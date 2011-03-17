@@ -4,4 +4,9 @@
 
 #pragma once
 
-
+#include <vector>
+#include <map>
+#include <iostream>
+#include <string>
+#include "debug.h"
+#include "error.h"

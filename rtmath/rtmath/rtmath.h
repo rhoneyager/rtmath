@@ -1,13 +1,19 @@
 // rtmath.h
+/* This is the main header for the library.
+ * All programs which link to this library should
+ * include this header.
+ */
 
 #pragma once
 
-using namespace System;
+#include "debug.h"
+#include "error.h"
 
-namespace rtmath {
-
-	public ref class Class1
-	{
-		// TODO: Add your methods for this class here.
-	};
-}
+/*
+#include "quadrature.h"
+#include "polynomial.h"
+#include "phasefunc.h"
+#include "recursivePolynomial.h"
+#include "zeros.h"
+#include "mie.h"
+*/
