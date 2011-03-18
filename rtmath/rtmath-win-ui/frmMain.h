@@ -47,15 +47,15 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::ToolStripMenuItem^  openModelToolStripMenuItem;
 	private: System::Windows::Forms::ToolStripMenuItem^  saveModelToolStripMenuItem;
 	private: System::Windows::Forms::ToolStripMenuItem^  atmosphereToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^  newToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^  openToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^  saveToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator2;
-	private: System::Windows::Forms::ToolStripMenuItem^  layersToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^  aerosolsToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripMenuItem^  cloudsToolStripMenuItem;
+
+
+
+
+
+
+
 	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator3;
-	private: System::Windows::Forms::ToolStripMenuItem^  overridesToolStripMenuItem;
+
 	private: System::Windows::Forms::ToolStripMenuItem^  surfaceToolStripMenuItem;
 	private: System::Windows::Forms::ToolStripMenuItem^  modelSelectionToolStripMenuItem;
 	private: System::Windows::Forms::ToolStripMenuItem^  lightingToolStripMenuItem;
@@ -71,6 +71,29 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::ToolStripMenuItem^  noneToolStripMenuItem;
 	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator4;
 	private: System::Windows::Forms::ToolStripMenuItem^  customToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  setLightingSourcesToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  exportImagesToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  exportResultsToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator6;
+	private: System::Windows::Forms::ToolStripMenuItem^  propertiesToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  baseAtmosphereToolStripMenuItem;
+
+	private: System::Windows::Forms::ToolStripMenuItem^  toolStripMenuItem1;
+	private: System::Windows::Forms::ToolStripMenuItem^  newToolStripMenuItem2;
+	private: System::Windows::Forms::ToolStripMenuItem^  openToolStripMenuItem2;
+	private: System::Windows::Forms::ToolStripMenuItem^  saveToolStripMenuItem2;
+	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator7;
+	private: System::Windows::Forms::ToolStripMenuItem^  layersToolStripMenuItem1;
+	private: System::Windows::Forms::ToolStripMenuItem^  newToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  openToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  saveToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator2;
+	private: System::Windows::Forms::ToolStripMenuItem^  aerosolsToolStripMenuItem1;
+	private: System::Windows::Forms::ToolStripMenuItem^  cloudsToolStripMenuItem1;
+	private: System::Windows::Forms::ToolStripMenuItem^  overridesToolStripMenuItem1;
+
+
+
 
 	private:
 		/// <summary>
@@ -100,15 +123,7 @@ namespace rtmathwinui {
 			this->surfaceToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->lightingToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->filtersToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->newToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->openToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->saveToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
-			this->layersToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->aerosolsToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->cloudsToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator3 = (gcnew System::Windows::Forms::ToolStripSeparator());
-			this->overridesToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->modelSelectionToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->defineFIlterToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->selectFilterToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -121,6 +136,25 @@ namespace rtmathwinui {
 			this->notchToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator5 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->customToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->setLightingSourcesToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->exportResultsToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->exportImagesToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->toolStripSeparator6 = (gcnew System::Windows::Forms::ToolStripSeparator());
+			this->propertiesToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->baseAtmosphereToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->toolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->newToolStripMenuItem2 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->openToolStripMenuItem2 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->saveToolStripMenuItem2 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->toolStripSeparator7 = (gcnew System::Windows::Forms::ToolStripSeparator());
+			this->layersToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->newToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->openToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->saveToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
+			this->aerosolsToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->cloudsToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->overridesToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->menuStrip1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -137,8 +171,9 @@ namespace rtmathwinui {
 			// 
 			// fileToolStripMenuItem
 			// 
-			this->fileToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(5) {this->newRunToolStripMenuItem, 
-				this->openRunToolStripMenuItem, this->saveResultsToolStripMenuItem, this->toolStripSeparator1, this->exitToolStripMenuItem});
+			this->fileToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(8) {this->newRunToolStripMenuItem, 
+				this->openRunToolStripMenuItem, this->saveResultsToolStripMenuItem, this->toolStripSeparator1, this->exportImagesToolStripMenuItem, 
+				this->exportResultsToolStripMenuItem, this->toolStripSeparator6, this->exitToolStripMenuItem});
 			this->fileToolStripMenuItem->Name = L"fileToolStripMenuItem";
 			this->fileToolStripMenuItem->Size = System::Drawing::Size(37, 20);
 			this->fileToolStripMenuItem->Text = L"&File";
@@ -175,8 +210,8 @@ namespace rtmathwinui {
 			// 
 			// modelToolStripMenuItem
 			// 
-			this->modelToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {this->newModelToolStripMenuItem, 
-				this->openModelToolStripMenuItem, this->saveModelToolStripMenuItem});
+			this->modelToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(4) {this->newModelToolStripMenuItem, 
+				this->openModelToolStripMenuItem, this->saveModelToolStripMenuItem, this->propertiesToolStripMenuItem});
 			this->modelToolStripMenuItem->Name = L"modelToolStripMenuItem";
 			this->modelToolStripMenuItem->Size = System::Drawing::Size(53, 20);
 			this->modelToolStripMenuItem->Text = L"&Model";
@@ -201,9 +236,8 @@ namespace rtmathwinui {
 			// 
 			// atmosphereToolStripMenuItem
 			// 
-			this->atmosphereToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(9) {this->newToolStripMenuItem, 
-				this->openToolStripMenuItem, this->saveToolStripMenuItem, this->toolStripSeparator2, this->layersToolStripMenuItem, this->aerosolsToolStripMenuItem, 
-				this->cloudsToolStripMenuItem, this->toolStripSeparator3, this->overridesToolStripMenuItem});
+			this->atmosphereToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {this->baseAtmosphereToolStripMenuItem, 
+				this->toolStripSeparator3, this->toolStripMenuItem1});
 			this->atmosphereToolStripMenuItem->Name = L"atmosphereToolStripMenuItem";
 			this->atmosphereToolStripMenuItem->Size = System::Drawing::Size(84, 20);
 			this->atmosphereToolStripMenuItem->Text = L"&Atmosphere";
@@ -217,6 +251,7 @@ namespace rtmathwinui {
 			// 
 			// lightingToolStripMenuItem
 			// 
+			this->lightingToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) {this->setLightingSourcesToolStripMenuItem});
 			this->lightingToolStripMenuItem->Name = L"lightingToolStripMenuItem";
 			this->lightingToolStripMenuItem->Size = System::Drawing::Size(63, 20);
 			this->lightingToolStripMenuItem->Text = L"&Lighting";
@@ -229,57 +264,10 @@ namespace rtmathwinui {
 			this->filtersToolStripMenuItem->Size = System::Drawing::Size(50, 20);
 			this->filtersToolStripMenuItem->Text = L"&Filters";
 			// 
-			// newToolStripMenuItem
-			// 
-			this->newToolStripMenuItem->Name = L"newToolStripMenuItem";
-			this->newToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->newToolStripMenuItem->Text = L"&New";
-			// 
-			// openToolStripMenuItem
-			// 
-			this->openToolStripMenuItem->Name = L"openToolStripMenuItem";
-			this->openToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->openToolStripMenuItem->Text = L"&Open";
-			// 
-			// saveToolStripMenuItem
-			// 
-			this->saveToolStripMenuItem->Name = L"saveToolStripMenuItem";
-			this->saveToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->saveToolStripMenuItem->Text = L"&Save";
-			// 
-			// toolStripSeparator2
-			// 
-			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(149, 6);
-			// 
-			// layersToolStripMenuItem
-			// 
-			this->layersToolStripMenuItem->Name = L"layersToolStripMenuItem";
-			this->layersToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->layersToolStripMenuItem->Text = L"&Layers...";
-			// 
-			// aerosolsToolStripMenuItem
-			// 
-			this->aerosolsToolStripMenuItem->Name = L"aerosolsToolStripMenuItem";
-			this->aerosolsToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->aerosolsToolStripMenuItem->Text = L"&Aerosols...";
-			// 
-			// cloudsToolStripMenuItem
-			// 
-			this->cloudsToolStripMenuItem->Name = L"cloudsToolStripMenuItem";
-			this->cloudsToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->cloudsToolStripMenuItem->Text = L"&Clouds...";
-			// 
 			// toolStripSeparator3
 			// 
 			this->toolStripSeparator3->Name = L"toolStripSeparator3";
 			this->toolStripSeparator3->Size = System::Drawing::Size(149, 6);
-			// 
-			// overridesToolStripMenuItem
-			// 
-			this->overridesToolStripMenuItem->Name = L"overridesToolStripMenuItem";
-			this->overridesToolStripMenuItem->Size = System::Drawing::Size(152, 22);
-			this->overridesToolStripMenuItem->Text = L"O&verrides...";
 			// 
 			// modelSelectionToolStripMenuItem
 			// 
@@ -355,6 +343,123 @@ namespace rtmathwinui {
 			this->customToolStripMenuItem1->Size = System::Drawing::Size(152, 22);
 			this->customToolStripMenuItem1->Text = L"&Custom...";
 			// 
+			// setLightingSourcesToolStripMenuItem
+			// 
+			this->setLightingSourcesToolStripMenuItem->Name = L"setLightingSourcesToolStripMenuItem";
+			this->setLightingSourcesToolStripMenuItem->Size = System::Drawing::Size(181, 22);
+			this->setLightingSourcesToolStripMenuItem->Text = L"&Set Lighting Sources";
+			// 
+			// exportResultsToolStripMenuItem
+			// 
+			this->exportResultsToolStripMenuItem->Name = L"exportResultsToolStripMenuItem";
+			this->exportResultsToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->exportResultsToolStripMenuItem->Text = L"&Export Results";
+			// 
+			// exportImagesToolStripMenuItem
+			// 
+			this->exportImagesToolStripMenuItem->Name = L"exportImagesToolStripMenuItem";
+			this->exportImagesToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->exportImagesToolStripMenuItem->Text = L"Export &Images";
+			// 
+			// toolStripSeparator6
+			// 
+			this->toolStripSeparator6->Name = L"toolStripSeparator6";
+			this->toolStripSeparator6->Size = System::Drawing::Size(149, 6);
+			// 
+			// propertiesToolStripMenuItem
+			// 
+			this->propertiesToolStripMenuItem->Name = L"propertiesToolStripMenuItem";
+			this->propertiesToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->propertiesToolStripMenuItem->Text = L"&Properties...";
+			// 
+			// baseAtmosphereToolStripMenuItem
+			// 
+			this->baseAtmosphereToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(5) {this->newToolStripMenuItem2, 
+				this->openToolStripMenuItem2, this->saveToolStripMenuItem2, this->toolStripSeparator7, this->layersToolStripMenuItem1});
+			this->baseAtmosphereToolStripMenuItem->Name = L"baseAtmosphereToolStripMenuItem";
+			this->baseAtmosphereToolStripMenuItem->Size = System::Drawing::Size(166, 22);
+			this->baseAtmosphereToolStripMenuItem->Text = L"&Base Atmosphere";
+			this->baseAtmosphereToolStripMenuItem->Click += gcnew System::EventHandler(this, &frmMain::baseAtmosphereToolStripMenuItem_Click);
+			// 
+			// toolStripMenuItem1
+			// 
+			this->toolStripMenuItem1->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(7) {this->newToolStripMenuItem, 
+				this->openToolStripMenuItem, this->saveToolStripMenuItem, this->toolStripSeparator2, this->aerosolsToolStripMenuItem1, this->cloudsToolStripMenuItem1, 
+				this->overridesToolStripMenuItem1});
+			this->toolStripMenuItem1->Name = L"toolStripMenuItem1";
+			this->toolStripMenuItem1->Size = System::Drawing::Size(166, 22);
+			this->toolStripMenuItem1->Text = L"&Overlays";
+			// 
+			// newToolStripMenuItem2
+			// 
+			this->newToolStripMenuItem2->Name = L"newToolStripMenuItem2";
+			this->newToolStripMenuItem2->Size = System::Drawing::Size(152, 22);
+			this->newToolStripMenuItem2->Text = L"&New";
+			// 
+			// openToolStripMenuItem2
+			// 
+			this->openToolStripMenuItem2->Name = L"openToolStripMenuItem2";
+			this->openToolStripMenuItem2->Size = System::Drawing::Size(152, 22);
+			this->openToolStripMenuItem2->Text = L"&Open";
+			// 
+			// saveToolStripMenuItem2
+			// 
+			this->saveToolStripMenuItem2->Name = L"saveToolStripMenuItem2";
+			this->saveToolStripMenuItem2->Size = System::Drawing::Size(152, 22);
+			this->saveToolStripMenuItem2->Text = L"&Save";
+			// 
+			// toolStripSeparator7
+			// 
+			this->toolStripSeparator7->Name = L"toolStripSeparator7";
+			this->toolStripSeparator7->Size = System::Drawing::Size(149, 6);
+			// 
+			// layersToolStripMenuItem1
+			// 
+			this->layersToolStripMenuItem1->Name = L"layersToolStripMenuItem1";
+			this->layersToolStripMenuItem1->Size = System::Drawing::Size(152, 22);
+			this->layersToolStripMenuItem1->Text = L"&Layers...";
+			// 
+			// newToolStripMenuItem
+			// 
+			this->newToolStripMenuItem->Name = L"newToolStripMenuItem";
+			this->newToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->newToolStripMenuItem->Text = L"&New";
+			// 
+			// openToolStripMenuItem
+			// 
+			this->openToolStripMenuItem->Name = L"openToolStripMenuItem";
+			this->openToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->openToolStripMenuItem->Text = L"&Open";
+			// 
+			// saveToolStripMenuItem
+			// 
+			this->saveToolStripMenuItem->Name = L"saveToolStripMenuItem";
+			this->saveToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->saveToolStripMenuItem->Text = L"&Save";
+			// 
+			// toolStripSeparator2
+			// 
+			this->toolStripSeparator2->Name = L"toolStripSeparator2";
+			this->toolStripSeparator2->Size = System::Drawing::Size(149, 6);
+			// 
+			// aerosolsToolStripMenuItem1
+			// 
+			this->aerosolsToolStripMenuItem1->Name = L"aerosolsToolStripMenuItem1";
+			this->aerosolsToolStripMenuItem1->Size = System::Drawing::Size(152, 22);
+			this->aerosolsToolStripMenuItem1->Text = L"&Aerosols...";
+			// 
+			// cloudsToolStripMenuItem1
+			// 
+			this->cloudsToolStripMenuItem1->Name = L"cloudsToolStripMenuItem1";
+			this->cloudsToolStripMenuItem1->Size = System::Drawing::Size(152, 22);
+			this->cloudsToolStripMenuItem1->Text = L"&Clouds...";
+			// 
+			// overridesToolStripMenuItem1
+			// 
+			this->overridesToolStripMenuItem1->Name = L"overridesToolStripMenuItem1";
+			this->overridesToolStripMenuItem1->Size = System::Drawing::Size(152, 22);
+			this->overridesToolStripMenuItem1->Text = L"&Overrides...";
+			// 
 			// frmMain
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -373,5 +478,7 @@ namespace rtmathwinui {
 #pragma endregion
 	private: System::Void exitToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 			 }
+private: System::Void baseAtmosphereToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
 };
 }
