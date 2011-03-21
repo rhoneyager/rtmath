@@ -1,29 +1,361 @@
-<UI version="4.0" >
- <class>frmMainClass</class>
- <widget class="QMainWindow" name="frmMainClass" >
-  <property name="objectName" >
-   <string notr="true">frmMainClass</string>
-  </property>
-  <property name="geometry" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmMain</class>
+ <widget class="QMainWindow" name="frmMain">
+  <property name="geometry">
    <rect>
-	<x>0</x>
-	<y>0</y>
-	<width>600</width>
-	<height>400</height>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>frmMain</string>
+  <property name="windowTitle">
+   <string>rtmath</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/images/rtlogo</normaloff>:/images/rtlogo</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QLabel" name="lblRev">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>270</y>
+      <width>46</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rev</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>600</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_New_Run"/>
+    <addaction name="action_Open_Run"/>
+    <addaction name="action_Save_Run"/>
+    <addaction name="separator"/>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Model">
+    <property name="title">
+     <string>&amp;Model</string>
+    </property>
+    <addaction name="action_New_Model"/>
+    <addaction name="action_Open_Model"/>
+    <addaction name="action_Save_Model"/>
+    <addaction name="action_model_Properties"/>
+   </widget>
+   <widget class="QMenu" name="menu_Atmosphere">
+    <property name="title">
+     <string>&amp;Atmosphere</string>
+    </property>
+    <widget class="QMenu" name="menu_Base_Atmosphere">
+     <property name="title">
+      <string>&amp;Base Atmosphere</string>
+     </property>
+     <addaction name="action_atmos_New"/>
+     <addaction name="action_atmos_Open"/>
+     <addaction name="action_atmos_Save"/>
+     <addaction name="separator"/>
+     <addaction name="action_Layers"/>
+    </widget>
+    <widget class="QMenu" name="menu_Overlays">
+     <property name="title">
+      <string>&amp;Overlays</string>
+     </property>
+     <addaction name="action_New_2"/>
+     <addaction name="action_Open_2"/>
+     <addaction name="action_Save_2"/>
+     <addaction name="separator"/>
+     <addaction name="action_Aerosols"/>
+     <addaction name="action_Clouds"/>
+     <addaction name="action_Overrides"/>
+    </widget>
+    <addaction name="menu_Base_Atmosphere"/>
+    <addaction name="menu_Overlays"/>
+   </widget>
+   <widget class="QMenu" name="menu_Surface">
+    <property name="title">
+     <string>&amp;Surface</string>
+    </property>
+    <addaction name="actionModel_Selection"/>
+   </widget>
+   <widget class="QMenu" name="menu_Lighting">
+    <property name="title">
+     <string>&amp;Lighting</string>
+    </property>
+    <addaction name="actionSet_Lighting_Sources"/>
+   </widget>
+   <widget class="QMenu" name="menu_Filters">
+    <property name="title">
+     <string>Fil&amp;ters</string>
+    </property>
+    <widget class="QMenu" name="menu_Define_Filter">
+     <property name="title">
+      <string>&amp;Define Filter</string>
+     </property>
+     <addaction name="action_Bandpass"/>
+     <addaction name="action_High_Pass"/>
+     <addaction name="action_Low_Pass"/>
+     <addaction name="action_Notch"/>
+     <addaction name="separator"/>
+     <addaction name="action_Custom"/>
+    </widget>
+    <widget class="QMenu" name="menu_Select_Filter">
+     <property name="title">
+      <string>&amp;Select Filter</string>
+     </property>
+     <addaction name="action_None"/>
+     <addaction name="separator"/>
+     <addaction name="action_custom"/>
+    </widget>
+    <addaction name="menu_Define_Filter"/>
+    <addaction name="menu_Select_Filter"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_About_rtmath"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Model"/>
+   <addaction name="menu_Atmosphere"/>
+   <addaction name="menu_Surface"/>
+   <addaction name="menu_Lighting"/>
+   <addaction name="menu_Filters"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_New_Run">
+   <property name="text">
+    <string>&amp;New Run</string>
+   </property>
+  </action>
+  <action name="action_Open_Run">
+   <property name="text">
+    <string>&amp;Open Run</string>
+   </property>
+  </action>
+  <action name="action_Save_Run">
+   <property name="text">
+    <string>&amp;Save Results</string>
+   </property>
+  </action>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="action_New_Model">
+   <property name="text">
+    <string>&amp;New Model</string>
+   </property>
+  </action>
+  <action name="action_Open_Model">
+   <property name="text">
+    <string>&amp;Open Model</string>
+   </property>
+  </action>
+  <action name="action_Save_Model">
+   <property name="text">
+    <string>&amp;Save Model</string>
+   </property>
+  </action>
+  <action name="action_About_rtmath">
+   <property name="text">
+    <string>&amp;About rtmath</string>
+   </property>
+  </action>
+  <action name="action_atmos_New">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="action_atmos_Open">
+   <property name="text">
+    <string>&amp;Open</string>
+   </property>
+  </action>
+  <action name="action_atmos_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="action_Layers">
+   <property name="text">
+    <string>&amp;Layers...</string>
+   </property>
+  </action>
+  <action name="action_New_2">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="action_Open_2">
+   <property name="text">
+    <string>&amp;Open</string>
+   </property>
+  </action>
+  <action name="action_Save_2">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="action_Aerosols">
+   <property name="text">
+    <string>&amp;Aerosols...</string>
+   </property>
+  </action>
+  <action name="action_Clouds">
+   <property name="text">
+    <string>&amp;Clouds...</string>
+   </property>
+  </action>
+  <action name="action_Overrides">
+   <property name="text">
+    <string>&amp;Overrides...</string>
+   </property>
+  </action>
+  <action name="actionModel_Selection">
+   <property name="text">
+    <string>Model Selection</string>
+   </property>
+  </action>
+  <action name="actionSet_Lighting_Sources">
+   <property name="text">
+    <string>Set Lighting Sources...</string>
+   </property>
+  </action>
+  <action name="action_Bandpass">
+   <property name="text">
+    <string>&amp;Bandpass...</string>
+   </property>
+  </action>
+  <action name="action_High_Pass">
+   <property name="text">
+    <string>&amp;High-Pass...</string>
+   </property>
+  </action>
+  <action name="action_Low_Pass">
+   <property name="text">
+    <string>&amp;Low-Pass...</string>
+   </property>
+  </action>
+  <action name="action_Notch">
+   <property name="text">
+    <string>&amp;Notch...</string>
+   </property>
+  </action>
+  <action name="action_Custom">
+   <property name="text">
+    <string>&amp;Custom...</string>
+   </property>
+  </action>
+  <action name="action_None">
+   <property name="text">
+    <string>&amp;None</string>
+   </property>
+  </action>
+  <action name="action_custom">
+   <property name="text">
+    <string>(custom)</string>
+   </property>
+  </action>
+  <action name="action_model_Properties">
+   <property name="text">
+    <string>&amp;Properties...</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
  <resources>
-   <include location="frmmain.qrc"/>
+  <include location="res.qrc"/>
  </resources>
- <connections/>
-</UI>
+ <connections>
+  <connection>
+   <sender>actionE_xit</sender>
+   <signal>triggered()</signal>
+   <receiver>frmMain</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>271</x>
+     <y>195</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_model_Properties</sender>
+   <signal>triggered()</signal>
+   <receiver>frmMain</receiver>
+   <slot>model_props()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_About_rtmath</sender>
+   <signal>triggered()</signal>
+   <receiver>frmMain</receiver>
+   <slot>show_about()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_atmos_Open</sender>
+   <signal>triggered()</signal>
+   <receiver>frmMain</receiver>
+   <slot>atmos_open()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>model_props()</slot>
+  <slot>show_about()</slot>
+  <slot>atmos_open()</slot>
+ </slots>
+</ui>

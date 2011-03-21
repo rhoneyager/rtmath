@@ -1,13 +1,39 @@
 #include "stdafx.h"
 #include "frmmain.h"
+#include "ui_frmmain.h"
 
-frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
-	: QMainWindow(parent, flags)
+#include "frmabout.h"
+#include "frmmodelprops.h"
+#include <QFileDialog>
+
+frmMain::frmMain(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::frmMain)
 {
-	ui.setupUi(this);
+    ui->setupUi(this);
+	//ui->lblRev
 }
 
 frmMain::~frmMain()
 {
+    delete ui;
+}
 
+void frmMain::model_props()
+{
+    frmModelProps props;
+    props.exec();
+}
+
+void frmMain::show_about()
+{
+    frmAbout newfrm;
+    //newfrm.show();
+    newfrm.exec();
+}
+
+void frmMain::atmos_open()
+{
+    QString fileName;
+    fileName = QFileDialog::getOpenFileName(this,tr("Select Atmospheric Parameters File"), tr(""), tr("Atmospheres (*.atmos)"));
 }
