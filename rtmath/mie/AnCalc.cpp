@@ -4,7 +4,7 @@ namespace mie {
 
 	// Remember, m is a complex refractive index
 
-	AnCalc::AnCalc(double x, std::complex<double> m)
+	AnCalc::AnCalc(double x, const std::complex<double> &m)
 	{
 		using namespace std;
 		this->x = x;

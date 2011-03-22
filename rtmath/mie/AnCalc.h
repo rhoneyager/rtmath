@@ -9,7 +9,7 @@ namespace mie {
 	{
 	public:
 		std::complex<double> calc(unsigned int n);
-		AnCalc(double x, std::complex<double> m);
+		AnCalc(double x, const std::complex<double> &m);
 		std::vector< std::complex<double> > An;
 	private:
 		double x;

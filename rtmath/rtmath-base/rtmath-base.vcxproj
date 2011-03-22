@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7EC1D8B2-5A81-4F21-A9BC-C65C73EA87EA}</ProjectGuid>
-    <RootNamespace>mie</RootNamespace>
+    <ProjectGuid>{4C51F696-286A-4D40-B1BB-F671ECD6C515}</ProjectGuid>
+    <RootNamespace>rtmathbase</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -60,27 +60,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="abNCalc.h" />
-    <ClInclude Include="AnCalc.h" />
-    <ClInclude Include="mie.h" />
-    <ClInclude Include="piNCalc.h" />
-    <ClInclude Include="Qcalc.h" />
-    <ClInclude Include="tauNCalc.h" />
-    <ClInclude Include="wnCalc.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="abNCalc.cpp" />
-    <ClCompile Include="AnCalc.cpp" />
-    <ClCompile Include="mie.cpp" />
-    <ClCompile Include="piNCalc.cpp" />
-    <ClCompile Include="Qcalc.cpp" />
-    <ClCompile Include="tauNCalc.cpp" />
-    <ClCompile Include="wnCalc.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\rtmath-base\rtmath-base.vcxproj">
-      <Project>{4c51f696-286a-4d40-b1bb-f671ecd6c515}</Project>
-    </ProjectReference>
+    <ClCompile Include="rtmath-base.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

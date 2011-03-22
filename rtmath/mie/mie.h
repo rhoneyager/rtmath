@@ -5,6 +5,8 @@
 #include "AnCalc.h"
 #include "piNCalc.h"
 #include "tauNCalc.h"
+#include "abNCalc.h"
+#include "Qcalc.h"
 
 namespace mie {
 	unsigned int version(void);

@@ -30,6 +30,12 @@
     <ClInclude Include="tauNCalc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="abNCalc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Qcalc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wnCalc.cpp">
@@ -45,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tauNCalc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="abNCalc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Qcalc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

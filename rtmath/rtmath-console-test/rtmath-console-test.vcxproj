@@ -64,6 +64,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\mie\mie.vcxproj">
+      <Project>{7ec1d8b2-5a81-4f21-a9bc-c65c73ea87ea}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\rtmath\rtmath.vcxproj">
       <Project>{57ce7c52-d622-4e29-b868-107a7e1ab51e}</Project>
       <Private>true</Private>
