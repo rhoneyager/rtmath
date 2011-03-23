@@ -88,9 +88,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_frmmain.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_frmabout.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -100,13 +97,13 @@
     <ClInclude Include="GeneratedFiles\ui_frmmodelprops.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_frmmain.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="frmmain.h">
       <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="frmmain.ui">
-      <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="frmmain.qrc">
       <Filter>Resource Files</Filter>
@@ -131,6 +128,9 @@
     </CustomBuild>
     <CustomBuild Include="res.qrc">
       <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="frmmain.ui">
+      <Filter>Form Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

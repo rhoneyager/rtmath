@@ -11,6 +11,7 @@ frmMain::frmMain(QWidget *parent) :
     ui(new Ui::frmMain)
 {
     ui->setupUi(this);
+	ui->lblRev->setText(tr("This is a test"));
 	//ui->lblRev
 }
 

@@ -18,8 +18,8 @@ int main(int argc, char** argv)
 		cout << "w(" << i << ") = " << res << endl;
 	}
 	std::cin.get();
-	cout << "Testing pi_n for theta = 0 (mu = 1)\n";
-	mie::piNCalc pitest(0.0);
+	cout << "Testing pi_n for theta = pi (mu = cos(pi))\n";
+	mie::piNCalc pitest(3.14159);
 	cout << "n\tpi(0,n)\n";
 	for (unsigned int i=0; i<10; i++)
 	{
@@ -39,24 +39,35 @@ int main(int argc, char** argv)
 	std::cin.get();
 	
 	cout << "Testing A_n for x = 1 (m = 1+0.33i)\n";
-	mie::AnCalc Atest(1,complex<double>(1,0.33));
+	mie::AnCalc Atest(2,complex<double>(1.1,0.63));
 	cout << "n\tA(1,1+0.33i,n)\n";
-	for (unsigned int i=0; i<10; i++)
+	for (unsigned int i=0; i<16; i++)
 	{
 		complex<double> res = Atest.calc(i);
 		cout << "A(" << i << ") = " << res << endl;
 	}
 	std::cin.get();
-	*/
-	cout << "Testing a few x points for the Qext code" << endl;
+	
 	std::complex<double> m(1.33,0);
+	cout << "Testing the calculated an and bn\n";
+	std::complex<double> an, bn;
+	mie::abNCalc abncalc(m,2.0);
+	for (unsigned int n=1;n<=10;n++)
+	{
+		abncalc.calc(n, an, bn);
+		cout << n << "\t" << an << "\t" << bn << std::endl;
+	}
+	std::cin.get();
+	cout << "Testing a few x points for the Qext code" << endl;
+
 	mie::Qcalc q(m);
-	for (double x=0.1;x<10;x=x+0.01)
+	for (double x=0.1;x<=1;x=x+0.1)
 	{
 		double Qe, Qa, Qs;
 		q.calc(x,Qe,Qs,Qa);
 		cout << Qe << std::endl;
 	}
+	*/
 	std::cin.get();
 	return 0;
 }

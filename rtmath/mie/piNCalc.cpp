@@ -18,8 +18,8 @@ namespace mie {
 		for (unsigned int i=pin.size(); i<=n; i++)
 		{
 			double res;
-			res = ((2.0*n - 1.0) / (n - 1.0)) * mu * pin[i-1]
-			- ((n) / (n - 1.0)) * pin[n-2];
+			res = ((2.0*i - 1.0) / (i - 1.0)) * mu * pin[i-1]
+			- ((i) / (i - 1.0)) * pin[i-2];
 			pin.push_back(res);
 		}
 		return pin[n];
