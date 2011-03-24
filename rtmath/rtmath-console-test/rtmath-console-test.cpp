@@ -2,6 +2,7 @@
 #include "../rtmath/rtmath.h"
 #include "../mie/mie.h"
 #include <complex>
+#include<netcdf.h>
 
 int main(int argc, char** argv)
 {
@@ -68,6 +69,23 @@ int main(int argc, char** argv)
 		cout << Qe << std::endl;
 	}
 	*/
+	std::cin.get();
+	cout << "Testing the basic netCDF libraries\n";
+	int fileid;
+	int timeid;
+	int voltageid;
+	const char* desc = "The test attribute";
+	nc_create("d:/nctest.nc",0,&fileid);
+	nc_def_dim(fileid, "time", NC_UNLIMITED, &timeid);
+	nc_def_var(fileid, "voltage", NC_DOUBLE,1, &timeid, &voltageid);
+	nc_put_att_text(fileid,voltageid,"desc",strlen(desc), desc);
+	nc_enddef(fileid);
+	double voltdata[] = {1.0, 2.0, 3.0, 3.5, 3.8, 2.5, 1.4, 1.2, 1.0, 0.5, 0.25};
+	static size_t start[] = {0};
+	static size_t count[] = {10};
+	nc_put_vara_double(fileid, voltageid, start, count, voltdata);
+	nc_close(fileid);
+	cout << "netCDF file written!" << std::endl;
 	std::cin.get();
 	return 0;
 }
