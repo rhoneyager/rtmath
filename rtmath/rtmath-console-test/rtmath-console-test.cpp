@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 	int timeid;
 	int voltageid;
 	const char* desc = "The test attribute";
-	nc_create("d:/nctest.nc",0,&fileid);
+	nc_create("nctest.nc",0,&fileid);
 	nc_def_dim(fileid, "time", NC_UNLIMITED, &timeid);
 	nc_def_var(fileid, "voltage", NC_DOUBLE,1, &timeid, &voltageid);
 	nc_put_att_text(fileid,voltageid,"desc",strlen(desc), desc);

@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-base", "rtmath-base\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glgraph", "glgraph\glgraph.vcxproj", "{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mie-qt-ui", "mie-qt-ui\mie-qt-ui.vcxproj", "{3F2AD2E3-DC86-4655-8841-824F24EF4C8E}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -53,6 +55,10 @@ Global
 		{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}.Debug|Win32.Build.0 = Debug|Win32
 		{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}.Release|Win32.ActiveCfg = Release|Win32
 		{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}.Release|Win32.Build.0 = Release|Win32
+		{3F2AD2E3-DC86-4655-8841-824F24EF4C8E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3F2AD2E3-DC86-4655-8841-824F24EF4C8E}.Debug|Win32.Build.0 = Debug|Win32
+		{3F2AD2E3-DC86-4655-8841-824F24EF4C8E}.Release|Win32.ActiveCfg = Release|Win32
+		{3F2AD2E3-DC86-4655-8841-824F24EF4C8E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
