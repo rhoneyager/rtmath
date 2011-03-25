@@ -14,6 +14,18 @@ public:
 
 private:
 	Ui::frmMainClass ui;
+
+	public slots:
+		void jobRun();
+		void jobItemAdd();
+		void jobItemDelete();
+		void jobItemModify();
+		void jobNew();
+		void jobOpen();
+		void jobSave();
+		void jobSaveOutput();
+		void jobExportImage();
+		void imageProperties();
 };
 
 #endif // FRMMAIN_H

@@ -53,6 +53,15 @@
     <ClCompile Include="GeneratedFiles\qrc_frmmain.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="job.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="task.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="taskNothing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -63,6 +72,21 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_frmJobItemProps.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="job.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="task.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskOutput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskNothing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
