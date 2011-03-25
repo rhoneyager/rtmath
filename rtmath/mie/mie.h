@@ -7,6 +7,7 @@
 #include "tauNCalc.h"
 #include "abNCalc.h"
 #include "Qcalc.h"
+#include "Scalc.h"
 
 namespace mie {
 	unsigned int version(void);

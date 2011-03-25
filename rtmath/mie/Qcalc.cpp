@@ -21,7 +21,7 @@ Qcalc::~Qcalc(void)
 {
 }
 
-void Qcalc::calc(double x, double &Qext, double &Qsca, double &Qabs)
+void Qcalc::calc(double x, double &Qext, double &Qsca, double &Qabs, double &g)
 {
 	// TODO: save previous results for faster future runs!!!!!!!
 	// Construct the abNcalc class
@@ -32,24 +32,36 @@ void Qcalc::calc(double x, double &Qext, double &Qsca, double &Qabs)
 	double Qe = 0, Qep, Qepar;
 	double Qs = 0, Qsp, Qspar;
 	double Qa = 0;
+	double gpar = 0, ge = 0;
+
+		// Define memory for an and bn
+		std::complex<double> an, anp;
+		std::complex<double> bn, bnp;
+		std::complex<double> suma, sumb;
+	abn.calc(1, an, bn);
 	// TODO: use proper bounding formula
 	for (unsigned int n=1; n < 400; n++)
 	{
 		// Set previous values for iteration
 		Qep = Qe;
 		Qsp = Qs;
-		// Define memory for an and bn
-		std::complex<double> an;
-		std::complex<double> bn;
+
 		// Do iteration of the sum
-		abn.calc(n, an, bn);
+		abn.calc(n+1, anp, bnp);
 
 		Qepar = (2.0*n+1.0) * (an.real() + bn.real());
 		Qspar = (2.0*n+1.0) * ((std::abs(an) * std::abs(an)) + (std::abs(bn) * std::abs(bn)) );
+		
+		suma = an*conj(anp)+bn*conj(bnp);
+		sumb = an*conj(bn);
+
 		// Do another tolerance check against too small terms messing up sum
 		if (Qepar < _atol || Qspar < _atol) break;
 		Qe += Qepar;
 		Qs += Qspar;
+		gpar += ((n*(n+2.0)/(n+1.0)) * suma.real()) + (((2.0*n+1)/(n*n+n))* sumb.real());
+		an = anp;
+		bn = bnp;
 		// Note the inversion of div and inequalities to make this work
 		//if ( (Qep / Qe > _tolerance) && (Qsp/Qs >_tolerance) ) break;
 	}
@@ -60,6 +72,12 @@ void Qcalc::calc(double x, double &Qext, double &Qsca, double &Qabs)
 	Qext = Qe;
 	Qsca = Qs;
 	Qabs = Qa;
+
+	// Now, to calculate g
+	// I'm doing this here because the summations are already in place, and g is really a waste of a class
+	// abncalc already holds the necessary values
+	gpar *= 4.0/(x*x);
+	g = gpar/Qsca;
 	return;
 }
 

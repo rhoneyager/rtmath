@@ -24,10 +24,10 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debug.h">
+    <ClInclude Include="error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="error.h">
+    <ClInclude Include="debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,13 +1,11 @@
 #include "piNCalc.h"
 
-#include <cmath>
-
 namespace mie {
 
-	piNCalc::piNCalc(double theta)
+	piNCalc::piNCalc(double mu)
 	{
-		this->theta = theta;
-		this->mu = cos(theta);
+		//this->theta = theta;
+		this->mu = mu;
 		pin.push_back(0);
 		pin.push_back(1);
 	}

@@ -63,8 +63,10 @@
     <ClInclude Include="abNCalc.h" />
     <ClInclude Include="AnCalc.h" />
     <ClInclude Include="mie.h" />
+    <ClInclude Include="miePhaseFunc.h" />
     <ClInclude Include="piNCalc.h" />
     <ClInclude Include="Qcalc.h" />
+    <ClInclude Include="Scalc.h" />
     <ClInclude Include="tauNCalc.h" />
     <ClInclude Include="wnCalc.h" />
   </ItemGroup>
@@ -72,8 +74,10 @@
     <ClCompile Include="abNCalc.cpp" />
     <ClCompile Include="AnCalc.cpp" />
     <ClCompile Include="mie.cpp" />
+    <ClCompile Include="miePhaseFunc.cpp" />
     <ClCompile Include="piNCalc.cpp" />
     <ClCompile Include="Qcalc.cpp" />
+    <ClCompile Include="Scalc.cpp" />
     <ClCompile Include="tauNCalc.cpp" />
     <ClCompile Include="wnCalc.cpp" />
   </ItemGroup>

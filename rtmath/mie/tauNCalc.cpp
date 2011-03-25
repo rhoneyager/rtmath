@@ -1,13 +1,11 @@
 #include "tauNCalc.h"
 #include "piNCalc.h"
-#include<cmath>
 
 namespace mie {
 
-	tauNCalc::tauNCalc(double theta) {
-		this->theta = theta;
-		this->mu = cos(theta);
-		pin = new piNCalc(theta);
+	tauNCalc::tauNCalc(double mu) {
+		this->mu = mu;
+		pin = new piNCalc(mu);
 	}
 
 	tauNCalc::~tauNCalc()

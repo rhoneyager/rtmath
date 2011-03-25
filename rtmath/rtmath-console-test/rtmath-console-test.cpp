@@ -64,8 +64,8 @@ int main(int argc, char** argv)
 	mie::Qcalc q(m);
 	for (double x=0.1;x<=1;x=x+0.1)
 	{
-		double Qe, Qa, Qs;
-		q.calc(x,Qe,Qs,Qa);
+		double Qe, Qa, Qs, g;
+		q.calc(x,Qe,Qs,Qa, g);
 		cout << Qe << std::endl;
 	}
 	*/

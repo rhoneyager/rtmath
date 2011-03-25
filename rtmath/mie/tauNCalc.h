@@ -5,10 +5,9 @@ namespace mie {
 
 	class tauNCalc {
 	public:
-		tauNCalc(double theta);
+		tauNCalc(double mu);
 		~tauNCalc();
 		double calc(unsigned int n);
-		double theta;
 		double mu;
 		piNCalc* pin;
 	};

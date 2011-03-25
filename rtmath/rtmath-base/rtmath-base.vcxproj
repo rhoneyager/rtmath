@@ -60,7 +60,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="phaseFunc.cpp" />
+    <ClCompile Include="polynomial.cpp" />
+    <ClCompile Include="quadrature.cpp" />
     <ClCompile Include="rtmath-base.cpp" />
+    <ClCompile Include="zeros.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="phaseFunc.h" />
+    <ClInclude Include="polynomial.h" />
+    <ClInclude Include="quadrature.h" />
+    <ClInclude Include="rtmath-base.h" />
+    <ClInclude Include="zeros.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

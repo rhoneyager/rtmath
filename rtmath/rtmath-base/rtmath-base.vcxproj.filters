@@ -18,5 +18,34 @@
     <ClCompile Include="rtmath-base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="phaseFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="quadrature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="zeros.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rtmath-base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="phaseFunc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quadrature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="polynomial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="zeros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
