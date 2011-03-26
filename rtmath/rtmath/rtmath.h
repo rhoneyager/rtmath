@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "../rtmath-base/rtmath-base.h"
 #include "debug.h"
 #include "error.h"
 

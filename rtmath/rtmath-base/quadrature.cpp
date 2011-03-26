@@ -57,16 +57,21 @@ namespace rtmath {
 		{
 			// Assumes legendre polynomials
 			// Use the appropriate quadrature and weights (precomputed mostly!)
-			double res = (b - a) / 2.0;
 			if (degree <= 1) throw;
 			// For each n degree, expect n quadrature points
 			// Start point in array is 2 + 3 + 4 + ... + n-1
 			// So, the starting index is 3 * 
-
-			// Do the necessary evaluation and summation
-			for (unsigned int i=1; i <= degree; i++)
+			unsigned int start = 3 * (-1 - degree / 2 + degree * degree/2);
+			// Check if the start even exists! If not, generate the necessary points.
+			// TODO: add code. For now, throw if insufficient points
+			if (degree > 7) throw;
+			// Do the evaluation and summation
+			double res = 0.0;
+			for (unsigned int i = start; i < start + 3 * degree; i+=3)
 			{
+				res += f->eval( ((b-a)/2.0* _gaussian_lagrange[i+1]) + ((a+b)/2.0) ) * _gaussian_lagrange[i+2];
 			}
+			res *= (b-a)/2.0;
 			return res;
 		}
 

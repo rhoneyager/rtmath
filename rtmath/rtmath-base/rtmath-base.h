@@ -4,3 +4,6 @@
 // for scattering phase func., debug system primatives, and similar stuff)
 
 #include "phaseFunc.h"
+#include "polynomial.h"
+#include "zeros.h"
+#include "quadrature.h"

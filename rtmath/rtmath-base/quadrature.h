@@ -10,7 +10,7 @@
    base class
    */
 
-namespace rtmath {
+   namespace rtmath {
 	class evalfunction // an evaluatable function (allows class evaluation)
 	{
 	public:
@@ -20,5 +20,7 @@ namespace rtmath {
 		virtual double operator() (double) = 0;
 	};
 
-
+	namespace quadrature {
+      	  double quad_eval_leg(double a, double b, unsigned int degree, evalfunction *f);
+      	  };
 }; // end namespace rtmath

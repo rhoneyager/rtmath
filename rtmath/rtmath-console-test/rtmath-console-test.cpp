@@ -1,8 +1,9 @@
 #include <iostream>
 #include "../rtmath/rtmath.h"
 #include "../mie/mie.h"
+#include "../rtmath-base/rtmath-base.h"
 #include <complex>
-#include<netcdf.h>
+//#include <netcdf.h>
 
 int main(int argc, char** argv)
 {
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
 		q.calc(x,Qe,Qs,Qa, g);
 		cout << Qe << std::endl;
 	}
-	*/
+	
 	std::cin.get();
 	cout << "Testing the basic netCDF libraries\n";
 	int fileid;
@@ -87,5 +88,16 @@ int main(int argc, char** argv)
 	nc_close(fileid);
 	cout << "netCDF file written!" << std::endl;
 	std::cin.get();
+	*/
+	cout << "Gaussian quadrature test" << endl;
+	cout << "Testing polynomial function y=4-x^2 with degrees 2-7" << endl;
+	rtmath::polynomial x(1,1);
+	rtmath::polynomial y = x*x * -1.0 + 4.0;
+	for (unsigned int i=2; i<8; i++)
+	{
+		cout << i << "\t" << rtmath::quadrature::quad_eval_leg(-2.0,2.0,i,&y) << endl;
+	}
+	std::cin.get();
+
 	return 0;
 }
