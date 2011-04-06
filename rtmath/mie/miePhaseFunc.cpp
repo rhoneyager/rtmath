@@ -31,6 +31,6 @@ void miePhaseFunc::calc(double mu, double mun, double phi, double pn, double *re
 	}
 
 }
-
+s
 }; // end mie
 
