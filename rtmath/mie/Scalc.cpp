@@ -20,14 +20,16 @@ Scalc::Scalc(const std::complex<double> &m, double x, double tol, double atol)
 {
 	_tolerance = tol;
 	_atol = atol;
-	Scalc(m,x);
+	_m = m;
+	_x = x;
 }
 
 Scalc::~Scalc(void)
 {
 }
 
-void Scalc::calc(double mu, std::complex<double> &Sa, std::complex<double> &Sb, double &Ssq)
+//void Scalc::calc(double mu, std::complex<double> &Sa, std::complex<double> &Sb, double &Ssq)
+void Scalc::calc(double mu, double Snn[4][4], std::complex<double> Sn[4])
 {
 	// This code is based on the Qcalc code
 	// TODO: save previous results for faster future runs!!!!!!!
@@ -46,15 +48,23 @@ void Scalc::calc(double mu, std::complex<double> &Sa, std::complex<double> &Sb, 
 
 	// Zero Sa and Sb
 	std::complex<double> zero(0,0);
-	Sa = zero;
-	Sb = zero;
+	for (unsigned int i=0;i<4;i++)
+		Sn[i] = zero;
+	for (unsigned int i=0; i<4;i++)
+		for (unsigned int j=0; j<4; j++)
+			Snn[i][j] = 0;
+
+	std::complex<double> *Sa = &Sn[0];
+	std::complex<double> *Sb = &Sn[1];
+	*Sa = zero;
+	*Sb = zero;
 	
 	// TODO: use proper bounding formula
 	for (unsigned int n=1; n < 400; n++)
 	{
 		// Set previous values for iteration
-		Sap = Sa;
-		Sbp = Sb;
+		Sap = *Sa;
+		Sbp = *Sb;
 		// Define memory for an and bn
 		std::complex<double> an;
 		std::complex<double> bn;
@@ -71,13 +81,15 @@ void Scalc::calc(double mu, std::complex<double> &Sa, std::complex<double> &Sb, 
 		Sbpar *= (2.0*n+1)/(n*n+n);
 		// Do another tolerance check against too small terms messing up sum
 		if (abs(Sapar) < _atol || abs(Sbpar) < _atol) break;
-		Sa += Sapar;
-		Sb += Sbpar;
+		*Sa += Sapar;
+		*Sb += Sbpar;
 		// Note the inversion of div and inequalities to make this work
 		//if ( (Qep / Qe > _tolerance) && (Qsp/Qs >_tolerance) ) break;
 	}
 
-	Ssq = 0.5 * (abs(Sa)*abs(Sa) + abs(Sb) * abs(Sb));
+	this->_genMuellerMatrix(Snn, Sn);
+	// Ssq is now Snn[0][0]
+	//Ssq = 0.5 * (abs(*Sa)*abs(*Sa) + abs(*Sb) * abs(*Sb));
 
 	return;
 }

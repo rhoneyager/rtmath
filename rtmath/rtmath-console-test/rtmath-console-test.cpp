@@ -89,6 +89,7 @@ int main(int argc, char** argv)
 	cout << "netCDF file written!" << std::endl;
 	std::cin.get();
 	*/
+	/*
 	cout << "Gaussian quadrature test" << endl;
 	cout << "Testing polynomial function y=4-x^2 with degrees 2-7" << endl;
 	rtmath::polynomial x(1,1);
@@ -97,6 +98,23 @@ int main(int argc, char** argv)
 	{
 		cout << i << "\t" << rtmath::quadrature::quad_eval_leg(-2.0,2.0,i,&y) << endl;
 	}
+	std::cin.get();
+	*/
+	cout << "Mie Mueller Matrix Calculation" << endl;
+	std::complex<double> m(1.33,0);
+	double x = 1.0;
+	mie::Scalc Sc(m,x);
+	double Snn[4][4];
+	complex<double> Sn[4];
+	Sc.calc(0,Snn,Sn);
+
+	cout << "Sn:" << endl;
+	for (unsigned int i=0; i<4;i++)
+		cout << i << "\t" << Sn[i] << endl;
+	cout << endl << "Snn:" << endl;
+	for (unsigned int i=0;i<4;i++)
+		for (unsigned int j=0;j<4;j++)
+			cout << i << j << "\t" << Snn[i][j] << endl;
 	std::cin.get();
 
 	return 0;
