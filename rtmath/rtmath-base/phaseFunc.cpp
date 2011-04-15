@@ -1,5 +1,6 @@
 #include "phaseFunc.h"
 #include <complex>
+#include <cmath>
 namespace rtmath {
 
 phaseFunc::phaseFunc(void)
@@ -11,6 +12,12 @@ phaseFunc::~phaseFunc(void)
 {
 }
 
+void phaseFunc::eval(double mu, double mun, double phir, double Pnn[4][4], double res[4][4])
+{
+	// Actually evaluate the phase function
+	//double ia = acos();
+
+}
 
 scattMatrix::scattMatrix(void)
 {
