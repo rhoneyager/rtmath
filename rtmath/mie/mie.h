@@ -8,6 +8,7 @@
 #include "abNCalc.h"
 #include "Qcalc.h"
 #include "Scalc.h"
+#include "miePhaseFunc.h"
 
 namespace mie {
 	unsigned int version(void);

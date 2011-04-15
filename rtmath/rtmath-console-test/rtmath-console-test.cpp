@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 	double Snn[4][4];
 	complex<double> Sn[4];
 	Sc.calc(0,Snn,Sn);
-
+	mie::miePhaseFunc mp;
 	cout << "Sn:" << endl;
 	for (unsigned int i=0; i<4;i++)
 		cout << i << "\t" << Sn[i] << endl;
@@ -115,6 +115,12 @@ int main(int argc, char** argv)
 	for (unsigned int i=0;i<4;i++)
 		for (unsigned int j=0;j<4;j++)
 			cout << i << j << "\t" << Snn[i][j] << endl;
+	double Pnn[4][4];
+	mp.calc(0, m, x, Pnn);
+	cout << endl << "Pnn:" << endl;
+	for (unsigned int i=0;i<4;i++)
+		for (unsigned int j=0;j<4;j++)
+			cout << i << j << "\t" << Pnn[i][j] << endl;
 	std::cin.get();
 
 	return 0;
