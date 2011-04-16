@@ -60,7 +60,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="matrixop.cpp" />
     <ClCompile Include="phaseFunc.cpp" />
     <ClCompile Include="polynomial.cpp" />
@@ -69,7 +68,6 @@
     <ClCompile Include="zeros.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="damatrix.h" />
     <ClInclude Include="matrixop.h" />
     <ClInclude Include="phaseFunc.h" />
     <ClInclude Include="polynomial.h" />

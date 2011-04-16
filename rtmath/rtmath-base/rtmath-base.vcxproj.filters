@@ -33,9 +33,6 @@
     <ClCompile Include="matrixop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="damatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath-base.h">
@@ -54,9 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="matrixop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="damatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

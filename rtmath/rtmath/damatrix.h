@@ -1,6 +1,6 @@
 #pragma once
-#include "matrixop.h"
-#include "quadrature.h"
+#include "../rtmath-base/matrixop.h"
+#include "../rtmath-base/quadrature.h"
 
 namespace rtmath {
 

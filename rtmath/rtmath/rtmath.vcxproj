@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="damatrix.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="resource.h" />
@@ -87,6 +88,7 @@
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="rtmath.cpp" />
     <ClCompile Include="Stdafx.cpp">

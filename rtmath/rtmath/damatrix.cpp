@@ -1,5 +1,5 @@
 #include "damatrix.h"
-#include "quadrature.h"
+#include "../rtmath-base/quadrature.h"
 #define _MATH_DEFINES_DEFINED
 #include <cmath>
 namespace rtmath {
