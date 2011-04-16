@@ -30,7 +30,7 @@ namespace rtmath {
 	}
 	*/
 
-	polynomial polynomial::operator+ (polynomial param)
+	polynomial polynomial::operator+ (polynomial param) const
 	{
 		polynomial temp;
 		// Compare degree of both polynomials and pick max
@@ -42,7 +42,7 @@ namespace rtmath {
 		return temp;
 	}
 
-	polynomial polynomial::operator+ (double param)
+	polynomial polynomial::operator+ (double param) const
 	{
 		polynomial temp;
 		temp = *this;
@@ -50,7 +50,7 @@ namespace rtmath {
 		return temp;
 	}
 
-	polynomial polynomial::operator- (double param)
+	polynomial polynomial::operator- (double param) const
 	{
 		polynomial temp;
 		temp = *this;
@@ -58,7 +58,7 @@ namespace rtmath {
 		return temp;
 	}
 
-	polynomial polynomial::operator- (polynomial param)
+	polynomial polynomial::operator- (polynomial param) const
 	{
 		// Easily enough, mult. param by -1 and run add op
 		polynomial tempa, tempb;
@@ -68,7 +68,7 @@ namespace rtmath {
 		return tempb;
 	}
 
-	polynomial polynomial::operator* (polynomial param)
+	polynomial polynomial::operator* (polynomial param) const
 	{
 		// This is more complex, unfortunately
 		polynomial temp;
@@ -83,7 +83,7 @@ namespace rtmath {
 		return temp;
 	}
 
-	polynomial polynomial::operator* (double param)
+	polynomial polynomial::operator* (double param) const
 	{
 		// Go through and mult coeffs
 		polynomial temp;
@@ -93,7 +93,7 @@ namespace rtmath {
 		return temp;
 	}
 
-	polynomial polynomial::operator^ (unsigned int param)
+	polynomial polynomial::operator^ (unsigned int param) const
 	{
 		//TODO: use a better method
 		polynomial temp;
@@ -112,14 +112,14 @@ namespace rtmath {
 	}
 */
 
-	bool polynomial::operator== (double param)
+	bool polynomial::operator== (double param) const
 	{
 		if (maxPow() > 0) return false;
 		if (coeff(0) == param) return true;
 		return false;
 	}
 
-	bool polynomial::operator== (polynomial param)
+	bool polynomial::operator== (polynomial param) const
 	{
 		// Compare the two polynomials
 		// First, check rank
@@ -132,23 +132,23 @@ namespace rtmath {
 		return true;
 	}
 
-	bool polynomial::operator!= (polynomial param)
+	bool polynomial::operator!= (polynomial param) const
 	{
 		if (*this == param) return false;
 		return true;
 	}
 
-	bool polynomial::operator!= (double param)
+	bool polynomial::operator!= (double param) const
 	{
 		if (maxPow() > 0) return true;
 		if (coeff(0) == param) return false;
 		return true;
 	}
 
-	double polynomial::eval(double xval)
+	double polynomial::eval(double xval) const
 	{
 		double res = 0.0;
-		std::map<unsigned int, double>::iterator it;
+		std::map<unsigned int, double>::const_iterator it;
 		for (it = _coeffs.begin(); it != _coeffs.end(); it++)
 		{
 			if ( (*it).second != 0.0 ) 
@@ -159,7 +159,7 @@ namespace rtmath {
 		return res;
 	}
 
-	double polynomial::operator() (double param)
+	double polynomial::operator() (double param) const
 	{
 		return eval(param);
 	}
@@ -171,7 +171,7 @@ namespace rtmath {
 	}
 	*/
 
-	double& polynomial::operator[] (const unsigned int param)
+	double& polynomial::operator[] (const unsigned int param) 
 	{
 		if (_coeffs.count(param) == 0) _coeffs[param] = 0.0;
 		return _coeffs[param];
@@ -188,10 +188,13 @@ namespace rtmath {
 		truncate();
 	}
 
-	double polynomial::coeff(unsigned int pow)
+	double polynomial::coeff(unsigned int pow) const
 	{
 		if (_coeffs.count(pow) == 0) return 0.0;
-		return _coeffs[pow];
+		// TODO: Fix the need for this diversion
+		// Use const_iterator find (res[pow] creates an entry if pow nonexistant)
+		std::map<unsigned int, double> res = _coeffs;
+		return res[pow];
 	}
 
 	polynomial polynomial::deriv(unsigned int pow)
@@ -215,7 +218,7 @@ namespace rtmath {
 		return res;
 	}
 
-	void polynomial::zeros(std::set<double> &zpts)
+	void polynomial::zeros(std::set<double> &zpts) const
 	{
 		throw;
 		return;
@@ -337,7 +340,7 @@ namespace rtmath {
 		return;
 	}
 	*/
-	unsigned int polynomial::maxPow()
+	unsigned int polynomial::maxPow() const
 	{
 		// Use recursion to find first nonzero exponent
 		/*
@@ -352,7 +355,7 @@ namespace rtmath {
 		return run;
 		*/
 		unsigned int max=0;
-		std::map<unsigned int, double>::iterator it;
+		std::map<unsigned int, double>::const_iterator it;
 		for (it = _coeffs.begin(); it != _coeffs.end(); it++)
 		{
 			if ( ( (*it).first > max ) && ( (*it).second != 0.0 ) ) 
@@ -378,7 +381,7 @@ namespace rtmath {
 		}
 	}
 
-	void polynomial::print()
+	void polynomial::print() const
 	{
 		using namespace std;
 //		cerr << "Size: " << _coeffs.size() << endl;

@@ -53,7 +53,7 @@ namespace rtmath {
 
 		const double *_gaussian_lagrange = _gaussian_lagrange_prepump;
 
-		double quad_eval_leg(double a, double b, unsigned int degree, evalfunction *f)
+		double quad_eval_leg(double a, double b, unsigned int degree, const evalfunction *f)
 		{
 			// Assumes legendre polynomials
 			// Use the appropriate quadrature and weights (precomputed mostly!)

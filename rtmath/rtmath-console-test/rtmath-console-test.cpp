@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 		cout << i << "\t" << rtmath::quadrature::quad_eval_leg(-2.0,2.0,i,&y) << endl;
 	}
 	std::cin.get();
-	*/
+	
 	cout << "Mie Mueller Matrix Calculation" << endl;
 	std::complex<double> m(1.33,0);
 	double x = 1.0;
@@ -122,6 +122,8 @@ int main(int argc, char** argv)
 		for (unsigned int j=0;j<4;j++)
 			cout << i << j << "\t" << Pnn[i][j] << endl;
 	std::cin.get();
-
+	*/
+	cout << "Now creating a few atmospheric layers and the DA layers structure." << endl;
+	std::cin.get();
 	return 0;
 }

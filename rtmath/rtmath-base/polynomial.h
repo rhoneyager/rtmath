@@ -18,34 +18,34 @@ namespace rtmath {
 			polynomial(unsigned int pow, double val);
 //			polynomial(polynomial &orig);
 			~polynomial();
-			polynomial operator + (polynomial);
-			polynomial operator + (double);
-			polynomial operator - (double);
-			polynomial operator - (polynomial);
-			polynomial operator * (polynomial);
-			polynomial operator * (double);
-			polynomial operator ^ (unsigned int);
-			polynomial deriv(unsigned int pow);
-			void zeros(std::set<double> &zpts);
-			double operator() (double);
-			double& operator[] (const unsigned int);
-			double eval(double xval);
+			polynomial operator + (polynomial) const;
+			polynomial operator + (double) const;
+			polynomial operator - (double) const;
+			polynomial operator - (polynomial) const;
+			polynomial operator * (polynomial) const;
+			polynomial operator * (double) const;
+			polynomial operator ^ (unsigned int) const;
+			polynomial deriv(unsigned int pow); // redo so it can be const
+			void zeros(std::set<double> &zpts) const;
+			double operator() (double) const;
+			double& operator[] (const unsigned int); // redo for const
+			double eval(double xval) const;
 //			polynomial operator = (double);
-			bool operator == (polynomial);
-			bool operator == (double);
-			bool operator != (double);
-			bool operator != (polynomial);
+			bool operator == (polynomial) const;
+			bool operator == (double) const;
+			bool operator != (double) const;
+			bool operator != (polynomial) const;
 			/*
 			   Future operators:
 			   +=, -=, *=, ^=
 			   */
 			void erase();
 			void coeff(unsigned int pow, double val);
-			double coeff(unsigned int pow);
-			unsigned int maxPow();
+			double coeff(const unsigned int pow) const; // TODO: fix
+			unsigned int maxPow() const;
 			void truncate();
 			void truncate(unsigned int pow);
-			void print(); // Error display
+			void print() const; // Error display
 		private:
 			std::map<unsigned int, double> _coeffs;
 	};

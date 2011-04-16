@@ -16,11 +16,11 @@
 	public:
 		evalfunction();
 		virtual ~evalfunction();
-		virtual double eval(double val) = 0;
-		virtual double operator() (double) = 0;
+		virtual double eval(double val) const = 0;
+		virtual double operator() (double) const = 0;
 	};
 
 	namespace quadrature {
-      	  double quad_eval_leg(double a, double b, unsigned int degree, evalfunction *f);
+      	  double quad_eval_leg(double a, double b, unsigned int degree, const evalfunction *f);
       	  };
 }; // end namespace rtmath
