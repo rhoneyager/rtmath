@@ -23,20 +23,6 @@ matrixop* matrixop::clone()
 	return new matrixop(*this);
 }
 
-/* An example from earlier code
-polynomial polynomial::operator+ (polynomial param)
-	{
-		polynomial temp;
-		// Compare degree of both polynomials and pick max
-		unsigned int maxDeg = maxPow();
-		if (param.maxPow() > maxDeg) maxDeg = maxPow();
-		for (unsigned int i=0;i<=maxPow();i++)
-			temp.coeff(i, coeff(i) + param.coeff(i));
-		temp.truncate();
-		return temp;
-	}
-	*/
-
 unsigned int matrixop::dimensionality() const
 {
 	return _dims.size();

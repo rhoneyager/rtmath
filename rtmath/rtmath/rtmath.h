@@ -9,6 +9,7 @@
 #include "../rtmath-base/rtmath-base.h"
 #include "debug.h"
 #include "error.h"
+#include "damatrix.h"
 
 /*
 #include "quadrature.h"

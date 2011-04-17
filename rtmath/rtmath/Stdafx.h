@@ -10,3 +10,4 @@
 #include <string>
 #include "debug.h"
 #include "error.h"
+#include "damatrix.h"
