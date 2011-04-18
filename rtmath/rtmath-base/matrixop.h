@@ -31,7 +31,7 @@ public:
 	virtual void set(const std::vector<unsigned int> &pos, double val);
 	virtual double get(const std::vector<unsigned int> &pos) const;
 	void size(std::vector<unsigned int> &out) const;
-	std::vector<unsigned int>& size() const;
+	std::vector<unsigned int> size() const;
 	unsigned int dimensionality() const;
 	void clear();
 	bool issquare() const;

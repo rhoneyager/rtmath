@@ -5,6 +5,24 @@
 #include <complex>
 //#include <netcdf.h>
 
+
+void prnMat(rtmath::matrixop &mat)
+{
+	using namespace std;
+	using namespace rtmath;
+	vector<unsigned int> pos(2,0), resSize = mat.size();
+	for (unsigned int i=0; i<resSize[0]; i++)
+	{
+		for (unsigned int j=0; j<mat.size()[1]; j++)
+		{
+			pos[0] = i;
+			pos[1] = j;
+			cout << mat.get(pos);
+		}
+		cout << endl;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	using namespace std;
@@ -123,6 +141,23 @@ int main(int argc, char** argv)
 			cout << i << j << "\t" << Pnn[i][j] << endl;
 	std::cin.get();
 	*/
+	cout << "Testing matrix math capabilities.\n";
+	std::vector<unsigned int> szA, szB, szRes;
+	// szA is 2x4, szB is 4x3
+	szA.push_back(2);
+	szA.push_back(4);
+	szB.push_back(4);
+	szB.push_back(3);
+	szRes.push_back(2);
+	szRes.push_back(3);
+	rtmath::matrixop matA(szA);
+	rtmath::matrixop matB(szB);
+	rtmath::matrixop matRes(szRes);
+	matRes = matA.operator*(matB);
+	//matRes = matA * matB;
+	cout << "Resulting matrix:\n";
+	prnMat(matRes);
+	std::cin.get();
 	cout << "Now creating a few atmospheric layers and the DA layers structure." << endl;
 	std::cin.get();
 	return 0;

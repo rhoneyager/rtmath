@@ -33,11 +33,13 @@ void matrixop::size(std::vector<unsigned int> &out) const
 	out = _dims;
 }
 
-std::vector<unsigned int>& matrixop::size() const
+std::vector<unsigned int> matrixop::size() const
 {
 	//TODO: check to see if this code works as intended
-	static std::vector<unsigned int> temp = _dims;
-	return temp;
+	//NOTE: declaring as static failed
+	//static std::vector<unsigned int> temp = _dims;
+	//return temp;
+	return _dims;
 }
 
 matrixop matrixop::operator+ (const matrixop& rhs) const
@@ -66,6 +68,7 @@ matrixop matrixop::operator* (const matrixop& rhs) const
 
 	// size()[0] is number of rows, size()[1] is # of columns
 	// If matrices cannot produce a square matrix, throw
+	//std::vector<unsigned int> testA = this->size(), testB = rhs.size();
 	if (this->size()[1] != rhs.size()[0]) throw;
 
 	// Create vector for size of result
@@ -97,6 +100,7 @@ matrixop matrixop::operator* (const matrixop& rhs) const
 			res.set(pos,val);
 		}
 	}
+	//TODO: fix so that it returns!
 	return res;
 
 }
