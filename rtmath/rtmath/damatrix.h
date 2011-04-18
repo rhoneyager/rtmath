@@ -6,9 +6,28 @@ namespace rtmath {
 
 	class damatrix;
 
+	class daevalmuint : public rtmath::evalfunction
+		// Sould really only ever be called from daevalmu
+	{
+	public:
+		daevalmuint(damatrix *targeta, damatrix *targetb);
+		damatrix* targeta;
+		damatrix* targetb;
+		void setA(unsigned int i, unsigned int j,
+			double a, double b, double c, unsigned int evalindex);
+		void setB(unsigned int i, unsigned int j,
+			double a, double b, double c, unsigned int evalindex);
+		virtual double eval(double val) const;
+		virtual double operator () (double) const;
+	private:
+		unsigned int _Ai, _Aj, _Bi, _Bj, _An, _Bn;
+		double _Aa, _Ab, _Ac, _Ba, _Bb, _Bc;
+	};
+
 	class daevalmu : public rtmath::evalfunction
 	{
 	public:
+		daevalmu();
 		void setvals(double phi, double phin, double php, 
 			double mu, double mun,
 			unsigned int i, unsigned int j);
@@ -27,6 +46,7 @@ namespace rtmath {
 	class daevalphi : public rtmath::evalfunction
 	{
 	public:
+		daevalphi();
 		void setvals(double phi, double phin, 
 			double mu, double mun,
 			unsigned int i, unsigned int j);
@@ -34,7 +54,7 @@ namespace rtmath {
 		virtual double eval(double val) const;
 		virtual double operator() (double) const;
 		daevalmu *mueval;
-	private:
+	protected:
 		double _phi;
 		double _phin;
 		double _mu;

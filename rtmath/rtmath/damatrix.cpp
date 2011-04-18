@@ -5,6 +5,84 @@
 #include <cmath>
 namespace rtmath {
 
+	daevalmuint::daevalmuint(damatrix *targeta, damatrix *targetb)
+	{
+		if (targeta == NULL) throw;
+		if (targetb == NULL) throw;
+		this->targeta = targeta;
+		this->targetb = targetb;
+	}
+
+	void daevalmuint::setA(unsigned int i, unsigned int j,
+			double a, double b, double c, unsigned int evalindex)
+	{
+		_Ai = i;
+		_Ab = j;
+		_Aa = a;
+		_Ab = b;
+		_Ac = c;
+		_An = evalindex;
+	}
+
+	void daevalmuint::setB(unsigned int i, unsigned int j,
+			double a, double b, double c, unsigned int evalindex)
+	{
+		_Bi = i;
+		_Bb = j;
+		_Ba = a;
+		_Bb = b;
+		_Bc = c;
+		_Bn = evalindex;
+	}
+
+	double daevalmuint::eval(double val) const
+	{
+		// Val is phi'
+		// I've declared a const function, so I should duplicate the values here (using pointers)
+		const double *_pAa = &_Aa, *_pAb = &_Ab, *_pAc = &_Ac;
+		const double *_pBa = &_Ba, *_pBb = &_Bb, *_pBc = &_Bc;
+
+		switch(_An)
+		{
+		case 1:
+			_pAa = &val;
+			break;
+		case 2:
+			_pAb = &val;
+			break;
+		case 3:
+			_pAc = &val;
+			break;
+		};
+		switch(_Bn)
+		{
+		case 1:
+			_pBa = &val;
+			break;
+		case 2:
+			_pBb = &val;
+			break;
+		case 3:
+			_pBc = &val;
+			break;
+		};
+
+		// And now, evaluate!
+		double res = 0.0, resa, resb;
+
+		resa = targeta->eval(_Ai, _Aj, *_pAa, *_pAb, *_pAc);
+		resb = targeta->eval(_Bi, _Bj, *_pBa, *_pBb, *_pBc);
+
+		res = val * resa * resb;
+		return res;
+	}
+
+	double daevalmuint::operator() (double val) const
+	{
+		// Val is phi'
+		return eval(val);
+	}
+
 	void daevalmu::setvals(double phi, double phin, double php, 
 		double mu, double mun, unsigned int i, unsigned int j)
 	{
@@ -17,6 +95,12 @@ namespace rtmath {
 		_j = j;
 	}
 
+	daevalmu::daevalmu()
+	{
+		targeta = NULL;
+		targetb = NULL;
+	}
+
 	double daevalmu::eval(double val) const
 	{
 		// Val is mu'
@@ -26,11 +110,17 @@ namespace rtmath {
 		// And, link a derived class to evalfunction that wraps them
 		double res = 0.0;
 		// For most cases, targets.size()[0] should be 4
+		if (targeta == NULL) throw;
+		if (targetb == NULL) throw;
+		// _i and _j are already set. Iterate through k.
+		daevalmuint evalint(targeta, targetb);
 		for (unsigned int k=0; k<targeta->size()[0]; k++)
 		{
-			//targeta.
+			evalint.setA(_i,k,_mu,0.0,_phi-_php, 2);
+			evalint.setB(k,_j,0.0,_mun,_php-_phin, 1);
+			res += rtmath::quadrature::quad_eval_leg(0.0,1.0,7,&evalint);
 		}
-		return 0.0;
+		return res;
 	}
 
 	double daevalmu::operator() (double val) const
@@ -51,9 +141,15 @@ namespace rtmath {
 		// mueval.setvals(phi,phin,0,mu,mun,i,j); // Not here
 	}
 
+	daevalphi::daevalphi()
+	{
+		mueval = NULL;
+	}
+
 	double daevalphi::eval(double val) const
 	{
 		// Val is phi'
+		if (mueval == NULL) throw;
 		double res;
 		mueval->setvals(_phi,_phin,val,_mu,_mun,_i,_j);
 		res = rtmath::quadrature::quad_eval_leg(0.0,1.0,7,mueval);
@@ -99,7 +195,7 @@ namespace rtmath {
 			}
 		}
 		//res = res.matrixop::operator*( 1.0 / (3.141592654) );
-		throw;
+		//throw;
 		return res;
 	}
 
