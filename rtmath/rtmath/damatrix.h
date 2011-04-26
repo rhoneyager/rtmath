@@ -82,6 +82,14 @@ public:
 	   */
 	virtual double eval(unsigned int i, unsigned int j,
 		double a, double b, double c); // eval at setparams
+	virtual void set(const std::vector<unsigned int> &pos, double val)
+	{ throw; }
+	virtual void set(double val, unsigned int rank, ...)
+	{ throw; }
+	virtual double get(const std::vector<unsigned int> &pos) const
+	{ throw; return 0; }
+	virtual double get(unsigned int rank, ...) const
+	{ throw; return 0; }
 protected:
 	double _phi, _phip, _phin, _mu, _mup, _mun;
 };

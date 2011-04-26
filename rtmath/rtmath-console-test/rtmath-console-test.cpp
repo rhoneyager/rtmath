@@ -151,7 +151,11 @@ int main(int argc, char** argv)
 	szRes.push_back(2);
 	szRes.push_back(3);
 	rtmath::matrixop matA(szA);
+	matA.set(1.0,2,0,0);
+	matA.set(1.0,2,1,1);
 	rtmath::matrixop matB(szB);
+	matB.set(1.0,2,0,0);
+	matB.set(1.0,2,1,1);
 	rtmath::matrixop matRes(szRes);
 	matRes = matA.operator*(matB);
 	//matRes = matA * matB;

@@ -96,8 +96,9 @@ matrixop matrixop::operator* (const matrixop& rhs) const
 				pa[0] = i;
 				pa[1] = k;
 				pb[0] = k;
-				pb[1] = i;
-				val += this->get(pa) * rhs.get(pb);
+				pb[1] = j;
+				double nres = this->get(pa) * rhs.get(pb);
+				val += nres;
 			}
 			res.set(pos,val);
 		}
@@ -185,6 +186,40 @@ void matrixop::set(const std::vector<unsigned int> &pos, double val)
 	}
 	// Set the value
 	_vals[pos] = val;
+}
+
+void matrixop::set(double val, unsigned int rank, ...)
+{
+	// Uses variadic array to get the index, as matrices can have multiple dimensions
+	if (rank != this->dimensionality()) throw;
+	va_list indices;
+	va_start(indices, rank);
+	std::vector<unsigned int> ptr;
+	unsigned int ival;
+	for (unsigned int i=0; i<rank; i++)
+	{
+		ival = va_arg(indices,unsigned int);
+		ptr.push_back(ival);
+	}
+	va_end(indices);
+	set(ptr,val);
+}
+
+double matrixop::get(unsigned int rank, ...) const
+{
+	// Uses variadic array to get the index, as matrices can have multiple dimensions
+	if (rank != this->dimensionality()) throw;
+	va_list indices;
+	va_start(indices, rank);
+	std::vector<unsigned int> ptr;
+	unsigned int ival;
+	for (unsigned int i=0; i<rank; i++)
+	{
+		ival = va_arg(indices,unsigned int);
+		ptr.push_back(ival);
+	}
+	va_end(indices);
+	return get(ptr);
 }
 
 double matrixop::get(const std::vector<unsigned int> &pos) const

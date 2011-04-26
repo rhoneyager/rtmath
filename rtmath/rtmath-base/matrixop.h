@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <map>
+#include <cstdarg>
 
 namespace rtmath {
 
@@ -29,7 +30,9 @@ public:
 	virtual bool operator == (const matrixop&) const;
 	virtual bool operator != (const matrixop&) const;
 	virtual void set(const std::vector<unsigned int> &pos, double val);
+	virtual void set(double val, unsigned int rank, ...);
 	virtual double get(const std::vector<unsigned int> &pos) const;
+	virtual double get(unsigned int rank, ...) const;
 	void size(std::vector<unsigned int> &out) const;
 	std::vector<unsigned int> size() const;
 	unsigned int dimensionality() const;
