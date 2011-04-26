@@ -17,7 +17,7 @@ void prnMat(rtmath::matrixop &mat)
 		{
 			pos[0] = i;
 			pos[1] = j;
-			cout << mat.get(pos);
+			cout << mat.get(pos) << '\t';
 		}
 		cout << endl;
 	}

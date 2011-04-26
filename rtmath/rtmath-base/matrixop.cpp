@@ -16,6 +16,8 @@ matrixop::~matrixop(void)
 matrixop::matrixop(const matrixop & rhs)
 {
 	// The matrixop copy constructor
+	this->_vals = rhs._vals;
+	this->_dims = rhs._dims;
 }
 
 matrixop* matrixop::clone()
@@ -75,7 +77,7 @@ matrixop matrixop::operator* (const matrixop& rhs) const
 	using namespace std;
 	vector<unsigned int> ressize;
 	ressize.push_back(this->size()[0]); // number of rows
-	ressize.push_back(rhs.size()[0]); // number of columns
+	ressize.push_back(rhs.size()[1]); // number of columns
 	matrixop res(ressize);
 
 	// Actually calculate the resulting values
