@@ -20,6 +20,24 @@ matrixop::matrixop(const matrixop & rhs)
 	this->_dims = rhs._dims;
 }
 
+matrixop::matrixop(unsigned int ndims, ...)
+{
+	va_list indices;
+	va_start(indices, ndims);
+	std::vector<unsigned int> ptr;
+	unsigned int ival;
+	for (unsigned int i=0; i<ndims; i++)
+	{
+		ival = va_arg(indices,unsigned int);
+		ptr.push_back(ival);
+	}
+	va_end(indices);
+	// NOTE: cannot call matrixop(vector) directly
+	// So reduplicate the necessary code
+	// TODO: fix this
+	_dims = ptr;
+}
+
 matrixop* matrixop::clone()
 {
 	return new matrixop(*this);

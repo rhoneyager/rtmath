@@ -16,6 +16,7 @@ class matrixop
 {
 public:
 	matrixop(const std::vector<unsigned int> &size);
+	matrixop(unsigned int ndims, ...);
 	virtual ~matrixop(void);
 	// Define a copy constructor, since this is a base class
 	matrixop (const matrixop & rhs);

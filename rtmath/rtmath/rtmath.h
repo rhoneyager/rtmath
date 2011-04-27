@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "error.h"
 #include "damatrix.h"
+#include "layer.h"
 
 /*
 #include "quadrature.h"

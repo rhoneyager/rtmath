@@ -83,6 +83,7 @@
     <ClInclude Include="damatrix.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="error.h" />
+    <ClInclude Include="layer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rtmath.h" />
     <ClInclude Include="Stdafx.h" />
@@ -90,6 +91,7 @@
   <ItemGroup>
     <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="layer.cpp" />
     <ClCompile Include="rtmath.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
