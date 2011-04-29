@@ -38,11 +38,15 @@ public:
 	std::vector<unsigned int> size() const;
 	unsigned int dimensionality() const;
 	void clear();
+	virtual void resize(const std::vector<unsigned int> &size);
+	virtual void resize(unsigned int ndims, ...);
 	bool issquare() const;
 	// To add:
 	// Diagonalization
 	// Determinant
 	// Evaluation
+	void toDoubleArray(double *target);
+	void fromDoubleArray(const double *target);
 protected:
 	std::map<std::vector<unsigned int>, double > _vals;
 	std::vector<unsigned int> _dims;

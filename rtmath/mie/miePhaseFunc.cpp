@@ -17,7 +17,7 @@ miePhaseFunc::~miePhaseFunc(void)
 
 
 //TODO: rewrite this function, giving dependency on rtmath-base provided matrix operations!
-// See Liou page 261 for the correct form of the phase fonction based on the scattering 
+// See Liou page 261 for the correct form of the phase function based on the scattering 
 // amplitude functions
 /*
 void miePhaseFunc::eval(double mu, double mun, double phi, double pn, double *res[4][4])

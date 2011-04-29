@@ -3,6 +3,7 @@
 #include "../rtmath-base/phaseFunc.h"
 #include "../rtmath-base/matrixop.h"
 #include "../rtmath-base/quadrature.h"
+#include "../rtmath-base/enums.h"
 #include "damatrix.h"
 #include <map>
 #include <vector>
@@ -25,10 +26,14 @@ public:
 	 */
 	dalayer(phaseFunc *pf, double alb);
 	virtual ~dalayer(void);
-	damatrix calcR(double tau, double phi, double phin, 
+	// TODO: redefine calcR and calcT as aliases / macros of 
+	//    calcParam
+	inline damatrix calcR(double tau, double phi, double phin, 
 			double mu, double mun);
-	damatrix calcT(double tau, double phi, double phin, 
+	inline damatrix calcT(double tau, double phi, double phin, 
 			double mu, double mun);
+	damatrix calcParam(double tau, double phi, double phin, 
+		double mu, double mun, rtselec::rtselec rt);
 protected:
 	phaseFunc *_pf;
 	double _alb;

@@ -38,6 +38,30 @@ matrixop::matrixop(unsigned int ndims, ...)
 	_dims = ptr;
 }
 
+void matrixop::resize(const std::vector<unsigned int> &size)
+{
+	clear();
+	_dims = size;
+}
+
+void matrixop::resize(unsigned int ndims, ...)
+{
+	va_list indices;
+	va_start(indices, ndims);
+	std::vector<unsigned int> ptr;
+	unsigned int ival;
+	for (unsigned int i=0; i<ndims; i++)
+	{
+		ival = va_arg(indices,unsigned int);
+		ptr.push_back(ival);
+	}
+	va_end(indices);
+	// NOTE: cannot call matrixop(vector) directly
+	// So reduplicate the necessary code
+	// TODO: fix this
+	resize(ptr);
+}
+
 matrixop* matrixop::clone()
 {
 	return new matrixop(*this);
@@ -275,6 +299,72 @@ bool matrixop::operator== (const matrixop& rhs) const
 		if (it->second != rhs.get(it->first)) return false;
 	}
 	return true;
+}
+
+void matrixop::toDoubleArray(double *target)
+{
+	// Take the data and convert to an array of doubles
+	// Use pointers to do this, and assume that target is pre-sized appropriately
+	// Start with the dimensions of the matrix, and produce a mapping
+	// Use pointers like target[1] = 0.0;
+
+	using namespace std;
+	// Use const_iterator
+	map<vector<unsigned int>, double>::const_iterator it;
+		unsigned int runningTotal = 1;
+		vector<unsigned int> mfactorflip, mfactor;
+		// Get the position in the array
+		for (unsigned int i=_dims.size()-1;i!=0;i--)
+		{
+			mfactorflip.push_back(_dims[i] * runningTotal);
+			runningTotal *= _dims[i];
+		}
+		// Flip to get mfactor
+		for (unsigned int j=mfactorflip.size()-1; j!=0; j--)
+		{
+			mfactor.push_back(mfactorflip[j]);
+		}
+	for ( it = _vals.begin(); it != _vals.end(); it++)
+	{
+		unsigned int pos = 0;
+		for (unsigned int k=0; k<_dims.size(); k++)
+		{
+			pos += mfactor[k] * it->first[k];
+		}
+		// We now have a position vector!
+		// TODO: check for accurate math
+		
+		// Finally, place the value in the array
+		target[pos] = it->second;
+	}
+
+}
+
+void matrixop::fromDoubleArray(const double *target)
+{
+	// Assume that the double array is of matching size as the matrixop
+	// TODO: implement subset adding / extraction
+	// TODO: implement subsetting matrixop
+	// Calculate max size (mult. of all dim sizes)
+
+
+	// TODO: add a modular math class (to do these conversions)!!!!!
+	using namespace std;
+	unsigned int maxsize = 1;
+	for (unsigned int i=0;i<_dims.size();i++)
+	{
+		maxsize *= _dims[i];
+	}
+	// Take in each value over [0,maxsize) and place in the matrix
+	clear();
+
+	throw;
+	double cval = 0.0;
+	for (unsigned int j=0;j<maxsize;j++)
+	{
+		cval = target[j];
+		// Convert j into pos coords
+	}
 }
 
 }; // end rtmath
