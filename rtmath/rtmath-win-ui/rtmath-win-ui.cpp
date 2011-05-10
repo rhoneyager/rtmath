@@ -12,6 +12,11 @@ int main(array<System::String ^> ^args)
 	Application::EnableVisualStyles();
 	Application::SetCompatibleTextRenderingDefault(false); 
 
+	// TODO: parse and execute and arguments
+	// This will include switches and multiple files (from the command line)
+	// or groups of files representing runs to load and perform
+	//Application::
+
 	// Create the main window and run it
 	Application::Run(gcnew frmMain());
 	return 0;

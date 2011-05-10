@@ -21,7 +21,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="rtmath-win-ui.cpp">
+    <ClCompile Include="glgraph-winControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -30,36 +30,21 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="frmMain.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="frmLayers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rtRun.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rtModel.cpp">
+    <ClCompile Include="glform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="glgraph-winControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="frmMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="frmLayers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rtRun.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rtModel.h">
+    <ClInclude Include="glform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -67,13 +52,5 @@
     <ResourceCompile Include="app.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="frmMain.resx">
-      <Filter>Resource Files</Filter>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmLayers.resx">
-      <Filter>Resource Files</Filter>
-    </EmbeddedResource>
   </ItemGroup>
 </Project>
