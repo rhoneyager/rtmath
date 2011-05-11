@@ -27,42 +27,13 @@ namespace glgraphwin {
 			//public System::Windows::Forms::NativeWindow
 	{
 	public:
-		glgraphwinControl(void)
-		{
-			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
-			openglform = gcnew glform(this->ParentForm, 
-				this->Size.Width, this->Size.Height);
-		}
-		void redraw(System::Windows::Forms::Form ^ par)
-		{
-			if (openglform)
-			{
-				delete openglform;
-			}
-			openglform = gcnew glform(par, 
-				this->Size.Width, this->Size.Height);
-		}
-	private: System::Windows::Forms::Timer^  timer1;
-	public: 
+		glgraphwinControl(void);
+		void redraw();
+		void render();
 		glform^ openglform;
+	private: System::Windows::Forms::Timer^  timer1;
 	protected:
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		~glgraphwinControl()
-		{
-			if (components)
-			{
-				delete components;
-			}
-			if (openglform)
-			{
-				delete openglform;
-			}
-		}
+		~glgraphwinControl();
 	private: System::ComponentModel::IContainer^  components;
 	protected: 
 
@@ -85,6 +56,7 @@ namespace glgraphwin {
 			// 
 			// timer1
 			// 
+			this->timer1->Interval = 1;
 			this->timer1->Tick += gcnew System::EventHandler(this, &glgraphwinControl::timer1_Tick);
 			// 
 			// glgraphwinControl
@@ -126,13 +98,13 @@ namespace glgraphwin {
     UNREFERENCED_PARAMETER(sender);
     UNREFERENCED_PARAMETER(e);
     openglform->Render();
-    openglform->SwapOpenGLBuffers();
+    //openglform->SwapOpenGLBuffers();
 			 }
 	private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
     UNREFERENCED_PARAMETER(sender);
     UNREFERENCED_PARAMETER(e);
     openglform->Render();
-    openglform->SwapOpenGLBuffers();
+    //openglform->SwapOpenGLBuffers();
 			 }
 	private: System::Void glgraphwinControl_BackColorChanged(System::Object^  sender, System::EventArgs^  e) {
 				 //this->glgraphwinControl1->BackColor = System::Drawing::Color::Black;

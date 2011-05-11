@@ -494,6 +494,7 @@ namespace rtmathwinui {
 			this->Name = L"frmMain";
 			this->Text = L"rtmath";
 			this->Load += gcnew System::EventHandler(this, &frmMain::frmMain_Load);
+			this->Move += gcnew System::EventHandler(this, &frmMain::frmMain_Move);
 			this->menuStrip1->ResumeLayout(false);
 			this->menuStrip1->PerformLayout();
 			this->ResumeLayout(false);
@@ -509,9 +510,16 @@ private: System::Void menuStrip1_ItemClicked(System::Object^  sender, System::Wi
 private: System::Void layersToolStripMenuItem1_Click(System::Object^  sender, System::EventArgs^  e);
 private: System::Void frmMain_Load(System::Object^  sender, System::EventArgs^  e) {
 			 //this->glgraphwinControl1;
+			 // Needed since the form doesn't fully exist at initialization
+			 this->glgraphwinControl1->redraw();
+			 this->glgraphwinControl1->render();
 		 }
 private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-			 this->glgraphwinControl1->redraw(this);
+			 this->glgraphwinControl1->redraw();
+			 this->glgraphwinControl1->render();
+		 }
+private: System::Void frmMain_Move(System::Object^  sender, System::EventArgs^  e) {
+			 this->glgraphwinControl1->render();
 		 }
 };
 }
