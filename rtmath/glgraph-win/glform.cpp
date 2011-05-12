@@ -17,8 +17,10 @@ namespace glgraphwin {
 		if (!(parent->ParentForm) ) return;
 		CreateParams^ cp = gcnew CreateParams;
 		// TODO: find location on form of the parent object
-		cp->X = 130;
-		cp->Y = 80;
+		//System.Drawing::Point loc;
+		//loc = parent->Location;
+		cp->X = parent->Location.X;
+		cp->Y = parent->Location.Y;
 		cp->Height = parent->Size.Width;
 		cp->Width = parent->Size.Height;
 
@@ -126,7 +128,7 @@ namespace glgraphwin {
 		}
 		if((wglMakeCurrent(m_hDC, m_hglrc)) == NULL)
 		{
-			MessageBox::Show("wglMakeCurrent Failed");
+			//MessageBox::Show("wglMakeCurrent Failed");
 			wglMakeCurrent( NULL, NULL );
 			return 1;
 		}

@@ -31,9 +31,27 @@ namespace glgraphwin {
 		void redraw();
 		void render();
 		glform^ openglform;
+	private:
+		bool _runtime;
 	private: System::Windows::Forms::Timer^  timer1;
 	protected:
 		~glgraphwinControl();
+		
+		
+	protected: property System::Windows::Forms::CreateParams^ CreateParams 
+	{
+		
+		virtual System::Windows::Forms::CreateParams^ get () override
+		{
+			//System::Windows::Forms::CreateParams^ cp=__super::CreateParams;
+			System::Windows::Forms::CreateParams^ cp=UserControl::CreateParams;
+			//cp->ExStyle|=0x00000020; //WS_EX_TRANSPARENT
+			cp->ExStyle|=WS_EX_TRANSPARENT;
+			return cp;
+		}
+		
+	}
+	
 	private: System::ComponentModel::IContainer^  components;
 	protected: 
 
@@ -66,7 +84,6 @@ namespace glgraphwin {
 			this->BackColor = System::Drawing::SystemColors::ControlDark;
 			this->Name = L"glgraphwinControl";
 			this->Size = System::Drawing::Size(300, 300);
-			this->BackColorChanged += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_BackColorChanged);
 			this->EnabledChanged += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_EnabledChanged);
 			this->VisibleChanged += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_VisibleChanged);
 			this->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &glgraphwinControl::glgraphwinControl_Paint);
@@ -84,9 +101,8 @@ namespace glgraphwin {
 	private: System::Void glgraphwinControl_Move(System::Object^  sender, System::EventArgs^  e) {
 				 //throw;
 			 }
-	private: System::Void glgraphwinControl_VisibleChanged(System::Object^  sender, System::EventArgs^  e) {
-				 //throw;
-			 }
+	private: System::Void glgraphwinControl_VisibleChanged(System::Object^  sender, System::EventArgs^  e);
+
 	private: System::Void glgraphwinControl_EnabledChanged(System::Object^  sender, System::EventArgs^  e) {
 				 //throw;
 			 }
@@ -97,18 +113,21 @@ namespace glgraphwin {
 	private: System::Void glgraphwinControl_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) {
     UNREFERENCED_PARAMETER(sender);
     UNREFERENCED_PARAMETER(e);
-    openglform->Render();
+	if (openglform)
+	{
+		openglform->Render();
+	}
     //openglform->SwapOpenGLBuffers();
 			 }
 	private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
     UNREFERENCED_PARAMETER(sender);
     UNREFERENCED_PARAMETER(e);
+		if (openglform)
+	{
     openglform->Render();
+		}
     //openglform->SwapOpenGLBuffers();
 			 }
-	private: System::Void glgraphwinControl_BackColorChanged(System::Object^  sender, System::EventArgs^  e) {
-				 //this->glgraphwinControl1->BackColor = System::Drawing::Color::Black;
-				 
-			 }
+
 	};
 }
