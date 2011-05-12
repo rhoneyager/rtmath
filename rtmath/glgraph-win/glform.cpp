@@ -7,7 +7,6 @@ namespace glgraphwin {
 
 	glform::glform(System::Windows::Forms::UserControl ^ parent)
 	{
-		// TODO: Debug this
 		initialized = false;
 		m_hDC = 0;
 		m_hglrc = 0;
