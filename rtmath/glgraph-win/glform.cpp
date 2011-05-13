@@ -8,6 +8,7 @@ namespace glgraphwin {
 	glform::glform(System::Windows::Forms::UserControl ^ parent)
 	{
 		initialized = false;
+		glstarted = false;
 		m_hDC = 0;
 		m_hglrc = 0;
 
@@ -94,6 +95,7 @@ namespace glgraphwin {
 		}
 		SwapBuffers(m_hDC);
 			
+		/*
 		unsigned long i = 0;
 		if((m_hglrc = wglCreateContext(m_hDC)) == NULL)
 		{
@@ -108,10 +110,21 @@ namespace glgraphwin {
 			//i++;
 			//if (i > 1000000) break;
 		}
-
+		*/
 		wglMakeCurrent( NULL, NULL );
 
 		return 1;
+	}
+
+	int glform::startGL()
+	{
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-.5, .5, .5, -.5, -1000, 1000);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		return 0;
 	}
 
 	int glform::Render(System::Void)
@@ -132,8 +145,48 @@ namespace glgraphwin {
 			return 1;
 		}
 
-		glClearColor(0.0,0.0,0.0,0.0);
+		if (!glstarted) startGL();
+
+		glClearColor(1.0,1.0,1.0,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		//glTranslatef(-0.25f, -0.10f, 0.0f);
+		//glScalef(0.75f, 1.15f, 0.0f);
+		glBegin(GL_LINE_STRIP);
+		glColor3f(1.0,0.0,0.0);
+		glVertex3f(-10.0,0.0,-30.0);
+		glVertex3f(10.0,0.0,-30.0);
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		glColor3f(0.0,0.0,1.0);
+		glVertex3f(0.0,-10.0,-30.0);
+		glVertex3f(0.0,10.0,-30.0);
+		glEnd();
+		glFlush();
+
+		glPopMatrix();
+		/*
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		//glViewport(0,0,x,y);
+
+		glBegin(GL_LINE_STRIP);
+			glColor3f(1.0,0.0,0.0);
+			glVertex3f(-10.0,0.0,-30.0);
+			glVertex3f(-5.0,-5.0,-30.0);
+			glVertex3f(0.0,1.0,-30.0);
+			glVertex3f(2.0,3.0,-30.0);
+			glVertex3f(7.0,0.0,-30.0);
+			glVertex3f(10.0,-8.0,-30.0);
+		glEnd();
+	
+		glFlush();
+		*/
+
+		// Rendering done. Now, swap buffers and release window
 		SwapBuffers(m_hDC);
 
 		wglMakeCurrent( NULL, NULL );

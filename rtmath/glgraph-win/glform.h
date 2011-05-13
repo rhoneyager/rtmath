@@ -26,6 +26,8 @@ namespace glgraphwin {
 	private:
 		HDC m_hDC;
 		HGLRC m_hglrc;
+		int startGL();
 		bool initialized;
+		bool glstarted;
 	};
 }
