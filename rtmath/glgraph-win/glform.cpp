@@ -19,14 +19,28 @@ namespace glgraphwin {
 		// TODO: find location on form of the parent object
 		//System.Drawing::Point loc;
 		//loc = parent->Location;
-		cp->X = parent->Location.X;
-		cp->Y = parent->Location.Y;
-		cp->Height = parent->Size.Width;
-		cp->Width = parent->Size.Height;
+		// wpf only cp->X = parent->TranslatePoint(new Point(0,0), parent->ParentForm).X;
+		//cp->X = parent->Location.X;
+		//cp->Y = parent->Location.Y;
+		// wpf onlycp->Y = parent->TranslatePoint(new Point(0,0), parent->ParentForm).Y;
+		using namespace System::Drawing;
+		Point screenpt;
+		Point ^ wndpt;
+		screenpt = parent->PointToScreen(Point(0,0));
+		wndpt = parent->ParentForm->PointToClient(screenpt);
+		cp->X = wndpt->X;
+		cp->Y = wndpt->Y;
+		cp->Height = parent->Size.Height;
+		cp->Width = parent->Size.Width;
 
 		cp->Parent = parent->ParentForm->Handle;
+		/*
 		cp->Style = WS_CHILD | WS_VISIBLE | 
 			WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+			*/
+		// Allow sibling clipping - otherwise it ends up behind any controls,
+		// such as system tabs or frames
+		cp->Style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
 
 		this->CreateHandle(cp);
 		// Get the device context

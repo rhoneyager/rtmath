@@ -18,6 +18,7 @@ namespace glgraphwin {
 		}
 		*/
 		//openglform->SwapOpenGLBuffers();
+		_overrideui = false;
 	}
 
 	void glgraphwinControl::redraw()
@@ -72,6 +73,7 @@ namespace glgraphwin {
 
 	System::Void glgraphwinControl::glgraphwinControl_Resize(System::Object^  sender, System::EventArgs^  e)
 	{
+		redraw();
 	}
 
 	System::Void glgraphwinControl::glgraphwinControl_Move(System::Object^  sender, System::EventArgs^  e)
@@ -90,6 +92,7 @@ namespace glgraphwin {
 
 	System::Void glgraphwinControl::glgraphwinControl_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e)
 	{
+		if (_overrideui) return;
 		if (this->Enabled == false) return;
 		if (!openglform) return;
 		// Control is active. Process input.
@@ -97,6 +100,7 @@ namespace glgraphwin {
 
 	System::Void glgraphwinControl::glgraphwinControl_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
 	{
+		if (_overrideui) return;
 		if (this->Enabled == false) return;
 		if (!openglform) return;
 		// Control is active. Process input.

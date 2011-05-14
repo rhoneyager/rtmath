@@ -76,6 +76,9 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::Label^  label8;
 	private: System::ComponentModel::BackgroundWorker^  threadCalc;
 	private: System::Windows::Forms::PictureBox^  pictureBox1;
+	private: System::Windows::Forms::SaveFileDialog^  dlgSave;
+	private: System::Windows::Forms::OpenFileDialog^  dlgOpen;
+	private: System::Windows::Forms::ColorDialog^  dlgColor;
 
 
 	public: 
@@ -218,7 +221,14 @@ namespace rtmathwinui {
 			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
 			this->tabs = (gcnew System::Windows::Forms::TabControl());
 			this->tabSummary = (gcnew System::Windows::Forms::TabPage());
+			this->tableLayoutPanel3 = (gcnew System::Windows::Forms::TableLayoutPanel());
 			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->flowLayoutPanel3 = (gcnew System::Windows::Forms::FlowLayoutPanel());
+			this->button9 = (gcnew System::Windows::Forms::Button());
+			this->button10 = (gcnew System::Windows::Forms::Button());
+			this->button11 = (gcnew System::Windows::Forms::Button());
+			this->label8 = (gcnew System::Windows::Forms::Label());
+			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->tabModel = (gcnew System::Windows::Forms::TabPage());
 			this->tabAtmos = (gcnew System::Windows::Forms::TabPage());
 			this->panelAtmosLayout = (gcnew System::Windows::Forms::TableLayoutPanel());
@@ -238,41 +248,45 @@ namespace rtmathwinui {
 			this->button7 = (gcnew System::Windows::Forms::Button());
 			this->button8 = (gcnew System::Windows::Forms::Button());
 			this->numericUpDown1 = (gcnew System::Windows::Forms::NumericUpDown());
+			this->chkAdvAtmos = (gcnew System::Windows::Forms::CheckBox());
 			this->tabMisc = (gcnew System::Windows::Forms::TabPage());
+			this->tableLayoutPanel2 = (gcnew System::Windows::Forms::TableLayoutPanel());
+			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
+			this->numericUpDown3 = (gcnew System::Windows::Forms::NumericUpDown());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->numericUpDown2 = (gcnew System::Windows::Forms::NumericUpDown());
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
+			this->label7 = (gcnew System::Windows::Forms::Label());
+			this->groupBox3 = (gcnew System::Windows::Forms::GroupBox());
 			this->tabResults = (gcnew System::Windows::Forms::TabPage());
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
 			this->statusbar = (gcnew System::Windows::Forms::StatusStrip());
-			this->toolStripProgressBar1 = (gcnew System::Windows::Forms::ToolStripProgressBar());
-			this->tableLayoutPanel1 = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->tableLayoutPanel2 = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
-			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->numericUpDown2 = (gcnew System::Windows::Forms::NumericUpDown());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->numericUpDown3 = (gcnew System::Windows::Forms::NumericUpDown());
-			this->label7 = (gcnew System::Windows::Forms::Label());
-			this->chkAdvAtmos = (gcnew System::Windows::Forms::CheckBox());
-			this->groupBox3 = (gcnew System::Windows::Forms::GroupBox());
-			this->tableLayoutPanel3 = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->flowLayoutPanel3 = (gcnew System::Windows::Forms::FlowLayoutPanel());
-			this->button9 = (gcnew System::Windows::Forms::Button());
-			this->button10 = (gcnew System::Windows::Forms::Button());
-			this->button11 = (gcnew System::Windows::Forms::Button());
 			this->toolStripStatusLabel1 = (gcnew System::Windows::Forms::ToolStripStatusLabel());
+			this->toolStripProgressBar1 = (gcnew System::Windows::Forms::ToolStripProgressBar());
 			this->toolStripStatusLabel2 = (gcnew System::Windows::Forms::ToolStripStatusLabel());
-			this->label8 = (gcnew System::Windows::Forms::Label());
+			this->tableLayoutPanel1 = (gcnew System::Windows::Forms::TableLayoutPanel());
 			this->threadCalc = (gcnew System::ComponentModel::BackgroundWorker());
-			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
+			this->dlgSave = (gcnew System::Windows::Forms::SaveFileDialog());
+			this->dlgOpen = (gcnew System::Windows::Forms::OpenFileDialog());
+			this->dlgColor = (gcnew System::Windows::Forms::ColorDialog());
 			this->menuStrip1->SuspendLayout();
 			this->tabs->SuspendLayout();
 			this->tabSummary->SuspendLayout();
+			this->tableLayoutPanel3->SuspendLayout();
+			this->flowLayoutPanel3->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->BeginInit();
 			this->tabAtmos->SuspendLayout();
 			this->panelAtmosLayout->SuspendLayout();
 			this->flowLayoutPanel1->SuspendLayout();
 			this->flowLayoutPanel2->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->BeginInit();
 			this->tabMisc->SuspendLayout();
+			this->tableLayoutPanel2->SuspendLayout();
+			this->groupBox1->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown3))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown2))->BeginInit();
+			this->groupBox2->SuspendLayout();
 			this->tabResults->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer1))->BeginInit();
 			this->splitContainer1->Panel1->SuspendLayout();
@@ -280,14 +294,6 @@ namespace rtmathwinui {
 			this->splitContainer1->SuspendLayout();
 			this->statusbar->SuspendLayout();
 			this->tableLayoutPanel1->SuspendLayout();
-			this->tableLayoutPanel2->SuspendLayout();
-			this->groupBox1->SuspendLayout();
-			this->groupBox2->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown2))->BeginInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown3))->BeginInit();
-			this->tableLayoutPanel3->SuspendLayout();
-			this->flowLayoutPanel3->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// menuStrip1
@@ -314,47 +320,47 @@ namespace rtmathwinui {
 			// newRunToolStripMenuItem
 			// 
 			this->newRunToolStripMenuItem->Name = L"newRunToolStripMenuItem";
-			this->newRunToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->newRunToolStripMenuItem->Size = System::Drawing::Size(144, 22);
 			this->newRunToolStripMenuItem->Text = L"&New Run";
 			// 
 			// openRunToolStripMenuItem
 			// 
 			this->openRunToolStripMenuItem->Name = L"openRunToolStripMenuItem";
-			this->openRunToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->openRunToolStripMenuItem->Size = System::Drawing::Size(144, 22);
 			this->openRunToolStripMenuItem->Text = L"&Open Run";
 			// 
 			// saveResultsToolStripMenuItem
 			// 
 			this->saveResultsToolStripMenuItem->Name = L"saveResultsToolStripMenuItem";
-			this->saveResultsToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->saveResultsToolStripMenuItem->Size = System::Drawing::Size(144, 22);
 			this->saveResultsToolStripMenuItem->Text = L"&Save Results";
 			// 
 			// toolStripSeparator1
 			// 
 			this->toolStripSeparator1->Name = L"toolStripSeparator1";
-			this->toolStripSeparator1->Size = System::Drawing::Size(149, 6);
+			this->toolStripSeparator1->Size = System::Drawing::Size(141, 6);
 			// 
 			// exportImagesToolStripMenuItem
 			// 
 			this->exportImagesToolStripMenuItem->Name = L"exportImagesToolStripMenuItem";
-			this->exportImagesToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->exportImagesToolStripMenuItem->Size = System::Drawing::Size(144, 22);
 			this->exportImagesToolStripMenuItem->Text = L"Export &Images";
 			// 
 			// exportResultsToolStripMenuItem
 			// 
 			this->exportResultsToolStripMenuItem->Name = L"exportResultsToolStripMenuItem";
-			this->exportResultsToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->exportResultsToolStripMenuItem->Size = System::Drawing::Size(144, 22);
 			this->exportResultsToolStripMenuItem->Text = L"&Export Results";
 			// 
 			// toolStripSeparator6
 			// 
 			this->toolStripSeparator6->Name = L"toolStripSeparator6";
-			this->toolStripSeparator6->Size = System::Drawing::Size(149, 6);
+			this->toolStripSeparator6->Size = System::Drawing::Size(141, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this->exitToolStripMenuItem->Name = L"exitToolStripMenuItem";
-			this->exitToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->exitToolStripMenuItem->Size = System::Drawing::Size(144, 22);
 			this->exitToolStripMenuItem->Text = L"E&xit";
 			this->exitToolStripMenuItem->Click += gcnew System::EventHandler(this, &frmMain::exitToolStripMenuItem_Click);
 			// 
@@ -369,25 +375,25 @@ namespace rtmathwinui {
 			// newModelToolStripMenuItem
 			// 
 			this->newModelToolStripMenuItem->Name = L"newModelToolStripMenuItem";
-			this->newModelToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->newModelToolStripMenuItem->Size = System::Drawing::Size(135, 22);
 			this->newModelToolStripMenuItem->Text = L"&New Model";
 			// 
 			// openModelToolStripMenuItem
 			// 
 			this->openModelToolStripMenuItem->Name = L"openModelToolStripMenuItem";
-			this->openModelToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->openModelToolStripMenuItem->Size = System::Drawing::Size(135, 22);
 			this->openModelToolStripMenuItem->Text = L"&Open Model";
 			// 
 			// saveModelToolStripMenuItem
 			// 
 			this->saveModelToolStripMenuItem->Name = L"saveModelToolStripMenuItem";
-			this->saveModelToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->saveModelToolStripMenuItem->Size = System::Drawing::Size(135, 22);
 			this->saveModelToolStripMenuItem->Text = L"&Save Model";
 			// 
 			// propertiesToolStripMenuItem
 			// 
 			this->propertiesToolStripMenuItem->Name = L"propertiesToolStripMenuItem";
-			this->propertiesToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->propertiesToolStripMenuItem->Size = System::Drawing::Size(135, 22);
 			this->propertiesToolStripMenuItem->Text = L"&Properties...";
 			// 
 			// atmosphereToolStripMenuItem
@@ -502,7 +508,7 @@ namespace rtmathwinui {
 			// modelSelectionToolStripMenuItem
 			// 
 			this->modelSelectionToolStripMenuItem->Name = L"modelSelectionToolStripMenuItem";
-			this->modelSelectionToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->modelSelectionToolStripMenuItem->Size = System::Drawing::Size(148, 22);
 			this->modelSelectionToolStripMenuItem->Text = L"&Model Selection";
 			// 
 			// lightingToolStripMenuItem
@@ -531,7 +537,7 @@ namespace rtmathwinui {
 			this->defineFIlterToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(6) {this->bandpassToolStripMenuItem, 
 				this->highPassToolStripMenuItem, this->lowPassToolStripMenuItem, this->notchToolStripMenuItem, this->toolStripSeparator5, this->customToolStripMenuItem1});
 			this->defineFIlterToolStripMenuItem->Name = L"defineFIlterToolStripMenuItem";
-			this->defineFIlterToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->defineFIlterToolStripMenuItem->Size = System::Drawing::Size(132, 22);
 			this->defineFIlterToolStripMenuItem->Text = L"&Define Filter";
 			// 
 			// bandpassToolStripMenuItem
@@ -574,7 +580,7 @@ namespace rtmathwinui {
 			this->selectFilterToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {this->noneToolStripMenuItem, 
 				this->toolStripSeparator4, this->customToolStripMenuItem});
 			this->selectFilterToolStripMenuItem->Name = L"selectFilterToolStripMenuItem";
-			this->selectFilterToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->selectFilterToolStripMenuItem->Size = System::Drawing::Size(132, 22);
 			this->selectFilterToolStripMenuItem->Text = L"&Select Filter";
 			// 
 			// noneToolStripMenuItem
@@ -642,6 +648,30 @@ namespace rtmathwinui {
 			this->tabSummary->Text = L"Run Summary";
 			this->tabSummary->UseVisualStyleBackColor = true;
 			// 
+			// tableLayoutPanel3
+			// 
+			this->tableLayoutPanel3->ColumnCount = 2;
+			this->tableLayoutPanel3->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
+				50)));
+			this->tableLayoutPanel3->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
+				50)));
+			this->tableLayoutPanel3->Controls->Add(this->label4, 0, 0);
+			this->tableLayoutPanel3->Controls->Add(this->flowLayoutPanel3, 1, 0);
+			this->tableLayoutPanel3->Controls->Add(this->label8, 0, 2);
+			this->tableLayoutPanel3->Controls->Add(this->pictureBox1, 1, 3);
+			this->tableLayoutPanel3->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->tableLayoutPanel3->Location = System::Drawing::Point(3, 3);
+			this->tableLayoutPanel3->Name = L"tableLayoutPanel3";
+			this->tableLayoutPanel3->RowCount = 6;
+			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 35)));
+			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
+			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
+			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 100)));
+			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
+			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
+			this->tableLayoutPanel3->Size = System::Drawing::Size(780, 503);
+			this->tableLayoutPanel3->TabIndex = 1;
+			// 
 			// label4
 			// 
 			this->label4->AutoSize = true;
@@ -652,6 +682,63 @@ namespace rtmathwinui {
 			this->label4->TabIndex = 0;
 			this->label4->Text = L"Welcome to rtmath";
 			this->label4->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
+			// 
+			// flowLayoutPanel3
+			// 
+			this->flowLayoutPanel3->Controls->Add(this->button9);
+			this->flowLayoutPanel3->Controls->Add(this->button10);
+			this->flowLayoutPanel3->Controls->Add(this->button11);
+			this->flowLayoutPanel3->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->flowLayoutPanel3->Location = System::Drawing::Point(393, 3);
+			this->flowLayoutPanel3->Name = L"flowLayoutPanel3";
+			this->flowLayoutPanel3->Size = System::Drawing::Size(384, 29);
+			this->flowLayoutPanel3->TabIndex = 1;
+			// 
+			// button9
+			// 
+			this->button9->Location = System::Drawing::Point(3, 3);
+			this->button9->Name = L"button9";
+			this->button9->Size = System::Drawing::Size(75, 23);
+			this->button9->TabIndex = 0;
+			this->button9->Text = L"&New Run";
+			this->button9->UseVisualStyleBackColor = true;
+			// 
+			// button10
+			// 
+			this->button10->Location = System::Drawing::Point(84, 3);
+			this->button10->Name = L"button10";
+			this->button10->Size = System::Drawing::Size(75, 23);
+			this->button10->TabIndex = 1;
+			this->button10->Text = L"&Open Run";
+			this->button10->UseVisualStyleBackColor = true;
+			// 
+			// button11
+			// 
+			this->button11->Location = System::Drawing::Point(165, 3);
+			this->button11->Name = L"button11";
+			this->button11->Size = System::Drawing::Size(75, 23);
+			this->button11->TabIndex = 2;
+			this->button11->Text = L"&Save Run";
+			this->button11->UseVisualStyleBackColor = true;
+			// 
+			// label8
+			// 
+			this->label8->AutoSize = true;
+			this->label8->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->label8->Location = System::Drawing::Point(3, 55);
+			this->label8->Name = L"label8";
+			this->label8->Size = System::Drawing::Size(384, 20);
+			this->label8->TabIndex = 2;
+			this->label8->Text = L"Run Parameters:";
+			// 
+			// pictureBox1
+			// 
+			this->pictureBox1->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"pictureBox1.Image")));
+			this->pictureBox1->Location = System::Drawing::Point(393, 78);
+			this->pictureBox1->Name = L"pictureBox1";
+			this->pictureBox1->Size = System::Drawing::Size(188, 212);
+			this->pictureBox1->TabIndex = 3;
+			this->pictureBox1->TabStop = false;
 			// 
 			// tabModel
 			// 
@@ -859,6 +946,17 @@ namespace rtmathwinui {
 			this->numericUpDown1->TabIndex = 8;
 			this->numericUpDown1->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) {64, 0, 0, 0});
 			// 
+			// chkAdvAtmos
+			// 
+			this->chkAdvAtmos->AutoSize = true;
+			this->chkAdvAtmos->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->chkAdvAtmos->Location = System::Drawing::Point(396, 3);
+			this->chkAdvAtmos->Name = L"chkAdvAtmos";
+			this->chkAdvAtmos->Size = System::Drawing::Size(387, 29);
+			this->chkAdvAtmos->TabIndex = 9;
+			this->chkAdvAtmos->Text = L"Enable Advanced Atmospheric Profiles";
+			this->chkAdvAtmos->UseVisualStyleBackColor = true;
+			// 
 			// tabMisc
 			// 
 			this->tabMisc->Controls->Add(this->tableLayoutPanel2);
@@ -868,6 +966,101 @@ namespace rtmathwinui {
 			this->tabMisc->TabIndex = 3;
 			this->tabMisc->Text = L"Miscellaneous";
 			this->tabMisc->UseVisualStyleBackColor = true;
+			// 
+			// tableLayoutPanel2
+			// 
+			this->tableLayoutPanel2->ColumnCount = 2;
+			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
+				50)));
+			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
+				50)));
+			this->tableLayoutPanel2->Controls->Add(this->groupBox1, 0, 0);
+			this->tableLayoutPanel2->Controls->Add(this->groupBox2, 0, 1);
+			this->tableLayoutPanel2->Controls->Add(this->groupBox3, 1, 0);
+			this->tableLayoutPanel2->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->tableLayoutPanel2->Location = System::Drawing::Point(0, 0);
+			this->tableLayoutPanel2->Name = L"tableLayoutPanel2";
+			this->tableLayoutPanel2->RowCount = 2;
+			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
+			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
+			this->tableLayoutPanel2->Size = System::Drawing::Size(786, 509);
+			this->tableLayoutPanel2->TabIndex = 0;
+			// 
+			// groupBox1
+			// 
+			this->groupBox1->Controls->Add(this->numericUpDown3);
+			this->groupBox1->Controls->Add(this->label6);
+			this->groupBox1->Controls->Add(this->numericUpDown2);
+			this->groupBox1->Controls->Add(this->label5);
+			this->groupBox1->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->groupBox1->Location = System::Drawing::Point(3, 3);
+			this->groupBox1->Name = L"groupBox1";
+			this->groupBox1->Size = System::Drawing::Size(387, 248);
+			this->groupBox1->TabIndex = 0;
+			this->groupBox1->TabStop = false;
+			this->groupBox1->Text = L"Lighting";
+			// 
+			// numericUpDown3
+			// 
+			this->numericUpDown3->Location = System::Drawing::Point(175, 81);
+			this->numericUpDown3->Name = L"numericUpDown3";
+			this->numericUpDown3->Size = System::Drawing::Size(120, 20);
+			this->numericUpDown3->TabIndex = 3;
+			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(49, 81);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(76, 13);
+			this->label6->TabIndex = 2;
+			this->label6->Text = L"Solar Intensity:";
+			// 
+			// numericUpDown2
+			// 
+			this->numericUpDown2->Location = System::Drawing::Point(175, 45);
+			this->numericUpDown2->Name = L"numericUpDown2";
+			this->numericUpDown2->Size = System::Drawing::Size(120, 20);
+			this->numericUpDown2->TabIndex = 1;
+			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Location = System::Drawing::Point(46, 47);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(97, 13);
+			this->label5->TabIndex = 0;
+			this->label5->Text = L"Solar Zenith Angle:";
+			// 
+			// groupBox2
+			// 
+			this->groupBox2->Controls->Add(this->label7);
+			this->groupBox2->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->groupBox2->Location = System::Drawing::Point(3, 257);
+			this->groupBox2->Name = L"groupBox2";
+			this->groupBox2->Size = System::Drawing::Size(387, 249);
+			this->groupBox2->TabIndex = 1;
+			this->groupBox2->TabStop = false;
+			this->groupBox2->Text = L"Surface";
+			// 
+			// label7
+			// 
+			this->label7->AutoSize = true;
+			this->label7->Location = System::Drawing::Point(46, 50);
+			this->label7->Name = L"label7";
+			this->label7->Size = System::Drawing::Size(115, 13);
+			this->label7->TabIndex = 0;
+			this->label7->Text = L"Surface Albedo Model:";
+			// 
+			// groupBox3
+			// 
+			this->groupBox3->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->groupBox3->Location = System::Drawing::Point(396, 3);
+			this->groupBox3->Name = L"groupBox3";
+			this->groupBox3->Size = System::Drawing::Size(387, 248);
+			this->groupBox3->TabIndex = 2;
+			this->groupBox3->TabStop = false;
+			this->groupBox3->Text = L"Filters";
 			// 
 			// tabResults
 			// 
@@ -907,10 +1100,22 @@ namespace rtmathwinui {
 			this->statusbar->TabIndex = 5;
 			this->statusbar->Text = L"statusStrip1";
 			// 
+			// toolStripStatusLabel1
+			// 
+			this->toolStripStatusLabel1->Name = L"toolStripStatusLabel1";
+			this->toolStripStatusLabel1->Size = System::Drawing::Size(75, 17);
+			this->toolStripStatusLabel1->Text = L"Run Progress:";
+			// 
 			// toolStripProgressBar1
 			// 
 			this->toolStripProgressBar1->Name = L"toolStripProgressBar1";
 			this->toolStripProgressBar1->Size = System::Drawing::Size(300, 16);
+			// 
+			// toolStripStatusLabel2
+			// 
+			this->toolStripStatusLabel2->Name = L"toolStripStatusLabel2";
+			this->toolStripStatusLabel2->Size = System::Drawing::Size(64, 17);
+			this->toolStripStatusLabel2->Text = L"(run status)";
 			// 
 			// tableLayoutPanel1
 			// 
@@ -927,204 +1132,9 @@ namespace rtmathwinui {
 			this->tableLayoutPanel1->Size = System::Drawing::Size(800, 549);
 			this->tableLayoutPanel1->TabIndex = 6;
 			// 
-			// tableLayoutPanel2
+			// dlgOpen
 			// 
-			this->tableLayoutPanel2->ColumnCount = 2;
-			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
-				50)));
-			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
-				50)));
-			this->tableLayoutPanel2->Controls->Add(this->groupBox1, 0, 0);
-			this->tableLayoutPanel2->Controls->Add(this->groupBox2, 0, 1);
-			this->tableLayoutPanel2->Controls->Add(this->groupBox3, 1, 0);
-			this->tableLayoutPanel2->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->tableLayoutPanel2->Location = System::Drawing::Point(0, 0);
-			this->tableLayoutPanel2->Name = L"tableLayoutPanel2";
-			this->tableLayoutPanel2->RowCount = 2;
-			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel2->Size = System::Drawing::Size(786, 509);
-			this->tableLayoutPanel2->TabIndex = 0;
-			// 
-			// groupBox1
-			// 
-			this->groupBox1->Controls->Add(this->numericUpDown3);
-			this->groupBox1->Controls->Add(this->label6);
-			this->groupBox1->Controls->Add(this->numericUpDown2);
-			this->groupBox1->Controls->Add(this->label5);
-			this->groupBox1->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->groupBox1->Location = System::Drawing::Point(3, 3);
-			this->groupBox1->Name = L"groupBox1";
-			this->groupBox1->Size = System::Drawing::Size(387, 248);
-			this->groupBox1->TabIndex = 0;
-			this->groupBox1->TabStop = false;
-			this->groupBox1->Text = L"Lighting";
-			// 
-			// groupBox2
-			// 
-			this->groupBox2->Controls->Add(this->label7);
-			this->groupBox2->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->groupBox2->Location = System::Drawing::Point(3, 257);
-			this->groupBox2->Name = L"groupBox2";
-			this->groupBox2->Size = System::Drawing::Size(387, 249);
-			this->groupBox2->TabIndex = 1;
-			this->groupBox2->TabStop = false;
-			this->groupBox2->Text = L"Surface";
-			// 
-			// label5
-			// 
-			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(46, 47);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(97, 13);
-			this->label5->TabIndex = 0;
-			this->label5->Text = L"Solar Zenith Angle:";
-			// 
-			// numericUpDown2
-			// 
-			this->numericUpDown2->Location = System::Drawing::Point(175, 45);
-			this->numericUpDown2->Name = L"numericUpDown2";
-			this->numericUpDown2->Size = System::Drawing::Size(120, 20);
-			this->numericUpDown2->TabIndex = 1;
-			// 
-			// label6
-			// 
-			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(49, 81);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(76, 13);
-			this->label6->TabIndex = 2;
-			this->label6->Text = L"Solar Intensity:";
-			// 
-			// numericUpDown3
-			// 
-			this->numericUpDown3->Location = System::Drawing::Point(175, 81);
-			this->numericUpDown3->Name = L"numericUpDown3";
-			this->numericUpDown3->Size = System::Drawing::Size(120, 20);
-			this->numericUpDown3->TabIndex = 3;
-			// 
-			// label7
-			// 
-			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(46, 50);
-			this->label7->Name = L"label7";
-			this->label7->Size = System::Drawing::Size(115, 13);
-			this->label7->TabIndex = 0;
-			this->label7->Text = L"Surface Albedo Model:";
-			// 
-			// chkAdvAtmos
-			// 
-			this->chkAdvAtmos->AutoSize = true;
-			this->chkAdvAtmos->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->chkAdvAtmos->Location = System::Drawing::Point(396, 3);
-			this->chkAdvAtmos->Name = L"chkAdvAtmos";
-			this->chkAdvAtmos->Size = System::Drawing::Size(387, 29);
-			this->chkAdvAtmos->TabIndex = 9;
-			this->chkAdvAtmos->Text = L"Enable Advanced Atmospheric Profiles";
-			this->chkAdvAtmos->UseVisualStyleBackColor = true;
-			// 
-			// groupBox3
-			// 
-			this->groupBox3->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->groupBox3->Location = System::Drawing::Point(396, 3);
-			this->groupBox3->Name = L"groupBox3";
-			this->groupBox3->Size = System::Drawing::Size(387, 248);
-			this->groupBox3->TabIndex = 2;
-			this->groupBox3->TabStop = false;
-			this->groupBox3->Text = L"Filters";
-			// 
-			// tableLayoutPanel3
-			// 
-			this->tableLayoutPanel3->ColumnCount = 2;
-			this->tableLayoutPanel3->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
-				50)));
-			this->tableLayoutPanel3->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
-				50)));
-			this->tableLayoutPanel3->Controls->Add(this->label4, 0, 0);
-			this->tableLayoutPanel3->Controls->Add(this->flowLayoutPanel3, 1, 0);
-			this->tableLayoutPanel3->Controls->Add(this->label8, 0, 2);
-			this->tableLayoutPanel3->Controls->Add(this->pictureBox1, 1, 3);
-			this->tableLayoutPanel3->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->tableLayoutPanel3->Location = System::Drawing::Point(3, 3);
-			this->tableLayoutPanel3->Name = L"tableLayoutPanel3";
-			this->tableLayoutPanel3->RowCount = 6;
-			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 35)));
-			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
-			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
-			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 100)));
-			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
-			this->tableLayoutPanel3->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Absolute, 20)));
-			this->tableLayoutPanel3->Size = System::Drawing::Size(780, 503);
-			this->tableLayoutPanel3->TabIndex = 1;
-			// 
-			// flowLayoutPanel3
-			// 
-			this->flowLayoutPanel3->Controls->Add(this->button9);
-			this->flowLayoutPanel3->Controls->Add(this->button10);
-			this->flowLayoutPanel3->Controls->Add(this->button11);
-			this->flowLayoutPanel3->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->flowLayoutPanel3->Location = System::Drawing::Point(393, 3);
-			this->flowLayoutPanel3->Name = L"flowLayoutPanel3";
-			this->flowLayoutPanel3->Size = System::Drawing::Size(384, 29);
-			this->flowLayoutPanel3->TabIndex = 1;
-			// 
-			// button9
-			// 
-			this->button9->Location = System::Drawing::Point(3, 3);
-			this->button9->Name = L"button9";
-			this->button9->Size = System::Drawing::Size(75, 23);
-			this->button9->TabIndex = 0;
-			this->button9->Text = L"&New Run";
-			this->button9->UseVisualStyleBackColor = true;
-			// 
-			// button10
-			// 
-			this->button10->Location = System::Drawing::Point(84, 3);
-			this->button10->Name = L"button10";
-			this->button10->Size = System::Drawing::Size(75, 23);
-			this->button10->TabIndex = 1;
-			this->button10->Text = L"&Open Run";
-			this->button10->UseVisualStyleBackColor = true;
-			// 
-			// button11
-			// 
-			this->button11->Location = System::Drawing::Point(165, 3);
-			this->button11->Name = L"button11";
-			this->button11->Size = System::Drawing::Size(75, 23);
-			this->button11->TabIndex = 2;
-			this->button11->Text = L"&Save Run";
-			this->button11->UseVisualStyleBackColor = true;
-			// 
-			// toolStripStatusLabel1
-			// 
-			this->toolStripStatusLabel1->Name = L"toolStripStatusLabel1";
-			this->toolStripStatusLabel1->Size = System::Drawing::Size(75, 17);
-			this->toolStripStatusLabel1->Text = L"Run Progress:";
-			// 
-			// toolStripStatusLabel2
-			// 
-			this->toolStripStatusLabel2->Name = L"toolStripStatusLabel2";
-			this->toolStripStatusLabel2->Size = System::Drawing::Size(64, 17);
-			this->toolStripStatusLabel2->Text = L"(run status)";
-			// 
-			// label8
-			// 
-			this->label8->AutoSize = true;
-			this->label8->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->label8->Location = System::Drawing::Point(3, 55);
-			this->label8->Name = L"label8";
-			this->label8->Size = System::Drawing::Size(384, 20);
-			this->label8->TabIndex = 2;
-			this->label8->Text = L"Run Parameters:";
-			// 
-			// pictureBox1
-			// 
-			this->pictureBox1->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"pictureBox1.Image")));
-			this->pictureBox1->Location = System::Drawing::Point(393, 78);
-			this->pictureBox1->Name = L"pictureBox1";
-			this->pictureBox1->Size = System::Drawing::Size(188, 212);
-			this->pictureBox1->TabIndex = 3;
-			this->pictureBox1->TabStop = false;
+			this->dlgOpen->FileName = L"openFileDialog1";
 			// 
 			// frmMain
 			// 
@@ -1144,6 +1154,10 @@ namespace rtmathwinui {
 			this->menuStrip1->PerformLayout();
 			this->tabs->ResumeLayout(false);
 			this->tabSummary->ResumeLayout(false);
+			this->tableLayoutPanel3->ResumeLayout(false);
+			this->tableLayoutPanel3->PerformLayout();
+			this->flowLayoutPanel3->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->EndInit();
 			this->tabAtmos->ResumeLayout(false);
 			this->panelAtmosLayout->ResumeLayout(false);
 			this->panelAtmosLayout->PerformLayout();
@@ -1151,6 +1165,13 @@ namespace rtmathwinui {
 			this->flowLayoutPanel2->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->EndInit();
 			this->tabMisc->ResumeLayout(false);
+			this->tableLayoutPanel2->ResumeLayout(false);
+			this->groupBox1->ResumeLayout(false);
+			this->groupBox1->PerformLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown3))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown2))->EndInit();
+			this->groupBox2->ResumeLayout(false);
+			this->groupBox2->PerformLayout();
 			this->tabResults->ResumeLayout(false);
 			this->splitContainer1->Panel1->ResumeLayout(false);
 			this->splitContainer1->Panel1->PerformLayout();
@@ -1161,17 +1182,6 @@ namespace rtmathwinui {
 			this->statusbar->ResumeLayout(false);
 			this->statusbar->PerformLayout();
 			this->tableLayoutPanel1->ResumeLayout(false);
-			this->tableLayoutPanel2->ResumeLayout(false);
-			this->groupBox1->ResumeLayout(false);
-			this->groupBox1->PerformLayout();
-			this->groupBox2->ResumeLayout(false);
-			this->groupBox2->PerformLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown2))->EndInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown3))->EndInit();
-			this->tableLayoutPanel3->ResumeLayout(false);
-			this->tableLayoutPanel3->PerformLayout();
-			this->flowLayoutPanel3->ResumeLayout(false);
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 

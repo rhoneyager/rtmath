@@ -36,8 +36,6 @@ namespace glgraphwin {
 		private: System::Windows::Forms::Timer^  timer1;
 		protected:
 			~glgraphwinControl();
-
-
 		protected: property System::Windows::Forms::CreateParams^ CreateParams 
 				   {
 
@@ -53,7 +51,21 @@ namespace glgraphwin {
 				   }
 
 		private: System::ComponentModel::IContainer^  components;
-		protected: 
+		// Add the override mouse/keyboard handler flag
+		private:
+			bool _overrideui;
+		public:
+			property bool UIoverride
+			{
+				bool get()
+				{
+					return _overrideui;
+				}
+				void set(bool value)
+				{
+					_overrideui = value;
+				}
+			}
 
 		private:
 			/// <summary>
