@@ -16,7 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
-    <None Include="app.ico">
+    <None Include="rtlogo.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\rtmath\rtlogo.png">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -33,9 +36,6 @@
     <ClCompile Include="frmMain.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="frmLayers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rtRun.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,9 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="frmMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="frmLayers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rtRun.h">

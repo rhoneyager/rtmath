@@ -13,8 +13,8 @@ namespace glgraphwin {
 		// Should always fail, as designmode is not yet set
 		/*
 		if (this->Visible && !(this->DesignMode) ) {
-			openglform = gcnew glform(this);
-			//openglform->Render();
+		openglform = gcnew glform(this);
+		//openglform->Render();
 		}
 		*/
 		//openglform->SwapOpenGLBuffers();
@@ -68,6 +68,38 @@ namespace glgraphwin {
 				delete openglform;
 			}
 		}
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_Resize(System::Object^  sender, System::EventArgs^  e)
+	{
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_Move(System::Object^  sender, System::EventArgs^  e)
+	{
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e)
+	{
+		UNREFERENCED_PARAMETER(sender);
+		UNREFERENCED_PARAMETER(e);
+		if (openglform)
+		{
+			openglform->Render();
+		}
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e)
+	{
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		// Control is active. Process input.
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+	{
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		// Control is active. Process input.
 	}
 
 }; // end namespace glgraphwin
