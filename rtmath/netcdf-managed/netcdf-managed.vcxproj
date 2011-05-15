@@ -107,6 +107,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ncattr.h" />
+    <ClInclude Include="ncdim.h" />
+    <ClInclude Include="ncfile.h" />
+    <ClInclude Include="ncgroup.h" />
+    <ClInclude Include="nctype.h" />
+    <ClInclude Include="ncvar.h" />
+    <ClInclude Include="netcdf-managed.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ncattr.cpp" />
+    <ClCompile Include="ncdim.cpp" />
+    <ClCompile Include="ncgroup.cpp" />
+    <ClCompile Include="nctype.cpp" />
+    <ClCompile Include="ncvar.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
