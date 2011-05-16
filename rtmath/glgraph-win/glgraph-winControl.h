@@ -33,6 +33,7 @@ namespace glgraphwin {
 			glform^ openglform;
 		private:
 			bool _runtime;
+			bool _mouseinwindow;
 		private: System::Windows::Forms::Timer^  timer1;
 		protected:
 			~glgraphwinControl();
@@ -100,6 +101,9 @@ namespace glgraphwin {
 				this->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &glgraphwinControl::glgraphwinControl_Paint);
 				this->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &glgraphwinControl::glgraphwinControl_KeyPress);
 				this->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseClick);
+				this->MouseEnter += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_MouseEnter);
+				this->MouseLeave += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_MouseLeave);
+				this->MouseWheel += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseWheel);
 				this->Move += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_Move);
 				this->Resize += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_Resize);
 				this->ResumeLayout(false);
@@ -111,6 +115,7 @@ namespace glgraphwin {
 		private: System::Void glgraphwinControl_VisibleChanged(System::Object^  sender, System::EventArgs^  e);
 		private: System::Void glgraphwinControl_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e);
 		private: System::Void glgraphwinControl_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		private: System::Void glgraphwinControl_MouseWheel(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e);
 		private: System::Void glgraphwinControl_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e);
 		private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e) {
 					 UNREFERENCED_PARAMETER(sender);
@@ -122,5 +127,7 @@ namespace glgraphwin {
 					 //openglform->SwapOpenGLBuffers();
 				 }
 
-		};
+		private: System::Void glgraphwinControl_MouseEnter(System::Object^  sender, System::EventArgs^  e);
+		private: System::Void glgraphwinControl_MouseLeave(System::Object^  sender, System::EventArgs^  e);
+};
 }

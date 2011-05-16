@@ -19,6 +19,7 @@ namespace glgraphwin {
 		*/
 		//openglform->SwapOpenGLBuffers();
 		_overrideui = false;
+		_mouseinwindow = false;
 	}
 
 	void glgraphwinControl::redraw()
@@ -96,6 +97,35 @@ namespace glgraphwin {
 		if (this->Enabled == false) return;
 		if (!openglform) return;
 		// Control is active. Process input.
+		// This only gives the ascii character, so alt will not work since it's intercepted by the form
+		// TODO: test this
+		// For convenience, 
+		System::Char key = e->KeyChar;
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseWheel(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+	{
+		if (_overrideui) return;
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		if (!_mouseinwindow) return;
+		// Process the scroll event. See mouseclick for event documentation.
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseEnter(System::Object^  sender, System::EventArgs^  e)
+	{
+		if (_overrideui) return;
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		_mouseinwindow = true;
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseLeave(System::Object^  sender, System::EventArgs^  e)
+	{
+		if (_overrideui) return;
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		_mouseinwindow = false;
 	}
 
 	System::Void glgraphwinControl::glgraphwinControl_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
@@ -104,6 +134,13 @@ namespace glgraphwin {
 		if (this->Enabled == false) return;
 		if (!openglform) return;
 		// Control is active. Process input.
+		/* mouseeventargs e contains:
+		   Button (Left, Middle, Right, None, ...)  System.Windows.Forms.MouseButtons
+		   Clicks (number of clicks) Int32
+		   Delta (signed count of number of dents wheel is rotated)
+		   Location (rel. to top left of form) System.Drawing.Point
+		   X and Y
+		   */
 	}
 
 }; // end namespace glgraphwin
