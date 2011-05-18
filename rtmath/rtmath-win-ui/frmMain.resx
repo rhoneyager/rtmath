@@ -120,14 +120,11 @@
   <metadata name="menuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="treeNode14.ToolTipText" xml:space="preserve">
-    <value>Selection of the base atmospheric profiles. A user-defined profile may be created, or one of the USAF profiles may be selected. The layers in the profile do not necessarily correspond to the doubling-adding layers.</value>
-  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACxAAAAsQAa0jvXUAAAAGYktHRAD/AP8A/6C9p5MAAAAHdElNRQfbBQ4CESoX9ICn
+        YQUAAAAJcEhZcwAACw0AAAsNAe0HwCwAAAAGYktHRAD/AP8A/6C9p5MAAAAHdElNRQfbBQ4CESoX9ICn
         AAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAABo5JREFUeF7tXTuoHVUUjXlqJOLT
         QsFfRBFE1ED8NEKEaAqx0EILEUQUDRYSSKUIETQ2Coo2ImIj2FhELW0SlBQKQQvTWCgYDYp/0CTGT+Jz
         7XCf3Pd8uTNz5qzz9j5nPdjVm7PP2mutmX1mztx716zRnxgQA2JADIgBMSAGxIAYEANiQAyIATEgBlZg
@@ -158,6 +155,9 @@
         1P/5HLueQf3ftTx8cOr/fI7dzqD+71aaMsDU/8vw7HYW9X+30pQBpv5fhmeXs6j/u5SlHCj1/3Jcu5xJ
         /d+lLOVAqf+X41oziQExIAbEgBgQA2JADIgBMSAGxIAYEAPdDPwLE0ALv/lzWf8AAAAASUVORK5CYII=
 </value>
+  </data>
+  <data name="treeNode1.ToolTipText" xml:space="preserve">
+    <value>Selection of the base atmospheric profiles. A user-defined profile may be created, or one of the USAF profiles may be selected. The layers in the profile do not necessarily correspond to the doubling-adding layers.</value>
   </data>
   <metadata name="statusbar.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>126, 17</value>

@@ -11,6 +11,8 @@ namespace glgraphwin {
 	/// <summary>
 	/// Summary for camera
 	/// </summary>
+	public delegate void CameraChangedEventHandler(System::Object^  sender);
+
 	public ref class camera :  public System::ComponentModel::Component
 	{
 	public:
@@ -20,6 +22,12 @@ namespace glgraphwin {
 			//
 			//TODO: Add the constructor code here
 			//
+			this->_width.X = 10;
+			this->_width.Y = 10;
+			this->_min.X = -5;
+			this->_max.X = 5;
+			this->_min.Y = -5;
+			this->_max.Y = 5;
 		}
 		camera(System::ComponentModel::IContainer ^container)
 		{
@@ -29,6 +37,21 @@ namespace glgraphwin {
 
 			container->Add(this);
 			InitializeComponent();
+			this->_width.X = 10;
+			this->_width.Y = 10;
+			this->_min.X = -5;
+			this->_max.X = 5;
+			this->_min.Y = -5;
+			this->_max.Y = 5;
+		}
+		// The rendering function which sends the correct openGL commands to the plot
+		void Render();
+		// Event when camera is updated
+	public: event CameraChangedEventHandler^ cameraChanged;
+
+	protected: virtual System::Void OnCameraChanged()
+		{
+			cameraChanged(this);
 		}
 
 	protected:
@@ -94,6 +117,7 @@ namespace glgraphwin {
 				_min.Y = value.Y - (_width.Y / 2);
 				_max.Y = value.Y + (_width.Y / 2);
 				_center = value;
+				OnCameraChanged();
 			}
 		}
 
@@ -113,6 +137,7 @@ namespace glgraphwin {
 				_width.X = _max.X - _min.X;
 				_width.Y = _max.Y - _min.Y;
 				// TODO: recalculate scale
+				OnCameraChanged();
 			}
 		}
 
@@ -132,6 +157,7 @@ namespace glgraphwin {
 				_width.X = _max.X - _min.X;
 				_width.Y = _max.Y - _min.Y;
 				// TODO: recalculate scale
+				OnCameraChanged();
 			}
 		}
 
@@ -151,6 +177,7 @@ namespace glgraphwin {
 				_min.X = _center.X - (_width.X / 2);
 				_min.Y = _center.Y - (_width.Y / 2);
 				// TODO: recalculate scale
+				OnCameraChanged();
 			}
 		}
 

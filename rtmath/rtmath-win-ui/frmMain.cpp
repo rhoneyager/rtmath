@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "frmMain.h"
+//#include "../glgraph-win/camera.h"
 //#include <iostream>
 
 namespace rtmathwinui
@@ -11,7 +12,7 @@ namespace rtmathwinui
 			//TODO: Add the constructor code here
 			//
 			currRun = (gcnew rtRun() );
-			
+			propPlots->SelectedObject = glgraphwinControl1->activeCamera;
 		}
 	System::Void frmMain::exitToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 		//using namespace std;

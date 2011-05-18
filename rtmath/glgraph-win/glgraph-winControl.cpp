@@ -20,7 +20,14 @@ namespace glgraphwin {
 		//openglform->SwapOpenGLBuffers();
 		_overrideui = false;
 		activeCamera = gcnew camera();
+		activeCamera->cameraChanged += gcnew CameraChangedEventHandler(this, &glgraphwinControl::activeCamera_Changed);
+
 		_mouseinwindow = false;
+	}
+
+	System::Void glgraphwinControl::activeCamera_Changed(System::Object^  sender)
+	{
+		render();
 	}
 
 	void glgraphwinControl::redraw()
@@ -32,7 +39,13 @@ namespace glgraphwin {
 				delete openglform;
 			}
 			openglform = gcnew glform(this);
-			openglform->Render();
+			openglform->activeCamera = activeCamera;
+			if (openglform->Render()) 
+			{
+					timer1->Enabled = true;
+			} else {
+				timer1->Enabled = false;
+			}
 		}
 		//openglform->SwapOpenGLBuffers();
 	}
@@ -62,6 +75,7 @@ namespace glgraphwin {
 		//throw;
 		// This doesn't affect invisibility in the standard sense, since the control loads 
 		// an imaginary subwindow for the opengl rendering
+		bool nowvis = this->Visible;
 		if (this->Visible && !(this->DesignMode) )
 		{
 			redraw();

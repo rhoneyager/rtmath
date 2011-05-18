@@ -15,6 +15,7 @@ namespace glgraphwin {
 		if (!parent) return;
 		System::Windows::Forms::Form ^ parform = parent->ParentForm;
 		if (!(parent->ParentForm) ) return;
+		// Get the camera from the parent form
 		CreateParams^ cp = gcnew CreateParams;
 		// TODO: find location on form of the parent object
 		//System.Drawing::Point loc;
@@ -141,6 +142,25 @@ namespace glgraphwin {
 		return 0;
 	}
 
+	void glform::draw()
+	{
+		glBegin(GL_LINE_STRIP);
+		glColor3f(1.0,0.0,0.0);
+		glVertex3f(-10.0,0.0,-30.0);
+		glVertex3f(10.0,0.0,-30.0);
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		glColor3f(0.0,0.0,1.0);
+		glVertex3f(0.0,-10.0,-30.0);
+		glVertex3f(0.0,10.0,-30.0);
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		glColor3f(1.0,0.0,1.0);
+		glVertex3f(1.0,-1.0,-30.0);
+		glVertex3f(1.0,1.0,-30.0);
+		glEnd();
+	}
+
 	int glform::Render(System::Void)
 	{
 		if (!initialized) return 1;
@@ -164,20 +184,12 @@ namespace glgraphwin {
 		glClearColor(1.0,1.0,1.0,1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
+
 		//glTranslatef(-0.25f, -0.10f, 0.0f);
 		//glScalef(0.75f, 1.15f, 0.0f);
-		glBegin(GL_LINE_STRIP);
-		glColor3f(1.0,0.0,0.0);
-		glVertex3f(-10.0,0.0,-30.0);
-		glVertex3f(10.0,0.0,-30.0);
-		glEnd();
-		glBegin(GL_LINE_STRIP);
-		glColor3f(0.0,0.0,1.0);
-		glVertex3f(0.0,-10.0,-30.0);
-		glVertex3f(0.0,10.0,-30.0);
-		glEnd();
+		// Have the camera calculate and set the correct translate and scale matrices
+		if (activeCamera) activeCamera->Render();
+		draw();
 		glFlush();
 
 		glPopMatrix();
@@ -207,4 +219,20 @@ namespace glgraphwin {
 		return 0;
 	}
 
+	void camera::Render(void)
+	{
+		// First, set glOrtho for 2d viewing
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-1.0*(_width.X)/2.0,
+			(_width.X)/2.0,
+			-1.0*(_width.Y)/2.0,
+			1.0*(_width.Y)/2.0,
+			-100,100);
+		glMatrixMode(GL_MODELVIEW);
+		glTranslatef((GLfloat) -1.0*_center.X, (GLfloat) -1.0*_center.Y,0.0);
+		glPushMatrix();
+		
+	}
 };

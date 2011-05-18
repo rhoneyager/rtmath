@@ -18,8 +18,8 @@ namespace rtmathwinui {
 	public:
 		frmMain(void);
 
-	private: System::Windows::Forms::Button^  button1;
-	private: System::Windows::Forms::CheckBox^  checkBox1;
+
+
 	private: System::Windows::Forms::TabControl^  tabs;
 	private: System::Windows::Forms::TabPage^  tabSummary;
 
@@ -80,6 +80,9 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::OpenFileDialog^  dlgOpen;
 	private: System::Windows::Forms::ColorDialog^  dlgColor;
 	private: System::Windows::Forms::TreeView^  listAtmosLayers;
+	private: System::Windows::Forms::SplitContainer^  splitContainer2;
+	private: System::Windows::Forms::TreeView^  treePlots;
+	private: System::Windows::Forms::PropertyGrid^  propPlots;
 
 
 	public: 
@@ -170,22 +173,28 @@ namespace rtmathwinui {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			System::Windows::Forms::TreeNode^  treeNode14 = (gcnew System::Windows::Forms::TreeNode(L"Base Atmosphere Selection"));
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(frmMain::typeid));
-			System::Windows::Forms::TreeNode^  treeNode15 = (gcnew System::Windows::Forms::TreeNode(L"Example Cloud Layer 1"));
-			System::Windows::Forms::TreeNode^  treeNode16 = (gcnew System::Windows::Forms::TreeNode(L"Example Cloud Layer 2"));
-			System::Windows::Forms::TreeNode^  treeNode17 = (gcnew System::Windows::Forms::TreeNode(L"Clouds", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode15, 
-				treeNode16}));
-			System::Windows::Forms::TreeNode^  treeNode18 = (gcnew System::Windows::Forms::TreeNode(L"CO2"));
-			System::Windows::Forms::TreeNode^  treeNode19 = (gcnew System::Windows::Forms::TreeNode(L"H2O"));
-			System::Windows::Forms::TreeNode^  treeNode20 = (gcnew System::Windows::Forms::TreeNode(L"Gases", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode18, 
-				treeNode19}));
-			System::Windows::Forms::TreeNode^  treeNode21 = (gcnew System::Windows::Forms::TreeNode(L"Aerosols"));
-			System::Windows::Forms::TreeNode^  treeNode22 = (gcnew System::Windows::Forms::TreeNode(L"Sun"));
-			System::Windows::Forms::TreeNode^  treeNode23 = (gcnew System::Windows::Forms::TreeNode(L"Lighting", gcnew cli::array< System::Windows::Forms::TreeNode^  >(1) {treeNode22}));
-			System::Windows::Forms::TreeNode^  treeNode24 = (gcnew System::Windows::Forms::TreeNode(L"Surface Model"));
-			System::Windows::Forms::TreeNode^  treeNode25 = (gcnew System::Windows::Forms::TreeNode(L"Filters"));
-			System::Windows::Forms::TreeNode^  treeNode26 = (gcnew System::Windows::Forms::TreeNode(L"Spectral Region"));
+			System::Windows::Forms::TreeNode^  treeNode1 = (gcnew System::Windows::Forms::TreeNode(L"Base Atmosphere Selection"));
+			System::Windows::Forms::TreeNode^  treeNode2 = (gcnew System::Windows::Forms::TreeNode(L"Example Cloud Layer 1"));
+			System::Windows::Forms::TreeNode^  treeNode3 = (gcnew System::Windows::Forms::TreeNode(L"Example Cloud Layer 2"));
+			System::Windows::Forms::TreeNode^  treeNode4 = (gcnew System::Windows::Forms::TreeNode(L"Clouds", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode2, 
+				treeNode3}));
+			System::Windows::Forms::TreeNode^  treeNode5 = (gcnew System::Windows::Forms::TreeNode(L"CO2"));
+			System::Windows::Forms::TreeNode^  treeNode6 = (gcnew System::Windows::Forms::TreeNode(L"H2O"));
+			System::Windows::Forms::TreeNode^  treeNode7 = (gcnew System::Windows::Forms::TreeNode(L"Gases", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode5, 
+				treeNode6}));
+			System::Windows::Forms::TreeNode^  treeNode8 = (gcnew System::Windows::Forms::TreeNode(L"Aerosols"));
+			System::Windows::Forms::TreeNode^  treeNode9 = (gcnew System::Windows::Forms::TreeNode(L"Sun"));
+			System::Windows::Forms::TreeNode^  treeNode10 = (gcnew System::Windows::Forms::TreeNode(L"Lighting", gcnew cli::array< System::Windows::Forms::TreeNode^  >(1) {treeNode9}));
+			System::Windows::Forms::TreeNode^  treeNode11 = (gcnew System::Windows::Forms::TreeNode(L"Surface Model"));
+			System::Windows::Forms::TreeNode^  treeNode12 = (gcnew System::Windows::Forms::TreeNode(L"Filters"));
+			System::Windows::Forms::TreeNode^  treeNode13 = (gcnew System::Windows::Forms::TreeNode(L"Spectral Region"));
+			System::Windows::Forms::TreeNode^  treeNode14 = (gcnew System::Windows::Forms::TreeNode(L"Sample Axis Line 1"));
+			System::Windows::Forms::TreeNode^  treeNode15 = (gcnew System::Windows::Forms::TreeNode(L"Sample Axis Line 2"));
+			System::Windows::Forms::TreeNode^  treeNode16 = (gcnew System::Windows::Forms::TreeNode(L"Model Run 1", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode14, 
+				treeNode15}));
+			System::Windows::Forms::TreeNode^  treeNode17 = (gcnew System::Windows::Forms::TreeNode(L"Upwelling Radiance at TOA"));
+			System::Windows::Forms::TreeNode^  treeNode18 = (gcnew System::Windows::Forms::TreeNode(L"Model Run 2", gcnew cli::array< System::Windows::Forms::TreeNode^  >(1) {treeNode17}));
 			this->menuStrip1 = (gcnew System::Windows::Forms::MenuStrip());
 			this->fileToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->newRunToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -233,8 +242,6 @@ namespace rtmathwinui {
 			this->noneToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator4 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->customToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->button1 = (gcnew System::Windows::Forms::Button());
-			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
 			this->tabs = (gcnew System::Windows::Forms::TabControl());
 			this->tabSummary = (gcnew System::Windows::Forms::TabPage());
 			this->tableLayoutPanel3 = (gcnew System::Windows::Forms::TableLayoutPanel());
@@ -255,7 +262,6 @@ namespace rtmathwinui {
 			this->button6 = (gcnew System::Windows::Forms::Button());
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->layerProps = (gcnew System::Windows::Forms::PropertyGrid());
-			this->glgraphwinControl1 = (gcnew glgraphwin::glgraphwinControl());
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->flowLayoutPanel2 = (gcnew System::Windows::Forms::FlowLayoutPanel());
 			this->button3 = (gcnew System::Windows::Forms::Button());
@@ -263,8 +269,13 @@ namespace rtmathwinui {
 			this->button8 = (gcnew System::Windows::Forms::Button());
 			this->numericUpDown1 = (gcnew System::Windows::Forms::NumericUpDown());
 			this->chkAdvAtmos = (gcnew System::Windows::Forms::CheckBox());
+			this->listAtmosLayers = (gcnew System::Windows::Forms::TreeView());
 			this->tabResults = (gcnew System::Windows::Forms::TabPage());
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
+			this->glgraphwinControl1 = (gcnew glgraphwin::glgraphwinControl());
+			this->splitContainer2 = (gcnew System::Windows::Forms::SplitContainer());
+			this->treePlots = (gcnew System::Windows::Forms::TreeView());
+			this->propPlots = (gcnew System::Windows::Forms::PropertyGrid());
 			this->statusbar = (gcnew System::Windows::Forms::StatusStrip());
 			this->toolStripStatusLabel1 = (gcnew System::Windows::Forms::ToolStripStatusLabel());
 			this->toolStripProgressBar1 = (gcnew System::Windows::Forms::ToolStripProgressBar());
@@ -274,7 +285,6 @@ namespace rtmathwinui {
 			this->dlgSave = (gcnew System::Windows::Forms::SaveFileDialog());
 			this->dlgOpen = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->dlgColor = (gcnew System::Windows::Forms::ColorDialog());
-			this->listAtmosLayers = (gcnew System::Windows::Forms::TreeView());
 			this->menuStrip1->SuspendLayout();
 			this->tabs->SuspendLayout();
 			this->tabSummary->SuspendLayout();
@@ -291,6 +301,10 @@ namespace rtmathwinui {
 			this->splitContainer1->Panel1->SuspendLayout();
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer2))->BeginInit();
+			this->splitContainer2->Panel1->SuspendLayout();
+			this->splitContainer2->Panel2->SuspendLayout();
+			this->splitContainer2->SuspendLayout();
 			this->statusbar->SuspendLayout();
 			this->tableLayoutPanel1->SuspendLayout();
 			this->SuspendLayout();
@@ -599,29 +613,6 @@ namespace rtmathwinui {
 			this->customToolStripMenuItem->Size = System::Drawing::Size(116, 22);
 			this->customToolStripMenuItem->Text = L"(custom)";
 			// 
-			// button1
-			// 
-			this->button1->Location = System::Drawing::Point(45, 119);
-			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(75, 23);
-			this->button1->TabIndex = 2;
-			this->button1->Text = L"Reinit";
-			this->button1->UseVisualStyleBackColor = true;
-			this->button1->Click += gcnew System::EventHandler(this, &frmMain::button1_Click);
-			// 
-			// checkBox1
-			// 
-			this->checkBox1->AutoSize = true;
-			this->checkBox1->Checked = true;
-			this->checkBox1->CheckState = System::Windows::Forms::CheckState::Checked;
-			this->checkBox1->Location = System::Drawing::Point(55, 55);
-			this->checkBox1->Name = L"checkBox1";
-			this->checkBox1->Size = System::Drawing::Size(56, 17);
-			this->checkBox1->TabIndex = 3;
-			this->checkBox1->Text = L"Visible";
-			this->checkBox1->UseVisualStyleBackColor = true;
-			this->checkBox1->CheckedChanged += gcnew System::EventHandler(this, &frmMain::checkBox1_CheckedChanged);
-			// 
 			// tabs
 			// 
 			this->tabs->Controls->Add(this->tabSummary);
@@ -853,18 +844,6 @@ namespace rtmathwinui {
 			this->layerProps->Size = System::Drawing::Size(387, 394);
 			this->layerProps->TabIndex = 4;
 			// 
-			// glgraphwinControl1
-			// 
-			this->glgraphwinControl1->AutoSize = true;
-			this->glgraphwinControl1->BackColor = System::Drawing::SystemColors::ControlDark;
-			this->glgraphwinControl1->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->glgraphwinControl1->Location = System::Drawing::Point(0, 0);
-			this->glgraphwinControl1->Name = L"glgraphwinControl1";
-			this->glgraphwinControl1->Size = System::Drawing::Size(568, 509);
-			this->glgraphwinControl1->TabIndex = 1;
-			this->glgraphwinControl1->TabStop = false;
-			this->glgraphwinControl1->UIoverride = false;
-			// 
 			// label3
 			// 
 			this->label3->AutoSize = true;
@@ -935,6 +914,49 @@ namespace rtmathwinui {
 			this->chkAdvAtmos->Text = L"Enable Advanced Atmospheric Profiles";
 			this->chkAdvAtmos->UseVisualStyleBackColor = true;
 			// 
+			// listAtmosLayers
+			// 
+			this->listAtmosLayers->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->listAtmosLayers->Location = System::Drawing::Point(3, 53);
+			this->listAtmosLayers->Name = L"listAtmosLayers";
+			treeNode1->Name = L"nodeBaseAtmos";
+			treeNode1->Text = L"Base Atmosphere Selection";
+			treeNode1->ToolTipText = resources->GetString(L"treeNode1.ToolTipText");
+			treeNode2->Name = L"nodeExCld1";
+			treeNode2->Text = L"Example Cloud Layer 1";
+			treeNode2->ToolTipText = L"A node for an example cloud layer has been created.";
+			treeNode3->Name = L"Node5";
+			treeNode3->Text = L"Example Cloud Layer 2";
+			treeNode3->ToolTipText = L"A node for an example cloud layer has been created.";
+			treeNode4->Name = L"nodeClouds";
+			treeNode4->Text = L"Clouds";
+			treeNode5->Name = L"Node6";
+			treeNode5->Text = L"CO2";
+			treeNode6->Name = L"Node7";
+			treeNode6->Text = L"H2O";
+			treeNode7->Name = L"nodeGases";
+			treeNode7->Text = L"Gases";
+			treeNode7->ToolTipText = L"Gases to use in calculations. This acts as a master switch to use or ignore the g" 
+				L"as profile in the base atmosphere. Base profiles may also be overridden here.";
+			treeNode8->Name = L"nodeAerosols";
+			treeNode8->Text = L"Aerosols";
+			treeNode8->ToolTipText = L"Enter any aerosols here.";
+			treeNode9->Name = L"nodeSun";
+			treeNode9->Text = L"Sun";
+			treeNode10->Name = L"nodeLighting";
+			treeNode10->Text = L"Lighting";
+			treeNode11->Name = L"nodeSurface";
+			treeNode11->Text = L"Surface Model";
+			treeNode12->Name = L"nodeFilters";
+			treeNode12->Text = L"Filters";
+			treeNode13->Name = L"nodeRegion";
+			treeNode13->Text = L"Spectral Region";
+			this->listAtmosLayers->Nodes->AddRange(gcnew cli::array< System::Windows::Forms::TreeNode^  >(8) {treeNode1, treeNode4, treeNode7, 
+				treeNode8, treeNode10, treeNode11, treeNode12, treeNode13});
+			this->listAtmosLayers->ShowNodeToolTips = true;
+			this->listAtmosLayers->Size = System::Drawing::Size(387, 394);
+			this->listAtmosLayers->TabIndex = 10;
+			// 
 			// tabResults
 			// 
 			this->tabResults->Controls->Add(this->splitContainer1);
@@ -944,6 +966,7 @@ namespace rtmathwinui {
 			this->tabResults->TabIndex = 6;
 			this->tabResults->Text = L"Results";
 			this->tabResults->UseVisualStyleBackColor = true;
+			this->tabResults->Click += gcnew System::EventHandler(this, &frmMain::tabResults_Click);
 			// 
 			// splitContainer1
 			// 
@@ -957,11 +980,72 @@ namespace rtmathwinui {
 			// 
 			// splitContainer1.Panel2
 			// 
-			this->splitContainer1->Panel2->Controls->Add(this->checkBox1);
-			this->splitContainer1->Panel2->Controls->Add(this->button1);
+			this->splitContainer1->Panel2->Controls->Add(this->splitContainer2);
 			this->splitContainer1->Size = System::Drawing::Size(786, 509);
 			this->splitContainer1->SplitterDistance = 568;
 			this->splitContainer1->TabIndex = 4;
+			// 
+			// glgraphwinControl1
+			// 
+			this->glgraphwinControl1->AutoSize = true;
+			this->glgraphwinControl1->BackColor = System::Drawing::SystemColors::ControlDark;
+			this->glgraphwinControl1->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->glgraphwinControl1->Location = System::Drawing::Point(0, 0);
+			this->glgraphwinControl1->Name = L"glgraphwinControl1";
+			this->glgraphwinControl1->Size = System::Drawing::Size(568, 509);
+			this->glgraphwinControl1->TabIndex = 1;
+			this->glgraphwinControl1->TabStop = false;
+			this->glgraphwinControl1->UIoverride = false;
+			this->glgraphwinControl1->Visible = true;
+			// 
+			// splitContainer2
+			// 
+			this->splitContainer2->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->splitContainer2->Location = System::Drawing::Point(0, 0);
+			this->splitContainer2->Name = L"splitContainer2";
+			this->splitContainer2->Orientation = System::Windows::Forms::Orientation::Horizontal;
+			// 
+			// splitContainer2.Panel1
+			// 
+			this->splitContainer2->Panel1->Controls->Add(this->treePlots);
+			// 
+			// splitContainer2.Panel2
+			// 
+			this->splitContainer2->Panel2->Controls->Add(this->propPlots);
+			this->splitContainer2->Size = System::Drawing::Size(214, 509);
+			this->splitContainer2->SplitterDistance = 254;
+			this->splitContainer2->TabIndex = 4;
+			// 
+			// treePlots
+			// 
+			this->treePlots->CheckBoxes = true;
+			this->treePlots->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->treePlots->Location = System::Drawing::Point(0, 0);
+			this->treePlots->Name = L"treePlots";
+			treeNode14->Checked = true;
+			treeNode14->Name = L"Node1";
+			treeNode14->Text = L"Sample Axis Line 1";
+			treeNode15->Name = L"Node2";
+			treeNode15->Text = L"Sample Axis Line 2";
+			treeNode16->Name = L"Node0";
+			treeNode16->Text = L"Model Run 1";
+			treeNode17->Name = L"Node4";
+			treeNode17->Text = L"Upwelling Radiance at TOA";
+			treeNode18->Name = L"Node3";
+			treeNode18->Text = L"Model Run 2";
+			this->treePlots->Nodes->AddRange(gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode16, treeNode18});
+			this->treePlots->Size = System::Drawing::Size(214, 254);
+			this->treePlots->TabIndex = 0;
+			// 
+			// propPlots
+			// 
+			this->propPlots->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->propPlots->Location = System::Drawing::Point(0, 0);
+			this->propPlots->Name = L"propPlots";
+			this->propPlots->PropertySort = System::Windows::Forms::PropertySort::Alphabetical;
+			this->propPlots->Size = System::Drawing::Size(214, 251);
+			this->propPlots->TabIndex = 4;
+			this->propPlots->ToolbarVisible = false;
 			// 
 			// statusbar
 			// 
@@ -1009,49 +1093,6 @@ namespace rtmathwinui {
 			// 
 			this->dlgOpen->FileName = L"openFileDialog1";
 			// 
-			// listAtmosLayers
-			// 
-			this->listAtmosLayers->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->listAtmosLayers->Location = System::Drawing::Point(3, 53);
-			this->listAtmosLayers->Name = L"listAtmosLayers";
-			treeNode14->Name = L"nodeBaseAtmos";
-			treeNode14->Text = L"Base Atmosphere Selection";
-			treeNode14->ToolTipText = resources->GetString(L"treeNode14.ToolTipText");
-			treeNode15->Name = L"nodeExCld1";
-			treeNode15->Text = L"Example Cloud Layer 1";
-			treeNode15->ToolTipText = L"A node for an example cloud layer has been created.";
-			treeNode16->Name = L"Node5";
-			treeNode16->Text = L"Example Cloud Layer 2";
-			treeNode16->ToolTipText = L"A node for an example cloud layer has been created.";
-			treeNode17->Name = L"nodeClouds";
-			treeNode17->Text = L"Clouds";
-			treeNode18->Name = L"Node6";
-			treeNode18->Text = L"CO2";
-			treeNode19->Name = L"Node7";
-			treeNode19->Text = L"H2O";
-			treeNode20->Name = L"nodeGases";
-			treeNode20->Text = L"Gases";
-			treeNode20->ToolTipText = L"Gases to use in calculations. This acts as a master switch to use or ignore the g" 
-				L"as profile in the base atmosphere. Base profiles may also be overridden here.";
-			treeNode21->Name = L"nodeAerosols";
-			treeNode21->Text = L"Aerosols";
-			treeNode21->ToolTipText = L"Enter any aerosols here.";
-			treeNode22->Name = L"nodeSun";
-			treeNode22->Text = L"Sun";
-			treeNode23->Name = L"nodeLighting";
-			treeNode23->Text = L"Lighting";
-			treeNode24->Name = L"nodeSurface";
-			treeNode24->Text = L"Surface Model";
-			treeNode25->Name = L"nodeFilters";
-			treeNode25->Text = L"Filters";
-			treeNode26->Name = L"nodeRegion";
-			treeNode26->Text = L"Spectral Region";
-			this->listAtmosLayers->Nodes->AddRange(gcnew cli::array< System::Windows::Forms::TreeNode^  >(8) {treeNode14, treeNode17, 
-				treeNode20, treeNode21, treeNode23, treeNode24, treeNode25, treeNode26});
-			this->listAtmosLayers->ShowNodeToolTips = true;
-			this->listAtmosLayers->Size = System::Drawing::Size(387, 394);
-			this->listAtmosLayers->TabIndex = 10;
-			// 
 			// frmMain
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -1084,9 +1125,12 @@ namespace rtmathwinui {
 			this->splitContainer1->Panel1->ResumeLayout(false);
 			this->splitContainer1->Panel1->PerformLayout();
 			this->splitContainer1->Panel2->ResumeLayout(false);
-			this->splitContainer1->Panel2->PerformLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer1))->EndInit();
 			this->splitContainer1->ResumeLayout(false);
+			this->splitContainer2->Panel1->ResumeLayout(false);
+			this->splitContainer2->Panel2->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer2))->EndInit();
+			this->splitContainer2->ResumeLayout(false);
 			this->statusbar->ResumeLayout(false);
 			this->statusbar->PerformLayout();
 			this->tableLayoutPanel1->ResumeLayout(false);
@@ -1107,15 +1151,12 @@ private: System::Void frmMain_Load(System::Object^  sender, System::EventArgs^  
 			 this->glgraphwinControl1->redraw();
 			 this->glgraphwinControl1->render();
 		 }
-private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-			 this->glgraphwinControl1->redraw();
-			 this->glgraphwinControl1->render();
-		 }
 private: System::Void frmMain_Move(System::Object^  sender, System::EventArgs^  e) {
 			 this->glgraphwinControl1->render();
 		 }
-private: System::Void checkBox1_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
-			 this->glgraphwinControl1->Visible = checkBox1->Checked;
+private: System::Void tabResults_Click(System::Object^  sender, System::EventArgs^  e) {
+			 this->glgraphwinControl1->redraw();
+			 this->glgraphwinControl1->render();
 		 }
 };
 }

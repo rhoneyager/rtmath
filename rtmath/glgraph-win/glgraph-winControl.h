@@ -89,7 +89,8 @@ namespace glgraphwin {
 				// 
 				// timer1
 				// 
-				this->timer1->Interval = 1;
+				this->timer1->Enabled = true;
+				this->timer1->Interval = 5;
 				this->timer1->Tick += gcnew System::EventHandler(this, &glgraphwinControl::timer1_Tick);
 				// 
 				// glgraphwinControl
@@ -124,12 +125,13 @@ namespace glgraphwin {
 					 UNREFERENCED_PARAMETER(e);
 					 if (openglform)
 					 {
-						 openglform->Render();
+						 redraw();
 					 }
 					 //openglform->SwapOpenGLBuffers();
 				 }
 
 		private: System::Void glgraphwinControl_MouseEnter(System::Object^  sender, System::EventArgs^  e);
 		private: System::Void glgraphwinControl_MouseLeave(System::Object^  sender, System::EventArgs^  e);
+		private: System::Void activeCamera_Changed(System::Object^  sender);
 };
 }

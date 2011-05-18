@@ -2,6 +2,8 @@
 #include <Windows.h>
 #include <gl/GL.h>
 
+#include "camera.h"
+
 using namespace System;
 using namespace System::ComponentModel;
 using namespace System::Collections;
@@ -18,10 +20,12 @@ namespace glgraphwin {
 	public:
 		glform(System::Windows::Forms::UserControl ^ parent);
 		virtual int Render(System::Void);
+		camera ^ activeCamera;
 	protected:
 		System::Void SwapOpenGLBuffers(System::Void);
 	protected:
 		~glform();
+		void draw();
 		GLint mySetPixelFormat(HDC hdc);
 	private:
 		HDC m_hDC;
