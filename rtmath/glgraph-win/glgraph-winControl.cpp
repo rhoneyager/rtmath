@@ -19,6 +19,7 @@ namespace glgraphwin {
 		*/
 		//openglform->SwapOpenGLBuffers();
 		_overrideui = false;
+		activeCamera = gcnew camera();
 		_mouseinwindow = false;
 	}
 

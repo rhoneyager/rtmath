@@ -22,9 +22,9 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::CheckBox^  checkBox1;
 	private: System::Windows::Forms::TabControl^  tabs;
 	private: System::Windows::Forms::TabPage^  tabSummary;
-	private: System::Windows::Forms::TabPage^  tabModel;
+
 	private: System::Windows::Forms::TabPage^  tabAtmos;
-	private: System::Windows::Forms::TabPage^  tabMisc;
+
 
 
 
@@ -32,7 +32,7 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::TabPage^  tabResults;
 	private: System::Windows::Forms::TableLayoutPanel^  panelAtmosLayout;
 	private: System::Windows::Forms::Label^  label1;
-	private: System::Windows::Forms::ListBox^  listAtmosLayers;
+
 	private: System::Windows::Forms::FlowLayoutPanel^  flowLayoutPanel1;
 	private: System::Windows::Forms::Button^  button2;
 	private: System::Windows::Forms::Button^  button4;
@@ -55,17 +55,17 @@ namespace rtmathwinui {
 
 	private: glgraphwin::glgraphwinControl^  glgraphwinControl1;
 	private: System::Windows::Forms::SplitContainer^  splitContainer1;
-	private: System::Windows::Forms::TableLayoutPanel^  tableLayoutPanel2;
-	private: System::Windows::Forms::GroupBox^  groupBox1;
-	private: System::Windows::Forms::GroupBox^  groupBox2;
-	private: System::Windows::Forms::NumericUpDown^  numericUpDown3;
-	private: System::Windows::Forms::Label^  label6;
-	private: System::Windows::Forms::NumericUpDown^  numericUpDown2;
-	private: System::Windows::Forms::Label^  label5;
-	private: System::Windows::Forms::Label^  label7;
+
+
+
+
+
+
+
+
 
 	private: System::Windows::Forms::CheckBox^  chkAdvAtmos;
-	private: System::Windows::Forms::GroupBox^  groupBox3;
+
 	private: System::Windows::Forms::TableLayoutPanel^  tableLayoutPanel3;
 	private: System::Windows::Forms::FlowLayoutPanel^  flowLayoutPanel3;
 	private: System::Windows::Forms::Button^  button9;
@@ -79,6 +79,7 @@ namespace rtmathwinui {
 	private: System::Windows::Forms::SaveFileDialog^  dlgSave;
 	private: System::Windows::Forms::OpenFileDialog^  dlgOpen;
 	private: System::Windows::Forms::ColorDialog^  dlgColor;
+	private: System::Windows::Forms::TreeView^  listAtmosLayers;
 
 
 	public: 
@@ -169,7 +170,22 @@ namespace rtmathwinui {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			System::Windows::Forms::TreeNode^  treeNode14 = (gcnew System::Windows::Forms::TreeNode(L"Base Atmosphere Selection"));
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(frmMain::typeid));
+			System::Windows::Forms::TreeNode^  treeNode15 = (gcnew System::Windows::Forms::TreeNode(L"Example Cloud Layer 1"));
+			System::Windows::Forms::TreeNode^  treeNode16 = (gcnew System::Windows::Forms::TreeNode(L"Example Cloud Layer 2"));
+			System::Windows::Forms::TreeNode^  treeNode17 = (gcnew System::Windows::Forms::TreeNode(L"Clouds", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode15, 
+				treeNode16}));
+			System::Windows::Forms::TreeNode^  treeNode18 = (gcnew System::Windows::Forms::TreeNode(L"CO2"));
+			System::Windows::Forms::TreeNode^  treeNode19 = (gcnew System::Windows::Forms::TreeNode(L"H2O"));
+			System::Windows::Forms::TreeNode^  treeNode20 = (gcnew System::Windows::Forms::TreeNode(L"Gases", gcnew cli::array< System::Windows::Forms::TreeNode^  >(2) {treeNode18, 
+				treeNode19}));
+			System::Windows::Forms::TreeNode^  treeNode21 = (gcnew System::Windows::Forms::TreeNode(L"Aerosols"));
+			System::Windows::Forms::TreeNode^  treeNode22 = (gcnew System::Windows::Forms::TreeNode(L"Sun"));
+			System::Windows::Forms::TreeNode^  treeNode23 = (gcnew System::Windows::Forms::TreeNode(L"Lighting", gcnew cli::array< System::Windows::Forms::TreeNode^  >(1) {treeNode22}));
+			System::Windows::Forms::TreeNode^  treeNode24 = (gcnew System::Windows::Forms::TreeNode(L"Surface Model"));
+			System::Windows::Forms::TreeNode^  treeNode25 = (gcnew System::Windows::Forms::TreeNode(L"Filters"));
+			System::Windows::Forms::TreeNode^  treeNode26 = (gcnew System::Windows::Forms::TreeNode(L"Spectral Region"));
 			this->menuStrip1 = (gcnew System::Windows::Forms::MenuStrip());
 			this->fileToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->newRunToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -229,11 +245,9 @@ namespace rtmathwinui {
 			this->button11 = (gcnew System::Windows::Forms::Button());
 			this->label8 = (gcnew System::Windows::Forms::Label());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
-			this->tabModel = (gcnew System::Windows::Forms::TabPage());
 			this->tabAtmos = (gcnew System::Windows::Forms::TabPage());
 			this->panelAtmosLayout = (gcnew System::Windows::Forms::TableLayoutPanel());
 			this->label1 = (gcnew System::Windows::Forms::Label());
-			this->listAtmosLayers = (gcnew System::Windows::Forms::ListBox());
 			this->flowLayoutPanel1 = (gcnew System::Windows::Forms::FlowLayoutPanel());
 			this->button2 = (gcnew System::Windows::Forms::Button());
 			this->button4 = (gcnew System::Windows::Forms::Button());
@@ -249,16 +263,6 @@ namespace rtmathwinui {
 			this->button8 = (gcnew System::Windows::Forms::Button());
 			this->numericUpDown1 = (gcnew System::Windows::Forms::NumericUpDown());
 			this->chkAdvAtmos = (gcnew System::Windows::Forms::CheckBox());
-			this->tabMisc = (gcnew System::Windows::Forms::TabPage());
-			this->tableLayoutPanel2 = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
-			this->numericUpDown3 = (gcnew System::Windows::Forms::NumericUpDown());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->numericUpDown2 = (gcnew System::Windows::Forms::NumericUpDown());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
-			this->label7 = (gcnew System::Windows::Forms::Label());
-			this->groupBox3 = (gcnew System::Windows::Forms::GroupBox());
 			this->tabResults = (gcnew System::Windows::Forms::TabPage());
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
 			this->statusbar = (gcnew System::Windows::Forms::StatusStrip());
@@ -270,6 +274,7 @@ namespace rtmathwinui {
 			this->dlgSave = (gcnew System::Windows::Forms::SaveFileDialog());
 			this->dlgOpen = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->dlgColor = (gcnew System::Windows::Forms::ColorDialog());
+			this->listAtmosLayers = (gcnew System::Windows::Forms::TreeView());
 			this->menuStrip1->SuspendLayout();
 			this->tabs->SuspendLayout();
 			this->tabSummary->SuspendLayout();
@@ -281,12 +286,6 @@ namespace rtmathwinui {
 			this->flowLayoutPanel1->SuspendLayout();
 			this->flowLayoutPanel2->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->BeginInit();
-			this->tabMisc->SuspendLayout();
-			this->tableLayoutPanel2->SuspendLayout();
-			this->groupBox1->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown3))->BeginInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown2))->BeginInit();
-			this->groupBox2->SuspendLayout();
 			this->tabResults->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer1))->BeginInit();
 			this->splitContainer1->Panel1->SuspendLayout();
@@ -626,9 +625,7 @@ namespace rtmathwinui {
 			// tabs
 			// 
 			this->tabs->Controls->Add(this->tabSummary);
-			this->tabs->Controls->Add(this->tabModel);
 			this->tabs->Controls->Add(this->tabAtmos);
-			this->tabs->Controls->Add(this->tabMisc);
 			this->tabs->Controls->Add(this->tabResults);
 			this->tabs->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->tabs->Location = System::Drawing::Point(3, 3);
@@ -740,16 +737,6 @@ namespace rtmathwinui {
 			this->pictureBox1->TabIndex = 3;
 			this->pictureBox1->TabStop = false;
 			// 
-			// tabModel
-			// 
-			this->tabModel->Location = System::Drawing::Point(4, 22);
-			this->tabModel->Name = L"tabModel";
-			this->tabModel->Padding = System::Windows::Forms::Padding(3);
-			this->tabModel->Size = System::Drawing::Size(786, 509);
-			this->tabModel->TabIndex = 1;
-			this->tabModel->Text = L"Model";
-			this->tabModel->UseVisualStyleBackColor = true;
-			// 
 			// tabAtmos
 			// 
 			this->tabAtmos->Controls->Add(this->panelAtmosLayout);
@@ -757,7 +744,7 @@ namespace rtmathwinui {
 			this->tabAtmos->Name = L"tabAtmos";
 			this->tabAtmos->Size = System::Drawing::Size(786, 509);
 			this->tabAtmos->TabIndex = 2;
-			this->tabAtmos->Text = L"Atmosphere";
+			this->tabAtmos->Text = L"Model";
 			this->tabAtmos->UseVisualStyleBackColor = true;
 			// 
 			// panelAtmosLayout
@@ -768,7 +755,6 @@ namespace rtmathwinui {
 			this->panelAtmosLayout->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
 				50)));
 			this->panelAtmosLayout->Controls->Add(this->label1, 0, 1);
-			this->panelAtmosLayout->Controls->Add(this->listAtmosLayers, 0, 2);
 			this->panelAtmosLayout->Controls->Add(this->flowLayoutPanel1, 0, 3);
 			this->panelAtmosLayout->Controls->Add(this->label2, 1, 1);
 			this->panelAtmosLayout->Controls->Add(this->layerProps, 1, 2);
@@ -776,6 +762,7 @@ namespace rtmathwinui {
 			this->panelAtmosLayout->Controls->Add(this->flowLayoutPanel2, 0, 0);
 			this->panelAtmosLayout->Controls->Add(this->numericUpDown1, 1, 4);
 			this->panelAtmosLayout->Controls->Add(this->chkAdvAtmos, 1, 0);
+			this->panelAtmosLayout->Controls->Add(this->listAtmosLayers, 0, 2);
 			this->panelAtmosLayout->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->panelAtmosLayout->Location = System::Drawing::Point(0, 0);
 			this->panelAtmosLayout->Name = L"panelAtmosLayout";
@@ -796,17 +783,8 @@ namespace rtmathwinui {
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(387, 15);
 			this->label1->TabIndex = 0;
-			this->label1->Text = L"Specify the atmospheric layers:";
+			this->label1->Text = L"Specify the model parameters:";
 			this->label1->TextAlign = System::Drawing::ContentAlignment::BottomLeft;
-			// 
-			// listAtmosLayers
-			// 
-			this->listAtmosLayers->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->listAtmosLayers->FormattingEnabled = true;
-			this->listAtmosLayers->Location = System::Drawing::Point(3, 53);
-			this->listAtmosLayers->Name = L"listAtmosLayers";
-			this->listAtmosLayers->Size = System::Drawing::Size(387, 394);
-			this->listAtmosLayers->TabIndex = 1;
 			// 
 			// flowLayoutPanel1
 			// 
@@ -872,7 +850,6 @@ namespace rtmathwinui {
 			this->layerProps->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->layerProps->Location = System::Drawing::Point(396, 53);
 			this->layerProps->Name = L"layerProps";
-			this->layerProps->SelectedObject = this->glgraphwinControl1;
 			this->layerProps->Size = System::Drawing::Size(387, 394);
 			this->layerProps->TabIndex = 4;
 			// 
@@ -886,6 +863,7 @@ namespace rtmathwinui {
 			this->glgraphwinControl1->Size = System::Drawing::Size(568, 509);
 			this->glgraphwinControl1->TabIndex = 1;
 			this->glgraphwinControl1->TabStop = false;
+			this->glgraphwinControl1->UIoverride = false;
 			// 
 			// label3
 			// 
@@ -956,111 +934,6 @@ namespace rtmathwinui {
 			this->chkAdvAtmos->TabIndex = 9;
 			this->chkAdvAtmos->Text = L"Enable Advanced Atmospheric Profiles";
 			this->chkAdvAtmos->UseVisualStyleBackColor = true;
-			// 
-			// tabMisc
-			// 
-			this->tabMisc->Controls->Add(this->tableLayoutPanel2);
-			this->tabMisc->Location = System::Drawing::Point(4, 22);
-			this->tabMisc->Name = L"tabMisc";
-			this->tabMisc->Size = System::Drawing::Size(786, 509);
-			this->tabMisc->TabIndex = 3;
-			this->tabMisc->Text = L"Miscellaneous";
-			this->tabMisc->UseVisualStyleBackColor = true;
-			// 
-			// tableLayoutPanel2
-			// 
-			this->tableLayoutPanel2->ColumnCount = 2;
-			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
-				50)));
-			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent, 
-				50)));
-			this->tableLayoutPanel2->Controls->Add(this->groupBox1, 0, 0);
-			this->tableLayoutPanel2->Controls->Add(this->groupBox2, 0, 1);
-			this->tableLayoutPanel2->Controls->Add(this->groupBox3, 1, 0);
-			this->tableLayoutPanel2->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->tableLayoutPanel2->Location = System::Drawing::Point(0, 0);
-			this->tableLayoutPanel2->Name = L"tableLayoutPanel2";
-			this->tableLayoutPanel2->RowCount = 2;
-			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel2->Size = System::Drawing::Size(786, 509);
-			this->tableLayoutPanel2->TabIndex = 0;
-			// 
-			// groupBox1
-			// 
-			this->groupBox1->Controls->Add(this->numericUpDown3);
-			this->groupBox1->Controls->Add(this->label6);
-			this->groupBox1->Controls->Add(this->numericUpDown2);
-			this->groupBox1->Controls->Add(this->label5);
-			this->groupBox1->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->groupBox1->Location = System::Drawing::Point(3, 3);
-			this->groupBox1->Name = L"groupBox1";
-			this->groupBox1->Size = System::Drawing::Size(387, 248);
-			this->groupBox1->TabIndex = 0;
-			this->groupBox1->TabStop = false;
-			this->groupBox1->Text = L"Lighting";
-			// 
-			// numericUpDown3
-			// 
-			this->numericUpDown3->Location = System::Drawing::Point(175, 81);
-			this->numericUpDown3->Name = L"numericUpDown3";
-			this->numericUpDown3->Size = System::Drawing::Size(120, 20);
-			this->numericUpDown3->TabIndex = 3;
-			// 
-			// label6
-			// 
-			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(49, 81);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(76, 13);
-			this->label6->TabIndex = 2;
-			this->label6->Text = L"Solar Intensity:";
-			// 
-			// numericUpDown2
-			// 
-			this->numericUpDown2->Location = System::Drawing::Point(175, 45);
-			this->numericUpDown2->Name = L"numericUpDown2";
-			this->numericUpDown2->Size = System::Drawing::Size(120, 20);
-			this->numericUpDown2->TabIndex = 1;
-			// 
-			// label5
-			// 
-			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(46, 47);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(97, 13);
-			this->label5->TabIndex = 0;
-			this->label5->Text = L"Solar Zenith Angle:";
-			// 
-			// groupBox2
-			// 
-			this->groupBox2->Controls->Add(this->label7);
-			this->groupBox2->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->groupBox2->Location = System::Drawing::Point(3, 257);
-			this->groupBox2->Name = L"groupBox2";
-			this->groupBox2->Size = System::Drawing::Size(387, 249);
-			this->groupBox2->TabIndex = 1;
-			this->groupBox2->TabStop = false;
-			this->groupBox2->Text = L"Surface";
-			// 
-			// label7
-			// 
-			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(46, 50);
-			this->label7->Name = L"label7";
-			this->label7->Size = System::Drawing::Size(115, 13);
-			this->label7->TabIndex = 0;
-			this->label7->Text = L"Surface Albedo Model:";
-			// 
-			// groupBox3
-			// 
-			this->groupBox3->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->groupBox3->Location = System::Drawing::Point(396, 3);
-			this->groupBox3->Name = L"groupBox3";
-			this->groupBox3->Size = System::Drawing::Size(387, 248);
-			this->groupBox3->TabIndex = 2;
-			this->groupBox3->TabStop = false;
-			this->groupBox3->Text = L"Filters";
 			// 
 			// tabResults
 			// 
@@ -1136,6 +1009,49 @@ namespace rtmathwinui {
 			// 
 			this->dlgOpen->FileName = L"openFileDialog1";
 			// 
+			// listAtmosLayers
+			// 
+			this->listAtmosLayers->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->listAtmosLayers->Location = System::Drawing::Point(3, 53);
+			this->listAtmosLayers->Name = L"listAtmosLayers";
+			treeNode14->Name = L"nodeBaseAtmos";
+			treeNode14->Text = L"Base Atmosphere Selection";
+			treeNode14->ToolTipText = resources->GetString(L"treeNode14.ToolTipText");
+			treeNode15->Name = L"nodeExCld1";
+			treeNode15->Text = L"Example Cloud Layer 1";
+			treeNode15->ToolTipText = L"A node for an example cloud layer has been created.";
+			treeNode16->Name = L"Node5";
+			treeNode16->Text = L"Example Cloud Layer 2";
+			treeNode16->ToolTipText = L"A node for an example cloud layer has been created.";
+			treeNode17->Name = L"nodeClouds";
+			treeNode17->Text = L"Clouds";
+			treeNode18->Name = L"Node6";
+			treeNode18->Text = L"CO2";
+			treeNode19->Name = L"Node7";
+			treeNode19->Text = L"H2O";
+			treeNode20->Name = L"nodeGases";
+			treeNode20->Text = L"Gases";
+			treeNode20->ToolTipText = L"Gases to use in calculations. This acts as a master switch to use or ignore the g" 
+				L"as profile in the base atmosphere. Base profiles may also be overridden here.";
+			treeNode21->Name = L"nodeAerosols";
+			treeNode21->Text = L"Aerosols";
+			treeNode21->ToolTipText = L"Enter any aerosols here.";
+			treeNode22->Name = L"nodeSun";
+			treeNode22->Text = L"Sun";
+			treeNode23->Name = L"nodeLighting";
+			treeNode23->Text = L"Lighting";
+			treeNode24->Name = L"nodeSurface";
+			treeNode24->Text = L"Surface Model";
+			treeNode25->Name = L"nodeFilters";
+			treeNode25->Text = L"Filters";
+			treeNode26->Name = L"nodeRegion";
+			treeNode26->Text = L"Spectral Region";
+			this->listAtmosLayers->Nodes->AddRange(gcnew cli::array< System::Windows::Forms::TreeNode^  >(8) {treeNode14, treeNode17, 
+				treeNode20, treeNode21, treeNode23, treeNode24, treeNode25, treeNode26});
+			this->listAtmosLayers->ShowNodeToolTips = true;
+			this->listAtmosLayers->Size = System::Drawing::Size(387, 394);
+			this->listAtmosLayers->TabIndex = 10;
+			// 
 			// frmMain
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -1164,14 +1080,6 @@ namespace rtmathwinui {
 			this->flowLayoutPanel1->ResumeLayout(false);
 			this->flowLayoutPanel2->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->EndInit();
-			this->tabMisc->ResumeLayout(false);
-			this->tableLayoutPanel2->ResumeLayout(false);
-			this->groupBox1->ResumeLayout(false);
-			this->groupBox1->PerformLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown3))->EndInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown2))->EndInit();
-			this->groupBox2->ResumeLayout(false);
-			this->groupBox2->PerformLayout();
 			this->tabResults->ResumeLayout(false);
 			this->splitContainer1->Panel1->ResumeLayout(false);
 			this->splitContainer1->Panel1->PerformLayout();

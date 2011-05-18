@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="glform.cpp" />
     <ClCompile Include="glgraph-winControl.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -146,6 +147,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h">
+      <FileType>CppClass</FileType>
+    </ClInclude>
     <ClInclude Include="glform.h">
       <FileType>CppClass</FileType>
     </ClInclude>

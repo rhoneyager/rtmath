@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <gl/GL.h>
+#include "camera.h"
 #include "glform.h"
 using namespace System;
 using namespace System::ComponentModel;
@@ -31,6 +32,7 @@ namespace glgraphwin {
 			void redraw();
 			void render();
 			glform^ openglform;
+			camera^ activeCamera;
 		private:
 			bool _runtime;
 			bool _mouseinwindow;
