@@ -22,7 +22,7 @@ namespace netcdf_managed {
 		virtual ~ncVar();
 		std::string name;
 		std::set<ncAttr*> attributes;
-		std::set<ncDim*> dimensions;
+		std::vector<ncDim*> dimensions;
 		endianness varEndian;
 		ncType *varType;
 	protected:

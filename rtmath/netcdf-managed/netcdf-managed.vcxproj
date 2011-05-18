@@ -78,6 +78,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>netcdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="ncattr.cpp" />
     <ClCompile Include="ncdim.cpp" />
+    <ClCompile Include="ncfile.cpp" />
     <ClCompile Include="ncgroup.cpp" />
     <ClCompile Include="nctype.cpp" />
     <ClCompile Include="ncvar.cpp" />

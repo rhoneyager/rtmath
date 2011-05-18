@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmJobItemProps.ui'
 **
-** Created: Thu Mar 24 17:01:55 2011
+** Created: Sun May 15 01:28:30 2011
 **      by: Qt User Interface Compiler version 4.7.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -16,12 +16,14 @@
 #include <QtGui/QButtonGroup>
 #include <QtGui/QComboBox>
 #include <QtGui/QDialog>
+#include <QtGui/QDialogButtonBox>
 #include <QtGui/QFormLayout>
-#include <QtGui/QGroupBox>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
+#include <QtGui/QPlainTextEdit>
 #include <QtGui/QTextEdit>
+#include <QtGui/QToolButton>
 
 QT_BEGIN_NAMESPACE
 
@@ -33,9 +35,12 @@ public:
     QLineEdit *txtName;
     QLabel *label_2;
     QTextEdit *txtDescription;
-    QComboBox *actionComboBox;
     QLabel *actionLabel;
-    QGroupBox *groupBox;
+    QComboBox *actionComboBox;
+    QLabel *actionParametersLabel;
+    QPlainTextEdit *txtActionParams;
+    QToolButton *cmdModifyParams;
+    QDialogButtonBox *buttonBox;
 
     void setupUi(QDialog *frmJobItemProp)
     {
@@ -65,20 +70,37 @@ public:
 
         formLayout->setWidget(1, QFormLayout::FieldRole, txtDescription);
 
-        actionComboBox = new QComboBox(frmJobItemProp);
-        actionComboBox->setObjectName(QString::fromUtf8("actionComboBox"));
-
-        formLayout->setWidget(2, QFormLayout::FieldRole, actionComboBox);
-
         actionLabel = new QLabel(frmJobItemProp);
         actionLabel->setObjectName(QString::fromUtf8("actionLabel"));
 
         formLayout->setWidget(2, QFormLayout::LabelRole, actionLabel);
 
-        groupBox = new QGroupBox(frmJobItemProp);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        actionComboBox = new QComboBox(frmJobItemProp);
+        actionComboBox->setObjectName(QString::fromUtf8("actionComboBox"));
 
-        formLayout->setWidget(3, QFormLayout::FieldRole, groupBox);
+        formLayout->setWidget(2, QFormLayout::FieldRole, actionComboBox);
+
+        actionParametersLabel = new QLabel(frmJobItemProp);
+        actionParametersLabel->setObjectName(QString::fromUtf8("actionParametersLabel"));
+
+        formLayout->setWidget(3, QFormLayout::LabelRole, actionParametersLabel);
+
+        txtActionParams = new QPlainTextEdit(frmJobItemProp);
+        txtActionParams->setObjectName(QString::fromUtf8("txtActionParams"));
+        txtActionParams->setReadOnly(true);
+
+        formLayout->setWidget(3, QFormLayout::FieldRole, txtActionParams);
+
+        cmdModifyParams = new QToolButton(frmJobItemProp);
+        cmdModifyParams->setObjectName(QString::fromUtf8("cmdModifyParams"));
+
+        formLayout->setWidget(4, QFormLayout::FieldRole, cmdModifyParams);
+
+        buttonBox = new QDialogButtonBox(frmJobItemProp);
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+
+        formLayout->setWidget(5, QFormLayout::FieldRole, buttonBox);
 
 
         retranslateUi(frmJobItemProp);
@@ -92,7 +114,8 @@ public:
         label->setText(QApplication::translate("frmJobItemProp", "Item Name:", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("frmJobItemProp", "Description:", 0, QApplication::UnicodeUTF8));
         actionLabel->setText(QApplication::translate("frmJobItemProp", "Action:", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("frmJobItemProp", "Action Parameters:", 0, QApplication::UnicodeUTF8));
+        actionParametersLabel->setText(QApplication::translate("frmJobItemProp", "Action Parameters:", 0, QApplication::UnicodeUTF8));
+        cmdModifyParams->setText(QApplication::translate("frmJobItemProp", "Modify Parameters...", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };
