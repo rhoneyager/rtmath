@@ -156,6 +156,7 @@
     <ClInclude Include="glgraph-winControl.h">
       <FileType>CppControl</FileType>
     </ClInclude>
+    <ClInclude Include="pointfconverter.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

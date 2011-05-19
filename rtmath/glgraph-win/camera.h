@@ -5,6 +5,7 @@ using namespace System::ComponentModel;
 using namespace System::Collections;
 using namespace System::Diagnostics;
 
+#include "pointfconverter.h"
 
 namespace glgraphwin {
 	/// <summary>
