@@ -95,6 +95,7 @@ namespace glgraphwin {
 
 	System::Void glgraphwinControl::glgraphwinControl_Move(System::Object^  sender, System::EventArgs^  e)
 	{
+		redraw();
 	}
 
 	System::Void glgraphwinControl::glgraphwinControl_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e)
