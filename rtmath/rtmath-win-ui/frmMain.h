@@ -996,7 +996,6 @@ namespace rtmathwinui {
 			this->glgraphwinControl1->TabIndex = 1;
 			this->glgraphwinControl1->TabStop = false;
 			this->glgraphwinControl1->UIoverride = false;
-			this->glgraphwinControl1->Visible = true;
 			// 
 			// splitContainer2
 			// 
@@ -1046,6 +1045,7 @@ namespace rtmathwinui {
 			this->propPlots->Size = System::Drawing::Size(214, 251);
 			this->propPlots->TabIndex = 4;
 			this->propPlots->ToolbarVisible = false;
+			this->propPlots->PropertyValueChanged += gcnew System::Windows::Forms::PropertyValueChangedEventHandler(this, &frmMain::propPlots_PropertyValueChanged);
 			// 
 			// statusbar
 			// 
@@ -1157,6 +1157,11 @@ private: System::Void frmMain_Move(System::Object^  sender, System::EventArgs^  
 private: System::Void tabResults_Click(System::Object^  sender, System::EventArgs^  e) {
 			 this->glgraphwinControl1->redraw();
 			 this->glgraphwinControl1->render();
+		 }
+private: System::Void propPlots_PropertyValueChanged(System::Object^  s, System::Windows::Forms::PropertyValueChangedEventArgs^  e) {
+			 //Refresh();
+			 // System::ComponentModel::PropertyTabScope::Component
+			 //propPlots->RefreshTabs(System::ComponentModel::PropertyTabScope::Document);
 		 }
 };
 }

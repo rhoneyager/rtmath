@@ -12,11 +12,13 @@ using namespace System::ComponentModel;
 
 namespace glgraphwin {
 
-	public ref class PointFTypeConverter : System::ComponentModel::TypeConverter
+	public ref class PointFTypeConverter : System::ComponentModel::ExpandableObjectConverter
 	{
 	public: virtual bool CanConvertFrom(System::ComponentModel::ITypeDescriptorContext^ context, System::Type^ sourceType) override
 			{
 				if (sourceType = String::typeid)
+					return true;
+				if (sourceType = PointFTypeConverter::typeid)
 					return true;
 				return System::ComponentModel::TypeConverter::CanConvertFrom(context, sourceType);
 			}
@@ -25,6 +27,8 @@ namespace glgraphwin {
 	public: virtual bool CanConvertTo(System::ComponentModel::ITypeDescriptorContext^ context, System::Type^ destinationType) override
 			{
 				if (destinationType = String::typeid)
+					return true;
+				if (destinationType = PointFTypeConverter::typeid)
 					return true;
 				return System::ComponentModel::TypeConverter::CanConvertTo(context, destinationType);
 			}

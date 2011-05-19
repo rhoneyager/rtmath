@@ -73,32 +73,19 @@ namespace glgraphwin {
 		System::Drawing::PointF _max;
 		System::Drawing::PointF _width;
 		System::Drawing::PointF _scale;
-		//System::Drawing::PointF _test;
-		// Reverse axis flag
-		/*
-		xybool _rev;
-		public:
-		property xybool reverse
-		{
-		xybool get()
-		{
-		return _rev;
-		}
-		void set(xybool value)
-		{
-		_rev = value;
-		}
-		}
-		*/
+		//System::Drawing::SizeF _test;
 	public:
 		/*
-		System::Drawing::PointF _test;
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
-			EditorBrowsable(EditorBrowsableState.Advanced), 
-			TypeConverter(typeof(PointFConverter))]
-		public System::Drawing::PointFF test {
-			get { return _test; }
-			set { _test = value; }
+		property System::Drawing::SizeF test
+		{
+			System::Drawing::SizeF get()
+			{
+				return _test;
+			}
+			void set(System::Drawing::SizeF value)
+			{
+				_test = value;
+			}
 		}
 		*/
 
