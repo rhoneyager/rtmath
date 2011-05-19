@@ -61,8 +61,11 @@ namespace glgraphwin {
 
 				   }
 
+				   // I also want to override the keys that are captured so I can get the arrows
+		protected: virtual bool ProcessCmdKey(System::Windows::Forms::Message% msg, System::Windows::Forms::Keys keyData) override;
+
 		private: System::ComponentModel::IContainer^  components;
-		// Add the override mouse/keyboard handler flag
+				 // Add the override mouse/keyboard handler flag
 		private:
 			bool _overrideui;
 			graphmousemodes mmode;
@@ -146,9 +149,9 @@ namespace glgraphwin {
 		private: System::Void glgraphwinControl_MouseEnter(System::Object^  sender, System::EventArgs^  e);
 		private: System::Void glgraphwinControl_MouseLeave(System::Object^  sender, System::EventArgs^  e);
 		private: System::Void activeCamera_Changed(System::Object^  sender);
-private: System::Void glgraphwinControl_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-private: System::Void glgraphwinControl_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-private: System::Void glgraphwinControl_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
-private: System::Void glgraphwinControl_MouseCaptureChanged(System::Object^  sender, System::EventArgs^  e);
-};
+		private: System::Void glgraphwinControl_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		private: System::Void glgraphwinControl_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		private: System::Void glgraphwinControl_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+		private: System::Void glgraphwinControl_MouseCaptureChanged(System::Object^  sender, System::EventArgs^  e);
+		};
 }

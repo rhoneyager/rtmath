@@ -31,6 +31,52 @@ namespace glgraphwin {
 		render();
 	}
 
+	bool glgraphwinControl::ProcessCmdKey(System::Windows::Forms::Message% msg, System::Windows::Forms::Keys keyData)
+	{
+		//const unsigned long WM_KEYDOWN = 100;
+		//const unsigned long WM_SYSKEYDOWN = 104;
+		if ((msg.Msg == WM_KEYDOWN) || (msg.Msg == WM_SYSKEYDOWN))
+		{
+			switch(keyData)
+			{
+			case Keys::Down | Keys::Control:
+				activeCamera->zoomIn();
+				break;
+
+			case Keys::Up | Keys::Control:
+				activeCamera->zoomOut();
+				break;
+
+			case Keys::Down:
+				activeCamera->panDown();
+				break;
+
+			case Keys::Up:
+				activeCamera->panUp();
+				break;
+
+			case Keys::Right:
+				activeCamera->panRight();
+				break;
+
+			case Keys::Left:
+				activeCamera->panLeft();
+				break;
+
+			case Keys::Tab:
+				break;
+
+			case Keys::Control | Keys::M:
+				break;
+
+			case Keys::Alt | Keys::Z:
+				break;
+			}				
+		}
+
+		return System::Windows::Forms::UserControl::ProcessCmdKey(msg,keyData);
+	}
+
 	void glgraphwinControl::redraw()
 	{
 		if (this->Visible && !(this->DesignMode) )
@@ -43,7 +89,7 @@ namespace glgraphwin {
 			openglform->activeCamera = activeCamera;
 			if (openglform->Render()) 
 			{
-					timer1->Enabled = true;
+				timer1->Enabled = true;
 			} else {
 				timer1->Enabled = false;
 			}
@@ -118,6 +164,8 @@ namespace glgraphwin {
 		// TODO: test this
 		// For convenience, 
 		System::Char key = e->KeyChar;
+		// NOTE: most of this function is overridden by the ProcessCmdKey override, which gets arrow keys!
+		// See that part for most functionality
 	}
 
 	System::Void glgraphwinControl::glgraphwinControl_MouseWheel(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
@@ -130,19 +178,15 @@ namespace glgraphwin {
 		// My delta seems to go in increments of 120
 		// Negative delta (scroll up) is zoom in
 		// Positive delta (scroll down) is zoom out
-		// Each should change the width in 10 percent increments?
+		// Each should change the width in 10 percent increments
 		// Delta is a signed Int32
-		// System::Drawing::PointF activeCamera->_width;
-		System::Drawing::PointF newwidth;
 		if (e->Delta > 0)
 		{
-			newwidth.X = activeCamera->Width.X / ( 1.1f * ( (float) abs(e->Delta) / 120.0f) );
-			newwidth.Y = activeCamera->Width.Y / ( 1.1f * ( (float) abs(e->Delta) / 120.0f) );
-		} else {
-			newwidth.X = activeCamera->Width.X * 1.1f * ( (float) abs(e->Delta) / 120.0f);
-			newwidth.Y = activeCamera->Width.Y * 1.1f * ( (float) abs(e->Delta) / 120.0f);
+			activeCamera->zoomOut();
+		} else if (e->Delta < 0)
+		{
+			activeCamera->zoomIn();
 		}
-		activeCamera->Width = newwidth;
 
 	}
 
@@ -169,12 +213,12 @@ namespace glgraphwin {
 		if (!openglform) return;
 		// Control is active. Process input.
 		/* mouseeventargs e contains:
-		   Button (Left, Middle, Right, None, ...)  System.Windows.Forms.MouseButtons
-		   Clicks (number of clicks) Int32
-		   Delta (signed count of number of dents wheel is rotated)
-		   Location (rel. to top left of form) System.Drawing.Point
-		   X and Y
-		   */
+		Button (Left, Middle, Right, None, ...)  System.Windows.Forms.MouseButtons
+		Clicks (number of clicks) Int32
+		Delta (signed count of number of dents wheel is rotated)
+		Location (rel. to top left of form) System.Drawing.Point
+		X and Y
+		*/
 	}
 
 	System::Void glgraphwinControl::glgraphwinControl_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
@@ -237,18 +281,18 @@ namespace glgraphwin {
 			if (mmode == PANNING)
 			{
 				/* Redraw the camera so that the visible frame is
-				   dragged along with the mouse
-				   Get the direction and amount of motion based on the 
-				   difference between the two Locations in pixels and 
-				   then convert to appropriate units to move the camera.
-				   */
+				dragged along with the mouse
+				Get the direction and amount of motion based on the 
+				difference between the two Locations in pixels and 
+				then convert to appropriate units to move the camera.
+				*/
 				/* I know the size of the usercontrol in pixels, and I have the camera dimensions. */
 				// Map the pixels into x-y coordinates
 				//System::Drawing::PointF
 				System::Drawing::Point deltaMouse;
 				deltaMouse.X = mouserecpos.X - e->Location.X;
 				deltaMouse.Y = mouserecpos.Y - e->Location.Y;
-				
+
 				System::Drawing::PointF deltaCamera, newCamera;
 				// Size.Height and Size.Width help here
 				deltaCamera.X = (float) deltaMouse.X * (float) activeCamera->Width.X / (float) Size.Width;
@@ -277,11 +321,11 @@ namespace glgraphwin {
 				System::Drawing::PointF newwidth;
 				if (deltaMouse.Y > 0)
 				{
-					newwidth.X = activeCamera->Width.X / (1.1 * ( (float) abs(deltaMouse.Y) / 5.0f ) );
-					newwidth.Y = activeCamera->Width.Y / (1.1 * ( (float) abs(deltaMouse.Y) / 5.0f ) );
+					newwidth.X = activeCamera->Width.X / (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
+					newwidth.Y = activeCamera->Width.Y / (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
 				} else if (deltaMouse.Y < 0) {
-					newwidth.X = activeCamera->Width.X * (1.1 * ( (float) abs(deltaMouse.Y) / 5.0f ) );
-					newwidth.Y = activeCamera->Width.Y * (1.1 * ( (float) abs(deltaMouse.Y) / 5.0f ) );
+					newwidth.X = activeCamera->Width.X * (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
+					newwidth.Y = activeCamera->Width.Y * (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
 				}
 
 				// Record the new mouse position
@@ -291,16 +335,3 @@ namespace glgraphwin {
 	}
 
 }; // end namespace glgraphwin
-
-/*
-		System::Drawing::PointF newwidth;
-		if (e->Delta > 0)
-		{
-			newwidth.X = activeCamera->Width.X / ( 1.1f * ( (float) abs(e->Delta) / 120.0f) );
-			newwidth.Y = activeCamera->Width.Y / ( 1.1f * ( (float) abs(e->Delta) / 120.0f) );
-		} else {
-			newwidth.X = activeCamera->Width.X * 1.1f * ( (float) abs(e->Delta) / 120.0f);
-			newwidth.Y = activeCamera->Width.Y * 1.1f * ( (float) abs(e->Delta) / 120.0f);
-		}
-		activeCamera->Width = newwidth;
-		*/

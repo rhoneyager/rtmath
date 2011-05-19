@@ -46,6 +46,12 @@ namespace glgraphwin {
 		}
 		// The rendering function which sends the correct openGL commands to the plot
 		void Render();
+		void panLeft();
+		void panRight();
+		void panUp();
+		void panDown();
+		void zoomIn();
+		void zoomOut();
 		// Event when camera is updated
 	public: event CameraChangedEventHandler^ cameraChanged;
 
