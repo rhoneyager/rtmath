@@ -7,7 +7,6 @@ using namespace System::Diagnostics;
 
 
 namespace glgraphwin {
-
 	/// <summary>
 	/// Summary for camera
 	/// </summary>

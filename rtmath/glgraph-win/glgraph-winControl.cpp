@@ -19,6 +19,7 @@ namespace glgraphwin {
 		*/
 		//openglform->SwapOpenGLBuffers();
 		_overrideui = false;
+		mmode = NONE;
 		activeCamera = gcnew camera();
 		activeCamera->cameraChanged += gcnew CameraChangedEventHandler(this, &glgraphwinControl::activeCamera_Changed);
 
@@ -156,6 +157,63 @@ namespace glgraphwin {
 		   Location (rel. to top left of form) System.Drawing.Point
 		   X and Y
 		   */
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+	{
+		if (_overrideui) return;
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		// Control active
+		if (e->Button == System::Windows::Forms::MouseButtons::Left)
+		{
+			if (mmode == NONE)
+			{
+				// Begin Panning
+				mmode = PANNING;
+				// Record mouse position on control
+				mouserecpos = e->Location;
+			}
+		}
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+	{
+		if (mmode == PANNING)
+		{
+			// End panning
+			mmode = NONE;
+		}
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseCaptureChanged(System::Object^  sender, System::EventArgs^  e)
+	{
+		// End any panning
+		if (mmode == PANNING)
+			mmode = NONE;
+	}
+
+	System::Void glgraphwinControl::glgraphwinControl_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+	{
+		if (_overrideui) return;
+		if (this->Enabled == false) return;
+		if (!openglform) return;
+		// Control active
+		// The button mapping is designed for graph panning and zoom
+		// Button 1 (Left), when held down, initiates dragging
+		// Button 2 (Middle), when held down, changes zoom
+		if (e->Button == System::Windows::Forms::MouseButtons::Left)
+		{
+			if (mmode == PANNING)
+			{
+				/* Redraw the camera so that the visible frame is
+				   dragged along with the mouse
+				   Get the direction and amount of motion based on the 
+				   difference between the two Locations in pixels and 
+				   then convert to appropriate units to move the camera.
+				   */
+			}
+		}
 	}
 
 }; // end namespace glgraphwin

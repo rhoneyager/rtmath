@@ -13,6 +13,12 @@ using namespace System::Drawing;
 
 namespace glgraphwin {
 
+	enum graphmousemodes
+	{
+		NONE,
+		PANNING
+	};
+
 	/// <summary>
 	/// Summary for glgraphwinControl
 	/*    This is a control for adding an openGL graph (2D/3D)
@@ -36,6 +42,7 @@ namespace glgraphwin {
 		private:
 			bool _runtime;
 			bool _mouseinwindow;
+			System::Drawing::Point mouserecpos;
 		private: System::Windows::Forms::Timer^  timer1;
 		protected:
 			~glgraphwinControl();
@@ -57,6 +64,7 @@ namespace glgraphwin {
 		// Add the override mouse/keyboard handler flag
 		private:
 			bool _overrideui;
+			graphmousemodes mmode;
 		public:
 			property bool UIoverride
 			{
@@ -104,8 +112,12 @@ namespace glgraphwin {
 				this->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &glgraphwinControl::glgraphwinControl_Paint);
 				this->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &glgraphwinControl::glgraphwinControl_KeyPress);
 				this->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseClick);
+				this->MouseCaptureChanged += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_MouseCaptureChanged);
+				this->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseDown);
 				this->MouseEnter += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_MouseEnter);
 				this->MouseLeave += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_MouseLeave);
+				this->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseMove);
+				this->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseUp);
 				this->MouseWheel += gcnew System::Windows::Forms::MouseEventHandler(this, &glgraphwinControl::glgraphwinControl_MouseWheel);
 				this->Move += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_Move);
 				this->Resize += gcnew System::EventHandler(this, &glgraphwinControl::glgraphwinControl_Resize);
@@ -133,5 +145,9 @@ namespace glgraphwin {
 		private: System::Void glgraphwinControl_MouseEnter(System::Object^  sender, System::EventArgs^  e);
 		private: System::Void glgraphwinControl_MouseLeave(System::Object^  sender, System::EventArgs^  e);
 		private: System::Void activeCamera_Changed(System::Object^  sender);
+private: System::Void glgraphwinControl_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+private: System::Void glgraphwinControl_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+private: System::Void glgraphwinControl_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
+private: System::Void glgraphwinControl_MouseCaptureChanged(System::Object^  sender, System::EventArgs^  e);
 };
 }
