@@ -16,7 +16,8 @@ namespace glgraphwin {
 	enum graphmousemodes
 	{
 		NONE,
-		PANNING
+		PANNING,
+		ZOOM
 	};
 
 	/// <summary>
