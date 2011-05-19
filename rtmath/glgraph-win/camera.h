@@ -22,12 +22,12 @@ namespace glgraphwin {
 			//
 			//TODO: Add the constructor code here
 			//
-			this->_width.X = 10;
-			this->_width.Y = 10;
-			this->_min.X = -5;
-			this->_max.X = 5;
-			this->_min.Y = -5;
-			this->_max.Y = 5;
+			this->_width.X = 10.0f;
+			this->_width.Y = 10.0f;
+			this->_min.X = -5.0f;
+			this->_max.X = 5.0f;
+			this->_min.Y = -5.0f;
+			this->_max.Y = 5.0f;
 		}
 		camera(System::ComponentModel::IContainer ^container)
 		{
@@ -37,12 +37,12 @@ namespace glgraphwin {
 
 			container->Add(this);
 			InitializeComponent();
-			this->_width.X = 10;
-			this->_width.Y = 10;
-			this->_min.X = -5;
-			this->_max.X = 5;
-			this->_min.Y = -5;
-			this->_max.Y = 5;
+			this->_width.X = 10.0f;
+			this->_width.Y = 10.0f;
+			this->_min.X = -5.0f;
+			this->_max.X = 5.0f;
+			this->_min.Y = -5.0f;
+			this->_max.Y = 5.0f;
 		}
 		// The rendering function which sends the correct openGL commands to the plot
 		void Render();
@@ -68,11 +68,11 @@ namespace glgraphwin {
 
 	private:
 		// Some basic camera properties
-		System::Drawing::Point _center;
-		System::Drawing::Point _min;
-		System::Drawing::Point _max;
-		System::Drawing::Point _width;
-		System::Drawing::Point _scale;
+		System::Drawing::PointF _center;
+		System::Drawing::PointF _min;
+		System::Drawing::PointF _max;
+		System::Drawing::PointF _width;
+		System::Drawing::PointF _scale;
 		//System::Drawing::PointF _test;
 		// Reverse axis flag
 		/*
@@ -95,45 +95,49 @@ namespace glgraphwin {
 		System::Drawing::PointF _test;
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
 			EditorBrowsable(EditorBrowsableState.Advanced), 
-			TypeConverter(typeof(PointConverter))]
-		public System::Drawing::PointF test {
+			TypeConverter(typeof(PointFConverter))]
+		public System::Drawing::PointFF test {
 			get { return _test; }
 			set { _test = value; }
 		}
 		*/
 
-		property System::Drawing::Point Center
+		[DescriptionAttribute("The center of the graph"),
+		TypeConverter(PointFTypeConverter::typeid)]
+		property System::Drawing::PointF Center
 		{
-			System::Drawing::Point get()
+			System::Drawing::PointF get()
 			{
 				return _center;
 			}
-			void set(System::Drawing::Point value)
+			void set(System::Drawing::PointF value)
 			{
 				// Recalculate the _min and _max
 				// Given the current width and scale
-				_min.X = value.X - (_width.X / 2);
-				_max.X = value.X + (_width.X / 2);
-				_min.Y = value.Y - (_width.Y / 2);
-				_max.Y = value.Y + (_width.Y / 2);
+				_min.X = value.X - (_width.X / 2.0f);
+				_max.X = value.X + (_width.X / 2.0f);
+				_min.Y = value.Y - (_width.Y / 2.0f);
+				_max.Y = value.Y + (_width.Y / 2.0f);
 				_center = value;
 				OnCameraChanged();
 			}
 		}
 
-		property System::Drawing::Point Min
+		[DescriptionAttribute("The minimum X and Y values on the graph (bottom-left corner)"),
+		TypeConverter(PointFTypeConverter::typeid)]
+		property System::Drawing::PointF Min
 		{
-			System::Drawing::Point get()
+			System::Drawing::PointF get()
 			{
 				return _min;
 			}
-			void set(System::Drawing::Point value)
+			void set(System::Drawing::PointF value)
 			{
 				// Recalculate the _min and _max
 				// Given the current width and scale
 				_min = value;
-				_center.X = (_min.X / 2) + (_max.X / 2);
-				_center.Y = (_min.Y / 2) + (_max.Y / 2);
+				_center.X = (_min.X / 2.0f) + (_max.X / 2.0f);
+				_center.Y = (_min.Y / 2.0f) + (_max.Y / 2.0f);
 				_width.X = _max.X - _min.X;
 				_width.Y = _max.Y - _min.Y;
 				// TODO: recalculate scale
@@ -141,19 +145,21 @@ namespace glgraphwin {
 			}
 		}
 
-		property System::Drawing::Point Max
+		[DescriptionAttribute("The maximum X and Y values on the graph (top-right corner)"),
+		TypeConverter(PointFTypeConverter::typeid)]
+		property System::Drawing::PointF Max
 		{
-			System::Drawing::Point get()
+			System::Drawing::PointF get()
 			{
 				return _max;
 			}
-			void set(System::Drawing::Point value)
+			void set(System::Drawing::PointF value)
 			{
 				// Recalculate the _min and _max
 				// Given the current width and scale
 				_max = value;
-				_center.X = (_min.X / 2) + (_max.X / 2);
-				_center.Y = (_min.Y / 2) + (_max.Y / 2);
+				_center.X = (_min.X / 2.0f) + (_max.X / 2.0f);
+				_center.Y = (_min.Y / 2.0f) + (_max.Y / 2.0f);
 				_width.X = _max.X - _min.X;
 				_width.Y = _max.Y - _min.Y;
 				// TODO: recalculate scale
@@ -161,21 +167,23 @@ namespace glgraphwin {
 			}
 		}
 
-		property System::Drawing::Point Width
+		[DescriptionAttribute("The width of the graph (in X and Y coordinates)"),
+		TypeConverter(PointFTypeConverter::typeid)]
+		property System::Drawing::PointF Width
 		{
-			System::Drawing::Point get()
+			System::Drawing::PointF get()
 			{
 				return _width;
 			}
-			void set(System::Drawing::Point value)
+			void set(System::Drawing::PointF value)
 			{
 				// Recalculate the _min and _max
 				// Given the current width and scale
 				_width = value;
-				_max.X = _center.X + (_width.X / 2);
-				_max.Y = _center.Y + (_width.Y / 2);
-				_min.X = _center.X - (_width.X / 2);
-				_min.Y = _center.Y - (_width.Y / 2);
+				_max.X = _center.X + (_width.X / 2.0f);
+				_max.Y = _center.Y + (_width.Y / 2.0f);
+				_min.X = _center.X - (_width.X / 2.0f);
+				_min.Y = _center.Y - (_width.Y / 2.0f);
 				// TODO: recalculate scale
 				OnCameraChanged();
 			}
