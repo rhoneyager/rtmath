@@ -24,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glgraph-win", "glgraph-win\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netcdf-managed", "netcdf-managed\netcdf-managed.vcxproj", "{FEF8D776-19B9-4865-BB44-C1F62116579C}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "rtmath-compile-depends", "rtmath-compile-depends\rtmath-compile-depends.vdproj", "{A781AD51-7C22-4A75-81B4-77E057F1BDF6}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -112,6 +114,10 @@ Global
 		{FEF8D776-19B9-4865-BB44-C1F62116579C}.Release|Win32.Build.0 = Release|Win32
 		{FEF8D776-19B9-4865-BB44-C1F62116579C}.Release|x64.ActiveCfg = Release|x64
 		{FEF8D776-19B9-4865-BB44-C1F62116579C}.Release|x64.Build.0 = Release|x64
+		{A781AD51-7C22-4A75-81B4-77E057F1BDF6}.Debug|Win32.ActiveCfg = Debug
+		{A781AD51-7C22-4A75-81B4-77E057F1BDF6}.Debug|x64.ActiveCfg = Debug
+		{A781AD51-7C22-4A75-81B4-77E057F1BDF6}.Release|Win32.ActiveCfg = Release
+		{A781AD51-7C22-4A75-81B4-77E057F1BDF6}.Release|x64.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
