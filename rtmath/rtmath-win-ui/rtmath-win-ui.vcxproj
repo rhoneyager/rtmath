@@ -171,6 +171,7 @@
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="frmMain.cpp" />
+    <ClCompile Include="rtBaseAtmos.cpp" />
     <ClCompile Include="rtmath-win-ui.cpp" />
     <ClCompile Include="rtModel.cpp" />
     <ClCompile Include="rtRun.cpp" />
@@ -186,6 +187,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="rtBaseAtmos.h">
+      <FileType>CppClass</FileType>
+    </ClInclude>
     <ClInclude Include="rtModel.h">
       <FileType>CppClass</FileType>
     </ClInclude>
