@@ -319,17 +319,24 @@ namespace glgraphwin {
 				// Y decreasing means zoom out
 				// Y increasing means zoom in
 				System::Drawing::PointF newwidth;
-				if (deltaMouse.Y > 0)
+				if (deltaMouse.Y > 5)
 				{
 					newwidth.X = activeCamera->Width.X / (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
 					newwidth.Y = activeCamera->Width.Y / (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
-				} else if (deltaMouse.Y < 0) {
+					// Record the new mouse position
+					mouserecpos = e->Location;
+					activeCamera->Width = newwidth;
+				} else if (deltaMouse.Y < -5) {
 					newwidth.X = activeCamera->Width.X * (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
 					newwidth.Y = activeCamera->Width.Y * (1.1f * ( (float) abs(deltaMouse.Y) / 5.0f ) );
+					// Record the new mouse position
+					mouserecpos = e->Location;
+					activeCamera->Width = newwidth;
 				}
 
-				// Record the new mouse position
-				mouserecpos = e->Location;
+				
+
+				
 			}
 		}
 	}
