@@ -21,6 +21,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mie-qt-ui", "mie-qt-ui\mie-qt-ui.vcxproj", "{3F2AD2E3-DC86-4655-8841-824F24EF4C8E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glgraph-win", "glgraph-win\glgraph-win.vcxproj", "{9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C51F696-286A-4D40-B1BB-F671ECD6C515} = {4C51F696-286A-4D40-B1BB-F671ECD6C515}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netcdf-managed", "netcdf-managed\netcdf-managed.vcxproj", "{FEF8D776-19B9-4865-BB44-C1F62116579C}"
 EndProject

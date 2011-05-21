@@ -69,7 +69,7 @@ matrixop* matrixop::clone()
 
 unsigned int matrixop::dimensionality() const
 {
-	return _dims.size();
+	return (unsigned int) _dims.size();
 }
 
 void matrixop::size(std::vector<unsigned int> &out) const
@@ -274,7 +274,10 @@ double matrixop::get(const std::vector<unsigned int> &pos) const
 	}
 	// Get the value (if it exists)
 	// Otherwise, return a zero
-	if (_vals.count(pos) > 0) return _vals.at(pos);
+	if (_vals.count(pos) > 0) 
+	{
+			return _vals.at(pos);
+	}
 	return 0;
 }
 
@@ -314,13 +317,13 @@ void matrixop::toDoubleArray(double *target)
 		unsigned int runningTotal = 1;
 		vector<unsigned int> mfactorflip, mfactor;
 		// Get the position in the array
-		for (unsigned int i=_dims.size()-1;i!=0;i--)
+		for (unsigned int i= (unsigned int) _dims.size()-1;i!=0;i--)
 		{
 			mfactorflip.push_back(_dims[i] * runningTotal);
 			runningTotal *= _dims[i];
 		}
 		// Flip to get mfactor
-		for (unsigned int j=mfactorflip.size()-1; j!=0; j--)
+		for (unsigned int j= (unsigned int) mfactorflip.size()-1; j!=0; j--)
 		{
 			mfactor.push_back(mfactorflip[j]);
 		}

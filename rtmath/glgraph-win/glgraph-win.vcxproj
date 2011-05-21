@@ -34,7 +34,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CLRSupport>Pure</CLRSupport>
+    <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -139,6 +139,8 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="glform.cpp" />
     <ClCompile Include="glgraph-winControl.cpp" />
+    <ClCompile Include="markerSquare.cpp" />
+    <ClCompile Include="Plottable.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -150,12 +152,15 @@
     <ClInclude Include="camera.h">
       <FileType>CppClass</FileType>
     </ClInclude>
+    <ClInclude Include="embedded.h" />
     <ClInclude Include="glform.h">
       <FileType>CppClass</FileType>
     </ClInclude>
     <ClInclude Include="glgraph-winControl.h">
       <FileType>CppControl</FileType>
     </ClInclude>
+    <ClInclude Include="markerSquare.h" />
+    <ClInclude Include="Plottable.h" />
     <ClInclude Include="pointfconverter.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -167,6 +172,11 @@
     <EmbeddedResource Include="glgraph-winControl.resX">
       <DependentUpon>glgraph-winControl.h</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rtmath-base\rtmath-base.vcxproj">
+      <Project>{4c51f696-286a-4d40-b1bb-f671ecd6c515}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

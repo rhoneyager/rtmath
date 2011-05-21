@@ -17,7 +17,7 @@ namespace rtmathwinui {
 		rtBaseAtmos(void);
 		rtBaseAtmos(System::ComponentModel::IContainer ^container);
 	protected:
-		~rtBaseAtmos()
+		~rtBaseAtmos();
 	private:
 	private:
 		System::ComponentModel::Container ^components;

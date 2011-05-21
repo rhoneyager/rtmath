@@ -2,6 +2,7 @@
 #include "glform.h"
 #include <gl/GL.h>
 #include <gl/GLU.h>
+#include "markerSquare.h"
 
 namespace glgraphwin {
 
@@ -144,6 +145,16 @@ namespace glgraphwin {
 
 	void glform::draw()
 	{
+		// Plot all items in plotObjects
+		
+		std::set<Plottable*>::const_iterator it;
+		for (it = (plotObjects)->begin(); it != (plotObjects)->end(); it++)
+		{
+			(*it)->Plot();
+		}
+		
+		
+		/*
 		glBegin(GL_LINE_STRIP);
 		glColor3f(1.0,0.0,0.0);
 		glVertex3f(-10.0,0.0,-30.0);
@@ -159,6 +170,7 @@ namespace glgraphwin {
 		glVertex3f(1.0,-1.0,-30.0);
 		glVertex3f(1.0,1.0,-30.0);
 		glEnd();
+		*/
 	}
 
 	int glform::Render(System::Void)

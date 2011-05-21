@@ -373,7 +373,7 @@ namespace rtmath {
 	void polynomial::truncate(unsigned int pow)
 	{
 		// Truncate at the specified power
-		unsigned int max = _coeffs.size();
+		unsigned int max = (unsigned int) _coeffs.size();
 		for (unsigned int i=pow+1; i<=max; i++)
 		{
 			// Safety check. If it exists, delete it

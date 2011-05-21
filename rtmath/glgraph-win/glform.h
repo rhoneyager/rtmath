@@ -1,8 +1,11 @@
 #pragma once
 #include <Windows.h>
 #include <gl/GL.h>
+#include <set>
 
 #include "camera.h"
+#include "Plottable.h"
+#include "embedded.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -21,6 +24,7 @@ namespace glgraphwin {
 		glform(System::Windows::Forms::UserControl ^ parent);
 		virtual int Render(System::Void);
 		camera ^ activeCamera;
+		Embedded< std::set<Plottable*> > plotObjects;
 	protected:
 		System::Void SwapOpenGLBuffers(System::Void);
 	protected:
