@@ -53,6 +53,7 @@ namespace glgraphwin {
 	*/
 	void markerSquare::Plot()
 	{
+		if (!_visible) return;
 		// The openGL environment is ready
 		// Take the x and y coordinate and add it to the rotated points
 
