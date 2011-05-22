@@ -13,6 +13,13 @@ namespace glgraphwin {
 	{
 	}
 
+	void Plottable::setAspectRatio(unsigned int width, unsigned int height)
+	{
+		// Important for drawing markers, which should be displayed in the correct ratio
+		_controlWidth = width;
+		_controlHeight = height;
+	}
+
 	Color::Color()
 	{
 		_r = 0;

@@ -10,8 +10,11 @@ namespace glgraphwin {
 		virtual void Plot() = 0;
 		inline void Visible(bool newvis) {_visible = newvis;}
 		inline bool Visible() {return _visible;}
+		void setAspectRatio(unsigned int width, unsigned int height);
 	protected:
 		bool _visible;
+		unsigned int _controlWidth;
+		unsigned int _controlHeight;
 	};
 
 	class Color

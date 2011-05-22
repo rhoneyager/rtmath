@@ -56,12 +56,15 @@ namespace glgraphwin {
 		// The openGL environment is ready
 		// Take the x and y coordinate and add it to the rotated points
 
+		// TODO: correct for the current aspect ratio, so that these display without distortion
+		double AR = (double) _controlHeight / (double) _controlWidth;
+
 		// Draw the inside of the shape first
 		glBegin(GL_POLYGON);
 		bodyColor.Select();
 		for (unsigned int i=0;i<4;i++)
 		{
-			glVertex2d(op[2*i]+_x,op[2*i+1]+_y);
+			glVertex2d(op[2*i]*AR+_x,op[2*i+1]+_y);
 		}
 		glEnd();
 
@@ -70,7 +73,7 @@ namespace glgraphwin {
 		borderColor.Select();
 		for (unsigned int i=0;i<4;i++)
 		{
-			glVertex2d(op[2*i]+_x,op[2*i+1]+_y);
+			glVertex2d(op[2*i]*AR+_x,op[2*i+1]+_y);
 		}
 		glEnd();
 	}

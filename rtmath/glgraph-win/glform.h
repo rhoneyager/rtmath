@@ -34,6 +34,7 @@ namespace glgraphwin {
 	private:
 		HDC m_hDC;
 		HGLRC m_hglrc;
+		CreateParams^ cp;
 		int startGL();
 		bool initialized;
 		bool glstarted;

@@ -4,7 +4,8 @@
 #include "../rtmath-base/rtmath-base.h"
 #include <complex>
 //#include <netcdf.h>
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 void prnMat(rtmath::matrixop &mat)
 {
@@ -19,7 +20,7 @@ void prnMat(rtmath::matrixop &mat)
 			pos[1] = j;
 			cout << mat.get(pos) << '\t';
 		}
-		cout << endl;
+		cout << endl << endl;
 	}
 }
 
@@ -142,6 +143,7 @@ int main(int argc, char** argv)
 	std::cin.get();
 	*/
 	cout << "Testing matrix math capabilities.\n";
+	/*
 	std::vector<unsigned int> szA, szB, szRes;
 	// szA is 2x4, szB is 4x3
 	szA.push_back(2);
@@ -153,16 +155,61 @@ int main(int argc, char** argv)
 	rtmath::matrixop matA(szA);
 	matA.set(1.0,2,0,0);
 	matA.set(1.0,2,1,1);
+	matA.set(2.0,2,0,1);
+	matA.set(-3.0,2,1,0);
+	prnMat(matA);
+	cout << endl;
 	rtmath::matrixop matB(szB);
 	matB.set(1.0,2,0,0);
 	matB.set(1.0,2,1,1);
+	matB.set(5.0,2,1,0);
+	matB.set(-7.0,2,0,1);
+	prnMat(matB);
+	cout << endl;
 	rtmath::matrixop matRes(szRes);
 	matRes = matA.operator*(matB);
 	//matRes = matA * matB;
 	cout << "Resulting matrix:\n";
 	prnMat(matRes);
-	std::cin.get();
-	cout << "Now creating a few atmospheric layers and the DA layers structure." << endl;
+	*/
+	rtmath::matrixop A(2,2,1), B(2,2,1), C(2,2,1), D(2,2,1);
+	double Size = 1.0;
+			A.set(-1.0/2.0,2,0,0); //     [-0.5, 0.5]
+			A.set(1.0/2.0,2,1,0);
+			B.set(Size/2.0,2,0,0); //     [ 0.5, 0.5]
+			B.set(Size/2.0,2,1,0);
+			C.set(Size/2.0,2,0,0); //     [ 0.5,-0.5]
+			C.set(-1.0*Size/2.0,2,1,0);
+			D.set(-1.0*Size/2.0,2,0,0);// [-0.5,-0.5]
+			D.set(-1.0*Size/2.0,2,1,0);
+
+			prnMat(A);
+			prnMat(B);
+			prnMat(C);
+			prnMat(D);
+
+			// Rotation is in radians
+			//double Rotation = M_PI / 4.0;
+			double Rotation = 0.0;
+			rtmath::matrixop rot(2,2,2);
+			rot.set(cos(Rotation),2,0,0);
+			rot.set(cos(Rotation),2,1,1);
+			rot.set(sin(Rotation),2,1,0);
+			rot.set(-1.0*sin(Rotation),2,0,1);
+
+			prnMat(rot);
+
+			rtmath::matrixop Ar(2,2,1), Br(2,2,1), Cr(2,2,1), Dr(2,2,1);
+			Ar = rot * A;
+			Br = rot * B;
+			Cr = rot * C;
+			Dr = rot * D;
+
+			prnMat(Ar);
+			prnMat(Br);
+			prnMat(Cr);
+			prnMat(Dr);
+
 	std::cin.get();
 	return 0;
 }

@@ -17,7 +17,7 @@ namespace glgraphwin {
 		System::Windows::Forms::Form ^ parform = parent->ParentForm;
 		if (!(parent->ParentForm) ) return;
 		// Get the camera from the parent form
-		CreateParams^ cp = gcnew CreateParams;
+		cp = gcnew CreateParams;
 		// TODO: find location on form of the parent object
 		//System.Drawing::Point loc;
 		//loc = parent->Location;
@@ -140,6 +140,13 @@ namespace glgraphwin {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+		/* Test plotting by adding a marker
+		markerSquare *testm = new markerSquare(0,0,1,0);
+		testm->bodyColor.Set(1.0,0,0,0.1);
+		(plotObjects)->insert(testm);
+		*/
+
 		return 0;
 	}
 
@@ -150,11 +157,12 @@ namespace glgraphwin {
 		std::set<Plottable*>::const_iterator it;
 		for (it = (plotObjects)->begin(); it != (plotObjects)->end(); it++)
 		{
+			(*it)->setAspectRatio(cp->Width, cp->Height);
 			(*it)->Plot();
 		}
 		
 		
-		/*
+		/* Example of some lines
 		glBegin(GL_LINE_STRIP);
 		glColor3f(1.0,0.0,0.0);
 		glVertex3f(-10.0,0.0,-30.0);
@@ -205,24 +213,6 @@ namespace glgraphwin {
 		glFlush();
 
 		glPopMatrix();
-		/*
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
-		//glViewport(0,0,x,y);
-
-		glBegin(GL_LINE_STRIP);
-			glColor3f(1.0,0.0,0.0);
-			glVertex3f(-10.0,0.0,-30.0);
-			glVertex3f(-5.0,-5.0,-30.0);
-			glVertex3f(0.0,1.0,-30.0);
-			glVertex3f(2.0,3.0,-30.0);
-			glVertex3f(7.0,0.0,-30.0);
-			glVertex3f(10.0,-8.0,-30.0);
-		glEnd();
-	
-		glFlush();
-		*/
 
 		// Rendering done. Now, swap buffers and release window
 		SwapBuffers(m_hDC);
