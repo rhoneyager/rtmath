@@ -13,8 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Plot Types">
+    <Filter Include="Plot Types">
       <UniqueIdentifier>{a5d37f30-c455-4496-a9cf-b6bb64fc1839}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fonts">
+      <UniqueIdentifier>{c3363893-3085-4f8b-8a94-e49c4147a370}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,20 +42,26 @@
     <ClCompile Include="camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Plottable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="linePlot.cpp">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
     </ClCompile>
     <ClCompile Include="markerSquare.cpp">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
     </ClCompile>
     <ClCompile Include="histiogram.cpp">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
     </ClCompile>
     <ClCompile Include="Rectangle.cpp">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Plottable.cpp">
+      <Filter>Plot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="BitmapFont.cpp">
+      <Filter>Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="OutlineFont.cpp">
+      <Filter>Fonts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,23 +83,29 @@
     <ClInclude Include="pointfconverter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Plottable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="embedded.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="linePlot.h">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
     </ClInclude>
     <ClInclude Include="markerSquare.h">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
     </ClInclude>
     <ClInclude Include="histiogram.h">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
     </ClInclude>
     <ClInclude Include="Rectangle.h">
-      <Filter>Header Files\Plot Types</Filter>
+      <Filter>Plot Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Plottable.h">
+      <Filter>Plot Types</Filter>
+    </ClInclude>
+    <ClInclude Include="BitmapFont.h">
+      <Filter>Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="OutlineFont.h">
+      <Filter>Fonts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

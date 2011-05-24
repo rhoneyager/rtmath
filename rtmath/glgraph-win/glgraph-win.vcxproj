@@ -136,12 +136,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="BitmapFont.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="glform.cpp" />
     <ClCompile Include="glgraph-winControl.cpp" />
     <ClCompile Include="histiogram.cpp" />
     <ClCompile Include="linePlot.cpp" />
     <ClCompile Include="markerSquare.cpp" />
+    <ClCompile Include="OutlineFont.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="Plottable.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -152,6 +154,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BitmapFont.h" />
     <ClInclude Include="camera.h">
       <FileType>CppClass</FileType>
     </ClInclude>
@@ -165,6 +168,7 @@
     <ClInclude Include="histiogram.h" />
     <ClInclude Include="linePlot.h" />
     <ClInclude Include="markerSquare.h" />
+    <ClInclude Include="OutlineFont.h" />
     <ClInclude Include="Plottable.h" />
     <ClInclude Include="pointfconverter.h" />
     <ClInclude Include="Rectangle.h" />
