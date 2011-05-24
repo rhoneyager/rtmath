@@ -19,7 +19,7 @@ namespace glgraphwin {
 		_controlWidth = width;
 		_controlHeight = height;
 	}
-
+	/*
 	Color::Color()
 	{
 		_r = 0;
@@ -46,13 +46,15 @@ namespace glgraphwin {
 		// Assume correct opengl mode
 		glColor4d(_r, _g, _b, _a);
 	}
-
+	*/
 	Shape::Shape(double X, double Y, double Size, double Rotation)
 	{
 		_x = X;
 		_y = Y;
 		_size = Size;
 		_rotation = Rotation;
+		bodyColor = gcnew System::Drawing::Color();
+		borderColor = gcnew System::Drawing::Color();
 	}
 
 

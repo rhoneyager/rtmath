@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Plot Types">
+      <UniqueIdentifier>{a5d37f30-c455-4496-a9cf-b6bb64fc1839}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -68,14 +71,17 @@
     <ClInclude Include="Plottable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="markerSquare.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="embedded.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="linePlot.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Plot Types</Filter>
+    </ClInclude>
+    <ClInclude Include="markerSquare.h">
+      <Filter>Header Files\Plot Types</Filter>
+    </ClInclude>
+    <ClInclude Include="histiogram.h">
+      <Filter>Header Files\Plot Types</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

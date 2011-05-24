@@ -7,7 +7,7 @@
 namespace glgraphwin {
 
 	// Use this to plot a square marker at a point
-	class markerSquare : public Shape
+	public ref class markerSquare abstract : public Shape
 	{
 	public:
 		markerSquare(double X, double Y, double Size, double Rotation) 
@@ -46,6 +46,7 @@ namespace glgraphwin {
 			// Good, the rotated points are now known
 			// Must do these counterclockwise.....
 
+			op = gcnew array<double>(8);
 			op[0] = A.get(2,0,0);
 			op[1] = A.get(2,1,0);
 			op[6] = B.get(2,0,0);
@@ -55,11 +56,12 @@ namespace glgraphwin {
 			op[2] = D.get(2,0,0);
 			op[3] = D.get(2,1,0);
 		}
-		virtual void Plot();
+		virtual void Plot() override;
 		//virtual ~markerSquare(void);
 	private:
 		// Ordered (x,y) points for plotting
-		double op[8];
+		//double op[8];
+		array<double> ^op;
 	};
 
 }; // end namespace

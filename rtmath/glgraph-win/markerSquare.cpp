@@ -62,7 +62,8 @@ namespace glgraphwin {
 
 		// Draw the inside of the shape first
 		glBegin(GL_POLYGON);
-		bodyColor.Select();
+		//bodyColor.Select();
+		glColor4d(bodyColor->R / 255.0, bodyColor->G / 255.0, bodyColor->B / 255.0, bodyColor->A / 255.0);
 		for (unsigned int i=0;i<4;i++)
 		{
 			glVertex2d(op[2*i]*AR+_x,op[2*i+1]+_y);
@@ -71,7 +72,8 @@ namespace glgraphwin {
 
 		// Draw the shape border
 		glBegin(GL_LINE_LOOP);
-		borderColor.Select();
+		//borderColor.Select();
+		glColor4d(borderColor->R / 255.0, borderColor->G / 255.0, borderColor->B / 255.0, borderColor->A / 255.0);
 		for (unsigned int i=0;i<4;i++)
 		{
 			glVertex2d(op[2*i]*AR+_x,op[2*i+1]+_y);

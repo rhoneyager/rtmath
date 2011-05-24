@@ -15,6 +15,7 @@ namespace glgraphwin {
 
 		if (!parent) return;
 		System::Windows::Forms::Form ^ parform = parent->ParentForm;
+		plotObjects = gcnew System::Collections::Generic::List<Plottable^>;
 		if (!(parent->ParentForm) ) return;
 		// Get the camera from the parent form
 		cp = gcnew CreateParams;
@@ -153,14 +154,14 @@ namespace glgraphwin {
 	void glform::draw()
 	{
 		// Plot all items in plotObjects
-		
+		/* C++ class implementation
 		std::set<Plottable*>::const_iterator it;
 		for (it = (plotObjects)->begin(); it != (plotObjects)->end(); it++)
 		{
 			(*it)->setAspectRatio(cp->Width, cp->Height);
 			(*it)->Plot();
 		}
-		
+		*/
 		
 		/* Example of some lines
 		glBegin(GL_LINE_STRIP);

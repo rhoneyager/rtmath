@@ -6,6 +6,7 @@ namespace glgraphwin {
 	linePlot::linePlot(size_t num, double *x, double *y)
 	{
 		setData(num,x,y);
+		lineColor = gcnew System::Drawing::Color();
 	}
 
 	void linePlot::setData(size_t num, double *x, double *y)
@@ -22,7 +23,8 @@ namespace glgraphwin {
 
 		// This is similar to markerSquare's code
 		glBegin(GL_LINE_LOOP);
-		lineColor.Select();
+		//lineColor.Select();
+		glColor4d(lineColor->R / 255.0, lineColor->G / 255.0, lineColor->B / 255.0, lineColor->A / 255.0);
 		// Plot each vertex
 		// Follow order in the array
 		// CCL direction does not matter, since no fill is done
