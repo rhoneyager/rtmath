@@ -26,6 +26,10 @@ namespace glgraphwin {
 		camera ^ activeCamera;
 		System::Collections::Generic::List<Plottable^>^ plotObjects;
 		//Embedded< std::set<Plottable*> > plotObjects;
+		property HDC hDC
+		{
+			HDC get() {return m_hDC;}
+		}
 	protected:
 		System::Void SwapOpenGLBuffers(System::Void);
 	protected:

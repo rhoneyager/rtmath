@@ -63,6 +63,9 @@
     <ClCompile Include="OutlineFont.cpp">
       <Filter>Fonts</Filter>
     </ClCompile>
+    <ClCompile Include="fontlabel.cpp">
+      <Filter>Fonts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glgraph-winControl.h">
@@ -105,6 +108,9 @@
       <Filter>Fonts</Filter>
     </ClInclude>
     <ClInclude Include="OutlineFont.h">
+      <Filter>Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="fontlabel.h">
       <Filter>Fonts</Filter>
     </ClInclude>
   </ItemGroup>

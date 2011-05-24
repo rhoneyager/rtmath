@@ -138,6 +138,7 @@
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="BitmapFont.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="fontlabel.cpp" />
     <ClCompile Include="glform.cpp" />
     <ClCompile Include="glgraph-winControl.cpp" />
     <ClCompile Include="histiogram.cpp" />
@@ -159,6 +160,7 @@
       <FileType>CppClass</FileType>
     </ClInclude>
     <ClInclude Include="embedded.h" />
+    <ClInclude Include="fontlabel.h" />
     <ClInclude Include="glform.h">
       <FileType>CppClass</FileType>
     </ClInclude>
