@@ -58,4 +58,38 @@ namespace glgraphwin {
 			Width = newwidth;
 		}
 
+		void camera::autoFocus(System::Collections::Generic::List<Plottable^>^ plotObjects)
+		{
+			// For this, take each plotObject in the list and find the minima and maxima for x and y
+			// Then, set the camera so that these bounds are enclosed, with a good (~10%) margin
+
+			// This typically takes the list of all visible entries in the glform plotobjects list
+			System::Drawing::PointF newmin, newmax;
+			bool init = false;
+			for (int i=0;i<plotObjects->Count;i++)
+			{
+				if (plotObjects[i]->Visible)
+				{
+					if (!init)
+					{
+						newmin.X = plotObjects[i]->min->X;
+						newmin.Y = plotObjects[i]->min->Y;
+						newmax.X = plotObjects[i]->max->X;
+						newmax.Y = plotObjects[i]->max->Y;
+						init = true;
+					} else {
+						if (plotObjects[i]->min->X < newmin.X) newmin.X = plotObjects[i]->min->X;
+						if (plotObjects[i]->min->Y < newmin.Y) newmin.Y = plotObjects[i]->min->Y;
+						if (plotObjects[i]->max->X > newmax.X) newmax.X = plotObjects[i]->max->X;
+						if (plotObjects[i]->max->Y > newmax.Y) newmax.Y = plotObjects[i]->max->Y;
+					}
+				}
+			}
+			// Next, give a margin to the graph by setting the new min and max, then tweaking widths
+			Min = newmin;
+			Max = newmax;
+			Width.X = Width.X * 1.1f;
+			Width.Y = Width.Y * 1.1f;
+		}
+
 }; // end glgraphwin

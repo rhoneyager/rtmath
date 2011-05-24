@@ -13,13 +13,23 @@ namespace glgraphwin {
 			bool get() { return _visible; }
 			void set(bool newvis) {_visible = newvis; }
 		}
-		//inline void Visible(bool newvis) {_visible = newvis;}
-		//inline bool Visible() {return _visible;}
+		// Read-only property giving the min and max x and y coords. that an object 
+		// covers for autofocusing purposes
+		property System::Drawing::PointF^ min
+		{
+			System::Drawing::PointF^ get() { return _min;}
+		}
+		property System::Drawing::PointF^ max
+		{
+			System::Drawing::PointF^ get() { return _max;}
+		}
 		void setAspectRatio(unsigned int width, unsigned int height);
 	protected:
 		bool _visible;
 		unsigned int _controlWidth;
 		unsigned int _controlHeight;
+		System::Drawing::PointF^ _min;
+		System::Drawing::PointF^ _max;
 	};
 	/*
 	public ref class Color : public System::ComponentModel::Component

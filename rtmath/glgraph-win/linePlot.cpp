@@ -14,6 +14,14 @@ namespace glgraphwin {
 		_numPoints = num;
 		_x = x;
 		_y = y;
+		// Save the minima and maxima for x and y for autofocusing
+		for (unsigned int i=0; i< (unsigned int) num;i++)
+		{
+			if (_x[i] < _min->X) _min->X = (float) _x[i];
+			if (_x[i] > _max->X) _max->X = (float) _x[i];
+			if (_y[i] < _min->Y) _min->Y = (float) _y[i];
+			if (_y[i] > _max->Y) _max->Y = (float) _y[i];
+		}
 	}
 
 	void linePlot::Plot()

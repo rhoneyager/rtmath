@@ -6,6 +6,7 @@ using namespace System::Collections;
 using namespace System::Diagnostics;
 
 #include "pointfconverter.h"
+#include "Plottable.h"
 
 namespace glgraphwin {
 	/// <summary>
@@ -52,6 +53,7 @@ namespace glgraphwin {
 		void panDown();
 		void zoomIn();
 		void zoomOut();
+		void autoFocus(System::Collections::Generic::List<Plottable^>^ plotObjects);
 		// Event when camera is updated
 	public: event CameraChangedEventHandler^ cameraChanged;
 

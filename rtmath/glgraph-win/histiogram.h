@@ -29,17 +29,9 @@ namespace glgraphwin {
 			void set(size_t num) 
 			{ 
 				_numBins = num;
-				// Find max and min x. Don't assume ordering.
-				// TODO: put max/min in seperate function
-				double min = _x[0], max = _x[0];
-				for (size_t i=0;i<_numPoints;i++)
-				{
-					if (_x[i]<min) min = _x[i];
-					if (_x[i]>max) max = _x[i];
-				}
-				_min = min;
-				_max = max;
-				_binWidth = (max - min) / (double) _numBins;
+				_binWidth = (_max->X - _min->X) / (double) _numBins;
+				// Do binning
+				_binning();
 			}
 		}
 		property double binWidth
@@ -48,28 +40,21 @@ namespace glgraphwin {
 			void set(double width)
 			{
 				_binWidth = width;
-				// Find max / min
-				double min = _x[0], max = _x[0];
-				for (size_t i=0;i<_numPoints;i++)
-				{
-					if (_x[i]<min) min = _x[i];
-					if (_x[i]>max) max = _x[i];
-				}
-				_min = min;
-				_max = max;
-				double nb = (max - min) / _binWidth;
+				double nb = (_max->X - _min->X) / _binWidth;
 				// numBins is nb+1, unless nb is an integer
 				if (nb - (int) nb > 0) _numBins = (size_t) (nb + 1);
 				else _numBins = (size_t) nb;
+				// Do binning
+				_binning();
 			}
 		}
 	protected:
+		void _binning();
 		size_t _numPoints;
 		size_t _numBins;
 		double _binWidth;
 		double *_x;
-		double _min;
-		double _max;
+		array<double> ^bins;
 	};
 	
 

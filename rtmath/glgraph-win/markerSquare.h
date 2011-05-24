@@ -55,6 +55,19 @@ namespace glgraphwin {
 			op[5] = C.get(2,1,0);
 			op[2] = D.get(2,0,0);
 			op[3] = D.get(2,1,0);
+			// Save the minima and maxima for x and y for autofocusing
+			for (unsigned int i=0;i<3;i++)
+			{
+				// xs
+				if ((float) op[2*i] < _min->X) _min->X = (float) op[2*i];
+				if ((float) op[2*i] > _max->X) _max->X = (float) op[2*i];
+			}
+			for (unsigned int i=0;i<3;i++)
+			{
+				// ys
+				if ((float) op[2*i+1] < _min->Y) _min->Y = (float) op[2*i+1];
+				if ((float) op[2*i+1] > _max->Y) _max->Y = (float) op[2*i+1];
+			}
 		}
 		virtual void Plot() override;
 		//virtual ~markerSquare(void);
