@@ -37,6 +37,7 @@ namespace glgraphwin {
 	{
 	public:
 		Shape(double X, double Y, double Size, double Rotation);
+		Shape();
 		//virtual void Plot() = 0 override;
 		// Colors are extracted as 32-bit integers
 		System::Drawing::Color^ borderColor;

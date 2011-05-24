@@ -42,11 +42,17 @@
     <ClCompile Include="Plottable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="markerSquare.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="linePlot.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files\Plot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="markerSquare.cpp">
+      <Filter>Header Files\Plot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="histiogram.cpp">
+      <Filter>Header Files\Plot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Rectangle.cpp">
+      <Filter>Header Files\Plot Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +87,9 @@
       <Filter>Header Files\Plot Types</Filter>
     </ClInclude>
     <ClInclude Include="histiogram.h">
+      <Filter>Header Files\Plot Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Rectangle.h">
       <Filter>Header Files\Plot Types</Filter>
     </ClInclude>
   </ItemGroup>

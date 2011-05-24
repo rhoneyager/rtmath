@@ -57,6 +57,16 @@ namespace glgraphwin {
 		borderColor = gcnew System::Drawing::Color();
 	}
 
+	Shape::Shape()
+	{
+		_x = 0;
+		_y = 0;
+		_size = 0;
+		_rotation = 0;
+		bodyColor = gcnew System::Drawing::Color();
+		borderColor = gcnew System::Drawing::Color();
+	}
+
 
 }; // end namespace
 

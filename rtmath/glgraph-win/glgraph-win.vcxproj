@@ -139,8 +139,10 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="glform.cpp" />
     <ClCompile Include="glgraph-winControl.cpp" />
+    <ClCompile Include="histiogram.cpp" />
     <ClCompile Include="linePlot.cpp" />
     <ClCompile Include="markerSquare.cpp" />
+    <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="Plottable.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -165,6 +167,7 @@
     <ClInclude Include="markerSquare.h" />
     <ClInclude Include="Plottable.h" />
     <ClInclude Include="pointfconverter.h" />
+    <ClInclude Include="Rectangle.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
