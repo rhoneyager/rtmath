@@ -4,7 +4,7 @@
 #define _MATH_DEFINES_DEFINED
 #include <cmath>
 namespace rtmath {
-
+	/* // Block these for now
 	daevalmuint::daevalmuint(damatrix *targeta, damatrix *targetb)
 	{
 		if (targeta == NULL) throw;
@@ -161,7 +161,8 @@ namespace rtmath {
 		// Val is phi'
 		return eval(val);
 	}
-
+	*/
+/*
 	damatrix damatrix::operator* (const damatrix& rhs) const
 	{
 		// Do matrix multiplication and then integration
@@ -209,6 +210,101 @@ namespace rtmath {
 		loc.push_back(j);
 		return this->get(loc);
 	}
+	*/
 
+	boost::shared_ptr<matrixop> damatrix::eval(const mapid &valmap)
+	{
+		// NOTE: cannot be constant due to storage of calculations
+		// The purpose of this function is to evaluate the matrix at valmap
+		// valmap contains mu,mun,phi,phin
+		// Assume that this is not the base for some other derived class (a provider)
+
+		// First, look at the precached table. If a result is there, return it
+		for (std::map<mapid,boost::shared_ptr<matrixop>, mmapcomp >::const_iterator it=precalc.begin(); 
+			it != precalc.end(); it++)
+		{
+			// *it->second.get() is awkward phrasing. Eval really should just return a pointer
+			if (it->first == valmap) return it->second;
+		}
+
+		// Damn. It has to be calculated.
+		// Evaluation occurs by performing the necessary matrix multiplication and 
+		// integration of the two parent matrices
+		// Transfer a copy of valmap to a local object
+		mapid val = valmap;
+		boost::shared_ptr<matrixop> res( new matrixop(_rootA->size()) );
+		// Annoying to do, as I want to dereference the pointers
+		matrixop A(_rootA->size()), B(_rootB->size());
+		switch (_parentsource)
+		{
+		case ADD:
+			A = *(_rootA->eval)(val);
+			B = *(_rootB->eval)(val);
+			*res = A + B;
+			// Remember it
+			precalc[val] = res;
+			return res;
+			break;
+		case MULT:
+			// This is trickier
+			// Do the necessary integration by quadrature and store the result
+			// AB = 1/pi * int_0^2pi*int_0^1 (A(mu,phi,mu',phi')B(mu',phi',mun,phin))mu' dmu'dphi'
+			// Using gaussian quadrature (min. of 7 pts)
+			// Note (hardwired for now at 7. TODO: fix for arb. quad. pt. number)
+
+			break;
+		case INV:
+			// Also annoying
+			// Evaluate _rootA and invert the result
+			break;
+		default:
+			// Die in disgrace
+			throw;
+			break;
+		}
+	}
+
+	damatrix damatrix::operator* (damatrix& rhs)
+	{
+		// Create a resultant matrix that acts to multiply the two initial matrices
+		damatrix res(this->size());
+		res._parentsource = MULT; // For evaluation
+		// Use shared_ptr because the parent must be held in memory for any 
+		//  new calculations to occur. Auto-delete when object is forgotten!
+		res._rootA = boost::shared_ptr<damatrix>(this); 
+		res._rootB = boost::shared_ptr<damatrix>(&rhs);
+		res._precalc_operator();
+		// And we're done
+		return res;
+	}
+
+	damatrix damatrix::operator+ (damatrix &rhs)
+	{
+		// See multiplication operator for relevant comments
+		damatrix res(this->size());
+		res._parentsource = ADD; // For evaluation
+		res._rootA = boost::shared_ptr<damatrix>(this); 
+		res._rootB = boost::shared_ptr<damatrix>(&rhs);
+		res._precalc_operator();
+		// And we're done
+		return res;
+	}
+
+	void damatrix::_precalc_operator()
+	{
+		// Do some precalculation (for convenience later on)
+		// Take all of precalc mapids in rootA and evaluate in the child
+		for (std::map<mapid, boost::shared_ptr<matrixop>, mmapcomp >::const_iterator it=_rootA->precalc.begin();
+			it != _rootA->precalc.end(); it++)
+				eval(it->first);
+		// Try with _rootB, if it exists
+		if (_rootB)
+		{
+		for (std::map<mapid, boost::shared_ptr<matrixop>, mmapcomp >::const_iterator it=_rootB->precalc.begin();
+			it != _rootB->precalc.end(); it++)
+				eval(it->first);
+		}
+	}
+	
 }; // end rtmath
 

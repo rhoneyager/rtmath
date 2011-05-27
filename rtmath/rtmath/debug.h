@@ -70,4 +70,12 @@ namespace rtmath
 #define UNIMPLEMENTED() { throw debug::xUnimplementedFunction(__FUNCSIG__); };
 #endif
 
+// Die on error
+#ifdef __GNUC__
+#define DIE() { throw debug::diemsg(__FILE__,__LINE__,__PRETTY_FUNCTION__); };
+#endif
+#ifdef _MSC_FULL_VER
+#define DIE() { throw debug::diemsg(__FILE__,__LINE__,__FUNCSIG__); };
+#endif
+
 }; // end namespace rtmath

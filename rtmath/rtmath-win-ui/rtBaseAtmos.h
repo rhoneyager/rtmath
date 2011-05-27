@@ -8,16 +8,45 @@ using namespace System::Diagnostics;
 
 namespace rtmathwinui {
 
-	/// <summary>
-	/// Summary for rtBaseAtmos
-	/// </summary>
-	public ref class rtBaseAtmos :  public System::ComponentModel::Component
+	public ref class BaseAtmosTypeConverter : System::ComponentModel::StringConverter
+	{
+	public: virtual bool GetStandardValuesSupported(System::ComponentModel::ITypeDescriptorContext^ context) override
+			{
+				return true;
+			}
+
+	public: virtual System::ComponentModel::TypeConverter::StandardValuesCollection^ 
+				GetStandardValues(System::ComponentModel::ITypeDescriptorContext^ context) override
+			{
+				array<System::String^ >^ names = gcnew array<System::String^> {"Test 1", "Test 2"};
+				return gcnew System::ComponentModel::TypeConverter::StandardValuesCollection(
+					names);
+			}
+	};
+
+	public ref class SpecUnitsTypeConverter : System::ComponentModel::StringConverter
+	{
+	public: virtual bool GetStandardValuesSupported(System::ComponentModel::ITypeDescriptorContext^ context) override
+			{
+				return true;
+			}
+
+	public: virtual System::ComponentModel::TypeConverter::StandardValuesCollection^ 
+				GetStandardValues(System::ComponentModel::ITypeDescriptorContext^ context) override
+			{
+				array<System::String^ >^ names = gcnew array<System::String^> {"Wavenumber (cm^-1)", "Wavelength (m)", "Frequency (Hz)"};
+				return gcnew System::ComponentModel::TypeConverter::StandardValuesCollection(
+					names);
+			}
+	};
+
+	public ref class baseAtmos :  public System::ComponentModel::Component
 	{
 	public:
-		rtBaseAtmos(void);
-		rtBaseAtmos(System::ComponentModel::IContainer ^container);
+		baseAtmos(void);
+		baseAtmos(System::ComponentModel::IContainer ^container);
 	protected:
-		~rtBaseAtmos();
+		~baseAtmos();
 	private:
 	private:
 		System::ComponentModel::Container ^components;

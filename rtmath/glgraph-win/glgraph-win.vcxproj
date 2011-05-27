@@ -70,6 +70,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <ExecutablePath>C:\Users\reh9650\Documents\Visual Studio 2010\Projects\rtmath\rtmath-compile-depends\bin\win64;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\Users\reh9650\Documents\Visual Studio 2010\Projects\rtmath\rtmath-compile-depends\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\reh9650\Documents\Visual Studio 2010\Projects\rtmath\rtmath-compile-depends\libs\win64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

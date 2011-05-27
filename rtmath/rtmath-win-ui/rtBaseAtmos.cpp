@@ -2,18 +2,18 @@
 #include "rtBaseAtmos.h"
 
 namespace rtmathwinui {
-	rtBaseAtmos::rtBaseAtmos(void)
+	baseAtmos::baseAtmos(void)
 	{
 		InitializeComponent();
 	}
 
-	rtBaseAtmos::rtBaseAtmos(System::ComponentModel::IContainer ^container)
+	baseAtmos::baseAtmos(System::ComponentModel::IContainer ^container)
 	{
 		container->Add(this);
 		InitializeComponent();
 	}
 
-	rtBaseAtmos::~rtBaseAtmos()
+	baseAtmos::~baseAtmos()
 	{
 		if (components)
 		{

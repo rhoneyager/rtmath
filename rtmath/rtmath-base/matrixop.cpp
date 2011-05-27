@@ -62,7 +62,7 @@ void matrixop::resize(unsigned int ndims, ...)
 	resize(ptr);
 }
 
-matrixop* matrixop::clone()
+matrixop* matrixop::clone() const
 {
 	return new matrixop(*this);
 }

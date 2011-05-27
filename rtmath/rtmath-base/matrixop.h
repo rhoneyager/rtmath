@@ -21,7 +21,7 @@ public:
 	// Define a copy constructor, since this is a base class
 	matrixop (const matrixop & rhs);
 	// Cloning function
-	virtual matrixop* clone();
+	virtual matrixop* clone() const;
 	// virtual ...
 	virtual matrixop operator + (const matrixop&) const;
 	virtual matrixop operator - (const matrixop&) const;
