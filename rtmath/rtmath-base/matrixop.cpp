@@ -1,4 +1,6 @@
 #include "matrixop.h"
+// Reduces tedium when finding minors
+#include <boost/foreach.hpp>
 
 namespace rtmath {
 
@@ -302,6 +304,155 @@ bool matrixop::operator== (const matrixop& rhs) const
 		if (it->second != rhs.get(it->first)) return false;
 	}
 	return true;
+}
+
+matrixop matrixop::minor(unsigned int rank, ...) const
+{
+	// Retrieve the variable parameters
+	va_list indices;
+	va_start(indices, rank);
+	std::vector<unsigned int> ptr;
+	unsigned int ival;
+	for (unsigned int i=0; i<rank; i++)
+	{
+		ival = va_arg(indices,unsigned int);
+		ptr.push_back(ival);
+	}
+	va_end(indices);
+	return minor(ival);
+}
+
+void matrixop::_push_back(unsigned int index, double val)
+{
+	// Used by minor to place a value in the appropriate location
+	using namespace std;
+	vector<unsigned int> pos;
+	_getpos(index,pos);
+	// Set the value
+	set(pos,val);
+}
+
+void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
+{
+	using namespace std;
+	if (dimensionality() == 0) throw;
+	pos.clear();
+	pos.resize(_dims.size());
+	pos[_dims.size()-1] = index;
+
+	// If > dimensionality, do modular addition
+	BOOST_REVERSE_FOREACH(unsigned int i,pos)
+	{
+		if (pos[i] >= _dims[i] && i > 0)
+		{
+			pos[i-1] += pos[i] / _dims[i];
+			pos[i] = pos[i] % _dims[i];
+		}
+	}
+}
+
+matrixop matrixop::minor(const std::vector<unsigned int> &pos) const
+{
+	// Take a subset of the matrix and return it as a new matrixop
+	// The resulting matrix has each dimension decreased by one
+	// If any dimension hits size zero, throw!
+	using namespace std;
+	vector<unsigned int> newdims = _dims;
+	for (unsigned int i=0;i<_dims.size();i++)
+	{
+		newdims[i]--;
+		if (newdims[i] == 0) throw; // TODO: fix the unsupported error
+		// --- should ignore the construction of any dimension of size 1
+	}
+	matrixop res(newdims);
+	// Copy over each value the lazy way (if row = minor row, continue)
+	// Still doing arbitrary numbers of rows, columns, ... (higher terms)
+	vector<unsigned int> k((size_t) dimensionality(), 0);
+	unsigned int j = 0;
+	// TODO: implement this as a modular math / base kind of thing (like in timeanalysis::date)
+	while (k[0] < _dims[0])
+	{
+		bool skipme = false;
+		BOOST_FOREACH(unsigned int i, k)
+		{
+			if (k[i] == pos[i]) skipme = true;
+		}
+		if (skipme) continue; // Minor should not have this value
+
+		// Copy the main matrix value to the minor
+		// Note that the two positions need not be the same
+		res._push_back(j, get(k));
+
+		// Increment k
+		k[k.size()]++;
+		// If > dimensionality, do modular addition
+		BOOST_REVERSE_FOREACH(unsigned int i,k)
+		{
+			if (k[i] >= _dims[i] && i > 0)
+			{
+				k[i-1]++;
+				k[i] = 0;
+			}
+		}
+		// Loop ends if k[0] >= _dims[0]
+		j++;
+	}
+	return res;
+}
+
+double matrixop::det() const
+{
+	using namespace std;
+	// Find the determinant
+	if (!issquare()) throw;
+	if (dimensionality() == 1) return get(1,0);
+	// Do this by expansion of minors.
+	// It's unfortunately slow and relies heaviny on recursion, but
+	// I don't want to implement a whole linear algrbra system just yet
+	// TODO: add in gaussian elimination code
+
+	// Check that matrix is 2d, for now
+	// TODO: extend this to n dims, if possible
+	if (_dims.size() != 2) throw;
+	vector<unsigned int> it;
+	it.push_back(0); // 0th row
+	it.push_back(0); // 0th column
+	// Retrieve the first row of the matrix, get minor, and calculate determinant of minor
+	double res = 0.0;
+	// Wow, this next line is obtuse
+	for (it[1] = 0; it[1] < _dims[1]; it[1]++)
+	{
+		matrixop min = minor(2,it[0],it[1]);
+		// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
+		res += (-1 * it[1]) * min.det() * get(it);
+	}
+	return res;
+}
+
+matrixop matrixop::diagonal(const std::vector<unsigned int> &size, double val)
+{
+	matrixop res(size);
+	if (size.size() != 2) throw;
+	// Find min dimension
+	unsigned int min = (size[0] < size[1])? size[0] : size[1];
+	for (unsigned int i=0;i<min;i++)
+	{
+		res.set(val,2,i,i);
+	}
+	return res;
+}
+
+matrixop matrixop::inverse() const
+{
+	// This uses minors and a determinant to calculate the inverse
+	double mdet = det();
+	// Construct the matrix minors
+	throw;
+}
+
+matrixop matrixop::identity(const std::vector<unsigned int> &size)
+{
+	return diagonal(size,1.0);
 }
 
 void matrixop::toDoubleArray(double *target)
