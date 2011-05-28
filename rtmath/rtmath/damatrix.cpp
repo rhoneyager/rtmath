@@ -1,8 +1,8 @@
 #include "Stdafx.h"
 #include "damatrix.h"
 #include "../rtmath-base/quadrature.h"
-#define _MATH_DEFINES_DEFINED
-#include <cmath>
+#define _USE_MATH_DEFINES
+#include <math.h>
 namespace rtmath {
 	/* // Block these for now
 	daevalmuint::daevalmuint(damatrix *targeta, damatrix *targetb)
@@ -251,17 +251,61 @@ namespace rtmath {
 			// AB = 1/pi * int_0^2pi*int_0^1 (A(mu,phi,mu',phi')B(mu',phi',mun,phin))mu' dmu'dphi'
 			// Using gaussian quadrature (min. of 7 pts)
 			// Note (hardwired for now at 7. TODO: fix for arb. quad. pt. number)
-
+			{
+				// The factor of 1/pi, since I'm integrating the whole matrix at once
+				matrixop prefact = matrixop::diagonal(_rootA->size(),1.0/M_PI);
+				// The outer integral
+				// From 0 to 2pi, over phi'
+				// Parameters for A and B are expressed as a mapid (mu,mun,phi,phin)
+				// A gets (mu,mu',phi,phi'). B gets (mu',mun,phi',phin)
+				// factormu will be the diagonal mu' matrix for the integration
+				//  it changes with each mu'
+				// Invoke the outer integral function (in namespace rtmath::daint)
+				// it is not a class function
+				// TODO: check that pointers work without reference here
+				//   Unsure about shared_ptr details
+				daint::outer_int(res,val,_rootA,_rootB);
+				precalc[val] = res;
+				return res;
+			}
 			break;
 		case INV:
 			// Also annoying
 			// Evaluate _rootA and invert the result
+			A = *(_rootA->eval)(val);
+			B = A.inverse();
+			*res = B;
+			precalc[val] = res;
+			return res;
 			break;
 		default:
 			// Die in disgrace
 			throw;
 			break;
 		}
+		// We'll never get here, but it gets rid of a compiler warning
+		return res;
+	}
+
+	void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap, 
+		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B)
+	{
+		// This is a namespace function that handles the outer integration loop
+		// Outer integration is 0 to 2pi, dphi'
+		// It varies A and B valmaps and calls the inner loop with 
+		//  gaussian quadrature
+
+	}
+
+	void daint::inner_int(boost::shared_ptr<matrixop> res, 
+		const mapid &valmapA, const mapid &valmapB, 
+		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B)
+	{
+		// This is a namespace function that handles the outer integration loop
+		// Outer integration is 0 to 2pi, dphi'
+		// It varies A and B valmaps and calls the inner loop with 
+		//  gaussian quadrature
+
 	}
 
 	damatrix damatrix::operator* (damatrix& rhs)

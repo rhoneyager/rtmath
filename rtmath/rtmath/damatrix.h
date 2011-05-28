@@ -160,4 +160,13 @@ private:
 	void _precalc_operator();
 };
 
+namespace daint
+{
+	// Note here that A and B are not const, since they memorize pre-calculated values
+	void outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap, 
+		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B);
+	void inner_int(boost::shared_ptr<matrixop> res, const mapid &valmapA, const mapid &valmapB, 
+		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B);
+}; // end namespace daint
+
 }; // end rtmath
