@@ -319,7 +319,7 @@ matrixop matrixop::minor(unsigned int rank, ...) const
 		ptr.push_back(ival);
 	}
 	va_end(indices);
-	return minor(ival);
+	return minor(ptr);
 }
 
 void matrixop::_push_back(unsigned int index, double val)
@@ -341,7 +341,8 @@ void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
 	pos[_dims.size()-1] = index;
 
 	// If > dimensionality, do modular addition
-	BOOST_REVERSE_FOREACH(unsigned int i,pos)
+	// BOOST_REVERSE_FOREACH(unsigned int i,pos) // REVERSE_FOREACH seems unreliable
+	for (int i=_dims.size()-1;i>=0;i--)
 	{
 		if (pos[i] >= _dims[i] && i > 0)
 		{
@@ -351,51 +352,38 @@ void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
 	}
 }
 
-matrixop matrixop::minor(const std::vector<unsigned int> &pos) const
+matrixop matrixop::minor(const std::vector<unsigned int> &rc) const
 {
-	// Take a subset of the matrix and return it as a new matrixop
-	// The resulting matrix has each dimension decreased by one
-	// If any dimension hits size zero, throw!
 	using namespace std;
-	vector<unsigned int> newdims = _dims;
-	for (unsigned int i=0;i<_dims.size();i++)
+	if (_dims.size() != 2) throw; // Allow only 2d matrices
+	vector<unsigned int> msiz = _dims;
+	for (unsigned int i=0;i<msiz.size();i++)
 	{
-		newdims[i]--;
-		if (newdims[i] == 0) throw; // TODO: fix the unsupported error
-		// --- should ignore the construction of any dimension of size 1
+		msiz[i] = msiz[i] - 1;
+		if (msiz[i] == 0) throw;
 	}
-	matrixop res(newdims);
-	// Copy over each value the lazy way (if row = minor row, continue)
-	// Still doing arbitrary numbers of rows, columns, ... (higher terms)
-	vector<unsigned int> k((size_t) dimensionality(), 0);
-	unsigned int j = 0;
-	// TODO: implement this as a modular math / base kind of thing (like in timeanalysis::date)
-	while (k[0] < _dims[0])
+	matrixop res(msiz);
+	// I have the empty resultant matrix
+	// Now, to fill in the minors
+	int rowX=rc[0],colX=rc[1];
+	int rcol=0,rrow=0;
+	int rS = 0, cS = 0; // Row / column shift
+	// Since this is used in more than just determinants, I cannot assume that
+	// the matrix is square. Too bad.
+	// Iterate over the rows and columns of the initial matrix
+	for (unsigned int srow=0;srow<_dims[0];srow++)
 	{
-		bool skipme = false;
-		BOOST_FOREACH(unsigned int i, k)
+		if (srow == rowX) rS = 1; // Add the skip factor for future rows
+		if (srow == rowX) continue; // Don't even bother here
+		cS = 0;
+		for (unsigned int scol=0;scol < _dims[1];scol++)
 		{
-			if (k[i] == pos[i]) skipme = true;
+			if (scol == colX) cS = 1;
+			if (scol == colX) continue;
+			// Do the actual value copying here
+			double val = get(2,srow,scol);
+			res.set(val,2,srow-rS,scol-cS); // Row and column skip factors shift the result!
 		}
-		if (skipme) continue; // Minor should not have this value
-
-		// Copy the main matrix value to the minor
-		// Note that the two positions need not be the same
-		res._push_back(j, get(k));
-
-		// Increment k
-		k[k.size()]++;
-		// If > dimensionality, do modular addition
-		BOOST_REVERSE_FOREACH(unsigned int i,k)
-		{
-			if (k[i] >= _dims[i] && i > 0)
-			{
-				k[i-1]++;
-				k[i] = 0;
-			}
-		}
-		// Loop ends if k[0] >= _dims[0]
-		j++;
 	}
 	return res;
 }
@@ -406,14 +394,20 @@ double matrixop::det() const
 	// Find the determinant
 	if (!issquare()) throw;
 	if (dimensionality() == 1) return get(1,0);
-	// Do this by expansion of minors.
+	// Check that matrix is 2d, for now
+	// TODO: extend this to n dims, if possible
+	if (_dims.size() != 2) throw;
+
+	// Handle the 1x1 case easily
+	if (_dims[0] == 1 && _dims[1] == 1) return get(2,0,0);
+	// 2x2 case should be handled as well
+	if (_dims[0] == 2 && _dims[1] == 2) return ((get(2,0,0)*get(2,1,1))-(get(2,0,1)*get(2,1,0)));
+	// Do rest by expansion of minors.
 	// It's unfortunately slow and relies heaviny on recursion, but
 	// I don't want to implement a whole linear algrbra system just yet
 	// TODO: add in gaussian elimination code
 
-	// Check that matrix is 2d, for now
-	// TODO: extend this to n dims, if possible
-	if (_dims.size() != 2) throw;
+	
 	vector<unsigned int> it;
 	it.push_back(0); // 0th row
 	it.push_back(0); // 0th column
@@ -424,7 +418,7 @@ double matrixop::det() const
 	{
 		matrixop min = minor(2,it[0],it[1]);
 		// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
-		res += (-1 * it[1]) * min.det() * get(it);
+		res += pow(-1.0, (double) it[1]) * min.det() * get(it);
 	}
 	return res;
 }
@@ -446,8 +440,21 @@ matrixop matrixop::inverse() const
 {
 	// This uses minors and a determinant to calculate the inverse
 	double mdet = det();
+	if (mdet == 0) throw;
 	// Construct the matrix minors
-	throw;
+	// Assumes 2d array from det. TODO: extend if possible
+	matrixop res(this->_dims);
+	for (unsigned int i=0;i<_dims[0];i++) // columns
+	{
+		for (unsigned int j=0;j<_dims[1];j++) // rows
+		{
+			// Calculate the appropriate minor
+			matrixop min = minor(2,j,i);
+			double inv = pow(-1.0, (double) (i+j) ) * min.det() / mdet;
+			res.set(inv,2,j,i);
+		}
+	}
+	return res;
 }
 
 matrixop matrixop::identity(const std::vector<unsigned int> &size)

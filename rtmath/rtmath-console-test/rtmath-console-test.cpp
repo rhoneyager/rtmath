@@ -172,6 +172,7 @@ int main(int argc, char** argv)
 	cout << "Resulting matrix:\n";
 	prnMat(matRes);
 	*/
+	/*
 	rtmath::matrixop A(2,2,1), B(2,2,1), C(2,2,1), D(2,2,1);
 	double Size = 1.0;
 			A.set(-1.0/2.0,2,0,0); //     [-0.5, 0.5]
@@ -209,7 +210,42 @@ int main(int argc, char** argv)
 			prnMat(Br);
 			prnMat(Cr);
 			prnMat(Dr);
-
+			*/
+	// Matrix inverse calculations
+	rtmath::matrixop orig(2,3,3);
+	orig.set(1,2,0,0);
+	orig.set(2,2,0,1);
+	orig.set(3,2,0,2);
+	orig.set(4,2,1,0);
+	orig.set(5,2,1,1);
+	orig.set(6,2,1,2);
+	orig.set(7,2,2,0);
+	orig.set(8,2,2,1);
+	orig.set(0,2,2,2);
+	std::cout << "Inverse test: \nOriginal:\n";
+	prnMat(orig);
+	std::cout << orig.det() << std::endl;
+	rtmath::matrixop min = orig.minor(2,0,0);
+	std::cout << "Minor (0,0)\n";
+	prnMat(min);
+	std::cout << min.det() << std::endl;
+	min = orig.minor(2,0,1);
+	std::cout << "Minor (0,1)\n";
+	prnMat(min);
+	std::cout << min.det() << std::endl;
+	min = orig.minor(2,1,0);
+	std::cout << "Minor (1,0)\n";
+	prnMat(min);
+	std::cout << min.det() << std::endl;
+	min = orig.minor(2,1,1);
+	std::cout << "Minor (1,1)\n";
+	prnMat(min);
+	std::cout << min.det() << std::endl;
+	// Invert
+	std::cout << "Inverse: \n";
+	rtmath::matrixop inv = orig.inverse();
+	prnMat(inv);
+	std::cout << inv.det() << std::endl;
 	std::cin.get();
 	return 0;
 }
