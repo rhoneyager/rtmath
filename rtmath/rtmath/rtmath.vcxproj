@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="damatrix.h" />
+    <ClInclude Include="damatrix_quad.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="layer.h" />
@@ -156,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="damatrix.cpp" />
+    <ClCompile Include="damatrix_quad.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="layer.cpp" />
     <ClCompile Include="rtmath.cpp" />

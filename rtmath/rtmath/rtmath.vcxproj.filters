@@ -36,6 +36,9 @@
     <ClInclude Include="layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="damatrix_quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="layer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="damatrix_quad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

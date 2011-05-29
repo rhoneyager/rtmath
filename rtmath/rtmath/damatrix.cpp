@@ -1,6 +1,7 @@
 #include "Stdafx.h"
 #include "damatrix.h"
 #include "../rtmath-base/quadrature.h"
+#include "damatrix_quad.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 namespace rtmath {
@@ -285,27 +286,6 @@ namespace rtmath {
 		}
 		// We'll never get here, but it gets rid of a compiler warning
 		return res;
-	}
-
-	void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap, 
-		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B)
-	{
-		// This is a namespace function that handles the outer integration loop
-		// Outer integration is 0 to 2pi, dphi'
-		// It varies A and B valmaps and calls the inner loop with 
-		//  gaussian quadrature
-
-	}
-
-	void daint::inner_int(boost::shared_ptr<matrixop> res, 
-		const mapid &valmapA, const mapid &valmapB, 
-		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B)
-	{
-		// This is a namespace function that handles the outer integration loop
-		// Outer integration is 0 to 2pi, dphi'
-		// It varies A and B valmaps and calls the inner loop with 
-		//  gaussian quadrature
-
 	}
 
 	damatrix damatrix::operator* (damatrix& rhs)

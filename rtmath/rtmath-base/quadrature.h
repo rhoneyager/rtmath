@@ -11,6 +11,9 @@
    */
 
    namespace rtmath {
+
+	   extern const double _gaussian_lagrange_prepump[];
+
 	class evalfunction // an evaluatable function (allows class evaluation)
 	{
 	public:
