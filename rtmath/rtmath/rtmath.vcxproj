@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="atmos.h" />
     <ClInclude Include="damatrix.h" />
     <ClInclude Include="damatrix_quad.h" />
     <ClInclude Include="debug.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="atmos.cpp" />
     <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="damatrix_quad.cpp" />
     <ClCompile Include="debug.cpp" />
