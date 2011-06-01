@@ -65,6 +65,12 @@
     <None Include="app.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\rtmath research 6-2-2011.pptx">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\rtmath research 7-2011.pptx">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
