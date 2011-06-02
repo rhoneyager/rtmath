@@ -5,6 +5,31 @@
 
 namespace rtmath {
 
+	// Used as an easy structure for mapping and function parameters
+	class mapid
+	{
+	public:
+		mapid(double mu, double mun, double phi, double phin)
+		{
+			this->mu = mu;
+			this->mun = mun;
+			this->phi = phi;
+			this->phin = phin;
+		}
+		mapid () {}
+		virtual bool operator == (const mapid &rhs) const
+		{
+			if (this->mu != rhs.mu) return false;
+			if (this->mun != rhs.mun) return false;
+			if (this->phi != rhs.phi) return false;
+			if (this->phin != rhs.phin) return false;
+			return true;
+		}
+		virtual bool operator != (const mapid &rhs) const
+		{ return !(this->operator==(rhs)); }
+		double mu, mun, phi, phin;
+	};
+
 	class matrixop
 		// Defines a generalized set of tensor operations
 		// For now, just use it as a 2d matrix

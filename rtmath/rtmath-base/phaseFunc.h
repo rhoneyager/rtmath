@@ -6,8 +6,8 @@
 
 namespace rtmath {
 
-class phaseFunc
-{
+	class phaseFunc
+	{
 public:
 	// This fuction is designed to be pure virtual, so that mie and other
 	// phase functions can be included in atmospheric layers
@@ -21,9 +21,16 @@ public:
 	virtual void calc(double mu, std::complex<double> &m, double x, double Pnn[4][4]) = 0;
 	// And, give the same function as a matrixop class
 	virtual void calc(double mu, std::complex<double> &m, double x, matrixop &Pnn);
-};
+	const std::vector<unsigned int> size()
+	{
+		std::vector<unsigned int> res;
+		res.push_back(4);
+		res.push_back(4);
+		return res;
+	}
+	};
 
-class scattMatrix
+	class scattMatrix
 {
 public:
 	scattMatrix(void);
@@ -46,6 +53,8 @@ public:
 		matrixop &res);
 	void rotate(rtselec::rtselec RT, double mu, double mun, double alpha, double phi, double phin,
 		double res[4][4]);
+	static void rotate(rtselec::rtselec RT, const matrixop &Pa, 
+		const mapid &varmap, matrixop &res, double alpha);
 private:
 	std::complex<double> m;
 	double x;

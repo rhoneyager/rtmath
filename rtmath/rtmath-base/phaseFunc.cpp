@@ -107,6 +107,61 @@ phaseFuncRotator::phaseFuncRotator(phaseFunc &target, std::complex<double> &m, d
 	this->m = m;
 }
 
+void phaseFuncRotator::rotate(rtselec::rtselec RT, const matrixop &Pa, 
+		const mapid &varmap, matrixop &res, double alpha)
+{
+	double cosia = 0;
+	double cosib = 0;
+	double mu = varmap.mu;
+	double mun = varmap.mun;
+	double phi = varmap.phi;
+	double phin = varmap.phin;
+	// Note that in phasefunc, mu is alpha!
+	if (mu != mun && mu != 1.0)
+	{ // Regular case
+		if (RT == rtmath::rtselec::R)
+		{
+			// Reflection
+			cosia = (-1.0*mu*sqrt(1.0-mun*mun)-mun*sqrt(1.0-mu*mu)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
+			cosib = (mun*sqrt(1.0-mu*mu)+mu*sqrt(1.0-mun*mun)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
+		} else {
+			// Transmission
+			cosia = (1.0*mu*sqrt(1.0-mun*mun)-mun*sqrt(1.0-mu*mu)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
+			cosib = (mun*sqrt(1.0-mu*mu)-mu*sqrt(1.0-mun*mun)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
+		}
+	} else
+	{ // Special case: mu=mun=1
+		cosia = -1.0*cos(phi-phin);
+		cosib = 1.0;
+	}
+
+	double ia,ib;
+	ia=acos(cosia);
+	ib=acos(cosib);
+
+	// Construct the two matrixop rotation matrices in the rotation operator
+	matrixop rota(2,4,4), rotb(2,4,4);
+	// rota
+	rota.set(1.0,2,0,0);
+	rota.set(cos(2.0*ib),2,1,1);
+	rota.set(cos(2.0*ib),2,2,2);
+	rota.set(1.0,2,3,3);
+	rota.set(sin(2.0*ib),2,2,1);
+	rota.set(sin(-2.0*ib),2,1,2);
+	// rotb
+	rotb.set(1.0,2,0,0);
+	rotb.set(cos(2.0*ia),2,1,1);
+	rotb.set(cos(2.0*ia),2,2,2);
+	rotb.set(1.0,2,3,3);
+	rotb.set(sin(2.0*ia),2,2,1);
+	rotb.set(sin(-2.0*ia),2,1,2);
+
+	// Do the rotation!
+	res.clear();
+	res.resize(2,4,4);
+	res = rota * (Pa * rotb);
+}
+
 void phaseFuncRotator::rotate(rtselec::rtselec RT, double mu, double mun, double alpha, 
 	double phi, double phin, matrixop &res)
 {

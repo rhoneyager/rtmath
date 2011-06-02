@@ -50,7 +50,8 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 			// Assign Amap and Bmap the appropriate variables
 			// From DA method, 
 			mapid Amap(valmap.mu,mup,valmap.phi,phip), Bmap(mup,valmap.mun,phip,valmap.phin);
-			*res = *res + *A->eval(Amap) * *B->eval(Bmap) * mup;
+			//*res = *res + *A->eval(Amap) * *B->eval(Bmap) * mup;
+			*res = *res + (matrixop) *A->eval(Amap) * (matrixop) *B->eval(Bmap) * mup;
 		}
 		*res = *res * ((b - a)/2.0);
 		return res;

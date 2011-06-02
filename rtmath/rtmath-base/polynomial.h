@@ -25,10 +25,10 @@ namespace rtmath {
 			polynomial operator * (polynomial) const;
 			polynomial operator * (double) const;
 			polynomial operator ^ (unsigned int) const;
-			polynomial deriv(unsigned int pow); // redo so it can be const
+			polynomial deriv(unsigned int pow); // TODO: redo so it can be const
 			void zeros(std::set<double> &zpts) const;
 			double operator() (double) const;
-			double& operator[] (const unsigned int); // redo for const
+			double& operator[] (const unsigned int); // TODO: redo for const
 			double eval(double xval) const;
 //			polynomial operator = (double);
 			bool operator == (polynomial) const;

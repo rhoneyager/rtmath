@@ -11,31 +11,6 @@ namespace rtmath {
 
 	class damatrix;
 
-	// Used as an easy structure for mapping and function parameters
-	class mapid
-	{
-	public:
-		mapid(double mu, double mun, double phi, double phin)
-		{
-			this->mu = mu;
-			this->mun = mun;
-			this->phi = phi;
-			this->phin = phin;
-		}
-		mapid () {}
-		virtual bool operator == (const mapid &rhs) const
-		{
-			if (this->mu != rhs.mu) return false;
-			if (this->mun != rhs.mun) return false;
-			if (this->phi != rhs.phi) return false;
-			if (this->phin != rhs.phin) return false;
-			return true;
-		}
-		virtual bool operator != (const mapid &rhs) const
-		{ return !(this->operator==(rhs)); }
-		double mu, mun, phi, phin;
-	};
-
 	// TODO: add damatrix operation enums for damatrix::eval to know 
 	// what to do with the parents
 	enum damatrixopenum
@@ -139,7 +114,7 @@ public:
 	virtual damatrix operator * (damatrix&);
 	virtual damatrix operator + (damatrix&);
 	// eval is introduced in damatrix. providers of initial matrices override this
-	virtual boost::shared_ptr<matrixop> eval(const mapid &valmap); // eval at setparams
+	virtual boost::shared_ptr<damatrix> eval(const mapid &valmap); // eval at setparams
 	// set and get are from matrixop. Disallow their usage for now
 	virtual void set(const std::vector<unsigned int> &pos, double val)
 	{ throw; }
@@ -155,7 +130,7 @@ protected:
 	// Must use shared_ptr in all invocations
 	boost::shared_ptr<damatrix> _rootA, _rootB;
 	damatrixopenum _parentsource;
-	std::map<mapid, boost::shared_ptr<matrixop>, mmapcomp > precalc;
+	std::map<mapid, boost::shared_ptr<damatrix>, mmapcomp > precalc;
 private:
 	void _precalc_operator();
 };

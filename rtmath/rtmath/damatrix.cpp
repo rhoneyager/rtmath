@@ -213,7 +213,7 @@ namespace rtmath {
 	}
 	*/
 
-	boost::shared_ptr<matrixop> damatrix::eval(const mapid &valmap)
+	boost::shared_ptr<damatrix> damatrix::eval(const mapid &valmap)
 	{
 		// NOTE: cannot be constant due to storage of calculations
 		// The purpose of this function is to evaluate the matrix at valmap
@@ -221,7 +221,7 @@ namespace rtmath {
 		// Assume that this is not the base for some other derived class (a provider)
 
 		// First, look at the precached table. If a result is there, return it
-		for (std::map<mapid,boost::shared_ptr<matrixop>, mmapcomp >::const_iterator it=precalc.begin(); 
+		for (std::map<mapid,boost::shared_ptr<damatrix>, mmapcomp >::const_iterator it=precalc.begin(); 
 			it != precalc.end(); it++)
 		{
 			// *it->second.get() is awkward phrasing. Eval really should just return a pointer
@@ -233,7 +233,7 @@ namespace rtmath {
 		// integration of the two parent matrices
 		// Transfer a copy of valmap to a local object
 		mapid val = valmap;
-		boost::shared_ptr<matrixop> res( new matrixop(_rootA->size()) );
+		boost::shared_ptr<damatrix> res( new damatrix(_rootA->size()) );
 		// Annoying to do, as I want to dereference the pointers
 		matrixop A(_rootA->size()), B(_rootB->size());
 		switch (_parentsource)
@@ -318,13 +318,13 @@ namespace rtmath {
 	{
 		// Do some precalculation (for convenience later on)
 		// Take all of precalc mapids in rootA and evaluate in the child
-		for (std::map<mapid, boost::shared_ptr<matrixop>, mmapcomp >::const_iterator it=_rootA->precalc.begin();
+		for (std::map<mapid, boost::shared_ptr<damatrix>, mmapcomp >::const_iterator it=_rootA->precalc.begin();
 			it != _rootA->precalc.end(); it++)
 				eval(it->first);
 		// Try with _rootB, if it exists
 		if (_rootB)
 		{
-		for (std::map<mapid, boost::shared_ptr<matrixop>, mmapcomp >::const_iterator it=_rootB->precalc.begin();
+		for (std::map<mapid, boost::shared_ptr<damatrix>, mmapcomp >::const_iterator it=_rootB->precalc.begin();
 			it != _rootB->precalc.end(); it++)
 				eval(it->first);
 		}
