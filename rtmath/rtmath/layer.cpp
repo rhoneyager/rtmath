@@ -11,11 +11,11 @@
 namespace rtmath
 {
 
-	dalayer_init::~dalayer_init()
+	dalayerInit::~dalayerInit()
 	{
 	}
 
-	boost::shared_ptr<damatrix> dalayer_init::eval(const mapid &valmap)
+	boost::shared_ptr<damatrix> dalayerInit::eval(const mapid &valmap)
 	{
 		// valmap contains mu, mun, phi, phin
 		// _tau gives optical depth - value is FIXED!!!!!!
@@ -39,7 +39,7 @@ namespace rtmath
 		// _phaseMat already holds the phase matrix at mun
 		// Invoke phasefuncrotator to move to proper orientation
 		// TODO: is alpha equal to mu, or zero, or what?
-		phaseFuncRotator::rotate(_rt, _phaseMat, valmap, *resa, valmap.mu);
+		phaseFuncRotator::rotate(_rt, *_phaseMat, valmap, *resa, valmap.mu);
 
 		// Take the rotated phase function and build a layer
 		*res = *resa * _tau * _ssa * (1.0/ (4.0 * abs(valmap.mu) * abs(valmap.mun) ));
@@ -79,12 +79,12 @@ void dalayer::generateLayer()
 //	boost::shared_ptr<damatrix> _Rinit, _Tinit;
 	// Cannot use phasefunc directly - must encapsulate in a damatrix
 	
-	dalayer_init initR(*_pf, _ssa, taueff, rtselec::R);
-	dalayer_init initT(*_pf, _ssa, taueff, rtselec::T);
+	dalayerInit initR(*_pf, _ssa, taueff, rtselec::R);
+	dalayerInit initT(*_pf, _ssa, taueff, rtselec::T);
 	// TODO: see if any other method is possible
-	boost::shared_ptr<damatrix> _Rinit = boost::shared_ptr<damatrix> (new dalayer_init(initR));
-	boost::shared_ptr<damatrix> _Tinit = boost::shared_ptr<damatrix> (new dalayer_init(initT));
-
+	boost::shared_ptr<damatrix> _Rinit = boost::shared_ptr<damatrix> (new dalayerInit(initR));
+	boost::shared_ptr<damatrix> _Tinit = boost::shared_ptr<damatrix> (new dalayerInit(initT));
+	
 	// Perform doubling until desired tau is reached
 	throw;
 	// Individ. layers are homog. here, so R*=R, T*=T

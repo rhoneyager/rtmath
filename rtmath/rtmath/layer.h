@@ -45,25 +45,26 @@ namespace rtmath {
 		double _ssa;
 	};
 
-	class dalayer_init : public damatrix
+	
+	class dalayerInit : public damatrix
 	{
 	public:
-		dalayer_init(matrixop &pf, double alb, double tau, rtselec::rtselec rt) : damatrix(pf.size())
+		dalayerInit(matrixop &pf, double alb, double tau, rtselec::rtselec rt) : damatrix(pf.size())
 		{
-			_phaseMat = pf;
+			_phaseMat = &pf;
 			_tau = tau;
 			_ssa  = alb;
 			_rt = rt;
 		}
-		virtual ~dalayer_init();
+		virtual ~dalayerInit();
 		virtual boost::shared_ptr<damatrix> eval(const mapid &valmap);
 	private:
-		matrixop _phaseMat;
+		matrixop *_phaseMat;
 		double _ssa;
 		double _tau;
 		rtselec::rtselec _rt;
 	};
-
+	
 }; // end rtmath
 
 

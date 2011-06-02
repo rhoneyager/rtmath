@@ -60,7 +60,7 @@ namespace rtmath {
 		virtual double get(const std::vector<unsigned int> &pos) const;
 		virtual double get(unsigned int rank, ...) const;
 		void size(std::vector<unsigned int> &out) const;
-		std::vector<unsigned int> size() const;
+		const std::vector<unsigned int> size() const;
 		unsigned int dimensionality() const;
 		void clear();
 		virtual void resize(const std::vector<unsigned int> &size);

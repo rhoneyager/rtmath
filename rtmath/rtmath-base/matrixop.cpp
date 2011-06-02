@@ -79,7 +79,7 @@ void matrixop::size(std::vector<unsigned int> &out) const
 	out = _dims;
 }
 
-std::vector<unsigned int> matrixop::size() const
+const std::vector<unsigned int> matrixop::size() const
 {
 	//TODO: check to see if this code works as intended
 	//NOTE: declaring as static failed
