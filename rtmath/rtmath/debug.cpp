@@ -3,7 +3,7 @@
  * and versioning code resides.
  */
 
-#include "stdafx.h"
+#include "Stdafx.h"
 #include "debug.h"
 #include "error.h"
 #include <map>
