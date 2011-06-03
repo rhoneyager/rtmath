@@ -17,7 +17,7 @@ namespace rtmath {
 			//double (*f)(double) = (double (*)(double)) evalfunc;
 			double convint = 1E-7;
 			double fcint = 1E-13;
-			double fa, fb, fc, fd, fs;
+			double fa, fb, fc, fd, fs = 1.0;
 			unsigned int i=0;
 			fa = f->eval(a);
 			fb = f->eval(b);
