@@ -32,7 +32,7 @@ void Qcalc::calc(double x, double &Qext, double &Qsca, double &Qabs, double &g)
 	double Qe = 0, Qep, Qepar;
 	double Qs = 0, Qsp, Qspar;
 	double Qa = 0;
-	double gpar = 0, ge = 0;
+	double gpar = 0;
 
 		// Define memory for an and bn
 		std::complex<double> an, anp;
