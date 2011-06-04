@@ -13,7 +13,7 @@ static : $(OFILES)
 	ar rcs librtmathbase.a $(OFILES)
 
 dynamic : $(OFILES)
-	$(CC) $(CFLAGS) $(LFLAGS) -o librtmathbase.so
+	$(CC) $(CFLAGS) -o librtmathbase.so $(OFILES) $(LFLAGS) 
 #	ld -G $(OFILES) $(LFLAGS) -o librtmathbase.so
 
 clean :
