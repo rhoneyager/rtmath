@@ -1,6 +1,7 @@
 #include "matrixop.h"
 // Reduces tedium when finding minors
-#include <boost/foreach.hpp>
+//#include <boost/foreach.hpp>
+#include <cmath>
 
 namespace rtmath {
 
@@ -365,8 +366,7 @@ matrixop matrixop::minor(const std::vector<unsigned int> &rc) const
 	matrixop res(msiz);
 	// I have the empty resultant matrix
 	// Now, to fill in the minors
-	int rowX=rc[0],colX=rc[1];
-	int rcol=0,rrow=0;
+	unsigned int rowX=rc[0],colX=rc[1];
 	int rS = 0, cS = 0; // Row / column shift
 	// Since this is used in more than just determinants, I cannot assume that
 	// the matrix is square. Too bad.
@@ -418,7 +418,7 @@ double matrixop::det() const
 	{
 		matrixop min = minor(2,it[0],it[1]);
 		// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
-		res += pow(-1.0, (double) it[1]) * min.det() * get(it);
+		res += std::pow(-1.0, (double) it[1]) * min.det() * get(it);
 	}
 	return res;
 }
@@ -450,7 +450,7 @@ matrixop matrixop::inverse() const
 		{
 			// Calculate the appropriate minor
 			matrixop min = minor(2,j,i);
-			double inv = pow(-1.0, (double) (i+j) ) * min.det() / mdet;
+			double inv = std::pow(-1.0, (double) (i+j) ) * min.det() / mdet;
 			res.set(inv,2,j,i);
 		}
 	}
