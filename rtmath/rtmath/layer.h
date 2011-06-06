@@ -29,20 +29,15 @@ namespace rtmath {
 		void tau(double newtau) {_tau = newtau;}
 		double tau() {return _tau;}
 		void generateLayer();
-		// TODO: redefine calcR and calcT as aliases / macros of 
-		//    calcParam
-		/*
-		inline damatrix calcR(double tau, double phi, double phin, 
-		double mu, double mun);
-		inline damatrix calcT(double tau, double phi, double phin, 
-		double mu, double mun);
-		damatrix calcParam(double tau, double phi, double phin, 
-		double mu, double mun, rtselec::rtselec rt);
-		*/
+		boost::shared_ptr<damatrix> getR() { return _R; }
+		boost::shared_ptr<damatrix> getT() { return _T; }
+		boost::shared_ptr<damatrix> getU() { return _U; }
+		boost::shared_ptr<damatrix> getD() { return _D; }
 	protected:
 		double _tau;
 		matrixop *_pf;
 		double _ssa;
+		boost::shared_ptr<damatrix> _R, _T, _U, _D;
 	};
 
 	

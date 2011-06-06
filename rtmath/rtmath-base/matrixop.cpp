@@ -436,6 +436,22 @@ matrixop matrixop::diagonal(const std::vector<unsigned int> &size, double val)
 	return res;
 }
 
+matrixop matrixop::diagonal(double val, unsigned int rank, ...)
+{
+	// Retrieve the variable parameters
+	va_list indices;
+	va_start(indices, rank);
+	std::vector<unsigned int> ptr;
+	unsigned int ival;
+	for (unsigned int i=0; i<rank; i++)
+	{
+		ival = va_arg(indices,unsigned int);
+		ptr.push_back(ival);
+	}
+	va_end(indices);
+	return diagonal(ptr,val);
+}
+
 matrixop matrixop::inverse() const
 {
 	// This uses minors and a determinant to calculate the inverse

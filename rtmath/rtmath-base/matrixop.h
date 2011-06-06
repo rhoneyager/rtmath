@@ -77,6 +77,7 @@ namespace rtmath {
 		void fromDoubleArray(const double *target);
 		matrixop inverse() const;
 		static matrixop diagonal(const std::vector<unsigned int> &size, double val);
+		static matrixop diagonal(double val, unsigned int rank, ...);
 		static matrixop identity(const std::vector<unsigned int> &size);
 	protected:
 		std::map<std::vector<unsigned int>, double > _vals;

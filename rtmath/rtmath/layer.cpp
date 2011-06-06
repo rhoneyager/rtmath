@@ -52,6 +52,10 @@ dalayer::dalayer(matrixop &pf, double alb)
 	_pf = &pf;
 	_ssa = alb;
 	_tau = 0;
+	_R.reset();
+	_T.reset();
+	_U.reset();
+	_D.reset();
 }
 
 
@@ -63,7 +67,7 @@ void dalayer::generateLayer()
 {
 	// Generate the layer with properties defined by tau,
 	// ssa, phasefunction
-
+	throw;
 	// Begin by determining the number of doublings - must 
 	// begin with a very small tau
 	unsigned int numDoubles = 0;
@@ -79,62 +83,42 @@ void dalayer::generateLayer()
 //	boost::shared_ptr<damatrix> _Rinit, _Tinit;
 	// Cannot use phasefunc directly - must encapsulate in a damatrix
 	
-	dalayerInit initR(*_pf, _ssa, taueff, rtselec::R);
-	dalayerInit initT(*_pf, _ssa, taueff, rtselec::T);
+	//dalayerInit initR(*_pf, _ssa, taueff, rtselec::R);
+	//dalayerInit initT(*_pf, _ssa, taueff, rtselec::T);
 	// TODO: see if any other method is possible
-	boost::shared_ptr<damatrix> _Rinit = boost::shared_ptr<damatrix> (new dalayerInit(initR));
-	boost::shared_ptr<damatrix> _Tinit = boost::shared_ptr<damatrix> (new dalayerInit(initT));
-	
+	boost::shared_ptr<damatrix> _Rinit = boost::shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::R));
+	boost::shared_ptr<damatrix> _Tinit = boost::shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::T));
+
+	// Feed in a dummy variable
+	mapid valmap(0,0,0,0);
+
+	// The initial R and T matrices
+	boost::shared_ptr<damatrix> _Rorig = _Rinit->eval(valmap);
+	boost::shared_ptr<damatrix> _Torig = _Tinit->eval(valmap);
+
+	_R = _Rorig;
+	_T = _Torig;
+
 	// Perform doubling until desired tau is reached
-	throw;
 	// Individ. layers are homog. here, so R*=R, T*=T
 	for (unsigned int i=0;i<numDoubles;i++)
 	{
+		damatrix Q = *_R * *_R;
+		// TODO: fix inverse calculation
+		// TODO: extend damatrix to allow addition and mult. of constant numbers
+		//damatrix S = Q * (Q * damatrix(matrixop::diagonal(-1.0,2,4,4)) + 1.0).inverse();
+		damatrix S = damatrix(matrixop::diagonal(1.0,2,4,4));
+		// TODO: fix D mun value
+		damatrix D = *_T + S * *_T + S * exp(-1.0*_tau / 1.0);
+		damatrix U = *_R * D + *_R * exp(-1.0*_tau / 1.0);
+		damatrix Rnew = *_R;
+		damatrix Tnew = *_T;
+		_R = boost::shared_ptr<damatrix> (new damatrix(Rnew));
+		_T = boost::shared_ptr<damatrix> (new damatrix(Tnew));
 	}
+	// And we have a fully-generated layer!!!!!!!
 }
 
-/*
-damatrix dalayer::calcR(double tau, double phi, double phin, 
-	double mu, double mun)
-{
-	return calcParam(tau,phi,phin,mu,mun,rtselec::R);
-}
-
-damatrix dalayer::calcT(double tau, double phi, double phin, 
-	double mu, double mun)
-{
-	return calcParam(tau,phi,phin,mu,mun,rtselec::T);
-}
-
-damatrix dalayer::calcParam(double tau, double phi, double phin, 
-	double mu, double mun, rtselec::rtselec rt)
-{
-	std::vector<unsigned int> siz;
-	siz.push_back(4);
-	siz.push_back(4);
-	damatrix nul(siz);
-	return nul;
-	// Solution by recursion
-	// Yeah, this stinks, but it's how DA is defined
-	// Written so that recursive calls are not made
-	//  so as not to kill the stack
-
-	// rt is used to select for transmission or reflection
-	// this changes the phase function angle-change matrix (give better name)
-
-	// Start by recursively dividing until tau is sufficiently small
-	// Compute R and T for tau'
-	// Compute other matrices, and get R and T for 2*tau'
-	// Work up until desired thickness is reached
-
-	// This may be difficult without direct recursion
-	// Should cache the angles used in quadrature calculations
-
-	// The phasefunc pointer is *_pf in this class
-
-	// First, create the appropriate rotation matrices for R and T
-}
-*/
 }; // end rtmath
 
 

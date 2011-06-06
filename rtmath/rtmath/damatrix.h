@@ -21,62 +21,6 @@ namespace rtmath {
 		INV
 	};
 
-	/* // Block these while rewriting damatrix
-	class daevalmuint : public rtmath::evalfunction
-		// Sould really only ever be called from daevalmu
-	{
-	public:
-		daevalmuint(damatrix *targeta, damatrix *targetb);
-		damatrix* targeta;
-		damatrix* targetb;
-		void setA(unsigned int i, unsigned int j,
-			double a, double b, double c, unsigned int evalindex);
-		void setB(unsigned int i, unsigned int j,
-			double a, double b, double c, unsigned int evalindex);
-		virtual double eval(double val) const;
-		virtual double operator () (double) const;
-	private:
-		unsigned int _Ai, _Aj, _Bi, _Bj, _An, _Bn;
-		double _Aa, _Ab, _Ac, _Ba, _Bb, _Bc;
-	};
-
-	class daevalmu : public rtmath::evalfunction
-	{
-	public:
-		daevalmu();
-		void setvals(double phi, double phin, double php, 
-			double mu, double mun,
-			unsigned int i, unsigned int j);
-		virtual double eval(double val) const;
-		virtual double operator() (double) const;
-	private:
-		double _phi;
-		double _phin;
-		double _php;
-		double _mu;
-		double _mun;
-		unsigned int _i, _j;
-		damatrix *targeta, *targetb;
-	};
-
-	class daevalphi : public rtmath::evalfunction
-	{
-	public:
-		daevalphi();
-		void setvals(mapid &valmap);
-		void setmats(boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B); 
-		// TODO: recode quadrature to perform on matrices
-		// evalfunction expects return type of double
-		virtual double eval(double val) const;
-		virtual double operator() (double) const;
-		daevalmu *mueval;
-	protected:
-		mapid vals;
-	};
-	*/
-	
-	// Unfortunately necessary, as an autogenerator could not be 
-	// constructed in msvc2010
 	struct mmapcomp
 	{
 		bool operator() (const mapid &lhs, const mapid &rhs)
