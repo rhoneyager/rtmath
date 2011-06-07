@@ -12,6 +12,7 @@
 #include <set>
 #include <map>
 #include <string>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 namespace rtmath {
@@ -19,59 +20,25 @@ namespace rtmath {
 	namespace lbl {
 		// I want the lbl code to be distinct from the rest of the rtmath code
 
-		class Qselector {
-		public:
-			Qselector(unsigned int molecnum, unsigned int isonum, double tempK)
-			{
-				_molecnum = molecnum;
-				_isonum = isonum;
-				_tempK = tempK;
-			}
-			inline unsigned int molecnum() { return _molecnum; }
-			inline unsigned int isonum() { return _isonum; }
-			inline double tempK() { return _tempK; }
-		protected:
-			unsigned int _molecnum;
-			unsigned int _isonum;
-			double _tempK;
-		};
-
 		class isoselector {
 		public:
-			isoselector(unsigned int molecnum, unsigned int isonum)
+			isoselector(unsigned int molecnum, unsigned int isonum, double abundance)
 			{
 				_molecnum = molecnum;
 				_isonum = isonum;
+				_abundance = abundance;
 			}
 			inline unsigned int molecnum() { return _molecnum; }
 			inline unsigned int isonum() { return _isonum; }
+			inline double abundance() { return _abundance; }
 		protected:
 			unsigned int _molecnum;
 			unsigned int _isonum;
+			double _abundance;
 		};
 
 		// Don't use a full class, as reading is too slow
 		class specline {
-		public:
-/*
-			specline() {}
-			specline(unsigned int molecnum, unsigned int isonum,
-				double nu, double S, double gamAir, double gamSelf,
-				double nAir, double deltaAir, double Eb);
-			void set(std::string &parLine);
-			specline(std::string &parLine) { set(parLine); }
-			~specline();
-			inline double nu() { return _nu; }
-			inline unsigned int molecnum() { return _molecnum; }
-			inline unsigned int isonum() { return _isonum; }
-			inline double S() { return _S; }
-			inline double gamAir() {return _gamAir; }
-			inline double gamSelf() { return _gamSelf; }
-			inline double nAir() { return _nAir; }
-			inline double deltaAir() { return _deltaAir; }
-			inline double Eb() { return _Eb; }
-		protected:
-*/
 		public:
 			double _nu;
 			unsigned int _molecnum;
@@ -85,9 +52,12 @@ namespace rtmath {
 		public:
 			static void loadlines(const char* hitranpar, 
 				const char* molparam, const char* parsum);
-			//static std::set<specline*> lines;
-			static std::map<Qselector, double> Qmap;
-			static std::map<isoselector, double> abundanceMap;
+			//static std::map<Qselector, double> Qmap;
+			static std::vector< std::map<double, double> > Qmap;
+			static std::vector< std::string> QmapNames;
+			//static std::vector
+			static std::vector<isoselector> abundanceMap;
+			//static std::map<isoselector, double> abundanceMap;
 			inline static double pRef() { return _pRef; }
 		protected:
 			static double _pRef;

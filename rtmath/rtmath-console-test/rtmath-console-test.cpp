@@ -253,17 +253,21 @@ int main(int argc, char** argv)
 	// hitran loading tests
 	using namespace std;
 	cout << "hitran parse file: ";
-	string htp;
-	const char *none = "";
+	string htp, molp, pars;
 	getline(cin,htp);
+	cout << "Molparam file: ";
+	getline(cin,molp);
+	cout << "parsum file: ";
+	getline(cin,pars);
 	time_t start, finish;
 	start = time (NULL);
 	cout << "Start time: " << start << endl;
-	rtmath::lbl::specline::loadlines(htp.c_str(),none,none);
-	cout << "Lines loaded." << endl;
+	rtmath::lbl::specline::loadlines("",molp.c_str(),pars.c_str());
 	finish = time(NULL);
 	cout << "Finish: " << finish << endl;
 	cout << "Total time to load is " << (finish - start) << " seconds.\n";
+	cout << "molp has " << rtmath::lbl::specline::abundanceMap.size() << " entries.\n";
+	cout << "pars has " << rtmath::lbl::specline::Qmap.at(0).size() << " temperatures.\n";
 	for (;;)
 	{
 		getline(cin,htp);

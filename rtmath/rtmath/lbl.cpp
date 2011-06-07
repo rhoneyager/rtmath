@@ -16,15 +16,18 @@ namespace rtmath {
 		// Define the static variables here
 		double specline::_pRef = 1.0;
 		//std::set<specline*> specline::lines;
-		std::map<Qselector, double> specline::Qmap;
-		std::map<isoselector, double> specline::abundanceMap;
+		//std::map<Qselector, double> specline::Qmap;
+		std::vector< std::map<double, double> > specline::Qmap;
+		std::vector< std::string> specline::QmapNames;
+		std::vector<isoselector> specline::abundanceMap;
 
 		void specline::loadlines(const char* hitranpar, 
 			const char* molparam, const char* parsum)
 		{
-			_loadHITRAN(hitranpar);
-			_loadMolparam(molparam);
-			_loadParsum(parsum);
+			// If a string is null, skip that step
+			if (hitranpar[0]) _loadHITRAN(hitranpar);
+			if (molparam[0]) _loadMolparam(molparam);
+			if (parsum[0]) _loadParsum(parsum);
 		}
 
 		void specline::_loadHITRAN(const char* hitranpar)
@@ -156,16 +159,114 @@ namespace rtmath {
 
 		void specline::_loadMolparam(const char* molparam)
 		{
-			/*
 			using namespace std;
 			ifstream indata(molparam);
+			// molparam.txt is oddly-formatted
+			// it has one line for a header
+			// the next line, prefixed by three spaces, is the molecule, with number
+			// the next several lines have records as:
+			//  iso#, abundance, Q(296K), gj, Molar mass (g)
+			// Then, a new molecule's entry begins
+			// All I need are abundances, but I might as well keep the other data
+			// NOTE: the isotope numbers are not the same as for PARSUM.
+			string linein;
+			// Skip the header
+			getline(indata,linein);
 
+			string molname;
+			unsigned int molid;
+			unsigned int isoid;
+			double abundance;
+			//double Q;
+			//int gj;
+			//double mmass;
+
+			do 
+			{
+				getline(indata,linein);
+				// Check for new molecule
+				if (linein.size() < 5) continue;
+				if (linein[5] != ' ')
+				{
+					// New molecule found. Loading id and number
+					molname = linein.substr(0,5);
+					molid = atoi( linein.substr(8).c_str() );
+				} else {
+					// Check for new isotope
+					if (linein.size() < 11) continue;
+					if (linein[11] != ' ')
+					{
+						// New isotope found
+						isoid = atoi( linein.substr(8,4).c_str() );
+						abundance = atof( linein.substr(14,10).c_str() );
+						//Q = atof( linein.substr(29,9).c_str() );
+						//gj = atoi( linein.substr(42,2).c_str() );
+						//mmass = atof( linein.substr(49,8).c_str() );
+
+						// Add the isotope to the list
+						abundanceMap.push_back(isoselector(molid,isoid,abundance));
+						//abundanceMap[isoselector(molid,isoid)] = abundance;
+						// Yeah, I know that the rest is ignored.
+					}
+				}
+			} while (linein.size());
 			indata.close();
-			*/
 		}
 
 		void specline::_loadParsum(const char* parsum)
 		{
+			// This is a big spreadsheet of data values
+			// Contains T from 70K to 3000K
+			// Contains all isotopes in molparam.txt
+			// But of course, the isotopes are not quite the same as in 
+			// molparams.txt. Crap.
+			
+			// _loadMolparam has already run, so that vector is done
+			//Qmap.resize(abundanceMap.size());
+			using namespace std;
+			ifstream indata(parsum);
+
+			string linein;
+			// Parse the first line to get atoms and isotopes
+			getline(indata,linein);
+			std::istringstream parser(linein, istringstream::in);
+			std::vector<string> molecisoids;
+			string namein;
+			indata >> namein; // Skip Temp(K) in file
+			// Expand around whitespace
+			while (parser.good())
+			{
+				indata >> namein;
+				molecisoids.push_back(namein);
+			}
+
+			Qmap.resize(molecisoids.size());
+			QmapNames = molecisoids;
+
+			// Expand Qmap names, so that molec/isotop lookup works
+			// Using find and substr
+			for (unsigned int i=0;i<QmapNames.size();i++)
+			{
+				size_t seploc = QmapNames[i].find('_');
+				string mname = QmapNames[i].substr(0,seploc);
+				unsigned int isotop = atoi( QmapNames[i].substr(seploc+1));
+
+			}
+
+			// Iterate until eof, reading temperatures and appropriate values
+			while ( indata.good())
+			{
+				double tempK;
+				indata >> tempK;
+				for (unsigned int i=0;i<abundanceMap.size();i++)
+				{
+					double Q;
+					indata >> Q;
+					Qmap.at(i)[tempK] = Q;
+				}
+			}
+
+			indata.close();
 		}
 
 	}; // end lbl
