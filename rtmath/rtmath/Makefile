@@ -1,6 +1,6 @@
 CC=g++
 FILES=`ls *.cpp`
-OFILES=atmos.o damatrix.o damatrix_quad.o debug.o layer.o rtmath.o
+OFILES=atmos.o damatrix.o damatrix_quad.o debug.o layer.o lbl.o rtmath.o
 CFLAGS=-rdynamic -shared -fPIC -Wall 
 LFLAGS=-Wl,export-dynamic -lm
 

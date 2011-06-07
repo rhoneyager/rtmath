@@ -3,6 +3,7 @@
 #include "../mie/mie.h"
 #include "../rtmath-base/rtmath-base.h"
 #include <complex>
+#include <time.h>
 //#include <netcdf.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -211,6 +212,7 @@ int main(int argc, char** argv)
 			prnMat(Cr);
 			prnMat(Dr);
 			*/
+	/*
 	// Matrix inverse calculations
 	rtmath::matrixop orig(2,3,3);
 	orig.set(1,2,0,0);
@@ -247,5 +249,24 @@ int main(int argc, char** argv)
 	prnMat(inv);
 	std::cout << inv.det() << std::endl;
 	std::cin.get();
+	*/
+	// hitran loading tests
+	using namespace std;
+	cout << "hitran parse file: ";
+	string htp;
+	const char *none = "";
+	getline(cin,htp);
+	time_t start, finish;
+	start = time (NULL);
+	cout << "Start time: " << start << endl;
+	rtmath::lbl::specline::loadlines(htp.c_str(),none,none);
+	cout << "Lines loaded." << endl;
+	finish = time(NULL);
+	cout << "Finish: " << finish << endl;
+	cout << "Total time to load is " << (finish - start) << " seconds.\n";
+	for (;;)
+	{
+		getline(cin,htp);
+	}
 	return 0;
 }

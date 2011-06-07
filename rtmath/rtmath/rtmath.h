@@ -11,6 +11,7 @@
 #include "error.h"
 #include "damatrix.h"
 #include "layer.h"
+#include "lbl.h"
 
 /*
 #include "quadrature.h"

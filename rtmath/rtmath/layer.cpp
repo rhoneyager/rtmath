@@ -103,6 +103,7 @@ void dalayer::generateLayer()
 	// Individ. layers are homog. here, so R*=R, T*=T
 	for (unsigned int i=0;i<numDoubles;i++)
 	{
+		/*
 		damatrix Q = *_R * *_R;
 		// TODO: fix inverse calculation
 		// TODO: extend damatrix to allow addition and mult. of constant numbers
@@ -115,6 +116,7 @@ void dalayer::generateLayer()
 		damatrix Tnew = *_T;
 		_R = boost::shared_ptr<damatrix> (new damatrix(Rnew));
 		_T = boost::shared_ptr<damatrix> (new damatrix(Tnew));
+		*/
 	}
 	// And we have a fully-generated layer!!!!!!!
 }
