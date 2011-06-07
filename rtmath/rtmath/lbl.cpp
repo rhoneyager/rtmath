@@ -78,9 +78,12 @@ namespace rtmath {
 				// If eof is reached, the read stops there
 				// Note: no null character gets appended
 				indata.read(inset,recSize*nRecsinread);
+				
 				// On last read, if near end of file, change number 
 				// of records to insert
 				k += numcurrRecs;
+				// Logic check to break loop
+				if (k == numrecs) break;
 				if (k/numcurrRecs >= numFullReads) 
 					numcurrRecs = numrecs % k; // get a remainder
 				// omp parallel for requires integer iterator
