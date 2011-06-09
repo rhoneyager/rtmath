@@ -262,7 +262,7 @@ int main(int argc, char** argv)
 	time_t start, finish;
 	start = time (NULL);
 	cout << "Start time: " << start << endl;
-	rtmath::lbl::specline::loadlines("",molp.c_str(),pars.c_str());
+	rtmath::lbl::specline::loadlines(htp.c_str(),molp.c_str(),pars.c_str());
 	finish = time(NULL);
 	cout << "Finish: " << finish << endl;
 	cout << "Total time to load is " << (finish - start) << " seconds.\n";

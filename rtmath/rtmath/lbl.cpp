@@ -20,6 +20,9 @@ namespace rtmath {
 		std::vector< std::map<double, double> > specline::Qmap;
 		std::vector< std::string> specline::QmapNames;
 		std::vector<isoselector> specline::abundanceMap;
+		std::set<isodata*> specline::linemappings;
+		specline* specline::lines = NULL;
+		const unsigned int specline::numrecs = 2713968;
 
 		void specline::loadlines(const char* hitranpar, 
 			const char* molparam, const char* parsum)
@@ -28,14 +31,16 @@ namespace rtmath {
 			if (hitranpar[0]) _loadHITRAN(hitranpar);
 			if (molparam[0]) _loadMolparam(molparam);
 			if (parsum[0]) _loadParsum(parsum);
+			if (lines) _doMappings();
 		}
 
 		void specline::_loadHITRAN(const char* hitranpar)
 		{
 			// This algorithm is too slow at first
 			// Preallocate memory to speed it up
-			const unsigned int numrecs = 2713968;
+			//const unsigned int numrecs = 2713968; // Now a static var
 			specline *inlines = new specline[numrecs];
+			lines = inlines;
 			// Also, use low-level C functions like fread
 			// getchar locks the io stream each time it is called
 			// fread only does one locking
@@ -189,7 +194,10 @@ namespace rtmath {
 				if (linein[5] != ' ')
 				{
 					// New molecule found. Loading id and number
-					molname = linein.substr(0,5);
+					molname = linein.substr(0,7);
+					// Trim molname
+					molname.erase(molname.find_last_not_of(' ')+1,molname.size());
+					molname.erase(0,molname.find_first_not_of(' '));
 					molid = atoi( linein.substr(8).c_str() );
 				} else {
 					// Check for new isotope
@@ -204,7 +212,7 @@ namespace rtmath {
 						//mmass = atof( linein.substr(49,8).c_str() );
 
 						// Add the isotope to the list
-						abundanceMap.push_back(isoselector(molid,isoid,abundance));
+						abundanceMap.push_back(isoselector(molname, molid,isoid,abundance));
 						//abundanceMap[isoselector(molid,isoid)] = abundance;
 						// Yeah, I know that the rest is ignored.
 					}
@@ -233,10 +241,12 @@ namespace rtmath {
 			std::vector<string> molecisoids;
 			string namein;
 			indata >> namein; // Skip Temp(K) in file
+			getline(indata,namein);
+			parser.str(namein);
 			// Expand around whitespace
 			while (parser.good())
 			{
-				indata >> namein;
+				parser >> namein;
 				molecisoids.push_back(namein);
 			}
 
@@ -245,13 +255,15 @@ namespace rtmath {
 
 			// Expand Qmap names, so that molec/isotop lookup works
 			// Using find and substr
+			/*
 			for (unsigned int i=0;i<QmapNames.size();i++)
 			{
 				size_t seploc = QmapNames[i].find('_');
 				string mname = QmapNames[i].substr(0,seploc);
-				unsigned int isotop = atoi( QmapNames[i].substr(seploc+1));
-
+				unsigned int isotop = atoi( QmapNames[i].substr(seploc+1).c_str());
+				// TODO: complete here if desired. The functionality is unused
 			}
+			*/
 
 			// Iterate until eof, reading temperatures and appropriate values
 			while ( indata.good())
@@ -267,6 +279,76 @@ namespace rtmath {
 			}
 
 			indata.close();
+		}
+
+		void specline::_doMappings()
+		{
+			// TODO: optimize this, since it's important and takes a while
+			// Function creates the mappings between molparams, parsum and the lines.
+			// This is necessary because each file uses different identifiers for the data.
+			// This function assumes that molparam has the complete set of interesting 
+			// molecules (it is essential for the others to work).
+			// It finds the matching parsum entry, and selects the appropriate lines 
+			//std::set<isodata*> linemappings;
+			// Each isodata entry contains the isotope data for one isotope of a molecule
+			// It contains the mapping of partition function values, the abundance, and 
+			// the set of spectral lines. Pointers here are essential.
+
+			unsigned int pmolec=0,piso=0;
+			// Loop through the abundance map
+			for (unsigned int i=0;i<abundanceMap.size();i++)
+			{
+				// Create a new isodata
+				isodata *newiso = new isodata();
+
+				// Set the basic parameters
+				// Note: loading molparams gives isodata from greatest to least abundances!
+				if (pmolec != abundanceMap[i].molecnum())
+				{
+					// New molecule
+					pmolec = abundanceMap[i].molecnum();
+					piso = 1;
+				} else {
+					// Same molecule. Increment isonum
+					piso++;
+				}
+				newiso->_abundance = abundanceMap[i].abundance();
+				abundanceMap[i].molecname(newiso->_molecule);
+				newiso->_isotope = abundanceMap[i].isonum();
+				newiso->_molnum = abundanceMap[i].molecnum();
+				newiso->_isoorder = piso; // Set order for line lookup
+
+				// Select the appropriate Q parameter set
+				std::ostringstream qsstr; // I'm combining an int with a string
+				std::string qstr;
+				qsstr << newiso->_molecule << "_" << newiso->_isotope;
+				qstr = qsstr.str(); // Make stringstream into string
+				// Search for the entry
+				unsigned int target = 0;
+				for (unsigned int j=0;j<QmapNames.size();j++)
+				{
+					if (QmapNames[j] == qstr) target = j;
+				}
+				// Link _Q with Q[target]
+				newiso->_Q = (&Qmap[target]);
+
+				// Select the appropriate HITRAN lines
+				// Must iterate over all lines, so code should be FAST!
+				for (unsigned int k=0;k<numrecs;k++)
+				{
+					if (lines[k]._molecnum == newiso->_molnum)
+					{
+						if (lines[k]._isonum == newiso->_isoorder)
+						{
+							// This is a line that fits the criteria
+							newiso->lines.insert(&lines[k]);
+						}
+					}
+				}
+				// And this abundance entry is completed!
+				linemappings.insert(newiso);
+			}
+			// We've looped through all isotopes, so the mappings are complete.
 		}
 
 	}; // end lbl

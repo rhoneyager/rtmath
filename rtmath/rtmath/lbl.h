@@ -20,21 +20,26 @@ namespace rtmath {
 	namespace lbl {
 		// I want the lbl code to be distinct from the rest of the rtmath code
 
+		class isodata;
+
 		class isoselector {
 		public:
-			isoselector(unsigned int molecnum, unsigned int isonum, double abundance)
+			isoselector(std::string &name, unsigned int molecnum, unsigned int isonum, double abundance)
 			{
 				_molecnum = molecnum;
 				_isonum = isonum;
 				_abundance = abundance;
+				_molecname = name;
 			}
 			inline unsigned int molecnum() { return _molecnum; }
 			inline unsigned int isonum() { return _isonum; }
 			inline double abundance() { return _abundance; }
+			void molecname(std::string &target) { target = _molecname; }
 		protected:
 			unsigned int _molecnum;
 			unsigned int _isonum;
 			double _abundance;
+			std::string _molecname;
 		};
 
 		// Don't use a full class, as reading is too slow
@@ -55,6 +60,9 @@ namespace rtmath {
 			//static std::map<Qselector, double> Qmap;
 			static std::vector< std::map<double, double> > Qmap;
 			static std::vector< std::string> QmapNames;
+			static specline *lines;
+			static const unsigned int numrecs;
+			static std::set<isodata*> linemappings;
 			//static std::vector
 			static std::vector<isoselector> abundanceMap;
 			//static std::map<isoselector, double> abundanceMap;
@@ -64,6 +72,28 @@ namespace rtmath {
 			static void _loadHITRAN(const char* hitranpar);
 			static void _loadMolparam(const char* molparam);
 			static void _loadParsum(const char* parsum);
+			static void _doMappings();
+		};
+
+		class isodata {
+		public:
+			isodata() {}
+			~isodata() {}
+			inline double abundance() { return _abundance; }
+			inline double Q(double T) { return 0; }
+			std::set<specline*> lines;
+			inline const char* molecule() {return _molecule.c_str();}
+			inline unsigned int molnum() { return _molnum;}
+			inline unsigned int isotope() { return _isotope;}
+			inline unsigned int isoorder() { return _isoorder;}
+		private:
+			double _abundance;
+			std::map<double,double> *_Q;
+			std::string _molecule;
+			unsigned int _isotope;
+			unsigned int _molnum;
+			unsigned int _isoorder;
+			friend specline;
 		};
 
 	}; // end namespace lbl
