@@ -44,7 +44,8 @@ namespace rtmath {
 
 		// Don't use a full class, as reading is too slow
 		class specline {
-		public:
+		public: // Member vars
+			// For speed, leave these in the open. Inlining has no point.
 			double _nu;
 			unsigned int _molecnum;
 			unsigned int _isonum;
@@ -54,7 +55,15 @@ namespace rtmath {
 			double _nAir;
 			double _deltaAir;
 			double _Eb;
-		public:
+		public: // Member functions
+			double gamma(double p, double ps, double T);
+			double nuShifted(double p);
+			double f(double nu, double p, double ps, double T);
+			double S(double T, std::map<double,double> *Q);
+			double k(double nu, double p, double ps, double T, std::map<double,double> *Q);
+			double deltaTau(double nu, double p, double ps, 
+				double T, double abun, std::map<double,double> *Q, double dz);
+		public: // Static vars and functions
 			static void loadlines(const char* hitranpar, 
 				const char* molparam, const char* parsum);
 			//static std::map<Qselector, double> Qmap;
@@ -67,8 +76,10 @@ namespace rtmath {
 			static std::vector<isoselector> abundanceMap;
 			//static std::map<isoselector, double> abundanceMap;
 			inline static double pRef() { return _pRef; }
+			inline static double TRef() { return _TRef; }
 		protected:
 			static double _pRef;
+			static double _TRef;
 			static void _loadHITRAN(const char* hitranpar);
 			static void _loadMolparam(const char* molparam);
 			static void _loadParsum(const char* parsum);
@@ -80,7 +91,11 @@ namespace rtmath {
 			isodata() {}
 			~isodata() {}
 			inline double abundance() { return _abundance; }
-			inline double Q(double T) { return 0; }
+			inline double Q(double T) 
+			{ 
+				int _T = (int) T; // Truncation necessary as Q is every int
+				return _Q->at((double) _T);
+			}
 			std::set<specline*> lines;
 			inline const char* molecule() {return _molecule.c_str();}
 			inline unsigned int molnum() { return _molnum;}

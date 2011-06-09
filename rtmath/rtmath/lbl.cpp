@@ -8,13 +8,16 @@
 #include <cstdlib>
 #include <cstdio>
 #include <boost/shared_ptr.hpp>
-
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <cmath>
 #include "lbl.h"
 
 namespace rtmath {
 	namespace lbl {
 		// Define the static variables here
 		double specline::_pRef = 1.0;
+		double specline::_TRef = 296.0;
 		//std::set<specline*> specline::lines;
 		//std::map<Qselector, double> specline::Qmap;
 		std::vector< std::map<double, double> > specline::Qmap;
@@ -23,6 +26,66 @@ namespace rtmath {
 		std::set<isodata*> specline::linemappings;
 		specline* specline::lines = NULL;
 		const unsigned int specline::numrecs = 2713968;
+
+		double specline::gamma(double p, double ps, double T)
+		{
+			double Tscale = pow(_TRef/T,_nAir);
+			double gair = _gamAir * (p - ps);
+			double gsel = _gamSelf * ps;
+			double res = Tscale * (gair + gsel);
+			return res;
+		}
+
+		double specline::nuShifted(double p)
+		{
+			return _nu + _deltaAir * p;
+		}
+
+		double specline::f(double nu, double p, double ps, double T)
+		{
+			// Assuming Lorentx Profile, for now
+			// TODO: find where Voight/Lorentz shift occurs when 
+			// looking over a large range of wavelengths
+			double num = gamma(p,ps,T);
+			double denom = pow(gamma(p,ps,T),2.0) + pow(nuShifted(p),2.0);
+			double res = num / (M_PI * denom);
+			return res;
+		}
+
+		double specline::S(double T, std::map<double,double> *Q)
+		{
+			double Qquo = Q->at(_TRef) / Q->at(T);
+			double cb = -1.4388; // cm*K
+			double Equo = exp(cb*_Eb/T) / exp(cb*_Eb/_TRef);
+			double nuquo = (1.0 - exp(cb*_nu/T)) / 
+				(1.0 - exp(cb*_nu/_TRef));
+			double res = _S * Qquo * Equo * nuquo;
+			return res;
+		}
+
+		double specline::k(double nu, double p, double ps, 
+			double T, std::map<double,double> *Q)
+		{
+			double Sres = S(T,Q);
+			double fres = f(nu,p,ps,T);
+			double res = Sres * fres;
+			return res;
+		}
+
+		double specline::deltaTau(double nu, double p, double ps, 
+			double T, double abun, std::map<double,double> *Q, double dz)
+		{
+			double kres = k(nu,p,ps,T,Q);
+			// Boltzmann's constant:
+			// TODO: check units is ps in atm, T in K
+			const double kb=1.3806503e-23; // m^2 kg s^-2 K^-1
+			// Convert ps from atm to Pa for units
+			double nai = abun * 101325 * ps / (kb*T);
+			// kres has units of 1/(molecule cm^-2)
+			double res = nai * kres * dz;
+			throw;
+			return res;
+		}
 
 		void specline::loadlines(const char* hitranpar, 
 			const char* molparam, const char* parsum)
