@@ -108,7 +108,7 @@ namespace rtmath {
 			unsigned int _isotope;
 			unsigned int _molnum;
 			unsigned int _isoorder;
-			friend specline;
+			friend class specline;
 		};
 
 	}; // end namespace lbl
