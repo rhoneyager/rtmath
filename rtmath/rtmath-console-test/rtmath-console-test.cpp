@@ -1,6 +1,6 @@
 #include <iostream>
 #include "../rtmath/rtmath.h"
-#include "../mie/mie.h"
+//#include "../mie/mie.h"
 #include "../rtmath-base/rtmath-base.h"
 #include <complex>
 #include <time.h>
