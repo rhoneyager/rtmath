@@ -4,6 +4,7 @@
 #include "../rtmath-base/matrixop.h"
 #include "../rtmath-base/quadrature.h"
 #include "../rtmath-base/enums.h"
+#include "lbl.h"
 #include "damatrix.h"
 #include <map>
 #include <vector>
@@ -33,6 +34,7 @@ namespace rtmath {
 		boost::shared_ptr<damatrix> getT() { return _T; }
 		boost::shared_ptr<damatrix> getU() { return _U; }
 		boost::shared_ptr<damatrix> getD() { return _D; }
+		//std::set<lbl::specline*> lines; // The lines that matter in the layer
 	protected:
 		double _tau;
 		matrixop *_pf;

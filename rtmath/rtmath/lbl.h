@@ -88,7 +88,11 @@ namespace rtmath {
 
 		class isodata {
 		public:
+			// Blank class constructer used by specline
 			isodata() {}
+			// Standard constructor used by others, which pulls from specline
+			// TODO: implement
+			isodata(unsigned int atom, unsigned int isoorder); 
 			~isodata() {}
 			inline double abundance() { return _abundance; }
 			inline double Q(double T) 
@@ -109,7 +113,35 @@ namespace rtmath {
 			unsigned int _molnum;
 			unsigned int _isoorder;
 			friend class specline;
+			friend lbllayer;
 		};
+
+		class lbllayer {
+		// This is a layer of the atmosphere.
+		// It corresponds exactly with a doubling-adding layer.
+		// This layer overlay provides the optical depth at the 
+		// desired frequency. The atmos class gives it the 
+		// appropriate lines and concentrations of gases.
+		public:
+			lbllayer();
+			~lbllayer();
+			std::set<isodata*> isotopes;
+			double nu();
+			void nu(double newnu);
+			double p();
+			void p(double newp);
+			double T();
+			void T(double newT);
+			double dz();
+			void dz(double newdz);
+			// TODO: add in constituent concentrations
+			double tau(); // Calculates tau of the layer
+		private:
+		protected:
+			double _nu;
+			double _p;
+			double _T;
+		}; 
 
 	}; // end namespace lbl
 
