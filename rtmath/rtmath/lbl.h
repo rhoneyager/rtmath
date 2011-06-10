@@ -21,6 +21,7 @@ namespace rtmath {
 		// I want the lbl code to be distinct from the rest of the rtmath code
 
 		class isodata;
+		class isoconc;
 
 		class isoselector {
 		public:
@@ -94,17 +95,17 @@ namespace rtmath {
 			// TODO: implement
 			isodata(unsigned int atom, unsigned int isoorder); 
 			~isodata() {}
-			inline double abundance() { return _abundance; }
+			inline double abundance() const { return _abundance; }
 			inline double Q(double T) 
 			{ 
 				int _T = (int) T; // Truncation necessary as Q is every int
 				return _Q->at((double) _T);
 			}
 			std::set<specline*> lines;
-			inline const char* molecule() {return _molecule.c_str();}
-			inline unsigned int molnum() { return _molnum;}
-			inline unsigned int isotope() { return _isotope;}
-			inline unsigned int isoorder() { return _isoorder;}
+			inline const char* molecule() const {return _molecule.c_str();}
+			inline unsigned int molnum() const { return _molnum;}
+			inline unsigned int isotope() const { return _isotope;}
+			inline unsigned int isoorder() const { return _isoorder;}
 		private:
 			double _abundance;
 			std::map<double,double> *_Q;
@@ -113,7 +114,34 @@ namespace rtmath {
 			unsigned int _molnum;
 			unsigned int _isoorder;
 			friend class specline;
-			friend lbllayer;
+			friend class lbllayer;
+			friend class isoconc;
+		};
+
+		class isoconc 
+		{
+		public:
+			isoconc() {}
+			~isoconc() {}
+			inline double ps() const { return _ps; }
+			inline void ps(double newps) { _ps = newps; }
+			inline double p() const { return _p; }
+			inline void p(double newp) { _p = newp; }
+			inline double T() const { return _T; }
+			inline void T(double newT) { _T = newT; }
+			inline double abun() const { return _abun; }
+			inline void abun(double newabun) { _abun = newabun; }
+			inline double dz() const { return _dz; }
+			inline void dz(double newdz) { _dz = newdz; }
+			std::set<isodata*> isotopes;
+			double deltaTau(double nu) const;
+		private:
+			double _ps;
+			double _p;
+			double _T;
+			std::map<double,double> *_Q;
+			double _abun;
+			double _dz;
 		};
 
 		class lbllayer {
@@ -125,22 +153,23 @@ namespace rtmath {
 		public:
 			lbllayer();
 			~lbllayer();
-			std::set<isodata*> isotopes;
-			double nu();
-			void nu(double newnu);
-			double p();
-			void p(double newp);
-			double T();
-			void T(double newT);
-			double dz();
-			void dz(double newdz);
-			// TODO: add in constituent concentrations
-			double tau(); // Calculates tau of the layer
+			// Isotopes contains the spectral lines of each isotope, 
+			// and the molecular data. It does not, however, have the 
+			// concentrations at a given level
+			//std::set<isodata*> isotopes;
+			std::set<isoconc> isoconcentrations;
+			inline double p() const { return _p; }
+			inline void p(double newp) { _p = newp; }
+			inline double T() const { return _T; }
+			inline void T(double newT) { _T = newT; }
+			inline double dz() const { return _dz; }
+			inline void dz(double newdz) { _dz = newdz; }
+			double tau(double nu); // Calculates tau of the layer
 		private:
 		protected:
-			double _nu;
 			double _p;
 			double _T;
+			double _dz;
 		}; 
 
 	}; // end namespace lbl

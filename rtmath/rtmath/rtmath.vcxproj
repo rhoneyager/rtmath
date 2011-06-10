@@ -176,6 +176,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\profiles.xlsx" />
     <None Include="..\rtmath research 6-2-2011.pptx" />
     <None Include="..\rtmath research 7-2011.pptx" />
     <None Include="app.ico" />

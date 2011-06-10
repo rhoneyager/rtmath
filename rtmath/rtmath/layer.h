@@ -8,6 +8,7 @@
 #include "damatrix.h"
 #include <map>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace rtmath {
 
@@ -62,6 +63,17 @@ namespace rtmath {
 		rtselec::rtselec _rt;
 	};
 	
+	class layer {
+		// This class contains the actual atmospheric layer (not just the DA layer components)
+	public:
+		layer() {}
+		~layer() {}
+		boost::shared_ptr<dalayer> l_DA;
+		//boost::shared_ptr<lbllayer> l_lbl;
+	protected:
+	private:
+	};
+
 }; // end rtmath
 
 

@@ -56,11 +56,12 @@ namespace rtmath {
 		double specline::S(double T, std::map<double,double> *Q)
 		{
 			double Qquo = Q->at(_TRef) / Q->at(T);
-			double cb = -1.4388; // cm*K
+			double cb = -1.4388; // cm*K // TODO: unit check
 			double Equo = exp(cb*_Eb/T) / exp(cb*_Eb/_TRef);
 			double nuquo = (1.0 - exp(cb*_nu/T)) / 
 				(1.0 - exp(cb*_nu/_TRef));
 			double res = _S * Qquo * Equo * nuquo;
+			throw; // Unit check must be done
 			return res;
 		}
 
@@ -84,7 +85,44 @@ namespace rtmath {
 			double nai = abun * 101325 * ps / (kb*T);
 			// kres has units of 1/(molecule cm^-2)
 			double res = nai * kres * dz;
-			throw;
+			throw; // Unit check must be done first
+			return res;
+		}
+
+		double isoconc::deltaTau(double nu) const
+		{
+			// Calculate deltaTau caused by a set of isotope lines
+			// at a certain frequency, temp, pressure, concentration, 
+			// etc. Sum them all up and return.
+			double res = 0.0;
+			std::set<isodata*>::iterator it;
+			std::set<specline*>::iterator line;
+			for (it = isotopes.begin(); it != isotopes.end(); it++)
+			{
+				// Isoconc provides lines
+				// Isodata does not provide tau - it's useless, and 
+				// isoconc calls the lines directly
+				double abun = (*it)->abundance();
+				//double Q = (*it)->Q(_T);
+
+				for(line = (*it)->lines.begin(); line != (*it)->lines.end(); line++)
+				{
+					res += (*line)->deltaTau(nu, _p, _ps, _T, abun, _Q, _dz);
+				}
+			}
+			return res;
+		}
+
+		double lbllayer::tau(double nu)
+		{
+			double res = 0.0;
+			std::set<isoconc>::iterator it;
+			for (it = isoconcentrations.begin(); 
+				it != isoconcentrations.end(); it++)
+			{
+				res += it->deltaTau(nu);
+			}
+
 			return res;
 		}
 
