@@ -268,9 +268,38 @@ int main(int argc, char** argv)
 	cout << "Total time to load is " << (finish - start) << " seconds.\n";
 	cout << "molp has " << rtmath::lbl::specline::abundanceMap.size() << " entries.\n";
 	cout << "pars has " << rtmath::lbl::specline::Qmap.at(0).size() << " temperatures.\n";
-	for (;;)
-	{
-		getline(cin,htp);
-	}
+
+	cout << "Now, to perform calculations with an atmospheric profile\n";
+	cout << "Auxiliary profile filename: ";
+	string auxprof;
+	getline(cin,auxprof);
+	cout << "Actual profile filename: ";
+	string mainprof;
+	getline(cin,mainprof);
+
+	// Read in the main profile, list its name, and ask for the wavenumber range
+
+	cout << "Profile is: " << endl;
+
+	double wvlower, wvupper;
+	cout << "Lower wavenumber bound: ";
+	cin >> wvlower;
+	cout << "Upper wavenumber bound: ";
+	cin >> wvupper;
+
+	cout << "Performing atmospheric transmission calculations without scattering.\n";
+	start = time(NULL);
+	cout << "Start time: " << start << endl;
+	// Call functions
+
+	// Output data
+
+	finish = time (NULL);
+	cout << "End time: " << finish << endl;
+	cout << "Total time: " << (finish - start) << " seconds." << endl;
+
+	cout << endl;
+	cout << endl;
+	cout << "Test program routines finished." << endl;
 	return 0;
 }
