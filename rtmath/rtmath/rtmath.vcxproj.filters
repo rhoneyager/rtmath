@@ -89,6 +89,12 @@
     <None Include="..\profiles.xlsx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\auxiliary.txt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\mls.txt">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
