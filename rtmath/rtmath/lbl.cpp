@@ -55,13 +55,15 @@ namespace rtmath {
 
 		double specline::S(double T, std::map<double,double> *Q)
 		{
-			double Qquo = Q->at(_TRef) / Q->at(T);
+			// Approximate T to the truncated int due to roundoff of parsum
+			unsigned int _T = (unsigned int) T;
+			double Qquo = Q->at(_TRef) / Q->at(_T);
 			double cb = -1.4388; // cm*K // TODO: unit check
 			double Equo = exp(cb*_Eb/T) / exp(cb*_Eb/_TRef);
 			double nuquo = (1.0 - exp(cb*_nu/T)) / 
 				(1.0 - exp(cb*_nu/_TRef));
 			double res = _S * Qquo * Equo * nuquo;
-			throw; // Unit check must be done
+			//throw; // Unit check must be done
 			return res;
 		}
 
@@ -85,7 +87,7 @@ namespace rtmath {
 			double nai = abun * 101325 * ps / (kb*T);
 			// kres has units of 1/(molecule cm^-2)
 			double res = nai * kres * dz;
-			throw; // Unit check must be done first
+			//throw; // Unit check must be done first
 			return res;
 		}
 
@@ -103,11 +105,11 @@ namespace rtmath {
 				// Isodata does not provide tau - it's useless, and 
 				// isoconc calls the lines directly
 				double abun = (*it)->abundance();
-				//double Q = (*it)->Q(_T);
+				std::map<double, double> *Q = (*it)->_Q;
 
 				for(line = (*it)->lines.begin(); line != (*it)->lines.end(); line++)
 				{
-					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, _Q, *_dz);
+					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, Q, *_dz);
 				}
 			}
 			return res;
@@ -342,15 +344,18 @@ namespace rtmath {
 			std::istringstream parser(linein, istringstream::in);
 			std::vector<string> molecisoids;
 			string namein;
-			indata >> namein; // Skip Temp(K) in file
-			getline(indata,namein);
-			parser.str(namein);
+			//indata >> namein; // Skip Temp(K) in file
+			//getline(indata,namein);
+			//parser.str(namein);
+			parser >> namein;
 			// Expand around whitespace
 			while (parser.good())
 			{
 				parser >> namein;
 				molecisoids.push_back(namein);
 			}
+			// Drop last molecisoids (it repeats the last read)
+			molecisoids.pop_back();
 
 			Qmap.resize(molecisoids.size());
 			QmapNames = molecisoids;
@@ -372,7 +377,7 @@ namespace rtmath {
 			{
 				double tempK;
 				indata >> tempK;
-				for (unsigned int i=0;i<abundanceMap.size();i++)
+				for (unsigned int i=0;i<QmapNames.size();i++)
 				{
 					double Q;
 					indata >> Q;
@@ -474,7 +479,8 @@ namespace rtmath {
 			std::set<isodata*>::iterator it;
 			for (it = specline::linemappings.begin(); it != specline::linemappings.end(); it++)
 			{
-				if ((*it)->molecule() == molecule.c_str())
+				std::string a((*it)->molecule()), b(molecule);
+				if (a == b)
 				{
 					// Add the isotope
 					isotopes.insert( (*it) );

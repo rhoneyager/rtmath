@@ -146,7 +146,7 @@ namespace rtmath {
 			double _psfrac;
 			double *_p;
 			double *_T;
-			std::map<double,double> *_Q;
+			//std::map<double,double> *_Q;
 			//double _abun;
 			double *_dz;
 		};
@@ -158,8 +158,8 @@ namespace rtmath {
 		// desired frequency. The atmos class gives it the 
 		// appropriate lines and concentrations of gases.
 		public:
-			lbllayer();
-			~lbllayer();
+			lbllayer() {}
+			~lbllayer() {}
 			// Isotopes contains the spectral lines of each isotope, 
 			// and the molecular data. It does not, however, have the 
 			// concentrations at a given level

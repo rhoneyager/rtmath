@@ -23,7 +23,7 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 		// res is already defined
 		for (unsigned int i = start; i< start + (3*deg); i +=3)
 		{
-			double phip = ((b-a)/2.0 * rtmath::_gaussian_lagrange_prepump[i+1]) 
+			double phip = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1]) 
 				+ ((a+b)/2.0);
 			*res = *res + *inner_int(A,B,valmap,phip);
 		}
@@ -45,7 +45,7 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 		boost::shared_ptr<matrixop> res(new matrixop(A->size()));
 		for (unsigned int i = start; i< start + (3*deg); i +=3)
 		{
-			double mup = ((b-a)/2.0 * rtmath::_gaussian_lagrange_prepump[i+1]) 
+			double mup = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1]) 
 				+ ((a+b)/2.0);
 			// Assign Amap and Bmap the appropriate variables
 			// From DA method, 

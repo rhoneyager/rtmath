@@ -12,6 +12,7 @@
 #include "damatrix.h"
 #include "layer.h"
 #include "lbl.h"
+#include "atmos.h"
 
 /*
 #include "quadrature.h"

@@ -12,7 +12,7 @@
 
    namespace rtmath {
 
-	   extern const double _gaussian_lagrange_prepump[];
+	   //extern const double _gaussian_lagrange_prepump[];
 
 	class evalfunction // an evaluatable function (allows class evaluation)
 	{
@@ -25,5 +25,6 @@
 
 	namespace quadrature {
       	  double quad_eval_leg(double a, double b, unsigned int degree, const evalfunction *f);
+		  extern const double _gaussian_lagrange_prepump[];
       	  };
 }; // end namespace rtmath

@@ -35,7 +35,7 @@ namespace rtmath {
 
 	void atmos::loadProfile(const char* filename)
 	{
-		throw;
+		//throw;
 		// open the file
 		using namespace std;
 		ifstream in(filename);
@@ -51,8 +51,9 @@ namespace rtmath {
 		string buffer;
 		istringstream parser(istringstream::in);
 		getline(in,buffer); // Read a full line
-		in >> buffer; // Discard word 'Profile'
-		in >> buffer; // The name of the profile
+		parser.str(buffer);
+		parser >> buffer; // Discard word 'Profile'
+		parser >> buffer; // The name of the profile
 		name = buffer;
 
 		getline(in,buffer); // Get next line, which lists the var names
@@ -79,23 +80,23 @@ namespace rtmath {
 
 		while(in.good())
 		{
-			getline(in,buffer);
-			parser.str(buffer);
+			//getline(in,buffer);
+			//parser.str(buffer);
 			// Do formatted read
-			
-			parser >> zn;
-			parser >> pn;
-			parser >> tn;
-			parser >> dn;
+			//cerr << parser.str();
+			in >> zn;
+			in >> pn;
+			in >> tn;
+			in >> dn;
 			zlevs.push_back(zn);
-			plevs.push_back(pn);
+			plevs.push_back(pn / 1013.0);
 			tlevs.push_back(tn);
 			dlevs.push_back(dn);
 
 			// Read in gases
 			for (unsigned int i=0;i<numgases;i++)
 			{
-				parser >> gn[i];
+				in >> gn[i];
 				conc[i].push_back(gn[i]);
 			}
 
@@ -156,7 +157,7 @@ namespace rtmath {
 				
 				// I have P(mb or atm), density(cm^-3), and conc. (ppmv)
 				// This is easy. Ps = conc * e-6 * P
-				newgas->psfrac(1.0E-6 * conc[i].at(j));
+				newgas->psfrac(1.0E-6 * conc[j].at(i));
 				layer->isoconcentrations.insert(newgas);
 			}
 			// Gases inserted
