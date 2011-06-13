@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=gfortran
-AS=as
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=gfortran.exe
+AS=as.exe
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=MinGW-Windows
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -48,8 +48,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-fvisibility=default
+CXXFLAGS=-fvisibility=default
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -58,69 +58,71 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-L../rtmath-base/dist/Debug/MinGW-Windows -lrtmath-base
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.dll
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.dll: ../rtmath-base/dist/Debug/MinGW-Windows/librtmath-base.dll
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.dll: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
-	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a ${OBJECTFILES} 
-	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
+	${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.dll ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/damatrix_quad.o: damatrix_quad.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix_quad.o damatrix_quad.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix_quad.o damatrix_quad.cpp
 
 ${OBJECTDIR}/atmos.o: atmos.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/atmos.o atmos.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/atmos.o atmos.cpp
 
 ${OBJECTDIR}/rtmath.o: rtmath.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
 
 ${OBJECTDIR}/Stdafx.o: Stdafx.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
 
 ${OBJECTDIR}/debug.o: debug.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug.o debug.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug.o debug.cpp
 
 ${OBJECTDIR}/lbl.o: lbl.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/lbl.o lbl.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/lbl.o lbl.cpp
 
 ${OBJECTDIR}/damatrix.o: damatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix.o damatrix.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix.o damatrix.cpp
 
 ${OBJECTDIR}/layer.o: layer.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
 
 # Subprojects
 .build-subprojects:
+	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug
 	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.dll
 
 # Subprojects
 .clean-subprojects:
+	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug clean
 	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug clean
 
 # Enable dependency checking
