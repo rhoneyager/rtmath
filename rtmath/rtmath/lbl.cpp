@@ -107,7 +107,7 @@ namespace rtmath {
 
 				for(line = (*it)->lines.begin(); line != (*it)->lines.end(); line++)
 				{
-					res += (*line)->deltaTau(nu, _p, _ps, _T, abun, _Q, _dz);
+					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, _Q, *_dz);
 				}
 			}
 			return res;
@@ -116,11 +116,11 @@ namespace rtmath {
 		double lbllayer::tau(double nu)
 		{
 			double res = 0.0;
-			std::set<isoconc>::iterator it;
+			std::set<isoconc*>::iterator it;
 			for (it = isoconcentrations.begin(); 
 				it != isoconcentrations.end(); it++)
 			{
-				res += it->deltaTau(nu);
+				res += (*it)->deltaTau(nu);
 			}
 
 			return res;
@@ -451,6 +451,35 @@ namespace rtmath {
 				linemappings.insert(newiso);
 			}
 			// We've looped through all isotopes, so the mappings are complete.
+		}
+
+		isoconc::isoconc(unsigned int molnum)
+		{
+			// Select the molecule number (not abundance order)
+			// and import the appropriate isotopes
+			std::set<isodata*>::iterator it;
+			for (it = specline::linemappings.begin(); it != specline::linemappings.end(); it++)
+			{
+				if ((*it)->molnum() == molnum)
+				{
+					// Add the isotope
+					isotopes.insert( (*it) );
+				}
+			}
+		}
+
+		isoconc::isoconc(std::string &molecule)
+		{
+			// See other constructor
+			std::set<isodata*>::iterator it;
+			for (it = specline::linemappings.begin(); it != specline::linemappings.end(); it++)
+			{
+				if ((*it)->molecule() == molecule.c_str())
+				{
+					// Add the isotope
+					isotopes.insert( (*it) );
+				}
+			}
 		}
 
 	}; // end lbl

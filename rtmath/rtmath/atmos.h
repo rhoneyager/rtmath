@@ -15,19 +15,41 @@
 #include "layer.h"
 #include "../rtmath-base/matrixop.h"
 #include "damatrix.h"
+#include "lbl.h"
+#include <string>
 
 namespace rtmath {
+	class dalayer;
+	namespace lbl { class lbllayer; };
 
 	class atmos {
 	public:
 		atmos();
 		~atmos();
-		std::vector<dalayer> layers;
+		// The doubling-adding layers
+		//  for scattering
+		std::vector<dalayer> dalayers;
+		// The lbl layers
+		//  for calculation of tau
+		std::vector<lbl::lbllayer> lbllayers;
+
+		std::string name;
 		// For now, calculate at just one wavelength, until dalayer set 
 		// has support for wavenumber cacheing (different tau, ssa yield 
 		// different results at different wavenumbers)
-		void spec(double wvnum);
-		double spec();
+		inline void nu(double wvnum) { _wvnum = wvnum; }
+		inline double nu() { return _wvnum; }
+		
+		// Calculation of optical depth of the entire atmosphere
+		double tau();
+
+		// Smart function to load in a profile with corresponding gas 
+		// concentrations, scattering information, phase functions, ...
+		//  or any subset of the above
+		// For absorption-only, only the gas concentrations are really needed
+		// For merging profile data, consider using a better function
+		void loadProfile(const char* filename);
+
 	private:
 		void _calcProps();
 		double _wvnum;

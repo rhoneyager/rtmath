@@ -58,6 +58,19 @@ dalayer::dalayer(matrixop &pf, double alb)
 	_D.reset();
 }
 
+dalayer::dalayer()
+{
+	static std::vector<unsigned int> size(2,4);
+	static matrixop idmat = matrixop::identity(size);
+	_pf = &idmat; // Set the phase function to the identity matrix
+	_ssa = 0; // No single-scattering albedo, as no scattering
+	_tau = 0;
+	_R.reset();
+	_T.reset();
+	_U.reset();
+	_D.reset();
+}
+
 
 dalayer::~dalayer(void)
 {

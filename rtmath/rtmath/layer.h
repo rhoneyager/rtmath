@@ -27,6 +27,7 @@ namespace rtmath {
 		* (TODO: cache these)
 		*/
 		dalayer(matrixop &pf, double alb);
+		dalayer(); // empty dalayer for no-scattering case
 		virtual ~dalayer(void);
 		void tau(double newtau) {_tau = newtau;}
 		double tau() {return _tau;}
@@ -63,16 +64,18 @@ namespace rtmath {
 		rtselec::rtselec _rt;
 	};
 	
+	/*
 	class layer {
 		// This class contains the actual atmospheric layer (not just the DA layer components)
 	public:
 		layer() {}
 		~layer() {}
 		boost::shared_ptr<dalayer> l_DA;
-		//boost::shared_ptr<lbllayer> l_lbl;
+		boost::shared_ptr<lbllayer> l_lbl;
 	protected:
 	private:
 	};
+	*/
 
 }; // end rtmath
 
