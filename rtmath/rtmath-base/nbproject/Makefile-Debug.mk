@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=gfortran
-AS=as
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=gfortran.exe
+AS=as.exe
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=MinGW-Windows
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -46,8 +46,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-fvisibility=default
+CXXFLAGS=-fvisibility=default
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -60,43 +60,41 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a
-	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a ${OBJECTFILES} 
-	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a
+	${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/zeros.o: zeros.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/zeros.o zeros.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/zeros.o zeros.cpp
 
 ${OBJECTDIR}/rtmath-base.o: rtmath-base.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-base.o rtmath-base.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-base.o rtmath-base.cpp
 
 ${OBJECTDIR}/quadrature.o: quadrature.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/quadrature.o quadrature.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/quadrature.o quadrature.cpp
 
 ${OBJECTDIR}/matrixop.o: matrixop.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/matrixop.o matrixop.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/matrixop.o matrixop.cpp
 
 ${OBJECTDIR}/phaseFunc.o: phaseFunc.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/phaseFunc.o phaseFunc.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/phaseFunc.o phaseFunc.cpp
 
 ${OBJECTDIR}/polynomial.o: polynomial.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/polynomial.o polynomial.cpp
+	$(COMPILE.cc) -g -Wall  -MMD -MP -MF $@.d -o ${OBJECTDIR}/polynomial.o polynomial.cpp
 
 # Subprojects
 .build-subprojects:
@@ -104,7 +102,7 @@ ${OBJECTDIR}/polynomial.o: polynomial.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll
 
 # Subprojects
 .clean-subprojects:

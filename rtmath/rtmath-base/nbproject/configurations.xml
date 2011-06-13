@@ -40,14 +40,16 @@
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Debug" type="3">
+    <conf name="Debug" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
       </toolsSet>
       <compileType>
-        <archiverTool>
-        </archiverTool>
+        <ccTool>
+          <commandLine>-fvisibility=default</commandLine>
+          <warningLevel>2</warningLevel>
+        </ccTool>
       </compileType>
     </conf>
     <conf name="Release" type="3">
