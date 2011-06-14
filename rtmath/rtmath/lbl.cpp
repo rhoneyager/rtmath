@@ -113,11 +113,12 @@ namespace rtmath {
 				// Isodata does not provide tau - it's useless, and 
 				// isoconc calls the lines directly
 				double abun = (*it)->abundance();
-
+				/*
 				for(line = (*it)->lines.begin(); line != (*it)->lines.end(); line++)
 				{
 					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, (*it)->_Qcol, *_dz);
 				}
+				*/
 			}
 			return res;
 		}
@@ -202,7 +203,7 @@ namespace rtmath {
 				// If eof is reached, the read stops there
 				// Note: no null character gets appended
 				indata.read(inset,recSize*nRecsinread);
-				
+
 				// On last read, if near end of file, change number 
 				// of records to insert
 				k += numcurrRecs;
@@ -221,9 +222,9 @@ namespace rtmath {
 					// Copy values for conversion into newvalue[20]
 					// Ensure that they are null-terminated
 					// Then, call M_ATOF or M_ATOI and insert into array
-					
+
 					// I am casting record to allow pointer addition
-					
+
 					// Molecule number
 					strncpy(newvalue,((char*) record) ,2);
 					newvalue[2] = '\0';
@@ -446,13 +447,24 @@ namespace rtmath {
 			// the set of spectral lines. Pointers here are essential.
 
 			unsigned int pmolec=0,piso=0;
-			// Loop through the abundance map
-			for (unsigned int i=0;i<abundanceMap.size();i++)
-			{
-				// Create a new isodata
-				isodata *newiso = new isodata();
 
+			// Two-pass solution for greater speed
+
+			// Create bins for abundances
+			unsigned int numIsos = abundanceMap.size();
+			unsigned int *nALines = new unsigned int[numIsos];
+			isodata *newIsos = new isodata[numIsos];
+
+			// Loop through isotopes and make a mapping table to isotope / hitran line identifiers
+#pragma omp parallel for private(pmolec,piso)
+			for (int i=0;i<(int)numIsos;i++)
+			{
 				// Set the basic parameters
+				nALines[i] = 0;
+				pmolec = 0;
+				piso = 0;
+				// Here, populate the newIsos data with molecule information
+				//  Eveything goes in except for the actual lines
 				// Note: loading molparams gives isodata from greatest to least abundances!
 				if (pmolec != abundanceMap[i].molecnum())
 				{
@@ -463,16 +475,17 @@ namespace rtmath {
 					// Same molecule. Increment isonum
 					piso++;
 				}
-				newiso->_abundance = abundanceMap[i].abundance();
-				abundanceMap[i].molecname(newiso->_molecule);
-				newiso->_isotope = abundanceMap[i].isonum();
-				newiso->_molnum = abundanceMap[i].molecnum();
-				newiso->_isoorder = piso; // Set order for line lookup
+				newIsos[i]._abundance = abundanceMap[i].abundance();
+				abundanceMap[i].molecname(newIsos[i]._molecule);
+				newIsos[i]._isotope = abundanceMap[i].isonum();
+				newIsos[i]._molnum = abundanceMap[i].molecnum();
+				newIsos[i]._isoorder = piso; // Set order for line lookup
 
 				// Select the appropriate Q parameter set
+				// No need to speed up, as this only done ~110 times
 				std::ostringstream qsstr; // I'm combining an int with a string
 				std::string qstr;
-				qsstr << newiso->_molecule << "_" << newiso->_isotope;
+				qsstr << newIsos[i]._molecule << "_" << newIsos[i]._isotope;
 				qstr = qsstr.str(); // Make stringstream into string
 				// Search for the entry
 				unsigned int target = 0;
@@ -481,24 +494,63 @@ namespace rtmath {
 					if (QmapNames[j] == qstr) target = j;
 				}
 				// Link _Q with Q[target]
-				newiso->_Qcol = target;
+				newIsos[i]._Qcol = target;
 
-				// Select the appropriate HITRAN lines
-				// Must iterate over all lines, so code should be FAST!
-				for (unsigned int k=0;k<numrecs;k++)
+			}
+			
+			// Do pass one of the lines
+			// In this pass, just count the number of lines for each isotope
+			bool done = false;
+#pragma omp parallel for private(done)
+			for (int k=0;k<(int)numrecs;k++)
+			{
+				done = false;
+				// Iterate over each isotope
+				for (int i=0;i< (int) numIsos;i++)
 				{
-					if (lines[k]._molecnum == newiso->_molnum)
+					if (lines[k]._molecnum == newIsos[i]._molnum)
 					{
-						if (lines[k]._isonum == newiso->_isoorder)
+						if (lines[k]._isonum == newIsos[i]._isoorder)
 						{
-							// This is a line that fits the criteria
-							newiso->lines.insert(&lines[k]);
+#pragma omp atomic
+							nALines[i]++;
+							//newIsos[i].lines.insert(&lines[k]);
+							done = true;
 						}
 					}
+					if (done) break;
 				}
-				// And this abundance entry is completed!
-				linemappings.insert(newiso);
 			}
+			
+			// Pass 2 - Allocate memory for the line arrays and insert the lines
+#pragma omp parallel for
+			for (int i=0;i<(int)numIsos;i++)
+			{
+				newIsos[i].lines = new specline[ nALines[i] ];
+				newIsos[i]._numLines = nALines[i];
+			}
+
+#pragma omp parallel for private(done)
+			for (int k=0;k<(int)numrecs;k++)
+			{
+				done = false;
+				// Iterate over each isotope
+				for (int i=0;i< (int) numIsos;i++)
+				{
+					if (lines[k]._molecnum == newIsos[i]._molnum)
+					{
+						if (lines[k]._isonum == newIsos[i]._isoorder)
+						{
+							newIsos[i].lines[nALines[i] ] = lines[k];
+#pragma omp atomic
+							nALines[i]--;
+							done = true;
+						}
+					}
+					if (done) break;
+				}
+			}
+
 			// We've looped through all isotopes, so the mappings are complete.
 		}
 
