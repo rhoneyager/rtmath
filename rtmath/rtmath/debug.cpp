@@ -10,6 +10,11 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <time.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace rtmath
 {
@@ -39,6 +44,11 @@ namespace rtmath
 			std::cerr << "Debug Version" << std::endl;
 #else
 			std::cerr << "Release Version" << std::endl;
+#endif
+#ifdef _OPENMP
+			std::cerr << "OpenMP Supported" << std::endl;
+#else
+			std::cerr << "OpenMP Disabled" << std::endl;
 #endif
 #ifdef __amd64
 			std::cerr << "64-bit build" << std::endl;
@@ -72,6 +82,14 @@ namespace rtmath
 #endif
 			std::cerr << std::endl;
 		};
+
+		void timestamp(bool show)
+		{
+			static time_t stamp = 0; // Set to zero the first time
+			time_t newstamp = time (NULL);
+			if (show) std::cerr << "Timestamp Delta: " << (newstamp - stamp) << " seconds" << std::endl;
+			stamp = newstamp;
+		}
 
 		unsigned int getuniqueobj(const char* file, int line, const char* func)
 		{

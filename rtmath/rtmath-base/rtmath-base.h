@@ -10,3 +10,6 @@
 #include "quadrature.h"
 #include "matrixop.h"
 
+// Macro definitions to speed things up
+// (like a redefine of atof on windows)
+#include "macros.h"

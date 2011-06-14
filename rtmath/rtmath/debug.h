@@ -13,7 +13,8 @@ namespace rtmath
 		// library information
 		void debug_preamble(void);
 		int rev(void);
-
+		void timestamp(bool show);
+		inline void timestamp() {timestamp(true);}
 		struct keymap
 		{
 		public:

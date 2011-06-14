@@ -13,6 +13,8 @@
 #include <cmath>
 #include <string.h>
 #include "lbl.h"
+#include "debug.h"
+#include "../rtmath-base/macros.h"
 
 namespace rtmath {
 	namespace lbl {
@@ -21,7 +23,9 @@ namespace rtmath {
 		double specline::_TRef = 296.0;
 		//std::set<specline*> specline::lines;
 		//std::map<Qselector, double> specline::Qmap;
-		std::vector< std::map<double, double> > specline::Qmap;
+		double *specline::Qmatrix = NULL;
+		unsigned int specline::QTlow = 0, specline::QThigh = 0, 
+			specline::QnumIsos = 0, specline::QnumRecords = 0;
 		std::vector< std::string> specline::QmapNames;
 		std::vector<isoselector> specline::abundanceMap;
 		std::set<isodata*> specline::linemappings;
@@ -53,11 +57,15 @@ namespace rtmath {
 			return res;
 		}
 
-		double specline::S(double T, std::map<double,double> *Q)
+		double specline::S(double T, unsigned int Qcol)
 		{
 			// Approximate T to the truncated int due to roundoff of parsum
 			unsigned int _T = (unsigned int) T;
-			double Qquo = Q->at(_TRef) / Q->at(_T);
+			// Find the Tref and T Q values
+			double Qref, Q;
+			Qref = Qmatrix[(QnumIsos+1)*(296-QTlow) + Qcol + 1];
+			Q = Qmatrix[(QnumIsos+1)*(_T-QTlow) + Qcol + 1];
+			double Qquo = Qref / Q;
 			double cb = -1.4388; // cm*K // TODO: unit check
 			double Equo = exp(cb*_Eb/T) / exp(cb*_Eb/_TRef);
 			double nuquo = (1.0 - exp(cb*_nu/T)) / 
@@ -68,18 +76,18 @@ namespace rtmath {
 		}
 
 		double specline::k(double nu, double p, double ps, 
-			double T, std::map<double,double> *Q)
+			double T, unsigned int Qcol)
 		{
-			double Sres = S(T,Q);
+			double Sres = S(T,Qcol);
 			double fres = f(nu,p,ps,T);
 			double res = Sres * fres;
 			return res;
 		}
 
 		double specline::deltaTau(double nu, double p, double ps, 
-			double T, double abun, std::map<double,double> *Q, double dz)
+			double T, double abun, unsigned int Qcol, double dz)
 		{
-			double kres = k(nu,p,ps,T,Q);
+			double kres = k(nu,p,ps,T,Qcol);
 			// Boltzmann's constant:
 			// TODO: check units is ps in atm, T in K
 			const double kb=1.3806503e-23; // m^2 kg s^-2 K^-1
@@ -105,11 +113,10 @@ namespace rtmath {
 				// Isodata does not provide tau - it's useless, and 
 				// isoconc calls the lines directly
 				double abun = (*it)->abundance();
-				std::map<double, double> *Q = (*it)->_Q;
 
 				for(line = (*it)->lines.begin(); line != (*it)->lines.end(); line++)
 				{
-					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, Q, *_dz);
+					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, (*it)->_Qcol, *_dz);
 				}
 			}
 			return res;
@@ -132,10 +139,15 @@ namespace rtmath {
 			const char* molparam, const char* parsum)
 		{
 			// If a string is null, skip that step
+			debug::timestamp(false);
 			if (hitranpar[0]) _loadHITRAN(hitranpar);
+			debug::timestamp(true);
 			if (molparam[0]) _loadMolparam(molparam);
+			debug::timestamp(true);
 			if (parsum[0]) _loadParsum(parsum);
+			debug::timestamp(true);
 			if (lines) _doMappings();
+			debug::timestamp(true);
 		}
 
 		void specline::_loadHITRAN(const char* hitranpar)
@@ -149,10 +161,10 @@ namespace rtmath {
 			// getchar locks the io stream each time it is called
 			// fread only does one locking
 
-			// Slow point is atof, atoi, but these are needed, as the records 
+			// Slow point is M_ATOF, M_ATOI, but these are needed, as the records 
 			// have numbers in exp notation (3.02e48)
 			// Time spent in routine is ~50 seconds on windows, which is acceptable
-			// If only doing atoi for mol and isotop number, takes just 9 secs.
+			// If only doing M_ATOI for mol and isotop number, takes just 9 secs.
 			// With no assignments, takes only 6 secs.
 
 			// This algorithm will do a continuous read of 400 records
@@ -208,54 +220,54 @@ namespace rtmath {
 					char newvalue[20];
 					// Copy values for conversion into newvalue[20]
 					// Ensure that they are null-terminated
-					// Then, call atof or atoi and insert into array
+					// Then, call M_ATOF or M_ATOI and insert into array
 					
 					// I am casting record to allow pointer addition
 					
 					// Molecule number
 					strncpy(newvalue,((char*) record) ,2);
 					newvalue[2] = '\0';
-					linep->_molecnum = atoi(newvalue);
+					linep->_molecnum = M_ATOI(newvalue);
 
 					// Isotopologue number
 					strncpy(newvalue,((char*) record) + 2,1);
 					newvalue[1] = '\0';
-					linep->_isonum = atoi(newvalue);
+					linep->_isonum = M_ATOI(newvalue);
 
 					// Vacuum wavenumber
 					strncpy(newvalue,((char*) record) + 3,12);
 					newvalue[12] = '\0';
-					linep->_nu = atof(newvalue);
+					linep->_nu = M_ATOF(newvalue);
 
 					// S
 					strncpy(newvalue,((char*) record) + 15,10);
 					newvalue[10] = '\0';
-					linep->_S = atof(newvalue);
+					linep->_S = M_ATOF(newvalue);
 
 					// Gamma_air
 					strncpy(newvalue,((char*) record) + 35,5);
 					newvalue[5] = '\0';
-					linep->_gamAir = atof(newvalue);
+					linep->_gamAir = M_ATOF(newvalue);
 
 					// Gamma_self
 					strncpy(newvalue,((char*) record) + 40,5);
 					newvalue[5] = '\0';
-					linep->_gamSelf = atof(newvalue);
+					linep->_gamSelf = M_ATOF(newvalue);
 
 					// E"
 					strncpy(newvalue,((char*) record) + 45,10);
 					newvalue[10] = '\0';
-					linep->_Eb = atof(newvalue);
+					linep->_Eb = M_ATOF(newvalue);
 
 					// n_air
 					strncpy(newvalue,((char*) record) + 55,4);
 					newvalue[4] = '\0';
-					linep->_nAir = atof(newvalue);
+					linep->_nAir = M_ATOF(newvalue);
 
 					// delta_air
 					strncpy(newvalue,((char*) record) + 59,8);
 					newvalue[8] = '\0';
-					linep->_deltaAir = atof(newvalue);
+					linep->_deltaAir = M_ATOF(newvalue);
 
 					//linep++;
 				}
@@ -302,18 +314,18 @@ namespace rtmath {
 					// Trim molname
 					molname.erase(molname.find_last_not_of(' ')+1,molname.size());
 					molname.erase(0,molname.find_first_not_of(' '));
-					molid = atoi( linein.substr(8).c_str() );
+					molid = M_ATOI( linein.substr(8).c_str() );
 				} else {
 					// Check for new isotope
 					if (linein.size() < 11) continue;
 					if (linein[11] != ' ')
 					{
 						// New isotope found
-						isoid = atoi( linein.substr(8,4).c_str() );
-						abundance = atof( linein.substr(14,10).c_str() );
-						//Q = atof( linein.substr(29,9).c_str() );
-						//gj = atoi( linein.substr(42,2).c_str() );
-						//mmass = atof( linein.substr(49,8).c_str() );
+						isoid = M_ATOI( linein.substr(8,4).c_str() );
+						abundance = M_ATOF( linein.substr(14,10).c_str() );
+						//Q = M_ATOF( linein.substr(29,9).c_str() );
+						//gj = M_ATOI( linein.substr(42,2).c_str() );
+						//mmass = M_ATOF( linein.substr(49,8).c_str() );
 
 						// Add the isotope to the list
 						abundanceMap.push_back(isoselector(molname, molid,isoid,abundance));
@@ -332,7 +344,14 @@ namespace rtmath {
 			// Contains all isotopes in molparam.txt
 			// But of course, the isotopes are not quite the same as in 
 			// molparams.txt. Crap.
-			
+
+			// Note: Original routine was too slow. Using similar process as hitran08.par load
+			static const unsigned int numParsumEntries = 3000-70+1; // TODO: allow for dynamic setting
+			// Each record line is 2916 characters long, including the end line
+			static const unsigned int linelength = 2916;
+			// Split reads into intervals of 21 lines each, so a read length of 61236 < 64k
+			//unsigned int numBlockLines = 21;
+			unsigned int numBlockLines = numParsumEntries;
 			// _loadMolparam has already run, so that vector is done
 			//Qmap.resize(abundanceMap.size());
 			using namespace std;
@@ -357,35 +376,60 @@ namespace rtmath {
 			// Drop last molecisoids (it repeats the last read)
 			molecisoids.pop_back();
 
-			Qmap.resize(molecisoids.size());
+			//Qmap.resize(molecisoids.size());
 			QmapNames = molecisoids;
 
-			// Expand Qmap names, so that molec/isotop lookup works
-			// Using find and substr
-			/*
-			for (unsigned int i=0;i<QmapNames.size();i++)
-			{
-				size_t seploc = QmapNames[i].find('_');
-				string mname = QmapNames[i].substr(0,seploc);
-				unsigned int isotop = atoi( QmapNames[i].substr(seploc+1).c_str());
-				// TODO: complete here if desired. The functionality is unused
-			}
-			*/
+			unsigned int numIsos = molecisoids.size();
 
-			// Iterate until eof, reading temperatures and appropriate values
-			while ( indata.good())
+			// Read in the data values
+			if (Qmatrix) delete[] Qmatrix;
+			Qmatrix = new double[numParsumEntries*(1+numIsos )];
+			char* blockin = new char[linelength*numBlockLines];
+			unsigned int linesRead = 0, lineIndex = 0;
+			while (lineIndex < numParsumEntries)
 			{
-				double tempK;
-				indata >> tempK;
-				for (unsigned int i=0;i<QmapNames.size();i++)
+				if (numBlockLines == 0) break;
+				indata.read(blockin,linelength*numBlockLines);
+				linesRead += numBlockLines;
+				// If we've hit the end of file, with a partial block, change numBlockLines
+				//if (numParsumEntries - linesRead < numBlockLines) numBlockLines = numParsumEntries - linesRead;
+				// Iterate in parallel on the block, filling in the values
+				// Q values are in 27-character-wide fields, T values are in the first six characters
+				// I can just punch nulls in this white-space-filled block
+				char* line;
+				char* arr;
+				unsigned int offstart;
+#pragma omp parallel for private(line, arr, offstart)
+				for (int i=0;i<(int)numBlockLines;i++)
 				{
-					double Q;
-					indata >> Q;
-					Qmap.at(i)[tempK] = Q;
+					line = &blockin[linelength*i];
+					arr = line;
+					// Read T
+					arr[6] = '\0'; // Insert a null
+					Qmatrix[(numIsos+1)*(lineIndex+i)] = M_ATOF(&arr[0]); // Start at zero and read until null, and return a double
+					for (unsigned int j=0;j<numIsos;j++)
+					{
+						// Read the values
+						if (j==0)
+						{
+							offstart = 7;
+						} else {
+							offstart = 26*(j)+1;
+						}
+						// Punch hole at end
+						arr[26*(j+1)]='\0';
+						// Pull in the double
+						Qmatrix[(numIsos+1)*(lineIndex+i)+j+1] = M_ATOF(&arr[offstart]);
+					}
 				}
+				lineIndex += numBlockLines;
 			}
-
+			QTlow = (unsigned int) Qmatrix[0];
+			QnumIsos = numIsos;
+			QThigh = (unsigned int) Qmatrix[(numIsos+1)*(numParsumEntries-1)];
+			QnumRecords = numParsumEntries;
 			indata.close();
+			delete[] blockin;
 		}
 
 		void specline::_doMappings()
@@ -432,12 +476,12 @@ namespace rtmath {
 				qstr = qsstr.str(); // Make stringstream into string
 				// Search for the entry
 				unsigned int target = 0;
-				for (unsigned int j=0;j<QmapNames.size();j++)
+				for (unsigned int j=0;j<QnumIsos;j++)
 				{
 					if (QmapNames[j] == qstr) target = j;
 				}
 				// Link _Q with Q[target]
-				newiso->_Q = (&Qmap[target]);
+				newiso->_Qcol = target;
 
 				// Select the appropriate HITRAN lines
 				// Must iterate over all lines, so code should be FAST!

@@ -63,15 +63,18 @@ namespace rtmath {
 			double gamma(double p, double ps, double T);
 			double nuShifted(double p);
 			double f(double nu, double p, double ps, double T);
-			double S(double T, std::map<double,double> *Q);
-			double k(double nu, double p, double ps, double T, std::map<double,double> *Q);
+			double S(double T, unsigned int Qcol);
+			double k(double nu, double p, double ps, double T, unsigned int Qcol);
 			double deltaTau(double nu, double p, double ps, 
-				double T, double abun, std::map<double,double> *Q, double dz);
+				double T, double abun, unsigned int Qcol, double dz);
 		public: // Static vars and functions
 			static void loadlines(const char* hitranpar, 
 				const char* molparam, const char* parsum);
 			//static std::map<Qselector, double> Qmap;
-			static std::vector< std::map<double, double> > Qmap;
+			//static std::vector< std::map<double, double> > Qmap;
+			static double *Qmatrix;
+			static unsigned int QTlow, QThigh;
+			static unsigned int QnumRecords, QnumIsos;
 			static std::vector< std::string> QmapNames;
 			static specline *lines;
 			static const unsigned int numrecs;
@@ -99,11 +102,11 @@ namespace rtmath {
 			isodata(const std::string &molecule);
 			~isodata() {}
 			inline double abundance() const { return _abundance; }
-			inline double Q(double T) 
+			/*inline double Q(double T) 
 			{ 
 				int _T = (int) T; // Truncation necessary as Q is every int
 				return _Q->at((double) _T);
-			}
+			}*/
 			std::set<specline*> lines;
 			inline const char* molecule() const {return _molecule.c_str();}
 			inline unsigned int molnum() const { return _molnum;}
@@ -111,7 +114,8 @@ namespace rtmath {
 			inline unsigned int isoorder() const { return _isoorder;}
 		private:
 			double _abundance;
-			std::map<double,double> *_Q;
+			//std::map<double,double> *_Q;
+			unsigned int _Qcol;
 			std::string _molecule;
 			int _isotope;
 			int _molnum;
@@ -146,6 +150,7 @@ namespace rtmath {
 			double _psfrac;
 			double *_p;
 			double *_T;
+			//unsigned int _Qcol;
 			//std::map<double,double> *_Q;
 			//double _abun;
 			double *_dz;

@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="enums.h" />
+    <ClInclude Include="macros.h" />
     <ClInclude Include="matrixop.h" />
     <ClInclude Include="phaseFunc.h" />
     <ClInclude Include="polynomial.h" />

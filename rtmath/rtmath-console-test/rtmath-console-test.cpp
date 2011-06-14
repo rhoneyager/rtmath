@@ -13,6 +13,20 @@ int main(int argc, char** argv)
 	using namespace std;
 	rtmath::debug::debug_preamble();
 
+	/*
+	cout << "Custom atoi test\nEnter a series of numbers, which will be converted to a double and printed out again." << endl;
+	string in;
+	int num;
+	for (;;)
+	{
+		getline(cin,in);
+		num = M_ATOI(in);
+		cout << num << endl;
+	}
+
+	return 0;
+	*/
+
 	using namespace std;
 	cout << "hitran parse file: ";
 	string htp, molp, pars;
@@ -21,15 +35,11 @@ int main(int argc, char** argv)
 	getline(cin,molp);
 	cout << "parsum file: ";
 	getline(cin,pars);
-	time_t start, finish;
-	start = time (NULL);
-	cout << "Start time: " << start << endl;
+	rtmath::debug::timestamp(false);
 	rtmath::lbl::specline::loadlines(htp.c_str(),molp.c_str(),pars.c_str());
-	finish = time(NULL);
-	cout << "Finish: " << finish << endl;
-	cout << "Total time to load is " << (finish - start) << " seconds.\n";
+	rtmath::debug::timestamp(false);
 	cout << "molp has " << rtmath::lbl::specline::abundanceMap.size() << " entries.\n";
-	cout << "pars has " << rtmath::lbl::specline::Qmap.at(0).size() << " temperatures.\n";
+	cout << "pars has " << rtmath::lbl::specline::QThigh - rtmath::lbl::specline::QTlow << " temperatures.\n";
 
 	cout << "Now, to perform calculations with an atmospheric profile\n";
 	cout << "Profile filename: ";
@@ -53,8 +63,7 @@ int main(int argc, char** argv)
 	while (wvnum + i <= wvnumhigh)
 	{
 		cout << "Performing atmospheric transmission calculations without scattering.\n";
-		start = time(NULL);
-		cout << "Start time: " << start << endl;
+		rtmath::debug::timestamp();
 		// Call functions
 
 		lblatmos.nu(wvnum+i);
@@ -62,7 +71,7 @@ int main(int argc, char** argv)
 		tau[i] = lblatmos.tau();
 		i++;
 	}
-	finish = time (NULL);
+	rtmath::debug::timestamp();
 	for (unsigned int j=0;j<i;j++)
 	{
 		// Output data
@@ -70,8 +79,7 @@ int main(int argc, char** argv)
 	}
 
 	
-	cout << "End time: " << finish << endl;
-	cout << "Total time: " << (finish - start) << " seconds." << endl;
+	rtmath::debug::timestamp();
 
 	cout << endl;
 	cout << endl;
