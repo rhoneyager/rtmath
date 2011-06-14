@@ -112,13 +112,89 @@ namespace rtmath {
 				// Isoconc provides lines
 				// Isodata does not provide tau - it's useless, and 
 				// isoconc calls the lines directly
-				double abun = (*it)->abundance();
-				/*
+				
+				/* // The old-school method that was way too slow
 				for(line = (*it)->lines.begin(); line != (*it)->lines.end(); line++)
 				{
 					res += (*line)->deltaTau(nu, *_p, *_p * _psfrac, *_T, abun, (*it)->_Qcol, *_dz);
 				}
 				*/
+				// This is going to be one long function, since inlining makes my header too big
+				// Plus, I can optimize and parallelize to my heart's content
+
+				// The function is at the molecular level
+				// So, each iterator is at the isotope level
+				double abun = (*it)->abundance();
+				unsigned int Qc = (*it)->_Qcol;
+				// Each isotope (isodata) has a set of specdata* lines
+				// Loop through them
+#pragma omp parallel for
+				for (int i=0;i<(int) (*it)->numLines();i++)
+				{
+					// Each line is at (*it)->lines[i]
+					specline *line = &(*it)->lines[i];
+					// Each line has delta tau: dt=n_a,i * knn'(nu,T,p)dz
+					// Also need the isotope's Q
+					static const double kb=1.3806503e-23; // Boltzmann's const in m^2 kg s^-2 K^-1
+					// Convert ps from atm to Pa for units
+					//  Remember that _p, _T are pointers to the values of the layer
+					double ps = _psfrac * (*_p);
+					double nai = abun * 101325 * ps / (kb * (*_T));
+					// To get dTnn, we must calculate k
+
+					// But, k is dependent on several other things! 
+					
+					// Calculate gamma(p,ps,T)
+					// _nAir is provided by iteration over spectral line
+					double gamma = pow(specline::TRef() / (*_T),line->_nAir) * 
+						((line->_gamAir * (*_p - ps)) + (line->_gamSelf * ps) );
+
+					// Calculate nushifted(p)
+					// spectral line-dependent
+					double nushifted = line->_nu + (line->_deltaAir * (*_p) );
+
+					// Calculate f
+					// Assume Lorentzian for now
+					// TODO: add selector to enable choice
+					// spectral line dependent
+					double f;
+					{
+						double num = gamma;
+						double denom = (gamma * gamma) + (nushifted * nushifted);
+						f = num / (M_PI * denom);
+					}
+
+					// Calculate S(T,Q)
+					// S is spectral line dependent
+					double S;
+					{
+						// Average partition function to get Q(T)
+						double Qref, Q, Qa, Qb;
+						Qref = specline::Qmatrix[(specline::QnumIsos+1)*(296-specline::QTlow) + Qc + 1];
+						Qa = specline::Qmatrix[(specline::QnumIsos+1)*( ((unsigned int)(*_T))-specline::QTlow) + Qc + 1];
+						Qb = specline::Qmatrix[(specline::QnumIsos+1)*( ((unsigned int)(*_T))+1-specline::QTlow) + Qc + 1];
+						// If Tfrac = 1, then Qb, if Tfrac = 0, then Qa
+						double Tfrac = (*_T) - (double) ((unsigned int) *_T); 
+						Q = (Tfrac * Qb) + ( (1.0 - Tfrac) * Qa);
+						double Qquo = Qref / Q;
+						double cb = -1.4388; // cm*K // TODO: unit check
+						double Equo = exp( cb*line->_Eb/(*_T) ) / exp(cb*line->_Eb/specline::TRef());
+						double nuquo = (1.0 - exp( cb*line->_nu/(*_T) )) / 
+							(1.0 - exp(cb*line->_nu/specline::TRef() ));
+						S = line->_S * Qquo * Equo * nuquo;
+					}
+
+					// Calculate k
+					// k = S(T,Q) * f(nu,p,ps,T)
+					// k is spectral line dependent
+					double k = S * f;
+
+					// Finally, dtnn may be calculated
+					double dtnn = nai * k * (*_dz);
+
+#pragma omp atomic
+					res += dtnn;
+				}
 			}
 			return res;
 		}

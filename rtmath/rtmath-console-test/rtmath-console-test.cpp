@@ -67,8 +67,9 @@ int main(int argc, char** argv)
 		// Call functions
 
 		lblatmos.nu(wvnum+i);
-		cout << i;
+		cout << i << " ";
 		tau[i] = lblatmos.tau();
+		rtmath::debug::timestamp();
 		i++;
 	}
 	rtmath::debug::timestamp();
