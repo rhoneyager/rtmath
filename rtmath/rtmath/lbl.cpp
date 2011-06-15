@@ -235,7 +235,8 @@ namespace rtmath {
 			// Preallocate memory to speed it up
 			//const unsigned int numrecs = 2713968; // Now a static var
 			specline *inlines = new specline[numrecs];
-			lines = inlines;
+			specline::lines = inlines;
+
 			// Also, use low-level C functions like fread
 			// getchar locks the io stream each time it is called
 			// fread only does one locking
@@ -256,7 +257,9 @@ namespace rtmath {
 			const unsigned int recSize = 161;
 
 			// Calc the critical read number (for special treatment)
-			const unsigned int numFullReads = numrecs/nRecsinread;
+			unsigned int numReads = numrecs/nRecsinread;
+			if (numrecs % nRecsinread) numReads++;
+
 			//const unsigned int recRem = numrecs - numFullReads * nRecsinread; // Not used
 
 			// Open the hitran file
@@ -273,29 +276,24 @@ namespace rtmath {
 			char *record = inset;
 			//char newvalue[20];
 			specline *linep = inlines;
-			unsigned int k=0;
-			unsigned int numcurrRecs = nRecsinread;
-			while (indata.eof() == false)
-			{
-				// Read in the first increment
-				// If eof is reached, the read stops there
-				// Note: no null character gets appended
-				indata.read(inset,recSize*nRecsinread);
 
-				// On last read, if near end of file, change number 
-				// of records to insert
-				k += numcurrRecs;
-				// Logic check to break loop
-				if (k == numrecs) break;
-				if (k/numcurrRecs >= numFullReads) 
-					numcurrRecs = numrecs % k; // get a remainder
-				// omp parallel for requires integer iterator
+			// Do block-by-block to enable parallelization
+			for (int block=0; block < numReads; block++)
+			{
+				// Read in the block
+				indata.read(inset,recSize*nRecsinread);
+				// Set the bounds for the iteration
+				int blockstart = block * nRecsinread;
+				int blockend = (block + 1) * nRecsinread;
+				if (blockend > numrecs) blockend = numrecs; // not -1 since i<blockend
+
+				// Loop through the record ids
 #pragma omp parallel for private(record,linep)
-				for (int i=0;i< (int) numcurrRecs;i++)
+				for (int i=blockstart;i<blockend;i++)
 				{
-					linep = &inlines[k+i];
-					// Do the actual record parsing
-					record = &inset[i*recSize];
+					linep = &inlines[i];
+					int indataLine = i % nRecsinread;
+					record = &inset[recSize*indataLine];
 					char newvalue[20];
 					// Copy values for conversion into newvalue[20]
 					// Ensure that they are null-terminated
@@ -347,12 +345,10 @@ namespace rtmath {
 					strncpy(newvalue,((char*) record) + 59,8);
 					newvalue[8] = '\0';
 					linep->_deltaAir = M_ATOF(newvalue);
-
-					//linep++;
 				}
-
 			}
-
+			
+			// Note: I have verified that lines is filled by checking the endpoints.
 			indata.close();
 			//std::cout << "Records read: " << j << std::endl;
 		}
@@ -532,10 +528,10 @@ namespace rtmath {
 
 
 			// Loop through isotopes and make a mapping table to isotope / hitran line identifiers
-#pragma omp parallel for
+			int pmolec = 0, piso = 0;
+//#pragma omp parallel for private(pmolec,piso) // can't use the loop because I need ordered data...
 			for (int i=0;i<(int)numIsos;i++)
 			{
-				int pmolec=0, piso=0;
 				// Set the basic parameters
 				nALines[i] = 0;
 
@@ -582,6 +578,7 @@ namespace rtmath {
 					newIsos[i].valid = false;
 				} else {
 					// Add isotope to specdata::linemappings. It's essential for later parts
+					// isodata *iso = &newIsos[i]; // useful when debugging in VS
 #pragma omp critical
 					specline::linemappings.insert(&newIsos[i]);
 				}
@@ -624,6 +621,7 @@ namespace rtmath {
 #pragma omp parallel for
 			for (int k=0;k<(int)numrecs;k++)
 			{
+				specline *tline = &lines[k];
 				bool done = false;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)

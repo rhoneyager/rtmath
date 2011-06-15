@@ -25,9 +25,12 @@ namespace rtmath {
 		// for each lbl layer, compute tau
 		// add the taus together to get the overall optical depth
 		double res = 0.0;
+		double newtau = 0.0;
 		for (unsigned int i=0; i<lbllayers.size(); i++)
 		{
-			res += lbllayers[i].tau(_wvnum);
+			newtau = lbllayers[i].tau(_wvnum);
+			std::cout << i << "\t" << newtau << std::endl;
+			res += newtau;
 		}
 
 		return res;
