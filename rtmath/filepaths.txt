@@ -1,0 +1,53 @@
+C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\HITRAN08.par
+C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\molparam.txt
+C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\parsum.dat
+C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\mls.txt
+
+
+/home/rhoneyag/hitran/cfa-ftp.harvard.edu/pub/HITRAN2008/HITRAN2008/HITRAN08.par
+/home/rhoneyag/hitran/cfa-ftp.harvard.edu/pub/HITRAN2008/Global_Data/molparam.txt
+/home/rhoneyag/hitran/cfa-ftp.harvard.edu/pub/HITRAN2008/Global_Data/parsum.dat
+/home/rhoneyag/devel/rtmath/rtmath/mls.txt
+3000
+3010
+
+
+
+rtmath library
+Compiled on Jun 13 2011 at 18:24:21
+SVN Revision Unknown
+Debug Version
+OpenMP Supported
+Windows Compile
+Microsoft Visual Studio Compiler Version 160040219
+
+hitran parse file: C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projec
+ts\rtmath\HITRAN08.par
+Molparam file: C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\r
+tmath\molparam.txt
+parsum file: C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtm
+ath\parsum.dat
+Timestamp Delta: 1308003882 seconds
+Timestamp Delta: 0 seconds
+Timestamp Delta: 26 seconds * No optimization
+* Note: with optimized atof and atoi, now takes 10-11 seconds
+Timestamp Delta: 0 seconds
+Timestamp Delta: 11 seconds
+Timestamp Delta: 44 seconds
+Timestamp Delta: 0 seconds
+molp has 102 entries.
+pars has 2931 temperatures.
+Now, to perform calculations with an atmospheric profile
+Profile filename: C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Project
+s\rtmath\mls.txt
+Profile is: TRP
+Lower Wavenumber (cm^-1): 3000
+Upper Wavenumber (cm^-1): 3000
+Performing atmospheric transmission calculations without scattering.
+Timestamp Delta: 24 seconds
+0Timestamp Delta: 545 seconds
+3000:   155.975 1.82373e-068
+Timestamp Delta: 0 seconds
+
+
+Test program routines finished.

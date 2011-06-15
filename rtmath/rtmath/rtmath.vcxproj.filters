@@ -95,6 +95,9 @@
     <None Include="..\mls.txt">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\filepaths.txt">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">

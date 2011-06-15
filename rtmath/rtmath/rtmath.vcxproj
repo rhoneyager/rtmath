@@ -186,6 +186,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\auxiliary.txt" />
+    <None Include="..\filepaths.txt" />
     <None Include="..\mls.txt" />
     <None Include="..\profiles.xlsx" />
     <None Include="..\rtmath research 6-2-2011.pptx" />
