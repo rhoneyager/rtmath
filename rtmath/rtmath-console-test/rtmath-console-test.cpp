@@ -85,5 +85,9 @@ int main(int argc, char** argv)
 	cout << endl;
 	cout << endl;
 	cout << "Test program routines finished." << endl;
+	for (;;)
+	{
+		getline(cin,mainprof);
+	}
 	return 0;
 }

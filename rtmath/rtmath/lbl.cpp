@@ -32,6 +32,7 @@ namespace rtmath {
 		specline* specline::lines = NULL;
 		const unsigned int specline::numrecs = 2713968;
 
+		/*
 		double specline::gamma(double p, double ps, double T)
 		{
 			double Tscale = pow(_TRef/T,_nAir);
@@ -98,6 +99,7 @@ namespace rtmath {
 			//throw; // Unit check must be done first
 			return res;
 		}
+		*/
 
 		double isoconc::deltaTau(double nu) const
 		{
@@ -160,7 +162,7 @@ namespace rtmath {
 					double f;
 					{
 						double num = gamma;
-						double denom = (gamma * gamma) + (nushifted * nushifted);
+						double denom = (gamma * gamma) + ((nu - nushifted) * (nu - nushifted));
 						f = num / (M_PI * denom);
 					}
 
@@ -255,7 +257,7 @@ namespace rtmath {
 
 			// Calc the critical read number (for special treatment)
 			const unsigned int numFullReads = numrecs/nRecsinread;
-			const unsigned int recRem = numrecs - numFullReads * nRecsinread;
+			//const unsigned int recRem = numrecs - numFullReads * nRecsinread; // Not used
 
 			// Open the hitran file
 			using namespace std;
@@ -372,9 +374,9 @@ namespace rtmath {
 			getline(indata,linein);
 
 			string molname;
-			unsigned int molid;
-			unsigned int isoid;
-			double abundance;
+			unsigned int molid = 0;
+			unsigned int isoid = 0;
+			double abundance = 0;
 			//double Q;
 			//int gj;
 			//double mmass;
@@ -511,34 +513,32 @@ namespace rtmath {
 
 		void specline::_doMappings()
 		{
-			// TODO: optimize this, since it's important and takes a while
 			// Function creates the mappings between molparams, parsum and the lines.
 			// This is necessary because each file uses different identifiers for the data.
 			// This function assumes that molparam has the complete set of interesting 
 			// molecules (it is essential for the others to work).
 			// It finds the matching parsum entry, and selects the appropriate lines 
-			//std::set<isodata*> linemappings;
+
 			// Each isodata entry contains the isotope data for one isotope of a molecule
 			// It contains the mapping of partition function values, the abundance, and 
 			// the set of spectral lines. Pointers here are essential.
-
-			unsigned int pmolec=0,piso=0;
 
 			// Two-pass solution for greater speed
 
 			// Create bins for abundances
 			unsigned int numIsos = abundanceMap.size();
 			unsigned int *nALines = new unsigned int[numIsos];
-			isodata *newIsos = new isodata[numIsos];
+			isodata *newIsos = new isodata[numIsos]; // Have this data persist (used in set linemappings)
+
 
 			// Loop through isotopes and make a mapping table to isotope / hitran line identifiers
-#pragma omp parallel for private(pmolec,piso)
+#pragma omp parallel for
 			for (int i=0;i<(int)numIsos;i++)
 			{
+				int pmolec=0, piso=0;
 				// Set the basic parameters
 				nALines[i] = 0;
-				pmolec = 0;
-				piso = 0;
+
 				// Here, populate the newIsos data with molecule information
 				//  Eveything goes in except for the actual lines
 				// Note: loading molparams gives isodata from greatest to least abundances!
@@ -565,25 +565,39 @@ namespace rtmath {
 				qstr = qsstr.str(); // Make stringstream into string
 				// Search for the entry
 				unsigned int target = 0;
+				bool success = false;
 				for (unsigned int j=0;j<QnumIsos;j++)
 				{
-					if (QmapNames[j] == qstr) target = j;
+					if (QmapNames[j] == qstr) 
+					{
+						target = j;
+						success = true;
+					}
+					if (success) break;
 				}
 				// Link _Q with Q[target]
 				newIsos[i]._Qcol = target;
-
+				if (!success) 
+				{
+					newIsos[i].valid = false;
+				} else {
+					// Add isotope to specdata::linemappings. It's essential for later parts
+#pragma omp critical
+					specline::linemappings.insert(&newIsos[i]);
+				}
 			}
 			
 			// Do pass one of the lines
 			// In this pass, just count the number of lines for each isotope
-			bool done = false;
-#pragma omp parallel for private(done)
+			
+#pragma omp parallel for
 			for (int k=0;k<(int)numrecs;k++)
 			{
-				done = false;
+				bool done = false;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
+					if (newIsos[i].valid == false) continue; // Skip it
 					if (lines[k]._molecnum == newIsos[i]._molnum)
 					{
 						if (lines[k]._isonum == newIsos[i]._isoorder)
@@ -602,22 +616,29 @@ namespace rtmath {
 #pragma omp parallel for
 			for (int i=0;i<(int)numIsos;i++)
 			{
+				if (newIsos[i].valid == false) continue; // skip it
 				newIsos[i].lines = new specline[ nALines[i] ];
 				newIsos[i]._numLines = nALines[i];
 			}
-
-#pragma omp parallel for private(done)
+			///*
+#pragma omp parallel for
 			for (int k=0;k<(int)numrecs;k++)
 			{
-				done = false;
+				bool done = false;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
+					if (nALines[i] == 0) break; // Just a check.
+					if (newIsos[i].valid == false) continue; // skip it
 					if (lines[k]._molecnum == newIsos[i]._molnum)
 					{
 						if (lines[k]._isonum == newIsos[i]._isoorder)
 						{
-							newIsos[i].lines[nALines[i] ] = lines[k];
+							// Omitting the -1 brought pain and heartbreak.
+							// It took two hours to find the bug.
+							// Windows App Verifier and gflags and many linux heap overflow
+							// debug utilities did NOT find it.
+							newIsos[i].lines[nALines[i] -1] = lines[k];
 #pragma omp atomic
 							nALines[i]--;
 							done = true;
@@ -626,11 +647,13 @@ namespace rtmath {
 					if (done) break;
 				}
 			}
-
+			//*/
 			// We've looped through all isotopes, so the mappings are complete.
+			// Free nALines
+			delete[] nALines;
 		}
 
-		isoconc::isoconc(unsigned int molnum)
+		isoconc::isoconc(int molnum)
 		{
 			// Select the molecule number (not abundance order)
 			// and import the appropriate isotopes

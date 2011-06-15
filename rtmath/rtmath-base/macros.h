@@ -17,7 +17,6 @@ namespace rtmath {
 			unsigned int remainder = 0;
 			unsigned int rembase = 1;
 			unsigned int digit = 0;
-			unsigned int exp = 0;
 			// Sign false indicates positive. True is negative
 			bool sign = false;
 			bool expsign = false;
