@@ -45,6 +45,9 @@
     <ClInclude Include="lbl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="debug_mem_class.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -96,6 +99,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\filepaths.txt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\console-laptop.txt">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

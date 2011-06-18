@@ -6,6 +6,7 @@
 #include "../rtmath-base/enums.h"
 #include "lbl.h"
 #include "damatrix.h"
+#include "debug.h"
 #include <map>
 #include <vector>
 #include <boost/shared_ptr.hpp>

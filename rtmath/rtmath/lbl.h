@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include "debug.h"
 #include "atmos.h"
 
 namespace rtmath {
@@ -48,6 +49,7 @@ namespace rtmath {
 
 		// Don't use a full class, as reading is too slow
 		class specline {
+#include "debug_mem_class.h" // Do special specline debugging
 		public: // Member vars
 			// For speed, leave these in the open. Inlining has no point.
 			double _nu;
@@ -93,6 +95,7 @@ namespace rtmath {
 			static void _loadMolparam(const char* molparam);
 			static void _loadParsum(const char* parsum);
 			static void _doMappings();
+#undef new
 		};
 
 		class isodata {

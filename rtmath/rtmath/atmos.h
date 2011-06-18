@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <map>
+#include "debug.h"
 #include "layer.h"
 #include "../rtmath-base/matrixop.h"
 #include "damatrix.h"

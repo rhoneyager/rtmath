@@ -3,6 +3,7 @@
 #include "../rtmath-base/quadrature.h"
 // Necessary so that I can ignore the ever-growing damatrix tree
 // It can now take care of itself
+#include "debug.h"
 #include <boost/shared_ptr.hpp>
 // Allows variadic function calls
 #include <cstdarg>
@@ -60,6 +61,7 @@ public:
 	// eval is introduced in damatrix. providers of initial matrices override this
 	virtual boost::shared_ptr<damatrix> eval(const mapid &valmap); // eval at setparams
 	// set and get are from matrixop. Disallow their usage for now
+	/*
 	virtual void set(const std::vector<unsigned int> &pos, double val)
 	{ throw; }
 	virtual void set(double val, unsigned int rank, ...)
@@ -68,6 +70,7 @@ public:
 	{ throw; return 0; }
 	virtual double get(unsigned int rank, ...) const
 	{ throw; return 0; }
+	*/
 protected:
 	// TODO: use a smart pointer to do a deep copy here
 	matrixop *_provider;

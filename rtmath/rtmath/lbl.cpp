@@ -13,8 +13,8 @@
 #include <cmath>
 #include <string.h>
 #include "lbl.h"
-#include "debug.h"
 #include "../rtmath-base/macros.h"
+#include "debug.h"
 
 namespace rtmath {
 	namespace lbl {
@@ -32,74 +32,9 @@ namespace rtmath {
 		specline* specline::lines = NULL;
 		const unsigned int specline::numrecs = 2713968;
 
-		/*
-		double specline::gamma(double p, double ps, double T)
-		{
-			double Tscale = pow(_TRef/T,_nAir);
-			double gair = _gamAir * (p - ps);
-			double gsel = _gamSelf * ps;
-			double res = Tscale * (gair + gsel);
-			return res;
-		}
-
-		double specline::nuShifted(double p)
-		{
-			return _nu + _deltaAir * p;
-		}
-
-		double specline::f(double nu, double p, double ps, double T)
-		{
-			// Assuming Lorentx Profile, for now
-			// TODO: find where Voight/Lorentz shift occurs when 
-			// looking over a large range of wavelengths
-			double num = gamma(p,ps,T);
-			double denom = pow(gamma(p,ps,T),2.0) + pow(nuShifted(p),2.0);
-			double res = num / (M_PI * denom);
-			return res;
-		}
-
-		double specline::S(double T, unsigned int Qcol)
-		{
-			// Approximate T to the truncated int due to roundoff of parsum
-			unsigned int _T = (unsigned int) T;
-			// Find the Tref and T Q values
-			double Qref, Q;
-			Qref = Qmatrix[(QnumIsos+1)*(296-QTlow) + Qcol + 1];
-			Q = Qmatrix[(QnumIsos+1)*(_T-QTlow) + Qcol + 1];
-			double Qquo = Qref / Q;
-			double cb = -1.4388; // cm*K // TODO: unit check
-			double Equo = exp(cb*_Eb/T) / exp(cb*_Eb/_TRef);
-			double nuquo = (1.0 - exp(cb*_nu/T)) / 
-				(1.0 - exp(cb*_nu/_TRef));
-			double res = _S * Qquo * Equo * nuquo;
-			//throw; // Unit check must be done
-			return res;
-		}
-
-		double specline::k(double nu, double p, double ps, 
-			double T, unsigned int Qcol)
-		{
-			double Sres = S(T,Qcol);
-			double fres = f(nu,p,ps,T);
-			double res = Sres * fres;
-			return res;
-		}
-
-		double specline::deltaTau(double nu, double p, double ps, 
-			double T, double abun, unsigned int Qcol, double dz)
-		{
-			double kres = k(nu,p,ps,T,Qcol);
-			// Boltzmann's constant:
-			// TODO: check units is ps in atm, T in K
-			const double kb=1.3806503e-23; // m^2 kg s^-2 K^-1
-			// Convert ps from atm to Pa for units
-			double nai = abun * 101325 * ps / (kb*T);
-			// kres has units of 1/(molecule cm^-2)
-			double res = nai * kres * dz;
-			//throw; // Unit check must be done first
-			return res;
-		}
-		*/
+		const char* specline::__file__ = 0;
+	size_t specline::__line__ = 0;
+	const char* specline::__caller__ = 0;
 
 		double isoconc::deltaTau(double nu) const
 		{
@@ -137,6 +72,14 @@ namespace rtmath {
 					specline *line = &(*it)->lines[i];
 					// Each line has delta tau: dt=n_a,i * knn'(nu,T,p)dz
 					// Also need the isotope's Q
+					bool bad = false;
+					if (line->_S > 1e-10) bad = true;
+					if (line->_S < -1e-10) bad = true;
+					if (bad)
+					{
+						// Pause execution here
+						double test = 0;
+					}
 					static const double kb=1.3806503e-23; // Boltzmann's const in m^2 kg s^-2 K^-1
 					// Convert ps from atm to Pa for units
 					//  Remember that _p, _T are pointers to the values of the layer
@@ -214,6 +157,8 @@ namespace rtmath {
 			return res;
 		}
 
+#define new (setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : new
+
 		void specline::loadlines(const char* hitranpar, 
 			const char* molparam, const char* parsum)
 		{
@@ -227,6 +172,7 @@ namespace rtmath {
 			debug::timestamp(true);
 			if (lines) _doMappings();
 			debug::timestamp(true);
+			__Track(3,0,0,0,0,0);
 		}
 
 		void specline::_loadHITRAN(const char* hitranpar)
@@ -278,7 +224,7 @@ namespace rtmath {
 			specline *linep = inlines;
 
 			// Do block-by-block to enable parallelization
-			for (int block=0; block < numReads; block++)
+			for (int block=0; block < (int) numReads; block++)
 			{
 				// Read in the block
 				indata.read(inset,recSize*nRecsinread);
@@ -590,10 +536,12 @@ namespace rtmath {
 #pragma omp parallel for
 			for (int k=0;k<(int)numrecs;k++)
 			{
+				specline *currline = &lines[k];
 				bool done = false;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
+					isodata *currIso = &newIsos[i];
 					if (newIsos[i].valid == false) continue; // Skip it
 					if (lines[k]._molecnum == newIsos[i]._molnum)
 					{
@@ -623,10 +571,10 @@ namespace rtmath {
 			{
 				specline *tline = &lines[k];
 				bool done = false;
+				if (tline->_molecnum < 0) throw;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
-					if (nALines[i] == 0) break; // Just a check.
 					if (newIsos[i].valid == false) continue; // skip it
 					if (lines[k]._molecnum == newIsos[i]._molnum)
 					{
@@ -636,7 +584,9 @@ namespace rtmath {
 							// It took two hours to find the bug.
 							// Windows App Verifier and gflags and many linux heap overflow
 							// debug utilities did NOT find it.
-							newIsos[i].lines[nALines[i] -1] = lines[k];
+							// TODO: check here for the error!
+							//newIsos[i].lines[nALines[i] -1] = lines[k];
+							(newIsos[i].lines[nALines[i] - 1]) = *tline;
 #pragma omp atomic
 							nALines[i]--;
 							done = true;
@@ -650,6 +600,8 @@ namespace rtmath {
 			// Free nALines
 			delete[] nALines;
 		}
+
+#undef new
 
 		isoconc::isoconc(int molnum)
 		{

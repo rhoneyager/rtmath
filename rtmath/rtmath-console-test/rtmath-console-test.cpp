@@ -7,34 +7,35 @@
 //#include <netcdf.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <fstream>
+#include <stdio.h>
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
 	using namespace std;
 	rtmath::debug::debug_preamble();
-
-	/*
-	cout << "Custom atoi test\nEnter a series of numbers, which will be converted to a double and printed out again." << endl;
-	string in;
-	int num;
-	for (;;)
+	freopen("strerr.txt","w",stderr); // Remap standard error for debug
+	rtmath::debug::debug_preamble(); // Print again, this time to the file
+	// This part of the code lets me create an answer file, so that I don't 
+	// need to copy and paste all the time.
+	istream *in = NULL;
+	if (argc > 1)
 	{
-		getline(cin,in);
-		num = M_ATOI(in);
-		cout << num << endl;
+		static filebuf fb;
+		fb.open(argv[1],ios::in);
+		static istream indata(&fb);
+		in = &indata;
+	} else {
+		in = &cin;
 	}
 
-	return 0;
-	*/
-
-	using namespace std;
 	cout << "hitran parse file: ";
 	string htp, molp, pars;
-	getline(cin,htp);
+	getline(*in,htp);
 	cout << "Molparam file: ";
-	getline(cin,molp);
+	getline(*in,molp);
 	cout << "parsum file: ";
-	getline(cin,pars);
+	getline(*in,pars);
 	rtmath::debug::timestamp(false);
 	rtmath::lbl::specline::loadlines(htp.c_str(),molp.c_str(),pars.c_str());
 	rtmath::debug::timestamp(false);
@@ -44,7 +45,7 @@ int main(int argc, char** argv)
 	cout << "Now, to perform calculations with an atmospheric profile\n";
 	cout << "Profile filename: ";
 	string mainprof;
-	getline(cin,mainprof);
+	getline(*in,mainprof);
 
 	// Read in the main profile, list its name, and ask for the wavenumber range
 	rtmath::atmos lblatmos;
@@ -54,25 +55,27 @@ int main(int argc, char** argv)
 
 	double wvnum, wvnumhigh;
 	cout << "Lower Wavenumber (cm^-1): ";
-	cin >> wvnum;
+	*in >> wvnum;
 	cout << "Upper Wavenumber (cm^-1): ";
-	cin >> wvnumhigh;
+	*in >> wvnumhigh;
 
 	double *tau = new double( (unsigned int) wvnumhigh - (unsigned int) wvnum + 1);
 	unsigned int i=0;
+		cout << "Performing atmospheric transmission calculations without scattering.\n";
 	while (wvnum + i <= wvnumhigh)
 	{
-		cout << "Performing atmospheric transmission calculations without scattering.\n";
-		rtmath::debug::timestamp();
+		rtmath::debug::timestamp(false);
 		// Call functions
 
 		lblatmos.nu(wvnum+i);
 		cout << i << " ";
 		tau[i] = lblatmos.tau();
-		rtmath::debug::timestamp();
+		rtmath::debug::timestamp(true);
 		i++;
 	}
-	rtmath::debug::timestamp();
+	rtmath::debug::timestamp(false);
+	cout << "Final results:" << endl;
+	cout << "Wavenumber\t\tTau\tT\n";
 	for (unsigned int j=0;j<i;j++)
 	{
 		// Output data
@@ -80,7 +83,7 @@ int main(int argc, char** argv)
 	}
 
 	
-	rtmath::debug::timestamp();
+	rtmath::debug::timestamp(false);
 
 	cout << endl;
 	cout << endl;

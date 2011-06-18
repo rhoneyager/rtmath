@@ -83,11 +83,11 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;SPECIAL_HEAP_CHECK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
-      <OpenMPSupport>true</OpenMPSupport>
+      <OpenMPSupport>false</OpenMPSupport>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -162,6 +162,7 @@
     <ClInclude Include="damatrix.h" />
     <ClInclude Include="damatrix_quad.h" />
     <ClInclude Include="debug.h" />
+    <ClInclude Include="debug_mem_class.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="layer.h" />
     <ClInclude Include="lbl.h" />
@@ -186,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\auxiliary.txt" />
+    <None Include="..\console-laptop.txt" />
     <None Include="..\filepaths.txt" />
     <None Include="..\mls.txt" />
     <None Include="..\profiles.xlsx" />

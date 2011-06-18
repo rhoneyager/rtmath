@@ -1,20 +1,11 @@
 /* debug.cpp
- * The debugging file, where all of the error-handling
- * and versioning code resides.
- */
+* The debugging file, where all of the error-handling
+* and versioning code resides.
+*/
 
 #include "Stdafx.h"
 #include "debug.h"
 #include "error.h"
-#include <map>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <time.h>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 namespace rtmath
 {
@@ -94,7 +85,7 @@ namespace rtmath
 		unsigned int getuniqueobj(const char* file, int line, const char* func)
 		{
 			keymap* temp = new keymap(file,line,func);
-    
+
 			if (UNIQUE_KEYS.count(temp) == 0)
 			{
 				UNIQUE_KEYS[temp] = 0;
@@ -112,7 +103,7 @@ namespace rtmath
 			for (map<keymap*,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
 			{
 				cerr << it->first->file << " - " << it->first->function << " - " << it->first->line << " - " << it->second << endl;
-        
+
 			}
 			cerr << endl;
 		}
@@ -129,3 +120,73 @@ namespace rtmath
 
 	}; // end debug
 }; // end rtmath
+
+// These go outside of rtmath
+/*
+#ifdef HEAP_CHECK
+
+typedef struct {
+	void*	address;
+	size_t	size;
+	char	file[64];
+	int	line;
+} ALLOC_INFO;
+
+typedef std::set<ALLOC_INFO*> AllocList;
+
+AllocList *allocList;
+
+void AddTrack(void* addr,  size_t asize,  const char *fname, int lnum)
+{
+	ALLOC_INFO *info;
+
+	if(!allocList) {
+		allocList = new(AllocList);
+	}
+
+	info = new(ALLOC_INFO);
+	info->address = addr;
+	strncpy(info->file, fname, 63);
+	info->line = lnum;
+	info->size = asize;
+	allocList->insert(allocList->begin(), info);
+};
+
+void RemoveTrack(void* addr)
+{
+	AllocList::iterator i;
+
+	if(!allocList)
+		return;
+	for(i = allocList->begin(); i != allocList->end(); i++)
+	{
+		if((*i)->address == addr)
+		{
+			allocList->erase((*i));
+			break;
+		}
+	}
+};
+
+void DumpUnfreed()
+{
+	AllocList::iterator i;
+	int totalSize = 0;
+	char buf[1024];
+
+	if(!allocList)
+		return;
+
+	for(i = allocList->begin(); i != allocList->end(); i++) {
+		sprintf(buf, "%-50s:\t\tLINE %d,\t\tADDRESS %d\t%d unfreed\n",
+			(*i)->file, (*i)->line, (*i)->address, (*i)->size);
+		OutputDebugString(buf);
+		totalSize += (*i)->size;
+	}
+	sprintf(buf, "-----------------------------------------------------------\n");
+	OutputDebugString(buf);
+	sprintf(buf, "Total Unfreed: %d bytes\n", totalSize);
+	OutputDebugString(buf);
+};
+#endif
+*/

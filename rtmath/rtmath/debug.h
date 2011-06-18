@@ -1,9 +1,14 @@
 /* debug.h - The debugging system for the library */
+//#pragma once
+
+
+
 #pragma once
 
 #include <iostream>
 #include <string>
 #include "error.h"
+
 
 namespace rtmath
 {
@@ -80,3 +85,4 @@ namespace rtmath
 #endif
 
 }; // end namespace rtmath
+
