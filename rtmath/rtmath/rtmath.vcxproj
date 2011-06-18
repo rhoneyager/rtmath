@@ -83,7 +83,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;SPECIAL_HEAP_CHECK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;HEAP_CHECK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
@@ -97,6 +97,10 @@
       <AdditionalDependencies>
       </AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Message>Update the subversion revision!</Message>
+      <Command>subwcrev "$(SolutionDir)." "$(SolutionDir)rtmath/debug_subversion.h.template" "$(SolutionDir)rtmath/debug_subversion.h" -f</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -162,6 +166,7 @@
     <ClInclude Include="damatrix.h" />
     <ClInclude Include="damatrix_quad.h" />
     <ClInclude Include="debug.h" />
+    <ClInclude Include="debug_mem.h" />
     <ClInclude Include="debug_mem_class.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="layer.h" />
@@ -175,6 +180,7 @@
     <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="damatrix_quad.cpp" />
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="debug_mem.cpp" />
     <ClCompile Include="layer.cpp" />
     <ClCompile Include="lbl.cpp" />
     <ClCompile Include="rtmath.cpp" />
@@ -194,6 +200,7 @@
     <None Include="..\rtmath research 6-2-2011.pptx" />
     <None Include="..\rtmath research 7-2011.pptx" />
     <None Include="app.ico" />
+    <None Include="debug_subversion.h.template" />
     <None Include="Makefile" />
     <None Include="ReadMe.txt" />
   </ItemGroup>

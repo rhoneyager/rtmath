@@ -10,6 +10,8 @@
 #include <sstream>
 #include "lbl.h"
 
+#include "debug_mem.h"
+
 namespace rtmath {
 
 	atmos::atmos()

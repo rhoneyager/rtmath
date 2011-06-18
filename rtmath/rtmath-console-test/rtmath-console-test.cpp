@@ -1,3 +1,6 @@
+//#undef HEAP_CHECK
+
+
 #include <iostream>
 #include "../rtmath/rtmath.h"
 //#include "../mie/mie.h"
@@ -10,12 +13,18 @@
 #include <fstream>
 #include <stdio.h>
 
+#include "../rtmath/debug_mem.h"
+
 int main(int argc, char* argv[])
 {
 	using namespace std;
 	rtmath::debug::debug_preamble();
 	freopen("strerr.txt","w",stderr); // Remap standard error for debug
 	rtmath::debug::debug_preamble(); // Print again, this time to the file
+	// Enable debug logging (needs to be turned on to prevent prog. start errors)
+	//rtmath::debug::memcheck::enabled = true;
+
+
 	// This part of the code lets me create an answer file, so that I don't 
 	// need to copy and paste all the time.
 	istream *in = NULL;
@@ -52,6 +61,9 @@ int main(int argc, char* argv[])
 	lblatmos.loadProfile(mainprof.c_str());
 
 	cout << "Profile is: " << lblatmos.name << endl;
+	// List the memory locations now
+	rtmath::debug::memcheck::__Track(3,0,0,0,0,0);
+	fflush(stderr);
 
 	double wvnum, wvnumhigh;
 	cout << "Lower Wavenumber (cm^-1): ";

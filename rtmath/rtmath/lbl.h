@@ -49,7 +49,7 @@ namespace rtmath {
 
 		// Don't use a full class, as reading is too slow
 		class specline {
-#include "debug_mem_class.h" // Do special specline debugging
+//#include "debug_mem_class.h" // Do special specline debugging
 		public: // Member vars
 			// For speed, leave these in the open. Inlining has no point.
 			double _nu;
@@ -95,7 +95,7 @@ namespace rtmath {
 			static void _loadMolparam(const char* molparam);
 			static void _loadParsum(const char* parsum);
 			static void _doMappings();
-#undef new
+//#undef new
 		};
 
 		class isodata {

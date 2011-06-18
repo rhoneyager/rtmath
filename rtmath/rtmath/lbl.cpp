@@ -16,6 +16,9 @@
 #include "../rtmath-base/macros.h"
 #include "debug.h"
 
+#include "debug_mem.h"
+
+
 namespace rtmath {
 	namespace lbl {
 		// Define the static variables here
@@ -31,11 +34,11 @@ namespace rtmath {
 		std::set<isodata*> specline::linemappings;
 		specline* specline::lines = NULL;
 		const unsigned int specline::numrecs = 2713968;
-
+		/*
 		const char* specline::__file__ = 0;
 	size_t specline::__line__ = 0;
 	const char* specline::__caller__ = 0;
-
+	*/
 		double isoconc::deltaTau(double nu) const
 		{
 			// Calculate deltaTau caused by a set of isotope lines
@@ -157,8 +160,6 @@ namespace rtmath {
 			return res;
 		}
 
-#define new (setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : new
-
 		void specline::loadlines(const char* hitranpar, 
 			const char* molparam, const char* parsum)
 		{
@@ -172,7 +173,7 @@ namespace rtmath {
 			debug::timestamp(true);
 			if (lines) _doMappings();
 			debug::timestamp(true);
-			__Track(3,0,0,0,0,0);
+			//__Track(3,0,0,0,0,0);
 		}
 
 		void specline::_loadHITRAN(const char* hitranpar)

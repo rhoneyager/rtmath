@@ -7,6 +7,11 @@
 #include "debug.h"
 #include "error.h"
 
+#include "debug_mem.h"
+
+// This file just defines the subversion revision, created at a pre-build strp
+#include "debug_subversion.h"
+
 namespace rtmath
 {
 	namespace debug
@@ -26,8 +31,11 @@ namespace rtmath
 		{
 			std::cerr << "rtmath library" << std::endl;
 			std::cerr << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
-#ifdef REV
-			std::cerr << "SVN Revision " << REV << std::endl;
+#ifdef SUB_REV
+			std::cerr << "SVN Revision " << SUB_REV << std::endl;
+			std::cerr << "SVN Revision Date: " << SUB_DATE << std::endl;
+			std::cerr << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
+			std::cerr << "SVN Source: " << SUB_SOURCE << std::endl;
 #else
 			std::cerr << "SVN Revision Unknown" << std::endl;
 #endif

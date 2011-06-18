@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#include "debug_mem.h"
+
 namespace rtmath
 {
 

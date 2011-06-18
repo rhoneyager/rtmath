@@ -1,0 +1,6 @@
+#pragma once
+
+#define SUB_REV $WCREV$
+#define SUB_DATE "$WCDATE$"
+#define SUB_WCRANGE "$WCRANGE$"
+#define SUB_SOURCE "$WCURL$"
