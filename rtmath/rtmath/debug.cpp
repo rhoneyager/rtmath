@@ -10,8 +10,11 @@
 #include "debug_mem.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
+#ifdef _WIN32
 #include "debug_subversion.h"
-
+#else
+#include "debug_subversion.svn.h"
+#endif
 namespace rtmath
 {
 	namespace debug

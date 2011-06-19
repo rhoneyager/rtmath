@@ -52,7 +52,7 @@
       </toolsSet>
       <compileType>
         <ccTool>
-          <commandLine>-fvisibility=default</commandLine>
+          <commandLine>-fvisibility=default -fopenmp</commandLine>
           <warningLevel>2</warningLevel>
         </ccTool>
         <linkerTool>
@@ -66,7 +66,7 @@
                             WD="../rtmath-base"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.so">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
