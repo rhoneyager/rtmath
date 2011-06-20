@@ -15,7 +15,8 @@
 #include "debug_subversion.h"
 #endif
 #else
-#include "debug_subversion.svn.h"
+
+//#include "debug_subversion.svn.h"
 #endif
 namespace rtmath
 {

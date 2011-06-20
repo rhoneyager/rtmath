@@ -34,10 +34,16 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/zeros.o \
+	${OBJECTDIR}/rtmath-base.o \
+	${OBJECTDIR}/quadrature.o \
 	${OBJECTDIR}/damatrix_quad.o \
+	${OBJECTDIR}/matrixop.o \
+	${OBJECTDIR}/phaseFunc.o \
 	${OBJECTDIR}/atmos.o \
 	${OBJECTDIR}/rtmath.o \
 	${OBJECTDIR}/Stdafx.o \
+	${OBJECTDIR}/polynomial.o \
 	${OBJECTDIR}/debug_mem.o \
 	${OBJECTDIR}/debug.o \
 	${OBJECTDIR}/lbl.o \
@@ -59,77 +65,103 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.dll
+LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so: ../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.dll
-
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} --enable-auto-import -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
+	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a ${OBJECTFILES} 
+	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
 
-${OBJECTDIR}/damatrix_quad.o: damatrix_quad.cpp 
+${OBJECTDIR}/zeros.o: nbproject/Makefile-${CND_CONF}.mk zeros.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix_quad.o damatrix_quad.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/zeros.o zeros.cpp
 
-${OBJECTDIR}/atmos.o: atmos.cpp 
+${OBJECTDIR}/rtmath-base.o: nbproject/Makefile-${CND_CONF}.mk rtmath-base.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/atmos.o atmos.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-base.o rtmath-base.cpp
 
-${OBJECTDIR}/rtmath.o: rtmath.cpp 
+${OBJECTDIR}/quadrature.o: nbproject/Makefile-${CND_CONF}.mk quadrature.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/quadrature.o quadrature.cpp
 
-${OBJECTDIR}/Stdafx.o: Stdafx.cpp 
+${OBJECTDIR}/damatrix_quad.o: nbproject/Makefile-${CND_CONF}.mk damatrix_quad.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix_quad.o damatrix_quad.cpp
 
-${OBJECTDIR}/debug_mem.o: debug_mem.cpp 
+${OBJECTDIR}/matrixop.o: nbproject/Makefile-${CND_CONF}.mk matrixop.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug_mem.o debug_mem.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/matrixop.o matrixop.cpp
 
-${OBJECTDIR}/debug.o: debug.cpp 
+${OBJECTDIR}/phaseFunc.o: nbproject/Makefile-${CND_CONF}.mk phaseFunc.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug.o debug.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/phaseFunc.o phaseFunc.cpp
 
-${OBJECTDIR}/lbl.o: lbl.cpp 
+${OBJECTDIR}/atmos.o: nbproject/Makefile-${CND_CONF}.mk atmos.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/lbl.o lbl.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/atmos.o atmos.cpp
 
-${OBJECTDIR}/damatrix.o: damatrix.cpp 
+${OBJECTDIR}/rtmath.o: nbproject/Makefile-${CND_CONF}.mk rtmath.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix.o damatrix.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
 
-${OBJECTDIR}/layer.o: layer.cpp 
+${OBJECTDIR}/Stdafx.o: nbproject/Makefile-${CND_CONF}.mk Stdafx.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
+
+${OBJECTDIR}/polynomial.o: nbproject/Makefile-${CND_CONF}.mk polynomial.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/polynomial.o polynomial.cpp
+
+${OBJECTDIR}/debug_mem.o: nbproject/Makefile-${CND_CONF}.mk debug_mem.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug_mem.o debug_mem.cpp
+
+${OBJECTDIR}/debug.o: nbproject/Makefile-${CND_CONF}.mk debug.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug.o debug.cpp
+
+${OBJECTDIR}/lbl.o: nbproject/Makefile-${CND_CONF}.mk lbl.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/lbl.o lbl.cpp
+
+${OBJECTDIR}/damatrix.o: nbproject/Makefile-${CND_CONF}.mk damatrix.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix.o damatrix.cpp
+
+${OBJECTDIR}/layer.o: nbproject/Makefile-${CND_CONF}.mk layer.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
 
 # Subprojects
 .build-subprojects:
-	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug
-	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a
 
 # Subprojects
 .clean-subprojects:
-	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug clean
-	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug clean
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl

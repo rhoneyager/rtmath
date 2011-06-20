@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../rtmath-base/rtmath-base.h"
+#include "rtmath-base.h"
 #include "debug.h"
 #include "error.h"
 #include "damatrix.h"

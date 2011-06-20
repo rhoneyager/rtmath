@@ -13,7 +13,7 @@
 #include <cmath>
 #include <string.h>
 #include "lbl.h"
-#include "../rtmath-base/macros.h"
+#include "macros.h"
 #include "debug.h"
 
 #include "debug_mem.h"

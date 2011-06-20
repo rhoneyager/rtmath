@@ -3,7 +3,7 @@
 #include "damatrix_quad.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "../rtmath-base/quadrature.h"
+#include "quadrature.h"
 
 namespace rtmath {
 	

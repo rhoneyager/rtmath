@@ -10,7 +10,6 @@
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects>
                 <make-dep-project>../rtmath</make-dep-project>
-                <make-dep-project>../rtmath-base</make-dep-project>
             </make-dep-projects>
             <sourceRootList/>
             <confList>

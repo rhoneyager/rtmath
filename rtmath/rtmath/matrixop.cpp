@@ -320,7 +320,7 @@ matrixop matrixop::minor(unsigned int rank, ...) const
 		ptr.push_back(ival);
 	}
 	va_end(indices);
-	return minor(ptr);
+	return this->minor(ptr);
 }
 
 void matrixop::_push_back(unsigned int index, double val)
@@ -416,7 +416,10 @@ double matrixop::det() const
 	// Wow, this next line is obtuse
 	for (it[1] = 0; it[1] < _dims[1]; it[1]++)
 	{
-		matrixop min = minor(2,it[0],it[1]);
+            std::vector<unsigned int> pos;
+            pos.push_back(it[0]); pos.push_back(it[1]);
+            //throw;
+		matrixop min = this->minor(pos);
 		// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
 		res += std::pow(-1.0, (double) it[1]) * min.det() * get(it);
 	}
@@ -464,8 +467,10 @@ matrixop matrixop::inverse() const
 	{
 		for (unsigned int j=0;j<_dims[1];j++) // rows
 		{
+                    std::vector<unsigned int> pos; pos.push_back(j); pos.push_back(i);
 			// Calculate the appropriate minor
-			matrixop min = minor(2,j,i);
+                    //throw;
+			matrixop min = this->minor(pos);
 			double inv = std::pow(-1.0, (double) (i+j) ) * min.det() / mdet;
 			res.set(inv,2,j,i);
 		}

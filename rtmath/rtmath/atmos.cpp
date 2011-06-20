@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 #include "layer.h"
-#include "../rtmath-base/matrixop.h"
+#include "matrixop.h"
 #include "damatrix.h"
 #include <iostream>
 #include <fstream>

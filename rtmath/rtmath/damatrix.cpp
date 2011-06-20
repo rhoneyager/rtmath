@@ -1,6 +1,6 @@
 #include "Stdafx.h"
 #include "damatrix.h"
-#include "../rtmath-base/quadrature.h"
+#include "quadrature.h"
 #include "damatrix_quad.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -67,6 +67,7 @@ namespace rtmath {
 			// Also annoying
 			// Evaluate _rootA and invert the result
 			A = *(_rootA->eval)(val);
+                        //throw;
 			B = A.inverse();
 			*res = B;
 			precalc[val] = res;

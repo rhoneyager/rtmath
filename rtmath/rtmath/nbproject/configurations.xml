@@ -11,11 +11,19 @@
       <itemPath>debug.h</itemPath>
       <itemPath>debug_mem.h</itemPath>
       <itemPath>debug_mem_class.h</itemPath>
+      <itemPath>enums.h</itemPath>
       <itemPath>error.h</itemPath>
       <itemPath>layer.h</itemPath>
       <itemPath>lbl.h</itemPath>
+      <itemPath>macros.h</itemPath>
+      <itemPath>matrixop.h</itemPath>
+      <itemPath>phaseFunc.h</itemPath>
+      <itemPath>polynomial.h</itemPath>
+      <itemPath>quadrature.h</itemPath>
       <itemPath>resource.h</itemPath>
+      <itemPath>rtmath-base.h</itemPath>
       <itemPath>rtmath.h</itemPath>
+      <itemPath>zeros.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -34,7 +42,13 @@
       <itemPath>debug_mem.cpp</itemPath>
       <itemPath>layer.cpp</itemPath>
       <itemPath>lbl.cpp</itemPath>
+      <itemPath>matrixop.cpp</itemPath>
+      <itemPath>phaseFunc.cpp</itemPath>
+      <itemPath>polynomial.cpp</itemPath>
+      <itemPath>quadrature.cpp</itemPath>
+      <itemPath>rtmath-base.cpp</itemPath>
       <itemPath>rtmath.cpp</itemPath>
+      <itemPath>zeros.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -50,10 +64,11 @@
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Debug" type="2">
+    <conf name="Debug" type="3">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
+        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <ccTool>
@@ -63,35 +78,8 @@
         <asmTool>
           <warningLevel>2</warningLevel>
         </asmTool>
-        <linkerTool>
-          <linkerLibItems>
-            <linkerLibProjectItem>
-              <makeArtifact PL="../rtmath-base"
-                            CT="2"
-                            CN="Debug"
-                            AC="true"
-                            BL="true"
-                            WD="../rtmath-base"
-                            BC="${MAKE}  -f Makefile CONF=Debug"
-                            CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll">
-              </makeArtifact>
-            </linkerLibProjectItem>
-          </linkerLibItems>
-          <commandLine>--enable-auto-import</commandLine>
-        </linkerTool>
-        <requiredProjects>
-          <makeArtifact PL="../rtmath-base"
-                        CT="3"
-                        CN="Debug"
-                        AC="true"
-                        BL="true"
-                        WD="../rtmath-base"
-                        BC="${MAKE}  -f Makefile CONF=Debug"
-                        CC="${MAKE}  -f Makefile CONF=Debug clean"
-                        OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.a">
-          </makeArtifact>
-        </requiredProjects>
+        <archiverTool>
+        </archiverTool>
       </compileType>
     </conf>
     <conf name="Release" type="3">

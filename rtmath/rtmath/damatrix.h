@@ -1,6 +1,6 @@
 #pragma once
-#include "../rtmath-base/matrixop.h"
-#include "../rtmath-base/quadrature.h"
+#include "matrixop.h"
+#include "quadrature.h"
 // Necessary so that I can ignore the ever-growing damatrix tree
 // It can now take care of itself
 #include "debug.h"

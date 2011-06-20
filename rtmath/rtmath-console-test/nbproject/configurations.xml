@@ -44,31 +44,18 @@
           <linkerLibItems>
             <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
             <linkerLibProjectItem>
-              <makeArtifact PL="../rtmath-base"
-                            CT="2"
-                            CN="Debug"
-                            AC="true"
-                            BL="true"
-                            WD="../rtmath-base"
-                            BC="${MAKE}  -f Makefile CONF=Debug"
-                            CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll">
-              </makeArtifact>
-            </linkerLibProjectItem>
-            <linkerLibProjectItem>
               <makeArtifact PL="../rtmath"
-                            CT="2"
+                            CT="3"
                             CN="Debug"
                             AC="true"
                             BL="true"
                             WD="../rtmath"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.dll">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
-          <commandLine>--enable-auto-import</commandLine>
         </linkerTool>
       </compileType>
     </conf>

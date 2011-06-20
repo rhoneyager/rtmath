@@ -1,8 +1,8 @@
 #include "Stdafx.h"
 #include "layer.h"
-#include "../rtmath-base/phaseFunc.h"
-#include "../rtmath-base/matrixop.h"
-#include "../rtmath-base/quadrature.h"
+#include "phaseFunc.h"
+#include "matrixop.h"
+#include "quadrature.h"
 #include "damatrix.h"
 #include <boost/shared_ptr.hpp>
 #include <map>

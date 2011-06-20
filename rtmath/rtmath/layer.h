@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../rtmath-base/phaseFunc.h"
-#include "../rtmath-base/matrixop.h"
-#include "../rtmath-base/quadrature.h"
-#include "../rtmath-base/enums.h"
+#include "phaseFunc.h"
+#include "matrixop.h"
+#include "quadrature.h"
+#include "enums.h"
 #include "lbl.h"
 #include "damatrix.h"
 #include "debug.h"

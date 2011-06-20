@@ -14,7 +14,7 @@
 #include <map>
 #include "debug.h"
 #include "layer.h"
-#include "../rtmath-base/matrixop.h"
+#include "matrixop.h"
 #include "damatrix.h"
 #include "lbl.h"
 #include <string>

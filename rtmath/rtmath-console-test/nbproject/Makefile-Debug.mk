@@ -51,19 +51,17 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lm ../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.dll ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.dll
+LDLIBSOPTIONS=-lm ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.dll
-
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.dll
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.a
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} --enable-auto-import -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/rtmath-console-test.o: rtmath-console-test.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -72,7 +70,6 @@ ${OBJECTDIR}/rtmath-console-test.o: rtmath-console-test.cpp
 
 # Subprojects
 .build-subprojects:
-	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug
 	cd ../rtmath && ${MAKE}  -f Makefile CONF=Debug
 
 # Clean Targets
@@ -82,7 +79,6 @@ ${OBJECTDIR}/rtmath-console-test.o: rtmath-console-test.cpp
 
 # Subprojects
 .clean-subprojects:
-	cd ../rtmath-base && ${MAKE}  -f Makefile CONF=Debug clean
 	cd ../rtmath && ${MAKE}  -f Makefile CONF=Debug clean
 
 # Enable dependency checking

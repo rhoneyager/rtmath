@@ -4,13 +4,6 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>enums.h</itemPath>
-      <itemPath>matrixop.h</itemPath>
-      <itemPath>phaseFunc.h</itemPath>
-      <itemPath>polynomial.h</itemPath>
-      <itemPath>quadrature.h</itemPath>
-      <itemPath>rtmath-base.h</itemPath>
-      <itemPath>zeros.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -19,12 +12,6 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>matrixop.cpp</itemPath>
-      <itemPath>phaseFunc.cpp</itemPath>
-      <itemPath>polynomial.cpp</itemPath>
-      <itemPath>quadrature.cpp</itemPath>
-      <itemPath>rtmath-base.cpp</itemPath>
-      <itemPath>zeros.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"

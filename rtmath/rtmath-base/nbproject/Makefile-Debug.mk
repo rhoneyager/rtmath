@@ -33,13 +33,7 @@ include Makefile
 OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
-OBJECTFILES= \
-	${OBJECTDIR}/zeros.o \
-	${OBJECTDIR}/rtmath-base.o \
-	${OBJECTDIR}/quadrature.o \
-	${OBJECTDIR}/matrixop.o \
-	${OBJECTDIR}/phaseFunc.o \
-	${OBJECTDIR}/polynomial.o
+OBJECTFILES=
 
 
 # C Compiler Flags
@@ -64,37 +58,7 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.so: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
-
-${OBJECTDIR}/zeros.o: zeros.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/zeros.o zeros.cpp
-
-${OBJECTDIR}/rtmath-base.o: rtmath-base.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-base.o rtmath-base.cpp
-
-${OBJECTDIR}/quadrature.o: quadrature.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/quadrature.o quadrature.cpp
-
-${OBJECTDIR}/matrixop.o: matrixop.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/matrixop.o matrixop.cpp
-
-${OBJECTDIR}/phaseFunc.o: phaseFunc.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/phaseFunc.o phaseFunc.cpp
-
-${OBJECTDIR}/polynomial.o: polynomial.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/polynomial.o polynomial.cpp
+	${LINK.c} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 # Subprojects
 .build-subprojects:
