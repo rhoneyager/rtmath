@@ -68,6 +68,7 @@
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
+          <commandLine>--enable-auto-import</commandLine>
         </linkerTool>
       </compileType>
     </conf>
