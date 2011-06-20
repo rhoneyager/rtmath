@@ -7,7 +7,12 @@
 // Redefine throws so that the location of the code in error is recorded
 // TODO: rewrite so that it works with non-MSVC compilers
 #ifdef _DEBUG
+#ifdef _MSC_FULL_VER
 #define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+#endif
+#ifdef __GNUC__
+#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
+#endif
 #define TASSERT(x) if(x) ; else throw rtmath::debug::xAssert(#x)
 #else
 #define TASSERT(x) NULL;

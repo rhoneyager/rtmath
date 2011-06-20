@@ -573,7 +573,7 @@ namespace rtmath {
 				specline *tline = &lines[k];
 				bool done = false;
 				if (tline->_molecnum < 0) std::cout << "rec: " << k << " of " << numrecs << std::endl;
-				TASSERT(tline->_molecnum < 0); // A throwable assertion
+				TASSERT(tline->_molecnum > 0); // A throwable assertion
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{

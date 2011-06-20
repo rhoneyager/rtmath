@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/zeros.o \
+	${OBJECTDIR}/error.o \
 	${OBJECTDIR}/rtmath-base.o \
 	${OBJECTDIR}/quadrature.o \
 	${OBJECTDIR}/damatrix_quad.o \
@@ -55,8 +56,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-fvisibility=default
-CXXFLAGS=-fvisibility=default
+CCFLAGS=-fvisibility=default -D_DEBUG
+CXXFLAGS=-fvisibility=default -D_DEBUG
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -151,6 +152,11 @@ ${OBJECTDIR}/layer.o: nbproject/Makefile-${CND_CONF}.mk layer.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
+
+${OBJECTDIR}/error.o: nbproject/Makefile-${CND_CONF}.mk error.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/error.o error.cpp
 
 # Subprojects
 .build-subprojects:
