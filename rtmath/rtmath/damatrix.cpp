@@ -67,7 +67,6 @@ namespace rtmath {
 			// Also annoying
 			// Evaluate _rootA and invert the result
 			A = *(_rootA->eval)(val);
-                        //throw;
 			B = A.inverse();
 			*res = B;
 			precalc[val] = res;
@@ -75,7 +74,7 @@ namespace rtmath {
 			break;
 		default:
 			// Die in disgrace
-			throw;
+			throw rtmath::debug::xBadInput();
 			break;
 		}
 		// We'll never get here, but it gets rid of a compiler warning

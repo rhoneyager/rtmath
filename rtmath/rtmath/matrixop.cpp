@@ -1,5 +1,6 @@
 #include "Stdafx.h"
 #include "matrixop.h"
+#include "error.h"
 // Reduces tedium when finding minors
 //#include <boost/foreach.hpp>
 #include <cmath>
@@ -92,8 +93,8 @@ const std::vector<unsigned int> matrixop::size() const
 
 matrixop matrixop::operator+ (const matrixop& rhs) const
 {
-	if (rhs.dimensionality() != this->dimensionality()) throw;
-	if (rhs.size() != this->_dims) throw;
+	TASSERT(rhs.dimensionality() == this->dimensionality());
+	TASSERT(rhs.size() == this->_dims);
 
 	matrixop temp(_dims);
 	temp = rhs;
@@ -111,13 +112,13 @@ matrixop matrixop::operator* (const matrixop& rhs) const
 	// Define standard matrix multiplication
 	// That is: do the bilinear mapping between two rank 0,1 or 2 tensors
 	// If greater dimensionality, throw an error since it's unsupported
-	if (rhs.dimensionality() > 2) throw;
-	if (this->dimensionality() > 2) throw;
+	TASSERT(rhs.dimensionality() < 3);
+	TASSERT(this->dimensionality() < 3);
 
 	// size()[0] is number of rows, size()[1] is # of columns
 	// If matrices cannot produce a square matrix, throw
 	//std::vector<unsigned int> testA = this->size(), testB = rhs.size();
-	if (this->size()[1] != rhs.size()[0]) throw;
+	TASSERT(this->size()[1] == rhs.size()[0]);
 
 	// Create vector for size of result
 	using namespace std;
@@ -176,7 +177,7 @@ matrixop matrixop::operator^ (unsigned int rhs) const
 {
 	// In future, allow for fast power (using linear algebra)
 	// For now, do the slow recursive matrix multiplication
-	if (issquare() == false) throw;
+	TASSERT(issquare());
 	// Do recursion
 	if (rhs == 0) // Handle special case of matrix to zero power
 	{
@@ -204,8 +205,8 @@ matrixop matrixop::operator^ (unsigned int rhs) const
 matrixop matrixop::operator- (const matrixop& rhs) const
 {
 	// Use multiplication defined by the BASE class, not from derived!
-	if (rhs.dimensionality() != this->dimensionality()) throw;
-	if (rhs.size() != this->_dims) throw;
+	TASSERT(rhs.dimensionality() == this->dimensionality());
+	TASSERT(rhs.size() == this->_dims);
 
 	using namespace std;
 	matrixop tempr(_dims);
@@ -225,10 +226,10 @@ void matrixop::clear()
 void matrixop::set(const std::vector<unsigned int> &pos, double val)
 {
 	// Check for going beyond matrix bounds
-	if (pos.size() != _dims.size()) throw;
+	TASSERT(pos.size() == _dims.size());
 	for (unsigned int i=0; i<pos.size(); i++)
 	{
-		if (pos[i] > _dims[i]) throw;
+		if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput();
 	}
 	// Set the value
 	_vals[pos] = val;
@@ -237,7 +238,7 @@ void matrixop::set(const std::vector<unsigned int> &pos, double val)
 void matrixop::set(double val, unsigned int rank, ...)
 {
 	// Uses variadic array to get the index, as matrices can have multiple dimensions
-	if (rank != this->dimensionality()) throw;
+	TASSERT(rank == this->dimensionality());
 	va_list indices;
 	va_start(indices, rank);
 	std::vector<unsigned int> ptr;
@@ -254,7 +255,7 @@ void matrixop::set(double val, unsigned int rank, ...)
 double matrixop::get(unsigned int rank, ...) const
 {
 	// Uses variadic array to get the index, as matrices can have multiple dimensions
-	if (rank != this->dimensionality()) throw;
+	TASSERT(rank == this->dimensionality());
 	va_list indices;
 	va_start(indices, rank);
 	std::vector<unsigned int> ptr;
@@ -271,10 +272,10 @@ double matrixop::get(unsigned int rank, ...) const
 double matrixop::get(const std::vector<unsigned int> &pos) const
 {
 	// Check matrix bounds
-	if (pos.size() != _dims.size()) throw;
+	TASSERT(pos.size() == _dims.size());
 	for (unsigned int i=0; i<pos.size(); i++)
 	{
-		if (pos[i] > _dims[i]) throw;
+		if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput();
 	}
 	// Get the value (if it exists)
 	// Otherwise, return a zero
@@ -337,7 +338,7 @@ void matrixop::_push_back(unsigned int index, double val)
 void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
 {
 	using namespace std;
-	if (dimensionality() == 0) throw;
+	TASSERT(dimensionality());
 	pos.clear();
 	pos.resize(_dims.size());
 	pos[_dims.size()-1] = index;
@@ -357,12 +358,12 @@ void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
 matrixop matrixop::minors(const std::vector<unsigned int> &rc) const
 {
 	using namespace std;
-	if (_dims.size() != 2) throw; // Allow only 2d matrices
+	TASSERT(_dims.size() == 2); // Allow only 2d matrices
 	vector<unsigned int> msiz = _dims;
 	for (unsigned int i=0;i<msiz.size();i++)
 	{
 		msiz[i] = msiz[i] - 1;
-		if (msiz[i] == 0) throw;
+		if (msiz[i] == 0) throw rtmath::debug::xBadInput();
 	}
 	matrixop res(msiz);
 	// I have the empty resultant matrix
@@ -393,11 +394,11 @@ double matrixop::det() const
 {
 	using namespace std;
 	// Find the determinant
-	if (!issquare()) throw;
+	TASSERT(issquare());
 	if (dimensionality() == 1) return get(1,0);
 	// Check that matrix is 2d, for now
 	// TODO: extend this to n dims, if possible
-	if (_dims.size() != 2) throw;
+	TASSERT(_dims.size() == 2);
 
 	// Handle the 1x1 case easily
 	if (_dims[0] == 1 && _dims[1] == 1) return get(2,0,0);
@@ -430,7 +431,7 @@ double matrixop::det() const
 matrixop matrixop::diagonal(const std::vector<unsigned int> &size, double val)
 {
 	matrixop res(size);
-	if (size.size() != 2) throw;
+	TASSERT(size.size() == 2);
 	// Find min dimension
 	unsigned int min = (size[0] < size[1])? size[0] : size[1];
 	for (unsigned int i=0;i<min;i++)
@@ -460,7 +461,7 @@ matrixop matrixop::inverse() const
 {
 	// This uses minors and a determinant to calculate the inverse
 	double mdet = det();
-	if (mdet == 0) throw;
+	TASSERT(mdet);
 	// Construct the matrix minors
 	// Assumes 2d array from det. TODO: extend if possible
 	matrixop res(this->_dims);
@@ -541,7 +542,7 @@ void matrixop::fromDoubleArray(const double *target)
 	// Take in each value over [0,maxsize) and place in the matrix
 	clear();
 
-	throw;
+	throw rtmath::debug::xUnimplementedFunction();
 	double cval = 0.0;
 	for (unsigned int j=0;j<maxsize;j++)
 	{

@@ -19,7 +19,7 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 		unsigned int deg = 7;
 		// TODO: check the double / uint conversion
 		unsigned int start = 3 * (unsigned int) (-1.0 - (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
-		if (deg > 7) throw;
+		if (deg > 7) throw rtmath::debug::xBadInput();
 		// res is already defined
 		for (unsigned int i = start; i< start + (3*deg); i +=3)
 		{
@@ -41,7 +41,7 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 		unsigned int deg = 7;
 		double a = 0.0, b = 1.0;
 		unsigned int start = 3 * (unsigned int) (-1.0 - (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
-		if (deg > 7) throw;
+		if (deg > 7) throw rtmath::debug::xBadInput();
 		boost::shared_ptr<matrixop> res(new matrixop(A->size()));
 		for (unsigned int i = start; i< start + (3*deg); i +=3)
 		{

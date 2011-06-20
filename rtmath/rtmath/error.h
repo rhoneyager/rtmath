@@ -4,6 +4,17 @@
 #include "Stdafx.h"
 #include <iostream>
 
+// Redefine throws so that the location of the code in error is recorded
+// TODO: rewrite so that it works with non-MSVC compilers
+#ifdef _DEBUG
+#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+#define TASSERT(x) if(x) ; else throw rtmath::debug::xAssert(#x)
+#else
+#define TASSERT(x) NULL;
+#endif
+
+#define ERRSTD : public xError { protected: void _setmessage(); };
+#define ERRSTR(x) class x : public xError { public: x (const char* m) : xError() {_m=m;} protected: const char *_m; void _setmessage(); }
 namespace rtmath
 {
 	namespace debug
@@ -14,28 +25,33 @@ namespace rtmath
 		public:
 			xError();
 			virtual ~xError();
-			virtual void message(std::string &message)
-			{
-				if (message.size())
-				{
-					message = _message;
-				} else {
-					message = "Unknown Error\n";
-				}
-				return;
-			}
+			virtual void message(std::string &message) const;
+			virtual void Display() const;
+		public: // The static functions for:
+			// providing error handling to the UI (message boxes and the like)
+			// if not set, sent to stderr.
+			static void setHandler(void (*func)(const char*));
 		protected:
 			std::string _message;
+			static void (*_errHandlerFunc)(const char*);
+			virtual void _setmessage() = 0;
+			const char* file;
+			const char* caller;
+			int line;
 		};
 
-		class xUnimplementedFunction : public xError
-		{
-			// A function has not been defined. Always stops execution.
-			xUnimplementedFunction(char* funcsig)
-			{
-				_message = "Unimplemented function: ";
-				_message.append(funcsig);
-			}
-		};
+		// The throwable assert call failed! It's like assert, but will throw
+		ERRSTR(xAssert);
+
+		// The values passed to the function are nonsensical
+		// TODO: extend to also take a string for an error message
+		class xBadInput ERRSTD;
+
+		// The file that is opened for reading is empty
+		ERRSTR(xEmptyInputFile);
+
+		// A function has not been defined. Always stops execution.
+		class xUnimplementedFunction ERRSTD;
+
 	}; // end debug
 }; // end rtmath

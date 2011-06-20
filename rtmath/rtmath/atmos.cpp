@@ -173,7 +173,7 @@ namespace rtmath {
 
 	void atmos::_calcProps()
 	{
-		throw;
+		throw rtmath::debug::xUnimplementedFunction();
 		// Have each layer generate its base properties
 		// Then, add downward, then upward to get appropriate R and T
 		// Next, calculate intensities and fluxes

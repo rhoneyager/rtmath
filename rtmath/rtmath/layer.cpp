@@ -84,7 +84,7 @@ void dalayer::generateLayer()
 {
 	// Generate the layer with properties defined by tau,
 	// ssa, phasefunction
-	throw;
+	throw rtmath::debug::xUnimplementedFunction();
 	// Begin by determining the number of doublings - must 
 	// begin with a very small tau
 	unsigned int numDoubles = 0;

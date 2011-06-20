@@ -91,7 +91,7 @@ inline void operator delete(void *p)
 	using namespace rtmath::debug::memcheck;
 	if (!__caller__) return;
 	if (!enabled) return;
-	printf("Delete called on memory %p\n", p);
+	fprintf(stderr,"Delete called on memory %p\n", p);
 	using namespace rtmath::debug::memcheck;
 	bool res;
 	res = __Track(2,p,0,0,0,0);
@@ -109,7 +109,7 @@ free(p);
 	using namespace rtmath::debug::memcheck;
 	if (!__caller__) return;
 	if (!enabled) return;
-	printf("Delete[] called on memory %p\n", p);
+	fprintf(stderr,"Delete[] called on memory %p\n", p);
 	using namespace rtmath::debug::memcheck;
 	bool res;
 	res = __Track(2,p,0,0,0,0);
@@ -123,8 +123,8 @@ free(p);
 
 
 #ifdef __GNUC__
-//#define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? new : new
-//#define delete (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? delete : delete
+//#define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : new
+//#define delete (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : delete
 #endif
 #ifdef _MSC_FULL_VER
 #define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : new

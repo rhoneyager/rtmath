@@ -58,14 +58,14 @@ namespace rtmath {
 		{
 			// Assumes legendre polynomials
 			// Use the appropriate quadrature and weights (precomputed mostly!)
-			if (degree <= 1) throw;
+			if (degree <= 1) throw rtmath::debug::xBadInput();
 			// For each n degree, expect n quadrature points
 			// Start point in array is 2 + 3 + 4 + ... + n-1
 			// So, the starting index is 3 * 
 			unsigned int start = 3 * (unsigned int) (-1.0 - (double) degree / 2.0 + (double) degree * (double) degree / 2.0);
 			// Check if the start even exists! If not, generate the necessary points.
 			// TODO: add code. For now, throw if insufficient points
-			if (degree > 7) throw;
+			if (degree > 7) throw rtmath::debug::xBadInput();
 			// Do the evaluation and summation
 			double res = 0.0;
 			for (unsigned int i = start; i < start + 3 * degree; i+=3)

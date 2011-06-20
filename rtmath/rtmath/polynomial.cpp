@@ -221,7 +221,7 @@ namespace rtmath {
 
 	void polynomial::zeros(std::set<double> &zpts) const
 	{
-		throw;
+		throw rtmath::debug::xUnimplementedFunction();
 		return;
 		// Calculate all zeros through repeated differentiation
 		// and good application of Brent's method

@@ -24,7 +24,7 @@ namespace rtmath {
 			fb = f->eval(b);
 
 			// Bad starting points if fa*fb > 0
-			if (fa*fb > 0) throw;
+			if (fa*fb > 0) throw rtmath::debug::xBadInput();
 
 			if ( abs(fa) < abs(fb) )
 			{

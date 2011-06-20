@@ -213,10 +213,10 @@ namespace rtmath {
 			using namespace std;
 
 			ifstream indata(hitranpar);
-			if (indata.good() == false) throw;
-			if (indata.eof()) throw;
-			if (indata.bad()) throw;
-			if (indata.fail()) throw;
+			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(hitranpar);
+			if (indata.eof()) throw rtmath::debug::xEmptyInputFile(hitranpar);
+			if (indata.bad()) throw rtmath::debug::xEmptyInputFile(hitranpar);
+			if (indata.fail()) throw rtmath::debug::xEmptyInputFile(hitranpar);
 
 			// The line containing the data
 			char inset[recSize*nRecsinread];
@@ -573,7 +573,7 @@ namespace rtmath {
 				specline *tline = &lines[k];
 				bool done = false;
 				if (tline->_molecnum < 0) std::cout << "rec: " << k << " of " << numrecs << std::endl;
-				if (tline->_molecnum < 0) throw;
+				TASSERT(tline->_molecnum < 0); // A throwable assertion
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
