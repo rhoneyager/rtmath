@@ -71,6 +71,11 @@
         <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <preprocessorList>
+            <Elem>HEAP_CHECK</Elem>
+          </preprocessorList>
+        </cTool>
         <ccTool>
           <commandLine>-fvisibility=default</commandLine>
           <preprocessorList>
