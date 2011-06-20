@@ -67,8 +67,9 @@ namespace rtmath {
 		virtual void resize(unsigned int ndims, ...);
 		bool issquare() const;
 		virtual double det() const;
-		virtual matrixop minor(unsigned int rank, ...) const;
+		
 		virtual matrixop minor(const std::vector<unsigned int> &pos) const;
+                virtual matrixop minor(unsigned int rank, ...) const;
 		// To add:
 		// Diagonalization
 		// Determinant

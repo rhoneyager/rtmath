@@ -7,13 +7,13 @@ CND_BASEDIR=`pwd`
 CND_BUILDDIR=build
 CND_DISTDIR=dist
 # Debug configuration
-CND_PLATFORM_Debug=MinGW-Windows
-CND_ARTIFACT_DIR_Debug=dist/Debug/MinGW-Windows
-CND_ARTIFACT_NAME_Debug=librtmath-base.dll
-CND_ARTIFACT_PATH_Debug=dist/Debug/MinGW-Windows/librtmath-base.dll
-CND_PACKAGE_DIR_Debug=dist/Debug/MinGW-Windows/package
-CND_PACKAGE_NAME_Debug=librtmath-base.dll.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/MinGW-Windows/package/librtmath-base.dll.tar
+CND_PLATFORM_Debug=GNU-Linux-x86
+CND_ARTIFACT_DIR_Debug=dist/Debug/GNU-Linux-x86
+CND_ARTIFACT_NAME_Debug=librtmath-base.so
+CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Linux-x86/librtmath-base.so
+CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Linux-x86/package
+CND_PACKAGE_NAME_Debug=librtmath-base.so.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux-x86/package/librtmath-base.so.tar
 # Release configuration
 CND_PLATFORM_Release=MinGW-Windows
 CND_ARTIFACT_DIR_Release=dist/Release/MinGW-Windows
