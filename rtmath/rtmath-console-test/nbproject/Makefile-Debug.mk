@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=gfortran
-AS=as
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=gfortran.exe
+AS=as.exe
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=MinGW-Windows
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -41,8 +41,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-ggdb
-CXXFLAGS=-ggdb
+CCFLAGS=
+CXXFLAGS=
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -51,15 +51,15 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lm ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.a
+LDLIBSOPTIONS=-lm ../rtmath/dist/Debug/MinGW-Windows/librtmath.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.a
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe: ../rtmath/dist/Debug/MinGW-Windows/librtmath.a
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
@@ -75,7 +75,7 @@ ${OBJECTDIR}/rtmath-console-test.o: rtmath-console-test.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe
 
 # Subprojects
 .clean-subprojects:
