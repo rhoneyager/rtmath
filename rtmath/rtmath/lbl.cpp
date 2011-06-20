@@ -232,7 +232,7 @@ namespace rtmath {
 				// Set the bounds for the iteration
 				int blockstart = block * nRecsinread;
 				int blockend = (block + 1) * nRecsinread;
-				if (blockend > numrecs) blockend = numrecs; // not -1 since i<blockend
+				if (blockend > (int) numrecs) blockend = numrecs; // not -1 since i<blockend
 
 				// Loop through the record ids
 #pragma omp parallel for private(record,linep)

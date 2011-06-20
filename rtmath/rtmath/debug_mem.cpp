@@ -1,5 +1,6 @@
 #include "debug_mem.h"
 #include "Stdafx.h"
+#include <cstring>
 
 namespace rtmath {
 	namespace debug {

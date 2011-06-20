@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=gfortran
-AS=as
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=gfortran.exe
+AS=as.exe
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=MinGW-Windows
 CND_CONF=Release
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/atmos.o \
 	${OBJECTDIR}/rtmath.o \
 	${OBJECTDIR}/Stdafx.o \
+	${OBJECTDIR}/debug_mem.o \
 	${OBJECTDIR}/debug.o \
 	${OBJECTDIR}/lbl.o \
 	${OBJECTDIR}/damatrix.o \
@@ -89,6 +90,11 @@ ${OBJECTDIR}/Stdafx.o: Stdafx.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
+
+${OBJECTDIR}/debug_mem.o: debug_mem.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug_mem.o debug_mem.cpp
 
 ${OBJECTDIR}/debug.o: debug.cpp 
 	${MKDIR} -p ${OBJECTDIR}

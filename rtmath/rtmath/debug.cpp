@@ -11,7 +11,9 @@
 
 // This file just defines the subversion revision, created at a pre-build strp
 #ifdef _WIN32
+#ifdef _MSC_FULL_VER
 #include "debug_subversion.h"
+#endif
 #else
 #include "debug_subversion.svn.h"
 #endif

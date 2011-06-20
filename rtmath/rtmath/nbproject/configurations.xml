@@ -9,6 +9,8 @@
       <itemPath>damatrix.h</itemPath>
       <itemPath>damatrix_quad.h</itemPath>
       <itemPath>debug.h</itemPath>
+      <itemPath>debug_mem.h</itemPath>
+      <itemPath>debug_mem_class.h</itemPath>
       <itemPath>error.h</itemPath>
       <itemPath>layer.h</itemPath>
       <itemPath>lbl.h</itemPath>
@@ -18,6 +20,8 @@
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <itemPath>debug_subversion.h.template</itemPath>
+      <itemPath>debug_subversion.svn.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -27,6 +31,7 @@
       <itemPath>damatrix.cpp</itemPath>
       <itemPath>damatrix_quad.cpp</itemPath>
       <itemPath>debug.cpp</itemPath>
+      <itemPath>debug_mem.cpp</itemPath>
       <itemPath>layer.cpp</itemPath>
       <itemPath>lbl.cpp</itemPath>
       <itemPath>rtmath.cpp</itemPath>
@@ -52,9 +57,12 @@
       </toolsSet>
       <compileType>
         <ccTool>
-          <commandLine>-fvisibility=default -fopenmp</commandLine>
+          <commandLine>-fvisibility=default</commandLine>
           <warningLevel>2</warningLevel>
         </ccTool>
+        <asmTool>
+          <warningLevel>2</warningLevel>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
             <linkerLibProjectItem>
@@ -66,10 +74,11 @@
                             WD="../rtmath-base"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.so">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath-base.dll">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
+          <commandLine>--enable-auto-import</commandLine>
         </linkerTool>
         <requiredProjects>
           <makeArtifact PL="../rtmath-base"

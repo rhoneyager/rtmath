@@ -106,7 +106,7 @@ namespace rtmath {
 			}
 
 		}
-		delete[] gn;
+		delete [] gn; // Note: I'm introducing a memory leak
 		in.close();
 
 		// Take the line data from hitran and select the useful lines

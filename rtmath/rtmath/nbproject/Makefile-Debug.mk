@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/atmos.o \
 	${OBJECTDIR}/rtmath.o \
 	${OBJECTDIR}/Stdafx.o \
+	${OBJECTDIR}/debug_mem.o \
 	${OBJECTDIR}/debug.o \
 	${OBJECTDIR}/lbl.o \
 	${OBJECTDIR}/damatrix.o \
@@ -48,8 +49,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-fvisibility=default -fopenmp
-CXXFLAGS=-fvisibility=default -fopenmp
+CCFLAGS=-fvisibility=default
+CXXFLAGS=-fvisibility=default
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -58,17 +59,17 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-Wl,-rpath ../rtmath-base/dist/Debug/GNU-Linux-x86 -L../rtmath-base/dist/Debug/GNU-Linux-x86 -lrtmath-base
+LDLIBSOPTIONS=../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.dll
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so: ../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.so
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so: ../rtmath-base/dist/Debug/GNU-Linux-x86/librtmath-base.dll
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.cc} --enable-auto-import -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/damatrix_quad.o: damatrix_quad.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -89,6 +90,11 @@ ${OBJECTDIR}/Stdafx.o: Stdafx.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
+
+${OBJECTDIR}/debug_mem.o: debug_mem.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug_mem.o debug_mem.cpp
 
 ${OBJECTDIR}/debug.o: debug.cpp 
 	${MKDIR} -p ${OBJECTDIR}

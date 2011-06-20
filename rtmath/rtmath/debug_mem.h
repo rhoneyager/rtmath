@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <map>
+#include <stdlib.h>
 
 namespace rtmath {
 	namespace debug {
@@ -104,10 +105,22 @@ inline void operator delete(void *p)
 
 inline void operator delete[](void *p)
 {
-	delete(p);
+	free(p);
+	using namespace rtmath::debug::memcheck;
+	if (!__caller__) return;
+	if (!enabled) return;
+	printf("Delete called on memory %p\n", p);
+	using namespace rtmath::debug::memcheck;
+	bool res;
+	res = __Track(2,p,0,0,0,0);
+	//RemoveTrack(p);
+	if (res) {
+		__file__ = 0;
+		__line__ = 0;
+		__caller__ = 0;
+	}
 }
-// End special heap check code
-#endif
+
 
 #ifdef __GNUC__
 //#define DEBUG_NEW new(__FILE__, __LINE__, __PRETTY_FUNCTION__)
@@ -120,7 +133,8 @@ inline void operator delete[](void *p)
 #define delete (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : delete
 #endif
 
-	
+	// End special heap check code
+#endif
 
 
 //#endif
