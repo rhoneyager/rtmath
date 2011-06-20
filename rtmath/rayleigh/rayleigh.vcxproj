@@ -113,11 +113,6 @@
     <ClInclude Include="Scalc.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\rtmath-base\rtmath-base.vcxproj">
-      <Project>{4c51f696-286a-4d40-b1bb-f671ecd6c515}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Qcalc.cpp" />
     <ClCompile Include="rayleighPhaseFunc.cpp" />
     <ClCompile Include="Scalc.cpp" />

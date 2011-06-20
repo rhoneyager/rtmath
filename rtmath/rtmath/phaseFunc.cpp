@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include "phaseFunc.h"
 #include <complex>
 #include <cmath>

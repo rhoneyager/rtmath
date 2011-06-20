@@ -14,14 +14,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-qt-ui", "rtmath-qt-u
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mie", "mie\mie.vcxproj", "{7EC1D8B2-5A81-4F21-A9BC-C65C73EA87EA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-base", "rtmath-base\rtmath-base.vcxproj", "{4C51F696-286A-4D40-B1BB-F671ECD6C515}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glgraph", "glgraph\glgraph.vcxproj", "{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glgraph-win", "glgraph-win\glgraph-win.vcxproj", "{9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515} = {4C51F696-286A-4D40-B1BB-F671ECD6C515}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netcdf-managed", "netcdf-managed\netcdf-managed.vcxproj", "{FEF8D776-19B9-4865-BB44-C1F62116579C}"
 EndProject
@@ -83,14 +78,6 @@ Global
 		{7EC1D8B2-5A81-4F21-A9BC-C65C73EA87EA}.Release|Win32.Build.0 = Release|Win32
 		{7EC1D8B2-5A81-4F21-A9BC-C65C73EA87EA}.Release|x64.ActiveCfg = Release|x64
 		{7EC1D8B2-5A81-4F21-A9BC-C65C73EA87EA}.Release|x64.Build.0 = Release|x64
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Debug|Win32.Build.0 = Debug|Win32
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Debug|x64.ActiveCfg = Debug|x64
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Debug|x64.Build.0 = Debug|x64
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Release|Win32.ActiveCfg = Release|Win32
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Release|Win32.Build.0 = Release|Win32
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Release|x64.ActiveCfg = Release|x64
-		{4C51F696-286A-4D40-B1BB-F671ECD6C515}.Release|x64.Build.0 = Release|x64
 		{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}.Debug|Win32.Build.0 = Debug|Win32
 		{F3993BF9-0AF1-44CD-B5EA-8D069F5188E9}.Debug|x64.ActiveCfg = Debug|x64

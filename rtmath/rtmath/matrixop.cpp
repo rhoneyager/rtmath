@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include "matrixop.h"
 // Reduces tedium when finding minors
 //#include <boost/foreach.hpp>

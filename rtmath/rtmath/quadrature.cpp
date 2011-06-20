@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include <vector>
 #include <set>
 #include <map>

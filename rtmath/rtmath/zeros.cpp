@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include "zeros.h"
 //#include <cstdlib>
 #include <cmath>

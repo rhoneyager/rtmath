@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include "polynomial.h"
 #include "zeros.h"
 #include "quadrature.h"
