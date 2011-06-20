@@ -80,77 +80,77 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/librtmath.a: ${OBJECTFILES}
 ${OBJECTDIR}/zeros.o: nbproject/Makefile-${CND_CONF}.mk zeros.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/zeros.o zeros.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/zeros.o zeros.cpp
 
 ${OBJECTDIR}/rtmath-base.o: nbproject/Makefile-${CND_CONF}.mk rtmath-base.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-base.o rtmath-base.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-base.o rtmath-base.cpp
 
 ${OBJECTDIR}/quadrature.o: nbproject/Makefile-${CND_CONF}.mk quadrature.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/quadrature.o quadrature.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/quadrature.o quadrature.cpp
 
 ${OBJECTDIR}/damatrix_quad.o: nbproject/Makefile-${CND_CONF}.mk damatrix_quad.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix_quad.o damatrix_quad.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix_quad.o damatrix_quad.cpp
 
 ${OBJECTDIR}/matrixop.o: nbproject/Makefile-${CND_CONF}.mk matrixop.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/matrixop.o matrixop.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/matrixop.o matrixop.cpp
 
 ${OBJECTDIR}/phaseFunc.o: nbproject/Makefile-${CND_CONF}.mk phaseFunc.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/phaseFunc.o phaseFunc.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/phaseFunc.o phaseFunc.cpp
 
 ${OBJECTDIR}/atmos.o: nbproject/Makefile-${CND_CONF}.mk atmos.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/atmos.o atmos.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/atmos.o atmos.cpp
 
 ${OBJECTDIR}/rtmath.o: nbproject/Makefile-${CND_CONF}.mk rtmath.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
 
 ${OBJECTDIR}/Stdafx.o: nbproject/Makefile-${CND_CONF}.mk Stdafx.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/Stdafx.o Stdafx.cpp
 
 ${OBJECTDIR}/polynomial.o: nbproject/Makefile-${CND_CONF}.mk polynomial.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/polynomial.o polynomial.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/polynomial.o polynomial.cpp
 
 ${OBJECTDIR}/debug_mem.o: nbproject/Makefile-${CND_CONF}.mk debug_mem.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug_mem.o debug_mem.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug_mem.o debug_mem.cpp
 
 ${OBJECTDIR}/debug.o: nbproject/Makefile-${CND_CONF}.mk debug.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug.o debug.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/debug.o debug.cpp
 
 ${OBJECTDIR}/lbl.o: nbproject/Makefile-${CND_CONF}.mk lbl.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/lbl.o lbl.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/lbl.o lbl.cpp
 
 ${OBJECTDIR}/damatrix.o: nbproject/Makefile-${CND_CONF}.mk damatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix.o damatrix.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/damatrix.o damatrix.cpp
 
 ${OBJECTDIR}/layer.o: nbproject/Makefile-${CND_CONF}.mk layer.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/layer.o layer.cpp
 
 # Subprojects
 .build-subprojects:

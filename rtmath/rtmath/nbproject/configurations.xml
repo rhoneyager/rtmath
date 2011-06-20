@@ -73,6 +73,9 @@
       <compileType>
         <ccTool>
           <commandLine>-fvisibility=default</commandLine>
+          <preprocessorList>
+            <Elem>HEAP_CHECK</Elem>
+          </preprocessorList>
           <warningLevel>2</warningLevel>
         </ccTool>
         <asmTool>
