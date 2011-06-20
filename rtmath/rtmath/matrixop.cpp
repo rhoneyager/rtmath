@@ -308,7 +308,7 @@ bool matrixop::operator== (const matrixop& rhs) const
 	return true;
 }
 
-matrixop matrixop::minor(unsigned int rank, ...) const
+matrixop matrixop::minors(unsigned int rank, ...) const
 {
 	// Retrieve the variable parameters
 	va_list indices;
@@ -321,7 +321,7 @@ matrixop matrixop::minor(unsigned int rank, ...) const
 		ptr.push_back(ival);
 	}
 	va_end(indices);
-	return this->minor(ptr);
+	return this->minors(ptr);
 }
 
 void matrixop::_push_back(unsigned int index, double val)
@@ -354,7 +354,7 @@ void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
 	}
 }
 
-matrixop matrixop::minor(const std::vector<unsigned int> &rc) const
+matrixop matrixop::minors(const std::vector<unsigned int> &rc) const
 {
 	using namespace std;
 	if (_dims.size() != 2) throw; // Allow only 2d matrices
@@ -420,7 +420,7 @@ double matrixop::det() const
             std::vector<unsigned int> pos;
             pos.push_back(it[0]); pos.push_back(it[1]);
             //throw;
-		matrixop min = this->minor(pos);
+		matrixop min = this->minors(pos);
 		// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
 		res += std::pow(-1.0, (double) it[1]) * min.det() * get(it);
 	}
@@ -471,7 +471,7 @@ matrixop matrixop::inverse() const
                     std::vector<unsigned int> pos; pos.push_back(j); pos.push_back(i);
 			// Calculate the appropriate minor
                     //throw;
-			matrixop min = this->minor(pos);
+			matrixop min = this->minors(pos);
 			double inv = std::pow(-1.0, (double) (i+j) ) * min.det() / mdet;
 			res.set(inv,2,j,i);
 		}
