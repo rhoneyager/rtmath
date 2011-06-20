@@ -38,6 +38,9 @@
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
+          <preprocessorList>
+            <Elem>HEAP_CHECK</Elem>
+          </preprocessorList>
           <warningLevel>2</warningLevel>
         </ccTool>
         <linkerTool>

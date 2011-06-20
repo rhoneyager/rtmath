@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
-FC=gfortran.exe
-AS=as.exe
+CC=gcc
+CCC=g++
+CXX=g++
+FC=gfortran
+AS=as
 
 # Macros
-CND_PLATFORM=MinGW-Windows
+CND_PLATFORM=GNU-Linux-x86
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -51,22 +51,22 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lm ../rtmath/dist/Debug/MinGW-Windows/librtmath.a
+LDLIBSOPTIONS=-lm ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe: ../rtmath/dist/Debug/MinGW-Windows/librtmath.a
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ../rtmath/dist/Debug/GNU-Linux-x86/librtmath.a
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/rtmath-console-test.o: rtmath-console-test.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -Wall -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-console-test.o rtmath-console-test.cpp
+	$(COMPILE.cc) -g -Wall -DHEAP_CHECK -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath-console-test.o rtmath-console-test.cpp
 
 # Subprojects
 .build-subprojects:
@@ -75,7 +75,7 @@ ${OBJECTDIR}/rtmath-console-test.o: rtmath-console-test.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test.exe
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rtmath-console-test
 
 # Subprojects
 .clean-subprojects:
