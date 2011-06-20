@@ -404,7 +404,7 @@ namespace rtmath {
 			unsigned int numIsos = molecisoids.size();
 
 			// Read in the data values
-			if (Qmatrix) delete[] Qmatrix;
+			//if (Qmatrix) delete[] Qmatrix;
 			Qmatrix = new double[numParsumEntries*(1+numIsos )];
 			char* blockin = new char[linelength*numBlockLines];
 			unsigned int linesRead = 0, lineIndex = 0;
@@ -572,6 +572,7 @@ namespace rtmath {
 			{
 				specline *tline = &lines[k];
 				bool done = false;
+				if (tline->_molecnum < 0) std::cout << "rec: " << k << " of " << numrecs << std::endl;
 				if (tline->_molecnum < 0) throw;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)

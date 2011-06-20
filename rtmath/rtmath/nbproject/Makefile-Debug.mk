@@ -55,8 +55,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-fvisibility=default
-CXXFLAGS=-fvisibility=default
+CCFLAGS=-fvisibility=default -ggdb
+CXXFLAGS=-fvisibility=default -ggdb
 
 # Fortran Compiler Flags
 FFLAGS=

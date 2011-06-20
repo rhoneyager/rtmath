@@ -44,8 +44,8 @@ inline void* operator new(size_t size)
 	//AddTrack(p, size, file, line);
 	if (__caller__) fprintf(stderr,"\nHEAP: new called from: %s\n", __caller__);
 	if (__file__) fprintf(stderr, " file: %s\n", __file__);
-	if (__line__) fprintf(stderr, " line: %d\n", __line__);
-	fprintf(stderr, " size: %d\n", size);
+	if (__line__) fprintf(stderr, " line: %d\n", (int) __line__);
+	fprintf(stderr, " size: %d\n", (int) size);
 	int lengthInt = size / sizeof(int);
 	int *end = &(((int*) p)[lengthInt]);
 	fprintf(stderr, " memory range: %p - %p\n", p, end);
@@ -71,8 +71,8 @@ inline void* operator new[](size_t size)
 	//AddTrack(p, size, file, line);
 	if (__caller__) fprintf(stderr,"\nHEAP: new called from: %s\n", __caller__);
 	if (__file__) fprintf(stderr, " file: %s\n", __file__);
-	if (__line__) fprintf(stderr, " line: %d\n", __line__);
-	fprintf(stderr, " size: %d\n", size);
+	if (__line__) fprintf(stderr, " line: %d\n", (int) __line__);
+	fprintf(stderr, " size: %d\n", (int) size);
 	int lengthInt = size / sizeof(int);
 	int *end = &(((int*) p)[lengthInt]);
 	fprintf(stderr, " memory range: %p - %p\n", p, end);
