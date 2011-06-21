@@ -7,6 +7,7 @@
    */
 
 #include <map>
+#include <complex>
 #include <set>
 #include "quadrature.h"
 
@@ -26,7 +27,7 @@ namespace rtmath {
 			polynomial operator * (double) const;
 			polynomial operator ^ (unsigned int) const;
 			polynomial deriv(unsigned int pow); // TODO: redo so it can be const
-			void zeros(std::set<double> &zpts) const;
+			void zeros(std::set<std::complex<double> > &zpts) const;
 			double operator() (double) const;
 			double& operator[] (const unsigned int); // TODO: redo for const
 			double eval(double xval) const;

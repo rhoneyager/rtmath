@@ -94,7 +94,7 @@ namespace rtmath {
 			in >> tn;
 			in >> dn;
 			zlevs.push_back(zn);
-			plevs.push_back(pn / 1013.0);
+			plevs.push_back(pn);
 			tlevs.push_back(tn);
 			dlevs.push_back(dn);
 
@@ -138,10 +138,10 @@ namespace rtmath {
 			// Fill in the information for this layer
 			// TODO: add dalayer stuff
 			layer = &lbllayers[i];
-			// TODO: unit checks
-			layer->dz(zlevs[i+1]-zlevs[i]);
-			layer->p(plevs[i]);
-			layer->T(tlevs[i]);
+			
+			layer->dz(1000 * (zlevs[i+1]-zlevs[i]) ); // in m
+			layer->p(plevs[i]); // in hPa
+			layer->T(tlevs[i]); // in K
 			
 			// Loop through and add the necessary isotope concentrations
 			//layer->isoconcentrations
@@ -152,9 +152,9 @@ namespace rtmath {
 				// newgas has dz, p and T set from the layer when it runs
 				// TODO: change the structure so that pointers to the
 				//  values are used. Prevents update errors.
-				newgas->dz(layer->_dz);
-				newgas->p(layer->_p);
-				newgas->T(layer->_T);
+				newgas->dz(layer->_dz); // in m
+				newgas->p(layer->_p);   // in hPa
+				newgas->T(layer->_T);   // in K
 				// need to calculate ps
 				// ps is the partial pressure in atmospheres of the gas
 				// so, the sum of all ps is one
@@ -162,7 +162,7 @@ namespace rtmath {
 				
 				// I have P(mb or atm), density(cm^-3), and conc. (ppmv)
 				// This is easy. Ps = conc * e-6 * P
-				newgas->psfrac(1.0E-6 * conc[j].at(i));
+				newgas->psfrac(1.0E-6 * conc[j].at(i)); // Just a fraction (unitless)
 				layer->isoconcentrations.insert(newgas);
 			}
 			// Gases inserted

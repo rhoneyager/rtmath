@@ -22,8 +22,8 @@
 namespace rtmath {
 	namespace lbl {
 		// Define the static variables here
-		double specline::_pRef = 1.0;
-		double specline::_TRef = 296.0;
+		double specline::_pRef = 1013.0; // in hPa
+		double specline::_TRef = 296.0; // in K
 		//std::set<specline*> specline::lines;
 		//std::map<Qselector, double> specline::Qmap;
 		double *specline::Qmatrix = NULL;
@@ -80,41 +80,53 @@ namespace rtmath {
 					if (line->_S < -1e-10) bad = true;
 					if (bad)
 					{
-						// Pause execution here
-						double test = 0;
+						throw rtmath::debug::xBadInput();
 					}
 					static const double kb=1.3806503e-23; // Boltzmann's const in m^2 kg s^-2 K^-1
 					// Convert ps from atm to Pa for units
 					//  Remember that _p, _T are pointers to the values of the layer
-					double ps = _psfrac * (*_p);
-					double nai = abun * 101325 * ps / (kb * (*_T));
+					double ps = _psfrac * (*_p);						// in hPa
+					// nai is the number density for isotope I (units of molecule/m^3)
+					//   abun is the isotope abundance fraction (fraction of this iso over all isos of this molecule)
+					//   abun is dimensionless. ps is in hPa. kb is above. T in K
+					// So, nai has units of 100 / m^3 (much better than in atmospheres, with the 101325 factor)
+					double nai = abun * ps / (kb * (*_T));				// in 100 molecules / m^3
 					// To get dTnn, we must calculate k
 
 					// But, k is dependent on several other things! 
 					
 					// Calculate gamma(p,ps,T)
 					// _nAir is provided by iteration over spectral line
+					// Tr/T is unitless. each gamma is HWHM at 296 K in cm^-1 atm^-1
+					// p, ps in hPA, so gamma needs conversion
+					const double hPadivAtm = 0.00098692327; // hPa / atm conversion factor (= 1/1013...)
 					double gamma = pow(specline::TRef() / (*_T),line->_nAir) * 
-						((line->_gamAir * (*_p - ps)) + (line->_gamSelf * ps) );
+						((line->_gamAir * hPadivAtm * (*_p - ps)) + (line->_gamSelf * hPadivAtm * ps) );
+					// so, gamma has units of cm^-1
 
 					// Calculate nushifted(p)
 					// spectral line-dependent
-					double nushifted = line->_nu + (line->_deltaAir * (*_p) );
+					// _deltaAir has units of 1 / (cm * atm)
+					// _nu is in cm^-1
+					// I want to keep nu in wavenumber units (cm^-1), so the formula is:
+					double nushifted = line->_nu + (line->_deltaAir * (*_p) * hPadivAtm); // nushifted is in cm^-1
 
 					// Calculate f
 					// Assume Lorentzian for now
 					// TODO: add selector to enable choice
 					// spectral line dependent
-					double f;
+					double f;	// f = gamma/(gamma^2 + (nu-nushift)^2)
+								// f has units of (1/cm)/((1/cm)^2 + (cm^-1)^2)
+								// f has units of 0.01 * m = cm
 					{
 						double num = gamma;
 						double denom = (gamma * gamma) + ((nu - nushifted) * (nu - nushifted));
-						f = num / (M_PI * denom);
+						f = num / (M_PI * denom);	// f is in cm
 					}
 
 					// Calculate S(T,Q)
 					// S is spectral line dependent
-					double S;
+					double S;									// S is in cm / molecule
 					{
 						// Average partition function to get Q(T)
 						double Qref, Q, Qa, Qb;
@@ -125,26 +137,37 @@ namespace rtmath {
 						double Tfrac = (*_T) - (double) ((unsigned int) *_T); 
 						Q = (Tfrac * Qb) + ( (1.0 - Tfrac) * Qa);
 						double Qquo = Qref / Q;
-						double cb = -1.4388; // cm*K // TODO: unit check
+						double cb = -1.4388; // cm*K
 						double Equo = exp( cb*line->_Eb/(*_T) ) / exp(cb*line->_Eb/specline::TRef());
 						double nuquo = (1.0 - exp( cb*line->_nu/(*_T) )) / 
 							(1.0 - exp(cb*line->_nu/specline::TRef() ));
-						S = line->_S * Qquo * Equo * nuquo;
+						// Units of _S are cm / molecule at 296 K
+						// Qquo is unitless
+						// Equo is unitless
+						// nuquo is unitless
+						S = line->_S * Qquo * Equo * nuquo;		// Units of S are cm / molecule
 					}
 
 					// Calculate k
 					// k = S(T,Q) * f(nu,p,ps,T)
 					// k is spectral line dependent
+					// S is in cm / molecule. f is in cm
+					// k has units of cm^2 / molecule
 					double k = S * f;
 
 					// Finally, dtnn may be calculated
-					double dtnn = nai * k * (*_dz);
+					// nai has units of 100 / m^3
+					// k is in cm^2 / molecule
+					// dz is in m
+					// dtnn has units of 0.01 (dimensionless)
+					//     so multiply by 100 to get truly dimensionless units
+					double dtnn = 100 * nai * k * (*_dz); // dimensionless
 
 #pragma omp atomic
 					res += dtnn;
 				}
 			}
-			return res;
+			return res; // res is dimensionless, as expected
 		}
 
 		double lbllayer::tau(double nu)

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <complex>
 
 namespace rtmath {
 	polynomial::polynomial()
@@ -219,9 +220,73 @@ namespace rtmath {
 		return res;
 	}
 
-	void polynomial::zeros(std::set<double> &zpts) const
+	void polynomial::zeros(std::set<std::complex<double> > &zpts) const
 	{
 		throw rtmath::debug::xUnimplementedFunction();
+
+		// This work is based on Dr. Ahlquist's 1993 modifications to the 
+		// zero-finding functions provided in SLATEC. It computes the complex-
+		// valued roots and sorts them. 
+		// These roots can be either incorporated into polynomials or treated separately
+		// Note: the actual original algorithm allows for complex-coefficient polynomials,
+		//  but my class only handles the real-valued case. 
+		// TODO: extend this to encompass complex-valued polynomials
+
+		unsigned int maxpow = maxPow();
+		// Consistency check - make sure that the polynomial is not zero
+		if (maxpow == 0) return;
+		
+		// Easy answer: when the polynomial is linear
+		if (maxpow == 1)
+		{
+			double zero = -1.0 * coeff(0) / coeff(1);
+			zpts.insert(std::complex<double>(zero,0));
+			return;
+		}
+
+		// More complex case that requires actual math
+		// Need to set up a scratch area for work calculations
+		double *work = new double[2*maxpow*(maxpow+1)];
+		using namespace std;
+		complex<double> scale;
+		complex<double> c;
+		complex<double> *coeffs = new complex<double>[maxpow+1];
+		complex<double> *roots = new complex<double>[maxpow+1];
+		int k, khr, khi, kwr, kwi, kad, kj;
+
+		// TODO: for all of these, check the array bounds, as 
+		//  Fortran is annoyingly different than C
+
+		// Begin the main loop
+		scale = 1.0 / coeff(maxpow);
+		khr = 1;
+		khi = khr * maxpow * maxpow;
+		kwr = khi + khi - khr;
+		kwi = kwr + maxpow;
+		// Initialize the work space to zero
+		for (k = 0; k < 2 * maxpow * (maxpow + 1); k++)
+			work[k] = 0.0;
+
+		// Next loop
+		for (k=0; k < maxpow; k++)
+		{
+			kad = (k-1) * maxpow + 1;
+			c = scale * coeff(k+1);
+			work[kad] =  c.real() * -1.0;
+			kj = khi + kad - 1;
+			work[kj] = -1.0 * c.imag();
+			if (k == maxpow) continue;
+			work[kad+k] = 1.0;
+		}
+
+		// Find the eigenvalues of a complex upper Hessenberg matrix
+		// with the QR method
+
+
+		// Free used memory
+		delete[] work;
+		delete[] coeffs;
+		delete[] roots;
 		return;
 		// Calculate all zeros through repeated differentiation
 		// and good application of Brent's method
