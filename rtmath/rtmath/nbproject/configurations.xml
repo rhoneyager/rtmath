@@ -40,6 +40,7 @@
       <itemPath>damatrix_quad.cpp</itemPath>
       <itemPath>debug.cpp</itemPath>
       <itemPath>debug_mem.cpp</itemPath>
+      <itemPath>error.cpp</itemPath>
       <itemPath>layer.cpp</itemPath>
       <itemPath>lbl.cpp</itemPath>
       <itemPath>matrixop.cpp</itemPath>
@@ -80,6 +81,7 @@
           <commandLine>-fvisibility=default</commandLine>
           <preprocessorList>
             <Elem>HEAP_CHECK</Elem>
+            <Elem>_DEBUG</Elem>
           </preprocessorList>
           <warningLevel>2</warningLevel>
         </ccTool>

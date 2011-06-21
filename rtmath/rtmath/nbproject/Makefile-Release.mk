@@ -42,6 +42,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/phaseFunc.o \
 	${OBJECTDIR}/atmos.o \
 	${OBJECTDIR}/rtmath.o \
+	${OBJECTDIR}/error.o \
 	${OBJECTDIR}/Stdafx.o \
 	${OBJECTDIR}/polynomial.o \
 	${OBJECTDIR}/debug_mem.o \
@@ -116,6 +117,11 @@ ${OBJECTDIR}/rtmath.o: rtmath.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/rtmath.o rtmath.cpp
+
+${OBJECTDIR}/error.o: error.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/error.o error.cpp
 
 ${OBJECTDIR}/Stdafx.o: Stdafx.cpp 
 	${MKDIR} -p ${OBJECTDIR}
