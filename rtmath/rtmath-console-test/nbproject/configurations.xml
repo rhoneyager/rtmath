@@ -40,6 +40,7 @@
         <ccTool>
           <preprocessorList>
             <Elem>HEAP_CHECK</Elem>
+            <Elem>_DEBUG</Elem>
           </preprocessorList>
           <warningLevel>2</warningLevel>
         </ccTool>
