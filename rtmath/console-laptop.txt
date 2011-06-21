@@ -1,6 +1,6 @@
 C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\HITRAN08.par
 C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\molparam.txt
 C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\parsum.dat
-C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\mls.txt
+C:\Users\reh9650.RYNETRIX\Documents\Visual Studio 2010\Projects\rtmath\trpaux.txt
 3000
 3010
