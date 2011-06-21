@@ -24,9 +24,9 @@ namespace rtmath {
 			std::ostringstream out;
 			if (_message.size())
 			{
-				out << _message;
+				out << "\n" << _message;
 			} else {
-				out << "Unknown Error" << std::endl;
+				out << "\nUnknown Error" << std::endl;
 			}
 			if (caller)
 			{

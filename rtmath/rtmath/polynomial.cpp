@@ -240,7 +240,7 @@ namespace rtmath {
 		if (maxpow == 1)
 		{
 			double zero = -1.0 * coeff(0) / coeff(1);
-			zpts.insert(std::complex<double>(zero,0));
+			//zpts.insert(std::complex<double>(zero,0));
 			return;
 		}
 

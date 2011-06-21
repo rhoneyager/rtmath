@@ -18,8 +18,9 @@
 #define TASSERT(x) NULL;
 #endif
 
-#define ERRSTD : public xError { protected: void _setmessage(); };
-#define ERRSTR(x) class x : public xError { public: x (const char* m) : xError() {_m=m;} protected: const char *_m; void _setmessage(); }
+//#define ERRSTD : public xError { protected: void _setmessage(); };
+#define ERRSTD(x) class x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
+#define ERRSTR(x) class x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
 namespace rtmath
 {
 	namespace debug
@@ -50,13 +51,13 @@ namespace rtmath
 
 		// The values passed to the function are nonsensical
 		// TODO: extend to also take a string for an error message
-		class xBadInput ERRSTD;
+		ERRSTD(xBadInput);
 
 		// The file that is opened for reading is empty
 		ERRSTR(xEmptyInputFile);
 
 		// A function has not been defined. Always stops execution.
-		class xUnimplementedFunction ERRSTD;
+		ERRSTD(xUnimplementedFunction);
 
 	}; // end debug
 }; // end rtmath

@@ -123,8 +123,9 @@ free(p);
 
 
 #ifdef __GNUC__
-//#define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : new
-//#define delete (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : delete
+#define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : new
+// Note: gcc complains about wrong type of NULL (non-void) in the ternary operator for delete, even if it's never used, so (void) NULL
+#define delete (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__) && 0) ? (void) NULL : delete
 #endif
 #ifdef _MSC_FULL_VER
 #define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : new

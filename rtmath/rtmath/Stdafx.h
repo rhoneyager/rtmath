@@ -27,11 +27,11 @@
 #include <omp.h>
 #endif
 
+#include "debug.h"
 //#ifdef HEAP_CHECK
 // The heap-checking overridess to new and delete, to find bugs!!!
 #include "debug_mem.h"
 //#endif
 
-#include "debug.h"
 //#include "error.h"
 //#include "damatrix.h"
