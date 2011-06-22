@@ -315,6 +315,13 @@ namespace rtmath {
 					strncpy(newvalue,((char*) record) + 59,8);
 					newvalue[8] = '\0';
 					linep->_deltaAir = M_ATOF(newvalue);
+                                        
+                                        if (linep->_molecnum < 0)
+                                        {
+                                            std::cout << "Error";
+                                        }
+                                        TASSERT(linep->_molecnum >= 0);
+                                        
 				}
 			}
 			
@@ -561,6 +568,16 @@ namespace rtmath {
 			for (int k=0;k<(int)numrecs;k++)
 			{
 				specline *currline = &lines[k];
+                                // Debug: lots of assertions slow the code, but find the bugs
+                                TASSERT(currline->_isonum >= 0);
+                                TASSERT(currline->_S < 1.e20);
+                                TASSERT(currline->_S >= 0);
+                                if (currline->_molecnum < 0)
+                                {
+                                    // Break so that I can debug the situation
+                                    std::cout << k << std::endl;
+                                }
+                                TASSERT(currline->_molecnum >= 0);
 				bool done = false;
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
@@ -596,7 +613,7 @@ namespace rtmath {
 				specline *tline = &lines[k];
 				bool done = false;
 				if (tline->_molecnum < 0) std::cout << "rec: " << k << " of " << numrecs << std::endl;
-				TASSERT(tline->_molecnum > 0); // A throwable assertion
+				TASSERT(tline->_molecnum >= 0); // A throwable assertion
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
