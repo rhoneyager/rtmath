@@ -223,8 +223,12 @@ namespace rtmath {
 			// so it slows down and gives an equivalent timed result
 
 			const unsigned int nRecsinread = 400;
+#ifdef _WIN32
 			// Size is 161 because of line feed character
 			const unsigned int recSize = 161;
+#else
+			const unsigned int recSize = 162;
+#endif
 
 			// Calc the critical read number (for special treatment)
 			unsigned int numReads = numrecs/nRecsinread;
@@ -316,10 +320,6 @@ namespace rtmath {
 					newvalue[8] = '\0';
 					linep->_deltaAir = M_ATOF(newvalue);
                                         
-                                        if (linep->_molecnum < 0)
-                                        {
-                                            std::cout << "Error";
-                                        }
                                         TASSERT(linep->_molecnum >= 0);
                                         
 				}
