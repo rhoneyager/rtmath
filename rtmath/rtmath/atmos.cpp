@@ -26,15 +26,26 @@ namespace rtmath {
 	{
 		// for each lbl layer, compute tau
 		// add the taus together to get the overall optical depth
+
+		// Holds the final value for tau
 		double res = 0.0;
-		double newtau = 0.0;
-		for (unsigned int i=0; i<lbllayers.size(); i++)
+		// The number of layers
+		int numlayers = lbllayers.size();
+		// The array of taus for each layer
+		double *pres = new double[numlayers];
+
+#pragma omp parallel for
+		for (int i=0; i<numlayers; i++)
 		{
-			newtau = lbllayers[i].tau(_wvnum);
-			std::cout << i << "\t" << newtau << std::endl;
-			res += newtau;
+			pres[i] = lbllayers[i].tau(_wvnum);
+			std::cout << i << "\t" << pres[i] << std::endl;
 		}
 
+		// Sum the partials
+		for (int i=0;i<numlayers;i++)
+			res += pres[i];
+
+		delete[] pres;
 		return res;
 	}
 

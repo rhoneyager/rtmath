@@ -62,13 +62,13 @@ namespace rtmath {
 				case 3:
 					// List current assignments
 					fprintf(stderr, "\nListing remaining memory assignments:\n");
-					fprintf(stderr, "Size: %d\n", sizes.size());
+					fprintf(stderr, "Size: %d\n", (int) sizes.size());
 					fprintf(stderr, "Pointer range\tSize\tFile\tLine\tCaller\n");
 					for (std::map<void*,size_t>::const_iterator it=sizes.begin(); it!=sizes.end(); it++)
 					{
 						int *end = &((int*) it->first)[it->second / sizeof(int)];
 						// I'll use just one iterator. The key is the same in each map
-						fprintf(stderr, "%p - %p\t%d\t%s\t%d\t%s\n", it->first, end, it->second, 
+						fprintf(stderr, "%p - %p\t%lu\t%s\t%d\t%s\n", it->first, end, it->second,
 							files[it->first], lines[it->first], callers[it->first]);
 					}
 					fprintf(stderr,"\nEnd of remaining callers.\n");

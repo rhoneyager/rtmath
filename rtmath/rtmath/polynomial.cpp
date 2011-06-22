@@ -264,8 +264,8 @@ namespace rtmath {
 		kwr = khi + khi - khr;
 		kwi = kwr + maxpow;
 		// Initialize the work space to zero
-		for (k = 0; k < 2 * maxpow * (maxpow + 1); k++)
-			work[k] = 0.0;
+		//for (k = 0; k < 2 * maxpow * (maxpow + 1); k++)
+			//work[k] = 0.0;
 
 		// Next loop
 		for (k=0; k < maxpow; k++)

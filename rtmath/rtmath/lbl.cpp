@@ -322,10 +322,18 @@ namespace rtmath {
                                         
 				}
 			}
-			
-			// Note: I have verified that lines is filled by checking the endpoints.
+
+#ifdef _DEBUG
+			// Verify that the lines are populated
+			for (int i=0; i<(int)numrecs; i++)
+			{
+				if (inlines[i]._molecnum < 0) throw;
+				if (inlines[i]._molecnum > 60) throw;
+			}
+			std::cerr << "DEBUG: HITRAN08.par read lines verified\n";
+#endif
+
 			indata.close();
-			//std::cout << "Records read: " << j << std::endl;
 		}
 
 		void specline::_loadMolparam(const char* molparam)
@@ -372,7 +380,7 @@ namespace rtmath {
 					{
 						// New isotope found
 						isoid = M_ATOI( linein.substr(8,4).c_str() );
-						abundance = M_ATOF( linein.substr(14,10).c_str() );
+						abundance = M_ATOF( linein.substr(14,11).c_str() );
 						//Q = M_ATOF( linein.substr(29,9).c_str() );
 						//gj = M_ATOI( linein.substr(42,2).c_str() );
 						//mmass = M_ATOF( linein.substr(49,8).c_str() );
@@ -398,7 +406,11 @@ namespace rtmath {
 			// Note: Original routine was too slow. Using similar process as hitran08.par load
 			static const unsigned int numParsumEntries = 3000-70+1; // TODO: allow for dynamic setting
 			// Each record line is 2916 characters long, including the end line
+#ifdef _WIN32
 			static const unsigned int linelength = 2916;
+#else
+			static const unsigned int linelength = 2917;
+#endif
 			// Split reads into intervals of 21 lines each, so a read length of 61236 < 64k
 			//unsigned int numBlockLines = 21;
 			unsigned int numBlockLines = numParsumEntries;
@@ -464,11 +476,15 @@ namespace rtmath {
 						{
 							offstart = 7;
 						} else {
-							offstart = 26*(j)+1;
+							offstart = 27*(j)+1;
 						}
-						// Punch hole at end
-						arr[26*(j+1)]='\0';
+						// Punch hole at end, only if not at end of array
+						if (j != numIsos-1) arr[27*(j+1)]='\0';
+
+						//double test = M_ATOF(&arr[offstart]); // for debugging
+
 						// Pull in the double
+						// M_ATOF, upon reading an endline, stops parsing and returns, so we're safe here
 						Qmatrix[(numIsos+1)*(lineIndex+i)+j+1] = M_ATOF(&arr[offstart]);
 					}
 				}
@@ -480,6 +496,19 @@ namespace rtmath {
 			QnumRecords = numParsumEntries;
 			indata.close();
 			delete[] blockin;
+
+			// Perform parsum verification
+#ifdef _DEBUG
+			int imax = (int) numParsumEntries*(1+numIsos );
+			double Qv = 0;
+			for (int i=0; i< imax; i++)
+			{
+				Qv = Qmatrix[i];
+				if (Qv < 0) throw;
+				if (Qv > 9.5e16) throw;
+			}
+			std::cerr << "DEBUG: parsum verified\n";
+#endif
 		}
 
 		void specline::_doMappings()
@@ -504,7 +533,7 @@ namespace rtmath {
 
 			// Loop through isotopes and make a mapping table to isotope / hitran line identifiers
 			int pmolec = 0, piso = 0;
-//#pragma omp parallel for private(pmolec,piso) // can't use the loop because I need ordered data...
+//////#pragma omp parallel for private(pmolec,piso) // can't use a parallel loop because I need ordered data...
 			for (int i=0;i<(int)numIsos;i++)
 			{
 				// Set the basic parameters
@@ -554,7 +583,7 @@ namespace rtmath {
 				} else {
 					// Add isotope to specdata::linemappings. It's essential for later parts
 					// isodata *iso = &newIsos[i]; // useful when debugging in VS
-#pragma omp critical
+//#pragma omp critical // see above - loop requires ordered data, so no openmp
 					specline::linemappings.insert(&newIsos[i]);
 				}
 			}
@@ -570,11 +599,6 @@ namespace rtmath {
                                 TASSERT(currline->_isonum >= 0);
                                 TASSERT(currline->_S < 1.e20);
                                 TASSERT(currline->_S >= 0);
-                                if (currline->_molecnum < 0)
-                                {
-                                    // Break so that I can debug the situation
-                                    std::cout << k << std::endl;
-                                }
                                 TASSERT(currline->_molecnum >= 0);
 				bool done = false;
 				// Iterate over each isotope
@@ -610,8 +634,9 @@ namespace rtmath {
 			{
 				specline *tline = &lines[k];
 				bool done = false;
-				if (tline->_molecnum < 0) std::cout << "rec: " << k << " of " << numrecs << std::endl;
-				TASSERT(tline->_molecnum >= 0); // A throwable assertion
+
+				TASSERT(tline->_molecnum >= 0); // A throwable assertion for bug checking
+
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
@@ -624,11 +649,13 @@ namespace rtmath {
 							// It took two hours to find the bug.
 							// Windows App Verifier and gflags and many linux heap overflow
 							// debug utilities did NOT find it.
-							// TODO: check here for the error!
-							//newIsos[i].lines[nALines[i] -1] = lines[k];
-							(newIsos[i].lines[nALines[i] - 1]) = *tline;
-#pragma omp atomic
-							nALines[i]--;
+							// Also, the next TWO lines are critical TOGETHER. Else, a run condition occurs and
+							// not all values are filled.
+#pragma omp critical
+							{
+								(newIsos[i].lines[nALines[i] - 1]) = *tline;
+								nALines[i]--;
+							}
 							done = true;
 						}
 					}
