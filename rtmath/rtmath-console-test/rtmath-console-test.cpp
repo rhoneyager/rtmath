@@ -12,6 +12,7 @@
 #include <math.h>
 #include <fstream>
 #include <stdio.h>
+#include <omp.h>
 
 #include "../rtmath/debug_mem.h"
 
@@ -19,6 +20,15 @@ int main(int argc, char* argv[])
 {
 	using namespace std;
 	try {
+		/*
+		for (;;)
+		{
+			std::string inval;
+			std::getline(cin,inval);
+			std::cout << rtmath::macros::m_atof(inval) << std::endl;
+		}
+		return 0;
+		*/
 		rtmath::debug::debug_preamble();
 		freopen("strerr.txt","w",stderr); // Remap standard error for debug
 		rtmath::debug::debug_preamble(); // Print again, this time to the file
@@ -81,7 +91,7 @@ int main(int argc, char* argv[])
 			// Call functions
 
 			lblatmos.nu(wvnum+i);
-			cout << i << " ";
+			cout << wvnum + i << ": ";
 			tau[i] = lblatmos.tau();
 			rtmath::debug::timestamp(true);
 			i++;
@@ -101,9 +111,9 @@ int main(int argc, char* argv[])
 		cout << endl;
 		cout << endl;
 		cout << "Test program routines finished." << endl;
-		for (;;)
+		//for (;;)
 		{
-			std::getline(cin,mainprof);
+			//std::getline(cin,mainprof);
 		}
 	}
 	catch (rtmath::debug::xError &err)
