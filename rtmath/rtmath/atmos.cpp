@@ -73,7 +73,11 @@ namespace rtmath {
 			// Otherwise, add gas to conc. list
 			gasnames.push_back(buffer);
 		}
-		numgases = gasnames.size() - 1; // parser.good() repeats the last value. Aarg!
+#ifdef _WIN32
+		numgases = gasnames.size(); 
+#else // parser.good() repeats the last value. Aarg!
+		numgases = gasnames.size() - 1;
+#endif
 
 		// Skip next line
 		getline(in,buffer);
