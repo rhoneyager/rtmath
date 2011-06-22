@@ -93,6 +93,11 @@ namespace rtmath {
 			in >> pn;
 			in >> tn;
 			in >> dn;
+			//TASSERT(zn>0); // Debug checking
+			TASSERT(pn>0);
+			TASSERT(tn>0);
+			TASSERT(dn>0);
+
 			zlevs.push_back(zn);
 			plevs.push_back(pn);
 			tlevs.push_back(tn);
@@ -106,7 +111,7 @@ namespace rtmath {
 			}
 
 		}
-		delete [] gn; // Note: I'm introducing a memory leak
+		delete [] gn;
 		in.close();
 
 		// Take the line data from hitran and select the useful lines
@@ -127,13 +132,15 @@ namespace rtmath {
 
 		// Iterate from zero to the number of layers
 		// Resize beforehand so I can use multiple threads here
-		lbllayers.resize(zlevs.size());
-		dalayers.resize(zlevs.size());
+		lbllayers.resize(zlevs.size()-2);
+		dalayers.resize(zlevs.size()-2);
 
 		lbl::lbllayer *layer;
 		int j;
+		// Loop is to zlevs.size()-2 to avoid the second last read that in.good() loops
+		// always have and to avoid calculating dz at the end of the atmosphere
 #pragma omp parallel for private(layer,j)
-		for(int i=0;i<(int)zlevs.size()-1;i++)
+		for(int i=0;i<(int)zlevs.size()-2;i++)
 		{
 			// Fill in the information for this layer
 			// TODO: add dalayer stuff
@@ -142,6 +149,7 @@ namespace rtmath {
 			layer->dz(1000 * (zlevs[i+1]-zlevs[i]) ); // in m
 			layer->p(plevs[i]); // in hPa
 			layer->T(tlevs[i]); // in K
+			TASSERT(layer->dz() > 0);
 			
 			// Loop through and add the necessary isotope concentrations
 			//layer->isoconcentrations

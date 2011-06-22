@@ -149,9 +149,6 @@
     <None Include="..\auxiliary.txt">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\mls.txt">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\filepaths.txt">
       <Filter>Resource Files</Filter>
     </None>
@@ -159,6 +156,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="debug_subversion.h.template">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\trp.txt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\trpaux.txt">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

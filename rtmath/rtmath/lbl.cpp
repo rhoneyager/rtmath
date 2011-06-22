@@ -75,13 +75,9 @@ namespace rtmath {
 					specline *line = &(*it)->lines[i];
 					// Each line has delta tau: dt=n_a,i * knn'(nu,T,p)dz
 					// Also need the isotope's Q
-					bool bad = false;
-					if (line->_S > 1e-10) bad = true;
-					if (line->_S < -1e-10) bad = true;
-					if (bad)
-					{
-						throw rtmath::debug::xBadInput();
-					}
+					TASSERT(line->_S <1e-10); // Debugging invalid line check
+					TASSERT(line->_S > 0);
+
 					static const double kb=1.3806503e-23; // Boltzmann's const in m^2 kg s^-2 K^-1
 					// Convert ps from atm to Pa for units
 					//  Remember that _p, _T are pointers to the values of the layer
@@ -162,7 +158,7 @@ namespace rtmath {
 					// dtnn has units of 0.01 (dimensionless)
 					//     so multiply by 100 to get truly dimensionless units
 					double dtnn = 100 * nai * k * (*_dz); // dimensionless
-
+					TASSERT(dtnn>=0);
 #pragma omp atomic
 					res += dtnn;
 				}
@@ -227,6 +223,8 @@ namespace rtmath {
 			// Size is 161 because of line feed character
 			const unsigned int recSize = 161;
 #else
+			// Size is 162 because non-CRLF systems read CR and LF separately, 
+			// whereas windows reads it as a single newline
 			const unsigned int recSize = 162;
 #endif
 
@@ -642,8 +640,6 @@ namespace rtmath {
 			// Free nALines
 			delete[] nALines;
 		}
-
-#undef new
 
 		isoconc::isoconc(int molnum)
 		{

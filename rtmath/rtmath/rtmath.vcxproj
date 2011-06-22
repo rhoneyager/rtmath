@@ -129,7 +129,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <OpenMPSupport>true</OpenMPSupport>
+      <OpenMPSupport>false</OpenMPSupport>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -211,10 +211,11 @@
     <None Include="..\auxiliary.txt" />
     <None Include="..\console-laptop.txt" />
     <None Include="..\filepaths.txt" />
-    <None Include="..\mls.txt" />
     <None Include="..\profiles.xlsx" />
     <None Include="..\rtmath research 6-2-2011.pptx" />
     <None Include="..\rtmath research 7-2011.pptx" />
+    <None Include="..\trp.txt" />
+    <None Include="..\trpaux.txt" />
     <None Include="app.ico" />
     <None Include="debug_subversion.h.template" />
     <None Include="Makefile" />
