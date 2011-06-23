@@ -38,7 +38,7 @@ namespace rtmath {
 		for (int i=0; i<numlayers; i++)
 		{
 			pres[i] = lbllayers[i].tau(_wvnum);
-			std::cout << i << "\t" << pres[i] << std::endl;
+			//std::cout << i << "\t" << pres[i] << std::endl;
 		}
 
 		// Sum the partials
