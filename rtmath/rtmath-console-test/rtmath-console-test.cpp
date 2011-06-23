@@ -49,21 +49,21 @@ int main(int argc, char* argv[])
 			in = &cin;
 		}
 
-		cout << "hitran parse file: ";
+		//cout << "hitran parse file: ";
 		string htp, molp, pars;
 		getline(*in,htp);
-		cout << "Molparam file: ";
+		//cout << "Molparam file: ";
 		getline(*in,molp);
-		cout << "parsum file: ";
+		//cout << "parsum file: ";
 		getline(*in,pars);
 		rtmath::debug::timestamp(false);
 		rtmath::lbl::specline::loadlines(htp.c_str(),molp.c_str(),pars.c_str());
 		rtmath::debug::timestamp(false);
-		cout << "molp has " << rtmath::lbl::specline::abundanceMap.size() << " entries.\n";
-		cout << "pars has " << rtmath::lbl::specline::QThigh - rtmath::lbl::specline::QTlow << " temperatures.\n";
+		//cout << "molp has " << rtmath::lbl::specline::abundanceMap.size() << " entries.\n";
+		//cout << "pars has " << rtmath::lbl::specline::QThigh - rtmath::lbl::specline::QTlow << " temperatures.\n";
 
-		cout << "Now, to perform calculations with an atmospheric profile\n";
-		cout << "Profile filename: ";
+		//cout << "Now, to perform calculations with an atmospheric profile\n";
+		//cout << "Profile filename: ";
 		string mainprof;
 		getline(*in,mainprof);
 
@@ -71,38 +71,43 @@ int main(int argc, char* argv[])
 		rtmath::atmos lblatmos;
 		lblatmos.loadProfile(mainprof.c_str());
 
-		cout << "Profile is: " << lblatmos.name << endl;
+		cout << "Profile: " << lblatmos.name << endl;
 		// List the memory locations now
 		rtmath::debug::memcheck::__Track(3,0,0,0,0,0);
 		fflush(stderr);
 
-		double wvnum, wvnumhigh;
-		cout << "Lower Wavenumber (cm^-1): ";
+		double wvnum, wvnumhigh, wvrate;
+//		cout << "Lower Wavenumber (cm^-1): ";
 		*in >> wvnum;
-		cout << "Upper Wavenumber (cm^-1): ";
+//		cout << "Upper Wavenumber (cm^-1): ";
 		*in >> wvnumhigh;
+//		cout << "Rate (cm^-1): ";
+		*in >> wvrate;
 
-		double *tau = new double( (unsigned int) wvnumhigh - (unsigned int) wvnum + 1);
+		std::map<double, double> taus;
+		//double *tau = new double( (unsigned int) wvnumhigh - (unsigned int) wvnum + 1);
 		unsigned int i=0;
-		cout << "Performing atmospheric transmission calculations without scattering.\n";
+//		cout << "Performing atmospheric transmission calculations without scattering.\n";
 		while (wvnum + i <= wvnumhigh)
 		{
 			rtmath::debug::timestamp(false);
 			// Call functions
-
+			double tau;
 			lblatmos.nu(wvnum+i);
-			cout << wvnum + i << ": ";
-			tau[i] = lblatmos.tau();
+			tau = lblatmos.tau();
+			taus[wvnum+i] = tau;
+			std::cout << (wvnum + i) << "\t" << tau << "\t" << exp(-1.0*tau) << std::endl;
 			rtmath::debug::timestamp(true);
-			i++;
+			i+=wvrate;
 		}
 		rtmath::debug::timestamp(false);
-		cout << "Final results:" << endl;
-		cout << "Wavenumber\t\tTau\tT\n";
-		for (unsigned int j=0;j<i;j++)
+//		cout << "Final results:" << endl;
+//		cout << "Wavenumber\t\tTau\tT\n";
+		for (std::map<double,double>::const_iterator it=taus.begin(); it != taus.end(); it++)
 		{
 			// Output data
-			cout << (wvnum + j) << ":\t" << tau[j] << "\t" << exp(-1.0 * tau[j]) << endl;
+			//cout << (wvnum + j) << ":\t" << tau[j] << "\t" << exp(-1.0 * tau[j]) << endl;
+		//	std::cout << it->first << ":\t" << it->second << std::endl;
 		}
 
 
@@ -110,7 +115,7 @@ int main(int argc, char* argv[])
 
 		cout << endl;
 		cout << endl;
-		cout << "Test program routines finished." << endl;
+		//cout << "Test program routines finished." << endl;
 		//for (;;)
 		{
 			//std::getline(cin,mainprof);
