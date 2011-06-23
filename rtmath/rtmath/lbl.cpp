@@ -480,8 +480,9 @@ namespace rtmath {
 						}
 						// Punch hole at end, only if not at end of array
 						if (j != numIsos-1) arr[27*(j+1)]='\0';
+						if (j == numIsos-1) arr[27*(j+1)-1] = '\0';
 
-						//double test = M_ATOF(&arr[offstart]); // for debugging
+						double test = M_ATOF(&arr[offstart]); // for debugging
 
 						// Pull in the double
 						// M_ATOF, upon reading an endline, stops parsing and returns, so we're safe here

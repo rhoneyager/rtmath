@@ -79,8 +79,18 @@ namespace rtmath
 #ifdef __SUNPRO_CC
 			std::cerr << "Sun Studio Compiler " << __SUNPRO_CC << std::endl;
 #endif
+#ifdef __PATHCC__
+			std::cerr << "EKOPath Compiler " << __PATHCC__ << "." << __PATHCC_MINOR__ << "." << __PATHCC_PATCHLEVEL__ << std::endl;
+#endif
 #ifdef __llvm__
 			std::cerr << "LLVM Compiler Suite" << std::endl;
+#endif
+#ifdef __clang__
+			std::cerr << " clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__ << std::endl;
+#endif
+#ifdef __INTEL_COMPILER
+			std::cerr << "Intel Compiler Version " << __INTEL_COMPILER << std::endl;
+			std::cerr << " Compiler build date: " << __INTEL_COMPILER_BUILD_DATE << std::endl;
 #endif
 #ifdef _MSC_FULL_VER
 			std::cerr << "Microsoft Visual Studio Compiler Version " << _MSC_FULL_VER << std::endl;

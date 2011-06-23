@@ -88,6 +88,7 @@ inline void* operator new[](size_t size)
 inline void operator delete(void *p)
 {
 	free(p);
+	p = NULL; // Reset the pointer to detect future errors
 	using namespace rtmath::debug::memcheck;
 	if (!__caller__) return;
 	if (!enabled) return;
@@ -105,7 +106,8 @@ inline void operator delete(void *p)
 
 inline void operator delete[](void *p)
 {
-free(p);
+	free(p);
+	p = NULL; // Reset the pointer to detect future errors
 	using namespace rtmath::debug::memcheck;
 	if (!__caller__) return;
 	if (!enabled) return;

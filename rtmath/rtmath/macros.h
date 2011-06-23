@@ -85,6 +85,7 @@ namespace rtmath {
 						break;
 					default:
 						// Invalid input
+						p++;
 						continue;
 						break;
 					}
