@@ -41,14 +41,23 @@ int main(int argc, char* argv[])
 		istream *in = NULL;
 		if (argc > 1)
 		{
+			/*
 			static filebuf fb;
 			fb.open(argv[1],ios::in);
 			static istream indata(&fb);
 			in = &indata;
+			*/
+			in = &cin;
+
 		} else {
 			in = &cin;
 		}
+		string confrootname;
+		confrootname.assign(argv[1]);
+		rtmath::config::configsegment *confroot = rtmath::config::configsegment::loadFile(confrootname.c_str(),NULL);
 
+		std::cout << "Config loading finished\n";
+		/*
 		//cout << "hitran parse file: ";
 		string htp, molp, pars;
 		getline(*in,htp);
@@ -115,6 +124,7 @@ int main(int argc, char* argv[])
 
 		cout << endl;
 		cout << endl;
+		*/
 		//cout << "Test program routines finished." << endl;
 		//for (;;)
 		{

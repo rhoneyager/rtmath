@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <boost/filesystem.hpp>
 #include <set>
 #include <cstdlib>
 #include <cstdio>

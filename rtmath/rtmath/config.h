@@ -24,17 +24,18 @@
 
 namespace rtmath {
 	namespace config {
+		class configsegment;
+
 		class configsegment {
 		public:
 			configsegment(const std::string &name);
 			configsegment(const std::string &name, configsegment *parent);
-			void getVal(const std::string &key, std::string &value) const;
+			void getVal(const std::string &key, std::string &value);
 			void setVal(const std::string &key, const std::string &value);
-			configsegment* findSegment(const std::string &key) const
-			configsegment* getChild(const std::string &name) const;
+			configsegment* findSegment(const std::string &key);
+			configsegment* getChild(const std::string &name);
 			configsegment* getParent() const;
 		private:
-			int _id;
 			std::string _segname;
 			configsegment *_parent;
 			std::map<std::string, std::string> _mapStr;

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <boost/filesystem.hpp>
 
 namespace rtmath {
 	namespace config {
@@ -17,23 +18,25 @@ namespace rtmath {
 		{
 			// No parent
 			this->_parent = NULL;
+			this->_segname = name;
 		}
 
 		configsegment::configsegment(const std::string &name, configsegment *parent)
 		{
 			_parent = parent;
 			parent->_children.insert(this);
+			this->_segname = name;
 		}
 
-		configsegment* configsegment::findSegment(const std::string &key) const
+		configsegment* configsegment::findSegment(const std::string &key)
 		{
 			using namespace std;
 			configsegment *cseg = this;
 
 			// If first part of key is '/', seek to root
-			if (key[0] == '/')
+			if (key[0] == '/' != string::npos)
 			{
-				configsegment cpar = this->_parent;
+				configsegment *cpar = this->_parent;
 				while (cpar != NULL)
 				{
 					cseg = cpar;
@@ -66,13 +69,13 @@ namespace rtmath {
 			// Done advancing. Return result.
 			return cseg;
 		}
-		void configsegment::getVal(const std::string &key, std::string &value) const
+		void configsegment::getVal(const std::string &key, std::string &value)
 		{
 			using namespace std;
 			// If the key contains '/', we should search the path
 			// a / at the beginning specifies an absolute path.
 			// Otherwise, it is relative only going downwards
-			if (key.find('/'))
+			if (key.find('/') != string::npos)
 			{
 				configsegment *relseg = findSegment(key);
 				if (relseg == NULL) throw;
@@ -103,7 +106,7 @@ namespace rtmath {
 		void configsegment::setVal(const std::string &key, const std::string &value)
 		{
 			using namespace std;
-			if (key.find('/'))
+			if (key.find('/') != string::npos)
 			{
 				configsegment *relseg = findSegment(key);
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
@@ -116,10 +119,10 @@ namespace rtmath {
 			_mapStr[key] = value;
 		}
 
-		configsegment* configsegment::getChild(const std::string &name) const
+		configsegment* configsegment::getChild(const std::string &name)
 		{
 			using namespace std;
-			if (name.find('/'))
+			if (name.find('/') != string::npos)
 			{
 				configsegment *relseg = findSegment(name);
 				return relseg;
@@ -129,7 +132,7 @@ namespace rtmath {
 			std::set<configsegment*>::const_iterator it;
 			for (it = _children.begin(); it != _children.end(); it++)
 			{
-				if (it->_segname == name) return *it;
+				if ((*it)->_segname == name) return *it;
 			}
 			return NULL;
 		}
@@ -153,7 +156,7 @@ namespace rtmath {
 
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
-				root = new configsegment("ROOT",NULL);
+				root = new configsegment("ROOT");
 
 			configsegment* cseg = root; // The current container in the tree
 
@@ -200,14 +203,16 @@ namespace rtmath {
 					// First part is the key! The rest is the value
 					// Key is in key
 					string value;
-					size_t vstart = line.find(key) + key.size();
-					size_t vend = line.find_last_not_of(' ');
+					size_t vstart = line.find(key) + key.size()+1;
+					size_t vend = line.find_last_not_of(' ')+1;
 					// Trim line to get value
 					value = line.substr(vstart, vend - vstart);
 
 					// Check for special keywords, like Include!
 					if (key == "Include")
 					{
+						// Use Boost to get the full path of the file (use appropriate dir)
+
 						loadFile(value.c_str(), cseg); // Load a file
 					} else {
 						// Set the key-val combination

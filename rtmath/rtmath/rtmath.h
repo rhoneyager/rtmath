@@ -13,6 +13,7 @@
 #include "layer.h"
 #include "lbl.h"
 #include "atmos.h"
+#include "config.h"
 
 /*
 #include "quadrature.h"
