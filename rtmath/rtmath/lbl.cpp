@@ -482,8 +482,6 @@ namespace rtmath {
 						if (j != numIsos-1) arr[27*(j+1)]='\0';
 						if (j == numIsos-1) arr[27*(j+1)-1] = '\0';
 
-						double test = M_ATOF(&arr[offstart]); // for debugging
-
 						// Pull in the double
 						// M_ATOF, upon reading an endline, stops parsing and returns, so we're safe here
 						Qmatrix[(numIsos+1)*(lineIndex+i)+j+1] = M_ATOF(&arr[offstart]);
@@ -605,7 +603,7 @@ namespace rtmath {
 				// Iterate over each isotope
 				for (int i=0;i< (int) numIsos;i++)
 				{
-					isodata *currIso = &newIsos[i];
+					//isodata *currIso = &newIsos[i];
 					if (newIsos[i].valid == false) continue; // Skip it
 					if (lines[k]._molecnum == newIsos[i]._molnum)
 					{

@@ -543,10 +543,10 @@ void matrixop::fromDoubleArray(const double *target)
 	clear();
 
 	throw rtmath::debug::xUnimplementedFunction();
-	double cval = 0.0;
+	//double cval = 0.0;
 	for (unsigned int j=0;j<maxsize;j++)
 	{
-		cval = target[j];
+		//cval = target[j];
 		// Convert j into pos coords
 	}
 }

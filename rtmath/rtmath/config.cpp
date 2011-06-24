@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 
 namespace rtmath {
 	namespace config {
@@ -34,7 +34,7 @@ namespace rtmath {
 			configsegment *cseg = this;
 
 			// If first part of key is '/', seek to root
-			if (key[0] == '/' != string::npos)
+			if (key[0] == '/')
 			{
 				configsegment *cpar = this->_parent;
 				while (cpar != NULL)
