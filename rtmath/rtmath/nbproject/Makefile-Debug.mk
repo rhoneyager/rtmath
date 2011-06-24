@@ -56,8 +56,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-fvisibility=default
-CXXFLAGS=-fvisibility=default
+CCFLAGS=-fvisibility=default -fopenmp
+CXXFLAGS=-fvisibility=default -fopenmp
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -66,7 +66,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-fopenmp
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
