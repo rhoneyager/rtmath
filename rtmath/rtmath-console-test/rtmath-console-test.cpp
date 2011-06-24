@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
 		// This part of the code lets me create an answer file, so that I don't 
 		// need to copy and paste all the time.
 		istream *in = NULL;
+		string confrootname;
 		if (argc > 1)
 		{
 			/*
@@ -48,12 +49,14 @@ int main(int argc, char* argv[])
 			in = &indata;
 			*/
 			in = &cin;
-
+			confrootname.assign(argv[1]);
 		} else {
 			in = &cin;
+			std::cout << "Config file: ";
+			getline(*in,confrootname);
 		}
-		string confrootname;
-		confrootname.assign(argv[1]);
+
+
 		rtmath::config::configsegment *confroot = rtmath::config::configsegment::loadFile(confrootname.c_str(),NULL);
 
 		std::cout << "Config loading finished\n";
