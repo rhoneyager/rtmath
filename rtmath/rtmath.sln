@@ -28,6 +28,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PhaseFuncs", "PhaseFuncs", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui", "ui", "{B80DF6DB-DF2D-4CC1-8494-BBED66DD6C80}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "win-bonjour", "win-bonjour\win-bonjour.vcxproj", "{DAF96C14-9A36-41AE-A847-566058519069}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -99,6 +101,12 @@ Global
 		{45C058B2-9D7B-4063-B2C3-B9528CC82AFD}.Release|Win32.Build.0 = Release|Win32
 		{45C058B2-9D7B-4063-B2C3-B9528CC82AFD}.Release|x64.ActiveCfg = Release|x64
 		{45C058B2-9D7B-4063-B2C3-B9528CC82AFD}.Release|x64.Build.0 = Release|x64
+		{DAF96C14-9A36-41AE-A847-566058519069}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DAF96C14-9A36-41AE-A847-566058519069}.Debug|Win32.Build.0 = Debug|Win32
+		{DAF96C14-9A36-41AE-A847-566058519069}.Debug|x64.ActiveCfg = Debug|Win32
+		{DAF96C14-9A36-41AE-A847-566058519069}.Release|Win32.ActiveCfg = Release|Win32
+		{DAF96C14-9A36-41AE-A847-566058519069}.Release|Win32.Build.0 = Release|Win32
+		{DAF96C14-9A36-41AE-A847-566058519069}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

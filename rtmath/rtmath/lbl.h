@@ -27,6 +27,16 @@ namespace rtmath {
 		class isodata;
 		class isoconc;
 
+		namespace lineshape {
+			enum shape {
+				LORENTZIAN,
+				VLECK_WEISSKOPF,
+				VOIGHT,
+				GAUSSIAN,
+				NUM_SHAPES
+			};
+		}; // end namespace lineshape
+
 		class isoselector {
 		public:
 			isoselector(std::string &name, unsigned int molecnum, unsigned int isonum, double abundance)
@@ -83,6 +93,7 @@ namespace rtmath {
 			static specline *lines;
 			static const unsigned int numrecs;
 			static std::set<isodata*> linemappings;
+			static lineshape::shape speclineShape;
 			//static std::vector
 			static std::vector<isoselector> abundanceMap;
 			//static std::map<isoselector, double> abundanceMap;

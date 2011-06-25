@@ -45,7 +45,7 @@ namespace rtmath {
 				cseg = cpar;
 			}
 
-			std::string dkey = key.substr(0,key.find_last_not_of('/'));
+			std::string dkey = key.substr(0,key.find_last_of('/')+1);
 			// Go down the tree, pulling out one '/' at a time, until done
 			// If an entry is missing, create the container
 
@@ -55,7 +55,7 @@ namespace rtmath {
 			while ( (s_end = dkey.find_first_of('/',s_start)) != std::string::npos)
 			{
 				segname = dkey.substr(s_start,s_end-s_start);
-				if (segname.size() == 0) continue;
+				if (segname.size() == 0) break;
 				configsegment *newChild = cseg->getChild(segname);
 				if (newChild == NULL) newChild = new configsegment(segname,cseg);
 
@@ -185,14 +185,9 @@ namespace rtmath {
 					} else {
 						// New container
 						// Remove spaces, tabs, < and > from original input line
-						std::remove(line.begin(), line.end(), ' ');
-						std::remove(line.begin(), line.end(), '\t');
-						std::remove(line.begin(), line.end(), '<');
-						std::remove(line.begin(), line.end(), '>');
-						std::remove(line.begin(), line.end(), '/');
-						std::remove(line.begin(), line.end(), '\\');
-						std::remove(line.begin(), line.end(), '\r');
-						std::remove(line.begin(), line.end(), '\n');
+						size_t kstart = line.find_first_of('<')+1;
+						size_t kend = line.find_last_of('>');
+						line = line.substr(kstart,kend-kstart);
 
 						// Now, create the new container and switch to it
 						configsegment *child = new configsegment(line, cseg);
@@ -212,8 +207,17 @@ namespace rtmath {
 					if (key == "Include")
 					{
 						// Use Boost to get the full path of the file (use appropriate dir)
-
-						loadFile(value.c_str(), cseg); // Load a file
+						static boost::filesystem::path rootpath(filename); // static, so it is called on the very first file
+						boost::filesystem::path inclpath(value);
+						if (inclpath.is_relative())
+						{
+							// The path on the Include is relative, so make it relative to the first loaded file, typically the root
+							string newfile = (rootpath.parent_path() / value).string();
+							loadFile( newfile.c_str(), cseg);
+						} else {
+							// The path is absolute, so use it
+							loadFile(value.c_str(), cseg); // Load a file
+						}
 					} else {
 						// Set the key-val combination
 						cseg->setVal(key,value);

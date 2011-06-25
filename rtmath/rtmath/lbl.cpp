@@ -24,6 +24,7 @@ namespace rtmath {
 		// Define the static variables here
 		double specline::_pRef = 1013.0; // in hPa
 		double specline::_TRef = 296.0; // in K
+		lineshape::shape specline::speclineShape = lineshape::VLECK_WEISSKOPF;
 		//std::set<specline*> specline::lines;
 		//std::map<Qselector, double> specline::Qmap;
 		double *specline::Qmatrix = NULL;
@@ -64,8 +65,8 @@ namespace rtmath {
 
 				// The function is at the molecular level
 				// So, each iterator is at the isotope level
-				double abun = (*it)->abundance();
-				unsigned int Qc = (*it)->_Qcol;
+				double abun = (*it)->abundance(); // abundance is a fraction (unitless)
+				unsigned int Qc = (*it)->_Qcol;	// the column of the desired isotope in the partition function table
 				// Each isotope (isodata) has a set of specdata* lines
 				// Loop through them
 #pragma omp parallel for
@@ -95,9 +96,10 @@ namespace rtmath {
 					// _nAir is provided by iteration over spectral line
 					// Tr/T is unitless. each gamma is HWHM at 296 K in cm^-1 atm^-1
 					// p, ps in hPA, so gamma needs conversion
-					const double hPadivAtm = 0.00098692327; // hPa / atm conversion factor (= 1/1013...)
+					const double hPadivAtm = 0.00098692327; // hPa / atm conversion factor (= 1/1013.25)
+					const double atmdivhPa = 1013.25; // atm / hPa conversion factor
 					double gamma = pow(specline::TRef() / (*_T),line->_nAir) * 
-						((line->_gamAir * hPadivAtm * (*_p - ps)) + (line->_gamSelf * hPadivAtm * ps) );
+						((line->_gamAir * hPadivAtm * (*_p - ps)) + (line->_gamSelf * hPadivAtm * ps) ); // Note, I flipped to atm/hPa here
 					// so, gamma has units of cm^-1
 
 					// Calculate nushifted(p)
@@ -108,17 +110,35 @@ namespace rtmath {
 					double nushifted = line->_nu + (line->_deltaAir * (*_p) * hPadivAtm); // nushifted is in cm^-1
 
 					// Calculate f
-					// Assume Lorentzian for now
+					// Assume van Vleck-Weisskopf for now
 					// TODO: add selector to enable choice
 					// spectral line dependent
 					double f;	// f = gamma/(gamma^2 + (nu-nushift)^2)
 								// f has units of (1/cm)/((1/cm)^2 + (cm^-1)^2)
 								// f has units of 0.01 * m = cm
+					switch (specline::speclineShape)
 					{
-						double num = gamma;
-						double denom = (gamma * gamma) + ((nu - nushifted) * (nu - nushifted));
-						f = num / (M_PI * denom);	// f is in cm
-					}
+					case lineshape::LORENTZIAN:
+						{ // Lorentzian
+							double num = gamma;
+							double denom = (gamma * gamma) + ((nu - nushifted) * (nu - nushifted));
+							f = num / (M_PI * denom);	// f is in cm
+						}
+						break;
+					case lineshape::VLECK_WEISSKOPF:
+						{ // van Vleck-Weisskopf
+							// phi(nu) = 1/pi * (v/v0) * [gamma/(gamma^2+(nu-nu0)^2) + gamma/(gamma^2+(nu+nu0)^2)]
+							double ad, bd; // Denominator for first and second parts of the equation
+							ad = (gamma * gamma) + ((nu-nushifted)*(nu-nushifted));
+							bd = (gamma * gamma) + ((nu+nushifted)*(nu+nushifted));
+							f = (nu * gamma / (M_PI)) * (1.0/ad + 1.0/bd); // f is in cm
+						}
+						break;
+					default:
+						f = 0;
+						throw debug::xUnimplementedFunction();
+						break;
+					} // end switch 
 
 					// Calculate S(T,Q)
 					// S is spectral line dependent

@@ -43,5 +43,19 @@ namespace rtmath {
 		public: // And let's have a static loading function here!
 			static configsegment* loadFile(const char* filename, configsegment* root);
 		};
+
+		// Easy-to-use function that looks in config for a property. If not found, ask the user!
+		inline std::string queryConfig(configsegment* root, const std::string &key, const std::string &question)
+		{
+			std::string res;
+			root->getVal(key,res);
+			if (res.size() == 0)
+			{
+				std::cout << question;
+				std::getline(std::cin,res);
+			}
+			return res;
+		}
+
 	}; // end namespace config
 }; // end namespace rtmath
