@@ -24,28 +24,30 @@ namespace rtmath {
 
 	double atmos::tau()
 	{
-		// for each lbl layer, compute tau
-		// add the taus together to get the overall optical depth
+		// If taus is filled, just return the sum.
+		// If not, calculation is required
 
 		// Holds the final value for tau
 		double res = 0.0;
-		// The number of layers
-		int numlayers = lbllayers.size();
-		// The array of taus for each layer
-		double *pres = new double[numlayers];
+		if (_taus.size() == 0)
+		{
+			// for each lbl layer, compute tau
+			// add the taus together to get the overall optical depth
+
+			// The array of taus for each layer is _taus, as 
+			//  they should be retained for scattering usage
 
 #pragma omp parallel for
-		for (int i=0; i<numlayers; i++)
-		{
-			pres[i] = lbllayers[i].tau(_wvnum);
-			//std::cout << i << "\t" << pres[i] << std::endl;
+			for (int i=0; i<lbllayers.size(); i++)
+			{
+				_taus[i] = lbllayers[i].tau(_wvnum);
+				//std::cout << i << "\t" << pres[i] << std::endl;
+			}
 		}
-
 		// Sum the partials
-		for (int i=0;i<numlayers;i++)
-			res += pres[i];
+		for (int i=0;i<_taus.size();i++)
+			res += _taus[i];
 
-		delete[] pres;
 		return res;
 	}
 
@@ -201,8 +203,46 @@ namespace rtmath {
 		// Then, add downward, then upward to get appropriate R and T
 		// Next, calculate intensities and fluxes
 		// Convert to get brightness temperatures
+		using namespace rtmath;
+		using namespace std;
+		//vector<dalayer>::const_iterator it; // The iterator for the layer
+		// Assume that the layers are already generated
+		// Assume that the optical depths are already known (in _taus)
+
+		// Use indexes because there is a 1:1:1 correspondance between 
+		//  dayalers, lbllayers and _taus
+		for (int i=0; i<dalayers.size(); i++)
+		{
+			dalayers[i].tau(_taus[i]);
+			dalayers[i].generateLayer();
+		}
 	}
 
+	void atmos::RTd(size_t low, size_t high, 
+		boost::shared_ptr<damatrix> &Rres, boost::shared_ptr<damatrix> &Tres)
+	{
+		throw rtmath::debug::xUnimplementedFunction(); // Lots of debugging needed
+		_calcProps(); // generate R and T for each layer
+		// Add downwards from high to low
+		// Use the standard adding method equations
+		boost::shared_ptr<damatrix> startR = dalayers[high].getR();
+		boost::shared_ptr<damatrix> startT = dalayers[high].getT();
+		size_t it = high - 1;
+		boost::shared_ptr<damatrix> Ra = startR;
+		boost::shared_ptr<damatrix> Ta = startT;
+		while (it >= low)
+		{
+			boost::shared_ptr<damatrix> Rb = dalayers[it].getR();
+			boost::shared_ptr<damatrix> Tb = dalayers[it].getT();
+			boost::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
+			boost::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
+			Ra = Rr;
+			Ta = Tr;
+			it--;
+		}
+		Rres = Ra;
+		Tres = Ta;
+	}
 
 };
 

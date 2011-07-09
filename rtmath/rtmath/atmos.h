@@ -38,7 +38,7 @@ namespace rtmath {
 		// For now, calculate at just one wavelength, until dalayer set 
 		// has support for wavenumber cacheing (different tau, ssa yield 
 		// different results at different wavenumbers)
-		inline void nu(double wvnum) { _wvnum = wvnum; }
+		inline void nu(double wvnum) { _wvnum = wvnum; _taus.clear(); }
 		inline double nu() { return _wvnum; }
 		
 		// Calculation of optical depth of the entire atmosphere
@@ -54,6 +54,8 @@ namespace rtmath {
 	private:
 		void _calcProps();
 		double _wvnum;
+		std::vector<double> _taus;
+		// R and T for each layer are provided for by dalayers.
 	public:
 		// The functions that return the model calculations
 		/*
@@ -64,6 +66,12 @@ namespace rtmath {
 		double Fnet(std::vector<dalayer>::const_iterator low, 
 			std::vector<dalayer>::const_iterator high);
 			*/
+		void RTd(size_t low, size_t high, boost::shared_ptr<damatrix> &Rres, boost::shared_ptr<damatrix> &Tres);
+		/*
+		void Ru(size_t low, size_t high, boost::shared_ptr<damatrix> &res);
+		void Td(size_t low, size_t high, boost::shared_ptr<damatrix> &res);
+		void Tu(size_t low, size_t high, boost::shared_ptr<damatrix> &res);
+		*/
 	};
 
 }; // end namespace rtmath
