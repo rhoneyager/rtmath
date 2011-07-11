@@ -234,8 +234,8 @@ namespace rtmath {
 		{
 			boost::shared_ptr<damatrix> Rb = dalayers[it].getR();
 			boost::shared_ptr<damatrix> Tb = dalayers[it].getT();
-			boost::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
-			boost::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
+			//boost::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
+			//boost::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
 			Ra = Rr;
 			Ta = Tr;
 			it--;

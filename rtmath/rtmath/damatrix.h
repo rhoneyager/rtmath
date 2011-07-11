@@ -58,6 +58,7 @@ public:
 	damatrix (const damatrix & rhs) : matrixop(rhs.size()) {}; // copy constructor
 	virtual damatrix operator * (damatrix&);
 	virtual damatrix operator + (damatrix&);
+	virtual damatrix inverse();
 	// eval is introduced in damatrix. providers of initial matrices override this
 	virtual boost::shared_ptr<damatrix> eval(const mapid &valmap); // eval at setparams
 	// set and get are from matrixop. Disallow their usage for now

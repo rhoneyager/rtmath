@@ -107,6 +107,16 @@ namespace rtmath {
 		return res;
 	}
 
+	damatrix damatrix::inverse()
+	{
+		// This takes no rhs, as it is a unary operator
+		damatrix res(this->size());
+		res._parentsource = INV;
+		res._rootA = boost::shared_ptr<damatrix>(this); 
+		res._precalc_operator();
+		return res;
+	}
+
 	void damatrix::_precalc_operator()
 	{
 		// Do some precalculation (for convenience later on)

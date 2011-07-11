@@ -87,7 +87,7 @@ void dalayer::generateLayer()
 	throw rtmath::debug::xUnimplementedFunction();
 	// Begin by determining the number of doublings - must 
 	// begin with a very small tau
-	unsigned int numDoubles = 0;
+	unsigned int numDoubles = 0; // The number of doubles necessary to achieve the desired thickness
 	double taueff = _tau;
 	do {
 		taueff /= 2.0;
@@ -120,12 +120,12 @@ void dalayer::generateLayer()
 	// Individ. layers are homog. here, so R*=R, T*=T
 	for (unsigned int i=0;i<numDoubles;i++)
 	{
-		/*
-		damatrix Q = *_R * *_R;
+		
+		damatrix Q = *_R * *_R; // The new value for Q depends on the previous calculation (or the initial thin layer)
 		// TODO: fix inverse calculation
 		// TODO: extend damatrix to allow addition and mult. of constant numbers
-		//damatrix S = Q * (Q * damatrix(matrixop::diagonal(-1.0,2,4,4)) + 1.0).inverse();
-		damatrix S = damatrix(matrixop::diagonal(1.0,2,4,4));
+		damatrix S = Q * (Q * damatrix(matrixop::diagonal(-1.0,2,4,4)) + 1.0).inverse();
+		//damatrix S = damatrix(matrixop::diagonal(1.0,2,4,4));
 		// TODO: fix D mun value
 		damatrix D = *_T + S * *_T + S * exp(-1.0*_tau / 1.0);
 		damatrix U = *_R * D + *_R * exp(-1.0*_tau / 1.0);
@@ -133,7 +133,7 @@ void dalayer::generateLayer()
 		damatrix Tnew = *_T;
 		_R = boost::shared_ptr<damatrix> (new damatrix(Rnew));
 		_T = boost::shared_ptr<damatrix> (new damatrix(Tnew));
-		*/
+		
 	}
 	// And we have a fully-generated layer!!!!!!!
 }
