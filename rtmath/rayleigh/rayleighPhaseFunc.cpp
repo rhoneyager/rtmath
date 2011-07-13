@@ -1,9 +1,10 @@
+#include "Stdafx.h"
 #include "rayleighPhaseFunc.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <complex>
-#include "Scalc.h"
-#include "Qcalc.h"
+#include "Scalc-Rayleigh.h"
+#include "Qcalc-Rayleigh.h"
 
 namespace rayleigh {
 

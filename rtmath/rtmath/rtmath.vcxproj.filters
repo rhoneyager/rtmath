@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="PhaseFuncs">
+      <UniqueIdentifier>{49719982-f1e1-423c-8c24-8400d24358e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PhaseFuncs\Rayleigh">
+      <UniqueIdentifier>{8f8b07af-1708-4dba-942f-5b00d6132f3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath.h">
@@ -81,6 +87,18 @@
     <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\rayleigh\Scalc-Rayleigh.h">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rayleigh\Qcalc-Rayleigh.h">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rayleigh\rayleigh.h">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rayleigh\rayleighPhaseFunc.h">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -133,6 +151,15 @@
     </ClCompile>
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rayleigh\Qcalc-Rayleigh.cpp">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rayleigh\rayleighPhaseFunc.cpp">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rayleigh\Scalc-Rayleigh.cpp">
+      <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

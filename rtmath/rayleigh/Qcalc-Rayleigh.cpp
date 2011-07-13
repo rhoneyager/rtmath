@@ -1,4 +1,5 @@
-#include "Qcalc.h"
+#include "StdAfx.h"
+#include "Qcalc-Rayleigh.h"
 #include <complex>
 #include <cmath>
 namespace rayleigh {

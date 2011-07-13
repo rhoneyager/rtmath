@@ -32,7 +32,7 @@ namespace rtmath {
 		virtual ~dalayer(void);
 		void tau(double newtau) {_tau = newtau;}
 		double tau() {return _tau;}
-		void generateLayer();
+		void generateLayer(const mapid &valmap);
 		boost::shared_ptr<damatrix> getR() { return _R; }
 		boost::shared_ptr<damatrix> getT() { return _T; }
 		boost::shared_ptr<damatrix> getU() { return _U; }

@@ -1,6 +1,6 @@
 #pragma once
 #include <complex>
-#include "../rtmath-base/rtmath-base.h"
+#include "rtmath.h"
 namespace rayleigh {
 
 class Scalc : 

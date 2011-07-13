@@ -1,5 +1,6 @@
-#include "Scalc.h"
-#include "Qcalc.h"
+#include "Stdafx.h"
+#include "Scalc-Rayleigh.h"
+#include "Qcalc-Rayleigh.h"
 #include <complex>
 
 #include <cmath>

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../rtmath-base/rtmath-base.h"
+//#include "../rtmath-base/rtmath-base.h"
+#include "rtmath.h"
 
 namespace rayleigh {
 

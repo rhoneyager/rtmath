@@ -170,6 +170,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\rayleigh\Qcalc-Rayleigh.h" />
+    <ClInclude Include="..\rayleigh\rayleigh.h" />
+    <ClInclude Include="..\rayleigh\rayleighPhaseFunc.h" />
+    <ClInclude Include="..\rayleigh\Scalc-Rayleigh.h" />
     <ClInclude Include="atmos.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="damatrix.h" />
@@ -194,6 +198,9 @@
     <ClInclude Include="zeros.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\rayleigh\Qcalc-Rayleigh.cpp" />
+    <ClCompile Include="..\rayleigh\rayleighPhaseFunc.cpp" />
+    <ClCompile Include="..\rayleigh\Scalc-Rayleigh.cpp" />
     <ClCompile Include="atmos.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="damatrix.cpp" />

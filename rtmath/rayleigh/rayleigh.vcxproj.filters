@@ -15,31 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rayleigh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rayleighPhaseFunc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scalc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Qcalc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="rayleighPhaseFunc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Qcalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Makefile">
       <Filter>Resource Files</Filter>
     </None>

@@ -95,6 +95,18 @@ namespace rtmath {
 		return res;
 	}
 
+	damatrix damatrix::operator* (double rhs)
+	{
+		// Implemented so that I don't have to keep doing it elsewhere
+		damatrix res(this->size());
+		res._parentsource = MULT;
+		res._rootA = boost::shared_ptr<damatrix>(this);
+		// TODO: check that _precalc_operator works with resB
+		res._rootB = boost::shared_ptr<damatrix>(new damatrix(matrixop::diagonal(this->size(),rhs)));
+		res._precalc_operator();
+		return res;
+	}
+
 	damatrix damatrix::operator+ (damatrix &rhs)
 	{
 		// See multiplication operator for relevant comments

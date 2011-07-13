@@ -15,6 +15,7 @@
 #include <omp.h>
 
 #include "../rtmath/debug_mem.h"
+#include "../rayleigh/rayleigh.h"
 
 int main(int argc, char* argv[])
 {
@@ -23,6 +24,39 @@ int main(int argc, char* argv[])
 		rtmath::debug::debug_preamble();
 		
 		rtmath::debug::memcheck::enabled = false;
+
+		// Doing the testing of the layer generation functions
+
+		using namespace rtmath;
+		double alb = 0.1;
+		double tau = 1.0;
+		double mu = 1.0, mun = 1.0, phi = 0.0, phin = 0.0;
+		double x = 1.0;
+		std::complex<double> m;
+		m.real(1.33);
+		m.imag(0.001);
+
+		rtselec::rtselec rs = rtselec::R;
+		// Use the rayleigh-scattering case, for starters
+		// Need a layer with a phasefunction matrixop
+		rayleigh::rayleighPhaseFunc ray;
+		double Pnn[4][4];
+		ray.calc(mu,m,x,Pnn);
+		// Now, to convert Pnn to a matrixop, pf
+		matrixop pf(2,4,4);
+		pf.fromDoubleArray(*Pnn);
+
+		//dalayerInit ilayer(0,alb,tau,rs);
+		dalayer layer(pf,alb);
+		mapid mid(mu,mun,phi,phin);
+		layer.tau(tau);
+		layer.generateLayer(mid);
+
+		boost::shared_ptr<damatrix> _R = layer.getR();
+
+		
+
+		return 0;
 
 		// This part of the code lets me create an answer file, so that I don't 
 		// need to copy and paste all the time.

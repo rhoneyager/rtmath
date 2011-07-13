@@ -80,7 +80,7 @@ dalayer::~dalayer(void)
 {
 }
 
-void dalayer::generateLayer()
+void dalayer::generateLayer(const mapid &valmap)
 {
 	// Generate the layer with properties defined by tau,
 	// ssa, phasefunction
@@ -107,7 +107,7 @@ void dalayer::generateLayer()
 	boost::shared_ptr<damatrix> _Tinit = boost::shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::T));
 
 	// Feed in a dummy variable
-	mapid valmap(0,0,0,0);
+	//mapid valmap(0,0,0,0);
 
 	// The initial R and T matrices
 	boost::shared_ptr<damatrix> _Rorig = _Rinit->eval(valmap);
@@ -116,21 +116,31 @@ void dalayer::generateLayer()
 	_R = _Rorig;
 	_T = _Torig;
 
+	// TODO: check all pointers here to make sure that they remain valid!!!!!!!
+
 	// Perform doubling until desired tau is reached
 	// Individ. layers are homog. here, so R*=R, T*=T
 	for (unsigned int i=0;i<numDoubles;i++)
 	{
-		
 		damatrix Q = *_R * *_R; // The new value for Q depends on the previous calculation (or the initial thin layer)
 		// TODO: fix inverse calculation
 		// TODO: extend damatrix to allow addition and mult. of constant numbers
-		damatrix S = Q * (Q * damatrix(matrixop::diagonal(-1.0,2,4,4)) + 1.0).inverse();
-		//damatrix S = damatrix(matrixop::diagonal(1.0,2,4,4));
-		// TODO: fix D mun value
-		damatrix D = *_T + S * *_T + S * exp(-1.0*_tau / 1.0);
-		damatrix U = *_R * D + *_R * exp(-1.0*_tau / 1.0);
-		damatrix Rnew = *_R;
-		damatrix Tnew = *_T;
+		// Also, see if this is the correct S...
+		//damatrix S = Q * (Q * damatrix(matrixop::diagonal(-1.0,2,4,4)) + 1.0).inverse();
+		// The alternate formulation for S
+		damatrix S(Q.size());
+		for (unsigned int j=1; j<10; j++) // TODO: check for sufficient convergence
+		{
+			// TODO: check that this works correctly (lose track of initial S?)
+			S = S + Q^j;
+		}
+		// TODO: fix U,D mun value
+		//    The value for mu_0 is determined by the val map! It can only be generated when the desired 
+		//    angle is given. This poses a minor problem, as this information is not yet known.....
+		damatrix D = *_T + (S * *_T) + (S * exp(-1.0*_tau / valmap.mun));
+		damatrix U = *_R * D + *_R * exp(-1.0*_tau / valmap.mun);
+		damatrix Rnew = *_R + U * exp(-1.0*_tau / valmap.mu) + *_T * U;
+		damatrix Tnew = *_T * D + *_T * exp(-1.0*_tau/valmap.mun) + D * exp(-1.0*_tau / valmap.mu);
 		_R = boost::shared_ptr<damatrix> (new damatrix(Rnew));
 		_T = boost::shared_ptr<damatrix> (new damatrix(Tnew));
 		

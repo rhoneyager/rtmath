@@ -57,6 +57,7 @@ public:
 	virtual ~damatrix(void) {}
 	damatrix (const damatrix & rhs) : matrixop(rhs.size()) {}; // copy constructor
 	virtual damatrix operator * (damatrix&);
+	virtual damatrix operator * (double);
 	virtual damatrix operator + (damatrix&);
 	virtual damatrix inverse();
 	// eval is introduced in damatrix. providers of initial matrices override this

@@ -38,14 +38,14 @@ namespace rtmath {
 			//  they should be retained for scattering usage
 
 #pragma omp parallel for
-			for (int i=0; i<lbllayers.size(); i++)
+			for (int i=0; i<(int)lbllayers.size(); i++)
 			{
 				_taus[i] = lbllayers[i].tau(_wvnum);
 				//std::cout << i << "\t" << pres[i] << std::endl;
 			}
 		}
 		// Sum the partials
-		for (int i=0;i<_taus.size();i++)
+		for (int i=0;i<(int)_taus.size();i++)
 			res += _taus[i];
 
 		return res;
@@ -211,10 +211,10 @@ namespace rtmath {
 
 		// Use indexes because there is a 1:1:1 correspondance between 
 		//  dayalers, lbllayers and _taus
-		for (int i=0; i<dalayers.size(); i++)
+		for (int i=0; i<(int)dalayers.size(); i++)
 		{
 			dalayers[i].tau(_taus[i]);
-			dalayers[i].generateLayer();
+			//dalayers[i].generateLayer();
 		}
 	}
 
@@ -236,8 +236,8 @@ namespace rtmath {
 			boost::shared_ptr<damatrix> Tb = dalayers[it].getT();
 			//boost::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
 			//boost::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
-			Ra = Rr;
-			Ta = Tr;
+			//Ra = Rr;
+			//Ta = Tr;
 			it--;
 		}
 		Rres = Ra;
