@@ -84,7 +84,7 @@ void dalayer::generateLayer(const mapid &valmap)
 {
 	// Generate the layer with properties defined by tau,
 	// ssa, phasefunction
-	throw rtmath::debug::xUnimplementedFunction();
+	//throw rtmath::debug::xUnimplementedFunction();
 	// Begin by determining the number of doublings - must 
 	// begin with a very small tau
 	unsigned int numDoubles = 0; // The number of doubles necessary to achieve the desired thickness

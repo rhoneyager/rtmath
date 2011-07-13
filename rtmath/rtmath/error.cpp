@@ -81,6 +81,12 @@ namespace rtmath {
 			_message = "ERROR: Unimplemented function\n";
 		}
 
+		void xArrayOutOfBounds::_setmessage()
+		{
+			_message = "ERROR: A referenced array went out of bounds.\n";
+			_message.append("Please examine the source code at the error region.\n");
+		}
+
 
 	};
 };

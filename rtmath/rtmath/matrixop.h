@@ -61,13 +61,13 @@ namespace rtmath {
 		virtual double get(unsigned int rank, ...) const;
 		void size(std::vector<unsigned int> &out) const;
 		const std::vector<unsigned int> size() const;
+		virtual void print() const;
 		unsigned int dimensionality() const;
 		void clear();
 		virtual void resize(const std::vector<unsigned int> &size);
 		virtual void resize(unsigned int ndims, ...);
 		bool issquare() const;
 		virtual double det() const;
-		
 		virtual matrixop minors(const std::vector<unsigned int> &pos) const;
                 virtual matrixop minors(unsigned int rank, ...) const;
 		// To add:

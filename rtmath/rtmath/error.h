@@ -59,5 +59,8 @@ namespace rtmath
 		// A function has not been defined. Always stops execution.
 		ERRSTD(xUnimplementedFunction);
 
+		// An array went out of bounds.
+		ERRSTD(xArrayOutOfBounds);
+
 	}; // end debug
 }; // end rtmath

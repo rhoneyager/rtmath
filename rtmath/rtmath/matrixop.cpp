@@ -524,6 +524,18 @@ void matrixop::toDoubleArray(double *target)
 
 }
 
+void matrixop::print() const
+{
+	TASSERT(_dims.size() == 2);
+	using namespace std;
+	for (unsigned int i=0;i<_dims[0];i++) // row
+	{
+		for (unsigned int j=0;j<_dims[1];j++) // column
+			cout << get(2,i,j) << "\t";
+		cout << endl;
+	}
+}
+
 void matrixop::fromDoubleArray(const double *target)
 {
 	// Assume that the double array is of matching size as the matrixop
@@ -542,12 +554,29 @@ void matrixop::fromDoubleArray(const double *target)
 	// Take in each value over [0,maxsize) and place in the matrix
 	clear();
 
-	throw rtmath::debug::xUnimplementedFunction();
-	//double cval = 0.0;
+	double cval = 0.0;
+	vector<unsigned int> pos(_dims.size(),0);
 	for (unsigned int j=0;j<maxsize;j++)
 	{
-		//cval = target[j];
+		cval = target[j];
 		// Convert j into pos coords
+		set(pos,cval);
+		// Find the next pos
+		// TODO: put this in a separate function one day
+		{
+			unsigned int last = pos.size() - 1;
+			pos[last]++;
+			while (last > 0)
+			{
+				if (pos[last] >= _dims[last]) 
+				{
+					pos[last-1]++;
+					pos[last] = 0;
+				}
+				last--;
+			}
+			if (pos[0] > _dims[0]) throw rtmath::debug::xArrayOutOfBounds();
+		} // Subfunction completed
 	}
 }
 

@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 		matrixop pf(2,4,4);
 		pf.fromDoubleArray(*Pnn);
 
+		pf.print();
 		//dalayerInit ilayer(0,alb,tau,rs);
 		dalayer layer(pf,alb);
 		mapid mid(mu,mun,phi,phin);

@@ -231,7 +231,7 @@ namespace rtmath {
 		// Note: the actual original algorithm allows for complex-coefficient polynomials,
 		//  but my class only handles the real-valued case. 
 		// TODO: extend this to encompass complex-valued polynomials
-
+		/*
 		unsigned int maxpow = maxPow();
 		// Consistency check - make sure that the polynomial is not zero
 		if (maxpow == 0) return;
@@ -256,7 +256,7 @@ namespace rtmath {
 
 		// TODO: for all of these, check the array bounds, as 
 		//  Fortran is annoyingly different than C
-
+		
 		// Begin the main loop
 		scale = 1.0 / coeff(maxpow);
 		khr = 1;
@@ -296,6 +296,7 @@ namespace rtmath {
 
 		// To begin, find the number of complex zeros that will be expected
 		//unsigned int numCzeros = maxPow();
+		*/
 	}
 	/*
 	void polynomial::zeros(std::set<double> &zpts)
