@@ -87,16 +87,16 @@
     <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\rayleigh\Scalc-Rayleigh.h">
+    <ClInclude Include="Qcalc-Rayleigh.h">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClInclude>
-    <ClInclude Include="..\rayleigh\Qcalc-Rayleigh.h">
+    <ClInclude Include="rayleigh.h">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClInclude>
-    <ClInclude Include="..\rayleigh\rayleigh.h">
+    <ClInclude Include="rayleighPhaseFunc.h">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClInclude>
-    <ClInclude Include="..\rayleigh\rayleighPhaseFunc.h">
+    <ClInclude Include="Scalc-Rayleigh.h">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClInclude>
   </ItemGroup>
@@ -152,13 +152,13 @@
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\rayleigh\Qcalc-Rayleigh.cpp">
+    <ClCompile Include="Qcalc-Rayleigh.cpp">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClCompile>
-    <ClCompile Include="..\rayleigh\rayleighPhaseFunc.cpp">
+    <ClCompile Include="rayleighPhaseFunc.cpp">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClCompile>
-    <ClCompile Include="..\rayleigh\Scalc-Rayleigh.cpp">
+    <ClCompile Include="Scalc-Rayleigh.cpp">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClCompile>
   </ItemGroup>

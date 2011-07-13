@@ -15,7 +15,7 @@
 #include <omp.h>
 
 #include "../rtmath/debug_mem.h"
-#include "../rayleigh/rayleigh.h"
+#include "../rtmath/rayleigh.h"
 
 int main(int argc, char* argv[])
 {

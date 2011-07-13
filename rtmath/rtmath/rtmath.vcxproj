@@ -170,10 +170,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\rayleigh\Qcalc-Rayleigh.h" />
-    <ClInclude Include="..\rayleigh\rayleigh.h" />
-    <ClInclude Include="..\rayleigh\rayleighPhaseFunc.h" />
-    <ClInclude Include="..\rayleigh\Scalc-Rayleigh.h" />
     <ClInclude Include="atmos.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="damatrix.h" />
@@ -190,17 +186,18 @@
     <ClInclude Include="matrixop.h" />
     <ClInclude Include="phaseFunc.h" />
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="Qcalc-Rayleigh.h" />
     <ClInclude Include="quadrature.h" />
+    <ClInclude Include="rayleigh.h" />
+    <ClInclude Include="rayleighPhaseFunc.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rtmath-base.h" />
     <ClInclude Include="rtmath.h" />
+    <ClInclude Include="Scalc-Rayleigh.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="zeros.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\rayleigh\Qcalc-Rayleigh.cpp" />
-    <ClCompile Include="..\rayleigh\rayleighPhaseFunc.cpp" />
-    <ClCompile Include="..\rayleigh\Scalc-Rayleigh.cpp" />
     <ClCompile Include="atmos.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="damatrix.cpp" />
@@ -213,9 +210,12 @@
     <ClCompile Include="matrixop.cpp" />
     <ClCompile Include="phaseFunc.cpp" />
     <ClCompile Include="polynomial.cpp" />
+    <ClCompile Include="Qcalc-Rayleigh.cpp" />
     <ClCompile Include="quadrature.cpp" />
+    <ClCompile Include="rayleighPhaseFunc.cpp" />
     <ClCompile Include="rtmath-base.cpp" />
     <ClCompile Include="rtmath.cpp" />
+    <ClCompile Include="Scalc-Rayleigh.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
