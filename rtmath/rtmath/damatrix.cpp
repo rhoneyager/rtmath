@@ -72,6 +72,11 @@ namespace rtmath {
 			precalc[val] = res;
 			return res;
 			break;
+		case NONE:
+			// Nothing to do here
+			*res = *this;
+			return res;
+			break;
 		default:
 			// Die in disgrace
 			throw rtmath::debug::xBadInput();
@@ -93,6 +98,11 @@ namespace rtmath {
 		res._precalc_operator();
 		// And we're done
 		return res;
+	}
+
+	damatrix* damatrix::cloneDa() const
+	{
+		return new damatrix(*this);
 	}
 
 	damatrix damatrix::operator* (double rhs)

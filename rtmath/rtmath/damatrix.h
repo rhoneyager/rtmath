@@ -55,6 +55,7 @@ public:
 		_provider = source.clone();
 	}
 	virtual ~damatrix(void) {}
+	virtual damatrix* cloneDa() const;
 	damatrix (const damatrix & rhs) : matrixop(rhs.size()) {}; // copy constructor
 	virtual damatrix operator * (damatrix&);
 	virtual damatrix operator * (double);
