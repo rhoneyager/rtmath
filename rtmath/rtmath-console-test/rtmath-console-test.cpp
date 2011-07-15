@@ -28,6 +28,8 @@ int main(int argc, char* argv[])
 		// Doing the testing of the layer generation functions
 
 		using namespace rtmath;
+		using namespace std;
+
 		double alb = 0.1;
 		double tau = 1.0;
 		double mu = 1.0, mun = 1.0, phi = 0.0, phin = 0.0;
@@ -36,7 +38,7 @@ int main(int argc, char* argv[])
 		m.real(1.33);
 		m.imag(0.001);
 
-		rtselec::rtselec rs = rtselec::R;
+		//rtselec::rtselec rs = rtselec::R;
 		// Use the rayleigh-scattering case, for starters
 		// Need a layer with a phasefunction matrixop
 		rayleigh::rayleighPhaseFunc ray;
@@ -53,7 +55,7 @@ int main(int argc, char* argv[])
 		layer.tau(tau);
 		layer.generateLayer(mid);
 
-		boost::shared_ptr<damatrix> _R = layer.getR();
+		shared_ptr<damatrix> _R = layer.getR();
 
 		
 

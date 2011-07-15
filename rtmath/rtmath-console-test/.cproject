@@ -48,6 +48,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rtmath}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.flags.1496659207" name="Other optimization flags" superClass="gnu.cpp.compiler.option.optimization.flags" value="-fopenmp" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1975931759" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 --std=c++0x" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.544059455" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.742366972" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -147,6 +148,7 @@
 	<storageModule moduleId="refreshScope" versionNumber="1">
 		<resource resourceType="PROJECT" workspacePath="/rtmath-console-test"/>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.release.1730024931;cdt.managedbuild.config.gnu.cross.exe.release.1730024931.;cdt.managedbuild.tool.gnu.cross.c.compiler.1199644424;cdt.managedbuild.tool.gnu.c.compiler.input.1612128792">
@@ -157,10 +159,19 @@
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.1508093569;cdt.managedbuild.config.gnu.cross.exe.debug.1508093569.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453;cdt.managedbuild.tool.gnu.cpp.compiler.input.544059455">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="true"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp --std=c++0x" command="g++" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.1508093569;cdt.managedbuild.config.gnu.cross.exe.debug.1508093569.;cdt.managedbuild.tool.gnu.cross.c.compiler.1913874465;cdt.managedbuild.tool.gnu.c.compiler.input.1361911398">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
