@@ -4,7 +4,7 @@
 // Necessary so that I can ignore the ever-growing damatrix tree
 // It can now take care of itself
 #include "debug.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 // Allows variadic function calls
 #include <cstdarg>
 
@@ -61,7 +61,7 @@ public:
 	virtual damatrix operator + (damatrix&);
 	virtual damatrix inverse();
 	// eval is introduced in damatrix. providers of initial matrices override this
-	virtual boost::shared_ptr<damatrix> eval(const mapid &valmap); // eval at setparams
+	virtual std::shared_ptr<damatrix> eval(const mapid &valmap); // eval at setparams
 	// set and get are from matrixop. Disallow their usage for now
 	/*
 	virtual void set(const std::vector<unsigned int> &pos, double val)
@@ -77,9 +77,9 @@ protected:
 	// TODO: use a smart pointer to do a deep copy here
 	matrixop *_provider;
 	// Must use shared_ptr in all invocations
-	boost::shared_ptr<damatrix> _rootA, _rootB;
+	std::shared_ptr<damatrix> _rootA, _rootB;
 	damatrixopenum _parentsource;
-	std::map<mapid, boost::shared_ptr<damatrix>, mmapcomp > precalc;
+	std::map<mapid, std::shared_ptr<damatrix>, mmapcomp > precalc;
 private:
 	void _precalc_operator();
 };

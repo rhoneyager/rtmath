@@ -7,8 +7,8 @@
 
 namespace rtmath {
 	
-void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap, 
-		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B)
+void daint::outer_int(std::shared_ptr<matrixop> res, const mapid &valmap, 
+		std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B)
 	{
 		// This is a namespace function that handles the outer integration loop
 		// Outer integration is 0 to 2pi, dphi'
@@ -30,8 +30,8 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 		*res = *res * ((b - a)/2.0);
 	}
 
-	boost::shared_ptr<matrixop> daint::inner_int(
-		boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B,
+	std::shared_ptr<matrixop> daint::inner_int(
+		std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B,
 		const mapid &valmap, double phip)
 	{
 		// This is a namespace function that handles the outer integration loop
@@ -42,7 +42,7 @@ void daint::outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap,
 		double a = 0.0, b = 1.0;
 		unsigned int start = 3 * (unsigned int) (-1.0 - (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
 		if (deg > 7) throw rtmath::debug::xBadInput();
-		boost::shared_ptr<matrixop> res(new matrixop(A->size()));
+		std::shared_ptr<matrixop> res(new matrixop(A->size()));
 		for (unsigned int i = start; i< start + (3*deg); i +=3)
 		{
 			double mup = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1]) 

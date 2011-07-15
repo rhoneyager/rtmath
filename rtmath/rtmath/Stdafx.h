@@ -8,7 +8,8 @@
 #include <map>
 #include <iostream>
 #include <string>
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/filesystem.hpp>
 #include <set>
 #include <cstdlib>

@@ -9,7 +9,7 @@
 #include "debug.h"
 #include <map>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace rtmath {
 
@@ -33,16 +33,16 @@ namespace rtmath {
 		void tau(double newtau) {_tau = newtau;}
 		double tau() {return _tau;}
 		void generateLayer(const mapid &valmap);
-		boost::shared_ptr<damatrix> getR() { return _R; }
-		boost::shared_ptr<damatrix> getT() { return _T; }
-		boost::shared_ptr<damatrix> getU() { return _U; }
-		boost::shared_ptr<damatrix> getD() { return _D; }
+		std::shared_ptr<damatrix> getR() { return _R; }
+		std::shared_ptr<damatrix> getT() { return _T; }
+		std::shared_ptr<damatrix> getU() { return _U; }
+		std::shared_ptr<damatrix> getD() { return _D; }
 		//std::set<lbl::specline*> lines; // The lines that matter in the layer
 	protected:
 		double _tau;
 		matrixop *_pf;
 		double _ssa;
-		boost::shared_ptr<damatrix> _R, _T, _U, _D;
+		std::shared_ptr<damatrix> _R, _T, _U, _D;
 	};
 
 	
@@ -57,7 +57,7 @@ namespace rtmath {
 			_rt = rt;
 		}
 		virtual ~dalayerInit();
-		virtual boost::shared_ptr<damatrix> eval(const mapid &valmap);
+		virtual std::shared_ptr<damatrix> eval(const mapid &valmap);
 	private:
 		matrixop *_phaseMat;
 		double _ssa;

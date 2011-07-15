@@ -219,23 +219,23 @@ namespace rtmath {
 	}
 
 	void atmos::RTd(size_t low, size_t high, 
-		boost::shared_ptr<damatrix> &Rres, boost::shared_ptr<damatrix> &Tres)
+		std::shared_ptr<damatrix> &Rres, std::shared_ptr<damatrix> &Tres)
 	{
 		throw rtmath::debug::xUnimplementedFunction(); // Lots of debugging needed
 		_calcProps(); // generate R and T for each layer
 		// Add downwards from high to low
 		// Use the standard adding method equations
-		boost::shared_ptr<damatrix> startR = dalayers[high].getR();
-		boost::shared_ptr<damatrix> startT = dalayers[high].getT();
+		std::shared_ptr<damatrix> startR = dalayers[high].getR();
+		std::shared_ptr<damatrix> startT = dalayers[high].getT();
 		size_t it = high - 1;
-		boost::shared_ptr<damatrix> Ra = startR;
-		boost::shared_ptr<damatrix> Ta = startT;
+		std::shared_ptr<damatrix> Ra = startR;
+		std::shared_ptr<damatrix> Ta = startT;
 		while (it >= low)
 		{
-			boost::shared_ptr<damatrix> Rb = dalayers[it].getR();
-			boost::shared_ptr<damatrix> Tb = dalayers[it].getT();
-			//boost::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
-			//boost::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
+			std::shared_ptr<damatrix> Rb = dalayers[it].getR();
+			std::shared_ptr<damatrix> Tb = dalayers[it].getT();
+			//std::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
+			//std::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
 			//Ra = Rr;
 			//Ta = Tr;
 			it--;

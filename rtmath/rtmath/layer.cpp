@@ -4,7 +4,6 @@
 #include "matrixop.h"
 #include "quadrature.h"
 #include "damatrix.h"
-#include <boost/shared_ptr.hpp>
 #include <map>
 #include <vector>
 
@@ -17,14 +16,15 @@ namespace rtmath
 	{
 	}
 
-	boost::shared_ptr<damatrix> dalayerInit::eval(const mapid &valmap)
+	std::shared_ptr<damatrix> dalayerInit::eval(const mapid &valmap)
 	{
+		using namespace std;
 		// valmap contains mu, mun, phi, phin
 		// _tau gives optical depth - value is FIXED!!!!!!
 		
 		// This function overrides damatrix::eval. So,
 		// search the cache for existing values
-		for (std::map<mapid,boost::shared_ptr<damatrix>, mmapcomp >::const_iterator it=precalc.begin(); 
+		for (map<mapid,shared_ptr<damatrix>, mmapcomp >::const_iterator it=precalc.begin();
 			it != precalc.end(); it++)
 		{
 			// *it->second.get() is awkward phrasing. Eval really should just return a pointer
@@ -34,10 +34,10 @@ namespace rtmath
 		// TODO: CHECK THIS CODE!
 
 		// Too bad. Must calculate the values for R or T.
-		std::vector<unsigned int> size;
+		vector<unsigned int> size;
 		size.push_back(4);size.push_back(4);
-		boost::shared_ptr<matrixop> resa( new matrixop(size) );
-		boost::shared_ptr<matrixop> res( new matrixop(size) );
+		shared_ptr<matrixop> resa( new matrixop(size) );
+		shared_ptr<matrixop> res( new matrixop(size) );
 		// _phaseMat already holds the phase matrix at mun
 		// Invoke phasefuncrotator to move to proper orientation
 		// TODO: is alpha equal to mu, or zero, or what?
@@ -45,8 +45,8 @@ namespace rtmath
 
 		// Take the rotated phase function and build a layer
 		*res = *resa * _tau * _ssa * (1.0/ (4.0 * abs(valmap.mu) * abs(valmap.mun) ));
-		precalc[valmap] = boost::shared_ptr<damatrix> (new damatrix(*res));
-		return boost::shared_ptr<damatrix> (new damatrix(*res));
+		precalc[valmap] = shared_ptr<damatrix> (new damatrix(*res));
+		return shared_ptr<damatrix> (new damatrix(*res));
 	}
 
 dalayer::dalayer(matrixop &pf, double alb)
@@ -62,9 +62,7 @@ dalayer::dalayer(matrixop &pf, double alb)
 
 dalayer::dalayer()
 {
-//#pragma omp critical
 	static std::vector<unsigned int> size(2,4);
-//#pragma omp critical
 	static matrixop idmat = matrixop::identity(size);
 	_pf = &idmat; // Set the phase function to the identity matrix
 	_ssa = 0; // No single-scattering albedo, as no scattering
@@ -82,6 +80,7 @@ dalayer::~dalayer(void)
 
 void dalayer::generateLayer(const mapid &valmap)
 {
+	using namespace std;
 	// Generate the layer with properties defined by tau,
 	// ssa, phasefunction
 	//throw rtmath::debug::xUnimplementedFunction();
@@ -103,15 +102,15 @@ void dalayer::generateLayer(const mapid &valmap)
 	//dalayerInit initR(*_pf, _ssa, taueff, rtselec::R);
 	//dalayerInit initT(*_pf, _ssa, taueff, rtselec::T);
 	// TODO: see if any other method is possible
-	boost::shared_ptr<damatrix> _Rinit = boost::shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::R));
-	boost::shared_ptr<damatrix> _Tinit = boost::shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::T));
+	shared_ptr<damatrix> _Rinit = shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::R));
+	shared_ptr<damatrix> _Tinit = shared_ptr<damatrix> (new dalayerInit(*_pf, _ssa, taueff, rtselec::T));
 
 	// Feed in a dummy variable
 	//mapid valmap(0,0,0,0);
 
 	// The initial R and T matrices
-	boost::shared_ptr<damatrix> _Rorig = _Rinit->eval(valmap);
-	boost::shared_ptr<damatrix> _Torig = _Tinit->eval(valmap);
+	shared_ptr<damatrix> _Rorig = _Rinit->eval(valmap);
+	shared_ptr<damatrix> _Torig = _Tinit->eval(valmap);
 
 	_R = _Rorig;
 	_T = _Torig;
@@ -132,17 +131,17 @@ void dalayer::generateLayer(const mapid &valmap)
 		for (unsigned int j=1; j<10; j++) // TODO: check for sufficient convergence
 		{
 			// TODO: check that this works correctly (lose track of initial S?)
-			S = S + Q^j;
+			//S = S + Q^j;
 		}
 		// TODO: fix U,D mun value
 		//    The value for mu_0 is determined by the val map! It can only be generated when the desired 
 		//    angle is given. This poses a minor problem, as this information is not yet known.....
-		damatrix D = *_T + (S * *_T) + (S * exp(-1.0*_tau / valmap.mun));
-		damatrix U = *_R * D + *_R * exp(-1.0*_tau / valmap.mun);
-		damatrix Rnew = *_R + U * exp(-1.0*_tau / valmap.mu) + *_T * U;
-		damatrix Tnew = *_T * D + *_T * exp(-1.0*_tau/valmap.mun) + D * exp(-1.0*_tau / valmap.mu);
-		_R = boost::shared_ptr<damatrix> (new damatrix(Rnew));
-		_T = boost::shared_ptr<damatrix> (new damatrix(Tnew));
+		//damatrix D = *_T + (S * *_T) + (S * exp(-1.0*_tau / valmap.mun));
+		//damatrix U = *_R * D + *_R * exp(-1.0*_tau / valmap.mun);
+		//damatrix Rnew = *_R + U * exp(-1.0*_tau / valmap.mu) + *_T * U;
+		//damatrix Tnew = *_T * D + *_T * exp(-1.0*_tau/valmap.mun) + D * exp(-1.0*_tau / valmap.mu);
+		//_R = shared_ptr<damatrix> (new damatrix(Rnew));
+		//_T = shared_ptr<damatrix> (new damatrix(Tnew));
 		
 	}
 	// And we have a fully-generated layer!!!!!!!

@@ -13,10 +13,10 @@ namespace rtmath {
 	namespace daint {
 
 		// Note here that A and B are not const, since they memorize pre-calculated values
-		void outer_int(boost::shared_ptr<matrixop> res, const mapid &valmap, 
-			boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B);
-		boost::shared_ptr<matrixop> inner_int(
-			boost::shared_ptr<damatrix> A, boost::shared_ptr<damatrix> B,
+		void outer_int(std::shared_ptr<matrixop> res, const mapid &valmap, 
+			std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B);
+		std::shared_ptr<matrixop> inner_int(
+			std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B,
 			const mapid &valmap, double phip);
 
 
