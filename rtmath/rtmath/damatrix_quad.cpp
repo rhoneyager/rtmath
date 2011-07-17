@@ -8,7 +8,7 @@
 namespace rtmath {
 	
 void daint::outer_int(matrixop &res, const mapid &valmap, 
-		std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B)
+		damatrix* A, damatrix* B)
 	{
 		// This is a namespace function that handles the outer integration loop
 		// Outer integration is 0 to 2pi, dphi'
@@ -31,7 +31,7 @@ void daint::outer_int(matrixop &res, const mapid &valmap,
 	}
 
 	std::shared_ptr<matrixop> daint::inner_int(
-		std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B,
+		damatrix* A, damatrix* B,
 		const mapid &valmap, double phip)
 	{
 		// This is a namespace function that handles the outer integration loop

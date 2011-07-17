@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 		layer.tau(tau);
 		layer.generateLayer(mid);
 
-		shared_ptr<damatrix> _R = layer.getR();
+		damatrix* _R = layer.getR();
 
 		
 

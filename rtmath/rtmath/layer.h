@@ -33,16 +33,16 @@ namespace rtmath {
 		void tau(double newtau) {_tau = newtau;}
 		double tau() {return _tau;}
 		void generateLayer(const mapid &valmap);
-		std::shared_ptr<damatrix> getR() { return _R; }
-		std::shared_ptr<damatrix> getT() { return _T; }
-		std::shared_ptr<damatrix> getU() { return _U; }
-		std::shared_ptr<damatrix> getD() { return _D; }
+		damatrix* getR() { return _R; }
+		damatrix* getT() { return _T; }
+		damatrix* getU() { return _U; }
+		damatrix* getD() { return _D; }
 		//std::set<lbl::specline*> lines; // The lines that matter in the layer
 	protected:
 		double _tau;
 		matrixop *_pf;
 		double _ssa;
-		std::shared_ptr<damatrix> _R, _T, _U, _D;
+		damatrix *_R, *_T, *_U, *_D;
 	};
 
 	
@@ -55,9 +55,11 @@ namespace rtmath {
 			_tau = tau;
 			_ssa  = alb;
 			_rt = rt;
+			_rootA = 0;
+			_rootB = 0;
 		}
 		virtual ~dalayerInit();
-		virtual std::shared_ptr<damatrix> eval(const mapid &valmap);
+		virtual damatrix* eval(const mapid &valmap);
 	private:
 		matrixop *_phaseMat;
 		double _ssa;

@@ -534,6 +534,7 @@ void matrixop::print() const
 			cout << get(2,i,j) << "\t";
 		cout << endl;
 	}
+	cout << endl;
 }
 
 void matrixop::fromDoubleArray(const double *target)

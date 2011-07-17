@@ -66,7 +66,7 @@ namespace rtmath {
 		double Fnet(std::vector<dalayer>::const_iterator low, 
 			std::vector<dalayer>::const_iterator high);
 			*/
-		void RTd(size_t low, size_t high, std::shared_ptr<damatrix> &Rres, std::shared_ptr<damatrix> &Tres);
+		void RTd(size_t low, size_t high, damatrix *Rres, damatrix *Tres);
 		/*
 		void Ru(size_t low, size_t high, std::shared_ptr<damatrix> &res);
 		void Td(size_t low, size_t high, std::shared_ptr<damatrix> &res);

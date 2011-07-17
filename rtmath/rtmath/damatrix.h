@@ -19,7 +19,8 @@ namespace rtmath {
 		NONE,
 		ADD,
 		MULT,
-		INV
+		INV,
+		POW
 	};
 
 	struct mmapcomp
@@ -44,6 +45,9 @@ public:
 	damatrix(const std::vector<unsigned int> &size) : matrixop(size)
 	{
 		_provider = NULL;
+		_rootA = 0;
+		_rootB = 0;
+		_parentsource = NONE;
 	}
 	// TODO: check to see if I can use variadic args to initialize matrixop
 	//damatrix(unsigned int ndims, ...) : matrixop(ndims,...) {}
@@ -54,16 +58,27 @@ public:
 		// This gets too confusing if pointers are used
 		_provider = source.clone();
 		_parentsource = NONE;
+		_rootA = 0;
+		_rootB = 0;
 	}
 	virtual ~damatrix(void) {}
 	virtual damatrix* cloneDa() const;
-	damatrix (const damatrix & rhs) : matrixop(rhs.size()) {}; // copy constructor
+	// copy constructor:
+	damatrix (const damatrix & rhs) : matrixop(rhs.size()) 
+	{
+		this->_provider = rhs._provider;
+		this->_rootA = rhs._rootA;
+		this->_rootB = rhs._rootB;
+		this->_parentsource = rhs._parentsource;
+		this->precalc = rhs.precalc;
+	} 
 	virtual damatrix operator * (damatrix&);
 	virtual damatrix operator * (double);
 	virtual damatrix operator + (damatrix&);
+	virtual damatrix operator ^ (unsigned int);
 	virtual damatrix inverse();
 	// eval is introduced in damatrix. providers of initial matrices override this
-	virtual std::shared_ptr<damatrix> eval(const mapid &valmap); // eval at setparams
+	virtual damatrix* eval(const mapid &valmap); // eval at setparams
 	// set and get are from matrixop. Disallow their usage for now
 	/*
 	virtual void set(const std::vector<unsigned int> &pos, double val)
@@ -79,11 +94,15 @@ protected:
 	// TODO: use a smart pointer to do a deep copy here
 	matrixop *_provider;
 	// Must use shared_ptr in all invocations
-	std::shared_ptr<damatrix> _rootA, _rootB;
+	damatrix *_rootA;
+	damatrix *_rootB;
 	damatrixopenum _parentsource;
-	std::map<mapid, std::shared_ptr<damatrix>, mmapcomp > precalc;
+	std::map<mapid, damatrix*, mmapcomp > precalc;
 private:
 	void _precalc_operator();
+private: // Static functions and members involving memory management
+	static std::set<damatrix*> __damatrices;
+	static void __releaseAll();
 };
 
 }; // end rtmath

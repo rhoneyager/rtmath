@@ -219,21 +219,21 @@ namespace rtmath {
 	}
 
 	void atmos::RTd(size_t low, size_t high, 
-		std::shared_ptr<damatrix> &Rres, std::shared_ptr<damatrix> &Tres)
+		damatrix *Rres, damatrix *Tres)
 	{
 		throw rtmath::debug::xUnimplementedFunction(); // Lots of debugging needed
 		_calcProps(); // generate R and T for each layer
 		// Add downwards from high to low
 		// Use the standard adding method equations
-		std::shared_ptr<damatrix> startR = dalayers[high].getR();
-		std::shared_ptr<damatrix> startT = dalayers[high].getT();
+		damatrix* startR = dalayers[high].getR();
+		damatrix* startT = dalayers[high].getT();
 		size_t it = high - 1;
-		std::shared_ptr<damatrix> Ra = startR;
-		std::shared_ptr<damatrix> Ta = startT;
+		damatrix* Ra = startR;
+		damatrix* Ta = startT;
 		while (it >= low)
 		{
-			std::shared_ptr<damatrix> Rb = dalayers[it].getR();
-			std::shared_ptr<damatrix> Tb = dalayers[it].getT();
+			damatrix* Rb = dalayers[it].getR();
+			damatrix* Tb = dalayers[it].getT();
 			//std::shared_ptr<damatrix> Rr = *Ra + (*Ta * *Rb * (1.0 - *Ra * *Rb).inverse() * Ta);
 			//std::shared_ptr<damatrix> Tr = *Tb * (1.0 - *Ra * *Rb).inverse() * *Ta;
 			//Ra = Rr;
