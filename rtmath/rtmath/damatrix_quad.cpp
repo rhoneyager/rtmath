@@ -7,7 +7,7 @@
 
 namespace rtmath {
 	
-void daint::outer_int(std::shared_ptr<matrixop> res, const mapid &valmap, 
+void daint::outer_int(matrixop &res, const mapid &valmap, 
 		std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B)
 	{
 		// This is a namespace function that handles the outer integration loop
@@ -25,9 +25,9 @@ void daint::outer_int(std::shared_ptr<matrixop> res, const mapid &valmap,
 		{
 			double phip = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1]) 
 				+ ((a+b)/2.0);
-			*res = *res + *inner_int(A,B,valmap,phip);
+			res = res + *inner_int(A,B,valmap,phip);
 		}
-		*res = *res * ((b - a)/2.0);
+		res = res * ((b - a)/2.0);
 	}
 
 	std::shared_ptr<matrixop> daint::inner_int(

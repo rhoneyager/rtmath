@@ -99,6 +99,9 @@
     <ClInclude Include="Scalc-Rayleigh.h">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClInclude>
+    <ClInclude Include="common_templates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">

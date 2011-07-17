@@ -45,8 +45,10 @@ namespace rtmath
 
 		// Take the rotated phase function and build a layer
 		*res = *resa * _tau * _ssa * (1.0/ (4.0 * abs(valmap.mu) * abs(valmap.mun) ));
-		precalc[valmap] = shared_ptr<damatrix> (new damatrix(*res));
-		return shared_ptr<damatrix> (new damatrix(*res));
+		shared_ptr<damatrix> sharedres(new damatrix(*res)); // res is cloned per constructor
+		
+		precalc[valmap] = sharedres;
+		return sharedres;
 	}
 
 dalayer::dalayer(matrixop &pf, double alb)
@@ -122,17 +124,18 @@ void dalayer::generateLayer(const mapid &valmap)
 	for (unsigned int i=0;i<numDoubles;i++)
 	{
 		damatrix Q = *_R * *_R; // The new value for Q depends on the previous calculation (or the initial thin layer)
+		i++;
 		// TODO: fix inverse calculation
 		// TODO: extend damatrix to allow addition and mult. of constant numbers
 		// Also, see if this is the correct S...
 		//damatrix S = Q * (Q * damatrix(matrixop::diagonal(-1.0,2,4,4)) + 1.0).inverse();
 		// The alternate formulation for S
-		damatrix S(Q.size());
-		for (unsigned int j=1; j<10; j++) // TODO: check for sufficient convergence
-		{
+		//damatrix S(Q.size());
+		//for (unsigned int j=1; j<10; j++) // TODO: check for sufficient convergence
+		//{
 			// TODO: check that this works correctly (lose track of initial S?)
 			//S = S + Q^j;
-		}
+		//}
 		// TODO: fix U,D mun value
 		//    The value for mu_0 is determined by the val map! It can only be generated when the desired 
 		//    angle is given. This poses a minor problem, as this information is not yet known.....

@@ -53,6 +53,7 @@ public:
 		// The _provider makes a copy of the source
 		// This gets too confusing if pointers are used
 		_provider = source.clone();
+		_parentsource = NONE;
 	}
 	virtual ~damatrix(void) {}
 	virtual damatrix* cloneDa() const;

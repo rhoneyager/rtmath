@@ -2,19 +2,21 @@
 #include "damatrix.h"
 #include "quadrature.h"
 #include "damatrix_quad.h"
+#include "common_templates.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 namespace rtmath {
 
 	std::shared_ptr<damatrix> damatrix::eval(const mapid &valmap)
 	{
+		using namespace std;
 		// NOTE: cannot be constant due to storage of calculations
 		// The purpose of this function is to evaluate the matrix at valmap
 		// valmap contains mu,mun,phi,phin
 		// Assume that this is not the base for some other derived class (a provider)
 
 		// First, look at the precached table. If a result is there, return it
-		for (std::map<mapid,std::shared_ptr<damatrix>, mmapcomp >::const_iterator it=precalc.begin(); 
+		for (map<mapid,shared_ptr<damatrix>, mmapcomp >::const_iterator it=precalc.begin(); 
 			it != precalc.end(); it++)
 		{
 			// *it->second.get() is awkward phrasing. Eval really should just return a pointer
@@ -26,7 +28,8 @@ namespace rtmath {
 		// integration of the two parent matrices
 		// Transfer a copy of valmap to a local object
 		mapid val = valmap;
-		std::shared_ptr<damatrix> res( new damatrix(_rootA->size()) );
+		//shared_ptr<damatrix> res( new damatrix(_rootA->size()) );
+		damatrix res(_rootA->size());
 		// Annoying to do, as I want to dereference the pointers
 		matrixop A(_rootA->size()), B(_rootB->size());
 		switch (_parentsource)
@@ -34,10 +37,7 @@ namespace rtmath {
 		case ADD:
 			A = *(_rootA->eval)(val);
 			B = *(_rootB->eval)(val);
-			*res = A + B;
-			// Remember it
-			precalc[val] = res;
-			return res;
+			res = A + B;
 			break;
 		case MULT:
 			// This is trickier
@@ -58,9 +58,7 @@ namespace rtmath {
 				// it is not a class function
 				// TODO: check that pointers work without reference here
 				//   Unsure about shared_ptr details
-				daint::outer_int(res,val,_rootA,_rootB);
-				precalc[val] = res;
-				return res;
+				daint::outer_int(res,val,_rootA,_rootB); // res is changed here
 			}
 			break;
 		case INV:
@@ -68,22 +66,23 @@ namespace rtmath {
 			// Evaluate _rootA and invert the result
 			A = *(_rootA->eval)(val);
 			B = A.inverse();
-			*res = B;
-			precalc[val] = res;
-			return res;
+			res = B;
 			break;
 		case NONE:
 			// Nothing to do here
-			*res = *this;
-			return res;
+			//*res = *this; // This is BAD!!!!!!!!!! It causes *this to be deleted when the function using res goes out of scope.
+			// Instead, return a shared_ptr of this with a null deleter
+			return shared_ptr<damatrix> (this, null_deleter());
 			break;
 		default:
 			// Die in disgrace
 			throw rtmath::debug::xBadInput();
 			break;
 		}
-		// We'll never get here, but it gets rid of a compiler warning
-		return res;
+		
+		shared_ptr<damatrix> resa(new damatrix(res));
+		precalc[val] = resa;
+		return resa;
 	}
 
 	damatrix damatrix::operator* (damatrix& rhs)
@@ -93,7 +92,7 @@ namespace rtmath {
 		res._parentsource = MULT; // For evaluation
 		// Use shared_ptr because the parent must be held in memory for any 
 		//  new calculations to occur. Auto-delete when object is forgotten!
-		res._rootA = std::shared_ptr<damatrix>(this); 
+		res._rootA = std::shared_ptr<damatrix>(new damatrix(*this) );  // Dangerous!!
 		res._rootB = std::shared_ptr<damatrix>(&rhs);
 		res._precalc_operator();
 		// And we're done
@@ -110,7 +109,7 @@ namespace rtmath {
 		// Implemented so that I don't have to keep doing it elsewhere
 		damatrix res(this->size());
 		res._parentsource = MULT;
-		res._rootA = std::shared_ptr<damatrix>(this);
+		res._rootA = std::shared_ptr<damatrix>(new damatrix(*this)); // Dangerous!!!
 		// TODO: check that _precalc_operator works with resB
 		res._rootB = std::shared_ptr<damatrix>(new damatrix(matrixop::diagonal(this->size(),rhs)));
 		res._precalc_operator();
@@ -122,7 +121,7 @@ namespace rtmath {
 		// See multiplication operator for relevant comments
 		damatrix res(this->size());
 		res._parentsource = ADD; // For evaluation
-		res._rootA = std::shared_ptr<damatrix>(this); 
+		res._rootA = std::shared_ptr<damatrix>(new damatrix(*this)); // Dangerous!!!
 		res._rootB = std::shared_ptr<damatrix>(&rhs);
 		res._precalc_operator();
 		// And we're done
@@ -134,7 +133,7 @@ namespace rtmath {
 		// This takes no rhs, as it is a unary operator
 		damatrix res(this->size());
 		res._parentsource = INV;
-		res._rootA = std::shared_ptr<damatrix>(this); 
+		res._rootA = std::shared_ptr<damatrix>(new damatrix(*this)); // Dangerous!!
 		res._precalc_operator();
 		return res;
 	}
