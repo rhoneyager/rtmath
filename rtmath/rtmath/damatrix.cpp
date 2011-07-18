@@ -51,6 +51,38 @@ namespace rtmath {
 	{
 		_pow = 0;
 		_parentOp = NONE;
+		_eval_cache_enabled = true;
+	}
+
+	std::shared_ptr<damatrix> damatrix::operator* (std::shared_ptr<damatrix> rhs) const
+	{
+		// Unfortunately necessary to not use *this directly, as the deallocation 
+		// of the operator frees this unpredictably. I have no other shared_ptr 
+		// for reference.
+		std::shared_ptr<damatrix> lhs(new damatrix(*this)); // Clone me
+		return op(lhs,rhs,MULT);
+	}
+
+	std::shared_ptr<damatrix> damatrix::operator* (double rhs) const
+	{
+		// This is really just an alias that creates a damatrix out of the 
+		// diagonal 4x4 matrix produced by rhs, then performs the multiplication
+		std::shared_ptr<damatrix> lhs(new damatrix(*this)); // Clone me
+		matrixop rhmat = matrixop::diagonal(rhs,2,4,4);		// Turn rhs into a diagonal matrix
+		std::shared_ptr<damatrix> rhDA(new damatrix(rhmat));// Create a damatrix out of the matrixop
+		return op(lhs,rhDA,MULT); // Do the standard multiplication
+	}
+
+	std::shared_ptr<damatrix> damatrix::operator+ (std::shared_ptr<damatrix> rhs) const
+	{
+		std::shared_ptr<damatrix> lhs(new damatrix(*this)); // Clone me
+		return op(lhs,rhs,ADD);
+	}
+
+	std::shared_ptr<damatrix> damatrix::inverse() const
+	{
+		std::shared_ptr<damatrix> lhs(new damatrix(*this)); // Clone me
+		return op(lhs,lhs,INV); // rhs is not used, so just use a second lhs copy
 	}
 
 	std::shared_ptr<damatrix> damatrix::op(std::shared_ptr<damatrix> lhs, 
@@ -72,10 +104,17 @@ namespace rtmath {
 		return res;
 	}
 
-	std::shared_ptr<matrixop> damatrix::eval(const mapid &valmap)
+	std::shared_ptr<matrixop> damatrix::eval(const mapid &valmap) const
 	{
+		// First, check to see if this has already been calculated
+		// If it is in the cache, return the cached value
+		if (_eval_cache.count(valmap) > 0)
+		{
+			return _eval_cache[valmap];
+		}
+
+		// Desired mapid (valmap) is not in the cache, so the matrixop must be calculated
 		// Evaluate the damatrix at the necessary values
-		// TODO: store values for future calculations
 
 		// Create the resultant matrixop
 		std::shared_ptr<matrixop> res(new matrixop(2,4,4));
@@ -107,6 +146,12 @@ namespace rtmath {
 			pRes = aResS->inverse();
 			usePRes = true;
 			break;
+		case MULTNORMAL:
+			aResS = _rootA->eval(valmap);
+			bResS = _rootB->eval(valmap);
+			pRes = *aResS * *bResS;
+			usePRes = true;
+			break;
 		case MULT:
 			// Hardest, as integration by quadrature must occur
 			throw rtmath::debug::xUnimplementedFunction();
@@ -127,6 +172,10 @@ namespace rtmath {
 			std::shared_ptr<matrixop> h(new matrixop(pRes));
 			res = h;
 		}
+
+		// Cache the calculated value, for later calculations
+		if (_eval_cache_enabled)
+			_eval_cache[valmap] = res;
 
 		return res;
 	}

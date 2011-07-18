@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
 
 		shared_ptr<damatrix> P(new damatrix(pf));
 		shared_ptr<matrixop> Peval = P->eval(mid);
+		shared_ptr<matrixop> Pteval = P->eval(mid);
 		shared_ptr<damatrix> tP = damatrix::op(P,P,INV);
 		shared_ptr<matrixop> tPeval = tP->eval(mid);
 		shared_ptr<damatrix> rP = damatrix::op(P,tP,ADD);
