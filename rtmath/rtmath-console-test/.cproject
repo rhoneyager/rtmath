@@ -57,7 +57,6 @@
 								<option id="gnu.cpp.link.option.debugging.gprof.1267820537" name="Generate gprof information (-pg)" superClass="gnu.cpp.link.option.debugging.gprof" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.link.option.paths.236088313" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rtmath/Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="./"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.181751094" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="rtmath"/>

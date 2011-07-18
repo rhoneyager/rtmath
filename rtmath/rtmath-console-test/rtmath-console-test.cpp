@@ -147,10 +147,12 @@ int main(int argc, char* argv[])
 		cout << endl;
 		*/
 		cout << "Test program routines finished." << endl;
+#ifdef _WIN32
 		for (;;)
 		{
 			std::getchar();
 		}
+#endif
 	}
 	catch (rtmath::debug::xError &err)
 	{
