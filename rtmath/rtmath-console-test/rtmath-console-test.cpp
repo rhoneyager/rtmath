@@ -13,6 +13,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <omp.h>
+#include <memory>
 
 #include "../rtmath/debug_mem.h"
 #include "../rtmath/rayleigh.h"
@@ -37,8 +38,8 @@ int main(int argc, char* argv[])
 		std::complex<double> m;
 		m.real(1.33);
 		m.imag(0.001);
+		mapid mid(mu,mun,phi,phin);	
 
-		//rtselec::rtselec rs = rtselec::R;
 		// Use the rayleigh-scattering case, for starters
 		// Need a layer with a phasefunction matrixop
 		rayleigh::rayleighPhaseFunc ray;
@@ -48,31 +49,27 @@ int main(int argc, char* argv[])
 		matrixop pf(2,4,4);
 		pf.fromDoubleArray(*Pnn);
 
-		pf.print();
-		//dalayerInit ilayer(0,alb,tau,rs);
-		dalayer layer(pf,alb);
-		mapid mid(mu,mun,phi,phin);
-		layer.tau(tau);
-		layer.generateLayer(mid);
+		shared_ptr<damatrix> P(new damatrix(pf));
+		shared_ptr<matrixop> Peval = P->eval(mid);
+		shared_ptr<damatrix> tP = damatrix::op(P,P,INV);
+		shared_ptr<matrixop> tPeval = tP->eval(mid);
+		shared_ptr<damatrix> rP = damatrix::op(P,tP,ADD);
+		shared_ptr<matrixop> rPeval = rP->eval(mid);
 
-		damatrix* _R = layer.getR();
+		cout << "P\n";
+		Peval->print();
+		cout << "P^-1\n";
+		tPeval->print();
+		cout << "P+P^-1\n";
+		rPeval->print();
 
-		
-
-		return 0;
-
+		/*
 		// This part of the code lets me create an answer file, so that I don't 
 		// need to copy and paste all the time.
 		istream *in = NULL;
 		string confrootname;
 		if (argc > 1)
 		{
-			/*
-			static filebuf fb;
-			fb.open(argv[1],ios::in);
-			static istream indata(&fb);
-			in = &indata;
-			*/
 			in = &cin;
 			confrootname.assign(argv[1]);
 		} else {
@@ -148,11 +145,11 @@ int main(int argc, char* argv[])
 
 		cout << endl;
 		cout << endl;
-		
+		*/
 		cout << "Test program routines finished." << endl;
 		for (;;)
 		{
-			std::getline(cin,atmoprof);
+			std::getchar();
 		}
 	}
 	catch (rtmath::debug::xError &err)

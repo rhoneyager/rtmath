@@ -15,7 +15,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "debug.h"
-#include "atmos.h"
+//#include "atmos.h"
 
 namespace rtmath {
 

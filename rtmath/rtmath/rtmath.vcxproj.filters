@@ -19,6 +19,9 @@
     <Filter Include="PhaseFuncs\Rayleigh">
       <UniqueIdentifier>{8f8b07af-1708-4dba-942f-5b00d6132f3d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Old">
+      <UniqueIdentifier>{4c633e33-dd0d-4c96-97d9-fdbdfe61d84c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath.h">
@@ -34,18 +37,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="damatrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="layer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="damatrix_quad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="atmos.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lbl.h">
@@ -102,6 +93,24 @@
     <ClInclude Include="common_templates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="damatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="old_atmos.h.txt">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="old_damatrix.h.txt">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="old_damatrix_quad.h.txt">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="old_layer.h.txt">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="damatrix_override.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -111,18 +120,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="damatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="layer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="damatrix_quad.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="atmos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lbl.cpp">
@@ -163,6 +160,21 @@
     </ClCompile>
     <ClCompile Include="Scalc-Rayleigh.cpp">
       <Filter>PhaseFuncs\Rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="damatrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="old_layer.cpp.txt">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="old_damatrix_quad.cpp.txt">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="old_damatrix.cpp.txt">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="old_atmos.cpp.txt">
+      <Filter>Old</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

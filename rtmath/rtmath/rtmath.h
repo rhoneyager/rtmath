@@ -10,9 +10,9 @@
 #include "debug.h"
 #include "error.h"
 #include "damatrix.h"
-#include "layer.h"
+//#include "layer.h"
 #include "lbl.h"
-#include "atmos.h"
+//#include "atmos.h"
 #include "config.h"
 
 /*
