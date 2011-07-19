@@ -26,10 +26,10 @@ namespace rtmath {
 		// _tau should be fixed, and valmap provides the other angles
 		
 		// Search the cache for existing calculated values
-		//if (_eval_cache.count(valmap) > 0)
-		//{
-		//	return _eval_cache[valmap];
-		//}
+		if (_eval_cache.count(valmap) > 0)
+		{
+			return _eval_cache[valmap];
+		}
 
 		// Existing value not found. Must calculate.
 		matrixop pRes(2,4,4);

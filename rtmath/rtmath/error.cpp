@@ -87,6 +87,11 @@ namespace rtmath {
 			_message.append("Please examine the source code at the error region.\n");
 		}
 
+		void xLockedNotInCache::_setmessage()
+		{
+			_message = "ERROR: An attempt was made to call eval() on a locked damatrix.\n";
+			_message.append("The evalparams were not found in the cache, so eval() cannot succeed.\n");
+		}
 
 	};
 };

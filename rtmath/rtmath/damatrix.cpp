@@ -53,6 +53,7 @@ namespace rtmath {
 		_pow = 0;
 		_parentOp = NONE;
 		_eval_cache_enabled = true;
+		_locked = false;
 	}
 
 	std::shared_ptr<damatrix> damatrix::operator* (const std::shared_ptr<damatrix> rhs) const
@@ -105,6 +106,15 @@ namespace rtmath {
 		return res;
 	}
 
+	void damatrix::lock()
+	{
+		// Locks the damatrix and drops the parents.
+		// Used to save memory
+		_locked = true;
+		_rootA.reset();
+		_rootB.reset();
+	}
+
 	std::shared_ptr<matrixop> damatrix::eval(const mapid &valmap) const
 	{
 		// First, check to see if this has already been calculated
@@ -113,6 +123,9 @@ namespace rtmath {
 		{
 			return _eval_cache[valmap];
 		}
+
+		// Check lock condition
+		if (_locked && _parentOp != NONE) throw rtmath::debug::xLockedNotInCache();
 
 		// Desired mapid (valmap) is not in the cache, so the matrixop must be calculated
 		// Evaluate the damatrix at the necessary values

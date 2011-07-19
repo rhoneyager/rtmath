@@ -47,12 +47,14 @@ namespace rtmath {
 		//damatrix operator ^ (unsigned int pow);									// Raise damatrix to a power
 		std::shared_ptr<damatrix> inverse() const;									// Compute the inverse of a damatrix
 		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;			// Evaluate the damatrix to a matrixop
+		void lock();																// Drop parents to save memory
 	protected:
 		std::shared_ptr<matrixop> _provider;
 		std::shared_ptr<damatrix> _rootA, _rootB;
 		unsigned int _pow;
 		daOp _parentOp;
 		bool _eval_cache_enabled;
+		bool _locked;
 		mutable std::map<mapid, std::shared_ptr<matrixop>, mmapcomp > _eval_cache;
 	public: // Static Functions
 		// Perform the desired operation involving two damatrices

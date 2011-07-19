@@ -22,6 +22,12 @@
     <Filter Include="Old">
       <UniqueIdentifier>{4c633e33-dd0d-4c96-97d9-fdbdfe61d84c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PhaseFuncs\Mie">
+      <UniqueIdentifier>{bf4eb8cf-d530-4d1d-9111-61312eb043aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PhaseFuncs\Other">
+      <UniqueIdentifier>{2f631269-828b-4b5e-bb40-ff4fbe53a2c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath.h">
@@ -117,6 +123,33 @@
     <ClInclude Include="damatrix_quad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mie.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-AnCalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-phaseFunc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-piNCalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-Qcalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-Scalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-tauNCalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-wnCalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
+    <ClInclude Include="mie-abNCalc.h">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -187,6 +220,33 @@
     </ClCompile>
     <ClCompile Include="damatrix_quad.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-abNCalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-AnCalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-phaseFunc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-piNCalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-Qcalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-Scalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-tauNCalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="mie-wnCalc.cpp">
+      <Filter>PhaseFuncs\Mie</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

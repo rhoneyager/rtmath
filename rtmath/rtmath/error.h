@@ -62,5 +62,8 @@ namespace rtmath
 		// An array went out of bounds.
 		ERRSTD(xArrayOutOfBounds);
 
+		// Attempting to eval a damatrix that is locked and a cached source cannot be found
+		ERRSTD(xLockedNotInCache);
+
 	}; // end debug
 }; // end rtmath

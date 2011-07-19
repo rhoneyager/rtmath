@@ -51,12 +51,21 @@ int main(int argc, char* argv[])
 		shared_ptr<matrixop> Pm(new matrixop(pf));
 
 		shared_ptr<daInitLayer> iLa( new daInitLayer(Pm,alb,tau,rtselec::R) );
-		shared_ptr<matrixop> iLaeval = iLa->eval(mid);
+		// Special cast is needed to keep shared_ptr happy. Unfortunate.
+		// It also fixes the double free issue with daInitLayer cacheing, I think
+		shared_ptr<damatrix> iLaBase = static_pointer_cast<damatrix>(iLa); 
+		shared_ptr<matrixop> iLaeval = iLaBase->eval(mid);
+		cout << "iLa\n";
+		iLaeval->print();
+		iLaeval = iLaBase->eval(mid);
 		cout << "iLa\n";
 		iLaeval->print();
 
-		shared_ptr<damatrix> iLaDoubled = damatrix::op(iLa,iLa,MULT);
+		shared_ptr<damatrix> iLaDoubled = damatrix::op(iLaBase,iLaBase,MULT);
 		shared_ptr<matrixop> iLaDoubledeval = iLaDoubled->eval(mid);
+		cout << "iLaDoubled\n";
+		iLaDoubledeval->print();
+		iLaDoubledeval = iLaDoubled->eval(mid);
 		cout << "iLaDoubled\n";
 		iLaDoubledeval->print();
 
