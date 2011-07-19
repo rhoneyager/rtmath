@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 		double alb = 0.1;
 		double tau = 1.0;
-		double mu = 1.0, mun = 1.0, phi = 0.0, phin = 0.0;
+		double mu = 1.0, mun = 0.0, phi = 0.3, phin = 0.1;
 		double x = 1.0;
 		std::complex<double> m;
 		m.real(1.33);
@@ -48,21 +48,17 @@ int main(int argc, char* argv[])
 		// Now, to convert Pnn to a matrixop, pf
 		matrixop pf(2,4,4);
 		pf.fromDoubleArray(*Pnn);
+		shared_ptr<matrixop> Pm(new matrixop(pf));
 
-		shared_ptr<damatrix> P(new damatrix(pf));
-		shared_ptr<matrixop> Peval = P->eval(mid);
-		shared_ptr<matrixop> Pteval = P->eval(mid);
-		shared_ptr<damatrix> tP = damatrix::op(P,P,INV);
-		shared_ptr<matrixop> tPeval = tP->eval(mid);
-		shared_ptr<damatrix> rP = damatrix::op(P,tP,ADD);
-		shared_ptr<matrixop> rPeval = rP->eval(mid);
+		shared_ptr<daInitLayer> iLa( new daInitLayer(Pm,alb,tau,rtselec::R) );
+		shared_ptr<matrixop> iLaeval = iLa->eval(mid);
+		cout << "iLa\n";
+		iLaeval->print();
 
-		cout << "P\n";
-		Peval->print();
-		cout << "P^-1\n";
-		tPeval->print();
-		cout << "P+P^-1\n";
-		rPeval->print();
+		shared_ptr<damatrix> iLaDoubled = damatrix::op(iLa,iLa,MULT);
+		shared_ptr<matrixop> iLaDoubledeval = iLaDoubled->eval(mid);
+		cout << "iLaDoubled\n";
+		iLaDoubledeval->print();
 
 		/*
 		// This part of the code lets me create an answer file, so that I don't 

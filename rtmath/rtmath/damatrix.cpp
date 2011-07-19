@@ -4,6 +4,7 @@
 #include "error.h"
 #include "common_templates.h"
 #include <memory>
+#include "damatrix_quad.h"
 
 namespace rtmath {
 
@@ -54,7 +55,7 @@ namespace rtmath {
 		_eval_cache_enabled = true;
 	}
 
-	std::shared_ptr<damatrix> damatrix::operator* (std::shared_ptr<damatrix> rhs) const
+	std::shared_ptr<damatrix> damatrix::operator* (const std::shared_ptr<damatrix> rhs) const
 	{
 		// Unfortunately necessary to not use *this directly, as the deallocation 
 		// of the operator frees this unpredictably. I have no other shared_ptr 
@@ -73,7 +74,7 @@ namespace rtmath {
 		return op(lhs,rhDA,MULT); // Do the standard multiplication
 	}
 
-	std::shared_ptr<damatrix> damatrix::operator+ (std::shared_ptr<damatrix> rhs) const
+	std::shared_ptr<damatrix> damatrix::operator+ (const std::shared_ptr<damatrix> rhs) const
 	{
 		std::shared_ptr<damatrix> lhs(new damatrix(*this)); // Clone me
 		return op(lhs,rhs,ADD);
@@ -154,7 +155,7 @@ namespace rtmath {
 			break;
 		case MULT:
 			// Hardest, as integration by quadrature must occur
-			throw rtmath::debug::xUnimplementedFunction();
+			res = daint::outer_int(valmap,_rootA,_rootB);
 			break;
 		case POW:
 			// Really just successive multiplication for now

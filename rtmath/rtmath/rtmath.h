@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "error.h"
 #include "damatrix.h"
+#include "daInitLayer.h"
 //#include "layer.h"
 #include "lbl.h"
 //#include "atmos.h"

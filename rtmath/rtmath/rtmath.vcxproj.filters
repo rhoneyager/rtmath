@@ -111,6 +111,12 @@
     <ClInclude Include="damatrix_override.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="daInitLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="damatrix_quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -175,6 +181,12 @@
     </ClCompile>
     <ClCompile Include="old_atmos.cpp.txt">
       <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="daInitLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="damatrix_quad.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
