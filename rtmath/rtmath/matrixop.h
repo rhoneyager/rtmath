@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <cstdarg>
+#include <memory>
 
 namespace rtmath {
 

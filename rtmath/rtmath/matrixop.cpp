@@ -1,6 +1,7 @@
 #include "Stdafx.h"
 #include "matrixop.h"
 #include "error.h"
+#include <memory>
 // Reduces tedium when finding minors
 //#include <boost/foreach.hpp>
 #include <cmath>

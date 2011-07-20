@@ -170,7 +170,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="atmos.h" />
+    <ClInclude Include="daDiagonalMatrix.h" />
     <ClInclude Include="daInitLayer.h" />
+    <ClInclude Include="daLayer.h" />
     <ClInclude Include="damatrix.h" />
     <ClInclude Include="damatrix_override.h" />
     <ClInclude Include="damatrix_quad.h" />
@@ -220,7 +223,10 @@
     <ClInclude Include="zeros.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="atmos.cpp" />
+    <ClCompile Include="daDiagonalMatrix.cpp" />
     <ClCompile Include="daInitLayer.cpp" />
+    <ClCompile Include="daLayer.cpp" />
     <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="damatrix_quad.cpp" />
     <ClCompile Include="mie-abNCalc.cpp" />
@@ -231,7 +237,6 @@
     <ClCompile Include="mie-Scalc.cpp" />
     <ClCompile Include="mie-tauNCalc.cpp" />
     <ClCompile Include="mie-wnCalc.cpp" />
-    <ClCompile Include="mie.cpp" />
     <ClCompile Include="old_atmos.cpp.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>

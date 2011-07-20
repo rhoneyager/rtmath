@@ -46,7 +46,7 @@ namespace rtmath {
 		shared_ptr<matrixop> res(new matrixop(pResLayer));
 
 		// Store result and return
-		//_eval_cache[valmap] = res;
+		_eval_cache[valmap] = res;
 		return res;
 	}
 

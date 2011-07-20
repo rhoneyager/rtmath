@@ -150,6 +150,15 @@
     <ClInclude Include="mie-abNCalc.h">
       <Filter>PhaseFuncs\Mie</Filter>
     </ClInclude>
+    <ClInclude Include="daLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="daDiagonalMatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="atmos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -227,9 +236,6 @@
     <ClCompile Include="mie-AnCalc.cpp">
       <Filter>PhaseFuncs\Mie</Filter>
     </ClCompile>
-    <ClCompile Include="mie.cpp">
-      <Filter>PhaseFuncs\Mie</Filter>
-    </ClCompile>
     <ClCompile Include="mie-phaseFunc.cpp">
       <Filter>PhaseFuncs\Mie</Filter>
     </ClCompile>
@@ -247,6 +253,15 @@
     </ClCompile>
     <ClCompile Include="mie-wnCalc.cpp">
       <Filter>PhaseFuncs\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="daLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="daDiagonalMatrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="atmos.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
