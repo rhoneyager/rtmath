@@ -69,7 +69,7 @@ namespace rtmath {
 		// open the file
 		using namespace std;
 		ifstream in(filename);
-
+		if (!in) throw rtmath::debug::xEmptyInputFile(filename);
 		// These variables are in the file
 		std::vector<double> zlevs, plevs, tlevs, dlevs;
 		unsigned int numgases;

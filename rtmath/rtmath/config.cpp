@@ -152,6 +152,7 @@ namespace rtmath {
 			using namespace std;
 
 			ifstream indata(filename);
+			if (!indata) return NULL; // File does not exist
 			if (indata.good() == false) return NULL;
 
 			// Okay then. File is good. If no root, create it now.

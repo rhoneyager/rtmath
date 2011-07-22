@@ -177,7 +177,7 @@ namespace rtmath {
 					// dz is in m
 					// dtnn has units of 0.01 (dimensionless)
 					//     so multiply by 100 to get truly dimensionless units
-					double dtnn = 100 * nai * k * (*_dz); // dimensionless
+					double dtnn = 0.01 * nai * k * (*_dz); // dimensionless    // TODO: check if 100 or 0.01 factor
 					TASSERT(dtnn>=0);
 #pragma omp atomic
 					res += dtnn;
@@ -258,6 +258,7 @@ namespace rtmath {
 			using namespace std;
 
 			ifstream indata(hitranpar);
+			if (!indata) throw rtmath::debug::xEmptyInputFile(hitranpar);
 			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(hitranpar);
 			if (indata.eof()) throw rtmath::debug::xEmptyInputFile(hitranpar);
 			if (indata.bad()) throw rtmath::debug::xEmptyInputFile(hitranpar);
@@ -360,6 +361,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			ifstream indata(molparam);
+			if (!indata) throw rtmath::debug::xEmptyInputFile(molparam);
 			// molparam.txt is oddly-formatted
 			// it has one line for a header
 			// the next line, prefixed by three spaces, is the molecule, with number
@@ -438,6 +440,7 @@ namespace rtmath {
 			//Qmap.resize(abundanceMap.size());
 			using namespace std;
 			ifstream indata(parsum);
+			if (!indata) throw rtmath::debug::xEmptyInputFile(parsum);
 
 			string linein;
 			// Parse the first line to get atoms and isotopes
