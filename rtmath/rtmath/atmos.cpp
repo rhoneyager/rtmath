@@ -24,7 +24,7 @@ namespace rtmath {
 
 	double atmos::tau()
 	{
-		return tau(0,(unsigned int) lblLayers.size());
+		return tau(0,(unsigned int) lblLayers.size() ); // Low to high (including low but not including high)
 	}
 
 	double atmos::tau(unsigned int layernum)
@@ -47,6 +47,7 @@ namespace rtmath {
 
 			// The array of taus for each layer is _taus, as 
 			//  they should be retained for scattering usage
+			_taus.resize(lblLayers.size());
 
 #pragma omp parallel for
 			for (int i=0; i<(int)lblLayers.size(); i++)
@@ -158,6 +159,8 @@ namespace rtmath {
 
 		// TODO: add scattering case
 
+
+		TASSERT(zlevs.size() > 2);
 		// Iterate from zero to the number of layers
 		// Resize beforehand so I can use multiple threads here
 		lblLayers.resize(zlevs.size()-2);
