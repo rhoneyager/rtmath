@@ -37,7 +37,7 @@ namespace rtmath {
 			}
 
 			double c = a; // A testing point
-			double s, d;
+			double s = 0, d = 0;  // Initialize these to stop VS whining
 			fc = f->eval(c);
 			bool mflag = true; // Flag for method stuff
 			while (fb != 0 || fs != 0 || abs(b-a) > convint)

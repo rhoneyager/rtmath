@@ -102,18 +102,6 @@
     <ClInclude Include="damatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="old_atmos.h.txt">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="old_damatrix.h.txt">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="old_damatrix_quad.h.txt">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="old_layer.h.txt">
-      <Filter>Old</Filter>
-    </ClInclude>
     <ClInclude Include="damatrix_override.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -212,18 +200,6 @@
     <ClCompile Include="damatrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="old_layer.cpp.txt">
-      <Filter>Old</Filter>
-    </ClCompile>
-    <ClCompile Include="old_damatrix_quad.cpp.txt">
-      <Filter>Old</Filter>
-    </ClCompile>
-    <ClCompile Include="old_damatrix.cpp.txt">
-      <Filter>Old</Filter>
-    </ClCompile>
-    <ClCompile Include="old_atmos.cpp.txt">
-      <Filter>Old</Filter>
-    </ClCompile>
     <ClCompile Include="daInitLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -298,6 +274,30 @@
     </None>
     <None Include="..\trpaux.txt">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="old_layer.cpp.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_damatrix_quad.h.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_damatrix_quad.cpp.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_damatrix.h.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_damatrix.cpp.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_atmos.h.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_layer.h.txt">
+      <Filter>Old</Filter>
+    </None>
+    <None Include="old_atmos.cpp.txt">
+      <Filter>Old</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

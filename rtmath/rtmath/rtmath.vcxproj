@@ -186,26 +186,30 @@
     <ClInclude Include="mie-tauNCalc.h" />
     <ClInclude Include="mie-wnCalc.h" />
     <ClInclude Include="mie.h" />
-    <ClInclude Include="old_atmos.h.txt">
+    <None Include="old_atmos.h.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClInclude Include="common_templates.h" />
     <ClInclude Include="config.h" />
-    <ClInclude Include="old_damatrix.h.txt">
+    <None Include="old_damatrix.h.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="old_damatrix_quad.h.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="old_damatrix_quad.h.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClInclude Include="debug.h" />
     <ClInclude Include="debug_mem.h" />
     <ClInclude Include="debug_mem_class.h" />
     <ClInclude Include="debug_subversion.svn.h" />
     <ClInclude Include="enums.h" />
     <ClInclude Include="error.h" />
-    <ClInclude Include="old_layer.h.txt">
+    <None Include="old_layer.h.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClInclude Include="lbl.h" />
     <ClInclude Include="macros.h" />
     <ClInclude Include="matrixop.h" />
@@ -237,22 +241,26 @@
     <ClCompile Include="mie-Scalc.cpp" />
     <ClCompile Include="mie-tauNCalc.cpp" />
     <ClCompile Include="mie-wnCalc.cpp" />
-    <ClCompile Include="old_atmos.cpp.txt">
+    <None Include="old_atmos.cpp.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClCompile Include="config.cpp" />
-    <ClCompile Include="old_damatrix.cpp.txt">
+    <None Include="old_damatrix.cpp.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="old_damatrix_quad.cpp.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="old_damatrix_quad.cpp.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="debug_mem.cpp" />
     <ClCompile Include="error.cpp" />
-    <ClCompile Include="old_layer.cpp.txt">
+    <None Include="old_layer.cpp.txt">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClCompile Include="lbl.cpp" />
     <ClCompile Include="matrixop.cpp" />
     <ClCompile Include="phaseFunc.cpp" />

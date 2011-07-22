@@ -98,7 +98,7 @@ namespace rtmath {
 			gasnames.push_back(buffer);
 		}
 #ifdef _WIN32
-		numgases = gasnames.size(); 
+		numgases = (unsigned int) gasnames.size(); 
 #else // parser.good() repeats the last value. Aarg!
 		numgases = gasnames.size() - 1;
 #endif

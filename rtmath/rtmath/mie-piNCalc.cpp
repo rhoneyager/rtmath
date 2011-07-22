@@ -14,7 +14,7 @@ namespace mie {
 	double piNCalc::calc(unsigned int n)
 	{
 		if (pin.size() > n) return pin[n];
-		for (unsigned int i=pin.size(); i<=n; i++)
+		for (unsigned int i=(unsigned int) pin.size(); i<=n; i++)
 		{
 			double res;
 			res = ((2.0*i - 1.0) / (i - 1.0)) * mu * pin[i-1]

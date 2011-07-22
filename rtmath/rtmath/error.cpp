@@ -11,7 +11,7 @@ namespace rtmath {
 		{
 			using namespace rtmath::debug::memcheck;
 			file = __file__;
-			line = __line__;
+			line = (int) __line__;
 			caller = __caller__;
 		}
 

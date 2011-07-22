@@ -11,9 +11,9 @@
 #include "error.h"
 #include "damatrix.h"
 #include "daInitLayer.h"
-//#include "layer.h"
+#include "daLayer.h"
 #include "lbl.h"
-//#include "atmos.h"
+#include "atmos.h"
 #include "config.h"
 
 /*

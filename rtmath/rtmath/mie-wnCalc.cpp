@@ -27,7 +27,7 @@ namespace mie {
 		// Don't use recursion, as it's slow and kills the stack
 		// Find the max. n value (they should be continuous)
 		// This is the map.size - 2 (-1, 0, 1, 2, 3, ...)
-		int maxN = _Wn.size() - 2;
+		int maxN = (int) _Wn.size() - 2;
 
 		for (int i = maxN + 1; i <= n; i++)
 		{

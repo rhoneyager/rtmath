@@ -26,50 +26,6 @@ int main(int argc, char* argv[])
 		
 		rtmath::debug::memcheck::enabled = false;
 
-		// Doing the testing of the layer generation functions
-
-		using namespace rtmath;
-		using namespace std;
-
-		double alb = 0.1;
-		double tau = 1.0;
-		double mu = 1.0, mun = 0.0, phi = 0.3, phin = 0.1;
-		double x = 1.0;
-		std::complex<double> m;
-		m.real(1.33);
-		m.imag(0.001);
-		mapid mid(mu,mun,phi,phin);	
-
-		// Use the rayleigh-scattering case, for starters
-		// Need a layer with a phasefunction matrixop
-		rayleigh::rayleighPhaseFunc ray;
-		double Pnn[4][4];
-		ray.calc(mu,m,x,Pnn);
-		// Now, to convert Pnn to a matrixop, pf
-		matrixop pf(2,4,4);
-		pf.fromDoubleArray(*Pnn);
-		shared_ptr<matrixop> Pm(new matrixop(pf));
-
-		shared_ptr<daInitLayer> iLa( new daInitLayer(Pm,alb,tau,rtselec::R) );
-		// Special cast is needed to keep shared_ptr happy. Unfortunate.
-		// It also fixes the double free issue with daInitLayer cacheing, I think
-		shared_ptr<damatrix> iLaBase = static_pointer_cast<damatrix>(iLa); 
-		shared_ptr<matrixop> iLaeval = iLaBase->eval(mid);
-		cout << "iLa\n";
-		iLaeval->print();
-		iLaeval = iLaBase->eval(mid);
-		cout << "iLa\n";
-		iLaeval->print();
-
-		shared_ptr<damatrix> iLaDoubled = damatrix::op(iLaBase,iLaBase,MULT);
-		shared_ptr<matrixop> iLaDoubledeval = iLaDoubled->eval(mid);
-		cout << "iLaDoubled\n";
-		iLaDoubledeval->print();
-		iLaDoubledeval = iLaDoubled->eval(mid);
-		cout << "iLaDoubled\n";
-		iLaDoubledeval->print();
-
-		/*
 		// This part of the code lets me create an answer file, so that I don't 
 		// need to copy and paste all the time.
 		istream *in = NULL;
@@ -132,7 +88,7 @@ int main(int argc, char* argv[])
 
 		std::map<double, double> taus;
 		//double *tau = new double( (unsigned int) wvnumhigh - (unsigned int) wvnum + 1);
-		unsigned int i=0;
+		double i=0;
 //		cout << "Performing atmospheric transmission calculations without scattering.\n";
 		while (wvnum + i <= wvnumhigh)
 		{
@@ -144,14 +100,14 @@ int main(int argc, char* argv[])
 			taus[wvnum+i] = tau;
 			std::cout << (wvnum + i) << "\t" << tau << "\t" << exp(-1.0*tau) << std::endl;
 			rtmath::debug::timestamp(true);
-			i+=wvrate;
+			i+= wvrate;
 		}
 
 		rtmath::debug::timestamp(false);
 
 		cout << endl;
 		cout << endl;
-		*/
+		
 		cout << "Test program routines finished." << endl;
 #ifdef _WIN32
 		for (;;)

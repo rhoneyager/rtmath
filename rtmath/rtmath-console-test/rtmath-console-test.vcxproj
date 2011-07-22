@@ -131,6 +131,7 @@
     <ClCompile Include="rtmath-console-test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="dalayers.txt" />
     <None Include="oldmain.txt" />
   </ItemGroup>
   <ItemGroup>

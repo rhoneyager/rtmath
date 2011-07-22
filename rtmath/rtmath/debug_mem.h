@@ -40,13 +40,13 @@ inline void* operator new(size_t size)
 	if (!__caller__) return p;
 	if (!enabled) return p;
 	bool res;
-	res = __Track(1,p,size,__file__,__line__,__caller__);
+	res = __Track(1,p,size,__file__,(int) __line__,__caller__);
 	//AddTrack(p, size, file, line);
 	if (__caller__) fprintf(stderr,"\nHEAP: new called from: %s\n", __caller__);
 	if (__file__) fprintf(stderr, " file: %s\n", __file__);
 	if (__line__) fprintf(stderr, " line: %d\n", (int) __line__);
 	fprintf(stderr, " size: %d\n", (int) size);
-	int lengthInt = size / sizeof(int);
+	int lengthInt = (int) size / sizeof(int);
 	int *end = &(((int*) p)[lengthInt]);
 	fprintf(stderr, " memory range: %p - %p\n", p, end);
 	if (res)
@@ -67,13 +67,13 @@ inline void* operator new[](size_t size)
 	if (!__caller__) return p;
 	if (!enabled) return p;
 	bool res;
-	res = __Track(1,p,size,__file__,__line__,__caller__);
+	res = __Track(1,p,size,__file__,(int) __line__,__caller__);
 	//AddTrack(p, size, file, line);
 	if (__caller__) fprintf(stderr,"\nHEAP: new called from: %s\n", __caller__);
 	if (__file__) fprintf(stderr, " file: %s\n", __file__);
 	if (__line__) fprintf(stderr, " line: %d\n", (int) __line__);
 	fprintf(stderr, " size: %d\n", (int) size);
-	int lengthInt = size / sizeof(int);
+	int lengthInt = (int) size / sizeof(int);
 	int *end = &(((int*) p)[lengthInt]);
 	fprintf(stderr, " memory range: %p - %p\n", p, end);
 	if (res)

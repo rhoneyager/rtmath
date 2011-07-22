@@ -24,7 +24,7 @@ namespace mie {
 		using namespace std;
 		if(An.size() > n) return An[n];
 		// Calculation is necessary.
-		for (unsigned int i = An.size(); i <= n; i++)
+		for (unsigned int i = (unsigned int) An.size(); i <= n; i++)
 		{
 			complex<double> res(0.0,0.0);
 			res = (complex<double>(i,0))/(x*m) - An[i-1];

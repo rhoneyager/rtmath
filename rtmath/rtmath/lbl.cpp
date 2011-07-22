@@ -461,7 +461,7 @@ namespace rtmath {
 			//Qmap.resize(molecisoids.size());
 			QmapNames = molecisoids;
 
-			unsigned int numIsos = molecisoids.size();
+			unsigned int numIsos = (unsigned int) molecisoids.size();
 
 			// Read in the data values
 			//if (Qmatrix) delete[] Qmatrix;
@@ -545,7 +545,7 @@ namespace rtmath {
 			// Two-pass solution for greater speed
 
 			// Create bins for abundances
-			unsigned int numIsos = abundanceMap.size();
+			unsigned int numIsos = (unsigned int) abundanceMap.size();
 			unsigned int *nALines = new unsigned int[numIsos];
 			isodata *newIsos = new isodata[numIsos]; // Have this data persist (used in set linemappings)
 

@@ -346,7 +346,7 @@ void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
 
 	// If > dimensionality, do modular addition
 	// BOOST_REVERSE_FOREACH(unsigned int i,pos) // REVERSE_FOREACH seems unreliable
-	for (int i=_dims.size()-1;i>=0;i--)
+	for (int i=(int) _dims.size()-1;i>=0;i--)
 	{
 		if (pos[i] >= _dims[i] && i > 0)
 		{
@@ -566,7 +566,7 @@ void matrixop::fromDoubleArray(const double *target)
 		// Find the next pos
 		// TODO: put this in a separate function one day
 		{
-			unsigned int last = pos.size() - 1;
+			unsigned int last = (unsigned int) pos.size() - 1;
 			pos[last]++;
 			while (last > 0)
 			{
