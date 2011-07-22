@@ -119,6 +119,7 @@ namespace rtmath {
 	{
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
+
 		if (_eval_cache.count(valmap) > 0)
 		{
 			return _eval_cache[valmap];

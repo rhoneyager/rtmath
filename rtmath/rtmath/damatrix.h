@@ -20,7 +20,7 @@ namespace rtmath {
 
 	struct mmapcomp
 	{
-		bool operator() (const mapid &lhs, const mapid &rhs)
+		bool operator() (const mapid &lhs, const mapid &rhs) const
 		{
 			if (lhs.phi < rhs.phi) return true;
 			if (lhs.phin < rhs.phin) return true;
