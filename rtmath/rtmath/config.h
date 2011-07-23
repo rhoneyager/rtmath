@@ -35,7 +35,7 @@ namespace rtmath {
 			configsegment* findSegment(const std::string &key);
 			configsegment* getChild(const std::string &name);
 			configsegment* getParent() const;
-		private:
+		protected:
 			std::string _segname;
 			configsegment *_parent;
 			std::map<std::string, std::string> _mapStr;

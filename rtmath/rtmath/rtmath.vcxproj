@@ -171,6 +171,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="atmos.h" />
+    <ClInclude Include="command.h" />
     <ClInclude Include="daDiagonalMatrix.h" />
     <ClInclude Include="daInitLayer.h" />
     <ClInclude Include="daLayer.h" />
@@ -228,6 +229,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="atmos.cpp" />
+    <ClCompile Include="command.cpp" />
     <ClCompile Include="daDiagonalMatrix.cpp" />
     <ClCompile Include="daInitLayer.cpp" />
     <ClCompile Include="daLayer.cpp" />

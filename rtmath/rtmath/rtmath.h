@@ -15,6 +15,7 @@
 #include "lbl.h"
 #include "atmos.h"
 #include "config.h"
+#include "command.h"
 
 /*
 #include "quadrature.h"
