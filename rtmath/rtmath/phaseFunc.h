@@ -2,6 +2,7 @@
 
 #include<complex>
 #include "enums.h"
+#include "debug.h"
 #include "matrixop.h"
 
 namespace rtmath {
