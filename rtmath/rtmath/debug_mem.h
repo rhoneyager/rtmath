@@ -20,9 +20,9 @@ namespace rtmath {
 			inline bool setloc(const char* _file, int _line, const char* _caller)
 			{
 				using namespace rtmath::debug::memcheck;
-				__file__ = _file;
-				__line__ = _line;
-				__caller__ = _caller;
+				rtmath::debug::memcheck::__file__ = _file;
+				rtmath::debug::memcheck::__line__ = _line;
+				rtmath::debug::memcheck::__caller__ = _caller;
 				return false;
 			}
 		};

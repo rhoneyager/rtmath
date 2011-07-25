@@ -36,7 +36,7 @@ namespace rtmath {
 				} while (end != endpos);
 
 				// Post-parsing (search for empty commands, remove whitespace, ...)
-				for (int i=0;i<rawCommand.size();i++)
+				for (int i=0;i<(int)rawCommand.size();i++)
 				{
 					if (rawCommand[i].size() == 0) continue;
 					command.push_back(rawCommand[i]);
@@ -46,7 +46,7 @@ namespace rtmath {
 			// Now to move on to actual command processing:
 			// Loop through all commands and execute them.
 			// Catch any errors returned and dispatch them to the appropriate listener/
-			for (int i=0; i<command.size(); i++)
+			for (int i=0; i<(int)command.size(); i++)
 			{
 
 			}

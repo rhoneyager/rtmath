@@ -65,5 +65,25 @@ namespace rtmath
 		// Attempting to eval a damatrix that is locked and a cached source cannot be found
 		ERRSTD(xLockedNotInCache);
 
+		// Function has been obsoleted.
+		ERRSTD(xObsolete);
+
+		// Function is known to be defective.
+		ERRSTD(xDefective);
+
+		// A convenient way to mark a class as obsolete and prevent execution 
+		// of functions that use the obsolete class is to make the class derive from obsoleted.
+		class obsoleted
+		{
+		public:
+			obsoleted();
+		};
+
+		class defective
+		{
+		public:
+			defective();
+		};
+
 	}; // end debug
 }; // end rtmath

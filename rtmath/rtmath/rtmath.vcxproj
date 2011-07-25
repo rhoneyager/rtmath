@@ -178,6 +178,7 @@
     <ClInclude Include="damatrix.h" />
     <ClInclude Include="damatrix_override.h" />
     <ClInclude Include="damatrix_quad.h" />
+    <ClInclude Include="daPf.h" />
     <ClInclude Include="mie-abNCalc.h" />
     <ClInclude Include="mie-AnCalc.h" />
     <ClInclude Include="mie-phaseFunc.h" />
@@ -235,6 +236,7 @@
     <ClCompile Include="daLayer.cpp" />
     <ClCompile Include="damatrix.cpp" />
     <ClCompile Include="damatrix_quad.cpp" />
+    <ClCompile Include="daPf.cpp" />
     <ClCompile Include="mie-abNCalc.cpp" />
     <ClCompile Include="mie-AnCalc.cpp" />
     <ClCompile Include="mie-phaseFunc.cpp" />

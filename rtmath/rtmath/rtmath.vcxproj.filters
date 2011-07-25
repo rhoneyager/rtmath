@@ -150,6 +150,9 @@
     <ClInclude Include="command.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="daPf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -243,6 +246,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="command.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="daPf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "error.h"
 #include <sstream>
+#include "debug_mem.h"
 
 namespace rtmath {
 	namespace debug {
@@ -17,6 +18,16 @@ namespace rtmath {
 
 		xError::~xError()
 		{
+		}
+
+		obsoleted::obsoleted()
+		{
+			throw rtmath::debug::obsoleted();
+		}
+
+		defective::defective()
+		{
+			throw rtmath::debug::defective();
 		}
 
 		void xError::message(std::string &message) const 
@@ -91,6 +102,18 @@ namespace rtmath {
 		{
 			_message = "ERROR: An attempt was made to call eval() on a locked damatrix.\n";
 			_message.append("The evalparams were not found in the cache, so eval() cannot succeed.\n");
+		}
+
+		void xObsolete::_setmessage()
+		{
+			_message = "ERROR: This function is obsolete.\n";
+			_message.append("Consult code comments and documentation.\n");
+		}
+
+		void xDefective::_setmessage()
+		{
+			_message = "ERROR: This class is defective.\n";
+			_message.append("Consult code comments and documentation to fix known bugs.\n");
 		}
 
 	};
