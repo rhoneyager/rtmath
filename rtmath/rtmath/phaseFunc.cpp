@@ -3,16 +3,6 @@
 #include <complex>
 #include <cmath>
 namespace rtmath {
-
-	phaseFunc::phaseFunc(void)
-	{
-	}
-
-
-	phaseFunc::~phaseFunc(void)
-	{
-	}
-
 	/*
 	void phaseFunc::eval(double mu, double mun, double phir, double Pnn[4][4], double res[4][4])
 	{
@@ -22,6 +12,7 @@ namespace rtmath {
 	}
 	*/
 
+	/*
 	void phaseFunc::calc(double mu, std::complex<double> &m, double x, matrixop &Pnn)
 	{
 		double Pnnres[4][4];
@@ -39,6 +30,7 @@ namespace rtmath {
 		}
 		// Well, that was easy!
 	}
+	*/
 
 	scattMatrix::scattMatrix(void)
 	{
@@ -101,6 +93,7 @@ namespace rtmath {
 		Snn[3][3] = scratch.real();
 	}
 
+	/*
 	phaseFuncRotator::phaseFuncRotator(phaseFunc &target, std::complex<double> &m, double x)
 	{
 		throw rtmath::debug::xObsolete();
@@ -223,6 +216,7 @@ namespace rtmath {
 		res.resize(2,4,4);
 		res = rota * (Pa * rotb);
 	}
+	*/
 
 }; // end rtmath
 

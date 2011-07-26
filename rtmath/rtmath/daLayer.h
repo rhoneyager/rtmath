@@ -20,18 +20,19 @@
 #include "matrixop.h"
 #include "damatrix.h"
 #include "daInitLayer.h"
+#include "daPf.h"
 
 namespace rtmath {
 	class daLayer {
 	public:
-		daLayer(std::shared_ptr<matrixop> pf, double tau, double alb);
+		daLayer(std::shared_ptr<damatrix> pf, double tau, double alb);
 		virtual ~daLayer();
 		virtual void generateLayer();							// Generates the layer if not yet generated
 		std::shared_ptr<damatrix> R, T;							// The reflection and transmission matrices
 		double tau();											// Get the current optical depth
 		void tau(double newtau);								// Set the optical depth and regenerate the layer
 	protected:
-		std::shared_ptr<matrixop> _pf;							// The phase function matrix
+		std::shared_ptr<damatrix> _pf;							// The phase function matrix
 		double _tau;											// Optical depth of layer
 		double _alb;											// Single-scattering albedo of layer
 		bool _layergenerated;									// Has the layer been validly generated

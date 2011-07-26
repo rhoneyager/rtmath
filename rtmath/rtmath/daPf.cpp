@@ -7,18 +7,26 @@
 #include <memory>
 
 namespace rtmath {
-	daPf::daPf(rtselec::rtselec RT, std::shared_ptr<damatrix> pf)
+	daPfNone::daPfNone()
+	{
+		// Set up the no-scattering matrix
+		std::shared_ptr<matrixop> newpf(new matrixop(2,4,4));
+		newpf->set(1.0,2,4,4);
+		_pf = newpf;
+	}
+
+	std::shared_ptr<matrixop> daPfNone::eval(const mapid &valmap) const
+	{
+		// NO SCATTERING CASE!!!!!
+		return _pf;
+	}
+
+	daPfAlpha::daPfAlpha(rtselec::rtselec RT, std::shared_ptr<phaseFunc> pf)
 	{
 		_init(RT, pf);
 	}
 
-	daPf::daPf(rtselec::rtselec RT, std::shared_ptr<matrixop> pf)
-	{
-		std::shared_ptr<damatrix> damatrixPf(new damatrix(*pf));
-		_init(RT, damatrixPf);
-	}
-
-	void daPf::_init(rtselec::rtselec RT, std::shared_ptr<damatrix> pf)
+	void daPfAlpha::_init(rtselec::rtselec RT, std::shared_ptr<phaseFunc> pf)
 	{
 		using namespace std;
 		_rt = RT;
@@ -31,11 +39,11 @@ namespace rtmath {
 		_rhs = static_pointer_cast<damatrix>(drhs);
 	}
 
-	daPf::~daPf()
+	daPfAlpha::~daPfAlpha()
 	{
 	}
 
-	std::shared_ptr<matrixop> daPf::eval(const mapid &valmap) const
+	std::shared_ptr<matrixop> daPfAlpha::eval(const mapid &valmap) const
 	{
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
@@ -55,7 +63,23 @@ namespace rtmath {
 		std::shared_ptr<matrixop> lhs,rhs,pf;
 		lhs = _lhs->eval(valmap);
 		rhs = _rhs->eval(valmap);
-		pf = _phaseMat->eval(valmap); // TODO: also allow for case where P(alpha)
+		
+		// Calculate alpha
+			double calpha;
+			calpha = sqrt(1.0 - (valmap.mu * valmap.mu)) * sqrt(1.0 - (valmap.mun * valmap.mun)) * cos(valmap.phi - valmap.phin);
+			switch (_rt)
+			{
+			case rtselec::R:
+				calpha -= valmap.mu*valmap.mun;
+				break;
+			case rtselec::T:
+				calpha += valmap.mu*valmap.mun;
+				break;
+			} // cos(alpha) has now been found
+
+			double alpha = acos(calpha); // not used yet, but soon
+
+		pf = _phaseMat->eval(alpha); 
 		matrixop resb = *pf * *rhs;
 		matrixop resa = *lhs * resb;
 		std::shared_ptr<matrixop> res(new matrixop(resa));
@@ -105,7 +129,7 @@ namespace rtmath {
 				break;
 			} // cos(alpha) has now been found
 
-			double alpha = acos(calpha); // not used yet, but soon
+			//double alpha = acos(calpha); // not used yet, but soon
 
 			// Create the resultant matrixop
 			std::shared_ptr<matrixop> res(new matrixop(2,4,4));

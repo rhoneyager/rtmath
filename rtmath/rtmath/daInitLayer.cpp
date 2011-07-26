@@ -19,21 +19,15 @@ namespace rtmath {
 		_tau = tau;
 		_rt = rt;
 		using namespace std;
-		shared_ptr<daPf> rotPF(new daPf(rt,pf));
-		_phaseMatRot = static_pointer_cast<damatrix>(rotPF);
+		//shared_ptr<daPf> rotPF(new daPf(rt,pf));
+		//_phaseMatRot = static_pointer_cast<damatrix>(rotPF);
+		_pf = pf; // It is now the user's responsibility to declare a rotator.
 	}
 
 	daInitLayer::daInitLayer(std::shared_ptr<damatrix> pf, 
 		double alb, double tau, rtselec::rtselec rt)
 	{
 		_init(pf,alb,tau,rt);
-	}
-
-	daInitLayer::daInitLayer(std::shared_ptr<matrixop> pf, 
-		double alb, double tau, rtselec::rtselec rt)
-	{
-		std::shared_ptr<damatrix> damatrixPf(new damatrix(*pf));
-		_init(damatrixPf,alb,tau,rt);
 	}
 
 	std::shared_ptr<matrixop> daInitLayer::eval(const mapid &valmap) const
@@ -53,7 +47,8 @@ namespace rtmath {
 		// This function rotates the phasefunction to the desired angle
 		// TODO: check the last term (should alpha = mu?)
 		//rtmath::phaseFuncRotator::rotate(_rt, *_phaseMat, valmap, pRes, valmap.mu);
-		std::shared_ptr<matrixop> pf(_phaseMatRot->eval(valmap));
+		// _pf now should already handle rotation.
+		std::shared_ptr<matrixop> pf(_pf->eval(valmap));
 
 		// Take the rotated phase function and build a layer
 		pRes = *pf * _tau * _ssa * (1.0 / 4.0 * abs(valmap.mu) * abs(valmap.mun));

@@ -1,47 +1,46 @@
 #pragma once
 
-#include<complex>
+#include <complex>
 #include "enums.h"
 #include "debug.h"
 #include "matrixop.h"
+#include "damatrix.h"
+#include <memory>
+#include <map>
 
 namespace rtmath {
 
-	class phaseFunc
+	class phaseFunc // TODO: rewrite this.
 	{
 	public:
 		// This fuction is designed to be pure virtual, so that mie and other
 		// phase functions can be included in atmospheric layers
-
-		// TODO: rewrite to remove dependency on x and m - these are dependent on the scattering scheme!
-		phaseFunc(void);
-		virtual ~phaseFunc(void);
+		phaseFunc(void) {}
+		virtual ~phaseFunc(void) {}
 		// eval evaluates P for reduced mur and phir (mu-mu0, phi-phi0) to get proper directional data
 		//virtual void eval(double mu, double mun, double phir, double Pnn[4][4], double res[4][4]);
 		// calc constructs the base P matrix, centered on mu=mu0
-		virtual void calc(double mu, std::complex<double> &m, double x, double Pnn[4][4]) = 0;
+		//virtual void calc(double mu, std::complex<double> &m, double x, double Pnn[4][4]) = 0;
 		// And, give the same function as a matrixop class
-		virtual void calc(double mu, std::complex<double> &m, double x, matrixop &Pnn);
-		const std::vector<unsigned int> size()
-		{
-			std::vector<unsigned int> res;
-			res.push_back(4);
-			res.push_back(4);
-			return res;
-		}
+		//virtual void calc(double mu, std::complex<double> &m, double x, matrixop &Pnn);
+		virtual std::shared_ptr<matrixop> eval(double alpha) const = 0;
+	protected:
+		mutable std::map<double,std::shared_ptr<matrixop> > _eval_cache;
 	};
 
-	class scattMatrix
+	class scattMatrix // TODO: rewrite this to make it easier to understand and be derived from.
 	{
 	public:
 		scattMatrix(void);
 		virtual ~scattMatrix(void);
-		// Calculate the scattering amplitude matrix for a given mu
+		// Calculate the scattering amplitude matrix for a given mu.
+		// Here, mu = cos(alpha), the total scattering angle.
 		virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
 	protected:
 		void _genMuellerMatrix(double Snn[4][4], std::complex<double> Sn[4]);
 	};
 
+	/*
 	class phaseFuncRotator : public rtmath::debug::obsoleted
 	{
 	public:
@@ -62,5 +61,6 @@ namespace rtmath {
 		phaseFunc *target;
 
 	};
+	*/
 
 }; // end namespace rtmath

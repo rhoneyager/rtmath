@@ -15,12 +15,12 @@ namespace rtmath {
 	class daInitLayer : public damatrix
 	{
 	public:
-		daInitLayer(std::shared_ptr<matrixop> pf, double alb, double tau, rtselec::rtselec rt);
 		daInitLayer(std::shared_ptr<damatrix> pf, double alb, double tau, rtselec::rtselec rt);
 		virtual ~daInitLayer();
 		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
 	protected:
-		std::shared_ptr<damatrix> _phaseMatRot;
+		//std::shared_ptr<damatrix> _phaseMatRot;
+		std::shared_ptr<damatrix> _pf;
 		double _ssa;
 		double _tau;
 		rtselec::rtselec _rt;

@@ -8,7 +8,7 @@
 
 namespace rtmath {
 
-	daLayer::daLayer(std::shared_ptr<matrixop> pf, double tau, double alb)
+	daLayer::daLayer(std::shared_ptr<damatrix> pf, double tau, double alb)
 	{
 		_tau = tau;
 		_pf = pf;
