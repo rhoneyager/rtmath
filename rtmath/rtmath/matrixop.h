@@ -3,6 +3,7 @@
 #include <map>
 #include <cstdarg>
 #include <memory>
+#include <netcdfcpp.h>
 
 namespace rtmath {
 
@@ -67,6 +68,7 @@ namespace rtmath {
 		void clear();
 		virtual void resize(const std::vector<unsigned int> &size);
 		virtual void resize(unsigned int ndims, ...);
+		unsigned int maxSize() const;
 		bool issquare() const;
 		virtual double det() const;
 		virtual matrixop minors(const std::vector<unsigned int> &pos) const;
@@ -75,12 +77,15 @@ namespace rtmath {
 		// Diagonalization
 		// Determinant
 		// Evaluation
-		void toDoubleArray(double *target);
+		void toDoubleArray(double *target) const;
 		void fromDoubleArray(const double *target);
+		void fromCdf(NcVar *var, long n); // Populate the matrixop from a netCDF variable. Specify start location in extended params.
+		void toCDF(NcVar *var) const; // Save matrixop to a netCDF variable. 
 		matrixop inverse() const;
 		static matrixop diagonal(const std::vector<unsigned int> &size, double val);
 		static matrixop diagonal(double val, unsigned int rank, ...);
 		static matrixop identity(const std::vector<unsigned int> &size);
+		void posFromIndex(unsigned int index, std::vector<unsigned int> pos) const;
 	protected:
 		std::map<std::vector<unsigned int>, double > _vals;
 		std::vector<unsigned int> _dims;

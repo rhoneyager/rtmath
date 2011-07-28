@@ -63,9 +63,18 @@ namespace rtmath {
 		return res;
 	}
 
+	void atmos::loadProfile(NcFile *nfile, const char* profileName)
+	{
+		throw debug::xUnimplementedFunction();
+	}
+
+	void atmos::saveProfile(NcFile *nfile, const char* profileName)
+	{
+		throw debug::xUnimplementedFunction();
+	}
+
 	void atmos::loadProfile(const char* filename)
 	{
-		//throw;
 		// open the file
 		using namespace std;
 		ifstream in(filename);

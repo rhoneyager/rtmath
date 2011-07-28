@@ -13,48 +13,51 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Old">
+      <UniqueIdentifier>{4b97c923-0f9d-4caa-9971-32c746e534d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="netcdf-managed.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ncfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ncgroup.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ncdim.h">
-      <Filter>Header Files</Filter>
+      <Filter>Old</Filter>
     </ClInclude>
     <ClInclude Include="ncattr.h">
-      <Filter>Header Files</Filter>
+      <Filter>Old</Filter>
     </ClInclude>
-    <ClInclude Include="ncvar.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ncdim.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="ncfile.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="ncgroup.h">
+      <Filter>Old</Filter>
     </ClInclude>
     <ClInclude Include="nctype.h">
-      <Filter>Header Files</Filter>
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="ncvar.h">
+      <Filter>Old</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ncgroup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ncdim.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="nctype.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ncvar.cpp">
+      <Filter>Old</Filter>
     </ClCompile>
     <ClCompile Include="ncattr.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Old</Filter>
     </ClCompile>
-    <ClCompile Include="ncvar.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ncdim.cpp">
+      <Filter>Old</Filter>
     </ClCompile>
     <ClCompile Include="ncfile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="ncgroup.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="nctype.cpp">
+      <Filter>Old</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -2,6 +2,8 @@
 /* The general catch-all header for including netcdf-managed into a project */
 
 #include <netcdf.h>
+//#include <netcdfcpp.h>
+
 
 // Test to see if version 4 is enabled. If not, disable those features.
 //TODO

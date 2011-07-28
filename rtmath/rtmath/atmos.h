@@ -19,6 +19,7 @@
 #include "lbl.h"
 #include <string>
 #include <memory>
+#include <netcdfcpp.h>
 
 namespace rtmath {
 	class daLayer; // List it here for reference
@@ -45,7 +46,20 @@ namespace rtmath {
 		// subset of the above.
 		// For absorption-only, only the gas concentrations are really needed.
 		// For merging profile data, a better function must be implemented.
-		void loadProfile(const char* filename);
+		void loadProfile(const char* filename); // Only handles absorption information only.
+		/* Load in a profile from netCDF
+		 * Profile contains the name of the atmosphere, the lbl layers,
+		 * the lbl layer gas concentrations, the corresponding daLayers, 
+		 * their albedos and phase function information.
+		 * The phase functions may be simple, but are typically a complex angle-dependent 
+		 * construct. There are several ways of storing the phase functions, but they really 
+		 * should contain information on the particle scattering schemes and any necessary parameters 
+		 * to reproduce the phase matrix. This will use identifiers, and will call the appropriate loading functions.
+		 * It should rely on both attributes and variables to work properly.
+		 */
+		void loadProfile(NcFile * nfile, const char* profileName); 
+		inline void saveProfile(NcFile * nfile) { saveProfile(nfile, name.c_str()); }
+		void saveProfile(NcFile * nfile, const char* profileName);
 
 		// Functions that perform adding-doubling on entire layer
 		std::shared_ptr<damatrix> R();
