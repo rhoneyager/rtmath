@@ -70,7 +70,83 @@ namespace rtmath {
 
 	void atmos::saveProfile(NcFile *nfile, const char* profileName)
 	{
-		throw debug::xUnimplementedFunction();
+		using namespace std;
+		//throw debug::xUnimplementedFunction();
+		// Assuming that these fields are unoccupied. TODO: fix this.
+		// Determine the id number of the profile
+		unsigned int id = 1; // For now
+		string pname(profileName);
+		// Create the necessary dimensions
+		NcDim *dlayer, *disos, *dcharstream, *dlongcharstream;
+		dlayer = nfile->add_dim( (string("layer_") + pname).c_str(), (long) this->lblLayers.size());
+		disos = nfile->add_dim( (string("iso_") + pname).c_str(), (long) this->lblLayers[0].isoconcentrations.size());
+		dcharstream = nfile->add_dim( "charstream", 16);
+		dlongcharstream = nfile->add_dim( "charstream", 256);
+
+		// Create the variables
+		NcVar *p, *T, *dz, *alb;
+		p = nfile->add_var( (pname + string("_layers_p")).c_str(), ncDouble, dlayer);
+		T = nfile->add_var( (pname + string("_layers_T")).c_str(), ncDouble, dlayer);
+		dz = nfile->add_var( (pname + string("_layers_dz")).c_str(), ncDouble, dlayer);
+		//alb = nfile->add_var( (pname + string("_layers_alb")).c_str(), ncDouble, dlayer);
+
+		NcVar *iso, *isoconc, *providerids, *providerinfo;
+		iso = nfile->add_var( (pname + string("_layers_isotopes")).c_str(), ncChar, disos, dcharstream);
+		isoconc = nfile->add_var( (pname + string("_layers_isoconc")).c_str(), ncDouble, dlayer, disos);
+		providerids = nfile->add_var( (pname + string("_layers_provids")).c_str(), ncDouble, dlayer, dcharstream);
+		providerinfo = nfile->add_var( (pname + string("_layers_provinfo")).c_str(), ncDouble, dlayer, dlongcharstream);
+
+		// Give the variables descriptive attributes
+		p->add_att("description", "The pressure in hPa at the base of each layer.");
+		T->add_att("description", "The temperature in K at the base of each layer.");
+		dz->add_att("description", "The thickness in meters of each layer.");
+		//alb->add_att("description", "The effective single-scattering albedo of the layer.");
+		iso->add_att("description", "The ids of the isotopes that are considered in this atmosphere.");
+		iso->add_att("units", "Each id takes the form (molecule name)_(isotopologue id number). See molparams and parsum.");
+		isoconc->add_att("description", "The concentration of each isotope in the layer.");
+		providerids->add_att("description", "The identifier of the type of scatterer (mie, rayleigh, ddscat, ...).");
+		providerinfo->add_att("description", "Provides the scatterer code with the necessary information to reconstruct the phase functions in memory. Internal use only.");
+
+		// Set global attributes with relavent profile information
+		nfile->add_att(profileName, "An atmospheric profile.");
+
+		// Actually save the data
+		for (long i=0; i< (long) this->lblLayers.size(); i++)
+		{
+			// i in the index for the layer number
+			p->set_rec(i);
+			p->put_rec(&lblLayers[i]._p);
+			T->set_rec(i);
+			T->put_rec(&lblLayers[i]._p);
+			dz->set_rec(i);
+			dz->put_rec(&lblLayers[i]._p);
+
+			const char* pids = "NONE";
+			const char* pinfo = "N/A";
+			providerids->set_rec(i);
+			providerids->put_rec(pids);
+			providerinfo->set_rec(i);
+			providerinfo->put_rec(pinfo);
+
+			for (long j=0; j< (long) this->lblLayers[0].isoconcentrations.size(); j++)
+			{
+				// j is the isotope number
+				//isoconc->set_cur(i,j);
+				//isoconc->put(lblLayers[i].isoconcentrations,i,j);
+			}
+			
+		}
+
+		// Set the isotope names
+		for (long j=0; j< (long) this->lblLayers[0].isoconcentrations.size(); j++)
+			{
+				// j is the isotope number
+				iso->set_rec(j);
+				//iso->put_rec(&lblLayers[0].isoconcentrations[j]);
+			}
+
+		// And the data is written!
+
 	}
 
 	void atmos::loadProfile(const char* filename)

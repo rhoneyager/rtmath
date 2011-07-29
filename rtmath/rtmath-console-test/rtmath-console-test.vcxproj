@@ -72,7 +72,7 @@
     <IncludePath>C:\devel\netcdf\netcdf-3.6.3\libsrc4;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>C:\devel\netcdf;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\devel\netcdf\netcdf-4.1.1\win32\NET\x64\Release;C:\devel\netcdf;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>C:\devel\netcdf;$(LibraryPath)</LibraryPath>

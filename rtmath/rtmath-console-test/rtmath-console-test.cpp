@@ -87,6 +87,9 @@ int main(int argc, char* argv[])
 		rtmath::debug::memcheck::__Track(3,0,0,0,0,0);
 		fflush(stderr);
 
+		NcFile cdf("c:/test.nc", NcFile::Replace);
+		lblatmos.saveProfile(&cdf, lblatmos.name.c_str());
+
 		std::map<double, double> taus;
 		//double *tau = new double( (unsigned int) wvnumhigh - (unsigned int) wvnum + 1);
 		double i=0;
