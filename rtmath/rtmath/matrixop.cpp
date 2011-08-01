@@ -537,7 +537,7 @@ namespace rtmath {
 		}
 		cout << endl;
 	}
-
+/*
 	void matrixop::fromCdf(NcVar *var, long n)
 	{
 		// Calculate max size
@@ -570,7 +570,7 @@ namespace rtmath {
 
 		delete[] dvals;
 	}
-
+*/
 	unsigned int matrixop::maxSize() const
 	{
 		using namespace std;

@@ -62,7 +62,7 @@ namespace rtmath {
 
 		return res;
 	}
-
+/*
 	void atmos::loadProfile(NcFile *nfile, const char* profileName)
 	{
 		throw debug::xUnimplementedFunction();
@@ -148,7 +148,7 @@ namespace rtmath {
 		// And the data is written!
 
 	}
-
+*/
 	void atmos::loadProfile(const char* filename)
 	{
 		// open the file

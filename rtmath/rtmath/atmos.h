@@ -19,7 +19,7 @@
 #include "lbl.h"
 #include <string>
 #include <memory>
-#include <netcdfcpp.h>
+//#include <netcdfcpp.h>
 
 namespace rtmath {
 	class daLayer; // List it here for reference
@@ -57,9 +57,9 @@ namespace rtmath {
 		 * to reproduce the phase matrix. This will use identifiers, and will call the appropriate loading functions.
 		 * It should rely on both attributes and variables to work properly.
 		 */
-		void loadProfile(NcFile * nfile, const char* profileName); 
-		inline void saveProfile(NcFile * nfile) { saveProfile(nfile, name.c_str()); }
-		void saveProfile(NcFile * nfile, const char* profileName);
+		//void loadProfile(NcFile * nfile, const char* profileName); 
+		//inline void saveProfile(NcFile * nfile) { saveProfile(nfile, name.c_str()); }
+		//void saveProfile(NcFile * nfile, const char* profileName);
 
 		// Functions that perform adding-doubling on entire layer
 		std::shared_ptr<damatrix> R();

@@ -3,7 +3,7 @@
 #include <map>
 #include <cstdarg>
 #include <memory>
-#include <netcdfcpp.h>
+//#include <netcdfcpp.h>
 
 namespace rtmath {
 
@@ -79,8 +79,8 @@ namespace rtmath {
 		// Evaluation
 		void toDoubleArray(double *target) const;
 		void fromDoubleArray(const double *target);
-		void fromCdf(NcVar *var, long n); // Populate the matrixop from a netCDF variable. Specify start location in extended params.
-		void toCDF(NcVar *var) const; // Save matrixop to a netCDF variable. 
+		//void fromCdf(NcVar *var, long n); // Populate the matrixop from a netCDF variable. Specify start location in extended params.
+		//void toCDF(NcVar *var) const; // Save matrixop to a netCDF variable. 
 		matrixop inverse() const;
 		static matrixop diagonal(const std::vector<unsigned int> &size, double val);
 		static matrixop diagonal(double val, unsigned int rank, ...);
