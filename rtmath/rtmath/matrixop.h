@@ -18,7 +18,7 @@ namespace rtmath {
 			this->phi = phi;
 			this->phin = phin;
 		}
-		mapid () {}
+		mapid () { mu=0; mun=0; phi=0; phin=0;}
 		virtual bool operator == (const mapid &rhs) const
 		{
 			if (this->mu != rhs.mu) return false;

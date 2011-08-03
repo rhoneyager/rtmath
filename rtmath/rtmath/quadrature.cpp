@@ -17,6 +17,8 @@ namespace rtmath {
 
 // For my programmatic convenience, let's use a basic array that can be parsed later
 		const double _gaussian_lagrange_prepump[] = {
+		// deg, zero,           weight
+			1,  0.0,			2,
 			2,	0.577350269,	1,
 			2,	-0.577350269,	1,
 			3,	0.0,			0.88888889,
@@ -62,7 +64,8 @@ namespace rtmath {
 			// For each n degree, expect n quadrature points
 			// Start point in array is 2 + 3 + 4 + ... + n-1
 			// So, the starting index is 3 * 
-			unsigned int start = 3 * (unsigned int) (-1.0 - (double) degree / 2.0 + (double) degree * (double) degree / 2.0);
+			unsigned int start = 3 * (unsigned int) ( ( (degree * degree) - degree) / 2);
+			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) degree / 2.0 + (double) degree * (double) degree / 2.0);
 			// Check if the start even exists! If not, generate the necessary points.
 			// TODO: add code. For now, throw if insufficient points
 			if (degree > 7) throw rtmath::debug::xBadInput();

@@ -5,6 +5,8 @@
 #include "common_templates.h"
 #include <memory>
 #include "damatrix_quad.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 namespace rtmath {
 
@@ -52,7 +54,7 @@ namespace rtmath {
 	{
 		_pow = 0;
 		_parentOp = NONE;
-		_eval_cache_enabled = true;
+		_eval_cache_enabled = false;
 		_locked = false;
 	}
 
@@ -119,12 +121,12 @@ namespace rtmath {
 	{
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
-
+		
 		if (_eval_cache.count(valmap) > 0)
 		{
 			return _eval_cache[valmap];
 		}
-
+		
 		// Check lock condition
 		if (_locked && _parentOp != NONE) throw rtmath::debug::xLockedNotInCache();
 
@@ -170,6 +172,8 @@ namespace rtmath {
 		case MULT:
 			// Hardest, as integration by quadrature must occur
 			res = daint::outer_int(valmap,_rootA,_rootB);
+			pRes = *res * matrixop::diagonal(1.0/M_PI,2,4,4);
+			usePRes = true;
 			break;
 		case POW:
 			// Really just successive multiplication for now

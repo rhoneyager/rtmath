@@ -11,6 +11,7 @@
 
 namespace rtmath {
 	namespace daint {
+		extern unsigned int deg;
 		std::shared_ptr<matrixop> outer_int(const mapid &valmap, 
 			std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B);
 		std::shared_ptr<matrixop> inner_int(const mapid &valmap, double phip, 

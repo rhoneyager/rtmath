@@ -61,6 +61,7 @@ namespace netcdf_managed {
 			// Error handleing - ncreturn is the netcdf error code
 			// Get string with nc_strerror(ncreturn) and 
 			// send to the predefined handler in the ui
+			throw; // For debugging now
 		}
 
 	}
@@ -251,6 +252,7 @@ namespace netcdf_managed {
 
 	void ncFile::write()
 	{
+		throw; // need to implement
 		if (!_valid) throw;
 		if (!_fileopen) throw;
 		// Assume file is already open, via create or load
@@ -263,6 +265,24 @@ namespace netcdf_managed {
 
 	void ncFile::create(const char* filename)
 	{
+		int omode = 0, res = 0;
+			if (options.writeable) omode += NC_WRITE;
+			if (options.parallel)  omode += NC_SHARE;
+			res = nc_create(filename, omode, &_fileid);
+			if (res) throw(res);
+
+			// The file is open. Now, for a bunch of inquiries
+			// Groups must be handled in version 4 of the library...
+			// the ncid is the id of the file and the root group of the file
+
+			// Create the root group programatically
+			ncGroup *root = new ncGroup(NULL);
+			root->_ncid = _fileid;
+
+			/* Now, iterate through the group tree to 
+			populate each group's name, childres, dimensions,
+			attributes, variables and types */
+			groupTop = root;
 		/* cmode The creation mode flag. The following flags 
 		are available: NC NOCLOBBER, NC SHARE, NC 64BIT OFFSET, 
 		NC NETCDF4, NC CLASSIC MODEL. */
@@ -270,6 +290,7 @@ namespace netcdf_managed {
 
 	void ncFile::close()
 	{
+		nc_close(this->_fileid);
 	}
 
 	fileOpt::fileOpt()

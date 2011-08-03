@@ -4,7 +4,26 @@
 
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include "matrixop.h"
+#include <limits.h>	
+
+/*
+// This code segment allows for an unordered map of mapid to exist. It implements a hash depending on the values in the mapid.
+namespace std {
+	//namespace tr1 {
+		template <>
+		struct hash<rtmath::mapid> : public unary_function<rtmath::mapid, size_t>
+		{
+			size_t operator()(const rtmath::mapid &v) const 
+			{
+
+				return 0;
+			}
+		};
+	//};
+};
+*/
 
 namespace rtmath {
 	
@@ -56,6 +75,7 @@ namespace rtmath {
 		bool _eval_cache_enabled;
 		bool _locked;
 		mutable std::map<mapid, std::shared_ptr<matrixop>, mmapcomp > _eval_cache;
+		//mutable std::unordered_map<mapid, std::shared_ptr<matrixop> > _eval_cache;
 	public: // Static Functions
 		// Perform the desired operation involving two damatrices
 		static std::shared_ptr<damatrix> op(const std::shared_ptr<damatrix> lhs, 

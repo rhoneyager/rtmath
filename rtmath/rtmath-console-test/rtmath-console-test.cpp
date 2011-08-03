@@ -8,7 +8,7 @@
 #include <complex>
 #include <time.h>
 //#include <netcdf.h>
-#include <netcdfcpp.h>
+//#include <netcdfcpp.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <fstream>
@@ -21,7 +21,36 @@
 
 int main(int argc, char* argv[])
 {
+	rtmath::debug::debug_preamble();
+		
+	rtmath::debug::memcheck::enabled = false;
 	using namespace std;
+	using namespace rtmath;
+
+	rtmath::mapid valmap(1,1,1,0);
+
+	rtmath::matrixop a(2,4,4);
+	a.set(1,2,0,0);
+	a.set(1,2,2,1);
+
+	rtmath::matrixop b(2,4,4); // clone a
+	b.set(1,2,0,0);
+	b.set(1,2,1,2);
+
+	shared_ptr<damatrix> A(new damatrix(a)), B(new damatrix(b));
+	shared_ptr<damatrix> C = damatrix::op(A,B,MULT);
+
+	shared_ptr<matrixop> Cr = C->eval(valmap);
+	Cr->print();
+	#ifdef _WIN32
+		for (;;)
+		{
+			std::getchar();
+		}
+#endif
+	return 0;
+
+
 	try {
 		rtmath::debug::debug_preamble();
 		
@@ -87,8 +116,8 @@ int main(int argc, char* argv[])
 		rtmath::debug::memcheck::__Track(3,0,0,0,0,0);
 		fflush(stderr);
 
-		NcFile cdf("c:/test.nc", NcFile::Replace);
-		lblatmos.saveProfile(&cdf, lblatmos.name.c_str());
+//		NcFile cdf("c:/test.nc", NcFile::Replace);
+//		lblatmos.saveProfile(&cdf, lblatmos.name.c_str());
 
 		std::map<double, double> taus;
 		//double *tau = new double( (unsigned int) wvnumhigh - (unsigned int) wvnum + 1);

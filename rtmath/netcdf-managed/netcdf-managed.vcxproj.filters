@@ -18,46 +18,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="netcdf-managed.h">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="ncattr.h">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="ncdim.h">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="ncfile.h">
-      <Filter>Old</Filter>
-    </ClInclude>
-    <ClInclude Include="ncgroup.h">
-      <Filter>Old</Filter>
+    <ClInclude Include="ncvar.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nctype.h">
-      <Filter>Old</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ncvar.h">
-      <Filter>Old</Filter>
+    <ClInclude Include="ncgroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ncfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ncdim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="netcdf-managed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ncattr.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ncvar.cpp">
-      <Filter>Old</Filter>
-    </ClCompile>
-    <ClCompile Include="ncattr.cpp">
-      <Filter>Old</Filter>
-    </ClCompile>
-    <ClCompile Include="ncdim.cpp">
-      <Filter>Old</Filter>
-    </ClCompile>
-    <ClCompile Include="ncfile.cpp">
-      <Filter>Old</Filter>
+    <ClCompile Include="nctype.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ncgroup.cpp">
-      <Filter>Old</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="nctype.cpp">
-      <Filter>Old</Filter>
+    <ClCompile Include="ncfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ncdim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ncvar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ncattr.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
