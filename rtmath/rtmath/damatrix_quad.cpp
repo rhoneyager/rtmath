@@ -61,7 +61,14 @@ namespace rtmath {
 				double muweight = rtmath::quadrature::_gaussian_lagrange_prepump[i+2];
 				// Assign Amap and Bmap the appropriate variables
 				// From DA method, 
-				mapid Amap(valmap.mu,mup,valmap.phi,phip), Bmap(mup,valmap.mun,phip,valmap.phin);
+				// Note: I'll do it this way to allow me to change mapid's definition later
+				mapid Amap = valmap; 
+				Amap.mun = mup;
+				Amap.phin = phip;
+				mapid Bmap = valmap;
+				Bmap.mu = mup;
+				Bmap.phi = phip;
+				//mapid Amap(valmap.mu,mup,valmap.phi,phip), Bmap(mup,valmap.mun,phip,valmap.phin);
 				//*res = *res + *A->eval(Amap) * *B->eval(Bmap) * mup;
 				resa = resa + *A->eval(Amap) * *B->eval(Bmap) * muweight;
 			}

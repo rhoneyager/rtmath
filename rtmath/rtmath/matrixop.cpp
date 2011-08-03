@@ -200,7 +200,7 @@ namespace rtmath {
 			return res;
 		}
 		// Should not reach this point!
-		throw;
+		//throw;
 	}
 
 	matrixop matrixop::operator- (const matrixop& rhs) const
@@ -586,7 +586,7 @@ namespace rtmath {
 	{
 		pos.clear();
 		pos.resize(_dims.size(),0);
-		unsigned int maxsize = maxSize();
+		//unsigned int maxsize = maxSize();
 
 		for (unsigned int j=0;j<index;j++)
 		{
