@@ -123,11 +123,14 @@ namespace rtmath {
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
 		
-		if (_eval_cache.count(valmap) > 0)
+		if (_eval_cache_enabled) 
 		{
-			return _eval_cache[valmap];
+			if (_eval_cache.count(valmap) > 0)
+			{
+				return _eval_cache[valmap];
+			}
 		}
-		
+
 		// Check lock condition
 		if (_locked && _parentOp != NONE) throw rtmath::debug::xLockedNotInCache();
 

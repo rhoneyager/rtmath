@@ -53,9 +53,12 @@ namespace rtmath {
 		// _tau should be fixed, and valmap provides the other angles
 		
 		// Search the cache for existing calculated values
-		if (_eval_cache.count(valmap) > 0)
+		if (_eval_cache_enabled) 
 		{
-			return _eval_cache[valmap];
+			if (_eval_cache.count(valmap) > 0)
+			{
+				return _eval_cache[valmap];
+			}
 		}
 
 		// Existing value not found. Must calculate.
@@ -73,7 +76,8 @@ namespace rtmath {
 		shared_ptr<matrixop> res(new matrixop(pRes));
 
 		// Store result and return
-		_eval_cache[valmap] = res;
+		if (_eval_cache_enabled) 
+			_eval_cache[valmap] = res;
 		return res;
 	}
 

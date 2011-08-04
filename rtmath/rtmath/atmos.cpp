@@ -342,6 +342,14 @@ namespace rtmath {
 		To = daLayers[0]->T;
 		double tauBot = daLayers[0]->tau();
 
+		// In the case that the atmosphere is one layer thick:
+		if (daLayers.size() == 1)
+		{
+			_T = daLayers[0]->T;
+			_R = daLayers[0]->R;
+			return;
+		}
+
 		for (int i=1; i< (int) daLayers.size(); i++)
 		{
 			Rn = daLayers[i]->R;
@@ -362,7 +370,7 @@ namespace rtmath {
 			double tauTop = daLayers[i]->tau();
 
 			// S has been calculated. Now to find D, U, RcD and TcD
-			// Constrict the diagonal e^-tau/mu and mu0 matrices for this doubling
+			// Construct the diagonal e^-tau/mu and mu0 matrices for this doubling
 			std::shared_ptr<daDiagonalMatrix> dMu(new daDiagonalMatrix(tauTop, valmap_selector::MU));
 			std::shared_ptr<daDiagonalMatrix> dMut(new daDiagonalMatrix(tauBot, valmap_selector::MU));
 			std::shared_ptr<daDiagonalMatrix> dMun(new daDiagonalMatrix(tauTop, valmap_selector::MUN));
