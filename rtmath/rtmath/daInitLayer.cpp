@@ -21,7 +21,24 @@ namespace rtmath {
 		using namespace std;
 		//shared_ptr<daPf> rotPF(new daPf(rt,pf));
 		//_phaseMatRot = static_pointer_cast<damatrix>(rotPF);
-		_pf = pf; // It is now the user's responsibility to declare a rotator.
+		//_pf = pf; // It is now the user's responsibility to declare a rotator.
+		// If the damatrix specifies that a rotator is needed, provide it
+		if (pf->needsRot() == true)
+		{
+			using namespace rtmath::daPfReflections;
+			//_pf = static_pointer_case<damatrix>( shared_ptr<daPfAlpha> (new daPfAlpha(pf)));
+			shared_ptr<daReflection> refl;
+			if (rt == T)
+			{
+				refl = shared_ptr<daReflection> (new daReflection(T, pf));
+			} else {
+				refl = shared_ptr<daReflection> (new daReflection(R, pf));
+			}
+			_pf = static_pointer_cast<damatrix> (refl); // This will handle the reflection aspect of the layer.
+
+		} else {
+			_pf = pf; // No reflection necessary. Use raw pf.
+		}
 	}
 
 	daInitLayer::daInitLayer(std::shared_ptr<damatrix> pf, 

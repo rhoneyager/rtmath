@@ -49,6 +49,8 @@ namespace rtmath {
 		} while (taueff >= 1e-10);
 
 		// Construct the initial layers
+		// Any reflections to get R or T depend on the source of the pf.
+		// Reflections are handled in the daInitLayer code itself.
 		std::shared_ptr<daInitLayer> _Rinit(new daInitLayer(_pf, _alb, _tau, rtselec::R));
 		std::shared_ptr<daInitLayer> _Tinit(new daInitLayer(_pf, _alb, _tau, rtselec::T));
 		

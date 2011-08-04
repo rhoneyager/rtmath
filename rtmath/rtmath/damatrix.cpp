@@ -37,6 +37,7 @@ namespace rtmath {
 		_rootA = rhs._rootA;
 		_rootB = rhs._rootB;
 		_provider = rhs._provider;
+		_needsrot = false;
 	}
 
 	damatrix::damatrix()

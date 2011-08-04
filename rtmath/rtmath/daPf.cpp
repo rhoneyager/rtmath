@@ -31,6 +31,7 @@ namespace rtmath {
 		using namespace std;
 		_rt = rtselec::T; // The new default.
 		_phaseMat = pf;
+		_needsrot = true; // signals that reflection / rotation is needed when evaluating this in layers
 		// Initialize the damatrix-derived lhs and rhs.
 		// These are from a derived class, so use static_pointer_cast.
 		shared_ptr<daPfRotators::daRotator> dlhs(new daPfRotators::daRotator(_rt, daPfRotators::LHS));

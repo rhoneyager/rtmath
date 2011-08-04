@@ -113,9 +113,25 @@ int main(int argc, char* argv[])
 		cout << endl;
 		cout << endl;
 		cout << "Assuming a slightly scattering atmosphere." << endl;
-		cout << "Rayleigh scattering with x = 1, m = 1.33-0.01i" << endl;
-		rayleigh::rayleighPhaseFunc pfalpha(1.0,complex<double>(1.33,0.01));
-		//rtmath::daPfAlpha(rtselec::R, 
+		cout << "Rayleigh scattering with x = 0.1, m = 1.33-0.01i" << endl;
+		double Qsca, Qext, Qabs, g, x = 0.1;
+		std::complex<double> m(1.33,0.01);
+		shared_ptr<rayleigh::rayleighPhaseFunc> pfalpha (new rayleigh::rayleighPhaseFunc(x,m)); // pf as func. of alpha
+		shared_ptr<rtmath::daPfAlpha> pf (new rtmath::daPfAlpha(pfalpha)); // The phase function in standard form
+		
+		rayleigh::Qcalc Q(m);
+		Q.calc(x,Qext,Qsca,Qabs,g); // I'm using this to get ssa. ssa = Qsca / Qext
+		double ssa = Qsca / Qext;
+
+		// Create a dalayer using this phase function
+		shared_ptr<rtmath::daLayer> dal(new rtmath::daLayer(pf,lblatmos.tau(),ssa));
+		lblatmos.daLayers[0] = dal; // Insert the layer into the atmosphere
+		shared_ptr<damatrix> R = lblatmos.R();
+		//mapid vala(0,0,0,0);
+		mapid valb(1,0,1,0);
+		shared_ptr<matrixop> Rm = R->eval(valb);
+		Rm->print();
+		
 		cout << "Test program routines finished." << endl;
 #ifdef _WIN32
 		for (;;)
