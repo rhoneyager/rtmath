@@ -21,20 +21,20 @@ namespace rtmath {
 		return _pf;
 	}
 
-	daPfAlpha::daPfAlpha(rtselec::rtselec RT, std::shared_ptr<phaseFunc> pf)
+	daPfAlpha::daPfAlpha(std::shared_ptr<phaseFunc> pf)
 	{
-		_init(RT, pf);
+		_init(pf);
 	}
 
-	void daPfAlpha::_init(rtselec::rtselec RT, std::shared_ptr<phaseFunc> pf)
+	void daPfAlpha::_init(std::shared_ptr<phaseFunc> pf)
 	{
 		using namespace std;
-		_rt = RT;
+		_rt = rtselec::T; // The new default.
 		_phaseMat = pf;
 		// Initialize the damatrix-derived lhs and rhs.
 		// These are from a derived class, so use static_pointer_cast.
-		shared_ptr<daPfRotators::daRotator> dlhs(new daPfRotators::daRotator(RT, daPfRotators::LHS));
-		shared_ptr<daPfRotators::daRotator> drhs(new daPfRotators::daRotator(RT, daPfRotators::RHS));
+		shared_ptr<daPfRotators::daRotator> dlhs(new daPfRotators::daRotator(_rt, daPfRotators::LHS));
+		shared_ptr<daPfRotators::daRotator> drhs(new daPfRotators::daRotator(_rt, daPfRotators::RHS));
 		_lhs = static_pointer_cast<damatrix>(dlhs);
 		_rhs = static_pointer_cast<damatrix>(drhs);
 	}
@@ -71,7 +71,7 @@ namespace rtmath {
 			calpha = sqrt(1.0 - (valmap.mu * valmap.mu)) * sqrt(1.0 - (valmap.mun * valmap.mun)) * cos(valmap.phi - valmap.phin);
 			switch (_rt)
 			{
-			case rtselec::R:
+			case rtselec::R: // Old code. Should never hit rtselec::R.
 				calpha -= valmap.mu*valmap.mun;
 				break;
 			case rtselec::T:
@@ -194,6 +194,53 @@ namespace rtmath {
 		}
 
 	}; // end namespace daPfRotators
+
+	namespace daPfReflections
+	{
+		daReflection::daReflection(daReflectionEnum spec, std::shared_ptr<rtmath::damatrix> pf)
+		{
+			_type = spec;
+			_source = pf;
+		}
+
+		std::shared_ptr<matrixop> daReflection::eval(const mapid &valmap) const
+		{
+			// This is just a wrapper function for a basic type of symmetry by reflection.
+			// Pr(mu,mun,phi,phin) = P(-mu,mun,phi,phin)
+			// Pt(mu,mun,phi,phin) = P(mu,mun,phi,phin)
+			// Pr*(mu,mun,phi,phin) = P(mu,-mun,phi,phin)
+			// Pt*(mu,mun,phi,phin) = P(-mu,-mun,phi,phin)
+			mapid resmap;
+			resmap.phi = valmap.phi;
+			resmap.phin = valmap.phin;
+
+			switch(_type)
+			{
+			case T:
+				resmap.mu = valmap.mu;
+				resmap.mun = valmap.mun;
+				break;
+			case R:
+				resmap.mu = -1.0 * valmap.mu;
+				resmap.mun = valmap.mun;
+				break;
+			case T_STAR:
+				resmap.mu = -1.0 * valmap.mu;
+				resmap.mun = -1.0 * valmap.mun;
+				break;
+			case R_STAR:
+				resmap.mu = valmap.mu;
+				resmap.mun = -1.0 * valmap.mun;
+				break;
+			default:
+				throw rtmath::debug::xBadInput();
+				break;
+			}
+
+			return _source->eval(resmap);
+		}
+
+	}; // end namespace daPfReflections
 
 }; // end namespace rtmath
 

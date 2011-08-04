@@ -31,10 +31,12 @@ namespace rtmath {
 	};
 
 	// daPfAlpha is for phase functions that depend on alpha
+	// It provides P_t=P(mu,mu0,phi,phi0). Reflection is handled with a 
+	// converter, which uses symmetry to change the arguments.
 	class daPfAlpha : public damatrix
 	{
 	public:
-		daPfAlpha(rtselec::rtselec RT, std::shared_ptr<phaseFunc> pf);
+		daPfAlpha(std::shared_ptr<phaseFunc> pf);
 		virtual ~daPfAlpha();
 		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
 	protected:
@@ -44,7 +46,7 @@ namespace rtmath {
 		// Inherited from damatrix:
 		//mutable std::map<mapid, std::shared_ptr<matrixop>, mmapcomp > _eval_cache;
 	private:
-		void _init(rtselec::rtselec RT, std::shared_ptr<phaseFunc> pf);
+		void _init(std::shared_ptr<phaseFunc> pf);
 	};
 
 
@@ -70,6 +72,32 @@ namespace rtmath {
 			daRotatorLR _lr;
 		};
 	}; // end namespace daPfRotators
+
+
+	// This namespace contains the necessary functions to exploit symmetry on a damatrix.
+	// Useful especially for phasefunctions, or anything using T, T*, R and R*.
+	namespace daPfReflections
+	{
+		enum daReflectionEnum
+		{
+			T,
+			R,
+			T_STAR,
+			R_STAR
+		};
+
+		class daReflection : public damatrix
+		{
+		public:
+			daReflection(daReflectionEnum spec, std::shared_ptr<rtmath::damatrix> pf);
+			virtual ~daReflection() {}
+			virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+		protected:
+			daReflectionEnum _type;
+			std::shared_ptr<rtmath::damatrix> _source;
+		};
+
+	}; // end namespace daPfReflections
 }; // end rtmath
 
 
