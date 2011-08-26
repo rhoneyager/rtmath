@@ -40,6 +40,7 @@ namespace glgraphwin {
 			void render();
 			glform^ openglform;
 			camera^ activeCamera;
+			System::Collections::Generic::List<Plottable^>^ plotObjects;
 		private:
 			bool _runtime;
 			bool _mouseinwindow;

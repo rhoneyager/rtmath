@@ -3,6 +3,7 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include "markerSquare.h"
+#include "fontlabel.h"
 
 namespace glgraphwin {
 
@@ -15,7 +16,7 @@ namespace glgraphwin {
 
 		if (!parent) return;
 		System::Windows::Forms::Form ^ parform = parent->ParentForm;
-		plotObjects = gcnew System::Collections::Generic::List<Plottable^>;
+		//plotObjects = gcnew System::Collections::Generic::List<Plottable^>; // Will be provided by parent
 		if (!(parent->ParentForm) ) return;
 		// Get the camera from the parent form
 		cp = gcnew CreateParams;
@@ -154,7 +155,7 @@ namespace glgraphwin {
 	void glform::draw()
 	{
 		// Plot all items in plotObjects
-		/* C++ class implementation
+		/* C++ class implementation 
 		std::set<Plottable*>::const_iterator it;
 		for (it = (plotObjects)->begin(); it != (plotObjects)->end(); it++)
 		{
@@ -162,7 +163,12 @@ namespace glgraphwin {
 			(*it)->Plot();
 		}
 		*/
-		
+		// System::Collections::Generic::List<Plottable^>^ plotObjects;
+		for each (Plottable^ obj in plotObjects)
+		{
+			obj->setAspectRatio(cp->Width, cp->Height);
+			obj->Plot();
+		}
 		/* Example of some lines
 		glBegin(GL_LINE_STRIP);
 		glColor3f(1.0,0.0,0.0);
@@ -180,6 +186,8 @@ namespace glgraphwin {
 		glVertex3f(1.0,1.0,-30.0);
 		glEnd();
 		*/
+		// Just a test - plot some text
+
 	}
 
 	int glform::Render(System::Void)

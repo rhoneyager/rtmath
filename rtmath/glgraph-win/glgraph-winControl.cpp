@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "glgraph-winControl.h"
+#include "Rectangle.h" // used for plot test
 
 namespace glgraphwin {
 
@@ -22,8 +23,15 @@ namespace glgraphwin {
 		mmode = NONE;
 		activeCamera = gcnew camera();
 		activeCamera->cameraChanged += gcnew CameraChangedEventHandler(this, &glgraphwinControl::activeCamera_Changed);
-
+		plotObjects = gcnew System::Collections::Generic::List<Plottable^>;
 		_mouseinwindow = false;
+
+		// Add a basic set of lines for plotting test
+		Rectangle^ test = gcnew Rectangle(0.0,0.0,2.0,2.0,0.0);
+		test->Visible = true;
+		test->borderColor = System::Drawing::Color::Black;
+		//openglform->plotObjects
+		plotObjects->Add(test);
 	}
 
 	System::Void glgraphwinControl::activeCamera_Changed(System::Object^  sender)
@@ -86,6 +94,7 @@ namespace glgraphwin {
 				delete openglform;
 			}
 			openglform = gcnew glform(this);
+			openglform->plotObjects = plotObjects;
 			openglform->activeCamera = activeCamera;
 			if (openglform->Render()) 
 			{

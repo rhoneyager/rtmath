@@ -8,6 +8,7 @@ namespace glgraphwin {
 	{
 		_min = gcnew System::Drawing::PointF();
 		_max = gcnew System::Drawing::PointF();
+		_visible = false;
 	}
 
 

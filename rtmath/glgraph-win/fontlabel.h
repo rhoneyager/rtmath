@@ -98,7 +98,7 @@ namespace glgraphwin {
 
 		event labelChangedEventHandler^ labelChanged;
 		
-		//virtual void Plot() = 0 override;
+		virtual void Plot() override {};
 
 	protected: 
 		
