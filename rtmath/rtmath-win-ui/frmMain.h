@@ -1152,28 +1152,12 @@ namespace rtmathwinui {
 		}
 #pragma endregion
 	private: System::Void exitToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e);
-private: System::Void baseAtmosphereToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
-		 }
-private: System::Void menuStrip1_ItemClicked(System::Object^  sender, System::Windows::Forms::ToolStripItemClickedEventArgs^  e) {
-		 }
-private: System::Void layersToolStripMenuItem1_Click(System::Object^  sender, System::EventArgs^  e);
-private: System::Void frmMain_Load(System::Object^  sender, System::EventArgs^  e) {
-			 //this->glgraphwinControl1;
-			 // Needed since the form doesn't fully exist at initialization
-			 this->glgraphwinControl1->redraw();
-			 this->glgraphwinControl1->render();
-		 }
-private: System::Void frmMain_Move(System::Object^  sender, System::EventArgs^  e) {
-			 this->glgraphwinControl1->render();
-		 }
-private: System::Void tabResults_Click(System::Object^  sender, System::EventArgs^  e) {
-			 this->glgraphwinControl1->redraw();
-			 this->glgraphwinControl1->render();
-		 }
-private: System::Void propPlots_PropertyValueChanged(System::Object^  s, System::Windows::Forms::PropertyValueChangedEventArgs^  e) {
-			 //Refresh();
-			 // System::ComponentModel::PropertyTabScope::Component
-			 //propPlots->RefreshTabs(System::ComponentModel::PropertyTabScope::Document);
-		 }
-};
+	private: System::Void baseAtmosphereToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void menuStrip1_ItemClicked(System::Object^  sender, System::Windows::Forms::ToolStripItemClickedEventArgs^  e);
+	private: System::Void layersToolStripMenuItem1_Click(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void frmMain_Load(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void frmMain_Move(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void tabResults_Click(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void propPlots_PropertyValueChanged(System::Object^  s, System::Windows::Forms::PropertyValueChangedEventArgs^  e);
+	};
 }

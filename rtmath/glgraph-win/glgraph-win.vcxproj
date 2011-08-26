@@ -185,6 +185,11 @@
       <DependentUpon>glgraph-winControl.h</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rtmath\rtmath.vcxproj">
+      <Project>{57ce7c52-d622-4e29-b868-107a7e1ab51e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

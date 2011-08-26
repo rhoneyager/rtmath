@@ -48,6 +48,7 @@ namespace rtmath {
 			numDoubles++;
 		} while (taueff >= 1e-10);
 
+		std::cout << numDoubles << endl;
 		// Construct the initial layers
 		// Any reflections to get R or T depend on the source of the pf.
 		// Reflections are handled in the daInitLayer code itself.

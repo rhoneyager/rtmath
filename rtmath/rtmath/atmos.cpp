@@ -318,8 +318,9 @@ namespace rtmath {
 		// Do a check and calculate taus, populating _taus if empty
 		tau();
 
-		for (int i=0; i< (int) daLayers.size(); i++)
+		//for (int i=0; i< (int) daLayers.size(); i++)
 		{
+			int i = 0;
 			// daLayer tau is set at initialization
 			// If it does not match lblLayer tau, then we it needs to be recalculated
 			if (daLayers[i]->tau() != _taus[i])
@@ -343,15 +344,17 @@ namespace rtmath {
 		double tauBot = daLayers[0]->tau();
 
 		// In the case that the atmosphere is one layer thick:
-		if (daLayers.size() == 1)
-		{
+		//if (daLayers.size() == 1)
+		//{
 			_T = daLayers[0]->T;
 			_R = daLayers[0]->R;
 			return;
-		}
+		//}
 
-		for (int i=1; i< (int) daLayers.size(); i++)
+		//for (int i=1; i< (int) daLayers.size(); i++)
+		while (1==0)
 		{
+			int i=0;
 			Rn = daLayers[i]->R;
 			Tn = daLayers[i]->T;
 

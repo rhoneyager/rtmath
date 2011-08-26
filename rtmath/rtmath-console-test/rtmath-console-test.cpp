@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "../rtmath/debug_mem.h"
+#include "../rtmath/damatrix_quad.h"
 
 int main(int argc, char* argv[])
 {
@@ -27,6 +28,7 @@ int main(int argc, char* argv[])
 		rtmath::debug::debug_preamble();
 		
 		rtmath::debug::memcheck::enabled = false;
+		rtmath::daint::deg = 1; // For now, use only one degree of quadrature for testing
 
 		// This part of the code lets me create an answer file, so that I don't 
 		// need to copy and paste all the time.
@@ -114,6 +116,9 @@ int main(int argc, char* argv[])
 		cout << endl;
 		cout << "Assuming a slightly scattering atmosphere." << endl;
 		cout << "Rayleigh scattering with x = 0.1, m = 1.33-0.01i" << endl;
+		cout << "Tau is " << taus[wvnum] << ".\n";
+		cout << "So this involves " << 10.0*log(10.0*taus[wvnum])/log(2.0) << " doublings." << endl;
+		//cout << "There will be " << 
 		double Qsca, Qext, Qabs, g, x = 0.1;
 		std::complex<double> m(1.33,0.01);
 		shared_ptr<rayleigh::rayleighPhaseFunc> pfalpha (new rayleigh::rayleighPhaseFunc(x,m)); // pf as func. of alpha
@@ -129,6 +134,9 @@ int main(int argc, char* argv[])
 		shared_ptr<damatrix> R = lblatmos.R();
 		//mapid vala(0,0,0,0);
 		mapid valb(1,0,1,0);
+		// Here, determine the rough number of operations that are required for the single layer case
+		cout << "Note: each layer's calculation involves quadrature-based integration over the sublayers, in several ";
+		cout << " equations. This gets big, fast.\n";
 		shared_ptr<matrixop> Rm = R->eval(valb);
 		Rm->print();
 		
