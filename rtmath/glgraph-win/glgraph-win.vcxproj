@@ -153,6 +153,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="stringConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitmapFont.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="glgraph-winControl.h">
       <FileType>CppControl</FileType>
     </ClInclude>
+    <ClInclude Include="hfontConverter.h" />
     <ClInclude Include="histiogram.h" />
     <ClInclude Include="linePlot.h" />
     <ClInclude Include="markerSquare.h" />
@@ -176,6 +178,7 @@
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stringConverter.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />

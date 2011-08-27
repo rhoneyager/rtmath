@@ -19,6 +19,7 @@ namespace glgraphwin {
 
 
 	public delegate void labelChangedEventHandler(System::Object^ sender);
+	public delegate void fontChangedEventHandler(System::Object^ sender);
 
 	public ref class fontlabel abstract : public Plottable
 	{
@@ -47,7 +48,7 @@ namespace glgraphwin {
 				// Redo the font context
 				_initFont();
 				// Update label
-				OnLabelChanged();
+				OnFontChanged();
 			}
 		}
 
@@ -97,6 +98,7 @@ namespace glgraphwin {
 		}
 
 		event labelChangedEventHandler^ labelChanged;
+		event fontChangedEventHandler^ fontChanged;
 		
 		virtual void Plot() override {};
 
@@ -114,6 +116,11 @@ namespace glgraphwin {
 				   labelChanged(this);
 			   }
 
+		virtual System::Void OnFontChanged()
+		{
+			fontChanged(this);
+		}
+
 		virtual ~fontlabel()
 			   {
 			   }
@@ -124,13 +131,16 @@ namespace glgraphwin {
 	{
 	public:
 		outlineFont();
-		~outlineFont();
+		virtual ~outlineFont();
 		virtual void Plot() override;
 	protected:
 		virtual void _initFont() override;
+		void _deleteFont();
+		virtual System::Void OnFontChanged() override;
 	private:
 		int m_listbase;
 		bool _initialized;
+		HFONT font;
 	};
 
 }; // end glgraphwin

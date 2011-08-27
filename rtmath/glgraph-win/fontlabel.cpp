@@ -3,15 +3,17 @@
 #include "fontlabel.h"
 #include <gl/GL.h>
 #include <gl/GLU.h>
+#include <string>
+#include "stringConverter.h"
+//#include "hfontConverter.h"
 
 namespace glgraphwin {
 
 	outlineFont::outlineFont()
 	{
 		m_listbase = 0;
-		m_hDC = 0;
 		_initialized = false;
-		//m_hDC = m_hdc;
+		font = 0;
 	}
 
 	outlineFont::~outlineFont()
@@ -29,23 +31,42 @@ namespace glgraphwin {
 		GLsizei len = GLsizei(_text->Length);
 		if (len > 0)
 		{
+			std::string txt;
+			MarshalString(_text,txt);
 			glPushAttrib(GL_LIST_BIT);
 			{
 				glListBase(m_listbase);
 				glCallLists(len, GL_UNSIGNED_BYTE, 
-					//(const GLvoid*)_text->ToCharArray());
-					(const GLvoid*) "this is a test");
+					(const GLvoid*)txt.c_str());
+					//(const GLvoid*) "this is a test");
 			}
 			glPopAttrib();
 		}
 	}
 
+	System::Void outlineFont::OnFontChanged()
+	{
+		_deleteFont();
+		_initialized = false;
+		fontChanged(this);
+	}
+
+	void outlineFont::_deleteFont()
+	{
+		glDeleteLists(m_listbase,256);
+		m_listbase = 0;
+	}
+
 	void outlineFont::_initFont()
 	{
-		HFONT font;
+		//HFONT font; // now a class variable
 		GLYPHMETRICSFLOAT gmf[256];
 		m_listbase = glGenLists(256);
-		font = CreateFont( -12, // height of font
+		//font = (HFONT) _font->ToHfont(); // check cast
+		font = (HFONT) _font->ToHfont().ToPointer();
+		//font = context.marshal_as<HFONT>(_font);
+		/*
+		font = CreateFont( -height, // height of font
 			0, // width of font
 			0, // angle of escapement
 			0, // orientation angle
@@ -59,6 +80,7 @@ namespace glgraphwin {
 			ANTIALIASED_QUALITY, // Output Quality
 			FF_DONTCARE|DEFAULT_PITCH, // Family And Pitch
 			(LPCWSTR) "Comic Sans MS"); // Font Name
+		*/
 		SelectObject(m_hDC, font); // Selects The Font We Created
 		BOOL success;
 		success = wglUseFontOutlines(
