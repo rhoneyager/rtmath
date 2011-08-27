@@ -31,6 +31,7 @@ namespace glgraphwin {
 			_text = gcnew System::String("");
 			_textColor = gcnew System::Drawing::Color();
 			_orientation = 0;
+			_initialized = false;
 		}
 
 		// TODO: wrap these up nicely so that OnLabelChanged gets called
@@ -102,14 +103,27 @@ namespace glgraphwin {
 		
 		virtual void Plot() override {};
 
+		// When the hDC changes, we need to know about it.
+		property HDC hDC
+		{
+			virtual void set(HDC hDC) override 
+			{ 
+				if (hDC == m_hDC) return;
+				_deleteFont();
+				m_hDC = hDC;
+			}
+		}
+
 	protected: 
 		
 		float _orientation;
 		System::String^ _text;
 		System::Drawing::Font^ _font;
 		System::Drawing::Color^ _textColor;
-		
+		bool _initialized;
+
 		virtual void _initFont() = 0;
+		virtual void _deleteFont() = 0;
 
 		virtual System::Void OnLabelChanged()
 			   {
@@ -133,13 +147,13 @@ namespace glgraphwin {
 		outlineFont();
 		virtual ~outlineFont();
 		virtual void Plot() override;
+		
 	protected:
 		virtual void _initFont() override;
-		void _deleteFont();
+		virtual void _deleteFont() override;
 		virtual System::Void OnFontChanged() override;
 	private:
 		int m_listbase;
-		bool _initialized;
 		HFONT font;
 	};
 

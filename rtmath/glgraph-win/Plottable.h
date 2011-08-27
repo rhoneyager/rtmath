@@ -27,7 +27,7 @@ namespace glgraphwin {
 		}
 		property HDC hDC
 		{
-			void set(HDC hDC) { m_hDC = hDC; }
+			virtual void set(HDC hDC) { m_hDC = hDC; }
 		}
 		void setAspectRatio(unsigned int width, unsigned int height);
 	protected:

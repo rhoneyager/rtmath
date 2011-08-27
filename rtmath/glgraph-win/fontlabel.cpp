@@ -12,7 +12,6 @@ namespace glgraphwin {
 	outlineFont::outlineFont()
 	{
 		m_listbase = 0;
-		_initialized = false;
 		font = 0;
 	}
 
@@ -31,6 +30,9 @@ namespace glgraphwin {
 		GLsizei len = GLsizei(_text->Length);
 		if (len > 0)
 		{
+			glBegin(GL_POLYGON);
+			glColor4d(_textColor->R / 255.0, _textColor->G / 255.0, _textColor->B / 255.0, _textColor->A / 255.0);
+			glEnd();
 			std::string txt;
 			MarshalString(_text,txt);
 			glPushAttrib(GL_LIST_BIT);
@@ -47,7 +49,6 @@ namespace glgraphwin {
 	System::Void outlineFont::OnFontChanged()
 	{
 		_deleteFont();
-		_initialized = false;
 		fontChanged(this);
 	}
 
@@ -55,6 +56,7 @@ namespace glgraphwin {
 	{
 		glDeleteLists(m_listbase,256);
 		m_listbase = 0;
+		_initialized = false;
 	}
 
 	void outlineFont::_initFont()
@@ -90,12 +92,13 @@ namespace glgraphwin {
 			m_listbase,	// number of display lists
 			0.0,		// deviation from the true outlines
 			0.0,		// font z thickness
+			//WGL_FONT_LINES, // using lines, not polygons
 			WGL_FONT_POLYGONS,	// use polygons, not lines
 			gmf);		// address of data-receiving buffer
 		if (!success)
 		{
-			glDeleteLists(m_listbase,256);
-			m_listbase = 0;
+			_deleteFont();
+			return;
 		}
 		_initialized = true;
 	}
