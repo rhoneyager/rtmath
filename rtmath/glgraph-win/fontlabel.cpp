@@ -9,6 +9,78 @@
 
 namespace glgraphwin {
 
+	bitmapFont::bitmapFont()
+	{
+		m_listbase = 0;
+		font = 0;
+	}
+
+	bitmapFont::~bitmapFont()
+	{
+		glDeleteLists(m_listbase, 256);
+		m_listbase = 0;
+		m_hDC = 0;
+	}
+
+	void bitmapFont::Plot()
+	{
+		if (!Visible) return;
+		if (!_initialized) _initFont();
+		// Print the text
+		GLsizei len = GLsizei(_text->Length);
+		if (len > 0)
+		{
+			glColor4d(_textColor->R / 255.0, _textColor->G / 255.0, _textColor->B / 255.0, _textColor->A / 255.0);
+			glRasterPos2f(-1.0f*_min->X, -1.0f*_min->Y);
+			std::string txt;
+			MarshalString(_text,txt);
+			glPushAttrib(GL_LIST_BIT);
+			{
+				glListBase(m_listbase);
+				glCallLists(len, GL_UNSIGNED_BYTE, 
+					(const GLvoid*)txt.c_str());
+					//(const GLvoid*) "this is a test");
+			}
+			glPopAttrib();
+		}
+	}
+
+	void bitmapFont::_initFont()
+	{
+		//HFONT font; // now a class variable
+		m_listbase = glGenLists(256);
+		//font = (HFONT) _font->ToHfont(); // check cast
+		font = (HFONT) _font->ToHfont().ToPointer();
+		
+		SelectObject(m_hDC, font); // Selects The Font We Created
+		BOOL success;
+		success = wglUseFontBitmaps(
+			m_hDC, // from the existing glform
+			0,     // Starting character
+			256,   // ending character
+			m_listbase	// number of display lists
+			);
+		if (!success)
+		{
+			_deleteFont();
+			return;
+		}
+		_initialized = true;
+	}
+
+	void bitmapFont::_deleteFont()
+	{
+		glDeleteLists(m_listbase,256);
+		m_listbase = 0;
+		_initialized = false;
+	}
+
+	System::Void bitmapFont::OnFontChanged()
+	{
+		_deleteFont();
+		fontChanged(this);
+	}
+
 	outlineFont::outlineFont()
 	{
 		m_listbase = 0;
@@ -30,9 +102,11 @@ namespace glgraphwin {
 		GLsizei len = GLsizei(_text->Length);
 		if (len > 0)
 		{
-			glBegin(GL_POLYGON);
+			//glBegin(GL_POLYGON);
+			glPushMatrix();
+			glTranslatef(-1.0f*_min->X, -1.0f*_min->Y, 0.0);
 			glColor4d(_textColor->R / 255.0, _textColor->G / 255.0, _textColor->B / 255.0, _textColor->A / 255.0);
-			glEnd();
+			//glEnd();
 			std::string txt;
 			MarshalString(_text,txt);
 			glPushAttrib(GL_LIST_BIT);
@@ -43,6 +117,7 @@ namespace glgraphwin {
 					//(const GLvoid*) "this is a test");
 			}
 			glPopAttrib();
+			glPopMatrix();
 		}
 	}
 

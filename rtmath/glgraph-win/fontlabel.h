@@ -157,5 +157,22 @@ namespace glgraphwin {
 		HFONT font;
 	};
 
+	// Bitmap font
+
+	public ref class bitmapFont : public fontlabel
+	{
+	public:
+		bitmapFont();
+		virtual ~bitmapFont();
+		virtual void Plot() override;
+	protected:
+		virtual void _initFont() override;
+		virtual void _deleteFont() override;
+		virtual System::Void OnFontChanged() override;
+	private:
+		int m_listbase;
+		HFONT font;
+	};
+
 }; // end glgraphwin
 

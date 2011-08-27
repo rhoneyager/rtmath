@@ -40,10 +40,21 @@ namespace glgraphwin {
 		//openglform->plotObjects
 		plotObjects->Add(testb);
 		// Try to add sample text
-		outlineFont^ c = gcnew outlineFont();
-		c->Text = "This is a test of the font subsystem.";
+		
+		bitmapFont^ c = gcnew bitmapFont();
+		c->Text = "Bitmap font";
+		c->min->X = 1.0;
+		c->min->Y = -1.0;
 		c->Visible = true;
 		plotObjects->Add(c);
+		/*
+		outlineFont^ d = gcnew outlineFont();
+		d->Text = "Outline font";
+		d->min->X = -1.0;
+		d->min->Y = 2.0;
+		d->Visible = true;
+		plotObjects->Add(d);
+		*/
 	}
 
 	System::Void glgraphwinControl::activeCamera_Changed(System::Object^  sender)
