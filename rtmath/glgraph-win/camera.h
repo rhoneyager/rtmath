@@ -1,4 +1,6 @@
 #pragma once
+#include <Windows.h>
+#include <gl/GL.h>
 
 using namespace System;
 using namespace System::ComponentModel;

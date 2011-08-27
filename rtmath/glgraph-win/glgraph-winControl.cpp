@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "glgraph-winControl.h"
 #include "Rectangle.h" // used for plot test
-
+#include "fontlabel.h" // used for plot test
 namespace glgraphwin {
 
 	glgraphwinControl::glgraphwinControl(void)
@@ -30,8 +30,20 @@ namespace glgraphwin {
 		Rectangle^ test = gcnew Rectangle(0.0,0.0,2.0,2.0,0.0);
 		test->Visible = true;
 		test->borderColor = System::Drawing::Color::Black;
+		test->bodyColor = System::Drawing::Color::White;
 		//openglform->plotObjects
 		plotObjects->Add(test);
+		Rectangle^ testb = gcnew Rectangle(0.0,0.0,1.0,1.0,3.141592654/9.0);
+		testb->Visible = true;
+		testb->borderColor = System::Drawing::Color::Blue;
+		testb->bodyColor = System::Drawing::Color::White;
+		//openglform->plotObjects
+		plotObjects->Add(testb);
+		// Try to add sample text
+		outlineFont^ c = gcnew outlineFont();
+		c->Text = "This is a test of the font subsystem.";
+		c->Visible = true;
+		plotObjects->Add(c);
 	}
 
 	System::Void glgraphwinControl::activeCamera_Changed(System::Object^  sender)

@@ -120,16 +120,17 @@ namespace glgraphwin {
 	};
 
 	// Outline font
-	public ref class outlineFont abstract : public fontlabel
+	public ref class outlineFont : public fontlabel
 	{
 	public:
-		outlineFont(HDC m_hdc);
+		outlineFont();
+		~outlineFont();
 		virtual void Plot() override;
 	protected:
 		virtual void _initFont() override;
 	private:
 		int m_listbase;
-		HDC m_hDC;
+		bool _initialized;
 	};
 
 }; // end glgraphwin

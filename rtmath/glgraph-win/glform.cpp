@@ -167,6 +167,7 @@ namespace glgraphwin {
 		for each (Plottable^ obj in plotObjects)
 		{
 			obj->setAspectRatio(cp->Width, cp->Height);
+			obj->hDC = m_hDC; // Needed for fonts and other special objects
 			obj->Plot();
 		}
 		/* Example of some lines

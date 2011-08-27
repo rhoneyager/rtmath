@@ -1,4 +1,6 @@
 #pragma once
+#include <Windows.h>
+#include <gl/GL.h>
 
 namespace glgraphwin {
 
@@ -23,6 +25,10 @@ namespace glgraphwin {
 		{
 			System::Drawing::PointF^ get() { return _max;}
 		}
+		property HDC hDC
+		{
+			void set(HDC hDC) { m_hDC = hDC; }
+		}
 		void setAspectRatio(unsigned int width, unsigned int height);
 	protected:
 		bool _visible;
@@ -30,6 +36,8 @@ namespace glgraphwin {
 		unsigned int _controlHeight;
 		System::Drawing::PointF^ _min;
 		System::Drawing::PointF^ _max;
+		HDC m_hDC;
+		HGLRC m_hglrc;
 	};
 	/*
 	public ref class Color : public System::ComponentModel::Component

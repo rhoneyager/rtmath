@@ -50,14 +50,14 @@ namespace glgraphwin {
 			// Must do these counterclockwise.....
 
 			op = gcnew array<double>(8);
-			op[0] = A.get(2,0,0);
-			op[1] = A.get(2,1,0);
-			op[6] = B.get(2,0,0);
-			op[7] = B.get(2,1,0);
-			op[4] = C.get(2,0,0);
-			op[5] = C.get(2,1,0);
-			op[2] = D.get(2,0,0);
-			op[3] = D.get(2,1,0);
+			op[0] = Ar.get(2,0,0);
+			op[1] = Ar.get(2,1,0);
+			op[6] = Br.get(2,0,0);
+			op[7] = Br.get(2,1,0);
+			op[4] = Cr.get(2,0,0);
+			op[5] = Cr.get(2,1,0);
+			op[2] = Dr.get(2,0,0);
+			op[3] = Dr.get(2,1,0);
 
 			// Save the minima and maxima for x and y for autofocusing
 			for (unsigned int i=0;i<3;i++)
