@@ -28,6 +28,9 @@
     <Filter Include="PhaseFuncs\Other">
       <UniqueIdentifier>{2f631269-828b-4b5e-bb40-ff4fbe53a2c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Public Domain">
+      <UniqueIdentifier>{b6082b54-2949-4dce-af92-690654bc6861}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath.h">
@@ -153,6 +156,9 @@
     <ClInclude Include="daPf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MurmurHash3.h">
+      <Filter>Public Domain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -250,6 +256,9 @@
     </ClCompile>
     <ClCompile Include="daPf.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MurmurHash3.cpp">
+      <Filter>Public Domain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

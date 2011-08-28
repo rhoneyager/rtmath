@@ -48,13 +48,19 @@ namespace glgraphwin {
 		c->Visible = true;
 		plotObjects->Add(c);
 		/*
-		outlineFont^ d = gcnew outlineFont();
-		d->Text = "Outline font";
+		outlineFont^ e = gcnew outlineFont();
+		e->Text = "Outline font";
+		e->min->X = -3.0;
+		e->min->Y = 3.0;
+		e->Visible = true;
+		plotObjects->Add(e);
+		*/
+		bitmapFont^ d = gcnew bitmapFont();
+		d->Text = "another font";
 		d->min->X = -1.0;
 		d->min->Y = 2.0;
 		d->Visible = true;
 		plotObjects->Add(d);
-		*/
 	}
 
 	System::Void glgraphwinControl::activeCamera_Changed(System::Object^  sender)

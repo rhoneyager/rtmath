@@ -51,8 +51,14 @@ namespace glgraphwin {
 		m_listbase = glGenLists(256);
 		//font = (HFONT) _font->ToHfont(); // check cast
 		font = (HFONT) _font->ToHfont().ToPointer();
-		
-		SelectObject(m_hDC, font); // Selects The Font We Created
+		// If an error occurs and the selected object is not a region, the return value is NULL. Otherwise, it is HGDI_ERROR.
+		HGDIOBJ res;
+		res = SelectObject(m_hDC, font); // Selects The Font We Created
+		if (res == 0 || res == HGDI_ERROR || m_listbase == 0 || font == 0)
+		{
+			_deleteFont();
+			return;
+		}
 		BOOL success;
 		success = wglUseFontBitmaps(
 			m_hDC, // from the existing glform
@@ -72,6 +78,7 @@ namespace glgraphwin {
 	{
 		glDeleteLists(m_listbase,256);
 		m_listbase = 0;
+		font = 0;
 		_initialized = false;
 	}
 

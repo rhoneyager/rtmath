@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CLRSupport>true</CLRSupport>
+    <CLRSupport>false</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -218,6 +218,7 @@
     <ClInclude Include="lbl.h" />
     <ClInclude Include="macros.h" />
     <ClInclude Include="matrixop.h" />
+    <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="phaseFunc.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="Qcalc-Rayleigh.h" />
@@ -270,6 +271,7 @@
     </None>
     <ClCompile Include="lbl.cpp" />
     <ClCompile Include="matrixop.cpp" />
+    <ClCompile Include="MurmurHash3.cpp" />
     <ClCompile Include="phaseFunc.cpp" />
     <ClCompile Include="polynomial.cpp" />
     <ClCompile Include="Qcalc-Rayleigh.cpp" />
