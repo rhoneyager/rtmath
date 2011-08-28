@@ -4,6 +4,8 @@
 #include <cstdarg>
 #include <memory>
 //#include <netcdfcpp.h>
+#include "defs.h"
+#include "MurmurHash3.h"
 
 namespace rtmath {
 
@@ -30,6 +32,12 @@ namespace rtmath {
 		virtual bool operator != (const mapid &rhs) const
 		{ return !(this->operator==(rhs)); }
 		double mu, mun, phi, phin;
+		inline HASH_t hash() const
+		{
+			HASH_t res;
+			HASH(this, sizeof(*this), HASHSEED, &res);
+			return res;
+		}
 	};
 
 	class matrixop

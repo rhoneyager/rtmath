@@ -159,6 +159,9 @@
     <ClInclude Include="MurmurHash3.h">
       <Filter>Public Domain</Filter>
     </ClInclude>
+    <ClInclude Include="defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">

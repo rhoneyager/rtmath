@@ -7,7 +7,8 @@
 #include <unordered_map>
 #include "matrixop.h"
 #include <limits.h>	
-
+#include "defs.h"
+#include "error.h"
 /*
 // This code segment allows for an unordered map of mapid to exist. It implements a hash depending on the values in the mapid.
 namespace std {
@@ -37,7 +38,7 @@ namespace rtmath {
 		POW
 	};
 
-	struct mmapcomp
+	struct mmapcomp : public debug::obsoleted
 	{
 		bool operator() (const mapid &lhs, const mapid &rhs) const
 		{
@@ -76,7 +77,8 @@ namespace rtmath {
 		bool _eval_cache_enabled;
 		bool _locked;
 		bool _needsrot;
-		mutable std::map<mapid, std::shared_ptr<matrixop>, mmapcomp > _eval_cache;
+		//mutable std::map<mapid, std::shared_ptr<matrixop>, mmapcomp > _eval_cache;
+		mutable std::map<HASH_t, std::shared_ptr<matrixop>, hashcomp > _eval_cache;
 		//mutable std::unordered_map<mapid, std::shared_ptr<matrixop> > _eval_cache;
 	public: // Static Functions
 		// Perform the desired operation involving two damatrices

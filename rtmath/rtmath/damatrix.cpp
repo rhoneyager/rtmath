@@ -122,15 +122,11 @@ namespace rtmath {
 	{
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
-		
+		HASH_t hash = valmap.hash();
 		if (_eval_cache_enabled) 
-		{
-			if (_eval_cache.count(valmap) > 0)
-			{
-				return _eval_cache[valmap];
-			}
-		}
-
+			if (_eval_cache.count(hash) > 0)
+				return _eval_cache[hash];
+		
 		// Check lock condition
 		if (_locked && _parentOp != NONE) throw rtmath::debug::xLockedNotInCache();
 
@@ -198,7 +194,7 @@ namespace rtmath {
 
 		// Cache the calculated value, for later calculations
 		if (_eval_cache_enabled)
-			_eval_cache[valmap] = res;
+			_eval_cache[hash] = res;
 
 		return res;
 	}

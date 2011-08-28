@@ -50,17 +50,12 @@ namespace rtmath {
 	std::shared_ptr<matrixop> daInitLayer::eval(const mapid &valmap) const
 	{
 		using namespace std;
+		HASH_t hash = valmap.hash();
 		// _tau should be fixed, and valmap provides the other angles
-		
 		// Search the cache for existing calculated values
 		if (_eval_cache_enabled) 
-		{
-			if (_eval_cache.count(valmap) > 0)
-			{
-				return _eval_cache[valmap];
-			}
-		}
-
+			if (_eval_cache.count(hash) > 0)
+				return _eval_cache[hash];
 		// Existing value not found. Must calculate.
 		matrixop pRes(2,4,4);
 
@@ -77,7 +72,7 @@ namespace rtmath {
 
 		// Store result and return
 		if (_eval_cache_enabled) 
-			_eval_cache[valmap] = res;
+			_eval_cache[hash] = res;
 		return res;
 	}
 
