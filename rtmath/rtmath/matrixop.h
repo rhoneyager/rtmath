@@ -3,6 +3,8 @@
 #include <map>
 #include <cstdarg>
 #include <memory>
+#include <string>
+#include <sstream>
 //#include <netcdfcpp.h>
 #include "defs.h"
 #include "MurmurHash3.h"
@@ -37,6 +39,14 @@ namespace rtmath {
 			HASH_t res;
 			HASH(this, sizeof(*this), HASHSEED, &res);
 			return res;
+		}
+		inline std::string print() const
+		{
+			std::ostringstream out;
+			out << "mu: " << mu << " mun: " << mun << " phi: " << phi << " phin: " << phin;
+			std::string res = out.str();
+			return res;
+
 		}
 	};
 
