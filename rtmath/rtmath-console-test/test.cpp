@@ -35,17 +35,41 @@ int main(int argc, char* argv[])
 
 		double alb = 0.1;
 		double tau = 1.0;
-		double mu = 1.0, mun = 0.0, phi = 0.3, phin = 0.1;
+		double mu = 0.9, mun = 0.1, phi = 0.3, phin = 0.1;
 		double x = 1.0;
 		std::complex<double> m;
 		m.real(1.33);
 		m.imag(0.001);
 		mapid mid(mu,mun,phi,phin);	
 
+		cout << "Using angles of " << mid.print() << endl;
 		// Use the rayleigh-scattering case, for starters
 		// Need a layer with a phasefunction matrixop
-		rayleigh::rayleighPhaseFunc ray(x,m);
-		
+		shared_ptr<rayleigh::rayleighPhaseFunc> ray (new rayleigh::rayleighPhaseFunc(x,m));
+		shared_ptr<phaseFunc> raycast = static_pointer_cast<phaseFunc> (ray);
+		shared_ptr<daPfAlpha> pfa( new daPfAlpha(raycast));
+		shared_ptr<damatrix> pfacast = static_pointer_cast<damatrix> (pfa);
+		shared_ptr<daInitLayer> base  ( new daInitLayer(pfacast, alb, tau, rtselec::R));
+		shared_ptr<matrixop> baseEval = base->eval(mid);
+		cout << "base evaled\n";
+		baseEval->print();
+		cout << endl;
+
+		shared_ptr<damatrix> a, b;
+		a = static_pointer_cast<damatrix> (base);
+		cout << "now to test iteration and cacheing" << endl;
+		cout << "for i 1 to 10" << endl;
+		for (unsigned int i=1;i<11;i++)
+		{
+			cout << "i = " << i << endl;
+			b = damatrix::op(a,a,MULT);
+			shared_ptr<matrixop> evals = b->eval(mid);
+			evals->print();
+			a = b;
+		}
+
+		cout << "testing done. please verify results." << endl;
+		/*
 
 		shared_ptr<daInitLayer> iLa( new daInitLayer(ray,alb, tau, rtselec::R) );
 		// Special cast is needed to keep shared_ptr happy. Unfortunate.
@@ -65,7 +89,7 @@ int main(int argc, char* argv[])
 		iLaDoubledeval = iLaDoubled->eval(mid);
 		cout << "iLaDoubled\n";
 		iLaDoubledeval->print();
-		
+		*/
 		cout << "Test program routines finished." << endl;
 #ifdef _WIN32
 		for (;;)

@@ -71,6 +71,12 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1508093569.735853882" name="lbltest.cpp" rcbsApplicability="disable" resourcePath="lbltest.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453.952354284">
+						<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453.952354284" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453"/>
+					</fileInfo>
+					<sourceEntries>
+						<entry excluding="lbltest.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
