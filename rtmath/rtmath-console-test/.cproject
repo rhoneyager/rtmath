@@ -40,15 +40,16 @@
 								<option id="gnu.cpp.compiler.option.debugging.prof.1605601502" name="Generate prof information (-p)" superClass="gnu.cpp.compiler.option.debugging.prof" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.debugging.gprof.1665888493" name="Generate gprof information (-pg)" superClass="gnu.cpp.compiler.option.debugging.gprof" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.debugging.other.529734226" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" value="-ggdb" valueType="string"/>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.1655351305" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="_DEBUG"/>
-									<listOptionValue builtIn="false" value="HEAP_CHECK"/>
-								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1655351305" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1708474157" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rtmath}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.flags.1496659207" name="Other optimization flags" superClass="gnu.cpp.compiler.option.optimization.flags" value="-fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.other.other.1975931759" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 --std=c++0x" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.undef.1942498326" superClass="gnu.cpp.compiler.option.preprocessor.undef" valueType="undefDefinedSymbols">
+									<listOptionValue builtIn="false" value="HEAP_CHECK"/>
+									<listOptionValue builtIn="false" value="_DEBUG"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.544059455" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.742366972" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -71,9 +72,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1508093569.735853882" name="lbltest.cpp" rcbsApplicability="disable" resourcePath="lbltest.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453.952354284">
-						<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453.952354284" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler.970381453"/>
-					</fileInfo>
 					<sourceEntries>
 						<entry excluding="lbltest.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

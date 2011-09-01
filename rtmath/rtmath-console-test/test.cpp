@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 		rtmath::debug::debug_preamble();
 		
 		rtmath::debug::memcheck::enabled = false;
-		rtmath::daint::deg = 1; // For now, use only one degree of quadrature for testing
+		rtmath::daint::deg = 3; // For now, use only one degree of quadrature for testing
 		fflush(stderr);
 
 
@@ -58,9 +58,9 @@ int main(int argc, char* argv[])
 		shared_ptr<damatrix> a, b;
 		a = static_pointer_cast<damatrix> (base);
 		cout << "now to test iteration and cacheing" << endl;
-		cout << "for i = 1 ... 2" << endl;
+		cout << "for i = 1 ... 5" << endl;
 
-		for (unsigned int i=1;i<3;i++)
+		for (unsigned int i=1;i<6;i++)
 		{
 			cout << "i = " << i << endl;
 			b = damatrix::op(a,a,MULT);
