@@ -20,7 +20,7 @@ namespace rtmath {
 			//double b = 2.0 * M_PI; // Oops - I had switched outer_int and inner_int's bounds
 			double b = 1.0;
 			//unsigned int deg = 7;
-			
+			double d = deg;
 			unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
 			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
 			if (deg > 7) throw rtmath::debug::xBadInput();
@@ -70,7 +70,10 @@ namespace rtmath {
 				Bmap.phi = phip;
 				//mapid Amap(valmap.mu,mup,valmap.phi,phip), Bmap(mup,valmap.mun,phip,valmap.phin);
 				//*res = *res + *A->eval(Amap) * *B->eval(Bmap) * mup;
-				resa = resa + *A->eval(Amap) * *B->eval(Bmap) * muweight;
+				matrixop a(2,4,4), b(2,4,4);
+				a = *A->eval(Amap);
+				b = *B->eval(Bmap);
+				resa = resa + a * b * muweight;
 			}
 			resa = resa * ((b - a)/2.0);
 			std::shared_ptr<matrixop> res(new matrixop(resa));

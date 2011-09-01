@@ -58,8 +58,9 @@ int main(int argc, char* argv[])
 		shared_ptr<damatrix> a, b;
 		a = static_pointer_cast<damatrix> (base);
 		cout << "now to test iteration and cacheing" << endl;
-		cout << "for i 1 to 10" << endl;
-		for (unsigned int i=1;i<11;i++)
+		cout << "for i = 1 ... 2" << endl;
+
+		for (unsigned int i=1;i<3;i++)
 		{
 			cout << "i = " << i << endl;
 			b = damatrix::op(a,a,MULT);
