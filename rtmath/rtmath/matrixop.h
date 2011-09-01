@@ -23,7 +23,7 @@ namespace rtmath {
 			this->phin = phin;
 		}
 		mapid () { mu=0; mun=0; phi=0; phin=0;}
-		virtual bool operator == (const mapid &rhs) const
+		bool operator == (const mapid &rhs) const
 		{
 			if (this->mu != rhs.mu) return false;
 			if (this->mun != rhs.mun) return false;
@@ -31,7 +31,7 @@ namespace rtmath {
 			if (this->phin != rhs.phin) return false;
 			return true;
 		}
-		virtual bool operator != (const mapid &rhs) const
+		bool operator != (const mapid &rhs) const
 		{ return !(this->operator==(rhs)); }
 		double mu, mun, phi, phin;
 		inline HASH_t hash() const

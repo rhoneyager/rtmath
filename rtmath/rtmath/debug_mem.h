@@ -123,7 +123,7 @@ inline void operator delete[](void *p)
 	}
 }
 
-
+#ifdef _DEBUG // TODO: check again to see if MSVC defines this at all
 #ifdef __GNUC__
 #define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : new
 // Note: gcc complains about wrong type of NULL (non-void) in the ternary operator for delete, even if it's never used, so (void) NULL
@@ -132,6 +132,7 @@ inline void operator delete[](void *p)
 #ifdef _MSC_FULL_VER
 #define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : new
 #define delete (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : delete
+#endif
 #endif
 
 	// End special heap check code

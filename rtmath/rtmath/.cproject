@@ -40,11 +40,12 @@
 								<option id="gnu.cpp.compiler.option.debugging.gprof.297261868" name="Generate gprof information (-pg)" superClass="gnu.cpp.compiler.option.debugging.gprof" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.debugging.prof.1780202012" name="Generate prof information (-p)" superClass="gnu.cpp.compiler.option.debugging.prof" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.debugging.other.1801840306" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" value="-ggdb" valueType="string"/>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.612579610" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="_DEBUG"/>
-								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.612579610" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols"/>
 								<option id="gnu.cpp.compiler.option.other.other.1512337203" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -fPIC --std=c++0x" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.optimization.flags.2112344884" name="Other optimization flags" superClass="gnu.cpp.compiler.option.optimization.flags" value="-fopenmp" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.undef.918626561" superClass="gnu.cpp.compiler.option.preprocessor.undef" valueType="undefDefinedSymbols">
+									<listOptionValue builtIn="false" value="_DEBUG"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.692439192" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.366409726" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker">

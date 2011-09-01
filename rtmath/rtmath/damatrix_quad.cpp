@@ -17,10 +17,9 @@ namespace rtmath {
 			// Outer integration is from 0 to 2pi, dphi'
 			// It varies A and B valmaps and calls the inner loop with Gaussian quadrature
 			double a = 0.0;
-			//double b = 2.0 * M_PI; // Oops - I had switched outer_int and inner_int's bounds
-			double b = 1.0;
+			double b = 2.0 * M_PI; // Oops - I had switched outer_int and inner_int's bounds
+			//double b = 1.0;
 			//unsigned int deg = 7;
-			double d = deg;
 			unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
 			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
 			if (deg > 7) throw rtmath::debug::xBadInput();
@@ -48,7 +47,7 @@ namespace rtmath {
 			//  gaussian quadrature
 			//unsigned int deg = 7;
 			double a = 0.0;
-			double b = 2.0 * M_PI;
+			double b = 1.0;
 			unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
 			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
 			if (deg > 7) throw rtmath::debug::xBadInput();
