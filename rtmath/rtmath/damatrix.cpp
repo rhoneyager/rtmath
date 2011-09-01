@@ -55,7 +55,7 @@ namespace rtmath {
 	{
 		_pow = 0;
 		_parentOp = NONE;
-		_eval_cache_enabled = false;
+		_eval_cache_enabled = true;
 		_locked = false;
 	}
 
