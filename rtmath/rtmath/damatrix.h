@@ -5,6 +5,8 @@
 #include <memory>
 #include <map>
 #include <unordered_map>
+#include "enums.h"
+#include "mapid.h"
 #include "matrixop.h"
 #include <limits.h>	
 #include "defs.h"

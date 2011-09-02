@@ -183,6 +183,7 @@
     <ClInclude Include="damatrix_quad.h" />
     <ClInclude Include="daPf.h" />
     <ClInclude Include="defs.h" />
+    <ClInclude Include="mapid.h" />
     <ClInclude Include="mie-abNCalc.h" />
     <ClInclude Include="mie-AnCalc.h" />
     <ClInclude Include="mie-phaseFunc.h" />

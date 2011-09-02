@@ -65,20 +65,7 @@ namespace rtmath {
 		lhs = _lhs->eval(valmap);
 		rhs = _rhs->eval(valmap);
 		
-		// Calculate alpha
-			double calpha;
-			calpha = sqrt(1.0 - (valmap.mu * valmap.mu)) * sqrt(1.0 - (valmap.mun * valmap.mun)) * cos(valmap.phi - valmap.phin);
-			switch (_rt)
-			{
-			case rtselec::R: // Old code. Should never hit rtselec::R.
-				calpha -= valmap.mu*valmap.mun;
-				break;
-			case rtselec::T:
-				calpha += valmap.mu*valmap.mun;
-				break;
-			} // cos(alpha) has now been found
-
-			double alpha = acos(calpha); // not used yet, but soon
+		double alpha = valmap.toAlpha(_rt);
 
 		pf = _phaseMat->eval(alpha); 
 		matrixop resb = *pf * *rhs;
@@ -116,18 +103,11 @@ namespace rtmath {
 			// Evaluate the damatrix at the necessary values
 
 			// Calculate alpha
-			double calpha;
-			calpha = sqrt(1.0 - (valmap.mu * valmap.mu)) * sqrt(1.0 - (valmap.mun * valmap.mun)) * cos(valmap.phi - valmap.phin);
-			switch (_rt)
+			double calpha = valmap.toCosAlpha(_rt); // cos(alpha) has now been found
+			if (calpha == 1.0)
 			{
-			case rtselec::R:
-				calpha -= valmap.mu*valmap.mun;
-				break;
-			case rtselec::T:
-				calpha += valmap.mu*valmap.mun;
-				break;
-			} // cos(alpha) has now been found
-
+				throw;
+			}
 			//double alpha = acos(calpha); // not used yet, but soon
 
 			// Create the resultant matrixop
