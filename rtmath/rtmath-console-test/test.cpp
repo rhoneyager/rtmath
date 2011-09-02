@@ -104,6 +104,11 @@ int main(int argc, char* argv[])
 		err.Display();
 		throw;
 	}
+	catch (...)
+	{
+		cerr << "\nProgram encountered an unknown / unhandled exception. Terminating." << endl;
+		throw;
+	}
 
 	return 0;
 }
