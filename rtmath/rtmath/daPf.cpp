@@ -106,7 +106,7 @@ namespace rtmath {
 			double calpha = valmap.toCosAlpha(_rt); // cos(alpha) has now been found
 			if (calpha == 1.0)
 			{
-				throw;
+				//throw;
 			}
 			//double alpha = acos(calpha); // not used yet, but soon
 
