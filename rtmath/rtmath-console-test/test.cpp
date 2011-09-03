@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 		m.imag(0.001);
 		mapid mid(mu,mun,phi,phin);	
 
-		cout << "Using angles of " << mid.print() << endl;
+		cerr << "Using angles of " << mid.print() << endl;
 		// Use the rayleigh-scattering case, for starters
 		// Need a layer with a phasefunction matrixop
 		shared_ptr<rayleigh::rayleighPhaseFunc> ray (new rayleigh::rayleighPhaseFunc(x,m));
@@ -51,18 +51,18 @@ int main(int argc, char* argv[])
 		shared_ptr<damatrix> pfacast = static_pointer_cast<damatrix> (pfa);
 		shared_ptr<daInitLayer> base  ( new daInitLayer(pfacast, alb, tau, rtselec::R));
 		shared_ptr<matrixop> baseEval = base->eval(mid);
-		cout << "base evaled\n";
+		cerr << "base evaled\n";
 		baseEval->print();
 		cout << endl;
 
 		shared_ptr<damatrix> a, b;
 		a = static_pointer_cast<damatrix> (base);
-		cout << "now to test iteration and cacheing" << endl;
-		cout << "for i = 1 ... 3" << endl;
+		cerr << "now to test iteration and cacheing" << endl;
+		cerr << "for i = 1 ... 3" << endl;
 
 		for (unsigned int i=1;i<4;i++)
 		{
-			cout << "i = " << i << endl;
+			cerr << "i = " << i << endl;
 			b = damatrix::op(a,a,MULT);
 			shared_ptr<matrixop> evals = b->eval(mid);
 			evals->print();
