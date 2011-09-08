@@ -71,6 +71,8 @@ namespace rtmath
 		// Function is known to be defective.
 		ERRSTD(xDefective);
 
+		ERRSTD(xSingular);
+
 		// A convenient way to mark a class as obsolete and prevent execution 
 		// of functions that use the obsolete class is to make the class derive from obsoleted.
 		class obsoleted

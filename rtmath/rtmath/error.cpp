@@ -116,5 +116,11 @@ namespace rtmath {
 			_message.append("Consult code comments and documentation to fix known bugs.\n");
 		}
 
+		void xSingular::_setmessage()
+		{
+			_message = "ERROR: singular matrix detected.\n";
+		}
+		}
+
 	};
 };

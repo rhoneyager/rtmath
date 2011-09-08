@@ -457,7 +457,7 @@ namespace rtmath {
 		va_end(indices);
 		return diagonal(ptr,val);
 	}
-
+/*
 	matrixop matrixop::inverse() const
 	{
 		// This uses minors and a determinant to calculate the inverse
@@ -480,6 +480,45 @@ namespace rtmath {
 		}
 		return res;
 	}
+*/
+	matrixop matrixop::inverse() const
+	{
+		// First, calculate the determinant
+		// It's going here because I'm using gaussian elimination to speed things up,
+		// and I don't want to do the same operations twice.
+		// Loosely inspired from Evans' code (same method, different language, different implementation)
+		if (this->issquare() == false) throw rtmath::debug::xBadInput();
+
+		double det = 0;
+		matrixop res(*this);
+		matrixop inv = matrixop::diagonal(_dims,1.0);
+		// Repivot matrix su
+		// Use gaussian elimination to first produce an upper triangular matrix
+		for (size_t row=0; row<_dims[0]; row++)
+		{
+			// Iterate through each row, and subtract
+			// If the desired row is missing the necessary pivot, search for a row to swap with
+			// - if no swapping row is found, the matrix is singular and throw an error
+			if (res.get(2,row,row) == 0) _repivot(res,res,row);
+		}
+		// Then, go backwards to make the
+	}
+
+	void matrixop::_swaprows(matrixop &source, size_t rowa, size_t rowb)
+	{
+		// Fast relinking function that swaps two rows using internal functions
+		// Check row bounds
+		if (source._dims[0] < rowa || source._dims[0] < rowb) throw rtmath::debug::xBadInput();
+		// The values are all actually in a map of position vectors.
+		// This is unfortunate, as it may slow the code.
+		throw;
+	}
+
+	void matrixop::_repivot(const matrixop &source, matrixop &res, size_t row)
+	{
+
+	}
+
 
 	matrixop matrixop::identity(const std::vector<unsigned int> &size)
 	{

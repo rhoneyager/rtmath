@@ -66,6 +66,9 @@ namespace rtmath {
 		static matrixop identity(const std::vector<unsigned int> &size);
 		static inline matrixop fileRead(const char* filename) { return fileRead(filename, -1, -1); }
 		static matrixop fileRead(const char* filename, int lineStart, int lineEnd);
+	private:
+		static void _swaprows(matrixop &source, size_t rowa, size_t rowb);
+		static void _repivot(const matrixop &source, matrixop &res, size_t row);
 	protected:
 		std::map<std::vector<unsigned int>, double > _vals;
 		std::vector<unsigned int> _dims;
