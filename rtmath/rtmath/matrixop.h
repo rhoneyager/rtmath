@@ -53,19 +53,19 @@ namespace rtmath {
 		virtual double det() const;
 		virtual matrixop minors(const std::vector<unsigned int> &pos) const;
                 virtual matrixop minors(unsigned int rank, ...) const;
-		// To add:
-		// Diagonalization
-		// Determinant
-		// Evaluation
+		
 		void toDoubleArray(double *target) const;
 		void fromDoubleArray(const double *target);
 		//void fromCdf(NcVar *var, long n); // Populate the matrixop from a netCDF variable. Specify start location in extended params.
 		//void toCDF(NcVar *var) const; // Save matrixop to a netCDF variable. 
 		matrixop inverse() const;
+		void posFromIndex(unsigned int index, std::vector<unsigned int> pos) const;
+	public:
 		static matrixop diagonal(const std::vector<unsigned int> &size, double val);
 		static matrixop diagonal(double val, unsigned int rank, ...);
 		static matrixop identity(const std::vector<unsigned int> &size);
-		void posFromIndex(unsigned int index, std::vector<unsigned int> pos) const;
+		static inline matrixop fileRead(const char* filename) { return fileRead(filename, -1, -1); }
+		static matrixop fileRead(const char* filename, int lineStart, int lineEnd);
 	protected:
 		std::map<std::vector<unsigned int>, double > _vals;
 		std::vector<unsigned int> _dims;

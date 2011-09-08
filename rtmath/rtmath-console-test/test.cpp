@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
 		double alb = 0.1;
 		double tau = 1.0;
-		double mu = 0.9, mun = 0.1, phi = 0.3, phin = 0.1;
+		double mu = 0.1, mun = 0.1, phi = 0.3, phin = 0.1;
 		double x = 1.0;
 		std::complex<double> m;
 		m.real(1.33);

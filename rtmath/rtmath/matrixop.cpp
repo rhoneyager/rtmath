@@ -540,35 +540,35 @@ namespace rtmath {
 	/*
 	void matrixop::fromCdf(NcVar *var, long n)
 	{
-		// Calculate max size
-		unsigned int maxsize = maxSize();
-		// Clear matrixop of any values
-		clear();
-		// Initialize an array of doubles
-		double *dvals = new double[maxsize];
+	// Calculate max size
+	unsigned int maxsize = maxSize();
+	// Clear matrixop of any values
+	clear();
+	// Initialize an array of doubles
+	double *dvals = new double[maxsize];
 
-		NcValues *vals = var->get_rec(n);
-		for (long i=0; i< (long) maxsize; i++)
-		{
-			dvals[i] = vals->as_double(i);
-		}
+	NcValues *vals = var->get_rec(n);
+	for (long i=0; i< (long) maxsize; i++)
+	{
+	dvals[i] = vals->as_double(i);
+	}
 
-		fromDoubleArray(dvals);
+	fromDoubleArray(dvals);
 
-		// Clean up
-		delete[] dvals;
+	// Clean up
+	delete[] dvals;
 	}
 
 	void matrixop::toCDF(NcVar *var) const
 	{
-		unsigned int maxsize = maxSize();
-		double *dvals = new double[maxsize];
+	unsigned int maxsize = maxSize();
+	double *dvals = new double[maxsize];
 
-		toDoubleArray(dvals);
+	toDoubleArray(dvals);
 
-		var->put_rec(dvals);
+	var->put_rec(dvals);
 
-		delete[] dvals;
+	delete[] dvals;
 	}
 	*/
 	unsigned int matrixop::maxSize() const
@@ -648,6 +648,56 @@ namespace rtmath {
 				if (pos[0] > _dims[0]) throw rtmath::debug::xArrayOutOfBounds();
 			} // Subfunction completed
 		}
+	}
+
+	matrixop matrixop::fileRead(const char* filename, int lineStart, int lineEnd)
+	{
+		// Open file. Seek starting line. Read through and including ending line.
+		// Determine matrix dimensions. Convert double array into a matrixop.
+		double val = 0.0;
+		bool readtoeof = false;
+		if (lineEnd < 0) readtoeof = true;
+		using namespace std;
+		vector<double> vals;
+		ifstream indata(filename);
+		if (!indata) throw rtmath::debug::xEmptyInputFile(filename);
+		if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(filename);
+		if (indata.eof()) throw rtmath::debug::xEmptyInputFile(filename);
+		if (indata.bad()) throw rtmath::debug::xEmptyInputFile(filename);
+		if (indata.fail()) throw rtmath::debug::xEmptyInputFile(filename);
+		string lineIn;
+		// Seek to start
+		for (int i=0; i<lineStart; i++)
+			std::getline(indata, lineIn);
+
+		int linesRead = 0;
+		int colsRead=0;
+		for (int i=lineStart; 
+			( (i<lineEnd) || readtoeof) && indata.eof() == false; 
+			i++, linesRead++)
+		{
+			std::getline(indata,lineIn);
+			istringstream proc(lineIn);
+			while (proc.eof() == false)
+			{
+				proc >> val;
+				vals.push_back(val);
+				if (linesRead == 0) colsRead++;
+			}
+		}
+
+		// Convert the vector of values into a double array
+		double *dvals = new double[vals.size()];
+		double *cval = &dvals[0];
+		vector<double>::const_iterator it;
+		for (it = vals.begin(); it != vals.end(); it++, cval++)
+			*cval = *it;
+		
+		// Construct matrixop from double array
+		matrixop res(2, linesRead, colsRead);
+		res.fromDoubleArray(dvals);
+		delete[] dvals;
+		return res;
 	}
 
 }; // end rtmath

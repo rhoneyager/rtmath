@@ -221,6 +221,7 @@
     <ClInclude Include="macros.h" />
     <ClInclude Include="matrixop.h" />
     <ClInclude Include="MurmurHash3.h" />
+    <ClInclude Include="pfFixed.h" />
     <ClInclude Include="phaseFunc.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="Qcalc-Rayleigh.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="lbl.cpp" />
     <ClCompile Include="matrixop.cpp" />
     <ClCompile Include="MurmurHash3.cpp" />
+    <ClCompile Include="pfFixed.cpp" />
     <ClCompile Include="phaseFunc.cpp" />
     <ClCompile Include="polynomial.cpp" />
     <ClCompile Include="Qcalc-Rayleigh.cpp" />

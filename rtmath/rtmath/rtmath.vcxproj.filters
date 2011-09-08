@@ -31,6 +31,12 @@
     <Filter Include="Public Domain">
       <UniqueIdentifier>{b6082b54-2949-4dce-af92-690654bc6861}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debugging">
+      <UniqueIdentifier>{9699476e-5eae-4b37-98ce-128ff09af220}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="damatrix">
+      <UniqueIdentifier>{1d10f019-2eea-4df8-b287-445f5b14f46f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath.h">
@@ -42,22 +48,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="error.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="lbl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="debug_mem_class.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="debug_mem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="debug_subversion.svn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="enums.h">
@@ -102,18 +93,6 @@
     <ClInclude Include="common_templates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="damatrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="damatrix_override.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="daInitLayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="damatrix_quad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mie.h">
       <Filter>PhaseFuncs\Mie</Filter>
     </ClInclude>
@@ -141,19 +120,10 @@
     <ClInclude Include="mie-abNCalc.h">
       <Filter>PhaseFuncs\Mie</Filter>
     </ClInclude>
-    <ClInclude Include="daLayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="daDiagonalMatrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="atmos.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="command.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="daPf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MurmurHash3.h">
@@ -165,6 +135,45 @@
     <ClInclude Include="mapid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="debug_subversion.svn.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="debug_mem.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="debug_mem_class.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="daDiagonalMatrix.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="daPf.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="daInitLayer.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="daLayer.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="damatrix.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="damatrix_override.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="damatrix_quad.h">
+      <Filter>damatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="pfFixed.h">
+      <Filter>PhaseFuncs\Other</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rtmath.cpp">
@@ -173,13 +182,7 @@
     <ClCompile Include="Stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lbl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="debug_mem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="matrixop.cpp">
@@ -200,9 +203,6 @@
     <ClCompile Include="zeros.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="error.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -214,15 +214,6 @@
     </ClCompile>
     <ClCompile Include="Scalc-Rayleigh.cpp">
       <Filter>PhaseFuncs\Rayleigh</Filter>
-    </ClCompile>
-    <ClCompile Include="damatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="daInitLayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="damatrix_quad.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mie-abNCalc.cpp">
       <Filter>PhaseFuncs\Mie</Filter>
@@ -248,23 +239,44 @@
     <ClCompile Include="mie-wnCalc.cpp">
       <Filter>PhaseFuncs\Mie</Filter>
     </ClCompile>
-    <ClCompile Include="daLayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="daDiagonalMatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="atmos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="command.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="daPf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MurmurHash3.cpp">
       <Filter>Public Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="debug_mem.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="error.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="daDiagonalMatrix.cpp">
+      <Filter>damatrix</Filter>
+    </ClCompile>
+    <ClCompile Include="damatrix_quad.cpp">
+      <Filter>damatrix</Filter>
+    </ClCompile>
+    <ClCompile Include="daInitLayer.cpp">
+      <Filter>damatrix</Filter>
+    </ClCompile>
+    <ClCompile Include="daLayer.cpp">
+      <Filter>damatrix</Filter>
+    </ClCompile>
+    <ClCompile Include="damatrix.cpp">
+      <Filter>damatrix</Filter>
+    </ClCompile>
+    <ClCompile Include="daPf.cpp">
+      <Filter>damatrix</Filter>
+    </ClCompile>
+    <ClCompile Include="pfFixed.cpp">
+      <Filter>PhaseFuncs\Other</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
