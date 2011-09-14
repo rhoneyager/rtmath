@@ -499,7 +499,20 @@ namespace rtmath {
 			// Iterate through each row, and subtract
 			// If the desired row is missing the necessary pivot, search for a row to swap with
 			// - if no swapping row is found, the matrix is singular and throw an error
-			if (res.get(2,row,row) == 0) _repivot(res,res,row);
+			// Note: must also repivot the identity matrix to match
+			if (res.get(2,row,row) == 0) // repivot if necessary
+			{
+				size_t rowb;
+				rowb = _repivot(res,res,row);
+				_swaprows(inv,row,rowb); // perform the swap on the inverse matrix as well
+			}
+
+			// Next, subtract a multiple of this row from the subsequent rows
+			for (size_t rowb=row+1; rowb<_dims[0]; rowb++)
+			{
+				double multval = res.get(2,rowb,row) / res.get(2,row,row);
+
+			}
 		}
 		// Then, go backwards to make the
 	}
@@ -511,12 +524,46 @@ namespace rtmath {
 		if (source._dims[0] < rowa || source._dims[0] < rowb) throw rtmath::debug::xBadInput();
 		// The values are all actually in a map of position vectors.
 		// This is unfortunate, as it may slow the code.
-		throw;
+		// Create a map of all elements in rows a and b
+		size_t rows = source._dims[0];
+		size_t cols = source._dims[1];
+		size_t size = rows * cols;
+		double * elems = new double[size];
+		source.toDoubleArray(elems);
+		// Do the swap of the rows
+		double *a = &elems[cols*rowa];
+		double *b = &elems[cols*rowb];
+		for (size_t i=0; i < cols; i++)
+		{
+			double holder = *b;
+			*b = *a;
+			*a = holder;
+			a++;
+			b++;
+		}
+
+		// Reread from elems to get swapped matrix
+		source.fromDoubleArray(elems);
+		delete[] elems;
 	}
 
-	void matrixop::_repivot(const matrixop &source, matrixop &res, size_t row)
+	size_t matrixop::_repivot(const matrixop &source, matrixop &res, size_t row)
 	{
-
+		// Search below for a row that can be swapped with the current row to ensure upper triangularity can be preserved
+		std::vector<unsigned int> pos;
+		pos.push_back(row+1);
+		pos.push_back(row);
+		res = source;
+		for (size_t i = row++; i<res._dims[0]; i++, pos[0]++)
+		{
+			if (res.get(pos) != 0)
+			{
+				// We have a match
+				_swaprows(res,row,pos[0]);
+				return pos[0];
+			}
+		}
+		throw; // TODO: Give a throw class. Occurs when matrix cannot be fully decomposed
 	}
 
 
