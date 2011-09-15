@@ -28,7 +28,7 @@ namespace rtmath {
 			using namespace rtmath::daPfReflections;
 			//_pf = static_pointer_case<damatrix>( shared_ptr<daPfAlpha> (new daPfAlpha(pf)));
 			shared_ptr<daReflection> refl;
-			if (rt == T)
+			if (rt == rtmath::rtselec::T)
 			{
 				refl = shared_ptr<daReflection> (new daReflection(T, pf));
 			} else {

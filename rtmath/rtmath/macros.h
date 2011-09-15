@@ -198,6 +198,34 @@ namespace rtmath {
 		{
 			return m_atoi(x.c_str());
 		}
+
+		// Borrowed from Ahlquist for use in zero-finding algorithm.
+		// Based on slatec.
+		inline double pythag(double a, double b)
+		{
+			// Find sqrt(a^2+b^2) without overflow or underflow
+			double p, q, r, t, s;
+			if (abs(p) > abs(q))
+			{
+				p = a;
+				q = b;
+			} else {
+				q = a;
+				p = b;
+			}
+
+			if (q == 0.0) return p;
+
+			do {
+				r = (a/p) * (a/p);
+				t = 4.0 + r;
+				s = r / t;
+				p = p + (2.0 * p * s);
+				q = q * s;
+			} while (t != 4.0);
+
+			return p;
+		}
 	};
 
 };

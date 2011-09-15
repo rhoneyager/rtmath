@@ -120,7 +120,7 @@ namespace rtmath {
 		{
 			_message = "ERROR: singular matrix detected.\n";
 		}
-		}
+
 
 	};
 };

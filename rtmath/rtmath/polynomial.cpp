@@ -2,6 +2,8 @@
 #include "polynomial.h"
 #include "zeros.h"
 #include "quadrature.h"
+#include "macros.h"
+#include "matrixop.h" // Used for polynomial zero finding with upper Hessenberg matrix reduction
 #include <iostream>
 #include <cmath>
 #include <vector>
