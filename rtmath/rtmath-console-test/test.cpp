@@ -32,7 +32,69 @@ int main(int argc, char* argv[])
 		rtmath::daint::deg = 2; // For now, use only one degree of quadrature for testing
 		fflush(stderr);
 
+		cout << endl;
 
+		matrixop a(2,3,3);
+		//void posFromIndex(size_t index, std::vector<unsigned int> &pos) const; // duplicate of _getPos!!
+		//		void indexFromPos(size_t &index, std::vector<unsigned int> pos) const;
+
+		std::vector<unsigned int> pos;
+		pos.resize(2);
+		size_t index;
+
+		pos[0]=0; pos[1] = 0;
+		a.indexFromPos(index,pos);
+		a.posFromIndex(index,pos);
+		a.indexFromPos(index,pos);
+		cout << index << endl;
+
+		pos[0]=0; pos[1] = 1;
+		a.indexFromPos(index,pos);
+		a.posFromIndex(index,pos);
+				a.indexFromPos(index,pos);
+		cout << index << endl;
+
+		pos[0]=0; pos[1] = 2;
+		a.indexFromPos(index,pos);
+		a.posFromIndex(index,pos);
+				a.indexFromPos(index,pos);
+		cout << index << endl;
+
+		pos[0]=1; pos[1] = 0;
+		a.indexFromPos(index,pos);
+		a.posFromIndex(index,pos);
+				a.indexFromPos(index,pos);
+		cout << index << endl;
+
+		pos[0]=1; pos[1] = 1;
+		a.indexFromPos(index,pos);
+		a.posFromIndex(index,pos);
+				a.indexFromPos(index,pos);
+		cout << index << endl;
+
+
+		a.set(1,0,0);
+		a.set(2,0,1);
+		a.set(3,0,2);
+		a.set(4,1,0);
+		a.set(5,1,1);
+/*
+		a.set(4,1,2);
+		a.set(4,2,0);
+		a.set(5,2,1);
+		a.set(7,2,2);
+*/
+		cout << "Matrix a:" << endl;
+		a.print();
+		fflush(stderr);
+		fflush(stdout);
+		//matrixop b(2,3,3);
+		//a.upperTriangular(b);
+		//cout << "Matrix b:" << endl;
+		//b.print();
+
+
+		/*
 		double alb = 0.1;
 		double tau = 1.0;
 		double mu = 0.1, mun = 0.1, phi = 0.3, phin = 0.1;
@@ -69,7 +131,8 @@ int main(int argc, char* argv[])
 			a = b;
 		}
 
-		cout << "testing done. please verify results." << endl;
+		cout << "\ntesting done. please verify results." << endl;
+		*/
 		/*
 
 		shared_ptr<daInitLayer> iLa( new daInitLayer(ray,alb, tau, rtselec::R) );
@@ -91,7 +154,7 @@ int main(int argc, char* argv[])
 		cout << "iLaDoubled\n";
 		iLaDoubledeval->print();
 		*/
-		cout << "Test program routines finished." << endl;
+		cout << "\nTest program routines finished." << endl;
 #ifdef _WIN32
 		for (;;)
 		{
