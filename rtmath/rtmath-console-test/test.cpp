@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 		//void posFromIndex(size_t index, std::vector<unsigned int> &pos) const; // duplicate of _getPos!!
 		//		void indexFromPos(size_t &index, std::vector<unsigned int> pos) const;
 
-		std::vector<unsigned int> pos;
+		std::vector<size_t> pos;
 		pos.resize(2);
 		size_t index;
 
@@ -73,25 +73,24 @@ int main(int argc, char* argv[])
 		cout << index << endl;
 
 
-		a.set(1,0,0);
-		a.set(2,0,1);
-		a.set(3,0,2);
-		a.set(4,1,0);
-		a.set(5,1,1);
-/*
-		a.set(4,1,2);
-		a.set(4,2,0);
-		a.set(5,2,1);
-		a.set(7,2,2);
-*/
+		a.set(1,2,0,0);
+		a.set(2,2,0,1);
+		a.set(3,2,0,2);
+		a.set(2,2,1,0);
+		a.set(3,2,1,1);
+		a.set(4,2,1,2);
+		a.set(4,2,2,0);
+		a.set(5,2,2,1);
+		a.set(7,2,2,2);
+
 		cout << "Matrix a:" << endl;
 		a.print();
 		fflush(stderr);
 		fflush(stdout);
-		//matrixop b(2,3,3);
-		//a.upperTriangular(b);
-		//cout << "Matrix b:" << endl;
-		//b.print();
+		matrixop b(2,3,3);
+		a.upperTriangular(b);
+		cout << "Matrix b:" << endl;
+		b.print();
 
 
 		/*

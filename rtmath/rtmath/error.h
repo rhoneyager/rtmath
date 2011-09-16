@@ -8,7 +8,7 @@
 // TODO: rewrite so that it works with non-MSVC compilers
 #ifdef _DEBUG
 #ifdef _MSC_FULL_VER
-#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+//#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 #endif
 #ifdef __GNUC__
 #define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 

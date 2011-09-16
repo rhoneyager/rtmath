@@ -10,7 +10,7 @@
 #include <string>
 //#include <boost/shared_ptr.hpp>
 #include <memory>
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 #include <set>
 #include <cstdlib>
 #include <cstdio>
@@ -34,6 +34,9 @@
 // The heap-checking overridess to new and delete, to find bugs!!!
 #include "debug_mem.h"
 //#endif
+
+#undef new
+#undef delete
 
 //#include "error.h"
 //#include "damatrix.h"

@@ -8,7 +8,7 @@
 
 namespace rtmath {
 
-	void matrixop::_init(const std::vector<unsigned int> &size)
+	void matrixop::_init(const std::vector<size_t> &size)
 	{
 		_data = NULL; // it is safe to put this here
 		_datasize = 0; // just to give it a value for now
@@ -18,7 +18,7 @@ namespace rtmath {
 		_realloc(sz);
 	}
 
-	matrixop::matrixop(const std::vector<unsigned int> &size)
+	matrixop::matrixop(const std::vector<size_t> &size)
 	{
 		_init(size);
 	}
@@ -40,15 +40,15 @@ namespace rtmath {
 			_data[i] = rhs._data[i];
 	}
 
-	matrixop::matrixop(unsigned int ndims, ...)
+	matrixop::matrixop(size_t ndims, ...)
 	{
 		va_list indices;
 		va_start(indices, ndims);
-		std::vector<unsigned int> ptr;
-		unsigned int ival;
-		for (unsigned int i=0; i<ndims; i++)
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<ndims; i++)
 		{
-			ival = va_arg(indices,unsigned int);
+			ival = va_arg(indices,size_t);
 			ptr.push_back(ival);
 		}
 		va_end(indices);
@@ -82,21 +82,21 @@ namespace rtmath {
 		}
 	}
 
-	void matrixop::resize(const std::vector<unsigned int> &size)
+	void matrixop::resize(const std::vector<size_t> &size)
 	{
 		if (_data) _free();
 		_init(size);
 	}
 
-	void matrixop::resize(unsigned int ndims, ...)
+	void matrixop::resize(size_t ndims, ...)
 	{
 		va_list indices;
 		va_start(indices, ndims);
-		std::vector<unsigned int> ptr;
-		unsigned int ival;
-		for (unsigned int i=0; i<ndims; i++)
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<ndims; i++)
 		{
-			ival = va_arg(indices,unsigned int);
+			ival = va_arg(indices,size_t);
 			ptr.push_back(ival);
 		}
 		va_end(indices);
@@ -114,12 +114,12 @@ namespace rtmath {
 		return _dims.size();
 	}
 
-	void matrixop::size(std::vector<unsigned int> &out) const
+	void matrixop::size(std::vector<size_t> &out) const
 	{
 		out = _dims;
 	}
 
-	const std::vector<unsigned int> matrixop::size() const
+	const std::vector<size_t> matrixop::size() const
 	{
 		return _dims;
 	}
@@ -149,28 +149,28 @@ namespace rtmath {
 
 		// size()[0] is number of rows, size()[1] is # of columns
 		// If matrices cannot produce a square matrix, throw
-		//std::vector<unsigned int> testA = this->size(), testB = rhs.size();
+		//std::vector<size_t> testA = this->size(), testB = rhs.size();
 		TASSERT(this->size()[1] == rhs.size()[0]);
 
 		// Create vector for size of result
 		using namespace std;
-		vector<unsigned int> ressize;
+		vector<size_t> ressize;
 		ressize.push_back(this->size()[0]); // number of rows
 		ressize.push_back(rhs.size()[1]); // number of columns
 		matrixop res(ressize);
 
 		// Actually calculate the resulting values
 		// TODO: optimize this
-		for (unsigned int i=0; i< res.size()[0]; i++)
+		for (size_t i=0; i< res.size()[0]; i++)
 		{
-			for (unsigned int j=0; j< res.size()[1]; j++)
+			for (size_t j=0; j< res.size()[1]; j++)
 			{
-				vector<unsigned int> pos(2,0), pa(2,0), pb(2,0);
+				vector<size_t> pos(2,0), pa(2,0), pb(2,0);
 				pos[0] = i;
 				pos[1] = j;
 				// Calculate res(i,j)
 				double val = 0;
-				for (unsigned int k=0; k<this->size()[1]; k++)
+				for (size_t k=0; k<this->size()[1]; k++)
 				{
 					pa[0] = i;
 					pa[1] = k;
@@ -189,16 +189,13 @@ namespace rtmath {
 
 	matrixop matrixop::operator* (double rhs) const
 	{
-		TASSERT(rhs.dimensionality() == this->dimensionality());
-				TASSERT(rhs.size() == this->_dims);
+		matrixop temp(_dims);
 
-				matrixop temp(_dims);
-
-				for (size_t i = 0; i < _datasize; i++)
-				{
-					temp._data[i] = this->_data[i] * rhs;
-				}
-				return temp;
+		for (size_t i = 0; i < _datasize; i++)
+		{
+			temp._data[i] = this->_data[i] * rhs;
+		}
+		return temp;
 	}
 
 	bool matrixop::issquare() const
@@ -217,9 +214,9 @@ namespace rtmath {
 		if (rhs == 0) // Handle special case of matrix to zero power
 		{
 			matrixop res(_dims);
-			for (unsigned int i=0; i< _dims[0]; i++)
+			for (size_t i=0; i< _dims[0]; i++)
 			{
-				std::vector<unsigned int> pos(_dims[0],i);
+				std::vector<size_t> pos(_dims[0],i);
 				res.set(pos,1.0);
 			}
 			return res;
@@ -259,11 +256,11 @@ namespace rtmath {
 			_data[i] = 0.0;
 	}
 
-	void matrixop::set(const std::vector<unsigned int> &pos, double val)
+	void matrixop::set(const std::vector<size_t> &pos, double val)
 	{
 		// Check for going beyond matrix bounds
 		TASSERT(pos.size() == _dims.size());
-		for (unsigned int i=0; i<pos.size(); i++)
+		for (size_t i=0; i<pos.size(); i++)
 		{
 			if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput();
 		}
@@ -274,41 +271,41 @@ namespace rtmath {
 		_data[index] = val;
 	}
 
-	void matrixop::set(double val, unsigned int rank, ...)
+	void matrixop::set(double val, size_t rank, ...)
 	{
 		// Uses variadic array to get the index, as matrices can have multiple dimensions
 		TASSERT(rank == this->dimensionality());
 		va_list indices;
 		va_start(indices, rank);
-		std::vector<unsigned int> ptr;
-		unsigned int ival;
-		for (unsigned int i=0; i<rank; i++)
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<rank; i++)
 		{
-			ival = va_arg(indices,unsigned int);
+			ival = va_arg(indices,size_t);
 			ptr.push_back(ival);
 		}
 		va_end(indices);
 		set(ptr,val);
 	}
 
-	double matrixop::get(unsigned int rank, ...) const
+	double matrixop::get(size_t rank, ...) const
 	{
 		// Uses variadic array to get the index, as matrices can have multiple dimensions
 		TASSERT(rank == this->dimensionality());
 		va_list indices;
 		va_start(indices, rank);
-		std::vector<unsigned int> ptr;
-		unsigned int ival;
-		for (unsigned int i=0; i<rank; i++)
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<rank; i++)
 		{
-			ival = va_arg(indices,unsigned int);
+			ival = va_arg(indices,size_t);
 			ptr.push_back(ival);
 		}
 		va_end(indices);
 		return get(ptr);
 	}
 
-	double matrixop::get(const std::vector<unsigned int> &pos) const
+	double matrixop::get(const std::vector<size_t> &pos) const
 	{
 		size_t index;
 		indexFromPos(index, pos);
@@ -316,23 +313,23 @@ namespace rtmath {
 		return _data[index];
 	}
 
-	void matrixop::indexFromPos(size_t &index, std::vector<unsigned int> pos) const
+	void matrixop::indexFromPos(size_t &index, std::vector<size_t> pos) const
 	{
 		// Check matrix bounds
 		TASSERT(pos.size() == _dims.size());
-		for (unsigned int i=0; i<pos.size(); i++)
+		for (size_t i=0; i<pos.size(); i++)
 		{
 			if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput();
 		}
 
 		using namespace std;
-		unsigned int maxsize = _datasize;
+		//size_t maxsize = _datasize;
 
 		index = 0; // The index position
 		size_t runningMult = 1; // A running multiplier to work with the vector index calculation
 		// Working from the end of the position vector
-		vector<unsigned int>::reverse_iterator rit;
-		vector<unsigned int>::const_reverse_iterator sit;
+		vector<size_t>::reverse_iterator rit;
+		vector<size_t>::const_reverse_iterator sit;
 		sit = this->_dims.rbegin();
 		for (rit = pos.rbegin(); rit < pos.rend(); ++rit)
 		{
@@ -364,33 +361,33 @@ namespace rtmath {
 		return true;
 	}
 
-	matrixop matrixop::minors(unsigned int rank, ...) const
+	matrixop matrixop::minors(size_t rank, ...) const
 	{
 		// Retrieve the variable parameters
 		va_list indices;
 		va_start(indices, rank);
-		std::vector<unsigned int> ptr;
-		unsigned int ival;
-		for (unsigned int i=0; i<rank; i++)
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<rank; i++)
 		{
-			ival = va_arg(indices,unsigned int);
+			ival = va_arg(indices,size_t);
 			ptr.push_back(ival);
 		}
 		va_end(indices);
 		return this->minors(ptr);
 	}
 
-	void matrixop::set(double val, unsigned int index)
+	void matrixop::set(double val, size_t index)
 	{
 		// Used by minor to place a value in the appropriate location
 		using namespace std;
-		vector<unsigned int> pos;
+		vector<size_t> pos;
 		_getpos(index,pos);
 		// Set the value
 		set(pos,val);
 	}
 
-	void matrixop::_getpos(unsigned int index, std::vector<unsigned int> &pos) const
+	void matrixop::_getpos(size_t index, std::vector<size_t> &pos) const
 	{
 		using namespace std;
 		TASSERT(dimensionality());
@@ -399,7 +396,7 @@ namespace rtmath {
 		pos[_dims.size()-1] = index;
 
 		// If > dimensionality, do modular addition
-		// BOOST_REVERSE_FOREACH(unsigned int i,pos) // REVERSE_FOREACH seems unreliable
+		// BOOST_REVERSE_FOREACH(size_t i,pos) // REVERSE_FOREACH seems unreliable
 		for (int i=(int) _dims.size()-1;i>=0;i--)
 		{
 			if (pos[i] >= _dims[i] && i > 0)
@@ -410,12 +407,12 @@ namespace rtmath {
 		}
 	}
 
-	matrixop matrixop::minors(const std::vector<unsigned int> &rc) const
+	matrixop matrixop::minors(const std::vector<size_t> &rc) const
 	{
 		using namespace std;
 		TASSERT(_dims.size() == 2); // Allow only 2d matrices
-		vector<unsigned int> msiz = _dims;
-		for (unsigned int i=0;i<msiz.size();i++)
+		vector<size_t> msiz = _dims;
+		for (size_t i=0;i<msiz.size();i++)
 		{
 			msiz[i] = msiz[i] - 1;
 			if (msiz[i] == 0) throw rtmath::debug::xBadInput();
@@ -423,17 +420,17 @@ namespace rtmath {
 		matrixop res(msiz);
 		// I have the empty resultant matrix
 		// Now, to fill in the minors
-		unsigned int rowX=rc[0],colX=rc[1];
+		size_t rowX=rc[0],colX=rc[1];
 		int rS = 0, cS = 0; // Row / column shift
 		// Since this is used in more than just determinants, I cannot assume that
 		// the matrix is square. Too bad.
 		// Iterate over the rows and columns of the initial matrix
-		for (unsigned int srow=0;srow<_dims[0];srow++)
+		for (size_t srow=0;srow<_dims[0];srow++)
 		{
 			if (srow == rowX) rS = 1; // Add the skip factor for future rows
 			if (srow == rowX) continue; // Don't even bother here
 			cS = 0;
-			for (unsigned int scol=0;scol < _dims[1];scol++)
+			for (size_t scol=0;scol < _dims[1];scol++)
 			{
 				if (scol == colX) cS = 1;
 				if (scol == colX) continue;
@@ -465,7 +462,7 @@ namespace rtmath {
 		// TODO: add in gaussian elimination code
 
 
-		vector<unsigned int> it;
+		vector<size_t> it;
 		it.push_back(0); // 0th row
 		it.push_back(0); // 0th column
 		// Retrieve the first row of the matrix, get minor, and calculate determinant of minor
@@ -473,7 +470,7 @@ namespace rtmath {
 		// Wow, this next line is obtuse
 		for (it[1] = 0; it[1] < _dims[1]; it[1]++)
 		{
-			std::vector<unsigned int> pos;
+			std::vector<size_t> pos;
 			pos.push_back(it[0]); pos.push_back(it[1]);
 			//throw;
 			matrixop min = this->minors(pos);
@@ -483,29 +480,29 @@ namespace rtmath {
 		return res;
 	}
 
-	matrixop matrixop::diagonal(const std::vector<unsigned int> &size, double val)
+	matrixop matrixop::diagonal(const std::vector<size_t> &size, double val)
 	{
 		matrixop res(size);
 		TASSERT(size.size() == 2);
 		// Find min dimension
-		unsigned int min = (size[0] < size[1])? size[0] : size[1];
-		for (unsigned int i=0;i<min;i++)
+		size_t min = (size[0] < size[1])? size[0] : size[1];
+		for (size_t i=0;i<min;i++)
 		{
 			res.set(val,2,i,i);
 		}
 		return res;
 	}
 
-	matrixop matrixop::diagonal(double val, unsigned int rank, ...)
+	matrixop matrixop::diagonal(double val, size_t rank, ...)
 	{
 		// Retrieve the variable parameters
 		va_list indices;
 		va_start(indices, rank);
-		std::vector<unsigned int> ptr;
-		unsigned int ival;
-		for (unsigned int i=0; i<rank; i++)
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<rank; i++)
 		{
-			ival = va_arg(indices,unsigned int);
+			ival = va_arg(indices,size_t);
 			ptr.push_back(ival);
 		}
 		va_end(indices);
@@ -520,11 +517,11 @@ namespace rtmath {
 		// Construct the matrix minors
 		// Assumes 2d array from det. TODO: extend if possible
 		matrixop res(this->_dims);
-		for (unsigned int i=0;i<_dims[0];i++) // columns
+		for (size_t i=0;i<_dims[0];i++) // columns
 		{
-			for (unsigned int j=0;j<_dims[1];j++) // rows
+			for (size_t j=0;j<_dims[1];j++) // rows
 			{
-				std::vector<unsigned int> pos; pos.push_back(j); pos.push_back(i);
+				std::vector<size_t> pos; pos.push_back(j); pos.push_back(i);
 				// Calculate the appropriate minor
 				//throw;
 				matrixop min = this->minors(pos);
@@ -577,7 +574,7 @@ namespace rtmath {
 		// Very useful for calculating determinants and inverses
 		if (this->issquare() == false) throw rtmath::debug::xBadInput();
 		res = *this;
-		size_t numRows = _dims[0];
+		//size_t numRows = _dims[0];
 		size_t numCols = _dims[1];
 		matrixop secondary = diagonal(_dims,1.0); // To keep track of inverse
 		// Repivot matrix su
@@ -641,13 +638,13 @@ namespace rtmath {
 	size_t matrixop::_repivot(const matrixop &source, matrixop &res, size_t row)
 	{
 		// Search below for a row that can be swapped with the current row to ensure upper triangularity can be preserved
-		std::vector<unsigned int> pos;
+		std::vector<size_t> pos;
 		pos.push_back(row+1);
 		pos.push_back(row);
 		res = source;
 		for (size_t i = row++; i<res._dims[0]; i++, pos[0]++)
 		{
-			if (res.get(pos) != 0)
+			if (res.get(pos) != 0.0)
 			{
 				// We have a match
 				_swaprows(res,row,pos[0]);
@@ -658,7 +655,7 @@ namespace rtmath {
 	}
 
 
-	matrixop matrixop::identity(const std::vector<unsigned int> &size)
+	matrixop matrixop::identity(const std::vector<size_t> &size)
 	{
 		return diagonal(size,1.0);
 	}
@@ -675,9 +672,9 @@ namespace rtmath {
 	{
 		TASSERT(_dims.size() == 2);
 		using namespace std;
-		for (unsigned int i=0;i<_dims[0];i++) // row
+		for (size_t i=0;i<_dims[0];i++) // row
 		{
-			for (unsigned int j=0;j<_dims[1];j++) // column
+			for (size_t j=0;j<_dims[1];j++) // column
 				cout << get(2,i,j) << "\t";
 			cout << endl;
 		}
@@ -687,7 +684,7 @@ namespace rtmath {
 	void matrixop::fromCdf(NcVar *var, long n)
 	{
 	// Calculate max size
-	unsigned int maxsize = maxSize();
+	size_t maxsize = maxSize();
 	// Clear matrixop of any values
 	clear();
 	// Initialize an array of doubles
@@ -707,7 +704,7 @@ namespace rtmath {
 
 	void matrixop::toCDF(NcVar *var) const
 	{
-	unsigned int maxsize = maxSize();
+	size_t maxsize = maxSize();
 	double *dvals = new double[maxsize];
 
 	toDoubleArray(dvals);
@@ -717,22 +714,22 @@ namespace rtmath {
 	delete[] dvals;
 	}
 	*/
-	unsigned int matrixop::maxSize() const
+	size_t matrixop::maxSize() const
 	{
 		using namespace std;
-		unsigned int maxsize = 1;
-		for (unsigned int i=0;i<_dims.size();i++)
+		size_t maxsize = 1;
+		for (size_t i=0;i<_dims.size();i++)
 		{
 			maxsize *= _dims[i];
 		}
 		return maxsize;
 	}
 
-	void matrixop::posFromIndex(size_t index, std::vector<unsigned int> &pos) const
+	void matrixop::posFromIndex(size_t index, std::vector<size_t> &pos) const
 	{
 		pos.clear();
 		pos.resize(_dims.size(),0);
-		//unsigned int maxsize = maxSize();
+		//size_t maxsize = maxSize();
 
 		for (size_t j=0;j<index;j++)
 		{
@@ -740,7 +737,7 @@ namespace rtmath {
 			// Convert j into pos coords
 			//set(pos,cval);
 			// Find the next pos
-			unsigned int last = (unsigned int) pos.size() - 1;
+			size_t last = (size_t) pos.size() - 1;
 			pos[last]++;
 			while (last > 0)
 			{

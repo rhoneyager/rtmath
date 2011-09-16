@@ -75,9 +75,6 @@
     <ClInclude Include="zeros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Qcalc-Rayleigh.h">
       <Filter>PhaseFuncs\Rayleigh</Filter>
     </ClInclude>
@@ -173,6 +170,9 @@
     </ClInclude>
     <ClInclude Include="pfFixed.h">
       <Filter>PhaseFuncs\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

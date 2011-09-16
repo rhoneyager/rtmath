@@ -14,7 +14,7 @@
 #include "daLayer.h"
 #include "lbl.h"
 #include "atmos.h"
-#include "config.h"
+//#include "config.h"
 #include "command.h"
 
 /*
