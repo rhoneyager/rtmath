@@ -23,6 +23,21 @@ namespace rtmath
 	namespace debug
 	{
 		std::map<keymap*, int> UNIQUE_KEYS;
+		unsigned int uidtracker::_uidcount = 0;
+
+
+		uidtracker::uidtracker()
+		{
+			_uid = _uidcount;
+			_uidcount++;
+			std::cerr << "Debug: new uid " << _uid << std::endl;
+		}
+
+		uidtracker::~uidtracker()
+		{
+			std::cerr << "Debug: destroying uid " << _uid << std::endl;
+		}
+
 
 		int rev(void)
 		{

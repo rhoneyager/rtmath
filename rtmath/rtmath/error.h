@@ -71,6 +71,7 @@ namespace rtmath
 		// Function is known to be defective.
 		ERRSTD(xDefective);
 
+		// Singular matrix detected.
 		ERRSTD(xSingular);
 
 		// A convenient way to mark a class as obsolete and prevent execution 

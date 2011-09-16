@@ -34,64 +34,51 @@ int main(int argc, char* argv[])
 
 		cout << endl;
 
-		matrixop a(2,3,3);
+		matrixop a(2,2,2);
 		//void posFromIndex(size_t index, std::vector<unsigned int> &pos) const; // duplicate of _getPos!!
 		//		void indexFromPos(size_t &index, std::vector<unsigned int> pos) const;
 
-		std::vector<size_t> pos;
-		pos.resize(2);
-		size_t index;
-
-		pos[0]=0; pos[1] = 0;
-		a.indexFromPos(index,pos);
-		a.posFromIndex(index,pos);
-		a.indexFromPos(index,pos);
-		cout << index << endl;
-
-		pos[0]=0; pos[1] = 1;
-		a.indexFromPos(index,pos);
-		a.posFromIndex(index,pos);
-				a.indexFromPos(index,pos);
-		cout << index << endl;
-
-		pos[0]=0; pos[1] = 2;
-		a.indexFromPos(index,pos);
-		a.posFromIndex(index,pos);
-				a.indexFromPos(index,pos);
-		cout << index << endl;
-
-		pos[0]=1; pos[1] = 0;
-		a.indexFromPos(index,pos);
-		a.posFromIndex(index,pos);
-				a.indexFromPos(index,pos);
-		cout << index << endl;
-
-		pos[0]=1; pos[1] = 1;
-		a.indexFromPos(index,pos);
-		a.posFromIndex(index,pos);
-				a.indexFromPos(index,pos);
-		cout << index << endl;
-
-
 		a.set(1,2,0,0);
 		a.set(2,2,0,1);
-		a.set(3,2,0,2);
-		a.set(2,2,1,0);
-		a.set(3,2,1,1);
-		a.set(4,2,1,2);
-		a.set(4,2,2,0);
-		a.set(5,2,2,1);
-		a.set(7,2,2,2);
+		a.set(3,2,1,0);
+		a.set(4,2,1,1);
 
-		cout << "Matrix a:" << endl;
+		cout << "Matrix orig:" << endl;
 		a.print();
-		fflush(stderr);
-		fflush(stdout);
-		matrixop b(2,3,3);
-		a.upperTriangular(b);
+		cout << "Determinant: " << a.det() << endl << endl;
+		
+		matrixop b(2,2,2), bi(2,2,2), c(2,2,2), ci(2,2,2), d(2,2,2), di(2,2,2);
+		matrixop inverse(2,2,2);
+		bi = matrixop::diagonal(1.0,2,2,2); // must debug the copy constructor to allow inverse calculations
+		ci = bi;
+		a.upperTriangular(b,bi);
+		a.lowerTriangular(c,ci);
 		cout << "Matrix b:" << endl;
 		b.print();
+		cout << "Matrix bi:" << endl;
+		bi.print();
 
+		cout << "Determinant: " << b.det() << endl;
+
+		cout << "Matrix c:" << endl;
+		c.print();
+		cout << "Matrix ci:" << endl;
+		ci.print();
+
+		cout << "Determinant: " << c.det() << endl;
+
+		di = bi;
+		b.lowerTriangular(d,di);
+		cout << "Matrix d:" << endl;
+		d.print();
+		cout << "Matrix di:" << endl;
+		di.print();
+
+		cout << "Determinant: " << d.det() << endl;
+
+		inverse = a.inverse();
+		cout << "Inverse of a:" << endl;
+		inverse.print();
 
 		/*
 		double alb = 0.1;

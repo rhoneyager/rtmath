@@ -118,7 +118,7 @@ namespace rtmath {
 
 		void xSingular::_setmessage()
 		{
-			_message = "ERROR: singular matrix detected.\n";
+			_message = "ERROR: Singular matrix detected.\n";
 		}
 
 

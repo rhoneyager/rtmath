@@ -37,6 +37,17 @@ namespace rtmath
 		void DEBUG_TIMESTAMP(void);
 		unsigned int getuniqueobj(const char* file, int line, const char* func);
 		void listuniqueobj(void);
+
+		class uidtracker
+		{
+		public:
+			uidtracker();
+			virtual ~uidtracker();
+			inline unsigned int uid() { return _uid; }
+		private:
+			unsigned int _uid;
+			static unsigned int _uidcount;
+		};
 	}; // end namespace debug
 
 	// see assert.h for how this is made

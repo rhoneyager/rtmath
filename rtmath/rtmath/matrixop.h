@@ -38,6 +38,7 @@ namespace rtmath {
 		matrixop operator ^ (unsigned int) const;
 		bool operator == (const matrixop&) const;
 		bool operator != (const matrixop&) const;
+		matrixop & operator = (const matrixop&);
 
 		void set(const std::vector<size_t> &pos, double val);
 		void set(double val, size_t rank, ...);
@@ -57,8 +58,11 @@ namespace rtmath {
 		bool issquare() const;
 
 		double det() const;
-		void upperTriangular(matrixop &target) const;
-		inline matrixop upperTriangular() { matrixop res(this->_dims); upperTriangular(res); return res; }
+		void upperTriangular(matrixop &target, matrixop &secondary) const;
+		//inline matrixop upperTriangular() { throw; matrixop res(_dims); upperTriangular(res); return res; }
+		void lowerTriangular(matrixop &target, matrixop &secondary) const;
+		void transpose(matrixop &target) const;
+		//inline matrixop transpose() { throw; matrixop res(*this); transpose(res); return res; }
 		matrixop minors(const std::vector<size_t> &pos) const;
         matrixop minors(size_t rank, ...) const;
 		
@@ -77,13 +81,14 @@ namespace rtmath {
 		static matrixop fileRead(const char* filename, int lineStart, int lineEnd);
 	private:
 		static void _swaprows(matrixop &source, size_t rowa, size_t rowb);
-		static size_t _repivot(const matrixop &source, matrixop &res, size_t row);
+		static size_t _repivot(matrixop &res, size_t row, bool reverse);
 	protected:
 		//std::map<std::vector<unsigned int>, double > _vals;
 		std::vector<size_t> _dims;
 	private:
 		//void _push_back(unsigned int, double);
 		void _getpos(size_t index, std::vector<size_t> &pos) const;
+		void _rowmult(size_t row, double factor);
 
 		// New stuff goes here
 	private:

@@ -25,6 +25,7 @@ namespace rtmath {
 
 	matrixop::~matrixop(void)
 	{
+		//std::cerr << "destructing" << std::endl;
 		_free();
 	}
 
@@ -35,9 +36,19 @@ namespace rtmath {
 
 		// _datasize now holds the number of elements to directly copy
 		// Do a deep copy of the memory contents
-		// Iterate and zero the data
 		for (size_t i=0; i<_datasize; i++)
 			_data[i] = rhs._data[i];
+	}
+
+	matrixop & matrixop::operator=(const matrixop & rhs)
+	{
+		if (this == &rhs) return *this; // self-assignment check
+		resize(rhs._dims);
+		// _datasize now holds the number of elements to directly copy
+		// Do a deep copy of the memory contents
+		for (size_t i=0; i<_datasize; i++)
+			_data[i] = rhs._data[i];
+		return *this;
 	}
 
 	matrixop::matrixop(size_t ndims, ...)
@@ -64,12 +75,10 @@ namespace rtmath {
 		_data = new double[numelems];
 		_datasize = numelems;
 
-		double *ptr = &_data[0];
 		// Iterate and zero the data
 		for (size_t i=0; i<numelems; i++)
 		{
-			*ptr = 0.0;
-			ptr++;
+			_data[i] = 0.0;
 		}
 	}
 
@@ -77,6 +86,8 @@ namespace rtmath {
 	{
 		if (_data)
 		{
+			//for (size_t i=0; i<_datasize; i++) // debugging to find memory overwrite
+			//_data[i] = -99;
 			delete[] _data;
 			_datasize = 0;
 		}
@@ -237,16 +248,16 @@ namespace rtmath {
 	matrixop matrixop::operator- (const matrixop& rhs) const
 	{
 		TASSERT(rhs.dimensionality() == this->dimensionality());
-				TASSERT(rhs.size() == this->_dims);
+		TASSERT(rhs.size() == this->_dims);
 
-				matrixop temp(_dims);
-				temp = rhs;
+		matrixop temp(_dims);
+		temp = rhs;
 
-				for (size_t i = 0; i < _datasize; i++)
-				{
-					temp._data[i] = this->_data[i] - rhs._data[i];
-				}
-				return temp;
+		for (size_t i = 0; i < _datasize; i++)
+		{
+			temp._data[i] = this->_data[i] - rhs._data[i];
+		}
+		return temp;
 	}
 
 	void matrixop::clear()
@@ -442,42 +453,63 @@ namespace rtmath {
 		return res;
 	}
 
+	/* // superseded by a method that computes an upper triangular matrix instead of finding minors
 	double matrixop::det() const
 	{
-		using namespace std;
-		// Find the determinant
-		TASSERT(issquare());
-		if (dimensionality() == 1) return get(1,0);
-		// Check that matrix is 2d, for now
-		// TODO: extend this to n dims, if possible
-		TASSERT(_dims.size() == 2);
+	using namespace std;
+	// Find the determinant
+	TASSERT(issquare());
+	if (dimensionality() == 1) return get(1,0);
+	// Check that matrix is 2d, for now
+	// TODO: extend this to n dims, if possible
+	TASSERT(_dims.size() == 2);
 
-		// Handle the 1x1 case easily
-		if (_dims[0] == 1 && _dims[1] == 1) return get(2,0,0);
-		// 2x2 case should be handled as well
-		if (_dims[0] == 2 && _dims[1] == 2) return ((get(2,0,0)*get(2,1,1))-(get(2,0,1)*get(2,1,0)));
-		// Do rest by expansion of minors.
-		// It's unfortunately slow and relies heaviny on recursion, but
-		// I don't want to implement a whole linear algrbra system just yet
-		// TODO: add in gaussian elimination code
+	// Handle the 1x1 case easily
+	if (_dims[0] == 1 && _dims[1] == 1) return get(2,0,0);
+	// 2x2 case should be handled as well
+	if (_dims[0] == 2 && _dims[1] == 2) return ((get(2,0,0)*get(2,1,1))-(get(2,0,1)*get(2,1,0)));
+	// Do rest by expansion of minors.
+	// It's unfortunately slow and relies heaviny on recursion, but
+	// I don't want to implement a whole linear algrbra system just yet
+	// TODO: add in gaussian elimination code
 
 
-		vector<size_t> it;
-		it.push_back(0); // 0th row
-		it.push_back(0); // 0th column
-		// Retrieve the first row of the matrix, get minor, and calculate determinant of minor
-		double res = 0.0;
-		// Wow, this next line is obtuse
-		for (it[1] = 0; it[1] < _dims[1]; it[1]++)
-		{
-			std::vector<size_t> pos;
-			pos.push_back(it[0]); pos.push_back(it[1]);
-			//throw;
-			matrixop min = this->minors(pos);
-			// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
-			res += std::pow(-1.0, (double) it[1]) * min.det() * get(it);
+	vector<size_t> it;
+	it.push_back(0); // 0th row
+	it.push_back(0); // 0th column
+	// Retrieve the first row of the matrix, get minor, and calculate determinant of minor
+	double res = 0.0;
+	// Wow, this next line is obtuse
+	for (it[1] = 0; it[1] < _dims[1]; it[1]++)
+	{
+	std::vector<size_t> pos;
+	pos.push_back(it[0]); pos.push_back(it[1]);
+	//throw;
+	matrixop min = this->minors(pos);
+	// () alternates negatives, get(it) is the value at (0,i) and min.det is the minor's det
+	res += std::pow(-1.0, (double) it[1]) * min.det() * get(it);
+	}
+	return res;
+	}
+	*/
+
+	double matrixop::det() const
+	{
+		// Next line assumes square matrix. If not, it will throw an error.
+		try {
+			matrixop b(_dims);
+			matrixop sec(_dims);
+			upperTriangular(b, sec);
+			// Iterate through the diagonal elements and calculate the determinant
+			double res = 1.0;
+			for (size_t i = 0; i < _dims[0]; i++)
+				res *= b.get(_dims.size(), i, i);
+			return res;
 		}
-		return res;
+		catch (rtmath::debug::xSingular)
+		{
+			return 0.0;
+		}
 	}
 
 	matrixop matrixop::diagonal(const std::vector<size_t> &size, double val)
@@ -509,6 +541,7 @@ namespace rtmath {
 		return diagonal(ptr,val);
 	}
 
+	/*
 	matrixop matrixop::inverse() const
 	{
 		// This uses minors and a determinant to calculate the inverse
@@ -531,77 +564,150 @@ namespace rtmath {
 		}
 		return res;
 	}
-/*
+	*/
+
 	matrixop matrixop::inverse() const
 	{
-		// First, calculate the determinant
-		// It's going here because I'm using gaussian elimination to speed things up,
-		// and I don't want to do the same operations twice.
-		// Loosely inspired from Evans' code (same method, different language, different implementation)
-		if (this->issquare() == false) throw rtmath::debug::xBadInput();
-
-		double det = 0;
-		matrixop res(*this);
-		matrixop inv = matrixop::diagonal(_dims,1.0);
-		// Repivot matrix su
-		// Use gaussian elimination to first produce an upper triangular matrix
-		for (size_t row=0; row<_dims[0]; row++)
+		// Use gaussian elimination
+		TASSERT(_dims.size() == 2);
+		matrixop ut(_dims), inv(_dims), invcheck(_dims);
+		inv = diagonal(_dims,1.0);
+		upperTriangular(ut, inv);
+		ut.lowerTriangular(invcheck,inv);
+		size_t numCols = _dims[1];
+		// Go through rows, and perform row-based multiplication
+		for (size_t i=0; i<_dims[0];i++)
 		{
-			// Iterate through each row, and subtract
-			// If the desired row is missing the necessary pivot, search for a row to swap with
-			// - if no swapping row is found, the matrix is singular and throw an error
-			// Note: must also repivot the identity matrix to match
-			if (res.get(2,row,row) == 0) // repivot if necessary
-			{
-				size_t rowb;
-				rowb = _repivot(res,res,row);
-				_swaprows(inv,row,rowb); // perform the swap on the inverse matrix as well
-			}
-
-			// Next, subtract a multiple of this row from the subsequent rows
-			for (size_t rowb=row+1; rowb<_dims[0]; rowb++)
-			{
-				double multval = res.get(2,rowb,row) / res.get(2,row,row);
-
-			}
+			double factor = invcheck._data[i*numCols+i];
+			if (factor != 1.0) inv._rowmult(i, 1.0/factor);
 		}
-		// Then, go backwards to make the
+		return inv;
 	}
-*/
 
-	void matrixop::upperTriangular(matrixop &res) const
+	void matrixop::_rowmult(size_t row, double factor)
+	{
+		// Multiply a given row by a given factor
+		TASSERT(_dims.size() == 2);
+		std::vector<size_t> pos;
+		pos.push_back(row);
+		pos.push_back(0);
+		size_t indexStart;
+		indexFromPos(indexStart, pos);
+		for (size_t i=0; i<_dims[1];i++) // iterate over all columns in this row
+			_data[indexStart+i] *= factor;
+	}
+
+	void matrixop::upperTriangular(matrixop &res, matrixop &secondary) const
 	{
 		// Very useful for calculating determinants and inverses
 		if (this->issquare() == false) throw rtmath::debug::xBadInput();
-		res = *this;
-		//size_t numRows = _dims[0];
-		size_t numCols = _dims[1];
-		matrixop secondary = diagonal(_dims,1.0); // To keep track of inverse
-		// Repivot matrix su
-		// Use gaussian elimination
-		for (size_t row=0; row<_dims[0]; row++)
-		{
-			// Iterate through each row, and subtract
-			// If the desired row is missing the necessary pivot, search for a row to swap with
-			// - if no swapping row is found, the matrix is singular and throw an error
-			// Note: must also repivot the identity matrix to match
-			if (res.get(2,row,row) == 0) // repivot if necessary
-			{
-				size_t rowb;
-				rowb = _repivot(res,res,row);
-				_swaprows(secondary,row,rowb); // perform the swap on the secondary matrix as well
-			}
+		//res = *this; // wrong clone constructor - produces pointer errors
+		try {
+			res.resize(_dims);
+			this->toDoubleArray(res._data);
 
-			// Next, subtract a multiple of this row from the subsequent rows
-			for (size_t rowb=row+1; rowb<_dims[0]; rowb++)
+			//size_t numRows = _dims[0];
+			size_t numCols = _dims[1];
+			//matrixop secondary = diagonal(_dims,1.0); // To keep track of inverse
+			// Repivot matrix su
+			// Use gaussian elimination
+			for (size_t row=0; row<_dims[0]; row++)
 			{
-				double multval = res.get(2,rowb,row) / res.get(2,row,row);
-				for (size_t col=0; col<numCols; col++)
+				// Iterate through each row, and subtract
+				// If the desired row is missing the necessary pivot, search for a row to swap with
+				// - if no swapping row is found, the matrix is singular and throw an error
+				// Note: must also repivot the identity matrix to match
+				double val = res.get(2,row,row);
+				if (val == 0) // repivot if necessary
 				{
-					res.set( res.get(2,rowb,col) - (multval * res.get(2,row,col)) ,2,rowb,col);
-					secondary.set( secondary.get(2,rowb,col) - (multval * secondary.get(2,row,col)) ,2,rowb,col);
+					size_t rowb;
+					rowb = _repivot(res,row, false);
+					_swaprows(secondary,row,rowb); // perform the swap on the secondary matrix as well
+				}
+
+				// Next, subtract a multiple of this row from the subsequent rows
+				for (size_t rowb=row+1; rowb<_dims[0]; rowb++)
+				{
+					double multval = res.get(2,rowb,row) / res.get(2,row,row);
+					for (size_t col=0; col<numCols; col++)
+					{
+						std::vector<size_t> p; // why not? it's an artifact from debugging that is still quite valid
+						p.push_back(rowb); p.push_back(col);
+						res.set( p, res.get(2,rowb,col) - (multval * res.get(2,row,col)));
+						secondary.set( secondary.get(2,rowb,col) - (multval * secondary.get(2,row,col)) ,2,rowb,col);
+					}
 				}
 			}
+		}
+		catch (rtmath::debug::xSingular)
+		{
+			throw rtmath::debug::xSingular();
+		}
+	}
+
+	void matrixop::lowerTriangular(matrixop &res, matrixop &secondary) const
+	{
+		// Very useful for calculating determinants and inverses
+		if (this->issquare() == false) throw rtmath::debug::xBadInput();
+
+		try {
+			//res = *this; // wrong clone constructor - produces pointer errors
+			res.resize(_dims);
+			this->toDoubleArray(res._data);
+
+			//size_t numRows = _dims[0];
+			size_t numCols = _dims[1];
+			//matrixop secondary = diagonal(_dims,1.0); // To keep track of inverse
+			// Repivot matrix su
+			// Use gaussian elimination
+			for (size_t row=_dims[0]-1; row<_dims[0]; row--) // overflow will end the loop!
+			{
+				// Iterate through each row, and subtract
+				// If the desired row is missing the necessary pivot, search for a row to swap with
+				// - if no swapping row is found, the matrix is singular and throw an error
+				// Note: must also repivot the identity matrix to match
+				double val = res.get(2,row,row);
+				if (val == 0) // repivot if necessary
+				{
+					size_t rowb;
+					rowb = _repivot(res,row, true);
+					_swaprows(secondary,row,rowb); // perform the swap on the secondary matrix as well
+				}
+
+				// Next, subtract a multiple of this row from the subsequent rows
+				for (size_t rowb=row-1; rowb<_dims[0]; rowb--) // again, counting on overflow
+				{
+					double multval = res.get(2,rowb,row) / res.get(2,row,row);
+					for (size_t col=0; col<numCols; col++)
+					{
+						std::vector<size_t> p; // why not? it's an artifact from debugging that is still quite valid
+						p.push_back(rowb); p.push_back(col);
+						res.set( p, res.get(2,rowb,col) - (multval * res.get(2,row,col)));
+						secondary.set( secondary.get(2,rowb,col) - (multval * secondary.get(2,row,col)) ,2,rowb,col);
+					}
+				}
+			}
+		}
+		catch (rtmath::debug::xSingular)
+		{
+			throw rtmath::debug::xSingular();
+		}
+	}
+
+	void matrixop::transpose(matrixop &res) const
+	{
+		// Calculates the transpose of the matrix, and places it in res
+		// TODO: speed / figure out pattern to avoid 
+		if (this->issquare() == false) throw rtmath::debug::xBadInput();
+		res.resize(_dims);
+
+		// Iterate through the index, and convert this into a vector
+		// Then, set res with the reversed vector elements
+		for (size_t i = 0; i < _datasize; i++)
+		{
+			std::vector<size_t> pos;
+			posFromIndex(i, pos);
+			res.set( _data[i], 2, pos[1], pos[0]);
 		}
 	}
 
@@ -635,23 +741,44 @@ namespace rtmath {
 		delete[] elems;
 	}
 
-	size_t matrixop::_repivot(const matrixop &source, matrixop &res, size_t row)
+	size_t matrixop::_repivot(matrixop &res, size_t row, bool reverse)
 	{
 		// Search below for a row that can be swapped with the current row to ensure upper triangularity can be preserved
-		std::vector<size_t> pos;
-		pos.push_back(row+1);
-		pos.push_back(row);
-		res = source;
-		for (size_t i = row++; i<res._dims[0]; i++, pos[0]++)
+		if (!reverse)
 		{
-			if (res.get(pos) != 0.0)
+			std::vector<size_t> pos;
+			pos.push_back(row+1);
+			pos.push_back(row);
+			//res = source; // BAD
+			for (size_t i = row+1; i<res._dims[0]; i++, pos[0]++)
 			{
-				// We have a match
-				_swaprows(res,row,pos[0]);
-				return pos[0];
+				double val = res.get(pos);
+				if (val != 0.0)
+				{
+					// We have a match
+					_swaprows(res,row,pos[0]);
+					return pos[0];
+				}
+			}
+		} else {
+			std::vector<size_t> pos;
+			pos.push_back(row-1);
+			pos.push_back(row);
+			//res = source; // BAD
+			for (size_t i = row-1; i<res._dims[0]; i--, pos[0]--)
+			{
+				double val = res.get(pos);
+				if (val != 0.0)
+				{
+					// We have a match
+					_swaprows(res,row,pos[0]);
+					return pos[0];
+				}
 			}
 		}
-		throw; // TODO: Give a throw class. Occurs when matrix cannot be fully decomposed
+		// TODO: instead, put all zero rows at the bottom (or top, if reversed) of the matrix
+		throw rtmath::debug::xSingular();
+		// Throw class needed for determinant and inverses to catch the singularity!!!!!
 	}
 
 
@@ -801,7 +928,7 @@ namespace rtmath {
 		vector<double>::const_iterator it;
 		for (it = vals.begin(); it != vals.end(); it++, cval++)
 			*cval = *it;
-		
+
 		// Construct matrixop from double array
 		matrixop res(2, linesRead, colsRead);
 		res.fromDoubleArray(dvals);
