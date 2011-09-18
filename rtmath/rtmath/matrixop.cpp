@@ -757,16 +757,18 @@ namespace rtmath {
 			for (size_t j=0;j<i;j++)
 			{
 				// I'm arranging this into groups of proj_e_i (so the row elements are contiguous)
-				long double ee = 0;
+				//long double ee = 0; // since ||e|| = 1 by def, ee = 1, so discard.
 				long double ea = 0;
 				for (size_t k=0; k< numRows; k++)
 				{
-					ee += e[j][k] * e[j][k]; // should exist from previous iterations of the outermost loop
-					ea += e[j][k] * columns[j][k];
+					double ejk = e[j][k];
+					//ee += ejk * ejk; // should exist from previous iterations of the outermost loop
+					ea += ejk * columns[i][k]; // careful about indices, here. col. i, not j!!!
 				}
 				for (size_t k=0; k<numRows;k++)
 				{
-					proj[(numRows*j)+k] = (ea / ee) * e[j][k];
+					double projval = (ea) * e[j][k];
+					proj[(numRows*j)+k] = projval;
 				}
 			}
 
