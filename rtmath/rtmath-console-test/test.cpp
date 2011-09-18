@@ -50,20 +50,9 @@ int main(int argc, char* argv[])
 
 		cout << "\nCheck\n" << endl;
 		(Q*R).print();
-
-		double bvals[] = {4,1,3,-2,1,-2,4,1,3,4,1,2,-2,1,2,3};
-		matrixop b(2,4,4);
-		b.fromDoubleArray(bvals);
-		cout << "\nMatrix b:\n";
-		b.print();
-		b.decompositionQR(Q,R);
-		cout << "\nQ:\n";
-		Q.print();
-		cout << "\nR:\n";
-		R.print();
-
-		cout << "\nCheck\n" << endl;
-		(Q*R).print();
+		
+		cout << "\nUpper Hessenberg Form:\n";
+		(R*Q).print();
 
 		/*
 		double alb = 0.1;
