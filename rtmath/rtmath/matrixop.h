@@ -43,6 +43,8 @@ namespace rtmath {
 		void set(const std::vector<size_t> &pos, double val);
 		void set(double val, size_t rank, ...);
 		void set(double, size_t); // Former _push_back
+		void setCol(size_t col, const std::vector<double> &data);
+		void setRow(size_t row, const std::vector<double> &data);
 		double get(const std::vector<size_t> &pos) const;
 		double get(size_t rank, ...) const;
 		inline double get(size_t index) const { return _data[index]; }
@@ -62,6 +64,8 @@ namespace rtmath {
 		//inline matrixop upperTriangular() { throw; matrixop res(_dims); upperTriangular(res); return res; }
 		void lowerTriangular(matrixop &target, matrixop &secondary) const;
 		void transpose(matrixop &target) const;
+		inline matrixop transpose() const {matrixop res(_dims); transpose(res); return res; }
+		void decompositionQR(matrixop &Q, matrixop &R) const;
 		//inline matrixop transpose() { throw; matrixop res(*this); transpose(res); return res; }
 		matrixop minors(const std::vector<size_t> &pos) const;
         matrixop minors(size_t rank, ...) const;

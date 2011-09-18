@@ -711,6 +711,122 @@ namespace rtmath {
 		}
 	}
 
+	void matrixop::decompositionQR(matrixop &Q, matrixop &R) const
+	{
+		// Perform a QR decomposition of the matrix (hoping that it is invertible)
+		// Matrix R is an upper right triangular matrix. 
+		// Matrix Q is an orthogonal matrix.
+		// This method uses Graham-Schmidt orthogonalization.
+		// Inner products assume transposition, and since matrixop takes only real values, 
+		// for now, does not compute complex conjugates.
+
+		// First, extract the columns of the matrix, and put these into matrices of their own
+		// I'm not using matrixops here, but instead stl vectors to speed things up
+		// (only a subset of functionality is needed).
+
+		std::vector< std::vector<double> > columns, u, e;
+		size_t numCols = this->_dims[1];
+		size_t numRows = this->_dims[0];
+		columns.resize(numCols);
+		u.resize(numCols);
+		e.resize(numCols);
+		for (size_t index = 0; index < _datasize; index++)
+		{
+			size_t column = index % numCols;
+			columns[column].push_back(_data[index]);
+		}
+
+		// Now, to perform orthogonalization
+		// projection is defined as proj_e(a) = (<e,a>/<e,e>) e
+		// <a,b> = a^T b
+		// e_i = u_i / ||u_i||
+		// A is the full matrix, so a_i is the ith column in columns
+		//std::vector<double>::const_iterator it;
+		for (size_t i=0; i < numCols; i++) // i is the column number
+		{
+			// Calculate relevant projections
+			// Projections fit into an (i-1)x(numRows) matrix
+			double *proj;
+			if (i > 0)
+			{
+				proj = new double[(i)*numRows];
+			} else {
+				proj = 0; // I won't use it anyways
+			}
+			// The calculation step for projections
+			for (size_t j=0;j<i;j++)
+			{
+				// I'm arranging this into groups of proj_e_i (so the row elements are contiguous)
+				long double ee = 0;
+				long double ea = 0;
+				for (size_t k=0; k< numRows; k++)
+				{
+					ee += e[j][k] * e[j][k]; // should exist from previous iterations of the outermost loop
+					ea += e[j][k] * columns[j][k];
+				}
+				for (size_t k=0; k<numRows;k++)
+				{
+					proj[(numRows*j)+k] = (ea / ee) * e[j][k];
+				}
+			}
+
+			// Calculate u_i
+			long double usq = 0;
+			for (size_t k=0; k<numRows ;k++) // k is the element number in the column
+			{
+				double uk = columns[i][k]; // u_i = a_i - ... (first term)
+				// Now, loop through and subtract the projections
+				for(size_t j=0; j<i; j++)
+				{
+					// Projection was calculated above
+					uk -= proj[(numRows*j)+k];
+				}
+				usq += uk*uk;
+				u[i].push_back(uk);
+			}
+			// Calculate e_i (waited for ui to be complete)
+			for (size_t k=0; k<numRows; k++)
+			{
+				// usq gives the norm
+				e[i].push_back(u[i][k] / sqrt(usq));
+			}
+
+			// Dump projection table (no longer needed)
+			if (proj) delete[] proj;
+		}
+
+
+		// The orthogonalization step is done. Now, set Q to be the set of e_i columns.
+		Q.resize(_dims);
+		for (size_t col=0; col<numCols; col++)
+			Q.setCol(col, e[col]);
+
+		// Then, R=Q^T * A, which is easy to calculate
+		matrixop Qt = Q.transpose();
+		matrixop A = *this; // Otherwise, compile complains, even though matrixop * is defined as const... why?
+		R = Qt * A;
+	}
+
+	void matrixop::setCol(size_t col, const std::vector<double> &data)
+	{
+		for (size_t i = col, j=0; i<_datasize; i+= _dims[1], j++)
+		{
+			_data[i] = data[j];
+		}
+	}
+
+	void matrixop::setRow(size_t row, const std::vector<double> &data)
+	{
+		size_t start = _dims[1] * row;
+		double *pt = &_data[start];
+		std::vector<double>::const_iterator it;
+		for (it = data.begin(); it != data.end(); it++)
+		{
+			*pt = *it;
+			pt++;
+		}
+	}
+
 	void matrixop::_swaprows(matrixop &source, size_t rowa, size_t rowb)
 	{
 		// Fast relinking function that swaps two rows using internal functions
