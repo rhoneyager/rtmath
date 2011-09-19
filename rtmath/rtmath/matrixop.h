@@ -10,6 +10,11 @@
 #include "mapid.h"
 #include "MurmurHash3.h"
 
+#define inlinerval(x,y) inline x y(size_t rank, ...) const \
+	{ x res(_dims); va_list indices; va_start(indices, rank); std::vector<size_t> ptr; \
+	size_t ival; for (size_t i=0; i<rank; i++) { ival = va_arg(indices,size_t); \
+	ptr.push_back(ival); } va_end(indices); y(ptr,res); return res; }
+
 namespace rtmath {
 
 // Class labeled as defective for now to prevent compilation while base is being changed
@@ -27,7 +32,7 @@ namespace rtmath {
 		matrixop(size_t ndims, ...);
 		~matrixop(void);
 		// Define a copy constructor, since this is a base class
-		matrixop (const matrixop & rhs);
+		matrixop(const matrixop & rhs);
 		// Cloning function
 		matrixop* clone() const;
 
@@ -61,20 +66,24 @@ namespace rtmath {
 
 		double det() const;
 		void upperTriangular(matrixop &target, matrixop &secondary) const;
-		//inline matrixop upperTriangular() { throw; matrixop res(_dims); upperTriangular(res); return res; }
+		inline matrixop upperTriangular() { matrixop res(_dims); upperTriangular(res); return res; }
 		void lowerTriangular(matrixop &target, matrixop &secondary) const;
+		inline matrixop lowerTriangular() { matrixop res(_dims); lowerTriangular(res); return res; }
 		void transpose(matrixop &target) const;
 		inline matrixop transpose() const {matrixop res(_dims); transpose(res); return res; }
 		void decompositionQR(matrixop &Q, matrixop &R) const;
-		//inline matrixop transpose() { throw; matrixop res(*this); transpose(res); return res; }
-		matrixop minors(const std::vector<size_t> &pos) const;
-        matrixop minors(size_t rank, ...) const;
+
+		void minors(const std::vector<size_t> &pos, matrixop &res) const;
+		inline matrixop minors(const std::vector<size_t> &pos) const { matrixop res(_dims); minors(pos,res); return res; }
+		void minors(matrixop &res, size_t rank, ...) const;
+		inlinerval(matrixop,minors); // macro to inline a variable length function
 		
 		void toDoubleArray(double *target) const;
 		void fromDoubleArray(const double *target);
 		//void fromCdf(NcVar *var, long n); // Populate the matrixop from a netCDF variable. Specify start location in extended params.
 		//void toCDF(NcVar *var) const; // Save matrixop to a netCDF variable. 
-		matrixop inverse() const;
+		void inverse(matrixop &res) const;
+		inline matrixop inverse() const { matrixop res(_dims); inverse(res); return res; }
 		void posFromIndex(size_t index, std::vector<size_t> &pos) const; // duplicate of _getPos!!
 		void indexFromPos(size_t &index, std::vector<size_t> pos) const;
 	public:

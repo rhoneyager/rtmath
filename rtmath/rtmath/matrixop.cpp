@@ -2,8 +2,7 @@
 #include "matrixop.h"
 #include "error.h"
 #include <memory>
-// Reduces tedium when finding minors
-//#include <boost/foreach.hpp>
+
 #include <cmath>
 
 namespace rtmath {
@@ -372,7 +371,7 @@ namespace rtmath {
 		return true;
 	}
 
-	matrixop matrixop::minors(size_t rank, ...) const
+	void matrixop::minors(matrixop &res, size_t rank, ...) const
 	{
 		// Retrieve the variable parameters
 		va_list indices;
@@ -385,7 +384,7 @@ namespace rtmath {
 			ptr.push_back(ival);
 		}
 		va_end(indices);
-		return this->minors(ptr);
+		this->minors(ptr,res);
 	}
 
 	void matrixop::set(double val, size_t index)
@@ -418,7 +417,7 @@ namespace rtmath {
 		}
 	}
 
-	matrixop matrixop::minors(const std::vector<size_t> &rc) const
+	void matrixop::minors(const std::vector<size_t> &rc, matrixop &res) const
 	{
 		using namespace std;
 		TASSERT(_dims.size() == 2); // Allow only 2d matrices
@@ -428,7 +427,8 @@ namespace rtmath {
 			msiz[i] = msiz[i] - 1;
 			if (msiz[i] == 0) throw rtmath::debug::xBadInput();
 		}
-		matrixop res(msiz);
+		res.resize(msiz);
+		//matrixop res(msiz);
 		// I have the empty resultant matrix
 		// Now, to fill in the minors
 		size_t rowX=rc[0],colX=rc[1];
@@ -450,7 +450,7 @@ namespace rtmath {
 				res.set(val,2,srow-rS,scol-cS); // Row and column skip factors shift the result!
 			}
 		}
-		return res;
+		//return res;
 	}
 
 	/* // superseded by a method that computes an upper triangular matrix instead of finding minors
@@ -566,7 +566,7 @@ namespace rtmath {
 	}
 	*/
 
-	matrixop matrixop::inverse() const
+	void matrixop::inverse(matrixop &inv) const
 	{
 		// Use gaussian elimination
 		TASSERT(_dims.size() == 2);
