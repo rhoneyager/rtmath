@@ -34,13 +34,13 @@ int main(int argc, char* argv[])
 
 		cout << endl;
 
-		double avals[] = {12,-51,4,6,167,-68,-4,24,-41};
-		matrixop a(2,3,3), Q(2,3,3), R(2,3,3);
+		double avals[] = {0,0,0,8,1,0,0,14,0,1,0,3,0,0,1,-4};
+		matrixop a(2,4,4), Q(2,4,4), R(2,4,4);
 		a.fromDoubleArray(avals);
 
 		cout << "Matrix a:" << endl;
 		a.print();
-		
+
 		a.decompositionQR(Q,R);
 
 		cout << "\nQ:" << endl;
@@ -50,10 +50,21 @@ int main(int argc, char* argv[])
 
 		cout << "\nCheck\n" << endl;
 		(Q*R).print();
-		
-		cout << "\nUpper Hessenberg Form:\n";
+
+		cout << "\nQR Algorithm:\n";
 		(R*Q).print();
 
+		matrixop b(2,4,4), c(2,4,4);
+		b = (R*Q);
+
+		for (size_t i=0;i<100;i++)
+		{
+			cout << "i = " << i << endl;
+			b.decompositionQR(Q,R);
+			b.print();
+			c = R*Q;
+			b = c;
+		}
 		/*
 		double alb = 0.1;
 		double tau = 1.0;
