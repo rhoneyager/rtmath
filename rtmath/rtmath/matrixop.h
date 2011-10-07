@@ -74,8 +74,8 @@ namespace rtmath {
 		void transpose(matrixop &target) const;
 		inline matrixop transpose() const {matrixop res(_dims); transpose(res); return res; }
 		void decompositionQR(matrixop &Q, matrixop &R) const;
-		void upperHessenberg(matrixop &target) const;
-		inline matrixop upperHessenberg() const { matrixop res(_dims); upperHessenberg(res); return res; }
+		void HouseholderUT(matrixop &target) const;
+		inline matrixop HouseholderUT() const { matrixop res(_dims); HouseholderUT(res); return res; }
 
 		void minors(const std::vector<size_t> &pos, matrixop &res) const;
 		inline matrixop minors(const std::vector<size_t> &pos) const { matrixop res(_dims); minors(pos,res); return res; }

@@ -715,7 +715,7 @@ namespace rtmath {
 		}
 	}
 
-	void matrixop::upperHessenberg(matrixop &target) const
+	void matrixop::HouseholderUT(matrixop &target) const
 	{
 		// If matrix is symmetric, this tridiagonalizes it
 		// Constructing the upper hessenberg matrix is useful for solving
