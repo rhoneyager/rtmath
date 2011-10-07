@@ -49,6 +49,8 @@ namespace rtmath {
 		void set(double val, size_t rank, ...);
 		void set(double, size_t); // Former _push_back
 		void setCol(size_t col, const std::vector<double> &data);
+		void setCol(size_t col, const double *data);
+		void setRow(size_t row, const double *data);
 		void setRow(size_t row, const std::vector<double> &data);
 		double get(const std::vector<size_t> &pos) const;
 		double get(size_t rank, ...) const;
@@ -72,6 +74,8 @@ namespace rtmath {
 		void transpose(matrixop &target) const;
 		inline matrixop transpose() const {matrixop res(_dims); transpose(res); return res; }
 		void decompositionQR(matrixop &Q, matrixop &R) const;
+		void upperHessenberg(matrixop &target) const;
+		inline matrixop upperHessenberg() const { matrixop res(_dims); upperHessenberg(res); return res; }
 
 		void minors(const std::vector<size_t> &pos, matrixop &res) const;
 		inline matrixop minors(const std::vector<size_t> &pos) const { matrixop res(_dims); minors(pos,res); return res; }

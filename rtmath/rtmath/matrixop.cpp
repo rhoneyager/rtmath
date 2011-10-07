@@ -698,8 +698,12 @@ namespace rtmath {
 	{
 		// Calculates the transpose of the matrix, and places it in res
 		// TODO: speed / figure out pattern to avoid 
-		if (this->issquare() == false) throw rtmath::debug::xBadInput();
-		res.resize(_dims);
+		//if (this->issquare() == false) throw rtmath::debug::xBadInput();
+
+		std::vector<size_t> dt;
+		dt.push_back(_dims[1]);
+		dt.push_back(_dims[0]);
+		res.resize(dt);
 
 		// Iterate through the index, and convert this into a vector
 		// Then, set res with the reversed vector elements
@@ -709,6 +713,96 @@ namespace rtmath {
 			posFromIndex(i, pos);
 			res.set( _data[i], 2, pos[1], pos[0]);
 		}
+	}
+
+	void matrixop::upperHessenberg(matrixop &target) const
+	{
+		// If matrix is symmetric, this tridiagonalizes it
+		// Constructing the upper hessenberg matrix is useful for solving
+		// for eigenvalues, which is used extensively in zero-finding code
+
+		// Uses Householder reductions
+		// H = I - 2 u uT
+
+
+		// Can be done on a non-square matrix!
+		std::vector<matrixop> results;
+
+		matrixop wrk(_dims);
+		wrk = *this;
+
+		// Loop through for number or rows times
+		for (size_t i=0; i<_dims[0]-1; i++)
+		{
+			std::vector<matrixop> as, vs, Has;
+			std::vector<double> fs;
+			matrixop wrknext(wrk._dims);
+			//std::cout << "wrk\n"; wrk.print();
+
+			double a11 = wrk.get(2,0,0);
+			matrixop a1(2,wrk._dims[0],1);
+
+			for (size_t j=0; j<wrk._dims[1];j++)
+			{
+				// Read down the column and define a
+				matrixop a(2,wrk._dims[0],1), v(2,wrk._dims[0],1), Ha(2,wrk._dims[0],1);
+				for (size_t k=0; k<wrk._dims[0];k++)
+					a.set( wrk.get(2,k,j) , 2, k, 0);
+				if (j==0) a1 = a;
+				double d;
+				double a1m = sqrt((a1.transpose() * a1).get(2,0,0));
+				//double a11 = a.get(2,0,0);
+				(a11>0) ? d = -std::abs(a1m) : d = std::abs(a1m);
+				double w11 = a11 - d;
+				double f1 = sqrt(-2.0*w11*d);
+				v.set(w11 / f1, 2, 0,0);
+				for (size_t k=1;k<wrk._dims[0];k++)
+					v.set(wrk.get(2,k,0) / f1, 2, k, 0);
+				double fi;
+				(j==0) ? fi = f1 : fi = 2.0 * (v.transpose()*a).get(2,0,0);
+				if (j == 0)
+				{
+					Ha.set(d,0,0);
+				} else {
+					Ha = a - (v * fi);
+				}
+				//std::cout << "Ha\n"; Ha.print();
+				Has.push_back(Ha);
+
+			}
+
+			// Create result matrix
+			for (size_t j=0; j< Has.size(); j++)
+			{
+				wrknext.setCol(j,Has[j]._data);
+			}
+			results.push_back(wrknext);
+			// Set work equal to its minor
+			matrixop newwrk(2,wrk._dims[0] - 1, wrk._dims[1]);
+			wrknext.minors(newwrk, 2, 0, 0);
+			wrk = newwrk; // and do the assignment
+			//wrknext.print();
+		}
+
+		//for (size_t l=0;l<results.size();l++)
+			//results[l].print();
+		target.resize(_dims);
+		// Now go through all results and place the elements in the appropriate places
+		for (size_t i=0; i<_dims[0]; i++)
+			for (size_t j=0; j<_dims[1]; j++)
+			{
+				// Get val from correct matrix and place in target
+				double val = 0;
+				size_t index = 0;
+				(i>j) ? index = j : index = i; // take the minimum
+				//std::cout << index << " " << i << " " << j << std::endl;
+				//if (index >=results.size()) continue;
+				if (index >= results.size()) index = results.size() - 1; // last box is really previous
+				val = results[index].get(2, i-index, j-index);
+				target.set(val,2,i,j);
+			}
+		//std::cout << std::endl << std::endl;
+		//target.print();
 	}
 
 	void matrixop::decompositionQR(matrixop &Q, matrixop &R) const
@@ -817,6 +911,14 @@ namespace rtmath {
 		}
 	}
 
+	void matrixop::setCol(size_t col, const double *data)
+	{
+		for (size_t i = col, j=0; i<_datasize; i+= _dims[1], j++)
+		{
+			_data[i] = data[j];
+		}
+	}
+
 	void matrixop::setRow(size_t row, const std::vector<double> &data)
 	{
 		size_t start = _dims[1] * row;
@@ -825,6 +927,17 @@ namespace rtmath {
 		for (it = data.begin(); it != data.end(); it++)
 		{
 			*pt = *it;
+			pt++;
+		}
+	}
+
+	void matrixop::setRow(size_t row, const double *data)
+	{
+		size_t start = _dims[1] * row;
+		double *pt = &_data[start];
+		for (size_t i=0; i<_dims[1];i++)
+		{
+			*pt = data[i];
 			pt++;
 		}
 	}
