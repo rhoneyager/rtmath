@@ -66,9 +66,9 @@ namespace rtmath {
 
 		double det() const;
 		void upperTriangular(matrixop &target, matrixop &secondary) const;
-		inline matrixop upperTriangular() { matrixop res(_dims); upperTriangular(res); return res; }
+		inline matrixop upperTriangular() { matrixop res(_dims), junk(_dims); upperTriangular(res,junk); return res; }
 		void lowerTriangular(matrixop &target, matrixop &secondary) const;
-		inline matrixop lowerTriangular() { matrixop res(_dims); lowerTriangular(res); return res; }
+		inline matrixop lowerTriangular() { matrixop res(_dims),junk(_dims); lowerTriangular(res,junk); return res; }
 		void transpose(matrixop &target) const;
 		inline matrixop transpose() const {matrixop res(_dims); transpose(res); return res; }
 		void decompositionQR(matrixop &Q, matrixop &R) const;

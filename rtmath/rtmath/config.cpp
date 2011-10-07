@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-//#include <boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
 
 namespace rtmath {
 	namespace config {

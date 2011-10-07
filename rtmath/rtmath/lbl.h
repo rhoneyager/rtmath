@@ -154,6 +154,8 @@ namespace rtmath {
 			isoconc(int molnum);
 			isoconc(std::string &molecule);
 
+			int molnumsrc;
+
 			inline double psfrac() const { return _psfrac; }
 			inline void psfrac(double newps) { _psfrac = newps; }
 			inline double p() const { return *_p; }

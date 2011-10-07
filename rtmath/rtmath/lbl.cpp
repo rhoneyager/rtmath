@@ -189,11 +189,28 @@ namespace rtmath {
 		double lbllayer::tau(double nu)
 		{
 			double res = 0.0;
+			double pwfrac = 0.0; // used for water vapor continuum calculations
 			std::set<isoconc*>::iterator it;
 			for (it = isoconcentrations.begin(); 
 				it != isoconcentrations.end(); it++)
 			{
 				res += (*it)->deltaTau(nu);
+				if ((*it)->molnumsrc == 1) pwfrac += (*it)->psfrac();
+			}
+
+			// Add in the water vapor continuum absorption background
+			// I have pressure, temp, conc of vapor, and frequency
+			{
+				// nu is in wavenumbers. Convert to freq by multiplying by speed of light
+				// and divide by 10^9 to get in GHz
+				double fGHz = nu * 0.3; // Close enough
+				//double Pvap = rho * _T/217.0;
+				double Pvap = pwfrac * _p;
+				double PDA = _p - Pvap;
+				double Ti = 300.0/_T;
+				double Ti2 = pow(Ti,2.5);
+				double con = fGHz * fGHz * Pvap * ((5.43e-10 * PDA * pow(Ti,3.0)) + (1.8e-8*Pvap*pow(Ti,7.5)));
+				res += con;
 			}
 
 			return res;
@@ -695,6 +712,7 @@ namespace rtmath {
 			// Select the molecule number (not abundance order)
 			// and import the appropriate isotopes
 			std::set<isodata*>::iterator it;
+			molnumsrc = molnum;
 			for (it = specline::linemappings.begin(); it != specline::linemappings.end(); it++)
 			{
 				if ((*it)->molnum() == molnum)
@@ -709,11 +727,17 @@ namespace rtmath {
 		{
 			// See other constructor
 			std::set<isodata*>::iterator it;
+			bool idset = false;
 			for (it = specline::linemappings.begin(); it != specline::linemappings.end(); it++)
 			{
 				std::string a((*it)->molecule()), b(molecule);
 				if (a == b)
 				{
+					if (!idset)
+					{
+						molnumsrc = (*it)->molnum();
+						idset = true;
+					}
 					// Add the isotope
 					isotopes.insert( (*it) );
 				}

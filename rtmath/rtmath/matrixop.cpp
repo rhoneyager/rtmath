@@ -570,7 +570,7 @@ namespace rtmath {
 	{
 		// Use gaussian elimination
 		TASSERT(_dims.size() == 2);
-		matrixop ut(_dims), inv(_dims), invcheck(_dims);
+		matrixop ut(_dims), invcheck(_dims);
 		inv = diagonal(_dims,1.0);
 		upperTriangular(ut, inv);
 		ut.lowerTriangular(invcheck,inv);
@@ -581,7 +581,7 @@ namespace rtmath {
 			double factor = invcheck._data[i*numCols+i];
 			if (factor != 1.0) inv._rowmult(i, 1.0/factor);
 		}
-		return inv;
+		//return inv;
 	}
 
 	void matrixop::_rowmult(size_t row, double factor)
