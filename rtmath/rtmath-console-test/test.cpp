@@ -35,11 +35,24 @@ int main(int argc, char* argv[])
 		cout << endl;
 
 		double avals[] = {0,0,0,8,1,0,0,14,0,1,0,3,0,0,1,-4};
-		matrixop a(2,4,4), Q(2,4,4), R(2,4,4);
+		matrixop a(2,4,4), Q(2,3,3), R(2,4,4), uh(2,3,3);
 		a.fromDoubleArray(avals);
+		//double uhtvals[] = {1,-4,0,3,-1,3,0,-2,3,-7,-2,6,0,4,0,-2};
+		double uhtvals[] = {2,-1,1,-1,2,1,1,-1,2};
+		Q.fromDoubleArray(uhtvals);
 
-		cout << "Matrix a:" << endl;
-		a.print();
+		//cout << "Matrix a:" << endl;
+		//a.print();
+
+		cout << "Input matrix: " << endl;
+		Q.print();
+
+		uh = Q.upperHessenberg();
+
+		cout << "Upper Hessenberg: " << endl;
+		uh.print();
+
+		return 0;
 
 		a.decompositionQR(Q,R);
 
