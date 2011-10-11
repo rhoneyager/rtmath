@@ -76,6 +76,9 @@ namespace rtmath {
 		void decompositionQR(matrixop &Q, matrixop &R) const;
 		void HouseholderUT(matrixop &target) const;
 		inline matrixop HouseholderUT() const { matrixop res(_dims); HouseholderUT(res); return res; }
+		void upperHessenberg(matrixop &target) const;
+		inline matrixop upperHessenberg() const { matrixop res(_dims); upperHessenberg(res); return res; }
+		void QRalgorithm(matrixop &res, std::vector<double> &evals) const;
 
 		void minors(const std::vector<size_t> &pos, matrixop &res) const;
 		inline matrixop minors(const std::vector<size_t> &pos) const { matrixop res(_dims); minors(pos,res); return res; }
