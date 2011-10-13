@@ -1,6 +1,8 @@
 #include "Stdafx.h"
 #include <memory>
 #include "ddscat.h"
+#include <iostream>
+#include <sstream>
 
 namespace rtmath {
 
@@ -35,6 +37,35 @@ namespace rtmath {
 	}
 
 	ddRun::~ddRun()
+	{
+
+	}
+
+	ddOutput::ddOutput()
+	{
+		_valid = false;
+		_numDipoles = 0;
+		_daeff = 0;
+		_d = 0;
+
+	}
+
+	ddOutput::writeEvans(std::string filename)
+	{
+
+	}
+
+	ddOutput::readEvans(std::string filename)
+	{
+
+	}
+
+	ddOutput::readdir(std::string dirpath)
+	{
+		// Begin by searcing for ddscat.par
+	}
+
+	ddOutput::writedir(std::string dirpath)
 	{
 
 	}
