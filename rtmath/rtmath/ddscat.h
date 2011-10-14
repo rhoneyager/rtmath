@@ -51,7 +51,7 @@ namespace rtmath {
 		private:
 			double _memInit[3];
 			GEOMETRY::GEOMETRY _geom;
-			SOULTIONMETHOD::SOLUTIONMETHOD _method;
+			SOLUTIONMETHOD::SOLUTIONMETHOD _method;
 			double _shapeParams[3];
 			size_t _ncomp;
 			std::vector<std::string> _refrIndexFiles;
@@ -86,11 +86,11 @@ namespace rtmath {
 				memset(Sij,0,16);
 			}
 			double pol;
-			double Sij[16];
+			double Sij[4][4];
 		};
 
 		struct ddOutputScatt {
-			std::complex<double> f11, f12, f21, f22;
+			std::complex<double> f[4];
 		};
 
 		struct ddCoords {
@@ -122,8 +122,8 @@ namespace rtmath {
 			inline double theta() const { return _theta; }
 			inline void phi(double newphi) { _phi = newphi; }
 			inline double phi() const { return _phi; }
-			inline void wavelength(double newwavelength) { _wavelegth = newwavelength; }
-			inline double wavelength() const { return _wavelegth; }
+			inline void wavelength(double newwavelength) { _wavelength = newwavelength; }
+			inline double wavelength() const { return _wavelength; }
 			inline void sizep(double newsizep) { _sizep = newsizep; }
 			inline double sizep() const { return _sizep; }
 			inline void reff(double newreff) { _reff = newreff; }
@@ -136,8 +136,11 @@ namespace rtmath {
 			void setF(const ddCoords &coords, const ddOutputScatt &f);
 			void setS(const ddCoords &coords, const ddOutputMueller &s);
 			void getF(const ddCoords &coords, ddOutputScatt &f) const;
+			//inline ddOutputScatt getF(const ddCoords &coords) const { ddOutputScatt res; getF(coords, res); return res; }
 			void getS(const ddCoords &coords, ddOutputMueller &s) const;
+			//inline ddOutputScatt getS(const ddCoords &coords) const { ddOutputMueller res; getS(coords, res); return res; }
 			void calcS(); // calculate S from f
+			std::vector<std::complex<double> > n;
 		private:
 			ddOutputSingle();
 			void _init(); // sets sensible values for everything (hidden common init code)
@@ -146,11 +149,11 @@ namespace rtmath {
 			double _sizep, _reff; // TODO: set starting from here
 			double _d;
 			size_t _numDipoles;
-			std::vector<std::complex<double> > _n;
+			//std::vector<std::complex<double> > _n;
 			// Todo: get rid of duplication of elements
 			// std::bitset<16> _ijs;
-			std::map<ddCoords, ddOutputScatt, ddOutComp> _fijs;
-			std::map<ddCoords, ddOutputMueller, ddOutComp> _Sijs;
+			mutable std::map<ddCoords, ddOutputScatt, ddOutComp> _fijs;
+			mutable std::map<ddCoords, ddOutputMueller, ddOutComp> _Sijs;
 		};
 
 		class ddOutput {
@@ -164,7 +167,7 @@ namespace rtmath {
 			void writedir(std::string dirpath);
 			//void readfile();
 			//void writefile();
-			void genPf(daPf &target);
+			//void genPf(daPf &target);
 		private:
 			bool _valid;
 			size_t _numDipoles;

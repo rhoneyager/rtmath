@@ -36,8 +36,8 @@ namespace rtmath {
 		// Calculate the scattering amplitude matrix for a given mu.
 		// Here, mu = cos(alpha), the total scattering angle.
 		virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
-	protected:
-		void _genMuellerMatrix(double Snn[4][4], std::complex<double> Sn[4]);
+	public:
+		static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
 	};
 
 	/*

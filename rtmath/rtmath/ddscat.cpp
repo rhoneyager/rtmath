@@ -3,13 +3,16 @@
 #include "ddscat.h"
 #include <iostream>
 #include <sstream>
+#include "phaseFunc.h"
 
 namespace rtmath {
 
+namespace ddscat {
+
 	ddRun::ddRun()
 	{
-		_geom = NONE;
-		_method = NONE;
+		_geom = GEOMETRY::NONE;
+		_method = SOLUTIONMETHOD::NONE;
 		for (size_t i=0;i<3;i++)
 		{
 			_shapeParams[i] = 1;
@@ -50,25 +53,79 @@ namespace rtmath {
 
 	}
 
-	ddOutput::writeEvans(std::string filename)
+	void ddOutput::writeEvans(std::string filename)
 	{
 
 	}
 
-	ddOutput::readEvans(std::string filename)
+	void ddOutput::readEvans(std::string filename)
 	{
 
 	}
 
-	ddOutput::readdir(std::string dirpath)
+	void ddOutput::readdir(std::string dirpath)
 	{
 		// Begin by searcing for ddscat.par
 	}
 
-	ddOutput::writedir(std::string dirpath)
+	void ddOutput::writedir(std::string dirpath)
 	{
 
 	}
 
+	ddOutputSingle::ddOutputSingle(double beta, double theta, double phi)
+	{
+		_init();
+		_beta = beta;
+		_theta = _theta;
+		_phi = phi;
+	}
+
+	void ddOutputSingle::_init()
+	{
+		_wavelength = 0;
+		_sizep = 0;
+		_reff = 0;
+		_d = 0;
+		_numDipoles = 0;
+	}
+
+	void ddOutputSingle::setF(const ddCoords &coords, const ddOutputScatt &f)
+	{
+		_fijs[coords] = f;
+	}
+
+	void ddOutputSingle::setS(const ddCoords &coords, const ddOutputMueller &s)
+	{
+		_Sijs[coords] = s;
+	}
+
+	void ddOutputSingle::getF(const ddCoords &coords, ddOutputScatt &f) const
+	{
+		f = _fijs[coords];
+	}
+
+	void ddOutputSingle::getS(const ddCoords &coords, ddOutputMueller &s) const
+	{
+		s = _Sijs[coords];
+	}
+
+	void ddOutputSingle::calcS()
+	{
+		// Use the standard matrix relationships to extract S from f
+		// This really just calls the code found in phaseFunc.cpp's
+		// scattMatrix::_genMuellerMatrix(double Snn[4][4], complex<double> Sn[4])
+		std::map<ddCoords,ddOutputScatt,ddOutComp>::const_iterator it;
+		_Sijs.clear(); // clear the existing Sijs
+		for (it = _fijs.begin(); it != _fijs.end(); it++)
+		{
+			ddOutputMueller mueller;
+			ddCoords crds = it->first;
+			scattMatrix::_genMuellerMatrix(mueller.Sij, it->second.f);
+			_Sijs[crds] = mueller;
+		}
+	}
+
+}; // end namespace ddscat
 }; // end namespace rtmath
 

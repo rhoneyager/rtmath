@@ -40,7 +40,7 @@ namespace rtmath {
 	{
 	}
 
-	void scattMatrix::_genMuellerMatrix(double Snn[4][4], std::complex<double> Sn[4])
+	void scattMatrix::_genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4])
 	{
 		// Do the upper left quad in a loop
 		for (unsigned int i=0;i<4;i++)
