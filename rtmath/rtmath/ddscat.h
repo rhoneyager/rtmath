@@ -93,6 +93,16 @@ namespace rtmath {
 			std::complex<double> f[4];
 		};
 
+		struct ddRotCoords {
+			ddRotCoords(double beta, double theta, double phi)
+			{
+				this->beta = beta;
+				this->theta = teta;
+				this->phi = phi;
+			}
+			double beta, theta, phi;
+		};
+
 		struct ddCoords {
 			ddCoords(double theta, double phi)
 			{
@@ -111,11 +121,23 @@ namespace rtmath {
 				if (lhs.phi < rhs.phi) return true;
 				return false;
 			}
+
+			bool operator() (const ddRotCoords &lhs, const ddRotCoords &rhs) const
+			{
+				if (lhs.beta < rhs.beta) return true;
+				if (lhs.beta > rhs.beta) return false;
+				if (lhs.theta < rhs.theta) return true;
+				if (lhs.theta > rhs.theta) return false; // i want strict weak ordering with theta first
+				if (lhs.phi < rhs.phi) return true;
+				return false;
+			}
 		};
 
 		class ddOutputSingle {
 		public:
 			ddOutputSingle(double beta, double theta, double phi); // rotation angles
+			ddOutputSingle(const std::string &filename) { _init(); loadFile(filename); }
+			void loadFile(const std::string &fileheader);
 			inline void beta(double newbeta) { _beta = newbeta; }
 			inline double beta() const { return _beta; }
 			inline void theta(double newtheta) { _theta = newtheta; }
@@ -177,6 +199,8 @@ namespace rtmath {
 			double _aEff;
 			double _wavelength;
 			double _kAeff;
+			std::map<ddRotCoords, ddOutputSingle, ddOutComp> _data;
+		public:
 		};
 
 	}; // end namespace ddscat

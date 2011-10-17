@@ -126,6 +126,29 @@ namespace ddscat {
 		}
 	}
 
+	void ddOutputSingle::loadFile(const std::string &fileheader)
+	{
+		// Open the desired ddscat files and read in the values
+		using namespace std;
+
+		// The prefix of the ddscat names is to be passed to the program. The two
+		// files opened are the prefix and '.fml' and '.sca' (if needed)
+		ostringstream strFml;
+		strFml << fileheader << ".fml";
+		ifstream infml(strFml.str().c_str());
+
+		// Let's just assume that the input is standard, without missing lines, and is the latest format
+		// In this case, Beta is on line 21, Theta 22, Phi 23.
+		// Wavelength 8, reff 7, numDipoles 2, sizep 9, n 10
+		// The data begin on line 29
+
+		double Beta, Theta, Phi, theta, phi, re, im;
+		double wvlen, reff, sizep;
+
+		string linein;
+
+	}
+
 }; // end namespace ddscat
 }; // end namespace rtmath
 
