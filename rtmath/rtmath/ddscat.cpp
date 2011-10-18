@@ -3,7 +3,9 @@
 #include "ddscat.h"
 #include <iostream>
 #include <sstream>
+#include <cstring>
 #include "phaseFunc.h"
+#include "macros.h"
 
 namespace rtmath {
 
@@ -142,11 +144,113 @@ namespace ddscat {
 		// Wavelength 8, reff 7, numDipoles 2, sizep 9, n 10
 		// The data begin on line 29
 
-		double Beta, Theta, Phi, theta, phi, re, im;
+		double Beta, Theta, Phi, re, im;
 		double wvlen, reff, sizep;
+		size_t numDipoles;
+		std::complex<double> n;
 
 		string linein;
+		size_t line=0;
+		char newval[20];
 
+		while (line!=2)
+		{
+			std::getline(infml,linein);
+			line++;
+		}
+
+		// Line 2 is in the string buffer. Now, extract numDipoles
+		strncpy(newval, linein.data()+20, 5);
+		numDipoles = M_ATOI(newval);
+		this->numDipoles(numDipoles);
+
+		// Loop to interesting line (line 7)
+		while (line!=7)
+		{
+			std::getline(infml,linein);
+			line++;
+		}
+		// Line 7 is in the string buffer. Now, extract reff
+		// reff is in chars 10-17, inclusively
+		strncpy(newval, linein.data()+10, 7);
+		reff = M_ATOF(newval);
+		this->reff(reff);
+
+		// Line 8 - wavelength
+		std::getline(infml,linein);
+		strncpy(newval, linein.data()+10, 7);
+		wvlen = M_ATOF(newval);
+		this->wavelength(wvlen);
+
+		// Line 9 - size parameter
+		std::getline(infml,linein);
+		strncpy(newval, linein.data()+10, 7);
+		sizep = M_ATOF(newval);
+		this->sizep(sizep);
+
+		// Line 10 - n
+		std::getline(infml,linein);
+		strncpy(newval, linein.data()+4, 7);
+		re = M_ATOF(newval);
+		strncpy(newval, linein.data()+13, 7);
+		im = M_ATOF(newval);
+		n.real(re);
+		n.imag(im);
+		this->n.push_back(n);
+
+		line = 10;
+		// seek to line 21 for beta
+		while (line!=21)
+		{
+			std::getline(infml,linein);
+			line++;
+		}
+
+		// Set Beta
+		strncpy(newval, linein.data()+10, 7);
+		Beta = M_ATOF(newval);
+		this->beta(Beta);
+
+		// Set Theta
+		std::getline(infml,linein);
+		strncpy(newval, linein.data()+10, 7);
+		Theta = M_ATOF(newval);
+		this->theta(Theta);
+
+		// Set Phi
+		std::getline(infml,linein);
+		strncpy(newval, linein.data()+10, 7);
+		Phi = M_ATOF(newval);
+		this->phi(Phi);
+
+		line = 23;
+		// Seek to the beginning of the data section
+		while (line!=28)
+		{
+			std::getline(infml,linein);
+			line++;
+		}
+
+		// Loop until eof and read in the scattering amplitude matrix information
+		while (infml.good())
+		{
+			std::getline(infml,linein);
+			double theta, phi; // also using re and im from before
+			istringstream parser(linein, istringstream::in);
+			parser >> theta;
+			parser >> phi;
+			ddOutputScatt newdata;
+			for (size_t i=0;i<4;i++)
+			{
+				parser >> re;
+				parser >> im;
+				newdata.f[i].real(re);
+				newdata.f[i].imag(im);
+			}
+			ddCoords crds(theta,phi);
+			if (_fijs.count(crds) == 0)
+				_fijs[crds] = newdata;
+		}
 	}
 
 }; // end namespace ddscat

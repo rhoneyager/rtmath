@@ -97,7 +97,7 @@ namespace rtmath {
 			ddRotCoords(double beta, double theta, double phi)
 			{
 				this->beta = beta;
-				this->theta = teta;
+				this->theta = theta;
 				this->phi = phi;
 			}
 			double beta, theta, phi;
