@@ -153,103 +153,92 @@ namespace ddscat {
 		size_t line=0;
 		char newval[20];
 
-		while (line!=2)
-		{
-			std::getline(infml,linein);
-			line++;
-		}
-
-		// Line 2 is in the string buffer. Now, extract numDipoles
-		strncpy(newval, linein.data()+20, 5);
-		numDipoles = M_ATOI(newval);
-		this->numDipoles(numDipoles);
-
-		// Loop to interesting line (line 7)
-		while (line!=7)
-		{
-			std::getline(infml,linein);
-			line++;
-		}
-		// Line 7 is in the string buffer. Now, extract reff
-		// reff is in chars 10-17, inclusively
-		strncpy(newval, linein.data()+10, 7);
-		reff = M_ATOF(newval);
-		this->reff(reff);
-
-		// Line 8 - wavelength
-		std::getline(infml,linein);
-		strncpy(newval, linein.data()+10, 7);
-		wvlen = M_ATOF(newval);
-		this->wavelength(wvlen);
-
-		// Line 9 - size parameter
-		std::getline(infml,linein);
-		strncpy(newval, linein.data()+10, 7);
-		sizep = M_ATOF(newval);
-		this->sizep(sizep);
-
-		// Line 10 - n
-		std::getline(infml,linein);
-		strncpy(newval, linein.data()+4, 7);
-		re = M_ATOF(newval);
-		strncpy(newval, linein.data()+13, 7);
-		im = M_ATOF(newval);
-		n.real(re);
-		n.imag(im);
-		this->n.push_back(n);
-
-		line = 10;
-		// seek to line 21 for beta
-		while (line!=21)
-		{
-			std::getline(infml,linein);
-			line++;
-		}
-
-		// Set Beta
-		strncpy(newval, linein.data()+10, 7);
-		Beta = M_ATOF(newval);
-		this->beta(Beta);
-
-		// Set Theta
-		std::getline(infml,linein);
-		strncpy(newval, linein.data()+10, 7);
-		Theta = M_ATOF(newval);
-		this->theta(Theta);
-
-		// Set Phi
-		std::getline(infml,linein);
-		strncpy(newval, linein.data()+10, 7);
-		Phi = M_ATOF(newval);
-		this->phi(Phi);
-
-		line = 23;
-		// Seek to the beginning of the data section
-		while (line!=28)
-		{
-			std::getline(infml,linein);
-			line++;
-		}
-
-		// Loop until eof and read in the scattering amplitude matrix information
+		// Rewrite so that the file header may be preserved for future resaving
 		while (infml.good())
 		{
+			line++;
 			std::getline(infml,linein);
-			double theta, phi; // also using re and im from before
-			istringstream parser(linein, istringstream::in);
-			parser >> theta;
-			parser >> phi;
-			ddOutputScatt newdata;
-			for (size_t i=0;i<4;i++)
+
+			if (line == 2)
 			{
-				parser >> re;
-				parser >> im;
-				newdata.f[i].real(re);
-				newdata.f[i].imag(im);
+				strncpy(newval, linein.data()+20, 5);
+				numDipoles = M_ATOI(newval);
+				this->numDipoles(numDipoles);
 			}
-			ddCoords crds(theta,phi);
-			if (_fijs.count(crds) == 0)
-				_fijs[crds] = newdata;
+
+			if (line == 7)
+			{
+				strncpy(newval, linein.data()+10, 7);
+				reff = M_ATOF(newval);
+				this->reff(reff);
+			}
+
+			if (line == 8)
+			{
+				strncpy(newval, linein.data()+10, 7);
+				wvlen = M_ATOF(newval);
+				this->wavelength(wvlen);
+			}
+
+			if (line == 9)
+			{
+				strncpy(newval, linein.data()+10, 7);
+				sizep = M_ATOF(newval);
+				this->sizep(sizep);
+			}
+
+			if (line == 10)
+			{
+				strncpy(newval, linein.data()+4, 7);
+				re = M_ATOF(newval);
+				strncpy(newval, linein.data()+13, 7);
+				im = M_ATOF(newval);
+				n.real(re);
+				n.imag(im);
+				this->n.push_back(n);
+			}
+
+			if (line == 21)
+			{
+				strncpy(newval, linein.data()+10, 7);
+				Beta = M_ATOF(newval);
+				this->beta(Beta);
+			}
+
+			if (line == 22)
+			{
+				strncpy(newval, linein.data()+10, 7);
+				Theta = M_ATOF(newval);
+				this->theta(Theta);
+			}
+
+			if (line == 23)
+			{
+				strncpy(newval, linein.data()+10, 7);
+				Phi = M_ATOF(newval);
+				this->phi(Phi);
+			}
+
+			if (line <= 28) _headerRead.append(linein);
+
+			if (line > 28)
+			{
+				double theta, phi; // also using re and im from before
+				istringstream parser(linein, istringstream::in);
+				parser >> theta;
+				parser >> phi;
+				ddOutputScatt newdata;
+				for (size_t i=0;i<4;i++)
+				{
+					parser >> re;
+					parser >> im;
+					newdata.f[i].real(re);
+					newdata.f[i].imag(im);
+				}
+				ddCoords crds(theta,phi);
+				if (_fijs.count(crds) == 0)
+					_fijs[crds] = newdata;
+			}
 		}
 	}
 

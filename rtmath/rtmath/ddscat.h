@@ -171,6 +171,7 @@ namespace rtmath {
 			double _sizep, _reff; // TODO: set starting from here
 			double _d;
 			size_t _numDipoles;
+			std::string _headerRead;
 			//std::vector<std::complex<double> > _n;
 			// Todo: get rid of duplication of elements
 			// std::bitset<16> _ijs;
