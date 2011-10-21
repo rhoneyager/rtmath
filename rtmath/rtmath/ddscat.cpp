@@ -65,12 +65,7 @@ namespace ddscat {
 
 	}
 
-	void ddOutput::readdir(std::string dirpath)
-	{
-		// Begin by searcing for ddscat.par
-	}
-
-	void ddOutput::writedir(std::string dirpath)
+	void ddOutput::writedir(const std::string dirpath)
 	{
 
 	}
@@ -240,6 +235,37 @@ namespace ddscat {
 					_fijs[crds] = newdata;
 			}
 		}
+	}
+
+	void ddOutput::readdir(const std::string &dirpath)
+	{
+		using namespace std;
+
+		// Begin by looking for ddscat.par
+		ostringstream ddpar(dirpath);
+		ddpar << "/ddscat.par";
+		string ddfile = ddpar.str();
+
+		ifstream ddin(ddfile.c_str());
+
+		// Get the set of w*.fml files. Use boost for this.
+		// Load each fml file as ddOutputSingle
+
+		//
+		{
+			// Get name of file
+			string filename;
+
+			// Load file
+			ddOutputSingle infile(filename);
+			// File is loaded. Can get coordinates easily.
+			if (_data.count(infile.getddRotCoords()) == 0)
+				_data[infile.getddRotCoords()] = infile;
+		}
+
+		// Read ddscat.par and get other properties
+
+
 	}
 
 }; // end namespace ddscat

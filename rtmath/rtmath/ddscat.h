@@ -155,6 +155,9 @@ namespace rtmath {
 			inline void numDipoles(double newDipoles) { _numDipoles = newDipoles; }
 			inline size_t numDipoles() const { return _numDipoles; }
 
+			inline void getddRotCoords(ddRotCoords &res) const { res.beta = _beta; res.theta = _theta; res.phi = _phi; }
+			inline ddRotCoords getddRotCoords() const { ddRotCoords res(0,0,0); getddRotCoords(res); return res; }
+
 			void setF(const ddCoords &coords, const ddOutputScatt &f);
 			void setS(const ddCoords &coords, const ddOutputMueller &s);
 			void getF(const ddCoords &coords, ddOutputScatt &f) const;
@@ -186,8 +189,8 @@ namespace rtmath {
 			//void writeCDF();
 			//void readCDF();
 			void readEvans(std::string filename);
-			void readdir(std::string dirpath);
-			void writedir(std::string dirpath);
+			void readdir(const std::string dirpath);
+			void writedir(const std::string dirpath);
 			//void readfile();
 			//void writefile();
 			//void genPf(daPf &target);
