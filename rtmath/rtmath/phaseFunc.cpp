@@ -40,6 +40,42 @@ namespace rtmath {
 	{
 	}
 
+	void scattMatrix::_genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double k)
+	{
+		double f = 2.0 * M_PI / k;
+
+		// Do the diagonals first
+		for (size_t i=0;i<4;i++)
+		{
+			Knn[i][i] = (Sn[0] + Sn[3]).imag();
+		}
+
+		// And the remaining 12 (really duplicates, so only six)
+		for (size_t i=0; i<4; i++)
+			for (size_t j=0; j<4; j++)
+			{
+				if (i == 0 && j == 1) Knn[i][j] = (Sn[0] - Sn[3]).imag();
+				if (i == 0 && j == 2) Knn[i][j] = -(Sn[1] + Sn[2]).imag();
+				if (i == 0 && j == 3) Knn[i][j] = (-Sn[1] + Sn[2]).real();
+				if (i == 1 && j == 2) Knn[i][j] = (Sn[2] - Sn[1]).imag();
+				if (i == 1 && j == 3) Knn[i][j] = -(-Sn[1] + Sn[2]).real();
+				if (i == 2 && j == 3) Knn[i][j] = (Sn[3] - Sn[0]).real();
+
+				if (j == 0 && i == 1) Knn[i][j] = (Sn[0] - Sn[3]).imag(); // Same
+				if (j == 0 && i == 2) Knn[i][j] = -(Sn[1] + Sn[2]).imag();
+				if (j == 0 && i == 3) Knn[i][j] = (-Sn[1] + Sn[2]).real();
+				if (j == 1 && i == 2) Knn[i][j] = -(Sn[2] - Sn[1]).imag(); // Negative
+				if (j == 1 && i == 3) Knn[i][j] = (-Sn[1] + Sn[2]).real();
+				if (j == 2 && i == 3) Knn[i][j] = -(Sn[3] - Sn[0]).real();
+			}
+
+
+		// Go back and multiply by f
+		for (size_t i=0; i<4;i++)
+			for (size_t j=0; j<4; j++)
+				Knn[i][j] *= f;
+	}
+
 	void scattMatrix::_genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4])
 	{
 		// Do the upper left quad in a loop

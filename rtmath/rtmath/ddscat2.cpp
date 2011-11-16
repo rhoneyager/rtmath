@@ -3,25 +3,55 @@
 #include <iostream>
 #include <fstream>
 #include <boost/filesystem.hpp>
+#include <memory>
+#include "phaseFunc.h" // TODO: rewrite so that names do not conflict
 
 namespace rtmath {
 
 	namespace ddscat {
 
-	scattMatrix::scattMatrix()
+	ddScattMatrix::ddScattMatrix()
 	{
 		_theta = 0;
 		_phi = 0;
+		_wavelength = 0;
 		// vals should be auto-initializing
 	}
 
-	scattMatrix::scattMatrix(double theta, double phi)
+	ddScattMatrix::ddScattMatrix(double theta, double phi, double wavelength)
 	{
 		_theta = theta;
 		_phi = phi;
+		_wavelength = wavelength;
 	}
 
-	scattMatrix& scattMatrix::operator=(const scattMatrix &rhs)
+	void ddScattMatrix::mueller(double Snn[4][4]) const
+	{
+		rtmath::scattMatrix::_genMuellerMatrix(Snn, &(vals[0][0]));
+	}
+
+	void ddScattMatrix::mueller(matrixop &res) const
+	{
+		double Snn[4][4];
+		rtmath::scattMatrix::_genMuellerMatrix(Snn, &(vals[0][0]));
+		res.fromDoubleArray(&Snn[0][0]);
+	}
+
+	void ddScattMatrix::extinction(double Knn[4][4]) const
+	{
+		double k = 2.0 * M_PI / _wavelength;
+		rtmath::scattMatrix::_genExtinctionMatrix(Knn, &(vals[0][0]), k);
+	}
+
+	void ddScattMatrix::extinction(matrixop &res) const
+	{
+		double Knn[4][4];
+		double k = 2.0 * M_PI / _wavelength;
+		rtmath::scattMatrix::_genExtinctionMatrix(Knn, &(vals[0][0]), k);
+		res.fromDoubleArray(&Knn[0][0]);
+	}
+
+	ddScattMatrix& ddScattMatrix::operator=(const ddScattMatrix &rhs)
 	{
 		// Check for pointer equality. If equal, return.
 		if (this == &rhs) return *this;
@@ -33,7 +63,7 @@ namespace rtmath {
 		return *this;
 	}
 
-	bool scattMatrix::operator==(const scattMatrix &rhs) const
+	bool ddScattMatrix::operator==(const ddScattMatrix &rhs) const
 	{
 		if (this == &rhs) return true;
 		if (_theta != rhs._theta) return false;
@@ -44,12 +74,12 @@ namespace rtmath {
 		return true;
 	}
 
-	bool scattMatrix::operator!=(const scattMatrix &rhs) const
+	bool ddScattMatrix::operator!=(const ddScattMatrix &rhs) const
 	{
 		return !operator==(rhs);
 	}
 
-	void scattMatrix::print() const
+	void ddScattMatrix::print() const
 	{
 		using namespace std;
 		cout << "Scattering matrix for theta " << _theta << " phi "
@@ -88,21 +118,67 @@ namespace rtmath {
 			_shape[i] = 0;
 	}
 
-	ddOutputSingle::ddOutputSingle(double beta, double theta, double phi)
+	ddOutputSingle::ddOutputSingle(double beta, double theta, double phi, double wavelength)
 	{
 		_init();
 		_Beta = beta;
 		_Theta = theta;
 		_Phi = phi;
+		_wavelength = wavelength;
 	}
 
-	void ddOutputSingle::getF(const ddCoords &coords, scattMatrix &f) const
+	std::shared_ptr<matrixop> ddOutputSingle::eval(double alpha) const
+	{
+		// Evaluate the phase function at a given single-scattering angle
+		// Not the most accurate method, as it assumes that there is only one
+		// degree of freedom. However, it works by selecting the element in _fs
+		// that has alpha equal to the request.
+		// If not found, it will try and interpolate linearly to get a result.
+		// TODO: eventually, have it save precomputed values using hashes
+		//std::map<double, ddScattMatrix*> rankings; // Pointer set of ranked _fs
+		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
+		ddScattMatrix prev, next;
+		double aprev = 0, anext = 0;
+		for (it = _fs.begin(); it != _fs.end(); it++)
+		{
+			// First, check for an exact alpha match
+			// If so, just return
+			if (it->first.alpha == alpha)
+			{
+				//it->second.mueller();
+				std::shared_ptr<matrixop> res( new matrixop(it->second.mueller()));
+				return res;
+			}
+			// If not, add to rankings
+			//rankings[it->first.alpha] = &(it->second);
+			if (it->first.alpha < anext && it->first.alpha > alpha)
+			{
+				anext = it->first.alpha;
+				next = (it->second);
+			}
+			if (it->first.alpha > aprev && it->first.alpha < alpha)
+			{
+				aprev = it->first.alpha;
+				prev = (it->second);
+			}
+		}
+		// If we've hit this point, linearly interpolate to get a good alpha
+		// Factors are weights for average on scale of 0 to 1.
+		// Weird formulation, but it's just how I think...
+		double facta = (anext - alpha)/ (anext - aprev);
+		double factb = 1 - facta;
+		matrixop resi = (prev.mueller() * facta) + (next.mueller() *factb);
+		std::shared_ptr<matrixop> res( new matrixop(resi));
+		return res;
+	}
+
+	void ddOutputSingle::getF(const ddCoords &coords, ddScattMatrix &f) const
 	{
 		if (_fs.count(coords)) f = _fs[coords];
 		//else f = NULL;
 	}
 
-	void ddOutputSingle::setF(const ddCoords &coords, const scattMatrix &f)
+	void ddOutputSingle::setF(const ddCoords &coords, const ddScattMatrix &f)
 	{
 		_fs[coords] = f;
 	}
@@ -113,7 +189,7 @@ namespace rtmath {
 		// File loading routine is important!
 		// Load a standard .fml file. Parse each line for certain key words.
 		bool dataseg = false;
-		cout << "Loading " << filename << endl;
+		//cout << "Loading " << filename << endl;
 		ifstream in(filename.c_str(), std::ifstream::in);
 		while (in.good())
 		{
@@ -133,7 +209,8 @@ namespace rtmath {
 				double theta, phi, re, im;
 				lss >> theta;
 				lss >> phi;
-				scattMatrix nscat(theta,phi);
+				// _wavelength will be saved so that extinction matrix may be calculated
+				ddScattMatrix nscat(theta,phi,_wavelength);
 				// For the next eight quantities, load the complex f
 				for (size_t i=0; i<2; i++)
 					for (size_t j=0; j<2; j++)
@@ -206,7 +283,7 @@ namespace rtmath {
 		cout << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
 		cout << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
 		cout << endl;
-		std::map<ddCoords, scattMatrix, ddCoordsComp>::const_iterator it;
+		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
 		for (it = _fs.begin(); it != _fs.end(); it++)
 		{
 			it->second.print();

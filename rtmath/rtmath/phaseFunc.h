@@ -38,6 +38,7 @@ namespace rtmath {
 		virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
 	public:
 		static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
+		static void _genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double k);
 	};
 
 	/*

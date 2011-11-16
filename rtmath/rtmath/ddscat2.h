@@ -7,6 +7,8 @@
 #include <cstdio>
 #include <cstring>
 #include <complex>
+#include "matrixop.h"
+#include "phaseFunc.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)
@@ -23,22 +25,29 @@ namespace rtmath {
 
 	namespace ddscat {
 
-		class scattMatrix{
+		class ddScattMatrix{
 			// A complex matrix that holds the scattering amplitudes (2x2)
 			// It may be converted into other forms
 		public:
 			// Standard constructor. theta and phi in degrees.
-			scattMatrix(double theta, double phi);
-			scattMatrix();
+			ddScattMatrix(double theta, double phi, double wavelength);
+			ddScattMatrix();
 			std::complex<double> vals[2][2]; // Just for convenience
 			inline double theta() const {return _theta;}
 			inline double phi() const {return _phi;}
-			scattMatrix& operator=(const scattMatrix &rhs);
-			bool operator==(const scattMatrix &rhs) const;
-			bool operator!=(const scattMatrix &rhs) const;
+			ddScattMatrix& operator=(const ddScattMatrix &rhs);
+			bool operator==(const ddScattMatrix &rhs) const;
+			bool operator!=(const ddScattMatrix &rhs) const;
 			void print() const;
+		public: // Conversions start here
+			void mueller(double Pnn[4][4]) const;
+			void mueller(matrixop &res) const;
+			inline matrixop mueller() const { matrixop res(2,4,4); mueller(res); return res; }
+			void extinction(double Knn[4][4]) const;
+			void extinction(matrixop &res) const;
+			inline matrixop extinction() const { matrixop res(2,4,4); extinction(res); return res; }
 		private:
-			double _theta, _phi;
+			double _theta, _phi, _wavelength;
 		};
 
 		struct ddCoords {
@@ -46,8 +55,9 @@ namespace rtmath {
 			{
 				this->theta = theta;
 				this->phi = phi;
+				alpha = theta;
 			}
-			double theta, phi;
+			double theta, phi, alpha;
 		};
 
 		struct ddCoords3 {
@@ -79,7 +89,8 @@ namespace rtmath {
 			}
 		};
 
-		class ddOutputSingle {
+		class ddOutputSingle : public rtmath::phaseFunc
+		{
 			// Class contains the output of a single ddscat file
 			// This usually contains the results for a given Beta, Theta, Phi
 			// And has the scattering amplitude matrix elements
@@ -88,20 +99,22 @@ namespace rtmath {
 			// dipoles and a few other quantities).
 			// Results are presented with varied theta and phi (note lower case)
 		public:
-			ddOutputSingle(double beta, double theta, double phi); // rotation angles
+			ddOutputSingle(double beta, double theta, double phi, double wavelength); // rotation angles
 			ddOutputSingle(const std::string &filename) { _init(); loadFile(filename); }
 			ddOutputSingle() { _init(); }
 			void loadFile(const std::string &filename);
-			void getF(const ddCoords &coords, scattMatrix &f) const;
-			void setF(const ddCoords &coords, const scattMatrix &f);
+			void getF(const ddCoords &coords, ddScattMatrix &f) const;
+			void setF(const ddCoords &coords, const ddScattMatrix &f);
 			ddOutputSingle& operator=(const ddOutputSingle &rhs);
 			void print() const;
+			// evaluate phase function at a given scattering angle:
+			virtual std::shared_ptr<matrixop> eval(double alpha) const;
 		public:
 			void _init();
 			double _Beta, _Theta, _Phi;
 			double _wavelength, _numDipoles, _reff;
 			double _shape[3]; // for ellipsoids
-			mutable std::map<ddCoords, scattMatrix, ddCoordsComp> _fs;
+			mutable std::map<ddCoords, ddScattMatrix, ddCoordsComp> _fs;
 		};
 
 		class ddOutput {
