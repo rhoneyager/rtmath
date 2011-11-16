@@ -29,15 +29,15 @@ namespace rtmath {
 		public:
 			// Standard constructor. theta and phi in degrees.
 			scattMatrix(double theta, double phi);
+			scattMatrix();
 			std::complex<double> vals[2][2]; // Just for convenience
-			inline double theta() const {return _theta};
-			inline double phi() const {return _phi};
+			inline double theta() const {return _theta;}
+			inline double phi() const {return _phi;}
 			scattMatrix& operator=(const scattMatrix &rhs);
 			bool operator==(const scattMatrix &rhs) const;
 			bool operator!=(const scattMatrix &rhs) const;
 			void print() const;
 		private:
-			scattMatrix();
 			double _theta, _phi;
 		};
 
@@ -51,7 +51,7 @@ namespace rtmath {
 		};
 
 		struct ddCoords3 {
-			ddCoords(double beta, double theta, double phi)
+			ddCoords3(double beta, double theta, double phi)
 			{
 				this->beta = beta;
 				this->theta = theta;
@@ -90,10 +90,13 @@ namespace rtmath {
 		public:
 			ddOutputSingle(double beta, double theta, double phi); // rotation angles
 			ddOutputSingle(const std::string &filename) { _init(); loadFile(filename); }
+			ddOutputSingle() { _init(); }
 			void loadFile(const std::string &filename);
 			void getF(const ddCoords &coords, scattMatrix &f) const;
 			void setF(const ddCoords &coords, const scattMatrix &f);
-		private:
+			ddOutputSingle& operator=(const ddOutputSingle &rhs);
+			void print() const;
+		public:
 			void _init();
 			double _Beta, _Theta, _Phi;
 			double _wavelength, _numDipoles, _reff;
@@ -111,16 +114,16 @@ namespace rtmath {
 			// TODO: netcdf read/write, ddscat-formatted write
 		public:
 			ddOutput();
-			ddOutput(const std::string ddscatparFile) { _init(); loadFile(ddscatparFile); }
-			void loadFile(const std::string ddscatparFile);
+			ddOutput(const std::string &ddscatparFile) { _init(); loadFile(ddscatparFile); }
+			void loadFile(const std::string &ddscatparFile);
 			// writeEvans interpolates to the quadrature points and writes out the
 			// mueller matrix, extinction matrix and emission matrices
 			// It assumes that particles are aligned horizontally (but I take care of this)
 			//void writeEvans(const std::string scatFile) const;
 			void get(const ddCoords3 &coords, ddOutputSingle &f) const;
 			void set(const ddCoords3 &coords, const ddOutputSingle &f);
-		private:
-			_init();
+		public:
+			void _init();
 			mutable std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _data;
 		};
 	}; // end namespace ddscat

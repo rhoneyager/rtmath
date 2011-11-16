@@ -63,11 +63,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.cross.lib.debug.955700108.1076816500" name="ddscat.cpp" rcbsApplicability="disable" resourcePath="ddscat.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cross.cpp.compiler.438859328.781650998">
-						<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.438859328.781650998" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler.438859328"/>
+					<fileInfo id="cdt.managedbuild.config.gnu.cross.lib.debug.955700108.814278444" name="ddscat.cpp" rcbsApplicability="disable" resourcePath="ddscat.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cross.cpp.compiler.438859328.1942712705">
+						<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.438859328.1942712705" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler.438859328"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ddscat.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -1,6 +1,8 @@
 #include "ddscat2.h"
 #include "splitstring.h"
 #include <iostream>
+#include <fstream>
+#include <boost/filesystem.hpp>
 
 namespace rtmath {
 
@@ -28,6 +30,7 @@ namespace rtmath {
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
 				vals[i][j] = rhs.vals[i][j];
+		return *this;
 	}
 
 	bool scattMatrix::operator==(const scattMatrix &rhs) const
@@ -49,11 +52,27 @@ namespace rtmath {
 	void scattMatrix::print() const
 	{
 		using namespace std;
-		cout << "Scattering matrix for theta " << _ theta << " phi "
+		cout << "Scattering matrix for theta " << _theta << " phi "
 				<< _phi << endl;
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
 				cout << i << "," << j << "\t" << vals[i][j] << endl;
+	}
+
+	ddOutputSingle& ddOutputSingle::operator=(const ddOutputSingle &rhs)
+	{
+		// Check for pointer equality. If equal, return.
+		if (this == &rhs) return *this;
+		_Beta = rhs._Beta;
+		_Theta = rhs._Theta;
+		_Phi = rhs._Phi;
+		_wavelength = rhs._wavelength;
+		_numDipoles = rhs._numDipoles;
+		_reff = rhs._reff;
+		_fs = rhs._fs;
+		for (size_t i=0; i<3; i++)
+			_shape[i] = rhs._shape[i];
+		return *this;
 	}
 
 	void ddOutputSingle::_init()
@@ -80,7 +99,7 @@ namespace rtmath {
 	void ddOutputSingle::getF(const ddCoords &coords, scattMatrix &f) const
 	{
 		if (_fs.count(coords)) f = _fs[coords];
-		else f = NULL;
+		//else f = NULL;
 	}
 
 	void ddOutputSingle::setF(const ddCoords &coords, const scattMatrix &f)
@@ -94,8 +113,8 @@ namespace rtmath {
 		// File loading routine is important!
 		// Load a standard .fml file. Parse each line for certain key words.
 		bool dataseg = false;
-
-		ifstream in(filename.c_str());
+		cout << "Loading " << filename << endl;
+		ifstream in(filename.c_str(), std::ifstream::in);
 		while (in.good())
 		{
 			// Read a line
@@ -125,7 +144,8 @@ namespace rtmath {
 						nscat.vals[i][j] = nval;
 					}
 				// Save to the map
-				setF(ddCoords(theta,phi),nscat);
+				if (_fs.count(ddCoords(theta,phi)) == 0)
+					setF(ddCoords(theta,phi),nscat);
 			} else {
 				// Still in header segment
 				string junk;
@@ -135,18 +155,22 @@ namespace rtmath {
 				if (lin.find("BETA") != string::npos)
 				{
 					lss >> junk; // get rid of first word
+					lss >> junk;
 					lss >> _Beta;
 				}
 				// THETA
 				if (lin.find("THETA") != string::npos)
 				{
 					lss >> junk; // get rid of first word
+					// Theta is unlike Beta and Phi, as there is
+					// no space between THETA and =
 					lss >> _Theta;
 				}
 				// PHI
 				if (lin.find("PHI") != string::npos)
 				{
 					lss >> junk; // get rid of first word
+					lss >> junk;
 					lss >> _Phi;
 				}
 				// NAT0
@@ -167,11 +191,25 @@ namespace rtmath {
 					lss >> _wavelength;
 				}
 				// theta --- indicates last line of header
-				if (lin.find("theta") != string::npos)
+				if (lin.find("Re(f_11)") != string::npos)
 				{
 					dataseg = true;
 				}
 			}
+		}
+		//print();
+	}
+
+	void ddOutputSingle::print() const
+	{
+		using namespace std;
+		cout << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
+		cout << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
+		cout << endl;
+		std::map<ddCoords, scattMatrix, ddCoordsComp>::const_iterator it;
+		for (it = _fs.begin(); it != _fs.end(); it++)
+		{
+			it->second.print();
 		}
 	}
 
@@ -183,24 +221,62 @@ namespace rtmath {
 	void ddOutput::_init()
 	{
 		// TODO!!
-		throw;
+		//throw;
 	}
 
-	void ddOutput::loadFile(const std::string ddscatparFile)
+	void ddOutput::loadFile(const std::string &ddscatparFile)
 	{
 		using namespace std;
-		// TODO!!
-		throw;
-		// Open file
+		using namespace boost::filesystem;
+
+		boost::filesystem::path p(ddscatparFile.c_str()), dir, ddfile;
+		if (!exists(p)) throw;
+		if (is_regular_file(p))
+		{
+			// Need to extract the directory path
+			ddfile = p;
+			dir = p.parent_path();
+		}
+		if (is_directory(p))
+		{
+			// Need to extract the path for ddscat.par
+			dir = p;
+			ddfile = p / "ddscat.par";
+		}
+
+		cout << "Directory: " << dir << endl;
+		cout << "ddscat par: " << ddfile << endl;
 
 		// Use boost to select and open all files in path
 		// Iterate through each .fml file and load
+		vector<path> files;
+		copy(directory_iterator(dir), directory_iterator(), back_inserter(files));
+
+		cout << "There are " << files.size() << " files in the directory." << endl;
+		// Iterate through file list for .fml files
+		vector<path>::const_iterator it;
+		size_t counter = 0;
+		for (it = files.begin(); it != files.end(); it++)
+		{
+			//cout << *it << "\t" << it->extension() << endl;
+			if (it->extension().string() == string(".fml") )
+			{
+				// Load the file
+				//cout << "Loading " << it->string() << endl;
+				ddOutputSingle news(it->string());
+				ddCoords3 crds(news._Beta, news._Theta, news._Phi);
+				if (_data.count(crds) == 0)
+					set(crds, news);
+				counter++;
+			}
+		}
+		cout << "Of these, " << counter << " fml files were loaded." << endl;
 	}
 
 	void ddOutput::get(const ddCoords3 &coords, ddOutputSingle &f) const
 	{
 		if (_data.count(coords)) f = _data[coords];
-		else f = NULL;
+		//else f = NULL;
 	}
 
 	void ddOutput::set(const ddCoords3 &coords, const ddOutputSingle &f)
