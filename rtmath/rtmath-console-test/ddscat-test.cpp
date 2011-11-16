@@ -20,6 +20,18 @@
 #include "../rtmath/rayleigh.h"
 #include "../rtmath/ddscat2.h"
 
+void test()
+{
+	// Begin by loading files
+
+	// I now have several files. Select the subset whete Theta ranges
+	// from 0 to 90 degrees
+
+	// Perform averaging of phase functions to generate isotropic solution
+	// will have 91 or 181 possible theta (lc)
+
+	// Write out results
+}
 
 int main(int argc, char* argv[])
 {
@@ -34,6 +46,6 @@ int main(int argc, char* argv[])
 	//ddOutputSingle a(file);
 	ddOutput a(file);
 	std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it;
-	cout << "Loaded " << a._data.size() << " files" << endl;
+	//cout << "Loaded " << a._data.size() << " files" << endl;
 	return 0;
 }
