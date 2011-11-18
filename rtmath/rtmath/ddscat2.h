@@ -109,6 +109,8 @@ namespace rtmath {
 			void print() const;
 			// evaluate phase function at a given scattering angle:
 			virtual std::shared_ptr<matrixop> eval(double alpha) const;
+			static void ddOutputSingle::writeCDFheader(cdfParams &params) const;
+			void writeCDF(const std::string &filename) const;
 		public:
 			void _init();
 			double _Beta, _Theta, _Phi;

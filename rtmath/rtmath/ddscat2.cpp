@@ -4,6 +4,9 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 #include <memory>
+#include <netcdf.h>
+
+#include "cdf-ddscat.h"
 #include "phaseFunc.h" // TODO: rewrite so that names do not conflict
 
 namespace rtmath {
@@ -181,6 +184,82 @@ namespace rtmath {
 	void ddOutputSingle::setF(const ddCoords &coords, const ddScattMatrix &f)
 	{
 		_fs[coords] = f;
+	}
+
+	void ddOutputSingle::writeCDFheader(cdfParams &params) const
+	{
+		using namespace cdf;
+		using namespace std;
+		int *p = &params.p[0]; // convenient alias
+
+		// Define dimensions
+		nc_def_dim(p[fid],"theta",181, &p[dtheta]); // 181 possible thetas: [0,180]
+		nc_def_dim(p[fid],"phi",1, &p[dphi]); // one possible phi for now
+		nc_def_dim(p[fid],"index",16, &p[didnum]); // 16 possible index points
+		// Define variables
+		nc_def_var(p[fid], "theta", NC_DOUBLE, 1, &p[dtheta], &p[theta]);
+		nc_def_var(p[fid], "phi", NC_DOUBLE, 1, &p[dphi], &p[phi]);
+		nc_def_var(p[fid], "index", NC_DOUBLE, 1, &p[dindex], &p[index]);
+
+		// Set variable attributes for grads plotting
+		string sLat("degrees_north");
+		string sLon("degrees_east");
+		string sT("t");
+		string sTu("seconds since 2001-1-1 00:00:0.0");
+		string strLev("level");
+		string strZaxis("z");
+
+		//nc_put_att_text(p[fid], p[cdf::plevs], "units", strLev.size(), strLev.c_str());
+		//nc_put_att_text(p[fid], p[cdf::plevs], "axis", strZaxis.size(), strZaxis.c_str());
+		nc_put_att_text(p[fid], p[phi], "units", sLat.size(), sLat.c_str());
+		nc_put_att_text(p[fid], p[theta], "units", sLon.size(), sLon.c_str());
+		nc_put_att_text(p[fid], p[index], "axis", sT.size(), sT.c_str());
+		nc_put_att_text(p[fid], p[index], "units", sTu.size(), sTu.c_str());
+
+		// Define other variables
+		int vdimp[] = { p[dtheta], p[dphi], p[dindex] };
+		const int dvdimp = 3;
+
+		nc_def_var(p[fid], "S", NC_DOUBLE, dvdimp, vdimp, &p[S]);
+		nc_def_var(p[fid], "P", NC_DOUBLE, dvdimp, vdimp, &p[P]);
+		nc_def_var(p[fid], "K", NC_DOUBLE, dvdimp, vdimp, &p[K]);
+	}
+
+	void ddOutputSingle::writeCDF(const std::string &filename) const
+	{
+		// Open netcdf file
+		using namespace cdf;
+		using namespace std;
+		cdfParams params;
+
+		nc_create(filename.c_str(), 0, &p[fid]); // open cdf file for writing
+
+		writeCDFheader(params);
+		nc_enddef(fid);
+
+		int *p = &params.p[0]; // convenient alias
+
+		// Write variable data
+
+		// Loop through all _fs
+		// Generate mueller and extinction matrices
+		// Write out all values, one at a time
+		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
+		for (it = _fs.begin(); it != _fs.end(); it++)
+		{
+			double theta = it->first.theta();
+			double phi = it->first.phi();
+			double Pnn[4][4], Knn[4][4];
+			double Sr[4], Si[4];
+			it->second.mueller(Pnn);
+			it->second.extinction(Knn);
+
+			// Write values one at a time to cdf file
+			//nc_put_var1_double(p[fid],p[S],index,&data);
+		}
+
+		// Close file
+		nc_close(fid);
 	}
 
 	void ddOutputSingle::loadFile(const std::string &filename)
