@@ -184,9 +184,11 @@ namespace rtmath {
 	void ddOutputSingle::setF(const ddCoords &coords, const ddScattMatrix &f)
 	{
 		_fs[coords] = f;
+		_fs[coords].mueller(_fs[coords].Pnn);
+		_fs[coords].extinction(_fs[coords].Knn);
 	}
 
-	void ddOutputSingle::writeCDFheader(cdfParams &params) const
+	void ddOutputSingle::writeCDFheader(cdfParams &params)
 	{
 		using namespace cdf;
 		using namespace std;
@@ -199,13 +201,13 @@ namespace rtmath {
 		// Define variables
 		nc_def_var(p[fid], "theta", NC_DOUBLE, 1, &p[dtheta], &p[theta]);
 		nc_def_var(p[fid], "phi", NC_DOUBLE, 1, &p[dphi], &p[phi]);
-		nc_def_var(p[fid], "index", NC_DOUBLE, 1, &p[dindex], &p[index]);
+		nc_def_var(p[fid], "index", NC_DOUBLE, 1, &p[didnum], &p[idnum]);
 
 		// Set variable attributes for grads plotting
 		string sLat("degrees_north");
 		string sLon("degrees_east");
 		string sT("t");
-		string sTu("seconds since 2001-1-1 00:00:0.0");
+		string sTu("hours since 2001-1-1 00:00:0.0");
 		string strLev("level");
 		string strZaxis("z");
 
@@ -213,14 +215,14 @@ namespace rtmath {
 		//nc_put_att_text(p[fid], p[cdf::plevs], "axis", strZaxis.size(), strZaxis.c_str());
 		nc_put_att_text(p[fid], p[phi], "units", sLat.size(), sLat.c_str());
 		nc_put_att_text(p[fid], p[theta], "units", sLon.size(), sLon.c_str());
-		nc_put_att_text(p[fid], p[index], "axis", sT.size(), sT.c_str());
-		nc_put_att_text(p[fid], p[index], "units", sTu.size(), sTu.c_str());
+		nc_put_att_text(p[fid], p[idnum], "axis", sT.size(), sT.c_str());
+		nc_put_att_text(p[fid], p[idnum], "units", sTu.size(), sTu.c_str());
 
 		// Define other variables
-		int vdimp[] = { p[dtheta], p[dphi], p[dindex] };
+		int vdimp[] = { p[dtheta], p[dphi], p[didnum] };
 		const int dvdimp = 3;
 
-		nc_def_var(p[fid], "S", NC_DOUBLE, dvdimp, vdimp, &p[S]);
+		nc_def_var(p[fid], "A", NC_DOUBLE, dvdimp, vdimp, &p[S]);
 		nc_def_var(p[fid], "P", NC_DOUBLE, dvdimp, vdimp, &p[P]);
 		nc_def_var(p[fid], "K", NC_DOUBLE, dvdimp, vdimp, &p[K]);
 	}
@@ -228,18 +230,27 @@ namespace rtmath {
 	void ddOutputSingle::writeCDF(const std::string &filename) const
 	{
 		// Open netcdf file
-		using namespace cdf;
+		//using namespace cdf;
 		using namespace std;
 		cdfParams params;
 
-		nc_create(filename.c_str(), 0, &p[fid]); // open cdf file for writing
+		int *p = &params.p[0]; // convenient alias
+		nc_create(filename.c_str(), 0, &p[cdf::fid]); // open cdf file for writing
 
 		writeCDFheader(params);
-		nc_enddef(fid);
-
-		int *p = &params.p[0]; // convenient alias
+		nc_enddef(p[cdf::fid]);
 
 		// Write variable data
+
+		// Write index variables first
+		double phia = 0;
+		double thetaa[181];
+		double indexa[16];
+		for (size_t i=0;i<16;i++) indexa[i] = i;
+		for (size_t i=0;i<181;i++) thetaa[i] = i;
+		nc_put_var_double(p[cdf::fid],p[cdf::theta],thetaa );
+		nc_put_var_double(p[cdf::fid],p[cdf::idnum],indexa );
+		nc_put_var_double(p[cdf::fid],p[cdf::phi],&phia );
 
 		// Loop through all _fs
 		// Generate mueller and extinction matrices
@@ -247,19 +258,60 @@ namespace rtmath {
 		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
 		for (it = _fs.begin(); it != _fs.end(); it++)
 		{
-			double theta = it->first.theta();
-			double phi = it->first.phi();
-			double Pnn[4][4], Knn[4][4];
-			double Sr[4], Si[4];
-			it->second.mueller(Pnn);
-			it->second.extinction(Knn);
+			double theta = it->second.theta();
+			double phi = it->second.phi();
+			//double Pnn[4][4], Knn[4][4];
+			//double Sr[4], Si[4];
+			//it->second.mueller(Pnn);
+			//it->second.extinction(Knn);
 
-			// Write values one at a time to cdf file
-			//nc_put_var1_double(p[fid],p[S],index,&data);
+			//int vdimp[] = { p[dtheta], p[dphi], p[dindex] };
+
+			//for (int theta=0; theta <= 180; theta++)
+			{
+				//for (int phi = 0; phi <= 0; phi++)
+				{
+					// Each variable has different types of indices.
+					// P and K are the same (16), S has only 8.
+					for (int i=0;i<16;i++)
+					{
+						// Output P and K
+						size_t index[3]; // array for netcdf location specifying
+						index[0] = theta;
+						index[1] = phi;
+						index[2] = i;
+
+						double data = 0;
+						// I'm overriding my indices here to convert to single dimension array
+						data = it->second.Pnn[(i/4)][(i%4)];
+						nc_put_var1_double(p[cdf::fid],p[cdf::P],index,&data );
+						data = it->second.Knn[(i/4)][(i%4)];
+						nc_put_var1_double(p[cdf::fid],p[cdf::K],index,&data );
+
+						if (i<8)
+						{
+							// Output S too
+							int k = i / 2;
+							int l = i / 4;
+							int j = i % 2; // selects real or imaginary part
+							if (j == 0) // real
+								data = it->second.vals[l][k].real();
+							else // imaginary
+								data = it->second.vals[l][k].imag();
+							nc_put_var1_double(p[cdf::fid],p[cdf::S],index,&data);
+						}
+						if (i>=8)
+						{
+							data = 0;
+							nc_put_var1_double(p[cdf::fid],p[cdf::S],index,&data);
+						}
+					}
+				}
+			}
 		}
 
 		// Close file
-		nc_close(fid);
+		nc_close(p[cdf::fid]);
 	}
 
 	void ddOutputSingle::loadFile(const std::string &filename)
@@ -345,6 +397,7 @@ namespace rtmath {
 				{
 					lss >> junk; // get rid of first word
 					lss >> _wavelength;
+					cout << _wavelength << endl;
 				}
 				// theta --- indicates last line of header
 				if (lin.find("Re(f_11)") != string::npos)

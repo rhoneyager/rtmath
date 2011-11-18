@@ -9,6 +9,7 @@
 #include <complex>
 #include "matrixop.h"
 #include "phaseFunc.h"
+#include "cdf-ddscat.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)
@@ -39,6 +40,8 @@ namespace rtmath {
 			bool operator==(const ddScattMatrix &rhs) const;
 			bool operator!=(const ddScattMatrix &rhs) const;
 			void print() const;
+			double Pnn[4][4];
+			double Knn[4][4];
 		public: // Conversions start here
 			void mueller(double Pnn[4][4]) const;
 			void mueller(matrixop &res) const;
@@ -109,7 +112,7 @@ namespace rtmath {
 			void print() const;
 			// evaluate phase function at a given scattering angle:
 			virtual std::shared_ptr<matrixop> eval(double alpha) const;
-			static void ddOutputSingle::writeCDFheader(cdfParams &params) const;
+			static void writeCDFheader(cdfParams &params);
 			void writeCDF(const std::string &filename) const;
 		public:
 			void _init();

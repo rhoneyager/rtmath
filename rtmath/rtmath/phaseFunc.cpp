@@ -43,7 +43,6 @@ namespace rtmath {
 	void scattMatrix::_genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double k)
 	{
 		double f = 2.0 * M_PI / k;
-
 		// Do the diagonals first
 		for (size_t i=0;i<4;i++)
 		{
