@@ -46,6 +46,9 @@ int main(int argc, char* argv[])
 	//ddOutputSingle a(file);
 	ddOutput a(file);
 	std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it;
+	it = a._data.begin();
+	cout << it->first.beta << " " << it->first.theta << " " << it->first.phi << endl;
+	it->second.writeCDF("out.nc");
 	//cout << "Loaded " << a._data.size() << " files" << endl;
 	return 0;
 }
