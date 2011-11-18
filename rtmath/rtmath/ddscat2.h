@@ -122,6 +122,22 @@ namespace rtmath {
 			mutable std::map<ddCoords, ddScattMatrix, ddCoordsComp> _fs;
 		};
 
+		class ddOutputEnsemble : public ddOutputSingle
+		{
+			// Class is a pure virtual class designed to do ensemble weighting
+			// of a set of ddOutputSingle
+		public:
+			ddOutputEnsemble() {}
+			std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _ensemble;
+			virtual void generate() = 0; // virtual based on weighting method
+		};
+
+		class ddOutputEnsembleIso : public ddOutputEnsemble
+		{
+			ddOutputEnsembleIso() {}
+			virtual void generate();
+		};
+
 		class ddOutput {
 			// Class represents the output of a ddscat run
 			// Can be loaded by specifying the path of a ddscat.par file

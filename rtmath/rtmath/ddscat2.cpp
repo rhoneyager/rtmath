@@ -18,6 +18,14 @@ namespace rtmath {
 		_theta = 0;
 		_phi = 0;
 		_wavelength = 0;
+
+		for (int i=0;i<4;i++)
+			for(int j=0;j<4;j++)
+			{
+				Pnn[i][j] = 0;
+				Knn[i][j] = 0;
+			}
+
 		// vals should be auto-initializing
 	}
 
@@ -26,6 +34,12 @@ namespace rtmath {
 		_theta = theta;
 		_phi = phi;
 		_wavelength = wavelength;
+		for (int i=0;i<4;i++)
+			for(int j=0;j<4;j++)
+			{
+				Pnn[i][j] = 0;
+				Knn[i][j] = 0;
+			}
 	}
 
 	void ddScattMatrix::mueller(double Snn[4][4]) const
@@ -491,6 +505,49 @@ namespace rtmath {
 	void ddOutput::set(const ddCoords3 &coords, const ddOutputSingle &f)
 	{
 		_data[coords] = f;
+	}
+
+	void ddOutputEnsembleIso::generate()
+	{
+		// Take the set of ddOutputSingle, and average each rotation's s and phase matrices
+		// Report the output in standard ddOutputSingle elements, as we are a derived class,
+		// and it makes it easy this way
+		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it;
+		size_t numElems = _ensemble.size();
+		double weight = 1.0 / (double) numElems;
+		for (it=_ensemble.begin(); it != _ensemble.end(); it++)
+		{
+			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iteratir itb;
+			for (itb=_ensemble.begin(); itb != _ensemble.end(); itb++)
+			{
+				// TODO: rewrite so that ddCoords is not the determining factor here (allow for less symmetry)
+				ddScattMatrix *newmat;
+				if (_fs.count(it->first) > 0) newmat = &_fs[it->first];
+				else newmat = new ddScattMatrix;
+
+				// Go through ensemble fs and add weight*entry to newmat
+				for (int i=0;i<4;i++)
+					for(int j=0;j<4;j++)
+					{
+						newmat->Pnn[i][j] += weight * 0;
+						newmat->Knn[i][j] += weight * 0;
+					}
+
+				// TODO: do reverse calculation
+				for (int i=0;i<2;i++)
+					for(int j=0;j<2;j++)
+					{
+						vals[i][j].real(0);
+						vals[i][j].imag(0);
+					}
+
+				if (_fs.count(it->first) == 0)
+				{
+					ddScattMatrix newb = *newmat;
+					_fs[it->first] = newb;
+				}
+			}
+		}
 	}
 
 	}; // end namespace ddscat
