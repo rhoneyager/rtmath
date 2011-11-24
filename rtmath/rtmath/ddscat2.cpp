@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include "ddscat2.h"
 #include "splitstring.h"
 #include <iostream>
@@ -78,6 +79,32 @@ namespace rtmath {
 			for (size_t j=0; j<2; j++)
 				vals[i][j] = rhs.vals[i][j];
 		return *this;
+	}
+
+	ddScattMatrix ddScattMatrix::operator+(const ddScattMatrix &rhs)
+	{
+		// Used when adding two ddScattMatrices
+		ddScattMatrix res;
+		for (size_t i=0;i<2;i++)
+			for (size_t j=0;j<2;j++)
+				res.vals[i][j] = this->vals[i][j] + rhs.vals[i][j];
+		res.update();
+		return res;
+	}
+
+	ddScattMatrix& ddScattMatrix::operator+=(const ddScattMatrix &rhs)
+	{
+		for (size_t i=0;i<2;i++)
+			for (size_t j=0;j<2;j++)
+				this->vals[i][j] = this->vals[i][j] + rhs.vals[i][j];
+		update();
+		return *this;
+	}
+
+	void ddScattMatrix::update()
+	{
+		mueller(Pnn);
+		extinction(Knn);
 	}
 
 	bool ddScattMatrix::operator==(const ddScattMatrix &rhs) const
@@ -202,15 +229,38 @@ namespace rtmath {
 		_fs[coords].extinction(_fs[coords].Knn);
 	}
 
-	void ddOutputSingle::writeCDFheader(cdfParams &params)
+	void ddOutputSingle::size(std::set<double> &thetas, std::set<double> &phis) const
+	{
+		thetas.clear();
+		phis.clear();
+
+		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
+		for (it=_fs.begin(); it != _fs.end(); it++)
+		{
+			double th = it->first.theta;
+			if (thetas.count(th) == 0)
+				thetas.insert(th);
+			double ph = it->first.phi;
+			if (phis.count(ph) == 0)
+				phis.insert(ph);
+		}
+	}
+
+	void ddOutputSingle::writeCDFheader(cdfParams &params) const
 	{
 		using namespace cdf;
 		using namespace std;
 		int *p = &params.p[0]; // convenient alias
 
 		// Define dimensions
-		nc_def_dim(p[fid],"theta",181, &p[dtheta]); // 181 possible thetas: [0,180]
-		nc_def_dim(p[fid],"phi",1, &p[dphi]); // one possible phi for now
+		// Look at one of the _fs to see the bounds on theta and phi!
+		std::set<double> thetas, phis;
+		size(thetas,phis);
+
+		int numthetas = thetas.size();
+		int numphis = phis.size();
+		nc_def_dim(p[fid],"theta",numthetas, &p[dtheta]); // 181 possible thetas: [0,180]
+		nc_def_dim(p[fid],"phi",numphis, &p[dphi]); // one possible phi for now
 		nc_def_dim(p[fid],"index",16, &p[didnum]); // 16 possible index points
 		// Define variables
 		nc_def_var(p[fid], "theta", NC_DOUBLE, 1, &p[dtheta], &p[theta]);
@@ -257,20 +307,40 @@ namespace rtmath {
 		// Write variable data
 
 		// Write index variables first
-		double phia = 0;
-		double thetaa[181];
+		std::set<double> thetas, phis;
+		size(thetas,phis);
+
+		int numthetas = thetas.size();
+		int numphis = phis.size();
+
+		double *phia = new double[numphis];
+		double *thetaa = new double[numthetas];
+
+		{
+			std::set<double>::iterator dt;
+			size_t t;
+			for (dt = thetas.begin(), t=0; dt != thetas.end(); dt++, t++)
+				thetaa[t] = *dt;
+			for (dt = phis.begin(), t=0; dt != phis.end(); dt++, t++)
+				phia[t] = *dt;
+		}
+		//double phia[] = {0, 90};
+		//double thetaa[181];
 		double indexa[16];
 		for (size_t i=0;i<16;i++) indexa[i] = i;
-		for (size_t i=0;i<181;i++) thetaa[i] = i;
 		nc_put_var_double(p[cdf::fid],p[cdf::theta],thetaa );
 		nc_put_var_double(p[cdf::fid],p[cdf::idnum],indexa );
-		nc_put_var_double(p[cdf::fid],p[cdf::phi],&phia );
+		nc_put_var_double(p[cdf::fid],p[cdf::phi],phia );
+
+		delete[] thetaa;
+		delete[] phia;
 
 		// Loop through all _fs
 		// Generate mueller and extinction matrices
 		// Write out all values, one at a time
 		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
-		for (it = _fs.begin(); it != _fs.end(); it++)
+		size_t counter = 0; // keeps track of indices for theta and phi
+		for (it = _fs.begin(), counter = 0; it != _fs.end(); it++, counter++)
 		{
 			double theta = it->second.theta();
 			double phi = it->second.phi();
@@ -283,7 +353,7 @@ namespace rtmath {
 
 			//for (int theta=0; theta <= 180; theta++)
 			{
-				//for (int phi = 0; phi <= 0; phi++)
+				//for (int phi = 0; phi < 2; phi++)
 				{
 					// Each variable has different types of indices.
 					// P and K are the same (16), S has only 8.
@@ -291,9 +361,11 @@ namespace rtmath {
 					{
 						// Output P and K
 						size_t index[3]; // array for netcdf location specifying
-						index[0] = theta;
-						index[1] = phi;
-						index[2] = i;
+						//index[0] = theta;// BAD
+						//index[1] = phi; // BAD
+						index[0] = counter / numphis;
+						index[1] = counter % numphis;
+						index[2] = i; // GOOD
 
 						double data = 0;
 						// I'm overriding my indices here to convert to single dimension array
@@ -305,7 +377,7 @@ namespace rtmath {
 						if (i<8)
 						{
 							// Output S too
-							int k = i / 2;
+							int k = (i / 2) % 2;
 							int l = i / 4;
 							int j = i % 2; // selects real or imaginary part
 							if (j == 0) // real
@@ -409,9 +481,11 @@ namespace rtmath {
 				// WAVE
 				if (lin.find("WAVE") != string::npos)
 				{
-					lss >> junk; // get rid of first word
-					lss >> _wavelength;
-					cout << _wavelength << endl;
+					// BAD --- WAVE runs against size...
+					//lss >> junk; // get rid of first word
+					//lss >> _wavelength;
+					// Instead, read wave from column 7 (starting at 0) to 17
+					_wavelength = atof( lin.substr( 7, 10 ).c_str() );
 				}
 				// theta --- indicates last line of header
 				if (lin.find("Re(f_11)") != string::npos)
@@ -429,6 +503,7 @@ namespace rtmath {
 		cout << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
 		cout << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
 		cout << endl;
+
 		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
 		for (it = _fs.begin(); it != _fs.end(); it++)
 		{
@@ -466,7 +541,11 @@ namespace rtmath {
 			dir = p;
 			ddfile = p / "ddscat.par";
 		}
-
+		if (!exists(ddfile))
+		{
+			cout << "Invalid ddOutput directory. No ddscat.par\n";
+			throw;
+		}
 		cout << "Directory: " << dir << endl;
 		cout << "ddscat par: " << ddfile << endl;
 
@@ -517,7 +596,8 @@ namespace rtmath {
 		double weight = 1.0 / (double) numElems;
 		for (it=_ensemble.begin(); it != _ensemble.end(); it++)
 		{
-			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iteratir itb;
+			/*
+			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator itb;
 			for (itb=_ensemble.begin(); itb != _ensemble.end(); itb++)
 			{
 				// TODO: rewrite so that ddCoords is not the determining factor here (allow for less symmetry)
@@ -547,6 +627,7 @@ namespace rtmath {
 					_fs[it->first] = newb;
 				}
 			}
+			*/
 		}
 	}
 

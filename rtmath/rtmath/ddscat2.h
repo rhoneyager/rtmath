@@ -37,9 +37,12 @@ namespace rtmath {
 			inline double theta() const {return _theta;}
 			inline double phi() const {return _phi;}
 			ddScattMatrix& operator=(const ddScattMatrix &rhs);
+			ddScattMatrix operator+(const ddScattMatrix &rhs);
+			ddScattMatrix& operator+=(const ddScattMatrix &rhs);
 			bool operator==(const ddScattMatrix &rhs) const;
 			bool operator!=(const ddScattMatrix &rhs) const;
 			void print() const;
+			void update();
 			double Pnn[4][4];
 			double Knn[4][4];
 		public: // Conversions start here
@@ -112,8 +115,9 @@ namespace rtmath {
 			void print() const;
 			// evaluate phase function at a given scattering angle:
 			virtual std::shared_ptr<matrixop> eval(double alpha) const;
-			static void writeCDFheader(cdfParams &params);
+			void writeCDFheader(cdfParams &params) const;
 			void writeCDF(const std::string &filename) const;
+			void size(std::set<double> &thetas, std::set<double> &phis) const;
 		public:
 			void _init();
 			double _Beta, _Theta, _Phi;

@@ -29,8 +29,11 @@
     <ClCompile Include="lbltest.cpp">
       <Filter>Test Segments</Filter>
     </ClCompile>
-    <ClCompile Include="test.cpp">
+    <ClCompile Include="ddscat-test.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>Test Segments</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
