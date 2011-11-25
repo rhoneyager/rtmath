@@ -43,29 +43,50 @@ namespace rtmath {
 			}
 	}
 
+	void ddScattMatrix::genS()
+	{
+		using namespace std;
+		//complex<double> S[4];
+		complex<double> i(0,1);
+
+		complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
+		complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
+
+		//double cp = cos(2.0*M_PI*phi()/180.0);
+		double cp = cos(phi() * M_PI / 180.0);
+		//double sp = sin(2.0*M_PI*phi()/180.0);
+		double sp = sin(phi() * M_PI / 180.0);
+		S[0] = -i * ( vals[1][0] * (b * cp - a * sp) + vals[1][1] * (d * cp - c * sp) );
+		S[1] = -i * (vals[0][0] * (a*cp + b * sp) + vals[0][1] * (c * cp + d * sp) );
+		S[2] = i * ( vals[0][0] * (b * cp - a * sp) + vals[0][1] * (d * cp - c * sp) );
+		S[3] = i * ( vals[1][0] * (a*cp + b * sp) + vals[1][1] * (c*cp + d * sp) );
+	}
+
 	void ddScattMatrix::mueller(double Snn[4][4]) const
 	{
-		rtmath::scattMatrix::_genMuellerMatrix(Snn, &(vals[0][0]));
+		//genS();
+		rtmath::scattMatrix::_genMuellerMatrix(Snn,S);
 	}
 
 	void ddScattMatrix::mueller(matrixop &res) const
 	{
 		double Snn[4][4];
-		rtmath::scattMatrix::_genMuellerMatrix(Snn, &(vals[0][0]));
+		mueller(Snn);
 		res.fromDoubleArray(&Snn[0][0]);
 	}
 
 	void ddScattMatrix::extinction(double Knn[4][4]) const
 	{
+		//genS();
 		double k = 2.0 * M_PI / _wavelength;
-		rtmath::scattMatrix::_genExtinctionMatrix(Knn, &(vals[0][0]), k);
+		rtmath::scattMatrix::_genExtinctionMatrix(Knn, S, k);
 	}
 
 	void ddScattMatrix::extinction(matrixop &res) const
 	{
 		double Knn[4][4];
 		double k = 2.0 * M_PI / _wavelength;
-		rtmath::scattMatrix::_genExtinctionMatrix(Knn, &(vals[0][0]), k);
+		rtmath::scattMatrix::_genExtinctionMatrix(Knn, S, k);
 		res.fromDoubleArray(&Knn[0][0]);
 	}
 
@@ -75,9 +96,11 @@ namespace rtmath {
 		if (this == &rhs) return *this;
 		_theta = rhs._theta;
 		_phi = rhs._phi;
+		_wavelength = rhs._wavelength;
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
 				vals[i][j] = rhs.vals[i][j];
+		update();
 		return *this;
 	}
 
@@ -103,6 +126,7 @@ namespace rtmath {
 
 	void ddScattMatrix::update()
 	{
+		genS();
 		mueller(Pnn);
 		extinction(Knn);
 	}
@@ -126,11 +150,39 @@ namespace rtmath {
 	void ddScattMatrix::print() const
 	{
 		using namespace std;
-		cout << "Scattering matrix for theta " << _theta << " phi "
-				<< _phi << endl;
+		cout << "Matrices for theta " << _theta << " phi "
+				<< _phi << " wavelength " << _wavelength << endl;
+		/*
+		cout << "f" << endl;
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
 				cout << i << "," << j << "\t" << vals[i][j] << endl;
+		cout << "S" << endl;
+		for (size_t i=0; i<4; i++)
+		{
+			cout << "\t" <<  S[i] << endl;
+		}
+		
+		cout << "Mueller" << endl;
+		//update();
+		for (size_t i=0; i<4; i++)
+		{
+			for (size_t j=0; j<4; j++)
+			{
+				cout << Pnn[i][j] << "\t";
+			}
+			cout << endl;
+		}
+		*/
+		cout << "Extinction" << endl;
+		for (size_t i=0; i<4; i++)
+		{
+			for (size_t j=0; j<4; j++)
+			{
+				cout << Knn[i][j] << "\t";
+			}
+			cout << endl;
+		}
 	}
 
 	ddOutputSingle& ddOutputSingle::operator=(const ddOutputSingle &rhs)
@@ -225,8 +277,7 @@ namespace rtmath {
 	void ddOutputSingle::setF(const ddCoords &coords, const ddScattMatrix &f)
 	{
 		_fs[coords] = f;
-		_fs[coords].mueller(_fs[coords].Pnn);
-		_fs[coords].extinction(_fs[coords].Knn);
+		_fs[coords].update();
 	}
 
 	void ddOutputSingle::size(std::set<double> &thetas, std::set<double> &phis) const

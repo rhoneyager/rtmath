@@ -31,9 +31,11 @@ namespace rtmath {
 			// It may be converted into other forms
 		public:
 			// Standard constructor. theta and phi in degrees.
+			// wavelength in microns
 			ddScattMatrix(double theta, double phi, double wavelength);
 			ddScattMatrix();
 			std::complex<double> vals[2][2]; // Just for convenience
+			mutable std::complex<double> S[4]; // also for convenience
 			inline double theta() const {return _theta;}
 			inline double phi() const {return _phi;}
 			ddScattMatrix& operator=(const ddScattMatrix &rhs);
@@ -46,6 +48,7 @@ namespace rtmath {
 			double Pnn[4][4];
 			double Knn[4][4];
 		public: // Conversions start here
+			void genS();
 			void mueller(double Pnn[4][4]) const;
 			void mueller(matrixop &res) const;
 			inline matrixop mueller() const { matrixop res(2,4,4); mueller(res); return res; }
@@ -80,9 +83,9 @@ namespace rtmath {
 		{
 			bool operator() (const ddCoords &lhs, const ddCoords &rhs) const
 			{
-				if (lhs.theta < rhs.theta) return true;
-				if (lhs.theta > rhs.theta) return false; // i want strict weak ordering with theta first
 				if (lhs.phi < rhs.phi) return true;
+				if (lhs.phi > rhs.phi) return false; // i want strict weak ordering with theta first
+				if (lhs.theta < rhs.theta) return true;
 				return false;
 			}
 			bool operator() (const ddCoords3 &lhs, const ddCoords3 &rhs) const
