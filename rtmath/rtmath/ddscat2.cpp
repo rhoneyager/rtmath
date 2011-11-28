@@ -682,7 +682,7 @@ namespace rtmath {
 		// and it makes it easy this way
 		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, jt;
 		size_t numElems = _ensemble.size();
-		double wt;
+		double wt = 0, wtall = 0;
 		//double weight = 1.0 / (double) numElems;
 		// Assume that all ddOutputSingle have the same coordinate set for _fs
 		//ddOutputSingle res;
@@ -714,8 +714,9 @@ namespace rtmath {
 				// Using matrixops for ease (and not having to write yet another set of loops)
 				srcfp = srcf;
 				srcfp++;
-				if (srcfp == it->second._fs.end()) srcfp = srcf; // prev 3 lines so that delta calc works
-				wt = weight(srcf->first, srcfp->first);
+				if (srcfp == it->second._fs.end()) wt = 1.0 - wtall; // prev 3 lines so that delta calc works
+				else wt = weight(srcf->first, srcfp->first);
+				wtall += wt;
 				matrixop Peff(2,4,4), Keff(2,4,4);
 				matrixop Pn(2,4,4),   Kn(2,4,4);
 				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);

@@ -50,7 +50,8 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		string file(argv[1]);
-		boost::filesystem::path p(file.c_str()), dir, outfile, outiso;
+		boost::filesystem::path p(file.c_str()), dir, outfile, 
+			outiso, out5s, out10s, out15s, out30s;
 		dir = p.remove_filename();
 		cout << "Loading from: " << dir << endl << endl;
 
@@ -63,6 +64,10 @@ int main(int argc, char* argv[])
 		// Write output in the same folder as the input
 		outfile = dir / "out.nc";
 		outiso = dir / "isotropic.nc";
+		out5s = dir / "sigma5.nc";
+		out10s = dir / "sigma10.nc";
+		out15s = dir / "sigma15.nc";
+		out30s = dir / "sigma30.nc";
 
 		//it->second.print();
 		it->second.writeCDF(outfile.string());
@@ -71,13 +76,35 @@ int main(int argc, char* argv[])
 
 		// Now, try and generate ensemble results
 		cout << "Generating ensembles" << endl;
-		ddOutputEnsembleIso ens;
-		ens._ensemble = a._data;
-		ens.generate();
+		ddOutputEnsembleIso ensiso;
+		ensiso._ensemble = a._data;
+		ensiso.generate();
 		//ens.res.print();
-		ens.res.writeCDF(outiso.string());
+		ensiso.res.writeCDF(outiso.string());
 		cout << "Isotropic output written to " << outiso << endl;
 		cout << endl << endl;
+
+		ddOutputEnsembleGaussianTheta s5(0,5);
+		s5._ensemble = a._data;
+		s5.generate();
+		s5.res.writeCDF(out5s.string());
+
+		ddOutputEnsembleGaussianTheta s10(0,10);
+		s10._ensemble = a._data;
+		s10.generate();
+		s10.res.writeCDF(out10s.string());
+
+		ddOutputEnsembleGaussianTheta s15(0,15);
+		s15._ensemble = a._data;
+		s15.generate();
+		s15.res.writeCDF(out15s.string());
+
+		ddOutputEnsembleGaussianTheta s30(0,30);
+		s30._ensemble = a._data;
+		s30.generate();
+		s30.res.writeCDF(out30s.string());
+
+		cout << "Sigma 5, 10, 15 and 30 written to files." << endl << endl;
 
 		std::set<double> THETAS;
 		// Do iteration to see bounds on THETA
