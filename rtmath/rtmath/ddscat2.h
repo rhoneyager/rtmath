@@ -45,6 +45,7 @@ namespace rtmath {
 			bool operator!=(const ddScattMatrix &rhs) const;
 			void print() const;
 			void update();
+			bool lock;
 			double Pnn[4][4];
 			double Knn[4][4];
 		public: // Conversions start here
@@ -141,8 +142,10 @@ namespace rtmath {
 
 		class ddOutputEnsembleIso : public ddOutputEnsemble
 		{
+		public:
 			ddOutputEnsembleIso() {}
 			virtual void generate();
+			ddOutputSingle res;
 		};
 
 		class ddOutput {

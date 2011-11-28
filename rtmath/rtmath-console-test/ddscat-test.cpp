@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		string file(argv[1]);
-		boost::filesystem::path p(file.c_str()), dir, outfile;
+		boost::filesystem::path p(file.c_str()), dir, outfile, outiso;
 		dir = p.remove_filename();
 		cout << "Loading from: " << dir << endl << endl;
 
@@ -62,11 +62,22 @@ int main(int argc, char* argv[])
 
 		// Write output in the same folder as the input
 		outfile = dir / "out.nc";
+		outiso = dir / "isotropic.nc";
 
-		it->second.print();
+		//it->second.print();
 		it->second.writeCDF(outfile.string());
 		cout << "Output written to " << outfile << endl;
 		//cout << "Loaded " << a._data.size() << " files" << endl;
+
+		// Now, try and generate ensemble results
+		cout << "Generating ensembles" << endl;
+		ddOutputEnsembleIso ens;
+		ens._ensemble = a._data;
+		ens.generate();
+		//ens.res.print();
+		ens.res.writeCDF(outiso.string());
+		cout << "Isotropic output written to " << outiso << endl;
+		cout << endl << endl;
 
 		std::set<double> THETAS;
 		// Do iteration to see bounds on THETA
@@ -102,6 +113,7 @@ int main(int argc, char* argv[])
 			cout << *tit << "\t";
 		}
 		cout << endl << endl;
+
 	}
 	catch (...)
 	{

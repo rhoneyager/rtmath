@@ -19,6 +19,7 @@ namespace rtmath {
 		_theta = 0;
 		_phi = 0;
 		_wavelength = 0;
+		lock = false;
 
 		for (int i=0;i<4;i++)
 			for(int j=0;j<4;j++)
@@ -35,6 +36,7 @@ namespace rtmath {
 		_theta = theta;
 		_phi = phi;
 		_wavelength = wavelength;
+		lock = false;
 		for (int i=0;i<4;i++)
 			for(int j=0;j<4;j++)
 			{
@@ -126,6 +128,7 @@ namespace rtmath {
 
 	void ddScattMatrix::update()
 	{
+		if (lock) return;
 		genS();
 		mueller(Pnn);
 		extinction(Knn);
@@ -645,40 +648,47 @@ namespace rtmath {
 		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it;
 		size_t numElems = _ensemble.size();
 		double weight = 1.0 / (double) numElems;
+		// Assume that all ddOutputSingle have the same coordinate set for _fs
+		//ddOutputSingle res;
+		res._fs.clear();
+
 		for (it=_ensemble.begin(); it != _ensemble.end(); it++)
 		{
-			/*
-			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator itb;
-			for (itb=_ensemble.begin(); itb != _ensemble.end(); itb++)
+			// Iterate through and match the _fs element with res' element
+			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::iterator resf;
+			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator srcf;
+			for (srcf=it->second._fs.begin(); srcf!=it->second._fs.end(); srcf++)
 			{
-				// TODO: rewrite so that ddCoords is not the determining factor here (allow for less symmetry)
-				ddScattMatrix *newmat;
-				if (_fs.count(it->first) > 0) newmat = &_fs[it->first];
-				else newmat = new ddScattMatrix;
-
-				// Go through ensemble fs and add weight*entry to newmat
-				for (int i=0;i<4;i++)
-					for(int j=0;j<4;j++)
-					{
-						newmat->Pnn[i][j] += weight * 0;
-						newmat->Knn[i][j] += weight * 0;
-					}
-
-				// TODO: do reverse calculation
-				for (int i=0;i<2;i++)
-					for(int j=0;j<2;j++)
-					{
-						vals[i][j].real(0);
-						vals[i][j].imag(0);
-					}
-
-				if (_fs.count(it->first) == 0)
+				// Find the matching resf based on the key
+				resf = res._fs.find(srcf->first);
+				if (resf == res._fs.end()) // Iterator not found. Add a new key.
 				{
-					ddScattMatrix newb = *newmat;
-					_fs[it->first] = newb;
+					std::pair< std::map<ddCoords, ddScattMatrix, ddCoordsComp>::iterator, bool> op;
+					ddCoords a( srcf->first );
+					ddScattMatrix b(a.theta, a.phi, 0);
+					b.lock = true; // Suppress overwriting of P and K (normally calculated from vals[][])
+					res._fs[a] = b;
+					resf = res._fs.find(srcf->first); // Ugly, but fast to code
 				}
+				// resf is the iterator pointing to the ensemble result's value for _fs
+				// So, it points to a ddScattMartix
+				// srcf is the iterator pointing to the current scattMatrix which is 
+				// multiplied by the weight and then added to the value in resf.
+
+				// Using matrixops for ease (and not having to write yet another set of loops)
+				matrixop Peff(2,4,4), Keff(2,4,4);
+				matrixop Pn(2,4,4),   Kn(2,4,4);
+				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);
+				Keff.fromDoubleArray(&(resf->second.Knn)[0][0]);
+				Pn.fromDoubleArray(&(srcf->second.Pnn)[0][0]);
+				Kn.fromDoubleArray(&(srcf->second.Knn)[0][0]);
+
+				Peff = Peff + (Pn * weight);
+				Keff = Keff + (Kn * weight);
+
+				Peff.toDoubleArray(&(resf->second.Pnn)[0][0]);
+				Keff.toDoubleArray(&(resf->second.Knn)[0][0]);
 			}
-			*/
 		}
 	}
 
