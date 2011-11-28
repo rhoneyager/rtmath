@@ -139,6 +139,7 @@ namespace rtmath {
 			std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _ensemble;
 			void generate(); // virtual based on weighting method
 			virtual double weight(const ddCoords &coords, const ddCoords &delta) = 0;
+			virtual bool needwtwt() {return true;}
 			ddOutputSingle res;
 		};
 
@@ -147,6 +148,7 @@ namespace rtmath {
 		public:
 			ddOutputEnsembleIso() {}
 			virtual double weight(const ddCoords &coords, const ddCoords &delta);
+			virtual bool needwtwt() {return false;}
 		};
 
 		class ddOutputEnsembleGaussian : public ddOutputEnsemble

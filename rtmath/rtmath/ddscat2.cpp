@@ -681,8 +681,7 @@ namespace rtmath {
 		// Report the output in standard ddOutputSingle elements, as we are a derived class,
 		// and it makes it easy this way
 		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, jt;
-		size_t numElems = _ensemble.size();
-		double wt = 0, wtall = 0;
+		double wt = 0, wtall = 0, wtwt = 0;
 		//double weight = 1.0 / (double) numElems;
 		// Assume that all ddOutputSingle have the same coordinate set for _fs
 		//ddOutputSingle res;
@@ -716,7 +715,17 @@ namespace rtmath {
 				srcfp++;
 				if (srcfp == it->second._fs.end()) wt = 1.0 - wtall; // prev 3 lines so that delta calc works
 				else wt = weight(srcf->first, srcfp->first);
-				wtall += wt;
+
+				// Also factor in the discrepancy caused by not starting precisely at zero
+				// (missing most important part of erf)
+				if (srcf==it->second._fs.begin() && needwtwt() == true) // Must hit on first for loop iteration
+				{
+					ddCoords zc(0,0);
+					wtwt = 1.0 - weight(zc,srcf->first); // Scaling factor for all subsequent weights
+					if (wtwt == 0) wtwt = 1.0; // to avvoid division by zero
+				}
+
+				wtall += wt / wtwt;
 				matrixop Peff(2,4,4), Keff(2,4,4);
 				matrixop Pn(2,4,4),   Kn(2,4,4);
 				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);
