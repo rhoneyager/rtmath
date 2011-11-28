@@ -137,15 +137,16 @@ namespace rtmath {
 		public:
 			ddOutputEnsemble() {}
 			std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _ensemble;
-			virtual void generate() = 0; // virtual based on weighting method
+			void generate(); // virtual based on weighting method
+			virtual double weight(const ddCoords &coords) = 0;
+			ddOutputSingle res;
 		};
 
 		class ddOutputEnsembleIso : public ddOutputEnsemble
 		{
 		public:
 			ddOutputEnsembleIso() {}
-			virtual void generate();
-			ddOutputSingle res;
+			virtual double weight(const ddCoords &coords);
 		};
 
 		class ddOutput {

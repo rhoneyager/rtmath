@@ -640,14 +640,20 @@ namespace rtmath {
 		_data[coords] = f;
 	}
 
-	void ddOutputEnsembleIso::generate()
+	double ddOutputEnsembleIso::weight(const ddCoords &coords)
+	{
+		return 1.0;
+	}
+
+	void ddOutputEnsemble::generate()
 	{
 		// Take the set of ddOutputSingle, and average each rotation's s and phase matrices
 		// Report the output in standard ddOutputSingle elements, as we are a derived class,
 		// and it makes it easy this way
 		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it;
 		size_t numElems = _ensemble.size();
-		double weight = 1.0 / (double) numElems;
+		double wt;
+		//double weight = 1.0 / (double) numElems;
 		// Assume that all ddOutputSingle have the same coordinate set for _fs
 		//ddOutputSingle res;
 		res._fs.clear();
@@ -676,6 +682,7 @@ namespace rtmath {
 				// multiplied by the weight and then added to the value in resf.
 
 				// Using matrixops for ease (and not having to write yet another set of loops)
+				wt = weight(srcf->first) / (double) numElems;
 				matrixop Peff(2,4,4), Keff(2,4,4);
 				matrixop Pn(2,4,4),   Kn(2,4,4);
 				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);
@@ -683,8 +690,8 @@ namespace rtmath {
 				Pn.fromDoubleArray(&(srcf->second.Pnn)[0][0]);
 				Kn.fromDoubleArray(&(srcf->second.Knn)[0][0]);
 
-				Peff = Peff + (Pn * weight);
-				Keff = Keff + (Kn * weight);
+				Peff = Peff + (Pn * wt);
+				Keff = Keff + (Kn * wt);
 
 				Peff.toDoubleArray(&(resf->second.Pnn)[0][0]);
 				Keff.toDoubleArray(&(resf->second.Knn)[0][0]);
