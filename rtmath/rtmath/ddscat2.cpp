@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <memory>
 #include <netcdf.h>
+#include <cmath>
 
 #include "cdf-ddscat.h"
 #include "phaseFunc.h" // TODO: rewrite so that names do not conflict
@@ -640,9 +641,38 @@ namespace rtmath {
 		_data[coords] = f;
 	}
 
-	double ddOutputEnsembleIso::weight(const ddCoords &coords)
+	double ddOutputEnsembleIso::weight(const ddCoords &coords, const ddCoords &delta)
 	{
-		return 1.0;
+		// Number of elements provided upon initialization
+		return 1.0 / (double) this->_ensemble.size();
+	}
+
+	double ddOutputEnsembleGaussianPhi::weight(const ddCoords &coords, const ddCoords &delta)
+	{
+		// Use cmath erf function because we need to integrate the error function
+		double scaled = coords.phi - mu;
+		double scaledb = delta.phi - mu;
+		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
+		// I'll use an override here
+
+		double Pa = rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		double P = Pa - Pb;
+		return P;
+	}
+
+	double ddOutputEnsembleGaussianTheta::weight(const ddCoords &coords, const ddCoords &delta)
+	{
+		// Use cmath erf function because we need to integrate the error function
+		double scaled = coords.theta - mu;
+		double scaledb = delta.theta - mu;
+		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
+		// I'll use an override here
+
+		double Pa = rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		double P = Pa - Pb;
+		return P;
 	}
 
 	void ddOutputEnsemble::generate()
@@ -650,7 +680,7 @@ namespace rtmath {
 		// Take the set of ddOutputSingle, and average each rotation's s and phase matrices
 		// Report the output in standard ddOutputSingle elements, as we are a derived class,
 		// and it makes it easy this way
-		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it;
+		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, jt;
 		size_t numElems = _ensemble.size();
 		double wt;
 		//double weight = 1.0 / (double) numElems;
@@ -662,7 +692,7 @@ namespace rtmath {
 		{
 			// Iterate through and match the _fs element with res' element
 			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::iterator resf;
-			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator srcf;
+			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator srcf, srcfp;
 			for (srcf=it->second._fs.begin(); srcf!=it->second._fs.end(); srcf++)
 			{
 				// Find the matching resf based on the key
@@ -682,7 +712,10 @@ namespace rtmath {
 				// multiplied by the weight and then added to the value in resf.
 
 				// Using matrixops for ease (and not having to write yet another set of loops)
-				wt = weight(srcf->first) / (double) numElems;
+				srcfp = srcf;
+				srcfp++;
+				if (srcfp == it->second._fs.end()) srcfp = srcf; // prev 3 lines so that delta calc works
+				wt = weight(srcf->first, srcfp->first);
 				matrixop Peff(2,4,4), Keff(2,4,4);
 				matrixop Pn(2,4,4),   Kn(2,4,4);
 				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);
