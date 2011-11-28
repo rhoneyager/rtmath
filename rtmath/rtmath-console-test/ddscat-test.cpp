@@ -46,12 +46,14 @@ int main(int argc, char* argv[])
 		if (argc == 1) 
 		{
 			cout << "Error: no files specified.\n";
+#ifdef _WIN32
 			std::getchar();
+#endif
 			return 1;
 		}
 		string file(argv[1]);
 		boost::filesystem::path p(file.c_str()), dir, outfile, 
-			outiso, out5s, out10s, out15s, out30s;
+			outiso, outs;
 		dir = p.remove_filename();
 		cout << "Loading from: " << dir << endl << endl;
 
@@ -64,47 +66,12 @@ int main(int argc, char* argv[])
 		// Write output in the same folder as the input
 		outfile = dir / "out.nc";
 		outiso = dir / "isotropic.nc";
-		out5s = dir / "sigma5.nc";
-		out10s = dir / "sigma10.nc";
-		out15s = dir / "sigma15.nc";
-		out30s = dir / "sigma30.nc";
+		//outs = dir / "sigma5.nc";
 
 		//it->second.print();
 		it->second.writeCDF(outfile.string());
 		cout << "Output written to " << outfile << endl;
 		//cout << "Loaded " << a._data.size() << " files" << endl;
-
-		// Now, try and generate ensemble results
-		cout << "Generating ensembles" << endl;
-		ddOutputEnsembleIso ensiso;
-		ensiso._ensemble = a._data;
-		ensiso.generate();
-		//ens.res.print();
-		ensiso.res.writeCDF(outiso.string());
-		cout << "Isotropic output written to " << outiso << endl;
-		cout << endl << endl;
-
-		ddOutputEnsembleGaussianTheta s5(0,5);
-		s5._ensemble = a._data;
-		s5.generate();
-		s5.res.writeCDF(out5s.string());
-
-		ddOutputEnsembleGaussianTheta s10(0,10);
-		s10._ensemble = a._data;
-		s10.generate();
-		s10.res.writeCDF(out10s.string());
-
-		ddOutputEnsembleGaussianTheta s15(0,15);
-		s15._ensemble = a._data;
-		s15.generate();
-		s15.res.writeCDF(out15s.string());
-
-		ddOutputEnsembleGaussianTheta s30(0,30);
-		s30._ensemble = a._data;
-		s30.generate();
-		s30.res.writeCDF(out30s.string());
-
-		cout << "Sigma 5, 10, 15 and 30 written to files." << endl << endl;
 
 		std::set<double> THETAS;
 		// Do iteration to see bounds on THETA
@@ -141,13 +108,59 @@ int main(int argc, char* argv[])
 		}
 		cout << endl << endl;
 
+		// Now, try and generate ensemble results
+		cout << "Generating ensembles" << endl;
+		ddOutputEnsembleIso ensiso;
+		ensiso._ensemble = a._data;
+		ensiso.generate();
+		//ens.res.print();
+		ensiso.res.writeCDF(outiso.string());
+		cout << "Isotropic output written to " << outiso << endl;
+		cout << endl << endl;
+
+
+
+		double mean = 0;
+		double sigmas[] = {5, 10, 15, 30};
+		size_t numSigmas = 4;
+
+		ddOutputEnsembleGaussian* gens;
+
+		for (size_t k=0;k<numSigmas;k++)
+		{
+			// Do a check to see if PHI or THETA is being varied, and use 
+			// the appropriate weighting function
+			if (PHIS.size() > 1)
+			{
+				gens = new ddOutputEnsembleGaussianPhi(mean, sigmas[k]);
+				if (k==0) cout << "Varying phi\n";
+			} else {
+				gens = new ddOutputEnsembleGaussianTheta(mean, sigmas[k]);
+				if (k==0) cout << "Varying theta\n";
+			}
+
+			gens->_ensemble = a._data;
+			gens->generate();
+			//outs = dir / "sigma5.nc";
+			ostringstream sfile;
+			sfile << "sigma" << sigmas[k] << ".nc";
+			outs = dir / sfile.str();
+			gens->res.writeCDF(outs.string());
+			delete gens;
+		}
+
+		cout << "Sigmas written to files." << endl << endl;
+
+
+
 	}
 	catch (...)
 	{
 		cerr << "Error thrown" << endl;
 
 	}
-
+#ifdef _WIN32
 	std::getchar();
+#endif
 	return 0;
 }
