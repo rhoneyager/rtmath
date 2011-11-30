@@ -231,6 +231,69 @@ namespace rtmath {
 		_wavelength = wavelength;
 	}
 
+	void ddOutputSingle::genEmissionVectors()
+	{
+		// Generate the emission vector sigma, based on the definition
+		// sigma(mu) = K(mu) - 2\pi * \int_{-1}^{+1} S(\mu,\mu') d\mu'
+		unsigned int deg = 7;
+		double a = -1.0;
+		double b = 1.0;
+		unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
+		if (deg > 7) throw rtmath::debug::xBadInput();
+		if (deg == 0) throw rtmath::debug::xBadInput();
+		for (unsigned int i = start; i< start + (3*deg); i +=3)
+		{
+			double mup = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1])
+				+ ((a+b)/2.0);
+			double muweight = rtmath::quadrature::_gaussian_lagrange_prepump[i+2];
+			// Assign Amap and Bmap the appropriate variables
+			// Note: I'll do it this way to allow me to change mapid's definition later
+			mapid Amap(mup,0,0,0);
+			matrixop ra(2,4,4);
+			ra = *this->eval(Amap);
+			if (_sigmas.count(mup) == 0)
+				_sigmas[mup] = ra;
+			//resa = resa + (ra * muweight);
+		}
+		//resa = resa * ((b - a)/2.0);
+		//std::shared_ptr<matrixop> res(new matrixop(resa));
+		//return res;
+	}
+
+	std::shared_ptr<matrixop> ddOutputSingle::evalSInt(const mapid &valmap)
+	{
+		// Taken from damatrix_quad.cpp and rewritten for the situation
+		unsigned int deg = 7;
+		double a = -1.0;
+		double b = 1.0;
+		unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
+		if (deg > 7) throw rtmath::debug::xBadInput();
+		if (deg == 0) throw rtmath::debug::xBadInput();
+		matrixop resa(2,4,4);
+		for (unsigned int i = start; i< start + (3*deg); i +=3)
+		{
+			double mup = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1])
+				+ ((a+b)/2.0);
+			double muweight = rtmath::quadrature::_gaussian_lagrange_prepump[i+2];
+			// Assign Amap and Bmap the appropriate variables
+			// Note: I'll do it this way to allow me to change mapid's definition later
+			mapid Amap(valmap.mu,mup,valmap.phi,valmap.phin);
+			matrixop ra(2,4,4);
+			ra = *this->eval(Amap);
+			resa = resa + (ra * muweight);
+		}
+		resa = resa * ((b - a)/2.0);
+		std::shared_ptr<matrixop> res(new matrixop(resa));
+		return res;
+	}
+
+	std::shared_ptr<matrixop> ddOutputSingle::eval(const mapid &valmap) const
+	{
+		rtselec::rtselec _rt = rtselec::T;
+		double alpha = valmap.toAlpha(_rt);
+		return eval(alpha);
+	}
+
 	std::shared_ptr<matrixop> ddOutputSingle::eval(double alpha) const
 	{
 		// Evaluate the phase function at a given single-scattering angle
@@ -275,6 +338,8 @@ namespace rtmath {
 		std::shared_ptr<matrixop> res( new matrixop(resi));
 		return res;
 	}
+
+
 
 	void ddOutputSingle::getF(const ddCoords &coords, ddScattMatrix &f) const
 	{

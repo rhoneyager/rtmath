@@ -43,10 +43,8 @@ namespace rtmath {
 		std::shared_ptr<matrixop> inner_int(const mapid &valmap, double phip, 
 			std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B)
 		{
-			// This is a namespace function that handles the outer integration loop
-			// Outer integration is 0 to 2pi, dphi'
-			// It varies A and B valmaps and calls the inner loop with 
-			//  gaussian quadrature
+			// This is a namespace function that handles the inner integration loop
+			// Inner integration is -1 to 1 on mu'
 			//unsigned int deg = 7;
 			std::cerr << "inner int on valmap " << valmap.print() << " with phip " << phip << std::endl;
 			double a = 0.0;
@@ -68,11 +66,11 @@ namespace rtmath {
 				mapid Bmap(mup,valmap.mun,phip,valmap.phin);
 				//mapid Amap(valmap.mu,mup,valmap.phi,phip), Bmap(mup,valmap.mun,phip,valmap.phin);
 				//*res = *res + *A->eval(Amap) * *B->eval(Bmap) * mup;
-				matrixop a(2,4,4), b(2,4,4);
+				matrixop ra(2,4,4), rb(2,4,4);
 				std::cerr << "\ti:" << i << "   Amap: " << Amap.print() << "   Bmap: " << Bmap.print() << std::endl;
-				a = *A->eval(Amap);
-				b = *B->eval(Bmap);
-				resa = resa + (a * b * muweight * mup);
+				ra = *A->eval(Amap);
+				rb = *B->eval(Bmap);
+				resa = resa + (ra * rb * muweight * mup);
 			}
 			resa = resa * ((b - a)/2.0);
 			std::shared_ptr<matrixop> res(new matrixop(resa));
