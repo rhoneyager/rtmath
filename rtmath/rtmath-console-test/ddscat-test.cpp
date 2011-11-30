@@ -21,19 +21,6 @@
 #include "../rtmath/rayleigh.h"
 #include "../rtmath/ddscat2.h"
 
-void test()
-{
-	// Begin by loading files
-
-	// I now have several files. Select the subset whete Theta ranges
-	// from 0 to 90 degrees
-
-	// Perform averaging of phase functions to generate isotropic solution
-	// will have 91 or 181 possible theta (lc)
-
-	// Write out results
-}
-
 int main(int argc, char* argv[])
 {
 	using namespace std;
@@ -68,7 +55,7 @@ int main(int argc, char* argv[])
 		outiso = dir / "isotropic.nc";
 		//outs = dir / "sigma5.nc";
 
-		//it->second.print();
+		it->second.print();
 		it->second.writeCDF(outfile.string());
 		cout << "Output written to " << outfile << endl;
 		//cout << "Loaded " << a._data.size() << " files" << endl;
