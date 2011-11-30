@@ -253,11 +253,7 @@ namespace rtmath {
 			ra = *this->eval(Amap);
 			if (_sigmas.count(mup) == 0)
 				_sigmas[mup] = ra;
-			//resa = resa + (ra * muweight);
 		}
-		//resa = resa * ((b - a)/2.0);
-		//std::shared_ptr<matrixop> res(new matrixop(resa));
-		//return res;
 	}
 
 	std::shared_ptr<matrixop> ddOutputSingle::evalSInt(const mapid &valmap)
