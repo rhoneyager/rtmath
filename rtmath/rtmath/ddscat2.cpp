@@ -739,7 +739,7 @@ namespace rtmath {
 					if (wtwt == 0) wtwt = 1.0; // to avoid division by zero
 				}
 
-				std::cerr << wt / wtwt << std::endl;
+				//std::cerr << wt / wtwt << std::endl;
 
 				wtall += wt / wtwt;
 				matrixop Peff(2,4,4), Keff(2,4,4);
