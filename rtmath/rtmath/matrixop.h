@@ -31,7 +31,7 @@ namespace rtmath {
 		matrixop(const std::vector<size_t> &size);
 		matrixop(size_t ndims, ...);
 		~matrixop(void);
-		matrixop(); // Invalid constructor
+		//matrixop(); // Invalid constructor
 		// Define a copy constructor, since this is a base class
 		matrixop(const matrixop & rhs);
 		// Cloning function

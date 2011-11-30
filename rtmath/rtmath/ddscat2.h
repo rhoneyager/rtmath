@@ -135,7 +135,7 @@ namespace rtmath {
 			double _wavelength, _numDipoles, _reff;
 			double _shape[3]; // for ellipsoids
 			mutable std::map<ddCoords, ddScattMatrix, ddCoordsComp> _fs;
-			mutable std::map<double, matrixop> _sigmas; // The emission matrices
+			//mutable std::map<double, matrixop> _sigmas; // The emission matrices
 		};
 
 		class ddOutputEnsemble : public ddOutputSingle

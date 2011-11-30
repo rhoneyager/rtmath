@@ -158,7 +158,7 @@ namespace rtmath {
 		using namespace std;
 		cout << "Matrices for theta " << _theta << " phi "
 				<< _phi << " wavelength " << _wavelength << endl;
-
+		/*
 		cout << "f" << endl;
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
@@ -168,7 +168,7 @@ namespace rtmath {
 		{
 			cout << "\t" <<  S[i] << endl;
 		}
-		/*
+	*/
 		cout << "Mueller" << endl;
 		//update();
 		for (size_t i=0; i<4; i++)
@@ -179,8 +179,8 @@ namespace rtmath {
 			}
 			cout << endl;
 		}
-		*/
 
+		/*
 		cout << "Extinction" << endl;
 		for (size_t i=0; i<4; i++)
 		{
@@ -190,7 +190,7 @@ namespace rtmath {
 			}
 			cout << endl;
 		}
-
+	*/
 	}
 
 	ddOutputSingle& ddOutputSingle::operator=(const ddOutputSingle &rhs)
@@ -251,8 +251,8 @@ namespace rtmath {
 			mapid Amap(mup,0,0,0);
 			matrixop ra(2,4,4);
 			ra = *this->eval(Amap);
-			if (_sigmas.count(mup) == 0)
-				_sigmas[mup] = ra;
+			//if (_sigmas.count(mup) == 0)
+			//	_sigmas[mup] = ra;
 		}
 	}
 
