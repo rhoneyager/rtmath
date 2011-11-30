@@ -82,6 +82,8 @@ namespace rtmath {
 	{
 		//genS();
 		double k = 2.0 * M_PI / _wavelength;
+		// _wavelength is in micrometers. should I convert to standard units?
+
 		rtmath::scattMatrix::_genExtinctionMatrix(Knn, S, k);
 	}
 
@@ -156,7 +158,7 @@ namespace rtmath {
 		using namespace std;
 		cout << "Matrices for theta " << _theta << " phi "
 				<< _phi << " wavelength " << _wavelength << endl;
-		/*
+
 		cout << "f" << endl;
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
@@ -166,7 +168,7 @@ namespace rtmath {
 		{
 			cout << "\t" <<  S[i] << endl;
 		}
-		
+		/*
 		cout << "Mueller" << endl;
 		//update();
 		for (size_t i=0; i<4; i++)
@@ -178,6 +180,7 @@ namespace rtmath {
 			cout << endl;
 		}
 		*/
+
 		cout << "Extinction" << endl;
 		for (size_t i=0; i<4; i++)
 		{
@@ -187,6 +190,7 @@ namespace rtmath {
 			}
 			cout << endl;
 		}
+
 	}
 
 	ddOutputSingle& ddOutputSingle::operator=(const ddOutputSingle &rhs)
@@ -484,14 +488,17 @@ namespace rtmath {
 				// _wavelength will be saved so that extinction matrix may be calculated
 				ddScattMatrix nscat(theta,phi,_wavelength);
 				// For the next eight quantities, load the complex f
-				for (size_t i=0; i<2; i++)
-					for (size_t j=0; j<2; j++)
-					{
-						lss >> re;
-						lss >> im;
-						complex<double> nval(re,im);
-						nscat.vals[i][j] = nval;
-					}
+				// NOTE: The ordering in the file if f11, f21!!!, f12!!!, f22
+				// It's annoyingly backwards in the middle, which was a bug
+				for (size_t i=0; i<4; i++)
+				{
+					lss >> re;
+					lss >> im;
+					complex<double> nval(re,im);
+					size_t j= i % 2;
+					size_t k= i / 2;
+					nscat.vals[j][k] = nval;
+				}
 				// Save to the map
 				if (_fs.count(ddCoords(theta,phi)) == 0)
 					setF(ddCoords(theta,phi),nscat);

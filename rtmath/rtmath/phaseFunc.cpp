@@ -46,26 +46,26 @@ namespace rtmath {
 		// Do the diagonals first
 		for (size_t i=0;i<4;i++)
 		{
-			Knn[i][i] = (Sn[0] + Sn[3]).imag();
+			Knn[i][i] = (Sn[0] + Sn[1]).imag();
 		}
 
 		// And the remaining 12 (really duplicates, so only six)
 		for (size_t i=0; i<4; i++)
 			for (size_t j=0; j<4; j++)
 			{
-				if (i == 0 && j == 1) Knn[i][j] = (Sn[0] - Sn[3]).imag();
-				if (i == 0 && j == 2) Knn[i][j] = -(Sn[1] + Sn[2]).imag();
-				if (i == 0 && j == 3) Knn[i][j] = (-Sn[1] + Sn[2]).real();
-				if (i == 1 && j == 2) Knn[i][j] = (Sn[2] - Sn[1]).imag();
-				if (i == 1 && j == 3) Knn[i][j] = -(-Sn[1] + Sn[2]).real();
-				if (i == 2 && j == 3) Knn[i][j] = (Sn[3] - Sn[0]).real();
+				if (i == 0 && j == 1) Knn[i][j] = (Sn[1] - Sn[0]).imag();
+				if (i == 0 && j == 2) Knn[i][j] = -(Sn[2] + Sn[3]).imag();
+				if (i == 0 && j == 3) Knn[i][j] = (-Sn[2] + Sn[3]).real();
+				if (i == 1 && j == 2) Knn[i][j] = (Sn[3] - Sn[2]).imag();
+				if (i == 1 && j == 3) Knn[i][j] = -(Sn[2] + Sn[3]).real();
+				if (i == 2 && j == 3) Knn[i][j] = (Sn[0] - Sn[1]).real();
 
-				if (j == 0 && i == 1) Knn[i][j] = (Sn[0] - Sn[3]).imag(); // Same
-				if (j == 0 && i == 2) Knn[i][j] = -(Sn[1] + Sn[2]).imag();
-				if (j == 0 && i == 3) Knn[i][j] = (-Sn[1] + Sn[2]).real();
-				if (j == 1 && i == 2) Knn[i][j] = -(Sn[2] - Sn[1]).imag(); // Negative
-				if (j == 1 && i == 3) Knn[i][j] = (-Sn[1] + Sn[2]).real();
-				if (j == 2 && i == 3) Knn[i][j] = -(Sn[3] - Sn[0]).real();
+				if (j == 0 && i == 1) Knn[i][j] = (Sn[1] - Sn[0]).imag(); // Same
+				if (j == 0 && i == 2) Knn[i][j] = -(Sn[2] + Sn[3]).imag();
+				if (j == 0 && i == 3) Knn[i][j] = (-Sn[2] + Sn[3]).real();
+				if (j == 1 && i == 2) Knn[i][j] = -(Sn[3] - Sn[2]).imag(); // Negative
+				if (j == 1 && i == 3) Knn[i][j] = (-Sn[2] + Sn[3]).real();
+				if (j == 2 && i == 3) Knn[i][j] = -(Sn[0] - Sn[1]).real();
 			}
 
 		// Go back and multiply by f
@@ -108,7 +108,7 @@ namespace rtmath {
 
 		scratch = ( (Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
 		Snn[2][0] = 1.0 * scratch.real();
-		scratch = ( -(Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
+		scratch = ( -(Sn[0] * (conj(Sn[2]))) + (Sn[1] * (conj(Sn[3])) ));
 		Snn[2][1] = 1.0 * scratch.real();
 
 		scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[2] * (conj(Sn[3])) ));
