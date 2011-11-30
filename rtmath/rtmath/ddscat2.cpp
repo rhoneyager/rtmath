@@ -156,8 +156,8 @@ namespace rtmath {
 	void ddScattMatrix::print() const
 	{
 		using namespace std;
-		cout << "Matrices for theta " << _theta << " phi "
-				<< _phi << " wavelength " << _wavelength << endl;
+		//cout << "Matrices for theta " << _theta << " phi "
+		//		<< _phi << " wavelength " << _wavelength << endl;
 		/*
 		cout << "f" << endl;
 		for (size_t i=0; i<2; i++)
@@ -168,29 +168,30 @@ namespace rtmath {
 		{
 			cout << "\t" <<  S[i] << endl;
 		}
-	*/
-		cout << "Mueller" << endl;
+		*/
+		//cout << "Mueller" << endl;
+		cout << _theta << ", " << _phi << ", " << _wavelength << ", ";
 		//update();
 		for (size_t i=0; i<4; i++)
 		{
 			for (size_t j=0; j<4; j++)
 			{
-				cout << Pnn[i][j] << "\t";
+				cout << Pnn[i][j] << ", ";
 			}
-			cout << endl;
 		}
+		//cout << endl;
 
-		/*
-		cout << "Extinction" << endl;
+		//cout << "Extinction" << endl;
 		for (size_t i=0; i<4; i++)
 		{
 			for (size_t j=0; j<4; j++)
 			{
-				cout << Knn[i][j] << "\t";
+				cout << Knn[i][j] << ", ";
 			}
-			cout << endl;
+			//cout << endl;
 		}
-	*/
+		cout << endl;
+
 	}
 
 	ddOutputSingle& ddOutputSingle::operator=(const ddOutputSingle &rhs)
@@ -204,6 +205,7 @@ namespace rtmath {
 		_numDipoles = rhs._numDipoles;
 		_reff = rhs._reff;
 		_fs = rhs._fs;
+		filename = rhs.filename;
 		for (size_t i=0; i<3; i++)
 			_shape[i] = rhs._shape[i];
 		return *this;
@@ -229,65 +231,6 @@ namespace rtmath {
 		_Theta = theta;
 		_Phi = phi;
 		_wavelength = wavelength;
-	}
-
-	void ddOutputSingle::genEmissionVectors()
-	{
-		// Generate the emission vector sigma, based on the definition
-		// sigma(mu) = K(mu) - 2\pi * \int_{-1}^{+1} S(\mu,\mu') d\mu'
-		unsigned int deg = 7;
-		double a = -1.0;
-		double b = 1.0;
-		unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
-		if (deg > 7) throw rtmath::debug::xBadInput();
-		if (deg == 0) throw rtmath::debug::xBadInput();
-		for (unsigned int i = start; i< start + (3*deg); i +=3)
-		{
-			double mup = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1])
-				+ ((a+b)/2.0);
-			double muweight = rtmath::quadrature::_gaussian_lagrange_prepump[i+2];
-			// Assign Amap and Bmap the appropriate variables
-			// Note: I'll do it this way to allow me to change mapid's definition later
-			mapid Amap(mup,0,0,0);
-			matrixop ra(2,4,4);
-			ra = *this->eval(Amap);
-			//if (_sigmas.count(mup) == 0)
-			//	_sigmas[mup] = ra;
-		}
-	}
-
-	std::shared_ptr<matrixop> ddOutputSingle::evalSInt(const mapid &valmap)
-	{
-		// Taken from damatrix_quad.cpp and rewritten for the situation
-		unsigned int deg = 7;
-		double a = -1.0;
-		double b = 1.0;
-		unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
-		if (deg > 7) throw rtmath::debug::xBadInput();
-		if (deg == 0) throw rtmath::debug::xBadInput();
-		matrixop resa(2,4,4);
-		for (unsigned int i = start; i< start + (3*deg); i +=3)
-		{
-			double mup = ((b-a)/2.0 * rtmath::quadrature::_gaussian_lagrange_prepump[i+1])
-				+ ((a+b)/2.0);
-			double muweight = rtmath::quadrature::_gaussian_lagrange_prepump[i+2];
-			// Assign Amap and Bmap the appropriate variables
-			// Note: I'll do it this way to allow me to change mapid's definition later
-			mapid Amap(valmap.mu,mup,valmap.phi,valmap.phin);
-			matrixop ra(2,4,4);
-			ra = *this->eval(Amap);
-			resa = resa + (ra * muweight);
-		}
-		resa = resa * ((b - a)/2.0);
-		std::shared_ptr<matrixop> res(new matrixop(resa));
-		return res;
-	}
-
-	std::shared_ptr<matrixop> ddOutputSingle::eval(const mapid &valmap) const
-	{
-		rtselec::rtselec _rt = rtselec::T;
-		double alpha = valmap.toAlpha(_rt);
-		return eval(alpha);
 	}
 
 	std::shared_ptr<matrixop> ddOutputSingle::eval(double alpha) const
@@ -334,8 +277,6 @@ namespace rtmath {
 		std::shared_ptr<matrixop> res( new matrixop(resi));
 		return res;
 	}
-
-
 
 	void ddOutputSingle::getF(const ddCoords &coords, ddScattMatrix &f) const
 	{
@@ -526,6 +467,7 @@ namespace rtmath {
 		// File loading routine is important!
 		// Load a standard .fml file. Parse each line for certain key words.
 		bool dataseg = false;
+		this->filename = filename;
 		//cout << "Loading " << filename << endl;
 		ifstream in(filename.c_str(), std::ifstream::in);
 		while (in.good())
@@ -623,12 +565,13 @@ namespace rtmath {
 	void ddOutputSingle::print() const
 	{
 		using namespace std;
-		cout << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
-		cout << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
-		cout << endl;
+		cerr << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
+		cerr << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
+		cerr << endl;
 
-		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
-		for (it = _fs.begin(); it != _fs.end(); it++)
+		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it, e = _fs.end();
+		e--;
+		for (it = _fs.begin(); it != e; it++)
 		{
 			it->second.print();
 		}
@@ -669,15 +612,15 @@ namespace rtmath {
 			cout << "Invalid ddOutput directory. No ddscat.par\n";
 			throw;
 		}
-		cout << "Directory: " << dir << endl;
-		cout << "ddscat par: " << ddfile << endl;
+		cerr << "Directory: " << dir << endl;
+		cerr << "ddscat par: " << ddfile << endl;
 
 		// Use boost to select and open all files in path
 		// Iterate through each .fml file and load
 		vector<path> files;
 		copy(directory_iterator(dir), directory_iterator(), back_inserter(files));
 
-		cout << "There are " << files.size() << " files in the directory." << endl;
+		cerr << "There are " << files.size() << " files in the directory." << endl;
 		// Iterate through file list for .fml files
 		vector<path>::const_iterator it;
 		size_t counter = 0;
@@ -695,7 +638,7 @@ namespace rtmath {
 				counter++;
 			}
 		}
-		cout << "Of these, " << counter << " fml files were loaded." << endl;
+		cerr << "Of these, " << counter << " fml files were loaded." << endl;
 	}
 
 	void ddOutput::get(const ddCoords3 &coords, ddOutputSingle &f) const
@@ -731,15 +674,18 @@ namespace rtmath {
 
 	double ddOutputEnsembleGaussianTheta::weight(const ddCoords &coords, const ddCoords &delta)
 	{
+		using namespace std;
 		// Use cmath erf function because we need to integrate the error function
 		double scaled = coords.theta - mu;
 		double scaledb = delta.theta - mu;
+		//cerr << "theta1 " << scaled << " theta2 " << scaledb << " sigma " << sigma;
 		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
 		// I'll use an override here
 
-		double Pa = rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		double Pa = 0.5 + 0.5 * rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = 0.5 + 0.5 * rtmath::erf(scaled / (sqrt(2.0) * sigma));
 		double P = Pa - Pb;
+		//cerr << " Pa " << Pa << " Pb " << Pb << " P " << P << endl;
 		return P;
 	}
 
@@ -749,7 +695,7 @@ namespace rtmath {
 		// Report the output in standard ddOutputSingle elements, as we are a derived class,
 		// and it makes it easy this way
 		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, jt;
-		double wt = 0, wtall = 0, wtwt = 0;
+		double wt = 0, wtall = 0, wtwt = 1.0;
 		//double weight = 1.0 / (double) numElems;
 		// Assume that all ddOutputSingle have the same coordinate set for _fs
 		//ddOutputSingle res;
@@ -790,8 +736,10 @@ namespace rtmath {
 				{
 					ddCoords zc(0,0);
 					wtwt = 1.0 - weight(zc,srcf->first); // Scaling factor for all subsequent weights
-					if (wtwt == 0) wtwt = 1.0; // to avvoid division by zero
+					if (wtwt == 0) wtwt = 1.0; // to avoid division by zero
 				}
+
+				std::cerr << wt / wtwt << std::endl;
 
 				wtall += wt / wtwt;
 				matrixop Peff(2,4,4), Keff(2,4,4);

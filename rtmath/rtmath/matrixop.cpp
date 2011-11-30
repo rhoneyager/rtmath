@@ -21,15 +21,7 @@ namespace rtmath {
 	{
 		_init(size);
 	}
-/*
-	matrixop::matrixop()
-	{
-		std::vector<size_t> ptr;
-		ptr.push_back(2);
-		ptr.push_back(2);
-		_init(ptr);
-	}
-*/
+
 	matrixop::~matrixop(void)
 	{
 		//std::cerr << "destructing" << std::endl;

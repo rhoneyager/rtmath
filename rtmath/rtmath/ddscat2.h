@@ -8,11 +8,8 @@
 #include <cstring>
 #include <complex>
 #include "matrixop.h"
-#include "damatrix.h"
-#include "enums.h"
 #include "phaseFunc.h"
 #include "cdf-ddscat.h"
-#include "quadrature.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)
@@ -102,8 +99,7 @@ namespace rtmath {
 			}
 		};
 
-		class ddOutputSingle // : public rtmath::phaseFunc
-			: public rtmath::damatrix
+		class ddOutputSingle : public rtmath::phaseFunc
 		{
 			// Class contains the output of a single ddscat file
 			// This usually contains the results for a given Beta, Theta, Phi
@@ -121,11 +117,9 @@ namespace rtmath {
 			void setF(const ddCoords &coords, const ddScattMatrix &f);
 			ddOutputSingle& operator=(const ddOutputSingle &rhs);
 			void print() const;
-			void genEmissionVectors();
-			std::shared_ptr<matrixop> evalSInt(const mapid &valmap);
 			// evaluate phase function at a given scattering angle:
+			std::string filename;
 			virtual std::shared_ptr<matrixop> eval(double alpha) const;
-			virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
 			void writeCDFheader(cdfParams &params) const;
 			void writeCDF(const std::string &filename) const;
 			void size(std::set<double> &thetas, std::set<double> &phis) const;
@@ -135,7 +129,6 @@ namespace rtmath {
 			double _wavelength, _numDipoles, _reff;
 			double _shape[3]; // for ellipsoids
 			mutable std::map<ddCoords, ddScattMatrix, ddCoordsComp> _fs;
-			//mutable std::map<double, matrixop> _sigmas; // The emission matrices
 		};
 
 		class ddOutputEnsemble : public ddOutputSingle
@@ -166,6 +159,8 @@ namespace rtmath {
 			{
 				this->mu = mu;
 				this->sigma = sigma;
+				using namespace std;
+				//cerr << "mu " << mu << "sigma " << sigma << endl;
 			}
 			virtual double weight(const ddCoords &coords, const ddCoords &delta) = 0;
 			double mu, sigma;
@@ -175,18 +170,28 @@ namespace rtmath {
 		{
 		public:
 			ddOutputEnsembleGaussianPhi(double mu, double sigma) : 
-			  ddOutputEnsembleGaussian(mu,sigma) {};
+			  ddOutputEnsembleGaussian(mu,sigma)
+			{
+				this->mu = mu;
+				this->sigma = sigma;
+				using namespace std;
+				//cerr << "mu " << mu << "sigma " << sigma << endl;
+			}
 			virtual double weight(const ddCoords &coords, const ddCoords &delta);
-			double mu, sigma;
 		};
 
 		class ddOutputEnsembleGaussianTheta : public ddOutputEnsembleGaussian
 		{
 		public:
 			ddOutputEnsembleGaussianTheta(double mu, double sigma) : 
-			  ddOutputEnsembleGaussian(mu,sigma) {};
+			  ddOutputEnsembleGaussian(mu,sigma)
+			{
+				this->mu = mu;
+				this->sigma = sigma;
+				using namespace std;
+				//cerr << "mu " << mu << "sigma " << sigma << endl;
+			}
 			virtual double weight(const ddCoords &coords, const ddCoords &delta);
-			double mu, sigma;
 		};
 
 		class ddOutput {
