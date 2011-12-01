@@ -122,10 +122,11 @@ int main(int argc, char* argv[])
 		cout << endl << endl;
 
 		double mean = 0;
-		size_t numSigmas = 30;
-		double sigmas[numSigmas];
-		for (size_t k=1;k<=numSigmas;k++) sigmas[k-1] = k;
-
+		//size_t numSigmas = 30;
+		//double sigmas[numSigmas];
+		//for (size_t k=1;k<=numSigmas;k++) sigmas[k-1] = k;
+		size_t numSigmas = 6;
+		double sigmas[numSigmas] = { 5, 10, 15, 20, 25, 30};
 
 		ddOutputEnsembleGaussian* gens;
 
