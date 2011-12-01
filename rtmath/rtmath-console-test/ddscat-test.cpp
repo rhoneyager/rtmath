@@ -65,11 +65,11 @@ int main(int argc, char* argv[])
 			std::string newname = it->second.filename;
 			newname.append(".csv");
 			outfile = dir / newname;
-			//it->second.writeCSV(outfile.string()); // Verified
+			if (it == a._data.begin()) it->second.writeCSV(outfile.string()); // Verified
 			newname = it->second.filename;
 			newname.append(".nc");
 			outfile = dir / newname;
-			it->second.writeCDF(outfile.string());
+			//it->second.writeCDF(outfile.string()); // Also not necessary
 			//cout << "Output written to " << outfile << endl;
 		}
 		//cout << "Loaded " << a._data.size() << " files" << endl;
