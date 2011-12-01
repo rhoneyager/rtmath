@@ -153,53 +153,12 @@ namespace rtmath {
 		return !operator==(rhs);
 	}
 
-	void ddScattMatrix::writeCSV(const std::string &filename) const
-	{
-		using namespace std;
-		ofstream out(filename.c_str());
-		out << "CSV output for (theta,phi,wavelength)=\n";
-
-		//streambuf *filebuf;
-		//filebuf = out.rdbuf();
-		writeCSV(out);
-	}
-
-	void ddScattMatrix::writeCSV(std::ofstream &out) const
-	{
-		using namespace std;
-		//ofstream out;
-		//out.rdbuf(filebuf);
-		//streambuf *filebuf;
-		//filebuf = out.rdbuf();
-		//cout.rdbuf(filebuf);
-		//out << "CSV output for (theta,phi,wavelength)=\n";
-
-		out << _theta << ", " << _phi << ", " << _wavelength << ", ";
-
-		for (size_t i=0; i<4; i++)
-		{
-			for (size_t j=0; j<4; j++)
-			{
-				out << Pnn[i][j] << ", ";
-			}
-		}
-
-		for (size_t i=0; i<4; i++)
-		{
-			for (size_t j=0; j<4; j++)
-			{
-				out << Knn[i][j] << ", ";
-			}
-		}
-		out << endl;
-	}
-
 	void ddScattMatrix::print() const
 	{
 		using namespace std;
-		cout << "Matrices for theta " << _theta << " phi "
-				<< _phi << " wavelength " << _wavelength << endl;
-
+		//cout << "Matrices for theta " << _theta << " phi "
+		//		<< _phi << " wavelength " << _wavelength << endl;
+		/*
 		cout << "f" << endl;
 		for (size_t i=0; i<2; i++)
 			for (size_t j=0; j<2; j++)
@@ -209,28 +168,27 @@ namespace rtmath {
 		{
 			cout << "\t" <<  S[i] << endl;
 		}
-
-		cout << "Mueller" << endl;
-		cout << _theta << "\t" << _phi << "\t" << _wavelength << "\t";
+		*/
+		//cout << "Mueller" << endl;
+		cout << _theta << ", " << _phi << ", " << _wavelength << ", ";
 		//update();
 		for (size_t i=0; i<4; i++)
 		{
 			for (size_t j=0; j<4; j++)
 			{
-				cout << Pnn[i][j] << "\t";
+				cout << Pnn[i][j] << ", ";
 			}
-			cout << endl;
 		}
-		cout << endl;
+		//cout << endl;
 
-		cout << "Extinction" << endl;
+		//cout << "Extinction" << endl;
 		for (size_t i=0; i<4; i++)
 		{
 			for (size_t j=0; j<4; j++)
 			{
-				cout << Knn[i][j] << "\t";
+				cout << Knn[i][j] << ", ";
 			}
-			cout << endl;
+			//cout << endl;
 		}
 		cout << endl;
 
@@ -445,8 +403,8 @@ namespace rtmath {
 		size_t counter = 0; // keeps track of indices for theta and phi
 		for (it = _fs.begin(), counter = 0; it != _fs.end(); it++, counter++)
 		{
-			//double theta = it->second.theta();
-			//double phi = it->second.phi();
+			double theta = it->second.theta();
+			double phi = it->second.phi();
 			//double Pnn[4][4], Knn[4][4];
 			//double Sr[4], Si[4];
 			//it->second.mueller(Pnn);
@@ -619,27 +577,6 @@ namespace rtmath {
 		}
 	}
 
-	void ddOutputSingle::writeCSV(const std::string &filename) const
-	{
-		using namespace std;
-		ofstream out(filename.c_str());
-		//streambuf *filebuf;
-		//filebuf = out.rdbuf();
-		//cout.rdbuf(filebuf);
-
-		out << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
-		out << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
-		out << endl;
-
-		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it, e = _fs.end();
-		e--;
-		for (it = _fs.begin(); it != e; it++)
-		{
-			//it->second.writeCSV(filebuf);
-			it->second.writeCSV(out);
-		}
-	}
-
 	ddOutput::ddOutput()
 	{
 		_init();
@@ -802,7 +739,7 @@ namespace rtmath {
 					if (wtwt == 0) wtwt = 1.0; // to avoid division by zero
 				}
 
-				//std::cerr << wt / wtwt << std::endl;
+				std::cerr << wt / wtwt << std::endl;
 
 				wtall += wt / wtwt;
 				matrixop Peff(2,4,4), Keff(2,4,4);

@@ -44,8 +44,6 @@ namespace rtmath {
 			bool operator==(const ddScattMatrix &rhs) const;
 			bool operator!=(const ddScattMatrix &rhs) const;
 			void print() const;
-			void writeCSV(const std::string &filename) const;
-			void writeCSV(std::ofstream &out) const;
 			void update();
 			bool lock;
 			double Pnn[4][4];
@@ -124,7 +122,6 @@ namespace rtmath {
 			virtual std::shared_ptr<matrixop> eval(double alpha) const;
 			void writeCDFheader(cdfParams &params) const;
 			void writeCDF(const std::string &filename) const;
-			void writeCSV(const std::string &filename) const;
 			void size(std::set<double> &thetas, std::set<double> &phis) const;
 		public:
 			void _init();
