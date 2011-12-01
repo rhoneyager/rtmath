@@ -142,7 +142,7 @@ namespace rtmath {
 			ddOutputEnsemble() {}
 			std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _ensemble;
 			void generate(); // virtual based on weighting method
-			virtual double weight(const ddCoords &coords, const ddCoords &delta) = 0;
+			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta) = 0;
 			virtual bool needwtwt() {return true;}
 			ddOutputSingle res;
 		};
@@ -151,7 +151,7 @@ namespace rtmath {
 		{
 		public:
 			ddOutputEnsembleIso() {}
-			virtual double weight(const ddCoords &coords, const ddCoords &delta);
+			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta);
 			virtual bool needwtwt() {return false;}
 		};
 
@@ -165,7 +165,7 @@ namespace rtmath {
 				using namespace std;
 				//cerr << "mu " << mu << "sigma " << sigma << endl;
 			}
-			virtual double weight(const ddCoords &coords, const ddCoords &delta) = 0;
+			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta) = 0;
 			double mu, sigma;
 		};
 
@@ -180,7 +180,7 @@ namespace rtmath {
 				using namespace std;
 				//cerr << "mu " << mu << "sigma " << sigma << endl;
 			}
-			virtual double weight(const ddCoords &coords, const ddCoords &delta);
+			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta);
 		};
 
 		class ddOutputEnsembleGaussianTheta : public ddOutputEnsembleGaussian
@@ -194,7 +194,7 @@ namespace rtmath {
 				using namespace std;
 				//cerr << "mu " << mu << "sigma " << sigma << endl;
 			}
-			virtual double weight(const ddCoords &coords, const ddCoords &delta);
+			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta);
 		};
 
 		class ddOutput {

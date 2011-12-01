@@ -715,13 +715,13 @@ namespace rtmath {
 		_data[coords] = f;
 	}
 
-	double ddOutputEnsembleIso::weight(const ddCoords &coords, const ddCoords &delta)
+	double ddOutputEnsembleIso::weight(const ddCoords3 &coords, const ddCoords3 &delta)
 	{
 		// Number of elements provided upon initialization
 		return 1.0 / (double) this->_ensemble.size();
 	}
 
-	double ddOutputEnsembleGaussianPhi::weight(const ddCoords &coords, const ddCoords &delta)
+	double ddOutputEnsembleGaussianPhi::weight(const ddCoords3 &coords, const ddCoords3 &delta)
 	{
 		// Use cmath erf function because we need to integrate the error function
 		double scaled = coords.phi - mu;
@@ -729,13 +729,14 @@ namespace rtmath {
 		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
 		// I'll use an override here
 
-		double Pa = rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		// Weights are doubled because orientations are +-  <--- 2 domains of interest
+		double Pa = 1.0 + rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = 1.0 + rtmath::erf(scaled / (sqrt(2.0) * sigma));
 		double P = Pa - Pb;
 		return P;
 	}
 
-	double ddOutputEnsembleGaussianTheta::weight(const ddCoords &coords, const ddCoords &delta)
+	double ddOutputEnsembleGaussianTheta::weight(const ddCoords3 &coords, const ddCoords3 &delta)
 	{
 		using namespace std;
 		// Use cmath erf function because we need to integrate the error function
@@ -745,8 +746,8 @@ namespace rtmath {
 		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
 		// I'll use an override here
 
-		double Pa = 0.5 + 0.5 * rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = 0.5 + 0.5 * rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		double Pa = 1.0 + rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = 1.0 + rtmath::erf(scaled / (sqrt(2.0) * sigma));
 		double P = Pa - Pb;
 		//cerr << " Pa " << Pa << " Pb " << Pb << " P " << P << endl;
 		return P;
@@ -757,7 +758,7 @@ namespace rtmath {
 		// Take the set of ddOutputSingle, and average each rotation's s and phase matrices
 		// Report the output in standard ddOutputSingle elements, as we are a derived class,
 		// and it makes it easy this way
-		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, jt;
+		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, kt;
 		double wt = 0, wtall = 0, wtwt = 1.0;
 		//double weight = 1.0 / (double) numElems;
 		// Assume that all ddOutputSingle have the same coordinate set for _fs
@@ -788,23 +789,24 @@ namespace rtmath {
 				// multiplied by the weight and then added to the value in resf.
 
 				// Using matrixops for ease (and not having to write yet another set of loops)
-				srcfp = srcf;
-				srcfp++;
-				if (srcfp == it->second._fs.end()) wt = 1.0 - wtall; // prev 3 lines so that delta calc works
-				else wt = weight(srcf->first, srcfp->first);
+				kt = it;
+				kt++;
 
 				// Also factor in the discrepancy caused by not starting precisely at zero
 				// (missing most important part of erf)
-				if (srcf==it->second._fs.begin() && needwtwt() == true) // Must hit on first for loop iteration
+				if (it==_ensemble.begin() && needwtwt() == true) // Must hit on first for loop iteration
 				{
-					ddCoords zc(0,0);
-					wtwt = 1.0 - weight(zc,srcf->first); // Scaling factor for all subsequent weights
-					if (wtwt == 0) wtwt = 1.0; // to avoid division by zero
+					ddCoords3 zc(0,0,0);
+					wtwt = 1.0 - weight(zc,it->first); // Scaling factor for all subsequent weights
+					if (wtwt < 0) throw; // Should never have the weight being greater than 1.
+					if (wtwt == 0) throw; // to avoid division by zero
 				}
 
-				//std::cerr << wt / wtwt << std::endl;
+				// Here come the weights
+				if (kt == _ensemble.end()) wt = 1.0 - wtall; // prev 3 lines so that delta calc works
+				else wt = weight(it->first, kt->first) / wtwt;
 
-				wtall += wt / wtwt;
+				wtall += wt;
 				matrixop Peff(2,4,4), Keff(2,4,4);
 				matrixop Pn(2,4,4),   Kn(2,4,4);
 				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);
