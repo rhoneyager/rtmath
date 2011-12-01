@@ -765,6 +765,8 @@ namespace rtmath {
 		//ddOutputSingle res;
 		res._fs.clear();
 
+		throw; // I have to fix bugs with total weighting
+
 		for (it=_ensemble.begin(); it != _ensemble.end(); it++)
 		{
 			// Iterate through and match the _fs element with res' element
