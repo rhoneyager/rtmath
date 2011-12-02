@@ -7,18 +7,18 @@
 #include <sstream>
 #include <vector>
 #include <boost/filesystem.hpp>
-#include "options.h"
+#include "combo-options.h"
 
 /* program to parse several csv files, extract one column, and then reoutput the results */
 
-//void printHelp();
+void printHelp();
 
 int main(int argc, char** argv)
 {
 	using namespace std;
 	using namespace boost::filesystem;
 
-	//if (argc < 2) printHelp();
+	if (argc < 2) printHelp();
 
 	if (argc < 2) return 1;
 	// Parse options
@@ -48,6 +48,7 @@ int main(int argc, char** argv)
 	// Iterate through file list for .csv files
 	vector<path>::const_iterator it;
 	size_t counter = 0;
+	vector<path> csvfiles;
 	for (it = files.begin(); it != files.end(); it++)
 	{
 		//cout << *it << "\t" << it->extension() << endl;
@@ -55,8 +56,12 @@ int main(int argc, char** argv)
 		{
 			//ddOutputSingle news(it->string());
 			counter++;
+			csvfiles.push_back(*it);
 		}
 	}
+
+	sort(csvfiles.begin(), csvfiles.end());
+
 	cout << "Of these, there are " << counter << " csv files." << endl;
 
 	// Create the arrays for file output
@@ -72,9 +77,9 @@ int main(int argc, char** argv)
 	bool headerDone = false;
 	bool headerLoading = false;
 	int filenum = 0;
-	for (it = files.begin(); it != files.end(); it++)
+	for (it = csvfiles.begin(); it != csvfiles.end(); it++)
 		{
-			if (it->extension().string() == string(".csv") )
+			//if (it->extension().string() == string(".csv") )
 			{
 				ifstream in(it->string().c_str());
 				string lin;
@@ -136,6 +141,8 @@ int main(int argc, char** argv)
 		//for (size_t j=0;j<common[i].size();j++)
 			//out << ",";
 			//out << common[j][i] << ",";
+		for (size_t j=0;j<ops.numHeaderLines;j++)
+			out << "0,";
 
 		// Output merged stuff
 		for (size_t j=0;j<counter;j++)
@@ -146,4 +153,21 @@ int main(int argc, char** argv)
 	}
 
 	return 0;
+}
+
+
+void printHelp()
+{
+	using namespace std;
+	cout << "combo - a program to combine csv columns from multiple files for ease of plotting" << endl;
+	cout << "-----" << endl;
+	cout << "Usage: combo [options]" << endl;
+	cout << "-d directory\n";
+	cout << "-o outfile\n";
+	cout << "-h column\n";
+	cout << "\tPreserve common column\n";
+	cout << "-m column\n";
+	cout << "\tSpecify column number to be merged\n";
+	cout << "-n numHeaderLines\n";
+	exit(0);
 }

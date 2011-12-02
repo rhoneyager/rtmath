@@ -38,13 +38,13 @@ public:
 			{
 				i++;
 				int nc = atoi(argv[i]);
-				preserve.insert(nc);
+				preserve.insert(nc - 1);
 			}
 			if (in == "-m")
 			{
 				i++;
 				int nc = atoi(argv[i]);
-				merge = nc;
+				merge = nc - 1;
 			}
 			if (in == "-n")
 			{
