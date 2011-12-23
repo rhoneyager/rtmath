@@ -4,6 +4,7 @@
 #include <cstdarg>
 #include <memory>
 #include <string>
+#include <iostream>
 #include <sstream>
 //#include <netcdfcpp.h>
 #include "defs.h"
@@ -44,6 +45,11 @@ namespace rtmath {
 		bool operator == (const matrixop&) const;
 		bool operator != (const matrixop&) const;
 		matrixop & operator = (const matrixop&);
+		matrixop & operator = (const double*); // Assignment from double array
+		// TODO: check that the 'friend' actually works
+//		friend std::ostream &operator<<(std::ostream &stream, rtmath::matrixop ob);
+		// TODO: add matrix input
+//		friend std::istream &operator>>(std::istream &stream, matrixop &ob);
 
 		void set(const std::vector<size_t> &pos, double val);
 		void set(double val, size_t rank, ...);
@@ -120,3 +126,9 @@ namespace rtmath {
 	};
 
 }; // end rtmath
+
+// istream / ostream overrides, used for printing / setting matrices
+//std::ostream &operator<<(std::ostream &stream, rtmath::matrixop ob);
+//std::istream &operator>>(std::istream &stream, rtmath::matrixop &ob);
+std::ostream & operator<<(std::ostream &stream, const rtmath::matrixop &ob);
+

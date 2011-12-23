@@ -1,5 +1,5 @@
 #include "Stdafx.h"
-#include "ddscat2.h"
+#include "ddscat.h"
 #include "splitstring.h"
 #include <iostream>
 #include <fstream>

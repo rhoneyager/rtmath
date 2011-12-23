@@ -50,6 +50,14 @@ namespace rtmath {
 		return *this;
 	}
 
+	matrixop & matrixop::operator=(const double * rhs)
+	{
+		// Assign values from an array of doubles.
+		// Essentially an alias to fromDoubleArray.
+		fromDoubleArray(rhs);
+		return *this;
+	}
+
 	matrixop::matrixop(size_t ndims, ...)
 	{
 		va_list indices;
@@ -1277,4 +1285,23 @@ namespace rtmath {
 	}
 
 }; // end rtmath
+//
+// istream / ostream overrides, used for putting / setting matrices
+std::ostream & operator<<(std::ostream &stream, const rtmath::matrixop &ob)
+{
+	// Quick and easy output for now
+	size_t n = ob.maxSize();
+	double *data = new double[n];
+	ob.toDoubleArray(data);
+	stream << "{ ";
+	for (size_t i=0;i<n-1;i++)
+		stream << data[i] << ", ";
+	stream << data[n-1] << " }";
+}
+//
+//std::istream &operator>>(std::istream &stream, rtmath::matrixop &ob)
+//{
+	// 
+//}
+
 
