@@ -495,3 +495,21 @@ namespace rtmath {
 
 };
 
+
+// istream / ostream overrides, used for getting and setting polynomials
+std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob)
+{
+	// Quick and easy output for now
+	int n = (int) ob.maxPow();
+	stream << "{ ";
+	for (int i=n;i>0;i--)
+	{
+		if (ob.coeff(i) == 0) continue;
+		if ( i != n ) stream << " + ";
+		stream << ob.coeff(i) << "*x^" << i;
+	}
+	if (ob.coeff(0)) 
+		stream << " + " << ob.coeff(0);
+	stream << " }";
+}
+

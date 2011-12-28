@@ -9,6 +9,8 @@
 #include <map>
 #include <complex>
 #include <set>
+#include <iostream>
+#include <sstream>
 #include "quadrature.h"
 
 namespace rtmath {
@@ -27,7 +29,7 @@ namespace rtmath {
 			polynomial operator * (double) const;
 			polynomial operator ^ (unsigned int) const;
 			polynomial deriv(unsigned int pow); // TODO: redo so it can be const
-			void zeros(std::set<std::complex<double> > &zpts) const;
+			void zeros(std::set<std::complex<double> > &zpts) const; // TODO: complete
 			double operator() (double) const;
 			double& operator[] (const unsigned int); // TODO: redo for const
 			double eval(double xval) const;
@@ -52,4 +54,7 @@ namespace rtmath {
 	};
 
 };
+
+
+std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob);
 

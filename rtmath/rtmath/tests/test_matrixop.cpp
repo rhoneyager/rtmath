@@ -2,10 +2,12 @@
 #include <iostream>
 #include "../matrixop.h"
 
-#define BOOST_TEST_MODULE matrixop
-#define BOOST_TEST_DYN_LINK
+//#define BOOST_TEST_MODULE matrixop
+//#define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_SUITE(test_matrixop);
 
 // Check set/get alignment
 BOOST_AUTO_TEST_CASE(matrixop_set) {
@@ -166,6 +168,24 @@ BOOST_AUTO_TEST_CASE(matrixop_upperTriangular)
 // Check lowerTriangular
 
 // Check transpose
+BOOST_AUTO_TEST_CASE(matrixop_transpose) {
+	rtmath::matrixop a(2,4,4), b(2,4,4), c(2,4,4);
+	const double ai[] = { 	1,2,3,4,
+				5,6,7,8,
+				9,10,11,12,
+				13,14,15,16 };
+	const double bi[] = { 	1,5,9,13,
+				2,6,10,14,
+				3,7,11,15,
+				4,8,12,16 };
+	a = ai;
+	b = bi;
+	c = a.transpose();
+	bool res = false;
+	if (b == c) res = true;
+	BOOST_CHECK_EQUAL(res,true);
+}
+
 
 // Check determinant calculation
 BOOST_AUTO_TEST_CASE(matrixop_det) {
@@ -213,4 +233,6 @@ BOOST_AUTO_TEST_CASE(matrixop_det) {
 
 // Check _getpos
 
+
+BOOST_AUTO_TEST_SUITE_END();
 
