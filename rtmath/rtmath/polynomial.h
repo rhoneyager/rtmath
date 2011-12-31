@@ -51,10 +51,13 @@ namespace rtmath {
 			void print() const; // Error display
 		private:
 			std::map<unsigned int, double> _coeffs;
+			std::string _var;
 	};
 
 };
 
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob);
+std::istream &operator>>(std::istream &stream, rtmath::polynomial &ob);
+
 

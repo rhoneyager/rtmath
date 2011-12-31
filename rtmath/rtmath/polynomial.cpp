@@ -8,10 +8,13 @@
 #include <cmath>
 #include <vector>
 #include <complex>
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace rtmath {
 	polynomial::polynomial()
 	{
+		_var = "x";
 	}
 
 	polynomial::~polynomial()
@@ -20,6 +23,7 @@ namespace rtmath {
 
 	polynomial::polynomial(unsigned int pow, double val)
 	{
+		_var = "x";
 		coeff(pow,val);
 	}
 
@@ -473,7 +477,7 @@ namespace rtmath {
 						}
 					}
 				}
-				cerr << abs(coeff(i)) << "*x^" << i << " ";
+				cerr << abs(coeff(i)) << "*" << _var << "^" << i << " ";
 			}
 		if (coeff(0) != 0.0) 
 		{
@@ -506,10 +510,25 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob)
 	{
 		if (ob.coeff(i) == 0) continue;
 		if ( i != n ) stream << " + ";
-		stream << ob.coeff(i) << "*x^" << i;
+		stream << ob.coeff(i) << "*" <<_var << "^" << i;
 	}
 	if (ob.coeff(0)) 
 		stream << " + " << ob.coeff(0);
 	stream << " }";
 }
+
+std::istream & operator>>(std::istream &stream, rtmath::polynomial &ob)
+{
+	// Use tokenizer to split string
+	// String will be split based on +/-/*/^, variable and spaces
+	// It's rather a pain to import this way
+	// For example, consider "3.1*x^2 + 2*x + 1"
+	// The spacing should first be trimmed for ease of processing
+	using namespace boost::algorithm;
+	using namespace std;
+	string str = stream.str();
+	erase_all(str, " "); // Get rid of all spaces
+	throw; // IMPLEMENT REST OF FUNCTION
+}
+
 
