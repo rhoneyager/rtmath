@@ -19,11 +19,17 @@ all: dynamic static
 clean:
 	rm -rf *.o bin/* tests/*.o
 
+# Pre-build updates repositiory revition
+pre-build:
+	@tcsh ./getRev.csh
+	@touch debug.cpp
+
+
 # No pure c files used here for now
-.c.o:
+.c.o: pre-build
 	$(CC) $(CCFLAGS) -c $? -o $(?:.c=.o)
 
-.cpp.o:
+.cpp.o: pre-build
 	$(CPP) $(CCFLAGS) -c $? -o $(?:.cpp=.o)
 
 dynamic: $(OBJS)

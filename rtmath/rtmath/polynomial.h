@@ -29,6 +29,7 @@ namespace rtmath {
 			polynomial operator * (double) const;
 			polynomial operator ^ (unsigned int) const;
 			polynomial deriv(unsigned int pow); // TODO: redo so it can be const
+//			polynomial integrate(unsigned int pow); // TODO: redo for constness
 			void zeros(std::set<std::complex<double> > &zpts) const; // TODO: complete
 			double operator() (double) const;
 			double& operator[] (const unsigned int); // TODO: redo for const

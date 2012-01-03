@@ -10,14 +10,14 @@
 #include "debug_mem.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
-#ifdef _WIN32
-#ifdef _MSC_FULL_VER
+//#ifdef _WIN32
+//#ifdef _MSC_FULL_VER
 #include "debug_subversion.h"
-#endif
-#else
+//#endif
+//#else
 
 //#include "debug_subversion.svn.h"
-#endif
+//#endif
 namespace rtmath
 {
 	namespace debug
@@ -41,10 +41,10 @@ namespace rtmath
 
 		int rev(void)
 		{
-#ifndef REV
+#ifndef SUB_REV
 			return -1;
 #else
-			return REV;
+			return SUB_REV;
 #endif
 		};
 
@@ -55,10 +55,10 @@ namespace rtmath
 #ifdef SUB_REV
 			std::cerr << "SVN Revision " << SUB_REV << std::endl;
 			std::cerr << "SVN Revision Date: " << SUB_DATE << std::endl;
-			std::cerr << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
+//			std::cerr << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
 			std::cerr << "SVN Source: " << SUB_SOURCE << std::endl;
 #else
-			std::cerr << "SVN Revision Unknown" << std::endl;
+			std::cerr << "SVN Repository Information Unknown" << std::endl;
 #endif
 #ifdef _DEBUG
 			std::cerr << "Debug Version" << std::endl;

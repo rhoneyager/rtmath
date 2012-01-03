@@ -510,7 +510,7 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob)
 	{
 		if (ob.coeff(i) == 0) continue;
 		if ( i != n ) stream << " + ";
-		stream << ob.coeff(i) << "*" <<_var << "^" << i;
+		stream << ob.coeff(i) << "*x^" << i;
 	}
 	if (ob.coeff(0)) 
 		stream << " + " << ob.coeff(0);
@@ -526,8 +526,8 @@ std::istream & operator>>(std::istream &stream, rtmath::polynomial &ob)
 	// The spacing should first be trimmed for ease of processing
 	using namespace boost::algorithm;
 	using namespace std;
-	string str = stream.str();
-	erase_all(str, " "); // Get rid of all spaces
+	//string str = stream.str();
+	//erase_all(str, " "); // Get rid of all spaces
 	throw; // IMPLEMENT REST OF FUNCTION
 }
 
