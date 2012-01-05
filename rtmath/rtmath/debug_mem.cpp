@@ -5,9 +5,9 @@
 namespace rtmath {
 	namespace debug {
 		namespace memcheck {
-			const char* __file__;
-			size_t __line__;
-			const char* __caller__;
+			const char* __file__ = 0;
+			size_t __line__ = 0;
+			const char* __caller__ = 0;
 			bool enabled = true;
 			/*
 			bool setloc(const char* _file, int _line, const char* _caller)

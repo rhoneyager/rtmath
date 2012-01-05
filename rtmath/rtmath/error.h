@@ -3,6 +3,7 @@
 
 #include "Stdafx.h"
 #include <iostream>
+#include "debug_mem.h"
 
 // Redefine throws so that the location of the code in error is recorded
 // TODO: rewrite so that it works with non-MSVC compilers
@@ -33,6 +34,7 @@ namespace rtmath
 			virtual ~xError();
 			virtual void message(std::string &message) const;
 			virtual void Display() const;
+			bool hasLoc() const;
 		public: // The static functions for:
 			// providing error handling to the UI (message boxes and the like)
 			// if not set, sent to stderr.

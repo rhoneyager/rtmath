@@ -56,6 +56,7 @@ namespace rtmath {
 #endif
 
 	// Replacement error function
+	// TODO: replace with function provided by boost libraries
 	inline double erf(double x)
 	{
 		const double p = 0.3275911;

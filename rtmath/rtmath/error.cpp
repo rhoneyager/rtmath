@@ -15,6 +15,12 @@ namespace rtmath {
 			line = (int) __line__;
 			caller = __caller__;
 		}
+		
+		bool xError::hasLoc() const
+		{
+			if (file == 0) return false;
+			return true;
+		}
 
 		xError::~xError()
 		{
