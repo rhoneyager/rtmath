@@ -11,54 +11,80 @@
 #include <set>
 #include <iostream>
 #include <sstream>
+#include <cstdarg>
 #include "quadrature.h"
 
 namespace rtmath {
 
 	class polynomial : public evalfunction {
 		public:
-			polynomial();
-			polynomial(unsigned int pow, double val);
-//			polynomial(polynomial &orig);
-			~polynomial();
-			polynomial operator + (polynomial) const;
-			polynomial operator + (double) const;
-			polynomial operator - (double) const;
-			polynomial operator - (polynomial) const;
-			polynomial operator * (polynomial) const;
-			polynomial operator * (double) const;
-			polynomial operator ^ (unsigned int) const;
-			polynomial deriv(unsigned int pow); // TODO: redo so it can be const
-//			polynomial integrate(unsigned int pow); // TODO: redo for constness
-			void zeros(std::set<std::complex<double> > &zpts) const; // TODO: complete
-			double operator() (double) const;
-			double& operator[] (const unsigned int); // TODO: redo for const
-			double eval(double xval) const;
-//			polynomial operator = (double);
-			bool operator == (polynomial) const;
+			polynomial(); 
+			polynomial(unsigned int pow, double val); 
+			polynomial(size_t ndims, ...); 
+			polynomial(const polynomial &orig);
+			~polynomial(void);
+
+			void toDoubleArray(double *target) const;
+			void fromDoubleArray(size_t maxdeg, const double *source); // maxdeg is highest degree
+
+			polynomial* clone() const;
+			polynomial & operator = (const polynomial&);
+			polynomial & operator = (double); // Assignment from double (array impossible, as degree of polynomial will be unknown)
+			bool operator == (const polynomial&) const;
+			bool operator != (const polynomial&) const;
 			bool operator == (double) const;
 			bool operator != (double) const;
-			bool operator != (polynomial) const;
+
+			double eval(double val) const;
+			double operator() (double val) const; // Evaluate polynomial at specified value
+			// Disabled, as it messes with arrays of polynomials and is unclean
+			//double& operator[] (unsigned int deg) const; // Get coefficient for specified degree
+			double coeff(unsigned int deg) const; // Get coefficient for specified degree
+			void coeff(unsigned int deg, double val); // Set coefficient for specified degree
+
+			polynomial operator + (const polynomial&) const;
+			polynomial operator - (const polynomial&) const;
+			polynomial operator * (const polynomial&) const;
+			polynomial operator + (double) const;
+			polynomial operator - (double) const;
+			polynomial operator * (double) const;
+			polynomial operator ^ (unsigned int) const;
+
+			polynomial& operator += (const polynomial&);
+			polynomial& operator -= (const polynomial&);
+			polynomial& operator *= (const polynomial&);
+			polynomial& operator += (double);
+			polynomial& operator -= (double);
+			polynomial& operator *= (double);
+			polynomial& operator ^= (unsigned int);
+
+			polynomial deriv(unsigned int deg) const;
+			//polynomial integ(unsigned int deg) const;
+
+			//void zeros(std::multiset<std::complex<double> > &zpts) const;
+			//void zeros(std::complex<double> *zeros) const;
 			/*
-			   Future operators:
-			   +=, -=, *=, ^=
-			   */
+			inline std::multiset<std::complex<double> > zeros() const
+			{
+			}
+			*/
+
 			void erase();
-			void coeff(unsigned int pow, double val);
-			double coeff(const unsigned int pow) const; // TODO: fix
-			unsigned int maxPow() const;
+			void print() const;
 			void truncate();
 			void truncate(unsigned int pow);
-			void print() const; // Error display
+			unsigned int maxPow() const;
+
 		private:
 			std::map<unsigned int, double> _coeffs;
 			std::string _var;
+			void _init();
 	};
 
 };
 
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob);
-std::istream &operator>>(std::istream &stream, rtmath::polynomial &ob);
+//std::istream &operator>>(std::istream &stream, rtmath::polynomial &ob);
 
 

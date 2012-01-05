@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(polynomial_evaluation) {
 	BOOST_CHECK_EQUAL(4.0,res);
 	res = y(-1.0);
 	BOOST_CHECK_EQUAL(res,0.0);
-	res = y[1];
+	res = y.coeff(1);
 	BOOST_CHECK_EQUAL(res,2.0);
 }
 
@@ -38,16 +38,46 @@ BOOST_AUTO_TEST_CASE(polynomial_equalities) {
 	BOOST_CHECK_EQUAL(eq,true);
 }
 
+BOOST_AUTO_TEST_CASE(polynomial_identity) {
+	using namespace rtmath;
+	using namespace std;
+	const polynomial x(1,1.0);
+	const polynomial y = (x^2) + (x*2.0) + 1.0;
+	polynomial z;
+	z = y - x + x;
+	BOOST_CHECK(z==y);
+	//z = (x + y) - x;
+	z = x + y;
+	z -= x;
+	BOOST_CHECK(z==y);
+	z = y + x - x;
+	BOOST_CHECK(z==y);
+	z = x * -1.0 + y + x;
+	BOOST_CHECK(z==y);
+}
+
+BOOST_AUTO_TEST_CASE(polynomial_addition2) {
+	using namespace rtmath;
+	polynomial x(1,1.0);
+	polynomial y = (x^2) + x*2.0;
+	y += y;
+	polynomial check_a = (x^2) * 2.0 + x * 4.0;
+	BOOST_CHECK(check_a == y);
+	y += x;
+	polynomial check_b = (x^2) * 2.0 + x * 5.0;
+	BOOST_CHECK(check_b == y);
+}
+
 BOOST_AUTO_TEST_CASE(polynomial_addition) {
 	using namespace rtmath;
 	polynomial x(1,1.0);
-	polynomial a = (x^2) + x*2.0 + 1.0;
-	polynomial b = (x^2) + 1.0;
+	polynomial a = (x^5) + (x^2) + x*2.0 + 1.0;
+	polynomial b = (x^5) + (x^2) + 1.0;
 	polynomial c = x*2.0;
 	polynomial d = b + c;
-	bool eq = false;
-	if (a == d) eq = true;
-	BOOST_CHECK_EQUAL(eq,true);
+	BOOST_CHECK(a == d);
+	d = c + b;
+	BOOST_CHECK(a == d);
 }
 
 BOOST_AUTO_TEST_CASE(polynomial_subtraction) {
@@ -56,9 +86,9 @@ BOOST_AUTO_TEST_CASE(polynomial_subtraction) {
 	polynomial a = (x^3) + (x^2) * 2.0 + x * 3.0 - 1.0;
 	polynomial b = (x^2) - 1.0;
 	polynomial c = (x^3) + (x^2) + x * 3.0;
-	bool eq = false;
-	if (a-b==c) eq = true;
-	BOOST_CHECK_EQUAL(eq,true);
+	BOOST_CHECK(c==a-b);
+	BOOST_CHECK(c==a + (b*-1.0) );
+	BOOST_CHECK(c== (b*-1.0) + a );
 }
 
 BOOST_AUTO_TEST_CASE(polynomial_multiplication) {
@@ -67,9 +97,8 @@ BOOST_AUTO_TEST_CASE(polynomial_multiplication) {
 	polynomial a = (x^2) + x*2.0 + 1.0;
 	polynomial b = x - 1.0;
 	polynomial c = (x^3) + (x^2) - x - 1.0;
-	bool eq = false;
-	if (c==a*b) eq = true;
-	BOOST_CHECK_EQUAL(eq,true);
+	BOOST_CHECK(c==a*b);
+	BOOST_CHECK(c==b*a);
 }
 
 BOOST_AUTO_TEST_CASE(polynomial_exponentiation) {

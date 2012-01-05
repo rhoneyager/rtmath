@@ -18,7 +18,6 @@
 
 namespace rtmath {
 
-// Class labeled as defective for now to prevent compilation while base is being changed
 	class matrixop
 		// Defines a generalized set of tensor operations
 		// For now, just use it as a 2d matrix

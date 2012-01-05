@@ -12,9 +12,15 @@
 #include <boost/algorithm/string.hpp>
 
 namespace rtmath {
-	polynomial::polynomial()
+
+	void polynomial::_init()
 	{
 		_var = "x";
+	}
+
+	polynomial::polynomial()
+	{
+		_init();
 	}
 
 	polynomial::~polynomial()
@@ -23,31 +29,89 @@ namespace rtmath {
 
 	polynomial::polynomial(unsigned int pow, double val)
 	{
-		_var = "x";
+		_init();
 		coeff(pow,val);
 	}
 
-	/*
-	polynomial::polynomial(polynomial &orig)
+	polynomial::polynomial(const polynomial &orig)
 	{
-		// Nicely copy the old polynomial
-		unsigned int max = orig.maxPow();
-		for (unsigned int i=0; i<=max; i++)
-			_coeffs[i] = orig.coeff(i);
-		return;
+		*this = orig;
 	}
-	*/
 
-	polynomial polynomial::operator+ (polynomial param) const
+	polynomial & polynomial::operator=(const polynomial &rhs)
+	{
+		if (this == &rhs) return *this; // self-assignment check
+		_coeffs = rhs._coeffs;
+		_var = rhs._var;
+		return *this;
+	}
+
+	polynomial & polynomial::operator=(double rhs)
+	{
+		erase();
+		coeff(0,rhs);
+		return *this;
+	}
+
+	polynomial* polynomial::clone() const
+	{
+		// Cloning operator creates new object
+		polynomial *res = new polynomial(*this);
+		return res;
+	}
+
+	void polynomial::fromDoubleArray(size_t maxdeg, const double* source)
+	{
+		// Read in data from degree zero upwards
+		erase();
+		for (size_t i=0; i<=maxdeg; i++)
+		{
+			coeff(i,source[i]);
+		}
+	}
+
+	void polynomial::toDoubleArray(double* target) const
+	{
+		// Start from deg zero and move up to maxPow
+		size_t n = maxPow();
+		for (size_t i=0; i<=n; i++)
+		{
+			target[i] = coeff(i);
+		}
+	}
+
+	polynomial polynomial::operator+ (const polynomial &param) const
 	{
 		polynomial temp;
 		// Compare degree of both polynomials and pick max
 		unsigned int maxDeg = maxPow();
-		if (param.maxPow() > maxDeg) maxDeg = maxPow();
-		for (unsigned int i=0;i<=maxPow();i++)
+		if (param.maxPow() > maxDeg) maxDeg = param.maxPow();
+		for (unsigned int i=0;i<=maxDeg;i++)
 			temp.coeff(i, coeff(i) + param.coeff(i));
 		temp.truncate();
 		return temp;
+	}
+
+	polynomial& polynomial::operator+= (const polynomial &rhs)
+	{
+		polynomial a(*this);
+		a = a + rhs;
+		*this = a;
+		return *this;
+		/*
+		unsigned int maxDeg = maxPow();
+		if (rhs.maxPow() > maxDeg) maxDeg = rhs.maxPow();
+		for (unsigned int i=0;i<=maxPow();i++)
+			coeff(i, coeff(i) + rhs.coeff(i));
+		truncate();
+		return *this;
+		*/
+	}
+
+	polynomial& polynomial::operator+= (double rhs)
+	{
+		coeff(0, coeff(0) + rhs);
+		return *this;
 	}
 
 	polynomial polynomial::operator+ (double param) const
@@ -66,17 +130,40 @@ namespace rtmath {
 		return temp;
 	}
 
-	polynomial polynomial::operator- (polynomial param) const
+	polynomial polynomial::operator- (const polynomial &param) const
 	{
-		// Easily enough, mult. param by -1 and run add op
-		polynomial tempa, tempb;
-		tempa = param * -1.0;
-		tempb = *this + tempa;
-		tempb.truncate();
-		return tempb;
+		polynomial temp;
+		// Compare degree of both polynomials and pick max
+		unsigned int maxDeg = maxPow();
+		if (param.maxPow() > maxDeg) maxDeg = param.maxPow();
+		for (unsigned int i=0;i<=maxDeg;i++)
+			temp.coeff(i, coeff(i) - param.coeff(i));
+		temp.truncate();
+		return temp;
 	}
 
-	polynomial polynomial::operator* (polynomial param) const
+	polynomial& polynomial::operator-= (const polynomial &rhs)
+	{
+		polynomial a(*this);
+		a = a - rhs;
+		*this = a;
+		return *this;
+/*		unsigned int maxDeg = maxPow();
+		if (rhs.maxPow() > maxDeg) maxDeg = rhs.maxPow();
+		for (unsigned int i=0;i<=maxPow();i++)
+			coeff(i, coeff(i) - rhs.coeff(i));
+		truncate();
+		return *this;
+		*/
+	}
+
+	polynomial& polynomial::operator-= (double rhs)
+	{
+		coeff(0, coeff(0) - rhs);
+		return *this;
+	}
+
+	polynomial polynomial::operator* (const polynomial &param) const
 	{
 		// This is more complex, unfortunately
 		polynomial temp;
@@ -91,6 +178,14 @@ namespace rtmath {
 		return temp;
 	}
 
+	polynomial& polynomial::operator*= (const polynomial &rhs)
+	{
+		polynomial a(*this);
+		a = a * rhs;
+		*this = a;
+		return *this;
+	}
+
 	polynomial polynomial::operator* (double param) const
 	{
 		// Go through and mult coeffs
@@ -101,24 +196,30 @@ namespace rtmath {
 		return temp;
 	}
 
+	polynomial& polynomial::operator*= (double rhs)
+	{
+		polynomial a = *this;
+		a = a * rhs;
+		*this = a;
+		return *this;
+	}
+
 	polynomial polynomial::operator^ (unsigned int param) const
 	{
 		//TODO: use a better method
-		polynomial temp;
-		temp[0] = 1; // Start the mult.
+		polynomial temp(0,1.0);
 		for (unsigned int i=1; i<=param; i++)
 			temp = temp * (*this);
 		return temp;
 	}
-/*
-	polynomial polynomial::operator= (double param)
+
+	polynomial& polynomial::operator^= (unsigned int rhs)
 	{
-		// Mildly useless
-		polynomial temp;
-		temp.coeff(0, param);
-		return temp;
+		polynomial a = *this;
+		a = a ^ rhs;
+		*this = a;
+		return *this;
 	}
-*/
 
 	bool polynomial::operator== (double param) const
 	{
@@ -127,7 +228,7 @@ namespace rtmath {
 		return false;
 	}
 
-	bool polynomial::operator== (polynomial param) const
+	bool polynomial::operator== (const polynomial &param) const
 	{
 		// Compare the two polynomials
 		// First, check rank
@@ -140,7 +241,7 @@ namespace rtmath {
 		return true;
 	}
 
-	bool polynomial::operator!= (polynomial param) const
+	bool polynomial::operator!= (const polynomial &param) const
 	{
 		if (*this == param) return false;
 		return true;
@@ -179,11 +280,13 @@ namespace rtmath {
 	}
 	*/
 
-	double& polynomial::operator[] (const unsigned int param) 
+/*
+	double& polynomial::operator[] (const unsigned int param) const;
 	{
 		if (_coeffs.count(param) == 0) _coeffs[param] = 0.0;
 		return _coeffs[param];
 	}
+*/
 
 	void polynomial::erase()
 	{
@@ -205,7 +308,7 @@ namespace rtmath {
 		return res[pow];
 	}
 
-	polynomial polynomial::deriv(unsigned int pow)
+	polynomial polynomial::deriv(unsigned int pow) const
 	{
 		// TODO: fix calling, as this is such an abuse of the stack
 		polynomial res;
@@ -221,14 +324,15 @@ namespace rtmath {
 			{
 				pires *= i + pow - j;
 			}
-			res[i] = _coeffs[i+pow] * pires;
+			//res[i] = coeff(i+pow) * pires;
+			res.coeff(i, coeff(i+pow) * pires);
 		}
 		return res;
 	}
 
-	void polynomial::zeros(std::set<std::complex<double> > &zpts) const
-	{
-		throw rtmath::debug::xUnimplementedFunction();
+//	void polynomial::zeros(std::set<std::complex<double> > &zpts) const
+//	{
+//		throw rtmath::debug::xUnimplementedFunction();
 
 		// This work is based on Dr. Ahlquist's 1993 modifications to the 
 		// zero-finding functions provided in SLATEC. It computes the complex-
@@ -303,7 +407,7 @@ namespace rtmath {
 		// To begin, find the number of complex zeros that will be expected
 		//unsigned int numCzeros = maxPow();
 		*/
-	}
+//	}
 	/*
 	void polynomial::zeros(std::set<double> &zpts)
 	{
@@ -517,10 +621,11 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob)
 	stream << " }";
 }
 
+/*
 std::istream & operator>>(std::istream &stream, rtmath::polynomial &ob)
 {
 	// Use tokenizer to split string
-	// String will be split based on +/-/*/^, variable and spaces
+	// String will be split based on + - * ^, variable and spaces
 	// It's rather a pain to import this way
 	// For example, consider "3.1*x^2 + 2*x + 1"
 	// The spacing should first be trimmed for ease of processing
@@ -530,5 +635,5 @@ std::istream & operator>>(std::istream &stream, rtmath::polynomial &ob)
 	//erase_all(str, " "); // Get rid of all spaces
 	throw; // IMPLEMENT REST OF FUNCTION
 }
-
+*/
 
