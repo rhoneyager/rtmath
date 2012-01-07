@@ -6,7 +6,7 @@ CPP = g++
 LD = g++
 AR = ar
 CCFLAGS = -ggdb -fPIC -rdynamic -std=c++0x
-LIBS = -ggdb -lm -lnetcdf -lboost_filesystem -lboost_system
+LIBS = -ggdb -lm -lnetcdf -lboost_filesystem -lboost_unit_test_framework -lboost_system
 SRCSCPP = $(wildcard src/*.cpp)
 SRCSC = $(wildcard *.c)
 
@@ -42,6 +42,6 @@ FORCE:
 
 # Compiles regular code along with test files
 test: dynamic $(OBJSTEST)
-	$(LD) -ggdb -lboost_unit_test_framework $(CCFLAGS) $(LIBS) -o bin/rtmath-test $(OBJSTEST) -lrtmath
+	$(LD) -ggdb -lboost_unit_test_framework $(CCFLAGS) -o bin/rtmath-test $(OBJSTEST) -lrtmath $(LIBS)
 	./bin/rtmath-test --log-level=test_suite --report_level=short
 
