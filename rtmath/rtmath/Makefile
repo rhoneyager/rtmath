@@ -20,7 +20,7 @@ clean:
 	rm -rf *.o bin/* lib/* tests/*.o src/*.o
 
 # Pre-build updates repositiory revition
-pre-build:
+pre-build: FORCE
 	@tcsh ./getRev.csh
 	@touch debug.cpp
 
@@ -37,6 +37,8 @@ dynamic: $(OBJS) pre-build
 
 static: $(OBJS) pre-build
 	$(AR) rcs lib/librtmath.a $(OBJS)
+
+FORCE:
 
 # Compiles regular code along with test files
 test: dynamic $(OBJSTEST)
