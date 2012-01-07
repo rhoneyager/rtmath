@@ -22,7 +22,7 @@ clean:
 # Pre-build updates repositiory revition
 pre-build: FORCE
 	@tcsh ./getRev.csh
-	@touch debug.cpp
+	@touch src/debug.cpp
 
 
 # No pure c files used here for now
