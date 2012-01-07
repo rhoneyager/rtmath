@@ -2,7 +2,7 @@
 
 # Set the subversion revision and repository information
 
-set file = debug_subversion.h
+set file = rtmath/error/debug_subversion.h
 
 # Get information
 set rev = `svn info . | grep Revision: |cut -c11-`

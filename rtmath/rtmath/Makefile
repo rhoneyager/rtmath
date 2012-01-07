@@ -7,7 +7,7 @@ LD = g++
 AR = ar
 CCFLAGS = -ggdb -fPIC -rdynamic -std=c++0x
 LIBS = -ggdb -lm -lnetcdf -lboost_filesystem -lboost_system
-SRCSCPP = $(wildcard *.cpp) $(wildcard polynomials/*.cpp)
+SRCSCPP = $(wildcard src/*.cpp)
 SRCSC = $(wildcard *.c)
 
 OBJS = $(SRCSCPP:.cpp=.o) $(SRCSC:.c=.o)
