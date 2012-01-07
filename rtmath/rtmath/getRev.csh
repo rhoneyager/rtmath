@@ -24,4 +24,5 @@ echo "#define SUB_SOURCE "\""$url"\"" " >> $file
 #rpline $file 4 "#define SUB_DATE \"$dt\""
 #rpline $file 6 "#define SUB_SOURCE \"$url\""
 
+touch src/debug.cpp
 

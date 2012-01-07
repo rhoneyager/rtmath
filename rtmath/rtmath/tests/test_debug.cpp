@@ -3,7 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #define _DEBUG
-#include "../debug.h"
+#include "../rtmath/rtmath.h"
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK
 

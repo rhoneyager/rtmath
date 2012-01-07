@@ -17,7 +17,7 @@ OBJSTEST = $(SRCSTEST:.cpp=.o)
 all: dynamic static
 
 clean:
-	rm -rf *.o bin/* tests/*.o polynomials/*.o
+	rm -rf *.o bin/* lib/* tests/*.o src/*.o
 
 # Pre-build updates repositiory revition
 pre-build:
@@ -32,14 +32,14 @@ pre-build:
 .cpp.o: pre-build
 	$(CPP) $(CCFLAGS) -c $? -o $(?:.cpp=.o)
 
-dynamic: $(OBJS)
-	$(LD) -shared $(CCFLAGS) -o bin/librtmath.so $(OBJS)
+dynamic: $(OBJS) pre-build
+	$(LD) -shared $(CCFLAGS) -o lib/librtmath.so $(OBJS)
 
-static: $(OBJS)
-	$(AR) rcs bin/librtmath.a $(OBJS)
+static: $(OBJS) pre-build
+	$(AR) rcs lib/librtmath.a $(OBJS)
 
 # Compiles regular code along with test files
-test: $(OBJS) $(OBJSTEST)
-	$(LD) -ggdb -lboost_unit_test_framework $(CCFLAGS) $(LIBS) -o bin/rtmath-test $(OBJS) $(OBJSTEST)
+test: dynamic $(OBJSTEST)
+	$(LD) -ggdb -lboost_unit_test_framework $(CCFLAGS) $(LIBS) -o bin/rtmath-test $(OBJSTEST) -lrtmath
 	./bin/rtmath-test --log-level=test_suite --report_level=short
 

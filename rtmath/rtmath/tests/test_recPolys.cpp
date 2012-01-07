@@ -1,11 +1,11 @@
 #include <string>
 #include <iostream>
-#include "../polynomial.h"
-#include "../polynomials/recursivePolynomial.h"
-#include "../polynomials/legendre.h"
-#include "../polynomials/laguerre.h"
-#include "../polynomials/chebyshev.h"
-#include "../polynomials/hermite.h"
+#include "../rtmath/polynomial.h"
+#include "../rtmath/polynomials/recursivePolynomial.h"
+#include "../rtmath/polynomials/legendre.h"
+#include "../rtmath/polynomials/laguerre.h"
+#include "../rtmath/polynomials/chebyshev.h"
+#include "../rtmath/polynomials/hermite.h"
 
 #include <boost/test/unit_test.hpp>
 

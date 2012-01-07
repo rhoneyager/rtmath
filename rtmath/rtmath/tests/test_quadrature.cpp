@@ -6,8 +6,7 @@
 #include <iostream>
 #include <boost/test/unit_test.hpp>
 
-#include "../error.h"
-#include "../quadrature.h"
+#include "../rtmath/rtmath.h"
 
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK

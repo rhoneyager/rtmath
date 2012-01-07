@@ -1,6 +1,6 @@
 #include <string>
 #include <iostream>
-#include "../lbl.h"
+#include "../rtmath/lbl.h"
 
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK

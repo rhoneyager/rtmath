@@ -1,8 +1,8 @@
 #pragma once
 
 //#include "../rtmath-base/rtmath-base.h"
-#include "matrixop.h"
-#include "rtmath.h"
+#include "../matrixop.h"
+#include "../rtmath.h"
 #include <memory>
 
 namespace rayleigh {

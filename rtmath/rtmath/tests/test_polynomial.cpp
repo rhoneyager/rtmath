@@ -1,6 +1,6 @@
 #include <string>
 #include <iostream>
-#include "../polynomial.h"
+#include "../rtmath/polynomial.h"
 
 #include <boost/test/unit_test.hpp>
 
