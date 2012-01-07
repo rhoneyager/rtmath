@@ -4,13 +4,14 @@
  *  Created on: Jun 24, 2011
  *      Author: reh9650
  */
+#include "../rtmath/Stdafx.h"
+#include "../rtmath/rtmath.h"
+
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <boost/filesystem.hpp>
-
-#include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
 
 namespace rtmath {
 	namespace config {

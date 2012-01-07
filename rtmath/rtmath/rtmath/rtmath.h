@@ -6,6 +6,8 @@
 
 #pragma once
 
+#define BOOST_FILESYSTEM_VERSION 3
+
 #include "error/debug.h"
 #include "error/error.h"
 #include "enums.h"
