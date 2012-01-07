@@ -32,11 +32,13 @@ namespace rtmath {
 			polynomial & operator = (double); // Assignment from double (array impossible, as degree of polynomial will be unknown)
 			bool operator == (const polynomial&) const;
 			bool operator != (const polynomial&) const;
+			bool approxEq(const polynomial&) const;
+			bool approxEq(double) const;
 			bool operator == (double) const;
 			bool operator != (double) const;
 
-			double eval(double val) const;
-			double operator() (double val) const; // Evaluate polynomial at specified value
+			virtual double eval(double val) const;
+			virtual double operator() (double val) const; // Evaluate polynomial at specified value
 			// Disabled, as it messes with arrays of polynomials and is unclean
 			//double& operator[] (unsigned int deg) const; // Get coefficient for specified degree
 			double coeff(unsigned int deg) const; // Get coefficient for specified degree

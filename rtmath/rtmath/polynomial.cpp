@@ -241,6 +241,32 @@ namespace rtmath {
 		return true;
 	}
 
+	bool polynomial::approxEq (double param) const
+	{
+		if (maxPow() > 0) return false;
+		double des = coeff(0) - param;
+		des /= coeff(0);
+		if (des > 0.0001) return false;
+		if (des < -0.0001) return false;
+		return true;
+	}
+
+	bool polynomial::approxEq (const polynomial &param) const
+	{
+		// Compare the two polynomials
+		// First, check rank
+		if (maxPow() != param.maxPow()) return false;
+		// Check elementwise
+		for (unsigned int i=0;i<=maxPow();i++)
+		{
+			double des = ( coeff(i) - param.coeff(i)) / coeff(i);
+			if (des > 0.000001) return false;
+			if (des < -0.000001) return false;
+		}
+		return true;
+	}
+
+
 	bool polynomial::operator!= (const polynomial &param) const
 	{
 		if (*this == param) return false;

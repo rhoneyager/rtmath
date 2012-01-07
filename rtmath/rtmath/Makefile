@@ -7,7 +7,7 @@ LD = g++
 AR = ar
 CCFLAGS = -ggdb -fPIC -rdynamic -std=c++0x
 LIBS = -ggdb -lm -lnetcdf -lboost_filesystem -lboost_system
-SRCSCPP = $(wildcard *.cpp)
+SRCSCPP = $(wildcard *.cpp) $(wildcard polynomials/*.cpp)
 SRCSC = $(wildcard *.c)
 
 OBJS = $(SRCSCPP:.cpp=.o) $(SRCSC:.c=.o)
@@ -17,7 +17,7 @@ OBJSTEST = $(SRCSTEST:.cpp=.o)
 all: dynamic static
 
 clean:
-	rm -rf *.o bin/* tests/*.o
+	rm -rf *.o bin/* tests/*.o polynomials/*.o
 
 # Pre-build updates repositiory revition
 pre-build:
