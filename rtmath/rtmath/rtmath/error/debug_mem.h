@@ -123,6 +123,8 @@ inline void operator delete[](void *p)
 	}
 }
 
+
+// Note: these subsequent definitions do not cover throws. For these, see error.h
 #ifdef _DEBUG // TODO: check again to see if MSVC defines this at all
 #ifdef __GNUC__
 #define new (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : new
@@ -135,7 +137,7 @@ inline void operator delete[](void *p)
 #endif
 #endif
 
-	// End special heap check code
+// End special heap check code
 #endif
 
 

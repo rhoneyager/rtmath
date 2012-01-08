@@ -348,6 +348,8 @@ namespace rtmath {
 		//}
 
 		//for (int i=1; i< (int) daLayers.size(); i++)
+			throw rtmath::debug::xDefective();
+			return; // TODO: debug code block
 		while (1==0)
 		{
 			int i=0;

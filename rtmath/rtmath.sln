@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gl", "gl", "{78C13545-08D3-
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui", "ui", "{B80DF6DB-DF2D-4CC1-8494-BBED66DD6C80}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-test", "rtmath-test\rtmath-test.vcxproj", "{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -59,6 +61,12 @@ Global
 		{9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA}.Debug|x64.ActiveCfg = Debug|x64
 		{9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA}.Release|Win32.ActiveCfg = Release|Win32
 		{9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA}.Release|x64.ActiveCfg = Release|x64
+		{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}.Debug|Win32.Build.0 = Debug|Win32
+		{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}.Debug|x64.ActiveCfg = Debug|Win32
+		{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}.Release|Win32.ActiveCfg = Release|Win32
+		{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}.Release|Win32.Build.0 = Release|Win32
+		{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

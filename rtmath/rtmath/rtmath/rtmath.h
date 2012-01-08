@@ -6,10 +6,12 @@
 
 #pragma once
 
+// Needed for compatability with older boost versions
 #define BOOST_FILESYSTEM_VERSION 3
 
-#include "error/debug.h"
+// Not an includive list, as several of these headers load other headers
 #include "error/error.h"
+#include "error/debug.h"
 #include "enums.h"
 #include "matrixop.h"
 #include "polynomial.h"

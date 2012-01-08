@@ -70,6 +70,17 @@ namespace rtmath {
 				alpha = theta;
 			}
 			double theta, phi, alpha;
+			bool operator == (const ddCoords &rhs) const
+			{
+				if (theta != rhs.theta) return false;
+				if (phi != rhs.phi) return false;
+				if (alpha != rhs.alpha) return false;
+				return true;
+			}
+			bool operator != (const ddCoords &rhs) const
+			{
+				return !operator==(rhs);
+			}
 		};
 
 		struct ddCoords3 {
@@ -80,6 +91,17 @@ namespace rtmath {
 				this->phi = phi;
 			}
 			double theta, phi, beta;
+			bool operator == (const ddCoords3 &rhs) const
+			{
+				if (theta != rhs.theta) return false;
+				if (phi != rhs.phi) return false;
+				if (beta != rhs.beta) return false;
+				return true;
+			}
+			bool operator != (const ddCoords3 &rhs) const
+			{
+				return !operator==(rhs);
+			}
 		};
 
 		struct ddCoordsComp

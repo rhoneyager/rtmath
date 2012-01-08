@@ -6,10 +6,11 @@
 #include "debug_mem.h"
 
 // Redefine throws so that the location of the code in error is recorded
-// TODO: rewrite so that it works with non-MSVC compilers
 #ifdef _DEBUG
 #ifdef _MSC_FULL_VER
-//#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+// I need to be careful with MSVC, since this line disagrees with some of the boost headers. So,
+// error.h should be loaded after the default system headers
+#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 #endif
 #ifdef __GNUC__
 #define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
