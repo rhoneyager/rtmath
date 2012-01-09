@@ -186,6 +186,9 @@
     <ClInclude Include="rtmath\zeros.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\absorb_basic.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -323,6 +326,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\zeros.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\absorb_basic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

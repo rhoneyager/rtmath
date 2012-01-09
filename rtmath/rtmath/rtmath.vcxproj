@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="rtmath\absorb_basic.h" />
     <ClInclude Include="rtmath\atmos.h" />
     <ClInclude Include="rtmath\cdf-ddscat.h" />
     <ClInclude Include="rtmath\command.h" />
@@ -80,6 +81,7 @@
     <None Include="rtmath\error\debug_subversion.h.template" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\absorb_basic.cpp" />
     <ClCompile Include="src\atmos.cpp" />
     <ClCompile Include="src\chebyshev.cpp" />
     <ClCompile Include="src\command.cpp" />
