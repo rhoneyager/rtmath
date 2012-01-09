@@ -1,8 +1,4 @@
 #include <iostream>
-#include "../rtmath/rtmath.h"
-#include "../rtmath/rtmath-base.h"
-#include "../rtmath/mie.h"
-#include "../rtmath/rayleigh.h"
 #include <complex>
 #include <time.h>
 //#include <netcdf.h>
@@ -16,10 +12,7 @@
 #include <string>
 #include <boost/filesystem.hpp> // used for location of output of netcdf
 
-#include "../rtmath/debug_mem.h"
-#include "../rtmath/damatrix_quad.h"
-#include "../rtmath/rayleigh.h"
-#include "../rtmath/ddscat2.h"
+#include <rtmath/rtmath.h>
 
 int main(int argc, char* argv[])
 {

@@ -57,7 +57,8 @@ BOOST_AUTO_TEST_CASE(config_setVal)
 BOOST_AUTO_TEST_CASE(config_findSegment)
 {
 	configsegment *ta = cRoot->findSegment("testing");
-	BOOST_CHECK_MESSAGE(ta!=cRoot, "findSegment is not working right. FIX IT.");
+	BOOST_REQUIRE_MESSAGE(ta!=cRoot, "findSegment is not working right. FIX IT.");
+	BOOST_REQUIRE(ta!=0);
 	BOOST_CHECK(ta != 0);
 	configsegment *tb = cRoot->getChild("testing");
 	string wl;
