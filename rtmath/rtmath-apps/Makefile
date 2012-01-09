@@ -10,18 +10,22 @@ IDIR=$(HOME)/bin
 
 COMBOFILES = $(wildcard combo/*.cpp)
 DDPARSEFILES = $(wildcard ddparse/*.cpp)
+RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
 
-all: combo ddparse
+
+all: combo ddparse rtmath-version
 
 clean:
 	rm -rf *.o */*.o bin/*
 	
 distclean:
-	rm -rf $(IDIR)/combo $(IDIR)/ddparse
-	
+	rm -rf $(IDIR)/combo $(IDIR)/ddparse $(IDIR)/rtmath-*
+
+# Should wildcard all of these	
 install: all distclean
 	ln -s $(WDIR)/bin/combo $(IDIR)/combo
 	ln -s $(WDIR)/bin/ddparse $(IDIR)/ddparse
+	ln -s $(WDIR)/bin/rtmath-version $(IDIR)/rtmath-version
 
 .f.o:
 	$(FC) $(FFLAGS) -c $? -o $(?:.f=.o)
@@ -37,3 +41,7 @@ combo: $(COMBOFILES:.cpp=.o)
 	
 ddparse: $(DDPARSEFILES:.cpp=.o) 
 	$(LD) -o bin/ddparse $(DDPARSEFILES:.cpp=.o) $(LIBS)
+
+rtmath-version: $(RTMATHVERFILES:.cpp=.o) 
+	$(LD) -o bin/rtmath-version $(RTMATHVERFILES:.cpp=.o) $(LIBS)
+
