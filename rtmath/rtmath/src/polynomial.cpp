@@ -1,11 +1,13 @@
-#include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
 #include <iostream>
 #include <cmath>
 #include <vector>
 #include <complex>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+
+
+#include "../rtmath/Stdafx.h"
+#include "../rtmath/rtmath.h"
 
 namespace rtmath {
 

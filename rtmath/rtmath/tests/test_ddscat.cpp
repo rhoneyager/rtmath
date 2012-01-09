@@ -62,10 +62,11 @@ BOOST_AUTO_TEST_CASE(ddCoordsChecks)
 	BOOST_CHECK(d!=f);
 	BOOST_CHECK(e!=f);
 	ddCoordsComp cmp;
+	// These use strict weak ordering
 	BOOST_CHECK(cmp.operator()(a,b) == false);
-	BOOST_CHECK(cmp.operator()(a,c) == true);
+	BOOST_CHECK(cmp.operator()(a,c) == false);
 	BOOST_CHECK(cmp.operator()(c,b) == false);
-	BOOST_CHECK(cmp.operator()(d,e) == true);
+	BOOST_CHECK(cmp.operator()(d,e) == false);
 	BOOST_CHECK(cmp.operator()(d,f) == false);
 	BOOST_CHECK(cmp.operator()(e,f) == false);
 }

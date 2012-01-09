@@ -29,6 +29,15 @@ namespace rtmath {
 			this->_segname = name;
 		}
 
+		configsegment::~configsegment()
+		{
+			// Delete all children configsegments
+			//std::set<configsegment*> _children;
+			std::set<configsegment*>::const_iterator it;
+			for (it=_children.begin();it!=_children.end();it++)
+				delete *it;
+		}
+
 		configsegment* configsegment::findSegment(const std::string &key)
 		{
 			using namespace std;
@@ -151,10 +160,16 @@ namespace rtmath {
 
 			// First, check that the file can be opened. If not, return NULL.
 			using namespace std;
+			using namespace boost::filesystem;
 
+			// TODO: use boost_filesystem as a file existence check
+			boost::filesystem::path p(filename);
+			if (!exists(p)) throw rtmath::debug::xMissingFile(filename);
+			if (is_directory(p)) throw rtmath::debug::xMissingFile(filename);
 			ifstream indata(filename);
-			if (!indata) return NULL; // File does not exist
-			if (indata.good() == false) return NULL;
+			if (!indata) throw rtmath::debug::xOtherError();
+//			if (indata.good() == false) return NULL;
+			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(filename);
 
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
@@ -215,9 +230,11 @@ namespace rtmath {
 						{
 							// The path on the Include is relative, so make it relative to the first loaded file, typically the root
 							string newfile = (rootpath.parent_path() / value).string();
+							if (!exists(path(newfile))) throw rtmath::debug::xMissingFile( newfile.c_str() );
 							loadFile( newfile.c_str(), cseg);
 						} else {
 							// The path is absolute, so use it
+							if (!exists(path(value.c_str()))) throw rtmath::debug::xMissingFile( value.c_str());
 							loadFile(value.c_str(), cseg); // Load a file
 						}
 					} else {

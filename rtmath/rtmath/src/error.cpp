@@ -126,6 +126,18 @@ namespace rtmath {
 			_message = "ERROR: Singular matrix detected.\n";
 		}
 
+		void xMissingFile::_setmessage()
+		{
+			_message = "ERROR: Missing file: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xOtherError::_setmessage()
+		{
+			_message = "ERROR (unknown)\n";
+		}
+
 
 	};
 };

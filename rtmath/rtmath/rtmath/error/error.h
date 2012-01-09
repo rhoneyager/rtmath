@@ -59,6 +59,9 @@ namespace rtmath
 		// The file that is opened for reading is empty
 		ERRSTR(xEmptyInputFile);
 
+		// File to be opened for reading does not exist
+		ERRSTR(xMissingFile);
+
 		// A function has not been defined. Always stops execution.
 		ERRSTD(xUnimplementedFunction);
 
@@ -76,6 +79,9 @@ namespace rtmath
 
 		// Singular matrix detected.
 		ERRSTD(xSingular);
+
+		// Unknown error
+		ERRSTD(xOtherError);
 
 		// A convenient way to mark a class as obsolete and prevent execution 
 		// of functions that use the obsolete class is to make the class derive from obsoleted.

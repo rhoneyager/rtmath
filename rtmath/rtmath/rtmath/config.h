@@ -22,14 +22,23 @@
 #include <map>
 #include <set>
 
+// TODO: fix findSegment so that it works
+// TODO: provide output of tree structure with print() and ostream
+// TODO: more throwable errors
+// TODO: findSegment check for not found condition (currently returns garbage)
+// TODO: newChild function (that maps to configsegment constructor of new one)
+// TODO: move configsegment to shared-ptr implementation
+
 namespace rtmath {
 	namespace config {
 		class configsegment;
 
+		// NOTE: config needs to be redone to avoid memory leaks!!!
 		class configsegment {
 		public:
 			configsegment(const std::string &name);
 			configsegment(const std::string &name, configsegment *parent);
+			~configsegment();
 			void getVal(const std::string &key, std::string &value);
 			void setVal(const std::string &key, const std::string &value);
 			configsegment* findSegment(const std::string &key);

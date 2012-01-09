@@ -24,6 +24,7 @@ BOOST_AUTO_TEST_CASE(debug_revision_flag)
 	BOOST_CHECK_EQUAL(revision_flag,true);
 }
 
+#ifdef _DEBUG
 BOOST_AUTO_TEST_CASE(debug_setloc)
 {
 	// Construct a throw. If setloc provides information, 
@@ -38,6 +39,7 @@ BOOST_AUTO_TEST_CASE(debug_setloc)
 		BOOST_CHECK_EQUAL(err.hasLoc(), true);
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(debug_class_markers) {
 }

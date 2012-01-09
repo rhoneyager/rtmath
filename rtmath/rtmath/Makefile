@@ -5,7 +5,7 @@ CC = gcc
 CPP = g++
 LD = g++
 AR = ar
-CCFLAGS = -ggdb -fPIC -rdynamic -std=c++0x
+CCFLAGS = -ggdb -fPIC -rdynamic -std=c++0x -D_DEBUG
 LIBS = -ggdb -lm -lnetcdf -lboost_filesystem -lboost_unit_test_framework -lboost_system
 SRCSCPP = $(wildcard src/*.cpp)
 SRCSC = $(wildcard *.c)
@@ -13,6 +13,8 @@ SRCSC = $(wildcard *.c)
 OBJS = $(SRCSCPP:.cpp=.o) $(SRCSC:.c=.o)
 SRCSTEST = $(wildcard tests/*.cpp)
 OBJSTEST = $(SRCSTEST:.cpp=.o)
+
+TESTDATA=`pwd`/tests/data/
 
 all: dynamic static
 
