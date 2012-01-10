@@ -11,20 +11,20 @@ IDIR=$(HOME)/bin
 COMBOFILES = $(wildcard combo/*.cpp)
 DDPARSEFILES = $(wildcard ddparse/*.cpp)
 RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
+LBLCALCFILES = $(wildcard lblcalc/*.cpp)
 
-
-all: combo ddparse rtmath-version
+all: combo ddparse rtmath-version lblcalc
 
 clean:
 	rm -rf *.o */*.o bin/*
 	
 distclean:
-	rm -rf $(IDIR)/combo $(IDIR)/ddparse $(IDIR)/rtmath-*
+	rm -rf $(IDIR)/combo $(IDIR)/rtmath-*
 
 # Should wildcard all of these	
 install: all distclean
 	ln -s $(WDIR)/bin/combo $(IDIR)/combo
-	ln -s $(WDIR)/bin/ddparse $(IDIR)/ddparse
+	ln -s $(WDIR)/bin/rtmath-ddparse $(IDIR)/rtmath-ddparse
 	ln -s $(WDIR)/bin/rtmath-version $(IDIR)/rtmath-version
 
 .f.o:
@@ -40,8 +40,11 @@ combo: $(COMBOFILES:.cpp=.o)
 	$(LD) -o bin/combo $(COMBOFILES:.cpp=.o) $(LIBS)
 	
 ddparse: $(DDPARSEFILES:.cpp=.o) 
-	$(LD) -o bin/ddparse $(DDPARSEFILES:.cpp=.o) $(LIBS)
+	$(LD) -o bin/rtmath-ddparse $(DDPARSEFILES:.cpp=.o) $(LIBS)
 
 rtmath-version: $(RTMATHVERFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-version $(RTMATHVERFILES:.cpp=.o) $(LIBS)
+
+lblcalc: $(LBLCALCFILES:.cpp=.o) 
+	$(LD) -o bin/rtmath-lblcalc $(LBLCALCFILES:.cpp=.o) $(LIBS)
 
