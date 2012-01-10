@@ -11,7 +11,7 @@ class miePhaseFunc :
 	public rtmath::phaseFunc
 {
 public:
-	miePhaseFunc(double x, std::complex<double> &m) : rtmath::phaseFunc()
+	miePhaseFunc(double x, const std::complex<double> &m) : rtmath::phaseFunc()
 	{
 		_m = m;
 		_x = x;

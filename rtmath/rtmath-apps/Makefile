@@ -12,8 +12,9 @@ COMBOFILES = $(wildcard combo/*.cpp)
 DDPARSEFILES = $(wildcard ddparse/*.cpp)
 RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
 LBLCALCFILES = $(wildcard lblcalc/*.cpp)
+BACK_F_FILES = $(wildcard backscatter_f/*.cpp)
 
-all: combo ddparse rtmath-version lblcalc
+all: combo ddparse rtmath-version lblcalc backscatter_f
 
 clean:
 	rm -rf *.o */*.o bin/*
@@ -27,6 +28,7 @@ install: all distclean
 	ln -s $(WDIR)/bin/rtmath-ddparse $(IDIR)/rtmath-ddparse
 	ln -s $(WDIR)/bin/rtmath-version $(IDIR)/rtmath-version
 	ln -s $(WDIR)/bin/rtmath-lblcalc $(IDIR)/rtmath-lblcalc
+	ln -s $(WDIR)/bin/rtmath-back_f $(IDIR)/rtmath-back_f
 
 .f.o:
 	$(FC) $(FFLAGS) -c $? -o $(?:.f=.o)
@@ -48,4 +50,7 @@ rtmath-version: $(RTMATHVERFILES:.cpp=.o)
 
 lblcalc: $(LBLCALCFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-lblcalc $(LBLCALCFILES:.cpp=.o) $(LIBS)
+
+backscatter_f: $(BACK_F_FILES:.cpp=.o) 
+	$(LD) -o bin/rtmath-back_f $(BACK_F_FILES:.cpp=.o) $(LIBS)
 

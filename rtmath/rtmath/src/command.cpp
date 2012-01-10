@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 
 namespace rtmath {
 	namespace config {
@@ -50,6 +51,86 @@ namespace rtmath {
 
 			}
 		}
+
+
+		// the parseParams class member functions
+		parseParams::parseParams(int argc, char** argv)
+		{
+			_ac = argc;
+			_av = argv;
+		}
+
+		bool parseParams::readParam(const char* oName, double &val)
+		{
+			// Find the option
+			std::string op(oName);
+			for (size_t i=0;i<_ac-1;i++)
+			{
+				std::string p(_av[i]);
+				if (p==op)
+				{
+					std::string v(_av[i+1]);
+					// Convert to double
+					val = atof(v.c_str());
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool parseParams::readParam(const char* oName, size_t num, double *vals)
+		{
+			using namespace std;
+			string op(oName);
+			for (size_t i=0;i<_ac-num;i++)
+			{
+				string p(_av[i]);
+				if (p==op)
+				{
+					for (size_t j=0;j<num;j++)
+					{
+						string s(_av[i+1+j]);
+						vals[j] = atof(s.c_str());
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool parseParams::readParam(const char* oName, std::string &val)
+		{
+			using namespace std;
+			string op(oName);
+			for (size_t i=0;i<_ac-1;i++)
+			{
+				string p(_av[i]);
+				if (p==op)
+				{
+					string r(_av[i+1]);
+					val = r;
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool parseParams::readParam(const char* oName, bool &flag)
+		{
+			using namespace std;
+			string op(oName);
+			for (size_t i=0;i<_ac-1;i++)
+			{
+				string p(_av[i]);
+				if (p==op)
+				{
+					flag = (bool) atoi(_av[i+1]);
+					return true;
+				}
+			}
+			return false;
+		}
+
 	}; // end namespace config
 }; // end namespace rtmath
 
