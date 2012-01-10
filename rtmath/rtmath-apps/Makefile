@@ -26,6 +26,7 @@ install: all distclean
 	ln -s $(WDIR)/bin/combo $(IDIR)/combo
 	ln -s $(WDIR)/bin/rtmath-ddparse $(IDIR)/rtmath-ddparse
 	ln -s $(WDIR)/bin/rtmath-version $(IDIR)/rtmath-version
+	ln -s $(WDIR)/bin/rtmath-lblcalc $(IDIR)/rtmath-lblcalc
 
 .f.o:
 	$(FC) $(FFLAGS) -c $? -o $(?:.f=.o)
