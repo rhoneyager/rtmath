@@ -36,4 +36,5 @@
 #include "rayleigh/rayleigh.h"
 #include "ddscat.h"
 #include "cdf-ddscat.h"
+#include "refract.h"
 
