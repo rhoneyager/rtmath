@@ -247,6 +247,13 @@ namespace rtmath {
 			return root;
 		}
 
+		void getConfigDefaultFile(std::string &filename)
+		{
+			filename = "/home/rhoneyag/.rtmath";
+			return;
+		}
+
+
 	}; // end config
 };// end rtmath
 

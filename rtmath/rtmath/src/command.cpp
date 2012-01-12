@@ -131,6 +131,18 @@ namespace rtmath {
 			return false;
 		}
 
+		bool parseParams::readParam(const char* oName)
+		{
+			using namespace std;
+			string op(oName);
+			for (size_t i=0;i<_ac;i++)
+			{
+				string p(_av[i]);
+				if (p==op) return true;
+			}
+			return false;
+		}
+
 	}; // end namespace config
 }; // end namespace rtmath
 

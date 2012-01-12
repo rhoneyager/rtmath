@@ -66,5 +66,7 @@ namespace rtmath {
 			return res;
 		}
 
+		void getConfigDefaultFile(std::string &filename);
+		
 	}; // end namespace config
 }; // end namespace rtmath

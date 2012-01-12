@@ -17,6 +17,7 @@ namespace rtmath {
 				bool readParam(const char* oName, size_t num, double *vals);
 				bool readParam(const char* oName, std::string &val);
 				bool readParam(const char* oName, bool &flag);
+				bool readParam(const char* oName);
 			private:
 				int _ac;
 				char** _av;
