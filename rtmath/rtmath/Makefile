@@ -5,6 +5,7 @@ CC = gcc
 CPP = g++
 LD = g++
 AR = ar
+RTMATHCONF = $(HOME)/.rtmath
 CCFLAGS = -ggdb -fPIC -rdynamic -std=c++0x -D_DEBUG
 LIBS = -ggdb -lm -lnetcdf -lboost_filesystem -lboost_unit_test_framework -lboost_system
 SRCSCPP = $(wildcard src/*.cpp)
@@ -25,19 +26,21 @@ clean:
 pre-build: FORCE
 	@tcsh ./getRev.csh
 	@touch src/debug.cpp
+	@echo #define RTC $(RTMATHCONF) > build/rtc.h
+	@touch src/config.cpp
 
 
 # No pure c files used here for now
-.c.o: pre-build
+.c.o: 
 	$(CC) $(CCFLAGS) -c $? -o $(?:.c=.o)
 
-.cpp.o: pre-build
+.cpp.o:
 	$(CPP) $(CCFLAGS) -c $? -o $(?:.cpp=.o)
 
-dynamic: $(OBJS) pre-build
+dynamic: pre-build $(OBJS)
 	$(LD) -shared $(CCFLAGS) -o lib/librtmath.so $(OBJS)
 
-static: $(OBJS) pre-build
+static: pre-build $(OBJS)
 	$(AR) rcs lib/librtmath.a $(OBJS)
 
 FORCE:
