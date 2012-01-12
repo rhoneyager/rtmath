@@ -26,6 +26,7 @@ int main(int argc, char** argv)
 	string oname;
 	double f;
 	double temp;
+	bool mtab = false;
 	if (argc != 3)
 	{
 		bool flag = false;
@@ -33,14 +34,29 @@ int main(int argc, char** argv)
 		if (!flag) doHelp();
 		flag = p.readParam("-f", f);
 		if (!flag) doHelp();
+		mtab = p.readParam("--mtab");
 	} else {
 		f = atof(argv[1]);
 		temp = atof(argv[2]);
 	}
 
+	// Check program name to see if output should 
+	// follow getm or genmtab (two for the code of one deal)
+	if (string(argv[0]) == "rtmath-genmtab") mtab = true;
+
 	std::complex<double> ref;
 	rtmath::refract::mice(f,temp,ref);
-	cout << " ( " << ref.real() << " , " << ref.imag() << " ) " << endl;
+	if (!mtab)
+	{
+		cout << " ( " << ref.real() << " , " << ref.imag() << " ) " << endl;
+	} else {
+		cout << " m = " << ref.real() << " + " << (-1.0 *ref.imag()) << " i" << endl;
+		cout << " 1 2 3 0 0 = columns for wave, Re(n), Im(n), eps1, eps2" << endl;
+		cout << " LAMBDA  Re(N)   Im(N)" << endl;
+		cout << " 0.000001    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
+		cout << " 1.000000    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
+		cout << " 100000.0    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
+	}
 
 	return 0;
 }

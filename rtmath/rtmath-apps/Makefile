@@ -33,6 +33,7 @@ install: all distclean
 	ln -s $(WDIR)/bin/rtmath-lblcalc $(IDIR)/rtmath-lblcalc
 	ln -s $(WDIR)/bin/rtmath-back_f $(IDIR)/rtmath-back_f
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-getm
+	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-genmtab
 	ln -s $(WDIR)/bin/rtmath-transmittance $(IDIR)/rtmath-transmittance
 
 .f.o:
