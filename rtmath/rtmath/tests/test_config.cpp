@@ -93,5 +93,13 @@ BOOST_AUTO_TEST_CASE(config_finished)
 
 // queryConfig not tested, as user interaction may be required
 
+BOOST_AUTO_TEST_CASE(config_defaultroot)
+{
+	std::string f;
+	getConfigDefaultFile(f);
+	BOOST_CHECK(f != "");
+	BOOST_REQUIRE_MESSAGE(f!="", "The makefile is not providing a default rtmath config file path. FIX IT.");
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 

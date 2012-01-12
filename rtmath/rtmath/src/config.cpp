@@ -6,7 +6,7 @@
  */
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/rtmath.h"
-
+#include "../build/rtc.h"
 
 #include <iostream>
 #include <fstream>
@@ -249,7 +249,9 @@ namespace rtmath {
 
 		void getConfigDefaultFile(std::string &filename)
 		{
-			filename = "/home/rhoneyag/.rtmath";
+			//filename = "/home/rhoneyag/.rtmath";
+			// Macro defining the correct path
+			filename = RTC;
 			return;
 		}
 

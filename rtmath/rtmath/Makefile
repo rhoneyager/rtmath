@@ -20,13 +20,14 @@ TESTDATA=`pwd`/tests/data/
 all: dynamic static
 
 clean:
-	rm -rf *.o bin/* lib/* tests/*.o src/*.o
+	rm -rf *.o bin/* lib/* tests/*.o src/*.o build/*
 
 # Pre-build updates repositiory revition
 pre-build: FORCE
+	@echo "Runnning pre-build"
 	@tcsh ./getRev.csh
 	@touch src/debug.cpp
-	@echo #define RTC $(RTMATHCONF) > build/rtc.h
+	@echo "#define RTC "\"$(RTMATHCONF)"\"" > build/rtc.h
 	@touch src/config.cpp
 
 
