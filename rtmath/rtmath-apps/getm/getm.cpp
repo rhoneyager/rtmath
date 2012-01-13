@@ -46,6 +46,8 @@ int main(int argc, char** argv)
 
 	std::complex<double> ref;
 	rtmath::refract::mice(f,temp,ref);
+	cout.setf( ios::scientific, ios::floatfield);
+	cout.precision(7);
 	if (!mtab)
 	{
 		cout << " ( " << ref.real() << " , " << ref.imag() << " ) " << endl;

@@ -46,8 +46,8 @@ namespace rtmath {
 
 		class collide : public absorb {
 			public:
-				inline abscollide() {}
-				virtual ~abscollide() {}
+				inline collide() {}
+				virtual ~collide() {}
 				virtual double tau(double wvnum) const;
 		};
 

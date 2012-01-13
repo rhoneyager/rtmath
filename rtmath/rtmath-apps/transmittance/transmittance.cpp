@@ -191,6 +191,23 @@ void doHelp()
 	using namespace std;
 	cout << "rtmath-transmittance\n";
 	cout << "A program for calculating transmittance in an atmosphere." << endl;
+	cout << "Options:\n";
+	cout << "--config\n";
+	cout << "\tOverride the path to the master config file. This\n";
+	cout << "\tfile is used when finding atmospheric profiles\n";
+	cout << "\tand the HITRAN database." << endl;
+	cout << "-f (frequency range)\n";
+	cout << "\tSpecify the range of frequencies (in GHz) for\n";
+	cout << "\ttransmittance calculation. Either specify a\n";
+	cout << "\tsingle frequency, or specify a set of frequencies\n";
+	cout << "\tusing the form (start,increment,stop)." << endl;
+	cout << "--profdir\n";
+	cout << "\tOverride the search directory for atmospheric\n";
+	cout << "\tprofiles. By default, we look in config and ./\n";
+	cout << "--profile\n";
+	cout << "\tSpecify the desired atmospheric profile. Consult\n";
+	cout << "\tthe manual for the file format.\n";
+	cout << endl;
 	cout << endl;
 	exit(1);
 }
