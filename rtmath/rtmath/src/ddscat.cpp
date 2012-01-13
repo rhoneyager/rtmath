@@ -1,11 +1,12 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
 #include <iostream>
 #include <fstream>
 #include <boost/filesystem.hpp>
+#include <boost/math/special_functions/erf.hpp>
 #include <memory>
 #include <netcdf.h>
 #include <cmath>
+#include "../rtmath/rtmath.h"
 #include "../rtmath/ddscat.h"
 
 namespace rtmath {
@@ -720,15 +721,13 @@ namespace rtmath {
 
 	double ddOutputEnsembleGaussianPhi::weight(const ddCoords3 &coords, const ddCoords3 &delta)
 	{
-		// Use cmath erf function because we need to integrate the error function
 		double scaled = coords.phi - mu;
 		double scaledb = delta.phi - mu;
 		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
-		// I'll use an override here
-
+		// I'll use boost libraries here
 		// Weights are doubled because orientations are +-  <--- 2 domains of interest
-		double Pa = 1.0 + rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = 1.0 + rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		double Pa = 1.0 + boost::math::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = 1.0 + boost::math::erf(scaled / (sqrt(2.0) * sigma));
 		double P = Pa - Pb;
 		return P;
 	}
@@ -739,12 +738,9 @@ namespace rtmath {
 		// Use cmath erf function because we need to integrate the error function
 		double scaled = coords.theta - mu;
 		double scaledb = delta.theta - mu;
-		//cerr << "theta1 " << scaled << " theta2 " << scaledb << " sigma " << sigma;
 		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
-		// I'll use an override here
-
-		double Pa = 1.0 + rtmath::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = 1.0 + rtmath::erf(scaled / (sqrt(2.0) * sigma));
+		double Pa = 1.0 + boost::math::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
+		double Pb = 1.0 + boost::math::erf(scaled / (sqrt(2.0) * sigma));
 		double P = Pa - Pb;
 		//cerr << " Pa " << Pa << " Pb " << Pb << " P " << P << endl;
 		return P;
