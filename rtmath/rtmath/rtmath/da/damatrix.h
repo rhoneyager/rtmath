@@ -11,6 +11,7 @@
 #include <limits.h>	
 #include "../defs.h"
 #include "../error/error.h"
+#include "damatrix_quad.h"
 /*
 // This code segment allows for an unordered map of mapid to exist. It implements a hash depending on the values in the mapid.
 namespace std {

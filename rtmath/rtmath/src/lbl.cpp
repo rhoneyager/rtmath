@@ -1,5 +1,4 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
 #include <set>
 #include <map>
 #include <string>
@@ -13,6 +12,8 @@
 #include <math.h>
 #include <cmath>
 #include <string.h>
+#include "../rtmath/lbl.h"
+#include "../rtmath/macros.h"
 
 namespace rtmath {
 	namespace lbl {

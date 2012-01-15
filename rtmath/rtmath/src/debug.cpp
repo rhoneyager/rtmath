@@ -4,7 +4,7 @@
 */
 
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/error/debug.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "../build/debug_subversion.h"

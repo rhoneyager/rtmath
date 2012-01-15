@@ -8,6 +8,7 @@
 #include <memory>
 #include "../matrixop.h"
 #include "damatrix.h"
+#include "daPf.h"
 #include "../enums.h" // provides rtselec
 
 namespace rtmath {

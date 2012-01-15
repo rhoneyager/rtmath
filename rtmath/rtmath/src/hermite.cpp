@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/polynomials/hermite.h"
 #include <vector>
 
 namespace rtmath {

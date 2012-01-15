@@ -7,7 +7,8 @@
 
 
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/polynomial.h"
+#include "../rtmath/matrixop.h"
 
 namespace rtmath {
 

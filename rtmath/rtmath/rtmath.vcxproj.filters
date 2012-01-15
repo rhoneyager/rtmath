@@ -186,7 +186,7 @@
     <ClInclude Include="rtmath\zeros.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\absorb_basic.h">
+    <ClInclude Include="rtmath\absorb.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
   </ItemGroup>
@@ -207,6 +207,9 @@
       <Filter>Misc</Filter>
     </None>
     <None Include="Readme.txt">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="prebuild.bat">
       <Filter>Misc</Filter>
     </None>
   </ItemGroup>
@@ -328,7 +331,7 @@
     <ClCompile Include="src\zeros.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\absorb_basic.cpp">
+    <ClCompile Include="src\absorb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

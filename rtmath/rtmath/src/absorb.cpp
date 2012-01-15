@@ -1,3 +1,4 @@
+#include "../rtmath/Stdafx.h"
 #include <cmath>
 #include "../rtmath/absorb.h"
 
@@ -23,7 +24,7 @@ namespace rtmath {
 			// TODO: replace definition
 			return wvnum * 2.997925e8;
 		}
-
+		/*
 		// TODO: rewrite the function call to take an entire atmospheric layer's parameters, such as temp, pressure, HUMIDITY and others for use in the absorption calculation
 		double o2abs::tau(double T, double p, double wvnum) const
 		{
@@ -37,7 +38,7 @@ namespace rtmath {
 			double f = _wvtofreq(wvnum);
 			return 6.4e-14*p*p*f*f*pow(th,3.55);
 		}
-
+		*/
 		// Collision-induced absorption by Pardo et al. (2000)
 		// Pardo, J. R., E. Serabyn, and J. Cernicharo, 
 		//  Submillimeter atmospheric transmission measurements
@@ -57,7 +58,7 @@ namespace rtmath {
 			double th = 300.0/T;
 			double f2 = wvnum * wvnum;
 			double an2 = (a1*exp(-c1*th*f2)+a2*exp(-c2*th*f2)*(d*d+f2))*pow(th,b);
-			double abscollide = 0.65*(P/1013.)*(P/1013.)*th*th*2.0*f2*an2;
+			double abscollide = 0.65*(p/1013.)*(p/1013.)*th*th*2.0*f2*an2;
 			// abscollide has units of 1/cm. convert to 1/km
 			abscollide *= 1.e5;
 			return abscollide;

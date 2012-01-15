@@ -1,6 +1,7 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/rtmath.h"
 #include "../rtmath/da/daDiagonalMatrix.h"
+#include "../rtmath/da/daLayer.h"
 #include <memory>
 
 namespace rtmath {

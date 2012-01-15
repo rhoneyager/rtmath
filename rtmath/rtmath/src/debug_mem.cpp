@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/error/debug_mem.h"
 //#include <cstring>
 
 namespace rtmath {

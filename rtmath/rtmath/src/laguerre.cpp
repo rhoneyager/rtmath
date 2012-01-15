@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/polynomials/laguerre.h"
 #include <vector>
 
 namespace rtmath {

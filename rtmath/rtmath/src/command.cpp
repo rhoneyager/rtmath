@@ -1,12 +1,12 @@
 #include "../rtmath/Stdafx.h"
 #include <string>
 #include <memory>
-#include "../rtmath/rtmath.h"
 #include <vector>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include "../rtmath/command.h"
 
 namespace rtmath {
 	namespace config {
@@ -64,7 +64,7 @@ namespace rtmath {
 		{
 			// Find the option
 			std::string op(oName);
-			for (size_t i=0;i<_ac-1;i++)
+			for (size_t i=0;i< (size_t) (_ac-1);i++)
 			{
 				std::string p(_av[i]);
 				if (p==op)
@@ -82,7 +82,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			string op(oName);
-			for (size_t i=0;i<_ac-num;i++)
+			for (size_t i=0;i<(size_t) (_ac-num);i++)
 			{
 				string p(_av[i]);
 				if (p==op)
@@ -102,7 +102,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			string op(oName);
-			for (size_t i=0;i<_ac-1;i++)
+			for (size_t i=0;i<(size_t) (_ac-1);i++)
 			{
 				string p(_av[i]);
 				if (p==op)
@@ -119,7 +119,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			string op(oName);
-			for (size_t i=0;i<_ac-1;i++)
+			for (size_t i=0;i< (size_t) (_ac-1);i++)
 			{
 				string p(_av[i]);
 				if (p==op)
@@ -135,7 +135,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			string op(oName);
-			for (size_t i=0;i<_ac;i++)
+			for (size_t i=0;i<(size_t) (_ac);i++)
 			{
 				string p(_av[i]);
 				if (p==op) return true;

@@ -63,6 +63,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\rtmath\tests\test.cpp" />
+    <ClCompile Include="..\rtmath\tests\test_config.cpp" />
     <ClCompile Include="..\rtmath\tests\test_ddscat.cpp" />
     <ClCompile Include="..\rtmath\tests\test_debug.cpp" />
     <ClCompile Include="..\rtmath\tests\test_lbl.cpp" />

@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/error/error.h"
 #include <iostream>
 #include <sstream>
 

@@ -17,7 +17,7 @@ configsegment* cRoot;
 
 void loadConfig()
 {
-	string crootname = "tests/data/rtmath.conf";
+	string crootname = "../rtmath/tests/data/rtmath.conf";
 	cRoot =  configsegment::loadFile(
 			crootname.c_str(),NULL);
 }

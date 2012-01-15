@@ -1,7 +1,8 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
 #include <cmath>
 #include <memory>
+#include "../rtmath/da/daPf.h"
+
 
 namespace rtmath {
 	daPfNone::daPfNone()

@@ -1,9 +1,9 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
-#include "../rtmath/da/damatrix_quad.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream> // for debugging
+#include "../rtmath/da/damatrix_quad.h"
+#include "../rtmath/quadrature.h"
 
 namespace rtmath {
 	namespace daint {

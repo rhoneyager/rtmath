@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/mie/mie.h"
 #include <cmath>
 
 namespace mie {

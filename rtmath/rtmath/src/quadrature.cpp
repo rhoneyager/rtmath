@@ -1,5 +1,6 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/quadrature.h"
+#include "../rtmath/error/debug.h"
 #include <vector>
 #include <set>
 #include <map>

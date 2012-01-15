@@ -5,13 +5,17 @@
  *      Author: reh9650
  */
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
-#include "../build/rtc.h"
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include "../rtmath/config.h"
+#include "../rtmath/error/debug.h"
+
+// Special compile-time generated file that build needs
+#include "../build/rtc.h"
+
+
 
 namespace rtmath {
 	namespace config {

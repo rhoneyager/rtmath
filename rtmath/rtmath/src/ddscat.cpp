@@ -6,7 +6,6 @@
 #include <memory>
 #include <netcdf.h>
 #include <cmath>
-#include "../rtmath/rtmath.h"
 #include "../rtmath/ddscat.h"
 
 namespace rtmath {

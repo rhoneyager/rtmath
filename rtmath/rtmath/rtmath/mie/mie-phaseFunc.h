@@ -2,6 +2,7 @@
 
 #include <complex>
 #include "../matrixop.h"
+#include "../phaseFunc.h"
 #include <memory>
 
 namespace mie {

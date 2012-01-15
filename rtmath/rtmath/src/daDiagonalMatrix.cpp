@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/da/daDiagonalMatrix.h"
 #include <memory>
 
 namespace rtmath {

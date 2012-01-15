@@ -1,8 +1,9 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
 #include <memory>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "../rtmath/da/damatrix.h"
+
 
 namespace rtmath {
 

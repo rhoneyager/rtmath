@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/phaseFunc.h"
 #include <complex>
 #include <cmath>
 

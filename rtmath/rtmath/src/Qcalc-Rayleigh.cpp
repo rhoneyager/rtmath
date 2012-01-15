@@ -1,5 +1,5 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/rayleigh/rayleigh.h"
 #include <complex>
 #include <cmath>
 

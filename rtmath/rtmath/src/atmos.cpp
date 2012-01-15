@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "../rtmath/rtmath.h"
+#include "../rtmath/atmos.h"
 #include "../rtmath/da/daDiagonalMatrix.h"
 
 namespace rtmath {

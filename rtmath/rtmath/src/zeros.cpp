@@ -1,5 +1,6 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/zeros.h"
+#include "../rtmath/error/debug.h"
 //#include <cstdlib>
 #include <cmath>
 

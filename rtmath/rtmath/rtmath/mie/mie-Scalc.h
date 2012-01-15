@@ -1,5 +1,6 @@
 #pragma once
 #include <complex>
+#include "../phaseFunc.h"
 
 namespace mie {
 

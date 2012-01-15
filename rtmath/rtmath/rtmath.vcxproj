@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rtmath\absorb_basic.h" />
+    <ClInclude Include="rtmath\absorb.h" />
     <ClInclude Include="rtmath\atmos.h" />
     <ClInclude Include="rtmath\cdf-ddscat.h" />
     <ClInclude Include="rtmath\command.h" />
@@ -76,12 +76,13 @@
     <None Include="app.ico" />
     <None Include="getRev.csh" />
     <None Include="Makefile" />
+    <None Include="prebuild.bat" />
     <None Include="Readme.txt" />
     <None Include="rtlogo.png" />
     <None Include="rtmath\error\debug_subversion.h.template" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\absorb_basic.cpp" />
+    <ClCompile Include="src\absorb.cpp" />
     <ClCompile Include="src\atmos.cpp" />
     <ClCompile Include="src\chebyshev.cpp" />
     <ClCompile Include="src\command.cpp" />
@@ -199,7 +200,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OpenMPSupport>true</OpenMPSupport>
@@ -214,8 +215,8 @@
       </AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Message>Update the Subversion revision information</Message>
-      <Command>subwcrev "$(SolutionDir)." "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h.template" "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h" -f</Command>
+      <Message>Create special files for this build</Message>
+      <Command>"$(SolutionDir)rtmath/prebuild.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -238,8 +239,8 @@
       </AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Message>Update the Subversion revision information</Message>
-      <Command>subwcrev "$(SolutionDir)." "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h.template" "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h" -f</Command>
+      <Message>Create special files for this build</Message>
+      <Command>"$(SolutionDir)rtmath/prebuild.bat"</Command>
     </PreBuildEvent>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
@@ -268,10 +269,10 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>subwcrev "$(SolutionDir)." "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h.template" "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h" -f</Command>
+      <Command>"$(SolutionDir)rtmath/prebuild.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>Update the Subversion revision information</Message>
+      <Message>Create special files for this build</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -297,10 +298,10 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>subwcrev "$(SolutionDir)." "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h.template" "$(SolutionDir)rtmath/rtmath/error/debug_subversion.h" -f</Command>
+      <Command>"$(SolutionDir)rtmath/prebuild.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>Update the Subversion revision information</Message>
+      <Message>Create special files for this build</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

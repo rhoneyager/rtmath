@@ -9,6 +9,7 @@
 //#include <netcdfcpp.h>
 #include "defs.h"
 #include "mapid.h"
+#include "error/debug.h"
 #include "Public_Domain/MurmurHash3.h"
 
 #define inlinerval(x,y) inline x y(size_t rank, ...) const \

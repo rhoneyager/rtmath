@@ -1,5 +1,6 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/da/daInitLayer.h"
+#include "../rtmath/da/daPf.h"
 #include <memory>
 
 namespace rtmath {
