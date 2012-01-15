@@ -28,7 +28,8 @@ namespace rtmath {
 			public:
 				absorb() {}
 				virtual ~absorb();
-				virtual double tau(double wvnum) const = 0;
+				// wvnum is wavenumbers, T in kelvin, p in hPa
+				virtual double tau(double T, double p, double wvnum) const = 0;
 				// virtual double tau(double quant, dim)
 				// Provide easily accessable function for 
 				// transmittance calculation:
@@ -48,7 +49,7 @@ namespace rtmath {
 			public:
 				inline collide() {}
 				virtual ~collide() {}
-				virtual double tau(double wvnum) const;
+				virtual double tau(double T, double p, double wvnum) const;
 		};
 
 
