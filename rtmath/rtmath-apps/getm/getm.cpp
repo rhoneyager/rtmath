@@ -7,8 +7,8 @@
 #include <set>
 #include <vector>
 #include <map>
-#include <rtmath/rtmath.h>
-#include <rtmath/mie/mie.h>
+#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/mie/mie.h"
 #include <boost/units/systems/si.hpp>
 #include <memory>
 #include <complex>

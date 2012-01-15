@@ -66,6 +66,7 @@
     <ClInclude Include="rtmath\rayleigh\rayleigh.h" />
     <ClInclude Include="rtmath\rayleigh\rayleighPhaseFunc.h" />
     <ClInclude Include="rtmath\rayleigh\Scalc-Rayleigh.h" />
+    <ClInclude Include="rtmath\refract.h" />
     <ClInclude Include="rtmath\resource.h" />
     <ClInclude Include="rtmath\rtmath.h" />
     <ClInclude Include="rtmath\splitstring.h" />
@@ -118,6 +119,7 @@
     <ClCompile Include="src\quadrature.cpp" />
     <ClCompile Include="src\rayleighPhaseFunc.cpp" />
     <ClCompile Include="src\recursivePolynomial.cpp" />
+    <ClCompile Include="src\refract.cpp" />
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\Stdafx.cpp" />

@@ -6,7 +6,7 @@
 #include <set>
 #include <vector>
 #include <map>
-#include <rtmath/rtmath.h>
+#include "../../rtmath/rtmath/rtmath.h"
 
 
 int main(int argc, char** argv)

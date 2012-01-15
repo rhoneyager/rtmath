@@ -15,7 +15,7 @@
 #include <set>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
-#include <rtmath/rtmath.h>
+#include "../../rtmath/rtmath/rtmath.h"
 
 void doHelp();
 
@@ -180,6 +180,9 @@ int main(int argc, char** argv)
 	{
 		err.Display();
 		cerr << endl;
+#ifdef _WIN32
+		std::getchar();
+#endif
 		return 1;
 	}
 	return 0;
@@ -209,6 +212,9 @@ void doHelp()
 	cout << "\tthe manual for the file format.\n";
 	cout << endl;
 	cout << endl;
+#ifdef _WIN32
+	std::getchar();
+#endif
 	exit(1);
 }
 

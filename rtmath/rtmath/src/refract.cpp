@@ -1,9 +1,10 @@
 // Code segment directly based on Liu's code. Rewritten in C++ so that it may be 
 // compiled in an MSVC environment
 
+#include "../rtmath/Stdafx.h"
 #include <cmath>
 #include <complex>
-#include <rtmath/rtmath.h>
+#include "../rtmath/refract.h"
 
 // Ice complex refractive index
 // based on Christian Matzler (2006)
