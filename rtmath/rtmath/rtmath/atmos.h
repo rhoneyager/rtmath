@@ -16,63 +16,75 @@
 #include "da/daLayer.h"
 #include "matrixop.h"
 #include "da/damatrix.h"
-#include "lbl.h"
 #include <string>
 #include <memory>
-//#include <netcdfcpp.h>
 
 namespace rtmath {
-	class daLayer; // List it here for reference
-	namespace lbl { class lbllayer; }; // Listed for reference
+	//class daLayer; // List it here for reference
+	//namespace lbl { class lbllayer; }; // Listed for reference
 
-	class atmos {
-	public:
-		atmos();
-		~atmos();
-		std::string name;						// Name of this atmosphere
-		// Containers
-		std::vector<std::shared_ptr<daLayer> > daLayers;			// The doubling-adding layers in the atmosphere
-		std::vector<lbl::lbllayer> lblLayers;	// The line-by-line layers
-		// Functions to set and get the target wavelength
-		inline void nu(double wvnum) { _wvnum = wvnum; _taus.clear(); }
-		inline double nu() { return _wvnum; }
-		// Calculation of the optical depth in the atmosphere or in parts thereof
-		double tau();
-		double tau(unsigned int layernum);
-		double tau(unsigned int layerlow, unsigned int layerhigh);
+	namespace atmos {
 
-		// Smart function to load a profile with the corresponding gas
-		// concentrations, scattering information, phase functions, ..., or any 
-		// subset of the above.
-		// For absorption-only, only the gas concentrations are really needed.
-		// For merging profile data, a better function must be implemented.
-		void loadProfile(const char* filename); // Only handles absorption information only.
-		/* Load in a profile from netCDF
-		 * Profile contains the name of the atmosphere, the lbl layers,
-		 * the lbl layer gas concentrations, the corresponding daLayers, 
-		 * their albedos and phase function information.
-		 * The phase functions may be simple, but are typically a complex angle-dependent 
-		 * construct. There are several ways of storing the phase functions, but they really 
-		 * should contain information on the particle scattering schemes and any necessary parameters 
-		 * to reproduce the phase matrix. This will use identifiers, and will call the appropriate loading functions.
-		 * It should rely on both attributes and variables to work properly.
-		 */
-		/*
-		void loadProfile(NcFile * nfile, const char* profileName); 
-		inline void saveProfile(NcFile * nfile) { saveProfile(nfile, name.c_str()); }
-		void saveProfile(NcFile * nfile, const char* profileName);
-		*/
+		class atmoslayer;
 
-		// Functions that perform adding-doubling on entire layer
-		std::shared_ptr<damatrix> R();
-		std::shared_ptr<damatrix> T();
-	protected:
-		std::shared_ptr<damatrix> _R, _T;		// These hold the pointers to any preconstructed R and T for the atmosphere
-	private:
-		void _calcProps();
-		double _wvnum;
-		std::vector<double> _taus;
+		class absorber
+		{
+		public:
+			// The constructors act either as a dummy constructor, or they assign
+			// the appropriate molecule id for the gas. 
+			// Isoconc is overridable to allow for selection of method (lbl, band model, 
+			// or Liu's sources.
+			absorber() { _init(); }
+			absorber(int molnum);
+			absorber(const std::string &molecule);
+			absorber(const atmoslayer &layer, double psfrac);
+			virtual ~absorber();
+			virtual double deltaTau(double nu) const = 0;
+			double p() const { return _p; }
+			double psfrac() const { return _psfrac; }
+			double T() const { return _T; }
+			double dz() const { return _dz; }
+			void p(double newp) { _p = newp; }
+			void psfrac(double newpsfrac) {_psfrac = newpsfrac;}
+			void T(double newt) {_T = newt;}
+			void dz(double newdz) {_dz = newdz;}
+		protected:
+			double _p;
+			double _T;
+			double _dz;
+			double _psfrac;
+			std::string _molecule;
+			int _molnum;
+		private:
+			void _init();
+		public:
+			// Let's be specific. _wvtofreq converts wavenumbers of form cm^-1
+			// into frequency in GHz. _freqtowv does the reverse.
+			static double _wvtofreq(double wvnum);
+			static double _freqtowv(double f);
+		};
 
-	};
+		class atmoslayer
+		{
+		public:
+			atmoslayer() { _init(); }
+			virtual ~atmoslayer() {};
+			inline double p() const { return _p; }
+			inline void p(double newp) { _p = newp; }
+			inline double T() const { return _T; }
+			inline void T(double newT) { _T = newT; }
+			inline double dz() const { return _dz; }
+			inline void dz(double newdz) { _dz = newdz; }
+			double tau(double nu); // Calculates tau of the layer
+			// absorbers needs to be kept as a pointer because it it pure virtual
+			std::set<std::shared_ptr<absorber> > absorbers;
+		protected:
+			double _p;
+			double _T;
+			double _dz;
+			void _init();
+		};
+
+	}; // end namespace atmos
 
 }; // end namespace rtmath

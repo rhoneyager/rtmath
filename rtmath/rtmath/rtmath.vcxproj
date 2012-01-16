@@ -77,6 +77,8 @@
     <None Include="app.ico" />
     <None Include="getRev.csh" />
     <None Include="Makefile" />
+    <None Include="other\absorb.f" />
+    <None Include="other\mcx.f" />
     <None Include="prebuild.bat" />
     <None Include="Readme.txt" />
     <None Include="rtlogo.png" />
@@ -85,6 +87,7 @@
   <ItemGroup>
     <ClCompile Include="src\absorb.cpp" />
     <ClCompile Include="src\atmos.cpp" />
+    <ClCompile Include="src\atmoslayer.cpp" />
     <ClCompile Include="src\chebyshev.cpp" />
     <ClCompile Include="src\command.cpp" />
     <ClCompile Include="src\config.cpp" />
@@ -99,8 +102,11 @@
     <ClCompile Include="src\debug_mem.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\hermite.cpp" />
+    <ClCompile Include="src\absorber.cpp" />
     <ClCompile Include="src\laguerre.cpp" />
-    <ClCompile Include="src\lbl.cpp" />
+    <ClCompile Include="src\lbl.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\legendre.cpp" />
     <ClCompile Include="src\matrixop.cpp" />
     <ClCompile Include="src\mie-abNCalc.cpp" />

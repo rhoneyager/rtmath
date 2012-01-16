@@ -1,5 +1,6 @@
-// backcalc_f is a program that calculates mie and rayleigh backscatter as a function of frequency and reports results in csv format. 
-// Orientation does not matter because the particles are assumed to be either spherical or really small.
+// this is a drop-in replacement for Liu's getm and genmtab
+// It will add extra functionality, such as a better selection of refractive index
+// calculation functions. It will also be able to handle both ice and water.
 
 #include <iostream>
 #include <fstream>
@@ -8,8 +9,7 @@
 #include <vector>
 #include <map>
 #include "../../rtmath/rtmath/rtmath.h"
-#include "../../rtmath/rtmath/mie/mie.h"
-#include <boost/units/systems/si.hpp>
+//#include <boost/units/systems/si.hpp> // TODO: allow units
 #include <memory>
 #include <complex>
 #define _USE_MATH_DEFINES

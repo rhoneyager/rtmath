@@ -31,6 +31,9 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{531986c4-0702-47c0-94c4-7ee7ec5fa288}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Atmosphere">
+      <UniqueIdentifier>{b70da78d-9f84-40ba-88f1-b2686b4de949}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath\polynomials\chebyshev.h">
@@ -123,9 +126,6 @@
     <ClInclude Include="rtmath\da\daPf.h">
       <Filter>Header Files\da</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\atmos.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\cdf-ddscat.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
@@ -145,9 +145,6 @@
       <Filter>Header Files\General</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\enums.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\lbl.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\macros.h">
@@ -186,11 +183,17 @@
     <ClInclude Include="rtmath\zeros.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\absorb.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\refract.h">
       <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\atmos.h">
+      <Filter>Header Files\Atmosphere</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\absorb.h">
+      <Filter>Header Files\Atmosphere</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\lbl.h">
+      <Filter>Header Files\Atmosphere</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +216,12 @@
       <Filter>Misc</Filter>
     </None>
     <None Include="prebuild.bat">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="other\absorb.f">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="other\mcx.f">
       <Filter>Misc</Filter>
     </None>
   </ItemGroup>
@@ -338,6 +347,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\refract.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\atmoslayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\absorber.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

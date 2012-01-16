@@ -1,6 +1,6 @@
 #pragma once
 
-/* absorb_basic - contains the functions for calculating atmospheric absorption 
+/* absorb - contains the functions for calculating atmospheric absorption 
  * due to water vapor, oxygen and nitrogen. This is an adaptation of Dr. Liu's 
  * code (in mwrt3/sub0/absorb.f), which considers absorption in a bulk atmosphere.
  * Since my code needs the absorption in a small layer, his code requires some 
@@ -13,31 +13,10 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "error/debug.h"
+#include "atmos.h"
 
 namespace rtmath {
-	namespace absorb {
-
-		// The absorb class is a base class to handle different
-		// methods of calculating absorption. By having a 
-		// base class, sets of absorption calculations can be 
-		// implemented, providing the ability, for example, for 
-		// water absorption to be turned off while o3 is turned 
-		// on. This is meant to be an alternative to lbl, and 
-		// will eventually handle things like band models, too.
-		class absorb {
-			public:
-				absorb() {}
-				virtual ~absorb();
-				// wvnum is wavenumbers, T in kelvin, p in hPa
-				virtual double tau(double T, double p, double wvnum) const = 0;
-				// virtual double tau(double quant, dim)
-				// Provide easily accessable function for 
-				// transmittance calculation:
-				static double T(double tau);
-			protected:
-				double _wvtofreq(double wvnum);
-		};
-
+	namespace atmos {
 
 		// Might as well set some functions that handle absorption
 		// b.n.: These functions are member functions because they 
@@ -45,13 +24,36 @@ namespace rtmath {
 		// member functions, their classes have no member data. The
 		// initialization is inline, so it doesn't matter too much.
 
-		class collide : public absorb {
-			public:
-				inline collide() {}
-				virtual ~collide() {}
-				virtual double tau(double T, double p, double wvnum) const;
+
+		// Collision-induced absorption by Pardo et al. (2000)
+		// Pardo, J. R., E. Serabyn, and J. Cernicharo, 
+		//  Submillimeter atmospheric transmission measurements
+		// on Mauna Kea during extremely dry El Nino
+		// consitions: Implications for broadband opacity 
+		// contributions. J.Q.S.R.T., 67, 169-180, 2000.
+		// 1.29 times of N2-N2 collision absorption to account
+		// for N2-O2 and O2-O2 collisions
+		class collide : public absorber {
+			public: virtual double deltaTau(double nu) const;
 		};
 
+		// N2 collision absorption
+		// P. Rosenkranz (1998)
+		class abs_N2 : public absorber {
+			public: virtual double deltaTau(double nu) const;
+		};
+
+		// H2O absorption
+		// Rosenkranz (1998)
+		class abs_H2O : public absorber {
+			public: virtual double deltaTau(double nu) const;
+		};
+
+		// O2 absorption
+		// Rosenkranz (1995)
+		class abs_O2 : public absorber {
+			public: virtual double deltaTau(double nu) const;
+		};
 
 	}; // end namespace absorb
 }; // end namespace rtmath
