@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath", "rtmath\rtmath.vcxproj", "{57CE7C52-D622-4E29-B868-107A7E1AB51E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-console-test", "rtmath-console-test\rtmath-console-test.vcxproj", "{343AC1E0-DC48-42EF-AF8E-2B3CB5D2364C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-win-ui", "rtmath-win-ui\rtmath-win-ui.vcxproj", "{7E4C1611-2802-4F75-8DC3-F3F23C1E49C9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA} = {9F1195CF-C78E-4FCD-9EEA-27ECC46F46EA}
@@ -55,10 +53,6 @@ Global
 		{57CE7C52-D622-4E29-B868-107A7E1AB51E}.Release|Win32.Build.0 = Release|Win32
 		{57CE7C52-D622-4E29-B868-107A7E1AB51E}.Release|x64.ActiveCfg = Release|x64
 		{57CE7C52-D622-4E29-B868-107A7E1AB51E}.Release|x64.Build.0 = Release|x64
-		{343AC1E0-DC48-42EF-AF8E-2B3CB5D2364C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{343AC1E0-DC48-42EF-AF8E-2B3CB5D2364C}.Debug|x64.ActiveCfg = Debug|x64
-		{343AC1E0-DC48-42EF-AF8E-2B3CB5D2364C}.Release|Win32.ActiveCfg = Release|Win32
-		{343AC1E0-DC48-42EF-AF8E-2B3CB5D2364C}.Release|x64.ActiveCfg = Release|x64
 		{7E4C1611-2802-4F75-8DC3-F3F23C1E49C9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{7E4C1611-2802-4F75-8DC3-F3F23C1E49C9}.Debug|x64.ActiveCfg = Debug|x64
 		{7E4C1611-2802-4F75-8DC3-F3F23C1E49C9}.Release|Win32.ActiveCfg = Release|Win32

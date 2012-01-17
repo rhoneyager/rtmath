@@ -8,9 +8,9 @@ namespace rtmath {
 
 		double abs_N2::deltaTau(double nu) const
 		{
-			double th = 300./_T;
+			double th = 300./(*_T);
 			double f = _wvtofreq(nu);
-			return 6.4e-14*_p*_p*f*f*pow(th,3.55);
+			return 6.4e-14*(*_p)*(*_p)*f*f*pow(th,3.55);
 		}
 
 		double collide::deltaTau(double nu) const
@@ -21,14 +21,14 @@ namespace rtmath {
 			const double c1 = 1.5e-3;
 			const double c2 = 1.0e-4;
 			const double d = 60.0;
-			double th = 300.0/_T;
+			double th = 300.0/(*_T);
 			double f2 = nu * nu;
 			double an2 = (a1*exp(-c1*th*f2)+a2*exp(-c2*th*f2)*(d*d+f2))*pow(th,b);
-			double abscollide = 0.65*(_p/1013.)*(_p/1013.)*th*th*2.0*f2*an2;
+			double abscollide = 0.65*((*_p)/1013.)*((*_p)/1013.)*th*th*2.0*f2*an2;
 			// abscollide has units of 1/cm. convert to 1/km
 			abscollide *= 1.e5;
 			// But, we have _dz (in km)!
-			return abscollide*_dz; // TODO: check absorption coefficient results
+			return abscollide* (*_dz); // TODO: check absorption coefficient results
 		}
 
 		double abs_H2O::deltaTau(double nu) const
@@ -75,16 +75,16 @@ namespace rtmath {
 			// To calculate rho, I have the ps fraction (pressure fraction),
 			// R, _p and _T. Should be enough.
 			const double Rd = 287.05; // J/(kg*K)
-			double rho = (_p/Rd*_T) * (1.0 - (0.378*_psfrac)); // in 100 kg/m^3
+			double rho = ((*_p)/Rd*(*_T)) * (1.0 - (0.378*_psfrac)); // in 100 kg/m^3
 			// We want in g/m^3
 			rho *= 1.e3; // TODO: check
 
 			if (rho < 0) return 0;
 
-			double pvap = rho*_T/217.;
-			double pda = _p - pvap;
+			double pvap = rho * (*_T) / 217.;
+			double pda = (*_p) - pvap;
 			double den = 3.335e16*rho;
-			double ti = 300./_T;
+			double ti = 300./(*_T);
 			double ti2 = pow(ti,2.5);
 
 			// Water vapor continuum terms
@@ -116,7 +116,7 @@ namespace rtmath {
 			// abh2o needs to be converted
 			// it is in nepers per km, but I want dB. I also have _dz.
 			double abh2o = 0.3183e-4*den*sum + con;
-			return abh2o * _dz * 20.0*log10(M_E);
+			return abh2o * (*_dz) * 20.0*log10(M_E);
 		}
 
 		double abs_O2::deltaTau(double nu) const
@@ -169,13 +169,13 @@ namespace rtmath {
 				0.6526, -0.6393,  0.6640, -0.6475,  0.6729, -0.6545, 6*0 };
 
 			// Finally...
-			double th = 300./_T;
+			double th = 300./(*_T);
 			double th1 = th - 1.;
 			double b = pow(th,X);
 			throw rtmath::debug::xUnimplementedFunction();
 			double vapden = 0; // SET ME
-			double preswv = vapden * _T/217.;
-			double presda = _p - preswv;
+			double preswv = vapden * (*_T)/217.;
+			double presda = (*_p) - preswv;
 			double den = 0.001*(presda*b + 1.1*preswv*th);
 			double dens = 0.001*(presda + 1.1*preswv)*th;
 			double dfnr = WB300*den;
@@ -187,7 +187,7 @@ namespace rtmath {
 					df = W300[0] * dens;
 				else
 					df = W300[k] * den;
-				double y = 0.001*_p*b*(Y300[k]+V[k]*th1);
+				double y = 0.001*(*_p)*b*(Y300[k]+V[k]*th1);
 				double str = S300[k]*exp(-BE[k]*th1);
 				double sf1 = (df + (f-F[k])*y)/(pow(f-F[k],2)+df*df);
 				double sf2 = (df - (f+F[k])*y)/(pow(f+F[k],2)+df*df);
@@ -196,7 +196,7 @@ namespace rtmath {
 			double o2abs = 0.5034e12*sum*presda*pow(th,3)/3.14159;
 			// o2abs needs to be converted
 			// it is in nepers per km, but I want dB. I also have _dz.
-			return o2abs * _dz * 20.0*log10(M_E);
+			return o2abs * (*_dz) * 20.0*log10(M_E);
 		}
 	};
 }; // end namespace rtmath

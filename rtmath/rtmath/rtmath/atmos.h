@@ -18,6 +18,7 @@
 #include "da/damatrix.h"
 #include <string>
 #include <memory>
+#include "atmoslayer.h"
 
 namespace rtmath {
 	//class daLayer; // List it here for reference
@@ -26,63 +27,33 @@ namespace rtmath {
 	namespace atmos {
 
 		class atmoslayer;
+		class absorber;
 
-		class absorber
-		{
+		class atmos {
 		public:
-			// The constructors act either as a dummy constructor, or they assign
-			// the appropriate molecule id for the gas. 
-			// Isoconc is overridable to allow for selection of method (lbl, band model, 
-			// or Liu's sources.
-			absorber() { _init(); }
-			absorber(int molnum);
-			absorber(const std::string &molecule);
-			absorber(const atmoslayer &layer, double psfrac);
-			virtual ~absorber();
-			virtual double deltaTau(double nu) const = 0;
-			double p() const { return _p; }
-			double psfrac() const { return _psfrac; }
-			double T() const { return _T; }
-			double dz() const { return _dz; }
-			void p(double newp) { _p = newp; }
-			void psfrac(double newpsfrac) {_psfrac = newpsfrac;}
-			void T(double newt) {_T = newt;}
-			void dz(double newdz) {_dz = newdz;}
-		protected:
-			double _p;
-			double _T;
-			double _dz;
-			double _psfrac;
-			std::string _molecule;
-			int _molnum;
+			atmos();
+			~atmos();
+			atmos(const std::string &filename);
+			std::string name; // Name of the atmosphere
+
+			// File loading and saving to various formats
+			// Formats are my own text, netcdf, Liu's text format and Evans' text format
+			void loadProfile(const std::string &filename);
+			void saveProfile(const std::string &filename) const;
+			void loadProfileRyan(const std::string &filename);
+			//void saveProfileRyan(const std::string &filename);
+			//void loadProfileLiu(const std::string &filename);
+			//void saveProfileLiu(const std::string &filename);
+			//void loadProfileCDF(const std::string &filename);
+			//void saveProfileCDF(const std::string &filename);
+
+			// Calculation of optical depth of atmosphere or parts thereof
+			double tau(double wvnum) const;
+			double tau(double wvnum, size_t layernum) const;
+			// Careful: calcs from layerLow (inclusive) to high (exclusive)
+			double tau(double wvnum, size_t layerLow, size_t layerHigh) const;
 		private:
-			void _init();
-		public:
-			// Let's be specific. _wvtofreq converts wavenumbers of form cm^-1
-			// into frequency in GHz. _freqtowv does the reverse.
-			static double _wvtofreq(double wvnum);
-			static double _freqtowv(double f);
-		};
-
-		class atmoslayer
-		{
-		public:
-			atmoslayer() { _init(); }
-			virtual ~atmoslayer() {};
-			inline double p() const { return _p; }
-			inline void p(double newp) { _p = newp; }
-			inline double T() const { return _T; }
-			inline void T(double newT) { _T = newT; }
-			inline double dz() const { return _dz; }
-			inline void dz(double newdz) { _dz = newdz; }
-			double tau(double nu); // Calculates tau of the layer
-			// absorbers needs to be kept as a pointer because it it pure virtual
-			std::set<std::shared_ptr<absorber> > absorbers;
-		protected:
-			double _p;
-			double _T;
-			double _dz;
-			void _init();
+			std::vector<atmoslayer> _layers;
 		};
 
 	}; // end namespace atmos

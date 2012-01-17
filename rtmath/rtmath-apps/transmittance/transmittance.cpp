@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 		bool flag;
 
 		// Get master configuration file path
-		// Used to find out where HITRAN is
+		// Used to find out where HITRAN is and where the profile paths are
 		string rtconfpath;
 		flag = p.readParam("--config", rtconfpath);
 		if (rtconfpath == "")
@@ -132,6 +132,7 @@ int main(int argc, char** argv)
 		}
 		cerr << "Profile found in " << profpath << endl;
 		
+		/*
 		// Get HITRAN paths
 		{
 			string fMolparam, fHITRAN, fParsum;
@@ -148,11 +149,12 @@ int main(int argc, char** argv)
 			timestamp(false);
 			cerr << "HITRAN loaded in TODO seconds." << endl;
 		}
+		*/
 
 		// Read atmospheric profile
-		atmos lblatmos;
-		lblatmos.loadProfile(profpath.c_str());
-		cerr << "Running profile " << lblatmos.name << endl;
+		atmos::atmos atm;
+		atm.loadProfile(profpath.c_str());
+		cerr << "Running profile " << atm.name << endl;
 		cerr << "frequency (GHz), tau" << endl;
 
 		{
@@ -168,9 +170,8 @@ int main(int argc, char** argv)
 			for (it = freqs.begin(); it != freqs.end(); it++)
 			{
 				// TODO: use better value for c
-				double wvnum = *it / 3.e8;
-				lblatmos.nu(wvnum);
-				double tau = lblatmos.tau();
+				double wvnum = atmos::absorber::_freqtowv(*it);
+				double tau = atm.tau(wvnum);
 				cout << *it << "," << tau << endl;
 			}
 		}

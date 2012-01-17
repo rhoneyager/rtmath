@@ -166,7 +166,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace boost::filesystem;
 
-			// TODO: use boost_filesystem as a file existence check
+			// Use boost_filesystem as a file existence check
 			boost::filesystem::path p(filename);
 			if (!exists(p)) throw rtmath::debug::xMissingFile(filename);
 			if (is_directory(p)) throw rtmath::debug::xMissingFile(filename);

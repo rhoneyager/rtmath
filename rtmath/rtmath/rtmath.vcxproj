@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="rtmath\absorb.h" />
     <ClInclude Include="rtmath\atmos.h" />
+    <ClInclude Include="rtmath\atmoslayer.h" />
     <ClInclude Include="rtmath\cdf-ddscat.h" />
     <ClInclude Include="rtmath\command.h" />
     <ClInclude Include="rtmath\common_templates.h" />
@@ -208,7 +209,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OpenMPSupport>true</OpenMPSupport>

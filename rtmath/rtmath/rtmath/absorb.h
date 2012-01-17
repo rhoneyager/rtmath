@@ -18,6 +18,45 @@
 namespace rtmath {
 	namespace atmos {
 
+			class absorber
+			{
+			public:
+				// The constructors act either as a dummy constructor, or they assign
+				// the appropriate molecule id for the gas. 
+				// Isoconc is overridable to allow for selection of method (lbl, band model, 
+				// or Liu's sources.
+				absorber() { _init(); }
+				//absorber(int molnum);
+				//absorber(const std::string &molecule);
+				// This is the preferred initializer, as it sets p, T, etc.:
+				absorber(const atmoslayer &layer, double psfrac);
+				virtual ~absorber();
+				virtual absorber* clone() const = 0; // Annoying, but necessary
+				virtual double deltaTau(double nu) const = 0;
+				double p() const { return *_p; }
+				double psfrac() const { return _psfrac; }
+				double T() const { return *_T; }
+				double dz() const { return *_dz; }
+
+				void psfrac(double newpsfrac) {_psfrac = newpsfrac;}
+				void setLayer(const atmoslayer &layer, double psfrac);
+			protected:
+				const double *_p;
+				const double *_T;
+				const double *_dz;
+				const atmoslayer *_layer;
+				double _psfrac;
+				std::string _molecule;
+				int _molnum;
+			private:
+				void _init();
+			public:
+				// Let's be specific. _wvtofreq converts wavenumbers of form cm^-1
+				// into frequency in GHz. _freqtowv does the reverse.
+				static double _wvtofreq(double wvnum);
+				static double _freqtowv(double f);
+			};
+
 		// Might as well set some functions that handle absorption
 		// b.n.: These functions are member functions because they 
 		// have virtual class inheritance. However, though they are 
@@ -35,24 +74,40 @@ namespace rtmath {
 		// for N2-O2 and O2-O2 collisions
 		class collide : public absorber {
 			public: virtual double deltaTau(double nu) const;
+			virtual collide* clone() const
+			{
+				return new collide(*this);
+			}
 		};
 
 		// N2 collision absorption
 		// P. Rosenkranz (1998)
 		class abs_N2 : public absorber {
 			public: virtual double deltaTau(double nu) const;
+			virtual abs_N2* clone() const
+			{
+				return new abs_N2(*this);
+			}
 		};
 
 		// H2O absorption
 		// Rosenkranz (1998)
 		class abs_H2O : public absorber {
 			public: virtual double deltaTau(double nu) const;
+			virtual abs_H2O* clone() const
+			{
+				return new abs_H2O(*this);
+			}
 		};
 
 		// O2 absorption
 		// Rosenkranz (1995)
 		class abs_O2 : public absorber {
 			public: virtual double deltaTau(double nu) const;
+			virtual abs_O2* clone() const
+			{
+				return new abs_O2(*this);
+			}
 		};
 
 	}; // end namespace absorb

@@ -1,3 +1,4 @@
+#include "../rtmath/Stdafx.h"
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -6,7 +7,7 @@
 #include <boost/algorithm/string.hpp>
 
 
-#include "../rtmath/Stdafx.h"
+
 #include "../rtmath/polynomial.h"
 #include "../rtmath/matrixop.h"
 

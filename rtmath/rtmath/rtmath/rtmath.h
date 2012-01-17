@@ -31,6 +31,7 @@
 //#include "lbl.h"
 #include "atmos.h"
 #include "absorb.h"
+#include "atmoslayer.h"
 #include "config.h"
 #include "command.h"
 #include "mie/mie.h"

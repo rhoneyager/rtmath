@@ -195,6 +195,9 @@
     <ClInclude Include="rtmath\lbl.h">
       <Filter>Header Files\Atmosphere</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\atmoslayer.h">
+      <Filter>Header Files\Atmosphere</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">

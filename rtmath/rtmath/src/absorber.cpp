@@ -5,12 +5,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "../rtmath/atmos.h"
+#include "../rtmath/absorb.h"
+#include "../rtmath/atmoslayer.h"
 
 namespace rtmath {
 	
 	namespace atmos {
 
+		/*
 		absorber::absorber(int molnum)
 		{
 			_init();
@@ -21,6 +23,37 @@ namespace rtmath {
 		{
 			_init();
 			_molecule = molecule;
+		}
+		*/
+
+		double absorber::_wvtofreq(double wvnum)
+		{
+			double f = wvnum * 2.99792458e8;
+			// And, for appropriate dimensionality...
+			f *= 1.e7;
+			return f;
+		}
+
+		double absorber::_freqtowv(double f)
+		{
+			double wvnum = (f*1.e-7) / 2.99792458e8;
+			return wvnum;
+		}
+
+
+		absorber::absorber(const atmoslayer &layer, double psfrac)
+		{
+			_init();
+			setLayer(layer,psfrac);
+		}
+
+		void absorber::setLayer(const atmoslayer &layer, double psfrac)
+		{
+			_p = &layer._p;
+			_T = &layer._T;
+			_dz = &layer._dz;
+			_psfrac = psfrac;
+			_layer = &layer;
 		}
 
 		absorber::~absorber()
@@ -35,6 +68,7 @@ namespace rtmath {
 			_psfrac = 0;
 			_molnum = 0;
 			_molecule = "";
+			_layer = 0;
 		}
 
 

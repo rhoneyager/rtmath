@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include "../rtmath/atmos.h"
+#include "../rtmath/atmoslayer.h"
+#include "../rtmath/absorb.h"
 
 namespace rtmath {
 	
@@ -18,6 +20,58 @@ namespace rtmath {
 			_dz = 0;
 		}
 
+		atmoslayer::atmoslayer(const atmoslayer &rhs)
+		{
+			_init();
+			*this = rhs; // Invoke the assignment operator
+		}
+
+		atmoslayer & atmoslayer::operator= (const atmoslayer & rhs)
+		{
+			// First, check for self-assignment
+			if (this == &rhs) return *this;
+			// Now, duplicate _p, _T, _dz
+			_p = rhs._p;
+			_T = rhs._T;
+			_dz = rhs._dz;
+			// Duplicate the absorbers
+			// Slightly harder, as it is a set of unique_ptr
+			std::set<std::shared_ptr<absorber> >::iterator it; // Note: iterator cannot be const
+
+			for (it = rhs.absorbers.begin(); it != rhs.absorbers.end(); it++)
+			{
+				// Take each element and invoke its clone method to do a deep copy
+				// and add this to the new set. Also, make sure that the absorber
+				// is bound to this class instance, not the previous one.
+				std::shared_ptr<absorber> np( (*it)->clone() );
+				np->setLayer(*this, np->psfrac());
+				absorbers.insert( np );
+			}
+			return *this;
+		}
+
+		atmoslayer::atmoslayer(double p, double T, double dz)
+		{
+			_init();
+			_p = p;
+			_T = T;
+			_dz = dz;
+		}
+
+		double atmoslayer::tau(double nu) const
+		{
+			double res = 0;
+			std::set<std::shared_ptr<absorber> >::const_iterator it;
+			for (it = absorbers.begin(); it != absorbers.end(); it++)
+			{
+				res += (*it)->deltaTau(nu);
+			}
+			return res;
+		}
+
+		//atmoslayer* atmoslayer::clone() const
+		//{
+		//}
 
 
 	}; // end namespace atmos
