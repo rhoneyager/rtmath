@@ -42,7 +42,7 @@ namespace rtmath {
 			void saveProfile(const std::string &filename) const;
 			void loadProfileRyan(const std::string &filename);
 			//void saveProfileRyan(const std::string &filename);
-			//void loadProfileLiu(const std::string &filename);
+			void loadProfileLiu(const std::string &filename);
 			//void saveProfileLiu(const std::string &filename);
 			//void loadProfileCDF(const std::string &filename);
 			//void saveProfileCDF(const std::string &filename);

@@ -55,6 +55,35 @@ namespace rtmath {
 			loadProfileRyan(filename);
 		}
 
+		void atmos::loadProfileLiu(const std::string &filename)
+		{
+			// Liu's atmosphere structure is very dissimilar from my own
+			// For now, all I'm doing is loading in the atmosphere, not 
+			// the hydrology, which exists within a separate, unlinked file
+			using namespace std;
+			using namespace rtmath;
+			using namespace boost::filesystem;
+			// Verify file existence
+			path p(filename);
+			if (!exists(p)) throw debug::xMissingFile(filename.c_str());
+			if (is_directory(p)) throw debug::xMissingFile(filename.c_str());
+			// Open the file
+			ifstream in(filename.c_str());
+			if (!in) throw debug::xOtherError();
+			if (!in.good()) throw debug::xEmptyInputFile(filename.c_str());
+
+			// Liu's file structure gives the number of levels on the first line
+			// After this, each line contains: the height in m, pressure (mb),
+			// temperature (K) and the relative humidity (percent), starting with
+			// the surface
+
+			// For the hydrometeor profile, each record contains the cloud liquid,
+			// cloud ice, rain, snow, graupel, starting from the lowest layer.
+			// Units for cloud liquid and cloud ice are in g/m^3. Rain, snow and 
+			// graupel are in g/m^3 or in mm/hr.
+			// Therefore, the hydrometeor file is almost totally useless for my work
+		}
+
 		void atmos::loadProfileRyan(const std::string &filename)
 		{
 			using namespace std;
