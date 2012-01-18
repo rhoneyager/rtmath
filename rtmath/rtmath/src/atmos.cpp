@@ -82,10 +82,36 @@ namespace rtmath {
 			// Units for cloud liquid and cloud ice are in g/m^3. Rain, snow and 
 			// graupel are in g/m^3 or in mm/hr.
 			// Therefore, the hydrometeor file is almost totally useless for my work
+
+			size_t numLayers = 0;
+			in >> numLayers;
+
+			// TODO: fix layer toa issues
+			_layers.resize(numLayers-1); // -1 to avoid dz at toa?
+			// Loop through each layer and get information
+			// As each layer is loaded, generate the appropriate atmoslayer and link
+			// TODO: split logic between loading and implementing, as 
+			// I need to calculate dz upon layer setup. Aargh.
+			for (size_t i=0; i<numLayers-1;i++)
+			{
+				double h, p, t, rh;
+				// Also, since I'm missing several gases here, I need to add
+				// them by hand (O2, N2)
+				in >> h >> p >> t >> rh; // Quick and easy input
+
+				// Convert the relative humidity to a water vapor concentration
+				// in ppmv? or a partial pressure?
+
+				atmoslayer *layer = &_layers[i];
+				layer->dz(); // dz needs layer above for setting
+				layer->p(p);
+				later->T(t);
+			}
 		}
 
 		void atmos::loadProfileRyan(const std::string &filename)
 		{
+			// TODO: fix so that layers may start from toa or from ground
 			using namespace std;
 			using namespace rtmath;
 			using namespace boost::filesystem;
