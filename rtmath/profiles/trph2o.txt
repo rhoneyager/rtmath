@@ -1,5 +1,5 @@
 Profile	TRP-H2O			
-Altitude	Pres	Temp	Density	H2O
+Altitude	Pres	Temp	Number Density	H2O
 km	mb	K	cm^-3	ppmv
 0	1013	299.7	2.45E+19	2.59E+04
 1	904	293.7	2.23E+19	1.95E+04
