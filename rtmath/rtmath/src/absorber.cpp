@@ -26,33 +26,29 @@ namespace rtmath {
 		}
 		*/
 
-		double absorber::_wvtofreq(double wvnum)
+		double absorber::_wvtofreq(double nu)
 		{
-			double f = wvnum * 2.99792458e8;
-			// And, for appropriate dimensionality...
-			f *= 1.e7;
+			double f = nu * 2.99792458e10/1.e9; // COnvert cm^-1 to GHz
 			return f;
 		}
 
 		double absorber::_freqtowv(double f)
 		{
-			double wvnum = (f*1.e-7) / 2.99792458e8;
-			return wvnum;
+			double nu = f*1.e9/2.997925e10; // convert GHz to cm^-1
+			return nu;
 		}
 
-
-		absorber::absorber(const atmoslayer &layer, double psfrac)
+		absorber::absorber(const atmoslayer &layer)
 		{
 			_init();
-			setLayer(layer,psfrac);
+			setLayer(layer);
 		}
 
-		void absorber::setLayer(const atmoslayer &layer, double psfrac)
+		void absorber::setLayer(const atmoslayer &layer)
 		{
 			_p = &layer._p;
 			_T = &layer._T;
 			_dz = &layer._dz;
-			_psfrac = psfrac;
 			_layer = &layer;
 		}
 
@@ -65,10 +61,11 @@ namespace rtmath {
 			_p = 0;
 			_T = 0;
 			_dz = 0;
-			_psfrac = 0;
 			_molnum = 0;
 			_molecule = "";
 			_layer = 0;
+			_wvden = 0;
+			_numConc = 0;
 		}
 
 

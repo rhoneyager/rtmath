@@ -7,6 +7,7 @@
 #include <sstream>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/units/systems/si.hpp> // Used for atmos readins!
 #include "../rtmath/atmos.h"
 #include "../rtmath/absorb.h"
 #include "../rtmath/da/daDiagonalMatrix.h"
@@ -29,23 +30,23 @@ namespace rtmath {
 			loadProfile(filename);
 		}
 
-		double atmos::tau(double wvnum) const
+		double atmos::tau(double f) const
 		{
-			return tau(wvnum,0,_layers.size());
+			return tau(f,0,_layers.size());
 		}
 
-		double atmos::tau(double wvnum, size_t layernum) const
+		double atmos::tau(double f, size_t layernum) const
 		{
-			return tau(wvnum,layernum,layernum);
+			return tau(f,layernum,layernum);
 		}
 
-		double atmos::tau(double wvnum, size_t layerLow, size_t layerHigh) const
+		double atmos::tau(double f, size_t layerLow, size_t layerHigh) const
 		{
-			throw rtmath::debug::xUnimplementedFunction();
 			double res = 0;
 			for (size_t i=layerLow; i<layerHigh; i++)
 			{
-				res += _layers[i].tau(wvnum);
+				double t = _layers[i].tau(f);
+				res += t;
 			}
 			return res;
 		}
@@ -64,9 +65,9 @@ namespace rtmath {
 			using namespace rtmath;
 			using namespace boost::filesystem;
 			// Verify file existence
-			path p(filename);
-			if (!exists(p)) throw debug::xMissingFile(filename.c_str());
-			if (is_directory(p)) throw debug::xMissingFile(filename.c_str());
+			path pt(filename);
+			if (!exists(pt)) throw debug::xMissingFile(filename.c_str());
+			if (is_directory(pt)) throw debug::xMissingFile(filename.c_str());
 			// Open the file
 			ifstream in(filename.c_str());
 			if (!in) throw debug::xOtherError();
@@ -87,25 +88,57 @@ namespace rtmath {
 			in >> numLayers;
 
 			// TODO: fix layer toa issues
-			_layers.resize(numLayers-1); // -1 to avoid dz at toa?
+			_layers.resize(numLayers);
 			// Loop through each layer and get information
 			// As each layer is loaded, generate the appropriate atmoslayer and link
 			// TODO: split logic between loading and implementing, as 
 			// I need to calculate dz upon layer setup. Aargh.
-			for (size_t i=0; i<numLayers-1;i++)
+			vector<double> h,p,t,rh;
+			for (size_t i=0; i<numLayers;i++)
 			{
-				double h, p, t, rh;
-				// Also, since I'm missing several gases here, I need to add
-				// them by hand (O2, N2)
-				in >> h >> p >> t >> rh; // Quick and easy input
+				double ih, ip, it, irh;
+				in >> ih >> ip >> it >> irh;
+				h.push_back(ih / 1000.0); // convert m to km
+				p.push_back(ip);
+				t.push_back(it);
+				rh.push_back(irh);
+			}
 
-				// Convert the relative humidity to a water vapor concentration
-				// in ppmv? or a partial pressure?
+			for(size_t i=0;i<numLayers;i++)
+			{
+				atmoslayer *layer;
+				layer = &_layers[i];
+				if (i<numLayers-1)
+					layer->dz( h[i+1]-h[i]); // in km
+				else
+					layer->dz(0);
+				layer->p(p[i]); // in hPa
+				layer->T(t[i]); // in K
+				TASSERT(layer->dz() >= 0);
 
-				atmoslayer *layer = &_layers[i];
-				layer->dz(); // dz needs layer above for setting
-				layer->p(p);
-				later->T(t);
+				// Add the absorbing gases
+				// TODO: fix O2 implementation
+				// TODO: check calculations
+				// Add collision-induced broadening
+				absorber *newgas = new collide;
+				newgas->setLayer(*layer);
+				std::shared_ptr<absorber> ptr(newgas); 
+				layer->absorbers.insert(ptr);
+				// Add N2
+				newgas = new abs_N2;
+				newgas->setLayer(*layer);
+				std::shared_ptr<absorber> ptrb(newgas); 
+				layer->absorbers.insert(ptrb);
+				// Add O2
+				newgas = new abs_O2;
+				newgas->setLayer(*layer);
+				std::shared_ptr<absorber> ptrc(newgas); 
+				layer->absorbers.insert(ptrc);
+				// Add H2O
+				newgas = new abs_H2O;
+				newgas->setLayer(*layer);
+				std::shared_ptr<absorber> ptrd(newgas); 
+				layer->absorbers.insert(ptrd);
 			}
 		}
 
@@ -116,9 +149,9 @@ namespace rtmath {
 			using namespace rtmath;
 			using namespace boost::filesystem;
 			// Verify file existence
-			path p(filename);
-			if (!exists(p)) throw debug::xMissingFile(filename.c_str());
-			if (is_directory(p)) throw debug::xMissingFile(filename.c_str());
+			path pt(filename);
+			if (!exists(pt)) throw debug::xMissingFile(filename.c_str());
+			if (is_directory(pt)) throw debug::xMissingFile(filename.c_str());
 			// Open the file
 			ifstream in(filename.c_str());
 			if (!in) throw debug::xOtherError();
@@ -153,13 +186,31 @@ namespace rtmath {
 				gasnames.push_back(buffer);
 			}
 #ifdef _WIN32
-			numgases = (unsigned int) gasnames.size(); 
+			numgases = (unsigned int) gasnames.size()-1; 
 #else // parser.good() repeats the last value. Aarg!
 			numgases = gasnames.size() - 1;
 #endif
 
-			// Skip next line
+			// Get subheader line which gives the units for the columns
 			getline(in,buffer);
+
+			parser.str(buffer);
+			std::string units_z, units_p, units_T, units_d;
+			std::vector<std::string> units_gases;
+			parser >> units_z;
+			parser >> units_p;
+			parser >> units_T;
+			parser >> units_d;
+			for (int i=0; i< (int)numgases; i++)
+			{
+				string j;
+				parser >> j;
+				units_gases.push_back(j);
+			}
+
+			// Work out any conversion factors
+			// TODO
+
 			// Read in the profile values
 			double zn, pn, tn, dn;
 			double *gn = new double[numgases];
@@ -194,38 +245,51 @@ namespace rtmath {
 			// Onto the processing!
 			TASSERT(zlevs.size() > 2);
 			// Resize beforehand for multithreading
-			_layers.resize(zlevs.size()-2);
+			_layers.resize(zlevs.size()-1);
 
 			atmoslayer *layer;
-			int j;
-			// Loop is to zlevs.size()-2 to avoid the second last read that in.good()
+
+			// Loop is to zlevs.size()-1 to avoid the second last read that in.good()
 			// loops always seem to have and to avoid calculating dz at the end of 
 			// the atmosphere
-#pragma omp parallel for private(layer,j)
-			for(int i=0;i<(int)zlevs.size()-2;i++)
+//#pragma omp parallel for private(layer,j)
+			for(int i=0;i<(int)zlevs.size()-1;i++)
 			{
 				// Fill in the information for this layer
 				layer = &_layers[i];
-				layer->dz( zlevs[i+1]-zlevs[i]); // in km
+				if (i != (int) (zlevs.size()-2) )
+					layer->dz( zlevs[i+1]-zlevs[i]); // in km
+				else
+					layer->dz(0); // For toa, set dz to zero
 				layer->p(plevs[i]); // in hPa
 				layer->T(tlevs[i]); // in K
-				TASSERT(layer->dz() > 0);
+				TASSERT(layer->dz() >= 0);
 
+				bool hasH2O = false, hasO2 = false, hasN2 = false;
+				double rhoWat = 0;
 				// Loop through and add the necessary gases to the layer
-				for (j=0;j<(int)numgases;j++)
+				for (int j=0;j<(int)numgases;j++)
 				{
 					// Create absorber based on gas name in gasnames[j]
 					absorber *newgas;
-					if ("H2O" == gasnames[j]) newgas = new abs_H2O;
-					else if ("O2" == gasnames[j]) newgas = new abs_O2;
-					else if ("N2" == gasnames[j]) newgas = new abs_N2;
+
+					if ("H2O" == gasnames[j]) 
+					{ 
+						newgas = new abs_H2O; 
+						hasH2O = true; 
+						//psWV = psfrac; 
+						const double Na = 6.022e23; // molecules / mol
+						const double uH2O = 18.01528; // g/mol
+						// dlevs is number density (molecules/cm^3)
+						rhoWat = (dlevs[i] / Na) * uH2O * conc[j].at(i) * 1.0e-6;
+						// rhoWat is now in g/m^3
+					}
+					else if ("O2" == gasnames[j]) { newgas = new abs_O2; hasO2 = true; }
+					else if ("N2" == gasnames[j]) { newgas = new abs_N2; hasN2 = true; }
 					else continue; // Skip if not found
-					// I'll associate this with a layer, and I need to calculate psfrac
-					// ps is the partial pressure of the gas in atmospheres (TODO: or mb?)
-					// so, they all sum to one, but in reality <1 as I don't have all the gases
-					// I have P(mb or atm), density(cm^-3) and conc. (ppmv)
-					// This is easy. Ps = conc * e-6 * P
-					newgas->setLayer(*layer, 1.0e-6*conc[j].at(i)); // Just a fraction (unitless)
+					
+					newgas->setLayer(*layer); 
+					newgas->numConc(dlevs[i]); // Set number concentration. Will be used in lbl stuff.
 					
 					// Insert the gas into the layer
 					// encapsulate into a pointer. Object already created, so no new needed
@@ -234,9 +298,41 @@ namespace rtmath {
 				}
 				// Add collision-induced broadening
 				absorber *newgas = new collide;
-				newgas->setLayer(*layer,0);
+				newgas->setLayer(*layer);
 				std::shared_ptr<absorber> ptr(newgas); 
 				layer->absorbers.insert(ptr);
+
+				// Add and gases missing from the profile
+				if (!hasH2O)
+				{
+					// Do nothing, as I can't find H2O concentration
+				}
+
+				if (!hasO2)
+				{ // Note: O2 has trouble!!!
+					absorber *newgas = new abs_O2;
+					newgas->setLayer(*layer);
+					std::shared_ptr<absorber> ptr(newgas); 
+					layer->absorbers.insert(ptr);
+				}
+
+				if (!hasN2)
+				{
+					absorber *newgas = new abs_N2;
+					newgas->setLayer(*layer);
+					std::shared_ptr<absorber> ptr(newgas); 
+					layer->absorbers.insert(ptr);
+				}
+
+				// Now, do another pass, recording water vapor density
+				if (rhoWat) // Easily precalculated!
+				{
+					std::set<std::shared_ptr<absorber> >::iterator it;
+					for (it = layer->absorbers.begin(); it != layer->absorbers.end(); it++)
+					{
+						(*it)->wvden(rhoWat);
+					}
+				}
 			}
 			// And, we're done!!!!!
 		}

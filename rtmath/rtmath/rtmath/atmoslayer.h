@@ -38,7 +38,7 @@ namespace rtmath {
 			inline void T(double newT) { _T = newT; }
 			inline double dz() const { return _dz; }
 			inline void dz(double newdz) { _dz = newdz; }
-			double tau(double nu) const; // Calculates tau of the layer
+			double tau(double f) const; // Calculates tau of the layer
 			// absorbers needs to be kept as a pointer because it it pure virtual
 			// I don't want to allow layers to be arbitrarily copied, as this screws
 			// with the absorber psfrac parameter.

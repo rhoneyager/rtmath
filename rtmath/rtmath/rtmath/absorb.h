@@ -29,25 +29,31 @@ namespace rtmath {
 				//absorber(int molnum);
 				//absorber(const std::string &molecule);
 				// This is the preferred initializer, as it sets p, T, etc.:
-				absorber(const atmoslayer &layer, double psfrac);
+				absorber(const atmoslayer &layer);
 				virtual ~absorber();
 				virtual absorber* clone() const = 0; // Annoying, but necessary
-				virtual double deltaTau(double nu) const = 0;
+				virtual double deltaTau(double f) const = 0;
 				double p() const { return *_p; }
-				double psfrac() const { return _psfrac; }
+				//double psfrac() const { return _psfrac; }
 				double T() const { return *_T; }
 				double dz() const { return *_dz; }
+				double numConc() { return _numConc; }
+				void numConc(double newnumConc) { _numConc = newnumConc; }
 
-				void psfrac(double newpsfrac) {_psfrac = newpsfrac;}
-				void setLayer(const atmoslayer &layer, double psfrac);
+				//void psfrac(double newpsfrac) {_psfrac = newpsfrac;}
+				void setLayer(const atmoslayer &layer);
+				// For O2 only, need water vapor density (in g/m^3)
+				// because of O2 line broadening calculation
+				void wvden(double newwvden) { _wvden = newwvden; } 
 			protected:
 				const double *_p;
 				const double *_T;
 				const double *_dz;
 				const atmoslayer *_layer;
-				double _psfrac;
 				std::string _molecule;
 				int _molnum;
+				double _numConc;
+				double _wvden;
 			private:
 				void _init();
 			public:
@@ -73,41 +79,49 @@ namespace rtmath {
 		// 1.29 times of N2-N2 collision absorption to account
 		// for N2-O2 and O2-O2 collisions
 		class collide : public absorber {
-			public: virtual double deltaTau(double nu) const;
-			virtual collide* clone() const
-			{
-				return new collide(*this);
-			}
+			public: 
+				collide() { _molecule = "COLLIDE"; }
+				virtual double deltaTau(double f) const;
+				virtual collide* clone() const
+				{
+					return new collide(*this);
+				}
 		};
 
 		// N2 collision absorption
 		// P. Rosenkranz (1998)
 		class abs_N2 : public absorber {
-			public: virtual double deltaTau(double nu) const;
-			virtual abs_N2* clone() const
-			{
-				return new abs_N2(*this);
-			}
+			public: 
+				abs_N2() { _molecule = "N2"; }
+				virtual double deltaTau(double f) const;
+				virtual abs_N2* clone() const
+				{
+					return new abs_N2(*this);
+				}
 		};
 
 		// H2O absorption
 		// Rosenkranz (1998)
 		class abs_H2O : public absorber {
-			public: virtual double deltaTau(double nu) const;
-			virtual abs_H2O* clone() const
-			{
-				return new abs_H2O(*this);
-			}
+			public: 
+				abs_H2O() { _molecule = "H2O"; }
+				virtual double deltaTau(double f) const;
+				virtual abs_H2O* clone() const
+				{
+					return new abs_H2O(*this);
+				}
 		};
 
 		// O2 absorption
 		// Rosenkranz (1995)
 		class abs_O2 : public absorber {
-			public: virtual double deltaTau(double nu) const;
-			virtual abs_O2* clone() const
-			{
-				return new abs_O2(*this);
-			}
+			public: 
+				abs_O2() { _molecule = "O2"; }
+				virtual double deltaTau(double f) const;
+				virtual abs_O2* clone() const
+				{
+					return new abs_O2(*this);
+				}
 		};
 
 	}; // end namespace absorb

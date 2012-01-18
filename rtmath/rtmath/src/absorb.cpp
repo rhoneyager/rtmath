@@ -13,7 +13,7 @@ namespace rtmath {
 			return 6.4e-14*(*_p)*(*_p)*f*f*pow(th,3.55);
 		}
 
-		double collide::deltaTau(double nu) const
+		double collide::deltaTau(double f) const
 		{
 			const double a1 = 7.7e-10;
 			const double a2 = 1.0e-13;
@@ -22,6 +22,7 @@ namespace rtmath {
 			const double c2 = 1.0e-4;
 			const double d = 60.0;
 			double th = 300.0/(*_T);
+			double nu = _freqtowv(f);
 			double f2 = nu * nu;
 			double an2 = (a1*exp(-c1*th*f2)+a2*exp(-c2*th*f2)*(d*d+f2))*pow(th,b);
 			double abscollide = 0.65*((*_p)/1013.)*((*_p)/1013.)*th*th*2.0*f2*an2;
@@ -31,15 +32,13 @@ namespace rtmath {
 			return abscollide* (*_dz); // TODO: check absorption coefficient results
 		}
 
-		double abs_H2O::deltaTau(double nu) const
+		double abs_H2O::deltaTau(double f) const
 		{
-			// Find frequency in GHz
-			double f = _wvtofreq(nu);
 			// _T is in Kelvin
 			// _p is in mb
 			// rho is water vapor density (in G/m^3)
 			// abh2o is output in nepers / km
-			// abh20, given knowledge of dz (in m), will calculate tau
+			// abh20, given knowledge of dz (in km), will calculate tau
 
 			// Now, for a more-or-less direct translation of Liu's code
 			const int nlines = 15;
@@ -70,15 +69,9 @@ namespace rtmath {
 			const double XS[] = { .61, .85, .54, .74, .89, .52, .50, .67, .65, 
 				.64, .72, 1.0, .68, .84, .78 };
 
-			// Now for the actual work
-			// Calculate rho
-			// To calculate rho, I have the ps fraction (pressure fraction),
-			// R, _p and _T. Should be enough.
-			const double Rd = 287.05; // J/(kg*K)
-			double rho = ((*_p)/Rd*(*_T)) * (1.0 - (0.378*_psfrac)); // in 100 kg/m^3
-			// We want in g/m^3
-			rho *= 1.e3; // TODO: check
 
+			//double rho = absorber::_rhoWVap(*_p,*_T,_psfrac);
+			double rho = _wvden; // Well, I already calculated it anyways.....
 			if (rho < 0) return 0;
 
 			double pvap = rho * (*_T) / 217.;
@@ -119,15 +112,16 @@ namespace rtmath {
 			return abh2o * (*_dz) * 20.0*log10(M_E);
 		}
 
-		double abs_O2::deltaTau(double nu) const
+		double abs_O2::deltaTau(double f) const
 		{
 			// _T is temp in Kelvin
 			// _p is pressure in mb
 			// vapden is water vapor density in g/m^3
 			// f is freq in GHz
-			double f = _wvtofreq(nu);
 
-			const double F[] = { 118.7503, 56.2648, 62.4863, 58.4466, 
+			double vapden = _wvden; // NOTE: this is set during initialization pass 2
+
+			const double F[] = { 118.7503, 56.2648, 62.4863, 58.4466,
 				60.3061, 59.5910, 59.1642, 60.4348, 58.3239, 61.1506,
 				57.6125, 61.8002, 56.9682, 62.4112, 56.3634, 62.9980, 
 				55.7838, 63.5685, 55.2214, 64.1278, 54.6712, 64.6789, 
@@ -144,36 +138,38 @@ namespace rtmath {
 				.4264E-16,.6899E-16, .1924E-16, .3229E-16,
 				.8191E-17,.1423E-16, .6494E-15, .7083E-14, 
 				.3025E-14,.1835E-14, .1158E-13, .3993E-14 };
-			const double BE[] = { .009,.015, .083,.084, 2*.212, 2*.391, 2*.626,
-				2*.915, 2*1.260, 1.660,1.665, 2.119,2.115, 2.624,2.625,
-				2*3.194, 2*3.814, 2*4.484, 2*5.224, 2*6.004, 2*6.844,
-				2*7.744, .048, .044, .049, .145, .141, .145 };
+			const double BE[] = { .009,.015, .083,.084, .212, .212, .391, .391, .626, .626,
+				.915, .915, 1.260, 1.260, 1.660,1.665, 2.119,2.115, 2.624, 2.625,
+				3.194, 3.194, 3.814, 3.814, 4.484, 4.484, 5.224, 5.224, 6.004, 6.004, 6.844, 6.844,
+				7.744, 7.744, .048, .044, .049, .145, .141, .145};
 			// Widths in MHZ/mb
 			const double WB300 = 0.56;
 			const double X = 0.8;
 			const double W300[] = { 1.63, 1.646, 1.468, 1.449, 1.382, 1.360,
 				1.319, 1.297, 1.266, 1.248, 1.221, 1.207, 1.181, 1.171,
-				1.144, 1.139, 1.110, 1.108, 1.079, 1.078, 2*1.05,
-				2*1.02,2*1.00,2*.97,2*.94,2*.92,2*.89, 3*1.92, 3*1.81 };
+				1.144, 1.139, 1.110, 1.108, 1.079, 1.078, 1.05, 1.05,
+				1.02, 1.02, 1.00, 1.00, 0.97, .97, .94, .94, .92, .92, .89, .89, 
+				1.92, 1.92, 1.92, 1.81, 1.81, 1.81};
 			const double Y300[] = { -0.0233,  0.2408, -0.3486,  0.5227,
 				-0.5430,  0.5877, -0.3970,  0.3237, -0.1348,  0.0311,
 				0.0725, -0.1663,  0.2832, -0.3629,  0.3970, -0.4599,
 				0.4695, -0.5199,  0.5187, -0.5597,  0.5903, -0.6246,
 				0.6656, -0.6942,  0.7086, -0.7325,  0.7348, -0.7546,
-				0.7702, -0.7864,  0.8083, -0.8210,  0.8439, -0.8529, 6*0. };
+				0.7702, -0.7864,  0.8083, -0.8210,  0.8439, -0.8529, 
+				0, 0, 0, 0, 0, 0};
 			const double V[] = { 0.0079, -0.0978,  0.0844, -0.1273,
 				0.0699, -0.0776,  0.2309, -0.2825,  0.0436, -0.0584,
 				0.6056, -0.6619,  0.6451, -0.6759,  0.6547, -0.6675,
 				0.6135, -0.6139,  0.2952, -0.2895,  0.2654, -0.2590,
 				0.3750, -0.3680,  0.5085, -0.5002,  0.6206, -0.6091,
-				0.6526, -0.6393,  0.6640, -0.6475,  0.6729, -0.6545, 6*0 };
+				0.6526, -0.6393,  0.6640, -0.6475,  0.6729, -0.6545, 
+				0, 0, 0, 0, 0, 0};
 
 			// Finally...
 			double th = 300./(*_T);
 			double th1 = th - 1.;
 			double b = pow(th,X);
-			throw rtmath::debug::xUnimplementedFunction();
-			double vapden = 0; // SET ME
+			
 			double preswv = vapden * (*_T)/217.;
 			double presda = (*_p) - preswv;
 			double den = 0.001*(presda*b + 1.1*preswv*th);
@@ -191,7 +187,8 @@ namespace rtmath {
 				double str = S300[k]*exp(-BE[k]*th1);
 				double sf1 = (df + (f-F[k])*y)/(pow(f-F[k],2)+df*df);
 				double sf2 = (df - (f+F[k])*y)/(pow(f+F[k],2)+df*df);
-				sum += str*(sf1+sf2)*(pow(f/F[k],2));
+				double s = str*(sf1+sf2)*(pow(f/F[k],2));
+				sum += s;
 			}
 			double o2abs = 0.5034e12*sum*presda*pow(th,3)/3.14159;
 			// o2abs needs to be converted

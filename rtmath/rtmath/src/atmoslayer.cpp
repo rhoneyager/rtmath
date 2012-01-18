@@ -44,7 +44,7 @@ namespace rtmath {
 				// and add this to the new set. Also, make sure that the absorber
 				// is bound to this class instance, not the previous one.
 				std::shared_ptr<absorber> np( (*it)->clone() );
-				np->setLayer(*this, np->psfrac());
+				np->setLayer(*this);
 				absorbers.insert( np );
 			}
 			return *this;
@@ -58,13 +58,15 @@ namespace rtmath {
 			_dz = dz;
 		}
 
-		double atmoslayer::tau(double nu) const
+		double atmoslayer::tau(double f) const
 		{
 			double res = 0;
+			if (this->dz() == 0) return 0; // For TOA layer
 			std::set<std::shared_ptr<absorber> >::const_iterator it;
 			for (it = absorbers.begin(); it != absorbers.end(); it++)
 			{
-				res += (*it)->deltaTau(nu);
+				double t = (*it)->deltaTau(f);
+				res += t;
 			}
 			return res;
 		}

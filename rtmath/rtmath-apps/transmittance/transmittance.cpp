@@ -169,9 +169,7 @@ int main(int argc, char** argv)
 			set<double>::const_iterator it;
 			for (it = freqs.begin(); it != freqs.end(); it++)
 			{
-				// TODO: use better value for c
-				double wvnum = atmos::absorber::_freqtowv(*it);
-				double tau = atm.tau(wvnum);
+				double tau = atm.tau(*it);
 				cout << *it << "," << tau << endl;
 			}
 		}

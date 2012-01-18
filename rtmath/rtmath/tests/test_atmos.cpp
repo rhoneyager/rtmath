@@ -70,6 +70,24 @@ BOOST_AUTO_TEST_CASE(absorber_calculations) {
 // Attempt to clone atmoslayer
 
 
+// Create atmos and have it load a file
+BOOST_AUTO_TEST_CASE(atmos_load_ryan) {
+	using namespace std;
+	using namespace atmos;
+	try {
+		string profilepath = "../profiles/trp.txt";
+		rtmath::atmos::atmos trp;
+		trp.loadProfileRyan(profilepath);
+		double res = 0;
+		res = trp.tau(94.0);
+		cout << res << endl;
+	}
+	catch (rtmath::debug::xError &err)
+	{
+		err.Display();
+	}
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();
 

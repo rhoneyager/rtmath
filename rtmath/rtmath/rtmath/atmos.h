@@ -48,10 +48,10 @@ namespace rtmath {
 			//void saveProfileCDF(const std::string &filename);
 
 			// Calculation of optical depth of atmosphere or parts thereof
-			double tau(double wvnum) const;
-			double tau(double wvnum, size_t layernum) const;
+			double tau(double f) const;
+			double tau(double f, size_t layernum) const;
 			// Careful: calcs from layerLow (inclusive) to high (exclusive)
-			double tau(double wvnum, size_t layerLow, size_t layerHigh) const;
+			double tau(double f, size_t layerLow, size_t layerHigh) const;
 		private:
 			std::vector<atmoslayer> _layers;
 		};
