@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 		atmos::atmos atm;
 		atm.loadProfile(profpath.c_str());
 		cerr << "Running profile " << atm.name << endl;
-		cerr << "frequency (GHz), tau" << endl;
+		cerr << "frequency (GHz), tau (nepers)" << endl;
 
 		{
 			// Construct set of frequencies to analyze. Be nice and make sure

@@ -52,7 +52,7 @@ namespace rtmath {
 			double tau(double f, size_t layernum) const;
 			// Careful: calcs from layerLow (inclusive) to high (exclusive)
 			double tau(double f, size_t layerLow, size_t layerHigh) const;
-		private:
+		public: // Public for testing... Should change.
 			std::vector<atmoslayer> _layers;
 		};
 

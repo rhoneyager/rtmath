@@ -1015,7 +1015,7 @@ namespace rtmath {
 		// A_nn then is the lowest eigenvalue, and the matrix minor can be taken to
 		// iterate for the next eigenvalue
 		// Convergence is cubic
-		throw;
+		throw rtmath::debug::xUnimplementedFunction();
 	}
 
 	void matrixop::setCol(size_t col, const std::vector<double> &data)

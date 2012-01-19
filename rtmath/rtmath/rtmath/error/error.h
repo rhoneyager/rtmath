@@ -23,6 +23,8 @@
 //#define ERRSTD : public xError { protected: void _setmessage(); };
 #define ERRSTD(x) class x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
 #define ERRSTR(x) class x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
+#define ERRDOU(x) class x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
+
 namespace rtmath
 {
 	namespace debug
@@ -55,6 +57,10 @@ namespace rtmath
 		// The values passed to the function are nonsensical
 		// TODO: extend to also take a string for an error message
 		ERRSTD(xBadInput);
+
+		// The model (typically for optical depth) was called for a value outside
+		// of the expected domain of the function. Results will be nonsensical.
+		ERRDOU(xModelOutOfRange);
 
 		// The file that is opened for reading is empty
 		ERRSTR(xEmptyInputFile);

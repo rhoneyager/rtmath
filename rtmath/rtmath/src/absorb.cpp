@@ -107,9 +107,9 @@ namespace rtmath {
 			}
 
 			// abh2o needs to be converted
-			// it is in nepers per km, but I want dB. I also have _dz.
+			// it is in nepers per km, but I want nepers. I have _dz.
 			double abh2o = 0.3183e-4*den*sum + con;
-			return abh2o * (*_dz) * 20.0*log10(M_E);
+			return abh2o * (*_dz);
 		}
 
 		double abs_O2::deltaTau(double f) const
@@ -192,8 +192,8 @@ namespace rtmath {
 			}
 			double o2abs = 0.5034e12*sum*presda*pow(th,3)/3.14159;
 			// o2abs needs to be converted
-			// it is in nepers per km, but I want dB. I also have _dz.
-			return o2abs * (*_dz) * 20.0*log10(M_E);
+			// it is in nepers per km, but I want nepers
+			return o2abs * (*_dz);
 		}
 	};
 }; // end namespace rtmath

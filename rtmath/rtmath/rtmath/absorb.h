@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 #include <boost/shared_ptr.hpp>
 #include "error/debug.h"
 #include "atmos.h"
@@ -54,6 +55,7 @@ namespace rtmath {
 				int _molnum;
 				double _numConc;
 				double _wvden;
+				double _fr[2]; // Frequency fange
 			private:
 				void _init();
 			public:
@@ -63,6 +65,11 @@ namespace rtmath {
 				static double _freqtowv(double f);
 				// Function converting relative humidity to density (in g/m^3)
 				static double _Vden(double T, double RH);
+				// Create an appropriate absorption class based on molecule and
+				// target frequency range
+				// bool return indicates success or failure
+				static bool _findAbsorber (const std::string &molecule, 
+					double frequency, std::shared_ptr<absorber> &res);
 			};
 
 		// Might as well set some functions that handle absorption

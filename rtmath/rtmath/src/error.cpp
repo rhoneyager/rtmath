@@ -85,6 +85,18 @@ namespace rtmath {
 			_message.append("TODO: give a more precise error here.\n");
 		}
 
+		void xModelOutOfRange::_setmessage()
+		{
+			std::ostringstream out;
+
+			out << "ERROR: The model (typically for optical depth) was called for a ";
+			out << "value outside of the expected domain of the function. The ";
+			out << "results would be nonsensical.\n";
+			out << "The value provided was " << _m << ". Consult the rest of the ";
+			out << "error text to determine the function involved.\n";
+			_message = out.str();
+		}
+
 		void xEmptyInputFile::_setmessage()
 		{
 			_message = "ERROR: Reading an empty input file. \nInput file: ";

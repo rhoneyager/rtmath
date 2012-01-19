@@ -79,9 +79,32 @@ namespace rtmath {
 			_layer = 0;
 			_wvden = 0;
 			_numConc = 0;
+			_fr[0] = 0;
+			_fr[1] = 0;
 		}
 
+		bool _findAbsorber
+			(const std::string &molecule, double frequency, std::shared_ptr<absorber> &res)
+		{
+			absorber *newgas = 0;
+			// frequency is not used yet, so the next line suppresses an error
+			if (molecule == "O2" && frequency)
+				newgas = new abs_O2;
+			if (molecule == "N2")
+				newgas = new abs_N2;
+			if (molecule == "H2O")
+				newgas = new abs_H2O;
+			if (molecule == "COLLIDE")
+				newgas = new collide;
 
+			if (newgas)
+			{
+				std::shared_ptr<absorber> a(newgas);
+				res = a;
+				return true;
+			}
+			return false;
+		}
 
 	}; // end namespace atmos
 
