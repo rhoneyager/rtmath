@@ -11,13 +11,12 @@ IDIR=$(HOME)/bin
 COMBOFILES = $(wildcard combo/*.cpp)
 DDPARSEFILES = $(wildcard ddparse/*.cpp)
 RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
-LBLCALCFILES = $(wildcard lblcalc/*.cpp)
 BACK_F_FILES = $(wildcard backscatter_f/*.cpp)
 GM_FILES = $(wildcard getm/*.cpp)
 TM_FILES = $(wildcard transmittance/*.cpp)
+AS_FILES = $(wildcard absorb-slab/*.cpp)
 
-
-all: combo ddparse rtmath-version lblcalc backscatter_f getm transmittance
+all: combo ddparse rtmath-version backscatter_f getm transmittance absorb-slab
 
 clean:
 	rm -rf *.o */*.o bin/*
@@ -30,7 +29,7 @@ install: all distclean
 	ln -s $(WDIR)/bin/combo $(IDIR)/combo
 	ln -s $(WDIR)/bin/rtmath-ddparse $(IDIR)/rtmath-ddparse
 	ln -s $(WDIR)/bin/rtmath-version $(IDIR)/rtmath-version
-	ln -s $(WDIR)/bin/rtmath-lblcalc $(IDIR)/rtmath-lblcalc
+	ln -s $(WDIR)/bin/rtmath-absorb-slab $(IDIR)/rtmath-absorb-slab
 	ln -s $(WDIR)/bin/rtmath-back_f $(IDIR)/rtmath-back_f
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-getm
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-genmtab
@@ -54,9 +53,6 @@ ddparse: $(DDPARSEFILES:.cpp=.o)
 rtmath-version: $(RTMATHVERFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-version $(RTMATHVERFILES:.cpp=.o) $(LIBS)
 
-lblcalc: $(LBLCALCFILES:.cpp=.o) 
-	$(LD) -o bin/rtmath-lblcalc $(LBLCALCFILES:.cpp=.o) $(LIBS)
-
 backscatter_f: $(BACK_F_FILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-back_f $(BACK_F_FILES:.cpp=.o) $(LIBS)
 
@@ -65,4 +61,7 @@ getm: $(GM_FILES:.cpp=.o)
 
 transmittance: $(TM_FILES:.cpp=.o)
 	$(LD) -o bin/rtmath-transmittance $(TM_FILES:.cpp=.o) $(LIBS)
+
+absorb-slab: $(AS_FILES:.cpp=.o)
+	$(LD) -o bin/rtmath-absorb-slab $(AS_files:.cpp=.o) $(LIBS)
 
