@@ -92,6 +92,13 @@ namespace rtmath {
 			_message.append("\n");
 		}
 
+		void xUnknownFileFormat::_setmessage()
+		{
+			_message = "ERROR: File format unknown or unexpected. \nInput file: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
 		void xUnimplementedFunction::_setmessage()
 		{
 			_message = "ERROR: Unimplemented function\n";

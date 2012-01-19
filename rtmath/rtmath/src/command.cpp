@@ -2,10 +2,13 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <set>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
 #include "../rtmath/command.h"
 
 namespace rtmath {
@@ -124,7 +127,8 @@ namespace rtmath {
 				string p(_av[i]);
 				if (p==op)
 				{
-					flag = (bool) atoi(_av[i+1]);
+					if (atoi(_av[i+1])) flag = true;
+					else flag = false; // Like this to avoid performance warning
 					return true;
 				}
 			}
@@ -142,6 +146,127 @@ namespace rtmath {
 			}
 			return false;
 		}
+
+
+
+		findFile::findFile()
+		{
+		}
+
+		findFile::findFile(const std::string &searchPath, 
+			const std::string &suffixes)
+		{
+			addSearch(searchPath);
+			addSuffix(suffixes);
+		}
+
+		findFile::findFile(const std::vector<std::string> &searchPath, 
+			const std::set<std::string> &suffixes)
+		{
+			setSearch(searchPath);
+			setSuffix(suffixes);
+		}
+
+		void findFile::setSearch(const std::vector<std::string> &searchPath)
+		{
+			_paths = searchPath;
+		}
+
+		void findFile::clearSearch()
+		{
+			_paths.clear();
+		}
+
+		void findFile::addSearch(const std::string &searchPath)
+		{
+			// Time to tokenize
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",");
+			tokenizer tokens(searchPath, sep);
+			for (tokenizer::iterator it = tokens.begin();
+				it != tokens.end(); ++it)
+			{
+				if (it->size())
+					_paths.push_back(*it);
+			}
+		}
+
+		void findFile::addSearch(const boost::filesystem::path &searchPath)
+		{
+			// Assumes that just a single path exists
+			if (searchPath.string().size())
+				addSearch(searchPath.string());
+		}
+
+		void findFile::clearSuffix()
+		{
+			_suffixes.clear();
+		}
+
+		void findFile::setSuffix(const std::set<std::string> &suffixes)
+		{
+			_suffixes = suffixes;
+		}
+
+		void findFile::addSuffix(const std::string &suffix)
+		{
+			// Tokenize, svp.
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",");
+			tokenizer tokens(suffix, sep);
+			for (tokenizer::iterator it = tokens.begin();
+				it != tokens.end(); ++it)
+			{
+				// Check for existence (while allowing for empty suffix)
+				if (_suffixes.count(*it) == 0)
+					_suffixes.insert(*it);
+			}
+			// Add empty suffix
+			if (_suffixes.count("") == 0) _suffixes.insert("");
+		}
+
+		bool findFile::searchSubDir() const
+		{
+			return false;
+		}
+
+		bool findFile::search(const std::string &token, std::string &res) const
+		{
+			res.clear();
+
+			// The function that actually does searches based on the provided paths
+			// Iterate through each path
+			std::vector<std::string>::const_iterator it;
+			for (it=_paths.begin();it!=_paths.end();it++)
+			{
+				// Iterate through all possible suffixes
+				std::set<std::string>::const_iterator ot;
+				for (ot=_suffixes.begin();ot!=_suffixes.end();ot++)
+				{
+					// If an empty suffix is missing, then this will NOT match
+					// against just the raw token
+					using namespace boost::filesystem;
+					using namespace std;
+					string filename = token;
+					filename.append(*ot); // Append the current suffix
+					path cand = path(*it) / path(filename);
+					// We're looking for a file, not a directory
+					if (exists(cand))
+						if (!is_directory(cand))
+						{
+							// Success
+							res = cand.string();
+							return true;
+						}
+				}
+			}
+
+			// If we hit this point, then the file was not found
+			return false;
+		}
+
 
 	}; // end namespace config
 }; // end namespace rtmath

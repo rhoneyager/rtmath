@@ -61,6 +61,8 @@ namespace rtmath {
 				// into frequency in GHz. _freqtowv does the reverse.
 				static double _wvtofreq(double wvnum);
 				static double _freqtowv(double f);
+				// Function converting relative humidity to density (in g/m^3)
+				static double _Vden(double T, double RH);
 			};
 
 		// Might as well set some functions that handle absorption

@@ -58,6 +58,8 @@ int main(int argc, char** argv)
 				doHelp();
 			}
 			// Tokenize the string
+			// The way that I wrote it, connand::processCommands
+			// cannot yet do this level of parsing. Too bad.
 			typedef boost::tokenizer<boost::char_separator<char> >
 				tokenizer;
 			boost::char_separator<char> sep(",:");
@@ -86,13 +88,15 @@ int main(int argc, char** argv)
 			}
 		}
 
-		string profdir;
+		string profdir, profext;
 		// Get profile directory
 		cRoot->getVal("atmos/atmosDir", profdir);
 		if (profdir == "") profdir == "./";
 		// If profile search directory is user-specified, override
 		p.readParam("--profdir", profdir); 
-		cerr << "Profile search directories: ./ and " << profdir << endl;
+		cerr << "Profile search directories: " << profdir << endl;
+		// Get profile extensions
+		cRoot->getVal("atmos/profileExtensions",profext);
 
 		// Get profile name for calculations
 		string profname;
@@ -102,34 +106,11 @@ int main(int argc, char** argv)
 		// Find the actual path to the atmospheric profile
 		string profpath;
 		{
-			using namespace boost::filesystem;
-			bool found = false;
-			path searchpath(profdir.c_str()), 
-				filepath(profname.c_str());
-			if (!is_directory(searchpath))
-			{
-				cerr << profdir << " is not a directory.";
-				throw debug::xMissingFile(profdir.c_str());
-			}
-
-			path fspath(searchpath / filepath);
-			path finalpath;
-			// Search for file existance
-			if (is_regular_file(filepath))
-			{
-				// We have a match in the execution directory
-				finalpath = filepath;
-				found = true;
-			} else if (is_regular_file(fspath))
-			{
-				// Match occurred in the search directory
-				finalpath = fspath;
-				found = true;
-			}
-			profpath = finalpath.string();
-
+			rtmath::config::findFile psearch(profdir, profext);
+			bool found = psearch.search(profname,profpath);
 			if (!found) throw debug::xMissingFile(profname.c_str());
 		}
+
 		cerr << "Profile found in " << profpath << endl;
 		
 		/*

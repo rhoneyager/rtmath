@@ -38,6 +38,19 @@ namespace rtmath {
 			return nu;
 		}
 
+		double absorber::_Vden(double T, double RH)
+		{
+			const double RV = 461.5;
+			double es = 6.1365*exp(17.502*(T-273.15)/(T-32.18));
+			double ev;
+			if (es < 0)
+				ev = 0;
+			else
+				ev = 0.01*es*RH;
+			double Vden = ev*100.0/RV/T*1000.;
+			return Vden;
+		}
+
 		absorber::absorber(const atmoslayer &layer)
 		{
 			_init();

@@ -6,6 +6,7 @@
  */
 #pragma once
 
+// TODO: this needs serious changing to make it work with any future framework
 namespace rtmath {
 	namespace ddscat {
 

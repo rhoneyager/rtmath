@@ -62,6 +62,9 @@ namespace rtmath
 		// File to be opened for reading does not exist
 		ERRSTR(xMissingFile);
 
+		// File format is unknown
+		ERRSTR(xUnknownFileFormat);
+
 		// A function has not been defined. Always stops execution.
 		ERRSTD(xUnimplementedFunction);
 

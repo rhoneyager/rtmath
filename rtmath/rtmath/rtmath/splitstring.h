@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+
+// TODO: deprecate this function so that I use boost::tokenizer instead.
 inline void splitString(const std::string &source, char delim, std::vector<std::string> &res)
 {
 	// Take the string, find all occurances of the delimeter, and split the string

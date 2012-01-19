@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <locale>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/units/systems/si.hpp> // Used for atmos readins!
@@ -53,7 +54,33 @@ namespace rtmath {
 
 		void atmos::loadProfile(const std::string &filename)
 		{
-			loadProfileRyan(filename);
+			// Do some autodetection of file type
+			// If the file begins with a number, it is one of Liu's. If
+			// it starts with text ('Profile'), it is one of mine
+			using namespace std;
+			using namespace boost::filesystem;
+			// Verify file existence
+			path pt(filename);
+			if (!exists(pt)) throw debug::xMissingFile(filename.c_str());
+			if (is_directory(pt)) throw debug::xMissingFile(filename.c_str());
+
+			// Open the file
+			ifstream in(filename.c_str());
+			if (!in) throw debug::xOtherError();
+			if (!in.good()) throw debug::xEmptyInputFile(filename.c_str());
+
+			// Look at first word.
+			string buffer;
+			in >> buffer;
+			locale loc;
+
+			//if (in == "Profile" || in == "Trace")
+			if (buffer == "Profile")
+				loadProfileRyan(filename);
+			else if (isdigit(buffer[0],loc))
+				loadProfileLiu(filename);
+			else
+				throw debug::xUnknownFileFormat(filename.c_str());
 		}
 
 		void atmos::loadProfileLiu(const std::string &filename)
@@ -64,14 +91,9 @@ namespace rtmath {
 			using namespace std;
 			using namespace rtmath;
 			using namespace boost::filesystem;
-			// Verify file existence
-			path pt(filename);
-			if (!exists(pt)) throw debug::xMissingFile(filename.c_str());
-			if (is_directory(pt)) throw debug::xMissingFile(filename.c_str());
+
 			// Open the file
 			ifstream in(filename.c_str());
-			if (!in) throw debug::xOtherError();
-			if (!in.good()) throw debug::xEmptyInputFile(filename.c_str());
 
 			// Liu's file structure gives the number of levels on the first line
 			// After this, each line contains: the height in m, pressure (mb),
@@ -115,28 +137,32 @@ namespace rtmath {
 				layer->p(p[i]); // in hPa
 				layer->T(t[i]); // in K
 				TASSERT(layer->dz() >= 0);
+				// Also, since I have relative humidity, call the appropriate functions
+				double rhoWat = absorber::_Vden(t[i],rh[i]);
 
 				// Add the absorbing gases
-				// TODO: fix O2 implementation
-				// TODO: check calculations
 				// Add collision-induced broadening
 				absorber *newgas = new collide;
 				newgas->setLayer(*layer);
+				newgas->wvden(rhoWat);
 				std::shared_ptr<absorber> ptr(newgas); 
 				layer->absorbers.insert(ptr);
 				// Add N2
 				newgas = new abs_N2;
 				newgas->setLayer(*layer);
+				newgas->wvden(rhoWat);
 				std::shared_ptr<absorber> ptrb(newgas); 
 				layer->absorbers.insert(ptrb);
 				// Add O2
 				newgas = new abs_O2;
 				newgas->setLayer(*layer);
+				newgas->wvden(rhoWat);
 				std::shared_ptr<absorber> ptrc(newgas); 
 				layer->absorbers.insert(ptrc);
 				// Add H2O
 				newgas = new abs_H2O;
 				newgas->setLayer(*layer);
+				newgas->wvden(rhoWat);
 				std::shared_ptr<absorber> ptrd(newgas); 
 				layer->absorbers.insert(ptrd);
 			}
@@ -144,22 +170,15 @@ namespace rtmath {
 
 		void atmos::loadProfileRyan(const std::string &filename)
 		{
-			// TODO: fix so that layers may start from toa or from ground
 			using namespace std;
 			using namespace rtmath;
 			using namespace boost::filesystem;
-			// Verify file existence
-			path pt(filename);
-			if (!exists(pt)) throw debug::xMissingFile(filename.c_str());
-			if (is_directory(pt)) throw debug::xMissingFile(filename.c_str());
 			// Open the file
 			ifstream in(filename.c_str());
-			if (!in) throw debug::xOtherError();
-			if (!in.good()) throw debug::xEmptyInputFile(filename.c_str());
 
 			// Start reading
 			vector<double> zlevs, plevs, tlevs, dlevs;
-			unsigned int numgases;
+			size_t numgases;
 			// For gases, the unsigned int is the gas id, the double is 
 			// the concentration in ppmv - matches input file
 			vector< vector<double> > conc;
@@ -174,22 +193,23 @@ namespace rtmath {
 			name = buffer;
 
 			getline(in,buffer); // Get next line, which lists the var names
-			parser.str(buffer); // I'm doing this to avoid passing line boundaries
-			while (parser.good())
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",\t");
+			tokenizer tokens(buffer, sep);
+			for (tokenizer::iterator it = tokens.begin();
+				it != tokens.end(); ++it)
 			{
-				parser >> buffer;
-				if (buffer == "Altitude") continue;
-				if (buffer == "Pres") continue;
-				if (buffer == "Temp") continue;
-				if (buffer == "Density") continue;
-				// Otherwise, add gas to conc. list
-				gasnames.push_back(buffer);
+				if (*it == "Altitude") continue;
+				if (*it == "Pres") continue;
+				if (*it == "Temp") continue;
+				if (*it == "Density") continue;
+				if (*it == "Number Density") continue;
+				// Otherwise, add gas to conc. list, while avoiding duplicates at end
+				gasnames.push_back(*it);
 			}
-#ifdef _WIN32
-			numgases = (unsigned int) gasnames.size()-1; 
-#else // parser.good() repeats the last value. Aarg!
-			numgases = gasnames.size() - 1;
-#endif
+
+			numgases = gasnames.size(); 
 
 			// Get subheader line which gives the units for the columns
 			getline(in,buffer);
@@ -232,7 +252,7 @@ namespace rtmath {
 				dlevs.push_back(dn);
 
 				// Read in gases
-				for (unsigned int i=0;i<numgases;i++)
+				for (size_t i=0;i<numgases;i++)
 				{
 					in >> gn[i];
 					conc[i].push_back(gn[i]);
@@ -268,7 +288,7 @@ namespace rtmath {
 				bool hasH2O = false, hasO2 = false, hasN2 = false;
 				double rhoWat = 0;
 				// Loop through and add the necessary gases to the layer
-				for (int j=0;j<(int)numgases;j++)
+				for (size_t j=0;j<numgases;j++)
 				{
 					// Create absorber based on gas name in gasnames[j]
 					absorber *newgas;
