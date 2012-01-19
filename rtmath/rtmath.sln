@@ -32,7 +32,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transmittance", "rtmath-app
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "combo", "rtmath-apps\combo\combo.vcxproj", "{2375674A-9CA6-44DB-B843-2C5FED0A2F0B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-absorb-domain", "rtmath-apps\test-absorb-domain\test-absorb-domain.vcxproj", "{2089DB17-92EF-41F5-86F9-3BBC47A7036A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "absorb-slab", "rtmath-apps\absorb-slab\absorb-slab.vcxproj", "{2089DB17-92EF-41F5-86F9-3BBC47A7036A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{57CE7C52-D622-4E29-B868-107A7E1AB51E} = {57CE7C52-D622-4E29-B868-107A7E1AB51E}
 	EndProjectSection

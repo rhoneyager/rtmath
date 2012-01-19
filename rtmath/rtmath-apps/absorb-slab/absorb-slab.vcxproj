@@ -11,17 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{DAF96C14-9A36-41AE-A847-566058519069}</ProjectGuid>
-    <RootNamespace>winbonjour</RootNamespace>
+    <ProjectGuid>{2089DB17-92EF-41F5-86F9-3BBC47A7036A}</ProjectGuid>
+    <RootNamespace>absorb-slab</RootNamespace>
+    <ProjectName>absorb-slab</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
@@ -60,10 +61,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="win-bonjour.cpp" />
+    <ClCompile Include="absorb-slab.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="win-bonjour.h" />
+    <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
+      <Project>{57ce7c52-d622-4e29-b868-107a7e1ab51e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
