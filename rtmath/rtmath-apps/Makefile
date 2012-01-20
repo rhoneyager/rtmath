@@ -63,5 +63,5 @@ transmittance: $(TM_FILES:.cpp=.o)
 	$(LD) -o bin/rtmath-transmittance $(TM_FILES:.cpp=.o) $(LIBS)
 
 absorb-slab: $(AS_FILES:.cpp=.o)
-	$(LD) -o bin/rtmath-absorb-slab $(AS_files:.cpp=.o) $(LIBS)
+	$(LD) -o bin/rtmath-absorb-slab $(AS_FILES:.cpp=.o) $(LIBS)
 
