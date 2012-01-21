@@ -5,28 +5,16 @@ PD = `pwd`
 all: rtmath test apps
 
 clean:
-	@cd $(PD)
-	@cd rtmath-apps
-	@make clean
-	@cd ../rtmath/
-	@make clean
 
 test: rtmath
-	@cd $(PD)
 	@cd rtmath
-	@make test
-	@cd $(PD)
+	@make -f rtmath/Makefile test
+	@cd ../
 
 apps: rtmath
-	@cd $(PD)
-	@cd rtmath-apps
-	@make all
-	@cd $(PD)
+	@make -f rtmath-apps/Makefile all
 
 rtmath:
-	@cd $(PD)
-	@cd rtmath
-	@make all
-	@cd $(PD)
+	@make -f rtmath/Makefile all
 
 
