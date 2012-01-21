@@ -14,16 +14,12 @@
 
 #include "../../rtmath/rtmath/rtmath.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
 	using namespace std;
 	using namespace rtmath;
 	using namespace rtmath::ddscat;
 	using namespace boost::filesystem;
-
-
-	// Redirect cout
-	//streambuf *corig, *filebuf;
 
 	try {
 		// Take ddscat name or path from argv, and attempt to load the files
@@ -35,6 +31,7 @@ int main(int argc, char* argv[])
 #endif
 			return 1;
 		}
+
 		string file(argv[1]);
 		boost::filesystem::path p(file.c_str()), dir, outfile,
 			outiso, outs;
@@ -107,6 +104,8 @@ int main(int argc, char* argv[])
 
 		// Now, try and generate ensemble results
 		cout << "Generating ensembles" << endl;
+		// TODO: reimplement isotropic case
+		/*
 		ddOutputEnsembleIso ensiso;
 		ensiso._ensemble = a._data;
 		ensiso.generate();
@@ -114,6 +113,7 @@ int main(int argc, char* argv[])
 		ensiso.res.writeCDF(outiso.string());
 		cout << "Isotropic output written to " << outiso << endl;
 		cout << endl << endl;
+		*/
 
 		double mean = 0;
 		const size_t numSigmas = 30;
@@ -130,14 +130,16 @@ int main(int argc, char* argv[])
 			// the appropriate weighting function
 			if (PHIS.size() > 1)
 			{
-				gens = new ddOutputEnsembleGaussianPhi(mean, sigmas[k]);
+				gens = new ddOutputEnsembleGaussianPhi(sigmas[k]);
 				if (k==0) cout << "Varying phi\n";
 			} else {
-				gens = new ddOutputEnsembleGaussianTheta(mean, sigmas[k]);
+				throw;
+				// TODO: reimplement Theta varying
+				//gens = new ddOutputEnsembleGaussianTheta(mean, sigmas[k]);
 				if (k==0) cout << "Varying theta\n";
 			}
 
-			gens->_ensemble = a._data;
+			gens->ensemble = a._data;
 			gens->generate();
 			//outs = dir / "sigma5.nc";
 			ostringstream sfile;
@@ -145,9 +147,9 @@ int main(int argc, char* argv[])
 			sfile.fill('0');
 			sfile.width(2);
 			sfile << sigmas[k];
-			sfile << ".nc";
-			outs = dir / sfile.str();
-			gens->res.writeCDF(outs.string());
+			//sfile << ".nc";
+			//outs = dir / sfile.str();
+			//gens->res.writeCDF(outs.string());
 			sfile << ".csv";
 			gens->res.writeCSV((dir / sfile.str()).string());
 			delete gens;

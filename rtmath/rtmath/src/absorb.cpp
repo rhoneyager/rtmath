@@ -29,7 +29,7 @@ namespace rtmath {
 			// abscollide has units of 1/cm. convert to 1/km
 			abscollide *= 1.e5;
 			// But, we have _dz (in km)!
-			return abscollide* (*_dz); // TODO: check absorption coefficient results
+			return abscollide* (*_dz); 
 		}
 
 		double abs_H2O::deltaTau(double f) const

@@ -82,7 +82,8 @@ namespace rtmath {
 		void xBadInput::_setmessage()
 		{
 			_message = "ERROR: The values passed to this function did not make sense.\n";
-			_message.append("TODO: give a more precise error here.\n");
+			_message += _m;
+			_message.append("\n");
 		}
 
 		void xModelOutOfRange::_setmessage()

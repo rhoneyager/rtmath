@@ -55,35 +55,5 @@ namespace rtmath {
 	};
 #endif
 
-	// Replacement error function
-	// TODO: replace with function provided by boost libraries
-	/*
-	inline double erf(double x)
-	{
-		const double p = 0.3275911;
-		const double a[] = {
-			0.254829592, -0.284496736, 1.421413741,
-			-1.453152027, 1.061405429 };
-		double t = 1.0 / (1.0 + (p * x) );
-		size_t i=0;
-		double tp = 1;
-		double res = 0;
-		for (i=0;i<5;i++)
-		{
-			tp *= t;
-			res += a[i] * tp;
-		}
-		res *= -1.0 * exp(-1.0 * x * x);
-		res += 1;
-		return res;
-	}
-	*/
-
-	// Some basic constant value definitions, 
-	// such as the speed of light
-	namespace constants {
-//		const double c = 299792458; // [m/s]
-	}; // end namespace constants
-
 }; // end namespace rtmath
 

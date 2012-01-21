@@ -41,11 +41,19 @@ namespace rtmath {
 			void loadProfile(const std::string &filename);
 			void saveProfile(const std::string &filename) const;
 			void loadProfileRyan(const std::string &filename);
+			void loadProfileRyanB(const std::string &filename);
 			//void saveProfileRyan(const std::string &filename);
 			void loadProfileLiu(const std::string &filename);
 			//void saveProfileLiu(const std::string &filename);
 			//void loadProfileCDF(const std::string &filename);
 			//void saveProfileCDF(const std::string &filename);
+
+			// Overlays are extra files containing the same layers but additional information
+			// The additional information could include more gases, phase functions, or
+			// really anything else that loadProfile-based functions would process
+			void loadOverlay(const std::string &filename);
+			void loadOverlayRyan(const std::string &filename);
+			void loadOverlayLiu(const std::string &filename);
 
 			// Calculation of optical depth of atmosphere or parts thereof
 			double tau(double f) const;

@@ -174,9 +174,6 @@
     <ClInclude Include="rtmath\rtmath.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\splitstring.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\Stdafx.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
@@ -197,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="rtmath\atmoslayer.h">
       <Filter>Header Files\Atmosphere</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddweights.h">
+      <Filter>Header Files\General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -356,6 +356,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\absorber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddweights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

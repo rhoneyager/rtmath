@@ -1,7 +1,9 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/matrixop.h"
 #include <memory>
 #include <cmath>
+#include "../rtmath/matrixop.h"
+#include "../rtmath/error/error.h"
+
 
 namespace rtmath {
 
@@ -278,7 +280,7 @@ namespace rtmath {
 		TASSERT(pos.size() == _dims.size());
 		for (size_t i=0; i<pos.size(); i++)
 		{
-			if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput();
+			if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput("Beyond matrix bounds");
 		}
 
 		size_t index;
@@ -335,7 +337,7 @@ namespace rtmath {
 		TASSERT(pos.size() == _dims.size());
 		for (size_t i=0; i<pos.size(); i++)
 		{
-			if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput();
+			if (pos[i] > _dims[i]) throw rtmath::debug::xBadInput("Beyond matrix bounds");
 		}
 
 		using namespace std;
@@ -431,7 +433,7 @@ namespace rtmath {
 		for (size_t i=0;i<msiz.size();i++)
 		{
 			msiz[i] = msiz[i] - 1;
-			if (msiz[i] == 0) throw rtmath::debug::xBadInput();
+			if (msiz[i] == 0) throw rtmath::debug::xBadInput("Minor would be a null matrix");
 		}
 		res.resize(msiz);
 		//matrixop res(msiz);
@@ -606,7 +608,8 @@ namespace rtmath {
 	void matrixop::upperTriangular(matrixop &res, matrixop &secondary) const
 	{
 		// Very useful for calculating determinants and inverses
-		if (this->issquare() == false) throw rtmath::debug::xBadInput();
+		if (this->issquare() == false) 
+			throw rtmath::debug::xBadInput("upperTriangular code written for square matrices only.");
 		//res = *this; // wrong clone constructor - produces pointer errors
 		try {
 			res.resize(_dims);
@@ -654,7 +657,8 @@ namespace rtmath {
 	void matrixop::lowerTriangular(matrixop &res, matrixop &secondary) const
 	{
 		// Very useful for calculating determinants and inverses
-		if (this->issquare() == false) throw rtmath::debug::xBadInput();
+		if (this->issquare() == false) 
+			throw rtmath::debug::xBadInput("lowerTriangular code written for square matrices only");
 
 		try {
 			//res = *this; // wrong clone constructor - produces pointer errors
@@ -704,7 +708,6 @@ namespace rtmath {
 	{
 		// Calculates the transpose of the matrix, and places it in res
 		// TODO: speed / figure out pattern to avoid 
-		//if (this->issquare() == false) throw rtmath::debug::xBadInput();
 
 		std::vector<size_t> dt;
 		dt.push_back(_dims[1]);
@@ -1061,7 +1064,8 @@ namespace rtmath {
 	{
 		// Fast relinking function that swaps two rows using internal functions
 		// Check row bounds
-		if (source._dims[0] < rowa || source._dims[0] < rowb) throw rtmath::debug::xBadInput();
+		if (source._dims[0] < rowa || source._dims[0] < rowb) 
+			throw rtmath::debug::xBadInput("Row swaps out of bounds");
 		// The values are all actually in a map of position vectors.
 		// This is unfortunate, as it may slow the code.
 		// Create a map of all elements in rows a and b

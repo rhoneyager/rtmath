@@ -1,7 +1,7 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/rayleigh/rayleigh.h"
 #include <complex>
 #include <cmath>
+#include "../rtmath/rayleigh/rayleigh.h"
 
 namespace rayleigh {
 

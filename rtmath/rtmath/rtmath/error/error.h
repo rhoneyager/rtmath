@@ -56,7 +56,7 @@ namespace rtmath
 
 		// The values passed to the function are nonsensical
 		// TODO: extend to also take a string for an error message
-		ERRSTD(xBadInput);
+		ERRSTR(xBadInput);
 
 		// The model (typically for optical depth) was called for a value outside
 		// of the expected domain of the function. Results will be nonsensical.

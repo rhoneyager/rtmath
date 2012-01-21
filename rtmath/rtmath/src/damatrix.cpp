@@ -94,7 +94,7 @@ namespace rtmath {
 		// of the operation of two parent damatrices.
 		// It does not evaluate the result. eval(mapid) does that.
 
-		if (oper == NONE) throw rtmath::debug::xBadInput();
+		if (oper == NONE) throw rtmath::debug::xBadInput("No damatrix operation specified.");
 
 		// Use the private constructor here
 		std::shared_ptr<damatrix> res(new damatrix());
@@ -177,7 +177,7 @@ namespace rtmath {
 			throw rtmath::debug::xUnimplementedFunction();
 			break;
 		default:
-			throw rtmath::debug::xBadInput();
+			throw rtmath::debug::xBadInput("No damatrix operation specified.");
 			break;
 		}
 

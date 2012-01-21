@@ -357,11 +357,104 @@ namespace rtmath {
 			// And, we're done!!!!!
 		}
 
+		void atmos::loadProfileRyanB(const std::string &filename)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+			// Should read in the same data as loadProfileRyanA, but
+			// performs the read and atmospheric creation in a different manner
+			using namespace std;
+			using namespace rtmath;
+			using namespace boost::filesystem;
+			// Open the file
+			ifstream in(filename.c_str());
+			string line;
+
+			// First, read in the name of the profile
+			// Found in first line, starting at the second word
+			// The first word is always Profile!
+			getline(in,line);
+			name = line.substr(8); // Skip 'Profile '
+
+			// Prepare the tokenizer
+			// The rest of the lines in this file are csv or tsv
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",\t");
+
+
+			// Read in header and subheader lines
+			vector<string> header, subheader;
+			getline(in,line);
+			tokenizer tokens(line,sep);
+			for (tokenizer::iterator it = tokens.begin();
+				it != tokens.end(); it++)
+				header.push_back(*it);
+			getline(in,line);
+			tokens.assign(line);
+			for (tokenizer::iterator it = tokens.begin();
+				it != tokens.end(); it++)
+				subheader.push_back(*it);
+
+			// Parse header and subheader
+			// Header columns may include 'Alt/Altitude', 'P/Pres/Pressure', 
+			// 'T/Temp/Temperature', 'D/Dens/Density,rho' (type of density  
+			// based on units), 'Humidity', 'pf' (phase function),
+			// and the gas names
+
+			// In general, a complete atmospheric description requires
+			// each layer to have pressure/altitude, temp/density/humidity
+			// Note: the necessary number of quantities MUST be given for the 
+			// atmosphere load to succeed! I need to have a complete, working 
+			// atmosphere at the end of the load.
+
+			{
+				// Use numbers to count the number of parameters available
+				int presalt = 0, tdh = 0;
+			}
+		}
+
 		void atmos::saveProfile(const std::string &filename) const
 		{
 			std::cerr << "saveProfile not yet implemented, so " << filename << 
 				" will not be written.\n";
 			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void atmos::loadOverlay(const std::string &filename)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void atmos::loadOverlayLiu(const std::string &filename)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void atmos::loadOverlayRyan(const std::string &filename)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+			using namespace std;
+			using namespace rtmath;
+			using namespace boost::filesystem;
+			// Open the file
+			ifstream in(filename.c_str());
+
+			// Seek to the start of the file data
+
+			// Assuming that I have the same layers as in the main file:
+
+			// Start reading
+			// Skip to header
+			string buffer;
+			getline(in,buffer);
+			getline(in,buffer);
+			// Tokenize the header line
+			vector<string> header, subheader;
+			vector<bool> processColumn;
+
+			// Find a mapping to the existing layers, be it pressure, altitude or density
+
+			// Iterate through each line and insert the read data as appropriate 
 		}
 
 	}; // end namespace atmos

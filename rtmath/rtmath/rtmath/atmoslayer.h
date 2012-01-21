@@ -31,10 +31,12 @@ namespace rtmath {
 			atmoslayer & operator = (const atmoslayer&);
 			//atmoslayer* clone() const;
 
-			// Other functions
+			// Other optical depth-based functions
 			inline double p() const { return _p; }
 			inline void p(double newp) { _p = newp; }
-			inline double T() const { return _T; }
+			// Will think of a better name to avoid conflicts of underatanding with
+			// doubling-adding stuff
+			inline double T() const { return _T; } 
 			inline void T(double newT) { _T = newT; }
 			inline double dz() const { return _dz; }
 			inline void dz(double newdz) { _dz = newdz; }
@@ -50,6 +52,21 @@ namespace rtmath {
 			void _init();
 		private:
 			friend class absorber;
+
+
+
+			// The doubling-adding functions (FUN)
+		public:
+			// Calculate transmission and reflection matrices
+			void da_T(std::shared_ptr<damatrix> &res) const;
+			void da_R(std::shared_ptr<damatrix> &res) const;
+			// Set / get the initial phasefunction
+			// Note: I really need a better way to retrieve it.
+			void phaseFunc(const std::shared_ptr<damatrix> &pf);
+			std::shared_ptr<damatrix> phaseFunc() const;
+		protected:
+			std::shared_ptr<damatrix> _pf;
+		private:
 		};
 
 	}; // end namespace atmos

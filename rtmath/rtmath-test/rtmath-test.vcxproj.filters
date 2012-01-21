@@ -45,5 +45,8 @@
     <ClCompile Include="..\rtmath\tests\test_atmos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\rtmath\tests\test_ddweights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

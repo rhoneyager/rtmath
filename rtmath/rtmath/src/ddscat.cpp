@@ -7,6 +7,7 @@
 #include <netcdf.h>
 #include <cmath>
 #include "../rtmath/ddscat.h"
+#include "../rtmath/ddweights.h"
 
 namespace rtmath {
 
@@ -348,6 +349,7 @@ namespace rtmath {
 
 	void ddOutputSingle::writeCDFheader(cdfParams &params) const
 	{
+		/*
 		using namespace cdf;
 		using namespace std;
 		int *p = &params.p[0]; // convenient alias
@@ -389,10 +391,12 @@ namespace rtmath {
 		nc_def_var(p[fid], "A", NC_DOUBLE, dvdimp, vdimp, &p[S]);
 		nc_def_var(p[fid], "P", NC_DOUBLE, dvdimp, vdimp, &p[P]);
 		nc_def_var(p[fid], "K", NC_DOUBLE, dvdimp, vdimp, &p[K]);
+		*/
 	}
 
 	void ddOutputSingle::writeCDF(const std::string &filename) const
 	{
+		/*
 		// Open netcdf file
 		//using namespace cdf;
 		using namespace std;
@@ -498,6 +502,7 @@ namespace rtmath {
 
 		// Close file
 		nc_close(p[cdf::fid]);
+		*/
 	}
 
 	void ddOutputSingle::loadFile(const std::string &filename)
@@ -712,56 +717,65 @@ namespace rtmath {
 		_data[coords] = f;
 	}
 
-	double ddOutputEnsembleIso::weight(const ddCoords3 &coords, const ddCoords3 &delta)
+	void ddOutputEnsembleGaussian::_genWeights(const std::set<double> &points,
+		const std::map<double, unsigned int> &recs)
 	{
-		// Number of elements provided upon initialization
-		return 1.0 / (double) this->_ensemble.size();
+		gaussianPosWeights a(_sigma, points);
+		a.getWeights(_weights);
+
+		// Tweak weights to account for multiple phi recurrances
+		// Tweak divided the weight by the number of times it pops up
+
+		std::set<double>::const_iterator it;
+		double sum = 0;
+		for (it = points.begin(); it != points.end(); it++)
+		{
+			_weights[*it] /= (double) recs.at(*it);
+			sum += _weights[*it];
+		}
+
+		// And then they all get rescaled to unity
+		for (it = points.begin(); it != points.end(); it++)
+		{
+			_weights[*it] /= sum;
+		}
+
 	}
 
-	double ddOutputEnsembleGaussianPhi::weight(const ddCoords3 &coords, const ddCoords3 &delta)
+	void ddOutputEnsembleGaussianPhi::generate()
 	{
-		double scaled = coords.phi - mu;
-		double scaledb = delta.phi - mu;
-		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
-		// I'll use boost libraries here
-		// Weights are doubled because orientations are +-  <--- 2 domains of interest
-		double Pa = 1.0 + boost::math::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = 1.0 + boost::math::erf(scaled / (sqrt(2.0) * sigma));
-		double P = Pa - Pb;
-		return P;
-	}
-
-	double ddOutputEnsembleGaussianTheta::weight(const ddCoords3 &coords, const ddCoords3 &delta)
-	{
+		// ensemble should be set. 
+		// First, collect all phi into a set and generate the weights
 		using namespace std;
-		// Use cmath erf function because we need to integrate the error function
-		double scaled = coords.theta - mu;
-		double scaledb = delta.theta - mu;
-		// NOTE: msvc2010 has no erf function support in either c99 or c++2011!!!
-		double Pa = 1.0 + boost::math::erf( (scaled + scaledb) / (sqrt(2.0) * sigma));
-		double Pb = 1.0 + boost::math::erf(scaled / (sqrt(2.0) * sigma));
-		double P = Pa - Pb;
-		//cerr << " Pa " << Pa << " Pb " << Pb << " P " << P << endl;
-		return P;
-	}
+		set<double> phis;
+		map<double, unsigned int> phiRecs;
+		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, ot, kt;
+		for (it = ensemble.begin(); it != ensemble.end(); it++)
+		{
+			// Note: normally, it would fail if multiple phis are introduced.
+			// I'm just recording the recurrance for a weight adjustment later on.
+			// Either that, or I could sum over those elements with the same phi,
+			// but that will lead to an extra summation step later on
+			double val = it->first.phi;
+			if (phis.count(val) == 0)
+				phis.insert(val);
+			if (phiRecs.count(val))
+				phiRecs[val]++;
+			else phiRecs[val] = 1;
+		}
 
-	void ddOutputEnsemble::generate()
-	{
-		// Take the set of ddOutputSingle, and average each rotation's s and phase matrices
-		// Report the output in standard ddOutputSingle elements, as we are a derived class,
-		// and it makes it easy this way
-		std::map<ddCoords3, ddOutputSingle, ddCoordsComp>::const_iterator it, kt;
-		double wt = 0, wtall = 0, wtwt = 1.0;
-		//double weight = 1.0 / (double) numElems;
-		// Assume that all ddOutputSingle have the same coordinate set for _fs
-		//ddOutputSingle res;
+		_genWeights(phis, phiRecs);
+
+		// We now have weights. Time to take the elements in the ensemble
+		// and sum according to the weighting function results.
+
 		res._fs.clear();
 
-		throw; // I have to fix bugs with total weighting
-
-		for (it=_ensemble.begin(); it != _ensemble.end(); it++)
+		matrixop Peff(2,4,4), Keff(2,4,4), Pn(2,4,4), Kn(2,4,4);
+		for (it = ensemble.begin(); it != ensemble.end(); it++)
 		{
 			// Iterate through and match the _fs element with res' element
+
 			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::iterator resf;
 			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator srcf, srcfp;
 			for (srcf=it->second._fs.begin(); srcf!=it->second._fs.end(); srcf++)
@@ -773,6 +787,7 @@ namespace rtmath {
 					std::pair< std::map<ddCoords, ddScattMatrix, ddCoordsComp>::iterator, bool> op;
 					ddCoords a( srcf->first );
 					ddScattMatrix b(a.theta, a.phi, 0);
+					// TODO: check how fs add together. WOuld be easier that way.
 					b.lock = true; // Suppress overwriting of P and K (normally calculated from vals[][])
 					res._fs[a] = b;
 					resf = res._fs.find(srcf->first); // Ugly, but fast to code
@@ -783,24 +798,10 @@ namespace rtmath {
 				// multiplied by the weight and then added to the value in resf.
 
 				// Using matrixops for ease (and not having to write yet another set of loops)
-				kt = it;
-				kt++;
 
-				// Also factor in the discrepancy caused by not starting precisely at zero
-				// (missing most important part of erf)
-				if (it==_ensemble.begin() && needwtwt() == true) // Must hit on first for loop iteration
-				{
-					ddCoords3 zc(0,0,0);
-					wtwt = 1.0 - weight(zc,it->first); // Scaling factor for all subsequent weights
-					if (wtwt < 0) throw; // Should never have the weight being greater than 1.
-					if (wtwt == 0) throw; // to avoid division by zero
-				}
+				double wt = 0;
+				wt = weight(it->first);
 
-				// Here come the weights
-				if (kt == _ensemble.end()) wt = 1.0 - wtall; // prev 3 lines so that delta calc works
-				else wt = weight(it->first, kt->first) / wtwt;
-
-				wtall += wt;
 				matrixop Peff(2,4,4), Keff(2,4,4);
 				matrixop Pn(2,4,4),   Kn(2,4,4);
 				Peff.fromDoubleArray(&(resf->second.Pnn)[0][0]);
@@ -815,6 +816,14 @@ namespace rtmath {
 				Keff.toDoubleArray(&(resf->second.Knn)[0][0]);
 			}
 		}
+	}
+
+	double ddOutputEnsembleGaussianPhi::weight(const ddCoords3 &coords) const
+	{
+		if (_weights.count(coords.phi))
+			return _weights.at(coords.phi);
+		throw rtmath::debug::xAssert("For some reason, the appropriate weight was not computed!");
+		return 0;
 	}
 
 	}; // end namespace ddscat

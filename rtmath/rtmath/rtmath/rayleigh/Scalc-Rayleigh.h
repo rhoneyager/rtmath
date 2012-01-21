@@ -1,6 +1,6 @@
 #pragma once
 #include <complex>
-#include "../rtmath.h"
+#include "../phaseFunc.h"
 namespace rayleigh {
 
 class Scalc : 

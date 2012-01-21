@@ -25,7 +25,8 @@ namespace rtmath {
 			fb = f->eval(b);
 
 			// Bad starting points if fa*fb > 0
-			if (fa*fb > 0) throw rtmath::debug::xBadInput();
+			if (fa*fb > 0) 
+				throw rtmath::debug::xBadInput("Bad selection of a,b");
 
 			if ( abs(fa) < abs(fb) )
 			{

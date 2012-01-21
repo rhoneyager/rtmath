@@ -37,6 +37,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "absorb-slab", "rtmath-apps\
 		{57CE7C52-D622-4E29-B868-107A7E1AB51E} = {57CE7C52-D622-4E29-B868-107A7E1AB51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-units", "rtmath-units\rtmath-units.vcxproj", "{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -114,6 +116,12 @@ Global
 		{2089DB17-92EF-41F5-86F9-3BBC47A7036A}.Release|Win32.ActiveCfg = Release|Win32
 		{2089DB17-92EF-41F5-86F9-3BBC47A7036A}.Release|Win32.Build.0 = Release|Win32
 		{2089DB17-92EF-41F5-86F9-3BBC47A7036A}.Release|x64.ActiveCfg = Release|Win32
+		{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}.Debug|Win32.Build.0 = Debug|Win32
+		{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}.Debug|x64.ActiveCfg = Debug|Win32
+		{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}.Release|Win32.ActiveCfg = Release|Win32
+		{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}.Release|Win32.Build.0 = Release|Win32
+		{1952B3B6-AC66-407E-A9A2-4392BFDF7DAE}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

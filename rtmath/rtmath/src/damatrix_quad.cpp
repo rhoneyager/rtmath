@@ -22,8 +22,8 @@ namespace rtmath {
 			//unsigned int deg = 7;
 			unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
 			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
-			if (deg > 7) throw rtmath::debug::xBadInput();
-			if (deg == 0) throw rtmath::debug::xBadInput();
+			if (deg > 7) throw rtmath::debug::xBadInput("Quadrature degree out of bounds");
+			if (deg == 0) throw rtmath::debug::xBadInput("Quadrature degree out of bounds");
 			// res is the result that gets returned
 			// resa is the corresponding matrixop
 			matrixop resa(2,4,4);
@@ -51,8 +51,8 @@ namespace rtmath {
 			double b = 1.0;
 			unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
 			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) deg / 2.0 + (double) deg * (double) deg / 2.0);
-			if (deg > 7) throw rtmath::debug::xBadInput();
-			if (deg == 0) throw rtmath::debug::xBadInput();
+			if (deg > 7) throw rtmath::debug::xBadInput("Quadrature degree out of bounds");
+			if (deg == 0) throw rtmath::debug::xBadInput("Quadrature degree out of bounds");
 			matrixop resa(2,4,4);
 			for (unsigned int i = start; i< start + (3*deg); i +=3)
 			{

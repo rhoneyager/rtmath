@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(absorber_calculations) {
 		BOOST_CHECK(sample.dz() == 110);
 		// Construct an absorber
 		abs_H2O ao;
-		ao.setLayer(sample,0.1);
+		ao.setLayer(sample);
 
 		double nu = absorber::_freqtowv(94.0);
 		double ret = ao.deltaTau(nu);

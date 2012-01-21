@@ -22,9 +22,10 @@ int main(int argc, char** argv)
 	using namespace rtmath::atmos;
 
 	try {
+		cerr << "rtmath-absorb-slab\n\n";
 		if (argc == 1) doHelp();
 		config::parseParams p(argc,argv);
-		cerr << "rtmath-absorb-slab\n\n";
+
 		bool flag = false;
 
 		p.readParam("-h",flag);
@@ -193,7 +194,6 @@ int main(int argc, char** argv)
 void doHelp()
 {
 	using namespace std;
-	cout << "rtmath-absorb-slab\n";
 	cout << "A program for calculating transmittance in a sample atmosphere,\n";
 	cout << "to determine the domains of the absorbtion-calculationg functions.\n";
 	cout << "Options:\n";

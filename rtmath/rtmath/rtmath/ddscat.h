@@ -162,61 +162,39 @@ namespace rtmath {
 			// of a set of ddOutputSingle
 		public:
 			ddOutputEnsemble() {}
-			std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _ensemble;
-			void generate(); // virtual based on weighting method
-			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta) = 0;
-			virtual bool needwtwt() {return true;}
+			virtual ~ddOutputEnsemble() {}
+			virtual void generate() = 0; // virtual based on weighting method
+			virtual double weight(const ddCoords3 &coords) const = 0;
 			ddOutputSingle res;
-		};
-
-		class ddOutputEnsembleIso : public ddOutputEnsemble
-		{
-		public:
-			ddOutputEnsembleIso() {}
-			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta);
-			virtual bool needwtwt() {return false;}
+			std::map<ddCoords3, ddOutputSingle, ddCoordsComp> ensemble;
 		};
 
 		class ddOutputEnsembleGaussian : public ddOutputEnsemble
 		{
 		public:
-			ddOutputEnsembleGaussian(double mu, double sigma)
+			ddOutputEnsembleGaussian(double sigma)
 			{
-				this->mu = mu;
-				this->sigma = sigma;
-				using namespace std;
-				//cerr << "mu " << mu << "sigma " << sigma << endl;
+				_sigma = sigma;
 			}
-			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta) = 0;
-			double mu, sigma;
+			virtual ~ddOutputEnsembleGaussian() {}
+			virtual void generate() = 0;
+			virtual double weight(const ddCoords3 &coords) const = 0;
+		protected:
+			double _sigma;
+			std::map<double,double> _weights;
+			void _genWeights(const std::set<double> &points, const
+				std::map<double, unsigned int> &recs);
 		};
 
 		class ddOutputEnsembleGaussianPhi : public ddOutputEnsembleGaussian
 		{
 		public:
-			ddOutputEnsembleGaussianPhi(double mu, double sigma) : 
-			  ddOutputEnsembleGaussian(mu,sigma)
+			ddOutputEnsembleGaussianPhi(double sigma) : ddOutputEnsembleGaussian(sigma)
 			{
-				this->mu = mu;
-				this->sigma = sigma;
-				using namespace std;
-				//cerr << "mu " << mu << "sigma " << sigma << endl;
 			}
-			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta);
-		};
-
-		class ddOutputEnsembleGaussianTheta : public ddOutputEnsembleGaussian
-		{
-		public:
-			ddOutputEnsembleGaussianTheta(double mu, double sigma) : 
-			  ddOutputEnsembleGaussian(mu,sigma)
-			{
-				this->mu = mu;
-				this->sigma = sigma;
-				using namespace std;
-				//cerr << "mu " << mu << "sigma " << sigma << endl;
-			}
-			virtual double weight(const ddCoords3 &coords, const ddCoords3 &delta);
+			virtual ~ddOutputEnsembleGaussianPhi() {}
+			virtual void generate();
+			virtual double weight(const ddCoords3 &coords) const;
 		};
 
 		class ddOutput {

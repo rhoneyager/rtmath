@@ -208,7 +208,7 @@ namespace rtmath {
 				resmap.mun = -1.0 * valmap.mun;
 				break;
 			default:
-				throw rtmath::debug::xBadInput();
+				throw rtmath::debug::xBadInput("Unknown type of calculation for daPf");
 				break;
 			}
 

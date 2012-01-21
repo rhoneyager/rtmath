@@ -34,6 +34,7 @@
     <ClInclude Include="rtmath\da\damatrix_quad.h" />
     <ClInclude Include="rtmath\da\daPf.h" />
     <ClInclude Include="rtmath\ddscat.h" />
+    <ClInclude Include="rtmath\ddweights.h" />
     <ClInclude Include="rtmath\defs.h" />
     <ClInclude Include="rtmath\enums.h" />
     <ClInclude Include="rtmath\error\debug.h" />
@@ -70,7 +71,6 @@
     <ClInclude Include="rtmath\refract.h" />
     <ClInclude Include="rtmath\resource.h" />
     <ClInclude Include="rtmath\rtmath.h" />
-    <ClInclude Include="rtmath\splitstring.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
     <ClInclude Include="rtmath\zeros.h" />
   </ItemGroup>
@@ -99,6 +99,7 @@
     <ClCompile Include="src\damatrix_quad.cpp" />
     <ClCompile Include="src\daPf.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
+    <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
     <ClCompile Include="src\error.cpp" />
