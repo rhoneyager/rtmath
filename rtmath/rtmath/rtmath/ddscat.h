@@ -63,6 +63,10 @@ namespace rtmath {
 		};
 
 		struct ddCoords {
+			ddCoords()
+			{
+				theta = 0; phi = 0; alpha = 0;
+			}
 			ddCoords(double theta, double phi)
 			{
 				this->theta = theta;
@@ -144,10 +148,14 @@ namespace rtmath {
 			// evaluate phase function at a given scattering angle:
 			std::string filename;
 			virtual std::shared_ptr<matrixop> eval(double alpha) const;
-			void writeCDFheader(cdfParams &params) const;
-			void writeCDF(const std::string &filename) const;
 			void writeCSV(const std::string &filename) const;
 			void size(std::set<double> &thetas, std::set<double> &phis) const;
+
+			// Perform interpolation based on the data already generated to 
+			// roughly approximate the phase matrices for a given set of coordinates.
+			// This interpolation is used to determine the phase matrices at the 
+			// quadrature points.
+			void interpolate(const ddCoords &coords, ddScattMatrix &res) const;
 		public:
 			void _init();
 			double _Beta, _Theta, _Phi;
@@ -215,6 +223,7 @@ namespace rtmath {
 			//void writeEvans(const std::string scatFile) const;
 			void get(const ddCoords3 &coords, ddOutputSingle &f) const;
 			void set(const ddCoords3 &coords, const ddOutputSingle &f);
+
 		public:
 			void _init();
 			mutable std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _data;

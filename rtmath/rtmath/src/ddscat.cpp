@@ -347,162 +347,53 @@ namespace rtmath {
 		}
 	}
 
-	void ddOutputSingle::writeCDFheader(cdfParams &params) const
+	void ddOutputSingle::interpolate(const ddCoords &coords, ddScattMatrix &res) const
 	{
-		/*
-		using namespace cdf;
-		using namespace std;
-		int *p = &params.p[0]; // convenient alias
+		// I already have the set of scattering matrices available. I'll use them
+		// to perform a linear interpolation. This interpolation may be crude, but
+		// it is necessary it I want to generate matrices with angles along the appropriate
+		// quadrature points. I really with that ddscat could do this for me.
 
-		// Define dimensions
-		// Look at one of the _fs to see the bounds on theta and phi!
-		std::set<double> thetas, phis;
-		size(thetas,phis);
+		// Conveniently, all of my ddscat stuff varies theta from 0 to 180, while
+		// phi is either 0 or 90 degrees (covering co- and orthogonal polarizations).
 
-		int numthetas = thetas.size();
-		int numphis = phis.size();
-		nc_def_dim(p[fid],"theta",numthetas, &p[dtheta]); // 181 possible thetas: [0,180]
-		nc_def_dim(p[fid],"phi",numphis, &p[dphi]); // one possible phi for now
-		nc_def_dim(p[fid],"index",16, &p[didnum]); // 16 possible index points
-		// Define variables
-		nc_def_var(p[fid], "theta", NC_DOUBLE, 1, &p[dtheta], &p[theta]);
-		nc_def_var(p[fid], "phi", NC_DOUBLE, 1, &p[dphi], &p[phi]);
-		nc_def_var(p[fid], "index", NC_DOUBLE, 1, &p[didnum], &p[idnum]);
+		// So, I really should look at phi first
+		// Find the four matrices needed for the planar average
+		throw rtmath::debug::xUnimplementedFunction();
+		// Store the resulting angles here
+		ddCoords col, cou, cxl, cxu;
 
-		// Set variable attributes for grads plotting
-		string sLat("degrees_north");
-		string sLon("degrees_east");
-		string sT("t");
-		string sTu("hours since 2001-1-1 00:00:0.0");
-		string strLev("level");
-		string strZaxis("z");
-
-		//nc_put_att_text(p[fid], p[cdf::plevs], "units", strLev.size(), strLev.c_str());
-		//nc_put_att_text(p[fid], p[cdf::plevs], "axis", strZaxis.size(), strZaxis.c_str());
-		nc_put_att_text(p[fid], p[phi], "units", sLat.size(), sLat.c_str());
-		nc_put_att_text(p[fid], p[theta], "units", sLon.size(), sLon.c_str());
-		nc_put_att_text(p[fid], p[idnum], "axis", sT.size(), sT.c_str());
-		nc_put_att_text(p[fid], p[idnum], "units", sTu.size(), sTu.c_str());
-
-		// Define other variables
-		int vdimp[] = { p[dtheta], p[dphi], p[didnum] };
-		const int dvdimp = 3;
-
-		nc_def_var(p[fid], "A", NC_DOUBLE, dvdimp, vdimp, &p[S]);
-		nc_def_var(p[fid], "P", NC_DOUBLE, dvdimp, vdimp, &p[P]);
-		nc_def_var(p[fid], "K", NC_DOUBLE, dvdimp, vdimp, &p[K]);
-		*/
-	}
-
-	void ddOutputSingle::writeCDF(const std::string &filename) const
-	{
-		/*
-		// Open netcdf file
-		//using namespace cdf;
-		using namespace std;
-		cdfParams params;
-
-		int *p = &params.p[0]; // convenient alias
-		nc_create(filename.c_str(), 0, &p[cdf::fid]); // open cdf file for writing
-
-		writeCDFheader(params);
-		nc_enddef(p[cdf::fid]);
-
-		// Write variable data
-
-		// Write index variables first
-		std::set<double> thetas, phis;
-		size(thetas,phis);
-
-		int numthetas = thetas.size();
-		int numphis = phis.size();
-
-		double *phia = new double[numphis];
-		double *thetaa = new double[numthetas];
-
-		{
-			std::set<double>::iterator dt;
-			size_t t;
-			for (dt = thetas.begin(), t=0; dt != thetas.end(); dt++, t++)
-				thetaa[t] = *dt;
-			for (dt = phis.begin(), t=0; dt != phis.end(); dt++, t++)
-				phia[t] = *dt;
-		}
-		//double phia[] = {0, 90};
-		//double thetaa[181];
-		double indexa[16];
-		for (size_t i=0;i<16;i++) indexa[i] = i;
-		nc_put_var_double(p[cdf::fid],p[cdf::theta],thetaa );
-		nc_put_var_double(p[cdf::fid],p[cdf::idnum],indexa );
-		nc_put_var_double(p[cdf::fid],p[cdf::phi],phia );
-
-		delete[] thetaa;
-		delete[] phia;
-
-		// Loop through all _fs
-		// Generate mueller and extinction matrices
-		// Write out all values, one at a time
 		std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
-		size_t counter = 0; // keeps track of indices for theta and phi
-		for (it = _fs.begin(), counter = 0; it != _fs.end(); it++, counter++)
+		for (it = _fs.begin(); it != _fs.end(); ++it)
 		{
-			//double theta = it->second.theta();
-			//double phi = it->second.phi();
-			//double Pnn[4][4], Knn[4][4];
-			//double Sr[4], Si[4];
-			//it->second.mueller(Pnn);
-			//it->second.extinction(Knn);
+			// Find best value underneath and overshooting for each phi
+			if (it->first.theta > col.theta && it->first.phi == 0 && it->first.theta <= coords.theta)
+				col = it->first;
+			if (it->first.theta > cxl.theta && it->first.phi == 90 && it->first.theta <= coords.theta)
+				cxl = it->first;
+			if (it->first.theta < cou.theta && it->first.phi == 0 && it->first.theta >= coords.theta)
+				cou = it->first;
+			if (it->first.theta > cxu.theta && it->first.phi == 90 && it->first.theta >= coords.theta)
+				cxu = it->first;
+		}
 
-			//int vdimp[] = { p[dtheta], p[dphi], p[dindex] };
+		// Okay, we have the set of the four closest coordinates on the sphere.
+		// Average the scattmatrices for each phi
+		double facttheta = (cou.theta - coords.theta) / (cou.theta - col.theta);
+		double factphi = (cxu.phi - coords.phi) / (cxu.phi - cou.phi);
 
-			//for (int theta=0; theta <= 180; theta++)
+		res.lock = true;
+		for (size_t i=0;i<4;i++)
+		{
+			for (size_t j=0;j<4;j++)
 			{
-				//for (int phi = 0; phi < 2; phi++)
-				{
-					// Each variable has different types of indices.
-					// P and K are the same (16), S has only 8.
-					for (int i=0;i<16;i++)
-					{
-						// Output P and K
-						size_t index[3]; // array for netcdf location specifying
-						//index[0] = theta;// BAD
-						//index[1] = phi; // BAD
-						index[0] = counter / numphis;
-						index[1] = counter % numphis;
-						index[2] = i; // GOOD
-
-						double data = 0;
-						// I'm overriding my indices here to convert to single dimension array
-						data = it->second.Pnn[(i/4)][(i%4)];
-						nc_put_var1_double(p[cdf::fid],p[cdf::P],index,&data );
-						data = it->second.Knn[(i/4)][(i%4)];
-						nc_put_var1_double(p[cdf::fid],p[cdf::K],index,&data );
-
-						if (i<8)
-						{
-							// Output S too
-							int k = (i / 2) % 2;
-							int l = i / 4;
-							int j = i % 2; // selects real or imaginary part
-							if (j == 0) // real
-								data = it->second.vals[l][k].real();
-							else // imaginary
-								data = it->second.vals[l][k].imag();
-							nc_put_var1_double(p[cdf::fid],p[cdf::S],index,&data);
-						}
-						if (i>=8)
-						{
-							data = 0;
-							nc_put_var1_double(p[cdf::fid],p[cdf::S],index,&data);
-						}
-					}
-				}
+				// Do interpolation on Pnn and Knn
+				res.Pnn[i][j] = factphi * (facttheta * _fs[col].Pnn[i][j] + (1.0-facttheta) * _fs[cou].Pnn[i][j]);
+				res.Pnn[i][j] += (1.0 - factphi) * (facttheta * _fs[cxl].Pnn[i][j] + (1.0-facttheta) * _fs[cxu].Pnn[i][j]);
+				res.Knn[i][j] = factphi * (facttheta * _fs[col].Knn[i][j] + (1.0-facttheta) * _fs[cou].Knn[i][j]);
+				res.Knn[i][j] += (1.0 - factphi) * (facttheta * _fs[cxl].Knn[i][j] + (1.0-facttheta) * _fs[cxu].Knn[i][j]);
 			}
 		}
-
-		// Close file
-		nc_close(p[cdf::fid]);
-		*/
 	}
 
 	void ddOutputSingle::loadFile(const std::string &filename)
