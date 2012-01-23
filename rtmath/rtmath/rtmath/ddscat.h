@@ -156,6 +156,9 @@ namespace rtmath {
 			// This interpolation is used to determine the phase matrices at the 
 			// quadrature points.
 			void interpolate(const ddCoords &coords, ddScattMatrix &res) const;
+
+			// Need function here to generate emission vectors
+			void emissionVector(double mu, matrixop &res) const;
 		public:
 			void _init();
 			double _Beta, _Theta, _Phi;
