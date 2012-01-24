@@ -11,12 +11,11 @@ IDIR=$(HOME)/bin
 COMBOFILES = $(wildcard combo/*.cpp)
 DDPARSEFILES = $(wildcard ddparse/*.cpp)
 RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
-BACK_F_FILES = $(wildcard backscatter_f/*.cpp)
 GM_FILES = $(wildcard getm/*.cpp)
 TM_FILES = $(wildcard transmittance/*.cpp)
 AS_FILES = $(wildcard absorb-slab/*.cpp)
 
-all: combo ddparse rtmath-version backscatter_f getm transmittance absorb-slab
+all: combo ddparse rtmath-version getm transmittance absorb-slab
 
 clean:
 	rm -rf *.o */*.o bin/*
@@ -52,9 +51,6 @@ ddparse: $(DDPARSEFILES:.cpp=.o)
 
 rtmath-version: $(RTMATHVERFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-version $(RTMATHVERFILES:.cpp=.o) $(LIBS)
-
-backscatter_f: $(BACK_F_FILES:.cpp=.o) 
-	$(LD) -o bin/rtmath-back_f $(BACK_F_FILES:.cpp=.o) $(LIBS)
 
 getm: $(GM_FILES:.cpp=.o)
 	$(LD) -o bin/rtmath-getm $(GM_FILES:.cpp=.o) $(LIBS)
