@@ -14,8 +14,9 @@ RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
 GM_FILES = $(wildcard getm/*.cpp)
 TM_FILES = $(wildcard transmittance/*.cpp)
 AS_FILES = $(wildcard absorb-slab/*.cpp)
+UU_FILES = $(wildcard uuid/*.cpp)
 
-all: combo ddparse rtmath-version getm transmittance absorb-slab
+all: combo ddparse rtmath-version getm transmittance absorb-slab uuid
 
 clean:
 	rm -rf *.o */*.o bin/*
@@ -33,6 +34,7 @@ install: all distclean
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-getm
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-genmtab
 	ln -s $(WDIR)/bin/rtmath-transmittance $(IDIR)/rtmath-transmittance
+	ln -s $(WDIR)/bin/rtmath-uuid-gen $(IDIR)/rtmath-uuid-gen
 
 .f.o:
 	$(FC) $(FFLAGS) -c $? -o $(?:.f=.o)
@@ -60,4 +62,7 @@ transmittance: $(TM_FILES:.cpp=.o)
 
 absorb-slab: $(AS_FILES:.cpp=.o)
 	$(LD) -o bin/rtmath-absorb-slab $(AS_FILES:.cpp=.o) $(LIBS)
+
+uuid: $(UU_FILES:.cpp=.o)
+	$(LD) -o bin/rtmath-uuid-gen $(UU_FILES:.cpp=.o) $(LIBS)
 
