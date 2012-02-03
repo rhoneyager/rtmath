@@ -83,7 +83,19 @@ namespace rtmath {
 			// Done advancing. Return result.
 			return cseg;
 		}
-		void configsegment::getVal(const std::string &key, std::string &value)
+
+		bool configsegment::getVal(const std::string &key, std::string &value, std::string defaultVal)
+		{
+			bool res = false;
+			res = getVal(key,value);
+			if (res == false)
+			{
+				value = defaultVal;
+			}
+			return res;
+		}
+
+		bool configsegment::getVal(const std::string &key, std::string &value)
 		{
 			using namespace std;
 			// If the key contains '/', we should search the path
@@ -95,8 +107,8 @@ namespace rtmath {
 				if (relseg == NULL) throw;
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
-				relseg->getVal(keystripped,value);
-				return;
+				bool res = relseg->getVal(keystripped,value);
+				return res;
 			}
 
 			// Let's be promiscuous!
@@ -111,8 +123,9 @@ namespace rtmath {
 				if (this->_parent)
 				{
 					this->_parent->getVal(key, value);
+					return true;
 				} else {
-					value.clear(); // Return an empty value
+					return false;
 				}
 			}
 		}

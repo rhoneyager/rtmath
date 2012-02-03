@@ -15,24 +15,26 @@ GM_FILES = $(wildcard getm/*.cpp)
 TM_FILES = $(wildcard transmittance/*.cpp)
 AS_FILES = $(wildcard absorb-slab/*.cpp)
 UU_FILES = $(wildcard uuid/*.cpp)
+SEC_FILES = $(wildcard sector/*.cpp)
 
-all: combo ddparse rtmath-version getm transmittance absorb-slab uuid
+all: combo ddparse rtmath-version getm transmittance absorb-slab uuid sector
 
 clean:
 	rm -rf *.o */*.o bin/*
 	
 distclean:
-	rm -rf $(IDIR)/combo $(IDIR)/rtmath-*
+	rm -rf $(IDIR)/rtmath-*
 
 # Should wildcard all of these	
 install: all distclean
-	ln -s $(WDIR)/bin/combo $(IDIR)/combo
+	ln -s $(WDIR)/bin/rtmath-combo $(IDIR)/rtmath-combo
 	ln -s $(WDIR)/bin/rtmath-ddparse $(IDIR)/rtmath-ddparse
 	ln -s $(WDIR)/bin/rtmath-version $(IDIR)/rtmath-version
 	ln -s $(WDIR)/bin/rtmath-absorb-slab $(IDIR)/rtmath-absorb-slab
 	ln -s $(WDIR)/bin/rtmath-back_f $(IDIR)/rtmath-back_f
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-getm
 	ln -s $(WDIR)/bin/rtmath-getm $(IDIR)/rtmath-genmtab
+	ln -s $(WDIR)/bin/rtmath-sector $(IDIR)/rtmath-sector
 	ln -s $(WDIR)/bin/rtmath-transmittance $(IDIR)/rtmath-transmittance
 	ln -s $(WDIR)/bin/rtmath-uuid-gen $(IDIR)/rtmath-uuid-gen
 
@@ -46,7 +48,7 @@ install: all distclean
 	$(CPP) $(CCFLAGS) -c $? -o $(?:.cpp=.o)
 
 combo: $(COMBOFILES:.cpp=.o) 
-	$(LD) -o bin/combo $(COMBOFILES:.cpp=.o) $(LIBS)
+	$(LD) -o bin/rtmath-combo $(COMBOFILES:.cpp=.o) $(LIBS)
 	
 ddparse: $(DDPARSEFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-ddparse $(DDPARSEFILES:.cpp=.o) $(LIBS)
@@ -65,4 +67,7 @@ absorb-slab: $(AS_FILES:.cpp=.o)
 
 uuid: $(UU_FILES:.cpp=.o)
 	$(LD) -o bin/rtmath-uuid-gen $(UU_FILES:.cpp=.o) $(LIBS)
+
+sector: $(SEC_FILES:.cpp=.o)
+	$(LD) -o bin/rtmath-sector $(SEC_FILES:.cpp=.o) $(LIBS)
 

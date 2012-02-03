@@ -4,6 +4,7 @@
 // through pipes, or are located in config segments.
 // This is useful in coordinating several disparate processes.
 #include <string>
+#include <sstream>
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <set>
@@ -20,11 +21,34 @@ namespace rtmath {
 		{
 			public:
 				parseParams(int argc, char** argv);
+				// TODO: remove the non-template members to avoid confusion
 				bool readParam(const char* oName, double &val);
 				bool readParam(const char* oName, size_t num, double *vals);
 				bool readParam(const char* oName, std::string &val);
 				bool readParam(const char* oName, bool &flag);
 				bool readParam(const char* oName);
+				template <class T>
+					bool readParam(const char* oName, T &val)
+					{
+						// Find the option
+						std::string op(oName);
+						for (size_t i=0;i<(size_t) _ac-1;i++)
+						{
+							std::string p(_av[i]);
+							if (p==op)
+							{
+								std::string v(_av[i+1]);
+								// Use stringstream for conversion
+								std::istringstream is(v);
+								is >> val;
+								return true;
+							}
+						}
+						return false;
+					}
+//				template <class T>
+//					bool readParam(const char* oName, size_t num, T *vals);
+
 			private:
 				int _ac;
 				char** _av;

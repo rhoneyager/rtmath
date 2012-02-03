@@ -39,7 +39,8 @@ namespace rtmath {
 			configsegment(const std::string &name);
 			configsegment(const std::string &name, configsegment *parent);
 			~configsegment();
-			void getVal(const std::string &key, std::string &value);
+			bool getVal(const std::string &key, std::string &value);
+			bool getVal(const std::string &key, std::string &value, std::string defaultVal);
 			void setVal(const std::string &key, const std::string &value);
 			configsegment* findSegment(const std::string &key);
 			configsegment* getChild(const std::string &name);
