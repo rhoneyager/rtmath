@@ -30,9 +30,9 @@ int main(int argc, char** argv)
 	if (argc != 3)
 	{
 		bool flag = false;
-		flag = p.readParam("-t", temp);
+		flag = p.readParam<double>("-t", temp);
 		if (!flag) doHelp();
-		flag = p.readParam("-f", f);
+		flag = p.readParam<double>("-f", f);
 		if (!flag) doHelp();
 		mtab = p.readParam("--mtab");
 	} else {

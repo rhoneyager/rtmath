@@ -26,8 +26,8 @@ int main(int argc, char** argv)
 		p.readParam("-h",flag);
 		if (flag) doHelp();
 
-		double numUuid;
-		flag = p.readParam("-n", numUuid);
+		int numUuid;
+		flag = p.readParam<int>("-n", numUuid);
 		if (!flag) doHelp();
 		if (numUuid < 0) doHelp();
 
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 		// output to the console
 
 		random_generator gen;
-		for (int i=0;i<(int) numUuid;i++)
+		for (int i=0;i<numUuid;i++)
 		{
 			uuid u = gen();
 			cout << u << endl;

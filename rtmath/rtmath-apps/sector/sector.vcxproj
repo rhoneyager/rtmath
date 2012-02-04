@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2375674A-9CA6-44DB-B843-2C5FED0A2F0B}</ProjectGuid>
-    <RootNamespace>combo</RootNamespace>
+    <ProjectGuid>{0F5DADD3-5312-41AF-9C55-20140C7B24FE}</ProjectGuid>
+    <RootNamespace>sector</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -65,18 +65,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="sector.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{57ce7c52-d622-4e29-b868-107a7e1ab51e}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="combo.old">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="combo2.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="combo-options.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

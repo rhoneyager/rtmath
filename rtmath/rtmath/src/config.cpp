@@ -128,6 +128,7 @@ namespace rtmath {
 					return false;
 				}
 			}
+			return false;
 		}
 
 		void configsegment::setVal(const std::string &key, const std::string &value)

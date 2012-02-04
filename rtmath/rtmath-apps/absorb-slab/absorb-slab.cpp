@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 		double f[3] = {0,0,0};
 		{
 			string strF;
-			flag = p.readParam("-f", strF);
+			flag = p.readParam<string>("-f", strF);
 			if (!flag)
 			{
 				cerr << "Frequency range must be specified.\n";
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		set<string> gases;
 		{
 			string sGases;
-			flag = p.readParam("-g", sGases);
+			flag = p.readParam<string>("-g", sGases);
 			if (flag)
 			{
 				typedef boost::tokenizer<boost::char_separator<char> >
@@ -99,10 +99,10 @@ int main(int argc, char** argv)
 		}
 
 		if (gases.count("H2O")) rh = 15; // Set new default value
-		p.readParam("-rh", rh);
-		p.readParam("-t", T);
-		p.readParam("-p", pres);
-		p.readParam("-dz", dz);
+		p.readParam<double>("-rh", rh);
+		p.readParam<double>("-t", T);
+		p.readParam<double>("-p", pres);
+		p.readParam<double>("-dz", dz);
 
 		// Build the sample atmosphere
 		rtmath::atmos::atmos a;

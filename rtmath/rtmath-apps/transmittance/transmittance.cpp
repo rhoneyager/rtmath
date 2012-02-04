@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 		// Get master configuration file path
 		// Used to find out where HITRAN is and where the profile paths are
 		string rtconfpath;
-		flag = p.readParam("--config", rtconfpath);
+		flag = p.readParam<string>("--config", rtconfpath);
 		if (rtconfpath == "")
 		{
 			config::getConfigDefaultFile(rtconfpath);
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 		// Uses boost tokenizer
 		{
 			string strF;
-			flag = p.readParam("-f", strF);
+			flag = p.readParam<string>("-f", strF);
 			if (!flag)
 			{
 				cerr << "Frequency range must be specified.\n";
@@ -93,14 +93,14 @@ int main(int argc, char** argv)
 		cRoot->getVal("atmos/atmosDir", profdir);
 		if (profdir == "") profdir == "./";
 		// If profile search directory is user-specified, override
-		p.readParam("--profdir", profdir); 
+		p.readParam<string>("--profdir", profdir); 
 		cerr << "Profile search directories: " << profdir << endl;
 		// Get profile extensions
 		cRoot->getVal("atmos/profileExtensions",profext);
 
 		// Get profile name for calculations
 		string profname;
-		flag = p.readParam("--profile", profname);
+		flag = p.readParam<string>("--profile", profname);
 		if (!flag) doHelp();
 		cerr << "Profile desired: " << profname << ". Searching..." << endl;
 		// Find the actual path to the atmospheric profile

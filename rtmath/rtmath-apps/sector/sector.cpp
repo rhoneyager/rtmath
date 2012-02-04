@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include <rtmath/rtmath.h>
+#include "../../rtmath/rtmath/rtmath.h"
 #include <set>
 #include <vector>
 #include <string>
@@ -33,11 +33,11 @@ int main(int argc, char** argv)
 			if (flag) doHelp();
 
 			// Input file
-			flag = p.readParam("-i", ifstr);
+			flag = p.readParam<string>("-i", ifstr);
 			if (!flag) doHelp();
 
 			// Output file
-			flag = p.readParam("-o", ofstr);
+			flag = p.readParam<string>("-o", ofstr);
 			if (!flag) doHelp();
 
 			// Skip header lines
