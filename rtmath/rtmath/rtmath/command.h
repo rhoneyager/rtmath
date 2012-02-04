@@ -7,6 +7,7 @@
 #include <sstream>
 #include <memory>
 #include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <set>
 #include <vector>
