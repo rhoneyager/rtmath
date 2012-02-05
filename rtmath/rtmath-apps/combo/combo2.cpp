@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -103,7 +104,12 @@ int main(int argc, char** argv)
 							}
 						} else {
 							cerr << "\nOverwrite file? (y/n) ";
-							cin >> clobber;
+							string doClobber;
+							cin >> doClobber;
+							std::transform(doClobber.begin(), doClobber.end(), 
+								doClobber.begin(), ::tolower);
+							if (doClobber == "1" || doClobber == "y" || doClobber == "yes")
+								clobber = true;
 							if (!clobber)
 							{
 								cerr << "Terminating.\n";
