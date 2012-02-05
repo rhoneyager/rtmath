@@ -10,6 +10,7 @@
 #include <cmath>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include "../rtmath/command.h"
 
 namespace rtmath {
