@@ -398,18 +398,45 @@ namespace rtmath {
 			// Parse header and subheader
 			// Header columns may include 'Alt/Altitude', 'P/Pres/Pressure', 
 			// 'T/Temp/Temperature', 'D/Dens/Density,rho' (type of density  
-			// based on units), 'Humidity', 'pf' (phase function),
-			// and the gas names
+			// based on units), 'Humidity', and the gas names
 
 			// In general, a complete atmospheric description requires
 			// each layer to have pressure/altitude, temp/density/humidity
 			// Note: the necessary number of quantities MUST be given for the 
 			// atmosphere load to succeed! I need to have a complete, working 
 			// atmosphere at the end of the load.
+			// Also, the hydrometeor profiles / phase functions for nongaseous
+			// particles are not loaded in this file. This is incorporated through
+			// an overlay file.
 
+			size_t counter = 0;
+			size_t cAlt = 0, cP = 0, cT = 0, cD = 0;
+			// Iterate over the header and subheader. Use counter to count the numeric
+			// column number. Can consider header and subheader together.
+			for (auto it = header.begin(), ot = subheader.begin(); 
+				it != header.end(); it++, ot++, counter++)
 			{
-				// Use numbers to count the number of parameters available
-				int presalt = 0, tdh = 0;
+				// Too bad I can't use a switch here
+				// Take lower-case version of header to ease comparisons
+				string sCol = *it; // Copy to preserve gas names!
+				std::transform(sCol.begin(), sCol.end(), sCol.begin(), ::tolower);
+
+				if (sCol == "altitude" || sCol == "alt")
+				{
+					cAlt = counter;
+				}
+				if (sCol == "p" || sCol == "pres" || sCol == "pressure")
+				{
+					cP = counter;
+				}
+				if (sCol == "t" || sCol == "temp" || sCol == "temperature")
+				{
+					cT = counter;
+				}
+				if (sCol == "d" || sCol == "dens" || sCol == "density" || sCol == "rho")
+				{
+					cD = counter;
+				}
 			}
 		}
 
