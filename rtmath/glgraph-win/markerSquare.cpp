@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "markerSquare.h"
-#include "../rtmath/matrixop.h"
+#include "../rtmath/rtmath/matrixop.h"
 #include <cmath>
 #include "glform.h"
 

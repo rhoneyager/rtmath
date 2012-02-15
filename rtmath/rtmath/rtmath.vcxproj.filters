@@ -198,6 +198,12 @@
     <ClInclude Include="rtmath\ddweights.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\da\daStatic.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\units.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -359,6 +365,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ddweights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\surfaces.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thermal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daStatic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\units.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\os_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

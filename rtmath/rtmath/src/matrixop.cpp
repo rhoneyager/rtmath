@@ -1129,12 +1129,29 @@ namespace rtmath {
 		// TODO: instead, put all zero rows at the bottom (or top, if reversed) of the matrix
 		throw rtmath::debug::xSingular();
 		// Throw class needed for determinant and inverses to catch the singularity!!!!!
+		return 0; // to force control path to return a value
 	}
 
 
 	matrixop matrixop::identity(const std::vector<size_t> &size)
 	{
 		return diagonal(size,1.0);
+	}
+
+	matrixop matrixop::identity(size_t rank, ...)
+	{
+		// Retrieve the variable parameters
+		va_list indices;
+		va_start(indices, rank);
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<rank; i++)
+		{
+			ival = va_arg(indices,size_t);
+			ptr.push_back(ival);
+		}
+		va_end(indices);
+		return diagonal(ptr,1.0);
 	}
 
 	void matrixop::toDoubleArray(double *target) const

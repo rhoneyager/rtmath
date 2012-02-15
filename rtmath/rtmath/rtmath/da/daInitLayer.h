@@ -18,7 +18,7 @@ namespace rtmath {
 	public:
 		daInitLayer(std::shared_ptr<damatrix> pf, double alb, double tau, rtselec::rtselec rt);
 		virtual ~daInitLayer();
-		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+		virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;
 	protected:
 		//std::shared_ptr<damatrix> _phaseMatRot;
 		std::shared_ptr<damatrix> _pf;

@@ -25,6 +25,7 @@ int main(int argc, char** argv)
 	using namespace rtmath;
 	try {
 		// Process some of the flags
+		atexit(rtmath::debug::appExit);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc, argv);
 		cerr << "rtmath-transmittance\n\n";
@@ -160,9 +161,6 @@ int main(int argc, char** argv)
 	{
 		err.Display();
 		cerr << endl;
-#ifdef _WIN32
-		std::getchar();
-#endif
 		return 1;
 	}
 	return 0;
@@ -192,9 +190,6 @@ void doHelp()
 	cout << "\tthe manual for the file format.\n";
 	cout << endl;
 	cout << endl;
-#ifdef _WIN32
-	std::getchar();
-#endif
 	exit(1);
 }
 

@@ -20,7 +20,7 @@ namespace rtmath {
 		//_phaseMatRot = static_pointer_cast<damatrix>(rotPF);
 		//_pf = pf; // It is now the user's responsibility to declare a rotator.
 		// If the damatrix specifies that a rotator is needed, provide it
-		if (pf->needsRot() == true)
+		if (pf->needsRot())
 		{
 			using namespace rtmath::daPfReflections;
 			//_pf = static_pointer_case<damatrix>( shared_ptr<daPfAlpha> (new daPfAlpha(pf)));
@@ -44,15 +44,14 @@ namespace rtmath {
 		_init(pf,alb,tau,rt);
 	}
 
-	std::shared_ptr<matrixop> daInitLayer::eval(const mapid &valmap) const
+	std::shared_ptr<const matrixop> daInitLayer::eval(const mapid &valmap) const
 	{
 		using namespace std;
-		HASH_t hash = valmap.hash();
 		// _tau should be fixed, and valmap provides the other angles
 		// Search the cache for existing calculated values
 		if (_eval_cache_enabled) 
-			if (_eval_cache.count(hash) > 0)
-				return _eval_cache[hash];
+			if (_eval_cache.count(valmap) > 0)
+				return _eval_cache[valmap];
 		// Existing value not found. Must calculate.
 		matrixop pRes(2,4,4);
 
@@ -60,16 +59,16 @@ namespace rtmath {
 		// TODO: check the last term (should alpha = mu?)
 		//rtmath::phaseFuncRotator::rotate(_rt, *_phaseMat, valmap, pRes, valmap.mu);
 		// _pf now should already handle rotation.
-		std::shared_ptr<matrixop> pf(_pf->eval(valmap));
+		std::shared_ptr<const matrixop> pf(_pf->eval(valmap));
 
 		// Take the rotated phase function and build a layer
 		pRes = *pf * _tau * _ssa * (1.0 / 4.0 * abs(valmap.mu) * abs(valmap.mun));
 
-		shared_ptr<matrixop> res(new matrixop(pRes));
+		shared_ptr<const matrixop> res(new matrixop(pRes));
 
 		// Store result and return
 		if (_eval_cache_enabled) 
-			_eval_cache[hash] = res;
+			_eval_cache[valmap] = res;
 		return res;
 	}
 

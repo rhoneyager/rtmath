@@ -34,6 +34,7 @@ namespace rtmath {
 			atmos();
 			~atmos();
 			atmos(const std::string &filename);
+			atmos(const std::string &filename, const atmos &base);
 			std::string name; // Name of the atmosphere
 
 			// File loading and saving to various formats

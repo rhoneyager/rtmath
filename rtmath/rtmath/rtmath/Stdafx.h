@@ -14,8 +14,11 @@
 #include <boost/shared_ptr.hpp>
 #include <memory>
 #include <boost/filesystem.hpp>
+#include <unordered_map>
+#include <boost/unordered_map.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/units/systems/si.hpp>
 #include <set>
 #include <cstdlib>
 #include <cstdio>

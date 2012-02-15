@@ -33,6 +33,7 @@
     <ClInclude Include="rtmath\da\damatrix_override.h" />
     <ClInclude Include="rtmath\da\damatrix_quad.h" />
     <ClInclude Include="rtmath\da\daPf.h" />
+    <ClInclude Include="rtmath\da\daStatic.h" />
     <ClInclude Include="rtmath\ddscat.h" />
     <ClInclude Include="rtmath\ddweights.h" />
     <ClInclude Include="rtmath\defs.h" />
@@ -72,6 +73,7 @@
     <ClInclude Include="rtmath\resource.h" />
     <ClInclude Include="rtmath\rtmath.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
+    <ClInclude Include="rtmath\units.h" />
     <ClInclude Include="rtmath\zeros.h" />
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +100,7 @@
     <ClCompile Include="src\damatrix.cpp" />
     <ClCompile Include="src\damatrix_quad.cpp" />
     <ClCompile Include="src\daPf.cpp" />
+    <ClCompile Include="src\daStatic.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
     <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
@@ -120,6 +123,7 @@
     <ClCompile Include="src\mie-tauNCalc.cpp" />
     <ClCompile Include="src\mie-wnCalc.cpp" />
     <ClCompile Include="src\MurmurHash3.cpp" />
+    <ClCompile Include="src\os_functions.cpp" />
     <ClCompile Include="src\pfFixed.cpp" />
     <ClCompile Include="src\phaseFunc.cpp" />
     <ClCompile Include="src\polynomial.cpp" />
@@ -131,6 +135,9 @@
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\Stdafx.cpp" />
+    <ClCompile Include="src\surfaces.cpp" />
+    <ClCompile Include="src\thermal.cpp" />
+    <ClCompile Include="src\units.cpp" />
     <ClCompile Include="src\zeros.cpp" />
   </ItemGroup>
   <ItemGroup>

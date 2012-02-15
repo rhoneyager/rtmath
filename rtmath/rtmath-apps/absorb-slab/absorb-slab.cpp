@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-absorb-slab\n\n";
+		atexit(rtmath::debug::appExit);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc,argv);
 
@@ -182,9 +183,6 @@ int main(int argc, char** argv)
 	{
 		err.Display();
 		cerr << endl;
-#ifdef _WIN32
-		std::getchar();
-#endif
 		return 1;
 	}
 	return 0;
@@ -219,9 +217,6 @@ void doHelp()
 	cout << "-h\n";
 	cout << "\tProduce this help message.\n";
 	cout << endl << endl;
-#ifdef _WIN32
-	std::getchar();
-#endif
 	exit(1);
 }
 

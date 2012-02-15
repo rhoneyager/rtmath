@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E3DB083E-2458-4759-A7D0-EC27E71C5CFB}</ProjectGuid>
-    <RootNamespace>rtmathtest</RootNamespace>
+    <ProjectGuid>{B579DB96-1A64-4FFD-919A-E06EB9B24C35}</ProjectGuid>
+    <RootNamespace>da</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -37,7 +37,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExecutablePath>C:\Program Files (x86)\boost\boost_1_47\lib;$(ExecutablePath)</ExecutablePath>
+    <TargetName>rtmath-$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>rtmath-$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -62,23 +65,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\rtmath\tests\test.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_atmos.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_config.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_damatrix.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_ddscat.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_ddweights.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_debug.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_lbl.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_matrixop.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_polynomial.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_quadrature.cpp" />
-    <ClCompile Include="..\rtmath\tests\test_recPolys.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\rtmath\rtmath.vcxproj">
+    <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{57ce7c52-d622-4e29-b868-107a7e1ab51e}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="da.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

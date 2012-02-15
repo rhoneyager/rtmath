@@ -5,18 +5,37 @@
 
 
 namespace rtmath {
-	daPfNone::daPfNone()
+	daMatrixop::daMatrixop()
 	{
 		// Set up the no-scattering matrix
-		std::shared_ptr<matrixop> newpf(new matrixop(2,4,4));
-		newpf->set(1.0,2,4,4);
-		_pf = newpf;
+		std::shared_ptr<matrixop> newpf(new matrixop(matrixop::identity(2,4,4)));
+		_src = newpf;
 	}
 
-	std::shared_ptr<matrixop> daPfNone::eval(const mapid &valmap) const
+	daMatrixop::daMatrixop(const matrixop &src)
+	{
+		std::shared_ptr<matrixop> newpf(new matrixop(src));
+		_src = newpf;
+	}
+
+	daMatrixop::daMatrixop(const std::shared_ptr<const matrixop> &src)
+	{
+		// Doing it this way because othervise there is no guarantee
+		// that src remains constant later. This is a problem because
+		// operations referencing this matrix cache their results, 
+		// which definitely leads to problems.
+		_src = std::shared_ptr<matrixop> (new matrixop(*src));
+	}
+
+	std::shared_ptr<const matrixop> daMatrixop::eval(const mapid &) const
 	{
 		// NO SCATTERING CASE!!!!!
-		return _pf;
+		// Normally, I'd copy the pointer and make it a unique_ptr,
+		// or I'd have daMatrixop store _src as a unique_ptr, but
+		// I can guarantee that _src will not be changed by any of
+		// the other classes. The unique_ptr implementation would
+		// necessitate copying and wasting memory and time.
+		return _src;
 	}
 
 	daPfAlpha::daPfAlpha(std::shared_ptr<phaseFunc> pf)
@@ -29,7 +48,7 @@ namespace rtmath {
 		using namespace std;
 		_rt = rtselec::T; // The new default.
 		_phaseMat = pf;
-		_needsrot = true; // signals that reflection / rotation is needed when evaluating this in layers
+		_needsRot = true; // signals that reflection / rotation is needed when evaluating this in layers
 		// Initialize the damatrix-derived lhs and rhs.
 		// These are from a derived class, so use static_pointer_cast.
 		shared_ptr<daPfRotators::daRotator> dlhs(new daPfRotators::daRotator(_rt, daPfRotators::LHS));
@@ -42,24 +61,19 @@ namespace rtmath {
 	{
 	}
 
-	std::shared_ptr<matrixop> daPfAlpha::eval(const mapid &valmap) const
+	std::shared_ptr<const matrixop> daPfAlpha::eval(const mapid &valmap) const
 	{
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
-		HASH_t hash = valmap.hash();
 		if (_eval_cache_enabled)
-			if (_eval_cache.count(hash) > 0)
-				return _eval_cache[hash];
-
-
-		// Check lock condition
-		if (_locked && _parentOp != NONE) throw rtmath::debug::xLockedNotInCache();
+			if (_eval_cache.count(valmap) > 0)
+				return _eval_cache[valmap];
 
 		// Desired mapid (valmap) is not in the cache, so the matrixop must be calculated
 		// Evaluate the damatrix at the necessary values
 
 		// Apply the rotation matrices.
-		std::shared_ptr<matrixop> lhs,rhs,pf;
+		std::shared_ptr<const matrixop> lhs,rhs,pf;
 		lhs = _lhs->eval(valmap);
 		rhs = _rhs->eval(valmap);
 		
@@ -68,11 +82,11 @@ namespace rtmath {
 		pf = _phaseMat->eval(alpha); 
 		matrixop resb = *pf * *rhs;
 		matrixop resa = *lhs * resb;
-		std::shared_ptr<matrixop> res(new matrixop(resa));
+		std::shared_ptr<const matrixop> res(new matrixop(resa));
 
 		// Save to the cache
 		if (_eval_cache_enabled)
-			_eval_cache[hash] = res;
+			_eval_cache[valmap] = res;
 
 		return res;
 	}
@@ -86,16 +100,12 @@ namespace rtmath {
 			_lr = LR;
 		}
 
-		std::shared_ptr<matrixop> daRotator::eval(const mapid &valmap) const
+		std::shared_ptr<const matrixop> daRotator::eval(const mapid &valmap) const
 		{
 			// First, check to see if this has already been calculated
 			// If it is in the cache, return the cached value
-			HASH_t hash = valmap.hash();
-			if (_eval_cache.count(hash) > 0)
-				return _eval_cache[hash];
-
-			// Check lock condition
-			if (_locked && _parentOp != NONE) throw rtmath::debug::xLockedNotInCache();
+			if (_eval_cache.count(valmap) > 0)
+				return _eval_cache[valmap];
 
 			// Desired mapid (valmap) is not in the cache, so the matrixop must be calculated
 			// Evaluate the damatrix at the necessary values
@@ -109,7 +119,7 @@ namespace rtmath {
 			//double alpha = acos(calpha); // not used yet, but soon
 
 			// Create the resultant matrixop
-			std::shared_ptr<matrixop> res(new matrixop(2,4,4));
+			matrixop res(2,4,4);
 
 
 			// Set cosarg (see Hansen 1971)
@@ -154,18 +164,19 @@ namespace rtmath {
 			double dsinarg = sin(2.0 * arg); // Cosine(2*arg)
 
 			// Can finally construct the matrix
-			res->set(1.0,2,0,0); // res[0][0]
-			res->set(1.0,2,3,3); // res[3][3]
-			res->set(dcosarg,2,1,1); // res[1][1]
-			res->set(dcosarg,2,2,2); // res[2][2]
-			res->set(dsinarg,2,2,1); // res[2][1]
-			res->set(-1.0*dsinarg,2,2,1); // res[1][2]
+			res.set(1.0,2,0,0); // res[0][0]
+			res.set(1.0,2,3,3); // res[3][3]
+			res.set(dcosarg,2,1,1); // res[1][1]
+			res.set(dcosarg,2,2,2); // res[2][2]
+			res.set(dsinarg,2,2,1); // res[2][1]
+			res.set(-1.0*dsinarg,2,2,1); // res[1][2]
 
+			std::shared_ptr<const matrixop> resp(new matrixop(res));
 			// Save to the cache
 			if (_eval_cache_enabled)
-				_eval_cache[hash] = res;
+				_eval_cache[valmap] = resp;
 
-			return res;
+			return resp;
 		}
 
 	}; // end namespace daPfRotators
@@ -178,7 +189,7 @@ namespace rtmath {
 			_source = pf;
 		}
 
-		std::shared_ptr<matrixop> daReflection::eval(const mapid &valmap) const
+		std::shared_ptr<const matrixop> daReflection::eval(const mapid &valmap) const
 		{
 			// This is just a wrapper function for a basic type of symmetry by reflection.
 			// Pr(mu,mun,phi,phin) = P(-mu,mun,phi,phin)

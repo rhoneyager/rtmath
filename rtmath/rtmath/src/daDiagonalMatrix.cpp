@@ -15,16 +15,15 @@ namespace rtmath {
 		_mumun = mumun;
 	}
 
-	std::shared_ptr<matrixop> daDiagonalMatrix::eval(const mapid &valmap) const
+	std::shared_ptr<const matrixop> daDiagonalMatrix::eval(const mapid &valmap) const
 	{
 		using namespace std;
-		HASH_t hash = valmap.hash();
 		// _tau should be fixed, and valmap provides the other angles
 		
 		// Search the cache for existing calculated values
 		if (_eval_cache_enabled)
-			if (_eval_cache.count(hash) > 0)
-				return _eval_cache[hash];
+			if (_eval_cache.count(valmap) > 0)
+				return _eval_cache[valmap];
 
 		// Existing value not found. Must calculate.
 		matrixop pRes(2,4,4);
@@ -39,11 +38,11 @@ namespace rtmath {
 			break;
 		};
 		
-		shared_ptr<matrixop> res(new matrixop(pRes));
+		shared_ptr<const matrixop> res(new matrixop(pRes));
 
 		// Store result and return
 		if (_eval_cache_enabled)
-			_eval_cache[hash] = res;
+			_eval_cache[valmap] = res;
 		return res;
 	}
 

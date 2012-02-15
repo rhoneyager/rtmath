@@ -48,6 +48,9 @@ namespace rtmath
 			unsigned int _uid;
 			static unsigned int _uidcount;
 		};
+
+		bool waitOnExit(); // in os_functions.cpp
+		void appExit(); // Convenient default atexit function
 	}; // end namespace debug
 
 	// see assert.h for how this is made

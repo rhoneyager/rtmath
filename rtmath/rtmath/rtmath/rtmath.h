@@ -28,6 +28,7 @@
 #include "da/damatrix_override.h"
 #include "da/damatrix_quad.h"
 #include "da/daPf.h"
+#include "da/daStatic.h"
 //#include "lbl.h"
 #include "atmos.h"
 #include "absorb.h"
@@ -39,4 +40,5 @@
 #include "ddscat.h"
 #include "cdf-ddscat.h"
 #include "refract.h"
+#include "units.h"
 

@@ -4,6 +4,7 @@
 */
 
 #include "../rtmath/Stdafx.h"
+#include <boost/version.hpp>
 #include "../rtmath/error/debug.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
@@ -101,6 +102,7 @@ namespace rtmath
 #ifdef _MSC_FULL_VER
 			std::cerr << "Microsoft Visual Studio Compiler Version " << _MSC_FULL_VER << std::endl;
 #endif
+			std::cerr << "Boost version " << BOOST_LIB_VERSION << std::endl;
 			std::cerr << std::endl;
 		};
 

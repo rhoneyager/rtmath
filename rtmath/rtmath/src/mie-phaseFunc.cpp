@@ -1,8 +1,9 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/mie/mie.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <complex>
+#include "../rtmath/mie/mie.h"
+
 namespace mie {
 
 	//TODO: rewrite this function, giving dependency on rtmath-base provided matrix operations!

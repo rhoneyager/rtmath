@@ -21,7 +21,7 @@ namespace rtmath {
 	public:
 		daDiagonalMatrix(double tau, valmap_selector::valmap_selector mumun);
 		virtual ~daDiagonalMatrix();
-		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+		virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;
 	protected:
 		double _tau;
 		valmap_selector::valmap_selector _mumun;

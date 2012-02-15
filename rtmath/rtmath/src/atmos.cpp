@@ -11,8 +11,10 @@
 #include <boost/units/systems/si.hpp> // Used for atmos readins!
 #include "../rtmath/atmos.h"
 #include "../rtmath/absorb.h"
+#include "../rtmath/units.h"
 #include "../rtmath/da/daDiagonalMatrix.h"
 #include "../rtmath/error/error.h"
+#include "../rtmath/units.h"
 
 namespace rtmath {
 	
@@ -29,6 +31,12 @@ namespace rtmath {
 		atmos::atmos(const std::string &filename)
 		{
 			loadProfile(filename);
+		}
+
+		atmos::atmos(const std::string &filename, const atmos &base)
+		{
+			_layers = base._layers;
+			loadOverlay(filename);
 		}
 
 		double atmos::tau(double f) const
@@ -411,6 +419,7 @@ namespace rtmath {
 
 			size_t counter = 0;
 			size_t cAlt = 0, cP = 0, cT = 0, cD = 0;
+			map<size_t, std::unique_ptr<units::converter> > converters;
 			// Iterate over the header and subheader. Use counter to count the numeric
 			// column number. Can consider header and subheader together.
 			for (auto it = header.begin(), ot = subheader.begin(); 
@@ -421,21 +430,37 @@ namespace rtmath {
 				string sCol = *it; // Copy to preserve gas names!
 				std::transform(sCol.begin(), sCol.end(), sCol.begin(), ::tolower);
 
+				// Find key columns and use the subcolumn information to set up any 
+				// necessary unit conversions
 				if (sCol == "altitude" || sCol == "alt")
 				{
 					cAlt = counter;
-				}
-				if (sCol == "p" || sCol == "pres" || sCol == "pressure")
+					// Want altitude in km
+					// see rtmath-units
+					// rtmath::converter convAlt(*ot,"km");
+					//unique_ptr<units::converter> cv(new units::converter(*ot,"km"));
+				} else if (sCol == "p" || sCol == "pres" || sCol == "pressure")
 				{
 					cP = counter;
-				}
-				if (sCol == "t" || sCol == "temp" || sCol == "temperature")
+					// Want pressure in mb / hPa
+					//unique_ptr<units::converter> cv(new units::converter(*ot,"hPa"));
+				} else if (sCol == "t" || sCol == "temp" || sCol == "temperature")
 				{
 					cT = counter;
-				}
-				if (sCol == "d" || sCol == "dens" || sCol == "density" || sCol == "rho")
+					// Want temperature in K
+					//unique_ptr<units::converter> cv(new units::converter(*ot,"K"));
+				} else if (sCol == "d" || sCol == "dens" || sCol == "density" || sCol == "rho")
 				{
 					cD = counter;
+					// Want density in ppmv
+					//unique_ptr<units::converter> cv(new units::converter(*ot,"ppmv"));
+				} else if (sCol == "pfdata")
+				{
+					// Phase function information has been provided for this layer. This includes 
+					// scattering and extinction matrices, or something that can generate these
+				} else {
+					// Everything else should be a gas concentration
+					// These should be in ppmv
 				}
 			}
 		}

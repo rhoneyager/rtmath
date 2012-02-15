@@ -22,13 +22,11 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
+		atexit(rtmath::debug::appExit);
 		// Take ddscat name or path from argv, and attempt to load the files
 		if (argc == 1)
 		{
 			cout << "Error: no files specified.\n";
-#ifdef _WIN32
-			std::getchar();
-#endif
 			return 1;
 		}
 
@@ -165,8 +163,5 @@ int main(int argc, char** argv)
 		cout << "Error thrown" << endl;
 
 	}
-#ifdef _WIN32
-	std::getchar();
-#endif
 	return 0;
 }

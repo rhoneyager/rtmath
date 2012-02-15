@@ -20,14 +20,18 @@
 
 namespace rtmath {
 	// No scattering at all. Just return the basic matrix.
-	class daPfNone : public damatrix
+	class daMatrixop : public damatrix
 	{
 	public:
-		daPfNone();
-		virtual ~daPfNone() {}
-		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+		daMatrixop();
+		// Copy existing matrix
+		daMatrixop(const rtmath::matrixop &src);
+		// Encapsulate existing matrix (may be changed elsewhere)
+		daMatrixop(const std::shared_ptr<const rtmath::matrixop> &src);
+		virtual ~daMatrixop() {}
+		virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;
 	private:
-		std::shared_ptr<matrixop> _pf;
+		std::shared_ptr<const matrixop> _src;
 	};
 
 	// daPfAlpha is for phase functions that depend on alpha
@@ -38,7 +42,7 @@ namespace rtmath {
 	public:
 		daPfAlpha(std::shared_ptr<phaseFunc> pf);
 		virtual ~daPfAlpha();
-		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+		virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;
 	protected:
 		std::shared_ptr<phaseFunc> _phaseMat;
 		std::shared_ptr<damatrix> _lhs, _rhs;
@@ -66,7 +70,7 @@ namespace rtmath {
 			daRotator(rtselec::rtselec RT, daRotatorLR LR);
 		public:
 			virtual ~daRotator() {}
-			virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+			virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;
 		protected:
 			rtselec::rtselec _rt;
 			daRotatorLR _lr;
@@ -91,7 +95,7 @@ namespace rtmath {
 		public:
 			daReflection(daReflectionEnum spec, std::shared_ptr<rtmath::damatrix> pf);
 			virtual ~daReflection() {}
-			virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const;
+			virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;
 		protected:
 			daReflectionEnum _type;
 			std::shared_ptr<rtmath::damatrix> _source;

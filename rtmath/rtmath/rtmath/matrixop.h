@@ -103,6 +103,7 @@ namespace rtmath {
 		static matrixop diagonal(const std::vector<size_t> &size, double val);
 		static matrixop diagonal(double val, size_t rank, ...);
 		static matrixop identity(const std::vector<size_t> &size);
+		static matrixop identity(size_t rank, ...);
 		static inline matrixop fileRead(const char* filename) { return fileRead(filename, -1, -1); }
 		static matrixop fileRead(const char* filename, int lineStart, int lineEnd);
 	private:

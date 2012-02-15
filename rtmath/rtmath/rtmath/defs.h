@@ -11,8 +11,10 @@ namespace rtmath {
 	} UINT128, 
 		*PUINT128;
 
+//#define LARGEHASH
+
 	// Hash type definitions based on architecture
-#if defined(_M_X64) || defined(__amd64)
+#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
 	typedef UINT128 HASH_t;
 #else
 	typedef uint32_t HASH_t;
@@ -22,7 +24,7 @@ namespace rtmath {
 	// Hash function definitions based on architecture
 	// Both MurmurHash3 functions take the same arguments in the same order
 	//void MurmurHash3_...  ( const void * key, int len, uint32_t seed, void * out );
-#if defined(_M_X64) || defined(__amd64)
+#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
 #define HASH MurmurHash3_x64_128
 #else
 #define HASH MurmurHash3_x86_32
@@ -30,7 +32,7 @@ namespace rtmath {
 
 #define HASHSEED 2387213
 
-#if defined(_M_X64) || defined(__amd64)
+#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
 	struct hashcomp
 	{
 		bool operator() (const HASH_t &lhs, const HASH_t &rhs) const

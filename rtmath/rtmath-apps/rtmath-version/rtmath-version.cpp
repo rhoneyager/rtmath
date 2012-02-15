@@ -8,9 +8,8 @@ int main(int argc, char* argv[])
 	using namespace std;
 	using namespace rtmath;
 
+	atexit(rtmath::debug::appExit);
 	rtmath::debug::debug_preamble();
-#ifdef _WIN32
-	std::getchar();
-#endif
+
 	return 0;
 }

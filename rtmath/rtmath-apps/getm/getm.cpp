@@ -20,6 +20,7 @@ void doHelp();
 int main(int argc, char** argv)
 {
 	using namespace std;
+	atexit(rtmath::debug::appExit);
 	// Parse the commands provided on the command line
 	if (argc == 1) doHelp();
 	rtmath::config::parseParams p(argc,argv);

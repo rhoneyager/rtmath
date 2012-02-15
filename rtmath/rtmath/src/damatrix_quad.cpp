@@ -9,13 +9,13 @@ namespace rtmath {
 	namespace daint {
 		unsigned int deg = 7;
 
-		std::shared_ptr<matrixop> outer_int(const mapid &valmap, 
+		std::shared_ptr<const matrixop> outer_int(const mapid &valmap, 
 			std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B)
 		{
 			// This is a namespace function that handles the outer integration loop/
 			// Outer integration is from 0 to 2pi, dphi'
 			// It varies A and B valmaps and calls the inner loop with Gaussian quadrature
-			std::cerr << "Integrating on valmap " << valmap.print() << std::endl;
+			//std::cerr << "Integrating on valmap " << valmap.print() << std::endl;
 			double a = 0.0;
 			double b = 2.0 * M_PI; // Oops - I had switched outer_int and inner_int's bounds
 			//double b = 1.0;
@@ -34,11 +34,11 @@ namespace rtmath {
 				resa = resa + ( (*inner_int(valmap,phip,A,B) * rtmath::quadrature::_gaussian_lagrange_prepump[i+2]) );
 			}
 			resa = resa * ((b-a)/2.0);
-			std::shared_ptr<matrixop> res(new matrixop(resa));
+			std::shared_ptr<const matrixop> res(new matrixop(resa));
 			return res;
 		}
 
-		std::shared_ptr<matrixop> inner_int(const mapid &valmap, double phip, 
+		std::shared_ptr<const matrixop> inner_int(const mapid &valmap, double phip, 
 			std::shared_ptr<damatrix> A, std::shared_ptr<damatrix> B)
 		{
 			// This is a namespace function that handles the outer integration loop
@@ -46,7 +46,7 @@ namespace rtmath {
 			// It varies A and B valmaps and calls the inner loop with 
 			//  gaussian quadrature
 			//unsigned int deg = 7;
-			std::cerr << "inner int on valmap " << valmap.print() << " with phip " << phip << std::endl;
+			//std::cerr << "inner int on valmap " << valmap.print() << " with phip " << phip << std::endl;
 			double a = 0.0;
 			double b = 1.0;
 			unsigned int start = 3 * (unsigned int) ( ( (deg * deg) - deg) / 2);
@@ -67,13 +67,13 @@ namespace rtmath {
 				//mapid Amap(valmap.mu,mup,valmap.phi,phip), Bmap(mup,valmap.mun,phip,valmap.phin);
 				//*res = *res + *A->eval(Amap) * *B->eval(Bmap) * mup;
 				matrixop a(2,4,4), b(2,4,4);
-				std::cerr << "\ti:" << i << "   Amap: " << Amap.print() << "   Bmap: " << Bmap.print() << std::endl;
+				//std::cerr << "\ti:" << i << "   Amap: " << Amap.print() << "   Bmap: " << Bmap.print() << std::endl;
 				a = *A->eval(Amap);
 				b = *B->eval(Bmap);
 				resa = resa + (a * b * muweight * mup);
 			}
 			resa = resa * ((b - a)/2.0);
-			std::shared_ptr<matrixop> res(new matrixop(resa));
+			std::shared_ptr<const matrixop> res(new matrixop(resa));
 			return res;
 		}
 	}; // end namespace daint

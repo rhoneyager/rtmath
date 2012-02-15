@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <sstream>
 #include "defs.h"
 #include "enums.h"
 #include "Public_Domain/MurmurHash3.h"
@@ -61,4 +62,24 @@ namespace rtmath {
 			return acos( toCosAlpha(RT) );
 		}
 	};
+
+	// Supporting code to allow boost unordered map
+	inline std::size_t hash_value(mapid const& x)
+	{
+		return (size_t) x.hash();
+	}
 }; // end namespace rtmath
+
+// Suppotring code to allow an unordered map of mapid (for damatrix)
+// Using standard namespace for C++11
+namespace std {
+	template <> struct hash<rtmath::mapid>
+	{
+		size_t operator()(const rtmath::mapid & x) const
+		{
+			// Really need to cast for the unordered map to work
+			return (size_t) x.hash();
+		}
+	};
+}; // end namespace std
+

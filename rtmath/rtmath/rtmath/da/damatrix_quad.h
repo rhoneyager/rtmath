@@ -13,9 +13,9 @@ namespace rtmath {
 	class damatrix;
 	namespace daint {
 		extern unsigned int deg;
-		std::shared_ptr<matrixop> outer_int(const mapid &valmap, 
+		std::shared_ptr<const matrixop> outer_int(const mapid &valmap, 
 			std::shared_ptr<rtmath::damatrix> A, std::shared_ptr<rtmath::damatrix> B);
-		std::shared_ptr<matrixop> inner_int(const mapid &valmap, double phip, 
+		std::shared_ptr<const matrixop> inner_int(const mapid &valmap, double phip, 
 			std::shared_ptr<rtmath::damatrix> A, std::shared_ptr<rtmath::damatrix> B);
 	}; // end namespace daint
 }; // end namespace rtmath

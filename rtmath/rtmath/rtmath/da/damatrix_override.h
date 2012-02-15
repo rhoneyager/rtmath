@@ -21,9 +21,9 @@ namespace rtmath {
 			_providerFunction = provider;
 		}
 		virtual ~damatrix_override() {}
-		virtual std::shared_ptr<matrixop> eval(const mapid &valmap) const
+		virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const
 		{
-			std::shared_ptr<matrixop> res( new matrixop(_providerFunction(valmap)));
+			std::shared_ptr<const matrixop> res( new matrixop(_providerFunction(valmap)));
 			return res;
 		}
 

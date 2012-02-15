@@ -4,7 +4,7 @@ CPP = g++
 LD = g++
 #FFLAGS = -fdefault-integer-8 -fdefault-real-8 -ggdb
 CCFLAGS = -ggdb -std=c++0x -fopenmp
-LIBS = -lm -lgfortran -lnetcdf -ggdb -lboost_filesystem -lboost_unit_test_framework -lboost_system -lrtmath -fopenmp
+LIBS = -lm -lgfortran -lnetcdf -ggdb -lboost_filesystem -lboost_unit_test_framework -lboost_system -fopenmp ../rtmath/lib/librtmath.a
 WDIR=`pwd`
 IDIR=$(HOME)/bin
 

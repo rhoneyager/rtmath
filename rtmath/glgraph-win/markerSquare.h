@@ -1,7 +1,7 @@
 #pragma once
 #include "Plottable.h"
 
-#include "../rtmath/matrixop.h"
+#include "../rtmath/rtmath/matrixop.h"
 #include <cmath>
 
 namespace glgraphwin {
