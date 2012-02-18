@@ -47,7 +47,7 @@ static: pre-build $(OBJS)
 FORCE:
 
 # Compiles regular code along with test files
-test: dynamic $(OBJSTEST)
+test: static $(OBJSTEST)
 	$(LD) -ggdb -lboost_unit_test_framework $(CCFLAGS) -o bin/rtmath-test $(OBJSTEST) lib/librtmath.a $(LIBS)
 	./bin/rtmath-test --log-level=test_suite --report_level=short
 
