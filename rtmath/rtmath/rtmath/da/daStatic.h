@@ -17,7 +17,7 @@ namespace rtmath {
 		public:
 			daStatic();
 			virtual ~daStatic() {}
-			void insert(const mapid &valmap, const std::shared_ptr<const matrixop> &val);
+			virtual void insert(const mapid &valmap, const std::shared_ptr<const matrixop> &val);
 			// Evaluation here involves interpolation of known results
 			// Results are cached for speed
 			virtual std::shared_ptr<const matrixop> eval(const mapid &valmap) const;

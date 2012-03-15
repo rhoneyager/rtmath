@@ -37,22 +37,21 @@ BOOST_AUTO_TEST_CASE(absorber_calculations) {
 	// First, note that absorbers must reference an atmoslayer class that provides 
 	// p, T and dz.
 	try {
-		atmoslayer sample(100,200,110);
+		atmoslayer sample(100,200,10,11,10);
 		BOOST_CHECK(sample.p() == 100);
 		BOOST_CHECK(sample.T() == 200);
-		BOOST_CHECK(sample.dz() == 110);
+		BOOST_CHECK(sample.dz() == 11);
 		// Construct an absorber
-		abs_H2O ao;
+		abs_N2 ao; // Can't test H2O, as no wv concentration given.
 		ao.setLayer(sample);
 
-		double nu = absorber::_freqtowv(94.0);
-		double ret = ao.deltaTau(nu);
+		double ret = ao.deltaTau(94);
 		BOOST_CHECK(ret > 0); // Just make sure it's valid for now
 		
 		// Now try and place it in sample and run
 		std::shared_ptr<absorber> cln(ao.clone());
 		sample.absorbers.insert(cln);
-		double retb = cln->deltaTau(nu);
+		double retb = cln->deltaTau(94.0);
 		BOOST_CHECK(retb == ret);
 
 		// Have sample actually do a tau calculation. With one element, verify consistency.
@@ -77,10 +76,11 @@ BOOST_AUTO_TEST_CASE(atmos_load_ryan) {
 	try {
 		string profilepath = "../profiles/trp.txt";
 		rtmath::atmos::atmos trp;
-		trp.loadProfileRyan(profilepath);
+		trp.loadProfileRyanB(profilepath);
 		double res = 0;
 		res = trp.tau(94.0);
-		cout << res << endl;
+		BOOST_CHECK(res > 0);
+		//cout << res << endl;
 	}
 	catch (rtmath::debug::xError &err)
 	{

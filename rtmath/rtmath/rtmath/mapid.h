@@ -10,16 +10,19 @@ namespace rtmath {
 	class mapid
 	{
 	public:
-		mapid(double mu, double mun, double phi, double phin)
+		friend struct std::less<rtmath::mapid>;
+		mapid(double mu, double mun, double phi, double phin, double f = 0)
 		{
 			this->mu = mu;
 			this->mun = mun;
 			this->phi = phi;
 			this->phin = phin;
+			this->f = f;
 		}
-		mapid () { mu=0; mun=0; phi=0; phin=0;}
+		mapid () { mu=0; mun=0; phi=0; phin=0; f = 0;}
 		bool operator == (const mapid &rhs) const
 		{
+			if (this->f != rhs.f) return false;
 			if (this->mu != rhs.mu) return false;
 			if (this->mun != rhs.mun) return false;
 			if (this->phi != rhs.phi) return false;
@@ -28,7 +31,7 @@ namespace rtmath {
 		}
 		bool operator != (const mapid &rhs) const
 		{ return !(this->operator==(rhs)); }
-		double mu, mun, phi, phin;
+		double mu, mun, phi, phin, f;
 		inline HASH_t hash() const
 		{
 			HASH_t res;
@@ -38,7 +41,7 @@ namespace rtmath {
 		inline std::string print() const
 		{
 			std::ostringstream out;
-			out << "mu: " << mu << " mun: " << mun << " phi: " << phi << " phin: " << phin;
+			out << "f: " << f << "mu: " << mu << " mun: " << mun << " phi: " << phi << " phin: " << phin;
 			std::string res = out.str();
 			return res;
 		}
@@ -70,7 +73,7 @@ namespace rtmath {
 	}
 }; // end namespace rtmath
 
-// Suppotring code to allow an unordered map of mapid (for damatrix)
+// Supporting code to allow an unordered map of mapid (for damatrix)
 // Using standard namespace for C++11
 namespace std {
 	template <> struct hash<rtmath::mapid>
@@ -79,6 +82,22 @@ namespace std {
 		{
 			// Really need to cast for the unordered map to work
 			return (size_t) x.hash();
+		}
+	};
+
+
+	template <> struct less<rtmath::mapid >
+	{
+		bool operator() (const rtmath::mapid &lhs, const rtmath::mapid &rhs) const
+		{
+			// Check f, mu, mun, phi, phin
+			if (lhs.f != rhs.f) return lhs.f < rhs.f;
+			if (lhs.mu != rhs.mu) return lhs.mu < rhs.mu;
+			if (lhs.mun != rhs.mun) return lhs.mun < rhs.mun;
+			if (lhs.phi != rhs.phi) return lhs.phi < rhs.phi;
+			if (lhs.phin != rhs.phin) return lhs.phin < rhs.phin;
+
+			return false;
 		}
 	};
 }; // end namespace std

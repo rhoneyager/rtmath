@@ -74,6 +74,7 @@
     <ClCompile Include="..\rtmath\tests\test_polynomial.cpp" />
     <ClCompile Include="..\rtmath\tests\test_quadrature.cpp" />
     <ClCompile Include="..\rtmath\tests\test_recPolys.cpp" />
+    <ClCompile Include="..\rtmath\tests\test_units.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\rtmath\rtmath.vcxproj">

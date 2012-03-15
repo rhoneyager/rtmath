@@ -26,6 +26,7 @@ namespace rtmath {
 
 		// Perform the desired type of interpolation
 		// TODO!
+		throw rtmath::debug::xUnimplementedFunction();
 		return nullptr;
 		// 		if (_eval_cache_enabled)
 			//_eval_cache[valmap] = res;

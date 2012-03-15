@@ -98,6 +98,17 @@ namespace rtmath {
 			_message = out.str();
 		}
 
+		void xMissingFrequency::_setmessage()
+		{
+			std::ostringstream out;
+
+			out << "ERROR: The ddscat data loaded does not contain information ";
+			out << "for the given frequency.\n";
+			out << "The frequency requested was " << _m << ". Consult the rest of the ";
+			out << "error text to determine the function involved.\n";
+			_message = out.str();
+		}
+
 		void xEmptyInputFile::_setmessage()
 		{
 			_message = "ERROR: Reading an empty input file. \nInput file: ";

@@ -4,8 +4,8 @@
 #include <set>
 #include <map>
 #define BOOST_TEST_DYN_LINK
-#include "../rtmath/ddweights.h"
-#include "../rtmath/ddscat.h"
+//#include "../rtmath/ddscat/ddweights.h"
+//#include "../rtmath/ddscat/ddscat.h"
 #include "../rtmath/error/error.h"
 
 #include <boost/test/unit_test.hpp>
@@ -15,10 +15,11 @@ BOOST_AUTO_TEST_SUITE(test_ddweights);
 using namespace std;
 using namespace rtmath;
 using namespace rtmath::debug;
-using namespace rtmath::ddscat;
+//using namespace rtmath::ddscat;
 
 BOOST_AUTO_TEST_CASE(gPosWeights)
 {
+	/*
 	// Begin test by creating a set of points
 	set<double> points;
 	for (double i=0.5; i<90; i++)

@@ -62,6 +62,9 @@ namespace rtmath
 		// of the expected domain of the function. Results will be nonsensical.
 		ERRDOU(xModelOutOfRange);
 
+		// ddscat data missing for this frequency.
+		ERRDOU(xMissingFrequency);
+
 		// The file that is opened for reading is empty
 		ERRSTR(xEmptyInputFile);
 

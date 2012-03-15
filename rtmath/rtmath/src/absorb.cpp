@@ -36,7 +36,7 @@ namespace rtmath {
 		{
 			// _T is in Kelvin
 			// _p is in mb
-			// rho is water vapor density (in G/m^3)
+			// rho is water vapor density (in g/m^3)
 			// abh2o is output in nepers / km
 			// abh20, given knowledge of dz (in km), will calculate tau
 

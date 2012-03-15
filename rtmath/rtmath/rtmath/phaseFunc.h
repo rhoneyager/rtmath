@@ -37,31 +37,10 @@ namespace rtmath {
 		// Here, mu = cos(alpha), the total scattering angle.
 		virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
 	public:
+		// f is the frequency
 		static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
-		static void _genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double k);
+		static void _genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double fGHz);
+		static void _invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4]);
 	};
-
-	/*
-	class phaseFuncRotator : public rtmath::debug::obsoleted
-	{
-	public:
-		// Take a reference to the actual target
-		phaseFuncRotator(phaseFunc &target, std::complex<double> &m, double x);
-		// For most phasefuncs, calc(mu) is calc(alpha), refed to 
-		// the total angle for single scattering.
-		// We need more.
-		void rotate(rtselec::rtselec RT, double mu, double mun, double alpha, double phi, double phin,
-			matrixop &res);
-		void rotate(rtselec::rtselec RT, double mu, double mun, double alpha, double phi, double phin,
-			double res[4][4]);
-		static void rotate(rtselec::rtselec RT, const matrixop &Pa, 
-			const mapid &varmap, matrixop &res, double alpha);
-	private:
-		std::complex<double> m;
-		double x;
-		phaseFunc *target;
-
-	};
-	*/
 
 }; // end namespace rtmath

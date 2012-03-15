@@ -21,18 +21,70 @@ namespace rtmath {
 		class converter
 		{
 		public:
-			converter(const std::string &inUnits, const std::string &outUnits);
 			virtual ~converter();
 			virtual double convert(double inVal) const;
+			//virtual double convertFull
 		protected:
+			converter();
 			std::string _inUnits, _outUnits;
-		private:
 			double _convFactor;
 			bool _valid;
-			static void _initMap();
-			static std::map<std::string, boost::units::quantity<boost::units::si::length> > _unitsLength;
-			static std::map<std::string, boost::units::quantity<boost::units::si::pressure> > _unitsPressure;
-			static std::map<std::string, boost::units::quantity<boost::units::si::temperature> > _unitsTemp;
+			void _init(const std::string &inUnits, const std::string &outUnits);
+		};
+
+		// Useful parent class to allow for conversions that require more than
+		// just an input quantity. For example: conversions between density, 
+		// partial pressure and parts per million volumetrically or by mass.
+		// It basically just provides another function to conveniently set 
+		// these values, and it's up to a derived class to make use of it.
+		class atmosConv : public converter
+		{
+		public:
+			virtual ~atmosConv();
+		protected:
+			atmosConv();
+			//std::weak_ptr
+		};
+
+		class conv_alt : public atmosConv
+		{
+		public:
+			conv_alt(const std::string &inUnits, const std::string &outUnits);
+		};
+
+		class conv_pres : public atmosConv
+		{
+		public:
+			conv_pres(const std::string &inUnits, const std::string &outUnits);
+		};
+
+		class conv_temp : public atmosConv
+		{
+		public:
+			// Will eventually override convert function
+			conv_temp(const std::string &inUnits, const std::string &outUnits);
+		};
+
+		class conv_dens : public atmosConv
+		{
+		public:
+			conv_dens(const std::string &inUnits, const std::string &outUnits);
+			// Needs a special invocation of the convert function, as density may
+			// be expressed in terms of mass, volume or numerical densities!!!
+			// TODO: add other stuff, such as water vapor, to allow for more
+			// conversions!
+			// Currently only supporting numberic density (#/cm^3)
+		};
+
+		class conv_spec : public converter
+		{
+		public:
+			// Perform interconversions between frequency, wavelength and wavenumber
+			conv_spec(const std::string &inUnits, const std::string &outUnits);
+			virtual double convert(double in) const;
+		protected:
+			double _Sin, _Sout;
+			bool _Iin, _Iout;
 		};
 
 	}; // end units

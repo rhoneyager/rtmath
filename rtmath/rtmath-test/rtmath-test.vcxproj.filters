@@ -51,5 +51,8 @@
     <ClCompile Include="..\rtmath\tests\test_damatrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\rtmath\tests\test_units.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

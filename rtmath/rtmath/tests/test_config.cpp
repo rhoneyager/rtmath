@@ -13,13 +13,12 @@ using namespace rtmath;
 using namespace std;
 using namespace rtmath::config;
 
-configsegment* cRoot;
+std::shared_ptr<configsegment> cRoot;
 
 void loadConfig()
 {
 	string crootname = "../rtmath/tests/data/rtmath.conf";
-	cRoot =  configsegment::loadFile(
-			crootname.c_str(),NULL);
+	cRoot =  loadRtconfRoot(crootname);
 }
 
 BOOST_AUTO_TEST_CASE(config_loadFile)
@@ -39,7 +38,7 @@ BOOST_AUTO_TEST_CASE(config_getVal)
 	//shared_ptr<configsegment> cRoot;
 	//loadConfig(cRoot);
 	string erfile;
-	cRoot->getVal("maxcores", erfile);
+	cRoot->getVal("General/maxcores", erfile);
 	BOOST_CHECK(erfile.size() > 0);
 	cRoot->getVal("testing/wvlow", erfile);
 	BOOST_CHECK(erfile.size() > 0);
@@ -56,11 +55,11 @@ BOOST_AUTO_TEST_CASE(config_setVal)
 
 BOOST_AUTO_TEST_CASE(config_findSegment)
 {
-	configsegment *ta = cRoot->findSegment("testing");
+	std::shared_ptr<configsegment> ta = cRoot->findSegment("testing/");
 	BOOST_REQUIRE_MESSAGE(ta!=cRoot, "findSegment is not working right. FIX IT.");
 	BOOST_REQUIRE(ta!=0);
 	BOOST_CHECK(ta != 0);
-	configsegment *tb = cRoot->getChild("testing");
+	std::shared_ptr<configsegment> tb = cRoot->getChild("testing");
 	string wl;
 	ta->getVal("wvlow", wl);
 	BOOST_CHECK(wl.size() > 0);
@@ -71,7 +70,7 @@ BOOST_AUTO_TEST_CASE(config_findSegment)
 
 BOOST_AUTO_TEST_CASE(config_getChild)
 {
-	configsegment *tb = cRoot->getChild("testing");
+	std::shared_ptr<configsegment> tb = cRoot->getChild("testing");
 	string wl;
 	tb->getVal("wvlow",wl);
 	BOOST_CHECK(wl.size()>0);
@@ -79,8 +78,8 @@ BOOST_AUTO_TEST_CASE(config_getChild)
 
 BOOST_AUTO_TEST_CASE(config_getParent)
 {
-	configsegment *tb = cRoot->getChild("testing");
-	configsegment *par = tb->getParent();
+	std::shared_ptr<configsegment> tb = cRoot->getChild("testing");
+	std::shared_ptr<configsegment> par = tb->getParent();
 	BOOST_CHECK(cRoot==par);
 	par = cRoot->getParent();
 	BOOST_CHECK(par == NULL);
@@ -88,7 +87,7 @@ BOOST_AUTO_TEST_CASE(config_getParent)
 
 BOOST_AUTO_TEST_CASE(config_finished)
 {
-	delete cRoot;
+	//delete cRoot;
 }
 
 // queryConfig not tested, as user interaction may be required

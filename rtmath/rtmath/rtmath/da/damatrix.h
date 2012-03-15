@@ -13,6 +13,7 @@
 #include "../defs.h"
 #include "../error/error.h"
 #include "damatrix_quad.h"
+
 /*
 // This code segment allows for an unordered map of mapid to exist. It implements a hash depending on the values in the mapid.
 namespace std {
@@ -42,10 +43,12 @@ namespace rtmath {
 		POW
 	};
 
+	/*
 	struct mmapcomp : public debug::obsoleted
 	{
 		bool operator() (const mapid &lhs, const mapid &rhs) const
 		{
+			if (lhs.f < rhs.f) return true;
 			if (lhs.phi < rhs.phi) return true;
 			if (lhs.phin < rhs.phin) return true;
 			if (lhs.mu < rhs.mu) return true;
@@ -53,6 +56,7 @@ namespace rtmath {
 			return false;
 		}
 	};
+	*/
 
 	class damatrix
 	{

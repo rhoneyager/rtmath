@@ -34,6 +34,33 @@
     <Filter Include="Header Files\Atmosphere">
       <UniqueIdentifier>{b70da78d-9f84-40ba-88f1-b2686b4de949}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Atmosphere">
+      <UniqueIdentifier>{6ffd0a18-78f6-4631-b30a-b13cea23a13f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\da">
+      <UniqueIdentifier>{b6d8d690-7c06-43cd-afc5-24722b71bcc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Errors">
+      <UniqueIdentifier>{d52f4b0a-0019-4d00-b15d-380baef6fde1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\General">
+      <UniqueIdentifier>{2bea36de-aac9-459f-9a7d-6bbc23cc026c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mie">
+      <UniqueIdentifier>{9d7f4ac4-85ee-45d6-a3be-abc41da0882a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rayleigh">
+      <UniqueIdentifier>{db1c903f-2a6a-4153-ba9c-dd9002a9f078}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Recursive">
+      <UniqueIdentifier>{18906141-7de5-4a65-a08e-304754e51a90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ddscat">
+      <UniqueIdentifier>{f19c11b4-b915-4e46-b172-3a41d14b7c89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ddscat">
+      <UniqueIdentifier>{ed44e192-9854-4211-86bd-67a9c1ae8483}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath\polynomials\chebyshev.h">
@@ -126,9 +153,6 @@
     <ClInclude Include="rtmath\da\daPf.h">
       <Filter>Header Files\da</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\cdf-ddscat.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\command.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
@@ -136,9 +160,6 @@
       <Filter>Header Files\General</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\config.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\ddscat.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\defs.h">
@@ -195,13 +216,43 @@
     <ClInclude Include="rtmath\atmoslayer.h">
       <Filter>Header Files\Atmosphere</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\ddweights.h">
-      <Filter>Header Files\General</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\da\daStatic.h">
       <Filter>Header Files\da</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\units.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\cdf-ddscat.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddLoader.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddscat.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddScattMatrix.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddweights.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddOutputSingle.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\coords.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddOutput.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddOutputEnsemble.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\interpolatable.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ROOTlink.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
   </ItemGroup>
@@ -235,152 +286,173 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\atmos.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\chebyshev.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\command.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\daDiagonalMatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\daInitLayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\daLayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\damatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\damatrix_quad.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\daPf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ddscat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\debug_mem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\error.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hermite.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\laguerre.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lbl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\legendre.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\matrixop.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-abNCalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-AnCalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-phaseFunc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-piNCalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-Qcalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-Scalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-tauNCalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-wnCalc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MurmurHash3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\pfFixed.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\phaseFunc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\polynomial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Qcalc-Rayleigh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\quadrature.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rayleighPhaseFunc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\recursivePolynomial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rtmath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Scalc-Rayleigh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\zeros.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\absorb.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\refract.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Atmosphere</Filter>
     </ClCompile>
     <ClCompile Include="src\atmoslayer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Atmosphere</Filter>
     </ClCompile>
     <ClCompile Include="src\absorber.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Atmosphere</Filter>
     </ClCompile>
-    <ClCompile Include="src\ddweights.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\atmos.cpp">
+      <Filter>Source Files\Atmosphere</Filter>
     </ClCompile>
-    <ClCompile Include="src\surfaces.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\lbl.cpp">
+      <Filter>Source Files\Atmosphere</Filter>
     </ClCompile>
-    <ClCompile Include="src\thermal.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\daDiagonalMatrix.cpp">
+      <Filter>Source Files\da</Filter>
     </ClCompile>
     <ClCompile Include="src\daStatic.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\da</Filter>
     </ClCompile>
-    <ClCompile Include="src\units.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\daInitLayer.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daLayer.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\damatrix.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\damatrix_quad.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daPf.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\debug_mem.cpp">
+      <Filter>Source Files\Errors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\debug.cpp">
+      <Filter>Source Files\Errors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\error.cpp">
+      <Filter>Source Files\Errors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\chebyshev.cpp">
+      <Filter>Source Files\Recursive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-wnCalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-abNCalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-AnCalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-phaseFunc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-piNCalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-Qcalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-Scalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-tauNCalc.cpp">
+      <Filter>Source Files\Mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Qcalc-Rayleigh.cpp">
+      <Filter>Source Files\Rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scalc-Rayleigh.cpp">
+      <Filter>Source Files\Rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rayleighPhaseFunc.cpp">
+      <Filter>Source Files\Rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MurmurHash3.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\command.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hermite.cpp">
+      <Filter>Source Files\Recursive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\laguerre.cpp">
+      <Filter>Source Files\Recursive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\legendre.cpp">
+      <Filter>Source Files\Recursive</Filter>
+    </ClCompile>
+    <ClCompile Include="src\matrixop.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pfFixed.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\phaseFunc.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\polynomial.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\recursivePolynomial.cpp">
+      <Filter>Source Files\Recursive</Filter>
     </ClCompile>
     <ClCompile Include="src\os_functions.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zeros.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\quadrature.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\refract.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rtmath.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stdafx.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\surfaces.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thermal.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\units.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddScattMatrix.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddscat.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddLoader.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddweights.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutputSingle.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\coords.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutputEnsemble.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutput.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\interpolatable.cpp">
+      <Filter>Source Files\ddscat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	using namespace std;
 	using namespace rtmath;
 
-	atexit(rtmath::debug::appExit);
+	rtmath::debug::appEntry(argc, argv);
 	rtmath::debug::debug_preamble();
 
 	return 0;

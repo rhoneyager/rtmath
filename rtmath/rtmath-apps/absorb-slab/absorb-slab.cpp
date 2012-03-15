@@ -10,8 +10,12 @@
 #include <string>
 #include <vector>
 #include <set>
-#include <boost/tokenizer.hpp>
 #include "../../rtmath/rtmath/rtmath.h"
+#include <TGraph.h>
+#include <TF1.h>
+#include <TCanvas.h>
+#include <TAxis.h>
+#include <TNamed.h>
 
 void doHelp();
 
@@ -23,80 +27,38 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-absorb-slab\n\n";
-		atexit(rtmath::debug::appExit);
+		rtmath::debug::appEntry(argc, argv);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc,argv);
 
 		bool flag = false;
+		bool doPlots = false;
 
 		p.readParam("-h",flag);
 		if (flag) doHelp();
 
 		double rh = 0, T = 273, pres = 700, dz = 5;
-
-		double f[3] = {0,0,0};
+		set<double> freqs;
 		{
-			string strF;
-			flag = p.readParam<string>("-f", strF);
+			vector<string> vF;
+			flag = p.readParam<string>("-f", vF);
 			if (!flag)
 			{
 				cerr << "Frequency range must be specified.\n";
 				doHelp();
 			}
-			// Tokenize the string
-			// The way that I wrote it, connand::processCommands
-			// cannot yet do this level of parsing. Too bad.
-			typedef boost::tokenizer<boost::char_separator<char> >
-				tokenizer;
-			boost::char_separator<char> sep(",:");
-			tokenizer tokens(strF, sep);
-			std::vector<double> fs;
-			for (tokenizer::iterator tok_iter = tokens.begin();
-				tok_iter != tokens.end(); ++tok_iter)
-				fs.push_back( atof(tok_iter->c_str()) );
-			if (fs.size() < 3)
-			{
-				f[0] = fs[0];
-				f[2] = fs[0];
-				f[1] = 1;
-				cerr << "Frequency: " << f[0] << " GHz" << endl;
-			} else {
-				f[0] = fs[0];
-				f[1] = fs[1];
-				f[2] = fs[2];
-				cerr << "Frequency range (GHz): from " << f[0] << 
-					" to " << f[2] << " step " << f[1] << endl;
-			}
-			if (f[0] <= 0 || f[2] < f[0] || f[1] <= 0 || f[2] <= 0)
-			{
-				cerr << "Bad frequency input.\n";
-				doHelp();
-			}
+			for (auto it = vF.begin(); it != vF.end(); it++)
+				rtmath::config::splitSet<double>(*it,freqs);
 		}
 
 		set<string> gases;
 		{
-			string sGases;
+			vector<string> sGases;
 			flag = p.readParam<string>("-g", sGases);
-			if (flag)
-			{
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(",");
-				tokenizer tokens(sGases, sep);
-				std::vector<double> fs;
-				for (tokenizer::iterator it = tokens.begin();
-					it != tokens.end(); ++it)
-				{
-					if (gases.count(*it) == 0)
-						gases.insert(*it);
-				}
-			} else { // Using default gases instead
-				gases.insert("H2O");
-				gases.insert("O2");
-				gases.insert("N2");
-				gases.insert("COLLIDE");
-			}
+			if (sGases.size() == 0)
+				sGases.push_back("H2O,O2,N2,COLLIDE"); // Default gases
+			for (auto it = sGases.begin(); it != sGases.end(); ++it)
+				rtmath::config::splitSet<string>(*it,gases);
 		}
 
 		if (gases.count("H2O")) rh = 15; // Set new default value
@@ -104,6 +66,10 @@ int main(int argc, char** argv)
 		p.readParam<double>("-t", T);
 		p.readParam<double>("-p", pres);
 		p.readParam<double>("-dz", dz);
+
+		// Should plots over the requested frequency domain be done?
+		string plotfile;
+		doPlots = p.readParam<string>("-P",plotfile);
 
 		// Build the sample atmosphere
 		rtmath::atmos::atmos a;
@@ -120,42 +86,14 @@ int main(int argc, char** argv)
 			// Convert relative humidity into rho_Wat
 			double rhoWat = 0;
 			rhoWat = absorber::_Vden(layer->T(), rh);
-			absorber *newgas;
-			if (gases.count("H2O"))
+			for (auto it = gases.begin(); it != gases.end(); ++it)
 			{
-
-				newgas = new abs_H2O;
+				std::shared_ptr<absorber> newgas;
+				// Find the most appropriate absorber
+				absorber::_findAbsorber(*it,newgas);
 				newgas->setLayer(*layer);
 				newgas->wvden(rhoWat);
-				std::shared_ptr<absorber> ptrd(newgas); 
-				layer->absorbers.insert(ptrd);
-			}
-
-			if (gases.count("O2"))
-			{
-				newgas = new abs_O2;
-				newgas->setLayer(*layer);
-				newgas->wvden(rhoWat);
-				std::shared_ptr<absorber> ptrc(newgas); 
-				layer->absorbers.insert(ptrc);
-			}
-
-			if (gases.count("N2"))
-			{
-				newgas = new abs_N2;
-				newgas->setLayer(*layer);
-				newgas->wvden(rhoWat);
-				std::shared_ptr<absorber> ptrb(newgas); 
-				layer->absorbers.insert(ptrb);
-			}
-
-			if (gases.count("COLLIDE"))
-			{
-				newgas = new collide;
-				newgas->setLayer(*layer);
-				newgas->wvden(rhoWat);
-				std::shared_ptr<absorber> ptr(newgas); 
-				layer->absorbers.insert(ptr);
+				layer->absorbers.insert(newgas);
 			}
 		}
 
@@ -163,19 +101,65 @@ int main(int argc, char** argv)
 		{
 			cerr << "Running atmosphere\n";
 			cerr << "frequency (GHz), tau (nepers)" << endl;
-			// Construct set of frequencies to analyze. Be nice and make sure
-			// that the end frequency is in the set
-			set<double> freqs;
-			for (double fr = f[0]; fr <= f[2]; fr+=f[1])
-				freqs.insert(fr);
-			if (freqs.count(f[2]) == 0) freqs.insert(f[2]);
 
 			// Loop through freqs
 			set<double>::const_iterator it;
+			map<double,double> taus;
 			for (it = freqs.begin(); it != freqs.end(); it++)
 			{
 				double tau = a.tau(*it);
+				taus[*it] = tau;
 				cout << *it << "," << tau << endl;
+			}
+
+			if (doPlots)
+			{
+				// Use ROOT to plot a graph of the data
+				// Unfortunately, ROOT has no support for std::pair or std::map.....
+				// Must convert to doubles.
+				unique_ptr<double[]> f(new double[taus.size()]);
+				unique_ptr<double[]> t(new double[taus.size()]);
+				unique_ptr<double[]> Tr(new double[taus.size()]);
+				size_t i = 0;
+				for (auto it = taus.begin(); it != taus.end(); ++it, ++i)
+				{
+					f[i] = it->first;
+					t[i] = it->second;
+					Tr[i] = exp(-1.0 * it->second);
+				}
+
+				TCanvas c1("c1","canvas", 3000, 1600);
+				//c1.Size(60,80);
+				c1.Divide(1,2);
+				c1.cd(1);
+				TGraph gTaus((Int_t) taus.size(),f.get(),t.get());
+				gTaus.GetXaxis()->SetTitle("Frequency (GHz)");
+				gTaus.GetXaxis()->CenterTitle();
+				gTaus.GetYaxis()->SetTitle("#tau (nepers)");
+				gTaus.GetYaxis()->CenterTitle();
+				// Set plot title
+				ostringstream sTitle;
+				for (auto ot = gases.begin(); ot != gases.end(); ot++)
+				{
+					if (ot != gases.begin()) sTitle << ", ";
+					sTitle << *ot;
+				}
+				sTitle << " at " << pres << " hPa, " << T << " C, " 
+					<< rh << "% rh, " << dz << " km thickness";
+				gTaus.SetTitle(sTitle.str().c_str());
+				gTaus.Draw("AL");
+
+				c1.cd(2);
+				TGraph gTr((Int_t) taus.size(),f.get(),Tr.get());
+				gTr.GetXaxis()->SetTitle("Frequency (GHz)");
+				gTr.GetXaxis()->CenterTitle();
+				gTr.GetYaxis()->SetTitle("Transmittance");
+				gTr.GetYaxis()->CenterTitle();
+				gTr.Draw("AL");
+				gTr.SetTitle(" ");
+
+
+				c1.SaveAs(plotfile.c_str());
 			}
 		}
 	}
@@ -197,9 +181,7 @@ void doHelp()
 	cout << "Options:\n";
 	cout << "-f (frequency range)\n";
 	cout << "\tSpecify the range of frequencies (in GHz) for\n";
-	cout << "\ttransmittance calculation. Either specify a\n";
-	cout << "\tsingle frequency, or specify a set of frequencies\n";
-	cout << "\tusing the form (start,increment,stop)." << endl;
+	cout << "\ttransmittance calculation. " << endl;
 	cout << "-g (gases)\n";
 	cout << "\tManually specify the gases to place in the atmosphere.\n";
 	cout << "\tAcceptable values: H2O, N2, O2, COLLIDE\n";
@@ -214,6 +196,8 @@ void doHelp()
 	cout << "\tPressure (default = 700 hPa)\n";
 	cout << "-dz (depth, km)\n";
 	cout << "\tSlab thickness (defult 5 km)\n";
+	cout << "-P (filename)\n";
+	cout << "\tProduce plots over the requested frequency domain.\n";
 	cout << "-h\n";
 	cout << "\tProduce this help message.\n";
 	cout << endl << endl;

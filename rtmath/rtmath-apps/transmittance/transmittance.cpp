@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	using namespace rtmath;
 	try {
 		// Process some of the flags
-		atexit(rtmath::debug::appExit);
+		rtmath::debug::appEntry(argc, argv);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc, argv);
 		cerr << "rtmath-transmittance\n\n";
@@ -35,14 +35,9 @@ int main(int argc, char** argv)
 		// Used to find out where HITRAN is and where the profile paths are
 		string rtconfpath;
 		flag = p.readParam<string>("--config", rtconfpath);
-		if (rtconfpath == "")
-		{
-			config::getConfigDefaultFile(rtconfpath);
-		}
-		cerr << "Loading config file: " << rtconfpath << endl;
+		cerr << "Loading config file." << endl;
 		// Read in configuration file
-		config::configsegment* cRoot = config::configsegment::loadFile(
-				rtconfpath.c_str(), NULL);
+		std::shared_ptr<config::configsegment> cRoot = config::loadRtconfRoot(rtconfpath);
 
 		// Get list of desired frequencies
 		// List has several possible formats. A single number (in GHz)

@@ -3,16 +3,15 @@
 /* atmoslayer - represents an atmospheric layer. Used by atmos, and uses absorber class. */
 #include <vector>
 #include <map>
+#include <string>
+#include <memory>
 #include "error/debug.h"
 #include "da/daLayer.h"
 #include "matrixop.h"
 #include "da/damatrix.h"
-#include <string>
-#include <memory>
+#include "ddscat/ddLoader.h"
 
 namespace rtmath {
-	//class daLayer; // List it here for reference
-	//namespace lbl { class lbllayer; }; // Listed for reference
 
 	namespace atmos {
 
@@ -23,7 +22,7 @@ namespace rtmath {
 		{
 		public:
 			atmoslayer() { _init(); }
-			atmoslayer(double p, double T, double dz);
+			atmoslayer(double p, double T, double z, double dz, double rho);
 			virtual ~atmoslayer() {};
 			// Need special assignment and copy constructors due to
 			// the absorbers set being irregular (use of unique_ptr)
@@ -38,8 +37,17 @@ namespace rtmath {
 			// doubling-adding stuff
 			inline double T() const { return _T; } 
 			inline void T(double newT) { _T = newT; }
+			inline double z() const { return _z; }
+			inline void z(double newz) { _z = newz; }
 			inline double dz() const { return _dz; }
 			inline void dz(double newdz) { _dz = newdz; }
+			// rho is number density (# of gas molecules per volume)
+			inline double rho() const { return _rho; }
+			inline void rho(double newrho) { _rho = newrho; }
+			// wvden is density of water vapor (g/m^3)
+			inline double wvden() const { return _wvden; }
+			inline void wvden(double newwvden) { _wvden = newwvden; }
+
 			double tau(double f) const; // Calculates tau of the layer
 			// absorbers needs to be kept as a pointer because it it pure virtual
 			// I don't want to allow layers to be arbitrarily copied, as this screws
@@ -48,25 +56,33 @@ namespace rtmath {
 		protected:
 			double _p;
 			double _T;
+			double _z;
 			double _dz;
+			double _rho;
+			double _wvden;
 			void _init();
-		private:
-			friend class absorber;
-
-
 
 			// The doubling-adding functions (FUN)
 		public:
 			// Calculate transmission and reflection matrices
-			void da_T(std::shared_ptr<damatrix> &res) const;
-			void da_R(std::shared_ptr<damatrix> &res) const;
-			// Set / get the initial phasefunction
-			// Note: I really need a better way to retrieve it.
-			void phaseFunc(const std::shared_ptr<damatrix> &pf);
-			std::shared_ptr<damatrix> phaseFunc() const;
+			void da_T(std::shared_ptr<const damatrix> &res) const;
+			void da_R(std::shared_ptr<const damatrix> &res) const;
+
+
+			// Allow for setting of pf loader
+			void setPfLoader(std::unique_ptr<rtmath::ddLoader> newLoader);
+			// Reading pf and related quantities - these alias to _pfLoader's functions!
+			void pf(std::shared_ptr<const damatrix> &pF) const;
+			void K(std::shared_ptr<const damatrix> &k) const;
+			void emV(std::shared_ptr<const damatrix> &emv) const;
+
+
 		protected:
-			std::shared_ptr<damatrix> _pf;
+			std::shared_ptr<const damatrix> _baseP, _baseK, _baseEmV;
+			std::shared_ptr<const damatrix> _effT, _effR;
+			std::unique_ptr<rtmath::ddLoader> _pfLoader;
 		private:
+			friend class absorber;
 		};
 
 	}; // end namespace atmos

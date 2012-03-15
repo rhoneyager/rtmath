@@ -12,23 +12,9 @@ namespace rtmath {
 	
 	namespace atmos {
 
-		/*
-		absorber::absorber(int molnum)
-		{
-			_init();
-			_molnum = molnum;
-		}
-
-		absorber::absorber(const std::string &molecule)
-		{
-			_init();
-			_molecule = molecule;
-		}
-		*/
-
 		double absorber::_wvtofreq(double nu)
 		{
-			double f = nu * 2.99792458e10/1.e9; // COnvert cm^-1 to GHz
+			double f = nu * 2.99792458e10/1.e9; // Convert cm^-1 to GHz
 			return f;
 		}
 
@@ -38,17 +24,52 @@ namespace rtmath {
 			return nu;
 		}
 
+		double absorber::_rho(double P, double T, double ew)
+		{
+			// T is in K, P is in hPa, ew is in hPa
+			// rho is in number of molecules / m^3
+			const double Rd = 287.058; // J/kg*K
+			const double Rv = 461.5; // J/kg*K
+			const double Na = 6.02214129e23; // molecules / mole
+			double rho;
+			rho = ew/(Rv*T);
+			rho += (P-ew)/(Rd*T);
+			rho *= 100; // since pressures in hPa. Convert to Pa
+			rho *= Na; // moles to molecules
+			return rho; // molecules per cubic meter
+		}
+
+		double absorber::_ewsat(double P, double T)
+		{
+			// T is in K, P is in hPa
+			// Result is in hPa
+			double tc = T - 273.15;
+			double e = (1.0007+3.46e-6*P)*6.1121;
+			e += exp(17.502*tc/(240.97+tc));
+			return e;
+		}
+
 		double absorber::_Vden(double T, double RH)
 		{
 			const double RV = 461.5;
-			double es = 6.1365*exp(17.502*(T-273.15)/(T-32.18));
+			const double es = 6.1365*exp(17.502*(T-273.15)/(T-32.18));
 			double ev;
 			if (es < 0)
 				ev = 0;
 			else
 				ev = 0.01*es*RH;
-			double Vden = ev*100.0/RV/T*1000.;
+			// TODO: verify for clarity
+			double Vden = ev*1.e5/(RV*T);
 			return Vden;
+		}
+
+		double absorber::_RH(double T, double rhowat)
+		{
+			const double RV = 461.5;
+			const double es = 6.1365*exp(17.502*(T-273.15)/(T-32.18));
+			double ev = rhowat * RV * T / 1.e5;
+			double RH = 100.0 * ev / es;
+			return RH;
 		}
 
 		absorber::absorber(const atmoslayer &layer)
@@ -83,12 +104,13 @@ namespace rtmath {
 			_fr[1] = 0;
 		}
 
-		bool _findAbsorber
-			(const std::string &molecule, double frequency, std::shared_ptr<absorber> &res)
+		bool absorber::_findAbsorber
+			(const std::string &molecule, std::shared_ptr<absorber> &res, double frequency)
 		{
-			absorber *newgas = 0;
-			// frequency is not used yet, so the next line suppresses an error
-			if (molecule == "O2" && frequency)
+			absorber *newgas = nullptr;
+			// frequency is not used yet, so the next line suppresses a warning
+			frequency++;
+			if (molecule == "O2")
 				newgas = new abs_O2;
 			if (molecule == "N2")
 				newgas = new abs_N2;

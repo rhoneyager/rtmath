@@ -19,49 +19,57 @@
 
 namespace rtmath {
 	namespace config {
+
+		std::shared_ptr<configsegment> configsegment::create(const std::string &name)
+		{
+			std::shared_ptr<configsegment> obj(new configsegment(name));
+			obj->_self = obj; // My, how circular, but _self is the weak_ptr.
+			return obj;
+		}
+
+		std::shared_ptr<configsegment> configsegment::create(const std::string &name, std::shared_ptr<configsegment> &parent)
+		{
+			std::shared_ptr<configsegment> obj(new configsegment(name));
+			obj->_self = obj; // My, how circular, but _self is the weak_ptr.
+			obj->_parent = parent;
+			parent->_children.insert(obj);
+			return obj;
+		}
+
 		configsegment::configsegment(const std::string &name)
 		{
 			// No parent
-			this->_parent = NULL;
-			this->_segname = name;
-		}
-
-		configsegment::configsegment(const std::string &name, configsegment *parent)
-		{
-			_parent = parent;
-			parent->_children.insert(this);
 			this->_segname = name;
 		}
 
 		configsegment::~configsegment()
 		{
-			// Delete all children configsegments
-			//std::set<configsegment*> _children;
-			std::set<configsegment*>::const_iterator it;
-			for (it=_children.begin();it!=_children.end();it++)
-				delete *it;
+			// Thanks to shared_ptr, children will delete naturally when nothing holds them!
 		}
 
-		configsegment* configsegment::findSegment(const std::string &key)
+		// Deprecated in shared_ptr conversion
+		std::shared_ptr<configsegment> configsegment::findSegment(const std::string &key) const
 		{
 			using namespace std;
-			configsegment *cseg = this;
+			std::shared_ptr<configsegment> cseg = this->_self.lock();
 
 			// If first part of key is '/', seek to root
+			
 			if (key[0] == '/')
 			{
-				configsegment *cpar = this->_parent;
-				while (cpar != NULL)
+				std::shared_ptr<configsegment> cpar = this->_parent.lock();
+				while (cpar.use_count())
 				{
 					cseg = cpar;
-					cpar = cseg->_parent;
+					cpar = cseg->_parent.lock();
 				}
 				cseg = cpar;
 			}
+			
 
 			std::string dkey = key.substr(0,key.find_last_of('/')+1);
 			// Go down the tree, pulling out one '/' at a time, until done
-			// If an entry is missing, create the container
+			// If entry is missing, create it
 
 			std::string segname;
 			size_t s_start, s_end;
@@ -70,8 +78,9 @@ namespace rtmath {
 			{
 				segname = dkey.substr(s_start,s_end-s_start);
 				if (segname.size() == 0) break;
-				configsegment *newChild = cseg->getChild(segname);
-				if (newChild == NULL) newChild = new configsegment(segname,cseg);
+				std::shared_ptr<configsegment> newChild = cseg->getChild(segname);
+				//if (newChild == nullptr) newChild = std::shared_ptr<configsegment> (new configsegment(segname,cseg));
+				if (newChild == nullptr) newChild = create(segname,cseg);
 
 				// Advance into the child
 				cseg = newChild;
@@ -83,8 +92,9 @@ namespace rtmath {
 			// Done advancing. Return result.
 			return cseg;
 		}
+		
 
-		bool configsegment::getVal(const std::string &key, std::string &value, std::string defaultVal)
+		bool configsegment::getVal(const std::string &key, std::string &value, std::string defaultVal) const
 		{
 			bool res = false;
 			res = getVal(key,value);
@@ -95,7 +105,7 @@ namespace rtmath {
 			return res;
 		}
 
-		bool configsegment::getVal(const std::string &key, std::string &value)
+		bool configsegment::getVal(const std::string &key, std::string &value) const
 		{
 			using namespace std;
 			// If the key contains '/', we should search the path
@@ -103,7 +113,7 @@ namespace rtmath {
 			// Otherwise, it is relative only going downwards
 			if (key.find('/') != string::npos)
 			{
-				configsegment *relseg = findSegment(key);
+				std::shared_ptr<configsegment> relseg = findSegment(key);
 				if (relseg == NULL) throw;
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
@@ -116,13 +126,13 @@ namespace rtmath {
 
 			if (_mapStr.count(key))
 			{
-				value = _mapStr[key];
+				value = _mapStr.at(key);
 			}
 			else
 			{
-				if (this->_parent)
+				if (this->_parent.expired() == false)
 				{
-					this->_parent->getVal(key, value);
+					this->_parent.lock()->getVal(key, value);
 					return true;
 				} else {
 					return false;
@@ -136,7 +146,7 @@ namespace rtmath {
 			using namespace std;
 			if (key.find('/') != string::npos)
 			{
-				configsegment *relseg = findSegment(key);
+				std::shared_ptr<configsegment> relseg = findSegment(key);
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
 				relseg->setVal(keystripped,value);
 				return;
@@ -147,30 +157,31 @@ namespace rtmath {
 			_mapStr[key] = value;
 		}
 
-		configsegment* configsegment::getChild(const std::string &name)
+		std::shared_ptr<configsegment> configsegment::getChild(const std::string &name) const
 		{
 			using namespace std;
 			if (name.find('/') != string::npos)
 			{
-				configsegment *relseg = findSegment(name);
+				std::shared_ptr<configsegment> relseg = findSegment(name);
 				return relseg;
 			}
 
 			// Search through the child list to find the child
-			std::set<configsegment*>::const_iterator it;
-			for (it = _children.begin(); it != _children.end(); it++)
+			for (auto it = _children.begin(); it != _children.end(); it++)
 			{
 				if ((*it)->_segname == name) return *it;
 			}
 			return NULL;
 		}
 
-		configsegment* configsegment::getParent() const
+		std::shared_ptr<configsegment> configsegment::getParent() const
 		{
-			return _parent;
+			if (_parent.expired()) return nullptr;
+			return std::shared_ptr<configsegment>(_parent);
 		}
 
-		configsegment* configsegment::loadFile(const char* filename, configsegment* root)
+		std::shared_ptr<configsegment> configsegment::loadFile
+			(const char* filename, std::shared_ptr<configsegment> root)
 		{
 			// This will load a file and tack it into the root (if specified)
 			// If this is a new config tree, pass NULL as the root
@@ -191,9 +202,10 @@ namespace rtmath {
 
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
-				root = new configsegment("ROOT");
+				//root = std::shared_ptr<configsegment>(new configsegment("ROOT"));
+				root = create("ROOT");
 
-			configsegment* cseg = root; // The current container in the tree
+			std::shared_ptr<configsegment> cseg = root; // The current container in the tree
 
 			// Read in each line, one at a time.
 			// This is Apache-style, so tags in <> are containers, ended by </> tags.
@@ -225,7 +237,8 @@ namespace rtmath {
 						line = line.substr(kstart,kend-kstart);
 
 						// Now, create the new container and switch to it
-						configsegment *child = new configsegment(line, cseg);
+						//std::shared_ptr<configsegment> child (new configsegment(line, cseg));
+						std::shared_ptr<configsegment> child = create(line,cseg);
 						cseg = child;
 					}
 				} else {
@@ -255,6 +268,22 @@ namespace rtmath {
 							if (!exists(path(value.c_str()))) throw rtmath::debug::xMissingFile( value.c_str());
 							loadFile(value.c_str(), cseg); // Load a file
 						}
+					} else if (key == "IncludeIfExists") {
+						// Use Boost to get the full path of the file (use appropriate dir)
+						static boost::filesystem::path rootpath(filename); // static, so it is called on the very first file
+						boost::filesystem::path inclpath(value);
+						if (inclpath.is_relative())
+						{
+							// The path on the Include is relative, so make it relative to the first loaded file, typically the root
+							string newfile = (rootpath.parent_path() / value).string();
+							if (!exists(path(newfile))) continue;
+							loadFile( newfile.c_str(), cseg);
+						} else {
+							// The path is absolute, so use it
+							if (!exists(path(value.c_str()))) continue;
+							loadFile(value.c_str(), cseg); // Load a file
+						}
+
 					} else {
 						// Set the key-val combination
 						cseg->setVal(key,value);
@@ -267,12 +296,49 @@ namespace rtmath {
 
 		void getConfigDefaultFile(std::string &filename)
 		{
+			// Finding the default config file has become a rather involved process.
+			// First, check the application execution arguments (if using appEntry).
+			// Then, check the system registry (if using Windows).
+			// Third, check the system environment variables
+
+			// Finally, just use the default os-dependent path
 			//filename = "/home/rhoneyag/.rtmath";
 			// Macro defining the correct path
 			filename = RTC;
 			return;
 		}
 
+		std::shared_ptr<configsegment> _rtconfroot = nullptr;
+
+		std::shared_ptr<configsegment> getRtconfRoot()
+		{
+			return _rtconfroot;
+		}
+
+		void setRtconfRoot(std::shared_ptr<configsegment> &root)
+		{
+			_rtconfroot = root;
+		}
+
+		std::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename)
+		{
+			if (_rtconfroot != nullptr) return _rtconfroot;
+			std::string fn = filename;
+			if (fn == "") getConfigDefaultFile(fn);
+			std::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
+			if (cnf != nullptr) _rtconfroot = cnf;
+			return cnf;
+		}
+
+		std::shared_ptr<configsegment> loadRtconfRoot()
+		{
+			if (_rtconfroot != nullptr) return _rtconfroot;
+			std::string fn;
+			getConfigDefaultFile(fn);
+			std::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
+			if (cnf != nullptr) _rtconfroot = cnf;
+			return cnf;
+		}
 
 	}; // end config
 };// end rtmath

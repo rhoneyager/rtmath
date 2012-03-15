@@ -15,8 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ddparse.cpp">
+    <ClCompile Include="ddparse2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ddparse.cpp.old">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="plotshape.m">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

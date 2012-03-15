@@ -1,7 +1,8 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/phaseFunc.h"
 #include <complex>
 #include <cmath>
+#include "../rtmath/phaseFunc.h"
+#include "../rtmath/units.h"
 
 namespace rtmath {
 	/*
@@ -41,9 +42,15 @@ namespace rtmath {
 	{
 	}
 
-	void scattMatrix::_genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double k)
+	void scattMatrix::_genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double fGHz)
 	{
-		double f = 2.0 * M_PI / k;
+		// TODO: make sure it's correct via testing. Am I solving for the correct matrix?
+
+
+		// Convert f in GHz to Hz
+		units::conv_spec cnv("GHz","Hz");
+		double f = cnv.convert(fGHz);
+
 		// Do the diagonals first
 		for (size_t i=0;i<4;i++)
 		{
@@ -128,130 +135,58 @@ namespace rtmath {
 		Snn[3][3] = scratch.real();
 	}
 
-	/*
-	phaseFuncRotator::phaseFuncRotator(phaseFunc &target, std::complex<double> &m, double x)
+	void scattMatrix::_invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4])
 	{
-		throw rtmath::debug::xObsolete();
-		this->target = &target;
-		this->x = x;
-		this->m = m;
+		// TODO: make sure it's correct via testing. Am I solving for the correct matrix?
+
+
+		// Using the Mueller matrix (Snn) and the Stokes Extinction Matrix (Knn), the 
+		// forward-scattering amplitude matrix (Sn) may be retreived. This goes in the 
+		// reverse direction from the normal procedure.
+		// It cannot be done purely from the extinction matrix (S0 and S3 real values are coupled)
+		// and it is _quite_ dificult from the phase matrix alone.
+		units::conv_spec fc("GHz","Hz");
+		const double f = fc.convert(fGHz);
+
+		double val;
+
+		// Imaginary parts
+
+		val = (Knn[0][0] + Knn[0][1]) * f / (4.0 * M_PI);
+		Sn[0].imag(val);
+
+		val = Knn[0][0] * f / (2.0 * M_PI);
+		val -= Sn[0].imag();
+		Sn[3].imag(val);
+
+		val = -f * (Knn[0][2] + Knn[1][2]) / (4.0 * M_PI);
+		Sn[1].imag(val);
+
+		val = -f * Knn[0][2] / (2.0 * M_PI);
+		val -= Sn[1].imag();
+		Sn[2].imag(val);
+
+		// Real parts
+
+		val = -f * (Knn[0][3] + Knn[1][3]) / (4.0 * M_PI);
+		Sn[1].real(val);
+
+		val = -f * Knn[1][3] / (2.0 * M_PI);
+		val -= Sn[1].real();
+		Sn[2].real(val);
+
+		// Need Snn for the last two real components
+
+		val = Snn[0][0] + Snn[1][0];
+		val -= (Sn[1] * conj(Sn[1])).real();
+		val -= Sn[0].imag() * Sn[0].imag();
+		Sn[0].real(val);
+
+		val = Snn[0][0] - Snn[1][0];
+		val -= (Sn[2] * conj(Sn[2])).real();
+		val -= Sn[3].imag() * Sn[3].imag();
+		Sn[3].real(val);
 	}
-
-	void phaseFuncRotator::rotate(rtselec::rtselec RT, const matrixop &Pa, 
-		const mapid &varmap, matrixop &res, double alpha)
-	{
-		throw rtmath::debug::xObsolete();
-		double cosia = 0;
-		double cosib = 0;
-		double mu = varmap.mu;
-		double mun = varmap.mun;
-		double phi = varmap.phi;
-		double phin = varmap.phin;
-		// Note that in phasefunc, mu is alpha!
-		if (mu != mun && mu != 1.0)
-		{ // Regular case
-			if (RT == rtmath::rtselec::R)
-			{
-				// Reflection
-				cosia = (-1.0*mu*sqrt(1.0-mun*mun)-mun*sqrt(1.0-mu*mu)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-				cosib = (mun*sqrt(1.0-mu*mu)+mu*sqrt(1.0-mun*mun)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-			} else {
-				// Transmission
-				cosia = (1.0*mu*sqrt(1.0-mun*mun)-mun*sqrt(1.0-mu*mu)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-				cosib = (mun*sqrt(1.0-mu*mu)-mu*sqrt(1.0-mun*mun)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-			}
-		} else
-		{ // Special case: mu=mun=1
-			cosia = -1.0*cos(phi-phin);
-			cosib = 1.0;
-		}
-
-		double ia,ib;
-		ia=acos(cosia);
-		ib=acos(cosib);
-
-		// Construct the two matrixop rotation matrices in the rotation operator
-		matrixop rota(2,4,4), rotb(2,4,4);
-		// rota
-		rota.set(1.0,2,0,0);
-		rota.set(cos(2.0*ib),2,1,1);
-		rota.set(cos(2.0*ib),2,2,2);
-		rota.set(1.0,2,3,3);
-		rota.set(sin(2.0*ib),2,2,1);
-		rota.set(sin(-2.0*ib),2,1,2);
-		// rotb
-		rotb.set(1.0,2,0,0);
-		rotb.set(cos(2.0*ia),2,1,1);
-		rotb.set(cos(2.0*ia),2,2,2);
-		rotb.set(1.0,2,3,3);
-		rotb.set(sin(2.0*ia),2,2,1);
-		rotb.set(sin(-2.0*ia),2,1,2);
-
-		// Do the rotation!
-		res.clear();
-		res.resize(2,4,4);
-		res = rota * (Pa * rotb);
-	}
-
-	void phaseFuncRotator::rotate(rtselec::rtselec RT, double mu, double mun, double alpha, 
-		double phi, double phin, matrixop &res)
-	{
-		throw rtmath::debug::xObsolete();
-		// Following Hansen 1971
-		// cos alpha = +- mu*mun + sqrt(1-mu^2) sqrt(1-mun^2) cos (phi-phin)
-		// Need to find rotation angles i1 and i2
-		double cosia = 0;
-		double cosib = 0;
-
-		matrixop Pa(2,4,4);
-		target->calc(alpha, m, x, Pa);
-
-		// Note that in phasefunc, mu is alpha!
-		if (mu != mun && mu != 1.0)
-		{ // Regular case
-			if (RT == rtmath::rtselec::R)
-			{
-				// Reflection
-				cosia = (-1.0*mu*sqrt(1.0-mun*mun)-mun*sqrt(1.0-mu*mu)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-				cosib = (mun*sqrt(1.0-mu*mu)+mu*sqrt(1.0-mun*mun)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-			} else {
-				// Transmission
-				cosia = (1.0*mu*sqrt(1.0-mun*mun)-mun*sqrt(1.0-mu*mu)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-				cosib = (mun*sqrt(1.0-mu*mu)-mu*sqrt(1.0-mun*mun)*cos(phi-phin)) / sqrt(1.0- cos(alpha*alpha));
-			}
-		} else
-		{ // Special case: mu=mun=1
-			cosia = -1.0*cos(phi-phin);
-			cosib = 1.0;
-		}
-
-		double ia,ib;
-		ia=acos(cosia);
-		ib=acos(cosib);
-
-		// Construct the two matrixop rotation matrices in the rotation operator
-		matrixop rota(2,4,4), rotb(2,4,4);
-		// rota
-		rota.set(1.0,2,0,0);
-		rota.set(cos(2.0*ib),2,1,1);
-		rota.set(cos(2.0*ib),2,2,2);
-		rota.set(1.0,2,3,3);
-		rota.set(sin(2.0*ib),2,2,1);
-		rota.set(sin(-2.0*ib),2,1,2);
-		// rotb
-		rotb.set(1.0,2,0,0);
-		rotb.set(cos(2.0*ia),2,1,1);
-		rotb.set(cos(2.0*ia),2,2,2);
-		rotb.set(1.0,2,3,3);
-		rotb.set(sin(2.0*ia),2,2,1);
-		rotb.set(sin(-2.0*ia),2,1,2);
-
-		// Do the rotation!
-		res.clear();
-		res.resize(2,4,4);
-		res = rota * (Pa * rotb);
-	}
-	*/
 
 }; // end rtmath
 

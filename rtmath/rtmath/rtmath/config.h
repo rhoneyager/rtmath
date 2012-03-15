@@ -21,41 +21,42 @@
 #include <string>
 #include <map>
 #include <set>
+#include <memory>
 
 // TODO: fix findSegment so that it works
 // TODO: provide output of tree structure with print() and ostream
 // TODO: more throwable errors
 // TODO: findSegment check for not found condition (currently returns garbage)
-// TODO: newChild function (that maps to configsegment constructor of new one)
-// TODO: move configsegment to shared-ptr implementation
 
 namespace rtmath {
 	namespace config {
-		class configsegment;
 
-		// NOTE: config needs to be redone to avoid memory leaks!!!
 		class configsegment {
 		public:
-			configsegment(const std::string &name);
-			configsegment(const std::string &name, configsegment *parent);
+			static std::shared_ptr<configsegment> create(const std::string &name);
+			static std::shared_ptr<configsegment> create(const std::string &name, 
+				std::shared_ptr<configsegment> &parent);
 			~configsegment();
-			bool getVal(const std::string &key, std::string &value);
-			bool getVal(const std::string &key, std::string &value, std::string defaultVal);
+			bool getVal(const std::string &key, std::string &value) const;
+			bool getVal(const std::string &key, std::string &value, std::string defaultVal) const;
 			void setVal(const std::string &key, const std::string &value);
-			configsegment* findSegment(const std::string &key);
-			configsegment* getChild(const std::string &name);
-			configsegment* getParent() const;
+			std::shared_ptr<configsegment> findSegment(const std::string &key) const;
+			std::shared_ptr<configsegment> getChild(const std::string &name) const;
+			std::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
+			std::shared_ptr<configsegment> getParent() const;
 		protected:
+			configsegment(const std::string &name);
 			std::string _segname;
-			configsegment *_parent;
+			std::weak_ptr<configsegment> _parent;
+			std::weak_ptr<configsegment> _self;
 			std::map<std::string, std::string> _mapStr;
-			std::set<configsegment*> _children;
+			std::set<std::shared_ptr<configsegment> > _children;
 		public: // And let's have a static loading function here!
-			static configsegment* loadFile(const char* filename, configsegment* root);
+			static std::shared_ptr<configsegment> loadFile(const char* filename, std::shared_ptr<configsegment> root);
 		};
 
 		// Easy-to-use function that looks in config for a property. If not found, ask the user!
-		inline std::string queryConfig(configsegment* root, const std::string &key, const std::string &question)
+		inline std::string queryConfig(std::shared_ptr<configsegment> &root, const std::string &key, const std::string &question)
 		{
 			std::string res;
 			root->getVal(key,res);
@@ -68,6 +69,11 @@ namespace rtmath {
 		}
 
 		void getConfigDefaultFile(std::string &filename);
-		
+		std::shared_ptr<configsegment> getRtconfRoot();
+		std::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename);
+		std::shared_ptr<configsegment> loadRtconfRoot();
+		void setRtconfRoot(std::shared_ptr<configsegment> &root);
+
+		extern std::shared_ptr<configsegment> _rtconfroot;
 	}; // end namespace config
 }; // end namespace rtmath

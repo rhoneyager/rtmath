@@ -5,8 +5,6 @@
 #include <memory>
 #include <string>
 #include <iostream>
-#include <sstream>
-//#include <netcdfcpp.h>
 #include "defs.h"
 #include "mapid.h"
 #include "error/debug.h"
@@ -19,7 +17,7 @@
 
 namespace rtmath {
 
-	class matrixop
+	class matrixop : std::enable_shared_from_this<matrixop>
 		// Defines a generalized set of tensor operations
 		// For now, just use it as a 2d matrix
 		//  More dimensions becomes more complex and should
@@ -32,10 +30,8 @@ namespace rtmath {
 		matrixop(const std::vector<size_t> &size);
 		matrixop(size_t ndims, ...);
 		~matrixop(void);
-		// Define a copy constructor, since this is a base class
-		matrixop(const matrixop & rhs);
-		// Cloning function
-		matrixop* clone() const;
+		matrixop(const matrixop & rhs); // Copy constructor
+		//matrixop* clone() const; // Clone creator. Never use.
 
 		matrixop operator + (const matrixop&) const;
 		matrixop operator - (const matrixop&) const;
@@ -46,14 +42,11 @@ namespace rtmath {
 		bool operator != (const matrixop&) const;
 		matrixop & operator = (const matrixop&);
 		matrixop & operator = (const double*); // Assignment from double array
-		// TODO: check that the 'friend' actually works
-//		friend std::ostream &operator<<(std::ostream &stream, rtmath::matrixop ob);
-		// TODO: add matrix input
-//		friend std::istream &operator>>(std::istream &stream, matrixop &ob);
-
+		
+		// TODO: normalize calls to place val first for all set(...)
 		void set(const std::vector<size_t> &pos, double val);
-		void set(double val, size_t rank, ...);
-		void set(double, size_t); // Former _push_back
+		void set(double val, size_t rank, ...); // Does this overlap next def?
+		void set(double, size_t); // See previous
 		void setCol(size_t col, const std::vector<double> &data);
 		void setCol(size_t col, const double *data);
 		void setRow(size_t row, const double *data);
@@ -84,7 +77,7 @@ namespace rtmath {
 		inline matrixop HouseholderUT() const { matrixop res(_dims); HouseholderUT(res); return res; }
 		void upperHessenberg(matrixop &target) const;
 		inline matrixop upperHessenberg() const { matrixop res(_dims); upperHessenberg(res); return res; }
-		void QRalgorithm(matrixop &res, std::vector<double> &evals) const;
+		//void QRalgorithm(matrixop &res, std::vector<double> &evals) const;
 
 		void minors(const std::vector<size_t> &pos, matrixop &res) const;
 		inline matrixop minors(const std::vector<size_t> &pos) const { matrixop res(_dims); minors(pos,res); return res; }
@@ -93,13 +86,21 @@ namespace rtmath {
 		
 		void toDoubleArray(double *target) const;
 		void fromDoubleArray(const double *target);
-		//void fromCdf(NcVar *var, long n); // Populate the matrixop from a netCDF variable. Specify start location in extended params.
-		//void toCDF(NcVar *var) const; // Save matrixop to a netCDF variable. 
 		void inverse(matrixop &res) const;
 		inline matrixop inverse() const { matrixop res(_dims); inverse(res); return res; }
 		void posFromIndex(size_t index, std::vector<size_t> &pos) const; // duplicate of _getPos!!
 		void indexFromPos(size_t &index, std::vector<size_t> pos) const;
-	public:
+	protected:
+		std::vector<size_t> _dims;
+	private:
+		void _getpos(size_t index, std::vector<size_t> &pos) const;
+		void _rowmult(size_t row, double factor);
+		void _init(const std::vector<size_t> &size);
+		void _realloc(size_t numelems);
+		void _free();
+		size_t _datasize;
+		double *_data;
+	public: // Static member functions start here
 		static matrixop diagonal(const std::vector<size_t> &size, double val);
 		static matrixop diagonal(double val, size_t rank, ...);
 		static matrixop identity(const std::vector<size_t> &size);
@@ -109,27 +110,14 @@ namespace rtmath {
 	private:
 		static void _swaprows(matrixop &source, size_t rowa, size_t rowb);
 		static size_t _repivot(matrixop &res, size_t row, bool reverse);
-	protected:
-		//std::map<std::vector<unsigned int>, double > _vals;
-		std::vector<size_t> _dims;
-	private:
-		//void _push_back(unsigned int, double);
-		void _getpos(size_t index, std::vector<size_t> &pos) const;
-		void _rowmult(size_t row, double factor);
-
-		// New stuff goes here
-	private:
-		void _init(const std::vector<size_t> &size);
-		void _realloc(size_t numelems);
-		void _free();
-		size_t _datasize;
-		double *_data;
 	};
 
 }; // end rtmath
 
 // istream / ostream overrides, used for printing / setting matrices
-//std::ostream &operator<<(std::ostream &stream, rtmath::matrixop ob);
-//std::istream &operator>>(std::istream &stream, rtmath::matrixop &ob);
 std::ostream & operator<<(std::ostream &stream, const rtmath::matrixop &ob);
+std::istream & operator>>(std::istream &stream, rtmath::matrixop &ob);
 
+// Extend std::less and std::hash to allow for hashing and ordering of *const* matrixops
+// If not const, then changes in internal data will break the hashes and ordering.
+// TODO: see if ordering may be done based on address in memory.

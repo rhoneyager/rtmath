@@ -19,6 +19,7 @@ int main(int argc, char** argv)
 
 	try {
 		if (argc == 1) doHelp();
+		rtmath::debug::appEntry(argc, argv);
 		rtmath::config::parseParams p(argc,argv);
 
 		bool flag = false;

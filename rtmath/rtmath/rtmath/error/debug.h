@@ -49,6 +49,9 @@ namespace rtmath
 			static unsigned int _uidcount;
 		};
 
+		// rtmath-apps application entry point. Not fully necessary, but it sets
+		// several really convenient settings.
+		void appEntry(int argc, char** argv); // in os_functions.cpp
 		bool waitOnExit(); // in os_functions.cpp
 		void appExit(); // Convenient default atexit function
 	}; // end namespace debug

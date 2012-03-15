@@ -215,6 +215,26 @@ namespace rtmath {
 				}
 			}
 
+			// Specialization for splitting strings. These objects have no ranges to be compared against.
+			template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded);
+			/*
+			{
+				using namespace std;
+				// Prepare tokenizer
+				typedef boost::tokenizer<boost::char_separator<char> >
+					tokenizer;
+				boost::char_separator<char> sep(",");
+				//boost::char_separator<char> seprange(":-");
+				{
+					tokenizer tcom(instr,sep);
+					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+					{
+						if (expanded.count(*ot) == 0)
+							expanded.insert(*ot);
+					}
+				}
+			}
+			*/
 	}; // end namespace config
 }; // end namespace rtmath
 

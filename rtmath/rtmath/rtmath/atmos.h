@@ -39,9 +39,12 @@ namespace rtmath {
 
 			// File loading and saving to various formats
 			// Formats are my own text, netcdf, Liu's text format and Evans' text format
+			// Overlays are extra files containing the same layers but additional information
+			// The additional information could include more gases, phase functions, or
+			// really anything else that loadProfile-based functions would process
 			void loadProfile(const std::string &filename);
 			void saveProfile(const std::string &filename) const;
-			void loadProfileRyan(const std::string &filename);
+			//void loadProfileRyan(const std::string &filename);
 			void loadProfileRyanB(const std::string &filename);
 			//void saveProfileRyan(const std::string &filename);
 			void loadProfileLiu(const std::string &filename);
@@ -49,20 +52,15 @@ namespace rtmath {
 			//void loadProfileCDF(const std::string &filename);
 			//void saveProfileCDF(const std::string &filename);
 
-			// Overlays are extra files containing the same layers but additional information
-			// The additional information could include more gases, phase functions, or
-			// really anything else that loadProfile-based functions would process
-			void loadOverlay(const std::string &filename);
-			void loadOverlayRyan(const std::string &filename);
-			void loadOverlayLiu(const std::string &filename);
-
 			// Calculation of optical depth of atmosphere or parts thereof
 			double tau(double f) const;
 			double tau(double f, size_t layernum) const;
 			// Careful: calcs from layerLow (inclusive) to high (exclusive)
 			double tau(double f, size_t layerLow, size_t layerHigh) const;
 		public: // Public for testing... Should change.
-			std::vector<atmoslayer> _layers;
+			std::vector<atmoslayer > _layers;
+		private:
+			void _init();
 		};
 
 	}; // end namespace atmos

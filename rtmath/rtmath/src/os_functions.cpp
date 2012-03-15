@@ -7,16 +7,73 @@
 #include "../rtmath/Stdafx.h"
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <string>
+#include <cstdlib>
 #ifdef _WIN32
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <Psapi.h>
 #pragma comment(lib, "Psapi")
 #endif
+#include <TError.h> // ROOT info message suppression
 #include "../rtmath/error/debug.h"
+#include "../rtmath/config.h"
+#include "../rtmath/command.h"
 
 namespace rtmath {
 	namespace debug {
+
+		void appEntry(int argc, char** argv)
+		{
+			// Process parameters
+			config::parseParams p(argc,argv);
+			// - Give library information?
+			if (p.readParam("--vlib"))
+			{
+				std::cerr << "rtmath library information:\n";
+				debug::debug_preamble();
+				exit(1);
+			}
+			// - Set default config file path?
+			{
+				std::string rtconfpath;
+				if (p.readParam<std::string>("--rtconfpath", rtconfpath))
+				{
+				}
+			}
+
+			// Set appexit
+			atexit(appExit);
+
+			// ROOT info message suppression
+			gErrorIgnoreLevel = 2000;
+
+			// Prevent ROOT from renaming the console title on Windows
+			// Do this by setting the window name to its file name and path
+#ifdef _WIN32
+			// Get PID
+			DWORD pid = 0;
+			HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+			if (NULL == h) return;
+			PROCESSENTRY32 pe = { 0 };
+			pe.dwSize = sizeof(PROCESSENTRY32);
+			pid = GetCurrentProcessId();
+			CloseHandle(h);
+
+			// Get parent process name
+			h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
+									//| PROCESS_VM_READ
+									,FALSE, pid );
+			if (NULL == h) return;
+			TCHAR szModName[600];
+			DWORD success = 0;
+			DWORD sz = sizeof(szModName) / sizeof(TCHAR);
+			success = QueryFullProcessImageName(h,0,szModName,&sz);
+
+			// Set Console Title
+			SetConsoleTitle(szModName);
+#endif
+		}
 
 		void appExit()
 		{

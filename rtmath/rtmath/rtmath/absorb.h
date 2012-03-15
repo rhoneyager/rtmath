@@ -38,14 +38,15 @@ namespace rtmath {
 				//double psfrac() const { return _psfrac; }
 				double T() const { return *_T; }
 				double dz() const { return *_dz; }
-				double numConc() { return _numConc; }
-				void numConc(double newnumConc) { _numConc = newnumConc; }
-
+				double numConc() const { return _numConc; }
+				virtual void numConc(double newnumConc) { _numConc = newnumConc; }
+				inline void getName(std::string &name) { name = _molecule; }
 				//void psfrac(double newpsfrac) {_psfrac = newpsfrac;}
 				void setLayer(const atmoslayer &layer);
 				// For O2 only, need water vapor density (in g/m^3)
 				// because of O2 line broadening calculation
 				void wvden(double newwvden) { _wvden = newwvden; } 
+				double wvden() const { return _wvden; }
 			protected:
 				const double *_p;
 				const double *_T;
@@ -63,13 +64,19 @@ namespace rtmath {
 				// into frequency in GHz. _freqtowv does the reverse.
 				static double _wvtofreq(double wvnum);
 				static double _freqtowv(double f);
-				// Function converting relative humidity to density (in g/m^3)
+				// Function converting relative humidity (%) to density (in g/m^3)
 				static double _Vden(double T, double RH);
+				// Function converting density (g/m^3) to relative humidity (%)
+				static double _RH(double T, double rhowat);
+				// Function calculating saturation vapor pressure (in hPa)
+				static double _ewsat(double P, double T);
+				// Function calculating number density (number of molecules / m^3)
+				static double _rho(double P, double T, double ew);
 				// Create an appropriate absorption class based on molecule and
 				// target frequency range
 				// bool return indicates success or failure
 				static bool _findAbsorber (const std::string &molecule, 
-					double frequency, std::shared_ptr<absorber> &res);
+					std::shared_ptr<absorber> &res, double frequency = 0);
 			};
 
 		// Might as well set some functions that handle absorption

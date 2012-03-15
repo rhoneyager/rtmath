@@ -4,11 +4,13 @@ CPP = g++
 LD = g++
 #FFLAGS = -fdefault-integer-8 -fdefault-real-8 -ggdb
 CCFLAGS = -ggdb -std=c++0x -fopenmp
-LIBS = -lm -lgfortran -lnetcdf -ggdb -lboost_filesystem -lboost_unit_test_framework -lboost_system -fopenmp ../rtmath/lib/librtmath.a
+LIBS = -lm -lgfortran -lnetcdf -ggdb -lboost_filesystem -lboost_unit_test_framework -lboost_system -fopenmp ../rtmath/lib/librtmath.a `root-config --libs`
+INCDIR = -I `root-config --incdir`
 WDIR=`pwd`
 IDIR=$(HOME)/bin
 
 COMBOFILES = $(wildcard combo/*.cpp)
+CNVUNITSFILES = $(wildcard conv-units/*.cpp)
 DDPARSEFILES = $(wildcard ddparse/*.cpp)
 RTMATHVERFILES = $(wildcard rtmath-version/*.cpp)
 GM_FILES = $(wildcard getm/*.cpp)
@@ -17,7 +19,7 @@ AS_FILES = $(wildcard absorb-slab/*.cpp)
 UU_FILES = $(wildcard uuid/*.cpp)
 SEC_FILES = $(wildcard sector/*.cpp)
 
-all: combo ddparse rtmath-version getm transmittance absorb-slab uuid sector
+all: combo ddparse rtmath-version getm transmittance absorb-slab uuid sector convunits
 
 clean:
 	rm -rf *.o */*.o bin/*
@@ -42,14 +44,17 @@ install: all distclean
 	$(FC) $(FFLAGS) -c $? -o $(?:.f=.o)
 
 .c.o:
-	$(CC) $(CCFLAGS) -c $? -o $(?:.c=.o)
+	$(CC) $(CCFLAGS) $(INCDIR) -c $? -o $(?:.c=.o)
 
 .cpp.o:
-	$(CPP) $(CCFLAGS) -c $? -o $(?:.cpp=.o)
+	$(CPP) $(CCFLAGS) $(INCDIR) -c $? -o $(?:.cpp=.o)
 
 combo: $(COMBOFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-combo $(COMBOFILES:.cpp=.o) $(LIBS)
 	
+convunits: $(CNVUNITSFILES:.cpp=.o)
+	$(LD) -o bin/rtmath-conv-units $(CNVUNITSFILES:.cpp=.o) $(LIBS)
+
 ddparse: $(DDPARSEFILES:.cpp=.o) 
 	$(LD) -o bin/rtmath-ddparse $(DDPARSEFILES:.cpp=.o) $(LIBS)
 

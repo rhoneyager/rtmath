@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 	using namespace rtmath;
 	try {
 		cerr << "rtmath-combo" << endl;
+		rtmath::debug::appEntry(argc, argv);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc,argv);
 		set<string> infiles;

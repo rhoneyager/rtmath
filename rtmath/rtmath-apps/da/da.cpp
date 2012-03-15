@@ -28,11 +28,11 @@ int main(int argc, char** argv)
 	using namespace rtmath;
 	try {
 		cerr << "rtmath-da" << endl;
-		atexit(rtmath::debug::appExit);
+		rtmath::debug::appEntry(argc, argv);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc,argv);
 		string fAtmos;
-		string fOutput;
+		string fOutput; // Output FOLDER
 		string fOverlay;
 		set<double> freqs;
 		bool verbose = true;
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 		bool askClobber = true;
 		vector<string> profpaths;
 		shared_ptr<atmos::atmos> atmosBase;
-		set<unique_ptr<atmos::atmos> > atmosOverlays;
+		set<shared_ptr<atmos::atmos> > atmosOverlays;
 		// Parse parameters and verify profile existence
 		{
 			bool flag = false;
@@ -49,13 +49,8 @@ int main(int argc, char** argv)
 			// Get rtmath config file path
 			string rtconfpath;
 			flag = p.readParam<string>("--config",rtconfpath);
-			if (rtconfpath == "")
-			{
-				config::getConfigDefaultFile(rtconfpath);
-			}
-			cerr << "Loading config file: " << rtconfpath << endl;
-			unique_ptr<config::configsegment> cRoot ( 
-				config::configsegment::loadFile(rtconfpath.c_str(), NULL) );
+			cerr << "Loading config file." << endl;
+			std::shared_ptr<config::configsegment> cRoot = config::loadRtconfRoot(rtconfpath);
 
 			// Get frequency range
 			vector<string> sFreqs;
@@ -112,8 +107,8 @@ int main(int argc, char** argv)
 			} else {
 				// Overlay atmosphere
 				// Atmos class is an overlay. Copy base, then override certain aspects
-				unique_ptr<atmos::atmos> o(new atmos::atmos(*it, *atmosBase ));
-				atmosOverlays.insert( o.release() );
+				shared_ptr<atmos::atmos> o(new atmos::atmos(*it, *atmosBase ));
+				atmosOverlays.insert( o );
 			}
 		}
 
@@ -140,9 +135,50 @@ int main(int argc, char** argv)
 			}
 		}
 
-		// Execute program
-		if (!dryrun)
+		if (dryrun)
 		{
+			cerr << "This is a dry run. Stopping here.\n";
+			exit(0);
+		}
+
+
+
+		// Execute program
+		// I've loaded the atmosphere and the overlays. The overlays will have referenced the phase 
+		// functions and the necessary files will have been loaded.
+		// I just need to loop through the atmospheres and all selected frequencies.
+
+		// Check for output folder existence
+		// If it exists, ask to clobber. If yes, unlink the existing folder.
+
+		// Create output folder
+
+		// Write out basic information in description file
+
+		// Create a new set containing the composite of the base atmosphere and any overlays.
+		set<shared_ptr<atmos::atmos> > setAtmos = atmosOverlays; // Soooo convenient
+		setAtmos.insert(atmosBase);
+
+		// Then, establish loops over atmospheres
+		for (auto it = setAtmos.begin(); it != setAtmos.end(); ++it)
+		{
+			// Loop over possible combinations of input phase functions
+			{
+				// Loop over frequencies
+				for (auto f = freqs.begin(); f != freqs.end(); ++f)
+				{
+					// Do the da calculations
+					//(*it)->
+
+					// Write calculation results to file
+
+					// Write out run statistics to filr
+					// These statistics include the time taken to run,
+					// the start date/time and end date/time, the optical
+					// depths of the layers, the frequency, phase function
+					// files referenced, etc.
+				}
+			}
 		}
 	}
 	catch (rtmath::debug::xError &err)

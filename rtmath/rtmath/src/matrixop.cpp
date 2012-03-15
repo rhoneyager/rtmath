@@ -122,10 +122,10 @@ namespace rtmath {
 		resize(ptr);
 	}
 
-	matrixop* matrixop::clone() const
+	/*matrixop* matrixop::clone() const
 	{
 		return new matrixop(*this);
-	}
+	}*/
 
 	size_t matrixop::dimensionality() const
 	{
@@ -1008,7 +1008,7 @@ namespace rtmath {
 		matrixop A = *this; // Otherwise, compile complains, even though matrixop * is defined as const... why?
 		R = Qt * A;
 	}
-
+	/*
 	void matrixop::QRalgorithm(matrixop &res, std::vector<double> &evals) const
 	{
 		// Performs the implicit QR algorithm to extract eigenvalues from a system
@@ -1020,7 +1020,7 @@ namespace rtmath {
 		// Convergence is cubic
 		throw rtmath::debug::xUnimplementedFunction();
 	}
-
+	*/
 	void matrixop::setCol(size_t col, const std::vector<double> &data)
 	{
 		for (size_t i = col, j=0; i<_datasize; i+= _dims[1], j++)
@@ -1318,10 +1318,20 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::matrixop &ob)
 	stream << data[n-1] << " }";
 	return stream;
 }
-//
-//std::istream &operator>>(std::istream &stream, rtmath::matrixop &ob)
-//{
-	// 
-//}
+
+// TODO: make sure that all istreams advance the stream!!!!
+
+std::istream & operator>>(std::istream &stream, rtmath::matrixop &ob)
+{
+	// Input can be given either as just a stream of doubles or as 
+	// a formatted set of blocks for parsing.
+	// Examples: [[2,4,5][1,4,3][9,3,2]], {1,2,3,4,5,6,7,9,8}.
+
+	// Do parsing of a set of values, removing any prefixes, suffixes
+	// Split commas
+	// Make sure that the number of values read matches the matrix
+	// Perform readDoubleArray(...) to insert the data.
+}
+
 
 

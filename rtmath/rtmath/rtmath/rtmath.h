@@ -37,8 +37,11 @@
 #include "command.h"
 #include "mie/mie.h"
 #include "rayleigh/rayleigh.h"
-#include "ddscat.h"
-#include "cdf-ddscat.h"
+#include "ddscat/ddscat.h"
+#include "ddscat/cdf-ddscat.h"
 #include "refract.h"
 #include "units.h"
+#include "ddscat/ddLoader.h"
 
+// Link with ROOT on MSVC
+#include "ROOTlink.h"

@@ -6,330 +6,14 @@
 #include <memory>
 #include <netcdf.h>
 #include <cmath>
-#include "../rtmath/ddscat.h"
-#include "../rtmath/ddweights.h"
+#include "../rtmath/ddscat/ddscat.h"
+#include "../rtmath/ddscat/ddweights.h"
+#include "../rtmath/units.h"
 
 namespace rtmath {
 
 	namespace ddscat {
-
-		ddScattMatrix::ddScattMatrix()
-		{
-			_theta = 0;
-			_phi = 0;
-			_wavelength = 0;
-			lock = false;
-
-			for (int i=0;i<4;i++)
-				for(int j=0;j<4;j++)
-				{
-					Pnn[i][j] = 0;
-					Knn[i][j] = 0;
-				}
-
-				// vals should be auto-initializing
-		}
-
-		ddScattMatrix::ddScattMatrix(double theta, double phi, double wavelength)
-		{
-			_theta = theta;
-			_phi = phi;
-			_wavelength = wavelength;
-			lock = false;
-			for (int i=0;i<4;i++)
-				for(int j=0;j<4;j++)
-				{
-					Pnn[i][j] = 0;
-					Knn[i][j] = 0;
-				}
-		}
-
-		void ddScattMatrix::genS()
-		{
-			using namespace std;
-			//complex<double> S[4];
-			complex<double> i(0,1);
-
-			complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
-			complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
-
-			//double cp = cos(2.0*M_PI*phi()/180.0);
-			double cp = cos(phi() * M_PI / 180.0);
-			//double sp = sin(2.0*M_PI*phi()/180.0);
-			double sp = sin(phi() * M_PI / 180.0);
-			S[0] = -i * ( vals[1][0] * (b * cp - a * sp) + vals[1][1] * (d * cp - c * sp) );
-			S[1] = -i * (vals[0][0] * (a*cp + b * sp) + vals[0][1] * (c * cp + d * sp) );
-			S[2] = i * ( vals[0][0] * (b * cp - a * sp) + vals[0][1] * (d * cp - c * sp) );
-			S[3] = i * ( vals[1][0] * (a*cp + b * sp) + vals[1][1] * (c*cp + d * sp) );
-		}
-
-		void ddScattMatrix::mueller(double Snn[4][4]) const
-		{
-			//genS();
-			rtmath::scattMatrix::_genMuellerMatrix(Snn,S);
-		}
-
-		void ddScattMatrix::mueller(matrixop &res) const
-		{
-			double Snn[4][4];
-			mueller(Snn);
-			res.fromDoubleArray(&Snn[0][0]);
-		}
-
-		void ddScattMatrix::extinction(double Knn[4][4]) const
-		{
-			//genS();
-			double k = 2.0 * M_PI / _wavelength;
-			// _wavelength is in micrometers. should I convert to standard units?
-
-			rtmath::scattMatrix::_genExtinctionMatrix(Knn, S, k);
-		}
-
-		void ddScattMatrix::extinction(matrixop &res) const
-		{
-			double Knn[4][4];
-			double k = 2.0 * M_PI / _wavelength;
-			rtmath::scattMatrix::_genExtinctionMatrix(Knn, S, k);
-			res.fromDoubleArray(&Knn[0][0]);
-		}
-
-		ddScattMatrix& ddScattMatrix::operator=(const ddScattMatrix &rhs)
-		{
-			// Check for pointer equality. If equal, return.
-			if (this == &rhs) return *this;
-			_theta = rhs._theta;
-			_phi = rhs._phi;
-			_wavelength = rhs._wavelength;
-			for (size_t i=0; i<2; i++)
-				for (size_t j=0; j<2; j++)
-					vals[i][j] = rhs.vals[i][j];
-			update();
-			return *this;
-		}
-
-		ddScattMatrix ddScattMatrix::operator+(const ddScattMatrix &rhs)
-		{
-			// Used when adding two ddScattMatrices
-			ddScattMatrix res;
-			for (size_t i=0;i<2;i++)
-				for (size_t j=0;j<2;j++)
-					res.vals[i][j] = this->vals[i][j] + rhs.vals[i][j];
-			res.update();
-			return res;
-		}
-
-		ddScattMatrix& ddScattMatrix::operator+=(const ddScattMatrix &rhs)
-		{
-			for (size_t i=0;i<2;i++)
-				for (size_t j=0;j<2;j++)
-					this->vals[i][j] = this->vals[i][j] + rhs.vals[i][j];
-			update();
-			return *this;
-		}
-
-		void ddScattMatrix::update()
-		{
-			if (lock) return;
-			genS();
-			mueller(Pnn);
-			extinction(Knn);
-		}
-
-		bool ddScattMatrix::operator==(const ddScattMatrix &rhs) const
-		{
-			if (this == &rhs) return true;
-			if (_theta != rhs._theta) return false;
-			if (_phi != rhs._phi) return false;
-			for (size_t i=0; i<2; i++)
-				for (size_t j=0; j<2; j++)
-					if (vals[i][j] != rhs.vals[i][j]) return false;
-			return true;
-		}
-
-		bool ddScattMatrix::operator!=(const ddScattMatrix &rhs) const
-		{
-			return !operator==(rhs);
-		}
-
-		void ddScattMatrix::writeCSV(const std::string &filename) const
-		{
-			using namespace std;
-			ofstream out(filename.c_str());
-			out << "CSV output for (theta,phi,wavelength)=\n";
-
-			//streambuf *filebuf;
-			//filebuf = out.rdbuf();
-			writeCSV(out);
-		}
-
-		void ddScattMatrix::writeCSV(std::ofstream &out) const
-		{
-			using namespace std;
-			//ofstream out;
-			//out.rdbuf(filebuf);
-			//streambuf *filebuf;
-			//filebuf = out.rdbuf();
-			//cout.rdbuf(filebuf);
-			//out << "CSV output for (theta,phi,wavelength)=\n";
-
-			out << _theta << ", " << _phi << ", " << _wavelength << ", ";
-
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					out << Pnn[i][j] << ", ";
-				}
-			}
-
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					out << Knn[i][j] << ", ";
-				}
-			}
-			out << endl;
-		}
-
-		void ddScattMatrix::print() const
-		{
-			using namespace std;
-			cout << "Matrices for theta " << _theta << " phi "
-				<< _phi << " wavelength " << _wavelength << endl;
-
-			cout << "f" << endl;
-			for (size_t i=0; i<2; i++)
-				for (size_t j=0; j<2; j++)
-					cout << i << "," << j << "\t" << vals[i][j] << endl;
-			cout << "S" << endl;
-			for (size_t i=0; i<4; i++)
-			{
-				cout << "\t" <<  S[i] << endl;
-			}
-
-			cout << "Mueller" << endl;
-			cout << _theta << "\t" << _phi << "\t" << _wavelength << "\t";
-			//update();
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					cout << Pnn[i][j] << "\t";
-				}
-				cout << endl;
-			}
-			cout << endl;
-
-			cout << "Extinction" << endl;
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					cout << Knn[i][j] << "\t";
-				}
-				cout << endl;
-			}
-			cout << endl;
-
-		}
-
-		ddOutputSingle& ddOutputSingle::operator=(const ddOutputSingle &rhs)
-		{
-			// Check for pointer equality. If equal, return.
-			if (this == &rhs) return *this;
-			_Beta = rhs._Beta;
-			_Theta = rhs._Theta;
-			_Phi = rhs._Phi;
-			_wavelength = rhs._wavelength;
-			_numDipoles = rhs._numDipoles;
-			_reff = rhs._reff;
-			_fs = rhs._fs;
-			filename = rhs.filename;
-			for (size_t i=0; i<3; i++)
-				_shape[i] = rhs._shape[i];
-			return *this;
-		}
-
-		void ddOutputSingle::_init()
-		{
-			_Beta = 0;
-			_Theta = 0;
-			_Phi = 0;
-			_wavelength = 0;
-			//_sizep = 0;
-			_numDipoles = 0;
-			_reff = 0;
-			for (int i=0; i<3; i++)
-				_shape[i] = 0;
-		}
-
-		ddOutputSingle::ddOutputSingle(double beta, double theta, double phi, double wavelength)
-		{
-			_init();
-			_Beta = beta;
-			_Theta = theta;
-			_Phi = phi;
-			_wavelength = wavelength;
-		}
-
-		std::shared_ptr<matrixop> ddOutputSingle::eval(double alpha) const
-		{
-			// Evaluate the phase function at a given single-scattering angle
-			// Not the most accurate method, as it assumes that there is only one
-			// degree of freedom. However, it works by selecting the element in _fs
-			// that has alpha equal to the request.
-			// If not found, it will try and interpolate linearly to get a result.
-			// TODO: eventually, have it save precomputed values using hashes
-			//std::map<double, ddScattMatrix*> rankings; // Pointer set of ranked _fs
-			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it;
-			ddScattMatrix prev, next;
-			double aprev = 0, anext = 0;
-			for (it = _fs.begin(); it != _fs.end(); it++)
-			{
-				// First, check for an exact alpha match
-				// If so, just return
-				if (it->first.alpha == alpha)
-				{
-					//it->second.mueller();
-					std::shared_ptr<matrixop> res( new matrixop(it->second.mueller()));
-					return res;
-				}
-				// If not, add to rankings
-				//rankings[it->first.alpha] = &(it->second);
-				if (it->first.alpha < anext && it->first.alpha > alpha)
-				{
-					anext = it->first.alpha;
-					next = (it->second);
-				}
-				if (it->first.alpha > aprev && it->first.alpha < alpha)
-				{
-					aprev = it->first.alpha;
-					prev = (it->second);
-				}
-			}
-			// If we've hit this point, linearly interpolate to get a good alpha
-			// Factors are weights for average on scale of 0 to 1.
-			// Weird formulation, but it's just how I think...
-			double facta = (anext - alpha)/ (anext - aprev);
-			double factb = 1 - facta;
-			matrixop resi = (prev.mueller() * facta) + (next.mueller() *factb);
-			std::shared_ptr<matrixop> res( new matrixop(resi));
-			return res;
-		}
-
-		void ddOutputSingle::getF(const ddCoords &coords, ddScattMatrix &f) const
-		{
-			if (_fs.count(coords)) f = _fs[coords];
-			//else f = NULL;
-		}
-
-		void ddOutputSingle::setF(const ddCoords &coords, const ddScattMatrix &f)
-		{
-			_fs[coords] = f;
-			_fs[coords].update();
-		}
-
+		/*
 		void ddOutputSingle::size(std::set<double> &thetas, std::set<double> &phis) const
 		{
 			thetas.clear();
@@ -486,6 +170,10 @@ namespace rtmath {
 						//lss >> _wavelength;
 						// Instead, read wave from column 7 (starting at 0) to 17
 						_wavelength = atof( lin.substr( 7, 10 ).c_str() );
+						// Also do a conversion from wavelength to frequency,
+						// for easier comparisons later
+						units::conv_spec wvtof("um","GHz");
+						_freq = wvtof.convert(_wavelength);
 					}
 					// theta --- indicates last line of header
 					if (lin.find("Re(f_11)") != string::npos)
@@ -499,6 +187,7 @@ namespace rtmath {
 
 		void ddOutputSingle::emissionVector(double mu, matrixop &res) const
 		{
+			throw debug::xUnimplementedFunction();
 			// Well, this is a function that is needed to generate the Stokes emission vector,
 			// as required by the doubling-adding method for thermal radiation sources,
 			// as are valid at microwave wavelengths
@@ -522,42 +211,6 @@ namespace rtmath {
 			// angles, then I'm really very confused.
 		}
 
-		void ddOutputSingle::print() const
-		{
-			using namespace std;
-			cerr << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
-			cerr << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
-			cerr << endl;
-
-			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it, e = _fs.end();
-			e--;
-			for (it = _fs.begin(); it != e; it++)
-			{
-				it->second.print();
-			}
-		}
-
-		void ddOutputSingle::writeCSV(const std::string &filename) const
-		{
-			using namespace std;
-			ofstream out(filename.c_str());
-			//streambuf *filebuf;
-			//filebuf = out.rdbuf();
-			//cout.rdbuf(filebuf);
-
-			out << "ddOutputSingle output for " << _Beta << ", " << _Theta << ", " << _Phi << endl;
-			out << _wavelength << ", " << _numDipoles << ", " << _reff << endl;
-			out << endl;
-
-			std::map<ddCoords, ddScattMatrix, ddCoordsComp>::const_iterator it, e = _fs.end();
-			e--;
-			for (it = _fs.begin(); it != e; it++)
-			{
-				//it->second.writeCSV(filebuf);
-				it->second.writeCSV(out);
-			}
-		}
-
 		ddOutput::ddOutput()
 		{
 			_init();
@@ -565,8 +218,6 @@ namespace rtmath {
 
 		void ddOutput::_init()
 		{
-			// TODO!!
-			//throw;
 		}
 
 		void ddOutput::loadFile(const std::string &ddscatparFile)
@@ -593,15 +244,15 @@ namespace rtmath {
 				cout << "Invalid ddOutput directory. No ddscat.par\n";
 				throw;
 			}
-			cerr << "Directory: " << dir << endl;
-			cerr << "ddscat par: " << ddfile << endl;
+			//cerr << "Directory: " << dir << endl;
+			//cerr << "ddscat par: " << ddfile << endl;
 
 			// Use boost to select and open all files in path
 			// Iterate through each .fml file and load
 			vector<path> files;
 			copy(directory_iterator(dir), directory_iterator(), back_inserter(files));
 
-			cerr << "There are " << files.size() << " files in the directory." << endl;
+			//cerr << "There are " << files.size() << " files in the directory." << endl;
 			// Iterate through file list for .fml files
 			vector<path>::const_iterator it;
 			size_t counter = 0;
@@ -619,7 +270,7 @@ namespace rtmath {
 					counter++;
 				}
 			}
-			cerr << "Of these, " << counter << " fml files were loaded." << endl;
+			//cerr << "Of these, " << counter << " fml files were loaded." << endl;
 		}
 
 		void ddOutput::get(const ddCoords3 &coords, ddOutputSingle &f) const
@@ -741,7 +392,7 @@ namespace rtmath {
 			throw rtmath::debug::xAssert("For some reason, the appropriate weight was not computed!");
 			return 0;
 		}
-
+		*/
 	}; // end namespace ddscat
 
 }; // end namespace rtmath

@@ -15,12 +15,18 @@
 #include "../rtmath/da/daDiagonalMatrix.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/units.h"
+#include "../rtmath/ddscat/ddLoader.h"
 
 namespace rtmath {
 	
 	namespace atmos {
 
 		atmos::atmos()
+		{
+			_init();
+		}
+
+		void atmos::_init()
 		{
 		}
 
@@ -30,13 +36,15 @@ namespace rtmath {
 
 		atmos::atmos(const std::string &filename)
 		{
+			_init();
 			loadProfile(filename);
 		}
 
 		atmos::atmos(const std::string &filename, const atmos &base)
 		{
+			_init();
 			_layers = base._layers;
-			loadOverlay(filename);
+			loadProfile(filename);
 		}
 
 		double atmos::tau(double f) const
@@ -83,8 +91,8 @@ namespace rtmath {
 			locale loc;
 
 			//if (in == "Profile" || in == "Trace")
-			if (buffer == "Profile")
-				loadProfileRyan(filename);
+			if (buffer == "Profile" || buffer == "Overlay")
+				loadProfileRyanB(filename);
 			else if (isdigit(buffer[0],loc))
 				loadProfileLiu(filename);
 			else
@@ -124,11 +132,12 @@ namespace rtmath {
 			// TODO: split logic between loading and implementing, as 
 			// I need to calculate dz upon layer setup. Aargh.
 			vector<double> h,p,t,rh;
+			units::conv_alt convAlt("m", "km");
 			for (size_t i=0; i<numLayers;i++)
 			{
 				double ih, ip, it, irh;
 				in >> ih >> ip >> it >> irh;
-				h.push_back(ih / 1000.0); // convert m to km
+				h.push_back(convAlt.convert(ih)); // convert m to km
 				p.push_back(ip);
 				t.push_back(it);
 				rh.push_back(irh);
@@ -142,11 +151,22 @@ namespace rtmath {
 					layer->dz( h[i+1]-h[i]); // in km
 				else
 					layer->dz(0);
+				layer->z(h[i]); // in km
 				layer->p(p[i]); // in hPa
 				layer->T(t[i]); // in K
 				TASSERT(layer->dz() >= 0);
 				// Also, since I have relative humidity, call the appropriate functions
-				double rhoWat = absorber::_Vden(t[i],rh[i]);
+				double rhoWat = absorber::_Vden(t[i],rh[i]); // g/m^3
+				layer->wvden(rhoWat);
+
+				// Get conversion to number density for population of layer->rho
+				double rho, ewsat, ew;
+				ewsat = absorber::_ewsat(p[i],t[i]);
+				ew = rh[i] * ewsat / 100.0;
+				rho = absorber::_rho(p[i],t[i],ew); // in molecules / m^3
+				units::conv_dens densconv("m^-3","cm^-3");
+				layer->rho(densconv.convert(rho)); // in molecules / cm^3
+
 
 				// Add the absorbing gases
 				// Add collision-induced broadening
@@ -176,203 +196,18 @@ namespace rtmath {
 			}
 		}
 
-		void atmos::loadProfileRyan(const std::string &filename)
-		{
-			using namespace std;
-			using namespace rtmath;
-			using namespace boost::filesystem;
-			// Open the file
-			ifstream in(filename.c_str());
-
-			// Start reading
-			vector<double> zlevs, plevs, tlevs, dlevs;
-			size_t numgases;
-			// For gases, the unsigned int is the gas id, the double is 
-			// the concentration in ppmv - matches input file
-			vector< vector<double> > conc;
-			vector<string> gasnames;
-
-			string buffer;
-			istringstream parser(istringstream::in);
-			getline(in,buffer); // Read a full line
-			parser.str(buffer);
-			parser >> buffer; // Discard word 'Profile'
-			parser >> buffer; // The name of the profile
-			name = buffer;
-
-			getline(in,buffer); // Get next line, which lists the var names
-			typedef boost::tokenizer<boost::char_separator<char> >
-				tokenizer;
-			boost::char_separator<char> sep(",\t");
-			tokenizer tokens(buffer, sep);
-			for (tokenizer::iterator it = tokens.begin();
-				it != tokens.end(); ++it)
-			{
-				if (*it == "Altitude") continue;
-				if (*it == "Pres") continue;
-				if (*it == "Temp") continue;
-				if (*it == "Density") continue;
-				if (*it == "Number Density") continue;
-				// Otherwise, add gas to conc. list, while avoiding duplicates at end
-				gasnames.push_back(*it);
-			}
-
-			numgases = gasnames.size(); 
-
-			// Get subheader line which gives the units for the columns
-			getline(in,buffer);
-
-			parser.str(buffer);
-			std::string units_z, units_p, units_T, units_d;
-			std::vector<std::string> units_gases;
-			parser >> units_z;
-			parser >> units_p;
-			parser >> units_T;
-			parser >> units_d;
-			for (int i=0; i< (int)numgases; i++)
-			{
-				string j;
-				parser >> j;
-				units_gases.push_back(j);
-			}
-
-			// Work out any conversion factors
-			// TODO
-
-			// Read in the profile values
-			double zn, pn, tn, dn;
-			double *gn = new double[numgases];
-			conc.resize(numgases);
-
-			while(in.good())
-			{
-				in >> zn;
-				in >> pn;
-				in >> tn;
-				in >> dn;
-				TASSERT(pn>0);
-				TASSERT(tn>0);
-				TASSERT(dn>0);
-
-				zlevs.push_back(zn);
-				plevs.push_back(pn);
-				tlevs.push_back(tn);
-				dlevs.push_back(dn);
-
-				// Read in gases
-				for (size_t i=0;i<numgases;i++)
-				{
-					in >> gn[i];
-					conc[i].push_back(gn[i]);
-				}
-			}
-			delete [] gn;
-			in.close();
-
-			// I've read the file
-			// Onto the processing!
-			TASSERT(zlevs.size() > 2);
-			// Resize beforehand for multithreading
-			_layers.resize(zlevs.size()-1);
-
-			atmoslayer *layer;
-
-			// Loop is to zlevs.size()-1 to avoid the second last read that in.good()
-			// loops always seem to have and to avoid calculating dz at the end of 
-			// the atmosphere
-//#pragma omp parallel for private(layer,j)
-			for(int i=0;i<(int)zlevs.size()-1;i++)
-			{
-				// Fill in the information for this layer
-				layer = &_layers[i];
-				if (i != (int) (zlevs.size()-2) )
-					layer->dz( zlevs[i+1]-zlevs[i]); // in km
-				else
-					layer->dz(0); // For toa, set dz to zero
-				layer->p(plevs[i]); // in hPa
-				layer->T(tlevs[i]); // in K
-				TASSERT(layer->dz() >= 0);
-
-				bool hasH2O = false, hasO2 = false, hasN2 = false;
-				double rhoWat = 0;
-				// Loop through and add the necessary gases to the layer
-				for (size_t j=0;j<numgases;j++)
-				{
-					// Create absorber based on gas name in gasnames[j]
-					absorber *newgas;
-
-					if ("H2O" == gasnames[j]) 
-					{ 
-						newgas = new abs_H2O; 
-						hasH2O = true; 
-						//psWV = psfrac; 
-						const double Na = 6.022e23; // molecules / mol
-						const double uH2O = 18.01528; // g/mol
-						// dlevs is number density (molecules/cm^3)
-						rhoWat = (dlevs[i] / Na) * uH2O * conc[j].at(i) * 1.0e-6;
-						// rhoWat is now in g/m^3
-					}
-					else if ("O2" == gasnames[j]) { newgas = new abs_O2; hasO2 = true; }
-					else if ("N2" == gasnames[j]) { newgas = new abs_N2; hasN2 = true; }
-					else continue; // Skip if not found
-					
-					newgas->setLayer(*layer); 
-					newgas->numConc(dlevs[i]); // Set number concentration. Will be used in lbl stuff.
-					
-					// Insert the gas into the layer
-					// encapsulate into a pointer. Object already created, so no new needed
-					std::shared_ptr<absorber> ptr(newgas); 
-					layer->absorbers.insert(ptr);
-				}
-				// Add collision-induced broadening
-				absorber *newgas = new collide;
-				newgas->setLayer(*layer);
-				std::shared_ptr<absorber> ptr(newgas); 
-				layer->absorbers.insert(ptr);
-
-				// Add and gases missing from the profile
-				if (!hasH2O)
-				{
-					// Do nothing, as I can't find H2O concentration
-				}
-
-				if (!hasO2)
-				{ // Note: O2 has trouble!!!
-					absorber *newgas = new abs_O2;
-					newgas->setLayer(*layer);
-					std::shared_ptr<absorber> ptr(newgas); 
-					layer->absorbers.insert(ptr);
-				}
-
-				if (!hasN2)
-				{
-					absorber *newgas = new abs_N2;
-					newgas->setLayer(*layer);
-					std::shared_ptr<absorber> ptr(newgas); 
-					layer->absorbers.insert(ptr);
-				}
-
-				// Now, do another pass, recording water vapor density
-				if (rhoWat) // Easily precalculated!
-				{
-					std::set<std::shared_ptr<absorber> >::iterator it;
-					for (it = layer->absorbers.begin(); it != layer->absorbers.end(); it++)
-					{
-						(*it)->wvden(rhoWat);
-					}
-				}
-			}
-			// And, we're done!!!!!
-		}
-
 		void atmos::loadProfileRyanB(const std::string &filename)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
-			// Should read in the same data as loadProfileRyanA, but
+			// Should read in the same data as former loadProfileRyanA (removed), but
 			// performs the read and atmospheric creation in a different manner
 			using namespace std;
 			using namespace rtmath;
 			using namespace boost::filesystem;
+
+			// Check if expecting an overlay
+			bool isOverlay = false;
+			if (this->_layers.size()) isOverlay = true;
+
 			// Open the file
 			ifstream in(filename.c_str());
 			string line;
@@ -418,8 +253,12 @@ namespace rtmath {
 			// an overlay file.
 
 			size_t counter = 0;
-			size_t cAlt = 0, cP = 0, cT = 0, cD = 0;
-			map<size_t, std::unique_ptr<units::converter> > converters;
+			bool hAlt = false, hP = false, hT = false, hD = false, hPf = false;
+			size_t cAlt = 0, cP = 0, cT = 0, cD = 0, cPf = 0;
+			set<size_t> cGases;
+			string convSubheader;
+			map<size_t, std::unique_ptr<units::atmosConv> > converters;
+			//std::unique_ptr<> pfConverter;
 			// Iterate over the header and subheader. Use counter to count the numeric
 			// column number. Can consider header and subheader together.
 			for (auto it = header.begin(), ot = subheader.begin(); 
@@ -430,39 +269,243 @@ namespace rtmath {
 				string sCol = *it; // Copy to preserve gas names!
 				std::transform(sCol.begin(), sCol.end(), sCol.begin(), ::tolower);
 
+				unique_ptr<units::atmosConv> cv;
 				// Find key columns and use the subcolumn information to set up any 
 				// necessary unit conversions
 				if (sCol == "altitude" || sCol == "alt")
 				{
 					cAlt = counter;
+					hAlt = true;
 					// Want altitude in km
 					// see rtmath-units
 					// rtmath::converter convAlt(*ot,"km");
-					//unique_ptr<units::converter> cv(new units::converter(*ot,"km"));
+					cv = unique_ptr<units::atmosConv>(new units::conv_alt(*ot,"km"));
 				} else if (sCol == "p" || sCol == "pres" || sCol == "pressure")
 				{
 					cP = counter;
+					hP = true;
 					// Want pressure in mb / hPa
-					//unique_ptr<units::converter> cv(new units::converter(*ot,"hPa"));
+					cv = unique_ptr<units::atmosConv>(new units::conv_pres(*ot,"hPa"));
 				} else if (sCol == "t" || sCol == "temp" || sCol == "temperature")
 				{
 					cT = counter;
+					hT = true;
 					// Want temperature in K
-					//unique_ptr<units::converter> cv(new units::converter(*ot,"K"));
+					cv = unique_ptr<units::atmosConv>(new units::conv_temp(*ot,"K"));
 				} else if (sCol == "d" || sCol == "dens" || sCol == "density" || sCol == "rho")
 				{
 					cD = counter;
-					// Want density in ppmv
-					//unique_ptr<units::converter> cv(new units::converter(*ot,"ppmv"));
-				} else if (sCol == "pfdata")
+					hD = true;
+					// Want density in number / cm^-3
+					cv = unique_ptr<units::atmosConv>(new units::conv_dens(*ot,"cm^-3"));
+				} else if (sCol == "pfdata" || sCol == "pf" || 
+						sCol == "phasefunction" || sCol == "phase function")
 				{
 					// Phase function information has been provided for this layer. This includes 
 					// scattering and extinction matrices, or something that can generate these
+					// This may be specified as a directory name, with spaces allowed since the 
+					// separators are commas and tabs.
+					// Additionally, this may be specified as a database id that maps to the appropriate 
+					// phase function path. The id may be either numeric or may be a known key. 
+					// The database entries may reference either postgresql code or a symlink undet a path 
+					// known to rtmathconf. These may be distinguished from each other by the subheader fields.
+					// Note: only one phase function may be specified at this stage, because otherwise it's too 
+					// much coding / inconvenience. Effective pfs should be calculated first anyways.
+					//
+					// TODO: come up with a converter that does the appropriate mapping to an actual file!
+					cPf = counter;
+					convSubheader = *ot;
+					hPf = true;
 				} else {
 					// Everything else should be a gas concentration
 					// These should be in ppmv
+					cv = unique_ptr<units::atmosConv>(new units::conv_dens(*ot,"ppmv"));
+					cGases.insert(counter);
+				}
+				// Insert the converter into the appropriate structure
+				converters[counter] = move(cv);
+			}
+
+			if (!isOverlay) // Quick check to end processing here
+				if (!(hAlt && hP && hT && hD))
+					throw rtmath::debug::xBadInput("Base atmosphere is incomplete.");
+			if (isOverlay)
+				if (!(hP)) // Altitude is possible, but harder to map
+					throw rtmath::debug::xBadInput("Overlay does not contain pressure.");
+
+			// The headers are loaded and the converters are in converters!
+			map<size_t,vector<double> > vals;
+			map<size_t,string> pfVals;
+			// Begin processing the actual atmosphere
+			while (in.good()) // Think up better reader that doesn't duplicate the last line
+			{
+				getline(in,line);
+				tokens.assign(line);
+				counter = 0; // Keeps track of column number
+				for (tokenizer::iterator it = tokens.begin();
+					it != tokens.end(); it++, counter++)
+				{
+					if (counter == cPf && hPf)
+					{
+						// Special phase function handling!
+						if (pfVals.count(counter) == 0)
+							pfVals[counter] = *it;
+					} else {
+						// Use standard numeric converters
+						double quant = converters[counter]->convert( boost::lexical_cast<double>(*it));
+						vector<double> test;
+						if (vals.count(counter) == 0) vals[counter] = test; // Creation of value in map
+						vals[counter].push_back(quant);
+					}
 				}
 			}
+
+			// Do final processing and modification / creation of atmoslayers
+			// Do a loop over the altitude or the pressure
+			//size_t loopCol = (hP) ? cP : cAlt; // This is the column that will be used in overlay comparisons
+			// Pressure is preferred as layer stores dz only
+			size_t loopCol = cP;
+			double lastP = 0;
+			for (size_t i=0;i<vals[loopCol].size();i++)
+			{
+				atmoslayer *layer = nullptr;
+				if (vals[cP][i] == lastP) continue; // Safety check that skips duplicate reads of layers
+				if (!isOverlay)
+				{
+					// Careful about the bounds!
+					double dZ;
+					if (i == vals[loopCol].size()-1)
+						dZ = 0;
+					else dZ= vals[cAlt][i+1]-vals[cAlt][i];
+					// TODO: add support for computing number density from relative humidity
+					atmoslayer nl(vals[cP][i],vals[cT][i],vals[cAlt][i],dZ, vals[cD][i]);
+					_layers.push_back(nl);
+					layer = &_layers[i];
+				} else {
+					// Scan layers for the matching one
+					bool done = false;
+					for (size_t j=0; j < _layers.size() && done == false; j++)
+						if (_layers[j].p() == vals[cP][i])
+						{
+							done = true;
+							layer = &_layers[j];
+						}
+					if (!done) throw rtmath::debug::xBadInput("Overlay does not match any existing pressure.");
+				}
+
+
+				// Insert any new gases. Replace existing gas if encountered.
+				bool hasH2O = false, hasO2 = false, hasN2 = false;
+				double rhoWat = 0; // Will be set once found.
+				for (auto j = cGases.begin(); j != cGases.end(); j++)
+				{
+					string gasname = header[*j];
+					// Scan for existing gas by this name
+					bool duplicate = false;
+					set<shared_ptr<absorber> >::const_iterator dupIt;
+					for (auto ot = layer->absorbers.begin(); ot != layer->absorbers.end() && duplicate == false; ot++)
+					{
+						string aname;
+						(*ot)->getName(aname);
+						if (aname == gasname) { duplicate = true; dupIt = ot; }
+					}
+					if (duplicate)
+					{
+						// Remove existing gas entry. Assumes only one entry for each gas type.
+						layer->absorbers.erase(dupIt);
+					}
+					absorber *newgas = nullptr; // encapsulates in shared pointer. no manual delete.
+					if ("H2O" == gasname) 
+					{ 
+						newgas = new abs_H2O; 
+						hasH2O = true; 
+						//psWV = psfrac; 
+						const double Na = 6.022e23; // molecules / mol
+						const double uH2O = 18.01528; // g/mol
+						// dlevs is number density (molecules/cm^3)
+						// Using existing layer density
+						//layer->
+						rhoWat = (vals[cD][i] / Na) * uH2O * vals[*j][i] * 1.0e-6;
+						// rhoWat is now in g/m^3
+						layer->wvden(rhoWat);
+					}
+					else if ("O2" == gasname) { newgas = new abs_O2; hasO2 = true; }
+					else if ("N2" == gasname) { newgas = new abs_N2; hasN2 = true; }
+					else continue; // Skip to next gas if not found
+					
+					newgas->setLayer(*layer); 
+					newgas->numConc(vals[cD][i]); // Set number concentration. Will be used in lbl stuff.
+					
+					// Insert the gas into the layer
+					// encapsulate into a pointer. Object already created, so no new needed
+					std::shared_ptr<absorber> ptr(newgas); 
+					layer->absorbers.insert(ptr);
+				}
+				// Fill in any missing gases if this is a base atmos load.
+				if (!isOverlay)
+				{
+					if (!hasH2O)
+					{
+						// Do nothing, as I can't find H2O concentration
+					}
+
+					if (!hasO2)
+					{ // Note: O2 has trouble!!!
+						absorber *newgas = new abs_O2;
+						newgas->setLayer(*layer);
+						newgas->numConc(vals[cD][i]);
+						std::shared_ptr<absorber> ptr(newgas); 
+						layer->absorbers.insert(ptr);
+					}
+
+					if (!hasN2)
+					{
+						absorber *newgas = new abs_N2;
+						newgas->setLayer(*layer);
+						newgas->numConc(vals[cD][i]);
+						std::shared_ptr<absorber> ptr(newgas); 
+						layer->absorbers.insert(ptr);
+					}
+				}
+
+				// Need to update water vapor density in each layer
+				{
+					// If H2O read (base or overlay), rhowat is already calculated. 
+					// If not, if overlay and no H2O, check existing absorbers
+					if (!hasH2O && isOverlay)
+					{
+						for (auto it = layer->absorbers.begin(); it != layer->absorbers.end(); it++)
+						{
+							string name;
+							(*it)->getName(name);
+							if (name == "H2O")
+							{
+								rhoWat = (*it)->wvden();
+								break;
+							}
+						}
+					}
+					// Now, do another pass, recording water vapor density
+					if (rhoWat) // Easily precalculated!
+						for (auto it = layer->absorbers.begin(); it != layer->absorbers.end(); it++)
+						{
+							(*it)->wvden(rhoWat);
+						}
+				}
+
+				// Insert the phase function, if specified. Replace any existing one.
+				if (hPf)
+				{
+					// cPf is the column id for the pf id string
+					string id = pfVals[i];
+					unique_ptr<ddLoader> layerConv = ddLoader::findLoader(id, convSubheader);
+					// Last step...
+					layer->setPfLoader( move(layerConv) ); // Move into layer and invalidate layerConv
+				}
+
+				lastP = vals[cP][i]; // Safety check
+			} // End of a very long loop
+			// Finally done. Such a long function.
 		}
 
 		void atmos::saveProfile(const std::string &filename) const
@@ -472,42 +515,6 @@ namespace rtmath {
 			throw rtmath::debug::xUnimplementedFunction();
 		}
 
-		void atmos::loadOverlay(const std::string &filename)
-		{
-			throw rtmath::debug::xUnimplementedFunction();
-		}
-
-		void atmos::loadOverlayLiu(const std::string &filename)
-		{
-			throw rtmath::debug::xUnimplementedFunction();
-		}
-
-		void atmos::loadOverlayRyan(const std::string &filename)
-		{
-			throw rtmath::debug::xUnimplementedFunction();
-			using namespace std;
-			using namespace rtmath;
-			using namespace boost::filesystem;
-			// Open the file
-			ifstream in(filename.c_str());
-
-			// Seek to the start of the file data
-
-			// Assuming that I have the same layers as in the main file:
-
-			// Start reading
-			// Skip to header
-			string buffer;
-			getline(in,buffer);
-			getline(in,buffer);
-			// Tokenize the header line
-			vector<string> header, subheader;
-			vector<bool> processColumn;
-
-			// Find a mapping to the existing layers, be it pressure, altitude or density
-
-			// Iterate through each line and insert the read data as appropriate 
-		}
 
 	}; // end namespace atmos
 

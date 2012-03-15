@@ -7,9 +7,10 @@
 #include <cstdio>
 #include <cstring>
 #include <complex>
-#include "matrixop.h"
-#include "phaseFunc.h"
+#include "../matrixop.h"
+#include "../phaseFunc.h"
 #include "cdf-ddscat.h"
+#include "ddScattMatrix.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)
@@ -25,7 +26,9 @@
 namespace rtmath {
 
 	namespace ddscat {
-
+		class ddScattMatrix;
+		class ddOutputSingle;
+		/*
 		class ddScattMatrix{
 			// A complex matrix that holds the scattering amplitudes (2x2)
 			// It may be converted into other forms
@@ -61,72 +64,9 @@ namespace rtmath {
 		private:
 			double _theta, _phi, _wavelength;
 		};
+		*/
 
-		struct ddCoords {
-			ddCoords()
-			{
-				theta = 0; phi = 0; alpha = 0;
-			}
-			ddCoords(double theta, double phi)
-			{
-				this->theta = theta;
-				this->phi = phi;
-				alpha = theta;
-			}
-			double theta, phi, alpha;
-			bool operator == (const ddCoords &rhs) const
-			{
-				if (theta != rhs.theta) return false;
-				if (phi != rhs.phi) return false;
-				if (alpha != rhs.alpha) return false;
-				return true;
-			}
-			bool operator != (const ddCoords &rhs) const
-			{
-				return !operator==(rhs);
-			}
-		};
-
-		struct ddCoords3 {
-			ddCoords3(double beta, double theta, double phi)
-			{
-				this->beta = beta;
-				this->theta = theta;
-				this->phi = phi;
-			}
-			double theta, phi, beta;
-			bool operator == (const ddCoords3 &rhs) const
-			{
-				if (theta != rhs.theta) return false;
-				if (phi != rhs.phi) return false;
-				if (beta != rhs.beta) return false;
-				return true;
-			}
-			bool operator != (const ddCoords3 &rhs) const
-			{
-				return !operator==(rhs);
-			}
-		};
-
-		struct ddCoordsComp
-		{
-			bool operator() (const ddCoords &lhs, const ddCoords &rhs) const
-			{
-				if (lhs.phi < rhs.phi) return true;
-				if (lhs.phi > rhs.phi) return false; // i want strict weak ordering with theta first
-				if (lhs.theta < rhs.theta) return true;
-				return false;
-			}
-			bool operator() (const ddCoords3 &lhs, const ddCoords3 &rhs) const
-			{
-				if (lhs.beta < rhs.beta) return true;
-				if (lhs.theta < rhs.theta) return true;
-				if (lhs.theta > rhs.theta) return false; // i want strict weak ordering with theta first
-				if (lhs.phi < rhs.phi) return true;
-				return false;
-			}
-		};
-
+		/*
 		class ddOutputSingle : public rtmath::phaseFunc
 		{
 			// Class contains the output of a single ddscat file
@@ -162,11 +102,13 @@ namespace rtmath {
 		public:
 			void _init();
 			double _Beta, _Theta, _Phi;
-			double _wavelength, _numDipoles, _reff;
+			// wavelength in um, freq in GHz
+			double _wavelength, _freq, _numDipoles, _reff;
 			double _shape[3]; // for ellipsoids
 			mutable std::map<ddCoords, ddScattMatrix, ddCoordsComp> _fs;
 		};
-
+		*/
+		/*
 		class ddOutputEnsemble : public ddOutputSingle
 		{
 			// Class is a pure virtual class designed to do ensemble weighting
@@ -207,7 +149,10 @@ namespace rtmath {
 			virtual void generate();
 			virtual double weight(const ddCoords3 &coords) const;
 		};
-
+		*/
+		class ddCoords3;
+		class ddCoordsComp;
+		/*
 		class ddOutput {
 			// Class represents the output of a ddscat run
 			// Can be loaded by specifying the path of a ddscat.par file
@@ -231,6 +176,7 @@ namespace rtmath {
 			void _init();
 			mutable std::map<ddCoords3, ddOutputSingle, ddCoordsComp> _data;
 		};
+		*/
 	}; // end namespace ddscat
 
 }; // end namespace rtmath

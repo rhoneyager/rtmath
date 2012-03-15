@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 	using namespace rtmath;
 	try {
 		cerr << "rtmath-db-catalog-ddscat" << endl;
-		atexit(rtmath::debug::appExit);
+		rtmath::debug::appEntry(argc, argv);
 		config::parseParams p(argc,argv);
 	}
 	catch (rtmath::debug::xError &err)
