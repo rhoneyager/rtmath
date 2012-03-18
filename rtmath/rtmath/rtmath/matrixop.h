@@ -17,7 +17,7 @@
 
 namespace rtmath {
 
-	class matrixop : std::enable_shared_from_this<matrixop>
+	class matrixop : public std::enable_shared_from_this<matrixop>
 		// Defines a generalized set of tensor operations
 		// For now, just use it as a 2d matrix
 		//  More dimensions becomes more complex and should
@@ -29,6 +29,7 @@ namespace rtmath {
 	public:
 		matrixop(const std::vector<size_t> &size);
 		matrixop(size_t ndims, ...);
+		matrixop();
 		~matrixop(void);
 		matrixop(const matrixop & rhs); // Copy constructor
 		//matrixop* clone() const; // Clone creator. Never use.

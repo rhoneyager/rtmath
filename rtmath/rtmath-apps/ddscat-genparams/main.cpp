@@ -3,7 +3,7 @@
  * interconversion of frequency/wavelength, automatic size selection, shape file generation, dielectric constant
  * generation (through getm/genmtab) and lots of other stuff. */
 
-#include "Stdafx.h"
+#include "StdAfx.h"
 #include "../../rtmath/rtmath/rtmath.h"
 
 int main(int argc, char** argv)

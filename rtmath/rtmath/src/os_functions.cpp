@@ -118,16 +118,21 @@ namespace rtmath {
 			DWORD sz = sizeof(szModName) / sizeof(TCHAR);
 			success = QueryFullProcessImageName(h,0,szModName,&sz);
 			//success = GetModuleFileNameEx(h,NULL,szModName,sizeof(szModName) / sizeof(TCHAR));
+
+			// If using unicode and not multibyte...
 			// Convert wchar to char in preparation for string and path conversion
-			
+#ifdef UNICODE
+
 			size_t origsize = wcslen(szModName) + 1;
+
 			const size_t newsize = 600;
 			size_t convertedChars = 0;
 			char nstring[newsize];
 			wcstombs_s(&convertedChars, nstring, origsize, szModName, _TRUNCATE);
-			
-
 			boost::filesystem::path modPath(nstring);
+#else
+			boost::filesystem::path modPath(szModName);
+#endif
 			boost::filesystem::path filename = modPath.filename();
 			CloseHandle(h);
 			if (!success) 

@@ -1,5 +1,7 @@
 #!/bin/tcsh
 
+echo "Getting revision information"
+
 # Set the subversion revision and repository information
 
 set file = build/debug_subversion.h

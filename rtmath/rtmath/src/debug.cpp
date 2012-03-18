@@ -8,7 +8,7 @@
 #include "../rtmath/error/debug.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
-#include "../build/debug_subversion.h"
+#include "debug_subversion.h"
 
 namespace rtmath
 {

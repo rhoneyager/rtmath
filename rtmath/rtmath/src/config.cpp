@@ -13,7 +13,7 @@
 #include "../rtmath/error/debug.h"
 
 // Special compile-time generated file that build needs
-#include "../build/rtc.h"
+#include "debug_subversion.h"
 
 
 

@@ -22,6 +22,14 @@ namespace rtmath {
 		_init(size);
 	}
 
+	matrixop::matrixop()
+	{
+		std::vector<size_t> sz;
+		sz.push_back(1);
+		sz.push_back(1);
+		_init(sz);
+	}
+
 	matrixop::~matrixop(void)
 	{
 		//std::cerr << "destructing" << std::endl;
@@ -1331,6 +1339,8 @@ std::istream & operator>>(std::istream &stream, rtmath::matrixop &ob)
 	// Split commas
 	// Make sure that the number of values read matches the matrix
 	// Perform readDoubleArray(...) to insert the data.
+	throw rtmath::debug::xUnimplementedFunction();
+	return stream;
 }
 
 
