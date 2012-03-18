@@ -20,12 +20,12 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
@@ -45,10 +45,20 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>Stdafx.h</PrecompiledHeaderFile>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>prebuild.bat "$(SolutionDir)$(ProjectName)\src"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generate Subversion Information Header</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -56,14 +66,176 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>Stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PreBuildEvent>
+      <Command>prebuild.bat "$(SolutionDir)$(ProjectName)\src"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generate Subversion Information Header</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="other\disabled_poly\assocLegendre.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="rtmath\absorb.h" />
+    <ClInclude Include="rtmath\atmos.h" />
+    <ClInclude Include="rtmath\atmoslayer.h" />
+    <ClInclude Include="rtmath\command.h" />
+    <ClInclude Include="rtmath\common_templates.h" />
+    <ClInclude Include="rtmath\config.h" />
+    <ClInclude Include="rtmath\coords.h" />
+    <ClInclude Include="rtmath\da\daDiagonalMatrix.h" />
+    <ClInclude Include="rtmath\da\daInitLayer.h" />
+    <ClInclude Include="rtmath\da\daLayer.h" />
+    <ClInclude Include="rtmath\da\damatrix.h" />
+    <ClInclude Include="rtmath\da\damatrix_override.h" />
+    <ClInclude Include="rtmath\da\damatrix_quad.h" />
+    <ClInclude Include="rtmath\da\daPf.h" />
+    <ClInclude Include="rtmath\da\daStatic.h" />
+    <ClInclude Include="rtmath\ddscat\cdf-ddscat.h" />
+    <ClInclude Include="rtmath\ddscat\ddLoader.h" />
+    <ClInclude Include="rtmath\ddscat\ddOutput.h" />
+    <ClInclude Include="rtmath\ddscat\ddOutputEnsemble.h" />
+    <ClInclude Include="rtmath\ddscat\ddOutputSingle.h" />
+    <ClInclude Include="rtmath\ddscat\ddscat.h" />
+    <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
+    <ClInclude Include="rtmath\ddscat\ddweights.h" />
+    <ClInclude Include="rtmath\defs.h" />
+    <ClInclude Include="rtmath\enums.h" />
+    <ClInclude Include="rtmath\error\debug.h" />
+    <ClInclude Include="rtmath\error\debug_mem.h" />
+    <ClInclude Include="rtmath\error\debug_mem_class.h" />
+    <ClInclude Include="rtmath\error\error.h" />
+    <ClInclude Include="rtmath\interpolatable.h" />
+    <ClInclude Include="rtmath\lbl.h" />
+    <ClInclude Include="rtmath\macros.h" />
+    <ClInclude Include="rtmath\mapid.h" />
+    <ClInclude Include="rtmath\matrixop.h" />
+    <ClInclude Include="rtmath\mie\mie-abNCalc.h" />
+    <ClInclude Include="rtmath\mie\mie-AnCalc.h" />
+    <ClInclude Include="rtmath\mie\mie-phaseFunc.h" />
+    <ClInclude Include="rtmath\mie\mie-piNCalc.h" />
+    <ClInclude Include="rtmath\mie\mie-Qcalc.h" />
+    <ClInclude Include="rtmath\mie\mie-Scalc.h" />
+    <ClInclude Include="rtmath\mie\mie-tauNCalc.h" />
+    <ClInclude Include="rtmath\mie\mie-wnCalc.h" />
+    <ClInclude Include="rtmath\mie\mie.h" />
+    <ClInclude Include="rtmath\pfFixed.h" />
+    <ClInclude Include="rtmath\phaseFunc.h" />
+    <ClInclude Include="rtmath\polynomial.h" />
+    <ClInclude Include="rtmath\polynomials\chebyshev.h" />
+    <ClInclude Include="rtmath\polynomials\hermite.h" />
+    <ClInclude Include="rtmath\polynomials\laguerre.h" />
+    <ClInclude Include="rtmath\polynomials\legendre.h" />
+    <ClInclude Include="rtmath\polynomials\recursivePolynomial.h" />
+    <ClInclude Include="rtmath\Public_Domain\MurmurHash3.h" />
+    <ClInclude Include="rtmath\quadrature.h" />
+    <ClInclude Include="rtmath\rayleigh\Qcalc-Rayleigh.h" />
+    <ClInclude Include="rtmath\rayleigh\rayleigh.h" />
+    <ClInclude Include="rtmath\rayleigh\rayleighPhaseFunc.h" />
+    <ClInclude Include="rtmath\rayleigh\Scalc-Rayleigh.h" />
+    <ClInclude Include="rtmath\refract.h" />
+    <ClInclude Include="rtmath\resource.h" />
+    <ClInclude Include="rtmath\ROOTlink.h" />
+    <ClInclude Include="rtmath\rtmath.h" />
+    <ClInclude Include="rtmath\Stdafx.h" />
+    <ClInclude Include="rtmath\units.h" />
+    <ClInclude Include="rtmath\zeros.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico" />
+    <None Include="CMakeLists.txt" />
+    <None Include="getRev.csh" />
+    <None Include="other\absorb.f" />
+    <None Include="other\mcx.f" />
+    <None Include="other\old_atmos.cpp.txt" />
+    <None Include="other\old_atmos.h.txt" />
+    <None Include="other\old_damatrix.cpp.txt" />
+    <None Include="other\old_damatrix.h.txt" />
+    <None Include="other\old_damatrix_quad.cpp.txt" />
+    <None Include="other\old_damatrix_quad.h.txt" />
+    <None Include="other\old_layer.cpp.txt" />
+    <None Include="other\old_layer.h.txt" />
+    <None Include="prebuild.bat" />
+    <None Include="prebuild.csh" />
+    <None Include="Readme.txt" />
+    <None Include="rtlogo.png" />
+    <None Include="rtmath\error\debug_subversion.h.template" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="other\disabled_poly\assocLegendre.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="other\lbl.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\absorb.cpp" />
+    <ClCompile Include="src\absorber.cpp" />
+    <ClCompile Include="src\atmos.cpp" />
+    <ClCompile Include="src\atmoslayer.cpp" />
+    <ClCompile Include="src\chebyshev.cpp" />
+    <ClCompile Include="src\command.cpp" />
+    <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\coords.cpp" />
+    <ClCompile Include="src\daDiagonalMatrix.cpp" />
+    <ClCompile Include="src\daInitLayer.cpp" />
+    <ClCompile Include="src\daLayer.cpp" />
+    <ClCompile Include="src\damatrix.cpp" />
+    <ClCompile Include="src\damatrix_quad.cpp" />
+    <ClCompile Include="src\daPf.cpp" />
+    <ClCompile Include="src\daStatic.cpp" />
+    <ClCompile Include="src\ddLoader.cpp" />
+    <ClCompile Include="src\ddOutput.cpp" />
+    <ClCompile Include="src\ddOutputEnsemble.cpp" />
+    <ClCompile Include="src\ddOutputSingle.cpp" />
+    <ClCompile Include="src\ddscat.cpp" />
+    <ClCompile Include="src\ddScattMatrix.cpp" />
+    <ClCompile Include="src\ddweights.cpp" />
+    <ClCompile Include="src\debug.cpp" />
+    <ClCompile Include="src\debug_mem.cpp" />
+    <ClCompile Include="src\error.cpp" />
+    <ClCompile Include="src\hermite.cpp" />
+    <ClCompile Include="src\interpolatable.cpp" />
+    <ClCompile Include="src\laguerre.cpp" />
+    <ClCompile Include="src\legendre.cpp" />
+    <ClCompile Include="src\matrixop.cpp" />
+    <ClCompile Include="src\mie-abNCalc.cpp" />
+    <ClCompile Include="src\mie-AnCalc.cpp" />
+    <ClCompile Include="src\mie-phaseFunc.cpp" />
+    <ClCompile Include="src\mie-piNCalc.cpp" />
+    <ClCompile Include="src\mie-Qcalc.cpp" />
+    <ClCompile Include="src\mie-Scalc.cpp" />
+    <ClCompile Include="src\mie-tauNCalc.cpp" />
+    <ClCompile Include="src\mie-wnCalc.cpp" />
+    <ClCompile Include="src\MurmurHash3.cpp" />
+    <ClCompile Include="src\os_functions.cpp" />
+    <ClCompile Include="src\pfFixed.cpp" />
+    <ClCompile Include="src\phaseFunc.cpp" />
+    <ClCompile Include="src\polynomial.cpp" />
+    <ClCompile Include="src\Qcalc-Rayleigh.cpp" />
+    <ClCompile Include="src\quadrature.cpp" />
+    <ClCompile Include="src\rayleighPhaseFunc.cpp" />
+    <ClCompile Include="src\recursivePolynomial.cpp" />
+    <ClCompile Include="src\refract.cpp" />
+    <ClCompile Include="src\rtmath.cpp" />
+    <ClCompile Include="src\Scalc-Rayleigh.cpp" />
+    <ClCompile Include="src\Stdafx.cpp" />
+    <ClCompile Include="src\surfaces.cpp" />
+    <ClCompile Include="src\thermal.cpp" />
+    <ClCompile Include="src\units.cpp" />
+    <ClCompile Include="src\zeros.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

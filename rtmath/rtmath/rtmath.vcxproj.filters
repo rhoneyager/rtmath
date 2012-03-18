@@ -13,5 +13,493 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\General">
+      <UniqueIdentifier>{a7c52fd2-2d99-4ad5-a3f3-e48c3035a680}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\da">
+      <UniqueIdentifier>{3faafd43-2512-4f4b-bbfa-ea906ba6853e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ddscat">
+      <UniqueIdentifier>{37d8c950-3dce-4918-9a38-efad5b2a5c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\error">
+      <UniqueIdentifier>{e745fbc2-fdcf-40f1-903f-c68c6045fead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\mie">
+      <UniqueIdentifier>{55834ebc-41b9-4344-b62a-94db9ef8f54f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\polynomials">
+      <UniqueIdentifier>{1f0bf347-6405-44ef-9117-acdb7f18e8e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Public Domain">
+      <UniqueIdentifier>{125bb0cc-2ecc-444f-a1a7-dd89a4b617ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\rayleigh">
+      <UniqueIdentifier>{f516c32f-0b33-4aaf-ac5c-dac6e9dcd3cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other">
+      <UniqueIdentifier>{f7c8153f-c912-4808-b6eb-a91e6a835db1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Atmos">
+      <UniqueIdentifier>{c1f677c6-4761-459c-91f2-10d38c3baa77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\General">
+      <UniqueIdentifier>{1c84426a-daff-4a32-9d23-716be753bc18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\da">
+      <UniqueIdentifier>{b6bac7d5-fec5-4443-ac95-844f5aec70dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ddscat">
+      <UniqueIdentifier>{ad15545a-2d63-4bb5-ab21-e7712f156154}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\error">
+      <UniqueIdentifier>{4866bac3-4323-4bff-a60e-84745a43412d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mie">
+      <UniqueIdentifier>{45f3cac4-6d69-4e51-b719-0f64c3339f1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Atmos">
+      <UniqueIdentifier>{1d4a0b74-49d4-4d18-b8dd-6eb30f2a9b7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rayleigh">
+      <UniqueIdentifier>{55dcf724-f921-4e29-b2e6-1580cf138ca8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Public Domain">
+      <UniqueIdentifier>{07339e0f-efa9-43b9-87b1-2ffb6926aa2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\polynomials">
+      <UniqueIdentifier>{dbaa3a7d-debf-458f-9233-369b3bf8e1fa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rtmath\zeros.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\command.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\common_templates.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\config.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\coords.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\defs.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\enums.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\interpolatable.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\macros.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mapid.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\matrixop.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\pfFixed.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\phaseFunc.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\polynomial.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\quadrature.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\refract.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\resource.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ROOTlink.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\rtmath.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Stdafx.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\units.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\daDiagonalMatrix.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\daInitLayer.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\daLayer.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\damatrix.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\damatrix_override.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\damatrix_quad.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\daPf.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\da\daStatic.h">
+      <Filter>Header Files\da</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\cdf-ddscat.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddLoader.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddOutput.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddOutputEnsemble.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddOutputSingle.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddscat.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddScattMatrix.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddweights.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\error\debug.h">
+      <Filter>Header Files\error</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\error\debug_mem.h">
+      <Filter>Header Files\error</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\error\debug_mem_class.h">
+      <Filter>Header Files\error</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\error\error.h">
+      <Filter>Header Files\error</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-abNCalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-AnCalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-phaseFunc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-piNCalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-Qcalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-Scalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-tauNCalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\mie\mie-wnCalc.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\rayleigh\Qcalc-Rayleigh.h">
+      <Filter>Header Files\rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\rayleigh\rayleigh.h">
+      <Filter>Header Files\rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\rayleigh\rayleighPhaseFunc.h">
+      <Filter>Header Files\rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\rayleigh\Scalc-Rayleigh.h">
+      <Filter>Header Files\rayleigh</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Public_Domain\MurmurHash3.h">
+      <Filter>Header Files\Public Domain</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\polynomials\chebyshev.h">
+      <Filter>Header Files\polynomials</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\polynomials\hermite.h">
+      <Filter>Header Files\polynomials</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\polynomials\laguerre.h">
+      <Filter>Header Files\polynomials</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\polynomials\legendre.h">
+      <Filter>Header Files\polynomials</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\polynomials\recursivePolynomial.h">
+      <Filter>Header Files\polynomials</Filter>
+    </ClInclude>
+    <ClInclude Include="other\disabled_poly\assocLegendre.h">
+      <Filter>Other</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\absorb.h">
+      <Filter>Header Files\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\atmoslayer.h">
+      <Filter>Header Files\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\atmos.h">
+      <Filter>Header Files\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\lbl.h">
+      <Filter>Header Files\Atmos</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="rtmath\error\debug_subversion.h.template">
+      <Filter>Header Files\error</Filter>
+    </None>
+    <None Include="app.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="getRev.csh">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="prebuild.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="prebuild.csh">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Readme.txt">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="rtlogo.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="other\absorb.f">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\mcx.f">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_atmos.cpp.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_atmos.h.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_damatrix.cpp.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_damatrix.h.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_damatrix_quad.cpp.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_damatrix_quad.h.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_layer.cpp.txt">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="other\old_layer.h.txt">
+      <Filter>Other</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="other\lbl.cpp">
+      <Filter>Other</Filter>
+    </ClCompile>
+    <ClCompile Include="other\disabled_poly\assocLegendre.cpp">
+      <Filter>Other</Filter>
+    </ClCompile>
+    <ClCompile Include="src\absorb.cpp">
+      <Filter>Source Files\Atmos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\atmoslayer.cpp">
+      <Filter>Source Files\Atmos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\absorber.cpp">
+      <Filter>Source Files\Atmos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\atmos.cpp">
+      <Filter>Source Files\Atmos</Filter>
+    </ClCompile>
+    <ClCompile Include="src\chebyshev.cpp">
+      <Filter>Source Files\polynomials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daDiagonalMatrix.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daStatic.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daInitLayer.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daLayer.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\damatrix.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\damatrix_quad.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\daPf.cpp">
+      <Filter>Source Files\da</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddLoader.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddweights.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutput.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutputEnsemble.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutputSingle.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddscat.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddScattMatrix.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\debug_mem.cpp">
+      <Filter>Source Files\error</Filter>
+    </ClCompile>
+    <ClCompile Include="src\debug.cpp">
+      <Filter>Source Files\error</Filter>
+    </ClCompile>
+    <ClCompile Include="src\error.cpp">
+      <Filter>Source Files\error</Filter>
+    </ClCompile>
+    <ClCompile Include="src\laguerre.cpp">
+      <Filter>Source Files\polynomials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\legendre.cpp">
+      <Filter>Source Files\polynomials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hermite.cpp">
+      <Filter>Source Files\polynomials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-abNCalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-wnCalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-AnCalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-phaseFunc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-piNCalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-Qcalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-Scalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mie-tauNCalc.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rayleighPhaseFunc.cpp">
+      <Filter>Source Files\rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\recursivePolynomial.cpp">
+      <Filter>Source Files\polynomials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Qcalc-Rayleigh.cpp">
+      <Filter>Source Files\rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scalc-Rayleigh.cpp">
+      <Filter>Source Files\rayleigh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MurmurHash3.cpp">
+      <Filter>Source Files\Public Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\command.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zeros.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\coords.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\interpolatable.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\matrixop.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\os_functions.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pfFixed.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\phaseFunc.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\polynomial.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\quadrature.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\refract.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rtmath.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stdafx.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\surfaces.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thermal.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\units.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

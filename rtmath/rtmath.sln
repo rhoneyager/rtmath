@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath", "rtmath\rtmath.vcxproj", "{B80CE2C2-2D78-464D-B936-8977BC6083D7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-tests", "rtmath\tests\tests.vcxproj", "{C6105613-011F-4CD5-9013-28DBF945C2E4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B80CE2C2-2D78-464D-B936-8977BC6083D7} = {B80CE2C2-2D78-464D-B936-8977BC6083D7}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{3410248F-F4B3-4444-96BD-AEEA3BCE4B57}"
 EndProject

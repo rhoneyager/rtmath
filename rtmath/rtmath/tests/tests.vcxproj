@@ -46,6 +46,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -65,6 +67,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="test.cpp" />
+    <ClCompile Include="test_atmos.cpp" />
+    <ClCompile Include="test_config.cpp" />
+    <ClCompile Include="test_damatrix.cpp" />
+    <ClCompile Include="test_ddscat.cpp" />
+    <ClCompile Include="test_ddweights.cpp" />
+    <ClCompile Include="test_debug.cpp" />
+    <ClCompile Include="test_lbl.cpp" />
+    <ClCompile Include="test_matrixop.cpp" />
+    <ClCompile Include="test_polynomial.cpp" />
+    <ClCompile Include="test_quadrature.cpp" />
+    <ClCompile Include="test_recPolys.cpp" />
+    <ClCompile Include="test_units.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\rtmath.conf" />
+    <None Include="data\testing.conf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rtmath.vcxproj">
+      <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
