@@ -1344,4 +1344,3 @@ std::istream & operator>>(std::istream &stream, rtmath::matrixop &ob)
 }
 
 
-
