@@ -54,7 +54,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>prebuild.bat "$(SolutionDir)$(ProjectName)\src"</Command>
+      <Command>prebuild.bat "$(ProjectDir)src"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Generate Subversion Information Header</Message>
@@ -76,7 +76,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PreBuildEvent>
-      <Command>prebuild.bat "$(SolutionDir)$(ProjectName)\src"</Command>
+      <Command>prebuild.bat "$(ProjectDir)src"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Generate Subversion Information Header</Message>
