@@ -4,8 +4,8 @@
 # compiler flags. 
 
 # Find the locations of ROOT, OpenMP and others
-include (FindROOT.cmake)
-include (FindOpenMP.cmake)
+include (${CMAKE_CURRENT_LIST_DIR}/FindROOT.cmake)
+#include (${CMAKE_CURRENT_LIST_DIR}/FindOpenMP.cmake)
 
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
 
