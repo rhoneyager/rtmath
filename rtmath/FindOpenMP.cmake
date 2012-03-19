@@ -1,6 +1,3 @@
-
-<!-- saved from url=(0099)http://www.phy.bnl.gov/~bviren/lbne/code/ai/external/build/LCG/cmake-2.6.4/Modules/FindOpenMP.cmake -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><link type="text/css" rel="stylesheet" href="data:text/css,"></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;"># - Finds OpenMP support
 # This module can be used to detect OpenMP support in a compiler.
 # If the compiler supports OpenMP, the flags required to compile with
 # openmp support are set.  
@@ -49,23 +46,23 @@ set(OpenMP_CXX_FLAG_CANDIDATES ${OpenMP_C_FLAG_CANDIDATES})
 # sample openmp source code to test
 set(OpenMP_C_TEST_SOURCE 
 "
-#include &lt;omp.h&gt;
 int main() { 
 #ifdef _OPENMP
-  return 0; 
+  return 0\; 
 #else
   breaks_on_purpose
 #endif
 }
 ")
+
 # use the same source for CXX as C for now
 set(OpenMP_CXX_TEST_SOURCE ${OpenMP_C_TEST_SOURCE})
 # if these are set then do not try to find them again,
 # by avoiding any try_compiles for the flags
-if(DEFINED OpenMP_C_FLAGS AND DEFINED OpenMP_CXX_FLAGS)
+if(OpenMP_C_FLAGS AND OpenMP_CXX_FLAGS)
   set(OpenMP_C_FLAG_CANDIDATES)
   set(OpenMP_CXX_FLAG_CANDIDATES)
-endif(DEFINED OpenMP_C_FLAGS AND DEFINED OpenMP_CXX_FLAGS)
+endif()
 
 # check c compiler
 foreach(FLAG ${OpenMP_C_FLAG_CANDIDATES})
@@ -87,13 +84,20 @@ foreach(FLAG ${OpenMP_CXX_FLAG_CANDIDATES})
   set(CMAKE_REQUIRED_FLAGS "${FLAG}")
   unset(OpenMP_FLAG_DETECTED CACHE)
   message(STATUS "Try OpenMP CXX flag = [${FLAG}]")
-  check_cxx_source_compiles("${OpenMP_C_TEST_SOURCE}" OpenMP_FLAG_DETECTED)
+  check_cxx_source_compiles("${OpenMP_CXX_TEST_SOURCE}" OpenMP_FLAG_DETECTED)
   set(CMAKE_REQUIRED_FLAGS "${SAFE_CMAKE_REQUIRED_FLAGS}")
   if(OpenMP_FLAG_DETECTED)
     set(OpenMP_CXX_FLAGS_INTERNAL "${FLAG}")
     break()
   endif(OpenMP_FLAG_DETECTED)
 endforeach(FLAG ${OpenMP_CXX_FLAG_CANDIDATES})
+
+
+if(OpenMP_C_FLAGS AND OpenMP_CXX_FLAGS)
+else()
+set(OpenMP_C_FLAGS ${OpenMP_C_FLAGS_INTERNAL})
+set(OpenMP_CXX_FLAGS ${OpenMP_CXX_FLAGS_INTERNAL})
+endif()
 
 set(OpenMP_C_FLAGS "${OpenMP_C_FLAGS_INTERNAL}"
   CACHE STRING "C compiler flags for OpenMP parallization")
@@ -108,4 +112,3 @@ mark_as_advanced(
   OpenMP_C_FLAGS
   OpenMP_CXX_FLAGS
 )
-</pre></body></html>
