@@ -16,7 +16,10 @@ ENDIF()
 
 # Enable C++11
 IF(${CMAKE_COMPILER_IS_GNUCXX})
-SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++0x)
+	if ("${COMMON_CFLAGS}" MATCHES "0x$")
+	else()
+	SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++0x)
+	endif()
 ENDIF()
 
 # Take OpenMP option and enable / disable as appropriate
