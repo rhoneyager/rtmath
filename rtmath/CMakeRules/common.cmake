@@ -1,4 +1,4 @@
-# Common include file for misra project
+# Common include file for all rtmath-derived projects that use CMake.
 
 # Loads the necessary components for libraries and sets various 
 # compiler flags. 
