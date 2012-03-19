@@ -94,7 +94,7 @@ namespace rtmath {
 		}
 		
 
-		bool configsegment::getVal(const std::string &key, std::string &value, std::string defaultVal) const
+		bool configsegment::getVal(const std::string &key, std::string &value, std::string &defaultVal) const
 		{
 			bool res = false;
 			res = getVal(key,value);

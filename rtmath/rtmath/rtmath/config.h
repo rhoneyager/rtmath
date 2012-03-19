@@ -38,7 +38,7 @@ namespace rtmath {
 				std::shared_ptr<configsegment> &parent);
 			~configsegment();
 			bool getVal(const std::string &key, std::string &value) const;
-			bool getVal(const std::string &key, std::string &value, std::string defaultVal) const;
+			bool getVal(const std::string &key, std::string &value, std::string &defaultVal) const;
 			void setVal(const std::string &key, const std::string &value);
 			std::shared_ptr<configsegment> findSegment(const std::string &key) const;
 			std::shared_ptr<configsegment> getChild(const std::string &name) const;

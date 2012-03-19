@@ -32,13 +32,19 @@ namespace rtmath {
 			{
 				std::cerr << "rtmath library information:\n";
 				debug::debug_preamble();
-				exit(1);
+				//exit(1);
 			}
 			// - Set default config file path?
 			{
 				std::string rtconfpath;
 				if (p.readParam<std::string>("--rtconfpath", rtconfpath))
 				{
+					// Check for file existence
+					if (!exists(boost::filesystem::path(rtconfpath))) 
+						throw debug::xMissingFile(rtconfpath.c_str());
+					// Attempt to load this file
+					// This will block any other rtconf root load calls!
+					config::loadRtconfRoot(rtconfpath);
 				}
 			}
 
