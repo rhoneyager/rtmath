@@ -5,7 +5,8 @@
 aux_source_directory (src libsrcs)
 
 # Find ROOT directories and files
-include(../FindROOT.cmake)
+#include(../FindROOT.cmake)
+include (../CMakeRules/common.cmake)
 
 # Options
 option ( USE_IPP_MATRIXOP
