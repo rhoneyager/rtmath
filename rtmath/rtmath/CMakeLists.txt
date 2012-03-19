@@ -19,7 +19,7 @@ IF(${UNIX})
 	add_custom_command (
 		COMMAND tcsh ./prebuild.csh "${PROJECT_BINARY_DIR}"
 		#${PROJECT_BINARY_DIR}
-		OUTPUT ${PROJECT_BINARY_DIR}/rtc.h
+		OUTPUT ${PROJECT_BINARY_DIR}/debug_subversion.h
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 ENDIF(${UNIX})
@@ -27,7 +27,7 @@ IF(${WIN32})
 	add_custom_command (
 		COMMAND prebuild.bat "${PROJECT_BINARY_DIR}"
 		COMMENT Running custom commands to set paths and query the repository information.
-		OUTPUT ${PROJECT_BINARY_DIR}/rtc.h
+		OUTPUT ${PROJECT_BINARY_DIR}/debug_subversion.h
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 ENDIF(${WIN32})
@@ -36,9 +36,9 @@ ENDIF(${WIN32})
 include_directories("${PROJECT_BINARY_DIR}")
 
 
-add_library (rtmath SHARED ${libsrcs} ${PROJECT_BINARY_DIR}/rtc.h)
+add_library (rtmath SHARED ${libsrcs} ${PROJECT_BINARY_DIR}/debug_subversion.h)
 
-add_library (rtmath-static STATIC ${libsrcs} ${PROJECT_BINARY_DIR}/rtc.h)
+add_library (rtmath-static STATIC ${libsrcs} ${PROJECT_BINARY_DIR}/debug_subversion.h)
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
