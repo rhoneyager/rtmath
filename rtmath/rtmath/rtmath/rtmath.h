@@ -42,6 +42,10 @@
 #include "refract.h"
 #include "units.h"
 #include "ddscat/ddLoader.h"
+#include "gridded/gridded.h"
+#include "gridded/gridCoords.h"
+#include "gridded/gridStatic.h"
+#include "gridded/gridCDF.h"
 
 // Link with ROOT on MSVC
 #include "ROOTlink.h"

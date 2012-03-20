@@ -70,6 +70,18 @@
     <Filter Include="Source Files\polynomials">
       <UniqueIdentifier>{dbaa3a7d-debf-458f-9233-369b3bf8e1fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gridded">
+      <UniqueIdentifier>{0cb43bac-254b-44b9-a409-4e330a437da8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gridded">
+      <UniqueIdentifier>{4267329e-cff8-4144-bfdc-1768382fa910}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\netcdf">
+      <UniqueIdentifier>{a10fc161-64ac-4661-a825-d574c576bfdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\netcdf">
+      <UniqueIdentifier>{a23aace6-7c46-4bea-9894-8177cc418b7c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath\zeros.h">
@@ -266,6 +278,27 @@
     </ClInclude>
     <ClInclude Include="rtmath\lbl.h">
       <Filter>Header Files\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\gridded\gridded.h">
+      <Filter>Header Files\gridded</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\gridded\gridCoords.h">
+      <Filter>Header Files\gridded</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\gridded\gridStatic.h">
+      <Filter>Header Files\gridded</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\gridded\gridCDF.h">
+      <Filter>Header Files\gridded</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\netcdf\ncContainer.h">
+      <Filter>Header Files\netcdf</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\netcdf\ncVar.h">
+      <Filter>Header Files\netcdf</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\netcdf\ncDim.h">
+      <Filter>Header Files\netcdf</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -500,6 +533,18 @@
     </ClCompile>
     <ClCompile Include="src\units.cpp">
       <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gridded.cpp">
+      <Filter>Source Files\gridded</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gridStatic.cpp">
+      <Filter>Source Files\gridded</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gridCDF.cpp">
+      <Filter>Source Files\gridded</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ncContainer.cpp">
+      <Filter>Source Files\netcdf</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

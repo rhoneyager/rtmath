@@ -115,6 +115,10 @@
     <ClInclude Include="rtmath\error\debug_mem.h" />
     <ClInclude Include="rtmath\error\debug_mem_class.h" />
     <ClInclude Include="rtmath\error\error.h" />
+    <ClInclude Include="rtmath\gridded\gridCDF.h" />
+    <ClInclude Include="rtmath\gridded\gridCoords.h" />
+    <ClInclude Include="rtmath\gridded\gridded.h" />
+    <ClInclude Include="rtmath\gridded\gridStatic.h" />
     <ClInclude Include="rtmath\interpolatable.h" />
     <ClInclude Include="rtmath\lbl.h" />
     <ClInclude Include="rtmath\macros.h" />
@@ -129,6 +133,9 @@
     <ClInclude Include="rtmath\mie\mie-tauNCalc.h" />
     <ClInclude Include="rtmath\mie\mie-wnCalc.h" />
     <ClInclude Include="rtmath\mie\mie.h" />
+    <ClInclude Include="rtmath\netcdf\ncContainer.h" />
+    <ClInclude Include="rtmath\netcdf\ncDim.h" />
+    <ClInclude Include="rtmath\netcdf\ncVar.h" />
     <ClInclude Include="rtmath\pfFixed.h" />
     <ClInclude Include="rtmath\phaseFunc.h" />
     <ClInclude Include="rtmath\polynomial.h" />
@@ -206,6 +213,9 @@
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
     <ClCompile Include="src\error.cpp" />
+    <ClCompile Include="src\gridCDF.cpp" />
+    <ClCompile Include="src\gridded.cpp" />
+    <ClCompile Include="src\gridStatic.cpp" />
     <ClCompile Include="src\hermite.cpp" />
     <ClCompile Include="src\interpolatable.cpp" />
     <ClCompile Include="src\laguerre.cpp" />
@@ -220,6 +230,7 @@
     <ClCompile Include="src\mie-tauNCalc.cpp" />
     <ClCompile Include="src\mie-wnCalc.cpp" />
     <ClCompile Include="src\MurmurHash3.cpp" />
+    <ClCompile Include="src\ncContainer.cpp" />
     <ClCompile Include="src\os_functions.cpp" />
     <ClCompile Include="src\pfFixed.cpp" />
     <ClCompile Include="src\phaseFunc.cpp" />

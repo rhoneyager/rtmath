@@ -14,23 +14,6 @@
 #include "../error/error.h"
 #include "damatrix_quad.h"
 
-/*
-// This code segment allows for an unordered map of mapid to exist. It implements a hash depending on the values in the mapid.
-namespace std {
-	//namespace tr1 {
-		template <>
-		struct hash<rtmath::mapid> : public unary_function<rtmath::mapid, size_t>
-		{
-			size_t operator()(const rtmath::mapid &v) const 
-			{
-
-				return 0;
-			}
-		};
-	//};
-};
-*/
-
 namespace rtmath {
 	
 	enum daOp
@@ -42,21 +25,6 @@ namespace rtmath {
 		INV,
 		POW
 	};
-
-	/*
-	struct mmapcomp : public debug::obsoleted
-	{
-		bool operator() (const mapid &lhs, const mapid &rhs) const
-		{
-			if (lhs.f < rhs.f) return true;
-			if (lhs.phi < rhs.phi) return true;
-			if (lhs.phin < rhs.phin) return true;
-			if (lhs.mu < rhs.mu) return true;
-			if (lhs.mun < rhs.mun) return true;
-			return false;
-		}
-	};
-	*/
 
 	class damatrix
 	{

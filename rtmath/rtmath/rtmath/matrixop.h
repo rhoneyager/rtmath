@@ -37,6 +37,7 @@ namespace rtmath {
 		matrixop operator + (const matrixop&) const;
 		matrixop operator - (const matrixop&) const;
 		matrixop operator * (const matrixop&) const;
+		matrixop operator % (const matrixop&) const; // Elementwise multiplication
 		matrixop operator * (double) const;
 		matrixop operator ^ (unsigned int) const;
 		bool operator == (const matrixop&) const;

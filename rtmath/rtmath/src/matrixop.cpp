@@ -208,9 +208,7 @@ namespace rtmath {
 				res.set(pos,val);
 			}
 		}
-		//TODO: fix so that it returns!
 		return res;
-
 	}
 
 	matrixop matrixop::operator* (double rhs) const
@@ -222,6 +220,26 @@ namespace rtmath {
 			temp._data[i] = this->_data[i] * rhs;
 		}
 		return temp;
+	}
+
+	matrixop matrixop::operator%(const matrixop& rhs) const
+	{
+		// Define standard elementwise matrix multiplication
+		TASSERT(this->dimensionality() == rhs.dimensionality());
+		for (size_t i=0;i<_dims.size();i++)
+		{
+			// Make sure all dimensions are the same
+			TASSERT(_dims[i] == rhs._dims[i]);
+		}
+
+		using namespace std;
+		matrixop res(_dims);
+		for (size_t i=0;i<maxSize();i++)
+		{
+			res._data[i] = _data[i] * rhs._data[i];
+		}
+
+		return res;
 	}
 
 	bool matrixop::issquare() const
