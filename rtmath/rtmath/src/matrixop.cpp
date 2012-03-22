@@ -7,6 +7,8 @@
 
 namespace rtmath {
 
+#ifndef USE_IPP
+
 	void matrixop::_init(const std::vector<size_t> &size)
 	{
 		_data = NULL; // it is safe to put this here
@@ -1328,6 +1330,8 @@ namespace rtmath {
 		delete[] dvals;
 		return res;
 	}
+
+#endif // ifndef USE_IPP
 
 }; // end rtmath
 //

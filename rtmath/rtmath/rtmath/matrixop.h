@@ -93,6 +93,7 @@ namespace rtmath {
 		void posFromIndex(size_t index, std::vector<size_t> &pos) const; // duplicate of _getPos!!
 		void indexFromPos(size_t &index, std::vector<size_t> pos) const;
 	protected:
+		// TODO: encapsulate all private and protected members, to allow for IPP providers
 		std::vector<size_t> _dims;
 	private:
 		void _getpos(size_t index, std::vector<size_t> &pos) const;

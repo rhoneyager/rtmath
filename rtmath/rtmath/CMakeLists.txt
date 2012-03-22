@@ -9,8 +9,8 @@ aux_source_directory (src libsrcs)
 include (../CMakeRules/common.cmake)
 
 # Options
-option ( USE_IPP_MATRIXOP
-	"Use Intel Integrated Performance Primitives in matrixops" OFF)
+option ( USE_IPP
+	"Use Intel Integrated Performance Primitives" OFF)
 option ( USE_OPENMP
 	"Enable OpenMP to speed up execution in certain areas" OFF)
 

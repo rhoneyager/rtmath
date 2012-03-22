@@ -9,6 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
+#include <boost/filesystem.hpp>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
@@ -67,6 +68,38 @@ namespace rtmath {
 			{
 				(*it)->writeCSV(out);
 			}
+		}
+
+		void ddOutputSingle::writeEvans(std::ostream &out, double freq) const
+		{
+			using namespace std;
+			// Takes the scattering data, generates the appropriate
+			// phase, extinction matrices and emission vectors for a given
+			// frequency, and writes the necessary file.
+
+			// Generate quadrature points
+			set<double> qangles;
+
+			// Need to interpolate phase matrices to the correct quadrature points
+			for (auto it = qangles.begin(); it != qangled.end(); it++)
+			{
+			}
+
+			// First, write commented header information
+			// This includes where the scattering information is from, and a
+			// discription of each of these files
+
+			// Next is the degree and type of quadrature
+
+			// Output each scattering matrix at the designated quadrature incoming
+			// and outgoing angles
+			out << "C  SCATTERING MATRIX" << endl;
+
+			// Write the extinction matrix at each quadrature angle
+			out << "C   EXTINCTION MATRIX" << endl;
+
+			// Output the emission vectors
+			out << "C   EMISSION VECTOR" << endl;
 		}
 
 		void ddOutputSingle::_insert(std::shared_ptr<const ddScattMatrix> &obj)
