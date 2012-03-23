@@ -220,6 +220,7 @@
     <ClCompile Include="src\interpolatable.cpp" />
     <ClCompile Include="src\laguerre.cpp" />
     <ClCompile Include="src\legendre.cpp" />
+    <ClCompile Include="src\matrixop-ipp.cpp" />
     <ClCompile Include="src\matrixop.cpp" />
     <ClCompile Include="src\mie-abNCalc.cpp" />
     <ClCompile Include="src\mie-AnCalc.cpp" />

@@ -22,6 +22,7 @@
 #include <map>
 #include <set>
 #include <memory>
+#include <boost/lexical_cast.hpp>
 
 // TODO: fix findSegment so that it works
 // TODO: provide output of tree structure with print() and ostream
@@ -37,8 +38,16 @@ namespace rtmath {
 			static std::shared_ptr<configsegment> create(const std::string &name, 
 				std::shared_ptr<configsegment> &parent);
 			~configsegment();
+			bool hasVal(const std::string &key) const;
 			bool getVal(const std::string &key, std::string &value) const;
-			bool getVal(const std::string &key, std::string &value, std::string &defaultVal) const;
+			template <class T> bool getVal(const std::string &key, T &value) const
+			{
+				std::string valS;
+				bool success = getVal(key,valS);
+				if (success)
+					value = boost::lexical_cast<T>(valS);
+				return success;
+			}
 			void setVal(const std::string &key, const std::string &value);
 			std::shared_ptr<configsegment> findSegment(const std::string &key) const;
 			std::shared_ptr<configsegment> getChild(const std::string &name) const;

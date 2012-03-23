@@ -68,6 +68,7 @@
     <None Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="help.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Stdafx.cpp" />
   </ItemGroup>

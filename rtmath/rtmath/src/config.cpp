@@ -92,17 +92,40 @@ namespace rtmath {
 			// Done advancing. Return result.
 			return cseg;
 		}
-		
 
-		bool configsegment::getVal(const std::string &key, std::string &value, std::string &defaultVal) const
+		bool configsegment::hasVal(const std::string &key) const
 		{
-			bool res = false;
-			res = getVal(key,value);
-			if (res == false)
+			using namespace std;
+			// If the key contains '/', we should search the path
+			// a / at the beginning specifies an absolute path.
+			// Otherwise, it is relative only going downwards
+			if (key.find('/') != string::npos)
 			{
-				value = defaultVal;
+				std::shared_ptr<configsegment> relseg = findSegment(key);
+				if (relseg == NULL) throw;
+				// keystripped is the key without the path. If ends in /, an error will occur
+				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
+				bool res = relseg->hasVal(keystripped);
+				return res;
 			}
-			return res;
+
+			// Let's be promiscuous!
+			// If this container does not have the value, look at the parent
+
+			if (_mapStr.count(key))
+			{
+				return true;
+			}
+			else
+			{
+				if (this->_parent.expired() == false)
+				{
+					return this->_parent.lock()->hasVal(key);
+				} else {
+					return false;
+				}
+			}
+			return false;
 		}
 
 		bool configsegment::getVal(const std::string &key, std::string &value) const

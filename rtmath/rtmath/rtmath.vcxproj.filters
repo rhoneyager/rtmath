@@ -546,5 +546,8 @@
     <ClCompile Include="src\ncContainer.cpp">
       <Filter>Source Files\netcdf</Filter>
     </ClCompile>
+    <ClCompile Include="src\matrixop-ipp.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

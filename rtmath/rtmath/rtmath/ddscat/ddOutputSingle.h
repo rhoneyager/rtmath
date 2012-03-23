@@ -42,7 +42,7 @@ namespace rtmath {
 			void print(std::ostream &out = std::cerr) const;
 			void writeCSV(const std::string &filename) const;
 			void writeCSV(std::ostream &out = std::cerr) const;
-			void writeEvans(std::ostream &out = std::cerr, double freq) const;
+			void writeEvans(std::ostream &out, double freq) const;
 
 			inline double beta() const {return _beta; }
 			inline double theta() const {return _theta;}
