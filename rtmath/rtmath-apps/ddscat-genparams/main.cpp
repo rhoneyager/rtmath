@@ -69,6 +69,7 @@ int main(int argc, char** argv)
 			cRun->getVal("Volume",sVolume);
 
 			// Convert the strings into sets and other usable values.
+			throw rtmath::debug::xUnimplementedFunction();
 		}
 	}
 	catch (rtmath::debug::xError &err)

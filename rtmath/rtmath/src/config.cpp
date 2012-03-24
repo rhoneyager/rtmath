@@ -203,6 +203,25 @@ namespace rtmath {
 			return std::shared_ptr<configsegment>(_parent);
 		}
 
+		void configsegment::name(std::string &res) const
+		{
+			res = _segname;
+		}
+
+		void configsegment::listKeys(std::set<std::string> &res) const
+		{
+			res.clear();
+			for (auto it = _mapStr.begin(); it != _mapStr.end(); it++)
+				res.insert( it->first );
+		}
+
+		void configsegment::listChildren(std::set<std::string> &res) const
+		{
+			res.clear();
+			for (auto it = _children.begin(); it != _children.end(); it++)
+				res.insert( (*it)->_segname );
+		}
+
 		std::shared_ptr<configsegment> configsegment::loadFile
 			(const char* filename, std::shared_ptr<configsegment> root)
 		{
@@ -365,5 +384,36 @@ namespace rtmath {
 
 	}; // end config
 };// end rtmath
+
+
+std::ostream & operator<< (std::ostream &stream, const rtmath::config::configsegment &ob)
+{
+	// Take the object, and print in the appropriate form, using recursion
+	// TODO: allow for include statements
+	using namespace std;
+	string name = ob.name();
+	stream << "<" << name << ">" << endl;
+	{
+		for (auto ut = ob._symlinks.begin(); ut != ob._symlinks.end(); ++ut)
+		{
+			if ((*ut).expired() == false)
+			{
+				//stream << (*ut);
+			}
+		}
+		for (auto ot = ob._mapStr.begin(); ot != ob._mapStr.end(); ++ot)
+			stream << " " << ot->first << " " << ot->second<< endl;
+		for (auto it = ob._children.begin(); it != ob._children.end(); ++it)
+			stream << (*it);
+	}
+	stream << "</" << name << ">" << endl;
+	return stream;
+}
+
+std::istream & operator>> (std::istream &stream, rtmath::config::configsegment &ob)
+{
+	return stream;
+}
+
 
 

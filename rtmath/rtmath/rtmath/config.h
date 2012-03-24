@@ -19,16 +19,16 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <map>
 #include <set>
 #include <memory>
 #include <boost/lexical_cast.hpp>
 
 // TODO: fix findSegment so that it works
-// TODO: provide output of tree structure with print() and ostream
 // TODO: more throwable errors
 // TODO: findSegment check for not found condition (currently returns garbage)
-
+// TODO: restructure to explicitly enable symlinks
 namespace rtmath {
 	namespace config {
 
@@ -49,10 +49,16 @@ namespace rtmath {
 				return success;
 			}
 			void setVal(const std::string &key, const std::string &value);
+			void name(std::string &res) const;
+			inline std::string name() const { std::string res; name(res); return res; }
 			std::shared_ptr<configsegment> findSegment(const std::string &key) const;
 			std::shared_ptr<configsegment> getChild(const std::string &name) const;
 			std::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
 			std::shared_ptr<configsegment> getParent() const;
+			void listKeys(std::set<std::string> &res) const;
+			inline std::set<std::string> listKeys() const { std::set<std::string> res; listKeys(res); return res; }
+			void listChildren(std::set<std::string> &res) const;
+			inline std::set<std::string> listChildren() const { std::set<std::string> res; listChildren(res); return res; }
 		protected:
 			configsegment(const std::string &name);
 			std::string _segname;
@@ -60,8 +66,11 @@ namespace rtmath {
 			std::weak_ptr<configsegment> _self;
 			std::map<std::string, std::string> _mapStr;
 			std::set<std::shared_ptr<configsegment> > _children;
+			std::set<std::weak_ptr<configsegment> > _symlinks;
 		public: // And let's have a static loading function here!
 			static std::shared_ptr<configsegment> loadFile(const char* filename, std::shared_ptr<configsegment> root);
+			friend std::ostream & operator<<(std::ostream &stream, const rtmath::config::configsegment &ob);
+			friend std::istream & operator>>(std::istream &stream, rtmath::config::configsegment &ob);
 		};
 
 		// Easy-to-use function that looks in config for a property. If not found, ask the user!
@@ -86,3 +95,10 @@ namespace rtmath {
 		extern std::shared_ptr<configsegment> _rtconfroot;
 	}; // end namespace config
 }; // end namespace rtmath
+
+// ostream override
+std::ostream & operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
+// istream override
+std::istream & operator>> (std::istream &stream, rtmath::config::configsegment &ob);
+
+
