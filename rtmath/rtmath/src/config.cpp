@@ -23,14 +23,12 @@ namespace rtmath {
 		std::shared_ptr<configsegment> configsegment::create(const std::string &name)
 		{
 			std::shared_ptr<configsegment> obj(new configsegment(name));
-			obj->_self = obj; // My, how circular, but _self is the weak_ptr.
 			return obj;
 		}
 
 		std::shared_ptr<configsegment> configsegment::create(const std::string &name, std::shared_ptr<configsegment> &parent)
 		{
 			std::shared_ptr<configsegment> obj(new configsegment(name));
-			obj->_self = obj; // My, how circular, but _self is the weak_ptr.
 			obj->_parent = parent;
 			parent->_children.insert(obj);
 			return obj;
@@ -42,16 +40,29 @@ namespace rtmath {
 			this->_segname = name;
 		}
 
+		configsegment::configsegment(const std::string &name, std::shared_ptr<configsegment> &parent)
+		{
+			this->_segname = name;
+			_parent = parent;
+			parent->_children.insert(getPtr());
+		}
+
 		configsegment::~configsegment()
 		{
 			// Thanks to shared_ptr, children will delete naturally when nothing holds them!
+		}
+
+		std::shared_ptr<configsegment> configsegment::getPtr() const
+		{
+			std::shared_ptr<const configsegment> a = shared_from_this();
+			return std::const_pointer_cast<configsegment>(a);
 		}
 
 		// Deprecated in shared_ptr conversion
 		std::shared_ptr<configsegment> configsegment::findSegment(const std::string &key) const
 		{
 			using namespace std;
-			std::shared_ptr<configsegment> cseg = this->_self.lock();
+			std::shared_ptr<configsegment> cseg = getPtr();
 
 			// If first part of key is '/', seek to root
 			
@@ -225,11 +236,6 @@ namespace rtmath {
 		std::shared_ptr<configsegment> configsegment::loadFile
 			(const char* filename, std::shared_ptr<configsegment> root)
 		{
-			// This will load a file and tack it into the root (if specified)
-			// If this is a new config tree, pass NULL as the root
-			// If new tree, returns the new root. If not, returns root
-
-			// First, check that the file can be opened. If not, return NULL.
 			using namespace std;
 			using namespace boost::filesystem;
 
@@ -239,8 +245,22 @@ namespace rtmath {
 			if (is_directory(p)) throw rtmath::debug::xMissingFile(filename);
 			ifstream indata(filename);
 			if (!indata) throw rtmath::debug::xOtherError();
-//			if (indata.good() == false) return NULL;
 			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(filename);
+
+			loadFile(indata, root, filename);
+			return root;
+		}
+
+		std::shared_ptr<configsegment> configsegment::loadFile
+			(std::istream &indata, std::shared_ptr<configsegment> root, const std::string &cwd)
+		{
+			// This will load a file and tack it into the root (if specified)
+			// If this is a new config tree, pass NULL as the root
+			// If new tree, returns the new root. If not, returns root
+
+			// First, check that the file can be opened. If not, return NULL.
+			using namespace std;
+			using namespace boost::filesystem;
 
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
@@ -297,7 +317,7 @@ namespace rtmath {
 					if (key == "Include")
 					{
 						// Use Boost to get the full path of the file (use appropriate dir)
-						static boost::filesystem::path rootpath(filename); // static, so it is called on the very first file
+						static boost::filesystem::path rootpath(cwd); // static, so it is called on the very first file
 						boost::filesystem::path inclpath(value);
 						if (inclpath.is_relative())
 						{
@@ -312,7 +332,7 @@ namespace rtmath {
 						}
 					} else if (key == "IncludeIfExists") {
 						// Use Boost to get the full path of the file (use appropriate dir)
-						static boost::filesystem::path rootpath(filename); // static, so it is called on the very first file
+						static boost::filesystem::path rootpath(cwd); // static, so it is called on the very first file
 						boost::filesystem::path inclpath(value);
 						if (inclpath.is_relative())
 						{
@@ -334,6 +354,18 @@ namespace rtmath {
 
 			}
 			return root;
+		}
+
+		void configsegment::move(std::shared_ptr<configsegment> &newparent)
+		{
+			std::shared_ptr<configsegment> me = getPtr();
+			if (_parent.expired() == false)
+			{
+				// Parent exists. Free child reference.
+				_parent.lock()->_children.erase(me);
+			}
+			_parent = newparent;
+			newparent->_children.insert(me);
 		}
 
 		void getConfigDefaultFile(std::string &filename)
@@ -382,38 +414,42 @@ namespace rtmath {
 			return cnf;
 		}
 
+		std::ostream& operator<< (std::ostream& stream, const rtmath::config::configsegment &ob)
+		{
+			// Take the object, and print in the appropriate form, using recursion
+			// TODO: allow for include statements
+			using namespace std;
+			string name = ob.name();
+			stream << "<" << name << ">" << endl;
+			{
+				for (auto ut = ob._symlinks.begin(); ut != ob._symlinks.end(); ++ut)
+				{
+					if ((*ut).expired() == false)
+					{
+						stream << (*ut).lock();
+						//stream << (*ut);
+					}
+				}
+				for (auto ot = ob._mapStr.begin(); ot != ob._mapStr.end(); ++ot)
+					stream << " " << ot->first << " " << ot->second<< endl;
+				for (auto it = ob._children.begin(); it != ob._children.end(); ++it)
+					stream << (*it);
+			}
+			stream << "</" << name << ">" << endl;
+			return stream;
+		}
+
+
+		std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob)
+		{
+			//std::string fname;
+			//stream >> fname;
+			//ob = rtmath::config::configsegment::loadFile(fname.c_str(),ob);
+			ob = rtmath::config::configsegment::loadFile(stream,nullptr);
+			return stream;
+		}
+
 	}; // end config
 };// end rtmath
-
-
-std::ostream & operator<< (std::ostream &stream, const rtmath::config::configsegment &ob)
-{
-	// Take the object, and print in the appropriate form, using recursion
-	// TODO: allow for include statements
-	using namespace std;
-	string name = ob.name();
-	stream << "<" << name << ">" << endl;
-	{
-		for (auto ut = ob._symlinks.begin(); ut != ob._symlinks.end(); ++ut)
-		{
-			if ((*ut).expired() == false)
-			{
-				//stream << (*ut);
-			}
-		}
-		for (auto ot = ob._mapStr.begin(); ot != ob._mapStr.end(); ++ot)
-			stream << " " << ot->first << " " << ot->second<< endl;
-		for (auto it = ob._children.begin(); it != ob._children.end(); ++it)
-			stream << (*it);
-	}
-	stream << "</" << name << ">" << endl;
-	return stream;
-}
-
-std::istream & operator>> (std::istream &stream, rtmath::config::configsegment &ob)
-{
-	return stream;
-}
-
 
 

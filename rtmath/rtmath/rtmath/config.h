@@ -20,10 +20,13 @@
 
 #include <string>
 #include <iostream>
+#include <ostream>
+#include <iomanip>
 #include <map>
 #include <set>
 #include <memory>
 #include <boost/lexical_cast.hpp>
+
 
 // TODO: fix findSegment so that it works
 // TODO: more throwable errors
@@ -32,12 +35,15 @@
 namespace rtmath {
 	namespace config {
 
-		class configsegment {
+		class configsegment : public std::enable_shared_from_this<configsegment> {
 		public:
 			static std::shared_ptr<configsegment> create(const std::string &name);
 			static std::shared_ptr<configsegment> create(const std::string &name, 
 				std::shared_ptr<configsegment> &parent);
+			configsegment(const std::string &name);
+			configsegment(const std::string &name, std::shared_ptr<configsegment> &parent);
 			~configsegment();
+			std::shared_ptr<configsegment> getPtr() const;
 			bool hasVal(const std::string &key) const;
 			bool getVal(const std::string &key, std::string &value) const;
 			template <class T> bool getVal(const std::string &key, T &value) const
@@ -51,6 +57,7 @@ namespace rtmath {
 			void setVal(const std::string &key, const std::string &value);
 			void name(std::string &res) const;
 			inline std::string name() const { std::string res; name(res); return res; }
+			void move(std::shared_ptr<configsegment> &newparent);
 			std::shared_ptr<configsegment> findSegment(const std::string &key) const;
 			std::shared_ptr<configsegment> getChild(const std::string &name) const;
 			std::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
@@ -60,17 +67,17 @@ namespace rtmath {
 			void listChildren(std::set<std::string> &res) const;
 			inline std::set<std::string> listChildren() const { std::set<std::string> res; listChildren(res); return res; }
 		protected:
-			configsegment(const std::string &name);
 			std::string _segname;
 			std::weak_ptr<configsegment> _parent;
-			std::weak_ptr<configsegment> _self;
+			//std::weak_ptr<configsegment> _self;
 			std::map<std::string, std::string> _mapStr;
 			std::set<std::shared_ptr<configsegment> > _children;
 			std::set<std::weak_ptr<configsegment> > _symlinks;
 		public: // And let's have a static loading function here!
 			static std::shared_ptr<configsegment> loadFile(const char* filename, std::shared_ptr<configsegment> root);
-			friend std::ostream & operator<<(std::ostream &stream, const rtmath::config::configsegment &ob);
-			friend std::istream & operator>>(std::istream &stream, rtmath::config::configsegment &ob);
+			static std::shared_ptr<configsegment> loadFile(std::istream &indata, std::shared_ptr<configsegment> root, const std::string &cwd = "./");
+			friend std::ostream& operator<<(std::ostream& stream, const rtmath::config::configsegment &ob);
+			friend std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
 		};
 
 		// Easy-to-use function that looks in config for a property. If not found, ask the user!
@@ -93,12 +100,16 @@ namespace rtmath {
 		void setRtconfRoot(std::shared_ptr<configsegment> &root);
 
 		extern std::shared_ptr<configsegment> _rtconfroot;
+
+		std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
+		std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
+
 	}; // end namespace config
 }; // end namespace rtmath
 
 // ostream override
-std::ostream & operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
+//std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
 // istream override
-std::istream & operator>> (std::istream &stream, rtmath::config::configsegment &ob);
+//std::istream& std::istream::operator>> (std::istream &stream, rtmath::config::configsegment &ob);
 
 
