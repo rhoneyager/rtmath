@@ -3,7 +3,7 @@
 include(../../FindROOT.cmake)
 
 add_executable (rtmath-getm getm.cpp)
-target_link_libraries (rtmath-getm rtmath-static)
+target_link_libraries (rtmath-getm rtmath)
 
 IF(${UNIX})
 target_link_libraries (rtmath-getm netcdf m boost_filesystem boost_unit_test_framework boost_system)
@@ -17,4 +17,6 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-getm PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
+#INSTALL(TARGETS rtmath-getm RUNTIME DESTINATION bin)
+INSTALL(TARGETS rtmath-getm RUNTIME DESTINATION bin RENAME rtmath-genmtab)
 

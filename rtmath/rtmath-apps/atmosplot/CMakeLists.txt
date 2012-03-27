@@ -3,7 +3,7 @@
 include(../../FindROOT.cmake)
 
 add_executable (rtmath-atmosplot atmosplot.cpp)
-target_link_libraries (rtmath-atmosplot rtmath-static)
+target_link_libraries (rtmath-atmosplot rtmath)
 
 IF(${UNIX})
 target_link_libraries (rtmath-atmosplot netcdf m boost_filesystem boost_unit_test_framework boost_system)
@@ -17,4 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-atmosplot PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
+INSTALL(TARGETS rtmath-atmosplot RUNTIME DESTINATION bin)
 

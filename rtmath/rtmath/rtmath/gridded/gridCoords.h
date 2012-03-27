@@ -96,10 +96,11 @@ namespace std {
 			return false;
 		}
 	};
-
+/*
 	std::ostream & operator<<(std::ostream &stream, const rtmath::griddata::gridCoords &ob)
 	{
 		ob.print(stream);
 		return stream;
 	}
+*/
 } // end std

@@ -81,7 +81,7 @@ namespace rtmath {
 			set<double> qangles;
 
 			// Need to interpolate phase matrices to the correct quadrature points
-			for (auto it = qangles.begin(); it != qangled.end(); it++)
+			for (auto it = qangles.begin(); it != qangles.end(); it++)
 			{
 			}
 

@@ -3,7 +3,7 @@
 include(../../FindROOT.cmake)
 
 add_executable (rtmath-ddparse ddparse2.cpp)
-target_link_libraries (rtmath-ddparse rtmath-static)
+target_link_libraries (rtmath-ddparse rtmath)
 
 IF(${UNIX})
 target_link_libraries (rtmath-ddparse netcdf m boost_filesystem boost_unit_test_framework boost_system)
@@ -17,4 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-ddparse PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
+INSTALL(TARGETS rtmath-ddparse RUNTIME DESTINATION bin)
 

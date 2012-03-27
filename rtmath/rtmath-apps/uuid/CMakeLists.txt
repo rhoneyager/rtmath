@@ -3,7 +3,7 @@
 include(../../FindROOT.cmake)
 
 add_executable (rtmath-uuid uuid.cpp)
-target_link_libraries (rtmath-uuid rtmath-static)
+target_link_libraries (rtmath-uuid rtmath)
 
 IF(${UNIX})
 target_link_libraries (rtmath-uuid netcdf m boost_filesystem boost_unit_test_framework boost_system)
@@ -17,4 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-uuid PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
+INSTALL(TARGETS rtmath-uuid RUNTIME DESTINATION bin)
 

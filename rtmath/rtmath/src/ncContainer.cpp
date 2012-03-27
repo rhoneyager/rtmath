@@ -21,7 +21,7 @@ namespace rtmath {
 		ncContainer::ncContainer(const std::string &filename, int mode)
 		{
 			_init();
-			_open(filename);
+			_open(filename,0);
 		}
 
 		ncContainer::~ncContainer()

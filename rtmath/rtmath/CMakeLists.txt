@@ -75,7 +75,10 @@ ENDIF(${UNIX})
 # and places the testing program in the appropriate directory.
 
 # Headers
-INSTALL(DIRECTORY rtmath DESTINATION include)
+INSTALL(DIRECTORY rtmath 
+	DESTINATION include
+	PATTERN ".svn" EXCLUDE
+)
 
 # Executables and libraries
 INSTALL(TARGETS rtmath-tests rtmath-static rtmath 
