@@ -70,3 +70,18 @@ IF(${UNIX})
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
 ENDIF(${UNIX})
 
+
+# Install targets. This ensures that the library is in a valid location, 
+# and places the testing program in the appropriate directory.
+
+# Headers
+INSTALL(DIRECTORY rtmath DESTINATION include)
+
+# Executables and libraries
+INSTALL(TARGETS rtmath-tests rtmath-static rtmath 
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+)
+
+
