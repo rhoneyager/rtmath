@@ -1,6 +1,7 @@
 # Create the test program and link it with the rtmath library
 
-include(../../FindROOT.cmake)
+# Find ROOT directories and files
+include (../../CMakeRules/common.cmake)
 
 add_executable (rtmath-absorb-slab absorb-slab.cpp)
 target_link_libraries (rtmath-absorb-slab rtmath)
@@ -17,5 +18,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-absorb-slab PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
-INSTALL(TARGETS rtmath-absorb-slab RUNTIME DESTINATION bin)
+INSTALL(TARGETS rtmath-absorb-slab RUNTIME DESTINATION bin COMPONENT Applications)
 

@@ -1,6 +1,6 @@
 # Create the test program and link it with the rtmath library
+include (../../CMakeRules/common.cmake)
 
-include(../../FindROOT.cmake)
 
 add_executable (rtmath-atmosplot atmosplot.cpp)
 target_link_libraries (rtmath-atmosplot rtmath)
@@ -17,5 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-atmosplot PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
-INSTALL(TARGETS rtmath-atmosplot RUNTIME DESTINATION bin)
+INSTALL(TARGETS rtmath-atmosplot RUNTIME DESTINATION bin COMPONENT Applications)
 

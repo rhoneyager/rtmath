@@ -1,6 +1,6 @@
 # Create the test program and link it with the rtmath library
 
-include(../../FindROOT.cmake)
+include (../../CMakeRules/common.cmake)
 
 add_executable (rtmath-conv-units conv.cpp)
 target_link_libraries (rtmath-conv-units rtmath)
@@ -17,5 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-conv-units PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
-INSTALL(TARGETS rtmath-conv-units RUNTIME DESTINATION bin)
+INSTALL(TARGETS rtmath-conv-units RUNTIME DESTINATION bin COMPONENT Applications)
 

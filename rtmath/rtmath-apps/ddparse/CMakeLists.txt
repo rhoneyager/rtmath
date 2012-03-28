@@ -1,6 +1,6 @@
 # Create the test program and link it with the rtmath library
 
-include(../../FindROOT.cmake)
+include (../../CMakeRules/common.cmake)
 
 add_executable (rtmath-ddparse ddparse2.cpp)
 target_link_libraries (rtmath-ddparse rtmath)
@@ -17,5 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-ddparse PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
-INSTALL(TARGETS rtmath-ddparse RUNTIME DESTINATION bin)
+INSTALL(TARGETS rtmath-ddparse RUNTIME DESTINATION bin COMPONENT Applications)
 

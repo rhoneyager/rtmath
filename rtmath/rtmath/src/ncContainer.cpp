@@ -2,9 +2,22 @@
 #include <memory>
 #include <netcdf.h>
 #include <boost/filesystem.hpp>
+#include <memory>
+#include <map>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <unordered_map>
+#include <boost/unordered_map.hpp> // Instead of std::unordered map, for now
+#include <boost/bimap.hpp> // Support for bidirectional maps!!!
+#include <limits.h>	
 #include "../rtmath/error/error.h"
 #include "../rtmath/netcdf/ncContainer.h"
 
+
+#ifdef _WIN32
+#pragma comment(lib, "netcdf")
+#endif
 
 namespace rtmath {
 

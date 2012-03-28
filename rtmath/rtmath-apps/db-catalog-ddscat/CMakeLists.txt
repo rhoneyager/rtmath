@@ -1,6 +1,6 @@
 # Create the test program and link it with the rtmath library
 
-include(../../FindROOT.cmake)
+include (../../CMakeRules/common.cmake)
 
 # For now, don't build on windows
 IF(${UNIX})
@@ -22,6 +22,6 @@ ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 ENDIF(${UNIX})
 
 
-#INSTALL(TARGETS rtmath-db-catalog-ddscat RUNTIME DESTINATION bin)
+#INSTALL(TARGETS rtmath-db-catalog-ddscat RUNTIME DESTINATION bin COMPONENT Applications)
 
 

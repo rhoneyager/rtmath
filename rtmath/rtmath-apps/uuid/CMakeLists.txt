@@ -1,6 +1,6 @@
 # Create the test program and link it with the rtmath library
 
-include(../../FindROOT.cmake)
+include (../../CMakeRules/common.cmake)
 
 add_executable (rtmath-uuid uuid.cpp)
 target_link_libraries (rtmath-uuid rtmath)
@@ -17,5 +17,5 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 set_target_properties(rtmath-uuid PROPERTIES COMPILE_FLAGS -std=c++0x)
 ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 
-INSTALL(TARGETS rtmath-uuid RUNTIME DESTINATION bin)
+INSTALL(TARGETS rtmath-uuid RUNTIME DESTINATION bin COMPONENT Applications)
 

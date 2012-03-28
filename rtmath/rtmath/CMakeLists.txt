@@ -34,8 +34,12 @@ ENDIF(${WIN32})
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-
-add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
+# Win32 MSVC builds really prefer a static lib build.
+IF(${WIN32})
+	add_library (rtmath STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
+ELSE()
+	add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
+ENDIF()
 
 add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
 
