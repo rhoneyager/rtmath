@@ -9,6 +9,8 @@
    or a class that provides an eval member and inherits from the function 
    base class
    */
+#include <map>
+#include <set>
 
    namespace rtmath {
 
@@ -26,5 +28,7 @@
 	namespace quadrature {
       	  double quad_eval_leg(double a, double b, unsigned int degree, const evalfunction *f);
 		  extern const double _gaussian_lagrange_prepump[];
+
+		  void getQuadPtsLeg(size_t degree, std::set<double> &pts);
       	  };
 }; // end namespace rtmath

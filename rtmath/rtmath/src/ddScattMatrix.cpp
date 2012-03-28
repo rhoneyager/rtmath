@@ -30,6 +30,8 @@ namespace rtmath {
 				}
 			// _vals and _S are part of std::complex.
 			// They are automatically zeroed.
+
+			_lock = false;
 		}
 		
 		ddScattMatrix::ddScattMatrix()
@@ -84,6 +86,15 @@ namespace rtmath {
 				{
 					_vals[i][j] = rhs._vals[i][j];
 				}
+
+			// Preserve locking, too
+			for (size_t i=0;i<4;i++)
+				for (size_t j=0;j<4;j++)
+				{
+					_Knn[i][j] = rhs._Knn[i][j];
+					_Pnn[i][j] = rhs._Pnn[i][j];
+				}
+
 			_genS();
 
 			return *this;
@@ -176,6 +187,9 @@ namespace rtmath {
 			// Generates Snn and, by extension, Knn and Pnn
 			// TODO: verify Snn, Pnn and Knn
 			using namespace std;
+
+			if (_lock) return;
+
 			//complex<double> S[4];
 			complex<double> i(0,1);
 
@@ -197,6 +211,7 @@ namespace rtmath {
 
 		void ddScattMatrix::setF(const matrixop &src)
 		{
+			if (_lock) return;
 			_vals[0][0].real(src.get(2,0,0));
 			_vals[0][0].imag(src.get(2,0,1));
 			_vals[0][1].real(src.get(2,0,2));

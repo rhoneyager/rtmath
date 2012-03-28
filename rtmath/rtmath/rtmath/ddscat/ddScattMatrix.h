@@ -23,7 +23,7 @@ namespace rtmath {
 			ddScattMatrix(double freq, const std::string &lin);
 			ddScattMatrix(double freq, std::istream &lss);
 			ddScattMatrix();
-			~ddScattMatrix();
+			virtual ~ddScattMatrix();
 			ddScattMatrix & operator = (const ddScattMatrix&); // Assignment needed due to double arrays
 
 			inline double theta() const {return _theta;}
@@ -51,10 +51,13 @@ namespace rtmath {
 			void extinction(double Knn[4][4]) const;
 			void extinction(matrixop &res) const;
 			inline matrixop extinction() const { matrixop res(2,4,4); extinction(res); return res; }
-		private:
+
+			inline void lock() { _lock = true; }
+		protected:
 			void _init();
-			void _genS();
+			virtual void _genS();
 			
+			bool _lock;
 			double _theta, _phi, _wavelength, _freq;
 			double _Knn[4][4], _Pnn[4][4];
 			// Unfortunately, matrixop is not a template. Otherwise, I'd change these.

@@ -300,6 +300,9 @@
     <ClInclude Include="rtmath\netcdf\ncDim.h">
       <Filter>Header Files\netcdf</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\mie\mieScattMatrix.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -548,6 +551,9 @@
     </ClCompile>
     <ClCompile Include="src\matrixop-ipp.cpp">
       <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mieScattMatrix.cpp">
+      <Filter>Source Files\mie</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -81,6 +81,15 @@ namespace rtmath {
 			return res;
 		}
 
+		void getQuadPtsLeg(size_t degree, std::set<double> &pts)
+		{
+			pts.clear();
+			unsigned int start = 3 * (unsigned int) ( ( (degree * degree) - degree) / 2);
+			if (degree > 7) throw rtmath::debug::xBadInput("Bad quadrature degree");
+			for (unsigned int i = start; i < start + 3 * degree; i+=3)
+				pts.insert(_gaussian_lagrange[i+1]);
+		}
+
 	}; // end namespace quadrature
 }; // end namespace rtmath
 

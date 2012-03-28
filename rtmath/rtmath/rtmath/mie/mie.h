@@ -9,8 +9,5 @@
 #include "mie-Qcalc.h"
 #include "mie-Scalc.h"
 #include "mie-phaseFunc.h"
-
-namespace mie {
-	unsigned int version(void);
-};
+#include "mieScattMatrix.h"
 

@@ -15,6 +15,7 @@
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 #include "../rtmath/units.h"
+#include "../rtmath/quadrature.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -79,27 +80,65 @@ namespace rtmath {
 
 			// Generate quadrature points
 			set<double> qangles;
+			// Let's get the quadrature angles from gaussian quadrature
+			// Other quadrature methods can be coded in as well
+			const size_t deg = 7;
+			quadrature::getQuadPtsLeg(deg,qangles);
+			// The quadrature points are on interval (-1,1)
+			// Need to get mapping between angles in degrees and these points
+			// can handle this by mapping mu = cos(theta).
 
+			// For phase functions, need to look at both incoming and outgoing angle
+			// in cos(theta)
+			// ddscat output always has incoming angle at zero degrees, with a varying output angle.
+			// However, the targets may be rotated to simulate the angle change.
+			// In this case, however, we likely just have a single ensemble pf from the data
+			// TODO!!!!!
+			std::map<coords::cyclic<double>, std::shared_ptr<const ddscat::ddScattMatrix> >
+				interped;
 			// Need to interpolate phase matrices to the correct quadrature points
 			for (auto it = qangles.begin(); it != qangles.end(); it++)
 			{
+				// TODO: convert angle into cyclic coords
+				throw rtmath::debug::xUnimplementedFunction();
+				coords::cyclic<double> crd;
+				std::shared_ptr<const ddscat::ddScattMatrix> interres;
+				interpolate(crd, interres);
+				interped[crd] = interres;
 			}
 
 			// First, write commented header information
 			// This includes where the scattering information is from, and a
 			// discription of each of these files
+			out << "C  ddscat rtmath output for " << endl;
+			out << "C  theta " << _theta << " phi " << _phi << " beta " << _beta << endl;
+			out << "C  at f = " << _freq << " GHz" << endl;
 
 			// Next is the degree and type of quadrature
+			cout << "   8    0   'GAUSSIAN         '" << endl;
 
 			// Output each scattering matrix at the designated quadrature incoming
 			// and outgoing angles
-			out << "C  SCATTERING MATRIX" << endl;
+			out << "C   SCATTERING MATRIX" << endl;
+			for (auto it = interped.begin(); it != interped.end(); ++it)
+			{
+				// Write incoming angle, outcoming angle, 0
+			}
 
 			// Write the extinction matrix at each quadrature angle
 			out << "C   EXTINCTION MATRIX" << endl;
+			for (auto it = interped.begin(); it != interped.end(); ++it)
+			{
+				// Write incoming angle
+			}
 
 			// Output the emission vectors
 			out << "C   EMISSION VECTOR" << endl;
+			for (auto it = interped.begin(); it != interped.end(); ++it)
+			{
+				// Write incoming angle and the four stokes parameters
+			}
+			// Evans fortran files lack a newline at EOF.
 		}
 
 		void ddOutputSingle::_insert(std::shared_ptr<const ddScattMatrix> &obj)

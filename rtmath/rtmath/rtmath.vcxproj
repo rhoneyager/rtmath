@@ -133,6 +133,7 @@
     <ClInclude Include="rtmath\mie\mie-tauNCalc.h" />
     <ClInclude Include="rtmath\mie\mie-wnCalc.h" />
     <ClInclude Include="rtmath\mie\mie.h" />
+    <ClInclude Include="rtmath\mie\mieScattMatrix.h" />
     <ClInclude Include="rtmath\netcdf\ncContainer.h" />
     <ClInclude Include="rtmath\netcdf\ncDim.h" />
     <ClInclude Include="rtmath\netcdf\ncVar.h" />
@@ -230,6 +231,7 @@
     <ClCompile Include="src\mie-Scalc.cpp" />
     <ClCompile Include="src\mie-tauNCalc.cpp" />
     <ClCompile Include="src\mie-wnCalc.cpp" />
+    <ClCompile Include="src\mieScattMatrix.cpp" />
     <ClCompile Include="src\MurmurHash3.cpp" />
     <ClCompile Include="src\ncContainer.cpp" />
     <ClCompile Include="src\os_functions.cpp" />
