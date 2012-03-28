@@ -22,6 +22,6 @@ ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 ENDIF(${UNIX})
 
 
-INSTALL(TARGETS rtmath-db-catalog-ddscat RUNTIME DESTINATION bin)
+#INSTALL(TARGETS rtmath-db-catalog-ddscat RUNTIME DESTINATION bin)
 
 

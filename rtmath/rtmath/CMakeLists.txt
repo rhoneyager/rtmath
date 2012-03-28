@@ -5,7 +5,6 @@
 aux_source_directory (src libsrcs)
 
 # Find ROOT directories and files
-#include(../FindROOT.cmake)
 include (../CMakeRules/common.cmake)
 
 # Options
@@ -77,14 +76,21 @@ ENDIF(${UNIX})
 # Headers
 INSTALL(DIRECTORY rtmath 
 	DESTINATION include
+	COMPONENT Headers
 	PATTERN ".svn" EXCLUDE
-)
+	)
 
 # Executables and libraries
-INSTALL(TARGETS rtmath-tests rtmath-static rtmath 
+INSTALL(TARGETS rtmath-tests
+	RUNTIME DESTINATION bin
+	COMPONENT Tests
+	)
+
+INSTALL(TARGETS rtmath-static rtmath 
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
-)
+	COMPONENT Libraries
+	)
 
 
