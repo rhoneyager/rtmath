@@ -61,6 +61,22 @@ namespace rtmath {
 			writeCSV(out);
 		}
 
+		void ddOutputSingle::write(const std::string &filename) const
+		{
+			using namespace std;
+			using namespace boost::filesystem;
+			// Do extension matching
+			path fp(filename);
+			path ext = fp.extension();
+
+			// TODO: add evans series (for this, strip .evans, expand filename into
+			// per-freq set, and write out each one).
+			if (ext.string() == ".csv")
+				writeCSV(filename);
+			else // Write csv output by default. Others, like nc and tsv, will be added later.
+				writeCSV(filename);
+		}
+
 		void ddOutputSingle::writeCSV(std::ostream &out) const
 		{
 			using namespace std;
@@ -143,6 +159,7 @@ namespace rtmath {
 
 		void ddOutputSingle::_insert(std::shared_ptr<const ddScattMatrix> &obj)
 		{
+			if (_locked) return;
 			// Helps loadFile and collects all insertions in a convenient place.
 			//_scattMatricesRaw.insert(obj);
 			// Insert into interpolation handler
@@ -151,6 +168,7 @@ namespace rtmath {
 
 		void ddOutputSingle::clear()
 		{
+			if (_locked) return;
 			ddOutputSingleInterp::_clear();
 			_init();
 		}
@@ -158,6 +176,7 @@ namespace rtmath {
 		void ddOutputSingle::loadFile(const std::string &filename)
 		{
 			using namespace std;
+			if (_locked) return;
 			// File loading routine is important!
 			// Load a standard .fml file. Parse each line for certain key words.
 			clear();

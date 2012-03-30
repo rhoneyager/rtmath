@@ -303,6 +303,9 @@
     <ClInclude Include="rtmath\mie\mieScattMatrix.h">
       <Filter>Header Files\mie</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\mie\ddOutputMie.h">
+      <Filter>Header Files\mie</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -553,6 +556,9 @@
       <Filter>Source Files\General</Filter>
     </ClCompile>
     <ClCompile Include="src\mieScattMatrix.cpp">
+      <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddOutputMie.cpp">
       <Filter>Source Files\mie</Filter>
     </ClCompile>
   </ItemGroup>

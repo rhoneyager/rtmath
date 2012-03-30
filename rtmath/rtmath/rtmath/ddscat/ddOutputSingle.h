@@ -38,8 +38,10 @@ namespace rtmath {
 			void loadFile(const std::string &filename);
 			// Stream input (Evans, CSV)
 			void clear();
+			void lock();
 
 			void print(std::ostream &out = std::cerr) const;
+			void write(const std::string &filename) const;
 			void writeCSV(const std::string &filename) const;
 			void writeCSV(std::ostream &out = std::cerr) const;
 			void writeEvans(std::ostream &out, double freq) const;
@@ -67,6 +69,7 @@ namespace rtmath {
 		protected:
 			double _beta, _theta, _phi, _freq, _wavelength;
 			double _reff;
+			bool _locked;
 			size_t _numDipoles;
 			std::string _filename;
 			// Note the shared_ptr construction to save memory

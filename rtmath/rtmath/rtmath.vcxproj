@@ -124,6 +124,7 @@
     <ClInclude Include="rtmath\macros.h" />
     <ClInclude Include="rtmath\mapid.h" />
     <ClInclude Include="rtmath\matrixop.h" />
+    <ClInclude Include="rtmath\mie\ddOutputMie.h" />
     <ClInclude Include="rtmath\mie\mie-abNCalc.h" />
     <ClInclude Include="rtmath\mie\mie-AnCalc.h" />
     <ClInclude Include="rtmath\mie\mie-phaseFunc.h" />
@@ -207,6 +208,7 @@
     <ClCompile Include="src\ddLoader.cpp" />
     <ClCompile Include="src\ddOutput.cpp" />
     <ClCompile Include="src\ddOutputEnsemble.cpp" />
+    <ClCompile Include="src\ddOutputMie.cpp" />
     <ClCompile Include="src\ddOutputSingle.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
     <ClCompile Include="src\ddScattMatrix.cpp" />

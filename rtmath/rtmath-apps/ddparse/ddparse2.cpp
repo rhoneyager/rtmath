@@ -34,7 +34,8 @@ int main(int argc, char** argv)
 		set<double> frequencies;
 		string ddPath = "./ddscat.par";
 		size_t varying_coord = 2;
-		string outprefix = "ddparse_";
+		string outprefix = "ddparse-";
+		string outFormat = "csv";
 		bool outCSV = true;
 		// Parse parameters
 		{
@@ -46,6 +47,9 @@ int main(int argc, char** argv)
 
 			// Input path
 			p.readParam<string>("-i",ddPath);
+
+			// Output Format
+			p.readParam<string>("-of",outFormat);
 
 			// Output prefix
 			p.readParam<string>("-p",outprefix);
@@ -122,15 +126,15 @@ int main(int argc, char** argv)
 
 			// Write the ensemble results, interpolating wherever necessary
 			ostringstream outname;
-			outname << outprefix << *it << ".csv";
-			res.writeCSV(outname.str());
+			outname << outprefix << *it << "." << outFormat;
+			res.write(outname.str());
 		} // end orientation loop
 
 	}
-	catch (...)
+	catch (rtmath::debug::xError &err)
 	{
-		cout << "Error thrown" << endl;
-
+		err.Display();
+		exit(1);
 	}
 	return 0;
 }
@@ -139,12 +143,14 @@ void doHelp()
 {
 	using namespace std;
 	cerr << "ddparse\n";
-	cerr << "A program for parsig ddscat output and generating ensembles.\n";
+	cerr << "A program for parsing ddscat output and generating ensembles.\n";
 	cerr << "Flags:\n";
 	cerr << "-h\n";
 	cerr << "\tProduce this help message.\n";
 	cerr << "-i\n";
 	cerr << "\tSpecify input ddscat.par. If not specified, defaults to execution directory.\n";
+	cerr << "-of\n";
+	cerr << "\tSpecify output format (csv, nc, evans, ...). Default is csv.\n";
 	cerr << "-p\n";
 	cerr << "\tSpecify prefix for output files. Default is 'ddparse-'.\n";
 	cerr << "-f\n";
