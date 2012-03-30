@@ -1,2 +1,34 @@
-cmake . -DCMAKE_INSTALL_PREFIX=/home/rhoneyag
+This is Ryan's rtmath library and corresponding applications.
+rtmath is a set of radiative transfer-geard routines that are designed to ultimately solve the radiative transfer equation in the microwave spectrum. Furthermore, it contains C++ classes designed to read and manipulate ddscat data and to perform weighting based on particle distributions of shape, size and orientation. These weightings change the bulk scattering and absorption matrices for the DA solution. 
+
+Additionally, this library provides many ancillary routines for fast matrix manipulation, command-line and config file processing and plotting. 
+
+
+DEPENDENCIES
+------------
+rtmath depends on:
+- Boost (version >= 1.46)
+- CERN ROOT (recent version)
+- C++11 compiler (gcc >= 4.4, etc.)
+- cmake (>= 1.6.2)
+
+Not all systems provide these dependencies. For CentOS 5.7, for example, everything but cmake must be compiled from scratch. Recent versions of Debian and Ubuntu no longer provide Boost in their repositories, so this must be compiled manually, along with all respective dependencies.
+
+This software is designed to work well on Windows, and may be compiled with GCC, MSVC and Intel compilers. It should work, but is untested, on Mac OS X.
+
+INSTALLATION
+------------
+
+- First, procure the most recent version of the libraries through subversion
+  svn co https://solar.met.fsu.edu/rtmath/rtmath
+  * Branches may be found under https://solar.met.fsu.edu/svn/rtmath/branches
+  * When upgrading between major versions, a fresh checkout is recommended.
+
+- Invoke cmake to generate platform-specific build files
+  Ex: cmake . -DCMAKE_INSTALL_PREFIX=/home/rhoneyag
+      Will configure install path.
+
+- Execute build using build utility
+  Ex: make all install
+      make package
 

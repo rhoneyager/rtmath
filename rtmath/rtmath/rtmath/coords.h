@@ -11,6 +11,7 @@
 #include <complex>
 #include "defs.h"
 #include "enums.h"
+#include "matrixop.h"
 #include "Public_Domain/MurmurHash3.h"
 
 /* coords.h provides the header information for several types of coordinate systems used in rtmath.
@@ -51,6 +52,16 @@ namespace rtmath {
 				va_end(indices);
 			}
 
+			cyclic(std::vector<T> &src)
+			{
+				_nd = src.size();
+				_coords.resize(_nd);
+				for (size_t i=0; i<_nd; i++)
+				{
+					_coords[i] = src[i];
+				}
+			}
+
 			virtual ~cyclic() {}
 
 			virtual T get(size_t index) const
@@ -71,6 +82,16 @@ namespace rtmath {
 			virtual void get(std::vector<T> &res) const
 			{
 				res = _coords;
+			}
+
+			virtual void get(matrixop &res) const
+			{
+				// Produces a 1 by x matrix. May be upconverted in
+				// dimensionality by matrixop functions.
+				matrixop r(1,_coords.size());
+				for (size_t i=0; i<_coords.size(); i++)
+					r.set( boost::lexical_cast<double>(_coords[i]) ,1,i);
+				res = r;
 			}
 
 			virtual size_t size() const
@@ -119,17 +140,24 @@ namespace rtmath {
 			{
 				using namespace std;
 				out << "coords output: ";
-				writeCSV(out);
+				writeCSV(out,true);
 			}
 
-			virtual void writeCSV(std::ostream &out = std::cerr) const
+			virtual void writeCSV(std::ostream &out = std::cerr, bool givedims = true) const
 			{
 				using namespace std;
-				out << _nd << ", ";
+				if (givedims) out << _nd << ", ";
 				for (auto it = _coords.begin(); it != _coords.end(); ++it)
 					out << *it << ", ";
 			}
 
+			virtual void writeTSV(std::ostream &out = std::cerr, bool givedims = true) const
+			{
+				using namespace std;
+				if (givedims) out << _nd << "\t";
+				for (auto it = _coords.begin(); it != _coords.end(); ++it)
+					out << *it << "\t";
+			}
 		};
 
 		// Supporting code to allow boost unordered map
