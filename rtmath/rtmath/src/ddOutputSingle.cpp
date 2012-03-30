@@ -34,6 +34,7 @@ namespace rtmath {
 			_reff = 0;
 			_numDipoles = 0;
 			_filename = "";
+			_locked = false;
 		}
 
 		ddOutputSingle::~ddOutputSingle()
@@ -52,6 +53,11 @@ namespace rtmath {
 			out << "ddOutputSingle for beta " << _beta << 
 				" theta " << _theta << " phi " << _phi
 				<< " frequency " << _freq << endl;
+		}
+
+		void ddOutputSingle::lock()
+		{
+			_locked = true;
 		}
 
 		void ddOutputSingle::writeCSV(const std::string &filename) const
