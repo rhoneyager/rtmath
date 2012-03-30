@@ -110,7 +110,8 @@ int main(int argc, char** argv)
 					(new ddscat::ddOutputEnsembleIsotropic(varying_coord));
 			} else if (*it == 0) // Fully-aligned provider
 			{
-				throw debug::xBadInput("Unimplemented fully-aligned provider");
+				oProv = shared_ptr<ddscat::ddOutputEnsemble>
+					(new ddscat::ddOutputEnsembleAligned());
 			} else { // Gaussian provider
 				oProv = shared_ptr<ddscat::ddOutputEnsemble>
 					(new ddscat::ddOutputEnsembleGaussian(*it,varying_coord));

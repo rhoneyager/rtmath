@@ -64,6 +64,20 @@ namespace rtmath {
 			size_t _coord_varying;
 		};
 
+		class ddOutputEnsembleAligned : public ddOutputEnsemble
+		{
+		public:
+			ddOutputEnsembleAligned();
+			virtual ~ddOutputEnsembleAligned();
+			virtual void genEnsemble(const std::unordered_map<coords::cyclic<double>, 
+				std::shared_ptr<const ddscat::ddOutputSingle>, 
+				boost::hash<coords::cyclic<double> > 
+				> &_mapOutputSingleRaw, 
+				ddOutputSingle &res) const;
+		private:
+			size_t _coord_varying;
+		};
+
 	} // end ddscat
 } // end rtmath
 

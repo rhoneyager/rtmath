@@ -241,5 +241,34 @@ namespace rtmath {
 			// So the gaussian ensemble averaging is now complete!
 		}
 
+		ddOutputEnsembleAligned::ddOutputEnsembleAligned()
+		{
+		}
+
+		ddOutputEnsembleAligned::~ddOutputEnsembleAligned()
+		{
+		}
+
+		void ddOutputEnsembleAligned::genEnsemble(const std::unordered_map<coords::cyclic<double>, 
+			std::shared_ptr<const ddscat::ddOutputSingle>, 
+			boost::hash<coords::cyclic<double> > 
+			> &_mapOutputSingleRaw, 
+			ddOutputSingle &res) const
+		{
+			// Long definition for what is a simple unordered_map
+			// Ensemble varies based on varying coordinate (beta, theta or phi)
+			// ensemble should also reflect frequency boundaries.
+
+			// So, split everything up based on frequency (coord. 0).
+			// Handle each frequency separately, then recombine at the end.
+			res.clear();
+
+			using namespace std;
+			if (_mapOutputSingleRaw.size() == 0) throw rtmath::debug::xBadInput("No members to generate ensemble with.");
+			auto it = _mapOutputSingleRaw.begin();
+			res = *it->second;
+
+		}
+
 	} // end ddscat
 } // end rtmath
