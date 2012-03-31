@@ -31,12 +31,14 @@ namespace rtmath {
 				_moments;
 			std::shared_ptr<const matrixop> _lattice;
 			std::map<size_t, coords::cyclic<double> > _latticePts;
+			std::map<size_t, coords::cyclic<double> > _latticePtsStd;
 			double _mass;
 			size_t _numPoints;
 			std::string _desc;
-			std::shared_ptr<const coords::cyclic<double> > _a1, _a2;
+			std::shared_ptr<const coords::cyclic<double> > _a1, _a2, _a3;
 			std::shared_ptr<const coords::cyclic<double> > _d;
-			std::shared_ptr<const coords::cyclic<double> > _x0;
+			std::shared_ptr<const coords::cyclic<double> > _x0, _xd;
+			std::shared_ptr<matrixop> _I; // Moments of inertia (not counting mass) in xyz coords
 		};
 
 	}

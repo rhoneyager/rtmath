@@ -109,6 +109,7 @@
     <ClInclude Include="rtmath\ddscat\ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
     <ClInclude Include="rtmath\ddscat\ddweights.h" />
+    <ClInclude Include="rtmath\ddscat\shapefile.h" />
     <ClInclude Include="rtmath\defs.h" />
     <ClInclude Include="rtmath\enums.h" />
     <ClInclude Include="rtmath\error\debug.h" />
@@ -247,6 +248,7 @@
     <ClCompile Include="src\refract.cpp" />
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
+    <ClCompile Include="src\shapefile.cpp" />
     <ClCompile Include="src\Stdafx.cpp" />
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />

@@ -306,6 +306,9 @@
     <ClInclude Include="rtmath\mie\ddOutputMie.h">
       <Filter>Header Files\mie</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\ddscat\shapefile.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -560,6 +563,9 @@
     </ClCompile>
     <ClCompile Include="src\ddOutputMie.cpp">
       <Filter>Source Files\mie</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapefile.cpp">
+      <Filter>Source Files\ddscat</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

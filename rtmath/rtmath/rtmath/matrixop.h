@@ -66,6 +66,12 @@ namespace rtmath {
 		void resize(size_t ndims, ...);
 		size_t maxSize() const;
 		bool issquare() const;
+/*
+		void squeeze(matrixop &res) const;
+		void expand(matrixop &res) const;
+		void subset(const std::vector<size_t> &start, const std::vector<size_t> &span, matrixop &res) const;
+		void superset(const std::vector<size_t> start, matrixop &res) const;
+*/
 
 		double det() const;
 		void upperTriangular(matrixop &target, matrixop &secondary) const;

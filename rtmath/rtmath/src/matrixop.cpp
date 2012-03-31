@@ -619,7 +619,44 @@ namespace rtmath {
 		}
 		//return inv;
 	}
+	/*
+	void matrixop::expand(matrixop &res) const
+	{
+		// Expand current matrix to match the dimensions of res
+		// This preserves dimensionality.
 
+		std::vector<size_t> mysize, ressize;
+		mysize = size();
+		ressize = res.size();
+		// Check that dimensions are compatible
+		for (auto it = mysize.begin(), ot = ressize.begin(); it != mysize.end() && ot != ressize.end();
+			++it, ++ot)
+		{
+			if (*ot < *it) throw debug::xArrayOutOfBounds();
+		}
+
+		res.clear();
+
+
+		std::vector<size_t> ptr(ressize.size(), 1);
+	}
+
+	void matrixop::squeeze(matrixop &res) const
+	{
+	}
+
+	void matrixop::subset(const std::vector<size_t> &start, const std::vector<size_t> &span, matrixop &res) const
+	{
+		res.resize(span);
+		// Do modular addition
+		std::vector<size_t> offset(span.size());
+
+	}
+
+	void matrixop::superset(const std::vector<size_t> start, matrixop &res) const
+	{
+	}
+	*/
 	void matrixop::_rowmult(size_t row, double factor)
 	{
 		// Multiply a given row by a given factor
