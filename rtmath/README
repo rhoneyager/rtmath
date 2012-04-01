@@ -12,6 +12,7 @@ rtmath depends on:
 - C++11 compiler (gcc >= 4.4, etc.)
 - cmake (>= 1.6.2)
 - tcsh
+- postgresql
 
 Not all systems provide these dependencies. For CentOS 5.7, for example, everything but cmake must be compiled from scratch. Recent versions of Debian and Ubuntu no longer provide Boost in their repositories, so this must be compiled manually, along with all respective dependencies.
 
