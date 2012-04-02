@@ -84,15 +84,19 @@ namespace rtmath {
 
 		double a1[3], a2[3], a3[3], d[3], x0[3];
 		std::getline(in,lin);
+		sin.clear();
 		sin.str(lin);
 		sin >> a1[0] >> a1[1] >> a1[2];
 		std::getline(in,lin);
+		sin.clear();
 		sin.str(lin);
 		sin >> a2[0] >> a2[1] >> a2[2];
 		std::getline(in,lin);
+		sin.clear();
 		sin.str(lin);
 		sin >> d[0] >> d[1] >> d[2];
 		std::getline(in,lin);
+		sin.clear();
 		sin.str(lin);
 		sin >> x0[0] >> x0[1] >> x0[2];
 
@@ -115,7 +119,7 @@ namespace rtmath {
 			double j, jx, jy, jz, ix, iy, iz;
 			pin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
 			coords::cyclic<double> cds(6,jx,jy,jz,ix,iy,iz);
-			_latticePts[i] = cds;
+			_latticePts[i+1] = cds;
 		}
 
 		// Figure out third lattice vector in target frame
