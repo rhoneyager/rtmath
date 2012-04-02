@@ -196,7 +196,6 @@ namespace rtmath {
 		_I->set(sum(iner_xz),2,2,0);
 		_I->set(sum(iner_yz),2,1,2);
 		_I->set(sum(iner_yz),2,2,1);
-		_I->print();
 	}
 
 	void shapefile::print(std::ostream &out) const
@@ -212,6 +211,8 @@ namespace rtmath {
 		out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
 		_x0->writeTSV(out,false);
 		out << "\t= X0(1-3) = location in lattice of target origin" << endl;
+		out << "Tensor of moment of inertia (dimensionless):\n";
+		_I->print(out);
 		out << "\tNo.\tix\tiy\tiz\t1\t1\t1" << endl;
 		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 		{

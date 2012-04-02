@@ -83,6 +83,7 @@ int main(int argc, char** argv)
 
 		// Load the shape file
 		rtmath::ddscat::shapefile shp(shapepath);
+		shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)
 	{
