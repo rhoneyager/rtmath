@@ -71,6 +71,7 @@ ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
 # Add in root dependencies on unix (AND WINDOWS)
 IF(${UNIX})
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
+target_link_libraries (rtmath-static ${ROOT_LIBRARIES})
 ENDIF(${UNIX})
 
 
