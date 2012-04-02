@@ -59,7 +59,7 @@ namespace rtmath {
 
 		void size(std::vector<size_t> &out) const;
 		const std::vector<size_t> size() const;
-		void print() const;
+		void print(std::ostream &out = std::cerr) const;
 		size_t dimensionality() const;
 		void clear();
 		void resize(const std::vector<size_t> &size);

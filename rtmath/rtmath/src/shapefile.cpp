@@ -67,7 +67,7 @@ namespace rtmath {
 
 	void shapefile::loadFile(std::istream &in)
 	{
-		throw rtmath::debug::xUnimplementedFunction();
+		//throw rtmath::debug::xUnimplementedFunction();
 		using namespace std;
 		_init();
 
@@ -78,9 +78,10 @@ namespace rtmath {
 		std::getline(in,lin);
 		_desc = lin;
 		std::getline(in,lin);
-		_numPoints = boost::lexical_cast<size_t>(lin);
-
 		istringstream sin;
+		sin.str(lin);
+		sin >> _numPoints;
+
 		double a1[3], a2[3], a3[3], d[3], x0[3];
 		std::getline(in,lin);
 		sin.str(lin);
@@ -104,13 +105,15 @@ namespace rtmath {
 		_x0 = std::shared_ptr<const coords::cyclic<double> >
 			(new coords::cyclic<double>(3,x0[0],x0[1],x0[2]));
 
+		std::getline(in,lin); // Skip junk line
+
 		// Load in the lattice points
 		for (size_t i=0; i < _numPoints; i++)
 		{
 			std::getline(in,lin);
-			sin.str(lin);
+			istringstream pin(lin); // MSVC bug with sin not reloading data in loop
 			double j, jx, jy, jz, ix, iy, iz;
-			sin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
+			pin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
 			coords::cyclic<double> cds(6,jx,jy,jz,ix,iy,iz);
 			_latticePts[i] = cds;
 		}
@@ -154,7 +157,7 @@ namespace rtmath {
 		{
 			// First, get matrixops of the lattice vectors
 			matrixop crd(2,3,1);
-			it->second.get(crd);
+			it->second.get(crd,3); // Drop the last 3 crds (they don't matter here)
 			// Do componentwise multiplication to do scaling
 			crd = crd % scale;
 
@@ -193,6 +196,7 @@ namespace rtmath {
 		_I->set(sum(iner_xz),2,2,0);
 		_I->set(sum(iner_yz),2,1,2);
 		_I->set(sum(iner_yz),2,2,1);
+		_I->print();
 	}
 
 	void shapefile::print(std::ostream &out) const

@@ -1227,17 +1227,17 @@ namespace rtmath {
 			target[i] = _data[i];
 	}
 
-	void matrixop::print() const
+	void matrixop::print(std::ostream &out) const
 	{
 		TASSERT(_dims.size() == 2);
 		using namespace std;
 		for (size_t i=0;i<_dims[0];i++) // row
 		{
 			for (size_t j=0;j<_dims[1];j++) // column
-				cout << get(2,i,j) << "\t";
-			cout << endl;
+				out << get(2,i,j) << "\t";
+			out << endl;
 		}
-		cout << endl;
+		out << endl;
 	}
 	/*
 	void matrixop::fromCdf(NcVar *var, long n)

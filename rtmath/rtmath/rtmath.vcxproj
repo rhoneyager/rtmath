@@ -49,6 +49,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>Stdafx.h</PrecompiledHeaderFile>
       <MinimalRebuild>false</MinimalRebuild>
+      <DisableSpecificWarnings>4996;4800</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -156,6 +157,7 @@
     <ClInclude Include="rtmath\refract.h" />
     <ClInclude Include="rtmath\resource.h" />
     <ClInclude Include="rtmath\ROOTlink.h" />
+    <ClInclude Include="rtmath\ROOT_functions.h" />
     <ClInclude Include="rtmath\rtmath.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
     <ClInclude Include="rtmath\units.h" />
@@ -246,6 +248,7 @@
     <ClCompile Include="src\rayleighPhaseFunc.cpp" />
     <ClCompile Include="src\recursivePolynomial.cpp" />
     <ClCompile Include="src\refract.cpp" />
+    <ClCompile Include="src\ROOT_functions.cpp" />
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\shapefile.cpp" />

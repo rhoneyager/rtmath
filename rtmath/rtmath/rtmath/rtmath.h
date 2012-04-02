@@ -46,6 +46,8 @@
 #include "gridded/gridCoords.h"
 #include "gridded/gridStatic.h"
 #include "gridded/gridCDF.h"
+#include "ROOT_functions.h"
+#include "ddscat/shapefile.h"
 
 // Link with ROOT on MSVC
 #include "ROOTlink.h"

@@ -14,6 +14,17 @@
 namespace rtmath {
 	namespace ddscat {
 
+		/*
+		class shapeFileStats
+		{
+		public:
+			shapeFileStats(
+				const std::map<size_t, coords::cyclic<double> > &_latticePtsStd,
+				const std::map<double, double> &masses,
+				double d);
+		};
+		*/
+
 		class shapefile
 		{
 		public:

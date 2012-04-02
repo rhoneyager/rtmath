@@ -247,8 +247,8 @@ namespace rtmath {
 			if (!indata) throw rtmath::debug::xOtherError();
 			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(filename);
 
-			loadFile(indata, root, filename);
-			return root;
+			return loadFile(indata, root, filename);
+			//return root;
 		}
 
 		std::shared_ptr<configsegment> configsegment::loadFile

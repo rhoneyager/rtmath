@@ -14,4 +14,5 @@ add_subdirectory (sector)
 add_subdirectory (transmittance)
 add_subdirectory (uuid)
 add_subdirectory (mie)
+add_subdirectory (shape)
 

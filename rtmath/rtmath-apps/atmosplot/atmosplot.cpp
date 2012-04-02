@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "../../rtmath/rtmath/rtmath.h"
 #include <TGraph.h>
 #include <TF1.h>
 #include <TCanvas.h>
@@ -18,6 +17,8 @@
 #include <TGraph2D.h>
 #include <TStyle.h>
 #include <TH2.h>
+#include "../../rtmath/rtmath/rtmath.h"
+
 
 void doHelp();
 
@@ -32,6 +33,8 @@ int main(int argc, char** argv)
 		rtmath::debug::appEntry(argc, argv);
 		if (argc == 1) doHelp();
 		config::parseParams p(argc,argv);
+
+		if (p.readParam("-h")) doHelp();
 
 		bool flag = false;
 
@@ -135,6 +138,7 @@ int main(int argc, char** argv)
 			gTPtitle << atm.name;
 			gTP.SetTitle(gTPtitle.str().c_str());
 			gTP.Draw("AL");
+			//ROOT_funcs::flip_axis(&gTP);
 
 			// Alt. vs p
 			Ctp.cd(2);
@@ -148,6 +152,7 @@ int main(int argc, char** argv)
 			gAPtitle << atm.name;
 			gAP.SetTitle(gTPtitle.str().c_str());
 			gAP.Draw("AL");
+			//ROOT_funcs::flip_axis(&gAP);
 
 			// RH vs p
 			Ctp.cd(3);
@@ -161,6 +166,8 @@ int main(int argc, char** argv)
 			gRPtitle << atm.name;
 			gRP.SetTitle(gTPtitle.str().c_str());
 			gRP.Draw("AL");
+			//ROOT_funcs::flip_axis(&gRP);
+
 			ostringstream fbasic;
 			fbasic << profname << "-basic.png";
 			Ctp.SaveAs(fbasic.str().c_str());

@@ -68,7 +68,7 @@ namespace rtmath {
 				_coords.resize(msz[0]);
 				_nd = msz[0];
 				for (size_t i=0; i<_coords.size(); i++)
-					_coords[i] = boost::lexical_cast<T> ( src.get(2,i,1) );
+					_coords[i] = boost::lexical_cast<T> ( src.get(2,i,0) );
 			}
 
 			virtual ~cyclic() {}
@@ -93,14 +93,14 @@ namespace rtmath {
 				res = _coords;
 			}
 
-			virtual void get(matrixop &res) const
+			virtual void get(matrixop &res, size_t len = 0) const
 			{
 				// Produces a 1 by x matrix. May be upconverted in
 				// dimensionality by matrixop functions.
-				matrixop r(2,_coords.size(),1);
-				for (size_t i=0; i<_coords.size(); i++)
-					r.set( boost::lexical_cast<double>(_coords[i]) ,2,i,1);
-				res = r;
+				if (len == 0) len = _coords.size();
+				res.resize(2,len,1);
+				for (size_t i=0; i<len; i++)
+					res.set( boost::lexical_cast<double>(_coords[i]) ,2,i,0);
 			}
 
 			virtual size_t size() const

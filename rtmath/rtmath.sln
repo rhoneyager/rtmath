@@ -9,6 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath-tests", "rtmath\test
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{3410248F-F4B3-4444-96BD-AEEA3BCE4B57}"
+	ProjectSection(SolutionItems) = preProject
+		rtmath-apps\CMakeLists.txt = rtmath-apps\CMakeLists.txt
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transmittance", "rtmath-apps\transmittance\transmittance.vcxproj", "{985581C5-8E25-4C98-8705-54F08BF17BA0}"
 EndProject
@@ -37,6 +40,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "absorb-slab", "rtmath-apps\absorb-slab\absorb-slab.vcxproj", "{732F68F7-7E2B-428A-B33C-F193D4C0994A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mie", "rtmath-apps\mie\mie.vcxproj", "{4BB3CAA5-7675-459D-B256-9BD54EFF8D4B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shape", "rtmath-apps\shape\shape.vcxproj", "{7055E1A9-189D-4A0E-B904-B947FD76F27B}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -112,6 +117,10 @@ Global
 		{4BB3CAA5-7675-459D-B256-9BD54EFF8D4B}.Debug|Win32.Build.0 = Debug|Win32
 		{4BB3CAA5-7675-459D-B256-9BD54EFF8D4B}.Release|Win32.ActiveCfg = Release|Win32
 		{4BB3CAA5-7675-459D-B256-9BD54EFF8D4B}.Release|Win32.Build.0 = Release|Win32
+		{7055E1A9-189D-4A0E-B904-B947FD76F27B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7055E1A9-189D-4A0E-B904-B947FD76F27B}.Debug|Win32.Build.0 = Debug|Win32
+		{7055E1A9-189D-4A0E-B904-B947FD76F27B}.Release|Win32.ActiveCfg = Release|Win32
+		{7055E1A9-189D-4A0E-B904-B947FD76F27B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,5 +140,6 @@ Global
 		{C8628A02-F87D-45D8-BEF6-544C41835314} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{732F68F7-7E2B-428A-B33C-F193D4C0994A} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{4BB3CAA5-7675-459D-B256-9BD54EFF8D4B} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
+		{7055E1A9-189D-4A0E-B904-B947FD76F27B} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 	EndGlobalSection
 EndGlobal
