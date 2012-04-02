@@ -21,16 +21,34 @@ This software is designed to work well on Windows, and may be compiled with GCC,
 INSTALLATION
 ------------
 
-- First, procure the most recent version of the libraries through subversion
+- First, ensure that the dependencies are installed
+  For Fedora, yum install environment-modules postgresql-devel libpqxx root-physics netcdf-devel tcsh screen gcc-c++ boost-devel subversion boost vim alpine
+  Debian and Ubuntu currently no longer provide ROOT packages. These need to be built from source.
+  Old CentOS versions (anything below version 6) provide GCC 4.1.x. This lacks C++11 support. A more recent compiler is necessary. GCC can be built for this platform 
+  with some difficulty. LLVM is also an option. Also, the version of Boost provided is ancient. This requires a from-source build. Actually, most of the packages probably 
+  need a source rebuild.
+  For Windows, just install the packages and a compiler (Visual Studio 2010 or better is recommended), and the build works fine.
+  Untested as yet on OS X, but it should build just fine.
+
+- Procure the most recent version of the libraries through subversion
   svn co https://solar.met.fsu.edu/rtmath/rtmath
   * Branches may be found under https://solar.met.fsu.edu/svn/rtmath/branches
   * When upgrading between major versions, a fresh checkout is recommended.
 
 - Invoke cmake to generate platform-specific build files
-  Ex: cmake . -DCMAKE_INSTALL_PREFIX=/home/rhoneyag
+  It is recommended that the cmake build path be separate from the sources, as this keeps the sources pristine. This is essential on WIndows VS builds, as the build system 
+  can overwrite the development .sln files.
+  Ex: mkdir cmake-rtmath
+      svn co https://solar.met.fsu.edu/svn/rtmath/rtmath
+      cd cmake-rtmath
+      cmake ../rtmath -DCMAKE_INSTALL_PREFIX=/home/rhoneyag
       Will configure install path.
+  Also, using ccmake or cmake-gui gives a good list of the options that may be set in the build.
 
 - Execute build using build utility
   Ex: make all install
       make package
+  Note: Installations in nonstandard directories require that the LD_LIBRARY_PATH and PATH environment variables be updated appropriately. On Red Hat-derivatives, 
+      the environment-modules package is highly recommended. See documentation for further details.
+
 
