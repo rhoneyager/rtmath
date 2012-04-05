@@ -23,11 +23,11 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <set>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <cmath>
 #include <complex>

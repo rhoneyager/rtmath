@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 #include <memory>
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include "../rtmath/da/damatrix.h"
 
@@ -66,6 +65,7 @@ namespace rtmath {
 
 	std::shared_ptr<const matrixop> damatrix::eval(const mapid &valmap) const
 	{
+		const double M_PI = boost::math::constants::pi<double>();
 		// First, check to see if this has already been calculated
 		// If it is in the cache, return the cached value
 		if (_eval_cache_enabled) 

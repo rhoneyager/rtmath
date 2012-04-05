@@ -1,5 +1,4 @@
 #include "../rtmath/Stdafx.h"
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream> // for debugging
 #include "../rtmath/da/damatrix_quad.h"
@@ -17,6 +16,7 @@ namespace rtmath {
 			// It varies A and B valmaps and calls the inner loop with Gaussian quadrature
 			//std::cerr << "Integrating on valmap " << valmap.print() << std::endl;
 			double a = 0.0;
+			const double M_PI = boost::math::constants::pi<double>();
 			double b = 2.0 * M_PI; // Oops - I had switched outer_int and inner_int's bounds
 			//double b = 1.0;
 			//unsigned int deg = 7;

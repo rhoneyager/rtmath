@@ -12,7 +12,6 @@
 //#include <boost/units/systems/si.hpp> // TODO: allow units
 #include <memory>
 #include <complex>
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 void doHelp();

@@ -5,8 +5,6 @@
 // Define filesystem version 3 for compile issues with older boost
 #define BOOST_FILESYSTEM_VERSION 3
 
-#define _USE_MATH_DEFINES
-
 #include <iostream>
 #include <cmath>
 #include <complex>

@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <boost/shared_ptr.hpp>
-#define _USE_MATH_DEFINES
+#include <boost/math/constants/constants.hpp>
 #include <math.h>
 #include <cmath>
 #include <string.h>
@@ -42,6 +42,7 @@ namespace rtmath {
 			// at a certain frequency, temp, pressure, concentration, 
 			// etc. Sum them all up and return.
 			double res = 0.0;
+			const double M_PI = boost::math::constants::pi<double>();
 			std::set<isodata*>::iterator it;
 			std::set<specline*>::iterator line;
 			for (it = isotopes.begin(); it != isotopes.end(); it++)

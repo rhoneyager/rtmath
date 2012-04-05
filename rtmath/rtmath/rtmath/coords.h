@@ -93,13 +93,15 @@ namespace rtmath {
 				res = _coords;
 			}
 
-			virtual void get(matrixop &res, size_t len = 0) const
+			virtual void get(matrixop &res, size_t start = 0, size_t len = 0) const
 			{
 				// Produces a 1 by x matrix. May be upconverted in
 				// dimensionality by matrixop functions.
-				if (len == 0) len = _coords.size();
+				if (start >= _coords.size()) throw rtmath::debug::xBadInput("start");
+				if (len == 0) len = _coords.size() - start;
+				if (start + len >= _coords.size()) throw rtmath::debug::xBadInput("len");
 				res.resize(2,len,1);
-				for (size_t i=0; i<len; i++)
+				for (size_t i=start; i<len; i++)
 					res.set( boost::lexical_cast<double>(_coords[i]) ,2,i,0);
 			}
 

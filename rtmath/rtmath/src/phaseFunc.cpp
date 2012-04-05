@@ -138,7 +138,7 @@ namespace rtmath {
 	void scattMatrix::_invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4])
 	{
 		// TODO: make sure it's correct via testing. Am I solving for the correct matrix?
-
+		const double M_PI = boost::math::constants::pi<double>();
 
 		// Using the Mueller matrix (Snn) and the Stokes Extinction Matrix (Knn), the 
 		// forward-scattering amplitude matrix (Sn) may be retreived. This goes in the 

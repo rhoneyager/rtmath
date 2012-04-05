@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 #include <memory>
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include "../rtmath/gridded/gridded.h"
 

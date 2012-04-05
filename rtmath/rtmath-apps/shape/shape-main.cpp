@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	try {
 		cerr << "rtmath-shape\n\n";
 		rtmath::debug::appEntry(argc, argv);
-		if (argc == 1) doHelp();
+		//if (argc == 1) doHelp(); // Undesirable.
 		config::parseParams p(argc,argv);
 
 

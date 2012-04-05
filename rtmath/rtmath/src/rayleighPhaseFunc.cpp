@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/rayleigh/rayleigh.h"
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <complex>
 

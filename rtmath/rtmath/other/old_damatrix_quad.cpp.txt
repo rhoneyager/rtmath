@@ -1,7 +1,6 @@
 #include "Stdafx.h"
 #include "damatrix.h"
 #include "damatrix_quad.h"
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include "quadrature.h"
 
@@ -14,6 +13,7 @@ void daint::outer_int(matrixop &res, const mapid &valmap,
 		// Outer integration is 0 to 2pi, dphi'
 		// It varies A and B valmaps and calls the inner loop with 
 		//  gaussian quadrature
+		const double M_PI = boost::math::constants::pi<double>();
 		double a = 0.0;
 		double b = 2.0 * M_PI;
 		unsigned int deg = 7;

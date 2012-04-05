@@ -3,7 +3,6 @@
 #include <time.h>
 //#include <netcdf.h>
 //#include <netcdfcpp.h>
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <fstream>
 #include <sstream>

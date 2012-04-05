@@ -107,6 +107,7 @@
     <ClInclude Include="rtmath\ddscat\ddOutput.h" />
     <ClInclude Include="rtmath\ddscat\ddOutputEnsemble.h" />
     <ClInclude Include="rtmath\ddscat\ddOutputSingle.h" />
+    <ClInclude Include="rtmath\ddscat\ddpar.h" />
     <ClInclude Include="rtmath\ddscat\ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
     <ClInclude Include="rtmath\ddscat\ddweights.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="src\ddOutputEnsemble.cpp" />
     <ClCompile Include="src\ddOutputMie.cpp" />
     <ClCompile Include="src\ddOutputSingle.cpp" />
+    <ClCompile Include="src\ddpar.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
     <ClCompile Include="src\ddScattMatrix.cpp" />
     <ClCompile Include="src\ddweights.cpp" />

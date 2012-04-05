@@ -187,7 +187,7 @@ namespace rtmath {
 			// Generates Snn and, by extension, Knn and Pnn
 			// TODO: verify Snn, Pnn and Knn
 			using namespace std;
-
+			const double M_PI = boost::math::constants::pi<double>();
 			if (_lock) return;
 
 			//complex<double> S[4];

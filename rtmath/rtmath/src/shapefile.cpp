@@ -15,6 +15,7 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <cmath>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
@@ -139,29 +140,11 @@ namespace rtmath {
 		_xd = std::shared_ptr<const coords::cyclic<double> >
 			(new coords::cyclic<double> (xd));
 
-		// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
-		using namespace boost::accumulators;
-		/*
-		accumulator_set<double, stats<
-			tag::(min),
-			tag::(max), 
-			tag::sum,
-			tag::mean, 
-			tag::moment<2>,
-			tag::skewness,
-			tag::kurtosis
-		> > acc_x, acc_y, acc_z;
-		*/
-
-		accumulator_set<double, stats<
-			tag::sum
-		> > iner_xx, iner_yy, iner_zz, iner_xy, iner_xz, iner_yz;
-
 		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 		{
 			// First, get matrixops of the lattice vectors
 			matrixop crd(2,3,1);
-			it->second.get(crd,3); // Drop the last 3 crds (they don't matter here)
+			it->second.get(crd,0,3); // Drop the last 3 crds (they don't matter here)
 			// Do componentwise multiplication to do scaling
 			crd = crd % scale;
 
@@ -171,35 +154,7 @@ namespace rtmath {
 			coords::cyclic<double> ccc(crdsc);
 			// Save in _latticePtsStd
 			_latticePtsStd[it->first] = ccc;
-			double x = ccc.get(0), y = ccc.get(1), z = ccc.get(2);
-
-			// Add to accumulators
-			// I split the coordinates to make it less work than for extending
-			// coords of matrixop...
-			/*
-			acc_x(x);
-			acc_y(y);
-			acc_z(z);
-			*/
-
-			iner_xx(y*y+z*z);
-			iner_yy(x*x+z*z);
-			iner_zz(x*x+y*y);
-			iner_xy(-x*y);
-			iner_xz(-x*z);
-			iner_yz(-y*z);
 		}
-
-
-		_I->set(sum(iner_xx),2,0,0);
-		_I->set(sum(iner_yy),2,1,1);
-		_I->set(sum(iner_zz),2,2,2);
-		_I->set(sum(iner_xy),2,0,1);
-		_I->set(sum(iner_xy),2,1,0);
-		_I->set(sum(iner_xz),2,0,2);
-		_I->set(sum(iner_xz),2,2,0);
-		_I->set(sum(iner_yz),2,1,2);
-		_I->set(sum(iner_yz),2,2,1);
 	}
 
 	void shapefile::print(std::ostream &out) const
@@ -215,8 +170,6 @@ namespace rtmath {
 		out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
 		_x0->writeTSV(out,false);
 		out << "\t= X0(1-3) = location in lattice of target origin" << endl;
-		out << "Tensor of moment of inertia (dimensionless):\n";
-		_I->print(out);
 		out << "\tNo.\tix\tiy\tiz\t1\t1\t1" << endl;
 		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 		{
@@ -226,8 +179,167 @@ namespace rtmath {
 		}
 	}
 
+	std::shared_ptr<shapefile> shapefile::getPtr() const
+	{
+		std::shared_ptr<const shapefile> a = shared_from_this();
+		return std::const_pointer_cast<shapefile>(a);
+	}
+
+	shapeFileStats::shapeFileStats(const shapefile &shp)
+	{
+		_init();
+		_shp = shp.getPtr();
+	}
+
+	shapeFileStats::shapeFileStats(const std::shared_ptr<const shapefile> &shp)
+	{
+		_init();
+		_shp = shp;
+	}
+
+	void shapeFileStats::_init()
+	{
+		_d = 0;
+		_V = 0;
+		_N = 0;
+		_reff = 0;
+		_T = 263; // TODO: find an appropriate value for this
+		_mass = 0;
+		_density = 0;
+		_valid = false;
+		_shp = nullptr;
+	}
+
+	void shapeFileStats::_calcDensities()
+	{
+		// The density of water and ice is expected to change with temperature.
+		// Knowing volume, this will enable a determination of mass
+
+		// TODO: implement this later.
+	}
+
+	void shapeFileStats::_calcDensity()
+	{
+		// Given the densities of the known constituents, calculate the overall particle
+		// mass and its density
+
+		double uV = _V / (double) _N; // unit volume
+		double mass = 0;
+		for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); ++it)
+		{
+			size_t material = (size_t) it->second.get(3);
+			double den = 1.0;
+			if (_densities.count(material)) // _calcDensities not really implemented yet...
+				den = _densities.at(material);
+			double um = den * uV;
+			mass += um;
+		}
+		_mass = mass;
+		_density = mass / _V;
+	}
+
+	void shapeFileStats::_calcFromD()
+	{
+		// Do calculations from interdipole spacing.
+
+		// First, find volume
+		// Assume eash dipole is a cube. Take number of dipoles and 
+		// multiply by interdipole distance.
+		double Vd = pow(_d,3.0);
+		_V = ((double) _N) * Vd;
+
+		// Get effective radius
+		// Take volume, and treat the object as a sphere. Then, 
+		// determine the effective radius, used in ddscat calculations.
+		double pi = boost::math::constants::pi<double>();
+		_reff = pow(3.*_V/(4.*pi),1./3.);
+
+		// Calculate mass (kg). Assume knowledge of all densities.
+		// This changes based on temperature
+		_calcDensities();
+
+		// Calculate overall density and particle mass
+		_calcDensity();
+
+		// Calculate other quantities, like center of mass and inertia tensor
+		_calcOtherStats();
+	}
+
+	void shapeFileStats::_calcFromV()
+	{
+		// With a known volume, the interdipole spacing can be calculated
+		double Vd = _V / ((double) _N);
+		_d = pow(Vd,1./3.);
+
+		// Get effective radius
+		double pi = boost::math::constants::pi<double>();
+		_reff = pow(3.*_V/(4.*pi),1./3.);
+
+		_calcDensities();
+		_calcDensity();
+		_calcOtherStats();
+	}
+
+	void shapeFileStats::_calcFromReff()
+	{
+		// Get volume
+		double pi = boost::math::constants::pi<double>();
+		_V = 4./3. * pi * pow(_reff,3.0);
+		double Vd = _V / ((double) _N);
+		_d = pow(Vd,1./3.);
+
+		_calcDensities();
+		_calcDensity();
+		_calcOtherStats();
+	}
+
+	void shapeFileStats::_calcFromMass()
+	{
+		// Given temp, can figure out densities of crystal components.
+		// Can also get overall crystal density
+		// From this, can get volume
+		// Then, can calculate effective radius
+		// And can get interdipole spacing
+	}
+
+	void shapeFileStats::_calcOtherStats()
+	{
+		// Do calculations of the center of mass, the tensor quantities, and other stuff
+		// The functions called here are all indep. of the initial state, as mass, density,
+		// volume and everything else have been calculated already.
+		_valid = true;
+
+		// Define the accumulators that we want
+		// For each axis, get min, max and the other statistics about the distribution
+
+		// Iterate accumulator as function of radial distance from center of mass
+
+		// 
+		/*
+				// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
+		using namespace boost::accumulators;
+
+		accumulator_set<double, stats<
+			tag::(min),
+			tag::(max), 
+			tag::sum,
+			tag::mean, 
+			tag::moment<2>,
+			tag::skewness,
+			tag::kurtosis
+		> > acc_x, acc_y, acc_z;
+
+		accumulator_set<double, stats<
+			tag::sum
+		> > iner_xx, iner_yy, iner_zz, iner_xy, iner_xz, iner_yz;
+		*/
+	}
+
+
 	}
 }
+
+
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob)
 {
