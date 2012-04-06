@@ -8,19 +8,24 @@ include (${CMAKE_CURRENT_LIST_DIR}/FindROOT.cmake)
 #include (${CMAKE_CURRENT_LIST_DIR}/FindOpenMP.cmake)
 
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
+set (COMMON_LIBS ${COMMON_LIBS} ${ROOT_LIBRARIES})
 
-# Set libraries on unix (MSVC provides automatically)
-IF(${UNIX})
-SET (COMMON_LIBS netcdf m boost_filesystem boost_unit_test_framework boost_system ${ROOT_LIBRARIES})
+# Add other libraries (MSVC provides automatically)
+IF(${MSVC})
+ELSE()
+SET (COMMON_LIBS ${COMMON_LIBS} netcdf m boost_filesystem boost_unit_test_framework boost_system ${ROOT_LIBRARIES})
 ENDIF()
 
 # Enable C++11
+# g++
 IF(${CMAKE_COMPILER_IS_GNUCXX})
 	if ("${COMMON_CFLAGS}" MATCHES "0x$")
 	else()
 	SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++0x)
 	endif()
 ENDIF()
+# llvm
+# TODO!!!
 
 # Take OpenMP option and enable / disable as appropriate
 IF(${USE_OPENMP})

@@ -46,6 +46,13 @@ set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries)
 
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 
+# TODO: add RPM building package separation
+# TODO: add Ubuntu package separation
+# TODO: add package dependencies
+# TODO: add structure to MSVC build files (solution folders)
+# TODO: add headers to rtmath solution build, in their appropriiate directories
+# TODO: add postgresql support
+
 # This must always be last!
 include(CPack)
 

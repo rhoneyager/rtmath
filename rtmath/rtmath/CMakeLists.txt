@@ -47,32 +47,22 @@ aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
 target_link_libraries (rtmath-tests rtmath-static)
 
-IF(${UNIX})
-target_link_libraries (rtmath-tests netcdf boost_filesystem boost_unit_test_framework boost_system)
-ENDIF(${UNIX})
+IF(${MSVC})
+# MSVC parallel builds by default
+SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
+ENDIF(${MSVC})
 
+#message(${COMMON_CFLAGS})
+
+target_link_libraries (rtmath-tests ${COMMON_LIBS})
+IF(EXISTS(COMMON_CFLAGS))
+set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+ENDIF()
 
 # Ensure that the dynamic library builds first (so prebuild will have run)
 add_dependencies (rtmath-tests rtmath-static)
-
-# MSVC parallel builds by default
-IF(${MSVC})
-set_target_properties(rtmath PROPERTIES COMPILE_FLAGS /MP)
-set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS /MP)
-ENDIF(${MSVC})
-
-# Use C++11 in gcc
-IF(${CMAKE_COMPILER_IS_GNUCXX})
-set_target_properties(rtmath PROPERTIES COMPILE_FLAGS -std=c++0x)
-set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS -std=c++0x)
-set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS -std=c++0x)
-ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
-
-# Add in root dependencies on unix (AND WINDOWS)
-IF(${UNIX})
-include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
-target_link_libraries (rtmath-static ${ROOT_LIBRARIES})
-ENDIF(${UNIX})
 
 
 # Install targets. This ensures that the library is in a valid location, 

@@ -45,7 +45,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shape", "rtmath-apps\shape\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9D4A2788-8FD7-4FB3-8D3A-6A9F3EF77A3C}"
 	ProjectSection(SolutionItems) = preProject
+		CMakeLists.txt = CMakeLists.txt
 		README = README
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CMakeRules", "CMakeRules", "{BB3A712C-3367-48CB-A98A-58A65FE83367}"
+	ProjectSection(SolutionItems) = preProject
+		CMakeRules\addapp.cmake = CMakeRules\addapp.cmake
+		CMakeRules\common.cmake = CMakeRules\common.cmake
+		CMakeRules\FindOpenMP.cmake = CMakeRules\FindOpenMP.cmake
+		CMakeRules\FindROOT.cmake = CMakeRules\FindROOT.cmake
 	EndProjectSection
 EndProject
 Global
@@ -146,5 +155,6 @@ Global
 		{732F68F7-7E2B-428A-B33C-F193D4C0994A} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{4BB3CAA5-7675-459D-B256-9BD54EFF8D4B} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{7055E1A9-189D-4A0E-B904-B947FD76F27B} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
+		{BB3A712C-3367-48CB-A98A-58A65FE83367} = {9D4A2788-8FD7-4FB3-8D3A-6A9F3EF77A3C}
 	EndGlobalSection
 EndGlobal

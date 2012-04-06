@@ -12,6 +12,7 @@
 
 #MESSAGE(STATUS "Looking for Root...")
 
+# Don't try to find ROOT this way on MSVC. I don't have to place ROOT on the path if this is the case.
 IF(${WIN32})
 	return()
 ENDIF(${WIN32})

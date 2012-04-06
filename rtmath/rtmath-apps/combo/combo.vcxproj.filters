@@ -21,7 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
-      <Filter>Header Files</Filter>
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -3,19 +3,5 @@
 include (../../CMakeRules/common.cmake)
 
 add_executable (rtmath-version rtmath-version.cpp)
-target_link_libraries (rtmath-version rtmath)
-
-IF(${UNIX})
-target_link_libraries (rtmath-version netcdf m boost_filesystem boost_unit_test_framework boost_system)
-ENDIF(${UNIX})
-
-#include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
-target_link_libraries (rtmath-version ${ROOT_LIBRARIES})
-
-# Use C++11 in gcc
-IF(${CMAKE_COMPILER_IS_GNUCXX})
-set_target_properties(rtmath-version PROPERTIES COMPILE_FLAGS -std=c++0x)
-ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
-
-INSTALL(TARGETS rtmath-version RUNTIME DESTINATION bin COMPONENT Applications)
-
+set(appname rtmath-version)
+include (../../CMakeRules/addapp.cmake)

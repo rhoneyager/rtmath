@@ -3,19 +3,5 @@
 include (../../CMakeRules/common.cmake)
 
 add_executable (rtmath-ddparse ddparse2.cpp)
-target_link_libraries (rtmath-ddparse rtmath)
-
-IF(${UNIX})
-target_link_libraries (rtmath-ddparse netcdf m boost_filesystem boost_unit_test_framework boost_system)
-ENDIF(${UNIX})
-
-include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
-target_link_libraries (rtmath-ddparse ${ROOT_LIBRARIES})
-
-# Use C++11 in gcc
-IF(${CMAKE_COMPILER_IS_GNUCXX})
-set_target_properties(rtmath-ddparse PROPERTIES COMPILE_FLAGS -std=c++0x)
-ENDIF(${CMAKE_COMPILER_IS_GNUCXX})
-
-INSTALL(TARGETS rtmath-ddparse RUNTIME DESTINATION bin COMPONENT Applications)
-
+set(appname rtmath-ddparse)
+include (../../CMakeRules/addapp.cmake)
