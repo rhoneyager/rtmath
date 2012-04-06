@@ -3,9 +3,17 @@
 # Loads the necessary components for libraries and sets various 
 # compiler flags. 
 
+# Add path for custom modules
+#set(CMAKE_MODULE_PATH
+#  ${CMAKE_MODULE_PATH}
+#  "${PROJECT_SOURCE_DIR}/CMakeRules"
+#)
+
 # Find the locations of ROOT, OpenMP and others
-include (${CMAKE_CURRENT_LIST_DIR}/FindROOT.cmake)
+#include (${CMAKE_CURRENT_LIST_DIR}/FindROOT.cmake)
 #include (${CMAKE_CURRENT_LIST_DIR}/FindOpenMP.cmake)
+include (FindROOT)
+include (addapp)
 
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
 set (COMMON_LIBS ${COMMON_LIBS} ${ROOT_LIBRARIES})

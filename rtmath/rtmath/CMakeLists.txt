@@ -3,9 +3,9 @@
 # Really should specify the files manually, 
 # but I can just delete the build and recreate for now.
 aux_source_directory (src libsrcs)
+#aux_source_directory (rtmath headers)
 
-# Find ROOT directories and files
-include (../CMakeRules/common.cmake)
+include (common)
 
 # Options
 option ( USE_IPP
@@ -60,6 +60,12 @@ set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 ENDIF()
+
+set_target_properties(rtmath PROPERTIES FOLDER "Libs")
+set_target_properties(rtmath-static PROPERTIES FOLDER "Libs")
+set_target_properties(rtmath-tests PROPERTIES FOLDER "Tests")
+
+#add_header_files(headers)
 
 # Ensure that the dynamic library builds first (so prebuild will have run)
 add_dependencies (rtmath-tests rtmath-static)

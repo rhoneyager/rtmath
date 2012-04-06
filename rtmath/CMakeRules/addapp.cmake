@@ -3,10 +3,19 @@
 
 # Take the variable {appname}, and link libraries,
 # set properties and create an INSTALL target
+macro(addapp appname)
+	target_link_libraries (${appname} rtmath ${COMMON_LIBS})
+	IF(EXISTS(COMMON_CFLAGS))
+	set_target_properties(${appname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	ENDIF()
 
-target_link_libraries (${appname} rtmath ${COMMON_LIBS})
-IF(EXISTS(COMMON_CFLAGS))
-set_target_properties(${appname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-ENDIF()
+	INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin COMPONENT Applications)
+	set_target_properties(${appname} PROPERTIES FOLDER "Apps")
+endmacro(addapp appname)
 
-INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin COMPONENT Applications)
+macro(add_header_files srcs)
+  if( hds )
+    set_source_files_properties(${hds} PROPERTIES HEADER_FILE_ONLY ON)
+    list(APPEND ${srcs} ${hds})
+  endif()
+endmacro(add_header_files srcs)

@@ -5,8 +5,27 @@
 cmake_minimum_required (VERSION 2.6)
 project(rtmath)
 
-# Recurse into the subdirectories
+# Add path for custom modules
+set(CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_SOURCE_DIR}/CMakeRules/"
+)
+#message("Modules " ${CMAKE_MODULE_PATH})
 
+include(common)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND MSVC_IDE )
+  message(FATAL_ERROR "In-source builds are not allowed.
+CMake would overwrite the VS project files. 
+Please create a directory and run cmake from there, passing the path
+to this source directory as the last argument.
+This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
+Please delete them.")
+endif()
+
+# Recurse into the subdirectories
 add_subdirectory (rtmath)
 add_subdirectory (rtmath-apps)
 
