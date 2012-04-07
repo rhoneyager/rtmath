@@ -16,6 +16,7 @@
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddOutputEnsemble.h"
+#include "../rtmath/ddscat/shapefile.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -34,6 +35,7 @@ namespace rtmath {
 		void ddOutput::_init()
 		{
 			_filename = "";
+			_shape = 0;
 		}
 
 		void ddOutput::clear()
@@ -112,6 +114,25 @@ namespace rtmath {
 			//cerr << "Directory: " << dir << endl;
 			//cerr << "ddscat par: " << ddfile << endl;
 
+			// Find and load the shapefile
+			boost::filesystem::path pshapepath;
+			string shapepath;
+			{
+				// Figure out where the shape file is located.
+				path ptarget = p / "target.out";
+				path pshapedat = p / "shape.dat";
+				if (exists(ptarget))
+				{ pshapepath = ptarget;
+				} else if (exists(pshapedat))
+				{ pshapepath = pshapedat;
+				} else {
+					throw rtmath::debug::xMissingFile("shape.dat or target.out");
+				}
+				shapepath = pshapepath.string();
+				if (exists(pshapepath))
+					_shape = shared_ptr<shapefile>(new shapefile(shapepath));
+			}
+
 			// Use boost to select and open all files in path
 			// Iterate through each .fml file and load
 			vector<path> files;
@@ -137,6 +158,7 @@ namespace rtmath {
 				}
 			}
 			//cerr << "Of these, " << counter << " fml files were loaded." << endl;
+
 		}
 
 		void ddOutput::ensemble(const ddOutputEnsemble &provider, ddOutputSingle &res) const

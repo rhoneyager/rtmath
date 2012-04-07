@@ -11,6 +11,7 @@
 #include "../interpolatable.h"
 #include "../phaseFunc.h"
 #include "ddScattMatrix.h"
+#include "shapefile.h"
 #include "../da/daStatic.h"
 #include "../coords.h"
 
@@ -30,6 +31,7 @@ namespace rtmath {
 			// shared pointers.
 			// Read from ddscat file
 			ddOutputSingle(const std::string &filename);
+			ddOutputSingle(const std::string &filename, std::shared_ptr<shapefile> &shape);
 			// Read from stream (Evans?/Other format?)
 
 			
@@ -72,6 +74,7 @@ namespace rtmath {
 			bool _locked;
 			size_t _numDipoles;
 			std::string _filename;
+			std::shared_ptr<shapefile> _shape;
 			// Note the shared_ptr construction to save memory
 			// Contains the raw scattering matrices
 			//mutable std::set<std::shared_ptr<const ddscat::ddScattMatrix> > _scattMatricesRaw;

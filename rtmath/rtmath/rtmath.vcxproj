@@ -111,6 +111,7 @@
     <ClInclude Include="rtmath\ddscat\ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
     <ClInclude Include="rtmath\ddscat\ddweights.h" />
+    <ClInclude Include="rtmath\ddscat\parids.h" />
     <ClInclude Include="rtmath\ddscat\shapefile.h" />
     <ClInclude Include="rtmath\defs.h" />
     <ClInclude Include="rtmath\enums.h" />

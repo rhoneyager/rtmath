@@ -35,6 +35,7 @@ namespace rtmath {
 			_numDipoles = 0;
 			_filename = "";
 			_locked = false;
+			_shape = nullptr;
 		}
 
 		ddOutputSingle::~ddOutputSingle()
@@ -44,6 +45,13 @@ namespace rtmath {
 		ddOutputSingle::ddOutputSingle(const std::string &filename)
 		{
 			_init();
+			loadFile(filename);
+		}
+
+		ddOutputSingle::ddOutputSingle(const std::string &filename, std::shared_ptr<shapefile> &shape)
+		{
+			_init();
+			_shape = shape;
 			loadFile(filename);
 		}
 
@@ -188,6 +196,28 @@ namespace rtmath {
 			clear();
 			bool dataseg = false;
 			this->_filename = filename;
+
+			// If a shape is not loaded, then try to load the corresponding shapefile
+			using namespace boost::filesystem;
+			path pshapepath, p, pfile(filename);
+			p = pfile.parent_path();
+			string shapepath;
+			{
+				// Figure out where the shape file is located.
+				path ptarget = p / "target.out";
+				path pshapedat = p / "shape.dat";
+				if (exists(ptarget))
+				{ pshapepath = ptarget;
+				} else if (exists(pshapedat))
+				{ pshapepath = pshapedat;
+				} else {
+					throw rtmath::debug::xMissingFile("shape.dat or target.out");
+				}
+				shapepath = pshapepath.string();
+				if (exists(pshapepath))
+					_shape = shared_ptr<shapefile>(new shapefile(shapepath));
+			}
+
 			ifstream in(filename.c_str(), std::ifstream::in);
 			while (in.good())
 			{

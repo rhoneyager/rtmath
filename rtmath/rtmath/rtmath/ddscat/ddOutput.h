@@ -12,6 +12,7 @@
 #include "ddOutputEnsemble.h"
 #include "ddOutputSingle.h"
 #include "ddScattMatrix.h"
+#include "shapefile.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -47,6 +48,7 @@ namespace rtmath {
 				boost::hash<coords::cyclic<double> > 
 				> _mapOutputSingleRaw;
 			std::string _filename;
+			std::shared_ptr<shapefile> _shape;
 		private:
 			void _init();
 		};
