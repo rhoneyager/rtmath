@@ -95,8 +95,7 @@ namespace rtmath {
 
 		void getConfigDefaultFile(std::string &filename);
 		std::shared_ptr<configsegment> getRtconfRoot();
-		std::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename);
-		std::shared_ptr<configsegment> loadRtconfRoot();
+		std::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename = "");
 		void setRtconfRoot(std::shared_ptr<configsegment> &root);
 
 		extern std::shared_ptr<configsegment> _rtconfroot;

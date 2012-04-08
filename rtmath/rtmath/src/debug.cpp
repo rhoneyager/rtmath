@@ -40,77 +40,77 @@ namespace rtmath
 #endif
 		};
 
-		void debug_preamble(void)
+		void debug_preamble(std::ostream &out)
 		{
-			std::cerr << "rtmath library" << std::endl;
-			std::cerr << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
+			out << "rtmath library" << std::endl;
+			out << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
 #ifdef SUB_REV
-			std::cerr << "SVN Revision " << SUB_REV << std::endl;
-			std::cerr << "SVN Revision Date: " << SUB_DATE << std::endl;
-//			std::cerr << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
-			std::cerr << "SVN Source: " << SUB_SOURCE << std::endl;
+			out << "SVN Revision " << SUB_REV << std::endl;
+			out << "SVN Revision Date: " << SUB_DATE << std::endl;
+//			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
+			out << "SVN Source: " << SUB_SOURCE << std::endl;
 #else
-			std::cerr << "SVN Repository Information Unknown" << std::endl;
+			out << "SVN Repository Information Unknown" << std::endl;
 #endif
 #ifdef _DEBUG
-			std::cerr << "Debug Version" << std::endl;
+			out << "Debug Version" << std::endl;
 #else
-			std::cerr << "Release Version" << std::endl;
+			out << "Release Version" << std::endl;
 #endif
 #ifdef _OPENMP
-			std::cerr << "OpenMP Supported" << std::endl;
+			out << "OpenMP Supported" << std::endl;
 #else
-			std::cerr << "OpenMP Disabled" << std::endl;
+			out << "OpenMP Disabled" << std::endl;
 #endif
 #ifdef __amd64
-			std::cerr << "64-bit build" << std::endl;
+			out << "64-bit build" << std::endl;
 #endif
 #ifdef _M_X64
-			std::cerr << "64-bit build" << std::endl;
+			out << "64-bit build" << std::endl;
 #endif
 #ifdef __unix__
-			std::cerr << "Unix / Linux Compile" << std::endl;
+			out << "Unix / Linux Compile" << std::endl;
 #endif
 #ifdef __APPLE__
-			std::cerr << "Mac Os X Compile" << std::endl;
+			out << "Mac Os X Compile" << std::endl;
 #endif
 #ifdef _WIN32
-			std::cerr << "Windows Compile" << std::endl;
+			out << "Windows Compile" << std::endl;
 #endif
 #ifdef __GNUC__
-			std::cerr << "GNU Compiler Suite " << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__ << std::endl;
+			out << "GNU Compiler Suite " << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__ << std::endl;
 #endif
 #ifdef __MINGW32__
-			std::cerr << "MinGW Compiler Suite " << __MINGW32_MAJOR_VERSION << "." << __MINGW32_MINOR_VERSION << std::endl;
+			out << "MinGW Compiler Suite " << __MINGW32_MAJOR_VERSION << "." << __MINGW32_MINOR_VERSION << std::endl;
 #endif
 #ifdef __SUNPRO_CC
-			std::cerr << "Sun Studio Compiler " << __SUNPRO_CC << std::endl;
+			out << "Sun Studio Compiler " << __SUNPRO_CC << std::endl;
 #endif
 #ifdef __PATHCC__
-			std::cerr << "EKOPath Compiler " << __PATHCC__ << "." << __PATHCC_MINOR__ << "." << __PATHCC_PATCHLEVEL__ << std::endl;
+			out << "EKOPath Compiler " << __PATHCC__ << "." << __PATHCC_MINOR__ << "." << __PATHCC_PATCHLEVEL__ << std::endl;
 #endif
 #ifdef __llvm__
-			std::cerr << "LLVM Compiler Suite" << std::endl;
+			out << "LLVM Compiler Suite" << std::endl;
 #endif
 #ifdef __clang__
-			std::cerr << " clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__ << std::endl;
+			out << " clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__ << std::endl;
 #endif
 #ifdef __INTEL_COMPILER
-			std::cerr << "Intel Compiler Version " << __INTEL_COMPILER << std::endl;
-			std::cerr << " Compiler build date: " << __INTEL_COMPILER_BUILD_DATE << std::endl;
+			out << "Intel Compiler Version " << __INTEL_COMPILER << std::endl;
+			out << " Compiler build date: " << __INTEL_COMPILER_BUILD_DATE << std::endl;
 #endif
 #ifdef _MSC_FULL_VER
-			std::cerr << "Microsoft Visual Studio Compiler Version " << _MSC_FULL_VER << std::endl;
+			out << "Microsoft Visual Studio Compiler Version " << _MSC_FULL_VER << std::endl;
 #endif
-			std::cerr << "Boost version " << BOOST_LIB_VERSION << std::endl;
-			std::cerr << std::endl;
+			out << "Boost version " << BOOST_LIB_VERSION << std::endl;
+			out << std::endl;
 		};
 
-		void timestamp(bool show)
+		void timestamp(bool show, std::ostream &out)
 		{
 			static time_t stamp = 0; // Set to zero the first time
 			time_t newstamp = time (NULL);
-			if (show) std::cerr << "Timestamp Delta: " << (newstamp - stamp) << " seconds" << std::endl;
+			if (show) out << "Timestamp Delta: " << (newstamp - stamp) << " seconds" << std::endl;
 			stamp = newstamp;
 		}
 
@@ -125,21 +125,25 @@ namespace rtmath
 			return UNIQUE_KEYS[temp]++;
 		}
 
-		void listuniqueobj(void)
+		void listuniqueobj(std::ostream &out)
 		{
-			// This is a debugging function that will output to cerr the keymaps, counts and identities
+			// This is a debugging function that will output the keymaps, counts and identities
 			using namespace std;
-			cerr << "\nUnique object keymap listing:\n";
-			cerr << UNIQUE_KEYS.size() << " objects\n";
-			cerr << "File - Function - Line - Count\n";
-			for (map<keymap*,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
+			out << "\nUnique object keymap listing:\n";
+			out << UNIQUE_KEYS.size() << " objects\n";
+			if (UNIQUE_KEYS.size())
 			{
-				cerr << it->first->file << " - " << it->first->function << " - " << it->first->line << " - " << it->second << endl;
+				out << "File - Function - Line - Count\n";
+				for (map<keymap*,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
+				{
+					out << it->first->file << " - " << it->first->function << " - " << it->first->line << " - " << it->second << endl;
 
+				}
 			}
-			cerr << endl;
+			out << endl;
 		}
 
+		// TODO: find caller for this... If none, remove.
 		std::string diemsg(const char* file, int line, const char* sig)
 		{
 			using namespace std;

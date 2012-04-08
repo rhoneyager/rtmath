@@ -17,6 +17,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+/*
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -26,8 +27,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+*/
 //#include <netcdf.h>
-#include <libpq-fe.h>
+//#include <libpq-fe.h>
 
 #include <stdlib.h>
 #include "../../rtmath/rtmath/rtmath.h"

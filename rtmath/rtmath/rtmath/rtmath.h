@@ -39,6 +39,7 @@
 #include "rayleigh/rayleigh.h"
 #include "ddscat/ddscat.h"
 #include "ddscat/cdf-ddscat.h"
+#include "ddscat/shapefile.h"
 #include "refract.h"
 #include "units.h"
 #include "ddscat/ddLoader.h"
@@ -46,8 +47,8 @@
 #include "gridded/gridCoords.h"
 #include "gridded/gridStatic.h"
 #include "gridded/gridCDF.h"
+
 #include "ROOT_functions.h"
-#include "ddscat/shapefile.h"
 
 // Link with ROOT on MSVC
 #include "ROOTlink.h"

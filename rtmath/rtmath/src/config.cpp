@@ -404,16 +404,6 @@ namespace rtmath {
 			return cnf;
 		}
 
-		std::shared_ptr<configsegment> loadRtconfRoot()
-		{
-			if (_rtconfroot != nullptr) return _rtconfroot;
-			std::string fn;
-			getConfigDefaultFile(fn);
-			std::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
-			if (cnf != nullptr) _rtconfroot = cnf;
-			return cnf;
-		}
-
 		std::ostream& operator<< (std::ostream& stream, const rtmath::config::configsegment &ob)
 		{
 			// Take the object, and print in the appropriate form, using recursion

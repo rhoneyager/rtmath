@@ -53,17 +53,17 @@ namespace rtmath {
 			message = out.str();
 		}
 
-		void xError::Display() const
+		void xError::Display(std::ostream &out) const
 		{
-			std::string out;
-			this->message(out);
+			std::string sout;
+			this->message(sout);
 			if (_errHandlerFunc)
 			{
 				// Convert to const char array and send to function
-				_errHandlerFunc(out.c_str());
+				_errHandlerFunc(sout.c_str());
 			} else {
 				// Send to std. err.
-				std::cerr << out;
+				out << sout;
 			}
 		}
 

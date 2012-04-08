@@ -18,6 +18,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include "parids.h"
+#include "../parsers.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -37,7 +38,6 @@ namespace rtmath {
 			void loadFile(const std::string &filename);
 			void saveFile(const std::string &filename) const;
 			void load(std::istream &stream);
-			void parseMap();
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 		private:
@@ -62,9 +62,16 @@ namespace rtmath {
 			{
 			public:
 				friend struct std::less<rtmath::ddscat::ddParParsers::ddParLine>;
-				ddParLine(ParId id = UNKNOWN) { _id = id; }
+				ddParLine(ParId id = UNKNOWN) { _id = id; _endWriteWithEndl = true; }
 				virtual ~ddParLine() {}
-				virtual void read(std::istream &in) = 0;
+				// Read does NOT split keys and vals!!!!!
+				virtual void read(std::istream &in)
+				{
+					// No key / val separation here...
+					std::string lin;
+					std::getline(in,lin);
+					read(lin);
+				}
 				virtual void read(const std::string &val) = 0;
 				virtual void write(std::ostream &out) = 0;
 
@@ -72,9 +79,11 @@ namespace rtmath {
 				//void line(size_t nl) { _line = nl; }
 				inline ParId id() const { return _id; }
 				virtual bool versionValid(size_t ver) const;
+				void endWriteWithEndl(bool val) { _endWriteWithEndl = val; }
 			protected:
 				//size_t _line;
 				ParId _id;
+				bool _endWriteWithEndl;
 			};
 
 			// Added this as a level of abstraction to prevent code duplication
@@ -85,13 +94,6 @@ namespace rtmath {
 				ddParLineSimpleBase(ParId id = UNKNOWN) 
 					: ddParLine(id) {}
 				virtual ~ddParLineSimpleBase() {}
-				virtual void read(std::istream &in)
-				{
-					// No key / val separation here...
-					std::string lin;
-					std::getline(in,lin);
-					read(lin);
-				}
 				virtual void read(const std::string &val) = 0;
 				virtual void write(std::ostream &out) = 0;
 
@@ -113,7 +115,9 @@ namespace rtmath {
 				{
 					std::string idstr;
 					idString(_id,idstr);
-					out << _val << "   = " << idstr << std::endl;
+					out << _val << " ";
+					if (_endWriteWithEndl)
+						out << " = " << idstr << std::endl;
 				}
 				virtual void read(const std::string &val)
 				{
@@ -135,7 +139,9 @@ namespace rtmath {
 				{
 					std::string idstr;
 					idString(_id,idstr);
-					out << "\'" << _val << "\'   = " << idstr << std::endl;
+					out << "\'" << _val << "\'";
+					if (_endWriteWithEndl)
+						out << " = " << idstr << std::endl;
 				}
 				virtual void read(const std::string &val)
 				{
@@ -145,85 +151,134 @@ namespace rtmath {
 				}
 			};
 
+			template <class T>
+			class ddParLineSimplePlural : public ddParLine
+			{
+			public:
+				ddParLineSimplePlural(ParId id = UNKNOWN) 
+					: ddParLine(id) {}
+				virtual ~ddParLineSimplePlural() {}
+				virtual void write(std::ostream &out)
+				{
+					std::string idstr;
+					idString(_id,idstr);
+					for (auto it = _val.begin(); it != _val.end(); ++it)
+						out << *it << " ";
+					if (_endWriteWithEndl)
+						out << " = " << idstr << std::endl;
+				}
+				virtual void read(const std::string &val)
+				{
+					_val.clear();
+					// Parse based on spaces
+					typedef boost::tokenizer<boost::char_separator<char> >
+						tokenizer;
+					boost::char_separator<char> sep(" \t()");
+					tokenizer tcom(val,sep);
+					for (auto it=tcom.begin(); it != tcom.end(); ++it)
+						_val.push_back(boost::lexical_cast<T>(*it));
+				}
+
+				void get(size_t index, T &val) const { val = _val.at(index); }
+				void set(size_t index, const T &val) { _val[index] = val; }
+				void get(std::vector<T> &val) const { val = _val; }
+				void set(const std::vector<T> &val) { _val = val; }
+			protected:
+				std::vector<T> _val;
+			};
 			
-			// The rest of the parsers go here
-			// TODO:  CONVERT THESE LIKE WITH THE SIMPLE CASES!!!
-
-			template <class T> bool pNumeric(const std::string &in, std::vector<T> &vals)
+			// This is a special case for paired numbers.
+			template <class T>
+			class ddParTuples : public ddParLineSimplePlural<T>
 			{
-				vals.clear();
-				// Parse based on spaces
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(" \t");
-				tokenizer tcom(in,sep);
-				for (auto it=tcom.begin(); it != tcom.end(); ++it)
-					vals.push_back(boost::lexical_cast<T>(*it));
-				if (vals.size()) return true;
-				return false;
-			}
-
-			template <class T> bool pNumeric(const std::string &in, T &val)
-			{
-				// Parse based on spaces
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(" \t");
-				tokenizer tcom(in,sep);
-				auto it = tcom.begin();
-				if (it == tcom.end()) return false;
-				val = boost::lexical_cast<T>(*it);
-				return true;
-			}
-
-			template <class T, class R> bool pMixed(const std::string &in, size_t numT,
-				std::vector<T> &valsT, std::vector<R> &valsR)
-			{
-				valsT.clear();
-				valsR.clear();
-				// Separate based on strings
-				// Parse based on spaces
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(" \t");
-				tokenizer tcom(in,sep);
-				size_t np = 0;
-				for (auto it=tcom.begin(); it != tcom.end(); ++it)
+			public:
+				ddParTuples(size_t tuplesize, ParId id = UNKNOWN) 
+					: ddParLineSimplePlural(id) { _tuplesize = tuplesize; }
+				virtual ~ddParTuples() {}
+				virtual void write(std::ostream &out)
 				{
-					if (np < numT)
+					std::string idstr;
+					idString(_id,idstr);
+					for (size_t i = 0; i < _val.size(); i++)
 					{
-						valsT.push_back(boost::lexical_cast<T>(*it));
-					} else {
-						valsR.push_back(boost::lexical_cast<R>(*it));
+						if (i % _tuplesize == 0)
+							out << "(";
+						out << _val[i];
+						if ((i % _tuplesize) == (_tuplesize - 1))
+						{
+							out << ") ";
+						} else {
+							out << ",";
+						}
 					}
-					np++;
+					if (_endWriteWithEndl)
+						out << " = " << idstr << std::endl;
 				}
-				return true;
-			}
+			protected:
+				size_t _tuplesize;
+			};
 
-			template <class T> bool pTuples(const std::string &in, const std::string &seps,
-				size_t rank, std::vector< std::vector<T> > &vals)
+			template <class T, class R> 
+			class ddParLineMixed : public ddParLine
 			{
-				vals.clear();
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(seps.c_str());
-				tokenizer tcom(in,sep);
-
-				size_t r = 0;
-				std::vector<T> vCurr;
-				for (auto it=tcom.begin(); it != tcom.end(); ++it)
+			public:
+				ddParLineMixed(size_t numT, ParId id = UNKNOWN) 
+					: ddParLine(id) { _numT = numT; }
+				virtual ~ddParLineMixed() {}
+				virtual void read(const std::string &val)
 				{
-					vCurr.push_back(boost::lexical_cast<T>(*it));
-					r++;
-					if (r == rank)
+					// Separate based on spaces
+					_t.clear();
+					_r.clear();
+					// Parse based on spaces
+					typedef boost::tokenizer<boost::char_separator<char> >
+						tokenizer;
+					boost::char_separator<char> sep(" \t()");
+					tokenizer tcom(val,sep);
+					size_t num = 0;
+					for (auto it=tcom.begin(); it != tcom.end(); ++it)
 					{
-						vals.push_back(vCurr);
-						vCurr.clear();
+						//val.push_back(*it);
+						// Select where to insert based on position
+						if (num < _numT)
+						{
+							ddParLineSimple<T> in;
+							in.read(*it);
+							_t.push_back(in);
+						} else {
+							ddParLineSimple<R> in;
+							in.read(*it);
+							_r.push_back(in);
+						}
+						num++;
 					}
 				}
-				return true;
-			}
+				virtual void write(std::ostream &out)
+				{
+					std::string idstr;
+					idString(_id,idstr);
+					// Each separate member is used to write
+					// Suppress the endline emitted by the members
+					for (auto it = _t.begin(); it != _t.end(); ++it)
+					{
+						it->endWriteWithEndl(false);
+						it->write(out);
+					}
+					for (auto it = _r.begin(); it != _r.end(); ++it)
+					{
+						it->endWriteWithEndl(false);
+						it->write(out);
+					}
+					if (_endWriteWithEndl)
+						out << " = " << idstr << std::endl;
+				}
+			protected:
+				size_t _numT;
+				std::vector<ddParLineSimple<T> > _t;
+				std::vector<ddParLineSimple<R> > _r;
+			};
+
+			std::shared_ptr<ddParLine> mapKeys(const std::string &key);
 		}
 
 	}

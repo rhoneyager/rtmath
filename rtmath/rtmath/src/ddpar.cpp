@@ -17,6 +17,7 @@
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/command.h"
+#include "../rtmath/config.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -80,7 +81,38 @@ namespace rtmath {
 			// Populates missing items for this version with default
 			// entries. Used when converting between ddscat file versions.
 			// Also used when file information is incomplete.
-			throw rtmath::debug::xUnimplementedFunction();
+			using namespace rtmath::ddscat::ddParParsers;
+			using namespace boost::filesystem;
+			using namespace std;
+			// Let's take the default entries from a default scattering file.
+			// I don't want to hardcode these values, plus, by varying the path, 
+			// this improves scriptability...
+
+			shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
+			string sBasePar;
+			cRoot->getVal("ddscat/DefaultFile", sBasePar);
+			if (sBasePar.size())
+			{
+				if (exists(path(sBasePar)))
+				{
+					ddPar base(sBasePar);
+					for (auto it = base._parsedData.begin(); it != base._parsedData.end(); it++)
+					{
+						if (this->_parsedData.count(it->first) == 0)
+						{
+							this->_parsedData[it->first] = it->second;
+						}
+					}
+				} else {
+					// Default file not found
+					// TODO!
+					GETOBJKEY();
+				}
+			} else {
+				// Default file not listed
+				// TODO!
+				GETOBJKEY();
+			}
 		}
 
 		void ddPar::_init()
@@ -96,6 +128,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace rtmath::config;
 			_keys.clear();
+			_parsedData.clear();
 
 			size_t line = 0;
 			while (stream.good())
@@ -148,246 +181,168 @@ namespace rtmath {
 
 			}
 
-			// Parse map
-			parseMap();
-
-		}
-
-		void ddPar::parseMap()
-		{
-			using namespace std;
+			// Map the keys
 			using namespace rtmath::ddscat::ddParParsers;
 			for (auto it = _keys.begin(); it != _keys.end(); ++it)
 			{
-				string sout;
-				vector<size_t> vS;
-				vector<double> vD;
-				double d;
-				size_t st;
-				if (it->first.find("CMTORQ") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CMTORQ) );
-					ptr->read(it->second);
-					_parsedData[CMTORQ] = ptr;
-				}
-				else if (it->first.find("CMDSOL") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CMDSOL) );
-					ptr->read(it->second);
-					_parsedData[CMDSOL] = ptr;
-				}
-				else if (it->first.find("CMDFFT") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CMDFFT) );
-					ptr->read(it->second);
-					_parsedData[CMDFFT] = ptr;
-				}
-				else if (it->first.find("CALPHA") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CALPHA) );
-					ptr->read(it->second);
-					_parsedData[CALPHA] = ptr;
-				}
-				else if (it->first.find("CBINFLAG") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CBINFLAG) );
-					ptr->read(it->second);
-					_parsedData[CBINFLAG] = ptr;
-				}
-				else if (it->first.find("dimension") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, vS);
-				}
-				else if (it->first.find("CSHAPE") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CSHAPE) );
-					ptr->read(it->second);
-					_parsedData[CSHAPE] = ptr;
-				}
-				else if (it->first.find("shape parameters") != string::npos)
-				{
-					//TODO
-					pNumeric<double>(it->second, vD);
-				}
-				else if (it->first.find("NCOMP") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("refractive index") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(IREFR) );
-					ptr->read(it->second);
-					_parsedData[IREFR] = ptr;
-				}
-				else if (it->first.find("TOL") != string::npos)
-				{
-					//TODO
-					pNumeric<double>(it->second, d);
-				}
-				else if (it->first.find("GAMMA") != string::npos)
-				{
-					//TODO
-					pNumeric<double>(it->second, d);
-				}
-				else if (it->first.find("ETASCA") != string::npos)
-				{
-					//TODO
-					pNumeric<double>(it->second, d);
-				}
-				else if (it->first.find("wavelengths") != string::npos)
-				{
-					//TODO
-					vector<double> wvlens;
-					vector<string> vspacing;
-					string spacing;
-					pMixed<double,string>(it->second,3,wvlens,vspacing);
-					pString(vspacing[0],spacing);
-				}
-				else if (it->first.find("aeff") != string::npos)
-				{
-					//TODO
-					vector<double> as;
-					vector<string> vspacing;
-					string spacing;
-					pMixed<double,string>(it->second,3,as,vspacing);
-					pString(vspacing[0],spacing);
-				}
-				else if (it->first.find("Polarization state") != string::npos)
-				{
-					//TODO
-					vector<vector<double> > vvPols;
-					pTuples<double>(it->second,"( \t)",2,vvPols);
-				}
-				else if (it->first.find("IORTH") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("IWRKSC") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("IWRPOL") != string::npos)
-				{
-					//TODO
-					_version = 70;
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("NBETA") != string::npos)
-				{
-					//TODO
-					vector<double> betas;
-					vector<size_t> vspacing;
-					size_t spacing;
-					pMixed<double,size_t>(it->second,3,betas,vspacing);
-					spacing = vspacing[0];
-				}
-				else if (it->first.find("NTHETA") != string::npos)
-				{
-					//TODO
-					vector<double> thetas;
-					vector<size_t> vspacing;
-					size_t spacing;
-					pMixed<double,size_t>(it->second,3,thetas,vspacing);
-					spacing = vspacing[0];
-				}
-				else if (it->first.find("NPHI") != string::npos)
-				{
-					//TODO
-					vector<double> phis;
-					vector<size_t> vspacing;
-					size_t spacing;
-					pMixed<double,size_t>(it->second,3,phis,vspacing);
-					spacing = vspacing[0];
-				}
-				else if (it->first.find("IWAV") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, vS);
-				}
-				else if (it->first.find("NSMELTS") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("indices ij of") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, vS);
-				}
-				else if (it->first.find("CMDFRM") != string::npos)
-				{
-					std::shared_ptr<ddParLineSimple<std::string> > ptr
-						( new ddParLineSimple<std::string>(CMDFRM) );
-					ptr->read(it->second);
-					_parsedData[CMDFRM] = ptr;
-				}
-				else if (it->first.find("NPLANES") != string::npos)
-				{
-					//TODO
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("for plane 1") != string::npos)
-				{
-					//TODO
-					vector<double> vals;
-					vector<size_t> vspacing;
-					size_t spacing;
-					pMixed<double,size_t>(it->second,3,vals,vspacing);
-					spacing = vspacing[0];
-				}
-				else if (it->first.find("for plane 2") != string::npos)
-				{
-					//TODO
-					vector<double> vals;
-					vector<size_t> vspacing;
-					size_t spacing;
-					pMixed<double,size_t>(it->second,3,vals,vspacing);
-					spacing = vspacing[0];
-				}
-				else if (it->first.find("NRFLD") != string::npos)
-				{
-					//TODO
-					_version = 72;
-					pNumeric<size_t>(it->second, st);
-				}
-				else if (it->first.find("fract. extens.") != string::npos)
-				{
-					//TODO
-					_version = 72;
-					pNumeric<double>(it->second, vD);
-				}
-				else if (it->first.find("MXITER") != string::npos)
-				{
-					//TODO
-					_version = 72;
-					pNumeric<size_t>(it->second, st);
-				}
-				/*else if (it->first.find("") != string::npos)
-				{
-				}*/
-				else
-				{
-					cerr << "Unmatched key: " << it->first << endl;
-					cerr << "\tWith value: " << it->second << endl;
-				}
+				std::shared_ptr<ddParLine> ptr = mapKeys(it->first);
+				ptr->read(it->second);
+				if (_parsedData.count(ptr->id()))
+					throw rtmath::debug::xBadInput("Bad ddscat.par file read - duplicate key");
+				_parsedData[ptr->id()] = ptr;
 			}
 		}
 
+	
+
 		namespace ddParParsers
 		{
+			std::shared_ptr<ddParLine> ddParParsers::mapKeys(const std::string &key)
+			{
+				using namespace std;
+				using namespace rtmath::ddscat::ddParParsers;
+				std::shared_ptr<ddParLine> ptr;
+
+				if (key.find("CMTORQ") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> > 
+					( new ddParLineSimple<std::string>(CMTORQ) );
+				else if (key.find("CMDSOL") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(CMDSOL) );
+				else if (key.find("CMDFFT") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(CMDFFT) );
+				else if (key.find("CALPHA") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(CALPHA) );
+				else if (key.find("CBINFLAG") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(CBINFLAG) );
+				else if (key.find("dimension") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimplePlural<size_t> >
+					( new ddParLineSimplePlural<size_t>(DIMENSION) );
+				else if (key.find("CSHAPE") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(CSHAPE) );
+				else if (key.find("shape parameters") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimplePlural<double> > 
+					( new ddParLineSimplePlural<double>(SHAPEPARAMS) );
+				else if (key.find("NCOMP") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(NCOMP) );
+				else if (key.find("refractive index") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(IREFR) );
+				else if (key.find("NRFLD") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(NRFLD) );
+					// version 7.2 NRFLD
+				else if (key.find("fract. extens.") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
+					( new ddParLineSimplePlural<double>(FRACT_EXTENS) );
+					// version 7.2 FRACT_EXTENS
+				else if (key.find("TOL") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<double> > 
+					( new ddParLineSimple<double>(TOL) );
+				else if (key.find("MXITER") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(MXITER) );
+					// version 7.2 MXITER
+				else if (key.find("GAMMA") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<double> > 
+					( new ddParLineSimple<double>(GAMMA) );
+				else if (key.find("ETASCA") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<double> > 
+					( new ddParLineSimple<double>(ETASCA) );
+
+				// TODO: fix wavelengths and aeff to read two doubles, a size_t and a string
+				else if (key.find("wavelengths") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, std::string> >
+					( new ddParLineMixed<double, std::string>(3, WAVELENGTHS));
+				else if (key.find("NAMBIENT") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<double> > 
+					( new ddParLineSimple<double>(NAMBIENT) );
+				else if (key.find("aeff") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, std::string> >
+					( new ddParLineMixed<double, std::string>(3, AEFF));
+
+				else if (key.find("Polarization state") != string::npos)
+					ptr = std::shared_ptr<ddParTuples<double> >
+					( new ddParTuples<double>(2, POLSTATE));
+				else if (key.find("IORTH") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(IORTH) );
+				else if (key.find("IWRKSC") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(IWRKSC) );
+				else if (key.find("IWRPOL") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(IWRPOL) );
+					// IWRPOL is version 7.0
+
+				else if (key.find("NBETA") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+					( new ddParLineMixed<double, size_t>(2, NBETA));
+				else if (key.find("NTHETA") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+					( new ddParLineMixed<double, size_t>(2, NTHETA));
+				else if (key.find("NPHI") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+					( new ddParLineMixed<double, size_t>(2, NPHI));
+				else if (key.find("IWAV") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
+					( new ddParLineSimplePlural<double>(IWAV) );
+				else if (key.find("NSMELTS") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(NSMELTS) );
+				else if (key.find("indices ij of") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
+					( new ddParLineSimplePlural<double>(INDICESIJ) );
+				else if (key.find("CMDFRM") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::string> >
+					( new ddParLineSimple<std::string>(CMDFRM) );
+				else if (key.find("NPLANES") != string::npos)
+					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
+					( new ddParLineSimple<std::size_t>(NPLANES) );
+				else if (key.find("for plane 1") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+					( new ddParLineMixed<double, size_t>(3, PLANE1));
+				else if (key.find("for plane 2") != string::npos)
+					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+					( new ddParLineMixed<double, size_t>(3, PLANE2));
+				else
+				{
+					cerr << "Unmatched key: " << key << endl;
+					throw rtmath::debug::xBadInput("ddscat.par");
+				}
+
+				return ptr;
+			}
+
 			bool ddParLine::versionValid(size_t ver) const
 			{
+				if (ver == 72)
+				{
+					switch (_id)
+					{
+					case IWRPOL:
+						return false;
+					default:
+						return true;
+					}
+				}
+				if (ver == 70)
+				{
+					switch (_id)
+					{
+					case NRFLD:
+					case FRACT_EXTENS:
+					case MXITER:
+						return false;
+					default:
+						return true;
+					}
+				}
 				return true;
 			}
 
@@ -402,25 +357,114 @@ namespace rtmath {
 
 			void idString(ParId id, std::string &key)
 			{
-				throw rtmath::debug::xUnimplementedFunction();
-			}
-		}
-
-	}
-}
-
-/*
-				// Prepare tokenizer
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(",");
-				boost::char_separator<char> seprange(":-");
+				switch (id)
 				{
-					tokenizer tcom(instr,sep);
-					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
-					{
-						// Separated based on commas. Expand for dashes and colons
-						tokenizer trange(*ot,seprange);
-						vector<size_t> range;
-						for (auto rt = trange.begin(); rt != trange.end(); rt++)
-						*/
+				case CMTORQ:
+					key = "CMTORQ*6 (NOTORQ, DOTORQ) -- either do or skip torque calculations";
+					break;
+				case CMDSOL:
+					key = "CMDSOL*6 (PBCGS2, PBCGST, PETRKP) -- select solution method";
+					break;
+				case CMDFFT:
+					key = "CMDFFT*6 (GPFAFT, FFTMKL)";
+					break;
+				case CALPHA:
+					key = "CALPHA*6 (GKDLDR, LATTDR)";
+					break;
+				case CBINFLAG:
+					key = "CBINFLAG (NOTBIN, ORIBIN, ALLBIN)";
+					break;
+				case DIMENSION:
+					key = "dimension";
+					break;
+				case CSHAPE:
+					key = "CSHAPE*9 shape directive";
+					break;
+				case SHAPEPARAMS:
+					key = "shape parameters 1-3";
+					break;
+				case NCOMP:
+					key = "NCOMP = number of dielectric materials";
+					break;
+				case IREFR:
+					key = "file with refractive index 1";
+					break;
+				case NRFLD:
+					key = "NRFLD (=0 to skip nearfield calc., =1 to calculate nearfield E)";
+					break;
+				case FRACT_EXTENS:
+					key = "(fract. extens. of calc. vol. in -x,+x,-y,+y,-z,+z)";
+					break;
+				case TOL:
+					key = "TOL = MAX ALLOWED (NORM OF |G>=AC|E>-ACA|X>)/(NORM OF AC|E>)";
+					break;
+				case MXITER:
+					key = "MXITER";
+					break;
+				case GAMMA:
+					key = "GAMMA (1e-2 is normal, 3e-3 for greater accuracy)";
+					break;
+				case ETASCA:
+					key = "ETASCA (number of angles is proportional to [(3+x)/ETASCA]^2 )";
+					break;
+				case WAVELENGTHS:
+					key = "wavelengths";
+					break;
+				case NAMBIENT:
+					key = "NAMBIENT";
+					break;
+				case AEFF:
+					key = "aeff";
+					break;
+				case POLSTATE:
+					key = "Polarization state e01 (k along x axis)";
+					break;
+				case IORTH:
+					key = "IORTH  (=1 to do only pol. state e01; =2 to also do orth. pol. state)";
+					break;
+				case IWRKSC:
+					key = "IWRKSC (=0 to suppress, =1 to write \".sca\" file for each target orient.";
+					break;
+				case IWRPOL:
+					key = "IWRPOL (=0 to suppress, =1 to write \".pol\" file for each (BETA,THETA)";
+					break;
+				case NBETA:
+					key = "BETAMI, BETAMX, NBETA  (beta=rotation around a1)";
+					break;
+				case NTHETA:
+					key = "THETMI, THETMX, NTHETA (theta=angle between a1 and k)";
+					break;
+				case NPHI:
+					key = "PHIMIN, PHIMAX, NPHI (phi=rotation angle of a1 around k)";
+					break;
+				case IWAV:
+					key = "first IWAV, first IRAD, first IORI (0 0 0 to begin fresh)";
+					break;
+				case NSMELTS:
+					key = "NSMELTS = number of elements of S_ij to print (not more than 9)";
+					break;
+				case INDICESIJ:
+					key = "indices ij of elements to print";
+					break;
+				case CMDFRM:
+					key = "CMDFRM (LFRAME, TFRAME for Lab Frame or Target Frame)";
+					break;
+				case NPLANES:
+					key = "NPLANES = number of scattering planes";
+					break;
+				case PLANE1:
+					key = "phi, thetan_min, thetan_max, dtheta (in deg) for plane 1";
+					break;
+				case PLANE2:
+					key = "phi, thetan_min, thetan_max, dtheta (in deg) for plane 2";
+					break;
+				case UNKNOWN:
+				default:
+					throw rtmath::debug::xBadInput("Unknown parid");
+				}
+			}
+		} // end ddparparsers
+	} // end namespace ddscat
+} // end rtmath
+
+

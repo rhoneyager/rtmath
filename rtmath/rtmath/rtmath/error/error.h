@@ -36,7 +36,7 @@ namespace rtmath
 			xError();
 			virtual ~xError();
 			virtual void message(std::string &message) const;
-			virtual void Display() const;
+			virtual void Display(std::ostream &out = std::cerr) const;
 			bool hasLoc() const;
 		public: // The static functions for:
 			// providing error handling to the UI (message boxes and the like)

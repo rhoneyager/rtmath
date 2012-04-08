@@ -16,10 +16,9 @@ namespace rtmath
 	{
 		// Generate the startup message giving 
 		// library information
-		void debug_preamble(void);
+		void debug_preamble(std::ostream &out = std::cerr);
 		int rev(void);
-		void timestamp(bool show);
-		inline void timestamp() {timestamp(true);}
+		void timestamp(bool show = false, std::ostream &out = std::cerr);
 		struct keymap
 		{
 		public:
@@ -36,7 +35,7 @@ namespace rtmath
 		};
 		void DEBUG_TIMESTAMP(void);
 		unsigned int getuniqueobj(const char* file, int line, const char* func);
-		void listuniqueobj(void);
+		void listuniqueobj(std::ostream &out = std::cerr);
 
 		class uidtracker
 		{
@@ -54,6 +53,9 @@ namespace rtmath
 		void appEntry(int argc, char** argv); // in os_functions.cpp
 		bool waitOnExit(); // in os_functions.cpp
 		void appExit(); // Convenient default atexit function
+
+		// App warning functions
+		//void warn(const char* msg);
 	}; // end namespace debug
 
 	// see assert.h for how this is made

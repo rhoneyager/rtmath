@@ -318,6 +318,9 @@
     <ClInclude Include="rtmath\ddscat\parids.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\parsers.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">

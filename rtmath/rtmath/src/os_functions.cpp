@@ -84,6 +84,13 @@ namespace rtmath {
 		void appExit()
 		{
 			using namespace std;
+
+			// If debugging, display the debug mark information
+//#ifdef _DEBUG
+			cerr << endl << endl;
+			rtmath::debug::listuniqueobj();
+//#endif
+
 			bool wait = rtmath::debug::waitOnExit();
 			if (wait)
 			{

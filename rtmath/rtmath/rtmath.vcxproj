@@ -142,6 +142,7 @@
     <ClInclude Include="rtmath\netcdf\ncContainer.h" />
     <ClInclude Include="rtmath\netcdf\ncDim.h" />
     <ClInclude Include="rtmath\netcdf\ncVar.h" />
+    <ClInclude Include="rtmath\parsers.h" />
     <ClInclude Include="rtmath\pfFixed.h" />
     <ClInclude Include="rtmath\phaseFunc.h" />
     <ClInclude Include="rtmath\polynomial.h" />
