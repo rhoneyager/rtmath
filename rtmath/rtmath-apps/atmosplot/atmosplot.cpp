@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include "../../rtmath/rtmath/ROOTlink.h"
 #include <TGraph.h>
 #include <TF1.h>
 #include <TCanvas.h>

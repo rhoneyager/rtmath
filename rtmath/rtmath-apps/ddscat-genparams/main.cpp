@@ -16,6 +16,64 @@ int main(int argc, char** argv)
 {
 	using namespace std;
 	using namespace rtmath;
+	using namespace boost::filesystem;
+	using namespace rtmath::config;
+	using namespace rtmath::ddscat;
+	using namespace rtmath::debug;
+	try {
+		cerr << argv[0] << endl;
+		rtmath::debug::appEntry(argc, argv);
+		config::parseParams p(argc,argv);
+		if (p.readParam("-h")) doHelp();
+
+		// Absolute default setting
+		string srcPath = "./"; // The directory with the config information (ddscat.par and shape.dat)
+		// Allow rtmath.conf override
+		// And the command-line overrides this
+		p.readParam<string>("-i",srcPath);
+
+		path pBase(srcPath);
+		if (!exists(pBase)) throw rtmath::debug::xMissingFile(pBase.string().c_str());
+		// Is this a directory or a file> If a file, go to the parent
+		if (is_directory(pBase))
+		{
+		} else {
+			pBase = pBase.parent_path();
+		}
+
+		// Make sure that ddscat.par exists
+		path pParFile(pBase / "ddscat.par");
+		if (!exists(pBase)) throw rtmath::debug::xMissingFile(pParFile.string().c_str());
+
+		// Find the shape file
+		path pShape;
+		{
+			// Figure out where the shape file is located.
+			path ptarget = pBase / "target.out";
+			path pshapedat = pBase / "shape.dat";
+			if (exists(ptarget))
+			{ pShape = ptarget;
+			} else if (exists(pshapedat))
+			{ pShape = pshapedat;
+			} else {
+				throw rtmath::debug::xMissingFile("shape.dat or target.out");
+			}
+		}
+
+		// Okay, the files all exist. Now, to load them.
+	}
+	catch (rtmath::debug::xError &err)
+	{
+		err.Display();
+		exit(1);
+	}
+	return 0;
+}
+
+int main(int argc, char** argv)
+{
+	using namespace std;
+	using namespace rtmath;
 	try {
 		cerr << argv[0] << endl;
 		rtmath::debug::appEntry(argc, argv);
