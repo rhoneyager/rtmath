@@ -40,6 +40,7 @@
 #include "ddscat/ddscat.h"
 #include "ddscat/cdf-ddscat.h"
 #include "ddscat/shapefile.h"
+#include "ddscat/ddpar.h"
 #include "refract.h"
 #include "units.h"
 #include "ddscat/ddLoader.h"

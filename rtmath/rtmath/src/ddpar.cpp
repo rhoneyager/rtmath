@@ -76,6 +76,21 @@ namespace rtmath {
 			}
 		}
 
+		std::shared_ptr<ddParParsers::ddParLine> ddPar::getKey(ddParParsers::ParId key)
+		{
+			std::shared_ptr<ddParParsers::ddParLine> res = nullptr;
+			if (_parsedData.count(key))
+				res = _parsedData[key];
+			return res;
+		}
+
+		void ddPar::insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr)
+		{
+			if (_parsedData.count(key))
+				_parsedData.erase(key);
+			_parsedData[key] = ptr;
+		}
+
 		void ddPar::_populateDefaults() const
 		{
 			// Populates missing items for this version with default

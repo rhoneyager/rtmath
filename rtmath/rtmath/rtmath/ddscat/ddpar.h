@@ -40,6 +40,8 @@ namespace rtmath {
 			void load(std::istream &stream);
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
+			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
+			std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key);
 		private:
 			void _init();
 			size_t _version;

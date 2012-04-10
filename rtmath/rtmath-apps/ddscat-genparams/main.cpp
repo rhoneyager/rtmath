@@ -26,12 +26,22 @@ int main(int argc, char** argv)
 		config::parseParams p(argc,argv);
 		if (p.readParam("-h")) doHelp();
 
-		// Absolute default setting
+		// Absolute default setting of input source directory path
 		string srcPath = "./"; // The directory with the config information (ddscat.par and shape.dat)
 		// Allow rtmath.conf override
+		shared_ptr<config::configsegment> cRoot = config::loadRtconfRoot();
+		cRoot->getVal("ddscat-genParams/inputPath", srcPath); // Set default outputDirectory if set here
 		// And the command-line overrides this
 		p.readParam<string>("-i",srcPath);
 
+		// Output directory path
+		string dstPath = "./out"; // The directory with the config information (ddscat.par and shape.dat)
+		// Allow rtmath.conf override
+		cRoot->getVal("ddscat-genParams/outputPath", dstPath); // Set default outputDirectory if set here
+		// And the command-line overrides this
+		p.readParam<string>("-o",dstPath);
+
+		// Verify the input and output paths
 		path pBase(srcPath);
 		if (!exists(pBase)) throw rtmath::debug::xMissingFile(pBase.string().c_str());
 		// Is this a directory or a file> If a file, go to the parent
@@ -60,7 +70,107 @@ int main(int argc, char** argv)
 			}
 		}
 
+
+		// See if output directory exists. If not, then create it.
+		// Also add safeguards to prevent overwriting input
+		path pDest(dstPath);
+		if (!exists(pDest))
+		{
+			// Create the directory
+			boost::filesystem::create_directory(pDest);
+		} else {
+			// If it does exist, is it a directory?
+			if (is_directory(pDest))
+			{
+				// And, if so, is it empty?
+				// TODO!!!
+				GETOBJKEY();
+				throw rtmath::debug::xBadInput("Destination exists");
+			} else {
+				throw rtmath::debug::xBadInput("Destination exists, and is a file, not a directory.");
+			}
+		}
+		path pDpar(pDest / pParFile.filename());
+		path pDshp(pDest / pShape.filename());
+
 		// Okay, the files all exist. Now, to load them.
+		rtmath::ddscat::ddPar ddfile(pParFile.string());
+		rtmath::ddscat::shapefile shp(pShape.string());
+		// Files loaded. Now, what to do with them?
+
+		// Use flags for this...
+		// Set output version (7.2 is default)
+		size_t ddVer = 72;
+		p.readParam<size_t>("-v", ddVer);
+		ddfile.version(ddVer);
+
+		// Add in values passed from the command line (redo of beta, theta, phi, etc.)
+		vector<string> vals;
+		bool doMod = false;
+		if(p.readParam("-e"))
+		{
+			// TODO: different consoles pass quoted / unquoted strings in different ways!
+			//		 Modify command.h to specialize string loading, with concatenation and 
+			//		 splitting, as necessary...
+			throw rtmath::debug::xUnimplementedFunction();
+			doMod = true;
+			p.readParam<string>("-e",vals);
+		} else if(p.readParam("-f"))
+		{
+			// Get file that provides changes, and implement one line at a time...
+			// TODO!
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+		// TODO: Also allow for a more expressive version of frequency, aeff, ...
+
+		if (doMod)
+		{
+			// Iterate through each val, split on =, map the key, and insert into ddscat.par
+			for (auto ot = vals.begin(); ot != vals.end(); ++ot)
+			{
+				// Split lin based on '='
+				// Prepare tokenizer
+				typedef boost::tokenizer<boost::char_separator<char> >
+					tokenizer;
+				boost::char_separator<char> sep("=");
+				tokenizer tcom(*ot,sep);
+				vector<string> cmd;
+				for (auto it=tcom.begin(); it != tcom.end(); ++it)
+					cmd.push_back(*it);
+				if (cmd.size() < 2) 
+					throw rtmath::debug::xUnknownFileFormat(ot->c_str());
+				// Process the key
+				std::shared_ptr<ddParParsers::ddParLine> ptr = ddParParsers::mapKeys(cmd[1]);
+				ptr->read(cmd[0]);
+				ddfile.insertKey(ptr->id(), ptr);
+			}
+		}
+		
+
+		// Rewrite ddscat.par to the destination, with any version changes
+		ddfile.saveFile(pDpar.string());
+
+		// Copy shape.dat / target.out to destination (no need to write the loaded version)
+		boost::filesystem::copy_file(pShape, pDshp);
+		// Copy any auxiliary files (like diel.tab) mentioned in ddscat.par
+		shared_ptr<ddParParsers::ddParLineSimple<std::string> > dielloc = 
+			std::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ddfile.getKey(ddParParsers::IREFR));
+		if (dielloc != nullptr)
+		{
+			string sdl;
+			dielloc->get(sdl);
+			path pDTs(sdl);
+			path pDTd(pDest / pDTs.filename());
+			boost::filesystem::copy_file(pDTs, pDTd);
+		}
+
+		// Calculate shape file statistics output and write to destination
+		if (p.readParam("-s"))
+		{
+			// TODO
+		}
+
+		// And we're done!
 	}
 	catch (rtmath::debug::xError &err)
 	{
@@ -70,6 +180,8 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+
+/*
 int main(int argc, char** argv)
 {
 	using namespace std;
@@ -137,3 +249,6 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
+*/
+
+
