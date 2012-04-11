@@ -7,10 +7,14 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <fstream>
+#include <istream>
+#include <iterator>
 #include <sstream>
 #include "../../rtmath/rtmath/rtmath.h"
 
 void doHelp();
+// boost has an issue when copying files. So, I'll use my own function for now.
+void fcopy(const boost::filesystem::path &src, const boost::filesystem::path &dst);
 
 int main(int argc, char** argv)
 {
@@ -137,7 +141,8 @@ int main(int argc, char** argv)
 		ddfile.saveFile(pDpar.string());
 
 		// Copy shape.dat / target.out to destination (no need to write the loaded version)
-		boost::filesystem::copy_file(pShape, pDshp);
+		fcopy(pShape, pDshp);
+//		boost::filesystem::copy_file(pShape, pDshp);
 		// Copy any auxiliary files (like diel.tab) mentioned in ddscat.par
 		shared_ptr<ddParParsers::ddParLineSimple<std::string> > dielloc = 
 			std::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ddfile.getKey(ddParParsers::IREFR));
@@ -147,7 +152,8 @@ int main(int argc, char** argv)
 			dielloc->get(sdl);
 			path pDTs(sdl);
 			path pDTd(pDest / pDTs.filename());
-			boost::filesystem::copy_file(pDTs, pDTd);
+			fcopy(pDTs, pDTd);
+//			boost::filesystem::copy_file(pDTs, pDTd);
 		}
 
 		// Calculate shape file statistics output and write to destination
@@ -250,5 +256,21 @@ int main(int argc, char** argv)
 	return 0;
 }
 */
+
+void fcopy(const boost::filesystem::path &src, const boost::filesystem::path &dst)
+{
+	using namespace std;
+	fstream f(src.string().c_str(), fstream::in|fstream::binary);
+	f << noskipws;
+	istream_iterator<unsigned char> begin(f);
+	istream_iterator<unsigned char> end;
+	fstream f2(dst.string().c_str(), fstream::out|fstream::trunc|fstream::binary);
+	ostream_iterator<char> begin2(f2);
+
+	copy(begin,end,begin2);
+}
+
+
+
 
 

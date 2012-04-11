@@ -111,14 +111,14 @@ namespace rtmath {
 			{
 			public:
 				ddParLineSimple(ParId id = UNKNOWN) 
-					: ddParLineSimpleBase(id) {}
+					: ddParLineSimpleBase<T>(id) {}
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(_id,idstr);
-					out << _val << " ";
-					if (_endWriteWithEndl)
+					idString(this->_id,idstr);
+					out << this->_val << " ";
+					if (this->_endWriteWithEndl)
 						out << " = " << idstr << std::endl;
 				}
 				virtual void read(const std::string &val)
@@ -195,17 +195,17 @@ namespace rtmath {
 			{
 			public:
 				ddParTuples(size_t tuplesize, ParId id = UNKNOWN) 
-					: ddParLineSimplePlural(id) { _tuplesize = tuplesize; }
+					: ddParLineSimplePlural<T>(id) { _tuplesize = tuplesize; }
 				virtual ~ddParTuples() {}
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(_id,idstr);
-					for (size_t i = 0; i < _val.size(); i++)
+					idString(this->_id,idstr);
+					for (size_t i = 0; i < this->_val.size(); i++)
 					{
 						if (i % _tuplesize == 0)
 							out << "(";
-						out << _val[i];
+						out << this->_val[i];
 						if ((i % _tuplesize) == (_tuplesize - 1))
 						{
 							out << ") ";
@@ -213,7 +213,7 @@ namespace rtmath {
 							out << ",";
 						}
 					}
-					if (_endWriteWithEndl)
+					if (this->_endWriteWithEndl)
 						out << " = " << idstr << std::endl;
 				}
 			protected:
@@ -275,7 +275,7 @@ namespace rtmath {
 						out << " = " << idstr << std::endl;
 				}
 				template <class S>
-				virtual void get(size_t index, S &val) const
+				void get(size_t index, S &val) const
 				{
 					if (index >= _numT)
 					{
@@ -286,7 +286,7 @@ namespace rtmath {
 					}
 				}
 				template <class S>
-				virtual void set(size_t index, S &val) const
+				void set(size_t index, S &val) const
 				{
 					if (index >= _numT)
 					{

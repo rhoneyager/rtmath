@@ -138,7 +138,7 @@ namespace rtmath {
 	void scattMatrix::_invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4])
 	{
 		// TODO: make sure it's correct via testing. Am I solving for the correct matrix?
-		const double M_PI = boost::math::constants::pi<double>();
+		const double PI = boost::math::constants::pi<double>();
 
 		// Using the Mueller matrix (Snn) and the Stokes Extinction Matrix (Knn), the 
 		// forward-scattering amplitude matrix (Sn) may be retreived. This goes in the 
@@ -152,26 +152,26 @@ namespace rtmath {
 
 		// Imaginary parts
 
-		val = (Knn[0][0] + Knn[0][1]) * f / (4.0 * M_PI);
+		val = (Knn[0][0] + Knn[0][1]) * f / (4.0 * PI);
 		Sn[0].imag(val);
 
-		val = Knn[0][0] * f / (2.0 * M_PI);
+		val = Knn[0][0] * f / (2.0 * PI);
 		val -= Sn[0].imag();
 		Sn[3].imag(val);
 
-		val = -f * (Knn[0][2] + Knn[1][2]) / (4.0 * M_PI);
+		val = -f * (Knn[0][2] + Knn[1][2]) / (4.0 * PI);
 		Sn[1].imag(val);
 
-		val = -f * Knn[0][2] / (2.0 * M_PI);
+		val = -f * Knn[0][2] / (2.0 * PI);
 		val -= Sn[1].imag();
 		Sn[2].imag(val);
 
 		// Real parts
 
-		val = -f * (Knn[0][3] + Knn[1][3]) / (4.0 * M_PI);
+		val = -f * (Knn[0][3] + Knn[1][3]) / (4.0 * PI);
 		Sn[1].real(val);
 
-		val = -f * Knn[1][3] / (2.0 * M_PI);
+		val = -f * Knn[1][3] / (2.0 * PI);
 		val -= Sn[1].real();
 		Sn[2].real(val);
 

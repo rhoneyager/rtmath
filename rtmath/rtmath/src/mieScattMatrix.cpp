@@ -34,10 +34,10 @@ namespace rtmath {
 			_lock = true; // prevent genS from working
 
 			_reff = reff;
-			const double M_PI = boost::math::constants::pi<double>();
+			const double PI = boost::math::constants::pi<double>();
 			// Assume default temp for index of refraction in this constructor.
 			// reff and wavelength both in microns.
-			_x = 2.0 * M_PI * reff / _wavelength;
+			_x = 2.0 * PI * reff / _wavelength;
 			const double temp = 263.0; // Default temperature.
 			// Calculate index of refraction from this
 			rtmath::refract::mice(freq,temp,_m);

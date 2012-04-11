@@ -97,7 +97,7 @@ namespace rtmath {
 			_parsedData[key] = ptr;
 		}
 
-		void ddPar::_populateDefaults(bool overwrite) const
+		void ddPar::_populateDefaults(bool overwrite, const std::string &src) const
 		{
 			// Populates missing items for this version with default
 			// entries. Used when converting between ddscat file versions.
@@ -110,8 +110,9 @@ namespace rtmath {
 			// this improves scriptability...
 
 			shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
-			string sBasePar;
-			cRoot->getVal("ddscat/DefaultFile", sBasePar);
+			string sBasePar = src;
+			if (src.size() == 0)
+				cRoot->getVal("ddscat/DefaultFile", sBasePar);
 			if (sBasePar.size())
 			{
 				if (exists(path(sBasePar)))
@@ -241,7 +242,7 @@ namespace rtmath {
 
 		namespace ddParParsers
 		{
-			std::shared_ptr<ddParLine> ddParParsers::mapKeys(const std::string &key)
+			std::shared_ptr<ddParLine> mapKeys(const std::string &key)
 			{
 				using namespace std;
 				using namespace rtmath::ddscat::ddParParsers;

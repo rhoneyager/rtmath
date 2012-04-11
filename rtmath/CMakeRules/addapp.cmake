@@ -4,8 +4,9 @@
 # Take the variable {appname}, and link libraries,
 # set properties and create an INSTALL target
 macro(addapp appname)
+#message(${COMMON_LIBS})
 	target_link_libraries (${appname} rtmath ${COMMON_LIBS})
-	IF(EXISTS(COMMON_CFLAGS))
+	IF(DEFINED COMMON_CFLAGS )
 	set_target_properties(${appname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 	ENDIF()
 

@@ -27,7 +27,7 @@ ENDIF()
 # Enable C++11
 # g++
 IF(${CMAKE_COMPILER_IS_GNUCXX})
-	if ("${COMMON_CFLAGS}" MATCHES "0x$")
+	if ("${COMMON_CFLAGS}" MATCHES "0x")
 	else()
 	SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++0x)
 	endif()
@@ -41,4 +41,6 @@ IF (${OPENMP_FOUND})
 SET (COMMON_CFLAGS ${COMMON_CFLAGS} ${OpenMP_CXX_FLAGS})
 ENDIF()
 ENDIF()
+
+#message(${COMMON_CFLAGS})
 

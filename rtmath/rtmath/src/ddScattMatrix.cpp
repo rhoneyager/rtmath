@@ -187,7 +187,7 @@ namespace rtmath {
 			// Generates Snn and, by extension, Knn and Pnn
 			// TODO: verify Snn, Pnn and Knn
 			using namespace std;
-			const double M_PI = boost::math::constants::pi<double>();
+			const double PI = boost::math::constants::pi<double>();
 			if (_lock) return;
 
 			//complex<double> S[4];
@@ -196,10 +196,10 @@ namespace rtmath {
 			complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
 			complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
 
-			//double cp = cos(2.0*M_PI*phi()/180.0);
-			double cp = cos(_phi * M_PI / 180.0);
-			//double sp = sin(2.0*M_PI*phi()/180.0);
-			double sp = sin(_phi * M_PI / 180.0);
+			//double cp = cos(2.0*PI*phi()/180.0);
+			double cp = cos(_phi * PI / 180.0);
+			//double sp = sin(2.0*PI*phi()/180.0);
+			double sp = sin(_phi * PI / 180.0);
 			_S[0] = -i * ( _vals[1][0] * (b * cp - a * sp) + _vals[1][1] * (d * cp - c * sp) );
 			_S[1] = -i * ( _vals[0][0] * (a*cp + b * sp) + _vals[0][1] * (c * cp + d * sp) );
 			_S[2] = i * ( _vals[0][0] * (b * cp - a * sp) + _vals[0][1] * (d * cp - c * sp) );
