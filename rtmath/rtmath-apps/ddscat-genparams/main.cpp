@@ -105,46 +105,32 @@ int main(int argc, char** argv)
 		ddfile.version(ddVer);
 
 		// Add in values passed from the command line (redo of beta, theta, phi, etc.)
-		vector<string> vals;
-		bool doMod = false;
 		if(p.readParam("-e"))
 		{
 			// TODO: different consoles pass quoted / unquoted strings in different ways!
 			//		 Modify command.h to specialize string loading, with concatenation and 
 			//		 splitting, as necessary...
 			throw rtmath::debug::xUnimplementedFunction();
-			doMod = true;
+			vector<string> vals;
 			p.readParam<string>("-e",vals);
-		} else if(p.readParam("-f"))
+		}
+		if(p.readParam("-f"))
 		{
 			// Get file that provides changes, and implement one line at a time...
-			// TODO!
+			string overlay;
+			p.readParam<string>("-f",overlay);
+			path poverlay(overlay);
+			if (!exists(poverlay))
+				throw rtmath::debug::xMissingFile(overlay.c_str());
+			if (is_directory(poverlay))
+				throw rtmath::debug::xBadInput(overlay.c_str());
+			ddfile.loadFile(overlay,true);
+		}
+		if(p.readParam("-d"))
+		{
 			throw rtmath::debug::xUnimplementedFunction();
 		}
 		// TODO: Also allow for a more expressive version of frequency, aeff, ...
-
-		if (doMod)
-		{
-			// Iterate through each val, split on =, map the key, and insert into ddscat.par
-			for (auto ot = vals.begin(); ot != vals.end(); ++ot)
-			{
-				// Split lin based on '='
-				// Prepare tokenizer
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep("=");
-				tokenizer tcom(*ot,sep);
-				vector<string> cmd;
-				for (auto it=tcom.begin(); it != tcom.end(); ++it)
-					cmd.push_back(*it);
-				if (cmd.size() < 2) 
-					throw rtmath::debug::xUnknownFileFormat(ot->c_str());
-				// Process the key
-				std::shared_ptr<ddParParsers::ddParLine> ptr = ddParParsers::mapKeys(cmd[1]);
-				ptr->read(cmd[0]);
-				ddfile.insertKey(ptr->id(), ptr);
-			}
-		}
 		
 
 		// Rewrite ddscat.par to the destination, with any version changes
@@ -168,6 +154,20 @@ int main(int argc, char** argv)
 		if (p.readParam("-s"))
 		{
 			// TODO
+			throw rtmath::debug::xUnimplementedFunction();
+			// ddscat is limited in that it assumes the refractive index is 
+			// frequency-independent. Thus, all of the ddscat.par files that 
+			// will be encountered will only provide information for one frequency.
+			// However, multiple effective radii may be considered. 
+			// Also, multiple orientations are calculated.
+			// For each orientation / size combination, generate statistics
+			// output. I need to figure out how the filenames map in ddscat.
+			// Each output orientation will provide the KE and PE relative 
+			// to the minimum possible potential energy.
+			// Effective radii need a better parser than normal, as spacings may
+			// be lin, log, exp or inv.
+			// Orientations are linear except for theta, which is linear in cos(theta).
+
 		}
 
 		// And we're done!

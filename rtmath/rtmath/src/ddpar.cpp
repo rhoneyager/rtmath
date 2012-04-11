@@ -37,7 +37,7 @@ namespace rtmath {
 		{
 		}
 
-		void ddPar::loadFile(const std::string &filename)
+		void ddPar::loadFile(const std::string &filename, bool overlay)
 		{
 			// Check file existence
 			using namespace std;
@@ -45,7 +45,7 @@ namespace rtmath {
 			path p(filename);
 			if (!exists(p)) throw debug::xMissingFile(filename.c_str());
 			ifstream in(filename.c_str());
-			load(in);
+			load(in, overlay);
 		}
 
 		void ddPar::saveFile(const std::string &filename) const
@@ -84,6 +84,12 @@ namespace rtmath {
 			return res;
 		}
 
+		void ddPar::delKey(ddParParsers::ParId key)
+		{
+			if (_parsedData.count(key))
+				_parsedData.erase(key);
+		}
+
 		void ddPar::insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr)
 		{
 			if (_parsedData.count(key))
@@ -91,7 +97,7 @@ namespace rtmath {
 			_parsedData[key] = ptr;
 		}
 
-		void ddPar::_populateDefaults() const
+		void ddPar::_populateDefaults(bool overwrite) const
 		{
 			// Populates missing items for this version with default
 			// entries. Used when converting between ddscat file versions.
@@ -113,10 +119,19 @@ namespace rtmath {
 					ddPar base(sBasePar);
 					for (auto it = base._parsedData.begin(); it != base._parsedData.end(); it++)
 					{
-						if (this->_parsedData.count(it->first) == 0)
+						// If overwrite, then overwrite any existing key
+						// If not, and key exists, skip to next one
+						// If key does not exist, add it
+						if (this->_parsedData.count(it->first))
 						{
-							this->_parsedData[it->first] = it->second;
+							if (overwrite)
+							{
+								this->_parsedData.erase(it->first);
+							} else {
+								continue;
+							}
 						}
+						this->_parsedData[it->first] = it->second;
 					}
 				} else {
 					// Default file not found
@@ -135,15 +150,19 @@ namespace rtmath {
 			_version = 72;
 		}
 
-		void ddPar::load(std::istream &stream)
+		void ddPar::load(std::istream &stream, bool overlay)
 		{
 			// Parse until end of stream, line-by-line
 			// Split string based on equal sign, and do parsing
 			// based on keys
 			using namespace std;
 			using namespace rtmath::config;
-			_keys.clear();
-			_parsedData.clear();
+			// _keys are mostly useless. Just used for loading.
+			std::map<std::string, std::string> _keys;
+			if (!overlay)
+			{
+				_parsedData.clear();
+			}
 
 			size_t line = 0;
 			while (stream.good())
@@ -203,7 +222,17 @@ namespace rtmath {
 				std::shared_ptr<ddParLine> ptr = mapKeys(it->first);
 				ptr->read(it->second);
 				if (_parsedData.count(ptr->id()))
-					throw rtmath::debug::xBadInput("Bad ddscat.par file read - duplicate key");
+				{
+					if (overlay)
+					{
+						_parsedData.erase(ptr->id());
+					} else {
+						ostringstream ostr;
+						ostr << "Duplicate ddscat.par key: ";
+						ostr << it->first;
+						throw rtmath::debug::xBadInput(ostr.str().c_str());
+					}
+				}
 				_parsedData[ptr->id()] = ptr;
 			}
 		}

@@ -35,18 +35,18 @@ namespace rtmath {
 			ddPar(const std::string &filename);
 			~ddPar();
 
-			void loadFile(const std::string &filename);
+			void loadFile(const std::string &filename, bool overlay = false);
 			void saveFile(const std::string &filename) const;
-			void load(std::istream &stream);
+			void load(std::istream &stream, bool overlay = false);
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
 			std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key);
+			void delKey(ddParParsers::ParId key);
 		private:
 			void _init();
 			size_t _version;
-			void _populateDefaults() const;
-			mutable std::map<std::string, std::string> _keys;
+			void _populateDefaults(bool overwrite = false, const std::string &src = "") const;
 
 			mutable std::map<ddParParsers::ParId, 
 				std::shared_ptr<ddParParsers::ddParLine> > 
@@ -273,6 +273,28 @@ namespace rtmath {
 					}
 					if (_endWriteWithEndl)
 						out << " = " << idstr << std::endl;
+				}
+				template <class S>
+				virtual void get(size_t index, S &val) const
+				{
+					if (index >= _numT)
+					{
+						index -= _numT;
+						val = _r[index];
+					} else {
+						val = _t[index];
+					}
+				}
+				template <class S>
+				virtual void set(size_t index, S &val) const
+				{
+					if (index >= _numT)
+					{
+						index -= _numT;
+						_r[index] = val;
+					} else {
+						_t[index] = val;
+					}
 				}
 			protected:
 				size_t _numT;

@@ -216,6 +216,7 @@ namespace rtmath {
 		// Knowing volume, this will enable a determination of mass
 
 		// TODO: implement this later.
+		throw rtmath::debug::xUnimplementedFunction();
 	}
 
 	void shapeFileStats::_calcDensity()
@@ -228,6 +229,8 @@ namespace rtmath {
 		for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); ++it)
 		{
 			size_t material = (size_t) it->second.get(3);
+			throw rtmath::debug::xUnimplementedFunction();
+			// TODO: need density-calculating functions for ice and water
 			double den = 1.0;
 			if (_densities.count(material)) // _calcDensities not really implemented yet...
 				den = _densities.at(material);
@@ -300,6 +303,7 @@ namespace rtmath {
 		// From this, can get volume
 		// Then, can calculate effective radius
 		// And can get interdipole spacing
+		throw rtmath::debug::xUnimplementedFunction();
 	}
 
 	void shapeFileStats::_calcOtherStats()
