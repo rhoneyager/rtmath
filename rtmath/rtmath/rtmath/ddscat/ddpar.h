@@ -116,14 +116,20 @@ namespace rtmath {
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(this->_id,idstr);
 					out << this->_val << " ";
 					if (this->_endWriteWithEndl)
+					{
+						idString(this->_id,idstr);
 						out << " = " << idstr << std::endl;
+					}
 				}
 				virtual void read(const std::string &val)
 				{
-					set( boost::lexical_cast<T>(val) );
+					std::istringstream strm(val);
+					T trgt;
+					strm >> trgt;
+					set(trgt);
+					//set( boost::lexical_cast<T>(val) );
 				}
 			};
 
@@ -140,10 +146,12 @@ namespace rtmath {
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(_id,idstr);
 					out << "\'" << _val << "\'";
-					if (_endWriteWithEndl)
+					if (this->_endWriteWithEndl)
+					{
+						idString(this->_id,idstr);
 						out << " = " << idstr << std::endl;
+					}
 				}
 				virtual void read(const std::string &val)
 				{
@@ -163,11 +171,13 @@ namespace rtmath {
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(_id,idstr);
 					for (auto it = _val.begin(); it != _val.end(); ++it)
 						out << *it << " ";
-					if (_endWriteWithEndl)
+					if (this->_endWriteWithEndl)
+					{
+						idString(this->_id,idstr);
 						out << " = " << idstr << std::endl;
+					}
 				}
 				virtual void read(const std::string &val)
 				{
@@ -175,10 +185,17 @@ namespace rtmath {
 					// Parse based on spaces
 					typedef boost::tokenizer<boost::char_separator<char> >
 						tokenizer;
-					boost::char_separator<char> sep(" \t()");
+					boost::char_separator<char> sep(" \t(),");
 					tokenizer tcom(val,sep);
 					for (auto it=tcom.begin(); it != tcom.end(); ++it)
-						_val.push_back(boost::lexical_cast<T>(*it));
+					{
+						std::istringstream strm(*it);
+						T trgt;
+						strm >> trgt;
+						_val.push_back(trgt);
+						//set(trgt);
+						//_val.push_back(boost::lexical_cast<T>(*it));
+					}
 				}
 
 				void get(size_t index, T &val) const { val = _val.at(index); }
@@ -200,7 +217,6 @@ namespace rtmath {
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(this->_id,idstr);
 					for (size_t i = 0; i < this->_val.size(); i++)
 					{
 						if (i % _tuplesize == 0)
@@ -214,7 +230,10 @@ namespace rtmath {
 						}
 					}
 					if (this->_endWriteWithEndl)
+					{
+						idString(this->_id,idstr);
 						out << " = " << idstr << std::endl;
+					}
 				}
 			protected:
 				size_t _tuplesize;
@@ -258,7 +277,6 @@ namespace rtmath {
 				virtual void write(std::ostream &out)
 				{
 					std::string idstr;
-					idString(_id,idstr);
 					// Each separate member is used to write
 					// Suppress the endline emitted by the members
 					for (auto it = _t.begin(); it != _t.end(); ++it)
@@ -271,8 +289,11 @@ namespace rtmath {
 						it->endWriteWithEndl(false);
 						it->write(out);
 					}
-					if (_endWriteWithEndl)
+					if (this->_endWriteWithEndl)
+					{
+						idString(this->_id,idstr);
 						out << " = " << idstr << std::endl;
+					}
 				}
 				template <class S>
 				void get(size_t index, S &val) const

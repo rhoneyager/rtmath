@@ -99,7 +99,7 @@ namespace rtmath {
 				// dimensionality by matrixop functions.
 				if (start >= _coords.size()) throw rtmath::debug::xBadInput("start");
 				if (len == 0) len = _coords.size() - start;
-				if (start + len >= _coords.size()) throw rtmath::debug::xBadInput("len");
+				if (start + len > _coords.size()) throw rtmath::debug::xBadInput("len");
 				res.resize(2,len,1);
 				for (size_t i=start; i<len; i++)
 					res.set( boost::lexical_cast<double>(_coords[i]) ,2,i,0);

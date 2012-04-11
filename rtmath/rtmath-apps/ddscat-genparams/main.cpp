@@ -5,6 +5,7 @@
 
 #include "StdAfx.h"
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <fstream>
 #include <istream>
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
 
 		// Okay, the files all exist. Now, to load them.
 		rtmath::ddscat::ddPar ddfile(pParFile.string());
-		rtmath::ddscat::shapefile shp(pShape.string());
+		
 		// Files loaded. Now, what to do with them?
 
 		// Use flags for this...
@@ -150,7 +151,13 @@ int main(int argc, char** argv)
 		{
 			string sdl;
 			dielloc->get(sdl);
+			// Trim annoying spaces from end of file
+			using namespace boost::algorithm;
+			using namespace boost::filesystem;
+			trim(sdl);
+			// Make path. If path is relative, make relative to source dir
 			path pDTs(sdl);
+			if (pDTs.is_relative()) pDTs = pBase / path(sdl);
 			path pDTd(pDest / pDTs.filename());
 			fcopy(pDTs, pDTd);
 //			boost::filesystem::copy_file(pDTs, pDTd);
@@ -160,6 +167,7 @@ int main(int argc, char** argv)
 		if (p.readParam("-s"))
 		{
 			// TODO
+			rtmath::ddscat::shapefile shp(pShape.string());
 			throw rtmath::debug::xUnimplementedFunction();
 			// ddscat is limited in that it assumes the refractive index is 
 			// frequency-independent. Thus, all of the ddscat.par files that 

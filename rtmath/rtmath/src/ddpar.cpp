@@ -71,6 +71,7 @@ namespace rtmath {
 					// If key is valid for this output version, write it
 					if (it->second->versionValid(_version))
 						it->second->write(out);
+					it++;
 				}
 				line++;
 			}
@@ -213,10 +214,28 @@ namespace rtmath {
 				}
 
 				// Populate map
-				_keys[vals[1]] = vals[0];
-
+				//_keys[vals[1]] = vals[0];
+				using namespace rtmath::ddscat::ddParParsers;
+				{
+				std::shared_ptr<ddParLine> ptr = mapKeys(vals[1]);
+				ptr->read(vals[0]);
+				if (_parsedData.count(ptr->id()))
+				{
+					if (overlay)
+					{
+						_parsedData.erase(ptr->id());
+					} else {
+						ostringstream ostr;
+						ostr << "Duplicate ddscat.par key: ";
+						ostr << vals[1];
+						throw rtmath::debug::xBadInput(ostr.str().c_str());
+					}
+				}
+				_parsedData[ptr->id()] = ptr;
 			}
 
+			}
+			/*
 			// Map the keys
 			using namespace rtmath::ddscat::ddParParsers;
 			for (auto it = _keys.begin(); it != _keys.end(); ++it)
@@ -237,6 +256,7 @@ namespace rtmath {
 				}
 				_parsedData[ptr->id()] = ptr;
 			}
+			*/
 		}
 
 	
