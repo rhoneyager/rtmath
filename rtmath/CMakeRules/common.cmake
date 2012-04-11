@@ -21,6 +21,12 @@ SET( DATA_DIR_PREFIX
 	"Data directory prefix for basic configuration"
 )
 
+SET( ENV_MOD_DIR_PREFIX
+        ${CMAKE_INSTALL_PREFIX}/etc/modulefiles
+        CACHE STRING
+        "Environment-modules package file install directory"
+)
+
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
 set (COMMON_LIBS ${COMMON_LIBS} ${ROOT_LIBRARIES})
 

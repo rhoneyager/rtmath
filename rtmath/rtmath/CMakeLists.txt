@@ -11,6 +11,11 @@ include (common)
 # Options
 option ( INSTALL_DATA
 	"Install data directory" OFF)
+
+# TODO: add logic to detect if environment-modules is installed at all!
+option ( INSTALL_MODULES
+	"Install environment-modules file for easy pathing"
+	OFF)
 option ( USE_IPP
 	"Use Intel Integrated Performance Primitives" OFF)
 option ( USE_OPENMP
@@ -39,6 +44,11 @@ configure_file (
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
 	)
 
+configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/data/defaults/modulefiles/rtmath"
+        "${CMAKE_CURRENT_BINARY_DIR}/module-rtmath"
+        )
+
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -49,7 +59,7 @@ ELSE()
 	add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
 ENDIF()
 
-add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
+add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath)
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
@@ -112,4 +122,12 @@ INSTALL(TARGETS rtmath-static rtmath
 	COMPONENT Libraries
 	)
 
+# Install modulefiles on linux / unix / mac
+if (INSTALL_MODULES)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+	DESTINATION ${ENV_MOD_DIR_PREFIX}
+	COMPONENT Data
+	RENAME rtmath
+	)
+endif()
 
