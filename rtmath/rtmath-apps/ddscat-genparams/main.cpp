@@ -66,10 +66,10 @@ int main(int argc, char** argv)
 			// Figure out where the shape file is located.
 			path ptarget = pBase / "target.out";
 			path pshapedat = pBase / "shape.dat";
-			if (exists(ptarget))
-			{ pShape = ptarget;
-			} else if (exists(pshapedat))
+			if (exists(pshapedat))
 			{ pShape = pshapedat;
+			} else if (exists(ptarget))
+			{ pShape = ptarget;
 			} else {
 				throw rtmath::debug::xMissingFile("shape.dat or target.out");
 			}
