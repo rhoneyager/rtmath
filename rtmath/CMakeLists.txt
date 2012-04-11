@@ -44,7 +44,8 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "rtmath")
 set(CPACK_PACKAGE_CONTACT "Ryan Honeyager (rhoneyager@fsu.edu)")
 
 set (CPACK_COMPONENTS_ALL 
-	Applications 
+	Applications
+	Data
 	Libraries 
 	Tests 
 	Headers
@@ -52,7 +53,9 @@ set (CPACK_COMPONENTS_ALL
 
 set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION 
 	"All of the rtmath apps")
-set(CPACK_COMPONENT_LIBRARIESS_DESCRIPTION 
+set(CPACK_COMPONENT_DATA_DESCRIPTION 
+	"Basic configuration files")
+set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION 
 	"The compiled libraries")
 set(CPACK_COMPONENT_TESTS_DESCRIPTION 
 	"Testing application to verify that the library is working properly.")
@@ -60,8 +63,8 @@ set(CPACK_COMPONENT_HEADERS_DESCRIPTION
 	"Headers for code development")
 
 set(CPACK_COMPONENT_HEADERS_DEPENDS Libraries)
-set(CPACK_COMPONENT_TESTS_DEPENDS Libraries)
-set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries)
+set(CPACK_COMPONENT_TESTS_DEPENDS Libraries Data)
+set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries Data)
 
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 

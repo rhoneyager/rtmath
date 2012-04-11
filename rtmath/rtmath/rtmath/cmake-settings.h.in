@@ -1,0 +1,4 @@
+#pragma once
+
+#define SYS_RTC "@DATA_DIR_PREFIX@/data/rtmath.conf"
+

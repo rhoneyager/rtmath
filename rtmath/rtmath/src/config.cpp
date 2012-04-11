@@ -12,9 +12,9 @@
 #include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
 
-// Special compile-time generated file that build needs
+// Special compile-time generated files that build needs
 #include "debug_subversion.h"
-
+#include "cmake-settings.h"
 
 
 namespace rtmath {
@@ -378,7 +378,15 @@ namespace rtmath {
 			// Finally, just use the default os-dependent path
 			//filename = "/home/rhoneyag/.rtmath";
 			// Macro defining the correct path
-			filename = RTC;
+			filename = "";
+			using namespace boost::filesystem;
+			path testUser(RTC);
+			path testSys(SYS_RTC);
+			if (exists(testUser))
+				filename = RTC;
+			else if (exists(testSys))
+				filename = SYS_RTC;
+			
 			return;
 		}
 

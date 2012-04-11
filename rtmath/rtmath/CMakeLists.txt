@@ -9,6 +9,8 @@ aux_source_directory (src libsrcs)
 include (common)
 
 # Options
+option ( INSTALL_DATA
+	"Install data directory" OFF)
 option ( USE_IPP
 	"Use Intel Integrated Performance Primitives" OFF)
 option ( USE_OPENMP
@@ -32,17 +34,22 @@ IF(${WIN32})
 	)
 ENDIF(${WIN32})
 
+configure_file (
+	"${CMAKE_CURRENT_SOURCE_DIR}/rtmath/cmake-settings.h.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
+	)
+
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Win32 MSVC builds really prefer a static lib build.
 IF(${WIN32})
-	add_library (rtmath STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
+	add_library (rtmath STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
 ELSE()
-	add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
+	add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
 ENDIF()
 
-add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h)
+add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
@@ -75,6 +82,15 @@ add_dependencies (rtmath-tests rtmath-static)
 
 # Install targets. This ensures that the library is in a valid location, 
 # and places the testing program in the appropriate directory.
+
+# Data directory
+if (INSTALL_DATA)
+INSTALL(DIRECTORY data
+	DESTINATION ${DATA_DIR_PREFIX}
+	COMPONENT Data
+	PATTERN ".svn" EXCLUDE
+	)
+endif()
 
 # Headers
 INSTALL(DIRECTORY rtmath 

@@ -15,6 +15,12 @@
 include (FindROOT)
 include (addapp)
 
+SET( DATA_DIR_PREFIX
+	${CMAKE_INSTALL_PREFIX}
+	CACHE STRING
+	"Data directory prefix for basic configuration"
+)
+
 include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
 set (COMMON_LIBS ${COMMON_LIBS} ${ROOT_LIBRARIES})
 
