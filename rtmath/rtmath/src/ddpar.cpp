@@ -206,9 +206,10 @@ namespace rtmath {
 					vals.push_back(*it);
 				if (vals.size() < 2) 
 				{
-					ostringstream errmsg;
-					errmsg << "This is not a valid ddscat.par file (error on file line " << line << ").";
-					throw rtmath::debug::xUnknownFileFormat(errmsg.str().c_str());
+					continue;
+					//ostringstream errmsg;
+					//errmsg << "This is not a valid ddscat.par file (error on file line " << line << ").";
+					//throw rtmath::debug::xUnknownFileFormat(errmsg.str().c_str());
 				}
 
 				// Populate map

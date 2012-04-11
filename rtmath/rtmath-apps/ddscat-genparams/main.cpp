@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 				// And, if so, is it empty?
 				// TODO!!!
 				GETOBJKEY();
-				throw rtmath::debug::xBadInput("Destination exists");
+				//throw rtmath::debug::xBadInput("Destination exists");
 			} else {
 				throw rtmath::debug::xBadInput("Destination exists, and is a file, not a directory.");
 			}
@@ -183,6 +183,12 @@ int main(int argc, char** argv)
 		err.Display();
 		exit(1);
 	}
+/*	catch (...)
+	{
+		rtmath::debug::dumpErrorLocation();
+		exit(1);
+	}
+*/
 	return 0;
 }
 

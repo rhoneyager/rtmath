@@ -18,6 +18,7 @@ namespace rtmath
 		// library information
 		void debug_preamble(std::ostream &out = std::cerr);
 		int rev(void);
+		void dumpErrorLocation(std::ostream &out = std::cerr);
 		void timestamp(bool show = false, std::ostream &out = std::cerr);
 		struct keymap
 		{

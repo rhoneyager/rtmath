@@ -6,6 +6,7 @@
 #include "../rtmath/Stdafx.h"
 #include <boost/version.hpp>
 #include "../rtmath/error/debug.h"
+#include "../rtmath/error/debug_mem.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "debug_subversion.h"
@@ -28,6 +29,14 @@ namespace rtmath
 		uidtracker::~uidtracker()
 		{
 			std::cerr << "Debug: destroying uid " << _uid << std::endl;
+		}
+
+		void dumpErrorLocation(std::ostream &out)
+		{
+			out << "File: " << memcheck::__file__ << std::endl;
+			out << "Line: " << memcheck::__line__ << std::endl;
+			out << "Caller: " << memcheck::__caller__ << std::endl;
+			out << std::endl;
 		}
 
 
