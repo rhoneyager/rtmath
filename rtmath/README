@@ -63,9 +63,6 @@ Recommended cmake options:
 
 
 
-
-
-
 - Execute build using build utility
   Ex: make all install
       make package
