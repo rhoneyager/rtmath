@@ -77,6 +77,12 @@ namespace rtmath {
 				virtual void read(const std::string &val) = 0;
 				virtual void write(std::ostream &out) = 0;
 
+				void setComment(const std::string &cmnt) { _comment = cmnt; }
+				void writeComment(std::ostream &out)
+				{
+					if (_comment.size())
+						out << _comment << std::endl;
+				}
 				//inline size_t line() const { return _line; }
 				//void line(size_t nl) { _line = nl; }
 				inline ParId id() const { return _id; }
@@ -86,6 +92,7 @@ namespace rtmath {
 				//size_t _line;
 				ParId _id;
 				bool _endWriteWithEndl;
+				std::string _comment;
 			};
 
 			// Added this as a level of abstraction to prevent code duplication
@@ -115,6 +122,7 @@ namespace rtmath {
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out)
 				{
+					writeComment(out);
 					std::string idstr;
 					out << this->_val << " ";
 					if (this->_endWriteWithEndl)
@@ -145,6 +153,7 @@ namespace rtmath {
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out)
 				{
+					writeComment(out);
 					std::string idstr;
 					out << "\'" << _val << "\'";
 					if (this->_endWriteWithEndl)
@@ -170,6 +179,7 @@ namespace rtmath {
 				virtual ~ddParLineSimplePlural() {}
 				virtual void write(std::ostream &out)
 				{
+					writeComment(out);
 					std::string idstr;
 					for (auto it = _val.begin(); it != _val.end(); ++it)
 						out << *it << " ";
@@ -216,6 +226,7 @@ namespace rtmath {
 				virtual ~ddParTuples() {}
 				virtual void write(std::ostream &out)
 				{
+					writeComment(out);
 					std::string idstr;
 					for (size_t i = 0; i < this->_val.size(); i++)
 					{
@@ -276,6 +287,7 @@ namespace rtmath {
 				}
 				virtual void write(std::ostream &out)
 				{
+					writeComment(out);
 					std::string idstr;
 					// Each separate member is used to write
 					// Suppress the endline emitted by the members

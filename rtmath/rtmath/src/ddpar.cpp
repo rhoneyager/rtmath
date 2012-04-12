@@ -66,7 +66,7 @@ namespace rtmath {
 			{
 				if (_comments.count(line))
 				{
-					out << _comments.at(line) << endl;
+					//out << _comments.at(line) << endl;
 				} else {
 					// If key is valid for this output version, write it
 					if (it->second->versionValid(_version))
@@ -172,7 +172,7 @@ namespace rtmath {
 				string lin;
 				std::getline(stream,lin);
 				line++;
-
+				string comment;
 				// Check if this is a comment line (ends with ')
 				// Need extra logic if line ends in whitespace
 				{
@@ -184,6 +184,7 @@ namespace rtmath {
 						{ 
 							// Define a comment
 							_comments[line] = lin;
+							comment = lin;
 							// End line parsing
 							skip = true; 
 							break; 
@@ -218,6 +219,12 @@ namespace rtmath {
 				using namespace rtmath::ddscat::ddParParsers;
 				{
 				std::shared_ptr<ddParLine> ptr = mapKeys(vals[1]);
+				if (comment.size())
+				{
+					// Comment setting to preserve comment order...
+					ptr->setComment(comment);
+					comment = "";
+				}
 				ptr->read(vals[0]);
 				if (_parsedData.count(ptr->id()))
 				{
