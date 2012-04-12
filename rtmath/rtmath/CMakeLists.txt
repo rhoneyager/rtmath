@@ -59,6 +59,9 @@ ELSE()
 	add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
 ENDIF()
 
+# Used to allow VS default project to coexist with cmake project
+add_definitions(-DWITH_CMAKE)
+
 add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath)
 
 aux_source_directory (tests modtests)

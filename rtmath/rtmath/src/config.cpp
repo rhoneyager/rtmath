@@ -14,7 +14,12 @@
 
 // Special compile-time generated files that build needs
 #include "debug_subversion.h"
+
+#ifdef WITH_CMAKE
 #include "cmake-settings.h"
+#else
+#define SYS_RTC RTC
+#endif
 
 
 namespace rtmath {
