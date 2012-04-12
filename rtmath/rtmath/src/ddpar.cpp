@@ -61,9 +61,9 @@ namespace rtmath {
 
 			// Write file version
 			string ver;
-			if (_version == 70) ver = "7.0.0";
+			if (_version == 70) ver = "7.0.8";
 			else if (_version == 72) ver = "7.2.0";
-			out << "' ========= Parameter file for v" << ver << " ==================='" << endl;
+			out << "' ========= Parameter file for v" << ver << " =================== '" << endl;
 
 			// Loop through and write parameters and comments
 			auto ct = _comments.begin();
@@ -342,6 +342,7 @@ namespace rtmath {
 				else if (key.find("NAMBIENT") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(NAMBIENT) );
+					// version 7.0 NAMBIENT
 				else if (key.find("aeff") != string::npos)
 					ptr = std::shared_ptr<ddParLineMixed<double, std::string> >
 					( new ddParLineMixed<double, std::string>(3, AEFF));
@@ -418,6 +419,7 @@ namespace rtmath {
 					case NRFLD:
 					case FRACT_EXTENS:
 					case MXITER:
+					case NAMBIENT:
 						return false;
 					default:
 						return true;
