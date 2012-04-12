@@ -352,7 +352,10 @@ namespace rtmath {
 							pfVals[counter] = *it;
 					} else {
 						// Use standard numeric converters
-						double quant = converters[counter]->convert( boost::lexical_cast<double>(*it));
+						istringstream ival(*it);
+						double ivald;
+						ival >> ivald;
+						double quant = converters[counter]->convert( ivald );
 						vector<double> test;
 						if (vals.count(counter) == 0) vals[counter] = test; // Creation of value in map
 						vals[counter].push_back(quant);
