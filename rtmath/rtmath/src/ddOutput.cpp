@@ -145,7 +145,9 @@ namespace rtmath {
 			for (it = files.begin(); it != files.end(); it++)
 			{
 				//cout << *it << "\t" << it->extension() << endl;
-				if (it->extension().string() == string(".fml") )
+//				it->extension().str();
+				if (string(".fml").compare(it->extension().c_str()) == 0)
+//				if (it->extension().string() == string(".fml") )
 				{
 					// Load the file
 					//cout << "Loading " << it->string() << endl;

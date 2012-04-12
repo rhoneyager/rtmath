@@ -33,7 +33,8 @@ set (COMMON_LIBS ${COMMON_LIBS} ${ROOT_LIBRARIES})
 # Add other libraries (MSVC provides automatically)
 IF(${MSVC})
 ELSE()
-SET (COMMON_LIBS ${COMMON_LIBS} netcdf m boost_filesystem boost_unit_test_framework boost_system ${ROOT_LIBRARIES})
+SET (	COMMON_LIBS ${COMMON_LIBS} netcdf m boost_filesystem
+	boost_unit_test_framework boost_system ${ROOT_LIBRARIES})
 ENDIF()
 
 # Enable C++11

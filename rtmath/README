@@ -35,15 +35,36 @@ INSTALLATION
   * Branches may be found under https://solar.met.fsu.edu/svn/rtmath/branches
   * When upgrading between major versions, a fresh checkout is recommended.
 
+- Load appropriate modules and build dependencies
+  On Red Hat derivatives or on environment-modules-containing systems, load:
+  1) gcc-4.6.3        3) netcdf           5) cmake
+  2) root             4) boost-1.49       6) hdf5
+
+  These packages are provided on many of the liu systems. Not all are necessary if the base system provides the package. 
+
 - Invoke cmake to generate platform-specific build files
   It is recommended that the cmake build path be separate from the sources, as this keeps the sources pristine. This is essential on WIndows VS builds, as the build system 
   can overwrite the development .sln files.
   Ex: mkdir cmake-rtmath
-      svn co https://solar.met.fsu.edu/svn/rtmath/rtmath
+      svn co https://solar.met.fsu.edu/svn/rtmath/branches/stable rtmath-stable
       cd cmake-rtmath
-      cmake ../rtmath -DCMAKE_INSTALL_PREFIX=/home/rhoneyag
+      cmake ../rtmath-stable -DCMAKE_INSTALL_PREFIX=/home/rhoneyag
       Will configure install path.
   Also, using ccmake or cmake-gui gives a good list of the options that may be set in the build.
+
+Recommended cmake options:
+ CMAKE_INSTALL_PREFIX             /opt/rtmath
+ DATA_DIR_PREFIX                  /data/rhoneyag/rtmath
+ ENV_MOD_DIR_PREFIX               /etc/modulefiles
+ INSTALL_DATA                     OFF
+ INSTALL_MODULES                  ON
+ USE_IPP                          OFF
+ USE_OPENMP                       OFF
+
+
+
+
+
 
 - Execute build using build utility
   Ex: make all install

@@ -71,7 +71,7 @@ SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
 ENDIF(${MSVC})
 
 #message(${COMMON_CFLAGS})
-
+#message(${COMMON_LIBS})
 target_link_libraries (rtmath-tests ${COMMON_LIBS})
 
 IF(DEFINED COMMON_CFLAGS )
