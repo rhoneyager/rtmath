@@ -58,10 +58,17 @@ namespace rtmath {
 
 			// Open file for writing
 			ofstream out(filename.c_str());
+
+			// Write file version
+			string ver;
+			if (_version == 70) ver = "7.0.0";
+			else if (_version == 72) ver = "7.2.0";
+			out << "' ========= Parameter file for v" << ver << " ==================='" << endl;
+
 			// Loop through and write parameters and comments
 			auto ct = _comments.begin();
 			auto it = _parsedData.begin();
-			size_t line = 1;
+			size_t line = 2;
 			while (it != _parsedData.end() && ct != _comments.end())
 			{
 				if (_comments.count(line))
@@ -167,12 +174,12 @@ namespace rtmath {
 			}
 
 			size_t line = 0;
+			string comment;
 			while (stream.good())
 			{
 				string lin;
 				std::getline(stream,lin);
 				line++;
-				string comment;
 				// Check if this is a comment line (ends with ')
 				// Need extra logic if line ends in whitespace
 				{
