@@ -122,7 +122,7 @@ namespace rtmath {
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out)
 				{
-					writeComment(out);
+					this->writeComment(out);
 					std::string idstr;
 					out << this->_val << " ";
 					if (this->_endWriteWithEndl)
@@ -153,7 +153,7 @@ namespace rtmath {
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out)
 				{
-					writeComment(out);
+					this->writeComment(out);
 					std::string idstr;
 					out << "\'" << _val << "\'";
 					if (this->_endWriteWithEndl)
@@ -179,7 +179,7 @@ namespace rtmath {
 				virtual ~ddParLineSimplePlural() {}
 				virtual void write(std::ostream &out)
 				{
-					writeComment(out);
+					this->writeComment(out);
 					std::string idstr;
 					for (auto it = _val.begin(); it != _val.end(); ++it)
 						out << *it << " ";
@@ -226,7 +226,7 @@ namespace rtmath {
 				virtual ~ddParTuples() {}
 				virtual void write(std::ostream &out)
 				{
-					writeComment(out);
+					this->writeComment(out);
 					std::string idstr;
 					for (size_t i = 0; i < this->_val.size(); i++)
 					{
@@ -287,7 +287,7 @@ namespace rtmath {
 				}
 				virtual void write(std::ostream &out)
 				{
-					writeComment(out);
+					this->writeComment(out);
 					std::string idstr;
 					// Each separate member is used to write
 					// Suppress the endline emitted by the members
