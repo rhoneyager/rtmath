@@ -36,7 +36,7 @@ namespace rtmath
 		};
 		void DEBUG_TIMESTAMP(void);
 		unsigned int getuniqueobj(const char* file, int line, const char* func);
-		void listuniqueobj(std::ostream &out = std::cerr);
+		void listuniqueobj(std::ostream &out = std::cerr, bool listifempty = true);
 
 		class uidtracker
 		{

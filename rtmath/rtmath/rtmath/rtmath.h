@@ -41,6 +41,7 @@
 #include "ddscat/cdf-ddscat.h"
 #include "ddscat/shapefile.h"
 #include "ddscat/ddpar.h"
+#include "ddscat/mtab.h"
 #include "refract.h"
 #include "units.h"
 #include "ddscat/ddLoader.h"

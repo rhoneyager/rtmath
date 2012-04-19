@@ -134,10 +134,13 @@ namespace rtmath
 			return UNIQUE_KEYS[temp]++;
 		}
 
-		void listuniqueobj(std::ostream &out)
+		void listuniqueobj(std::ostream &out, bool listifempty)
 		{
 			// This is a debugging function that will output the keymaps, counts and identities
 			using namespace std;
+			if (!listifempty)
+				if (UNIQUE_KEYS.size() == 0)
+					return;
 			out << "\nUnique object keymap listing:\n";
 			out << UNIQUE_KEYS.size() << " objects\n";
 			if (UNIQUE_KEYS.size())

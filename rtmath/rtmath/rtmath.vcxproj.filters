@@ -321,6 +321,12 @@
     <ClInclude Include="rtmath\parsers.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\emd.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\mtab.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -583,6 +589,12 @@
       <Filter>Source Files\General</Filter>
     </ClCompile>
     <ClCompile Include="src\ddpar.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\emd.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mtab.cpp">
       <Filter>Source Files\ddscat</Filter>
     </ClCompile>
   </ItemGroup>

@@ -87,8 +87,8 @@ namespace rtmath {
 
 			// If debugging, display the debug mark information
 //#ifdef _DEBUG
-			cerr << endl << endl;
-			rtmath::debug::listuniqueobj();
+			cerr << endl;
+			rtmath::debug::listuniqueobj(cerr, false);
 //#endif
 
 			bool wait = rtmath::debug::waitOnExit();

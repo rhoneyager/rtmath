@@ -16,8 +16,8 @@ void doHelp()
 	cerr << "-v (ddscat output version)\n";
 	cerr << "\tUse this option to convert between ddscat versions.\n";
 	cerr << "\tSupported versions are 70 and 72 (7.0 and 7.2)\n";
-	cerr << "-s\n";
-	cerr << "\tIf shapefile exists, calculate statistics.\n";
+	//cerr << "-s\n";
+	//cerr << "\tIf shapefile exists, calculate statistics.\n";
 	cerr << "-f (ddscat-like file)\n";
 	cerr << "\tThis option is used for patching the main ddscat file with\n";
 	cerr << "\talternate options. Used in changing betas, solver methods, ...\n";

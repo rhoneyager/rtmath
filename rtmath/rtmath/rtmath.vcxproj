@@ -111,9 +111,11 @@
     <ClInclude Include="rtmath\ddscat\ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
     <ClInclude Include="rtmath\ddscat\ddweights.h" />
+    <ClInclude Include="rtmath\ddscat\mtab.h" />
     <ClInclude Include="rtmath\ddscat\parids.h" />
     <ClInclude Include="rtmath\ddscat\shapefile.h" />
     <ClInclude Include="rtmath\defs.h" />
+    <ClInclude Include="rtmath\emd.h" />
     <ClInclude Include="rtmath\enums.h" />
     <ClInclude Include="rtmath\error\debug.h" />
     <ClInclude Include="rtmath\error\debug_mem.h" />
@@ -222,6 +224,7 @@
     <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
+    <ClCompile Include="src\emd.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\gridCDF.cpp" />
     <ClCompile Include="src\gridded.cpp" />
@@ -241,6 +244,7 @@
     <ClCompile Include="src\mie-tauNCalc.cpp" />
     <ClCompile Include="src\mie-wnCalc.cpp" />
     <ClCompile Include="src\mieScattMatrix.cpp" />
+    <ClCompile Include="src\mtab.cpp" />
     <ClCompile Include="src\MurmurHash3.cpp" />
     <ClCompile Include="src\ncContainer.cpp" />
     <ClCompile Include="src\os_functions.cpp" />

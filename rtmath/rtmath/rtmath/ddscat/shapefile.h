@@ -31,26 +31,26 @@ namespace rtmath {
 			shapefile();
 			void _init();
 			std::string _filename;
-			std::map<size_t, std::shared_ptr<const matrixop> >
-				_moments;
+			//std::map<size_t, std::shared_ptr<const matrixop> >
+			//	_moments;
 			std::shared_ptr<const matrixop> _lattice;
-			std::map<size_t, coords::cyclic<double> > _latticePts;
-			std::map<size_t, coords::cyclic<double> > _latticePtsStd;
-			double _mass;
+			std::map<size_t, matrixop > _latticePts;
+			std::map<size_t, matrixop > _latticePtsRi;
+			std::map<size_t, matrixop > _latticePtsStd;
 			size_t _numPoints;
 			std::string _desc;
-			std::shared_ptr<const coords::cyclic<double> > _a1, _a2, _a3;
-			std::shared_ptr<const coords::cyclic<double> > _d;
-			std::shared_ptr<const coords::cyclic<double> > _x0, _xd;
-			std::shared_ptr<matrixop> _I; // Moments of inertia (not counting mass) in xyz coords
+			std::shared_ptr<matrixop> _a1, _a2, _a3;
+			std::shared_ptr<const matrixop > _d;
+			std::shared_ptr<const matrixop > _x0, _xd;
+			//std::shared_ptr<matrixop> _I; // Moments of inertia (not counting mass) in xyz coords
 			friend class shapeFileStats;
 		};
 
 		class shapeFileStats
 		{
 		public:
-			shapeFileStats(const shapefile &shp);
-			shapeFileStats(const std::shared_ptr<const shapefile> &shp);
+			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
+			shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
 			inline double d() const {return _d;}
 			inline double density() const {return _density;}
 			inline double T() const {return _T;}
@@ -60,6 +60,8 @@ namespace rtmath {
 			inline double mass() const {return _mass;}
 			inline bool isValid() const { return _valid; }
 
+			// Set rotation matrix, with each value in degrees
+			void setRot(double beta, double theta, double phi);
 		private:
 			size_t _N;// Number of dipoles
 			double _d; // Interdipole spacing, in um
@@ -78,6 +80,9 @@ namespace rtmath {
 
 			// The object
 			std::shared_ptr<const shapefile> _shp;
+			// The rotations
+			std::shared_ptr<matrixop> _rot;
+			double _beta, _theta, _phi;
 			// Functions
 			void _init();
 			void _calcFromD();

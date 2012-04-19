@@ -1197,6 +1197,31 @@ namespace rtmath {
 		return 0; // to force control path to return a value
 	}
 
+	std::shared_ptr<matrixop> matrixop::fromDoubleArray(const double *src, size_t rank, ...)
+	{
+		// Retrieve the variable parameters
+		va_list indices;
+		va_start(indices, rank);
+		std::vector<size_t> ptr;
+		size_t ival;
+		for (size_t i=0; i<rank; i++)
+		{
+			ival = va_arg(indices,size_t);
+			ptr.push_back(ival);
+		}
+		va_end(indices);
+		matrixop res(ptr);
+		res.fromDoubleArray(src);
+
+		return std::make_shared<matrixop> (res);
+	}
+
+	std::shared_ptr<matrixop> matrixop::fromDoubleArray(const double *src, const std::vector<size_t> &size)
+	{
+		matrixop res(size);
+		res.fromDoubleArray(src);
+		return std::make_shared<matrixop> (res);
+	}
 
 	matrixop matrixop::identity(const std::vector<size_t> &size)
 	{
@@ -1239,6 +1264,15 @@ namespace rtmath {
 		}
 		out << endl;
 	}
+
+	void matrixop::writeSV(const std::string &delim, std::ostream &out, bool givedims) const
+	{
+		using namespace std;
+		if (givedims) out << _datasize << delim;
+		for (size_t i=0;i<_datasize;i++)
+			out << _data[i] << delim;
+	}
+
 	/*
 	void matrixop::fromCdf(NcVar *var, long n)
 	{

@@ -60,22 +60,6 @@ int main(int argc, char** argv)
 		path pParFile(pBase / "ddscat.par");
 		if (!exists(pBase)) throw rtmath::debug::xMissingFile(pParFile.string().c_str());
 
-		// Find the shape file
-		path pShape;
-		{
-			// Figure out where the shape file is located.
-			path ptarget = pBase / "target.out";
-			path pshapedat = pBase / "shape.dat";
-			if (exists(pshapedat))
-			{ pShape = pshapedat;
-			} else if (exists(ptarget))
-			{ pShape = ptarget;
-			} else {
-				throw rtmath::debug::xMissingFile("shape.dat or target.out");
-			}
-		}
-
-
 		// See if output directory exists. If not, then create it.
 		// Also add safeguards to prevent overwriting input
 		path pDest(dstPath);
@@ -96,7 +80,6 @@ int main(int argc, char** argv)
 			}
 		}
 		path pDpar(pDest / pParFile.filename());
-		path pDshp(pDest / pShape.filename());
 
 		// Okay, the files all exist. Now, to load them.
 		rtmath::ddscat::ddPar ddfile(pParFile.string());
@@ -109,16 +92,6 @@ int main(int argc, char** argv)
 		p.readParam<size_t>("-v", ddVer);
 		ddfile.version(ddVer);
 
-		// Add in values passed from the command line (redo of beta, theta, phi, etc.)
-		if(p.readParam("-e"))
-		{
-			// TODO: different consoles pass quoted / unquoted strings in different ways!
-			//		 Modify command.h to specialize string loading, with concatenation and 
-			//		 splitting, as necessary...
-			throw rtmath::debug::xUnimplementedFunction();
-			vector<string> vals;
-			p.readParam<string>("-e",vals);
-		}
 		if(p.readParam("-f"))
 		{
 			// Get file that provides changes, and implement one line at a time...
@@ -140,51 +113,69 @@ int main(int argc, char** argv)
 
 		// Rewrite ddscat.par to the destination, with any version changes
 		ddfile.saveFile(pDpar.string());
-
-		// Copy shape.dat / target.out to destination (no need to write the loaded version)
-		fcopy(pShape, pDshp);
-//		boost::filesystem::copy_file(pShape, pDshp);
-		// Copy any auxiliary files (like diel.tab) mentioned in ddscat.par
-		shared_ptr<ddParParsers::ddParLineSimple<std::string> > dielloc = 
-			std::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ddfile.getKey(ddParParsers::IREFR));
-		if (dielloc != nullptr)
+		
+		// Also write rtmath version information in directory, along with a config file 
+		// detailing what was changed
 		{
-			string sdl;
-			dielloc->get(sdl);
-			// Trim annoying spaces from end of file
-			using namespace boost::algorithm;
-			using namespace boost::filesystem;
-			trim(sdl);
-			// Make path. If path is relative, make relative to source dir
-			path pDTs(sdl);
-			if (pDTs.is_relative()) pDTs = pBase / path(sdl);
-			path pDTd(pDest / pDTs.filename());
-			fcopy(pDTs, pDTd);
-//			boost::filesystem::copy_file(pDTs, pDTd);
+			path vinfo(pDest / "rtmath-info.txt");
+			ofstream vout(vinfo.c_str());
+			debug::debug_preamble(vout);
+			vout << endl << endl;
+			vout << "Command line:\n";
+			for (size_t i=0; i<argc;i++)
+				vout << argv[i] << " ";
+			vout << endl;
+
 		}
 
-		// Calculate shape file statistics output and write to destination
-		if (p.readParam("-s"))
 		{
-			// TODO
-			rtmath::ddscat::shapefile shp(pShape.string());
-			throw rtmath::debug::xUnimplementedFunction();
-			// ddscat is limited in that it assumes the refractive index is 
-			// frequency-independent. Thus, all of the ddscat.par files that 
-			// will be encountered will only provide information for one frequency.
-			// However, multiple effective radii may be considered. 
-			// Also, multiple orientations are calculated.
-			// For each orientation / size combination, generate statistics
-			// output. I need to figure out how the filenames map in ddscat.
-			// Each output orientation will provide the KE and PE relative 
-			// to the minimum possible potential energy.
-			// Effective radii need a better parser than normal, as spacings may
-			// be lin, log, exp or inv.
-			// Orientations are linear except for theta, which is linear in cos(theta).
+			// Find the shape file
+			path pShape;
+			// Figure out where the shape file is located.
+			path ptarget = pBase / "target.out";
+			path pshapedat = pBase / "shape.dat";
+			if (exists(pshapedat))
+			{ pShape = pshapedat;
+			} else if (exists(ptarget))
+			{ pShape = ptarget;
+			}
 
+			if (exists(pShape))
+			{
+				path pDshp(pDest / pShape.filename());
+				// Copy shape.dat / target.out to destination (no need to write the loaded version)
+				fcopy(pShape, pDshp);
+		//		boost::filesystem::copy_file(pShape, pDshp);
+			}
 		}
+		
+	
+		// Either copy aux files (like diel.tab) or regenerate them
+		{
+			// Copy any auxiliary files (like diel.tab) mentioned in ddscat.par
+			shared_ptr<ddParParsers::ddParLineSimple<std::string> > dielloc = 
+				std::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ddfile.getKey(ddParParsers::IREFR));
+			if (dielloc != nullptr)
+			{
+				string sdl;
+				dielloc->get(sdl);
+				// Trim annoying spaces from end of file
+				using namespace boost::algorithm;
+				using namespace boost::filesystem;
+				trim(sdl);
+				// Make path. If path is relative, make relative to source dir
+				path pDTs(sdl);
+				if (pDTs.is_relative()) pDTs = pBase / path(sdl);
+				path pDTd(pDest / pDTs.filename());
+				fcopy(pDTs, pDTd);
+	//			boost::filesystem::copy_file(pDTs, pDTd);
+			}
+		}
+
 
 		// And we're done!
+
+
 	}
 	catch (rtmath::debug::xError &err)
 	{

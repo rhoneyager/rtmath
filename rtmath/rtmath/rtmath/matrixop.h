@@ -60,6 +60,7 @@ namespace rtmath {
 		void size(std::vector<size_t> &out) const;
 		const std::vector<size_t> size() const;
 		void print(std::ostream &out = std::cerr) const;
+		void writeSV(const std::string &delim = ", ", std::ostream &out = std::cerr, bool givedims = true) const;
 		size_t dimensionality() const;
 		void clear();
 		void resize(const std::vector<size_t> &size);
@@ -110,6 +111,8 @@ namespace rtmath {
 		size_t _datasize;
 		double *_data;
 	public: // Static member functions start here
+		static std::shared_ptr<matrixop> fromDoubleArray(const double *src, size_t rank, ...);
+		static std::shared_ptr<matrixop> fromDoubleArray(const double *src, const std::vector<size_t> &size);
 		static matrixop diagonal(const std::vector<size_t> &size, double val);
 		static matrixop diagonal(double val, size_t rank, ...);
 		static matrixop identity(const std::vector<size_t> &size);

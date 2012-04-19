@@ -48,14 +48,14 @@ namespace rtmath {
 	void shapefile::_init()
 	{
 		using namespace std;
-		_mass = 0;
 		_lattice = nullptr;
 		_latticePts.clear();
 		_latticePtsStd.clear();
-		_moments.clear();
+		_latticePtsRi.clear();
+		//_moments.clear();
 		_numPoints = 0;
 		_filename = "";
-		_I = shared_ptr<matrixop>(new matrixop(2,3,3));
+		//_I = shared_ptr<matrixop>(new matrixop(2,3,3));
 	}
 
 	void shapefile::loadFile(const std::string &filename)
@@ -101,14 +101,12 @@ namespace rtmath {
 		sin.str(lin);
 		sin >> x0[0] >> x0[1] >> x0[2];
 
-		_a1 = std::shared_ptr<const coords::cyclic<double> >
-			(new coords::cyclic<double>(3,a1[0],a1[1],a1[2]));
-		_a2 = std::shared_ptr<const coords::cyclic<double> >
-			(new coords::cyclic<double>(3,a2[0],a2[1],a2[2]));
-		_d  = std::shared_ptr<const coords::cyclic<double> >
-			(new coords::cyclic<double>(3,d[0],d[1],d[2]));
-		_x0 = std::shared_ptr<const coords::cyclic<double> >
-			(new coords::cyclic<double>(3,x0[0],x0[1],x0[2]));
+		// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
+		// bypassing any compiler return be value/reference difficulties
+		_a1 = matrixop::fromDoubleArray(a1,2,1,3);
+		_a2 = matrixop::fromDoubleArray(a2,2,1,3);
+		_d  = matrixop::fromDoubleArray(d,2,1,3);
+		_x0 = matrixop::fromDoubleArray(x0,2,1,3);
 
 		std::getline(in,lin); // Skip junk line
 
@@ -120,40 +118,36 @@ namespace rtmath {
 			double j, jx, jy, jz, ix, iy, iz;
 			pin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
 			coords::cyclic<double> cds(6,jx,jy,jz,ix,iy,iz);
-			_latticePts[i+1] = cds;
+			//matrixop crds(2,1,6);
+			matrixop crdsm(2,1,3), crdsi(2,1,3);
+			cds.get(crdsm,0,3);
+			cds.get(crdsi,3,3);
+			_latticePts[i+1] = crdsm;
+			_latticePtsRi[i+1] = crdsi;
 		}
 
 		// Figure out third lattice vector in target frame
 		a3[0] = a1[1]*a2[2]-a1[2]*a2[1];
 		a3[1] = a1[2]*a2[0]-a1[0]*a2[2];
 		a3[2] = a1[0]*a2[1]-a1[1]*a2[0];
-		_a3 = std::shared_ptr<const coords::cyclic<double> >
-			(new coords::cyclic<double>(3,a3[0],a3[1],a3[2]));
+		_a3 = matrixop::fromDoubleArray(a3,2,1,3);
 
 		// Do a second pass and generate the lattice from the lattice points
 		// The scaling factors and basis vectors are already in place.
-		matrixop scale(2,3,1);
-		_d->get(scale);
 		matrixop xd(2,3,1);
-		_x0->get(xd);
-		xd = xd % scale;
-		_xd = std::shared_ptr<const coords::cyclic<double> >
-			(new coords::cyclic<double> (xd));
+		xd = *_x0 % *_d;
+		_xd = make_shared<matrixop>(xd);
 
 		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 		{
 			// First, get matrixops of the lattice vectors
-			matrixop crd(2,3,1);
-			it->second.get(crd,0,3); // Drop the last 3 crds (they don't matter here)
+			matrixop crd = it->second;
 			// Do componentwise multiplication to do scaling
-			crd = crd % scale;
+			crd = crd % *_d;
 
-			_mass++;
 			matrixop crdsc = crd - xd; // Normalized coordinates!
-
-			coords::cyclic<double> ccc(crdsc);
 			// Save in _latticePtsStd
-			_latticePtsStd[it->first] = ccc;
+			_latticePtsStd[it->first] = crdsc;
 		}
 	}
 
@@ -162,19 +156,19 @@ namespace rtmath {
 		using namespace std;
 		out << _desc << endl;
 		out << _numPoints << "\t= Number of lattice points" << endl;
-		_a1->writeTSV(out,false);
+		_a1->writeSV("\t",out,false);
 		out << "\t= target vector a1 (in TF)" << endl;
-		_a2->writeTSV(out,false);
+		_a2->writeSV("\t",out,false);
 		out << "\t= target vector a2 (in TF)" << endl;
-		_d->writeTSV(out,false);
+		_d->writeSV("\t",out,false);
 		out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
-		_x0->writeTSV(out,false);
+		_x0->writeSV("\t",out,false);
 		out << "\t= X0(1-3) = location in lattice of target origin" << endl;
 		out << "\tNo.\tix\tiy\tiz\t1\t1\t1" << endl;
 		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 		{
 			out << "\t" << it->first << "\t";
-			it->second.writeTSV(out,false);
+			it->second.writeSV("\t",out,false);
 			out << endl;
 		}
 	}
@@ -185,16 +179,18 @@ namespace rtmath {
 		return std::const_pointer_cast<shapefile>(a);
 	}
 
-	shapeFileStats::shapeFileStats(const shapefile &shp)
+	shapeFileStats::shapeFileStats(const shapefile &shp, double beta, double theta, double phi)
 	{
 		_init();
 		_shp = shp.getPtr();
+		setRot(beta,theta,phi);
 	}
 
-	shapeFileStats::shapeFileStats(const std::shared_ptr<const shapefile> &shp)
+	shapeFileStats::shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
 	{
 		_init();
 		_shp = shp;
+		setRot(beta,theta,phi);
 	}
 
 	void shapeFileStats::_init()
@@ -208,6 +204,56 @@ namespace rtmath {
 		_density = 0;
 		_valid = false;
 		_shp = nullptr;
+		_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
+		_beta = 0;
+		_theta = 0;
+		_phi = 0;
+	}
+
+	void shapeFileStats::setRot(double beta, double theta, double phi)
+	{
+		_beta = beta;
+		_theta = theta;
+		_phi = phi;
+
+		if (beta == 0 && theta == 0 && phi == 0)
+		{
+			_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
+			return;
+		}
+
+		const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
+		double cb = cos(beta*drconv);
+		double ct = cos(theta*drconv);
+		double cp = cos(phi*drconv);
+		double sb = sin(beta*drconv);
+		double st = sin(theta*drconv);
+		double sp = sin(phi*drconv);
+		// Do left-handed rotation
+		// It's just easier to express the overall rotation as the multiplication of
+		// the component Gimbal matrices.
+		matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
+
+		Rx.set(1,2,0,0);
+		Rx.set(cp,2,1,1);
+		Rx.set(cp,2,2,2);
+		Rx.set(sp,2,2,1);
+		Rx.set(-sp,2,1,2);
+
+		Ry.set(cb,2,0,0);
+		Ry.set(1 ,2,1,1);
+		Ry.set(cb,2,2,2);
+		Ry.set(sb,2,0,2);
+		Ry.set(-sb,2,2,0);
+
+		Rz.set(ct,2,0,0);
+		Rz.set(ct,2,1,1);
+		Rz.set(1,2,2,2);
+		Rz.set(st,2,1,0);
+		Rz.set(-st,2,0,1);
+
+		matrixop Rtot = Rz*Rx*Ry;
+		_rot = Rtot.shared_from_this();
 	}
 
 	void shapeFileStats::_calcDensities()
@@ -226,12 +272,12 @@ namespace rtmath {
 
 		double uV = _V / (double) _N; // unit volume
 		double mass = 0;
-		for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); ++it)
+		for (auto it = _shp->_latticePtsRi.begin(); it != _shp->_latticePtsRi.end(); ++it)
 		{
-			size_t material = (size_t) it->second.get(3);
+			size_t material = (size_t) it->second.get(2,0,0);
 			throw rtmath::debug::xUnimplementedFunction();
 			// TODO: need density-calculating functions for ice and water
-			double den = 1.0;
+			double den = 9.17e-16; // kg/um^3
 			if (_densities.count(material)) // _calcDensities not really implemented yet...
 				den = _densities.at(material);
 			double um = den * uV;
