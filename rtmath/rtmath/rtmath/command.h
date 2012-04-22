@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <set>
 #include <vector>
+#include "error/error.h"
 
 namespace rtmath {
 	namespace config {
@@ -185,9 +186,9 @@ namespace rtmath {
 					{
 						// Separated based on commas. Expand for dashes and colons
 						tokenizer trange(*ot,seprange);
-						vector<size_t> range;
+						vector<T> range;
 						for (auto rt = trange.begin(); rt != trange.end(); rt++)
-							range.push_back(boost::lexical_cast<size_t>(*rt));
+							range.push_back(boost::lexical_cast<T>(*rt));
 						// Look at range. If one element, just add it. If two or 
 						// three, calculate the inclusive interval
 						if (range.size() == 1)
@@ -195,15 +196,17 @@ namespace rtmath {
 							if (expanded.count(range[0]) == 0)
 								expanded.insert(range[0]);
 						} else {
-							size_t start, end = 0, interval = 1;
+							T start, end = 0, interval = 1;
 							start = range[0];
 							end = range[range.size()-1];
 							if (range.size() > 2) interval = range[1];
 							if (start < 0 || end < 0 || start > end || interval < 0)
 							{
 								// Die from invalid range
-								cerr << "Invalid range " << *ot << endl;
-								exit(1);
+								// Should really throw error
+								throw rtmath::debug::xBadInput(ot->c_str());
+								//cerr << "Invalid range " << *ot << endl;
+								//exit(1);
 							}
 							for (size_t i=start;i<=end;i+=interval)
 							{

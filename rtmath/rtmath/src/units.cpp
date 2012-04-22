@@ -45,7 +45,7 @@ namespace rtmath {
 		double converter::convert(double inVal) const
 		{
 			if (_valid) return inVal * _convFactor;
-			throw rtmath::debug::xUnimplementedFunction();
+			throw rtmath::debug::xBadInput("Trying to convert with bad converter units.");
 			return 0;
 		}
 

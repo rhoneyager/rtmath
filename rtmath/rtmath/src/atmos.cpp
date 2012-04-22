@@ -216,6 +216,8 @@ namespace rtmath {
 			// Found in first line, starting at the second word
 			// The first word is always Profile!
 			getline(in,line);
+			line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
+			line.erase( std::remove(line.begin(), line.end(), '\t'), line.end() );
 			name = line.substr(8); // Skip 'Profile '
 
 			// Prepare the tokenizer
@@ -228,11 +230,13 @@ namespace rtmath {
 			// Read in header and subheader lines
 			vector<string> header, subheader;
 			getline(in,line);
+			line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
 			tokenizer tokens(line,sep);
 			for (tokenizer::iterator it = tokens.begin();
 				it != tokens.end(); it++)
 				header.push_back(*it);
 			getline(in,line);
+			line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
 			tokens.assign(line);
 			for (tokenizer::iterator it = tokens.begin();
 				it != tokens.end(); it++)
@@ -340,6 +344,7 @@ namespace rtmath {
 			while (in.good()) // Think up better reader that doesn't duplicate the last line
 			{
 				getline(in,line);
+				line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
 				tokens.assign(line);
 				counter = 0; // Keeps track of column number
 				for (tokenizer::iterator it = tokens.begin();

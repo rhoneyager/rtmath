@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
+		cerr << "rtmath-mie" << endl;
 		rtmath::debug::appEntry(argc, argv);
 		
 		// Take ddscat name or path from argv, and attempt to load the files

@@ -134,25 +134,25 @@ namespace rtmath
 			return UNIQUE_KEYS[temp]++;
 		}
 
-		void listuniqueobj(std::ostream &out, bool listifempty)
+		void listuniqueobj(std::ostream &out, bool showifnone)
 		{
 			// This is a debugging function that will output the keymaps, counts and identities
 			using namespace std;
-			if (!listifempty)
-				if (UNIQUE_KEYS.size() == 0)
-					return;
-			out << "\nUnique object keymap listing:\n";
-			out << UNIQUE_KEYS.size() << " objects\n";
-			if (UNIQUE_KEYS.size())
+			if (showifnone || UNIQUE_KEYS.size())
 			{
-				out << "File - Function - Line - Count\n";
-				for (map<keymap*,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
+				out << "\nUnique object keymap listing:\n";
+				out << UNIQUE_KEYS.size() << " objects\n";
+				if (UNIQUE_KEYS.size())
 				{
-					out << it->first->file << " - " << it->first->function << " - " << it->first->line << " - " << it->second << endl;
+					out << "File - Function - Line - Count\n";
+					for (map<keymap*,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
+					{
+						out << it->first->file << " - " << it->first->function << " - " << it->first->line << " - " << it->second << endl;
 
+					}
 				}
+				out << endl;
 			}
-			out << endl;
 		}
 
 		// TODO: find caller for this... If none, remove.
