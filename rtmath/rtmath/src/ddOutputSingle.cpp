@@ -71,7 +71,11 @@ namespace rtmath {
 		void ddOutputSingle::writeCSV(const std::string &filename) const
 		{
 			std::ofstream out(filename.c_str());
-			out << "CSV output for (beta,theta,phi,wavelength)=";
+			//out << "CSV output for (beta,theta,phi,wavelength)=";
+			out << "beta, theta, phi, ";
+			out << "P11, P12, P13, P14, P21, P22, P23, P24, P31, P32, P33, P34, P41, P42, P43, P44, ";
+			out << "K11, K12, K13, K14, K21, K22, K23, K24, K31, K32, K33, K34, K41, K42, K43, K44";
+			out << std::endl;
 			writeCSV(out);
 		}
 
@@ -94,10 +98,22 @@ namespace rtmath {
 		void ddOutputSingle::writeCSV(std::ostream &out) const
 		{
 			using namespace std;
-			out << _beta << ", " << _theta << ", " << _phi << ", " << _freq << endl;
+			//out << _beta << ", " << _theta << ", " << _phi << ", " << _freq << endl;
+
+			// Need to collect the objects into a map for sorting. Otherwise, csv writes 
+			// irregularly.
+
+			std::map<rtmath::coords::cyclic<double>, std::shared_ptr<const ddscat::ddScattMatrix> > mmap;
 			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
 			{
-				(*it)->writeCSV(out);
+				rtmath::coords::cyclic<double> c = (*it)->genCoords();
+				mmap[c] = *it;
+			}
+
+			for (auto it = mmap.begin(); it != mmap.end(); ++it)
+			{
+				it->second->writeCSV(out);
+				//(*it)->writeCSV(out);
 			}
 		}
 

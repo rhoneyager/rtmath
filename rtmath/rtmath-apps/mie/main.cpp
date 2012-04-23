@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 				doHelp();
 			}
 
-			// Orientations to consider
+			// radii to consider
 			vector<string> sizeList;
 			flag = p.readParam<string>("-s",sizeList);
 			if (flag)

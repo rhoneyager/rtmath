@@ -14,6 +14,7 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/parameter/keyword.hpp>
 #include <istream>
 #include <iterator>
 #include <sstream>
@@ -32,7 +33,7 @@ int main(int argc, char** argv)
 	using namespace rtmath::debug;
 	try {
 		cerr << argv[0] << endl;
-		rtmath::debug::appEntry(argc, argv);
+		rtmath::debug::appEntry(argc, argv); // Standard config argument parsing
 
 		// For this application, I will be using the boost command-line parsing system
 		//config::parseParams p(argc,argv);
