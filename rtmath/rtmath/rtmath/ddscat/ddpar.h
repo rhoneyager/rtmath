@@ -136,7 +136,7 @@ namespace rtmath {
 					std::istringstream strm(val);
 					T trgt;
 					strm >> trgt;
-					set(trgt);
+					this->set(trgt);
 					//set( boost::lexical_cast<T>(val) );
 				}
 			};
