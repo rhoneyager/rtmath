@@ -75,6 +75,9 @@ set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 # TODO: add headers to rtmath solution build, in their appropriiate directories
 # TODO: add postgresql support
 
+#add_package_dependency(rtmath DEPENDS_ON HDF5)
+#add_package_dependency(rtmath DEPENDS_ON NetCDF)
+
 # This must always be last!
 include(CPack)
 

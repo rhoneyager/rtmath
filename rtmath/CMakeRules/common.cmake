@@ -13,6 +13,7 @@
 #include (${CMAKE_CURRENT_LIST_DIR}/FindROOT.cmake)
 #include (${CMAKE_CURRENT_LIST_DIR}/FindOpenMP.cmake)
 include (FindROOT)
+include (FindNetCDF)
 include (addapp)
 
 SET( DATA_DIR_PREFIX
