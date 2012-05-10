@@ -74,6 +74,11 @@ set(rtmath_LIBRARIES "")
 #add_package_dependency(NetCDF DEPENDS_ON HDF5)
 add_package_dependency(rtmath DEPENDS_ON HDF5)
 add_package_dependency(rtmath DEPENDS_ON NetCDF)
+add_package_dependency(rtmath DEPENDS_ON ROOT)
+
+target_link_libraries (rtmath ${COMMON_LIBS})
+target_link_libraries (rtmath-static ${COMMON_LIBS})
+
 #add_package_dependency(NetCDF DEPENDS_ON HDF5)
 #add_package_dependency(NetCDF DEPENDS_ON HDF5)
 

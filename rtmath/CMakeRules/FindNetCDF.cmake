@@ -67,7 +67,7 @@ else(NetCDF_LIBRARIES AND NetCDF_INCLUDE_DIRS)
     if (NetCDF_INCLUDE_DIR)
 
         if (EXISTS "${NetCDF_INCLUDE_DIR}")
-
+	    MARK_AS_ADVANCED( cdf_test_include_path )
             find_path(cdf_test_include_path
                       NAMES ${netcdf_inc_names}
                       HINTS ${NetCDF_INCLUDE_DIR}
