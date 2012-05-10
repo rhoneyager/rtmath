@@ -29,17 +29,29 @@ endif()
 add_subdirectory (rtmath)
 add_subdirectory (rtmath-apps)
 
+# Get subversion revision information - for use in cpack
+#EXECUTE_PROCESS("svn info . | grep Revision: |cut -c11-" 
+#	OUTPUT_VARIABLE REVISION)
+EXECUTE_PROCESS(COMMAND "svn" "info" "${CMAKE_CURRENT_SOURCE_DIR}"
+	OUTPUT_FILE "SVN-INFO")
 
+EXECUTE_PROCESS(COMMAND "grep" "Revis" "SVN-INFO"
+	OUTPUT_FILE "SVN-REV")
+
+EXECUTE_PROCESS(COMMAND "cut" "-c11-" "SVN-REV"
+	OUTPUT_VARIABLE REVISION
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+	
 
 # Add in packaging system support
 
 set(CPACK_PACKAGE_NAME "rtmath")
 set(CPACK_PACKAGE_VENDOR "Ryan Honeyager")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "rtmath - radiative transfer math library")
-set(CPACK_PACKAGE_VERSION "1.0.0")
-set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION "0.1.${REVISION}")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH ${REVISION})
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "rtmath")
 set(CPACK_PACKAGE_CONTACT "Ryan Honeyager (rhoneyager@fsu.edu)")
 
@@ -74,7 +86,9 @@ set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 # TODO: add structure to MSVC build files (solution folders)
 # TODO: add headers to rtmath solution build, in their appropriiate directories
 # TODO: add postgresql support
-
+set(CPACK_RPM_PACKAGE_REQUIRES 
+	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel"
+	)
 #add_package_dependency(rtmath DEPENDS_ON HDF5)
 #add_package_dependency(rtmath DEPENDS_ON NetCDF)
 
