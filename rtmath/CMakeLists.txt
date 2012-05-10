@@ -91,7 +91,7 @@ set(CPACK_RPM_PACKAGE_REQUIRES
 	)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-	"cmake (>= 2.8), root-v5.32.00, tcsh, boost-dev (>= 1.46.1), libboost-filesystem-dev (>= 1.46.1), g++ (>= 4:4.6.1), libnetcdf-dev, libnetcdf6, libhdf5-dev, libpqxx-dev, libpq-dev"
+	"cmake (>= 2.8), root-v5.32.00, tcsh, libboost-dev (>= 1.46.1), libboost-filesystem-dev (>= 1.46.1), g++ (>= 4:4.6.1), libnetcdf-dev, libnetcdf6, libhdf5-dev, libpqxx-dev, libpq-dev"
 	)
 
 # This must always be last!
