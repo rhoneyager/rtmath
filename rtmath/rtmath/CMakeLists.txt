@@ -118,11 +118,14 @@ INSTALL(DIRECTORY data
 	)
 endif()
 
+set(LIB_SUFFIX "" CACHE STRING "Define suffix of lib directory name (32/64)" )
+
 # Headers
 INSTALL(DIRECTORY rtmath 
 	DESTINATION include
 	COMPONENT Headers
 	PATTERN ".svn" EXCLUDE
+	PATTERN ".in" EXCLUDE
 	)
 
 # Executables and libraries
@@ -133,8 +136,8 @@ INSTALL(TARGETS rtmath-tests
 
 INSTALL(TARGETS rtmath-static rtmath 
 	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
+	LIBRARY DESTINATION lib${LIB_SUFFIX}
+	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 	COMPONENT Libraries
 	)
 

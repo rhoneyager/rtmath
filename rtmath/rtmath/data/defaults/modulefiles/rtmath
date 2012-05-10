@@ -4,8 +4,8 @@
 #
 conflict		rtmath rtmath-devel
 prepend-path		PATH		@CMAKE_INSTALL_PREFIX@/bin
-prepend-path		LD_LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib
-prepend-path		LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib
+prepend-path		LD_LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
+prepend-path		LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
 prepend-path		INCLUDE		@CMAKE_INSTALL_PREFIX@/include
 prepend-path		C_INCLUDE_PATH	@CMAKE_INSTALL_PREFIX@/include
 prepend-path		CPLUS_INCLUDE_PATH	@CMAKE_INSTALL_PREFIX@/include
