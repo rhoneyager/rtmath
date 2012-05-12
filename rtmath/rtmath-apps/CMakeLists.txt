@@ -17,5 +17,13 @@ add_subdirectory (shape)
 add_subdirectory (transmittance)
 add_subdirectory (uuid)
 
+# Control option for creating qt apps
+option ( MAKE_GUIS
+	"Make Qt GUI programs?" OFF)
+
+if (MAKE_GUIS)
+add_subdirectory (ddscat-genparams-qt)
+endif()
+
 
 
