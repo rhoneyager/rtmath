@@ -1,6 +1,7 @@
 # Build the apps
 
 add_subdirectory (absorb-slab)
+add_subdirectory (arm-index-files)
 add_subdirectory (atmosplot)
 add_subdirectory (combo)
 add_subdirectory (conv-units)

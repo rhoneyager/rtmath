@@ -61,6 +61,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddscat", "rtmath-apps\ddsca
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddscat-genparams-qt", "rtmath-apps\ddscat-genparams-qt\ddscat-genparams-qt.vcxproj", "{74EE6C41-1FE1-40B6-90B5-AB286548DC9C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arm-index-files", "rtmath-apps\arm-index-files\arm-index-files.vcxproj", "{347051E5-54F7-4917-8286-EED3ACA330D6}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -147,6 +149,10 @@ Global
 		{74EE6C41-1FE1-40B6-90B5-AB286548DC9C}.Debug|Win32.Build.0 = Debug|Win32
 		{74EE6C41-1FE1-40B6-90B5-AB286548DC9C}.Release|Win32.ActiveCfg = Release|Win32
 		{74EE6C41-1FE1-40B6-90B5-AB286548DC9C}.Release|Win32.Build.0 = Release|Win32
+		{347051E5-54F7-4917-8286-EED3ACA330D6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{347051E5-54F7-4917-8286-EED3ACA330D6}.Debug|Win32.Build.0 = Debug|Win32
+		{347051E5-54F7-4917-8286-EED3ACA330D6}.Release|Win32.ActiveCfg = Release|Win32
+		{347051E5-54F7-4917-8286-EED3ACA330D6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -169,6 +175,7 @@ Global
 		{7055E1A9-189D-4A0E-B904-B947FD76F27B} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{36181ED6-5763-446F-80FA-297A35981FB6} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{74EE6C41-1FE1-40B6-90B5-AB286548DC9C} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
+		{347051E5-54F7-4917-8286-EED3ACA330D6} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{BB3A712C-3367-48CB-A98A-58A65FE83367} = {9D4A2788-8FD7-4FB3-8D3A-6A9F3EF77A3C}
 	EndGlobalSection
 EndGlobal
