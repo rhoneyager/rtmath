@@ -49,8 +49,8 @@ function(ADD_PACKAGE_DEPENDENCY)
     find_package(${req_package} REQUIRED)
 #	message("${${req_package}_LIBRARIES}")
 #	message("${${req_package}_INCLUDE_DIRS}")
-#       message("${${target_package}_LIBRARIES}")
-#       message("${${target_package}_INCLUDE_DIRS}")
+#        message("${${target_package}_LIBRARIES}")
+#        message("${${target_package}_INCLUDE_DIRS}")
 
 #    if( 0 AND ${req_package}_LIBRARIES AND ${req_package}_INCLUDE_DIRS )
     if( ${req_package}_LIBRARIES AND ${req_package}_INCLUDE_DIRS )
@@ -144,6 +144,9 @@ endif()
 
        
         set(${target_package}_LIBRARIES ${_save_lib_list} PARENT_SCOPE)
+	set_target_properties(${target_package} 
+		PROPERTIES INCLUDE_DIRECTORIES 
+		${target_package}_INCLUDE_DIRS)
 
     endif()    
 

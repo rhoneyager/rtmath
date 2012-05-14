@@ -59,7 +59,8 @@ int main(int argc, char** argv)
                         string fconfig;
                         rtmath::config::getConfigDefaultFile(fconfig);
                         p.readParam<string>("-config", fconfig);
-                        rtmath::config::configsegment *croot;
+			std::shared_ptr<rtmath::config::configsegment> croot;
+//                        rtmath::config::configsegment *croot;
                         croot = rtmath::config::configsegment::loadFile(fconfig.c_str(),NULL);
                         string database = "arm";
                         string username, password, host;

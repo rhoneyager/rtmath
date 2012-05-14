@@ -1,28 +1,13 @@
 # Create the rtmath library
 
+include (common)
+
 # Really should specify the files manually, 
 # but I can just delete the build and recreate for now.
 aux_source_directory (src libsrcs)
 #aux_source_directory (rtmath headers)
-#message("rtmath")
-
-include (common)
-
-# Options
-option ( INSTALL_DATA
-	"Install data directory" OFF)
-
-# TODO: add logic to detect if environment-modules is installed at all!
-option ( INSTALL_MODULES
-	"Install environment-modules file for easy pathing"
-	OFF)
-option ( USE_IPP
-	"Use Intel Integrated Performance Primitives" OFF)
-option ( USE_OPENMP
-	"Enable OpenMP to speed up execution in certain areas" OFF)
 
 # Custom prebuild step based on os
-
 IF(${UNIX})
 	add_custom_command (
 		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
@@ -71,34 +56,53 @@ set(rtmath_LIBRARIES "")
 #message(${rtmath_LIBRARIES})
 #message(${rtmath_INCLUDE_DIRS})
 
-#add_package_dependency(NetCDF DEPENDS_ON HDF5)
-add_package_dependency(rtmath DEPENDS_ON HDF5)
-add_package_dependency(rtmath DEPENDS_ON NetCDF)
-add_package_dependency(rtmath DEPENDS_ON ROOT)
+if(LOAD_PACKAGES)	
+	add_package_dependency(rtmath DEPENDS_ON HDF5)
+	add_package_dependency(rtmath DEPENDS_ON NetCDF)
+	add_package_dependency(rtmath DEPENDS_ON ROOT)
+	add_package_dependency(rtmath DEPENDS_ON Boost)
+	#add_package_dependency(rtmath depends_on )
+	#add_package_dependency(rtmath depends_on )
+endif()
+IF(USE_OPENMP)
+	IF (${OPENMP_FOUND})
+		add_package_dependency(rtmath DEPENDS_ON OpenMP)
+	endif()
+endif()
 
+include_directories(${rtmath_INCLUDE_DIRS})
+set(rtmath_INCLUDES ${rtmath_INCLUDE_DIRS} CACHE INTERNAL "rtmath-included dirs")
+set(rtmath_LIBS ${rtmath_LIBRARIES} CACHE INTERNAL "rtmath-included libs")
+
+
+#add_package_dependency(rtmath-static DEPENDS_ON rtmathDummy)
+set(rtmath-static_LIBRARIES ${rtmath_LIBRARIES})
+set(rtmath-static_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
 target_link_libraries (rtmath ${COMMON_LIBS})
+target_link_libraries (rtmath ${rtmath_LIBRARIES})
 target_link_libraries (rtmath-static ${COMMON_LIBS})
-
-#add_package_dependency(NetCDF DEPENDS_ON HDF5)
-#add_package_dependency(NetCDF DEPENDS_ON HDF5)
+target_link_libraries (rtmath-static ${rtmath-static_LIBRARIES})
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
 target_link_libraries (rtmath-tests rtmath-static)
-
-IF(${MSVC})
-# MSVC parallel builds by default
-SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
-ENDIF(${MSVC})
-
-#message(${COMMON_CFLAGS})
-#message(${COMMON_LIBS})
+#add_package_dependency(rtmath-tests DEPENDS_ON rtmathDummy)
+set(rtmath-tests_LIBRARIES ${rtmath_LIBRARIES})
+set(rtmath-tests_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
 target_link_libraries (rtmath-tests ${COMMON_LIBS})
+target_link_libraries (rtmath-tests ${rtmath-tests_LIBRARIES})
+
+#target_link_libraries(rtmath-tests 
+#	boost_filesystem 
+#	boost_date_time 
+#	boost_unit_test_framework 
+#	boost_system
+#)
 
 IF(DEFINED COMMON_CFLAGS )
-set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 ENDIF()
 
 set_target_properties(rtmath PROPERTIES FOLDER "Libs")
@@ -123,8 +127,6 @@ INSTALL(DIRECTORY data
 	)
 endif()
 
-set(LIB_SUFFIX "" CACHE STRING "Define suffix of lib directory name (32/64)" )
-
 # Headers
 INSTALL(DIRECTORY rtmath 
 	DESTINATION include
@@ -148,10 +150,10 @@ INSTALL(TARGETS rtmath-static rtmath
 
 # Install modulefiles on linux / unix / mac
 if (INSTALL_MODULES)
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
-	DESTINATION ${ENV_MOD_DIR_PREFIX}
-	COMPONENT Data
-	RENAME rtmath
-	)
+	INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+		DESTINATION ${ENV_MOD_DIR_PREFIX}
+		COMPONENT Data
+		RENAME rtmath
+		)
 endif()
 

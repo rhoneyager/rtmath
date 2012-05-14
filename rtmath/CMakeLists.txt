@@ -25,9 +25,98 @@ This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
 Please delete them.")
 endif()
 
+# Ask for some options
+SET( DATA_DIR_PREFIX
+	${CMAKE_INSTALL_PREFIX}
+	CACHE STRING
+	"Data directory prefix for basic configuration"
+)
+SET( ENV_MOD_DIR_PREFIX
+        ${CMAKE_INSTALL_PREFIX}/etc/modulefiles
+        CACHE STRING
+        "Environment-modules package file install directory"
+)
+set(LIB_SUFFIX "" CACHE STRING "Define suffix of lib directory name (32/64)" )
+
+
+option ( INSTALL_DATA
+	"Install data directory" OFF)
+option ( INSTALL_MODULES
+	"Install environment-modules file for easy pathing"
+	OFF)
+option ( USE_IPP
+	"Use Intel Integrated Performance Primitives" OFF)
+option ( USE_OPENMP
+	"Enable OpenMP to speed up execution in certain areas" OFF)
+option ( LOAD_PACKAGES
+	"Master switch to enable / disable package finding." 
+#	if(${MSVC}) OFF else() ON endif()
+	ON
+)
+option ( BUILD_APPS
+	"Build the default applications" ON)
+
+
+if(LOAD_PACKAGES)
+	# Find the locations of ROOT, OpenMP and others
+	find_package(ROOT REQUIRED)
+	find_package(NetCDF REQUIRED)
+	find_package(PostgreSQL REQUIRED)
+	find_package(PQXX REQUIRED)
+	find_package(Boost REQUIRED)
+	find_package(OpenMP)
+	#find_package(Qt4 REQUIRED)
+	#find_package(Curses REQUIRED)
+endif()
+# Take OpenMP option and enable / disable as appropriate
+IF(USE_OPENMP)
+	IF (${OPENMP_FOUND})
+		SET (COMMON_CFLAGS ${COMMON_CFLAGS} ${OpenMP_CXX_FLAGS})
+	ENDIF()
+ENDIF()
+
+# Set basic common libraries
+SET ( COMMON_LIBS 
+	boost_filesystem
+	boost_date_time
+	boost_unit_test_framework
+	boost_system
+)
+IF(${MSVC})
+ELSE()
+	SET ( COMMON_LIBS ${COMMON_LIBS} 
+		m
+	)
+	#SET (	COMMON_LIBS ${COMMON_LIBS} netcdf m boost_filesystem
+	#	pqxx boost_date_time pq
+	#	boost_unit_test_framework boost_system ${ROOT_LIBRARIES})
+ENDIF()
+
+# Enable C++11
+# g++
+IF(${CMAKE_COMPILER_IS_GNUCXX})
+	if ("${COMMON_CFLAGS}" MATCHES "0x")
+	else()
+		SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++0x)
+	endif()
+ENDIF()
+
+IF(${MSVC})
+	# MSVC parallel builds by default
+	SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
+ENDIF(${MSVC})
+
+
+# The target processing
 # Recurse into the subdirectories
 add_subdirectory (rtmath)
+if (BUILD_APPS)
 add_subdirectory (rtmath-apps)
+endif()
+
+
+# Beginning of CPack stuff
+
 
 # Get subversion revision information - for use in cpack
 #EXECUTE_PROCESS("svn info . | grep Revision: |cut -c11-" 
@@ -82,12 +171,11 @@ set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 
 # TODO: add RPM building package separation
 # TODO: add Ubuntu package separation
-# TODO: add package dependencies
 # TODO: add structure to MSVC build files (solution folders)
 # TODO: add headers to rtmath solution build, in their appropriiate directories
 # TODO: add postgresql support
 set(CPACK_RPM_PACKAGE_REQUIRES 
-	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel"
+	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel, pqxx-devel"
 	)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
