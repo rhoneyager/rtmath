@@ -52,9 +52,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CMakeRules", "CMakeRules", "{BB3A712C-3367-48CB-A98A-58A65FE83367}"
 	ProjectSection(SolutionItems) = preProject
 		CMakeRules\addapp.cmake = CMakeRules\addapp.cmake
+		CMakeRules\AddPackageDependency.cmake = CMakeRules\AddPackageDependency.cmake
 		CMakeRules\common.cmake = CMakeRules\common.cmake
+		CMakeRules\FindHDF5.cmake = CMakeRules\FindHDF5.cmake
+		CMakeRules\FindNetCDF.cmake = CMakeRules\FindNetCDF.cmake
 		CMakeRules\FindOpenMP.cmake = CMakeRules\FindOpenMP.cmake
 		CMakeRules\FindROOT.cmake = CMakeRules\FindROOT.cmake
+		CMakeRules\ParseLibraryList.cmake = CMakeRules\ParseLibraryList.cmake
+		CMakeRules\PrintVariable.cmake = CMakeRules\PrintVariable.cmake
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddscat", "rtmath-apps\ddscat\ddscat.vcxproj", "{36181ED6-5763-446F-80FA-297A35981FB6}"
