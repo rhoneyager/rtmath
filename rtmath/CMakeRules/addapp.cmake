@@ -17,7 +17,7 @@ macro(addapp appname)
 #	message("${rtmath_INCLUDES}")
 	target_link_libraries (${appname} ${${appname}_LIBRARIES})
 	target_link_libraries (${appname} ${COMMON_LIBS} rtmath)
-	include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	include_directories(${${appname}_INCLUDE_DIRS})
 
 #	message("${COMMON_LIBS}")
