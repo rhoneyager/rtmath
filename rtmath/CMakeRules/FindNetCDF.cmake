@@ -37,6 +37,11 @@ include(FindPackageHandleStandardArgs)
 include(PrintVariable)
 include(AddPackageDependency)
 
+OPTION( NetCDF_NEED_CXX
+	"Do we need to find the CXX library?"
+	OFF
+	)
+
 if ( NetCDF_LIBRARIES AND NetCDF_INCLUDE_DIRS )
 
     # Do nothing. Variables are set. No need to search again
@@ -165,16 +170,18 @@ else(NetCDF_LIBRARIES AND NetCDF_INCLUDE_DIRS)
                          NAMES netcdf
                          HINTS ${NetCDF_LIBRARY_DIR}
                          NO_DEFAULT_PATH)
-
-            find_library(NetCDF_CXX_LIBRARY
-                         NAMES netcdf_c++
-                         HINTS ${NetCDF_LIBRARY_DIR}
-                         NO_DEFAULT_PATH)
-             
+		if(NetCDF_NEED_CXX)
+		    find_library(NetCDF_CXX_LIBRARY
+				 NAMES netcdf_c++
+				 HINTS ${NetCDF_LIBRARY_DIR}
+				 NO_DEFAULT_PATH)
+	 	endif()
         else()
             message(SEND_ERROR "NetCDF_LIBRARY_DIR=${NetCDF_LIBRARY_DIR} does not exist")
             set(NetCDF_LIBRARY "NetCDF_C_LIBRARY-NOTFOUND")
-            set(NetCDF_LIBRARY "NetCDF_CXX_LIBRARY-NOTFOUND")
+	    if (NetCDF_NEED_CXX)
+	            set(NetCDF_LIBRARY "NetCDF_CXX_LIBRARY-NOTFOUND")
+	    endif()
         endif()
 
     else() 
@@ -189,16 +196,20 @@ else(NetCDF_LIBRARIES AND NetCDF_INCLUDE_DIRS)
                              PATH_SUFFIXES "lib" "Lib"
                              NO_DEFAULT_PATH)
 
-                find_library(NetCDF_CXX_LIBRARY
-                             NAMES netcdf_c++
-                             HINTS ${NetCDF_DIR}
-                             PATH_SUFFIXES "lib" "Lib"
-                             NO_DEFAULT_PATH)
+		     if (NetCDF_NEED_CXX)
+			find_library(NetCDF_CXX_LIBRARY
+				     NAMES netcdf_c++
+				     HINTS ${NetCDF_DIR}
+				     PATH_SUFFIXES "lib" "Lib"
+				     NO_DEFAULT_PATH)
+		     endif()
 
             else()
                  message(SEND_ERROR "NetCDF_DIR=${NetCDF_DIR} does not exist")
                  set(NetCDF_LIBRARY "NetCDF_C_LIBRARY-NOTFOUND")
-                 set(NetCDF_LIBRARY "NetCDF_CXX_LIBRARY-NOTFOUND")
+		 if (NetCDF_NEED_CXX)
+	                 set(NetCDF_LIBRARY "NetCDF_CXX_LIBRARY-NOTFOUND")
+		 endif()
             endif()    
 
 
@@ -208,9 +219,11 @@ else(NetCDF_LIBRARIES AND NetCDF_INCLUDE_DIRS)
                          NAMES netcdf
                          PATH_SUFFIXES ${netcdf_lib_suffixes})
             
-            find_library(NetCDF_CXX_LIBRARY
-                         NAMES netcdf_c++
-                         PATH_SUFFIXES ${netcdf_lib_suffixes})
+		if(NetCDF_NEED_CXX)
+	            find_library(NetCDF_CXX_LIBRARY
+        	                 NAMES netcdf_c++
+                	         PATH_SUFFIXES ${netcdf_lib_suffixes})
+		 endif()
 
 
         endif()
@@ -221,15 +234,21 @@ else(NetCDF_LIBRARIES AND NetCDF_INCLUDE_DIRS)
         message(SEND_ERROR "Can not locate NetCDF C library")
     endif()    
     
-    if ( NOT NetCDF_CXX_LIBRARY )
-        message(SEND_ERROR "Can not locate NetCDF CXX library")
-    endif()    
-
+    if(NetCDF_NEED_CXX)
+	    if ( NOT NetCDF_CXX_LIBRARY )
+		    #        message(SEND_ERROR "Can not locate NetCDF CXX library")
+		    message("Cannot locate NetCDF CXX library")
+	    endif()    
+    endif()
 
    
     # Define the LIBRARIES and INCLUDE_DORS
     set(NetCDF_INCLUDE_DIRS ${NetCDF_INCLUDE_DIR})
-    set(NetCDF_LIBRARIES    ${NetCDF_CXX_LIBRARY} ${NetCDF_C_LIBRARY})
+    if (NetCDF_NEED_CXX)
+    	set(NetCDF_LIBRARIES    ${NetCDF_CXX_LIBRARY} ${NetCDF_C_LIBRARY})
+    else()
+	     set(NetCDF_LIBRARIES ${NetCDF_C_LIBRARY})
+    endif()
 
     # Need to find the NetCDF config script to check for HDF5
     if ( NetCDF_DIR OR NetCDF_BIN_DIR )
@@ -284,3 +303,9 @@ mark_as_advanced(
   NetCDF_LIBRARIES
   NetCDF_LIBRARY_DIR
 )
+
+#if (NetCDF_NEED_CXX)
+mark_as_advanced(NetCDF_CXX_LIBRARY NetCDF_NEED_CXX)
+	#endif()
+
+

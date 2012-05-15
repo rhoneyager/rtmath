@@ -48,10 +48,14 @@ option ( USE_IPP
 	"Use Intel Integrated Performance Primitives" OFF)
 option ( USE_OPENMP
 	"Enable OpenMP to speed up execution in certain areas" OFF)
+if(MSVC)
+	set(LOAD_PACKAGES_DEFAULT OFF)
+else()
+	set(LOAD_PACKAGES_DEFAULT ON)
+endif()
 option ( LOAD_PACKAGES
 	"Master switch to enable / disable package finding." 
-#	if(${MSVC}) OFF else() ON endif()
-	ON
+	${LOAD_PACKAGES_DEFAULT}
 )
 option ( BUILD_APPS
 	"Build the default applications" ON)
@@ -61,8 +65,8 @@ if(LOAD_PACKAGES)
 	# Find the locations of ROOT, OpenMP and others
 	find_package(ROOT REQUIRED)
 	find_package(NetCDF REQUIRED)
-	find_package(PostgreSQL REQUIRED)
-	find_package(PQXX REQUIRED)
+	find_package(PostgreSQL)
+	find_package(PQXX)
 	find_package(Boost REQUIRED)
 	find_package(OpenMP)
 	#find_package(Qt4 REQUIRED)
@@ -111,7 +115,7 @@ ENDIF(${MSVC})
 # Recurse into the subdirectories
 add_subdirectory (rtmath)
 if (BUILD_APPS)
-add_subdirectory (rtmath-apps)
+	add_subdirectory (rtmath-apps)
 endif()
 
 

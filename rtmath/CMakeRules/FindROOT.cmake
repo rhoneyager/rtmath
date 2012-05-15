@@ -17,7 +17,7 @@ IF(${WIN32})
 	return()
 ENDIF(${WIN32})
 
-#set(ROOT_PATH "" CACHE STRING "Define search path for ROOT binaries (if not autodetected)" )
+set(ROOT_PATH "" CACHE STRING "Define search path for ROOT binaries (if not autodetected)" )
 
 SET(ROOT_CONFIG_SEARCHPATH
   ${SIMPATH}/tools/root/bin

@@ -50,6 +50,9 @@ add_definitions(-DWITH_CMAKE)
 add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath)
 
 get_target_property(rtmath_INCLUDE_DIRS rtmath INCLUDE_DIRECTORIES)
+if (NOT rtmath_INCLUDE_DIRS)
+	set(rtmath_INCLUDE_DIRS "")
+endif()
 #get_target_property(rtmath_LIBRARIES rtmath LIBRARIES)
 set(rtmath_LIBRARIES "")
 
@@ -57,12 +60,12 @@ set(rtmath_LIBRARIES "")
 #message(${rtmath_INCLUDE_DIRS})
 
 if(LOAD_PACKAGES)	
-	add_package_dependency(rtmath DEPENDS_ON HDF5)
+	#add_package_dependency(rtmath DEPENDS_ON HDF5)
 	add_package_dependency(rtmath DEPENDS_ON NetCDF)
 	add_package_dependency(rtmath DEPENDS_ON ROOT)
 	add_package_dependency(rtmath DEPENDS_ON Boost)
-	#add_package_dependency(rtmath depends_on )
-	#add_package_dependency(rtmath depends_on )
+	#add_package_dependency(rtmath DEPENDS_ON )
+	#add_package_dependency(rtmath DEPENDS_ON )
 endif()
 IF(USE_OPENMP)
 	IF (${OPENMP_FOUND})
@@ -85,6 +88,8 @@ target_link_libraries (rtmath-static ${rtmath-static_LIBRARIES})
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
+# Ensure that the dynamic library builds first (so prebuild will have run)
+add_dependencies (rtmath-tests rtmath-static)
 target_link_libraries (rtmath-tests rtmath-static)
 #add_package_dependency(rtmath-tests DEPENDS_ON rtmathDummy)
 set(rtmath-tests_LIBRARIES ${rtmath_LIBRARIES})
@@ -111,8 +116,6 @@ set_target_properties(rtmath-tests PROPERTIES FOLDER "Tests")
 
 #add_header_files(headers)
 
-# Ensure that the dynamic library builds first (so prebuild will have run)
-add_dependencies (rtmath-tests rtmath-static)
 
 
 # Install targets. This ensures that the library is in a valid location, 
@@ -149,11 +152,13 @@ INSTALL(TARGETS rtmath-static rtmath
 	)
 
 # Install modulefiles on linux / unix / mac
-if (INSTALL_MODULES)
-	INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
-		DESTINATION ${ENV_MOD_DIR_PREFIX}
-		COMPONENT Data
-		RENAME rtmath
-		)
+if (NOT WIN32)
+	if (INSTALL_MODULES)
+		INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+			DESTINATION ${ENV_MOD_DIR_PREFIX}
+			COMPONENT Data
+			RENAME rtmath
+			)
+	endif()
 endif()
 

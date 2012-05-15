@@ -171,7 +171,11 @@ set( HDF5_VALID_COMPONENTS
     CXX
 )
 
-# Define the search path 
+# Define the search path
+
+set(HDF5_DIR "" CACHE PATH "Override Path to base HDF5 installation")
+set(HDF5_BIN_DIR "" CACHE PATH "Override Path to HDF5 binaries")
+
 # Either HDF5_BIN_DIR or HDF5_DIR
 set(hdf5_search_path ${HDF5_BIN_DIR} ${HDF5_DIR} /usr/bin)
 
