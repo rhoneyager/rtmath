@@ -29,6 +29,7 @@ int main(int argc, char** argv)
 		// Take ddscat name or path from argv, and attempt to load the files
 		set<double> sizes; // Contains particle sizes
 		set<double> frequencies;
+		bool suppressOutput = false;
 		string outprefix = "mie-";
 		string outFormat = "csv";
 		// Parse parameters
@@ -44,6 +45,9 @@ int main(int argc, char** argv)
 
 			// Output format
 			p.readParam<string>("-o",outFormat);
+
+			// Suppress output
+			suppressOutput = p.readParam("-N");
 
 			// Frequencies to analyze
 			vector<string> freqList;
@@ -75,17 +79,31 @@ int main(int argc, char** argv)
 		ofstream so(statname.str().c_str());
 		so << "freq, size, nScatt, nNan" << endl;
 
+		ostringstream srangename;
+		srangename << outprefix << "envelope.csv";
+		ofstream sr(srangename.str().c_str());
+		sr << "freq, max error size" << endl;
+
 		for (auto it = frequencies.begin(); it != frequencies.end(); ++it)
 		{
 			for (auto ot = sizes.begin(); ot != sizes.end(); ++ot)
 			{
+				size_t err = 1;
 				ostringstream outname;
 				outname << outprefix << "f-" << *it << "-s-" << *ot << "." << outFormat;
 				mie::ddOutputMie target(*it,*ot);
 				size_t n = target._sizeRaw();
 				size_t nN = target._sizeRawNan();
 				so << *it << ", " << *ot << ", " << n << ", " << nN << endl;
-				target.write(outname.str());
+
+				if (nN < err)
+				{
+					sr << *it << ", " << *ot << endl;
+					err = nN;
+				}
+
+				if (!suppressOutput)
+					target.write(outname.str());
 			}
 		}
 	}
