@@ -39,6 +39,29 @@ namespace rtmath {
 			_interpMap.clear();
 		}
 
+		size_t ddOutputSingleInterp::_sizeRaw() const
+		{
+			return _scattMatricesRaw.size();
+		}
+
+		size_t ddOutputSingleInterp::_sizeRawNan() const
+		{
+			size_t nN = 0;
+			// Iterate through scattering matrices. nans have property that a != a (IEEE standard).
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				double Pnn[4][4];
+				(*it)->mueller(Pnn);
+				for (size_t i=0;i<16;i++)
+					if (&Pnn[i] != &Pnn[i])
+					{
+						nN++;
+						break;
+					}
+			}
+			return nN;
+		}
+
 		void ddOutputSingleInterp::_insert(std::shared_ptr<const ddscat::ddScattMatrix> &obj)
 		{
 			_scattMatricesAll.insert(obj);

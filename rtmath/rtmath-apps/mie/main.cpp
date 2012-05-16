@@ -70,6 +70,10 @@ int main(int argc, char** argv)
 			}
 		}
 
+		ostringstream statname;
+		statname << outprefix << "-stats.csv"; //<< outFormat;
+		ofstream so(statname.str().c_str());
+
 		for (auto it = frequencies.begin(); it != frequencies.end(); ++it)
 		{
 			for (auto ot = sizes.begin(); ot != sizes.end(); ++ot)
@@ -77,6 +81,9 @@ int main(int argc, char** argv)
 				ostringstream outname;
 				outname << outprefix << "f-" << *it << "-s-" << *ot << "." << outFormat;
 				mie::ddOutputMie target(*it,*ot);
+				size_t n = target._sizeRaw();
+				size_t nN = target._sizeRawNan();
+				so << *it << ", " << *ot << ", " << n << ", " << nN << endl;
 				target.write(outname.str());
 			}
 		}

@@ -64,6 +64,9 @@ namespace rtmath {
 			void _init();
 			interpMethod _interpMethod;
 
+			size_t _sizeRaw() const;
+			size_t _sizeRawNan() const;
+
 			/*friend class ddscat::ddOutputEnsemble;
 			friend class ddscat::ddOutputEnsembleGaussian;
 			friend class ddscat::ddOutputEnsembleIsotropic;*/
