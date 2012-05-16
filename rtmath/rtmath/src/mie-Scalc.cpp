@@ -57,8 +57,9 @@ void Scalc::calc(double mu, double Snn[4][4], std::complex<double> Sn[4])
 	*Sa = zero;
 	*Sb = zero;
 	
-	// TODO: use proper bounding formula
-	for (unsigned int n=1; n < 400; n++)
+	size_t nmax = (size_t) (_x + 4.0*pow(_x,1./3.) + 2.0) + 1;
+	//for (unsigned int n=1; n < 400; n++)
+	for (unsigned int n=1; n < nmax; n++)
 	{
 		// Set previous values for iteration
 		Sap = *Sa;

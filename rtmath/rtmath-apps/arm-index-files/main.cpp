@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <boost/asio/ip/host_name.hpp> // for system host name
-#include <rtmath/rtmath.h>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -17,6 +16,7 @@
 #include <sstream>
 #include <libpq-fe.h>
 #include <pqxx/pqxx>
+#include "../../rtmath/rtmath/rtmath.h"
 
 void doHelp();
 

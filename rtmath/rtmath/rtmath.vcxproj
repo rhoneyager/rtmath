@@ -86,6 +86,7 @@
   <ItemGroup>
     <ClInclude Include="other\disabled_poly\assocLegendre.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="rtmath\absorb.h" />
     <ClInclude Include="rtmath\atmos.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="rtmath\polynomials\laguerre.h" />
     <ClInclude Include="rtmath\polynomials\legendre.h" />
     <ClInclude Include="rtmath\polynomials\recursivePolynomial.h" />
+    <ClInclude Include="rtmath\Public_Domain\bhmie.h" />
     <ClInclude Include="rtmath\Public_Domain\MurmurHash3.h" />
     <ClInclude Include="rtmath\quadrature.h" />
     <ClInclude Include="rtmath\rayleigh\Qcalc-Rayleigh.h" />
@@ -172,8 +174,12 @@
     <None Include="app.ico" />
     <None Include="CMakeLists.txt" />
     <None Include="getRev.csh" />
-    <None Include="other\absorb.f" />
-    <None Include="other\mcx.f" />
+    <None Include="other\absorb.f">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="other\mcx.f">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
     <None Include="other\old_atmos.cpp.txt" />
     <None Include="other\old_atmos.h.txt" />
     <None Include="other\old_damatrix.cpp.txt" />
@@ -194,14 +200,17 @@
   <ItemGroup>
     <ClCompile Include="other\disabled_poly\assocLegendre.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="other\lbl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\absorb.cpp" />
     <ClCompile Include="src\absorber.cpp" />
     <ClCompile Include="src\atmos.cpp" />
     <ClCompile Include="src\atmoslayer.cpp" />
+    <ClCompile Include="src\bhmie.cpp" />
     <ClCompile Include="src\chebyshev.cpp" />
     <ClCompile Include="src\command.cpp" />
     <ClCompile Include="src\config.cpp" />
