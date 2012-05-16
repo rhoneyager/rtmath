@@ -9,6 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
+#include <boost/math/special_functions/fpclassify.hpp>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/interpolatable.h"
@@ -52,12 +53,14 @@ namespace rtmath {
 			{
 				double Pnn[4][4];
 				(*it)->mueller(Pnn);
-				for (size_t i=0;i<16;i++)
-					if (&Pnn[i] != &Pnn[i])
-					{
-						nN++;
-						break;
-					}
+				for (size_t i=0;i<4;i++)
+					for (size_t j=0;j<4;i++)
+						if (boost::math::isnan(Pnn[i][j]))
+						{
+							nN++;
+							return 1;
+						}
+						
 			}
 			return nN;
 		}

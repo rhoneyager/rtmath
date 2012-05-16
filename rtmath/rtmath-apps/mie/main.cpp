@@ -71,8 +71,9 @@ int main(int argc, char** argv)
 		}
 
 		ostringstream statname;
-		statname << outprefix << "-stats.csv"; //<< outFormat;
+		statname << outprefix << "stats.csv"; //<< outFormat;
 		ofstream so(statname.str().c_str());
+		so << "freq, size, nScatt, nNan" << endl;
 
 		for (auto it = frequencies.begin(); it != frequencies.end(); ++it)
 		{
