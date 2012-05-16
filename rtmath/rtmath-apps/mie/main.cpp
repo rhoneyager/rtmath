@@ -86,9 +86,9 @@ int main(int argc, char** argv)
 
 		for (auto it = frequencies.begin(); it != frequencies.end(); ++it)
 		{
+			size_t err = 1;
 			for (auto ot = sizes.begin(); ot != sizes.end(); ++ot)
 			{
-				size_t err = 1;
 				ostringstream outname;
 				outname << outprefix << "f-" << *it << "-s-" << *ot << "." << outFormat;
 				mie::ddOutputMie target(*it,*ot);
