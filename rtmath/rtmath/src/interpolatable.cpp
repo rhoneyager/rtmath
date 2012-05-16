@@ -54,8 +54,8 @@ namespace rtmath {
 				double Pnn[4][4];
 				(*it)->mueller(Pnn);
 				for (size_t i=0;i<4;i++)
-					for (size_t j=0;j<4;i++)
-						if (boost::math::isnan(Pnn[i][j]))
+					for (size_t j=0;j<4;j++)
+						if (boost::math::isnan<double>(Pnn[i][j]))
 						{
 							nN++;
 							return 1;
