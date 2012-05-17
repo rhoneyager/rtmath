@@ -16,6 +16,10 @@
 #include <TGraph2D.h>
 #include <TStyle.h>
 #include <TH2.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TComplex.h>
+#include <TObject.h>
 #pragma warning( pop ) 
 
 

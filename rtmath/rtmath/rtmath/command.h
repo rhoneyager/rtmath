@@ -208,7 +208,7 @@ namespace rtmath {
 								//cerr << "Invalid range " << *ot << endl;
 								//exit(1);
 							}
-							for (size_t i=start;i<=end;i+=interval)
+							for (T i=start;i<=end;i+=interval)
 							{
 								if (expanded.count(i) == 0)
 									expanded.insert(i);

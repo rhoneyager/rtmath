@@ -10,14 +10,7 @@
 #include <vector>
 #include <set>
 #include "../../rtmath/rtmath/ROOTlink.h"
-#include <TGraph.h>
-#include <TF1.h>
-#include <TCanvas.h>
-#include <TAxis.h>
-#include <TNamed.h>
-#include <TGraph2D.h>
-#include <TStyle.h>
-#include <TH2.h>
+// root headers are identical to those in ROOTlink.h
 #include "../../rtmath/rtmath/rtmath.h"
 
 
