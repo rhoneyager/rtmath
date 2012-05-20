@@ -2,7 +2,7 @@
 # This conveniently can produce unix makefiles, eclipse .project files, 
 # visual studio solutions and xcode projects
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 project(rtmath)
 
 # Add path for custom modules

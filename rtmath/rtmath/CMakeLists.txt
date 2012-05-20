@@ -6,11 +6,10 @@ include (common)
 # but I can just delete the build and recreate for now.
 #aux_source_directory (src libsrcs)
 #aux_source_directory (rtmath headers)
+
 include (files_src.cmake)
-set_source_files_properties(src/rtmath.cpp PROPERTIES FOLDER "A")
 
 set (libsrcs ${srcfiles})
-#${hdrfiles})
 
 
 # Custom prebuild step based on os
@@ -45,15 +44,30 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Win32 MSVC builds really prefer a static lib build.
 IF(${WIN32})
-	add_library (rtmath STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
+	add_library (rtmath STATIC 
+			${libsrcs} 
+			${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
+			${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
+			${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+			)
 ELSE()
-	add_library (rtmath SHARED ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h)
+	add_library (rtmath SHARED 
+			${libsrcs} 
+			${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
+			${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
+			${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+			)
 ENDIF()
 
 # Used to allow VS default project to coexist with cmake project
 add_definitions(-DWITH_CMAKE)
 
-add_library (rtmath-static STATIC ${libsrcs} ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h ${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath)
+add_library (rtmath-static STATIC 
+		${libsrcs} 
+		${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
+		${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h 
+		${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+		)
 
 get_target_property(rtmath_INCLUDE_DIRS rtmath INCLUDE_DIRECTORIES)
 if (NOT rtmath_INCLUDE_DIRS)
