@@ -4,8 +4,14 @@ include (common)
 
 # Really should specify the files manually, 
 # but I can just delete the build and recreate for now.
-aux_source_directory (src libsrcs)
+#aux_source_directory (src libsrcs)
 #aux_source_directory (rtmath headers)
+include (files_src.cmake)
+set_source_files_properties(src/rtmath.cpp PROPERTIES FOLDER "A")
+
+set (libsrcs ${srcfiles})
+#${hdrfiles})
+
 
 # Custom prebuild step based on os
 IF(${UNIX})
