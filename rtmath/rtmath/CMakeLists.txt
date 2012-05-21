@@ -177,7 +177,7 @@ if (NOT WIN32)
 		INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
 			DESTINATION ${ENV_MOD_DIR_PREFIX}
 			COMPONENT Data
-			RENAME rtmath
+			RENAME ${MODULES_FILENAME}
 			)
 	endif()
 endif()

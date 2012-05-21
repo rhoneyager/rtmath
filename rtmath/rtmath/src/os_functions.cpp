@@ -127,7 +127,7 @@ namespace rtmath {
 				std::getchar();
 			}
 		}
-
+#ifdef _WIN32
 		BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType )
 		{
 			/*
@@ -140,7 +140,7 @@ namespace rtmath {
 			_consoleTerminated = true;
 			return false;
 		}
-
+#endif
 		bool pidExists(int pid)
 		{
 			// Function needed because Qt is insufficient, and Windows / Unix have 
@@ -174,8 +174,9 @@ namespace rtmath {
 			// Need to check existence of directory /proc/pid
 			std::ostringstream pname;
 			pname << "/proc/" << pid;
-			boost::filesistem::path p(pname.str().c_str());
-			if (exists(pname)) return true;
+			using namespace boost::filesystem;
+			path p(pname.str().c_str());
+			if (exists(p)) return true;
 			return false;
 #endif
 			// Execution should not reach this point

@@ -44,6 +44,11 @@ option ( INSTALL_DATA
 option ( INSTALL_MODULES
 	"Install environment-modules file for easy pathing"
 	OFF)
+set(MODULES_FILENAME
+	rtmath
+	CACHE STRING
+	"Name of the environment module"
+	)
 option ( USE_IPP
 	"Use Intel Integrated Performance Primitives" OFF)
 option ( USE_OPENMP
