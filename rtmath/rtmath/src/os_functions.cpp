@@ -150,6 +150,20 @@ namespace rtmath {
 			h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid );
 			if (h)
 			{
+				DWORD code = 0;
+				if (GetExitCodeProcess(h, &code))
+				{
+					CloseHandle(h);
+					if (code == STILL_ACTIVE)
+					{
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					CloseHandle(h);
+					return false;
+				}
 				CloseHandle(h);
 				return true;
 			} else {
