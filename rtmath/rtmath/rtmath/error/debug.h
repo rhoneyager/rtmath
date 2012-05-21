@@ -54,7 +54,7 @@ namespace rtmath
 		void appEntry(int argc, char** argv); // in os_functions.cpp
 		bool waitOnExit(); // in os_functions.cpp
 		void appExit(); // Convenient default atexit function
-
+		bool pidExists(int pid);
 		// App warning functions
 		//void warn(const char* msg);
 	}; // end namespace debug

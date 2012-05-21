@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <cstdlib>
 #ifdef _WIN32
 #include <Windows.h>
@@ -23,6 +24,13 @@
 namespace rtmath {
 	namespace debug {
 
+		// Don't export this symbol (not in header)
+#ifdef _WIN32
+		BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType ); // Helps gracefully close console
+		bool _consoleTerminated = false;
+#endif
+
+		// Regular defs start here
 		void appEntry(int argc, char** argv)
 		{
 			// Process parameters
@@ -56,6 +64,8 @@ namespace rtmath {
 
 			// Prevent ROOT from renaming the console title on Windows
 			// Do this by setting the window name to its file name and path
+
+			// Note: nowadays, could use GetConsoleOriginalTitle?
 #ifdef _WIN32
 			// Get PID
 			DWORD pid = 0;
@@ -78,6 +88,14 @@ namespace rtmath {
 
 			// Set Console Title
 			SetConsoleTitle(szModName);
+
+
+			// Also, set the window closing routine
+			// This allows for the user to click the X (or press ctrl-c)
+			// without causing a fault.
+			// The fault is because the window closes before the atexit 
+			// functions can write output.
+			SetConsoleCtrlHandler(_CloseHandlerRoutine, true);
 #endif
 		}
 
@@ -86,7 +104,18 @@ namespace rtmath {
 			using namespace std;
 
 			// If debugging, display the debug mark information
-//#ifdef _DEBUG
+
+			
+#ifdef _WIN32
+			// If console is closed, then don't even bother 
+			// Windows app will fault if closed before main returns
+			if (_consoleTerminated)
+			{
+				return;
+			}
+#endif
+			
+			
 			cerr << endl << endl;
 			rtmath::debug::listuniqueobj(cerr, false);
 //#endif
@@ -97,6 +126,45 @@ namespace rtmath {
 				cerr << endl << "Program terminated. Press return to exit." << endl;
 				std::getchar();
 			}
+		}
+
+		BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType )
+		{
+			/*
+			if (dwCtrlType == CTRL_CLOSE_EVENT)
+			{
+				_consoleTerminated = true;
+				//return true;
+			}
+			*/
+			_consoleTerminated = true;
+			return false;
+		}
+
+		bool pidExists(int pid)
+		{
+			// Function needed because Qt is insufficient, and Windows / Unix have 
+			// different methods of ascertaining this.
+#ifdef _WIN32
+			HANDLE h;
+			h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid );
+			if (h)
+			{
+				CloseHandle(h);
+				return true;
+			} else {
+				return false;
+			}
+#endif
+#ifdef __unix__
+			// Need to check existence of directory /proc/pid
+			std::ostringstream pname;
+			pname << "/proc/" << pid;
+			boost::filesistem::path p(pname.str().c_str());
+			if (exists(pname)) return true;
+			return false;
+#endif
+			// Execution should not reach this point
 		}
 
 		bool waitOnExit()
