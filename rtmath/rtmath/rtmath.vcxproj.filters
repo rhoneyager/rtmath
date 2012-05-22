@@ -330,6 +330,12 @@
     <ClInclude Include="rtmath\Public_Domain\bhmie.h">
       <Filter>Header Files\Public Domain</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\ddscat\ddparGenerator.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\shapes.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">

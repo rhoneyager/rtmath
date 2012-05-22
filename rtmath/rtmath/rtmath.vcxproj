@@ -109,12 +109,14 @@
     <ClInclude Include="rtmath\ddscat\ddOutputEnsemble.h" />
     <ClInclude Include="rtmath\ddscat\ddOutputSingle.h" />
     <ClInclude Include="rtmath\ddscat\ddpar.h" />
+    <ClInclude Include="rtmath\ddscat\ddparGenerator.h" />
     <ClInclude Include="rtmath\ddscat\ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
     <ClInclude Include="rtmath\ddscat\ddweights.h" />
     <ClInclude Include="rtmath\ddscat\mtab.h" />
     <ClInclude Include="rtmath\ddscat\parids.h" />
     <ClInclude Include="rtmath\ddscat\shapefile.h" />
+    <ClInclude Include="rtmath\ddscat\shapes.h" />
     <ClInclude Include="rtmath\defs.h" />
     <ClInclude Include="rtmath\emd.h" />
     <ClInclude Include="rtmath\enums.h" />

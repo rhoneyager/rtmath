@@ -14,7 +14,6 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
-#include <string>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include "parids.h"

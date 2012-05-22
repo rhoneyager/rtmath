@@ -148,22 +148,22 @@
           </property>
           <item>
            <property name="text">
-            <string>7.0 gcc</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>7.0 intel</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
             <string>7.2 gcc</string>
            </property>
           </item>
           <item>
            <property name="text">
             <string>7.2 intel</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>7.0 gcc</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>7.0 intel</string>
            </property>
           </item>
          </widget>

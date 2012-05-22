@@ -11,6 +11,7 @@
 #include <complex>
 #include "../matrixop.h"
 #include "../coords.h"
+#include "shapes.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -46,33 +47,32 @@ namespace rtmath {
 			friend class shapeFileStats;
 		};
 
-		class shapeFileStats
+
+
+		class shapeFileStats : public shapeModifiable
 		{
 		public:
 			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
 			shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
-			inline double d() const {return _d;}
-			inline double density() const {return _density;}
-			inline double T() const {return _T;}
-			inline double V() const {return _V;}
-			inline double reff() const {return _reff;}
+			virtual double d() const {return _d;}
+			virtual double density() const {return _density;}
+			virtual double T() const {return _T;}
+			virtual double V() const {return _V;}
+			virtual double reff() const {return _reff;}
 			inline size_t N() const {return _N;}
-			inline double mass() const {return _mass;}
+			virtual double mass() const {return _mass;}
 			inline bool isValid() const { return _valid; }
+
+			virtual void d(double newD) const;
+			virtual void T(double newT) const;
+			virtual void V(double newV) const;
+			virtual void reff(double newReff) const;
+			virtual void mass(double newMass) const;
 
 			// Set rotation matrix, with each value in degrees
 			void setRot(double beta, double theta, double phi);
 		private:
 			size_t _N;// Number of dipoles
-			double _d; // Interdipole spacing, in um
-			double _V; // Volume, in um^3
-			double _reff; // reff in um
-			double _mass; // mass in kg
-			double _density; // kg / um^3
-			double _T; // Temperature, K, used in water density calculations
-			bool _valid;
-			// Densities of different anisotropic materials. Used in mass and inertia calculations.
-			std::map<size_t, double> _densities;
 
 			// Center of mass
 
