@@ -336,6 +336,9 @@
     <ClInclude Include="rtmath\ddscat\shapes.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\ddscat\rotations.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">

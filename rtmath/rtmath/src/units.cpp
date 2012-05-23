@@ -24,6 +24,8 @@ namespace rtmath {
 
 		void converter::_init(const std::string &inUnits, const std::string &outUnits)
 		{
+			_inOffset = 0;
+			_outOffset = 0;
 			_inUnits = inUnits;
 			_outUnits = outUnits;
 			_convFactor = 1;
@@ -44,7 +46,7 @@ namespace rtmath {
 
 		double converter::convert(double inVal) const
 		{
-			if (_valid) return inVal * _convFactor;
+			if (_valid) return ((inVal + _inOffset) * _convFactor) + (_outOffset);
 			throw rtmath::debug::xBadInput("Trying to convert with bad converter units.");
 			return 0;
 		}
@@ -86,8 +88,15 @@ namespace rtmath {
 		{
 			_init(in,out);
 			bool inV = false, outV = false;
+			// K - Kelvin, C - Celsius, F - Fahrenheit, R - Rankine
 			if (in == "K") inV = true;
+			if (in == "C") { inV = true; _inOffset += 273.15; }
+			if (in == "F") { inV = true; _convFactor *= 5./9.; _inOffset += 459.67; }
+			if (in == "R") { inV = true; _convFactor *= 5./9; }
 			if (out == "K") outV = true;
+			if (out == "C") { outV = true; _outOffset -= 273.15; }
+			if (out == "F") { outV = true; _convFactor *= 9./5.; _outOffset -= 459.67; }
+			if (out == "R") { outV = true; _convFactor *= 9./5.; }
 			if (inV && outV) _valid = true;
 		}
 

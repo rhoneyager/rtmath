@@ -31,6 +31,10 @@ namespace rtmath {
 			};
 		}
 
+		// Note: shapefile.h contains the definition for shapes
+		// that are read hrom a file. Also important and 
+		// defives from shapeModifiable
+
 		class shape : public std::enable_shared_from_this<shape>, debug::defective
 		{
 		public:

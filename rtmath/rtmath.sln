@@ -70,6 +70,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arm-index-files", "rtmath-a
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "roottest", "rtmath-apps\roottest\roottest.vcxproj", "{D21DE6FD-CE2C-486D-A811-A5876E5FEE14}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddscat-genparams-test", "rtmath-apps\ddscat-genparams-test\ddscat-genparams-test.vcxproj", "{729F7FD8-3CB7-4014-8F21-CE358F521ED6}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -162,6 +164,10 @@ Global
 		{D21DE6FD-CE2C-486D-A811-A5876E5FEE14}.Debug|Win32.Build.0 = Debug|Win32
 		{D21DE6FD-CE2C-486D-A811-A5876E5FEE14}.Release|Win32.ActiveCfg = Release|Win32
 		{D21DE6FD-CE2C-486D-A811-A5876E5FEE14}.Release|Win32.Build.0 = Release|Win32
+		{729F7FD8-3CB7-4014-8F21-CE358F521ED6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{729F7FD8-3CB7-4014-8F21-CE358F521ED6}.Debug|Win32.Build.0 = Debug|Win32
+		{729F7FD8-3CB7-4014-8F21-CE358F521ED6}.Release|Win32.ActiveCfg = Release|Win32
+		{729F7FD8-3CB7-4014-8F21-CE358F521ED6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -186,6 +192,7 @@ Global
 		{74EE6C41-1FE1-40B6-90B5-AB286548DC9C} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{347051E5-54F7-4917-8286-EED3ACA330D6} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{D21DE6FD-CE2C-486D-A811-A5876E5FEE14} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
+		{729F7FD8-3CB7-4014-8F21-CE358F521ED6} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{BB3A712C-3367-48CB-A98A-58A65FE83367} = {9D4A2788-8FD7-4FB3-8D3A-6A9F3EF77A3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

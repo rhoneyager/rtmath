@@ -17,6 +17,9 @@
 #include <boost/tokenizer.hpp>
 #include "ddpar.h"
 #include "shapes.h"
+#include "rotations.h"
+#include "../coords.h"
+#include "../units.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -24,20 +27,26 @@ namespace rtmath {
 		class ddParGeneratorBase
 		{
 		public:
-			ddParGeneratorBase();
+			ddParGeneratorBase()
+				:
+					ddscatVer(72),
+					_compressResults(false),
+					_genIndivScripts(true),
+					_genMassScript(true),
+					_shapeStats(false),
+					_registerDatabase(false)
+
+					{ }
 			virtual ~ddParGeneratorBase();
+			std::set<units::hasUnits> freqs, temps;
+			std::set<rotations> rots;
+			std::string name, description, outLocation;
+			size_t ddscatVer;
 		protected:
 			ddPar _base;
 			// The parameters that are variable
 			//		Add tag for shape type // Shape
 			std::string _shapefilebase;
-			std::set<double> _freqs;
-			std::set<double> _temps;
-			//std::set<double> _idsps; // Interdipole spacings
-			//		Add tag for particle sizes and other aspects of shape parameters.
-			//		These sizes can be specified in terms of effective radius, 
-			//		max dimension, volume, mass or some other quantity. This 
-			//		requires knowledge of the target shape.
 
 			// Can also vary scattering and rotation angle calculations
 			// Be lazy and just specify as we would in ddscat for now...
@@ -46,8 +55,7 @@ namespace rtmath {
 
 
 			// These don't go into a ddscat.par file
-			std::string _name, _description, _outLocation;
-			size_t _ddscatVer;
+			
 			bool _compressResults, _genIndivScripts, _genMassScript;
 			bool _shapeStats, _registerDatabase;
 			std::string _exportLoc;
@@ -59,7 +67,7 @@ namespace rtmath {
 			ddParGenerator();
 			ddParGenerator(const ddPar &base);
 			virtual ~ddParGenerator();
-			void write() const;
+			void write(const std::string &basedir) const;
 			void read(const std::string &basedir);
 		};
 

@@ -42,6 +42,8 @@
 #include "ddscat/shapefile.h"
 #include "ddscat/ddpar.h"
 #include "ddscat/mtab.h"
+#include "ddscat/shapes.h"
+#include "ddscat/ddparGenerator.h"
 #include "refract.h"
 #include "units.h"
 #include "ddscat/ddLoader.h"

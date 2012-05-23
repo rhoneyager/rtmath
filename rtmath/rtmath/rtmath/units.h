@@ -16,6 +16,22 @@
 namespace rtmath {
 	namespace units {
 
+		class hasUnits
+		{
+		public:
+			hasUnits(double quant, const std::string &sUnits)
+				:
+				_units(sUnits),
+				_quant(quant)
+				{ }
+			double quant() const { return _quant; }
+			void units(std::string &sUnits) const { sUnits = _units; }
+			inline std::string units() const { std::string sUnits; units(sUnits); return sUnits; }
+		private:
+			std::string _units;
+			double _quant;
+		};
+
 		// Class is virtual. May be overridden with classes that do formulaic operations,
 		// such as converters to density in ppmv
 		class converter
@@ -28,6 +44,7 @@ namespace rtmath {
 			converter();
 			std::string _inUnits, _outUnits;
 			double _convFactor;
+			double _inOffset, _outOffset;
 			bool _valid;
 			void _init(const std::string &inUnits, const std::string &outUnits);
 		};
