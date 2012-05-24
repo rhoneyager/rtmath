@@ -48,11 +48,13 @@ set (ddscat-src
 	src/ddOutputEnsemble.cpp
 	src/ddOutputSingle.cpp
 	src/ddpar.cpp
+	src/ddparGenerator.cpp
 	src/ddscat.cpp
 	src/ddScattMatrix.cpp
 	src/ddweights.cpp
 	src/mtab.cpp
 	src/shapefile.cpp
+	src/shapes.cpp
 	)
 set (ddscat-hdr
 	rtmath/ddscat/cdf-ddscat.h
@@ -61,12 +63,14 @@ set (ddscat-hdr
 	rtmath/ddscat/ddOutputEnsemble.h
 	rtmath/ddscat/ddOutputSingle.h
 	rtmath/ddscat/ddpar.h
+	rtmath/ddscat/ddparGenerator.h
 	rtmath/ddscat/ddscat.h
 	rtmath/ddscat/ddScattMatrix.h
 	rtmath/ddscat/ddweights.h
 	rtmath/ddscat/mtab.h
 	rtmath/ddscat/parids.h
 	rtmath/ddscat/shapefile.h
+	rtmath/ddscat/shapes.h
 	)
 source_group("Source Files\\ddscat" FILES ${ddscat-src})
 source_group("Header Files\\ddscat" FILES ${ddscat-hdr})

@@ -395,6 +395,9 @@
     <None Include="other\old_layer.h.txt">
       <Filter>Other</Filter>
     </None>
+    <None Include="files_src.cmake">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
@@ -611,6 +614,12 @@
     </ClCompile>
     <ClCompile Include="src\bhmie.cpp">
       <Filter>Source Files\Public Domain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapes.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddparGenerator.cpp">
+      <Filter>Source Files\ddscat</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

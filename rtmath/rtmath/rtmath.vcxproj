@@ -176,6 +176,7 @@
   <ItemGroup>
     <None Include="app.ico" />
     <None Include="CMakeLists.txt" />
+    <None Include="files_src.cmake" />
     <None Include="getRev.csh" />
     <None Include="other\absorb.f">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -231,6 +232,7 @@
     <ClCompile Include="src\ddOutputMie.cpp" />
     <ClCompile Include="src\ddOutputSingle.cpp" />
     <ClCompile Include="src\ddpar.cpp" />
+    <ClCompile Include="src\ddparGenerator.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
     <ClCompile Include="src\ddScattMatrix.cpp" />
     <ClCompile Include="src\ddweights.cpp" />
@@ -272,6 +274,7 @@
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\shapefile.cpp" />
+    <ClCompile Include="src\shapes.cpp" />
     <ClCompile Include="src\Stdafx.cpp" />
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />

@@ -31,17 +31,14 @@ namespace rtmath {
 			};
 		}
 
-		// Note: shapefile.h contains the definition for shapes
-		// that are read hrom a file. Also important and 
-		// defives from shapeModifiable
-
-		class shape : public std::enable_shared_from_this<shape>, debug::defective
+		class shape : public std::enable_shared_from_this<shape>
 		{
 		public:
-			shape();
+			shape() :
+			  _d(0), _V(0), _reff(0), _mass(0), _density(0), _T(0), _valid(false) {}
 			virtual ~shape();
 			virtual double d() const { return _d; }
-			virtual double density() const { return _V; }
+			virtual double density() const { return _density; }
 			virtual double T() const { return _T; }
 			virtual double V() const { return _V; }
 			virtual double reff() const { return _reff; }
@@ -58,23 +55,33 @@ namespace rtmath {
 			std::map<size_t, double> _densities;
 		};
 
-		class shapeModifiable : public shape, debug::defective
+		class shapeModifiable : public shape
 		{
 		public:
 			shapeModifiable();
 			virtual ~shapeModifiable();
-			virtual void d(double newD) const = 0;
-			virtual void T(double newT) const = 0;
-			virtual void V(double newV) const = 0;
-			virtual void reff(double newReff) const = 0;
-			virtual void mass(double newMass) const = 0;
+			virtual void d(double newD);
+			virtual void density(double newDensity);
+			virtual void T(double newT);
+			virtual void V(double newV);
+			virtual void reff(double newReff);
+			virtual void mass(double newMass);
 		protected:
-			// TODO: add updater function that tracks which
-			// value(s) to keep constant and recalculate the rest
-			//virtual void _updater() = 0;
+			// updater function tracks which value(s) to keep constant 
+			// and recalculates the rest
+			// NOTE: may be overridden to add functionality, especially in 
+			// more complex shapes where more manipulatable variables may be specified.
+			// TODO: rewrite function to facilitate this functionality
+			void _update(MANIPULATED_QUANTITY::MANIPULATED_QUANTITY fixed);
+			virtual void _update(
+				const std::set<MANIPULATED_QUANTITY::MANIPULATED_QUANTITY> &fixed);
+			// placeholder functions for objects consisting entirely of ice i-h
+			// TODO: again, enable multiple materials in shape
+			static double _convDT(double density);
+			static double _convTD(double temp);
 		};
 
-		class shapeSphere : public shapeModifiable, debug::defective
+		class shapeSphere : public shapeModifiable
 		{
 		public:
 			shapeSphere();
