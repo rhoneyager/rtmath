@@ -7,6 +7,7 @@
 #include <list>
 #include <string>
 
+namespace old {
 class graph;
 
 class vertex : public std::enable_shared_from_this<vertex>
@@ -35,4 +36,6 @@ private:
 	std::set< std::shared_ptr<const vertex> > _vertices, _remaining, _filled, _unfillable;
 	std::list< std::shared_ptr<const vertex> > _order;
 };
+
+}
 

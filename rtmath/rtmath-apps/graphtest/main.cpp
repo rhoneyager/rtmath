@@ -9,7 +9,7 @@
 #include <map>
 #include "../../rtmath/rtmath/rtmath.h"
 
-#include "vertex.h"
+#include "vertex2.h"
 
 int main(int argc, char** argv)
 {
@@ -22,20 +22,32 @@ int main(int argc, char** argv)
 	// solution that traverses the nodes in some near-minimum amount of steps.
 
 	// Set up the structures
-	enum links_e { T, DENS, M, V, REFF, NUMLINKS };
-	const char* links_n[] = { "T", "DENS", "M", "V", "REFF" };
+	// slots go in. signals get emitted (so out)
+	// Set slots
+	enum slots_s { T_DENS, DENS_T, DENS_M, DENS_V, M_DENS, V_DENS, V_REFF, REFF_V, NUMSLOTS };
+	// Set signals
+	enum signals_e { T = NUMSLOTS, DENS, M, V, REFF, NUMSIGSLOTS };
 
-	// Construct a set of vertices
-	std::map<size_t, std::shared_ptr<vertex> > vertices;
-	std::set<std::shared_ptr<const vertex> > sv;
-	for (size_t i=0; i<NUMLINKS; i++)
+	//enum links_e { T, DENS, M, V, REFF, NUMLINKS };
+	const char* links_n[] = { "T_DENS", "DENS_T", "DENS_M", "DENS_V",
+		"M_DENS", "V_DENS", "V_REFF", "REFF_V",
+		"T", "DENS", "M", "V", "REFF" };
+
+	typedef std::pair<size_t, std::shared_ptr<const vertex> >  vPair;
+	std::set<vPair> vertices;
+	for (size_t i=0; i<NUMSLOTS; i++)
 	{
-		std::shared_ptr<vertex> np (new vertex(i));
-		vertices[i] = np;
-		sv.insert(np);
+		std::shared_ptr<vertex> np (new vertex);
+		vertices.insert(vPair(i,np));
+	}
+	for (size_t i=NUMSLOTS; i<NUMSIGSLOTS; i++)
+	{
+		std::shared_ptr<vertex> np (new vertexVarProvided);
+		vertices.insert(vPair(i,np));
 	}
 
-	// Add branches to vertices
+	// Add the links
+
 	for (size_t i=0; i< NUMLINKS; i++)
 	{
 		std::set<std::shared_ptr<const vertex> > depends;

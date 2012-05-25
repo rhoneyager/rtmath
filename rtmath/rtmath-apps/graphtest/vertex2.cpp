@@ -1,14 +1,15 @@
-#include "vertex.h"
+#include "vertex2.h"
 
-namespace old {
-void vertex::addRoot(const std::set< std::shared_ptr<const vertex> > & root)
+vertex::~vertex() {}
+
+void vertex::addslot(std::shared_ptr<const vertex> &slot)
 {
-	_roots.insert(root);
+	_slots.insert(slot);
 }
 
-void vertex::dropRoots()
+void vertex::addsignal(std::shared_ptr<const vertex> &signal)
 {
-	_roots.clear();
+	_signals.insert(signal);
 }
 
 graph::graph(const std::set< std::shared_ptr<const vertex> > &vertices)
@@ -21,6 +22,7 @@ void graph::_generate()
 {
 	_order.clear();
 	_filled.clear();
+	_useless.clear();
 	_remaining = _vertices;
 
 	size_t order = 0;
@@ -35,22 +37,36 @@ void graph::_generate()
 		for (auto it = _remaining.begin(); it != _remaining.end(); it++)
 		{
 			bool ready = false;
-			if ((*it)->_roots.size() == 0) ready = true;
+			if (!(*it)->_slots.size()) ready = true;
+
+			// Check to see if signals exist and if they are filled
+			bool signalblock = ((*it)->_signals.size()) ? true : false;
+			for (auto ot = (*it)->_signals.begin(); ot != (*it)->_signals.end(); ot++)
+			{
+				if (!_filled.count(*ot))
+				{
+					signalblock = false;
+					break;
+				}
+			}
+			if (signalblock)
+			{
+				_useless.insert(*it);
+				cleanup.insert(*it);
+				continue;
+			}
 
 			// Check to see if a root is completely filled (hence ready for extraction)
-			for (auto ot = (*it)->_roots.begin(); ot != (*it)->_roots.end(); ++ot)
+			// Look at all root members to see if root is filled
+			size_t n = (*it)->_slots.size();
+			size_t m = 0;
+			for (auto ot = (*it)->_slots.begin(); ot != (*it)->_slots.end(); ot++)
 			{
-				// Look at all root members to see if root is filled
-				size_t n = ot->size();
-				size_t m = 0;
-				for (auto ut = ot->begin(); ut != ot->end(); ut++)
-				{
-					if (_filled.count(*ut)) m++;
-				}
-				if (m == n) ready = true;
-
-				if (ready) break;
+				if (_filled.count(*ot)) m++;
+				if (m && (*it)->_slotOR) break; // No need to go on
 			}
+			if (m && (*it)->_slotOR) ready = true;
+			if (m == n) ready = true;
 
 			// If ready, place in _order, _filled and remove from _remaining
 			if (ready)
@@ -75,12 +91,11 @@ void graph::_generate()
 }
 
 void graph::generate(std::list< std::shared_ptr<const vertex> > &order, 
-		std::set< std::shared_ptr<const vertex> > &remaining)
+		std::set< std::shared_ptr<const vertex> > &remaining,
+		std::set< std::shared_ptr<const vertex> > &ignored)
 {
 	_generate();
 	order = _order;
 	remaining = _remaining;
-}
-
-
+	ignored = _useless;
 }
