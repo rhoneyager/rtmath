@@ -13,6 +13,7 @@ int main(int argc, char **argv)
 	using namespace boost::filesystem;
 	try {
 		cerr << "Batch genparams test program" << endl;
+		rtmath::debug::appEntry(argc, argv);
 		rtmath::config::parseParams p(argc, argv);
 
 		// Will create a test set of ddscat runs

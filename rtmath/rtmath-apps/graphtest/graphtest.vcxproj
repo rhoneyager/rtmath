@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{729F7FD8-3CB7-4014-8F21-CE358F521ED6}</ProjectGuid>
-    <RootNamespace>ddscatgenparamstest</RootNamespace>
+    <ProjectGuid>{07D5E082-C967-4D28-BF73-9452BF7A62B9}</ProjectGuid>
+    <RootNamespace>graphtest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -60,15 +60,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="vertex.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="genparams-test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CMakeLists.txt" />
+    <ClInclude Include="vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
