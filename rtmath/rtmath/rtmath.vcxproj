@@ -119,6 +119,7 @@
     <ClInclude Include="rtmath\ddscat\shapefile.h" />
     <ClInclude Include="rtmath\ddscat\shapes.h" />
     <ClInclude Include="rtmath\defs.h" />
+    <ClInclude Include="rtmath\depGraph.h" />
     <ClInclude Include="rtmath\emd.h" />
     <ClInclude Include="rtmath\enums.h" />
     <ClInclude Include="rtmath\error\debug.h" />
@@ -238,6 +239,7 @@
     <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
+    <ClCompile Include="src\depGraph.cpp" />
     <ClCompile Include="src\emd.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\gridCDF.cpp" />

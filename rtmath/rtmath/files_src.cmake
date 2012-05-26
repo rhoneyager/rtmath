@@ -96,6 +96,7 @@ set (general-src
 	src/command.cpp
 	src/config.cpp
 	src/coords.cpp
+	src/depGraph.cpp
 	src/emd.cpp
 	src/interpolatable.cpp
 	src/matrixop.cpp
@@ -120,6 +121,7 @@ set (general-hdr
 	rtmath/config.h
 	rtmath/coords.h
 	rtmath/defs.h
+	rtmath/depGraph.h
 	rtmath/emd.h
 	rtmath/enums.h
 	rtmath/interpolatable.h

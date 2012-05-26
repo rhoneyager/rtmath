@@ -339,6 +339,9 @@
     <ClInclude Include="rtmath\ddscat\rotations.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\depGraph.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -620,6 +623,9 @@
     </ClCompile>
     <ClCompile Include="src\ddparGenerator.cpp">
       <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\depGraph.cpp">
+      <Filter>Source Files\General</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

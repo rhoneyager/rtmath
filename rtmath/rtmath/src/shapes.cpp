@@ -26,46 +26,57 @@ namespace rtmath {
 
 		shapeModifiable::shapeModifiable()
 		{
+			_constructGraph();
 		}
 
 		shapeModifiable::~shapeModifiable()
 		{
 		}
 
+		void shapeModifiable::_constructGraph()
+		{
+			// Establish the vertices and construct the graph used in the shape 
+			// parameter update process
+			using namespace rtmath::graphs;
+			_vertices.clear();
+			_graph = nullptr;
+
+			// Create vertices for end variables
+
+			// Create vertices representing function relationships
+
+			// Create the graph from the vertices
+			_graph = std::shared_ptr<graph>(new graph(_vertices));
+		}
+
 		void shapeModifiable::d(double newD)
 		{
 			_d = newD;
-			_update(MANIPULATED_QUANTITY::D);
 		}
 
 		void shapeModifiable::density(double newDensity)
 		{
 			_density = newDensity;
-			_update(MANIPULATED_QUANTITY::DENSITY);
 		}
 
 		void shapeModifiable::T(double newT)
 		{
 			_T = newT;
-			_update(MANIPULATED_QUANTITY::T);
 		}
 
 		void shapeModifiable::V(double newV)
 		{
 			_V = newV;
-			_update(MANIPULATED_QUANTITY::V);
 		}
 
 		void shapeModifiable::reff(double newReff)
 		{
 			_reff = newReff;
-			_update(MANIPULATED_QUANTITY::REFF);
 		}
 
 		void shapeModifiable::mass(double newMass)
 		{
 			_mass = newMass;
-			_update(MANIPULATED_QUANTITY::MASS);
 		}
 
 		void shapeModifiable::_update(MANIPULATED_QUANTITY::MANIPULATED_QUANTITY fixed)
@@ -197,19 +208,6 @@ namespace rtmath {
 			}
 
 			// And this overwieldy function is finally done!!!!!
-		}
-
-		// Dummy converters for water T and Density
-		double shapeModifiable::_convDT(double density)
-		{
-			throw rtmath::debug::xUnimplementedFunction();
-			return 0;
-		}
-
-		double shapeModifiable::_convTD(double temp)
-		{
-			throw rtmath::debug::xUnimplementedFunction();
-			return 0;
 		}
 		
 	}

@@ -18,7 +18,7 @@ class graph;
 class vertex : public std::enable_shared_from_this<vertex>
 {
 public:
-	vertex() : _slotOR(false), _id(0) {}
+	vertex(bool OR = false) : _slotOR(or), _id(0) {}
 	virtual ~vertex();
 	void addSlot(std::shared_ptr<const vertex> slot);
 	void addSignal(std::shared_ptr<const vertex> signal);
@@ -30,13 +30,6 @@ protected:
 	size_t _id;
 	std::set< std::shared_ptr<const vertex> > _signals, _slots;
 	friend class graph;
-};
-
-class vertexVarProvided : public vertex
-{
-public:
-	vertexVarProvided() { _slotOR = true; }
-	virtual ~vertexVarProvided() {}
 };
 
 class graph : public std::enable_shared_from_this<graph>

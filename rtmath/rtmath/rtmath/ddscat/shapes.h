@@ -11,6 +11,7 @@
 #include <complex>
 #include "../matrixop.h"
 #include "../coords.h"
+#include "../depGraph.h"
 #include "../error/error.h"
 
 namespace rtmath {
@@ -75,10 +76,13 @@ namespace rtmath {
 			void _update(MANIPULATED_QUANTITY::MANIPULATED_QUANTITY fixed);
 			virtual void _update(
 				const std::set<MANIPULATED_QUANTITY::MANIPULATED_QUANTITY> &fixed);
+			void _constructGraph();
+			std::set< std::shared_ptr<rtmath::graphs::vertex> > _vertices;
+			std::shared_ptr<rtmath::graphs::graph> _graph;
 			// placeholder functions for objects consisting entirely of ice i-h
 			// TODO: again, enable multiple materials in shape
-			static double _convDT(double density);
-			static double _convTD(double temp);
+			void _convDT();
+			void _convTD();
 		};
 
 		class shapeSphere : public shapeModifiable
