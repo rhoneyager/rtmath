@@ -3,12 +3,14 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
 #include <unordered_map>
 #include <complex>
+#include <boost/bimap.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -37,13 +39,60 @@ namespace rtmath {
 		{
 			// Establish the vertices and construct the graph used in the shape 
 			// parameter update process
+			using namespace std;
 			using namespace rtmath::graphs;
+			using namespace MANIPULATED_QUANTITY;
 			_vertices.clear();
+			_vertexMap.clear();
 			_graph = nullptr;
 
+			typedef boost::bimap< size_t, std::shared_ptr<rtmath::graphs::vertex> > vidMap;
+
 			// Create vertices for end variables
+			for (size_t i = 1; i < NUM_MANIPULATED_QUANTITY; i++)
+			{
+				shared_ptr<vertex> w = shared_ptr<vertex>(new vertex(true));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(i, w) ) ; //[i] = w;
+			}
 
 			// Create vertices representing function relationships
+			{
+				// I can't make these in batch anywhere, since I need some rather specific relationships.
+				shared_ptr<vertex> w;
+
+				w = vertex::connect(_vertexMap.left.at(TEMP), 1, _vertexMap.left.at(DENS));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(DENS_T, w));
+
+				w = vertex::connect(_vertexMap.left.at(DENS), 1, _vertexMap.left.at(TEMP));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(T_DENS, w));
+
+				w = vertex::connect(_vertexMap.left.at(VOL), 1, _vertexMap.left.at(REFF));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(REFF_V, w));
+
+				w = vertex::connect(_vertexMap.left.at(REFF), 1, _vertexMap.left.at(VOL));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(V_REFF, w));
+
+				w = vertex::connect(_vertexMap.left.at(DENS), 
+					2, _vertexMap.left.at(MASS), _vertexMap.left.at(VOL));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(MASS_V__DENS, w));
+
+				w = vertex::connect(_vertexMap.left.at(VOL), 
+					2, _vertexMap.left.at(MASS), _vertexMap.left.at(DENS));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(MASS_DENS__V, w));
+
+				w = vertex::connect(_vertexMap.left.at(MASS), 
+					2, _vertexMap.left.at(DENS), _vertexMap.left.at(VOL));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(DENS_V__MASS, w));
+			}
+			
 
 			// Create the graph from the vertices
 			_graph = std::shared_ptr<graph>(new graph(_vertices));
@@ -79,26 +128,64 @@ namespace rtmath {
 			_mass = newMass;
 		}
 
-		void shapeModifiable::_update(MANIPULATED_QUANTITY::MANIPULATED_QUANTITY fixed)
+		void shapeModifiable::_update(const rtmath::graphs::setWeakVertex &fixed)
 		{
-			std::set<MANIPULATED_QUANTITY::MANIPULATED_QUANTITY> a;
-			a.insert(fixed);
-			_update(a);
-		}
-
-		void shapeModifiable::_update(const std::set<MANIPULATED_QUANTITY::MANIPULATED_QUANTITY> &fixed)
-		{
-			// This is ONE UGLY FUNCTION! IN FAR FUTURE, REIMPLEMENT WITH RECURSION!
-			// A sphere has just one important parameter: reff
-			// So, take the fixed quantity and convert based on the related ones
-			
-			// T <-> refractive index
-			// T <-> density = mass / vol = mass / reff^3
-			// V <-> reff
-			// d (num dipoles is independent)
 			const double pi = boost::math::constants::pi<double>();
-			std::set<MANIPULATED_QUANTITY::MANIPULATED_QUANTITY> updated;
+			rtmath::graphs::setWeakVertex remaining, ignored;
+			rtmath::graphs::listWeakVertex order;
+			_graph->generate(fixed, order, remaining, ignored);
 
+			// Now, make sure that all variables are solved for (check that order contains all base vertices)
+			{
+				using namespace MANIPULATED_QUANTITY;
+				using namespace std;
+				using namespace rtmath::graphs;
+				
+				// For ease of intersection calculation, promote weak_ptrs to shared_ptr. It's hell otherwise.
+
+				setShrdVertex baseVertices, shrRemaining;
+				for (auto it = remaining.begin(); it != remaining.end(); it++)
+					shrRemaining.insert(*it);
+
+				for (size_t i = 1; i < NUM_MANIPULATED_QUANTITY; i++)
+					baseVertices.insert(_vertexMap.left.at(i));
+
+				// Use std algorithms to ensure that intersection of remaining and baseVertices is null
+				setShrdVertex intersection;
+
+				std::set_intersection(
+					baseVertices.begin(), baseVertices.end(),
+					shrRemaining.begin(), shrRemaining.end(),
+					std::inserter(intersection,intersection.begin())
+					);
+					
+				if (intersection.size())
+				{
+					// We have a problem.
+					throw rtmath::debug::xBadInput("Need to fix more input variables");
+				}
+			}
+
+			// All variables are solved for. Now, go through ordering and perform operations in 
+			// specified order to fill in the rest of the variables.
+			for (auto it = order.begin(); it != order.end(); it++)
+			{
+				// For each step, consult against the reverse map (see bidirectional map)
+				// and get the type of operation. Then, based on operation type, execute 
+				// the appropriate calculation.
+				size_t id = _vertexMap.right.at(*it);
+
+				/* DENS_T
+				T_DENS
+				REFF_V
+				V_REFF
+				MASS_V__DENS
+				MASS_DENS__V
+				DENS_V__MASS
+				*/
+			}
+
+			/*
 			if (fixed.count(MANIPULATED_QUANTITY::V) && fixed.count(MANIPULATED_QUANTITY::REFF))
 				throw rtmath::debug::xBadInput("Cannot fix both V and REFF simultaneously and remain consistent");
 			if (fixed.count(MANIPULATED_QUANTITY::DENSITY) && fixed.count(MANIPULATED_QUANTITY::T))
@@ -208,6 +295,7 @@ namespace rtmath {
 			}
 
 			// And this overwieldy function is finally done!!!!!
+			*/
 		}
 		
 	}

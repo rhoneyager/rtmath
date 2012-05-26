@@ -14,7 +14,6 @@ namespace rtmath
 	{
 
 		std::shared_ptr<vertex> vertex::connect(
-			std::shared_ptr<vertex> &connector, 
 			std::shared_ptr<vertex> target, 
 			size_t nDepends, ...)
 		{
@@ -30,6 +29,7 @@ namespace rtmath
 			va_end(indices);
 
 			// Create connector
+			std::shared_ptr<vertex> connector;
 			connector = std::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
 			for (auto it = ptr.begin(); it != ptr.end(); it++)
@@ -58,6 +58,12 @@ namespace rtmath
 		graph::graph(const std::set< std::shared_ptr<const vertex> > &vertices)
 		{
 			_vertices = vertices;
+		}
+
+		graph::graph(const std::set< std::shared_ptr<vertex> > &vertices)
+		{
+			for (auto it = vertices.begin(); it != vertices.end(); it++)
+				_vertices.insert(*it);
 		}
 
 		void graph::_generate(const setWeakVertex &provided)

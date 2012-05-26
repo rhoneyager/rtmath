@@ -14,6 +14,7 @@ namespace rtmath
 		class vertex;
 
 		typedef std::set< std::weak_ptr<const vertex>, std::owner_less<std::weak_ptr<const vertex> > > setWeakVertex;
+		typedef std::set< std::shared_ptr<const vertex> > setShrdVertex;
 		//typedef std::list< std::weak_ptr<const vertex>, std::owner_less<std::weak_ptr<const vertex> > > listWeakVertex;
 		typedef std::list< std::weak_ptr<const vertex> > listWeakVertex;
 
@@ -28,7 +29,6 @@ namespace rtmath
 
 			// Make connector between two criteria
 			static std::shared_ptr<vertex> connect(
-				std::shared_ptr<vertex> &connector, 
 				std::shared_ptr<vertex> target, 
 				size_t nDepends, ...); 
 		protected:
@@ -44,6 +44,7 @@ namespace rtmath
 		{
 		public:
 			graph(const std::set< std::shared_ptr<const vertex> > &vertices);
+			graph(const std::set< std::shared_ptr<vertex> > &vertices);
 			void generate(const setWeakVertex &provided, 
 				listWeakVertex &order, 
 				setWeakVertex &remaining,

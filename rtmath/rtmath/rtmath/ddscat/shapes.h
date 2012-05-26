@@ -9,6 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
+#include <boost/bimap.hpp>
 #include "../matrixop.h"
 #include "../coords.h"
 #include "../depGraph.h"
@@ -23,12 +24,24 @@ namespace rtmath {
 			{
 				NONE,
 				D,
-				DENSITY,
-				T,
-				V,
+				DENS,
+				TEMP,
+				VOL,
 				REFF,
 				MASS,
 				NUM_MANIPULATED_QUANTITY
+			};
+
+			enum CONVERTERS
+			{
+				DENS_T = NUM_MANIPULATED_QUANTITY,
+				T_DENS,
+				REFF_V,
+				V_REFF,
+				MASS_V__DENS,
+				MASS_DENS__V,
+				DENS_V__MASS,
+				NUM_ALL
 			};
 		}
 
@@ -70,19 +83,13 @@ namespace rtmath {
 		protected:
 			// updater function tracks which value(s) to keep constant 
 			// and recalculates the rest
-			// NOTE: may be overridden to add functionality, especially in 
-			// more complex shapes where more manipulatable variables may be specified.
-			// TODO: rewrite function to facilitate this functionality
-			void _update(MANIPULATED_QUANTITY::MANIPULATED_QUANTITY fixed);
 			virtual void _update(
-				const std::set<MANIPULATED_QUANTITY::MANIPULATED_QUANTITY> &fixed);
+				const rtmath::graphs::setWeakVertex &fixed);
 			void _constructGraph();
 			std::set< std::shared_ptr<rtmath::graphs::vertex> > _vertices;
+			boost::bimap< size_t, 
+				std::shared_ptr<rtmath::graphs::vertex> > _vertexMap;
 			std::shared_ptr<rtmath::graphs::graph> _graph;
-			// placeholder functions for objects consisting entirely of ice i-h
-			// TODO: again, enable multiple materials in shape
-			void _convDT();
-			void _convTD();
 		};
 
 		class shapeSphere : public shapeModifiable
