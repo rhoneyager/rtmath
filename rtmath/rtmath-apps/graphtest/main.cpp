@@ -24,41 +24,75 @@ int main(int argc, char** argv)
 	// Set up the structures
 	// slots go in. signals get emitted (so out)
 	// Set slots
-	enum slots_s { T_DENS, DENS_T, DENS_M, DENS_V, M_DENS, V_DENS, V_REFF, REFF_V, NUMSLOTS };
+	enum slots_s { T_DENS, DENS_T, DENS_V__M, DENS_M__V, M_V__DENS, V_REFF, REFF_V, NUMSLOTS };
 	// Set signals
 	enum signals_e { T = NUMSLOTS, DENS, M, V, REFF, NUMSIGSLOTS };
 
 	//enum links_e { T, DENS, M, V, REFF, NUMLINKS };
-	const char* links_n[] = { "T_DENS", "DENS_T", "DENS_M", "DENS_V",
-		"M_DENS", "V_DENS", "V_REFF", "REFF_V",
-		"T", "DENS", "M", "V", "REFF" };
+	const char* links_n[] = { "T_DENS", "DENS_T", "DENS_V__M", "DENS_M__V",
+		"M_V__DENS", "V_REFF", "REFF_V", "T","DENS", "M", "V", "REFF" };
 
-	typedef std::pair<size_t, std::shared_ptr<const vertex> >  vPair;
-	std::set<vPair> vertices;
+	typedef std::pair<size_t, std::shared_ptr<vertex> >  vPair;
+	std::set<std::shared_ptr< const vertex> > vertices;
+	std::map<size_t, std::shared_ptr<vertex> > mVerts;
 	for (size_t i=0; i<NUMSLOTS; i++)
 	{
 		std::shared_ptr<vertex> np (new vertex);
-		vertices.insert(vPair(i,np));
+		np->id(i);
+		vertices.insert(np);
+		mVerts[i] = np;
 	}
 	for (size_t i=NUMSLOTS; i<NUMSIGSLOTS; i++)
 	{
 		std::shared_ptr<vertex> np (new vertexVarProvided);
-		vertices.insert(vPair(i,np));
+		np->id(i);
+		vertices.insert(np);
+		mVerts[i] = np;
 	}
 
 	// Add the links
+	mVerts[T_DENS]->addSignal(mVerts[DENS]);
+	mVerts[DENS_T]->addSignal(mVerts[T]);
+	mVerts[DENS_V__M]->addSignal(mVerts[M]);
+	mVerts[DENS_M__V]->addSignal(mVerts[V]);
+	mVerts[M_V__DENS]->addSignal(mVerts[DENS]);
+	mVerts[V_REFF]->addSignal(mVerts[REFF]);
+	mVerts[REFF_V]->addSignal(mVerts[V]);
 
+	mVerts[DENS]->addSlot(mVerts[T_DENS]);
+	mVerts[T]->addSlot(mVerts[DENS_T]);
+	mVerts[M]->addSlot(mVerts[DENS_V__M]);
+	mVerts[V]->addSlot(mVerts[DENS_M__V]);
+	mVerts[DENS]->addSlot(mVerts[M_V__DENS]);
+	mVerts[REFF]->addSlot(mVerts[V_REFF]);
+	mVerts[V]->addSlot(mVerts[REFF_V]);
+
+	// Check that these links are accurate...
+	mVerts[T_DENS]->addSlot(mVerts[T]);
+	mVerts[DENS_T]->addSlot(mVerts[DENS]);
+	mVerts[DENS_V__M]->addSlot(mVerts[DENS]);
+	mVerts[DENS_V__M]->addSlot(mVerts[V]);
+	mVerts[DENS_M__V]->addSlot(mVerts[DENS]);
+	mVerts[DENS_M__V]->addSlot(mVerts[M]);
+	mVerts[M_V__DENS]->addSlot(mVerts[M]);
+	mVerts[M_V__DENS]->addSlot(mVerts[V]);
+	mVerts[V_REFF]->addSlot(mVerts[V]);
+	mVerts[REFF_V]->addSlot(mVerts[REFF]);
+
+
+
+	/*
 	for (size_t i=0; i< NUMLINKS; i++)
 	{
 		std::set<std::shared_ptr<const vertex> > depends;
 		switch (i)
 		{
 		case T:
-			/*
+			
 			depends.insert(vertices[DENS]);
 			vertices[T]->addRoot(depends);
 			break;
-			*/
+			
 		case DENS:
 			depends.insert(vertices[T]);
 			vertices[DENS]->addRoot(depends);
@@ -90,11 +124,16 @@ int main(int argc, char** argv)
 			break;
 		}
 	}
-	
-	graph grp(sv);
+	*/
+
+	std::set< std::shared_ptr<const vertex> > provided;
+	provided.insert(mVerts[REFF]);
+	provided.insert(mVerts[T]);
+
+	graph grp(vertices);
 	std::list< std::shared_ptr<const vertex> > order;
-	std::set< std::shared_ptr<const vertex> > remaining;
-	grp.generate(order, remaining);
+	std::set< std::shared_ptr<const vertex> > remaining, ignored;
+	grp.generate(provided, order, remaining, ignored);
 
 	// Print output
 	using namespace std;
@@ -105,6 +144,10 @@ int main(int argc, char** argv)
 	cout << "Leftovers:\n\t";
 	for (auto it = remaining.begin(); it != remaining.end(); it++)
 		cout << links_n[(*it)->id()] << "\t";
+	for (auto it = ignored.begin(); it != ignored.end(); it++)
+		cout << links_n[(*it)->id()] << "\t";
 	cout << endl << endl;
 	return 0;
 }
+
+

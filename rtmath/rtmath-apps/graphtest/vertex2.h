@@ -18,12 +18,16 @@ class graph;
 class vertex : public std::enable_shared_from_this<vertex>
 {
 public:
-	vertex() : _slotOR(false) {}
+	vertex() : _slotOR(false), _id(0) {}
 	virtual ~vertex();
-	void addSlot(std::shared_ptr<const vertex> &slot);
-	void addSignal(std::shared_ptr<const vertex> &signal);
+	void addSlot(std::shared_ptr<const vertex> slot);
+	void addSignal(std::shared_ptr<const vertex> signal);
+
+	inline size_t id() const { return _id; }
+	void id(size_t newid) { _id = newid; }
 protected:
 	bool _slotOR;
+	size_t _id;
 	std::set< std::shared_ptr<const vertex> > _signals, _slots;
 	friend class graph;
 };
@@ -39,11 +43,12 @@ class graph : public std::enable_shared_from_this<graph>
 {
 public:
 	graph(const std::set< std::shared_ptr<const vertex> > &vertices);
-	void generate(std::list< std::shared_ptr<const vertex> > &order, 
+	void generate(const std::set< std::shared_ptr<const vertex> > &provided, 
+		std::list< std::shared_ptr<const vertex> > &order, 
 		std::set< std::shared_ptr<const vertex> > &remaining,
 		std::set< std::shared_ptr<const vertex> > &ignored);
 private:
-	void _generate();
+	void _generate(const std::set< std::shared_ptr<const vertex> > &provided);
 	std::set< std::shared_ptr<const vertex> > _vertices, _remaining, _filled, _unfillable, _useless;
 	std::list< std::shared_ptr<const vertex> > _order;
 	// TODO:	add functions to check for set intersection, union, ....

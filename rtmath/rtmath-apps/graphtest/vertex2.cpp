@@ -2,12 +2,12 @@
 
 vertex::~vertex() {}
 
-void vertex::addslot(std::shared_ptr<const vertex> &slot)
+void vertex::addSlot(std::shared_ptr<const vertex> slot)
 {
 	_slots.insert(slot);
 }
 
-void vertex::addsignal(std::shared_ptr<const vertex> &signal)
+void vertex::addSignal(std::shared_ptr<const vertex> signal)
 {
 	_signals.insert(signal);
 }
@@ -15,15 +15,19 @@ void vertex::addsignal(std::shared_ptr<const vertex> &signal)
 graph::graph(const std::set< std::shared_ptr<const vertex> > &vertices)
 {
 	_vertices = vertices;
-	_generate();
 }
 
-void graph::_generate()
+void graph::_generate(const std::set< std::shared_ptr<const vertex> > &provided)
 {
 	_order.clear();
 	_filled.clear();
 	_useless.clear();
 	_remaining = _vertices;
+
+	_filled = provided;
+	// Remove provided from remaining
+	for (auto it = provided.begin(); it != provided.end(); it++)
+		_remaining.erase(*it);
 
 	size_t order = 0;
 	// Loop each depth layer
@@ -90,11 +94,12 @@ void graph::_generate()
 	}
 }
 
-void graph::generate(std::list< std::shared_ptr<const vertex> > &order, 
+void graph::generate(const std::set< std::shared_ptr<const vertex> > &provided,
+		std::list< std::shared_ptr<const vertex> > &order, 
 		std::set< std::shared_ptr<const vertex> > &remaining,
 		std::set< std::shared_ptr<const vertex> > &ignored)
 {
-	_generate();
+	_generate(provided);
 	order = _order;
 	remaining = _remaining;
 	ignored = _useless;
