@@ -15,6 +15,7 @@
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <unordered_map>
+#include <boost/bimap.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>

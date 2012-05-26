@@ -21,6 +21,30 @@
 namespace rtmath {
 	namespace ddscat {
 
+		namespace MANIPULATED_QUANTITY
+		{
+
+			const char* qnames[] = 
+			{
+				"NONE",
+				"DIPOLE SPACING",
+				"DENSITY",
+				"TEMPERATURE",
+				"VOLUME",
+				"REFF",
+				"MASS",
+				"DENS_T",
+				"T_DENS",
+				"REFF_V",
+				"V_REFF",
+				"MASS_V__DENS",
+				"MASS_DENS__V",
+				"DENS_V__MASS",
+				"INVALID"
+			};
+
+		}
+
 		shape::~shape()
 		{
 		}
@@ -162,7 +186,16 @@ namespace rtmath {
 				if (intersection.size())
 				{
 					// We have a problem.
-					throw rtmath::debug::xBadInput("Need to fix more input variables");
+					std::ostringstream out;
+					out << "Input variable set needs more input variables." << endl;
+					out << "Still need: ";
+					for (auto it = intersection.begin(); it != intersection.end(); it++)
+					{
+						std::shared_ptr<graphs::vertex> UT = std::const_pointer_cast< graphs::vertex >(*it);
+						out << qnames[_vertexMap.right.at(UT)] << " ";
+					}
+					out << std::endl;
+					throw rtmath::debug::xBadInput(out.str().c_str());
 				}
 			}
 
@@ -170,132 +203,41 @@ namespace rtmath {
 			// specified order to fill in the rest of the variables.
 			for (auto it = order.begin(); it != order.end(); it++)
 			{
+				using namespace MANIPULATED_QUANTITY;
 				// For each step, consult against the reverse map (see bidirectional map)
 				// and get the type of operation. Then, based on operation type, execute 
 				// the appropriate calculation.
-				size_t id = _vertexMap.right.at(*it);
-
-				/* DENS_T
-				T_DENS
-				REFF_V
-				V_REFF
-				MASS_V__DENS
-				MASS_DENS__V
-				DENS_V__MASS
-				*/
-			}
-
-			/*
-			if (fixed.count(MANIPULATED_QUANTITY::V) && fixed.count(MANIPULATED_QUANTITY::REFF))
-				throw rtmath::debug::xBadInput("Cannot fix both V and REFF simultaneously and remain consistent");
-			if (fixed.count(MANIPULATED_QUANTITY::DENSITY) && fixed.count(MANIPULATED_QUANTITY::T))
-				throw rtmath::debug::xBadInput("Cannot fix both Density and Temp simultaneously and remain consistent");
-
-			if (fixed.count(MANIPULATED_QUANTITY::REFF) || fixed.count(MANIPULATED_QUANTITY::V))
-			{
-				// They're exclusive by this point, so update the other one!
-				if (fixed.count(MANIPULATED_QUANTITY::REFF))
+				std::shared_ptr<const graphs::vertex> IT = it->lock();
+				std::shared_ptr<graphs::vertex> UT = std::const_pointer_cast< graphs::vertex >(IT);
+				size_t id = _vertexMap.right.at(UT);
+				//size_t id = _vertexMap.right.at(it->lock());
+				
+				if (id == DENS_T)
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else if (id == T_DENS)
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else if (id == REFF_V)
 				{
 					_V = 4./3. * pi * _reff * _reff * _reff;
-					updated.insert(MANIPULATED_QUANTITY::V);
-				} else {
+				} else if (id == V_REFF)
+				{
 					_reff = pow(3.*_V/4./pi,1./3.);
-					updated.insert(MANIPULATED_QUANTITY::REFF);
-				}
-
-				// Try to update density
-				if (fixed.count(MANIPULATED_QUANTITY::DENSITY) || fixed.count(MANIPULATED_QUANTITY::T))
+				} else if (id == MASS_V__DENS)
 				{
-					// Density must remain fixed, as must temperature
-					// So, see if mass can be changed
-					if (fixed.count(MANIPULATED_QUANTITY::MASS))
-						throw rtmath::debug::xBadInput("Cannot fix both (V/REFF) and (DENSITY/T) and MASS simultaneously and remain consistent");
-
-					// Change mass
-					_mass = _density * _V;
-					updated.insert(MANIPULATED_QUANTITY::MASS);
-				} else {
-					// Density and temperature can change (but prefer not to). Check if mass can change.
-					// If mass is fixed, then Dens and T must change
-					// If not, prefer change in mass
-					if (fixed.count(MANIPULATED_QUANTITY::MASS))
-					{
-						// Change density and temperature
-						_density = _mass / _V;
-						_T = _convDT(_density);
-						updated.insert(MANIPULATED_QUANTITY::DENSITY);
-						updated.insert(MANIPULATED_QUANTITY::T);
-					} else {
-						// Change mass
-						_mass = _density * _V;
-						updated.insert(MANIPULATED_QUANTITY::MASS);
-					}
-				}
-				// By this point, something must have changed
-			}
-
-			if (fixed.count(MANIPULATED_QUANTITY::MASS))
-			{
-				// try to change volume / reff
-				if (!(fixed.count(MANIPULATED_QUANTITY::V) || fixed.count(MANIPULATED_QUANTITY::REFF))
-					&&  !(updated.count(MANIPULATED_QUANTITY::V) || updated.count(MANIPULATED_QUANTITY::REFF)))
-				{
-					// So, hold density now fixed
-					_V = _mass / _density;
-					_reff = pow(3.*_V/4./pi,1./3.);
-					updated.insert(MANIPULATED_QUANTITY::V);
-					updated.insert(MANIPULATED_QUANTITY::REFF);
-				} else if (!(fixed.count(MANIPULATED_QUANTITY::DENSITY) || fixed.count(MANIPULATED_QUANTITY::T))
-					&& !(updated.count(MANIPULATED_QUANTITY::DENSITY) || updated.count(MANIPULATED_QUANTITY::T)))
-				{
-					// Hold volume fixed. Update density and T
-					// Change density and temperature
 					_density = _mass / _V;
-					_T = _convDT(_density);
-					updated.insert(MANIPULATED_QUANTITY::DENSITY);
-					updated.insert(MANIPULATED_QUANTITY::T);
-				} else
+				} else if (id == MASS_DENS__V)
 				{
-					throw rtmath::debug::xBadInput("Cannot update from mass based on other constraints or previously updated quantities.");
-				}
-				// By this point, something must have changed
-			}
-
-			// Now try to change things based on density / temp
-			if (fixed.count(MANIPULATED_QUANTITY::DENSITY) || fixed.count(MANIPULATED_QUANTITY::T))
-			{
-				if (fixed.count(MANIPULATED_QUANTITY::DENSITY))
-				{
-					_T = _convDT(_density);
-					updated.insert(MANIPULATED_QUANTITY::T);
-				} else {
-					_density = _convTD(_T);
-					updated.insert(MANIPULATED_QUANTITY::DENSITY);
-				}
-
-				// Try changing mass first. Then, change volume. 
-				// NOTE: No option to scale mass and volume together. It's not a situation that I care to model.
-				if (!(fixed.count(MANIPULATED_QUANTITY::MASS) || updated.count(MANIPULATED_QUANTITY::MASS)))
-				{
-					// Change mass
-					_mass = _density * _V;
-					updated.insert(MANIPULATED_QUANTITY::MASS);
-				} else if (!(fixed.count(MANIPULATED_QUANTITY::V) || fixed.count(MANIPULATED_QUANTITY::REFF))
-					&&  !(updated.count(MANIPULATED_QUANTITY::V) || updated.count(MANIPULATED_QUANTITY::REFF)))
-				{
-					// Change volume and reff
 					_V = _mass / _density;
-					_reff = pow(3.*_V/4./pi,1./3.);
-					updated.insert(MANIPULATED_QUANTITY::V);
-					updated.insert(MANIPULATED_QUANTITY::REFF);
-				} else {
-					throw rtmath::debug::xBadInput("Cannot update from density with other constraints.");
+				} else if (id == DENS_V__MASS)
+				{
+					_mass = _density * _V;
 				}
-				// Something must have changed
+				
 			}
+			// And we've updated!
 
-			// And this overwieldy function is finally done!!!!!
-			*/
 		}
 		
 	}

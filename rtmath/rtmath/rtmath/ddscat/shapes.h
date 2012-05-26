@@ -43,6 +43,8 @@ namespace rtmath {
 				DENS_V__MASS,
 				NUM_ALL
 			};
+
+			const char* qnames[];
 		}
 
 		class shape : public std::enable_shared_from_this<shape>
@@ -91,14 +93,14 @@ namespace rtmath {
 				std::shared_ptr<rtmath::graphs::vertex> > _vertexMap;
 			std::shared_ptr<rtmath::graphs::graph> _graph;
 		};
-
+		/*
 		class shapeSphere : public shapeModifiable
 		{
 		public:
 			shapeSphere();
 			virtual ~shapeSphere();
 		};
-
+		*/
 
 	}
 }
