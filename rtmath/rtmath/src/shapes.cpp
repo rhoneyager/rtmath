@@ -27,12 +27,19 @@ namespace rtmath {
 			const char* qnames[] = 
 			{
 				"NONE",
-				"DIPOLE SPACING",
-				"DENSITY",
-				"TEMPERATURE",
-				"VOLUME",
-				"REFF",
-				"MASS",
+				"Dipole Spacing",
+				"Density",
+				"Temperature",
+				"Volume",
+				"Effective Radius",
+				"Mass",
+				"Refractive Index (Real)",
+				"Refractive Index (Imag)",
+				"Frequency",
+				"Size Parameter",
+				"SHPAR1",
+				"SHPAR2",
+				"SHPAR3",
 				"DENS_T",
 				"T_DENS",
 				"REFF_V",
@@ -43,12 +50,74 @@ namespace rtmath {
 				"INVALID"
 			};
 
+			shapeBasicManip::shapeBasicManip(shapeModifiable *base, CONVERTERS varconv)
+				: _base(base), _id(varconv)
+			{
+			}
+
+			void shapeBasicManip::run()
+			{
+				// This is the trivial case of converter manipulation.
+				// The appropriate vertex has its run() method called, and it 
+				// eventually makes its way to this bit of code. This is the default
+				// catch-all converter, designed to handle several possible basic tasks. 
+				// It's all really just in the name of extensibility.
+				const double pi = boost::math::constants::pi<double>();
+
+				if (_id == DENS_T)
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else if (_id == T_DENS)
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else if (_id == REFF_V)
+				{
+					_base->set(VOL,4./3. * pi * pow(_base->get(REFF),3.0));
+				} else if (_id == V_REFF)
+				{
+					_base->set(REFF, pow(3.*_base->get(VOL)/4./pi,1./3.));
+				} else if (_id == MASS_V__DENS)
+				{
+					_base->set(DENS, _base->get(MASS) / _base->get(VOL));
+				} else if (_id == MASS_DENS__V)
+				{
+					_base->set(VOL, _base->get(MASS) / _base->get(DENS));
+				} else if (_id == DENS_V__MASS)
+				{
+					_base->set(MASS, _base->get(DENS) * _base->get(VOL));
+				} else 
+				{
+					throw rtmath::debug::xUnimplementedFunction();
+				}
+			}
+
 		}
 
 		shape::~shape()
 		{
 		}
 
+		shape::shape()
+		{
+			_vars[MANIPULATED_QUANTITY::D] = 0;
+			_vars[MANIPULATED_QUANTITY::DENS] = 0;
+			_vars[MANIPULATED_QUANTITY::TEMP] = 0;
+			_vars[MANIPULATED_QUANTITY::VOL] = 0;
+			_vars[MANIPULATED_QUANTITY::REFF] = 0;
+			_vars[MANIPULATED_QUANTITY::MASS] = 0;
+		}
+
+		double shape::get(MQ var) const
+		{
+			if (_vars.count(var))
+				return _vars.at(var);
+			return 0;
+		}
+
+		void shapeModifiable::set(MQ var, double val)
+		{
+			_vars[var] = val;
+		}
 
 		shapeModifiable::shapeModifiable()
 		{
@@ -86,33 +155,40 @@ namespace rtmath {
 				shared_ptr<vertex> w;
 
 				w = vertex::connect(_vertexMap.left.at(TEMP), 1, _vertexMap.left.at(DENS));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_T)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(DENS_T, w));
 
 				w = vertex::connect(_vertexMap.left.at(DENS), 1, _vertexMap.left.at(TEMP));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, T_DENS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(T_DENS, w));
 
 				w = vertex::connect(_vertexMap.left.at(VOL), 1, _vertexMap.left.at(REFF));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, REFF_V)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(REFF_V, w));
 
 				w = vertex::connect(_vertexMap.left.at(REFF), 1, _vertexMap.left.at(VOL));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, V_REFF)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(V_REFF, w));
 
 				w = vertex::connect(_vertexMap.left.at(DENS), 
 					2, _vertexMap.left.at(MASS), _vertexMap.left.at(VOL));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_V__DENS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(MASS_V__DENS, w));
 
 				w = vertex::connect(_vertexMap.left.at(VOL), 
 					2, _vertexMap.left.at(MASS), _vertexMap.left.at(DENS));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_DENS__V)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(MASS_DENS__V, w));
 
 				w = vertex::connect(_vertexMap.left.at(MASS), 
 					2, _vertexMap.left.at(DENS), _vertexMap.left.at(VOL));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_V__MASS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(DENS_V__MASS, w));
 			}
@@ -120,36 +196,6 @@ namespace rtmath {
 
 			// Create the graph from the vertices
 			_graph = std::shared_ptr<graph>(new graph(_vertices));
-		}
-
-		void shapeModifiable::d(double newD)
-		{
-			_d = newD;
-		}
-
-		void shapeModifiable::density(double newDensity)
-		{
-			_density = newDensity;
-		}
-
-		void shapeModifiable::T(double newT)
-		{
-			_T = newT;
-		}
-
-		void shapeModifiable::V(double newV)
-		{
-			_V = newV;
-		}
-
-		void shapeModifiable::reff(double newReff)
-		{
-			_reff = newReff;
-		}
-
-		void shapeModifiable::mass(double newMass)
-		{
-			_mass = newMass;
 		}
 
 		void shapeModifiable::_update(const rtmath::graphs::setWeakVertex &fixed)
@@ -203,38 +249,9 @@ namespace rtmath {
 			// specified order to fill in the rest of the variables.
 			for (auto it = order.begin(); it != order.end(); it++)
 			{
-				using namespace MANIPULATED_QUANTITY;
-				// For each step, consult against the reverse map (see bidirectional map)
-				// and get the type of operation. Then, based on operation type, execute 
-				// the appropriate calculation.
 				std::shared_ptr<const graphs::vertex> IT = it->lock();
 				std::shared_ptr<graphs::vertex> UT = std::const_pointer_cast< graphs::vertex >(IT);
-				size_t id = _vertexMap.right.at(UT);
-				//size_t id = _vertexMap.right.at(it->lock());
-				
-				if (id == DENS_T)
-				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
-				} else if (id == T_DENS)
-				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
-				} else if (id == REFF_V)
-				{
-					_V = 4./3. * pi * _reff * _reff * _reff;
-				} else if (id == V_REFF)
-				{
-					_reff = pow(3.*_V/4./pi,1./3.);
-				} else if (id == MASS_V__DENS)
-				{
-					_density = _mass / _V;
-				} else if (id == MASS_DENS__V)
-				{
-					_V = _mass / _density;
-				} else if (id == DENS_V__MASS)
-				{
-					_mass = _density * _V;
-				}
-				
+				UT->run();
 			}
 			// And we've updated!
 

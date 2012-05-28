@@ -47,6 +47,9 @@ namespace rtmath {
 			double tMax() const { return _tMax; }
 			double pMin() const { return _pMin; }
 			double pMax() const { return _pMax; }
+			// ddPar output function
+			void out(ddPar &dest) const;
+			// TODO: add stream-like function alias
 		};
 
 	}

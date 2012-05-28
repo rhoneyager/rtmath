@@ -42,15 +42,17 @@ namespace rtmath {
 			std::set<rotations> rots;
 			std::string name, description, outLocation;
 			size_t ddscatVer;
+			std::string strPreCmds;
+			std::string strPostCdms;
+
+			void setShapeBase(std::shared_ptr<shapeModifiable> base);
+			void getShapeBase(std::shared_ptr<shapeModifiable> &base);
 		protected:
 			ddPar _base;
 			// The parameters that are variable
 			//		Add tag for shape type // Shape
 			std::string _shapefilebase;
-
-			// Can also vary scattering and rotation angle calculations
-			// Be lazy and just specify as we would in ddscat for now...
-			// TODO:
+			std::shared_ptr<shapeModifiable> _shapeBase;
 
 
 
@@ -67,7 +69,8 @@ namespace rtmath {
 			ddParGenerator();
 			ddParGenerator(const ddPar &base);
 			virtual ~ddParGenerator();
-			void write(const std::string &basedir) const;
+			void write(const std::string &filename) const;
+			void generate(const std::string &basedir) const;
 			void read(const std::string &basedir);
 		};
 

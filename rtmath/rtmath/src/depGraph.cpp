@@ -55,6 +55,22 @@ namespace rtmath
 			_signals.insert(signal);
 		}
 
+		void vertex::run(std::shared_ptr<vertexRunnable> target) const
+		{
+			target->run();
+		}
+
+		void vertex::run() const
+		{
+			if (_target)
+				_target->run();
+		}
+
+		void vertex::setVertexRunnableCode(std::shared_ptr<vertexRunnable> target)
+		{
+			_target = target;
+		}
+
 		graph::graph(const std::set< std::shared_ptr<const vertex> > &vertices)
 		{
 			_vertices = vertices;

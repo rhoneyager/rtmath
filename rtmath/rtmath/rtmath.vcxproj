@@ -273,6 +273,7 @@
     <ClCompile Include="src\recursivePolynomial.cpp" />
     <ClCompile Include="src\refract.cpp" />
     <ClCompile Include="src\ROOT_functions.cpp" />
+    <ClCompile Include="src\rotations.cpp" />
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\shapefile.cpp" />

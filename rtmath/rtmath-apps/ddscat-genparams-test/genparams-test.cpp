@@ -44,13 +44,18 @@ int main(int argc, char **argv)
 		gen.rots.insert(ra);
 		gen.rots.insert(rb);
 
-		// Set the constraints on the shapes being analyzed
-		// Shape
-		// Constraint on dimension ratios
-		// Set dimensions (reff, V, ... (pick some))
+		std::shared_ptr<shapeSphere> bshape(new shapeSphere());
+		gen.setShapeBase(bshape);
+
+		// The important constraints are now set. The output-writing routine
+		// will write out the description file, and the generating routine will
+		// generate the full directory structure.
+
+		// Generate
+		gen.generate("testout");
 
 		// Write the output
-		gen.write("testout");
+		gen.write("test.txt");
 	}
 	catch (rtmath::debug::xError &err)
 	{

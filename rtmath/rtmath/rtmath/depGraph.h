@@ -13,6 +13,14 @@ namespace rtmath
 		class graph;
 		class vertex;
 
+		class vertexRunnable
+		{
+		public:
+			vertexRunnable() {}
+			virtual ~vertexRunnable() {}
+			virtual void run() = 0;
+		};
+
 		typedef std::set< std::weak_ptr<const vertex>, std::owner_less<std::weak_ptr<const vertex> > > setWeakVertex;
 		typedef std::set< std::shared_ptr<const vertex> > setShrdVertex;
 		//typedef std::list< std::weak_ptr<const vertex>, std::owner_less<std::weak_ptr<const vertex> > > listWeakVertex;
@@ -21,19 +29,20 @@ namespace rtmath
 		class vertex : public std::enable_shared_from_this<vertex>
 		{
 		public:
-			vertex(bool OR = false) : _slotOR(OR), _id(0) {}
+			vertex(bool OR = false) : _slotOR(OR) { _target = nullptr; }
 			virtual ~vertex();
 			void addSlot(std::shared_ptr<vertex> slot);
-			inline size_t id() const { return _id; }
-			void id(size_t newid) { _id = newid; }
+			void run(std::shared_ptr<vertexRunnable> target) const;
+			void run() const;
+			void setVertexRunnableCode(std::shared_ptr<vertexRunnable> target);
 
 			// Make connector between two criteria
 			static std::shared_ptr<vertex> connect(
 				std::shared_ptr<vertex> target, 
 				size_t nDepends, ...); 
 		protected:
+			std::shared_ptr<vertexRunnable> _target;
 			bool _slotOR;
-			size_t _id;
 			void _addSignal(std::weak_ptr<const vertex> signal);
 			setWeakVertex _signals, _slots;
 			friend class graph;

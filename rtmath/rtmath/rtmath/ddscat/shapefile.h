@@ -54,23 +54,11 @@ namespace rtmath {
 		public:
 			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
 			shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
-			virtual double d() const {return _d;}
-			virtual double density() const {return _density;}
-			virtual double T() const {return _T;}
-			virtual double V() const {return _V;}
-			virtual double reff() const {return _reff;}
 			inline size_t N() const {return _N;}
-			virtual double mass() const {return _mass;}
-			inline bool isValid() const { return _valid; }
-
-			virtual void d(double newD) const;
-			virtual void T(double newT) const;
-			virtual void V(double newV) const;
-			virtual void reff(double newReff) const;
-			virtual void mass(double newMass) const;
 
 			// Set rotation matrix, with each value in degrees
 			void setRot(double beta, double theta, double phi);
+			virtual shape* clone() const { shapeFileStats* ns = new shapeFileStats(this); return ns; }
 		private:
 			size_t _N;// Number of dipoles
 

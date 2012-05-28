@@ -627,5 +627,8 @@
     <ClCompile Include="src\depGraph.cpp">
       <Filter>Source Files\General</Filter>
     </ClCompile>
+    <ClCompile Include="src\rotations.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

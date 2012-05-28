@@ -40,7 +40,14 @@ namespace rtmath {
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
-			std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key);
+			void getKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &res);
+			void getKey(ddParParsers::ParId key, std::shared_ptr<const ddParParsers::ddParLine> &res) const;
+			inline std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
+			{
+				std::shared_ptr<ddParParsers::ddParLine> res = nullptr;
+				getKey(key,res);
+				return res;
+			}
 			void delKey(ddParParsers::ParId key);
 		private:
 			void _init();
@@ -306,28 +313,37 @@ namespace rtmath {
 						out << " = " << idstr << std::endl;
 					}
 				}
+#pragma warning( push ) // Suppress warning. MSVC warning is because of how it branches,
+#pragma warning( disable : 4244 ) // even though that part of code is never reached
 				template <class S>
 				void get(size_t index, S &val) const
 				{
+					// Phrased like this to allow MSVC compile
 					if (index >= _numT)
 					{
+						R pval;
 						index -= _numT;
-						val = _r[index];
+						_r[index].get(pval);
+						val = pval;
 					} else {
-						val = _t[index];
+						T pval;
+						_t[index].get(pval);
+						val = pval;
 					}
 				}
+
 				template <class S>
-				void set(size_t index, S &val) const
+				void set(size_t index, const S &val)
 				{
 					if (index >= _numT)
 					{
 						index -= _numT;
-						_r[index] = val;
+						_r[index].set(val);
 					} else {
-						_t[index] = val;
+						_t[index].set(val);
 					}
 				}
+#pragma warning( pop ) 
 			protected:
 				size_t _numT;
 				std::vector<ddParLineSimple<T> > _t;

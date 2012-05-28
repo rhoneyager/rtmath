@@ -116,6 +116,13 @@ namespace rtmath {
 			_message.append("\n");
 		}
 
+		void xPathExistsWrongType::_setmessage()
+		{
+			_message = "ERROR: The requested path already exists and is the wrong type.\nPath: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
 		void xUnknownFileFormat::_setmessage()
 		{
 			_message = "ERROR: File format unknown or unexpected. \nInput file: ";

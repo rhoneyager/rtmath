@@ -71,6 +71,9 @@ namespace rtmath
 		// File to be opened for reading does not exist
 		ERRSTR(xMissingFile);
 
+		// File / directory to be created already exists and is not the desired type
+		ERRSTR(xPathExistsWrongType);
+
 		// File format is unknown
 		ERRSTR(xUnknownFileFormat);
 

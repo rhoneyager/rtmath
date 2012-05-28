@@ -84,12 +84,18 @@ namespace rtmath {
 			}
 		}
 
-		std::shared_ptr<ddParParsers::ddParLine> ddPar::getKey(ddParParsers::ParId key)
+		void ddPar::getKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &res)
 		{
-			std::shared_ptr<ddParParsers::ddParLine> res = nullptr;
+			res = nullptr;
 			if (_parsedData.count(key))
 				res = _parsedData[key];
-			return res;
+		}
+
+		void ddPar::getKey(ddParParsers::ParId key, std::shared_ptr<const ddParParsers::ddParLine> &res) const
+		{
+			res = nullptr;
+			if (_parsedData.count(key))
+				res = _parsedData[key];
 		}
 
 		void ddPar::delKey(ddParParsers::ParId key)
