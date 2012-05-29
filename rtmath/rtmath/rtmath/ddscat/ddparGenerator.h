@@ -43,9 +43,11 @@ namespace rtmath {
 			virtual ~ddParGeneratorBase();
 			//std::set<units::hasUnits> freqs, temps;
 			std::set<rotations> rots;
-			// Freqs and temps exist as pairs of values
-			std::set<std::pair<std::string, std::string> > freqs, temps;
-			//std::set<boost::tuple<
+			// Freqs and temps exist as pairs of values (parameter set, units)
+			std::set< std::pair< paramSet<double> , std::string > > freqs, temps;
+			// Sizes exist as a tuple with the parameter set, actual variable and variable units
+			// By actual variable, I mean effective radius, mass or volume. It's quite convenient this way.
+			std::set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > sizes;
 			std::string name, description, outLocation;
 			size_t ddscatVer;
 			std::string strPreCmds;

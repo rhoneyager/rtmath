@@ -56,12 +56,39 @@ namespace rtmath {
 			_init(inUnits,outUnits);
 			bool inV = false, outV = false;
 
+			if (inUnits == "nm") { _convFactor /= 1e9; inV = true; }
+			if (inUnits == "um") { _convFactor /= 1e6; inV = true; }
+			if (inUnits == "mm") { _convFactor /= 1e3; inV = true; }
 			if (inUnits == "cm") { _convFactor *= 0.01; inV = true; }
 			if (inUnits == "km") { _convFactor *= 1000.; inV = true; }
 			if (inUnits == "m") inV = true;
+			if (outUnits == "nm") { _convFactor *= 1e9; outV = true; }
+			if (outUnits == "um") { _convFactor *= 1e6; outV = true; }
+			if (outUnits == "mm") { _convFactor *= 1e3; outV = true; }
 			if (outUnits == "cm") { _convFactor *= 100.; outV = true; }
 			if (outUnits == "km") { _convFactor /= 1000.; outV = true; }
 			if (outUnits == "m") outV = true;
+
+			if (inV && outV) _valid = true;
+		}
+
+		conv_vol::conv_vol(const std::string &inUnits, const std::string &outUnits)
+		{
+			_init(inUnits,outUnits);
+			bool inV = false, outV = false;
+
+			if (inUnits == "nm^3") { _convFactor /= 1e27; inV = true; }
+			if (inUnits == "um^3") { _convFactor /= 1e18; inV = true; }
+			if (inUnits == "mm^3") { _convFactor /= 1e9; inV = true; }
+			if (inUnits == "cm^3") { _convFactor /= 1e6; inV = true; }
+			if (inUnits == "km^3") { _convFactor *= 1e6; inV = true; }
+			if (inUnits == "m^3") inV = true;
+			if (outUnits == "nm^3") { _convFactor *= 1e27; outV = true; }
+			if (outUnits == "um^3") { _convFactor *= 1e18; outV = true; }
+			if (outUnits == "mm^3") { _convFactor *= 1e9; outV = true; }
+			if (outUnits == "cm^3") { _convFactor *= 1e6; outV = true; }
+			if (outUnits == "km^3") { _convFactor /= 1e6; outV = true; }
+			if (outUnits == "m^3") outV = true;
 
 			if (inV && outV) _valid = true;
 		}
@@ -80,6 +107,23 @@ namespace rtmath {
 			if (out == "bar") { _convFactor /= 100000; outV = true; }
 			if (out == "Pa") outV = true;
 			if (out == "kPa") { _convFactor /=1000; outV = true;}
+
+			if (inV && outV) _valid = true;
+		}
+
+		conv_mass::	conv_mass(const std::string &in, const std::string &out)
+		{
+			_init(in,out);
+			bool inV = false, outV = false;
+
+			if (in == "ug" ) { _convFactor /= 1e9; inV = true; }
+			if (in == "mg") { _convFactor /= 1e6; inV = true; }
+			if (in == "g") { _convFactor /= 1e3; inV = true; }
+			if (in == "kg") inV = true;
+			if (out == "ug") { _convFactor *= 1e9; outV = true; }
+			if (out == "mg") { _convFactor *= 1e6; outV = true; }
+			if (out == "g") { _convFactor *= 1e3; outV = true;}
+			if (out == "kg") outV = true;
 
 			if (inV && outV) _valid = true;
 		}

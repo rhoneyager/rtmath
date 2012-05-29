@@ -54,6 +54,10 @@ namespace rtmath {
 		// partial pressure and parts per million volumetrically or by mass.
 		// It basically just provides another function to conveniently set 
 		// these values, and it's up to a derived class to make use of it.
+
+		// TODO: combine some classes
+		// TODO: add angular converters
+		// TODO: add classes w/better dimensional analysis and SI prefix awareness
 		class atmosConv : public converter
 		{
 		public:
@@ -63,10 +67,17 @@ namespace rtmath {
 			//std::weak_ptr
 		};
 
+		// TODO: rename to conv_dist_linear
 		class conv_alt : public atmosConv
 		{
 		public:
 			conv_alt(const std::string &inUnits, const std::string &outUnits);
+		};
+
+		class conv_vol : public atmosConv
+		{
+		public:
+			conv_vol(const std::string &inUnits, const std::string &outUnits);
 		};
 
 		class conv_pres : public atmosConv
@@ -78,8 +89,13 @@ namespace rtmath {
 		class conv_temp : public atmosConv
 		{
 		public:
-			// Will eventually override convert function
 			conv_temp(const std::string &inUnits, const std::string &outUnits);
+		};
+
+		class conv_mass : public atmosConv
+		{
+		public:
+			conv_mass(const std::string &inUnits, const std::string &outUnits);
 		};
 
 		class conv_dens : public atmosConv

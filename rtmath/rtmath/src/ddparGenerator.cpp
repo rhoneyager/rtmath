@@ -66,47 +66,127 @@ namespace rtmath {
 			}
 
 			// Now, iterate through the combinations of initial parameters
-			for (auto f = freqs.begin(); f != freqs.end(); f++)
+			// This is rather ridiculous
+			// TODO: construct a better iterator notation that unifies the disparate sets into hasUnits constructs!!!
+			MARKFUNC();
+			for (auto fs = freqs.begin(); fs != freqs.end(); fs++)
 			{
-				for (auto T = temps.begin(); T != temps.end(); T++)
+				// I can take sets of frequencies, in range notation, all with different units
+				std::string fUnits = fs->second;
+				std::vector<double> fr;
+				fs->first.getLong(fr);
+
+				for (auto f = fr.begin(); f != fr.end(); f++)
 				{
-					// Add iteration over effective radius...
-					throw rtmath::debug::xUnimplementedFunction();
-					//for (auto sz = _; sz != _; sz++)
+					for (auto Ts = temps.begin(); Ts != temps.end(); T++)
 					{
-						for (auto r = rots.begin(); r != rots.end(); r++)
+						std::string TUnits = Ts->second;
+						std::vector<double> Tr;
+						Ts->first.getLong(Tr);
+						for (auto T = Tr.begin(); T != Tr.end(); T++)
 						{
-							// Take copy of shape and apply properties
-							shared_ptr<shapeModifiable> nS( _shapeBase->clone() );
-							using namespace MANIPULATED_QUANTITY;
+							for (auto szs = sizes.begin(); szs != sizes.end(); szs++)
+							{
+								std::string szUnits = szs->get<2>();
+								MANIPULATED_QUANTITY::MANIPULATED_QUANTITY stype = szs->get<1>();
+								std::vector<double> szr;
+								szs->get<0>().getLong(szr);
 
-							// Make copy of base
-							ddPar parout = _base;
+								for (auto sz = szr.begin(); sz != szr.end(); sz++)
+								{
+									for (auto r = rots.begin(); r != rots.end(); r++)
+									{
+										// Take copy of shape and apply properties
+										shared_ptr<shapeModifiable> nS( _shapeBase->clone() );
+										using namespace MANIPULATED_QUANTITY;
 
-							units::conv_temp tconv(T->units(), "K");
-							nS->set(TEMP, tconv.convert(T->quant()));
+										// Make copy of base
+										ddPar parout = _base;
 
-							units::conv_spec fconv(f->units(), "GHz");
-							nS->set(FREQ, fconv.convert(f->quant()));
-							// Convert to microns
-							units::conv_spec umconv(f->units(), "um");
-							double um = umconv.convert(f->quant()); // Wavelength in microns
-							shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
-								( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-							wvlens->set<double>(0,um);
-							wvlens->set<double>(1,um);
-							wvlens->set<double>(2,1.0);
-							wvlens->set<std::string>(3,"LIN");
-							parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
-							// That was far too much work...
+										// Set rotations
+										r->out(parout);
 
-							// Set the effective radii
-							//	in shape file
-							//	in ddscat.par also
-						
-							r->out(parout);
+										// Set temperature
+										units::conv_temp tconv(TUnits, "K");
+										nS->set(TEMP, tconv.convert(*T));
+										_shapeBase->set(TEMP, tconv.convert(*T));
 
-							throw rtmath::debug::xUnimplementedFunction();
+										// Set frequency and wavelength
+										units::conv_spec fconv(fUnits, "GHz");
+										nS->set(FREQ, fconv.convert(*f));
+										// Convert to microns
+										units::conv_spec umconv(fUnits, "um");
+										double um = umconv.convert(*f); // Wavelength in microns
+										shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
+											( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+										wvlens->set<double>(0,um);
+										wvlens->set<double>(1,um);
+										wvlens->set<double>(2,1.0);
+										wvlens->set<std::string>(3,"LIN");
+										parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
+										// Set in shape file
+										_shapeBase->set(FREQ, fconv.convert(*f));
+
+										// That was far too much work...
+
+										// Set the effective radius
+										//	in shape file
+										//	in ddscat.par also
+										// TODO: extend unit conversion to handle volumes and other stuff intelligently
+										// TODO: implement other converters and in a better manner
+										{
+											MARKFUNC();
+											double quant;
+											if (stype == MASS)
+											{
+												units::conv_mass c(szUnits, "kg");
+												quant = c.convert(*sz);
+											} else if (stype == VOL)
+											{
+												units::conv_vol c(szUnits, "um^3");
+												quant = c.convert(*sz);
+											} else if (stype == REFF)
+											{
+												units::conv_alt c(szUnits, "um");
+												quant = c.convert(*sz);
+											}
+											_shapeBase->set(stype, quant);
+											
+											// Update shape parameters based on quantities
+											shapeModifiable::vertexMap mappings;
+											_shapeBase->getVertices(mappings);
+											// Select mappings
+											rtmath::graphs::setWeakVertex known;
+											known.insert(mappings.left.at(stype));
+											known.insert(mappings.left.at(FREQ));
+											known.insert(mappings.left.at(TEMP));
+
+											// TODO: insert other known mappings here
+											//throw rtmath::debug::xUnimplementedFunction();
+
+											_shapeBase->update(known);
+										}
+
+										// Finish shape generation, then get calculated reff
+										double reff = _shapeBase->get(REFF); // in um by default
+										shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
+											( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+										reffline->set<double>(0,reff);
+										reffline->set<double>(1,reff);
+										reffline->set<double>(2,1.0);
+										reffline->set<std::string>(3,"LIN");
+										parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
+
+
+										// Now, write the files!!!!!
+										// Create the subdirectory
+										// Write diel.tab
+										// Write shape.dat (if needed)
+										// Write ddscat.par
+										throw rtmath::debug::xUnimplementedFunction();
+									}
+								}
+							}
 						}
 					}
 				}

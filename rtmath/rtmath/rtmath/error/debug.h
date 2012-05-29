@@ -82,9 +82,9 @@ namespace rtmath
 #endif
 
 #else
-#define MARK() { getuniqueobj("DEBUG", 0, "MARK"); };
-#define MARKUID() { getuniqueobj("DEBUG", 0, "MARKUID"); };
-#define MARKFUNC() { getuniqueobj("DEBUG", 0, "MARKFUNC"); };
+#define MARK() { debug::getuniqueobj("DEBUG", 0, "MARK"); };
+#define MARKUID() { debug::getuniqueobj("DEBUG", 0, "MARKUID"); };
+#define MARKFUNC() { debug::getuniqueobj("DEBUG", 0, "MARKFUNC"); };
 #endif
 
 // Throw unimplemented function

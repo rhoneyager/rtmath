@@ -90,6 +90,8 @@ namespace rtmath {
 		class shapeModifiable : public shape
 		{
 		public:
+			typedef boost::bimap< size_t, std::shared_ptr<rtmath::graphs::vertex> > vertexMap;
+			typedef rtmath::graphs::setWeakVertex vertexSet;
 			shapeModifiable();
 			virtual ~shapeModifiable();
 			void d(double newD) { set(MANIPULATED_QUANTITY::D, newD); }
@@ -100,6 +102,8 @@ namespace rtmath {
 			void mass(double newMass) { set(MANIPULATED_QUANTITY::MASS, newMass); }
 			virtual void set(MQ var, double val);
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(this); return ns; }
+			inline void update(const rtmath::graphs::setWeakVertex &fixed) { _update(fixed); }
+			void getVertices(vertexMap &mappings);
 		protected:
 			// updater function tracks which value(s) to keep constant 
 			// and recalculates the rest
