@@ -15,9 +15,12 @@
 #include <vector>
 #include <complex>
 #include <boost/tokenizer.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include "ddpar.h"
 #include "shapes.h"
 #include "rotations.h"
+#include "../common_templates.h"
 #include "../coords.h"
 #include "../units.h"
 
@@ -38,8 +41,11 @@ namespace rtmath {
 
 					{ }
 			virtual ~ddParGeneratorBase();
-			std::set<units::hasUnits> freqs, temps;
+			//std::set<units::hasUnits> freqs, temps;
 			std::set<rotations> rots;
+			// Freqs and temps exist as pairs of values
+			std::set<std::pair<std::string, std::string> > freqs, temps;
+			//std::set<boost::tuple<
 			std::string name, description, outLocation;
 			size_t ddscatVer;
 			std::string strPreCmds;

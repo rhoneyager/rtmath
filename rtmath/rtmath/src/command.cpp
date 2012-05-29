@@ -196,7 +196,8 @@ namespace rtmath {
 			return false;
 		}
 
-		template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded)
+		template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded,
+			const std::map<std::string, std::string> *aliases)
 		{
 			using namespace std;
 			// Prepare tokenizer
@@ -205,11 +206,25 @@ namespace rtmath {
 			boost::char_separator<char> sep(",");
 			//boost::char_separator<char> seprange(":-");
 			{
-				tokenizer tcom(instr,sep);
-				for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+				MARKFUNC();
+
+				std::string ssubst;
+
+				std::map<std::string, std::string> defaliases;
+				if (!aliases) aliases = &defaliases; // Provides a convenient default
+
+				if (aliases->count(*ot))
 				{
-					if (expanded.count(*ot) == 0)
-						expanded.insert(*ot);
+					ssubst = aliases->at(*ot);
+					// Recursively call splitSet to handle bundles of aliases
+					splitSet<std::string>(ssubst, expanded, aliases);
+				} else { 
+					tokenizer tcom(instr,sep);
+					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+					{
+						if (expanded.count(*ot) == 0)
+							expanded.insert(*ot);
+					}
 				}
 			}
 		}

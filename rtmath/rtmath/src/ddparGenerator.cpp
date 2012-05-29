@@ -70,27 +70,44 @@ namespace rtmath {
 			{
 				for (auto T = temps.begin(); T != temps.end(); T++)
 				{
-					for (auto r = rots.begin(); r != rots.end(); r++)
+					// Add iteration over effective radius...
+					throw rtmath::debug::xUnimplementedFunction();
+					//for (auto sz = _; sz != _; sz++)
 					{
-						// Take copy of shape and apply properties
-						shared_ptr<shapeModifiable> nS( _shapeBase->clone() );
-						using namespace MANIPULATED_QUANTITY;
+						for (auto r = rots.begin(); r != rots.end(); r++)
+						{
+							// Take copy of shape and apply properties
+							shared_ptr<shapeModifiable> nS( _shapeBase->clone() );
+							using namespace MANIPULATED_QUANTITY;
 
-						// Make copy of base
-						ddPar parout = _base;
+							// Make copy of base
+							ddPar parout = _base;
 
-						// TODO: set freq in parout as well!!!!!!!!
-						throw rtmath::debug::xUnimplementedFunction();
-						units::conv_temp tconv(T->units(), "K");
-						nS->set(TEMP, tconv.convert(T->quant()));
+							units::conv_temp tconv(T->units(), "K");
+							nS->set(TEMP, tconv.convert(T->quant()));
 
-						units::conv_spec fconv(f->units(), "GHz");
-						nS->set(FREQ, fconv.convert(f->quant()));
+							units::conv_spec fconv(f->units(), "GHz");
+							nS->set(FREQ, fconv.convert(f->quant()));
+							// Convert to microns
+							units::conv_spec umconv(f->units(), "um");
+							double um = umconv.convert(f->quant()); // Wavelength in microns
+							shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
+								( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+							wvlens->set<double>(0,um);
+							wvlens->set<double>(1,um);
+							wvlens->set<double>(2,1.0);
+							wvlens->set<std::string>(3,"LIN");
+							parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
+							// That was far too much work...
 
+							// Set the effective radii
+							//	in shape file
+							//	in ddscat.par also
 						
-						r->out(parout);
+							r->out(parout);
 
-						throw rtmath::debug::xUnimplementedFunction();
+							throw rtmath::debug::xUnimplementedFunction();
+						}
 					}
 				}
 			}

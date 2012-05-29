@@ -71,20 +71,20 @@ namespace rtmath
 #ifdef DEBUG
 
 #ifdef __GNUC__
-#define MARK() {std::cerr << "MARK " << debug::getuniqueobj(-1, "DEBUG", 0, "MARK") << ": " << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << "\n";};
+#define MARK() {std::cerr << "MARK " << debug::getuniqueobj("DEBUG", 0, "MARK") << ": " << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << "\n";};
 #define MARKUID() {std::cerr << "MARK: " << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << ": " << this->_uid << "\n";};
 #define MARKFUNC() {std::cerr << "MARK: " << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << "\n";};
 #endif
 #ifdef _MSC_FULL_VER
-#define MARK() {std::cerr << "MARK " << debug::getuniqueobj(-1, "DEBUG", 0, "MARK") << ": " << __FILE__ << ":" << __LINE__ << ": " << __FUNCSIG__ << "\n";};
+#define MARK() {std::cerr << "MARK " << debug::getuniqueobj("DEBUG", 0, "MARK") << ": " << __FILE__ << ":" << __LINE__ << ": " << __FUNCSIG__ << "\n";};
 #define MARKUID() {std::cerr << "MARK: " << __FILE__ << ":" << __LINE__ << ": " << __FUNCSIG__ << ": " << this->_uid << "\n";};
 #define MARKFUNC() {std::cerr << "MARK: " << __FILE__ << ":" << __LINE__ << ": " << __FUNCSIG__ << "\n";};
 #endif
 
 #else
-#define MARK() { getuniqueobj(-1, "DEBUG", 0, "MARK"); };
-#define MARKUID()
-#define MARKFUNC()
+#define MARK() { getuniqueobj("DEBUG", 0, "MARK"); };
+#define MARKUID() { getuniqueobj("DEBUG", 0, "MARKUID"); };
+#define MARKFUNC() { getuniqueobj("DEBUG", 0, "MARKFUNC"); };
 #endif
 
 // Throw unimplemented function

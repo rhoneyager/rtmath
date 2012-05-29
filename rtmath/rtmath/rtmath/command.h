@@ -171,8 +171,10 @@ namespace rtmath {
 
 		// Function that expands sets of _numbers_ with separators of commas,
 		// dashes and colons.
+		// TODO: check aliases reference validity...
 		template <class T>
-			void splitSet(const std::string &instr, std::set<T> &expanded)
+			void splitSet(const std::string &instr, std::set<T> &expanded,
+				const std::map<std::string, std::string> *aliases = nullptr)
 			{
 				using namespace std;
 				// Prepare tokenizer
@@ -184,34 +186,50 @@ namespace rtmath {
 					tokenizer tcom(instr,sep);
 					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 					{
-						// Separated based on commas. Expand for dashes and colons
-						tokenizer trange(*ot,seprange);
-						vector<T> range;
-						for (auto rt = trange.begin(); rt != trange.end(); rt++)
-							range.push_back(boost::lexical_cast<T>(*rt));
-						// Look at range. If one element, just add it. If two or 
-						// three, calculate the inclusive interval
-						if (range.size() == 1)
+						// At this junction, do any alias substitution
+						// TODO: check new behavior
+						MARKFUNC();
+
+						std::string ssubst;
+
+						std::map<std::string, std::string> defaliases;
+						if (!aliases) aliases = &defaliases; // Provides a convenient default
+
+						if (aliases->count(*ot))
 						{
-							if (expanded.count(range[0]) == 0)
-								expanded.insert(range[0]);
-						} else {
-							T start, end = 0, interval = 1;
-							start = range[0];
-							end = range[range.size()-1];
-							if (range.size() > 2) interval = range[1];
-							if (start < 0 || end < 0 || start > end || interval < 0)
+							ssubst = aliases->at(*ot);
+							// Recursively call splitSet to handle bundles of aliases
+							splitSet<T>(ssubst, expanded, aliases);
+						} else { 
+							// Separated based on commas. Expand for dashes and colons
+							tokenizer trange(*ot,seprange);
+							vector<T> range;
+							for (auto rt = trange.begin(); rt != trange.end(); rt++)
+								range.push_back(boost::lexical_cast<T>(*rt));
+							// Look at range. If one element, just add it. If two or 
+							// three, calculate the inclusive interval
+							if (range.size() == 1)
 							{
-								// Die from invalid range
-								// Should really throw error
-								throw rtmath::debug::xBadInput(ot->c_str());
-								//cerr << "Invalid range " << *ot << endl;
-								//exit(1);
-							}
-							for (T i=start;i<=end;i+=interval)
-							{
-								if (expanded.count(i) == 0)
-									expanded.insert(i);
+								if (expanded.count(range[0]) == 0)
+									expanded.insert(range[0]);
+							} else {
+								T start, end = 0, interval = 1;
+								start = range[0];
+								end = range[range.size()-1];
+								if (range.size() > 2) interval = range[1];
+								if (start < 0 || end < 0 || start > end || interval < 0)
+								{
+									// Die from invalid range
+									// Should really throw error
+									throw rtmath::debug::xBadInput(ot->c_str());
+									//cerr << "Invalid range " << *ot << endl;
+									//exit(1);
+								}
+								for (T i=start;i<=end;i+=interval)
+								{
+									if (expanded.count(i) == 0)
+										expanded.insert(i);
+								}
 							}
 						}
 					}
@@ -219,25 +237,10 @@ namespace rtmath {
 			}
 
 			// Specialization for splitting strings. These objects have no ranges to be compared against.
-			template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded);
-			/*
-			{
-				using namespace std;
-				// Prepare tokenizer
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(",");
-				//boost::char_separator<char> seprange(":-");
-				{
-					tokenizer tcom(instr,sep);
-					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
-					{
-						if (expanded.count(*ot) == 0)
-							expanded.insert(*ot);
-					}
-				}
-			}
-			*/
+			// Note: implemented in command.cpp!
+			template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded,
+				const std::map<std::string, std::string> *aliases);
+
 	}; // end namespace config
 }; // end namespace rtmath
 
