@@ -12,8 +12,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <cmath>
+#include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
 
 namespace rtmath {
@@ -94,8 +98,15 @@ namespace rtmath {
 
 								for (auto sz = szr.begin(); sz != szr.end(); sz++)
 								{
+									// TODO: allow handling of multiple output shapes. Including from several 
+									// base files and also including ddscat-internal shapes.
+									// Also, handle additional graph vertices and relationship insertion.
 									for (auto r = rots.begin(); r != rots.end(); r++)
 									{
+										// No subdir / duplicate run existence check, as the directories 
+										// have a semirandom naming scheme.
+
+
 										// Take copy of shape and apply properties
 										shared_ptr<shapeModifiable> nS( _shapeBase->clone() );
 										using namespace MANIPULATED_QUANTITY;
@@ -108,12 +119,14 @@ namespace rtmath {
 
 										// Set temperature
 										units::conv_temp tconv(TUnits, "K");
-										nS->set(TEMP, tconv.convert(*T));
-										_shapeBase->set(TEMP, tconv.convert(*T));
+										double TK = tconv.convert(*T);
+										nS->set(TEMP, TK);
+										_shapeBase->set(TEMP, TK);
 
 										// Set frequency and wavelength
 										units::conv_spec fconv(fUnits, "GHz");
-										nS->set(FREQ, fconv.convert(*f));
+										double fGHz = fconv.convert(*f);
+										nS->set(FREQ, fGHz);
 										// Convert to microns
 										units::conv_spec umconv(fUnits, "um");
 										double um = umconv.convert(*f); // Wavelength in microns
@@ -125,9 +138,16 @@ namespace rtmath {
 										wvlens->set<std::string>(3,"LIN");
 										parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
 										// Set in shape file
-										_shapeBase->set(FREQ, fconv.convert(*f));
+										_shapeBase->set(FREQ, fGHz);
 
 										// That was far too much work...
+										// Calculate and set index of refraction
+										std::complex<double> m;
+										// TODO: support for different materials and 
+										//		 refractive index functions
+										refract::mice(fGHz, TK, m);
+										_shapeBase->set(IREFR_R, m.real());
+										_shapeBase->set(IREFR_IM, m.imag());
 
 										// Set the effective radius
 										//	in shape file
@@ -179,11 +199,21 @@ namespace rtmath {
 
 
 										// Now, write the files!!!!!
+										// Generate semirandom subdirectory name
+										using namespace boost::uuids;
+										random_generator gen;
+										uuid u = gen();
+										string dirname = boost::uuids::to_string(u);
 										// Create the subdirectory
+										path pdir = bpath / dirname;
+										create_directory(pdir);
+
 										// Write diel.tab
+										refract::writeDiel( (pdir/"diel.tab").string(), m );
 										// Write shape.dat (if needed)
+
 										// Write ddscat.par
-										throw rtmath::debug::xUnimplementedFunction();
+										parout.saveFile( (pdir/"ddscat.par").string() );
 									}
 								}
 							}

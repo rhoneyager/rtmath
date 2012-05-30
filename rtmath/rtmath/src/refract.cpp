@@ -4,6 +4,7 @@
 #include "../rtmath/Stdafx.h"
 #include <cmath>
 #include <complex>
+#include <fstream>
 #include "../rtmath/refract.h"
 
 // Ice complex refractive index
@@ -27,5 +28,20 @@ void rtmath::refract::mice(double f, double t, std::complex<double> &m)
 	double ei = alpha/f+beta*f;
 	std::complex<double> e(er,-ei);
 	m = sqrt(e);
+}
+
+void rtmath::refract::writeDiel(const std::string &filename, 
+	const std::complex<double> &ref)
+{
+	using namespace std;
+	ofstream out(filename.c_str());
+	out.setf( ios::scientific, ios::floatfield);
+	out.precision(7);
+	out << " m = " << ref.real() << " + " << (-1.0 *ref.imag()) << " i" << endl;
+	out << " 1 2 3 0 0 = columns for wave, Re(n), Im(n), eps1, eps2" << endl;
+	out << " LAMBDA  Re(N)   Im(N)" << endl;
+	out << " 0.000001    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
+	out << " 1.000000    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
+	out << " 100000.0    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
 }
 
