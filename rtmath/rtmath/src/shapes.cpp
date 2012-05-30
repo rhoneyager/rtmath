@@ -16,6 +16,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <cmath>
+#include "../rtmath/refract.h"
 #include "../rtmath/ddscat/shapes.h"
 
 namespace rtmath {
@@ -50,11 +51,6 @@ namespace rtmath {
 				"INVALID"
 			};
 
-			shapeBasicManip::shapeBasicManip(shapeModifiable *base, CONVERTERS varconv)
-				: _base(base), _id(varconv)
-			{
-			}
-
 			void shapeBasicManip::run()
 			{
 				// This is the trivial case of converter manipulation.
@@ -85,12 +81,41 @@ namespace rtmath {
 				} else if (_id == DENS_V__MASS)
 				{
 					_base->set(MASS, _base->get(DENS) * _base->get(VOL));
+				} else if (_id == FREQ_TEMP__IREFR_R || _id == FREQ_TEMP__IREFR_I)
+				{
+					std::complex<double> m;
+					refract::mice(_base->get(FREQ), _base->get(TEMP), m);
+					_base->set(IREFR_R, m.real());
+					_base->set(IREFR_IM, m.imag());
 				} else 
 				{
 					throw rtmath::debug::xUnimplementedFunction();
 				}
 			}
 
+			void shapeEllipsoidManip::run()
+			{
+				// This is the trivial case of converter manipulation.
+				// The appropriate vertex has its run() method called, and it 
+				// eventually makes its way to this bit of code. This is the default
+				// catch-all converter, designed to handle several possible basic tasks. 
+				// It's all really just in the name of extensibility.
+				const double pi = boost::math::constants::pi<double>();
+				// Need knowledge of aspect ratios or ellipse components
+				if (_id == "GENSHPAR1")
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else if (_id == "GENSHPAR2")
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else if (_id == "GENSHPAR3")
+				{
+					throw rtmath::debug::xUnimplementedFunction(); // TODO
+				} else
+				{
+					throw rtmath::debug::xUnimplementedFunction();
+				}
+			}
 		}
 
 		shape::~shape()
@@ -191,6 +216,18 @@ namespace rtmath {
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_V__MASS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vidMap::value_type(DENS_V__MASS, w));
+
+				w = vertex::connect(_vertexMap.left.at(IREFR_R), 
+					2, _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_R)));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(FREQ_TEMP__IREFR_R, w));
+
+				w = vertex::connect(_vertexMap.left.at(IREFR_IM), 
+					2, _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ));
+				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_I)));
+				_vertices.insert(w);
+				_vertexMap.insert( vidMap::value_type(FREQ_TEMP__IREFR_I, w));
 			}
 			
 

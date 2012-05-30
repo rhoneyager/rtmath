@@ -141,13 +141,14 @@ namespace rtmath {
 										_shapeBase->set(FREQ, fGHz);
 
 										// That was far too much work...
-										// Calculate and set index of refraction
+										// Calculate and set index of refraction (just for diel.tab. done in shapes.cpp already)
+										// TODO: remove reduncancy
 										std::complex<double> m;
 										// TODO: support for different materials and 
 										//		 refractive index functions
 										refract::mice(fGHz, TK, m);
-										_shapeBase->set(IREFR_R, m.real());
-										_shapeBase->set(IREFR_IM, m.imag());
+										//_shapeBase->set(IREFR_R, m.real());
+										//_shapeBase->set(IREFR_IM, m.imag());
 
 										// Set the effective radius
 										//	in shape file
