@@ -54,6 +54,7 @@ set (ddscat-src
 	src/ddweights.cpp
 	src/mtab.cpp
 	src/rotations.cpp
+	src/runScripts.cpp
 	src/shapefile.cpp
 	src/shapes.cpp
 	)
@@ -71,6 +72,7 @@ set (ddscat-hdr
 	rtmath/ddscat/mtab.h
 	rtmath/ddscat/parids.h
 	rtmath/ddscat/rotations.h
+	rtmath/ddscat/runScripts.h
 	rtmath/ddscat/shapefile.h
 	rtmath/ddscat/shapes.h
 	)

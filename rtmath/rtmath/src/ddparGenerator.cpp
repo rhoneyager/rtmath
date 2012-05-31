@@ -19,6 +19,7 @@
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/ddscat/runScripts.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -215,6 +216,14 @@ namespace rtmath {
 
 										// Write ddscat.par
 										parout.saveFile( (pdir/"ddscat.par").string() );
+
+										// Write run definitions
+										// Give the output class access to the graph vertices.
+										// TODO: write indiv run definition file class
+
+										// Write run script
+										runScriptIndiv iscript(dirname);
+										iscript.write(dirname);
 									}
 								}
 							}
