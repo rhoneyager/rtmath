@@ -65,7 +65,11 @@ namespace rtmath {
 						throw rtmath::debug::xPathExistsWrongType(bpath.string().c_str());
 			}
 
+			// Keep a list of the assigned subdirectories
+			std::set<std::string> dirs;
+
 			// If a base shapefile exists and is not loaded, load it
+			if (!_shapeBase)
 			{
 				throw rtmath::debug::xUnimplementedFunction();
 			}
@@ -83,7 +87,7 @@ namespace rtmath {
 
 				for (auto f = fr.begin(); f != fr.end(); f++)
 				{
-					for (auto Ts = temps.begin(); Ts != temps.end(); T++)
+					for (auto Ts = temps.begin(); Ts != temps.end(); Ts++)
 					{
 						std::string TUnits = Ts->second;
 						std::vector<double> Tr;
@@ -109,7 +113,7 @@ namespace rtmath {
 
 
 										// Take copy of shape and apply properties
-										shared_ptr<shapeModifiable> nS( _shapeBase->clone() );
+										shared_ptr<shapeModifiable> nS( (shapeModifiable*) _shapeBase->clone() );
 										using namespace MANIPULATED_QUANTITY;
 
 										// Make copy of base
@@ -224,6 +228,9 @@ namespace rtmath {
 										// Write run script
 										runScriptIndiv iscript(dirname);
 										iscript.write(dirname);
+
+										// Lastly, add this path into the global run script listing...
+										dirs.insert(dirname);
 									}
 								}
 							}
@@ -231,6 +238,13 @@ namespace rtmath {
 					}
 				}
 			}
+
+			// Now to write the global run script
+			// This script will iterate through all of the directories and execute the individual runs
+
+			runScriptGlobal glb;
+			glb.addSubdir(dirs);
+			glb.write(bpath.string());
 		}
 
 		void ddParGenerator::write(const std::string &basedir) const

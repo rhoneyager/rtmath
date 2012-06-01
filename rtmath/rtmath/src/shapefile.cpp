@@ -195,14 +195,6 @@ namespace rtmath {
 
 	void shapeFileStats::_init()
 	{
-		_d = 0;
-		_V = 0;
-		_N = 0;
-		_reff = 0;
-		_T = 263; // TODO: find an appropriate value for this
-		_mass = 0;
-		_density = 0;
-		_valid = false;
 		_shp = nullptr;
 		_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
 		_beta = 0;

@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 		ddscat::ddParGenerator gen;
 
 		// Set name
-		gen.name = "Test run";
+		gen.name = "Test runs";
 
 		// Set description
 		gen.description = "genparams-test test to ensure proper file generation";
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 		gen.rots.insert(ra);
 		gen.rots.insert(rb);
 
-		std::shared_ptr<shapeSphere> bshape(new shapeSphere());
+		std::shared_ptr<shapeEllipsoid> bshape(new shapeEllipsoid());
 		gen.setShapeBase(bshape);
 
 		// The important constraints are now set. The output-writing routine

@@ -41,6 +41,7 @@ namespace rtmath
 			out << "#!/bin/tcsh" << endl;
 			out << "## Individual run script for " << _uuid << endl << endl;
 			out << "mkdir " << tmppath << endl;
+			out << "ln -s " << tmppath << " run" << endl;
 			out << "cp ddscat.par " << tmppath << endl;
 			out << "cp diel.tab " << tmppath << endl;
 
@@ -65,7 +66,47 @@ namespace rtmath
 
 			// Clean up temporary path
 			out << "rm -rf " << tmppath << endl;
+			out << "rm -rf run" << endl;
 
+
+		}
+
+		runScriptGlobal::runScriptGlobal()
+		{
+		}
+
+		void runScriptGlobal::addSubdir(const std::string &dirname)
+		{
+			_subdirs.insert(dirname);
+		}
+
+		void runScriptGlobal::addSubdir(const std::set<std::string> &dirname)
+		{
+			for (auto it = dirname.begin(); it != dirname.end(); it++)
+				_subdirs.insert(*it);
+		}
+
+		void runScriptGlobal::write(const std::string &path) const
+		{
+			// Take path. Produce global run script titles doAllRuns.csh
+			using namespace boost::filesystem;
+			using namespace std;
+			boost::filesystem::path p(path);
+			boost::filesystem::path base, baseabs, script, tmpgdir, tmpdir, tmppath;
+			if (is_directory(p)) base = p;
+			else base = p.parent_path();
+			boost::filesystem::canonical(baseabs, base);
+			script = base / "doAllRuns.csh";
+
+			ofstream out(script.string().c_str());
+
+			out << "#!/bin/tcsh" << endl;
+			out << "## Multiple run script " << endl << endl;
+
+			for (auto it = _subdirs.begin(); it != _subdirs.end(); it++)
+				out << "tcsh " << *it << "/doRun.csh" << endl;
+
+			out << endl << endl;
 		}
 
 	}

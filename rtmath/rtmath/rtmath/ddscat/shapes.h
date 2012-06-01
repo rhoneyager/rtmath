@@ -87,9 +87,7 @@ namespace rtmath {
 			double reff() const { return get(MANIPULATED_QUANTITY::REFF); }
 			double mass() const { return get(MANIPULATED_QUANTITY::MASS); }
 			virtual double get(MQ var) const;
-			virtual shape* clone() const 
-			{ shape* ns = new shape(this); // TODO: fix odd error here!!!
-			return ns; }
+			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 		protected:
 			std::map<MQ, double> _vars;
 			//double _d; // Interdipole spacing, in um
@@ -117,7 +115,7 @@ namespace rtmath {
 			void reff(double newReff) { set(MANIPULATED_QUANTITY::REFF, newReff); }
 			void mass(double newMass) { set(MANIPULATED_QUANTITY::MASS, newMass); }
 			virtual void set(MQ var, double val);
-			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(this); return ns; }
+			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			inline void update(const rtmath::graphs::setWeakVertex &fixed) { _update(fixed); }
 			void getVertices(vertexMap &mappings);
 		protected:
@@ -146,7 +144,7 @@ namespace rtmath {
 			shapeEllipsoid();
 			virtual ~shapeEllipsoid();
 			virtual shape_types::SHAPE_TYPES type() const { return shape_types::ELLIPSOID; }
-			virtual shape* clone() const { shapeEllipsoid *ns = new shapeEllipsoid(this); return ns; }
+			virtual shape* clone() const { shapeEllipsoid *ns = new shapeEllipsoid(*this); return ns; }
 		protected:
 			// Provide overload for shape parameters
 			virtual void _constructGraph(); // Override function to add connectors to shape params

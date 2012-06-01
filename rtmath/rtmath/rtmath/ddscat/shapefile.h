@@ -58,7 +58,7 @@ namespace rtmath {
 
 			// Set rotation matrix, with each value in degrees
 			void setRot(double beta, double theta, double phi);
-			virtual shape* clone() const { shapeFileStats* ns = new shapeFileStats(this); return ns; }
+			virtual shape* clone() const { shapeFileStats* ns = new shapeFileStats(*this); return ns; }
 		private:
 			size_t _N;// Number of dipoles
 

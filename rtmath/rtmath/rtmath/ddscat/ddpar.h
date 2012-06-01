@@ -338,9 +338,19 @@ namespace rtmath {
 					if (index >= _numT)
 					{
 						index -= _numT;
-						_r[index].set(val);
+						std::ostringstream srm;
+						srm << val;
+						std::istringstream irm(srm.str());
+						R pval;
+						irm >> pval;
+						_r[index].set(pval);
 					} else {
-						_t[index].set(val);
+						std::ostringstream srm;
+						srm << val;
+						std::istringstream irm(srm.str());
+						T pval;
+						irm >> pval;
+						_t[index].set(pval);
 					}
 				}
 #pragma warning( pop ) 

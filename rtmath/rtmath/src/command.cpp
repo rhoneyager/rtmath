@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include "../rtmath/command.h"
+#include "../rtmath/error/debug.h"
 
 namespace rtmath {
 	namespace config {
@@ -205,26 +206,24 @@ namespace rtmath {
 				tokenizer;
 			boost::char_separator<char> sep(",");
 			//boost::char_separator<char> seprange(":-");
+			MARKFUNC();
+
+			std::string ssubst;
+
+			std::map<std::string, std::string> defaliases;
+			if (!aliases) aliases = &defaliases; // Provides a convenient default
+
+			tokenizer tcom(instr,sep);
+			for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 			{
-				MARKFUNC();
-
-				std::string ssubst;
-
-				std::map<std::string, std::string> defaliases;
-				if (!aliases) aliases = &defaliases; // Provides a convenient default
-
 				if (aliases->count(*ot))
 				{
 					ssubst = aliases->at(*ot);
 					// Recursively call splitSet to handle bundles of aliases
 					splitSet<std::string>(ssubst, expanded, aliases);
 				} else { 
-					tokenizer tcom(instr,sep);
-					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
-					{
-						if (expanded.count(*ot) == 0)
-							expanded.insert(*ot);
-					}
+					if (expanded.count(*ot) == 0)
+						expanded.insert(*ot);
 				}
 			}
 		}

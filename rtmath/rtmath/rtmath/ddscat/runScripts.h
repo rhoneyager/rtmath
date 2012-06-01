@@ -33,6 +33,17 @@ namespace rtmath {
 			static bool _doStats;
 		};
 
+		class runScriptGlobal
+		{
+		public:
+			runScriptGlobal();
+			void addSubdir(const std::string &dirname);
+			void addSubdir(const std::set<std::string> &dirname);
+			void write(const std::string &path) const;
+		private:
+			std::set<std::string> _subdirs;
+		};
+
 	}
 }
 
