@@ -17,6 +17,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <cmath>
 #include "../rtmath/refract.h"
+#include "../rtmath/units.h"
 #include "../rtmath/ddscat/shapes.h"
 
 namespace rtmath {
@@ -62,10 +63,28 @@ namespace rtmath {
 
 				if (_id == DENS_T)
 				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
+					// Using http://www.ptb.de/cms/fileadmin/internet/
+					// publikationen/buecher/Kohlrausch/Tabellen/Kohlrausch_3_Tabellen_und_Diagramme_Waerme.pdf
+					// Gives a few pts for ice I-h, and I'm using a polynomial interp,
+					// with R^2 = 1 to 4 digits of precision
+					// Formula takes dens in kg/m^3 and returns temp in celsius
+					// So, I need to convert density from kg/um^3 to kg/m^3
+					double dens = _base->get(DENS);
+					dens *= 1.e18;
+					double t = -6e-5*pow(dens,6.) + 0.3271*pow(dens,5.)
+						- 754.04*pow(dens,4.) + 927139.*pow(dens,3)
+						- 6e8*pow(dens,2.) + 2.e11*dens - 4.e13;
+					_base->set(TEMP, t + 273.15); // Save temp in Kelvin
 				} else if (_id == T_DENS)
 				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
+					// Using same source as above
+					// R^2 = 0.9998, and is near-perfect along the subdomain -50 - 0 C.
+					double t = _base->get(TEMP) - 273.15; // need temp in K
+					double dens = 1.e-11*pow(t,6.) + 6.e-9*pow(t,5.) + 1.e-6*pow(t,4.)
+						+ 0.0001*pow(t,3.) + 0.034*pow(t,2.) -0.1177*t + 916.99;
+					// density now in kg/m^3. Want kg/um^3
+					dens *= 1.e-18;
+					_base->set(DENS, dens);
 				} else if (_id == REFF_V)
 				{
 					_base->set(VOL,4./3. * pi * pow(_base->get(REFF),3.0));

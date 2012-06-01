@@ -349,7 +349,6 @@ namespace rtmath {
 		// Do calculations of the center of mass, the tensor quantities, and other stuff
 		// The functions called here are all indep. of the initial state, as mass, density,
 		// volume and everything else have been calculated already.
-		_valid = true;
 
 		// Define the accumulators that we want
 		// For each axis, get min, max and the other statistics about the distribution
