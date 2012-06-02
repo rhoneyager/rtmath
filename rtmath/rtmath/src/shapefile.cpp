@@ -24,6 +24,30 @@
 namespace rtmath {
 	namespace ddscat {
 
+	namespace MANIPULATED_QUANTITY
+	{
+		void shapeFileManip::run()
+		{
+			using namespace std;
+			const double pi = boost::math::constants::pi<double>();
+			// This function overrides the basic manipulation scheme.
+			// This is because some of the functions, like volume
+			// computation are more complex
+			//if (_id == DENS_T)
+
+			if (_id == "")
+			{
+
+			} else if (_id == "")
+			{
+
+			} else {
+				throw rtmath::debug::xUnimplementedFunction();
+			}
+		}
+	}
+
+
 	shapefile::shapefile()
 	{
 		_init();

@@ -82,6 +82,21 @@ namespace rtmath {
 			void _calcOtherStats();
 		};
 
+		namespace MANIPULATED_QUANTITY
+		{
+		//  This class implements the vertex operations that change how a
+		//  shape file is processed by ddscat.
+			class shapeFileManip : public rtmath::graphs::vertexRunnable
+			{
+			public:
+				shapeFileManip();
+				virtual ~shapeFileManip() {}
+				virtual void run();
+			private:
+				shapeFileStats *_base;
+				std::string _id;
+			}
+		}
 	}
 }
 

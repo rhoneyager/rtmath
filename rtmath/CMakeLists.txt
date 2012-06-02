@@ -184,7 +184,7 @@ set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 # TODO: add headers to rtmath solution build, in their appropriiate directories
 # TODO: add postgresql support
 set(CPACK_RPM_PACKAGE_REQUIRES 
-	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel, pqxx-devel"
+	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel, libpqxx-devel"
 	)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
