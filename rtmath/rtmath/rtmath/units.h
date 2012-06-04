@@ -16,6 +16,7 @@
 namespace rtmath {
 	namespace units {
 
+		// TODO: remove hasUnits, as it's useless in light of std::pair...
 		class hasUnits
 		{
 		public:

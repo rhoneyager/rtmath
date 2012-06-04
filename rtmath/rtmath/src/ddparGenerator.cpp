@@ -54,9 +54,10 @@ namespace rtmath {
 
 		void ddParGenerator::generate(const std::string &basedir) const
 		{
-			// Check if basedir exists. If not, create it.
 			using namespace boost::filesystem;
 			using namespace std;
+
+			// Check if base directory exists. If not, try to create it.
 			path bpath(basedir);
 			{
 				if (!exists(bpath)) boost::filesystem::create_directory(bpath);
@@ -68,176 +69,124 @@ namespace rtmath {
 			// Keep a list of the assigned subdirectories
 			std::set<std::string> dirs;
 
-			// If a base shapefile exists and is not loaded, load it
-			if (!_shapeBase)
+			// Now, iterate over the conbinations of initial parameters.
+			ddParIteration itSetup(this);
+			ddParIteration::const_iterator it;
+			for (it = itSetup.begin(); it != itSetup.end(); it++)
 			{
-				throw rtmath::debug::xUnimplementedFunction();
-			}
+				// Now, the iterated quantity contains the individual frequency, shape, size, ...
+				// for this run in the set of all combinations of parameters for a run.
+				// Of course, some unit conversion is anticipated, as we've really just done some 
+				// preprocessing and alias expansion. The whole purpose of ddParIteration was to 
+				// do this setup and construct the iterated quantities.
 
-			// Now, iterate through the combinations of initial parameters
-			// This is rather ridiculous
-			// TODO: construct a better iterator notation that unifies the disparate sets into hasUnits constructs!!!
-			MARKFUNC();
-			for (auto fs = freqs.begin(); fs != freqs.end(); fs++)
-			{
-				// I can take sets of frequencies, in range notation, all with different units
-				std::string fUnits = fs->second;
-				std::vector<double> fr;
-				fs->first.getLong(fr);
+				// Take copy of shape and apply properties
+				shared_ptr<shapeModifiable> nS( (shapeModifiable*) it->shape()->clone() );
+				using namespace MANIPULATED_QUANTITY;
 
-				for (auto f = fr.begin(); f != fr.end(); f++)
+				double TK;		// Temp in K
+				double fGHz;	// Freq in GHz
+				double um;		// wavelength in um
+
+				// Make copy of base
+				ddPar parout = _base;
+				std::shared_ptr<shapeModifiable> shape = it->getshape();
+
+				// Update shape parameters based on quantities
+				shapeModifiable::vertexMap mappings;
+				shape->getVertices(mappings);		 // For the current shape, get a list of all possible mappings
+				rtmath::graphs::setWeakVertex known; // The list of known vertices
+				for (auto ot = it->_params.begin(); ot != it->_params.end(); ot++)
 				{
-					for (auto Ts = temps.begin(); Ts != temps.end(); Ts++)
+					string quant = ot->first, units = ot->second.second;
+					double val = ot->second.first;
+
+					if (quant == "temp")
 					{
-						std::string TUnits = Ts->second;
-						std::vector<double> Tr;
-						Ts->first.getLong(Tr);
-						for (auto T = Tr.begin(); T != Tr.end(); T++)
-						{
-							for (auto szs = sizes.begin(); szs != sizes.end(); szs++)
-							{
-								std::string szUnits = szs->get<2>();
-								MANIPULATED_QUANTITY::MANIPULATED_QUANTITY stype = szs->get<1>();
-								std::vector<double> szr;
-								szs->get<0>().getLong(szr);
-
-								for (auto sz = szr.begin(); sz != szr.end(); sz++)
-								{
-									// TODO: allow handling of multiple output shapes. Including from several 
-									// base files and also including ddscat-internal shapes.
-									// Also, handle additional graph vertices and relationship insertion.
-									for (auto r = rots.begin(); r != rots.end(); r++)
-									{
-										// No subdir / duplicate run existence check, as the directories 
-										// have a semirandom naming scheme.
-
-
-										// Take copy of shape and apply properties
-										shared_ptr<shapeModifiable> nS( (shapeModifiable*) _shapeBase->clone() );
-										using namespace MANIPULATED_QUANTITY;
-
-										// Make copy of base
-										ddPar parout = _base;
-
-										// Set rotations
-										r->out(parout);
-
-										// Set temperature
-										units::conv_temp tconv(TUnits, "K");
-										double TK = tconv.convert(*T);
-										nS->set(TEMP, TK);
-										_shapeBase->set(TEMP, TK);
-
-										// Set frequency and wavelength
-										units::conv_spec fconv(fUnits, "GHz");
-										double fGHz = fconv.convert(*f);
-										nS->set(FREQ, fGHz);
-										// Convert to microns
-										units::conv_spec umconv(fUnits, "um");
-										double um = umconv.convert(*f); // Wavelength in microns
-										shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
-											( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-										wvlens->set<double>(0,um);
-										wvlens->set<double>(1,um);
-										wvlens->set<double>(2,1.0);
-										wvlens->set<std::string>(3,"LIN");
-										parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
-										// Set in shape file
-										_shapeBase->set(FREQ, fGHz);
-
-										// That was far too much work...
-										// Calculate and set index of refraction (just for diel.tab. done in shapes.cpp already)
-										// TODO: remove reduncancy
-										std::complex<double> m;
-										// TODO: support for different materials and 
-										//		 refractive index functions
-										refract::mice(fGHz, TK, m);
-										//_shapeBase->set(IREFR_R, m.real());
-										//_shapeBase->set(IREFR_IM, m.imag());
-
-										// Set the effective radius
-										//	in shape file
-										//	in ddscat.par also
-										// TODO: extend unit conversion to handle volumes and other stuff intelligently
-										// TODO: implement other converters and in a better manner
-										{
-											MARKFUNC();
-											double quant;
-											if (stype == MASS)
-											{
-												units::conv_mass c(szUnits, "kg");
-												quant = c.convert(*sz);
-											} else if (stype == VOL)
-											{
-												units::conv_vol c(szUnits, "um^3");
-												quant = c.convert(*sz);
-											} else if (stype == REFF)
-											{
-												units::conv_alt c(szUnits, "um");
-												quant = c.convert(*sz);
-											}
-											_shapeBase->set(stype, quant);
-											
-											// Update shape parameters based on quantities
-											shapeModifiable::vertexMap mappings;
-											_shapeBase->getVertices(mappings);
-											// Select mappings
-											rtmath::graphs::setWeakVertex known;
-											known.insert(mappings.left.at(stype));
-											known.insert(mappings.left.at(FREQ));
-											known.insert(mappings.left.at(TEMP));
-
-											// TODO: insert other known mappings here
-											//throw rtmath::debug::xUnimplementedFunction();
-
-											_shapeBase->update(known);
-										}
-
-										// Finish shape generation, then get calculated reff
-										double reff = _shapeBase->get(REFF); // in um by default
-										shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
-											( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-										reffline->set<double>(0,reff);
-										reffline->set<double>(1,reff);
-										reffline->set<double>(2,1.0);
-										reffline->set<std::string>(3,"LIN");
-										parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
-
-
-										// Now, write the files!!!!!
-										// Generate semirandom subdirectory name
-										using namespace boost::uuids;
-										random_generator gen;
-										uuid u = gen();
-										string dirname = boost::uuids::to_string(u);
-										// Create the subdirectory
-										path pdir = bpath / dirname;
-										create_directory(pdir);
-
-										// Write diel.tab
-										refract::writeDiel( (pdir/"diel.tab").string(), m );
-										// Write shape.dat (if needed)
-
-										// Write ddscat.par
-										parout.saveFile( (pdir/"ddscat.par").string() );
-
-										// Write run definitions
-										// Give the output class access to the graph vertices.
-										// TODO: write indiv run definition file class
-
-										// Write run script
-										runScriptIndiv iscript(dirname);
-										iscript.write(dirname);
-
-										// Lastly, add this path into the global run script listing...
-										dirs.insert(dirname);
-									}
-								}
-							}
-						}
+						it->getParamValue<double>("temp",val,units);
+						units::conv_temp tconv(units, "K");
+						TK = tconv.convert(val);
+						shape->set(TEMP, TK);
+						known.insert(mappings.left.at(TEMP));
+					} else if (quant == "freq")
+					{
+						it->getParamValue<double>("freq",val,units);
+						units::conv_spec fconv(units, "GHz");
+						fGHz = fconv.convert(val);
+						nS->set(FREQ, fGHz);
+						units::conv_spec umconv(units, "um");
+						um = umconv.convert(val); // Wavelength in microns
+						known.insert(mappings.left.at(FREQ));
+					} // Allow setting of other quantities
+					else if (quant == "reff")
+					{
+					} else {
 					}
 				}
+				///// AT END, do shape->update(known);
+				shape->update(known);
+
+				// Set rotations
+				rotations rots;
+				it->getrots(rots);
+				rots.out(parout);
+
+				// Set frequency and wavelength
+				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
+					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+				wvlens->set<double>(0,um);
+				wvlens->set<double>(1,um);
+				wvlens->set<double>(2,1.0);
+				wvlens->set<std::string>(3,"LIN");
+				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
+
+				// Finish shape generation, then get calculated reff
+				double reff = shape->get(REFF); // in um by default
+				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
+					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+				reffline->set<double>(0,reff);
+				reffline->set<double>(1,reff);
+				reffline->set<double>(2,1.0);
+				reffline->set<std::string>(3,"LIN");
+				parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
+
+
+
+				// Now, write the files!!!!!
+				// Generate semirandom subdirectory name
+				using namespace boost::uuids;
+				random_generator gen;
+				uuid u = gen();
+				string dirname = boost::uuids::to_string(u);
+				// Create the subdirectory
+				path pdir = bpath / dirname;
+				create_directory(pdir);
+
+				// Write diel.tab
+				// Calculate and set index of refraction (just for diel.tab. done in shapes.cpp already)
+				std::complex<double> m;
+				// TODO: support for different materials and 
+				//		 refractive index functions
+				refract::mice(fGHz, TK, m);
+				refract::writeDiel( (pdir/"diel.tab").string(), m );
+
+				// Write shape.dat (if needed)
+
+				// Write ddscat.par
+				parout.saveFile( (pdir/"ddscat.par").string() );
+
+				// Write run definitions
+				// Give the output class access to the graph vertices.
+				// TODO: write indiv run definition file class
+
+				// Write run script
+				runScriptIndiv iscript(dirname);
+				iscript.write(dirname);
+
+				// Lastly, add this path into the global run script listing...
+				dirs.insert(dirname);
 			}
+
 
 			// Now to write the global run script
 			// This script will iterate through all of the directories and execute the individual runs
@@ -245,6 +194,7 @@ namespace rtmath {
 			runScriptGlobal glb;
 			glb.addSubdir(dirs);
 			glb.write(bpath.string());
+
 		}
 
 		void ddParGenerator::write(const std::string &basedir) const

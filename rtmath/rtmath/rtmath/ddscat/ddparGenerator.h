@@ -23,7 +23,8 @@
 #include "../common_templates.h"
 #include "../coords.h"
 #include "../units.h"
-
+ #include "../Public_Domain/MurmurHash3.h"
+ 
 namespace rtmath {
 	namespace ddscat {
 
@@ -60,7 +61,7 @@ namespace rtmath {
 			// The parameters that are variable
 			//		Add tag for shape type // Shape
 			std::string _shapefilebase;
-			std::shared_ptr<shapeModifiable> _shapeBase;
+			std::set<std::shared_ptr<shapeModifiable> > _shapeBase;
 
 
 
@@ -69,6 +70,78 @@ namespace rtmath {
 			bool _compressResults, _genIndivScripts, _genMassScript;
 			bool _shapeStats, _registerDatabase;
 			std::string _exportLoc;
+		};
+
+		class ddParIterator
+		{
+		public:
+			ddParIterator();
+			//double f() const; // Frequency, in GHz
+			double T() const; // Temp, in K
+			void getrots(rotations &out) const; // Export list of rotations
+			std::shared_ptr<shapeModifiable> getshape() const; // Provide the shape that is to be manipulated
+
+			template<class T>
+				bool getParamValue(const std::string &name, T &val, std::string &units) const
+				{
+					if (_params.count(name))
+					{
+						std::ostringstream out;
+						out << _params[name].first;
+						std::istringstream in(out.str());
+						in >> val;
+						units = _params[name].second;
+						return true;
+					} else {
+						val = 0;
+						units = "";
+						return false;
+					}
+				}
+			inline HASH_t hash() const
+			{
+				HASH_t res;
+				HASH(this, sizeof(*this), HASHSEED, &res);
+				return res;
+			}
+			friend struct std::less<rtmath::ddscat::ddParIterator>;
+			friend class ddParIteration;
+			friend class ddParGenerator;
+		private:
+			// The initial parameters are passed in this form:
+			// 1 - the name of the parameter
+			// 2 - the value of the parameter
+			// 3 - the units of the parameter
+			// TODO: use a better method instead of a string key?
+			std::map< std::string, std::pair< double, std::string > > _params;
+			rotations _rot;
+			std::shared_ptr<shapeModifiable> _shape; // Pulls from _params to set graph
+		};
+
+		inline std::size_t hash_value(ddParIterator const& x)
+		{
+			return (size_t) x.hash();
+		}
+
+		// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
+		class ddParIteration
+		{
+		public:
+			ddParIteration(ddParGenerator *src);
+			// Iterators go here
+			typedef std::unordered_set<ddParIterator, boost::hash<rtmath::ddscat::ddParIterator> > data_t;
+			typedef data_t::const_iterator const_iterator;
+			inline const_iterator begin() const { return _elements.begin(); }
+			inline const_iterator end() const { return _elements.end(); }
+		private:
+			std::set< std::pair< paramSet<double> , std::string > > freqs, temps;
+			std::set<rotations> rots;
+			std::set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > sizes;
+			std::set<std::shared_ptr<shapeModifiable> > _shapesBase;
+
+			// Use boost unordered stuff here
+			//std::unordered_set<ddParIterator> _elements 
+			data_t _elements;
 		};
 
 		class ddParGenerator : public ddParGeneratorBase
@@ -85,5 +158,33 @@ namespace rtmath {
 	} // end ddscat
 } // end rtmath
 
+
+namespace std {
+	template <> struct hash<rtmath::ddscat::ddParIterator>
+	{
+		size_t operator()(const rtmath::ddscat::ddParIterator & x) const
+		{
+			// Really need to cast for the unordered map to work
+			return (size_t) x.hash();
+		}
+	};
+
+
+	template <> struct less<rtmath::ddscat::ddParIterator >
+	{
+		bool operator() (const rtmath::ddscat::ddParIterator &lhs, const rtmath::ddscat::ddParIterator &rhs) const
+		{
+			// Check f, mu, mun, phi, phin
+			throw rtmath::debug::xUnimplementedFunction();
+			//if (lhs.f != rhs.f) return lhs.f < rhs.f;
+			//if (lhs.mu != rhs.mu) return lhs.mu < rhs.mu;
+			//if (lhs.mun != rhs.mun) return lhs.mun < rhs.mun;
+			//if (lhs.phi != rhs.phi) return lhs.phi < rhs.phi;
+			//if (lhs.phin != rhs.phin) return lhs.phin < rhs.phin;
+
+			return false;
+		}
+	};
+}; // end namespace std
 
 
