@@ -707,54 +707,44 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_26">
           <property name="text">
-           <string>Target Type:</string>
+           <string>Target Types:</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="comboBox"/>
+         <widget class="QTreeView" name="treeTypes">
+          <property name="toolTip">
+           <string>TODO</string>
+          </property>
+          <property name="statusTip">
+           <string>Specify the targets to be considered. These may be built-in ddscat shapes, or they may be sets of shape files, subject to any additional constraints.</string>
+          </property>
+         </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_27">
+         <widget class="QLabel" name="label_30">
           <property name="text">
-           <string>Shape File Source:</string>
+           <string>Temperatures:</string>
           </property>
          </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="lineEdit_2"/>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label_28">
-          <property name="text">
-           <string>Shape Parameters:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_9">
-          <item>
-           <widget class="QLineEdit" name="lineEdit_5"/>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_4"/>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_3"/>
-          </item>
-         </layout>
-        </item>
-        <item row="12" column="0" colspan="2">
          <widget class="QLabel" name="label_31">
           <property name="text">
            <string>Dielectric Materials:</string>
           </property>
          </widget>
         </item>
-        <item row="13" column="1">
-         <widget class="QTableWidget" name="tableWidget_3">
+        <item row="2" column="1">
+         <widget class="QTableWidget" name="tableDielectrics">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="contextMenuPolicy">
            <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="statusTip">
+           <string>NOT IMPLEMENTED. Eventually will allow for specification of different dielectric materials...</string>
           </property>
           <property name="dragEnabled">
            <bool>false</bool>
@@ -782,55 +772,30 @@
           </item>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_29">
-          <property name="text">
-           <string>Interdipole Spacing:</string>
+        <item row="1" column="1">
+         <widget class="QTreeWidget" name="treeTemps">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
           </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QDoubleSpinBox" name="doubleSpinBox">
-          <property name="value">
-           <double>5.000000000000000</double>
+          <property name="statusTip">
+           <string>Specify temperature values. Range notation (min:lin span:max) accepted.</string>
           </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_10">
-          <item>
-           <widget class="QLineEdit" name="lineEdit_7">
-            <property name="placeholderText">
-             <string>263</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox_2">
-            <item>
-             <property name="text">
-              <string>K</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>C</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_30">
-          <property name="text">
-           <string>Temperatures:</string>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Range</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Units</string>
+           </property>
+          </column>
          </widget>
         </item>
        </layout>
@@ -840,6 +805,9 @@
         <string>Size and Frequency</string>
        </attribute>
        <layout class="QFormLayout" name="formLayout_4">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
         <item row="0" column="0">
          <widget class="QLabel" name="label_32">
           <property name="text">
@@ -847,68 +815,72 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_11">
-          <item>
-           <widget class="QPushButton" name="pushButton_5">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_2">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="1">
-         <widget class="QListWidget" name="listWidget"/>
-        </item>
-        <item row="3" column="1">
-         <widget class="QListWidget" name="listWidget_2"/>
-        </item>
-        <item row="3" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="label_33">
           <property name="text">
            <string>Target Sizes:</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_12">
-          <item>
-           <widget class="QPushButton" name="pushButton_4">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_3">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_6">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="0" column="1">
+         <widget class="QTreeWidget" name="treeFreqs">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="statusTip">
+           <string>Specify frequencies. Range notation (min:lin span:max) accepted. Units required.</string>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Range</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Units</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QTreeWidget" name="treeSizes">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="toolTip">
+           <string>TODO! Have quantity be selected from a combo box</string>
+          </property>
+          <property name="statusTip">
+           <string>Specify target dimensions. Range notation (min:lin span:max) accepted. Units required.</string>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Quantity</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Range</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Units</string>
+           </property>
+          </column>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -924,98 +896,114 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QTableWidget" name="tableWidget">
-          <property name="acceptDrops">
-           <bool>false</bool>
-          </property>
-          <property name="dragEnabled">
-           <bool>false</bool>
-          </property>
-          <property name="dragDropMode">
-           <enum>QAbstractItemView::NoDragDrop</enum>
-          </property>
-          <property name="defaultDropAction">
-           <enum>Qt::IgnoreAction</enum>
-          </property>
-          <property name="rowCount">
-           <number>3</number>
-          </property>
-          <property name="columnCount">
-           <number>3</number>
-          </property>
-          <row>
-           <property name="text">
-            <string>Beta</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>Theta</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>Phi</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>Min</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Max</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Number</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QLabel" name="label_36">
-          <property name="text">
-           <string>Rotation Splitting:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <layout class="QHBoxLayout" name="horizontalLayout_13">
-          <item>
-           <widget class="QCheckBox" name="checkBox">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit"/>
-          </item>
-         </layout>
-        </item>
-        <item row="2" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="label_35">
           <property name="text">
            <string>Scattering Angles:</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1" colspan="2">
-         <widget class="QTableWidget" name="tableWidget_2">
-          <row>
+        <item row="0" column="1">
+         <widget class="QTreeWidget" name="treeRots">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="statusTip">
+           <string>Specify rotations. Each row is a separate set of runs.</string>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <column>
            <property name="text">
-            <string>Plane 1</string>
+            <string>Beta Min</string>
            </property>
-          </row>
-          <row>
+          </column>
+          <column>
            <property name="text">
-            <string>Plane 2</string>
+            <string>Beta Max</string>
            </property>
-          </row>
+          </column>
+          <column>
+           <property name="text">
+            <string>Beta N</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Theta Min</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Theta Max</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Theta N</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Phi Min</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Phi Max</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Phi N</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>0</string>
+           </property>
+           <property name="text">
+            <string>360</string>
+           </property>
+           <property name="text">
+            <string>6</string>
+           </property>
+           <property name="text">
+            <string>0</string>
+           </property>
+           <property name="text">
+            <string>180</string>
+           </property>
+           <property name="text">
+            <string>10</string>
+           </property>
+           <property name="text">
+            <string>0</string>
+           </property>
+           <property name="text">
+            <string>360</string>
+           </property>
+           <property name="text">
+            <string>6</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QTreeWidget" name="treeScattAngles">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="statusTip">
+           <string>Specify scattering angles. Used across all generated files.</string>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
           <column>
            <property name="text">
             <string>Phi</string>
@@ -1023,25 +1011,45 @@
           </column>
           <column>
            <property name="text">
-            <string>Theta_min</string>
+            <string>Theta Min</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>Theta_max</string>
+            <string>Theta Max</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>d_Theta</string>
+            <string>Theta Delta</string>
            </property>
           </column>
-          <item row="0" column="0">
+          <item>
            <property name="text">
-            <string/>
+            <string>0</string>
            </property>
-           <property name="checkState">
-            <enum>Unchecked</enum>
+           <property name="text">
+            <string>0</string>
+           </property>
+           <property name="text">
+            <string>180</string>
+           </property>
+           <property name="text">
+            <string>10</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>90</string>
+           </property>
+           <property name="text">
+            <string>0</string>
+           </property>
+           <property name="text">
+            <string>180</string>
+           </property>
+           <property name="text">
+            <string>10</string>
            </property>
           </item>
          </widget>
@@ -1092,6 +1100,9 @@
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -1151,7 +1162,7 @@
    <sender>chkDoExport</sender>
    <signal>stateChanged(int)</signal>
    <receiver>frmMainClass</receiver>
-   <slot>showMaximized()</slot>
+   <slot>allowExport(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>189</x>
@@ -1163,5 +1174,176 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>treeFreqs</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>menuFreqs(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>440</x>
+     <y>156</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeFreqs</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>440</x>
+     <y>156</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeSizes</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>menuSizes(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>440</x>
+     <y>360</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeSizes</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>440</x>
+     <y>360</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeRots</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>menuRots(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>450</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeRots</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>450</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeTemps</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>menuTemps(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>455</x>
+     <y>300</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeTemps</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>455</x>
+     <y>300</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeScattAngles</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>menuScaAngles(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>453</x>
+     <y>422</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeScattAngles</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>453</x>
+     <y>422</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>menuFreqs(QPoint)</slot>
+  <slot>menuSizes(QPoint)</slot>
+  <slot>menuRots(QPoint)</slot>
+  <slot>menuScaAngles(QPoint)</slot>
+  <slot>menuTargets(QPoint)</slot>
+  <slot>menuTemps(QPoint)</slot>
+  <slot>menuDielectrics(QPoint)</slot>
+  <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+  <slot>allowExport(int)</slot>
+ </slots>
 </ui>

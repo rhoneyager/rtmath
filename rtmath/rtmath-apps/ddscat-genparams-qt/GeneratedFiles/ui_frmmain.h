@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Tue May 15 21:01:44 2012
+** Created: Tue Jun 5 02:23:07 2012
 **      by: Qt User Interface Compiler version 4.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -16,14 +16,12 @@
 #include <QtGui/QButtonGroup>
 #include <QtGui/QCheckBox>
 #include <QtGui/QComboBox>
-#include <QtGui/QDoubleSpinBox>
 #include <QtGui/QFormLayout>
 #include <QtGui/QGridLayout>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
-#include <QtGui/QListWidget>
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenu>
 #include <QtGui/QMenuBar>
@@ -33,6 +31,8 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QTabWidget>
 #include <QtGui/QTableWidget>
+#include <QtGui/QTreeView>
+#include <QtGui/QTreeWidget>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 
@@ -121,46 +121,23 @@ public:
     QWidget *tab;
     QFormLayout *formLayout_3;
     QLabel *label_26;
-    QComboBox *comboBox;
-    QLabel *label_27;
-    QLineEdit *lineEdit_2;
-    QLabel *label_28;
-    QHBoxLayout *horizontalLayout_9;
-    QLineEdit *lineEdit_5;
-    QLineEdit *lineEdit_4;
-    QLineEdit *lineEdit_3;
-    QLabel *label_31;
-    QTableWidget *tableWidget_3;
-    QLabel *label_29;
-    QDoubleSpinBox *doubleSpinBox;
-    QHBoxLayout *horizontalLayout_10;
-    QLineEdit *lineEdit_7;
-    QComboBox *comboBox_2;
+    QTreeView *treeTypes;
     QLabel *label_30;
+    QLabel *label_31;
+    QTableWidget *tableDielectrics;
+    QTreeWidget *treeTemps;
     QWidget *tab_3;
     QFormLayout *formLayout_4;
     QLabel *label_32;
-    QHBoxLayout *horizontalLayout_11;
-    QPushButton *pushButton_5;
-    QPushButton *pushButton_2;
-    QPushButton *pushButton;
-    QListWidget *listWidget;
-    QListWidget *listWidget_2;
     QLabel *label_33;
-    QHBoxLayout *horizontalLayout_12;
-    QPushButton *pushButton_4;
-    QPushButton *pushButton_3;
-    QPushButton *pushButton_6;
+    QTreeWidget *treeFreqs;
+    QTreeWidget *treeSizes;
     QWidget *tab_4;
     QGridLayout *gridLayout;
     QLabel *label_34;
-    QTableWidget *tableWidget;
-    QLabel *label_36;
-    QHBoxLayout *horizontalLayout_13;
-    QCheckBox *checkBox;
-    QLineEdit *lineEdit;
     QLabel *label_35;
-    QTableWidget *tableWidget_2;
+    QTreeWidget *treeRots;
+    QTreeWidget *treeScattAngles;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
     QPushButton *cmdGenerate;
@@ -578,102 +555,48 @@ public:
 
         formLayout_3->setWidget(0, QFormLayout::LabelRole, label_26);
 
-        comboBox = new QComboBox(tab);
-        comboBox->setObjectName(QString::fromUtf8("comboBox"));
+        treeTypes = new QTreeView(tab);
+        treeTypes->setObjectName(QString::fromUtf8("treeTypes"));
 
-        formLayout_3->setWidget(0, QFormLayout::FieldRole, comboBox);
-
-        label_27 = new QLabel(tab);
-        label_27->setObjectName(QString::fromUtf8("label_27"));
-
-        formLayout_3->setWidget(1, QFormLayout::LabelRole, label_27);
-
-        lineEdit_2 = new QLineEdit(tab);
-        lineEdit_2->setObjectName(QString::fromUtf8("lineEdit_2"));
-
-        formLayout_3->setWidget(1, QFormLayout::FieldRole, lineEdit_2);
-
-        label_28 = new QLabel(tab);
-        label_28->setObjectName(QString::fromUtf8("label_28"));
-
-        formLayout_3->setWidget(2, QFormLayout::LabelRole, label_28);
-
-        horizontalLayout_9 = new QHBoxLayout();
-        horizontalLayout_9->setSpacing(6);
-        horizontalLayout_9->setObjectName(QString::fromUtf8("horizontalLayout_9"));
-        lineEdit_5 = new QLineEdit(tab);
-        lineEdit_5->setObjectName(QString::fromUtf8("lineEdit_5"));
-
-        horizontalLayout_9->addWidget(lineEdit_5);
-
-        lineEdit_4 = new QLineEdit(tab);
-        lineEdit_4->setObjectName(QString::fromUtf8("lineEdit_4"));
-
-        horizontalLayout_9->addWidget(lineEdit_4);
-
-        lineEdit_3 = new QLineEdit(tab);
-        lineEdit_3->setObjectName(QString::fromUtf8("lineEdit_3"));
-
-        horizontalLayout_9->addWidget(lineEdit_3);
-
-
-        formLayout_3->setLayout(2, QFormLayout::FieldRole, horizontalLayout_9);
-
-        label_31 = new QLabel(tab);
-        label_31->setObjectName(QString::fromUtf8("label_31"));
-
-        formLayout_3->setWidget(12, QFormLayout::SpanningRole, label_31);
-
-        tableWidget_3 = new QTableWidget(tab);
-        if (tableWidget_3->columnCount() < 1)
-            tableWidget_3->setColumnCount(1);
-        QTableWidgetItem *__qtablewidgetitem = new QTableWidgetItem();
-        tableWidget_3->setHorizontalHeaderItem(0, __qtablewidgetitem);
-        if (tableWidget_3->rowCount() < 1)
-            tableWidget_3->setRowCount(1);
-        QTableWidgetItem *__qtablewidgetitem1 = new QTableWidgetItem();
-        tableWidget_3->setVerticalHeaderItem(0, __qtablewidgetitem1);
-        QTableWidgetItem *__qtablewidgetitem2 = new QTableWidgetItem();
-        tableWidget_3->setItem(0, 0, __qtablewidgetitem2);
-        tableWidget_3->setObjectName(QString::fromUtf8("tableWidget_3"));
-        tableWidget_3->setContextMenuPolicy(Qt::CustomContextMenu);
-        tableWidget_3->setDragEnabled(false);
-        tableWidget_3->setRowCount(1);
-        tableWidget_3->setColumnCount(1);
-
-        formLayout_3->setWidget(13, QFormLayout::FieldRole, tableWidget_3);
-
-        label_29 = new QLabel(tab);
-        label_29->setObjectName(QString::fromUtf8("label_29"));
-
-        formLayout_3->setWidget(3, QFormLayout::LabelRole, label_29);
-
-        doubleSpinBox = new QDoubleSpinBox(tab);
-        doubleSpinBox->setObjectName(QString::fromUtf8("doubleSpinBox"));
-        doubleSpinBox->setValue(5);
-
-        formLayout_3->setWidget(3, QFormLayout::FieldRole, doubleSpinBox);
-
-        horizontalLayout_10 = new QHBoxLayout();
-        horizontalLayout_10->setSpacing(6);
-        horizontalLayout_10->setObjectName(QString::fromUtf8("horizontalLayout_10"));
-        lineEdit_7 = new QLineEdit(tab);
-        lineEdit_7->setObjectName(QString::fromUtf8("lineEdit_7"));
-
-        horizontalLayout_10->addWidget(lineEdit_7);
-
-        comboBox_2 = new QComboBox(tab);
-        comboBox_2->setObjectName(QString::fromUtf8("comboBox_2"));
-
-        horizontalLayout_10->addWidget(comboBox_2);
-
-
-        formLayout_3->setLayout(4, QFormLayout::FieldRole, horizontalLayout_10);
+        formLayout_3->setWidget(0, QFormLayout::FieldRole, treeTypes);
 
         label_30 = new QLabel(tab);
         label_30->setObjectName(QString::fromUtf8("label_30"));
 
-        formLayout_3->setWidget(4, QFormLayout::LabelRole, label_30);
+        formLayout_3->setWidget(1, QFormLayout::LabelRole, label_30);
+
+        label_31 = new QLabel(tab);
+        label_31->setObjectName(QString::fromUtf8("label_31"));
+
+        formLayout_3->setWidget(2, QFormLayout::LabelRole, label_31);
+
+        tableDielectrics = new QTableWidget(tab);
+        if (tableDielectrics->columnCount() < 1)
+            tableDielectrics->setColumnCount(1);
+        QTableWidgetItem *__qtablewidgetitem = new QTableWidgetItem();
+        tableDielectrics->setHorizontalHeaderItem(0, __qtablewidgetitem);
+        if (tableDielectrics->rowCount() < 1)
+            tableDielectrics->setRowCount(1);
+        QTableWidgetItem *__qtablewidgetitem1 = new QTableWidgetItem();
+        tableDielectrics->setVerticalHeaderItem(0, __qtablewidgetitem1);
+        QTableWidgetItem *__qtablewidgetitem2 = new QTableWidgetItem();
+        tableDielectrics->setItem(0, 0, __qtablewidgetitem2);
+        tableDielectrics->setObjectName(QString::fromUtf8("tableDielectrics"));
+        tableDielectrics->setEnabled(false);
+        tableDielectrics->setContextMenuPolicy(Qt::CustomContextMenu);
+        tableDielectrics->setDragEnabled(false);
+        tableDielectrics->setRowCount(1);
+        tableDielectrics->setColumnCount(1);
+
+        formLayout_3->setWidget(2, QFormLayout::FieldRole, tableDielectrics);
+
+        treeTemps = new QTreeWidget(tab);
+        treeTemps->setObjectName(QString::fromUtf8("treeTemps"));
+        treeTemps->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeTemps->setAlternatingRowColors(true);
+        treeTemps->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+        formLayout_3->setWidget(1, QFormLayout::FieldRole, treeTemps);
 
         tabWidget->addTab(tab, QString());
         tab_3 = new QWidget();
@@ -682,67 +605,32 @@ public:
         formLayout_4->setSpacing(6);
         formLayout_4->setContentsMargins(11, 11, 11, 11);
         formLayout_4->setObjectName(QString::fromUtf8("formLayout_4"));
+        formLayout_4->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
         label_32 = new QLabel(tab_3);
         label_32->setObjectName(QString::fromUtf8("label_32"));
 
         formLayout_4->setWidget(0, QFormLayout::LabelRole, label_32);
 
-        horizontalLayout_11 = new QHBoxLayout();
-        horizontalLayout_11->setSpacing(6);
-        horizontalLayout_11->setObjectName(QString::fromUtf8("horizontalLayout_11"));
-        pushButton_5 = new QPushButton(tab_3);
-        pushButton_5->setObjectName(QString::fromUtf8("pushButton_5"));
-
-        horizontalLayout_11->addWidget(pushButton_5);
-
-        pushButton_2 = new QPushButton(tab_3);
-        pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
-
-        horizontalLayout_11->addWidget(pushButton_2);
-
-        pushButton = new QPushButton(tab_3);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
-
-        horizontalLayout_11->addWidget(pushButton);
-
-
-        formLayout_4->setLayout(2, QFormLayout::FieldRole, horizontalLayout_11);
-
-        listWidget = new QListWidget(tab_3);
-        listWidget->setObjectName(QString::fromUtf8("listWidget"));
-
-        formLayout_4->setWidget(0, QFormLayout::FieldRole, listWidget);
-
-        listWidget_2 = new QListWidget(tab_3);
-        listWidget_2->setObjectName(QString::fromUtf8("listWidget_2"));
-
-        formLayout_4->setWidget(3, QFormLayout::FieldRole, listWidget_2);
-
         label_33 = new QLabel(tab_3);
         label_33->setObjectName(QString::fromUtf8("label_33"));
 
-        formLayout_4->setWidget(3, QFormLayout::LabelRole, label_33);
+        formLayout_4->setWidget(2, QFormLayout::LabelRole, label_33);
 
-        horizontalLayout_12 = new QHBoxLayout();
-        horizontalLayout_12->setSpacing(6);
-        horizontalLayout_12->setObjectName(QString::fromUtf8("horizontalLayout_12"));
-        pushButton_4 = new QPushButton(tab_3);
-        pushButton_4->setObjectName(QString::fromUtf8("pushButton_4"));
+        treeFreqs = new QTreeWidget(tab_3);
+        treeFreqs->setObjectName(QString::fromUtf8("treeFreqs"));
+        treeFreqs->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeFreqs->setAlternatingRowColors(true);
+        treeFreqs->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-        horizontalLayout_12->addWidget(pushButton_4);
+        formLayout_4->setWidget(0, QFormLayout::FieldRole, treeFreqs);
 
-        pushButton_3 = new QPushButton(tab_3);
-        pushButton_3->setObjectName(QString::fromUtf8("pushButton_3"));
+        treeSizes = new QTreeWidget(tab_3);
+        treeSizes->setObjectName(QString::fromUtf8("treeSizes"));
+        treeSizes->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeSizes->setAlternatingRowColors(true);
+        treeSizes->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-        horizontalLayout_12->addWidget(pushButton_3);
-
-        pushButton_6 = new QPushButton(tab_3);
-        pushButton_6->setObjectName(QString::fromUtf8("pushButton_6"));
-
-        horizontalLayout_12->addWidget(pushButton_6);
-
-
-        formLayout_4->setLayout(4, QFormLayout::FieldRole, horizontalLayout_12);
+        formLayout_4->setWidget(2, QFormLayout::FieldRole, treeSizes);
 
         tabWidget->addTab(tab_3, QString());
         tab_4 = new QWidget();
@@ -756,82 +644,28 @@ public:
 
         gridLayout->addWidget(label_34, 0, 0, 1, 1);
 
-        tableWidget = new QTableWidget(tab_4);
-        if (tableWidget->columnCount() < 3)
-            tableWidget->setColumnCount(3);
-        QTableWidgetItem *__qtablewidgetitem3 = new QTableWidgetItem();
-        tableWidget->setHorizontalHeaderItem(0, __qtablewidgetitem3);
-        QTableWidgetItem *__qtablewidgetitem4 = new QTableWidgetItem();
-        tableWidget->setHorizontalHeaderItem(1, __qtablewidgetitem4);
-        QTableWidgetItem *__qtablewidgetitem5 = new QTableWidgetItem();
-        tableWidget->setHorizontalHeaderItem(2, __qtablewidgetitem5);
-        if (tableWidget->rowCount() < 3)
-            tableWidget->setRowCount(3);
-        QTableWidgetItem *__qtablewidgetitem6 = new QTableWidgetItem();
-        tableWidget->setVerticalHeaderItem(0, __qtablewidgetitem6);
-        QTableWidgetItem *__qtablewidgetitem7 = new QTableWidgetItem();
-        tableWidget->setVerticalHeaderItem(1, __qtablewidgetitem7);
-        QTableWidgetItem *__qtablewidgetitem8 = new QTableWidgetItem();
-        tableWidget->setVerticalHeaderItem(2, __qtablewidgetitem8);
-        tableWidget->setObjectName(QString::fromUtf8("tableWidget"));
-        tableWidget->setAcceptDrops(false);
-        tableWidget->setDragEnabled(false);
-        tableWidget->setDragDropMode(QAbstractItemView::NoDragDrop);
-        tableWidget->setDefaultDropAction(Qt::IgnoreAction);
-        tableWidget->setRowCount(3);
-        tableWidget->setColumnCount(3);
-
-        gridLayout->addWidget(tableWidget, 0, 2, 1, 1);
-
-        label_36 = new QLabel(tab_4);
-        label_36->setObjectName(QString::fromUtf8("label_36"));
-
-        gridLayout->addWidget(label_36, 1, 0, 1, 2);
-
-        horizontalLayout_13 = new QHBoxLayout();
-        horizontalLayout_13->setSpacing(6);
-        horizontalLayout_13->setObjectName(QString::fromUtf8("horizontalLayout_13"));
-        checkBox = new QCheckBox(tab_4);
-        checkBox->setObjectName(QString::fromUtf8("checkBox"));
-
-        horizontalLayout_13->addWidget(checkBox);
-
-        lineEdit = new QLineEdit(tab_4);
-        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-
-        horizontalLayout_13->addWidget(lineEdit);
-
-
-        gridLayout->addLayout(horizontalLayout_13, 1, 2, 1, 1);
-
         label_35 = new QLabel(tab_4);
         label_35->setObjectName(QString::fromUtf8("label_35"));
 
-        gridLayout->addWidget(label_35, 2, 0, 1, 1);
+        gridLayout->addWidget(label_35, 1, 0, 1, 1);
 
-        tableWidget_2 = new QTableWidget(tab_4);
-        if (tableWidget_2->columnCount() < 4)
-            tableWidget_2->setColumnCount(4);
-        QTableWidgetItem *__qtablewidgetitem9 = new QTableWidgetItem();
-        tableWidget_2->setHorizontalHeaderItem(0, __qtablewidgetitem9);
-        QTableWidgetItem *__qtablewidgetitem10 = new QTableWidgetItem();
-        tableWidget_2->setHorizontalHeaderItem(1, __qtablewidgetitem10);
-        QTableWidgetItem *__qtablewidgetitem11 = new QTableWidgetItem();
-        tableWidget_2->setHorizontalHeaderItem(2, __qtablewidgetitem11);
-        QTableWidgetItem *__qtablewidgetitem12 = new QTableWidgetItem();
-        tableWidget_2->setHorizontalHeaderItem(3, __qtablewidgetitem12);
-        if (tableWidget_2->rowCount() < 2)
-            tableWidget_2->setRowCount(2);
-        QTableWidgetItem *__qtablewidgetitem13 = new QTableWidgetItem();
-        tableWidget_2->setVerticalHeaderItem(0, __qtablewidgetitem13);
-        QTableWidgetItem *__qtablewidgetitem14 = new QTableWidgetItem();
-        tableWidget_2->setVerticalHeaderItem(1, __qtablewidgetitem14);
-        QTableWidgetItem *__qtablewidgetitem15 = new QTableWidgetItem();
-        __qtablewidgetitem15->setCheckState(Qt::Unchecked);
-        tableWidget_2->setItem(0, 0, __qtablewidgetitem15);
-        tableWidget_2->setObjectName(QString::fromUtf8("tableWidget_2"));
+        treeRots = new QTreeWidget(tab_4);
+        new QTreeWidgetItem(treeRots);
+        treeRots->setObjectName(QString::fromUtf8("treeRots"));
+        treeRots->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeRots->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-        gridLayout->addWidget(tableWidget_2, 2, 1, 1, 2);
+        gridLayout->addWidget(treeRots, 0, 1, 1, 1);
+
+        treeScattAngles = new QTreeWidget(tab_4);
+        new QTreeWidgetItem(treeScattAngles);
+        new QTreeWidgetItem(treeScattAngles);
+        treeScattAngles->setObjectName(QString::fromUtf8("treeScattAngles"));
+        treeScattAngles->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeScattAngles->setAlternatingRowColors(true);
+        treeScattAngles->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+        gridLayout->addWidget(treeScattAngles, 1, 1, 1, 2);
 
         tabWidget->addTab(tab_4, QString());
 
@@ -859,6 +693,7 @@ public:
         menuBar->setGeometry(QRect(0, 0, 815, 21));
         menu_File = new QMenu(menuBar);
         menu_File->setObjectName(QString::fromUtf8("menu_File"));
+        menu_File->setEnabled(true);
         frmMainClass->setMenuBar(menuBar);
         statusBar = new QStatusBar(frmMainClass);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
@@ -874,9 +709,19 @@ public:
 
         retranslateUi(frmMainClass);
         QObject::connect(actionE_xit, SIGNAL(activated()), frmMainClass, SLOT(close()));
-        QObject::connect(chkDoExport, SIGNAL(stateChanged(int)), frmMainClass, SLOT(showMaximized()));
+        QObject::connect(chkDoExport, SIGNAL(stateChanged(int)), frmMainClass, SLOT(allowExport(int)));
+        QObject::connect(treeFreqs, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuFreqs(QPoint)));
+        QObject::connect(treeFreqs, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(treeSizes, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuSizes(QPoint)));
+        QObject::connect(treeSizes, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(treeRots, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuRots(QPoint)));
+        QObject::connect(treeRots, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(treeTemps, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuTemps(QPoint)));
+        QObject::connect(treeTemps, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(treeScattAngles, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuScaAngles(QPoint)));
+        QObject::connect(treeScattAngles, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(frmMainClass);
@@ -914,10 +759,10 @@ public:
         label_10->setText(QApplication::translate("frmMainClass", "DDSCAT Version:", 0, QApplication::UnicodeUTF8));
         cmbDdver->clear();
         cmbDdver->insertItems(0, QStringList()
-         << QApplication::translate("frmMainClass", "7.0 gcc", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "7.0 intel", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("frmMainClass", "7.2 gcc", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("frmMainClass", "7.2 intel", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "7.0 gcc", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "7.0 intel", 0, QApplication::UnicodeUTF8)
         );
 #ifndef QT_NO_STATUSTIP
         cmbDdver->setStatusTip(QApplication::translate("frmMainClass", "Specify ddscat version. 7.0 or 7.2? Intel or gcc?", 0, QApplication::UnicodeUTF8));
@@ -1068,73 +913,108 @@ public:
 #endif // QT_NO_STATUSTIP
         txtNAMBIENT->setPlaceholderText(QApplication::translate("frmMainClass", "1.000", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("frmMainClass", "Basics", 0, QApplication::UnicodeUTF8));
-        label_26->setText(QApplication::translate("frmMainClass", "Target Type:", 0, QApplication::UnicodeUTF8));
-        label_27->setText(QApplication::translate("frmMainClass", "Shape File Source:", 0, QApplication::UnicodeUTF8));
-        label_28->setText(QApplication::translate("frmMainClass", "Shape Parameters:", 0, QApplication::UnicodeUTF8));
+        label_26->setText(QApplication::translate("frmMainClass", "Target Types:", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        treeTypes->setToolTip(QApplication::translate("frmMainClass", "TODO", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        treeTypes->setStatusTip(QApplication::translate("frmMainClass", "Specify the targets to be considered. These may be built-in ddscat shapes, or they may be sets of shape files, subject to any additional constraints.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        label_30->setText(QApplication::translate("frmMainClass", "Temperatures:", 0, QApplication::UnicodeUTF8));
         label_31->setText(QApplication::translate("frmMainClass", "Dielectric Materials:", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem = tableWidget_3->horizontalHeaderItem(0);
+        QTableWidgetItem *___qtablewidgetitem = tableDielectrics->horizontalHeaderItem(0);
         ___qtablewidgetitem->setText(QApplication::translate("frmMainClass", "Substance", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem1 = tableWidget_3->verticalHeaderItem(0);
+        QTableWidgetItem *___qtablewidgetitem1 = tableDielectrics->verticalHeaderItem(0);
         ___qtablewidgetitem1->setText(QApplication::translate("frmMainClass", "1", 0, QApplication::UnicodeUTF8));
 
-        const bool __sortingEnabled = tableWidget_3->isSortingEnabled();
-        tableWidget_3->setSortingEnabled(false);
-        QTableWidgetItem *___qtablewidgetitem2 = tableWidget_3->item(0, 0);
+        const bool __sortingEnabled = tableDielectrics->isSortingEnabled();
+        tableDielectrics->setSortingEnabled(false);
+        QTableWidgetItem *___qtablewidgetitem2 = tableDielectrics->item(0, 0);
         ___qtablewidgetitem2->setText(QApplication::translate("frmMainClass", "Ice", 0, QApplication::UnicodeUTF8));
-        tableWidget_3->setSortingEnabled(__sortingEnabled);
+        tableDielectrics->setSortingEnabled(__sortingEnabled);
 
-        label_29->setText(QApplication::translate("frmMainClass", "Interdipole Spacing:", 0, QApplication::UnicodeUTF8));
-        lineEdit_7->setPlaceholderText(QApplication::translate("frmMainClass", "263", 0, QApplication::UnicodeUTF8));
-        comboBox_2->clear();
-        comboBox_2->insertItems(0, QStringList()
-         << QApplication::translate("frmMainClass", "K", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "C", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "F", 0, QApplication::UnicodeUTF8)
-        );
-        label_30->setText(QApplication::translate("frmMainClass", "Temperature:", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_STATUSTIP
+        tableDielectrics->setStatusTip(QApplication::translate("frmMainClass", "NOT IMPLEMENTED. Eventually will allow for specification of different dielectric materials...", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        QTreeWidgetItem *___qtreewidgetitem = treeTemps->headerItem();
+        ___qtreewidgetitem->setText(1, QApplication::translate("frmMainClass", "Units", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(0, QApplication::translate("frmMainClass", "Range", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_STATUSTIP
+        treeTemps->setStatusTip(QApplication::translate("frmMainClass", "Specify temperature values. Range notation (min:lin span:max) accepted.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("frmMainClass", "Target", 0, QApplication::UnicodeUTF8));
         label_32->setText(QApplication::translate("frmMainClass", "Frequencies:", 0, QApplication::UnicodeUTF8));
-        pushButton_5->setText(QApplication::translate("frmMainClass", "PushButton", 0, QApplication::UnicodeUTF8));
-        pushButton_2->setText(QApplication::translate("frmMainClass", "PushButton", 0, QApplication::UnicodeUTF8));
-        pushButton->setText(QApplication::translate("frmMainClass", "PushButton", 0, QApplication::UnicodeUTF8));
         label_33->setText(QApplication::translate("frmMainClass", "Target Sizes:", 0, QApplication::UnicodeUTF8));
-        pushButton_4->setText(QApplication::translate("frmMainClass", "PushButton", 0, QApplication::UnicodeUTF8));
-        pushButton_3->setText(QApplication::translate("frmMainClass", "PushButton", 0, QApplication::UnicodeUTF8));
-        pushButton_6->setText(QApplication::translate("frmMainClass", "PushButton", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem1 = treeFreqs->headerItem();
+        ___qtreewidgetitem1->setText(1, QApplication::translate("frmMainClass", "Units", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem1->setText(0, QApplication::translate("frmMainClass", "Range", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_STATUSTIP
+        treeFreqs->setStatusTip(QApplication::translate("frmMainClass", "Specify frequencies. Range notation (min:lin span:max) accepted. Units required.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        QTreeWidgetItem *___qtreewidgetitem2 = treeSizes->headerItem();
+        ___qtreewidgetitem2->setText(2, QApplication::translate("frmMainClass", "Units", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(1, QApplication::translate("frmMainClass", "Range", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(0, QApplication::translate("frmMainClass", "Quantity", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        treeSizes->setToolTip(QApplication::translate("frmMainClass", "TODO! Have quantity be selected from a combo box", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        treeSizes->setStatusTip(QApplication::translate("frmMainClass", "Specify target dimensions. Range notation (min:lin span:max) accepted. Units required.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("frmMainClass", "Size and Frequency", 0, QApplication::UnicodeUTF8));
         label_34->setText(QApplication::translate("frmMainClass", "Rotations:", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem3 = tableWidget->horizontalHeaderItem(0);
-        ___qtablewidgetitem3->setText(QApplication::translate("frmMainClass", "Min", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem4 = tableWidget->horizontalHeaderItem(1);
-        ___qtablewidgetitem4->setText(QApplication::translate("frmMainClass", "Max", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem5 = tableWidget->horizontalHeaderItem(2);
-        ___qtablewidgetitem5->setText(QApplication::translate("frmMainClass", "Number", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem6 = tableWidget->verticalHeaderItem(0);
-        ___qtablewidgetitem6->setText(QApplication::translate("frmMainClass", "Beta", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem7 = tableWidget->verticalHeaderItem(1);
-        ___qtablewidgetitem7->setText(QApplication::translate("frmMainClass", "Theta", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem8 = tableWidget->verticalHeaderItem(2);
-        ___qtablewidgetitem8->setText(QApplication::translate("frmMainClass", "Phi", 0, QApplication::UnicodeUTF8));
-        label_36->setText(QApplication::translate("frmMainClass", "Rotation Splitting:", 0, QApplication::UnicodeUTF8));
-        checkBox->setText(QString());
         label_35->setText(QApplication::translate("frmMainClass", "Scattering Angles:", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem9 = tableWidget_2->horizontalHeaderItem(0);
-        ___qtablewidgetitem9->setText(QApplication::translate("frmMainClass", "Phi", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem10 = tableWidget_2->horizontalHeaderItem(1);
-        ___qtablewidgetitem10->setText(QApplication::translate("frmMainClass", "Theta_min", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem11 = tableWidget_2->horizontalHeaderItem(2);
-        ___qtablewidgetitem11->setText(QApplication::translate("frmMainClass", "Theta_max", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem12 = tableWidget_2->horizontalHeaderItem(3);
-        ___qtablewidgetitem12->setText(QApplication::translate("frmMainClass", "d_Theta", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem13 = tableWidget_2->verticalHeaderItem(0);
-        ___qtablewidgetitem13->setText(QApplication::translate("frmMainClass", "Plane 1", 0, QApplication::UnicodeUTF8));
-        QTableWidgetItem *___qtablewidgetitem14 = tableWidget_2->verticalHeaderItem(1);
-        ___qtablewidgetitem14->setText(QApplication::translate("frmMainClass", "Plane 2", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem3 = treeRots->headerItem();
+        ___qtreewidgetitem3->setText(8, QApplication::translate("frmMainClass", "Phi N", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(7, QApplication::translate("frmMainClass", "Phi Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(6, QApplication::translate("frmMainClass", "Phi Min", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(5, QApplication::translate("frmMainClass", "Theta N", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(4, QApplication::translate("frmMainClass", "Theta Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(3, QApplication::translate("frmMainClass", "Theta Min", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(2, QApplication::translate("frmMainClass", "Beta N", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(1, QApplication::translate("frmMainClass", "Beta Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(0, QApplication::translate("frmMainClass", "Beta Min", 0, QApplication::UnicodeUTF8));
 
-        const bool __sortingEnabled1 = tableWidget_2->isSortingEnabled();
-        tableWidget_2->setSortingEnabled(false);
-        tableWidget_2->setSortingEnabled(__sortingEnabled1);
+        const bool __sortingEnabled1 = treeRots->isSortingEnabled();
+        treeRots->setSortingEnabled(false);
+        QTreeWidgetItem *___qtreewidgetitem4 = treeRots->topLevelItem(0);
+        ___qtreewidgetitem4->setText(8, QApplication::translate("frmMainClass", "6", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(7, QApplication::translate("frmMainClass", "360", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(6, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(5, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(4, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(3, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(2, QApplication::translate("frmMainClass", "6", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(1, QApplication::translate("frmMainClass", "360", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(0, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        treeRots->setSortingEnabled(__sortingEnabled1);
 
+#ifndef QT_NO_STATUSTIP
+        treeRots->setStatusTip(QApplication::translate("frmMainClass", "Specify rotations. Each row is a separate set of runs.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        QTreeWidgetItem *___qtreewidgetitem5 = treeScattAngles->headerItem();
+        ___qtreewidgetitem5->setText(3, QApplication::translate("frmMainClass", "Theta Delta", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem5->setText(2, QApplication::translate("frmMainClass", "Theta Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem5->setText(1, QApplication::translate("frmMainClass", "Theta Min", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem5->setText(0, QApplication::translate("frmMainClass", "Phi", 0, QApplication::UnicodeUTF8));
+
+        const bool __sortingEnabled2 = treeScattAngles->isSortingEnabled();
+        treeScattAngles->setSortingEnabled(false);
+        QTreeWidgetItem *___qtreewidgetitem6 = treeScattAngles->topLevelItem(0);
+        ___qtreewidgetitem6->setText(3, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem6->setText(2, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem6->setText(1, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem6->setText(0, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem7 = treeScattAngles->topLevelItem(1);
+        ___qtreewidgetitem7->setText(3, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem7->setText(2, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem7->setText(1, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem7->setText(0, QApplication::translate("frmMainClass", "90", 0, QApplication::UnicodeUTF8));
+        treeScattAngles->setSortingEnabled(__sortingEnabled2);
+
+#ifndef QT_NO_STATUSTIP
+        treeScattAngles->setStatusTip(QApplication::translate("frmMainClass", "Specify scattering angles. Used across all generated files.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         tabWidget->setTabText(tabWidget->indexOf(tab_4), QApplication::translate("frmMainClass", "Rotations and Scattering Angles", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         cmdGenerate->setStatusTip(QApplication::translate("frmMainClass", "Click to generate the files and directory structure", 0, QApplication::UnicodeUTF8));

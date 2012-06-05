@@ -27,6 +27,7 @@ namespace rtmath {
 			void print(std::ostream &out) const;
 			void loadFile(const std::string &filename);
 			void loadFile(std::istream &in);
+			void write(const std::string &fname) const;
 			std::shared_ptr<shapefile> getPtr() const;
 		private:
 			shapefile();
@@ -55,6 +56,9 @@ namespace rtmath {
 			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
 			shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
 			inline size_t N() const {return _N;}
+
+			virtual bool canWrite() const { return true; }
+			virtual void write(const std::string &fname) const;
 
 			// Set rotation matrix, with each value in degrees
 			void setRot(double beta, double theta, double phi);

@@ -12,6 +12,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <unordered_set>
+#include <unordered_map>
 #include <vector>
 #include <complex>
 #include <boost/tokenizer.hpp>
@@ -54,8 +56,6 @@ namespace rtmath {
 			std::string strPreCmds;
 			std::string strPostCdms;
 
-			void setShapeBase(std::shared_ptr<shapeModifiable> base);
-			void getShapeBase(std::shared_ptr<shapeModifiable> &base);
 		protected:
 			ddPar _base;
 			// The parameters that are variable
@@ -80,17 +80,17 @@ namespace rtmath {
 			double T() const; // Temp, in K
 			void getrots(rotations &out) const; // Export list of rotations
 			std::shared_ptr<shapeModifiable> getshape() const; // Provide the shape that is to be manipulated
-
+			void write(const std::string &outfile) const;
 			template<class T>
 				bool getParamValue(const std::string &name, T &val, std::string &units) const
 				{
 					if (_params.count(name))
 					{
 						std::ostringstream out;
-						out << _params[name].first;
+						out << _params.at(name).first;
 						std::istringstream in(out.str());
 						in >> val;
-						units = _params[name].second;
+						units = _params.at(name).second;
 						return true;
 					} else {
 						val = 0;
@@ -127,7 +127,7 @@ namespace rtmath {
 		class ddParIteration
 		{
 		public:
-			ddParIteration(ddParGenerator *src);
+			ddParIteration(const ddParGenerator *src);
 			// Iterators go here
 			typedef std::unordered_set<ddParIterator, boost::hash<rtmath::ddscat::ddParIterator> > data_t;
 			typedef data_t::const_iterator const_iterator;

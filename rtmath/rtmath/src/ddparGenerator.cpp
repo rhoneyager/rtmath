@@ -28,16 +28,6 @@ namespace rtmath {
 		{
 		}
 
-		void ddParGeneratorBase::getShapeBase(std::shared_ptr<shapeModifiable> &base)
-		{
-			base = _shapeBase;
-		}
-
-		void ddParGeneratorBase::setShapeBase(std::shared_ptr<shapeModifiable> base)
-		{
-			_shapeBase = base;
-		}
-
 		ddParGenerator::ddParGenerator()
 		{
 		}
@@ -81,7 +71,7 @@ namespace rtmath {
 				// do this setup and construct the iterated quantities.
 
 				// Take copy of shape and apply properties
-				shared_ptr<shapeModifiable> nS( (shapeModifiable*) it->shape()->clone() );
+				///shared_ptr<shapeModifiable> nS( (shapeModifiable*) it->getshape()->clone() );
 				using namespace MANIPULATED_QUANTITY;
 
 				double TK;		// Temp in K
@@ -90,7 +80,8 @@ namespace rtmath {
 
 				// Make copy of base
 				ddPar parout = _base;
-				std::shared_ptr<shapeModifiable> shape = it->getshape();
+				// TODO: check that splicing does not occur. If it does, use a better cast.
+				std::shared_ptr<shapeModifiable> shape ( (shapeModifiable*) it->getshape()->clone() );
 
 				// Update shape parameters based on quantities
 				shapeModifiable::vertexMap mappings;
@@ -113,17 +104,25 @@ namespace rtmath {
 						it->getParamValue<double>("freq",val,units);
 						units::conv_spec fconv(units, "GHz");
 						fGHz = fconv.convert(val);
-						nS->set(FREQ, fGHz);
+						shape->set(FREQ, fGHz);
 						units::conv_spec umconv(units, "um");
 						um = umconv.convert(val); // Wavelength in microns
 						known.insert(mappings.left.at(FREQ));
 					} // Allow setting of other quantities
-					else if (quant == "reff")
-					{
-					} else {
+					else {
+						// Ask the shape to attempt to match the variable
+						it->getParamValue<double>(quant,val,units);
+						// NOTE: No unit conversions added. TODO!
+						bool hasMap;
+						size_t vid;
+						std::shared_ptr< rtmath::graphs::vertex > vert;
+						hasMap = shape->mapVertex(quant, vid, vert);
+						// If it fails, then report an error
+						if (!hasMap) continue; // TODO: make an error.
+						shape->set((MQ) vid, val); // TODO: fix casting, as not MQ only is for 
+													// the base vertices
 					}
 				}
-				///// AT END, do shape->update(known);
 				shape->update(known);
 
 				// Set rotations
@@ -171,13 +170,15 @@ namespace rtmath {
 				refract::writeDiel( (pdir/"diel.tab").string(), m );
 
 				// Write shape.dat (if needed)
+				if (shape->canWrite())
+					shape->write( (pdir/"shape.dat").string() );
 
 				// Write ddscat.par
 				parout.saveFile( (pdir/"ddscat.par").string() );
 
 				// Write run definitions
 				// Give the output class access to the graph vertices.
-				// TODO: write indiv run definition file class
+				it->write( (pdir/"params.txt").string() );
 
 				// Write run script
 				runScriptIndiv iscript(dirname);

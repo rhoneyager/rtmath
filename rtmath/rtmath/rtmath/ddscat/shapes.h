@@ -88,6 +88,8 @@ namespace rtmath {
 			double mass() const { return get(MANIPULATED_QUANTITY::MASS); }
 			virtual double get(MQ var) const;
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
+			virtual bool canWrite() const { return false; }
+			virtual void write(const std::string &fname) const { return; }
 		protected:
 			std::map<MQ, double> _vars;
 			//double _d; // Interdipole spacing, in um
@@ -118,6 +120,9 @@ namespace rtmath {
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			inline void update(const rtmath::graphs::setWeakVertex &fixed) { _update(fixed); }
 			void getVertices(vertexMap &mappings);
+			bool mapVertex(const std::string &idstr, size_t &id, std::shared_ptr<rtmath::graphs::vertex> &vertex);
+
+			// TODO: allow function to change aspect ratio / dipole spacing prototype
 		protected:
 			// updater function tracks which value(s) to keep constant 
 			// and recalculates the rest
