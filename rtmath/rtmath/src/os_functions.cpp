@@ -16,6 +16,10 @@
 #include <Psapi.h>
 #pragma comment(lib, "Psapi")
 #endif
+#ifdef __unix__
+#include <unistd.h>
+#include <sys/types.h>
+#endif
 #include <TError.h> // ROOT info message suppression
 #include "../rtmath/error/debug.h"
 #include "../rtmath/config.h"
@@ -246,6 +250,54 @@ namespace rtmath {
 #else
 			return false;
 #endif
+		}
+
+		int getPID()
+		{
+#ifdef _WIN32
+			DWORD pid = 0;
+			HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+			if (NULL == h) return false;
+			PROCESSENTRY32 pe = { 0 };
+			pe.dwSize = sizeof(PROCESSENTRY32);
+			pid = GetCurrentProcessId();
+			CloseHandle(h);
+			return (int) pid;
+#endif
+#ifdef __unix__
+			//pid_t getpid(void);
+			return (int) getpid();
+#endif
+			return 0;
+		}
+
+		int getPPID(int pid)
+		{
+#ifdef _WIN32
+			DWORD Dpid = pid, ppid = 0;
+			HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+			if (NULL == h) return false;
+			PROCESSENTRY32 pe = { 0 };
+			pe.dwSize = sizeof(PROCESSENTRY32);
+			if (!pid) Dpid = GetCurrentProcessId();
+			if( Process32First(h, &pe)) {
+				do {
+					if (pe.th32ProcessID == Dpid) {
+						ppid = pe.th32ParentProcessID;
+						//printf("PID: %i; PPID: %i\n", pid, pe.th32ParentProcessID);
+					}
+				} while( Process32Next(h, &pe));
+			}
+
+			//std::cout << "Pid " << pid << "\nPPID " << ppid << std::endl;
+			CloseHandle(h);
+			return (int) ppid;
+#endif
+#ifdef __unix__
+			// pid_t getppid(void);
+			return (int) getppid();
+#endif
+			return 0;
 		}
 
 	}; // end namespace debug

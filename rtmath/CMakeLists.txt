@@ -118,6 +118,7 @@ ENDIF(${MSVC})
 
 # The target processing
 # Recurse into the subdirectories
+add_subdirectory (deps)
 add_subdirectory (rtmath)
 if (BUILD_APPS)
 	add_subdirectory (rtmath-apps)
