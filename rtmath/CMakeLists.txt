@@ -85,16 +85,20 @@ IF(USE_OPENMP)
 ENDIF()
 
 # Set basic common libraries
-SET ( COMMON_LIBS 
-	boost_filesystem
-	boost_date_time
-	boost_unit_test_framework
-	boost_system
-)
+#SET ( COMMON_LIBS 
+#	boost_filesystem
+#	boost_date_time
+#	boost_unit_test_framework
+#	boost_system
+#)
 IF(${MSVC})
 ELSE()
 	SET ( COMMON_LIBS ${COMMON_LIBS} 
 		m
+		boost_filesystem
+		boost_date_time
+		boost_unit_test_framework
+		boost_system
 	)
 	#SET (	COMMON_LIBS ${COMMON_LIBS} netcdf m boost_filesystem
 	#	pqxx boost_date_time pq
@@ -111,8 +115,11 @@ IF(${CMAKE_COMPILER_IS_GNUCXX})
 ENDIF()
 
 IF(${MSVC})
-	# MSVC parallel builds by default
-	SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
+	# MSVC parallel builds by defaul
+	if ("${COMMON_CFLAGS}" MATCHES "MP")
+	else()
+		SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
+	endif()
 ENDIF(${MSVC})
 
 
