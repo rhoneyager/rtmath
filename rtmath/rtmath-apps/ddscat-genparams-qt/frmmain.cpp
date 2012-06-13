@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "frmmain.h"
+#include "../../rtmath/rtmath/ROOTlink.h"
 
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)

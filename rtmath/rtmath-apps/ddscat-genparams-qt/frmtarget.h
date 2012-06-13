@@ -13,7 +13,7 @@ public:
 	~frmTarget();
 
 private:
-	Ui::frmTargetClass ui;
+	Ui::frmTarget ui;
 private slots:
 	void processOK();
 	void targetTypeChanged();

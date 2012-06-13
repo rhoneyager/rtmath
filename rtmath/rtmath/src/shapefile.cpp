@@ -24,271 +24,271 @@
 namespace rtmath {
 	namespace ddscat {
 
-	namespace MANIPULATED_QUANTITY
-	{
-		void shapeFileManip::run()
+		namespace MANIPULATED_QUANTITY
 		{
-			using namespace std;
-			const double pi = boost::math::constants::pi<double>();
-			// This function overrides the basic manipulation scheme.
-			// This is because some of the functions, like volume
-			// computation are more complex
-			//if (_id == DENS_T)
-
-			if (_id == "")
+			void shapeFileManip::run()
 			{
+				using namespace std;
+				const double pi = boost::math::constants::pi<double>();
+				// This function overrides the basic manipulation scheme.
+				// This is because some of the functions, like volume
+				// computation are more complex
+				//if (_id == DENS_T)
 
-			} else if (_id == "")
-			{
+				if (_id == "")
+				{
 
-			} else {
-				throw rtmath::debug::xUnimplementedFunction();
+				} else if (_id == "")
+				{
+
+				} else {
+					throw rtmath::debug::xUnimplementedFunction();
+				}
 			}
 		}
-	}
 
 
-	shapefile::shapefile()
-	{
-		_init();
-	}
-
-	shapefile::~shapefile()
-	{
-	}
-
-	shapefile::shapefile(const std::string &filename)
-	{
-		_init();
-		loadFile(filename);
-	}
-
-	shapefile::shapefile(std::istream &in)
-	{
-		_init();
-		loadFile(in);
-	}
-
-	void shapefile::_init()
-	{
-		using namespace std;
-		_lattice = nullptr;
-		_latticePts.clear();
-		_latticePtsStd.clear();
-		_latticePtsRi.clear();
-		//_moments.clear();
-		_numPoints = 0;
-		_filename = "";
-		//_I = shared_ptr<matrixop>(new matrixop(2,3,3));
-	}
-
-	void shapefile::loadFile(const std::string &filename)
-	{
-		using namespace std;
-		ifstream in(filename.c_str());
-		loadFile(in);
-		_filename = filename;
-	}
-
-	void shapefile::loadFile(std::istream &in)
-	{
-		//throw rtmath::debug::xUnimplementedFunction();
-		using namespace std;
-		_init();
-
-		string lin;
-		size_t linenum = 0;
-		bool done = false;
-
-		std::getline(in,lin);
-		_desc = lin;
-		std::getline(in,lin);
-		istringstream sin;
-		sin.str(lin);
-		sin >> _numPoints;
-
-		double a1[3], a2[3], a3[3], d[3], x0[3];
-		std::getline(in,lin);
-		sin.clear();
-		sin.str(lin);
-		sin >> a1[0] >> a1[1] >> a1[2];
-		std::getline(in,lin);
-		sin.clear();
-		sin.str(lin);
-		sin >> a2[0] >> a2[1] >> a2[2];
-		std::getline(in,lin);
-		sin.clear();
-		sin.str(lin);
-		sin >> d[0] >> d[1] >> d[2];
-		std::getline(in,lin);
-		sin.clear();
-		sin.str(lin);
-		sin >> x0[0] >> x0[1] >> x0[2];
-
-		// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
-		// bypassing any compiler return be value/reference difficulties
-		_a1 = matrixop::fromDoubleArray(a1,2,1,3);
-		_a2 = matrixop::fromDoubleArray(a2,2,1,3);
-		_d  = matrixop::fromDoubleArray(d,2,1,3);
-		_x0 = matrixop::fromDoubleArray(x0,2,1,3);
-
-		std::getline(in,lin); // Skip junk line
-
-		// Load in the lattice points
-		for (size_t i=0; i < _numPoints; i++)
+		shapefile::shapefile()
 		{
+			_init();
+		}
+
+		shapefile::~shapefile()
+		{
+		}
+
+		shapefile::shapefile(const std::string &filename)
+		{
+			_init();
+			loadFile(filename);
+		}
+
+		shapefile::shapefile(std::istream &in)
+		{
+			_init();
+			loadFile(in);
+		}
+
+		void shapefile::_init()
+		{
+			using namespace std;
+			_lattice = nullptr;
+			_latticePts.clear();
+			_latticePtsStd.clear();
+			_latticePtsRi.clear();
+			//_moments.clear();
+			_numPoints = 0;
+			_filename = "";
+			//_I = shared_ptr<matrixop>(new matrixop(2,3,3));
+		}
+
+		void shapefile::loadFile(const std::string &filename)
+		{
+			using namespace std;
+			ifstream in(filename.c_str());
+			loadFile(in);
+			_filename = filename;
+		}
+
+		void shapefile::loadFile(std::istream &in)
+		{
+			//throw rtmath::debug::xUnimplementedFunction();
+			using namespace std;
+			_init();
+
+			string lin;
+			size_t linenum = 0;
+			bool done = false;
+
 			std::getline(in,lin);
-			istringstream pin(lin); // MSVC bug with sin not reloading data in loop
-			double j, jx, jy, jz, ix, iy, iz;
-			pin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
-			coords::cyclic<double> cds(6,jx,jy,jz,ix,iy,iz);
-			//matrixop crds(2,1,6);
-			matrixop crdsm(2,1,3), crdsi(2,1,3);
-			cds.get(crdsm,0,3);
-			cds.get(crdsi,3,3);
-			_latticePts[i+1] = crdsm;
-			_latticePtsRi[i+1] = crdsi;
+			_desc = lin;
+			std::getline(in,lin);
+			istringstream sin;
+			sin.str(lin);
+			sin >> _numPoints;
+
+			double a1[3], a2[3], a3[3], d[3], x0[3];
+			std::getline(in,lin);
+			sin.clear();
+			sin.str(lin);
+			sin >> a1[0] >> a1[1] >> a1[2];
+			std::getline(in,lin);
+			sin.clear();
+			sin.str(lin);
+			sin >> a2[0] >> a2[1] >> a2[2];
+			std::getline(in,lin);
+			sin.clear();
+			sin.str(lin);
+			sin >> d[0] >> d[1] >> d[2];
+			std::getline(in,lin);
+			sin.clear();
+			sin.str(lin);
+			sin >> x0[0] >> x0[1] >> x0[2];
+
+			// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
+			// bypassing any compiler return be value/reference difficulties
+			_a1 = matrixop::fromDoubleArray(a1,2,1,3);
+			_a2 = matrixop::fromDoubleArray(a2,2,1,3);
+			_d  = matrixop::fromDoubleArray(d,2,1,3);
+			_x0 = matrixop::fromDoubleArray(x0,2,1,3);
+
+			std::getline(in,lin); // Skip junk line
+
+			// Load in the lattice points
+			for (size_t i=0; i < _numPoints; i++)
+			{
+				std::getline(in,lin);
+				istringstream pin(lin); // MSVC bug with sin not reloading data in loop
+				double j, jx, jy, jz, ix, iy, iz;
+				pin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
+				coords::cyclic<double> cds(6,jx,jy,jz,ix,iy,iz);
+				//matrixop crds(2,1,6);
+				matrixop crdsm(2,1,3), crdsi(2,1,3);
+				cds.get(crdsm,0,3);
+				cds.get(crdsi,3,3);
+				_latticePts[i+1] = crdsm;
+				_latticePtsRi[i+1] = crdsi;
+			}
+
+			// Figure out third lattice vector in target frame
+			a3[0] = a1[1]*a2[2]-a1[2]*a2[1];
+			a3[1] = a1[2]*a2[0]-a1[0]*a2[2];
+			a3[2] = a1[0]*a2[1]-a1[1]*a2[0];
+			_a3 = matrixop::fromDoubleArray(a3,2,1,3);
+
+			// Do a second pass and generate the lattice from the lattice points
+			// The scaling factors and basis vectors are already in place.
+			matrixop xd(2,3,1);
+			xd = *_x0 % *_d;
+			_xd = make_shared<matrixop>(xd);
+
+			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
+			{
+				// First, get matrixops of the lattice vectors
+				matrixop crd = it->second;
+				// Do componentwise multiplication to do scaling
+				crd = crd % *_d;
+
+				matrixop crdsc = crd - xd; // Normalized coordinates!
+				// Save in _latticePtsStd
+				_latticePtsStd[it->first] = crdsc;
+			}
 		}
 
-		// Figure out third lattice vector in target frame
-		a3[0] = a1[1]*a2[2]-a1[2]*a2[1];
-		a3[1] = a1[2]*a2[0]-a1[0]*a2[2];
-		a3[2] = a1[0]*a2[1]-a1[1]*a2[0];
-		_a3 = matrixop::fromDoubleArray(a3,2,1,3);
-
-		// Do a second pass and generate the lattice from the lattice points
-		// The scaling factors and basis vectors are already in place.
-		matrixop xd(2,3,1);
-		xd = *_x0 % *_d;
-		_xd = make_shared<matrixop>(xd);
-
-		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
+		void shapefile::print(std::ostream &out) const
 		{
-			// First, get matrixops of the lattice vectors
-			matrixop crd = it->second;
-			// Do componentwise multiplication to do scaling
-			crd = crd % *_d;
-
-			matrixop crdsc = crd - xd; // Normalized coordinates!
-			// Save in _latticePtsStd
-			_latticePtsStd[it->first] = crdsc;
+			using namespace std;
+			out << _desc << endl;
+			out << _numPoints << "\t= Number of lattice points" << endl;
+			_a1->writeSV("\t",out,false);
+			out << "\t= target vector a1 (in TF)" << endl;
+			_a2->writeSV("\t",out,false);
+			out << "\t= target vector a2 (in TF)" << endl;
+			_d->writeSV("\t",out,false);
+			out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
+			_x0->writeSV("\t",out,false);
+			out << "\t= X0(1-3) = location in lattice of target origin" << endl;
+			out << "\tNo.\tix\tiy\tiz\t1\t1\t1" << endl;
+			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
+			{
+				out << "\t" << it->first << "\t";
+				it->second.writeSV("\t",out,false);
+				out << endl;
+			}
 		}
-	}
 
-	void shapefile::print(std::ostream &out) const
-	{
-		using namespace std;
-		out << _desc << endl;
-		out << _numPoints << "\t= Number of lattice points" << endl;
-		_a1->writeSV("\t",out,false);
-		out << "\t= target vector a1 (in TF)" << endl;
-		_a2->writeSV("\t",out,false);
-		out << "\t= target vector a2 (in TF)" << endl;
-		_d->writeSV("\t",out,false);
-		out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
-		_x0->writeSV("\t",out,false);
-		out << "\t= X0(1-3) = location in lattice of target origin" << endl;
-		out << "\tNo.\tix\tiy\tiz\t1\t1\t1" << endl;
-		for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
+		std::shared_ptr<shapefile> shapefile::getPtr() const
 		{
-			out << "\t" << it->first << "\t";
-			it->second.writeSV("\t",out,false);
-			out << endl;
+			std::shared_ptr<const shapefile> a = shared_from_this();
+			return std::const_pointer_cast<shapefile>(a);
 		}
-	}
 
-	std::shared_ptr<shapefile> shapefile::getPtr() const
-	{
-		std::shared_ptr<const shapefile> a = shared_from_this();
-		return std::const_pointer_cast<shapefile>(a);
-	}
-
-	shapeFileStats::shapeFileStats(const shapefile &shp, double beta, double theta, double phi)
-	{
-		_init();
-		_shp = shp.getPtr();
-		setRot(beta,theta,phi);
-	}
-
-	shapeFileStats::shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
-	{
-		_init();
-		_shp = shp;
-		setRot(beta,theta,phi);
-	}
-
-	void shapeFileStats::_init()
-	{
-		_shp = nullptr;
-		_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
-		_beta = 0;
-		_theta = 0;
-		_phi = 0;
-	}
-
-	void shapeFileStats::setRot(double beta, double theta, double phi)
-	{
-		_beta = beta;
-		_theta = theta;
-		_phi = phi;
-
-		if (beta == 0 && theta == 0 && phi == 0)
+		shapeFileStats::shapeFileStats(const shapefile &shp, double beta, double theta, double phi)
 		{
+			_init();
+			_shp = shp.getPtr();
+			setRot(beta,theta,phi);
+		}
+
+		shapeFileStats::shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
+		{
+			_init();
+			_shp = shp;
+			setRot(beta,theta,phi);
+		}
+
+		void shapeFileStats::_init()
+		{
+			_shp = nullptr;
 			_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
-			return;
+			_beta = 0;
+			_theta = 0;
+			_phi = 0;
 		}
 
-		const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
-		double cb = cos(beta*drconv);
-		double ct = cos(theta*drconv);
-		double cp = cos(phi*drconv);
-		double sb = sin(beta*drconv);
-		double st = sin(theta*drconv);
-		double sp = sin(phi*drconv);
-		// Do left-handed rotation
-		// It's just easier to express the overall rotation as the multiplication of
-		// the component Gimbal matrices.
-		matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
+		void shapeFileStats::setRot(double beta, double theta, double phi)
+		{
+			_beta = beta;
+			_theta = theta;
+			_phi = phi;
 
-		Rx.set(1,2,0,0);
-		Rx.set(cp,2,1,1);
-		Rx.set(cp,2,2,2);
-		Rx.set(sp,2,2,1);
-		Rx.set(-sp,2,1,2);
+			if (beta == 0 && theta == 0 && phi == 0)
+			{
+				_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
+				return;
+			}
 
-		Ry.set(cb,2,0,0);
-		Ry.set(1 ,2,1,1);
-		Ry.set(cb,2,2,2);
-		Ry.set(sb,2,0,2);
-		Ry.set(-sb,2,2,0);
+			const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
+			double cb = cos(beta*drconv);
+			double ct = cos(theta*drconv);
+			double cp = cos(phi*drconv);
+			double sb = sin(beta*drconv);
+			double st = sin(theta*drconv);
+			double sp = sin(phi*drconv);
+			// Do left-handed rotation
+			// It's just easier to express the overall rotation as the multiplication of
+			// the component Gimbal matrices.
+			matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
 
-		Rz.set(ct,2,0,0);
-		Rz.set(ct,2,1,1);
-		Rz.set(1,2,2,2);
-		Rz.set(st,2,1,0);
-		Rz.set(-st,2,0,1);
+			Rx.set(1,2,0,0);
+			Rx.set(cp,2,1,1);
+			Rx.set(cp,2,2,2);
+			Rx.set(sp,2,2,1);
+			Rx.set(-sp,2,1,2);
 
-		matrixop Rtot = Rz*Rx*Ry;
-		_rot = Rtot.shared_from_this();
-	}
+			Ry.set(cb,2,0,0);
+			Ry.set(1 ,2,1,1);
+			Ry.set(cb,2,2,2);
+			Ry.set(sb,2,0,2);
+			Ry.set(-sb,2,2,0);
 
-	void shapeFileStats::_calcOtherStats()
-	{
-		// Do calculations of the center of mass, the tensor quantities, and other stuff
-		// The functions called here are all indep. of the initial state, as mass, density,
-		// volume and everything else have been calculated already.
+			Rz.set(ct,2,0,0);
+			Rz.set(ct,2,1,1);
+			Rz.set(1,2,2,2);
+			Rz.set(st,2,1,0);
+			Rz.set(-st,2,0,1);
 
-		// Define the accumulators that we want
-		// For each axis, get min, max and the other statistics about the distribution
+			matrixop Rtot = Rz*Rx*Ry;
+			_rot = Rtot.shared_from_this();
+		}
 
-		// Iterate accumulator as function of radial distance from center of mass
+		void shapeFileStats::_calcOtherStats()
+		{
+			// Do calculations of the center of mass, the tensor quantities, and other stuff
+			// The functions called here are all indep. of the initial state, as mass, density,
+			// volume and everything else have been calculated already.
 
-		// 
-		/*
-				// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
-		using namespace boost::accumulators;
+			// Define the accumulators that we want
+			// For each axis, get min, max and the other statistics about the distribution
 
-		accumulator_set<double, stats<
+			// Iterate accumulator as function of radial distance from center of mass
+
+			// 
+			/*
+			// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
+			using namespace boost::accumulators;
+
+			accumulator_set<double, stats<
 			tag::(min),
 			tag::(max), 
 			tag::sum,
@@ -296,13 +296,32 @@ namespace rtmath {
 			tag::moment<2>,
 			tag::skewness,
 			tag::kurtosis
-		> > acc_x, acc_y, acc_z;
+			> > acc_x, acc_y, acc_z;
 
-		accumulator_set<double, stats<
+			accumulator_set<double, stats<
 			tag::sum
-		> > iner_xx, iner_yy, iner_zz, iner_xy, iner_xz, iner_yz;
-		*/
-	}
+			> > iner_xx, iner_yy, iner_zz, iner_xy, iner_xz, iner_yz;
+			*/
+		}
+
+		void shapeFileStats::write(const std::string &fname) const
+		{
+			using namespace ::boost::filesystem;
+			using namespace ::boost;
+			path p(fname);
+			if (exists(p))
+			{
+				if (is_directory(p))
+					throw rtmath::debug::xPathExistsWrongType(fname.c_str());
+			}
+
+			// Okay, now to serialize and output...
+			std::ofstream out(p.string().c_str());
+			//boost::archive::text_oarchive oa(out);
+			// oa << *this;
+			::boost::archive::xml_oarchive oa(out);
+			oa << BOOST_SERIALIZATION_NVP(*this);
+		}
 
 
 	}

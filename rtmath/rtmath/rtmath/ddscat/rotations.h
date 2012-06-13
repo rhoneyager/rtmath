@@ -10,12 +10,21 @@
 #include <vector>
 #include <complex>
 #include <boost/tokenizer.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/string.hpp> 
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/set.hpp>
 #include "ddpar.h"
+#include "../common_templates.h"
 
 namespace rtmath {
 	namespace ddscat {
 
-		class rotationsBase
+		class rotationsBase : public hashable
 		{
 		public:
 			rotationsBase()
@@ -30,6 +39,26 @@ namespace rtmath {
 			double _tMin, _tMax;
 			double _pMin, _pMax;
 			size_t _bN, _tN, _pN;
+		friend class boost::serialization::access;
+		friend struct std::less<rtmath::ddscat::rotationsBase >;
+		public:
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					// serialize base class information
+					//ar & BOOST_SERIALIZATION_NVP(
+					//	boost::serialization::base_object<ddParGeneratorBase>(*this)
+					//	);
+					ar & BOOST_SERIALIZATION_NVP(_bMin);
+					ar & BOOST_SERIALIZATION_NVP(_bMax);
+					ar & BOOST_SERIALIZATION_NVP(_bN);
+					ar & BOOST_SERIALIZATION_NVP(_tMin);
+					ar & BOOST_SERIALIZATION_NVP(_tMax);
+					ar & BOOST_SERIALIZATION_NVP(_tN);
+					ar & BOOST_SERIALIZATION_NVP(_pMin);
+					ar & BOOST_SERIALIZATION_NVP(_pMax);
+					ar & BOOST_SERIALIZATION_NVP(_pN);
+				}
 		};
 
 		class rotations : public rotationsBase
@@ -50,9 +79,58 @@ namespace rtmath {
 			// ddPar output function
 			void out(ddPar &dest) const;
 			// TODO: add stream-like function alias
+			friend struct std::less<rtmath::ddscat::rotations >;
+			friend class boost::serialization::access;
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(rotationsBase);
+				}
 		};
+
+		// Supporting code to allow boost unordered map
+
+		inline std::size_t hash_value(rtmath::ddscat::rotations const& x) { return (size_t) x.hash(); }
 
 	}
 }
 
+
+// Supporting code to allow an unordered map of mapid (for damatrix)
+// Using standard namespace for C++11
+namespace std {
+	template <> struct hash<rtmath::ddscat::rotations>
+	{
+		size_t operator()(const rtmath::ddscat::rotations & x) const
+		{
+			// Really need to cast for the unordered map to work
+			return (size_t) x.hash();
+		}
+	};
+
+
+	template <> struct less<rtmath::ddscat::rotations >
+	{
+		bool operator() (const rtmath::ddscat::rotations &lhs, const rtmath::ddscat::rotations &rhs) const
+		{
+			/*
+						double _bMin, _bMax;
+			double _tMin, _tMax;
+			double _pMin, _pMax;
+			size_t _bN, _tN, _pN;
+			*/
+			if (lhs._bMin != rhs._bMin) return lhs._bMin < rhs._bMin;
+			if (lhs._bMax != rhs._bMax) return lhs._bMax < rhs._bMax;
+			if (lhs._bN != rhs._bN) return lhs._bN < rhs._bN;
+			if (lhs._tMin != rhs._tMin) return lhs._tMin < rhs._tMin;
+			if (lhs._tMax != rhs._tMax) return lhs._tMax < rhs._tMax;
+			if (lhs._tN != rhs._tN) return lhs._tN < rhs._tN;
+			if (lhs._pMin != rhs._pMin) return lhs._pMin < rhs._pMin;
+			if (lhs._pMax != rhs._pMax) return lhs._pMax < rhs._pMax;
+			if (lhs._pN != rhs._pN) return lhs._pN < rhs._pN;
+
+			return false;
+		}
+	};
+}; // end namespace std
 

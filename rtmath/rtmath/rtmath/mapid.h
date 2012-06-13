@@ -3,11 +3,12 @@
 #include <sstream>
 #include "defs.h"
 #include "enums.h"
+#include "common_templates.h"
 #include "Public_Domain/MurmurHash3.h"
 
 namespace rtmath {
 	// Used as an easy structure for mapping and function parameters
-	class mapid
+	class mapid : public hashable
 	{
 	public:
 		friend struct std::less<rtmath::mapid>;
@@ -32,12 +33,6 @@ namespace rtmath {
 		bool operator != (const mapid &rhs) const
 		{ return !(this->operator==(rhs)); }
 		double mu, mun, phi, phin, f;
-		inline HASH_t hash() const
-		{
-			HASH_t res;
-			HASH(this, sizeof(*this), HASHSEED, &res);
-			return res;
-		}
 		inline std::string print() const
 		{
 			std::ostringstream out;

@@ -10,6 +10,12 @@
 #include <unordered_map>
 #include <complex>
 #include <boost/bimap.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/map.hpp>
+//#include <boost/archive/
 #include "../matrixop.h"
 #include "../coords.h"
 #include "../depGraph.h"
@@ -89,7 +95,7 @@ namespace rtmath {
 			virtual double get(MQ var) const;
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 			virtual bool canWrite() const { return false; }
-			virtual void write(const std::string &fname) const { return; }
+			virtual void write(const std::string &fname) const;
 		protected:
 			std::map<MQ, double> _vars;
 			//double _d; // Interdipole spacing, in um
@@ -100,6 +106,14 @@ namespace rtmath {
 			//double _T; // Temperature, K, used in water density calculations
 			// Densities of different anisotropic materials. Used in mass and inertia calculations.
 			std::map<size_t, double> _densities;
+			friend class boost::serialization::access;
+		public:
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_NVP(_vars);
+					ar & BOOST_SERIALIZATION_NVP(_densities);
+				}
 		};
 
 		class shapeModifiable : public shape
@@ -133,6 +147,13 @@ namespace rtmath {
 			boost::bimap< size_t, 
 				std::shared_ptr<rtmath::graphs::vertex> > _vertexMap;
 			std::shared_ptr<rtmath::graphs::graph> _graph;
+			friend class boost::serialization::access;
+		public:
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shape);
+				}
 		};
 		
 		// In ellipsoid, 1/4 = (x/d*shp1)^2 + (y/d*shp2)^2 + (z/d*shp3)^2

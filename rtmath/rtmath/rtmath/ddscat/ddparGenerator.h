@@ -29,6 +29,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/set.hpp>
 #include "../Public_Domain/MurmurHash3.h"
  
 namespace rtmath {
@@ -133,9 +135,11 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(_gamma);
 					ar & BOOST_SERIALIZATION_NVP(_etasca);
 					ar & BOOST_SERIALIZATION_NVP(_nambient);
-					//ar & degrees;
-					//ar & minutes;
-					//ar & seconds;
+
+					ar & BOOST_SERIALIZATION_NVP(freqs);
+					ar & BOOST_SERIALIZATION_NVP(temps);
+					ar & BOOST_SERIALIZATION_NVP(sizes);
+					ar & BOOST_SERIALIZATION_NVP(rots);
 				}
 		};
 
@@ -219,7 +223,7 @@ namespace rtmath {
 			ddParGenerator();
 			ddParGenerator(const ddPar &base);
 			virtual ~ddParGenerator();
-			void write(const std::string &filename) const;
+			void write(const std::string &basename) const;
 			void import(const std::string &ddparfilename);
 			void import(const ddPar &base);
 			void generate(const std::string &basedir) const;

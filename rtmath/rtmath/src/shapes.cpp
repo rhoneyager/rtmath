@@ -15,6 +15,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/serialization/map.hpp>
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
@@ -156,6 +157,25 @@ namespace rtmath {
 			if (_vars.count(var))
 				return _vars.at(var);
 			return 0;
+		}
+
+		void shape::write(const std::string &fname) const
+		{
+			using namespace ::boost::filesystem;
+			using namespace ::boost;
+			path p(fname);
+			if (exists(p))
+			{
+				if (is_directory(p))
+					throw rtmath::debug::xPathExistsWrongType(fname.c_str());
+			}
+
+			// Okay, now to serialize and output...
+			std::ofstream out(p.string().c_str());
+			//boost::archive::text_oarchive oa(out);
+			// oa << *this;
+			::boost::archive::xml_oarchive oa(out);
+			oa << BOOST_SERIALIZATION_NVP(*this);
 		}
 
 		void shapeModifiable::set(MQ var, double val)
@@ -313,6 +333,16 @@ namespace rtmath {
 
 		}
 		
+		bool shapeModifiable::mapVertex(const std::string &idstr, size_t &id, std::shared_ptr<rtmath::graphs::vertex> &vertex)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void shapeModifiable::getVertices(vertexMap &mappings)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
 	}
 }
 

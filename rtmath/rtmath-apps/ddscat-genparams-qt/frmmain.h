@@ -3,6 +3,7 @@
 
 #include <QtGui/QMainWindow>
 #include "ui_frmmain.h"
+#include "../../rtmath/rtmath/ddscat/ddparGenerator.h"
 
 class frmMain : public QMainWindow
 {
@@ -27,6 +28,9 @@ private:
 		void menuTargets(const QPoint &);
 		void menuDielectrics(const QPoint &);
 		*/
+	private:
+		void toGenerator();
+		rtmath::ddscat::ddParGenerator _gen;
 };
 
 #endif // FRMMAIN_H

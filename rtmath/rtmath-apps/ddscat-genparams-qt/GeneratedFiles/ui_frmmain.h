@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Tue Jun 5 02:23:07 2012
+** Created: Wed Jun 13 03:45:01 2012
 **      by: Qt User Interface Compiler version 4.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -45,6 +45,7 @@ public:
     QAction *action_Open;
     QAction *action_Save;
     QAction *action_New;
+    QAction *action_Import_from_ddscat_par;
     QWidget *centralWidget;
     QVBoxLayout *verticalLayout;
     QTabWidget *tabWidget;
@@ -150,6 +151,7 @@ public:
         if (frmMainClass->objectName().isEmpty())
             frmMainClass->setObjectName(QString::fromUtf8("frmMainClass"));
         frmMainClass->resize(815, 614);
+        frmMainClass->setMouseTracking(true);
         actionE_xit = new QAction(frmMainClass);
         actionE_xit->setObjectName(QString::fromUtf8("actionE_xit"));
         action_Open = new QAction(frmMainClass);
@@ -158,6 +160,8 @@ public:
         action_Save->setObjectName(QString::fromUtf8("action_Save"));
         action_New = new QAction(frmMainClass);
         action_New->setObjectName(QString::fromUtf8("action_New"));
+        action_Import_from_ddscat_par = new QAction(frmMainClass);
+        action_Import_from_ddscat_par->setObjectName(QString::fromUtf8("action_Import_from_ddscat_par"));
         centralWidget = new QWidget(frmMainClass);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         verticalLayout = new QVBoxLayout(centralWidget);
@@ -703,6 +707,7 @@ public:
         menu_File->addAction(action_New);
         menu_File->addSeparator();
         menu_File->addAction(action_Open);
+        menu_File->addAction(action_Import_from_ddscat_par);
         menu_File->addAction(action_Save);
         menu_File->addSeparator();
         menu_File->addAction(actionE_xit);
@@ -720,8 +725,9 @@ public:
         QObject::connect(treeTemps, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
         QObject::connect(treeScattAngles, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuScaAngles(QPoint)));
         QObject::connect(treeScattAngles, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(cmdGenerate, SIGNAL(clicked()), frmMainClass, SLOT(generateRuns()));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(3);
 
 
         QMetaObject::connectSlotsByName(frmMainClass);
@@ -734,6 +740,7 @@ public:
         action_Open->setText(QApplication::translate("frmMainClass", "&Open", 0, QApplication::UnicodeUTF8));
         action_Save->setText(QApplication::translate("frmMainClass", "&Save", 0, QApplication::UnicodeUTF8));
         action_New->setText(QApplication::translate("frmMainClass", "&New", 0, QApplication::UnicodeUTF8));
+        action_Import_from_ddscat_par->setText(QApplication::translate("frmMainClass", "&Import from ddscat.par", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("frmMainClass", "Run Name:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtRunName->setStatusTip(QApplication::translate("frmMainClass", "An easy-to-remember name for this set of runs", 0, QApplication::UnicodeUTF8));
@@ -759,10 +766,8 @@ public:
         label_10->setText(QApplication::translate("frmMainClass", "DDSCAT Version:", 0, QApplication::UnicodeUTF8));
         cmbDdver->clear();
         cmbDdver->insertItems(0, QStringList()
-         << QApplication::translate("frmMainClass", "7.2 gcc", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "7.2 intel", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "7.0 gcc", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "7.0 intel", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "7.2", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "7.0", 0, QApplication::UnicodeUTF8)
         );
 #ifndef QT_NO_STATUSTIP
         cmbDdver->setStatusTip(QApplication::translate("frmMainClass", "Specify ddscat version. 7.0 or 7.2? Intel or gcc?", 0, QApplication::UnicodeUTF8));

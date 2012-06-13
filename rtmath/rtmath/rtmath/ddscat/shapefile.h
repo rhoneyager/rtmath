@@ -46,6 +46,13 @@ namespace rtmath {
 			std::shared_ptr<const matrixop > _x0, _xd;
 			//std::shared_ptr<matrixop> _I; // Moments of inertia (not counting mass) in xyz coords
 			friend class shapeFileStats;
+			friend class boost::serialization::access;
+		public:
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_NVP(_filename);
+				}
 		};
 
 
@@ -78,6 +85,19 @@ namespace rtmath {
 			// Functions
 			void _init();
 			void _calcOtherStats();
+			friend class boost::serialization::access;
+		public:
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeModifiable);
+					ar & BOOST_SERIALIZATION_NVP(_N);
+					ar & BOOST_SERIALIZATION_NVP(_beta);
+					ar & BOOST_SERIALIZATION_NVP(_theta);
+					ar & BOOST_SERIALIZATION_NVP(_phi);
+					//ar & BOOST_SERIALIZATION_NVP(_shp);
+					// TODO: add rotations (needs matrixop serialization)
+				}
 		};
 
 		namespace MANIPULATED_QUANTITY

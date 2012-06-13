@@ -277,6 +277,36 @@ namespace rtmath {
 			ia >> BOOST_SERIALIZATION_NVP(*this);
 		}
 
+		void ddParGenerator::import(const std::string &ddparfilename)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void ddParGenerator::import(const ddPar &base)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void ddParIterator::write(const std::string &outfile) const
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void ddParIterator::getrots(rotations &out) const
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		std::shared_ptr<shapeModifiable> ddParIterator::getshape() const
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		ddParIteration::ddParIteration(const ddParGenerator *src)
+		{
+			//throw rtmath::debug::xUnimplementedFunction();
+		}
+
 		/*
 		void ddParGenerator::read(const std::string &basename)
 		{
