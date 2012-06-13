@@ -25,7 +25,11 @@
 #include "../common_templates.h"
 #include "../coords.h"
 #include "../units.h"
- #include "../Public_Domain/MurmurHash3.h"
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include "../Public_Domain/MurmurHash3.h"
  
 namespace rtmath {
 	namespace ddscat {
@@ -40,8 +44,8 @@ namespace rtmath {
 					_genIndivScripts(true),
 					_genMassScript(true),
 					_shapeStats(false),
-					_registerDatabase(false)
-
+					_registerDatabase(false),
+					_doExport(true)
 					{ }
 			virtual ~ddParGeneratorBase();
 			//std::set<units::hasUnits> freqs, temps;
@@ -57,10 +61,11 @@ namespace rtmath {
 			std::string strPostCdms;
 
 		protected:
-			ddPar _base;
+			ddPar _base; // TODO: deprecated.
+			std::string _baseParFile;
 			// The parameters that are variable
 			//		Add tag for shape type // Shape
-			std::string _shapefilebase;
+			std::string _shapefilebase; // TODO: deprecated.
 			std::set<std::shared_ptr<shapeModifiable> > _shapeBase;
 
 
@@ -68,9 +73,73 @@ namespace rtmath {
 			// These don't go into a ddscat.par file
 			
 			bool _compressResults, _genIndivScripts, _genMassScript;
-			bool _shapeStats, _registerDatabase;
+			bool _shapeStats, _registerDatabase, _doExport;
 			std::string _exportLoc;
+
+			bool _doTorques;
+			std::string _solnMeth, _FFTsolver, _Calpha, _binning;
+
+			int _Imem1, _Imem2, _Imem3;
+			bool _doNearField;
+			double _near1, _near2, _near3, _near4, _near5, _near6;
+			double _maxTol;
+			int _maxIter;
+			double _gamma;
+			double _etasca;
+			double _nambient;
+			friend class boost::serialization::access;
+			// When the class Archive corresponds to an output archive, the
+			// & operator is defined similar to <<.  Likewise, when the class Archive
+			// is a type of input archive the & operator is defined similar to >>.
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_NVP(name);
+					ar & BOOST_SERIALIZATION_NVP(description);
+					ar & BOOST_SERIALIZATION_NVP(outLocation);
+					ar & BOOST_SERIALIZATION_NVP(ddscatVer);
+					ar & BOOST_SERIALIZATION_NVP(strPreCmds);
+					ar & BOOST_SERIALIZATION_NVP(strPostCdms);
+					ar & BOOST_SERIALIZATION_NVP(_baseParFile);
+					ar & BOOST_SERIALIZATION_NVP(_shapefilebase);
+
+					ar & BOOST_SERIALIZATION_NVP(_compressResults);
+					ar & BOOST_SERIALIZATION_NVP(_genIndivScripts);
+					ar & BOOST_SERIALIZATION_NVP(_genMassScript);
+					ar & BOOST_SERIALIZATION_NVP(_shapeStats);
+					ar & BOOST_SERIALIZATION_NVP(_registerDatabase);
+					ar & BOOST_SERIALIZATION_NVP(_doExport);
+					ar & BOOST_SERIALIZATION_NVP(_exportLoc);
+
+					ar & BOOST_SERIALIZATION_NVP(_doTorques);
+					ar & BOOST_SERIALIZATION_NVP(_solnMeth);
+					ar & BOOST_SERIALIZATION_NVP(_FFTsolver);
+					ar & BOOST_SERIALIZATION_NVP(_Calpha);
+					ar & BOOST_SERIALIZATION_NVP(_binning);
+				
+					ar & BOOST_SERIALIZATION_NVP(_Imem1);
+					ar & BOOST_SERIALIZATION_NVP(_Imem2);
+					ar & BOOST_SERIALIZATION_NVP(_Imem3);
+					ar & BOOST_SERIALIZATION_NVP(_doNearField);
+					ar & BOOST_SERIALIZATION_NVP(_near1);
+					ar & BOOST_SERIALIZATION_NVP(_near2);
+					ar & BOOST_SERIALIZATION_NVP(_near3);
+					ar & BOOST_SERIALIZATION_NVP(_near4);
+					ar & BOOST_SERIALIZATION_NVP(_near5);
+					ar & BOOST_SERIALIZATION_NVP(_near6);
+
+					ar & BOOST_SERIALIZATION_NVP(_maxTol);
+					ar & BOOST_SERIALIZATION_NVP(_maxIter);
+					ar & BOOST_SERIALIZATION_NVP(_gamma);
+					ar & BOOST_SERIALIZATION_NVP(_etasca);
+					ar & BOOST_SERIALIZATION_NVP(_nambient);
+					//ar & degrees;
+					//ar & minutes;
+					//ar & seconds;
+				}
 		};
+
+		//BOOST_CLASS_TRACKING(ddParGeneratorBase, track_always);
 
 		class ddParIterator
 		{
@@ -151,8 +220,25 @@ namespace rtmath {
 			ddParGenerator(const ddPar &base);
 			virtual ~ddParGenerator();
 			void write(const std::string &filename) const;
+			void import(const std::string &ddparfilename);
+			void import(const ddPar &base);
 			void generate(const std::string &basedir) const;
-			void read(const std::string &basedir);
+			void read(const std::string &basename);
+		public: // Static stuff here
+			void setDefaultBase(const std::string &ddbasefilename);
+			void setDefaultBase(const ddPar &base);
+			friend class boost::serialization::access;
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					// serialize base class information
+					//ar & BOOST_SERIALIZATION_NVP(
+					//	boost::serialization::base_object<ddParGeneratorBase>(*this)
+					//	);
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ddParGeneratorBase);
+				}
+		private:
+			static ddPar _s_defaultBase;
 		};
 
 	} // end ddscat

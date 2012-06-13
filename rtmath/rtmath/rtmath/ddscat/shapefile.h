@@ -77,12 +77,6 @@ namespace rtmath {
 			double _beta, _theta, _phi;
 			// Functions
 			void _init();
-			void _calcFromD();
-			void _calcFromV();
-			void _calcFromReff();
-			void _calcFromMass();
-			void _calcDensity();
-			void _calcDensities();
 			void _calcOtherStats();
 		};
 
@@ -99,7 +93,7 @@ namespace rtmath {
 			private:
 				shapeFileStats *_base;
 				std::string _id;
-			}
+			};
 		}
 	}
 }

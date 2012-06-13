@@ -11,6 +11,9 @@
     <height>614</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>rtmath - DDSCAT Parameter Batch Generation Utility</string>
   </property>
@@ -148,22 +151,12 @@
           </property>
           <item>
            <property name="text">
-            <string>7.2 gcc</string>
+            <string>7.2</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>7.2 intel</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>7.0 gcc</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>7.0 intel</string>
+            <string>7.0</string>
            </property>
           </item>
          </widget>
@@ -1109,6 +1102,7 @@
     <addaction name="action_New"/>
     <addaction name="separator"/>
     <addaction name="action_Open"/>
+    <addaction name="action_Import_from_ddscat_par"/>
     <addaction name="action_Save"/>
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
@@ -1134,6 +1128,11 @@
   <action name="action_New">
    <property name="text">
     <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="action_Import_from_ddscat_par">
+   <property name="text">
+    <string>&amp;Import from ddscat.par</string>
    </property>
   </action>
  </widget>
@@ -1334,6 +1333,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cmdGenerate</sender>
+   <signal>clicked()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>generateRuns()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>766</x>
+     <y>572</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>menuFreqs(QPoint)</slot>
@@ -1345,5 +1360,6 @@
   <slot>menuDielectrics(QPoint)</slot>
   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
   <slot>allowExport(int)</slot>
+  <slot>generateRuns()</slot>
  </slots>
 </ui>

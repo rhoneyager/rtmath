@@ -100,6 +100,7 @@ namespace rtmath {
 			// The fault is because the window closes before the atexit 
 			// functions can write output.
 			SetConsoleCtrlHandler(_CloseHandlerRoutine, true);
+			CloseHandle(h);
 #endif
 		}
 

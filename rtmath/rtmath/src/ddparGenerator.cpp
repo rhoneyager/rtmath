@@ -16,6 +16,15 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/string.hpp> 
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
@@ -24,17 +33,22 @@
 namespace rtmath {
 	namespace ddscat {
 
+		ddPar ddParGenerator::_s_defaultBase;
+
 		ddParGeneratorBase::~ddParGeneratorBase()
 		{
 		}
 
 		ddParGenerator::ddParGenerator()
 		{
+			_base = _s_defaultBase;
+			import(_base);
 		}
 
 		ddParGenerator::ddParGenerator(const ddPar &base)
 		{
 			_base = base;
+			import(_base);
 			// Figure out the type of shape, and produce an appropriate base shape
 		}
 
@@ -198,13 +212,174 @@ namespace rtmath {
 
 		}
 
-		void ddParGenerator::write(const std::string &basedir) const
+		void ddParGenerator::write(const std::string &basename) const
 		{
+			using namespace boost::filesystem;
+			path pBase(basename), pXML;
+			if (is_directory(pBase))
+			{
+				pXML = pBase / "runSet.xml";
+				if (exists(pXML))
+				{
+					if (is_directory(pXML))
+						throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
+					boost::filesystem::remove(pXML);
+				}
+				//throw rtmath::debug::xPathExistsWrongType
+			} else {
+				pXML = pBase;
+				if (exists(pXML))
+				{
+					boost::filesystem::remove(pXML);
+				}
+			}
+
+			// Okay, now to serialize and output...
+			std::ofstream out(pXML.string().c_str());
+			//boost::archive::text_oarchive oa(out);
+			// oa << *this;
+			boost::archive::xml_oarchive oa(out);
+			oa << BOOST_SERIALIZATION_NVP(*this);
 		}
 
-		void ddParGenerator::read(const std::string &basedir)
+		void ddParGenerator::read(const std::string &basename)
 		{
+			// This routine can accept either a base directory or an actual filename
+			// If a base directory is given, search for runSet.xml.
+			using namespace boost::filesystem;
+			path pBase(basename), pXML;
+			if (!exists(pBase)) throw rtmath::debug::xMissingFile(basename.c_str());
+			if (is_directory(pBase))
+			{
+				// Search for runSet.xml
+				path pCand = pBase / "runSet.xml";
+				if (exists(pCand))
+				{
+					if (!is_directory(pCand))
+					{
+						pXML = pBase;
+					} else {
+						throw rtmath::debug::xPathExistsWrongType(pCand.string().c_str());
+					}
+				} else {
+					throw rtmath::debug::xMissingFile(pCand.string().c_str());
+				}
+			} else 
+			{
+				pXML = pBase;
+			}
+
+			// Okay, now to serialize and input...
+			std::ifstream in(pXML.string().c_str());
+			//boost::archive::text_oarchive oa(out);
+			// oa << *this;
+			boost::archive::xml_iarchive ia(in);
+			ia >> BOOST_SERIALIZATION_NVP(*this);
 		}
+
+		/*
+		void ddParGenerator::read(const std::string &basename)
+		{
+			// This routine can accept either a base directory or an actual filename
+			// If a base directory is given, search for runSet.xml.
+			using namespace boost::filesystem;
+			path pBase(basename), pXML;
+			if (!exists(pBase)) throw rtmath::debug::xMissingFile(basename.c_str());
+			if (is_directory(pBase))
+			{
+				// Search for runSet.xml
+				path pCand = pBase / "runSet.xml";
+				if (exists(pCand))
+				{
+					if (!is_directory(pCand))
+					{
+						pXML = pBase;
+					} else {
+						throw rtmath::debug::xPathExistsWrongType(pCand.string().c_str());
+					}
+				} else {
+					throw rtmath::debug::xMissingFile(pCand.string().c_str());
+				}
+			} else 
+			{
+				pXML = pBase;
+			}
+
+			using boost::property_tree::ptree;
+			ptree pt;
+
+			// Load the XML file into the property tree
+			read_xml(pXML.string(), pt);
+
+			// Now, extract the xml file contents
+
+			// Allow ddscat.par import to set default vaules
+			//ddPar myBasePar;
+			_baseParFile = pt.get<std::string>("runset.baseDDPAR", "");
+			if (_baseParFile.size())
+				import(_baseParFile);
+
+			// Basic stuff
+			_compressResults = pt.get<bool>("runset.compressResults",_compressResults);
+			_genIndivScripts = pt.get<bool>("runset.genIndevScripts",_genIndivScripts);
+			_genMassScript = pt.get<bool>("runset.genMassScript",_genMassScript);
+			_shapeStats = pt.get<bool>("runset.shapeStats",_shapeStats);
+			_registerDatabase = pt.get<bool>("runset.registerDatabase",_registerDatabase);
+			_doExport = pt.get<bool>("runset.export",_doExport);
+			// TODO: allow setting of default values in rtmath.conf
+			_exportLoc = pt.get<std::string>("runset.exportLoc","/data/rhoneyag/incoming/");
+			ddscatVer = pt.get<size_t>("runset.ddscatVer", ddscatVer);
+			name = pt.get<std::string>("runset.name");
+			description = pt.get<std::string>("runset.description");
+			outLocation = pt.get<std::string>("runset.outLocation");
+
+			_doTorques = pt.get<bool>("runset.CMTORQ",_doTorques);
+			_solnMeth = pt.get<std::string>("runset.CMDSOL", _solnMeth);
+			_FFTsolver = pt.get<std::string>("runset.CMDFFT", _FFTsolver);
+			_Calpha = pt.get<std::string>("runset.CALPHA", _Calpha);
+			_binning = pt.get<std::string>("runset.CBINFLAG", _binning);
+
+			_Imem1 = pt.get<int>("runset.dimension.1", _Imem1);
+			_Imem2 = pt.get<int>("runset.dimension.2", _Imem2);
+			_Imem3 = pt.get<int>("runset.dimension.3", _Imem3);
+
+			_doNearField = pt.get<bool>("runset.NRFLD.do", _doNearField);
+			_near1 = pt.get<double>("runset.NRFLD.1", _near1);
+			_near2 = pt.get<double>("runset.NRFLD.2", _near2);
+			_near3 = pt.get<double>("runset.NRFLD.3", _near3);
+			_near4 = pt.get<double>("runset.NRFLD.4", _near4);
+			_near5 = pt.get<double>("runset.NRFLD.5", _near5);
+			_near6 = pt.get<double>("runset.NRFLD.6", _near6);
+
+			_maxTol = pt.get<double>("runset.TOL", _maxTol);
+			_maxIter = pt.get<int>("runset.MXITER", _maxIter);
+			_gamma = pt.get<double>("runset.GAMMA", _gamma);
+			_etasca = pt.get<double>("runset.ETASCA", _etasca);
+			_nambient = pt.get<double>("runset.NAMBIENT", _nambient);
+
+			// Process each element in the trees for frequency, size, rotations, 
+			// scatt angles, shape types and temperatures
+			ptree pFreqs = pt.get_child("frequencies");
+			for (auto it = pFreqs.begin(); it != pFreqs.end(); it++)
+			{
+				// Look at each child and use to populate frequencies list
+				for (auto ot = it->second.begin(); ot != it->second.end(); ot++)
+				{
+					// Get range and units for population
+				}
+			}
+
+
+			ptree pSizes = pt.get_child("sizes");
+			ptree pRots = pt.get_child("rotations");
+			ptree pSca = pt.get_child("scatt_angles");
+			ptree pShapes = pt.get_child("shapes");
+			ptree pTemps = pt.get_child("temperatures");
+
+			// At this point, we have a complete representation of the xml file contents
+		}
+		*/
+
 	}
 }
 

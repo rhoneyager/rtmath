@@ -191,3 +191,12 @@ void frmMain::menuScaAngles(const QPoint &p)
 		}
 	}
 }
+
+void frmMain::generateRuns()
+{
+	// Translate all of the information into stl objects and then invoke the stl functions
+	// Note: the library call should be in a separate thread, to allow for better 
+	// responsiveness as files are being created
+
+
+}

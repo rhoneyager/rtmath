@@ -22,6 +22,7 @@ private:
 		void menuRots(const QPoint &);
 		void menuTemps(const QPoint &);
 		void menuScaAngles(const QPoint &);
+		void generateRuns();
 		/*
 		void menuTargets(const QPoint &);
 		void menuDielectrics(const QPoint &);
