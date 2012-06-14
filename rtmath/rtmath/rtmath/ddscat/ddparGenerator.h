@@ -19,22 +19,25 @@
 #include <boost/tokenizer.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-#include "ddpar.h"
-#include "shapes.h"
-#include "rotations.h"
-#include "../common_templates.h"
-#include "../coords.h"
-#include "../units.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#include "ddpar.h"
+#include "shapes.h"
+#include "rotations.h"
+#include "../common_templates.h"
+#include "../coords.h"
+#include "../units.h"
+#include "../error/debug.h"
 #include "../Public_Domain/MurmurHash3.h"
  
 namespace rtmath {
 	namespace ddscat {
+
+		class ddParIteration;
 
 		class ddParGeneratorBase
 		{
@@ -81,14 +84,15 @@ namespace rtmath {
 			bool _doTorques;
 			std::string _solnMeth, _FFTsolver, _Calpha, _binning;
 
-			int _Imem1, _Imem2, _Imem3;
+			size_t _Imem1, _Imem2, _Imem3;
 			bool _doNearField;
 			double _near1, _near2, _near3, _near4, _near5, _near6;
 			double _maxTol;
-			int _maxIter;
+			size_t _maxIter;
 			double _gamma;
 			double _etasca;
 			double _nambient;
+			friend class ddParIteration;
 			friend class boost::serialization::access;
 			// When the class Archive corresponds to an output archive, the
 			// & operator is defined similar to <<.  Likewise, when the class Archive
@@ -154,6 +158,7 @@ namespace rtmath {
 			void getrots(rotations &out) const; // Export list of rotations
 			std::shared_ptr<shapeModifiable> getshape() const; // Provide the shape that is to be manipulated
 			void write(const std::string &outfile) const;
+			// TODO: add partial conversion function to ddpar
 			template<class T>
 				bool getParamValue(const std::string &name, T &val, std::string &units) const
 				{
@@ -180,6 +185,18 @@ namespace rtmath {
 			friend struct std::less<rtmath::ddscat::ddParIterator>;
 			friend class ddParIteration;
 			friend class ddParGenerator;
+			friend class boost::serialization::access;
+			// When the class Archive corresponds to an output archive, the
+			// & operator is defined similar to <<.  Likewise, when the class Archive
+			// is a type of input archive the & operator is defined similar to >>.
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_NVP(_params);
+					ar & BOOST_SERIALIZATION_NVP(_rot);
+					MARKFUNC();
+					//ar & BOOST_SERIALIZATION_NVP();
+				}
 		private:
 			// The initial parameters are passed in this form:
 			// 1 - the name of the parameter
@@ -207,10 +224,10 @@ namespace rtmath {
 			inline const_iterator begin() const { return _elements.begin(); }
 			inline const_iterator end() const { return _elements.end(); }
 		private:
-			std::set< std::pair< paramSet<double> , std::string > > freqs, temps;
-			std::set<rotations> rots;
-			std::set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > sizes;
-			std::set<std::shared_ptr<shapeModifiable> > _shapesBase;
+			const std::set< std::pair< paramSet<double> , std::string > > &freqs, &temps;
+			const std::set<rotations> &rots;
+			const std::set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > &sizes;
+			const std::set<std::shared_ptr<shapeModifiable> > &shapesBase;
 
 			// Use boost unordered stuff here
 			//std::unordered_set<ddParIterator> _elements 
@@ -231,14 +248,11 @@ namespace rtmath {
 		public: // Static stuff here
 			void setDefaultBase(const std::string &ddbasefilename);
 			void setDefaultBase(const ddPar &base);
+			friend class ddParIteration;
 			friend class boost::serialization::access;
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					// serialize base class information
-					//ar & BOOST_SERIALIZATION_NVP(
-					//	boost::serialization::base_object<ddParGeneratorBase>(*this)
-					//	);
 					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ddParGeneratorBase);
 				}
 		private:
@@ -265,14 +279,12 @@ namespace std {
 		bool operator() (const rtmath::ddscat::ddParIterator &lhs, const rtmath::ddscat::ddParIterator &rhs) const
 		{
 			// Check f, mu, mun, phi, phin
-			throw rtmath::debug::xUnimplementedFunction();
+			MARK();
+			//throw rtmath::debug::xUnimplementedFunction();
+			return &lhs < &rhs; // This is a horrible idea.......
 			//if (lhs.f != rhs.f) return lhs.f < rhs.f;
-			//if (lhs.mu != rhs.mu) return lhs.mu < rhs.mu;
-			//if (lhs.mun != rhs.mun) return lhs.mun < rhs.mun;
-			//if (lhs.phi != rhs.phi) return lhs.phi < rhs.phi;
-			//if (lhs.phin != rhs.phin) return lhs.phin < rhs.phin;
 
-			return false;
+			//return false;
 		}
 	};
 }; // end namespace std

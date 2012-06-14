@@ -120,6 +120,7 @@ namespace rtmath {
 		{
 		public:
 			typedef boost::bimap< size_t, std::shared_ptr<rtmath::graphs::vertex> > vertexMap;
+			typedef boost::bimap< std::string, size_t > vertexIdMap;
 			typedef rtmath::graphs::setWeakVertex vertexSet;
 			shapeModifiable();
 			virtual ~shapeModifiable();
@@ -144,8 +145,8 @@ namespace rtmath {
 				const rtmath::graphs::setWeakVertex &fixed);
 			virtual void _constructGraph();
 			std::set< std::shared_ptr<rtmath::graphs::vertex> > _vertices;
-			boost::bimap< size_t, 
-				std::shared_ptr<rtmath::graphs::vertex> > _vertexMap;
+			vertexMap _vertexMap;
+			vertexIdMap _vertexIdMap;
 			std::shared_ptr<rtmath::graphs::graph> _graph;
 			friend class boost::serialization::access;
 		public:

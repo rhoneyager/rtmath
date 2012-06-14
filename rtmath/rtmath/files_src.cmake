@@ -137,6 +137,7 @@ set (general-hdr
 	rtmath/phaseFunc.h
 	rtmath/polynomial.h
 	rtmath/quadrature.h
+	rtmath/qt_funcs.h
 	rtmath/refract.h
 	rtmath/resource.h
 	rtmath/ROOT_functions.h

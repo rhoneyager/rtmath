@@ -71,6 +71,14 @@ namespace rtmath
 		{
 			expanded = _expanded[index];
 		}
+		typename std::vector<T>::const_iterator begin() const
+		{
+			return _expanded.begin();
+		}
+		typename std::vector<T>::const_iterator end() const
+		{
+			return _expanded.end();
+		}
 		bool operator< (const paramSet<T> &rhs) const
 		{
 			return _shorthand < rhs._shorthand;

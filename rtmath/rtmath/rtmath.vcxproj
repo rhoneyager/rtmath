@@ -50,6 +50,7 @@
       <PrecompiledHeaderFile>Stdafx.h</PrecompiledHeaderFile>
       <MinimalRebuild>false</MinimalRebuild>
       <DisableSpecificWarnings>4996;4800</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -161,6 +162,7 @@
     <ClInclude Include="rtmath\polynomials\recursivePolynomial.h" />
     <ClInclude Include="rtmath\Public_Domain\bhmie.h" />
     <ClInclude Include="rtmath\Public_Domain\MurmurHash3.h" />
+    <ClInclude Include="rtmath\qt_funcs.h" />
     <ClInclude Include="rtmath\quadrature.h" />
     <ClInclude Include="rtmath\rayleigh\Qcalc-Rayleigh.h" />
     <ClInclude Include="rtmath\rayleigh\rayleigh.h" />

@@ -24,12 +24,17 @@ private:
 		void menuTemps(const QPoint &);
 		void menuScaAngles(const QPoint &);
 		void generateRuns();
+		void loadSet();
+		void saveSet();
+		void newSet();
+		void import();
 		/*
 		void menuTargets(const QPoint &);
 		void menuDielectrics(const QPoint &);
 		*/
 	private:
 		void toGenerator();
+		void fromGenerator();
 		rtmath::ddscat::ddParGenerator _gen;
 };
 

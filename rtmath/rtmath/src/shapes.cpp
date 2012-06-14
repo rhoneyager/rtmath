@@ -203,14 +203,20 @@ namespace rtmath {
 			_vertexMap.clear();
 			_graph = nullptr;
 
-			typedef boost::bimap< size_t, std::shared_ptr<rtmath::graphs::vertex> > vidMap;
-
 			// Create vertices for end variables
 			for (size_t i = 1; i < NUM_MANIPULATED_QUANTITY; i++)
 			{
 				shared_ptr<vertex> w = shared_ptr<vertex>(new vertex(true));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(i, w) ) ; //[i] = w;
+				_vertexMap.insert( vertexMap::value_type(i, w) ) ; //[i] = w;
+				_vertexIdMap.insert( 
+					vertexIdMap::value_type(ddscat::MANIPULATED_QUANTITY::qnames[i], i) );
+			}
+
+			for (size_t i=1; i<NUM_ALL;i++)
+			{
+				_vertexIdMap.insert( 
+					vertexIdMap::value_type(ddscat::MANIPULATED_QUANTITY::qnames[i], i) );
 			}
 
 			// Create vertices representing function relationships
@@ -221,52 +227,52 @@ namespace rtmath {
 				w = vertex::connect(_vertexMap.left.at(TEMP), 1, _vertexMap.left.at(DENS));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_T)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(DENS_T, w));
+				_vertexMap.insert( vertexMap::value_type(DENS_T, w));
 
 				w = vertex::connect(_vertexMap.left.at(DENS), 1, _vertexMap.left.at(TEMP));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, T_DENS)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(T_DENS, w));
+				_vertexMap.insert( vertexMap::value_type(T_DENS, w));
 
 				w = vertex::connect(_vertexMap.left.at(VOL), 1, _vertexMap.left.at(REFF));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, REFF_V)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(REFF_V, w));
+				_vertexMap.insert( vertexMap::value_type(REFF_V, w));
 
 				w = vertex::connect(_vertexMap.left.at(REFF), 1, _vertexMap.left.at(VOL));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, V_REFF)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(V_REFF, w));
+				_vertexMap.insert( vertexMap::value_type(V_REFF, w));
 
 				w = vertex::connect(_vertexMap.left.at(DENS), 
 					2, _vertexMap.left.at(MASS), _vertexMap.left.at(VOL));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_V__DENS)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(MASS_V__DENS, w));
+				_vertexMap.insert( vertexMap::value_type(MASS_V__DENS, w));
 
 				w = vertex::connect(_vertexMap.left.at(VOL), 
 					2, _vertexMap.left.at(MASS), _vertexMap.left.at(DENS));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_DENS__V)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(MASS_DENS__V, w));
+				_vertexMap.insert( vertexMap::value_type(MASS_DENS__V, w));
 
 				w = vertex::connect(_vertexMap.left.at(MASS), 
 					2, _vertexMap.left.at(DENS), _vertexMap.left.at(VOL));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_V__MASS)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(DENS_V__MASS, w));
+				_vertexMap.insert( vertexMap::value_type(DENS_V__MASS, w));
 
 				w = vertex::connect(_vertexMap.left.at(IREFR_R), 
 					2, _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_R)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(FREQ_TEMP__IREFR_R, w));
+				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_R, w));
 
 				w = vertex::connect(_vertexMap.left.at(IREFR_IM), 
 					2, _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ));
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_I)));
 				_vertices.insert(w);
-				_vertexMap.insert( vidMap::value_type(FREQ_TEMP__IREFR_I, w));
+				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_I, w));
 			}
 			
 
@@ -335,12 +341,19 @@ namespace rtmath {
 		
 		bool shapeModifiable::mapVertex(const std::string &idstr, size_t &id, std::shared_ptr<rtmath::graphs::vertex> &vertex)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			if (_vertexIdMap.left.count(idstr))
+			{
+				id = _vertexIdMap.left.at(idstr);
+				vertex = _vertexMap.left.at(id);
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		void shapeModifiable::getVertices(vertexMap &mappings)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			mappings = _vertexMap;
 		}
 
 	}

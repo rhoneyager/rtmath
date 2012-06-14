@@ -345,6 +345,9 @@
     <ClInclude Include="rtmath\ddscat\runScripts.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\qt_funcs.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">

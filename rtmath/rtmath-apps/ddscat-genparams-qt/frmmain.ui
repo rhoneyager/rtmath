@@ -1349,6 +1349,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>action_New</sender>
+   <signal>activated()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>newSet()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Open</sender>
+   <signal>activated()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>loadSet()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Save</sender>
+   <signal>activated()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>saveSet()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Import_from_ddscat_par</sender>
+   <signal>activated()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>import()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>menuFreqs(QPoint)</slot>
@@ -1361,5 +1425,9 @@
   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
   <slot>allowExport(int)</slot>
   <slot>generateRuns()</slot>
+  <slot>loadSet()</slot>
+  <slot>saveSet()</slot>
+  <slot>newSet()</slot>
+  <slot>import()</slot>
  </slots>
 </ui>

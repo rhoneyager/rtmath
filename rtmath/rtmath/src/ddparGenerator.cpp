@@ -132,6 +132,7 @@ namespace rtmath {
 						std::shared_ptr< rtmath::graphs::vertex > vert;
 						hasMap = shape->mapVertex(quant, vid, vert);
 						// If it fails, then report an error
+						MARK();
 						if (!hasMap) continue; // TODO: make an error.
 						shape->set((MQ) vid, val); // TODO: fix casting, as not MQ only is for 
 													// the base vertices
@@ -279,32 +280,175 @@ namespace rtmath {
 
 		void ddParGenerator::import(const std::string &ddparfilename)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			using namespace boost::filesystem;
+			path p(ddparfilename);
+			if (!exists(ddparfilename)) throw rtmath::debug::xMissingFile(ddparfilename.c_str());
+			rtmath::ddscat::ddPar ddfile(ddparfilename);
+			_base = ddfile;
+			import(_base);
 		}
 
 		void ddParGenerator::import(const ddPar &base)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			using namespace std;
+			using namespace rtmath::ddscat::ddParParsers;
+			string sval;
+			std::shared_ptr<const ddParLine> line;
+
+			base.getKey(CMTORQ, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(sval);
+			(sval == "DOTORQ")? _doTorques = true : _doTorques = false;
+
+			base.getKey(CMDSOL, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_solnMeth);
+
+			base.getKey(CMDFFT, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_FFTsolver);
+
+			base.getKey(CALPHA, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_Calpha);
+
+			base.getKey(CBINFLAG, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_binning);
+
+			base.getKey(DIMENSION, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(0, _Imem1);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(1, _Imem2);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(2, _Imem3);
+
+			base.getKey(NRFLD, line);
+			size_t tsz;
+			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(tsz);
+			(tsz > 0) ? _doNearField = true : _doNearField = false;
+			base.getKey(FRACT_EXTENS, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0, _near1);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(1, _near2);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(2, _near3);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(3, _near4);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(4, _near5);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(5, _near6);
+
+			base.getKey(TOL, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_maxTol);
+
+			base.getKey(MXITER, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(_maxIter);
+
+			base.getKey(GAMMA, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_gamma);
+
+			base.getKey(ETASCA, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_etasca);
+
+			base.getKey(CBINFLAG, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_nambient);
+
+			MARK();
+			/* Things to import from ddPar:
+			 shapefilebase
+			 shape params
+			 overall shape stuff
+			 */
 		}
 
 		void ddParIterator::write(const std::string &outfile) const
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			// It's yet another serialization case
+			using namespace boost::filesystem;
+			path pBase(outfile), pXML;
+			if (is_directory(pBase))
+			{
+				pXML = pBase / "ddParIterator.xml";
+				if (exists(pXML))
+				{
+					if (is_directory(pXML))
+						throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
+					boost::filesystem::remove(pXML);
+				}
+			} else {
+				pXML = pBase;
+				if (exists(pXML))
+				{
+					boost::filesystem::remove(pXML);
+				}
+			}
+
+			// Okay, now to serialize and output...
+			std::ofstream out(pXML.string().c_str());
+			boost::archive::xml_oarchive oa(out);
+			oa << BOOST_SERIALIZATION_NVP(*this);
 		}
 
 		void ddParIterator::getrots(rotations &out) const
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			out = _rot;
 		}
 
 		std::shared_ptr<shapeModifiable> ddParIterator::getshape() const
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			return _shape;
 		}
 
 		ddParIteration::ddParIteration(const ddParGenerator *src)
+			:
+				freqs(src->freqs),
+				temps(src->temps),
+				rots(src->rots),
+				sizes(src->sizes),
+				shapesBase(src->_shapeBase)
 		{
+			using namespace std;
+			// Iterate over rotations, freqs, temps, sizes, target types
 			//throw rtmath::debug::xUnimplementedFunction();
+			// Go through each combo and create a ddParIterator expressing each one
+
+			// Iterate freqs first
+			for (auto ft = freqs.begin(); ft != freqs.end(); ft++)
+			{
+				string fUnits = ft->second;
+				for (auto ftb = ft->first.begin(); ftb != ft->first.end(); ftb++)
+				{
+					double f = *ftb;
+
+					// Then iterate over rotations
+					for (auto rt = rots.begin(); rt != rots.end(); rt++)
+					{
+						// And also iterate over shapes
+						for (auto st = shapesBase.begin(); st != shapesBase.end(); st++)
+						{
+							// And iterate over temps
+							for (auto tt = temps.begin(); tt != temps.end(); tt++)
+							{
+								string tUnits = tt->second;
+								for (auto ttb = tt->first.begin(); ttb != tt->first.end(); ttb++)
+								{
+									double T = *ttb;
+
+									// And lastly iterate over sizes
+									for (auto ot = sizes.begin(); ot != sizes.end(); ot++)
+									{
+										string sUnits = ot->get<2>();
+										MANIPULATED_QUANTITY::MANIPULATED_QUANTITY q = ot->get<1>();
+
+										for (auto ott = ot->get<0>().begin(); ott != ot->get<0>().end(); ott++)
+										{
+											// And put all of this variation into a ddParIterator, somehow, ...
+											ddParIterator nit;
+											nit._shape = *st;
+											nit._rot = *rt;
+											nit._params["temp"] = std::make_pair<double, string>(T, tUnits);
+											nit._params["freq"] = std::make_pair<double, string>(f, fUnits);
+											MARK();
+											nit._params[rtmath::ddscat::MANIPULATED_QUANTITY::qnames[q]]
+												= std::make_pair<double, string>(*ott,sUnits); // q
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		/*

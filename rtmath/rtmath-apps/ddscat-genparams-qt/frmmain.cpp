@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "frmmain.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
+#include "../../rtmath/rtmath/qt_funcs.h"
+#include <QtGui/QFileDialog>
 
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
@@ -193,6 +195,76 @@ void frmMain::menuScaAngles(const QPoint &p)
 	}
 }
 
+void frmMain::newSet()
+{
+	rtmath::ddscat::ddParGenerator ng;
+	_gen = ng;
+	fromGenerator();
+}
+
+void frmMain::loadSet()
+{
+	// Open dialog box asking from where
+	
+	QFileDialog dialog(this);
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setNameFilter(tr("XML files (*.xml)"));
+	dialog.setViewMode(QFileDialog::Detail);
+	
+	if (dialog.exec())
+	{
+		QStringList qfilename;
+		qfilename = dialog.selectedFiles();
+
+		// Have generator load
+		std::string filename = qfilename.begin()->toStdString();
+
+		_gen.read(filename);
+		// Update ui
+		fromGenerator();
+	}
+}
+
+void frmMain::saveSet()
+{
+	toGenerator();
+	// Now, open a file dialog asking for the save location
+	QFileDialog dialog(this);
+	dialog.setFileMode(QFileDialog::AnyFile);
+	dialog.setNameFilter(tr("XML files (*.xml)"));
+	dialog.setViewMode(QFileDialog::Detail);
+	// Have the generator save
+	if (dialog.exec())
+	{
+		QStringList qfilename = dialog.selectedFiles();
+		std::string filename = qfilename.begin()->toStdString();
+
+		_gen.write(filename);
+	}
+}
+
+void frmMain::import()
+{
+	QFileDialog dialog(this);
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setNameFilter(tr("PAR files (*.par)"));
+	dialog.setViewMode(QFileDialog::Detail);
+	
+	if (dialog.exec())
+	{
+		QStringList qfilename;
+		qfilename = dialog.selectedFiles();
+
+		// Have generator load
+		std::string filename = qfilename.begin()->toStdString();
+
+		newSet();
+		_gen.import(filename);
+		// Update ui
+		fromGenerator();
+	}
+}
+
 void frmMain::generateRuns()
 {
 	// Translate all of the information into stl objects and then invoke the stl functions
@@ -201,3 +273,12 @@ void frmMain::generateRuns()
 
 
 }
+
+void frmMain::toGenerator()
+{
+}
+
+void frmMain::fromGenerator()
+{
+}
+
