@@ -270,15 +270,71 @@ void frmMain::generateRuns()
 	// Translate all of the information into stl objects and then invoke the stl functions
 	// Note: the library call should be in a separate thread, to allow for better 
 	// responsiveness as files are being created
-
-
+	toGenerator();
+	std::string dname;
+	ui.txtOutLocation->text().size() ? dname = ui.txtOutLocation->text().toStdString() : dname = ui.txtOutLocation->placeholderText().toStdString();
+	_gen.generate(dname);
 }
 
 void frmMain::toGenerator()
 {
+	_gen.name = ui.txtRunName->text().toStdString();
+	_gen.description = ui.txtDescription->toPlainText().toStdString();
+	_gen.outLocation = ui.txtOutLocation->text().toStdString();
+	//_gen.ddscatVer;
+	//_gen.strPreCmds; // TODO
+	//_gen.strPostCdms; // TODO
+	_gen._baseParFile = ui.txtBaseFile->text().toStdString();
+	
+	// shape stuff
+	//_gen._shapeBase; // TODO
+	// reg stuff
+	_gen._compressResults = ui.chkCompress->isChecked();
+	_gen._genIndivScripts = ui.chkGenIndivRunScripts->isChecked();
+	_gen._genMassScript = ui.chkGenMassRunScript->isChecked();
+	_gen._shapeStats = ui.chkGenShapeStats->isChecked();
+	_gen._registerDatabase = ui.chkDatabaseRegister->isChecked();
+	_gen._doExport = ui.chkDoExport->isChecked();
+	_gen._exportLoc = ui.txtExportDir->text().toStdString();
+	
+	ui.txtImem1->text().size() ? _gen._Imem1 = ui.txtImem1->text().toInt() : _gen._Imem1 = ui.txtImem1->placeholderText().toInt();
+	ui.txtImem2->text().size() ? _gen._Imem2 = ui.txtImem2->text().toInt() : _gen._Imem1 = ui.txtImem2->placeholderText().toInt();
+	ui.txtImem3->text().size() ? _gen._Imem3 = ui.txtImem3->text().toInt() : _gen._Imem1 = ui.txtImem3->placeholderText().toInt();
+	_gen._doNearField = ui.chkNearfield->isChecked();
+	ui.txtNear1->text().size() ? _gen._near1 = ui.txtNear1->text().toDouble() : _gen._near1 = ui.txtNear1->placeholderText().toDouble();
+	ui.txtNear2->text().size() ? _gen._near2 = ui.txtNear2->text().toDouble() : _gen._near2 = ui.txtNear2->placeholderText().toDouble();
+	ui.txtNear3->text().size() ? _gen._near3 = ui.txtNear3->text().toDouble() : _gen._near3 = ui.txtNear3->placeholderText().toDouble();
+	ui.txtNear4->text().size() ? _gen._near4 = ui.txtNear4->text().toDouble() : _gen._near4 = ui.txtNear4->placeholderText().toDouble();
+	ui.txtNear5->text().size() ? _gen._near5 = ui.txtNear5->text().toDouble() : _gen._near5 = ui.txtNear5->placeholderText().toDouble();
+	ui.txtNear6->text().size() ? _gen._near6 = ui.txtNear6->text().toDouble() : _gen._near6 = ui.txtNear6->placeholderText().toDouble();
+	ui.txtMaxTol->text().size() ? _gen._maxTol = ui.txtMaxTol->text().toDouble() : _gen._maxTol = ui.txtMaxTol->placeholderText().toDouble();
+	ui.txtMaxIter->text().size() ? _gen._maxIter = ui.txtMaxIter->text().toDouble() : _gen._maxIter =  ui.txtMaxIter->placeholderText().toDouble();
+	ui.txtGamma->text().size() ? _gen._gamma = ui.txtGamma->text().toDouble() : _gen._gamma =  ui.txtGamma->placeholderText().toDouble();
+	ui.txtETASCA->text().size() ? _gen._etasca = ui.txtETASCA->text().toDouble() : _gen._etasca =  ui.txtETASCA->placeholderText().toDouble();
+	ui.txtNAMBIENT->text().size() ? _gen._nambient = ui.txtNAMBIENT->text().toDouble() : _gen._nambient =  ui.txtNAMBIENT->placeholderText().toDouble();
+
+	_gen._doTorques = ui.chkDoTorques->isChecked();
+	_gen._solnMeth = ui.cmbSolnMeth->currentText().toStdString();
+	_gen._FFTsolver = ui.cmbFFTsolver->currentText().toStdString();
+	_gen._Calpha = ui.cmbCALPHA->currentText().toStdString();
+	_gen._binning = ui.cmbBinning->currentText().toStdString();
+
+	MARK();
+	// Target types
+
+	// Temps
+
+	// Freqs
+
+	// Sizes
+
+	// Rotations
+
+	// Scattering angles
 }
 
 void frmMain::fromGenerator()
 {
+	MARK();
 }
 

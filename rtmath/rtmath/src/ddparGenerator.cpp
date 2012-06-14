@@ -292,6 +292,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			using namespace rtmath::ddscat::ddParParsers;
+			if (!base.size()) return;
 			string sval;
 			std::shared_ptr<const ddParLine> line;
 
@@ -387,6 +388,10 @@ namespace rtmath {
 		std::shared_ptr<shapeModifiable> ddParIterator::getshape() const
 		{
 			return _shape;
+		}
+
+		ddParIterator::ddParIterator()
+		{
 		}
 
 		ddParIteration::ddParIteration(const ddParGenerator *src)

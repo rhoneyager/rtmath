@@ -42,6 +42,7 @@ namespace rtmath {
 		class ddParGeneratorBase
 		{
 		public:
+			// TODO: have constructor fill in rest of vars
 			ddParGeneratorBase()
 				:
 					ddscatVer(72),
@@ -51,7 +52,7 @@ namespace rtmath {
 					_shapeStats(false),
 					_registerDatabase(false),
 					_doExport(true)
-					{ }
+					{ MARK(); }
 			virtual ~ddParGeneratorBase();
 			//std::set<units::hasUnits> freqs, temps;
 			std::set<rotations> rots;
@@ -65,7 +66,8 @@ namespace rtmath {
 			std::string strPreCmds;
 			std::string strPostCdms;
 
-		protected:
+		public:
+			// TODO: make protected and add access functions
 			ddPar _base; // TODO: deprecated.
 			std::string _baseParFile;
 			// The parameters that are variable

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Wed Jun 13 03:45:01 2012
+** Created: Thu Jun 14 04:32:10 2012
 **      by: Qt User Interface Compiler version 4.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -726,8 +726,12 @@ public:
         QObject::connect(treeScattAngles, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuScaAngles(QPoint)));
         QObject::connect(treeScattAngles, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
         QObject::connect(cmdGenerate, SIGNAL(clicked()), frmMainClass, SLOT(generateRuns()));
+        QObject::connect(action_New, SIGNAL(activated()), frmMainClass, SLOT(newSet()));
+        QObject::connect(action_Open, SIGNAL(activated()), frmMainClass, SLOT(loadSet()));
+        QObject::connect(action_Save, SIGNAL(activated()), frmMainClass, SLOT(saveSet()));
+        QObject::connect(action_Import_from_ddscat_par, SIGNAL(activated()), frmMainClass, SLOT(import()));
 
-        tabWidget->setCurrentIndex(3);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(frmMainClass);

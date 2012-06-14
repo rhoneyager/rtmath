@@ -49,6 +49,7 @@ namespace rtmath {
 				return res;
 			}
 			void delKey(ddParParsers::ParId key);
+			size_t size() const { return _parsedData.size(); }
 		private:
 			void _init();
 			size_t _version;

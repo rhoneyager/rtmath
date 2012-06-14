@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'frmmain.h'
 **
-** Created: Wed Jun 13 03:33:21 2012
+** Created: Wed Jun 13 18:33:32 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -24,7 +24,7 @@ static const uint qt_meta_data_frmMain[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       8,   14, // methods
+      12,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -40,6 +40,10 @@ static const uint qt_meta_data_frmMain[] = {
      116,    8,    8,    8, 0x08,
      134,    8,    8,    8, 0x08,
      156,    8,    8,    8, 0x08,
+     171,    8,    8,    8, 0x08,
+     181,    8,    8,    8, 0x08,
+     191,    8,    8,    8, 0x08,
+     200,    8,    8,    8, 0x08,
 
        0        // eod
 };
@@ -50,6 +54,7 @@ static const char qt_meta_stringdata_frmMain[] = {
     "menuFreqs(QPoint)\0menuSizes(QPoint)\0"
     "menuRots(QPoint)\0menuTemps(QPoint)\0"
     "menuScaAngles(QPoint)\0generateRuns()\0"
+    "loadSet()\0saveSet()\0newSet()\0import()\0"
 };
 
 void frmMain::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -66,6 +71,10 @@ void frmMain::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
         case 5: _t->menuTemps((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
         case 6: _t->menuScaAngles((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
         case 7: _t->generateRuns(); break;
+        case 8: _t->loadSet(); break;
+        case 9: _t->saveSet(); break;
+        case 10: _t->newSet(); break;
+        case 11: _t->import(); break;
         default: ;
         }
     }
@@ -103,9 +112,9 @@ int frmMain::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 12)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 12;
     }
     return _id;
 }
