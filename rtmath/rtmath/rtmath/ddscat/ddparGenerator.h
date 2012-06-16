@@ -215,6 +215,7 @@ namespace rtmath {
 			return (size_t) x.hash();
 		}
 
+		class ddParGenerator;
 		// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
 		class ddParIteration
 		{

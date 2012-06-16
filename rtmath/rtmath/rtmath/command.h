@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <set>
 #include <vector>
+#include "error/debug.h"
 #include "error/error.h"
 
 namespace rtmath {

@@ -152,7 +152,8 @@ namespace rtmath {
 				wvlens->set<double>(1,um);
 				wvlens->set<double>(2,1.0);
 				wvlens->set<std::string>(3,"LIN");
-				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
+				MARK();
+//				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
 
 				// Finish shape generation, then get calculated reff
 				double reff = shape->get(REFF); // in um by default
@@ -162,7 +163,7 @@ namespace rtmath {
 				reffline->set<double>(1,reff);
 				reffline->set<double>(2,1.0);
 				reffline->set<std::string>(3,"LIN");
-				parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
+			//	parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
 
 
 
@@ -441,11 +442,12 @@ namespace rtmath {
 											ddParIterator nit;
 											nit._shape = *st;
 											nit._rot = *rt;
-											nit._params["temp"] = std::make_pair<double, string>(T, tUnits);
-											nit._params["freq"] = std::make_pair<double, string>(f, fUnits);
 											MARK();
-											nit._params[rtmath::ddscat::MANIPULATED_QUANTITY::qnames[q]]
-												= std::make_pair<double, string>(*ott,sUnits); // q
+//											nit._params["temp"] = std::make_pair<double, string>(T, tUnits);
+//											nit._params["freq"] = std::make_pair<double, string>(f, fUnits);
+											MARK();
+//											nit._params[rtmath::ddscat::MANIPULATED_QUANTITY::qnames[q]]
+//												= std::make_pair<double, string>(*ott,sUnits); // q
 										}
 									}
 								}

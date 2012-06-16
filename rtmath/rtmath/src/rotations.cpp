@@ -84,9 +84,11 @@ namespace rtmath {
 			p->set<double>(1, _pMax);
 			p->set<size_t>(2, _pN);
 
-			dest.insertKey(ddParParsers::NBETA,static_pointer_cast<ddParParsers::ddParLine>(b));
-			dest.insertKey(ddParParsers::NTHETA,static_pointer_cast<ddParParsers::ddParLine>(t));
-			dest.insertKey(ddParParsers::NPHI,static_pointer_cast<ddParParsers::ddParLine>(p));
+			MARK();
+
+//			dest.insertKey(ddParParsers::NBETA,static_pointer_cast<ddParParsers::ddParLine>(b));
+//			dest.insertKey(ddParParsers::NTHETA,static_pointer_cast<ddParParsers::ddParLine>(t));
+//			dest.insertKey(ddParParsers::NPHI,static_pointer_cast<ddParParsers::ddParLine>(p));
 		}
 	}
 }

@@ -88,7 +88,7 @@ namespace rtmath
 		std::string _shorthand;
 		void _expand()
 		{
-			rtmath::config::splitSet<T>(_shorthand, expanded);
+			rtmath::config::splitSet<T>(_shorthand, _expanded);
 		}
 		friend struct std::less<rtmath::paramSet<T> >;
 		friend class boost::serialization::access;
