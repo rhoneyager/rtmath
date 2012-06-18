@@ -26,7 +26,7 @@ namespace rtmath
 			boost::filesystem::path base, baseabs, script, tmpgdir, tmpdir, tmppath;
 			if (is_directory(p)) base = p;
 			else base = p.parent_path();
-			boost::filesystem::canonical(baseabs, base);
+			boost::filesystem::absolute(baseabs, base);
 			script = base / "doRun.csh";
 
 			// Want to calc results in a temp dir. Avoids running ddscat over nfs.....
@@ -95,7 +95,7 @@ namespace rtmath
 			boost::filesystem::path base, baseabs, script, tmpgdir, tmpdir, tmppath;
 			if (is_directory(p)) base = p;
 			else base = p.parent_path();
-			boost::filesystem::canonical(baseabs, base);
+			boost::filesystem::absolute(baseabs, base);
 			script = base / "doAllRuns.csh";
 
 			ofstream out(script.string().c_str());
