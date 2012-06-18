@@ -119,7 +119,7 @@ namespace rtmath {
 		class shapeModifiable : public shape
 		{
 		public:
-			typedef boost::bimap< size_t, std::shared_ptr<const rtmath::graphs::vertex> > vertexMap;
+			typedef boost::bimap< size_t, std::shared_ptr<rtmath::graphs::vertex> > vertexMap;
 			typedef boost::bimap< std::string, size_t > vertexIdMap;
 			typedef rtmath::graphs::setWeakVertex vertexSet;
 			shapeModifiable();
