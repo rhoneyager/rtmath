@@ -97,6 +97,7 @@ ELSE()
 		m
 		boost_filesystem
 		boost_date_time
+                boost_serialization
 		boost_unit_test_framework
 		boost_system
 	)

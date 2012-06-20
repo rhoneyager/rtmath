@@ -2,6 +2,7 @@
 
 #include <set>
 #include <memory>
+#include <initializer_list>
 
 
 #include "../rtmath/error/error.h"
@@ -15,31 +16,31 @@ namespace rtmath
 
 		std::shared_ptr<vertex> vertex::connect(
 			std::shared_ptr<vertex> target, 
-			size_t nDepends, ...)
+			std::initializer_list<std::shared_ptr<vertex> > depends)
 		{
-			va_list indices;
-			va_start(indices, nDepends);
-			std::vector<std::shared_ptr<vertex> > ptr;
-			std::shared_ptr<vertex> ival;
-			for (size_t i=0; i<nDepends; i++)
-			{
-				ival = va_arg(indices, std::shared_ptr<vertex> );
-				ptr.push_back(ival);
-			}
-			va_end(indices);
-
 			// Create connector
 			std::shared_ptr<vertex> connector;
 			connector = std::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
-			for (auto it = ptr.begin(); it != ptr.end(); it++)
-			{
-				connector->addSlot((*it));
-			}
+                        for (std::shared_ptr<vertex> it : depends)
+                            connector->addSlot(it);
 
 			return connector;
 		}
 		
+                static std::shared_ptr<vertex> connect(
+                        std::shared_ptr<vertex> target,
+                        std::set<std::shared_ptr<vertex> > depends)
+                {
+			std::shared_ptr<vertex> connector;
+			connector = std::shared_ptr<vertex>(new vertex(false) );
+			target->addSlot(connector);
+                        for (std::shared_ptr<vertex> it : depends)
+                            connector->addSlot(it);
+
+			return connector;
+                }
+                
 		vertex::~vertex() {}
 
 		void vertex::addSlot(std::shared_ptr<vertex> slot)
@@ -50,7 +51,7 @@ namespace rtmath
 				slot->_addSignal( this->shared_from_this() );
 		}
 
-		void vertex::_addSignal(std::weak_ptr<const vertex> signal)
+		void vertex::_addSignal(std::weak_ptr<vertex> signal)
 		{
 			_signals.insert(signal);
 		}
@@ -69,11 +70,6 @@ namespace rtmath
 		void vertex::setVertexRunnableCode(std::shared_ptr<vertexRunnable> target)
 		{
 			_target = target;
-		}
-
-		graph::graph(const std::set< std::shared_ptr<const vertex> > &vertices)
-		{
-			_vertices = vertices;
 		}
 
 		graph::graph(const std::set< std::shared_ptr<vertex> > &vertices)
@@ -101,7 +97,7 @@ namespace rtmath
 			// Loop each depth layer
 			while (_remaining.size())
 			{
-				std::set< std::shared_ptr<const vertex> > cleanup;
+				setWeakVertex cleanup;
 				size_t vertices_added = 0;
 
 				// First, start with the vertices that have no roots or have a root that is filled

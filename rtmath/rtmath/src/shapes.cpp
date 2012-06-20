@@ -224,55 +224,56 @@ namespace rtmath {
 				// I can't make these in batch anywhere, since I need some rather specific relationships.
 				shared_ptr<vertex> w;
 
-				w = vertex::connect(_vertexMap.left.at(TEMP), 1, _vertexMap.left.at(DENS));
+				w = vertex::connect(_vertexMap.left.at(TEMP), { _vertexMap.left.at(DENS) });
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_T)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(DENS_T, w));
 
-				w = vertex::connect(_vertexMap.left.at(DENS), 1, _vertexMap.left.at(TEMP));
+				w = vertex::connect(_vertexMap.left.at(DENS), { _vertexMap.left.at(TEMP) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, T_DENS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(T_DENS, w));
 
-				w = vertex::connect(_vertexMap.left.at(VOL), 1, _vertexMap.left.at(REFF));
+				w = vertex::connect(_vertexMap.left.at(VOL), { _vertexMap.left.at(REFF) });
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, REFF_V)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(REFF_V, w));
 
-				w = vertex::connect(_vertexMap.left.at(REFF), 1, _vertexMap.left.at(VOL));
+				w = vertex::connect(_vertexMap.left.at(REFF), { _vertexMap.left.at(VOL) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, V_REFF)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(V_REFF, w));
 
 				w = vertex::connect(_vertexMap.left.at(DENS), 
-					2, _vertexMap.left.at(MASS), _vertexMap.left.at(VOL));
+					{ _vertexMap.left.at(MASS), _vertexMap.left.at(VOL) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_V__DENS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(MASS_V__DENS, w));
 
 				w = vertex::connect(_vertexMap.left.at(VOL), 
-					2, _vertexMap.left.at(MASS), _vertexMap.left.at(DENS));
+					{ _vertexMap.left.at(MASS), _vertexMap.left.at(DENS) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_DENS__V)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(MASS_DENS__V, w));
 
 				w = vertex::connect(_vertexMap.left.at(MASS), 
-					2, _vertexMap.left.at(DENS), _vertexMap.left.at(VOL));
+					{ _vertexMap.left.at(DENS), _vertexMap.left.at(VOL) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_V__MASS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(DENS_V__MASS, w));
 
 				w = vertex::connect(_vertexMap.left.at(IREFR_R), 
-					2, _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ));
+					{ _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_R)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_R, w));
 
 				w = vertex::connect(_vertexMap.left.at(IREFR_IM), 
-					2, _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ));
+					{ _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ) } );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_I)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_I, w));
+                                
 			}
 			
 
@@ -297,7 +298,7 @@ namespace rtmath {
 
 				setShrdVertex baseVertices, shrRemaining;
 				for (auto it = remaining.begin(); it != remaining.end(); it++)
-					shrRemaining.insert(*it);
+					shrRemaining.insert(it->lock());
 
 				for (size_t i = 1; i < NUM_MANIPULATED_QUANTITY; i++)
 					baseVertices.insert(_vertexMap.left.at(i));
