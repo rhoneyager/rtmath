@@ -12,10 +12,10 @@ macro(addapp appname)
 IF(DEFINED COMMON_LIBS )
 	target_link_libraries (${appname} ${COMMON_LIBS})
 ENDIF()
-IF(DEFINED rtmath_INCLUDE_DIRS)
+#IF(DEFINED rtmath_INCLUDE_DIRS)
 	# Other apps use this function. Only include rtmath if desired.
 	target_link_libraries (${appname} rtmath)
-ENDIF()
+#ENDIF()
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	include_directories(${${appname}_INCLUDE_DIRS})
 
