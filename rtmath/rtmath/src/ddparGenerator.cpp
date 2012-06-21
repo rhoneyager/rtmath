@@ -38,17 +38,48 @@ namespace rtmath {
 		ddParGeneratorBase::~ddParGeneratorBase()
 		{
 		}
-
+                
+                ddParGeneratorBase::ddParGeneratorBase()
+                :
+                        ddscatVer(72),
+                        compressResults(false),
+                        genIndivScripts(true),
+                        genMassScript(true),
+                        shapeStats(false),
+                        registerDatabase(false),
+                        doExport(true),
+                        // Fill in zeros here, as base ddpar 
+                        // does not always import over
+                        doTorques(false),
+                        Imem1(0),
+                        Imem2(0),
+                        Imem3(0),
+                        doNearField(false),
+                        near1(0),
+                        near2(0),
+                        near3(0),
+                        near4(0),
+                        near5(0),
+                        near6(0),
+                        maxTol(0),
+                        maxIter(0),
+                        gamma(0),
+                        etasca(0),
+                        nambient(0)
+                {
+                    
+                }
+                
 		ddParGenerator::ddParGenerator()
 		{
-			_base = _s_defaultBase;
-			import(_base);
+			base = _s_defaultBase;
+			import(base);
 		}
 
 		ddParGenerator::ddParGenerator(const ddPar &base)
 		{
-			_base = base;
-			import(_base);
+			this->base = base;
+			import(base);
 			// Figure out the type of shape, and produce an appropriate base shape
 		}
 
@@ -93,7 +124,7 @@ namespace rtmath {
 				double um;		// wavelength in um
 
 				// Make copy of base
-				ddPar parout = _base;
+				ddPar parout = base;
 				// TODO: check that splicing does not occur. If it does, use a better cast.
 				std::shared_ptr<shapeModifiable> shape ( (shapeModifiable*) it->getshape()->clone() );
 
@@ -194,7 +225,7 @@ namespace rtmath {
 
 				// Write run definitions
 				// Give the output class access to the graph vertices.
-				it->write( (pdir/"params.txt").string() );
+				it->write( *it, (pdir).string() );
 
 				// Write run script
 				runScriptIndiv iscript(dirname);
@@ -214,7 +245,7 @@ namespace rtmath {
 
 		}
 
-		void ddParGenerator::write(const std::string &basename) const
+		void ddParGenerator::write(const ddParGenerator &obj, const std::string &basename)
 		{
 			using namespace boost::filesystem;
 			path pBase(basename), pXML;
@@ -241,10 +272,10 @@ namespace rtmath {
 			//boost::archive::text_oarchive oa(out);
 			// oa << *this;
 			boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(*this);
+			oa << BOOST_SERIALIZATION_NVP(obj);
 		}
 
-		void ddParGenerator::read(const std::string &basename)
+		void ddParGenerator::read(ddParGenerator &obj, const std::string &basename)
 		{
 			// This routine can accept either a base directory or an actual filename
 			// If a base directory is given, search for runSet.xml.
@@ -276,7 +307,7 @@ namespace rtmath {
 			//boost::archive::text_oarchive oa(out);
 			// oa << *this;
 			boost::archive::xml_iarchive ia(in);
-			ia >> BOOST_SERIALIZATION_NVP(*this);
+			ia >> BOOST_SERIALIZATION_NVP(obj);
 		}
 
 		void ddParGenerator::import(const std::string &ddparfilename)
@@ -285,8 +316,8 @@ namespace rtmath {
 			path p(ddparfilename);
 			if (!exists(ddparfilename)) throw rtmath::debug::xMissingFile(ddparfilename.c_str());
 			rtmath::ddscat::ddPar ddfile(ddparfilename);
-			_base = ddfile;
-			import(_base);
+			base = ddfile;
+			import(base);
 		}
 
 		void ddParGenerator::import(const ddPar &base)
@@ -299,51 +330,51 @@ namespace rtmath {
 
 			base.getKey(CMTORQ, line);
 			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(sval);
-			(sval == "DOTORQ")? _doTorques = true : _doTorques = false;
+			(sval == "DOTORQ")? doTorques = true : doTorques = false;
 
 			base.getKey(CMDSOL, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_solnMeth);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(solnMeth);
 
 			base.getKey(CMDFFT, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_FFTsolver);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(FFTsolver);
 
 			base.getKey(CALPHA, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_Calpha);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(Calpha);
 
 			base.getKey(CBINFLAG, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(_binning);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(binning);
 
 			base.getKey(DIMENSION, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(0, _Imem1);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(1, _Imem2);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(2, _Imem3);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(0, Imem1);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(1, Imem2);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(2, Imem3);
 
 			base.getKey(NRFLD, line);
 			size_t tsz;
 			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(tsz);
-			(tsz > 0) ? _doNearField = true : _doNearField = false;
+			(tsz > 0) ? doNearField = true : doNearField = false;
 			base.getKey(FRACT_EXTENS, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0, _near1);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(1, _near2);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(2, _near3);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(3, _near4);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(4, _near5);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(5, _near6);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0, near1);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(1, near2);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(2, near3);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(3, near4);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(4, near5);
+			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(5, near6);
 
 			base.getKey(TOL, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_maxTol);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(maxTol);
 
 			base.getKey(MXITER, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(_maxIter);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(maxIter);
 
 			base.getKey(GAMMA, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_gamma);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(gamma);
 
 			base.getKey(ETASCA, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_etasca);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(etasca);
 
 			base.getKey(CBINFLAG, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(_nambient);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(nambient);
 
 			MARK();
 			/* Things to import from ddPar:
@@ -353,7 +384,31 @@ namespace rtmath {
 			 */
 		}
 
-		void ddParIterator::write(const std::string &outfile) const
+		void ddParIterator::read(ddParIterator &obj, const std::string &file)
+		{
+			// It's yet another serialization case
+			using namespace boost::filesystem;
+			path pBase(file), pXML;
+			if (is_directory(pBase))
+			{
+				pXML = pBase / "ddParIterator.xml";
+				if (!exists(pXML))
+					throw rtmath::debug::xMissingFile(pXML.string().c_str());
+				else if (is_directory(pXML))
+                                        throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
+			} else {
+				pXML = pBase;
+				if (!exists(pXML))
+                                    throw rtmath::debug::xMissingFile(pXML.string().c_str());
+			}
+
+			// Okay, now to serialize and output...
+			std::ifstream in(pXML.string().c_str());
+			boost::archive::xml_iarchive oa(in);
+			oa >> BOOST_SERIALIZATION_NVP(obj);
+		}
+                
+		void ddParIterator::write(const ddParIterator &obj, const std::string &outfile)
 		{
 			// It's yet another serialization case
 			using namespace boost::filesystem;
@@ -378,7 +433,7 @@ namespace rtmath {
 			// Okay, now to serialize and output...
 			std::ofstream out(pXML.string().c_str());
 			boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(*this);
+			oa << BOOST_SERIALIZATION_NVP(obj);
 		}
 
 		void ddParIterator::getrots(rotations &out) const
@@ -401,7 +456,7 @@ namespace rtmath {
 				temps(src->temps),
 				rots(src->rots),
 				sizes(src->sizes),
-				shapesBase(src->_shapeBase)
+				shapesBase(src->shapeBase)
 		{
 			using namespace std;
 			// Iterate over rotations, freqs, temps, sizes, target types
@@ -457,109 +512,6 @@ namespace rtmath {
 				}
 			}
 		}
-
-		/*
-		void ddParGenerator::read(const std::string &basename)
-		{
-			// This routine can accept either a base directory or an actual filename
-			// If a base directory is given, search for runSet.xml.
-			using namespace boost::filesystem;
-			path pBase(basename), pXML;
-			if (!exists(pBase)) throw rtmath::debug::xMissingFile(basename.c_str());
-			if (is_directory(pBase))
-			{
-				// Search for runSet.xml
-				path pCand = pBase / "runSet.xml";
-				if (exists(pCand))
-				{
-					if (!is_directory(pCand))
-					{
-						pXML = pBase;
-					} else {
-						throw rtmath::debug::xPathExistsWrongType(pCand.string().c_str());
-					}
-				} else {
-					throw rtmath::debug::xMissingFile(pCand.string().c_str());
-				}
-			} else 
-			{
-				pXML = pBase;
-			}
-
-			using boost::property_tree::ptree;
-			ptree pt;
-
-			// Load the XML file into the property tree
-			read_xml(pXML.string(), pt);
-
-			// Now, extract the xml file contents
-
-			// Allow ddscat.par import to set default vaules
-			//ddPar myBasePar;
-			_baseParFile = pt.get<std::string>("runset.baseDDPAR", "");
-			if (_baseParFile.size())
-				import(_baseParFile);
-
-			// Basic stuff
-			_compressResults = pt.get<bool>("runset.compressResults",_compressResults);
-			_genIndivScripts = pt.get<bool>("runset.genIndevScripts",_genIndivScripts);
-			_genMassScript = pt.get<bool>("runset.genMassScript",_genMassScript);
-			_shapeStats = pt.get<bool>("runset.shapeStats",_shapeStats);
-			_registerDatabase = pt.get<bool>("runset.registerDatabase",_registerDatabase);
-			_doExport = pt.get<bool>("runset.export",_doExport);
-			// TODO: allow setting of default values in rtmath.conf
-			_exportLoc = pt.get<std::string>("runset.exportLoc","/data/rhoneyag/incoming/");
-			ddscatVer = pt.get<size_t>("runset.ddscatVer", ddscatVer);
-			name = pt.get<std::string>("runset.name");
-			description = pt.get<std::string>("runset.description");
-			outLocation = pt.get<std::string>("runset.outLocation");
-
-			_doTorques = pt.get<bool>("runset.CMTORQ",_doTorques);
-			_solnMeth = pt.get<std::string>("runset.CMDSOL", _solnMeth);
-			_FFTsolver = pt.get<std::string>("runset.CMDFFT", _FFTsolver);
-			_Calpha = pt.get<std::string>("runset.CALPHA", _Calpha);
-			_binning = pt.get<std::string>("runset.CBINFLAG", _binning);
-
-			_Imem1 = pt.get<int>("runset.dimension.1", _Imem1);
-			_Imem2 = pt.get<int>("runset.dimension.2", _Imem2);
-			_Imem3 = pt.get<int>("runset.dimension.3", _Imem3);
-
-			_doNearField = pt.get<bool>("runset.NRFLD.do", _doNearField);
-			_near1 = pt.get<double>("runset.NRFLD.1", _near1);
-			_near2 = pt.get<double>("runset.NRFLD.2", _near2);
-			_near3 = pt.get<double>("runset.NRFLD.3", _near3);
-			_near4 = pt.get<double>("runset.NRFLD.4", _near4);
-			_near5 = pt.get<double>("runset.NRFLD.5", _near5);
-			_near6 = pt.get<double>("runset.NRFLD.6", _near6);
-
-			_maxTol = pt.get<double>("runset.TOL", _maxTol);
-			_maxIter = pt.get<int>("runset.MXITER", _maxIter);
-			_gamma = pt.get<double>("runset.GAMMA", _gamma);
-			_etasca = pt.get<double>("runset.ETASCA", _etasca);
-			_nambient = pt.get<double>("runset.NAMBIENT", _nambient);
-
-			// Process each element in the trees for frequency, size, rotations, 
-			// scatt angles, shape types and temperatures
-			ptree pFreqs = pt.get_child("frequencies");
-			for (auto it = pFreqs.begin(); it != pFreqs.end(); it++)
-			{
-				// Look at each child and use to populate frequencies list
-				for (auto ot = it->second.begin(); ot != it->second.end(); ot++)
-				{
-					// Get range and units for population
-				}
-			}
-
-
-			ptree pSizes = pt.get_child("sizes");
-			ptree pRots = pt.get_child("rotations");
-			ptree pSca = pt.get_child("scatt_angles");
-			ptree pShapes = pt.get_child("shapes");
-			ptree pTemps = pt.get_child("temperatures");
-
-			// At this point, we have a complete representation of the xml file contents
-		}
-		*/
 
 	}
 }

@@ -1,7 +1,7 @@
 #ifndef FRMMAIN_H
 #define FRMMAIN_H
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "ui_frmmain.h"
 #include "../../rtmath/rtmath/ddscat/ddparGenerator.h"
 

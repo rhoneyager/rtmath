@@ -9,6 +9,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <set>
 #include <vector>
 #include "error/debug.h"
@@ -205,8 +206,23 @@ namespace rtmath {
 							// Separated based on commas. Expand for dashes and colons
 							tokenizer trange(*ot,seprange);
 							vector<T> range;
-							for (auto rt = trange.begin(); rt != trange.end(); rt++)
-								range.push_back(boost::lexical_cast<T>(*rt));
+                                                        for (auto rt = trange.begin(); rt != trange.end(); rt++)
+                                                        {
+                                                            try {
+                                                                string s = *rt;
+                                                                boost::algorithm::trim(s);
+                                                                //std::istringstream in(*rt);
+                                                                //T val;
+                                                                //in >> val;
+                                                                //range.push_back(val);
+                                                                //MARK(); // TODO: check for validity. Also verify boost lex cast
+                                                                range.push_back(boost::lexical_cast<T>(s));
+                                                            }
+                                                            catch (...)
+                                                            {
+                                                                throw rtmath::debug::xBadInput(rt->c_str());
+                                                            }
+                                                        }
 							// Look at range. If one element, just add it. If two or 
 							// three, calculate the inclusive interval
 							if (range.size() == 1)

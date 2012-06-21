@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "frmmain.h"
-#include <QtGui/QApplication>
+//#include <QtCore>
+#include <QApplication>
+//#include <QtGui/QApplication>
 
 int main(int argc, char *argv[])
 {

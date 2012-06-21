@@ -1,6 +1,5 @@
 #include <memory>
 #include <iostream>
-#include <boost/filesystem.hpp>
 #include "../../rtmath/rtmath/rtmath.h"
 
 int main(int argc, char **argv)
@@ -10,7 +9,6 @@ int main(int argc, char **argv)
 	using namespace rtmath::debug;
 	using namespace rtmath::ddscat;
 	using namespace rtmath::units;
-	using namespace boost::filesystem;
 	try {
 		cerr << "Batch genparams test program" << endl;
 		rtmath::debug::appEntry(argc, argv);
@@ -29,7 +27,36 @@ int main(int argc, char **argv)
 
 		// Set description
 		gen.description = "genparams-test test to ensure proper file generation";
+                gen.outLocation = "./out/";
+                gen.baseParFile = "ddscat.par";
+                gen.shapeStats = true;
+                gen.temps.insert(std::make_pair<paramSet<double>, std::string>
+                        ( paramSet<double>("263:5:270"), "K" )   );
+                gen.temps.insert(std::make_pair<paramSet<double>, std::string>
+                        ( paramSet<double>(230.0), "K" )   );
+                
+                std::map<std::string, std::string> freqaliases;
+                freqaliases["GPM_Radiometer"] = "10.7, 18.7, 23.8, 89.0, 165.5, 183.3";
+                freqaliases["GPM_Dual_Radar"] = "13.6, 35.5";
+                gen.freqs.insert(std::make_pair<paramSet<double>, std::string>
+                        ( paramSet<double>("35.5,GPM_Radiometer,GPM_Dual_Radar", &freqaliases), "GHz" )   );
+                MARK();
+                gen.generate(gen.outLocation);
+                //gen.write(gen.outLocation);
+                
+                std::ofstream outt("out.txt");
+                boost::archive::text_oarchive ot(outt);
+                ot << gen;
+                
+                ddscat::ddParGenerator::write(gen,"out.xml");
+                
+                //std::ofstream outx("out.xml");
+                //boost::archive::xml_oarchive oa(outx);
+                //oa << BOOST_SERIALIZATION_NVP(gen);
 
+                
+                // Set frequencies
+/*
 		// Set frequencies
 		gen.freqs.insert(hasUnits(94.0, "GHz"));
 		gen.freqs.insert(hasUnits(110.0, "GHz"));
@@ -56,6 +83,7 @@ int main(int argc, char **argv)
 
 		// Write the output
 		gen.write("test.txt");
+                */
 	}
 	catch (rtmath::debug::xError &err)
 	{

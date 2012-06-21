@@ -1,7 +1,7 @@
 #ifndef FRMTARGET_H
 #define FRMTARGET_H
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "ui_frmTarget.h"
 
 class frmTarget : public QMainWindow

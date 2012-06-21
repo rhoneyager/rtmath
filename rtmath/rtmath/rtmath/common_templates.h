@@ -4,6 +4,7 @@
  * difficulties with *this.
  */
 
+#include <sstream>
 #include <set>
 #include <vector>
 #include <string>
@@ -52,7 +53,17 @@ namespace rtmath
 	class paramSet : public hashable
 	{
 	public:
-		paramSet() {}
+		paramSet(const std::map<std::string, std::string> *aliases = nullptr) 
+                { _aliases = aliases; }
+                paramSet(const std::string &src, const std::map<std::string, std::string> *aliases = nullptr) 
+                { _aliases = aliases; set(src); }
+                paramSet(const T &src)
+                {
+                    std::ostringstream out;
+                    out << src;
+                    std::string t = out.str();
+                    set(t);
+                }
 		~paramSet() {}
 		void set(const std::string &str)
 		{
@@ -63,7 +74,7 @@ namespace rtmath
 		{
 			str = _shorthand;
 		}
-		void getLong(std::vector<T> &expanded) const
+		void getLong(std::set<T> &expanded) const
 		{
 			expanded = _expanded;
 		}
@@ -71,11 +82,11 @@ namespace rtmath
 		{
 			expanded = _expanded[index];
 		}
-		typename std::vector<T>::const_iterator begin() const
+		typename std::set<T>::const_iterator begin() const
 		{
 			return _expanded.begin();
 		}
-		typename std::vector<T>::const_iterator end() const
+		typename std::set<T>::const_iterator end() const
 		{
 			return _expanded.end();
 		}
@@ -84,11 +95,12 @@ namespace rtmath
 			return _shorthand < rhs._shorthand;
 		}
 	private:
-		std::vector<T> _expanded;
+		std::set<T> _expanded;
 		std::string _shorthand;
+                const std::map<std::string, std::string> *_aliases;
 		void _expand()
 		{
-			rtmath::config::splitSet<T>(_shorthand, _expanded);
+			rtmath::config::splitSet<T>(_shorthand, _expanded, _aliases);
 		}
 		friend struct std::less<rtmath::paramSet<T> >;
 		friend class boost::serialization::access;
@@ -96,7 +108,8 @@ namespace rtmath
 		template<class Archive>
 			void serialize(Archive & ar, const unsigned int version)
 			{
-				ar & BOOST_SERIALIZATION_NVP(_shorthand);
+                                ar & boost::serialization::make_nvp("values_short", _shorthand);
+                                ar & boost::serialization::make_nvp("values_expanded", _expanded);
 			}
 	};
 

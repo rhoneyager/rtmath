@@ -2,7 +2,7 @@
 #include "frmmain.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/qt_funcs.h"
-#include <QtGui/QFileDialog>
+#include <QFileDialog>
 
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
@@ -219,7 +219,7 @@ void frmMain::loadSet()
 		// Have generator load
 		std::string filename = qfilename.begin()->toStdString();
 
-		_gen.read(filename);
+		rtmath::ddscat::ddParGenerator::read(_gen,filename);
 		// Update ui
 		fromGenerator();
 	}
@@ -239,7 +239,7 @@ void frmMain::saveSet()
 		QStringList qfilename = dialog.selectedFiles();
 		std::string filename = qfilename.begin()->toStdString();
 
-		_gen.write(filename);
+		rtmath::ddscat::ddParGenerator::write(_gen,filename);
 	}
 }
 
@@ -274,6 +274,7 @@ void frmMain::generateRuns()
 	std::string dname;
 	ui.txtOutLocation->text().size() ? dname = ui.txtOutLocation->text().toStdString() : dname = ui.txtOutLocation->placeholderText().toStdString();
 	_gen.generate(dname);
+        rtmath::ddscat::ddParGenerator::write(_gen,dname);
 }
 
 void frmMain::toGenerator()
@@ -284,40 +285,40 @@ void frmMain::toGenerator()
 	//_gen.ddscatVer;
 	//_gen.strPreCmds; // TODO
 	//_gen.strPostCdms; // TODO
-	_gen._baseParFile = ui.txtBaseFile->text().toStdString();
+	_gen.baseParFile = ui.txtBaseFile->text().toStdString();
 	
 	// shape stuff
 	//_gen._shapeBase; // TODO
 	// reg stuff
-	_gen._compressResults = ui.chkCompress->isChecked();
-	_gen._genIndivScripts = ui.chkGenIndivRunScripts->isChecked();
-	_gen._genMassScript = ui.chkGenMassRunScript->isChecked();
-	_gen._shapeStats = ui.chkGenShapeStats->isChecked();
-	_gen._registerDatabase = ui.chkDatabaseRegister->isChecked();
-	_gen._doExport = ui.chkDoExport->isChecked();
-	_gen._exportLoc = ui.txtExportDir->text().toStdString();
+	_gen.compressResults = ui.chkCompress->isChecked();
+	_gen.genIndivScripts = ui.chkGenIndivRunScripts->isChecked();
+	_gen.genMassScript = ui.chkGenMassRunScript->isChecked();
+	_gen.shapeStats = ui.chkGenShapeStats->isChecked();
+	_gen.registerDatabase = ui.chkDatabaseRegister->isChecked();
+	_gen.doExport = ui.chkDoExport->isChecked();
+	_gen.exportLoc = ui.txtExportDir->text().toStdString();
 	
-	ui.txtImem1->text().size() ? _gen._Imem1 = ui.txtImem1->text().toInt() : _gen._Imem1 = ui.txtImem1->placeholderText().toInt();
-	ui.txtImem2->text().size() ? _gen._Imem2 = ui.txtImem2->text().toInt() : _gen._Imem1 = ui.txtImem2->placeholderText().toInt();
-	ui.txtImem3->text().size() ? _gen._Imem3 = ui.txtImem3->text().toInt() : _gen._Imem1 = ui.txtImem3->placeholderText().toInt();
-	_gen._doNearField = ui.chkNearfield->isChecked();
-	ui.txtNear1->text().size() ? _gen._near1 = ui.txtNear1->text().toDouble() : _gen._near1 = ui.txtNear1->placeholderText().toDouble();
-	ui.txtNear2->text().size() ? _gen._near2 = ui.txtNear2->text().toDouble() : _gen._near2 = ui.txtNear2->placeholderText().toDouble();
-	ui.txtNear3->text().size() ? _gen._near3 = ui.txtNear3->text().toDouble() : _gen._near3 = ui.txtNear3->placeholderText().toDouble();
-	ui.txtNear4->text().size() ? _gen._near4 = ui.txtNear4->text().toDouble() : _gen._near4 = ui.txtNear4->placeholderText().toDouble();
-	ui.txtNear5->text().size() ? _gen._near5 = ui.txtNear5->text().toDouble() : _gen._near5 = ui.txtNear5->placeholderText().toDouble();
-	ui.txtNear6->text().size() ? _gen._near6 = ui.txtNear6->text().toDouble() : _gen._near6 = ui.txtNear6->placeholderText().toDouble();
-	ui.txtMaxTol->text().size() ? _gen._maxTol = ui.txtMaxTol->text().toDouble() : _gen._maxTol = ui.txtMaxTol->placeholderText().toDouble();
-	ui.txtMaxIter->text().size() ? _gen._maxIter = ui.txtMaxIter->text().toDouble() : _gen._maxIter =  ui.txtMaxIter->placeholderText().toDouble();
-	ui.txtGamma->text().size() ? _gen._gamma = ui.txtGamma->text().toDouble() : _gen._gamma =  ui.txtGamma->placeholderText().toDouble();
-	ui.txtETASCA->text().size() ? _gen._etasca = ui.txtETASCA->text().toDouble() : _gen._etasca =  ui.txtETASCA->placeholderText().toDouble();
-	ui.txtNAMBIENT->text().size() ? _gen._nambient = ui.txtNAMBIENT->text().toDouble() : _gen._nambient =  ui.txtNAMBIENT->placeholderText().toDouble();
+	ui.txtImem1->text().size() ? _gen.Imem1 = ui.txtImem1->text().toInt() : _gen.Imem1 = ui.txtImem1->placeholderText().toInt();
+	ui.txtImem2->text().size() ? _gen.Imem2 = ui.txtImem2->text().toInt() : _gen.Imem1 = ui.txtImem2->placeholderText().toInt();
+	ui.txtImem3->text().size() ? _gen.Imem3 = ui.txtImem3->text().toInt() : _gen.Imem1 = ui.txtImem3->placeholderText().toInt();
+	_gen.doNearField = ui.chkNearfield->isChecked();
+	ui.txtNear1->text().size() ? _gen.near1 = ui.txtNear1->text().toDouble() : _gen.near1 = ui.txtNear1->placeholderText().toDouble();
+	ui.txtNear2->text().size() ? _gen.near2 = ui.txtNear2->text().toDouble() : _gen.near2 = ui.txtNear2->placeholderText().toDouble();
+	ui.txtNear3->text().size() ? _gen.near3 = ui.txtNear3->text().toDouble() : _gen.near3 = ui.txtNear3->placeholderText().toDouble();
+	ui.txtNear4->text().size() ? _gen.near4 = ui.txtNear4->text().toDouble() : _gen.near4 = ui.txtNear4->placeholderText().toDouble();
+	ui.txtNear5->text().size() ? _gen.near5 = ui.txtNear5->text().toDouble() : _gen.near5 = ui.txtNear5->placeholderText().toDouble();
+	ui.txtNear6->text().size() ? _gen.near6 = ui.txtNear6->text().toDouble() : _gen.near6 = ui.txtNear6->placeholderText().toDouble();
+	ui.txtMaxTol->text().size() ? _gen.maxTol = ui.txtMaxTol->text().toDouble() : _gen.maxTol = ui.txtMaxTol->placeholderText().toDouble();
+	ui.txtMaxIter->text().size() ? _gen.maxIter = ui.txtMaxIter->text().toDouble() : _gen.maxIter =  ui.txtMaxIter->placeholderText().toDouble();
+	ui.txtGamma->text().size() ? _gen.gamma = ui.txtGamma->text().toDouble() : _gen.gamma =  ui.txtGamma->placeholderText().toDouble();
+	ui.txtETASCA->text().size() ? _gen.etasca = ui.txtETASCA->text().toDouble() : _gen.etasca =  ui.txtETASCA->placeholderText().toDouble();
+	ui.txtNAMBIENT->text().size() ? _gen.nambient = ui.txtNAMBIENT->text().toDouble() : _gen.nambient =  ui.txtNAMBIENT->placeholderText().toDouble();
 
-	_gen._doTorques = ui.chkDoTorques->isChecked();
-	_gen._solnMeth = ui.cmbSolnMeth->currentText().toStdString();
-	_gen._FFTsolver = ui.cmbFFTsolver->currentText().toStdString();
-	_gen._Calpha = ui.cmbCALPHA->currentText().toStdString();
-	_gen._binning = ui.cmbBinning->currentText().toStdString();
+	_gen.doTorques = ui.chkDoTorques->isChecked();
+	_gen.solnMeth = ui.cmbSolnMeth->currentText().toStdString();
+	_gen.FFTsolver = ui.cmbFFTsolver->currentText().toStdString();
+	_gen.Calpha = ui.cmbCALPHA->currentText().toStdString();
+	_gen.binning = ui.cmbBinning->currentText().toStdString();
 
 	MARK();
 	// Target types
