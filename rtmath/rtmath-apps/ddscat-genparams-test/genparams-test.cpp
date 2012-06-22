@@ -40,6 +40,24 @@ int main(int argc, char **argv)
                 freqaliases["GPM_Dual_Radar"] = "13.6, 35.5";
                 gen.freqs.insert(std::make_pair<paramSet<double>, std::string>
                         ( paramSet<double>("35.5,GPM_Radiometer,GPM_Dual_Radar", &freqaliases), "GHz" )   );
+                
+                // Need sizes   
+                // set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, string > > sizes;
+                gen.sizes.insert(
+                    boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, string >(
+                        paramSet<double>("50:10:350"),
+                        rtmath::ddscat::MANIPULATED_QUANTITY::REFF,
+                        "um"
+                        )
+                    );
+                
+                // Need rotations   set<rotations> rots;
+                rtmath::ddscat::rotations rots;
+                gen.rots.insert(rots);
+                
+                // Need scattering angles
+                
+                
                 MARK();
                 gen.generate(gen.outLocation);
                 //gen.write(gen.outLocation);

@@ -45,19 +45,15 @@ namespace rtmath {
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					// serialize base class information
-					//ar & BOOST_SERIALIZATION_NVP(
-					//	boost::serialization::base_object<ddParGeneratorBase>(*this)
-					//	);
-					ar & BOOST_SERIALIZATION_NVP(_bMin);
-					ar & BOOST_SERIALIZATION_NVP(_bMax);
-					ar & BOOST_SERIALIZATION_NVP(_bN);
-					ar & BOOST_SERIALIZATION_NVP(_tMin);
-					ar & BOOST_SERIALIZATION_NVP(_tMax);
-					ar & BOOST_SERIALIZATION_NVP(_tN);
-					ar & BOOST_SERIALIZATION_NVP(_pMin);
-					ar & BOOST_SERIALIZATION_NVP(_pMax);
-					ar & BOOST_SERIALIZATION_NVP(_pN);
+                                        ar & boost::serialization::make_nvp("bMin", _bMin);
+					ar & boost::serialization::make_nvp("bMax",_bMax);
+					ar & boost::serialization::make_nvp("bN",_bN);
+					ar & boost::serialization::make_nvp("tMin", _tMin);
+					ar & boost::serialization::make_nvp("tMax", _tMax);
+					ar & boost::serialization::make_nvp("tN", _tN);
+					ar & boost::serialization::make_nvp("pMin",_pMin);
+					ar & boost::serialization::make_nvp("pMax",_pMax);
+					ar & boost::serialization::make_nvp("pN", _pN);
 				}
 		};
 

@@ -211,11 +211,6 @@ namespace rtmath {
                                                             try {
                                                                 string s = *rt;
                                                                 boost::algorithm::trim(s);
-                                                                //std::istringstream in(*rt);
-                                                                //T val;
-                                                                //in >> val;
-                                                                //range.push_back(val);
-                                                                //MARK(); // TODO: check for validity. Also verify boost lex cast
                                                                 range.push_back(boost::lexical_cast<T>(s));
                                                             }
                                                             catch (...)
