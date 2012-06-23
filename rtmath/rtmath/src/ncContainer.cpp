@@ -1,6 +1,6 @@
 #include "../rtmath/Stdafx.h"
 #include <memory>
-#include <netcdf.h>
+//#include <netcdf.h>
 #include <boost/filesystem.hpp>
 #include <memory>
 #include <map>
@@ -16,7 +16,7 @@
 
 
 #ifdef _WIN32
-#pragma comment(lib, "netcdf")
+//#pragma comment(lib, "netcdf")
 #endif
 
 namespace rtmath {
@@ -50,14 +50,16 @@ namespace rtmath {
 
 		void ncContainer::_close()
 		{
-			nc_close(_nFile);
+			throw rtmath::debug::xUnimplementedFunction();
+			//nc_close(_nFile);
 		}
 
 		void ncContainer::_open(const std::string &filename, int mode)
 		{
-			int res;
-			res = nc_open(filename.c_str(), mode, &_nFile);
-			if (res) throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+			throw rtmath::debug::xUnimplementedFunction();
+			//int res;
+			//res = nc_open(filename.c_str(), mode, &_nFile);
+			//if (res) throw rtmath::debug::xUnknownFileFormat(filename.c_str());
 		}
 	}
 

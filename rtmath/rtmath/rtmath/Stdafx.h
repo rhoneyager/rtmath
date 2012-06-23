@@ -7,6 +7,7 @@
 // Define filesystem version 3 for compile issues with older boost
 #define BOOST_FILESYSTEM_VERSION 3
 
+#include <bitset>
 #include <vector>
 #include <map>
 #include <iostream>

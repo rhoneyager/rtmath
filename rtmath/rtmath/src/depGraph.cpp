@@ -2,7 +2,9 @@
 
 #include <set>
 #include <memory>
+#ifdef __GNUC__
 #include <initializer_list>
+#endif
 
 
 #include "../rtmath/error/error.h"
@@ -13,7 +15,7 @@ namespace rtmath
 {
 	namespace graphs
 	{
-
+#ifdef __GNUC__
 		std::shared_ptr<vertex> vertex::connect(
 			std::shared_ptr<vertex> target, 
 			std::initializer_list<std::shared_ptr<vertex> > depends)
@@ -22,25 +24,26 @@ namespace rtmath
 			std::shared_ptr<vertex> connector;
 			connector = std::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
-                        for (std::shared_ptr<vertex> it : depends)
-                            connector->addSlot(it);
+			for (std::shared_ptr<vertex> it : depends)
+				connector->addSlot(it);
 
 			return connector;
 		}
-		
-                static std::shared_ptr<vertex> connect(
-                        std::shared_ptr<vertex> target,
-                        std::set<std::shared_ptr<vertex> > depends)
-                {
+#endif
+
+		static std::shared_ptr<vertex> connect(
+			std::shared_ptr<vertex> target,
+			std::set<std::shared_ptr<vertex> > depends)
+		{
 			std::shared_ptr<vertex> connector;
 			connector = std::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
-                        for (std::shared_ptr<vertex> it : depends)
-                            connector->addSlot(it);
+			for (std::shared_ptr<vertex> it : depends)
+				connector->addSlot(it);
 
 			return connector;
-                }
-                
+		}
+
 		vertex::~vertex() {}
 
 		void vertex::addSlot(std::shared_ptr<vertex> slot)
@@ -130,7 +133,7 @@ namespace rtmath
 					// Look at all root members to see if root is filled
 					size_t n = IT->_slots.size();
 					size_t m = 0;
-					
+
 					for (auto ot = IT->_slots.begin(); ot != IT->_slots.end(); ot++)
 					{
 						if (ot->expired()) continue;

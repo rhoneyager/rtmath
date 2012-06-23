@@ -4,7 +4,9 @@
 #include <memory>
 #include <set>
 #include <cstdarg>
+#ifdef __GNUC__
 #include <initializer_list>
+#endif
 
 namespace rtmath
 {
@@ -38,16 +40,18 @@ namespace rtmath
 			void setVertexRunnableCode(std::shared_ptr<vertexRunnable> target);
 
 			// Make connector between two criteria
-//			static std::shared_ptr<vertex> connect(
-//				std::shared_ptr<vertex> target, 
-//				size_t nDepends, ...); 
-                        static std::shared_ptr<vertex> connect(
-                                std::shared_ptr<vertex> target,
-                                std::set<std::shared_ptr<vertex> > depends);
-                        static std::shared_ptr<vertex> connect(
-                                std::shared_ptr<vertex> target,
-                                std::initializer_list<std::shared_ptr<vertex> > depends
-                                );
+			//			static std::shared_ptr<vertex> connect(
+			//				std::shared_ptr<vertex> target, 
+			//				size_t nDepends, ...); 
+			static std::shared_ptr<vertex> connect(
+				std::shared_ptr<vertex> target,
+				std::set<std::shared_ptr<vertex> > depends);
+#ifdef __GNUC__
+			static std::shared_ptr<vertex> connect(
+				std::shared_ptr<vertex> target,
+				std::initializer_list<std::shared_ptr<vertex> > depends
+				);
+#endif
 
 		protected:
 			std::shared_ptr<vertexRunnable> _target;

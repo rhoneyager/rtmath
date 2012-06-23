@@ -4,7 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <memory>
-#include <netcdf.h>
+//#include <netcdf.h>
 #include <cmath>
 #include "../rtmath/ddscat/ddscat.h"
 #include "../rtmath/ddscat/ddweights.h"
