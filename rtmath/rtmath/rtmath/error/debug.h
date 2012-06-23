@@ -33,6 +33,16 @@ namespace rtmath
 				this->line = line;
 				this->function = std::string(func);
 			}
+			bool operator< (const keymap &rhs) const
+			{
+				int a = file.compare(rhs.file);
+				if (!a)
+				{
+					if (a>0) return true;
+					return false;
+				}
+				return line < rhs.line;
+			}
 		};
 		void DEBUG_TIMESTAMP(void);
 		unsigned int getuniqueobj(const char* file, int line, const char* func);

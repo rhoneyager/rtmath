@@ -1,8 +1,8 @@
 #pragma once
 /* Contains common templates used in various functions.
- * Such as a null_deleter used to elude shared_ptr 
- * difficulties with *this.
- */
+* Such as a null_deleter used to elude shared_ptr 
+* difficulties with *this.
+*/
 
 #include <sstream>
 #include <set>
@@ -54,16 +54,17 @@ namespace rtmath
 	{
 	public:
 		paramSet(const std::map<std::string, std::string> *aliases = nullptr) 
-                { _aliases = aliases; }
-                paramSet(const std::string &src, const std::map<std::string, std::string> *aliases = nullptr) 
-                { _aliases = aliases; set(src); }
-                paramSet(const T &src)
-                {
-                    std::ostringstream out;
-                    out << src;
-                    std::string t = out.str();
-                    set(t);
-                }
+			{ _aliases = aliases; }
+		paramSet(const std::string &src, const std::map<std::string, std::string> *aliases = nullptr) 
+			{ _aliases = aliases; set(src); }
+		paramSet(const T &src)
+		{
+			_aliases = nullptr;
+			std::ostringstream out;
+			out << src;
+			std::string t = out.str();
+			set(t);
+		}
 		~paramSet() {}
 		void set(const std::string &str)
 		{
@@ -97,7 +98,7 @@ namespace rtmath
 	private:
 		std::set<T> _expanded;
 		std::string _shorthand;
-                const std::map<std::string, std::string> *_aliases;
+		const std::map<std::string, std::string> *_aliases;
 		void _expand()
 		{
 			rtmath::config::splitSet<T>(_shorthand, _expanded, _aliases);
@@ -106,11 +107,11 @@ namespace rtmath
 		friend class boost::serialization::access;
 	public:
 		template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-                                ar & boost::serialization::make_nvp("values_short", _shorthand);
-                                ar & boost::serialization::make_nvp("values_expanded", _expanded);
-			}
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("values_short", _shorthand);
+			ar & boost::serialization::make_nvp("values_expanded", _expanded);
+		}
 	};
 
 	// Supporting code to allow boost unordered map
@@ -150,19 +151,19 @@ namespace std {
 namespace boost { namespace serialization {
 
 #define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
-    ar & boost::serialization::make_nvp("element",t.get< which >());
+	ar & boost::serialization::make_nvp("element",t.get< which >());
 
 #define GENERATE_TUPLE_SERIALIZE(z,nargs,unused)                        \
-    template< typename Archive, BOOST_PP_ENUM_PARAMS(nargs,typename T) > \
-    void serialize(Archive & ar,                                        \
-                   boost::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
-                   const unsigned int version)                          \
-    {                                                                   \
-      BOOST_PP_REPEAT_FROM_TO(0,nargs,GENERATE_ELEMENT_SERIALIZE,~);    \
-    }
+	template< typename Archive, BOOST_PP_ENUM_PARAMS(nargs,typename T) > \
+	void serialize(Archive & ar,                                        \
+	boost::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
+	const unsigned int version)                          \
+	{                                                                   \
+	BOOST_PP_REPEAT_FROM_TO(0,nargs,GENERATE_ELEMENT_SERIALIZE,~);    \
+}
 
 
-    BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
+	BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
 
 }}
 

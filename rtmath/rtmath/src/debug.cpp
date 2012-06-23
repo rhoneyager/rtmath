@@ -15,7 +15,7 @@ namespace rtmath
 {
 	namespace debug
 	{
-		std::map<keymap*, int> UNIQUE_KEYS;
+		std::map<keymap, int> UNIQUE_KEYS;
 		unsigned int uidtracker::_uidcount = 0;
 
 
@@ -125,13 +125,15 @@ namespace rtmath
 
 		unsigned int getuniqueobj(const char* file, int line, const char* func)
 		{
-			keymap* temp = new keymap(file,line,func);
+			keymap temp(file,line,func);
 
-			if (UNIQUE_KEYS.count(temp) == 0)
+			if (!UNIQUE_KEYS.count(temp))
 			{
 				UNIQUE_KEYS[temp] = 0;
+			} else {
+				UNIQUE_KEYS[temp] = UNIQUE_KEYS[temp] + 1;
 			}
-			return UNIQUE_KEYS[temp]++;
+			return UNIQUE_KEYS[temp];
 		}
 
 		void listuniqueobj(std::ostream &out, bool showifnone)
@@ -145,9 +147,9 @@ namespace rtmath
 				if (UNIQUE_KEYS.size())
 				{
 					out << "File - Function - Line - Count\n";
-					for (map<keymap*,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
+					for (map<keymap,int>::iterator it = UNIQUE_KEYS.begin(); it != UNIQUE_KEYS.end(); it++)
 					{
-						out << it->first->file << " - " << it->first->function << " - " << it->first->line << " - " << it->second << endl;
+						out << it->first.file << " - " << it->first.function << " - " << it->first.line << " - " << it->second << endl;
 
 					}
 				}
@@ -155,7 +157,6 @@ namespace rtmath
 			}
 		}
 
-		// TODO: find caller for this... If none, remove.
 		std::string diemsg(const char* file, int line, const char* sig)
 		{
 			using namespace std;

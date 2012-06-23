@@ -16,6 +16,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/assign.hpp>
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
@@ -223,53 +224,58 @@ namespace rtmath {
 			{
 				// I can't make these in batch anywhere, since I need some rather specific relationships.
 				shared_ptr<vertex> w;
+				std::set<std::shared_ptr<vertex> > ptrs;
 
-				w = vertex::connect(_vertexMap.left.at(TEMP), { _vertexMap.left.at(DENS) });
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(DENS));
+				w = vertex::connect(_vertexMap.left.at(TEMP), ptrs);
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_T)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(DENS_T, w));
 
-				w = vertex::connect(_vertexMap.left.at(DENS), { _vertexMap.left.at(TEMP) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(TEMP));
+				w = vertex::connect(_vertexMap.left.at(DENS), ptrs );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, T_DENS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(T_DENS, w));
 
-				w = vertex::connect(_vertexMap.left.at(VOL), { _vertexMap.left.at(REFF) });
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(REFF));
+				w = vertex::connect(_vertexMap.left.at(VOL), ptrs);
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, REFF_V)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(REFF_V, w));
 
-				w = vertex::connect(_vertexMap.left.at(REFF), { _vertexMap.left.at(VOL) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(VOL));
+				w = vertex::connect(_vertexMap.left.at(REFF), ptrs);
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, V_REFF)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(V_REFF, w));
 
-				w = vertex::connect(_vertexMap.left.at(DENS), 
-					{ _vertexMap.left.at(MASS), _vertexMap.left.at(VOL) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(MASS)); ptrs.insert(_vertexMap.left.at(VOL));
+				w = vertex::connect(_vertexMap.left.at(DENS), ptrs);
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_V__DENS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(MASS_V__DENS, w));
 
-				w = vertex::connect(_vertexMap.left.at(VOL), 
-					{ _vertexMap.left.at(MASS), _vertexMap.left.at(DENS) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(MASS)); ptrs.insert(_vertexMap.left.at(DENS));
+				w = vertex::connect(_vertexMap.left.at(VOL), ptrs);
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_DENS__V)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(MASS_DENS__V, w));
 
-				w = vertex::connect(_vertexMap.left.at(MASS), 
-					{ _vertexMap.left.at(DENS), _vertexMap.left.at(VOL) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(DENS)); ptrs.insert(_vertexMap.left.at(VOL));
+				w = vertex::connect(_vertexMap.left.at(MASS), ptrs);
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_V__MASS)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(DENS_V__MASS, w));
 
-				w = vertex::connect(_vertexMap.left.at(IREFR_R), 
-					{ _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(TEMP)); ptrs.insert(_vertexMap.left.at(FREQ));
+				w = vertex::connect(_vertexMap.left.at(IREFR_R), ptrs );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_R)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_R, w));
 
-				w = vertex::connect(_vertexMap.left.at(IREFR_IM), 
-					{ _vertexMap.left.at(TEMP), _vertexMap.left.at(FREQ) } );
+				ptrs.clear(); ptrs.insert(_vertexMap.left.at(TEMP)); ptrs.insert(_vertexMap.left.at(FREQ));
+				w = vertex::connect(_vertexMap.left.at(IREFR_IM), ptrs );
 				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_I)));
 				_vertices.insert(w);
 				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_I, w));

@@ -45,7 +45,10 @@ namespace rtmath
 			//				size_t nDepends, ...); 
 			static std::shared_ptr<vertex> connect(
 				std::shared_ptr<vertex> target,
-				std::set<std::shared_ptr<vertex> > depends);
+				const std::set<std::shared_ptr<vertex> > &depends);
+			// Fast connect that looks up node id (MANIPULATED_QUANTITY)
+			//static std::shared_ptr<vertex> connect(
+			//	size_t node, size_t numDeps, ...);
 #ifdef __GNUC__
 			static std::shared_ptr<vertex> connect(
 				std::shared_ptr<vertex> target,

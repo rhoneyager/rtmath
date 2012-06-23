@@ -290,7 +290,7 @@ namespace rtmath {
 				{
 					if (!is_directory(pCand))
 					{
-						pXML = pBase;
+						pXML = pCand;
 					} else {
 						throw rtmath::debug::xPathExistsWrongType(pCand.string().c_str());
 					}

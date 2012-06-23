@@ -190,7 +190,7 @@ namespace rtmath {
 					{
 						// At this junction, do any alias substitution
 						// TODO: check new behavior
-						MARKFUNC();
+						GETOBJKEY();
 
 						std::string ssubst;
 
