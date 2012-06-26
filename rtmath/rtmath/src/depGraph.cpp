@@ -38,8 +38,9 @@ namespace rtmath
 			std::shared_ptr<vertex> connector;
 			connector = std::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
-			for (std::shared_ptr<vertex> it : depends)
-				connector->addSlot(it);
+			for (auto it = depends.begin(); it != depends.end(); it++)
+			//for (std::shared_ptr<vertex> it : depends)
+				connector->addSlot(*it);
 
 			return connector;
 		}
