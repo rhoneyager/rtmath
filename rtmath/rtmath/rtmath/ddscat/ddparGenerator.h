@@ -1,9 +1,9 @@
 #pragma once
 /* The generator acts to construct a set of ddscat.par files and the associated 
- * mtabs based on a template and a set of varied parameters.
- * The parameter variation generates separate files, primarily because ddscat
- * doesn't have the necessary sophistication to deal with our common usage scenarios.
- */
+* mtabs based on a template and a set of varied parameters.
+* The parameter variation generates separate files, primarily because ddscat
+* doesn't have the necessary sophistication to deal with our common usage scenarios.
+*/
 
 #include <memory>
 #include <iostream>
@@ -35,7 +35,7 @@
 #include "../units.h"
 #include "../error/debug.h"
 #include "../Public_Domain/MurmurHash3.h"
- 
+
 namespace rtmath {
 	namespace ddscat {
 
@@ -44,7 +44,6 @@ namespace rtmath {
 		class ddParGeneratorBase
 		{
 		public:
-			// TODO: have constructor fill in rest of vars
 			ddParGeneratorBase();
 			virtual ~ddParGeneratorBase();
 			std::set<rotations> rots;
@@ -52,28 +51,26 @@ namespace rtmath {
 			std::set< std::pair< paramSet<double> , std::string > > freqs, temps;
 			// Sizes exist as a tuple with the parameter set, actual variable and variable units
 			// By actual variable, I mean effective radius, mass or volume. It's quite convenient this way.
-			std::set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > sizes;
+			//std::set< boost::tuple< paramSet<double>, 
+			//	MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > sizes;
+			std::set< shapeConstraint > sizesGlobal;
+			// The shapes to generate
+			std::set<std::shared_ptr<shapeModifiable> > shapeBase;
+
+			// TODO: make protected and add access functions
+			ddPar base;
+			std::string baseParFile;
+
+			// These don't go into a ddscat.par file
 			std::string name, description, outLocation;
 			size_t ddscatVer;
 			std::string strPreCmds;
 			std::string strPostCdms;
-
-		public:
-			// TODO: make protected and add access functions
-			ddPar base; // TODO: deprecated.
-			std::string baseParFile;
-			// The parameters that are variable
-			//		Add tag for shape type // Shape
-			std::string shapefilebase; // TODO: deprecated.
-			std::set<std::shared_ptr<shapeModifiable> > shapeBase;
-
-
-
-			// These don't go into a ddscat.par file
-			
 			bool compressResults, genIndivScripts, genMassScript;
 			bool shapeStats, registerDatabase, doExport;
 			std::string exportLoc;
+
+			// These do go into a ddscat.par file in some form or another
 
 			bool doTorques;
 			std::string solnMeth, FFTsolver, Calpha, binning;
@@ -91,58 +88,55 @@ namespace rtmath {
 			// When the class Archive corresponds to an output archive, the
 			// & operator is defined similar to <<.  Likewise, when the class Archive
 			// is a type of input archive the & operator is defined similar to >>.
-                private:
+		private:
 			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_NVP(name);
-					ar & BOOST_SERIALIZATION_NVP(description);
-					ar & BOOST_SERIALIZATION_NVP(outLocation);
-					ar & BOOST_SERIALIZATION_NVP(ddscatVer);
-					ar & BOOST_SERIALIZATION_NVP(strPreCmds);
-					ar & BOOST_SERIALIZATION_NVP(strPostCdms);
-					ar & BOOST_SERIALIZATION_NVP(baseParFile);
-					ar & BOOST_SERIALIZATION_NVP(shapefilebase);
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				ar & BOOST_SERIALIZATION_NVP(name);
+				ar & BOOST_SERIALIZATION_NVP(description);
+				ar & BOOST_SERIALIZATION_NVP(outLocation);
+				ar & BOOST_SERIALIZATION_NVP(ddscatVer);
+				ar & BOOST_SERIALIZATION_NVP(strPreCmds);
+				ar & BOOST_SERIALIZATION_NVP(strPostCdms);
+				ar & BOOST_SERIALIZATION_NVP(baseParFile);
 
-					ar & BOOST_SERIALIZATION_NVP(compressResults);
-					ar & BOOST_SERIALIZATION_NVP(genIndivScripts);
-					ar & BOOST_SERIALIZATION_NVP(genMassScript);
-					ar & BOOST_SERIALIZATION_NVP(shapeStats);
-					ar & BOOST_SERIALIZATION_NVP(registerDatabase);
-					ar & BOOST_SERIALIZATION_NVP(doExport);
-					ar & BOOST_SERIALIZATION_NVP(exportLoc);
+				ar & BOOST_SERIALIZATION_NVP(compressResults);
+				ar & BOOST_SERIALIZATION_NVP(genIndivScripts);
+				ar & BOOST_SERIALIZATION_NVP(genMassScript);
+				ar & BOOST_SERIALIZATION_NVP(shapeStats);
+				ar & BOOST_SERIALIZATION_NVP(registerDatabase);
+				ar & BOOST_SERIALIZATION_NVP(doExport);
+				ar & BOOST_SERIALIZATION_NVP(exportLoc);
 
-					ar & BOOST_SERIALIZATION_NVP(doTorques);
-					ar & BOOST_SERIALIZATION_NVP(solnMeth);
-					ar & BOOST_SERIALIZATION_NVP(FFTsolver);
-					ar & BOOST_SERIALIZATION_NVP(Calpha);
-					ar & BOOST_SERIALIZATION_NVP(binning);
-				
-					ar & BOOST_SERIALIZATION_NVP(Imem1);
-					ar & BOOST_SERIALIZATION_NVP(Imem2);
-					ar & BOOST_SERIALIZATION_NVP(Imem3);
-					ar & BOOST_SERIALIZATION_NVP(doNearField);
-					ar & BOOST_SERIALIZATION_NVP(near1);
-					ar & BOOST_SERIALIZATION_NVP(near2);
-					ar & BOOST_SERIALIZATION_NVP(near3);
-					ar & BOOST_SERIALIZATION_NVP(near4);
-					ar & BOOST_SERIALIZATION_NVP(near5);
-					ar & BOOST_SERIALIZATION_NVP(near6);
+				ar & BOOST_SERIALIZATION_NVP(doTorques);
+				ar & BOOST_SERIALIZATION_NVP(solnMeth);
+				ar & BOOST_SERIALIZATION_NVP(FFTsolver);
+				ar & BOOST_SERIALIZATION_NVP(Calpha);
+				ar & BOOST_SERIALIZATION_NVP(binning);
 
-					ar & BOOST_SERIALIZATION_NVP(maxTol);
-					ar & BOOST_SERIALIZATION_NVP(maxIter);
-					ar & BOOST_SERIALIZATION_NVP(gamma);
-					ar & BOOST_SERIALIZATION_NVP(etasca);
-					ar & BOOST_SERIALIZATION_NVP(nambient);
+				ar & BOOST_SERIALIZATION_NVP(Imem1);
+				ar & BOOST_SERIALIZATION_NVP(Imem2);
+				ar & BOOST_SERIALIZATION_NVP(Imem3);
+				ar & BOOST_SERIALIZATION_NVP(doNearField);
+				ar & BOOST_SERIALIZATION_NVP(near1);
+				ar & BOOST_SERIALIZATION_NVP(near2);
+				ar & BOOST_SERIALIZATION_NVP(near3);
+				ar & BOOST_SERIALIZATION_NVP(near4);
+				ar & BOOST_SERIALIZATION_NVP(near5);
+				ar & BOOST_SERIALIZATION_NVP(near6);
 
-					ar & BOOST_SERIALIZATION_NVP(freqs);
-					ar & BOOST_SERIALIZATION_NVP(temps);
-					ar & BOOST_SERIALIZATION_NVP(sizes);
-					ar & BOOST_SERIALIZATION_NVP(rots);
-				}
+				ar & BOOST_SERIALIZATION_NVP(maxTol);
+				ar & BOOST_SERIALIZATION_NVP(maxIter);
+				ar & BOOST_SERIALIZATION_NVP(gamma);
+				ar & BOOST_SERIALIZATION_NVP(etasca);
+				ar & BOOST_SERIALIZATION_NVP(nambient);
+
+				ar & BOOST_SERIALIZATION_NVP(freqs);
+				ar & BOOST_SERIALIZATION_NVP(temps);
+				ar & BOOST_SERIALIZATION_NVP(sizes);
+				ar & BOOST_SERIALIZATION_NVP(rots);
+			}
 		};
-
-		//BOOST_CLASS_TRACKING(ddParGeneratorBase, track_always);
 
 		class ddParIterator
 		{
@@ -153,25 +147,25 @@ namespace rtmath {
 			void getrots(rotations &out) const; // Export list of rotations
 			std::shared_ptr<shapeModifiable> getshape() const; // Provide the shape that is to be manipulated
 			static void write(const ddParIterator &obj, const std::string &outfile);
-                        static void read(ddParIterator &obj, const std::string &file);
+			static void read(ddParIterator &obj, const std::string &file);
 			// TODO: add partial conversion function to ddpar
 			template<class T>
-				bool getParamValue(const std::string &name, T &val, std::string &units) const
+			bool getParamValue(const std::string &name, T &val, std::string &units) const
+			{
+				if (_params.count(name))
 				{
-					if (_params.count(name))
-					{
-						std::ostringstream out;
-						out << _params.at(name).first;
-						std::istringstream in(out.str());
-						in >> val;
-						units = _params.at(name).second;
-						return true;
-					} else {
-						val = 0;
-						units = "";
-						return false;
-					}
+					std::ostringstream out;
+					out << _params.at(name).first;
+					std::istringstream in(out.str());
+					in >> val;
+					units = _params.at(name).second;
+					return true;
+				} else {
+					val = 0;
+					units = "";
+					return false;
 				}
+			}
 			inline HASH_t hash() const
 			{
 				HASH_t res;
@@ -186,13 +180,13 @@ namespace rtmath {
 			// & operator is defined similar to <<.  Likewise, when the class Archive
 			// is a type of input archive the & operator is defined similar to >>.
 			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_NVP(_params);
-					ar & BOOST_SERIALIZATION_NVP(_rot);
-					MARKFUNC();
-					//ar & BOOST_SERIALIZATION_NVP();
-				}
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				ar & BOOST_SERIALIZATION_NVP(_params);
+				ar & BOOST_SERIALIZATION_NVP(_rot);
+				MARKFUNC();
+				//ar & BOOST_SERIALIZATION_NVP();
+			}
 		private:
 			// The initial parameters are passed in this form:
 			// 1 - the name of the parameter
@@ -247,12 +241,12 @@ namespace rtmath {
 			void setDefaultBase(const ddPar &base);
 			friend class ddParIteration;
 			friend class boost::serialization::access;
-                private:
+		private:
 			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ddParGeneratorBase);
-				}
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ddParGeneratorBase);
+			}
 			static ddPar _s_defaultBase;
 		};
 

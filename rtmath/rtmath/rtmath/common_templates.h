@@ -83,17 +83,35 @@ namespace rtmath
 		{
 			expanded = _expanded[index];
 		}
-		typename std::set<T>::const_iterator begin() const
+		typedef std::set<T>::const_iterator const_iterator;
+		typename const_iterator begin() const
 		{
 			return _expanded.begin();
 		}
-		typename std::set<T>::const_iterator end() const
+		typename const_iterator end() const
 		{
 			return _expanded.end();
+		}
+		typename const_iterator rbegin() const
+		{
+			return _expanded.rbegin();
+		}
+		typename const_iterator rend() const
+		{
+			return _expanded.rend();
 		}
 		bool operator< (const paramSet<T> &rhs) const
 		{
 			return _shorthand < rhs._shorthand;
+		}
+		bool operator== (const paramSet<T> &rhs) const
+		{
+			if (_shorthand == rhs._shorthand) return true;
+			return false;
+		}
+		inline bool operator!= (const paramSet<T> &rhs) const
+		{
+			return !(operator==(rhs));
 		}
 	private:
 		std::set<T> _expanded;
@@ -105,7 +123,7 @@ namespace rtmath
 		}
 		friend struct std::less<rtmath::paramSet<T> >;
 		friend class boost::serialization::access;
-	public:
+	private:
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version)
 		{
@@ -114,7 +132,7 @@ namespace rtmath
 		}
 	};
 
-	// Supporting code to allow boost unordered map
+	// Supporting code to allow boost unordered maps
 	template <class T> std::size_t hash_value(rtmath::paramSet<T> const& x)
 	{
 		return (size_t) x.hash();

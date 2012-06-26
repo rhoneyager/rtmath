@@ -139,21 +139,80 @@ namespace rtmath {
 			}
 		}
 
+		shapeConstraint::shapeConstraint()
+		{
+		}
+
+		shapeConstraint::~shapeConstraint()
+		{
+		}
+
+		shapeConstraint::shapeConstraint(
+			const std::string &varname,
+			const std::string &psetShorthand,
+			const std::string &units)
+			:
+				varname(varname),
+				pset(psetShorthand),
+				units(units)
+		{
+		}
+
+		bool shapeConstraint::operator==(const shapeConstraint &rhs) const
+		{
+			if (varname != rhs.varname) return false;
+			if (units != rhs.units) return false;
+			if (pset != rhs.pset) return false;
+			return true;
+		}
+
+		bool shapeConstraint::operator!=(const shapeConstraint &rhs) const
+		{
+			return !(operator==(rhs));
+		}
+
+		bool shapeConstraint::operator<(const shapeConstraint &rhs) const
+		{
+			int lt;
+			if (lt = varname.compare(rhs.varname))
+				return (lt>0) ? false : true;
+
+			if (lt = units.compare(rhs.units))
+				return (lt>0) ? false : true;
+
+			if (pset != rhs.pset) return (pset < rhs.pset);
+			return false;
+		}
+
+		typename shapeConstraint::const_iterator shapeConstraint::begin() const
+		{
+			return pset.begin();
+		}
+
+		typename shapeConstraint::const_iterator shapeConstraint::end() const
+		{
+			return pset.end();
+		}
+
+		typename shapeConstraint::const_iterator shapeConstraint::rbegin() const
+		{
+			return pset.rbegin();
+		}
+
+		typename shapeConstraint::const_iterator shapeConstraint::rend() const
+		{
+			return pset.rend();
+		}
+
 		shape::~shape()
 		{
 		}
 
 		shape::shape()
 		{
-			_vars[MANIPULATED_QUANTITY::D] = 0;
-			_vars[MANIPULATED_QUANTITY::DENS] = 0;
-			_vars[MANIPULATED_QUANTITY::TEMP] = 0;
-			_vars[MANIPULATED_QUANTITY::VOL] = 0;
-			_vars[MANIPULATED_QUANTITY::REFF] = 0;
-			_vars[MANIPULATED_QUANTITY::MASS] = 0;
 		}
 
-		double shape::get(MQ var) const
+		double shape::get(const std::string & var) const
 		{
 			if (_vars.count(var))
 				return _vars.at(var);
@@ -179,7 +238,7 @@ namespace rtmath {
 			oa << BOOST_SERIALIZATION_NVP(*this);
 		}
 
-		void shapeModifiable::set(MQ var, double val)
+		void shapeModifiable::set(const std::string & var, double val)
 		{
 			_vars[var] = val;
 		}
