@@ -62,7 +62,7 @@ namespace rtmath {
 			// Write file version
 			string ver;
 			if (_version == 70) ver = "7.0.8";
-			else if (_version == 72) ver = "7.2.0";
+			else if (_version == 72) ver = "7.2.1";
 			out << "' ========= Parameter file for v" << ver << " =================== '" << endl;
 
 			// Loop through and write parameters and comments
@@ -78,6 +78,23 @@ namespace rtmath {
 					// If key is valid for this output version, write it
 					if (it->second->versionValid(_version))
 						it->second->write(out);
+					it++;
+				}
+				line++;
+			}
+			for (auto ot = _scaPlanes.begin(); ot != _scaPlanes.end(); ot++)
+			{
+				if (!_comments.count(line))
+				{
+					// If key is valid for this output version, write it
+					if (ot->second->versionValid(_version))
+					{
+						ostringstream o;
+						// "...for plane" + " #"
+						o << " " << boost::lexical_cast<std::string>(ot->first);
+						string plid = o.str();
+						ot->second->write(out, plid);
+					}
 					it++;
 				}
 				line++;
@@ -109,6 +126,33 @@ namespace rtmath {
 			if (_parsedData.count(key))
 				_parsedData.erase(key);
 			_parsedData[key] = ptr;
+		}
+
+		void ddPar::getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)
+		{
+			res = nullptr;
+			if (_scaPlanes.count(key))
+				res = _scaPlanes[key];
+		}
+
+		void ddPar::getPlane(size_t key, std::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const
+		{
+			res = nullptr;
+			if (_scaPlanes.count(key))
+				res = _scaPlanes[key];
+		}
+
+		void ddPar::delPlane(size_t key)
+		{
+			if (_scaPlanes.count(key))
+				_scaPlanes.erase(key);
+		}
+
+		void ddPar::insertPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)
+		{
+			if (_scaPlanes.count(key))
+				_scaPlanes.erase(key);
+			_scaPlanes[key] = res;
 		}
 
 		void ddPar::_populateDefaults(bool overwrite, const std::string &src) const
@@ -148,6 +192,22 @@ namespace rtmath {
 						}
 						this->_parsedData[it->first] = it->second;
 					}
+					for (auto it = base._scaPlanes.begin(); it != base._scaPlanes.end(); it++)
+					{
+						// If overwrite, then overwrite any existing key
+						// If not, and key exists, skip to next one
+						// If key does not exist, add it
+						if (this->_scaPlanes.count(it->first))
+						{
+							if (overwrite)
+							{
+								this->_scaPlanes.erase(it->first);
+							} else {
+								continue;
+							}
+						}
+						this->_scaPlanes[it->first] = it->second;
+					}
 				} else {
 					// Default file not found
 					// TODO!
@@ -177,9 +237,11 @@ namespace rtmath {
 			if (!overlay)
 			{
 				_parsedData.clear();
+				_scaPlanes.clear();
 			}
 
 			size_t line = 0;
+			size_t nScaPlane = 0;
 			string comment;
 			while (stream.good())
 			{
@@ -231,55 +293,49 @@ namespace rtmath {
 				//_keys[vals[1]] = vals[0];
 				using namespace rtmath::ddscat::ddParParsers;
 				{
-				std::shared_ptr<ddParLine> ptr = mapKeys(vals[1]);
-				if (comment.size())
-				{
-					// Comment setting to preserve comment order...
-					ptr->setComment(comment);
-					comment = "";
-				}
-				ptr->read(vals[0]);
-				if (_parsedData.count(ptr->id()))
-				{
-					if (overlay)
+					std::shared_ptr<ddParLine> ptr = mapKeys(vals[1]);
+					if (comment.size())
 					{
-						_parsedData.erase(ptr->id());
+						// Comment setting to preserve comment order...
+						ptr->setComment(comment);
+						comment = "";
+					}
+					ptr->read(vals[0]);
+					// Scattering plane info goes into a separate structure
+					if (ptr->id() < ddParParsers::PLANE1)
+					{
+						if (_parsedData.count(ptr->id()))
+						{
+							if (overlay)
+							{
+								_parsedData.erase(ptr->id());
+							} else {
+								ostringstream ostr;
+								ostr << "Duplicate ddscat.par key: ";
+								ostr << vals[1];
+								throw rtmath::debug::xBadInput(ostr.str().c_str());
+							}
+						}
+						_parsedData[ptr->id()] = ptr;
+					} else if (ptr->id() == ddParParsers::PLANE1)
+					{
+						// Scattering plane info
+						nScaPlane++;
+						_scaPlanes[nScaPlane] = 
+							std::dynamic_pointer_cast<ddParParsers::ddParLineSimplePlural<double> >(ptr);
 					} else {
+						// Unknown key
 						ostringstream ostr;
-						ostr << "Duplicate ddscat.par key: ";
+						ostr << "Unknown ddscat.par key: ";
 						ostr << vals[1];
 						throw rtmath::debug::xBadInput(ostr.str().c_str());
 					}
 				}
-				_parsedData[ptr->id()] = ptr;
-			}
 
 			}
-			/*
-			// Map the keys
-			using namespace rtmath::ddscat::ddParParsers;
-			for (auto it = _keys.begin(); it != _keys.end(); ++it)
-			{
-				std::shared_ptr<ddParLine> ptr = mapKeys(it->first);
-				ptr->read(it->second);
-				if (_parsedData.count(ptr->id()))
-				{
-					if (overlay)
-					{
-						_parsedData.erase(ptr->id());
-					} else {
-						ostringstream ostr;
-						ostr << "Duplicate ddscat.par key: ";
-						ostr << it->first;
-						throw rtmath::debug::xBadInput(ostr.str().c_str());
-					}
-				}
-				_parsedData[ptr->id()] = ptr;
-			}
-			*/
 		}
 
-	
+
 
 		namespace ddParParsers
 		{
@@ -322,18 +378,18 @@ namespace rtmath {
 				else if (key.find("NRFLD") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(NRFLD) );
-					// version 7.2 NRFLD
+				// version 7.2 NRFLD
 				else if (key.find("fract. extens.") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
 					( new ddParLineSimplePlural<double>(FRACT_EXTENS) );
-					// version 7.2 FRACT_EXTENS
+				// version 7.2 FRACT_EXTENS
 				else if (key.find("TOL") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(TOL) );
 				else if (key.find("MXITER") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(MXITER) );
-					// version 7.2 MXITER
+				// version 7.2 MXITER
 				else if (key.find("GAMMA") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(GAMMA) );
@@ -348,7 +404,7 @@ namespace rtmath {
 				else if (key.find("NAMBIENT") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(NAMBIENT) );
-					// version 7.0 NAMBIENT
+				// version 7.0 NAMBIENT
 				else if (key.find("aeff") != string::npos)
 					ptr = std::shared_ptr<ddParLineMixed<double, std::string> >
 					( new ddParLineMixed<double, std::string>(3, AEFF));
@@ -365,7 +421,7 @@ namespace rtmath {
 				else if (key.find("IWRPOL") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(IWRPOL) );
-					// IWRPOL is version 7.0
+				// IWRPOL is version 7.0
 
 				else if (key.find("NBETA") != string::npos)
 					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
@@ -391,12 +447,9 @@ namespace rtmath {
 				else if (key.find("NPLANES") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(NPLANES) );
-				else if (key.find("for plane 1") != string::npos)
+				else if (key.find("for plane") != string::npos)
 					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
 					( new ddParLineSimplePlural<double>(PLANE1));
-				else if (key.find("for plane 2") != string::npos)
-					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
-					( new ddParLineSimplePlural<double>(PLANE2));
 				else
 				{
 					cerr << "Unmatched key: " << key << endl;
@@ -541,10 +594,7 @@ namespace rtmath {
 					key = "NPLANES = number of scattering planes";
 					break;
 				case PLANE1:
-					key = "phi, thetan_min, thetan_max, dtheta (in deg) for plane 1";
-					break;
-				case PLANE2:
-					key = "phi, thetan_min, thetan_max, dtheta (in deg) for plane 2";
+					key = "phi, thetan_min, thetan_max, dtheta (in deg) for plane";
 					break;
 				case UNKNOWN:
 				default:

@@ -25,6 +25,7 @@ namespace rtmath {
 		namespace ddParParsers
 		{
 			class ddParLine;
+			template<class T> class ddParLineSimplePlural;
 		}
 
 		class ddPar
@@ -50,6 +51,16 @@ namespace rtmath {
 			}
 			void delKey(ddParParsers::ParId key);
 			size_t size() const { return _parsedData.size(); }
+			void getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
+			void getPlane(size_t key, std::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const;
+			inline std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > getPlane(size_t key)
+			{
+				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res = nullptr;
+				getPlane(key,res);
+				return res;
+			}
+			void insertPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double>> &res);
+			void delPlane(size_t key);
 		private:
 			void _init();
 			size_t _version;
@@ -58,6 +69,10 @@ namespace rtmath {
 			mutable std::map<ddParParsers::ParId, 
 				std::shared_ptr<ddParParsers::ddParLine> > 
 				_parsedData;
+
+			mutable std::map<size_t,
+				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
+				_scaPlanes;
 
 			std::map<size_t, std::string> _comments;
 		};
@@ -186,6 +201,10 @@ namespace rtmath {
 				virtual ~ddParLineSimplePlural() {}
 				virtual void write(std::ostream &out)
 				{
+					write(out,"");
+				}
+				virtual void write(std::ostream &out, const std::string &suffix)
+				{
 					this->writeComment(out);
 					std::string idstr;
 					for (auto it = _val.begin(); it != _val.end(); ++it)
@@ -193,7 +212,7 @@ namespace rtmath {
 					if (this->_endWriteWithEndl)
 					{
 						idString(this->_id,idstr);
-						out << " = " << idstr << std::endl;
+						out << " = " << idstr << suffix << std::endl;
 					}
 				}
 				virtual void read(const std::string &val)

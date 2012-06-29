@@ -39,8 +39,10 @@ namespace rtmath {
 				INDICESIJ,		// size_t	(NSMELTS)
 				CMDFRM,			// string
 				NPLANES,		// size_t
-				PLANE1,			// SPECIAL (3 double, size_t)
-				PLANE2,			// SPECIAL (3 double, size_t)
+				// The scattering planes are now in a separate structure
+				// but, PLANE1 is preserved as a special case in the code
+				PLANE1,			// double	4
+				//PLANE2,			// double	4
 				UNKNOWN
 			};
 

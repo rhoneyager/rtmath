@@ -87,7 +87,7 @@ namespace rtmath
 		{
 			expanded = _expanded[index];
 		}
-		typedef std::set<T>::const_iterator const_iterator;
+		typedef typename std::set<T>::const_iterator const_iterator;
 		typename const_iterator begin() const
 		{
 			return _expanded.begin();
