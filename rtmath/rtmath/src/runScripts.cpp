@@ -11,12 +11,11 @@
 #include <cmath>
 #include <boost/filesystem.hpp>
 #include "../rtmath/ddscat/runScripts.h"
+#include "../rtmath/ddscat/ddparGenerator.h"
 
 namespace rtmath
 {
 	namespace ddscat {
-		std::string runScriptIndiv::_exportLoc;
-		bool runScriptIndiv::_doStats = false;
 
 		void runScriptIndiv::write(const std::string &path) const
 		{
@@ -53,16 +52,16 @@ namespace rtmath
 			out << "cd " << tmppath << endl;
 			out << "ddscat\n";
 			out << "cd " << baseabs << endl;
-
+			
 			// TODO: compute stats based on target.out
-			if (_doStats)
+			if (_gen.shapeStats)
 				out << "rtmath-statcalc -i " << tmppath << " -o " << tmppath << endl;
 
 			out << "tar cjf rtmath-ddscat-indrun-" << _uuid << ".tar.bz2 " << tmppath << "/*\n";
-
+			
 			// If desired, send to aqua
-			if (_exportLoc.size())
-				out << "cp " << _uuid << ".tar.bz2 " << _exportLoc << endl;
+			if (_gen.doExport)
+				out << "cp " << _uuid << ".tar.bz2 " << _gen.exportLoc << endl;
 
 			// Clean up temporary path
 			out << "rm -rf " << tmppath << endl;
@@ -71,7 +70,8 @@ namespace rtmath
 
 		}
 
-		runScriptGlobal::runScriptGlobal()
+		runScriptGlobal::runScriptGlobal(const ddParGenerator &gen)
+			: _gen(gen)
 		{
 		}
 

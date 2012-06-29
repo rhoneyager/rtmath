@@ -66,6 +66,10 @@ namespace rtmath
 			set(t);
 		}
 		~paramSet() {}
+		size_t size() const
+		{
+			return _expanded.size();
+		}
 		void set(const std::string &str)
 		{
 			_shorthand = str;

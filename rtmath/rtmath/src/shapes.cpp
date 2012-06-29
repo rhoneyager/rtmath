@@ -28,32 +28,6 @@ namespace rtmath {
 		namespace MANIPULATED_QUANTITY
 		{
 
-			const char* qnames[] = 
-			{
-				"NONE",
-				"Dipole Spacing",
-				"Density",
-				"Temperature",
-				"Volume",
-				"Effective Radius",
-				"Mass",
-				"Refractive Index (Real)",
-				"Refractive Index (Imag)",
-				"Frequency",
-				"Size Parameter",
-				"SHPAR1",
-				"SHPAR2",
-				"SHPAR3",
-				"DENS_T",
-				"T_DENS",
-				"REFF_V",
-				"V_REFF",
-				"MASS_V__DENS",
-				"MASS_DENS__V",
-				"DENS_V__MASS",
-				"INVALID"
-			};
-
 			void shapeBasicManip::run()
 			{
 				// This is the trivial case of converter manipulation.
@@ -204,6 +178,11 @@ namespace rtmath {
 			return pset.rend();
 		}
 
+		size_t shapeConstraint::size() const
+		{
+			return pset.size();
+		}
+
 		shape::~shape()
 		{
 		}
@@ -243,6 +222,7 @@ namespace rtmath {
 			_vars[var] = val;
 		}
 
+		// TODO: fix constructor
 		shapeModifiable::shapeModifiable()
 		{
 			_constructGraph();

@@ -41,23 +41,22 @@ namespace rtmath {
 
 		class ddParIteration;
 
+		// Using a map because it provides easy access to the constraint var name,
+		// really making it an indexed set
+		typedef std::multimap< std::string, std::shared_ptr<shapeConstraint> > shapeConstraintContainer;
+
 		class ddParGeneratorBase
 		{
 		public:
 			ddParGeneratorBase();
 			virtual ~ddParGeneratorBase();
+			// freqs and temps are not part of the shape constraints
 			std::set<rotations> rots;
-			// Freqs and temps exist as pairs of values (parameter set, units)
-			std::set< std::pair< paramSet<double> , std::string > > freqs, temps;
-			// Sizes exist as a tuple with the parameter set, actual variable and variable units
-			// By actual variable, I mean effective radius, mass or volume. It's quite convenient this way.
-			//std::set< boost::tuple< paramSet<double>, 
-			//	MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > sizes;
-			std::set< shapeConstraint > sizesGlobal;
+			
+			shapeConstraintContainer shapeConstraintsGlobal;
 			// The shapes to generate
-			std::set<std::shared_ptr<shapeModifiable> > shapeBase;
+			std::set<std::unique_ptr<shapeModifiable> > shapes;
 
-			// TODO: make protected and add access functions
 			ddPar base;
 			std::string baseParFile;
 
@@ -83,6 +82,10 @@ namespace rtmath {
 			double gamma;
 			double etasca;
 			double nambient;
+			bool doSca;
+			std::set< boost::tuple<double,double,double,double> > scaDirs;
+
+
 			friend class ddParIteration;
 			friend class boost::serialization::access;
 			// When the class Archive corresponds to an output archive, the
@@ -131,41 +134,35 @@ namespace rtmath {
 				ar & BOOST_SERIALIZATION_NVP(etasca);
 				ar & BOOST_SERIALIZATION_NVP(nambient);
 
-				ar & BOOST_SERIALIZATION_NVP(freqs);
-				ar & BOOST_SERIALIZATION_NVP(temps);
-				ar & BOOST_SERIALIZATION_NVP(sizes);
+				ar & BOOST_SERIALIZATION_NVP(doSca);
+				ar & BOOST_SERIALIZATION_NVP(scaDirs);
+
+				ar & BOOST_SERIALIZATION_NVP(shapeConstraintsGlobal);
 				ar & BOOST_SERIALIZATION_NVP(rots);
+				ar & BOOST_SERIALIZATION_NVP(shapes);
 			}
 		};
+
+		class ddParGenerator;
 
 		class ddParIterator
 		{
 		public:
-			ddParIterator();
-			//double f() const; // Frequency, in GHz
-			double T() const; // Temp, in K
-			void getrots(rotations &out) const; // Export list of rotations
-			std::shared_ptr<shapeModifiable> getshape() const; // Provide the shape that is to be manipulated
+			// Constructor takes the pointer so we don't have to copy every conceivable property
+			ddParIterator(const ddParGenerator &gen, std::unique_ptr<shapeModifiable> shp);
 			static void write(const ddParIterator &obj, const std::string &outfile);
 			static void read(ddParIterator &obj, const std::string &file);
-			// TODO: add partial conversion function to ddpar
-			template<class T>
-			bool getParamValue(const std::string &name, T &val, std::string &units) const
-			{
-				if (_params.count(name))
-				{
-					std::ostringstream out;
-					out << _params.at(name).first;
-					std::istringstream in(out.str());
-					in >> val;
-					units = _params.at(name).second;
-					return true;
-				} else {
-					val = 0;
-					units = "";
-					return false;
-				}
-			}
+
+			void exportShape(const std::string &filename) const;
+			void exportDiel(const std::string &filename) const;
+			void exportDDPAR(ddPar &out) const;
+			void exportDDPAR(const std::string &filename) const;
+
+			// The shape is a special clone of one of the ddParGenerator shapes, with no iteration over
+			// values - only one element in each shapeConstraint entry.
+			// contains freq, temp, reff, and every other needed quantity
+			std::unique_ptr<shapeModifiable> shape;
+
 			inline HASH_t hash() const
 			{
 				HASH_t res;
@@ -176,26 +173,17 @@ namespace rtmath {
 			friend class ddParIteration;
 			friend class ddParGenerator;
 			friend class boost::serialization::access;
+		private:
+			const ddParGenerator &_gen;
 			// When the class Archive corresponds to an output archive, the
 			// & operator is defined similar to <<.  Likewise, when the class Archive
 			// is a type of input archive the & operator is defined similar to >>.
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version)
 			{
-				ar & BOOST_SERIALIZATION_NVP(_params);
-				ar & BOOST_SERIALIZATION_NVP(_rot);
-				MARKFUNC();
-				//ar & BOOST_SERIALIZATION_NVP();
+				ar & boost::serialization::make_nvp("ddParGenerator", _gen);
+				ar & BOOST_SERIALIZATION_NVP(shape);
 			}
-		private:
-			// The initial parameters are passed in this form:
-			// 1 - the name of the parameter
-			// 2 - the value of the parameter
-			// 3 - the units of the parameter
-			// TODO: use a better method instead of a string key?
-			std::map< std::string, std::pair< double, std::string > > _params;
-			rotations _rot;
-			std::shared_ptr<shapeModifiable> _shape; // Pulls from _params to set graph
 		};
 
 		inline std::size_t hash_value(ddParIterator const& x)
@@ -203,26 +191,27 @@ namespace rtmath {
 			return (size_t) x.hash();
 		}
 
-		class ddParGenerator;
 		// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
 		class ddParIteration
 		{
 		public:
-			ddParIteration(const ddParGenerator *src);
+			ddParIteration(const ddParGenerator &gen);
 			// Iterators go here
-			typedef std::unordered_set<ddParIterator, boost::hash<rtmath::ddscat::ddParIterator> > data_t;
+			typedef std::set<ddParIterator > data_t;
 			typedef data_t::const_iterator const_iterator;
 			inline const_iterator begin() const { return _elements.begin(); }
 			inline const_iterator end() const { return _elements.end(); }
 		private:
-			const std::set< std::pair< paramSet<double> , std::string > > &freqs, &temps;
-			const std::set<rotations> &rots;
-			const std::set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, std::string > > &sizes;
-			const std::set<std::shared_ptr<shapeModifiable> > &shapesBase;
-
-			// Use boost unordered stuff here
-			//std::unordered_set<ddParIterator> _elements 
 			data_t _elements;
+			const ddParGenerator &_gen;
+			void _populate();
+			friend class boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				ar & boost::serialization::make_nvp("elements", _elements);
+				ar & boost::serialization::make_nvp("ddParGenerator", _gen);
+			}
 		};
 
 		class ddParGenerator : public ddParGeneratorBase
@@ -240,6 +229,7 @@ namespace rtmath {
 			void setDefaultBase(const std::string &ddbasefilename);
 			void setDefaultBase(const ddPar &base);
 			friend class ddParIteration;
+			friend class ddParIterator;
 			friend class boost::serialization::access;
 		private:
 			template<class Archive>

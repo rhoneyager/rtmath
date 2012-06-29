@@ -40,7 +40,7 @@ namespace rtmath {
 			shapeConstraint(
 				const std::string &varname,
 				const std::string &psetShorthand,
-				const std::string &units);
+				const std::string &units = "");
 			virtual ~shapeConstraint();
 			bool operator< (const shapeConstraint &rhs) const;
 			bool operator==(const shapeConstraint &rhs) const;
@@ -50,6 +50,7 @@ namespace rtmath {
 			typename const_iterator end() const;
 			typename const_iterator rbegin() const;
 			typename const_iterator rend() const;
+			size_t size() const;
 			paramSet<double> pset;
 			std::string varname;
 			std::string units;
@@ -105,13 +106,11 @@ namespace rtmath {
 		public:
 			shape();
 			virtual ~shape();
-			virtual double get(const std::string &var) const;
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 			virtual bool canWrite() const { return false; }
 			virtual void write(const std::string &fname) const;
+			shapeConstraintContainer shapeConstraints;
 		protected:
-			// Used to take a MANIPULATED_QUANTITY until switched over to string
-			std::map<std::string, double> _vars;
 			// Densities of different anisotropic materials. Used in mass and inertia calculations.
 			std::map<size_t, double> _densities;
 			friend class boost::serialization::access;
@@ -119,8 +118,8 @@ namespace rtmath {
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & BOOST_SERIALIZATION_NVP(_vars);
 					ar & BOOST_SERIALIZATION_NVP(_densities);
+					ar & BOOST_SERIALIZATION_NVP(shapeConstraints);
 				}
 		};
 
@@ -132,7 +131,7 @@ namespace rtmath {
 			typedef rtmath::graphs::setWeakVertex vertexSet;
 			shapeModifiable();
 			virtual ~shapeModifiable();
-			virtual void set(const std:string &var, double val);
+			
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			inline void update(const rtmath::graphs::setWeakVertex &fixed) { _update(fixed); }
 			void getVertices(vertexMap &mappings);
@@ -164,6 +163,15 @@ namespace rtmath {
 		//				shp3 = 1 for a1 || x and a2 || y, ..... (see documentation)
 		// shapeModifiable class specializations allow for shape param setting and provide other 
 		// vars, like mean radius.		
+
+		namespace shapes
+		{
+			class ellipsoid : public shapeModifiable
+			{
+			public:
+				ellipsoid();
+			};
+		}
 
 		namespace MANIPULATED_QUANTITY
 		{

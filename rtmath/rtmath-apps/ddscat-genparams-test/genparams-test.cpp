@@ -42,23 +42,36 @@ int main(int argc, char **argv)
 			( paramSet<double>("35.5,GPM_Radiometer,GPM_Dual_Radar", &freqaliases), "GHz" )   );
 
 		// Need sizes   
-		// set< boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, string > > sizes;
-		gen.sizes.insert(
-			boost::tuple< paramSet<double>, MANIPULATED_QUANTITY::MANIPULATED_QUANTITY, string >(
-			paramSet<double>("50:10:350"),
-			rtmath::ddscat::MANIPULATED_QUANTITY::REFF,
-			"um"
-			)
+		gen.shapeConstraintsGlobal.insert( // Effective radius
+			std::make_shared<shapeConstraint>("reff", "50:10:350", "um")
 			);
+		gen.shapeConstraintsGlobal.insert( // Interdipole spacing
+			std::make_shared<shapeConstraint>("d", "5", "um")
+			);
+
+		// Set the shapes (two ellipsoids, one of which is really a sphere)
+		auto shp = std::make_shared<rtmath::ddscat::shapes::ellipsoid>();
+		gen.shapes.insert(shp);
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar1","1"));
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar2","1"));
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar3","1"));
+
+		shp = std::make_shared<rtmath::ddscat::shapes::ellipsoid>();
+		gen.shapes.insert(shp);
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar1","1"));
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar2","2"));
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar3","3"));
 
 		// Need rotations   set<rotations> rots;
 		rtmath::ddscat::rotations rots;
 		gen.rots.insert(rots);
 
-		// Need scattering angles
+		// Scattering angles should have already been provided by ddParGenerator::import
 
 
-		GETOBJKEY();
+
+
+		// Attempt to generate everything
 		gen.generate(gen.outLocation);
 		ddscat::ddParGenerator::write(gen,gen.outLocation);
 
@@ -66,12 +79,6 @@ int main(int argc, char **argv)
 		ddscat::ddParGenerator ver;
 		ddscat::ddParGenerator::read(ver,gen.outLocation);
 		
-
-		/*
-		std::shared_ptr<shapeEllipsoid> bshape(new shapeEllipsoid());
-		gen.setShapeBase(bshape);
-
-		*/
 	}
 	catch (rtmath::debug::xError &err)
 	{

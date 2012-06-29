@@ -392,11 +392,11 @@ namespace rtmath {
 					ptr = std::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(NPLANES) );
 				else if (key.find("for plane 1") != string::npos)
-					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
-					( new ddParLineMixed<double, size_t>(3, PLANE1));
+					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
+					( new ddParLineSimplePlural<double>(PLANE1));
 				else if (key.find("for plane 2") != string::npos)
-					ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
-					( new ddParLineMixed<double, size_t>(3, PLANE2));
+					ptr = std::shared_ptr<ddParLineSimplePlural<double> >
+					( new ddParLineSimplePlural<double>(PLANE2));
 				else
 				{
 					cerr << "Unmatched key: " << key << endl;

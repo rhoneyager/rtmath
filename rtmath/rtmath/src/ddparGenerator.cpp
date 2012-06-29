@@ -1,5 +1,6 @@
 #include "../rtmath/Stdafx.h"
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <memory>
@@ -38,38 +39,39 @@ namespace rtmath {
 		ddParGeneratorBase::~ddParGeneratorBase()
 		{
 		}
-                
-                ddParGeneratorBase::ddParGeneratorBase()
-                :
-                        ddscatVer(72),
-                        compressResults(false),
-                        genIndivScripts(true),
-                        genMassScript(true),
-                        shapeStats(false),
-                        registerDatabase(false),
-                        doExport(true),
-                        // Fill in zeros here, as base ddpar 
-                        // does not always import over
-                        doTorques(false),
-                        Imem1(0),
-                        Imem2(0),
-                        Imem3(0),
-                        doNearField(false),
-                        near1(0),
-                        near2(0),
-                        near3(0),
-                        near4(0),
-                        near5(0),
-                        near6(0),
-                        maxTol(0),
-                        maxIter(0),
-                        gamma(0),
-                        etasca(0),
-                        nambient(0)
-                {
-                    
-                }
-                
+
+		ddParGeneratorBase::ddParGeneratorBase()
+			:
+		ddscatVer(72),
+			compressResults(false),
+			genIndivScripts(true),
+			genMassScript(true),
+			shapeStats(false),
+			registerDatabase(false),
+			doExport(true),
+			// Fill in zeros here, as base ddpar 
+			// does not always import over
+			doTorques(false),
+			Imem1(0),
+			Imem2(0),
+			Imem3(0),
+			doNearField(false),
+			near1(0),
+			near2(0),
+			near3(0),
+			near4(0),
+			near5(0),
+			near6(0),
+			maxTol(0),
+			maxIter(0),
+			gamma(0),
+			etasca(0),
+			nambient(0),
+			doSca(true)
+		{
+
+		}
+
 		ddParGenerator::ddParGenerator()
 		{
 			base = _s_defaultBase;
@@ -105,99 +107,10 @@ namespace rtmath {
 			std::set<std::string> dirs;
 
 			// Now, iterate over the conbinations of initial parameters.
-			ddParIteration itSetup(this);
+			ddParIteration itSetup(*this);
 			ddParIteration::const_iterator it;
 			for (it = itSetup.begin(); it != itSetup.end(); it++)
 			{
-				// Now, the iterated quantity contains the individual frequency, shape, size, ...
-				// for this run in the set of all combinations of parameters for a run.
-				// Of course, some unit conversion is anticipated, as we've really just done some 
-				// preprocessing and alias expansion. The whole purpose of ddParIteration was to 
-				// do this setup and construct the iterated quantities.
-
-				// Take copy of shape and apply properties
-				///shared_ptr<shapeModifiable> nS( (shapeModifiable*) it->getshape()->clone() );
-				using namespace MANIPULATED_QUANTITY;
-
-				double TK;		// Temp in K
-				double fGHz;	// Freq in GHz
-				double um;		// wavelength in um
-
-				// Make copy of base
-				ddPar parout = base;
-				// TODO: check that splicing does not occur. If it does, use a better cast.
-				std::shared_ptr<shapeModifiable> shape ( (shapeModifiable*) it->getshape()->clone() );
-
-				// Update shape parameters based on quantities
-				shapeModifiable::vertexMap mappings;
-				shape->getVertices(mappings);		 // For the current shape, get a list of all possible mappings
-				rtmath::graphs::setWeakVertex known; // The list of known vertices
-				for (auto ot = it->_params.begin(); ot != it->_params.end(); ot++)
-				{
-					string quant = ot->first, units = ot->second.second;
-					double val = ot->second.first;
-
-					if (quant == "temp")
-					{
-						it->getParamValue<double>("temp",val,units);
-						units::conv_temp tconv(units, "K");
-						TK = tconv.convert(val);
-						shape->set(TEMP, TK);
-						known.insert(mappings.left.at(TEMP));
-					} else if (quant == "freq")
-					{
-						it->getParamValue<double>("freq",val,units);
-						units::conv_spec fconv(units, "GHz");
-						fGHz = fconv.convert(val);
-						shape->set(FREQ, fGHz);
-						units::conv_spec umconv(units, "um");
-						um = umconv.convert(val); // Wavelength in microns
-						known.insert(mappings.left.at(FREQ));
-					} // Allow setting of other quantities
-					else {
-						// Ask the shape to attempt to match the variable
-						it->getParamValue<double>(quant,val,units);
-						// NOTE: No unit conversions added. TODO!
-						bool hasMap;
-						size_t vid;
-						std::shared_ptr< rtmath::graphs::vertex > vert;
-						hasMap = shape->mapVertex(quant, vid, vert);
-						// If it fails, then report an error
-						MARK();
-						if (!hasMap) continue; // TODO: make an error.
-						shape->set((MQ) vid, val); // TODO: fix casting, as not MQ only is for 
-													// the base vertices
-					}
-				}
-				shape->update(known);
-
-				// Set rotations
-				rotations rots;
-				it->getrots(rots);
-				rots.out(parout);
-
-				// Set frequency and wavelength
-				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
-					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-				wvlens->set<double>(0,um);
-				wvlens->set<double>(1,um);
-				wvlens->set<double>(2,1.0);
-				wvlens->set<std::string>(3,"LIN");
-				MARK();
-//				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
-
-				// Finish shape generation, then get calculated reff
-				double reff = shape->get(REFF); // in um by default
-				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
-					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-				reffline->set<double>(0,reff);
-				reffline->set<double>(1,reff);
-				reffline->set<double>(2,1.0);
-				reffline->set<std::string>(3,"LIN");
-			//	parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
-
-
-
 				// Now, write the files!!!!!
 				// Generate semirandom subdirectory name
 				using namespace boost::uuids;
@@ -209,28 +122,16 @@ namespace rtmath {
 				create_directory(pdir);
 
 				// Write diel.tab
-				// Calculate and set index of refraction (just for diel.tab. done in shapes.cpp already)
-				std::complex<double> m;
-				// TODO: support for different materials and 
-				//		 refractive index functions
-				refract::mice(fGHz, TK, m);
-				refract::writeDiel( (pdir/"diel.tab").string(), m );
-
+				it->exportDiel( (pdir/"diel.tab").string() );
 				// Write shape.dat (if needed)
-				if (shape->canWrite())
-					shape->write( (pdir/"shape.dat").string() );
-
+				it->exportShape( (pdir/"shape.dat").string() );
 				// Write ddscat.par
-				parout.saveFile( (pdir/"ddscat.par").string() );
-
+				it->exportDDPAR( (pdir/"ddscat.par").string() );
 				// Write run definitions
-				// Give the output class access to the graph vertices.
-				it->write( *it, (pdir).string() );
-
-				// Write run script
-				runScriptIndiv iscript(dirname);
+				ddParIterator::write(*it, (pdir).string() );
+				// Write individual run script
+				runScriptIndiv iscript(dirname, *this);
 				iscript.write(dirname);
-
 				// Lastly, add this path into the global run script listing...
 				dirs.insert(dirname);
 			}
@@ -239,7 +140,7 @@ namespace rtmath {
 			// Now to write the global run script
 			// This script will iterate through all of the directories and execute the individual runs
 
-			runScriptGlobal glb;
+			runScriptGlobal glb(*this);
 			glb.addSubdir(dirs);
 			glb.write(bpath.string());
 
@@ -376,12 +277,36 @@ namespace rtmath {
 			base.getKey(CBINFLAG, line);
 			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(nambient);
 
-			MARK();
+			base.getKey(IWRKSC, line);
+			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(tsz);
+			(tsz > 0) ? doSca = true : doSca = false;
+
+			// PLANE1, PLANE2    ddParLineMixed<double, size_t>(3, PLANE1)
+			{
+				scaDirs.clear();
+				double phi, thetan_min, thetan_max, dtheta;
+				base.getKey(PLANE1, line);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,phi);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_min);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_max);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,dtheta);
+				scaDirs.insert(boost::make_tuple<double,double,double,double>(phi,thetan_min,thetan_max,dtheta));
+
+				base.getKey(PLANE2, line);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,phi);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_min);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_max);
+				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,dtheta);
+				scaDirs.insert(boost::make_tuple<double,double,double,double>(phi,thetan_min,thetan_max,dtheta));
+			}
+
+			GETOBJKEY();
+			throw rtmath::debug::xUnimplementedFunction();
 			/* Things to import from ddPar:
-			 shapefilebase
-			 shape params
-			 overall shape stuff
-			 */
+			shapefilebase
+			shape params
+			overall shape stuff
+			*/
 		}
 
 		void ddParIterator::read(ddParIterator &obj, const std::string &file)
@@ -395,11 +320,11 @@ namespace rtmath {
 				if (!exists(pXML))
 					throw rtmath::debug::xMissingFile(pXML.string().c_str());
 				else if (is_directory(pXML))
-                                        throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
+					throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
 			} else {
 				pXML = pBase;
 				if (!exists(pXML))
-                                    throw rtmath::debug::xMissingFile(pXML.string().c_str());
+					throw rtmath::debug::xMissingFile(pXML.string().c_str());
 			}
 
 			// Okay, now to serialize and output...
@@ -407,7 +332,7 @@ namespace rtmath {
 			boost::archive::xml_iarchive oa(in);
 			oa >> BOOST_SERIALIZATION_NVP(obj);
 		}
-                
+
 		void ddParIterator::write(const ddParIterator &obj, const std::string &outfile)
 		{
 			// It's yet another serialization case
@@ -436,85 +361,229 @@ namespace rtmath {
 			oa << BOOST_SERIALIZATION_NVP(obj);
 		}
 
-		void ddParIterator::getrots(rotations &out) const
+		void ddParIterator::exportShape(const std::string &filename) const
 		{
-			out = _rot;
+			if (shape->canWrite())
+				shape->write(filename);
 		}
 
-		std::shared_ptr<shapeModifiable> ddParIterator::getshape() const
-		{
-			return _shape;
-		}
-
-		ddParIterator::ddParIterator()
-		{
-		}
-
-		ddParIteration::ddParIteration(const ddParGenerator *src)
-			:
-				freqs(src->freqs),
-				temps(src->temps),
-				rots(src->rots),
-				sizes(src->sizes),
-				shapesBase(src->shapeBase)
+		void ddParIterator::exportDiel(const std::string &filename) const
 		{
 			using namespace std;
-			// Iterate over rotations, freqs, temps, sizes, target types
-			//throw rtmath::debug::xUnimplementedFunction();
-			// Go through each combo and create a ddParIterator expressing each one
+			// Figure out the frequency and temperature in GHz and K.
+			complex<double> m;
+			double val;
+			string units;
 
-			// Iterate freqs first
-			for (auto ft = freqs.begin(); ft != freqs.end(); ft++)
+			double fGHz;
+			auto it = shape->shapeConstraints.find("freq");
+			val = *(it->second->pset.begin());
+			units = it->second->units;
+			units::conv_spec fconv(units, "GHz");
+			fGHz = fconv.convert(val);
+			
+			double TK;
+			it = shape->shapeConstraints.find("temp");
+			val = *(it->second->pset.begin());
+			units = it->second->units;
+			units::conv_temp tconv(units, "K");
+			TK = tconv.convert(val);
+			
+			refract::mice(fGHz, TK, m);
+			refract::writeDiel(filename,m);
+		}
+
+		void ddParIterator::exportDDPAR(ddPar &out) const
+		{
+			// Most of the ddPar file will be filled in from the base ddParGenerator class,
+			// with a few overrides from the iterator.
+
+			// TODO: make sure to include shape param output here!!!!!
+			throw rtmath::debug::xUnimplemented();
+			GETOBJKEY();
+		}
+
+		void ddParIterator::exportDDPAR(const std::string &filename) const
+		{
+			ddPar outpar;
+			exportDDPAR(out);
+			out.saveFile(filename);
+		}
+
+		ddParIterator::ddParIterator(const ddParGenerator &gen, std::unique_ptr<shapeModifiable> shp)
+			: _gen(gen), shape(shp)
+		{
+		}
+
+		ddParIteration::ddParIteration(const ddParGenerator &src)
+			: _gen(src)
+		{
+			_populate();
+		}
+
+		void ddParIteration::_populate()
+		{
+			using namespace std;
+			
+			/*	Iterate over all possible variations
+				Variations include, but are not limited to: 
+				shape, indiv shape params / global params,
+				freq, temp, size (vol, eff rad).
+				Go through each combo and create a ddParIterator expressing each one
+				
+				First, take each shape entry
+				It must come first, as the global params need to be added to the local params...
+			*/
+			for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
 			{
-				string fUnits = ft->second;
-				for (auto ftb = ft->first.begin(); ftb != ft->first.end(); ftb++)
+				shapeConstraintContainer shapeConstraintsEffective;
+				shapeConstraintsEffective = _gen.shapeConstraintsGlobal;
+				for (auto ot = (*it)->shapeConstraints.begin(); ot != (*it)->shapeConstraints.end(); ot++)
+					shapeConstraintsEffective.insert(*ot);
+
+
+				// first - parameter name. pair->first is value, pair->second is units
+				multimap<string, pair<double, string> > constraintsVaried;
+				set<string> variedNames;
+
+				// We now have the effective shape constraints. Gather those that need no expansion as a base.
+				// Also, for the varied ones, gather them up into constraintsVaried
+				shapeConstraintContainer shapeConstraintsEffectiveBase;
+				for (auto ot = shapeConstraintsEffective.begin(); ot != shapeConstraintsEffective.end(); ot++)
 				{
-					double f = *ftb;
-
-					// Then iterate over rotations
-					for (auto rt = rots.begin(); rt != rots.end(); rt++)
-					{
-						// And also iterate over shapes
-						for (auto st = shapesBase.begin(); st != shapesBase.end(); st++)
+					bool unique = false;
+					if (shapeConstraintsEffective.count(ot->first) == 1)
+						if ((ot->second->size() == 1))
 						{
-							// And iterate over temps
-							for (auto tt = temps.begin(); tt != temps.end(); tt++)
-							{
-								string tUnits = tt->second;
-								for (auto ttb = tt->first.begin(); ttb != tt->first.end(); ttb++)
-								{
-									double T = *ttb;
-
-									// And lastly iterate over sizes
-									for (auto ot = sizes.begin(); ot != sizes.end(); ot++)
-									{
-										string sUnits = ot->get<2>();
-										MANIPULATED_QUANTITY::MANIPULATED_QUANTITY q = ot->get<1>();
-
-										for (auto ott = ot->get<0>().begin(); ott != ot->get<0>().end(); ott++)
-										{
-											// And put all of this variation into a ddParIterator, somehow, ...
-											ddParIterator nit;
-											nit._shape = *st;
-											nit._rot = *rt;
-											MARK();
-//											nit._params["temp"] = std::make_pair<double, string>(T, tUnits);
-//											nit._params["freq"] = std::make_pair<double, string>(f, fUnits);
-											MARK();
-//											nit._params[rtmath::ddscat::MANIPULATED_QUANTITY::qnames[q]]
-//												= std::make_pair<double, string>(*ott,sUnits); // q
-										}
-									}
-								}
-							}
+							shapeConstraintsEffectiveBase.insert(*ot);
+							unique = true;
+						}
+					if (!unique)
+					{
+						for (auto ut = ot->second->begin(); ut != ot->second->end(); ut++)
+						{
+							auto p = std::make_pair<double,string>(*ut, ot->second->units);
+							constraintsVaried.insert(
+								pair<string,pair<double,string> >(ot->first,p));
+							if (variedNames.count(ot->first) == 0)
+								variedNames.insert(ot->first);
 						}
 					}
 				}
+
+				// constraintsVaried now contains all possible constraint variations. Iterate over these to 
+				// produce the ddParIterator entries in _elements
+				
+				// get rid of duplicates (they are possible still)
+				{
+					multimap<string, pair<double, string> > constraintsVariedUnique;
+					multimap<string, pair<double, string> >::iterator dt;
+					dt = unique_copy(constraintsVaried.begin(), constraintsVaried.end(), constraintsVariedUnique.begin());
+					constraintsVaried = constraintsVariedUnique;
+				}
+
+				// Collect the elements into sets of variedNames
+				map<string, set<pair<double,string> > > vmap;
+				for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
+				{
+					//pair<multimap<string,pair<double,string> >::iterator, multimap<string,pair<double,string> >::iterator >
+					auto ret = constraintsVaried.equal_range(*ot);
+					for (auto ut = ret.first; ut != ret.second; ut++)
+					{
+						if (!vmap.count(*ot))
+						{
+							static const set<pair<double,string> > base;
+							vmap.insert(pair<string,set<pair<double,string> > >(*ot,base));
+						}
+						vmap.at(*ot).insert(*ut);
+					}
+				}
+
+				// And now to permute everything.....
+				// Set all iterators to begin
+				map<string, set<pair<double,string> >::iterator> mapit;
+				for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
+					mapit[*ot] = vmap[*ot].begin();
+				bool done = false;
+				// Permute until all are at end
+				while (!done)
+				{
+					shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
+					for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
+					{
+						// Explicit, since it's hard to remember by this point
+						double val;
+						string name, units;
+
+						val = ot->second->first;
+						name = ot->first;
+						units = ot->second->second;
+
+						// Construct permuted object
+						permuted.insert(pair<string,shared_ptr<shapeConstraint> >(
+							name, make_shared<shapeConstraint>(name,val,units) ) );
+
+						// As a reminder, (it) is an iterator to the current shape.....
+						unique_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
+						nshape->shapeConstraints = permuted;
+
+						// Make the iterator
+						ddParIterator nit(_gen, move(nshape) );
+						_elements.insert(move(nit));
+
+					}
+
+					// Advance the iterators
+					// Advance the "leftmost" iterator until it hits the end. Then, reset it and advance one further.
+					auto mit = mapit.begin();
+					bool good = false;
+					auto cit = mit->second;
+					while (!done)
+					{
+						cit++;
+						if (cit == vmap[mit->first].end())
+						{
+							cit = vmap[mit->first].begin();
+							mit++;
+						} else break;
+						// Can't return here - only the current shape is done...
+						if (mit == mapit.end()) done = true; // Breaks two loops, and moves on to next shape...
+					}
+					
+				}
 			}
+
+			
 		}
 
 	}
 }
 
+/*
+				// Set rotations
+				rotations rots;
+				it->getrots(rots);
+				rots.out(parout);
 
+				// Set frequency and wavelength
+				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
+					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+				wvlens->set<double>(0,um);
+				wvlens->set<double>(1,um);
+				wvlens->set<double>(2,1.0);
+				wvlens->set<std::string>(3,"LIN");
+				GETOBJKEY();
+				//				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
 
+				// Finish shape generation, then get calculated reff
+				double reff = shape->get(REFF); // in um by default
+				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
+					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+				reffline->set<double>(0,reff);
+				reffline->set<double>(1,reff);
+				reffline->set<double>(2,1.0);
+				reffline->set<std::string>(3,"LIN");
+				//	parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
+
+				
+*/
