@@ -65,6 +65,10 @@ namespace rtmath {
 			}
 		};
 
+		// Using a map because it provides easy access to the constraint var name,
+		// really making it an indexed set
+		typedef std::multimap< std::string, std::shared_ptr<shapeConstraint> > shapeConstraintContainer;
+
 		namespace MANIPULATED_QUANTITY
 		{
 			enum MANIPULATED_QUANTITY
@@ -109,6 +113,8 @@ namespace rtmath {
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 			virtual bool canWrite() const { return false; }
 			virtual void write(const std::string &fname) const;
+			virtual bool useDDPAR() const;
+			virtual void setDDPAR(ddPar &out) const;
 			shapeConstraintContainer shapeConstraints;
 		protected:
 			// Densities of different anisotropic materials. Used in mass and inertia calculations.
@@ -134,6 +140,7 @@ namespace rtmath {
 			
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			inline void update(const rtmath::graphs::setWeakVertex &fixed) { _update(fixed); }
+			virtual void generate();
 			void getVertices(vertexMap &mappings);
 			virtual bool mapVertex(const std::string &idstr, size_t &id, std::shared_ptr<rtmath::graphs::vertex> &vertex);
 		protected:

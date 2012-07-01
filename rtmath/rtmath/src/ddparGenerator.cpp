@@ -75,13 +75,11 @@ namespace rtmath {
 		ddParGenerator::ddParGenerator()
 		{
 			base = _s_defaultBase;
-			import(base);
 		}
 
 		ddParGenerator::ddParGenerator(const ddPar &base)
 		{
 			this->base = base;
-			import(base);
 			// Figure out the type of shape, and produce an appropriate base shape
 		}
 
@@ -218,95 +216,6 @@ namespace rtmath {
 			if (!exists(ddparfilename)) throw rtmath::debug::xMissingFile(ddparfilename.c_str());
 			rtmath::ddscat::ddPar ddfile(ddparfilename);
 			base = ddfile;
-			import(base);
-		}
-
-		void ddParGenerator::import(const ddPar &base)
-		{
-			using namespace std;
-			using namespace rtmath::ddscat::ddParParsers;
-			if (!base.size()) return;
-			string sval;
-			std::shared_ptr<const ddParLine> line;
-
-			base.getKey(CMTORQ, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(sval);
-			(sval == "DOTORQ")? doTorques = true : doTorques = false;
-
-			base.getKey(CMDSOL, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(solnMeth);
-
-			base.getKey(CMDFFT, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(FFTsolver);
-
-			base.getKey(CALPHA, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(Calpha);
-
-			base.getKey(CBINFLAG, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<string> >(line)->get(binning);
-
-			base.getKey(DIMENSION, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(0, Imem1);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(1, Imem2);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<size_t> >(line)->get(2, Imem3);
-
-			base.getKey(NRFLD, line);
-			size_t tsz;
-			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(tsz);
-			(tsz > 0) ? doNearField = true : doNearField = false;
-			base.getKey(FRACT_EXTENS, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0, near1);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(1, near2);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(2, near3);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(3, near4);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(4, near5);
-			static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(5, near6);
-
-			base.getKey(TOL, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(maxTol);
-
-			base.getKey(MXITER, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(maxIter);
-
-			base.getKey(GAMMA, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(gamma);
-
-			base.getKey(ETASCA, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(etasca);
-
-			base.getKey(CBINFLAG, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<double> >(line)->get(nambient);
-
-			base.getKey(IWRKSC, line);
-			static_pointer_cast<const ddParParsers::ddParLineSimple<size_t> >(line)->get(tsz);
-			(tsz > 0) ? doSca = true : doSca = false;
-
-			// PLANE1, PLANE2    ddParLineMixed<double, size_t>(3, PLANE1)
-			{
-				scaDirs.clear();
-				double phi, thetan_min, thetan_max, dtheta;
-				base.getKey(PLANE1, line);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,phi);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_min);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_max);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,dtheta);
-				scaDirs.insert(boost::make_tuple<double,double,double,double>(phi,thetan_min,thetan_max,dtheta));
-
-				base.getKey(PLANE2, line);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,phi);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_min);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,thetan_max);
-				static_pointer_cast<const ddParParsers::ddParLineSimplePlural<double> >(line)->get(0,dtheta);
-				scaDirs.insert(boost::make_tuple<double,double,double,double>(phi,thetan_min,thetan_max,dtheta));
-			}
-
-			GETOBJKEY();
-			throw rtmath::debug::xUnimplementedFunction();
-			/* Things to import from ddPar:
-			shapefilebase
-			shape params
-			overall shape stuff
-			*/
 		}
 
 		void ddParIterator::read(ddParIterator &obj, const std::string &file)
@@ -391,23 +300,41 @@ namespace rtmath {
 			
 			refract::mice(fGHz, TK, m);
 			refract::writeDiel(filename,m);
+
+			GETOBJKEY();
+			// TODO: add support for different refractive index calculators and 
+			// for different materials (like iron)
 		}
 
 		void ddParIterator::exportDDPAR(ddPar &out) const
 		{
+			if (shape->useDDPAR() == false) return;
 			// Most of the ddPar file will be filled in from the base ddParGenerator class,
-			// with a few overrides from the iterator.
+			// with a few overrides from the iterator. Some of the properties come from the 
+			// shapeModifiable member, such as effective radius.
 
-			// TODO: make sure to include shape param output here!!!!!
-			throw rtmath::debug::xUnimplemented();
-			GETOBJKEY();
+			// Starting with the base (provided by ddParGenerator)
+			out = _gen.base;
+
+			// Apply iterator-specific properties --- there are none, 
+			// as these are all assumed by the shape...
+
+			// Also apply the shape properties to the ddPar output
+			// This means: set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF
+			// Wavelength
+			// Rotations
+			// Scattering planes
+			shape->setDDPAR(out);
+
+			// And that's really it for the ddscat.par file...
 		}
 
 		void ddParIterator::exportDDPAR(const std::string &filename) const
 		{
+			if (shape->useDDPAR() == false) return;
 			ddPar outpar;
-			exportDDPAR(out);
-			out.saveFile(filename);
+			exportDDPAR(outpar);
+			outpar.saveFile(filename);
 		}
 
 		ddParIterator::ddParIterator(const ddParGenerator &gen, std::unique_ptr<shapeModifiable> shp)
@@ -526,6 +453,7 @@ namespace rtmath {
 						// As a reminder, (it) is an iterator to the current shape.....
 						unique_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
 						nshape->shapeConstraints = permuted;
+						nshape->generate();
 
 						// Make the iterator
 						ddParIterator nit(_gen, move(nshape) );

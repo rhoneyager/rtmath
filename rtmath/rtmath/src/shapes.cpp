@@ -217,6 +217,41 @@ namespace rtmath {
 			oa << BOOST_SERIALIZATION_NVP(*this);
 		}
 
+		void shape::useDDPAR() const
+		{
+			return true;
+		}
+
+		void shape::setDDPAR(ddPar &out) const
+		{
+			// Here, set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF,
+			// Wavelength, Rotations, Scattering planes?
+
+			throw rtmath::debug::xUnimplementedFunction();
+			GETOBJKEY();
+			// Should these derived quantities be part of shapeConstraints, or should they 
+			// exist within separate containers?
+
+			// CSHAPE - shape type. If not present, select FROM_FILE
+			// This is a string, not a number, but it is hidden in shapeConstraints 
+			// since it was easier to releverage the iteration
+			auto it = shapeConstraints.find("CSHAPE");
+			if (it != shapeConstraints.end()) 
+			{
+				std::string shp = it->second->units;
+				out.setShape(shp);
+			} else {
+				throw rtmath::debug::xBadInput("Incomplete shape. No CSHAPE set!");
+				//out.setShape("FROM_FILE");
+			}
+
+			// SHPAR1, SHPAR2, SHPAR3
+			// AEFF
+			// Wavelength
+			// Rotations
+			// Scattering planes
+		}
+
 		void shapeModifiable::set(const std::string & var, double val)
 		{
 			_vars[var] = val;

@@ -16,66 +16,20 @@
 #include <complex>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/set.hpp>
 #include "parids.h"
 #include "../parsers.h"
 
 namespace rtmath {
 	namespace ddscat {
 
-		namespace ddParParsers
-		{
-			class ddParLine;
-			template<class T> class ddParLineSimplePlural;
-		}
-
-		class ddPar
-		{
-		public:
-			ddPar();
-			ddPar(const std::string &filename);
-			~ddPar();
-
-			void loadFile(const std::string &filename, bool overlay = false);
-			void saveFile(const std::string &filename) const;
-			void load(std::istream &stream, bool overlay = false);
-			inline size_t version() const { return _version; }
-			inline void version(size_t nv) { _version = nv; }
-			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
-			void getKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &res);
-			void getKey(ddParParsers::ParId key, std::shared_ptr<const ddParParsers::ddParLine> &res) const;
-			inline std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
-			{
-				std::shared_ptr<ddParParsers::ddParLine> res = nullptr;
-				getKey(key,res);
-				return res;
-			}
-			void delKey(ddParParsers::ParId key);
-			size_t size() const { return _parsedData.size(); }
-			void getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
-			void getPlane(size_t key, std::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const;
-			inline std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > getPlane(size_t key)
-			{
-				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res = nullptr;
-				getPlane(key,res);
-				return res;
-			}
-			void insertPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double>> &res);
-			void delPlane(size_t key);
-		private:
-			void _init();
-			size_t _version;
-			void _populateDefaults(bool overwrite = false, const std::string &src = "") const;
-
-			mutable std::map<ddParParsers::ParId, 
-				std::shared_ptr<ddParParsers::ddParLine> > 
-				_parsedData;
-
-			mutable std::map<size_t,
-				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
-				_scaPlanes;
-
-			std::map<size_t, std::string> _comments;
-		};
 
 		namespace ddParParsers
 		{
@@ -382,6 +336,184 @@ namespace rtmath {
 
 			std::shared_ptr<ddParLine> mapKeys(const std::string &key);
 		}
+
+
+#define accessorSimple(name,id,valtype) \
+	valtype name() const \
+		{ std::shared_ptr<const ddParParsers::ddParLineSimple<valtype> > line; \
+		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		valtype v; \
+		getKey(id,linein); \
+		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<valtype> >(line); \
+		line->get(v); \
+		return v; } \
+	void name(const valtype &v) \
+		{ std::shared_ptr< ddParParsers::ddParLineSimple<valtype> > line; \
+		line->set(v); \
+		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		}
+
+// Special case where a bool is stored in the file as an int
+#define accessorSimpleBool(name,id) \
+	bool name() const \
+		{ std::shared_ptr<const ddParParsers::ddParLineSimple<size_t> > line; \
+		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		size_t v; \
+		getKey(id,linein); \
+		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<size_t> >(line); \
+		line->get(v); \
+		return (v) ? true : false; } \
+	void name(const bool &v) \
+		{ std::shared_ptr< ddParParsers::ddParLineSimple<size_t> > line; \
+		size_t vi = (v) ? 1 : 0; \
+		line->set(vi); \
+		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		}
+
+#define accessorSimplePlural(name,id,valtype) \
+	valtype name(size_t index) const \
+		{ std::shared_ptr<const ddParParsers::ddParLineSimplePlural<valtype> > line; \
+		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		valtype v; \
+		getKey(id,linein); \
+		line = std::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<valtype> >(line); \
+		line->get(index,v); \
+		return v; } \
+	void name(size_t index, const valtype &v) \
+		{ std::shared_ptr< ddParParsers::ddParLineSimplePlural<valtype> > line; \
+		line->set(index,v); \
+		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		}
+
+#define accessorString(getname,setname,id) \
+	void getname(std::string &val) const \
+		{ std::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line; \
+		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		std::string v; \
+		getKey(id,linein); \
+		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
+		line->get(v); \
+		val = v; } \
+	void setname(const std::string &v) \
+		{ std::shared_ptr< ddParParsers::ddParLineSimple<std::string> > line; \
+		line->set(v); \
+		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		}
+
+#define accessorStringBool(name,id,bfalse,btrue) \
+	bool name() const \
+		{ std::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line; \
+		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		std::string v; \
+		getKey(id,linein); \
+		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
+		line->get(v); \
+		return (v == btrue) ? true : false; } \
+	void name(bool v) \
+		{ std::shared_ptr<ddParParsers::ddParLineSimple<std::string> > line; \
+		std::string vs = (v) ? btrue : bfalse ; \
+		line->set(vs); \
+		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		}
+
+
+		class ddPar
+		{
+		public:
+			ddPar();
+			ddPar(const std::string &filename);
+			~ddPar();
+
+			void loadFile(const std::string &filename, bool overlay = false);
+			void saveFile(const std::string &filename) const;
+			void load(std::istream &stream, bool overlay = false);
+			inline size_t version() const { return _version; }
+			inline void version(size_t nv) { _version = nv; }
+
+			// Easy to use accessor functions
+			accessorStringBool(doTorques,ddParParsers::CMTORQ,"NOTORQ","DOTORQ");
+			accessorString(getSolnMeth,setSolnMeth,ddParParsers::CMDSOL);
+			accessorString(getFFTsolver,setFFTsolver,ddParParsers::CMDFFT);
+			accessorString(getCalpha,setCalpha,ddParParsers::CALPHA);
+			accessorString(getBinning,setBinning,ddParParsers::CBINFLAG);
+			accessorSimplePlural(Imem,ddParParsers::DIMENSION,size_t);
+
+			accessorString(getShape,setShape,ddParParsers::CSHAPE);
+
+			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
+			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double);
+			accessorSimple(maxTol,ddParParsers::TOL,double);
+			accessorSimple(maxIter,ddParParsers::MXITER,size_t);
+			accessorSimple(gamma,ddParParsers::GAMMA,double);
+			accessorSimple(etasca,ddParParsers::ETASCA,double);
+			// Wavelengths
+			accessorSimple(nambient,ddParParsers::NAMBIENT,double);
+			// Eff rad
+			// Polarization states
+			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
+			accessorSimpleBool(writeSca,ddParParsers::IWRKSC);
+			// Betas
+			// Thetas
+			// Phis
+			// First IRAD
+			// SIJ element number
+			// SIJ indices
+
+			accessorString(getCMDFRM,setCMDFRM,ddParParsers::CMDFRM);
+			accessorSimple(numPlanes,ddParParsers::NPLANES,size_t);
+			
+			// The older interface
+			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
+			void getKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &res);
+			void getKey(ddParParsers::ParId key, std::shared_ptr<const ddParParsers::ddParLine> &res) const;
+			inline std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
+			{
+				std::shared_ptr<ddParParsers::ddParLine> res = nullptr;
+				getKey(key,res);
+				return res;
+			}
+			void delKey(ddParParsers::ParId key);
+			size_t size() const { return _parsedData.size(); }
+			void getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
+			void getPlane(size_t key, std::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const;
+			inline std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > getPlane(size_t key)
+			{
+				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res = nullptr;
+				getPlane(key,res);
+				return res;
+			}
+			void insertPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double>> &res);
+			void delPlane(size_t key);
+			friend class boost::serialization::access;
+		private:
+			void _init();
+			size_t _version;
+			void _populateDefaults(bool overwrite = false, const std::string &src = "") const;
+
+			mutable std::map<ddParParsers::ParId, 
+				std::shared_ptr<ddParParsers::ddParLine> > 
+				_parsedData;
+
+			mutable std::map<size_t,
+				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
+				_scaPlanes;
+
+			std::map<size_t, std::string> _comments;
+
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				//ar & BOOST_SERIALIZATION_NVP(exportLoc);
+				ar & boost::serialization::make_nvp("ddPar_Raw", _parsedData);
+				ar & boost::serialization::make_nvp("Scattering_Planes", _scaPlanes);
+			}
+		};
+
+#undef accessorSimple
+#undef accessorSimpleBool
+#undef accessorSimplePlural
+#undef accessorString
+#undef accessorStringBool
 
 	}
 }

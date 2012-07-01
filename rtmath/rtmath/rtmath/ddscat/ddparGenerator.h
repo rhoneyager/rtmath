@@ -40,10 +40,7 @@ namespace rtmath {
 	namespace ddscat {
 
 		class ddParIteration;
-
-		// Using a map because it provides easy access to the constraint var name,
-		// really making it an indexed set
-		typedef std::multimap< std::string, std::shared_ptr<shapeConstraint> > shapeConstraintContainer;
+		class ddParIterator;
 
 		class ddParGeneratorBase
 		{
@@ -69,24 +66,8 @@ namespace rtmath {
 			bool shapeStats, registerDatabase, doExport;
 			std::string exportLoc;
 
-			// These do go into a ddscat.par file in some form or another
-
-			bool doTorques;
-			std::string solnMeth, FFTsolver, Calpha, binning;
-
-			size_t Imem1, Imem2, Imem3;
-			bool doNearField;
-			double near1, near2, near3, near4, near5, near6;
-			double maxTol;
-			size_t maxIter;
-			double gamma;
-			double etasca;
-			double nambient;
-			bool doSca;
-			std::set< boost::tuple<double,double,double,double> > scaDirs;
-
-
 			friend class ddParIteration;
+			friend class ddParIterator;
 			friend class boost::serialization::access;
 			// When the class Archive corresponds to an output archive, the
 			// & operator is defined similar to <<.  Likewise, when the class Archive
@@ -111,31 +92,7 @@ namespace rtmath {
 				ar & BOOST_SERIALIZATION_NVP(doExport);
 				ar & BOOST_SERIALIZATION_NVP(exportLoc);
 
-				ar & BOOST_SERIALIZATION_NVP(doTorques);
-				ar & BOOST_SERIALIZATION_NVP(solnMeth);
-				ar & BOOST_SERIALIZATION_NVP(FFTsolver);
-				ar & BOOST_SERIALIZATION_NVP(Calpha);
-				ar & BOOST_SERIALIZATION_NVP(binning);
-
-				ar & BOOST_SERIALIZATION_NVP(Imem1);
-				ar & BOOST_SERIALIZATION_NVP(Imem2);
-				ar & BOOST_SERIALIZATION_NVP(Imem3);
-				ar & BOOST_SERIALIZATION_NVP(doNearField);
-				ar & BOOST_SERIALIZATION_NVP(near1);
-				ar & BOOST_SERIALIZATION_NVP(near2);
-				ar & BOOST_SERIALIZATION_NVP(near3);
-				ar & BOOST_SERIALIZATION_NVP(near4);
-				ar & BOOST_SERIALIZATION_NVP(near5);
-				ar & BOOST_SERIALIZATION_NVP(near6);
-
-				ar & BOOST_SERIALIZATION_NVP(maxTol);
-				ar & BOOST_SERIALIZATION_NVP(maxIter);
-				ar & BOOST_SERIALIZATION_NVP(gamma);
-				ar & BOOST_SERIALIZATION_NVP(etasca);
-				ar & BOOST_SERIALIZATION_NVP(nambient);
-
-				ar & BOOST_SERIALIZATION_NVP(doSca);
-				ar & BOOST_SERIALIZATION_NVP(scaDirs);
+				ar & boost::serialization::make_nvp("ddPar", base);
 
 				ar & BOOST_SERIALIZATION_NVP(shapeConstraintsGlobal);
 				ar & BOOST_SERIALIZATION_NVP(rots);
@@ -222,7 +179,6 @@ namespace rtmath {
 			virtual ~ddParGenerator();
 			static void write(const ddParGenerator &obj, const std::string &basename);
 			void import(const std::string &ddparfilename);
-			void import(const ddPar &base);
 			void generate(const std::string &basedir) const;
 			static void read(ddParGenerator &obj, const std::string &basename);
 		public: // Static stuff here
