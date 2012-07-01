@@ -316,14 +316,13 @@ namespace rtmath {
 			// Starting with the base (provided by ddParGenerator)
 			out = _gen.base;
 
-			// Apply iterator-specific properties --- there are none, 
-			// as these are all assumed by the shape...
+			// Apply iterator-specific properties
+			// Rotations
+			rots->out(out);
 
 			// Also apply the shape properties to the ddPar output
 			// This means: set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF
 			// Wavelength
-			// Rotations
-			// Scattering planes
 			shape->setDDPAR(out);
 
 			// And that's really it for the ddscat.par file...
@@ -351,7 +350,10 @@ namespace rtmath {
 		void ddParIteration::_populate()
 		{
 			using namespace std;
-			
+			// TODO: factor in different possible rotations!!!
+			MARK();
+			throw rtmath::debug::xUnimplementedFunction();
+
 			/*	Iterate over all possible variations
 				Variations include, but are not limited to: 
 				shape, indiv shape params / global params,

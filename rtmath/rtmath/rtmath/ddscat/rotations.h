@@ -29,32 +29,32 @@ namespace rtmath {
 		public:
 			rotationsBase()
 				:
-				_bMin(0), _bMax(360), _bN(6),
+			_bMin(0), _bMax(360), _bN(6),
 				_tMin(0), _tMax(90), _tN(6),
 				_pMin(0), _pMax(180), _pN(6)
-				{ }
+			{ }
 			virtual ~rotationsBase();
 		protected:
 			double _bMin, _bMax;
 			double _tMin, _tMax;
 			double _pMin, _pMax;
 			size_t _bN, _tN, _pN;
-		friend class boost::serialization::access;
-		friend struct std::less<rtmath::ddscat::rotationsBase >;
+			friend class boost::serialization::access;
+			friend struct std::less<rtmath::ddscat::rotationsBase >;
 		public:
 			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-                                        ar & boost::serialization::make_nvp("bMin", _bMin);
-					ar & boost::serialization::make_nvp("bMax",_bMax);
-					ar & boost::serialization::make_nvp("bN",_bN);
-					ar & boost::serialization::make_nvp("tMin", _tMin);
-					ar & boost::serialization::make_nvp("tMax", _tMax);
-					ar & boost::serialization::make_nvp("tN", _tN);
-					ar & boost::serialization::make_nvp("pMin",_pMin);
-					ar & boost::serialization::make_nvp("pMax",_pMax);
-					ar & boost::serialization::make_nvp("pN", _pN);
-				}
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				ar & boost::serialization::make_nvp("bMin", _bMin);
+				ar & boost::serialization::make_nvp("bMax",_bMax);
+				ar & boost::serialization::make_nvp("bN",_bN);
+				ar & boost::serialization::make_nvp("tMin", _tMin);
+				ar & boost::serialization::make_nvp("tMax", _tMax);
+				ar & boost::serialization::make_nvp("tN", _tN);
+				ar & boost::serialization::make_nvp("pMin",_pMin);
+				ar & boost::serialization::make_nvp("pMax",_pMax);
+				ar & boost::serialization::make_nvp("pN", _pN);
+			}
 		};
 
 		class rotations : public rotationsBase
@@ -78,10 +78,10 @@ namespace rtmath {
 			friend struct std::less<rtmath::ddscat::rotations >;
 			friend class boost::serialization::access;
 			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(rotationsBase);
-				}
+			void serialize(Archive & ar, const unsigned int version)
+			{
+				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(rotationsBase);
+			}
 		};
 
 		// Supporting code to allow boost unordered map
@@ -110,7 +110,7 @@ namespace std {
 		bool operator() (const rtmath::ddscat::rotations &lhs, const rtmath::ddscat::rotations &rhs) const
 		{
 			/*
-						double _bMin, _bMax;
+			double _bMin, _bMax;
 			double _tMin, _tMax;
 			double _pMin, _pMax;
 			size_t _bN, _tN, _pN;

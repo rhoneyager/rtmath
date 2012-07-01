@@ -13,7 +13,7 @@ namespace rtmath {
 				CBINFLAG,		// string
 				DIMENSION,		// size_t	3
 				CSHAPE,			// string
-				SHAPEPARAMS,	// size_t	3
+				SHAPEPARAMS,	// double	3
 				NCOMP,			// size_t
 				IREFR,			// string
 				NRFLD,			// size_t (bool)				version 7.2

@@ -191,13 +191,6 @@ namespace rtmath {
 		{
 		}
 
-		double shape::get(const std::string & var) const
-		{
-			if (_vars.count(var))
-				return _vars.at(var);
-			return 0;
-		}
-
 		void shape::write(const std::string &fname) const
 		{
 			using namespace ::boost::filesystem;
@@ -224,13 +217,7 @@ namespace rtmath {
 
 		void shape::setDDPAR(ddPar &out) const
 		{
-			// Here, set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF,
-			// Wavelength, Rotations, Scattering planes?
-
-			throw rtmath::debug::xUnimplementedFunction();
-			GETOBJKEY();
-			// Should these derived quantities be part of shapeConstraints, or should they 
-			// exist within separate containers?
+			// Here, set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF, Wavelength
 
 			// CSHAPE - shape type. If not present, select FROM_FILE
 			// This is a string, not a number, but it is hidden in shapeConstraints 
@@ -246,15 +233,52 @@ namespace rtmath {
 			}
 
 			// SHPAR1, SHPAR2, SHPAR3
-			// AEFF
-			// Wavelength
-			// Rotations
-			// Scattering planes
-		}
+			it = shapeConstraints.find("SHPAR1");
+			if (it != shapeConstraints.end()) 
+			{
+				out.shpar(0,*(it->second->pset.begin()));
+				it = shapeConstraints.find("SHPAR2");
+				TASSERT(it != shapeConstraints.end());
+				out.shpar(1,*(it->second->pset.begin()));
+				it = shapeConstraints.find("SHPAR3");
+				TASSERT(it != shapeConstraints.end());
+				out.shpar(2,*(it->second->pset.begin()));
+			} else {
+				out.shpar(0,1.0);
+				out.shpar(1,1.0);
+				out.shpar(2,1.0);
+			}
 
-		void shapeModifiable::set(const std::string & var, double val)
-		{
-			_vars[var] = val;
+			// AEFF
+			{
+				it = shapeConstraints.find("AEFF");
+				TASSERT(it != shapeConstraints.end());
+				std::string units;
+				double val, aeff;
+				units = it->second->units;
+				val = *(it->second->pset.begin());
+				// Convert
+				rtmath::units::conv_alt cnv(units, "um");
+				aeff = cnv.convert(val);
+
+				out.setAeff(aeff,aeff,1,"LIN");
+			}
+
+			// Wavelength
+			{
+				it = shapeConstraints.find("AEFF");
+				TASSERT(it != shapeConstraints.end());
+				std::string units;
+				double val, wvlen;
+				units = it->second->units;
+				val = *(it->second->pset.begin());
+				// Convert
+				rtmath::units::conv_spec cnv(units, "um");
+				wvlen = cnv.convert(val);
+
+				out.setWavelengths(wvlen,wvlen,1,"LIN");
+			}
+
 		}
 
 		// TODO: fix constructor

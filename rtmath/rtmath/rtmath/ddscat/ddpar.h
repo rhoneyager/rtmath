@@ -287,6 +287,10 @@ namespace rtmath {
 						out << " = " << idstr << std::endl;
 					}
 				}
+				void setSep(size_t numT) const
+				{
+					_numT = numT;
+				}
 #pragma warning( push ) // Suppress warning. MSVC warning is because of how it branches,
 #pragma warning( disable : 4244 ) // even though that part of code is never reached
 				template <class S>
@@ -298,11 +302,11 @@ namespace rtmath {
 						R pval;
 						index -= _numT;
 						_r[index].get(pval);
-						val = pval;
+						val = boost::lexical_cast<S>(pval);
 					} else {
 						T pval;
 						_t[index].get(pval);
-						val = pval;
+						val = boost::lexical_cast<S>(pval);
 					}
 				}
 
@@ -329,7 +333,7 @@ namespace rtmath {
 				}
 #pragma warning( pop ) 
 			protected:
-				size_t _numT;
+				mutable size_t _numT;
 				std::vector<ddParLineSimple<T> > _t;
 				std::vector<ddParLineSimple<R> > _r;
 			};
@@ -439,6 +443,7 @@ namespace rtmath {
 			accessorSimplePlural(Imem,ddParParsers::DIMENSION,size_t);
 
 			accessorString(getShape,setShape,ddParParsers::CSHAPE);
+			accessorSimplePlural(shpar,ddParParsers::SHAPEPARAMS,double);
 
 			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
 			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double);
@@ -447,8 +452,17 @@ namespace rtmath {
 			accessorSimple(gamma,ddParParsers::GAMMA,double);
 			accessorSimple(etasca,ddParParsers::ETASCA,double);
 			// Wavelengths
+			// TODO: implement
+			void setWavelengths(double min, double max, size_t n, const std::string &spacing);
+			void getWavelengths(double &min, double &max, size_t &n, std::string &spacing) const;
+
 			accessorSimple(nambient,ddParParsers::NAMBIENT,double);
+
 			// Eff rad
+			// TODO: implement
+			void setAeff(double min, double max, size_t n, const std::string &spacing);
+			void getAeff(double &min, double &max, size_t &n, std::string &spacing) const;
+
 			// Polarization states
 			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
 			accessorSimpleBool(writeSca,ddParParsers::IWRKSC);

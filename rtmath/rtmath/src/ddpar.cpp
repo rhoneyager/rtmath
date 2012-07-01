@@ -127,6 +127,62 @@ namespace rtmath {
 				_parsedData.erase(key);
 			_parsedData[key] = ptr;
 		}
+		
+		void ddPar::getAeff(double &min, double &max, size_t &n, std::string &spacing) const
+		{
+			std::shared_ptr< const ddParParsers::ddParLineMixed<double, std::string> > line;
+
+			std::shared_ptr< const ddParParsers::ddParLine > linein;
+			getKey(ddParParsers::AEFF,linein);
+			line = std::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(line);
+			line->setSep(3);
+			line->get<double>(0,min);
+			line->get<double>(1,max);
+			double dN;
+			line->get<double>(2,dN);
+			n = (size_t) dN;
+
+			line->get<std::string>(3,spacing);
+		}
+
+		void ddPar::getWavelengths(double &min, double &max, size_t &n, std::string &spacing) const
+		{
+			std::shared_ptr< const ddParParsers::ddParLineMixed<double, std::string> > line;
+
+			std::shared_ptr< const ddParParsers::ddParLine > linein;
+			getKey(ddParParsers::WAVELENGTHS,linein);
+			line = std::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(line);
+			line->setSep(3);
+			line->get<double>(0,min);
+			line->get<double>(1,max);
+			double dN;
+			line->get<double>(2,dN);
+			n = (size_t) dN;
+
+			line->get<std::string>(3,spacing);
+		}
+		
+		void ddPar::setAeff(double min, double max, size_t n, const std::string &spacing)
+		{
+			std::shared_ptr< ddParParsers::ddParLineMixed<double, std::string> > line
+				(new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::AEFF));
+			line->set<double>(0,min);
+			line->set<double>(1,max);
+			line->set<double>(2,n);
+			line->set<std::string>(3,spacing);
+			insertKey(ddParParsers::AEFF,std::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		void ddPar::setWavelengths(double min, double max, size_t n, const std::string &spacing)
+		{
+			std::shared_ptr< ddParParsers::ddParLineMixed<double, std::string> > line
+				(new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+			line->set<double>(0,min);
+			line->set<double>(1,max);
+			line->set<double>(2,n);
+			line->set<std::string>(3,spacing);
+			insertKey(ddParParsers::WAVELENGTHS,std::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
 
 		void ddPar::getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)
 		{

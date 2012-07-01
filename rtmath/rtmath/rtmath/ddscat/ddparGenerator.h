@@ -119,6 +119,7 @@ namespace rtmath {
 			// values - only one element in each shapeConstraint entry.
 			// contains freq, temp, reff, and every other needed quantity
 			std::unique_ptr<shapeModifiable> shape;
+			std::unique_ptr<rotations> rots;
 
 			inline HASH_t hash() const
 			{
@@ -140,6 +141,7 @@ namespace rtmath {
 			{
 				ar & boost::serialization::make_nvp("ddParGenerator", _gen);
 				ar & BOOST_SERIALIZATION_NVP(shape);
+				ar & BOOST_SERIALIZATION_NVP(rots);
 			}
 		};
 
