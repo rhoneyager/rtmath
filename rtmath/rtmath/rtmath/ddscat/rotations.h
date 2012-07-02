@@ -68,10 +68,13 @@ namespace rtmath {
 			virtual ~rotations();
 			double bMin() const { return _bMin; }
 			double bMax() const { return _bMax; }
+			size_t bN() const { return _bN; }
 			double tMin() const { return _tMin; }
 			double tMax() const { return _tMax; }
+			size_t tN() const { return _tN; }
 			double pMin() const { return _pMin; }
 			double pMax() const { return _pMax; }
+			size_t pN() const { return _pN; }
 			// ddPar output function
 			void out(ddPar &dest) const;
 			// TODO: add stream-like function alias

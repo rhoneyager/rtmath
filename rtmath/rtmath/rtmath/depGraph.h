@@ -7,6 +7,9 @@
 #ifdef __GNUC__
 #include <initializer_list>
 #endif
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace rtmath
 {
@@ -28,47 +31,48 @@ namespace rtmath
 			virtual bool runSupported(const std::string &id = "") = 0;
 		};
 
-		typedef std::set< std::weak_ptr<vertex>, std::owner_less<std::weak_ptr<vertex> > > setWeakVertex;
-		typedef std::set< std::shared_ptr<vertex> > setShrdVertex;
-		typedef std::list< std::weak_ptr<vertex> > listWeakVertex;
+		typedef std::set< boost::weak_ptr<vertex> > setWeakVertex;
+		typedef std::set< boost::shared_ptr<vertex> > setShrdVertex;
+		typedef std::list< boost::weak_ptr<vertex> > listWeakVertex;
 
-		class vertex : public std::enable_shared_from_this<vertex>
+		class vertex : public boost::enable_shared_from_this<vertex>
 		{
 		public:
-			vertex(bool OR = false) : _slotOR(OR) { _target = nullptr; }
+			vertex(bool OR = false) : _slotOR(OR) { } // TODO: set _target to nullptr 
 			virtual ~vertex();
-			void addSlot(std::shared_ptr<vertex> slot);
-			void run(std::shared_ptr<vertexRunnable> target) const;
+			inline bool isOR() const { return _slotOR; }
+			void addSlot(boost::shared_ptr<vertex> slot);
+			void run(boost::shared_ptr<vertexRunnable> target) const;
 			void run() const;
-			void setVertexRunnableCode(std::shared_ptr<vertexRunnable> target);
+			void setVertexRunnableCode(boost::shared_ptr<vertexRunnable> target);
 
 			// Make connector between two criteria
 			//			static std::shared_ptr<vertex> connect(
 			//				std::shared_ptr<vertex> target, 
 			//				size_t nDepends, ...); 
-			static std::shared_ptr<vertex> connect(
-				std::shared_ptr<vertex> target,
-				const std::set<std::shared_ptr<vertex> > &depends);
+			static boost::shared_ptr<vertex> connect(
+				boost::shared_ptr<vertex> target,
+				const std::set<boost::shared_ptr<vertex> > &depends);
 			// Fast connect that looks up node id (MANIPULATED_QUANTITY)
 			//static std::shared_ptr<vertex> connect(
 			//	size_t node, size_t numDeps, ...);
 #ifdef __GNUC__
-			static std::shared_ptr<vertex> connect(
-				std::shared_ptr<vertex> target,
-				std::initializer_list<std::shared_ptr<vertex> > depends
+			static boost::shared_ptr<vertex> connect(
+				boost::shared_ptr<vertex> target,
+				std::initializer_list<boost::shared_ptr<vertex> > depends
 				);
 #endif
 
 		protected:
-			std::shared_ptr<vertexRunnable> _target;
+			boost::shared_ptr<vertexRunnable> _target;
 			bool _slotOR;
-			void _addSignal(std::weak_ptr<vertex> signal);
+			void _addSignal(boost::weak_ptr<vertex> signal);
 			setWeakVertex _signals, _slots;
 			friend class graph;
 		};
 
 
-		class graph : public std::enable_shared_from_this<graph>
+		class graph : public boost::enable_shared_from_this<graph>
 		{
 		public:
 			graph(const setShrdVertex &vertices);

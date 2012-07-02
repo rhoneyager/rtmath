@@ -27,6 +27,10 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include "ddpar.h"
 #include "shapes.h"
 #include "rotations.h"
@@ -48,11 +52,11 @@ namespace rtmath {
 			ddParGeneratorBase();
 			virtual ~ddParGeneratorBase();
 			// freqs and temps are now part of the shape constraints
-			std::set<std::shared_ptr<rotations> > rots;
+			std::set<boost::shared_ptr<rotations> > rots;
 			// The other constraints
 			shapeConstraintContainer shapeConstraintsGlobal;
 			// The shapes to generate
-			std::set<std::unique_ptr<shapeModifiable> > shapes;
+			std::set<boost::scoped_ptr<shapeModifiable> > shapes;
 
 			ddPar base;
 			std::string baseParFile;
@@ -106,7 +110,7 @@ namespace rtmath {
 		{
 		public:
 			// Constructor takes the pointer so we don't have to copy every conceivable property
-			ddParIterator(const ddParGenerator &gen, std::unique_ptr<shapeModifiable> shp);
+			ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp);
 			static void write(const ddParIterator &obj, const std::string &outfile);
 			static void read(ddParIterator &obj, const std::string &file);
 
@@ -118,8 +122,8 @@ namespace rtmath {
 			// The shape is a special clone of one of the ddParGenerator shapes, with no iteration over
 			// values - only one element in each shapeConstraint entry.
 			// contains freq, temp, reff, and every other needed quantity
-			std::unique_ptr<shapeModifiable> shape;
-			std::shared_ptr<rotations> rots;
+			boost::shared_ptr<shapeModifiable> shape;
+			boost::shared_ptr<rotations> rots;
 
 			inline HASH_t hash() const
 			{
@@ -127,6 +131,12 @@ namespace rtmath {
 				HASH(this, sizeof(*this), HASHSEED, &res);
 				return res;
 			}
+
+			/*bool operator<(const ddParIterator &rhs) const
+			{
+				return false;
+			}*/
+
 			friend struct std::less<rtmath::ddscat::ddParIterator>;
 			friend class ddParIteration;
 			friend class ddParGenerator;
@@ -156,7 +166,7 @@ namespace rtmath {
 		public:
 			ddParIteration(const ddParGenerator &gen);
 			// Iterators go here
-			typedef std::set<ddParIterator > data_t;
+			typedef std::set< boost::shared_ptr<ddParIterator> > data_t;
 			typedef data_t::const_iterator const_iterator;
 			inline const_iterator begin() const { return _elements.begin(); }
 			inline const_iterator end() const { return _elements.end(); }
@@ -212,20 +222,6 @@ namespace std {
 		}
 	};
 
-
-	template <> struct less<rtmath::ddscat::ddParIterator >
-	{
-		bool operator() (const rtmath::ddscat::ddParIterator &lhs, const rtmath::ddscat::ddParIterator &rhs) const
-		{
-			// Check f, mu, mun, phi, phin
-			MARK();
-			//throw rtmath::debug::xUnimplementedFunction();
-			return &lhs < &rhs; // This is a horrible idea.......
-			//if (lhs.f != rhs.f) return lhs.f < rhs.f;
-
-			//return false;
-		}
-	};
 }; // end namespace std
 
 

@@ -16,27 +16,27 @@ namespace rtmath
 	namespace graphs
 	{
 #ifdef __GNUC__
-		std::shared_ptr<vertex> vertex::connect(
-			std::shared_ptr<vertex> target, 
-			std::initializer_list<std::shared_ptr<vertex> > depends)
+		boost::shared_ptr<vertex> vertex::connect(
+			boost::shared_ptr<vertex> target, 
+			std::initializer_list<boost::shared_ptr<vertex> > depends)
 		{
 			// Create connector
-			std::shared_ptr<vertex> connector;
-			connector = std::shared_ptr<vertex>(new vertex(false) );
+			boost::shared_ptr<vertex> connector;
+			connector = boost::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
-			for (std::shared_ptr<vertex> it : depends)
+			for (boost::shared_ptr<vertex> it : depends)
 				connector->addSlot(it);
 
 			return connector;
 		}
 #endif
 
-		std::shared_ptr<vertex> vertex::connect(
-			std::shared_ptr<vertex> target,
-			const std::set<std::shared_ptr<vertex> > &depends)
+		boost::shared_ptr<vertex> vertex::connect(
+			boost::shared_ptr<vertex> target,
+			const std::set<boost::shared_ptr<vertex> > &depends)
 		{
-			std::shared_ptr<vertex> connector;
-			connector = std::shared_ptr<vertex>(new vertex(false) );
+			boost::shared_ptr<vertex> connector;
+			connector = boost::shared_ptr<vertex>(new vertex(false) );
 			target->addSlot(connector);
 			for (auto it = depends.begin(); it != depends.end(); it++)
 			//for (std::shared_ptr<vertex> it : depends)
@@ -73,7 +73,7 @@ namespace rtmath
 		*/
 		vertex::~vertex() {}
 
-		void vertex::addSlot(std::shared_ptr<vertex> slot)
+		void vertex::addSlot(boost::shared_ptr<vertex> slot)
 		{
 			_slots.insert(slot);
 			// Check if the parent is OR. If so, set the parent's signal
@@ -81,12 +81,12 @@ namespace rtmath
 				slot->_addSignal( this->shared_from_this() );
 		}
 
-		void vertex::_addSignal(std::weak_ptr<vertex> signal)
+		void vertex::_addSignal(boost::weak_ptr<vertex> signal)
 		{
 			_signals.insert(signal);
 		}
 
-		void vertex::run(std::shared_ptr<vertexRunnable> target) const
+		void vertex::run(boost::shared_ptr<vertexRunnable> target) const
 		{
 			target->run();
 		}
@@ -97,12 +97,12 @@ namespace rtmath
 				_target->run();
 		}
 
-		void vertex::setVertexRunnableCode(std::shared_ptr<vertexRunnable> target)
+		void vertex::setVertexRunnableCode(boost::shared_ptr<vertexRunnable> target)
 		{
 			_target = target;
 		}
 
-		graph::graph(const std::set< std::shared_ptr<vertex> > &vertices)
+		graph::graph(const std::set< boost::shared_ptr<vertex> > &vertices)
 		{
 			for (auto it = vertices.begin(); it != vertices.end(); it++)
 				_vertices.insert(*it);

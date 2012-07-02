@@ -10,11 +10,15 @@
 #include <unordered_map>
 #include <complex>
 #include <boost/bimap.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/weak_ptr.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include "../matrixop.h"
@@ -48,10 +52,11 @@ namespace rtmath {
 			bool operator==(const shapeConstraint &rhs) const;
 			bool operator!=(const shapeConstraint &rhs) const;
 			typedef paramSet<double>::const_iterator const_iterator;
-			typename const_iterator begin() const;
-			typename const_iterator end() const;
-			typename const_iterator rbegin() const;
-			typename const_iterator rend() const;
+			typedef paramSet<double>::const_reverse_iterator const_reverse_iterator;
+			const_iterator begin() const;
+			const_iterator end() const;
+			const_reverse_iterator rbegin() const;
+			const_reverse_iterator rend() const;
 			size_t size() const;
 			paramSet<double> pset;
 			std::string varname;
@@ -69,7 +74,7 @@ namespace rtmath {
 
 		// Using a map because it provides easy access to the constraint var name,
 		// really making it an indexed set
-		typedef std::multimap< std::string, std::shared_ptr<shapeConstraint> > shapeConstraintContainer;
+		typedef std::multimap< std::string, boost::shared_ptr<shapeConstraint> > shapeConstraintContainer;
 
 		class shape : public std::enable_shared_from_this<shape>
 		{
@@ -89,7 +94,7 @@ namespace rtmath {
 			std::map<size_t, double> _densities;
 			// Convenient aliases to avoid repeated multimap searching
 			bool _get(const std::string &id, double &val, std::string &units) const;
-			void _set(const std::string &id, double &val, const std::string &units);
+			void _set(const std::string &id, double val, const std::string &units);
 			friend class boost::serialization::access;
 		private:
 			template<class Archive>
@@ -103,7 +108,7 @@ namespace rtmath {
 		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
 		{
 		public:
-			typedef boost::bimap< std::string, std::shared_ptr<rtmath::graphs::vertex> > vertexMap;
+			typedef boost::bimap< std::string, boost::shared_ptr<rtmath::graphs::vertex> > vertexMap;
 			typedef rtmath::graphs::setWeakVertex vertexSet;
 
 			shapeModifiable();
@@ -112,17 +117,30 @@ namespace rtmath {
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			// create ordering and apply vertex actions to shapeConstraints
 			virtual void update(const rtmath::graphs::setWeakVertex &fixed);
+			// create ordering and apply vertex actions based on known shapeConstraints
+			virtual void update();
 			// Return vertex mappings
 			void getVertices(vertexMap &mappings);
 			// Search for vertex by name
-			virtual bool mapVertex(const std::string &idstr, std::shared_ptr<rtmath::graphs::vertex> &vertex);
+			virtual bool mapVertex(const std::string &idstr, boost::shared_ptr<rtmath::graphs::vertex> &vertex);
 		protected:
 			// Establish basic vertices and construct graph. Will be overridden by shape specializations,
 			// but they will still call this function as a base.
 			virtual void _constructGraph();
-			std::set< std::shared_ptr<rtmath::graphs::vertex> > _vertices;
+			// Convenient functions to create a vertex and assign a name in _vertexMap
+			virtual boost::shared_ptr<rtmath::graphs::vertex> 
+				_createVertex(const std::string &name, bool OR = false);
+			// Create vertex like with connect, but by parsing string
+			virtual boost::shared_ptr<rtmath::graphs::vertex>
+				_createVertex(const std::string &name, 
+				const std::string &target, const std::string &depends);
+			// - Name and add existing vertex (used with vertex::connect)
+			virtual boost::shared_ptr<rtmath::graphs::vertex> 
+				_createVertex(const std::string &name, boost::shared_ptr<rtmath::graphs::vertex> vert);
+
+			std::set< boost::shared_ptr<rtmath::graphs::vertex> > _vertices;
 			vertexMap _vertexMap;
-			std::shared_ptr<rtmath::graphs::graph> _graph;
+			boost::shared_ptr<rtmath::graphs::graph> _graph;
 			friend class boost::serialization::access;
 		private:
 			template<class Archive>

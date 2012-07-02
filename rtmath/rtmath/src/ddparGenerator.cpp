@@ -48,26 +48,7 @@ namespace rtmath {
 			genMassScript(true),
 			shapeStats(false),
 			registerDatabase(false),
-			doExport(true),
-			// Fill in zeros here, as base ddpar 
-			// does not always import over
-			doTorques(false),
-			Imem1(0),
-			Imem2(0),
-			Imem3(0),
-			doNearField(false),
-			near1(0),
-			near2(0),
-			near3(0),
-			near4(0),
-			near5(0),
-			near6(0),
-			maxTol(0),
-			maxIter(0),
-			gamma(0),
-			etasca(0),
-			nambient(0),
-			doSca(true)
+			doExport(true)
 		{
 
 		}
@@ -120,13 +101,13 @@ namespace rtmath {
 				create_directory(pdir);
 
 				// Write diel.tab
-				it->exportDiel( (pdir/"diel.tab").string() );
+				(*it)->exportDiel( (pdir/"diel.tab").string() );
 				// Write shape.dat (if needed)
-				it->exportShape( (pdir/"shape.dat").string() );
+				(*it)->exportShape( (pdir/"shape.dat").string() );
 				// Write ddscat.par
-				it->exportDDPAR( (pdir/"ddscat.par").string() );
+				(*it)->exportDDPAR( (pdir/"ddscat.par").string() );
 				// Write run definitions
-				ddParIterator::write(*it, (pdir).string() );
+				ddParIterator::write(**it, (pdir).string() );
 				// Write individual run script
 				runScriptIndiv iscript(dirname, *this);
 				iscript.write(dirname);
@@ -336,10 +317,10 @@ namespace rtmath {
 			outpar.saveFile(filename);
 		}
 
-		ddParIterator::ddParIterator(const ddParGenerator &gen, std::unique_ptr<shapeModifiable> shp)
+		ddParIterator::ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp)
 			: _gen(gen)
 		{
-			shape = std::move(shp);
+			shape = shp;
 		}
 
 		ddParIteration::ddParIteration(const ddParGenerator &src)
@@ -394,8 +375,11 @@ namespace rtmath {
 								for (auto ut = ot->second->begin(); ut != ot->second->end(); ut++)
 								{
 									auto p = std::make_pair<double,string>(*ut, ot->second->units);
-									constraintsVaried.insert(
-										pair<string,pair<double,string> >(ot->first,p));
+									string name = ot->first;
+									string units = ot->second->units;
+									double val = *ut;
+									constraintsVaried.insert(make_pair<string,pair<double,string> >(name,make_pair<double,string>(val, units)));
+									//constraintsVaried.insert(std::pair<string,pair<double,string> >(ot->first,p));
 									if (variedNames.count(ot->first) == 0)
 										variedNames.insert(ot->first);
 								}
@@ -452,19 +436,19 @@ namespace rtmath {
 
 							// Construct permuted object
 							permuted.insert(pair<string,shared_ptr<shapeConstraint> >(
-								name, make_shared<shapeConstraint>(name,val,units) ) );
+								name, make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
 
 							// As a reminder, (it) is an iterator to the current shape.....
-							unique_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
+							boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
 							nshape->shapeConstraints = permuted;
-							nshape->generate();
+							nshape->update();
 
 							// Make the iterator
-							ddParIterator nit(_gen, move(nshape) );
+							boost::shared_ptr<ddParIterator> nit(new ddParIterator(_gen, nshape ));
 							// Add the rotations
-							nit.rots = *rt;
+							nit->rots = *rt;
 							// Insert into _elenemts using rvalue move (avoids copying)
-							_elements.insert(move(nit));
+							_elements.insert(nit);
 
 						}
 

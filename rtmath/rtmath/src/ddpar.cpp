@@ -18,6 +18,7 @@
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/command.h"
 #include "../rtmath/config.h"
+#include "../rtmath/ddscat/rotations.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -182,6 +183,43 @@ namespace rtmath {
 			line->set<double>(2,n);
 			line->set<std::string>(3,spacing);
 			insertKey(ddParParsers::WAVELENGTHS,std::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		void ddPar::getRots(rotations &rots) const
+		{
+			// The rotations constructor already contains the necessary stuff. Just alias it.
+			rots = rotations(*this);
+		}
+
+		void ddPar::setRots(const rotations &rots)
+		{
+			//				else if (key.find("NBETA") != string::npos)
+			//		ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+			//		( new ddParLineMixed<double, size_t>(2, NBETA));
+			//	else if (key.find("NTHETA") != string::npos)
+			//		ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+			//		( new ddParLineMixed<double, size_t>(2, NTHETA));
+			//	else if (key.find("NPHI") != string::npos)
+			//		ptr = std::shared_ptr<ddParLineMixed<double, size_t> >
+			//		( new ddParLineMixed<double, size_t>(2, NPHI));
+			std::shared_ptr< ddParParsers::ddParLineMixed<double, size_t> > bline
+				(new ddParParsers::ddParLineMixed<double, size_t>(2, ddParParsers::NBETA));
+			bline->set<double>(0, rots.bMin());
+			bline->set<double>(1, rots.bMax());
+			bline->set<double>(2, rots.bN());
+
+
+			std::shared_ptr< ddParParsers::ddParLineMixed<double, size_t> > tline
+				(new ddParParsers::ddParLineMixed<double, size_t>(2, ddParParsers::NTHETA));
+			tline->set<double>(0, rots.tMin());
+			tline->set<double>(1, rots.tMax());
+			tline->set<double>(2, rots.tN());
+
+			std::shared_ptr< ddParParsers::ddParLineMixed<double, size_t> > pline
+				(new ddParParsers::ddParLineMixed<double, size_t>(2, ddParParsers::NPHI));
+			pline->set<double>(0, rots.pMin());
+			pline->set<double>(1, rots.pMax());
+			pline->set<double>(2, rots.pN());
 		}
 
 		void ddPar::getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)

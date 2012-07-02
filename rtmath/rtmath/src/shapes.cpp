@@ -22,6 +22,7 @@
 #include "../rtmath/units.h"
 #include "../rtmath/ddscat/shapes.h"
 #include "../rtmath/error/error.h"
+#include "../rtmath/ddscat/ddpar.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -30,8 +31,8 @@ namespace rtmath {
 		{
 			if (id == "DENS_T") return true;
 			if (id == "T_DENS") return true;
-			if (id == "REFF_V") return true;
-			if (id == "V_REFF") return true;
+			if (id == "AEFF_V") return true;
+			if (id == "V_AEFF") return true;
 			if (id == "MASS_V__DENS") return true;
 			if (id == "MASS_DENS__V") return true;
 			if (id == "DENS_V__MASS") return true;
@@ -83,31 +84,31 @@ namespace rtmath {
 				// density now in kg/m^3. Want kg/um^3
 				dens *= 1.e-18;
 				_set("density", dens, "kg/um^3");
-			} else if (id == "REFF_V")
+			} else if (id == "AEFF_V")
 			{
 				_get("aeff",raw,units);
 				double aeff_um = conv_alt(units,"um").convert(raw);
 				_set("volume", 4./3. * pi * pow(aeff_um,3.0), "um^3");
-			} else if (id == "V_REFF")
+			} else if (id == "V_AEFF")
 			{
 				_get("volume",raw,units);
 				double v_umt = conv_vol(units,"um^3").convert(raw);
-				_base->set("aeff", pow(3.*v_umt/4./pi,1./3.), "um");
+				_set("aeff", pow(3.*v_umt/4./pi,1./3.), "um");
 			} else if (id == "MASS_V__DENS")
 			{
-				double mass, vol;
+				double mass;
 				_get("mass",raw,units);
-				double mass = conv_mass(units,"kg").convert(raw);
+				mass = conv_mass(units,"kg").convert(raw);
 				_get("volume",raw,units);
 				double v_umt = conv_vol(units,"um^3").convert(raw);
 				_set("density", mass / v_umt, "kg/um^3");
 			} else if (id == "MASS_DENS__V")
 			{
-				double mass, dens;
+				double mass, density;
 				_get("mass",raw,units);
-				double mass = conv_mass(units,"kg").convert(raw);
+				mass = conv_mass(units,"kg").convert(raw);
 				_get("density",raw,units);
-				double density = raw; //conv_vol(units,"um^3").convert(raw);
+				density = raw; //conv_vol(units,"um^3").convert(raw);
 				// TODO: implement this converter
 				GETOBJKEY();
 
@@ -186,22 +187,22 @@ namespace rtmath {
 			return false;
 		}
 
-		typename shapeConstraint::const_iterator shapeConstraint::begin() const
+		shapeConstraint::const_iterator shapeConstraint::begin() const
 		{
 			return pset.begin();
 		}
 
-		typename shapeConstraint::const_iterator shapeConstraint::end() const
+		shapeConstraint::const_iterator shapeConstraint::end() const
 		{
 			return pset.end();
 		}
 
-		typename shapeConstraint::const_iterator shapeConstraint::rbegin() const
+		shapeConstraint::const_reverse_iterator shapeConstraint::rbegin() const
 		{
 			return pset.rbegin();
 		}
 
-		typename shapeConstraint::const_iterator shapeConstraint::rend() const
+		shapeConstraint::const_reverse_iterator shapeConstraint::rend() const
 		{
 			return pset.rend();
 		}
@@ -225,20 +226,21 @@ namespace rtmath {
 			if (it == shapeConstraints.end()) return false;
 			val = *(it->second->begin());
 			units = it->second->units;
+			return true;
 		}
 
-		void shape::_set(const std::string &id, double &val, const std::string &units)
+		void shape::_set(const std::string &id, double val, const std::string &units)
 		{
 			// Erase existing ranges
 			auto it = shapeConstraints.equal_range(id);
 			shapeConstraints.erase(it.first, it.second);
 
-			std::shared_ptr<shapeConstraint> sc
-				(new shapeConstraint(id, boost::lexical_cast<std::string>(val), units);
+			boost::shared_ptr<shapeConstraint> sc
+				(new shapeConstraint(id, boost::lexical_cast<std::string>(val), units));
 
 			// Insert value
-			shapeConstraints.insert(std::pair<std::string, std::shared_ptr<shapeConstraint> >
-				(id,sc);
+			shapeConstraints.insert(std::pair<std::string, boost::shared_ptr<shapeConstraint> >
+				(id,sc));
 
 		}
 
@@ -332,7 +334,6 @@ namespace rtmath {
 
 		}
 
-		// TODO: fix constructor
 		shapeModifiable::shapeModifiable()
 		{
 			_constructGraph();
@@ -342,98 +343,138 @@ namespace rtmath {
 		{
 		}
 
+		boost::shared_ptr<rtmath::graphs::vertex> 
+			shapeModifiable::_createVertex(const std::string &name, bool OR)
+		{
+			using namespace rtmath::graphs;
+			boost::shared_ptr<vertex> connector;
+			connector = boost::shared_ptr<vertex>(new vertex(OR) );
+
+			return _createVertex(name, connector);
+		}
+
+		boost::shared_ptr<rtmath::graphs::vertex> 
+			shapeModifiable::_createVertex(const std::string &name, 
+			const std::string &target, const std::string &depends)
+		{
+			// Tokenize the dependency string, look up vertices, and place in set.
+			// Then, create vertex per output of vertex::connect.
+			using namespace std;
+			using namespace rtmath::graphs;
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",");
+			std::set<boost::shared_ptr<vertex> > setDepends;
+			boost::shared_ptr<vertex> res, ptarget;
+
+			if (!(_vertexMap.left.count(target)))
+				throw rtmath::debug::xBadInput(target.c_str());
+			ptarget = _vertexMap.left.at(target);
+
+			tokenizer tcom(depends,sep);
+			for (auto it = tcom.begin(); it != tcom.end(); ++it)
+			{
+				if (!(_vertexMap.left.count(*it))) 
+					throw rtmath::debug::xBadInput(it->c_str());
+
+				setDepends.insert(_vertexMap.left.at(*it));
+			}
+
+			res = vertex::connect(ptarget, setDepends );
+			return _createVertex(name, res);
+		}
+
+		boost::shared_ptr<rtmath::graphs::vertex> 
+			shapeModifiable::_createVertex(const std::string &name, boost::shared_ptr<rtmath::graphs::vertex> vert)
+		{
+			using namespace rtmath::graphs;
+
+			if (!_vertices.count(vert))
+				_vertices.insert(vert);
+
+			if (!_vertexMap.left.count(name))
+				_vertexMap.insert(vertexMap::value_type(name, vert));
+
+			return vert;
+		}
+
 		void shapeModifiable::_constructGraph()
 		{
 			// Establish the vertices and construct the graph used in the shape 
 			// parameter update process
 			using namespace std;
 			using namespace rtmath::graphs;
-			using namespace MANIPULATED_QUANTITY;
 			_vertices.clear();
 			_vertexMap.clear();
-			_graph = nullptr;
+			// TODO: set _graph to nullptr
+			//_graph = nullptr;
+
+			// Most basic level of var names. Interdipole spacing is in a derived class, as are others.
+			const size_t varnames_size = 8;
+			const std::string rawvarnames[varnames_size] = {
+				"density",
+				"temp",
+				"aeff",
+				"volume",
+				"mass",
+				"freq",
+				"irefr_r",
+				"irefr_i"
+			};
+			std::set<std::string> varnames( rawvarnames, rawvarnames + varnames_size );
 
 			// Create vertices for end variables
-			for (size_t i = 1; i < NUM_MANIPULATED_QUANTITY; i++)
-			{
-				shared_ptr<vertex> w = shared_ptr<vertex>(new vertex(true));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(i, w) ) ; //[i] = w;
-				_vertexIdMap.insert( 
-					vertexIdMap::value_type(ddscat::MANIPULATED_QUANTITY::qnames[i], i) );
-			}
-
-			for (size_t i=1; i<NUM_ALL;i++)
-			{
-				_vertexIdMap.insert( 
-					vertexIdMap::value_type(ddscat::MANIPULATED_QUANTITY::qnames[i], i) );
-			}
+			for (auto it = varnames.begin(); it != varnames.end(); ++it)
+				_createVertex(*it, true);
 
 			// Create vertices representing function relationships
+			// This is a table that lists the name of the new node, the variable being calculated, 
+			// and the necessary dependencies. This is much cleaner than repeated copying / pasting, 
+			// and is much easier to read.
+			const size_t varmapnames_size = 27;
+			const std::string rawvarmapnames[varmapnames_size] = {
+				// name,					target,				dependencies
+				"DENS_T",					"temp",				"density",
+				"T_DENS",					"density",			"temp",
+				"AEFF_V",					"volume",			"aeff",
+				"V_AEFF",					"aeff",				"volume",
+				"MASS_V__DENS",				"density",			"mass,volume",
+				"MASS_DENS__V",				"volume",			"mass,density",
+				"DENS_V__MASS",				"mass",				"density,volume",
+				"FREQ_TEMP__IREFR_R",		"irefr_r",			"freq,temp",
+				"FREQ_TEMP__IREFR_I"		"irefr_i",			"freq,temp"
+			};
+
+			for (size_t i=0; i< varmapnames_size; i = i + 3)
 			{
-				// I can't make these in batch anywhere, since I need some rather specific relationships.
-				shared_ptr<vertex> w;
-				std::set<std::shared_ptr<vertex> > ptrs;
+				const string &name = rawvarmapnames[i];
+				const string &starget = rawvarmapnames[i+1];
+				const string &deps = rawvarmapnames[i+2];
 
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(DENS));
-				w = vertex::connect(_vertexMap.left.at(TEMP), ptrs);
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_T)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(DENS_T, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(TEMP));
-				w = vertex::connect(_vertexMap.left.at(DENS), ptrs );
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, T_DENS)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(T_DENS, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(REFF));
-				w = vertex::connect(_vertexMap.left.at(VOL), ptrs);
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, REFF_V)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(REFF_V, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(VOL));
-				w = vertex::connect(_vertexMap.left.at(REFF), ptrs);
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, V_REFF)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(V_REFF, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(MASS)); ptrs.insert(_vertexMap.left.at(VOL));
-				w = vertex::connect(_vertexMap.left.at(DENS), ptrs);
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_V__DENS)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(MASS_V__DENS, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(MASS)); ptrs.insert(_vertexMap.left.at(DENS));
-				w = vertex::connect(_vertexMap.left.at(VOL), ptrs);
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, MASS_DENS__V)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(MASS_DENS__V, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(DENS)); ptrs.insert(_vertexMap.left.at(VOL));
-				w = vertex::connect(_vertexMap.left.at(MASS), ptrs);
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, DENS_V__MASS)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(DENS_V__MASS, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(TEMP)); ptrs.insert(_vertexMap.left.at(FREQ));
-				w = vertex::connect(_vertexMap.left.at(IREFR_R), ptrs );
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_R)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_R, w));
-
-				ptrs.clear(); ptrs.insert(_vertexMap.left.at(TEMP)); ptrs.insert(_vertexMap.left.at(FREQ));
-				w = vertex::connect(_vertexMap.left.at(IREFR_IM), ptrs );
-				w->setVertexRunnableCode(shared_ptr<shapeBasicManip>(new shapeBasicManip(this, FREQ_TEMP__IREFR_I)));
-				_vertices.insert(w);
-				_vertexMap.insert( vertexMap::value_type(FREQ_TEMP__IREFR_I, w));
-                                
+				_createVertex(name, starget, deps);
 			}
 			
 
 			// Create the graph from the vertices
-			_graph = std::shared_ptr<graph>(new graph(_vertices));
+			_graph = boost::shared_ptr<graph>(new graph(_vertices));
+		}
+
+		void shapeModifiable::update()
+		{
+			// Create a setWeakVertex based on the known mappings in shapeConstraints
+			rtmath::graphs::setWeakVertex known;
+			// Basically, if there exists a shapeConstraint name matching a vertex map name, 
+			// then it is already known, so it should be added.
+
+			for (auto it = shapeConstraints.begin(); it != shapeConstraints.end(); ++it)
+			{
+				if (_vertexMap.left.count(it->first))
+				{
+					known.insert(_vertexMap.left.at(it->first));
+				}
+			}
+
+			update(known);
 		}
 
 		void shapeModifiable::update(const rtmath::graphs::setWeakVertex &fixed)
@@ -441,11 +482,11 @@ namespace rtmath {
 			const double pi = boost::math::constants::pi<double>();
 			rtmath::graphs::setWeakVertex remaining, ignored;
 			rtmath::graphs::listWeakVertex order;
+
 			_graph->generate(fixed, order, remaining, ignored);
 
 			// Now, make sure that all variables are solved for (check that order contains all base vertices)
 			{
-				using namespace MANIPULATED_QUANTITY;
 				using namespace std;
 				using namespace rtmath::graphs;
 				
@@ -455,8 +496,13 @@ namespace rtmath {
 				for (auto it = remaining.begin(); it != remaining.end(); it++)
 					shrRemaining.insert(it->lock());
 
-				for (size_t i = 1; i < NUM_MANIPULATED_QUANTITY; i++)
-					baseVertices.insert(_vertexMap.left.at(i));
+				// baseVertices are those which are not connectors and have no associated run code
+				// use bool vertex::isOR() to determine this
+				for (auto it = _vertices.begin(); it != _vertices.end(); ++it)
+				{
+					if ((*it)->isOR() == true)
+						baseVertices.insert(*it);
+				}
 
 				// Use std algorithms to ensure that intersection of remaining and baseVertices is null
 				setShrdVertex intersection;
@@ -475,7 +521,7 @@ namespace rtmath {
 					out << "Still need: ";
 					for (auto it = intersection.begin(); it != intersection.end(); it++)
 					{
-						std::shared_ptr<graphs::vertex> UT = std::const_pointer_cast< graphs::vertex >(*it);
+						boost::shared_ptr<graphs::vertex> UT = boost::const_pointer_cast< graphs::vertex >(*it);
 						out << _vertexMap.right.at(UT) << ", ";
 					}
 					out << std::endl;
@@ -487,15 +533,15 @@ namespace rtmath {
 			// specified order to fill in the rest of the variables.
 			for (auto it = order.begin(); it != order.end(); it++)
 			{
-				std::shared_ptr<const graphs::vertex> IT = it->lock();
-				std::shared_ptr<graphs::vertex> UT = std::const_pointer_cast< graphs::vertex >(IT);
+				boost::shared_ptr<const graphs::vertex> IT = it->lock();
+				boost::shared_ptr<graphs::vertex> UT = boost::const_pointer_cast< graphs::vertex >(IT);
 				UT->run();
 			}
 			// And we've updated!
 
 		}
 		
-		bool shapeModifiable::mapVertex(const std::string &idstr, std::shared_ptr<rtmath::graphs::vertex> &vertex)
+		bool shapeModifiable::mapVertex(const std::string &idstr, boost::shared_ptr<rtmath::graphs::vertex> &vertex)
 		{
 			if (_vertexMap.left.count(idstr))
 			{

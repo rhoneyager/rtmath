@@ -30,6 +30,7 @@
 namespace rtmath {
 	namespace ddscat {
 
+		class rotations;
 
 		namespace ddParParsers
 		{
@@ -451,30 +452,28 @@ namespace rtmath {
 			accessorSimple(maxIter,ddParParsers::MXITER,size_t);
 			accessorSimple(gamma,ddParParsers::GAMMA,double);
 			accessorSimple(etasca,ddParParsers::ETASCA,double);
-			// Wavelengths
-			// TODO: implement
+
 			void setWavelengths(double min, double max, size_t n, const std::string &spacing);
 			void getWavelengths(double &min, double &max, size_t &n, std::string &spacing) const;
 
 			accessorSimple(nambient,ddParParsers::NAMBIENT,double);
 
-			// Eff rad
-			// TODO: implement
 			void setAeff(double min, double max, size_t n, const std::string &spacing);
 			void getAeff(double &min, double &max, size_t &n, std::string &spacing) const;
 
-			// Polarization states
 			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
 			accessorSimpleBool(writeSca,ddParParsers::IWRKSC);
-			// Betas
-			// Thetas
-			// Phis
+
+			void getRots(rotations &rots) const;
+			void setRots(const rotations &rots);
+
 			// First IRAD
 			// SIJ element number
 			// SIJ indices
 
 			accessorString(getCMDFRM,setCMDFRM,ddParParsers::CMDFRM);
 			accessorSimple(numPlanes,ddParParsers::NPLANES,size_t);
+			// Scattering planes
 			
 			// The older interface
 			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
