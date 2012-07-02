@@ -99,6 +99,7 @@ namespace rtmath {
 			conv_mass(const std::string &inUnits, const std::string &outUnits);
 		};
 
+		// TODO: add functionality to handle unit conversions by tokenizing
 		class conv_dens : public atmosConv
 		{
 		public:

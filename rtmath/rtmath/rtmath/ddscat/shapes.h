@@ -33,6 +33,8 @@
 namespace rtmath {
 	namespace ddscat {
 
+		class ddPar;
+
 		class shapeConstraint
 		{
 		public:
@@ -69,42 +71,6 @@ namespace rtmath {
 		// really making it an indexed set
 		typedef std::multimap< std::string, std::shared_ptr<shapeConstraint> > shapeConstraintContainer;
 
-		namespace MANIPULATED_QUANTITY
-		{
-			enum MANIPULATED_QUANTITY
-			{
-				NONE,
-				D,
-				DENS,
-				TEMP,
-				VOL,
-				REFF,
-				MASS,
-				// Size parameter relations
-				IREFR_R,
-				IREFR_IM,
-				FREQ,
-				SIZEP,
-				NUM_MANIPULATED_QUANTITY
-			};
-
-			enum CONVERTERS
-			{
-				DENS_T = NUM_MANIPULATED_QUANTITY,
-				T_DENS,
-				REFF_V,
-				V_REFF,
-				MASS_V__DENS,
-				MASS_DENS__V,
-				DENS_V__MASS,
-				FREQ_TEMP__IREFR_R,
-				FREQ_TEMP__IREFR_I,
-				NUM_ALL
-			};
-
-			extern const char* qnames[NUM_ALL];
-		}
-
 		class shape : public std::enable_shared_from_this<shape>
 		{
 		public:
@@ -115,41 +81,47 @@ namespace rtmath {
 			virtual void write(const std::string &fname) const;
 			virtual bool useDDPAR() const;
 			virtual void setDDPAR(ddPar &out) const;
+			// Nothing done with these until iterator evaluation. They are split, and THEN
+			// the mappings and vertexRunnable code is executed
 			shapeConstraintContainer shapeConstraints;
 		protected:
 			// Densities of different anisotropic materials. Used in mass and inertia calculations.
 			std::map<size_t, double> _densities;
+			// Convenient aliases to avoid repeated multimap searching
+			bool _get(const std::string &id, double &val, std::string &units) const;
+			void _set(const std::string &id, double &val, const std::string &units);
 			friend class boost::serialization::access;
 		private:
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & BOOST_SERIALIZATION_NVP(_densities);
+					ar & boost::serialization::make_nvp("densities", _densities);
 					ar & BOOST_SERIALIZATION_NVP(shapeConstraints);
 				}
 		};
 
-		class shapeModifiable : public shape
+		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
 		{
 		public:
-			typedef boost::bimap< size_t, std::shared_ptr<rtmath::graphs::vertex> > vertexMap;
-			typedef boost::bimap< std::string, size_t > vertexIdMap;
+			typedef boost::bimap< std::string, std::shared_ptr<rtmath::graphs::vertex> > vertexMap;
 			typedef rtmath::graphs::setWeakVertex vertexSet;
+
 			shapeModifiable();
 			virtual ~shapeModifiable();
 			
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
-			inline void update(const rtmath::graphs::setWeakVertex &fixed) { _update(fixed); }
-			virtual void generate();
+			// create ordering and apply vertex actions to shapeConstraints
+			virtual void update(const rtmath::graphs::setWeakVertex &fixed);
+			// Return vertex mappings
 			void getVertices(vertexMap &mappings);
-			virtual bool mapVertex(const std::string &idstr, size_t &id, std::shared_ptr<rtmath::graphs::vertex> &vertex);
+			// Search for vertex by name
+			virtual bool mapVertex(const std::string &idstr, std::shared_ptr<rtmath::graphs::vertex> &vertex);
 		protected:
-			virtual void _update(
-				const rtmath::graphs::setWeakVertex &fixed);
+			// Establish basic vertices and construct graph. Will be overridden by shape specializations,
+			// but they will still call this function as a base.
 			virtual void _constructGraph();
 			std::set< std::shared_ptr<rtmath::graphs::vertex> > _vertices;
 			vertexMap _vertexMap;
-			vertexIdMap _vertexIdMap;
 			std::shared_ptr<rtmath::graphs::graph> _graph;
 			friend class boost::serialization::access;
 		private:
@@ -157,9 +129,14 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					// TODO: save the vertex maps!!!
+					// saving these implies need to save lambda function linkage.....?
 					GETOBJKEY();
 					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shape);
 				}
+		protected:
+			// The vertexRunnable overrides
+			virtual void run(const std::string &id = "");
+			virtual bool runSupported(const std::string &id = "");
 		};
 		
 		// In ellipsoid, 1/4 = (x/d*shp1)^2 + (y/d*shp2)^2 + (z/d*shp3)^2
@@ -177,32 +154,6 @@ namespace rtmath {
 			{
 			public:
 				ellipsoid();
-			};
-		}
-
-		namespace MANIPULATED_QUANTITY
-		{
-			class shapeBasicManip : public rtmath::graphs::vertexRunnable
-			{
-			public:
-				shapeBasicManip(shapeModifiable *base, CONVERTERS varconv) : _base(base), _id(varconv) {}
-				virtual ~shapeBasicManip() {}
-				virtual void run();
-			private:
-				shapeModifiable *_base;
-				CONVERTERS _id;
-			};
-
-			// Provide shape parameters here
-			class shapeEllipsoidManip : public rtmath::graphs::vertexRunnable
-			{
-			public:
-				shapeEllipsoidManip(shapeModifiable *base, const std::string &varconv) : _base(base), _id(varconv) {}
-				virtual ~shapeEllipsoidManip() {}
-				virtual void run();
-			private:
-				shapeModifiable *_base;
-				std::string _id;
 			};
 		}
 

@@ -21,95 +21,123 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
 #include "../rtmath/ddscat/shapes.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
 
-		namespace MANIPULATED_QUANTITY
+		bool shapeModifiable::runSupported(const std::string &id)
 		{
+			if (id == "DENS_T") return true;
+			if (id == "T_DENS") return true;
+			if (id == "REFF_V") return true;
+			if (id == "V_REFF") return true;
+			if (id == "MASS_V__DENS") return true;
+			if (id == "MASS_DENS__V") return true;
+			if (id == "DENS_V__MASS") return true;
+			if (id == "FREQ_TEMP__IREFR_R") return true;
+			if (id == "FREQ_TEMP__IREFR_I") return true;
+			return false;
+		}
 
-			void shapeBasicManip::run()
+		void shapeModifiable::run(const std::string &id)
+		{
+			using namespace std;
+			using namespace rtmath::units;
+			// This is the trivial case of converter manipulation.
+			// The appropriate vertex has its run() method called, and it 
+			// eventually makes its way to this bit of code. This is the default
+			// catch-all converter, designed to handle several possible basic tasks. 
+			// It's all really just in the name of extensibility.
+			const double pi = boost::math::constants::pi<double>();
+			double raw;
+			string units;
+
+			if (id == "DENS_T")
 			{
-				// This is the trivial case of converter manipulation.
-				// The appropriate vertex has its run() method called, and it 
-				// eventually makes its way to this bit of code. This is the default
-				// catch-all converter, designed to handle several possible basic tasks. 
-				// It's all really just in the name of extensibility.
-				const double pi = boost::math::constants::pi<double>();
+				// Using http://www.ptb.de/cms/fileadmin/internet/
+				// publikationen/buecher/Kohlrausch/Tabellen/Kohlrausch_3_Tabellen_und_Diagramme_Waerme.pdf
+				// Gives a few pts for ice I-h, and I'm using a polynomial interp,
+				// with R^2 = 1 to 4 digits of precision
+				// Formula takes dens in kg/m^3 and returns temp in celsius
+				// So, I need to convert density from kg/um^3 to kg/m^3
+				
+				// TODO: implement this converter
+				GETOBJKEY();
 
-				if (_id == DENS_T)
-				{
-					// Using http://www.ptb.de/cms/fileadmin/internet/
-					// publikationen/buecher/Kohlrausch/Tabellen/Kohlrausch_3_Tabellen_und_Diagramme_Waerme.pdf
-					// Gives a few pts for ice I-h, and I'm using a polynomial interp,
-					// with R^2 = 1 to 4 digits of precision
-					// Formula takes dens in kg/m^3 and returns temp in celsius
-					// So, I need to convert density from kg/um^3 to kg/m^3
-					double dens = _base->get(DENS);
-					dens *= 1.e18;
-					double t = -6e-5*pow(dens,6.) + 0.3271*pow(dens,5.)
-						- 754.04*pow(dens,4.) + 927139.*pow(dens,3)
-						- 6e8*pow(dens,2.) + 2.e11*dens - 4.e13;
-					_base->set(TEMP, t + 273.15); // Save temp in Kelvin
-				} else if (_id == T_DENS)
-				{
-					// Using same source as above
-					// R^2 = 0.9998, and is near-perfect along the subdomain -50 - 0 C.
-					double t = _base->get(TEMP) - 273.15; // need temp in K
-					double dens = 1.e-11*pow(t,6.) + 6.e-9*pow(t,5.) + 1.e-6*pow(t,4.)
-						+ 0.0001*pow(t,3.) + 0.034*pow(t,2.) -0.1177*t + 916.99;
-					// density now in kg/m^3. Want kg/um^3
-					dens *= 1.e-18;
-					_base->set(DENS, dens);
-				} else if (_id == REFF_V)
-				{
-					_base->set(VOL,4./3. * pi * pow(_base->get(REFF),3.0));
-				} else if (_id == V_REFF)
-				{
-					_base->set(REFF, pow(3.*_base->get(VOL)/4./pi,1./3.));
-				} else if (_id == MASS_V__DENS)
-				{
-					_base->set(DENS, _base->get(MASS) / _base->get(VOL));
-				} else if (_id == MASS_DENS__V)
-				{
-					_base->set(VOL, _base->get(MASS) / _base->get(DENS));
-				} else if (_id == DENS_V__MASS)
-				{
-					_base->set(MASS, _base->get(DENS) * _base->get(VOL));
-				} else if (_id == FREQ_TEMP__IREFR_R || _id == FREQ_TEMP__IREFR_I)
-				{
-					std::complex<double> m;
-					refract::mice(_base->get(FREQ), _base->get(TEMP), m);
-					_base->set(IREFR_R, m.real());
-					_base->set(IREFR_IM, m.imag());
-				} else 
-				{
-					throw rtmath::debug::xUnimplementedFunction();
-				}
-			}
-
-			void shapeEllipsoidManip::run()
+				_get("density",raw,units);
+				double dens = raw;
+				dens *= 1.e18;
+				double t = -6e-5*pow(dens,6.) + 0.3271*pow(dens,5.)
+					- 754.04*pow(dens,4.) + 927139.*pow(dens,3)
+					- 6e8*pow(dens,2.) + 2.e11*dens - 4.e13;
+				_set("temp", t + 273.15, "K"); // Save temp in Kelvin
+			} else if (id == "T_DENS")
 			{
-				// This is the trivial case of converter manipulation.
-				// The appropriate vertex has its run() method called, and it 
-				// eventually makes its way to this bit of code. This is the default
-				// catch-all converter, designed to handle several possible basic tasks. 
-				// It's all really just in the name of extensibility.
-				const double pi = boost::math::constants::pi<double>();
-				// Need knowledge of aspect ratios or ellipse components
-				if (_id == "GENSHPAR1")
-				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
-				} else if (_id == "GENSHPAR2")
-				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
-				} else if (_id == "GENSHPAR3")
-				{
-					throw rtmath::debug::xUnimplementedFunction(); // TODO
-				} else
-				{
-					throw rtmath::debug::xUnimplementedFunction();
-				}
+				// Using same source as above
+				// R^2 = 0.9998, and is near-perfect along the subdomain -50 - 0 C.
+				_get("temp", raw, units);
+				double t = conv_temp(units,"K").convert(raw);
+				double dens = 1.e-11*pow(t,6.) + 6.e-9*pow(t,5.) + 1.e-6*pow(t,4.)
+					+ 0.0001*pow(t,3.) + 0.034*pow(t,2.) -0.1177*t + 916.99;
+				// density now in kg/m^3. Want kg/um^3
+				dens *= 1.e-18;
+				_set("density", dens, "kg/um^3");
+			} else if (id == "REFF_V")
+			{
+				_get("aeff",raw,units);
+				double aeff_um = conv_alt(units,"um").convert(raw);
+				_set("volume", 4./3. * pi * pow(aeff_um,3.0), "um^3");
+			} else if (id == "V_REFF")
+			{
+				_get("volume",raw,units);
+				double v_umt = conv_vol(units,"um^3").convert(raw);
+				_base->set("aeff", pow(3.*v_umt/4./pi,1./3.), "um");
+			} else if (id == "MASS_V__DENS")
+			{
+				double mass, vol;
+				_get("mass",raw,units);
+				double mass = conv_mass(units,"kg").convert(raw);
+				_get("volume",raw,units);
+				double v_umt = conv_vol(units,"um^3").convert(raw);
+				_set("density", mass / v_umt, "kg/um^3");
+			} else if (id == "MASS_DENS__V")
+			{
+				double mass, dens;
+				_get("mass",raw,units);
+				double mass = conv_mass(units,"kg").convert(raw);
+				_get("density",raw,units);
+				double density = raw; //conv_vol(units,"um^3").convert(raw);
+				// TODO: implement this converter
+				GETOBJKEY();
+
+				_set("volume", mass / density, "um^3");
+			} else if (id == "DENS_V__MASS")
+			{
+				double density, volume;
+				// TODO: implement density converter
+				GETOBJKEY();
+
+				_get("density", density, units);
+
+				_get("volume", raw, units);
+				volume = conv_vol(units,"um^3").convert(raw);
+
+				_set("mass", density * volume, "kg");
+			} else if (id == "FREQ_TEMP__IREFR_R" || id == "FREQ_TEMP__IREFR_I")
+			{
+				std::complex<double> m;
+				double freq, temp;
+
+				_get("freq", raw, units); freq = conv_spec(units,"GHz").convert(raw);
+				_get("temp", raw, units); temp = conv_temp(units, "K").convert(raw);
+
+				refract::mice(freq, temp, m);
+				_set("IREFR_R", m.real(), "");
+				_set("IREFR_IM", m.imag(), "");
+			} else 
+			{
+				throw rtmath::debug::xUnimplementedFunction();
 			}
 		}
 
@@ -191,6 +219,29 @@ namespace rtmath {
 		{
 		}
 
+		bool shape::_get(const std::string &id, double &val, std::string &units) const
+		{
+			auto it = shapeConstraints.find(id);
+			if (it == shapeConstraints.end()) return false;
+			val = *(it->second->begin());
+			units = it->second->units;
+		}
+
+		void shape::_set(const std::string &id, double &val, const std::string &units)
+		{
+			// Erase existing ranges
+			auto it = shapeConstraints.equal_range(id);
+			shapeConstraints.erase(it.first, it.second);
+
+			std::shared_ptr<shapeConstraint> sc
+				(new shapeConstraint(id, boost::lexical_cast<std::string>(val), units);
+
+			// Insert value
+			shapeConstraints.insert(std::pair<std::string, std::shared_ptr<shapeConstraint> >
+				(id,sc);
+
+		}
+
 		void shape::write(const std::string &fname) const
 		{
 			using namespace ::boost::filesystem;
@@ -210,7 +261,7 @@ namespace rtmath {
 			oa << BOOST_SERIALIZATION_NVP(*this);
 		}
 
-		void shape::useDDPAR() const
+		bool shape::useDDPAR() const
 		{
 			return true;
 		}
@@ -385,7 +436,7 @@ namespace rtmath {
 			_graph = std::shared_ptr<graph>(new graph(_vertices));
 		}
 
-		void shapeModifiable::_update(const rtmath::graphs::setWeakVertex &fixed)
+		void shapeModifiable::update(const rtmath::graphs::setWeakVertex &fixed)
 		{
 			const double pi = boost::math::constants::pi<double>();
 			rtmath::graphs::setWeakVertex remaining, ignored;
@@ -425,7 +476,7 @@ namespace rtmath {
 					for (auto it = intersection.begin(); it != intersection.end(); it++)
 					{
 						std::shared_ptr<graphs::vertex> UT = std::const_pointer_cast< graphs::vertex >(*it);
-						out << qnames[_vertexMap.right.at(UT)] << " ";
+						out << _vertexMap.right.at(UT) << ", ";
 					}
 					out << std::endl;
 					throw rtmath::debug::xBadInput(out.str().c_str());
@@ -444,12 +495,11 @@ namespace rtmath {
 
 		}
 		
-		bool shapeModifiable::mapVertex(const std::string &idstr, size_t &id, std::shared_ptr<rtmath::graphs::vertex> &vertex)
+		bool shapeModifiable::mapVertex(const std::string &idstr, std::shared_ptr<rtmath::graphs::vertex> &vertex)
 		{
-			if (_vertexIdMap.left.count(idstr))
+			if (_vertexMap.left.count(idstr))
 			{
-				id = _vertexIdMap.left.at(idstr);
-				vertex = _vertexMap.left.at(id);
+				vertex = _vertexMap.left.at(idstr);
 				return true;
 			} else {
 				return false;

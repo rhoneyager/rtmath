@@ -337,8 +337,9 @@ namespace rtmath {
 		}
 
 		ddParIterator::ddParIterator(const ddParGenerator &gen, std::unique_ptr<shapeModifiable> shp)
-			: _gen(gen), shape(shp)
+			: _gen(gen)
 		{
+			shape = std::move(shp);
 		}
 
 		ddParIteration::ddParIteration(const ddParGenerator &src)

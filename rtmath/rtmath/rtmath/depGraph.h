@@ -21,12 +21,15 @@ namespace rtmath
 		public:
 			vertexRunnable() {}
 			virtual ~vertexRunnable() {}
-			virtual void run() = 0;
+			// id field is present to allow for encapsulation within a class
+			virtual void run(const std::string &id = "") = 0;
+			// runSupported tells if the code can handle this id. Used for 
+			// derived / base class vertexRunnable handling
+			virtual bool runSupported(const std::string &id = "") = 0;
 		};
 
 		typedef std::set< std::weak_ptr<vertex>, std::owner_less<std::weak_ptr<vertex> > > setWeakVertex;
 		typedef std::set< std::shared_ptr<vertex> > setShrdVertex;
-		//typedef std::list< std::weak_ptr<const vertex>, std::owner_less<std::weak_ptr<const vertex> > > listWeakVertex;
 		typedef std::list< std::weak_ptr<vertex> > listWeakVertex;
 
 		class vertex : public std::enable_shared_from_this<vertex>
@@ -68,14 +71,14 @@ namespace rtmath
 		class graph : public std::enable_shared_from_this<graph>
 		{
 		public:
-			graph(const std::set< std::shared_ptr<vertex> > &vertices);
+			graph(const setShrdVertex &vertices);
 			void generate(const setWeakVertex &provided, 
 				listWeakVertex &order, 
 				setWeakVertex &remaining,
 				setWeakVertex &ignored);
 		private:
 			void _generate(const setWeakVertex &provided);
-			std::set< std::shared_ptr<vertex> > _vertices; 
+			setShrdVertex _vertices; 
 			setWeakVertex _remaining, _filled, _unfillable, _useless;
 			listWeakVertex _order;
 		};
