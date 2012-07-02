@@ -53,9 +53,10 @@ namespace rtmath
 	class paramSet : public hashable
 	{
 	public:
-		paramSet(const std::map<std::string, std::string> *aliases = nullptr) 
+		typedef std::map<std::string, std::string> aliasmap;
+		paramSet(const aliasmap *aliases = nullptr) 
 			{ _aliases = aliases; }
-		paramSet(const std::string &src, const std::map<std::string, std::string> *aliases = nullptr) 
+		paramSet(const std::string &src, const aliasmap *aliases = nullptr) 
 			{ _aliases = aliases; set(src); }
 		paramSet(const T &src)
 		{

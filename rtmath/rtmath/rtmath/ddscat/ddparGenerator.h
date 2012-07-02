@@ -47,9 +47,9 @@ namespace rtmath {
 		public:
 			ddParGeneratorBase();
 			virtual ~ddParGeneratorBase();
-			// freqs and temps are not part of the shape constraints
-			std::set<rotations> rots;
-			
+			// freqs and temps are now part of the shape constraints
+			std::set<std::shared_ptr<rotations> > rots;
+			// The other constraints
 			shapeConstraintContainer shapeConstraintsGlobal;
 			// The shapes to generate
 			std::set<std::unique_ptr<shapeModifiable> > shapes;
@@ -119,7 +119,7 @@ namespace rtmath {
 			// values - only one element in each shapeConstraint entry.
 			// contains freq, temp, reff, and every other needed quantity
 			std::unique_ptr<shapeModifiable> shape;
-			std::unique_ptr<rotations> rots;
+			std::shared_ptr<rotations> rots;
 
 			inline HASH_t hash() const
 			{

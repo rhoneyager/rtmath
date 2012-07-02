@@ -62,6 +62,7 @@ namespace rtmath {
 			std::shared_ptr<configsegment> getChild(const std::string &name) const;
 			std::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
 			std::shared_ptr<configsegment> getParent() const;
+			void listKeys(std::map<std::string,std::string> &output) const;
 			void listKeys(std::set<std::string> &res) const;
 			inline std::set<std::string> listKeys() const { std::set<std::string> res; listKeys(res); return res; }
 			void listChildren(std::set<std::string> &res) const;

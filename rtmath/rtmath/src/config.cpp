@@ -224,6 +224,11 @@ namespace rtmath {
 			res = _segname;
 		}
 
+		void configsegment::listKeys(std::map<std::string, std::string> &output) const
+		{
+			output = _mapStr;
+		}
+
 		void configsegment::listKeys(std::set<std::string> &res) const
 		{
 			res.clear();

@@ -290,14 +290,14 @@ namespace rtmath {
 			units = it->second->units;
 			units::conv_spec fconv(units, "GHz");
 			fGHz = fconv.convert(val);
-			
+
 			double TK;
 			it = shape->shapeConstraints.find("temp");
 			val = *(it->second->pset.begin());
 			units = it->second->units;
 			units::conv_temp tconv(units, "K");
 			TK = tconv.convert(val);
-			
+
 			refract::mice(fGHz, TK, m);
 			refract::writeDiel(filename,m);
 
@@ -350,170 +350,175 @@ namespace rtmath {
 		void ddParIteration::_populate()
 		{
 			using namespace std;
-			// TODO: factor in different possible rotations!!!
-			MARK();
-			throw rtmath::debug::xUnimplementedFunction();
 
 			/*	Iterate over all possible variations
-				Variations include, but are not limited to: 
-				shape, indiv shape params / global params,
-				freq, temp, size (vol, eff rad).
-				Go through each combo and create a ddParIterator expressing each one
-				
-				First, take each shape entry
-				It must come first, as the global params need to be added to the local params...
+			Variations include, but are not limited to: 
+			shape, indiv shape params / global params,
+			freq, temp, size (vol, eff rad).
+			Go through each combo and create a ddParIterator expressing each one
+
+			Take each shape entry
+			It must come first, as the global params need to be added to the local params...
 			*/
-			for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
+			for (auto rt = _gen.rots.begin(); rt != _gen.rots.end(); rt++)
 			{
-				shapeConstraintContainer shapeConstraintsEffective;
-				shapeConstraintsEffective = _gen.shapeConstraintsGlobal;
-				for (auto ot = (*it)->shapeConstraints.begin(); ot != (*it)->shapeConstraints.end(); ot++)
-					shapeConstraintsEffective.insert(*ot);
-
-
-				// first - parameter name. pair->first is value, pair->second is units
-				multimap<string, pair<double, string> > constraintsVaried;
-				set<string> variedNames;
-
-				// We now have the effective shape constraints. Gather those that need no expansion as a base.
-				// Also, for the varied ones, gather them up into constraintsVaried
-				shapeConstraintContainer shapeConstraintsEffectiveBase;
-				for (auto ot = shapeConstraintsEffective.begin(); ot != shapeConstraintsEffective.end(); ot++)
+				// rt refers to the rotations. Rotations are more complex objects, so they are 
+				// handled outside of the standard shapeConstraints
+				for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
 				{
-					bool unique = false;
-					if (shapeConstraintsEffective.count(ot->first) == 1)
-						if ((ot->second->size() == 1))
-						{
-							shapeConstraintsEffectiveBase.insert(*ot);
-							unique = true;
-						}
-					if (!unique)
+					shapeConstraintContainer shapeConstraintsEffective;
+					shapeConstraintsEffective = _gen.shapeConstraintsGlobal;
+					for (auto ot = (*it)->shapeConstraints.begin(); ot != (*it)->shapeConstraints.end(); ot++)
+						shapeConstraintsEffective.insert(*ot);
+
+
+					// first - parameter name. pair->first is value, pair->second is units
+					multimap<string, pair<double, string> > constraintsVaried;
+					set<string> variedNames;
+
+					// We now have the effective shape constraints. Gather those that need no expansion as a base.
+					// Also, for the varied ones, gather them up into constraintsVaried
+					shapeConstraintContainer shapeConstraintsEffectiveBase;
+					for (auto ot = shapeConstraintsEffective.begin(); ot != shapeConstraintsEffective.end(); ot++)
 					{
-						for (auto ut = ot->second->begin(); ut != ot->second->end(); ut++)
-						{
-							auto p = std::make_pair<double,string>(*ut, ot->second->units);
-							constraintsVaried.insert(
-								pair<string,pair<double,string> >(ot->first,p));
-							if (variedNames.count(ot->first) == 0)
-								variedNames.insert(ot->first);
-						}
-					}
-				}
-
-				// constraintsVaried now contains all possible constraint variations. Iterate over these to 
-				// produce the ddParIterator entries in _elements
-				
-				// get rid of duplicates (they are possible still)
-				{
-					multimap<string, pair<double, string> > constraintsVariedUnique;
-					multimap<string, pair<double, string> >::iterator dt;
-					dt = unique_copy(constraintsVaried.begin(), constraintsVaried.end(), constraintsVariedUnique.begin());
-					constraintsVaried = constraintsVariedUnique;
-				}
-
-				// Collect the elements into sets of variedNames
-				map<string, set<pair<double,string> > > vmap;
-				for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
-				{
-					//pair<multimap<string,pair<double,string> >::iterator, multimap<string,pair<double,string> >::iterator >
-					auto ret = constraintsVaried.equal_range(*ot);
-					for (auto ut = ret.first; ut != ret.second; ut++)
-					{
-						if (!vmap.count(*ot))
-						{
-							static const set<pair<double,string> > base;
-							vmap.insert(pair<string,set<pair<double,string> > >(*ot,base));
-						}
-						vmap.at(*ot).insert(*ut);
-					}
-				}
-
-				// And now to permute everything.....
-				// Set all iterators to begin
-				map<string, set<pair<double,string> >::iterator> mapit;
-				for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
-					mapit[*ot] = vmap[*ot].begin();
-				bool done = false;
-				// Permute until all are at end
-				while (!done)
-				{
-					shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
-					for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
-					{
-						// Explicit, since it's hard to remember by this point
-						double val;
-						string name, units;
-
-						val = ot->second->first;
-						name = ot->first;
-						units = ot->second->second;
-
-						// Construct permuted object
-						permuted.insert(pair<string,shared_ptr<shapeConstraint> >(
-							name, make_shared<shapeConstraint>(name,val,units) ) );
-
-						// As a reminder, (it) is an iterator to the current shape.....
-						unique_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
-						nshape->shapeConstraints = permuted;
-						nshape->generate();
-
-						// Make the iterator
-						ddParIterator nit(_gen, move(nshape) );
-						_elements.insert(move(nit));
-
+						bool unique = false;
+						if (shapeConstraintsEffective.count(ot->first) == 1)
+							if ((ot->second->size() == 1))
+							{
+								shapeConstraintsEffectiveBase.insert(*ot);
+								unique = true;
+							}
+							if (!unique)
+							{
+								for (auto ut = ot->second->begin(); ut != ot->second->end(); ut++)
+								{
+									auto p = std::make_pair<double,string>(*ut, ot->second->units);
+									constraintsVaried.insert(
+										pair<string,pair<double,string> >(ot->first,p));
+									if (variedNames.count(ot->first) == 0)
+										variedNames.insert(ot->first);
+								}
+							}
 					}
 
-					// Advance the iterators
-					// Advance the "leftmost" iterator until it hits the end. Then, reset it and advance one further.
-					auto mit = mapit.begin();
-					bool good = false;
-					auto cit = mit->second;
+					// constraintsVaried now contains all possible constraint variations. Iterate over these to 
+					// produce the ddParIterator entries in _elements
+
+					// get rid of duplicates (they are possible still)
+					{
+						multimap<string, pair<double, string> > constraintsVariedUnique;
+						multimap<string, pair<double, string> >::iterator dt;
+						dt = unique_copy(constraintsVaried.begin(), constraintsVaried.end(), constraintsVariedUnique.begin());
+						constraintsVaried = constraintsVariedUnique;
+					}
+
+					// Collect the elements into sets of variedNames
+					map<string, set<pair<double,string> > > vmap;
+					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
+					{
+						//pair<multimap<string,pair<double,string> >::iterator, multimap<string,pair<double,string> >::iterator >
+						auto ret = constraintsVaried.equal_range(*ot);
+						for (auto ut = ret.first; ut != ret.second; ut++)
+						{
+							if (!vmap.count(*ot))
+							{
+								static const set<pair<double,string> > base;
+								vmap.insert(pair<string,set<pair<double,string> > >(*ot,base));
+							}
+							vmap.at(*ot).insert(*ut);
+						}
+					}
+
+					// And now to permute everything.....
+					// Set all iterators to begin
+					map<string, set<pair<double,string> >::iterator> mapit;
+					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
+						mapit[*ot] = vmap[*ot].begin();
+					bool done = false;
+					// Permute until all are at end
 					while (!done)
 					{
-						cit++;
-						if (cit == vmap[mit->first].end())
+						shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
+						for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
 						{
-							cit = vmap[mit->first].begin();
-							mit++;
-						} else break;
-						// Can't return here - only the current shape is done...
-						if (mit == mapit.end()) done = true; // Breaks two loops, and moves on to next shape...
+							// Explicit, since it's hard to remember by this point
+							double val;
+							string name, units;
+
+							val = ot->second->first;
+							name = ot->first;
+							units = ot->second->second;
+
+							// Construct permuted object
+							permuted.insert(pair<string,shared_ptr<shapeConstraint> >(
+								name, make_shared<shapeConstraint>(name,val,units) ) );
+
+							// As a reminder, (it) is an iterator to the current shape.....
+							unique_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
+							nshape->shapeConstraints = permuted;
+							nshape->generate();
+
+							// Make the iterator
+							ddParIterator nit(_gen, move(nshape) );
+							// Add the rotations
+							nit.rots = *rt;
+							// Insert into _elenemts using rvalue move (avoids copying)
+							_elements.insert(move(nit));
+
+						}
+
+						// Advance the iterators
+						// Advance the "leftmost" iterator until it hits the end. Then, reset it and advance one further.
+						auto mit = mapit.begin();
+						bool good = false;
+						auto cit = mit->second;
+						while (!done)
+						{
+							cit++;
+							if (cit == vmap[mit->first].end())
+							{
+								cit = vmap[mit->first].begin();
+								mit++;
+							} else break;
+							// Can't return here - only the current shape is done...
+							if (mit == mapit.end()) done = true; // Breaks two loops, and moves on to next shape...
+						}
+
 					}
-					
 				}
 			}
 
-			
+
 		}
 
 	}
 }
 
 /*
-				// Set rotations
-				rotations rots;
-				it->getrots(rots);
-				rots.out(parout);
+// Set rotations
+rotations rots;
+it->getrots(rots);
+rots.out(parout);
 
-				// Set frequency and wavelength
-				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
-					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-				wvlens->set<double>(0,um);
-				wvlens->set<double>(1,um);
-				wvlens->set<double>(2,1.0);
-				wvlens->set<std::string>(3,"LIN");
-				GETOBJKEY();
-				//				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
+// Set frequency and wavelength
+shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
+( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+wvlens->set<double>(0,um);
+wvlens->set<double>(1,um);
+wvlens->set<double>(2,1.0);
+wvlens->set<std::string>(3,"LIN");
+GETOBJKEY();
+//				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
 
-				// Finish shape generation, then get calculated reff
-				double reff = shape->get(REFF); // in um by default
-				shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
-					( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-				reffline->set<double>(0,reff);
-				reffline->set<double>(1,reff);
-				reffline->set<double>(2,1.0);
-				reffline->set<std::string>(3,"LIN");
-				//	parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
+// Finish shape generation, then get calculated reff
+double reff = shape->get(REFF); // in um by default
+shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
+( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+reffline->set<double>(0,reff);
+reffline->set<double>(1,reff);
+reffline->set<double>(2,1.0);
+reffline->set<std::string>(3,"LIN");
+//	parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
 
-				
+
 */
