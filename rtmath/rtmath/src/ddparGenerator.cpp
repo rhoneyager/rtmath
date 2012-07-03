@@ -25,6 +25,8 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <cmath>
 #include "../rtmath/refract.h"
@@ -217,7 +219,7 @@ namespace rtmath {
 					throw rtmath::debug::xMissingFile(pXML.string().c_str());
 			}
 
-			// Okay, now to serialize and output...
+			// Okay, now to serialize and input...
 			std::ifstream in(pXML.string().c_str());
 			boost::archive::xml_iarchive oa(in);
 			oa >> BOOST_SERIALIZATION_NVP(obj);
@@ -289,6 +291,9 @@ namespace rtmath {
 
 		void ddParIterator::exportDDPAR(ddPar &out) const
 		{
+			if (!_genp) return;
+			const ddParGenerator &_gen = *_genp;
+
 			if (shape->useDDPAR() == false) return;
 			// Most of the ddPar file will be filled in from the base ddParGenerator class,
 			// with a few overrides from the iterator. Some of the properties come from the 
@@ -314,17 +319,17 @@ namespace rtmath {
 			if (shape->useDDPAR() == false) return;
 			ddPar outpar;
 			exportDDPAR(outpar);
-			outpar.saveFile(filename);
+			outpar.writeFile(filename);
 		}
 
 		ddParIterator::ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp)
-			: _gen(gen)
+			: _genp(&gen)
 		{
 			shape = shp;
 		}
 
 		ddParIteration::ddParIteration(const ddParGenerator &src)
-			: _gen(src)
+			: _genp(&src)
 		{
 			_populate();
 		}
@@ -333,6 +338,8 @@ namespace rtmath {
 		{
 			using namespace std;
 
+			if (!_genp) return;
+			const ddParGenerator &_gen = *_genp;
 			/*	Iterate over all possible variations
 			Variations include, but are not limited to: 
 			shape, indiv shape params / global params,
@@ -355,7 +362,8 @@ namespace rtmath {
 
 
 					// first - parameter name. pair->first is value, pair->second is units
-					multimap<string, pair<double, string> > constraintsVaried;
+					multimap<const string, rtmath::units::hasUnits> constraintsVaried;
+					//multimap<string, pair<double, string> > constraintsVaried;
 					set<string> variedNames;
 
 					// We now have the effective shape constraints. Gather those that need no expansion as a base.
@@ -375,11 +383,11 @@ namespace rtmath {
 								for (auto ut = ot->second->begin(); ut != ot->second->end(); ut++)
 								{
 									auto p = std::make_pair<double,string>(*ut, ot->second->units);
-									string name = ot->first;
-									string units = ot->second->units;
-									double val = *ut;
-									constraintsVaried.insert(make_pair<string,pair<double,string> >(name,make_pair<double,string>(val, units)));
-									//constraintsVaried.insert(std::pair<string,pair<double,string> >(ot->first,p));
+									const string &name = ot->first;
+									const string &units = ot->second->units;
+									const double val = *ut;
+									constraintsVaried.insert(pair<const string,units::hasUnits>(name, units::hasUnits(val,units)));
+									//constraintsVaried.insert(make_pair<string,pair<double,string> >(name,make_pair<double,string>(val, units)));
 									if (variedNames.count(ot->first) == 0)
 										variedNames.insert(ot->first);
 								}
@@ -388,17 +396,23 @@ namespace rtmath {
 
 					// constraintsVaried now contains all possible constraint variations. Iterate over these to 
 					// produce the ddParIterator entries in _elements
-
+					
 					// get rid of duplicates (they are possible still)
 					{
-						multimap<string, pair<double, string> > constraintsVariedUnique;
-						multimap<string, pair<double, string> >::iterator dt;
-						dt = unique_copy(constraintsVaried.begin(), constraintsVaried.end(), constraintsVariedUnique.begin());
+						multimap<const string, rtmath::units::hasUnits > constraintsVariedUnique;
+						multimap<const string, rtmath::units::hasUnits >::iterator dt;
+						// unique_copy will not work due to predicate differences
+						//dt = unique_copy(constraintsVaried.begin(), constraintsVaried.end(), constraintsVariedUnique.begin());
+						for (auto ot = constraintsVaried.begin(); ot != constraintsVaried.end(); ++ot)
+						{
+							if (!constraintsVariedUnique.count(ot->first))
+								constraintsVariedUnique.insert(*ot);
+						}
 						constraintsVaried = constraintsVariedUnique;
 					}
-
+					
 					// Collect the elements into sets of variedNames
-					map<string, set<pair<double,string> > > vmap;
+					map<const string, set<rtmath::units::hasUnits > > vmap;
 					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
 					{
 						//pair<multimap<string,pair<double,string> >::iterator, multimap<string,pair<double,string> >::iterator >
@@ -407,16 +421,16 @@ namespace rtmath {
 						{
 							if (!vmap.count(*ot))
 							{
-								static const set<pair<double,string> > base;
-								vmap.insert(pair<string,set<pair<double,string> > >(*ot,base));
+								static const set<rtmath::units::hasUnits > base;
+								vmap.insert(pair<string,set<rtmath::units::hasUnits > >(*ot,base));
 							}
-							vmap.at(*ot).insert(*ut);
+							vmap.at(*ot).insert(ut->second);
 						}
 					}
-
+					
 					// And now to permute everything.....
 					// Set all iterators to begin
-					map<string, set<pair<double,string> >::iterator> mapit;
+					map<string, set<rtmath::units::hasUnits >::iterator> mapit;
 					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
 						mapit[*ot] = vmap[*ot].begin();
 					bool done = false;
@@ -430,13 +444,13 @@ namespace rtmath {
 							double val;
 							string name, units;
 
-							val = ot->second->first;
+							val = ot->second->quant();
 							name = ot->first;
-							units = ot->second->second;
+							units = ot->second->units();
 
 							// Construct permuted object
-							permuted.insert(pair<string,shared_ptr<shapeConstraint> >(
-								name, make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
+							permuted.insert(pair<string,boost::shared_ptr<shapeConstraint> >(
+								name, boost::make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
 
 							// As a reminder, (it) is an iterator to the current shape.....
 							boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
@@ -470,11 +484,65 @@ namespace rtmath {
 						}
 
 					}
+					
 				}
 			}
 
 
 		}
+
+		void ddParIteration::read(ddParIteration &obj, const std::string &file)
+		{
+			// It's yet another serialization case
+			using namespace boost::filesystem;
+			path pBase(file), pXML;
+			if (is_directory(pBase))
+			{
+				pXML = pBase / "ddParIteration.xml";
+				if (!exists(pXML))
+					throw rtmath::debug::xMissingFile(pXML.string().c_str());
+				else if (is_directory(pXML))
+					throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
+			} else {
+				pXML = pBase;
+				if (!exists(pXML))
+					throw rtmath::debug::xMissingFile(pXML.string().c_str());
+			}
+
+			// Okay, now to serialize and input...
+			std::ifstream in(pXML.string().c_str());
+			boost::archive::xml_iarchive oa(in);
+			oa >> BOOST_SERIALIZATION_NVP(obj);
+		}
+
+		void ddParIteration::write(const ddParIteration &obj, const std::string &outfile)
+		{
+			// It's yet another serialization case
+			using namespace boost::filesystem;
+			path pBase(outfile), pXML;
+			if (is_directory(pBase))
+			{
+				pXML = pBase / "ddParIteration.xml";
+				if (exists(pXML))
+				{
+					if (is_directory(pXML))
+						throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
+					boost::filesystem::remove(pXML);
+				}
+			} else {
+				pXML = pBase;
+				if (exists(pXML))
+				{
+					boost::filesystem::remove(pXML);
+				}
+			}
+
+			// Okay, now to serialize and output...
+			std::ofstream out(pXML.string().c_str());
+			boost::archive::xml_oarchive oa(out);
+			oa << BOOST_SERIALIZATION_NVP(obj);
+		}
+
 
 	}
 }

@@ -46,6 +46,8 @@ namespace rtmath {
 		class ddParIteration;
 		class ddParIterator;
 
+		
+
 		class ddParGeneratorBase
 		{
 		public:
@@ -56,7 +58,7 @@ namespace rtmath {
 			// The other constraints
 			shapeConstraintContainer shapeConstraintsGlobal;
 			// The shapes to generate
-			std::set<boost::scoped_ptr<shapeModifiable> > shapes;
+			std::set<boost::shared_ptr<shapeModifiable> > shapes;
 
 			ddPar base;
 			std::string baseParFile;
@@ -96,7 +98,8 @@ namespace rtmath {
 				ar & BOOST_SERIALIZATION_NVP(doExport);
 				ar & BOOST_SERIALIZATION_NVP(exportLoc);
 
-				ar & boost::serialization::make_nvp("ddPar", base);
+				// The par file is not serialized, as it is written separately
+				//ar & boost::serialization::make_nvp("ddPar", base);
 
 				ar & BOOST_SERIALIZATION_NVP(shapeConstraintsGlobal);
 				ar & BOOST_SERIALIZATION_NVP(rots);
@@ -132,24 +135,20 @@ namespace rtmath {
 				return res;
 			}
 
-			/*bool operator<(const ddParIterator &rhs) const
-			{
-				return false;
-			}*/
-
-			friend struct std::less<rtmath::ddscat::ddParIterator>;
 			friend class ddParIteration;
 			friend class ddParGenerator;
 			friend class boost::serialization::access;
 		private:
-			const ddParGenerator &_gen;
+			//const ddParGenerator &_gen;
+			const ddParGenerator *_genp;
+			ddParIterator() { _genp = nullptr; }
 			// When the class Archive corresponds to an output archive, the
 			// & operator is defined similar to <<.  Likewise, when the class Archive
 			// is a type of input archive the & operator is defined similar to >>.
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version)
 			{
-				ar & boost::serialization::make_nvp("ddParGenerator", _gen);
+				ar & boost::serialization::make_nvp("ddParGenerator", _genp);
 				ar & BOOST_SERIALIZATION_NVP(shape);
 				ar & BOOST_SERIALIZATION_NVP(rots);
 			}
@@ -165,6 +164,8 @@ namespace rtmath {
 		{
 		public:
 			ddParIteration(const ddParGenerator &gen);
+			static void write(const ddParIteration &obj, const std::string &outfile);
+			static void read(ddParIteration &obj, const std::string &file);
 			// Iterators go here
 			typedef std::set< boost::shared_ptr<ddParIterator> > data_t;
 			typedef data_t::const_iterator const_iterator;
@@ -172,14 +173,15 @@ namespace rtmath {
 			inline const_iterator end() const { return _elements.end(); }
 		private:
 			data_t _elements;
-			const ddParGenerator &_gen;
+			//const ddParGenerator &_gen;
+			const ddParGenerator *_genp;
 			void _populate();
 			friend class boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version)
 			{
 				ar & boost::serialization::make_nvp("elements", _elements);
-				ar & boost::serialization::make_nvp("ddParGenerator", _gen);
+				ar & boost::serialization::make_nvp("ddParGenerator", _genp);
 			}
 		};
 

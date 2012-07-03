@@ -28,6 +28,12 @@ namespace rtmath {
 			double quant() const { return _quant; }
 			void units(std::string &sUnits) const { sUnits = _units; }
 			inline std::string units() const { std::string sUnits; units(sUnits); return sUnits; }
+			bool operator<(const hasUnits &rhs) const
+			{
+				if (_units != rhs._units) return _units < rhs._units;
+				if (_quant != rhs._quant) return _quant < rhs._quant;
+				return false;
+			}
 		private:
 			std::string _units;
 			double _quant;

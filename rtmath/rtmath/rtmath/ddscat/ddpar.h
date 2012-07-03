@@ -24,6 +24,10 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/shared_ptr.hpp>
 #include "parids.h"
 #include "../parsers.h"
 
@@ -339,86 +343,86 @@ namespace rtmath {
 				std::vector<ddParLineSimple<R> > _r;
 			};
 
-			std::shared_ptr<ddParLine> mapKeys(const std::string &key);
+			boost::shared_ptr<ddParLine> mapKeys(const std::string &key);
 		}
 
 
 #define accessorSimple(name,id,valtype) \
 	valtype name() const \
-		{ std::shared_ptr<const ddParParsers::ddParLineSimple<valtype> > line; \
-		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		{ boost::shared_ptr<const ddParParsers::ddParLineSimple<valtype> > line; \
+		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		valtype v; \
 		getKey(id,linein); \
-		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<valtype> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<valtype> >(line); \
 		line->get(v); \
 		return v; } \
 	void name(const valtype &v) \
-		{ std::shared_ptr< ddParParsers::ddParLineSimple<valtype> > line; \
+		{ boost::shared_ptr< ddParParsers::ddParLineSimple<valtype> > line; \
 		line->set(v); \
-		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line)); \
 		}
 
 // Special case where a bool is stored in the file as an int
 #define accessorSimpleBool(name,id) \
 	bool name() const \
-		{ std::shared_ptr<const ddParParsers::ddParLineSimple<size_t> > line; \
-		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		{ boost::shared_ptr<const ddParParsers::ddParLineSimple<size_t> > line; \
+		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		size_t v; \
 		getKey(id,linein); \
-		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<size_t> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<size_t> >(line); \
 		line->get(v); \
 		return (v) ? true : false; } \
 	void name(const bool &v) \
-		{ std::shared_ptr< ddParParsers::ddParLineSimple<size_t> > line; \
+		{ boost::shared_ptr< ddParParsers::ddParLineSimple<size_t> > line; \
 		size_t vi = (v) ? 1 : 0; \
 		line->set(vi); \
-		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line)); \
 		}
 
 #define accessorSimplePlural(name,id,valtype) \
 	valtype name(size_t index) const \
-		{ std::shared_ptr<const ddParParsers::ddParLineSimplePlural<valtype> > line; \
-		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		{ boost::shared_ptr<const ddParParsers::ddParLineSimplePlural<valtype> > line; \
+		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		valtype v; \
 		getKey(id,linein); \
-		line = std::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<valtype> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<valtype> >(line); \
 		line->get(index,v); \
 		return v; } \
 	void name(size_t index, const valtype &v) \
-		{ std::shared_ptr< ddParParsers::ddParLineSimplePlural<valtype> > line; \
+		{ boost::shared_ptr< ddParParsers::ddParLineSimplePlural<valtype> > line; \
 		line->set(index,v); \
-		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line)); \
 		}
 
 #define accessorString(getname,setname,id) \
 	void getname(std::string &val) const \
-		{ std::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line; \
-		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		{ boost::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line; \
+		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		std::string v; \
 		getKey(id,linein); \
-		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
 		line->get(v); \
 		val = v; } \
 	void setname(const std::string &v) \
-		{ std::shared_ptr< ddParParsers::ddParLineSimple<std::string> > line; \
+		{ boost::shared_ptr< ddParParsers::ddParLineSimple<std::string> > line; \
 		line->set(v); \
-		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line)); \
 		}
 
 #define accessorStringBool(name,id,bfalse,btrue) \
 	bool name() const \
-		{ std::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line; \
-		std::shared_ptr< const ddParParsers::ddParLine > linein; \
+		{ boost::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line; \
+		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		std::string v; \
 		getKey(id,linein); \
-		line = std::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
 		line->get(v); \
 		return (v == btrue) ? true : false; } \
 	void name(bool v) \
-		{ std::shared_ptr<ddParParsers::ddParLineSimple<std::string> > line; \
+		{ boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> > line; \
 		std::string vs = (v) ? btrue : bfalse ; \
 		line->set(vs); \
-		insertKey(id,std::static_pointer_cast< ddParParsers::ddParLine >(line)); \
+		insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line)); \
 		}
 
 
@@ -429,9 +433,10 @@ namespace rtmath {
 			ddPar(const std::string &filename);
 			~ddPar();
 
-			void loadFile(const std::string &filename, bool overlay = false);
-			void saveFile(const std::string &filename) const;
-			void load(std::istream &stream, bool overlay = false);
+			void readFile(const std::string &filename, bool overlay = false);
+			void writeFile(const std::string &filename) const;
+			void read(std::istream &stream, bool overlay = false);
+			void write(std::ostream &stream) const;
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 
@@ -476,26 +481,26 @@ namespace rtmath {
 			// Scattering planes
 			
 			// The older interface
-			void insertKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &ptr);
-			void getKey(ddParParsers::ParId key, std::shared_ptr<ddParParsers::ddParLine> &res);
-			void getKey(ddParParsers::ParId key, std::shared_ptr<const ddParParsers::ddParLine> &res) const;
-			inline std::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
+			void insertKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &ptr);
+			void getKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &res);
+			void getKey(ddParParsers::ParId key, boost::shared_ptr<const ddParParsers::ddParLine> &res) const;
+			inline boost::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
 			{
-				std::shared_ptr<ddParParsers::ddParLine> res = nullptr;
+				boost::shared_ptr<ddParParsers::ddParLine> res ;//= nullptr;
 				getKey(key,res);
 				return res;
 			}
 			void delKey(ddParParsers::ParId key);
 			size_t size() const { return _parsedData.size(); }
-			void getPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
-			void getPlane(size_t key, std::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const;
-			inline std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > getPlane(size_t key)
+			void getPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
+			void getPlane(size_t key, boost::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const;
+			inline boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > getPlane(size_t key)
 			{
-				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res = nullptr;
+				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res ;//= nullptr;
 				getPlane(key,res);
 				return res;
 			}
-			void insertPlane(size_t key, std::shared_ptr<ddParParsers::ddParLineSimplePlural<double>> &res);
+			void insertPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double>> &res);
 			void delPlane(size_t key);
 			friend class boost::serialization::access;
 		private:
@@ -504,22 +509,35 @@ namespace rtmath {
 			void _populateDefaults(bool overwrite = false, const std::string &src = "") const;
 
 			mutable std::map<ddParParsers::ParId, 
-				std::shared_ptr<ddParParsers::ddParLine> > 
+				boost::shared_ptr<ddParParsers::ddParLine> > 
 				_parsedData;
 
 			mutable std::map<size_t,
-				std::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
+				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
 				_scaPlanes;
 
 			std::map<size_t, std::string> _comments;
+			std::string _savedata;
 
 			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
+			void save(Archive & ar, const unsigned int version)
 			{
 				//ar & BOOST_SERIALIZATION_NVP(exportLoc);
-				ar & boost::serialization::make_nvp("ddPar_Raw", _parsedData);
-				ar & boost::serialization::make_nvp("Scattering_Planes", _scaPlanes);
+				//ar & boost::serialization::make_nvp("ddPar_Raw", _parsedData);
+				//ar & boost::serialization::make_nvp("Scattering_Planes", _scaPlanes);
+				std::ostringstream out;
+				save(out);
+				_savedata = out.str();
+				ar & boost::serialization::make_nvp("Par_File", _savedata);
 			}
+			template<class Archive>
+			void load(Archive & ar, const unsigned int version)
+			{
+				ar & boost::serialization::make_nvp("Par_File", _savedata);
+				std::istringstream in(_savedata);
+				load(in);
+			}
+			BOOST_SERIALIZATION_SPLIT_MEMBER()
 		};
 
 #undef accessorSimple
