@@ -639,5 +639,8 @@
     <ClCompile Include="src\runScripts.cpp">
       <Filter>Source Files\ddscat</Filter>
     </ClCompile>
+    <ClCompile Include="src\shapes-generators.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

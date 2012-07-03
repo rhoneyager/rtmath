@@ -281,6 +281,7 @@
     <ClCompile Include="src\runScripts.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\shapefile.cpp" />
+    <ClCompile Include="src\shapes-generators.cpp" />
     <ClCompile Include="src\shapes.cpp" />
     <ClCompile Include="src\Stdafx.cpp" />
     <ClCompile Include="src\surfaces.cpp" />

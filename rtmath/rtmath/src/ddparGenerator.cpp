@@ -547,31 +547,3 @@ namespace rtmath {
 	}
 }
 
-/*
-// Set rotations
-rotations rots;
-it->getrots(rots);
-rots.out(parout);
-
-// Set frequency and wavelength
-shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > wvlens
-( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-wvlens->set<double>(0,um);
-wvlens->set<double>(1,um);
-wvlens->set<double>(2,1.0);
-wvlens->set<std::string>(3,"LIN");
-GETOBJKEY();
-//				parout.insertKey(ddParParsers::WAVELENGTHS,static_pointer_cast<ddParParsers::ddParLine>(wvlens));
-
-// Finish shape generation, then get calculated reff
-double reff = shape->get(REFF); // in um by default
-shared_ptr<ddParParsers::ddParLineMixed<double, std::string> > reffline
-( new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
-reffline->set<double>(0,reff);
-reffline->set<double>(1,reff);
-reffline->set<double>(2,1.0);
-reffline->set<std::string>(3,"LIN");
-//	parout.insertKey(ddParParsers::AEFF,static_pointer_cast<ddParParsers::ddParLine>(reffline));
-
-
-*/

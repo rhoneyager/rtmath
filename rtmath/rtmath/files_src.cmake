@@ -57,6 +57,7 @@ set (ddscat-src
 	src/runScripts.cpp
 	src/shapefile.cpp
 	src/shapes.cpp
+	src/shapes-generators.cpp
 	)
 set (ddscat-hdr
 	rtmath/ddscat/cdf-ddscat.h

@@ -244,15 +244,36 @@ namespace rtmath {
 
 		}
 
-		void shape::write(const std::string &fname) const
+		void shape::read(shape &obj, const std::string &infile)
 		{
 			using namespace ::boost::filesystem;
 			using namespace ::boost;
-			path p(fname);
+			path p(outfile);
 			if (exists(p))
 			{
 				if (is_directory(p))
-					throw rtmath::debug::xPathExistsWrongType(fname.c_str());
+					throw rtmath::debug::xPathExistsWrongType(infile.c_str());
+			} else {
+				throw rtmath::debug::xMissingFile(infile.c_str());
+			}
+
+			// Okay, now to serialize and output...
+			std::ifstream in(p.string().c_str());
+			//boost::archive::text_oarchive oa(out);
+			// oa << *this;
+			::boost::archive::xml_iarchive ia(out);
+			ia >> BOOST_SERIALIZATION_NVP(obj);
+		}
+
+		void shape::write(const shape &obj, const std::string &outfile)
+		{
+			using namespace ::boost::filesystem;
+			using namespace ::boost;
+			path p(outfile);
+			if (exists(p))
+			{
+				if (is_directory(p))
+					throw rtmath::debug::xPathExistsWrongType(outfile.c_str());
 			}
 
 			// Okay, now to serialize and output...
@@ -260,7 +281,16 @@ namespace rtmath {
 			//boost::archive::text_oarchive oa(out);
 			// oa << *this;
 			::boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(*this);
+			oa << BOOST_SERIALIZATION_NVP(obj);
+		}
+
+		void shape::write(const std::string &fname) const
+		{
+			// This member just prevents a pure virtual shape. It does nothing, as at this level 
+			// there is no knowledge of how to write the shape. Execution should never reach here in a 
+			// proper implementation. canWrite prevents most cases, and if the derived class is writable,
+			// it should override this.
+			throw rtmath::debug::xUnimplementedFunction();
 		}
 
 		bool shape::useDDPAR() const

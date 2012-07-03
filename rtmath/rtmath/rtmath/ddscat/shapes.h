@@ -84,6 +84,8 @@ namespace rtmath {
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 			virtual bool canWrite() const { return false; }
 			virtual void write(const std::string &fname) const;
+			static void write(const shape &obj, const std::string &outfile);
+			static void read(shape &obj, const std::string &file);
 			virtual bool useDDPAR() const;
 			virtual void setDDPAR(ddPar &out) const;
 			// Nothing done with these until iterator evaluation. They are split, and THEN
@@ -113,7 +115,7 @@ namespace rtmath {
 
 			shapeModifiable();
 			virtual ~shapeModifiable();
-			
+
 			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			// create ordering and apply vertex actions to shapeConstraints
 			virtual void update(const rtmath::graphs::setWeakVertex &fixed);
@@ -168,11 +170,56 @@ namespace rtmath {
 
 		namespace shapes
 		{
-			class ellipsoid : public shapeModifiable
+			// from_file provides a target for ddscat shape.dat file processing. provides its 
+			// own dipole spacing vertex, which basically goes unused.
+			// TODO: allow for stretching/squeezing and aspect ratio manipulation
+			//       needs knowledge of shape file statistics (like length, width, depth)
+			//       Should this be in another class?
+			class from_file : public shapeModifiable
+			{
+			public:
+				from_file();
+				virtual ~from_file();
+				virtual shape* clone() const { from_file *ns = new from_file(*this); return ns; }
+				virtual bool canWrite() const { return true; }
+				// Function to write shape.dat, not to be confused with static xml write
+				virtual void write(const std::string &fname) const;
+				// shape.dat file source is stored in shapeConstraints, again.
+				// It is hidden in a units field. This allows splitting of multiple files and 
+				// the associated generation.
+				// field name is "source_filename"
+			protected:
+				virtual void _constructGraph();
+				virtual void run(const std::string &id = "");
+				virtual bool runSupported(const std::string &id = "");
+			};
+
+			/*
+			// ddscat_dep provides the interdipole spacing vertex. Not used in tmatrix-derivations.
+			class ddscat_dep : public shapeModifiable
+			{
+			protected:
+				ddscat_dep();
+				virtual ~ddscat_dep();
+				virtual shape* clone() const { ddscat_dep *ns = new ddscat_dep(*this); return ns; }
+				virtual void _constructGraph();
+			protected:
+				virtual void run(const std::string &id = "");
+				virtual bool runSupported(const std::string &id = "");
+			};
+
+			class ellipsoid : public ddscat_dep
 			{
 			public:
 				ellipsoid();
+				virtual ~ellipsoid();
+				virtual shape* clone() const { ellipsoid *ns = new ellipsoid(*this); return ns; }
+				virtual void _constructGraph();
+			protected:
+				virtual void run(const std::string &id = "");
+				virtual bool runSupported(const std::string &id = "");
 			};
+			*/
 		}
 
 	}
