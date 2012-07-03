@@ -111,8 +111,11 @@ namespace rtmath {
 		size_t _datasize;
 		double *_data;
 	public: // Static member functions start here
-		static std::shared_ptr<matrixop> fromDoubleArray(const double *src, size_t rank, ...);
-		static std::shared_ptr<matrixop> fromDoubleArray(const double *src, const std::vector<size_t> &size);
+		// These functions construct a new matrixop. It is NOT in a shared_ptr.
+		// Done like this because I then have the choice of pointer container.
+		static matrixop* fromDoubleArray(const double *src, size_t rank, ...);
+		static matrixop* fromDoubleArray(const double *src, const std::vector<size_t> &size);
+
 		static matrixop diagonal(const std::vector<size_t> &size, double val);
 		static matrixop diagonal(double val, size_t rank, ...);
 		static matrixop identity(const std::vector<size_t> &size);

@@ -1197,7 +1197,7 @@ namespace rtmath {
 		return 0; // to force control path to return a value
 	}
 
-	std::shared_ptr<matrixop> matrixop::fromDoubleArray(const double *src, size_t rank, ...)
+	matrixop* matrixop::fromDoubleArray(const double *src, size_t rank, ...)
 	{
 		// Retrieve the variable parameters
 		va_list indices;
@@ -1210,17 +1210,17 @@ namespace rtmath {
 			ptr.push_back(ival);
 		}
 		va_end(indices);
-		matrixop res(ptr);
-		res.fromDoubleArray(src);
+		matrixop *res = new matrixop(ptr);
+		res->fromDoubleArray(src);
 
-		return std::make_shared<matrixop> (res);
+		return (res);
 	}
 
-	std::shared_ptr<matrixop> matrixop::fromDoubleArray(const double *src, const std::vector<size_t> &size)
+	matrixop* matrixop::fromDoubleArray(const double *src, const std::vector<size_t> &size)
 	{
-		matrixop res(size);
-		res.fromDoubleArray(src);
-		return std::make_shared<matrixop> (res);
+		matrixop* res = new matrixop(size);
+		res->fromDoubleArray(src);
+		return (res);
 	}
 
 	matrixop matrixop::identity(const std::vector<size_t> &size)

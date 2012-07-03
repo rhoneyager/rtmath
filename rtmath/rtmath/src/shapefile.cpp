@@ -16,6 +16,8 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <cmath>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
@@ -23,30 +25,6 @@
 
 namespace rtmath {
 	namespace ddscat {
-
-		namespace MANIPULATED_QUANTITY
-		{
-			void shapeFileManip::run()
-			{
-				using namespace std;
-				const double pi = boost::math::constants::pi<double>();
-				// This function overrides the basic manipulation scheme.
-				// This is because some of the functions, like volume
-				// computation are more complex
-				//if (_id == DENS_T)
-
-				if (_id == "")
-				{
-
-				} else if (_id == "")
-				{
-
-				} else {
-					throw rtmath::debug::xUnimplementedFunction();
-				}
-			}
-		}
-
 
 		shapefile::shapefile()
 		{
@@ -72,7 +50,7 @@ namespace rtmath {
 		void shapefile::_init()
 		{
 			using namespace std;
-			_lattice = nullptr;
+			//_lattice = nullptr;
 			_latticePts.clear();
 			_latticePtsStd.clear();
 			_latticePtsRi.clear();
@@ -127,10 +105,10 @@ namespace rtmath {
 
 			// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
 			// bypassing any compiler return be value/reference difficulties
-			_a1 = matrixop::fromDoubleArray(a1,2,1,3);
-			_a2 = matrixop::fromDoubleArray(a2,2,1,3);
-			_d  = matrixop::fromDoubleArray(d,2,1,3);
-			_x0 = matrixop::fromDoubleArray(x0,2,1,3);
+			_a1 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a1,2,1,3));
+			_a2 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a2,2,1,3));
+			_d  = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(d,2,1,3));
+			_x0 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(x0,2,1,3));
 
 			std::getline(in,lin); // Skip junk line
 
@@ -154,13 +132,13 @@ namespace rtmath {
 			a3[0] = a1[1]*a2[2]-a1[2]*a2[1];
 			a3[1] = a1[2]*a2[0]-a1[0]*a2[2];
 			a3[2] = a1[0]*a2[1]-a1[1]*a2[0];
-			_a3 = matrixop::fromDoubleArray(a3,2,1,3);
+			_a3 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a3,2,1,3));
 
 			// Do a second pass and generate the lattice from the lattice points
 			// The scaling factors and basis vectors are already in place.
 			matrixop xd(2,3,1);
 			xd = *_x0 % *_d;
-			_xd = make_shared<matrixop>(xd);
+			_xd = boost::make_shared<matrixop>(xd);
 
 			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 			{
@@ -197,10 +175,10 @@ namespace rtmath {
 			}
 		}
 
-		std::shared_ptr<shapefile> shapefile::getPtr() const
+		boost::shared_ptr<shapefile> shapefile::getPtr() const
 		{
-			std::shared_ptr<const shapefile> a = shared_from_this();
-			return std::const_pointer_cast<shapefile>(a);
+			boost::shared_ptr<const shapefile> a = shared_from_this();
+			return boost::const_pointer_cast<shapefile>(a);
 		}
 
 		shapeFileStats::shapeFileStats(const shapefile &shp, double beta, double theta, double phi)
@@ -210,7 +188,7 @@ namespace rtmath {
 			setRot(beta,theta,phi);
 		}
 
-		shapeFileStats::shapeFileStats(const std::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
+		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
 		{
 			_init();
 			_shp = shp;
@@ -219,8 +197,8 @@ namespace rtmath {
 
 		void shapeFileStats::_init()
 		{
-			_shp = nullptr;
-			_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
+			//_shp = nullptr;
+			_rot = boost::make_shared<matrixop>(matrixop::identity(2,3,3));
 			_beta = 0;
 			_theta = 0;
 			_phi = 0;
@@ -234,7 +212,7 @@ namespace rtmath {
 
 			if (beta == 0 && theta == 0 && phi == 0)
 			{
-				_rot = std::make_shared<matrixop>(matrixop::identity(2,3,3));
+				_rot = boost::make_shared<matrixop>(matrixop::identity(2,3,3));
 				return;
 			}
 
@@ -269,7 +247,7 @@ namespace rtmath {
 			Rz.set(-st,2,0,1);
 
 			matrixop Rtot = Rz*Rx*Ry;
-			_rot = Rtot.shared_from_this();
+			_rot = boost::make_shared<matrixop>(Rtot);
 		}
 
 		void shapeFileStats::_calcOtherStats()
