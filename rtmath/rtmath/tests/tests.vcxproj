@@ -72,6 +72,8 @@
     <ClCompile Include="test_atmos.cpp" />
     <ClCompile Include="test_config.cpp" />
     <ClCompile Include="test_damatrix.cpp" />
+    <ClCompile Include="test_ddpar.cpp" />
+    <ClCompile Include="test_ddparGenerator.cpp" />
     <ClCompile Include="test_ddscat.cpp" />
     <ClCompile Include="test_ddweights.cpp" />
     <ClCompile Include="test_debug.cpp" />
@@ -83,6 +85,7 @@
     <ClCompile Include="test_units.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\ddscat.par" />
     <None Include="data\rtmath.conf" />
     <None Include="data\testing.conf" />
   </ItemGroup>

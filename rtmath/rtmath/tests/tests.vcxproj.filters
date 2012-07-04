@@ -60,12 +60,21 @@
     <ClCompile Include="globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_ddpar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_ddparGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\rtmath.conf">
       <Filter>Resource Files\Data</Filter>
     </None>
     <None Include="data\testing.conf">
+      <Filter>Resource Files\Data</Filter>
+    </None>
+    <None Include="data\ddscat.par">
       <Filter>Resource Files\Data</Filter>
     </None>
   </ItemGroup>

@@ -67,8 +67,9 @@ namespace rtmath {
 			inline std::set<std::string> listKeys() const { std::set<std::string> res; listKeys(res); return res; }
 			void listChildren(std::set<std::string> &res) const;
 			inline std::set<std::string> listChildren() const { std::set<std::string> res; listChildren(res); return res; }
+			void getCWD(std::string &cwd) const; // Returns directory of the loaded config file node.
 		protected:
-			std::string _segname;
+			std::string _segname, _cwd;
 			std::weak_ptr<configsegment> _parent;
 			//std::weak_ptr<configsegment> _self;
 			std::map<std::string, std::string> _mapStr;

@@ -171,13 +171,12 @@ namespace rtmath {
 			{
 				if (this->_parent.expired() == false)
 				{
-					this->_parent.lock()->getVal(key, value);
-					return true;
+					return this->_parent.lock()->getVal(key, value);
 				} else {
 					return false;
 				}
 			}
-			return false;
+			return true;
 		}
 
 		void configsegment::setVal(const std::string &key, const std::string &value)
@@ -243,6 +242,11 @@ namespace rtmath {
 				res.insert( (*it)->_segname );
 		}
 
+		void configsegment::getCWD(std::string &cwd) const
+		{
+			cwd = _cwd;
+		}
+
 		std::shared_ptr<configsegment> configsegment::loadFile
 			(const char* filename, std::shared_ptr<configsegment> root)
 		{
@@ -279,6 +283,7 @@ namespace rtmath {
 				root = create("ROOT");
 
 			std::shared_ptr<configsegment> cseg = root; // The current container in the tree
+			if (cseg->_cwd.size() == 0) cseg->_cwd = cwd;
 
 			// Read in each line, one at a time.
 			// This is Apache-style, so tags in <> are containers, ended by </> tags.
@@ -328,7 +333,8 @@ namespace rtmath {
 					if (key == "Include")
 					{
 						// Use Boost to get the full path of the file (use appropriate dir)
-						static boost::filesystem::path rootpath(cwd); // static, so it is called on the very first file
+						// rootpath now relative to current file being loaded, NOT tree root (cseg->_cwd) or ROOT
+						boost::filesystem::path rootpath(cwd); 
 						boost::filesystem::path inclpath(value);
 						if (inclpath.is_relative())
 						{

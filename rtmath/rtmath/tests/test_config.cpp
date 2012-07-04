@@ -3,9 +3,6 @@
 #define BOOST_TEST_DYN_LINK
 #include "globals.h"
 #include <boost/test/unit_test.hpp>
-//BOOST_GLOBAL_FIXTURE( globals );
-
-//#include <boost/test/included/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <memory>
 
@@ -17,11 +14,6 @@ BOOST_AUTO_TEST_SUITE(test_config);
 using namespace rtmath;
 using namespace std;
 using namespace rtmath::config;
-
-
-//BOOST_GLOBAL_FIXTURE( globals );
-
-//BOOST_FIXTURE_TEST_SUITE(test_config, csegdata)
 
 BOOST_AUTO_TEST_CASE(config_getVal)
 {
@@ -85,5 +77,5 @@ BOOST_AUTO_TEST_CASE(config_defaultroot)
 	BOOST_REQUIRE_MESSAGE(f!="", "The build system is not providing a valid default rtmath config file path. FIX IT.");
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END();
 

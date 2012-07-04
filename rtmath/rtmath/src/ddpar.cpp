@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 #include <cmath>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
@@ -265,56 +266,53 @@ namespace rtmath {
 			// I don't want to hardcode these values, plus, by varying the path, 
 			// this improves scriptability...
 
-			shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
-			string sBasePar = src;
-			if (src.size() == 0)
-				cRoot->getVal("ddscat/DefaultFile", sBasePar);
-			if (sBasePar.size())
+			boost::shared_ptr<ddPar> basep; // basep is a copy with auto-deletion
+			if (src == "")
 			{
-				if (exists(path(sBasePar)))
+				basep = boost::shared_ptr<ddPar>(new ddPar(*(defaultInstance())));
+			}
+			else
+			{
+				if (exists(path(src)))
 				{
-					ddPar base(sBasePar);
-					for (auto it = base._parsedData.begin(); it != base._parsedData.end(); it++)
-					{
-						// If overwrite, then overwrite any existing key
-						// If not, and key exists, skip to next one
-						// If key does not exist, add it
-						if (this->_parsedData.count(it->first))
-						{
-							if (overwrite)
-							{
-								this->_parsedData.erase(it->first);
-							} else {
-								continue;
-							}
-						}
-						this->_parsedData[it->first] = it->second;
-					}
-					for (auto it = base._scaPlanes.begin(); it != base._scaPlanes.end(); it++)
-					{
-						// If overwrite, then overwrite any existing key
-						// If not, and key exists, skip to next one
-						// If key does not exist, add it
-						if (this->_scaPlanes.count(it->first))
-						{
-							if (overwrite)
-							{
-								this->_scaPlanes.erase(it->first);
-							} else {
-								continue;
-							}
-						}
-						this->_scaPlanes[it->first] = it->second;
-					}
+					basep = boost::shared_ptr<ddPar>(new ddPar(src));
 				} else {
-					// Default file not found
-					// TODO!
-					GETOBJKEY();
+					throw rtmath::debug::xMissingFile(src.c_str());
 				}
-			} else {
-				// Default file not listed
-				// TODO!
-				GETOBJKEY();
+			}
+			ddPar &base = *basep;
+
+			for (auto it = base._parsedData.begin(); it != base._parsedData.end(); it++)
+			{
+				// If overwrite, then overwrite any existing key
+				// If not, and key exists, skip to next one
+				// If key does not exist, add it
+				if (this->_parsedData.count(it->first))
+				{
+					if (overwrite)
+					{
+						this->_parsedData.erase(it->first);
+					} else {
+						continue;
+					}
+				}
+				this->_parsedData[it->first] = it->second;
+			}
+			for (auto it = base._scaPlanes.begin(); it != base._scaPlanes.end(); it++)
+			{
+				// If overwrite, then overwrite any existing key
+				// If not, and key exists, skip to next one
+				// If key does not exist, add it
+				if (this->_scaPlanes.count(it->first))
+				{
+					if (overwrite)
+					{
+						this->_scaPlanes.erase(it->first);
+					} else {
+						continue;
+					}
+				}
+				this->_scaPlanes[it->first] = it->second;
 			}
 		}
 
@@ -433,7 +431,41 @@ namespace rtmath {
 			}
 		}
 
+		ddPar*& ddPar::defaultInstance()
+		{
+			using namespace std;
+			using namespace boost::filesystem;
+			static ddPar* s_inst = nullptr;
+			static bool loaded = false;
+			if (!loaded)
+			{
+				shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
+				string sBasePar, scwd;
+				cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
+				cRoot->getCWD(scwd);
 
+				path pscwd(scwd), psBasePar(sBasePar);
+				pscwd.remove_filename();
+
+				if (psBasePar.is_relative()) psBasePar = pscwd / psBasePar;
+
+				if (sBasePar.size() && exists(path(sBasePar)))
+				{
+					s_inst = new ddPar(sBasePar);
+				} else {
+					// Cannot get default instance.....
+					if (sBasePar.size())
+					{
+						throw rtmath::debug::xMissingFile(sBasePar.c_str());
+					} else {
+						throw rtmath::debug::xOtherError();
+					}
+				}
+
+				loaded = true;
+			}
+			return s_inst;
+		}
 
 		namespace ddParParsers
 		{

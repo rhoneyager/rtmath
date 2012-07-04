@@ -429,6 +429,8 @@ namespace rtmath {
 		class ddPar
 		{
 		public:
+			static ddPar*& defaultInstance();
+
 			ddPar();
 			ddPar(const std::string &filename);
 			~ddPar();
