@@ -82,9 +82,15 @@ void globals::loadConfig()
 {
 	using namespace std;
 	using namespace boost::filesystem;
-	if (!exists(pRtconf))
-		throw rtmath::debug::xMissingFile(pRtconf.string().c_str());
-	cRoot =  rtmath::config::loadRtconfRoot(pRtconf.string());
+	try {
+		if (!exists(pRtconf))
+			throw rtmath::debug::xMissingFile(pRtconf.string().c_str());
+		cRoot =  rtmath::config::loadRtconfRoot(pRtconf.string());
+	} catch (std::exception &e)
+	{
+		cerr << e.what() << endl;
+		BOOST_FAIL("Cannot load testing rtmath.conf file! Many tests cannot proceed.");
+	}
 }
 
 globals*& globals::instance()
