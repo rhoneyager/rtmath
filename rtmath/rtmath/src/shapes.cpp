@@ -248,7 +248,7 @@ namespace rtmath {
 		{
 			using namespace ::boost::filesystem;
 			using namespace ::boost;
-			path p(outfile);
+			path p(infile);
 			if (exists(p))
 			{
 				if (is_directory(p))
@@ -261,7 +261,7 @@ namespace rtmath {
 			std::ifstream in(p.string().c_str());
 			//boost::archive::text_oarchive oa(out);
 			// oa << *this;
-			::boost::archive::xml_iarchive ia(out);
+			::boost::archive::xml_iarchive ia(in);
 			ia >> BOOST_SERIALIZATION_NVP(obj);
 		}
 

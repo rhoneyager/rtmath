@@ -251,8 +251,9 @@ namespace rtmath {
 
 			// Use boost_filesystem as a file existence check
 			boost::filesystem::path p(filename);
-			if (!exists(p)) throw rtmath::debug::xMissingFile(filename);
-			if (is_directory(p)) throw rtmath::debug::xMissingFile(filename);
+			boost::filesystem::path pabs(boost::filesystem::canonical(p));
+			if (!exists(p)) throw rtmath::debug::xMissingFile(pabs.string().c_str());
+			if (is_directory(p)) throw rtmath::debug::xMissingFile(pabs.string().c_str());
 			ifstream indata(filename);
 			if (!indata) throw rtmath::debug::xOtherError();
 			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(filename);

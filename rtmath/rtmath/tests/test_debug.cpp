@@ -11,11 +11,6 @@
 
 BOOST_AUTO_TEST_SUITE(test_debug);
 
-
-BOOST_AUTO_TEST_CASE(debug_preamble) {
-	rtmath::debug::debug_preamble();
-}
-
 BOOST_AUTO_TEST_CASE(debug_revision_flag)
 {
 	int rev = rtmath::debug::rev();

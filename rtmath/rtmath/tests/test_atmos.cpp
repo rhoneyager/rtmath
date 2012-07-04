@@ -1,13 +1,16 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <exception>
 #define BOOST_TEST_DYN_LINK
 #include "../rtmath/atmos.h"
 #include "../rtmath/atmoslayer.h"
 #include "../rtmath/absorb.h"
 #include "../rtmath/error/error.h"
 
+#include "globals.h"
 #include <boost/test/unit_test.hpp>
+//BOOST_GLOBAL_FIXTURE( globals );
 
 BOOST_AUTO_TEST_SUITE(test_atmos);
 
@@ -59,6 +62,7 @@ BOOST_AUTO_TEST_CASE(absorber_calculations) {
 	catch (rtmath::debug::xError &err)
 	{
 		err.Display();
+		BOOST_FAIL("Test threw an error.");
 	}
 }
 
@@ -73,10 +77,12 @@ BOOST_AUTO_TEST_CASE(absorber_calculations) {
 BOOST_AUTO_TEST_CASE(atmos_load_ryan) {
 	using namespace std;
 	using namespace atmos;
+	using namespace boost::filesystem;
 	try {
-		string profilepath = "../profiles/trp.txt";
+		path profilepath = globals::instance()->pProfiles / "trp.txt";
+		//string profilepath = "../profiles/trp.txt";
 		rtmath::atmos::atmos trp;
-		trp.loadProfileRyanB(profilepath);
+		trp.loadProfileRyanB(profilepath.string());
 		double res = 0;
 		res = trp.tau(94.0);
 		BOOST_CHECK(res > 0);
@@ -85,6 +91,12 @@ BOOST_AUTO_TEST_CASE(atmos_load_ryan) {
 	catch (rtmath::debug::xError &err)
 	{
 		err.Display();
+		BOOST_FAIL("Test threw an error.");
+	}
+	catch (std::exception &e)
+	{
+		cerr << e.what() << endl;
+		BOOST_FAIL("Test threw an error.");
 	}
 }
 

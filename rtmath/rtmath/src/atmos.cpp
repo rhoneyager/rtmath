@@ -209,6 +209,7 @@ namespace rtmath {
 			if (this->_layers.size()) isOverlay = true;
 
 			// Open the file
+			if (!exists(path(filename))) throw rtmath::debug::xMissingFile(filename.c_str());
 			ifstream in(filename.c_str());
 			string line;
 

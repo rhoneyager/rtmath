@@ -43,7 +43,7 @@ namespace rtmath {
 
 		rotations::rotations(const ddPar &src)
 		{
-			using namespace std;
+			using namespace boost;
 			shared_ptr<const ddParParsers::ddParLine > ob, ot, op;
 			src.getKey(ddParParsers::NBETA, ob);
 			shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > b = 
@@ -72,7 +72,7 @@ namespace rtmath {
 
 		void rotations::out(ddPar &dest) const
 		{
-			using namespace std;
+			using namespace boost;
 			shared_ptr<ddParParsers::ddParLineMixed<double, size_t> > b, t, p;
 			b->set<double>(0, _bMin);
 			b->set<double>(1, _bMax);

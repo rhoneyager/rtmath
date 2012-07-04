@@ -1,11 +1,16 @@
 #include <string>
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
-#include "../rtmath/rtmath.h"
-
+#include "globals.h"
 #include <boost/test/unit_test.hpp>
+//BOOST_GLOBAL_FIXTURE( globals );
+
+//#include <boost/test/included/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <memory>
+
+#include "../rtmath/rtmath.h"
+
 
 BOOST_AUTO_TEST_SUITE(test_config);
 
@@ -13,34 +18,19 @@ using namespace rtmath;
 using namespace std;
 using namespace rtmath::config;
 
-std::shared_ptr<configsegment> cRoot;
 
-void loadConfig()
-{
-	string crootname = "../rtmath/tests/data/rtmath.conf";
-	cRoot =  loadRtconfRoot(crootname);
-}
+//BOOST_GLOBAL_FIXTURE( globals );
 
-BOOST_AUTO_TEST_CASE(config_loadFile)
-{
-	try {
-		loadConfig();
-	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		BOOST_FAIL("Test threw an error.");
-	}
-}
+//BOOST_FIXTURE_TEST_SUITE(test_config, csegdata)
 
 BOOST_AUTO_TEST_CASE(config_getVal)
 {
 	//shared_ptr<configsegment> cRoot;
 	//loadConfig(cRoot);
 	string erfile;
-	cRoot->getVal("General/maxcores", erfile);
+	globals::instance()->cRoot->getVal("General/maxcores", erfile);
 	BOOST_CHECK(erfile.size() > 0);
-	cRoot->getVal("testing/wvlow", erfile);
+	globals::instance()->cRoot->getVal("testing/wvlow", erfile);
 	BOOST_CHECK(erfile.size() > 0);
 }
 
@@ -48,18 +38,18 @@ BOOST_AUTO_TEST_CASE(config_setVal)
 {
 	const string test = "hi";
 	string check;
-	cRoot->setVal("hiya", test);
-	cRoot->getVal("hiya", check);
+	globals::instance()->cRoot->setVal("hiya", test);
+	globals::instance()->cRoot->getVal("hiya", check);
 	BOOST_CHECK_EQUAL(test,check);
 }
 
 BOOST_AUTO_TEST_CASE(config_findSegment)
 {
-	std::shared_ptr<configsegment> ta = cRoot->findSegment("testing/");
-	BOOST_REQUIRE_MESSAGE(ta!=cRoot, "findSegment is not working right. FIX IT.");
+	std::shared_ptr<configsegment> ta = globals::instance()->cRoot->findSegment("testing/");
+	BOOST_REQUIRE_MESSAGE(ta!=globals::instance()->cRoot, "findSegment is not working right. FIX IT.");
 	BOOST_REQUIRE(ta!=0);
 	BOOST_CHECK(ta != 0);
-	std::shared_ptr<configsegment> tb = cRoot->getChild("testing");
+	std::shared_ptr<configsegment> tb = globals::instance()->cRoot->getChild("testing");
 	string wl;
 	ta->getVal("wvlow", wl);
 	BOOST_CHECK(wl.size() > 0);
@@ -70,7 +60,7 @@ BOOST_AUTO_TEST_CASE(config_findSegment)
 
 BOOST_AUTO_TEST_CASE(config_getChild)
 {
-	std::shared_ptr<configsegment> tb = cRoot->getChild("testing");
+	std::shared_ptr<configsegment> tb = globals::instance()->cRoot->getChild("testing");
 	string wl;
 	tb->getVal("wvlow",wl);
 	BOOST_CHECK(wl.size()>0);
@@ -78,16 +68,11 @@ BOOST_AUTO_TEST_CASE(config_getChild)
 
 BOOST_AUTO_TEST_CASE(config_getParent)
 {
-	std::shared_ptr<configsegment> tb = cRoot->getChild("testing");
+	std::shared_ptr<configsegment> tb = globals::instance()->cRoot->getChild("testing");
 	std::shared_ptr<configsegment> par = tb->getParent();
-	BOOST_CHECK(cRoot==par);
-	par = cRoot->getParent();
+	BOOST_CHECK(globals::instance()->cRoot==par);
+	par = globals::instance()->cRoot->getParent();
 	BOOST_CHECK(par == NULL);
-}
-
-BOOST_AUTO_TEST_CASE(config_finished)
-{
-	//delete cRoot;
 }
 
 // queryConfig not tested, as user interaction may be required
@@ -97,8 +82,8 @@ BOOST_AUTO_TEST_CASE(config_defaultroot)
 	std::string f;
 	getConfigDefaultFile(f);
 	BOOST_CHECK(f != "");
-	BOOST_REQUIRE_MESSAGE(f!="", "The makefile is not providing a default rtmath config file path. FIX IT.");
+	BOOST_REQUIRE_MESSAGE(f!="", "The build system is not providing a valid default rtmath config file path. FIX IT.");
 }
 
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()
 

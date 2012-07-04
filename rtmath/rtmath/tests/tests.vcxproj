@@ -67,6 +67,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="globals.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_atmos.cpp" />
     <ClCompile Include="test_config.cpp" />
@@ -89,6 +90,9 @@
     <ProjectReference Include="..\rtmath.vcxproj">
       <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="globals.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

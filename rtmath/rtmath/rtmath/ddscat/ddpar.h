@@ -297,7 +297,7 @@ namespace rtmath {
 					_numT = numT;
 				}
 #pragma warning( push ) // Suppress warning. MSVC warning is because of how it branches,
-#pragma warning( disable : 4244 ) // even though that part of code is never reached
+#pragma warning( disable : 4244 4146 ) // even though that part of code is never reached
 				template <class S>
 				void get(size_t index, S &val) const
 				{

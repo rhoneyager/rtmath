@@ -18,6 +18,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/shared_ptr.hpp>
 #include "ddpar.h"
 #include "../common_templates.h"
 

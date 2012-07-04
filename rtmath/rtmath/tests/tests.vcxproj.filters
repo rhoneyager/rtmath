@@ -57,6 +57,9 @@
     <ClCompile Include="test_units.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\rtmath.conf">
@@ -65,5 +68,10 @@
     <None Include="data\testing.conf">
       <Filter>Resource Files\Data</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
