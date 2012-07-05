@@ -127,7 +127,7 @@ namespace rtmath {
 				_parsedData.erase(key);
 		}
 
-		void ddPar::insertKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &ptr)
+		void ddPar::insertKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> ptr)
 		{
 			if (_parsedData.count(key))
 				_parsedData.erase(key);

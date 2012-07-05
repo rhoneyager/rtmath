@@ -382,7 +382,7 @@ namespace rtmath {
 							{
 								for (auto ut = ot->second->begin(); ut != ot->second->end(); ut++)
 								{
-									auto p = std::make_pair<double,string>(*ut, ot->second->units);
+									std::pair<double, std::string> p = std::pair<double,string>(*ut, ot->second->units);
 									const string &name = ot->first;
 									const string &units = ot->second->units;
 									const double val = *ut;

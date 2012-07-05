@@ -90,19 +90,19 @@ namespace rtmath
 		}
 		typedef typename std::set<T>::const_iterator const_iterator;
 		typedef typename std::set<T>::const_reverse_iterator const_reverse_iterator;
-		typename const_iterator begin() const
+		const_iterator begin() const
 		{
 			return _expanded.begin();
 		}
-		typename const_iterator end() const
+		const_iterator end() const
 		{
 			return _expanded.end();
 		}
-		typename const_reverse_iterator rbegin() const
+		const_reverse_iterator rbegin() const
 		{
 			return _expanded.rbegin();
 		}
-		typename const_reverse_iterator rend() const
+		const_reverse_iterator rend() const
 		{
 			return _expanded.rend();
 		}

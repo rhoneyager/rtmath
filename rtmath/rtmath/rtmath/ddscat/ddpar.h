@@ -483,7 +483,7 @@ namespace rtmath {
 			// Scattering planes
 			
 			// The older interface
-			void insertKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &ptr);
+			void insertKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> ptr);
 			void getKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &res);
 			void getKey(ddParParsers::ParId key, boost::shared_ptr<const ddParParsers::ddParLine> &res) const;
 			inline boost::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
@@ -528,7 +528,7 @@ namespace rtmath {
 				//ar & boost::serialization::make_nvp("ddPar_Raw", _parsedData);
 				//ar & boost::serialization::make_nvp("Scattering_Planes", _scaPlanes);
 				std::ostringstream out;
-				save(out);
+				write(out);
 				_savedata = out.str();
 				ar & boost::serialization::make_nvp("Par_File", _savedata);
 			}
@@ -537,7 +537,7 @@ namespace rtmath {
 			{
 				ar & boost::serialization::make_nvp("Par_File", _savedata);
 				std::istringstream in(_savedata);
-				load(in);
+				read(in);
 			}
 			BOOST_SERIALIZATION_SPLIT_MEMBER()
 		};
