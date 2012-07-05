@@ -144,6 +144,7 @@ set (general-hdr
 	rtmath/ROOT_functions.h
 	rtmath/ROOTlink.h
 	rtmath/rtmath.h
+	rtmath/serialization.h
 	rtmath/Stdafx.h
 	rtmath/units.h
 	rtmath/zeros.h

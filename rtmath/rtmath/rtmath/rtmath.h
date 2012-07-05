@@ -51,6 +51,7 @@
 #include "gridded/gridCoords.h"
 #include "gridded/gridStatic.h"
 #include "gridded/gridCDF.h"
+#include "serialization.h"
 
 #include "ROOT_functions.h"
 
