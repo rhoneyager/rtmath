@@ -68,11 +68,13 @@
 #include <omp.h>
 #endif
 
+/*
 #ifdef _WIN32
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
 #include <crtdbg.h>
 #endif
+*/
 
 //#include "debug.h"
 //#ifdef HEAP_CHECK

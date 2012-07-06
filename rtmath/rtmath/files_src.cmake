@@ -114,6 +114,7 @@ set (general-src
 	src/refract.cpp
 	src/ROOT_functions.cpp
 	src/rtmath.cpp
+	src/serialization.cpp
 	src/Stdafx.cpp
 	src/surfaces.cpp
 	src/thermal.cpp

@@ -201,6 +201,7 @@
     <None Include="prebuild.csh" />
     <None Include="Readme.txt" />
     <None Include="rtlogo.png" />
+    <None Include="rtmath\cmake-settings.h.in" />
     <None Include="rtmath\error\debug_subversion.h.template" />
   </ItemGroup>
   <ItemGroup>
@@ -281,6 +282,7 @@
     <ClCompile Include="src\rtmath.cpp" />
     <ClCompile Include="src\runScripts.cpp" />
     <ClCompile Include="src\Scalc-Rayleigh.cpp" />
+    <ClCompile Include="src\serialization.cpp" />
     <ClCompile Include="src\shapefile.cpp" />
     <ClCompile Include="src\shapes-generators.cpp" />
     <ClCompile Include="src\shapes.cpp" />

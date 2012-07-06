@@ -69,6 +69,11 @@ namespace rtmath {
 				inline ParId id() const { return _id; }
 				virtual bool versionValid(size_t ver) const;
 				void endWriteWithEndl(bool val) { _endWriteWithEndl = val; }
+
+				bool operator==(ddParLine &rhs);
+				bool operator!=(ddParLine &rhs);
+				bool operator<(ddParLine &rhs);
+
 			protected:
 				//size_t _line;
 				ParId _id;
@@ -439,6 +444,8 @@ namespace rtmath {
 			void writeFile(const std::string &filename) const;
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream &stream) const;
+			bool operator==(const ddPar &rhs) const;
+			bool operator!=(const ddPar &rhs) const;
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 
@@ -519,22 +526,24 @@ namespace rtmath {
 				_scaPlanes;
 
 			std::map<size_t, std::string> _comments;
-			std::string _savedata;
+			//std::string _savedata;
 
 			template<class Archive>
-			void save(Archive & ar, const unsigned int version)
+			void save(Archive & ar, const unsigned int version) const
 			{
 				//ar & BOOST_SERIALIZATION_NVP(exportLoc);
 				//ar & boost::serialization::make_nvp("ddPar_Raw", _parsedData);
 				//ar & boost::serialization::make_nvp("Scattering_Planes", _scaPlanes);
 				std::ostringstream out;
 				write(out);
+				std::string _savedata;
 				_savedata = out.str();
 				ar & boost::serialization::make_nvp("Par_File", _savedata);
 			}
 			template<class Archive>
 			void load(Archive & ar, const unsigned int version)
 			{
+				std::string _savedata;
 				ar & boost::serialization::make_nvp("Par_File", _savedata);
 				std::istringstream in(_savedata);
 				read(in);

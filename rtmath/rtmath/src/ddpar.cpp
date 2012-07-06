@@ -25,6 +25,39 @@
 namespace rtmath {
 	namespace ddscat {
 
+		namespace ddParParsers
+		{
+
+			bool ddParLine::operator==(ddParLine &rhs)
+			{
+				if (_id != rhs._id) return false;
+				if (_endWriteWithEndl != rhs._endWriteWithEndl) return false;
+				std::ostringstream oT, oR;
+				write(oT);
+				rhs.write(oR);
+				std::string sT = oT.str(), sR = oR.str();
+				if (sT != sR) return false;
+
+				return true;
+			}
+
+			bool ddParLine::operator!=(ddParLine &rhs)
+			{
+				return !(operator==(rhs));
+			}
+
+			bool ddParLine::operator<(ddParLine &rhs)
+			{
+				if (_id != rhs._id) return (_id < rhs._id);
+				std::ostringstream oT, oR;
+				write(oT);
+				rhs.write(oR);
+				std::string sT = oT.str(), sR = oR.str();
+				return (sT < sR);
+			}
+
+		}
+
 		ddPar::ddPar()
 		{
 			_init();
@@ -38,6 +71,22 @@ namespace rtmath {
 
 		ddPar::~ddPar()
 		{
+		}
+
+		bool ddPar::operator==(const ddPar &rhs) const
+		{
+			std::string sThis, sRhs;
+			std::ostringstream oThis, oRhs;
+			write(oThis);
+			rhs.write(oRhs);
+			sThis = oThis.str();
+			sRhs = oRhs.str();
+			return (sThis == sRhs);
+		}
+
+		bool ddPar::operator!=(const ddPar &rhs) const
+		{
+			return !(operator==(rhs));
 		}
 
 		void ddPar::readFile(const std::string &filename, bool overlay)
@@ -102,7 +151,6 @@ namespace rtmath {
 						string plid = o.str();
 						ot->second->write(out, plid);
 					}
-					it++;
 				}
 				line++;
 			}

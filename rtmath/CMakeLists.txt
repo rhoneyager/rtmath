@@ -49,8 +49,7 @@ set(MODULES_FILENAME
 	CACHE STRING
 	"Name of the environment module"
 	)
-option ( USE_IPP
-	"Use Intel Integrated Performance Primitives" OFF)
+
 option ( USE_OPENMP
 	"Enable OpenMP to speed up execution in certain areas" OFF)
 if(MSVC)
@@ -76,6 +75,8 @@ if(LOAD_PACKAGES)
 	find_package(OpenMP)
 	#find_package(Qt4 REQUIRED)
 	#find_package(Curses REQUIRED)
+	find_package(ZLIB)
+	find_package(BZip2)
 endif()
 # Take OpenMP option and enable / disable as appropriate
 IF(USE_OPENMP)
@@ -83,6 +84,25 @@ IF(USE_OPENMP)
 		SET (COMMON_CFLAGS ${COMMON_CFLAGS} ${OpenMP_CXX_FLAGS})
 	ENDIF()
 ENDIF()
+
+# Set available compression schemes
+if(LOAD_PACKAGES)
+	set(COMPRESS_ZLIB 0)
+	set(COMPRESS_GZIP 0)
+	set(COMPRESS_BZIP2 0)
+	if (ZLIB_FOUND)
+		set(COMPRESS_ZLIB 1)
+		set(COMPRESS_GZIP 1)
+	endif()
+	if (BZip2_FOUND)
+		set(COMPRESS_BZIP2 1)
+	endif()
+
+else()
+	set(COMPRESS_ZLIB 1)
+	set(COMPRESS_GZIP 1)
+	set(COMPRESS_BZIP2 1)
+endif()
 
 # Set basic common libraries
 #SET ( COMMON_LIBS 

@@ -410,6 +410,9 @@
     <None Include="files_src.cmake">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="rtmath\cmake-settings.h.in">
+      <Filter>Header Files\General</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
@@ -644,6 +647,9 @@
     </ClCompile>
     <ClCompile Include="src\shapes-generators.cpp">
       <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\serialization.cpp">
+      <Filter>Source Files\General</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
