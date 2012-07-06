@@ -32,6 +32,7 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
 #include "../rtmath/ddscat/runScripts.h"
+#include "../rtmath/serialization.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -109,7 +110,8 @@ namespace rtmath {
 				// Write ddscat.par
 				(*it)->exportDDPAR( (pdir/"ddscat.par").string() );
 				// Write run definitions
-				ddParIterator::write(**it, (pdir).string() );
+				rtmath::serialization::write<ddParIterator>(**it,(pdir).string());
+				//ddParIterator::write(**it, (pdir).string() );
 				// Write individual run script
 				runScriptIndiv iscript(dirname, *this);
 				iscript.write(dirname);
@@ -127,71 +129,6 @@ namespace rtmath {
 
 		}
 
-		void ddParGenerator::write(const ddParGenerator &obj, const std::string &basename)
-		{
-			using namespace boost::filesystem;
-			path pBase(basename), pXML;
-			if (is_directory(pBase))
-			{
-				pXML = pBase / "runSet.xml";
-				if (exists(pXML))
-				{
-					if (is_directory(pXML))
-						throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
-					boost::filesystem::remove(pXML);
-				}
-				//throw rtmath::debug::xPathExistsWrongType
-			} else {
-				pXML = pBase;
-				if (exists(pXML))
-				{
-					boost::filesystem::remove(pXML);
-				}
-			}
-
-			// Okay, now to serialize and output...
-			std::ofstream out(pXML.string().c_str());
-			//boost::archive::text_oarchive oa(out);
-			// oa << *this;
-			boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(obj);
-		}
-
-		void ddParGenerator::read(ddParGenerator &obj, const std::string &basename)
-		{
-			// This routine can accept either a base directory or an actual filename
-			// If a base directory is given, search for runSet.xml.
-			using namespace boost::filesystem;
-			path pBase(basename), pXML;
-			if (!exists(pBase)) throw rtmath::debug::xMissingFile(basename.c_str());
-			if (is_directory(pBase))
-			{
-				// Search for runSet.xml
-				path pCand = pBase / "runSet.xml";
-				if (exists(pCand))
-				{
-					if (!is_directory(pCand))
-					{
-						pXML = pCand;
-					} else {
-						throw rtmath::debug::xPathExistsWrongType(pCand.string().c_str());
-					}
-				} else {
-					throw rtmath::debug::xMissingFile(pCand.string().c_str());
-				}
-			} else 
-			{
-				pXML = pBase;
-			}
-
-			// Okay, now to serialize and input...
-			std::ifstream in(pXML.string().c_str());
-			//boost::archive::text_oarchive oa(out);
-			// oa << *this;
-			boost::archive::xml_iarchive ia(in);
-			ia >> BOOST_SERIALIZATION_NVP(obj);
-		}
-
 		void ddParGenerator::import(const std::string &ddparfilename)
 		{
 			using namespace boost::filesystem;
@@ -199,58 +136,6 @@ namespace rtmath {
 			if (!exists(ddparfilename)) throw rtmath::debug::xMissingFile(ddparfilename.c_str());
 			rtmath::ddscat::ddPar ddfile(ddparfilename);
 			base = ddfile;
-		}
-
-		void ddParIterator::read(ddParIterator &obj, const std::string &file)
-		{
-			// It's yet another serialization case
-			using namespace boost::filesystem;
-			path pBase(file), pXML;
-			if (is_directory(pBase))
-			{
-				pXML = pBase / "ddParIterator.xml";
-				if (!exists(pXML))
-					throw rtmath::debug::xMissingFile(pXML.string().c_str());
-				else if (is_directory(pXML))
-					throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
-			} else {
-				pXML = pBase;
-				if (!exists(pXML))
-					throw rtmath::debug::xMissingFile(pXML.string().c_str());
-			}
-
-			// Okay, now to serialize and input...
-			std::ifstream in(pXML.string().c_str());
-			boost::archive::xml_iarchive oa(in);
-			oa >> BOOST_SERIALIZATION_NVP(obj);
-		}
-
-		void ddParIterator::write(const ddParIterator &obj, const std::string &outfile)
-		{
-			// It's yet another serialization case
-			using namespace boost::filesystem;
-			path pBase(outfile), pXML;
-			if (is_directory(pBase))
-			{
-				pXML = pBase / "ddParIterator.xml";
-				if (exists(pXML))
-				{
-					if (is_directory(pXML))
-						throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
-					boost::filesystem::remove(pXML);
-				}
-			} else {
-				pXML = pBase;
-				if (exists(pXML))
-				{
-					boost::filesystem::remove(pXML);
-				}
-			}
-
-			// Okay, now to serialize and output...
-			std::ofstream out(pXML.string().c_str());
-			boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(obj);
 		}
 
 		void ddParIterator::exportShape(const std::string &filename) const
@@ -489,58 +374,6 @@ namespace rtmath {
 			}
 
 
-		}
-
-		void ddParIteration::read(ddParIteration &obj, const std::string &file)
-		{
-			// It's yet another serialization case
-			using namespace boost::filesystem;
-			path pBase(file), pXML;
-			if (is_directory(pBase))
-			{
-				pXML = pBase / "ddParIteration.xml";
-				if (!exists(pXML))
-					throw rtmath::debug::xMissingFile(pXML.string().c_str());
-				else if (is_directory(pXML))
-					throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
-			} else {
-				pXML = pBase;
-				if (!exists(pXML))
-					throw rtmath::debug::xMissingFile(pXML.string().c_str());
-			}
-
-			// Okay, now to serialize and input...
-			std::ifstream in(pXML.string().c_str());
-			boost::archive::xml_iarchive oa(in);
-			oa >> BOOST_SERIALIZATION_NVP(obj);
-		}
-
-		void ddParIteration::write(const ddParIteration &obj, const std::string &outfile)
-		{
-			// It's yet another serialization case
-			using namespace boost::filesystem;
-			path pBase(outfile), pXML;
-			if (is_directory(pBase))
-			{
-				pXML = pBase / "ddParIteration.xml";
-				if (exists(pXML))
-				{
-					if (is_directory(pXML))
-						throw rtmath::debug::xPathExistsWrongType(pXML.string().c_str());
-					boost::filesystem::remove(pXML);
-				}
-			} else {
-				pXML = pBase;
-				if (exists(pXML))
-				{
-					boost::filesystem::remove(pXML);
-				}
-			}
-
-			// Okay, now to serialize and output...
-			std::ofstream out(pXML.string().c_str());
-			boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(obj);
 		}
 
 

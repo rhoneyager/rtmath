@@ -67,7 +67,14 @@ namespace rtmath
 		bool pidExists(int pid);
 		// App warning functions
 		//void warn(const char* msg);
-	}; // end namespace debug
+
+		// static instance registration functions
+		namespace instances
+		{
+			void registerInstance(const char* id, void* obj);
+			void freeInstances();
+		}
+	} // end namespace debug
 
 	// see assert.h for how this is made
 

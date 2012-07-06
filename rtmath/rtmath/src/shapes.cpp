@@ -244,46 +244,6 @@ namespace rtmath {
 
 		}
 
-		void shape::read(shape &obj, const std::string &infile)
-		{
-			using namespace ::boost::filesystem;
-			using namespace ::boost;
-			path p(infile);
-			if (exists(p))
-			{
-				if (is_directory(p))
-					throw rtmath::debug::xPathExistsWrongType(infile.c_str());
-			} else {
-				throw rtmath::debug::xMissingFile(infile.c_str());
-			}
-
-			// Okay, now to serialize and output...
-			std::ifstream in(p.string().c_str());
-			//boost::archive::text_oarchive oa(out);
-			// oa << *this;
-			::boost::archive::xml_iarchive ia(in);
-			ia >> BOOST_SERIALIZATION_NVP(obj);
-		}
-
-		void shape::write(const shape &obj, const std::string &outfile)
-		{
-			using namespace ::boost::filesystem;
-			using namespace ::boost;
-			path p(outfile);
-			if (exists(p))
-			{
-				if (is_directory(p))
-					throw rtmath::debug::xPathExistsWrongType(outfile.c_str());
-			}
-
-			// Okay, now to serialize and output...
-			std::ofstream out(p.string().c_str());
-			//boost::archive::text_oarchive oa(out);
-			// oa << *this;
-			::boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(obj);
-		}
-
 		void shape::write(const std::string &fname) const
 		{
 			// This member just prevents a pure virtual shape. It does nothing, as at this level 

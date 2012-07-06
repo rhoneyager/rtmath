@@ -114,8 +114,6 @@ namespace rtmath {
 		public:
 			// Constructor takes the pointer so we don't have to copy every conceivable property
 			ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp);
-			static void write(const ddParIterator &obj, const std::string &outfile);
-			static void read(ddParIterator &obj, const std::string &file);
 
 			void exportShape(const std::string &filename) const;
 			void exportDiel(const std::string &filename) const;
@@ -164,8 +162,6 @@ namespace rtmath {
 		{
 		public:
 			ddParIteration(const ddParGenerator &gen);
-			static void write(const ddParIteration &obj, const std::string &outfile);
-			static void read(ddParIteration &obj, const std::string &file);
 			// Iterators go here
 			typedef std::set< boost::shared_ptr<ddParIterator> > data_t;
 			typedef data_t::const_iterator const_iterator;
@@ -191,10 +187,8 @@ namespace rtmath {
 			ddParGenerator();
 			ddParGenerator(const ddPar &base);
 			virtual ~ddParGenerator();
-			static void write(const ddParGenerator &obj, const std::string &basename);
 			void import(const std::string &ddparfilename);
 			void generate(const std::string &basedir) const;
-			static void read(ddParGenerator &obj, const std::string &basename);
 		public: // Static stuff here
 			void setDefaultBase(const std::string &ddbasefilename);
 			void setDefaultBase(const ddPar &base);

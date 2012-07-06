@@ -173,6 +173,7 @@
     <ClInclude Include="rtmath\ROOTlink.h" />
     <ClInclude Include="rtmath\ROOT_functions.h" />
     <ClInclude Include="rtmath\rtmath.h" />
+    <ClInclude Include="rtmath\serialization.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
     <ClInclude Include="rtmath\units.h" />
     <ClInclude Include="rtmath\zeros.h" />

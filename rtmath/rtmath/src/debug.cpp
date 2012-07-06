@@ -167,6 +167,23 @@ namespace rtmath
 			return message.str();
 		}
 
+		// Instance debugging
+		namespace instances
+		{
+			std::map<std::string, void*> _instances;
+			void registerInstance(const char* id, void* obj)
+			{
+				_instances.insert( std::pair<std::string, void*>(std::string(id), obj));
+			}
+
+			void freeInstances()
+			{
+				// TODO: check if instance is already freed
+				for (auto it = _instances.begin(); it != _instances.end(); it++)
+					delete (it->second);
+			}
+		}
+
 	}; // end debug
 }; // end rtmath
 

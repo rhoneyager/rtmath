@@ -6,14 +6,18 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <set>
 
 #include "globals.h"
 #include "../rtmath/rtmath.h"
 
 globals::globals()
+	: cRoot(nullptr)
 {
 	BOOST_TEST_MESSAGE( "Loading globals" );
-	instance() = this;
+	instance() = this; // Really only meant to be invoked once
+	//rtmath::debug::instances::registerInstance( "test globals", reinterpret_cast<void*>(this));
+
 	try {
 		findDirs();
 		loadConfig();
@@ -42,32 +46,29 @@ void globals::findDirs()
 
 	// Find test data
 	{
-		const size_t sCand = 2;
-		const char* cand[sCand] = {
-			"./data", // MSVC reg soln build
-			"../rtmath/rtmath/tests/data" // cmake
-		};
+		set<string> cand;
+		cand.insert("./data");
+		cand.insert("../rtmath/rtmath/tests/data");
+
 		bool done = false;
-		for (size_t i=0; i<sCand && !done; i++)
+		for (auto it = cand.begin(); it != cand.end() && done == false; it++)
 		{
-			pTestData = path(cand[i]);
+			pTestData = path(*it);
 			if (exists(pTestData)) done = true;
 		}
 		if (!done)
 			BOOST_FAIL("Cannot find test data directory.");
 	}
-
+	
 	// Find full data
 	{
-		const size_t sCand = 2;
-		const char* cand[] = {
-			"../data", // MSVC reg soln
-			"../rtmath/rtmath/data"
-		};
+		set<string> cand;
+		cand.insert("../data");
+		cand.insert("../rtmath/rtmath/data");
 		bool done = false;
-		for (size_t i=0; i<sCand && !done; i++)
+		for (auto it = cand.begin(); it != cand.end() && done == false; it++)
 		{
-			pFullData = path(cand[i]);
+			pFullData = path(*it);
 			if (exists(pFullData)) done = true;
 		}
 		if (!done)
@@ -76,6 +77,7 @@ void globals::findDirs()
 
 	pProfiles = pFullData / "profiles/";
 	pRtconf = pTestData / "rtmath.conf";
+	
 }
 
 void globals::loadConfig()

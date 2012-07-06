@@ -20,6 +20,7 @@ struct ddparloader
 		baseExists(false),
 		testPar(nullptr)
 	{
+		
 		// Check that there is a default key
 		string sBasePar;
 		defaultKey = globals::instance()->cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
@@ -42,6 +43,7 @@ struct ddparloader
 			cerr << e.what() << endl;
 			BOOST_FAIL("Unable to load default testing ddscat.par file. Cannot do ddPar tests.");
 		}
+		
 	}
 	~ddparloader()
 	{

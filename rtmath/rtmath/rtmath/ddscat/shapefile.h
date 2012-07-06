@@ -37,9 +37,10 @@ namespace rtmath {
 			shapefile(std::istream &in);
 			~shapefile();
 			void print(std::ostream &out) const;
-			void loadFile(const std::string &filename);
-			void loadFile(std::istream &in);
+			void read(const std::string &filename);
+			void read(std::istream &in);
 			void write(const std::string &fname) const;
+			void write(std::ostream &out) const;
 			boost::shared_ptr<shapefile> getPtr() const;
 		private:
 			shapefile();
@@ -68,21 +69,15 @@ namespace rtmath {
 				}
 		};
 
-
-
-		class shapeFileStats : public shapeModifiable
+		class shapeFileStats
 		{
 		public:
 			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
 			shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
 			inline size_t N() const {return _N;}
 
-			virtual bool canWrite() const { return true; }
-			virtual void write(const std::string &fname) const;
-
 			// Set rotation matrix, with each value in degrees
 			void setRot(double beta, double theta, double phi);
-			virtual shape* clone() const { shapeFileStats* ns = new shapeFileStats(*this); return ns; }
 		private:
 			size_t _N;// Number of dipoles
 

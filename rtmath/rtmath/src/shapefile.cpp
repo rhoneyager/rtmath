@@ -38,13 +38,13 @@ namespace rtmath {
 		shapefile::shapefile(const std::string &filename)
 		{
 			_init();
-			loadFile(filename);
+			read(filename);
 		}
 
 		shapefile::shapefile(std::istream &in)
 		{
 			_init();
-			loadFile(in);
+			read(in);
 		}
 
 		void shapefile::_init()
@@ -60,15 +60,15 @@ namespace rtmath {
 			//_I = shared_ptr<matrixop>(new matrixop(2,3,3));
 		}
 
-		void shapefile::loadFile(const std::string &filename)
+		void shapefile::read(const std::string &filename)
 		{
 			using namespace std;
 			ifstream in(filename.c_str());
-			loadFile(in);
+			read(in);
 			_filename = filename;
 		}
 
-		void shapefile::loadFile(std::istream &in)
+		void shapefile::read(std::istream &in)
 		{
 			//throw rtmath::debug::xUnimplementedFunction();
 			using namespace std;
@@ -151,6 +151,18 @@ namespace rtmath {
 				// Save in _latticePtsStd
 				_latticePtsStd[it->first] = crdsc;
 			}
+		}
+
+		void shapefile::write(std::ostream &out) const
+		{
+			print(out);
+		}
+
+		void shapefile::write(const std::string &filename) const
+		{
+			using namespace std;
+			ofstream out(filename.c_str());
+			write(out);
 		}
 
 		void shapefile::print(std::ostream &out) const
@@ -282,26 +294,6 @@ namespace rtmath {
 			*/
 		}
 
-		void shapeFileStats::write(const std::string &fname) const
-		{
-			using namespace ::boost::filesystem;
-			using namespace ::boost;
-			path p(fname);
-			if (exists(p))
-			{
-				if (is_directory(p))
-					throw rtmath::debug::xPathExistsWrongType(fname.c_str());
-			}
-
-			// Okay, now to serialize and output...
-			std::ofstream out(p.string().c_str());
-			//boost::archive::text_oarchive oa(out);
-			// oa << *this;
-			::boost::archive::xml_oarchive oa(out);
-			oa << BOOST_SERIALIZATION_NVP(*this);
-		}
-
-
 	}
 }
 
@@ -315,7 +307,7 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile 
 
 std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob)
 {
-	ob.loadFile(stream);
+	ob.read(stream);
 	return stream;
 }
 

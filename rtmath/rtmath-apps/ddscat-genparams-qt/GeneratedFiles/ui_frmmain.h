@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Mon Jun 18 15:35:47 2012
-**      by: Qt User Interface Compiler version 4.8.0
+** Created: Thu Jul 5 20:56:28 2012
+**      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -110,15 +110,17 @@ public:
     QLineEdit *txtNear5;
     QLineEdit *txtNear6;
     QLabel *label_19;
-    QLabel *label_20;
-    QLabel *label_22;
-    QLabel *label_21;
-    QLabel *label_23;
     QLineEdit *txtMaxTol;
+    QLabel *label_20;
     QLineEdit *txtMaxIter;
+    QLabel *label_22;
     QLineEdit *txtGamma;
+    QLabel *label_21;
     QLineEdit *txtETASCA;
+    QLabel *label_23;
     QLineEdit *txtNAMBIENT;
+    QCheckBox *chkWriteSca;
+    QLabel *label_27;
     QWidget *tab;
     QFormLayout *formLayout_3;
     QLabel *label_26;
@@ -501,50 +503,60 @@ public:
 
         formLayout_2->setWidget(8, QFormLayout::LabelRole, label_19);
 
-        label_20 = new QLabel(tab_2);
-        label_20->setObjectName(QString::fromUtf8("label_20"));
-
-        formLayout_2->setWidget(9, QFormLayout::LabelRole, label_20);
-
-        label_22 = new QLabel(tab_2);
-        label_22->setObjectName(QString::fromUtf8("label_22"));
-
-        formLayout_2->setWidget(10, QFormLayout::LabelRole, label_22);
-
-        label_21 = new QLabel(tab_2);
-        label_21->setObjectName(QString::fromUtf8("label_21"));
-
-        formLayout_2->setWidget(11, QFormLayout::LabelRole, label_21);
-
-        label_23 = new QLabel(tab_2);
-        label_23->setObjectName(QString::fromUtf8("label_23"));
-
-        formLayout_2->setWidget(12, QFormLayout::LabelRole, label_23);
-
         txtMaxTol = new QLineEdit(tab_2);
         txtMaxTol->setObjectName(QString::fromUtf8("txtMaxTol"));
 
         formLayout_2->setWidget(8, QFormLayout::FieldRole, txtMaxTol);
+
+        label_20 = new QLabel(tab_2);
+        label_20->setObjectName(QString::fromUtf8("label_20"));
+
+        formLayout_2->setWidget(9, QFormLayout::LabelRole, label_20);
 
         txtMaxIter = new QLineEdit(tab_2);
         txtMaxIter->setObjectName(QString::fromUtf8("txtMaxIter"));
 
         formLayout_2->setWidget(9, QFormLayout::FieldRole, txtMaxIter);
 
+        label_22 = new QLabel(tab_2);
+        label_22->setObjectName(QString::fromUtf8("label_22"));
+
+        formLayout_2->setWidget(10, QFormLayout::LabelRole, label_22);
+
         txtGamma = new QLineEdit(tab_2);
         txtGamma->setObjectName(QString::fromUtf8("txtGamma"));
 
         formLayout_2->setWidget(10, QFormLayout::FieldRole, txtGamma);
+
+        label_21 = new QLabel(tab_2);
+        label_21->setObjectName(QString::fromUtf8("label_21"));
+
+        formLayout_2->setWidget(11, QFormLayout::LabelRole, label_21);
 
         txtETASCA = new QLineEdit(tab_2);
         txtETASCA->setObjectName(QString::fromUtf8("txtETASCA"));
 
         formLayout_2->setWidget(11, QFormLayout::FieldRole, txtETASCA);
 
+        label_23 = new QLabel(tab_2);
+        label_23->setObjectName(QString::fromUtf8("label_23"));
+
+        formLayout_2->setWidget(12, QFormLayout::LabelRole, label_23);
+
         txtNAMBIENT = new QLineEdit(tab_2);
         txtNAMBIENT->setObjectName(QString::fromUtf8("txtNAMBIENT"));
 
         formLayout_2->setWidget(12, QFormLayout::FieldRole, txtNAMBIENT);
+
+        chkWriteSca = new QCheckBox(tab_2);
+        chkWriteSca->setObjectName(QString::fromUtf8("chkWriteSca"));
+
+        formLayout_2->setWidget(13, QFormLayout::FieldRole, chkWriteSca);
+
+        label_27 = new QLabel(tab_2);
+        label_27->setObjectName(QString::fromUtf8("label_27"));
+
+        formLayout_2->setWidget(13, QFormLayout::LabelRole, label_27);
 
         tabWidget->addTab(tab_2, QString());
         tab = new QWidget();
@@ -731,7 +743,7 @@ public:
         QObject::connect(action_Save, SIGNAL(activated()), frmMainClass, SLOT(saveSet()));
         QObject::connect(action_Import_from_ddscat_par, SIGNAL(activated()), frmMainClass, SLOT(import()));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(frmMainClass);
@@ -897,30 +909,35 @@ public:
 #endif // QT_NO_STATUSTIP
         txtNear6->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
         label_19->setText(QApplication::translate("frmMainClass", "Max Error Tolerance:", 0, QApplication::UnicodeUTF8));
-        label_20->setText(QApplication::translate("frmMainClass", "Max Number of Iterations:", 0, QApplication::UnicodeUTF8));
-        label_22->setText(QApplication::translate("frmMainClass", "Interaction Cutoff Parameter (GAMMA):", 0, QApplication::UnicodeUTF8));
-        label_21->setText(QApplication::translate("frmMainClass", "Angular Resolution (ETASCA):", 0, QApplication::UnicodeUTF8));
-        label_23->setText(QApplication::translate("frmMainClass", "Refractive Index of Ambient Medium:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtMaxTol->setStatusTip(QApplication::translate("frmMainClass", "TOL = MAX ALLOWED (NORM OF |G>=AC|E>-ACA|X>)/(NORM OF AC|E>)", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         txtMaxTol->setPlaceholderText(QApplication::translate("frmMainClass", "1.0E-5", 0, QApplication::UnicodeUTF8));
+        label_20->setText(QApplication::translate("frmMainClass", "Max Number of Iterations:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtMaxIter->setStatusTip(QApplication::translate("frmMainClass", "Maximum number of iterations allowed", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         txtMaxIter->setPlaceholderText(QApplication::translate("frmMainClass", "300", 0, QApplication::UnicodeUTF8));
+        label_22->setText(QApplication::translate("frmMainClass", "Interaction Cutoff Parameter (GAMMA):", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtGamma->setStatusTip(QApplication::translate("frmMainClass", "Interaction cutoff parameter for PBC calculations (1e-2 is normal, 3e-3 for greater accuracy)", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         txtGamma->setPlaceholderText(QApplication::translate("frmMainClass", "5.00e-3", 0, QApplication::UnicodeUTF8));
+        label_21->setText(QApplication::translate("frmMainClass", "Angular Resolution (ETASCA):", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtETASCA->setStatusTip(QApplication::translate("frmMainClass", "Angular resolution for calculation of <cos>, etc... (number of angles is proportional to [(3+x)/ETASCA]^2 )", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         txtETASCA->setPlaceholderText(QApplication::translate("frmMainClass", "0.5", 0, QApplication::UnicodeUTF8));
+        label_23->setText(QApplication::translate("frmMainClass", "Refractive Index of Ambient Medium:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNAMBIENT->setStatusTip(QApplication::translate("frmMainClass", "Refractive Index of Ambient Medium", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         txtNAMBIENT->setPlaceholderText(QApplication::translate("frmMainClass", "1.000", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_STATUSTIP
+        chkWriteSca->setStatusTip(QApplication::translate("frmMainClass", "The fml and sca files contain the calculations for each rotation", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        chkWriteSca->setText(QString());
+        label_27->setText(QApplication::translate("frmMainClass", "Write fml and sca files:", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("frmMainClass", "Basics", 0, QApplication::UnicodeUTF8));
         label_26->setText(QApplication::translate("frmMainClass", "Target Types:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP

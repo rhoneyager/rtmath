@@ -14,7 +14,7 @@ namespace rtmath {
 			{
 				// TODO: check if outfile can be Compressed, then figure out an appropriate algorithm
 				using namespace boost::filesystem;
-				path pBase(basename), pXML;
+				path pBase(outfile), pXML;
 				if (is_directory(pBase))
 				{
 					if (dirsuffix.size() == 0)
@@ -50,7 +50,7 @@ namespace rtmath {
 				// This routine can accept either a base directory or an actual filename
 				// If a base directory is given, search for runSet.xml.
 				using namespace boost::filesystem;
-				path pBase(basename), pXML;
+				path pBase(infile), pXML;
 				if (!exists(pBase)) throw rtmath::debug::xMissingFile(basename.c_str());
 				if (is_directory(pBase))
 				{

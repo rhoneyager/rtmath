@@ -15,6 +15,11 @@
 #include <TlHelp32.h>
 #include <Psapi.h>
 #pragma comment(lib, "Psapi")
+
+#define _CRTDBG_MAP_ALLOC
+#include <cstdlib>
+#include <crtdbg.h>
+
 #endif
 #ifdef __unix__
 #include <unistd.h>
@@ -108,7 +113,8 @@ namespace rtmath {
 		{
 			using namespace std;
 
-			// If debugging, display the debug mark information
+			// Free the instantization routines for things like ddpar and testing globals
+			rtmath::debug::instances::freeInstances();
 
 			
 #ifdef _WIN32
@@ -128,9 +134,13 @@ namespace rtmath {
 			bool wait = rtmath::debug::waitOnExit();
 			if (wait)
 			{
+#ifdef _WIN32
+				_CrtDumpMemoryLeaks();
+#endif
 				cerr << endl << "Program terminated. Press return to exit." << endl;
 				std::getchar();
 			}
+
 		}
 #ifdef _WIN32
 		BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType )

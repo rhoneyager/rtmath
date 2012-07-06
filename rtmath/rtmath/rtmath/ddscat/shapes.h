@@ -84,8 +84,6 @@ namespace rtmath {
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 			virtual bool canWrite() const { return false; }
 			virtual void write(const std::string &fname) const;
-			static void write(const shape &obj, const std::string &outfile);
-			static void read(shape &obj, const std::string &file);
 			virtual bool useDDPAR() const;
 			virtual void setDDPAR(ddPar &out) const;
 			// Nothing done with these until iterator evaluation. They are split, and THEN

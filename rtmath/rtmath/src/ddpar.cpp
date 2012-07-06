@@ -15,6 +15,7 @@
 #include <boost/shared_ptr.hpp>
 #include <cmath>
 #include "../rtmath/matrixop.h"
+#include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/command.h"
@@ -449,19 +450,20 @@ namespace rtmath {
 
 				if (psBasePar.is_relative()) psBasePar = pscwd / psBasePar;
 
-				if (sBasePar.size() && exists(path(sBasePar)))
+				if (psBasePar.string().size() && exists(path(psBasePar)))
 				{
-					s_inst = new ddPar(sBasePar);
+					s_inst = new ddPar(psBasePar.string());
 				} else {
 					// Cannot get default instance.....
-					if (sBasePar.size())
+					if (psBasePar.string().size())
 					{
-						throw rtmath::debug::xMissingFile(sBasePar.c_str());
+						throw rtmath::debug::xMissingFile(psBasePar.string().c_str());
 					} else {
 						throw rtmath::debug::xOtherError();
 					}
 				}
 
+				rtmath::debug::instances::registerInstance( "ddPar::defaultInstance", reinterpret_cast<void*>(s_inst));
 				loaded = true;
 			}
 			return s_inst;
