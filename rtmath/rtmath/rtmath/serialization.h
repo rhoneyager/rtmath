@@ -3,6 +3,7 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
 
@@ -51,7 +52,7 @@ namespace rtmath {
 				// If a base directory is given, search for runSet.xml.
 				using namespace boost::filesystem;
 				path pBase(infile), pXML;
-				if (!exists(pBase)) throw rtmath::debug::xMissingFile(basename.c_str());
+				if (!exists(pBase)) throw rtmath::debug::xMissingFile(infile.c_str());
 				if (is_directory(pBase))
 				{
 					if (dirsuffix.size() == 0)

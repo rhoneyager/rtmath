@@ -6,6 +6,7 @@
 #include "StdAfx.h"
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <fstream>
 #include <istream>
@@ -102,7 +103,7 @@ int main(int argc, char** argv)
 				throw rtmath::debug::xMissingFile(overlay.c_str());
 			if (is_directory(poverlay))
 				throw rtmath::debug::xBadInput(overlay.c_str());
-			ddfile.loadFile(overlay,true);
+			ddfile.readFile(overlay,true);
 		}
 		if(p.readParam("-d"))
 		{
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
 		
 
 		// Rewrite ddscat.par to the destination, with any version changes
-		ddfile.saveFile(pDpar.string());
+		ddfile.writeFile(pDpar.string());
 		
 		// Also write rtmath version information in directory, along with a config file 
 		// detailing what was changed
@@ -153,8 +154,8 @@ int main(int argc, char** argv)
 		// Either copy aux files (like diel.tab) or regenerate them
 		{
 			// Copy any auxiliary files (like diel.tab) mentioned in ddscat.par
-			shared_ptr<ddParParsers::ddParLineSimple<std::string> > dielloc = 
-				std::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ddfile.getKey(ddParParsers::IREFR));
+			boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> > dielloc = 
+				boost::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ddfile.getKey(ddParParsers::IREFR));
 			if (dielloc != nullptr)
 			{
 				string sdl;

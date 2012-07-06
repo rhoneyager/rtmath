@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
 		// Use the default generator
 		ddscat::ddParGenerator gen;
-
+/*
 		// Set name
 		gen.name = "Test runs";
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 		// Verify read
 		ddscat::ddParGenerator ver;
 		ddscat::ddParGenerator::read(ver,gen.outLocation);
-		
+*/		
 	}
 	catch (rtmath::debug::xError &err)
 	{

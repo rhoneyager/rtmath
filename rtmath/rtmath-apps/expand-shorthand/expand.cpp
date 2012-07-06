@@ -1,5 +1,5 @@
 #include <memory>
-#include <iostreams>
+#include <iostream>
 #include "../../rtmath/rtmath/rtmath.h"
 
 void doHelp();

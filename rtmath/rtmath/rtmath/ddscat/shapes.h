@@ -114,7 +114,7 @@ namespace rtmath {
 			shapeModifiable();
 			virtual ~shapeModifiable();
 
-			virtual shape* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
+			virtual shapeModifiable* clone() const { shapeModifiable *ns = new shapeModifiable(*this); return ns; }
 			// create ordering and apply vertex actions to shapeConstraints
 			virtual void update(const rtmath::graphs::setWeakVertex &fixed);
 			// create ordering and apply vertex actions based on known shapeConstraints
@@ -178,7 +178,7 @@ namespace rtmath {
 			public:
 				from_file();
 				virtual ~from_file();
-				virtual shape* clone() const { from_file *ns = new from_file(*this); return ns; }
+				virtual from_file* clone() const { from_file *ns = new from_file(*this); return ns; }
 				virtual bool canWrite() const { return true; }
 				// Function to write shape.dat, not to be confused with static xml write
 				virtual void write(const std::string &fname) const;
@@ -222,3 +222,6 @@ namespace rtmath {
 
 	}
 }
+
+
+

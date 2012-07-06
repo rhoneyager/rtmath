@@ -134,9 +134,9 @@ namespace rtmath {
 			bool wait = rtmath::debug::waitOnExit();
 			if (wait)
 			{
-#ifdef _WIN32
-				_CrtDumpMemoryLeaks();
-#endif
+//#ifdef _WIN32
+//				_CrtDumpMemoryLeaks();
+//#endif
 				cerr << endl << "Program terminated. Press return to exit." << endl;
 				std::getchar();
 			}
