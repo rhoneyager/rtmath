@@ -9,6 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -445,7 +446,11 @@ namespace rtmath {
 						ptr->setComment(comment);
 						comment = "";
 					}
-					ptr->read(vals[0]);
+					// Strip trailing whitespace at the end of vals[0].
+					// It confuses some of the parsing functions, 
+					// like ddParSimple<string>
+					std::string vz = boost::algorithm::trim_right_copy(vals[0]);
+					ptr->read(vz);
 					// Scattering plane info goes into a separate structure
 					if (ptr->id() < ddParParsers::PLANE1)
 					{
@@ -670,10 +675,9 @@ namespace rtmath {
 
 			void pString(const std::string &in, std::string &out)
 			{
-				out.erase();
+				out = in;
 				// Remove all single quotes from the string
-				for (auto it = in.begin(); it != in.end(); ++it)
-					if (*it != '\'') out += *it;
+				boost::algorithm::erase_all(out, "\'");
 			}
 
 			void idString(ParId id, std::string &key)

@@ -120,6 +120,9 @@ BOOST_AUTO_TEST_CASE(ddpar_io)
 	istringstream in(sObj);
 	b.read(in);
 
+//a.writeFile("ddscat.a.par");
+//b.writeFile("ddscat.b.par");
+
 	BOOST_CHECK(a==b);
 }
 
@@ -136,7 +139,10 @@ BOOST_AUTO_TEST_CASE(ddpar_serialization)
 	sObj = out.str();
 	istringstream in(sObj);
 
+//rtmath::serialization::write<ddPar>(a,"a.ddscat.par");
+
 	rtmath::serialization::read<ddPar>(b,in);
+//rtmath::serialization::write<ddPar>(b,"b.ddscat.par");
 
 	BOOST_CHECK(a==b);
 }
