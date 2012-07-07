@@ -94,7 +94,8 @@ if(LOAD_PACKAGES)
 		set(COMPRESS_ZLIB 1)
 		set(COMPRESS_GZIP 1)
 	endif()
-	if (BZip2_FOUND)
+# BZIP2_FOUND requires that the debug libary be found, which is not desired.
+	if (BZIP2_INCLUDE_DIR)
 		set(COMPRESS_BZIP2 1)
 	endif()
 

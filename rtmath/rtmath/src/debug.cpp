@@ -10,6 +10,9 @@
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "debug_subversion.h"
+#ifdef WITH_CMAKE
+#include "cmake-settings.h"
+#endif
 
 namespace rtmath
 {
@@ -112,6 +115,17 @@ namespace rtmath
 			out << "Microsoft Visual Studio Compiler Version " << _MSC_FULL_VER << std::endl;
 #endif
 			out << "Boost version " << BOOST_LIB_VERSION << std::endl;
+			out << "Supported compression algorithms: ";
+#ifdef COMPRESS_BZIP2
+			out << "bzip2 ";
+#endif
+#ifdef COMPRESS_GZIP
+			out << "gzip ";
+#endif
+#ifdef COMPRESS_ZLIB
+			out << "zlib ";
+#endif
+			out << std::endl;
 			out << std::endl;
 		};
 
