@@ -9,6 +9,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #pragma warning( pop ) 
 
@@ -16,6 +17,8 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace serialization {
@@ -27,10 +30,10 @@ namespace rtmath {
 		bool select_compression(const std::string &name, std::string &meth);
 
 		// output and input streambufs supported
+		void prep_decompression(const std::string &meth, 
+			boost::iostreams::filtering_istream &sbuf);
 		void prep_compression(const std::string &meth, 
-			boost::iostreams::filtering_streambuf<boost::iostreams::input> &sbuf);
-		void prep_compression(const std::string &meth, 
-			boost::iostreams::filtering_streambuf<boost::iostreams::output> &sbuf);
+			boost::iostreams::filtering_ostream &sbuf);
 
 		template<class T>
 		void write(const T &obj, std::ostream &out)
@@ -40,12 +43,13 @@ namespace rtmath {
 		}
 
 		template<class T>
-		void write(const T &obj, boost::iostreams::filtering_streambuf<boost::iostreams::input> &sout)
+		void write(const T &obj, boost::iostreams::filtering_ostream &sout)
 		{
 			std::ostringstream out;
 			boost::archive::xml_oarchive oa(out);
 			oa << BOOST_SERIALIZATION_NVP(obj);
-			boost::iostreams::copy(out, sout);
+			//boost::iostreams::copy(out,sout);
+			sout << out.str();
 		}
 
 		template<class T>
@@ -79,19 +83,19 @@ namespace rtmath {
 			std::ofstream out;
 			if (cmeth.size())
 			{
-				out = ofstream(pXML.string().c_str(), ios_base::out | ios_base::binary);
+				out.open(pXML.string().c_str(), ios_base::out | ios_base::binary);
 			} else {
-				out = ofstream(pXML.string().c_str());
+				out.open(pXML.string().c_str());
 			}
 
 			// Prepare compression
 			using namespace boost::iostreams;
-			filtering_streambuf<input> sout;
+			filtering_ostream sout;
 			prep_compression(cmeth, sout);
 
 			// Serialize and output
-			write<T>(obj,sout);
-			boost::iostreams::copy(sout, out);
+			sout.push(out);
+			rtmath::serialization::write<T>(obj,sout);
 		}
 
 		template<class T>
@@ -102,12 +106,13 @@ namespace rtmath {
 		}
 
 		template<class T>
-		void read(T &obj, boost::iostreams::filtering_streambuf<boost::iostreams::output> &sin)
+		void read(T &obj, boost::iostreams::filtering_istream &sin)
 		{
-			std::istringstream in;
+			std::stringstream in;
+			//sin >> in;
+			boost::iostreams::copy(sin,in);
 			boost::archive::xml_iarchive ia(in);
 			ia >> BOOST_SERIALIZATION_NVP(obj);
-			boost::iostreams::copy(in, sin);
 		}
 
 		template<class T>
@@ -145,12 +150,12 @@ namespace rtmath {
 
 			// Prepare compression
 			using namespace boost::iostreams;
-			filtering_streambuf<output> sin;
-			prep_compression(cmeth, sin);
+			filtering_istream sin;
+			prep_decompression(cmeth, sin);
 			sin.push(in);
 
 			// Serialize and output
-			read<T>(obj,sin);
+			rtmath::serialization::read<T>(obj,sin);
 		}
 	}
 }

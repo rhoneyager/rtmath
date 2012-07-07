@@ -156,7 +156,7 @@ namespace rtmath
 			return true;
 		}
 
-		void prep_compression(const std::string &meth, boost::iostreams::filtering_streambuf<boost::iostreams::input> &sbuf)
+		void prep_decompression(const std::string &meth, boost::iostreams::filtering_istream &sbuf)
 		{
 			initCmeths();
 			using namespace boost::iostreams;
@@ -180,7 +180,7 @@ namespace rtmath
 #endif
 		}
 
-		void prep_compression(const std::string &meth, boost::iostreams::filtering_streambuf<boost::iostreams::output> &sbuf)
+		void prep_compression(const std::string &meth, boost::iostreams::filtering_ostream &sbuf)
 		{
 			initCmeths();
 			using namespace boost::iostreams;
