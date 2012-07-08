@@ -358,7 +358,7 @@ namespace rtmath {
 		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		valtype v; \
 		getKey(id,linein); \
-		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<valtype> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<valtype> >(linein); \
 		line->get(v); \
 		return v; } \
 	void name(const valtype &v) \
@@ -374,7 +374,7 @@ namespace rtmath {
 		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		size_t v; \
 		getKey(id,linein); \
-		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<size_t> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<size_t> >(linein); \
 		line->get(v); \
 		return (v) ? true : false; } \
 	void name(const bool &v) \
@@ -390,7 +390,7 @@ namespace rtmath {
 		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		valtype v; \
 		getKey(id,linein); \
-		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<valtype> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<valtype> >(linein); \
 		line->get(index,v); \
 		return v; } \
 	void name(size_t index, const valtype &v) \
@@ -405,7 +405,7 @@ namespace rtmath {
 		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		std::string v; \
 		getKey(id,linein); \
-		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(linein); \
 		line->get(v); \
 		val = v; } \
 	void setname(const std::string &v) \
@@ -420,7 +420,7 @@ namespace rtmath {
 		boost::shared_ptr< const ddParParsers::ddParLine > linein; \
 		std::string v; \
 		getKey(id,linein); \
-		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(line); \
+		line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(linein); \
 		line->get(v); \
 		return (v == btrue) ? true : false; } \
 	void name(bool v) \
@@ -460,6 +460,8 @@ namespace rtmath {
 			accessorString(getShape,setShape,ddParParsers::CSHAPE);
 			accessorSimplePlural(shpar,ddParParsers::SHAPEPARAMS,double);
 
+			// TODO: add diel.tab stuff : num refractive materials, and array for stuff like with scaPlanes
+
 			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
 			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double);
 			accessorSimple(maxTol,ddParParsers::TOL,double);
@@ -475,15 +477,21 @@ namespace rtmath {
 			void setAeff(double min, double max, size_t n, const std::string &spacing);
 			void getAeff(double &min, double &max, size_t &n, std::string &spacing) const;
 
+			// polarization state e01
+
 			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
+
+			// wrote .pol files? (generally disabled)
+
 			accessorSimpleBool(writeSca,ddParParsers::IWRKSC);
 
 			void getRots(rotations &rots) const;
 			void setRots(const rotations &rots);
 
 			// First IRAD
-			// SIJ element number
-			// SIJ indices
+
+			void getSIJ(std::set<size_t> &sij) const;
+			void setSIJ(const std::set<size_t> &sij);
 
 			accessorString(getCMDFRM,setCMDFRM,ddParParsers::CMDFRM);
 			accessorSimple(numPlanes,ddParParsers::NPLANES,size_t);

@@ -78,6 +78,11 @@ namespace rtmath {
 			size_t pN() const { return _pN; }
 			// ddPar output function
 			void out(ddPar &dest) const;
+
+			bool operator==(const rotations &rhs) const;
+			bool operator!=(const rotations &rhs) const;
+			bool operator<(const rotations &rhs) const;
+
 			// TODO: add stream-like function alias
 			friend struct std::less<rtmath::ddscat::rotations >;
 			friend class boost::serialization::access;
@@ -108,29 +113,5 @@ namespace std {
 		}
 	};
 
-
-	template <> struct less<rtmath::ddscat::rotations >
-	{
-		bool operator() (const rtmath::ddscat::rotations &lhs, const rtmath::ddscat::rotations &rhs) const
-		{
-			/*
-			double _bMin, _bMax;
-			double _tMin, _tMax;
-			double _pMin, _pMax;
-			size_t _bN, _tN, _pN;
-			*/
-			if (lhs._bMin != rhs._bMin) return lhs._bMin < rhs._bMin;
-			if (lhs._bMax != rhs._bMax) return lhs._bMax < rhs._bMax;
-			if (lhs._bN != rhs._bN) return lhs._bN < rhs._bN;
-			if (lhs._tMin != rhs._tMin) return lhs._tMin < rhs._tMin;
-			if (lhs._tMax != rhs._tMax) return lhs._tMax < rhs._tMax;
-			if (lhs._tN != rhs._tN) return lhs._tN < rhs._tN;
-			if (lhs._pMin != rhs._pMin) return lhs._pMin < rhs._pMin;
-			if (lhs._pMax != rhs._pMax) return lhs._pMax < rhs._pMax;
-			if (lhs._pN != rhs._pN) return lhs._pN < rhs._pN;
-
-			return false;
-		}
-	};
 }; // end namespace std
 

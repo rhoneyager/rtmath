@@ -82,6 +82,7 @@
     <ClCompile Include="test_polynomial.cpp" />
     <ClCompile Include="test_quadrature.cpp" />
     <ClCompile Include="test_recPolys.cpp" />
+    <ClCompile Include="test_serialization.cpp" />
     <ClCompile Include="test_units.cpp" />
   </ItemGroup>
   <ItemGroup>

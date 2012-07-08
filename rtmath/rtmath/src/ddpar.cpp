@@ -184,13 +184,50 @@ namespace rtmath {
 			_parsedData[key] = ptr;
 		}
 		
+		void ddPar::getSIJ(std::set<size_t> &sij) const
+		{
+			sij.clear();
+
+			boost::shared_ptr< const ddParParsers::ddParLineSimplePlural<size_t> > line;
+			boost::shared_ptr< const ddParParsers::ddParLine > linein;
+			std::vector<size_t> val;
+			// NSMELTS, INDICESIJ
+			getKey(ddParParsers::INDICESIJ,linein);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<size_t> >(linein);
+			line->get(val);
+			for (auto it = val.begin(); it != val.end(); it++)
+			{
+				if (!sij.count(*it))
+					sij.insert(*it);
+			}
+		}
+
+		void ddPar::setSIJ(const std::set<size_t> &sij)
+		{
+			// Set array size NSMELTS, with max of ?
+			boost::shared_ptr<ddParParsers::ddParLineSimple<std::size_t> > line_size
+					( new ddParParsers::ddParLineSimple<std::size_t>(ddParParsers::NSMELTS) );
+			line_size->set(sij.size());
+
+			// Set array
+			boost::shared_ptr< ddParParsers::ddParLineSimplePlural<size_t> > line
+				(new ddParParsers::ddParLineSimplePlural<size_t>(ddParParsers::INDICESIJ));
+			std::vector<size_t> val;
+			for (auto it = sij.begin(); it != sij.end(); it++)
+				val.push_back(*it);
+			line->set(val);
+
+			insertKey(ddParParsers::NSMELTS,boost::static_pointer_cast< ddParParsers::ddParLine >(line_size));
+			insertKey(ddParParsers::INDICESIJ,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
 		void ddPar::getAeff(double &min, double &max, size_t &n, std::string &spacing) const
 		{
 			boost::shared_ptr< const ddParParsers::ddParLineMixed<double, std::string> > line;
 
 			boost::shared_ptr< const ddParParsers::ddParLine > linein;
 			getKey(ddParParsers::AEFF,linein);
-			line = boost::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(line);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(linein);
 			line->setSep(3);
 			line->get<double>(0,min);
 			line->get<double>(1,max);
@@ -207,7 +244,7 @@ namespace rtmath {
 
 			boost::shared_ptr< const ddParParsers::ddParLine > linein;
 			getKey(ddParParsers::WAVELENGTHS,linein);
-			line = boost::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(line);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(linein);
 			line->setSep(3);
 			line->get<double>(0,min);
 			line->get<double>(1,max);
@@ -248,15 +285,9 @@ namespace rtmath {
 
 		void ddPar::setRots(const rotations &rots)
 		{
-			//				else if (key.find("NBETA") != string::npos)
-			//		ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
-			//		( new ddParLineMixed<double, size_t>(2, NBETA));
-			//	else if (key.find("NTHETA") != string::npos)
-			//		ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
-			//		( new ddParLineMixed<double, size_t>(2, NTHETA));
-			//	else if (key.find("NPHI") != string::npos)
-			//		ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
-			//		( new ddParLineMixed<double, size_t>(2, NPHI));
+			// use rotations code for duplication prevention
+			rots.out(*this);
+			/*
 			boost::shared_ptr< ddParParsers::ddParLineMixed<double, size_t> > bline
 				(new ddParParsers::ddParLineMixed<double, size_t>(2, ddParParsers::NBETA));
 			bline->set<double>(0, rots.bMin());
@@ -275,6 +306,7 @@ namespace rtmath {
 			pline->set<double>(0, rots.pMin());
 			pline->set<double>(1, rots.pMax());
 			pline->set<double>(2, rots.pN());
+			*/
 		}
 
 		void ddPar::getPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)
@@ -624,8 +656,8 @@ namespace rtmath {
 					ptr = boost::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(NSMELTS) );
 				else if (key.find("indices ij of") != string::npos)
-					ptr = boost::shared_ptr<ddParLineSimplePlural<double> >
-					( new ddParLineSimplePlural<double>(INDICESIJ) );
+					ptr = boost::shared_ptr<ddParLineSimplePlural<std::size_t> >
+					( new ddParLineSimplePlural<std::size_t>(INDICESIJ) );
 				else if (key.find("CMDFRM") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimple<std::string> >
 					( new ddParLineSimple<std::string>(CMDFRM) );
