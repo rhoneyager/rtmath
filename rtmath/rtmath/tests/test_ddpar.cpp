@@ -81,6 +81,8 @@ BOOST_AUTO_TEST_CASE(ddpar_defaultLoad)
 // Test read of all values using the traditional interface
 BOOST_AUTO_TEST_CASE(ddpar_read_traditional)
 {
+	// Note: the traditional interface is masked by the new interface, which calls on the 
+	// traditional one. So, only parameters that the new interface ignores will be reflected here.
 	BOOST_TEST_MESSAGE("   ddpar_read_traditional unimplemented");
 }
 
@@ -116,6 +118,7 @@ BOOST_AUTO_TEST_CASE(ddpar_read_new)
 	BOOST_CHECK( testPar->shpar(2) == 101);
 
 	// diel.tab stuff
+	// Needs support for multiple diel.tab files
 	//{
 	//}
 

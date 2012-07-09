@@ -22,9 +22,29 @@ using namespace rtmath::units;
 // Test to construct ddparGenerator
 BOOST_AUTO_TEST_CASE(pargenerator_construct)
 {
+	// Trivial construction
+	ddParGenerator p;
+	// Known base ddPar
+	ddParGenerator q(*rtmath::ddscat::ddPar::defaultInstance());
 }
 
 // Test to prepare a sample ddparGenerator file
+BOOST_AUTO_TEST_CASE(pargenerator_sample)
+{
+	ddParGenerator p;
+	p.name = "test run";
+	p.description = "desc goes here";
+	p.outLocation = "./testrun";
+
+	p.ddscatVer = 72;
+	p.compressResults = true;
+
+}
+
+// Read from ddPar file
+
+
+
 
 // Read a known ddparGenerator file
 

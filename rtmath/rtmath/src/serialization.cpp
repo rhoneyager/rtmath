@@ -25,9 +25,9 @@
 #ifdef WITH_CMAKE
 #include "cmake-settings.h"
 #else
-#define COMPRESS_ZLIB 1
-#define COMPRESS_GZIP 1
-#define COMPRESS_BZIP2 1
+#define COMPRESS_ZLIB 0
+#define COMPRESS_GZIP 0
+#define COMPRESS_BZIP2 0
 #endif
 
 
