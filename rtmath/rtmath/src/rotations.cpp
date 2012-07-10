@@ -108,7 +108,10 @@ namespace rtmath {
 		void rotations::out(ddPar &dest) const
 		{
 			using namespace boost;
-			shared_ptr<ddParParsers::ddParLineMixed<double, size_t> > b, t, p;
+			shared_ptr<ddParParsers::ddParLineMixed<double, size_t> > 
+				b (new ddParParsers::ddParLineMixed<double, size_t>(2,3, ddParParsers::NBETA) ), 
+				t (new ddParParsers::ddParLineMixed<double, size_t>(2,3, ddParParsers::NTHETA) ), 
+				p (new ddParParsers::ddParLineMixed<double, size_t>(2,3, ddParParsers::NPHI) );
 			b->set<double>(0, _bMin);
 			b->set<double>(1, _bMax);
 			b->set<size_t>(2, _bN);

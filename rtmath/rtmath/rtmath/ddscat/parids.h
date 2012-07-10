@@ -27,7 +27,7 @@ namespace rtmath {
 				NAMBIENT,		// double
 				AEFF,			// SPECIAL (2 double, size_t, string)
 
-				POLSTATE,		// SPECIAL (2 pair doubles)
+				POLSTATE,		// SPECIAL (3 pair doubles)
 				IORTH,			// size_t
 				IWRKSC,			// size_t (bool)
 				IWRPOL,			// size_t (bool)				version 7.0

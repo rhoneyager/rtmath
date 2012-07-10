@@ -59,6 +59,140 @@ namespace rtmath {
 
 		}
 
+		// ddPar overrides
+		// These are template functions (for int, double, size_t) that implement the 
+		// easy-use interface
+		template<class T>
+		T ddPar::__getSimple(ddParParsers::ParId key) const
+		{
+			boost::shared_ptr<const ddParParsers::ddParLineSimple<T> > line;
+			boost::shared_ptr< const ddParParsers::ddParLine > linein;
+			T v;
+			getKey(key,linein);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<T> >(linein);
+			line->get(v);
+			return v;
+		}
+
+		template size_t ddPar::__getSimple<size_t>(ddParParsers::ParId) const;
+		template bool ddPar::__getSimple<bool>(ddParParsers::ParId) const;
+		template double ddPar::__getSimple<double>(ddParParsers::ParId) const;
+		template int ddPar::__getSimple<int>(ddParParsers::ParId) const;
+
+		template<class T>
+		void ddPar::__setSimple(ddParParsers::ParId key, T val)
+		{
+			boost::shared_ptr< ddParParsers::ddParLineSimple<T> >
+				line(new ddParParsers::ddParLineSimple<T> (key));
+			line->set(val);
+			insertKey(key,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		template void ddPar::__setSimple<size_t>(ddParParsers::ParId, size_t);
+		template void ddPar::__setSimple<bool>(ddParParsers::ParId, bool);
+		template void ddPar::__setSimple<double>(ddParParsers::ParId, double);
+		template void ddPar::__setSimple<int>(ddParParsers::ParId, int);
+
+		bool ddPar::__getSimpleBool(ddParParsers::ParId key) const
+		{
+			boost::shared_ptr<const ddParParsers::ddParLineSimple<size_t> > line;
+			boost::shared_ptr< const ddParParsers::ddParLine > linein;
+			size_t v;
+			getKey(key,linein);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<size_t> >(linein);
+			line->get(v);
+			return (v) ? true : false;
+		}
+
+		void ddPar::__setSimpleBool(ddParParsers::ParId key, bool val)
+		{
+			boost::shared_ptr< ddParParsers::ddParLineSimple<size_t> >
+				line(new ddParParsers::ddParLineSimple<size_t> (key));
+			size_t vi = (val) ? 1 : 0;
+			line->set(vi);
+			insertKey(key,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		template<class valtype>
+		valtype ddPar::__getSimplePlural(ddParParsers::ParId id, size_t index) const
+		{ 
+			boost::shared_ptr<const ddParParsers::ddParLineSimplePlural<valtype> > line;
+			boost::shared_ptr< const ddParParsers::ddParLine > linein;
+			valtype v;
+			getKey(id,linein);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimplePlural<valtype> >(linein);
+			line->get(index,v);
+			return v; 
+		}
+
+		template size_t ddPar::__getSimplePlural<size_t>(ddParParsers::ParId, size_t) const;
+		template bool ddPar::__getSimplePlural<bool>(ddParParsers::ParId, size_t) const;
+		template double ddPar::__getSimplePlural<double>(ddParParsers::ParId, size_t) const;
+		template int ddPar::__getSimplePlural<int>(ddParParsers::ParId, size_t) const;
+
+		template<class valtype>
+		void ddPar::__setSimplePlural(ddParParsers::ParId id, size_t index, size_t maxSize, const valtype &v)
+		{ 
+			boost::shared_ptr< ddParParsers::ddParLineSimplePlural<valtype> > line;
+			boost::shared_ptr< ddParParsers::ddParLine > linein;
+			// does key exist? if so, load it and prepare for update
+			if (exists(id))
+			{
+				getKey(id, linein);
+				line = boost::static_pointer_cast< ddParParsers::ddParLineSimplePlural<valtype> >(linein);
+			} else {
+				line = boost::shared_ptr<ddParParsers::ddParLineSimplePlural<valtype> > 
+					(new ddParParsers::ddParLineSimplePlural<valtype> (id));
+				line->resize(maxSize);
+			}
+			line->set(index,v);
+			insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		template void ddPar::__setSimplePlural<size_t>(ddParParsers::ParId, size_t, size_t, const size_t&);
+		template void ddPar::__setSimplePlural<bool>(ddParParsers::ParId, size_t, size_t, const bool&);
+		template void ddPar::__setSimplePlural<double>(ddParParsers::ParId, size_t, size_t, const double&);
+		template void ddPar::__setSimplePlural<int>(ddParParsers::ParId, size_t, size_t, const int&);
+
+		void ddPar::__getString(ddParParsers::ParId id, std::string &val) const
+		{ 
+			boost::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line;
+			boost::shared_ptr< const ddParParsers::ddParLine > linein;
+			std::string v;
+			getKey(id,linein);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(linein);
+			line->get(v);
+			val = v; 
+		}
+
+		void ddPar::__setString(ddParParsers::ParId id, const std::string &val)
+		{ 
+			boost::shared_ptr< ddParParsers::ddParLineSimple<std::string> >
+				line(new ddParParsers::ddParLineSimple<std::string> (id));
+			line->set(val);
+			insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		bool ddPar::__getStringBool(ddParParsers::ParId id, const std::string &bfalse, const std::string &btrue) const
+		{
+			boost::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line;
+			boost::shared_ptr< const ddParParsers::ddParLine > linein;
+			std::string v;
+			getKey(id,linein);
+			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(linein);
+			line->get(v);
+			return (v == btrue) ? true : false; 
+		}
+
+		void ddPar::__setStringBool(ddParParsers::ParId id, bool v, const std::string &bfalse, const std::string &btrue)
+		{ 
+			boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> >
+				line(new ddParParsers::ddParLineSimple<std::string> (id));
+			std::string vs = (v) ? btrue : bfalse ;
+			line->set(vs);
+			insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
 		ddPar::ddPar()
 		{
 			_init();
@@ -96,7 +230,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace boost::filesystem;
 			path p(filename);
-			if (!exists(p)) throw debug::xMissingFile(filename.c_str());
+			if (!boost::filesystem::exists(p)) throw debug::xMissingFile(filename.c_str());
 			ifstream in(filename.c_str());
 			read(in, overlay);
 		}
@@ -155,6 +289,12 @@ namespace rtmath {
 				}
 				line++;
 			}
+		}
+
+		bool ddPar::exists(ddParParsers::ParId key) const
+		{
+			if (_parsedData.count(key)) return true;
+			return false;
 		}
 
 		void ddPar::getKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &res)
@@ -228,7 +368,7 @@ namespace rtmath {
 			boost::shared_ptr< const ddParParsers::ddParLine > linein;
 			getKey(ddParParsers::AEFF,linein);
 			line = boost::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(linein);
-			line->setSep(3);
+			line->setSep(3, 4);
 			line->get<double>(0,min);
 			line->get<double>(1,max);
 			double dN;
@@ -245,7 +385,7 @@ namespace rtmath {
 			boost::shared_ptr< const ddParParsers::ddParLine > linein;
 			getKey(ddParParsers::WAVELENGTHS,linein);
 			line = boost::static_pointer_cast< const ddParParsers::ddParLineMixed<double, std::string> >(linein);
-			line->setSep(3);
+			line->setSep(3, 4);
 			line->get<double>(0,min);
 			line->get<double>(1,max);
 			double dN;
@@ -258,7 +398,7 @@ namespace rtmath {
 		void ddPar::setAeff(double min, double max, size_t n, const std::string &spacing)
 		{
 			boost::shared_ptr< ddParParsers::ddParLineMixed<double, std::string> > line
-				(new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::AEFF));
+				(new ddParParsers::ddParLineMixed<double, std::string>(3,4, ddParParsers::AEFF));
 			line->set<double>(0,min);
 			line->set<double>(1,max);
 			line->set<double>(2,n);
@@ -269,10 +409,10 @@ namespace rtmath {
 		void ddPar::setWavelengths(double min, double max, size_t n, const std::string &spacing)
 		{
 			boost::shared_ptr< ddParParsers::ddParLineMixed<double, std::string> > line
-				(new ddParParsers::ddParLineMixed<double, std::string>(3, ddParParsers::WAVELENGTHS));
+				(new ddParParsers::ddParLineMixed<double, std::string>(3, 4, ddParParsers::WAVELENGTHS));
 			line->set<double>(0,min);
 			line->set<double>(1,max);
-			line->set<double>(2,n);
+			line->set<double>(2,(double) n);
 			line->set<std::string>(3,spacing);
 			insertKey(ddParParsers::WAVELENGTHS,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
 		}
@@ -323,6 +463,16 @@ namespace rtmath {
 				res = _scaPlanes[key];
 		}
 
+		void ddPar::getPlane(size_t n, double &phi, double &thetan_min, double &thetan_max, double &dtheta) const
+		{
+			boost::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > res;
+			getPlane(n, res);
+			res->get(0, phi);
+			res->get(1, thetan_min);
+			res->get(2, thetan_max);
+			res->get(3, dtheta);
+		}
+
 		void ddPar::delPlane(size_t key)
 		{
 			if (_scaPlanes.count(key))
@@ -334,6 +484,19 @@ namespace rtmath {
 			if (_scaPlanes.count(key))
 				_scaPlanes.erase(key);
 			_scaPlanes[key] = res;
+		}
+
+		void ddPar::setPlane(size_t n, double phi, double thetan_min, double thetan_max, double dtheta)
+		{
+			boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res
+				(new ddParParsers::ddParLineSimplePlural<double>(ddParParsers::PLANE1));
+			res->resize(4);
+			res->set(0,phi);
+			res->set(1,thetan_min);
+			res->set(2,thetan_max);
+			res->set(3,dtheta);
+
+			insertPlane(n, res);
 		}
 
 		void ddPar::_populateDefaults(bool overwrite, const std::string &src) const
@@ -355,7 +518,7 @@ namespace rtmath {
 			}
 			else
 			{
-				if (exists(path(src)))
+				if (boost::filesystem::exists(path(src)))
 				{
 					basep = boost::shared_ptr<ddPar>(new ddPar(src));
 				} else {
@@ -418,7 +581,11 @@ namespace rtmath {
 				_scaPlanes.clear();
 			}
 
-			size_t line = 0;
+			size_t line = 1;
+			{
+				std::string junk;
+				std::getline(stream,junk); // Disregard first line in file
+			}
 			size_t nScaPlane = 0;
 			string comment;
 			while (stream.good())
@@ -535,7 +702,7 @@ namespace rtmath {
 
 				if (psBasePar.is_relative()) psBasePar = pscwd / psBasePar;
 
-				if (psBasePar.string().size() && exists(path(psBasePar)))
+				if (psBasePar.string().size() && boost::filesystem::exists(path(psBasePar)))
 				{
 					s_inst = new ddPar(psBasePar.string());
 				} else {
@@ -617,14 +784,14 @@ namespace rtmath {
 				// TODO: fix wavelengths and aeff to read two doubles, a size_t and a string
 				else if (key.find("wavelengths") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, std::string> >
-					( new ddParLineMixed<double, std::string>(3, WAVELENGTHS));
+					( new ddParLineMixed<double, std::string>(3, 4, WAVELENGTHS));
 				else if (key.find("NAMBIENT") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(NAMBIENT) );
 				// version 7.0 NAMBIENT
 				else if (key.find("aeff") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, std::string> >
-					( new ddParLineMixed<double, std::string>(3, AEFF));
+					( new ddParLineMixed<double, std::string>(3, 4, AEFF));
 
 				else if (key.find("Polarization state") != string::npos)
 					ptr = boost::shared_ptr<ddParTuples<double> >
@@ -642,13 +809,13 @@ namespace rtmath {
 
 				else if (key.find("NBETA") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
-					( new ddParLineMixed<double, size_t>(2, NBETA));
+					( new ddParLineMixed<double, size_t>(2, 3, NBETA));
 				else if (key.find("NTHETA") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
-					( new ddParLineMixed<double, size_t>(2, NTHETA));
+					( new ddParLineMixed<double, size_t>(2, 3, NTHETA));
 				else if (key.find("NPHI") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
-					( new ddParLineMixed<double, size_t>(2, NPHI));
+					( new ddParLineMixed<double, size_t>(2, 3, NPHI));
 				else if (key.find("IWAV") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimplePlural<double> >
 					( new ddParLineSimplePlural<double>(IWAV) );

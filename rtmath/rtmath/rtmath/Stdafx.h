@@ -19,7 +19,12 @@
 #include <boost/bimap.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/tokenizer.hpp>
+#pragma warning( push ) // Suppress warning. MSVC warning is because of how it branches,
+#pragma warning( disable : 4244 ) // even though that part of code is never reached
+#pragma warning( disable : 4146 ) // annoying boost garbage
 #include <boost/lexical_cast.hpp>
+#pragma warning( pop )
+
 #include <boost/units/systems/si.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
