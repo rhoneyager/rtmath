@@ -189,8 +189,6 @@ namespace rtmath {
 					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 					{
 						// At this junction, do any alias substitution
-						// TODO: check new behavior
-						GETOBJKEY();
 
 						std::string ssubst;
 

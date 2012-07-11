@@ -47,7 +47,9 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
 	shp->addConstraint(shapeConstraint::create("aeff", 200, "um"));
 	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel1.tab"));
-	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
+	// Note: comparison at end may fail if multiple source_filenames present, as there is 
+	//	no particular ordering involved. Files are the same otherwise
+	//shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
 	p.shapes.insert(shp);
 
 
@@ -55,16 +57,19 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 	p.rots.insert( rotations::create(p.base) );
 
 	// Now, attempt to save and load the file
-	string sObj;
-	ostringstream out;
-	//rtmath::serialization::write<ddParGenerator>(p,out);
+	string sObj, sObjb;
+	ostringstream out, outb;
+	rtmath::serialization::write<ddParGenerator>(p,out);
 	rtmath::serialization::write<ddParGenerator>(p,"test.parGenerator");
 
 	ddParGenerator q;
-	rtmath::serialization::read<ddParGenerator>(q,"test.parGenerator");
-	rtmath::serialization::write<ddParGenerator>(q,"test2.parGenerator");
-	//sObj = out.str();
+	sObj = out.str();
 	istringstream in(sObj);
+	rtmath::serialization::read<ddParGenerator>(q,in);
+	rtmath::serialization::write<ddParGenerator>(q,outb);
+	sObjb = outb.str();
+	
+	BOOST_CHECK(sObj == sObjb);
 }
 
 // Read from ddPar file
