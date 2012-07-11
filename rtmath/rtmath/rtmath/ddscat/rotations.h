@@ -66,6 +66,12 @@ namespace rtmath {
 			rotations(double bMin, double bMax, size_t bN,
 				double tMin, double tMax, size_t tN,
 				double pMin, double pMax, size_t pN);
+			static boost::shared_ptr<rotations> create(
+				double bMin, double bMax, size_t bN,
+				double tMin, double tMax, size_t tN,
+				double pMin, double pMax, size_t pN);
+			static boost::shared_ptr<rotations> create();
+			static boost::shared_ptr<rotations> create(const ddPar &src);
 			virtual ~rotations();
 			double bMin() const { return _bMin; }
 			double bMax() const { return _bMax; }

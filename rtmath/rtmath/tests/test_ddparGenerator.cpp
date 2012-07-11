@@ -39,6 +39,18 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 	p.ddscatVer = 72;
 	p.compressResults = true;
 
+	// Set temp, aeff
+	p.addConstraint(shapeConstraint::create("temp", -10, "C"));
+	p.addConstraint(shapeConstraint::create("aeff", "50:100:350", "um"));
+
+	// Set shape
+
+
+	// Set rotations
+	p.rots.insert( rotations::create(p.base) );
+
+	// Now, attempt to save and load the file
+
 }
 
 // Read from ddPar file

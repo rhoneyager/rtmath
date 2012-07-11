@@ -51,7 +51,8 @@ namespace rtmath {
 			genMassScript(true),
 			shapeStats(false),
 			registerDatabase(false),
-			doExport(true)
+			doExport(true),
+			shapeConstraintsGlobal(___sbase)
 		{
 
 		}

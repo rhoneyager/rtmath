@@ -48,7 +48,7 @@ namespace rtmath {
 
 		
 
-		class ddParGeneratorBase
+		class ddParGeneratorBase : public constrainable
 		{
 		public:
 			ddParGeneratorBase();
@@ -56,7 +56,7 @@ namespace rtmath {
 			// freqs and temps are now part of the shape constraints
 			std::set<boost::shared_ptr<rotations> > rots;
 			// The other constraints
-			shapeConstraintContainer shapeConstraintsGlobal;
+			shapeConstraintContainer &shapeConstraintsGlobal;
 			// The shapes to generate
 			std::set<boost::shared_ptr<shapeModifiable> > shapes;
 

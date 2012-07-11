@@ -47,6 +47,18 @@ namespace rtmath {
 				const std::string &varname,
 				const std::string &psetShorthand,
 				const std::string &units = "");
+			shapeConstraint(
+				const std::string &varname,
+				double psetShorthand,
+				const std::string &units = "");
+			static boost::shared_ptr<shapeConstraint> create(
+				const std::string &varname,
+				const std::string &psetShorthand,
+				const std::string &units = "");
+			static boost::shared_ptr<shapeConstraint> create(
+				const std::string &varname,
+				double psetShorthand,
+				const std::string &units = "");
 			virtual ~shapeConstraint();
 			bool operator< (const shapeConstraint &rhs) const;
 			bool operator==(const shapeConstraint &rhs) const;
@@ -76,7 +88,20 @@ namespace rtmath {
 		// really making it an indexed set
 		typedef std::multimap< std::string, boost::shared_ptr<shapeConstraint> > shapeConstraintContainer;
 
-		class shape : public std::enable_shared_from_this<shape>
+		void addConstraint(shapeConstraintContainer &container, boost::shared_ptr<shapeConstraint> constraint);
+
+		class constrainable
+		{
+		protected:
+			constrainable(){}
+			virtual ~constrainable() {}
+		protected:
+			shapeConstraintContainer ___sbase;
+		public:
+			void addConstraint(boost::shared_ptr<shapeConstraint>);
+		};
+
+		class shape : public constrainable, public std::enable_shared_from_this<shape>
 		{
 		public:
 			shape();
@@ -88,7 +113,7 @@ namespace rtmath {
 			virtual void setDDPAR(ddPar &out) const;
 			// Nothing done with these until iterator evaluation. They are split, and THEN
 			// the mappings and vertexRunnable code is executed
-			shapeConstraintContainer shapeConstraints;
+			shapeConstraintContainer &shapeConstraints;
 		protected:
 			// Densities of different anisotropic materials. Used in mass and inertia calculations.
 			std::map<size_t, double> _densities;

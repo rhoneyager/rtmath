@@ -27,6 +27,14 @@
 namespace rtmath {
 	namespace ddscat {
 
+		void addConstraint(shapeConstraintContainer &container, boost::shared_ptr<shapeConstraint> constraint)
+		{
+			//constraintsVaried.insert(pair<const string,units::hasUnits>(name, units::hasUnits(val,units)));
+			//container.
+			container.insert(std::pair<const std::string, boost::shared_ptr<shapeConstraint> >
+				(constraint->varname, constraint));
+		}
+
 		bool shapeModifiable::runSupported(const std::string &id)
 		{
 			if (id == "DENS_T") return true;
@@ -161,6 +169,37 @@ namespace rtmath {
 		{
 		}
 
+		shapeConstraint::shapeConstraint(
+			const std::string &varname,
+			double psetShorthand,
+			const std::string &units)
+			:
+				varname(varname),
+				pset(psetShorthand),
+				units(units)
+		{
+		}
+
+		boost::shared_ptr<shapeConstraint> shapeConstraint::create(
+				const std::string &varname,
+				const std::string &psetShorthand,
+				const std::string &units)
+		{
+			boost::shared_ptr<shapeConstraint> res(
+				new shapeConstraint(varname, psetShorthand, units));
+			return res;
+		}
+
+		boost::shared_ptr<shapeConstraint> shapeConstraint::create(
+				const std::string &varname,
+				double psetShorthand,
+				const std::string &units)
+		{
+			boost::shared_ptr<shapeConstraint> res(
+				new shapeConstraint(varname, psetShorthand, units));
+			return res;
+		}
+
 		bool shapeConstraint::operator==(const shapeConstraint &rhs) const
 		{
 			if (varname != rhs.varname) return false;
@@ -217,7 +256,13 @@ namespace rtmath {
 		}
 
 		shape::shape()
+			: shapeConstraints(___sbase)
 		{
+		}
+
+		void constrainable::addConstraint(boost::shared_ptr<shapeConstraint> rhs)
+		{
+			rtmath::ddscat::addConstraint(___sbase, rhs);
 		}
 
 		bool shape::_get(const std::string &id, double &val, std::string &units) const

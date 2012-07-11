@@ -37,6 +37,30 @@ namespace rtmath {
 			_pN = pN;
 		}
 
+		boost::shared_ptr<rotations> rotations::create()
+		{
+			boost::shared_ptr<rotations> res(new rotations());
+			return res;
+		}
+
+		boost::shared_ptr<rotations> rotations::create(
+			double bMin, double bMax, size_t bN,
+			double tMin, double tMax, size_t tN,
+			double pMin, double pMax, size_t pN)
+		{
+			boost::shared_ptr<rotations> res(new rotations(
+				bMin, bMax, bN,
+				tMin, tMax, tN,
+				pMin, pMax, pN));
+			return res;
+		}
+
+		boost::shared_ptr<rotations> rotations::create(const ddPar &src)
+		{
+			boost::shared_ptr<rotations> res(new rotations(src));
+			return res;
+		}
+
 		rotations::~rotations()
 		{
 		}
