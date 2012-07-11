@@ -94,11 +94,17 @@ namespace rtmath {
 		{
 		protected:
 			constrainable(){}
-			virtual ~constrainable() {}
-		protected:
 			shapeConstraintContainer ___sbase;
 		public:
+			virtual ~constrainable() {}
 			void addConstraint(boost::shared_ptr<shapeConstraint>);
+			friend class boost::serialization::access;
+		private:
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp("shapeConstraints", ___sbase);
+				}
 		};
 
 		class shape : public constrainable, public std::enable_shared_from_this<shape>
@@ -125,8 +131,9 @@ namespace rtmath {
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & boost::serialization::make_nvp("densities", _densities);
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
 					ar & BOOST_SERIALIZATION_NVP(shapeConstraints);
+					ar & boost::serialization::make_nvp("densities", _densities);
 				}
 		};
 

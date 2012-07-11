@@ -44,13 +44,24 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 	p.addConstraint(shapeConstraint::create("aeff", "50:100:350", "um"));
 
 	// Set shape
+	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
+	shp->addConstraint(shapeConstraint::create("aeff", 200, "um"));
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel1.tab"));
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
+	p.shapes.insert(shp);
 
 
 	// Set rotations
 	p.rots.insert( rotations::create(p.base) );
 
 	// Now, attempt to save and load the file
+	string sObj;
+	ostringstream out;
+	//rtmath::serialization::write<ddParGenerator>(p,out);
+	rtmath::serialization::write<ddParGenerator>(p,"test.parGenerator");
 
+	sObj = out.str();
+	istringstream in(sObj);
 }
 
 // Read from ddPar file

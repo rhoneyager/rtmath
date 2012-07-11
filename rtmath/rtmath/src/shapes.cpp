@@ -441,8 +441,6 @@ namespace rtmath {
 			using namespace rtmath::graphs;
 			_vertices.clear();
 			_vertexMap.clear();
-			// TODO: set _graph to nullptr
-			//_graph = nullptr;
 
 			// Most basic level of var names. Interdipole spacing is in a derived class, as are others.
 			const size_t varnames_size = 8;

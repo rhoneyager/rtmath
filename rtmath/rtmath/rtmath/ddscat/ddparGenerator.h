@@ -100,8 +100,9 @@ namespace rtmath {
 
 				// The par file is not serialized, as it is written separately
 				//ar & boost::serialization::make_nvp("ddPar", base);
-
+				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
 				ar & BOOST_SERIALIZATION_NVP(shapeConstraintsGlobal);
+
 				ar & BOOST_SERIALIZATION_NVP(rots);
 				ar & BOOST_SERIALIZATION_NVP(shapes);
 			}

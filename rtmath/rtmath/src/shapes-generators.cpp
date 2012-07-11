@@ -30,6 +30,29 @@ namespace rtmath {
 
 		namespace shapes {
 
+			from_file::from_file()
+			{
+			}
+
+			from_file::~from_file()
+			{
+			}
+
+			void from_file::_constructGraph()
+			{
+				shapeModifiable::_constructGraph();
+			}
+
+			void from_file::run(const std::string &id)
+			{
+				shapeModifiable::run(id);
+			}
+
+			bool from_file::runSupported(const std::string &id)
+			{
+				return shapeModifiable::runSupported(id);
+			}
+
 			void from_file::write(const std::string &fname) const
 			{
 				// This is the shape.dat writing function. 
