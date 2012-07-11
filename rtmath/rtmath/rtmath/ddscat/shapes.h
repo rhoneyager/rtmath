@@ -17,6 +17,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -132,10 +134,12 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
-					ar & BOOST_SERIALIZATION_NVP(shapeConstraints);
+					//ar & BOOST_SERIALIZATION_NVP(shapeConstraints);
 					ar & boost::serialization::make_nvp("densities", _densities);
 				}
 		};
+
+		//BOOST_CLASS_EXPORT_GUID(shape, "shape")
 
 		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
 		{
@@ -189,6 +193,8 @@ namespace rtmath {
 			virtual bool runSupported(const std::string &id = "");
 		};
 		
+		//BOOST_CLASS_EXPORT_GUID(shapeModifiable, "shapeModifiable")
+
 		// In ellipsoid, 1/4 = (x/d*shp1)^2 + (y/d*shp2)^2 + (z/d*shp3)^2
 		// In cylinder, shp1 = length/d, shp2 = diam/d,
 		//		shp3 = 1 for a1 || x, 2 for a1|| y, 3 for a1 || z
@@ -222,7 +228,16 @@ namespace rtmath {
 				virtual void _constructGraph();
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
-			};
+				friend class boost::serialization::access;
+			private:
+				template<class Archive>
+					void serialize(Archive & ar, const unsigned int version)
+					{
+						ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeModifiable);
+					}
+				};
+
+			//BOOST_CLASS_EXPORT_GUID(from_file, "from_file")
 
 			/*
 			// ddscat_dep provides the interdipole spacing vertex. Not used in tmatrix-derivations.
@@ -255,5 +270,11 @@ namespace rtmath {
 	}
 }
 
-
+//BOOST_CLASS_EXPORT_GUID(rtmath::ddscat::shape, "shape")
+//BOOST_CLASS_EXPORT_GUID(rtmath::ddscat::shapeModifiable, "shapeModifiable")
+//BOOST_CLASS_EXPORT_GUID(rtmath::ddscat::shapes::from_file, "from_file")
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::constrainable)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
 

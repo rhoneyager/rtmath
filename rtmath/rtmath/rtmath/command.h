@@ -183,7 +183,7 @@ namespace rtmath {
 				typedef boost::tokenizer<boost::char_separator<char> >
 					tokenizer;
 				boost::char_separator<char> sep(",");
-				boost::char_separator<char> seprange(":-");
+				boost::char_separator<char> seprange(":");
 				{
 					tokenizer tcom(instr,sep);
 					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)

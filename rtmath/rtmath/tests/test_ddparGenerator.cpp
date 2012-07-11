@@ -60,7 +60,10 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 	//rtmath::serialization::write<ddParGenerator>(p,out);
 	rtmath::serialization::write<ddParGenerator>(p,"test.parGenerator");
 
-	sObj = out.str();
+	ddParGenerator q;
+	rtmath::serialization::read<ddParGenerator>(q,"test.parGenerator");
+	rtmath::serialization::write<ddParGenerator>(q,"test2.parGenerator");
+	//sObj = out.str();
 	istringstream in(sObj);
 }
 
@@ -77,3 +80,13 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 
 BOOST_AUTO_TEST_SUITE_END();
 
+/*
+		std::map<std::string, std::string> freqaliases;
+		freqaliases["GPM_Radiometer"] = "10.7, 18.7, 23.8, 89.0, 165.5, 183.3";
+		freqaliases["GPM_Dual_Radar"] = "13.6, 35.5";
+		gen.freqs.insert(std::make_pair<paramSet<double>, std::string>
+			( paramSet<double>("35.5,GPM_Radiometer,GPM_Dual_Radar", &freqaliases), "GHz" )   );
+
+
+		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar1","1"));
+*/

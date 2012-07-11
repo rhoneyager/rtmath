@@ -104,29 +104,51 @@ namespace rtmath {
 		{
 			using namespace boost;
 			shared_ptr<const ddParParsers::ddParLine > ob, ot, op;
-			src.getKey(ddParParsers::NBETA, ob);
-			shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > b = 
-				static_pointer_cast<const ddParParsers::ddParLineMixed<double, size_t> >
-				(ob);
-			b->get<double>(0,_bMin);
-			b->get<double>(1,_bMax);
-			b->get<size_t>(2,_bN);
+			rotations defaults;
+			if (src.exists(ddParParsers::NBETA))
+			{
+				src.getKey(ddParParsers::NBETA, ob);
+				shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > b = 
+					static_pointer_cast<const ddParParsers::ddParLineMixed<double, size_t> >
+					(ob);
+				b->get<double>(0,_bMin);
+				b->get<double>(1,_bMax);
+				b->get<size_t>(2,_bN);
+			} else {
+				_bMin = defaults.bMin();
+				_bMax = defaults.bMax();
+				_bN = defaults.bN();
+			}
 
-			src.getKey(ddParParsers::NTHETA, ot);
-			shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > t = 
-				static_pointer_cast<const ddParParsers::ddParLineMixed<double, size_t> >
-				(ot);
-			t->get<double>(0,_tMin);
-			t->get<double>(1,_tMax);
-			t->get<size_t>(2,_tN);
+			if (src.exists(ddParParsers::NTHETA))
+			{
+				src.getKey(ddParParsers::NTHETA, ot);
+				shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > t = 
+					static_pointer_cast<const ddParParsers::ddParLineMixed<double, size_t> >
+					(ot);
+				t->get<double>(0,_tMin);
+				t->get<double>(1,_tMax);
+				t->get<size_t>(2,_tN);
+			} else {
+				_tMin = defaults.tMin();
+				_tMax = defaults.tMax();
+				_tN = defaults.tN();
+			}
 
-			src.getKey(ddParParsers::NPHI, op);
-			shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > p = 
-				static_pointer_cast<const ddParParsers::ddParLineMixed<double, size_t> >
-				(op);
-			p->get<double>(0,_pMin);
-			p->get<double>(1,_pMax);
-			p->get<size_t>(2,_pN);
+			if (src.exists(ddParParsers::NPHI))
+			{
+				src.getKey(ddParParsers::NPHI, op);
+				shared_ptr<const ddParParsers::ddParLineMixed<double, size_t> > p = 
+					static_pointer_cast<const ddParParsers::ddParLineMixed<double, size_t> >
+					(op);
+				p->get<double>(0,_pMin);
+				p->get<double>(1,_pMax);
+				p->get<size_t>(2,_pN);
+			} else {
+				_pMin = defaults.pMin();
+				_pMax = defaults.pMax();
+				_pN = defaults.pN();
+			}
 		}
 
 		void rotations::out(ddPar &dest) const

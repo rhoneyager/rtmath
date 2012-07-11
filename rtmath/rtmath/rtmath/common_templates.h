@@ -61,10 +61,13 @@ namespace rtmath
 		paramSet(const T &src)
 		{
 			_aliases = nullptr;
+			set(boost::lexical_cast<std::string>(src));
+			/*
 			std::ostringstream out;
 			out << src;
 			std::string t = out.str();
 			set(t);
+			*/
 		}
 		~paramSet() {}
 		size_t size() const

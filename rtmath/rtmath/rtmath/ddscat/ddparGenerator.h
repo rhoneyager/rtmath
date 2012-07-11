@@ -25,6 +25,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/shared_ptr.hpp>
@@ -101,7 +102,7 @@ namespace rtmath {
 				// The par file is not serialized, as it is written separately
 				//ar & boost::serialization::make_nvp("ddPar", base);
 				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
-				ar & BOOST_SERIALIZATION_NVP(shapeConstraintsGlobal);
+				//ar & BOOST_SERIALIZATION_NVP(shapeConstraintsGlobal);
 
 				ar & BOOST_SERIALIZATION_NVP(rots);
 				ar & BOOST_SERIALIZATION_NVP(shapes);
@@ -127,20 +128,13 @@ namespace rtmath {
 			boost::shared_ptr<shapeModifiable> shape;
 			boost::shared_ptr<rotations> rots;
 
-			inline HASH_t hash() const
-			{
-				HASH_t res;
-				HASH(this, sizeof(*this), HASHSEED, &res);
-				return res;
-			}
-
 			friend class ddParIteration;
 			friend class ddParGenerator;
 			friend class boost::serialization::access;
 		private:
 			//const ddParGenerator &_gen;
 			const ddParGenerator *_genp;
-			ddParIterator() { _genp = nullptr; }
+			ddParIterator() : _genp(nullptr) { }
 			// When the class Archive corresponds to an output archive, the
 			// & operator is defined similar to <<.  Likewise, when the class Archive
 			// is a type of input archive the & operator is defined similar to >>.
@@ -153,11 +147,6 @@ namespace rtmath {
 			}
 		};
 
-		inline std::size_t hash_value(ddParIterator const& x)
-		{
-			return (size_t) x.hash();
-		}
-
 		// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
 		class ddParIteration
 		{
@@ -169,6 +158,7 @@ namespace rtmath {
 			inline const_iterator begin() const { return _elements.begin(); }
 			inline const_iterator end() const { return _elements.end(); }
 		private:
+			ddParIteration();
 			data_t _elements;
 			//const ddParGenerator &_gen;
 			const ddParGenerator *_genp;
@@ -208,17 +198,7 @@ namespace rtmath {
 	} // end ddscat
 } // end rtmath
 
-
-namespace std {
-	template <> struct hash<rtmath::ddscat::ddParIterator>
-	{
-		size_t operator()(const rtmath::ddscat::ddParIterator & x) const
-		{
-			// Really need to cast for the unordered map to work
-			return (size_t) x.hash();
-		}
-	};
-
-}; // end namespace std
-
-
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGeneratorBase)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParIterator)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParIteration)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGenerator)

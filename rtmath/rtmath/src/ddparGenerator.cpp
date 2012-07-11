@@ -220,6 +220,11 @@ namespace rtmath {
 			_populate();
 		}
 
+		ddParIteration::ddParIteration()
+			: _genp(nullptr)
+		{
+		}
+
 		void ddParIteration::_populate()
 		{
 			using namespace std;
@@ -380,4 +385,12 @@ namespace rtmath {
 
 	}
 }
+
+
+
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGeneratorBase)
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParIterator)
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParIteration)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGenerator)
+
 

@@ -475,7 +475,7 @@ namespace rtmath {
 				"MASS_DENS__V",				"volume",			"mass,density",
 				"DENS_V__MASS",				"mass",				"density,volume",
 				"FREQ_TEMP__IREFR_R",		"irefr_r",			"freq,temp",
-				"FREQ_TEMP__IREFR_I"		"irefr_i",			"freq,temp"
+				"FREQ_TEMP__IREFR_I",		"irefr_i",			"freq,temp"
 			};
 
 			for (size_t i=0; i< varmapnames_size; i = i + 3)
@@ -593,4 +593,13 @@ namespace rtmath {
 	}
 }
 
+/*
+BOOST_CLASS_EXPORT(rtmath::ddscat::shape)
+BOOST_CLASS_EXPORT(rtmath::ddscat::shapeModifiable)
+BOOST_CLASS_EXPORT(rtmath::ddscat::shapes::from_file)
+*/
 
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::constrainable)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shape)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeModifiable)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_file)
