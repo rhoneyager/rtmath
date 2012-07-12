@@ -99,13 +99,13 @@ BOOST_AUTO_TEST_CASE(pargenerator_generate)
 	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel1.tab"));
 	// Note: comparison at end may fail if multiple source_filenames present, as there is 
 	//	no particular ordering involved. Files are the same otherwise
-	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
+	//shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
 	p.shapes.insert(shp);
 
 
 	// Set rotations
 	p.rots.insert( rotations::create(p.base) );
-	p.rots.insert( rotations::create(0,90,6,0,180,6,0,180,10) );
+	//p.rots.insert( rotations::create(0,90,6,0,180,6,0,180,10) );
 
 
 	// generate

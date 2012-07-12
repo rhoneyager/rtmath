@@ -287,7 +287,7 @@ namespace rtmath {
 
 					// constraintsVaried now contains all possible constraint variations. Iterate over these to 
 					// produce the ddParIterator entries in _elements
-					
+					/*
 					// get rid of duplicates (they are possible still)
 					{
 						multimap<const string, rtmath::units::hasUnits > constraintsVariedUnique;
@@ -301,7 +301,7 @@ namespace rtmath {
 						}
 						constraintsVaried = constraintsVariedUnique;
 					}
-					
+					*/
 					// Collect the elements into sets of variedNames
 					map<const string, set<rtmath::units::hasUnits > > vmap;
 					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
@@ -342,45 +342,50 @@ namespace rtmath {
 							// Construct permuted object
 							permuted.insert(pair<string,boost::shared_ptr<shapeConstraint> >(
 								name, boost::make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
-
-							// As a reminder, (it) is an iterator to the current shape.....
-							boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
-							nshape->shapeConstraints = permuted;
-							nshape->update();
-
-							// Make the iterator
-							boost::shared_ptr<ddParIterator> nit(new ddParIterator(_gen, nshape ));
-							// Add the rotations
-							nit->rots = *rt;
-							// Insert into _elenemts using rvalue move (avoids copying)
-							_elements.insert(nit);
-
 						}
+						// As a reminder, (it) is an iterator to the current shape.....
+						boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
+						nshape->shapeConstraints = permuted;
+						nshape->update();
+
+						// Make the iterator
+						boost::shared_ptr<ddParIterator> nit(new ddParIterator(_gen, nshape ));
+						// Add the rotations
+						nit->rots = *rt;
+						// Insert into _elenemts using rvalue move (avoids copying)
+						_elements.insert(nit);
 
 						// Advance the iterators
 						// Advance the "leftmost" iterator until it hits the end. Then, reset it and advance one further.
 						auto mit = mapit.begin();
 						bool good = false;
-						auto cit = mit->second;
+						
 						while (!done)
 						{
+							auto &cit = mit->second; // By reference, else the loop will never end
 							cit++;
 							if (cit == vmap[mit->first].end())
 							{
 								cit = vmap[mit->first].begin();
-								mit++;
-							} else break;
-							// Can't return here - only the current shape is done...
-							if (mit == mapit.end()) done = true; // Breaks two loops, and moves on to next shape...
-						}
+								mit++; // Increment mit
+								if (mit != mapit.end()) 
+									continue;
+									
+								else 
+								// Can't return here - only the current shape is done...
+									done = true; // Breaks two loops, and moves on to next shape...
+							} else {
+								break; // 'done' breaks out of two loops. Break just exits the while loop
+							}
+						} // end of inner while (!done)
 
-					}
+					} // end of outer while (!done) (done=true passes, break should not)
 					
-				}
-			}
+				} // end of for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
+			} // end of for (auto rt = _gen.rots.begin(); rt != _gen.rots.end(); rt++)
 
 
-		}
+		} // end of _populate()
 
 
 	}
