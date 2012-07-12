@@ -31,7 +31,10 @@ BOOST_AUTO_TEST_CASE(pargenerator_construct)
 // Test to prepare a sample ddparGenerator file
 BOOST_AUTO_TEST_CASE(pargenerator_sample)
 {
+	ddparloader parloader;
+
 	ddParGenerator p;
+	p.base = *(parloader.testPar);
 	p.name = "test run";
 	p.description = "desc goes here";
 	p.outLocation = "./testrun";
@@ -72,15 +75,43 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 	BOOST_CHECK(sObj == sObjb);
 }
 
-// Read from ddPar file
-
-
-
-
-// Read a known ddparGenerator file
-
 // Attempt to generate a batch of runs
+BOOST_AUTO_TEST_CASE(pargenerator_generate)
+{
+	ddparloader parloader;
 
+	ddParGenerator p;
+	p.base = *(parloader.testPar);
+	p.name = "test run";
+	p.description = "desc goes here";
+	p.outLocation = "./testrun";
+
+	p.ddscatVer = 72;
+	p.compressResults = true;
+
+	// Set temp, aeff
+	p.addConstraint(shapeConstraint::create("temp", -10, "C"));
+	p.addConstraint(shapeConstraint::create("aeff", "50:100:350", "um"));
+
+	// Set shape
+	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
+	shp->addConstraint(shapeConstraint::create("aeff", 200, "um"));
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel1.tab"));
+	// Note: comparison at end may fail if multiple source_filenames present, as there is 
+	//	no particular ordering involved. Files are the same otherwise
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
+	p.shapes.insert(shp);
+
+
+	// Set rotations
+	p.rots.insert( rotations::create(p.base) );
+	p.rots.insert( rotations::create(0,90,6,0,180,6,0,180,10) );
+
+
+	// generate
+	p.generate("generation");
+	// serialize
+}
 //
 
 BOOST_AUTO_TEST_SUITE_END();
@@ -95,3 +126,5 @@ BOOST_AUTO_TEST_SUITE_END();
 
 		shp->shapeConstraints.insert(std::make_shared<shapeConstraint>("shpar1","1"));
 */
+
+

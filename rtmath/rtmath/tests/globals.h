@@ -12,6 +12,9 @@ namespace rtmath {
 	namespace config {
 		class configsegment;
 	}
+	namespace ddscat {
+		class ddPar;
+	};
 }
 
 struct globals
@@ -26,4 +29,14 @@ public:
 	boost::filesystem::path pFullData, pTestData, pProfiles, pRtconf;
 };
 
+struct ddparloader
+{
+	ddparloader();
+	~ddparloader();
+	bool baseExists;
+	bool defaultKey;
+	boost::filesystem::path pBasePar;
+	boost::filesystem::path pCWD;
+	rtmath::ddscat::ddPar *testPar;
+};
 

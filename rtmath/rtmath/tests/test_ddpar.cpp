@@ -18,50 +18,6 @@ using namespace boost::filesystem;
  * no facility for testing / comparing versioned reads and writes
  */
 
-struct ddparloader
-{
-	ddparloader()
-		: defaultKey(false),
-		baseExists(false),
-		testPar(nullptr)
-	{
-		
-		// Check that there is a default key
-		string sBasePar;
-		defaultKey = globals::instance()->cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
-		if (!defaultKey) BOOST_FAIL("ddscat/DefaultFile key missing from testing rtmath.conf");
-
-		// Check that default key points to a file
-		string scwd;
-		globals::instance()->cRoot->getCWD(scwd);
-		pCWD = path(scwd).remove_filename();
-
-		pBasePar = boost::filesystem::absolute(path(sBasePar), pCWD);
-		if (!exists(pBasePar)) BOOST_FAIL("ddscat/DefaultFile key refers to nonexistant file");
-		if (is_directory(pBasePar)) BOOST_FAIL("ddscat/DefaultFile key points to a directory, not a file");
-
-		// Attempt to load the default
-		try {
-			testPar = rtmath::ddscat::ddPar::defaultInstance();
-			//testPar->_populateDefaults();
-		} catch (std::exception &e)
-		{
-			cerr << e.what() << endl;
-			BOOST_FAIL("Unable to load default testing ddscat.par file. Cannot do ddPar tests.");
-		}
-		
-	}
-	~ddparloader()
-	{
-	}
-	bool baseExists;
-	bool defaultKey;
-	path pBasePar;
-	path pCWD;
-	rtmath::ddscat::ddPar *testPar;
-};
-
-
 //BOOST_AUTO_TEST_SUITE(test_ddpar);
 BOOST_FIXTURE_TEST_SUITE(test_ddpar, ddparloader);
 // globals::instance()->
