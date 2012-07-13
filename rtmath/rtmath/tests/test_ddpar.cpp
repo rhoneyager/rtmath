@@ -160,7 +160,8 @@ BOOST_AUTO_TEST_CASE(ddpar_write_new)
 {
 	std::string check;
 
-	ddPar out = *testPar;
+	ddPar *cln = testPar->clone();
+	ddPar &out = *cln;
 
 	out.doTorques(true);
 	BOOST_CHECK( out.doTorques() == true);
@@ -312,7 +313,7 @@ BOOST_AUTO_TEST_CASE(ddpar_io)
 	istringstream in(sObj);
 	b.read(in);
 
-a.writeFile("ddscat.a.par");
+	a.writeFile("ddscat.a.par");
 //b.writeFile("ddscat.b.par");
 
 	BOOST_CHECK(a==b);

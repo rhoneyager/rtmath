@@ -39,6 +39,7 @@ namespace rtmath {
 		namespace ddParParsers
 		{
 			void idString(ParId id, std::string &key);
+			bool commentString(ParId id, std::string &key);
 
 			// A vert abstract base class
 			class ddParLine
@@ -58,11 +59,11 @@ namespace rtmath {
 				virtual void read(const std::string &val) = 0;
 				virtual void write(std::ostream &out) = 0;
 
-				void setComment(const std::string &cmnt) { _comment = cmnt; }
 				void writeComment(std::ostream &out)
 				{
-					if (_comment.size())
-						out << _comment << std::endl;
+					std::string comment;
+					if (commentString(_id, comment))
+						out << comment << std::endl;
 				}
 				//inline size_t line() const { return _line; }
 				//void line(size_t nl) { _line = nl; }
@@ -78,7 +79,6 @@ namespace rtmath {
 				//size_t _line;
 				ParId _id;
 				bool _endWriteWithEndl;
-				std::string _comment;
 			};
 
 			// Added this as a level of abstraction to prevent code duplication
@@ -400,6 +400,7 @@ namespace rtmath {
 			void write(std::ostream &stream) const;
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;
+			ddPar* clone() const;
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 
@@ -486,9 +487,6 @@ namespace rtmath {
 			mutable std::map<size_t,
 				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
 				_scaPlanes;
-
-			std::map<size_t, std::string> _comments;
-			//std::string _savedata;
 
 			template<class T>
 			T __getSimple(ddParParsers::ParId key) const;

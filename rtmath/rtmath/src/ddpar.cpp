@@ -224,6 +224,22 @@ namespace rtmath {
 			return !(operator==(rhs));
 		}
 
+		ddPar* ddPar::clone() const
+		{
+			ddPar *lhs = new ddPar;
+
+			lhs->_version = _version;
+			
+			std::ostringstream out;
+			write(out);
+			std::string data = out.str();
+			std::istringstream in(data);
+
+			lhs->read(in);
+
+			return lhs;
+		}
+
 		void ddPar::readFile(const std::string &filename, bool overlay)
 		{
 			// Check file existence
@@ -257,37 +273,23 @@ namespace rtmath {
 			out << "' ========= Parameter file for v" << ver << " =================== '" << endl;
 
 			// Loop through and write parameters and comments
-			auto ct = _comments.begin();
-			auto it = _parsedData.begin();
-			size_t line = 2;
-			while (it != _parsedData.end() && ct != _comments.end())
+			for (auto it = _parsedData.begin(); it != _parsedData.end(); it++)
 			{
-				if (_comments.count(line))
-				{
-					//out << _comments.at(line) << endl;
-				} else {
-					// If key is valid for this output version, write it
-					if (it->second->versionValid(_version))
-						it->second->write(out);
-					it++;
-				}
-				line++;
+				// If key is valid for this output version, write it
+				if (it->second->versionValid(_version))
+					it->second->write(out);
 			}
 			for (auto ot = _scaPlanes.begin(); ot != _scaPlanes.end(); ot++)
 			{
-				if (!_comments.count(line))
+				// If key is valid for this output version, write it
+				if (ot->second->versionValid(_version))
 				{
-					// If key is valid for this output version, write it
-					if (ot->second->versionValid(_version))
-					{
-						ostringstream o;
-						// "...for plane" + " #"
-						o << " " << boost::lexical_cast<std::string>(ot->first);
-						string plid = o.str();
-						ot->second->write(out, plid);
-					}
+					ostringstream o;
+					// "...for plane" + " #"
+					o << " " << boost::lexical_cast<std::string>(ot->first);
+					string plid = o.str();
+					ot->second->write(out, plid);
 				}
-				line++;
 			}
 		}
 
@@ -601,10 +603,7 @@ namespace rtmath {
 					{
 						if (*it == ' ') continue;
 						if (*it == '\'') 
-						{ 
-							// Define a comment
-							_comments[line] = lin;
-							comment = lin;
+						{
 							// End line parsing
 							skip = true; 
 							break; 
@@ -639,12 +638,6 @@ namespace rtmath {
 				using namespace rtmath::ddscat::ddParParsers;
 				{
 					boost::shared_ptr<ddParLine> ptr = mapKeys(vals[1]);
-					if (comment.size())
-					{
-						// Comment setting to preserve comment order...
-						ptr->setComment(comment);
-						comment = "";
-					}
 					// Strip trailing whitespace at the end of vals[0].
 					// It confuses some of the parsing functions, 
 					// like ddParSimple<string>
@@ -871,6 +864,66 @@ namespace rtmath {
 				return true;
 			}
 
+			bool commentString(ParId id, std::string &key)
+			{
+				switch (id)
+				{
+				case CMTORQ:
+					key = "'**** Preliminaries ****'";
+					break;
+				case DIMENSION:
+					key = "'**** Initial Memory Allocation ****'";
+					break;
+				case CSHAPE:
+					key = "'**** Target Geometry and Composition ****'";
+					break;
+				case NRFLD:
+					key = "'**** Additional Nearfield calculation? ****'";
+					break;
+				case TOL:
+					key = "'**** Error Tolerance ****'";
+					break;
+				case MXITER:
+					key = "'**** maximum number of iterations allowed ****'";
+					break;
+				case GAMMA:
+					key = "'**** Interaction cutoff parameter for PBC calculations ****'";
+					break;
+				case ETASCA:
+					key = "'**** Angular resolution for calculation of <cos>, etc. ****'";
+					break;
+				case WAVELENGTHS:
+					key = "'**** Wavelengths (micron) ****'";
+					break;
+				case NAMBIENT:
+					key = "'**** Refractive index of ambient medium'";
+					break;
+				case AEFF:
+					key = "'**** Effective Radii (micron) **** '";
+					break;
+				case POLSTATE:
+					key = "'**** Define Incident Polarizations ****'";
+					break;
+				case IWRKSC:
+					key = "'**** Specify which output files to write ****'";
+					break;
+				case NBETA:
+					key = "'**** Prescribe Target Rotations ****'";
+					break;
+				case IWAV:
+					key = "'**** Specify first IWAV, IRAD, IORI (normally 0 0 0) ****'";
+					break;
+				case NSMELTS:
+					key = "'**** Select Elements of S_ij Matrix to Print ****'";
+					break;
+				case CMDFRM:
+					key = "'**** Specify Scattered Directions ****'";
+					break;
+				default:
+					return false;
+				}
+				return true;
+			}
 
 			void pString(const std::string &in, std::string &out)
 			{

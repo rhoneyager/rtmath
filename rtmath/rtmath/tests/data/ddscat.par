@@ -32,9 +32,9 @@
 '**** Define Incident Polarizations ****'
 (0,0) (1.,0.) (0.,0.) = Polarization state e01 (k along x axis)
 2 = IORTH  (=1 to do only pol. state e01; =2 to also do orth. pol. state)
-0 = IWRPOL (=0 to suppress, =1 to write ".pol" file for each (BETA,THETA)
 '**** Specify which output files to write ****'
 1 = IWRKSC (=0 to suppress, =1 to write ".sca" file for each target orient.
+0 = IWRPOL (=0 to suppress, =1 to write ".pol" file for each (BETA,THETA)
 '**** Prescribe Target Rotations ****'
 0. 0. 1  = BETAMI, BETAMX, NBETA  (beta=rotation around a1)
 0. 90. 10  = THETMI, THETMX, NTHETA (theta=angle between a1 and k)
