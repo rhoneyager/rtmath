@@ -90,8 +90,9 @@ BOOST_AUTO_TEST_CASE(pargenerator_generate)
 	p.compressResults = true;
 
 	// Set temp, aeff
-	p.addConstraint(shapeConstraint::create("temp", -10, "C"));
-	p.addConstraint(shapeConstraint::create("aeff", "50:100:350", "um"));
+	p.addConstraint(shapeConstraint::create("temp", 10, "C"));
+	p.addConstraint(shapeConstraint::create("temp", 15, "C"));
+	p.addConstraint(shapeConstraint::create("aeff", "50", "um"));
 
 	// Set shape
 	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());

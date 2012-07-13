@@ -321,66 +321,52 @@ namespace rtmath {
 					
 					// And now to permute everything.....
 					// Set all iterators to begin
+					// map<const string, set<rtmath::units::hasUnits > > vmap;
 					map<string, set<rtmath::units::hasUnits >::iterator> mapit;
 					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
 						mapit[*ot] = vmap[*ot].begin();
-					bool done = false;
-					// Permute until all are at end
-					while (!done)
-					{
-						shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
-						for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
+
+					auto mit = mapit.begin();
+					auto cit = &(mit->second);
+
+					// Loops will break when the end condition is detected
+
+					do {
+						// First, reset the iterators for incrementation
+						if (mit != mapit.begin())
 						{
-							// Explicit, since it's hard to remember by this point
-							double val;
-							string name, units;
-
-							val = ot->second->quant();
-							name = ot->first;
-							units = ot->second->units();
-
-							// Construct permuted object
-							permuted.insert(pair<string,boost::shared_ptr<shapeConstraint> >(
-								name, boost::make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
-						}
-						// As a reminder, (it) is an iterator to the current shape.....
-						boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
-						nshape->shapeConstraints = permuted;
-						nshape->update();
-
-						// Make the iterator
-						boost::shared_ptr<ddParIterator> nit(new ddParIterator(_gen, nshape ));
-						// Add the rotations
-						nit->rots = *rt;
-						// Insert into _elenemts using rvalue move (avoids copying)
-						_elements.insert(nit);
-
-						// Advance the iterators
-						// Advance the "leftmost" iterator until it hits the end. Then, reset it and advance one further.
-						auto mit = mapit.begin();
-						bool good = false;
-						
-						while (!done)
-						{
-							auto &cit = mit->second; // By reference, else the loop will never end
-							cit++;
-							if (cit == vmap[mit->first].end())
+							// Set range of mapits beteewn begin and mit to vmap[first].begin()
+							// This leaves the most significant previously modified iterator 
+							// unchanged, as desired
+							for (auto rit = mapit.begin(); rit != mit; rit++)
 							{
-								cit = vmap[mit->first].begin();
-								mit++; // Increment mit
-								if (mit != mapit.end()) 
-									continue;
-									
-								else 
-								// Can't return here - only the current shape is done...
-									done = true; // Breaks two loops, and moves on to next shape...
-							} else {
-								break; // 'done' breaks out of two loops. Break just exits the while loop
+								rit->second = vmap[rit->first].begin();
 							}
-						} // end of inner while (!done)
+							// And don't forget to reset mit and cit
+							mit = mapit.begin();
+							cit = &(mit->second);
+						}
 
-					} // end of outer while (!done) (done=true passes, break should not)
-					
+						// Do object construction. In separate block for readability
+						{
+						}
+
+						// Now, cit points to the leftmost iterator. Do recursive incrementation.
+						// As the recursion progresses, cit will point to rightward iterators
+						do {
+							(*cit)++;
+							if ((*cit) == vmap[mit->first].end())
+							{
+								mit++;
+								if (mit == mapit.end()) break; // mit at end also ends outer do-while loop
+								cit = &(mit->second);
+							}
+						} while (*cit == vmap[mit->first].end());
+
+					} while (mit != mapit.end());
+
+					throw;
+
 				} // end of for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
 			} // end of for (auto rt = _gen.rots.begin(); rt != _gen.rots.end(); rt++)
 
@@ -399,3 +385,31 @@ BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGeneratorBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGenerator)
 
 
+/*
+							shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
+							for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
+							{
+								// Explicit, since it's hard to remember by this point
+								double val;
+								string name, units;
+
+								val = ot->second->quant();
+								name = ot->first;
+								units = ot->second->units();
+
+								// Construct permuted object
+								permuted.insert(pair<string,boost::shared_ptr<shapeConstraint> >(
+									name, boost::make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
+							}
+							// As a reminder, (it) is an iterator to the current shape.....
+							boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
+							nshape->shapeConstraints = permuted;
+							nshape->update();
+
+							// Make the iterator
+							boost::shared_ptr<ddParIterator> nit(new ddParIterator(_gen, nshape ));
+							// Add the rotations
+							nit->rots = *rt;
+							// Insert into _elenemts using rvalue move (avoids copying)
+							_elements.insert(nit);
+*/
