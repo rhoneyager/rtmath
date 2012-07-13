@@ -1,17 +1,8 @@
 #include "../rtmath/Stdafx.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <memory>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <map>
-#include <set>
-#include <cmath>
-#include <boost/filesystem.hpp>
+
 #include "../rtmath/ddscat/runScripts.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/ddscat/ddpar.h"
 
 namespace rtmath
 {

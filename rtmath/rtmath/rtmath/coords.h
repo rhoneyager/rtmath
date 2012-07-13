@@ -178,37 +178,6 @@ namespace rtmath {
 			return (size_t) x.hash();
 		}
 
-		// Hash stuff goes here (for boost unordered_map)
-
-		// Convenient specializations go here
-/*
-		template<class T>
-		class circular : public cyclic<T>
-		{
-		public:
-			circular(T a, T b) : cyclic(2,0,0)
-			{
-				_coords[0] = a;
-				_coords[1] = b;
-			}
-			//circular() : cyclic(2) {}
-			virtual ~circular () {}
-		};
-
-		template<class T>
-		class spherical : public cyclic<T>
-		{
-		public:
-			spherical(T a, T b, T c) : cyclic(3,0,0,0)
-			{
-				_coords[0] = a;
-				_coords[1] = b;
-				_coords[2] = c;
-			}
-			//spherical() : cyclic(3) {}
-			virtual ~spherical() {}
-		};
-*/
 	} // end namespace coords
 } // end rtmath
 

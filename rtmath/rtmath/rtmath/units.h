@@ -9,9 +9,6 @@
  * correct dimensionality of functions.
  */
 #include <string>
-#include <map>
-#include <memory>
-#include <boost/units/systems/si.hpp>
 
 namespace rtmath {
 	namespace units {

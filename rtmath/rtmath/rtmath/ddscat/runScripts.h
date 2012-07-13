@@ -2,19 +2,8 @@
 /* Provides individual and mass run scripts for ddParGenerator outputs
  */
 
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
-#include <map>
 #include <set>
-#include <vector>
-#include <complex>
-#include <boost/tokenizer.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-#include "ddpar.h"
 
 namespace rtmath {
 	namespace ddscat {

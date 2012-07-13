@@ -5,48 +5,37 @@
 * doesn't have the necessary sophistication to deal with our common usage scenarios.
 */
 
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <map>
 #include <set>
-#include <unordered_set>
-#include <unordered_map>
-#include <vector>
-#include <complex>
-#include <boost/tokenizer.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
+#include <string>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <boost/weak_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+
 #include "ddpar.h"
 #include "shapes.h"
 #include "rotations.h"
 #include "../common_templates.h"
-#include "../coords.h"
 #include "../units.h"
-#include "../error/debug.h"
-#include "../Public_Domain/MurmurHash3.h"
 
 namespace rtmath {
 	namespace ddscat {
 
 		class ddParIteration;
 		class ddParIterator;
-
+		class ddPar;
 		
 
 		class ddParGeneratorBase : public constrainable
