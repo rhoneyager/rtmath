@@ -90,9 +90,8 @@ BOOST_AUTO_TEST_CASE(pargenerator_generate)
 	p.compressResults = true;
 
 	// Set temp, aeff
-	p.addConstraint(shapeConstraint::create("temp", 10, "C"));
-	p.addConstraint(shapeConstraint::create("temp", 15, "C"));
-	p.addConstraint(shapeConstraint::create("aeff", "50", "um"));
+	p.addConstraint(shapeConstraint::create("temp", "-10,-15", "C"));
+	p.addConstraint(shapeConstraint::create("aeff", "50,300", "um"));
 
 	// Set shape
 	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
@@ -100,7 +99,7 @@ BOOST_AUTO_TEST_CASE(pargenerator_generate)
 	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel1.tab"));
 	// Note: comparison at end may fail if multiple source_filenames present, as there is 
 	//	no particular ordering involved. Files are the same otherwise
-	//shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testdiel2.tab"));
 	p.shapes.insert(shp);
 
 
