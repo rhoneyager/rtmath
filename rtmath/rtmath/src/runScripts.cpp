@@ -38,6 +38,7 @@ namespace rtmath
 
 			out << "#!/bin/tcsh" << endl;
 			out << "## Individual run script for " << _uuid << endl << endl;
+			out << "set symlinks=expand" << endl; // allow cd ..
 			out << "mkdir " << tmppath << endl;
 			out << "ln -s " << tmppath << " run" << endl;
 			out << "cp ddscat.par run/" << endl;

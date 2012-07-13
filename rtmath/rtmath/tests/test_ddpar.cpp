@@ -160,136 +160,138 @@ BOOST_AUTO_TEST_CASE(ddpar_write_new)
 {
 	std::string check;
 
-	testPar->doTorques(true);
-	BOOST_CHECK( testPar->doTorques() == true);
+	ddPar out = *testPar;
+
+	out.doTorques(true);
+	BOOST_CHECK( out.doTorques() == true);
 	
-	testPar->setSolnMeth("PBCGST");
-	testPar->getSolnMeth(check);
+	out.setSolnMeth("PBCGST");
+	out.getSolnMeth(check);
 	BOOST_CHECK( check == "PBCGST" );
 
-	testPar->setFFTsolver("GPFAFT");
-	testPar->getFFTsolver(check);
+	out.setFFTsolver("GPFAFT");
+	out.getFFTsolver(check);
 	BOOST_CHECK( check == "GPFAFT" );
 
-	testPar->setCalpha("LATTDR");
-	testPar->getCalpha(check);
+	out.setCalpha("LATTDR");
+	out.getCalpha(check);
 	BOOST_CHECK( check == "LATTDR");
 
-	testPar->setBinning("ALLBIN");
-	testPar->getBinning(check);
+	out.setBinning("ALLBIN");
+	out.getBinning(check);
 	BOOST_CHECK( check == "ALLBIN");
 
-	testPar->Imem(0, 102);
-	testPar->Imem(1, 103);
-	testPar->Imem(2, 104);
-	BOOST_CHECK( testPar->Imem(0) == 102);
-	BOOST_CHECK( testPar->Imem(1) == 103);
-	BOOST_CHECK( testPar->Imem(2) == 104);
+	out.Imem(0, 102);
+	out.Imem(1, 103);
+	out.Imem(2, 104);
+	BOOST_CHECK( out.Imem(0) == 102);
+	BOOST_CHECK( out.Imem(1) == 103);
+	BOOST_CHECK( out.Imem(2) == 104);
 
-	testPar->setShape("ANIFRMFIL");
-	testPar->getShape(check);
+	out.setShape("ANIFRMFIL");
+	out.getShape(check);
 	BOOST_CHECK( check == "ANIFRMFIL" );
 
-	testPar->shpar(0, 99);
-	testPar->shpar(1, 98);
-	testPar->shpar(2, 97);
-	BOOST_CHECK( testPar->shpar(0) == 99);
-	BOOST_CHECK( testPar->shpar(1) == 98);
-	BOOST_CHECK( testPar->shpar(2) == 97);
+	out.shpar(0, 99);
+	out.shpar(1, 98);
+	out.shpar(2, 97);
+	BOOST_CHECK( out.shpar(0) == 99);
+	BOOST_CHECK( out.shpar(1) == 98);
+	BOOST_CHECK( out.shpar(2) == 97);
 
 	// diel.tab stuff
 	// Needs support for multiple diel.tab files
 	//{
 	//}
 
-	testPar->doNearField(true);
-	BOOST_CHECK( testPar->doNearField() == true );
+	out.doNearField(true);
+	BOOST_CHECK( out.doNearField() == true );
 
-	testPar->near(0, 0.1);
-	testPar->near(1, 0.2);
-	testPar->near(2, 0.3);
-	testPar->near(3, 0.4);
-	testPar->near(4, 0.5);
-	testPar->near(5, 0.6);
-	BOOST_CHECK( testPar->near(0) == 0.1);
-	BOOST_CHECK( testPar->near(1) == 0.2);
-	BOOST_CHECK( testPar->near(2) == 0.3);
-	BOOST_CHECK( testPar->near(3) == 0.4);
-	BOOST_CHECK( testPar->near(4) == 0.5);
-	BOOST_CHECK( testPar->near(5) == 0.6);
+	out.near(0, 0.1);
+	out.near(1, 0.2);
+	out.near(2, 0.3);
+	out.near(3, 0.4);
+	out.near(4, 0.5);
+	out.near(5, 0.6);
+	BOOST_CHECK( out.near(0) == 0.1);
+	BOOST_CHECK( out.near(1) == 0.2);
+	BOOST_CHECK( out.near(2) == 0.3);
+	BOOST_CHECK( out.near(3) == 0.4);
+	BOOST_CHECK( out.near(4) == 0.5);
+	BOOST_CHECK( out.near(5) == 0.6);
 
-	testPar->maxTol(2.e-5);
-	BOOST_CHECK( testPar->maxTol() == 2.e-5);
-	testPar->maxIter(301);
-	BOOST_CHECK( testPar->maxIter() == 301);
-	testPar->gamma(7.e-3);
-	BOOST_CHECK( testPar->gamma() == 7.e-3);
-	testPar->etasca(0.425);
-	BOOST_CHECK( testPar->etasca() == 0.425);
+	out.maxTol(2.e-5);
+	BOOST_CHECK( out.maxTol() == 2.e-5);
+	out.maxIter(301);
+	BOOST_CHECK( out.maxIter() == 301);
+	out.gamma(7.e-3);
+	BOOST_CHECK( out.gamma() == 7.e-3);
+	out.etasca(0.425);
+	BOOST_CHECK( out.etasca() == 0.425);
 
 	{
-		testPar->setWavelengths(3100,3200,3,"INV");
+		out.setWavelengths(3100,3200,3,"INV");
 		double min, max;
 		size_t n;
-		testPar->getWavelengths(min,max,n,check);
+		out.getWavelengths(min,max,n,check);
 		BOOST_CHECK( min == 3100 );
 		BOOST_CHECK( max == 3200 );
 		BOOST_CHECK( n == 3 );
 		BOOST_CHECK( check == "INV" );
 
-		testPar->setAeff(600,700,2,"LOG");
-		testPar->getAeff(min,max,n,check);
+		out.setAeff(600,700,2,"LOG");
+		out.getAeff(min,max,n,check);
 		BOOST_CHECK( min == 600 );
 		BOOST_CHECK( max == 700 );
 		BOOST_CHECK( n == 2 );
 		BOOST_CHECK( check == "LOG" );
 	}
 
-	testPar->nAmbient(1.33);
-	BOOST_CHECK( testPar->nAmbient() == 1.33);
+	out.nAmbient(1.33);
+	BOOST_CHECK( out.nAmbient() == 1.33);
 
-	testPar->PolState(0, 1);
-	testPar->PolState(1, 0);
-	testPar->PolState(2, 0);
-	testPar->PolState(3, 1);
-	testPar->PolState(4, 1);
-	testPar->PolState(5, 0);
-	BOOST_CHECK ( testPar->PolState(0) == 1 );
-	BOOST_CHECK ( testPar->PolState(1) == 0 );
-	BOOST_CHECK ( testPar->PolState(2) == 0 );
-	BOOST_CHECK ( testPar->PolState(3) == 1 );
-	BOOST_CHECK ( testPar->PolState(4) == 1 );
-	BOOST_CHECK ( testPar->PolState(5) == 0 );
+	out.PolState(0, 1);
+	out.PolState(1, 0);
+	out.PolState(2, 0);
+	out.PolState(3, 1);
+	out.PolState(4, 1);
+	out.PolState(5, 0);
+	BOOST_CHECK ( out.PolState(0) == 1 );
+	BOOST_CHECK ( out.PolState(1) == 0 );
+	BOOST_CHECK ( out.PolState(2) == 0 );
+	BOOST_CHECK ( out.PolState(3) == 1 );
+	BOOST_CHECK ( out.PolState(4) == 1 );
+	BOOST_CHECK ( out.PolState(5) == 0 );
 
-	testPar->OrthPolState(1);
-	BOOST_CHECK( testPar->OrthPolState() == 1);
-	testPar->writePol(true);
-	BOOST_CHECK( testPar->writePol() == true);
-	testPar->writeSca(true);
-	BOOST_CHECK( testPar->writeSca() == true);
+	out.OrthPolState(1);
+	BOOST_CHECK( out.OrthPolState() == 1);
+	out.writePol(true);
+	BOOST_CHECK( out.writePol() == true);
+	out.writeSca(true);
+	BOOST_CHECK( out.writeSca() == true);
 
 	rotations rots( 1, 1, 1, 30, 89, 11, 2, 3, 4 ), rotscheck;
-	testPar->setRots(rots);
-	testPar->getRots(rotscheck);
+	out.setRots(rots);
+	out.getRots(rotscheck);
 	BOOST_CHECK( rots == rotscheck );
 
-	testPar->firstOri(0, 1);
-	testPar->firstOri(1, 1);
-	testPar->firstOri(2, 2);
-	BOOST_CHECK ( testPar->firstOri(0) == 1 );
-	BOOST_CHECK ( testPar->firstOri(1) == 1 );
-	BOOST_CHECK ( testPar->firstOri(2) == 2 );
+	out.firstOri(0, 1);
+	out.firstOri(1, 1);
+	out.firstOri(2, 2);
+	BOOST_CHECK ( out.firstOri(0) == 1 );
+	BOOST_CHECK ( out.firstOri(1) == 1 );
+	BOOST_CHECK ( out.firstOri(2) == 2 );
 
-	testPar->setCMDFRM("TFRAME");
-	testPar->getCMDFRM(check);
+	out.setCMDFRM("TFRAME");
+	out.getCMDFRM(check);
 	BOOST_CHECK( check == "TFRAME" );
 
-	BOOST_CHECK ( testPar->numPlanes() == 2 );
+	BOOST_CHECK ( out.numPlanes() == 2 );
 
 	{
-		testPar->setPlane(2, 3, 4, 5, 6);
+		out.setPlane(2, 3, 4, 5, 6);
 		double phi, thetan_min, thetan_max, dtheta;
-		testPar->getPlane(2, phi, thetan_min, thetan_max, dtheta);
+		out.getPlane(2, phi, thetan_min, thetan_max, dtheta);
 		BOOST_CHECK( phi == 3 );
 		BOOST_CHECK( thetan_min == 4 );
 		BOOST_CHECK( thetan_max == 5 );
@@ -310,7 +312,7 @@ BOOST_AUTO_TEST_CASE(ddpar_io)
 	istringstream in(sObj);
 	b.read(in);
 
-//a.writeFile("ddscat.a.par");
+a.writeFile("ddscat.a.par");
 //b.writeFile("ddscat.b.par");
 
 	BOOST_CHECK(a==b);
