@@ -32,24 +32,38 @@ namespace rtmath {
 
 			from_file::from_file()
 			{
+				_constructGraph();
 			}
 
 			from_file::~from_file()
 			{
 			}
 
-			void from_file::_constructGraph()
+			void from_file::_constructGraph(bool makegraph)
 			{
-				shapeModifiable::_constructGraph();
+				using namespace rtmath::graphs;
+				//shapeModifiable::_constructGraph(false);
+				_createVertex("CSHAPE", true);
+				_set("CSHAPE", 0, "FROM_FILE"); // Need to do it here since this has no dependencies
+				if (makegraph)
+					_graph = boost::shared_ptr<graph>(new graph(_vertices));
 			}
 
 			void from_file::run(const std::string &id)
 			{
+				/*
+				if (id == "CSHAPE")
+				{
+					// Should be set in from_file::_constructGraph
+					_set("CSHAPE", 0, "FROM_FILE");
+				}
+				*/
 				shapeModifiable::run(id);
 			}
 
 			bool from_file::runSupported(const std::string &id)
 			{
+				if (id == "CSHAPE") return true;
 				return shapeModifiable::runSupported(id);
 			}
 

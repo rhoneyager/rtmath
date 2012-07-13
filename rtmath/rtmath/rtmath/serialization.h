@@ -60,13 +60,25 @@ namespace rtmath {
 			path pBase(outfile), pXML;
 			string cmeth;
 
+			// If passed a directory, attach desired suffix
+			if (boost::filesystem::is_directory(pBase))
+			{
+				if (dirsuffix.size())
+				{
+					pBase = pBase / dirsuffix;
+				} else {
+					throw rtmath::debug::xPathExistsWrongType(outfile.c_str());
+				}
+			}
+
 			// Check for compression
 			if (autoCompress)
 			{
-				if (select_compression(outfile, cmeth))
+				if (select_compression(pBase.string(), cmeth))
 				{
 					ostringstream sCompressed;
-					sCompressed << outfile << "." << cmeth;
+					// Note: boost 1.49 or 1.50 implements << operator.  1.48 and below do not.
+					sCompressed << pBase.string() << "." << cmeth;
 					pXML = path(sCompressed.str());
 				} else {
 					pXML = pBase;
@@ -129,6 +141,8 @@ namespace rtmath {
 			string sTarget, cmeth;
 			if (is_directory(pBase))
 			{
+				if (dirsuffix.size() == 0)
+					throw rtmath::debug::xPathExistsWrongType(infile.c_str());
 				pTargetBase = pBase / dirsuffix;
 			} else {
 				pTargetBase = pBase;

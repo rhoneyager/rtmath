@@ -140,6 +140,7 @@ namespace rtmath
 			
 			path p(name);
 			path ext = p.extension(); // Note: has leading dot
+			if (ext.string() == "") ext = p; // Avoids bug when path has no dot
 			std::string sext = ext.string().substr(1);
 
 			// First, look at extension to see if method is already set

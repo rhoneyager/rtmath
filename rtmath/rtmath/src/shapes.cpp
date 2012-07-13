@@ -339,8 +339,8 @@ namespace rtmath {
 
 			// AEFF
 			{
-				it = shapeConstraints.find("AEFF");
-				TASSERT(it != shapeConstraints.end());
+				it = shapeConstraints.find("aeff");
+				if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need aeff for ddscat.par");
 				std::string units;
 				double val, aeff;
 				units = it->second->units;
@@ -354,8 +354,8 @@ namespace rtmath {
 
 			// Wavelength
 			{
-				it = shapeConstraints.find("AEFF");
-				TASSERT(it != shapeConstraints.end());
+				it = shapeConstraints.find("aeff");
+				if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need aeff for ddscat.par");
 				std::string units;
 				double val, wvlen;
 				units = it->second->units;
@@ -433,7 +433,7 @@ namespace rtmath {
 			return vert;
 		}
 
-		void shapeModifiable::_constructGraph()
+		void shapeModifiable::_constructGraph(bool makegraph)
 		{
 			// Establish the vertices and construct the graph used in the shape 
 			// parameter update process
@@ -489,7 +489,8 @@ namespace rtmath {
 			
 
 			// Create the graph from the vertices
-			_graph = boost::shared_ptr<graph>(new graph(_vertices));
+			if (makegraph)
+				_graph = boost::shared_ptr<graph>(new graph(_vertices));
 		}
 
 		void shapeModifiable::update()

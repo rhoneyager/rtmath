@@ -8,16 +8,24 @@ namespace rtmath
 {
 	namespace ddscat {
 
-		void runScriptIndiv::write(const std::string &path) const
+		void runScriptIndiv::write(const std::string &spath) const
 		{
 			using namespace boost::filesystem;
 			using namespace std;
-			boost::filesystem::path p(path);
-			boost::filesystem::path base, baseabs, script, tmpgdir, tmpdir, tmppath;
-			if (is_directory(p)) base = p;
-			else base = p.parent_path();
-			boost::filesystem::absolute(baseabs, base);
-			script = base / "doRun.csh";
+			const string dirsuffix = "doRun.csh";
+
+			path p(spath);
+			if (boost::filesystem::is_directory(p))
+			{
+				if (dirsuffix.size())
+				{
+					p = p / dirsuffix;
+				} else {
+					throw rtmath::debug::xPathExistsWrongType(spath.c_str());
+				}
+			}
+
+			boost::filesystem::path tmpgdir, tmpdir, tmppath;
 
 			// Want to calc results in a temp dir. Avoids running ddscat over nfs.....
 			tmpgdir = boost::filesystem::temp_directory_path();
@@ -26,32 +34,31 @@ namespace rtmath
 			tmpdir = boost::filesystem::path(tmpdirname);
 			tmppath = tmpgdir / tmpdir;
 
-			ofstream out(script.string().c_str());
+			ofstream out(p.string().c_str());
 
 			out << "#!/bin/tcsh" << endl;
 			out << "## Individual run script for " << _uuid << endl << endl;
 			out << "mkdir " << tmppath << endl;
 			out << "ln -s " << tmppath << " run" << endl;
-			out << "cp ddscat.par " << tmppath << endl;
-			out << "cp diel.tab " << tmppath << endl;
+			out << "cp ddscat.par run/" << endl;
+			out << "cp diel.tab run/" << endl;
 
-			if (exists(boost::filesystem::path(base/"shape.dat")))
-				out << "cp shape.dat " << tmppath << endl;
-			if (exists(boost::filesystem::path(base/"RUNDEFS.txt")))
-				out << "cp RUNDEFS.txt " << tmppath << endl;
+			if (exists(boost::filesystem::path(p/"shape.dat")))
+				out << "cp shape.dat run/" << endl;
+			out << "cp ddparIterator.xm* run/" << endl;
 			out << endl;
-			out << "cd " << tmppath << endl;
+			out << "cd run" << endl;
 			out << "ddscat\n";
-			out << "cd " << baseabs << endl;
+			out << "cd .." << endl;
 			
 			// TODO: compute stats based on target.out
 			if (_gen.shapeStats)
-				out << "rtmath-statcalc -i " << tmppath << " -o " << tmppath << endl;
+				out << "rtmath-statcalc -i run/ -o run/" << endl;
 
-			out << "tar cjf rtmath-ddscat-indrun-" << _uuid << ".tar.bz2 " << tmppath << "/*\n";
+			out << "tar cjf rtmath-ddscat-indrun-" << _uuid << ".tar.bz2 run/*\n";
 			
 			// If desired, send to aqua
-			if (_gen.doExport)
+			if (_gen.doExport && _gen.exportLoc.size())
 				out << "cp " << _uuid << ".tar.bz2 " << _gen.exportLoc << endl;
 
 			// Clean up temporary path
@@ -77,25 +84,35 @@ namespace rtmath
 				_subdirs.insert(*it);
 		}
 
-		void runScriptGlobal::write(const std::string &path) const
+		void runScriptGlobal::write(const std::string &spath) const
 		{
 			// Take path. Produce global run script titles doAllRuns.csh
 			using namespace boost::filesystem;
 			using namespace std;
-			boost::filesystem::path p(path);
-			boost::filesystem::path base, baseabs, script, tmpgdir, tmpdir, tmppath;
-			if (is_directory(p)) base = p;
-			else base = p.parent_path();
-			boost::filesystem::absolute(baseabs, base);
-			script = base / "doAllRuns.csh";
 
-			ofstream out(script.string().c_str());
+			const string dirsuffix = "doAllRuns.csh";
+
+			path p(spath);
+			if (boost::filesystem::is_directory(p))
+			{
+				if (dirsuffix.size())
+				{
+					p = p / dirsuffix;
+				} else {
+					throw rtmath::debug::xPathExistsWrongType(spath.c_str());
+				}
+			}
+
+			ofstream out(p.string().c_str());
 
 			out << "#!/bin/tcsh" << endl;
 			out << "## Multiple run script " << endl << endl;
 
 			for (auto it = _subdirs.begin(); it != _subdirs.end(); it++)
+			{
+				out << "echo " << *it << endl;
 				out << "tcsh " << *it << "/doRun.csh" << endl;
+			}
 
 			out << endl << endl;
 		}

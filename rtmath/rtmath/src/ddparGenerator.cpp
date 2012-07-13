@@ -82,11 +82,11 @@ namespace rtmath {
 				// Write ddscat.par
 				(*it)->exportDDPAR( (pdir/"ddscat.par").string() );
 				// Write run definitions
-				rtmath::serialization::write<ddParIterator>(**it,(pdir).string());
+				rtmath::serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
 				//ddParIterator::write(**it, (pdir).string() );
 				// Write individual run script
 				runScriptIndiv iscript(dirname, *this);
-				iscript.write(dirname);
+				iscript.write((pdir).string());
 				// Lastly, add this path into the global run script listing...
 				dirs.insert(dirname);
 			}
@@ -126,6 +126,7 @@ namespace rtmath {
 
 			double fGHz;
 			auto it = shape->shapeConstraints.find("freq");
+			if (it == shape->shapeConstraints.end()) throw rtmath::debug::xBadInput("Need freq for diel.tab");
 			val = *(it->second->pset.begin());
 			units = it->second->units;
 			units::conv_spec fconv(units, "GHz");
@@ -133,6 +134,7 @@ namespace rtmath {
 
 			double TK;
 			it = shape->shapeConstraints.find("temp");
+			if (it == shape->shapeConstraints.end()) throw rtmath::debug::xBadInput("Need temp for diel.tab");
 			val = *(it->second->pset.begin());
 			units = it->second->units;
 			units::conv_temp tconv(units, "K");
@@ -141,7 +143,7 @@ namespace rtmath {
 			refract::mice(fGHz, TK, m);
 			refract::writeDiel(filename,m);
 
-			GETOBJKEY();
+			//GETOBJKEY();
 			// TODO: add support for different refractive index calculators and 
 			// for different materials (like iron)
 		}

@@ -162,7 +162,7 @@ namespace rtmath {
 		protected:
 			// Establish basic vertices and construct graph. Will be overridden by shape specializations,
 			// but they will still call this function as a base.
-			virtual void _constructGraph();
+			virtual void _constructGraph(bool makegraph = true);
 			// Convenient functions to create a vertex and assign a name in _vertexMap
 			virtual boost::shared_ptr<rtmath::graphs::vertex> 
 				_createVertex(const std::string &name, bool OR = false);
@@ -225,7 +225,7 @@ namespace rtmath {
 				// the associated generation.
 				// field name is "source_filename"
 			protected:
-				virtual void _constructGraph();
+				virtual void _constructGraph(bool makegraph = true);
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
 				friend class boost::serialization::access;
