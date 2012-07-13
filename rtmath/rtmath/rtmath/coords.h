@@ -100,9 +100,9 @@ namespace rtmath {
 				if (start >= _coords.size()) throw rtmath::debug::xBadInput("start");
 				if (len == 0) len = _coords.size() - start;
 				if (start + len > _coords.size()) throw rtmath::debug::xBadInput("len");
-				res.resize(2,len,1);
+				res.resize(2,1,len);
 				for (size_t i=start; i<len; i++)
-					res.set( boost::lexical_cast<double>(_coords[i]) ,2,i,0);
+					res.set( boost::lexical_cast<double>(_coords[i]) ,2,0,i);
 			}
 
 			virtual size_t size() const

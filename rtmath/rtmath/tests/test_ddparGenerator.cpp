@@ -96,10 +96,10 @@ BOOST_AUTO_TEST_CASE(pargenerator_generate)
 
 	// Set shape
 	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
-	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testshp1.dat"));
-	// Note: comparison at end may fail if multiple source_filenames present, as there is 
-	//	no particular ordering involved. Files are the same otherwise
-	shp->addConstraint(shapeConstraint::create("source_filename", 0, "testshp2.dat"));
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, 
+		(globals::instance()->pTestData / "2mm12shape.txt").string() ));
+	shp->addConstraint(shapeConstraint::create("source_filename", 0, 
+		(globals::instance()->pTestData / "ddscat-snow-18-3-7.shp").string() ));
 	p.shapes.insert(shp);
 
 

@@ -289,84 +289,13 @@ namespace rtmath {
 
 		}
 
-		void shape::write(const std::string &fname) const
+		void shape::write(const std::string &fname, const ddPar &ddbase) const
 		{
 			// This member just prevents a pure virtual shape. It does nothing, as at this level 
 			// there is no knowledge of how to write the shape. Execution should never reach here in a 
 			// proper implementation. canWrite prevents most cases, and if the derived class is writable,
 			// it should override this.
 			throw rtmath::debug::xUnimplementedFunction();
-		}
-
-		bool shape::useDDPAR() const
-		{
-			return true;
-		}
-
-		void shape::setDDPAR(ddPar &out) const
-		{
-			// Here, set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF, Wavelength
-
-			// CSHAPE - shape type. If not present, select FROM_FILE
-			// This is a string, not a number, but it is hidden in shapeConstraints 
-			// since it was easier to releverage the iteration
-			auto it = shapeConstraints.find("CSHAPE");
-			if (it != shapeConstraints.end()) 
-			{
-				std::string shp = it->second->units;
-				out.setShape(shp);
-			} else {
-				throw rtmath::debug::xBadInput("Incomplete shape. No CSHAPE set!");
-				//out.setShape("FROM_FILE");
-			}
-
-			// SHPAR1, SHPAR2, SHPAR3
-			it = shapeConstraints.find("SHPAR1");
-			if (it != shapeConstraints.end()) 
-			{
-				out.shpar(0,*(it->second->pset.begin()));
-				it = shapeConstraints.find("SHPAR2");
-				TASSERT(it != shapeConstraints.end());
-				out.shpar(1,*(it->second->pset.begin()));
-				it = shapeConstraints.find("SHPAR3");
-				TASSERT(it != shapeConstraints.end());
-				out.shpar(2,*(it->second->pset.begin()));
-			} else {
-				out.shpar(0,1.0);
-				out.shpar(1,1.0);
-				out.shpar(2,1.0);
-			}
-
-			// AEFF
-			{
-				it = shapeConstraints.find("aeff");
-				if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need aeff for ddscat.par");
-				std::string units;
-				double val, aeff;
-				units = it->second->units;
-				val = *(it->second->pset.begin());
-				// Convert
-				rtmath::units::conv_alt cnv(units, "um");
-				aeff = cnv.convert(val);
-
-				out.setAeff(aeff,aeff,1,"LIN");
-			}
-
-			// Wavelength
-			{
-				it = shapeConstraints.find("aeff");
-				if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need aeff for ddscat.par");
-				std::string units;
-				double val, wvlen;
-				units = it->second->units;
-				val = *(it->second->pset.begin());
-				// Convert
-				rtmath::units::conv_spec cnv(units, "um");
-				wvlen = cnv.convert(val);
-
-				out.setWavelengths(wvlen,wvlen,1,"LIN");
-			}
-
 		}
 
 		shapeModifiable::shapeModifiable()
@@ -591,6 +520,10 @@ namespace rtmath {
 			mappings = _vertexMap;
 		}
 
+		void shapeModifiable::setRots(boost::shared_ptr<rotations> rots)
+		{
+			_rots = rots;
+		}
 	}
 }
 
@@ -603,4 +536,5 @@ BOOST_CLASS_EXPORT(rtmath::ddscat::shapes::from_file)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::constrainable)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shape)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeModifiable)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_ddscat)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_file)

@@ -75,15 +75,15 @@ namespace rtmath {
 				path pdir = bpath / dirname;
 				create_directory(pdir);
 
-				// Write diel.tab
-				(*it)->exportDiel( (pdir/"diel.tab").string() );
-				// Write shape.dat (if needed)
-				(*it)->exportShape( (pdir/"shape.dat").string() );
-				// Write ddscat.par
-				(*it)->exportDDPAR( (pdir/"ddscat.par").string() );
+				// Have shape handle the writing information
+				// Not all need diel.tab, ddscat.par or a standard shape.dat file
+				(*it)->shape->write( pdir.string(), base );
+
 				// Write run definitions
 				rtmath::serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
-				//ddParIterator::write(**it, (pdir).string() );
+
+				// TODO: have shape handle this as well, as application names differ...
+				GETOBJKEY();
 				// Write individual run script
 				runScriptIndiv iscript(dirname, *this);
 				iscript.write((pdir).string());
@@ -108,77 +108,6 @@ namespace rtmath {
 			if (!exists(ddparfilename)) throw rtmath::debug::xMissingFile(ddparfilename.c_str());
 			rtmath::ddscat::ddPar ddfile(ddparfilename);
 			base = ddfile;
-		}
-
-		void ddParIterator::exportShape(const std::string &filename) const
-		{
-			if (shape->canWrite())
-				shape->write(filename);
-		}
-
-		void ddParIterator::exportDiel(const std::string &filename) const
-		{
-			using namespace std;
-			// Figure out the frequency and temperature in GHz and K.
-			complex<double> m;
-			double val;
-			string units;
-
-			double fGHz;
-			auto it = shape->shapeConstraints.find("freq");
-			if (it == shape->shapeConstraints.end()) throw rtmath::debug::xBadInput("Need freq for diel.tab");
-			val = *(it->second->pset.begin());
-			units = it->second->units;
-			units::conv_spec fconv(units, "GHz");
-			fGHz = fconv.convert(val);
-
-			double TK;
-			it = shape->shapeConstraints.find("temp");
-			if (it == shape->shapeConstraints.end()) throw rtmath::debug::xBadInput("Need temp for diel.tab");
-			val = *(it->second->pset.begin());
-			units = it->second->units;
-			units::conv_temp tconv(units, "K");
-			TK = tconv.convert(val);
-
-			refract::mice(fGHz, TK, m);
-			refract::writeDiel(filename,m);
-
-			//GETOBJKEY();
-			// TODO: add support for different refractive index calculators and 
-			// for different materials (like iron)
-		}
-
-		void ddParIterator::exportDDPAR(ddPar &out) const
-		{
-			if (!_genp) return;
-			const ddParGenerator &_gen = *_genp;
-
-			if (shape->useDDPAR() == false) return;
-			// Most of the ddPar file will be filled in from the base ddParGenerator class,
-			// with a few overrides from the iterator. Some of the properties come from the 
-			// shapeModifiable member, such as effective radius.
-
-			// Starting with the base (provided by ddParGenerator)
-			out = _gen.base;
-
-			// Apply iterator-specific properties
-			// Rotations
-			rots->out(out);
-
-			// Also apply the shape properties to the ddPar output
-			// This means: set CSHAPE, SHPAR1, SHPAR2, SHPAR3, AEFF
-			// Wavelength
-			shape->setDDPAR(out);
-
-			// And that's really it for the ddscat.par file...
-		}
-
-		void ddParIterator::exportDDPAR(const std::string &filename) const
-		{
-			if (shape->useDDPAR() == false) return;
-			ddPar outpar;
-			exportDDPAR(outpar);
-			outpar.writeFile(filename);
 		}
 
 		ddParIterator::ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp)
@@ -347,11 +276,13 @@ namespace rtmath {
 							nshape->shapeConstraints = permuted;
 							nshape->update();
 
+							nshape->setRots(*rt);
+
 							// Make the iterator
 							boost::shared_ptr<ddParIterator> nit(new ddParIterator(_gen, nshape ));
 							// Add the rotations
 							nit->rots = *rt;
-							// Insert into _elenemts using rvalue move (avoids copying)
+							// Insert into _elements using rvalue move (avoids copying)
 							_elements.insert(nit);
 						}
 

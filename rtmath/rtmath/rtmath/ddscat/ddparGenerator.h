@@ -106,10 +106,12 @@ namespace rtmath {
 			// Constructor takes the pointer so we don't have to copy every conceivable property
 			ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp);
 
+			/* // These are subsumed by the specific shape
 			void exportShape(const std::string &filename) const;
 			void exportDiel(const std::string &filename) const;
 			void exportDDPAR(ddPar &out) const;
 			void exportDDPAR(const std::string &filename) const;
+			*/
 
 			// The shape is a special clone of one of the ddParGenerator shapes, with no iteration over
 			// values - only one element in each shapeConstraint entry.

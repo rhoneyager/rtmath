@@ -80,6 +80,12 @@
     <None Include="data\ddscat.par">
       <Filter>Resource Files\Data</Filter>
     </None>
+    <None Include="data\2mm12shape.txt">
+      <Filter>Resource Files\Data</Filter>
+    </None>
+    <None Include="data\ddscat-snow-18-3-7.shp">
+      <Filter>Resource Files\Data</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="globals.h">

@@ -6,6 +6,9 @@
 
 #pragma once
 
+#pragma warning( push )
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+
 // Needed for compatability with older boost versions
 #define BOOST_FILESYSTEM_VERSION 3
 
@@ -57,3 +60,5 @@
 
 // Link with ROOT on MSVC
 #include "ROOTlink.h"
+
+#pragma warning( pop )

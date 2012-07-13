@@ -4,6 +4,8 @@
 
 #pragma once
 
+#pragma warning( push )
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #include <algorithm>
 #include <bitset>
 #include <cstdlib>
@@ -60,6 +62,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#pragma warning( pop )
 
 #pragma warning( push )
 #pragma warning( disable : 4996 )

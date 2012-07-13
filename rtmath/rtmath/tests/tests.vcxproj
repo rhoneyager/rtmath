@@ -48,6 +48,7 @@
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -86,6 +87,8 @@
     <ClCompile Include="test_units.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\2mm12shape.txt" />
+    <None Include="data\ddscat-snow-18-3-7.shp" />
     <None Include="data\ddscat.par" />
     <None Include="data\rtmath.conf" />
     <None Include="data\testing.conf" />

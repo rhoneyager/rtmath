@@ -1,4 +1,7 @@
 #pragma once
+//#pragma warning( push )
+#pragma warning(disable:4503) // decorated name length exceeded. with boost bimap mpl
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -28,6 +31,7 @@
 #include "../common_templates.h"
 #include "../depGraph.h"
 #include "../error/error.h"
+#include "rotations.h"
 
 //double _d; // Interdipole spacing, in um
 //double _V; // Volume, in um^3
@@ -116,9 +120,7 @@ namespace rtmath {
 			virtual ~shape();
 			virtual shape* clone() const { shape* ns = new shape(*this); return ns; }
 			virtual bool canWrite() const { return false; }
-			virtual void write(const std::string &fname) const;
-			virtual bool useDDPAR() const;
-			virtual void setDDPAR(ddPar &out) const;
+			virtual void write(const std::string &fname, const ddPar &ddbase) const;
 			// Nothing done with these until iterator evaluation. They are split, and THEN
 			// the mappings and vertexRunnable code is executed
 			shapeConstraintContainer &shapeConstraints;
@@ -134,12 +136,9 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
-					//ar & BOOST_SERIALIZATION_NVP(shapeConstraints);
 					ar & boost::serialization::make_nvp("densities", _densities);
 				}
 		};
-
-		//BOOST_CLASS_EXPORT_GUID(shape, "shape")
 
 		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
 		{
@@ -159,6 +158,8 @@ namespace rtmath {
 			void getVertices(vertexMap &mappings);
 			// Search for vertex by name
 			virtual bool mapVertex(const std::string &idstr, boost::shared_ptr<rtmath::graphs::vertex> &vertex);
+			// Set rotation information
+			void setRots(boost::shared_ptr<rotations> rots);
 		protected:
 			// Establish basic vertices and construct graph. Will be overridden by shape specializations,
 			// but they will still call this function as a base.
@@ -177,6 +178,7 @@ namespace rtmath {
 			std::set< boost::shared_ptr<rtmath::graphs::vertex> > _vertices;
 			vertexMap _vertexMap;
 			boost::shared_ptr<rtmath::graphs::graph> _graph;
+			boost::shared_ptr<rotations> _rots;
 			friend class boost::serialization::access;
 		private:
 			template<class Archive>
@@ -186,44 +188,61 @@ namespace rtmath {
 					// saving these implies need to save lambda function linkage.....?
 					GETOBJKEY();
 					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shape);
+					ar & boost::serialization::make_nvp("rotations", _rots);
 				}
 		protected:
 			// The vertexRunnable overrides
 			virtual void run(const std::string &id = "");
 			virtual bool runSupported(const std::string &id = "");
 		};
-		
-		//BOOST_CLASS_EXPORT_GUID(shapeModifiable, "shapeModifiable")
-
-		// In ellipsoid, 1/4 = (x/d*shp1)^2 + (y/d*shp2)^2 + (z/d*shp3)^2
-		// In cylinder, shp1 = length/d, shp2 = diam/d,
-		//		shp3 = 1 for a1 || x, 2 for a1|| y, 3 for a1 || z
-		// In hex_prism, shp1 = length of prism / d == dist betw hex faces / d
-		//				shp2 = dist betw opp vertices on one hex face / d = 2 * side length / d
-		//				shp3 = 1 for a1 || x and a2 || y, ..... (see documentation)
-		// shapeModifiable class specializations allow for shape param setting and provide other 
-		// vars, like mean radius.		
 
 		namespace shapes
 		{
-			// from_file provides a target for ddscat shape.dat file processing. provides its 
-			// own dipole spacing vertex, which basically goes unused.
+			// _ddscat is a class that provides some of the writing functions for file output.
+			class from_ddscat : public shapeModifiable
+			{
+			protected:
+				from_ddscat();
+				virtual ~from_ddscat();
+			public:
+				virtual bool canWrite() const { return true; }
+				// This write function is not the same as serialization
+				// It will write the necessary ddscat files into the directory.
+				// It is implemented to replace ddParIterator's routines, as my code can 
+				// also work with tmatrix.
+				virtual void write(const std::string &base, const ddPar &ddbase) const;
+
+				// The component writing functions
+				void exportDiel(const std::string &filename) const;
+				//void exportShape(const std::string &filename) const;
+				void exportDDPAR(ddPar &out) const;
+				void exportDDPAR(const std::string &filename, const ddPar &ddbase) const;
+
+			protected:
+				friend class boost::serialization::access;
+			private:
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeModifiable);
+				}
+			};
+
+			// from_file provides a target for ddscat shape.dat file processing.
 			// TODO: allow for stretching/squeezing and aspect ratio manipulation
 			//       needs knowledge of shape file statistics (like length, width, depth)
 			//       Should this be in another class?
-			class from_file : public shapeModifiable
+			class from_file : public from_ddscat
 			{
 			public:
 				from_file();
 				virtual ~from_file();
 				virtual from_file* clone() const { from_file *ns = new from_file(*this); return ns; }
 				virtual bool canWrite() const { return true; }
-				// Function to write shape.dat, not to be confused with static xml write
-				virtual void write(const std::string &fname) const;
-				// shape.dat file source is stored in shapeConstraints, again.
-				// It is hidden in a units field. This allows splitting of multiple files and 
-				// the associated generation.
-				// field name is "source_filename"
+				// Function to write shape.dat
+				void exportShape(const std::string &filename) const;
+				// General 'write everything' function
+				virtual void write(const std::string &base, const ddPar &ddbase) const;
 			protected:
 				virtual void _constructGraph(bool makegraph = true);
 				virtual void run(const std::string &id = "");
@@ -233,27 +252,12 @@ namespace rtmath {
 				template<class Archive>
 					void serialize(Archive & ar, const unsigned int version)
 					{
-						ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeModifiable);
+						ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(from_ddscat);
 					}
 				};
 
-			//BOOST_CLASS_EXPORT_GUID(from_file, "from_file")
-
 			/*
-			// ddscat_dep provides the interdipole spacing vertex. Not used in tmatrix-derivations.
-			class ddscat_dep : public shapeModifiable
-			{
-			protected:
-				ddscat_dep();
-				virtual ~ddscat_dep();
-				virtual shape* clone() const { ddscat_dep *ns = new ddscat_dep(*this); return ns; }
-				virtual void _constructGraph();
-			protected:
-				virtual void run(const std::string &id = "");
-				virtual bool runSupported(const std::string &id = "");
-			};
-
-			class ellipsoid : public ddscat_dep
+			class ellipsoid : public _ddscat
 			{
 			public:
 				ellipsoid();
@@ -276,5 +280,7 @@ namespace rtmath {
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::constrainable)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
 
+//#pragma warning( pop )
