@@ -48,6 +48,9 @@ namespace rtmath {
 		class runScriptIndiv;
 		class runScriptGlobal;
 
+		class shapeConstraint;
+		typedef boost::shared_ptr<const shapeConstraint> shapeConstraintPtr;
+
 		class shapeConstraint
 		{
 		public:
@@ -60,11 +63,11 @@ namespace rtmath {
 				const std::string &varname,
 				double psetShorthand,
 				const std::string &units = "");
-			static boost::shared_ptr<shapeConstraint> create(
+			static shapeConstraintPtr create(
 				const std::string &varname,
 				const std::string &psetShorthand,
 				const std::string &units = "");
-			static boost::shared_ptr<shapeConstraint> create(
+			static shapeConstraintPtr create(
 				const std::string &varname,
 				double psetShorthand,
 				const std::string &units = "");
@@ -95,24 +98,24 @@ namespace rtmath {
 
 		// Using a map because it provides easy access to the constraint var name,
 		// really making it an indexed set
-		typedef std::multimap< std::string, boost::shared_ptr<shapeConstraint> > shapeConstraintContainer;
+		typedef std::multimap< std::string, shapeConstraintPtr > shapeConstraintContainer;
 
-		void addConstraint(shapeConstraintContainer &container, boost::shared_ptr<shapeConstraint> constraint);
+		void addConstraint(shapeConstraintContainer &container, shapeConstraintPtr constraint);
 
 		class constrainable
 		{
 		protected:
 			constrainable(){}
-			shapeConstraintContainer ___sbase;
 		public:
 			virtual ~constrainable() {}
-			void addConstraint(boost::shared_ptr<shapeConstraint>);
+			void addConstraint(shapeConstraintPtr);
+			shapeConstraintContainer shapeConstraints;
 			friend class boost::serialization::access;
 		private:
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & boost::serialization::make_nvp("shapeConstraints", ___sbase);
+					ar & boost::serialization::make_nvp("shapeConstraints", shapeConstraints);
 				}
 		};
 
@@ -126,7 +129,7 @@ namespace rtmath {
 			virtual void write(const std::string &fname, const ddPar &ddbase) const;
 			// Nothing done with these until iterator evaluation. They are split, and THEN
 			// the mappings and vertexRunnable code is executed
-			shapeConstraintContainer &shapeConstraints;
+			//shapeConstraintContainer &shapeConstraints;
 		protected:
 			// Densities of different anisotropic materials. Used in mass and inertia calculations.
 			std::map<size_t, double> _densities;

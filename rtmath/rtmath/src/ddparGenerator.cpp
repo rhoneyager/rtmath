@@ -22,8 +22,7 @@ namespace rtmath {
 			genMassScript(true),
 			shapeStats(false),
 			registerDatabase(false),
-			doExport(true),
-			shapeConstraintsGlobal(___sbase)
+			doExport(true)
 		{
 
 		}
@@ -62,6 +61,7 @@ namespace rtmath {
 
 			// Now, iterate over the conbinations of initial parameters.
 			ddParIteration itSetup(*this);
+			//rtmath::serialization::write<ddParIteration>(itSetup, "debugIteration.xml");
 			ddParIteration::const_iterator it;
 			for (it = itSetup.begin(); it != itSetup.end(); it++)
 			{
@@ -148,7 +148,7 @@ namespace rtmath {
 				for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
 				{
 					shapeConstraintContainer shapeConstraintsEffective;
-					shapeConstraintsEffective = _gen.shapeConstraintsGlobal;
+					shapeConstraintsEffective = _gen.shapeConstraints;
 					for (auto ot = (*it)->shapeConstraints.begin(); ot != (*it)->shapeConstraints.end(); ot++)
 						shapeConstraintsEffective.insert(*ot);
 
@@ -267,12 +267,12 @@ namespace rtmath {
 								std::cout << "\t" << name << "\t" << val << "\t" << units << std::endl;
 
 								// Construct permuted object
-								permuted.insert(pair<string,boost::shared_ptr<shapeConstraint> >(
-									name, boost::shared_ptr<shapeConstraint>
+								permuted.insert(pair<string,shapeConstraintPtr >(
+									name, shapeConstraintPtr
 									(new shapeConstraint(name,boost::lexical_cast<std::string>(val),units) ) ) );
 							}
 							// As a reminder, (it) is an iterator to the current shape.....
-							boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
+							boost::shared_ptr<shapeModifiable> nshape( (*it)->clone() );
 							nshape->shapeConstraints = permuted;
 							nshape->update();
 
@@ -287,6 +287,7 @@ namespace rtmath {
 
 							// DEBUG CODE:
 							// Print out the mapit entries for each object in _elements
+							/*
 							{
 								for (auto et = _elements.begin(); et != _elements.end(); et++)
 								{
@@ -297,6 +298,7 @@ namespace rtmath {
 									}
 								}
 							}
+							*/
 						}
 
 						// Now, cit points to the leftmost iterator. Do recursive incrementation.

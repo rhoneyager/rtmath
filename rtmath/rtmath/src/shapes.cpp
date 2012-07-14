@@ -29,11 +29,11 @@
 namespace rtmath {
 	namespace ddscat {
 
-		void addConstraint(shapeConstraintContainer &container, boost::shared_ptr<shapeConstraint> constraint)
+		void addConstraint(shapeConstraintContainer &container, shapeConstraintPtr constraint)
 		{
 			//constraintsVaried.insert(pair<const string,units::hasUnits>(name, units::hasUnits(val,units)));
 			//container.
-			container.insert(std::pair<const std::string, boost::shared_ptr<shapeConstraint> >
+			container.insert(std::pair<const std::string, shapeConstraintPtr >
 				(constraint->varname, constraint));
 		}
 
@@ -182,22 +182,22 @@ namespace rtmath {
 		{
 		}
 
-		boost::shared_ptr<shapeConstraint> shapeConstraint::create(
+		shapeConstraintPtr shapeConstraint::create(
 				const std::string &varname,
 				const std::string &psetShorthand,
 				const std::string &units)
 		{
-			boost::shared_ptr<shapeConstraint> res(
+			shapeConstraintPtr res(
 				new shapeConstraint(varname, psetShorthand, units));
 			return res;
 		}
 
-		boost::shared_ptr<shapeConstraint> shapeConstraint::create(
+		shapeConstraintPtr shapeConstraint::create(
 				const std::string &varname,
 				double psetShorthand,
 				const std::string &units)
 		{
-			boost::shared_ptr<shapeConstraint> res(
+			shapeConstraintPtr res(
 				new shapeConstraint(varname, psetShorthand, units));
 			return res;
 		}
@@ -258,13 +258,12 @@ namespace rtmath {
 		}
 
 		shape::shape()
-			: shapeConstraints(___sbase)
 		{
 		}
 
-		void constrainable::addConstraint(boost::shared_ptr<shapeConstraint> rhs)
+		void constrainable::addConstraint(shapeConstraintPtr rhs)
 		{
-			rtmath::ddscat::addConstraint(___sbase, rhs);
+			rtmath::ddscat::addConstraint(shapeConstraints, rhs);
 		}
 
 		bool shape::_get(const std::string &id, double &val, std::string &units) const
@@ -313,6 +312,7 @@ namespace rtmath {
 		{
 			// Should be overridden, but I don't want a pure virtual class
 			throw rtmath::debug::xUnimplementedFunction();
+			return runScriptIndiv("", ddParGenerator()); // To prevent errors
 		}
 
 		boost::shared_ptr<rtmath::graphs::vertex> 
