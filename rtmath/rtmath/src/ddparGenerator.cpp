@@ -82,11 +82,10 @@ namespace rtmath {
 				// Write run definitions
 				rtmath::serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
 
-				// TODO: have shape handle this as well, as application names differ...
-				GETOBJKEY();
 				// Write individual run script
-				runScriptIndiv iscript(dirname, *this);
+				runScriptIndiv iscript = (*it)->shape->prepRunScript(dirname, *this);
 				iscript.write((pdir).string());
+
 				// Lastly, add this path into the global run script listing...
 				dirs.insert(dirname);
 			}
@@ -251,9 +250,9 @@ namespace rtmath {
 
 						// Do object construction. In separate block for readability
 						{
-							//static int i=0;
-							//i++;
-							//std::cout << "Constructing object " << i << std::endl;
+							static int i=0;
+							i++;
+							std::cout << "Constructing object " << i << std::endl;
 							shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
 							for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
 							{
@@ -265,11 +264,12 @@ namespace rtmath {
 								name = ot->first;
 								units = ot->second->units();
 
-								//std::cout << "\t" << name << "\t" << val << "\t" << units << std::endl;
+								std::cout << "\t" << name << "\t" << val << "\t" << units << std::endl;
 
 								// Construct permuted object
 								permuted.insert(pair<string,boost::shared_ptr<shapeConstraint> >(
-									name, boost::make_shared<shapeConstraint>(name,boost::lexical_cast<std::string>(val),units) ) );
+									name, boost::shared_ptr<shapeConstraint>
+									(new shapeConstraint(name,boost::lexical_cast<std::string>(val),units) ) ) );
 							}
 							// As a reminder, (it) is an iterator to the current shape.....
 							boost::shared_ptr<shapeModifiable> nshape( dynamic_cast<shapeModifiable*>((*it)->clone()) );
@@ -284,6 +284,19 @@ namespace rtmath {
 							nit->rots = *rt;
 							// Insert into _elements using rvalue move (avoids copying)
 							_elements.insert(nit);
+
+							// DEBUG CODE:
+							// Print out the mapit entries for each object in _elements
+							{
+								for (auto et = _elements.begin(); et != _elements.end(); et++)
+								{
+									std::cout << "Element" << std::endl;
+									for (auto st = (*et)->shape->shapeConstraints.begin(); st != (*et)->shape->shapeConstraints.end(); st++)
+									{
+										std::cout << "\t" << st->first << "\t" << *(st->second->begin()) << "\t" << st->second->units << std::endl;
+									}
+								}
+							}
 						}
 
 						// Now, cit points to the leftmost iterator. Do recursive incrementation.

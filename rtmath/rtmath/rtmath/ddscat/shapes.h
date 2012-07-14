@@ -44,6 +44,9 @@ namespace rtmath {
 	namespace ddscat {
 
 		class ddPar;
+		class ddParGenerator;
+		class runScriptIndiv;
+		class runScriptGlobal;
 
 		class shapeConstraint
 		{
@@ -160,6 +163,8 @@ namespace rtmath {
 			virtual bool mapVertex(const std::string &idstr, boost::shared_ptr<rtmath::graphs::vertex> &vertex);
 			// Set rotation information
 			void setRots(boost::shared_ptr<rotations> rots);
+			// Prepare an individual run script, given the constraints of the individual shape
+			virtual runScriptIndiv prepRunScript(const std::string &name, const ddParGenerator &gen) const;
 		protected:
 			// Establish basic vertices and construct graph. Will be overridden by shape specializations,
 			// but they will still call this function as a base.
@@ -212,6 +217,8 @@ namespace rtmath {
 				// also work with tmatrix.
 				virtual void write(const std::string &base, const ddPar &ddbase) const;
 
+				virtual runScriptIndiv prepRunScript(const std::string &name, const ddParGenerator &gen) const;
+
 				// The component writing functions
 				void exportDiel(const std::string &filename) const;
 				//void exportShape(const std::string &filename) const;
@@ -243,6 +250,8 @@ namespace rtmath {
 				void exportShape(const std::string &filename) const;
 				// General 'write everything' function
 				virtual void write(const std::string &base, const ddPar &ddbase) const;
+
+				virtual runScriptIndiv prepRunScript(const std::string &name, const ddParGenerator &gen) const;
 			protected:
 				virtual void _constructGraph(bool makegraph = true);
 				virtual void run(const std::string &id = "");

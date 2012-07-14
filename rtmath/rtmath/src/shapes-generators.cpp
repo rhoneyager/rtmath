@@ -25,6 +25,7 @@
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/ddscat/runScripts.h"
 
 		// In ellipsoid, 1/4 = (x/d*shp1)^2 + (y/d*shp2)^2 + (z/d*shp3)^2
 		// In cylinder, shp1 = length/d, shp2 = diam/d,
@@ -46,6 +47,28 @@ namespace rtmath {
 
 			from_ddscat::~from_ddscat()
 			{
+			}
+
+			runScriptIndiv from_ddscat::prepRunScript(const std::string &name, const ddParGenerator &gen) const
+			{
+				runScriptIndiv iscript(name, gen);
+				std::ostringstream cmds;
+				cmds << "module load ddscat" << std::endl
+					<< "ddscat" << std::endl;
+				iscript.setRunCmds(cmds.str());
+
+				iscript.addFile("ddscat.par");
+				iscript.addFile("diel.tab");
+
+				return iscript;
+			}
+
+			runScriptIndiv from_file::prepRunScript(const std::string &name, const ddParGenerator &gen) const
+			{
+				runScriptIndiv iscript = from_ddscat::prepRunScript(name, gen);
+				iscript.addFile("shape.dat");
+
+				return iscript;
 			}
 
 			void from_ddscat::exportDiel(const std::string &filename) const
@@ -228,7 +251,7 @@ namespace rtmath {
 				// This is the shape.dat writing function. 
 				// from_file should provide a shapefile class that can handle the writing
 
-				GETOBJKEY();
+				//GETOBJKEY();
 				// TODO: allow for crude shape manipulation!
 				// Allow stretching, squeezing, changes of aspect ratio
 
@@ -248,11 +271,16 @@ namespace rtmath {
 				if (!exists(p))
 					throw rtmath::debug::xMissingFile(fSource.c_str());
 
+
+				boost::filesystem::copy_file(p, boost::filesystem::path(fname));
+
+				/*
 				rtmath::ddscat::shapefile shp(fSource);
 
 				// TODO: do any complex manipulation here
 
 				shp.write(fname);
+				*/
 			}
 
 		}

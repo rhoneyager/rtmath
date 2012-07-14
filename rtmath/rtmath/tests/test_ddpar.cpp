@@ -61,9 +61,9 @@ BOOST_AUTO_TEST_CASE(ddpar_read_new)
 	testPar->getShape(check);
 	BOOST_CHECK( check == "FROM_FILE" );
 
-	BOOST_CHECK( testPar->shpar(0) == 101);
-	BOOST_CHECK( testPar->shpar(1) == 101);
-	BOOST_CHECK( testPar->shpar(2) == 101);
+	BOOST_CHECK_EQUAL( testPar->shpar(0), 101);
+	BOOST_CHECK_EQUAL( testPar->shpar(1), 101);
+	BOOST_CHECK_EQUAL( testPar->shpar(2), 101);
 
 	// diel.tab stuff
 	// Needs support for multiple diel.tab files
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(ddpar_io)
 	istringstream in(sObj);
 	b.read(in);
 
-	a.writeFile("ddscat.a.par");
+	//a.writeFile("ddscat.a.par");
 //b.writeFile("ddscat.b.par");
 
 	BOOST_CHECK(a==b);

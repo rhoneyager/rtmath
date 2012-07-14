@@ -4,8 +4,8 @@
 
 #pragma once
 
-#pragma warning( push )
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+#pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
 #include <algorithm>
 #include <bitset>
 #include <cstdlib>
@@ -61,8 +61,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-
-#pragma warning( pop )
 
 #pragma warning( push )
 #pragma warning( disable : 4996 )

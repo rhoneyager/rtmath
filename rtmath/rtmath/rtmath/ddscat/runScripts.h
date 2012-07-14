@@ -15,10 +15,16 @@ namespace rtmath {
 		public:
 			runScriptIndiv(const std::string &uuid, const ddParGenerator &gen)
 				: _uuid(uuid), _gen(gen) {}
+			// Write the script
 			void write(const std::string &path) const;
+			// Add a file that gets copied into the run directory
+			void addFile(const std::string &path);
+			void setRunCmds(const std::string &cmd);
 		private:
 			std::string _uuid;
+			std::string _runcmd;
 			const ddParGenerator &_gen;
+			std::set<std::string> _files;
 		};
 
 		class runScriptGlobal

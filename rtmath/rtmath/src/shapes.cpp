@@ -23,6 +23,8 @@
 #include "../rtmath/ddscat/shapes.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
+#include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/ddscat/runScripts.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -305,6 +307,12 @@ namespace rtmath {
 
 		shapeModifiable::~shapeModifiable()
 		{
+		}
+
+		runScriptIndiv shapeModifiable::prepRunScript(const std::string &name, const ddParGenerator &gen) const
+		{
+			// Should be overridden, but I don't want a pure virtual class
+			throw rtmath::debug::xUnimplementedFunction();
 		}
 
 		boost::shared_ptr<rtmath::graphs::vertex> 
