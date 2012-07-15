@@ -248,7 +248,6 @@ namespace rtmath {
 				from_file();
 				virtual ~from_file();
 				virtual from_file* clone() const { from_file *ns = new from_file(*this); return ns; }
-				virtual bool canWrite() const { return true; }
 				// Function to write shape.dat
 				void exportShape(const std::string &filename) const;
 				// General 'write everything' function
@@ -262,25 +261,32 @@ namespace rtmath {
 				friend class boost::serialization::access;
 			private:
 				template<class Archive>
-					void serialize(Archive & ar, const unsigned int version)
-					{
-						ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(from_ddscat);
-					}
-				};
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(from_ddscat);
+				}
+			};
 
-			/*
-			class ellipsoid : public _ddscat
+			
+			class ellipsoid : public from_ddscat
 			{
 			public:
 				ellipsoid();
 				virtual ~ellipsoid();
-				virtual shape* clone() const { ellipsoid *ns = new ellipsoid(*this); return ns; }
-				virtual void _constructGraph();
+				virtual ellipsoid* clone() const { ellipsoid *ns = new ellipsoid(*this); return ns; }
 			protected:
+				virtual void _constructGraph(bool makegraph = true);
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
+				friend class boost::serialization::access;
+			private:
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(from_ddscat);
+				}
 			};
-			*/
+			
 		}
 
 	}
@@ -294,5 +300,6 @@ BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::ellipsoid)
 
 //#pragma warning( pop )

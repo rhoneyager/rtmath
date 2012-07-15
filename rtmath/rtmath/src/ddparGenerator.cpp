@@ -250,9 +250,9 @@ namespace rtmath {
 
 						// Do object construction. In separate block for readability
 						{
-							static int i=0;
-							i++;
-							std::cout << "Constructing object " << i << std::endl;
+							//static int i=0;
+							//i++;
+							//std::cout << "Constructing object " << i << std::endl;
 							shapeConstraintContainer permuted = shapeConstraintsEffectiveBase; // initialize
 							for (auto ot = mapit.begin(); ot != mapit.end(); ot++)
 							{
@@ -264,7 +264,7 @@ namespace rtmath {
 								name = ot->first;
 								units = ot->second->units();
 
-								std::cout << "\t" << name << "\t" << val << "\t" << units << std::endl;
+								//std::cout << "\t" << name << "\t" << val << "\t" << units << std::endl;
 
 								// Construct permuted object
 								permuted.insert(pair<string,shapeConstraintPtr >(

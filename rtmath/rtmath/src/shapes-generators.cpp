@@ -221,9 +221,12 @@ namespace rtmath {
 			void from_file::_constructGraph(bool makegraph)
 			{
 				using namespace rtmath::graphs;
-				//shapeModifiable::_constructGraph(false);
+				//shapeModifiable::_constructGraph(false); // shapeModifiable constructor does this
 				_createVertex("CSHAPE", true);
 				_set("CSHAPE", 0, "FROM_FILE"); // Need to do it here since this has no dependencies
+				GETOBJKEY(); // Add other properties to prevent throwing.
+				// TODO: eventually allow for shape.dat manipulation, which would then use these properties.
+				//_set("CSHAPE", 0, "FROM_FILE");
 				if (makegraph)
 					_graph = boost::shared_ptr<graph>(new graph(_vertices));
 			}
@@ -283,6 +286,166 @@ namespace rtmath {
 				*/
 			}
 
+			ellipsoid::ellipsoid()
+			{
+				_constructGraph();
+			}
+
+			ellipsoid::~ellipsoid()
+			{
+			}
+
+			void ellipsoid::_constructGraph(bool makegraph)
+			{
+				using namespace std;
+				using namespace rtmath::graphs;
+				//shapeModifiable::_constructGraph(false); // shapeModifiable constructor does this
+				_createVertex("CSHAPE", true);
+				_set("CSHAPE", 0, "ELLIPSOID"); // Need to do it here since this has no dependencies
+
+				// Need to add a few variables, like interdipole spacing and the three shape parameters
+				
+				const size_t varnames_size = 4;
+				const std::string rawvarnames[varnames_size] = {
+					"d",
+					"shpar1",
+					"shpar2",
+					"shpar3"
+				};
+				std::set<std::string> varnames( rawvarnames, rawvarnames + varnames_size );
+
+				// Create vertices for end variables
+				for (auto it = varnames.begin(); it != varnames.end(); ++it)
+					_createVertex(*it, true);
+
+				// Create vertices representing function relationships
+				// This is a table that lists the name of the new node, the variable being calculated, 
+				// and the necessary dependencies. This is much cleaner than repeated copying / pasting, 
+				// and is much easier to read.
+				const size_t varmapnames_size = 27;
+				const std::string rawvarmapnames[varmapnames_size] = {
+					// name,					target,				dependencies
+					"D_Ax__SHPAR1",				"shpar1",			"d,ax",
+					"D_Ay__SHPAR2",				"shpar2",			"d,ay",
+					"D_Az__SHPAR3",				"shpar3",			"d,az",
+					"Ax_SHPAR1__D",				"d",				"ax,shpar1",
+					"Ay_SHPAR2__D",				"d",				"ax,shpar2",
+					"Az_SHPAR3__D",				"d",				"ax,shpar3",
+					"D_SHPAR1__Ax",				"ax",				"d,shpar1",
+					"D_SHPAR2__Ay",				"ay",				"d,shpar2",
+					"D_SHPAR3__Az",				"az",				"d,shpar3"
+				};
+
+				for (size_t i=0; i< varmapnames_size; i = i + 3)
+				{
+					const string &name = rawvarmapnames[i];
+					const string &starget = rawvarmapnames[i+1];
+					const string &deps = rawvarmapnames[i+2];
+
+					_createVertex(name, starget, deps);
+				}
+			
+
+
+
+				if (makegraph)
+					_graph = boost::shared_ptr<graph>(new graph(_vertices));
+			}
+
+			void ellipsoid::run(const std::string &id)
+			{
+				// In ellipsoid, 1/4 = (x/d*shp1)^2 + (y/d*shp2)^2 + (z/d*shp3)^2
+				using namespace std;
+				using namespace rtmath::units;
+				// This is the trivial case of converter manipulation.
+				// The appropriate vertex has its run() method called, and it 
+				// eventually makes its way to this bit of code. This is the default
+				// catch-all converter, designed to handle several possible basic tasks. 
+				// It's all really just in the name of extensibility.
+				const double pi = boost::math::constants::pi<double>();
+				double raw;
+				string units;
+
+				// These are rather repetitive, and I'd rather avoid potential coding 
+				// errors from the repitition. I may eventually implement a set of 
+				// parallel pattern functions, but this will suffice for now.
+				for (size_t i=1; i<=3; i++)
+				{
+					// Figure out var x, y, z
+					const char vi = 'x' + i - 1;
+
+					ostringstream svrad;
+					svrad << "a" << vi; // ax, ay, az
+					ostringstream sshpar;
+					sshpar << "shpar" << i;
+					string vrad = svrad.str();
+					string shpar = sshpar.str();
+
+					{
+						ostringstream sidpattern;
+						sidpattern << "D_A" << vi << "__SHPAR" << i;
+						if (id == sidpattern.str())
+						{
+							_get(vrad,raw,units); // "ax", raw, units
+							double a = conv_alt(units,"um").convert(raw);
+							_get("d",raw,units);
+							double d = conv_alt(units,"um").convert(raw);
+
+							double sn = 4.*a/d;
+							_set(shpar, sn, "um");
+							return;
+						}
+					}
+					{
+						ostringstream sidpattern;
+						sidpattern << "A" << vi << "_SHPAR" << i << "__D";
+						if (id == sidpattern.str())
+						{
+							_get(vrad,raw,units); // "ax", raw, units
+							double a = conv_alt(units,"um").convert(raw);
+							_get(shpar,raw,units);
+							double sn = conv_alt(units,"um").convert(raw);
+
+							double d = 4.*a/sn;
+							_set("d", d, "um");
+							return;
+						}
+					}
+					{
+						ostringstream sidpattern;
+						sidpattern << "D_SHPAR" << i << "__A" << vi;
+						if (id == sidpattern.str())
+						{
+							_get("d",raw,units);
+							double d = conv_alt(units,"um").convert(raw);
+							_get(shpar,raw,units);
+							double sn = conv_alt(units,"um").convert(raw);
+
+							double a = d*sn/4.;
+							_set(vrad, a, "um");
+							return;
+						}
+					}
+				}
+
+				
+				shapeModifiable::run(id);
+			}
+
+			bool ellipsoid::runSupported(const std::string &id)
+			{
+				if (id == "CSHAPE") return true;
+				if (id == "D_Ax__SHPAR1") return true;
+				if (id == "D_Ay__SHPAR2") return true;
+				if (id == "D_Az__SHPAR3") return true;
+				if (id == "Ax_SHPAR1__D") return true;
+				if (id == "Ay_SHPAR2__D") return true;
+				if (id == "Az_SHPAR3__D") return true;
+				if (id == "D_SHPAR1__Ax") return true;
+				if (id == "D_SHPAR2__Ay") return true;
+				if (id == "D_SHPAR3__Az") return true;
+				return shapeModifiable::runSupported(id);
+			}
 		}
 
 	}

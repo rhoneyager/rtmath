@@ -48,6 +48,20 @@ namespace rtmath {
 			if (id == "DENS_V__MASS") return true;
 			if (id == "FREQ_TEMP__IREFR_R") return true;
 			if (id == "FREQ_TEMP__IREFR_I") return true;
+			/*
+				"AEFF_ASxy__Az",			"az",				"aeff,aspect_xy",
+				"AEFF_ASxz__Ay",			"ay",				"aeff,aspect_xz",
+				"AEFF_ASyz__Ax",			"ax",				"aeff,aspect_yz"
+				*/
+			if (id == "ASxz_ASxy__ASyz") return true;
+			if (id == "ASxz_ASyz__ASxy") return true;
+			if (id == "ASxy_ASyz__ASxz") return true;
+			if (id == "Ax_Ay__ASxy") return true;
+			if (id == "Ax_Az__ASxz") return true;
+			if (id == "Ay_Az__ASyz") return true;
+			if (id == "AEFF_ASxy__Az") return true;//
+			if (id == "AEFF_ASxz__Ay") return true;
+			if (id == "AEFF_ASyz__Ax") return true;
 			return false;
 		}
 
@@ -63,6 +77,89 @@ namespace rtmath {
 			const double pi = boost::math::constants::pi<double>();
 			double raw;
 			string units;
+
+			{
+				set<boost::tuple<string,string> > permutations;
+				permutations.insert(boost::make_tuple<string,string>("xy","z"));
+				permutations.insert(boost::make_tuple<string,string>("xz","y"));
+				permutations.insert(boost::make_tuple<string,string>("yz","x"));
+				for (auto it = permutations.begin(); it != permutations.end(); it++)
+				{
+					ostringstream sid;
+					sid << "A" << it->get<0>() << "_A" << it->get<1>() << "__AS" << it->get<2>();
+					ostringstream sa1, sa2, sa3;
+					sa1 << "a" << it->get<0>();
+					sa2 << "a" << it->get<1>();
+					sa3 << "aspect_" << it->get<2>();
+
+					if (id == sid.str())
+					{
+						double as_a, as_b, as_c;
+						_get(sa1.str(), as_a, units);
+						_get(sa2.str(), as_b, units);
+						as_c = as_a / as_b;
+
+						_set(sa3.str(), as_c , "");
+						return;
+					}
+				}
+			}
+
+			{
+				set<boost::tuple<string,string,string> > permutations;
+				permutations.insert(boost::make_tuple<string,string,string>("x","y","xy"));
+				permutations.insert(boost::make_tuple<string,string,string>("x","z","xz"));
+				permutations.insert(boost::make_tuple<string,string,string>("y","z","xy"));
+				for (auto it = permutations.begin(); it != permutations.end(); it++)
+				{
+					ostringstream sid;
+					sid << "A" << it->get<0>() << "_A" << it->get<1>() << "__AS" << it->get<2>();
+					ostringstream sa1, sa2, sa3;
+					sa1 << "a" << it->get<0>();
+					sa2 << "a" << it->get<1>();
+					sa3 << "aspect_" << it->get<2>();
+
+					if (id == sid.str())
+					{
+						double as_a, as_b, as_c;
+						_get(sa1.str(), as_a, units);
+						_get(sa2.str(), as_b, units);
+						as_c = as_a / as_b;
+
+						_set(sa3.str(), as_c , "");
+						return;
+					}
+				}
+			}
+
+			{
+				// Carefully constructed permutations, such that
+				// AS1 / AS2 = AS3
+				set<boost::tuple<string,string,string> > permutations;
+				permutations.insert(boost::make_tuple<string,string,string>("xz","xy","yz"));
+				permutations.insert(boost::make_tuple<string,string,string>("xz","yz","xy"));
+				permutations.insert(boost::make_tuple<string,string,string>("xy","yz","xz"));
+				for (auto it = permutations.begin(); it != permutations.end(); it++)
+				{
+					ostringstream sid;
+					sid << "AS" << it->get<0>() << "_AS" << it->get<1>() << "__AS" << it->get<2>();
+					ostringstream sa1, sa2, sa3;
+					sa1 << "aspect_" << it->get<0>();
+					sa2 << "aspect_" << it->get<1>();
+					sa3 << "aspect_" << it->get<2>();
+
+					if (id == sid.str())
+					{
+						double as_a, as_b, as_c;
+						_get(sa1.str(), as_a, units);
+						_get(sa2.str(), as_b, units);
+						as_c = as_a / as_b;
+
+						_set(sa3.str(), as_c , "");
+						return;
+					}
+				}
+			}
 
 			if (id == "DENS_T")
 			{
@@ -380,7 +477,7 @@ namespace rtmath {
 			_vertexMap.clear();
 
 			// Most basic level of var names. Interdipole spacing is in a derived class, as are others.
-			const size_t varnames_size = 8;
+			const size_t varnames_size = 14;
 			const std::string rawvarnames[varnames_size] = {
 				"density",
 				"temp",
@@ -389,7 +486,13 @@ namespace rtmath {
 				"mass",
 				"freq",
 				"irefr_r",
-				"irefr_i"
+				"irefr_i",
+				"aspect_xy",
+				"aspect_yz",
+				"aspect_xz",
+				"ax",
+				"ay",
+				"az"
 			};
 			std::set<std::string> varnames( rawvarnames, rawvarnames + varnames_size );
 
@@ -401,7 +504,7 @@ namespace rtmath {
 			// This is a table that lists the name of the new node, the variable being calculated, 
 			// and the necessary dependencies. This is much cleaner than repeated copying / pasting, 
 			// and is much easier to read.
-			const size_t varmapnames_size = 27;
+			const size_t varmapnames_size = 54;
 			const std::string rawvarmapnames[varmapnames_size] = {
 				// name,					target,				dependencies
 				"DENS_T",					"temp",				"density",
@@ -412,7 +515,17 @@ namespace rtmath {
 				"MASS_DENS__V",				"volume",			"mass,density",
 				"DENS_V__MASS",				"mass",				"density,volume",
 				"FREQ_TEMP__IREFR_R",		"irefr_r",			"freq,temp",
-				"FREQ_TEMP__IREFR_I",		"irefr_i",			"freq,temp"
+				"FREQ_TEMP__IREFR_I",		"irefr_i",			"freq,temp",
+				// Start from here - TODO: check dep correctness
+				"ASxz_ASxy__ASyz",			"aspect_yz",		"aspect_xz,aspect_xy",
+				"ASxz_ASyz__ASxy",			"aspect_xy",		"aspect_xz,aspect_yz",
+				"ASxy_ASyz__ASxz",			"aspect_xz",		"aspect_xy,aspect_yz",
+				"Ax_Ay__ASxy",				"aspect_xy",		"ax,ay",
+				"Ax_Az__ASxz",				"aspect_xz",		"ax,az",
+				"Ay_Az__ASyz",				"aspect_yz",		"ay,az",
+				"AEFF_ASxy__Az",			"az",				"aeff,aspect_xy",
+				"AEFF_ASxz__Ay",			"ay",				"aeff,aspect_xz",
+				"AEFF_ASyz__Ax",			"ax",				"aeff,aspect_yz"
 			};
 
 			for (size_t i=0; i< varmapnames_size; i = i + 3)
@@ -546,3 +659,4 @@ BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shape)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeModifiable)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_ddscat)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_file)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::ellipsoid)
