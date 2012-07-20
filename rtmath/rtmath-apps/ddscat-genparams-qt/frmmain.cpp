@@ -41,6 +41,7 @@ frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	for (int i=0; i< ui.treeRots->columnCount(); i++)
 		ui.treeRots->resizeColumnToContents(i);
 	ui.treeTypes->setColumnHidden(1,true);
+	_targetCounter = 0;
 }
 
 frmMain::~frmMain()
@@ -62,12 +63,7 @@ void frmMain::editTreeItem(QTreeWidgetItem* item,int column)
 
 void frmMain::editTarget(QTreeWidgetItem* item,int column)
 {
-	// Look at item properties and determine the shapeModifiable map entry
-	int id = item->text(1).toInt();
-	// invoke editor on _targets.at(id)
-
-	//frmTarget ft;
-	_ft.setTarget(_targets.at(id));
+	_ft.setTarget(_targets.at(item));
 	_ft.show();
 }
 
@@ -89,16 +85,16 @@ void frmMain::menuTargets(const QPoint &p)
 		if (selected == mAdd)
 		{
 			QTreeWidgetItem *nitem = new QTreeWidgetItem();
-			static int i=0;
-			i++;
-			int id = i;
-			nitem->setText(0, QString::number(id));
-			nitem->setText(1, QString::number(id));
+			//static int i=0;
+			//i++;
+			//int id = i;
+			_targetCounter++;
+			nitem->setText(0, QString::number(_targetCounter));
 			// And add the appropriate map
 			boost::shared_ptr<rtmath::ddscat::shapeModifiable> nshp(
 				new rtmath::ddscat::shapeModifiable);
-			_targets.insert(std::pair<int, boost::shared_ptr<rtmath::ddscat::shapeModifiable> >
-				(id, nshp));
+			_targets.insert(std::pair<QTreeWidgetItem*, boost::shared_ptr<rtmath::ddscat::shapeModifiable> >
+				(nitem, nshp));
 
 			ui.treeTypes->addTopLevelItem(nitem);
 		}
@@ -107,8 +103,7 @@ void frmMain::menuTargets(const QPoint &p)
 			// Drop the selected items
 			for (auto it = selFreqs.begin(); it != selFreqs.end(); it++)
 			{
-				int id = (*it)->text(1).toInt();
-				_targets.erase(id);
+				_targets.erase(*it);
 
 				delete *it;
 			}
@@ -232,7 +227,11 @@ void frmMain::loadSet()
 	
 	QFileDialog dialog(this);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setNameFilter(tr("XML files (*.xml)"));
+	QStringList fltrs;
+	fltrs << "XML Files (*.xml *.xml.bz2 *.xml.gz)"
+		<< "All Files (*.*)";
+
+	dialog.setNameFilters(fltrs);
 	dialog.setViewMode(QFileDialog::Detail);
 	
 	if (dialog.exec())
@@ -255,7 +254,11 @@ void frmMain::saveSet()
 	// Now, open a file dialog asking for the save location
 	QFileDialog dialog(this);
 	dialog.setFileMode(QFileDialog::AnyFile);
-	dialog.setNameFilter(tr("XML files (*.xml)"));
+	QStringList fltrs;
+	fltrs << "XML Files (*.xml *.xml.bz2 *.xml.gz)"
+		<< "All Files (*.*)";
+
+	dialog.setNameFilters(fltrs);
 	dialog.setViewMode(QFileDialog::Detail);
 	// Have the generator save
 	if (dialog.exec())
@@ -271,7 +274,11 @@ void frmMain::import()
 {
 	QFileDialog dialog(this);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setNameFilter(tr("PAR files (*.par)"));
+	QStringList fltrs;
+	fltrs << "PAR files (*.par)"
+		<< "All Files (*.*)";
+
+	dialog.setNameFilters(fltrs);
 	dialog.setViewMode(QFileDialog::Detail);
 	
 	if (dialog.exec())
@@ -472,118 +479,119 @@ void frmMain::fromGenerator()
 	ui.txtExportDir->setEnabled( _gen.doExport );
 
 	ui.chkDoTorques->setChecked(_gen.base.doTorques());
-	/*
-	_gen.base.setSolnMeth(ui.cmbSolnMeth->currentText().toStdString());
-	_gen.base.setFFTsolver(ui.cmbFFTsolver->currentText().toStdString());
-	_gen.base.setCalpha(ui.cmbCALPHA->currentText().toStdString());
-	_gen.base.setBinning(ui.cmbBinning->currentText().toStdString());
 
-	_gen.base.Imem(0, getValText<int>(this->ui.txtImem1) );
-	_gen.base.Imem(1, getValText<int>(this->ui.txtImem2) );
-	_gen.base.Imem(2, getValText<int>(this->ui.txtImem3) );
+	// For combo boxes, map from string to id number for selection
+	{
+		std::string s;
 
-	_gen.base.doNearField(ui.chkNearfield->isChecked());
+		_gen.base.getSolnMeth(s);
+		if (s == "PBCGS2") ui.cmbSolnMeth->setCurrentIndex(0);
+		if (s == "PBCGST") ui.cmbSolnMeth->setCurrentIndex(1);
+		if (s == "PETRKP") ui.cmbSolnMeth->setCurrentIndex(2);
 
-	_gen.base.near(0, getValText<double>(ui.txtNear1) );
-	_gen.base.near(1, getValText<double>(ui.txtNear2) );
-	_gen.base.near(2, getValText<double>(ui.txtNear3) );
-	_gen.base.near(3, getValText<double>(ui.txtNear4) );
-	_gen.base.near(4, getValText<double>(ui.txtNear5) );
-	_gen.base.near(5, getValText<double>(ui.txtNear6) );
+		_gen.base.getFFTsolver(s);
+		if (s == "GPFAFT") ui.cmbFFTsolver->setCurrentIndex(0);
+		if (s == "FFTMKL") ui.cmbFFTsolver->setCurrentIndex(1);
 
-	_gen.base.maxTol(getValText<double>(ui.txtMaxTol) );
-	_gen.base.maxIter(getValText<size_t>(ui.txtMaxIter) );
-	_gen.base.gamma(getValText<double>(ui.txtGamma) );
-	_gen.base.etasca(getValText<double>(ui.txtETASCA) );
-	_gen.base.nAmbient(getValText<double>(ui.txtNAMBIENT) );
-	_gen.base.writeSca( ui.chkWriteSca->isChecked());
+		_gen.base.getCalpha(s);
+		if (s == "GKDLDR") ui.cmbCALPHA->setCurrentIndex(0);
+		if (s == "LATTDIR") ui.cmbCALPHA->setCurrentIndex(1);
+
+		_gen.base.getBinning(s);
+		if (s == "NOTBIN") ui.cmbBinning->setCurrentIndex(0);
+		if (s == "ORIBIN") ui.cmbBinning->setCurrentIndex(1);
+		if (s == "ALLBIN") ui.cmbBinning->setCurrentIndex(2);
+	}
+
+	ui.txtImem1->setText(QString::number(_gen.base.Imem(0)));
+	ui.txtImem2->setText(QString::number(_gen.base.Imem(1)));
+	ui.txtImem3->setText(QString::number(_gen.base.Imem(2)));
+
+	ui.chkNearfield->setChecked(_gen.base.doNearField());
+	ui.txtNear1->setText(QString::number(_gen.base.near(0)));
+	ui.txtNear2->setText(QString::number(_gen.base.near(1)));
+	ui.txtNear3->setText(QString::number(_gen.base.near(2)));
+	ui.txtNear4->setText(QString::number(_gen.base.near(3)));
+	ui.txtNear5->setText(QString::number(_gen.base.near(4)));
+	ui.txtNear6->setText(QString::number(_gen.base.near(5)));
+
+	ui.txtMaxTol->setText(QString::number(_gen.base.maxTol()));
+	ui.txtMaxIter->setText(QString::number(_gen.base.maxIter()));
+	ui.txtGamma->setText(QString::number(_gen.base.gamma()));
+	ui.txtETASCA->setText(QString::number(_gen.base.etasca()));
+	ui.txtNAMBIENT->setText(QString::number(_gen.base.nAmbient()));
+	ui.chkWriteSca->setChecked(_gen.base.writeSca());
 
 	// Global properties
 	{
-		_gen.shapeConstraints.clear();
-
-		QTreeWidgetItem *i = ui.treeGlobals->topLevelItem(0);
-		while (i)
+		ui.treeGlobals->clear();
+		for (auto it = _gen.shapeConstraints.begin(); it != _gen.shapeConstraints.end(); it++)
 		{
-			// Can get info from each column as a text string.
-			// Col 0 is var name
-			// Col 1 is range
-			// Col 2 is units
-			std::string vname, range, units;
-			vname = i->text(0).toStdString();
-			range = i->text(1).toStdString();
-			units = i->text(2).toStdString();
-
-			using namespace rtmath::ddscat;
-			_gen.addConstraint(shapeConstraint::create(vname, range, units));
-
-			i = ui.treeGlobals->itemBelow(i);
+			QTreeWidgetItem *nitem = new QTreeWidgetItem();
+			nitem->setText(0, QString::fromStdString(it->first));
+			std::string srt;
+			it->second->pset.getShort(srt);
+			nitem->setText(1, QString::fromStdString(srt));
+			nitem->setText(2, QString::fromStdString(it->second->units));
+			ui.treeGlobals->addTopLevelItem(nitem);
 		}
 	}
 
 	// Target properties
-	// Need to use shape matching / casting function
 	{
-		_gen.shapes.clear();
-		for (auto it = _targets.begin(); it != _targets.end(); it++)
+		ui.treeTypes->clear();
+		_targetCounter = 0;
+		for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
 		{
-			// Take object, and use promote member function to get the correct object type
-			boost::shared_ptr<rtmath::ddscat::shapeModifiable> casted(it->second->promote());
+			// Cast will demote back to shapeModifiable. This is desired.
+			boost::shared_ptr<rtmath::ddscat::shapeModifiable> casted
+				(new rtmath::ddscat::shapeModifiable);
+			casted->shapeConstraints = (*it)->shapeConstraints;
 
-			// Then insert the object into _gen.shapes
-			_gen.shapes.insert(casted);
+			QTreeWidgetItem *nitem = new QTreeWidgetItem();
+			_targetCounter++;
+			nitem->setText(0, QString::number(_targetCounter));
+
+			_targets.insert(std::pair<QTreeWidgetItem*, boost::shared_ptr<rtmath::ddscat::shapeModifiable> >
+				(nitem, casted));
+			ui.treeTypes->addTopLevelItem(nitem);
 		}
 	}
 
 	// Rotations
 	{
-		_gen.rots.clear();
-		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
-		while (i)
+		ui.treeRots->clear();
+		for (auto it = _gen.rots.begin(); it != _gen.rots.end(); it++)
 		{
-			double bMin, bMax, tMin, tMax, pMin, pMax;
-			size_t bN, tN, pN;
-
-			bMin = i->text(0).toDouble();
-			bMax = i->text(1).toDouble();
-			bN = i->text(2).toInt();
-			tMin = i->text(3).toDouble();
-			tMax = i->text(4).toDouble();
-			tN = i->text(5).toInt();
-			pMin = i->text(6).toDouble();
-			pMax = i->text(7).toDouble();
-			pN = i->text(8).toInt();
-
-			_gen.rots.insert( rtmath::ddscat::rotations::create(bMin,bMax,bN,tMin,tMax,tN,pMin,pMax,pN) );
-
-			i = ui.treeScattAngles->itemBelow(i);
+			QTreeWidgetItem *nitem = new QTreeWidgetItem();
+			nitem->setText(0, QString::number((*it)->bMin()));
+			nitem->setText(1, QString::number((*it)->bMax()));
+			nitem->setText(2, QString::number((*it)->bN()));
+			nitem->setText(3, QString::number((*it)->tMin()));
+			nitem->setText(4, QString::number((*it)->tMax()));
+			nitem->setText(5, QString::number((*it)->tN()));
+			nitem->setText(6, QString::number((*it)->pMin()));
+			nitem->setText(7, QString::number((*it)->pMax()));
+			nitem->setText(8, QString::number((*it)->pN()));
+			ui.treeRots->addTopLevelItem(nitem);
 		}
 	}
 
 	// Scattering angles
 	{
-		size_t n = 0;
-
-		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
-		while (i)
+		ui.treeScattAngles->clear();
+		for (size_t i=1; i<= _gen.base.numPlanes(); i++)
 		{
-			n++;
-			// Can get info from each column as a text string.
-			// phi, theta_min, theta_max, ntheta
 			double phi, thetan_min, thetan_max, dtheta;
-			phi = i->text(0).toDouble();
-			thetan_min = i->text(1).toDouble();
-			thetan_max = i->text(2).toDouble();
-			dtheta = i->text(3).toDouble();
+			_gen.base.getPlane(i,phi,thetan_min,thetan_max,dtheta);
 
-			using namespace rtmath::ddscat;
-			_gen.base.setPlane(n, phi, thetan_min, thetan_max, dtheta);
-
-			i = ui.treeScattAngles->itemBelow(i);
+			QTreeWidgetItem *nitem = new QTreeWidgetItem();
+			nitem->setText(0, QString::number(phi));
+			nitem->setText(1, QString::number(thetan_min));
+			nitem->setText(2, QString::number(thetan_max));
+			nitem->setText(3, QString::number(dtheta));
+			ui.treeScattAngles->addTopLevelItem(nitem);
 		}
-		// Set number of scattering planes after iteration
-		_gen.base.numPlanes(n);
 	}
-	*/
 }
 

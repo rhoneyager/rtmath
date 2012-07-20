@@ -190,6 +190,7 @@ void frmTarget::fromShapeModifiable()
 			it->second->pset.getShort(srt);
 			nitem->setText(1, QString::fromStdString(srt));
 			nitem->setText(2, QString::fromStdString(it->second->units));
+			ui.treeConstraints->addTopLevelItem(nitem);
 		}
 	}
 }

@@ -41,7 +41,8 @@ private:
 		void fromGenerator();
 
 		rtmath::ddscat::ddParGenerator _gen;
-		std::map<int, boost::shared_ptr< rtmath::ddscat::shapeModifiable > > _targets;
+		int _targetCounter;
+		std::map<QTreeWidgetItem*, boost::shared_ptr< rtmath::ddscat::shapeModifiable > > _targets;
 		frmTarget _ft;
 };
 
