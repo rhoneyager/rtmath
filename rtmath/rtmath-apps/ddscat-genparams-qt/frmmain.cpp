@@ -540,6 +540,7 @@ void frmMain::fromGenerator()
 	// Target properties
 	{
 		ui.treeTypes->clear();
+		_targets.clear();
 		_targetCounter = 0;
 		for (auto it = _gen.shapes.begin(); it != _gen.shapes.end(); it++)
 		{

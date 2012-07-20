@@ -196,12 +196,17 @@ namespace rtmath {
 		ddPar::ddPar()
 		{
 			_init();
+			// Fill in the blanks from the default file. Needed here to avoid
+			// crashed associated with accessing missing keys.
+			_populateDefaults(false);
 		}
 
-		ddPar::ddPar(const std::string &filename)
+		ddPar::ddPar(const std::string &filename, bool popDefaults)
 		{
 			_init();
 			readFile(filename);
+			if (popDefaults)
+				_populateDefaults(false);
 		}
 
 		ddPar::~ddPar()
@@ -697,7 +702,7 @@ namespace rtmath {
 
 				if (psBasePar.string().size() && boost::filesystem::exists(path(psBasePar)))
 				{
-					s_inst = new ddPar(psBasePar.string());
+					s_inst = new ddPar(psBasePar.string(), false);
 				} else {
 					// Cannot get default instance.....
 					if (psBasePar.string().size())

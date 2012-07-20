@@ -391,7 +391,7 @@ namespace rtmath {
 			static ddPar*& defaultInstance();
 
 			ddPar();
-			ddPar(const std::string &filename);
+			ddPar(const std::string &filename, bool populateDefaults = true);
 			~ddPar();
 
 			void readFile(const std::string &filename, bool overlay = false);
