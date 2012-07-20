@@ -168,6 +168,8 @@ namespace rtmath {
 			void setRots(boost::shared_ptr<rotations> rots);
 			// Prepare an individual run script, given the constraints of the individual shape
 			virtual runScriptIndiv prepRunScript(const std::string &name, const ddParGenerator &gen) const;
+			// Take shape and cast upward to get the appropriate target object (based on CSHAPE)
+			boost::shared_ptr<shapeModifiable> promote() const;
 		protected:
 			// Establish basic vertices and construct graph. Will be overridden by shape specializations,
 			// but they will still call this function as a base.

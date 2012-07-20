@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Fri Jul 20 01:48:42 2012
+** Created: Fri Jul 20 03:58:50 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -613,10 +613,9 @@ public:
         formLayout_3->setWidget(0, QFormLayout::LabelRole, label_26);
 
         treeTypes = new QTreeWidget(tab);
-        QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem();
-        __qtreewidgetitem->setText(0, QString::fromUtf8("1"));
-        treeTypes->setHeaderItem(__qtreewidgetitem);
         treeTypes->setObjectName(QString::fromUtf8("treeTypes"));
+        treeTypes->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeTypes->setSelectionMode(QAbstractItemView::ExtendedSelection);
         treeTypes->header()->setVisible(false);
 
         formLayout_3->setWidget(0, QFormLayout::FieldRole, treeTypes);
@@ -711,7 +710,7 @@ public:
         QObject::connect(action_Open, SIGNAL(activated()), frmMainClass, SLOT(loadSet()));
         QObject::connect(action_Save, SIGNAL(activated()), frmMainClass, SLOT(saveSet()));
         QObject::connect(action_Import_from_ddscat_par, SIGNAL(activated()), frmMainClass, SLOT(import()));
-        QObject::connect(treeTypes, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(treeTypes, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTarget(QTreeWidgetItem*,int)));
         QObject::connect(treeTypes, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuTargets(QPoint)));
 
         tabWidget->setCurrentIndex(3);
@@ -938,6 +937,9 @@ public:
 #endif // QT_NO_STATUSTIP
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("frmMainClass", "Global Properties", 0, QApplication::UnicodeUTF8));
         label_26->setText(QApplication::translate("frmMainClass", "Targets:", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem1 = treeTypes->headerItem();
+        ___qtreewidgetitem1->setText(1, QApplication::translate("frmMainClass", "Mapping", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem1->setText(0, QApplication::translate("frmMainClass", "Name", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         treeTypes->setToolTip(QApplication::translate("frmMainClass", "TODO", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
@@ -947,52 +949,52 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("frmMainClass", "Targets", 0, QApplication::UnicodeUTF8));
         label_34->setText(QApplication::translate("frmMainClass", "Rotations:", 0, QApplication::UnicodeUTF8));
         label_35->setText(QApplication::translate("frmMainClass", "Scattering Angles:", 0, QApplication::UnicodeUTF8));
-        QTreeWidgetItem *___qtreewidgetitem1 = treeRots->headerItem();
-        ___qtreewidgetitem1->setText(8, QApplication::translate("frmMainClass", "Phi N", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(7, QApplication::translate("frmMainClass", "Phi Max", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(6, QApplication::translate("frmMainClass", "Phi Min", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(5, QApplication::translate("frmMainClass", "Theta N", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(4, QApplication::translate("frmMainClass", "Theta Max", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(3, QApplication::translate("frmMainClass", "Theta Min", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(2, QApplication::translate("frmMainClass", "Beta N", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(1, QApplication::translate("frmMainClass", "Beta Max", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem1->setText(0, QApplication::translate("frmMainClass", "Beta Min", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem2 = treeRots->headerItem();
+        ___qtreewidgetitem2->setText(8, QApplication::translate("frmMainClass", "Phi N", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(7, QApplication::translate("frmMainClass", "Phi Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(6, QApplication::translate("frmMainClass", "Phi Min", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(5, QApplication::translate("frmMainClass", "Theta N", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(4, QApplication::translate("frmMainClass", "Theta Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(3, QApplication::translate("frmMainClass", "Theta Min", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(2, QApplication::translate("frmMainClass", "Beta N", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(1, QApplication::translate("frmMainClass", "Beta Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem2->setText(0, QApplication::translate("frmMainClass", "Beta Min", 0, QApplication::UnicodeUTF8));
 
         const bool __sortingEnabled1 = treeRots->isSortingEnabled();
         treeRots->setSortingEnabled(false);
-        QTreeWidgetItem *___qtreewidgetitem2 = treeRots->topLevelItem(0);
-        ___qtreewidgetitem2->setText(8, QApplication::translate("frmMainClass", "6", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(7, QApplication::translate("frmMainClass", "360", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(6, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(5, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(4, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(3, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(2, QApplication::translate("frmMainClass", "6", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(1, QApplication::translate("frmMainClass", "360", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem2->setText(0, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem3 = treeRots->topLevelItem(0);
+        ___qtreewidgetitem3->setText(8, QApplication::translate("frmMainClass", "6", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(7, QApplication::translate("frmMainClass", "360", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(6, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(5, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(4, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(3, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(2, QApplication::translate("frmMainClass", "6", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(1, QApplication::translate("frmMainClass", "360", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem3->setText(0, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
         treeRots->setSortingEnabled(__sortingEnabled1);
 
 #ifndef QT_NO_STATUSTIP
         treeRots->setStatusTip(QApplication::translate("frmMainClass", "Specify rotations. Each row is a separate set of runs.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        QTreeWidgetItem *___qtreewidgetitem3 = treeScattAngles->headerItem();
-        ___qtreewidgetitem3->setText(3, QApplication::translate("frmMainClass", "Theta Delta", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem3->setText(2, QApplication::translate("frmMainClass", "Theta Max", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem3->setText(1, QApplication::translate("frmMainClass", "Theta Min", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem3->setText(0, QApplication::translate("frmMainClass", "Phi", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem4 = treeScattAngles->headerItem();
+        ___qtreewidgetitem4->setText(3, QApplication::translate("frmMainClass", "Theta Delta", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(2, QApplication::translate("frmMainClass", "Theta Max", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(1, QApplication::translate("frmMainClass", "Theta Min", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem4->setText(0, QApplication::translate("frmMainClass", "Phi", 0, QApplication::UnicodeUTF8));
 
         const bool __sortingEnabled2 = treeScattAngles->isSortingEnabled();
         treeScattAngles->setSortingEnabled(false);
-        QTreeWidgetItem *___qtreewidgetitem4 = treeScattAngles->topLevelItem(0);
-        ___qtreewidgetitem4->setText(3, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem4->setText(2, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem4->setText(1, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem4->setText(0, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
-        QTreeWidgetItem *___qtreewidgetitem5 = treeScattAngles->topLevelItem(1);
+        QTreeWidgetItem *___qtreewidgetitem5 = treeScattAngles->topLevelItem(0);
         ___qtreewidgetitem5->setText(3, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
         ___qtreewidgetitem5->setText(2, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
         ___qtreewidgetitem5->setText(1, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem5->setText(0, QApplication::translate("frmMainClass", "90", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem5->setText(0, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem6 = treeScattAngles->topLevelItem(1);
+        ___qtreewidgetitem6->setText(3, QApplication::translate("frmMainClass", "10", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem6->setText(2, QApplication::translate("frmMainClass", "180", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem6->setText(1, QApplication::translate("frmMainClass", "0", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem6->setText(0, QApplication::translate("frmMainClass", "90", 0, QApplication::UnicodeUTF8));
         treeScattAngles->setSortingEnabled(__sortingEnabled2);
 
 #ifndef QT_NO_STATUSTIP

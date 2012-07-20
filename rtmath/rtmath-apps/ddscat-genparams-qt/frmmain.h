@@ -3,8 +3,11 @@
 #pragma warning( disable : 4996 )
 
 #include <QMainWindow>
+#include <map>
 #include "ui_frmmain.h"
+#include "frmtarget.h"
 #include "../../rtmath/rtmath/ddscat/ddparGenerator.h"
+#include "../../rtmath/rtmath/ddscat/shapes.h"
 
 class frmMain : public QMainWindow
 {
@@ -19,17 +22,18 @@ private:
 	private slots:
 		void allowExport(int);
 		void editTreeItem(QTreeWidgetItem*,int);
+		void editTarget(QTreeWidgetItem*,int);
 		void menuGlobals(const QPoint &);
 		void menuRots(const QPoint &);
-		//void menuTargets(const QPoint &);
 		void menuScaAngles(const QPoint &);
+		void menuTargets(const QPoint &);
 		void generateRuns();
 		void loadSet();
 		void saveSet();
 		void newSet();
 		void import();
+		
 		/*
-		void menuTargets(const QPoint &);
 		void menuDielectrics(const QPoint &);
 		*/
 	private:
@@ -37,6 +41,8 @@ private:
 		void fromGenerator();
 
 		rtmath::ddscat::ddParGenerator _gen;
+		std::map<int, boost::shared_ptr< rtmath::ddscat::shapeModifiable > > _targets;
+		frmTarget _ft;
 };
 
 

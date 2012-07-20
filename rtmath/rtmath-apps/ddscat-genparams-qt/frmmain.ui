@@ -818,18 +818,29 @@
         </item>
         <item row="0" column="1">
          <widget class="QTreeWidget" name="treeTypes">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
           <property name="toolTip">
            <string>TODO</string>
           </property>
           <property name="statusTip">
            <string>Specify the targets to be considered. These may be built-in ddscat shapes, or they may be sets of shape files, subject to any additional constraints.</string>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
           <attribute name="headerVisible">
            <bool>false</bool>
           </attribute>
           <column>
            <property name="text">
-            <string notr="true">1</string>
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Mapping</string>
            </property>
           </column>
          </widget>
@@ -1312,7 +1323,7 @@
    <sender>treeTypes</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
    <receiver>frmMainClass</receiver>
-   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <slot>editTarget(QTreeWidgetItem*,int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>429</x>
@@ -1356,5 +1367,6 @@
   <slot>saveSet()</slot>
   <slot>newSet()</slot>
   <slot>import()</slot>
+  <slot>editTarget(QTreeWidgetItem*,int)</slot>
  </slots>
 </ui>

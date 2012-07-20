@@ -39,6 +39,29 @@
 namespace rtmath {
 	namespace ddscat {
 
+		boost::shared_ptr<shapeModifiable> shapeModifiable::promote() const
+		{
+			// Get CSHAPE variable. If none, then return just the 
+			// pure shapeModifiable as a sign of failure.
+			std::string shp;
+			auto it = shapeConstraints.find("CSHAPE");
+			if (it != shapeConstraints.end()) shp = it->second->units;
+			
+			if (shp == "FROM_FILE")
+			{
+				boost::shared_ptr<shapeModifiable> res(new rtmath::ddscat::shapes::from_file);
+				res->shapeConstraints = shapeConstraints;
+				return res;
+			}
+			GETOBJKEY();
+			// Last resort
+			{
+				boost::shared_ptr<shapeModifiable> res(new shapeModifiable);
+				res->shapeConstraints = shapeConstraints;
+				return res;
+			}
+		}
+
 		namespace shapes {
 
 			from_ddscat::from_ddscat()
