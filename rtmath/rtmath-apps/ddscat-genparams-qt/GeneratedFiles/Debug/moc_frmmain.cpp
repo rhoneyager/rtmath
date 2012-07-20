@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'frmmain.h'
 **
-** Created: Fri Jul 20 03:07:54 2012
+** Created: Fri Jul 20 19:40:30 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.1)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -24,7 +24,7 @@ static const uint qt_meta_data_frmMain[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -44,6 +44,7 @@ static const uint qt_meta_data_frmMain[] = {
      200,    8,    8,    8, 0x08,
      210,    8,    8,    8, 0x08,
      219,    8,    8,    8, 0x08,
+     228,    8,    8,    8, 0x08,
 
        0        // eod
 };
@@ -55,7 +56,7 @@ static const char qt_meta_stringdata_frmMain[] = {
     "menuGlobals(QPoint)\0menuRots(QPoint)\0"
     "menuScaAngles(QPoint)\0menuTargets(QPoint)\0"
     "generateRuns()\0loadSet()\0saveSet()\0"
-    "newSet()\0import()\0"
+    "newSet()\0import()\0ddverChanged()\0"
 };
 
 void frmMain::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -76,6 +77,7 @@ void frmMain::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
         case 9: _t->saveSet(); break;
         case 10: _t->newSet(); break;
         case 11: _t->import(); break;
+        case 12: _t->ddverChanged(); break;
         default: ;
         }
     }
@@ -113,9 +115,9 @@ int frmMain::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 13;
     }
     return _id;
 }

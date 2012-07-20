@@ -32,6 +32,7 @@ private:
 		void saveSet();
 		void newSet();
 		void import();
+		void ddverChanged();
 		
 		/*
 		void menuDielectrics(const QPoint &);

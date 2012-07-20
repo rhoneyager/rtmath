@@ -181,7 +181,9 @@ namespace rtmath {
 			getKey(id,linein);
 			line = boost::static_pointer_cast< const ddParParsers::ddParLineSimple<std::string> >(linein);
 			line->get(v);
-			return (v == btrue) ? true : false; 
+			if (v == btrue)
+				return true;
+			return false;
 		}
 
 		void ddPar::__setStringBool(ddParParsers::ParId id, bool v, const std::string &bfalse, const std::string &btrue)
@@ -198,15 +200,21 @@ namespace rtmath {
 			_init();
 			// Fill in the blanks from the default file. Needed here to avoid
 			// crashed associated with accessing missing keys.
+			//_populateDefaults(false);
+		}
+		/*
+		ddPar::ddPar()
+		{
+			_init();
 			_populateDefaults(false);
 		}
-
+		*/
 		ddPar::ddPar(const std::string &filename, bool popDefaults)
 		{
 			_init();
 			readFile(filename);
 			if (popDefaults)
-				_populateDefaults(false);
+				populateDefaults(false);
 		}
 
 		ddPar::~ddPar()
@@ -227,6 +235,31 @@ namespace rtmath {
 		bool ddPar::operator!=(const ddPar &rhs) const
 		{
 			return !(operator==(rhs));
+		}
+
+		ddPar & ddPar::operator=(const ddPar &rhs)
+		{
+			if (this != &rhs)
+			{
+				_version = rhs._version;
+				std::ostringstream out;
+				rhs.write(out);
+				std::string data = out.str();
+				std::istringstream in(data);
+				read(in);
+			}
+			return *this;
+		}
+
+		ddPar::ddPar(const ddPar &src)
+		{
+			// Expensive copy constructor. Implements cloning to avoid screwups.
+			_version = src._version;
+			std::ostringstream out;
+			src.write(out);
+			std::string data = out.str();
+			std::istringstream in(data);
+			read(in);
 		}
 
 		ddPar* ddPar::clone() const
@@ -258,7 +291,7 @@ namespace rtmath {
 
 		void ddPar::writeFile(const std::string &filename) const
 		{
-			_populateDefaults();
+			populateDefaults();
 			ofstream out(filename.c_str());
 			write(out);
 		}
@@ -269,7 +302,7 @@ namespace rtmath {
 			using namespace std;
 
 			// Ensute that all necessary keys exist. If not, create them!!!
-			_populateDefaults();
+			//populateDefaults(); // User's responsibility
 
 			// Write file version
 			string ver;
@@ -506,7 +539,7 @@ namespace rtmath {
 			insertPlane(n, res);
 		}
 
-		void ddPar::_populateDefaults(bool overwrite, const std::string &src) const
+		void ddPar::populateDefaults(bool overwrite, const std::string &src) const
 		{
 			// Populates missing items for this version with default
 			// entries. Used when converting between ddscat file versions.

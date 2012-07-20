@@ -391,8 +391,10 @@ namespace rtmath {
 			static ddPar*& defaultInstance();
 
 			ddPar();
+			ddPar(const ddPar &src); // Copy constructor
 			ddPar(const std::string &filename, bool populateDefaults = true);
 			~ddPar();
+			ddPar & operator=(const ddPar &rhs);
 
 			void readFile(const std::string &filename, bool overlay = false);
 			void writeFile(const std::string &filename) const;
@@ -474,11 +476,11 @@ namespace rtmath {
 			}
 			void insertPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
 			void delPlane(size_t key);
+			void populateDefaults(bool overwrite = false, const std::string &src = "") const;
 			friend class boost::serialization::access;
 		private:
 			void _init();
 			size_t _version;
-			void _populateDefaults(bool overwrite = false, const std::string &src = "") const;
 
 			mutable std::map<ddParParsers::ParId, 
 				boost::shared_ptr<ddParParsers::ddParLine> > 

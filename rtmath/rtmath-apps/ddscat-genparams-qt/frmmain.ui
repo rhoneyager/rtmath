@@ -22,7 +22,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tabGeneral">
        <attribute name="title">
@@ -80,6 +80,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QLineEdit" name="txtBaseFile">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Defaults are loaded from this file. They are overridden in the next few screens.</string>
             </property>
@@ -87,6 +90,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="cmdSelectBaseFile">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1351,6 +1357,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cmbDdver</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>ddverChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>487</x>
+     <y>275</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>menuFreqs(QPoint)</slot>
@@ -1368,5 +1390,6 @@
   <slot>newSet()</slot>
   <slot>import()</slot>
   <slot>editTarget(QTreeWidgetItem*,int)</slot>
+  <slot>ddverChanged()</slot>
  </slots>
 </ui>

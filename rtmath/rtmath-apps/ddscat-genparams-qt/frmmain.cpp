@@ -8,6 +8,7 @@
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 
 #include <QFileDialog>
+#include <boost/filesystem.hpp>
 
 template <>
 int getValText(QLineEdit *src)
@@ -42,6 +43,7 @@ frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 		ui.treeRots->resizeColumnToContents(i);
 	ui.treeTypes->setColumnHidden(1,true);
 	_targetCounter = 0;
+	fromGenerator();
 }
 
 frmMain::~frmMain()
@@ -214,6 +216,41 @@ void frmMain::menuScaAngles(const QPoint &p)
 	}
 }
 
+void frmMain::ddverChanged()
+{
+	// Enable / disable various controls
+	size_t ver;
+	size_t index = ui.cmbDdver->currentIndex();
+	if (index == 0) ver = 72;
+	if (index == 1) ver = 70;
+
+	if (ver == 72)
+	{
+		ui.chkNearfield->setEnabled(true);
+		ui.txtNear1->setEnabled(true);
+		ui.txtNear2->setEnabled(true);
+		ui.txtNear3->setEnabled(true);
+		ui.txtNear4->setEnabled(true);
+		ui.txtNear5->setEnabled(true);
+		ui.txtNear6->setEnabled(true);
+
+		ui.txtMaxIter->setEnabled(true);
+		ui.txtNAMBIENT->setEnabled(true);
+	} else if (ver == 70)
+	{
+		ui.chkNearfield->setEnabled(false);
+		ui.txtNear1->setEnabled(false);
+		ui.txtNear2->setEnabled(false);
+		ui.txtNear3->setEnabled(false);
+		ui.txtNear4->setEnabled(false);
+		ui.txtNear5->setEnabled(false);
+		ui.txtNear6->setEnabled(false);
+
+		ui.txtMaxIter->setEnabled(false);
+		ui.txtNAMBIENT->setEnabled(false);
+	}
+}
+
 void frmMain::newSet()
 {
 	rtmath::ddscat::ddParGenerator ng;
@@ -266,6 +303,12 @@ void frmMain::saveSet()
 		QStringList qfilename = dialog.selectedFiles();
 		std::string filename = qfilename.begin()->toStdString();
 
+		// Force a .xml file extension here
+		boost::filesystem::path pfile(filename);
+		std::string ext = pfile.extension().string();
+		if (ext != ".xml" && ext != ".bz2" && ext != ".gz")
+			filename.append(".xml");
+
 		rtmath::serialization::write<rtmath::ddscat::ddParGenerator>(_gen,filename);
 	}
 }
@@ -315,8 +358,16 @@ void frmMain::toGenerator()
 	_gen.outLocation = ui.txtOutLocation->text().toStdString();
 	{
 		std::string sver = ui.cmbDdver->currentText().toStdString();
-		if (sver == "7.0") _gen.base.version(70);
-		if (sver == "7.2") _gen.base.version(72);
+		if (sver == "7.0") 
+		{
+			_gen.ddscatVer = 70;
+			_gen.base.version(70);
+		}
+		if (sver == "7.2")
+		{
+			_gen.base.version(72);
+			_gen.ddscatVer = 72;
+		}
 	}
 	//_gen.strPreCmds; // TODO
 	//_gen.strPostCdms; // TODO
@@ -400,7 +451,7 @@ void frmMain::toGenerator()
 	// Rotations
 	{
 		_gen.rots.clear();
-		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
+		QTreeWidgetItem *i = ui.treeRots->topLevelItem(0);
 		while (i)
 		{
 			double bMin, bMax, tMin, tMax, pMin, pMax;
@@ -418,7 +469,7 @@ void frmMain::toGenerator()
 
 			_gen.rots.insert( rtmath::ddscat::rotations::create(bMin,bMax,bN,tMin,tMax,tN,pMin,pMax,pN) );
 
-			i = ui.treeScattAngles->itemBelow(i);
+			i = ui.treeRots->itemBelow(i);
 		}
 	}
 
@@ -455,11 +506,13 @@ void frmMain::fromGenerator()
 	ui.txtRunName->setText(QString::fromStdString(_gen.name));
 	ui.txtDescription->setPlainText(QString::fromStdString(_gen.description));
 	ui.txtOutLocation->setText(QString::fromStdString(_gen.outLocation));
+
+	size_t ver = _gen.ddscatVer; // _gen.base.version() is not set on read. Only used on write.
 	{
-		size_t v = _gen.base.version();
 		// The indices will change as the program develops
-		if (v == 70) ui.cmbDdver->setCurrentIndex(1);
-		if (v == 72) ui.cmbDdver->setCurrentIndex(0);
+		// These trigger ddverChanged
+		if (ver == 70) ui.cmbDdver->setCurrentIndex(1);
+		if (ver == 72) ui.cmbDdver->setCurrentIndex(0);
 	}
 	//_gen.ddscatVer;
 	//_gen.strPreCmds; // TODO
@@ -507,19 +560,36 @@ void frmMain::fromGenerator()
 	ui.txtImem2->setText(QString::number(_gen.base.Imem(1)));
 	ui.txtImem3->setText(QString::number(_gen.base.Imem(2)));
 
-	ui.chkNearfield->setChecked(_gen.base.doNearField());
-	ui.txtNear1->setText(QString::number(_gen.base.near(0)));
-	ui.txtNear2->setText(QString::number(_gen.base.near(1)));
-	ui.txtNear3->setText(QString::number(_gen.base.near(2)));
-	ui.txtNear4->setText(QString::number(_gen.base.near(3)));
-	ui.txtNear5->setText(QString::number(_gen.base.near(4)));
-	ui.txtNear6->setText(QString::number(_gen.base.near(5)));
+	if (ver >= 72)
+	{
+		ui.chkNearfield->setChecked(_gen.base.doNearField());
+		ui.txtNear1->setText(QString::number(_gen.base.near(0)));
+		ui.txtNear2->setText(QString::number(_gen.base.near(1)));
+		ui.txtNear3->setText(QString::number(_gen.base.near(2)));
+		ui.txtNear4->setText(QString::number(_gen.base.near(3)));
+		ui.txtNear5->setText(QString::number(_gen.base.near(4)));
+		ui.txtNear6->setText(QString::number(_gen.base.near(5)));
+	} else {
+		ui.chkNearfield->setChecked(false);
+		ui.txtNear1->setText("");
+		ui.txtNear2->setText("");
+		ui.txtNear3->setText("");
+		ui.txtNear4->setText("");
+		ui.txtNear5->setText("");
+		ui.txtNear6->setText("");
+	}
 
 	ui.txtMaxTol->setText(QString::number(_gen.base.maxTol()));
-	ui.txtMaxIter->setText(QString::number(_gen.base.maxIter()));
+	if (ver >= 72)
+		ui.txtMaxIter->setText(QString::number(_gen.base.maxIter()));
+	else
+		ui.txtMaxIter->setText("");
 	ui.txtGamma->setText(QString::number(_gen.base.gamma()));
 	ui.txtETASCA->setText(QString::number(_gen.base.etasca()));
-	ui.txtNAMBIENT->setText(QString::number(_gen.base.nAmbient()));
+	if (ver >= 72)
+		ui.txtNAMBIENT->setText(QString::number(_gen.base.nAmbient()));
+	else
+		ui.txtNAMBIENT->setText("");
 	ui.chkWriteSca->setChecked(_gen.base.writeSca());
 
 	// Global properties

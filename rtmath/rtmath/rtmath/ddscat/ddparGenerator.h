@@ -88,8 +88,8 @@ namespace rtmath {
 				ar & BOOST_SERIALIZATION_NVP(doExport);
 				ar & BOOST_SERIALIZATION_NVP(exportLoc);
 
-				// The par file is not serialized, as it is written separately
-				//ar & boost::serialization::make_nvp("ddPar", base);
+				// The par file needs serialization, as it holds some properties
+				ar & boost::serialization::make_nvp("ddPar", base);
 				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
 
 				ar & BOOST_SERIALIZATION_NVP(rots);
@@ -182,7 +182,6 @@ namespace rtmath {
 			{
 				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ddParGeneratorBase);
 			}
-			static ddPar _s_defaultBase;
 		};
 
 	} // end ddscat

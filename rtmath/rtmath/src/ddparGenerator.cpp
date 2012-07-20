@@ -8,8 +8,6 @@
 namespace rtmath {
 	namespace ddscat {
 
-		ddPar ddParGenerator::_s_defaultBase;
-
 		ddParGeneratorBase::~ddParGeneratorBase()
 		{
 		}
@@ -29,7 +27,8 @@ namespace rtmath {
 
 		ddParGenerator::ddParGenerator()
 		{
-			base = _s_defaultBase;
+			base = *(ddPar::defaultInstance());
+			base.populateDefaults();
 		}
 
 		ddParGenerator::ddParGenerator(const ddPar &base)

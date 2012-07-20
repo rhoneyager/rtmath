@@ -183,6 +183,9 @@ void frmTarget::fromShapeModifiable()
 			QTreeWidgetItem *nitem = new QTreeWidgetItem();
 			nitem->setText(0, QString::fromStdString(it->second->units));
 			ui.treeShapedat->addTopLevelItem(nitem);
+		} else if (it->first == "CSHAPE")
+		{
+			// do nothing
 		} else {
 			QTreeWidgetItem *nitem = new QTreeWidgetItem();
 			nitem->setText(0, QString::fromStdString(it->first));

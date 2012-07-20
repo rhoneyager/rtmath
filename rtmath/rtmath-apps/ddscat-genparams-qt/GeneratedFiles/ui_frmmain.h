@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Fri Jul 20 03:58:50 2012
+** Created: Fri Jul 20 19:47:43 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -207,11 +207,13 @@ public:
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         txtBaseFile = new QLineEdit(tabGeneral);
         txtBaseFile->setObjectName(QString::fromUtf8("txtBaseFile"));
+        txtBaseFile->setEnabled(false);
 
         horizontalLayout_2->addWidget(txtBaseFile);
 
         cmdSelectBaseFile = new QPushButton(tabGeneral);
         cmdSelectBaseFile->setObjectName(QString::fromUtf8("cmdSelectBaseFile"));
+        cmdSelectBaseFile->setEnabled(false);
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -712,8 +714,9 @@ public:
         QObject::connect(action_Import_from_ddscat_par, SIGNAL(activated()), frmMainClass, SLOT(import()));
         QObject::connect(treeTypes, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmMainClass, SLOT(editTarget(QTreeWidgetItem*,int)));
         QObject::connect(treeTypes, SIGNAL(customContextMenuRequested(QPoint)), frmMainClass, SLOT(menuTargets(QPoint)));
+        QObject::connect(cmbDdver, SIGNAL(currentIndexChanged(int)), frmMainClass, SLOT(ddverChanged()));
 
-        tabWidget->setCurrentIndex(3);
+        tabWidget->setCurrentIndex(4);
 
 
         QMetaObject::connectSlotsByName(frmMainClass);
