@@ -6,7 +6,7 @@
 using namespace rtmath::ddscat;
 
 frmTarget::frmTarget(QWidget *parent, Qt::WFlags flags)
-	: QMainWindow(parent, flags)
+	: QDialog(parent, flags)
 {
 	ui.setupUi(this);
 }
@@ -217,12 +217,13 @@ void frmTarget::toShapeModifiable()
 	// Add any possible shape.dat files
 	//for (auto it = 
 	{
-		QTreeWidgetItem *i = ui.treeShapedat->takeTopLevelItem(0);
+		std::cerr << "shape.dat files\n";
+		QTreeWidgetItem *i = ui.treeShapedat->topLevelItem(0);
 		while (i)
 		{
 			std::string fname;
 			fname = i->text(0).toStdString();
-
+			std::cerr << fname << std::endl;
 			using namespace rtmath::ddscat;
 			tgt->addConstraint(shapeConstraint::create("source_filename", 0, fname));
 
@@ -232,7 +233,7 @@ void frmTarget::toShapeModifiable()
 
 	// Add everything else
 	{
-		QTreeWidgetItem *i = ui.treeConstraints->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeConstraints->topLevelItem(0);
 		while (i)
 		{
 			// Can get info from each column as a text string.

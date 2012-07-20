@@ -154,13 +154,14 @@ namespace rtmath {
 			pTarget = path(sTarget);
 
 			// Open file for writing with appropriate other params
-			ifstream in;
+			ifstream *iin;
 			if (cmeth.size())
 			{
-				in = ifstream(pTarget.string().c_str(), ios_base::in | ios_base::binary);
+				iin = new ifstream(pTarget.string().c_str(), ios_base::binary);
 			} else {
-				in = ifstream(pTarget.string().c_str());
+				iin = new ifstream(pTarget.string().c_str());
 			}
+			ifstream &in = *iin;
 
 			// Prepare compression
 			using namespace boost::iostreams;
@@ -170,6 +171,7 @@ namespace rtmath {
 
 			// Serialize and output
 			rtmath::serialization::read<T>(obj,sin);
+			delete iin;
 		}
 	}
 }

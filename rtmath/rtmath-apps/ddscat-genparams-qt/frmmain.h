@@ -52,5 +52,6 @@ T getValText(QLineEdit *src);
 template <> int getValText(QLineEdit *src);
 template <> size_t getValText(QLineEdit *src);
 template <> double getValText(QLineEdit *src);
+template <> std::string getValText(QLineEdit *src);
 
 #endif // FRMMAIN_H

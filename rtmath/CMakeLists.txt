@@ -63,7 +63,8 @@ option ( LOAD_PACKAGES
 )
 option ( BUILD_APPS
 	"Build the default applications" ON)
-
+option ( COMPRESSION_ENABLED 
+	"Enable compression" ON)
 
 if(LOAD_PACKAGES)
 	# Find the locations of ROOT, OpenMP and others
@@ -90,19 +91,23 @@ if(LOAD_PACKAGES)
 	set(COMPRESS_ZLIB 0)
 	set(COMPRESS_GZIP 0)
 	set(COMPRESS_BZIP2 0)
-	if (ZLIB_FOUND)
-		set(COMPRESS_ZLIB 1)
-		set(COMPRESS_GZIP 1)
-	endif()
-# BZIP2_FOUND requires that the debug libary be found, which is not desired.
-	if (BZIP2_INCLUDE_DIR)
-		set(COMPRESS_BZIP2 1)
+	if (COMPRESSION_ENABLED)
+		if (ZLIB_FOUND)
+			set(COMPRESS_ZLIB 1)
+			set(COMPRESS_GZIP 1)
+		endif()
+	# BZIP2_FOUND requires that the debug libary be found, which is not desired.
+		if (BZIP2_INCLUDE_DIR)
+			set(COMPRESS_BZIP2 1)
+		endif()
 	endif()
 
 else()
-	set(COMPRESS_ZLIB 1)
-	set(COMPRESS_GZIP 1)
-	set(COMPRESS_BZIP2 1)
+	if (COMPRESSION_ENABLED)
+		set(COMPRESS_ZLIB 1)
+		set(COMPRESS_GZIP 1)
+		set(COMPRESS_BZIP2 1)
+	endif()
 endif()
 
 # Set basic common libraries

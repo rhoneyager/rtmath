@@ -297,8 +297,8 @@ namespace rtmath {
 				if (!exists(p))
 					throw rtmath::debug::xMissingFile(fSource.c_str());
 
-
-				boost::filesystem::copy_file(p, boost::filesystem::path(fname));
+GETOBJKEY();
+//				boost::filesystem::copy_file(p, boost::filesystem::path(fname));
 
 				/*
 				rtmath::ddscat::shapefile shp(fSource);

@@ -1,7 +1,7 @@
 include (common)
 
-set(genparams-qt_mocheaders frmmain.h)
-set(genparams-qt_uis frmmain.ui)
+set(genparams-qt_mocheaders frmmain.h frmtarget.h)
+set(genparams-qt_uis frmmain.ui frmTarget.ui)
 #set(genparams-qt_rcs frmmain.qrc)
 
 find_package( Qt4 COMPONENTS QtCore QtGui REQUIRED )
@@ -24,7 +24,7 @@ include_directories (
 #)
 
 add_executable (rtmath-ddscat-genparams-qt 
-	main.cpp stdafx.cpp frmmain.cpp
+	main.cpp stdafx.cpp frmmain.cpp frmtarget.cpp
 	${genparams-qt_MOC_SRCS}
 #	${genparams-qt_RC_SRCS}
 	${genparams-qt_UI_HDRS}

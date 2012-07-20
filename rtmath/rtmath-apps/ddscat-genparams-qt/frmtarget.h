@@ -5,7 +5,7 @@
 #include "ui_frmTarget.h"
 #include "../../rtmath/rtmath/ddscat/shapes.h"
 
-class frmTarget : public QMainWindow
+class frmTarget : public QDialog
 {
 	Q_OBJECT
 

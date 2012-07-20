@@ -27,6 +27,12 @@ double getValText(QLineEdit *src)
 	return src->text().size() ? src->text().toDouble() : src->placeholderText().toDouble() ;
 }
 
+template <>
+std::string getValText(QLineEdit *src)
+{
+	return src->text().size() ? src->text().toStdString() : src->placeholderText().toStdString();
+}
+
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
 {
@@ -307,7 +313,7 @@ void frmMain::toGenerator()
 	}
 	//_gen.strPreCmds; // TODO
 	//_gen.strPostCdms; // TODO
-	_gen.baseParFile = ui.txtBaseFile->text().toStdString();
+	_gen.baseParFile = getValText<std::string>(ui.txtBaseFile);
 	
 	// shape stuff
 	//_gen._shapeBase; // TODO
@@ -318,7 +324,8 @@ void frmMain::toGenerator()
 	_gen.shapeStats = ui.chkGenShapeStats->isChecked();
 	_gen.registerDatabase = ui.chkDatabaseRegister->isChecked();
 	_gen.doExport = ui.chkDoExport->isChecked();
-	_gen.exportLoc = ui.txtExportDir->text().toStdString();
+	_gen.exportLoc = getValText<std::string>(ui.txtExportDir);
+	//_gen.exportLoc = ui.txtExportDir->text().toStdString();
 	
 	_gen.base.doTorques(ui.chkDoTorques->isChecked());
 	_gen.base.setSolnMeth(ui.cmbSolnMeth->currentText().toStdString());
@@ -350,7 +357,7 @@ void frmMain::toGenerator()
 	{
 		_gen.shapeConstraints.clear();
 
-		QTreeWidgetItem *i = ui.treeGlobals->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeGlobals->topLevelItem(0);
 		while (i)
 		{
 			// Can get info from each column as a text string.
@@ -386,7 +393,7 @@ void frmMain::toGenerator()
 	// Rotations
 	{
 		_gen.rots.clear();
-		QTreeWidgetItem *i = ui.treeScattAngles->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
 		while (i)
 		{
 			double bMin, bMax, tMin, tMax, pMin, pMax;
@@ -412,7 +419,7 @@ void frmMain::toGenerator()
 	{
 		size_t n = 0;
 
-		QTreeWidgetItem *i = ui.treeScattAngles->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
 		while (i)
 		{
 			n++;
@@ -495,7 +502,7 @@ void frmMain::fromGenerator()
 	{
 		_gen.shapeConstraints.clear();
 
-		QTreeWidgetItem *i = ui.treeGlobals->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeGlobals->topLevelItem(0);
 		while (i)
 		{
 			// Can get info from each column as a text string.
@@ -531,7 +538,7 @@ void frmMain::fromGenerator()
 	// Rotations
 	{
 		_gen.rots.clear();
-		QTreeWidgetItem *i = ui.treeScattAngles->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
 		while (i)
 		{
 			double bMin, bMax, tMin, tMax, pMin, pMax;
@@ -557,7 +564,7 @@ void frmMain::fromGenerator()
 	{
 		size_t n = 0;
 
-		QTreeWidgetItem *i = ui.treeScattAngles->takeTopLevelItem(0);
+		QTreeWidgetItem *i = ui.treeScattAngles->topLevelItem(0);
 		while (i)
 		{
 			n++;
