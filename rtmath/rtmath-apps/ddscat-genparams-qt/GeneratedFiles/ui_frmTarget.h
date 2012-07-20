@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmTarget.ui'
 **
-** Created: Thu Jul 5 20:56:28 2012
+** Created: Fri Jul 20 01:20:10 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -19,11 +19,10 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
-#include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
 #include <QtGui/QSpacerItem>
 #include <QtGui/QTextBrowser>
-#include <QtGui/QToolButton>
+#include <QtGui/QTreeWidget>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 
@@ -37,12 +36,12 @@ public:
     QLabel *label;
     QComboBox *cmbTargetType;
     QLabel *label_2;
-    QHBoxLayout *horizontalLayout;
-    QLineEdit *txtShapeBase;
-    QToolButton *cmdBaseShapeSel;
     QLabel *label_3;
     QComboBox *cmbAspectRatio;
     QTextBrowser *textBrowser;
+    QTreeWidget *treeGlobals;
+    QLabel *label_4;
+    QTreeWidget *treeShapedat;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer;
@@ -53,7 +52,7 @@ public:
     {
         if (frmTarget->objectName().isEmpty())
             frmTarget->setObjectName(QString::fromUtf8("frmTarget"));
-        frmTarget->resize(393, 362);
+        frmTarget->resize(792, 495);
         verticalLayout = new QVBoxLayout(frmTarget);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         formLayout = new QFormLayout();
@@ -61,47 +60,53 @@ public:
         label = new QLabel(frmTarget);
         label->setObjectName(QString::fromUtf8("label"));
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label);
+        formLayout->setWidget(1, QFormLayout::LabelRole, label);
 
         cmbTargetType = new QComboBox(frmTarget);
         cmbTargetType->setObjectName(QString::fromUtf8("cmbTargetType"));
 
-        formLayout->setWidget(0, QFormLayout::FieldRole, cmbTargetType);
+        formLayout->setWidget(1, QFormLayout::FieldRole, cmbTargetType);
 
         label_2 = new QLabel(frmTarget);
         label_2->setObjectName(QString::fromUtf8("label_2"));
 
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_2);
-
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        txtShapeBase = new QLineEdit(frmTarget);
-        txtShapeBase->setObjectName(QString::fromUtf8("txtShapeBase"));
-
-        horizontalLayout->addWidget(txtShapeBase);
-
-        cmdBaseShapeSel = new QToolButton(frmTarget);
-        cmdBaseShapeSel->setObjectName(QString::fromUtf8("cmdBaseShapeSel"));
-
-        horizontalLayout->addWidget(cmdBaseShapeSel);
-
-
-        formLayout->setLayout(1, QFormLayout::FieldRole, horizontalLayout);
+        formLayout->setWidget(2, QFormLayout::LabelRole, label_2);
 
         label_3 = new QLabel(frmTarget);
         label_3->setObjectName(QString::fromUtf8("label_3"));
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, label_3);
+        formLayout->setWidget(3, QFormLayout::LabelRole, label_3);
 
         cmbAspectRatio = new QComboBox(frmTarget);
         cmbAspectRatio->setObjectName(QString::fromUtf8("cmbAspectRatio"));
+        cmbAspectRatio->setEnabled(false);
 
-        formLayout->setWidget(2, QFormLayout::FieldRole, cmbAspectRatio);
+        formLayout->setWidget(3, QFormLayout::FieldRole, cmbAspectRatio);
 
         textBrowser = new QTextBrowser(frmTarget);
         textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
+        textBrowser->setEnabled(false);
 
-        formLayout->setWidget(3, QFormLayout::FieldRole, textBrowser);
+        formLayout->setWidget(4, QFormLayout::FieldRole, textBrowser);
+
+        treeGlobals = new QTreeWidget(frmTarget);
+        treeGlobals->setObjectName(QString::fromUtf8("treeGlobals"));
+        treeGlobals->setContextMenuPolicy(Qt::CustomContextMenu);
+        treeGlobals->setAlternatingRowColors(true);
+        treeGlobals->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+        formLayout->setWidget(0, QFormLayout::FieldRole, treeGlobals);
+
+        label_4 = new QLabel(frmTarget);
+        label_4->setObjectName(QString::fromUtf8("label_4"));
+
+        formLayout->setWidget(0, QFormLayout::LabelRole, label_4);
+
+        treeShapedat = new QTreeWidget(frmTarget);
+        treeShapedat->setObjectName(QString::fromUtf8("treeShapedat"));
+        treeShapedat->header()->setVisible(false);
+
+        formLayout->setWidget(2, QFormLayout::FieldRole, treeShapedat);
 
 
         verticalLayout->addLayout(formLayout);
@@ -134,6 +139,8 @@ public:
 
 
         retranslateUi(frmTarget);
+        QObject::connect(treeGlobals, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), frmTarget, SLOT(editTreeItem(QTreeWidgetItem*,int)));
+        QObject::connect(treeGlobals, SIGNAL(customContextMenuRequested(QPoint)), frmTarget, SLOT(menuTargetProps(QPoint)));
 
         QMetaObject::connectSlotsByName(frmTarget);
     } // setupUi
@@ -153,7 +160,6 @@ public:
          << QApplication::translate("frmTarget", "TMATRIX Cylinder", 0, QApplication::UnicodeUTF8)
         );
         label_2->setText(QApplication::translate("frmTarget", "Base Shape File:", 0, QApplication::UnicodeUTF8));
-        cmdBaseShapeSel->setText(QApplication::translate("frmTarget", "...", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("frmTarget", "Dimension Relations:", 0, QApplication::UnicodeUTF8));
         cmbAspectRatio->clear();
         cmbAspectRatio->insertItems(0, QStringList()
@@ -167,6 +173,19 @@ public:
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Relation info goes here...</span></p></body></html>", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem = treeGlobals->headerItem();
+        ___qtreewidgetitem->setText(2, QApplication::translate("frmTarget", "Units", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(1, QApplication::translate("frmTarget", "Range", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(0, QApplication::translate("frmTarget", "Variable", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        treeGlobals->setToolTip(QApplication::translate("frmTarget", "TODO! Have quantity be selected from a combo box", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        treeGlobals->setStatusTip(QApplication::translate("frmTarget", "Specify target dimensions. Range notation (min:lin span:max) accepted. Units required.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        label_4->setText(QApplication::translate("frmTarget", "General Target Properties:", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem1 = treeShapedat->headerItem();
+        ___qtreewidgetitem1->setText(0, QApplication::translate("frmTarget", "File", 0, QApplication::UnicodeUTF8));
         cmdOK->setText(QApplication::translate("frmTarget", "OK", 0, QApplication::UnicodeUTF8));
         cmdCancel->setText(QApplication::translate("frmTarget", "Cancel", 0, QApplication::UnicodeUTF8));
     } // retranslateUi

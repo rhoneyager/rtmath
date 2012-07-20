@@ -1,5 +1,6 @@
 #ifndef FRMMAIN_H
 #define FRMMAIN_H
+#pragma warning( disable : 4996 )
 
 #include <QMainWindow>
 #include "ui_frmmain.h"
@@ -18,10 +19,9 @@ private:
 	private slots:
 		void allowExport(int);
 		void editTreeItem(QTreeWidgetItem*,int);
-		void menuFreqs(const QPoint &);
-		void menuSizes(const QPoint &);
+		void menuGlobals(const QPoint &);
 		void menuRots(const QPoint &);
-		void menuTemps(const QPoint &);
+		//void menuTargets(const QPoint &);
 		void menuScaAngles(const QPoint &);
 		void generateRuns();
 		void loadSet();
@@ -35,7 +35,16 @@ private:
 	private:
 		void toGenerator();
 		void fromGenerator();
+
 		rtmath::ddscat::ddParGenerator _gen;
 };
+
+
+template < class T >
+T getValText(QLineEdit *src);
+
+template <> int getValText(QLineEdit *src);
+template <> size_t getValText(QLineEdit *src);
+template <> double getValText(QLineEdit *src);
 
 #endif // FRMMAIN_H

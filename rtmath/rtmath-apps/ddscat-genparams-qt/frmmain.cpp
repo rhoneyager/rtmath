@@ -2,7 +2,27 @@
 #include "frmmain.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/qt_funcs.h"
+#include "../../rtmath/rtmath/serialization.h"
+#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include <QFileDialog>
+
+template <>
+int getValText(QLineEdit *src)
+{
+	return src->text().size() ? src->text().toInt() : src->placeholderText().toInt() ;
+}
+
+template <>
+size_t getValText(QLineEdit *src)
+{
+	return src->text().size() ? src->text().toInt() : src->placeholderText().toInt() ;
+}
+
+template <>
+double getValText(QLineEdit *src)
+{
+	return src->text().size() ? src->text().toDouble() : src->placeholderText().toDouble() ;
+}
 
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
@@ -26,19 +46,19 @@ void frmMain::allowExport(int val)
 void frmMain::editTreeItem(QTreeWidgetItem* item,int column)
 {
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	
-	ui.treeFreqs->editItem(item, column);
+	item->treeWidget()->editItem(item,column);
+	//ui.treeFreqs->editItem(item, column);
 }
 
-void frmMain::menuFreqs(const QPoint &p)
+void frmMain::menuGlobals(const QPoint &p)
 {
-	QPoint pos = ui.treeFreqs->mapToGlobal(p);
+	QPoint pos = ui.treeGlobals->mapToGlobal(p);
 	QMenu mnuF;
 	QAction *mAdd, *mRemove;
 	mAdd = mnuF.addAction("&Add");
 	mRemove = mnuF.addAction("&Remove");
 
-	QList<QTreeWidgetItem *> selFreqs = ui.treeFreqs->selectedItems();
+	QList<QTreeWidgetItem *> selFreqs = ui.treeGlobals->selectedItems();
 	(selFreqs.size())? mRemove->setEnabled(true) : mRemove->setEnabled(false);
 
 	QAction *selected = mnuF.exec(pos);
@@ -48,41 +68,10 @@ void frmMain::menuFreqs(const QPoint &p)
 		if (selected == mAdd)
 		{
 			QTreeWidgetItem *nitem = new QTreeWidgetItem();
-			nitem->setText(0, "New range");
-			nitem->setText(1, "GHz");
-			ui.treeFreqs->addTopLevelItem(nitem);
-		}
-		if (selected == mRemove)
-		{
-			// Drop the selected items
-			for (auto it = selFreqs.begin(); it != selFreqs.end(); it++)
-				delete *it;
-		}
-	}
-}
-
-void frmMain::menuSizes(const QPoint &p)
-{
-	QPoint pos = ui.treeSizes->mapToGlobal(p);
-	QMenu mnuF;
-	QAction *mAdd, *mRemove;
-	mAdd = mnuF.addAction("&Add");
-	mRemove = mnuF.addAction("&Remove");
-
-	QList<QTreeWidgetItem *> selFreqs = ui.treeSizes->selectedItems();
-	(selFreqs.size())? mRemove->setEnabled(true) : mRemove->setEnabled(false);
-
-	QAction *selected = mnuF.exec(pos);
-	if (selected)
-	{
-		// Will manipulate items and their mapped frequency entries (text strings)
-		if (selected == mAdd)
-		{
-			QTreeWidgetItem *nitem = new QTreeWidgetItem();
-			nitem->setText(0, "Effective Radius");
-			nitem->setText(1, "New range");
+			nitem->setText(0, "aeff");
+			nitem->setText(1, "100:50:350");
 			nitem->setText(2, "um");
-			ui.treeSizes->addTopLevelItem(nitem);
+			ui.treeGlobals->addTopLevelItem(nitem);
 		}
 		if (selected == mRemove)
 		{
@@ -121,37 +110,6 @@ void frmMain::menuRots(const QPoint &p)
 			nitem->setText(7, "360");
 			nitem->setText(8, "6");
 			ui.treeRots->addTopLevelItem(nitem);
-		}
-		if (selected == mRemove)
-		{
-			// Drop the selected items
-			for (auto it = selFreqs.begin(); it != selFreqs.end(); it++)
-				delete *it;
-		}
-	}
-}
-
-void frmMain::menuTemps(const QPoint &p)
-{
-	QPoint pos = ui.treeTemps->mapToGlobal(p);
-	QMenu mnuF;
-	QAction *mAdd, *mRemove;
-	mAdd = mnuF.addAction("&Add");
-	mRemove = mnuF.addAction("&Remove");
-
-	QList<QTreeWidgetItem *> selFreqs = ui.treeTemps->selectedItems();
-	(selFreqs.size())? mRemove->setEnabled(true) : mRemove->setEnabled(false);
-
-	QAction *selected = mnuF.exec(pos);
-	if (selected)
-	{
-		// Will manipulate items and their mapped frequency entries (text strings)
-		if (selected == mAdd)
-		{
-			QTreeWidgetItem *nitem = new QTreeWidgetItem();
-			nitem->setText(0, "263");
-			nitem->setText(1, "K");
-			ui.treeTemps->addTopLevelItem(nitem);
 		}
 		if (selected == mRemove)
 		{
@@ -219,7 +177,7 @@ void frmMain::loadSet()
 		// Have generator load
 		std::string filename = qfilename.begin()->toStdString();
 
-		rtmath::ddscat::ddParGenerator::read(_gen,filename);
+		rtmath::serialization::read<rtmath::ddscat::ddParGenerator>(_gen,filename);
 		// Update ui
 		fromGenerator();
 	}
@@ -239,7 +197,7 @@ void frmMain::saveSet()
 		QStringList qfilename = dialog.selectedFiles();
 		std::string filename = qfilename.begin()->toStdString();
 
-		rtmath::ddscat::ddParGenerator::write(_gen,filename);
+		rtmath::serialization::write<rtmath::ddscat::ddParGenerator>(_gen,filename);
 	}
 }
 
@@ -274,7 +232,7 @@ void frmMain::generateRuns()
 	std::string dname;
 	ui.txtOutLocation->text().size() ? dname = ui.txtOutLocation->text().toStdString() : dname = ui.txtOutLocation->placeholderText().toStdString();
 	_gen.generate(dname);
-        rtmath::ddscat::ddParGenerator::write(_gen,dname);
+	rtmath::serialization::write<rtmath::ddscat::ddParGenerator>(_gen,dname);
 }
 
 void frmMain::toGenerator()
@@ -298,44 +256,115 @@ void frmMain::toGenerator()
 	_gen.doExport = ui.chkDoExport->isChecked();
 	_gen.exportLoc = ui.txtExportDir->text().toStdString();
 	
-	ui.txtImem1->text().size() ? _gen.Imem1 = ui.txtImem1->text().toInt() : _gen.Imem1 = ui.txtImem1->placeholderText().toInt();
-	ui.txtImem2->text().size() ? _gen.Imem2 = ui.txtImem2->text().toInt() : _gen.Imem1 = ui.txtImem2->placeholderText().toInt();
-	ui.txtImem3->text().size() ? _gen.Imem3 = ui.txtImem3->text().toInt() : _gen.Imem1 = ui.txtImem3->placeholderText().toInt();
-	_gen.doNearField = ui.chkNearfield->isChecked();
-	ui.txtNear1->text().size() ? _gen.near1 = ui.txtNear1->text().toDouble() : _gen.near1 = ui.txtNear1->placeholderText().toDouble();
-	ui.txtNear2->text().size() ? _gen.near2 = ui.txtNear2->text().toDouble() : _gen.near2 = ui.txtNear2->placeholderText().toDouble();
-	ui.txtNear3->text().size() ? _gen.near3 = ui.txtNear3->text().toDouble() : _gen.near3 = ui.txtNear3->placeholderText().toDouble();
-	ui.txtNear4->text().size() ? _gen.near4 = ui.txtNear4->text().toDouble() : _gen.near4 = ui.txtNear4->placeholderText().toDouble();
-	ui.txtNear5->text().size() ? _gen.near5 = ui.txtNear5->text().toDouble() : _gen.near5 = ui.txtNear5->placeholderText().toDouble();
-	ui.txtNear6->text().size() ? _gen.near6 = ui.txtNear6->text().toDouble() : _gen.near6 = ui.txtNear6->placeholderText().toDouble();
-	ui.txtMaxTol->text().size() ? _gen.maxTol = ui.txtMaxTol->text().toDouble() : _gen.maxTol = ui.txtMaxTol->placeholderText().toDouble();
-	ui.txtMaxIter->text().size() ? _gen.maxIter = ui.txtMaxIter->text().toDouble() : _gen.maxIter =  ui.txtMaxIter->placeholderText().toDouble();
-	ui.txtGamma->text().size() ? _gen.gamma = ui.txtGamma->text().toDouble() : _gen.gamma =  ui.txtGamma->placeholderText().toDouble();
-	ui.txtETASCA->text().size() ? _gen.etasca = ui.txtETASCA->text().toDouble() : _gen.etasca =  ui.txtETASCA->placeholderText().toDouble();
-	ui.txtNAMBIENT->text().size() ? _gen.nambient = ui.txtNAMBIENT->text().toDouble() : _gen.nambient =  ui.txtNAMBIENT->placeholderText().toDouble();
+	_gen.base.doTorques(ui.chkDoTorques->isChecked());
+	_gen.base.setSolnMeth(ui.cmbSolnMeth->currentText().toStdString());
+	_gen.base.setFFTsolver(ui.cmbFFTsolver->currentText().toStdString());
+	_gen.base.setCalpha(ui.cmbCALPHA->currentText().toStdString());
+	_gen.base.setBinning(ui.cmbBinning->currentText().toStdString());
 
-	_gen.doTorques = ui.chkDoTorques->isChecked();
-	_gen.solnMeth = ui.cmbSolnMeth->currentText().toStdString();
-	_gen.FFTsolver = ui.cmbFFTsolver->currentText().toStdString();
-	_gen.Calpha = ui.cmbCALPHA->currentText().toStdString();
-	_gen.binning = ui.cmbBinning->currentText().toStdString();
+	_gen.base.Imem(0, getValText<int>(this->ui.txtImem1) );
+	_gen.base.Imem(1, getValText<int>(this->ui.txtImem2) );
+	_gen.base.Imem(2, getValText<int>(this->ui.txtImem3) );
 
-	MARK();
-	// Target types
+	_gen.base.doNearField(ui.chkNearfield->isChecked());
 
-	// Temps
+	_gen.base.near(0, getValText<double>(ui.txtNear1) );
+	_gen.base.near(1, getValText<double>(ui.txtNear2) );
+	_gen.base.near(2, getValText<double>(ui.txtNear3) );
+	_gen.base.near(3, getValText<double>(ui.txtNear4) );
+	_gen.base.near(4, getValText<double>(ui.txtNear5) );
+	_gen.base.near(5, getValText<double>(ui.txtNear6) );
 
-	// Freqs
+	_gen.base.maxTol(getValText<double>(ui.txtMaxTol) );
+	_gen.base.maxIter(getValText<size_t>(ui.txtMaxIter) );
+	_gen.base.gamma(getValText<double>(ui.txtGamma) );
+	_gen.base.etasca(getValText<double>(ui.txtETASCA) );
+	_gen.base.nAmbient(getValText<double>(ui.txtNAMBIENT) );
+	_gen.base.writeSca( ui.chkWriteSca->isChecked());
 
-	// Sizes
+	// Global properties
+	{
+		_gen.shapeConstraints.clear();
+
+		QTreeWidgetItem *i = ui.treeGlobals->takeTopLevelItem(0);
+		while (i)
+		{
+			// Can get info from each column as a text string.
+			// Col 0 is var name
+			// Col 1 is range
+			// Col 2 is units
+			std::string vname, range, units;
+			vname = i->text(0).toStdString();
+			range = i->text(1).toStdString();
+			units = i->text(2).toStdString();
+
+			using namespace rtmath::ddscat;
+			_gen.addConstraint(shapeConstraint::create(vname, range, units));
+
+			i = ui.treeGlobals->itemBelow(i);
+		}
+	}
+
+	GETOBJKEY();
+	// Target properties
+	// Need to use shape matching / casting function
+	{
+	}
 
 	// Rotations
+	{
+		_gen.rots.clear();
+		QTreeWidgetItem *i = ui.treeScattAngles->takeTopLevelItem(0);
+		while (i)
+		{
+			double bMin, bMax, tMin, tMax, pMin, pMax;
+			size_t bN, tN, pN;
+
+			bMin = i->text(0).toDouble();
+			bMax = i->text(1).toDouble();
+			bN = i->text(2).toInt();
+			tMin = i->text(3).toDouble();
+			tMax = i->text(4).toDouble();
+			tN = i->text(5).toInt();
+			pMin = i->text(6).toDouble();
+			pMax = i->text(7).toDouble();
+			pN = i->text(8).toInt();
+
+			_gen.rots.insert( rtmath::ddscat::rotations::create(bMin,bMax,bN,tMin,tMax,tN,pMin,pMax,pN) );
+
+			i = ui.treeScattAngles->itemBelow(i);
+		}
+	}
 
 	// Scattering angles
+	{
+		size_t n = 0;
+
+		QTreeWidgetItem *i = ui.treeScattAngles->takeTopLevelItem(0);
+		while (i)
+		{
+			n++;
+			// Can get info from each column as a text string.
+			// phi, theta_min, theta_max, ntheta
+			double phi, thetan_min, thetan_max, dtheta;
+			phi = i->text(0).toDouble();
+			thetan_min = i->text(1).toDouble();
+			thetan_max = i->text(2).toDouble();
+			dtheta = i->text(3).toDouble();
+
+			using namespace rtmath::ddscat;
+			_gen.base.setPlane(n, phi, thetan_min, thetan_max, dtheta);
+
+			i = ui.treeScattAngles->itemBelow(i);
+		}
+		// Set number of scattering planes after iteration
+		_gen.base.numPlanes(n);
+	}
+	
 }
 
 void frmMain::fromGenerator()
 {
-	MARK();
+	GETOBJKEY();
 }
 

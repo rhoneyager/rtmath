@@ -22,7 +22,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tabGeneral">
        <attribute name="title">
@@ -706,40 +706,57 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="tab_3">
        <attribute name="title">
-        <string>Target</string>
+        <string>Global Properties</string>
        </attribute>
-       <layout class="QFormLayout" name="formLayout_3">
+       <layout class="QFormLayout" name="formLayout_4">
         <property name="fieldGrowthPolicy">
          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
         </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_26">
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_33">
           <property name="text">
-           <string>Target Types:</string>
+           <string>Global Properties:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QTreeView" name="treeTypes">
+        <item row="1" column="1">
+         <widget class="QTreeWidget" name="treeGlobals">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
           <property name="toolTip">
-           <string>TODO</string>
+           <string>TODO! Have quantity be selected from a combo box</string>
           </property>
           <property name="statusTip">
-           <string>Specify the targets to be considered. These may be built-in ddscat shapes, or they may be sets of shape files, subject to any additional constraints.</string>
+           <string>Specify target dimensions. Range notation (min:lin span:max) accepted. Units required.</string>
           </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_30">
-          <property name="text">
-           <string>Temperatures:</string>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Variable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Range</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Units</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label_31">
+         <widget class="QLabel" name="label_28">
           <property name="text">
            <string>Dielectric Materials:</string>
           </property>
@@ -782,112 +799,37 @@
           </item>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QTreeWidget" name="treeTemps">
-          <property name="contextMenuPolicy">
-           <enum>Qt::CustomContextMenu</enum>
-          </property>
-          <property name="statusTip">
-           <string>Specify temperature values. Range notation (min:lin span:max) accepted.</string>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
-          <column>
-           <property name="text">
-            <string>Range</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Units</string>
-           </property>
-          </column>
-         </widget>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_3">
+      <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Size and Frequency</string>
+        <string>Targets</string>
        </attribute>
-       <layout class="QFormLayout" name="formLayout_4">
+       <layout class="QFormLayout" name="formLayout_3">
         <property name="fieldGrowthPolicy">
          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
         </property>
         <item row="0" column="0">
-         <widget class="QLabel" name="label_32">
+         <widget class="QLabel" name="label_26">
           <property name="text">
-           <string>Frequencies:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_33">
-          <property name="text">
-           <string>Target Sizes:</string>
+           <string>Targets:</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QTreeWidget" name="treeFreqs">
-          <property name="contextMenuPolicy">
-           <enum>Qt::CustomContextMenu</enum>
-          </property>
-          <property name="statusTip">
-           <string>Specify frequencies. Range notation (min:lin span:max) accepted. Units required.</string>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
-          <column>
-           <property name="text">
-            <string>Range</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Units</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QTreeWidget" name="treeSizes">
-          <property name="contextMenuPolicy">
-           <enum>Qt::CustomContextMenu</enum>
-          </property>
+         <widget class="QTreeWidget" name="treeTypes">
           <property name="toolTip">
-           <string>TODO! Have quantity be selected from a combo box</string>
+           <string>TODO</string>
           </property>
           <property name="statusTip">
-           <string>Specify target dimensions. Range notation (min:lin span:max) accepted. Units required.</string>
+           <string>Specify the targets to be considered. These may be built-in ddscat shapes, or they may be sets of shape files, subject to any additional constraints.</string>
           </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
           <column>
            <property name="text">
-            <string>Quantity</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Range</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Units</string>
+            <string notr="true">1</string>
            </property>
           </column>
          </widget>
@@ -1191,42 +1133,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>treeFreqs</sender>
+   <sender>treeGlobals</sender>
    <signal>customContextMenuRequested(QPoint)</signal>
    <receiver>frmMainClass</receiver>
-   <slot>menuFreqs(QPoint)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>440</x>
-     <y>156</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>407</x>
-     <y>306</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>treeFreqs</sender>
-   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>frmMainClass</receiver>
-   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>440</x>
-     <y>156</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>407</x>
-     <y>306</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>treeSizes</sender>
-   <signal>customContextMenuRequested(QPoint)</signal>
-   <receiver>frmMainClass</receiver>
-   <slot>menuSizes(QPoint)</slot>
+   <slot>menuGlobals(QPoint)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>440</x>
@@ -1239,7 +1149,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>treeSizes</sender>
+   <sender>treeGlobals</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
    <receiver>frmMainClass</receiver>
    <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
@@ -1279,38 +1189,6 @@
     <hint type="sourcelabel">
      <x>450</x>
      <y>179</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>407</x>
-     <y>306</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>treeTemps</sender>
-   <signal>customContextMenuRequested(QPoint)</signal>
-   <receiver>frmMainClass</receiver>
-   <slot>menuTemps(QPoint)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>455</x>
-     <y>300</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>407</x>
-     <y>306</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>treeTemps</sender>
-   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>frmMainClass</receiver>
-   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>455</x>
-     <y>300</y>
     </hint>
     <hint type="destinationlabel">
      <x>407</x>
@@ -1430,10 +1308,42 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>treeTypes</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>editTreeItem(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>429</x>
+     <y>156</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeTypes</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>menuTargets(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>429</x>
+     <y>156</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>407</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>menuFreqs(QPoint)</slot>
-  <slot>menuSizes(QPoint)</slot>
+  <slot>menuGlobals(QPoint)</slot>
   <slot>menuRots(QPoint)</slot>
   <slot>menuScaAngles(QPoint)</slot>
   <slot>menuTargets(QPoint)</slot>

@@ -77,7 +77,7 @@ namespace rtmath {
 			const double pi = boost::math::constants::pi<double>();
 			double raw;
 			string units;
-
+			/*
 			{
 				set<boost::tuple<string,string> > permutations;
 				permutations.insert(boost::make_tuple<string,string>("xy","z"));
@@ -160,7 +160,7 @@ namespace rtmath {
 					}
 				}
 			}
-
+			*/
 			if (id == "DENS_T")
 			{
 				// Using http://www.ptb.de/cms/fileadmin/internet/
