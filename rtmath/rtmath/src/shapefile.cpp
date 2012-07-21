@@ -13,8 +13,13 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/kurtosis.hpp>
+#include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
+#include <boost/accumulators/statistics/skewness.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -193,38 +198,48 @@ namespace rtmath {
 			return boost::const_pointer_cast<shapefile>(a);
 		}
 
+
+
+
 		shapeFileStats::shapeFileStats(const shapefile &shp, double beta, double theta, double phi)
 		{
-			_init();
 			_shp = shp.getPtr();
 			setRot(beta,theta,phi);
 		}
 
 		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
 		{
-			_init();
 			_shp = shp;
 			setRot(beta,theta,phi);
 		}
 
-		void shapeFileStats::_init()
+		shapeFileStats::shapeFileStats()
 		{
-			//_shp = nullptr;
-			_rot = boost::make_shared<matrixop>(matrixop::identity(2,3,3));
-			_beta = 0;
-			_theta = 0;
-			_phi = 0;
 		}
 
-		void shapeFileStats::setRot(double beta, double theta, double phi)
+		shapeFileStatsBase::shapeFileStatsBase()
+			: cm(2,3,3), rot(2,3,3), mom1(2,3,3), mom2(2,3,3)
 		{
-			_beta = beta;
-			_theta = theta;
-			_phi = phi;
+			rot = matrixop::identity(2,3,3);
+			beta = 0;
+			theta = 0;
+			phi = 0;
+			_N = 0;
+		}
+
+		shapeFileStatsBase::~shapeFileStatsBase()
+		{
+		}
+
+		void shapeFileStatsBase::setRot(double beta, double theta, double phi)
+		{
+			this->beta = beta;
+			this->theta = theta;
+			this->phi = phi;
 
 			if (beta == 0 && theta == 0 && phi == 0)
 			{
-				_rot = boost::make_shared<matrixop>(matrixop::identity(2,3,3));
+				rot = matrixop::identity(2,3,3);
 				return;
 			}
 
@@ -259,11 +274,12 @@ namespace rtmath {
 			Rz.set(-st,2,0,1);
 
 			matrixop Rtot = Rz*Rx*Ry;
-			_rot = boost::make_shared<matrixop>(Rtot);
+			rot = Rtot;
 		}
 
-		void shapeFileStats::_calcOtherStats()
+		void shapeFileStatsBase::_calcStats()
 		{
+			using namespace std;
 			// Do calculations of the center of mass, the tensor quantities, and other stuff
 			// The functions called here are all indep. of the initial state, as mass, density,
 			// volume and everything else have been calculated already.
@@ -274,20 +290,50 @@ namespace rtmath {
 			// Iterate accumulator as function of radial distance from center of mass
 
 			// 
-			/*
+			_N = _shp->_latticePtsStd.size();
 			// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
 			using namespace boost::accumulators;
-
+			
+			// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
+			// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
 			accumulator_set<double, stats<
-			tag::(min),
-			tag::(max), 
-			tag::sum,
-			tag::mean, 
-			tag::moment<2>,
-			tag::skewness,
-			tag::kurtosis
-			> > acc_x, acc_y, acc_z;
+				tag::min,
+				tag::max, 
+				tag::moment<1>,
+				tag::moment<2>,
+				tag::sum,
+				tag::mean, 
+				tag::skewness,
+				tag::kurtosis,
+				tag::variance
+				> > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
+				
+			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
+			{
+				// it->first is the points id. it->second is its matrixop coords (3x1 matrix)
+				// Mult by rotaion matrix to get 3x1 rotated matrix
+				matrixop pt = rot * it->second;
+				//vector<double> vpt(3);
+				//pt.to<std::vector<double> >(vpt);
+				acc_x(pt.get(2,0,0));
+				acc_y(pt.get(2,1,0));
+				acc_z(pt.get(2,2,0));
 
+				// Accumulators are in TF frame? Check against Holly code
+			}
+
+			// Are other quantities needed?
+
+			// Export to class matrixops
+			mom1.set(boost::accumulators::moment<1>(acc_x),2,0,0);
+			mom1.set(boost::accumulators::moment<1>(acc_y),2,1,0);
+			mom1.set(boost::accumulators::moment<1>(acc_z),2,2,0);
+
+			mom2.set(boost::accumulators::moment<2>(acc_x),2,0,0);
+			mom2.set(boost::accumulators::moment<2>(acc_y),2,1,0);
+			mom2.set(boost::accumulators::moment<2>(acc_z),2,2,0);
+			GETOBJKEY();
+			/*
 			accumulator_set<double, stats<
 			tag::sum
 			> > iner_xx, iner_yy, iner_zz, iner_xy, iner_xz, iner_yz;
@@ -312,3 +358,6 @@ std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob)
 }
 
 
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsBase)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStats)

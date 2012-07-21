@@ -1,4 +1,5 @@
 #include "../rtmath/Stdafx.h"
+#include <algorithm>
 #include <memory>
 #include <cmath>
 #include "../rtmath/matrixop.h"
@@ -1248,8 +1249,7 @@ namespace rtmath {
 	{
 		// Take the data and convert to an array of doubles
 		// Use pointers to do this, and assume that target is pre-sized appropriately
-		for (size_t i=0; i<_datasize; i++)
-			target[i] = _data[i];
+		std::copy(_data,_data+_datasize,target);
 	}
 
 	void matrixop::print(std::ostream &out) const

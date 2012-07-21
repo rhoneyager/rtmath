@@ -292,7 +292,7 @@ namespace rtmath {
 		void ddPar::writeFile(const std::string &filename) const
 		{
 			populateDefaults();
-			ofstream out(filename.c_str());
+			std::ofstream out(filename.c_str());
 			write(out);
 		}
 

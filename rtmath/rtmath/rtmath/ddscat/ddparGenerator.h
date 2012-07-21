@@ -51,7 +51,6 @@ namespace rtmath {
 			std::set<boost::shared_ptr<shapeModifiable> > shapes;
 
 			ddPar base;
-			std::string baseParFile;
 
 			// These don't go into a ddscat.par file
 			std::string name, description, outLocation;
@@ -78,7 +77,6 @@ namespace rtmath {
 				ar & BOOST_SERIALIZATION_NVP(ddscatVer);
 				ar & BOOST_SERIALIZATION_NVP(strPreCmds);
 				ar & BOOST_SERIALIZATION_NVP(strPostCdms);
-				ar & BOOST_SERIALIZATION_NVP(baseParFile);
 
 				ar & BOOST_SERIALIZATION_NVP(compressResults);
 				ar & BOOST_SERIALIZATION_NVP(genIndivScripts);
@@ -89,7 +87,7 @@ namespace rtmath {
 				ar & BOOST_SERIALIZATION_NVP(exportLoc);
 
 				// The par file needs serialization, as it holds some properties
-				ar & boost::serialization::make_nvp("ddPar", base);
+				ar & boost::serialization::make_nvp("baseParFile", base);
 				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
 
 				ar & BOOST_SERIALIZATION_NVP(rots);

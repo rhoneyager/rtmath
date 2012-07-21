@@ -1,10 +1,25 @@
 #pragma once
+#include <algorithm>
 #include <vector>
 #include <map>
 #include <cstdarg>
 #include <memory>
 #include <string>
 #include <iostream>
+
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+
 #include "defs.h"
 #include "mapid.h"
 #include "error/debug.h"
@@ -94,7 +109,25 @@ namespace rtmath {
 		inlinerval(matrixop,minors); // macro to inline a variable length function
 		
 		void toDoubleArray(double *target) const;
+		template <class T> void to(T &start) const
+		{
+			std::copy(_data,_data+_datasize, start);
+		}
+		template <> void to<std::vector<double> >(std::vector<double> &target) const
+		{
+			target.resize(_datasize);
+			std::copy(_data,_data+_datasize,target.begin());
+		}
+
 		void fromDoubleArray(const double *target);
+		template <const class T> void from(const T &start)
+		{
+			std::copy(start, start+_datasize, _data);
+		}
+		template <> void from<const std::vector<double> >(const std::vector<double> &target)
+		{
+			std::copy(target.begin(), target.end(), _data);
+		}
 		void inverse(matrixop &res) const;
 		inline matrixop inverse() const { matrixop res(_dims); inverse(res); return res; }
 		void posFromIndex(size_t index, std::vector<size_t> &pos) const; // duplicate of _getPos!!
@@ -110,6 +143,42 @@ namespace rtmath {
 		void _free();
 		size_t _datasize;
 		double *_data;
+		friend class boost::serialization::access;
+	private:
+		template<class Archive>
+		void save(Archive & ar, const unsigned int version) const
+		{
+			ar & boost::serialization::make_nvp("Dimensions", _dims);
+			//ar & boost::serialization::make_nvp("Size", _datasize);
+			std::ostringstream out;
+			for (size_t i=0; i<_datasize-1; i++)
+			{
+				out << _data[i] << ",";
+			}
+			out << _data[_datasize-1];
+			std::string savedata = out.str();
+			ar & boost::serialization::make_nvp("Data", savedata);
+		}
+		template<class Archive>
+		void load(Archive & ar, const unsigned int version)
+		{
+			std::string savedata;
+			ar & boost::serialization::make_nvp("Dimensions", _dims);
+			resize(_dims);
+			// Loading _datasize is sort of pointless, as resize sets it
+			//ar & boost::serialization::make_nvp("Size", _datasize);
+			ar & boost::serialization::make_nvp("Data", savedata);
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",");
+			tokenizer tcom(savedata,sep);
+			size_t i=0;
+			for (auto ot = tcom.begin(); ot != tcom.end(); ot++, i++)
+			{
+				_data[i] = boost::lexical_cast<double>(*ot);
+			}
+		}
+		BOOST_SERIALIZATION_SPLIT_MEMBER()
 	public: // Static member functions start here
 		// These functions construct a new matrixop. It is NOT in a shared_ptr.
 		// Done like this because I then have the choice of pointer container.

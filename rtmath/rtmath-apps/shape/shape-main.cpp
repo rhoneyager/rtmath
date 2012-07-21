@@ -9,16 +9,16 @@
  * However, the number of dipoles is presented, along with crystal volume relations for a given 
  * radius. 
  */
-
+#pragma warning( push )
+#pragma warning( disable : 4996 )
+#pragma warning( disable : 4800 )
 #include <cmath>
 #include <memory>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <set>
-#pragma warning( push )
-#pragma warning( disable : 4996 )
-#pragma warning( disable : 4800 )
+
 #include <TGraph.h>
 #include <TF1.h>
 #include <TCanvas.h>
@@ -87,7 +87,10 @@ int main(int argc, char** argv)
 
 		// Load the shape file
 		rtmath::ddscat::shapefile shp(shapepath);
-		shp.print(out);
+
+		rtmath::ddscat::shapeFileStats sstats(shp);
+		rtmath::serialization::write<rtmath::ddscat::shapeFileStats>(sstats,"stats.xml");
+		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)
 	{

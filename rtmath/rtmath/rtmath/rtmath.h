@@ -6,8 +6,9 @@
 
 #pragma once
 
-#pragma warning( push )
+//#pragma warning( push )
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+#pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
 
 // Needed for compatability with older boost versions
 #define BOOST_FILESYSTEM_VERSION 3
@@ -61,4 +62,4 @@
 // Link with ROOT on MSVC
 #include "ROOTlink.h"
 
-#pragma warning( pop )
+//#pragma warning( pop )

@@ -2,6 +2,7 @@
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
 #include "../rtmath/matrixop.h"
+#include "../rtmath/serialization.h"
 
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK
@@ -48,6 +49,30 @@ BOOST_AUTO_TEST_CASE(matrixop_arrays) {
 	a.toDoubleArray(cvals);
 	for (size_t i=0;i<n;i++)
 		BOOST_CHECK_EQUAL(vals[i],cvals[i]);
+}
+
+// Check read / write from vectors and double arrays using template to<>, from<>
+BOOST_AUTO_TEST_CASE(matrixop_to_from)
+{
+	const double vals[] = {
+		1,2,3,4,5,6,7,8,
+		9,10,11,12,13,14,15,16 };
+	double check[16];
+	rtmath::matrixop a(2,4,4), b(2,4,4);
+	a = vals;
+	
+	std::vector<double> v, vb;
+	v.resize(16);
+	a.to<std::vector<double>::iterator >(v.begin());
+	a.to<std::vector<double> >(vb);
+	a.to<double[16]>(check); // Odd template, but double[constexpr] is not the same type as double*
+
+	b.from<double*>(check);
+	BOOST_CHECK(a==b);
+	b.from<const std::vector<double> >(vb);
+	BOOST_CHECK(a==b);
+	b.from<const std::vector<double>::const_iterator>(v.begin());
+	BOOST_CHECK(a==b);
 }
 
 // Check equality / inequality
@@ -234,6 +259,29 @@ BOOST_AUTO_TEST_CASE(matrixop_det) {
 
 // Check _getpos
 
+// Check serialization / loading
+BOOST_AUTO_TEST_CASE(matrixop_serialization) {
+	using namespace std;
+	using namespace rtmath;
+	matrixop a(2,4,4), b(2,4,4);
+	const double ai[] = { 	1,2,3,4,
+							5,6,7,8,
+							9,10,11,12,
+							13,14,15,16 };
+	a = ai;
+
+	string sObj;
+	ostringstream out;
+	serialization::write<matrixop>(a,out);
+	sObj = out.str();
+	//cout << sObj << endl;
+	istringstream in(sObj);
+	serialization::read<matrixop>(b,in);
+
+	bool res = false;
+	if (b == a) res = true;
+	BOOST_CHECK(res==true);
+}
 
 BOOST_AUTO_TEST_SUITE_END();
 

@@ -62,9 +62,10 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#pragma warning( push )
+//#pragma warning( push )
 #pragma warning( disable : 4996 )
 #pragma warning( disable : 4800 )
+/*
 #include "TGraph.h"
 #include "TF1.h"
 #include "TCanvas.h"
@@ -73,7 +74,8 @@
 #include "TGraph2D.h"
 #include "TStyle.h"
 #include "TH2.h"
-#pragma warning( pop ) 
+*/
+//#pragma warning( pop ) 
 
 //#ifdef _OPENMP
 //#include <omp.h>

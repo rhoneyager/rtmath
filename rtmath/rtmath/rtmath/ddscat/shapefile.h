@@ -17,6 +17,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/weak_ptr.hpp>
@@ -46,21 +47,21 @@ namespace rtmath {
 			shapefile();
 			void _init();
 			std::string _filename;
-			//std::map<size_t, std::shared_ptr<const matrixop> >
-			//	_moments;
 			boost::shared_ptr<const matrixop> _lattice;
 			std::map<size_t, matrixop > _latticePts;
 			std::map<size_t, matrixop > _latticePtsRi;
-			std::map<size_t, matrixop > _latticePtsStd;
+			std::map<size_t, matrixop > _latticePtsStd; // Normalized coord transform
 			size_t _numPoints;
 			std::string _desc;
-			boost::shared_ptr<matrixop> _a1, _a2, _a3;
+			// Specified in shape.dat
+			boost::shared_ptr<matrixop> _a1, _a2, _a3; // except for a3
 			boost::shared_ptr<const matrixop > _d;
 			boost::shared_ptr<const matrixop > _x0, _xd;
-			//std::shared_ptr<matrixop> _I; // Moments of inertia (not counting mass) in xyz coords
+			
+			friend class shapeFileStatsBase;
 			friend class shapeFileStats;
 			friend class boost::serialization::access;
-		public:
+		private:
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
@@ -69,42 +70,61 @@ namespace rtmath {
 				}
 		};
 
-		class shapeFileStats
+
+		class shapeFileStatsBase
 		{
 		public:
-			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
-			shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
 			inline size_t N() const {return _N;}
-
 			// Set rotation matrix, with each value in degrees
 			void setRot(double beta, double theta, double phi);
-		private:
+		protected:
+			shapeFileStatsBase();
+			virtual ~shapeFileStatsBase();
+			void _calcStats();
+
 			size_t _N;// Number of dipoles
 
+			// Moments
+			matrixop mom1, mom2;
 			// Center of mass
-
+			matrixop cm;
 			// Inertia tensor
 
 			// The object
 			boost::shared_ptr<const shapefile> _shp;
 			// The rotations
-			boost::shared_ptr<matrixop> _rot;
-			double _beta, _theta, _phi;
-			// Functions
-			void _init();
-			void _calcOtherStats();
+			matrixop rot;
+			double beta, theta, phi;
+		private:
 			friend class boost::serialization::access;
-		public:
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeModifiable);
+					ar & boost::serialization::make_nvp("shapefile", _shp);
 					ar & boost::serialization::make_nvp("N", _N);
-					ar & boost::serialization::make_nvp("beta", _beta);
-					ar & boost::serialization::make_nvp("theta", _theta);
-					ar & boost::serialization::make_nvp("phi", _phi);
-					//ar & BOOST_SERIALIZATION_NVP(_shp);
-					// TODO: add rotations (needs matrixop serialization)
+					ar & BOOST_SERIALIZATION_NVP(beta);
+					ar & BOOST_SERIALIZATION_NVP(theta);
+					ar & BOOST_SERIALIZATION_NVP(phi);
+					ar & BOOST_SERIALIZATION_NVP(rot);
+					ar & BOOST_SERIALIZATION_NVP(mom1);
+					ar & BOOST_SERIALIZATION_NVP(mom2);
+					ar & BOOST_SERIALIZATION_NVP(cm);
+				}
+		};
+
+		class shapeFileStats : public shapeFileStatsBase
+		{
+		public:
+			shapeFileStats();
+			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
+			shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
+
+		private:
+			friend class boost::serialization::access;
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeFileStatsBase);
 				}
 		};
 
@@ -114,3 +134,6 @@ namespace rtmath {
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob);
 std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
 
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsBase)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStats)
