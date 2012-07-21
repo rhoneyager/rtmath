@@ -183,7 +183,7 @@ namespace rtmath {
 			out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
 			_x0->writeSV("\t",out,false);
 			out << "\t= X0(1-3) = location in lattice of target origin" << endl;
-			out << "\tNo.\tix\tiy\tiz\t1\t1\t1" << endl;
+			out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
 			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 			{
 				out << "\t" << it->first << "\t";
