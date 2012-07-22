@@ -406,7 +406,7 @@ namespace rtmath {
 			// Using moment<1> to rescale value by dividing by the total number of points.
 			// I'm currently ignoring the mass term, so am making the ansatz that the whole flake 
 			// has unit mass.
-			accumulator_set<double, stats<tag::moment<1>> > abs_x, abs_y, abs_z;
+			accumulator_set<double, stats<tag::min, tag::max, tag::moment<1> > > abs_x, abs_y, abs_z;
 			// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
 			// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
 			accumulator_set<double, stats<
@@ -474,9 +474,55 @@ namespace rtmath {
 			res.mom2.set(boost::accumulators::moment<2>(acc_y),2,1,0);
 			res.mom2.set(boost::accumulators::moment<2>(acc_z),2,2,0);
 
-			res.PE.set(boost::accumulators::moment<1>(abs_x),2,0,0); // abs, not acc here
-			res.PE.set(boost::accumulators::moment<1>(abs_y),2,1,0);
-			res.PE.set(boost::accumulators::moment<1>(abs_z),2,2,0);
+			// Absolue value-dependent quantities
+
+			res.abs_min.set(boost::accumulators::min(abs_x),2,0,0); // abs, not acc here
+			res.abs_min.set(boost::accumulators::min(abs_y),2,1,0);
+			res.abs_min.set(boost::accumulators::min(abs_z),2,2,0);
+
+			res.abs_max.set(boost::accumulators::max(abs_x),2,0,0); // abs, not acc here
+			res.abs_max.set(boost::accumulators::max(abs_y),2,1,0);
+			res.abs_max.set(boost::accumulators::max(abs_z),2,2,0);
+
+			res.abs_mean.set(boost::accumulators::moment<1>(abs_x),2,0,0); // abs, not acc here
+			res.abs_mean.set(boost::accumulators::moment<1>(abs_y),2,1,0);
+			res.abs_mean.set(boost::accumulators::moment<1>(abs_z),2,2,0);
+			res.PE = res.abs_mean;
+
+
+			// Aspect ratios
+			// Absolute aspect ratio
+			res.as_abs.set(1,2,0,0);
+			res.as_abs.set(boost::accumulators::max(abs_x)/boost::accumulators::max(abs_y),2,0,1);
+			res.as_abs.set(boost::accumulators::max(abs_x)/boost::accumulators::max(abs_z),2,0,2);
+			res.as_abs.set(boost::accumulators::max(abs_y)/boost::accumulators::max(abs_x),2,1,0);
+			res.as_abs.set(1,2,1,1);
+			res.as_abs.set(boost::accumulators::max(abs_y)/boost::accumulators::max(abs_z),2,1,2);
+			res.as_abs.set(boost::accumulators::max(abs_z)/boost::accumulators::max(abs_x),2,2,0);
+			res.as_abs.set(boost::accumulators::max(abs_z)/boost::accumulators::max(abs_y),2,2,1);
+			res.as_abs.set(1,2,2,2);
+
+			// Absolute mean
+			res.as_abs_mean.set(1,2,0,0);
+			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_y),2,0,1);
+			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_z),2,0,2);
+			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_x),2,1,0);
+			res.as_abs_mean.set(1,2,1,1);
+			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_z),2,1,2);
+			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_x),2,2,0);
+			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_y),2,2,1);
+			res.as_abs_mean.set(1,2,2,2);
+
+			// Absolute rms
+			res.as_rms.set(1,2,0,0);
+			res.as_rms.set(boost::accumulators::moment<2>(acc_x)/boost::accumulators::moment<2>(acc_y),2,0,1);
+			res.as_rms.set(boost::accumulators::moment<2>(acc_x)/boost::accumulators::moment<2>(acc_z),2,0,2);
+			res.as_rms.set(boost::accumulators::moment<2>(acc_y)/boost::accumulators::moment<2>(acc_x),2,1,0);
+			res.as_rms.set(1,2,1,1);
+			res.as_rms.set(boost::accumulators::moment<2>(acc_y)/boost::accumulators::moment<2>(acc_z),2,1,2);
+			res.as_rms.set(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_x),2,2,0);
+			res.as_rms.set(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_y),2,2,1);
+			res.as_rms.set(1,2,2,2);
 
 			//covariance
 			res.covariance.set(_N*boost::accumulators::moment<2>(acc_x),2,0,0);
@@ -660,7 +706,9 @@ namespace rtmath {
 
 		shapeFileStatsRotated::shapeFileStatsRotated()
 			: min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1), PE(2,3,1),
-			mom1(2,3,1), mom2(2,3,1), mominert(2,3,3), covariance(2,3,3)
+			mom1(2,3,1), mom2(2,3,1), mominert(2,3,3), covariance(2,3,3),
+			abs_min(2,3,1), abs_max(2,3,1), abs_mean(2,3,1),
+			as_abs(2,3,3), as_abs_mean(2,3,3), as_rms(2,3,3)
 		{
 			this->beta = 0;
 			this->theta = 0;

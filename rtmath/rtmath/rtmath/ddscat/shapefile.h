@@ -101,6 +101,11 @@ namespace rtmath {
 			matrixop mom1, mom2, mominert;
 			matrixop covariance;
 
+			matrixop abs_min, abs_max, abs_mean; // - abs_mean is also PE
+
+			// Aspect ratios
+			matrixop as_abs, as_abs_mean, as_rms;
+
 			//void calc();
 			bool operator<(const shapeFileStatsRotated &rhs) const;
 		private:
@@ -121,6 +126,12 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(mom1);
 					ar & BOOST_SERIALIZATION_NVP(mom2);
 					ar & BOOST_SERIALIZATION_NVP(covariance);
+					ar & BOOST_SERIALIZATION_NVP(abs_min);
+					ar & BOOST_SERIALIZATION_NVP(abs_max);
+					ar & BOOST_SERIALIZATION_NVP(abs_mean);
+					ar & BOOST_SERIALIZATION_NVP(as_abs);
+					ar & BOOST_SERIALIZATION_NVP(as_abs_mean);
+					ar & BOOST_SERIALIZATION_NVP(as_rms);
 					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
 				}
 		};

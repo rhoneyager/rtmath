@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 			("trial-run,T", "Only list what would be done")
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("output,o", "output filename")
+			("separate-outputs,-s", "Write separate output file for each input. Use default naming scheme.")
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
 			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
@@ -81,21 +82,29 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
+		bool sepOutputs = false;
+		if (vm.count("separate-outputs")) sepOutputs = true;
+		
 		string output; 
-		if (!vm.count("output"))
+		if (!sepOutputs)
 		{
-			if (inputs.size() == 1)
+			if (!vm.count("output"))
 			{
-				output = inputs[0];
-				output.append(".stats.xml");
+				if (inputs.size() == 1)
+				{
+					output = inputs[0];
+					output.append(".stats.xml");
+				} else {
+					output = "shapestats.xml";
+				}
 			} else {
-				output = "shapestats.xml";
+				output = vm["output"].as<string>();
 			}
-		} else {
-			output = vm["output"].as<string>();
-		}
 
-		cerr << "Outputting to: " << output << endl;
+			cerr << "Outputting to: " << output << endl;
+		} else {
+			cerr << "Separating output files" << endl;
+		}
 
 		// Validate input files
 		for (auto it = inputs.begin(); it != inputs.end(); it++)
@@ -133,6 +142,8 @@ int main(int argc, char** argv)
 			cerr << *it << " ";
 		cerr << endl;
 
+		
+
 		if (vm.count("trial-run")) 
 		{
 			cerr << "Trial run specified. Terminating here." << endl;
@@ -163,11 +174,22 @@ int main(int argc, char** argv)
 					}
 				}
 			}
-			Stats.push_back(std::move(sstats));
+			
+			if (sepOutputs)
+			{
+				vector<rtmath::ddscat::shapeFileStats> singleStats;
+				singleStats.push_back(std::move(sstats));
+				string ofile = *it;
+				ofile.append(".stats.xml");
+				rtmath::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(singleStats,ofile);
+			} else {
+				Stats.push_back(std::move(sstats));
+			}
 		}
 
 		cerr << "Done calculating. Writing results." << endl;
-		rtmath::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
+		if (!sepOutputs)
+			rtmath::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
 		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)
