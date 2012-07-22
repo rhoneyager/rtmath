@@ -407,17 +407,22 @@ namespace rtmath {
 			// Using moment<1> to rescale value by dividing by the total number of points.
 			// I'm currently ignoring the mass term, so am making the ansatz that the whole flake 
 			// has unit mass.
-			accumulator_set<double, stats<tag::moment<1>> > acc_PE;
+			accumulator_set<double, stats<tag::moment<1>> > acc_x, acc_y, acc_z;
 				
 			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
 			{
 				// it->first is the points id. it->second is its matrixop coords (1x3 matrix)
 				// Mult by rotaion matrix to get 3x1 rotated matrix
 				
-				matrixop pt = rot * (it->transpose() - b_mean);
+				matrixop pt = Roteff * (it->transpose() - b_mean);
+				double x = pt.get(2,0,0);
+				double y = pt.get(2,1,0);
+				double z = pt.get(2,2,0);
 				//vector<double> vpt(3);
 				//pt.to<std::vector<double> >(vpt);
-				acc_PE(abs(pt.get(2,0,0)));
+				acc_x(abs(x));
+				acc_y(abs(y));
+				acc_z(abs(z));
 
 				// Accumulators are in TF frame? Check against Holly code
 			}
@@ -425,9 +430,9 @@ namespace rtmath {
 			// Are other quantities needed?
 
 			// Export to class matrixops
-			res.PE = boost::accumulators::moment<1>(acc_PE);
-
-
+			res.PE.set(boost::accumulators::moment<1>(acc_x),2,0,0);
+			res.PE.set(boost::accumulators::moment<1>(acc_y),2,1,0);
+			res.PE.set(boost::accumulators::moment<1>(acc_z),2,2,0);
 
 
 			// Use std move to insert into set
@@ -671,19 +676,19 @@ namespace rtmath {
 		}
 
 		shapeFileStatsRotated::shapeFileStatsRotated(double beta, double theta, double phi)
+			: PE(2,3,1)
 		{
 			this->beta = beta;
 			this->theta = theta;
 			this->phi = phi;
-			PE = 0;
 		}
 
 		shapeFileStatsRotated::shapeFileStatsRotated()
+			: PE(2,3,1)
 		{
 			this->beta = 0;
 			this->theta = 0;
 			this->phi = 0;
-			PE = 0;
 		}
 
 		shapeFileStatsRotated::~shapeFileStatsRotated()

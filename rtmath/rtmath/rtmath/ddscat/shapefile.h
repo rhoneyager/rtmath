@@ -87,7 +87,7 @@ namespace rtmath {
 			// Derived stats quantities
 			// PE is a potential energy-like function.
 			// PE = sum_i(x_i) (Note: masses assumed to be constant. use scaling factor)
-			double PE;
+			matrixop PE;
 			//void calc();
 			bool operator<(const shapeFileStatsRotated &rhs) const;
 		private:
