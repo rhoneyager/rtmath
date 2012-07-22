@@ -74,21 +74,49 @@ int main(int argc, char** argv)
 		// File found and it exists!
 
 		// Specify output location of analysis...
-		string outpath = "./shapeanalysis.out";
+		string outpath = shapepath;
+		outpath.append(".stats.xml");
+		//string outpath = "./shapeanalysis.out";
 		p.readParam<string>("-o",outpath);
 
+		// Specify beta, theta, phi rotations
+		string sbeta, stheta, sphi;
+		if (!p.readParam<string>("-b",sbeta)) doHelp();
+		if (!p.readParam<string>("-t",stheta)) doHelp();
+		if (!p.readParam<string>("-p",sphi)) doHelp();
+
+		paramSet<double> betas(sbeta);
+		paramSet<double> thetas(stheta);
+		paramSet<double> phis(sphi);
+
 		// Should plots be generated?
-		bool doPlots = p.readParam("-p");
+		//bool doPlots = p.readParam("-P");
 
 
 
 		// Start the run from here
-		ofstream out(outpath.c_str());
+		//ofstream out(outpath.c_str());
 
 		// Load the shape file
+		cerr << "Processing " << shapepath << endl;
 		rtmath::ddscat::shapefile shp(shapepath);
 
+		cerr << "\tCalculating baseline statistics" << endl;
 		rtmath::ddscat::shapeFileStats sstats(shp);
+		for (auto beta = betas.begin(); beta != betas.end(); beta++)
+		{
+			for (auto theta = thetas.begin(); theta != thetas.end(); theta++)
+			{
+				for (auto phi = phis.begin(); phi != phis.end(); phi++)
+				{
+					cerr << "\tCalculating rotation (beta,theta,phi): ("
+						<< *beta << ", " << *theta << ", " << *phi << ")" << endl;
+					sstats.calcStatsRot(*beta,*theta,*phi);
+				}
+			}
+		}
+
+		cerr << "Done calculating. Writing results." << endl;
 		rtmath::serialization::write<rtmath::ddscat::shapeFileStats>(sstats,outpath);
 		//shp.print(out);
 	}
@@ -112,6 +140,8 @@ void doHelp()
 	cerr << "\tIf a directory, try autodetection (default).\n";
 	cerr << "-o (output filename)\n";
 	cerr << "\tOutput file of analysis. Default is ./shapeanalysis.out\n";
+	cerr << "-b, -t, -p\n";
+	cerr << "\tSpecify ranges for rotations beta, theta, phi\n";
 	cerr << endl << endl;
 	exit(1);
 }
