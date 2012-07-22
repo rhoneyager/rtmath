@@ -330,8 +330,6 @@ namespace rtmath {
 		}
 
 
-
-
 		shapeFileStats::shapeFileStats(const shapefile &shp)
 		{
 			_shp = boost::shared_ptr<const shapefile>(new shapefile(shp));
@@ -347,10 +345,8 @@ namespace rtmath {
 		}
 
 		shapeFileStatsBase::shapeFileStatsBase()
-			: mom1(2,3,1), mom2(2,3,1), 
-			min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1), 
-			b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3),
-			mominert(2,3,3), _a1(2,1,3), _a2(2,1,3), covariance(2,3,3)
+			: b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3),
+			_a1(2,1,3), _a2(2,1,3)
 		{
 			_N = 0;
 			beta = 0;
@@ -399,7 +395,10 @@ namespace rtmath {
 			// which are specified in the file. Apply effective rotation matrix also.
 			matrixop Roteff = Ry*Rx*Rz*rot;
 			
-			shapeFileStatsRotated res(beta,theta,phi);
+			shapeFileStatsRotated res;
+			res.beta = beta;
+			res.theta = theta;
+			res.phi = phi;
 			
 			using namespace boost::accumulators;
 
@@ -407,7 +406,21 @@ namespace rtmath {
 			// Using moment<1> to rescale value by dividing by the total number of points.
 			// I'm currently ignoring the mass term, so am making the ansatz that the whole flake 
 			// has unit mass.
-			accumulator_set<double, stats<tag::moment<1>> > acc_x, acc_y, acc_z;
+			accumulator_set<double, stats<tag::moment<1>> > abs_x, abs_y, abs_z;
+			// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
+			// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
+			accumulator_set<double, stats<
+				tag::min,
+				tag::max, 
+				tag::moment<1>,
+				tag::moment<2>,
+				tag::sum,
+				tag::skewness,
+				tag::kurtosis,
+				// Covariances are special
+				tag::covariance<double, tag::covariate1>,
+				tag::covariance<double, tag::covariate2>
+				> > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 				
 			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
 			{
@@ -420,9 +433,12 @@ namespace rtmath {
 				double z = pt.get(2,2,0);
 				//vector<double> vpt(3);
 				//pt.to<std::vector<double> >(vpt);
-				acc_x(abs(x));
-				acc_y(abs(y));
-				acc_z(abs(z));
+				acc_x(x, covariate1 = y, covariate2 = z);
+				acc_y(y, covariate1 = x, covariate2 = z);
+				acc_z(z, covariate1 = x, covariate2 = y);
+				abs_x(abs(x));
+				abs_y(abs(y));
+				abs_z(abs(z));
 
 				// Accumulators are in TF frame? Check against Holly code
 			}
@@ -430,9 +446,87 @@ namespace rtmath {
 			// Are other quantities needed?
 
 			// Export to class matrixops
-			res.PE.set(boost::accumulators::moment<1>(acc_x),2,0,0);
-			res.PE.set(boost::accumulators::moment<1>(acc_y),2,1,0);
-			res.PE.set(boost::accumulators::moment<1>(acc_z),2,2,0);
+			res.min.set(boost::accumulators::min(acc_x),2,0,0);
+			res.min.set(boost::accumulators::min(acc_y),2,1,0);
+			res.min.set(boost::accumulators::min(acc_z),2,2,0);
+
+			res.max.set(boost::accumulators::max(acc_x),2,0,0);
+			res.max.set(boost::accumulators::max(acc_y),2,1,0);
+			res.max.set(boost::accumulators::max(acc_z),2,2,0);
+
+			res.sum.set(boost::accumulators::sum(acc_x),2,0,0);
+			res.sum.set(boost::accumulators::sum(acc_y),2,1,0);
+			res.sum.set(boost::accumulators::sum(acc_z),2,2,0);
+
+			res.skewness.set(boost::accumulators::skewness(acc_x),2,0,0);
+			res.skewness.set(boost::accumulators::skewness(acc_y),2,1,0);
+			res.skewness.set(boost::accumulators::skewness(acc_z),2,2,0);
+
+			res.kurtosis.set(boost::accumulators::kurtosis(acc_x),2,0,0);
+			res.kurtosis.set(boost::accumulators::kurtosis(acc_y),2,1,0);
+			res.kurtosis.set(boost::accumulators::kurtosis(acc_z),2,2,0);
+
+			res.mom1.set(boost::accumulators::moment<1>(acc_x),2,0,0);
+			res.mom1.set(boost::accumulators::moment<1>(acc_y),2,1,0);
+			res.mom1.set(boost::accumulators::moment<1>(acc_z),2,2,0);
+
+			res.mom2.set(boost::accumulators::moment<2>(acc_x),2,0,0);
+			res.mom2.set(boost::accumulators::moment<2>(acc_y),2,1,0);
+			res.mom2.set(boost::accumulators::moment<2>(acc_z),2,2,0);
+
+			res.PE.set(boost::accumulators::moment<1>(abs_x),2,0,0); // abs, not acc here
+			res.PE.set(boost::accumulators::moment<1>(abs_y),2,1,0);
+			res.PE.set(boost::accumulators::moment<1>(abs_z),2,2,0);
+
+			//covariance
+			res.covariance.set(_N*boost::accumulators::moment<2>(acc_x),2,0,0);
+			//boost::accumulators::covariance(acc_x, covariate1);
+			//boost::accumulators::covariance(acc_x, covariate2);
+			res.covariance.set(boost::accumulators::covariance(acc_x, covariate1),2,0,1);
+			res.covariance.set(boost::accumulators::covariance(acc_x, covariate2),2,0,2);
+			res.covariance.set(boost::accumulators::covariance(acc_y, covariate1),2,1,0);
+			res.covariance.set(_N*boost::accumulators::moment<2>(acc_y),2,1,1);
+			res.covariance.set(boost::accumulators::covariance(acc_y, covariate2),2,1,2);
+			res.covariance.set(boost::accumulators::covariance(acc_z, covariate1),2,2,0);
+			res.covariance.set(boost::accumulators::covariance(acc_z, covariate2),2,2,1);
+			res.covariance.set(_N*boost::accumulators::moment<2>(acc_z),2,2,2);
+
+			// Calculate moments of inertia
+			{
+				double val = 0;
+				// All wrong. Need to redo.
+				// I_xx
+				val = boost::accumulators::moment<2>(acc_y) + boost::accumulators::moment<2>(acc_z);
+				res.mominert.set(val,2,0,0);
+
+				// I_yy
+				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_z);
+				res.mominert.set(val,2,1,1);
+
+				// I_zz
+				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_y);
+				res.mominert.set(val,2,2,2);
+
+				// I_xy and I_yx
+				val = -1.0 * res.covariance.get(2,1,0);
+				val /= _N;
+				res.mominert.set(val,2,0,1);
+				res.mominert.set(val,2,1,0);
+
+				// I_xz and I_zx
+				val = -1.0 * res.covariance.get(2,2,0);
+				val /= _N;
+				res.mominert.set(val,2,0,2);
+				res.mominert.set(val,2,2,0);
+
+				// I_yz and I_zy
+				val = -1.0 * res.covariance.get(2,2,1);
+				val /= _N;
+				res.mominert.set(val,2,2,1);
+				res.mominert.set(val,2,1,2);
+			}
+
+			// Are other quantities needed?
 
 
 			// Use std move to insert into set
@@ -559,132 +653,14 @@ namespace rtmath {
 			b_mean.set(boost::accumulators::mean(m_y),2,1,0);
 			b_mean.set(boost::accumulators::mean(m_z),2,2,0);
 
-			// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
-			// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
-			accumulator_set<double, stats<
-				tag::min,
-				tag::max, 
-				tag::moment<1>,
-				tag::moment<2>,
-				tag::sum,
-				tag::skewness,
-				tag::kurtosis,
-				// Covariances are special
-				tag::covariance<double, tag::covariate1>,
-				tag::covariance<double, tag::covariate2>
-				> > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
-				
-			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
-			{
-				// it->first is the points id. it->second is its matrixop coords (1x3 matrix)
-				// Mult by rotaion matrix to get 3x1 rotated matrix
-				
-				matrixop pt = rot * (it->transpose() - b_mean);
-				double x = pt.get(2,0,0);
-				double y = pt.get(2,1,0);
-				double z = pt.get(2,2,0);
-				//vector<double> vpt(3);
-				//pt.to<std::vector<double> >(vpt);
-				acc_x(x, covariate1 = y, covariate2 = z);
-				acc_y(y, covariate1 = x, covariate2 = z);
-				acc_z(z, covariate1 = x, covariate2 = y);
-
-				// Accumulators are in TF frame? Check against Holly code
-			}
-
-			// Are other quantities needed?
-
-			// Export to class matrixops
-			min.set(boost::accumulators::min(acc_x),2,0,0);
-			min.set(boost::accumulators::min(acc_y),2,1,0);
-			min.set(boost::accumulators::min(acc_z),2,2,0);
-
-			max.set(boost::accumulators::max(acc_x),2,0,0);
-			max.set(boost::accumulators::max(acc_y),2,1,0);
-			max.set(boost::accumulators::max(acc_z),2,2,0);
-
-			sum.set(boost::accumulators::sum(acc_x),2,0,0);
-			sum.set(boost::accumulators::sum(acc_y),2,1,0);
-			sum.set(boost::accumulators::sum(acc_z),2,2,0);
-
-			skewness.set(boost::accumulators::skewness(acc_x),2,0,0);
-			skewness.set(boost::accumulators::skewness(acc_y),2,1,0);
-			skewness.set(boost::accumulators::skewness(acc_z),2,2,0);
-
-			kurtosis.set(boost::accumulators::kurtosis(acc_x),2,0,0);
-			kurtosis.set(boost::accumulators::kurtosis(acc_y),2,1,0);
-			kurtosis.set(boost::accumulators::kurtosis(acc_z),2,2,0);
-
-			mom1.set(boost::accumulators::moment<1>(acc_x),2,0,0);
-			mom1.set(boost::accumulators::moment<1>(acc_y),2,1,0);
-			mom1.set(boost::accumulators::moment<1>(acc_z),2,2,0);
-
-			mom2.set(boost::accumulators::moment<2>(acc_x),2,0,0);
-			mom2.set(boost::accumulators::moment<2>(acc_y),2,1,0);
-			mom2.set(boost::accumulators::moment<2>(acc_z),2,2,0);
-
-			//covariance
-			covariance.set(_N*boost::accumulators::moment<2>(acc_x),2,0,0);
-			//boost::accumulators::covariance(acc_x, covariate1);
-			//boost::accumulators::covariance(acc_x, covariate2);
-			covariance.set(boost::accumulators::covariance(acc_x, covariate1),2,0,1);
-			covariance.set(boost::accumulators::covariance(acc_x, covariate2),2,0,2);
-			covariance.set(boost::accumulators::covariance(acc_y, covariate1),2,1,0);
-			covariance.set(_N*boost::accumulators::moment<2>(acc_y),2,1,1);
-			covariance.set(boost::accumulators::covariance(acc_y, covariate2),2,1,2);
-			covariance.set(boost::accumulators::covariance(acc_z, covariate1),2,2,0);
-			covariance.set(boost::accumulators::covariance(acc_z, covariate2),2,2,1);
-			covariance.set(_N*boost::accumulators::moment<2>(acc_z),2,2,2);
-
-			// Calculate moments of inertia
-			{
-				double val = 0;
-				// All wrong. Need to redo.
-				// I_xx
-				val = boost::accumulators::moment<2>(acc_y) + boost::accumulators::moment<2>(acc_z);
-				mominert.set(val,2,0,0);
-
-				// I_yy
-				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_z);
-				mominert.set(val,2,1,1);
-
-				// I_zz
-				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_y);
-				mominert.set(val,2,2,2);
-
-				// I_xy and I_yx
-				val = -1.0 * covariance.get(2,1,0);
-				val /= _N;
-				mominert.set(val,2,0,1);
-				mominert.set(val,2,1,0);
-
-				// I_xz and I_zx
-				val = -1.0 * covariance.get(2,2,0);
-				val /= _N;
-				mominert.set(val,2,0,2);
-				mominert.set(val,2,2,0);
-
-				// I_yz and I_zy
-				val = -1.0 * covariance.get(2,2,1);
-				val /= _N;
-				mominert.set(val,2,2,1);
-				mominert.set(val,2,1,2);
-			}
 
 			
 			_valid = true;
 		}
 
-		shapeFileStatsRotated::shapeFileStatsRotated(double beta, double theta, double phi)
-			: PE(2,3,1)
-		{
-			this->beta = beta;
-			this->theta = theta;
-			this->phi = phi;
-		}
-
 		shapeFileStatsRotated::shapeFileStatsRotated()
-			: PE(2,3,1)
+			: min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1), PE(2,3,1),
+			mom1(2,3,1), mom2(2,3,1), mominert(2,3,3), covariance(2,3,3)
 		{
 			this->beta = 0;
 			this->theta = 0;

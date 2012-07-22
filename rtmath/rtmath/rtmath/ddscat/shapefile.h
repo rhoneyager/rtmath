@@ -78,7 +78,6 @@ namespace rtmath {
 		class shapeFileStatsRotated
 		{
 		public:
-			shapeFileStatsRotated(double beta, double theta, double phi);
 			shapeFileStatsRotated();
 			~shapeFileStatsRotated();
 			double beta;
@@ -88,6 +87,13 @@ namespace rtmath {
 			// PE is a potential energy-like function.
 			// PE = sum_i(x_i) (Note: masses assumed to be constant. use scaling factor)
 			matrixop PE;
+
+			// After normalization
+			matrixop min, max, sum, skewness, kurtosis;
+			// Moments
+			matrixop mom1, mom2, mominert;
+			matrixop covariance;
+
 			//void calc();
 			bool operator<(const shapeFileStatsRotated &rhs) const;
 		private:
@@ -100,7 +106,15 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(theta);
 					ar & BOOST_SERIALIZATION_NVP(phi);
 					ar & BOOST_SERIALIZATION_NVP(PE);
-					//ar & boost::serialization::make_nvp("Calculated", _valid);
+					ar & BOOST_SERIALIZATION_NVP(min);
+					ar & BOOST_SERIALIZATION_NVP(max);
+					ar & BOOST_SERIALIZATION_NVP(sum);
+					ar & BOOST_SERIALIZATION_NVP(skewness);
+					ar & BOOST_SERIALIZATION_NVP(kurtosis);
+					ar & BOOST_SERIALIZATION_NVP(mom1);
+					ar & BOOST_SERIALIZATION_NVP(mom2);
+					ar & BOOST_SERIALIZATION_NVP(covariance);
+					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
 				}
 		};
 
@@ -120,11 +134,7 @@ namespace rtmath {
 
 			// Before normalization and rotation
 			matrixop b_min, b_max, b_mean;
-			// After normalization
-			matrixop min, max, sum, skewness, kurtosis;
-			// Moments
-			matrixop mom1, mom2, mominert;
-			matrixop covariance;
+			
 
 			std::set<shapeFileStatsRotated> rotations;
 		protected:
@@ -155,15 +165,6 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(b_min);
 					ar & BOOST_SERIALIZATION_NVP(b_max);
 					ar & BOOST_SERIALIZATION_NVP(b_mean);
-					ar & BOOST_SERIALIZATION_NVP(min);
-					ar & BOOST_SERIALIZATION_NVP(max);
-					ar & BOOST_SERIALIZATION_NVP(sum);
-					ar & BOOST_SERIALIZATION_NVP(skewness);
-					ar & BOOST_SERIALIZATION_NVP(kurtosis);
-					ar & BOOST_SERIALIZATION_NVP(mom1);
-					ar & BOOST_SERIALIZATION_NVP(mom2);
-					ar & BOOST_SERIALIZATION_NVP(covariance);
-					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
 					ar & boost::serialization::make_nvp("Rotation-Dependent", rotations);
 				}
 		};
