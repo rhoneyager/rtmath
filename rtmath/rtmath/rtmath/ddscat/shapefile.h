@@ -70,6 +70,13 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & boost::serialization::make_nvp("filename", _filename);
+					ar & boost::serialization::make_nvp("N", _numPoints);
+					ar & boost::serialization::make_nvp("a1", _a1);
+					ar & boost::serialization::make_nvp("a2", _a2);
+					ar & boost::serialization::make_nvp("a3", _a3);
+					ar & boost::serialization::make_nvp("d", _d);
+					ar & boost::serialization::make_nvp("x0", _x0);
+					ar & boost::serialization::make_nvp("xd", _xd);
 					//ar & BOOST_SERIALIZATION_NVP(_filename);
 				}
 		};
@@ -141,9 +148,7 @@ namespace rtmath {
 			shapeFileStatsBase();
 			virtual ~shapeFileStatsBase();
 			
-			size_t _N;// Number of dipoles
-			matrixop _a1, _a2;
-			// Inertia tensor
+			size_t _N;// Number of dipoles (used in checking for a valid read)
 
 			// The object
 			boost::shared_ptr<const shapefile> _shp;
@@ -155,8 +160,6 @@ namespace rtmath {
 				{
 					ar & boost::serialization::make_nvp("shapefile", _shp);
 					ar & boost::serialization::make_nvp("N", _N);
-					ar & boost::serialization::make_nvp("a1", _a1);
-					ar & boost::serialization::make_nvp("a2", _a2);
 					ar & BOOST_SERIALIZATION_NVP(beta);
 					ar & BOOST_SERIALIZATION_NVP(theta);
 					ar & BOOST_SERIALIZATION_NVP(phi);

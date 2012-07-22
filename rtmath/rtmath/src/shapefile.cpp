@@ -55,6 +55,7 @@ namespace rtmath {
 		{
 			_init();
 			read(filename);
+			_filename = filename;
 		}
 
 		shapefile::shapefile(std::istream &in)
@@ -345,8 +346,7 @@ namespace rtmath {
 		}
 
 		shapeFileStatsBase::shapeFileStatsBase()
-			: b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3),
-			_a1(2,1,3), _a2(2,1,3)
+			: b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3)
 		{
 			_N = 0;
 			beta = 0;
@@ -557,8 +557,8 @@ namespace rtmath {
 			const matrixop &a1 = _shp->_a1;
 			const matrixop &a2 = _shp->_a2;
 			const matrixop &a3 = _shp->_a3;
-			_a1 = a1;
-			_a2 = a2;
+			//_a1 = a1;
+			//_a2 = a2;
 			// Figure out the base rotation from a1 = <1,0,0>, a2 = <0,1,0> that 
 			// gives the current a1, a2.
 
