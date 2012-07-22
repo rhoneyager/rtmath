@@ -36,6 +36,7 @@ namespace rtmath {
 	namespace ddscat {
 
 		shapefile::shapefile()
+			: _a1(2,1,3), _a2(2,1,3), _a3(2,1,3), _d(2,1,3), _x0(2,1,3), _xd(2,3,1)
 		{
 			_init();
 		}
@@ -45,12 +46,14 @@ namespace rtmath {
 		}
 
 		shapefile::shapefile(const std::string &filename)
+			: _a1(2,1,3), _a2(2,1,3), _a3(2,1,3), _d(2,1,3), _x0(2,1,3), _xd(2,3,1)
 		{
 			_init();
 			read(filename);
 		}
 
 		shapefile::shapefile(std::istream &in)
+			: _a1(2,1,3), _a2(2,1,3), _a3(2,1,3), _d(2,1,3), _x0(2,1,3), _xd(2,3,1)
 		{
 			_init();
 			read(in);
@@ -74,13 +77,25 @@ namespace rtmath {
 			using namespace std;
 			using namespace boost::interprocess;
 			using namespace boost::filesystem;
-			if (!exists(path(filename)))
-				throw rtmath::debug::xMissingFile(filename.c_str());
 
-			size_t fsize = (size_t) file_size(path(filename)); // bytes
+			string fname = filename;
+			if (fname == "")
+			{
+				if (_filename.size())
+				{
+					fname = _filename;
+				} else {
+					throw rtmath::debug::xBadInput("Must specify filename");
+				}
+			}
+
+			if (!exists(path(fname)))
+				throw rtmath::debug::xMissingFile(fname.c_str());
+
+			size_t fsize = (size_t) file_size(path(fname)); // bytes
 
 			file_mapping m_file(
-				filename.c_str(),
+				fname.c_str(),
 				read_only
 				);
 
@@ -93,7 +108,7 @@ namespace rtmath {
 			void* start = region.get_address();
 			const char* a = (char*) start;
 
-			_filename = filename;
+			_filename = fname;
 			string s(a, fsize);
 			readString(s);
 		}
@@ -113,7 +128,7 @@ namespace rtmath {
 			string s(sb,length);
 			delete[] sb;
 
-			read(s);
+			readString(s);
 		}
 
 		void shapefile::readString(const std::string &in)
@@ -188,10 +203,10 @@ namespace rtmath {
 				//cheaderm = boost::chrono::system_clock::now();
 				// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
 				// bypassing any compiler return be value/reference difficulties
-				_a1 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a1,2,1,3));
-				_a2 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a2,2,1,3));
-				_d  = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(d,2,1,3));
-				_x0 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(x0,2,1,3));
+				_a1.fromDoubleArray(a1);
+				_a2.fromDoubleArray(a2);
+				_d.fromDoubleArray(d);
+				_x0.fromDoubleArray(x0);
 			}
 
 			//boost::chrono::system_clock::time_point cheader = boost::chrono::system_clock::now();
@@ -232,20 +247,20 @@ namespace rtmath {
 			a3[0] = a1[1]*a2[2]-a1[2]*a2[1];
 			a3[1] = a1[2]*a2[0]-a1[0]*a2[2];
 			a3[2] = a1[0]*a2[1]-a1[1]*a2[0];
-			_a3 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a3,2,1,3));
+			_a3.fromDoubleArray(a3);
 
 			// Do a second pass and generate the lattice from the lattice points
 			// The scaling factors and basis vectors are already in place.
 			matrixop xd(2,3,1);
-			xd = *_x0 % *_d;
-			_xd = boost::make_shared<matrixop>(xd);
+			xd = _x0 % _d;
+			_xd = xd;
 			
 			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 			{
 				// First, get matrixops of the lattice vectors
 				matrixop crd = *it;
 				// Do componentwise multiplication to do scaling
-				crd = crd % *_d;
+				crd = crd % _d;
 
 				matrixop crdsc = crd - xd; // Normalized coordinates!
 				// Save in _latticePtsStd
@@ -282,13 +297,13 @@ namespace rtmath {
 			using namespace std;
 			out << _desc << endl;
 			out << _numPoints << "\t= Number of lattice points" << endl;
-			_a1->writeSV("\t",out,false);
+			_a1.writeSV("\t",out,false);
 			out << "\t= target vector a1 (in TF)" << endl;
-			_a2->writeSV("\t",out,false);
+			_a2.writeSV("\t",out,false);
 			out << "\t= target vector a2 (in TF)" << endl;
-			_d->writeSV("\t",out,false);
+			_d.writeSV("\t",out,false);
 			out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)" << endl;
-			_x0->writeSV("\t",out,false);
+			_x0.writeSV("\t",out,false);
 			out << "\t= X0(1-3) = location in lattice of target origin" << endl;
 			out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
 			size_t i=1;
@@ -312,16 +327,14 @@ namespace rtmath {
 
 
 
-		shapeFileStats::shapeFileStats(const shapefile &shp, double beta, double theta, double phi)
+		shapeFileStats::shapeFileStats(const shapefile &shp)
 		{
-			_shp = shp.getPtr();
-			setRot(beta,theta,phi);
+			_shp = boost::shared_ptr<const shapefile>(new shapefile(shp));
 		}
 
-		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta, double theta, double phi)
+		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp)
 		{
 			_shp = shp;
-			setRot(beta,theta,phi);
 		}
 
 		shapeFileStats::shapeFileStats()
@@ -329,31 +342,24 @@ namespace rtmath {
 		}
 
 		shapeFileStatsBase::shapeFileStatsBase()
-			: cm(2,3,3), rot(2,3,3), mom1(2,3,3), mom2(2,3,3)
+			: mom1(2,3,1), mom2(2,3,1), 
+			min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1), 
+			b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3),
+			mominert(2,3,3), _a1(2,1,3), _a2(2,1,3)
 		{
-			rot = matrixop::identity(2,3,3);
+			_N = 0;
 			beta = 0;
 			theta = 0;
 			phi = 0;
-			_N = 0;
+			_valid = false;
 		}
 
 		shapeFileStatsBase::~shapeFileStatsBase()
 		{
 		}
 
-		void shapeFileStatsBase::setRot(double beta, double theta, double phi)
+		void shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi)
 		{
-			this->beta = beta;
-			this->theta = theta;
-			this->phi = phi;
-
-			if (beta == 0 && theta == 0 && phi == 0)
-			{
-				rot = matrixop::identity(2,3,3);
-				return;
-			}
-
 			const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
 			double cb = cos(beta*drconv);
 			double ct = cos(theta*drconv);
@@ -361,7 +367,7 @@ namespace rtmath {
 			double sb = sin(beta*drconv);
 			double st = sin(theta*drconv);
 			double sp = sin(phi*drconv);
-			// Do left-handed rotation
+			// Do right-handed rotation
 			// It's just easier to express the overall rotation as the multiplication of
 			// the component Gimbal matrices.
 			matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
@@ -384,11 +390,43 @@ namespace rtmath {
 			Rz.set(st,2,1,0);
 			Rz.set(-st,2,0,1);
 
-			matrixop Rtot = Rz*Rx*Ry;
-			rot = Rtot;
+			// Normally, Reff = RyRxRz. But, the rotation is a1,a2-dependent, 
+			// which are specified in the file. Apply effective rotation matrix also.
+			matrixop Roteff = Ry*Rx*Rz*rot;
+			
+			shapeFileStatsRotated res(beta,theta,phi);
+			
+			using namespace boost::accumulators;
+
+			// Figure out potential energy
+			accumulator_set<double, stats<tag::sum> > acc_PE;
+				
+			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
+			{
+				// it->first is the points id. it->second is its matrixop coords (1x3 matrix)
+				// Mult by rotaion matrix to get 3x1 rotated matrix
+				
+				matrixop pt = rot * (it->transpose() - b_mean);
+				//vector<double> vpt(3);
+				//pt.to<std::vector<double> >(vpt);
+				acc_PE(abs(pt.get(2,0,0)));
+
+				// Accumulators are in TF frame? Check against Holly code
+			}
+
+			// Are other quantities needed?
+
+			// Export to class matrixops
+			res.PE = boost::accumulators::sum(acc_PE);
+
+
+
+
+			// Use std move to insert into set
+			rotations.insert(std::move(res));
 		}
 
-		void shapeFileStatsBase::_calcStats()
+		void shapeFileStatsBase::calcStatsBase()
 		{
 			using namespace std;
 			// Do calculations of the center of mass, the tensor quantities, and other stuff
@@ -400,11 +438,113 @@ namespace rtmath {
 
 			// Iterate accumulator as function of radial distance from center of mass
 
-			// 
+			// Pull in some vars from the shapefile
 			_N = _shp->_latticePtsStd.size();
+
+			if (!_N)
+			{
+				GETOBJKEY();
+				throw rtmath::debug::xBadInput("Stats cannot be calculated because the shapefile is not loaded.");
+			}
+
+			const matrixop &a1 = _shp->_a1;
+			const matrixop &a2 = _shp->_a2;
+			const matrixop &a3 = _shp->_a3;
+			_a1 = a1;
+			_a2 = a2;
+			// Figure out the base rotation from a1 = <1,0,0>, a2 = <0,1,0> that 
+			// gives the current a1, a2.
+
+			double thetar, betar, phir;
+			// Theta is the angle between a1 and xlf
+			// From dot product, theta = acos(a1.xlf)
+			double dp = a1.get(2,0,0); // need only x component, as xlf is the unit vector in +x
+			thetar = acos(dp);
+
+			// From a1 = x_lf*cos(theta) + y_lf*sin(theta)*cos(phi) + z_lf*sin(theta)*sin(phi),
+			// can use either y_lf or z_lf components to get phi
+			double stheta = sin(thetar);
+			if (thetar)
+			{
+				double acphi = a1.get(2,0,1) / stheta;
+				phir = acos(acphi);
+
+				// Finally, a2_x = -sin(theta)cos(beta)
+				double cbeta = a2.get(2,0,0) / stheta * -1;
+				betar = acos(cbeta);
+			} else {
+				// theta is zero, so gimbal locking occurs. assume phi = 0.
+				phir = 0;
+				// must use alternate definition to get beta
+				double cosbeta = a2.get(2,0,1);
+				betar = acos(cosbeta);
+			}
+
+			// thetar, betar, phir are in radians
+			// convert to degrees
+			{
+				double scale = 180.0/(2.0*boost::math::constants::pi<double>());
+				beta = betar * scale;
+				theta = thetar * scale;
+				phi = phir * scale;
+			}
+
+			// And figure out the effective rotation matrix of the existing file
+			{
+				double cb = cos(beta);
+				double ct = cos(theta);
+				double cp = cos(phi);
+				double sb = sin(beta);
+				double st = sin(theta);
+				double sp = sin(phi);
+				matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
+
+				Rx.set(1,2,0,0);
+				Rx.set(cp,2,1,1);
+				Rx.set(cp,2,2,2);
+				Rx.set(sp,2,2,1);
+				Rx.set(-sp,2,1,2);
+
+				Ry.set(cb,2,0,0);
+				Ry.set(1 ,2,1,1);
+				Ry.set(cb,2,2,2);
+				Ry.set(sb,2,0,2);
+				Ry.set(-sb,2,2,0);
+
+				Rz.set(ct,2,0,0);
+				Rz.set(ct,2,1,1);
+				Rz.set(1,2,2,2);
+				Rz.set(st,2,1,0);
+				Rz.set(-st,2,0,1);
+
+				rot = Ry*Rx*Rz;
+				invrot = rot.inverse();
+			}
+
 			// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
 			using namespace boost::accumulators;
 			
+			// Do two passes to be able to renormalize coordinates
+			accumulator_set<double, stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
+			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
+			{
+				m_x(it->get(2,0,0));
+				m_y(it->get(2,0,1));
+				m_z(it->get(2,0,2));
+			}
+
+			b_min.set(boost::accumulators::min(m_x),2,0,0);
+			b_min.set(boost::accumulators::min(m_y),2,1,0);
+			b_min.set(boost::accumulators::min(m_z),2,2,0);
+
+			b_max.set(boost::accumulators::max(m_x),2,0,0);
+			b_max.set(boost::accumulators::max(m_y),2,1,0);
+			b_max.set(boost::accumulators::max(m_z),2,2,0);
+
+			b_mean.set(boost::accumulators::mean(m_x),2,0,0);
+			b_mean.set(boost::accumulators::mean(m_y),2,1,0);
+			b_mean.set(boost::accumulators::mean(m_z),2,2,0);
+
 			// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
 			// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
 			accumulator_set<double, stats<
@@ -413,17 +553,16 @@ namespace rtmath {
 				tag::moment<1>,
 				tag::moment<2>,
 				tag::sum,
-				tag::mean, 
 				tag::skewness,
-				tag::kurtosis,
-				tag::variance
+				tag::kurtosis
 				> > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 				
 			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
 			{
-				// it->first is the points id. it->second is its matrixop coords (3x1 matrix)
+				// it->first is the points id. it->second is its matrixop coords (1x3 matrix)
 				// Mult by rotaion matrix to get 3x1 rotated matrix
-				matrixop pt = rot * *it;
+				
+				matrixop pt = rot * (it->transpose() - b_mean);
 				//vector<double> vpt(3);
 				//pt.to<std::vector<double> >(vpt);
 				acc_x(pt.get(2,0,0));
@@ -436,6 +575,26 @@ namespace rtmath {
 			// Are other quantities needed?
 
 			// Export to class matrixops
+			min.set(boost::accumulators::min(acc_x),2,0,0);
+			min.set(boost::accumulators::min(acc_y),2,1,0);
+			min.set(boost::accumulators::min(acc_z),2,2,0);
+
+			max.set(boost::accumulators::max(acc_x),2,0,0);
+			max.set(boost::accumulators::max(acc_y),2,1,0);
+			max.set(boost::accumulators::max(acc_z),2,2,0);
+
+			sum.set(boost::accumulators::sum(acc_x),2,0,0);
+			sum.set(boost::accumulators::sum(acc_y),2,1,0);
+			sum.set(boost::accumulators::sum(acc_z),2,2,0);
+
+			skewness.set(boost::accumulators::skewness(acc_x),2,0,0);
+			skewness.set(boost::accumulators::skewness(acc_y),2,1,0);
+			skewness.set(boost::accumulators::skewness(acc_z),2,2,0);
+
+			kurtosis.set(boost::accumulators::kurtosis(acc_x),2,0,0);
+			kurtosis.set(boost::accumulators::kurtosis(acc_y),2,1,0);
+			kurtosis.set(boost::accumulators::kurtosis(acc_z),2,2,0);
+
 			mom1.set(boost::accumulators::moment<1>(acc_x),2,0,0);
 			mom1.set(boost::accumulators::moment<1>(acc_y),2,1,0);
 			mom1.set(boost::accumulators::moment<1>(acc_z),2,2,0);
@@ -443,14 +602,73 @@ namespace rtmath {
 			mom2.set(boost::accumulators::moment<2>(acc_x),2,0,0);
 			mom2.set(boost::accumulators::moment<2>(acc_y),2,1,0);
 			mom2.set(boost::accumulators::moment<2>(acc_z),2,2,0);
-			GETOBJKEY();
-			/*
-			accumulator_set<double, stats<
-			tag::sum
-			> > iner_xx, iner_yy, iner_zz, iner_xy, iner_xz, iner_yz;
-			*/
+
+			// Calculate moments of inertia
+			{
+				double val = 0;
+
+				// I_xx
+				val = boost::accumulators::moment<2>(acc_y) + boost::accumulators::moment<2>(acc_z);
+				val *= _N*_N;
+				mominert.set(val,2,0,0);
+
+				// I_yy
+				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_z);
+				val *= _N*_N;
+				mominert.set(val,2,1,1);
+
+				// I_zz
+				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_y);
+				val *= _N*_N;
+				mominert.set(val,2,2,2);
+
+				// I_xy and I_yz
+				val = -1.0 * (boost::accumulators::sum(acc_x) + boost::accumulators::sum(acc_y));
+				mominert.set(val,2,0,1);
+				mominert.set(val,2,1,0);
+
+				// I_xz and I_zx
+				val = -1.0 * (boost::accumulators::sum(acc_x) + boost::accumulators::sum(acc_z));
+				mominert.set(val,2,0,2);
+				mominert.set(val,2,2,0);
+
+				// I_yz and I_zy
+				val = -1.0 * (boost::accumulators::sum(acc_y) + boost::accumulators::sum(acc_z));
+				mominert.set(val,2,2,1);
+				mominert.set(val,2,1,2);
+			}
+
+			
+			_valid = true;
 		}
 
+		shapeFileStatsRotated::shapeFileStatsRotated(double beta, double theta, double phi)
+		{
+			this->beta = beta;
+			this->theta = theta;
+			this->phi = phi;
+			PE = 0;
+		}
+
+		shapeFileStatsRotated::shapeFileStatsRotated()
+		{
+			this->beta = 0;
+			this->theta = 0;
+			this->phi = 0;
+			PE = 0;
+		}
+
+		shapeFileStatsRotated::~shapeFileStatsRotated()
+		{
+		}
+
+		bool shapeFileStatsRotated::operator<(const shapeFileStatsRotated &rhs) const
+		{
+			if (beta!=rhs.beta) return beta<rhs.beta;
+			if (theta!=rhs.theta) return theta<rhs.theta;
+			if (phi!=rhs.phi) return phi<rhs.phi;
+			return false;
+		}
 	}
 }
 

@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 		rtmath::ddscat::shapefile shp(shapepath);
 
 		rtmath::ddscat::shapeFileStats sstats(shp);
-		rtmath::serialization::write<rtmath::ddscat::shapeFileStats>(sstats,"stats.xml");
+		rtmath::serialization::write<rtmath::ddscat::shapeFileStats>(sstats,outpath);
 		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)

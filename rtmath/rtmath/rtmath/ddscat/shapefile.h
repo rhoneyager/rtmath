@@ -38,7 +38,7 @@ namespace rtmath {
 			shapefile(std::istream &in);
 			~shapefile();
 			void print(std::ostream &out) const;
-			void read(const std::string &filename);
+			void read(const std::string &filename = "");
 			void read(std::istream &in, size_t length = 0);
 			void readString(const std::string &in);
 			void write(const std::string &fname) const;
@@ -55,9 +55,12 @@ namespace rtmath {
 			size_t _numPoints;
 			std::string _desc;
 			// Specified in shape.dat
-			boost::shared_ptr<matrixop> _a1, _a2, _a3; // except for a3
-			boost::shared_ptr<const matrixop > _d;
-			boost::shared_ptr<const matrixop > _x0, _xd;
+			// a1 and a2 are the INITIAL vectors (before rotation!)
+			// usually a1 = x_lf, a2 = y_lf
+			// choice of a1 and a2 can reorient the shape (useful for KE, PE constraints)
+			matrixop _a1, _a2, _a3; // a3 = a1 x a2
+			matrixop _d;
+			matrixop _x0, _xd;
 			
 			friend class shapeFileStatsBase;
 			friend class shapeFileStats;
@@ -71,31 +74,69 @@ namespace rtmath {
 				}
 		};
 
+		// Lightweight POD class that can be placed in a set
+		class shapeFileStatsRotated
+		{
+		public:
+			shapeFileStatsRotated(double beta, double theta, double phi);
+			shapeFileStatsRotated();
+			~shapeFileStatsRotated();
+			double beta;
+			double theta;
+			double phi;
+			// Derived stats quantities
+			// PE is a potential energy-like function.
+			// PE = sum_i(x_i) (Note: masses assumed to be constant. use scaling factor)
+			double PE;
+			//void calc();
+			bool operator<(const shapeFileStatsRotated &rhs) const;
+		private:
+			//bool _valid;
+			friend class boost::serialization::access;
+			template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & BOOST_SERIALIZATION_NVP(beta);
+					ar & BOOST_SERIALIZATION_NVP(theta);
+					ar & BOOST_SERIALIZATION_NVP(phi);
+					ar & BOOST_SERIALIZATION_NVP(PE);
+					//ar & boost::serialization::make_nvp("Calculated", _valid);
+				}
+		};
 
 		class shapeFileStatsBase
 		{
 		public:
 			inline size_t N() const {return _N;}
 			// Set rotation matrix, with each value in degrees
-			void setRot(double beta, double theta, double phi);
+			//void setRot(double beta, double theta, double phi);
+			void calcStatsBase();
+			// calcStatsRot calculates the stats RELATIVE to the shapefile default rot.
+			void calcStatsRot(double beta, double theta, double phi);
+
+			// rot is the effective rotation designated by the choice of a1 and a2
+			matrixop rot, invrot;
+			double beta, theta, phi;
+
+			// Before normalization and rotation
+			matrixop b_min, b_max, b_mean;
+			// After normalization
+			matrixop min, max, sum, skewness, kurtosis;
+			// Moments
+			matrixop mom1, mom2, mominert;
+
+			std::set<shapeFileStatsRotated> rotations;
 		protected:
 			shapeFileStatsBase();
 			virtual ~shapeFileStatsBase();
-			void _calcStats();
-
+			
 			size_t _N;// Number of dipoles
-
-			// Moments
-			matrixop mom1, mom2;
-			// Center of mass
-			matrixop cm;
+			matrixop _a1, _a2;
 			// Inertia tensor
 
 			// The object
 			boost::shared_ptr<const shapefile> _shp;
-			// The rotations
-			matrixop rot;
-			double beta, theta, phi;
+			bool _valid;
 		private:
 			friend class boost::serialization::access;
 			template<class Archive>
@@ -103,13 +144,25 @@ namespace rtmath {
 				{
 					ar & boost::serialization::make_nvp("shapefile", _shp);
 					ar & boost::serialization::make_nvp("N", _N);
+					ar & boost::serialization::make_nvp("a1", _a1);
+					ar & boost::serialization::make_nvp("a2", _a2);
 					ar & BOOST_SERIALIZATION_NVP(beta);
 					ar & BOOST_SERIALIZATION_NVP(theta);
 					ar & BOOST_SERIALIZATION_NVP(phi);
-					ar & BOOST_SERIALIZATION_NVP(rot);
+					ar & boost::serialization::make_nvp("Effective_Rotation", rot);
+					ar & boost::serialization::make_nvp("Inverse_Effective_Rotation", invrot);
+					ar & BOOST_SERIALIZATION_NVP(b_min);
+					ar & BOOST_SERIALIZATION_NVP(b_max);
+					ar & BOOST_SERIALIZATION_NVP(b_mean);
+					ar & BOOST_SERIALIZATION_NVP(min);
+					ar & BOOST_SERIALIZATION_NVP(max);
+					ar & BOOST_SERIALIZATION_NVP(sum);
+					ar & BOOST_SERIALIZATION_NVP(skewness);
+					ar & BOOST_SERIALIZATION_NVP(kurtosis);
 					ar & BOOST_SERIALIZATION_NVP(mom1);
 					ar & BOOST_SERIALIZATION_NVP(mom2);
-					ar & BOOST_SERIALIZATION_NVP(cm);
+					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
+					ar & boost::serialization::make_nvp("Rotation-Dependent", rotations);
 				}
 		};
 
@@ -117,8 +170,8 @@ namespace rtmath {
 		{
 		public:
 			shapeFileStats();
-			shapeFileStats(const shapefile &shp, double beta = 0, double theta = 0, double phi = 0);
-			shapeFileStats(const boost::shared_ptr<const shapefile> &shp, double beta = 0, double theta = 0, double phi = 0);
+			shapeFileStats(const shapefile &shp);
+			shapeFileStats(const boost::shared_ptr<const shapefile> &shp);
 
 		private:
 			friend class boost::serialization::access;
