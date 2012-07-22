@@ -128,6 +128,14 @@ namespace rtmath {
 		{
 			std::copy(target.begin(), target.end(), _data);
 		}
+		template <class T> void from(T &start)
+		{
+			std::copy(start, start+_datasize, _data);
+		}
+		template <> void from<std::vector<double> >(std::vector<double> &target)
+		{
+			std::copy(target.begin(), target.end(), _data);
+		}
 		void inverse(matrixop &res) const;
 		inline matrixop inverse() const { matrixop res(_dims); inverse(res); return res; }
 		void posFromIndex(size_t index, std::vector<size_t> &pos) const; // duplicate of _getPos!!

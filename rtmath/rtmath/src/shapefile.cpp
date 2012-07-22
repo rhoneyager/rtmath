@@ -23,10 +23,14 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+//#include <boost/chrono.hpp>
 #include <cmath>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/shapefile.h"
+#include "../rtmath/macros.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -68,70 +72,161 @@ namespace rtmath {
 		void shapefile::read(const std::string &filename)
 		{
 			using namespace std;
-			ifstream in(filename.c_str());
-			read(in);
+			using namespace boost::interprocess;
+			using namespace boost::filesystem;
+			if (!exists(path(filename)))
+				throw rtmath::debug::xMissingFile(filename.c_str());
+
+			size_t fsize = (size_t) file_size(path(filename)); // bytes
+
+			file_mapping m_file(
+				filename.c_str(),
+				read_only
+				);
+
+			mapped_region region (
+				m_file,
+				read_only,
+				0,
+				fsize);
+
+			void* start = region.get_address();
+			const char* a = (char*) start;
+
 			_filename = filename;
+			string s(a, fsize);
+			readString(s);
 		}
 
-		void shapefile::read(std::istream &in)
+		void shapefile::read(std::istream &in, size_t length)
 		{
-			//throw rtmath::debug::xUnimplementedFunction();
+			using namespace std;
+			if (!length)
+			{
+				in.seekg(0, ios::end);
+				length = (size_t) in.tellg();
+				in.seekg(0, ios::beg);
+			}
+
+			char* sb = new char[length];
+			in.read(sb,length);
+			string s(sb,length);
+			delete[] sb;
+
+			read(s);
+		}
+
+		void shapefile::readString(const std::string &in)
+		{
+			// Since istringstream is so slow, I'm dusting off my old atof macros (in 
+			// macros.h). These were used when I implemented lbl, and are very fast.
 			using namespace std;
 			_init();
 
-			string lin;
-			size_t linenum = 0;
-			bool done = false;
+			size_t length = in.size();
 
-			std::getline(in,lin);
-			_desc = lin;
-			std::getline(in,lin);
-			istringstream sin;
-			sin.str(lin);
-			sin >> _numPoints;
-
+			// First, do header processing
+			//boost::chrono::system_clock::time_point cstart = boost::chrono::system_clock::now();
+			size_t pend = 0;
 			double a1[3], a2[3], a3[3], d[3], x0[3];
-			std::getline(in,lin);
-			sin.clear();
-			sin.str(lin);
-			sin >> a1[0] >> a1[1] >> a1[2];
-			std::getline(in,lin);
-			sin.clear();
-			sin.str(lin);
-			sin >> a2[0] >> a2[1] >> a2[2];
-			std::getline(in,lin);
-			sin.clear();
-			sin.str(lin);
-			sin >> d[0] >> d[1] >> d[2];
-			std::getline(in,lin);
-			sin.clear();
-			sin.str(lin);
-			sin >> x0[0] >> x0[1] >> x0[2];
-
-			// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
-			// bypassing any compiler return be value/reference difficulties
-			_a1 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a1,2,1,3));
-			_a2 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a2,2,1,3));
-			_d  = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(d,2,1,3));
-			_x0 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(x0,2,1,3));
-
-			std::getline(in,lin); // Skip junk line
-
-			// Load in the lattice points
-			for (size_t i=0; i < _numPoints; i++)
+			//boost::chrono::system_clock::time_point cheaderm;
 			{
-				std::getline(in,lin);
-				istringstream pin(lin); // MSVC bug with sin not reloading data in loop
-				double j, jx, jy, jz, ix, iy, iz;
-				pin >> j >> jx >> jy >> jz >> ix >> iy >> iz;
-				coords::cyclic<double> cds(6,jx,jy,jz,ix,iy,iz);
-				//matrixop crds(2,1,6);
-				matrixop crdsm(2,1,3), crdsi(2,1,3);
-				cds.get(crdsm,0,3);
-				cds.get(crdsi,3,3);
-				_latticePts[i+1] = crdsm;
-				_latticePtsRi[i+1] = crdsi;
+				// Seek to the end of the header, and construct an istringstream for just the header
+				size_t pstart = 0;
+				for (size_t i=0; i<7; i++)
+				{
+					pstart = pend;
+					pend = in.find_first_of("\n", pend+1);
+					size_t posa = 0, posb = pstart;
+					double *v = nullptr;
+					switch (i)
+					{
+					case 0: // Title line
+						_desc = string(in.data(),pend);
+						break;
+					case 1: // Number of dipoles
+						{
+							// Seek to first nonspace character
+							posa = in.find_first_not_of(" \t\n", posb);
+							// Find first space after this position
+							posb = in.find_first_of(" \t\n", posa);
+							size_t len = posb - posa;
+							_numPoints = rtmath::macros::m_atoi(&(in.data()[posa]),len);
+						}
+						break;
+					case 6: // Junk line
+					default:
+						break;
+					case 2: // a1
+					case 3: // a2
+					case 4: // d
+					case 5: // x0
+						// These all have the same structure. Read in three doubles, then assign.
+						{
+							if (2==i) v=a1;
+							if (3==i) v=a2;
+							if (4==i) v=d;
+							if (5==i) v=x0;
+							for (size_t j=0;j<3;j++)
+							{
+								// Seek to first nonspace character
+								posa = in.find_first_not_of(" \t\n", posb);
+								// Find first space after this position
+								posb = in.find_first_of(" \t\n", posa);
+								size_t len = posb - posa;
+								v[j] = rtmath::macros::m_atof(&(in.data()[posa]),len);
+							}
+						}
+						break;
+					}
+				}
+
+				
+				_latticePts.reserve(_numPoints);
+				_latticePtsRi.reserve(_numPoints);
+				_latticePtsStd.reserve(_numPoints);
+				//cheaderm = boost::chrono::system_clock::now();
+				// Note: the static fromDoubleArray constructor returns a shared_ptr<matrixop>,
+				// bypassing any compiler return be value/reference difficulties
+				_a1 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a1,2,1,3));
+				_a2 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(a2,2,1,3));
+				_d  = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(d,2,1,3));
+				_x0 = boost::shared_ptr<matrixop>(matrixop::fromDoubleArray(x0,2,1,3));
 			}
+
+			//boost::chrono::system_clock::time_point cheader = boost::chrono::system_clock::now();
+
+
+			vector<double> valser(7);
+			size_t posa = 0, posb = pend+1;
+			// Load in the lattice points through iteration and macro.h-based double extraction
+			for (size_t i=0; i< _numPoints; i++)
+			{
+				for (size_t j=0; j<7; j++)
+				{
+					// Seek to first nonspace character
+					posa = in.find_first_not_of(" \t\n", posb);
+					// Find first space after this position
+					posb = in.find_first_of(" \t\n", posa);
+					size_t len = posb - posa;
+					double val;
+					val = rtmath::macros::m_atof(&(in.data()[posa]),len);
+					valser[j] = val;
+				}
+				// valser[0] is point id, 1-3 are coords, 4-6 are diel entries
+				matrixop crdsm(2,1,3), crdsi(2,1,3);
+				vector<double>::const_iterator it = valser.begin() + 1;
+				crdsm.from<std::vector<double>::const_iterator>(it);
+				it += 3;
+				crdsi.from<std::vector<double>::const_iterator>(it);
+
+				_latticePts.push_back(move(crdsm));
+				_latticePtsRi.push_back(move(crdsi));
+				//_latticePts[i] = move(crdsm);
+				//_latticePtsRi[i] = move(crdsi);
+			}
+
+			//boost::chrono::system_clock::time_point clattice = boost::chrono::system_clock::now();
 
 			// Figure out third lattice vector in target frame
 			a3[0] = a1[1]*a2[2]-a1[2]*a2[1];
@@ -144,18 +239,30 @@ namespace rtmath {
 			matrixop xd(2,3,1);
 			xd = *_x0 % *_d;
 			_xd = boost::make_shared<matrixop>(xd);
-
+			
 			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 			{
 				// First, get matrixops of the lattice vectors
-				matrixop crd = it->second;
+				matrixop crd = *it;
 				// Do componentwise multiplication to do scaling
 				crd = crd % *_d;
 
 				matrixop crdsc = crd - xd; // Normalized coordinates!
 				// Save in _latticePtsStd
-				_latticePtsStd[it->first] = crdsc;
+				_latticePtsStd.push_back(move(crdsc));
 			}
+			/*
+			boost::chrono::system_clock::time_point cnormalized = boost::chrono::system_clock::now();
+
+			boost::chrono::duration<double> dheaderm = cheaderm - cstart;
+			boost::chrono::duration<double> dheader = cheader - cstart;
+			boost::chrono::duration<double> dlattice = clattice - cheader;
+			boost::chrono::duration<double> drenorm = cnormalized - clattice;
+			std::cerr << "early header took " << dheaderm.count() << " seconds\n";
+			std::cerr << "header took " << dheader.count() << " seconds\n";
+			std::cerr << "lattice took " << dlattice.count() << " seconds\n";
+			std::cerr << "renorm took " << drenorm.count() << " seconds\n";
+			*/
 		}
 
 		void shapefile::write(std::ostream &out) const
@@ -184,10 +291,14 @@ namespace rtmath {
 			_x0->writeSV("\t",out,false);
 			out << "\t= X0(1-3) = location in lattice of target origin" << endl;
 			out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
-			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
+			size_t i=1;
+			auto it = _latticePts.begin();
+			auto ot = _latticePtsRi.begin();
+			for (; it != _latticePts.end(); ++it, ++ot, ++i)
 			{
-				out << "\t" << it->first << "\t";
-				it->second.writeSV("\t",out,false);
+				out << "\t" << i << "\t";
+				it->writeSV("\t",out,false);
+				ot->writeSV("\t",out,false);
 				out << endl;
 			}
 		}
@@ -312,7 +423,7 @@ namespace rtmath {
 			{
 				// it->first is the points id. it->second is its matrixop coords (3x1 matrix)
 				// Mult by rotaion matrix to get 3x1 rotated matrix
-				matrixop pt = rot * it->second;
+				matrixop pt = rot * *it;
 				//vector<double> vpt(3);
 				//pt.to<std::vector<double> >(vpt);
 				acc_x(pt.get(2,0,0));

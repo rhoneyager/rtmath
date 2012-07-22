@@ -39,7 +39,8 @@ namespace rtmath {
 			~shapefile();
 			void print(std::ostream &out) const;
 			void read(const std::string &filename);
-			void read(std::istream &in);
+			void read(std::istream &in, size_t length = 0);
+			void readString(const std::string &in);
 			void write(const std::string &fname) const;
 			void write(std::ostream &out) const;
 			boost::shared_ptr<shapefile> getPtr() const;
@@ -47,10 +48,10 @@ namespace rtmath {
 			shapefile();
 			void _init();
 			std::string _filename;
-			boost::shared_ptr<const matrixop> _lattice;
-			std::map<size_t, matrixop > _latticePts;
-			std::map<size_t, matrixop > _latticePtsRi;
-			std::map<size_t, matrixop > _latticePtsStd; // Normalized coord transform
+			//boost::shared_ptr<const matrixop> _lattice;
+			std::vector<matrixop> _latticePts;
+			std::vector<matrixop> _latticePtsRi;
+			std::vector<matrixop> _latticePtsStd; // Normalized coord transform
 			size_t _numPoints;
 			std::string _desc;
 			// Specified in shape.dat

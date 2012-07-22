@@ -11,7 +11,7 @@
 
 namespace rtmath {
 	namespace macros {
-		inline double m_atof(const char* x)
+		inline double m_atof(const char* x, size_t len = 0)
 		{
 			double res = 0.0;
 			unsigned int remainder = 0;
@@ -24,7 +24,8 @@ namespace rtmath {
 			const char* p = x; // Set pointer to beginning of character stream
 			bool exponent = false;
 			bool decimal = false;
-			while (*p != '\0')
+			size_t i=0;
+			while (*p != '\0' && ((len)? i<len : true) )
 			{
 				// Do digit checks here (no calls to isdigit)
 				// Ignore whitespace
@@ -105,6 +106,7 @@ namespace rtmath {
 				}
 
 				p++;
+				i++;
 			}
 			// Iterated through the string
 			// Now, to combine the elements into my double
@@ -122,19 +124,15 @@ namespace rtmath {
 			return res;
 		}
 
-		inline double m_atof(const std::string &x)
-		{
-			return m_atof(x.c_str());
-		}
-
-		inline int m_atoi(const char *x)
+		inline int m_atoi(const char *x, size_t len = 0)
 		{
 			int res = 0;
 			int digit = 0;
 			bool sign = false; // false is pos, true is neg
 			bool done = false;
+			size_t i=0;
 			const char* p = x; // Set pointer to beginning of character stream
-			while (*p != '\0' && done == false)
+			while (*p != '\0' && done == false && ((len)? i<len : true) )
 			{
 				if (*p == '-') {
 					sign = true;
@@ -187,16 +185,12 @@ namespace rtmath {
 					res += digit;
 				}
 				p++;
+				i++;
 			}
 
 			// Return the value
 			if (sign) res *= -1;
 			return res;
-		}
-
-		inline int m_atoi(const std::string &x)
-		{
-			return m_atoi(x.c_str());
 		}
 
 		// Borrowed from Ahlquist for use in zero-finding algorithm.

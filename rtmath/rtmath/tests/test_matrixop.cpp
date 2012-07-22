@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(matrixop_to_from)
 	BOOST_CHECK(a==b);
 	b.from<const std::vector<double> >(vb);
 	BOOST_CHECK(a==b);
-	b.from<const std::vector<double>::const_iterator>(v.begin());
+	b.from<std::vector<double>::iterator>(v.begin());
 	BOOST_CHECK(a==b);
 }
 
