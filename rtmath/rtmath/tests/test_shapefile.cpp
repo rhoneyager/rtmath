@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(shapefile_io)
 // Test shapefile stats
 BOOST_AUTO_TEST_CASE(shapefile_stats)
 {
-	shapefile shp((globals::instance()->pTestData / "2mm12shape.txt").string());
+	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
 	shapeFileStats sshp(shp);
 	BOOST_TEST_MESSAGE("Base");
 	sshp.calcStatsBase();
@@ -52,6 +52,10 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 	sshp.calcStatsRot(0,0,30);
 	BOOST_TEST_MESSAGE("0 30 30");
 	sshp.calcStatsRot(0,30,30);
+	BOOST_TEST_MESSAGE("30 0 0");
+	sshp.calcStatsRot(30,0,0);
+	BOOST_TEST_MESSAGE("30 30 30");
+	sshp.calcStatsRot(30,30,30);
 
 	BOOST_TEST_MESSAGE("Writing");
 	rtmath::serialization::write<shapeFileStats>(sshp,"shpstats.xml");

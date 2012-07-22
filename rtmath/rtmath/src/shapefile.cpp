@@ -12,6 +12,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/covariance.hpp>
+#include <boost/accumulators/statistics/density.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/kurtosis.hpp>
 #include <boost/accumulators/statistics/max.hpp>
@@ -20,6 +22,9 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/accumulators/statistics/skewness.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/variates/covariate.hpp>
+//include <boost/bind.hpp>
+//#include <boost/ref.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -345,7 +350,7 @@ namespace rtmath {
 			: mom1(2,3,1), mom2(2,3,1), 
 			min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1), 
 			b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3),
-			mominert(2,3,3), _a1(2,1,3), _a2(2,1,3)
+			mominert(2,3,3), _a1(2,1,3), _a2(2,1,3), covariance(2,3,3)
 		{
 			_N = 0;
 			beta = 0;
@@ -399,7 +404,10 @@ namespace rtmath {
 			using namespace boost::accumulators;
 
 			// Figure out potential energy
-			accumulator_set<double, stats<tag::sum> > acc_PE;
+			// Using moment<1> to rescale value by dividing by the total number of points.
+			// I'm currently ignoring the mass term, so am making the ansatz that the whole flake 
+			// has unit mass.
+			accumulator_set<double, stats<tag::moment<1>> > acc_PE;
 				
 			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
 			{
@@ -417,7 +425,7 @@ namespace rtmath {
 			// Are other quantities needed?
 
 			// Export to class matrixops
-			res.PE = boost::accumulators::sum(acc_PE);
+			res.PE = boost::accumulators::moment<1>(acc_PE);
 
 
 
@@ -523,6 +531,7 @@ namespace rtmath {
 
 			// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
 			using namespace boost::accumulators;
+			//using namespace boost::accumulators::tag;
 			
 			// Do two passes to be able to renormalize coordinates
 			accumulator_set<double, stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
@@ -554,7 +563,10 @@ namespace rtmath {
 				tag::moment<2>,
 				tag::sum,
 				tag::skewness,
-				tag::kurtosis
+				tag::kurtosis,
+				// Covariances are special
+				tag::covariance<double, tag::covariate1>,
+				tag::covariance<double, tag::covariate2>
 				> > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 				
 			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
@@ -563,11 +575,14 @@ namespace rtmath {
 				// Mult by rotaion matrix to get 3x1 rotated matrix
 				
 				matrixop pt = rot * (it->transpose() - b_mean);
+				double x = pt.get(2,0,0);
+				double y = pt.get(2,1,0);
+				double z = pt.get(2,2,0);
 				//vector<double> vpt(3);
 				//pt.to<std::vector<double> >(vpt);
-				acc_x(pt.get(2,0,0));
-				acc_y(pt.get(2,1,0));
-				acc_z(pt.get(2,2,0));
+				acc_x(x, covariate1 = y, covariate2 = z);
+				acc_y(y, covariate1 = x, covariate2 = z);
+				acc_z(z, covariate1 = x, covariate2 = y);
 
 				// Accumulators are in TF frame? Check against Holly code
 			}
@@ -603,37 +618,50 @@ namespace rtmath {
 			mom2.set(boost::accumulators::moment<2>(acc_y),2,1,0);
 			mom2.set(boost::accumulators::moment<2>(acc_z),2,2,0);
 
+			//covariance
+			covariance.set(_N*boost::accumulators::moment<2>(acc_x),2,0,0);
+			//boost::accumulators::covariance(acc_x, covariate1);
+			//boost::accumulators::covariance(acc_x, covariate2);
+			covariance.set(boost::accumulators::covariance(acc_x, covariate1),2,0,1);
+			covariance.set(boost::accumulators::covariance(acc_x, covariate2),2,0,2);
+			covariance.set(boost::accumulators::covariance(acc_y, covariate1),2,1,0);
+			covariance.set(_N*boost::accumulators::moment<2>(acc_y),2,1,1);
+			covariance.set(boost::accumulators::covariance(acc_y, covariate2),2,1,2);
+			covariance.set(boost::accumulators::covariance(acc_z, covariate1),2,2,0);
+			covariance.set(boost::accumulators::covariance(acc_z, covariate2),2,2,1);
+			covariance.set(_N*boost::accumulators::moment<2>(acc_z),2,2,2);
+
 			// Calculate moments of inertia
 			{
 				double val = 0;
-
+				// All wrong. Need to redo.
 				// I_xx
 				val = boost::accumulators::moment<2>(acc_y) + boost::accumulators::moment<2>(acc_z);
-				val *= _N*_N;
 				mominert.set(val,2,0,0);
 
 				// I_yy
 				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_z);
-				val *= _N*_N;
 				mominert.set(val,2,1,1);
 
 				// I_zz
 				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_y);
-				val *= _N*_N;
 				mominert.set(val,2,2,2);
 
-				// I_xy and I_yz
-				val = -1.0 * (boost::accumulators::sum(acc_x) + boost::accumulators::sum(acc_y));
+				// I_xy and I_yx
+				val = -1.0 * covariance.get(2,1,0);
+				val /= _N;
 				mominert.set(val,2,0,1);
 				mominert.set(val,2,1,0);
 
 				// I_xz and I_zx
-				val = -1.0 * (boost::accumulators::sum(acc_x) + boost::accumulators::sum(acc_z));
+				val = -1.0 * covariance.get(2,2,0);
+				val /= _N;
 				mominert.set(val,2,0,2);
 				mominert.set(val,2,2,0);
 
 				// I_yz and I_zy
-				val = -1.0 * (boost::accumulators::sum(acc_y) + boost::accumulators::sum(acc_z));
+				val = -1.0 * covariance.get(2,2,1);
+				val /= _N;
 				mominert.set(val,2,2,1);
 				mominert.set(val,2,1,2);
 			}

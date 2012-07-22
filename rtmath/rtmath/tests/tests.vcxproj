@@ -91,6 +91,7 @@
     <None Include="data\2mm12shape.txt" />
     <None Include="data\ddscat-snow-18-3-7.shp" />
     <None Include="data\ddscat.par" />
+    <None Include="data\miniflake.shp" />
     <None Include="data\rtmath.conf" />
     <None Include="data\testing.conf" />
   </ItemGroup>

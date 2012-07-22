@@ -124,6 +124,7 @@ namespace rtmath {
 			matrixop min, max, sum, skewness, kurtosis;
 			// Moments
 			matrixop mom1, mom2, mominert;
+			matrixop covariance;
 
 			std::set<shapeFileStatsRotated> rotations;
 		protected:
@@ -161,6 +162,7 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(kurtosis);
 					ar & BOOST_SERIALIZATION_NVP(mom1);
 					ar & BOOST_SERIALIZATION_NVP(mom2);
+					ar & BOOST_SERIALIZATION_NVP(covariance);
 					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
 					ar & boost::serialization::make_nvp("Rotation-Dependent", rotations);
 				}

@@ -89,6 +89,9 @@
     <None Include="data\ddscat-snow-18-3-7.shp">
       <Filter>Resource Files\Data</Filter>
     </None>
+    <None Include="data\miniflake.shp">
+      <Filter>Resource Files\Data</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="globals.h">
