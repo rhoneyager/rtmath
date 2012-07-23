@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 			("trial-run,T", "Only list what would be done")
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("output,o", "output filename")
-			("separate-outputs,-s", "Write separate output file for each input. Use default naming scheme.")
+			("separate-outputs,s", "Write separate output file for each input. Use default naming scheme.")
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
 			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");

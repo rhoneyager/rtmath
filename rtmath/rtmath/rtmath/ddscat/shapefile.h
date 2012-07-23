@@ -150,6 +150,10 @@ namespace rtmath {
 			matrixop rot, invrot;
 			double beta, theta, phi;
 
+			// The constant multipliers! d is unknown!
+			double V_cell_const, V_dipoles_const;
+			double aeff_dipoles_const;
+
 			// Before normalization and rotation
 			matrixop b_min, b_max, b_mean;
 			
@@ -171,6 +175,10 @@ namespace rtmath {
 				{
 					ar & boost::serialization::make_nvp("shapefile", _shp);
 					ar & boost::serialization::make_nvp("N", _N);
+					ar & BOOST_SERIALIZATION_NVP(V_cell_const);
+					ar & BOOST_SERIALIZATION_NVP(V_dipoles_const);
+					ar & BOOST_SERIALIZATION_NVP(aeff_dipoles_const);
+
 					ar & BOOST_SERIALIZATION_NVP(beta);
 					ar & BOOST_SERIALIZATION_NVP(theta);
 					ar & BOOST_SERIALIZATION_NVP(phi);

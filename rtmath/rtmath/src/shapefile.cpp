@@ -352,6 +352,9 @@ namespace rtmath {
 			beta = 0;
 			theta = 0;
 			phi = 0;
+			V_cell_const = 0;
+			V_dipoles_const = 0;
+			aeff_dipoles_const = 0;
 			_valid = false;
 		}
 
@@ -599,6 +602,13 @@ namespace rtmath {
 				GETOBJKEY();
 				throw rtmath::debug::xBadInput("Stats cannot be calculated because the shapefile is not loaded.");
 			}
+
+			// Calculate volume elements
+			const matrixop &d = _shp->_d;
+			double dxdydz = d.get(2,0,0) * d.get(2,0,1) * d.get(2,0,2);
+			V_cell_const = dxdydz;
+			V_dipoles_const = dxdydz * _N;
+			aeff_dipoles_const = (3./(4.*boost::math::constants::pi<double>()))*pow(dxdydz,1./3.);
 
 			const matrixop &a1 = _shp->_a1;
 			const matrixop &a2 = _shp->_a2;
