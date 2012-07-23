@@ -236,11 +236,19 @@ namespace rtmath {
 				}
 				// valser[0] is point id, 1-3 are coords, 4-6 are diel entries
 				matrixop crdsm(2,1,3), crdsi(2,1,3);
+				crdsm.set(valser[1],2,0,0);
+				crdsm.set(valser[2],2,0,1);
+				crdsm.set(valser[3],2,0,2);
+				crdsi.set(valser[4],2,0,0);
+				crdsi.set(valser[5],2,0,1);
+				crdsi.set(valser[6],2,0,2);
+				//GETOBJKEY();
+				/* // if only.....
 				vector<double>::const_iterator it = valser.begin() + 1;
 				crdsm.from<std::vector<double>::const_iterator>(it);
 				it += 3;
 				crdsi.from<std::vector<double>::const_iterator>(it);
-
+				*/
 				_latticePts.push_back(move(crdsm));
 				_latticePtsRi.push_back(move(crdsi));
 				//_latticePts[i] = move(crdsm);

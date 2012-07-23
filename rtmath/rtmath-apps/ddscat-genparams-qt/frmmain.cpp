@@ -371,7 +371,7 @@ void frmMain::toGenerator()
 	}
 	//_gen.strPreCmds; // TODO
 	//_gen.strPostCdms; // TODO
-	_gen.baseParFile = getValText<std::string>(ui.txtBaseFile);
+	//_gen.baseParFile = getValText<std::string>(ui.txtBaseFile);
 	
 	// shape stuff
 	//_gen._shapeBase; // TODO
@@ -517,7 +517,7 @@ void frmMain::fromGenerator()
 	//_gen.ddscatVer;
 	//_gen.strPreCmds; // TODO
 	//_gen.strPostCdms; // TODO
-	ui.txtBaseFile->setText(QString::fromStdString(_gen.baseParFile));
+	//ui.txtBaseFile->setText(QString::fromStdString(_gen.baseParFile));
 
 	// shape stuff
 	//_gen._shapeBase; // TODO

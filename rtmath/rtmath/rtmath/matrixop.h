@@ -109,6 +109,7 @@ namespace rtmath {
 		inlinerval(matrixop,minors); // macro to inline a variable length function
 		
 		void toDoubleArray(double *target) const;
+		/*
 		template <class T> void to(T &start) const
 		{
 			std::copy(_data,_data+_datasize, start);
@@ -118,8 +119,9 @@ namespace rtmath {
 			target.resize(_datasize);
 			std::copy(_data,_data+_datasize,target.begin());
 		}
-
+		*/
 		void fromDoubleArray(const double *target);
+		/*
 		template <const class T> void from(const T &start)
 		{
 			std::copy(start, start+_datasize, _data);
@@ -136,6 +138,7 @@ namespace rtmath {
 		{
 			std::copy(target.begin(), target.end(), _data);
 		}
+		*/
 		void inverse(matrixop &res) const;
 		inline matrixop inverse() const { matrixop res(_dims); inverse(res); return res; }
 		void posFromIndex(size_t index, std::vector<size_t> &pos) const; // duplicate of _getPos!!

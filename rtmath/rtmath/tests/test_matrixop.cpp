@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(matrixop_arrays) {
 	for (size_t i=0;i<n;i++)
 		BOOST_CHECK_EQUAL(vals[i],cvals[i]);
 }
-
+/*
 // Check read / write from vectors and double arrays using template to<>, from<>
 BOOST_AUTO_TEST_CASE(matrixop_to_from)
 {
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(matrixop_to_from)
 	b.from<std::vector<double>::iterator>(v.begin());
 	BOOST_CHECK(a==b);
 }
-
+*/
 // Check equality / inequality
 BOOST_AUTO_TEST_CASE(matrixop_equality) {
 	rtmath::matrixop a(2,4,4), b(2,4,4);
