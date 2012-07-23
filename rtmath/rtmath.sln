@@ -72,6 +72,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "roottest", "rtmath-apps\roo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "expand-shorthand", "rtmath-apps\expand-shorthand\expand-shorthand.vcxproj", "{DE8E7E5D-379A-45DF-99F6-1C136D45FC8A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raw-plotdata", "rtmath-apps\raw-plotdata\raw-plotdata.vcxproj", "{D92599CB-3466-4D59-A043-1C567DE596CE}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -168,6 +170,10 @@ Global
 		{DE8E7E5D-379A-45DF-99F6-1C136D45FC8A}.Debug|Win32.Build.0 = Debug|Win32
 		{DE8E7E5D-379A-45DF-99F6-1C136D45FC8A}.Release|Win32.ActiveCfg = Release|Win32
 		{DE8E7E5D-379A-45DF-99F6-1C136D45FC8A}.Release|Win32.Build.0 = Release|Win32
+		{D92599CB-3466-4D59-A043-1C567DE596CE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D92599CB-3466-4D59-A043-1C567DE596CE}.Debug|Win32.Build.0 = Debug|Win32
+		{D92599CB-3466-4D59-A043-1C567DE596CE}.Release|Win32.ActiveCfg = Release|Win32
+		{D92599CB-3466-4D59-A043-1C567DE596CE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,6 +199,7 @@ Global
 		{347051E5-54F7-4917-8286-EED3ACA330D6} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{D21DE6FD-CE2C-486D-A811-A5876E5FEE14} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{DE8E7E5D-379A-45DF-99F6-1C136D45FC8A} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
+		{D92599CB-3466-4D59-A043-1C567DE596CE} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{BB3A712C-3367-48CB-A98A-58A65FE83367} = {9D4A2788-8FD7-4FB3-8D3A-6A9F3EF77A3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

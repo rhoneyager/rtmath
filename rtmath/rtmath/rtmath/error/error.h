@@ -1,6 +1,8 @@
 /* error.h - handling routines for all errors that can be thrown */
 #pragma once
 
+#pragma warning( disable : 4996 )
+
 #include "../Stdafx.h"
 #include <iostream>
 #include "debug_mem.h"
