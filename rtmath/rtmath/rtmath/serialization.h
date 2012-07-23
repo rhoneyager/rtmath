@@ -78,12 +78,12 @@ namespace rtmath {
 				{
 					ostringstream sCompressed;
 					// Note: boost 1.49 or 1.50 implements << operator.  1.48 and below do not.
-					if (pBase.string().find(cmeth) != std::string::npos)
+//					if (pBase.string().find(cmeth) != std::string::npos)
 					{
 						sCompressed << pBase.string() << "." << cmeth;
 						pXML = path(sCompressed.str());
-					} else {
-						pXML = pBase;
+//					} else {
+//						pXML = pBase;
 					}
 				} else {
 					pXML = pBase;
