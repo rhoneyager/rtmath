@@ -124,6 +124,7 @@ ELSE()
 		boost_filesystem
 		boost_date_time
 		boost_iostreams
+		boost_program_options
                 boost_serialization
 		boost_unit_test_framework
 		boost_system
