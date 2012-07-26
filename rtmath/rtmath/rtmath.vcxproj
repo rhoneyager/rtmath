@@ -51,6 +51,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <DisableSpecificWarnings>4996;4800</DisableSpecificWarnings>
       <PreprocessorDefinitions>_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -96,6 +97,7 @@
     <ClInclude Include="rtmath\common_templates.h" />
     <ClInclude Include="rtmath\config.h" />
     <ClInclude Include="rtmath\coords.h" />
+    <ClInclude Include="rtmath\PCLlink.h" />
     <ClInclude Include="rtmath\da\daDiagonalMatrix.h" />
     <ClInclude Include="rtmath\da\daInitLayer.h" />
     <ClInclude Include="rtmath\da\daLayer.h" />
@@ -114,12 +116,14 @@
     <ClInclude Include="rtmath\ddscat\ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddScattMatrix.h" />
     <ClInclude Include="rtmath\ddscat\ddweights.h" />
+    <ClInclude Include="rtmath\ddscat\hulls.h" />
     <ClInclude Include="rtmath\ddscat\mtab.h" />
     <ClInclude Include="rtmath\ddscat\parids.h" />
     <ClInclude Include="rtmath\ddscat\rotations.h" />
     <ClInclude Include="rtmath\ddscat\runScripts.h" />
     <ClInclude Include="rtmath\ddscat\shapefile.h" />
     <ClInclude Include="rtmath\ddscat\shapes.h" />
+    <ClInclude Include="rtmath\ddscat\shapestats.h" />
     <ClInclude Include="rtmath\defs.h" />
     <ClInclude Include="rtmath\depGraph.h" />
     <ClInclude Include="rtmath\emd.h" />
@@ -176,6 +180,7 @@
     <ClInclude Include="rtmath\serialization.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
     <ClInclude Include="rtmath\units.h" />
+    <ClInclude Include="rtmath\VTKlink.h" />
     <ClInclude Include="rtmath\zeros.h" />
   </ItemGroup>
   <ItemGroup>
@@ -251,6 +256,7 @@
     <ClCompile Include="src\gridded.cpp" />
     <ClCompile Include="src\gridStatic.cpp" />
     <ClCompile Include="src\hermite.cpp" />
+    <ClCompile Include="src\hulls.cpp" />
     <ClCompile Include="src\interpolatable.cpp" />
     <ClCompile Include="src\laguerre.cpp" />
     <ClCompile Include="src\legendre.cpp" />
@@ -286,6 +292,7 @@
     <ClCompile Include="src\shapefile.cpp" />
     <ClCompile Include="src\shapes-generators.cpp" />
     <ClCompile Include="src\shapes.cpp" />
+    <ClCompile Include="src\shapestats.cpp" />
     <ClCompile Include="src\Stdafx.cpp" />
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />

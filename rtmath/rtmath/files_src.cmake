@@ -52,11 +52,13 @@ set (ddscat-src
 	src/ddscat.cpp
 	src/ddScattMatrix.cpp
 	src/ddweights.cpp
+	src/hulls.cpp
 	src/mtab.cpp
 	src/rotations.cpp
 	src/runScripts.cpp
 	src/shapefile.cpp
 	src/shapes.cpp
+	src/shapestats.cpp
 	src/shapes-generators.cpp
 	)
 set (ddscat-hdr
@@ -70,12 +72,14 @@ set (ddscat-hdr
 	rtmath/ddscat/ddscat.h
 	rtmath/ddscat/ddScattMatrix.h
 	rtmath/ddscat/ddweights.h
+	rtmath/ddscat/hulls.h
 	rtmath/ddscat/mtab.h
 	rtmath/ddscat/parids.h
 	rtmath/ddscat/rotations.h
 	rtmath/ddscat/runScripts.h
 	rtmath/ddscat/shapefile.h
 	rtmath/ddscat/shapes.h
+	rtmath/ddscat/shapestats.h
 	)
 source_group("Source Files\\ddscat" FILES ${ddscat-src})
 source_group("Header Files\\ddscat" FILES ${ddscat-hdr})

@@ -21,6 +21,9 @@
     <ClCompile Include="refraction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shapedata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="e-260K-35.6GHz.dat">

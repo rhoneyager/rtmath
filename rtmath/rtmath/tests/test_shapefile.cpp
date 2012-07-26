@@ -6,9 +6,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 #include <memory>
+#include <set>
 
 #include "../rtmath/rtmath.h"
-
+#include "../rtmath/ddscat/shapestats.h"
+#include "../rtmath/ddscat/hulls.h"
+#include "../rtmath/PCLlink.h"
 
 BOOST_AUTO_TEST_SUITE(test_shapefile);
 using namespace rtmath;
@@ -61,6 +64,37 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 	rtmath::serialization::write<shapeFileStats>(sshp,"shpstats.xml");
 }
 
+BOOST_AUTO_TEST_CASE(shapefile_vtk)
+{
+	shapefile shp((globals::instance()->pTestData / "2mm12shape.txt").string());
+	//shapeFileStats sshp(shp);
+	writeVTKpoints("miniflake-points.vtk", shp._latticePtsStd);
+	hull h(shp._latticePtsStd);
+	h.searchRadius = 2.0;
+	h.Mu = 2.0;
+	h.writeVTKhull("miniflake-hull.vtk");
+	convexHull cvx(shp._latticePtsStd);
+	cvx.constructHull();
+	cout << "Max diameter is: " << cvx.maxDiameter() << endl;
+	cvx.searchRadius = 6.0;
+	cvx.Mu = 6.0;
+	cvx.writeVTKhull("miniflake-convex-hull.vtk");
+	writeVTKpoints("miniflake-convex-points.vtk", cvx._hullPts);
+
+	concaveHull ccv(shp._latticePtsStd);
+	double myalphas[] = { 1.0, 2.0, 4.0, 8.0 };
+	set<double> alphas(myalphas, myalphas+4);
+	for (auto it = alphas.begin(); it != alphas.end(); it++)
+	{
+		ccv.constructHull(*it);
+		if (ccv._hullPts.size() == 0) continue;
+		ostringstream fpts, fhull;
+		fpts << "miniflake-concave-" << *it << "-pts.vtk";
+		fhull << "miniflake-concave-" << *it << "-hull.vtk";
+		ccv.writeVTKhull(fhull.str());
+		writeVTKpoints(fpts.str(), ccv._hullPts);
+	}
+}
 
 BOOST_AUTO_TEST_SUITE_END();
 

@@ -69,6 +69,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="refraction.cpp" />
+    <ClCompile Include="shapedata.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="e-260K-35.6GHz.dat" />

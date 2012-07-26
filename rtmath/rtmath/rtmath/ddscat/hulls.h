@@ -1,0 +1,56 @@
+#pragma once
+#include <string>
+#include <vector>
+#include <set>
+#include <boost/shared_ptr.hpp>
+
+#include "../matrixop.h"
+
+//#include "shapefile.h"
+
+/* This contains the necessary functions for computing convex and concave hulls, 
+ * both for writeout and for shapefile determinations */
+
+namespace rtmath
+{
+	class matrixop;
+
+	namespace ddscat
+	{
+
+		void writeVTKpoints(const std::string &filename, const std::vector<matrixop> &src);
+
+		class hull
+		{
+		public:
+			hull(const std::vector<matrixop> &backend);
+			virtual ~hull();
+			double searchRadius, Mu, minAngle, maxAngle, maxSurfAngle;
+			size_t maxNearestNeighbors;
+			bool normalConsistency;
+			void writeVTKhull(const std::string &filename) const;
+		public:
+			hull();
+			std::vector<matrixop> _points;
+			mutable std::vector<matrixop> _hullPts;
+		};
+
+		class convexHull : public hull
+		{
+		public:
+			convexHull(const std::vector<matrixop>&);
+			virtual ~convexHull();
+			void constructHull();
+			double maxDiameter() const;
+		};
+
+		class concaveHull : public hull
+		{
+		public:
+			concaveHull(const std::vector<matrixop>&);
+			virtual ~concaveHull();
+			void constructHull(double alpha);
+		};
+	}
+}
+

@@ -74,10 +74,15 @@ if(LOAD_PACKAGES)
 	find_package(PQXX)
 	find_package(Boost REQUIRED)
 	find_package(OpenMP)
+	# Qt4 is loaded only of make_guis is set
 	#find_package(Qt4 REQUIRED)
 	#find_package(Curses REQUIRED)
+	# Compression for serialization. It even detects which are present.
 	find_package(ZLIB)
 	find_package(BZip2)
+	# PCL is needed for convex and concave hull calculations.
+	# Used by the core library for statistics generation.
+	find_package(PCL 1.0 REQUIRED)
 endif()
 # Take OpenMP option and enable / disable as appropriate
 IF(USE_OPENMP)
@@ -125,7 +130,7 @@ ELSE()
 		boost_date_time
 		boost_iostreams
 		boost_program_options
-                boost_serialization
+		boost_serialization
 		boost_unit_test_framework
 		boost_system
 	)

@@ -4,6 +4,9 @@
 
 #pragma once
 
+#pragma warning( disable : 4244 ) // even though that part of code is never reached
+#pragma warning( disable : 4146 ) // annoying boost garbage
+#pragma warning( disable : 4800 )
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
 #include <algorithm>
@@ -30,20 +33,28 @@
 #define BOOST_FILESYSTEM_VERSION 3
 
 #include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/covariance.hpp>
+#include <boost/accumulators/statistics/density.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/kurtosis.hpp>
+#include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
+#include <boost/accumulators/statistics/skewness.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/variates/covariate.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/bimap.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/filesystem.hpp>
-#pragma warning( push ) // Suppress warning. MSVC warning is because of how it branches,
-#pragma warning( disable : 4244 ) // even though that part of code is never reached
-#pragma warning( disable : 4146 ) // annoying boost garbage
-#include <boost/lexical_cast.hpp>
-#pragma warning( pop )
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+
 #include <boost/math/constants/constants.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -58,13 +69,13 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/units/systems/si.hpp>
 #include <boost/unordered_map.hpp>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 //#pragma warning( push )
-#pragma warning( disable : 4996 )
-#pragma warning( disable : 4800 )
+
 /*
 #include "TGraph.h"
 #include "TF1.h"

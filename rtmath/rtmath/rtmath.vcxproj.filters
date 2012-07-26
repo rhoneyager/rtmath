@@ -351,6 +351,18 @@
     <ClInclude Include="rtmath\serialization.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\ddscat\shapestats.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\hulls.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\VTKlink.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\PCLlink.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -650,6 +662,12 @@
     </ClCompile>
     <ClCompile Include="src\serialization.cpp">
       <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapestats.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hulls.cpp">
+      <Filter>Source Files\ddscat</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
