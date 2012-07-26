@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 
 BOOST_AUTO_TEST_CASE(shapefile_vtk)
 {
-	shapefile shp((globals::instance()->pTestData / "2mm12shape.txt").string());
+	shapefile shp((globals::instance()->pTestData / "ddscat-snow-33-23-23.shp").string());
 	//shapeFileStats sshp(shp);
 	writeVTKpoints("miniflake-points.vtk", shp._latticePtsStd);
 	hull h(shp._latticePtsStd);

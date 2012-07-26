@@ -13,6 +13,9 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/surface/gp3.h>
+#include <pcl/surface/grid_projection.h>
+#include <pcl/surface/marching_cubes.h>
+#include <pcl/surface/mls.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/filters/passthrough.h>
@@ -27,6 +30,86 @@
 
 namespace
 {
+	/*
+	void generateMeshMarching(const rtmath::ddscat::hull &h, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PolygonMesh &triangles)
+	{
+		pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;
+		pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals (new pcl::PointCloud<pcl::Normal>);
+		pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+
+		pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointNormal> mls;
+		mls.setComputeNormals (true);
+		mls.setInputCloud (cloud);
+		mls.setPolynomialFit (true);
+		mls.setSearchMethod (tree);
+		mls.setSearchRadius (1.0);
+		mls.process (*cloud_with_normals);
+		//
+		tree->setInputCloud (cloud);
+
+
+		pcl::PolygonMesh mesh;
+
+		//* normals should not contain the point normals + surface curvatures
+
+		
+		// Create search tree*
+		pcl::search::KdTree<pcl::PointNormal>::Ptr tree2 (new pcl::search::KdTree<pcl::PointNormal>);
+		tree2->setInputCloud (cloud_with_normals);
+
+		// Initialize objects
+		pcl::MarchingCubes<pcl::PointNormal> mc;
+		//pcl::PolygonMesh triangles;
+
+		// Set parameters
+		mc.setIsoLevel(0.5);
+		mc.setGridResolution(50, 50, 50);
+		mc.setSearchMethod(tree2);
+		mc.setInputCloud(cloud_with_normals);
+
+		mc.reconstruct (triangles);
+
+	}
+	*/
+	void generateMeshGridProjection(const rtmath::ddscat::hull &h, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PolygonMesh &triangles)
+	{
+		pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;
+		pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
+		pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+		//
+		tree->setInputCloud (cloud);
+		n.setInputCloud (cloud);
+		n.setSearchMethod (tree);
+		n.setKSearch (20);
+		n.compute (*normals);
+
+		//* normals should not contain the point normals + surface curvatures
+
+		// Concatenate the XYZ and normal fields*
+		pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals (new pcl::PointCloud<pcl::PointNormal>);
+		pcl::concatenateFields (*cloud, *normals, *cloud_with_normals);
+		//* cloud_with_normals = cloud + normals
+
+		// Create search tree*
+		pcl::search::KdTree<pcl::PointNormal>::Ptr tree2 (new pcl::search::KdTree<pcl::PointNormal>);
+		tree2->setInputCloud (cloud_with_normals);
+
+		// Initialize objects
+		pcl::GridProjection<pcl::PointNormal> gbpolygon;
+		//pcl::PolygonMesh triangles;
+
+		// Set parameters
+		gbpolygon.setResolution(0.005);
+		gbpolygon.setPaddingSize(1);
+		//gbpolygon.setNearestNeighborNum(h.maxNearestNeighbors);
+		gbpolygon.setMaxBinarySearchLevel(10);
+
+		// Get result
+		gbpolygon.setInputCloud(cloud_with_normals);
+		gbpolygon.setSearchMethod(tree2);
+		gbpolygon.reconstruct(triangles);
+	}
+
 	void generateMeshGreedy(const rtmath::ddscat::hull &h, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PolygonMesh &triangles)
 	{
 		pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;
@@ -104,13 +187,13 @@ namespace rtmath
 
 		hull::hull()
 		{
-			searchRadius = 5.0;
-			Mu = 2.2;
+			searchRadius = 1.5;
+			Mu = 1;
 			minAngle = 0;
 			maxAngle = 3.14159/2; // TODO: replace with boost def
 			maxSurfAngle = 3.14159/2;
 			maxNearestNeighbors = 200;
-			normalConsistency = false;
+			normalConsistency = true;
 		}
 
 		hull::~hull()
@@ -120,13 +203,13 @@ namespace rtmath
 		hull::hull(const std::vector<matrixop> &backend)
 		{
 			hull();
-			searchRadius = 5.0;
-			Mu = 2.2;
+			searchRadius = 1.5;
+			Mu = 1;
 			minAngle = 0;
 			maxAngle = 3.14159/2; // TODO: replace with boost def
 			maxSurfAngle = 3.14159/2;
 			maxNearestNeighbors = 200;
-			normalConsistency = false;
+			normalConsistency = true;
 			_points = backend;
 			_hullPts = backend;
 		}
@@ -145,8 +228,15 @@ namespace rtmath
 				cloud->push_back(pcl::PointXYZ(x,y,z));
 			}
 
+
+
 			pcl::PolygonMesh triangles;
-			generateMeshGreedy(*this,cloud,triangles);
+			triangles.polygons = _polygons;
+			sensor_msgs::PointCloud2 pbc;
+			pcl::toROSMsg(*cloud, pbc);
+			triangles.cloud = pbc;
+			
+			//generateMeshGreedy(*this,cloud,triangles);
 			pcl::io::saveVTKFile (filename.c_str(), triangles);
 		}
 
@@ -181,8 +271,9 @@ namespace rtmath
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZ>);
 			pcl::ConvexHull<pcl::PointXYZ> chull;
 			chull.setDimension(3);
+			chull.setComputeAreaVolume(true);
 			chull.setInputCloud (cloud);
-			chull.reconstruct (*cloud_hull);
+			chull.reconstruct (*cloud_hull, _polygons);
 
 			// Write to _hullPts
 			_hullPts.reserve(cloud_hull->size());
@@ -227,7 +318,7 @@ namespace rtmath
 		concaveHull::~concaveHull()
 		{
 		}
-
+		
 		void concaveHull::constructHull(double alpha)
 		{
 			_hullPts.clear();
@@ -252,7 +343,7 @@ namespace rtmath
 			chull.setDimension(3);
 			chull.setInputCloud (cloud);
 			chull.setAlpha(alpha);
-			chull.reconstruct (*cloud_hull);
+			chull.reconstruct (*cloud_hull, _polygons);
 
 			// Write to _hullPts
 			_hullPts.reserve(cloud_hull->size());

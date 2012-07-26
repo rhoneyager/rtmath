@@ -11,6 +11,11 @@
 /* This contains the necessary functions for computing convex and concave hulls, 
  * both for writeout and for shapefile determinations */
 
+namespace pcl
+{
+	struct Vertices;
+}
+
 namespace rtmath
 {
 	class matrixop;
@@ -32,6 +37,7 @@ namespace rtmath
 		public:
 			hull();
 			std::vector<matrixop> _points;
+			std::vector< pcl::Vertices > _polygons;
 			mutable std::vector<matrixop> _hullPts;
 		};
 
