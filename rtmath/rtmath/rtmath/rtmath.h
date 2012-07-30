@@ -44,6 +44,7 @@
 #include "ddscat/ddscat.h"
 #include "ddscat/cdf-ddscat.h"
 #include "ddscat/shapefile.h"
+#include "ddscat/shapestats.h"
 #include "ddscat/hulls.h"
 #include "ddscat/ddpar.h"
 #include "ddscat/mtab.h"

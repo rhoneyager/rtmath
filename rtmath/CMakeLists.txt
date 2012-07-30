@@ -26,8 +26,16 @@ Please delete them.")
 endif()
 
 # Ask for some options
+if(WIN32)
+	set( DATA_DIR_PREFIX_CAND
+		C:/rtmath )
+else()
+	set( DATA_DIR_PREFIX_CAND
+		/data/rhoneyag/rtmath )
+endif()
+
 SET( DATA_DIR_PREFIX
-	${CMAKE_INSTALL_PREFIX}
+	${DATA_DIR_PREFIX_CAND}
 	CACHE STRING
 	"Data directory prefix for basic configuration"
 )
@@ -82,6 +90,7 @@ if(LOAD_PACKAGES)
 	find_package(BZip2)
 	# PCL is needed for convex and concave hull calculations.
 	# Used by the core library for statistics generation.
+	find_package(VTK REQUIRED)
 	find_package(PCL 1.0 REQUIRED)
 endif()
 # Take OpenMP option and enable / disable as appropriate
@@ -226,7 +235,7 @@ set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 # TODO: add headers to rtmath solution build, in their appropriiate directories
 # TODO: add postgresql support
 set(CPACK_RPM_PACKAGE_REQUIRES 
-	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel, libpqxx-devel"
+	"cmake >= 2.8, root-physics, root, tcsh, postgresql-devel, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6, netcdf-devel, netcdf-cxx-devel, netcdf-cxx4-devel, hdf5-devel, libpqxx-devel, pcl-devel"
 	)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS

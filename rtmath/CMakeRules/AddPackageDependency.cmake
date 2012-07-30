@@ -1,5 +1,8 @@
 # -*- mode: cmake -*-
 
+# Ryan - taken from Amanzi (originally), and adapted for the rtmath build system
+#      - Currently implementing LIBRARY_DIRS because VTK needs it...
+
 #
 # MSTK (Shamelessly stolen from Amanzi open source code - https://software.lanl.gov/ascem/trac)
 #
@@ -47,8 +50,9 @@ function(ADD_PACKAGE_DEPENDENCY)
     #    message(STATUS "${target_package} depends on ${req_package}")
     #message(STATUS "Updating ${target_package}_LIBRARIES and ${target_package}_INCLUDE_DIRS")
     find_package(${req_package} REQUIRED)
-#	message("${${req_package}_LIBRARIES}")
-#	message("${${req_package}_INCLUDE_DIRS}")
+#	message("${req_package} lib dir - ${${req_package}_LIBRARY_DIRS}")
+#	message("${req_package} libs - ${${req_package}_LIBRARIES}")
+#	message("${req_package} includes - ${${req_package}_INCLUDE_DIRS}")
 #        message("${${target_package}_LIBRARIES}")
 #        message("${${target_package}_INCLUDE_DIRS}")
 
@@ -73,6 +77,30 @@ if(${target_package}_LIBRARIES)
                            GENERAL   target_gen_libs)
 else()
 set(target_libs_split 0)
+endif()
+
+if(DEFINED ${req_package}_LIBRARY_DIRS)
+# Find the absolute paths for all libraries in the list
+	foreach(rlib ${${req_package}_LIBRARIES})
+#		message("expanding ${rlib}")
+		unset(abs CACHE)
+		unset(abs)
+		find_library(abs
+			NAMES ${rlib}
+			HINTS ${${req_package}_LIBRARY_DIRS}
+			)
+#		message("${abs}")
+		if ("${abs}" STREQUAL "abs-NOTFOUND")
+			set(abs ${rlib})	
+		endif()
+#		message("${rlib} - ${abs}")
+		list(APPEND absolute_LIBRARIES ${abs})
+		unset(abs CACHE)
+		unset(abs)
+	endforeach(rlib)
+
+	set(${${req_package_LIBRARIES}} ${absolute_LIBRARIES})
+#	message("${req_package} new libs - ${absolute_LIBRARIES}")
 endif()
 
         parse_library_list(${${req_package}_LIBRARIES}
