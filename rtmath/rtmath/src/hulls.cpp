@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/min.hpp>
 
 #include <pcl/ModelCoefficients.h>
 #include <pcl/io/pcd_io.h>
@@ -194,6 +196,8 @@ namespace rtmath
 			maxSurfAngle = 3.14159/2;
 			maxNearestNeighbors = 200;
 			normalConsistency = true;
+			_volume = 0;
+			_surfarea = 0;
 		}
 
 		hull::~hull()
@@ -212,6 +216,8 @@ namespace rtmath
 			normalConsistency = true;
 			_points = backend;
 			_hullPts = backend;
+			_volume = 0;
+			_surfarea = 0;
 		}
 
 		void hull::writeVTKhull(const std::string &filename) const
@@ -275,6 +281,9 @@ namespace rtmath
 			chull.setInputCloud (cloud);
 			chull.reconstruct (*cloud_hull, _polygons);
 
+			_volume = chull.getTotalVolume();
+			_surfarea = chull.getTotalArea();
+
 			// Write to _hullPts
 			_hullPts.reserve(cloud_hull->size());
 			for (auto it = cloud_hull->begin(); it != cloud_hull->end(); it++)
@@ -308,6 +317,16 @@ namespace rtmath
 			}
 
 			return maxD;
+		}
+
+		double hull::volume() const
+		{
+			return _volume;
+		}
+
+		double hull::surface_area() const
+		{
+			return _surfarea;
 		}
 
 		concaveHull::concaveHull(const std::vector<matrixop> &src)
@@ -355,6 +374,66 @@ namespace rtmath
 				p.set(it->z,2,0,2);
 
 				_hullPts.push_back(std::move(p));
+			}
+
+			_findVS();
+		}
+
+		void concaveHull::_findVS()
+		{
+			// Using _hullPts and _polygons, determine surface area (easy),
+			// and volume (hard)
+			
+			_volume = 0;
+			_surfarea = 0;
+			// First, need to find bounds on iteration and matrix sizes
+			using namespace boost::accumulators;
+			accumulator_set<size_t, stats<tag::min, tag::max> > bnd_x, bnd_y, bnd_z;
+			for (auto it = _hullPts.begin(); it != _hullPts.end(); it++)
+			{
+				double x = it->get(2,0,0);
+				double y = it->get(2,1,0);
+				double z = it->get(2,2,0);
+
+				bnd_x((size_t) x);
+				bnd_y((size_t) y);
+				bnd_z((size_t) z);
+			}
+			const size_t y_range = boost::accumulators::max(bnd_y) - boost::accumulators::min(bnd_y);
+			const size_t z_range = boost::accumulators::max(bnd_z) - boost::accumulators::min(bnd_z);
+			const size_t x_min = boost::accumulators::min(bnd_x);
+
+			// Iterate over polygons for both surface area and volume elements
+			for (auto it = _polygons.begin(); it != _polygons.end(); it++)
+			{
+				accumulator_set<size_t, stats<tag::min, tag::max> > acc_x;
+				double s = 0, sproj = 0;
+				double a[4] = {0, 0, 0, 0};
+				for (size_t i = 0; i < (*it)->vertices.size(); i++)
+				{
+					a[i] = (*it)->vertices[i];
+					s += a[i];
+					if (i)
+						sproj += a[i];
+				}
+				double sseg = 0, ssproj = 0;
+				sseg = (s - a[0])*(s-a[1])*(s-a[2])*(s-a[3]);
+				ssproj = (sproj-a[1])*(sproj-a[2])*(sproj-a[3]);
+				_surfarea += sqrt(sseg);
+				double B = sqrt(ssproj);
+				// Volume formulas:
+				// Prism: B*h
+				// Pyramid: B*h/3
+				// Have base area. Just need prism and cap heights.
+				double Hcap = boost::accumulators::max(acc_x) - boost::accumulators::min(acc_x);
+				double Hprism = boost::accumulators::min(acc_x) - x_min;
+
+				double Vprism = B * Hprism;
+				double Vcap = B * Hcap / 3.0;
+
+				// Sign is also critical, as the vertex segments overlap 
+				// in x. Conveniently, the polygons may never overlap in 3d space.
+				//
 			}
 		}
 

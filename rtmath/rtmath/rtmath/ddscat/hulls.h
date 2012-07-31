@@ -34,11 +34,14 @@ namespace rtmath
 			size_t maxNearestNeighbors;
 			bool normalConsistency;
 			void writeVTKhull(const std::string &filename) const;
+			double volume() const;
+			double surface_area() const;
 		public:
 			hull();
 			std::vector<matrixop> _points;
 			std::vector< pcl::Vertices > _polygons;
 			mutable std::vector<matrixop> _hullPts;
+			double _volume, _surfarea;
 		};
 
 		class convexHull : public hull
@@ -56,6 +59,8 @@ namespace rtmath
 			concaveHull(const std::vector<matrixop>&);
 			virtual ~concaveHull();
 			void constructHull(double alpha);
+		private:
+			void _findVS();
 		};
 	}
 }
