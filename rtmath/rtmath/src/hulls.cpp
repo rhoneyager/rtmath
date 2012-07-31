@@ -402,38 +402,52 @@ namespace rtmath
 			const size_t y_range = boost::accumulators::max(bnd_y) - boost::accumulators::min(bnd_y);
 			const size_t z_range = boost::accumulators::max(bnd_z) - boost::accumulators::min(bnd_z);
 			const size_t x_min = boost::accumulators::min(bnd_x);
+			const size_t x_range = boost::accumulators::max(bnd_x) - x_min;
+			// Need the center points for concave volume determination
+			const double x_c = x_min + 0.5 * x_range;
+			const double y_c = boost::accumulators::min(bnd_y) + 0.5 * y_range;
+			const double z_c = boost::accumulators::min(bnd_z) + 0.5 * z_range;
 
 			// Iterate over polygons for both surface area and volume elements
+/*			pcl::PolygonMesh triangles;
+			triangles.polygons = _polygons;
+			sensor_msgs::PointCloud2 pbc;
+			pcl::toROSMsg(*cloud, pbc);
+			triangles.cloud = pbc;
+			
+*/
+
 			for (auto it = _polygons.begin(); it != _polygons.end(); it++)
 			{
-				accumulator_set<size_t, stats<tag::min, tag::max> > acc_x;
-				double s = 0, sproj = 0;
-				double a[4] = {0, 0, 0, 0};
-				for (size_t i = 0; i < (*it)->vertices.size(); i++)
+				// m contains the det matrix for volume computation
+				double m[4][4];
+				for (size_t i = 0; i < (*it).vertices.size(); i++)
 				{
-					a[i] = (*it)->vertices[i];
-					s += a[i];
-					if (i)
-						sproj += a[i];
+					size_t v = (*it).vertices[i]; // v will be the index
+					// _hullPts[v] has the coords
+					m[i][0] = _hullPts[v].get(2,0,0);
+					m[i][1] = _hullPts[v].get(2,1,0);
+					m[i][2] = _hullPts[v].get(2,2,0);
+					m[i][3] = 1.0;
 				}
-				double sseg = 0, ssproj = 0;
-				sseg = (s - a[0])*(s-a[1])*(s-a[2])*(s-a[3]);
-				ssproj = (sproj-a[1])*(sproj-a[2])*(sproj-a[3]);
-				_surfarea += sqrt(sseg);
-				double B = sqrt(ssproj);
-				// Volume formulas:
-				// Prism: B*h
-				// Pyramid: B*h/3
-				// Have base area. Just need prism and cap heights.
-				double Hcap = boost::accumulators::max(acc_x) - boost::accumulators::min(acc_x);
-				double Hprism = boost::accumulators::min(acc_x) - x_min;
+				m[3][0] = x_c;
+				m[3][1] = y_c;
+				m[3][2] = z_c;
+				m[3][3] = 1.0;
 
-				double Vprism = B * Hprism;
-				double Vcap = B * Hcap / 3.0;
+				// This matrix makes volume and surface area determination easy!
+
+				matrixop vd(2,4,4);
+				vd.fromDoubleArray(&m[0][0]);
+				_volume += vd.det() / 6.0;
+
+				double ss = (m[0][1]*m[1][2]) - (m[0][2]*m[1][1]);
+				ss -= (m[0][0]*m[1][2]) - (m[0][2]*m[1][0]);
+				ss += (m[0][0]*m[1][1]) - (m[0][1]*m[1][0]);
+				_surfarea += abs(ss);
 
 				// Sign is also critical, as the vertex segments overlap 
 				// in x. Conveniently, the polygons may never overlap in 3d space.
-				//
 			}
 		}
 
