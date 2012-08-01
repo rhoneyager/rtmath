@@ -8,6 +8,10 @@
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 
+// Need to disable PCL warnings that are extraneous
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <pcl/ModelCoefficients.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/vtk_io.h>
@@ -29,6 +33,8 @@
 
 //#include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/hulls.h"
+
+#pragma GCC diagnostic pop
 
 namespace
 {
@@ -444,7 +450,7 @@ namespace rtmath
 				double ss = (m[0][1]*m[1][2]) - (m[0][2]*m[1][1]);
 				ss -= (m[0][0]*m[1][2]) - (m[0][2]*m[1][0]);
 				ss += (m[0][0]*m[1][1]) - (m[0][1]*m[1][0]);
-				_surfarea += abs(ss);
+				_surfarea += abs(ss) / 2.0;
 
 				// Sign is also critical, as the vertex segments overlap 
 				// in x. Conveniently, the polygons may never overlap in 3d space.
