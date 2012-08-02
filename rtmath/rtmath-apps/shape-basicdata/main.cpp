@@ -21,6 +21,7 @@
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/ROOTlink.h"
 
 
 
@@ -43,8 +44,11 @@ int main(int argc, char** argv)
 		desc.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
-			("diameter,D", "Calculate max diameter");
-//			("inputstats,s", po::value< vector<string> >(), "input shape stat files")
+			("diameter,D", "Calculate max diameter")
+			("PE", "Plot potential energy")
+			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
+			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
+			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
 //			("output,o", "output filename")
 
 		po::variables_map vm;
@@ -83,8 +87,14 @@ int main(int argc, char** argv)
 			}
 		}
 
-		bool diameter = false;
-		if (vm.count("diameter")) diameter = true;
+		// Specify beta, theta, phi rotations
+		string sbeta = vm["betas"].as<string>();
+		string stheta = vm["thetas"].as<string>();
+		string sphi = vm["phis"].as<string>();
+
+		paramSet<double> betas(sbeta);
+		paramSet<double> thetas(stheta);
+		paramSet<double> phis(sphi);
 
 		vector<rtmath::ddscat::shapeFileStats> Stats;
 		Stats.reserve(inputs.size());
@@ -105,28 +115,99 @@ int main(int argc, char** argv)
 				sstats.reset( sp );
 				cerr << "\tCalculating baseline statistics" << endl;
 				sstats->calcStatsBase();
-				rtmath::serialization::write<rtmath::ddscat::shapeFileStats>
-					(*sstats, "test.xml", "", false);
+				for (auto beta = betas.begin(); beta != betas.end(); beta++)
+				{
+					for (auto theta = thetas.begin(); theta != thetas.end(); theta++)
+					{
+						for (auto phi = phis.begin(); phi != phis.end(); phi++)
+						{
+							cerr << "\tCalculating rotation (beta,theta,phi): ("
+								<< *beta << ", " << *theta << ", " << *phi << ")" << endl;
+							sstats->calcStatsRot(*beta,*theta,*phi);
+						}
+					}
+				}
 			} else {
 				cerr << "\tStats file detected\n";
-				//rtmath::ddscat::shapeFileStats *sp =
-				//	new rtmath::ddscat::shapeFileStats;
 				rtmath::serialization::read<rtmath::ddscat::shapeFileStats>
 					(*sstats, *it);
-				//sstats.reset( sp );
 			}
 
 			//cerr << "\tCalculating rotation (beta,theta,phi): ("
 			//	<< *beta << ", " << *theta << ", " << *phi << ")" << endl;
 			//sstats.calcStatsRot(*beta,*theta,*phi);
 		
-			if (diameter)
+			if (vm.count("diameter"))
 			{
 				cout << "Diameter (d): " << sstats->max_distance << endl;
-			}	
+			}
+			if (vm.count("PE"))
+			{
+				string ofname = *it;
+				ofname.append("-PE.png");
+
+				// Extract the potential energies against x-dimension, 
+				// using theta and phi as the axes
+				const size_t np = sstats->rotations.size();
+				boost::shared_ptr<TCanvas> tC(new TCanvas("c","PE plot", 0,0,2100,600));
+				boost::shared_ptr<TGraph2D> tPEx(new TGraph2D());
+				boost::shared_ptr<TGraph2D> tPEy(new TGraph2D());
+				boost::shared_ptr<TGraph2D> tPEz(new TGraph2D());
+
+				size_t n=0;
+				// TODO: resizing only for beta = 0
+				for (auto ot = sstats->rotations.begin(); ot != sstats->rotations.end(); ot++, n++)
+				{
+					const double beta = ot->beta;
+					if (beta != 0) continue;
+					const double theta = ot->theta;
+					const double phi = ot->phi;
+					const double PEx = ot->PE.get(2,0,0);
+					const double PEy = ot->PE.get(2,1,0);
+					const double PEz = ot->PE.get(2,2,0);
+					
+					tPEx->SetPoint(n,theta,phi,PEx);
+					tPEy->SetPoint(n,theta,phi,PEy);
+					tPEz->SetPoint(n,theta,phi,PEz);
+				}
+				gStyle->SetPalette(1);
+				tC->Divide(3,1);
+
+				tC->cd(1);
+				tPEx->Draw("surf1");
+				tPEx->SetTitle("Potential Energy - x");
+				tPEx->GetXaxis()->SetTitle("#theta");
+				tPEx->GetXaxis()->CenterTitle();
+				tPEx->GetYaxis()->SetTitle("#phi");
+				tPEx->GetYaxis()->CenterTitle();
+				tPEx->GetZaxis()->SetTitle("PE (scaled)");
+				tPEx->GetZaxis()->CenterTitle();
+
+
+				tC->cd(2);
+				tPEy->Draw("surf1");
+				tPEy->SetTitle("Potential Energy - y");
+				tPEy->GetXaxis()->SetTitle("#theta");
+				tPEy->GetXaxis()->CenterTitle();
+				tPEy->GetYaxis()->SetTitle("#phi");
+				tPEy->GetYaxis()->CenterTitle();
+
+
+				tC->cd(3);
+				tPEz->Draw("surf1");
+				tPEz->SetTitle("Potential Energy - z");
+				tPEz->GetXaxis()->SetTitle("#theta");
+				tPEz->GetXaxis()->CenterTitle();
+				tPEz->GetYaxis()->SetTitle("#phi");
+				tPEz->GetYaxis()->CenterTitle();
+
+
+				tC->SaveAs(ofname.c_str());
+
+			}
 		}
 
-		cerr << "Done." << endl;
+		//cerr << "Done." << endl;
 		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)

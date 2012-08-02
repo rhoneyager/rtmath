@@ -202,14 +202,22 @@ namespace rtmath {
 							splitSet<T>(ssubst, expanded, aliases);
 						} else { 
 							// Separated based on commas. Expand for dashes and colons
+							// TODO: allow string specifier after three params
 							tokenizer trange(*ot,seprange);
 							vector<T> range;
-                                                        for (auto rt = trange.begin(); rt != trange.end(); rt++)
+							string specializer;
+							size_t i = 0;
+                                                        for (auto rt = trange.begin(); rt != trange.end(); rt++, i++)
                                                         {
                                                             try {
                                                                 string s = *rt;
                                                                 boost::algorithm::trim(s);
-                                                                range.push_back(boost::lexical_cast<T>(s));
+								if (i < 3)
+								{
+                                                                	range.push_back(boost::lexical_cast<T>(s));
+								} else {
+									specializer = s;
+								}
                                                             }
                                                             catch (...)
                                                             {
@@ -227,18 +235,37 @@ namespace rtmath {
 								start = range[0];
 								end = range[range.size()-1];
 								if (range.size() > 2) interval = range[1];
-								if (start < 0 || end < 0 || start > end || interval < 0)
+								if (specializer == "")
 								{
-									// Die from invalid range
-									// Should really throw error
+									if (start < 0 || end < 0 || start > end || interval < 0)
+									{
+										// Die from invalid range
+										// Should really throw error
+										throw rtmath::debug::xBadInput(ot->c_str());
+										//cerr << "Invalid range " << *ot << endl;
+										//exit(1);
+									}
+									for (T i=start;i<=end;i+=interval)
+									{
+										if (expanded.count(i) == 0)
+											expanded.insert(i);
+									}
+								} else if (specializer == "lin") {
+									// Linear spacing
+									double increment = (end - start) / interval;
+									for (T i=start; i<end;i+=interval)
+									{
+										if (expanded.count(i) == 0)
+											expanded.insert(i);
+									}
+								} else if (specializer == "log") {
 									throw rtmath::debug::xBadInput(ot->c_str());
-									//cerr << "Invalid range " << *ot << endl;
-									//exit(1);
-								}
-								for (T i=start;i<=end;i+=interval)
-								{
-									if (expanded.count(i) == 0)
-										expanded.insert(i);
+								} else if (specializer == "inv") {
+									throw rtmath::debug::xBadInput(ot->c_str());
+								} else if (specializer == "cos") {
+									throw rtmath::debug::xBadInput(ot->c_str());
+								} else {
+									throw rtmath::debug::xBadInput(ot->c_str());
 								}
 							}
 						}

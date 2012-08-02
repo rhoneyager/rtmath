@@ -160,16 +160,6 @@ namespace std {
 		}
 	};
 
-
-	template <typename T> struct less<rtmath::paramSet<T> >
-	{
-		bool operator() (const rtmath::paramSet<T> &lhs, const rtmath::paramSet<T> &rhs) const
-		{
-			if (lhs._shorthand != rhs._shorthand) return lhs._shorthand < rhs._shorthand;
-
-			return false;
-		}
-	};
 } // end namespace std
 
 
