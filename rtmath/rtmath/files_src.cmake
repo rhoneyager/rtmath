@@ -84,6 +84,20 @@ set (ddscat-hdr
 source_group("Source Files\\ddscat" FILES ${ddscat-src})
 source_group("Header Files\\ddscat" FILES ${ddscat-hdr})
 
+# Garrett
+set (garrett-src
+	src/image.cpp
+	src/mesh.cpp
+	src/pclstuff.cpp
+	)
+set (garrett-hdr
+	rtmath/Garrett/image.h
+	rtmath/Garrett/mesh.h
+	rtmath/Garrett/pclstuff.h
+	)
+source_group("Source Files\\Garrett" FILES ${garrett-src})
+source_group("Header Files\\Garrett" FILES ${garrett-hdr})
+
 # error
 set (error-src
 	src/debug.cpp
@@ -282,6 +296,7 @@ set (srcfiles
 	${da-src}				${da-hdr}
 	${ddscat-src}			${ddscat-hdr}
 	${error-src}			${error-hdr}
+	${garrett-src}			${garrett-hdr}
 	${general-src}			${general-hdr}
 	${gridded-src}			${gridded-hdr}
 	${mie-src}				${mie-hdr}

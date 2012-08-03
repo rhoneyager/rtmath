@@ -8,8 +8,9 @@
 
 #include <boost/filesystem.hpp>
 
-#include "../rtmath/Garrett/image.h"
+#include "../rtmath/Garrett/pclstuff.h"
 #include "../rtmath/Garrett/mesh.h"
+#include "../rtmath/Garrett/image.h"
 
 namespace rtmath
 {

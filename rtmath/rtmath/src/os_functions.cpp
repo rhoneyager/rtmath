@@ -26,6 +26,15 @@
 #include <sys/types.h>
 #endif
 #include <TError.h> // ROOT info message suppression
+// ImageMagick init functions
+#ifdef _WIN32
+#ifndef NO_IMAGEMAGICK
+#include <Magick++.h>
+#endif
+#endif
+
+
+
 #include "../rtmath/error/debug.h"
 #include "../rtmath/config.h"
 #include "../rtmath/command.h"
@@ -67,6 +76,13 @@ namespace rtmath {
 
 			// Set appexit
 			atexit(appExit);
+
+			// Do ImageMagick intialization
+#ifdef _WIN32
+#ifndef NO_IMAGEMAGICK
+			//Magick::InitializeMagick(*argv);
+#endif
+#endif
 
 			// ROOT info message suppression
 			gErrorIgnoreLevel = 2000;

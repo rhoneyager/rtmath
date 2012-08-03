@@ -92,6 +92,8 @@ if(LOAD_PACKAGES)
 	# Used by the core library for statistics generation.
 	find_package(VTK REQUIRED)
 	find_package(PCL 1.0 REQUIRED)
+	# ImageMagick is needed for loading PNG files
+	find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 endif()
 # Take OpenMP option and enable / disable as appropriate
 IF(USE_OPENMP)

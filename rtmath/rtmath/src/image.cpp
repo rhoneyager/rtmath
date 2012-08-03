@@ -37,9 +37,10 @@
 
 #pragma GCC diagnostic pop
 
-
+#include "../rtmath/error/error.h"
 #include "../rtmath/Garrett/image.h"
 #include "../rtmath/Garrett/mesh.h"
+#include "../rtmath/Garrett/pclstuff.h"
 
 namespace rtmath
 {
@@ -47,30 +48,49 @@ namespace rtmath
 	{
 		image::image()
 		{
+			_pc = boost::shared_ptr<pointContainer>
+				(new pointContainer);
+			_mesh = boost::shared_ptr<meshObj>
+				(new meshObj);
 		}
 
 		image::~image()
 		{
 		}
 
-		image::image(const std::string &filename)
+		void image::read(const std::string &filename)
 		{
+			readPNG(filename);
 		}
 
 		void image::readPNG(const std::string &filename)
 		{
+			_pc->readPNG(filename);
 		}
 
 		void image::writePNG(const std::string &filename) const
 		{
+			_pc->writePNG(filename);
 		}
 
-		void image::readPoints(const std::string &filename)
+		void image::writeROOTsurf(const std::string &filename) const
 		{
+			_pc->writeROOTsurf(filename);
 		}
 
-		void image::writePoints(const std::string &filename) const
+		void image::writeROOTzhist(const std::string &filename) const
 		{
+			_pc->writeROOTzhist(filename);
+		}
+
+		void image::readVTKpoints(const std::string &filename)
+		{
+			_pc->readVTKpoints(filename);
+		}
+
+		void image::writeVTKpoints(const std::string &filename) const
+		{
+			_pc->writeVTKpoints(filename);
 		}
 
 		void image::readMesh(const std::string &filename)
@@ -79,6 +99,16 @@ namespace rtmath
 
 		void image::writeMesh(const std::string &filename) const
 		{
+		}
+
+		void image::readPCD(const std::string &filename)
+		{
+			_pc->readPCD(filename);
+		}
+
+		void image::writePCD(const std::string &filename) const
+		{
+			_pc->writePCD(filename);
 		}
 
 		void image::_meshPCL() 

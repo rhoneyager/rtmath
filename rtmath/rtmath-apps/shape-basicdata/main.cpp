@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 				tC->Divide(3,1);
 
 				tC->cd(1);
-				tPEx->Draw("surf1");
+				tPEx->Draw("surf3");
 				tPEx->SetTitle("Potential Energy - x");
 				tPEx->GetXaxis()->SetTitle("#theta");
 				tPEx->GetXaxis()->CenterTitle();
@@ -185,25 +185,26 @@ int main(int argc, char** argv)
 
 
 				tC->cd(2);
-				tPEy->Draw("surf1");
+				tPEy->Draw("surf3");
 				tPEy->SetTitle("Potential Energy - y");
 				tPEy->GetXaxis()->SetTitle("#theta");
 				tPEy->GetXaxis()->CenterTitle();
 				tPEy->GetYaxis()->SetTitle("#phi");
 				tPEy->GetYaxis()->CenterTitle();
-
+				tPEy->GetZaxis()->SetTitle("PE (scaled)");
+				tPEy->GetZaxis()->CenterTitle();
 
 				tC->cd(3);
-				tPEz->Draw("surf1");
+				tPEz->Draw("surf3");
 				tPEz->SetTitle("Potential Energy - z");
 				tPEz->GetXaxis()->SetTitle("#theta");
 				tPEz->GetXaxis()->CenterTitle();
 				tPEz->GetYaxis()->SetTitle("#phi");
 				tPEz->GetYaxis()->CenterTitle();
-
+				tPEz->GetZaxis()->SetTitle("PE (scaled)");
+				tPEz->GetZaxis()->CenterTitle();
 
 				tC->SaveAs(ofname.c_str());
-
 			}
 		}
 

@@ -16,6 +16,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace rtmath
 {
@@ -24,24 +25,29 @@ namespace rtmath
 	namespace Garrett
 	{
 		class meshObj;
+		class pointContainer;
 
 		class image
 		{
 			public:
 				image();
-				image(const std::string &filename);
 				~image();
+				void read(const std::string &filename);
 				void readPNG(const std::string &filename);
 				void writePNG(const std::string &filename) const;
-				void writePoints(const std::string &filename) const;
-				void readPoints(const std::string &filename);
+				void writeVTKpoints(const std::string &filename) const;
+				void readVTKpoints(const std::string &filename);
+				void readPCD(const std::string &filename);
+				void writePCD(const std::string &filename) const;
 				void readMesh(const std::string &filename);
 				void writeMesh(const std::string &filename) const;
+				void writeROOTsurf(const std::string &filename) const;
+				void writeROOTzhist(const std::string &filename) const;
 			protected:
-//				void _convertPCL();
 				void _meshPCL();
 				std::vector<matrixop> _points;
-				meshObj _mesh;
+				boost::shared_ptr<meshObj> _mesh;
+				boost::shared_ptr<pointContainer> _pc;
 		};
 	}
 }
