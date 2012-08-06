@@ -28,6 +28,7 @@
 #include <TError.h> // ROOT info message suppression
 // ImageMagick init functions
 #ifdef _WIN32
+#pragma warning( disable : 4251 )
 #ifndef NO_IMAGEMAGICK
 #include <Magick++.h>
 #endif

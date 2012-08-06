@@ -4,6 +4,7 @@
 
 #pragma once
 
+#pragma warning( disable : 4068 ) // ignore GCC pragmas
 #pragma warning( disable : 4244 ) // even though that part of code is never reached
 #pragma warning( disable : 4146 ) // annoying boost garbage
 #pragma warning( disable : 4800 )

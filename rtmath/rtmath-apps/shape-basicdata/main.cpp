@@ -22,7 +22,7 @@
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/rtmath.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
-
+#include "../../rtmath/rtmath/MagickLINK.h"
 
 
 int main(int argc, char** argv)

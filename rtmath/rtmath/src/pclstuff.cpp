@@ -1,4 +1,8 @@
 #include "../rtmath/Stdafx.h"
+
+#include "../rtmath/ROOTlink.h"
+#include "../rtmath/MagickLINK.h"
+
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -42,7 +46,7 @@
 #include "../rtmath/Garrett/mesh.h"
 #include "../rtmath/Garrett/pclstuff.h"
 
-#include "../rtmath/ROOTlink.h"
+
 
 namespace rtmath
 {
@@ -93,9 +97,9 @@ namespace rtmath
 			// can have the dimensions transformed in 
 			// the point cloud array. For now, though, just 
 			// translate directly into the PCL format.
-			for (size_t row=0;row<size_x;row++)
+			for (size_t row=0;row< (size_t) size_x;row++)
 			{
-				for (size_t col=0;col<size_y;col++)
+				for (size_t col=0;col< (size_t) size_y;col++)
 				{
 					// Cast upwards to grayscale and 
 					// extract shade

@@ -82,6 +82,12 @@
     <Filter Include="Source Files\netcdf">
       <UniqueIdentifier>{a23aace6-7c46-4bea-9894-8177cc418b7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Garrett">
+      <UniqueIdentifier>{8ab09eab-8c9c-4b97-a614-1c9c7ed6005f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Garrett">
+      <UniqueIdentifier>{7b21466c-e757-46a2-bff7-e5768a3769c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath\zeros.h">
@@ -361,6 +367,18 @@
       <Filter>Header Files\General</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\PCLlink.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Garrett\image.h">
+      <Filter>Header Files\Garrett</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Garrett\mesh.h">
+      <Filter>Header Files\Garrett</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Garrett\pclstuff.h">
+      <Filter>Header Files\Garrett</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\MagickLINK.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
   </ItemGroup>
@@ -668,6 +686,15 @@
     </ClCompile>
     <ClCompile Include="src\hulls.cpp">
       <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\image.cpp">
+      <Filter>Source Files\Garrett</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mesh.cpp">
+      <Filter>Source Files\Garrett</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pclstuff.cpp">
+      <Filter>Source Files\Garrett</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

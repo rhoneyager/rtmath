@@ -97,6 +97,10 @@
     <ClInclude Include="rtmath\common_templates.h" />
     <ClInclude Include="rtmath\config.h" />
     <ClInclude Include="rtmath\coords.h" />
+    <ClInclude Include="rtmath\Garrett\image.h" />
+    <ClInclude Include="rtmath\Garrett\mesh.h" />
+    <ClInclude Include="rtmath\Garrett\pclstuff.h" />
+    <ClInclude Include="rtmath\MagickLINK.h" />
     <ClInclude Include="rtmath\PCLlink.h" />
     <ClInclude Include="rtmath\da\daDiagonalMatrix.h" />
     <ClInclude Include="rtmath\da\daInitLayer.h" />
@@ -257,11 +261,13 @@
     <ClCompile Include="src\gridStatic.cpp" />
     <ClCompile Include="src\hermite.cpp" />
     <ClCompile Include="src\hulls.cpp" />
+    <ClCompile Include="src\image.cpp" />
     <ClCompile Include="src\interpolatable.cpp" />
     <ClCompile Include="src\laguerre.cpp" />
     <ClCompile Include="src\legendre.cpp" />
     <ClCompile Include="src\matrixop-ipp.cpp" />
     <ClCompile Include="src\matrixop.cpp" />
+    <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\mie-abNCalc.cpp" />
     <ClCompile Include="src\mie-AnCalc.cpp" />
     <ClCompile Include="src\mie-phaseFunc.cpp" />
@@ -275,6 +281,7 @@
     <ClCompile Include="src\MurmurHash3.cpp" />
     <ClCompile Include="src\ncContainer.cpp" />
     <ClCompile Include="src\os_functions.cpp" />
+    <ClCompile Include="src\pclstuff.cpp" />
     <ClCompile Include="src\pfFixed.cpp" />
     <ClCompile Include="src\phaseFunc.cpp" />
     <ClCompile Include="src\polynomial.cpp" />
@@ -293,7 +300,9 @@
     <ClCompile Include="src\shapes-generators.cpp" />
     <ClCompile Include="src\shapes.cpp" />
     <ClCompile Include="src\shapestats.cpp" />
-    <ClCompile Include="src\Stdafx.cpp" />
+    <ClCompile Include="src\Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />
     <ClCompile Include="src\units.cpp" />
