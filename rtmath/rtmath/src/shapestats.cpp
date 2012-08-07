@@ -459,6 +459,6 @@ namespace rtmath {
 	}
 }
 
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsRotated)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsBase)
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsRotated)
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStats)

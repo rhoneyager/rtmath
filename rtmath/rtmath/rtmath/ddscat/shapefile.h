@@ -27,8 +27,6 @@
 namespace rtmath {
 	namespace ddscat {
 
-		class shapeFileStats;
-
 		class shapefile
 		{
 		public:
@@ -41,8 +39,8 @@ namespace rtmath {
 			void readString(const std::string &in);
 			void write(const std::string &fname) const;
 			void write(std::ostream &out) const;
-		private:
 			shapefile();
+		private:
 			void _init();
 		public:
 			std::string _filename;
@@ -76,7 +74,6 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("d", _d);
 					ar & boost::serialization::make_nvp("x0", _x0);
 					ar & boost::serialization::make_nvp("xd", _xd);
-					//ar & BOOST_SERIALIZATION_NVP(_filename);
 				}
 		};
 

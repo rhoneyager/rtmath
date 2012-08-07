@@ -49,7 +49,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
       <MinimalRebuild>false</MinimalRebuild>
-      <DisableSpecificWarnings>4996;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4800;4251</DisableSpecificWarnings>
       <PreprocessorDefinitions>_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

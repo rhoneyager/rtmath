@@ -20,8 +20,6 @@
 namespace rtmath {
 	namespace ddscat {
 
-		class shapefile;
-
 		// Lightweight POD class that can be placed in a set
 		class shapeFileStatsRotated
 		{
@@ -170,6 +168,6 @@ namespace rtmath {
 
 BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 2)
 
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsBase)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsBase)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStats)

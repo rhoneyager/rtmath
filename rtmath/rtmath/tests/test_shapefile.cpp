@@ -40,6 +40,22 @@ BOOST_AUTO_TEST_CASE(shapefile_io)
 	
 }
 
+// Test shapefile serialization
+BOOST_AUTO_TEST_CASE(shapefile_serialization)
+{
+	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
+	ostringstream out;
+	rtmath::serialization::write<shapefile>(shp,out);
+
+	string s = out.str();
+
+	istringstream in(s);
+	shapefile sb;
+	rtmath::serialization::read<shapefile>(sb,in);
+
+	BOOST_CHECK(shp._filename == sb._filename);
+}
+
 // Test shapefile stats
 BOOST_AUTO_TEST_CASE(shapefile_stats)
 {
@@ -62,6 +78,29 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 
 	BOOST_TEST_MESSAGE("Writing");
 	rtmath::serialization::write<shapeFileStats>(sshp,"shpstats.xml");
+}
+
+BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
+{
+	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
+	shapeFileStats sshp(shp);
+	sshp.calcStatsBase();
+	sshp.calcStatsRot(0,0,0);
+
+	shapeFileStats sshpb;
+	ostringstream out;
+	rtmath::serialization::write<shapeFileStats>(sshp,out);
+	string s = out.str();
+
+	istringstream in(s);
+	rtmath::serialization::read<shapeFileStats>(sshpb,in);
+
+	BOOST_CHECK(sshp.max_distance == sshpb.max_distance);
+
+	shapeFileStats sshpc;
+	rtmath::serialization::write<shapeFileStats>(sshp,"testmini.xml");
+	rtmath::serialization::read<shapeFileStats>(sshpc,"testmini.xml");
+	BOOST_CHECK(sshp.max_distance == sshpc.max_distance);
 }
 
 BOOST_AUTO_TEST_CASE(shapefile_vtk)

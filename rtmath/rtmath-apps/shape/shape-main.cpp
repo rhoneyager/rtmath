@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 			("trial-run,T", "Only list what would be done")
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("output,o", "output filename")
-			("separate-outputs,s", "Write separate output file for each input. Use default naming scheme.")
+			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
 			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
@@ -81,8 +81,10 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		bool sepOutputs = false;
-		if (vm.count("separate-outputs")) sepOutputs = true;
+		// sepOutputs is a vestigial option. I want everything in a separate file automatically. 
+		// No vectors! They are hard to detect before readins, leading to input stream errors.
+		bool sepOutputs = true;
+		//if (vm.count("separate-outputs")) sepOutputs = true;
 		
 		string output; 
 		if (!sepOutputs)
@@ -93,6 +95,7 @@ int main(int argc, char** argv)
 				{
 					output = inputs[0];
 					output.append(".stats.xml");
+					sepOutputs = true; // Set this because we do not want a vector with size 1!
 				} else {
 					output = "shapestats.xml";
 				}
@@ -176,11 +179,11 @@ int main(int argc, char** argv)
 			
 			if (sepOutputs)
 			{
-				vector<rtmath::ddscat::shapeFileStats> singleStats;
-				singleStats.push_back(std::move(sstats));
+				//vector<rtmath::ddscat::shapeFileStats> singleStats;
+				//singleStats.push_back(std::move(sstats));
 				string ofile = *it;
 				ofile.append(".stats.xml");
-				rtmath::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(singleStats,ofile);
+				rtmath::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,ofile);
 			} else {
 				Stats.push_back(std::move(sstats));
 			}

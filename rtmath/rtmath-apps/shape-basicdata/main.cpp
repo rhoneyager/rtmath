@@ -23,6 +23,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/serialization.h"
+#include "../../rtmath/rtmath/error/error.h"
 //#include "../../rtmath/rtmath/rtmath.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/MagickLINK.h"
@@ -51,7 +52,8 @@ int main(int argc, char** argv)
 			("PE", "Plot potential energy")
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
+			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations"),
+			("vectorstats,V", "Stats file is old format, with stats hidden within a vector.");
 //			("output,o", "output filename")
 
 		po::variables_map vm;
@@ -132,8 +134,23 @@ int main(int argc, char** argv)
 				}
 			} else {
 				cerr << "\tStats file detected\n";
-				rtmath::serialization::read<rtmath::ddscat::shapeFileStats>
-					(*sstats, *it);
+				if (!vm.count("separate-outputs"))
+				{
+					rtmath::serialization::read<rtmath::ddscat::shapeFileStats>
+						(*sstats, *it);
+				} else {
+					// stats are in a vector (old method)
+					vector<rtmath::ddscat::shapeFileStats> vs;
+					rtmath::serialization::read<vector<rtmath::ddscat::shapeFileStats> >
+						(vs, *it);
+					if (vs.size())
+					{
+						*sstats = vs[0];
+					} else {
+						throw rtmath::debug::xUnknownFileFormat(it->c_str());
+					}
+				}
+				
 			}
 
 			//cerr << "\tCalculating rotation (beta,theta,phi): ("
