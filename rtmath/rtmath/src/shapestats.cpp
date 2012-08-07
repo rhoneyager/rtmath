@@ -40,12 +40,12 @@ namespace rtmath {
 
 		shapeFileStats::shapeFileStats(const shapefile &shp)
 		{
-			_shp = boost::shared_ptr<const shapefile>(new shapefile(shp));
+			_shp = boost::shared_ptr<shapefile>(new shapefile(shp));
 		}
 
 		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp)
 		{
-			_shp = shp;
+			_shp = boost::shared_ptr<shapefile>(new shapefile(*shp));
 		}
 
 		shapeFileStats::shapeFileStats()
@@ -65,6 +65,9 @@ namespace rtmath {
 			max_distance = 0;
 			_currVersion = _maxVersion;
 			_valid = false;
+
+			// Need to fill with something for serialization to work with
+			//_shp = boost::shared_ptr<shapefile>(new shapefile);
 		}
 
 		shapeFileStatsBase::~shapeFileStatsBase()
@@ -456,5 +459,6 @@ namespace rtmath {
 	}
 }
 
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsRotated)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStatsBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeFileStats)

@@ -15,6 +15,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "../matrixop.h"
+#include "shapefile.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -110,7 +111,7 @@ namespace rtmath {
 			size_t _N;// Number of dipoles (used in checking for a valid read)
 
 			// The object
-			boost::shared_ptr<const shapefile> _shp;
+			boost::shared_ptr<shapefile> _shp;
 			bool _valid;
 		private:
 			friend class boost::serialization::access;
@@ -118,17 +119,19 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & boost::serialization::make_nvp("shapefile", _shp);
-					ar & boost::serialization::make_nvp("N", _N);
+					if (version < 2)
+						ar & boost::serialization::make_nvp("N", _N);
+					
 					ar & BOOST_SERIALIZATION_NVP(V_cell_const);
 					ar & BOOST_SERIALIZATION_NVP(V_dipoles_const);
 					ar & BOOST_SERIALIZATION_NVP(aeff_dipoles_const);
 
 					switch (version)
 					{
+					default:
 					case 1:
 						ar & BOOST_SERIALIZATION_NVP(max_distance);
 					case 0:
-					default:
 						break;
 					}
 					_currVersion = version;
@@ -141,7 +144,8 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(b_min);
 					ar & BOOST_SERIALIZATION_NVP(b_max);
 					ar & BOOST_SERIALIZATION_NVP(b_mean);
-					ar & boost::serialization::make_nvp("Rotation-Dependent", rotations);
+					
+					ar & boost::serialization::make_nvp("Rotation_Dependent", rotations);
 				}
 		};
 
@@ -164,7 +168,8 @@ namespace rtmath {
 	}
 }
 
-BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 1)
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 2)
 
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsBase)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStats)

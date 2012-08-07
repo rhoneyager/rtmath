@@ -317,12 +317,6 @@ namespace rtmath {
 			}
 		}
 
-		boost::shared_ptr<shapefile> shapefile::getPtr() const
-		{
-			boost::shared_ptr<const shapefile> a = shared_from_this();
-			return boost::const_pointer_cast<shapefile>(a);
-		}
-
 	}
 }
 

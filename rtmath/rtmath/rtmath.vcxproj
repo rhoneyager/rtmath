@@ -301,7 +301,7 @@
     <ClCompile Include="src\shapes.cpp" />
     <ClCompile Include="src\shapestats.cpp" />
     <ClCompile Include="src\Stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />

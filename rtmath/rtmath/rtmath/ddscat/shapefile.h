@@ -29,7 +29,7 @@ namespace rtmath {
 
 		class shapeFileStats;
 
-		class shapefile : public boost::enable_shared_from_this<shapefile>
+		class shapefile
 		{
 		public:
 			shapefile(const std::string &filename);
@@ -41,7 +41,6 @@ namespace rtmath {
 			void readString(const std::string &in);
 			void write(const std::string &fname) const;
 			void write(std::ostream &out) const;
-			boost::shared_ptr<shapefile> getPtr() const;
 		private:
 			shapefile();
 			void _init();

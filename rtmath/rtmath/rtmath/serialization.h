@@ -98,11 +98,11 @@ namespace rtmath {
 
 			// Open file for writing with appropriate other params
 			std::ofstream out;
-			if (cmeth.size())
+			//if (cmeth.size())
 			{
 				out.open(pXML.string().c_str(), ios_base::out | ios_base::binary);
-			} else {
-				out.open(pXML.string().c_str());
+			//} else {
+			//	out.open(pXML.string().c_str());
 			}
 
 			// Prepare compression
@@ -160,11 +160,11 @@ namespace rtmath {
 
 			// Open file for writing with appropriate other params
 			ifstream *iin;
-			if (cmeth.size())
+			//if (cmeth.size())
 			{
 				iin = new ifstream(pTarget.string().c_str(), ios_base::binary);
-			} else {
-				iin = new ifstream(pTarget.string().c_str());
+			//} else {
+			//	iin = new ifstream(pTarget.string().c_str());
 			}
 			ifstream &in = *iin;
 

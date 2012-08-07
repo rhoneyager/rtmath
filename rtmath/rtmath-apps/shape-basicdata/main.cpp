@@ -20,7 +20,10 @@
 #include <boost/shared_ptr.hpp>
 
 #pragma warning( pop ) 
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/serialization.h"
+//#include "../../rtmath/rtmath/rtmath.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/MagickLINK.h"
 
