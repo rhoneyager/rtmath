@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "rtmath-shape-basicdata\n\n";
+		cerr << "rtmath-shape-ensembles\n\n";
 		rtmath::debug::appEntry(argc, argv);
 
 		namespace po = boost::program_options;
@@ -49,26 +49,21 @@ int main(int argc, char** argv)
 		desc.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
-			/*
+			
+			("physical-units,P", "Use physical instead of relative units")
 			("dipole-spacing,d", po::value<double>(), "Specify dipole spacing (um)")
 			("density", po::value<double>(), "Specify lattice cell density (mg/um^3)")
 			("mass", po::value<double>(), "Specify lattice cell mass (mg)")
-			*/
-			("diameter,D", "Calculate max diameter")
-			("PE", "Plot potential energy")
-			("convex-hull","Output convex hull information and vtk file")
-			("concave-hull", po::value<string>(), "Output concave hull information and vtk file for given value(s)")
-
-			("dipole-density-distance", po::value< vector<string> >(), 
-				"Make histogram and vtk file of number of neighbors within specified spacings")
-			("dipole-density-numneighbors", po::value< vector<string> >(),
-				"Make histogram and vtk file of rms distance to nearest _ neighbors")
-
-			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
-			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations")
-			("vectorstats,V", "Stats file is old format, with stats hidden within a vector.");
-//			("output,o", "output filename")
+			
+			("N-f", "Scatter plot of number of dipoles vs several volume fractions")
+			("aeff-f", "Scatter plot of effective radius of filled cells vs volume fractions")
+			("aspect-ratios", "Scatter plot of aspect ratios Axy and Axz")
+			("Vplots", "Comparison scatter plots of different volume rendering mechanisms")
+			("orientation-PDF-theta", po::value< vector<string> >(), 
+				"Comparative PDFs for particle orientation in theta for given total energy")
+			
+			("vectorstats,V", "Stats file is old format, with stats hidden within a vector.")
+			("output-prefix,o","Specify output filename prefix for plots");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
