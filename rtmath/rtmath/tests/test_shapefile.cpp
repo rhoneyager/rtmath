@@ -109,8 +109,6 @@ BOOST_AUTO_TEST_CASE(shapefile_vtk)
 	//shapeFileStats sshp(shp);
 	writeVTKpoints("miniflake-points.vtk", shp._latticePtsStd);
 	hull h(shp._latticePtsStd);
-	h.searchRadius = 2.0;
-	h.Mu = 2.0;
 	h.writeVTKhull("miniflake-hull.vtk");
 	convexHull cvx(shp._latticePtsStd);
 	cvx.constructHull();

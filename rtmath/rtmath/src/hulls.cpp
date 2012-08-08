@@ -33,6 +33,7 @@
 
 //#include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/hulls.h"
+#include "../rtmath/error/error.h"
 #include "../rtmath/PCLlink.h"
 
 #pragma GCC diagnostic pop
@@ -205,6 +206,7 @@ namespace rtmath
 			normalConsistency = true;
 			_volume = 0;
 			_surfarea = 0;
+			_nFaces = 0;
 		}
 
 		hull::~hull()
@@ -225,12 +227,14 @@ namespace rtmath
 			_hullPts = backend;
 			_volume = 0;
 			_surfarea = 0;
+			_nFaces = 0;
 		}
 
 		void hull::writeVTKhull(const std::string &filename) const
 		{
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 			const size_t N = _hullPts.size();
+			if (!N) throw rtmath::debug::xBadInput("VTK hull write needs populated hull points.");
 			cloud->reserve(N);
 			
 			for (auto it = _hullPts.begin(); it != _hullPts.end(); it++)
@@ -290,6 +294,7 @@ namespace rtmath
 
 			_volume = chull.getTotalVolume();
 			_surfarea = chull.getTotalArea();
+			_nFaces = _polygons.size();
 
 			// Write to _hullPts
 			_hullPts.reserve(cloud_hull->size());
@@ -383,6 +388,7 @@ namespace rtmath
 				_hullPts.push_back(std::move(p));
 			}
 
+			_nFaces = _polygons.size();
 			_findVS();
 		}
 
@@ -399,8 +405,8 @@ namespace rtmath
 			for (auto it = _hullPts.begin(); it != _hullPts.end(); it++)
 			{
 				double x = it->get(2,0,0);
-				double y = it->get(2,1,0);
-				double z = it->get(2,2,0);
+				double y = it->get(2,0,1);
+				double z = it->get(2,0,2);
 
 				bnd_x((size_t) x);
 				bnd_y((size_t) y);
@@ -433,8 +439,8 @@ namespace rtmath
 					size_t v = (*it).vertices[i]; // v will be the index
 					// _hullPts[v] has the coords
 					m[i][0] = _hullPts[v].get(2,0,0);
-					m[i][1] = _hullPts[v].get(2,1,0);
-					m[i][2] = _hullPts[v].get(2,2,0);
+					m[i][1] = _hullPts[v].get(2,0,1);
+					m[i][2] = _hullPts[v].get(2,0,2);
 					m[i][3] = 1.0;
 				}
 				m[3][0] = x_c;

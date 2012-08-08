@@ -55,7 +55,6 @@ namespace rtmath {
 		shapeFileStatsBase::shapeFileStatsBase()
 			: b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3)
 		{
-			_N = 0;
 			beta = 0;
 			theta = 0;
 			phi = 0;
@@ -63,6 +62,32 @@ namespace rtmath {
 			V_dipoles_const = 0;
 			aeff_dipoles_const = 0;
 			max_distance = 0;
+
+			a_circum_sphere = 0;
+			V_circum_sphere = 0;
+			SA_circum_sphere = 0;
+			V_convex_hull = 0;
+			aeff_V_convex_hull = 0;
+			SA_convex_hull = 0;
+			aeff_SA_convex_hull = 0;
+
+			V_ellipsoid_max = 0;
+			aeff_ellipsoid_max = 0;
+			V_ellipsoid_rms = 0;
+			aeff_ellipsoid_rms = 0;
+
+			f_circum_sphere = 0;
+			f_convex_hull = 0;
+			f_ellipsoid_max = 0;
+			f_ellipsoid_rms = 0;
+
+			rho_basic = 1;
+			rho_circum_sphere = 0;
+			rho_convex = 0;
+			rho_ellipsoid_max = 0;
+			rho_ellipsoid_rms = 0;
+
+
 			_currVersion = _maxVersion;
 			_valid = false;
 
@@ -74,8 +99,31 @@ namespace rtmath {
 		{
 		}
 
+		bool shapeFileStatsBase::load()
+		{
+			// Return true if shape is loaded or can be loaded (and load it)
+			// Return false if shape CANNOT be loaded
+			if (_shp->_latticePts.size() ) return true;
+
+			std::string fname = _shp->_filename;
+			if (boost::filesystem::exists(fname))
+			{
+				boost::shared_ptr<shapefile> nshp(new shapefile(fname));
+				_shp = nshp;
+				return true;
+			} else {
+				return false;
+			}
+		}
+
 		void shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi)
 		{
+			shapeFileStatsRotated res;
+			res.beta = beta;
+			res.theta = theta;
+			res.phi = phi;
+			if (rotations.count(res)) return; // Already calculated
+
 			const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
 			double cb = cos(beta*drconv);
 			double ct = cos(theta*drconv);
@@ -109,11 +157,6 @@ namespace rtmath {
 			// Normally, Reff = RyRxRz. But, the rotation is a1,a2-dependent, 
 			// which are specified in the file. Apply effective rotation matrix also.
 			matrixop Roteff = Ry*Rx*Rz*rot;
-			
-			shapeFileStatsRotated res;
-			res.beta = beta;
-			res.theta = theta;
-			res.phi = phi;
 			
 			using namespace boost::accumulators;
 
@@ -239,6 +282,13 @@ namespace rtmath {
 			res.as_rms.set(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_y),2,2,1);
 			res.as_rms.set(1,2,2,2);
 
+			// RMS accumulators - rms is the square root of the 2nd moment
+			res.rms_mean.set(sqrt(boost::accumulators::moment<2>(acc_x)),2,0,0);
+			res.rms_mean.set(sqrt(boost::accumulators::moment<2>(acc_y)),2,1,0);
+			res.rms_mean.set(sqrt(boost::accumulators::moment<2>(acc_z)),2,2,0);
+
+			const size_t _N = _shp->_numPoints;
+
 			//covariance
 			res.covariance.set(_N*boost::accumulators::moment<2>(acc_x),2,0,0);
 			//boost::accumulators::covariance(acc_x, covariate1);
@@ -307,8 +357,8 @@ namespace rtmath {
 			// Iterate accumulator as function of radial distance from center of mass
 
 			// Pull in some vars from the shapefile
-			_N = _shp->_latticePtsStd.size();
-
+			const size_t _N = _shp->_numPoints;
+			
 			if (!_N)
 			{
 				GETOBJKEY();
@@ -424,20 +474,65 @@ namespace rtmath {
 
 			// Figure out diameter of smallest circumscribing sphere
 			convexHull cvHull(_shp->_latticePtsStd);
+			cvHull.constructHull();
 			max_distance = cvHull.maxDiameter();
 
-			// Figure out concave volume
+			a_circum_sphere = max_distance / 2.0;
+			V_circum_sphere = boost::math::constants::pi<double>() * 4.0 * pow(a_circum_sphere,3.0) / 3.0;
+			SA_circum_sphere = boost::math::constants::pi<double>() * 4.0 * pow(a_circum_sphere,2.0);
 
+			V_convex_hull = cvHull.volume();
+			aeff_V_convex_hull = pow(3.0 * V_circum_sphere / (4.0 * boost::math::constants::pi<double>()),1./3.);
+			SA_convex_hull = cvHull.surface_area();
+			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0 * boost::math::constants::pi<double>()),0.5);
 
 			_currVersion = _maxVersion;
 			_valid = true;
+
+
+			// Calculate rotated stats to avoid having to duplicate code
+			calcStatsRot(0,0,0);
+			// From the 0,0,0 rotation,
+			{
+				// At beginning by default, as it is the only entry at this point!
+				const shapeFileStatsRotated &dr = *(this->rotations.begin());
+				V_ellipsoid_max = boost::math::constants::pi<double>() / 6.0;
+				// Using diameters, and factor in prev line reflects this
+				V_ellipsoid_max *= dr.max.get(2,0,0) - dr.min.get(2,0,0);
+				V_ellipsoid_max *= dr.max.get(2,1,0) - dr.min.get(2,1,0);
+				V_ellipsoid_max *= dr.max.get(2,2,0) - dr.min.get(2,2,0);
+
+				V_ellipsoid_rms = 4.0 * boost::math::constants::pi<double>() / 3.0;
+				V_ellipsoid_rms *= dr.rms_mean.get(2,0,0);
+				V_ellipsoid_rms *= dr.rms_mean.get(2,1,0);
+				V_ellipsoid_rms *= dr.rms_mean.get(2,2,0);
+
+				aeff_ellipsoid_max = pow(3.0 * V_ellipsoid_max / (4.0 * boost::math::constants::pi<double>()),1./3.);
+				aeff_ellipsoid_rms = pow(3.0 * V_ellipsoid_rms / (4.0 * boost::math::constants::pi<double>()),1./3.);
+			}
+
+			// Volume fractions
+			f_circum_sphere = V_cell_const / V_circum_sphere;
+			f_convex_hull = V_cell_const / V_convex_hull;
+			f_ellipsoid_max = V_cell_const / V_ellipsoid_max;
+			f_ellipsoid_rms = V_cell_const / V_ellipsoid_rms;
+
+			// Densities
+			rho_basic = 1.0;
+			rho_circum_sphere = _N / V_circum_sphere;
+			rho_convex = _N / V_convex_hull;
+			rho_ellipsoid_max = _N / V_ellipsoid_max;
+			rho_ellipsoid_rms = _N / V_ellipsoid_rms;
+
+
 		}
 
 		shapeFileStatsRotated::shapeFileStatsRotated()
 			: min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1), PE(2,3,1),
 			mom1(2,3,1), mom2(2,3,1), mominert(2,3,3), covariance(2,3,3),
 			abs_min(2,3,1), abs_max(2,3,1), abs_mean(2,3,1),
-			as_abs(2,3,3), as_abs_mean(2,3,3), as_rms(2,3,3)
+			as_abs(2,3,3), as_abs_mean(2,3,3), as_rms(2,3,3),
+			rms_mean(2,3,1)
 		{
 			this->beta = 0;
 			this->theta = 0;

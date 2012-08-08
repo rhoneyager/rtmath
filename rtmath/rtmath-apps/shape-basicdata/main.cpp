@@ -22,6 +22,7 @@
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/error/error.h"
 //#include "../../rtmath/rtmath/rtmath.h"
@@ -50,9 +51,11 @@ int main(int argc, char** argv)
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("diameter,D", "Calculate max diameter")
 			("PE", "Plot potential energy")
+			("convex-hull","Output convex hull information and vtk file")
+			("concave-hull", po::value<string>(), "Output concave hull information and vtk file for given value(s)")
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations"),
+			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations")
 			("vectorstats,V", "Stats file is old format, with stats hidden within a vector.");
 //			("output,o", "output filename")
 
@@ -153,10 +156,39 @@ int main(int argc, char** argv)
 				
 			}
 
-			//cerr << "\tCalculating rotation (beta,theta,phi): ("
-			//	<< *beta << ", " << *theta << ", " << *phi << ")" << endl;
-			//sstats.calcStatsRot(*beta,*theta,*phi);
-		
+			if (vm.count("convex-hull"))
+			{
+				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+				string ofname = *it;
+				ofname.append("-convex-hull.vtk");
+				rtmath::ddscat::convexHull cvx(sstats->_shp->_latticePtsStd);
+				cvx.constructHull();
+				cvx.writeVTKhull(ofname);
+				cout << "Hull has volume: " << cvx._volume << endl;
+				cout << "Hull has surface area: " << cvx._surfarea << endl;
+				//cout << "Hull has " << cvx._nFaces << " faces." << endl;
+			}
+
+			if (vm.count("concave-hull"))
+			{
+				string salphas = vm["concave-hull"].as<string>();
+				paramSet<double> chulls(salphas);
+				for (auto ot = chulls.begin(); ot != chulls.end(); ot++)
+				{
+					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+					ostringstream fname;
+					fname << *it << "-concave-hull-" << *ot << ".vtk";
+					rtmath::ddscat::concaveHull ccv(sstats->_shp->_latticePtsStd);
+					ccv.constructHull(*ot);
+					ccv.writeVTKhull(fname.str());
+					/*
+					cout << "Hull has volume: " << ccv._volume << endl;
+					cout << "Hull has surface area: " << ccv._surfarea << endl;
+					cout << "Hull has " << ccv._nFaces << " faces." << endl;
+					*/
+				}
+			}
+
 			if (vm.count("diameter"))
 			{
 				cout << "Diameter (d): " << sstats->max_distance << endl;

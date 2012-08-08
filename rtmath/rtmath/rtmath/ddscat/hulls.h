@@ -42,6 +42,7 @@ namespace rtmath
 			std::vector< pcl::Vertices > _polygons;
 			mutable std::vector<matrixop> _hullPts;
 			double _volume, _surfarea;
+			size_t _nFaces;
 		};
 
 		class convexHull : public hull

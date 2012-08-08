@@ -40,10 +40,11 @@ namespace rtmath {
 			matrixop mom1, mom2, mominert;
 			matrixop covariance;
 
-			matrixop abs_min, abs_max, abs_mean; // - abs_mean is also PE
+			matrixop abs_min, abs_max, abs_mean, rms_mean; // - abs_mean is also PE
 
 			// Aspect ratios
 			matrixop as_abs, as_abs_mean, as_rms;
+
 
 			//void calc();
 			bool operator<(const shapeFileStatsRotated &rhs) const;
@@ -68,6 +69,8 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(abs_min);
 					ar & BOOST_SERIALIZATION_NVP(abs_max);
 					ar & BOOST_SERIALIZATION_NVP(abs_mean);
+					if (version)
+						ar & BOOST_SERIALIZATION_NVP(rms_mean);
 					ar & BOOST_SERIALIZATION_NVP(as_abs);
 					ar & BOOST_SERIALIZATION_NVP(as_abs_mean);
 					ar & BOOST_SERIALIZATION_NVP(as_rms);
@@ -78,7 +81,10 @@ namespace rtmath {
 		class shapeFileStatsBase
 		{
 		public:
-			inline size_t N() const {return _N;}
+			// Function that, if the shapefile referenced is not loaded, reloads the shapefile
+			// Required for hulling or stats adding operations
+			bool load();
+
 			// Set rotation matrix, with each value in degrees
 			//void setRot(double beta, double theta, double phi);
 			void calcStatsBase();
@@ -93,7 +99,37 @@ namespace rtmath {
 			double V_cell_const, V_dipoles_const;
 			double aeff_dipoles_const;
 
+			// These require convex hull calculations
 			double max_distance;
+			double a_circum_sphere;
+			double V_circum_sphere;
+			double SA_circum_sphere;
+			
+			double V_convex_hull;
+			double aeff_V_convex_hull;
+			double SA_convex_hull;
+			double aeff_SA_convex_hull;
+
+			// Special stats calculated only in default orientation
+			//
+			double V_ellipsoid_max;
+			double aeff_ellipsoid_max;
+			double V_ellipsoid_rms;
+			double aeff_ellipsoid_rms;
+
+			// Extend to get volume fractions
+			double f_circum_sphere;
+			double f_convex_hull;
+			double f_ellipsoid_max;
+			double f_ellipsoid_rms;
+
+			// Figure out densities (particles filled / volume elements considered)
+			double rho_basic; // Should be one
+			double rho_circum_sphere;
+			double rho_convex;
+			double rho_ellipsoid_max;
+			double rho_ellipsoid_rms;
+
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;
 
@@ -102,14 +138,13 @@ namespace rtmath {
 			
 
 			std::set<shapeFileStatsRotated> rotations;
+
+			// The object
+			boost::shared_ptr<shapefile> _shp;
 		protected:
 			shapeFileStatsBase();
 			virtual ~shapeFileStatsBase();
 			
-			size_t _N;// Number of dipoles (used in checking for a valid read)
-
-			// The object
-			boost::shared_ptr<shapefile> _shp;
 			bool _valid;
 		private:
 			friend class boost::serialization::access;
@@ -118,8 +153,11 @@ namespace rtmath {
 				{
 					ar & boost::serialization::make_nvp("shapefile", _shp);
 					if (version < 2)
+					{
+						size_t _N;
 						ar & boost::serialization::make_nvp("N", _N);
-					
+					}
+
 					ar & BOOST_SERIALIZATION_NVP(V_cell_const);
 					ar & BOOST_SERIALIZATION_NVP(V_dipoles_const);
 					ar & BOOST_SERIALIZATION_NVP(aeff_dipoles_const);
@@ -127,6 +165,27 @@ namespace rtmath {
 					switch (version)
 					{
 					default:
+					case 2:
+						ar & BOOST_SERIALIZATION_NVP(a_circum_sphere);
+						ar & BOOST_SERIALIZATION_NVP(V_circum_sphere);
+						ar & BOOST_SERIALIZATION_NVP(SA_circum_sphere);
+						ar & BOOST_SERIALIZATION_NVP(V_convex_hull);
+						ar & BOOST_SERIALIZATION_NVP(aeff_V_convex_hull);
+						ar & BOOST_SERIALIZATION_NVP(SA_convex_hull);
+						ar & BOOST_SERIALIZATION_NVP(aeff_SA_convex_hull);
+						ar & BOOST_SERIALIZATION_NVP(V_ellipsoid_max);
+						ar & BOOST_SERIALIZATION_NVP(aeff_ellipsoid_max);
+						ar & BOOST_SERIALIZATION_NVP(V_ellipsoid_rms);
+						ar & BOOST_SERIALIZATION_NVP(aeff_ellipsoid_rms);
+						ar & BOOST_SERIALIZATION_NVP(f_circum_sphere);
+						ar & BOOST_SERIALIZATION_NVP(f_convex_hull);
+						ar & BOOST_SERIALIZATION_NVP(f_ellipsoid_max);
+						ar & BOOST_SERIALIZATION_NVP(f_ellipsoid_rms);
+						ar & BOOST_SERIALIZATION_NVP(rho_basic);
+						ar & BOOST_SERIALIZATION_NVP(rho_circum_sphere);
+						ar & BOOST_SERIALIZATION_NVP(rho_convex);
+						ar & BOOST_SERIALIZATION_NVP(rho_ellipsoid_max);
+						ar & BOOST_SERIALIZATION_NVP(rho_ellipsoid_rms);
 					case 1:
 						ar & BOOST_SERIALIZATION_NVP(max_distance);
 					case 0:
@@ -166,6 +225,7 @@ namespace rtmath {
 	}
 }
 
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsRotated, 1)
 BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 2)
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)
