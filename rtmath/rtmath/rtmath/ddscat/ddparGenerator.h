@@ -189,3 +189,4 @@ BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGeneratorBase)
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParIterator)
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParIteration)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGenerator)
+

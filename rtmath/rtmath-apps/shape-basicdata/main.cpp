@@ -236,15 +236,34 @@ int main(int argc, char** argv)
 					"Make histogram and vtk file of rms distance to specified nearest neighbors")
 				*/
 
-			if (vm.count("dipole-density-distance"))
+			if (vm.count("dipole-density-distance") || vm.count("dipole-density-numneighbors"))
 			{
-				string sdists = vm["dipole-density-distance"].as<string>();
+				string sdists, sneigh;
+				if (vm.count("dipole-density-distance"))
+					sdists = vm["dipole-density-distance"].as<string>();
+				if (vm.count("dipole-density-numneighbors"))
+					sneigh = vm["dipole-density-numneighbors"].as<string>();
 				paramSet<float> cdists(sdists);
+				paramSet<float> cneigh(sneigh);
+				// Construct pairwise containers to handle both cases.
+				set<pair<float, bool> > c;
 				for (auto ot = cdists.begin(); ot != cdists.end(); ot++)
+				{
+					c.insert(pair<float,bool>(*ot,false));
+				}
+				for (auto ot = cneigh.begin(); ot != cneigh.end(); ot++)
+				{
+					c.insert(pair<float,bool>(*ot,true));
+				}
+
+				for (auto ot = c.begin(); ot != c.end(); ot++)
 				{
 					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
 					ostringstream ofname;
-					ofname << *it << "-dipole-density-d-" << *ot;
+					if (ot->second == false)
+						ofname << *it << "-dipole-density-d-" << ot->first;
+					else
+						ofname << *it << "-dipole-density-neighbors-" << ot->first;
 					string fbase = ofname.str();
 
 					// Do lots of kd tree sorting to generate histogram in 1d of number of neighbors within specified radius
@@ -263,7 +282,7 @@ int main(int argc, char** argv)
 					//pcl::PointXYZI a;
 					
 					// The set containing the neighbor number information
-					multiset<int> sneighbors;
+					multiset<float> sneighbors;
 					multiset<float> srms;
 					
 					// Generate kd trees relative to this node
@@ -272,8 +291,8 @@ int main(int argc, char** argv)
 
 					vtkSmartPointer<vtkDoubleArray> vRMS = 
 						vtkSmartPointer<vtkDoubleArray>::New();
-					vtkSmartPointer<vtkIntArray> vN = 
-						vtkSmartPointer<vtkIntArray>::New();
+					vtkSmartPointer<vtkDoubleArray> vN = 
+						vtkSmartPointer<vtkDoubleArray>::New();
 
 					vRMS->SetName("RMS distances");
 					vRMS->SetNumberOfValues(pc->cloud->size());
@@ -281,7 +300,10 @@ int main(int argc, char** argv)
 					//vRMS->SetNumberOfTuples(pc->cloud->size());
 
 					vN->SetNumberOfValues(pc->cloud->size());
-					vN->SetName("Number of points within specified distance");
+					if (ot->second == false)
+						vN->SetName("Num points within specified distance");
+					else
+						vN->SetName("Distances of nearest neighbors");
 					//vN->SetNumberOfComponents(3);
 					//vN->SetNumberOfTuples(pc->cloud->size());
 
@@ -291,28 +313,45 @@ int main(int argc, char** argv)
 						vector<int> indices;
 						vector<float> d_sq;
 						//pc->cloud->begin()->x;
-						tree->radiusSearch(*sp, *ot, indices, d_sq);
+						if (ot->second == false)
+							tree->radiusSearch(*sp, ot->first, indices, d_sq);
+						else
+							tree->nearestKSearch(*sp, (int) ot->first, indices, d_sq);
 						// d_sq now has all of the squared distances. We also have the number of points in the region.
+						valarray<float> vdsq(d_sq.data(),d_sq.size());
+						double dmean = 0;
+						for_each(d_sq.begin(), d_sq.end(), [&] (float i)
+						{
+							dmean += sqrt(i)/d_sq.size();
+						});
+
+						double drms = sqrt(vdsq.sum() / (float) d_sq.size());
+
 						pcl::PointXYZI n, rms;
 						n.x = sp->x;
 						n.y = sp->y;
 						n.z = sp->z;
-						n.intensity = d_sq.size();
+						if (ot->second == false)
+						{
+							n.intensity = d_sq.size();
+							sneighbors.insert((float) d_sq.size());
+						} else {
+							n.intensity = dmean;
+							sneighbors.insert((float) dmean);
+						}
 
 						rms.x = sp->x;
 						rms.y = sp->y;
 						rms.z = sp->z;
-						valarray<float> vdsq(d_sq.data(),d_sq.size());
-						double drms = sqrt(vdsq.sum() / (float) d_sq.size());
 						rms.intensity = drms;
 
 						// Container insertion
-						sneighbors.insert((int) d_sq.size());
+						
 						srms.insert(drms);
 						vN->SetValue(p,n.intensity);
-						vRMS->SetValue(p,drms);
+						vRMS->SetValue(p,rms.intensity);
 						nneighbors.push_back(move(n));
-						rmsneighbors.push_back(move(n));
+						rmsneighbors.push_back(move(rms));
 					}
 
 					// All of the points have been processed. Time to write the vtk files and plot the histograms
@@ -336,7 +375,7 @@ int main(int argc, char** argv)
 					// Plotting two 1d histograms side-by-side - sneighbors and srms
 
 					boost::shared_ptr<TCanvas> tC(new TCanvas("c","Density plots", 0, 0, 2100, 600));
-					boost::shared_ptr<TH1I> tNN(new TH1I());
+					boost::shared_ptr<TH1F> tNN(new TH1F());
 					boost::shared_ptr<TH1F> tRMS(new TH1F());
 
 					double Nrange = *(sneighbors.rbegin()) - *(sneighbors.begin());
@@ -344,7 +383,7 @@ int main(int argc, char** argv)
 					tNN->SetBins(sneighbors.size(), *(sneighbors.begin()) - (Nrange/10.), *(sneighbors.rbegin()) + (Nrange/10.));
 					tRMS->SetBins(srms.size(), *(srms.begin()) - (Rrange/10.), *(srms.rbegin()) + (Rrange/10.));
 
-					for_each(sneighbors.begin(), sneighbors.end(), [&] (int i)
+					for_each(sneighbors.begin(), sneighbors.end(), [&] (float i)
 					{
 						tNN->Fill(i);
 					});
@@ -358,16 +397,30 @@ int main(int argc, char** argv)
 
 					tC->cd(1);
 					tNN->Draw();
-					tNN->SetTitle(string("Number of neighbors within distance ").append(boost::lexical_cast<string>(*ot)).c_str());
-					tNN->GetXaxis()->SetTitle("Number of neighbors");
+					if (ot->second == false)
+					{
+						tNN->SetTitle(string("Number of neighbors within distance ").append(boost::lexical_cast<string>(ot->first)).c_str());
+						tNN->GetXaxis()->SetTitle("Number of neighbors");
+					} else {
+						tNN->SetTitle(string("Mean Distances of nearest ").append(boost::lexical_cast<string>(ot->first)).append(" neighbors").c_str());
+						tNN->GetXaxis()->SetTitle("Mean neighbor distance");
+					}
+					
 					tNN->GetXaxis()->CenterTitle();
 					tNN->GetYaxis()->SetTitle("Frequency");
 					tNN->GetYaxis()->CenterTitle();
 
 					tC->cd(2);
 					tRMS->Draw();
-					tRMS->SetTitle(string("RMS distance of neighbors within distance ").append(boost::lexical_cast<string>(*ot)).c_str());
-					tRMS->GetXaxis()->SetTitle("Distance");
+					if (ot->second == false)
+					{
+						tRMS->SetTitle(string("RMS distance of neighbors within distance ").append(boost::lexical_cast<string>(ot->first)).c_str());
+						tRMS->GetXaxis()->SetTitle("Distance");
+					} else {
+						tRMS->SetTitle(string("RMS distance of nearest ").append(boost::lexical_cast<string>(ot->first)).append(" neighbors").c_str());
+						tRMS->GetXaxis()->SetTitle("Distance");
+					}
+					
 					tRMS->GetXaxis()->CenterTitle();
 					tRMS->GetYaxis()->SetTitle("Frequency");
 					tRMS->GetYaxis()->CenterTitle();
