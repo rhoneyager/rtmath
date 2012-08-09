@@ -20,6 +20,10 @@ namespace rtmath
 {
 	class matrixop;
 
+	namespace Garrett {
+		class pointContainer;
+	};
+
 	namespace ddscat
 	{
 

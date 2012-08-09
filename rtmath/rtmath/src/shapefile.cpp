@@ -1,4 +1,5 @@
 #include "../rtmath/Stdafx.h"
+#include <pcl/point_types.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -15,12 +16,14 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
 //#include <boost/chrono.hpp>
 #include <cmath>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/macros.h"
+#include "../rtmath/Garrett/pclstuff.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -254,6 +257,9 @@ namespace rtmath {
 			xd = _x0 % _d;
 			_xd = xd;
 			
+			using namespace boost::accumulators;
+			accumulator_set<double, stats<tag::mean> > m_x, m_y, m_z;
+
 			for (auto it = _latticePts.begin(); it != _latticePts.end(); ++it)
 			{
 				// First, get matrixops of the lattice vectors
@@ -262,9 +268,34 @@ namespace rtmath {
 				crd = crd % _d;
 
 				matrixop crdsc = crd - xd; // Normalized coordinates!
+				// Need to do stat collection here because the midpoint is usually not set correctly!
+
+				m_x(crdsc.get(2,0,0));
+				m_y(crdsc.get(2,0,1));
+				m_z(crdsc.get(2,0,2));
+
 				// Save in _latticePtsStd
 				_latticePtsStd.push_back(move(crdsc));
 			}
+
+
+			// And also construct the basic pointContainer object that holds the points (for faster 
+			// hull and meshing operations)
+
+			_pclObj = boost::shared_ptr<rtmath::Garrett::pointContainer>
+				(new rtmath::Garrett::pointContainer);
+
+			_pclObj->cloud->reserve(_latticePtsStd.size());
+			
+			// Need to renormalize data points in point cloud. Mean should be at 0, 0, 0 for plotting!
+			for (auto it = _latticePtsStd.begin(); it != _latticePtsStd.end(); it++)
+			{
+				const double x = it->get(2,0,0) - boost::accumulators::mean(m_x);
+				const double y = it->get(2,0,1) - boost::accumulators::mean(m_y);
+				const double z = it->get(2,0,2) - boost::accumulators::mean(m_z);
+				_pclObj->cloud->push_back(pcl::PointXYZ(x,y,z));
+			}
+
 			/*
 			boost::chrono::system_clock::time_point cnormalized = boost::chrono::system_clock::now();
 

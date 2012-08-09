@@ -25,6 +25,10 @@
 //#include "shapes.h"
 
 namespace rtmath {
+	namespace Garrett {
+		class pointContainer;
+	}
+
 	namespace ddscat {
 
 		class shapefile
@@ -57,6 +61,8 @@ namespace rtmath {
 			matrixop _a1, _a2, _a3; // a3 = a1 x a2
 			matrixop _d;
 			matrixop _x0, _xd;
+
+			boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
 			
 			friend class shapeFileStatsBase;
 			friend class shapeFileStats;

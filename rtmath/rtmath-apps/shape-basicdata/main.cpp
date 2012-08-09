@@ -1,12 +1,20 @@
 #pragma warning( push )
 #pragma warning( disable : 4996 )
 #pragma warning( disable : 4800 )
+#pragma warning( disable : 4521 ) // multiple copy constructors in some PCL stuff
+#pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
+
+#include "../../rtmath/rtmath/ROOTlink.h"
+#include "../../rtmath/rtmath/VTKlink.h"
+
 #include <cmath>
 #include <memory>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <set>
+#include <algorithm>
+#include <valarray>
 
 #include <boost/program_options.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -19,6 +27,19 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/io/vtk_io.h>
+#include <pcl/io/vtk_lib_io.h>
+#include <pcl/io/vtk_lib_io.hpp>
+#include <pcl/point_types.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
+#include <vtkXMLStructuredGridWriter.h>
+#include <vtkDoubleArray.h>
+#include <vtkIntArray.h>
+
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
@@ -26,8 +47,12 @@
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/error/error.h"
 //#include "../../rtmath/rtmath/rtmath.h"
-#include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/MagickLINK.h"
+
+#include "../../rtmath/rtmath/Garrett/pclstuff.h"
+
+
+
 
 
 int main(int argc, char** argv)
@@ -59,10 +84,10 @@ int main(int argc, char** argv)
 			("convex-hull","Output convex hull information and vtk file")
 			("concave-hull", po::value<string>(), "Output concave hull information and vtk file for given value(s)")
 
-			("dipole-density-distance", po::value< vector<string> >(), 
+			("dipole-density-distance", po::value< string >(), 
 				"Make histogram and vtk file of number of neighbors within specified spacings")
-			("dipole-density-numneighbors", po::value< vector<string> >(),
-				"Make histogram and vtk file of rms distance to nearest _ neighbors")
+			("dipole-density-numneighbors", po::value< string >(),
+				"Make histogram and vtk file of rms distance to specified nearest neighbors")
 
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
@@ -204,6 +229,153 @@ int main(int argc, char** argv)
 			{
 				cout << "Diameter (d): " << sstats->max_distance << endl;
 			}
+
+			/*	("dipole-density-distance", po::value< vector<string> >(), 
+					"Make histogram and vtk file of number of neighbors within specified spacings")
+				("dipole-density-numneighbors", po::value< vector<string> >(),
+					"Make histogram and vtk file of rms distance to specified nearest neighbors")
+				*/
+
+			if (vm.count("dipole-density-distance"))
+			{
+				string sdists = vm["dipole-density-distance"].as<string>();
+				paramSet<float> cdists(sdists);
+				for (auto ot = cdists.begin(); ot != cdists.end(); ot++)
+				{
+					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+					ostringstream ofname;
+					ofname << *it << "-dipole-density-d-" << *ot;
+					string fbase = ofname.str();
+
+					// Do lots of kd tree sorting to generate histogram in 1d of number of neighbors within specified radius
+					// Select the center slice of the shape and make a numeric 2d histogram reflecting this
+					// Also produce 3d vtk file output
+
+					// Get reference to the sstats _shp pointContainer
+					boost::shared_ptr<rtmath::Garrett::pointContainer> pc = sstats->_shp->_pclObj;
+
+					// The container for the number of neighbors container and the rms distance container
+					//pcl::PointXYZRGB
+					pcl::PointCloud<pcl::PointXYZI> nneighbors; // XYZ and intensity (float)
+					pcl::PointCloud<pcl::PointXYZI> rmsneighbors;
+					nneighbors.reserve(pc->cloud->size());
+					rmsneighbors.reserve(pc->cloud->size());
+					//pcl::PointXYZI a;
+					
+					// The set containing the neighbor number information
+					multiset<int> sneighbors;
+					multiset<float> srms;
+					
+					// Generate kd trees relative to this node
+					pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree (new pcl::KdTreeFLANN<pcl::PointXYZ>);
+					tree->setInputCloud (pc->cloud);
+
+					vtkSmartPointer<vtkDoubleArray> vRMS = 
+						vtkSmartPointer<vtkDoubleArray>::New();
+					vtkSmartPointer<vtkIntArray> vN = 
+						vtkSmartPointer<vtkIntArray>::New();
+
+					vRMS->SetName("RMS distances");
+					vRMS->SetNumberOfValues(pc->cloud->size());
+					//vRMS->SetNumberOfComponents(3);
+					//vRMS->SetNumberOfTuples(pc->cloud->size());
+
+					vN->SetNumberOfValues(pc->cloud->size());
+					vN->SetName("Number of points within specified distance");
+					//vN->SetNumberOfComponents(3);
+					//vN->SetNumberOfTuples(pc->cloud->size());
+
+					size_t p=0; // Stupid VTK requirement
+					for (auto sp = pc->cloud->begin(); sp != pc->cloud->end(); sp++, p++)
+					{
+						vector<int> indices;
+						vector<float> d_sq;
+						//pc->cloud->begin()->x;
+						tree->radiusSearch(*sp, *ot, indices, d_sq);
+						// d_sq now has all of the squared distances. We also have the number of points in the region.
+						pcl::PointXYZI n, rms;
+						n.x = sp->x;
+						n.y = sp->y;
+						n.z = sp->z;
+						n.intensity = d_sq.size();
+
+						rms.x = sp->x;
+						rms.y = sp->y;
+						rms.z = sp->z;
+						valarray<float> vdsq(d_sq.data(),d_sq.size());
+						double drms = sqrt(vdsq.sum() / (float) d_sq.size());
+						rms.intensity = drms;
+
+						// Container insertion
+						sneighbors.insert((int) d_sq.size());
+						srms.insert(drms);
+						vN->SetValue(p,n.intensity);
+						vRMS->SetValue(p,drms);
+						nneighbors.push_back(move(n));
+						rmsneighbors.push_back(move(n));
+					}
+
+					// All of the points have been processed. Time to write the vtk files and plot the histograms
+					// I don't like the pcl conversion defaults, so I get to implement my own!
+					vtkSmartPointer<vtkStructuredGrid> vpc = vtkSmartPointer<vtkStructuredGrid>::New();
+					pcl::io::pointCloudTovtkStructuredGrid<pcl::PointXYZI>(nneighbors, vpc);
+					
+					// The structured grid has now has the point coordinates. Now to attach the arrays for coloring
+					//vpc->GetPointData().AddArray(vRMS);
+					vpc->GetPointData()->AddArray(vRMS);
+					vpc->GetPointData()->AddArray(vN);
+					
+					vtkSmartPointer<vtkXMLStructuredGridWriter> writer =
+						vtkSmartPointer<vtkXMLStructuredGridWriter>::New();
+					writer->SetFileName(string(fbase).append("-neighbors.vts").c_str());
+					writer->SetInputConnection(vpc->GetProducerPort());
+					//writer->SetInputData(pcN);
+					writer->Write();
+
+
+					// Plotting two 1d histograms side-by-side - sneighbors and srms
+
+					boost::shared_ptr<TCanvas> tC(new TCanvas("c","Density plots", 0, 0, 2100, 600));
+					boost::shared_ptr<TH1I> tNN(new TH1I());
+					boost::shared_ptr<TH1F> tRMS(new TH1F());
+
+					double Nrange = *(sneighbors.rbegin()) - *(sneighbors.begin());
+					double Rrange = *(srms.rbegin()) - *(srms.begin());
+					tNN->SetBins(sneighbors.size(), *(sneighbors.begin()) - (Nrange/10.), *(sneighbors.rbegin()) + (Nrange/10.));
+					tRMS->SetBins(srms.size(), *(srms.begin()) - (Rrange/10.), *(srms.rbegin()) + (Rrange/10.));
+
+					for_each(sneighbors.begin(), sneighbors.end(), [&] (int i)
+					{
+						tNN->Fill(i);
+					});
+					for_each(srms.begin(), srms.end(), [&] (float i)
+					{
+						tRMS->Fill(i);
+					});
+
+					gStyle->SetPalette(1);
+					tC->Divide(2,1);
+
+					tC->cd(1);
+					tNN->Draw();
+					tNN->SetTitle(string("Number of neighbors within distance ").append(boost::lexical_cast<string>(*ot)).c_str());
+					tNN->GetXaxis()->SetTitle("Number of neighbors");
+					tNN->GetXaxis()->CenterTitle();
+					tNN->GetYaxis()->SetTitle("Frequency");
+					tNN->GetYaxis()->CenterTitle();
+
+					tC->cd(2);
+					tRMS->Draw();
+					tRMS->SetTitle(string("RMS distance of neighbors within distance ").append(boost::lexical_cast<string>(*ot)).c_str());
+					tRMS->GetXaxis()->SetTitle("Distance");
+					tRMS->GetXaxis()->CenterTitle();
+					tRMS->GetYaxis()->SetTitle("Frequency");
+					tRMS->GetYaxis()->CenterTitle();
+
+					tC->SaveAs(string(fbase).append("-histogram1.png").c_str());
+				}
+			}
+
 			if (vm.count("PE"))
 			{
 				string ofname = *it;
