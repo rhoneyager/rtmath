@@ -80,6 +80,28 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shape-basicdata", "rtmath-a
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shape-ensembles", "rtmath-apps\shape-ensembles\shape-ensembles.vcxproj", "{27BA1D5B-2396-433A-ABFD-68EBCF190CE0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "T-Matrix", "T-Matrix", "{613E6848-4DC5-4973-ACD3-50C8ADA188F0}"
+	ProjectSection(SolutionItems) = preProject
+		deps\tmatrix\src\fortran\ampld.par.f = deps\tmatrix\src\fortran\ampld.par.f
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Objects", "Common Objects", "{93E7F556-2915-4CD9-AA3A-5E56C5978F6D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{0BFA2064-FAD5-4D6D-A31C-7F4A5DDCE485}"
+	ProjectSection(SolutionItems) = preProject
+		deps\tmatrix\src\fortran\ampld.par.f = deps\tmatrix\src\fortran\ampld.par.f
+		deps\tmatrix\src\CMakeLists.txt = deps\tmatrix\src\CMakeLists.txt
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-cpp", "deps\tmatrix\VS\tmatrix-cpp\tmatrix-cpp.vcxproj", "{BC75D21E-9E1F-44AD-90A8-16F6A33881E6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8A456FAE-BAC3-4309-B181-4486575F89AE} = {8A456FAE-BAC3-4309-B181-4486575F89AE}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-test", "deps\tmatrix\VS\tmatrix-test\tmatrix-test.vcxproj", "{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}"
+EndProject
+Project("{5E53CCA8-D880-4964-8B8C-B3DB057578E7}") = "tmatrix-fortran", "deps\tmatrix\VS\tmatrix-fortran\tmatrix-fortran.pvfproj", "{8A456FAE-BAC3-4309-B181-4486575F89AE}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -192,6 +214,18 @@ Global
 		{27BA1D5B-2396-433A-ABFD-68EBCF190CE0}.Debug|Win32.Build.0 = Debug|Win32
 		{27BA1D5B-2396-433A-ABFD-68EBCF190CE0}.Release|Win32.ActiveCfg = Release|Win32
 		{27BA1D5B-2396-433A-ABFD-68EBCF190CE0}.Release|Win32.Build.0 = Release|Win32
+		{BC75D21E-9E1F-44AD-90A8-16F6A33881E6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BC75D21E-9E1F-44AD-90A8-16F6A33881E6}.Debug|Win32.Build.0 = Debug|Win32
+		{BC75D21E-9E1F-44AD-90A8-16F6A33881E6}.Release|Win32.ActiveCfg = Release|Win32
+		{BC75D21E-9E1F-44AD-90A8-16F6A33881E6}.Release|Win32.Build.0 = Release|Win32
+		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Debug|Win32.Build.0 = Debug|Win32
+		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Release|Win32.ActiveCfg = Release|Win32
+		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Release|Win32.Build.0 = Release|Win32
+		{8A456FAE-BAC3-4309-B181-4486575F89AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8A456FAE-BAC3-4309-B181-4486575F89AE}.Debug|Win32.Build.0 = Debug|Win32
+		{8A456FAE-BAC3-4309-B181-4486575F89AE}.Release|Win32.ActiveCfg = Release|Win32
+		{8A456FAE-BAC3-4309-B181-4486575F89AE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -222,6 +256,11 @@ Global
 		{64BCBD94-9B1E-4C0B-B6B6-4444DAC8BB3C} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{27BA1D5B-2396-433A-ABFD-68EBCF190CE0} = {3410248F-F4B3-4444-96BD-AEEA3BCE4B57}
 		{BB3A712C-3367-48CB-A98A-58A65FE83367} = {9D4A2788-8FD7-4FB3-8D3A-6A9F3EF77A3C}
+		{93E7F556-2915-4CD9-AA3A-5E56C5978F6D} = {613E6848-4DC5-4973-ACD3-50C8ADA188F0}
+		{BC75D21E-9E1F-44AD-90A8-16F6A33881E6} = {613E6848-4DC5-4973-ACD3-50C8ADA188F0}
+		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F} = {613E6848-4DC5-4973-ACD3-50C8ADA188F0}
+		{8A456FAE-BAC3-4309-B181-4486575F89AE} = {613E6848-4DC5-4973-ACD3-50C8ADA188F0}
+		{0BFA2064-FAD5-4D6D-A31C-7F4A5DDCE485} = {93E7F556-2915-4CD9-AA3A-5E56C5978F6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		QtVersion = $(DefaultQtVersion)
