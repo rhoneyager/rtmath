@@ -28,6 +28,7 @@ option ( MAKE_GUIS
 
 if (MAKE_GUIS)
 add_subdirectory (ddscat-genparams-qt)
+add_subdirectory (tmatrix-convert-from-ddscat)
 endif()
 
 

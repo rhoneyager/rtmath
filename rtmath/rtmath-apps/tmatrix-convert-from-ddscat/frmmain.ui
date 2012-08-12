@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmMainClass</class>
+ <widget class="QMainWindow" name="frmMainClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>624</width>
+    <height>280</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>280</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>280</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>T-MATRIX In-Place Converter</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QFormLayout" name="formLayout">
+    <property name="fieldGrowthPolicy">
+     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+    </property>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Base Directory:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLineEdit" name="txtBaseDir">
+        <property name="statusTip">
+         <string>Specify base directory containing all of the DDSCAT runs. Recursion is assumed.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdBaseFind">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Default ddscat.par file:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>Shape File Pattern:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="cmbShapePattern">
+      <property name="statusTip">
+       <string>Specify the pattern of the autodetected shape.dat files.</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>shape.dat</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>*.shp</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>*.txt</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Temperature (K):</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="txtTemp">
+      <property name="statusTip">
+       <string>Specify the temperature (in Kelvin)</string>
+      </property>
+      <property name="placeholderText">
+       <string>263</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Shape Dimensioning:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="cmbShapeMeth">
+      <property name="statusTip">
+       <string>Select the method for approximating the shape file</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Equiv Aeff Sphere</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Same real aspect ratio</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Same RMS aspect ratio</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Dielectric Method:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QComboBox" name="cmbDiel">
+      <property name="statusTip">
+       <string>Specify the dielectric constant calculation method.</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Debye</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Maxwell-Garnett</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Volume Fraction Method:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QComboBox" name="cmbVolFrac">
+      <property name="statusTip">
+       <string>Specify the volume fraction method used in the dielectric calculations.</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Minimal circumscribing sphere</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Convex hull</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Max Ellipsoid</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>RMS Ellipsoid</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QPushButton" name="cmdGenerate">
+      <property name="statusTip">
+       <string>Generate the run definitions and statistics.</string>
+      </property>
+      <property name="text">
+       <string>Generate Batch Run Files and Base Statistics</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLineEdit" name="txtDefaultPar">
+        <property name="statusTip">
+         <string>The default file is used if a ddscat.par file cannot be detected in the same dir as the shape.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdDefFind">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>624</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Quit"/>
+   </widget>
+   <addaction name="menu_File"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_Quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="frmmain.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>action_Quit</sender>
+   <signal>activated()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>309</x>
+     <y>105</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdGenerate</sender>
+   <signal>clicked()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>doGenerate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>371</x>
+     <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>309</x>
+     <y>105</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdDefFind</sender>
+   <signal>clicked()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>findDefaultPar()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>572</x>
+     <y>73</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>309</x>
+     <y>142</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdBaseFind</sender>
+   <signal>clicked()</signal>
+   <receiver>frmMainClass</receiver>
+   <slot>findBaseDir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>572</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>309</x>
+     <y>142</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>doGenerate()</slot>
+  <slot>findBaseDir()</slot>
+  <slot>findDefaultPar()</slot>
+ </slots>
+</ui>
