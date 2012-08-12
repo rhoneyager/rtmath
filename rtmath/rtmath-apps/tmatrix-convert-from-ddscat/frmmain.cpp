@@ -113,6 +113,10 @@ void frmMain::doGenerate()
 	}
 
 	// Convert the combo boxes into real options
+	string shapePattern = ui.cmbShapePattern->currentText().toStdString();
+	string shapeMethod = ui.cmbShapeMeth->currentText().toStdString();;
+	string dielMethod = ui.cmbDiel->currentText().toStdString();;
+	string volFracMethod = ui.cmbVolFrac->currentText().toStdString();;
 
 
 	// Finally, begin forming the iteration
