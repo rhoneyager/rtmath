@@ -122,7 +122,7 @@
       </property>
       <item>
        <property name="text">
-        <string>Equiv Aeff Sphere</string>
+        <string>Same RMS aspect ratio</string>
        </property>
       </item>
       <item>
@@ -132,7 +132,7 @@
       </item>
       <item>
        <property name="text">
-        <string>Same RMS aspect ratio</string>
+        <string>Equiv Aeff Sphere</string>
        </property>
       </item>
      </widget>
@@ -149,6 +149,11 @@
       <property name="statusTip">
        <string>Specify the dielectric constant calculation method.</string>
       </property>
+      <item>
+       <property name="text">
+        <string>Sihvola</string>
+       </property>
+      </item>
       <item>
        <property name="text">
         <string>Debye</string>

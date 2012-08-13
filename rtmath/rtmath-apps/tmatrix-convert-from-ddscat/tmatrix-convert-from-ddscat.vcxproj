@@ -44,6 +44,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -71,6 +72,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="converter.cpp" />
     <ClCompile Include="frmmain.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_frmmain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -112,6 +114,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="converter.h" />
     <ClInclude Include="GeneratedFiles\ui_frmmain.h" />
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +132,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
+      <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

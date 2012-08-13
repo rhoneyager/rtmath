@@ -50,6 +50,9 @@
     <ClCompile Include="GeneratedFiles\qrc_frmmain.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="converter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="frmmain.h">
@@ -65,6 +68,9 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_frmmain.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="converter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

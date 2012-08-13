@@ -220,6 +220,10 @@ namespace rtmath {
 				{
 					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeFileStatsBase);
 				}
+
+		public:
+			static boost::shared_ptr<shapeFileStats> genStats(
+				const std::string &shpfile, const std::string &statsfile = "");
 		};
 
 	}

@@ -9,12 +9,15 @@
 #include <QMessageBox>
 
 #include <boost/filesystem.hpp>
-/*
+
+#include "converter.h"
+
+
 #include "../../rtmath/rtmath/serialization.h"
-#include "../../rtmath/rtmath/ddscat/ddpar.h"
+//#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/ddscat/shapefile.h"
-*/
+//#include "../../rtmath/rtmath/ddscat/shapefile.h"
+
 template <>
 double getValText(QLineEdit *src)
 {
@@ -75,6 +78,7 @@ void frmMain::findBaseDir()
 void frmMain::doGenerate()
 {
 	using namespace std;
+	using namespace boost::filesystem;
 	double T = getValText<double>(ui.txtTemp);
 
 	string defaultPar = getValText<string>(ui.txtDefaultPar);
@@ -96,19 +100,25 @@ void frmMain::doGenerate()
 	}
 
 	// Verify file existence
-	boost::filesystem::path pPar(defaultPar);
-	if (!boost::filesystem::exists(pPar) && defaultPar.size())
+	path pPar(defaultPar);
+	if (!exists(pPar) && defaultPar.size())
 	{
 		QMessageBox::critical(this, tr("tmatrix-convert-from-ddscat"), 
 			tr("Default par file does not exist!"));
 		return;
 	}
 
-	boost::filesystem::path pDir(baseDir);
-	if (!boost::filesystem::exists(pDir))
+	path pDir(baseDir);
+	if (!exists(pDir))
 	{
 		QMessageBox::critical(this, tr("tmatrix-convert-from-ddscat"), 
 			tr("Base directory does not exist!"));
+		return;
+	}
+	if (!is_directory(pDir))
+	{
+		QMessageBox::critical(this, tr("tmatrix-convert-from-ddscat"),
+			tr("Need to specify a directory for base directory!"));
 		return;
 	}
 
@@ -118,9 +128,71 @@ void frmMain::doGenerate()
 	string dielMethod = ui.cmbDiel->currentText().toStdString();;
 	string volFracMethod = ui.cmbVolFrac->currentText().toStdString();;
 
-
+	bool searchExt = false;
+	bool searchFile = false;
+	if (shapePattern.find('*') != string::npos)
+	{
+		searchExt = true;
+		shapePattern = shapePattern.substr(1);
+	} else {
+		searchFile = true;
+	}
 	// Finally, begin forming the iteration
 
 	// Iterate over all matching files and perform the t-matrix generation
+	vector<path> v;
+	copy(recursive_directory_iterator(pDir), recursive_directory_iterator(), back_inserter(v));
+	for (auto it = v.begin(); it != v.end(); it++)
+	{
+		if (!is_regular_file(*it)) continue;
+		// Check that this is a recognized shape.dat file
+		path pBase, pFile, pCandPar;
+		pFile = it->filename();
+		pBase = it->parent_path();
+		pCandPar = pBase / "ddscat.par";
+
+		if (searchFile)
+		{
+			if (pFile.string() != shapePattern)
+				continue;
+		} else { // Search on extension
+			if (pFile.extension().string() != shapePattern)
+				continue;
+		}
+
+		// Only the desited shape files will make it to this point!
+		string pDest = it->string(); 
+		pDest.append("-tmatrix.xml");
+		string pStats = it->string(); 
+		pStats.append("-stats.xml");
+
+		// If ddscat.par is in this dir, use it. Else, use default.
+		if (!exists(pCandPar)) pCandPar = pPar;
+		// Do the shape stats need to be generated?
+		boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
+		if (!exists(path(pStats)))
+		{
+			stats = rtmath::ddscat::shapeFileStats::genStats(it->string(),pStats);
+		} else {
+			rtmath::ddscat::shapeFileStats s;
+			rtmath::serialization::read<rtmath::ddscat::shapeFileStats>(s,it->string());
+			stats = boost::shared_ptr<rtmath::ddscat::shapeFileStats>(
+				new rtmath::ddscat::shapeFileStats(s));
+		}
+
+		// Everything else is handled by the converter
+		fileconverter cnv;
+		//cnv.setShapeFile(it->string());
+		cnv.setStats(stats);
+		cnv.setDDPARfile(pCandPar.string());
+
+		//cnv.setShapePattern("");
+		cnv.setShapeMethod(shapeMethod);
+		cnv.setDielMethod(dielMethod);
+		cnv.setVolFracMethod(volFracMethod);
+		cnv.setTemp(T);
+
+		cnv.convert(pDest);
+	}
 
 }
