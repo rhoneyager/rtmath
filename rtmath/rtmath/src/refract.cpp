@@ -6,6 +6,7 @@
 #include <complex>
 #include <fstream>
 #include "../rtmath/refract.h"
+#include "../rtmath/zeros.h"
 
 // Ice complex refractive index
 // based on Christian Matzler (2006)
@@ -45,3 +46,86 @@ void rtmath::refract::writeDiel(const std::string &filename,
 	out << " 100000.0    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
 }
 
+void rtmath::refract::debyeDry(std::complex<double> Ma, std::complex<double> Mb, 
+	double fa, std::complex<double> &Mres)
+{
+	using namespace std;
+	std::complex<double> eA, eB, eRes;
+	mToE(Ma,eA);
+	mToE(Mb,eB);
+
+	complex<double> pa = fa * (eA - complex<double>(1.,0)) / (eA + complex<double>(2.,0));
+	complex<double> pb = (1.-fa) * (eB - complex<double>(1.,0)) / (eB + complex<double>(2.,0));
+
+	complex<double> fact = pa+pb;
+	eRes = (complex<double>(2.,0) * fact + complex<double>(1.,0)) 
+		/ (complex<double>(1.,0) - fact);
+	eToM(eRes,Mres);
+}
+
+void rtmath::refract::maxwellGarnett(std::complex<double> Mice, std::complex<double> Mwater, 
+	std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres)
+{
+	using namespace std;
+	std::complex<double> Miw;
+
+	// Ice is the inclusion in water, which is the inclusion in air
+	maxwellGarnettSimple(Mice, Mwater, fIce / fWater, Miw);
+	maxwellGarnettSimple(Miw, Mair, fIce + fWater, Mres);
+}
+
+void rtmath::refract::maxwellGarnettSimple(std::complex<double> Ma, std::complex<double> Mb, 
+	double fa, std::complex<double> &Mres)
+{
+	using namespace std;
+	std::complex<double> eA, eB, eRes;
+	mToE(Ma,eA);
+	mToE(Mb,eB);
+
+	// Formula is:
+	// (e_eff - eb)/(e_eff+2eb) = fa * (ea - eb) / (ea + 2 eb)
+	complex<double> a = complex<double>(fa,0) * ( eA - eB ) / (eA + (complex<double>(2,0) * eB));
+	eRes = eB * (complex<double>(2,0) * a + complex<double>(1,0))
+		/ (complex<double>(1,0) - a);
+	eToM(eRes,Mres);
+}
+
+void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb, 
+	double fa, double nu, std::complex<double> &Mres)
+{
+	using namespace std;
+	std::complex<double> eA, eB, eRes;
+	mToE(Ma,eA);
+	mToE(Mb,eB);
+
+	// Formula is:
+	// (e_eff - eb) / (e_eff + 2eb + v(e_eff - eb)) - fa (ea-eb)/(ea+2eb+v(e_eff-eb) = 0
+	// This formula has no analytic solution. It is also complex-valued. Its derivative is hard to calculate.
+	// Because of this, I will be using the complex secant method to find the zeros.
+	// This is also why the other mixing formulas do not call this code.
+
+	auto formula = [&](std::complex<double> x) -> std::complex<double>
+	{
+		using namespace std;
+		complex<double> res, pa, pb;
+		pa = (x-eB)/(x+(complex<double>(2.0,0)*eB)+(complex<double>(nu,0)*(x-eB)));
+		pb = complex<double>(fa,0) * 
+			(eA-eB)/(eA+(complex<double>(2.0,0)*eB)+(complex<double>(nu,0)*(x-eB)));
+		res = pa - pb;
+		return res;
+	};
+
+	complex<double> gA(1.0,1.0), gB(1.5,1.5);
+	zeros::complexSecant(formula, gA, gB, eRes);
+	eToM(eRes,Mres);
+}
+
+void rtmath::refract::mToE(std::complex<double> m, std::complex<double> &e)
+{
+	e = m * m;
+}
+
+void rtmath::refract::eToM(std::complex<double> e, std::complex<double> &m)
+{
+	m = sqrt(e);
+}

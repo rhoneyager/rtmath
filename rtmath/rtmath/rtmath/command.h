@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include <boost/math/constants/constants.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -25,119 +26,119 @@ namespace rtmath {
 		class parseParams
 		{
 		public:
-				parseParams(int argc, char** argv);
+			parseParams(int argc, char** argv);
 
-				// Check only for parameter existence
-				bool readParam(const char* oName);
+			// Check only for parameter existence
+			bool readParam(const char* oName);
 
-				// Read first occurance of the same flag only
-				template <class T> bool readParam(const char* oName, T &val) const
+			// Read first occurance of the same flag only
+			template <class T> bool readParam(const char* oName, T &val) const
+			{
+				// Find the option
+				std::string op(oName);
+				for (size_t i=0;i<(size_t) _ac-1;i++)
 				{
-					// Find the option
-					std::string op(oName);
-					for (size_t i=0;i<(size_t) _ac-1;i++)
+					std::string p(_av[i]);
+					if (p==op)
 					{
-						std::string p(_av[i]);
-						if (p==op)
-						{
-							std::string v(_av[i+1]);
-							// Use stringstream for conversion
-							std::istringstream is(v);
-							is >> val;
-							return true;
-						}
+						std::string v(_av[i+1]);
+						// Use stringstream for conversion
+						std::istringstream is(v);
+						is >> val;
+						return true;
 					}
-					return false;
 				}
+				return false;
+			}
 
-				// Read multiple occurances of the same flag, preserving value order
-				// If no intervening flags, will continue reading options, thus
-				// allowing for shell-provided globbing
-				template <class T> bool readParam(const char* oName, std::vector<T> &vals) const
+			// Read multiple occurances of the same flag, preserving value order
+			// If no intervening flags, will continue reading options, thus
+			// allowing for shell-provided globbing
+			template <class T> bool readParam(const char* oName, std::vector<T> &vals) const
+			{
+				// Find the option
+				std::string op(oName);
+				vals.clear();
+				bool glob = false;
+				for (size_t i=1;i<(size_t) _ac;i++)
 				{
-					// Find the option
-					std::string op(oName);
-					vals.clear();
-					bool glob = false;
-					for (size_t i=1;i<(size_t) _ac;i++)
+					std::string p(_av[i]);
+					if (p[0] == _flag) glob = false;
+					if (p==op) 
 					{
-						std::string p(_av[i]);
-						if (p[0] == _flag) glob = false;
-						if (p==op) 
-						{
-							glob = true;
-							continue;
-						}
-						if (glob)
-						{
-							std::string v(_av[i]);
-							// Use stringstream for conversion
-							std::istringstream is(v);
-							T val;
-							is >> val;
-							vals.push_back(val);
-						}
+						glob = true;
+						continue;
 					}
-					if (vals.size()) return true;
-					return false;
+					if (glob)
+					{
+						std::string v(_av[i]);
+						// Use stringstream for conversion
+						std::istringstream is(v);
+						T val;
+						is >> val;
+						vals.push_back(val);
+					}
 				}
+				if (vals.size()) return true;
+				return false;
+			}
 
-				// Read first occurance of the same flag only
-				template <class T> bool readParam(const char* oName, size_t num, T *vals) const
+			// Read first occurance of the same flag only
+			template <class T> bool readParam(const char* oName, size_t num, T *vals) const
+			{
+				// Find the option
+				using namespace std;
+				string op(oName);
+				for (size_t i=0;i<(size_t) (_ac-num);i++)
 				{
-					// Find the option
-					using namespace std;
-					string op(oName);
-					for (size_t i=0;i<(size_t) (_ac-num);i++)
+					string p(_av[i]);
+					if (p==op)
 					{
-						string p(_av[i]);
-						if (p==op)
+						for (size_t j=0;j<num;j++)
 						{
-							for (size_t j=0;j<num;j++)
-							{
-								string s(_av[i+1+j]);
-								std::istringstream is(s);
-								is >> vals[j];
-							}
-							return true;
+							string s(_av[i+1+j]);
+							std::istringstream is(s);
+							is >> vals[j];
 						}
+						return true;
 					}
-					return false;
 				}
+				return false;
+			}
 
-				// Read multiple occurances of the same flag, preserving value order
-				template <class T> bool readParam(const char* oName, size_t num, std::vector< std::vector<T> > &vals) const
+			// Read multiple occurances of the same flag, preserving value order
+			template <class T> bool readParam(const char* oName, size_t num, std::vector< std::vector<T> > &vals) const
+			{
+				vals.clear();
+				// Find the option
+				using namespace std;
+				string op(oName);
+				for (size_t i=0;i<(size_t) (_ac-num);i++)
 				{
-					vals.clear();
-					// Find the option
-					using namespace std;
-					string op(oName);
-					for (size_t i=0;i<(size_t) (_ac-num);i++)
+					string p(_av[i]);
+					if (p==op)
 					{
-						string p(_av[i]);
-						if (p==op)
+						vector<T> cval;
+						for (size_t j=0;j<num;j++)
 						{
-							vector<T> cval;
-							for (size_t j=0;j<num;j++)
-							{
-								T cur;
-								string s(_av[i+1+j]);
-								std::istringstream is(s);
-								is >> cur;
-								cval.push_back(cur);
-							}
-							vals.push_back(cval);
-							i+=num;
+							T cur;
+							string s(_av[i+1+j]);
+							std::istringstream is(s);
+							is >> cur;
+							cval.push_back(cur);
 						}
+						vals.push_back(cval);
+						i+=num;
 					}
-					if (vals.size()) return true;
-					return false;
 				}
+				if (vals.size()) return true;
+				return false;
+			}
 
 		private:
-				int _ac;
-				char** _av;
-				char _flag;
+			int _ac;
+			char** _av;
+			char _flag;
 		};
 
 		// findFile is another useful class, geared towards locating a file.
@@ -175,108 +176,140 @@ namespace rtmath {
 		// dashes and colons.
 		// TODO: check aliases reference validity...
 		template <class T>
-			void splitSet(const std::string &instr, std::set<T> &expanded,
-				const std::map<std::string, std::string> *aliases = nullptr)
+		void splitSet(const std::string &instr, std::set<T> &expanded,
+			const std::map<std::string, std::string> *aliases = nullptr)
+		{
+			using namespace std;
+			// Prepare tokenizer
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> sep(",");
+			boost::char_separator<char> seprange(":");
 			{
-				using namespace std;
-				// Prepare tokenizer
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(",");
-				boost::char_separator<char> seprange(":");
+				tokenizer tcom(instr,sep);
+				for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 				{
-					tokenizer tcom(instr,sep);
-					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+					// At this junction, do any alias substitution
+
+					std::string ssubst;
+
+					std::map<std::string, std::string> defaliases;
+					if (!aliases) aliases = &defaliases; // Provides a convenient default
+
+					if (aliases->count(*ot))
 					{
-						// At this junction, do any alias substitution
-
-						std::string ssubst;
-
-						std::map<std::string, std::string> defaliases;
-						if (!aliases) aliases = &defaliases; // Provides a convenient default
-
-						if (aliases->count(*ot))
+						ssubst = aliases->at(*ot);
+						// Recursively call splitSet to handle bundles of aliases
+						splitSet<T>(ssubst, expanded, aliases);
+					} else { 
+						// Separated based on commas. Expand for dashes and colons
+						// TODO: allow string specifier after three params
+						tokenizer trange(*ot,seprange);
+						vector<T> range;
+						string specializer;
+						size_t i = 0;
+						for (auto rt = trange.begin(); rt != trange.end(); rt++, i++)
 						{
-							ssubst = aliases->at(*ot);
-							// Recursively call splitSet to handle bundles of aliases
-							splitSet<T>(ssubst, expanded, aliases);
-						} else { 
-							// Separated based on commas. Expand for dashes and colons
-							// TODO: allow string specifier after three params
-							tokenizer trange(*ot,seprange);
-							vector<T> range;
-							string specializer;
-							size_t i = 0;
-                                                        for (auto rt = trange.begin(); rt != trange.end(); rt++, i++)
-                                                        {
-                                                            try {
-                                                                string s = *rt;
-                                                                boost::algorithm::trim(s);
+							try {
+								string s = *rt;
+								boost::algorithm::trim(s);
 								if (i < 3)
 								{
-                                                                	range.push_back(boost::lexical_cast<T>(s));
+									range.push_back(boost::lexical_cast<T>(s));
 								} else {
 									specializer = s;
 								}
-                                                            }
-                                                            catch (...)
-                                                            {
-                                                                throw rtmath::debug::xBadInput(rt->c_str());
-                                                            }
-                                                        }
-							// Look at range. If one element, just add it. If two or 
-							// three, calculate the inclusive interval
-							if (range.size() == 1)
+							}
+							catch (...)
 							{
-								if (expanded.count(range[0]) == 0)
-									expanded.insert(range[0]);
-							} else {
-								T start, end = 0, interval = 1;
-								start = range[0];
-								end = range[range.size()-1];
-								if (range.size() > 2) interval = range[1];
-								if (specializer == "")
+								throw rtmath::debug::xBadInput(rt->c_str());
+							}
+						}
+						// Look at range. If one element, just add it. If two or 
+						// three, calculate the inclusive interval
+						if (range.size() == 1)
+						{
+							if (expanded.count(range[0]) == 0)
+								expanded.insert(range[0]);
+						} else {
+							T start, end = 0, interval = 1;
+							start = range[0];
+							end = range[range.size()-1];
+							if (range.size() > 2) interval = range[1];
+							if (specializer == "")
+							{
+								if (start < 0 || end < 0 || start > end || interval < 0)
 								{
-									if (start < 0 || end < 0 || start > end || interval < 0)
-									{
-										// Die from invalid range
-										// Should really throw error
-										throw rtmath::debug::xBadInput(ot->c_str());
-										//cerr << "Invalid range " << *ot << endl;
-										//exit(1);
-									}
-									for (T i=start;i<=end;i+=interval)
-									{
-										if (expanded.count(i) == 0)
-											expanded.insert(i);
-									}
-								} else if (specializer == "lin") {
-									// Linear spacing
-									double increment = (end - start) / interval;
-									for (T i=start; i<end;i+=interval)
-									{
-										if (expanded.count(i) == 0)
-											expanded.insert(i);
-									}
-								} else if (specializer == "log") {
+									// Die from invalid range
+									// Should really throw error
 									throw rtmath::debug::xBadInput(ot->c_str());
-								} else if (specializer == "inv") {
-									throw rtmath::debug::xBadInput(ot->c_str());
-								} else if (specializer == "cos") {
-									throw rtmath::debug::xBadInput(ot->c_str());
-								} else {
-									throw rtmath::debug::xBadInput(ot->c_str());
+									//cerr << "Invalid range " << *ot << endl;
+									//exit(1);
 								}
+								for (T i=start;i<=end;i+=interval)
+								{
+									if (expanded.count(i) == 0)
+										expanded.insert(i);
+								}
+							} else if (specializer == "lin") {
+								// Linear spacing
+								double increment = (end - start) / (interval+1); // so interval of 1 gives midpoint
+								for (T i=start+increment; i<end;i+=increment)
+								{
+									if (expanded.count(i) == 0)
+										expanded.insert(i);
+								}
+							} else if (specializer == "log") {
+								double is = log10(start); 
+								double ie = log10(end); 
+								double increment = (ie - is) / (interval+1);
+								for (T i=is+increment; i<ie;i+=increment)
+								{
+									double j = pow(10.0,i);
+									if (expanded.count(j) == 0)
+										expanded.insert(j);
+								}
+							} else if (specializer == "inv") {
+								double is = 1.0 / start; 
+								double ie = 1.0 / end; 
+								double increment = (is - ie) / (interval+1);
+								for (T i=ie+increment; i<is;i+=increment)
+								{
+									double j = 1.0 / i;
+									if (expanded.count(j) == 0)
+										expanded.insert(j);
+								}
+							} else if (specializer == "cos") {
+								// Linear in cos
+								// start, end are in degrees
+								const double pi = boost::math::constants::pi<double>();
+								double cs = cos(start * pi / 180.0);
+								double ce = cos(end * pi / 180.0);
+								double increment = (ce - cs) / (interval+1);
+								if (increment < 0)
+								{
+									increment *= -1.0;
+									std::swap(cs,ce);
+								}
+								for (T i=cs+increment; i<ce;i+=increment)
+								{
+									double j = acos(i) * 180.0 / pi;
+									if (expanded.count(j) == 0)
+										expanded.insert(j);
+								}
+							} else {
+								throw rtmath::debug::xBadInput(ot->c_str());
 							}
 						}
 					}
 				}
 			}
+		}
 
-			// Specialization for splitting strings. These objects have no ranges to be compared against.
-			// Note: implemented in command.cpp!
-			template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded,
-				const std::map<std::string, std::string> *aliases);
+		// Specialization for splitting strings. These objects have no ranges to be compared against.
+		// Note: implemented in command.cpp!
+		template <> void splitSet<std::string>(const std::string &instr, std::set<std::string> &expanded,
+			const std::map<std::string, std::string> *aliases);
 
 	}; // end namespace config
 }; // end namespace rtmath
