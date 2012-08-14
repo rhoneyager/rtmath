@@ -50,6 +50,8 @@ void fileconverter::convert(const std::string &outfile) const
 	// Get volume fraction from the shape statistics. This has no bearing on the 
 	// other dimensioning calculations. It is purely for the dielectric calculation.
 	double frac, aeff;
+	// aeff is a united quantity. Needs to be rescaled from dipole coords into microns!
+	// Do I want to preserve this aeff or the shape.dat aeff?
 	{
 		if (volMeth == "Minimal circumscribing sphere")
 		{
