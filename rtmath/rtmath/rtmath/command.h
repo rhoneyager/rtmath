@@ -3,6 +3,7 @@
 // These commands are strings sent through MPI, through standard sockets, 
 // through pipes, or are located in config segments.
 // This is useful in coordinating several disparate processes.
+#include <algorithm>
 #include <string>
 #include <sstream>
 #include <memory>
@@ -236,6 +237,7 @@ namespace rtmath {
 							start = range[0];
 							end = range[range.size()-1];
 							if (range.size() > 2) interval = range[1];
+							std::transform(specializer.begin(),specializer.end(),specializer.begin(),::tolower);
 							if (specializer == "")
 							{
 								if (start < 0 || end < 0 || start > end || interval < 0)

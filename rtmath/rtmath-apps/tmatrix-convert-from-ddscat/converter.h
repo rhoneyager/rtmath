@@ -22,14 +22,14 @@ public:
 	void setStats(boost::shared_ptr<rtmath::ddscat::shapeFileStats>);
 	//void setShapePattern(const std::string &);
 	void setShapeMethod(const std::string &);
-	void setDielMethod(const std::string &);
+	void setDielMethod(const std::string &, double);
 	void setVolFracMethod(const std::string &);
 	void setTemp(double);
 	void setDDPARfile(const std::string &);
 	void convert(const std::string &) const;
 private:
 	std::string ddparFile, statsFile;
-	double temp;
+	double temp, nu;
 	std::string shapeMeth, dielMeth, volMeth;
 	boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 };

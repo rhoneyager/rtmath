@@ -80,6 +80,7 @@ void frmMain::doGenerate()
 	using namespace std;
 	using namespace boost::filesystem;
 	double T = getValText<double>(ui.txtTemp);
+	double nu = getValText<double>(ui.txtDiel);
 
 	string defaultPar = getValText<string>(ui.txtDefaultPar);
 	string baseDir = getValText<string>(ui.txtBaseDir);
@@ -124,9 +125,9 @@ void frmMain::doGenerate()
 
 	// Convert the combo boxes into real options
 	string shapePattern = ui.cmbShapePattern->currentText().toStdString();
-	string shapeMethod = ui.cmbShapeMeth->currentText().toStdString();;
-	string dielMethod = ui.cmbDiel->currentText().toStdString();;
-	string volFracMethod = ui.cmbVolFrac->currentText().toStdString();;
+	string shapeMethod = ui.cmbShapeMeth->currentText().toStdString();
+	string dielMethod = ui.cmbDiel->currentText().toStdString();
+	string volFracMethod = ui.cmbVolFrac->currentText().toStdString();
 
 	bool searchExt = false;
 	bool searchFile = false;
@@ -188,10 +189,11 @@ void frmMain::doGenerate()
 
 		//cnv.setShapePattern("");
 		cnv.setShapeMethod(shapeMethod);
-		cnv.setDielMethod(dielMethod);
+		cnv.setDielMethod(dielMethod,nu);
 		cnv.setVolFracMethod(volFracMethod);
 		cnv.setTemp(T);
 
+		//ui.cmdGenerate->
 		cnv.convert(pDest);
 	}
 

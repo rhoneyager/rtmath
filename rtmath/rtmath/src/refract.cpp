@@ -70,7 +70,7 @@ void rtmath::refract::maxwellGarnett(std::complex<double> Mice, std::complex<dou
 	std::complex<double> Miw;
 
 	// Ice is the inclusion in water, which is the inclusion in air
-	maxwellGarnettSimple(Mice, Mwater, fIce / fWater, Miw);
+	maxwellGarnettSimple(Mice, Mwater, fIce / (fWater+fIce), Miw);
 	maxwellGarnettSimple(Miw, Mair, fIce + fWater, Mres);
 }
 
