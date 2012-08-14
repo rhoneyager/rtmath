@@ -49,34 +49,56 @@ void fileconverter::convert(const std::string &outfile) const
 
 	// Get volume fraction from the shape statistics. This has no bearing on the 
 	// other dimensioning calculations. It is purely for the dielectric calculation.
-	double frac;
+	double frac, aeff;
 	{
 		if (volMeth == "Minimal circumscribing sphere")
 		{
 			frac = stats->f_circum_sphere;
+			aeff = stats->a_circum_sphere;
 		} else if (volMeth == "Convex hull")
 		{
 			frac = stats->f_convex_hull;
+			aeff = stats->aeff_V_convex_hull;
 		} else if (volMeth == "Max Ellipsoid")
 		{
 			frac = stats->f_ellipsoid_max;
+			aeff = stats->aeff_ellipsoid_max;
 		} else if (volMeth == "RMS Ellipsoid")
 		{
 			frac = stats->f_ellipsoid_rms;
+			aeff = stats->aeff_ellipsoid_rms;
 		} else {
 			throw rtmath::debug::xBadInput(volMeth.c_str());
 		}
 	}
 
 	// Calculate shape dimensioning (ellipsoid, sphere, ...)
+	// Volume used for shape dimensioning defined above
+	double asp; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
+	// Initial rotation is about x, which would be the rotational axes
+	// So, the horizontal axes are y and z
+	// Need to take the mean of two of the axes
 	{
+		auto r = stats->rotations.begin();
 		// Parse shapeMethod to figure this out
 		if (shapeMeth == "Equiv Aeff Sphere")
 		{
+			asp = 1.0;
 		} else if (shapeMeth == "Same RMS aspect ratio")
 		{
+			double x = r->as_rms.get(2,0,0);
+			double y = r->as_rms.get(2,1,0);
+			double z = r->as_rms.get(2,2,0);
+
+			asp = (0.5 * (y + z)) / x;
+			//stats->
 		} else if (shapeMeth == "Same real aspect ratio")
 		{
+			double x = r->as_abs.get(2,0,0);
+			double y = r->as_abs.get(2,1,0);
+			double z = r->as_abs.get(2,2,0);
+
+			asp = (0.5 * (y + z)) / x;
 		} else {
 			throw rtmath::debug::xBadInput(shapeMeth.c_str());
 		}
@@ -149,13 +171,13 @@ void fileconverter::convert(const std::string &outfile) const
 	{
 		using namespace tmatrix;
 		tmatrixInVars in;
-		in.AXI; // equiv vol sphere radius
-		in.RAT = 1;
+		in.AXI = aeff; // equiv vol sphere radius
+		in.RAT = 1; // Indicates that AXI is the equiv volume radius, not equiv sa radius
 		in.LAM = *(wavelengths.begin()); // incident light wavelength
 		in.MRR = mRes.real(); // real refractive index
 		in.MRI = mRes.imag(); // imag refractive index
 		in.NP = -1; // shape is a spheroid
-		in.EPS; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
+		in.EPS = asp; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
 
 		// And vary ALPHA, BETA, THET0, THET, PHI0, PHI
 		// ALPHA, BETA are Euler angles specifying the orientation of the scattering particle 
