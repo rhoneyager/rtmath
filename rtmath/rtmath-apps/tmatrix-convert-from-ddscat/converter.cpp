@@ -85,6 +85,8 @@ void fileconverter::convert(const std::string &outfile) const
 	{
 		auto r = stats->rotations.begin();
 		// Parse shapeMethod to figure this out
+		// TODO: need to record stats of the max aspect ratio / maximally distorted 
+		// line, which should occur along the two furthest points
 		if (shapeMeth == "Equiv Aeff Sphere")
 		{
 			asp = 1.0;
@@ -149,7 +151,7 @@ void fileconverter::convert(const std::string &outfile) const
 		// Given my knowledge of aeffs (um), aeff can be rescaled factoring in the 
 		// dipole spacings
 		double aeff_dipoles_const = stats->aeff_dipoles_const;
-		double aeff_ddpar = *(aeffs->begin());
+		double aeff_ddpar = *(aeffs.begin());
 		double d = aeff_ddpar / aeff_dipoles_const;
 		aeff *= d; // Now it is in microns
 	}
@@ -157,6 +159,18 @@ void fileconverter::convert(const std::string &outfile) const
 
 	// rotations and scattering angles combine to get overall choice of angles
 	{
+		// rotations determine alpha and beta
+		// scattering angles determine thetas and phis
+		// the ddscat rotations are the same as the tmatrix ones
+		// alpha = theta, beta = phi, gamma = beta
+		// unfortunately, tmatrix orients along the z axis instead of x
+		// so theta' = 90 - theta, phi' = 90 - phi
+		// in order to get the same scattering angles
+
+		// valid only if cmdfrm is in the lab frame 'LFRAME'
+		// throw if tframe (another approach is needed)
+
+
 	}
 
 	// Calculate refractive index
