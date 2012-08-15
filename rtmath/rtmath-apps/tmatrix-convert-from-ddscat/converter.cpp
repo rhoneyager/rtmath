@@ -51,7 +51,6 @@ void fileconverter::convert(const std::string &outfile) const
 	// other dimensioning calculations. It is purely for the dielectric calculation.
 	double frac, aeff;
 	// aeff is a united quantity. Needs to be rescaled from dipole coords into microns!
-	// Do I want to preserve this aeff or the shape.dat aeff?
 	{
 		if (volMeth == "Minimal circumscribing sphere")
 		{
@@ -72,6 +71,9 @@ void fileconverter::convert(const std::string &outfile) const
 		} else {
 			throw rtmath::debug::xBadInput(volMeth.c_str());
 		}
+		// aeff is currently not in microns. I need the 
+		// interdipole spacing, as read from the ddscat.par file.
+		// Note: ddscat.par has the aeff for only the dipoles, not the whole shape!
 	}
 
 	// Calculate shape dimensioning (ellipsoid, sphere, ...)
@@ -143,9 +145,17 @@ void fileconverter::convert(const std::string &outfile) const
 		s << min << ":" << n << ":" << max << ":" << spacing;
 		string ss(s.str());
 		rtmath::config::splitSet<double>(ss,aeffs);
-	}
 
-	// rotations and scattering angles combine to get overall rotation
+		// Given my knowledge of aeffs (um), aeff can be rescaled factoring in the 
+		// dipole spacings
+		double aeff_dipoles_const = stats->aeff_dipoles_const;
+		double aeff_ddpar = *(aeffs->begin());
+		double d = aeff_ddpar / aeff_dipoles_const;
+		aeff *= d; // Now it is in microns
+	}
+	
+
+	// rotations and scattering angles combine to get overall choice of angles
 	{
 	}
 
