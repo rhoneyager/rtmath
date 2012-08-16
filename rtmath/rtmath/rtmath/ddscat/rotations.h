@@ -84,6 +84,9 @@ namespace rtmath {
 			size_t pN() const { return _pN; }
 			// ddPar output function
 			void out(ddPar &dest) const;
+			void betas(std::string &dest) const;
+			void thetas(std::string &dest) const;
+			void phis(std::string &dest) const;
 
 			bool operator==(const rotations &rhs) const;
 			bool operator!=(const rotations &rhs) const;

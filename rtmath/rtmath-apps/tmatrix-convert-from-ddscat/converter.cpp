@@ -2,9 +2,11 @@
 #include "converter.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
+#include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/refract.h"
+#include "../../rtmath/rtmath/serialization.h"
 #include "../../deps/tmatrix/src/headers/tmatrix.h"
 
 fileconverter::fileconverter()
@@ -158,19 +160,50 @@ void fileconverter::convert(const std::string &outfile) const
 	
 
 	// rotations and scattering angles combine to get overall choice of angles
+	set<double> betas, thetas, phis;
+	map<double, set<double> > angles; // (phi, set of thetas)
 	{
-		// rotations determine alpha and beta
-		// scattering angles determine thetas and phis
-		// the ddscat rotations are the same as the tmatrix ones
-		// alpha = theta, beta = phi, gamma = beta
-		// unfortunately, tmatrix orients along the z axis instead of x
-		// so theta' = 90 - theta, phi' = 90 - phi
-		// in order to get the same scattering angles
-
 		// valid only if cmdfrm is in the lab frame 'LFRAME'
 		// throw if tframe (another approach is needed)
+		string sframe;
+		par.getCMDFRM(sframe);
+		if (sframe != "LFRAME") 
+			throw rtmath::debug::xBadInput("Only LFRAME supported");
 
+		// The ellipsoid starts oriented with the z axis as the axis of rotation.
+		// alpha and beta are then varied to rotate it about this axis. 
+		rtmath::ddscat::rotations rots;
+		par.getRots(rots);
+		//set<double> betas, thetas, phis; // above
+		string sbetas, sthetas, sphis;
+		rots.betas(sbetas);
+		rots.thetas(sthetas);
+		rots.phis(sphis);
+		rtmath::config::splitSet<double>(sbetas,betas);
+		rtmath::config::splitSet<double>(sthetas,thetas);
+		rtmath::config::splitSet<double>(sphis,phis);
 
+		// the mapping is ddstat theta = tmatrix beta
+		// tmatrix alpha = ddscat phi (but not really. tmatrix ordering is different, 
+		// and given rot symmetry, it doesn't matter)
+
+		size_t n = par.numPlanes();
+		for (size_t i=1; i<=n; i++)
+		{
+			double phi, thetan_min, thetan_max, dtheta;
+			par.getPlane(i, phi, thetan_min, thetan_max, dtheta);
+			ostringstream sT;
+			sT << thetan_min << ":" << dtheta << ":" << thetan_max;
+			set<double> scatThetas;
+			rtmath::config::splitSet<double>(sT.str(), scatThetas);
+			if (angles.count(phi) == 0)
+			{
+				set<double> ns;
+				angles[phi] = ns;
+			}
+			for (auto it = scatThetas.begin(); it != scatThetas.end(); ++it)
+				angles[phi].insert(*it);
+		}
 	}
 
 	// Calculate refractive index
@@ -211,7 +244,53 @@ void fileconverter::convert(const std::string &outfile) const
 		// Theta is the zenith angle
 		// Phi is the azimuth angle
 		// _0 is the incident beam, without is the scattered beam
+		double thet0 = 0;
+		double phi0 = 0;
 
+		vector<tmatrixSet> jobs;
+		tmatrixSet ts(in);
+
+		for (auto p = phis.begin(); p != phis.end(); ++p)
+		{
+			double alpha = *p;
+			for (auto t = thetas.begin(); t != thetas.end(); ++t)
+			{
+				double beta = *t;
+				for (auto it = angles.begin(); it != angles.end(); ++it)
+				{
+					double phi = it->first;
+					for (auto ot = it->second.begin(); ot != it->second.end(); ++ot)
+					{
+						double thet = *ot;
+
+						// Create the tmatrix entry to write out!
+						/*
+						in.ALPHA = alpha;
+						in.BETA = beta;
+						in.PHI = phi;
+						in.PHI0 = phi0;
+						in.THET = thet;
+						in.THET0 = thet0;
+						*/
+						boost::shared_ptr<tmatrixAngleRes> ar(new tmatrixAngleRes);
+						ar->alpha = alpha;
+						ar->beta = beta;
+						ar->phi = phi;
+						ar->phi0 = phi0;
+						ar->theta = thet;
+						ar->theta0 = thet0;
+
+						ts.results.insert(ar);
+					}
+				}
+			}
+		}
+
+		jobs.push_back(move(ts));
+		// serialize, but disable compression due to tmatrix serialization
+		// incapabilities
+		rtmath::serialization::write<vector<tmatrixSet> >
+			(jobs, outfile, "", false);
 	}
 }
 

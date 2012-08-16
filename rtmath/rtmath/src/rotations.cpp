@@ -172,6 +172,30 @@ namespace rtmath {
 			dest.insertKey(ddParParsers::NTHETA,static_pointer_cast<ddParParsers::ddParLine>(t));
 			dest.insertKey(ddParParsers::NPHI,static_pointer_cast<ddParParsers::ddParLine>(p));
 		}
+
+		void rotations::betas(std::string &dest) const
+		{
+			using namespace std;
+			ostringstream out;
+			out << bMin() << ":" << bN() << ":" << bMax() << ":LIN";
+			dest = out.str();
+		}
+
+		void rotations::thetas(std::string &dest) const
+		{
+			using namespace std;
+			ostringstream out;
+			out << tMin() << ":" << tN() << ":" << tMax() << ":LIN";
+			dest = out.str();
+		}
+
+		void rotations::phis(std::string &dest) const
+		{
+			using namespace std;
+			ostringstream out;
+			out << pMin() << ":" << pN() << ":" << pMax() << ":LIN";
+			dest = out.str();
+		}
 	}
 }
 
