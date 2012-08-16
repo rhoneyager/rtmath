@@ -17,7 +17,7 @@ include_directories (
 )
 
 add_executable (rtmath-tmatrix-convert-from-ddscat-qt 
-	main.cpp stdafx.cpp frmmain.cpp frmtarget.cpp
+	main.cpp frmmain.cpp
 	${tmconvert-qt_MOC_SRCS}
 	${tmconvert-qt_UI_HDRS}
 	)
