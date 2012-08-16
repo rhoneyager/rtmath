@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Sun Aug 12 02:34:33 2012
-**      by: Qt User Interface Compiler version 4.8.1
+** Created: Thu Aug 16 01:46:42 2012
+**      by: Qt User Interface Compiler version 4.7.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -47,13 +47,15 @@ public:
     QLabel *label_5;
     QComboBox *cmbShapeMeth;
     QLabel *label_3;
-    QComboBox *cmbDiel;
     QLabel *label_4;
     QComboBox *cmbVolFrac;
     QPushButton *cmdGenerate;
     QHBoxLayout *horizontalLayout_2;
     QLineEdit *txtDefaultPar;
     QPushButton *cmdDefFind;
+    QHBoxLayout *horizontalLayout_3;
+    QComboBox *cmbDiel;
+    QLineEdit *txtDiel;
     QMenuBar *menuBar;
     QMenu *menu_File;
     QStatusBar *statusBar;
@@ -135,11 +137,6 @@ public:
 
         formLayout->setWidget(5, QFormLayout::LabelRole, label_3);
 
-        cmbDiel = new QComboBox(centralWidget);
-        cmbDiel->setObjectName(QString::fromUtf8("cmbDiel"));
-
-        formLayout->setWidget(5, QFormLayout::FieldRole, cmbDiel);
-
         label_4 = new QLabel(centralWidget);
         label_4->setObjectName(QString::fromUtf8("label_4"));
 
@@ -170,6 +167,22 @@ public:
 
 
         formLayout->setLayout(1, QFormLayout::FieldRole, horizontalLayout_2);
+
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setSpacing(6);
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        cmbDiel = new QComboBox(centralWidget);
+        cmbDiel->setObjectName(QString::fromUtf8("cmbDiel"));
+
+        horizontalLayout_3->addWidget(cmbDiel);
+
+        txtDiel = new QLineEdit(centralWidget);
+        txtDiel->setObjectName(QString::fromUtf8("txtDiel"));
+
+        horizontalLayout_3->addWidget(txtDiel);
+
+
+        formLayout->setLayout(5, QFormLayout::FieldRole, horizontalLayout_3);
 
         frmMainClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(frmMainClass);
@@ -222,22 +235,14 @@ public:
         label_5->setText(QApplication::translate("frmMainClass", "Shape Dimensioning:", 0, QApplication::UnicodeUTF8));
         cmbShapeMeth->clear();
         cmbShapeMeth->insertItems(0, QStringList()
-         << QApplication::translate("frmMainClass", "Equiv Aeff Sphere", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "Same real aspect ratio", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("frmMainClass", "Same RMS aspect ratio", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "Same real aspect ratio", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "Equiv Aeff Sphere", 0, QApplication::UnicodeUTF8)
         );
 #ifndef QT_NO_STATUSTIP
         cmbShapeMeth->setStatusTip(QApplication::translate("frmMainClass", "Select the method for approximating the shape file", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         label_3->setText(QApplication::translate("frmMainClass", "Dielectric Method:", 0, QApplication::UnicodeUTF8));
-        cmbDiel->clear();
-        cmbDiel->insertItems(0, QStringList()
-         << QApplication::translate("frmMainClass", "Debye", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "Maxwell-Garnett", 0, QApplication::UnicodeUTF8)
-        );
-#ifndef QT_NO_STATUSTIP
-        cmbDiel->setStatusTip(QApplication::translate("frmMainClass", "Specify the dielectric constant calculation method.", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_STATUSTIP
         label_4->setText(QApplication::translate("frmMainClass", "Volume Fraction Method:", 0, QApplication::UnicodeUTF8));
         cmbVolFrac->clear();
         cmbVolFrac->insertItems(0, QStringList()
@@ -257,6 +262,19 @@ public:
         txtDefaultPar->setStatusTip(QApplication::translate("frmMainClass", "The default file is used if a ddscat.par file cannot be detected in the same dir as the shape.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         cmdDefFind->setText(QApplication::translate("frmMainClass", "...", 0, QApplication::UnicodeUTF8));
+        cmbDiel->clear();
+        cmbDiel->insertItems(0, QStringList()
+         << QApplication::translate("frmMainClass", "Sihvola", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "Debye", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("frmMainClass", "Maxwell-Garnett", 0, QApplication::UnicodeUTF8)
+        );
+#ifndef QT_NO_STATUSTIP
+        cmbDiel->setStatusTip(QApplication::translate("frmMainClass", "Specify the dielectric constant calculation method.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+#ifndef QT_NO_STATUSTIP
+        txtDiel->setStatusTip(QApplication::translate("frmMainClass", "Value of nu for the Sihvola method", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        txtDiel->setPlaceholderText(QApplication::translate("frmMainClass", "0.85", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("frmMainClass", "&File", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 

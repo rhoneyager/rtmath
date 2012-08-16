@@ -158,6 +158,11 @@
       </property>
       <item>
        <property name="text">
+        <string>RMS Ellipsoid</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>Minimal circumscribing sphere</string>
        </property>
       </item>
@@ -169,11 +174,6 @@
       <item>
        <property name="text">
         <string>Max Ellipsoid</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>RMS Ellipsoid</string>
        </property>
       </item>
      </widget>
