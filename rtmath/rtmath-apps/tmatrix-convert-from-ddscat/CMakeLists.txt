@@ -17,12 +17,12 @@ include_directories (
 )
 
 add_executable (rtmath-tmatrix-convert-from-ddscat-qt 
-	main.cpp frmmain.cpp
+	main.cpp frmmain.cpp converter.cpp
 	${tmconvert-qt_MOC_SRCS}
 	${tmconvert-qt_UI_HDRS}
 	)
 
 addapp(rtmath-tmatrix-convert-from-ddscat-qt)
 INCLUDE( ${QT_USE_FILE} )
-TARGET_LINK_LIBRARIES( rtmath-tmatrix-convert-from-ddscat-qt ${QT_LIBRARIES} )
+TARGET_LINK_LIBRARIES( rtmath-tmatrix-convert-from-ddscat-qt ${QT_LIBRARIES} tmatrix-cpp tmatrix-fortran)
 

@@ -12,10 +12,9 @@ int main(int argc, char *argv[])
 {
 	using namespace std;
 	try {
-		QApplication a(argc, argv);
-
 		if (argc == 1)
 		{
+			QApplication a(argc,argv);
 			frmMain w;
 			w.show();
 			return a.exec();
@@ -27,14 +26,21 @@ int main(int argc, char *argv[])
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
-			("temperature,T", po::value<double>()->default_value(267), "Specify temperature (K)")
-			("nu,n", po::value<double>()->default_value(0.85), "Specify nu for Sihvola")
+			("temperature,T", po::value<double>()->default_value(267), 
+			 "Specify temperature (K)")
+			("nu,n", po::value<double>()->default_value(0.85), 
+			 "Specify nu for Sihvola")
 
-			("default-par,p", po::value<string>(), "Specify default ddscat.par file")
-			("shapefiles,s", po::value<vector<string> >(), "Specify shapefiles")
-			("shape-method", po::value<string>()->default_value("Same RMS aspect ratio"), "Specify shape method (Same RMS aspect ratio, Same real aspect ratio, Equiv Aeff Sphere)")
-			("diel-method", po::value<string>()->default_value("Sihvola"), "Specify dielectric method (Sihvola, Debye, Maxwell-Garnett)")
-			("volfrac-method", po::value<string>()->default_value("RMS Ellipsoid"), "Specify volume fraction method (Minimal circumscribing sphere, Convex hull, Max Ellipsoid, RMS Ellipsoid)");
+			("default-par,p", po::value<string>(), 
+			 "Specify default ddscat.par file")
+			("shapefiles,s", po::value<vector<string> >(), 
+			 "Specify shapefiles")
+			("shape-method", po::value<string>()->default_value("Same RMS aspect ratio"), 
+			 "Specify shape method (Same RMS aspect ratio, Same real aspect ratio, Equiv Aeff Sphere)")
+			("diel-method", po::value<string>()->default_value("Sihvola"), 
+			 "Specify dielectric method (Sihvola, Debye, Maxwell-Garnett)")
+			("volfrac-method", po::value<string>()->default_value("RMS Ellipsoid"), 
+			 "Specify volume fraction method (Minimal circumscribing sphere, Convex hull, Max Ellipsoid, RMS Ellipsoid)");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).

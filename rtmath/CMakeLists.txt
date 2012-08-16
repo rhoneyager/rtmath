@@ -3,7 +3,7 @@
 # visual studio solutions and xcode projects
 
 cmake_minimum_required (VERSION 2.8)
-project(rtmath)
+project(rtmath CXX Fortran C)
 
 # Add path for custom modules
 set(CMAKE_MODULE_PATH
