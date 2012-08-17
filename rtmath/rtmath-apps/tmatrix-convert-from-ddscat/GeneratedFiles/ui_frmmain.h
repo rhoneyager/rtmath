@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Thu Aug 16 01:46:42 2012
+** Created: Fri Aug 17 01:52:58 2012
 **      by: Qt User Interface Compiler version 4.7.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -246,10 +246,10 @@ public:
         label_4->setText(QApplication::translate("frmMainClass", "Volume Fraction Method:", 0, QApplication::UnicodeUTF8));
         cmbVolFrac->clear();
         cmbVolFrac->insertItems(0, QStringList()
+         << QApplication::translate("frmMainClass", "RMS Ellipsoid", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("frmMainClass", "Minimal circumscribing sphere", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("frmMainClass", "Convex hull", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("frmMainClass", "Max Ellipsoid", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("frmMainClass", "RMS Ellipsoid", 0, QApplication::UnicodeUTF8)
         );
 #ifndef QT_NO_STATUSTIP
         cmbVolFrac->setStatusTip(QApplication::translate("frmMainClass", "Specify the volume fraction method used in the dielectric calculations.", 0, QApplication::UnicodeUTF8));

@@ -248,38 +248,38 @@ namespace rtmath {
 									//cerr << "Invalid range " << *ot << endl;
 									//exit(1);
 								}
-								for (T i=start;i<=end;i+=interval)
+								for (T j=start;j<=end;j+=interval)
 								{
-									if (expanded.count(i) == 0)
-										expanded.insert(i);
+									if (expanded.count(j) == 0)
+										expanded.insert(j);
 								}
 							} else if (specializer == "lin") {
 								// Linear spacing
 								double increment = (end - start) / (interval+1); // so interval of 1 gives midpoint
-								for (T i=start+increment; i<end;i+=increment)
+								for (T j=start+increment; j<end;j+=increment)
 								{
-									if (expanded.count(i) == 0)
-										expanded.insert(i);
+									if (expanded.count(j) == 0)
+										expanded.insert(j);
 								}
 							} else if (specializer == "log") {
 								double is = log10(start); 
 								double ie = log10(end); 
 								double increment = (ie - is) / (interval+1);
-								for (T i=is+increment; i<ie;i+=increment)
+								for (T j=is+increment; j<ie;j+=increment)
 								{
-									double j = pow(10.0,i);
-									if (expanded.count(j) == 0)
-										expanded.insert(j);
+									T k = (T) pow((T) 10.0,(j));
+									if (expanded.count(k) == 0)
+										expanded.insert(k);
 								}
 							} else if (specializer == "inv") {
-								double is = 1.0 / start; 
-								double ie = 1.0 / end; 
-								double increment = (is - ie) / (interval+1);
-								for (T i=ie+increment; i<is;i+=increment)
+								T is = 1.0 / start; 
+								T ie = 1.0 / end; 
+								T increment = (is - ie) / (interval+1);
+								for (T j=ie+increment; j<is;j+=increment)
 								{
-									double j = 1.0 / i;
-									if (expanded.count(j) == 0)
-										expanded.insert(j);
+									T k = ((T) 1.0) / j;
+									if (expanded.count(k) == 0)
+										expanded.insert(k);
 								}
 							} else if (specializer == "cos") {
 								// Linear in cos
@@ -293,11 +293,11 @@ namespace rtmath {
 									increment *= -1.0;
 									std::swap(cs,ce);
 								}
-								for (T i=cs+increment; i<ce;i+=increment)
+								for (T j=cs+increment; j<ce;j+=increment)
 								{
-									double j = acos(i) * 180.0 / pi;
-									if (expanded.count(j) == 0)
-										expanded.insert(j);
+									T k = (T) (acos(j) * 180.0 / pi);
+									if (expanded.count(k) == 0)
+										expanded.insert(k);
 								}
 							} else {
 								throw rtmath::debug::xBadInput(ot->c_str());

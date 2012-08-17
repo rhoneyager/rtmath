@@ -10,6 +10,7 @@
 
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/error/error.h"
+#include "../../rtmath/rtmath/command.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -185,7 +186,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			ostringstream out;
-			out << tMin() << ":" << tN() << ":" << tMax() << ":LIN";
+			out << tMin() << ":" << tN() << ":" << tMax() << ":COS";
 			dest = out.str();
 		}
 
@@ -195,6 +196,30 @@ namespace rtmath {
 			ostringstream out;
 			out << pMin() << ":" << pN() << ":" << pMax() << ":LIN";
 			dest = out.str();
+		}
+
+		void rotations::betas(std::set<double> &b) const
+		{
+			using namespace std;
+			string sbetas;
+			betas(sbetas);
+			rtmath::config::splitSet<double>(sbetas,b);
+		}
+
+		void rotations::thetas(std::set<double> &t) const
+		{
+			using namespace std;
+			string sthetas;
+			thetas(sthetas);
+			rtmath::config::splitSet<double>(sthetas,t);
+		}
+
+		void rotations::phis(std::set<double> &p) const
+		{
+			using namespace std;
+			string sphis;
+			phis(sphis);
+			rtmath::config::splitSet<double>(sphis,p);
 		}
 	}
 }

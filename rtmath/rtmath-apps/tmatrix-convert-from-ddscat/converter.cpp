@@ -175,13 +175,9 @@ void fileconverter::convert(const std::string &outfile) const
 		rtmath::ddscat::rotations rots;
 		par.getRots(rots);
 		//set<double> betas, thetas, phis; // above
-		string sbetas, sthetas, sphis;
-		rots.betas(sbetas);
-		rots.thetas(sthetas);
-		rots.phis(sphis);
-		rtmath::config::splitSet<double>(sbetas,betas);
-		rtmath::config::splitSet<double>(sthetas,thetas);
-		rtmath::config::splitSet<double>(sphis,phis);
+		rots.betas(betas);
+		rots.thetas(thetas);
+		rots.phis(phis);
 
 		// the mapping is ddstat theta = tmatrix beta
 		// tmatrix alpha = ddscat phi (but not really. tmatrix ordering is different, 

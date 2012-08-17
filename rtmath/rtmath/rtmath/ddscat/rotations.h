@@ -87,6 +87,9 @@ namespace rtmath {
 			void betas(std::string &dest) const;
 			void thetas(std::string &dest) const;
 			void phis(std::string &dest) const;
+			void betas(std::set<double> &b) const;
+			void thetas(std::set<double> &t) const;
+			void phis(std::set<double> &p) const;
 
 			bool operator==(const rotations &rhs) const;
 			bool operator!=(const rotations &rhs) const;
