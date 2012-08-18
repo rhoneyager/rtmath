@@ -6,8 +6,8 @@
 
 #ifndef WITH_CMAKE
 
-#pragma comment(lib, "MapReduceMPI.lib")
-#pragma comment(lib, "mpistubs.lib")
+//#pragma comment(lib, "MapReduceMPI.lib")
+//#pragma comment(lib, "mpistubs.lib")
 //#pragma comment(lib, "QVTK-gd.lib")
 #pragma comment(lib, "vtkalglib.lib")
 #pragma comment(lib, "vtkCharts.lib")

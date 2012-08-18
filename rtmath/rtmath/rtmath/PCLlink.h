@@ -10,7 +10,7 @@
 
 #ifdef _DEBUG
 // Debug symbols
-#pragma comment(lib, "pcl_apps_debug.lib")
+//#pragma comment(lib, "pcl_apps_debug.lib")
 #pragma comment(lib, "pcl_common_debug.lib")
 #pragma comment(lib, "pcl_features_debug.lib")
 #pragma comment(lib, "pcl_filters_debug.lib")
@@ -28,10 +28,10 @@
 #pragma comment(lib, "pcl_visualization_debug.lib")
 
 #pragma comment(lib, "flann_cpp_s-gd.lib")
-#pragma comment(lib, "flann_s-gd.lib")
+//#pragma comment(lib, "flann_s-gd.lib")
 
-#pragma comment(lib, "qhull6_d.lib")
-#pragma comment(lib, "qhullcpp_d.lib")
+#pragma comment(lib, "qhull.lib")
+#pragma comment(lib, "qhullcpp.lib")
 #else
 // Release symbols
 #pragma comment(lib, "pcl_apps_release.lib")
