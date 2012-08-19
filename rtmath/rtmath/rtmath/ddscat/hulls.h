@@ -34,9 +34,6 @@ namespace rtmath
 		public:
 			hull(const std::vector<matrixop> &backend);
 			virtual ~hull();
-			double searchRadius, Mu, minAngle, maxAngle, maxSurfAngle;
-			size_t maxNearestNeighbors;
-			bool normalConsistency;
 			void writeVTKhull(const std::string &filename) const;
 			double volume() const;
 			double surface_area() const;
@@ -46,7 +43,6 @@ namespace rtmath
 			std::vector< pcl::Vertices > _polygons;
 			mutable std::vector<matrixop> _hullPts;
 			double _volume, _surfarea;
-			size_t _nFaces;
 		};
 
 		class convexHull : public hull

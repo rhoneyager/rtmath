@@ -113,8 +113,6 @@ BOOST_AUTO_TEST_CASE(shapefile_vtk)
 	convexHull cvx(shp._latticePtsStd);
 	cvx.constructHull();
 	cout << "Max diameter is: " << cvx.maxDiameter() << endl;
-	cvx.searchRadius = 6.0;
-	cvx.Mu = 6.0;
 	cvx.writeVTKhull("miniflake-convex-hull.vtk");
 	writeVTKpoints("miniflake-convex-points.vtk", cvx._hullPts);
 

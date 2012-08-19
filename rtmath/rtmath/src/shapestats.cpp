@@ -107,7 +107,7 @@ namespace rtmath {
 			if (_shp->_latticePts.size() ) return true;
 
 			std::string fname = _shp->_filename;
-			if (boost::filesystem::exists(fname))
+			if (boost::filesystem::exists(boost::filesystem::path(fname)))
 			{
 				boost::shared_ptr<shapefile> nshp(new shapefile(fname));
 				_shp = nshp;

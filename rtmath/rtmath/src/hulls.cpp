@@ -80,7 +80,6 @@ namespace
 		mc.reconstruct (triangles);
 
 	}
-	*/
 	void generateMeshGridProjection(const rtmath::ddscat::hull &h, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PolygonMesh &triangles)
 	{
 		pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;
@@ -170,6 +169,7 @@ namespace
 		std::vector<int> states = gp3.getPointStates();
 
 	}
+*/
 }
 
 namespace rtmath
@@ -197,16 +197,8 @@ namespace rtmath
 
 		hull::hull()
 		{
-			searchRadius = 1.5;
-			Mu = 1;
-			minAngle = 0;
-			maxAngle = 3.14159/2; // TODO: replace with boost def
-			maxSurfAngle = 3.14159/2;
-			maxNearestNeighbors = 200;
-			normalConsistency = true;
 			_volume = 0;
 			_surfarea = 0;
-			_nFaces = 0;
 		}
 
 		hull::~hull()
@@ -215,19 +207,10 @@ namespace rtmath
 
 		hull::hull(const std::vector<matrixop> &backend)
 		{
-			hull();
-			searchRadius = 1.5;
-			Mu = 1;
-			minAngle = 0;
-			maxAngle = 3.14159/2; // TODO: replace with boost def
-			maxSurfAngle = 3.14159/2;
-			maxNearestNeighbors = 200;
-			normalConsistency = true;
 			_points = backend;
 			_hullPts = backend;
 			_volume = 0;
 			_surfarea = 0;
-			_nFaces = 0;
 		}
 
 		void hull::writeVTKhull(const std::string &filename) const
@@ -291,10 +274,8 @@ namespace rtmath
 			chull.setComputeAreaVolume(true);
 			chull.setInputCloud (cloud);
 			chull.reconstruct (*cloud_hull, _polygons);
-
 			_volume = chull.getTotalVolume();
 			_surfarea = chull.getTotalArea();
-			_nFaces = _polygons.size();
 
 			// Write to _hullPts
 			_hullPts.reserve(cloud_hull->size());
@@ -388,80 +369,12 @@ namespace rtmath
 				_hullPts.push_back(std::move(p));
 			}
 
-			_nFaces = _polygons.size();
 			_findVS();
 		}
 
 		void concaveHull::_findVS()
 		{
-			// Using _hullPts and _polygons, determine surface area (easy),
-			// and volume (hard)
-			
-			_volume = 0;
-			_surfarea = 0;
-			// First, need to find bounds on iteration and matrix sizes
-			using namespace boost::accumulators;
-			accumulator_set<size_t, stats<tag::min, tag::max> > bnd_x, bnd_y, bnd_z;
-			for (auto it = _hullPts.begin(); it != _hullPts.end(); it++)
-			{
-				double x = it->get(2,0,0);
-				double y = it->get(2,0,1);
-				double z = it->get(2,0,2);
-
-				bnd_x((size_t) x);
-				bnd_y((size_t) y);
-				bnd_z((size_t) z);
-			}
-			const size_t y_range = boost::accumulators::max(bnd_y) - boost::accumulators::min(bnd_y);
-			const size_t z_range = boost::accumulators::max(bnd_z) - boost::accumulators::min(bnd_z);
-			const size_t x_min = boost::accumulators::min(bnd_x);
-			const size_t x_range = boost::accumulators::max(bnd_x) - x_min;
-			// Need the center points for concave volume determination
-			const double x_c = x_min + 0.5 * x_range;
-			const double y_c = boost::accumulators::min(bnd_y) + 0.5 * y_range;
-			const double z_c = boost::accumulators::min(bnd_z) + 0.5 * z_range;
-
-			// Iterate over polygons for both surface area and volume elements
-/*			pcl::PolygonMesh triangles;
-			triangles.polygons = _polygons;
-			sensor_msgs::PointCloud2 pbc;
-			pcl::toROSMsg(*cloud, pbc);
-			triangles.cloud = pbc;
-			
-*/
-
-			for (auto it = _polygons.begin(); it != _polygons.end(); it++)
-			{
-				// m contains the det matrix for volume computation
-				double m[4][4];
-				for (size_t i = 0; i < (*it).vertices.size(); i++)
-				{
-					size_t v = (*it).vertices[i]; // v will be the index
-					// _hullPts[v] has the coords
-					m[i][0] = _hullPts[v].get(2,0,0);
-					m[i][1] = _hullPts[v].get(2,0,1);
-					m[i][2] = _hullPts[v].get(2,0,2);
-					m[i][3] = 1.0;
-				}
-				m[3][0] = x_c;
-				m[3][1] = y_c;
-				m[3][2] = z_c;
-				m[3][3] = 1.0;
-
-				// This matrix makes volume and surface area determination easy!
-
-				matrixop vd(2,4,4);
-				vd.fromDoubleArray(&m[0][0]);
-				_volume += vd.det() / 6.0;
-
-				double ss = (m[0][1]*m[1][2]) - (m[0][2]*m[1][1]);
-				ss -= (m[0][0]*m[1][2]) - (m[0][2]*m[1][0]);
-				ss += (m[0][0]*m[1][1]) - (m[0][1]*m[1][0]);
-				_surfarea += abs(ss) / 2.0;
-
-				// Sign is also critical, as the vertex segments overlap 
-				// in x. Conveniently, the polygons may never overlap in 3d space.
-			}
+			throw rtmath::debug::xUnimplementedFunction();
 		}
 
 	}
