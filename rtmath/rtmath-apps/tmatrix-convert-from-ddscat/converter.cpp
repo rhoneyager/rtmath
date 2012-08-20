@@ -283,10 +283,8 @@ void fileconverter::convert(const std::string &outfile) const
 		}
 
 		jobs.push_back(move(ts));
-		// serialize, but disable compression due to tmatrix serialization
-		// incapabilities
 		rtmath::serialization::write<vector<tmatrixSet> >
-			(jobs, outfile, "", false);
+			(jobs, outfile);
 	}
 }
 
