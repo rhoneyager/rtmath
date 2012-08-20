@@ -122,9 +122,6 @@ int main(int argc, char** argv)
 			}
 		}
 
-		bool mixed = false; // Mixed phase calculation
-		if (vVols.size()) mixed = true;
-
 		// Preprocessing done!
 		
 		// Figure out tuples of volume fractions
