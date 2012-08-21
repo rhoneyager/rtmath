@@ -248,34 +248,38 @@ namespace rtmath {
 									//cerr << "Invalid range " << *ot << endl;
 									//exit(1);
 								}
-								for (T j=start;j<=end;j+=interval)
+								for (T j=start;j<=end+(interval/100.0);j+=interval)
 								{
 									if (expanded.count(j) == 0)
 										expanded.insert(j);
 								}
 							} else if (specializer == "lin") {
 								// Linear spacing
-								double increment = (end - start) / (interval+1); // so interval of 1 gives midpoint
-								for (T j=start+increment; j<end;j+=increment)
+								double increment = (end - start) / (interval); // so interval of 1 gives midpoint
+								for (T j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
 								{
 									if (expanded.count(j) == 0)
 										expanded.insert(j);
 								}
 							} else if (specializer == "log") {
+								if (start == 0 || end == 0)
+									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
 								double is = log10(start); 
 								double ie = log10(end); 
-								double increment = (ie - is) / (interval+1);
-								for (T j=is+increment; j<ie;j+=increment)
+								double increment = (ie - is) / (interval);
+								for (T j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
 								{
 									T k = (T) pow((T) 10.0,(j));
 									if (expanded.count(k) == 0)
 										expanded.insert(k);
 								}
 							} else if (specializer == "inv") {
+								if (start == 0 || end == 0)
+									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
 								T is = 1.0 / start; 
 								T ie = 1.0 / end; 
-								T increment = (is - ie) / (interval+1);
-								for (T j=ie+increment; j<is;j+=increment)
+								T increment = (is - ie) / (interval);
+								for (T j=ie+(increment/2.0); j<is+(increment/100.0);j+=increment)
 								{
 									T k = ((T) 1.0) / j;
 									if (expanded.count(k) == 0)
@@ -287,13 +291,13 @@ namespace rtmath {
 								const double pi = boost::math::constants::pi<double>();
 								double cs = cos(start * pi / 180.0);
 								double ce = cos(end * pi / 180.0);
-								double increment = (ce - cs) / (interval+1);
+								double increment = (ce - cs) / (interval);
 								if (increment < 0)
 								{
 									increment *= -1.0;
 									std::swap(cs,ce);
 								}
-								for (T j=cs+increment; j<ce;j+=increment)
+								for (T j=cs+(increment/2.0); j<ce+(increment/100.0);j+=increment)
 								{
 									T k = (T) (acos(j) * 180.0 / pi);
 									if (expanded.count(k) == 0)

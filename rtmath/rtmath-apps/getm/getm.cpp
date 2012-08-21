@@ -2,6 +2,8 @@
 // It will add extra functionality, such as a better selection of refractive index
 // calculation functions. It will also be able to handle both ice and water.
 
+#include "../../rtmath/rtmath/ROOTlink.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -16,6 +18,7 @@
 #include <memory>
 #include <complex>
 #include <cmath>
+#include <cstring>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -26,6 +29,13 @@ enum PHASE {
 	ICE,
 	WATER,
 	AIR
+};
+
+struct ptdata {
+	Float_t temp, freq, nu;
+	Float_t fIce, fWat, fAir;
+	Float_t MeffReal, MeffImag;
+	char method[30];
 };
 
 int main(int argc, char** argv)
@@ -41,7 +51,7 @@ int main(int argc, char** argv)
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
-			("output,o", "Write ROOT output table of results")
+			("output,o", po::value<string>(), "Write ROOT output table of results")
 			("mtab,m", "Produce mtab-style output")
 			("frequency,f", po::value<string>(), "List of frequencies (GHz)")
 			("temperature,T", po::value<string>(), "List of temperatures (K)")
@@ -81,12 +91,12 @@ int main(int argc, char** argv)
 			sFreqs = vm["frequency"].as<string>();
 		if (vm.count("nu"))
 			sNus = vm["nu"].as<string>();
-		if (vm.count("volume-fraction-a"))
-			vsVols[AIR] = vm["volume-fraction-a"].as<string>();
-		if (vm.count("volume-fraction-wa"))
-			vsVols[WATER] = vm["volume-fraction-w"].as<string>();
-		if (vm.count("volume-fraction-i"))
-			vsVols[ICE] = vm["volume-fraction-i"].as<string>();
+		if (vm.count("volume-fraction-air"))
+			vsVols[AIR] = vm["volume-fraction-air"].as<string>();
+		if (vm.count("volume-fraction-water"))
+			vsVols[WATER] = vm["volume-fraction-water"].as<string>();
+		if (vm.count("volume-fraction-ice"))
+			vsVols[ICE] = vm["volume-fraction-ice"].as<string>();
 
 		if (vm.count("help") || vm.size() == 0 || argc == 1 ||
 			!vm.count("temperature") || !vm.count("frequency"))
@@ -123,7 +133,16 @@ int main(int argc, char** argv)
 		}
 
 		// Preprocessing done!
-		
+
+		TFile *file = nullptr;
+		if (fileWrite)
+		{
+			file = new TFile(ofile.c_str(), "RECREATE");
+		}
+		TTree *tree = new TTree("T","Refractive Indice Calculations");
+		ptdata pt;
+		tree->Branch("tuple",&pt,"temp/F:freq/F:nu/F:fIce/F:fWat/F:fAir/F:MeffReal/F:MeffImag/F:method/C");
+
 		// Figure out tuples of volume fractions
 		// Tuple ordering is ice, water, air
 		vector<boost::tuple<double, double, double> > fracs;
@@ -216,9 +235,10 @@ int main(int argc, char** argv)
 					{
 						// Call appropriate function depending on method
 						complex<double> mAir(1.0,0);
-						complex<double> mWat(1.0,0); // TODO: replace with actual f, T-dep value
+						complex<double> mWat;
 						complex<double> mIce;
 						rtmath::refract::mice(*freq,*T,mIce);
+						rtmath::refract::mwater(*freq,*T,mWat);
 
 						double fIce = frac->get<0>();
 						double fWat = frac->get<1>();
@@ -233,6 +253,19 @@ int main(int argc, char** argv)
 							}
 						}
 
+						cerr << fIce << "," << fWat << "," << fAir << "," << *T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
+						if (fIce + fWat + fAir > 1.0)
+						{
+							cerr << " - Invalid\n";
+							continue;
+						} if (fIce < 0 || fIce > 1.0 || fWat < 0 || fWat > 1.0 || fAir < 0 || fAir > 1.0)
+						{
+							cerr << " - Invalid\n";
+							continue;
+						} else {
+							cerr << endl;
+						}
+
 						complex<double> mEff;
 
 						if (method == "Sihvola")
@@ -243,8 +276,6 @@ int main(int argc, char** argv)
 							rtmath::refract::debyeDry(mIce,mAir,fIce, mEff);
 						} else if (method == "Maxwell-Garnett")
 						{
-							if (fWat)
-								throw rtmath::debug::xUnimplementedFunction(); // TODO: implement water refractive index
 							rtmath::refract::maxwellGarnett(mIce,mWat,mAir,fIce,fWat,mEff);
 						} else {
 							throw rtmath::debug::xBadInput(method.c_str());
@@ -256,7 +287,17 @@ int main(int argc, char** argv)
 							write(mEff,mtab);
 						} else {
 							// Prep for special ROOT file writing
-							throw rtmath::debug::xUnimplementedFunction();
+							pt.freq = *freq;
+							pt.temp = *T;
+							pt.nu = *nu;
+							pt.fIce = fIce;
+							pt.fWat = fWat;
+							pt.fAir = fAir;
+							pt.MeffReal = mEff.real();
+							pt.MeffImag = mEff.imag();;
+							strncpy(pt.method,method.c_str(),28);
+
+							tree->Fill();
 						}
 					}
 				}
@@ -266,7 +307,8 @@ int main(int argc, char** argv)
 		if (fileWrite)
 		{
 			// Do special ROOT file writing
-			throw rtmath::debug::xUnimplementedFunction();
+			tree->Write();
+			file->Close();
 		}
 
 	}

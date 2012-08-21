@@ -1,8 +1,13 @@
 #include <memory>
 #include <iostream>
-#include "../../rtmath/rtmath/rtmath.h"
+#include <string>
+//#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/error/error.h"
+#include "../../rtmath/rtmath/config.h"
+#include "../../rtmath/rtmath/common_templates.h"
 
-void doHelp();
+#include <boost/program_options.hpp>
 
 int main(int argc, char** argv)
 {
@@ -13,15 +18,41 @@ int main(int argc, char** argv)
 	try {
 		cerr << "Parameter expansion program" << endl;
 		rtmath::debug::appEntry(argc,argv);
-		rtmath::config::parseParams p(argc,argv);
 
-		if (p.readParam("-h")) doHelp();
-		if (!(p.readParam("-s"))) doHelp();
+		namespace po = boost::program_options;
+		po::options_description desc("Allowed options");
+		desc.add_options()
+			("help,h", "Produce help message")
+			("split,s", po::value<std::string>(), "The values to be expanded")
+			("aliases,k", po::value<std::string>(), "The key location in the config tables that contains the desired expansion table");
+
+		po::positional_options_description p;
+		p.add("split",1);
+		
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc,argv).
+			options(desc).positional(p).run(), vm);
+		po::notify (vm);
+
+		if (vm.count("help"))
+		{
+			std::cerr << desc << std::endl;
+			exit(1);
+		}
 
 		std::string src, nodename;
-		bool mapAliases;
-		p.readParam<std::string>("-s",src);
-		mapAliases = p.readParam<std::string>("-k",nodename);
+		bool mapAliases = false;
+		
+		if (vm.count("aliases"))
+		{
+			mapAliases = true;
+			nodename = vm["aliases"].as<std::string>();
+		}
+
+		if (vm.count("split"))
+		{
+			src = vm["split"].as<std::string>();
+		}
 
 		// Will attempt to load a parameter and will perform expansion based on 
 		// paramset expansion from key/value combinations found in rtmath.conf
@@ -59,14 +90,4 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void doHelp()
-{
-	using namespace std;
-	cerr << "-s (string)\n";
-	cerr << "\tThe string to be expanded.\n";
-	cerr << "-k (key location)\n";
-	cerr << "\tThe location of the alias table for expansion (OPTIONAL)" << endl;
-	cerr << endl;
-	exit(0);
-}
 

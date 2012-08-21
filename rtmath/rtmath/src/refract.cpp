@@ -8,6 +8,29 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/zeros.h"
 
+// Water complex refractive index
+// from Liu's mcx.f
+// LIEBE, HUFFORD AND MANABE, INT. J. IR & MM WAVES V.12, pp.659-675
+//  (1991);  Liebe et al, AGARD Conf. Proc. 542, May 1993.
+// Valid from 0 to 1000 GHz. freq in GHz, temp in K
+void rtmath::refract::mwater(double f, double t, std::complex<double> &m)
+{
+	if (f < 0 || f > 1000)
+		throw rtmath::debug::xModelOutOfRange(f);
+	double theta1 = 1.0 - (300.0/t);
+	double eps0 = 77.66 - (103.3*theta1);
+	double eps1 = .0671*eps0;
+	double eps2 = 3.52;
+	double fp = (316.*theta1 + 146.4)*theta1 + 20.20;
+	double fs = 39.8*fp;
+	using namespace std;
+	complex<double> eps;
+	eps = complex<double>(eps0-eps1,0)/complex<double>(1.0,f/fp)
+		+ complex<double>(eps1-eps2,0)/complex<double>(1.0,f/fs)
+		+ complex<double>(eps2,0);
+	m = sqrt(eps);
+}
+
 // Ice complex refractive index
 // based on Christian Matzler (2006)
 void rtmath::refract::mice(double f, double t, std::complex<double> &m)
@@ -70,7 +93,10 @@ void rtmath::refract::maxwellGarnett(std::complex<double> Mice, std::complex<dou
 	std::complex<double> Miw;
 
 	// Ice is the inclusion in water, which is the inclusion in air
-	maxwellGarnettSimple(Mice, Mwater, fIce / (fWater+fIce), Miw);
+	double frac = 0;
+	if (fWater+fIce == 0) frac = 0;
+	else frac = fIce / (fWater + fIce);
+	maxwellGarnettSimple(Mice, Mwater, frac, Miw);
 	maxwellGarnettSimple(Miw, Mair, fIce + fWater, Mres);
 }
 
@@ -115,7 +141,7 @@ void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb,
 		return res;
 	};
 
-	complex<double> gA(1.0,1.0), gB(1.5,1.5);
+	complex<double> gA(1.0,1.0), gB(1.55,1.45);
 	zeros::complexSecant(formula, gA, gB, eRes);
 	eToM(eRes,Mres);
 }

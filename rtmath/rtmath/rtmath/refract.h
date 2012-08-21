@@ -10,6 +10,10 @@ namespace rtmath {
 		void mToE(std::complex<double> m, std::complex<double> &e);
 		void eToM(std::complex<double> e, std::complex<double> &m);
 
+		// Water complex refractive index
+		// Liebe, Hufford and Manabe (1991)
+		void mwater(double f, double t, std::complex<double> &m);
+
 		// Ice complex refractive index
 		// Christian Matzler (2006)
 		void mice(double f, double t, std::complex<double> &m);
