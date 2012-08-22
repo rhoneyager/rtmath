@@ -309,6 +309,8 @@ int main(int argc, char** argv)
 			// Do special ROOT file writing
 			tree->Write();
 			file->Close();
+			delete tree;
+			delete file;
 		}
 
 	}

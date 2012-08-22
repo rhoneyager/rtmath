@@ -1,3 +1,4 @@
+#include "../../rtmath/rtmath/ROOTlink.h"
 #include <sstream>
 #include "converter.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
@@ -45,7 +46,7 @@ void fileconverter::setStats(boost::shared_ptr<rtmath::ddscat::shapeFileStats> s
 	stats = s;
 }
 
-void fileconverter::convert(const std::string &outfile) const
+void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 {
 	using namespace std;
 
@@ -226,6 +227,18 @@ void fileconverter::convert(const std::string &outfile) const
 	{
 		using namespace tmatrix;
 		tmatrixInVars in;
+
+		TFile *rfile = nullptr;
+		string rfilename = outfile;
+		rfilename.append(".root");
+		TTree tree("raw","T-MATRIX raw run input");
+		tree.Branch("tmatrixInVars", &in, "AXI/D:RAT/D:LAM/D:MRR/D:MRI/D:EPS/D:DDELT/D:ALPHA/D:BETA/D:THET0/D:THET/D:PHI0/D:PHI/D:NP/I:NDGS/I");
+
+		if (ROOToutput)
+		{
+			rfile = new TFile(rfilename.c_str(), "RECREATE");
+		}
+		
 		in.AXI = aeff; // equiv vol sphere radius
 		in.RAT = 1; // Indicates that AXI is the equiv volume radius, not equiv sa radius
 		in.LAM = *(wavelengths.begin()); // incident light wavelength
@@ -260,14 +273,15 @@ void fileconverter::convert(const std::string &outfile) const
 						double thet = *ot;
 
 						// Create the tmatrix entry to write out!
-						/*
+						// Setting in two places for ROOT output
 						in.ALPHA = alpha;
 						in.BETA = beta;
 						in.PHI = phi;
 						in.PHI0 = phi0;
 						in.THET = thet;
 						in.THET0 = thet0;
-						*/
+						tree.Fill();
+
 						boost::shared_ptr<tmatrixAngleRes> ar(new tmatrixAngleRes);
 						ar->alpha = alpha;
 						ar->beta = beta;
@@ -285,6 +299,14 @@ void fileconverter::convert(const std::string &outfile) const
 		jobs.push_back(move(ts));
 		rtmath::serialization::write<vector<tmatrixSet> >
 			(jobs, outfile);
+
+		if (ROOToutput)
+		{
+			tree.Write();
+			rfile->Close();
+			delete rfile;
+		}
+		
 	}
 }
 

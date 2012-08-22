@@ -26,7 +26,7 @@ public:
 	void setVolFracMethod(const std::string &);
 	void setTemp(double);
 	void setDDPARfile(const std::string &);
-	void convert(const std::string &) const;
+	void convert(const std::string &, bool ROOToutput = false) const;
 private:
 	std::string ddparFile, statsFile;
 	double temp, nu;

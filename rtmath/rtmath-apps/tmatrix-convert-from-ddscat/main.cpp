@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
+			("ROOT-output,r", "produce ROOT conversion output (for plotting and debugging)")
 			("temperature,T", po::value<double>()->default_value(267), 
 			 "Specify temperature (K)")
 			("nu,n", po::value<double>()->default_value(0.85), 
@@ -47,10 +48,15 @@ int main(int argc, char *argv[])
 			options(desc).run(), vm);
 		po::notify(vm);    
 
+		bool ROOT = false;
+
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
 			return 2;
 		}
+
+		if (vm.count("ROOT-output"))
+			ROOT = true;
 
 		vector<string> inputs = vm["shapefiles"].as< vector<string> >();
 		if (vm.count("shapefiles"))
@@ -117,7 +123,7 @@ int main(int argc, char *argv[])
 			cnv.setVolFracMethod(vmeth);
 			cnv.setTemp(T);
 
-			cnv.convert(pDest);
+			cnv.convert(pDest, ROOT);
 		}
 
 		return 0;
