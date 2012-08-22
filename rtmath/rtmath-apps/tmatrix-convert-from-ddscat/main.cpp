@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 			 "Specify shape method (Same RMS aspect ratio, Same real aspect ratio, Equiv Aeff Sphere)")
 			("diel-method", po::value<string>()->default_value("Sihvola"), 
 			 "Specify dielectric method (Sihvola, Debye, Maxwell-Garnett)")
-			("volfrac-method", po::value<string>()->default_value("RMS Ellipsoid"), 
+			("volfrac-method", po::value<string>()->default_value("Convex hull"), 
 			 "Specify volume fraction method (Minimal circumscribing sphere, Convex hull, Max Ellipsoid, RMS Ellipsoid)");
 
 		po::variables_map vm;

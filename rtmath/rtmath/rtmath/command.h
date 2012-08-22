@@ -256,6 +256,7 @@ namespace rtmath {
 							} else if (specializer == "lin") {
 								// Linear spacing
 								double increment = (end - start) / (interval); // so interval of 1 gives midpoint
+								if (!increment) expanded.insert(start);
 								for (T j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
 								{
 									if (expanded.count(j) == 0)
@@ -267,6 +268,7 @@ namespace rtmath {
 								double is = log10(start); 
 								double ie = log10(end); 
 								double increment = (ie - is) / (interval);
+								if (!increment) expanded.insert(start);
 								for (T j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
 								{
 									T k = (T) pow((T) 10.0,(j));
@@ -279,6 +281,7 @@ namespace rtmath {
 								T is = 1.0 / start; 
 								T ie = 1.0 / end; 
 								T increment = (is - ie) / (interval);
+								if (!increment) expanded.insert(start);
 								for (T j=ie+(increment/2.0); j<is+(increment/100.0);j+=increment)
 								{
 									T k = ((T) 1.0) / j;
@@ -292,6 +295,7 @@ namespace rtmath {
 								double cs = cos(start * pi / 180.0);
 								double ce = cos(end * pi / 180.0);
 								double increment = (ce - cs) / (interval);
+								if (increment == 0) expanded.insert(start);
 								if (increment < 0)
 								{
 									increment *= -1.0;

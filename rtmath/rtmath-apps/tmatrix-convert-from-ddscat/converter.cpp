@@ -1,4 +1,5 @@
 #include "../../rtmath/rtmath/ROOTlink.h"
+#include <algorithm>
 #include <sstream>
 #include "converter.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
@@ -9,6 +10,23 @@
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../deps/tmatrix/src/headers/tmatrix.h"
+
+namespace {
+	const size_t cmax = 1024;
+	struct convHeader
+	{
+		Float_t temp, freq, wvlen,
+			shiv_nu, aeff, vFrac;
+/*		char vFracMeth[cmax],
+		     dielMeth[cmax],
+		     shapeMeth[cmax],
+		     parFile[cmax],
+		     shapeFile[cmax];
+*/
+	};
+	const char* convHeaderStr = 
+		"temp:freq:wvlen:shiv_nu:aeff:vFrac"; //":vFracMeth/C:dielMeth/C:shapeMeth/C:parFile/C:shapeFile/C";
+};
 
 fileconverter::fileconverter()
 {
@@ -78,7 +96,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		// interdipole spacing, as read from the ddscat.par file.
 		// Note: ddscat.par has the aeff for only the dipoles, not the whole shape!
 	}
-
+	
 	// Calculate shape dimensioning (ellipsoid, sphere, ...)
 	// Volume used for shape dimensioning defined above
 	double asp; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
@@ -125,9 +143,10 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		par.getWavelengths(min,max,n,spacing);
 		// Wavelengths are in microns. Convert interval to frequencies
 		ostringstream s;
+		std::transform(spacing.begin(), spacing.end(), spacing.begin(), ::tolower);
 		s << min << ":" << n << ":" << max << ":" << spacing;
 		string ss(s.str());
-		
+
 		rtmath::config::splitSet<double>(ss,wavelengths);
 		rtmath::units::conv_spec c("um","GHz");
 		for (auto it = wavelengths.begin(); it != wavelengths.end(); it++)
@@ -147,6 +166,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		par.getAeff(min,max,n,spacing);
 		// Aeffs are in microns. Convert interval to frequencies
 		ostringstream s;
+		std::transform(spacing.begin(),spacing.end(),spacing.begin(), ::tolower);
 		s << min << ":" << n << ":" << max << ":" << spacing;
 		string ss(s.str());
 		rtmath::config::splitSet<double>(ss,aeffs);
@@ -231,8 +251,30 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		TFile *rfile = nullptr;
 		string rfilename = outfile;
 		rfilename.append(".root");
+		TTree headers("headers", "T-MATRIX conversion input");
 		TTree tree("raw","T-MATRIX raw run input");
-		tree.Branch("tmatrixInVars", &in, "AXI/D:RAT/D:LAM/D:MRR/D:MRI/D:EPS/D:DDELT/D:ALPHA/D:BETA/D:THET0/D:THET/D:PHI0/D:PHI/D:NP/I:NDGS/I");
+
+		convHeader hdr;
+		TBranch *header = headers.Branch("header", &hdr, convHeaderStr);
+		{
+			// Populate the header
+			// Temp, nu, freq, wavelength, default par file name, shapefile name,
+			// shape method, diel method, volume fraction, volume fraction method, 
+			hdr.temp = temp;
+			hdr.freq = *(freqs.begin());
+			hdr.wvlen = *(wavelengths.begin());
+			hdr.shiv_nu = nu;
+			hdr.aeff = aeff;
+			hdr.vFrac = frac;
+			// The rest are char arrays
+			//strncpy(hdr.vFracMeth, volMeth.c_str(), cmax);;
+			//strncpy(hdr.dielMeth, dielMeth.c_str(), cmax);
+			//strncpy(hdr.shapeMeth, shapeMeth.c_str(), cmax);
+			//strncpy(hdr.parFile, ddparFile.c_str(), cmax);
+			//strncpy(hdr.shapeFile, stats->_shp->_filename.c_str(), cmax);
+			headers.Fill();
+		}
+		TBranch *data = tree.Branch("tmatrixInVars", &in, "AXI/D:RAT/D:LAM/D:MRR/D:MRI/D:EPS/D:DDELT/D:ALPHA/D:BETA/D:THET0/D:THET/D:PHI0/D:PHI/D:NP/I:NDGS/I");
 
 		if (ROOToutput)
 		{
@@ -302,6 +344,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 
 		if (ROOToutput)
 		{
+			headers.Write();
 			tree.Write();
 			rfile->Close();
 			delete rfile;

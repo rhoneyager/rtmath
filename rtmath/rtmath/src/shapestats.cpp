@@ -177,6 +177,7 @@ namespace rtmath {
 				tag::skewness,
 				tag::kurtosis,
 				// Covariances are special
+				tag::variance,
 				tag::covariance<double, tag::covariate1>,
 				tag::covariance<double, tag::covariate2>
 				> > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
@@ -274,66 +275,71 @@ namespace rtmath {
 
 			// Absolute rms
 			res.as_rms.set(1,2,0,0);
-			res.as_rms.set(boost::accumulators::moment<2>(acc_x)/boost::accumulators::moment<2>(acc_y),2,0,1);
-			res.as_rms.set(boost::accumulators::moment<2>(acc_x)/boost::accumulators::moment<2>(acc_z),2,0,2);
-			res.as_rms.set(boost::accumulators::moment<2>(acc_y)/boost::accumulators::moment<2>(acc_x),2,1,0);
+			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_x)/boost::accumulators::moment<2>(acc_y)),2,0,1);
+			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_x)/boost::accumulators::moment<2>(acc_z)),2,0,2);
+			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_y)/boost::accumulators::moment<2>(acc_x)),2,1,0);
 			res.as_rms.set(1,2,1,1);
-			res.as_rms.set(boost::accumulators::moment<2>(acc_y)/boost::accumulators::moment<2>(acc_z),2,1,2);
-			res.as_rms.set(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_x),2,2,0);
-			res.as_rms.set(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_y),2,2,1);
+			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_y)/boost::accumulators::moment<2>(acc_z)),2,1,2);
+			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_x)),2,2,0);
+			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_z)/boost::accumulators::moment<2>(acc_y)),2,2,1);
 			res.as_rms.set(1,2,2,2);
 
 			// RMS accumulators - rms is the square root of the 2nd moment
-			res.rms_mean.set(sqrt(boost::accumulators::moment<2>(acc_x)),2,0,0);
-			res.rms_mean.set(sqrt(boost::accumulators::moment<2>(acc_y)),2,1,0);
-			res.rms_mean.set(sqrt(boost::accumulators::moment<2>(acc_z)),2,2,0);
+			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_x)),2,0,0);
+			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_y)),2,1,0);
+			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_z)),2,2,0);
 
 			const size_t _N = _shp->_numPoints;
+                        const matrixop &d = _shp->_d;
+                        const double dxdydz = d.get(2,0,0) * d.get(2,0,1) * d.get(2,0,2);
 
 			//covariance
-			res.covariance.set(_N*boost::accumulators::moment<2>(acc_x),2,0,0);
+			res.covariance.set(boost::accumulators::variance(acc_x),2,0,0);
 			//boost::accumulators::covariance(acc_x, covariate1);
 			//boost::accumulators::covariance(acc_x, covariate2);
 			res.covariance.set(boost::accumulators::covariance(acc_x, covariate1),2,0,1);
 			res.covariance.set(boost::accumulators::covariance(acc_x, covariate2),2,0,2);
 			res.covariance.set(boost::accumulators::covariance(acc_y, covariate1),2,1,0);
-			res.covariance.set(_N*boost::accumulators::moment<2>(acc_y),2,1,1);
+			res.covariance.set(boost::accumulators::variance(acc_y),2,1,1);
 			res.covariance.set(boost::accumulators::covariance(acc_y, covariate2),2,1,2);
 			res.covariance.set(boost::accumulators::covariance(acc_z, covariate1),2,2,0);
 			res.covariance.set(boost::accumulators::covariance(acc_z, covariate2),2,2,1);
-			res.covariance.set(_N*boost::accumulators::moment<2>(acc_z),2,2,2);
+			res.covariance.set(boost::accumulators::variance(acc_z),2,2,2);
 
 			// Calculate moments of inertia
 			{
 				double val = 0;
 				// All wrong. Need to redo.
 				// I_xx
-				val = boost::accumulators::moment<2>(acc_y) + boost::accumulators::moment<2>(acc_z);
+				val = boost::accumulators::variance(acc_y) + boost::accumulators::variance(acc_z);
+				val *= _N * dxdydz;
 				res.mominert.set(val,2,0,0);
 
 				// I_yy
-				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_z);
+				val = boost::accumulators::variance(acc_x) + boost::accumulators::variance(acc_z);
+				val *= _N * dxdydz;
 				res.mominert.set(val,2,1,1);
 
 				// I_zz
-				val = boost::accumulators::moment<2>(acc_x) + boost::accumulators::moment<2>(acc_y);
+				val = boost::accumulators::variance(acc_x) + boost::accumulators::variance(acc_y);
+				val *= _N * dxdydz;
 				res.mominert.set(val,2,2,2);
 
 				// I_xy and I_yx
 				val = -1.0 * res.covariance.get(2,1,0);
-				val /= _N;
+				val *= _N * dxdydz;
 				res.mominert.set(val,2,0,1);
 				res.mominert.set(val,2,1,0);
 
 				// I_xz and I_zx
 				val = -1.0 * res.covariance.get(2,2,0);
-				val /= _N;
+				val *= _N * dxdydz;
 				res.mominert.set(val,2,0,2);
 				res.mominert.set(val,2,2,0);
 
 				// I_yz and I_zy
 				val = -1.0 * res.covariance.get(2,2,1);
-				val /= _N;
+				val *= _N * dxdydz;
 				res.mominert.set(val,2,2,1);
 				res.mominert.set(val,2,1,2);
 			}
@@ -371,7 +377,7 @@ namespace rtmath {
 			double dxdydz = d.get(2,0,0) * d.get(2,0,1) * d.get(2,0,2);
 			V_cell_const = dxdydz;
 			V_dipoles_const = dxdydz * _N;
-			aeff_dipoles_const = (3./(4.*boost::math::constants::pi<double>()))*pow(dxdydz,1./3.);
+			aeff_dipoles_const = pow(V_dipoles_const*3./(4.*boost::math::constants::pi<double>()),1./3.);
 
 			const matrixop &a1 = _shp->_a1;
 			const matrixop &a2 = _shp->_a2;
@@ -513,17 +519,17 @@ namespace rtmath {
 			}
 
 			// Volume fractions
-			f_circum_sphere = V_cell_const / V_circum_sphere;
-			f_convex_hull = V_cell_const / V_convex_hull;
-			f_ellipsoid_max = V_cell_const / V_ellipsoid_max;
-			f_ellipsoid_rms = V_cell_const / V_ellipsoid_rms;
+			f_circum_sphere = V_dipoles_const / V_circum_sphere;
+			f_convex_hull = V_dipoles_const / V_convex_hull;
+			f_ellipsoid_max = V_dipoles_const / V_ellipsoid_max;
+			f_ellipsoid_rms = V_dipoles_const / V_ellipsoid_rms;
 
 			// Densities
 			rho_basic = 1.0;
-			rho_circum_sphere = _N / V_circum_sphere;
-			rho_convex = _N / V_convex_hull;
-			rho_ellipsoid_max = _N / V_ellipsoid_max;
-			rho_ellipsoid_rms = _N / V_ellipsoid_rms;
+			rho_circum_sphere = (1.0) * _N / V_circum_sphere;
+			rho_convex = (1.0) * _N / V_convex_hull;
+			rho_ellipsoid_max = (1.0) * _N / V_ellipsoid_max;
+			rho_ellipsoid_rms = (1.0) * _N / V_ellipsoid_rms;
 
 
 		}
