@@ -31,6 +31,7 @@ namespace {
 fileconverter::fileconverter()
 {
 	temp = 0;
+	frequency = 0;
 }
 
 void fileconverter::setDDPARfile(const std::string &file)
@@ -41,6 +42,11 @@ void fileconverter::setDDPARfile(const std::string &file)
 void fileconverter::setTemp(double T)
 {
 	temp = T;
+}
+
+void fileconverter::setFreq(double f)
+{
+	frequency = f;
 }
 
 void fileconverter::setShapeMethod(const std::string &meth)
@@ -136,6 +142,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 	rtmath::ddscat::ddPar par(ddparFile);
 	set<double> freqs; // GHz
 	set<double> wavelengths; // um
+	if (!frequency)
 	{
 		double min, max;
 		size_t n;
@@ -155,6 +162,11 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 			if (freqs.count(freq) == 0)
 				freqs.insert(freq);
 		}
+	} else {
+		freqs.insert(frequency);
+		rtmath::units::conv_spec c("GHz","um");
+		double wvlen = c.convert(frequency);
+		wavelengths.insert(wvlen);
 	}
 
 	// reff is needed, since the pure shapefile gives everything in terms of the interdipole spacing

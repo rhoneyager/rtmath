@@ -25,11 +25,12 @@ public:
 	void setDielMethod(const std::string &, double);
 	void setVolFracMethod(const std::string &);
 	void setTemp(double);
+	void setFreq(double);
 	void setDDPARfile(const std::string &);
 	void convert(const std::string &, bool ROOToutput = false) const;
 private:
 	std::string ddparFile, statsFile;
-	double temp, nu;
+	double temp, nu, frequency;
 	std::string shapeMeth, dielMeth, volMeth;
 	boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 };

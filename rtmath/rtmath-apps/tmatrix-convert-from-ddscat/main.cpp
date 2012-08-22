@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
 			("ROOT-output,r", "produce ROOT conversion output (for plotting and debugging)")
 			("temperature,T", po::value<double>()->default_value(267), 
 			 "Specify temperature (K)")
+			("frequency,F", po::value<double>()->default_value(0),
+			 "Override frequency (GHz)")
 			("nu,n", po::value<double>()->default_value(0.85), 
 			 "Specify nu for Sihvola")
 
@@ -43,9 +45,12 @@ int main(int argc, char *argv[])
 			("volfrac-method", po::value<string>()->default_value("Convex hull"), 
 			 "Specify volume fraction method (Minimal circumscribing sphere, Convex hull, Max Ellipsoid, RMS Ellipsoid)");
 
+		po::positional_options_description p;
+		p.add("shapefiles",-1);
+
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).run(), vm);
+			options(desc).positional(p).run(), vm);
 		po::notify(vm);    
 
 		bool ROOT = false;
@@ -82,6 +87,7 @@ int main(int argc, char *argv[])
 		}
 		double T = vm["temperature"].as<double>();
 		double nu = vm["nu"].as<double>();
+		double freq = vm["frequency"].as<double>();
 
 		string sm, dm, vmeth;
 		if (vm.count("shape-method"))
@@ -122,6 +128,7 @@ int main(int argc, char *argv[])
 			cnv.setDielMethod(dm,nu);
 			cnv.setVolFracMethod(vmeth);
 			cnv.setTemp(T);
+			cnv.setFreq(freq);
 
 			cnv.convert(pDest, ROOT);
 		}
