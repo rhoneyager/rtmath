@@ -15,7 +15,7 @@ namespace {
 	const size_t cmax = 1024;
 	struct convHeader
 	{
-		Float_t temp, freq, wvlen,
+		Float_t temp, freq, wvlen, dipoleSpacing,
 			shiv_nu, aeff, vFrac;
 /*		char vFracMeth[cmax],
 		     dielMeth[cmax],
@@ -25,13 +25,14 @@ namespace {
 */
 	};
 	const char* convHeaderStr = 
-		"temp:freq:wvlen:shiv_nu:aeff:vFrac"; //":vFracMeth/C:dielMeth/C:shapeMeth/C:parFile/C:shapeFile/C";
+		"temp:freq:wvlen:dipoleSpacing:shiv_nu:aeff:vFrac"; //":vFracMeth/C:dielMeth/C:shapeMeth/C:parFile/C:shapeFile/C";
 };
 
 fileconverter::fileconverter()
 {
 	temp = 0;
 	frequency = 0;
+	dipoleSpacing = 0;
 }
 
 void fileconverter::setDDPARfile(const std::string &file)
@@ -42,6 +43,11 @@ void fileconverter::setDDPARfile(const std::string &file)
 void fileconverter::setTemp(double T)
 {
 	temp = T;
+}
+
+void fileconverter::setDipoleSpacing(double d)
+{
+	dipoleSpacing = d;
 }
 
 void fileconverter::setFreq(double f)
@@ -171,6 +177,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 
 	// reff is needed, since the pure shapefile gives everything in terms of the interdipole spacing
 	set<double> aeffs;
+	double d;
 	{
 		double min, max;
 		size_t n;
@@ -187,7 +194,10 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		// dipole spacings
 		double aeff_dipoles_const = stats->aeff_dipoles_const;
 		double aeff_ddpar = *(aeffs.begin());
-		double d = aeff_ddpar / aeff_dipoles_const;
+		if (dipoleSpacing)
+			d = dipoleSpacing;
+		else
+			d = aeff_ddpar / aeff_dipoles_const;
 		aeff *= d; // Now it is in microns
 	}
 	
@@ -275,6 +285,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 			hdr.temp = temp;
 			hdr.freq = *(freqs.begin());
 			hdr.wvlen = *(wavelengths.begin());
+			hdr.dipoleSpacing = d;
 			hdr.shiv_nu = nu;
 			hdr.aeff = aeff;
 			hdr.vFrac = frac;

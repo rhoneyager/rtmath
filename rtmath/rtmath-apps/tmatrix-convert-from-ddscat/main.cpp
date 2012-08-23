@@ -31,6 +31,9 @@ int main(int argc, char *argv[])
 			 "Specify temperature (K)")
 			("frequency,F", po::value<double>()->default_value(0),
 			 "Override frequency (GHz)")
+			("dipole-spacing,d", po::value<double>()->default_value(0),
+			 "Override dipole spacing (um)")
+			("suffix", po::value<string>(), "Append suffix to generated files")
 			("nu,n", po::value<double>()->default_value(0.85), 
 			 "Specify nu for Sihvola")
 
@@ -88,8 +91,9 @@ int main(int argc, char *argv[])
 		double T = vm["temperature"].as<double>();
 		double nu = vm["nu"].as<double>();
 		double freq = vm["frequency"].as<double>();
+		double dipoleSpacing = vm["dipole-spacing"].as<double>();
 
-		string sm, dm, vmeth;
+		string sm, dm, vmeth, suffix;
 		if (vm.count("shape-method"))
 			sm = vm["shape-method"].as<string>();
 		if (vm.count("diel-method"))
@@ -97,6 +101,8 @@ int main(int argc, char *argv[])
 		if (vm.count("volfrac-method"))
 			vmeth = vm["volfrac-method"].as<string>();
 
+		if (vm.count("suffix"))
+			suffix = vm["suffix"].as<string>();
 		
 
 		// Iterate through files, try to find appropriate ddscat.par, and perform conversion
@@ -119,6 +125,7 @@ int main(int argc, char *argv[])
 			stats = rtmath::ddscat::shapeFileStats::genStats(*it);
 
 			string pDest = p.string();
+			pDest.append(suffix);
 			pDest.append("-tmatrix.xml");
 
 			fileconverter cnv;
@@ -129,6 +136,7 @@ int main(int argc, char *argv[])
 			cnv.setVolFracMethod(vmeth);
 			cnv.setTemp(T);
 			cnv.setFreq(freq);
+			cnv.setDipoleSpacing(dipoleSpacing);
 
 			cnv.convert(pDest, ROOT);
 		}

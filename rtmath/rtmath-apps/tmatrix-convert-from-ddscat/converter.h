@@ -26,11 +26,12 @@ public:
 	void setVolFracMethod(const std::string &);
 	void setTemp(double);
 	void setFreq(double);
+	void setDipoleSpacing(double);
 	void setDDPARfile(const std::string &);
 	void convert(const std::string &, bool ROOToutput = false) const;
 private:
 	std::string ddparFile, statsFile;
-	double temp, nu, frequency;
+	double temp, nu, frequency, dipoleSpacing;
 	std::string shapeMeth, dielMeth, volMeth;
 	boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 };
