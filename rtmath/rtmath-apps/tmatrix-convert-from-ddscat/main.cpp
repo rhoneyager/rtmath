@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
+			("tmatrix", "Execute the tmatrix run serially, rather than just preparing it")
 			("ROOT-output,r", "produce ROOT conversion output (for plotting and debugging)")
 			("temperature,T", po::value<double>()->default_value(267), 
 			 "Specify temperature (K)")
@@ -57,10 +58,16 @@ int main(int argc, char *argv[])
 		po::notify(vm);    
 
 		bool ROOT = false;
+		bool tmatrix = false;
 
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
 			return 2;
+		}
+
+		if (vm.count("tmatrix"))
+		{
+			tmatrix = true;
 		}
 
 		if (vm.count("ROOT-output"))
@@ -136,6 +143,7 @@ int main(int argc, char *argv[])
 			cnv.setVolFracMethod(vmeth);
 			cnv.setTemp(T);
 			cnv.setFreq(freq);
+			cnv.doTMATRIX(tmatrix);
 			cnv.setDipoleSpacing(dipoleSpacing);
 
 			cnv.convert(pDest, ROOT);

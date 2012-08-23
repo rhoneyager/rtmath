@@ -23,9 +23,55 @@ namespace {
 		     parFile[cmax],
 		     shapeFile[cmax];
 */
+		convHeader()
+		{
+			temp = 0;
+			freq = 0;
+			wvlen = 0;
+			dipoleSpacing = 0;
+			shiv_nu = 0;
+			aeff = 0;
+			vFrac = 0;
+		}
 	};
 	const char* convHeaderStr = 
 		"temp:freq:wvlen:dipoleSpacing:shiv_nu:aeff:vFrac"; //":vFracMeth/C:dielMeth/C:shapeMeth/C:parFile/C:shapeFile/C";
+
+	const char* tmOutConverterStr = 
+		"Sreal[4]:Simag[4]:P[16]";
+	struct tmOutConverter
+	{
+		Float_t Sreal[4], Simag[4];
+		Float_t P[16];
+		void import(const tmatrix::tmatrixOutVars &in)
+		{
+			Sreal[0] = in.S[0].real();
+			Simag[0] = in.S[0].imag();
+			Sreal[1] = in.S[1].real();
+			Simag[1] = in.S[1].imag();
+			Sreal[2] = in.S[2].real();
+			Simag[2] = in.S[2].imag();
+			Sreal[3] = in.S[3].real();
+			Simag[3] = in.S[3].imag();
+
+			P[0] = in.P[0][0];
+			P[1] = in.P[0][1];
+			P[2] = in.P[0][2];
+			P[3] = in.P[0][3];
+			P[4] = in.P[1][0];
+			P[5] = in.P[1][1];
+			P[6] = in.P[1][2];
+			P[7] = in.P[1][3];
+			P[8] = in.P[2][0];
+			P[9] = in.P[2][1];
+			P[10] = in.P[2][2];
+			P[11] = in.P[2][3];
+			P[12] = in.P[3][0];
+			P[13] = in.P[3][1];
+			P[14] = in.P[3][2];
+			P[15] = in.P[3][3];
+		}
+	};
 };
 
 fileconverter::fileconverter()
@@ -33,6 +79,12 @@ fileconverter::fileconverter()
 	temp = 0;
 	frequency = 0;
 	dipoleSpacing = 0;
+	tmatrix = false;
+}
+
+void fileconverter::doTMATRIX(bool tm)
+{
+	tmatrix = tm;
 }
 
 void fileconverter::setDDPARfile(const std::string &file)
@@ -269,6 +321,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 	{
 		using namespace tmatrix;
 		tmatrixInVars in;
+		tmOutConverter ocnv;
 
 		TFile *rfile = nullptr;
 		string rfilename = outfile;
@@ -298,6 +351,10 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 			headers.Fill();
 		}
 		TBranch *data = tree.Branch("tmatrixInVars", &in, "AXI/D:RAT/D:LAM/D:MRR/D:MRI/D:EPS/D:DDELT/D:ALPHA/D:BETA/D:THET0/D:THET/D:PHI0/D:PHI/D:NP/I:NDGS/I");
+
+		TBranch *dataout = nullptr;
+		if (tmatrix)
+			dataout = tree.Branch("tmatrixOutVars",&ocnv, tmOutConverterStr);
 
 		if (ROOToutput)
 		{
@@ -345,7 +402,6 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 						in.PHI0 = phi0;
 						in.THET = thet;
 						in.THET0 = thet0;
-						tree.Fill();
 
 						boost::shared_ptr<tmatrixAngleRes> ar(new tmatrixAngleRes);
 						ar->alpha = alpha;
@@ -355,6 +411,18 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 						ar->theta = thet;
 						ar->theta0 = thet0;
 
+						if (tmatrix)
+						{
+							tmatrix::tmatrix run;
+							run.vars = in;
+
+							run.run();
+							ar->res = run.outs;
+
+							ocnv.import(run.outs);
+						}
+
+						tree.Fill();
 						ts.results.insert(ar);
 					}
 				}
@@ -362,6 +430,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		}
 
 		jobs.push_back(move(ts));
+
 		rtmath::serialization::write<vector<tmatrixSet> >
 			(jobs, outfile);
 
