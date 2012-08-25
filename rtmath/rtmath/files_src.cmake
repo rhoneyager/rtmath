@@ -80,6 +80,7 @@ set (ddscat-hdr
 	rtmath/ddscat/shapefile.h
 	rtmath/ddscat/shapes.h
 	rtmath/ddscat/shapestats.h
+	rtmath/ddscat/shapestatsviews.h
 	)
 source_group("Source Files\\ddscat" FILES ${ddscat-src})
 source_group("Header Files\\ddscat" FILES ${ddscat-hdr})
