@@ -79,7 +79,7 @@ fileconverter::fileconverter()
 	temp = 0;
 	frequency = 0;
 	dipoleSpacing = 0;
-	tmatrix = false;
+	tmatrix = true;
 }
 
 void fileconverter::doTMATRIX(bool tm)
@@ -159,6 +159,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		// aeff is currently not in microns. I need the 
 		// interdipole spacing, as read from the ddscat.par file.
 		// Note: ddscat.par has the aeff for only the dipoles, not the whole shape!
+		//cerr << frac << "\t" << aeff << endl;
 	}
 	
 	// Calculate shape dimensioning (ellipsoid, sphere, ...)

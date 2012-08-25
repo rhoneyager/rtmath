@@ -119,6 +119,7 @@ set (general-src
 	src/command.cpp
 	src/config.cpp
 	src/coords.cpp
+	src/density.cpp
 	src/depGraph.cpp
 	src/emd.cpp
 	src/interpolatable.cpp
@@ -145,6 +146,7 @@ set (general-hdr
 	rtmath/config.h
 	rtmath/coords.h
 	rtmath/defs.h
+	rtmath/density.h
 	rtmath/depGraph.h
 	rtmath/emd.h
 	rtmath/enums.h

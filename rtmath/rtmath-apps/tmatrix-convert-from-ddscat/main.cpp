@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
-			("tmatrix", "Execute the tmatrix run serially, rather than just preparing it")
 			("ROOT-output,r", "produce ROOT conversion output (for plotting and debugging)")
 			("temperature,T", po::value<double>()->default_value(267), 
 			 "Specify temperature (K)")
@@ -43,11 +42,11 @@ int main(int argc, char *argv[])
 			("shapefiles,s", po::value<vector<string> >(), 
 			 "Specify shapefiles")
 			("shape-method", po::value<string>()->default_value("Same RMS aspect ratio"), 
-			 "Specify shape method (Same RMS aspect ratio, Same real aspect ratio, Equiv Aeff Sphere)")
+			 "Specify shape method (Same RMS aspect ratio/samerms, Same real aspect ratio/sameabs, Equiv Aeff Sphere/equivaeff)")
 			("diel-method", po::value<string>()->default_value("Sihvola"), 
 			 "Specify dielectric method (Sihvola, Debye, Maxwell-Garnett)")
 			("volfrac-method", po::value<string>()->default_value("Convex hull"), 
-			 "Specify volume fraction method (Minimal circumscribing sphere, Convex hull, Max Ellipsoid, RMS Ellipsoid)");
+			 "Specify volume fraction method (Minimal circumscribing sphere/minsphere, Convex hull/convex, Max Ellipsoid/ellipmax, RMS Ellipsoid/elliprms)");
 
 		po::positional_options_description p;
 		p.add("shapefiles",-1);
@@ -58,16 +57,10 @@ int main(int argc, char *argv[])
 		po::notify(vm);    
 
 		bool ROOT = false;
-		bool tmatrix = false;
 
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
 			return 2;
-		}
-
-		if (vm.count("tmatrix"))
-		{
-			tmatrix = true;
 		}
 
 		if (vm.count("ROOT-output"))
@@ -103,10 +96,28 @@ int main(int argc, char *argv[])
 		string sm, dm, vmeth, suffix;
 		if (vm.count("shape-method"))
 			sm = vm["shape-method"].as<string>();
+		{
+			if (sm == "samerms")
+				sm = "Same RMS aspect ratio";
+			if (sm == "sameabs")
+				sm = "Same real aspect ratio";
+			if (sm == "equivaeff")
+				sm = "Equiv Aeff Sphere";
+		}
 		if (vm.count("diel-method"))
 			dm = vm["diel-method"].as<string>();
 		if (vm.count("volfrac-method"))
 			vmeth = vm["volfrac-method"].as<string>();
+		{
+			if (vmeth == "minsphere")
+				vmeth = "Minimal circumscribing sphere";
+			if (vmeth == "convex")
+				vmeth = "Convex hull";
+			if (vmeth == "ellipmax")
+				vmeth = "Max Ellipsoid";
+			if (vmeth == "elliprms")
+				vmeth = "RMS Ellipsoid";
+		}
 
 		if (vm.count("suffix"))
 			suffix = vm["suffix"].as<string>();
@@ -132,8 +143,13 @@ int main(int argc, char *argv[])
 			stats = rtmath::ddscat::shapeFileStats::genStats(*it);
 
 			string pDest = p.string();
-			pDest.append(suffix);
-			pDest.append("-tmatrix.xml");
+			pDest.append("-tmatrix");
+			if (suffix.size())
+			{
+				pDest.append("-");
+				pDest.append(suffix);
+			}
+			pDest.append(".xml");
 
 			fileconverter cnv;
 			cnv.setStats(stats);
@@ -143,7 +159,6 @@ int main(int argc, char *argv[])
 			cnv.setVolFracMethod(vmeth);
 			cnv.setTemp(T);
 			cnv.setFreq(freq);
-			cnv.doTMATRIX(tmatrix);
 			cnv.setDipoleSpacing(dipoleSpacing);
 
 			cnv.convert(pDest, ROOT);
