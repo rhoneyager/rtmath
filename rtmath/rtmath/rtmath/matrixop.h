@@ -59,7 +59,8 @@ namespace rtmath {
 		bool operator != (const matrixop&) const;
 		matrixop & operator = (const matrixop&);
 		matrixop & operator = (const double*); // Assignment from double array
-		
+		bool operator < (const matrixop &) const; // Set ordering
+
 		// TODO: normalize calls to place val first for all set(...)
 		void set(const std::vector<size_t> &pos, double val);
 		void set(double val, size_t rank, ...); // Does this overlap next def?

@@ -296,6 +296,20 @@ namespace rtmath {
 		return temp;
 	}
 
+	bool matrixop::operator<(const matrixop& rhs) const
+	{
+		if (rhs.dimensionality() != this->dimensionality())
+			return (this->dimensionality() < rhs.dimensionality());
+
+		for (auto it = _dims.begin(), out = rhs._dims.begin(); it != _dims.end(); it++, ot++)
+			if (*it != *ot) return (*it < *ot);
+
+		for (size_t i=0; i<_datasize; i++)
+			if (_data[i] != rhs._data[i]) return (_data[i] < rhs._data[i]);
+
+		return false;
+	}
+
 	void matrixop::clear()
 	{
 		//_vals.clear();

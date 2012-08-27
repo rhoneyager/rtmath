@@ -26,28 +26,27 @@ namespace rtmath {
 		public:
 			shapeFileStatsRotated();
 			~shapeFileStatsRotated();
+			bool operator<(const shapeFileStatsRotated &rhs) const;
 			double beta;
 			double theta;
 			double phi;
 			// Derived stats quantities
 			// PE is a potential energy-like function.
-			// PE = sum_i(x_i) (Note: masses assumed to be constant. use scaling factor)
-			matrixop PE;
+			// All of the vector<matrixop> quantities are split by dielectric material.
+			// This is because they have different densities. Coord zero corresponds 
+			// to all of the dipoles simply combined.
+			// For physically-united quantities, construct a shapeFileStatsRotatedView.
 
 			// After normalization
 			matrixop min, max, sum, skewness, kurtosis;
 			// Moments
-			matrixop mom1, mom2, mominert;
-			matrixop covariance;
+			std::vector<matrixop> mom1, mom2, mominert;
+			std::vector<matrixop> covariance, PE;
 
-			matrixop abs_min, abs_max, abs_mean, rms_mean; // - abs_mean is also PE
+			matrixop abs_min, abs_max, abs_mean, rms_mean;
 
 			// Aspect ratios
 			matrixop as_abs, as_abs_mean, as_rms;
-
-
-			//void calc();
-			bool operator<(const shapeFileStatsRotated &rhs) const;
 		private:
 			//bool _valid;
 			friend class boost::serialization::access;
@@ -57,24 +56,24 @@ namespace rtmath {
 					ar & BOOST_SERIALIZATION_NVP(beta);
 					ar & BOOST_SERIALIZATION_NVP(theta);
 					ar & BOOST_SERIALIZATION_NVP(phi);
-					ar & BOOST_SERIALIZATION_NVP(PE);
 					ar & BOOST_SERIALIZATION_NVP(min);
 					ar & BOOST_SERIALIZATION_NVP(max);
 					ar & BOOST_SERIALIZATION_NVP(sum);
+					ar & BOOST_SERIALIZATION_NVP(covariance);
 					ar & BOOST_SERIALIZATION_NVP(skewness);
 					ar & BOOST_SERIALIZATION_NVP(kurtosis);
 					ar & BOOST_SERIALIZATION_NVP(mom1);
 					ar & BOOST_SERIALIZATION_NVP(mom2);
-					ar & BOOST_SERIALIZATION_NVP(covariance);
+					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
+					ar & BOOST_SERIALIZATION_NVP(PE);
 					ar & BOOST_SERIALIZATION_NVP(abs_min);
 					ar & BOOST_SERIALIZATION_NVP(abs_max);
 					ar & BOOST_SERIALIZATION_NVP(abs_mean);
-					if (version)
-						ar & BOOST_SERIALIZATION_NVP(rms_mean);
+					ar & BOOST_SERIALIZATION_NVP(rms_mean);
 					ar & BOOST_SERIALIZATION_NVP(as_abs);
 					ar & BOOST_SERIALIZATION_NVP(as_abs_mean);
 					ar & BOOST_SERIALIZATION_NVP(as_rms);
-					ar & boost::serialization::make_nvp("Moment_Inertia", mominert);
+
 				}
 		};
 
@@ -123,21 +122,13 @@ namespace rtmath {
 			double f_ellipsoid_max;
 			double f_ellipsoid_rms;
 
-			// Figure out densities (particles filled / volume elements considered)
-			double rho_basic; // Should be one
-			double rho_circum_sphere;
-			double rho_convex;
-			double rho_ellipsoid_max;
-			double rho_ellipsoid_rms;
-
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;
 
 			// Before normalization and rotation
 			matrixop b_min, b_max, b_mean;
-			
 
-			std::set<shapeFileStatsRotated> rotations;
+			std::set<boost::shared_ptr<shapeFileStatsRotated> > rotations;
 
 			// The object
 			boost::shared_ptr<shapefile> _shp;
@@ -151,12 +142,18 @@ namespace rtmath {
 			template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
+					_currVersion = version;
 					ar & boost::serialization::make_nvp("shapefile", _shp);
-					if (version < 2)
-					{
-						size_t _N;
-						ar & boost::serialization::make_nvp("N", _N);
-					}
+
+					ar & BOOST_SERIALIZATION_NVP(beta);
+					ar & BOOST_SERIALIZATION_NVP(theta);
+					ar & BOOST_SERIALIZATION_NVP(phi);
+					ar & boost::serialization::make_nvp("Effective_Rotation", rot);
+					ar & boost::serialization::make_nvp("Inverse_Effective_Rotation", invrot);
+
+					ar & BOOST_SERIALIZATION_NVP(b_min);
+					ar & BOOST_SERIALIZATION_NVP(b_max);
+					ar & BOOST_SERIALIZATION_NVP(b_mean);
 
 					ar & BOOST_SERIALIZATION_NVP(V_cell_const);
 					ar & BOOST_SERIALIZATION_NVP(V_dipoles_const);
@@ -165,7 +162,8 @@ namespace rtmath {
 					switch (version)
 					{
 					default:
-					case 2:
+					case 0:
+						ar & BOOST_SERIALIZATION_NVP(max_distance);
 						ar & BOOST_SERIALIZATION_NVP(a_circum_sphere);
 						ar & BOOST_SERIALIZATION_NVP(V_circum_sphere);
 						ar & BOOST_SERIALIZATION_NVP(SA_circum_sphere);
@@ -181,26 +179,8 @@ namespace rtmath {
 						ar & BOOST_SERIALIZATION_NVP(f_convex_hull);
 						ar & BOOST_SERIALIZATION_NVP(f_ellipsoid_max);
 						ar & BOOST_SERIALIZATION_NVP(f_ellipsoid_rms);
-						ar & BOOST_SERIALIZATION_NVP(rho_basic);
-						ar & BOOST_SERIALIZATION_NVP(rho_circum_sphere);
-						ar & BOOST_SERIALIZATION_NVP(rho_convex);
-						ar & BOOST_SERIALIZATION_NVP(rho_ellipsoid_max);
-						ar & BOOST_SERIALIZATION_NVP(rho_ellipsoid_rms);
-					case 1:
-						ar & BOOST_SERIALIZATION_NVP(max_distance);
-					case 0:
 						break;
 					}
-					_currVersion = version;
-
-					ar & BOOST_SERIALIZATION_NVP(beta);
-					ar & BOOST_SERIALIZATION_NVP(theta);
-					ar & BOOST_SERIALIZATION_NVP(phi);
-					ar & boost::serialization::make_nvp("Effective_Rotation", rot);
-					ar & boost::serialization::make_nvp("Inverse_Effective_Rotation", invrot);
-					ar & BOOST_SERIALIZATION_NVP(b_min);
-					ar & BOOST_SERIALIZATION_NVP(b_max);
-					ar & BOOST_SERIALIZATION_NVP(b_mean);
 					
 					ar & boost::serialization::make_nvp("Rotation_Dependent", rotations);
 				}
@@ -229,8 +209,8 @@ namespace rtmath {
 	}
 }
 
-BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsRotated, 1)
-BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 2)
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsRotated, 0)
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 0)
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsBase)

@@ -62,6 +62,7 @@ namespace rtmath {
 			_latticePtsRi.clear();
 			//_moments.clear();
 			_numPoints = 0;
+			_numDielectrics = 0;
 			_filename = "";
 			//_I = shared_ptr<matrixop>(new matrixop(2,3,3));
 		}
@@ -207,6 +208,7 @@ namespace rtmath {
 
 
 			vector<double> valser(7);
+			set<size_t> mediaIds;
 			size_t posa = 0, posb = pend+1;
 			// Load in the lattice points through iteration and macro.h-based double extraction
 			for (size_t i=0; i< _numPoints; i++)
@@ -222,6 +224,7 @@ namespace rtmath {
 					val = rtmath::macros::m_atof(&(in.data()[posa]),len);
 					valser[j] = val;
 				}
+
 				// valser[0] is point id, 1-3 are coords, 4-6 are diel entries
 				matrixop crdsm(2,1,3), crdsi(2,1,3);
 				crdsm.set(valser[1],2,0,0);
@@ -237,12 +240,15 @@ namespace rtmath {
 				it += 3;
 				crdsi.from<std::vector<double>::const_iterator>(it);
 				*/
+				if (mediaIds.count(valser[4]) == 0) mediaIds.insert(valser[4]);
+
 				_latticePts.push_back(move(crdsm));
 				_latticePtsRi.push_back(move(crdsi));
 				//_latticePts[i] = move(crdsm);
 				//_latticePtsRi[i] = move(crdsi);
 			}
 
+			_Dielectrics = mediaIds;
 			//boost::chrono::system_clock::time_point clattice = boost::chrono::system_clock::now();
 
 			// Figure out third lattice vector in target frame

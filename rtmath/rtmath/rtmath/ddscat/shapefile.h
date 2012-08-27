@@ -21,8 +21,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "../matrixop.h"
-//#include "../coords.h"
-//#include "shapes.h"
 
 namespace rtmath {
 	namespace Garrett {
@@ -49,10 +47,11 @@ namespace rtmath {
 		public:
 			std::string _filename;
 			//boost::shared_ptr<const matrixop> _lattice;
-			std::vector<matrixop> _latticePts;
-			std::vector<matrixop> _latticePtsRi;
+			std::vector<matrixop> _latticePts; // Untransformed points
+			std::vector<matrixop> _latticePtsRi; // Dielectric information
 			std::vector<matrixop> _latticePtsStd; // Normalized coord transform
 			size_t _numPoints;
+			std::set<size_t> _Dielectrics;
 			std::string _desc;
 			// Specified in shape.dat
 			// a1 and a2 are the INITIAL vectors (before rotation!)
@@ -74,6 +73,7 @@ namespace rtmath {
 				{
 					ar & boost::serialization::make_nvp("filename", _filename);
 					ar & boost::serialization::make_nvp("N", _numPoints);
+					ar & boost::serialization::make_nvp("Dielectrics", _Dielectrics);
 					ar & boost::serialization::make_nvp("a1", _a1);
 					ar & boost::serialization::make_nvp("a2", _a2);
 					ar & boost::serialization::make_nvp("a3", _a3);
