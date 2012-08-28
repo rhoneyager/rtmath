@@ -277,18 +277,30 @@ source_group("Source Files\\rayleigh" FILES ${rayleigh-src})
 source_group("Header Files\\rayleigh" FILES ${rayleigh-hdr})
 
 # Serialization
+set (serialization-src
+	src/common_templates_serialization.cpp
+	src/ddpar_serialization.cpp
+	src/ddparGenerator_serialization.cpp
+	src/matrixop_serialization.cpp
+	src/rotations_serialization.cpp
+	src/shapefile_serialization.cpp
+	src/shapes_serialization.cpp
+	src/shapestats_serialization.cpp
+	src/shapestatsRotated_serialization.cpp
+	)
 set (serialization-hdr
 	rtmath/Serialization/common_templates_serialization.h
 	rtmath/Serialization/ddpar_serialization.h
 	rtmath/Serialization/ddparGenerator_serialization.h
 	rtmath/Serialization/matrixop_serialization.h
 	rtmath/Serialization/rotations_serialization.h
+	rtmath/Serialization/serialization_macros.h
 	rtmath/Serialization/shapefile_serialization.h
 	rtmath/Serialization/shapes_serialization.h
 	rtmath/Serialization/shapestats_serialization.h
 	rtmath/Serialization/shapestatsRotated_serialization.h
 	)
-# source_group("Source Files\\Serialization" FILES ${serialization-src})
+source_group("Source Files\\Serialization" FILES ${serialization-src})
 source_group("Header Files\\Serialization" FILES ${serialization-hdr})
 
 # /Other

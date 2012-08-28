@@ -1,39 +1,48 @@
 #pragma once
 
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
-#include <map>
 #include <set>
-#include <vector>
-#include <complex>
-#include <boost/tokenizer.hpp>
 #include <boost/shared_ptr.hpp>
-#include "ddpar.h"
-#include "../common_templates.h"
+
+// Forward declaration for boost::serialization below
+namespace rtmath {
+	namespace ddscat {
+		class rotationsBase;
+		class rotations;
+	}
+}
+
+// Need these so the template friends can work
+namespace boost
+{
+	namespace serialization
+	{
+		template <class Archive>
+		void serialize(Archive &, rtmath::ddscat::rotationsBase &, const unsigned int);
+
+		template <class Archive>
+		void serialize(Archive &, rtmath::ddscat::rotations &, const unsigned int);
+	}
+}
 
 namespace rtmath {
 	namespace ddscat {
+		class ddPar;
 
-		class rotationsBase : public hashable
+		class rotationsBase
 		{
 		public:
-			rotationsBase()
-				:
-			_bMin(0), _bMax(360), _bN(6),
-				_tMin(0), _tMax(90), _tN(6),
-				_pMin(0), _pMax(180), _pN(6)
-			{ }
+			rotationsBase();
 			virtual ~rotationsBase();
 		protected:
 			double _bMin, _bMax;
 			double _tMin, _tMax;
 			double _pMin, _pMax;
 			size_t _bN, _tN, _pN;
-			friend class boost::serialization::access;
-			friend struct std::less<rtmath::ddscat::rotationsBase >;
+
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive &, rotationsBase &, const unsigned int);
 		};
 
 		class rotations : public rotationsBase
@@ -73,29 +82,10 @@ namespace rtmath {
 			bool operator!=(const rotations &rhs) const;
 			bool operator<(const rotations &rhs) const;
 
-			friend struct std::less<rtmath::ddscat::rotations >;
-			friend class boost::serialization::access;
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive &, rotations &, const unsigned int);
 		};
-
-		// Supporting code to allow boost unordered map
-
-		inline std::size_t hash_value(rtmath::ddscat::rotations const& x) { return (size_t) x.hash(); }
 
 	}
 }
-
-
-// Supporting code to allow an unordered map of mapid (for damatrix)
-// Using standard namespace for C++11
-namespace std {
-	template <> struct hash<rtmath::ddscat::rotations>
-	{
-		size_t operator()(const rtmath::ddscat::rotations & x) const
-		{
-			// Really need to cast for the unordered map to work
-			return (size_t) x.hash();
-		}
-	};
-
-}; // end namespace std
-

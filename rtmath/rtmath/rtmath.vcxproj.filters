@@ -420,6 +420,12 @@
     <ClInclude Include="rtmath\Serialization\shapes_serialization.h">
       <Filter>Header Files\Serialization</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\splitSet.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\serialization_macros.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -734,6 +740,36 @@
     </ClCompile>
     <ClCompile Include="src\shapestats_genstats.cpp">
       <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rotations_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\splitSet.cpp">
+      <Filter>Source Files\General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapefile_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\matrixop_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddpar_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common_templates_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapes_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddparGenerator_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapestatsRotated_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapestats_serialization.cpp">
+      <Filter>Source Files\Serialization</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

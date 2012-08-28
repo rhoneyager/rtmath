@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 #include <algorithm>
-#include <memory>
 #include <cmath>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"

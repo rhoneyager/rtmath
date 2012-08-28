@@ -466,7 +466,6 @@ namespace rtmath {
 			void insertPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
 			void delPlane(size_t key);
 			void populateDefaults(bool overwrite = false, const std::string &src = "") const;
-			friend class boost::serialization::access;
 		private:
 			void _init();
 			size_t _version;
@@ -508,18 +507,5 @@ namespace rtmath {
 #undef accessorStringBool
 
 	}
-}
-
-namespace std
-{
-	template <> struct less<rtmath::ddscat::ddParParsers::ddParLine >
-	{
-		bool operator() (const rtmath::ddscat::ddParParsers::ddParLine &lhs, const rtmath::ddscat::ddParParsers::ddParLine &rhs) const
-		{
-			// Only do ordering based on id
-			if (lhs._id != rhs._id) return lhs._id < rhs._id;
-			return false;
-		}
-	};
 }
 

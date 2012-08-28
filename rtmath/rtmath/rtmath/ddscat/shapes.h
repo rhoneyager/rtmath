@@ -1,5 +1,4 @@
 #pragma once
-//#pragma warning( push )
 #pragma warning(disable:4503) // decorated name length exceeded. with boost bimap mpl
 
 #include <iostream>
@@ -76,7 +75,6 @@ namespace rtmath {
 			paramSet<double> pset;
 			std::string varname;
 			std::string units;
-			friend class boost::serialization::access;
 		};
 
 		// Using a map because it provides easy access to the constraint var name,
@@ -113,7 +111,6 @@ namespace rtmath {
 			// Convenient aliases to avoid repeated multimap searching
 			bool _get(const std::string &id, double &val, std::string &units) const;
 			void _set(const std::string &id, double val, const std::string &units);
-			friend class boost::serialization::access;
 		};
 
 		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
@@ -159,7 +156,6 @@ namespace rtmath {
 			vertexMap _vertexMap;
 			boost::shared_ptr<rtmath::graphs::graph> _graph;
 			boost::shared_ptr<rotations> _rots;
-			friend class boost::serialization::access;
 		protected:
 			// The vertexRunnable overrides
 			virtual void run(const std::string &id = "");
@@ -189,7 +185,6 @@ namespace rtmath {
 				//void exportShape(const std::string &filename) const;
 				void exportDDPAR(ddPar &out) const;
 				void exportDDPAR(const std::string &filename, const ddPar &ddbase) const;
-
 				friend class boost::serialization::access;
 			};
 
@@ -213,7 +208,6 @@ namespace rtmath {
 				virtual void _constructGraph(bool makegraph = true);
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
-				friend class boost::serialization::access;
 			};
 
 			
@@ -227,19 +221,9 @@ namespace rtmath {
 				virtual void _constructGraph(bool makegraph = true);
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
-				friend class boost::serialization::access;
 			};
 			
 		}
 
 	}
 }
-
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::constrainable)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::ellipsoid)
-
-//#pragma warning( pop )

@@ -11,8 +11,25 @@
 #include <boost/tuple/tuple.hpp> 
 
 #include "defs.h"
-#include "command.h"
+#include "splitSet.h"
 #include "Public_Domain/MurmurHash3.h"
+
+// Forward declaration for boost::serialization below
+namespace rtmath {
+	template <class T>
+	class paramSet;
+}
+
+// Need these so the template friends can work
+namespace boost
+{
+	namespace serialization
+	{
+		template <class T, class Archive>
+		void serialize(Archive &, rtmath::paramSet<T> &, const unsigned int);
+	}
+}
+
 
 struct null_deleter
 {
@@ -41,8 +58,11 @@ namespace rtmath
 	};
 
 	template <class T>
-	class paramSet : public hashable
+	class paramSet
 	{
+		template<class T, class Archive> 
+		friend void ::boost::serialization::serialize(
+			Archive &, paramSet<T> &, const unsigned int);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 
@@ -53,12 +73,6 @@ namespace rtmath
 		{
 			_aliases = nullptr;
 			set(boost::lexical_cast<std::string>(src));
-			/*
-			std::ostringstream out;
-			out << src;
-			std::string t = out.str();
-			set(t);
-			*/
 		}
 		~paramSet() {}
 		size_t size() const
@@ -121,31 +135,9 @@ namespace rtmath
 		{
 			rtmath::config::splitSet<T>(_shorthand, _expanded, _aliases);
 		}
-		friend struct std::less<rtmath::paramSet<T> >;
-		friend class boost::serialization::access;
 	};
 
-	// Supporting code to allow boost unordered maps
-	template <class T> std::size_t hash_value(rtmath::paramSet<T> const& x)
-	{
-		return (size_t) x.hash();
-	}
 }
-
-
-
-namespace std {
-	template <typename T> struct hash<rtmath::paramSet<T> >
-	{
-		size_t operator()(const rtmath::paramSet<T> & x) const
-		{
-			// Really need to cast for the unordered map to work
-			return (size_t) x.hash();
-		}
-	};
-
-} // end namespace std
-
 
 
 

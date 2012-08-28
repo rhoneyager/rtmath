@@ -37,9 +37,6 @@ namespace rtmath {
 
 			// Aspect ratios
 			matrixop as_abs, as_abs_mean, as_rms;
-		private:
-			//bool _valid;
-			friend class boost::serialization::access;
 		};
 	}
 }

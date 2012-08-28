@@ -15,12 +15,12 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/assign.hpp>
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
 #include "../rtmath/ddscat/shapes.h"
+#include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
@@ -647,16 +647,3 @@ namespace rtmath {
 		}
 	}
 }
-
-/*
-BOOST_CLASS_EXPORT(rtmath::ddscat::shape)
-BOOST_CLASS_EXPORT(rtmath::ddscat::shapeModifiable)
-BOOST_CLASS_EXPORT(rtmath::ddscat::shapes::from_file)
-*/
-
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::constrainable)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shape)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapeModifiable)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_ddscat)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::from_file)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapes::ellipsoid)

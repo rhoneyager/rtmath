@@ -1,24 +1,32 @@
 #pragma once
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <memory>
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
-#include <unordered_map>
-#include <complex>
 #include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
+// Forward declaration for boost::serialization below
 namespace rtmath {
 	class matrixop;
-
 	namespace Garrett {
 		class pointContainer;
 	}
+	namespace ddscat {
+		class shapefile;
+	}
+}
 
+// Need these so the template friends can work
+namespace boost
+{
+	namespace serialization
+	{
+		template <class Archive>
+		void serialize(Archive &, rtmath::ddscat::shapefile &, const unsigned int);
+	}
+}
+
+namespace rtmath {
 	namespace ddscat {
 
 		class shapefile
@@ -58,7 +66,9 @@ namespace rtmath {
 			friend class shapeFileStatsBase;
 			friend class shapeFileStats;
 			friend class convexHull;
-			friend class boost::serialization::access;
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive &, shapefile &, const unsigned int);
 		};
 
 

@@ -330,6 +330,3 @@ namespace rtmath {
 }
 
 
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGeneratorBase)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGenerator)
-

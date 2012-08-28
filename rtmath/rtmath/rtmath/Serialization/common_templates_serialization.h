@@ -1,27 +1,18 @@
 #pragma once
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/nvp.hpp> 
 #include <boost/preprocessor/repetition.hpp> // used for boost tuple serialization
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/string.hpp> 
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/version.hpp>
+
+namespace rtmath
+{
+	template <class T>
+	class paramSet;
+}
 
 namespace boost
 {
 	namespace serialization
 	{
 		template <typename T, class Archive>
-		void serialize(Archive & ar, rtmath::paramSet & g, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("values_short", g._shorthand);
-			ar & boost::serialization::make_nvp("values_expanded", g._expanded);
-		}
+		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
 
 
 

@@ -23,6 +23,7 @@
 #include "../rtmath/ddscat/shapes.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/error/error.h"
+#include "../rtmath/error/debug.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
 #include "../rtmath/ddscat/runScripts.h"

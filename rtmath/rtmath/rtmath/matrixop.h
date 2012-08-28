@@ -1,11 +1,27 @@
 #pragma once
 #include <algorithm>
 #include <vector>
-#include <map>
 #include <cstdarg>
-#include <memory>
-#include <string>
 #include <iostream>
+
+// Forward declaration for boost::serialization below
+namespace rtmath {
+	class matrixop;
+}
+
+// Need these so the template friends can work
+namespace boost
+{
+	namespace serialization
+	{
+		template <class Archive>
+		void serialize(Archive &, rtmath::matrixop &, const unsigned int);
+		template <class Archive>
+		void load(Archive &, rtmath::matrixop &, const unsigned int);
+		template <class Archive>
+		void save(Archive &, rtmath::matrixop &, const unsigned int);
+	}
+}
 
 #define inlinerval(x,y) inline x y(size_t rank, ...) const \
 	{ x res(_dims); va_list indices; va_start(indices, rank); std::vector<size_t> ptr; \
@@ -23,6 +39,15 @@ namespace rtmath {
 		// This enables arbitrary multiplication / integration
 		// It's a base class so I can reuse the code in many different ways
 	{
+		template<class Archive> 
+		friend void ::boost::serialization::serialize(
+			Archive &, matrixop &, const unsigned int);
+		template<class Archive> 
+		friend void ::boost::serialization::load(
+			Archive &, matrixop &, const unsigned int);
+		template<class Archive> 
+		friend void ::boost::serialization::save(
+			Archive &, matrixop &, const unsigned int);
 	public:
 		matrixop(const std::vector<size_t> &size);
 		matrixop(size_t ndims, ...);
@@ -137,7 +162,6 @@ namespace rtmath {
 		void _free();
 		size_t _datasize;
 		double *_data;
-		friend class boost::serialization::access;
 	public: // Static member functions start here
 		// These functions construct a new matrixop. It is NOT in a shared_ptr.
 		// Done like this because I then have the choice of pointer container.

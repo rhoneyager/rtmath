@@ -1,18 +1,22 @@
 #include "../rtmath/Stdafx.h"
-#include <iostream>
-#include <fstream>
 #include <sstream>
-#include <memory>
 #include <string>
-#include <vector>
-#include <map>
 #include <set>
 
+#include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/rotations.h"
-#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 namespace rtmath {
 	namespace ddscat {
+
+		rotationsBase::rotationsBase()
+			:
+			_bMin(0), _bMax(360), _bN(6),
+				_tMin(0), _tMax(90), _tN(6),
+				_pMin(0), _pMax(180), _pN(6)
+		{
+		}
 
 		rotationsBase::~rotationsBase()
 		{

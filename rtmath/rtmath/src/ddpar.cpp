@@ -2,12 +2,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <memory>
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
-#include <unordered_map>
 #include <complex>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -15,11 +13,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
-#include "../rtmath/matrixop.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
-#include "../rtmath/command.h"
 #include "../rtmath/config.h"
 #include "../rtmath/ddscat/rotations.h"
 
