@@ -62,7 +62,6 @@ namespace rtmath {
 			_latticePtsRi.clear();
 			//_moments.clear();
 			_numPoints = 0;
-			_numDielectrics = 0;
 			_filename = "";
 			//_I = shared_ptr<matrixop>(new matrixop(2,3,3));
 		}

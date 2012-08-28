@@ -8,8 +8,6 @@
 
 namespace rtmath {
 
-#ifndef USE_IPP
-
 	void matrixop::_init(const std::vector<size_t> &size)
 	{
 		_data = NULL; // it is safe to put this here
@@ -301,7 +299,7 @@ namespace rtmath {
 		if (rhs.dimensionality() != this->dimensionality())
 			return (this->dimensionality() < rhs.dimensionality());
 
-		for (auto it = _dims.begin(), out = rhs._dims.begin(); it != _dims.end(); it++, ot++)
+		for (auto it = _dims.begin(), ot = rhs._dims.begin(); it != _dims.end(); it++, ot++)
 			if (*it != *ot) return (*it < *ot);
 
 		for (size_t i=0; i<_datasize; i++)
@@ -1416,7 +1414,6 @@ namespace rtmath {
 		return res;
 	}
 
-#endif // ifndef USE_IPP
 
 }; // end rtmath
 //

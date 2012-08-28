@@ -59,6 +59,8 @@ set (ddscat-src
 	src/shapefile.cpp
 	src/shapes.cpp
 	src/shapestats.cpp
+	src/shapestats_genstats.cpp
+	src/shapestatsRotated.cpp
 	src/shapes-generators.cpp
 	)
 set (ddscat-hdr
@@ -80,6 +82,7 @@ set (ddscat-hdr
 	rtmath/ddscat/shapefile.h
 	rtmath/ddscat/shapes.h
 	rtmath/ddscat/shapestats.h
+	rtmath/ddscat/shapestatsRotated.h
 	rtmath/ddscat/shapestatsviews.h
 	)
 source_group("Source Files\\ddscat" FILES ${ddscat-src})
@@ -125,7 +128,6 @@ set (general-src
 	src/emd.cpp
 	src/interpolatable.cpp
 	src/matrixop.cpp
-	src/matrixop-ipp.cpp
 	src/os_functions.cpp
 	src/pfFixed.cpp
 	src/phaseFunc.cpp
@@ -133,7 +135,6 @@ set (general-src
 	src/quadrature.cpp
 	src/refract.cpp
 	src/ROOT_functions.cpp
-	src/rtmath.cpp
 	src/serialization.cpp
 	src/Stdafx.cpp
 	src/surfaces.cpp
@@ -274,6 +275,21 @@ set (rayleigh-hdr
 	)
 source_group("Source Files\\rayleigh" FILES ${rayleigh-src})
 source_group("Header Files\\rayleigh" FILES ${rayleigh-hdr})
+
+# Serialization
+set (serialization-hdr
+	rtmath/Serialization/common_templates_serialization.h
+	rtmath/Serialization/ddpar_serialization.h
+	rtmath/Serialization/ddparGenerator_serialization.h
+	rtmath/Serialization/matrixop_serialization.h
+	rtmath/Serialization/rotations_serialization.h
+	rtmath/Serialization/shapefile_serialization.h
+	rtmath/Serialization/shapes_serialization.h
+	rtmath/Serialization/shapestats_serialization.h
+	rtmath/Serialization/shapestatsRotated_serialization.h
+	)
+# source_group("Source Files\\Serialization" FILES ${serialization-src})
+source_group("Header Files\\Serialization" FILES ${serialization-hdr})
 
 # /Other
 

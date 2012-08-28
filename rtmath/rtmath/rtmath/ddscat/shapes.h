@@ -16,21 +16,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/weak_ptr.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include "../matrixop.h"
 #include "../coords.h"
 #include "../common_templates.h"
 #include "../depGraph.h"
-#include "../error/error.h"
 #include "rotations.h"
 
 //double _d; // Interdipole spacing, in um
@@ -86,14 +77,6 @@ namespace rtmath {
 			std::string varname;
 			std::string units;
 			friend class boost::serialization::access;
-		private:
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & boost::serialization::make_nvp("variable", varname);
-				ar & boost::serialization::make_nvp("paramSet",pset);
-				ar & boost::serialization::make_nvp("units", units);
-			}
 		};
 
 		// Using a map because it provides easy access to the constraint var name,
@@ -111,12 +94,6 @@ namespace rtmath {
 			void addConstraint(shapeConstraintPtr);
 			shapeConstraintContainer shapeConstraints;
 			friend class boost::serialization::access;
-		private:
-			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & boost::serialization::make_nvp("shapeConstraints", shapeConstraints);
-				}
 		};
 
 		class shape : public constrainable, public std::enable_shared_from_this<shape>
@@ -137,13 +114,6 @@ namespace rtmath {
 			bool _get(const std::string &id, double &val, std::string &units) const;
 			void _set(const std::string &id, double val, const std::string &units);
 			friend class boost::serialization::access;
-		private:
-			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
-					ar & boost::serialization::make_nvp("densities", _densities);
-				}
 		};
 
 		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
@@ -190,16 +160,6 @@ namespace rtmath {
 			boost::shared_ptr<rtmath::graphs::graph> _graph;
 			boost::shared_ptr<rotations> _rots;
 			friend class boost::serialization::access;
-		private:
-			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					// TODO: save the vertex maps!!!
-					// saving these implies need to save lambda function linkage.....?
-					GETOBJKEY();
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shape);
-					ar & boost::serialization::make_nvp("rotations", _rots);
-				}
 		protected:
 			// The vertexRunnable overrides
 			virtual void run(const std::string &id = "");
@@ -230,14 +190,7 @@ namespace rtmath {
 				void exportDDPAR(ddPar &out) const;
 				void exportDDPAR(const std::string &filename, const ddPar &ddbase) const;
 
-			protected:
 				friend class boost::serialization::access;
-			private:
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(shapeModifiable);
-				}
 			};
 
 			// from_file provides a target for ddscat shape.dat file processing.
@@ -261,12 +214,6 @@ namespace rtmath {
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
 				friend class boost::serialization::access;
-			private:
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(from_ddscat);
-				}
 			};
 
 			
@@ -281,12 +228,6 @@ namespace rtmath {
 				virtual void run(const std::string &id = "");
 				virtual bool runSupported(const std::string &id = "");
 				friend class boost::serialization::access;
-			private:
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(from_ddscat);
-				}
 			};
 			
 		}
@@ -294,14 +235,11 @@ namespace rtmath {
 	}
 }
 
-//BOOST_CLASS_EXPORT_GUID(rtmath::ddscat::shape, "shape")
-//BOOST_CLASS_EXPORT_GUID(rtmath::ddscat::shapeModifiable, "shapeModifiable")
-//BOOST_CLASS_EXPORT_GUID(rtmath::ddscat::shapes::from_file, "from_file")
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::constrainable)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::ellipsoid)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::constrainable)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::ellipsoid)
 
 //#pragma warning( pop )

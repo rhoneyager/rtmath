@@ -16,20 +16,9 @@
 #include <complex>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/serialization/split_member.hpp>
 #include <boost/shared_ptr.hpp>
 #include "parids.h"
-#include "../parsers.h"
+//#include "../parsers.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -510,28 +499,6 @@ namespace rtmath {
 
 			bool __getStringBool(ddParParsers::ParId id, const std::string &bfalse, const std::string &btrue) const;
 			void __setStringBool(ddParParsers::ParId id, bool v, const std::string &bfalse, const std::string &btrue);
-
-			template<class Archive>
-			void save(Archive & ar, const unsigned int version) const
-			{
-				//ar & BOOST_SERIALIZATION_NVP(exportLoc);
-				//ar & boost::serialization::make_nvp("ddPar_Raw", _parsedData);
-				//ar & boost::serialization::make_nvp("Scattering_Planes", _scaPlanes);
-				std::ostringstream out;
-				write(out);
-				std::string _savedata;
-				_savedata = out.str();
-				ar & boost::serialization::make_nvp("Par_File", _savedata);
-			}
-			template<class Archive>
-			void load(Archive & ar, const unsigned int version)
-			{
-				std::string _savedata;
-				ar & boost::serialization::make_nvp("Par_File", _savedata);
-				std::istringstream in(_savedata);
-				read(in);
-			}
-			BOOST_SERIALIZATION_SPLIT_MEMBER()
 		};
 
 #undef accessorSimple

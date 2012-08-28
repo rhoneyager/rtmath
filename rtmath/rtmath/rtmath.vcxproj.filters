@@ -88,6 +88,12 @@
     <Filter Include="Source Files\Garrett">
       <UniqueIdentifier>{7b21466c-e757-46a2-bff7-e5768a3769c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Serialization">
+      <UniqueIdentifier>{0ea318a2-567a-4e2d-99dc-3955af577009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Serialization">
+      <UniqueIdentifier>{0e85308d-99ca-40fd-9779-10ca726229a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rtmath\zeros.h">
@@ -381,6 +387,39 @@
     <ClInclude Include="rtmath\MagickLINK.h">
       <Filter>Header Files\General</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\ddscat\shapestatsviews.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\ddscat\shapestatsRotated.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\matrixop_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\shapefile_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\shapestats_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\shapestatsRotated_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\rotations_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\common_templates_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\ddpar_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\ddparGenerator_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\Serialization\shapes_serialization.h">
+      <Filter>Header Files\Serialization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -606,9 +645,6 @@
     <ClCompile Include="src\refract.cpp">
       <Filter>Source Files\General</Filter>
     </ClCompile>
-    <ClCompile Include="src\rtmath.cpp">
-      <Filter>Source Files\General</Filter>
-    </ClCompile>
     <ClCompile Include="src\Stdafx.cpp">
       <Filter>Source Files\General</Filter>
     </ClCompile>
@@ -632,9 +668,6 @@
     </ClCompile>
     <ClCompile Include="src\ncContainer.cpp">
       <Filter>Source Files\netcdf</Filter>
-    </ClCompile>
-    <ClCompile Include="src\matrixop-ipp.cpp">
-      <Filter>Source Files\General</Filter>
     </ClCompile>
     <ClCompile Include="src\mieScattMatrix.cpp">
       <Filter>Source Files\mie</Filter>
@@ -695,6 +728,12 @@
     </ClCompile>
     <ClCompile Include="src\pclstuff.cpp">
       <Filter>Source Files\Garrett</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapestatsRotated.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapestats_genstats.cpp">
+      <Filter>Source Files\ddscat</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -10,14 +10,6 @@
 #include <vector>
 #include <complex>
 #include <boost/tokenizer.hpp>
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/string.hpp> 
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/set.hpp>
 #include <boost/shared_ptr.hpp>
 #include "ddpar.h"
 #include "../common_templates.h"
@@ -42,20 +34,6 @@ namespace rtmath {
 			size_t _bN, _tN, _pN;
 			friend class boost::serialization::access;
 			friend struct std::less<rtmath::ddscat::rotationsBase >;
-		public:
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & boost::serialization::make_nvp("bMin", _bMin);
-				ar & boost::serialization::make_nvp("bMax",_bMax);
-				ar & boost::serialization::make_nvp("bN",_bN);
-				ar & boost::serialization::make_nvp("tMin", _tMin);
-				ar & boost::serialization::make_nvp("tMax", _tMax);
-				ar & boost::serialization::make_nvp("tN", _tN);
-				ar & boost::serialization::make_nvp("pMin",_pMin);
-				ar & boost::serialization::make_nvp("pMax",_pMax);
-				ar & boost::serialization::make_nvp("pN", _pN);
-			}
 		};
 
 		class rotations : public rotationsBase
@@ -95,14 +73,8 @@ namespace rtmath {
 			bool operator!=(const rotations &rhs) const;
 			bool operator<(const rotations &rhs) const;
 
-			// TODO: add stream-like function alias
 			friend struct std::less<rtmath::ddscat::rotations >;
 			friend class boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(rotationsBase);
-			}
 		};
 
 		// Supporting code to allow boost unordered map

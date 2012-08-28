@@ -7,17 +7,7 @@
 
 #include <set>
 #include <string>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/set.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -64,35 +54,6 @@ namespace rtmath {
 			friend class ddParIteration;
 			friend class ddParIterator;
 			friend class boost::serialization::access;
-			// When the class Archive corresponds to an output archive, the
-			// & operator is defined similar to <<.  Likewise, when the class Archive
-			// is a type of input archive the & operator is defined similar to >>.
-		private:
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & BOOST_SERIALIZATION_NVP(name);
-				ar & BOOST_SERIALIZATION_NVP(description);
-				ar & BOOST_SERIALIZATION_NVP(outLocation);
-				ar & BOOST_SERIALIZATION_NVP(ddscatVer);
-				ar & BOOST_SERIALIZATION_NVP(strPreCmds);
-				ar & BOOST_SERIALIZATION_NVP(strPostCdms);
-
-				ar & BOOST_SERIALIZATION_NVP(compressResults);
-				ar & BOOST_SERIALIZATION_NVP(genIndivScripts);
-				ar & BOOST_SERIALIZATION_NVP(genMassScript);
-				ar & BOOST_SERIALIZATION_NVP(shapeStats);
-				ar & BOOST_SERIALIZATION_NVP(registerDatabase);
-				ar & BOOST_SERIALIZATION_NVP(doExport);
-				ar & BOOST_SERIALIZATION_NVP(exportLoc);
-
-				// The par file needs serialization, as it holds some properties
-				ar & boost::serialization::make_nvp("baseParFile", base);
-				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(constrainable);
-
-				ar & BOOST_SERIALIZATION_NVP(rots);
-				ar & BOOST_SERIALIZATION_NVP(shapes);
-			}
 		};
 
 		class ddParGenerator;
@@ -123,16 +84,6 @@ namespace rtmath {
 			//const ddParGenerator &_gen;
 			const ddParGenerator *_genp;
 			ddParIterator() : _genp(nullptr) { }
-			// When the class Archive corresponds to an output archive, the
-			// & operator is defined similar to <<.  Likewise, when the class Archive
-			// is a type of input archive the & operator is defined similar to >>.
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & boost::serialization::make_nvp("ddParGenerator", _genp);
-				ar & BOOST_SERIALIZATION_NVP(shape);
-				ar & BOOST_SERIALIZATION_NVP(rots);
-			}
 		};
 
 		// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
@@ -152,12 +103,6 @@ namespace rtmath {
 			const ddParGenerator *_genp;
 			void _populate();
 			friend class boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & boost::serialization::make_nvp("elements", _elements);
-				ar & boost::serialization::make_nvp("ddParGenerator", _genp);
-			}
 		};
 
 		class ddParGenerator : public ddParGeneratorBase
@@ -174,19 +119,8 @@ namespace rtmath {
 			friend class ddParIteration;
 			friend class ddParIterator;
 			friend class boost::serialization::access;
-		private:
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version)
-			{
-				ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ddParGeneratorBase);
-			}
 		};
 
 	} // end ddscat
 } // end rtmath
-
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGeneratorBase)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParIterator)
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParIteration)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGenerator)
 

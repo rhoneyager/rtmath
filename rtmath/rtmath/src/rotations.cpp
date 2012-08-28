@@ -9,7 +9,6 @@
 #include <set>
 
 #include "../rtmath/ddscat/rotations.h"
-#include "../rtmath/error/error.h"
 #include "../../rtmath/rtmath/command.h"
 
 namespace rtmath {

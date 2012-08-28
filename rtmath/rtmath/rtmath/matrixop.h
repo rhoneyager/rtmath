@@ -7,24 +7,6 @@
 #include <string>
 #include <iostream>
 
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/split_member.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-
-#include "defs.h"
-#include "mapid.h"
-#include "error/debug.h"
-#include "Public_Domain/MurmurHash3.h"
-
 #define inlinerval(x,y) inline x y(size_t rank, ...) const \
 	{ x res(_dims); va_list indices; va_start(indices, rank); std::vector<size_t> ptr; \
 	size_t ival; for (size_t i=0; i<rank; i++) { ival = va_arg(indices,size_t); \
@@ -156,41 +138,6 @@ namespace rtmath {
 		size_t _datasize;
 		double *_data;
 		friend class boost::serialization::access;
-	private:
-		template<class Archive>
-		void save(Archive & ar, const unsigned int version) const
-		{
-			ar & boost::serialization::make_nvp("Dimensions", _dims);
-			//ar & boost::serialization::make_nvp("Size", _datasize);
-			std::ostringstream out;
-			for (size_t i=0; i<_datasize-1; i++)
-			{
-				out << _data[i] << ",";
-			}
-			out << _data[_datasize-1];
-			std::string savedata = out.str();
-			ar & boost::serialization::make_nvp("Data", savedata);
-		}
-		template<class Archive>
-		void load(Archive & ar, const unsigned int version)
-		{
-			std::string savedata;
-			ar & boost::serialization::make_nvp("Dimensions", _dims);
-			resize(_dims);
-			// Loading _datasize is sort of pointless, as resize sets it
-			//ar & boost::serialization::make_nvp("Size", _datasize);
-			ar & boost::serialization::make_nvp("Data", savedata);
-			typedef boost::tokenizer<boost::char_separator<char> >
-				tokenizer;
-			boost::char_separator<char> sep(",");
-			tokenizer tcom(savedata,sep);
-			size_t i=0;
-			for (auto ot = tcom.begin(); ot != tcom.end(); ot++, i++)
-			{
-				_data[i] = boost::lexical_cast<double>(*ot);
-			}
-		}
-		BOOST_SERIALIZATION_SPLIT_MEMBER()
 	public: // Static member functions start here
 		// These functions construct a new matrixop. It is NOT in a shared_ptr.
 		// Done like this because I then have the choice of pointer container.
@@ -217,3 +164,5 @@ std::istream & operator>>(std::istream &stream, rtmath::matrixop &ob);
 // Extend std::less and std::hash to allow for hashing and ordering of *const* matrixops
 // If not const, then changes in internal data will break the hashes and ordering.
 // TODO: see if ordering may be done based on address in memory.
+
+#undef inlinerval

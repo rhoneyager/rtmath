@@ -2,8 +2,10 @@
 
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/serialization/ddparGenerator_serialization.h"
 #include "../rtmath/ddscat/runScripts.h"
 #include "../rtmath/serialization.h"
+
 
 namespace rtmath {
 	namespace ddscat {
@@ -328,9 +330,6 @@ namespace rtmath {
 }
 
 
-
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGeneratorBase)
-//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParIterator)
-//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParIteration)
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddParGenerator)
 

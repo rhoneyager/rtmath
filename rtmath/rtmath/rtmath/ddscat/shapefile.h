@@ -9,20 +9,12 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include "../matrixop.h"
 
 namespace rtmath {
+	class matrixop;
+
 	namespace Garrett {
 		class pointContainer;
 	}
@@ -67,20 +59,6 @@ namespace rtmath {
 			friend class shapeFileStats;
 			friend class convexHull;
 			friend class boost::serialization::access;
-		private:
-			template<class Archive>
-				void serialize(Archive & ar, const unsigned int version)
-				{
-					ar & boost::serialization::make_nvp("filename", _filename);
-					ar & boost::serialization::make_nvp("N", _numPoints);
-					ar & boost::serialization::make_nvp("Dielectrics", _Dielectrics);
-					ar & boost::serialization::make_nvp("a1", _a1);
-					ar & boost::serialization::make_nvp("a2", _a2);
-					ar & boost::serialization::make_nvp("a3", _a3);
-					ar & boost::serialization::make_nvp("d", _d);
-					ar & boost::serialization::make_nvp("x0", _x0);
-					ar & boost::serialization::make_nvp("xd", _xd);
-				}
 		};
 
 
@@ -89,5 +67,3 @@ namespace rtmath {
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob);
 std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
-
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
