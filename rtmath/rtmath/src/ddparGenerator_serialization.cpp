@@ -32,7 +32,7 @@ namespace boost
 
 			// The par file needs serialization, as it holds some properties
 			ar & boost::serialization::make_nvp("baseParFile", g.base);
-			ar & boost::serialization::make_nvp("rtmath::ddscat::constrainable",
+			ar & boost::serialization::make_nvp("rtmath_ddscat_constrainable",
 				boost::serialization::base_object<rtmath::ddscat::constrainable>(g));
 
 			ar & boost::serialization::make_nvp("shapes", g.shapes);
@@ -58,7 +58,7 @@ namespace boost
 		void serialize(Archive & ar, rtmath::ddscat::ddParGenerator & g, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp(
-				"rtmath::ddscat::ddParGeneratorBase", 
+				"rtmath_ddscat_ddParGeneratorBase", 
 				boost::serialization::base_object<rtmath::ddscat::ddParGeneratorBase>(g));
 		}
 

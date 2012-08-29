@@ -234,7 +234,7 @@ namespace rtmath {
 						mapit[*ot] = vmap[*ot].begin();
 
 					auto mit = mapit.begin();
-					auto cit = &(mit->second);
+					auto cit = &(mit->second); // TODO: begin debugging here
 
 					// Loops will break when the end condition is detected
 

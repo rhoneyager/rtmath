@@ -29,7 +29,7 @@ namespace boost
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::rotations & g, const unsigned int version)
 		{
-			ar & boost::serialization::make_nvp("rtmath::ddscat::rotationsBase", 
+			ar & boost::serialization::make_nvp("rtmath_ddscat_rotationsBase", 
 				boost::serialization::base_object<rtmath::ddscat::rotationsBase>(g));
 		}
 

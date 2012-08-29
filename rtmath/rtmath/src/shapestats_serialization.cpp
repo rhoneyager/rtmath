@@ -64,7 +64,7 @@ namespace boost
 		void serialize(Archive & ar, rtmath::ddscat::shapeFileStats & g, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp(
-				"rtmath::ddscat::shapeFileStatsBase",
+				"rtmath_ddscat_shapeFileStatsBase",
 				boost::serialization::base_object<rtmath::ddscat::shapeFileStatsBase>(g));
 		}
 

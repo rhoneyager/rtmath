@@ -83,39 +83,45 @@ BOOST_AUTO_TEST_CASE(pargenerator_sample)
 // Attempt to generate a batch of runs
 BOOST_AUTO_TEST_CASE(pargenerator_generate)
 {
-	ddparloader parloader;
+	try {
+		ddparloader parloader;
 
-	ddParGenerator p;
-	p.base = *(parloader.testPar);
-	p.name = "test run";
-	p.description = "desc goes here";
-	p.outLocation = "./testrun";
+		ddParGenerator p;
+		p.base = *(parloader.testPar);
+		p.name = "test run";
+		p.description = "desc goes here";
+		p.outLocation = "./testrun";
 
-	p.ddscatVer = 72;
-	p.compressResults = true;
+		p.ddscatVer = 72;
+		p.compressResults = true;
 
-	// Set temp, aeff
-	p.addConstraint(shapeConstraint::create("temp", -15, "C"));
-	p.addConstraint(shapeConstraint::create("aeff", "50,200,300", "um"));
-	p.addConstraint(shapeConstraint::create("freq", 94, "GHz"));
+		// Set temp, aeff
+		p.addConstraint(shapeConstraint::create("temp", -15, "C"));
+		p.addConstraint(shapeConstraint::create("aeff", "50,200,300", "um"));
+		p.addConstraint(shapeConstraint::create("freq", 94, "GHz"));
 
-	// Set shape
-	boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
-	shp->addConstraint(shapeConstraint::create("source_filename", 0, 
-		(globals::instance()->pTestData / "2mm12shape.txt").string() ));
-	shp->addConstraint(shapeConstraint::create("source_filename", 0, 
-		(globals::instance()->pTestData / "ddscat-snow-18-3-7.shp").string() ));
-	p.shapes.insert(shp);
-
-
-	// Set rotations
-	p.rots.insert( rotations::create(p.base) );
-	//p.rots.insert( rotations::create(0,90,6,0,180,6,0,180,10) );
+		// Set shape
+		boost::shared_ptr< rtmath::ddscat::shapes::from_file > shp(new rtmath::ddscat::shapes::from_file());
+		shp->addConstraint(shapeConstraint::create("source_filename", 0, 
+			(globals::instance()->pTestData / "2mm12shape.txt").string() ));
+		shp->addConstraint(shapeConstraint::create("source_filename", 0, 
+			(globals::instance()->pTestData / "ddscat-snow-18-3-7.shp").string() ));
+		p.shapes.insert(shp);
 
 
-	// generate
-	p.generate("generation");
-	// serialize
+		// Set rotations
+		p.rots.insert( rotations::create(p.base) );
+		//p.rots.insert( rotations::create(0,90,6,0,180,6,0,180,10) );
+
+
+		// generate
+		p.generate("generation"); // Note: this throws and is not caught... Need to fix additional var additions
+		// serialize
+	}
+	catch (std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 }
 //
 

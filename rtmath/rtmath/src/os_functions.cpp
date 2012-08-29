@@ -49,6 +49,8 @@ namespace rtmath {
 		bool _consoleTerminated = false;
 #endif
 
+		bool doWaitOnExit = false;
+
 		// Regular defs start here
 		void appEntry(int argc, char** argv)
 		{
@@ -74,6 +76,8 @@ namespace rtmath {
 					config::loadRtconfRoot(rtconfpath);
 				}
 			}
+
+			doWaitOnExit = waitOnExit();
 
 			// Set appexit
 			atexit(appExit);
@@ -148,7 +152,7 @@ namespace rtmath {
 			rtmath::debug::listuniqueobj(cerr, false);
 //#endif
 
-			bool wait = rtmath::debug::waitOnExit();
+			bool wait = doWaitOnExit;
 			if (wait)
 			{
 //#ifdef _WIN32

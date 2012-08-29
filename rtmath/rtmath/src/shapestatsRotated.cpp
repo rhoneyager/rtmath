@@ -73,14 +73,15 @@ namespace rtmath {
 			> > > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 
 			const size_t nV = _shp->_Dielectrics.size()+1;
+			matrixop cloner(2,3,1), clonerb(2,3,3);
 			acc_x.resize(nV); // Assumes that the dielectrics start at 1.
 			acc_y.resize(nV); // Will probably crash if not.
 			acc_z.resize(nV);
-			res.PE.resize(nV);
-			res.mom1.resize(nV);
-			res.mom2.resize(nV);
-			res.mominert.resize(nV);
-			res.covariance.resize(nV);
+			res.PE.resize(nV, cloner);
+			res.mom1.resize(nV, cloner);
+			res.mom2.resize(nV, cloner);
+			res.mominert.resize(nV,clonerb);
+			res.covariance.resize(nV,clonerb);
 
 			for (auto it = _shp->_latticePtsStd.begin(), ot = _shp->_latticePtsRi.begin(); 
 				it != _shp->_latticePtsStd.end(); it++, ot++)
@@ -92,7 +93,7 @@ namespace rtmath {
 				double x = pt.get(2,0,0);
 				double y = pt.get(2,1,0);
 				double z = pt.get(2,2,0);
-				size_t diel = it->get(2,0,0);
+				size_t diel = ot->get(2,0,0);
 
 				//vector<double> vpt(3);
 				//pt.to<std::vector<double> >(vpt);

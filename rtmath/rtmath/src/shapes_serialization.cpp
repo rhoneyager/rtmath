@@ -32,7 +32,7 @@ namespace boost
 		void serialize(Archive & ar, rtmath::ddscat::shape & g, const unsigned int version)
 		{
 				ar & boost::serialization::make_nvp(
-					"rtmath::ddscat::constrainable",
+					"rtmath_ddscat_constrainable",
 					boost::serialization::base_object<rtmath::ddscat::constrainable>(g));
 				ar & boost::serialization::make_nvp("densities", g._densities);
 		}
@@ -42,7 +42,7 @@ namespace boost
 		{
 			// TODO: save the vertex maps?
 			ar & boost::serialization::make_nvp(
-				"rtmath::ddscat::shape",
+				"rtmath_ddscat_shape",
 				boost::serialization::base_object<rtmath::ddscat::shape>(g));
 			ar & boost::serialization::make_nvp("rotations", g._rots);
 		}
@@ -52,7 +52,7 @@ namespace boost
 		{
 			// TODO: save the vertex maps?
 			ar & boost::serialization::make_nvp(
-				"rtmath::ddscat::shapeModifiable",
+				"rtmath_ddscat_shapeModifiable",
 				boost::serialization::base_object<rtmath::ddscat::shapeModifiable>(g));
 		}
 
@@ -61,7 +61,7 @@ namespace boost
 		{
 			// TODO: save the vertex maps?
 			ar & boost::serialization::make_nvp(
-				"rtmath::ddscat::shapes::from_ddscat",
+				"rtmath_ddscat_shapes_from_ddscat",
 				boost::serialization::base_object<rtmath::ddscat::shapes::from_ddscat>(g));
 		}
 
@@ -70,7 +70,7 @@ namespace boost
 		{
 			// TODO: save the vertex maps?
 			ar & boost::serialization::make_nvp(
-				"rtmath::ddscat::shapes::from_ddscat",
+				"rtmath_ddscat_shapes_from_ddscat",
 				boost::serialization::base_object<rtmath::ddscat::shapes::from_ddscat>(g));
 		}
 
