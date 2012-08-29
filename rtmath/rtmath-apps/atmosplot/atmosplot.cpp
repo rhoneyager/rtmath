@@ -11,8 +11,10 @@
 #include <set>
 #include "../../rtmath/rtmath/ROOTlink.h"
 // root headers are identical to those in ROOTlink.h
-#include "../../rtmath/rtmath/rtmath.h"
-
+#include "../../rtmath/rtmath/absorb.h"
+#include "../../rtmath/rtmath/atmos.h"
+#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/config.h"
 
 void doHelp();
 

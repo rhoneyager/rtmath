@@ -3,7 +3,13 @@
 // calculation functions. It will also be able to handle both ice and water.
 
 #include "../../rtmath/rtmath/ROOTlink.h"
-
+#include <memory>
+#include <complex>
+#include <cmath>
+#include <cstring>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -14,14 +20,8 @@
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
-#include <memory>
-#include <complex>
-#include <cmath>
-#include <cstring>
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
-#include <boost/tuple/tuple.hpp>
 
 void write(const std::complex<double> &ref, bool mtab);
 

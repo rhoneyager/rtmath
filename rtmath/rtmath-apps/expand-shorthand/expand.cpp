@@ -1,13 +1,13 @@
 #include <memory>
 #include <iostream>
 #include <string>
-//#include "../../rtmath/rtmath/rtmath.h"
+#include <boost/program_options.hpp>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/common_templates.h"
-
-#include <boost/program_options.hpp>
+#include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/ROOTlink.h"
 
 int main(int argc, char** argv)
 {

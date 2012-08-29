@@ -11,7 +11,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 // combo replacement program, since combo has annoying undebugged memory bounds errors
 

@@ -12,10 +12,10 @@
 
 #include "converter.h"
 
-
-#include "../../rtmath/rtmath/serialization.h"
-//#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/serialization.h"
+#include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
+//#include "../../rtmath/rtmath/ddscat/ddpar.h"
 //#include "../../rtmath/rtmath/ddscat/shapefile.h"
 
 template <>

@@ -10,7 +10,9 @@
 #include <map>
 #include <vector>
 #include <boost/lexical_cast.hpp>
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/units.h"
 
 void doHelp();
 

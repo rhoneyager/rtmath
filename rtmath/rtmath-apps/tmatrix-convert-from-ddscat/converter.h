@@ -33,7 +33,7 @@ public:
 private:
 	std::string ddparFile, statsFile;
 	double temp, nu, frequency, dipoleSpacing;
-	bool tmatrix;
+	bool dotmatrix;
 	std::string shapeMeth, dielMeth, volMeth;
 	boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 };

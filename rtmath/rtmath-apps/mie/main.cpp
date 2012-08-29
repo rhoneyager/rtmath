@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp> // used for location of output of netcdf
 
 #include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 void doHelp();
 

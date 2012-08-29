@@ -9,10 +9,6 @@
 #include <set>
 
 #include <boost/program_options.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
@@ -20,15 +16,18 @@
 #include <boost/shared_ptr.hpp>
 
 #pragma warning( pop ) 
+#include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/serialization.h"
+#include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
 #include "../../rtmath/rtmath/error/error.h"
-//#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/MagickLINK.h"
-
+#include "../../rtmath/rtmath/common_templates.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 int main(int argc, char** argv)
 {
@@ -220,9 +219,9 @@ int main(int argc, char** argv)
 					if (beta != 0) continue;
 					const double theta = ot->theta;
 					const double phi = ot->phi;
-					const double PEx = ot->PE.get(2,0,0);
-					const double PEy = ot->PE.get(2,1,0);
-					const double PEz = ot->PE.get(2,2,0);
+					const double PEx = ot->PE[0].get(2,0,0);
+					const double PEy = ot->PE[0].get(2,1,0);
+					const double PEz = ot->PE[0].get(2,2,0);
 					
 					tPEx->SetPoint(n,theta,phi,PEx);
 					tPEy->SetPoint(n,theta,phi,PEy);

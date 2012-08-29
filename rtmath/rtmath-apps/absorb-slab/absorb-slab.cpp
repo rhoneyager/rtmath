@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/absorb.h"
+#include "../../rtmath/rtmath/atmos.h"
+#include "../../rtmath/rtmath/command.h"
 #include <TGraph.h>
 #include <TF1.h>
 #include <TCanvas.h>

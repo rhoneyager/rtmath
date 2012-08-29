@@ -5,6 +5,8 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
+#include "../matrixop.h"
+
 // Forward declaration for boost::serialization below
 namespace rtmath {
 	class matrixop;

@@ -18,7 +18,11 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <stdlib.h>
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/absorb.h"
+#include "../../rtmath/rtmath/atmos.h"
+#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/config.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 void doHelp();
 

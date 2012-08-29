@@ -20,19 +20,17 @@
 #include <set>
 
 #include <boost/program_options.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
-
 #pragma warning( pop ) 
-#include "../../rtmath/rtmath/rtmath.h"
 
-
+#include "../../rtmath/rtmath/common_templates.h"
+#include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
+#include "../../rtmath/rtmath/serialization.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {

@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'frmmain.ui'
 **
-** Created: Fri Aug 17 01:52:58 2012
-**      by: Qt User Interface Compiler version 4.7.2
+** Created: Wed Aug 29 02:57:32 2012
+**      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/

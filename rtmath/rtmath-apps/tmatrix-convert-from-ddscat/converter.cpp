@@ -1,15 +1,21 @@
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include <algorithm>
 #include <sstream>
+#include <boost/serialization/vector.hpp>
 #include "converter.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/command.h"
+
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/serialization.h"
+#include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
+
 #include "../../deps/tmatrix/src/headers/tmatrix.h"
+#include "../../rtmath/rtmath/common_templates.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 namespace {
 	const size_t cmax = 1024;
@@ -79,12 +85,12 @@ fileconverter::fileconverter()
 	temp = 0;
 	frequency = 0;
 	dipoleSpacing = 0;
-	tmatrix = true;
+	dotmatrix = true;
 }
 
 void fileconverter::doTMATRIX(bool tm)
 {
-	tmatrix = tm;
+	dotmatrix = tm;
 }
 
 void fileconverter::setDDPARfile(const std::string &file)
@@ -354,7 +360,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		TBranch *data = tree.Branch("tmatrixInVars", &in, "AXI/D:RAT/D:LAM/D:MRR/D:MRI/D:EPS/D:DDELT/D:ALPHA/D:BETA/D:THET0/D:THET/D:PHI0/D:PHI/D:NP/I:NDGS/I");
 
 		TBranch *dataout = nullptr;
-		if (tmatrix)
+		if (dotmatrix)
 			dataout = tree.Branch("tmatrixOutVars",&ocnv, tmOutConverterStr);
 
 		if (ROOToutput)
@@ -412,9 +418,9 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 						ar->theta = thet;
 						ar->theta0 = thet0;
 
-						if (tmatrix)
+						if (dotmatrix)
 						{
-							tmatrix::tmatrix run;
+							::tmatrix::tmatrix run;
 							run.vars = in;
 
 							run.run();

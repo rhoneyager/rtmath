@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'frmmain.h'
 **
-** Created: Fri Jul 20 19:40:30 2012
+** Created: Wed Aug 29 01:01:35 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.1)
 **
 ** WARNING! All changes made in this file will be lost!

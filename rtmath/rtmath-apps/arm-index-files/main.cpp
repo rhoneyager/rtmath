@@ -16,7 +16,7 @@
 #include <sstream>
 #include <libpq-fe.h>
 #include <pqxx/pqxx>
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/config.h"
 
 void doHelp();
 

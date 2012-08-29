@@ -2,6 +2,7 @@
 
 #include "../rtmath/ROOTlink.h"
 #include "../rtmath/MagickLINK.h"
+#include "../rtmath/PCLlink.h"
 
 #include <algorithm>
 #include <iostream>

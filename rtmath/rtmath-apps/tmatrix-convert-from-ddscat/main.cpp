@@ -7,6 +7,8 @@
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 //#include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/common_templates.h"
+#include "../../rtmath/rtmath/splitSet.h"
 
 int main(int argc, char *argv[])
 {
