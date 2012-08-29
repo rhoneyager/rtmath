@@ -110,6 +110,11 @@ namespace rtmath {
 			base = ddfile;
 		}
 
+		ddParIterator::ddParIterator()
+			: _genp(nullptr)
+		{
+		}
+
 		ddParIterator::ddParIterator(const ddParGenerator &gen, boost::shared_ptr<shapeModifiable> shp)
 			: _genp(&gen)
 		{

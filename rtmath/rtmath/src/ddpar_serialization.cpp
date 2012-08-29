@@ -14,7 +14,7 @@ namespace boost
 	namespace serialization
 	{
 		template<class Archive>
-		void save(Archive &ar, rtmath::ddscat::ddPar &g, const unsigned int version)
+		void save(Archive &ar, const rtmath::ddscat::ddPar &g, const unsigned int version)
 		{
 				std::ostringstream out;
 				g.write(out);
@@ -38,6 +38,6 @@ namespace boost
 			boost::serialization::split_free(ar, g, version);
 		}
 
-		EXPORT(rtmath::ddscat::ddPar);
+		EXPORT(serialize, rtmath::ddscat::ddPar);
 	}
 }

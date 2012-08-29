@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/serialization/export.hpp>
 
+#include "rotations_serialization.h"
 #include "shapes_serialization.h"
 #include "ddpar_serialization.h"
 

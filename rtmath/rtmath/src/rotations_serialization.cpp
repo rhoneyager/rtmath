@@ -6,6 +6,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/set.hpp>
 
 namespace boost
 {
@@ -28,11 +29,12 @@ namespace boost
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::rotations & g, const unsigned int version)
 		{
-			ar & boost::serialization::base_object<rtmath::ddscat::rotationsBase>(g);
+			ar & boost::serialization::make_nvp("rtmath::ddscat::rotationsBase", 
+				boost::serialization::base_object<rtmath::ddscat::rotationsBase>(g));
 		}
 
-		EXPORT(rtmath::ddscat::rotationsBase);
-		EXPORT(rtmath::ddscat::rotations);
+		EXPORT(serialize,rtmath::ddscat::rotationsBase);
+		EXPORT(serialize,rtmath::ddscat::rotations);
 	}
 }
 

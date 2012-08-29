@@ -8,6 +8,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/set.hpp>
 
 namespace boost
 {
@@ -27,7 +28,7 @@ namespace boost
 				ar & boost::serialization::make_nvp("xd", g._xd);
 		}
 
-		EXPORT(rtmath::ddscat::shapefile);
+		EXPORT(serialize,rtmath::ddscat::shapefile);
 	}
 }
 

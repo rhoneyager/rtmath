@@ -8,12 +8,33 @@
 #include "shapefile.h"
 #include "shapestatsRotated.h"
 
+// Forward declaration for boost::serialization below
+namespace rtmath {
+	namespace ddscat {
+		class shapeFileStatsBase;
+		class shapeFileStats;
+	}
+}
+
+// Need these so the template friends can work
+namespace boost
+{
+	namespace serialization
+	{
+		template <class Archive>
+		void serialize(Archive &, rtmath::ddscat::shapeFileStatsBase &, const unsigned int);
+		template <class Archive>
+		void serialize(Archive &, rtmath::ddscat::shapeFileStats &, const unsigned int);
+	}
+}
+
 namespace rtmath {
 	namespace ddscat {
 
 		class shapeFileStatsBase
 		{
 		public:
+			virtual ~shapeFileStatsBase();
 			// Function that, if the shapefile referenced is not loaded, reloads the shapefile
 			// Required for hulling or stats adding operations
 			bool load();
@@ -68,11 +89,11 @@ namespace rtmath {
 			boost::shared_ptr<shapefile> _shp;
 		protected:
 			shapeFileStatsBase();
-			virtual ~shapeFileStatsBase();
 			
 			bool _valid;
-		private:
-			friend class boost::serialization::access;
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive &, shapeFileStatsBase &, const unsigned int);
 		};
 
 		class shapeFileStats : public shapeFileStatsBase
@@ -81,8 +102,6 @@ namespace rtmath {
 			shapeFileStats();
 			shapeFileStats(const shapefile &shp);
 			shapeFileStats(const boost::shared_ptr<const shapefile> &shp);
-		private:
-			friend class boost::serialization::access;
 		public:
 			static boost::shared_ptr<shapeFileStats> genStats(
 				const std::string &shpfile, const std::string &statsfile = "");

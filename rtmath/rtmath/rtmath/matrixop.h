@@ -19,7 +19,7 @@ namespace boost
 		template <class Archive>
 		void load(Archive &, rtmath::matrixop &, const unsigned int);
 		template <class Archive>
-		void save(Archive &, rtmath::matrixop &, const unsigned int);
+		void save(Archive &, const rtmath::matrixop &, const unsigned int);
 	}
 }
 
@@ -47,7 +47,7 @@ namespace rtmath {
 			Archive &, matrixop &, const unsigned int);
 		template<class Archive> 
 		friend void ::boost::serialization::save(
-			Archive &, matrixop &, const unsigned int);
+			Archive &, const matrixop &, const unsigned int);
 	public:
 		matrixop(const std::vector<size_t> &size);
 		matrixop(size_t ndims, ...);

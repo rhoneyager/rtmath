@@ -4,9 +4,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-#define EXPORT(T) \
-	template <> void serialize(boost::archive::text_oarchive &, T &, const unsigned int); \
-	template <> void serialize(boost::archive::text_iarchive &, T &, const unsigned int); \
-	template <> void serialize(boost::archive::xml_oarchive &, T &, const unsigned int); \
-	template <> void serialize(boost::archive::xml_iarchive &, T &, const unsigned int);
-
+#define EXPORT(U,T) \
+	template void U(boost::archive::text_oarchive &, T &, const unsigned int); \
+	template void U(boost::archive::text_iarchive &, T &, const unsigned int); \
+	template void U(boost::archive::xml_oarchive &, T &, const unsigned int); \
+	template void U(boost::archive::xml_iarchive &, T &, const unsigned int);

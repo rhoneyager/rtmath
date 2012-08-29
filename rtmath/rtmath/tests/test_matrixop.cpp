@@ -3,6 +3,7 @@
 #define BOOST_TEST_DYN_LINK
 #include "../rtmath/matrixop.h"
 #include "../rtmath/serialization.h"
+#include "../rtmath/Serialization/matrixop_serialization.h"
 
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK

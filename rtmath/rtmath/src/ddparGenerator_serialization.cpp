@@ -5,6 +5,8 @@
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 namespace boost
 {
@@ -13,35 +15,36 @@ namespace boost
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::ddParGeneratorBase & g, const unsigned int version)
 		{
-			ar & BOOST_SERIALIZATION_NVP(g.name);
-			ar & BOOST_SERIALIZATION_NVP(g.description);
-			ar & BOOST_SERIALIZATION_NVP(g.outLocation);
-			ar & BOOST_SERIALIZATION_NVP(g.ddscatVer);
-			ar & BOOST_SERIALIZATION_NVP(g.strPreCmds);
-			ar & BOOST_SERIALIZATION_NVP(g.strPostCdms);
+			ar & boost::serialization::make_nvp("name",g.name);
+			ar & boost::serialization::make_nvp("description",g.description);
+			ar & boost::serialization::make_nvp("outLocation",g.outLocation);
+			ar & boost::serialization::make_nvp("ddscatVer",g.ddscatVer);
+			ar & boost::serialization::make_nvp("strPreCmds",g.strPreCmds);
+			ar & boost::serialization::make_nvp("strPostCdms",g.strPostCdms);
 
-			ar & BOOST_SERIALIZATION_NVP(g.compressResults);
-			ar & BOOST_SERIALIZATION_NVP(g.genIndivScripts);
-			ar & BOOST_SERIALIZATION_NVP(g.genMassScript);
-			ar & BOOST_SERIALIZATION_NVP(g.shapeStats);
-			ar & BOOST_SERIALIZATION_NVP(g.registerDatabase);
-			ar & BOOST_SERIALIZATION_NVP(g.doExport);
-			ar & BOOST_SERIALIZATION_NVP(g.exportLoc);
+			ar & boost::serialization::make_nvp("compressResults",g.compressResults);
+			ar & boost::serialization::make_nvp("genIndivScripts",g.genIndivScripts);
+			ar & boost::serialization::make_nvp("genMassScript",g.genMassScript);
+			ar & boost::serialization::make_nvp("shapeStats",g.shapeStats);
+			ar & boost::serialization::make_nvp("registerDatabase",g.registerDatabase);
+			ar & boost::serialization::make_nvp("doExport",g.doExport);
+			ar & boost::serialization::make_nvp("exportLoc",g.exportLoc);
 
 			// The par file needs serialization, as it holds some properties
 			ar & boost::serialization::make_nvp("baseParFile", g.base);
-			ar & boost::serialization::base_object<rtmath::ddscat::constrainable>(g);
+			ar & boost::serialization::make_nvp("rtmath::ddscat::constrainable",
+				boost::serialization::base_object<rtmath::ddscat::constrainable>(g));
 
-			ar & BOOST_SERIALIZATION_NVP(g.rots);
-			ar & BOOST_SERIALIZATION_NVP(g.shapes);
+			ar & boost::serialization::make_nvp("shapes", g.shapes);
+			ar & boost::serialization::make_nvp("rots", g.rots);
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::ddParIterator & g, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("ddParGenerator", g._genp);
-			ar & BOOST_SERIALIZATION_NVP(g.shape);
-			ar & BOOST_SERIALIZATION_NVP(g.rots);
+			ar & boost::serialization::make_nvp("shape", g.shape);
+			ar & boost::serialization::make_nvp("rots", g.rots);
 		}
 
 		template <class Archive>
@@ -54,13 +57,15 @@ namespace boost
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::ddParGenerator & g, const unsigned int version)
 		{
-			ar & boost::serialization::base_object<rtmath::ddscat::ddParGeneratorBase>(g);
+			ar & boost::serialization::make_nvp(
+				"rtmath::ddscat::ddParGeneratorBase", 
+				boost::serialization::base_object<rtmath::ddscat::ddParGeneratorBase>(g));
 		}
 
-		EXPORT(rtmath::ddscat::ddParGeneratorBase);
-		EXPORT(rtmath::ddscat::ddParIterator);
-		EXPORT(rtmath::ddscat::ddParIteration);
-		EXPORT(rtmath::ddscat::ddParGenerator);
+		EXPORT(serialize,rtmath::ddscat::ddParGeneratorBase);
+		EXPORT(serialize,rtmath::ddscat::ddParIterator);
+		EXPORT(serialize,rtmath::ddscat::ddParIteration);
+		EXPORT(serialize,rtmath::ddscat::ddParGenerator);
 	}
 }
 

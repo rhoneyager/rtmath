@@ -1,10 +1,14 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/ddscat/shapes.h"
+#include "../rtmath/Serialization/common_templates_serialization.h"
+#include "../rtmath/Serialization/rotations_serialization.h"
 #include "../rtmath/Serialization/shapes_serialization.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 namespace boost
 {
@@ -13,60 +17,70 @@ namespace boost
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shapeConstraint & g, const unsigned int version)
 		{
-				ar & boost::serialization::make_nvp("variable", varname);
-				ar & boost::serialization::make_nvp("paramSet",pset);
-				ar & boost::serialization::make_nvp("units", units);
+				ar & boost::serialization::make_nvp("variable", g.varname);
+				ar & boost::serialization::make_nvp("paramSet",g.pset);
+				ar & boost::serialization::make_nvp("units", g.units);
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::constrainable & g, const unsigned int version)
 		{
-				ar & boost::serialization::make_nvp("shapeConstraints", shapeConstraints);
+				ar & boost::serialization::make_nvp("shapeConstraints", g.shapeConstraints);
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shape & g, const unsigned int version)
 		{
-				ar & boost::serialization::base_object<constrainable>(g);
-				ar & boost::serialization::make_nvp("densities", _densities);
+				ar & boost::serialization::make_nvp(
+					"rtmath::ddscat::constrainable",
+					boost::serialization::base_object<rtmath::ddscat::constrainable>(g));
+				ar & boost::serialization::make_nvp("densities", g._densities);
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shapeModifiable & g, const unsigned int version)
 		{
 			// TODO: save the vertex maps?
-			ar & boost::serialization::base_object<shape>(g);
-			ar & boost::serialization::make_nvp("rotations", _rots);
+			ar & boost::serialization::make_nvp(
+				"rtmath::ddscat::shape",
+				boost::serialization::base_object<rtmath::ddscat::shape>(g));
+			ar & boost::serialization::make_nvp("rotations", g._rots);
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shapes::from_ddscat & g, const unsigned int version)
 		{
 			// TODO: save the vertex maps?
-			ar & boost::serialization::base_object<shapeModifiable>(g);
+			ar & boost::serialization::make_nvp(
+				"rtmath::ddscat::shapeModifiable",
+				boost::serialization::base_object<rtmath::ddscat::shapeModifiable>(g));
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shapes::from_file & g, const unsigned int version)
 		{
 			// TODO: save the vertex maps?
-			ar & boost::serialization::base_object<from_ddscat>(g);
+			ar & boost::serialization::make_nvp(
+				"rtmath::ddscat::shapes::from_ddscat",
+				boost::serialization::base_object<rtmath::ddscat::shapes::from_ddscat>(g));
 		}
 
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shapes::ellipsoid & g, const unsigned int version)
 		{
 			// TODO: save the vertex maps?
-			ar & boost::serialization::base_object<from_ddscat>(g);
+			ar & boost::serialization::make_nvp(
+				"rtmath::ddscat::shapes::from_ddscat",
+				boost::serialization::base_object<rtmath::ddscat::shapes::from_ddscat>(g));
 		}
 
-		EXPORT(rtmath::ddscat::shapeConstraint);
-		EXPORT(rtmath::ddscat::constrainable);
-		EXPORT(rtmath::ddscat::shape);
-		EXPORT(rtmath::ddscat::shapeModifiable);
-		EXPORT(rtmath::ddscat::shapes::from_ddscat);
-		EXPORT(rtmath::ddscat::shapes::from_file);
-		EXPORT(rtmath::ddscat::shapes::ellipsoid);
+		EXPORT(serialize,rtmath::ddscat::shapeConstraint);
+		EXPORT(serialize,rtmath::ddscat::constrainable);
+		EXPORT(serialize,rtmath::ddscat::shape);
+		EXPORT(serialize,rtmath::ddscat::shapeModifiable);
+		EXPORT(serialize,rtmath::ddscat::shapes::from_ddscat);
+		EXPORT(serialize,rtmath::ddscat::shapes::from_file);
+		EXPORT(serialize,rtmath::ddscat::shapes::ellipsoid);
 	}
 }
 

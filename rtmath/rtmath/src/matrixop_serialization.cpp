@@ -7,13 +7,14 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace boost
 {
 	namespace serialization
 	{
 		template<class Archive>
-		void save(Archive &ar, rtmath::matrixop &g, const unsigned int version)
+		void save(Archive &ar, const rtmath::matrixop &g, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("Dimensions", g._dims);
 			//ar & boost::serialization::make_nvp("Size", _datasize);
@@ -53,6 +54,9 @@ namespace boost
 			boost::serialization::split_free(ar, g, version);
 		}
 
-		EXPORT(rtmath::matrixop);
+		//EXPORT(load, rtmath::matrixop);
+		//EXPORT(save, rtmath::matrixop);
+		EXPORT(serialize, rtmath::matrixop);
+		
 	}
 }

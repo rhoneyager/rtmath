@@ -7,8 +7,13 @@
 #include <boost/shared_ptr.hpp>
 #include <memory>
 
-#include "../rtmath/rtmath.h"
-
+#include "../rtmath/ddscat/rotations.h"
+#include "../rtmath/ddscat/ddpar.h"
+#include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/Serialization/ddparGenerator_serialization.h"
+#include "../rtmath/serialization.h"
+#include "../rtmath/units.h"
+#include "../rtmath/error/error.h"
 
 BOOST_AUTO_TEST_SUITE(test_ddparGenerator);
 

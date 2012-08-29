@@ -7,6 +7,8 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/set.hpp>
 
 namespace boost
 {
@@ -16,7 +18,7 @@ namespace boost
 		void serialize(Archive & ar, rtmath::ddscat::shapeFileStatsBase & g, const unsigned int version)
 		{
 			g._currVersion = version;
-			ar & boost::serialization::make_nvp("shapefile", _shp);
+			ar & boost::serialization::make_nvp("shapefile", g._shp);
 
 			ar & boost::serialization::make_nvp("beta", g.beta);
 			ar & boost::serialization::make_nvp("theta", g.theta);
@@ -61,11 +63,13 @@ namespace boost
 		template <class Archive>
 		void serialize(Archive & ar, rtmath::ddscat::shapeFileStats & g, const unsigned int version)
 		{
-			ar & boost::serialization::base_object<rtmath::ddscat::shapeFileStatsBase>(g);
+			ar & boost::serialization::make_nvp(
+				"rtmath::ddscat::shapeFileStatsBase",
+				boost::serialization::base_object<rtmath::ddscat::shapeFileStatsBase>(g));
 		}
 
-		EXPORT(rtmath::ddscat::shapeFileStatsBase);
-		EXPORT(rtmath::ddscat::shapeFileStats);
+		EXPORT(serialize,rtmath::ddscat::shapeFileStatsBase);
+		EXPORT(serialize,rtmath::ddscat::shapeFileStats);
 	}
 }
 

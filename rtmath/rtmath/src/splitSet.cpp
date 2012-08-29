@@ -102,7 +102,7 @@ namespace rtmath {
 								}
 							} else if (specializer == "lin") {
 								// Linear spacing
-								double increment = (end - start) / (interval); // so interval of 1 gives midpoint
+								T increment = (end - start) / (interval); // so interval of 1 gives midpoint
 								if (!increment) expanded.insert(start);
 								for (T j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
 								{
@@ -112,13 +112,13 @@ namespace rtmath {
 							} else if (specializer == "log") {
 								if (start == 0 || end == 0)
 									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
-								double is = log10(start); 
-								double ie = log10(end); 
-								double increment = (ie - is) / (interval);
+								T is = (T) log10( (double) start); 
+								T ie = (T) log10( (double) end); 
+								T increment = (ie - is) / (interval);
 								if (!increment) expanded.insert(start);
 								for (T j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
 								{
-									T k = (T) pow((T) 10.0,(j));
+									T k = (T) pow((double) 10.0, (double) j);
 									if (expanded.count(k) == 0)
 										expanded.insert(k);
 								}
@@ -139,9 +139,9 @@ namespace rtmath {
 								// Linear in cos
 								// start, end are in degrees
 								const double pi = boost::math::constants::pi<double>();
-								double cs = cos(start * pi / 180.0);
-								double ce = cos(end * pi / 180.0);
-								double increment = (ce - cs) / (interval);
+								T cs = cos(start * pi / 180.0);
+								T ce = cos(end * pi / 180.0);
+								T increment = (ce - cs) / (interval);
 								if (increment == 0) expanded.insert(start);
 								if (increment < 0)
 								{
@@ -150,7 +150,7 @@ namespace rtmath {
 								}
 								for (T j=cs+(increment/2.0); j<ce+(increment/100.0);j+=increment)
 								{
-									T k = (T) (acos(j) * 180.0 / pi);
+									T k = (T) (acos((double) j) * 180.0 / pi);
 									if (expanded.count(k) == 0)
 										expanded.insert(k);
 								}
@@ -193,7 +193,7 @@ namespace rtmath {
 		}
 
 #define SPEC_SPLITSET(T) \
-	template <> void splitSet<T>(const std::string &instr, std::set<T> &expanded, \
+	template void splitSet<T>(const std::string &instr, std::set<T> &expanded, \
 		const std::map<std::string, std::string> *aliases);
 
 		SPEC_SPLITSET(int);

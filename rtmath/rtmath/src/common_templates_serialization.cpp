@@ -8,6 +8,8 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
 
 namespace boost
 {
@@ -20,11 +22,11 @@ namespace boost
 			ar & boost::serialization::make_nvp("values_expanded", g._expanded);
 		}
 
-		EXPORT(rtmath::paramSet<double>);
-		EXPORT(rtmath::paramSet<float>);
-		EXPORT(rtmath::paramSet<int>);
-		EXPORT(rtmath::paramSet<size_t>);
-		EXPORT(rtmath::paramSet<std::string>);
+		EXPORT(serialize,rtmath::paramSet<double>);
+		EXPORT(serialize,rtmath::paramSet<float>);
+		EXPORT(serialize,rtmath::paramSet<int>);
+		EXPORT(serialize,rtmath::paramSet<size_t>);
+		EXPORT(serialize,rtmath::paramSet<std::string>);
 
 	}
 }

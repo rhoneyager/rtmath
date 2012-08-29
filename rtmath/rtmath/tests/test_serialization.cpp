@@ -6,7 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <memory>
 
-#include "../rtmath/rtmath.h"
+#include "../rtmath/serialization.h"
 
 using namespace rtmath;
 using namespace rtmath::ddscat;
