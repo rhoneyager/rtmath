@@ -111,6 +111,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-batch-runs", "deps\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-convert-from-ddscat", "rtmath-apps\tmatrix-convert-from-ddscat\tmatrix-convert-from-ddscat.vcxproj", "{37F86021-1382-4F1A-A7A3-EC142C7C753F}"
 EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "tmatrix-fortran-dll", "deps\tmatrix\VS\tmatrix-fortran-dll\tmatrix-fortran-dll.vfproj", "{5BF35485-A5DD-4859-9948-F73799E4CFAF}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -239,6 +241,10 @@ Global
 		{37F86021-1382-4F1A-A7A3-EC142C7C753F}.Debug|Win32.Build.0 = Debug|Win32
 		{37F86021-1382-4F1A-A7A3-EC142C7C753F}.Release|Win32.ActiveCfg = Release|Win32
 		{37F86021-1382-4F1A-A7A3-EC142C7C753F}.Release|Win32.Build.0 = Release|Win32
+		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Debug|Win32.Build.0 = Debug|Win32
+		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Release|Win32.ActiveCfg = Release|Win32
+		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -275,6 +281,7 @@ Global
 		{0BFA2064-FAD5-4D6D-A31C-7F4A5DDCE485} = {93E7F556-2915-4CD9-AA3A-5E56C5978F6D}
 		{324DFE54-E001-4744-8D83-11720AA99B89} = {A931F910-0C6A-4A82-BBF3-2993E17A2AB5}
 		{BC75D21E-9E1F-44AD-90A8-16F6A33881E6} = {A931F910-0C6A-4A82-BBF3-2993E17A2AB5}
+		{5BF35485-A5DD-4859-9948-F73799E4CFAF} = {A931F910-0C6A-4A82-BBF3-2993E17A2AB5}
 		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F} = {00AE1517-1EA2-410E-A26C-B9082DBDB616}
 		{C7A5C734-E439-45BA-9E0F-A37D447A720E} = {00AE1517-1EA2-410E-A26C-B9082DBDB616}
 	EndGlobalSection
