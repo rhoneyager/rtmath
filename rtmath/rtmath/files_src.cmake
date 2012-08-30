@@ -43,6 +43,7 @@ source_group("Header Files\\da" FILES ${da-hdr})
 
 # ddscat
 set (ddscat-src
+	src/ddavg.cpp
 	src/ddLoader.cpp
 	src/ddOutput.cpp
 	src/ddOutputEnsemble.cpp
@@ -65,6 +66,7 @@ set (ddscat-src
 	)
 set (ddscat-hdr
 	rtmath/ddscat/cdf-ddscat.h
+	rtmath/ddscat/ddavg.h
 	rtmath/ddscat/ddLoader.h
 	rtmath/ddscat/ddOutput.h
 	rtmath/ddscat/ddOutputEnsemble.h
@@ -84,6 +86,7 @@ set (ddscat-hdr
 	rtmath/ddscat/shapestats.h
 	rtmath/ddscat/shapestatsRotated.h
 	rtmath/ddscat/shapestatsviews.h
+	rtmath/ddscat/tmData.h
 	)
 source_group("Source Files\\ddscat" FILES ${ddscat-src})
 source_group("Header Files\\ddscat" FILES ${ddscat-hdr})
@@ -287,6 +290,7 @@ set (serialization-src
 	src/shapes_serialization.cpp
 	src/shapestats_serialization.cpp
 	src/shapestatsRotated_serialization.cpp
+	src/tmData_serialization.cpp
 	)
 set (serialization-hdr
 	rtmath/Serialization/common_templates_serialization.h
@@ -299,6 +303,7 @@ set (serialization-hdr
 	rtmath/Serialization/shapes_serialization.h
 	rtmath/Serialization/shapestats_serialization.h
 	rtmath/Serialization/shapestatsRotated_serialization.h
+	rtmath/Serialization/tmData_serialization.h
 	)
 source_group("Source Files\\Serialization" FILES ${serialization-src})
 source_group("Header Files\\Serialization" FILES ${serialization-hdr})

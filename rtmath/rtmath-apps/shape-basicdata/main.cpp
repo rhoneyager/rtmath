@@ -40,6 +40,8 @@
 #include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
+#include "../../rtmath/rtmath/ddscat/shapestatsviews.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
@@ -72,13 +74,13 @@ int main(int argc, char** argv)
 		desc.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
-			/*
+
 			("dipole-spacing,d", po::value<double>(), "Specify dipole spacing (um)")
-			("density", po::value<double>(), "Specify lattice cell density (mg/um^3)")
-			("mass", po::value<double>(), "Specify lattice cell mass (mg)")
-			*/
-			("diameter,D", "Calculate max diameter")
-			("PE", "Plot potential energy")
+			("density", "Output lattice cell density")
+			("mass", "Output lattice cell mass (mg)")
+			("diameter,D", "Calculate max diameter (in physical units is possible)")
+			("PE", "Plot potential energy (in physical units if possible)")
+
 			("convex-hull","Output convex hull information and vtk file")
 			("concave-hull", po::value<string>(), "Output concave hull information and vtk file for given value(s)")
 
@@ -89,9 +91,7 @@ int main(int argc, char** argv)
 
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations")
-			("vectorstats,V", "Stats file is old format, with stats hidden within a vector.");
-//			("output,o", "output filename")
+			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -102,6 +102,10 @@ int main(int argc, char** argv)
 			cerr << desc << "\n";
 			return 1;
 		}
+
+		double dSpacing = 0;
+		if (vm.count("dipole-spacing")) 
+			dSpacing = vm["dipole-spacing"].as<double>();
 
 		vector<string> inputs = vm["input"].as< vector<string> >();
 		if (vm.count("input"))
@@ -190,6 +194,16 @@ int main(int argc, char** argv)
 				
 			}
 
+			boost::shared_ptr<rtmath::ddscat::shapeFileStatsDipoleView> sstatsView
+				(new rtmath::ddscat::shapeFileStatsDipoleView(sstats, dSpacing));
+
+			if (vm.count("diameter"))
+			{
+				cout << "Diameter (d): " << sstats->max_distance << endl;
+				if (dSpacing)
+					cout << "Diameter (um): " << sstatsView->max_distance() << endl;
+			}
+
 			if (vm.count("convex-hull"))
 			{
 				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
@@ -221,11 +235,6 @@ int main(int argc, char** argv)
 					cout << "Hull has " << ccv._nFaces << " faces." << endl;
 					*/
 				}
-			}
-
-			if (vm.count("diameter"))
-			{
-				cout << "Diameter (d): " << sstats->max_distance << endl;
 			}
 
 			/*	("dipole-density-distance", po::value< vector<string> >(), 

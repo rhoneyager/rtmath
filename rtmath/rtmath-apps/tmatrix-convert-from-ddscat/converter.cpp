@@ -4,6 +4,7 @@
 #include <boost/serialization/vector.hpp>
 #include "converter.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/tmData.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/command.h"
@@ -12,6 +13,7 @@
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
+#include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
 
 #include "../../deps/tmatrix/src/headers/tmatrix.h"
 #include "../../rtmath/rtmath/common_templates.h"
@@ -137,6 +139,8 @@ void fileconverter::setStats(boost::shared_ptr<rtmath::ddscat::shapeFileStats> s
 void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 {
 	using namespace std;
+	// NOTE: this is the isotropic converter. Conversion with angle weightings 
+	// requires a precalculation of the different energies
 
 	// Get volume fraction from the shape statistics. This has no bearing on the 
 	// other dimensioning calculations. It is purely for the dielectric calculation.
@@ -281,6 +285,18 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		rots.thetas(thetas);
 		rots.phis(phis);
 
+		// Calculate the stats for each beta, theta, phi combination
+		for (auto beta = betas.begin(); beta != betas.end(); ++beta)
+		{
+			for (auto theta = thetas.begin(); theta != thetas.end(); ++theta)
+			{
+				for (auto phi = phis.begin(); phi != phis.end(); ++phi)
+				{
+					stats->calcStatsRot(*beta,*theta,*phi);
+				}
+			}
+		}
+
 		// the mapping is ddstat theta = tmatrix beta
 		// tmatrix alpha = ddscat phi (but not really. tmatrix ordering is different, 
 		// and given rot symmetry, it doesn't matter)
@@ -327,8 +343,25 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 	// Write output
 	{
 		using namespace tmatrix;
+		::rtmath::tmatrix::tmData td;
+		td.dipoleSpacing = d;
+		td.T = temp;
+		td.freq = *(freqs.begin());
+		td.nu = nu;
+		td.reff = mRes;
+		td.volMeth = volMeth;
+		td.dielMeth = dielMeth;
+		td.shapeMeth = shapeMeth;
+		td.angleMeth = "Isotropic";
+		td.ddparpath = ddparFile;
+
+		td.stats = stats;
+
+
 		tmatrixInVars in;
 		tmOutConverter ocnv;
+
+
 
 		TFile *rfile = nullptr;
 		string rfilename = outfile;
@@ -385,7 +418,7 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		double thet0 = 0;
 		double phi0 = 0;
 
-		vector<tmatrixSet> jobs;
+		vector<boost::shared_ptr<tmatrixSet> > jobs;
 		tmatrixSet ts(in);
 
 		for (auto p = phis.begin(); p != phis.end(); ++p)
@@ -436,10 +469,13 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 			}
 		}
 
-		jobs.push_back(move(ts));
+		jobs.push_back( boost::shared_ptr<::tmatrix::tmatrixSet>(
+			new ::tmatrix::tmatrixSet(move(ts))));
 
-		rtmath::serialization::write<vector<tmatrixSet> >
-			(jobs, outfile);
+		td.data = std::move(jobs);
+
+		rtmath::serialization::write<rtmath::tmatrix::tmData>
+			(td, outfile);
 
 		if (ROOToutput)
 		{

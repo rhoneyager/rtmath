@@ -97,8 +97,10 @@
     <ClInclude Include="rtmath\common_templates.h" />
     <ClInclude Include="rtmath\config.h" />
     <ClInclude Include="rtmath\coords.h" />
+    <ClInclude Include="rtmath\ddscat\ddavg.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsRotated.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsviews.h" />
+    <ClInclude Include="rtmath\ddscat\tmData.h" />
     <ClInclude Include="rtmath\Garrett\image.h" />
     <ClInclude Include="rtmath\Garrett\mesh.h" />
     <ClInclude Include="rtmath\Garrett\pclstuff.h" />
@@ -194,6 +196,7 @@
     <ClInclude Include="rtmath\Serialization\shapestatsRotated_serialization.h" />
     <ClInclude Include="rtmath\Serialization\shapestats_serialization.h" />
     <ClInclude Include="rtmath\Serialization\shapes_serialization.h" />
+    <ClInclude Include="rtmath\Serialization\tmData_serialization.h" />
     <ClInclude Include="rtmath\splitSet.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
     <ClInclude Include="rtmath\units.h" />
@@ -255,6 +258,7 @@
     <ClCompile Include="src\damatrix_quad.cpp" />
     <ClCompile Include="src\daPf.cpp" />
     <ClCompile Include="src\daStatic.cpp" />
+    <ClCompile Include="src\ddavg.cpp" />
     <ClCompile Include="src\ddLoader.cpp" />
     <ClCompile Include="src\ddOutput.cpp" />
     <ClCompile Include="src\ddOutputEnsemble.cpp" />
@@ -328,6 +332,7 @@
     </ClCompile>
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />
+    <ClCompile Include="src\tmData_serialization.cpp" />
     <ClCompile Include="src\units.cpp" />
     <ClCompile Include="src\zeros.cpp" />
   </ItemGroup>

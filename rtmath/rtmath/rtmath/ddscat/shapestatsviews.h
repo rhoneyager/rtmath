@@ -21,7 +21,6 @@
 		matrixop res = val * d; \
 		return res; }
 
-
 namespace rtmath {
 	namespace ddscat {
 
@@ -29,7 +28,7 @@ namespace rtmath {
 		{
 		public:
 			shapeFileStatsRotatedView(const shapeFileStatsRotated &base, double dSpacing)
-				: _base(base), _d(dSpacing) {}
+				: _baser(base), _d(dSpacing) {_base = &_baser;}
 			double getScale() const {return _d; }
 			void setScale(double d) {_d = d;}
 
@@ -54,16 +53,17 @@ namespace rtmath {
 
 			D_MAT_SCALED(as_abs, 0);
 			D_MAT_SCALED(as_abs_mean, 0);
-			D_MAT_SCALED(as_abs_rms, 0);
+			D_MAT_SCALED(as_rms, 0);
 		private:
 			double _d;
-			const shapeFileStatsRotated &_base;
+			const shapeFileStatsRotated &_baser;
+			const shapeFileStatsRotated *_base;
 		};
 
 		class shapeFileStatsDipoleView : public shapeFileStatsBase
 		{
 		public:
-			shapeFileStatsDipoleView(const boost::shared_ptr<const shapeFileStatsBase> &base, double dSpacing)
+			shapeFileStatsDipoleView(const boost::shared_ptr<shapeFileStatsBase> &base, double dSpacing)
 				: _base(base), _d(dSpacing) {}
 			double getScale() const { return _d; }
 			void setScale(double d) { _d = d; }
@@ -93,14 +93,9 @@ namespace rtmath {
 			D_SCALED(f_convex_hull, 0);
 			D_SCALED(f_ellipsoid_max, 0);
 			D_SCALED(f_ellipsoid_rms, 0);
-			D_SCALED(rho_basic, 0);
-			D_SCALED(rho_circum_sphere, 0);
-			D_SCALED(rho_convex, 0);
-			D_SCALED(rho_ellipsoid_max, 0);
-			D_SCALED(rho_ellipsoid_rms, 0);
 		private:
 			double _d;
-			const boost::shared_ptr<const shapeFileStatsBase> _base;
+			const boost::shared_ptr<shapeFileStatsBase> _base;
 		};
 
 	}
