@@ -30,7 +30,7 @@ namespace boost
 
 namespace rtmath {
 
-	class matrixop : public std::enable_shared_from_this<matrixop>
+	class matrixop
 		// Defines a generalized set of tensor operations
 		// For now, just use it as a 2d matrix
 		//  More dimensions becomes more complex and should

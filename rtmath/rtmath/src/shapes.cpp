@@ -19,9 +19,9 @@
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
-#include "../rtmath/ddscat/shapes.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
+#include "../rtmath/ddscat/shapes.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
 #include "../rtmath/ddscat/runScripts.h"

@@ -443,13 +443,21 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 						in.THET = thet;
 						in.THET0 = thet0;
 
-						boost::shared_ptr<tmatrixAngleRes> ar(new tmatrixAngleRes);
-						ar->alpha = alpha;
-						ar->beta = beta;
-						ar->phi = phi;
-						ar->phi0 = phi0;
-						ar->theta = thet;
-						ar->theta0 = thet0;
+						boost::shared_ptr< ::rtmath::tmatrix::tmRun > tr
+							(new ::rtmath::tmatrix::tmRun);
+						tr->invars.alpha = alpha;
+						tr->invars.beta = beta;
+						tr->invars.phi = phi;
+						tr->invars.phi0 = phi0;
+						tr->invars.thet = thet;
+						tr->invars.thet0 = thet0;
+						tr->invars.axi = aeff; // equiv vol sphere radius
+						tr->invars.rat = 1; // Indicates that AXI is the equiv volume radius, not equiv sa radius
+						tr->invars.lam = *(wavelengths.begin()); // incident light wavelength
+						tr->invars.mrr = mRes.real(); // real refractive index
+						tr->invars.mri = mRes.imag(); // imag refractive index
+						tr->invars.np = -1; // shape is a spheroid
+						tr->invars.eps = asp; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
 
 						if (dotmatrix)
 						{
@@ -457,22 +465,19 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 							run.vars = in;
 
 							run.run();
-							ar->res = run.outs;
+							std::copy(run.outs.P,run.outs.P,tr->res.P);
+							std::copy(run.outs.S,run.outs.S,tr->res.S);
 
 							ocnv.import(run.outs);
 						}
 
 						tree.Fill();
-						ts.results.insert(ar);
+						td.data.push_back(tr);
+						//ts.results.insert(ar);
 					}
 				}
 			}
 		}
-
-		jobs.push_back( boost::shared_ptr<::tmatrix::tmatrixSet>(
-			new ::tmatrix::tmatrixSet(move(ts))));
-
-		td.data = std::move(jobs);
 
 		rtmath::serialization::write<rtmath::tmatrix::tmData>
 			(td, outfile);

@@ -63,6 +63,7 @@ set (ddscat-src
 	src/shapestats_genstats.cpp
 	src/shapestatsRotated.cpp
 	src/shapes-generators.cpp
+	src/tmData.cpp
 	)
 set (ddscat-hdr
 	rtmath/ddscat/cdf-ddscat.h
@@ -139,6 +140,7 @@ set (general-src
 	src/refract.cpp
 	src/ROOT_functions.cpp
 	src/serialization.cpp
+	src/splitSet.cpp
 	src/Stdafx.cpp
 	src/surfaces.cpp
 	src/thermal.cpp
@@ -171,6 +173,7 @@ set (general-hdr
 	rtmath/ROOTlink.h
 	rtmath/rtmath.h
 	rtmath/serialization.h
+	rtmath/splitSet.h
 	rtmath/Stdafx.h
 	rtmath/units.h
 	rtmath/zeros.h
@@ -340,6 +343,7 @@ set (srcfiles
 	${polynomials-src}		${polynomials-hdr}
 	${publicdomain-src}		${publicdomain-hdr}
 	${rayleigh-src}			${rayleigh-hdr}
+	${serialization-src}		${serialization-hdr}
 	)
 
 # And we're done

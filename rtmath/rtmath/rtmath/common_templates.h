@@ -9,12 +9,14 @@
 #include <vector>
 #include <string>
 #include <boost/tuple/tuple.hpp> 
+#include <boost/lexical_cast.hpp>
 
 #include "defs.h"
 #include "splitSet.h"
 #include "Public_Domain/MurmurHash3.h"
 
 // Forward declaration for boost::serialization below
+/*
 namespace rtmath {
 	template <class T>
 	class paramSet;
@@ -29,7 +31,7 @@ namespace boost
 		void serialize(Archive &, rtmath::paramSet<T> &, const unsigned int);
 	}
 }
-
+*/
 
 struct null_deleter
 {
@@ -60,9 +62,9 @@ namespace rtmath
 	template <class T>
 	class paramSet
 	{
-		template<class T, class Archive> 
-		friend void ::boost::serialization::serialize(
-			Archive &, paramSet<T> &, const unsigned int);
+//		template<class Archive> 
+//		friend void ::boost::serialization::serialize(
+//			Archive &, paramSet<T> &, const unsigned int);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 
@@ -127,7 +129,7 @@ namespace rtmath
 		{
 			return !(operator==(rhs));
 		}
-	private:
+//	private:
 		std::set<T> _expanded;
 		std::string _shorthand;
 		const std::map<std::string, std::string> *_aliases;

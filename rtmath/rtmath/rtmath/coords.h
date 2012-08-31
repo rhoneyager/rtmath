@@ -9,6 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <complex>
+#include "error/error.h"
 #include "defs.h"
 #include "enums.h"
 #include "matrixop.h"

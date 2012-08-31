@@ -1,8 +1,9 @@
 #include "../rtmath/Stdafx.h"
 
+#include "../rtmath/error/error.h"
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
-#include "../rtmath/serialization/ddparGenerator_serialization.h"
+#include "../rtmath/Serialization/ddparGenerator_serialization.h"
 #include "../rtmath/ddscat/runScripts.h"
 #include "../rtmath/serialization.h"
 

@@ -13,18 +13,15 @@
 #include <vector>
 #include <set>
 #include <complex>
+#include <boost/cstdint.hpp>
 #include "shapestats.h"
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
 	namespace tmatrix {
+		class tmRun;
 		class tmData;
 	}
-}
-
-namespace tmatrix
-{
-	class tmatrixSet;
 }
 
 // Need these so the template friends can work
@@ -41,6 +38,35 @@ namespace rtmath
 {
 	namespace tmatrix
 	{
+		// I am providing structures equivalent to the 
+		// tmatrix-provided ones. This is because I 
+		// do not want rtmath to have a direct dependence 
+		// on the tmatrix library.
+
+		// A conversion library will be provided for 
+		// programs, but it will be at a higher level.
+		struct tmIn
+		{
+			tmIn();
+			double axi, rat, lam, mrr, mri,
+			       eps, ddelt, alpha, beta,
+			       thet0, thet, phi0, phi;
+			boost::int32_t np, ndgs;
+		};
+
+		struct tmOut
+		{
+			tmOut();
+			std::complex<double> S[4];
+			double P[4][4];
+		};
+
+		struct tmRun
+		{
+			tmIn invars;
+			tmOut res;
+		};
+
 		class tmData
 		{
 		public:
@@ -51,7 +77,7 @@ namespace rtmath
 
 			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 
-			std::vector<boost::shared_ptr<::tmatrix::tmatrixSet> > data;
+			std::vector<boost::shared_ptr< tmRun > > data;
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
 				Archive &, tmData &, const unsigned int);

@@ -108,10 +108,10 @@ namespace rtmath {
 			friend class ddParGenerator;
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
-				Archive &, ddParIterator &, const unsigned int);
+				Archive &, ::rtmath::ddscat::ddParIterator &, const unsigned int);
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
-				Archive &, ddParIteration &, const unsigned int);
+				Archive &, ::rtmath::ddscat::ddParIteration &, const unsigned int);
 		private:
 			//const ddParGenerator &_gen;
 			const ddParGenerator *_genp;
@@ -140,7 +140,7 @@ namespace rtmath {
 				Archive &, ddParIteration &, const unsigned int);
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
-				Archive &, ddParIterator &, const unsigned int);
+				Archive &, ::rtmath::ddscat::ddParIterator &, const unsigned int);
 		};
 
 		class ddParGenerator : public ddParGeneratorBase

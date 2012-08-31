@@ -17,7 +17,7 @@
 #include <libpq-fe.h>
 #include <pqxx/pqxx>
 #include "../../rtmath/rtmath/config.h"
-
+#include "../../rtmath/rtmath/command.h"
 void doHelp();
 
 int main(int argc, char** argv)

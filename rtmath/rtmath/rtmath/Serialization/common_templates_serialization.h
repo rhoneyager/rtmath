@@ -11,7 +11,7 @@ namespace boost
 {
 	namespace serialization
 	{
-		template <typename T, class Archive>
+		template <class Archive, class T>
 		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
 
 
