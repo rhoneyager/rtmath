@@ -101,6 +101,7 @@
     <ClInclude Include="rtmath\ddscat\shapestatsRotated.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsviews.h" />
     <ClInclude Include="rtmath\ddscat\tmData.h" />
+    <ClInclude Include="rtmath\density.h" />
     <ClInclude Include="rtmath\Garrett\image.h" />
     <ClInclude Include="rtmath\Garrett\mesh.h" />
     <ClInclude Include="rtmath\Garrett\pclstuff.h" />
@@ -273,6 +274,7 @@
     <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
+    <ClCompile Include="src\density.cpp" />
     <ClCompile Include="src\depGraph.cpp" />
     <ClCompile Include="src\emd.cpp" />
     <ClCompile Include="src\error.cpp" />
@@ -332,6 +334,7 @@
     </ClCompile>
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\thermal.cpp" />
+    <ClCompile Include="src\tmData.cpp" />
     <ClCompile Include="src\tmData_serialization.cpp" />
     <ClCompile Include="src\units.cpp" />
     <ClCompile Include="src\zeros.cpp" />

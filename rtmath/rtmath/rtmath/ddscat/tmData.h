@@ -19,7 +19,7 @@
 // Forward declaration for boost::serialization below
 namespace rtmath {
 	namespace tmatrix {
-		class tmRun;
+		struct tmRun;
 		class tmData;
 	}
 }

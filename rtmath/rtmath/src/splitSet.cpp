@@ -38,7 +38,6 @@ namespace rtmath {
 				for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 				{
 					// At this junction, do any alias substitution
-
 					std::string ssubst;
 
 					std::map<std::string, std::string> defaliases;
@@ -51,7 +50,6 @@ namespace rtmath {
 						splitSet<T>(ssubst, expanded, aliases);
 					} else { 
 						// Separated based on commas. Expand for dashes and colons
-						// TODO: allow string specifier after three params
 						tokenizer trange(*ot,seprange);
 						vector<T> range;
 						string specializer;
@@ -80,14 +78,14 @@ namespace rtmath {
 							if (expanded.count(range[0]) == 0)
 								expanded.insert(range[0]);
 						} else {
-							T start, end = 0, interval = 1;
-							start = range[0];
-							end = range[range.size()-1];
-							if (range.size() > 2) interval = range[1];
+							double start, end = 0, interval = 1;
+							start = (double) range[0];
+							end = (double) range[range.size()-1];
+							if (range.size() > 2) interval = (double) range[1];
 							std::transform(specializer.begin(),specializer.end(),specializer.begin(),::tolower);
 							if (specializer == "")
 							{
-								if (start < 0 || end < 0 || start > end || interval < 0)
+								if ((start > end && interval > 0) || (start < end && interval < 0))
 								{
 									// Die from invalid range
 									// Should really throw error
@@ -95,64 +93,64 @@ namespace rtmath {
 									//cerr << "Invalid range " << *ot << endl;
 									//exit(1);
 								}
-								for (T j=start;j<=end+(interval/100.0);j+=interval)
+								for (double j=start;j<=end+(interval/100.0);j+=interval)
 								{
-									if (expanded.count(j) == 0)
-										expanded.insert(j);
+									if (expanded.count((T) j) == 0)
+										expanded.insert((T) j);
 								}
 							} else if (specializer == "lin") {
 								// Linear spacing
-								T increment = (end - start) / (interval); // so interval of 1 gives midpoint
-								if (!increment) expanded.insert(start);
-								for (T j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
+								double increment = (end - start) / (interval); // so interval of 1 gives midpoint
+								if (!increment) expanded.insert((T) start);
+								for (double j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
 								{
-									if (expanded.count(j) == 0)
-										expanded.insert(j);
+									if (expanded.count((T) j) == 0)
+										expanded.insert((T) j);
 								}
 							} else if (specializer == "log") {
 								if (start == 0 || end == 0)
 									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
-								T is = (T) log10( (double) start); 
-								T ie = (T) log10( (double) end); 
-								T increment = (ie - is) / (interval);
-								if (!increment) expanded.insert(start);
-								for (T j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
+								double is = log10( (double) start); 
+								double ie = log10( (double) end); 
+								double increment = (ie - is) / (interval);
+								if (!increment) expanded.insert((T) start);
+								for (double j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
 								{
-									T k = (T) pow((double) 10.0, (double) j);
-									if (expanded.count(k) == 0)
-										expanded.insert(k);
+									double k = pow((double) 10.0, (double) j);
+									if (expanded.count((T) k) == 0)
+										expanded.insert((T) k);
 								}
 							} else if (specializer == "inv") {
 								if (start == 0 || end == 0)
 									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
-								T is = 1.0 / start; 
-								T ie = 1.0 / end; 
-								T increment = (is - ie) / (interval);
-								if (!increment) expanded.insert(start);
-								for (T j=ie+(increment/2.0); j<is+(increment/100.0);j+=increment)
+								double is = 1.0 / start; 
+								double ie = 1.0 / end; 
+								double increment = (is - ie) / (interval);
+								if (!increment) expanded.insert((T) start);
+								for (double j=ie+(increment/2.0); j<is+(increment/100.0);j+=increment)
 								{
-									T k = ((T) 1.0) / j;
-									if (expanded.count(k) == 0)
-										expanded.insert(k);
+									double k = (1.0) / j;
+									if (expanded.count((T) k) == 0)
+										expanded.insert((T) k);
 								}
 							} else if (specializer == "cos") {
 								// Linear in cos
 								// start, end are in degrees
 								const double pi = boost::math::constants::pi<double>();
-								T cs = cos(start * pi / 180.0);
-								T ce = cos(end * pi / 180.0);
-								T increment = (ce - cs) / (interval);
+								double cs = cos(start * pi / 180.0);
+								double ce = cos(end * pi / 180.0);
+								double increment = (ce - cs) / (interval);
 								if (increment == 0) expanded.insert(start);
 								if (increment < 0)
 								{
 									increment *= -1.0;
 									std::swap(cs,ce);
 								}
-								for (T j=cs+(increment/2.0); j<ce+(increment/100.0);j+=increment)
+								for (double j=cs+(increment/2.0); j<ce+(increment/100.0);j+=increment)
 								{
-									T k = (T) (acos((double) j) * 180.0 / pi);
-									if (expanded.count(k) == 0)
-										expanded.insert(k);
+									double k = (acos((double) j) * 180.0 / pi);
+									if (expanded.count((T) k) == 0)
+										expanded.insert((T) k);
 								}
 							} else {
 								throw rtmath::debug::xBadInput(ot->c_str());
