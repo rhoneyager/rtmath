@@ -18,7 +18,7 @@ namespace boost
 
 		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
 
-
+/*
 #define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
 	ar & boost::serialization::make_nvp("element",t.get< which >());
 
@@ -33,7 +33,7 @@ namespace boost
 
 
 		BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
-
+*/
 	}
 }
 

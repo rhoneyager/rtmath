@@ -118,7 +118,7 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				if (relseg == NULL) throw;
+				if (!relseg) throw;
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
 				bool res = relseg->hasVal(keystripped);
@@ -153,7 +153,7 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				if (relseg == NULL) throw;
+				if (!relseg) throw;
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
 				bool res = relseg->getVal(keystripped,value);
@@ -209,7 +209,7 @@ namespace rtmath {
 			{
 				if ((*it)->_segname == name) return *it;
 			}
-			return NULL;
+			return nullptr;
 		}
 
 		std::shared_ptr<configsegment> configsegment::getParent() const
@@ -306,7 +306,7 @@ namespace rtmath {
 					{
 						// Close container
 						cseg = cseg->getParent();
-						if (cseg == NULL) throw; // Shouldn't happen unless syntax error
+						if (!cseg) throw; // Shouldn't happen unless syntax error
 					} else {
 						// New container
 						// Remove spaces, tabs, < and > from original input line

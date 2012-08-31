@@ -60,7 +60,7 @@ namespace
 
 		pcl::PolygonMesh mesh;
 
-		//* normals should not contain the point normals + surface curvatures
+		// normals should not contain the point normals + surface curvatures
 
 		
 		// Create search tree*
@@ -92,12 +92,12 @@ namespace
 		n.setKSearch (20);
 		n.compute (*normals);
 
-		//* normals should not contain the point normals + surface curvatures
+		// normals should not contain the point normals + surface curvatures
 
 		// Concatenate the XYZ and normal fields*
 		pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals (new pcl::PointCloud<pcl::PointNormal>);
 		pcl::concatenateFields (*cloud, *normals, *cloud_with_normals);
-		//* cloud_with_normals = cloud + normals
+		// cloud_with_normals = cloud + normals
 
 		// Create search tree*
 		pcl::search::KdTree<pcl::PointNormal>::Ptr tree2 (new pcl::search::KdTree<pcl::PointNormal>);
@@ -131,12 +131,12 @@ namespace
 		n.setKSearch (20);
 		n.compute (*normals);
 
-		//* normals should not contain the point normals + surface curvatures
+		// normals should not contain the point normals + surface curvatures
 
 		// Concatenate the XYZ and normal fields*
 		pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals (new pcl::PointCloud<pcl::PointNormal>);
 		pcl::concatenateFields (*cloud, *normals, *cloud_with_normals);
-		//* cloud_with_normals = cloud + normals
+		// cloud_with_normals = cloud + normals
 
 		// Create search tree*
 		pcl::search::KdTree<pcl::PointNormal>::Ptr tree2 (new pcl::search::KdTree<pcl::PointNormal>);
