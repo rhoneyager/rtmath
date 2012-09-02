@@ -12,12 +12,13 @@
 
 set(QHULL_MAJOR_VERSION 6)
 
+set(QHULL_USE_STATIC 0)
 if(QHULL_USE_STATIC)
   set(QHULL_RELEASE_NAME qhullstatic)
   set(QHULL_DEBUG_NAME qhullstatic_d)
 else(QHULL_USE_STATIC)
-  set(QHULL_RELEASE_NAME qhull qhull${QHULL_MAJOR_VERSION})
-  set(QHULL_DEBUG_NAME qhull_d qhull${QHULL_MAJOR_VERSION}_d qhull_d${QHULL_MAJOR_VERSION})
+  set(QHULL_RELEASE_NAME libqhull.so libqhull${QHULL_MAJOR_VERSION}.so)
+  set(QHULL_DEBUG_NAME libqhull_d.so libqhull${QHULL_MAJOR_VERSION}_d.so libqhull_d${QHULL_MAJOR_VERSION}.so)
 endif(QHULL_USE_STATIC)
 
 find_file(QHULL_HEADER
