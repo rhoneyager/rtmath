@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 		string profdir, profext;
 		// Get profile directory
 		cRoot->getVal("atmos/atmosDir", profdir);
-		if (profdir == "") profdir == "./";
+		if (profdir == "") profdir = "./";
 		// If profile search directory is user-specified, override
 		p.readParam<string>("--profdir", profdir); 
 		cerr << "Profile search directories: " << profdir << endl;

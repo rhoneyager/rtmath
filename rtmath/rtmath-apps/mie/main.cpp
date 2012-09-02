@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdio.h>
-#include <omp.h>
+//#include <omp.h>
 #include <memory>
 #include <string>
 #include <algorithm>
