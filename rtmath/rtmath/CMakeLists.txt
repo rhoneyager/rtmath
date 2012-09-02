@@ -62,12 +62,12 @@ ENDIF()
 # Used to allow VS default project to coexist with cmake project
 add_definitions(-DWITH_CMAKE)
 
-add_library (rtmath-static STATIC 
-		${libsrcs} 
-		${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
-		${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h 
-		${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
-		)
+#add_library (rtmath-static STATIC 
+#		${libsrcs} 
+#		${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
+#		${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h 
+#		${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+#		)
 
 get_target_property(rtmath_INCLUDE_DIRS rtmath INCLUDE_DIRECTORIES)
 if (NOT rtmath_INCLUDE_DIRS)
@@ -104,18 +104,18 @@ set(rtmath_LIBS ${rtmath_LIBRARIES} CACHE INTERNAL "rtmath-included libs")
 #message("${rtmath_LIBS}")
 
 #add_package_dependency(rtmath-static DEPENDS_ON rtmathDummy)
-set(rtmath-static_LIBRARIES ${rtmath_LIBRARIES})
-set(rtmath-static_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
+#set(rtmath-static_LIBRARIES ${rtmath_LIBRARIES})
+#set(rtmath-static_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
 target_link_libraries (rtmath ${COMMON_LIBS})
 target_link_libraries (rtmath ${rtmath_LIBRARIES})
-target_link_libraries (rtmath-static ${COMMON_LIBS})
-target_link_libraries (rtmath-static ${rtmath-static_LIBRARIES})
+#target_link_libraries (rtmath-static ${COMMON_LIBS})
+#target_link_libraries (rtmath-static ${rtmath-static_LIBRARIES})
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
 # Ensure that the dynamic library builds first (so prebuild will have run)
-add_dependencies (rtmath-tests rtmath-static)
-target_link_libraries (rtmath-tests rtmath-static)
+add_dependencies (rtmath-tests rtmath)
+target_link_libraries (rtmath-tests rtmath)
 #add_package_dependency(rtmath-tests DEPENDS_ON rtmathDummy)
 set(rtmath-tests_LIBRARIES ${rtmath_LIBRARIES})
 set(rtmath-tests_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
@@ -131,12 +131,12 @@ target_link_libraries (rtmath-tests ${rtmath-tests_LIBRARIES})
 
 IF(DEFINED COMMON_CFLAGS )
 	set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-	set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+#	set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 	set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 ENDIF()
 
 set_target_properties(rtmath PROPERTIES FOLDER "Libs")
-set_target_properties(rtmath-static PROPERTIES FOLDER "Libs")
+#set_target_properties(rtmath-static PROPERTIES FOLDER "Libs")
 set_target_properties(rtmath-tests PROPERTIES FOLDER "Tests")
 
 #add_header_files(headers)
@@ -169,7 +169,7 @@ INSTALL(TARGETS rtmath-tests
 	COMPONENT Tests
 	)
 
-INSTALL(TARGETS rtmath-static rtmath 
+INSTALL(TARGETS rtmath # rtmath-static
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
