@@ -99,14 +99,21 @@ if(LOAD_PACKAGES)
 	# ImageMagick is needed for loading PNG files
 	find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 
-# TODO: find tmatrix if installed and set flags
-#	find_package(tmatrix)
+	find_package(tmatrix)
 endif()
 # Take OpenMP option and enable / disable as appropriate
 IF(USE_OPENMP)
 	IF (${OPENMP_FOUND})
 		SET (COMMON_CFLAGS ${COMMON_CFLAGS} ${OpenMP_CXX_FLAGS})
 	ENDIF()
+ENDIF()
+
+IF(${TMATRIX_FOUND})
+option ( DEPS_TMATRIX
+	"Build the code with tmatrix support (needs FORTRAN compiler)" OFF)
+else()
+option ( DEPS_TMATRIX
+	"Build the code with tmatrix support (needs FORTRAN compiler)" ON)
 ENDIF()
 
 # Set available compression schemes
