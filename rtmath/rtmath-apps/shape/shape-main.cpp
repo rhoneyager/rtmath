@@ -10,8 +10,8 @@
  * radius. 
  */
 #pragma warning( push )
-#pragma warning( disable : 4996 )
-#pragma warning( disable : 4800 )
+#pragma warning( disable : 4996 ) // Dumb boost uuid warning
+#pragma warning( disable : 4800 ) // forcing non-bool type to true or false
 #include <cmath>
 #include <memory>
 #include <iostream>

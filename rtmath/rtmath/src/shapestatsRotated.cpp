@@ -216,43 +216,51 @@ namespace rtmath {
 
 				// Calculate moments of inertia
 				double val = 0;
-				// TODO: All wrong. Need to redo.
+
+				// See derivation in Summer 2012 notebook
+
+				// All of these are the partial moments. They need to be scaled by the cell _density_,
+				// as multiplying by dxdydz is a volume.
 				// I_xx
-				val = boost::accumulators::variance(acc_y[i]) + boost::accumulators::variance(acc_z[i]);
+				val = boost::accumulators::moment<2>(acc_y[i]) + boost::accumulators::moment<2>(acc_z[i]);
 				val *= _N * dxdydz;
 				res.mominert[i].set(val,2,0,0);
 
 				// I_yy
-				val = boost::accumulators::variance(acc_x[i]) + boost::accumulators::variance(acc_z[i]);
+				val = boost::accumulators::moment<2>(acc_x[i]) + boost::accumulators::moment<2>(acc_z[i]);
 				val *= _N * dxdydz;
 				res.mominert[i].set(val,2,1,1);
 
 				// I_zz
-				val = boost::accumulators::variance(acc_x[i]) + boost::accumulators::variance(acc_y[i]);
+				val = boost::accumulators::moment<2>(acc_x[i]) + boost::accumulators::moment<2>(acc_y[i]);
 				val *= _N * dxdydz;
 				res.mominert[i].set(val,2,2,2);
 
 				// I_xy and I_yx
-				val = -1.0 * res.covariance[i].get(2,1,0);
-				val *= _N * dxdydz;
+				val = res.covariance[i].get(2,1,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_y[i]) );
+				val *= -1.0 * _N * dxdydz;
 				res.mominert[i].set(val,2,0,1);
 				res.mominert[i].set(val,2,1,0);
 
 				// I_xz and I_zx
-				val = -1.0 * res.covariance[i].get(2,2,0);
-				val *= _N * dxdydz;
+				val = res.covariance[i].get(2,2,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_z[i]) );
+				val *= -1.0 * _N * dxdydz;
 				res.mominert[i].set(val,2,0,2);
 				res.mominert[i].set(val,2,2,0);
 
 				// I_yz and I_zy
-				val = -1.0 * res.covariance[i].get(2,2,1);
-				val *= _N * dxdydz;
+				val = res.covariance[i].get(2,2,1) + (boost::accumulators::moment<1>(acc_y[i]) * boost::accumulators::moment<1>(acc_z[i]) );
+				val *= -1.0 * _N * dxdydz;
 				res.mominert[i].set(val,2,2,1);
 				res.mominert[i].set(val,2,1,2);
+
+				// Calculate the potential energy
+				const double g = 9.80665; // m/s^2
+				// I do not need the partial mass means to be zero here
+				res.PE[i].set(g*boost::accumulators::sum(acc_x[i]),2,0,0);
+				res.PE[i].set(g*boost::accumulators::sum(acc_y[i]),2,1,0);
+				res.PE[i].set(g*boost::accumulators::sum(acc_z[i]),2,2,0);
 			}
-
-			// Are other quantities needed?
-
 
 			// Use std move to insert into set
 			rotations.insert(std::move(res));

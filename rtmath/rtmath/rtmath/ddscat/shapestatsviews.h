@@ -20,6 +20,18 @@
 		matrixop val = _base->varname; \
 		matrixop res = val * d; \
 		return res; }
+#define D_MAT_SCALED_INDEXED(varname, power) \
+	matrixop varname(size_t index) const {\
+		double d = pow(_d, (double) power); \
+		matrixop val = _base->varname[index]; \
+		matrixop res = val * d; \
+		return res; }
+#define D_MAT_SCALED_INDEXED_OTHER(varname, power, multname) \
+	matrixop varname(size_t index) const {\
+		double d = pow(_d, (double) power); \
+		matrixop val = _base->varname[index]; \
+		matrixop res = val * d * multname[index]; \
+		return res; }
 
 namespace rtmath {
 	namespace ddscat {
@@ -31,16 +43,26 @@ namespace rtmath {
 				: _baser(base), _d(dSpacing) {_base = &_baser;}
 			double getScale() const {return _d; }
 			void setScale(double d) {_d = d;}
+			void setMasses(const std::vector<double> &m) { _masses = m; }
+			void getMasses(std::vector<double> &m) { m = _masses; }
+			void setDensities(const std::vector<double> &den) { _densities = den; }
+			void getDensities(std::vector<double> &den) { den = _densities; }
 
 			// Accessor functions
 			D_SCALED(beta, 0);
 			D_SCALED(theta, 0);
 			D_SCALED(phi, 0);
 
-			// D_MAT_SCALED(mom1, 1);
-			// D_MAT_SCALED(mom2, 1);
-			// D_MAT_SCALED(mominert, 1);
-//			D_MAT_SCALED(PE, 2); // TODO: check
+			// These are divided by constituent objects (distinct materials with 
+			// each having its own mass and density).
+			// mom1, mom2, covariance are fine by themselves
+			D_MAT_SCALED_INDEXED(mom1, 1);
+			D_MAT_SCALED_INDEXED(mom2, 2);
+			D_MAT_SCALED_INDEXED(covariance, 2);
+			// Moment of inertia requires material density
+			D_MAT_SCALED_INDEXED_OTHER(mominert, 3, _densities);
+			// PE requires multiplication by material mass
+			D_MAT_SCALED_INDEXED_OTHER(PE, 1, _masses);
 
 			D_MAT_SCALED(min, 1);
 			D_MAT_SCALED(max, 1);
@@ -54,10 +76,12 @@ namespace rtmath {
 			D_MAT_SCALED(as_abs, 0);
 			D_MAT_SCALED(as_abs_mean, 0);
 			D_MAT_SCALED(as_rms, 0);
+
 		private:
 			double _d;
 			const shapeFileStatsRotated &_baser;
 			const shapeFileStatsRotated *_base;
+			std::vector<double> _masses, _densities;
 		};
 
 		class shapeFileStatsDipoleView : public shapeFileStatsBase
@@ -103,4 +127,5 @@ namespace rtmath {
 
 #undef D_SCALED
 #undef D_MAT_SCALED
-
+#undef D_MAT_SCALED_INDEXED
+#undef D_MAT_SCALED_INDEXED_OTHER

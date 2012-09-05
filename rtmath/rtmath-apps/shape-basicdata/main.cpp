@@ -1,6 +1,6 @@
 #pragma warning( push )
-#pragma warning( disable : 4996 )
-#pragma warning( disable : 4800 )
+#pragma warning( disable : 4996 ) // Dumb boost uuid warning
+#pragma warning( disable : 4800 ) // forcing non-bool type to true or false
 #pragma warning( disable : 4521 ) // multiple copy constructors in some PCL stuff
 #pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
 
@@ -79,6 +79,16 @@ int main(int argc, char** argv)
 			("density", "Output lattice cell density")
 			("mass", "Output lattice cell mass (mg)")
 			("diameter,D", "Calculate max diameter (in physical units is possible)")
+			("aeff-filled", "Calculate effective radius with just shape.dat unit cells")
+			("aeff-circumsphere", "Calculate effective radius assuming circumscribing sphere")
+			("aeff-V-convex-hull", "Calculate effective radius assuming circumscribing sphere volume")
+			("aeff-SA-convex-hull", "Calculate effective radius assuming circumscribing sphere surface area")
+			("aeff-V-ellipsoid-max", "Calculate effective radius assuming maximum circumscribing ellipsoid volume")
+
+			("f-circum-sphere", "Calculate volume fraction with circumscribing sphere")
+			("f-convex-hull", "Calculate volume fraction with convex hull")
+			("f-ellipsoid-max", "Calculate volume fraction with convex hull")
+
 			("PE", "Plot potential energy (in physical units if possible)")
 
 			("convex-hull","Output convex hull information and vtk file")
@@ -90,8 +100,8 @@ int main(int argc, char** argv)
 				"Make histogram and vtk file of rms distance to specified nearest neighbors")
 
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
-			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
+			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations")
+			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -202,6 +212,56 @@ int main(int argc, char** argv)
 				cout << "Diameter (d): " << sstats->max_distance << endl;
 				if (dSpacing)
 					cout << "Diameter (um): " << sstatsView->max_distance() << endl;
+			}
+
+			if (vm.count("aeff-filled"))
+			{
+				cout << "aeff-filled (d): " << sstats->aeff_dipoles_const << endl;
+				if (dSpacing)
+					cout << "aeff-filled (um): " << sstatsView->aeff_dipoles_const() << endl;
+			}
+
+			if (vm.count("aeff-circumsphere"))
+			{
+				cout << "aeff-circumsphere (d): " << sstats->a_circum_sphere << endl;
+				if (dSpacing)
+					cout << "aeff-circumsphere (um): " << sstatsView->a_circum_sphere() << endl;
+			}
+
+			if (vm.count("aeff-V-convex-hull"))
+			{
+				cout << "aeff-V-convex-hull (d): " << sstats->aeff_V_convex_hull << endl;
+				if (dSpacing)
+					cout << "aeff-V-convex-hull (um): " << sstatsView->aeff_V_convex_hull() << endl;
+			}
+
+			if (vm.count("aeff-SA-convex-hull"))
+			{
+				cout << "aeff-SA-convex-hull (d): " << sstats->aeff_SA_convex_hull << endl;
+				if (dSpacing)
+					cout << "aeff-SA-convex-hull (um): " << sstatsView->aeff_SA_convex_hull() << endl;
+			}
+
+			if (vm.count("aeff-V-ellipsoid-max"))
+			{
+				cout << "aeff-V-ellipsoid-max (d): " << sstats->aeff_ellipsoid_max << endl;
+				if (dSpacing)
+					cout << "aeff-V-ellipsoid-max (um): " << sstatsView->aeff_ellipsoid_max() << endl;
+			}
+
+			if (vm.count("f-circum-sphere"))
+			{
+				cout << "f-circum-sphere: " << sstats->f_circum_sphere << endl;
+			}
+
+			if (vm.count("f-convex-hull"))
+			{
+				cout << "f-convex-hull: " << sstats->f_convex_hull << endl;
+			}
+
+			if (vm.count("f-ellipsoid-max"))
+			{
+				cout << "f-ellipsoid-max: " << sstats->f_ellipsoid_max << endl;
 			}
 
 			if (vm.count("convex-hull"))
