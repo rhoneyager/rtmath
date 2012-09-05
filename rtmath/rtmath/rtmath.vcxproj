@@ -100,6 +100,7 @@
     <ClInclude Include="rtmath\ddscat\ddavg.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsRotated.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsviews.h" />
+    <ClInclude Include="rtmath\ddscat\singleids.h" />
     <ClInclude Include="rtmath\ddscat\tmData.h" />
     <ClInclude Include="rtmath\density.h" />
     <ClInclude Include="rtmath\Garrett\image.h" />
@@ -188,8 +189,11 @@
     <ClInclude Include="rtmath\rtmath.h" />
     <ClInclude Include="rtmath\serialization.h" />
     <ClInclude Include="rtmath\Serialization\common_templates_serialization.h" />
+    <ClInclude Include="rtmath\Serialization\ddOutputSingle_serialization.h" />
+    <ClInclude Include="rtmath\Serialization\ddOutput_serialization.h" />
     <ClInclude Include="rtmath\Serialization\ddparGenerator_serialization.h" />
     <ClInclude Include="rtmath\Serialization\ddpar_serialization.h" />
+    <ClInclude Include="rtmath\Serialization\ddScattMatrix_serialization.h" />
     <ClInclude Include="rtmath\Serialization\matrixop_serialization.h" />
     <ClInclude Include="rtmath\Serialization\rotations_serialization.h" />
     <ClInclude Include="rtmath\Serialization\serialization_macros.h" />
@@ -261,16 +265,23 @@
     <ClCompile Include="src\daStatic.cpp" />
     <ClCompile Include="src\ddavg.cpp" />
     <ClCompile Include="src\ddLoader.cpp" />
-    <ClCompile Include="src\ddOutput.cpp" />
-    <ClCompile Include="src\ddOutputEnsemble.cpp" />
+    <ClCompile Include="src\ddOutput.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\ddOutputEnsemble.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\ddOutputMie.cpp" />
-    <ClCompile Include="src\ddOutputSingle.cpp" />
+    <ClCompile Include="src\ddOutputSingle.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\ddpar.cpp" />
     <ClCompile Include="src\ddparGenerator.cpp" />
     <ClCompile Include="src\ddparGenerator_serialization.cpp" />
     <ClCompile Include="src\ddpar_serialization.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
     <ClCompile Include="src\ddScattMatrix.cpp" />
+    <ClCompile Include="src\ddScattMatrix_serialization.cpp" />
     <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
@@ -284,7 +295,9 @@
     <ClCompile Include="src\hermite.cpp" />
     <ClCompile Include="src\hulls.cpp" />
     <ClCompile Include="src\image.cpp" />
-    <ClCompile Include="src\interpolatable.cpp" />
+    <ClCompile Include="src\interpolatable.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\laguerre.cpp" />
     <ClCompile Include="src\legendre.cpp" />
     <ClCompile Include="src\matrixop.cpp" />
@@ -298,7 +311,9 @@
     <ClCompile Include="src\mie-Scalc.cpp" />
     <ClCompile Include="src\mie-tauNCalc.cpp" />
     <ClCompile Include="src\mie-wnCalc.cpp" />
-    <ClCompile Include="src\mieScattMatrix.cpp" />
+    <ClCompile Include="src\mieScattMatrix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\mtab.cpp" />
     <ClCompile Include="src\MurmurHash3.cpp" />
     <ClCompile Include="src\ncContainer.cpp" />

@@ -33,39 +33,36 @@ namespace rtmath {
 			_wavelength = 0;
 			_reff = 0;
 			_numDipoles = 0;
+			_version = 0;
 			_filename = "";
-			_locked = false;
-			_shape = nullptr;
 		}
 
 		ddOutputSingle::~ddOutputSingle()
 		{
 		}
 
-		ddOutputSingle::ddOutputSingle(const std::string &filename)
+		ddOutputSingle::ddOutputSingle()
 		{
 			_init();
-			loadFile(filename);
 		}
 
-		ddOutputSingle::ddOutputSingle(const std::string &filename, std::shared_ptr<shapefile> &shape)
+		bool ddOutputSingle::operator< (const ddOutputSingle &rhs) const
 		{
-			_init();
-			_shape = shape;
-			loadFile(filename);
+			if (_freq != rhs._freq) return _freq < rhs._freq;
+			if (_reff != rhs._reff) return _reff < rhs._reff;
+			if (_beta != rhs._beta) return _beta < rhs._beta;
+			if (_theta != rhs._theta) return _theta < rhs._theta;
+			if (_phi != rhs._phi) return _phi < rhs._phi;
+			return false;
 		}
 
+		/*
 		void ddOutputSingle::print(std::ostream &out) const
 		{
 			using namespace std;
 			out << "ddOutputSingle for beta " << _beta << 
 				" theta " << _theta << " phi " << _phi
 				<< " frequency " << _freq << endl;
-		}
-
-		void ddOutputSingle::lock()
-		{
-			_locked = true;
 		}
 
 		void ddOutputSingle::writeCSV(const std::string &filename) const
@@ -78,7 +75,7 @@ namespace rtmath {
 			out << std::endl;
 			writeCSV(out);
 		}
-
+		
 		void ddOutputSingle::write(const std::string &filename) const
 		{
 			using namespace std;
@@ -186,10 +183,9 @@ namespace rtmath {
 			}
 			// Evans fortran files lack a newline at EOF.
 		}
-
-		void ddOutputSingle::_insert(std::shared_ptr<const ddScattMatrix> &obj)
+		*/
+		void ddOutputSingle::_insert(boost::shared_ptr<const ddScattMatrix> &obj)
 		{
-			if (_locked) return;
 			// Helps loadFile and collects all insertions in a convenient place.
 			//_scattMatricesRaw.insert(obj);
 			// Insert into interpolation handler
@@ -198,7 +194,6 @@ namespace rtmath {
 
 		void ddOutputSingle::clear()
 		{
-			if (_locked) return;
 			ddOutputSingleInterp::_clear();
 			_init();
 		}
@@ -206,7 +201,6 @@ namespace rtmath {
 		void ddOutputSingle::loadFile(const std::string &filename)
 		{
 			using namespace std;
-			if (_locked) return;
 			// File loading routine is important!
 			// Load a standard .fml file. Parse each line for certain key words.
 			clear();
@@ -230,8 +224,8 @@ namespace rtmath {
 					throw rtmath::debug::xMissingFile("shape.dat or target.out");
 				}
 				shapepath = pshapepath.string();
-				if (exists(pshapepath))
-					_shape = shared_ptr<shapefile>(new shapefile(shapepath));
+				if (exists(pshapepath) && !_shape)
+					_shape = boost::shared_ptr<shapefile>(new shapefile(shapepath));
 			}
 
 			ifstream in(filename.c_str(), std::ifstream::in);
@@ -314,27 +308,6 @@ namespace rtmath {
 			}
 		}
 
-		void ddOutputSingle::genCoords(coords::cyclic<double> &res) const
-		{
-			coords::cyclic<double> ret(4,freq(),beta(),theta(),phi());
-			res = ret;
-		}
-
 	} // end ddscat
 } // end rtmath
-
-
-std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSingle &ob)
-{
-	ob.writeCSV(stream);
-	return stream;
-}
-
-/*
-std::istream &operator>>(std::istream &stream, rtmath::ddscat::ddOutputSingle &ob)
-{
-	ob.setF(stream);
-	return stream;
-}
-*/
 

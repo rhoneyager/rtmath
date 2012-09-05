@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <memory>
+#include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -32,7 +32,6 @@ namespace mie {
 	ddOutputMie::ddOutputMie()
 	{
 		_init();
-		lock();
 	}
 
 	ddOutputMie::ddOutputMie(double freq, double psize, double span)
@@ -44,11 +43,10 @@ namespace mie {
 		// TODO: less hardcode of theta
 		for (double theta = 0; theta <= 180; theta += span)
 		{
-			std::shared_ptr<const rtmath::ddscat::ddScattMatrix> nm
+			boost::shared_ptr<const rtmath::ddscat::ddScattMatrix> nm
 				(new rtmath::ddscat::mieScattMatrix(freq,theta,psize));
 			_insert(nm);
 		}
-		lock();
 	}
 
 } // end mie namespace

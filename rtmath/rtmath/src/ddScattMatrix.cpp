@@ -13,147 +13,165 @@
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 #include "../rtmath/units.h"
+#include "../rtmath/phaseFunc.h"
+//#include "../rtmath/coords.h"
+
+namespace {
+	void complexify(const rtmath::matrixop &re, const rtmath::matrixop &im, std::complex<double> *res)
+	{
+		if (re.maxSize() != im.maxSize()) throw;
+		size_t maxSize = re.maxSize();
+		for (size_t i=0; i< maxSize; i++)
+		{
+			res[i] = std::complex<double>(re.getIndex(i), im.getIndex(i));
+		}
+	}
+}
 
 namespace rtmath {
 	namespace ddscat {
-		void ddScattMatrix::_init()
-		{
-			_theta = 0;
-			_phi = 0;
-			_freq = 0;
-			_wavelength = 0;
-			for (size_t i=0;i<4;i++)
-				for (size_t j=0;j<4;j++)
-				{
-					_Knn[i][j] = 0;
-					_Pnn[i][j] = 0;
-				}
-			// _vals and _S are part of std::complex.
-			// They are automatically zeroed.
 
-			_lock = false;
-		}
-		
 		ddScattMatrix::ddScattMatrix()
 		{
-			_init();
+			_Pnn = boost::shared_ptr<matrixop>(new matrixop(2,4,4));
+			_pol = 0;
 		}
-		
+
 		ddScattMatrix::~ddScattMatrix()
 		{
 		}
-		
-		ddScattMatrix::ddScattMatrix(double freq, double theta, double phi)
-		{
-			_init();
-			_theta = theta;
-			_phi = phi;
-			_freq = freq;
-			// freq is in GHz. Convert to wavelength in um.
-			units::conv_spec ftowv("GHz","um");
-			_wavelength = ftowv.convert(freq);
-		}
-		
-		ddScattMatrix::ddScattMatrix(double freq, const std::string &lin)
-		{
-			_init();
-			_freq = freq;
-			units::conv_spec ftowv("GHz","um");
-			_wavelength = ftowv.convert(freq);
-			setF(lin);
-		}
 
-		ddScattMatrix::ddScattMatrix(double freq, std::istream &lss)
-		{
-			_init();
-			_freq = freq;
-			units::conv_spec ftowv("GHz","um");
-			_wavelength = ftowv.convert(freq);
-			setF(lss);
-		}
-		
-		ddScattMatrix & ddScattMatrix::operator=(const ddScattMatrix &rhs)
+		ddScattMatrix& ddScattMatrix::operator = (const ddScattMatrix &rhs)
 		{
 			if (this == &rhs) return *this; // self-assignment check
 
-			_theta = rhs.theta();
-			_phi = rhs.phi();
-			_freq = rhs.freq();
-			_wavelength = rhs._wavelength;
-
-			for (size_t i=0;i<2;i++)
-				for (size_t j=0;j<2;j++)
-				{
-					_vals[i][j] = rhs._vals[i][j];
-				}
-
-			// Preserve locking, too
-			for (size_t i=0;i<4;i++)
-				for (size_t j=0;j<4;j++)
-				{
-					_Knn[i][j] = rhs._Knn[i][j];
-					_Pnn[i][j] = rhs._Pnn[i][j];
-				}
-
-			_genS();
+			_Pnn = boost::shared_ptr<matrixop>(new matrixop(*(rhs._Pnn)));
 
 			return *this;
 		}
 
-		void ddScattMatrix::mueller(double Pnn[4][4]) const
+		void ddScattMatrix::pol(double npol)
 		{
-			for (size_t i=0;i<4;i++)
-				for (size_t j=0;j<4;j++)
-				{
-					Pnn[i][j] = _Pnn[i][j];
-				}
-		}
-		
-		void ddScattMatrix::extinction(double Knn[4][4]) const
-		{
-			for (size_t i=0;i<4;i++)
-				for (size_t j=0;j<4;j++)
-			{
-				Knn[i][j] = _Knn[i][j];
-			}
-		}
-		
-		void ddScattMatrix::mueller(matrixop &res) const
-		{
-			res.resize(2,4,4);
-			res.fromDoubleArray(&_Pnn[0][0]);
-		}
-		
-		void ddScattMatrix::extinction(matrixop &res) const
-		{
-			res.resize(2,4,4);
-			res.fromDoubleArray(&_Knn[0][0]);
-		}
-		
-		void ddScattMatrix::genCoords(coords::cyclic<double> &res) const
-		{
-			coords::cyclic<double> ret(3,freq(),theta(),phi());
-			res = ret;
+			_pol = npol;
 		}
 
-		void ddScattMatrix::setF(size_t i, size_t j, const std::complex<double> &val)
+		double ddScattMatrix::pol() const
 		{
-			if (i>1 || j>1) throw debug::xArrayOutOfBounds();
-			_vals[i][j] = val;
-			_genS();
+			return _pol;
+		}
+
+		matrixop ddScattMatrix::mueller() const
+		{
+			return *_Pnn;
+		}
+
+		ddScattMatrixF::ddScattMatrixF(double freq, double phi)
+		{
+			_freq = freq;
+			_phi = phi;
+			_fRe = boost::shared_ptr<matrixop>(new matrixop(2,2,2));
+			_fIm = boost::shared_ptr<matrixop>(new matrixop(2,2,2));
+		}
+
+		ddScattMatrixF::~ddScattMatrixF()
+		{
+		}
+
+		ddScattMatrixF & ddScattMatrixF::operator = (const ddScattMatrixF &rhs)
+		{
+			if (this == &rhs) return *this; // self-assignment check
+
+			_freq = rhs._freq;
+			_phi = rhs._phi;
+
+			_Pnn = boost::shared_ptr<matrixop>(new matrixop(*(rhs._Pnn)));
+
+			_fRe = boost::shared_ptr<matrixop>(new matrixop(*(rhs._fRe)));
+			_fIm = boost::shared_ptr<matrixop>(new matrixop(*(rhs._fIm)));
+
+			return *this;
+		}
+
+		ddScattMatrixP & ddScattMatrixP::operator = (const ddScattMatrixP &rhs)
+		{
+			if (this == &rhs) return *this; // self-assignment check
+
+			_Pnn = boost::shared_ptr<matrixop>(new matrixop(*(rhs._Pnn)));
+
+			return *this;
+		}
+
+		matrixop ddScattMatrixF::mueller() const
+		{
+			_calcP();
+			return *_Pnn;
+		}
+
+		matrixop ddScattMatrixF::getF() const
+		{
+			matrixop res(2,2,4);
+			res.set(_fRe->get(2,0,0),2,0,0);
+			res.set(_fIm->get(2,0,0),2,0,1);
+			res.set(_fRe->get(2,0,1),2,0,2);
+			res.set(_fIm->get(2,0,1),2,0,3);
+			res.set(_fRe->get(2,1,0),2,1,0);
+			res.set(_fIm->get(2,1,0),2,1,1);
+			res.set(_fRe->get(2,1,1),2,1,2);
+			res.set(_fIm->get(2,1,1),2,1,3);
+
+			return res;
+		}
+
+		void ddScattMatrixF::_calcP() const
+		{
+			// Generates Snn and, by extension, Knn and Pnn
+			// TODO: verify Snn, Pnn and Knn
+			using namespace std;
+			const double PI = boost::math::constants::pi<double>();
+
+			//complex<double> S[4];
+			complex<double> i(0,1);
+
+			complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
+			complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
+
+			complex<double> _S[4];
+			complex<double> _vals[2][2];
+			complexify(*_fRe,*_fIm,&_vals[0][0]);
+
+			//double cp = cos(2.0*PI*phi()/180.0);
+			double cp = cos(_phi * PI / 180.0);
+			//double sp = sin(2.0*PI*phi()/180.0);
+			double sp = sin(_phi * PI / 180.0);
+			_S[0] = -i * ( _vals[1][0] * (b * cp - a * sp) + _vals[1][1] * (d * cp - c * sp) );
+			_S[1] = -i * ( _vals[0][0] * (a*cp + b * sp) + _vals[0][1] * (c * cp + d * sp) );
+			_S[2] = i * ( _vals[0][0] * (b * cp - a * sp) + _vals[0][1] * (d * cp - c * sp) );
+			_S[3] = i * ( _vals[1][0] * (a*cp + b * sp) + _vals[1][1] * (c*cp + d * sp) );
+			
+			//rtmath::scattMatrix::_genExtinctionMatrix(_Knn, _S, _freq);
+			double Snn[4][4];
+			rtmath::scattMatrix::_genMuellerMatrix(Snn,_S);
+			_Pnn->fromDoubleArray(&Snn[0][0]);
+			//rtmath::scattMatrix::_genMuellerMatrix(_Pnn,_S);
+		}
+
+		void ddScattMatrixF::setF(const std::complex<double> fs[2][2])
+		{
+			_fRe->set(fs[0][0].real(),2,0,0);
+			_fIm->set(fs[0][0].real(),2,0,0);
+
+			_fRe->set(fs[0][1].real(),2,0,1);
+			_fIm->set(fs[0][1].real(),2,0,1);
+
+			_fRe->set(fs[1][0].real(),2,1,0);
+			_fIm->set(fs[1][0].real(),2,1,0);
+
+			_fRe->set(fs[1][1].real(),2,1,1);
+			_fIm->set(fs[1][1].real(),2,1,1);
 		}
 		
-		void ddScattMatrix::setF(const std::complex<double> fs[2][2])
-		{
-			for (size_t i=0;i<2;i++)
-				for (size_t j=0;j<2;j++)
-				{
-					_vals[i][j] = fs[i][j];
-				}
-			_genS();
-		}
-		
-		void ddScattMatrix::setF(std::istream &lss)
+		/* Include this at a higher level
+		void ddScattMatrixF::setF(std::istream &lss)
 		{
 			// This function reads directly from a string and extracts the appropriate values.
 			// It compartamentalizes ddscat .fml reads into the appropriate classes.
@@ -175,12 +193,6 @@ namespace rtmath {
 			_genS();
 		}
 		
-		void ddScattMatrix::setF(const std::string &lin)
-		{
-			using namespace std;
-			istringstream lss(lin);
-			setF(lss);
-		}
 		
 		void ddScattMatrix::_genS()
 		{
@@ -188,7 +200,6 @@ namespace rtmath {
 			// TODO: verify Snn, Pnn and Knn
 			using namespace std;
 			const double PI = boost::math::constants::pi<double>();
-			if (_lock) return;
 
 			//complex<double> S[4];
 			complex<double> i(0,1);
@@ -208,127 +219,7 @@ namespace rtmath {
 			rtmath::scattMatrix::_genExtinctionMatrix(_Knn, _S, _freq);
 			rtmath::scattMatrix::_genMuellerMatrix(_Pnn,_S);
 		}
-
-		void ddScattMatrix::setF(const matrixop &src)
-		{
-			if (_lock) return;
-			_vals[0][0].real(src.get(2,0,0));
-			_vals[0][0].imag(src.get(2,0,1));
-			_vals[0][1].real(src.get(2,0,2));
-			_vals[0][1].imag(src.get(2,0,3));
-			_vals[1][0].real(src.get(2,1,0));
-			_vals[1][0].imag(src.get(2,1,1));
-			_vals[1][1].real(src.get(2,1,2));
-			_vals[1][1].imag(src.get(2,1,3));
-			_genS();
-		}
-
-		void ddScattMatrix::getF(matrixop &src) const
-		{
-			src.resize(2,2,4);
-			src.set(_vals[0][0].real(),2,0,0);
-			src.set(_vals[0][0].imag(),2,0,1);
-			src.set(_vals[0][1].real(),2,0,2);
-			src.set(_vals[0][1].imag(),2,0,3);
-			src.set(_vals[1][0].real(),2,1,0);
-			src.set(_vals[1][0].imag(),2,1,1);
-			src.set(_vals[1][1].real(),2,1,2);
-			src.set(_vals[1][1].imag(),2,1,3);
-		}
-		
-		void ddScattMatrix::print(std::ostream &out) const
-		{
-			using namespace std;
-			out << "ddScattMatrix for theta " << _theta << " phi " << _phi
-					<< " frequency " << _freq << endl;
-			
-			out << "f" << endl;
-			for (size_t i=0; i<2; i++)
-				for (size_t j=0; j<2; j++)
-					out << i << "," << j << "\t" << _vals[i][j] << endl;
-			out << "S" << endl;
-			for (size_t i=0; i<4; i++)
-			{
-				out << "\t" <<  _S[i] << endl;
-			}
-
-			out << "Mueller" << endl;
-			out << _theta << "\t" << _phi << "\t" << _freq << "\t";
-			//update();
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					out << _Pnn[i][j] << "\t";
-				}
-				out << endl;
-			}
-			out << endl;
-
-			out << "Extinction" << endl;
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					out << _Knn[i][j] << "\t";
-				}
-				out << endl;
-			}
-			out << endl;
-		}
-		
-		void ddScattMatrix::writeCSV(std::ostream &out) const
-		{
-			using namespace std;
-			out << _freq << ", " << _theta << ", " << _phi << ", ";
-			/*
-			for (size_t i=0; i<2; i++)
-			{
-				for (size_t j=0; j<2; j++)
-				{
-					out << _vals[i][j].real() << ", " << _vals[i][j].imag() << ", ";
-				}
-			}
-			*/
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					out << _Pnn[i][j] << ", ";
-				}
-			}
-
-			for (size_t i=0; i<4; i++)
-			{
-				for (size_t j=0; j<4; j++)
-				{
-					out << _Knn[i][j] << ", ";
-				}
-			}
-			out << endl;
-		}
-		
-		void ddScattMatrix::writeCSV(const std::string &filename) const
-		{
-			std::ofstream out(filename.c_str());
-			out << "CSV output for (frequency,theta,phi)\n";
-			writeCSV(out);
-		}
-		
-		
+		*/
 	} // end ddscat
 } // end rtmath
-
-std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddScattMatrix &ob)
-{
-	ob.writeCSV(stream);
-	return stream;
-}
-
-std::istream &operator>>(std::istream &stream, rtmath::ddscat::ddScattMatrix &ob)
-{
-	ob.setF(stream);
-	return stream;
-}
-
 

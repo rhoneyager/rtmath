@@ -101,6 +101,7 @@ namespace rtmath
 		double water(double T)
 		{
 			throw rtmath::debug::xUnimplementedFunction();
+			return 0;
 		}
 	}
 }

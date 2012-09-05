@@ -70,15 +70,15 @@ namespace rtmath {
 
 		// TODO: normalize calls to place val first for all set(...)
 		void set(const std::vector<size_t> &pos, double val);
-		void set(double val, size_t rank, ...); // Does this overlap next def?
-		void set(double, size_t); // See previous
+		void set(double val, size_t rank, ...);
+		void setIndex(double, size_t);
 		void setCol(size_t col, const std::vector<double> &data);
 		void setCol(size_t col, const double *data);
 		void setRow(size_t row, const double *data);
 		void setRow(size_t row, const std::vector<double> &data);
 		double get(const std::vector<size_t> &pos) const;
 		double get(size_t rank, ...) const;
-		inline double get(size_t index) const { return _data[index]; }
+		inline double getIndex(size_t index) const { return _data[index]; }
 
 		void size(std::vector<size_t> &out) const;
 		const std::vector<size_t> size() const;

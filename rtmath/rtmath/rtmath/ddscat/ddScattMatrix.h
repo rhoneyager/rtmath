@@ -1,73 +1,62 @@
 #pragma once
-#include <memory>
-#include <string>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <set>
-#include <unordered_map>
+//#include <iostream>
 #include <complex>
 #include "../matrixop.h"
-#include "../phaseFunc.h"
-#include "../coords.h"
 
-namespace rtmath {
-	namespace ddscat {
+#include <boost/shared_ptr.hpp>
+
+namespace rtmath
+{
+	namespace ddscat
+	{
+		// This is now a base class because there are two ways for
+		// specifying scattering: the complex scattering amplitude 
+		// matrix or the scattering phase matrix. ddscat intermediate 
+		// output gives the complex matrix which is more useful. The 
+		// P matrix is harder to derive from, but is found in the 
+		// .avg files and in tmatrix code.
 		class ddScattMatrix
 		{
-			// A set of complex matrices containing the
-			// 2x2 complex scattering amplitudes and the
-			// extinction and scattering matrices
 		public:
-			ddScattMatrix(double freq, double theta, double phi);
-			ddScattMatrix(double freq, const std::string &lin);
-			ddScattMatrix(double freq, std::istream &lss);
 			ddScattMatrix();
 			virtual ~ddScattMatrix();
-			ddScattMatrix & operator = (const ddScattMatrix&); // Assignment needed due to double arrays
+			ddScattMatrix & operator = (const ddScattMatrix&); // Assignment needed due to arrays
 
-			inline double theta() const {return _theta;}
-			inline double phi() const {return _phi;}
-			inline double freq() const {return _freq; }
-			
+			virtual matrixop mueller() const;
+			double pol() const;
+			void pol(double);
+		//protected:
+			mutable boost::shared_ptr<matrixop> _Pnn;
+			double _pol;
+		};
+
+		class ddScattMatrixF : public ddScattMatrix
+		{
+		public:
+			// Needs frequency (GHz) and phi (degrees) for P and K calculations
+			ddScattMatrixF(double freq = 0, double phi = 0);
+			virtual ~ddScattMatrixF();
+			ddScattMatrixF & operator = (const ddScattMatrixF&);
+			// matrixop extinction() const;
+			virtual matrixop mueller() const;
 			void setF(const std::complex<double> fs[2][2]);
-			void setF(const matrixop &src); // Double-sized matrixop for complexity
-			void setF(size_t i, size_t j, const std::complex<double> &val);
-			void setF(const std::string &lin);
-			void setF(std::istream &lss);
+			//void setF(std::istream &lss); // Include this higher up
+			matrixop getF() const;
+		//protected:
+			void _calcP() const;
+			boost::shared_ptr<matrixop> _fRe, _fIm;
+			double _freq, _phi;
+		};
 
-			void getF(matrixop &res) const; // Double-sized matrixop for complexity
-
-			void genCoords(coords::cyclic<double> &res) const;
-			inline coords::cyclic<double> genCoords() const { coords::cyclic<double> res; genCoords(res); return res; }
-
-			void print(std::ostream &out = std::cerr) const;
-			void writeCSV(const std::string &filename) const;
-			void writeCSV(std::ostream &out = std::cerr) const;
-
-			void mueller(double Pnn[4][4]) const;
-			void mueller(matrixop &res) const;
-			inline matrixop mueller() const { matrixop res(2,4,4); mueller(res); return res; }
-			void extinction(double Knn[4][4]) const;
-			void extinction(matrixop &res) const;
-			inline matrixop extinction() const { matrixop res(2,4,4); extinction(res); return res; }
-
-			inline void lock() { _lock = true; }
-		protected:
-			void _init();
-			virtual void _genS();
-			
-			bool _lock;
-			double _theta, _phi, _wavelength, _freq;
-			double _Knn[4][4], _Pnn[4][4];
-			// Unfortunately, matrixop is not a template. Otherwise, I'd change these.
-			std::complex<double> _vals[2][2];
-			std::complex<double> _S[4];
+		class ddScattMatrixP : public ddScattMatrix
+		{
+		public:
+			ddScattMatrixP();
+			virtual ~ddScattMatrixP();
+			ddScattMatrixP & operator = (const ddScattMatrixP&);
+			void setP(const matrixop&);
+			matrixop getP() const;
 		};
 	}
 }
 
-// ostream override
-std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddScattMatrix &ob);
-// istream override
-std::istream &operator>>(std::istream &stream, rtmath::ddscat::ddScattMatrix &ob);

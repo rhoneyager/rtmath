@@ -5,7 +5,6 @@
 #include "error/debug.h"
 #include "matrixop.h"
 #include "da/damatrix.h"
-#include <memory>
 #include <map>
 
 namespace rtmath {

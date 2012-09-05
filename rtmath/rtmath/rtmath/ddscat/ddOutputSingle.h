@@ -1,25 +1,23 @@
 #pragma once
-#include <memory>
 #include <string>
 #include <iostream>
 #include <vector>
 #include <map>
 #include <set>
-#include <unordered_map>
 #include <complex>
+#include <boost/shared_ptr.hpp>
 #include "../matrixop.h"
 #include "../interpolatable.h"
 #include "../phaseFunc.h"
 #include "ddScattMatrix.h"
 #include "shapefile.h"
 #include "../da/daStatic.h"
-#include "../coords.h"
 
 namespace rtmath {
 	
 	namespace ddscat {
 
-		class ddOutputSingle : public interpolation::ddOutputSingleInterp
+		class ddOutputSingle
 		{
 			// Class contains the output of a single ddscat file
 			// Doesn't quite inherit from daStatic. The files loaded by the ddOutput class
@@ -27,54 +25,39 @@ namespace rtmath {
 			// two separate entries.
 			// Note: ensemble providers inherit from this!
 		public:
-			// Constructors need to completely initialize, as I have const ddOutputSingle
-			// shared pointers.
-			// Read from ddscat file
-			ddOutputSingle(const std::string &filename);
-			ddOutputSingle(const std::string &filename, std::shared_ptr<shapefile> &shape);
-			// Read from stream (Evans?/Other format?)
-
-			
+			ddOutputSingle();
 			virtual ~ddOutputSingle();
 
-			void loadFile(const std::string &filename);
-			// Stream input (Evans, CSV)
-			void clear();
-			void lock();
+			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
+			void readFile(const std::string &filename);
+			void writeFile(const std::string &filename) const;
 
+			void clear();
+			/*
 			void print(std::ostream &out = std::cerr) const;
 			void write(const std::string &filename) const;
 			void writeCSV(const std::string &filename) const;
 			void writeCSV(std::ostream &out = std::cerr) const;
 			void writeEvans(std::ostream &out, double freq) const;
-
+			*/
 			inline double beta() const {return _beta; }
 			inline double theta() const {return _theta;}
 			inline double phi() const {return _phi;}
 			inline double freq() const {return _freq; }
 
-			void genCoords(coords::cyclic<double> &res) const;
-			inline coords::cyclic<double> genCoords() const { coords::cyclic<double> res; genCoords(res); return res; }
-
-			// Generation functions
-			// virtual std::shared_ptr<const daStatic> emissionVector(   ...   ) const;
-			// Scattering and extinction providers for daStatic
-			// virtual std::shared_ptr<const daStatic> P() const;
-			// virtual std::shared_ptr<const daStatic> K() const;
-
+			bool operator<(const ddOutputSingle &rhs) const;
 		private:
 			void _init();
 
 		public: // Made public for now so ensembles work. May just make that a friend class.
-			ddOutputSingle();
-			virtual void _insert(std::shared_ptr<const ddscat::ddScattMatrix> &obj);
+			virtual void _insert(boost::shared_ptr<const ddscat::ddScattMatrix> &obj);
 		protected:
 			double _beta, _theta, _phi, _freq, _wavelength;
 			double _reff;
-			bool _locked;
 			size_t _numDipoles;
+			size_t _version;
 			std::string _filename;
-			std::shared_ptr<shapefile> _shape;
+			boost::shared_ptr<shapefile> _shape;
 			// Note the shared_ptr construction to save memory
 			// Contains the raw scattering matrices
 			//mutable std::set<std::shared_ptr<const ddscat::ddScattMatrix> > _scattMatricesRaw;
@@ -95,7 +78,3 @@ namespace rtmath {
 
 }
 
-// ostream override
-std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSingle &ob);
-// istream override
-//std::istream &operator>>(std::istream &stream, rtmath::ddscat::ddOutputSingle &ob);

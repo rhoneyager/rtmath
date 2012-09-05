@@ -315,10 +315,11 @@ namespace rtmath {
 		bool shapeConstraint::operator<(const shapeConstraint &rhs) const
 		{
 			int lt;
-			if (lt == varname.compare(rhs.varname))
+			// Yes, I know what I'm doing with setting the variable!
+			if (lt = varname.compare(rhs.varname))
 				return (lt>0) ? false : true;
 
-			if (lt == units.compare(rhs.units))
+			if (lt = units.compare(rhs.units))
 				return (lt>0) ? false : true;
 
 			if (pset != rhs.pset) return (pset < rhs.pset);

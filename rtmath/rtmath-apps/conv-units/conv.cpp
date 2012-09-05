@@ -4,17 +4,16 @@
    */
 
 #include <iostream>
-#include <memory>
 #include <set>
 #include <string>
 #include <map>
 #include <vector>
 #include <boost/lexical_cast.hpp>
+#include <boost/program_options.hpp>
+#include <boost/shared_ptr.hpp>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
-
-void doHelp();
 
 int main(int argc, char** argv)
 {
@@ -23,61 +22,80 @@ int main(int argc, char** argv)
 	try {
 		// Process some of the flags
 		rtmath::debug::appEntry(argc, argv);
-		string inUnits, outUnits;
-		double in, out;
-		{
-			//if (argc == 1) doHelp();
-			config::parseParams p(argc, argv);
-			bool flag;
-			if (p.readParam("-h")) doHelp();
 
-			vector<string> inProc;
+		namespace po = boost::program_options;
 
+		po::positional_options_description p;
+		p.add("input", 1);
+		p.add("input-units", 2);
+		p.add("output-units", 3);
 
-			flag = p.readParam<string>("-i", inProc);
-			if (!flag)
-			{
-				cout << "Input quantity (no units): ";
-				cin >> in;
-				cout << "Input units: ";
-				cin >> inUnits;
-			} else {
-				if (inProc.size() != 2) doHelp();
-				inUnits = inProc[1];
-				in = boost::lexical_cast<double>(inProc[0]);
-			}
+		po::options_description desc("Allowed options");
+		desc.add_options()
+			("help,h", "produce help message")
+			("input,i", po::value< double >(), "Input quantity")
+			("input-units,u", po::value< string >(), "Input units")
+			("output-units,o", po::value< string >(), "Output units")
 
-			flag = p.readParam<string>("-o", outUnits);
-			if (!flag)
-			{
-				cout << "Output units: ";
-				cin >> outUnits;
-			}
+			("density", "Convert density units")
+			("mass", "Convert mass  units (kg, g, ...)")
+			("length", "Convert length units (m, km, ft, ...)")
+			("spec", "Interconvert spectral units (frequency, wavelength, wavenumber)")
+
+			("volume","Convert units of volume (m^3, ...)")
+			("pressure", "Convert units of pressure (Pa, hPa, atm)")
+
+			("temperature", "Perform temperature conversion (K, C, F, R)");
+
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).
+			options(desc).positional(p).run(), vm);
+		po::notify(vm);    
+
+		if (vm.count("help") || !vm.count("input") || 
+			!vm.count("output-units") || !vm.count ("input-units") ) {
+			cerr << desc << "\n";
+			return 1;
 		}
+
+		double inVal, outVal;
+		string inUnits, outUnits;
+
+		inVal = vm["input"].as<double>();
+		inUnits = vm["input-units"].as<string>();
+		outUnits = vm["output-units"].as<string>();
+
+		boost::shared_ptr<rtmath::units::converter> cnv;
+
+		if (vm.count("density")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_dens>(new rtmath::units::conv_dens(inUnits,outUnits));
+		} else if (vm.count("mass")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_mass>(new rtmath::units::conv_mass(inUnits,outUnits));
+		} else if (vm.count("length")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_alt>(new rtmath::units::conv_alt(inUnits,outUnits));
+		} else if (vm.count("spec")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_spec>(new rtmath::units::conv_spec(inUnits,outUnits));
+		} else if (vm.count("volume")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_vol>(new rtmath::units::conv_vol(inUnits,outUnits));
+		} else if (vm.count("pressure")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_pres>(new rtmath::units::conv_pres(inUnits,outUnits));
+		} else if (vm.count("temperature")) {
+			cnv = boost::shared_ptr<rtmath::units::conv_temp>(new rtmath::units::conv_temp(inUnits,outUnits));
+		} else {
+			cerr << "Must specify a valid type of unit to convert (temperature, linear distance, ...)\n";
+			cerr << desc << endl;
+			return 1;
+		}
+
 		
 		// Do only spectral conversions for now
-		units::conv_spec cnv(inUnits,outUnits);
-		out = cnv.convert(in);
-		cout << out << endl;
+		outVal = cnv->convert(inVal);
+		cout << outVal << endl;
 	}
-	catch (rtmath::debug::xError &err)
+	catch (std::exception &e)
 	{
-		err.Display();
-		cerr << endl;
+		cerr << e.what() << endl;
 		return 1;
 	}
 	return 0;
 }
-
-void doHelp()
-{
-	using namespace std;
-	cerr << "rtmath-conv-units\n";
-	cerr << "Interconvert between different units with equation support.\n";
-	cerr << "Options:\n";
-	cerr << "-i (quantity) (input units)\n";
-	cerr << "-o (output units)\n";
-	exit(1);
-}
-
-

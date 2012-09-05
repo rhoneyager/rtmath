@@ -11,9 +11,11 @@
 #include <sstream>
 #include <cstdlib>
 #ifdef _WIN32
+#include "../../rtmath/rtmath/ROOTlink.h"
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <Psapi.h>
+
 #pragma comment(lib, "Psapi")
 
 #define _CRTDBG_MAP_ALLOC

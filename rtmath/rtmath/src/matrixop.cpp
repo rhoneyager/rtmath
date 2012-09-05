@@ -435,7 +435,7 @@ namespace rtmath {
 		this->minors(ptr,res);
 	}
 
-	void matrixop::set(double val, size_t index)
+	void matrixop::setIndex(double val, size_t index)
 	{
 		// Used by minor to place a value in the appropriate location
 		using namespace std;
