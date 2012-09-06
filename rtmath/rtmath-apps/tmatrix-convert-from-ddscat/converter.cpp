@@ -408,6 +408,8 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		in.MRI = mRes.imag(); // imag refractive index
 		in.NP = -1; // shape is a spheroid
 		in.EPS = asp; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
+		in.NDGS = 4; // TODO: add conversion class and check these
+		in.DDELT = 0.001;
 
 		// And vary ALPHA, BETA, THET0, THET, PHI0, PHI
 		// ALPHA, BETA are Euler angles specifying the orientation of the scattering particle 
@@ -459,14 +461,23 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 						tr->invars.np = -1; // shape is a spheroid
 						tr->invars.eps = asp; // ratio of horizontal to rotational axes; >1 for oblate, <1 for prolate
 
-						if (dotmatrix)
+//						if (dotmatrix)
 						{
 							::tmatrix::tmatrix run;
 							run.vars = in;
 
 							run.run();
-							std::copy(run.outs.P,run.outs.P,tr->res.P);
-							std::copy(run.outs.S,run.outs.S,tr->res.S);
+							for (size_t i=0; i<4; i++)
+							{
+								for (size_t j=0; j<4; j++)
+								{
+									tr->res.P[i][j] = run.outs.P[i][j];
+								}
+								tr->res.S[i] = run.outs.S[i];
+							}
+//							std::copy(run.outs.P,run.outs.P,tr->res.P);
+std::cerr << run.outs.S[0] << endl;
+//							std::copy(run.outs.S,run.outs.S,tr->res.S);
 
 							ocnv.import(run.outs);
 						}

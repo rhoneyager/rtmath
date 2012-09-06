@@ -9,21 +9,21 @@ namespace rtmath
 	{
 		tmIn::tmIn()
 		{
-			axi = 0;
-			rat = 0;
-			lam = 0;
-			mrr = 0;
-			mri = 0;
-			eps = 0;
-			ddelt = 0;
-			alpha = 0;
-			beta = 0;
-			thet0 = 0;
-			thet = 0;
-			phi0 = 0;
-			phi = 0;
-			np = 0;
-			ndgs = 0;
+			axi = 10;
+			rat = 0.1;
+			lam = 360;
+			mrr = 1.5;
+			mri = 0.02;
+			eps = 0.5;
+			ddelt = 0.001;
+			alpha = 145;
+			beta = 52;
+			thet0 = 56;
+			thet = 65;
+			phi0 = 114;
+			phi = 128;
+			np = -1;
+			ndgs = 4;
 		}
 
 		tmOut::tmOut()
