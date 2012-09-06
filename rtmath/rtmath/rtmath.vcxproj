@@ -100,7 +100,6 @@
     <ClInclude Include="rtmath\ddscat\ddavg.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsRotated.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsviews.h" />
-    <ClInclude Include="rtmath\ddscat\singleids.h" />
     <ClInclude Include="rtmath\ddscat\tmData.h" />
     <ClInclude Include="rtmath\density.h" />
     <ClInclude Include="rtmath\Garrett\image.h" />
@@ -263,7 +262,6 @@
     <ClCompile Include="src\damatrix_quad.cpp" />
     <ClCompile Include="src\daPf.cpp" />
     <ClCompile Include="src\daStatic.cpp" />
-    <ClCompile Include="src\ddavg.cpp" />
     <ClCompile Include="src\ddLoader.cpp" />
     <ClCompile Include="src\ddOutput.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

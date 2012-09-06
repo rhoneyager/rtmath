@@ -447,9 +447,6 @@
     <ClInclude Include="rtmath\Serialization\ddOutput_serialization.h">
       <Filter>Header Files\Serialization</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\ddscat\singleids.h">
-      <Filter>Header Files\ddscat</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -794,9 +791,6 @@
     </ClCompile>
     <ClCompile Include="src\shapestats_serialization.cpp">
       <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ddavg.cpp">
-      <Filter>Source Files\ddscat</Filter>
     </ClCompile>
     <ClCompile Include="src\tmData_serialization.cpp">
       <Filter>Source Files\Serialization</Filter>
