@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <unordered_map>
+#include <boost/filesystem.hpp>
 #include <complex>
 #include <boost/filesystem.hpp>
 #include "../rtmath/matrixop.h"
@@ -19,6 +19,288 @@
 
 namespace rtmath {
 	namespace ddscat {
+
+		ddOutputSingleObj::ddOutputSingleObj()
+		{
+		}
+
+		ddOutputSingleObj::~ddOutputSingleObj()
+		{
+		}
+
+		void ddOutputSingle::writeFile(const std::string &filename) const
+		{
+			// Look at extension of file
+			std::ofstream out(filename.c_str());
+			boost::filesystem::path p(filename);
+			boost::filesystem::path pext = p.extension();
+			if (pext.string() == ".sca")
+			{
+				writeSCA(out);
+			} else if (pext.string() == ".fml")
+			{
+				writeFML(out);
+			} else if (pext.string() == ".avg")
+			{
+				writeAVG(out);
+			} else {
+				throw rtmath::debug::xBadInput(filename.c_str());
+			}
+		}
+
+		void ddOutputSingle::writeStatTable(std::ostream &out) const
+		{
+			using namespace std;
+			out << "          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
+			out << " JO=1: ";
+			out.width(11);
+			for (size_t i=0; i< (size_t) QEXT2; i++)
+				out << _statTable[i];
+			out << endl;
+			out.width(0);
+			out << " JO=2: ";
+			out.width(11);
+			for (size_t i=(size_t) QEXT2; i< (size_t) QEXTM; i++)
+				out << _statTable[i];
+			out << endl;
+			out.width(0);
+			out << " mean: ";
+			out.width(11);
+			for (size_t i=(size_t) QEXTM; i< (size_t) QPOL; i++)
+				out << _statTable[i];
+			out << endl;
+			out.width(0);
+			out << " Qpol= " << _statTable[(size_t) QPOL] << 
+				"                                                  " << 
+				"dQpha=";
+			out.width(11);
+			out << _statTable[(size_t) DQPHA] << endl;
+
+			out << "         Qsca*g(1)   Qsca*g(2)   Qsca*g(3)   iter  mxiter  Nsca";
+			out << " JO=1: ";
+			out.width(11);
+			for (size_t i=(size_t) QSCAG11; i< (size_t) QSCAG12; i++)
+				out << _statTable[i];
+			out << endl;
+			out.width(0);
+			out << " JO=2: ";
+			out.width(11);
+			for (size_t i=(size_t) QSCAG12; i< (size_t) QSCAG1M; i++)
+				out << _statTable[i];
+			out << endl;
+			out.width(0);
+			out << " mean: ";
+			for (size_t i=(size_t) QSCAG1M; i< (size_t) NUM_STAT_ENTRIES; i++)
+				out << _statTable[i];
+			out << endl;
+			out.width(0);
+		}
+
+		void ddOutputSingle::writeAVG(std::ostream &out) const
+		{
+			using namespace std;
+			// Make sure that all the necessary variables are known
+			// TODO
+
+			// Write the file in the appropriate order
+			_objMap.at("version")->write(out);
+			_objMap.at("target")->write(out);
+			_objMap.at("solnmeth")->write(out);
+			_objMap.at("polarizability")->write(out);
+			_objMap.at("shape")->write(out);
+			_objMap.at("numdipoles")->write(out);
+
+			_objMap.at("d/aeff")->write(out);
+			_objMap.at("d")->write(out);
+
+			_objMap.at("aeff")->write(out);
+			_objMap.at("wave")->write(out);
+			_objMap.at("k.aeff")->write(out);
+			if (_version >= 72)
+				_objMap.at("nambient")->write(out);
+			_objMap.at("neps")->write(out);
+			_objMap.at("tol")->write(out);
+			
+			_objMap.at("a1tgt")->write(out);
+			_objMap.at("a2tgt")->write(out);
+			_objMap.at("navg")->write(out);
+
+			_objMap.at("kveclf")->write(out);
+			_objMap.at("incpol1lf")->write(out);
+			_objMap.at("incpol2lf")->write(out);
+
+			_objMap.at("betarange")->write(out);
+			_objMap.at("thetarange")->write(out);
+			_objMap.at("phirange")->write(out);
+
+			out << endl;
+
+			_objMap.at("etasca")->write(out);
+			
+			_objMap.at("avgnumori")->write(out);
+			_objMap.at("avgnumpol")->write(out);
+
+			// Write the odd table of Qsca and the others
+			writeStatTable(out);
+
+			// Write the P matrix
+			out << "            Mueller matrix elements for selected scattering directions in Lab Frame" << endl;
+			out << " theta    phi    Pol.    S_11        S_12        S_21       S_22       S_31       S_41";
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				boost::shared_ptr<const ddscat::ddScattMatrix> sf(it->second);
+				out << endl;
+				out.width(6);
+				out << it->first.get(0);
+				out << it->first.get(1);
+				out.width(9);
+				out << sf->pol();
+				out.width(12);
+				matrixop p = sf->mueller();
+				out << p.get(2,0,0);
+				out << p.get(2,0,1);
+				out << p.get(2,1,0);
+				out << p.get(2,1,1);
+				out << p.get(2,2,0);
+				out << p.get(2,3,0);
+			}
+		}
+
+		void ddOutputSingle::writeSCA(std::ostream &out) const
+		{
+			using namespace std;
+			// Make sure that all the necessary variables are known
+			// TODO
+
+			// Write the file in the appropriate order
+			_objMap.at("version")->write(out);
+			_objMap.at("target")->write(out);
+			_objMap.at("solnmeth")->write(out);
+			_objMap.at("polarizability")->write(out);
+			_objMap.at("shape")->write(out);
+			_objMap.at("numdipoles")->write(out);
+
+			_objMap.at("d/aeff")->write(out);
+			_objMap.at("d")->write(out);
+			out << "----- physical extent of target volume in Target Frame ------" << endl;
+			_objMap.at("xtf")->write(out);
+			_objMap.at("ytf")->write(out);
+			_objMap.at("ztf")->write(out);
+
+			_objMap.at("aeff")->write(out);
+			_objMap.at("wave")->write(out);
+			_objMap.at("k.aeff")->write(out);
+			if (_version >= 72)
+				_objMap.at("nambient")->write(out);
+			_objMap.at("neps")->write(out);
+			_objMap.at("tol")->write(out);
+			
+			_objMap.at("a1tgt")->write(out);
+			_objMap.at("a2tgt")->write(out);
+			_objMap.at("navg")->write(out);
+
+			_objMap.at("kvectf")->write(out);
+			_objMap.at("incpol1tf")->write(out);
+			_objMap.at("incpol2tf")->write(out);
+			_objMap.at("kveclf")->write(out);
+			_objMap.at("incpol1lf")->write(out);
+			_objMap.at("incpol2lf")->write(out);
+
+			_objMap.at("beta")->write(out);
+			_objMap.at("theta")->write(out);
+			_objMap.at("phi")->write(out);
+
+			_objMap.at("etasca")->write(out);
+
+			// Write the odd table of Qsca and the others
+			writeStatTable(out);
+
+			// Write the P matrix
+			out << "            Mueller matrix elements for selected scattering directions in Lab Frame" << endl;
+			out << " theta    phi    Pol.    S_11        S_12        S_21       S_22       S_31       S_41";
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				boost::shared_ptr<const ddscat::ddScattMatrix> sf(it->second);
+				out << endl;
+				out.width(6);
+				out << it->first.get(0);
+				out << it->first.get(1);
+				out.width(9);
+				out << sf->pol();
+				out.width(12);
+				matrixop p = sf->mueller();
+				out << p.get(2,0,0);
+				out << p.get(2,0,1);
+				out << p.get(2,1,0);
+				out << p.get(2,1,1);
+				out << p.get(2,2,0);
+				out << p.get(2,3,0);
+			}
+		}
+
+		void ddOutputSingle::writeFML(std::ostream &out) const
+		{
+			using namespace std;
+			// Make sure that all the necessary variables are known
+			// TODO
+
+			// Write the file in the appropriate order
+			_objMap.at("version")->write(out);
+			_objMap.at("target")->write(out);
+			_objMap.at("solnmeth")->write(out);
+			_objMap.at("polarizability")->write(out);
+			_objMap.at("shape")->write(out);
+			_objMap.at("numdipoles")->write(out);
+
+			_objMap.at("aeff")->write(out);
+			_objMap.at("wave")->write(out);
+			_objMap.at("k.aeff")->write(out);
+			if (_version >= 72)
+				_objMap.at("nambient")->write(out);
+			_objMap.at("neps")->write(out);
+			_objMap.at("tol")->write(out);
+			_objMap.at("navg")->write(out);
+			_objMap.at("a1tgt")->write(out);
+			_objMap.at("a2tgt")->write(out);
+			_objMap.at("kvectf")->write(out);
+			_objMap.at("incpol1tf")->write(out);
+			_objMap.at("incpol2tf")->write(out);
+			_objMap.at("kveclf")->write(out);
+			_objMap.at("incpol1lf")->write(out);
+			_objMap.at("incpol2lf")->write(out);
+			_objMap.at("beta")->write(out);
+			_objMap.at("theta")->write(out);
+			_objMap.at("phi")->write(out);
+
+			out << "     Finite target:" << endl;
+			out << "     e_m dot E(r) = i*exp(ikr)*f_ml*E_inc(0)/(kr)" << endl;
+			out << "     m=1 in scatt. plane, m=2 perp to scatt. plane" << endl;
+			out << endl;
+
+			// Write the f matrix
+			out << " theta   phi  Re(f_11)   Im(f_11)   Re(f_21)   Im(f_21)   Re(f_12)   Im(f_12)   Re(f_22)   Im(f_22)";
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				if (it->second->id() != F) continue;
+				boost::shared_ptr<const ddscat::ddScattMatrixF> sf(
+					boost::shared_dynamic_cast<const ddscat::ddScattMatrixF>(it->second));
+				out << endl;
+				out.width(6);
+				out << it->first.get(0);
+				out << it->first.get(1);
+				out.width(11);
+				matrixop f = sf->getF();
+				out << f.get(2,0,0);
+				out << f.get(2,0,1);
+				out << f.get(2,1,0);
+				out << f.get(2,1,1);
+				out << f.get(2,0,2);
+				out << f.get(2,0,3);
+				out << f.get(2,1,2);
+				out << f.get(2,1,3);
+			}
+		}
+
 		ddOutputSingle::ddOutputSingle()
 		{
 			_init();
@@ -26,26 +308,86 @@ namespace rtmath {
 
 		void ddOutputSingle::_init()
 		{
-			_beta = 0;
-			_theta = 0;
-			_phi = 0;
-			_freq = 0;
-			_wavelength = 0;
-			_reff = 0;
-			_numDipoles = 0;
-			_version = 0;
-			_filename = "";
+			_version = 72;
+			_constructGraph();
 		}
-
+		
 		ddOutputSingle::~ddOutputSingle()
 		{
 		}
 
-		ddOutputSingle::ddOutputSingle()
+		void ddOutputSingle::_constructGraph()
 		{
-			_init();
+			/* Here, a dependency graph is constructed indicating the 
+			 * relationships between various quantities. This allows for 
+			 * file format interconversions and detecting whether 
+			 * such a change is even possible
+			 */
+			using namespace std;
+			using namespace rtmath::graphs;
+			_vertices.clear();
+			_vertexMap.clear();
+			_depsAVG.clear();
+			_depsFML.clear();
+			_depsSCA.clear();
+
+			const size_t varnames_size = 0; // TODO: get number
+			const string rawvarnames[] = {	// TODO: finish
+				"version",
+				"target_line",
+				"soln_meth",
+				"polarizability",
+				"shape",
+				"numdipoles",
+				"d/aeff",
+				"d",
+				"aeff",
+				"wavelength",
+				"k.aeff",
+				"Nambient",
+				"neps",
+				"tol"
+			};
+
+			std::set<std::string> varnames( rawvarnames, rawvarnames + varnames_size );
+
+			// Create vertices for end variables
+			for (auto it = varnames.begin(); it != varnames.end(); ++it)
+				_createVertex(*it, true);
+
+			// Create vertices representing function relationships
+			// This is a table that lists the name of the new node, the variable being calculated, 
+			// and the necessary dependencies. This is much cleaner than repeated copying / pasting, 
+			// and is much easier to read.
+			const size_t varmapnames_size = 54;
+			const std::string rawvarmapnames[varmapnames_size] = {
+				// name,					target,				dependencies
+				"DAEFF",					"d/aeff",			"aeff,d",
+				"T_DENS",					"density",			"temp",
+				"AEFF_V",					"volume",			"aeff",
+				"V_AEFF",					"aeff",				"volume",
+				"MASS_V__DENS",				"density",			"mass,volume",
+				"MASS_DENS__V",				"volume",			"mass,density",
+				"DENS_V__MASS",				"mass",				"density,volume",
+				"FREQ_TEMP__IREFR_R",		"irefr_r",			"freq,temp",
+				"FREQ_TEMP__IREFR_I",		"irefr_i",			"freq,temp"
+			};
+
+			for (size_t i=0; i< varmapnames_size; i = i + 3)
+			{
+				const string &name = rawvarmapnames[i];
+				const string &starget = rawvarmapnames[i+1];
+				const string &deps = rawvarmapnames[i+2];
+
+				_createVertex(name, starget, deps);
+			}
+			
+
+			// Create the graph from the vertices
+			_graph = boost::shared_ptr<graph>(new graph(_vertices));
 		}
 
+		/*
 		bool ddOutputSingle::operator< (const ddOutputSingle &rhs) const
 		{
 			if (_freq != rhs._freq) return _freq < rhs._freq;
@@ -55,65 +397,8 @@ namespace rtmath {
 			if (_phi != rhs._phi) return _phi < rhs._phi;
 			return false;
 		}
-
+		*/
 		/*
-		void ddOutputSingle::print(std::ostream &out) const
-		{
-			using namespace std;
-			out << "ddOutputSingle for beta " << _beta << 
-				" theta " << _theta << " phi " << _phi
-				<< " frequency " << _freq << endl;
-		}
-
-		void ddOutputSingle::writeCSV(const std::string &filename) const
-		{
-			std::ofstream out(filename.c_str());
-			//out << "CSV output for (beta,theta,phi,wavelength)=";
-			out << "beta, theta, phi, ";
-			out << "P11, P12, P13, P14, P21, P22, P23, P24, P31, P32, P33, P34, P41, P42, P43, P44, ";
-			out << "K11, K12, K13, K14, K21, K22, K23, K24, K31, K32, K33, K34, K41, K42, K43, K44";
-			out << std::endl;
-			writeCSV(out);
-		}
-		
-		void ddOutputSingle::write(const std::string &filename) const
-		{
-			using namespace std;
-			using namespace boost::filesystem;
-			// Do extension matching
-			path fp(filename);
-			path ext = fp.extension();
-
-			// TODO: add evans series (for this, strip .evans, expand filename into
-			// per-freq set, and write out each one).
-			if (ext.string() == ".csv")
-				writeCSV(filename);
-			else // Write csv output by default. Others, like nc and tsv, will be added later.
-				writeCSV(filename);
-		}
-
-		void ddOutputSingle::writeCSV(std::ostream &out) const
-		{
-			using namespace std;
-			//out << _beta << ", " << _theta << ", " << _phi << ", " << _freq << endl;
-
-			// Need to collect the objects into a map for sorting. Otherwise, csv writes 
-			// irregularly.
-
-			std::map<rtmath::coords::cyclic<double>, std::shared_ptr<const ddscat::ddScattMatrix> > mmap;
-			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
-			{
-				rtmath::coords::cyclic<double> c = (*it)->genCoords();
-				mmap[c] = *it;
-			}
-
-			for (auto it = mmap.begin(); it != mmap.end(); ++it)
-			{
-				it->second->writeCSV(out);
-				//(*it)->writeCSV(out);
-			}
-		}
-
 		void ddOutputSingle::writeEvans(std::ostream &out, double freq) const
 		{
 			using namespace std;
@@ -184,20 +469,8 @@ namespace rtmath {
 			// Evans fortran files lack a newline at EOF.
 		}
 		*/
-		void ddOutputSingle::_insert(boost::shared_ptr<const ddScattMatrix> &obj)
-		{
-			// Helps loadFile and collects all insertions in a convenient place.
-			//_scattMatricesRaw.insert(obj);
-			// Insert into interpolation handler
-			ddOutputSingleInterp::_insert(obj);
-		}
 
-		void ddOutputSingle::clear()
-		{
-			ddOutputSingleInterp::_clear();
-			_init();
-		}
-
+		/*
 		void ddOutputSingle::loadFile(const std::string &filename)
 		{
 			using namespace std;
@@ -307,6 +580,7 @@ namespace rtmath {
 				}
 			}
 		}
+		*/
 
 	} // end ddscat
 } // end rtmath

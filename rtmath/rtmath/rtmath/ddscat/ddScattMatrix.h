@@ -15,6 +15,13 @@ namespace rtmath
 		// output gives the complex matrix which is more useful. The 
 		// P matrix is harder to derive from, but is found in the 
 		// .avg files and in tmatrix code.
+
+		enum scattMatrixType
+		{
+			F,
+			P
+		};
+
 		class ddScattMatrix
 		{
 		public:
@@ -28,6 +35,7 @@ namespace rtmath
 		//protected:
 			mutable boost::shared_ptr<matrixop> _Pnn;
 			double _pol;
+			virtual scattMatrixType id() const { return P; }
 		};
 
 		class ddScattMatrixF : public ddScattMatrix
@@ -37,6 +45,7 @@ namespace rtmath
 			ddScattMatrixF(double freq = 0, double phi = 0);
 			virtual ~ddScattMatrixF();
 			ddScattMatrixF & operator = (const ddScattMatrixF&);
+			virtual scattMatrixType id() const { return F; }
 			// matrixop extinction() const;
 			virtual matrixop mueller() const;
 			void setF(const std::complex<double> fs[2][2]);
@@ -54,6 +63,7 @@ namespace rtmath
 			ddScattMatrixP();
 			virtual ~ddScattMatrixP();
 			ddScattMatrixP & operator = (const ddScattMatrixP&);
+			virtual scattMatrixType id() const { return P; }
 			void setP(const matrixop&);
 			matrixop getP() const;
 		};

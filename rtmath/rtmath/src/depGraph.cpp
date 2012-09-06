@@ -44,33 +44,7 @@ namespace rtmath
 
 			return connector;
 		}
-		/*
-		std::shared_ptr<vertex> vertex::connect(
-			size_t node, size_t numDeps, ...)
-		{
-			va_list indices;
-			va_start(indices, numDeps);
-			std::vector<std::shared_ptr<vertex> > ptr;
-			std::shared_ptr<vertex> ival;
-			for (size_t i=0; i<numDeps; i++)
-			{
-				ival = va_arg(indices, std::shared_ptr<vertex> );
-				ptr.push_back(ival);
-			}
-			va_end(indices);
 
-			// Create connector
-			std::shared_ptr<vertex> connector;
-			connector = std::shared_ptr<vertex>(new vertex(false) );
-			target->addSlot(connector);
-			for (auto it = ptr.begin(); it != ptr.end(); it++)
-			{
-				connector->addSlot((*it));
-			}
-
-			return connector;
-		}
-		*/
 		vertex::~vertex() {}
 
 		void vertex::addSlot(boost::shared_ptr<vertex> slot)
