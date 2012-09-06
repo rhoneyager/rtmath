@@ -63,11 +63,15 @@ int main(int argc, char** argv)
 			("set-frequency,f", po::value<double>(), "Specify frequency (GHz)")
 			("set-aeff,a", po::value<double>(), "Set effective radius (um)")
 			("set-shape", po::value<string>(), "Set SHAPE parameter (FROM_FILE, ...)")
+			("set-shapeparams", po::value<vector<double> >(), "Set shape params (double, double, double)");
+			("set-intermediate-output", po::value<bool>(), "Set IWRKSC")
 
 			("get-version", "Get version (70, 72)")
 			("get-frequency", "Get frequency (GHz)")
 			("get-aeff", "Get effective radius (um)")
-			("get-shape", "Get SHAPE parameter (FROM_FILE, ...)");
+			("get-shape", "Get SHAPE parameter (FROM_FILE, ...)")
+			("get-shapeparams", "Get shape parameters")
+			("get-intermediate-output", "Get IWRKSC");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -133,6 +137,16 @@ int main(int argc, char** argv)
 			par->getShape(shape);
 			cout << "Shape: " << shape << endl;
 		}
+		if (vm.count("get-shapeparams"))
+		{
+			cout << "Shapeparams: " << par->shpar(0) << " " << 
+				par->shpar(1) << " " << par->shpar(2) << endl;
+		}
+		if (vm.count("get-intermediate-output"))
+		{
+			bool iwrksc = par->writeSca();
+			cout << "iwrksc: " << iwrksc << endl;
+		}
 		if (vm.count("set-version"))
 		{
 			doWrite = true;
@@ -157,6 +171,21 @@ int main(int argc, char** argv)
 			doWrite = true;
 			string shape = vm["set-shape"].as<string>();
 			par->setShape(shape);
+		}
+		if (vm.count("set-shapeparams"))
+		{
+			doWrite = true;
+			vector<double> s = vm["set-shapeparams"].as<vector<double> >();
+			if (s.size() != 3) throw rtmath::debug::xBadInput("set-shapeparams needs three doubles as input");
+			par->shpar(0, s[0]);
+			par->shpar(1, s[1]);
+			par->shpar(2, s[2]);
+		}
+		if (vm.count("set-intermediate-output"))
+		{
+			doWrite = true;
+			bool iwrksc = vm["set-intermediate-output"].as<bool>();
+			par->writeSca(iwrksc);
 		}
 
 		if (vm.count("output")) output = vm["output"].as< string >();
