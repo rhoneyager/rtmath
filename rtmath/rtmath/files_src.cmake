@@ -44,9 +44,9 @@ source_group("Header Files\\da" FILES ${da-hdr})
 # ddscat
 set (ddscat-src
 	src/ddavg.cpp
-	src/ddLoader.cpp
-	src/ddOutput.cpp
-	src/ddOutputEnsemble.cpp
+#	src/ddLoader.cpp
+#	src/ddOutput.cpp
+#	src/ddOutputEnsemble.cpp
 	src/ddOutputSingle.cpp
 	src/ddpar.cpp
 	src/ddparGenerator.cpp
@@ -130,7 +130,7 @@ set (general-src
 	src/density.cpp
 	src/depGraph.cpp
 	src/emd.cpp
-	src/interpolatable.cpp
+#	src/interpolatable.cpp
 	src/matrixop.cpp
 	src/os_functions.cpp
 	src/pfFixed.cpp
@@ -198,15 +198,15 @@ source_group("Header Files\\gridded" FILES ${gridded-hdr})
 
 # mie
 set (mie-src
-	src/ddOutputMie.cpp
+#	src/ddOutputMie.cpp
 	src/mie-abNCalc.cpp
 	src/mie-AnCalc.cpp
 	src/mie-phaseFunc.cpp
 	src/mie-piNCalc.cpp
 	src/mie-Qcalc.cpp
 	src/mie-Scalc.cpp
-	src/mieScattMatrix.cpp
-	src/mie-tauNCalc.cpp
+#	src/mieScattMatrix.cpp
+	src/mie-tauNCalc.cpsp
 	src/mie-wnCalc.cpp
 	)
 set (mie-hdr

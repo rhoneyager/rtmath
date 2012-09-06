@@ -7,6 +7,10 @@ include (common)
 #aux_source_directory (src libsrcs)
 #aux_source_directory (rtmath headers)
 
+# Setting this to prevent forced link of all symbols.
+# I need this for a few builds where I am making extensive changes to the code.
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 include (files_src.cmake)
 
 set (libsrcs ${srcfiles})
