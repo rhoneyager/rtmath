@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 			("set-frequency,f", po::value<double>(), "Specify frequency (GHz)")
 			("set-aeff,a", po::value<double>(), "Set effective radius (um)")
 			("set-shape", po::value<string>(), "Set SHAPE parameter (FROM_FILE, ...)")
-			("set-shapeparams", po::value<vector<double> >(), "Set shape params (double, double, double)");
+			("set-shapeparams", po::value<vector<double> >(), "Set shape params (double, double, double)")
 			("set-intermediate-output", po::value<bool>(), "Set IWRKSC")
 
 			("get-version", "Get version (70, 72)")

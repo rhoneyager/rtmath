@@ -11,7 +11,7 @@
 #include "../phaseFunc.h"
 #include "ddOutputEnsemble.h"
 #include "ddOutputSingle.h"
-#include "ddScattMatrix.h"
+//#include "ddScattMatrix.h"
 #include "shapefile.h"
 
 namespace rtmath {
@@ -23,8 +23,8 @@ namespace rtmath {
 			// Otherwise, holds an array of all possible rotations that exist
 			// and can compute the phase functions for any weighted combination
 		public:
-			ddOutput();
-			ddOutput(const std::string &ddparfile);
+			ddOutput() {}
+			ddOutput(const std::string &ddparfile) {}
 			void loadFile(const std::string &ddparfile);
 
 			void insert(const std::shared_ptr<const ddscat::ddOutputSingle> &obj);

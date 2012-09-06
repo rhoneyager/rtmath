@@ -43,8 +43,7 @@ source_group("Header Files\\da" FILES ${da-hdr})
 
 # ddscat
 set (ddscat-src
-	src/ddavg.cpp
-#	src/ddLoader.cpp
+	src/ddLoader.cpp
 #	src/ddOutput.cpp
 #	src/ddOutputEnsemble.cpp
 	src/ddOutputSingle.cpp
@@ -206,7 +205,7 @@ set (mie-src
 	src/mie-Qcalc.cpp
 	src/mie-Scalc.cpp
 #	src/mieScattMatrix.cpp
-	src/mie-tauNCalc.cpsp
+	src/mie-tauNCalc.cpp
 	src/mie-wnCalc.cpp
 	)
 set (mie-hdr

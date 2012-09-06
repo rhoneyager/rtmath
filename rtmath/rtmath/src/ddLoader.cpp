@@ -37,6 +37,7 @@ namespace rtmath {
 
 	std::unique_ptr<ddLoader> ddLoader::findLoader(const std::string &id, const std::string &prepend)
 	{
+/*
 		// First, parse id string and get first element
 		typedef boost::tokenizer<boost::char_separator<char> >
 			tokenizer;
@@ -94,7 +95,7 @@ namespace rtmath {
 			}
 		}
 
-
+*/
 		// No implemented match.
 		std::string err = "Unimplemented loader id ";
 		err.append(id);
