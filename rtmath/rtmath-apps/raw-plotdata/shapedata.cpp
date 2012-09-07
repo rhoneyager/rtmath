@@ -6,9 +6,8 @@
 #include <complex>
 #include <cmath>
 #define BOOST_TEST_DYN_LINK
-#include "../rtmath/rtmath/error/error.h"
-#include "../rtmath/rtmath/refract.h"
-
+#include "../../rtmath/rtmath/refract.h"
+#include "../../rtmath/rtmath/error/debug.h"
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(shapes);

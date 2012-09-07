@@ -211,11 +211,11 @@ int main(int argc, char** argv)
 			tC->SaveAs(ofname.c_str());
 		}
 
-		//if (vm.count("aspect-ratios"))
+		//if (vm.count("aspect-ratios")) // todo: give a distinct name
 		{
 			//if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
 			string ofname = outprefix;
-			ofname.append("-aspect-ratios.png");
+			ofname.append("-aspect-ratios-abs.png");
 
 			const size_t nP = Stats.size();
 			boost::scoped_array<double> axys(new double[nP]);
@@ -240,7 +240,45 @@ int main(int argc, char** argv)
 
 			gStyle->SetPalette(1);
 			tM->Draw("A*");
-			tM->SetTitle("Aspect ratio relations");
+			tM->SetTitle("Absolute Aspect Ratio Relations");
+			tM->GetXaxis()->SetTitle("Axy");
+			tM->GetXaxis()->CenterTitle();
+			tM->GetYaxis()->SetTitle("Axz");
+			tM->GetYaxis()->CenterTitle();
+
+			tC->SaveAs(ofname.c_str());
+		}
+
+		//if (vm.count("aspect-ratios")) // todo: give a new name
+		{
+			//if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+			string ofname = outprefix;
+			ofname.append("-aspect-ratios-rms.png");
+
+			const size_t nP = Stats.size();
+			boost::scoped_array<double> axys(new double[nP]);
+			boost::scoped_array<double> axzs(new double[nP]);
+
+			boost::shared_ptr<TCanvas> tC(new TCanvas("c2","", 0,0,700,700));
+			
+			size_t i=0;
+			for (auto it = Stats.begin(); it != Stats.end(); ++it, i++)
+			{
+				auto rn = (*it)->rotations.begin();
+
+				double axy = rn->as_rms.get(2,1,0);
+				double axz = rn->as_rms.get(2,2,0);
+
+				axys[i] = axy;
+				axzs[i] = axz;
+				//tM->Fill(aeff,mass);
+				//tM->SetPoint(i,mass,aeff);
+			}
+			boost::shared_ptr<TGraph> tM(new TGraph(nP,axys.get(),axzs.get()));
+
+			gStyle->SetPalette(1);
+			tM->Draw("A*");
+			tM->SetTitle("RMS Aspect Ratio Relations");
 			tM->GetXaxis()->SetTitle("Axy");
 			tM->GetXaxis()->CenterTitle();
 			tM->GetYaxis()->SetTitle("Axz");

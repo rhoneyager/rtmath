@@ -19,8 +19,8 @@
 
 //BOOST_GLOBAL_FIXTURE( globals );
 
-#include "../rtmath/rtmath/error/debug.h"
-#include "../rtmath/rtmath/ROOTlink.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/ROOTlink.h"
 
 
 

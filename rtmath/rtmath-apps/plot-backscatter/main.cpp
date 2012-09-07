@@ -6,6 +6,7 @@
 
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/VTKlink.h"
+#include "../../rtmath/rtmath/MagickLINK.h"
 
 #include <cmath>
 #include <memory>
@@ -22,19 +23,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/shared_ptr.hpp>
-
-#include <pcl/io/pcd_io.h>
-#include <pcl/io/vtk_io.h>
-#include <pcl/io/vtk_lib_io.h>
-#include <pcl/io/vtk_lib_io.hpp>
-#include <pcl/point_types.h>
-#include <pcl/kdtree/kdtree.h>
-#include <pcl/kdtree/kdtree_flann.h>
-#include <vtkSmartPointer.h>
-#include <vtkStructuredGrid.h>
-#include <vtkXMLStructuredGridWriter.h>
-#include <vtkDoubleArray.h>
-#include <vtkIntArray.h>
+#include <boost/shared_array.hpp>
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/matrixop.h"
@@ -42,13 +31,10 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsviews.h"
-#include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/MagickLINK.h"
-#include "../../rtmath/rtmath/Garrett/pclstuff.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/matrixop.h"
@@ -62,7 +48,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "rtmath-shape-basicdata\n\n";
+		cerr << "rtmath-plot-backscatter\n\n";
 		rtmath::debug::appEntry(argc, argv);
 
 		namespace po = boost::program_options;
