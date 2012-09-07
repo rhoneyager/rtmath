@@ -59,6 +59,8 @@ namespace
 	{
 		auto lower = m.lower_bound(target);
 		if (lower->first == target) return lower->second;
+		lower--;
+
 		auto upper = m.upper_bound(target); // Will always point to element 'greater'
 
 		// Linear interpolation

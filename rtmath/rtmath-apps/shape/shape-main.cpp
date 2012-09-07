@@ -56,8 +56,8 @@ int main(int argc, char** argv)
 			("output,o", "output filename")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
-			("thetas,t", po::value<string>()->default_value("0:15:90"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0:15:90"), "Specify phi rotations");
+			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations")
+			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations");
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
 			options(desc).positional(p).run(), vm);

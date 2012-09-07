@@ -101,6 +101,7 @@ namespace rtmath {
 
 			D_SCALED(V_cell_const, 3);
 			D_SCALED(aeff_dipoles_const, 1);
+			D_SCALED(V_dipoles_const, 3);
 			D_SCALED(max_distance, 1);
 			D_SCALED(a_circum_sphere, 1);
 			D_SCALED(V_circum_sphere, 3);
