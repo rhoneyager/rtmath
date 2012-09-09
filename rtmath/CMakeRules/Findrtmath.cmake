@@ -1,36 +1,50 @@
-# - Find PostgreSQL library
+###############################################################################
+# Find rtmath
 #
-# This module defines:
-#  POSTGRESQL_FOUND - True if the package is found
-#  POSTGRESQL_INCLUDE_DIR - containing libpq-fe.h
-#  POSTGRESQL_LIBRARIES - Libraries to link to use PQ functions.
+# This sets the following variables:
+# RTMATH_FOUND - True if RTMATH was found.
+# RTMATH_INCLUDE_DIRS - Directories containing the include files.
+# RTMATH_LIBRARIES - Libraries needed.
+# RTMATH_DEFINITIONS - Compiler flags for.
 
-if (POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
-  set(POSTGRESQL_FIND_QUIETLY TRUE)
-endif (POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
+set(RTMATH_CPP_RELEASE_NAME rtmath)
 
-# Include dir
-find_path(POSTGRESQL_INCLUDE_DIR 
-	NAMES libpq-fe.h
-	PATH_SUFFIXES pgsql postgresql
-)
+find_file(RTMATH_HEADER
+	NAMES rtmath/rtmath.h rtmath.h
+	HINTS "${RTMATH_ROOT}" "$ENV{RTMATH_ROOT}" "${RTMATH_INCLUDE_DIR}"
+	PATHS "$ENV{PROGRAMFILES}/rtmath" "$ENV{PROGRAMW6432}/rtmath"
+	PATH_SUFFIXES rtmath include)
 
-# Library
-find_library(POSTGRESQL_LIBRARY 
-  NAMES pq
-)
+set(RTMATH_HEADER "${RTMATH_HEADER}" CACHE INTERNAL "rtmath header" FORCE )
 
-# handle the QUIETLY and REQUIRED arguments and set POSTGRESQL_FOUND to TRUE if 
-# all listed variables are TRUE
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(POSTGRESQL DEFAULT_MSG POSTGRESQL_LIBRARY POSTGRESQL_INCLUDE_DIR)
+if(RTMATH_HEADER)
+  get_filename_component(rtmath_header ${RTMATH_HEADER} NAME_WE)
+    get_filename_component(RTMATH_INCLUDE_DIR ${RTMATH_HEADER} PATH)
+    get_filename_component(RTMATH_INCLUDE_DIR ${RTMATH_INCLUDE_DIR} PATH)
+else()
+  set(RTMATH_INCLUDE_DIR "RTMATH_INCLUDE_DIR-NOTFOUND")
+endif()
 
-IF(POSTGRESQL_FOUND)
-  SET( POSTGRESQL_LIBRARIES ${POSTGRESQL_LIBRARY} )
-ELSE(POSTGRESQL_FOUND)
-  SET( POSTGRESQL_LIBRARIES )
-ENDIF(POSTGRESQL_FOUND)
+set(RTMATH_INCLUDE_DIR "${RTMATH_INCLUDE_DIR}" CACHE PATH "rtmath include dir." FORCE)
 
-# Lastly make it so that the POSTGRESQL_LIBRARY and POSTGRESQL_INCLUDE_DIR variables
-# only show up under the advanced options in the gui cmake applications.
-MARK_AS_ADVANCED( POSTGRESQL_LIBRARY POSTGRESQL_INCLUDE_DIR )
+find_library(RTMATH_CPP_LIBRARY 
+             NAMES ${RTMATH_CPP_RELEASE_NAME}
+             HINTS "${RTMATH_ROOT}" "$ENV{RTMATH_ROOT}" "${RTMATH_INCLUDE_DIR}/../"
+             PATHS "$ENV{PROGRAMFILES}/rtmath" "$ENV{PROGRAMW6432}/rtmath"
+             PATH_SUFFIXES project build bin lib)
+
+set (RTMATH_LIBRARIES ${RTMATH_CPP_LIBRARY})
+
+set(RTMATH_INCLUDE_DIRS ${RTMATH_INCLUDE_DIR})
+
+include(FindPackageHandleStandardArgs)
+#find_package_handle_standard_args(rtmath DEFAULT_MSG RTMATH_CPP_LIBRARY RTMATH_INCLUDE_DIR)
+find_package_handle_standard_args(rtmath DEFAULT_MSG RTMATH_LIBRARIES RTMATH_INCLUDE_DIR)
+
+mark_as_advanced(RTMATH_CPP_LIBRARY RTMATH_INCLUDE_DIR RTMATH_LIBRARIES rtmath_DIR)
+
+if(RTMATH_FOUND)
+  set(HAVE_RTMATH ON)
+  message(STATUS "rtmath found (include: ${RTMATH_INCLUDE_DIRS}, lib: ${RTMATH_LIBRARIES})")
+endif(RTMATH_FOUND)
+
