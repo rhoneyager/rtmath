@@ -100,6 +100,7 @@ if(LOAD_PACKAGES)
 	find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 
 	find_package(tmatrix)
+	find_package(rycurses)
 endif()
 # Take OpenMP option and enable / disable as appropriate
 IF(USE_OPENMP)

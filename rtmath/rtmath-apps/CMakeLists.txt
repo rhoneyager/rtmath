@@ -28,9 +28,20 @@ option ( MAKE_GUIS
 	"Make Qt GUI programs?" OFF)
 
 if (MAKE_GUIS)
-add_subdirectory (ddscat-genparams-qt)
-add_subdirectory (tmatrix-convert-from-ddscat)
+	add_subdirectory (ddscat-genparams-qt)
+	if (TMATRIX_FOUND)
+		add_subdirectory (tmatrix-convert-from-ddscat)
+	endif()
 endif()
 
-
+if (RYCURSES_FOUND)
+	option ( MAKE_NCURSES
+		"Make ncurses programs?" ON)
+	if (MAKE_NCURSES)
+		if (TMATRIX_FOUND)
+			add_subdirectory (mtplot)
+			add_subdirectory (mttest)
+		endif()
+	endif()
+endif()
 
