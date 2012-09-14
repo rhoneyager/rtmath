@@ -195,13 +195,12 @@ int main(int argc, char** argv)
 			boost::shared_array<double> dt(new double[nthetas]),
 				P11(new double[nthetas]);
 			size_t i = 0;
-			double Pmax = 1;
 			for (auto ot = (*it)->begin(); ot != (*it)->end(); ++ot, ++i)
 			{
+				// Pf here is unnormalized. Normalization invlves integration 
+				// over all possible components
 				dt[i] = ot->first;
-				//if (ot == (*it)->begin()) Pmax = ot->second.get(2,0,0);
-				P11[i] = ot->second.get(2,0,0) / Pmax;
-				P11[i] = P11[i] / P11[0];
+				P11[i] = ot->second.get(2,0,0);
 			}
 
 			boost::shared_ptr<TGraph> g(new TGraph(nthetas,dt.get(),P11.get()));

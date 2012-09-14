@@ -52,8 +52,8 @@ void Scalc::calc(double mu, double Snn[4][4], std::complex<double> Sn[4])
 		for (unsigned int j=0; j<4; j++)
 			Snn[i][j] = 0;
 
-	std::complex<double> *Sa = &Sn[0];
-	std::complex<double> *Sb = &Sn[1];
+	std::complex<double> *Sa = &Sn[3]; // S11 = S2, and S22 = S1
+	std::complex<double> *Sb = &Sn[0];
 	*Sa = zero;
 	*Sb = zero;
 	
