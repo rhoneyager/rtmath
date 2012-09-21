@@ -36,6 +36,8 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 	// Convert the textboxes into numbers, but only if the conversion
 	// is possible. bad_lexical_cast is a bad idea here.
 	try {
+		// Note that mie and tmatrix code use different 
+		// angle units. tmatrix uses degrees. mie uses radians.
 		using namespace std;
 		using namespace boost;
 		tmatrix::tmatrix run;
@@ -88,7 +90,7 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 		auto mres = pfm.eval(abs(run.vars.THET - run.vars.THET0));
 		double mSnn[4][4];
 		complex<double> mS[4];
-		sm.calc(cos(abs(run.vars.THET - run.vars.THET0)*2.0*pi/180.), mSnn, mS);
+		sm.calc(cos(abs(run.vars.THET - run.vars.THET0)*pi/180.), mSnn, mS);
 
 		// mres is a std::shared_ptr<matrixop>
 		for (size_t i=0; i<4; i++)

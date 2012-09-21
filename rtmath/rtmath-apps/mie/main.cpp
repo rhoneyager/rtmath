@@ -20,8 +20,10 @@
 
 #include "../../rtmath/rtmath/ROOTlink.h"
 
+#include "../../rtmath/rtmath/phaseFunc.h"
 #include "../../rtmath/rtmath/mie/mie-Scalc.h"
 #include "../../rtmath/rtmath/mie/mie-phaseFunc.h"
+#include "../../rtmath/rtmath/mie/mie-Qcalc.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/common_templates.h"
@@ -97,6 +99,14 @@ int main(int argc, char** argv)
 			tm.vars.MRR = M.real();
 			tm.vars.MRI = M.imag();
 			tm.vars.EPS = 1.0;
+			tm.vars.RAT = 1;
+			tm.vars.DDELT = 0.001;
+			tm.vars.ALPHA = 0;
+			tm.vars.BETA = 0;
+			tm.vars.PHI0 = 0;
+			tm.vars.PHI = 0;
+			tm.vars.NP = -1;
+			tm.vars.NDGS = 3;
 
 			ostringstream op;
 			op << outprefix << "-X-" << *X << "-";
@@ -107,7 +117,8 @@ int main(int argc, char** argv)
 
 			// Standard vector constructor would lead to mempry problems
 			vector<boost::shared_array<double> > 
-				miePnn, mieSnn, tmPnn, mieSr, mieSi, tmSr, tmSi;
+				miePnn, mieSnn, tmPnn, mieSr, mieSi, tmSr, tmSi,
+				tmSrC, tmSiC, tmPnnC;
 			miePnn.reserve(16);
 			mieSnn.reserve(16);
 			tmPnn.reserve(16);
@@ -115,11 +126,16 @@ int main(int argc, char** argv)
 			mieSi.reserve(4);
 			tmSr.reserve(4);
 			tmSi.reserve(4);
+
+			tmSrC.reserve(4);
+			tmSiC.reserve(4);
+			tmPnnC.reserve(16);
 			for (size_t i=0; i<16;i++)
 			{
 				miePnn.push_back(boost::shared_array<double>(new double[thetas.size()]));
 				mieSnn.push_back(boost::shared_array<double>(new double[thetas.size()]));
 				tmPnn.push_back(boost::shared_array<double>(new double[thetas.size()]));
+				tmPnnC.push_back(boost::shared_array<double>(new double[thetas.size()]));
 			}
 			for (size_t i=0;i<4;i++)
 			{
@@ -127,6 +143,8 @@ int main(int argc, char** argv)
 				mieSi.push_back(boost::shared_array<double>(new double[thetas.size()]));
 				tmSr.push_back(boost::shared_array<double>(new double[thetas.size()]));
 				tmSi.push_back(boost::shared_array<double>(new double[thetas.size()]));
+				tmSrC.push_back(boost::shared_array<double>(new double[thetas.size()]));
+				tmSiC.push_back(boost::shared_array<double>(new double[thetas.size()]));
 			}
 
 			size_t i=0;
@@ -137,8 +155,8 @@ int main(int argc, char** argv)
 
 				double mSnn[4][4], mPnn[4][4];
 				complex<double> mSn[4];
-				mS.calc(mu,mSnn,mSn);
-				auto mmPnn = mP.eval(thetar);
+				mS.calc(mu,mSnn,mSn); // unnormalized pf values
+				auto mmPnn = mP.eval(thetar); // mie normalized pf
 				mmPnn->toDoubleArray(&mPnn[0][0]);
 				
 				tm.vars.THET = *theta;
@@ -147,74 +165,47 @@ int main(int argc, char** argv)
 
 				// Stupid, but it really helps ROOT plotting
 
-				mieSr[0][i]= mSn[0].real();
-				mieSr[1][i]= mSn[1].real();
-				mieSr[2][i]= mSn[2].real();
-				mieSr[3][i]= mSn[3].real();
-				mieSi[0][i]= mSn[0].imag();
-				mieSi[1][i]= mSn[1].imag();
-				mieSi[2][i]= mSn[2].imag();
-				mieSi[3][i]= mSn[3].imag();
+				for (size_t k=0;k<4;k++)
+				{
+					mieSr[k][i] = mSn[k].real();
+					mieSi[k][i] = mSn[k].imag();
+					tmSr[k][i] = tm.outs.S[k].real();
+					tmSi[k][i] = tm.outs.S[k].imag();
 
-				tmSr[0][i]= tm.outs.S[0].real();
-				tmSr[1][i]= tm.outs.S[1].real();
-				tmSr[2][i]= tm.outs.S[2].real();
-				tmSr[3][i]= tm.outs.S[3].real();
-				tmSi[0][i]= tm.outs.S[0].imag();
-				tmSi[1][i]= tm.outs.S[1].imag();
-				tmSi[2][i]= tm.outs.S[2].imag();
-				tmSi[3][i]= tm.outs.S[3].imag();
+					tmSrC[k][i] = tm.outs.S[k].imag();
+					tmSiC[k][i] = tm.outs.S[k].real();
+				}
 
-				mieSnn[0][i] = mSnn[0][0];
-				mieSnn[1][i] = mSnn[0][1];
-				mieSnn[2][i] = mSnn[0][2];
-				mieSnn[3][i] = mSnn[0][3];
-				mieSnn[4][i] = mSnn[1][0];
-				mieSnn[5][i] = mSnn[1][1];
-				mieSnn[6][i] = mSnn[1][2];
-				mieSnn[7][i] = mSnn[1][3];
-				mieSnn[8][i] = mSnn[2][0];
-				mieSnn[9][i] = mSnn[2][1];
-				mieSnn[10][i] = mSnn[2][2];
-				mieSnn[11][i] = mSnn[2][3];
-				mieSnn[12][i] = mSnn[3][0];
-				mieSnn[13][i] = mSnn[3][1];
-				mieSnn[14][i] = mSnn[3][2];
-				mieSnn[15][i] = mSnn[3][3];
+				// Do my own pf calculation
+				if (doTm)
+				{
+					complex<double> Sn[4];
+					double Snn[4][4];
+					for (size_t k=0; k<4; k++)
+						Sn[k] = complex<double>(tmSrC[k][i],tmSiC[k][i]);
+					rtmath::scattMatrix::_genMuellerMatrix(Snn,Sn);
+					// And divide by the normalizing factor
+					mie::Qcalc qc(M);
+					double Qext, Qsca, Qabs, g;
+					qc.calc(*X,Qext, Qsca, Qabs, g);
+					for (size_t k=0;k<4;k++)
+						for (size_t l=0;l<4;l++)
+						{
+							tmPnnC[(4*k)+l][i] = 
+								4.0 * Snn[k][l] / (*X * *X * Qext);
+						}
+				}
 
-				miePnn[0][i] = mPnn[0][0];
-				miePnn[1][i] = mPnn[0][1];
-				miePnn[2][i] = mPnn[0][2];
-				miePnn[3][i] = mPnn[0][3];
-				miePnn[4][i] = mPnn[1][0];
-				miePnn[5][i] = mPnn[1][1];
-				miePnn[6][i] = mPnn[1][2];
-				miePnn[7][i] = mPnn[1][3];
-				miePnn[8][i] = mPnn[2][0];
-				miePnn[9][i] = mPnn[2][1];
-				miePnn[10][i] = mPnn[2][2];
-				miePnn[11][i] = mPnn[2][3];
-				miePnn[12][i] = mPnn[3][0];
-				miePnn[13][i] = mPnn[3][1];
-				miePnn[14][i] = mPnn[3][2];
-				miePnn[15][i] = mPnn[3][3];
+				// Use mishchenko's pf calculation
 
-				tmPnn[0][i] = tm.outs.P[0][0];
-				tmPnn[1][i] = tm.outs.P[0][1];
-				tmPnn[2][i] = tm.outs.P[0][2];
-				tmPnn[3][i] = tm.outs.P[0][3];
-				tmPnn[4][i] = tm.outs.P[1][0];
-				tmPnn[5][i] = tm.outs.P[1][1];
-				tmPnn[6][i] = tm.outs.P[1][2];
-				tmPnn[7][i] = tm.outs.P[1][3];
-				tmPnn[8][i] = tm.outs.P[2][0];
-				tmPnn[9][i] = tm.outs.P[2][1];
-				tmPnn[10][i] = tm.outs.P[2][2];
-				tmPnn[11][i] = tm.outs.P[2][3];
-				tmPnn[12][i] = tm.outs.P[3][0];
-				tmPnn[13][i] = tm.outs.P[3][1];
-				tmPnn[14][i] = tm.outs.P[3][2];
-				tmPnn[15][i] = tm.outs.P[3][3];
+				// And the default calculated stuff
+				for (size_t k=0;k<16;k++)
+				{
+					mieSnn[k][i] = mSnn[k/4][k%4];
+					miePnn[k][i] = mPnn[k/4][k%4];
+					tmPnn[k][i] = tm.outs.P[k/4][k%4];
+				}
+
 			}
 			
 			boost::shared_ptr<TCanvas> tS(new TCanvas("S","S", 800*4,800*2));
@@ -235,10 +226,16 @@ int main(int argc, char** argv)
 				boost::shared_ptr<TGraph> gMi(new TGraph(thetas.size(), Othetas.get(), mieSi[j].get()));
 				boost::shared_ptr<TGraph> gTr(new TGraph(thetas.size(), Othetas.get(), tmSr[j].get()));
 				boost::shared_ptr<TGraph> gTi(new TGraph(thetas.size(), Othetas.get(), tmSi[j].get()));
+				boost::shared_ptr<TGraph> gTrC(new TGraph(thetas.size(), Othetas.get(), tmSrC[j].get()));
+				boost::shared_ptr<TGraph> gTiC(new TGraph(thetas.size(), Othetas.get(), tmSiC[j].get()));
+
+
 				graphs.push_back(gMr);
 				graphs.push_back(gMi);
 				graphs.push_back(gTr);
 				graphs.push_back(gTi);
+				graphs.push_back(gTrC);
+				graphs.push_back(gTiC);
 				tS->cd(j+1);
 				gMr->Draw("AC");
 				gMr->SetLineColor(1);
@@ -248,8 +245,12 @@ int main(int argc, char** argv)
 				gMr->GetYaxis()->SetTitle("S_{real}");
 				gMr->GetYaxis()->CenterTitle();
 				if (doTm)
+				{
 					gTr->Draw("C");
+					gTrC->Draw("C");
+				}
 				gTr->SetLineColor(2);
+				gTrC->SetLineColor(3);
 				tS->cd(5+j);
 				gMi->Draw("AC");
 				gMi->SetLineColor(1);
@@ -259,8 +260,12 @@ int main(int argc, char** argv)
 				gMi->GetYaxis()->SetTitle("S_{imag}");
 				gMi->GetYaxis()->CenterTitle();
 				if (doTm)
+				{
 					gTi->Draw("C");
+					gTiC->Draw("C");
+				}
 				gTi->SetLineColor(2);
+				gTiC->SetLineColor(3);
 			}
 			tS->SaveAs(fS.c_str());
 
@@ -275,8 +280,11 @@ int main(int argc, char** argv)
 					title << "P_{" << (j+1) << (k+1) << "}";
 					boost::shared_ptr<TGraph> gP(new TGraph(thetas.size(), Othetas.get(), miePnn[(4*j)+k].get()));
 					boost::shared_ptr<TGraph> tP(new TGraph(thetas.size(), Othetas.get(), tmPnn[(4*j)+k].get()));
+					boost::shared_ptr<TGraph> tPC(new TGraph(thetas.size(), Othetas.get(), tmPnnC[(4*j)+k].get()));
+
 					graphs.push_back(gP);
 					graphs.push_back(tP);
+					graphs.push_back(tPC);
 					tcP->cd((4*j)+k+1);
 					gP->Draw("AC");
 					gP->SetLineColor(1);
@@ -286,8 +294,12 @@ int main(int argc, char** argv)
 					gP->GetYaxis()->SetTitle(title.str().c_str());
 					gP->GetYaxis()->CenterTitle();
 					if (doTm)
+					{
 						tP->Draw("C");
+						tPC->Draw("C");
+					}
 					tP->SetLineColor(2);
+					tPC->SetLineColor(3);
 				}
 			}
 			tcP->SaveAs(fP.c_str());
