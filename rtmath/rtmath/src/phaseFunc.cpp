@@ -84,7 +84,7 @@ namespace rtmath {
 
 	void scattMatrix::_genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4])
 	{
-		// Note, following ddscat conventions, matrix is [[S2, S3][S4,S1]]
+		// Note, following ddscat conventions, matrix is [[S2, S3][S4,S1]] = [[Sn0, Sn1][Sn2, Sn3]]
 		// It's annoying, but it's how ddscat does it and how the fml loading code provides it.
 		// Now, Sn is the matrix in linear form {S1, S2, S3, S4}, so it should avoid any 
 		// of the subsequent issues with forgetting the index transformations.
@@ -94,44 +94,44 @@ namespace rtmath {
 		Snn[0][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
 			+ (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
 
-		Snn[0][1] = 0.5 * ( (Sn[1]*conj(Sn[1])) - (Sn[0]*conj(Sn[0])) 
-			+ (Sn[3]*conj(Sn[3])) - (Sn[2]*conj(Sn[2]))).real();
+		Snn[0][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1])) 
+			+ (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3]))).real();
 		
-		scratch = ( (Sn[1] * (conj(Sn[2]))) + (Sn[0] * (conj(Sn[3])) ));
-		Snn[0][2] = 1.0 * scratch.real();
+		scratch = ( (Sn[3] * (conj(Sn[2]))) + (Sn[0] * (conj(Sn[1])) ));
+		Snn[0][2] = -1.0 * scratch.real();
 
-		scratch = ( (Sn[1] * (conj(Sn[2]))) - (Sn[0] * (conj(Sn[3])) ));
+		scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[3] * (conj(Sn[2])) ));
 		Snn[0][3] = 1.0 * scratch.imag();
 
-		Snn[1][0] = 0.5 * ( -(Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
-			+ (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3])) ).real();
-
-		Snn[1][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1]))
+		Snn[1][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
 			- (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3])) ).real();
 
-		scratch = ( (Sn[1] * (conj(Sn[2]))) - (Sn[0] * (conj(Sn[3])) ));
+		Snn[1][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1]))
+			- (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
+
+		scratch = ( (Sn[3] * (conj(Sn[2]))) - (Sn[0] * (conj(Sn[1])) ));
 		Snn[1][2] = 1.0 * scratch.real();
-		scratch = ( (Sn[1] * (conj(Sn[2]))) + (Sn[0] * (conj(Sn[3])) ));
+		scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[3] * (conj(Sn[2])) ));
 		Snn[1][3] = 1.0 * scratch.imag();
 
 		scratch = ( (Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
-		Snn[2][0] = 1.0 * scratch.real();
+		Snn[2][0] = -1.0 * scratch.real();
 		scratch = ( -(Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
 		Snn[2][1] = 1.0 * scratch.real();
 
-		scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[2] * (conj(Sn[3])) ));
+		scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[1] * (conj(Sn[2])) ));
 		Snn[2][2] = scratch.real();
-		scratch = ( (Sn[1] * (conj(Sn[0]))) + (Sn[3] * (conj(Sn[2])) ));
-		Snn[2][3] = scratch.imag();
+		scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[2] * (conj(Sn[1])) ));
+		Snn[2][3] = -1.0 * scratch.imag();
 
-		scratch = ( (conj(Sn[2]) * (Sn[0])) + (conj(Sn[1]) * (Sn[3]) ));
+		scratch = ( (conj(Sn[0]) * (Sn[2])) + (conj(Sn[1]) * (Sn[3]) ));
 		Snn[3][0] = 1.0 * scratch.imag();
-		scratch = ( -(conj(Sn[2]) * (Sn[0])) + (conj(Sn[1]) * (Sn[3]) ));
+		scratch = ( (conj(Sn[0]) * (Sn[2])) - (conj(Sn[1]) * (Sn[3]) ));
 		Snn[3][1] = 1.0 * scratch.imag();
 
-		scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[2] * (conj(Sn[3])) ));
+		scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
 		Snn[3][2] = scratch.imag();
-		scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[2] * (conj(Sn[3])) ));
+		scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
 		Snn[3][3] = scratch.real();
 	}
 
