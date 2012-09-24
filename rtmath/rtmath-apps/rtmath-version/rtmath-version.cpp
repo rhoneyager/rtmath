@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char* argv[])
 {

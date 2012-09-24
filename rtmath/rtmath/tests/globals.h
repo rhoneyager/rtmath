@@ -7,6 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <memory>
+#include "../rtmath/ROOTlink.h"
 
 namespace rtmath {
 	namespace config {

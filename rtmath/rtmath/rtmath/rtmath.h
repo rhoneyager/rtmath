@@ -59,9 +59,9 @@
 #include "gridded/gridCDF.h"
 #include "serialization.h"
 
-#include "ROOT_functions.h"
+//#include "ROOT_functions.h"
 
 // Link with ROOT on MSVC
-#include "ROOTlink.h"
+//#include "ROOTlink.h"
 
 //#pragma warning( pop )

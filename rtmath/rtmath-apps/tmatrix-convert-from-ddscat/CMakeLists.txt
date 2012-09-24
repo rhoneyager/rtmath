@@ -1,4 +1,7 @@
 include (common)
+set(rtmath-tmatrix-convert-from-ddscat-qt_LIBRARIES "")
+set(rtmath-tmatrix-convert-from-ddscat-qt_INCLUDE_DIRS "")
+
 
 set(tmconvert-qt_mocheaders frmmain.h)
 set(tmconvert-qt_uis frmmain.ui)
@@ -21,6 +24,8 @@ add_executable (rtmath-tmatrix-convert-from-ddscat-qt
 	${tmconvert-qt_MOC_SRCS}
 	${tmconvert-qt_UI_HDRS}
 	)
+
+add_package_dependency(rtmath-tmatrix-convert-from-ddscat-qt DEPENDS_ON ROOT)
 
 addapp(rtmath-tmatrix-convert-from-ddscat-qt)
 INCLUDE( ${QT_USE_FILE} )

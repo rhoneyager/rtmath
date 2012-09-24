@@ -4,8 +4,10 @@
 # Take the variable {appname}, and link libraries,
 # set properties and create an INSTALL target
 macro(addapp appname)
+if (NOT ${appname}_INCLUDE_DIRS)
 	set(${appname}_LIBRARIES "")
 	set(${appname}_INCLUDE_DIRS "")
+endif()
 
 	add_package_dependency(${appname} DEPENDS_ON rtmathDummy)
 

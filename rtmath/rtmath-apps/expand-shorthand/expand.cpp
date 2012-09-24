@@ -7,7 +7,6 @@
 #include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
-#include "../../rtmath/rtmath/ROOTlink.h"
 
 int main(int argc, char** argv)
 {

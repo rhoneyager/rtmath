@@ -1,6 +1,6 @@
 #include "../rtmath/Stdafx.h"
 
-#include "../rtmath/ROOTlink.h"
+//#include "../rtmath/ROOTlink.h"
 #include "../rtmath/MagickLINK.h"
 #include "../rtmath/PCLlink.h"
 
@@ -138,6 +138,8 @@ namespace rtmath
 
 		void pointContainer::writeROOTzhist(const std::string &filename) const
 		{
+			throw rtmath::debug::xUnimplementedFunction();
+/*
 			using namespace std;
 			const size_t nP = cloud->points.size();
 			boost::shared_ptr<TCanvas> tc(new TCanvas("c","Surface", 0, 0, 700, 600));
@@ -161,11 +163,14 @@ namespace rtmath
 			tp->GetYaxis()->CenterTitle();
 
 			tc->SaveAs(filename.c_str());
+*/
 		}
 
 
 		void pointContainer::writeROOTsurf(const std::string &filename) const
 		{
+			throw rtmath::debug::xUnimplementedFunction();
+/*
 			using namespace std;
 			// cloud->points
 			const size_t nP = cloud->points.size();
@@ -191,6 +196,7 @@ namespace rtmath
 			tp->GetZaxis()->CenterTitle();
 
 			tc->SaveAs(filename.c_str());
+*/
 		}
 
 	}

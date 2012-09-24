@@ -1,3 +1,4 @@
+// TODO: see todo further down. rtmath no longer has root dep
 #pragma warning( push )
 #pragma warning( disable : 4996 )
 #pragma warning( disable : 4800 )
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
 			cerr << "Processing " << *it << endl;
 			rtmath::Garrett::image img;
 			img.read(*it);
-
+// TODO: implement these functions here. The base library no longer will support them
 			if (vm.count("output-vtk"))
 				img.writeVTKpoints(string(*it).append(".vtk"));
 			if (vm.count("output-pcd"))

@@ -11,7 +11,7 @@
 #include <sstream>
 #include <cstdlib>
 #ifdef _WIN32
-#include "../../rtmath/rtmath/ROOTlink.h"
+//#include "../../rtmath/rtmath/ROOTlink.h"
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <Psapi.h>
@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #endif
-#include <TError.h> // ROOT info message suppression
+//#include <TError.h> // ROOT info message suppression
 // ImageMagick init functions
 #ifdef _WIN32
 #pragma warning( disable : 4251 )
@@ -92,7 +92,7 @@ namespace rtmath {
 #endif
 
 			// ROOT info message suppression
-			gErrorIgnoreLevel = 2000;
+//			gErrorIgnoreLevel = 2000;
 
 			// Prevent ROOT from renaming the console title on Windows
 			// Do this by setting the window name to its file name and path

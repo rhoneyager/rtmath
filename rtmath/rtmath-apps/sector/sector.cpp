@@ -5,7 +5,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/command.h"
+#include "../../rtmath/rtmath/error/debug.h"
 #include <set>
 #include <vector>
 #include <string>

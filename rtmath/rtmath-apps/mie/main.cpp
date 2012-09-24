@@ -172,8 +172,8 @@ int main(int argc, char** argv)
 					tmSr[k][i] = tm.outs.S[k].real();
 					tmSi[k][i] = tm.outs.S[k].imag();
 
-					tmSrC[k][i] = tm.outs.S[k].imag();
-					tmSiC[k][i] = tm.outs.S[k].real();
+					tmSiC[k][i] = tm.outs.S[k].imag();
+					tmSrC[k][i] = tm.outs.S[k].real();
 				}
 
 				// Do my own pf calculation

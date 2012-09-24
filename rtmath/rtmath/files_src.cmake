@@ -137,7 +137,6 @@ set (general-src
 	src/polynomial.cpp
 	src/quadrature.cpp
 	src/refract.cpp
-	src/ROOT_functions.cpp
 	src/serialization.cpp
 	src/splitSet.cpp
 	src/Stdafx.cpp

@@ -47,6 +47,7 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 		run.vars.LAM = lexical_cast<double>(ui.txtLAM->text);
 		if (!run.vars.LAM) return false;
 		run.vars.MRR = lexical_cast<double>(ui.txtMRR->text);
+		if (abs(run.vars.MRR - 1.0) < 0.05) return false;
 		if (!run.vars.MRR) return false;
 		run.vars.MRI = lexical_cast<double>(ui.txtMRI->text);
 		run.vars.EPS = lexical_cast<double>(ui.txtEPS->text);
@@ -73,6 +74,14 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 				run.outs.S[i]);
 			for (size_t j=0;j<4;j++)
 			{
+/*				
+				ostringstream val;
+				val.precision(8);
+				val << run.outs.P[i][j];
+				string s;
+				s = val.str();
+				ui.lblTPi[(4*i)+j]->text = s;
+*/				
 				ui.lblTPi[(4*i)+j]->text = lexical_cast<string>
 					(run.outs.P[i][j]);
 			}
@@ -99,6 +108,14 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 				mS[i]);
 			for (size_t j=0;j<4;j++)
 			{
+/*				
+				ostringstream val;
+				val.precision(8);
+				val << run.outs.P[i][j];
+				string s;
+			       	s = val.str();
+				ui.lblMPi[(4*i)+j]->text = s;
+*/				
 				ui.lblMPi[(4*i)+j]->text = 
 					lexical_cast<string>(mres->get(2,i,j));
 			}
