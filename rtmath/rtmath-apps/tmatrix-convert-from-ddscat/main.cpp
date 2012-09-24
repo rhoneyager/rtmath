@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 		desc.add_options()
 			("help,h", "produce help message")
 			("ROOT-output,r", "produce ROOT conversion output (for plotting and debugging)")
+			("flip-tmatrix", "Perform S real / imaginary swap to correct tmatrix run results")
 			("temperature,T", po::value<double>()->default_value(267), 
 			 "Specify temperature (K)")
 			("frequency,F", po::value<double>()->default_value(0),
@@ -59,6 +60,7 @@ int main(int argc, char *argv[])
 		po::notify(vm);    
 
 		bool ROOT = false;
+		bool fliptm = false;
 
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
@@ -67,6 +69,9 @@ int main(int argc, char *argv[])
 
 		if (vm.count("ROOT-output"))
 			ROOT = true;
+
+		if (vm.count("flip-tmatrix"))
+			fliptm = true;
 
 		vector<string> inputs = vm["shapefiles"].as< vector<string> >();
 		if (vm.count("shapefiles"))
@@ -162,6 +167,7 @@ int main(int argc, char *argv[])
 			cnv.setTemp(T);
 			cnv.setFreq(freq);
 			cnv.setDipoleSpacing(dipoleSpacing);
+			cnv.setFixTM(fliptm);
 
 			cnv.convert(pDest, ROOT);
 		}

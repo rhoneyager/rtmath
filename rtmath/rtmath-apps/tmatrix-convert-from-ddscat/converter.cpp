@@ -88,6 +88,12 @@ fileconverter::fileconverter()
 	frequency = 0;
 	dipoleSpacing = 0;
 	dotmatrix = true;
+	fliptm = false;
+}
+
+void fileconverter::setFixTM(bool val)
+{
+	fliptm = val;
 }
 
 void fileconverter::doTMATRIX(bool tm)
@@ -338,6 +344,8 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 		} else {
 			throw rtmath::debug::xBadInput(dielMeth.c_str());
 		}
+		// For convention, imaginary part of refractive index is taken to be positive
+		mIce = complex<double>(mIce.real(),abs(mIce.imag())); 
 	}
 
 	// Write output
@@ -467,13 +475,30 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 							run.vars = in;
 
 							run.run();
+							// If we are flipping the S results, do it here. 
+							// P will also have to be recalculated.
+							if (fliptm)
+							{
+								throw rtmath::debug::xUnimplementedFunction();
+								for (size_t i=0;i<4;i++)
+									run.outs.S[i] = std::complex<double>(run.outs.S[i].imag(), run.outs.S[i].real());
+								double Snn[4][4];
+								//rtmath::scattMatrix::_genMuellerMatrix(Snn, run.outs.S);
+								// Now, normalization requires Csca. The relevant formulae are coded in the library for an arbitrary ellipsoid of revolution.
+								double Csca = 0;
+								for (size_t i=0; i<16;i++)
+								{
+									run.outs.P[i/4][i%4] = 0;
+								}
+							}
+
 							for (size_t i=0; i<4; i++)
 							{
+								tr->res.S[i] = run.outs.S[i];
 								for (size_t j=0; j<4; j++)
 								{
 									tr->res.P[i][j] = run.outs.P[i][j];
 								}
-								tr->res.S[i] = run.outs.S[i];
 							}
 //							std::copy(run.outs.P,run.outs.P,tr->res.P);
 std::cerr << run.outs.S[0] << endl;

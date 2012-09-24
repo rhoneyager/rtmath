@@ -16,9 +16,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/math/constants/constants.hpp>
-
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/min.hpp>
 
 #include "../../rtmath/rtmath/ROOTlink.h"
+#include <TLegend.h>
 
 #include "../../rtmath/rtmath/phaseFunc.h"
 #include "../../rtmath/rtmath/mie/mie-Scalc.h"
@@ -130,6 +133,12 @@ int main(int argc, char** argv)
 			tmSrC.reserve(4);
 			tmSiC.reserve(4);
 			tmPnnC.reserve(16);
+
+			using namespace boost::accumulators;
+			vector<accumulator_set<double, stats<tag::min, tag::max> > > 
+				accsP, accsSr;
+			accsP.resize(16);
+			accsSr.resize(4);
 			for (size_t i=0; i<16;i++)
 			{
 				miePnn.push_back(boost::shared_array<double>(new double[thetas.size()]));
@@ -174,10 +183,15 @@ int main(int argc, char** argv)
 
 					tmSiC[k][i] = tm.outs.S[k].imag();
 					tmSrC[k][i] = tm.outs.S[k].real();
+
+					accsSr[k](mieSr[k][i]);
+					accsSr[k](tmSr[k][i]);
+					accsSr[k](mieSi[k][i]);
+					accsSr[k](tmSi[k][i]);
 				}
 
 				// Do my own pf calculation
-				if (doTm)
+				if (doTm && 0)
 				{
 					complex<double> Sn[4];
 					double Snn[4][4];
@@ -204,6 +218,8 @@ int main(int argc, char** argv)
 					mieSnn[k][i] = mSnn[k/4][k%4];
 					miePnn[k][i] = mPnn[k/4][k%4];
 					tmPnn[k][i] = tm.outs.P[k/4][k%4];
+					accsP[k](miePnn[k][i]);
+					accsP[k](tmPnn[k][i]);
 				}
 
 			}
@@ -216,27 +232,33 @@ int main(int argc, char** argv)
 
 			vector<boost::shared_ptr<TGraph> > graphs;
 			graphs.reserve(48);
+			vector<boost::shared_ptr<TLegend> > legends;
+			legends.reserve(24);
 
 			for (Int_t j=0; j<4; j++)
 			{
 				ostringstream rTitle, iTitle;
-				rTitle << "Real S_{" << (j+1) << "}";
-				iTitle << "Imaginary S_{" << (j+1) << "}";
+				Int_t iA = (j / 2) + 1;
+				Int_t iB = (j % 2) + 1;
+				rTitle << "Real S_{" << iA << iB << "}";
+				iTitle << "Imaginary S_{" << iA << iB << "}";
 				boost::shared_ptr<TGraph> gMr(new TGraph(thetas.size(), Othetas.get(), mieSr[j].get()));
 				boost::shared_ptr<TGraph> gMi(new TGraph(thetas.size(), Othetas.get(), mieSi[j].get()));
 				boost::shared_ptr<TGraph> gTr(new TGraph(thetas.size(), Othetas.get(), tmSr[j].get()));
 				boost::shared_ptr<TGraph> gTi(new TGraph(thetas.size(), Othetas.get(), tmSi[j].get()));
-				boost::shared_ptr<TGraph> gTrC(new TGraph(thetas.size(), Othetas.get(), tmSrC[j].get()));
-				boost::shared_ptr<TGraph> gTiC(new TGraph(thetas.size(), Othetas.get(), tmSiC[j].get()));
+//				boost::shared_ptr<TGraph> gTrC(new TGraph(thetas.size(), Othetas.get(), tmSrC[j].get()));
+//				boost::shared_ptr<TGraph> gTiC(new TGraph(thetas.size(), Othetas.get(), tmSiC[j].get()));
 
 
 				graphs.push_back(gMr);
 				graphs.push_back(gMi);
 				graphs.push_back(gTr);
 				graphs.push_back(gTi);
-				graphs.push_back(gTrC);
-				graphs.push_back(gTiC);
-				tS->cd(j+1);
+//				graphs.push_back(gTrC);
+//				graphs.push_back(gTiC);
+				TPad *pad = tS->cd(j+1);
+				pad->SetFillStyle(4000);
+
 				gMr->Draw("AC");
 				gMr->SetLineColor(1);
 				gMr->SetTitle(rTitle.str().c_str());
@@ -244,14 +266,32 @@ int main(int argc, char** argv)
 				gMr->GetXaxis()->CenterTitle();
 				gMr->GetYaxis()->SetTitle("S_{real}");
 				gMr->GetYaxis()->CenterTitle();
+				double MIN = boost::accumulators::min(accsSr[j]);
+				double MAX = boost::accumulators::max(accsSr[j]);
+//				cerr << MIN << "\t" << MAX << endl;
+				if (abs(MAX-MIN) < 0.01) MAX += 0.05;
+				gMr->GetHistogram()->SetMinimum(MIN);
+				gMr->GetHistogram()->SetMaximum(MAX);
+//				gMr->GetYaxis()->SetLimits(MIN,MAX);
+				gMr->Draw("AC");
 				if (doTm)
 				{
 					gTr->Draw("C");
-					gTrC->Draw("C");
+//					gTrC->Draw("C");
 				}
 				gTr->SetLineColor(2);
-				gTrC->SetLineColor(3);
-				tS->cd(5+j);
+
+				boost::shared_ptr<TLegend> lSr(new TLegend(0.7,0.8,0.9,0.9));
+				legends.push_back(lSr);
+				lSr->AddEntry(gMr.get(),"Mie Theory", "l");
+				if (doTm)
+					lSr->AddEntry(gTr.get(),"T-Matrix", "l");
+				lSr->Draw();
+
+
+//				gTrC->SetLineColor(3);
+				pad = tS->cd(5+j);
+				pad->SetFillStyle(4000);
 				gMi->Draw("AC");
 				gMi->SetLineColor(1);
 				gMi->SetTitle(iTitle.str().c_str());
@@ -259,14 +299,31 @@ int main(int argc, char** argv)
 				gMi->GetXaxis()->CenterTitle();
 				gMi->GetYaxis()->SetTitle("S_{imag}");
 				gMi->GetYaxis()->CenterTitle();
+//				gMi->GetYaxis()->SetLimits(MIN,MAX);
+				gMi->GetHistogram()->SetMinimum(MIN);
+				gMi->GetHistogram()->SetMaximum(MAX);
+
+				gMi->Draw("AC");
+
 				if (doTm)
 				{
 					gTi->Draw("C");
-					gTiC->Draw("C");
+//					gTiC->Draw("C");
 				}
 				gTi->SetLineColor(2);
-				gTiC->SetLineColor(3);
+				boost::shared_ptr<TLegend> lSi(new TLegend(0.7,0.8,0.9,0.9));
+				legends.push_back(lSi);
+				lSi->AddEntry(gMi.get(),"Mie Theory", "l");
+				if (doTm)
+					lSi->AddEntry(gTi.get(),"T-Matrix", "l");
+				lSi->Draw();
+
+
+//				gTiC->SetLineColor(3);
 			}
+			TPad *pad = tS->cd();
+
+
 			tS->SaveAs(fS.c_str());
 
 			boost::shared_ptr<TCanvas> tcP(new TCanvas("P","P", 800*4,800*4));
@@ -280,11 +337,11 @@ int main(int argc, char** argv)
 					title << "P_{" << (j+1) << (k+1) << "}";
 					boost::shared_ptr<TGraph> gP(new TGraph(thetas.size(), Othetas.get(), miePnn[(4*j)+k].get()));
 					boost::shared_ptr<TGraph> tP(new TGraph(thetas.size(), Othetas.get(), tmPnn[(4*j)+k].get()));
-					boost::shared_ptr<TGraph> tPC(new TGraph(thetas.size(), Othetas.get(), tmPnnC[(4*j)+k].get()));
+//					boost::shared_ptr<TGraph> tPC(new TGraph(thetas.size(), Othetas.get(), tmPnnC[(4*j)+k].get()));
 
 					graphs.push_back(gP);
 					graphs.push_back(tP);
-					graphs.push_back(tPC);
+//					graphs.push_back(tPC);
 					tcP->cd((4*j)+k+1);
 					gP->Draw("AC");
 					gP->SetLineColor(1);
@@ -293,13 +350,30 @@ int main(int argc, char** argv)
 					gP->GetXaxis()->CenterTitle();
 					gP->GetYaxis()->SetTitle(title.str().c_str());
 					gP->GetYaxis()->CenterTitle();
+					double MIN = boost::accumulators::min(accsP[(4*j)+k]);
+					double MAX = boost::accumulators::max(accsP[(4*j)+k]);
+					if (abs(MAX-MIN) < 0.01) MAX += 0.05;
+//					gP->GetYaxis()->SetLimits(MIN,MAX);
+					gP->GetHistogram()->SetMinimum(MIN);
+					gP->GetHistogram()->SetMaximum(MAX);
+
+					gP->Draw("AC");
+
 					if (doTm)
 					{
 						tP->Draw("C");
-						tPC->Draw("C");
+//						tPC->Draw("C");
 					}
 					tP->SetLineColor(2);
-					tPC->SetLineColor(3);
+//					tPC->SetLineColor(3);
+					boost::shared_ptr<TLegend> lP(new TLegend(0.7,0.6,0.9,0.7));
+					legends.push_back(lP);
+					lP->AddEntry(gP.get(),"Mie Theory", "l");
+					if (doTm)
+						lP->AddEntry(tP.get(),"T-Matrix", "l");
+					lP->Draw();
+
+
 				}
 			}
 			tcP->SaveAs(fP.c_str());

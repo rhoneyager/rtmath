@@ -53,6 +53,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("output,o", po::value<string>(), "Write ROOT output table of results")
 			("mtab,m", "Produce mtab-style output")
+			("debug", "Produce debug output")
 			("frequency,f", po::value<string>(), "List of frequencies (GHz)")
 			("temperature,T", po::value<string>(), "List of temperatures (K)")
 			("volume-fraction-ice,i", po::value<string >(), "Volume fractions [0,1] for mixed phase volumes. If not given, calculate from others.")
@@ -77,6 +78,10 @@ int main(int argc, char** argv)
 		map<PHASE,string> vsVols;
 		map<PHASE,set<double> > vVols;
 		bool fileWrite = false;
+		bool debug = false;
+
+		if (vm.count("debug"))
+			debug = true;
 
 		if (vm.count("output"))
 		{
@@ -253,17 +258,21 @@ int main(int argc, char** argv)
 							}
 						}
 
-						cerr << fIce << "," << fWat << "," << fAir << "," << *T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
+						if (debug)
+							cerr << fIce << "," << fWat << "," << fAir << "," << *T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
 						if (fIce + fWat + fAir > 1.0)
 						{
-							cerr << " - Invalid\n";
+							if (debug)
+								cerr << " - Invalid\n";
 							continue;
 						} if (fIce < 0 || fIce > 1.0 || fWat < 0 || fWat > 1.0 || fAir < 0 || fAir > 1.0)
 						{
-							cerr << " - Invalid\n";
+							if (debug)
+								cerr << " - Invalid\n";
 							continue;
 						} else {
-							cerr << endl;
+							if (debug)
+								cerr << endl;
 						}
 
 						complex<double> mEff;

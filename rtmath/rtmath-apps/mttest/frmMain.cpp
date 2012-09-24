@@ -1,4 +1,5 @@
 #include <complex>
+#include <cmath>
 #include <rtmath/mie/mie-phaseFunc.h>
 #include <rtmath/mie/mie-Scalc.h>
 #include <rtmath/matrixop.h>
@@ -74,16 +75,17 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 				run.outs.S[i]);
 			for (size_t j=0;j<4;j++)
 			{
-/*				
-				ostringstream val;
-				val.precision(8);
-				val << run.outs.P[i][j];
-				string s;
-				s = val.str();
-				ui.lblTPi[(4*i)+j]->text = s;
-*/				
-				ui.lblTPi[(4*i)+j]->text = lexical_cast<string>
-					(run.outs.P[i][j]);
+				double num = run.outs.P[i][j];
+				if (isfinite(num) && 0)
+				{
+					ostringstream val;
+					val.precision(8);
+					val << run.outs.P[i][j];
+					string s;
+					s = val.str();
+					ui.lblTPi[(4*i)+j]->text = s;
+				}
+				ui.lblTPi[(4*i)+j]->text = lexical_cast<string>(num);
 			}
 		}
 
@@ -108,16 +110,17 @@ bool frmMain::textChanged(const rycurses::ncHasText *item)
 				mS[i]);
 			for (size_t j=0;j<4;j++)
 			{
-/*				
-				ostringstream val;
-				val.precision(8);
-				val << run.outs.P[i][j];
-				string s;
-			       	s = val.str();
-				ui.lblMPi[(4*i)+j]->text = s;
-*/				
-				ui.lblMPi[(4*i)+j]->text = 
-					lexical_cast<string>(mres->get(2,i,j));
+				double num = mres->get(2,i,j);
+				if (isfinite(num) && 0)
+				{
+					ostringstream val;
+					val.precision(8);
+					val << run.outs.P[i][j];
+					string s;
+					s = val.str();
+					ui.lblMPi[(4*i)+j]->text = s;
+				}
+				ui.lblMPi[(4*i)+j]->text = lexical_cast<string>(num);
 			}
 		}
 	}

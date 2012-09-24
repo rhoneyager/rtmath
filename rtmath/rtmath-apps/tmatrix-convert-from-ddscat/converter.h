@@ -28,12 +28,14 @@ public:
 	void setFreq(double);
 	void setDipoleSpacing(double);
 	void setDDPARfile(const std::string &);
+	void setFixTM(bool);
 	void doTMATRIX(bool);
 	void convert(const std::string &, bool ROOToutput = false) const;
 private:
 	std::string ddparFile, statsFile;
 	double temp, nu, frequency, dipoleSpacing;
 	bool dotmatrix;
+	bool fliptm;
 	std::string shapeMeth, dielMeth, volMeth;
 	boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 };
