@@ -9,7 +9,9 @@
 #include <set>
 #include <boost/filesystem.hpp>
 #include <complex>
-#include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
@@ -212,6 +214,24 @@ namespace rtmath {
 			_version = nv;
 		}
 
+		void ddOutputSingle::readS(std::istream &in)
+		{
+		}
+
+		void ddOutputSingle::readMueller(std::istream &in)
+		{
+			using namespace std;
+			map<size_t, size_t> idmap;
+			string lin;
+			while (in.good())
+			{
+				std::getline(in,lin);
+				if (lin == "") return;
+				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+				boost::char_separator<char> sep("\t ");
+			}
+		}
+
 		void ddOutputSingle::readAVG(std::istream &in)
 		{
 			using namespace std;
@@ -240,6 +260,7 @@ namespace rtmath {
 
 			readStatTable(in);
 			// Do Mueller matrix read
+			readMueller(in);
 		}
 
 		void ddOutputSingle::writeStatTable(std::ostream &out) const

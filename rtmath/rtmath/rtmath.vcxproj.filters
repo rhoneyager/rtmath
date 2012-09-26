@@ -705,9 +705,6 @@
     <ClCompile Include="src\shapefile.cpp">
       <Filter>Source Files\ddscat</Filter>
     </ClCompile>
-    <ClCompile Include="src\ROOT_functions.cpp">
-      <Filter>Source Files\General</Filter>
-    </ClCompile>
     <ClCompile Include="src\ddpar.cpp">
       <Filter>Source Files\ddscat</Filter>
     </ClCompile>

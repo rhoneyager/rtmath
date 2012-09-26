@@ -333,7 +333,6 @@
     <ClCompile Include="src\rayleighPhaseFunc.cpp" />
     <ClCompile Include="src\recursivePolynomial.cpp" />
     <ClCompile Include="src\refract.cpp" />
-    <ClCompile Include="src\ROOT_functions.cpp" />
     <ClCompile Include="src\rotations.cpp" />
     <ClCompile Include="src\rotations_serialization.cpp" />
     <ClCompile Include="src\runScripts.cpp" />
