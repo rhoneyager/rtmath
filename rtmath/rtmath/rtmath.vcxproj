@@ -98,6 +98,7 @@
     <ClInclude Include="rtmath\config.h" />
     <ClInclude Include="rtmath\coords.h" />
     <ClInclude Include="rtmath\ddscat\ddavg.h" />
+    <ClInclude Include="rtmath\ddscat\muellerRelations.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsRotated.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsviews.h" />
     <ClInclude Include="rtmath\ddscat\tmData.h" />
@@ -321,6 +322,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\mtab.cpp" />
+    <ClCompile Include="src\muellerRelations.cpp" />
     <ClCompile Include="src\MurmurHash3.cpp" />
     <ClCompile Include="src\ncContainer.cpp" />
     <ClCompile Include="src\os_functions.cpp" />

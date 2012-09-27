@@ -216,19 +216,103 @@ namespace rtmath {
 
 		void ddOutputSingle::readS(std::istream &in)
 		{
+			using namespace std;
+			// The frequency is needed when reading this matrix
+			double freq = units::conv_spec("um","GHz").convert(wave());
+
+			string lin;
+			while(in.good())
+			{
+				std::getline(in,lin);
+				if (lin == "") return;
+				// Parse the string to get rid of spaces. This is used to determine 
+				// if we are still in the S matrix header or in the actual data
+				boost::trim(lin);
+				if (std::isalpha(lin.at(0))) continue;
+				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+				boost::char_separator<char> sep("\t ");
+				tokenizer t(lin, sep);
+
+				// TODO: check this
+				// The ordering is theta, phi, S11 (real and complex), S12, S21, S22
+				size_t i=0;
+				double vals[10];
+				for (auto it = t.begin(); it != t.end(); ++it, ++i)
+				{
+					vals[i] = boost::lexical_cast<double>(*it);
+				}
+				// ddScattMatrixF constructor takes frequency (GHz) and phi
+				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF(freq, vals[1]));
+				complex<double> fs[2][2];
+				fs[0][0] = complex<double>(vals[2],vals[3]);
+				fs[0][1] = complex<double>(vals[4],vals[5]);
+				fs[1][0] = complex<double>(vals[6],vals[7]);
+				fs[1][1] = complex<double>(vals[8],vals[9]);
+				mat->setF(fs);
+
+				// TODO: check if another cast is appropriate
+				boost::shared_ptr<const ddScattMatrix> matC = 
+					boost::shared_dynamic_cast<const ddScattMatrix>(mat);
+
+				// Coordinates are frequency, theta and phi.
+				rtmath::coords::cyclic<double> crds(2, freq, vals[0], vals[1]);
+
+				_scattMatricesRaw.insert(std::pair<rtmath::coords::cyclic<double>,
+					boost::shared_ptr<const ddScattMatrix> >(crds, matC));
+			}
 		}
 
 		void ddOutputSingle::readMueller(std::istream &in)
 		{
 			using namespace std;
-			map<size_t, size_t> idmap;
+			// The frequency is needed when reading this matrix
+			double freq = units::conv_spec("um","GHz").convert(wave());
+
 			string lin;
-			while (in.good())
+			while(in.good())
 			{
 				std::getline(in,lin);
 				if (lin == "") return;
+				// Parse the string to get rid of spaces. This is used to determine 
+				// if we are still in the S matrix header or in the actual data
+				boost::trim(lin);
 				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 				boost::char_separator<char> sep("\t ");
+				tokenizer t(lin, sep);
+
+				// TODO: parse the header line to get the list of matrix entries known
+				// TODO: use symmetry relationships in a depGraph to get the other 
+				// mueller matrix entries.
+				if (std::isalpha(lin.at(0))) continue;
+
+
+				// TODO: check this
+				// The ordering is theta, phi, polarization, and then the 
+				// relevant matrix entries
+				size_t i=0;
+				double vals[10];
+				for (auto it = t.begin(); it != t.end(); ++it, ++i)
+				{
+					vals[i] = boost::lexical_cast<double>(*it);
+				}
+				// ddScattMatrixF constructor takes frequency (GHz) and phi
+				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF(freq, vals[1]));
+				complex<double> fs[2][2];
+				fs[0][0] = complex<double>(vals[2],vals[3]);
+				fs[0][1] = complex<double>(vals[4],vals[5]);
+				fs[1][0] = complex<double>(vals[6],vals[7]);
+				fs[1][1] = complex<double>(vals[8],vals[9]);
+				mat->setF(fs);
+
+				// TODO: check if another cast is appropriate
+				boost::shared_ptr<const ddScattMatrix> matC = 
+					boost::shared_dynamic_cast<const ddScattMatrix>(mat);
+
+				// Coordinates are frequency, theta and phi.
+				rtmath::coords::cyclic<double> crds(2, freq, vals[0], vals[1]);
+
+				_scattMatricesRaw.insert(std::pair<rtmath::coords::cyclic<double>,
+					boost::shared_ptr<const ddScattMatrix> >(crds, matC));
 			}
 		}
 

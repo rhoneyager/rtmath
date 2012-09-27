@@ -44,7 +44,7 @@ namespace rtmath {
 			void readAVG(std::istream &in);
 			void readStatTable(std::istream &in); //
 			void readMueller(std::istream &in); //
-			void readS(std::istream &in); //
+			void readS(std::istream &in);
 
 			size_t version() const; //
 			void version(size_t); //
