@@ -1,5 +1,5 @@
 #pragma once
-#include <memory>
+#include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -29,7 +29,7 @@ namespace rtmath {
 			virtual ~ddOutputEnsemble();
 			// Long function definition here, even though the invocation is short...
 			virtual void genEnsemble(const std::unordered_map<coords::cyclic<double>, 
-				std::shared_ptr<const ddscat::ddOutputSingle>, 
+				boost::shared_ptr<const ddscat::ddOutputSingle>, 
 				boost::hash<coords::cyclic<double> > 
 				> &_mapOutputSingleRaw, 
 				ddOutputSingle &res) const = 0;
@@ -41,7 +41,7 @@ namespace rtmath {
 			ddOutputEnsembleGaussian(double sigma, size_t coord_varying);
 			virtual ~ddOutputEnsembleGaussian();
 			virtual void genEnsemble(const std::unordered_map<coords::cyclic<double>, 
-				std::shared_ptr<const ddscat::ddOutputSingle>, 
+				boost::shared_ptr<const ddscat::ddOutputSingle>, 
 				boost::hash<coords::cyclic<double> > 
 				> &_mapOutputSingleRaw, 
 				ddOutputSingle &res) const;
@@ -56,7 +56,7 @@ namespace rtmath {
 			ddOutputEnsembleIsotropic(size_t coord_varying);
 			virtual ~ddOutputEnsembleIsotropic();
 			virtual void genEnsemble(const std::unordered_map<coords::cyclic<double>, 
-				std::shared_ptr<const ddscat::ddOutputSingle>, 
+				boost::shared_ptr<const ddscat::ddOutputSingle>, 
 				boost::hash<coords::cyclic<double> > 
 				> &_mapOutputSingleRaw, 
 				ddOutputSingle &res) const;
@@ -70,7 +70,7 @@ namespace rtmath {
 			ddOutputEnsembleAligned();
 			virtual ~ddOutputEnsembleAligned();
 			virtual void genEnsemble(const std::unordered_map<coords::cyclic<double>, 
-				std::shared_ptr<const ddscat::ddOutputSingle>, 
+				boost::shared_ptr<const ddscat::ddOutputSingle>, 
 				boost::hash<coords::cyclic<double> > 
 				> &_mapOutputSingleRaw, 
 				ddOutputSingle &res) const;

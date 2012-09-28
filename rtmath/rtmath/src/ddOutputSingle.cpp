@@ -193,10 +193,10 @@ namespace rtmath {
 			boost::filesystem::path pext = p.extension();
 			if (pext.string() == ".sca")
 			{
-				//readSCA(in);
+				readSCA(in);
 			} else if (pext.string() == ".fml")
 			{
-				//readFML(in);
+				readFML(in);
 			} else if (pext.string() == ".avg")
 			{
 				readAVG(in);
@@ -289,20 +289,24 @@ namespace rtmath {
 				// TODO: check this
 				// The ordering is theta, phi, polarization, and then the 
 				// relevant matrix entries
+				// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 				size_t i=0;
-				double vals[10];
+				double vals[9];
 				for (auto it = t.begin(); it != t.end(); ++it, ++i)
 				{
 					vals[i] = boost::lexical_cast<double>(*it);
 				}
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
-				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF(freq, vals[1]));
-				complex<double> fs[2][2];
-				fs[0][0] = complex<double>(vals[2],vals[3]);
-				fs[0][1] = complex<double>(vals[4],vals[5]);
-				fs[1][0] = complex<double>(vals[6],vals[7]);
-				fs[1][1] = complex<double>(vals[8],vals[9]);
-				mat->setF(fs);
+				boost::shared_ptr<ddScattMatrixS> mat(new ddScattMatrixS(freq, vals[1]));
+				matrixop P(2,4,4);
+				P.set(vals[3],2,0,0);
+				P.set(vals[4],2,0,1);
+				P.set(vals[5],2,1,0);
+				P.set(vals[6],2,1,1);
+				P.set(vals[7],2,2,0);
+				P.set(vals[8],2,3,0);
+				mat->setP(P);
+				mat->pol(vals[2]);
 
 				// TODO: check if another cast is appropriate
 				boost::shared_ptr<const ddScattMatrix> matC = 
@@ -314,6 +318,16 @@ namespace rtmath {
 				_scattMatricesRaw.insert(std::pair<rtmath::coords::cyclic<double>,
 					boost::shared_ptr<const ddScattMatrix> >(crds, matC));
 			}
+		}
+
+		void ddOutputSingle::readFML(std::istream &in)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
+		}
+
+		void ddOutputSIngle::readSCA(std::istream &in)
+		{
+			throw rtmath::debug::xUnimplementedFunction();
 		}
 
 		void ddOutputSingle::readAVG(std::istream &in)

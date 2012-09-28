@@ -68,31 +68,40 @@ namespace rtmath
 
 			void muellerProvider::addKnown(size_t index)
 			{
+				throw rtmath::debug::xUnimplementedFunction();
 			}
 
 			void muellerProvider::addKnown(const std::string &indices)
 			{
+				throw rtmath::debug::xUnimplementedFunction();
 			}
 
 			void muellerProvider::update()
 			{
+				throw rtmath::debug::xUnimplementedFunction();
 			}
 
 			void muellerProvider::constructGraph()
 			{
+				throw rtmath::debug::xUnimplementedFunction();
 			}
 
 			void muellerProvider::createVertex(const std::string &name, const std::string &target, 
 				const std::string &deps, std::function<void(rtmath::matrixop&)> &)
 			{
+				throw rtmath::debug::xUnimplementedFunction();
 			}
 
 			matrixop muellerProvider::fillMask() const
 			{
+				throw rtmath::debug::xUnimplementedFunction();
+				return matrixop(2,4,4);
 			}
 
 			matrixop muellerProvider::fill(const matrixop &in) const
 			{
+				throw rtmath::debug::xUnimplementedFunction();
+				return matrixop(2,4,4);
 			}
 
 		}

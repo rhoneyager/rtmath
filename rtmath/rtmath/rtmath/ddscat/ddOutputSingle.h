@@ -39,8 +39,8 @@ namespace rtmath {
 			void writeAVG(std::ostream &out) const; //
 			void writeStatTable(std::ostream &out) const; //
 
-			//void readFML(std::istream &in);
-			//void readSCA(std::istream &in);
+			void readFML(std::istream &in);
+			void readSCA(std::istream &in);
 			void readAVG(std::istream &in);
 			void readStatTable(std::istream &in); //
 			void readMueller(std::istream &in); //
