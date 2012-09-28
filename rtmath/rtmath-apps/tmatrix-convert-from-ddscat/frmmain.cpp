@@ -21,19 +21,38 @@
 template <>
 double getValText(QLineEdit *src)
 {
+#ifndef RTMATH_OLD_QT
 	return src->text().size() ? src->text().toDouble() : src->placeholderText().toDouble() ;
+#else
+	return src->text().toDouble();
+#endif
 }
 
 template <>
 std::string getValText(QLineEdit *src)
 {
+#ifndef RTMATH_OLD_QT
 	return src->text().size() ? src->text().toStdString() : src->placeholderText().toStdString();
+#else
+	return src->text().toStdString();
+#endif
 }
 
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
 {
 	ui.setupUi(this);
+	/* Older Qt versions do not support placeHolderText (ahem, crystallus).
+	 * To allow for compilation, while still having placeholerText on the 
+	 * newer versions, insert the text definitions here. */
+#ifndef RTMATH_OLD_QT
+	ui.txtTemp->setPlaceholderText(QApplication::translate("frmMainClass", "263", 0, QApplication::UnicodeUTF8));
+	ui.txtDiel->setPlaceholderText(QApplication::translate("frmMainClass", "0.85", 0, QApplication::UnicodeUTF8));
+#else
+	ui.txtTemp->setText(QApplication::translate("frmMainClass", "263", 0, QApplication::UnicodeUTF8));
+	ui.txtDiel->setText(QApplication::translate("frmMainClass", "0.85", 0, QApplication::UnicodeUTF8));
+
+#endif
 }
 
 frmMain::~frmMain()

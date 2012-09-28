@@ -103,9 +103,6 @@
       <property name="statusTip">
        <string>Specify the temperature (in Kelvin)</string>
       </property>
-      <property name="placeholderText">
-       <string>263</string>
-      </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -234,9 +231,6 @@
        <widget class="QLineEdit" name="txtDiel">
         <property name="statusTip">
          <string>Value of nu for the Sihvola method</string>
-        </property>
-        <property name="placeholderText">
-         <string>0.85</string>
         </property>
        </widget>
       </item>

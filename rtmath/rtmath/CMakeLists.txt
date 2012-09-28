@@ -87,7 +87,7 @@ set(rtmath-tests_LIBRARIES "")
 
 if(LOAD_PACKAGES)	
 	#add_package_dependency(rtmath DEPENDS_ON HDF5)
-	add_package_dependency(rtmath DEPENDS_ON NetCDF)
+#	add_package_dependency(rtmath DEPENDS_ON NetCDF)
 #	add_package_dependency(rtmath DEPENDS_ON ROOT)
 	add_package_dependency(rtmath DEPENDS_ON Boost)
 	add_package_dependency(rtmath DEPENDS_ON VTK)

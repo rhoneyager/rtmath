@@ -31,6 +31,10 @@ ENDIF()
 		set_target_properties(${appname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 	ENDIF()
 
+	IF(RTMATH_OLD_QT)
+		add_definitions(-DRTMATH_OLD_QT)
+	ENDIF()
+
 	INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin COMPONENT Applications)
 	set_target_properties(${appname} PROPERTIES FOLDER "Apps")
 endmacro(addapp appname)

@@ -750,7 +750,6 @@ public:
 #ifndef QT_NO_STATUSTIP
         txtOutLocation->setStatusTip(QApplication::translate("frmMainClass", "The directory for storing all of the ddscat run information and the future directory tree.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtOutLocation->setPlaceholderText(QApplication::translate("frmMainClass", "./out", 0, QApplication::UnicodeUTF8));
         cmdSelectOutputLocation->setText(QApplication::translate("frmMainClass", "...", 0, QApplication::UnicodeUTF8));
         label_10->setText(QApplication::translate("frmMainClass", "DDSCAT Version:", 0, QApplication::UnicodeUTF8));
         cmbDdver->clear();
@@ -792,7 +791,6 @@ public:
 #ifndef QT_NO_STATUSTIP
         txtExportDir->setStatusTip(QApplication::translate("frmMainClass", "Once each ddscat invocation finishes, copy output to this directory. Useful for consolidation.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtExportDir->setPlaceholderText(QApplication::translate("frmMainClass", "/data/rhoneyag/incoming", 0, QApplication::UnicodeUTF8));
         cmdSelectExportDir->setText(QApplication::translate("frmMainClass", "...", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tabGeneral), QApplication::translate("frmMainClass", "General", 0, QApplication::UnicodeUTF8));
         label_11->setText(QApplication::translate("frmMainClass", "Torque Calculations?", 0, QApplication::UnicodeUTF8));
@@ -842,15 +840,12 @@ public:
 #ifndef QT_NO_STATUSTIP
         txtImem1->setStatusTip(QApplication::translate("frmMainClass", "Memory cells in each direction reserved for the first iteration. After the first, the matrix is autosized.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtImem1->setPlaceholderText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtImem2->setStatusTip(QApplication::translate("frmMainClass", "Memory cells in each direction reserved for the first iteration. After the first, the matrix is autosized.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtImem2->setPlaceholderText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtImem3->setStatusTip(QApplication::translate("frmMainClass", "Memory cells in each direction reserved for the first iteration. After the first, the matrix is autosized.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtImem3->setPlaceholderText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
         label_17->setText(QApplication::translate("frmMainClass", "Do Additional Nearfield Calcs?", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         chkNearfield->setStatusTip(QApplication::translate("frmMainClass", "Calculate nearfield E?", 0, QApplication::UnicodeUTF8));
@@ -860,52 +855,41 @@ public:
 #ifndef QT_NO_STATUSTIP
         txtNear1->setStatusTip(QApplication::translate("frmMainClass", "fract. extens. of calc. vol. in -x", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNear1->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNear2->setStatusTip(QApplication::translate("frmMainClass", "fract. extens. of calc. vol. in +x", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNear2->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNear3->setStatusTip(QApplication::translate("frmMainClass", "fract. extens. of calc. vol. in -y", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNear3->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNear4->setStatusTip(QApplication::translate("frmMainClass", "fract. extens. of calc. vol. in +y", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNear4->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNear5->setStatusTip(QApplication::translate("frmMainClass", "fract. extens. of calc. vol. in -z", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNear5->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNear6->setStatusTip(QApplication::translate("frmMainClass", "fract. extens. of calc. vol. in +z", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNear6->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
         label_19->setText(QApplication::translate("frmMainClass", "Max Error Tolerance:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtMaxTol->setStatusTip(QApplication::translate("frmMainClass", "TOL = MAX ALLOWED (NORM OF |G>=AC|E>-ACA|X>)/(NORM OF AC|E>)", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtMaxTol->setPlaceholderText(QApplication::translate("frmMainClass", "1.0E-5", 0, QApplication::UnicodeUTF8));
         label_20->setText(QApplication::translate("frmMainClass", "Max Number of Iterations:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtMaxIter->setStatusTip(QApplication::translate("frmMainClass", "Maximum number of iterations allowed", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtMaxIter->setPlaceholderText(QApplication::translate("frmMainClass", "300", 0, QApplication::UnicodeUTF8));
         label_22->setText(QApplication::translate("frmMainClass", "Interaction Cutoff Parameter (GAMMA):", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtGamma->setStatusTip(QApplication::translate("frmMainClass", "Interaction cutoff parameter for PBC calculations (1e-2 is normal, 3e-3 for greater accuracy)", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtGamma->setPlaceholderText(QApplication::translate("frmMainClass", "5.00e-3", 0, QApplication::UnicodeUTF8));
         label_21->setText(QApplication::translate("frmMainClass", "Angular Resolution (ETASCA):", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtETASCA->setStatusTip(QApplication::translate("frmMainClass", "Angular resolution for calculation of <cos>, etc... (number of angles is proportional to [(3+x)/ETASCA]^2 )", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtETASCA->setPlaceholderText(QApplication::translate("frmMainClass", "0.5", 0, QApplication::UnicodeUTF8));
         label_23->setText(QApplication::translate("frmMainClass", "Refractive Index of Ambient Medium:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         txtNAMBIENT->setStatusTip(QApplication::translate("frmMainClass", "Refractive Index of Ambient Medium", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtNAMBIENT->setPlaceholderText(QApplication::translate("frmMainClass", "1.000", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         chkWriteSca->setStatusTip(QApplication::translate("frmMainClass", "The fml and sca files contain the calculations for each rotation", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP

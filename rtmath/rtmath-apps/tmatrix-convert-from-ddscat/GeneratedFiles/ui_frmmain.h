@@ -231,7 +231,6 @@ public:
 #ifndef QT_NO_STATUSTIP
         txtTemp->setStatusTip(QApplication::translate("frmMainClass", "Specify the temperature (in Kelvin)", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtTemp->setPlaceholderText(QApplication::translate("frmMainClass", "263", 0, QApplication::UnicodeUTF8));
         label_5->setText(QApplication::translate("frmMainClass", "Shape Dimensioning:", 0, QApplication::UnicodeUTF8));
         cmbShapeMeth->clear();
         cmbShapeMeth->insertItems(0, QStringList()
@@ -274,7 +273,6 @@ public:
 #ifndef QT_NO_STATUSTIP
         txtDiel->setStatusTip(QApplication::translate("frmMainClass", "Value of nu for the Sihvola method", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
-        txtDiel->setPlaceholderText(QApplication::translate("frmMainClass", "0.85", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("frmMainClass", "&File", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 

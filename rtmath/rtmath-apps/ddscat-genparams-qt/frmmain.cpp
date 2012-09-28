@@ -14,25 +14,41 @@
 template <>
 int getValText(QLineEdit *src)
 {
+#ifndef RTMATH_OLD_QT
 	return src->text().size() ? src->text().toInt() : src->placeholderText().toInt() ;
+#else
+	return src->text().toInt();
+#endif
 }
 
 template <>
 size_t getValText(QLineEdit *src)
 {
+#ifndef RTMATH_OLD_QT
 	return src->text().size() ? src->text().toInt() : src->placeholderText().toInt() ;
+#else
+	return src->text().toInt();
+#endif
 }
 
 template <>
 double getValText(QLineEdit *src)
 {
+#ifndef RTMATH_OLD_QT
 	return src->text().size() ? src->text().toDouble() : src->placeholderText().toDouble() ;
+#else
+	return src->text().toDouble();
+#endif
 }
 
 template <>
 std::string getValText(QLineEdit *src)
 {
+#ifndef RTMATH_OLD_QT
 	return src->text().size() ? src->text().toStdString() : src->placeholderText().toStdString();
+#else
+	return src->text().toStdString();
+#endif
 }
 
 frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
@@ -44,12 +60,49 @@ frmMain::frmMain(QWidget *parent, Qt::WFlags flags)
 		ui.treeRots->resizeColumnToContents(i);
 	ui.treeTypes->setColumnHidden(1,true);
 	_targetCounter = 0;
+
+	// The annoying old qt placeholdertext issue fix goes here
+#ifndef RTMATH_OLD_QT
+	ui.txtOutLocation->setPlaceholderText(QApplication::translate("frmMainClass", "./out", 0, QApplication::UnicodeUTF8));
+	ui.txtExportDir->setPlaceholderText(QApplication::translate("frmMainClass", "/data/rhoneyag/incoming", 0, QApplication::UnicodeUTF8));
+	ui.txtImem1->setPlaceholderText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
+	ui.txtImem2->setPlaceholderText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
+	ui.txtImem3->setPlaceholderText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
+	ui.txtNear1->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear2->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear3->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear4->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear5->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear6->setPlaceholderText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtMaxTol->setPlaceholderText(QApplication::translate("frmMainClass", "1.0E-5", 0, QApplication::UnicodeUTF8));
+	ui.txtMaxIter->setPlaceholderText(QApplication::translate("frmMainClass", "300", 0, QApplication::UnicodeUTF8));
+	ui.txtGamma->setPlaceholderText(QApplication::translate("frmMainClass", "5.00e-3", 0, QApplication::UnicodeUTF8));
+	ui.txtETASCA->setPlaceholderText(QApplication::translate("frmMainClass", "0.5", 0, QApplication::UnicodeUTF8));
+	ui.txtNAMBIENT->setPlaceholderText(QApplication::translate("frmMainClass", "1.000", 0, QApplication::UnicodeUTF8));
+#else
+	ui.txtOutLocation->setText(QApplication::translate("frmMainClass", "./out", 0, QApplication::UnicodeUTF8));
+	ui.txtExportDir->setText(QApplication::translate("frmMainClass", "/data/rhoneyag/incoming", 0, QApplication::UnicodeUTF8));
+	ui.txtImem1->setText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
+	ui.txtImem2->setText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
+	ui.txtImem3->setText(QApplication::translate("frmMainClass", "101", 0, QApplication::UnicodeUTF8));
+	ui.txtNear1->setText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear2->setText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear3->setText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear4->setText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear5->setText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtNear6->setText(QApplication::translate("frmMainClass", "0.0", 0, QApplication::UnicodeUTF8));
+	ui.txtMaxTol->setText(QApplication::translate("frmMainClass", "1.0E-5", 0, QApplication::UnicodeUTF8));
+	ui.txtMaxIter->setText(QApplication::translate("frmMainClass", "300", 0, QApplication::UnicodeUTF8));
+	ui.txtGamma->setText(QApplication::translate("frmMainClass", "5.00e-3", 0, QApplication::UnicodeUTF8));
+	ui.txtETASCA->setText(QApplication::translate("frmMainClass", "0.5", 0, QApplication::UnicodeUTF8));
+	ui.txtNAMBIENT->setText(QApplication::translate("frmMainClass", "1.000", 0, QApplication::UnicodeUTF8));
+#endif
+
 	fromGenerator();
 }
 
 frmMain::~frmMain()
 {
-
 }
 
 void frmMain::allowExport(int val)

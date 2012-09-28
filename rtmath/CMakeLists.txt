@@ -76,11 +76,13 @@ option ( BUILD_APPS
 	"Build the default applications" ON)
 option ( COMPRESSION_ENABLED 
 	"Enable compression" ON)
+option ( RTMATH_OLD_QT
+	"Set this flag if an older version of Qt4 is present. Ensures compatibility" OFF)
 
 if(LOAD_PACKAGES)
 	# Find the locations of ROOT, OpenMP and others
 	find_package(ROOT REQUIRED)
-	find_package(NetCDF REQUIRED)
+#	find_package(NetCDF REQUIRED)
 	find_package(PostgreSQL)
 	find_package(PQXX)
 	find_package(Boost REQUIRED)

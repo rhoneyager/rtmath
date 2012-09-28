@@ -126,9 +126,6 @@
             <property name="statusTip">
              <string>The directory for storing all of the ddscat run information and the future directory tree.</string>
             </property>
-            <property name="placeholderText">
-             <string>./out</string>
-            </property>
            </widget>
           </item>
           <item>
@@ -323,9 +320,6 @@
             <property name="statusTip">
              <string>Once each ddscat invocation finishes, copy output to this directory. Useful for consolidation.</string>
             </property>
-            <property name="placeholderText">
-             <string>/data/rhoneyag/incoming</string>
-            </property>
            </widget>
           </item>
           <item>
@@ -487,9 +481,6 @@
             <property name="statusTip">
              <string>Memory cells in each direction reserved for the first iteration. After the first, the matrix is autosized.</string>
             </property>
-            <property name="placeholderText">
-             <string>101</string>
-            </property>
            </widget>
           </item>
           <item>
@@ -497,18 +488,12 @@
             <property name="statusTip">
              <string>Memory cells in each direction reserved for the first iteration. After the first, the matrix is autosized.</string>
             </property>
-            <property name="placeholderText">
-             <string>101</string>
-            </property>
            </widget>
           </item>
           <item>
            <widget class="QLineEdit" name="txtImem3">
             <property name="statusTip">
              <string>Memory cells in each direction reserved for the first iteration. After the first, the matrix is autosized.</string>
-            </property>
-            <property name="placeholderText">
-             <string>101</string>
             </property>
            </widget>
           </item>
@@ -545,18 +530,12 @@
             <property name="statusTip">
              <string>fract. extens. of calc. vol. in -x</string>
             </property>
-            <property name="placeholderText">
-             <string>0.0</string>
-            </property>
            </widget>
           </item>
           <item>
            <widget class="QLineEdit" name="txtNear2">
             <property name="statusTip">
              <string>fract. extens. of calc. vol. in +x</string>
-            </property>
-            <property name="placeholderText">
-             <string>0.0</string>
             </property>
            </widget>
           </item>
@@ -565,18 +544,12 @@
             <property name="statusTip">
              <string>fract. extens. of calc. vol. in -y</string>
             </property>
-            <property name="placeholderText">
-             <string>0.0</string>
-            </property>
            </widget>
           </item>
           <item>
            <widget class="QLineEdit" name="txtNear4">
             <property name="statusTip">
              <string>fract. extens. of calc. vol. in +y</string>
-            </property>
-            <property name="placeholderText">
-             <string>0.0</string>
             </property>
            </widget>
           </item>
@@ -588,9 +561,6 @@
             <property name="readOnly">
              <bool>false</bool>
             </property>
-            <property name="placeholderText">
-             <string>0.0</string>
-            </property>
            </widget>
           </item>
           <item>
@@ -600,9 +570,6 @@
             </property>
             <property name="readOnly">
              <bool>false</bool>
-            </property>
-            <property name="placeholderText">
-             <string>0.0</string>
             </property>
            </widget>
           </item>
@@ -620,9 +587,6 @@
           <property name="statusTip">
            <string>TOL = MAX ALLOWED (NORM OF |G&gt;=AC|E&gt;-ACA|X&gt;)/(NORM OF AC|E&gt;)</string>
           </property>
-          <property name="placeholderText">
-           <string>1.0E-5</string>
-          </property>
          </widget>
         </item>
         <item row="9" column="0">
@@ -636,9 +600,6 @@
          <widget class="QLineEdit" name="txtMaxIter">
           <property name="statusTip">
            <string>Maximum number of iterations allowed</string>
-          </property>
-          <property name="placeholderText">
-           <string>300</string>
           </property>
          </widget>
         </item>
@@ -654,9 +615,6 @@
           <property name="statusTip">
            <string>Interaction cutoff parameter for PBC calculations (1e-2 is normal, 3e-3 for greater accuracy)</string>
           </property>
-          <property name="placeholderText">
-           <string>5.00e-3</string>
-          </property>
          </widget>
         </item>
         <item row="11" column="0">
@@ -671,9 +629,6 @@
           <property name="statusTip">
            <string>Angular resolution for calculation of &lt;cos&gt;, etc... (number of angles is proportional to [(3+x)/ETASCA]^2 )</string>
           </property>
-          <property name="placeholderText">
-           <string>0.5</string>
-          </property>
          </widget>
         </item>
         <item row="12" column="0">
@@ -687,9 +642,6 @@
          <widget class="QLineEdit" name="txtNAMBIENT">
           <property name="statusTip">
            <string>Refractive Index of Ambient Medium</string>
-          </property>
-          <property name="placeholderText">
-           <string>1.000</string>
           </property>
          </widget>
         </item>
