@@ -1,9 +1,9 @@
 #include <complex>
 #include <cmath>
-#include <rtmath/mie/mie-phaseFunc.h>
-#include <rtmath/mie/mie-Scalc.h>
-#include <rtmath/matrixop.h>
-#include <rtmath/units.h>
+#include "../../rtmath/rtmath/mie/mie-phaseFunc.h"
+#include "../../rtmath/rtmath/mie/mie-Scalc.h"
+#include "../../rtmath/rtmath/matrixop.h"
+#include "../../rtmath/rtmath/units.h"
 #include <tmatrix/tmatrix.h>
 
 #include <boost/lexical_cast.hpp>
