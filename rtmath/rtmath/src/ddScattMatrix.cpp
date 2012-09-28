@@ -101,6 +101,17 @@ namespace rtmath {
 			return *this;
 		}
 
+		void ddScattMatrixP::setP(const matrixop &val)
+		{
+			_Pnn = boost::shared_ptr<matrixop>(new matrixop(val));
+		}
+
+		matrixop ddScattMatrixP::getP() const
+		{
+			matrixop res(*(_Pnn.get()));
+			return res;
+		}
+
 		matrixop ddScattMatrixF::mueller() const
 		{
 			_calcP();

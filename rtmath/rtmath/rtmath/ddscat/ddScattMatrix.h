@@ -60,8 +60,8 @@ namespace rtmath
 		class ddScattMatrixP : public ddScattMatrix
 		{
 		public:
-			ddScattMatrixP();
-			virtual ~ddScattMatrixP();
+			ddScattMatrixP() {}
+			virtual ~ddScattMatrixP() {}
 			ddScattMatrixP & operator = (const ddScattMatrixP&);
 			virtual scattMatrixType id() const { return P; }
 			void setP(const matrixop&);

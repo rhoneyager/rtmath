@@ -297,7 +297,7 @@ namespace rtmath {
 					vals[i] = boost::lexical_cast<double>(*it);
 				}
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
-				boost::shared_ptr<ddScattMatrixS> mat(new ddScattMatrixS(freq, vals[1]));
+				boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP);
 				matrixop P(2,4,4);
 				P.set(vals[3],2,0,0);
 				P.set(vals[4],2,0,1);
@@ -325,7 +325,7 @@ namespace rtmath {
 			throw rtmath::debug::xUnimplementedFunction();
 		}
 
-		void ddOutputSIngle::readSCA(std::istream &in)
+		void ddOutputSingle::readSCA(std::istream &in)
 		{
 			throw rtmath::debug::xUnimplementedFunction();
 		}
