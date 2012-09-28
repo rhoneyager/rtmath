@@ -256,7 +256,7 @@ int main(int argc, char** argv)
 				graphs.push_back(gTi);
 //				graphs.push_back(gTrC);
 //				graphs.push_back(gTiC);
-				TPad *pad = tS->cd(j+1);
+				auto *pad = tS->cd(j+1);
 				pad->SetFillStyle(4000);
 
 				gMr->Draw("AC");
@@ -321,7 +321,7 @@ int main(int argc, char** argv)
 
 //				gTiC->SetLineColor(3);
 			}
-			TPad *pad = tS->cd();
+			auto *pad = tS->cd();
 
 
 			tS->SaveAs(fS.c_str());
