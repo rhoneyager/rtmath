@@ -199,6 +199,7 @@ namespace rtmath
 		{
 			_volume = 0;
 			_surfarea = 0;
+			hull_enabled = true;
 		}
 
 		hull::~hull()
@@ -270,7 +271,7 @@ namespace rtmath
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZ>);
 			pcl::ConvexHull<pcl::PointXYZ> chull;
-			chull.setDimension(3);
+//			chull.setDimension(3); // Deimension 3 fails for dendrites
 			chull.setComputeAreaVolume(true);
 			chull.setInputCloud (cloud);
 			chull.reconstruct (*cloud_hull, _polygons);
@@ -293,12 +294,15 @@ namespace rtmath
 		double convexHull::maxDiameter() const
 		{
 			double maxD = 0;
-			for (auto it = _hullPts.begin(); it != _hullPts.end(); it++)
+			const std::vector<matrixop>* base = nullptr;
+			if (hull_enabled) base = &_hullPts;
+			else base = &_points;
+			for (auto it = base->begin(); it != base->end(); it++)
 			{
 				const double ix = it->get(2,0,0);
 				const double iy = it->get(2,0,1);
 				const double iz = it->get(2,0,2);
-				for (auto ot = it + 1; ot != _hullPts.end(); ot++)
+				for (auto ot = it + 1; ot != base->end(); ot++)
 				{
 					const double ox = ot->get(2,0,0);
 					const double oy = ot->get(2,0,1);

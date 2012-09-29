@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 			 "Override frequency (GHz)")
 			("dipole-spacing,d", po::value<double>()->default_value(0),
 			 "Override dipole spacing (um)")
+			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites")
 			("suffix", po::value<string>(), "Append suffix to generated files")
 			("nu,n", po::value<double>()->default_value(0.85), 
 			 "Specify nu for Sihvola")
@@ -61,6 +62,7 @@ int main(int argc, char *argv[])
 
 		bool ROOT = false;
 		bool fliptm = false;
+		bool qhull_enabled = true;
 
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
@@ -72,6 +74,9 @@ int main(int argc, char *argv[])
 
 		if (vm.count("flip-tmatrix"))
 			fliptm = true;
+
+		if (vm.count("disable-qhull")) qhull_enabled = false;
+		rtmath::ddscat::shapeFileStats::doQhull(qhull_enabled);
 
 		vector<string> inputs = vm["shapefiles"].as< vector<string> >();
 		if (vm.count("shapefiles"))

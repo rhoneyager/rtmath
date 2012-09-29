@@ -79,6 +79,7 @@ namespace rtmath {
 
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;
+			bool qhull_enabled;
 
 			// Before normalization and rotation
 			matrixop b_min, b_max, b_mean;
@@ -105,6 +106,8 @@ namespace rtmath {
 		public:
 			static boost::shared_ptr<shapeFileStats> genStats(
 				const std::string &shpfile, const std::string &statsfile = "");
+			static void doQhull(bool);
+			static bool doQhull();
 		};
 
 	}

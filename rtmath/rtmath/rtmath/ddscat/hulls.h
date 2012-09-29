@@ -37,6 +37,7 @@ namespace rtmath
 			void writeVTKhull(const std::string &filename) const;
 			double volume() const;
 			double surface_area() const;
+			bool hull_enabled;
 		public:
 			hull();
 			std::vector<matrixop> _points;

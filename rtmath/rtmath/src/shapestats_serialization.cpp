@@ -37,6 +37,8 @@ namespace boost
 			switch (version)
 			{
 			default:
+			case 1:
+				ar & boost::serialization::make_nvp("qhull_enabled", g.qhull_enabled);
 			case 0:
 				ar & boost::serialization::make_nvp("max_distance", g.max_distance);
 				ar & boost::serialization::make_nvp("a_circum_sphere", g.a_circum_sphere);
@@ -73,4 +75,5 @@ namespace boost
 	}
 }
 
-//BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 0)
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 1)
+

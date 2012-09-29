@@ -7,6 +7,10 @@
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h"
 
+namespace {
+	bool _doQhull = true;
+}
+
 namespace rtmath {
 	namespace ddscat {
 
@@ -20,6 +24,16 @@ namespace rtmath {
 		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp)
 		{
 			_shp = boost::shared_ptr<shapefile>(new shapefile(*shp));
+		}
+
+		bool shapeFileStats::doQhull()
+		{
+			return _doQhull;
+		}
+
+		void shapeFileStats::doQhull(bool val)
+		{
+			_doQhull = val;
 		}
 
 		shapeFileStats::shapeFileStats()
@@ -57,6 +71,7 @@ namespace rtmath {
 
 			_currVersion = _maxVersion;
 			_valid = false;
+			qhull_enabled = shapeFileStats::doQhull();
 
 			// Need to fill with something for serialization to work with
 			//_shp = boost::shared_ptr<shapefile>(new shapefile);
@@ -212,7 +227,12 @@ namespace rtmath {
 
 			// Figure out diameter of smallest circumscribing sphere
 			convexHull cvHull(_shp->_latticePtsStd);
-			cvHull.constructHull();
+			if (qhull_enabled)
+			{
+				cvHull.constructHull();
+			} else {
+				cvHull.hull_enabled = false;
+			}
 			max_distance = cvHull.maxDiameter();
 
 			a_circum_sphere = max_distance / 2.0;
@@ -220,7 +240,7 @@ namespace rtmath {
 			SA_circum_sphere = boost::math::constants::pi<double>() * 4.0 * pow(a_circum_sphere,2.0);
 
 			V_convex_hull = cvHull.volume();
-			aeff_V_convex_hull = pow(3.0 * V_circum_sphere / (4.0 * boost::math::constants::pi<double>()),1./3.);
+			aeff_V_convex_hull = pow(3.0 * V_convex_hull / (4.0 * boost::math::constants::pi<double>()),1./3.);
 			SA_convex_hull = cvHull.surface_area();
 			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0 * boost::math::constants::pi<double>()),0.5);
 
