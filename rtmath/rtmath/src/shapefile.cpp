@@ -179,9 +179,9 @@ namespace rtmath {
 							for (size_t j=0;j<3;j++)
 							{
 								// Seek to first nonspace character
-								posa = in.find_first_not_of(" \t\n", posb);
+								posa = in.find_first_not_of(" \t\n,", posb);
 								// Find first space after this position
-								posb = in.find_first_of(" \t\n", posa);
+								posb = in.find_first_of(" \t\n,", posa);
 								size_t len = posb - posa;
 								v[j] = rtmath::macros::m_atof(&(in.data()[posa]),len);
 							}

@@ -85,6 +85,7 @@ int main(int argc, char** argv)
 			("aeff-SA-convex-hull", "Calculate effective radius assuming circumscribing sphere surface area")
 			("aeff-V-ellipsoid-max", "Calculate effective radius assuming maximum circumscribing ellipsoid volume")
 
+			("aspect-ratios", "Tabulate the aspect ratios calculated for the flake")
 			("f-circum-sphere", "Calculate volume fraction with circumscribing sphere")
 			("f-convex-hull", "Calculate volume fraction with convex hull")
 			("f-ellipsoid-max", "Calculate volume fraction with convex hull")
@@ -101,7 +102,8 @@ int main(int argc, char** argv)
 
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations");
+			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations")
+			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites.");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -112,6 +114,9 @@ int main(int argc, char** argv)
 			cerr << desc << "\n";
 			return 1;
 		}
+
+		if (vm.count("disable-qhull"))
+			rtmath::ddscat::shapeFileStats::doQhull(false);
 
 		double dSpacing = 0;
 		if (vm.count("dipole-spacing")) 
@@ -247,6 +252,26 @@ int main(int argc, char** argv)
 				cout << "aeff-V-ellipsoid-max (d): " << sstats->aeff_ellipsoid_max << endl;
 				if (dSpacing)
 					cout << "aeff-V-ellipsoid-max (um): " << sstatsView->aeff_ellipsoid_max() << endl;
+			}
+
+			if (vm.count("aspect-ratios"))
+			{
+				cout << "Aspect ratios:" << endl;
+				cout << "\tAxy\tAxz\tAyz\n";
+				auto it = sstats->rotations.begin();
+				cout << "Abs\t" 
+					<< it->as_abs.get(2,0,1) << "\t" 
+					<< it->as_abs.get(2,0,2) << "\t" 
+					<< it->as_abs.get(2,1,2) << endl;
+				cout << "Amean\t"
+					<< it->as_abs_mean.get(2,0,1) << "\t" 
+					<< it->as_abs_mean.get(2,0,2) << "\t" 
+					<< it->as_abs_mean.get(2,1,2) << endl;
+				cout << "RMS\t"
+					<< it->as_rms.get(2,0,1) << "\t" 
+					<< it->as_rms.get(2,0,2) << "\t" 
+					<< it->as_rms.get(2,1,2) << endl;
+				cout << endl;
 			}
 
 			if (vm.count("f-circum-sphere"))

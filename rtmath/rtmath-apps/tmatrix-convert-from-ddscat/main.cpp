@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 			 "Override frequency (GHz)")
 			("dipole-spacing,d", po::value<double>()->default_value(0),
 			 "Override dipole spacing (um)")
-			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites")
+			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites.")
 			("suffix", po::value<string>(), "Append suffix to generated files")
 			("nu,n", po::value<double>()->default_value(0.85), 
 			 "Specify nu for Sihvola")

@@ -16,6 +16,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/vtk_io.h>
 #include <pcl/point_types.h>
+#include <pcl/kdtree/kdtree.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/surface/gp3.h>
@@ -271,7 +272,7 @@ namespace rtmath
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull (new pcl::PointCloud<pcl::PointXYZ>);
 			pcl::ConvexHull<pcl::PointXYZ> chull;
-//			chull.setDimension(3); // Deimension 3 fails for dendrites
+			chull.setDimension(3); // Deimension 3 fails for dendrites
 			chull.setComputeAreaVolume(true);
 			chull.setInputCloud (cloud);
 			chull.reconstruct (*cloud_hull, _polygons);
@@ -297,6 +298,9 @@ namespace rtmath
 			const std::vector<matrixop>* base = nullptr;
 			if (hull_enabled) base = &_hullPts;
 			else base = &_points;
+
+// Old implementation using dumb searching. New method uses a kd tree
+/*
 			for (auto it = base->begin(); it != base->end(); it++)
 			{
 				const double ix = it->get(2,0,0);
@@ -312,7 +316,20 @@ namespace rtmath
 					if (d > maxD) maxD = d;
 				}
 			}
+*/
+			pcl::PointCloud<pcl::PointXYZ> pts;
+			pts.reserve(base->size());
+			for (auto it = base->begin(); it != base->end(); ++it)
+			{
+				const double x = it->get(2,0,0);
+				const double y = it->get(2,0,1);
+				const double z = it->get(2,0,2);
+				pts.push_back(pcl::PointXYZ(x,y,z));
+			}
 
+
+			pcl::PointXYZ min, max;
+			maxD = pcl::getMaxSegment(pts, min, max);
 			return maxD;
 		}
 
