@@ -174,6 +174,7 @@ namespace rtmath {
 			in >> _statTable[(size_t) DQPHA];
 
 			std::getline(in,line); // "         Qsca*g(1)   Qsca*g(2)   Qsca*g(3)   iter  mxiter  Nsca";
+			std::getline(in,line);
 			in >> line; // " JO=1: ";
 			for (size_t i=(size_t) QSCAG11; i< (size_t) QSCAG12; i++)
 				in >> _statTable[i];
@@ -183,6 +184,7 @@ namespace rtmath {
 			in >> line; // " mean: ";
 			for (size_t i=(size_t) QSCAG1M; i< (size_t) NUM_STAT_ENTRIES; i++)
 				in >> _statTable[i];
+			std::getline(in,line);
 		}
 
 		void ddOutputSingle::readFile(const std::string &filename)
@@ -201,7 +203,7 @@ namespace rtmath {
 			{
 				readAVG(in);
 			} else {
-				throw rtmath::debug::xBadInput(filename.c_str());
+				throw rtmath::debug::xMissingFile(filename.c_str());
 			}
 		}
 
@@ -218,7 +220,9 @@ namespace rtmath {
 		{
 			using namespace std;
 			// The frequency is needed when reading this matrix
-			double freq = units::conv_spec("um","GHz").convert(wave());
+			double freq = 0;
+			if (wave())
+				freq = units::conv_spec("um","GHz").convert(wave());
 
 			string lin;
 			while(in.good())
@@ -240,13 +244,14 @@ namespace rtmath {
 				for (auto it = t.begin(); it != t.end(); ++it, ++i)
 				{
 					vals[i] = boost::lexical_cast<double>(*it);
+					//std::cerr << " i " << i << " - " << vals[i] << "\n";
 				}
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
 				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF(freq, vals[1]));
 				complex<double> fs[2][2];
 				fs[0][0] = complex<double>(vals[2],vals[3]);
-				fs[0][1] = complex<double>(vals[4],vals[5]);
-				fs[1][0] = complex<double>(vals[6],vals[7]);
+				fs[1][0] = complex<double>(vals[4],vals[5]);
+				fs[0][1] = complex<double>(vals[6],vals[7]);
 				fs[1][1] = complex<double>(vals[8],vals[9]);
 				mat->setF(fs);
 
@@ -254,8 +259,8 @@ namespace rtmath {
 				boost::shared_ptr<const ddScattMatrix> matC = 
 					boost::shared_dynamic_cast<const ddScattMatrix>(mat);
 
-				// Coordinates are frequency, theta and phi.
-				rtmath::coords::cyclic<double> crds(2, freq, vals[0], vals[1]);
+				// Coordinates are frequency, phi and theta.
+				rtmath::coords::cyclic<double> crds(3, freq, vals[1], vals[0]);
 
 				_scattMatricesRaw.insert(std::pair<rtmath::coords::cyclic<double>,
 					boost::shared_ptr<const ddScattMatrix> >(crds, matC));
@@ -266,7 +271,9 @@ namespace rtmath {
 		{
 			using namespace std;
 			// The frequency is needed when reading this matrix
-			double freq = units::conv_spec("um","GHz").convert(wave());
+			double freq = 0;
+			if (wave())
+				freq = units::conv_spec("um","GHz").convert(wave());
 
 			string lin;
 			while(in.good())
@@ -276,15 +283,15 @@ namespace rtmath {
 				// Parse the string to get rid of spaces. This is used to determine 
 				// if we are still in the S matrix header or in the actual data
 				boost::trim(lin);
-				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-				boost::char_separator<char> sep("\t ");
-				tokenizer t(lin, sep);
-
+				//std::cerr << lin << std::endl;
 				// TODO: parse the header line to get the list of matrix entries known
 				// TODO: use symmetry relationships in a depGraph to get the other 
 				// mueller matrix entries.
 				if (std::isalpha(lin.at(0))) continue;
 
+				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+				boost::char_separator<char> sep("\t ");
+				tokenizer t(lin, sep);
 
 				// TODO: check this
 				// The ordering is theta, phi, polarization, and then the 
@@ -295,6 +302,7 @@ namespace rtmath {
 				for (auto it = t.begin(); it != t.end(); ++it, ++i)
 				{
 					vals[i] = boost::lexical_cast<double>(*it);
+					//std::cerr << "\ti " << i << " - " << vals[i] << std::endl;
 				}
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
 				boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP);
@@ -312,8 +320,8 @@ namespace rtmath {
 				boost::shared_ptr<const ddScattMatrix> matC = 
 					boost::shared_dynamic_cast<const ddScattMatrix>(mat);
 
-				// Coordinates are frequency, theta and phi.
-				rtmath::coords::cyclic<double> crds(2, freq, vals[0], vals[1]);
+				// Coordinates are frequency, phi and theta.
+				rtmath::coords::cyclic<double> crds(3, freq, vals[1], vals[0]);
 
 				_scattMatricesRaw.insert(std::pair<rtmath::coords::cyclic<double>,
 					boost::shared_ptr<const ddScattMatrix> >(crds, matC));
@@ -322,31 +330,39 @@ namespace rtmath {
 
 		void ddOutputSingle::readFML(std::istream &in)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			readHeader(in,"Re(f_11)");
+			//readStatTable(in);
+			readS(in);
 		}
 
 		void ddOutputSingle::readSCA(std::istream &in)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			readHeader(in);
+			readStatTable(in);
+			readMueller(in);
 		}
 
-		void ddOutputSingle::readAVG(std::istream &in)
+		void ddOutputSingle::readHeader(std::istream &in, const std::string &sstop)
 		{
 			using namespace std;
 			std::string lin;
 			bool headerDone = false;
+			size_t line = 0;
 			while (!headerDone)
 			{
 				std::getline(in,lin);
-				if (lin.compare("Qext") != string::npos)
+				line++;
+				if (lin.find(sstop) != string::npos)
 				{
 					headerDone = true;
+					//cerr << "Header done on line " << line << endl;
 					break;
 				}
 				string key;
 				ddOutputSingleObj::findMap(lin,key);
 				if (key == "")
 				{
+					if (lin == "") continue;
 					cerr << "Unknown line: " << lin << endl;
 					continue;
 				}
@@ -355,9 +371,12 @@ namespace rtmath {
 				obj->read(ii);
 				_objMap[key] = obj;
 			}
+		}
 
+		void ddOutputSingle::readAVG(std::istream &in)
+		{
+			readHeader(in);
 			readStatTable(in);
-			// Do Mueller matrix read
 			readMueller(in);
 		}
 
@@ -368,19 +387,19 @@ namespace rtmath {
 			out << " JO=1: ";
 			out.width(11);
 			for (size_t i=0; i< (size_t) QEXT2; i++)
-				out << _statTable[i];
+				out << "\t" << _statTable[i];
 			out << endl;
 			out.width(0);
 			out << " JO=2: ";
 			out.width(11);
 			for (size_t i=(size_t) QEXT2; i< (size_t) QEXTM; i++)
-				out << _statTable[i];
+				out << "\t" << _statTable[i] ;
 			out << endl;
 			out.width(0);
 			out << " mean: ";
 			out.width(11);
 			for (size_t i=(size_t) QEXTM; i< (size_t) QPOL; i++)
-				out << _statTable[i];
+				out << "\t" << _statTable[i];
 			out << endl;
 			out.width(0);
 			out << " Qpol= " << _statTable[(size_t) QPOL] << 
@@ -389,22 +408,22 @@ namespace rtmath {
 			out.width(11);
 			out << _statTable[(size_t) DQPHA] << endl;
 
-			out << "         Qsca*g(1)   Qsca*g(2)   Qsca*g(3)   iter  mxiter  Nsca";
+			out << "         Qsca*g(1)   Qsca*g(2)   Qsca*g(3)   iter  mxiter  Nsca\n";
 			out << " JO=1: ";
 			out.width(11);
 			for (size_t i=(size_t) QSCAG11; i< (size_t) QSCAG12; i++)
-				out << _statTable[i];
+				out << "\t" << _statTable[i];
 			out << endl;
 			out.width(0);
 			out << " JO=2: ";
 			out.width(11);
 			for (size_t i=(size_t) QSCAG12; i< (size_t) QSCAG1M; i++)
-				out << _statTable[i];
+				out << "\t" << _statTable[i];
 			out << endl;
 			out.width(0);
 			out << " mean: ";
 			for (size_t i=(size_t) QSCAG1M; i< (size_t) NUM_STAT_ENTRIES; i++)
-				out << _statTable[i];
+				out << "\t" << _statTable[i];
 			out << endl;
 			out.width(0);
 		}
@@ -457,26 +476,34 @@ namespace rtmath {
 			writeStatTable(out);
 
 			// Write the P matrix
+			writeMueller(out);
+		}
+
+		void ddOutputSingle::writeMueller(std::ostream &out) const
+		{
+			using namespace std;
 			out << "            Mueller matrix elements for selected scattering directions in Lab Frame" << endl;
-			out << " theta    phi    Pol.    S_11        S_12        S_21       S_22       S_31       S_41";
+			out << " theta    phi    Pol.    S_11        S_12        S_21       S_22       S_31       S_41\n";
 			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
 			{
 				boost::shared_ptr<const ddscat::ddScattMatrix> sf(it->second);
 				out << endl;
 				out.width(6);
-				out << it->first.get(0);
-				out << it->first.get(1);
+				// Coords are: freq, phi, theta
+				out << it->first.get(2) << "\t";
+				out << it->first.get(1) << "\t";
 				out.width(9);
-				out << sf->pol();
+				out << sf->pol() << "\t";
 				out.width(12);
 				matrixop p = sf->mueller();
-				out << p.get(2,0,0);
-				out << p.get(2,0,1);
-				out << p.get(2,1,0);
-				out << p.get(2,1,1);
-				out << p.get(2,2,0);
+				out << p.get(2,0,0) << "\t";
+				out << p.get(2,0,1) << "\t";
+				out << p.get(2,1,0) << "\t";
+				out << p.get(2,1,1) << "\t";
+				out << p.get(2,2,0) << "\t";
 				out << p.get(2,3,0);
 			}
+
 		}
 
 		void ddOutputSingle::writeSCA(std::ostream &out) const
@@ -529,26 +556,7 @@ namespace rtmath {
 			writeStatTable(out);
 
 			// Write the P matrix
-			out << "            Mueller matrix elements for selected scattering directions in Lab Frame" << endl;
-			out << " theta    phi    Pol.    S_11        S_12        S_21       S_22       S_31       S_41";
-			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
-			{
-				boost::shared_ptr<const ddscat::ddScattMatrix> sf(it->second);
-				out << endl;
-				out.width(6);
-				out << it->first.get(0);
-				out << it->first.get(1);
-				out.width(9);
-				out << sf->pol();
-				out.width(12);
-				matrixop p = sf->mueller();
-				out << p.get(2,0,0);
-				out << p.get(2,0,1);
-				out << p.get(2,1,0);
-				out << p.get(2,1,1);
-				out << p.get(2,2,0);
-				out << p.get(2,3,0);
-			}
+			writeMueller(out);
 		}
 
 		void ddOutputSingle::writeFML(std::ostream &out) const
@@ -591,6 +599,12 @@ namespace rtmath {
 			out << endl;
 
 			// Write the f matrix
+			writeS(out);
+		}
+
+		void ddOutputSingle::writeS(std::ostream &out) const
+		{
+			using namespace std;
 			out << " theta   phi  Re(f_11)   Im(f_11)   Re(f_21)   Im(f_21)   Re(f_12)   Im(f_12)   Re(f_22)   Im(f_22)";
 			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
 			{
@@ -599,24 +613,26 @@ namespace rtmath {
 					boost::shared_dynamic_cast<const ddscat::ddScattMatrixF>(it->second));
 				out << endl;
 				out.width(6);
-				out << it->first.get(0);
-				out << it->first.get(1);
+				// it->first crds ordering is freq, phi, theta
+				out << it->first.get(2) << "\t";
+				out << it->first.get(1) << "\t";
 				out.width(11);
 				matrixop f = sf->getF();
-				out << f.get(2,0,0);
-				out << f.get(2,0,1);
-				out << f.get(2,1,0);
-				out << f.get(2,1,1);
-				out << f.get(2,0,2);
-				out << f.get(2,0,3);
-				out << f.get(2,1,2);
+				out << f.get(2,0,0) << "\t";
+				out << f.get(2,0,1) << "\t";
+				out << f.get(2,1,0) << "\t";
+				out << f.get(2,1,1) << "\t";
+				out << f.get(2,0,2) << "\t";
+				out << f.get(2,0,3) << "\t";
+				out << f.get(2,1,2) << "\t";
 				out << f.get(2,1,3);
 			}
 		}
 
-		ddOutputSingle::ddOutputSingle()
+		ddOutputSingle::ddOutputSingle(const std::string &infile)
 		{
 			_init();
+			if (infile.size()) readFile(infile);
 		}
 
 		void ddOutputSingle::_init()
@@ -627,6 +643,7 @@ namespace rtmath {
 			_phi = 0;
 			_wave = 0;
 			_aeff = 0;
+			_statTable.resize(NUM_STAT_ENTRIES);
 		}
 		
 		ddOutputSingle::~ddOutputSingle()

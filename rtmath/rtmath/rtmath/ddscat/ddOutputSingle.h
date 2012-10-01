@@ -27,7 +27,7 @@ namespace rtmath {
 			// Doesn't quite inherit from daStatic.
 			// Note: ensemble providers inherit from this!
 		public:
-			ddOutputSingle(); //
+			ddOutputSingle(const std::string &filename = ""); //
 			virtual ~ddOutputSingle(); //
 
 			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
@@ -37,11 +37,14 @@ namespace rtmath {
 			void writeFML(std::ostream &out) const;
 			void writeSCA(std::ostream &out) const;
 			void writeAVG(std::ostream &out) const;
+			void writeMueller(std::ostream &out) const;
+			void writeS(std::ostream &out) const;
 			void writeStatTable(std::ostream &out) const;
 
 			void readFML(std::istream &in); //
 			void readSCA(std::istream &in); //
 			void readAVG(std::istream &in);
+			void readHeader(std::istream &in, const std::string &sstop = "Qext");
 			void readStatTable(std::istream &in);
 			void readMueller(std::istream &in);
 			void readS(std::istream &in);

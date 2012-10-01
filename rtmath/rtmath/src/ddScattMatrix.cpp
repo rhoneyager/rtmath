@@ -169,16 +169,16 @@ namespace rtmath {
 		void ddScattMatrixF::setF(const std::complex<double> fs[2][2])
 		{
 			_fRe->set(fs[0][0].real(),2,0,0);
-			_fIm->set(fs[0][0].real(),2,0,0);
+			_fIm->set(fs[0][0].imag(),2,0,0);
 
 			_fRe->set(fs[0][1].real(),2,0,1);
-			_fIm->set(fs[0][1].real(),2,0,1);
+			_fIm->set(fs[0][1].imag(),2,0,1);
 
 			_fRe->set(fs[1][0].real(),2,1,0);
-			_fIm->set(fs[1][0].real(),2,1,0);
+			_fIm->set(fs[1][0].imag(),2,1,0);
 
 			_fRe->set(fs[1][1].real(),2,1,1);
-			_fIm->set(fs[1][1].real(),2,1,1);
+			_fIm->set(fs[1][1].imag(),2,1,1);
 		}
 		
 		/* Include this at a higher level
