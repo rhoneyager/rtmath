@@ -31,28 +31,28 @@ namespace rtmath {
 			virtual ~ddOutputSingle(); //
 
 			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
-			void readFile(const std::string &filename); //
-			void writeFile(const std::string &filename) const; //
+			void readFile(const std::string &filename);
+			void writeFile(const std::string &filename) const;
 
-			void writeFML(std::ostream &out) const; // TODO: finish these
-			void writeSCA(std::ostream &out) const; //
-			void writeAVG(std::ostream &out) const; //
-			void writeStatTable(std::ostream &out) const; //
+			void writeFML(std::ostream &out) const;
+			void writeSCA(std::ostream &out) const;
+			void writeAVG(std::ostream &out) const;
+			void writeStatTable(std::ostream &out) const;
 
-			void readFML(std::istream &in);
-			void readSCA(std::istream &in);
+			void readFML(std::istream &in); //
+			void readSCA(std::istream &in); //
 			void readAVG(std::istream &in);
-			void readStatTable(std::istream &in); //
-			void readMueller(std::istream &in); //
+			void readStatTable(std::istream &in);
+			void readMueller(std::istream &in);
 			void readS(std::istream &in);
 
-			size_t version() const; //
-			void version(size_t); //
-			double beta() const; //
-			double theta() const; //
-			double phi() const; //
-			double wave() const; //
-			double aeff() const; //
+			size_t version() const;
+			void version(size_t);
+			double beta() const;
+			double theta() const;
+			double phi() const;
+			double wave() const;
+			double aeff() const;
 
 			bool operator<(const ddOutputSingle &rhs) const; //
 		protected:
