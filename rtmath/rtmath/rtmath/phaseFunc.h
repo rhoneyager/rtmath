@@ -33,8 +33,8 @@ namespace rtmath {
 		//std::function<void(const std::complex<double> Sn[4], double Snn[4][4])> 
 
 
-		void convertFtoS(const std::complex<double> f[2][2], complex<double> Sn[4], double phi, 
-			complex<double> a, complex<double> b, complex<double> c, complex<double> d);
+		void convertFtoS(const std::complex<double> f[2][2], std::complex<double> Sn[4], double phi, 
+			std::complex<double> a, std::complex<double> b, std::complex<double> c, std::complex<double> d);
 	} // end namespace phasefuncs
 
 	class phaseFunc // TODO: rewrite this.

@@ -8,7 +8,7 @@
 #pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
 #pragma warning( disable : 4068 ) // unknown gcc pragmas
 
-#include "../../rtmath/rtmath/ROOTlink.h"
+//#include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/VTKlink.h"
 #include "../../rtmath/rtmath/Garrett/pclstuff.h"
 #include "../../rtmath/rtmath/MagickLINK.h"

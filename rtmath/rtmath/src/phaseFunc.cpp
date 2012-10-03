@@ -1,5 +1,6 @@
 #include "../rtmath/Stdafx.h"
 #include <complex>
+#include <algorithm>
 #include <cmath>
 #include "../rtmath/phaseFunc.h"
 #include "../rtmath/units.h"
@@ -92,8 +93,8 @@ namespace rtmath {
 
 	namespace phaseFuncs
 	{
-		void convertFtoS(const std::complex<double> f[2][2], complex<double> Sn[4], double phi, 
-			complex<double> a, complex<double> b, complex<double> c, complex<double> d)
+		void convertFtoS(const std::complex<double> f[2][2], std::complex<double> Sn[4], double phi, 
+			std::complex<double> a, std::complex<double> b, std::complex<double> c, std::complex<double> d)
 		{
 			using namespace std;
 			typedef complex<double> CD;
@@ -119,7 +120,7 @@ namespace rtmath {
 			using namespace std;
 			string tid = id;
 			// Put in lower case
-			std::tolower(tid);
+			std::transform(tid.begin(),tid.end(),tid.begin(),::tolower);
 
 			if (tid == "bh" || tid == "ddscat")
 				f = muellerBH;

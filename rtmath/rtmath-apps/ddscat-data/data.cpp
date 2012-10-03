@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		if (dispF)
 		{
 			cout << "F matrix:\n";
-			ddFile.writeF(cout);
+			ddfile.writeF(cout);
 			cout << endl;
 		}
 
