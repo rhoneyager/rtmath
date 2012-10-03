@@ -201,6 +201,9 @@ namespace rtmath {
 
 			_calcS();
 			_calcP();
+
+			_pol = sqrt( (pow(_Pnn->get(2,1,0),2) + pow(_Pnn->get(2,2,0),2) + pow(_Pnn->get(2,3,0),2))
+				/ pow(_Pnn->get(2,0,0),2) );
 		}
 		
 		/* Include this at a higher level
