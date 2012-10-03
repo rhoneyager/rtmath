@@ -3,6 +3,8 @@
 #include <cmath>
 #include "../rtmath/phaseFunc.h"
 #include "../rtmath/units.h"
+#include <algorithm>
+#include <boost/math/constants/constants.hpp>
 
 namespace rtmath {
 	/*
@@ -17,20 +19,20 @@ namespace rtmath {
 	/*
 	void phaseFunc::calc(double mu, std::complex<double> &m, double x, matrixop &Pnn)
 	{
-		double Pnnres[4][4];
-		calc(mu,m,x,Pnnres);
-		// Now, convert values to a matrixop class
-		Pnn.clear();
-		Pnn.resize(2,4,4);
-		// Put the appropriate values in the right cells
-		for (unsigned int i=0;i<4;i++)
-		{
-			for (unsigned int j=0;j<4;j++)
-			{
-				Pnn.set(Pnnres[i][j],2,i,j);
-			}
-		}
-		// Well, that was easy!
+	double Pnnres[4][4];
+	calc(mu,m,x,Pnnres);
+	// Now, convert values to a matrixop class
+	Pnn.clear();
+	Pnn.resize(2,4,4);
+	// Put the appropriate values in the right cells
+	for (unsigned int i=0;i<4;i++)
+	{
+	for (unsigned int j=0;j<4;j++)
+	{
+	Pnn.set(Pnnres[i][j],2,i,j);
+	}
+	}
+	// Well, that was easy!
 	}
 	*/
 
@@ -76,63 +78,153 @@ namespace rtmath {
 				if (j == 2 && i == 3) Knn[i][j] = -(Sn[3] - Sn[0]).real();
 			}
 
-		// Go back and multiply by f
-		for (size_t i=0; i<4;i++)
-			for (size_t j=0; j<4; j++)
-				Knn[i][j] *= f;
+			// Go back and multiply by f
+			for (size_t i=0; i<4;i++)
+				for (size_t j=0; j<4; j++)
+					Knn[i][j] *= f;
 	}
 
 	void scattMatrix::_genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4])
 	{
-		// Note, following ddscat conventions, matrix is [[S2, S3][S4,S1]] = [[Sn0, Sn1][Sn2, Sn3]]
-		// It's annoying, but it's how ddscat does it and how the fml loading code provides it.
-		// Now, Sn is the matrix in linear form {S1, S2, S3, S4}, so it should avoid any 
-		// of the subsequent issues with forgetting the index transformations.
+		throw rtmath::debug::xUnimplementedFunction();
+		//phaseFuncs::mueller
+	}
 
-		std::complex<double> scratch;
-		
-		Snn[0][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
-			+ (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
+	namespace phaseFuncs
+	{
+		void convertFtoS(const std::complex<double> f[2][2], complex<double> Sn[4], double phi, 
+			complex<double> a, complex<double> b, complex<double> c, complex<double> d)
+		{
+			using namespace std;
+			typedef complex<double> CD;
+			complex<double> i(0,1);
 
-		Snn[0][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1])) 
-			+ (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3]))).real();
-		
-		scratch = ( (Sn[3] * (conj(Sn[2]))) + (Sn[0] * (conj(Sn[1])) ));
-		Snn[0][2] = -1.0 * scratch.real();
+			double rphi = phi * boost::math::constants::pi<double>() / 180.0;
+			double cp = cos(rphi);
+			double sp = sin(rphi);
+			complex<double> CP(cp,0), SP(sp,0);
+			Sn[0] = -i*((f[0][0]*((a*CP)+(b*SP)))
+				+(f[0][1]*((c*CP)+(d*SP))));
+			Sn[1] = i*((f[0][0]*((b*CP)-(a*SP)))
+				+(f[0][1]*((d*CP)-(c*SP))));
+			Sn[2] = i*((f[1][0]*((a*CP)+(b*SP)))
+				+(f[1][1]*((c*CP)+(d*SP))));
+			Sn[3] = -i*((f[1][0]*((b*CP)-(a*SP)))
+				+(f[1][1]*((d*CP)-(c*SP))));
+		}
 
-		scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[3] * (conj(Sn[2])) ));
-		Snn[0][3] = 1.0 * scratch.imag();
+		void selectMueller(const std::string &id,
+			std::function<void(const std::complex<double> Sn[4], double Snn[4][4])>& f)
+		{
+			using namespace std;
+			string tid = id;
+			// Put in lower case
+			std::tolower(tid);
 
-		Snn[1][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
-			- (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3])) ).real();
+			if (tid == "bh" || tid == "ddscat")
+				f = muellerBH;
+			else if (tid == "tmatrix")
+				f = muellerTMATRIX;
+			else
+				throw rtmath::debug::xBadInput(id.c_str()); // TODO: use another xError? Create a new one?
+		}
 
-		Snn[1][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1]))
-			- (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
+		void muellerBH(const std::complex<double> Sn[4], double Snn[4][4])
+		{
+			std::complex<double> scratch;
 
-		scratch = ( (Sn[3] * (conj(Sn[2]))) - (Sn[0] * (conj(Sn[1])) ));
-		Snn[1][2] = 1.0 * scratch.real();
-		scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[3] * (conj(Sn[2])) ));
-		Snn[1][3] = 1.0 * scratch.imag();
+			Snn[0][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
+				+ (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
 
-		scratch = ( (Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
-		Snn[2][0] = -1.0 * scratch.real();
-		scratch = ( -(Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
-		Snn[2][1] = 1.0 * scratch.real();
+			Snn[0][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1])) 
+				+ (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3]))).real();
 
-		scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[1] * (conj(Sn[2])) ));
-		Snn[2][2] = scratch.real();
-		scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[2] * (conj(Sn[1])) ));
-		Snn[2][3] = -1.0 * scratch.imag();
+			scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[3] * (conj(Sn[2])) ));
+			Snn[0][2] = 1.0 * scratch.real();
 
-		scratch = ( (conj(Sn[0]) * (Sn[2])) + (conj(Sn[1]) * (Sn[3]) ));
-		Snn[3][0] = 1.0 * scratch.imag();
-		scratch = ( (conj(Sn[0]) * (Sn[2])) - (conj(Sn[1]) * (Sn[3]) ));
-		Snn[3][1] = 1.0 * scratch.imag();
+			scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[3] * (conj(Sn[2])) ));
+			Snn[0][3] = 1.0 * scratch.imag();
 
-		scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
-		Snn[3][2] = scratch.imag();
-		scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
-		Snn[3][3] = scratch.real();
+			Snn[1][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
+				- (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3])) ).real();
+
+			Snn[1][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1]))
+				- (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
+
+			scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[3] * (conj(Sn[2])) ));
+			Snn[1][2] = 1.0 * scratch.real();
+			scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[3] * (conj(Sn[2])) ));
+			Snn[1][3] = 1.0 * scratch.imag();
+
+			scratch = ( (Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
+			Snn[2][0] = 1.0 * scratch.real();
+			scratch = ( (Sn[0] * (conj(Sn[2]))) - (Sn[3] * (conj(Sn[1])) ));
+			Snn[2][1] = 1.0 * scratch.real();
+
+			scratch = ( (Sn[3] * (conj(Sn[0]))) + (Sn[1] * (conj(Sn[2])) ));
+			Snn[2][2] = scratch.real();
+			scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[2] * (conj(Sn[1])) ));
+			Snn[2][3] = 1.0 * scratch.imag();
+
+			scratch = ( (conj(Sn[0]) * (Sn[2])) + (conj(Sn[1]) * (Sn[3]) ));
+			Snn[3][0] = 1.0 * scratch.imag();
+			scratch = ( (conj(Sn[0]) * (Sn[2])) - (conj(Sn[1]) * (Sn[3]) ));
+			Snn[3][1] = 1.0 * scratch.imag();
+
+			scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
+			Snn[3][2] = scratch.imag();
+			scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
+			Snn[3][3] = scratch.real();
+		}
+
+		void muellerTMATRIX(const std::complex<double> Sn[4], double Snn[4][4])
+		{
+			std::complex<double> scratch;
+
+			Snn[0][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
+				+ (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
+
+			Snn[0][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1])) 
+				+ (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3]))).real();
+
+			scratch = ( (Sn[3] * (conj(Sn[2]))) + (Sn[0] * (conj(Sn[1])) ));
+			Snn[0][2] = -1.0 * scratch.real();
+
+			scratch = ( (Sn[0] * (conj(Sn[1]))) - (Sn[3] * (conj(Sn[2])) ));
+			Snn[0][3] = 1.0 * scratch.imag();
+
+			Snn[1][0] = 0.5 * ( (Sn[0]*conj(Sn[0])) + (Sn[1]*conj(Sn[1])) 
+				- (Sn[2]*conj(Sn[2])) - (Sn[3]*conj(Sn[3])) ).real();
+
+			Snn[1][1] = 0.5 * ( (Sn[0]*conj(Sn[0])) - (Sn[1]*conj(Sn[1]))
+				- (Sn[2]*conj(Sn[2])) + (Sn[3]*conj(Sn[3])) ).real();
+
+			scratch = ( (Sn[3] * (conj(Sn[2]))) - (Sn[0] * (conj(Sn[1])) ));
+			Snn[1][2] = 1.0 * scratch.real();
+			scratch = ( (Sn[0] * (conj(Sn[1]))) + (Sn[3] * (conj(Sn[2])) ));
+			Snn[1][3] = 1.0 * scratch.imag();
+
+			scratch = ( (Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
+			Snn[2][0] = -1.0 * scratch.real();
+			scratch = ( -(Sn[0] * (conj(Sn[2]))) + (Sn[3] * (conj(Sn[1])) ));
+			Snn[2][1] = 1.0 * scratch.real();
+
+			scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[1] * (conj(Sn[2])) ));
+			Snn[2][2] = scratch.real();
+			scratch = ( (Sn[0] * (conj(Sn[3]))) + (Sn[2] * (conj(Sn[1])) ));
+			Snn[2][3] = -1.0 * scratch.imag();
+
+			scratch = ( (conj(Sn[0]) * (Sn[2])) + (conj(Sn[1]) * (Sn[3]) ));
+			Snn[3][0] = 1.0 * scratch.imag();
+			scratch = ( (conj(Sn[0]) * (Sn[2])) - (conj(Sn[1]) * (Sn[3]) ));
+			Snn[3][1] = 1.0 * scratch.imag();
+
+			scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
+			Snn[3][2] = scratch.imag();
+			scratch = ( (Sn[3] * (conj(Sn[0]))) - (Sn[1] * (conj(Sn[2])) ));
+			Snn[3][3] = scratch.real();
+		}
+
 	}
 
 	void scattMatrix::_invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4])

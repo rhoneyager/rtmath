@@ -1,13 +1,41 @@
 #pragma once
 
+#include <functional>
 #include <complex>
 #include "enums.h"
 #include "error/debug.h"
 #include "matrixop.h"
 #include "da/damatrix.h"
 #include <map>
+#include <string>
 
 namespace rtmath {
+
+	namespace phaseFuncs
+	{
+		// This namespace provides the different type of radiative transfer matrix 
+		// manipulations. This includes several Mueller matrix generation methods and 
+		// the ability to generate an extinction matrix. Eventually, Mueller matrix 
+		// inversion routines will also go here.
+
+		// The following function provides a pointer to the desired phase function 
+		// routine. This is implemented to allow user choice in Mueller method.
+		void selectMueller(const std::string &id,
+			std::function<void(const std::complex<double> Sn[4], double Snn[4][4])>&);
+
+		// Note following conventions: matrix is [[S2, S3][S4,S1]] = [[Sn0, Sn1][Sn2, Sn3]]
+		// Sn is the matrix in linear form {S1, S2, S3, S4}, so it should avoid any 
+		// of the subsequent issues with forgetting the index transformations.
+
+		void muellerBH(const std::complex<double> Sn[4], double Snn[4][4]);
+		void muellerTMATRIX(const std::complex<double> Sn[4], double Snn[4][4]);
+
+		//std::function<void(const std::complex<double> Sn[4], double Snn[4][4])> 
+
+
+		void convertFtoS(const std::complex<double> f[2][2], complex<double> Sn[4], double phi, 
+			complex<double> a, complex<double> b, complex<double> c, complex<double> d);
+	} // end namespace phasefuncs
 
 	class phaseFunc // TODO: rewrite this.
 	{
@@ -42,4 +70,4 @@ namespace rtmath {
 		static void _invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4]);
 	};
 
-}; // end namespace rtmath
+} // end namespace rtmath

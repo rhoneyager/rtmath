@@ -51,11 +51,19 @@ namespace rtmath
 			void setF(const std::complex<double> fs[2][2]);
 			//void setF(std::istream &lss); // Include this higher up
 			matrixop getF() const;
+			matrixop getS() const;
 		//protected:
+			void _calcS() const;
 			void _calcP() const;
-			boost::shared_ptr<matrixop> _fRe, _fIm;
+			//boost::shared_array<std::complex<double> > _f, _s;
+			boost::shared_ptr<matrixop> _fRe, _fIm; // Should store as shared_array
+			boost::shared_ptr<matrixop> _sRe, _sIm;
 			double _freq, _phi;
 		};
+
+		/* class ddScattMatrixS : public ddScattMatrix
+		{
+		}; */
 
 		class ddScattMatrixP : public ddScattMatrix
 		{

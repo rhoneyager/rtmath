@@ -216,7 +216,7 @@ namespace rtmath {
 			_version = nv;
 		}
 
-		void ddOutputSingle::readS(std::istream &in)
+		void ddOutputSingle::readF(std::istream &in)
 		{
 			using namespace std;
 			// The frequency is needed when reading this matrix
@@ -332,7 +332,7 @@ namespace rtmath {
 		{
 			readHeader(in,"Re(f_11)");
 			//readStatTable(in);
-			readS(in);
+			readF(in);
 		}
 
 		void ddOutputSingle::readSCA(std::istream &in)
@@ -599,10 +599,10 @@ namespace rtmath {
 			out << endl;
 
 			// Write the f matrix
-			writeS(out);
+			writeF(out);
 		}
 
-		void ddOutputSingle::writeS(std::ostream &out) const
+		void ddOutputSingle::writeF(std::ostream &out) const
 		{
 			using namespace std;
 			out << " theta   phi  Re(f_11)   Im(f_11)   Re(f_21)   Im(f_21)   Re(f_12)   Im(f_12)   Re(f_22)   Im(f_22)";
@@ -626,6 +626,33 @@ namespace rtmath {
 				out << f.get(2,0,3) << "\t";
 				out << f.get(2,1,2) << "\t";
 				out << f.get(2,1,3);
+			}
+		}
+
+		void ddOutputSingle::writeS(std::ostream &out) const
+		{
+			using namespace std;
+			out << " theta   phi  Re(S_11)   Im(S_11)   Re(S_21)   Im(S_21)   Re(S_12)   Im(S_12)   Re(f_22)   Im(f_22)";
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				if (it->second->id() != F) continue;
+				boost::shared_ptr<const ddscat::ddScattMatrixF> sf(
+					boost::shared_dynamic_cast<const ddscat::ddScattMatrixF>(it->second));
+				out << endl;
+				out.width(6);
+				// it->first crds ordering is freq, phi, theta
+				out << it->first.get(2) << "\t";
+				out << it->first.get(1) << "\t";
+				out.width(11);
+				matrixop s = sf->getS();
+				out << s.get(2,0,0) << "\t";
+				out << s.get(2,0,1) << "\t";
+				out << s.get(2,1,0) << "\t";
+				out << s.get(2,1,1) << "\t";
+				out << s.get(2,0,2) << "\t";
+				out << s.get(2,0,3) << "\t";
+				out << s.get(2,1,2) << "\t";
+				out << s.get(2,1,3);
 			}
 		}
 

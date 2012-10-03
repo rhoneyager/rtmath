@@ -71,6 +71,8 @@ namespace rtmath {
 			_phi = phi;
 			_fRe = boost::shared_ptr<matrixop>(new matrixop(2,2,2));
 			_fIm = boost::shared_ptr<matrixop>(new matrixop(2,2,2));
+			_sRe = boost::shared_ptr<matrixop>(new matrixop(2,2,2));
+			_sIm = boost::shared_ptr<matrixop>(new matrixop(2,2,2));
 		}
 
 		ddScattMatrixF::~ddScattMatrixF()
@@ -118,6 +120,21 @@ namespace rtmath {
 			return *_Pnn;
 		}
 
+		matrixop ddScattMatrixF::getS() const
+		{
+			matrixop res(2,2,4);
+			res.set(_sRe->get(2,0,0),2,0,0);
+			res.set(_sIm->get(2,0,0),2,0,1);
+			res.set(_sRe->get(2,0,1),2,0,2);
+			res.set(_sIm->get(2,0,1),2,0,3);
+			res.set(_sRe->get(2,1,0),2,1,0);
+			res.set(_sIm->get(2,1,0),2,1,1);
+			res.set(_sRe->get(2,1,1),2,1,2);
+			res.set(_sIm->get(2,1,1),2,1,3);
+
+			return res;
+		}
+
 		matrixop ddScattMatrixF::getF() const
 		{
 			matrixop res(2,2,4);
@@ -133,37 +150,39 @@ namespace rtmath {
 			return res;
 		}
 
+		void ddScattMatrixF::_calcS() const
+		{
+			using namespace std;
+			const double PI = boost::math::constants::pi<double>();
+			complex<double> i(0,1);
+			complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
+			complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
+			complex<double> _Sn[4];
+			complex<double> _fs[2][2];
+			complexify(*_fRe,*_fIm,&_fs[0][0]);
+			rtmath::phaseFuncs::convertFtoS(_fs,_Sn,_phi,a,b,c,d);
+
+			_sRe->set(_Sn[0].real(),2,0,0);
+			_sIm->set(_Sn[0].imag(),2,0,0);
+			_sRe->set(_Sn[1].real(),2,0,1);
+			_sIm->set(_Sn[1].imag(),2,0,1);
+			_sRe->set(_Sn[2].real(),2,1,0);
+			_sIm->set(_Sn[2].imag(),2,1,0);
+			_sRe->set(_Sn[3].real(),2,1,1);
+			_sIm->set(_Sn[3].imag(),2,1,1);
+		}
+
 		void ddScattMatrixF::_calcP() const
 		{
 			// Generates Snn and, by extension, Knn and Pnn
-			// TODO: verify Snn, Pnn and Knn
 			using namespace std;
-			const double PI = boost::math::constants::pi<double>();
-
-			//complex<double> S[4];
-			complex<double> i(0,1);
-
-			complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
-			complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
-
 			complex<double> _S[4];
-			complex<double> _vals[2][2];
-			complexify(*_fRe,*_fIm,&_vals[0][0]);
-
-			//double cp = cos(2.0*PI*phi()/180.0);
-			double cp = cos(_phi * PI / 180.0);
-			//double sp = sin(2.0*PI*phi()/180.0);
-			double sp = sin(_phi * PI / 180.0);
-			_S[0] = -i * ( _vals[1][0] * (b * cp - a * sp) + _vals[1][1] * (d * cp - c * sp) );
-			_S[1] = -i * ( _vals[0][0] * (a*cp + b * sp) + _vals[0][1] * (c * cp + d * sp) );
-			_S[2] = i * ( _vals[0][0] * (b * cp - a * sp) + _vals[0][1] * (d * cp - c * sp) );
-			_S[3] = i * ( _vals[1][0] * (a*cp + b * sp) + _vals[1][1] * (c*cp + d * sp) );
+			complexify(*_sRe,*_sIm,&_S[0]);
 			
-			//rtmath::scattMatrix::_genExtinctionMatrix(_Knn, _S, _freq);
 			double Snn[4][4];
-			rtmath::scattMatrix::_genMuellerMatrix(Snn,_S);
+			// TODO: obey user mueller def selection
+			rtmath::phaseFuncs::muellerBH(_S,Snn);
 			_Pnn->fromDoubleArray(&Snn[0][0]);
-			//rtmath::scattMatrix::_genMuellerMatrix(_Pnn,_S);
 		}
 
 		void ddScattMatrixF::setF(const std::complex<double> fs[2][2])
@@ -179,6 +198,9 @@ namespace rtmath {
 
 			_fRe->set(fs[1][1].real(),2,1,1);
 			_fIm->set(fs[1][1].imag(),2,1,1);
+
+			_calcS();
+			_calcP();
 		}
 		
 		/* Include this at a higher level

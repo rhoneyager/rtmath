@@ -161,7 +161,7 @@ namespace rtmath {
 			// thetar, betar, phir are in radians
 			// convert to degrees
 			{
-				double scale = 180.0/(2.0*boost::math::constants::pi<double>());
+				double scale = 180.0/(boost::math::constants::pi<double>());
 				beta = betar * scale;
 				theta = thetar * scale;
 				phi = phir * scale;

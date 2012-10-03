@@ -25,8 +25,11 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<string>(),"specify input file")
 			("output,o", po::value<string>(), "specify output file")
+			//("Mueller-method", po::value<string>()->default_value("bh"),
+			//	"Specify method used to determine Mueller matrix (tmatrix, bh, ddscat). bh and ddscat are equivalent.")
 			("stats", "display file stats")
 			("S", "display complex amplitude matrix")
+			("F", "display F")
 			("Mueller", "display mueller matrix");
 
 		po::positional_options_description p;
@@ -38,14 +41,17 @@ int main(int argc, char** argv)
 			options(desc).positional(p).run(), vm);
 		po::notify(vm);    
 
-		string sInput, sOutput;
+		string sInput, sOutput, sMuellerMethod;
 		if (vm.count("input")) sInput = vm["input"].as<string>();
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
+		//sMuellerMethod = vm["Mueller-method"].as<string>();
 
 		bool dispScat = false;
 		bool dispS = false;
 		bool dispStat = false;
+		bool dispF = false;
 		if (vm.count("Mueller")) dispScat = true;
+		if (vm.count("F")) dispF = true;
 		if (vm.count("S")) dispS = true;
 		if (vm.count("stats")) dispStat = true;
 
@@ -55,6 +61,9 @@ int main(int argc, char** argv)
 		}
 
 		using namespace rtmath::ddscat;
+		//std::function<void(const std::complex<double> Sn[4], double Snn[4][4])>
+		//	mMeth;
+		//rtmath::phaseFuncs::selectMueller(sMuellerMethod, mMeth);
 		ddOutputSingle ddfile(sInput);
 
 		if (dispStat)
@@ -64,16 +73,23 @@ int main(int argc, char** argv)
 			cout << endl;
 		}
 
+		if (dispF)
+		{
+			cout << "F matrix:\n";
+			ddFile.writeF(cout);
+			cout << endl;
+		}
+
 		if (dispS)
 		{
-			cout << "Complex amplitude matrix:\n";
+			cout << "S matrix:\n";
 			ddfile.writeS(cout);
 			cout << endl;
 		}
 
 		if (dispScat)
 		{
-			cout << "Scattering information:\n";
+			cout << "Mueller matrix:\n";
 			ddfile.writeMueller(cout);
 			cout << endl;
 		}
