@@ -248,7 +248,9 @@
     </ClCompile>
     <ClCompile Include="src\absorb.cpp" />
     <ClCompile Include="src\absorber.cpp" />
-    <ClCompile Include="src\atmos.cpp" />
+    <ClCompile Include="src\atmos.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\atmoslayer.cpp" />
     <ClCompile Include="src\bhmie.cpp" />
     <ClCompile Include="src\chebyshev.cpp" />

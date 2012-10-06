@@ -6,8 +6,8 @@
 #include <boost/filesystem.hpp>
 #include <memory>
 
-#include "../rtmath/rtmath.h"
-
+#include "../rtmath/error/error.h"
+#include "../rtmath/config.h"
 
 BOOST_AUTO_TEST_SUITE(test_config);
 

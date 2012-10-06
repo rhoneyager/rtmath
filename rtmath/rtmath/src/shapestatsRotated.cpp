@@ -7,13 +7,22 @@
 namespace rtmath {
 	namespace ddscat {
 
-		void shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi)
+		boost::shared_ptr<const shapeFileStatsRotated> shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi)
 		{
-			shapeFileStatsRotated res;
+			boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
+			shapeFileStatsRotated &res = *pres;
+
 			res.beta = beta;
 			res.theta = theta;
 			res.phi = phi;
-			if (rotations.count(res)) return; // Already calculated
+			// Please note that the set rotations has a special comparator to allow for 
+			// rotational ordering intrusive to a shared pointer, which allows for the 
+			// avoidance of a map.
+			if (rotations.count(pres)) // Already calculated
+			{
+				auto it = rotations.find(pres);
+				return *it;
+			}
 
 			const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
 			double cb = cos(beta*drconv);
@@ -263,7 +272,10 @@ namespace rtmath {
 			}
 
 			// Use std move to insert into set
-			rotations.insert(std::move(res));
+			//boost::shared_ptr<const shapeFileStatsRotated> cpres
+			//	= boost::const_pointer_cast<
+			rotations.insert(pres);
+			return pres;
 		}
 
 
@@ -271,7 +283,7 @@ namespace rtmath {
 			: min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1),
 			abs_min(2,3,1), abs_max(2,3,1), abs_mean(2,3,1),
 			as_abs(2,3,3), as_abs_mean(2,3,3), as_rms(2,3,3),
-			rms_mean(2,3,1)
+			rms_mean(2,3,1), areas(2,3,1)
 		{
 			this->beta = 0;
 			this->theta = 0;

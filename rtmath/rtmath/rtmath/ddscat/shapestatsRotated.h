@@ -37,6 +37,9 @@ namespace rtmath {
 
 			// Aspect ratios
 			matrixop as_abs, as_abs_mean, as_rms;
+
+			// Cross-sectional areas
+			matrixop areas;
 		};
 	}
 }

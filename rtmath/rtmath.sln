@@ -92,16 +92,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{0BFA2064-F
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-cpp", "deps\tmatrix\VS\tmatrix-cpp\tmatrix-cpp.vcxproj", "{BC75D21E-9E1F-44AD-90A8-16F6A33881E6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{324DFE54-E001-4744-8D83-11720AA99B89} = {324DFE54-E001-4744-8D83-11720AA99B89}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-test", "deps\tmatrix\VS\tmatrix-test\tmatrix-test.vcxproj", "{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{324DFE54-E001-4744-8D83-11720AA99B89} = {324DFE54-E001-4744-8D83-11720AA99B89}
-	EndProjectSection
-EndProject
-Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "tmatrix-fortran", "deps\tmatrix\VS\tmatrix-fortran\tmatrix-fortran.vfproj", "{324DFE54-E001-4744-8D83-11720AA99B89}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{A931F910-0C6A-4A82-BBF3-2993E17A2AB5}"
 EndProject
@@ -110,8 +102,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-batch-runs", "deps\tmatrix\VS\tmatrix-batch-runs\tmatrix-batch-runs.vcxproj", "{C7A5C734-E439-45BA-9E0F-A37D447A720E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tmatrix-convert-from-ddscat", "rtmath-apps\tmatrix-convert-from-ddscat\tmatrix-convert-from-ddscat.vcxproj", "{37F86021-1382-4F1A-A7A3-EC142C7C753F}"
-EndProject
-Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "tmatrix-fortran-dll", "deps\tmatrix\VS\tmatrix-fortran-dll\tmatrix-fortran-dll.vfproj", "{5BF35485-A5DD-4859-9948-F73799E4CFAF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddscat-ddpar", "rtmath-apps\ddscat-ddpar\ddscat-ddpar.vcxproj", "{FD94C6F5-D9E0-4D4B-87D0-9828366B60F1}"
 EndProject
@@ -239,10 +229,6 @@ Global
 		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Debug|Win32.Build.0 = Debug|Win32
 		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Release|Win32.ActiveCfg = Release|Win32
 		{3CB68DFF-76B0-41C5-9E45-2DE50505F89F}.Release|Win32.Build.0 = Release|Win32
-		{324DFE54-E001-4744-8D83-11720AA99B89}.Debug|Win32.ActiveCfg = Debug|Win32
-		{324DFE54-E001-4744-8D83-11720AA99B89}.Debug|Win32.Build.0 = Debug|Win32
-		{324DFE54-E001-4744-8D83-11720AA99B89}.Release|Win32.ActiveCfg = Release|Win32
-		{324DFE54-E001-4744-8D83-11720AA99B89}.Release|Win32.Build.0 = Release|Win32
 		{C7A5C734-E439-45BA-9E0F-A37D447A720E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C7A5C734-E439-45BA-9E0F-A37D447A720E}.Debug|Win32.Build.0 = Debug|Win32
 		{C7A5C734-E439-45BA-9E0F-A37D447A720E}.Release|Win32.ActiveCfg = Release|Win32
@@ -251,10 +237,6 @@ Global
 		{37F86021-1382-4F1A-A7A3-EC142C7C753F}.Debug|Win32.Build.0 = Debug|Win32
 		{37F86021-1382-4F1A-A7A3-EC142C7C753F}.Release|Win32.ActiveCfg = Release|Win32
 		{37F86021-1382-4F1A-A7A3-EC142C7C753F}.Release|Win32.Build.0 = Release|Win32
-		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Debug|Win32.Build.0 = Debug|Win32
-		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Release|Win32.ActiveCfg = Release|Win32
-		{5BF35485-A5DD-4859-9948-F73799E4CFAF}.Release|Win32.Build.0 = Release|Win32
 		{FD94C6F5-D9E0-4D4B-87D0-9828366B60F1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FD94C6F5-D9E0-4D4B-87D0-9828366B60F1}.Debug|Win32.Build.0 = Debug|Win32
 		{FD94C6F5-D9E0-4D4B-87D0-9828366B60F1}.Release|Win32.ActiveCfg = Release|Win32

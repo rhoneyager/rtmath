@@ -3,7 +3,11 @@
 #include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>
-
+#pragma warning(push)
+#pragma warning( disable : 4521 )
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#pragma warning(pop)
 #include "../matrixop.h"
 
 //#include "shapefile.h"
@@ -27,12 +31,14 @@ namespace rtmath
 	namespace ddscat
 	{
 
+		void writeVTKpoints(const std::string &filename, const pcl::PointCloud<pcl::PointXYZ> &src);
 		void writeVTKpoints(const std::string &filename, const std::vector<matrixop> &src);
 
 		class hull
 		{
 		public:
 			hull(const std::vector<matrixop> &backend);
+			hull(const pcl::PointCloud<pcl::PointXYZ> &backend);
 			virtual ~hull();
 			void writeVTKhull(const std::string &filename) const;
 			double volume() const;
@@ -40,9 +46,9 @@ namespace rtmath
 			bool hull_enabled;
 		public:
 			hull();
-			std::vector<matrixop> _points;
+			pcl::PointCloud<pcl::PointXYZ> _points;
 			std::vector< pcl::Vertices > _polygons;
-			mutable std::vector<matrixop> _hullPts;
+			mutable pcl::PointCloud<pcl::PointXYZ> _hullPts;
 			double _volume, _surfarea;
 		};
 
@@ -50,6 +56,7 @@ namespace rtmath
 		{
 		public:
 			convexHull(const std::vector<matrixop>&);
+			convexHull(const pcl::PointCloud<pcl::PointXYZ>&);
 			virtual ~convexHull();
 			void constructHull();
 			double maxDiameter() const;
@@ -59,6 +66,7 @@ namespace rtmath
 		{
 		public:
 			concaveHull(const std::vector<matrixop>&);
+			concaveHull(const pcl::PointCloud<pcl::PointXYZ>&);
 			virtual ~concaveHull();
 			void constructHull(double alpha);
 		private:

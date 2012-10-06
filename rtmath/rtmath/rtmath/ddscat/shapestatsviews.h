@@ -39,8 +39,8 @@ namespace rtmath {
 		class shapeFileStatsRotatedView : public shapeFileStatsRotated
 		{
 		public:
-			shapeFileStatsRotatedView(const shapeFileStatsRotated &base, double dSpacing)
-				: _baser(base), _d(dSpacing) {_base = &_baser;}
+			shapeFileStatsRotatedView(const boost::shared_ptr<const shapeFileStatsRotated> &base, double dSpacing)
+				: _base(base), _d(dSpacing) {}
 			double getScale() const {return _d; }
 			void setScale(double d) {_d = d;}
 			void setMasses(const std::vector<double> &m) { _masses = m; }
@@ -79,8 +79,7 @@ namespace rtmath {
 
 		private:
 			double _d;
-			const shapeFileStatsRotated &_baser;
-			const shapeFileStatsRotated *_base;
+			const boost::shared_ptr<const shapeFileStatsRotated> _base;
 			std::vector<double> _masses, _densities;
 		};
 

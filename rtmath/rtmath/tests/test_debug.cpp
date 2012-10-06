@@ -4,7 +4,8 @@
 #include <boost/test/unit_test.hpp>
 
 //#define _DEBUG
-#include "../rtmath/rtmath.h"
+#include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK
 

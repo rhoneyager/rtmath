@@ -30,6 +30,11 @@ namespace boost
 
 namespace rtmath {
 	namespace ddscat {
+		struct rotComp
+		{
+			bool operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
+				const boost::shared_ptr<const shapeFileStatsRotated> &rhs);
+		};
 
 		class shapeFileStatsBase
 		{
@@ -43,7 +48,7 @@ namespace rtmath {
 			//void setRot(double beta, double theta, double phi);
 			void calcStatsBase();
 			// calcStatsRot calculates the stats RELATIVE to the shapefile default rot.
-			void calcStatsRot(double beta, double theta, double phi);
+			boost::shared_ptr<const shapeFileStatsRotated> calcStatsRot(double beta, double theta, double phi);
 
 			// rot is the effective rotation designated by the choice of a1 and a2
 			matrixop rot, invrot;
@@ -84,7 +89,7 @@ namespace rtmath {
 			// Before normalization and rotation
 			matrixop b_min, b_max, b_mean;
 
-			std::set<shapeFileStatsRotated> rotations;
+			std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
 
 			// The object
 			boost::shared_ptr<shapefile> _shp;

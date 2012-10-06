@@ -7,7 +7,8 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include "../rtmath/rtmath.h"
+#include "../rtmath/quadrature.h"
+#include "../rtmath/error/error.h"
 
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK

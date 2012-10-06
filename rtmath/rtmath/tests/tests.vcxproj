@@ -48,7 +48,7 @@
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4800</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -70,7 +70,9 @@
   <ItemGroup>
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="test.cpp" />
-    <ClCompile Include="test_atmos.cpp" />
+    <ClCompile Include="test_atmos.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="test_config.cpp" />
     <ClCompile Include="test_damatrix.cpp" />
     <ClCompile Include="test_ddpar.cpp" />
@@ -85,6 +87,7 @@
     <ClCompile Include="test_recPolys.cpp" />
     <ClCompile Include="test_serialization.cpp" />
     <ClCompile Include="test_shapefile.cpp" />
+    <ClCompile Include="test_shapestats.cpp" />
     <ClCompile Include="test_units.cpp" />
   </ItemGroup>
   <ItemGroup>

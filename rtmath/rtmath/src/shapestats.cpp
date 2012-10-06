@@ -1,11 +1,11 @@
 #include "../rtmath/Stdafx.h"
 
 #include "../rtmath/matrixop.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h"
+#include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 
 namespace {
 	bool _doQhull = true;
@@ -15,6 +15,15 @@ namespace rtmath {
 	namespace ddscat {
 
 		const unsigned int shapeFileStatsBase::_maxVersion = 0;
+
+		bool rotComp::operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
+			const boost::shared_ptr<const shapeFileStatsRotated> &rhs)
+		{
+			if (lhs->beta != rhs->beta) return lhs->beta < rhs->beta;
+			if (lhs->theta != rhs->theta) return lhs->theta < rhs->theta;
+			if (lhs->phi != rhs->phi) return lhs->phi < rhs->phi;
+			return false;
+		}
 
 		shapeFileStats::shapeFileStats(const shapefile &shp)
 		{
@@ -249,21 +258,20 @@ namespace rtmath {
 
 
 			// Calculate rotated stats to avoid having to duplicate code
-			calcStatsRot(0,0,0);
 			// From the 0,0,0 rotation,
 			{
 				// At beginning by default, as it is the only entry at this point!
-				const shapeFileStatsRotated &dr = *(this->rotations.begin());
+				auto pdr = calcStatsRot(0,0,0);
 				V_ellipsoid_max = boost::math::constants::pi<double>() / 6.0;
 				// Using diameters, and factor in prev line reflects this
-				V_ellipsoid_max *= dr.max.get(2,0,0) - dr.min.get(2,0,0);
-				V_ellipsoid_max *= dr.max.get(2,1,0) - dr.min.get(2,1,0);
-				V_ellipsoid_max *= dr.max.get(2,2,0) - dr.min.get(2,2,0);
+				V_ellipsoid_max *= pdr->max.get(2,0,0) - pdr->min.get(2,0,0);
+				V_ellipsoid_max *= pdr->max.get(2,1,0) - pdr->min.get(2,1,0);
+				V_ellipsoid_max *= pdr->max.get(2,2,0) - pdr->min.get(2,2,0);
 
 				V_ellipsoid_rms = 4.0 * boost::math::constants::pi<double>() / 3.0;
-				V_ellipsoid_rms *= dr.rms_mean.get(2,0,0);
-				V_ellipsoid_rms *= dr.rms_mean.get(2,1,0);
-				V_ellipsoid_rms *= dr.rms_mean.get(2,2,0);
+				V_ellipsoid_rms *= pdr->rms_mean.get(2,0,0);
+				V_ellipsoid_rms *= pdr->rms_mean.get(2,1,0);
+				V_ellipsoid_rms *= pdr->rms_mean.get(2,2,0);
 
 				aeff_ellipsoid_max = pow(3.0 * V_ellipsoid_max / (4.0 * boost::math::constants::pi<double>()),1./3.);
 				aeff_ellipsoid_rms = pow(3.0 * V_ellipsoid_rms / (4.0 * boost::math::constants::pi<double>()),1./3.);

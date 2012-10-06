@@ -9,7 +9,9 @@
 #include <set>
 
 #include "globals.h"
-#include "../rtmath/rtmath.h"
+#include "../rtmath/error/error.h"
+#include "../rtmath/config.h"
+#include "../rtmath/ddscat/ddpar.h"
 
 globals::globals()
 	: cRoot(nullptr)

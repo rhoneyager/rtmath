@@ -8,14 +8,15 @@
 #include <memory>
 #include <set>
 
+#include "../rtmath/PCLlink.h"
+#include "../rtmath/ddscat/hulls.h"
+#include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Serialization/shapestats_serialization.h"
 #include "../rtmath/serialization.h"
 #include "../rtmath/units.h"
-#include "../rtmath/error/error.h"
 
-#include "../rtmath/ddscat/hulls.h"
-#include "../rtmath/PCLlink.h"
+
 
 BOOST_AUTO_TEST_SUITE(test_shapefile);
 using namespace rtmath;

@@ -36,10 +36,11 @@ namespace boost
 			ar & boost::serialization::make_nvp("as_abs", g.as_abs);
 			ar & boost::serialization::make_nvp("as_abs_mean", g.as_abs_mean);
 			ar & boost::serialization::make_nvp("as_rms", g.as_rms);
+			ar & boost::serialization::make_nvp("areas", g.areas);
 		}
 
 		EXPORT(serialize,rtmath::ddscat::shapeFileStatsRotated);
 	}
 }
 
-//BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsRotated, 0)
+//BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsRotated, 1)
