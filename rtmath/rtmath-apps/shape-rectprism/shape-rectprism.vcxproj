@@ -11,13 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C6105613-011F-4CD5-9013-28DBF945C2E4}</ProjectGuid>
-    <RootNamespace>tests</RootNamespace>
-    <ProjectName>rtmath-tests</ProjectName>
-    <SccProjectName>Svn</SccProjectName>
-    <SccAuxPath>Svn</SccAuxPath>
-    <SccLocalPath>Svn</SccLocalPath>
-    <SccProvider>SubversionScc</SccProvider>
+    <ProjectGuid>{ADB61531-82AA-494A-933B-F0E83305AEFF}</ProjectGuid>
+    <RootNamespace>shaperectprism</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -46,9 +41,6 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
-      <DisableSpecificWarnings>4996;4800</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -68,47 +60,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="globals.cpp" />
-    <ClCompile Include="test.cpp" />
-    <ClCompile Include="test_atmos.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="test_config.cpp" />
-    <ClCompile Include="test_damatrix.cpp" />
-    <ClCompile Include="test_ddpar.cpp" />
-    <ClCompile Include="test_ddparGenerator.cpp" />
-    <ClCompile Include="test_ddscat.cpp" />
-    <ClCompile Include="test_ddweights.cpp" />
-    <ClCompile Include="test_debug.cpp" />
-    <ClCompile Include="test_lbl.cpp" />
-    <ClCompile Include="test_matrixop.cpp" />
-    <ClCompile Include="test_polynomial.cpp" />
-    <ClCompile Include="test_quadrature.cpp" />
-    <ClCompile Include="test_recPolys.cpp" />
-    <ClCompile Include="test_serialization.cpp" />
-    <ClCompile Include="test_shapefile.cpp" />
-    <ClCompile Include="test_shapestats.cpp" />
-    <ClCompile Include="test_units.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\2mm12shape.txt" />
-    <None Include="data\ddscat-snow-18-3-7.shp" />
-    <None Include="data\ddscat.par" />
-    <None Include="data\miniflake.shp" />
-    <None Include="data\miniflakehole2d.shp" />
-    <None Include="data\miniflakehole3d.shp" />
-    <None Include="data\miniflakehole3db.shp" />
-    <None Include="data\miniflakehole3dc.shp" />
-    <None Include="data\rtmath.conf" />
-    <None Include="data\testing.conf" />
+    <None Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\rtmath.vcxproj">
+    <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="globals.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

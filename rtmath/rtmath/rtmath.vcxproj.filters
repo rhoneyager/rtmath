@@ -450,6 +450,12 @@
     <ClInclude Include="rtmath\ddscat\muellerRelations.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
+    <ClInclude Include="rtmath\ddscat\crossSection.h">
+      <Filter>Header Files\ddscat</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmath\denseMatrix.h">
+      <Filter>Header Files\General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmath\error\debug_subversion.h.template">
@@ -806,6 +812,12 @@
     </ClCompile>
     <ClCompile Include="src\muellerRelations.cpp">
       <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crossSection.cpp">
+      <Filter>Source Files\ddscat</Filter>
+    </ClCompile>
+    <ClCompile Include="src\denseMatrix.cpp">
+      <Filter>Source Files\General</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

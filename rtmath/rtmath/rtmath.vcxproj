@@ -97,11 +97,13 @@
     <ClInclude Include="rtmath\common_templates.h" />
     <ClInclude Include="rtmath\config.h" />
     <ClInclude Include="rtmath\coords.h" />
+    <ClInclude Include="rtmath\ddscat\crossSection.h" />
     <ClInclude Include="rtmath\ddscat\ddavg.h" />
     <ClInclude Include="rtmath\ddscat\muellerRelations.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsRotated.h" />
     <ClInclude Include="rtmath\ddscat\shapestatsviews.h" />
     <ClInclude Include="rtmath\ddscat\tmData.h" />
+    <ClInclude Include="rtmath\denseMatrix.h" />
     <ClInclude Include="rtmath\density.h" />
     <ClInclude Include="rtmath\Garrett\image.h" />
     <ClInclude Include="rtmath\Garrett\mesh.h" />
@@ -258,6 +260,7 @@
     <ClCompile Include="src\common_templates_serialization.cpp" />
     <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\coords.cpp" />
+    <ClCompile Include="src\crossSection.cpp" />
     <ClCompile Include="src\daDiagonalMatrix.cpp" />
     <ClCompile Include="src\daInitLayer.cpp" />
     <ClCompile Include="src\daLayer.cpp" />
@@ -292,6 +295,7 @@
     <ClCompile Include="src\ddweights.cpp" />
     <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\debug_mem.cpp" />
+    <ClCompile Include="src\denseMatrix.cpp" />
     <ClCompile Include="src\density.cpp" />
     <ClCompile Include="src\depGraph.cpp" />
     <ClCompile Include="src\emd.cpp" />

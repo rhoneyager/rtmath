@@ -126,6 +126,7 @@ set (general-src
 	src/command.cpp
 	src/config.cpp
 	src/coords.cpp
+	src/denseMatrix.cpp
 	src/density.cpp
 	src/depGraph.cpp
 	src/emd.cpp
@@ -151,6 +152,7 @@ set (general-hdr
 	rtmath/config.h
 	rtmath/coords.h
 	rtmath/defs.h
+	rtmath/denseMatrix.h
 	rtmath/density.h
 	rtmath/depGraph.h
 	rtmath/emd.h

@@ -95,6 +95,18 @@
     <None Include="data\miniflake.shp">
       <Filter>Resource Files\Data</Filter>
     </None>
+    <None Include="data\miniflakehole2d.shp">
+      <Filter>Resource Files\Data</Filter>
+    </None>
+    <None Include="data\miniflakehole3d.shp">
+      <Filter>Resource Files\Data</Filter>
+    </None>
+    <None Include="data\miniflakehole3db.shp">
+      <Filter>Resource Files\Data</Filter>
+    </None>
+    <None Include="data\miniflakehole3dc.shp">
+      <Filter>Resource Files\Data</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="globals.h">

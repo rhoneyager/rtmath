@@ -20,6 +20,7 @@ add_subdirectory (rtmath-version)
 add_subdirectory (sector)
 add_subdirectory (shape)
 add_subdirectory (shape-basicdata)
+add_subdirectory (shape-rectprism)
 #add_subdirectory (transmittance)
 #add_subdirectory (uuid)
 

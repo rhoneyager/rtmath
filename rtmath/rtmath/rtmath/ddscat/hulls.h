@@ -10,8 +10,6 @@
 #pragma warning(pop)
 #include "../matrixop.h"
 
-//#include "shapefile.h"
-
 /* This contains the necessary functions for computing convex and concave hulls, 
  * both for writeout and for shapefile determinations */
 

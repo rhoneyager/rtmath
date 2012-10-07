@@ -136,7 +136,7 @@ namespace rtmath
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 			const size_t N = _points.size();
-			cloud->reserve(N);
+			cloud->resize(N);
 			std::copy(_points.begin(),_points.end(),cloud->begin());
 
 			pcl::ConvexHull<pcl::PointXYZ> chull;
@@ -191,7 +191,7 @@ namespace rtmath
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 			const size_t N = _points.size();
-			cloud->reserve(N);
+			cloud->resize(N);
 			std::copy(_points.begin(),_points.end(),cloud->begin());
 
 			pcl::ConcaveHull<pcl::PointXYZ> chull;
