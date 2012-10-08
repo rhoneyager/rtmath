@@ -21,6 +21,8 @@
 
 #include <boost/program_options.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/math/constants/constants.hpp>
+#include <boost/math/special_functions/round.hpp>
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/matrixop.h"
@@ -83,13 +85,13 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 						{
 							cerr << "Error\n";
 						}
-						dm.set(x-mins[0],y-mins[1],z-mins[2],true);
+						//dm.set(x-mins[0],y-mins[1],z-mins[2],true);
 					}
 				}
 			}
 		}
 	}
-	/*
+	
 	double nx = n[0] * boost::math::constants::pi<double>() / 180.0;
 	double ny = n[1] * boost::math::constants::pi<double>() / 180.0;
 	double nz = n[2] * boost::math::constants::pi<double>() / 180.0;
@@ -116,11 +118,11 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 		for (size_t i = 0; i< sV; i += 3)
 		{
 			auto res = Rinv * v.segment(i,3).matrix();
-			cout << res << endl;
+			//cout << res << endl;
 			// Take the translated point and store in dm
-			size_t sx = (size_t) (res(0,0) - mins[0]+1);
-			size_t sy = (size_t) (res(1,0) - mins[1]+1);
-			size_t sz = (size_t) (res(2,0) - mins[2]+1);
+			size_t sx = (size_t) boost::math::round(res(0,0) + c[0] - mins[0]);
+			size_t sy = (size_t) boost::math::round(res(1,0) + c[1] - mins[1]);
+			size_t sz = (size_t) boost::math::round(res(2,0) + c[2] - mins[2]);
 			if (sx > 200 || sy > 200 || sz > 200)
 			{
 				cerr << "Error\n";
@@ -128,7 +130,7 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 			dm.set(sx,sy,sz,sign);
 		}
 	}
-	*/
+	
 }
 
 struct fillSet
@@ -195,9 +197,9 @@ int main(int argc, char** argv)
 			vector<string> fills = vm["fill"].as< vector<string> >();
 		vector<fillSet> vfills;
 		fillSet a;
-		a.rhw[0] = 60;
-		a.rhw[1] = 10;
-		a.rhw[2] = 20;
+		a.rhw[0] = 120;
+		a.rhw[1] = 20;
+		a.rhw[2] = 40;
 		a.c[0] = 0;
 		a.c[1] = 0;
 		a.c[2] = 0;
@@ -206,7 +208,9 @@ int main(int argc, char** argv)
 		a.n[1] = 0;
 		a.n[2] = 0;
 		a.angles.insert(0);
-		//a.angles.insert(180);
+		a.angles.insert(180);
+		a.angles.insert(120);
+		a.angles.insert(270);
 		vfills.push_back(move(a));
 
 		/* "list of r:h:w,narms,cx:cy:cz,nx:ny:nz,sign. "
@@ -308,9 +312,9 @@ int main(int argc, char** argv)
 		size_t sizeY = boost::accumulators::max(sy) - boost::accumulators::min(sy) + 1;
 		size_t sizeZ = boost::accumulators::max(sz) - boost::accumulators::min(sz) + 1;
 		denseMatrix dm(sizeX, sizeY, sizeZ);
-		size_t offsetX = boost::accumulators::min(sx);
-		size_t offsetY = boost::accumulators::min(sx);
-		size_t offsetZ = boost::accumulators::min(sx);
+		int offsetX = boost::accumulators::min(sx);
+		int offsetY = boost::accumulators::min(sx);
+		int offsetZ = boost::accumulators::min(sx);
 		
 		cerr << "Max possible dimensions of final shape:" << endl;
 		cerr << "x - " << boost::accumulators::min(sx) << ":" << boost::accumulators::max(sx) << endl;
@@ -340,15 +344,18 @@ int main(int argc, char** argv)
 		// A final pass is needed to calculate the shape center of mass
 		cerr << "Pass 3" << endl;
 		accumulator_set<double, stats<tag::mean> > mX, mY, mZ;
-		for (int x = boost::accumulators::min(sx); x <= boost::accumulators::max(sx); x++)
+		for (size_t x=0; x<sizeX; x++)
 		{
-			for (int y = boost::accumulators::min(sy); y <= boost::accumulators::max(sy); y++)
+			for (size_t y=0; y<sizeY; y++)
 			{
-				for (int z = boost::accumulators::min(sz); z <= boost::accumulators::max(sz); z++)
+				for (size_t z=0; z<sizeZ; z++)
 				{
-					mX((int) x - (int) offsetX );
-					mY((int) y - (int) offsetY);
-					mZ((int) z - (int) offsetZ);
+					if (dm.get(x,y,z))
+					{
+						mX((int) x + (int) offsetX);
+						mY((int) y + (int) offsetY);
+						mZ((int) z + (int) offsetZ);
+					}
 				}
 			}
 		}
