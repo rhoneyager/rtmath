@@ -3,6 +3,7 @@
 #include <string>
 #include <set>
 
+#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/splitSet.h"
@@ -223,6 +224,53 @@ namespace rtmath {
 			string sphis;
 			phis(sphis);
 			rtmath::config::splitSet<double>(sphis,p);
+		}
+
+		void rotationMatrix(double thetad, double phid, double betad,
+			matrixop &Rx, matrixop &Ry, matrixop &Rz, matrixop &Reff)
+		{
+			double scale = (boost::math::constants::pi<double>()) / 180.0;
+			double betar = betad * scale;
+			double thetar = thetad * scale;
+			double phir = phid * scale;
+
+			double cb = cos(betar);
+			double ct = cos(thetar);
+			double cp = cos(phir);
+			double sb = sin(betar);
+			double st = sin(thetar);
+			double sp = sin(phir);
+			Rx.resize(2,3,3);
+			Ry.resize(2,3,3);
+			Rz.resize(2,3,3);
+			Reff.resize(2,3,3);
+
+			Rx.set(1,2,0,0);
+			Rx.set(cp,2,1,1);
+			Rx.set(cp,2,2,2);
+			Rx.set(sp,2,2,1);
+			Rx.set(-sp,2,1,2);
+
+			Ry.set(cb,2,0,0);
+			Ry.set(1 ,2,1,1);
+			Ry.set(cb,2,2,2);
+			Ry.set(sb,2,0,2);
+			Ry.set(-sb,2,2,0);
+
+			Rz.set(ct,2,0,0);
+			Rz.set(ct,2,1,1);
+			Rz.set(1,2,2,2);
+			Rz.set(st,2,1,0);
+			Rz.set(-st,2,0,1);
+
+			Reff = Ry*Rx*Rz;
+		}
+
+		void rotationMatrix(double thetad, double phid, double betad,
+			matrixop &Reff)
+		{
+			matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
+			rotationMatrix(thetad,phid,betad,Rx,Ry,Rz,Reff);
 		}
 	}
 }

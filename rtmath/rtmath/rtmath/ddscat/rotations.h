@@ -6,6 +6,7 @@
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
+	class matrixop;
 	namespace ddscat {
 		class rotationsBase;
 		class rotations;
@@ -86,6 +87,13 @@ namespace rtmath {
 			friend void ::boost::serialization::serialize(
 				Archive &, rotations &, const unsigned int);
 		};
+
+		// Function to calculate Gimbal matrices and effective rotation matrix.
+		// Using ddscat conventions.
+		void rotationMatrix(double thetad, double phid, double betad,
+			matrixop &Rx, matrixop &Ry, matrixop &Rz, matrixop &Reff);
+		void rotationMatrix(double thetad, double phid, double betad,
+			matrixop &Reff);
 
 	}
 }

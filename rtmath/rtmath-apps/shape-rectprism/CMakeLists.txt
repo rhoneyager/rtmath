@@ -1,8 +1,8 @@
 include (common)
-set(rtmath-rectprism_LIBRARIES "")
-set(rtmath-rectprism_INCLUDE_DIRS "")
+set(rtmath-shape-rectprism_LIBRARIES "")
+set(rtmath-shape-rectprism_INCLUDE_DIRS "")
 
-add_executable (rtmath-rectprism main.cpp)
+add_executable (rtmath-shape-rectprism main.cpp)
 
-addapp(rtmath-rectprism)
+addapp(rtmath-shape-rectprism)
 

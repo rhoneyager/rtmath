@@ -18,11 +18,95 @@
 #include <boost/shared_array.hpp>
 
 #include "../../rtmath/rtmath/common_templates.h"
+#include "../../rtmath/rtmath/matrixop.h"
+#include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/denseMatrix.h"
 
+void rangeSectorSnowflake(const double rhw[3], const double c[3], 
+	double mins[3], double maxs[3])
+{
+	using namespace std;
+	// This can be narrowed, but it's irrelavent for now
+	double rMax = max (max( rhw[0] / 2.0, rhw[1] / 2.0), rhw[2] / 2.0);
+	for (size_t i=0; i<3; i++)
+	{
+		mins[i] = c[i] - rMax;
+		maxs[i] = c[i] + rMax;
+	}
+}
+
+void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const double c[3], 
+	const double n[3], const std::set<double> &angles, bool sign)
+{
+	using namespace std;
+	using namespace rtmath;
+	// Draw half-ellipses specified by the inputs to make sector snowflake shapes
+	double rMax = max (max( rhw[0] / 2.0, rhw[1] / 2.0), rhw[2] / 2.0);
+	for (auto it = angles.begin(); it != angles.end(); ++it)
+	{
+		// rhw are the semimajor axes lengths
+		// c is the center
+		// n is the collection of rotations relative to the +x direction
+		// each angle is the angle beta for the shape rotation
+				
+		// Construct corresponding rotation and inverse rotation matrices
+		matrixop Reff(2,3,3), Rinv(2,3,3);
+		rtmath::ddscat::rotationMatrix(n[0],n[1],n[2] + *it,Reff);
+		Rinv = Reff.inverse();
+
+		std::vector<matrixop> _latticePts;
+		double mins[3], maxs[3];
+		rangeSectorSnowflake(rhw, c, mins, maxs);
+		for (double x=mins[0]; x <=maxs[0]; x++)
+		{
+			for (double y = mins[1]; y <=maxs[1]; y++)
+			{
+				for (double z = mins[2]; z <= maxs[2]; z++)
+				{
+					// Iterating over all points in the range that can be impacted. If 
+					// a point lies within the half-ellipsoid, then fill it in. 
+
+					auto within = [&](double x, double y, double z) -> bool
+					{
+						using namespace std;
+						using namespace rtmath;
+						// Take point and translate to origin. 
+						double oX = x - c[0], oY = y - c[1], oZ = z - c[2];
+						matrixop oPt(2,3,1);
+						oPt.set(oX,2,0,0);
+						oPt.set(oY,2,1,0);
+						oPt.set(oZ,2,2,0);
+						// Apply inverse rotation matrix
+						matrixop iPt = Rinv * oPt;
+						double iX = iPt.get(2,0,0), iY = iPt.get(2,1,0), iZ = iPt.get(2,2,0);
+								
+						// Test within ellipse
+						if (0.25 < pow(iX/rhw[0],2.0) + pow(iY/rhw[1],2.0) + pow(iZ/rhw[2],2.0))
+							return false;
+
+						// Test that we are on the proper side of the ellipse
+						if (iX < 0) return false;
+
+						return true;
+					};
+
+					if (within(x,y,z))
+						dm.set(x-mins[0], y-mins[1], z-mins[2], sign);
+				}
+			}
+		}
+	}
+};
+
+struct fillSet
+{
+	double rhw[3], c[3], n[3];
+	std::set<double> angles;
+	bool sign;
+};
 
 int main(int argc, char** argv)
 {
@@ -31,7 +115,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "rtmath-shape-rectprism\n\n";
+		cerr << "rtmath-shape-sector-snowflake\n\n";
 		rtmath::debug::appEntry(argc, argv);
 
 		namespace po = boost::program_options;
@@ -44,13 +128,17 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<string>(), "If an input file is specified, then the file is loaded and edited. Its header is ignored.")
 			("output,o", po::value<string>(), "This is the output filename. If unspecified, write to stdout.")
-			("title", po::value<string>()->default_value("rectprism-generated shape"), "The description enclosed in the shape file")
+			("title", po::value<string>()->default_value("sector-snowflake-generated shape"), "The description enclosed in the shape file")
 			("a1", po::value<string>()->default_value("1,0,0"), "The a1 vector in csv form")
 			("a2", po::value<string>()->default_value("0,1,0"), "The a2 vector in csv form")
 			("d", po::value<string>()->default_value("1,1,1"), "Dipole scaling factor")
 			("fill,f", po::value< vector<string> >(), "Specify a region to be filled. Region selected as a colon and comma-separated "
-			"list of sx:ex,sy:ey,sz:ez[,sign] where s is the start and e is the end vertex. Sign is optional. If "
-			"positive or unspecified, add the selected point. If negative, remove the elected point.");
+			"list of r:h:w,narms,cx:cy:cz,nx:ny:nz,sign. "
+			"rhw are the ellipsoid semimajor axes values. "
+			"narms (defaults to six) is the number of half-ellipsoids to draw (evenly-spaced through 360 degrees). "
+			"c{xyz} is the center of the flake in dipole coords. "
+			"n{xyz} (optional) is the rotation in degrees of the shape using gimbal matrices. "
+			"Sign (optional) determines if we are adding or removing area.");
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -73,10 +161,34 @@ int main(int argc, char** argv)
 		}
 		ostream &out = *pout;
 
-		vector<string> fills = vm["fill"].as< vector<string> >();
+		if (vm.count("fill"))
+			vector<string> fills = vm["fill"].as< vector<string> >();
+		vector<fillSet> vfills;
+		fillSet a;
+		a.rhw[0] = 40;
+		a.rhw[1] = 10;
+		a.rhw[2] = 25;
+		a.c[0] = 0;
+		a.c[1] = 0;
+		a.c[2] = 0;
+		a.sign = true;
+		a.n[0] = 0;
+		a.n[1] = 0;
+		a.n[2] = 0;
+		a.angles.insert(0);
+		a.angles.insert(120);
+		vfills.push_back(move(a));
+
+		/* "list of r:h:w,narms,cx:cy:cz,nx:ny:nz,sign. "
+			"rhw are the ellipsoid semimajor axes values. "
+			"narms (defaults to six) is the number of half-ellipsoids to draw (evenly-spaced through 360 degrees). "
+			"c{xyz} is the center of the flake in dipole coords. "
+			"n{xyz} (optional) is the rotation in degrees of the shape using gimbal matrices. "
+			"Sign (optional) determines if we are adding or removing area."
+			
 
 		// A lambda determining how the point ranges are split
-		auto fSplit = [](string inval, int mins[3], int maxs[3], int &sign)
+		auto fSplit = [](string inval, double rhw[3], bool &hasC, double c[3], bool &hasN, double n[3], size_t &narms, int mins[3], int maxs[3], int &sign)
 		{
 			sign = 1;
 			typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -86,6 +198,27 @@ int main(int argc, char** argv)
 			size_t selector = 0;
 			for (auto it = tp.begin(); it != tp.end(); ++it, ++selector)
 			{
+				vector<double> v;
+				tokenizer tc(*it, sepcol);
+				for (auto ot = tc.begin(); ot != tc.end(); ++ot)
+					v.push_back(boost::lexical_cast<double>(*ot));
+
+				if (selector == 0)
+				{
+					rhw[0] = v[0];
+					rhw[1] = v[1];
+					rhw[2] = v[2];
+					continue;
+				}
+				if (selector == 1)
+				{
+					if (v.size())
+					{
+					} else {
+						narms = 6;
+					}
+				}
+
 				if (selector < 3)
 				{
 					tokenizer tc(*it, sepcol);
@@ -102,19 +235,20 @@ int main(int argc, char** argv)
 					return;
 				}
 			}
-		};
+		};*/
 
 		// Do three passes. First pass allows for dimensioning and memory allocation.
 		// Second pass fills in the shape into memory. Dense memory layout is selected, since we are dealing with rectangles.
 		// Third pass writes the dipoles to disk
 		using namespace boost::accumulators;
-		accumulator_set<int, stats<tag::min, tag::max> > sx, sy, sz;
-		accumulator_set<int, stats<tag::sum> > svolmax;
+		accumulator_set<double, stats<tag::min, tag::max> > sx, sy, sz;
+		accumulator_set<double, stats<tag::sum> > svolmax;
 		cerr << "Pass 1" << endl;
-		for (auto it = fills.begin(); it != fills.end(); ++it)
+		for (auto it = vfills.begin(); it != vfills.end(); ++it)
 		{
-			int imins[3], imaxs[3], sign;
-			fSplit(*it, imins, imaxs, sign);
+			double imins[3], imaxs[3];
+			rangeSectorSnowflake(it->rhw,it->c,imins,imaxs);
+
 			sx(imins[0]);
 			sx(imaxs[0]);
 			sy(imins[1]);
@@ -154,7 +288,6 @@ int main(int argc, char** argv)
 		cerr << "z - " << boost::accumulators::min(sz) << ":" << boost::accumulators::max(sz) << endl;
 		cerr << endl;
 
-		
 		cerr << "Pass 2" << endl;
 		// If an input shape is provided, place it into the array.
 		if (vm.count("input"))
@@ -169,26 +302,9 @@ int main(int argc, char** argv)
 		}
 
 		// Iterate over each fill statement. Expand fill statement.
-		for (auto it = fills.begin(); it != fills.end(); ++it)
+		for (auto it = vfills.begin(); it != vfills.end(); ++it)
 		{
-			int imins[3], imaxs[3], sign;
-			fSplit(*it, imins, imaxs, sign);
-			bool bsign = (sign>0) ? true : false;
-
-			// Iterate over all possible x, y, z and set the matrix accordingly
-			for (int x = imins[0]; x <= imaxs[0]; x++)
-			{
-				for (int y = imins[1]; y <= imaxs[1]; y++)
-				{
-					for (int z = imins[2]; z <= imaxs[2]; z++)
-					{
-						size_t ix = (size_t) (x) - offsetX;
-						size_t iy = (size_t) (y) - offsetY;
-						size_t iz = (size_t) (z) - offsetZ;
-						dm.set(ix, iy, iz, bsign);
-					}
-				}
-			}
+			fillSectorSnowflake(dm,it->rhw,it->c,it->n,it->angles,it->sign);
 		}
 
 		// A final pass is needed to calculate the shape center of mass
