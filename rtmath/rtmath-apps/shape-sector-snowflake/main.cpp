@@ -14,6 +14,11 @@
 #include <vector>
 #include <set>
 
+//#pragma warning( disable : 4521 ) // Deprecated declaration
+//#include <pcl/point_cloud.h>
+//#include <pcl/point_types.h>
+#include <Eigen/Dense>
+
 #include <boost/program_options.hpp>
 #include <boost/shared_array.hpp>
 
@@ -29,8 +34,8 @@ void rangeSectorSnowflake(const double rhw[3], const double c[3],
 	double mins[3], double maxs[3])
 {
 	using namespace std;
-	// This can be narrowed, but it's irrelavent for now
-	double rMax = max (max( rhw[0] / 2.0, rhw[1] / 2.0), rhw[2] / 2.0);
+	// This can be narrowed, but it's irrelevent for now
+	double rMax = max (max( rhw[0]+1, rhw[1]+1), rhw[2]+1);
 	for (size_t i=0; i<3; i++)
 	{
 		mins[i] = c[i] - rMax;
@@ -44,62 +49,87 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 	using namespace std;
 	using namespace rtmath;
 	// Draw half-ellipses specified by the inputs to make sector snowflake shapes
-	double rMax = max (max( rhw[0] / 2.0, rhw[1] / 2.0), rhw[2] / 2.0);
+	// For speec, use the PCL. Create a uniform grid, then filter based on constraints.
+	// Constraints include the angle (plane normal) and the bounding sphere.
+
+	// Build the base arm shape
+	double mins[3], maxs[3];
+	rangeSectorSnowflake(rhw, c, mins, maxs);
+	double sizeX = maxs[0] - mins[0] + 1.0;
+	double sizeY = maxs[1] - mins[1] + 1.0;
+	double sizeZ = maxs[2] - mins[2] + 1.0;
+
+	Eigen::ArrayXd v(sizeX*sizeY*sizeZ);
+	size_t sV = 0;
+
+	//rtmath::denseMatrix mask((size_t) sizeX,(size_t) sizeY,(size_t) sizeZ);
+	for (double x = mins[0]; x <=maxs[0]; x++)
+	{
+		for (double y = mins[1]; y <=maxs[1]; y++)
+		{
+			for (double z = mins[2]; z <=maxs[2]; z++)
+			{
+				if (0.25 >= pow((x-c[0])/rhw[0],2.0) + pow((y-c[1])/rhw[1],2.0) + pow((z-c[2])/rhw[2],2.0))
+				{
+					if (x-c[0] >= 0)
+					{
+						v(sV) = x-c[0];
+						v(sV+1) = y-c[1];
+						v(sV+2) = z-c[2];
+						sV += 3;
+						//v << x-mins[0], y-mins[1], z-mins[2];
+						//mask.set(x-mins[0],y-mins[1],z-mins[2],true);
+						if (x-mins[0] > 200 || y-mins[1] > 200 || z-mins[2] > 200)
+						{
+							cerr << "Error\n";
+						}
+						dm.set(x-mins[0],y-mins[1],z-mins[2],true);
+					}
+				}
+			}
+		}
+	}
+	/*
+	double nx = n[0] * boost::math::constants::pi<double>() / 180.0;
+	double ny = n[1] * boost::math::constants::pi<double>() / 180.0;
+	double nz = n[2] * boost::math::constants::pi<double>() / 180.0;
+
+	// Now, take the base arm and duplicate it into the appropriate locations in dm
 	for (auto it = angles.begin(); it != angles.end(); ++it)
 	{
 		// rhw are the semimajor axes lengths
 		// c is the center
 		// n is the collection of rotations relative to the +x direction
 		// each angle is the angle beta for the shape rotation
-				
+		double na = *it * boost::math::constants::pi<double>() / 180.0;
+
 		// Construct corresponding rotation and inverse rotation matrices
-		matrixop Reff(2,3,3), Rinv(2,3,3);
-		rtmath::ddscat::rotationMatrix(n[0],n[1],n[2] + *it,Reff);
-		Rinv = Reff.inverse();
+		Eigen::Matrix3d Ref, Rinv; // Ref should be YXZ?
+		Ref = Eigen::AngleAxisd(nx, Eigen::Vector3d::UnitZ())
+			* Eigen::AngleAxisd(ny, Eigen::Vector3d::UnitX())
+			* Eigen::AngleAxisd(nz+na, Eigen::Vector3d::UnitY());
 
-		std::vector<matrixop> _latticePts;
-		double mins[3], maxs[3];
-		rangeSectorSnowflake(rhw, c, mins, maxs);
-		for (double x=mins[0]; x <=maxs[0]; x++)
+		Rinv = Ref.inverse();
+		cout << Rinv;
+		cout << endl;
+
+		for (size_t i = 0; i< sV; i += 3)
 		{
-			for (double y = mins[1]; y <=maxs[1]; y++)
+			auto res = Rinv * v.segment(i,3).matrix();
+			cout << res << endl;
+			// Take the translated point and store in dm
+			size_t sx = (size_t) (res(0,0) - mins[0]+1);
+			size_t sy = (size_t) (res(1,0) - mins[1]+1);
+			size_t sz = (size_t) (res(2,0) - mins[2]+1);
+			if (sx > 200 || sy > 200 || sz > 200)
 			{
-				for (double z = mins[2]; z <= maxs[2]; z++)
-				{
-					// Iterating over all points in the range that can be impacted. If 
-					// a point lies within the half-ellipsoid, then fill it in. 
-
-					auto within = [&](double x, double y, double z) -> bool
-					{
-						using namespace std;
-						using namespace rtmath;
-						// Take point and translate to origin. 
-						double oX = x - c[0], oY = y - c[1], oZ = z - c[2];
-						matrixop oPt(2,3,1);
-						oPt.set(oX,2,0,0);
-						oPt.set(oY,2,1,0);
-						oPt.set(oZ,2,2,0);
-						// Apply inverse rotation matrix
-						matrixop iPt = Rinv * oPt;
-						double iX = iPt.get(2,0,0), iY = iPt.get(2,1,0), iZ = iPt.get(2,2,0);
-								
-						// Test within ellipse
-						if (0.25 < pow(iX/rhw[0],2.0) + pow(iY/rhw[1],2.0) + pow(iZ/rhw[2],2.0))
-							return false;
-
-						// Test that we are on the proper side of the ellipse
-						if (iX < 0) return false;
-
-						return true;
-					};
-
-					if (within(x,y,z))
-						dm.set(x-mins[0], y-mins[1], z-mins[2], sign);
-				}
+				cerr << "Error\n";
 			}
+			dm.set(sx,sy,sz,sign);
 		}
 	}
-};
+	*/
+}
 
 struct fillSet
 {
@@ -165,9 +195,9 @@ int main(int argc, char** argv)
 			vector<string> fills = vm["fill"].as< vector<string> >();
 		vector<fillSet> vfills;
 		fillSet a;
-		a.rhw[0] = 40;
+		a.rhw[0] = 60;
 		a.rhw[1] = 10;
-		a.rhw[2] = 25;
+		a.rhw[2] = 20;
 		a.c[0] = 0;
 		a.c[1] = 0;
 		a.c[2] = 0;
@@ -176,7 +206,7 @@ int main(int argc, char** argv)
 		a.n[1] = 0;
 		a.n[2] = 0;
 		a.angles.insert(0);
-		a.angles.insert(120);
+		//a.angles.insert(180);
 		vfills.push_back(move(a));
 
 		/* "list of r:h:w,narms,cx:cy:cz,nx:ny:nz,sign. "
@@ -316,9 +346,9 @@ int main(int argc, char** argv)
 			{
 				for (int z = boost::accumulators::min(sz); z <= boost::accumulators::max(sz); z++)
 				{
-					mX(x - offsetX);
-					mY(y - offsetY);
-					mZ(z - offsetZ);
+					mX((int) x - (int) offsetX );
+					mY((int) y - (int) offsetY);
+					mZ((int) z - (int) offsetZ);
 				}
 			}
 		}
@@ -360,9 +390,9 @@ int main(int argc, char** argv)
 					if (dm.get(x,y,z))
 					{
 						out << "\t" << i
-							<< "\t" << x + offsetX 
-							<< "\t" << y + offsetX
-							<< "\t" << z + offsetZ
+							<< "\t" << (int) x + (int) offsetX 
+							<< "\t" << (int) y + (int) offsetY
+							<< "\t" << (int) z + (int) offsetZ
 							<< "\t1\t1\t1\n";
 						i++;
 					}

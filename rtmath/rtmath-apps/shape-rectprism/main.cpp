@@ -200,9 +200,9 @@ int main(int argc, char** argv)
 			{
 				for (int z = boost::accumulators::min(sz); z <= boost::accumulators::max(sz); z++)
 				{
-					mX(x - offsetX);
-					mY(y - offsetY);
-					mZ(z - offsetZ);
+					mX((int) x - (int) offsetX );
+					mY((int) y - (int) offsetY);
+					mZ((int) z - (int) offsetZ);
 				}
 			}
 		}
@@ -244,9 +244,9 @@ int main(int argc, char** argv)
 					if (dm.get(x,y,z))
 					{
 						out << "\t" << i
-							<< "\t" << x + offsetX 
-							<< "\t" << y + offsetX
-							<< "\t" << z + offsetZ
+							<< "\t" << (int) x + (int) offsetX 
+							<< "\t" << (int) y + (int) offsetY
+							<< "\t" << (int) z + (int) offsetZ
 							<< "\t1\t1\t1\n";
 						i++;
 					}
