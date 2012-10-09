@@ -14,10 +14,14 @@
 #include <vector>
 #include <set>
 
-//#pragma warning( disable : 4521 ) // Deprecated declaration
-//#include <pcl/point_cloud.h>
-//#include <pcl/point_types.h>
+#pragma warning( disable : 4521 ) // Deprecated declaration
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/kdtree/kdtree_flann.h>
 #include <Eigen/Dense>
+
+#include "../../rtmath/rtmath/VTKlink.h"
 
 #include <boost/program_options.hpp>
 #include <boost/shared_array.hpp>
@@ -61,8 +65,8 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 	double sizeY = maxs[1] - mins[1] + 1.0;
 	double sizeZ = maxs[2] - mins[2] + 1.0;
 
-	Eigen::ArrayXd v(sizeX*sizeY*sizeZ);
-	size_t sV = 0;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cBase(new pcl::PointCloud<pcl::PointXYZ>);
+	cBase->reserve(sizeX*sizeY*sizeZ);
 
 	//rtmath::denseMatrix mask((size_t) sizeX,(size_t) sizeY,(size_t) sizeZ);
 	for (double x = mins[0]; x <=maxs[0]; x++)
@@ -75,13 +79,8 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 				{
 					if (x-c[0] >= 0)
 					{
-						v(sV) = x-c[0];
-						v(sV+1) = y-c[1];
-						v(sV+2) = z-c[2];
-						sV += 3;
-						//v << x-mins[0], y-mins[1], z-mins[2];
-						//mask.set(x-mins[0],y-mins[1],z-mins[2],true);
-						if (x-mins[0] > 200 || y-mins[1] > 200 || z-mins[2] > 200)
+						cBase->push_back(pcl::PointXYZ(x-c[0],y-c[1],z-c[2]));
+						if (x-mins[0] > 1200 || y-mins[1] > 1200 || z-mins[2] > 1200)
 						{
 							cerr << "Error\n";
 						}
@@ -92,9 +91,15 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 		}
 	}
 	
+	pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree (new pcl::KdTreeFLANN<pcl::PointXYZ>);
+	tree->setInputCloud (cBase);
+
 	double nx = n[0] * boost::math::constants::pi<double>() / 180.0;
 	double ny = n[1] * boost::math::constants::pi<double>() / 180.0;
 	double nz = n[2] * boost::math::constants::pi<double>() / 180.0;
+	// Taking the base arm and duplicating it through rotations. Note: we cannot just copy from the base to 
+	// the destination since we get rounding errors. A better method is to assign a dense matrix to the original 
+	// copy and go through the rotations, comparing to the copy.
 
 	// Now, take the base arm and duplicate it into the appropriate locations in dm
 	for (auto it = angles.begin(); it != angles.end(); ++it)
@@ -115,20 +120,34 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 		cout << Rinv;
 		cout << endl;
 
-		for (size_t i = 0; i< sV; i += 3)
+
+
+		// Test each possible point and run it through the inverse rotation matrix. If it is within a  
+		// small distance (one dipole spacing) of an original point, mark the location as filled.
+		for (double x = mins[0]; x <=maxs[0]; x++)
 		{
-			auto res = Rinv * v.segment(i,3).matrix();
-			//cout << res << endl;
-			// Take the translated point and store in dm
-			size_t sx = (size_t) boost::math::round(res(0,0) + c[0] - mins[0]);
-			size_t sy = (size_t) boost::math::round(res(1,0) + c[1] - mins[1]);
-			size_t sz = (size_t) boost::math::round(res(2,0) + c[2] - mins[2]);
-			if (sx > 200 || sy > 200 || sz > 200)
+			for (double y = mins[1]; y <=maxs[1]; y++)
 			{
-				cerr << "Error\n";
+				for (double z = mins[2]; z <=maxs[2]; z++)
+				{
+					double xc = x-c[0], yc = y-c[1], zc = z - c[2];
+					auto res = Rinv * Eigen::Vector3d(xc,yc,zc);
+					double xp = res(0,0), yp = res(1,0), zp = res(2,0);
+					pcl::PointXYZ testpoint(xp,yp,zp);
+					vector<int> k_indices;
+					vector<float> d_sq;
+					tree->radiusSearch(testpoint,1.0, k_indices, d_sq);
+
+					if (d_sq.size())
+					{
+						dm.set(x-mins[0]+c[0],y-mins[1]+c[1],z-mins[2]+c[2],sign);
+					}
+
+				}
 			}
-			dm.set(sx,sy,sz,sign);
 		}
+
+
 	}
 	
 }
@@ -198,8 +217,8 @@ int main(int argc, char** argv)
 		vector<fillSet> vfills;
 		fillSet a;
 		a.rhw[0] = 120;
-		a.rhw[1] = 20;
-		a.rhw[2] = 40;
+		a.rhw[1] = 10;
+		a.rhw[2] = 20;
 		a.c[0] = 0;
 		a.c[1] = 0;
 		a.c[2] = 0;
@@ -212,7 +231,24 @@ int main(int argc, char** argv)
 		a.angles.insert(120);
 		a.angles.insert(270);
 		vfills.push_back(move(a));
-
+		/*
+		fillSet b;
+		b.rhw[0] = 140;
+		b.rhw[1] = 20;
+		b.rhw[2] = 10;
+		b.c[0] = 0;
+		b.c[1] = 0;
+		b.c[2] = 0;
+		b.sign = true;
+		b.n[0] = 0;
+		b.n[1] = 0;
+		b.n[2] = 45;
+		b.angles.insert(0);
+		b.angles.insert(180);
+		b.angles.insert(120);
+		b.angles.insert(270);
+		vfills.push_back(move(b));
+		*/
 		/* "list of r:h:w,narms,cx:cy:cz,nx:ny:nz,sign. "
 			"rhw are the ellipsoid semimajor axes values. "
 			"narms (defaults to six) is the number of half-ellipsoids to draw (evenly-spaced through 360 degrees). "
