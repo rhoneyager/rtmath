@@ -76,12 +76,6 @@
     <Filter Include="Source Files\gridded">
       <UniqueIdentifier>{4267329e-cff8-4144-bfdc-1768382fa910}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\netcdf">
-      <UniqueIdentifier>{a10fc161-64ac-4661-a825-d574c576bfdf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\netcdf">
-      <UniqueIdentifier>{a23aace6-7c46-4bea-9894-8177cc418b7c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Garrett">
       <UniqueIdentifier>{8ab09eab-8c9c-4b97-a614-1c9c7ed6005f}</UniqueIdentifier>
     </Filter>
@@ -302,15 +296,6 @@
     </ClInclude>
     <ClInclude Include="rtmath\gridded\gridCDF.h">
       <Filter>Header Files\gridded</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\netcdf\ncContainer.h">
-      <Filter>Header Files\netcdf</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\netcdf\ncVar.h">
-      <Filter>Header Files\netcdf</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\netcdf\ncDim.h">
-      <Filter>Header Files\netcdf</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\mie\mieScattMatrix.h">
       <Filter>Header Files\mie</Filter>
@@ -701,9 +686,6 @@
     </ClCompile>
     <ClCompile Include="src\gridCDF.cpp">
       <Filter>Source Files\gridded</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ncContainer.cpp">
-      <Filter>Source Files\netcdf</Filter>
     </ClCompile>
     <ClCompile Include="src\mieScattMatrix.cpp">
       <Filter>Source Files\mie</Filter>

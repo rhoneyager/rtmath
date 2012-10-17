@@ -12,6 +12,7 @@ namespace rtmath
 	{
 	public:
 		denseMatrix(size_t sx, size_t sy, size_t sz);
+		void resize(size_t sx, size_t sy, size_t sz);
 		bool get(size_t x, size_t y, size_t z);
 		void set(size_t x, size_t y, size_t z, bool val);
 		void locate(size_t x, size_t y, size_t z, boost::uint32_t **wd, size_t &offset);

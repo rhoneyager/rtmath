@@ -55,7 +55,7 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 	using namespace std;
 	using namespace rtmath;
 	// Draw half-ellipses specified by the inputs to make sector snowflake shapes
-	// For speec, use the PCL. Create a uniform grid, then filter based on constraints.
+	// For speed, use the PCL. Create a uniform grid, then filter based on constraints.
 	// Constraints include the angle (plane normal) and the bounding sphere.
 
 	// Build the base arm shape

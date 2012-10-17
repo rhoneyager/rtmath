@@ -6,11 +6,12 @@ namespace rtmath {
 
 	denseMatrix::denseMatrix(size_t sx, size_t sy, size_t sz) : wsz(32)
 	{
+		resize(sx,sy,sz);
+	}
+
+	void denseMatrix::resize(size_t sx, size_t sy, size_t sz)
+	{
 		size_t ax = sx, ay = sy;
-		//size_t ax = sx / wsz, rx = sx % wsz;
-		//if (rx) ax++;
-		//size_t ay = sy / wsz, ry = sy % wsz;
-		//if (ry) ay++;
 		size_t az = sz / wsz, rz = sz % wsz;
 		if (rz) az++;
 

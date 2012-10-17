@@ -134,9 +134,6 @@
     <None Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\deps\tmatrix\VS\tmatrix-cpp\tmatrix-cpp.vcxproj">
-      <Project>{bc75d21e-9e1f-44ad-90a8-16f6a33881e6}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
     </ProjectReference>
