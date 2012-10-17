@@ -8,6 +8,7 @@
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
 #pragma warning( disable : 4800 ) // forcing non-bool type to true or false
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <iostream>
@@ -89,13 +90,13 @@ void buildArm(size_t arm, float length, float width, pcl::PointCloud<pcl::PointX
 		mins[0] = mins[1] = -arm_h;
 		maxs[0] = maxs[1] = arm_h;
 	} else if (arm <= 3) {
-		mins[0] = (arm) ? -length : 0;
-		maxs[0] = (arm) ? 0 : length;
+		mins[0] = (arm == 3) ? -length : 0;
+		maxs[0] = (arm == 3) ? 0 : length;
 		mins[1] = mins[2] = -arm_h;
 		maxs[1] = maxs[2] = arm_h;
 	} else {
-		mins[1] = (arm) ? -length : 0;
-		maxs[1] = (arm) ? 0 : length;
+		mins[1] = (arm == 5) ? -length : 0;
+		maxs[1] = (arm == 5) ? 0 : length;
 		mins[0] = mins[2] = -arm_h;
 		maxs[0] = maxs[2] = arm_h;
 	}
@@ -104,7 +105,7 @@ void buildArm(size_t arm, float length, float width, pcl::PointCloud<pcl::PointX
 }
 
 void fillRosette(const rosetteParams &p, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-	float *mins, float *maxs)
+	float *mins, float *maxs, bool firstminmax = false)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr temp(new pcl::PointCloud<pcl::PointXYZ>);
 	// Construct arms
@@ -150,12 +151,63 @@ void fillRosette(const rosetteParams &p, pcl::PointCloud<pcl::PointXYZ>::Ptr clo
 		pt->z += p.center[2] - meanz;
 		cloud->push_back(*pt);
 	}
-	mins[0] = minx + p.center[0] - meanx;
-	mins[1] = miny + p.center[1] - meany;
-	mins[2] = minz + p.center[2] - meanz;
-	maxs[0] = maxx + p.center[0] - meanx;
-	maxs[1] = maxy + p.center[1] - meany;
-	maxs[2] = maxz + p.center[2] - meanz;
+	float smins[3], smaxs[3];
+	smins[0] = minx + p.center[0] - meanx;
+	smins[1] = miny + p.center[1] - meany;
+	smins[2] = minz + p.center[2] - meanz;
+	smaxs[0] = maxx + p.center[0] - meanx;
+	smaxs[1] = maxy + p.center[1] - meany;
+	smaxs[2] = maxz + p.center[2] - meanz;
+	if (firstminmax)
+	{
+		std::copy_n(smins,3,mins);
+		std::copy_n(smaxs,3,maxs);
+	} else {
+		for (size_t i=0; i<3; i++)
+		{
+			if (smins[i] < mins[i]) mins[i] = smins[i];
+			if (smaxs[i] > maxs[i]) maxs[i] = smaxs[i];
+		}
+	}
+}
+
+void discretize2(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, 
+	const float *mins, const float *maxs, rtmath::denseMatrix &target)
+{
+	// This function takes a point cloud and translates it into the discrete space defined be a 
+	// denseMatrix. The existing denseMatrix will be cleared and resized.
+	const size_t sx = (size_t) (maxs[0] - mins[0] + 2);
+	const size_t sy = (size_t) (maxs[1] - mins[1] + 2);
+	const size_t sz = (size_t) (maxs[2] - mins[2] + 2);
+
+	target.resize(sx,sy,sz);
+	
+	// Iterate through all possible points in the cloud. perform truncation and examine the nearest cells for plotting. 
+	// If a cell center is within unit distance from the cloud point, mark this cell as active.
+	for (auto pt = cloud->begin(); pt != cloud->end(); ++pt)
+	{
+		auto fdist = [](float fx, float fy, float fz, float tx, float ty, float tz)
+		{
+			return sqrt(pow(fx-tx,2.0f)+pow(fy-ty,2.0f)+pow(fz-tz,2.0f));
+		};
+		// Grid alignment
+		float fx = pt->x - mins[0];
+		float fy = pt->y - mins[1];
+		float fz = pt->z - mins[2];
+
+		// Examine the 27 nearest points. If the distance to the point < 1.0, then mark the cell as filled.
+		float cx = floor(fx), cy = floor(fy), cz = floor(fz);
+		for (float tx = cx -1.0f; tx <= cx+1.0f; tx++)
+			for (float ty = cy - 1.0f; ty <= cy + 1.0f; ty++)
+				for (float tz = cz - 1.0f; tz <= cz + 1.0f; tz++)
+				{
+					if (fdist(fx,fy,fz,tx,ty,tz) <= 1.01f)
+					{
+						if (tx<0 || ty <0 || tz < 0) continue;
+						target.set((size_t) tx, (size_t) ty, (size_t) tz, true);
+					}
+				}
+	}
 }
 
 void discretize(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, 
@@ -214,12 +266,12 @@ int main(int argc, char** argv)
 {
 	using namespace std;
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-	float mins[3], maxs[3];
+	float mins[3] = { 0, 0, 0}, maxs[3] = {0, 0, 0};
 	rosetteParams p;
 	p.armLength = 70;
 	p.armWidth = 20;
 	p.arms.insert(0);
-	//p.arms.insert(1);
+	p.arms.insert(1);
 	p.arms.insert(2);
 	p.arms.insert(3);
 	p.arms.insert(4);
@@ -231,9 +283,9 @@ int main(int argc, char** argv)
 	p.orientation[1] = 15;
 	p.orientation[2] = 0;
 
-	fillRosette(p,cloud,mins,maxs);
+	fillRosette(p,cloud,mins,maxs,true);
 	rtmath::denseMatrix dm(1,1,1);
-	discretize(cloud,mins,maxs,dm);
+	discretize2(cloud,mins,maxs,dm);
 
 	cerr << "Writing file" << endl;
 	ofstream out("test.shp");
