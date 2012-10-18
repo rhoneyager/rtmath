@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <memory>
 #include <string>
 #include <vector>
@@ -428,6 +429,11 @@ namespace rtmath {
 			out.width(0);
 		}
 
+		double ddOutputSingle::getStatEntry(stat_entries e) const 
+		{
+			return _statTable[e];
+		}
+
 		void ddOutputSingle::writeAVG(std::ostream &out) const
 		{
 			using namespace std;
@@ -600,6 +606,14 @@ namespace rtmath {
 
 			// Write the f matrix
 			writeF(out);
+		}
+
+		double ddOutputSingle::dipoleSpacing() const
+		{
+			std::ostringstream out;
+			_objMap.at("tol")->write(out);
+			std::string sout = out.str();
+			return boost::lexical_cast<double>(sout);
 		}
 
 		void ddOutputSingle::writeF(std::ostream &out) const

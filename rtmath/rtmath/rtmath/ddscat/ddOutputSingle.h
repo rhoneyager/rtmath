@@ -21,6 +21,18 @@ namespace rtmath {
 
 		class ddOutputSingleObj;
 
+		enum stat_entries
+		{
+			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
+			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
+			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
+			QPOL,DQPHA,
+			QSCAG11,QSCAG21,GSCAG31,ITER1,MXITER1,NSCA1,
+			QSCAG12,QSCAG22,GSCAG32,ITER2,MXITER2,NSCA2,
+			QSCAG1M,QSCAG2M,QSCAG3M,
+			NUM_STAT_ENTRIES
+		};
+
 		class ddOutputSingle
 		{
 			// Class contains the output of a single ddscat fml / sca or avg file
@@ -57,6 +69,9 @@ namespace rtmath {
 			double phi() const;
 			double wave() const;
 			double aeff() const;
+			double dipoleSpacing() const;
+
+			double getStatEntry(stat_entries e) const;
 
 			bool operator<(const ddOutputSingle &rhs) const;
 		protected:
@@ -85,17 +100,7 @@ namespace rtmath {
 				(const std::string &key);
 		};
 
-		enum stat_entries
-		{
-			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
-			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
-			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
-			QPOL,DQPHA,
-			QSCAG11,QSCAG21,GSCAG31,ITER1,MXITER1,NSCA1,
-			QSCAG12,QSCAG22,GSCAG32,ITER2,MXITER2,NSCA2,
-			QSCAG1M,QSCAG2M,QSCAG3M,
-			NUM_STAT_ENTRIES
-		};
+		
 	}
 
 }
