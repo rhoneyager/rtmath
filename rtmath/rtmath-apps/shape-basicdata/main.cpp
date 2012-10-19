@@ -258,19 +258,19 @@ int main(int argc, char** argv)
 			{
 				cout << "Aspect ratios:" << endl;
 				cout << "\tAxy\tAxz\tAyz\n";
-				auto it = sstats->rotations.begin();
+				auto rt = sstats->rotations.begin();
 				cout << "Abs\t" 
-					<< it->as_abs.get(2,0,1) << "\t" 
-					<< it->as_abs.get(2,0,2) << "\t" 
-					<< it->as_abs.get(2,1,2) << endl;
+					<< (*rt)->as_abs.get(2,0,1) << "\t" 
+					<< (*rt)->as_abs.get(2,0,2) << "\t" 
+					<< (*rt)->as_abs.get(2,1,2) << endl;
 				cout << "Amean\t"
-					<< it->as_abs_mean.get(2,0,1) << "\t" 
-					<< it->as_abs_mean.get(2,0,2) << "\t" 
-					<< it->as_abs_mean.get(2,1,2) << endl;
+					<< (*rt)->as_abs_mean.get(2,0,1) << "\t" 
+					<< (*rt)->as_abs_mean.get(2,0,2) << "\t" 
+					<< (*rt)->as_abs_mean.get(2,1,2) << endl;
 				cout << "RMS\t"
-					<< it->as_rms.get(2,0,1) << "\t" 
-					<< it->as_rms.get(2,0,2) << "\t" 
-					<< it->as_rms.get(2,1,2) << endl;
+					<< (*rt)->as_rms.get(2,0,1) << "\t" 
+					<< (*rt)->as_rms.get(2,0,2) << "\t" 
+					<< (*rt)->as_rms.get(2,1,2) << endl;
 				cout << endl;
 			}
 
@@ -538,13 +538,13 @@ int main(int argc, char** argv)
 				// TODO: resizing only for beta = 0
 				for (auto ot = sstats->rotations.begin(); ot != sstats->rotations.end(); ot++, n++)
 				{
-					const double beta = ot->beta;
+					const double beta = (*ot)->beta;
 					if (beta != 0) continue;
-					const double theta = ot->theta;
-					const double phi = ot->phi;
-					const double PEx = ot->PE[0].get(2,0,0);
-					const double PEy = ot->PE[0].get(2,1,0);
-					const double PEz = ot->PE[0].get(2,2,0);
+					const double theta = (*ot)->theta;
+					const double phi = (*ot)->phi;
+					const double PEx = (*ot)->PE[0].get(2,0,0);
+					const double PEy = (*ot)->PE[0].get(2,1,0);
+					const double PEz = (*ot)->PE[0].get(2,2,0);
 					
 					tPEx->SetPoint(n,theta,phi,PEx);
 					tPEy->SetPoint(n,theta,phi,PEy);

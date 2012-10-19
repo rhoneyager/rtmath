@@ -87,8 +87,7 @@ namespace rtmath {
 
 	void scattMatrix::_genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4])
 	{
-		throw rtmath::debug::xUnimplementedFunction();
-		//phaseFuncs::mueller
+		phaseFuncs::muellerBH(Sn,Snn);
 	}
 
 	namespace phaseFuncs

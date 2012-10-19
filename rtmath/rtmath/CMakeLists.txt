@@ -116,6 +116,10 @@ target_link_libraries (rtmath ${COMMON_LIBS})
 target_link_libraries (rtmath ${rtmath_LIBRARIES})
 #target_link_libraries (rtmath-static ${COMMON_LIBS})
 #target_link_libraries (rtmath-static ${rtmath-static_LIBRARIES})
+option ( RTMATH-TESTS
+	"Build the testing code" OFF)
+
+if (RTMATH-TESTS)
 
 aux_source_directory (tests modtests)
 add_executable (rtmath-tests ${modtests})
@@ -128,10 +132,11 @@ target_link_libraries (rtmath-tests rtmath)
 set(rtmath-tests_LIBRARIES ${rtmath_LIBRARIES})
 set(rtmath-tests_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
 add_package_dependency(rtmath-tests DEPENDS_ON ROOT)
+add_package_dependency(rtmath-tests DEPENDS_ON PCL)
 
 target_link_libraries (rtmath-tests ${COMMON_LIBS})
 target_link_libraries (rtmath-tests ${rtmath-tests_LIBRARIES})
-
+endif()
 #target_link_libraries(rtmath-tests 
 #	boost_filesystem 
 #	boost_date_time 
@@ -142,13 +147,16 @@ target_link_libraries (rtmath-tests ${rtmath-tests_LIBRARIES})
 IF(DEFINED COMMON_CFLAGS )
 	set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 #	set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+if(RTMATH-TESTS)
 	set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+ENDIF()
 ENDIF()
 
 set_target_properties(rtmath PROPERTIES FOLDER "Libs")
 #set_target_properties(rtmath-static PROPERTIES FOLDER "Libs")
+IF(RTMATH-TESTS)
 set_target_properties(rtmath-tests PROPERTIES FOLDER "Tests")
-
+ENDIF()
 #add_header_files(headers)
 
 
@@ -173,11 +181,13 @@ INSTALL(DIRECTORY rtmath
 	PATTERN ".in" EXCLUDE
 	)
 
+IF(RTMATH-TESTS)
 # Executables and libraries
 INSTALL(TARGETS rtmath-tests
 	RUNTIME DESTINATION bin
 	COMPONENT Tests
 	)
+ENDIF()
 
 INSTALL(TARGETS rtmath # rtmath-static
 	RUNTIME DESTINATION bin

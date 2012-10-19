@@ -194,17 +194,17 @@ void fileconverter::convert(const std::string &outfile, bool ROOToutput) const
 			asp = 1.0;
 		} else if (shapeMeth == "Same RMS aspect ratio")
 		{
-			double x = r->as_rms.get(2,0,0);
-			double y = r->as_rms.get(2,1,0);
-			double z = r->as_rms.get(2,2,0);
+			double x = (*r)->as_rms.get(2,0,0);
+			double y = (*r)->as_rms.get(2,1,0);
+			double z = (*r)->as_rms.get(2,2,0);
 
 			asp = (0.5 * (y + z)) / x;
 			//stats->
 		} else if (shapeMeth == "Same real aspect ratio")
 		{
-			double x = r->as_abs.get(2,0,0);
-			double y = r->as_abs.get(2,1,0);
-			double z = r->as_abs.get(2,2,0);
+			double x = (*r)->as_abs.get(2,0,0);
+			double y = (*r)->as_abs.get(2,1,0);
+			double z = (*r)->as_abs.get(2,2,0);
 
 			asp = (0.5 * (y + z)) / x;
 		} else {
