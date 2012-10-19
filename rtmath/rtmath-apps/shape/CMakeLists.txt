@@ -1,5 +1,5 @@
 include (common)
 
-add_executable (rtmath-shape-rectprism shape-main.cpp)
-addapp(rtmath-shape-rectprism)
+add_executable (rtmath-shape shape-main.cpp)
+addapp(rtmath-shape)
 
