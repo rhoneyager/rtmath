@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "../../rtmath/rtmath/rtmath.h"
-
-void doHelp();
+//#include "../../rtmath/rtmath/rtmath.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {
@@ -18,19 +18,32 @@ int main(int argc, char** argv)
 	using namespace boost::uuids;
 
 	try {
-		if (argc == 1) doHelp();
+		cerr << "rtmath-uuid\n\n";
 		rtmath::debug::appEntry(argc, argv);
-		rtmath::config::parseParams p(argc,argv);
+
+		namespace po = boost::program_options;
+
+		po::options_description desc("Allowed options");
+		desc.add_options()
+			("help,h", "produce help message")
+			("num,n", po::value<size_t>()->default_value(1),"specify number of uuids to generate");
+
+		po::positional_options_description p;
+		p.add("num",1);
+
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).
+			options(desc).positional(p).run(), vm);
+		po::notify(vm);
 
 		bool flag = false;
 
-		p.readParam("-h",flag);
-		if (flag) doHelp();
+		if (vm.count("help")) {
+			cerr << desc << "\n";
+			return 1;
+		}
 
-		int numUuid;
-		flag = p.readParam<int>("-n", numUuid);
-		if (!flag) doHelp();
-		if (numUuid < 0) doHelp();
+		int numUuid = vm["num"].as<size_t>();
 
 		// Loop and generate the uuids, printing 
 		// output to the console
@@ -42,33 +55,10 @@ int main(int argc, char** argv)
 			cout << u << endl;
 		}
 	}
-	catch (rtmath::debug::xError &err)
+	catch (std::exception &e)
 	{
-		err.Display();
-		cerr << endl;
-#ifdef _WIN32
-		std::getchar();
-#endif
+		cerr << e.what() << endl;
 		return 1;
 	}
 	return 0;
 }
-
-
-void doHelp()
-{
-	using namespace std;
-	cout << "rtmath-uuid\n\n";
-	cout << "A progran for generating uuids for use with\n";
-	cout << "database programs in the rtmath library\n";
-	cout << "Options:\n";
-	cout << "-n (number of uuids to generate)\n";
-	cout << "-h\n";
-	cout << "\tProduce this help message.\n";
-	cout << endl << endl;
-#ifdef _WIN32
-	std::getchar();
-#endif
-	exit(1);
-}
-

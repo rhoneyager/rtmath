@@ -16,7 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
-#pragma warning( pop ) 
+
 #include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
@@ -31,7 +31,7 @@
 #include "../../rtmath/rtmath/MagickLINK.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
-
+#pragma warning( pop ) 
 int main(int argc, char** argv)
 {
 	using namespace std;
@@ -228,8 +228,8 @@ int main(int argc, char** argv)
 			{
 				auto rn = (*it)->rotations.begin();
 
-				double axy = rn->as_abs.get(2,1,0);
-				double axz = rn->as_abs.get(2,2,0);
+				double axy = (*rn)->as_abs.get(2,1,0);
+				double axz = (*rn)->as_abs.get(2,2,0);
 
 				axys[i] = axy;
 				axzs[i] = axz;
@@ -266,8 +266,8 @@ int main(int argc, char** argv)
 			{
 				auto rn = (*it)->rotations.begin();
 
-				double axy = rn->as_rms.get(2,1,0);
-				double axz = rn->as_rms.get(2,2,0);
+				double axy = (*rn)->as_rms.get(2,1,0);
+				double axz = (*rn)->as_rms.get(2,2,0);
 
 				axys[i] = axy;
 				axzs[i] = axz;
@@ -308,8 +308,8 @@ int main(int argc, char** argv)
 			{
 				auto rn = (*it)->rotations.begin();
 
-				double axy = rn->as_abs.get(2,1,0);
-				double axz = rn->as_abs.get(2,2,0);
+				double axy = (*rn)->as_abs.get(2,1,0);
+				double axz = (*rn)->as_abs.get(2,2,0);
 
 				rtmath::ddscat::shapeFileStatsDipoleView viewBase(*it, d);
 				

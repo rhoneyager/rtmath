@@ -8,6 +8,8 @@
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
 #pragma warning( disable : 4800 ) // forcing non-bool type to true or false
+#pragma warning( disable : 4244 ) // flann converting double to float
+#pragma warning( disable : 4521 ) // Deprecated declaration
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -17,7 +19,7 @@
 #include <vector>
 #include <set>
 
-#pragma warning( disable : 4521 ) // Deprecated declaration
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
@@ -39,7 +41,7 @@
 //#include "../../rtmath/rtmath/ddscat/shapefile.h"
 //#include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/denseMatrix.h"
-
+#pragma warning( pop )
 struct rosetteParams
 {
 	float armLength;

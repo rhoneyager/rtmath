@@ -65,6 +65,11 @@
   <ItemGroup>
     <ClCompile Include="data.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
+      <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
