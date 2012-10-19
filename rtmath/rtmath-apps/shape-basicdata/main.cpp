@@ -429,7 +429,7 @@ int main(int argc, char** argv)
 					double Nrange = maxr - minr;
 					tR->SetBins(*ot, 0, maxr + (Nrange/10.));
 
-					for(auto pt = ccv._points->begin(); pt != ccv._points->end(); ++pt)
+					for(auto pt = ccv._points.begin(); pt != ccv._points.end(); ++pt)
 					{
 						double i = sqrt( pow(pt->x *dSpacing,2.0) + pow(pt->y *dSpacing,2.0) + pow(pt->z *dSpacing,2.0) );
 						double w;
