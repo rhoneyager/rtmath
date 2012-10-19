@@ -102,6 +102,8 @@ int main(int argc, char** argv)
 			("radial-distribution", po::value< string >(), "Make histogram of the radial distribution function of the dipoles."
 				" Pass values specifying number of bins.")
 			("radial-distribution-scaled", "Scale radial distribution plots according to shell surface area.")
+			("radial-distribution-concave", po::value< string >(), "Make histogram of the radial distribution function of the "
+				" dipoles on the concave hull (lambda = 2). Pass values specifying number of bins.")
 
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations")
@@ -357,6 +359,77 @@ int main(int argc, char** argv)
 					tR->SetBins(*ot, 0, maxr + (Nrange/10.));
 
 					for(auto pt = pc->cloud->begin(); pt != pc->cloud->end(); ++pt)
+					{
+						double i = sqrt( pow(pt->x *dSpacing,2.0) + pow(pt->y *dSpacing,2.0) + pow(pt->z *dSpacing,2.0) );
+						double w;
+						if (vm.count("radial-distribution-scaled"))
+							w = (i) ? 1.0/(4.0*boost::math::constants::pi<double>()*i*i) : 0;
+						else w = 1;
+						tR->Fill(i,w);
+					}
+
+					gStyle->SetPalette(1);
+					//tC->Divide(1,1);
+
+					//tC->cd(1);
+					tR->Draw();
+					tR->SetTitle(string("Radial distribution of ").append(*it).c_str());
+					tR->GetXaxis()->SetTitle("Radial distance (um)");
+					
+					tR->GetXaxis()->CenterTitle();
+					tR->GetYaxis()->SetTitle("Frequency");
+					tR->GetYaxis()->CenterTitle();
+
+					tC->SaveAs(fbase.c_str());
+				}
+			}
+
+			if (vm.count("radial-distribution-concave"))
+			{
+				/*
+				if (vm.count("concave-hull"))
+			{
+				string salphas = vm["concave-hull"].as<string>();
+				paramSet<double> chulls(salphas);
+				for (auto ot = chulls.begin(); ot != chulls.end(); ot++)
+				{
+					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+					ostringstream fname;
+					fname << *it << "-concave-hull-" << *ot << ".vtk";
+					rtmath::ddscat::concaveHull ccv(sstats->_shp->_latticePtsStd);
+					ccv.constructHull(*ot);
+					ccv.writeVTKhull(fname.str());
+				}
+			}
+				*/
+				const double lambda = 2.0;
+				string snumbins = vm["radial-distribution-concave"].as<string>();
+				paramSet<size_t> numbins(snumbins);
+				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+				if (!dSpacing) throw rtmath::debug::xBadInput("Need dipole spacings for radial distribution plot");
+				boost::shared_ptr<rtmath::ddscat::shapeFileStatsRotatedView> sstatsRView
+					(new rtmath::ddscat::shapeFileStatsRotatedView(sstats->calcStatsRot(0,0,0), dSpacing));
+				rtmath::ddscat::concaveHull ccv(sstats->_shp->_latticePtsStd);
+				ccv.constructHull(lambda);
+
+				for (auto ot = numbins.begin(); ot != numbins.end(); ++ot)
+				{
+					ostringstream ofname;
+					ofname << *it << "-radial-distribution-" << *ot << ".png";
+					string fbase = ofname.str();
+					// Get reference to the sstats _shp pointContainer
+					//boost::shared_ptr<rtmath::Garrett::pointContainer> pc = sstats->_shp->_pclObj;
+
+					boost::shared_ptr<TCanvas> tC(new TCanvas("c","Radial distribution plots", 0, 0, 2100, 600));
+					boost::shared_ptr<TH1F> tR(new TH1F());
+
+					double minr = 0;
+					double maxr = sstatsRView->max().get(2,3,0);
+
+					double Nrange = maxr - minr;
+					tR->SetBins(*ot, 0, maxr + (Nrange/10.));
+
+					for(auto pt = ccv._points->begin(); pt != ccv._points->end(); ++pt)
 					{
 						double i = sqrt( pow(pt->x *dSpacing,2.0) + pow(pt->y *dSpacing,2.0) + pow(pt->z *dSpacing,2.0) );
 						double w;
