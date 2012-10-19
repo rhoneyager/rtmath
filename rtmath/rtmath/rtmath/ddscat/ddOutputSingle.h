@@ -64,19 +64,19 @@ namespace rtmath {
 
 			size_t version() const;
 			void version(size_t);
-			double beta() const;
-			double theta() const;
-			double phi() const;
-			double wave() const;
-			double aeff() const;
-			double dipoleSpacing() const;
+			double beta() const; //
+			double theta() const; //
+			double phi() const; //
+			double wave() const; //
+			double aeff() const; //
+			double dipoleSpacing() const; //
 
 			double getStatEntry(stat_entries e) const;
 
 			bool operator<(const ddOutputSingle &rhs) const;
 		protected:
-			size_t _version; //
-			double _beta, _theta, _phi, _wave, _aeff; //
+			size_t _version;
+			double _beta, _theta, _phi, _wave, _aeff;
 			void _init(); //
 			//void _populateDefaults();
 			std::map< std::string, boost::shared_ptr<ddOutputSingleObj> >
@@ -95,6 +95,7 @@ namespace rtmath {
 			virtual ~ddOutputSingleObj();
 			virtual void write(std::ostream &out) const {}
 			virtual void read(std::istream &in) {}
+			virtual std::string value() const {return std::string(); }
 			static void findMap(const std::string &line, std::string &res); //
 			static boost::shared_ptr<ddOutputSingleObj> constructObj
 				(const std::string &key);

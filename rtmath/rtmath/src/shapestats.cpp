@@ -17,7 +17,7 @@ namespace rtmath {
 		const unsigned int shapeFileStatsBase::_maxVersion = 0;
 
 		bool rotComp::operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
-			const boost::shared_ptr<const shapeFileStatsRotated> &rhs)
+			const boost::shared_ptr<const shapeFileStatsRotated> &rhs) const
 		{
 			if (lhs->beta != rhs->beta) return lhs->beta < rhs->beta;
 			if (lhs->theta != rhs->theta) return lhs->theta < rhs->theta;

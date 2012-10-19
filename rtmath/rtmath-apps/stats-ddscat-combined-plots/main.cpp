@@ -12,8 +12,8 @@
 #pragma warning( disable : 4521 ) // multiple copy constructors in some PCL stuff
 #pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
 
-#include "../../rtmath/rtmath/ROOTlink.h"
-#include "../../rtmath/rtmath/VTKlink.h"
+//#include "../../rtmath/rtmath/ROOTlink.h"
+//#include "../../rtmath/rtmath/VTKlink.h"
 
 #include <cmath>
 #include <memory>
@@ -33,7 +33,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/shared_ptr.hpp>
-
+/*
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/vtk_io.h>
 #include <pcl/io/vtk_lib_io.h>
@@ -46,7 +46,7 @@
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
-
+*/
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -59,15 +59,50 @@
 #include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/MagickLINK.h"
-#include "../../rtmath/rtmath/Garrett/pclstuff.h"
+//#include "../../rtmath/rtmath/MagickLINK.h"
+//#include "../../rtmath/rtmath/Garrett/pclstuff.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/matrixop.h"
+#include "../../rtmath/rtmath/units.h"
 
 void writeCSVheader(std::ostream &out)
 {
 	using namespace std;
+	/*	gout << *it << "," << *ot << "," << freq <<"," << aeff << "," << dSpacing << "," 
+			<< qbk << "," << qsca << "," << qabs << "," << qext << "," << g1 << ","
+			<< g2 << "," << sView->aeff_dipoles_const() << "," << sView->f_circum_sphere() << ","
+			<< sView->max_distance() << "," 
+			<< sRot->max().get(2,0,0) << "," 
+			<< sRot->rms_mean().get(2,0,0) << "," << sRot->mom1(0).get(2,0,0) << ","
+			<< sRot->mom2(0).get(2,0,0) << "," << rot->skewness.get(2,0,0) << ","
+			<< rot->kurtosis.get(2,0,0) << "," 
+			<< sRot->max().get(2,1,0) << "," 
+			<< sRot->rms_mean().get(2,1,0) << "," << sRot->mom1(0).get(2,1,0) << ","
+			<< sRot->mom2(0).get(2,1,0) << "," << rot->skewness.get(2,1,0) << ","
+			<< rot->kurtosis.get(2,1,0) << ","
+			<< sRot->max().get(2,2,0) << "," 
+			<< sRot->rms_mean().get(2,2,0) << "," << sRot->mom1(0).get(2,2,0) << ","
+			<< sRot->mom2(0).get(2,2,0) << "," << rot->skewness.get(2,2,0) << ","
+			<< rot->kurtosis.get(2,2,0) << ","
+			<< sRot->max().get(2,3,0) << "," 
+			<< sRot->rms_mean().get(2,3,0) << "," << sRot->mom1(0).get(2,3,0) << ","
+			<< sRot->mom2(0).get(2,3,0) << "," << rot->skewness.get(2,3,0) << ","
+			<< rot->kurtosis.get(2,3,0) << "," 
+					
+			<< rot->as_rms.get(2,0,0) << "," << rot->as_rms.get(2,0,1) << "," << rot->as_rms.get(2,0,2) << ","
+			<< rot->as_rms.get(2,1,0) << "," << rot->as_rms.get(2,1,1) << "," << rot->as_rms.get(2,1,2) << ","
+			<< rot->as_rms.get(2,2,0) << "," << rot->as_rms.get(2,2,1) << "," << rot->as_rms.get(2,2,2) 
+			<< std::endl; 
+		*/
+	out << "shape,avg,freq,aeff,dSpacing,Qbk,Qsca,Qabs,Qext,g1,g2,aeff_dipoles_const,"
+		<< "f_circum_sphere,max_distance,"
+		<<"max_x,rms_mean_x,mom1_x,mom2_x,skewness_x,kurtosis_x,"
+		<<"max_y,rms_mean_y,mom1_y,mom2_y,skewness_y,kurtosis_y,"
+		<<"max_z,rms_mean_z,mom1_z,mom2_z,skewness_z,kurtosis_z,"
+		<<"max_R,rms_mean_R,mom1_R,mom2_R,skewness_R,kurtosis_R,"
+		<< "AS_rms_xx,AS_rms_xy,AS_rms_xz,AS_rms_yx,AS_rms_yy,AS_rms_yz,AS_rms_zx,AS_rms_zy,AS_rms_zz"
+		<< std::endl;
 }
 
 int main(int argc, char** argv)
@@ -89,6 +124,7 @@ int main(int argc, char** argv)
 		desc.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
+			("output,o", po::value<string>()->default_value("results.csv"), "output csv file")
 			// dipole spacing is automatically detected
 
 			//("root", "Indicates that ROOT output is desired")
@@ -111,35 +147,52 @@ int main(int argc, char** argv)
 		if (vm.count("disable-qhull"))
 			rtmath::ddscat::shapeFileStats::doQhull(false);
 
-		vector<string> inputs = vm["input"].as< vector<string> >();
+		vector<string> rawinputs = vm["input"].as< vector<string> >();
+		vector<string> inputs;
+
 		if (vm.count("input"))
 		{
-			cerr << "Input files are:" << endl;
-			for (auto it = inputs.begin(); it != inputs.end(); it++)
+			cerr << "Input files / paths are:" << endl;
+			for (auto it = rawinputs.begin(); it != rawinputs.end(); ++it)
 				cerr << "\t" << *it << "\n";
 		} else {
-			cerr << "Need to specify input files.\n" << desc << endl;
+			cerr << "Need to specify input files or directories\n" << desc << endl;
 			return 1;
 		}
 
-		// Validate input files
-		for (auto it = inputs.begin(); it != inputs.end(); it++)
+		// Expand directories and validate input files
+		// If a directory is specified, recurse through the 
+		// structure and pick up all valid shape files.
+		for (auto it = rawinputs.begin(); it != rawinputs.end(); ++it)
 		{
 			path pi(*it);
+			if (is_symlink(pi)) pi = read_symlink(pi);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
-			if (is_directory(pi))
+			if (is_directory(pi) )
 			{
-				path pt = pi / "target.out";
-				path ps = pi / "shape.dat";
-				if (exists(pt)) *it = pt.string();
-				else if (exists(ps)) *it = ps.string();
-				else throw rtmath::debug::xPathExistsWrongType(it->c_str());
+				vector<path> cands;
+				copy(recursive_directory_iterator(pi,symlink_option::recurse), 
+					recursive_directory_iterator(), back_inserter(cands));
+				for (auto f = cands.begin(); f != cands.end(); ++f)
+				{
+					path pf = *f;
+					if (is_symlink(pf)) pf = read_symlink(pf);
+					if (is_directory(pf)) continue;
+					path fname = pf.filename();
+					if (fname.string() == "shape.dat" || 
+						fname.string() == "target.out" || 
+						fname.extension().string() == ".shp")
+						inputs.push_back(pf.string());
+				}
+			} else 
+			{
+				inputs.push_back(*it);
 			}
 		}
 
 		// gout is the global output csv file that contains all of the analyzed 
 		// avg file data combined with the shape stats
-		ofstream gout("results.csv");
+		ofstream gout(vm["output"].as< string >().c_str());
 		writeCSVheader(gout);
 
 		vector<rtmath::ddscat::shapeFileStats> Stats;
@@ -179,318 +232,60 @@ int main(int argc, char** argv)
 				string ext = ot->extension().string();
 				if (ext != ".avg") continue;
 
+				cerr << *ot << std::endl;
+
 				using namespace rtmath::ddscat;
 				// This file is a .avg file. Read it.
 				ddOutputSingle ddfile(ot->string());
 				// Extract interdipole spacing, aeff and frequency
 				double dSpacing = ddfile.dipoleSpacing();
-				double aeff = 0;
-				double freq = 0;
+				double aeff = ddfile.aeff();
+				double freq = rtmath::units::conv_spec("um","GHz").convert(ddfile.wave());
 
 				
 				double qbk = ddfile.getStatEntry(QBKM);
 				double qsca = ddfile.getStatEntry(QSCAM);
-				double qbk = ddfile.getStatEntry(QABSM);
-				double qsca = ddfile.getStatEntry(QEXTM);
-				double qbk = ddfile.getStatEntry(G1M);
-				double qsca = ddfile.getStatEntry(G2M);
+				double qabs = ddfile.getStatEntry(QABSM);
+				double qext = ddfile.getStatEntry(QEXTM);
+				double g1 = ddfile.getStatEntry(G1M);
+				double g2 = ddfile.getStatEntry(G2M);
 
 				// Create the stats views - everything wil be in physical units
 				boost::shared_ptr<shapeFileStatsDipoleView> sView
 					(new shapeFileStatsDipoleView(sstats, dSpacing));
+				auto rot = sstats->calcStatsRot(0,0,0);
 				boost::shared_ptr<shapeFileStatsRotatedView> sRot
-					(new shapeFileStatsRotatedView(sstats->calcStatsRot(0,0,0), dSpacing));
+					(new shapeFileStatsRotatedView(rot, dSpacing));
 
 
 				// Write the csv files
-
+				gout << *it << "," << *ot << "," << freq <<"," << aeff << "," << dSpacing << "," 
+					<< qbk << "," << qsca << "," << qabs << "," << qext << "," << g1 << ","
+					<< g2 << "," << sView->aeff_dipoles_const() << "," << sView->f_circum_sphere() << ","
+					<< sView->max_distance() << "," 
+					<< sRot->max().get(2,0,0) << "," 
+					<< sRot->rms_mean().get(2,0,0) << "," << sRot->mom1(0).get(2,0,0) << ","
+					<< sRot->mom2(0).get(2,0,0) << "," << rot->skewness.get(2,0,0) << ","
+					<< rot->kurtosis.get(2,0,0) << "," 
+					<< sRot->max().get(2,1,0) << "," 
+					<< sRot->rms_mean().get(2,1,0) << "," << sRot->mom1(0).get(2,1,0) << ","
+					<< sRot->mom2(0).get(2,1,0) << "," << rot->skewness.get(2,1,0) << ","
+					<< rot->kurtosis.get(2,1,0) << ","
+					<< sRot->max().get(2,2,0) << "," 
+					<< sRot->rms_mean().get(2,2,0) << "," << sRot->mom1(0).get(2,2,0) << ","
+					<< sRot->mom2(0).get(2,2,0) << "," << rot->skewness.get(2,2,0) << ","
+					<< rot->kurtosis.get(2,2,0) << ","
+					<< sRot->max().get(2,3,0) << "," 
+					<< sRot->rms_mean().get(2,3,0) << "," << sRot->mom1(0).get(2,3,0) << ","
+					<< sRot->mom2(0).get(2,3,0) << "," << rot->skewness.get(2,3,0) << ","
+					<< rot->kurtosis.get(2,3,0) << "," 
+					
+					<< rot->as_rms.get(2,0,0) << "," << rot->as_rms.get(2,0,1) << "," << rot->as_rms.get(2,0,2) << ","
+					<< rot->as_rms.get(2,1,0) << "," << rot->as_rms.get(2,1,1) << "," << rot->as_rms.get(2,1,2) << ","
+					<< rot->as_rms.get(2,2,0) << "," << rot->as_rms.get(2,2,1) << "," << rot->as_rms.get(2,2,2) 
+					<< std::endl; 
 			}
 
-
-			if (vm.count("aspect-ratios"))
-			{
-				cout << "Aspect ratios:" << endl;
-				cout << "\tAxy\tAxz\tAyz\n";
-				auto it = sstats->rotations.begin();
-				cout << "Abs\t" 
-					<< it->as_abs.get(2,0,1) << "\t" 
-					<< it->as_abs.get(2,0,2) << "\t" 
-					<< it->as_abs.get(2,1,2) << endl;
-				cout << "Amean\t"
-					<< it->as_abs_mean.get(2,0,1) << "\t" 
-					<< it->as_abs_mean.get(2,0,2) << "\t" 
-					<< it->as_abs_mean.get(2,1,2) << endl;
-				cout << "RMS\t"
-					<< it->as_rms.get(2,0,1) << "\t" 
-					<< it->as_rms.get(2,0,2) << "\t" 
-					<< it->as_rms.get(2,1,2) << endl;
-				cout << endl;
-			}
-
-			if (vm.count("f-circum-sphere"))
-			{
-				cout << "f-circum-sphere: " << sstats->f_circum_sphere << endl;
-			}
-
-
-			if (vm.count("dipole-density-distance") || vm.count("dipole-density-numneighbors"))
-			{
-				string sdists, sneigh;
-				if (vm.count("dipole-density-distance"))
-					sdists = vm["dipole-density-distance"].as<string>();
-				if (vm.count("dipole-density-numneighbors"))
-					sneigh = vm["dipole-density-numneighbors"].as<string>();
-				paramSet<float> cdists(sdists);
-				paramSet<float> cneigh(sneigh);
-				// Construct pairwise containers to handle both cases.
-				set<pair<float, bool> > c;
-				for (auto ot = cdists.begin(); ot != cdists.end(); ot++)
-				{
-					c.insert(pair<float,bool>(*ot,false));
-				}
-				for (auto ot = cneigh.begin(); ot != cneigh.end(); ot++)
-				{
-					c.insert(pair<float,bool>(*ot,true));
-				}
-
-				for (auto ot = c.begin(); ot != c.end(); ot++)
-				{
-					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
-					ostringstream ofname;
-					if (ot->second == false)
-						ofname << *it << "-dipole-density-d-" << ot->first;
-					else
-						ofname << *it << "-dipole-density-neighbors-" << ot->first;
-					string fbase = ofname.str();
-
-					// Do lots of kd tree sorting to generate histogram in 1d of number of neighbors within specified radius
-					// Select the center slice of the shape and make a numeric 2d histogram reflecting this
-					// Also produce 3d vtk file output
-
-					// Get reference to the sstats _shp pointContainer
-					boost::shared_ptr<rtmath::Garrett::pointContainer> pc = sstats->_shp->_pclObj;
-
-					// The container for the number of neighbors container and the rms distance container
-					//pcl::PointXYZRGB
-					pcl::PointCloud<pcl::PointXYZI> nneighbors; // XYZ and intensity (float)
-					pcl::PointCloud<pcl::PointXYZI> rmsneighbors;
-					nneighbors.reserve(pc->cloud->size());
-					rmsneighbors.reserve(pc->cloud->size());
-					//pcl::PointXYZI a;
-					
-					// The set containing the neighbor number information
-					multiset<float> sneighbors;
-					multiset<float> srms;
-					
-					// Generate kd trees relative to this node
-					pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree (new pcl::KdTreeFLANN<pcl::PointXYZ>);
-					tree->setInputCloud (pc->cloud);
-
-					vtkSmartPointer<vtkDoubleArray> vRMS = 
-						vtkSmartPointer<vtkDoubleArray>::New();
-					vtkSmartPointer<vtkDoubleArray> vN = 
-						vtkSmartPointer<vtkDoubleArray>::New();
-
-					vRMS->SetName("RMS distances");
-					vRMS->SetNumberOfValues(pc->cloud->size());
-					//vRMS->SetNumberOfComponents(3);
-					//vRMS->SetNumberOfTuples(pc->cloud->size());
-
-					vN->SetNumberOfValues(pc->cloud->size());
-					if (ot->second == false)
-						vN->SetName("Num points within specified distance");
-					else
-						vN->SetName("Distances of nearest neighbors");
-					//vN->SetNumberOfComponents(3);
-					//vN->SetNumberOfTuples(pc->cloud->size());
-
-					size_t p=0; // Stupid VTK requirement
-					for (auto sp = pc->cloud->begin(); sp != pc->cloud->end(); sp++, p++)
-					{
-						vector<int> indices;
-						vector<float> d_sq;
-						//pc->cloud->begin()->x;
-						if (ot->second == false)
-							tree->radiusSearch(*sp, ot->first, indices, d_sq);
-						else
-							tree->nearestKSearch(*sp, (int) ot->first, indices, d_sq);
-						// d_sq now has all of the squared distances. We also have the number of points in the region.
-						valarray<float> vdsq(d_sq.data(),d_sq.size());
-						double dmean = 0;
-						for_each(d_sq.begin(), d_sq.end(), [&] (float i)
-						{
-							dmean += sqrt(i)/d_sq.size();
-						});
-
-						double drms = sqrt(vdsq.sum() / (float) d_sq.size());
-
-						pcl::PointXYZI n, rms;
-						n.x = sp->x;
-						n.y = sp->y;
-						n.z = sp->z;
-						if (ot->second == false)
-						{
-							n.intensity = d_sq.size();
-							sneighbors.insert((float) d_sq.size());
-						} else {
-							n.intensity = dmean;
-							sneighbors.insert((float) dmean);
-						}
-
-						rms.x = sp->x;
-						rms.y = sp->y;
-						rms.z = sp->z;
-						rms.intensity = drms;
-
-						// Container insertion
-						
-						srms.insert(drms);
-						vN->SetValue(p,n.intensity);
-						vRMS->SetValue(p,rms.intensity);
-						nneighbors.push_back(move(n));
-						rmsneighbors.push_back(move(rms));
-					}
-
-					// All of the points have been processed. Time to write the vtk files and plot the histograms
-					// I don't like the pcl conversion defaults, so I get to implement my own!
-					vtkSmartPointer<vtkStructuredGrid> vpc = vtkSmartPointer<vtkStructuredGrid>::New();
-					pcl::io::pointCloudTovtkStructuredGrid<pcl::PointXYZI>(nneighbors, vpc);
-					
-					// The structured grid has now has the point coordinates. Now to attach the arrays for coloring
-					//vpc->GetPointData().AddArray(vRMS);
-					vpc->GetPointData()->AddArray(vRMS);
-					vpc->GetPointData()->AddArray(vN);
-					
-					vtkSmartPointer<vtkXMLStructuredGridWriter> writer =
-						vtkSmartPointer<vtkXMLStructuredGridWriter>::New();
-					writer->SetFileName(string(fbase).append("-neighbors.vts").c_str());
-					writer->SetInputConnection(vpc->GetProducerPort());
-					//writer->SetInputData(pcN);
-					writer->Write();
-
-
-					// Plotting two 1d histograms side-by-side - sneighbors and srms
-
-					boost::shared_ptr<TCanvas> tC(new TCanvas("c","Density plots", 0, 0, 2100, 600));
-					boost::shared_ptr<TH1F> tNN(new TH1F());
-					boost::shared_ptr<TH1F> tRMS(new TH1F());
-
-					double Nrange = *(sneighbors.rbegin()) - *(sneighbors.begin());
-					double Rrange = *(srms.rbegin()) - *(srms.begin());
-					tNN->SetBins(sneighbors.size(), *(sneighbors.begin()) - (Nrange/10.), *(sneighbors.rbegin()) + (Nrange/10.));
-					tRMS->SetBins(srms.size(), *(srms.begin()) - (Rrange/10.), *(srms.rbegin()) + (Rrange/10.));
-
-					for_each(sneighbors.begin(), sneighbors.end(), [&] (float i)
-					{
-						tNN->Fill(i);
-					});
-					for_each(srms.begin(), srms.end(), [&] (float i)
-					{
-						tRMS->Fill(i);
-					});
-
-					gStyle->SetPalette(1);
-					tC->Divide(2,1);
-
-					tC->cd(1);
-					tNN->Draw();
-					if (ot->second == false)
-					{
-						tNN->SetTitle(string("Number of neighbors within distance ").append(boost::lexical_cast<string>(ot->first)).c_str());
-						tNN->GetXaxis()->SetTitle("Number of neighbors");
-					} else {
-						tNN->SetTitle(string("Mean Distances of nearest ").append(boost::lexical_cast<string>(ot->first)).append(" neighbors").c_str());
-						tNN->GetXaxis()->SetTitle("Mean neighbor distance");
-					}
-					
-					tNN->GetXaxis()->CenterTitle();
-					tNN->GetYaxis()->SetTitle("Frequency");
-					tNN->GetYaxis()->CenterTitle();
-
-					tC->cd(2);
-					tRMS->Draw();
-					if (ot->second == false)
-					{
-						tRMS->SetTitle(string("RMS distance of neighbors within distance ").append(boost::lexical_cast<string>(ot->first)).c_str());
-						tRMS->GetXaxis()->SetTitle("Distance");
-					} else {
-						tRMS->SetTitle(string("RMS distance of nearest ").append(boost::lexical_cast<string>(ot->first)).append(" neighbors").c_str());
-						tRMS->GetXaxis()->SetTitle("Distance");
-					}
-					
-					tRMS->GetXaxis()->CenterTitle();
-					tRMS->GetYaxis()->SetTitle("Frequency");
-					tRMS->GetYaxis()->CenterTitle();
-
-					tC->SaveAs(string(fbase).append("-histogram1.png").c_str());
-				}
-			}
-
-			if (vm.count("PE"))
-			{
-				string ofname = *it;
-				ofname.append("-PE.png");
-
-				// Extract the potential energies against x-dimension, 
-				// using theta and phi as the axes
-				const size_t np = sstats->rotations.size();
-				boost::shared_ptr<TCanvas> tC(new TCanvas("c","PE plot", 0,0,2100,600));
-				boost::shared_ptr<TGraph2D> tPEx(new TGraph2D());
-				boost::shared_ptr<TGraph2D> tPEy(new TGraph2D());
-				boost::shared_ptr<TGraph2D> tPEz(new TGraph2D());
-
-				size_t n=0;
-				// TODO: resizing only for beta = 0
-				for (auto ot = sstats->rotations.begin(); ot != sstats->rotations.end(); ot++, n++)
-				{
-					const double beta = ot->beta;
-					if (beta != 0) continue;
-					const double theta = ot->theta;
-					const double phi = ot->phi;
-					const double PEx = ot->PE[0].get(2,0,0);
-					const double PEy = ot->PE[0].get(2,1,0);
-					const double PEz = ot->PE[0].get(2,2,0);
-					
-					tPEx->SetPoint(n,theta,phi,PEx);
-					tPEy->SetPoint(n,theta,phi,PEy);
-					tPEz->SetPoint(n,theta,phi,PEz);
-				}
-				gStyle->SetPalette(1);
-				tC->Divide(3,1);
-
-				tC->cd(1);
-				tPEx->Draw("surf3");
-				tPEx->SetTitle("Potential Energy - x");
-				tPEx->GetXaxis()->SetTitle("#theta");
-				tPEx->GetXaxis()->CenterTitle();
-				tPEx->GetYaxis()->SetTitle("#phi");
-				tPEx->GetYaxis()->CenterTitle();
-				tPEx->GetZaxis()->SetTitle("PE (scaled)");
-				tPEx->GetZaxis()->CenterTitle();
-
-
-				tC->cd(2);
-				tPEy->Draw("surf3");
-				tPEy->SetTitle("Potential Energy - y");
-				tPEy->GetXaxis()->SetTitle("#theta");
-				tPEy->GetXaxis()->CenterTitle();
-				tPEy->GetYaxis()->SetTitle("#phi");
-				tPEy->GetYaxis()->CenterTitle();
-				tPEy->GetZaxis()->SetTitle("PE (scaled)");
-				tPEy->GetZaxis()->CenterTitle();
-
-				tC->cd(3);
-				tPEz->Draw("surf3");
-				tPEz->SetTitle("Potential Energy - z");
-				tPEz->GetXaxis()->SetTitle("#theta");
-				tPEz->GetXaxis()->CenterTitle();
-				tPEz->GetYaxis()->SetTitle("#phi");
-				tPEz->GetYaxis()->CenterTitle();
-				tPEz->GetZaxis()->SetTitle("PE (scaled)");
-				tPEz->GetZaxis()->CenterTitle();
-
-				tC->SaveAs(ofname.c_str());
-			}
 		}
 
 		//cerr << "Done." << endl;

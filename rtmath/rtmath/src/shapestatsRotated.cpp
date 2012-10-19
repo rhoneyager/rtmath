@@ -79,13 +79,14 @@ namespace rtmath {
 				tag::variance,
 				tag::covariance<double, tag::covariate1>,
 				tag::covariance<double, tag::covariate2>
-			> > > acc_x, acc_y, acc_z; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
+			> > > acc_x, acc_y, acc_z, acc_r; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 
 			const size_t nV = _shp->_Dielectrics.size()+1;
-			matrixop cloner(2,3,1), clonerb(2,3,3);
+			matrixop cloner(2,4,1), clonerb(2,3,3);
 			acc_x.resize(nV); // Assumes that the dielectrics start at 1.
 			acc_y.resize(nV); // Will probably crash if not.
 			acc_z.resize(nV);
+			acc_r.resize(nV);
 			res.PE.resize(nV, cloner);
 			res.mom1.resize(nV, cloner);
 			res.mom2.resize(nV, cloner);
@@ -109,9 +110,11 @@ namespace rtmath {
 				acc_x[0](x, covariate1 = y, covariate2 = z);
 				acc_y[0](y, covariate1 = x, covariate2 = z);
 				acc_z[0](z, covariate1 = x, covariate2 = y);
+				acc_r[0](sqrt((x*x)+(y*y)+(z*z)), covariate1 = x, covariate2 = y);
 				acc_x[diel](x, covariate1 = y, covariate2 = z);
 				acc_y[diel](y, covariate1 = x, covariate2 = z);
 				acc_z[diel](z, covariate1 = x, covariate2 = y);
+				acc_r[diel](sqrt((x*x)+(y*y)+(z*z)), covariate1 = x, covariate2 = y);
 				abs_x(abs(x));
 				abs_y(abs(y));
 				abs_z(abs(z));
@@ -125,23 +128,27 @@ namespace rtmath {
 			res.min.set(boost::accumulators::min(acc_x[0]),2,0,0);
 			res.min.set(boost::accumulators::min(acc_y[0]),2,1,0);
 			res.min.set(boost::accumulators::min(acc_z[0]),2,2,0);
+			res.min.set(boost::accumulators::min(acc_r[0]),2,3,0);
 
 			res.max.set(boost::accumulators::max(acc_x[0]),2,0,0);
 			res.max.set(boost::accumulators::max(acc_y[0]),2,1,0);
 			res.max.set(boost::accumulators::max(acc_z[0]),2,2,0);
+			res.max.set(boost::accumulators::max(acc_r[0]),2,3,0);
 
 			res.sum.set(boost::accumulators::sum(acc_x[0]),2,0,0);
 			res.sum.set(boost::accumulators::sum(acc_y[0]),2,1,0);
 			res.sum.set(boost::accumulators::sum(acc_z[0]),2,2,0);
+			res.sum.set(boost::accumulators::sum(acc_r[0]),2,3,0);
 
 			res.skewness.set(boost::accumulators::skewness(acc_x[0]),2,0,0);
 			res.skewness.set(boost::accumulators::skewness(acc_y[0]),2,1,0);
 			res.skewness.set(boost::accumulators::skewness(acc_z[0]),2,2,0);
+			res.skewness.set(boost::accumulators::skewness(acc_r[0]),2,3,0);
 
 			res.kurtosis.set(boost::accumulators::kurtosis(acc_x[0]),2,0,0);
 			res.kurtosis.set(boost::accumulators::kurtosis(acc_y[0]),2,1,0);
 			res.kurtosis.set(boost::accumulators::kurtosis(acc_z[0]),2,2,0);
-
+			res.kurtosis.set(boost::accumulators::kurtosis(acc_r[0]),2,3,0);
 
 			// Absolue value-dependent quantities
 
@@ -195,6 +202,7 @@ namespace rtmath {
 			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_x[0])),2,0,0);
 			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_y[0])),2,1,0);
 			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_z[0])),2,2,0);
+			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_r[0])),2,3,0);
 
 			const size_t _N = _shp->_numPoints;
 			const matrixop &d = _shp->_d;
@@ -205,10 +213,12 @@ namespace rtmath {
 				res.mom1[i].set(boost::accumulators::moment<1>(acc_x[i]),2,0,0);
 				res.mom1[i].set(boost::accumulators::moment<1>(acc_y[i]),2,1,0);
 				res.mom1[i].set(boost::accumulators::moment<1>(acc_z[i]),2,2,0);
+				res.mom1[i].set(boost::accumulators::moment<1>(acc_r[i]),2,3,0);
 
 				res.mom2[i].set(boost::accumulators::moment<2>(acc_x[i]),2,0,0);
 				res.mom2[i].set(boost::accumulators::moment<2>(acc_y[i]),2,1,0);
 				res.mom2[i].set(boost::accumulators::moment<2>(acc_z[i]),2,2,0);
+				res.mom2[i].set(boost::accumulators::moment<2>(acc_r[i]),2,3,0);
 
 				//covariance
 				res.covariance[i].set(boost::accumulators::variance(acc_x[i]),2,0,0);
@@ -280,10 +290,10 @@ namespace rtmath {
 
 
 		shapeFileStatsRotated::shapeFileStatsRotated()
-			: min(2,3,1), max(2,3,1), sum(2,3,1), skewness(2,3,1), kurtosis(2,3,1),
+			: min(2,4,1), max(2,4,1), sum(2,4,1), skewness(2,4,1), kurtosis(2,4,1),
 			abs_min(2,3,1), abs_max(2,3,1), abs_mean(2,3,1),
 			as_abs(2,3,3), as_abs_mean(2,3,3), as_rms(2,3,3),
-			rms_mean(2,3,1), areas(2,3,1)
+			rms_mean(2,4,1), areas(2,3,1)
 		{
 			this->beta = 0;
 			this->theta = 0;

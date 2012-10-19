@@ -108,6 +108,12 @@ namespace
 		{
 			out << head << val << tail << std::endl;
 		}
+		virtual std::string value() const
+		{
+			std::ostringstream out;
+			out << val;
+			return out.str();
+		}
 		virtual void read(std::istream &in)
 		{
 			std::string lin;
@@ -371,6 +377,11 @@ namespace rtmath {
 				istringstream ii(lin);
 				obj->read(ii);
 				_objMap[key] = obj;
+				if (key == "beta") _beta = boost::lexical_cast<double>(obj->value());
+				if (key == "theta") _theta = boost::lexical_cast<double>(obj->value());
+				if (key == "phi") _phi = boost::lexical_cast<double>(obj->value());
+				if (key == "wave") _wave = boost::lexical_cast<double>(obj->value());
+				if (key == "aeff") _aeff = boost::lexical_cast<double>(obj->value());
 			}
 		}
 
@@ -610,10 +621,7 @@ namespace rtmath {
 
 		double ddOutputSingle::dipoleSpacing() const
 		{
-			std::ostringstream out;
-			_objMap.at("tol")->write(out);
-			std::string sout = out.str();
-			return boost::lexical_cast<double>(sout);
+			return boost::lexical_cast<double>(_objMap.at("d")->value());
 		}
 
 		void ddOutputSingle::writeF(std::ostream &out) const

@@ -33,7 +33,7 @@ namespace rtmath {
 		struct rotComp
 		{
 			bool operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
-				const boost::shared_ptr<const shapeFileStatsRotated> &rhs);
+				const boost::shared_ptr<const shapeFileStatsRotated> &rhs) const;
 		};
 
 		class shapeFileStatsBase
