@@ -225,18 +225,6 @@ set (mie-hdr
 source_group("Source Files\\mie" FILES ${mie-src})
 source_group("Header Files\\mie" FILES ${mie-hdr})
 
-# netcdf
-set (netcdf-src
-	src/ncContainer.cpp
-	)
-set (netcdf-hdr
-	rtmath/netcdf/ncContainer.h
-	rtmath/netcdf/ncDim.h
-	rtmath/netcdf/ncVar.h
-	)
-source_group("Source Files\\netcdf" FILES ${netcdf-src})
-source_group("Header Files\\netcdf" FILES ${netcdf-hdr})
-
 # Polynomials
 set (polynomials-src
 	src/chebyshev.cpp
@@ -339,7 +327,6 @@ set (srcfiles
 	${general-src}			${general-hdr}
 	${gridded-src}			${gridded-hdr}
 	${mie-src}				${mie-hdr}
-	${netcdf-src}			${netcdf-hdr}
 	${polynomials-src}		${polynomials-hdr}
 	${publicdomain-src}		${publicdomain-hdr}
 	${rayleigh-src}			${rayleigh-hdr}
