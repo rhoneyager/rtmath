@@ -1,3 +1,5 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
 #pragma warning( disable : 4800 ) // forcing non-bool type to true or false
@@ -53,7 +55,7 @@
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/matrixop.h"
 
-
+#pragma GCC diagnostic pop
 
 int main(int argc, char** argv)
 {
@@ -409,7 +411,7 @@ int main(int argc, char** argv)
 				if (!dSpacing) throw rtmath::debug::xBadInput("Need dipole spacings for radial distribution plot");
 				boost::shared_ptr<rtmath::ddscat::shapeFileStatsRotatedView> sstatsRView
 					(new rtmath::ddscat::shapeFileStatsRotatedView(sstats->calcStatsRot(0,0,0), dSpacing));
-				rtmath::ddscat::concaveHull ccv(sstats->_shp->_latticePtsStd);
+				rtmath::ddscat::concaveHull ccv(*(sstats->_shp->_pclObj->cloud));
 				ccv.constructHull(lambda);
 
 				for (auto ot = numbins.begin(); ot != numbins.end(); ++ot)
@@ -428,10 +430,10 @@ int main(int argc, char** argv)
 
 					double Nrange = maxr - minr;
 					tR->SetBins(*ot, 0, maxr + (Nrange/10.));
-
-					for(auto pt = ccv._points.begin(); pt != ccv._points.end(); ++pt)
+					for(auto pt = ccv._hullPts.begin(); pt != ccv._hullPts.end(); ++pt)
 					{
-						double i = sqrt( pow(pt->x *dSpacing,2.0) + pow(pt->y *dSpacing,2.0) + pow(pt->z *dSpacing,2.0) );
+						double i = dSpacing * sqrt( pow(pt->x ,2.0) + pow(pt->y ,2.0) + pow(pt->z ,2.0) );
+
 						double w;
 						if (vm.count("radial-distribution-scaled"))
 							w = (i) ? 1.0/(4.0*boost::math::constants::pi<double>()*i*i) : 0;
@@ -444,8 +446,8 @@ int main(int argc, char** argv)
 
 					//tC->cd(1);
 					tR->Draw();
-					tR->SetTitle(string("Radial distribution of ").append(*it).c_str());
-					tR->GetXaxis()->SetTitle("Radial distance (um)");
+					tR->SetTitle(string("Concave Hull Radial Distribution of ").append(*it).c_str());
+					tR->GetXaxis()->SetTitle("Radial Distance (um)");
 					
 					tR->GetXaxis()->CenterTitle();
 					tR->GetYaxis()->SetTitle("Frequency");
