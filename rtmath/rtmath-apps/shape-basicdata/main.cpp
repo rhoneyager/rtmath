@@ -1,11 +1,11 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
 #pragma warning( disable : 4800 ) // forcing non-bool type to true or false
 #pragma warning( disable : 4521 ) // multiple copy constructors in some PCL stuff
 #pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
-
+#pragma warning( disable : 4068 ) // warning on unknown pragmas - GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include "../../rtmath/rtmath/ROOTlink.h"
 #include "../../rtmath/rtmath/VTKlink.h"
 
@@ -96,6 +96,7 @@ int main(int argc, char** argv)
 
 			("convex-hull","Output convex hull information and vtk file")
 			("concave-hull", po::value<string>(), "Output concave hull information and vtk file for given value(s)")
+			("output-hull-points", "When hull is calculated, output the points to a csv file")
 
 			("dipole-density-distance", po::value< string >(), 
 				"Make histogram and vtk file of number of neighbors within specified spacings")
@@ -301,12 +302,29 @@ int main(int argc, char** argv)
 				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
 				string ofname = *it;
 				ofname.append("-convex-hull.vtk");
-				rtmath::ddscat::convexHull cvx(sstats->_shp->_latticePtsStd);
+				rtmath::ddscat::convexHull cvx(*(sstats->_shp->_pclObj->cloud));
 				cvx.constructHull();
 				cvx.writeVTKhull(ofname);
 				cout << "Hull has volume: " << cvx._volume << endl;
 				cout << "Hull has surface area: " << cvx._surfarea << endl;
 				//cout << "Hull has " << cvx._nFaces << " faces." << endl;
+
+				if (vm.count("output-hull-points"))
+					{
+						ostringstream fvname;
+						fvname << *it << "-convex-hull-points.csv";
+						ofstream fout(fvname.str().c_str());
+						fout << fvname.str() << endl;
+						fout << "x,y,z,r\n";
+						for (auto pt = cvx._hullPts.begin(); pt != cvx._hullPts.end(); ++pt)
+						{
+							double s = (dSpacing) ? dSpacing : 1;
+							fout << s*pt->x << "," << s*pt->y << "," << s*pt->z << ","
+								<< sqrt( pow(pt->x *s,2.0) + pow(pt->y *s,2.0) + pow(pt->z *s,2.0) )
+								<< "\n";
+						}
+						fout.close();
+					}
 			}
 
 			if (vm.count("concave-hull"))
@@ -318,9 +336,26 @@ int main(int argc, char** argv)
 					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
 					ostringstream fname;
 					fname << *it << "-concave-hull-" << *ot << ".vtk";
-					rtmath::ddscat::concaveHull ccv(sstats->_shp->_latticePtsStd);
+					rtmath::ddscat::concaveHull ccv(*(sstats->_shp->_pclObj->cloud));
 					ccv.constructHull(*ot);
 					ccv.writeVTKhull(fname.str());
+
+					if (vm.count("output-hull-points"))
+					{
+						ostringstream fvname;
+						fvname << *it << "-concave-hull-" << *ot << "-points.csv";
+						ofstream fout(fvname.str().c_str());
+						fout << fvname.str() << endl;
+						fout << "x,y,z,r\n";
+						for (auto pt = ccv._hullPts.begin(); pt != ccv._hullPts.end(); ++pt)
+						{
+							double s = (dSpacing) ? dSpacing : 1;
+							fout << s*pt->x << "," << s*pt->y << "," << s*pt->z << ","
+								<< s*sqrt( pow(pt->x,2.0f) + pow(pt->y,2.0f) + pow(pt->z,2.0f) )
+								<< "\n";
+						}
+						fout.close();
+					}
 					/*
 					cout << "Hull has volume: " << ccv._volume << endl;
 					cout << "Hull has surface area: " << ccv._surfarea << endl;
@@ -432,7 +467,7 @@ int main(int argc, char** argv)
 					tR->SetBins(*ot, 0, maxr + (Nrange/10.));
 					for(auto pt = ccv._hullPts.begin(); pt != ccv._hullPts.end(); ++pt)
 					{
-						double i = dSpacing * sqrt( pow(pt->x ,2.0) + pow(pt->y ,2.0) + pow(pt->z ,2.0) );
+						double i = dSpacing * sqrt( pow(pt->x ,2.0f) + pow(pt->y ,2.0f) + pow(pt->z ,2.0f) );
 
 						double w;
 						if (vm.count("radial-distribution-scaled"))
