@@ -15,6 +15,9 @@
 #include <TNamed.h>
 #include <TGraph2D.h>
 #include <TStyle.h>
+#include <TSpectrum.h>
+#include <TVirtualFitter.h>
+#include <TRandom.h>
 #include <TH2.h>
 #include <TH3.h>
 #include <TFile.h>
@@ -33,6 +36,7 @@
 #pragma comment(lib, "libGraf3d")
 #pragma comment(lib, "libGpad")
 #pragma comment(lib, "libTree")
+#pragma comment(lib, "libSpectrum")
 #pragma comment(lib, "libRint")
 #pragma comment(lib, "libPostscript")
 #pragma comment(lib, "libMatrix")
