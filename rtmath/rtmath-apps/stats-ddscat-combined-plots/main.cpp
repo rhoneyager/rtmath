@@ -12,9 +12,7 @@
 #pragma warning( disable : 4521 ) // multiple copy constructors in some PCL stuff
 #pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
 
-//#include "../../rtmath/rtmath/ROOTlink.h"
-//#include "../../rtmath/rtmath/VTKlink.h"
-
+//#include <Eigen/
 #include <cmath>
 #include <memory>
 #include <iostream>
@@ -33,20 +31,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/shared_ptr.hpp>
-/*
-#include <pcl/io/pcd_io.h>
-#include <pcl/io/vtk_io.h>
-#include <pcl/io/vtk_lib_io.h>
-#include <pcl/io/vtk_lib_io.hpp>
-#include <pcl/point_types.h>
-#include <pcl/kdtree/kdtree.h>
-#include <pcl/kdtree/kdtree_flann.h>
-#include <vtkSmartPointer.h>
-#include <vtkStructuredGrid.h>
-#include <vtkXMLStructuredGridWriter.h>
-#include <vtkDoubleArray.h>
-#include <vtkIntArray.h>
-*/
+
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -54,17 +39,79 @@
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsviews.h"
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
-#include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
-#include "../../rtmath/rtmath/error/error.h"
-#include "../../rtmath/rtmath/error/debug.h"
 //#include "../../rtmath/rtmath/MagickLINK.h"
-//#include "../../rtmath/rtmath/Garrett/pclstuff.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/error/error.h"
+#include "../../rtmath/rtmath/error/debug.h"
+class dataset
+{
+public:
+	dataset() : id("") {}
+	dataset(const std::string &prefix)
+		: id(prefix)
+	{
+	}
+	std::string id;
+	boost::filesystem::path shape;
+	std::vector<boost::filesystem::path> avgs;
+
+	static std::string getPrefix(const boost::filesystem::path &filename)
+	{
+		// Prefix is the parent path and the first part of the filename.
+		// Parent path is included to allow recursion without naming conflicts
+		using namespace std;
+		using namespace boost::filesystem;
+		path pleaf = filename.filename();
+		// shape files are like 1mm14shape.txt
+		// avg files are 1mm14_t_f.avg
+		// So, search for first occurance of '_' and 'shape'. Truncate.
+		string sleaf = pleaf.string();
+		size_t pund = sleaf.find('_');
+		size_t pshape = sleaf.find("shape");
+		size_t pos = 0;
+		if (pund == string::npos && pshape) pos = pshape;
+		else if (pshape == string::npos && pund) pos = pund;
+		else if (pshape == pund == string::npos) throw;
+		else pos = (pund < pshape) ? pund : pshape;
+		string prefix = filename.parent_path().string();
+		prefix.append("/");
+		prefix.append(sleaf.substr(0,pos));
+		return prefix;
+	}
+	static bool isValid(const boost::filesystem::path &filename)
+	{
+		using namespace boost::filesystem;
+		using namespace std;
+		if (is_directory(filename)) return false;
+		path pleaf = filename.filename();
+		path ext = pleaf.extension();
+		if (ext.string() == ".avg") return true;
+		if (pleaf.string().find("shape.txt") != string::npos) return true;
+		if (ext.string() == ".shp") return true;
+		if (pleaf.string().find("shape.dat") != string::npos) return true;
+		return false;
+	}
+	static bool isAvg(const boost::filesystem::path &filename)
+	{
+		using namespace boost::filesystem;
+		using namespace std;
+		path pleaf = filename.filename();
+		path ext = pleaf.extension();
+		if (ext.string() == ".avg") return true;
+		return false;
+	}
+	static bool isShape(const boost::filesystem::path &filename)
+	{
+		if (!isValid(filename)) return false;
+		if (isAvg(filename)) return false;
+		return true;
+	}
+};
 
 void writeCSVheader(std::ostream &out)
 {
@@ -125,12 +172,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("output,o", po::value<string>()->default_value("results.csv"), "output csv file")
-			// dipole spacing is automatically detected
-
-			//("root", "Indicates that ROOT output is desired")
-			//("csv", "Indicates that csv / tsv output is desired")
-			//("png", "Produce basic png plots")
-			// Add plotting var specification, axes labels, titles, ...
+			//("root", "Indicates that ROOT output is also desired")
 
 			("disable-qhull", "Disable qhull calculations for the shapes.");
 
@@ -148,17 +190,40 @@ int main(int argc, char** argv)
 			rtmath::ddscat::shapeFileStats::doQhull(false);
 
 		vector<string> rawinputs = vm["input"].as< vector<string> >();
-		vector<string> inputs;
+		map<string,dataset> data;
 
-		if (vm.count("input"))
+		if (!vm.count("input"))
 		{
-			cerr << "Input files / paths are:" << endl;
-			for (auto it = rawinputs.begin(); it != rawinputs.end(); ++it)
-				cerr << "\t" << *it << "\n";
-		} else {
 			cerr << "Need to specify input files or directories\n" << desc << endl;
 			return 1;
 		}
+
+		auto insertMapping = [&](const boost::filesystem::path &p)
+		{
+			if (dataset::isValid(p) == false) return;
+			std::string prefix = dataset::getPrefix(p);
+			if (!data.count(prefix))
+				data[prefix] = std::move(dataset(prefix));
+			if (dataset::isShape(p))
+				data[prefix].shape = p;
+			if (dataset::isAvg(p))
+				data[prefix].avgs.push_back(p);
+		};
+
+		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
+		{
+			using namespace boost::filesystem;
+			if (is_symlink(p))
+			{
+				path pf = boost::filesystem::absolute(read_symlink(p), p.parent_path());
+				if (is_directory(pf))
+					return pf;
+				else
+					return p;
+			} else {
+				return p;
+			}
+		};
 
 		// Expand directories and validate input files
 		// If a directory is specified, recurse through the 
@@ -166,7 +231,7 @@ int main(int argc, char** argv)
 		for (auto it = rawinputs.begin(); it != rawinputs.end(); ++it)
 		{
 			path pi(*it);
-			if (is_symlink(pi)) pi = read_symlink(pi);
+			pi = expandSymlinks(pi);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
 			if (is_directory(pi) )
 			{
@@ -176,17 +241,12 @@ int main(int argc, char** argv)
 				for (auto f = cands.begin(); f != cands.end(); ++f)
 				{
 					path pf = *f;
-					if (is_symlink(pf)) pf = read_symlink(pf);
-					if (is_directory(pf)) continue;
-					path fname = pf.filename();
-					if (fname.string() == "shape.dat" || 
-						fname.string() == "target.out" || 
-						fname.extension().string() == ".shp")
-						inputs.push_back(pf.string());
+					pf = expandSymlinks(pf);
+					insertMapping(pf); // already does dir checking
 				}
 			} else 
 			{
-				inputs.push_back(*it);
+				insertMapping(*it);
 			}
 		}
 
@@ -195,43 +255,18 @@ int main(int argc, char** argv)
 		ofstream gout(vm["output"].as< string >().c_str());
 		writeCSVheader(gout);
 
-		vector<rtmath::ddscat::shapeFileStats> Stats;
-		Stats.reserve(inputs.size());
-
-		for (auto it = inputs.begin(); it != inputs.end(); it++)
+		for (auto it = data.begin(); it != data.end(); ++it)
 		{
 			// Load the shape file or shape stats file
-			cerr << "Processing " << *it << endl;
+			cerr << "Processing " << it->first << endl;
+			if (it->second.shape.string() == "") continue;
+			if (it->second.avgs.size() == 0) continue;
 			boost::shared_ptr<rtmath::ddscat::shapeFileStats> sstats
-				( new rtmath::ddscat::shapeFileStats );
-			// Determine file type by extension
-			if (it->find(".xml") == std::string::npos)
+				= rtmath::ddscat::shapeFileStats::genStats(it->second.shape.string());
+			sstats->calcStatsBase();
+
+			for (auto ot = it->second.avgs.begin(); ot != it->second.avgs.end(); ++ot)
 			{
-				cerr << "\tShape file detected\n";
-				rtmath::ddscat::shapefile shp(*it);
-				rtmath::ddscat::shapeFileStats *sp = 
-					new rtmath::ddscat::shapeFileStats(shp);
-				sstats.reset( sp );
-				cerr << "\tCalculating baseline statistics" << endl;
-				sstats->calcStatsBase();
-			} else {
-				cerr << "\tStats file detected\n";
-				rtmath::serialization::read<rtmath::ddscat::shapeFileStats>
-					(*sstats, *it);
-			}
-
-
-			// Use boost::filesystem to iterate over all .avg files in the same directory
-			path pdir = path(*it).remove_leaf();
-			vector<path> vec;
-			copy(directory_iterator(pdir), directory_iterator(), back_inserter(vec));
-
-			for (auto ot = vec.begin(); ot != vec.end(); ++ot)
-			{
-				// Check extension
-				string ext = ot->extension().string();
-				if (ext != ".avg") continue;
-
 				cerr << *ot << std::endl;
 
 				using namespace rtmath::ddscat;
@@ -259,7 +294,7 @@ int main(int argc, char** argv)
 
 
 				// Write the csv files
-				gout << *it << "," << *ot << "," << freq <<"," << aeff << "," << dSpacing << "," 
+				gout << it->first << "," << *ot << "," << freq <<"," << aeff << "," << dSpacing << "," 
 					<< qbk << "," << qsca << "," << qabs << "," << qext << "," << g1 << ","
 					<< g2 << "," << sView->aeff_dipoles_const() << "," << sView->f_circum_sphere() << ","
 					<< sView->max_distance() << "," 
@@ -288,15 +323,8 @@ int main(int argc, char** argv)
 
 		}
 
-		//cerr << "Done." << endl;
-		//shp.print(out);
 	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		cerr << endl;
-		return 1;
-	} catch (std::exception &e)
+	catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
 		return 1;
