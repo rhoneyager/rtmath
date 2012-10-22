@@ -263,7 +263,6 @@ int main(int argc, char** argv)
 			if (it->second.avgs.size() == 0) continue;
 			boost::shared_ptr<rtmath::ddscat::shapeFileStats> sstats
 				= rtmath::ddscat::shapeFileStats::genStats(it->second.shape.string());
-			sstats->calcStatsBase();
 
 			for (auto ot = it->second.avgs.begin(); ot != it->second.avgs.end(); ++ot)
 			{

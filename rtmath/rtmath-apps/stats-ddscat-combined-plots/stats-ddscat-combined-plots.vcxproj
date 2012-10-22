@@ -60,6 +60,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\rtmath-libs\rtmath_core\rtmath_core.vcxproj">
+      <Project>{42ef064f-64a8-42f5-9acb-07e1908997bf}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
     </ProjectReference>

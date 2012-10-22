@@ -156,9 +156,21 @@ namespace rtmath
 			if (hull_enabled) base = &_hullPts;
 			else base = &_points;
 
-			pcl::PointXYZ min, max;
-			maxD = pcl::getMaxSegment(*base, min, max);
-			return maxD;
+			// This function is too slow
+			//pcl::PointXYZ min, max;
+			//maxD = pcl::getMaxSegment(*base, min, max);
+
+			for (auto it = base->begin(); it != base->end(); ++it)
+			{
+				for (auto ot = base->begin(); ot != base->end(); ++ot)
+				{
+					double d = (it->x - ot->x) * (it->x - ot->x);
+					d += (it->y - ot->y,2.0f) * (it->y - ot->y,2.0f);
+					d += (it->z - ot->z,2.0f) * (it->z - ot->z,2.0f);
+					if (d > maxD) maxD = d;
+				}
+			}
+			return sqrt(maxD);
 		}
 
 		double hull::volume() const
