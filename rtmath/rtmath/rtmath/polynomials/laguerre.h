@@ -15,9 +15,7 @@ namespace rtmath {
 	namespace recPolys {
 		class laguerre : public recPoly {
 			public:
-				virtual void get(unsigned int rank, polynomial &res) const;
-			private:
-				static std::vector<polynomial> _cache;
+				virtual void get(unsigned int rank, polynomial &res) const override;
 		};
 	};
 };

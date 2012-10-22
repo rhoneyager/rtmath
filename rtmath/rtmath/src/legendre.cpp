@@ -2,8 +2,11 @@
 #include "../rtmath/polynomials/legendre.h"
 #include <vector>
 
+namespace {
+	std::vector<rtmath::polynomial> _cache;
+};
+
 namespace rtmath {
-	std::vector<polynomial> recPolys::legendre::_cache;
 
 	void recPolys::legendre::get(unsigned int rank, polynomial &res) const
 	{

@@ -2,8 +2,11 @@
 #include "../rtmath/polynomials/laguerre.h"
 #include <vector>
 
+namespace {
+	std::vector<rtmath::polynomial> _cache;
+};
+
 namespace rtmath {
-	std::vector<polynomial> recPolys::laguerre::_cache;
 
 	void recPolys::laguerre::get(unsigned int rank, polynomial &res) const
 	{

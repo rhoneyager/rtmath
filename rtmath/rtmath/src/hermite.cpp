@@ -2,29 +2,31 @@
 #include "../rtmath/polynomials/hermite.h"
 #include <vector>
 
+namespace {
+	std::vector<rtmath::polynomial> _cacheH, _cacheHP;
+};
+
 namespace rtmath {
-	std::vector<polynomial> recPolys::hermite::_cache;
-	std::vector<polynomial> recPolys::hermitePhys::_cache;
 
 	void recPolys::hermite::get(unsigned int rank, polynomial &res) const
 	{
 		// Begin by querying legpolys to see if initialized
-		if (_cache.size() == 0)
+		if (_cacheH.size() == 0)
 		{
 			polynomial np;
 			// P0(x)
 			np.coeff(0,1);
-			_cache.push_back(np);
+			_cacheH.push_back(np);
 			np.erase();
 			// P1(x)
 			np.coeff(1,1);
-			_cache.push_back(np);
+			_cacheH.push_back(np);
 		}
 		// Now, see if the element exists
-		if (_cache.size() > rank)
+		if (_cacheH.size() > rank)
 		{
 			// Polynomial exists. Return.
-			res = _cache[rank];
+			res = _cacheH[rank];
 			return;
 		} else {
 			// Some assembly required
@@ -32,13 +34,13 @@ namespace rtmath {
 			// Start at first unknown polynomial and build up
 			polynomial x(1,1); // The x operator
 			polynomial newpoly;
-			for (unsigned int i=_cache.size(); i<=rank ; i++)
+			for (unsigned int i=_cacheH.size(); i<=rank ; i++)
 			{
 				newpoly.erase();
-				newpoly = (x * _cache[i-1] ) - ( _cache[i-2] * (i-1));
-				_cache.push_back(newpoly);
+				newpoly = (x * _cacheH[i-1] ) - ( _cacheH[i-2] * (i-1));
+				_cacheH.push_back(newpoly);
 			}
-			res = _cache[rank];
+			res = _cacheH[rank];
 			return;
 		}
 	}
@@ -46,22 +48,22 @@ namespace rtmath {
 	void recPolys::hermitePhys::get(unsigned int rank, polynomial &res) const
 	{
 		// Begin by querying legpolys to see if initialized
-		if (_cache.size() == 0)
+		if (_cacheHP.size() == 0)
 		{
 			polynomial np;
 			// P0(x)
 			np.coeff(0,1);
-			_cache.push_back(np);
+			_cacheHP.push_back(np);
 			np.erase();
 			// P1(x)
 			np.coeff(1,2);
-			_cache.push_back(np);
+			_cacheHP.push_back(np);
 		}
 		// Now, see if the element exists
-		if (_cache.size() > rank)
+		if (_cacheHP.size() > rank)
 		{
 			// Polynomial exists. Return.
-			res = _cache[rank];
+			res = _cacheHP[rank];
 			return;
 		} else {
 			// Some assembly required
@@ -69,13 +71,13 @@ namespace rtmath {
 			// Start at first unknown polynomial and build up
 			polynomial x(1,1); // The x operator
 			polynomial newpoly;
-			for (unsigned int i=_cache.size(); i<=rank ; i++)
+			for (unsigned int i=_cacheHP.size(); i<=rank ; i++)
 			{
 				newpoly.erase();
-				newpoly = (x * _cache[i-1] * 2.0 ) - ( _cache[i-2] * (2.0*i-2.0) );
-				_cache.push_back(newpoly);
+				newpoly = (x * _cacheHP[i-1] * 2.0 ) - ( _cacheHP[i-2] * (2.0*i-2.0) );
+				_cacheHP.push_back(newpoly);
 			}
-			res = _cache[rank];
+			res = _cacheHP[rank];
 			return;
 		}
 	}

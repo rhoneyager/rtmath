@@ -29,9 +29,3 @@ namespace rtmath {
 	}; // end namespace recPolys
 }; // end namespace rtmath
 
-//#include "chebyshev.h"
-//#include "hermite.h"
-//#include "laguerre.h"
-//#include "legendre.h"
-
-
