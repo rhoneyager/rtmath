@@ -129,7 +129,6 @@ set (general-src
 	src/denseMatrix.cpp
 	src/density.cpp
 	src/depGraph.cpp
-	src/emd.cpp
 #	src/interpolatable.cpp
 	src/matrixop.cpp
 	src/os_functions.cpp
@@ -155,7 +154,6 @@ set (general-hdr
 	rtmath/denseMatrix.h
 	rtmath/density.h
 	rtmath/depGraph.h
-	rtmath/emd.h
 	rtmath/enums.h
 	rtmath/interpolatable.h
 	rtmath/macros.h

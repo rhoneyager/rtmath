@@ -32,7 +32,7 @@
 #ifdef _WIN32
 #pragma warning( disable : 4251 )
 #ifndef NO_IMAGEMAGICK
-#include <Magick++.h>
+//#include <Magick++.h>
 #endif
 #endif
 

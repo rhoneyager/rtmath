@@ -106,6 +106,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shape-rosette", "rtmath-app
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stats-ddscat-combined-plots", "rtmath-apps\stats-ddscat-combined-plots\stats-ddscat-combined-plots.vcxproj", "{A13B1E02-602B-476B-A5AF-FD72BAEB0DFE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath_core", "rtmath-libs\rtmath_core\rtmath_core.vcxproj", "{42EF064F-64A8-42F5-9ACB-07E1908997BF}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -254,6 +256,10 @@ Global
 		{A13B1E02-602B-476B-A5AF-FD72BAEB0DFE}.Debug|Win32.Build.0 = Debug|Win32
 		{A13B1E02-602B-476B-A5AF-FD72BAEB0DFE}.Release|Win32.ActiveCfg = Release|Win32
 		{A13B1E02-602B-476B-A5AF-FD72BAEB0DFE}.Release|Win32.Build.0 = Release|Win32
+		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Debug|Win32.Build.0 = Debug|Win32
+		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Release|Win32.ActiveCfg = Release|Win32
+		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
