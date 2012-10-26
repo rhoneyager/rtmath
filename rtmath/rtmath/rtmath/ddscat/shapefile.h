@@ -4,15 +4,11 @@
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
-
-#include "../matrixop.h"
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
-	class matrixop;
-	namespace Garrett {
-		class pointContainer;
-	}
 	namespace ddscat {
 		class shapefile;
 	}
@@ -47,23 +43,24 @@ namespace rtmath {
 		private:
 			void _init();
 		public:
-			std::string _filename;
-			//boost::shared_ptr<const matrixop> _lattice;
-			std::vector<matrixop> _latticePts; // Untransformed points
-			std::vector<matrixop> _latticePtsRi; // Dielectric information
-			std::vector<matrixop> _latticePtsStd; // Normalized coord transform
-			size_t _numPoints;
-			std::set<size_t> _Dielectrics;
-			std::string _desc;
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+			std::string filename;
+
+			std::vector<Eigen::Vector3f> 
+				latticePts, // Untransformed points
+				latticePtsStd, // Points with coord translation based on file properties
+				latticePtsNorm, // Points with coord transform to mean center of shape
+				latticePtsRi; // Dielectric information
+
+			size_t numPoints;
+			std::set<size_t> Dielectrics;
+			std::string desc;
 			// Specified in shape.dat
 			// a1 and a2 are the INITIAL vectors (before rotation!)
 			// usually a1 = x_lf, a2 = y_lf
 			// choice of a1 and a2 can reorient the shape (useful for KE, PE constraints)
-			matrixop _a1, _a2, _a3; // a3 = a1 x a2
-			matrixop _d;
-			matrixop _x0, _xd;
-
-			boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
+			Eigen::Array3f a1, a2, a3, d, x0, xd;
+			//boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
 			
 			friend class shapeFileStatsBase;
 			friend class shapeFileStats;
