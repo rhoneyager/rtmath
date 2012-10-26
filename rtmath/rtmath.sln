@@ -108,6 +108,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stats-ddscat-combined-plots
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath_core", "rtmath-libs\rtmath_core\rtmath_core.vcxproj", "{42EF064F-64A8-42F5-9ACB-07E1908997BF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath_atmos", "rtmath-libs\rtmath_atmos\rtmath_atmos.vcxproj", "{9A855CBF-1814-4027-A11B-6D2EEA0FB6CD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath_scatt_basic", "rtmath-libs\rtmath_scatt_basic\rtmath_scatt_basic.vcxproj", "{85F27F75-02F2-4589-A2BD-687D58F95931}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtmath_serialization", "rtmath-libs\rtmath_serialization\rtmath_serialization.vcxproj", "{4187C2B0-3CCD-403F-B670-89A564D6C8EF}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -260,6 +266,18 @@ Global
 		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Debug|Win32.Build.0 = Debug|Win32
 		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Release|Win32.ActiveCfg = Release|Win32
 		{42EF064F-64A8-42F5-9ACB-07E1908997BF}.Release|Win32.Build.0 = Release|Win32
+		{9A855CBF-1814-4027-A11B-6D2EEA0FB6CD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9A855CBF-1814-4027-A11B-6D2EEA0FB6CD}.Debug|Win32.Build.0 = Debug|Win32
+		{9A855CBF-1814-4027-A11B-6D2EEA0FB6CD}.Release|Win32.ActiveCfg = Release|Win32
+		{9A855CBF-1814-4027-A11B-6D2EEA0FB6CD}.Release|Win32.Build.0 = Release|Win32
+		{85F27F75-02F2-4589-A2BD-687D58F95931}.Debug|Win32.ActiveCfg = Debug|Win32
+		{85F27F75-02F2-4589-A2BD-687D58F95931}.Debug|Win32.Build.0 = Debug|Win32
+		{85F27F75-02F2-4589-A2BD-687D58F95931}.Release|Win32.ActiveCfg = Release|Win32
+		{85F27F75-02F2-4589-A2BD-687D58F95931}.Release|Win32.Build.0 = Release|Win32
+		{4187C2B0-3CCD-403F-B670-89A564D6C8EF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4187C2B0-3CCD-403F-B670-89A564D6C8EF}.Debug|Win32.Build.0 = Debug|Win32
+		{4187C2B0-3CCD-403F-B670-89A564D6C8EF}.Release|Win32.ActiveCfg = Release|Win32
+		{4187C2B0-3CCD-403F-B670-89A564D6C8EF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

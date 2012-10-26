@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{85F27F75-02F2-4589-A2BD-687D58F95931}</ProjectGuid>
+    <RootNamespace>rtmath_scatt_basic</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\rtmath\src\ddOutputMie.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\rtmath\src\mie-abNCalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-AnCalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-phaseFunc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-piNCalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-Qcalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-Scalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-tauNCalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mie-wnCalc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\mieScattMatrix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\rtmath\src\Qcalc-Rayleigh.cpp" />
+    <ClCompile Include="..\..\rtmath\src\rayleighPhaseFunc.cpp" />
+    <ClCompile Include="..\..\rtmath\src\Scalc-Rayleigh.cpp" />
+    <ClCompile Include="..\..\rtmath\src\Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../rtmath/Stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../rtmath/Stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\rtmath\rtmath\mie\ddOutputMie.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-abNCalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-AnCalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-phaseFunc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-piNCalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-Qcalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-Scalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-tauNCalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie-wnCalc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mie.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\mie\mieScattMatrix.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\rayleigh\Qcalc-Rayleigh.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\rayleigh\rayleigh.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\rayleigh\rayleighPhaseFunc.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\rayleigh\Scalc-Rayleigh.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rtmath_core\rtmath_core.vcxproj">
+      <Project>{42ef064f-64a8-42f5-9acb-07e1908997bf}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

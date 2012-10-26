@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4187C2B0-3CCD-403F-B670-89A564D6C8EF}</ProjectGuid>
+    <RootNamespace>rtmath_serialization</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\rtmath\src\ddparGenerator_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\ddpar_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\ddScattMatrix_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\rotations_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\shapefile_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\shapestatsRotated_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\shapestats_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\shapes_serialization.cpp" />
+    <ClCompile Include="..\..\rtmath\src\Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\rtmath\src\tmData_serialization.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddOutputSingle_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddOutput_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddparGenerator_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddpar_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddScattMatrix_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\rotations_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapefile_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapestatsRotated_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapestats_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapes_serialization.h" />
+    <ClInclude Include="..\..\rtmath\rtmath\Serialization\tmData_serialization.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rtmath_core\rtmath_core.vcxproj">
+      <Project>{42ef064f-64a8-42f5-9acb-07e1908997bf}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -22,20 +22,8 @@
     <Filter Include="Header Files\ddscat">
       <UniqueIdentifier>{37d8c950-3dce-4918-9a38-efad5b2a5c34}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\mie">
-      <UniqueIdentifier>{55834ebc-41b9-4344-b62a-94db9ef8f54f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Public Domain">
-      <UniqueIdentifier>{125bb0cc-2ecc-444f-a1a7-dd89a4b617ce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\rayleigh">
-      <UniqueIdentifier>{f516c32f-0b33-4aaf-ac5c-dac6e9dcd3cd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Other">
       <UniqueIdentifier>{f7c8153f-c912-4808-b6eb-a91e6a835db1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Atmos">
-      <UniqueIdentifier>{c1f677c6-4761-459c-91f2-10d38c3baa77}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\General">
       <UniqueIdentifier>{1c84426a-daff-4a32-9d23-716be753bc18}</UniqueIdentifier>
@@ -46,38 +34,11 @@
     <Filter Include="Source Files\ddscat">
       <UniqueIdentifier>{ad15545a-2d63-4bb5-ab21-e7712f156154}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mie">
-      <UniqueIdentifier>{45f3cac4-6d69-4e51-b719-0f64c3339f1e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Atmos">
-      <UniqueIdentifier>{1d4a0b74-49d4-4d18-b8dd-6eb30f2a9b7b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\rayleigh">
-      <UniqueIdentifier>{55dcf724-f921-4e29-b2e6-1580cf138ca8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Public Domain">
-      <UniqueIdentifier>{07339e0f-efa9-43b9-87b1-2ffb6926aa2b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\polynomials">
-      <UniqueIdentifier>{dbaa3a7d-debf-458f-9233-369b3bf8e1fa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\gridded">
-      <UniqueIdentifier>{0cb43bac-254b-44b9-a409-4e330a437da8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\gridded">
-      <UniqueIdentifier>{4267329e-cff8-4144-bfdc-1768382fa910}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Garrett">
       <UniqueIdentifier>{8ab09eab-8c9c-4b97-a614-1c9c7ed6005f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Garrett">
       <UniqueIdentifier>{7b21466c-e757-46a2-bff7-e5768a3769c7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Serialization">
-      <UniqueIdentifier>{0ea318a2-567a-4e2d-99dc-3955af577009}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Serialization">
-      <UniqueIdentifier>{0e85308d-99ca-40fd-9779-10ca726229a5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -153,75 +114,6 @@
     <ClInclude Include="rtmath\ddscat\ddweights.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\mie\mie.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-abNCalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-AnCalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-phaseFunc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-piNCalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-Qcalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-Scalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-tauNCalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mie-wnCalc.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\rayleigh\Qcalc-Rayleigh.h">
-      <Filter>Header Files\rayleigh</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\rayleigh\rayleigh.h">
-      <Filter>Header Files\rayleigh</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\rayleigh\rayleighPhaseFunc.h">
-      <Filter>Header Files\rayleigh</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\rayleigh\Scalc-Rayleigh.h">
-      <Filter>Header Files\rayleigh</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\absorb.h">
-      <Filter>Header Files\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\atmoslayer.h">
-      <Filter>Header Files\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\atmos.h">
-      <Filter>Header Files\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\lbl.h">
-      <Filter>Header Files\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\gridded\gridded.h">
-      <Filter>Header Files\gridded</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\gridded\gridCoords.h">
-      <Filter>Header Files\gridded</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\gridded\gridStatic.h">
-      <Filter>Header Files\gridded</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\gridded\gridCDF.h">
-      <Filter>Header Files\gridded</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\mieScattMatrix.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\mie\ddOutputMie.h">
-      <Filter>Header Files\mie</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\ddscat\shapefile.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
@@ -237,9 +129,6 @@
     <ClInclude Include="rtmath\ddscat\mtab.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\Public_Domain\bhmie.h">
-      <Filter>Header Files\Public Domain</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\ddscat\ddparGenerator.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
@@ -251,9 +140,6 @@
     </ClInclude>
     <ClInclude Include="rtmath\ddscat\runScripts.h">
       <Filter>Header Files\ddscat</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\qt_funcs.h">
-      <Filter>Header Files\General</Filter>
     </ClInclude>
     <ClInclude Include="rtmath\ddscat\shapestats.h">
       <Filter>Header Files\ddscat</Filter>
@@ -287,39 +173,6 @@
     </ClInclude>
     <ClInclude Include="rtmath\ddscat\crossSection.h">
       <Filter>Header Files\ddscat</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\tmData_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\ddOutput_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\ddOutputSingle_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\ddpar_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\ddparGenerator_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\ddScattMatrix_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\rotations_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\shapefile_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\shapes_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\shapestats_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="rtmath\Serialization\shapestatsRotated_serialization.h">
-      <Filter>Header Files\Serialization</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -387,18 +240,6 @@
     <ClCompile Include="other\lbl.cpp">
       <Filter>Other</Filter>
     </ClCompile>
-    <ClCompile Include="src\absorb.cpp">
-      <Filter>Source Files\Atmos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\atmoslayer.cpp">
-      <Filter>Source Files\Atmos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\absorber.cpp">
-      <Filter>Source Files\Atmos</Filter>
-    </ClCompile>
-    <ClCompile Include="src\atmos.cpp">
-      <Filter>Source Files\Atmos</Filter>
-    </ClCompile>
     <ClCompile Include="src\daDiagonalMatrix.cpp">
       <Filter>Source Files\da</Filter>
     </ClCompile>
@@ -441,39 +282,6 @@
     <ClCompile Include="src\ddScattMatrix.cpp">
       <Filter>Source Files\ddscat</Filter>
     </ClCompile>
-    <ClCompile Include="src\mie-abNCalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-wnCalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-AnCalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-phaseFunc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-piNCalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-Qcalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-Scalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mie-tauNCalc.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rayleighPhaseFunc.cpp">
-      <Filter>Source Files\rayleigh</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Qcalc-Rayleigh.cpp">
-      <Filter>Source Files\rayleigh</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Scalc-Rayleigh.cpp">
-      <Filter>Source Files\rayleigh</Filter>
-    </ClCompile>
     <ClCompile Include="src\interpolatable.cpp">
       <Filter>Source Files\General</Filter>
     </ClCompile>
@@ -489,21 +297,6 @@
     <ClCompile Include="src\surfaces.cpp">
       <Filter>Source Files\General</Filter>
     </ClCompile>
-    <ClCompile Include="src\gridded.cpp">
-      <Filter>Source Files\gridded</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gridStatic.cpp">
-      <Filter>Source Files\gridded</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gridCDF.cpp">
-      <Filter>Source Files\gridded</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mieScattMatrix.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ddOutputMie.cpp">
-      <Filter>Source Files\mie</Filter>
-    </ClCompile>
     <ClCompile Include="src\shapefile.cpp">
       <Filter>Source Files\ddscat</Filter>
     </ClCompile>
@@ -512,9 +305,6 @@
     </ClCompile>
     <ClCompile Include="src\mtab.cpp">
       <Filter>Source Files\ddscat</Filter>
-    </ClCompile>
-    <ClCompile Include="src\bhmie.cpp">
-      <Filter>Source Files\Public Domain</Filter>
     </ClCompile>
     <ClCompile Include="src\shapes.cpp">
       <Filter>Source Files\ddscat</Filter>
@@ -560,33 +350,6 @@
     </ClCompile>
     <ClCompile Include="src\crossSection.cpp">
       <Filter>Source Files\ddscat</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tmData_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ddpar_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ddparGenerator_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ddScattMatrix_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rotations_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shapefile_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shapes_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shapestats_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shapestatsRotated_serialization.cpp">
-      <Filter>Source Files\Serialization</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -11,10 +11,6 @@
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
 #include <algorithm>
-#include <bitset>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
 #include <cmath>
 #include <complex>
 #include <exception>
@@ -26,8 +22,6 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include <time.h>
-#include <unordered_map>
 #include <vector>
 
 // Define filesystem version 3 for compile issues with older boost
@@ -58,9 +52,6 @@
 #include <boost/math/special_functions/round.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/string.hpp> 
 #include <boost/serialization/map.hpp>
@@ -69,47 +60,11 @@
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 #include <boost/units/systems/si.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 //#pragma warning( push )
-
-/*
-#include "TGraph.h"
-#include "TF1.h"
-#include "TCanvas.h"
-#include "TAxis.h"
-#include "TNamed.h"
-#include "TGraph2D.h"
-#include "TStyle.h"
-#include "TH2.h"
-*/
-//#pragma warning( pop ) 
-
-//#ifdef _OPENMP
-//#include <omp.h>
-//#endif
-
-/*
-#ifdef _WIN32
-#define _CRTDBG_MAP_ALLOC
-#include <cstdlib>
-#include <crtdbg.h>
-#endif
-*/
-
-//#include "debug.h"
-//#ifdef HEAP_CHECK
-// The heap-checking overridess to new and delete, to find bugs!!!
-//#include "debug_mem.h"
-//#endif
-
-//#undef new
-//#undef delete
 

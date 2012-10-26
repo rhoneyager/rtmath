@@ -91,9 +91,6 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="rtmath\absorb.h" />
-    <ClInclude Include="rtmath\atmos.h" />
-    <ClInclude Include="rtmath\atmoslayer.h" />
     <ClInclude Include="rtmath\ddscat\crossSection.h" />
     <ClInclude Include="rtmath\ddscat\ddavg.h" />
     <ClInclude Include="rtmath\ddscat\muellerRelations.h" />
@@ -130,46 +127,13 @@
     <ClInclude Include="rtmath\ddscat\shapes.h" />
     <ClInclude Include="rtmath\ddscat\shapestats.h" />
     <ClInclude Include="rtmath\enums.h" />
-    <ClInclude Include="rtmath\gridded\gridCDF.h" />
-    <ClInclude Include="rtmath\gridded\gridCoords.h" />
-    <ClInclude Include="rtmath\gridded\gridded.h" />
-    <ClInclude Include="rtmath\gridded\gridStatic.h" />
     <ClInclude Include="rtmath\interpolatable.h" />
-    <ClInclude Include="rtmath\lbl.h" />
     <ClInclude Include="rtmath\mapid.h" />
-    <ClInclude Include="rtmath\mie\ddOutputMie.h" />
-    <ClInclude Include="rtmath\mie\mie-abNCalc.h" />
-    <ClInclude Include="rtmath\mie\mie-AnCalc.h" />
-    <ClInclude Include="rtmath\mie\mie-phaseFunc.h" />
-    <ClInclude Include="rtmath\mie\mie-piNCalc.h" />
-    <ClInclude Include="rtmath\mie\mie-Qcalc.h" />
-    <ClInclude Include="rtmath\mie\mie-Scalc.h" />
-    <ClInclude Include="rtmath\mie\mie-tauNCalc.h" />
-    <ClInclude Include="rtmath\mie\mie-wnCalc.h" />
-    <ClInclude Include="rtmath\mie\mie.h" />
-    <ClInclude Include="rtmath\mie\mieScattMatrix.h" />
     <ClInclude Include="rtmath\parsers.h" />
     <ClInclude Include="rtmath\pfFixed.h" />
     <ClInclude Include="rtmath\phaseFunc.h" />
-    <ClInclude Include="rtmath\Public_Domain\bhmie.h" />
-    <ClInclude Include="rtmath\qt_funcs.h" />
-    <ClInclude Include="rtmath\rayleigh\Qcalc-Rayleigh.h" />
-    <ClInclude Include="rtmath\rayleigh\rayleigh.h" />
-    <ClInclude Include="rtmath\rayleigh\rayleighPhaseFunc.h" />
-    <ClInclude Include="rtmath\rayleigh\Scalc-Rayleigh.h" />
     <ClInclude Include="rtmath\resource.h" />
     <ClInclude Include="rtmath\rtmath.h" />
-    <ClInclude Include="rtmath\Serialization\ddOutputSingle_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\ddOutput_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\ddparGenerator_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\ddpar_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\ddScattMatrix_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\rotations_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\shapefile_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\shapestatsRotated_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\shapestats_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\shapes_serialization.h" />
-    <ClInclude Include="rtmath\Serialization\tmData_serialization.h" />
     <ClInclude Include="rtmath\Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -204,13 +168,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\absorb.cpp" />
-    <ClCompile Include="src\absorber.cpp" />
-    <ClCompile Include="src\atmos.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\atmoslayer.cpp" />
-    <ClCompile Include="src\bhmie.cpp" />
     <ClCompile Include="src\crossSection.cpp" />
     <ClCompile Include="src\daDiagonalMatrix.cpp" />
     <ClCompile Include="src\daInitLayer.cpp" />
@@ -231,22 +188,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\ddOutputMie.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\ddOutputSingle.cpp" />
     <ClCompile Include="src\ddpar.cpp" />
     <ClCompile Include="src\ddparGenerator.cpp" />
-    <ClCompile Include="src\ddparGenerator_serialization.cpp" />
-    <ClCompile Include="src\ddpar_serialization.cpp" />
     <ClCompile Include="src\ddscat.cpp" />
     <ClCompile Include="src\ddScattMatrix.cpp" />
-    <ClCompile Include="src\ddScattMatrix_serialization.cpp" />
     <ClCompile Include="src\ddweights.cpp" />
-    <ClCompile Include="src\gridCDF.cpp" />
-    <ClCompile Include="src\gridded.cpp" />
-    <ClCompile Include="src\gridStatic.cpp" />
     <ClCompile Include="src\hulls.cpp" />
     <ClCompile Include="src\image.cpp" />
     <ClCompile Include="src\interpolatable.cpp">
@@ -254,45 +201,24 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\mesh.cpp" />
-    <ClCompile Include="src\mie-abNCalc.cpp" />
-    <ClCompile Include="src\mie-AnCalc.cpp" />
-    <ClCompile Include="src\mie-phaseFunc.cpp" />
-    <ClCompile Include="src\mie-piNCalc.cpp" />
-    <ClCompile Include="src\mie-Qcalc.cpp" />
-    <ClCompile Include="src\mie-Scalc.cpp" />
-    <ClCompile Include="src\mie-tauNCalc.cpp" />
-    <ClCompile Include="src\mie-wnCalc.cpp" />
-    <ClCompile Include="src\mieScattMatrix.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\mtab.cpp" />
     <ClCompile Include="src\muellerRelations.cpp" />
     <ClCompile Include="src\pclstuff.cpp" />
     <ClCompile Include="src\pfFixed.cpp" />
     <ClCompile Include="src\phaseFunc.cpp" />
-    <ClCompile Include="src\Qcalc-Rayleigh.cpp" />
-    <ClCompile Include="src\rayleighPhaseFunc.cpp" />
     <ClCompile Include="src\rotations.cpp" />
-    <ClCompile Include="src\rotations_serialization.cpp" />
     <ClCompile Include="src\runScripts.cpp" />
-    <ClCompile Include="src\Scalc-Rayleigh.cpp" />
     <ClCompile Include="src\shapefile.cpp" />
-    <ClCompile Include="src\shapefile_serialization.cpp" />
     <ClCompile Include="src\shapes-generators.cpp" />
     <ClCompile Include="src\shapes.cpp" />
     <ClCompile Include="src\shapestats.cpp" />
     <ClCompile Include="src\shapestatsRotated.cpp" />
-    <ClCompile Include="src\shapestatsRotated_serialization.cpp" />
     <ClCompile Include="src\shapestats_genstats.cpp" />
-    <ClCompile Include="src\shapestats_serialization.cpp" />
-    <ClCompile Include="src\shapes_serialization.cpp" />
     <ClCompile Include="src\Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\surfaces.cpp" />
     <ClCompile Include="src\tmData.cpp" />
-    <ClCompile Include="src\tmData_serialization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\rtmath-libs\rtmath_core\rtmath_core.vcxproj">

@@ -50,6 +50,12 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)rtmath\prebuild.bat" "$(SolutionDir)rtmath\src"</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generate subversion header information</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
