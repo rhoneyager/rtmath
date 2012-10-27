@@ -3,8 +3,9 @@
 #include <map>
 #include <set>
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
-#include "../matrixop.h"
 #include "shapefile.h"
 #include "shapestatsRotated.h"
 
@@ -51,7 +52,7 @@ namespace rtmath {
 			boost::shared_ptr<const shapeFileStatsRotated> calcStatsRot(double beta, double theta, double phi);
 
 			// rot is the effective rotation designated by the choice of a1 and a2
-			matrixop rot, invrot;
+			Eigen::Matrix3f rot, invrot;
 			double beta, theta, phi;
 
 			// The constant multipliers! d is unknown!
@@ -87,7 +88,7 @@ namespace rtmath {
 			bool qhull_enabled;
 
 			// Before normalization and rotation
-			matrixop b_min, b_max, b_mean;
+			Eigen::Vector3f b_min, b_max, b_mean;
 
 			std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
 
@@ -100,6 +101,7 @@ namespace rtmath {
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
 				Archive &, shapeFileStatsBase &, const unsigned int);
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
 
 		class shapeFileStats : public shapeFileStatsBase

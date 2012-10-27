@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 
-#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapestatsRotated.h"
 #include "../rtmath/ddscat/shapestats.h"
 
@@ -25,38 +24,15 @@ namespace rtmath {
 			}
 
 			const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
-			double cb = cos(beta*drconv);
-			double ct = cos(theta*drconv);
-			double cp = cos(phi*drconv);
-			double sb = sin(beta*drconv);
-			double st = sin(theta*drconv);
-			double sp = sin(phi*drconv);
 			// Do right-handed rotation
 			// It's just easier to express the overall rotation as the multiplication of
 			// the component Gimbal matrices.
-			matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
-
-			Rx.set(1,2,0,0);
-			Rx.set(cp,2,1,1);
-			Rx.set(cp,2,2,2);
-			Rx.set(sp,2,2,1);
-			Rx.set(-sp,2,1,2);
-
-			Ry.set(cb,2,0,0);
-			Ry.set(1 ,2,1,1);
-			Ry.set(cb,2,2,2);
-			Ry.set(sb,2,0,2);
-			Ry.set(-sb,2,2,0);
-
-			Rz.set(ct,2,0,0);
-			Rz.set(ct,2,1,1);
-			Rz.set(1,2,2,2);
-			Rz.set(st,2,1,0);
-			Rz.set(-st,2,0,1);
-
-			// Normally, Reff = RyRxRz. But, the rotation is a1,a2-dependent, 
-			// which are specified in the file. Apply effective rotation matrix also.
-			matrixop Roteff = Ry*Rx*Rz*rot;
+			Eigen::Matrix3f Roteff;
+			// TODO: check the rotations!
+			Roteff = Eigen::AngleAxisf(theta*drconv, Eigen::Vector3f::UnitZ())
+				* Eigen::AngleAxisf(phi*drconv, Eigen::Vector3f::UnitX())
+				* Eigen::AngleAxisf(beta*drconv, Eigen::Vector3f::UnitY())
+				* rot;
 
 			using namespace boost::accumulators;
 
@@ -81,32 +57,30 @@ namespace rtmath {
 				tag::covariance<double, tag::covariate2>
 			> > > acc_x, acc_y, acc_z, acc_r; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 
-			const size_t nV = _shp->_Dielectrics.size()+1;
-			matrixop cloner(2,4,1), clonerb(2,3,3);
+			const size_t nV = _shp->Dielectrics.size()+1;
 			acc_x.resize(nV); // Assumes that the dielectrics start at 1.
 			acc_y.resize(nV); // Will probably crash if not.
 			acc_z.resize(nV);
 			acc_r.resize(nV);
-			res.PE.resize(nV, cloner);
-			res.mom1.resize(nV, cloner);
-			res.mom2.resize(nV, cloner);
-			res.mominert.resize(nV,clonerb);
-			res.covariance.resize(nV,clonerb);
+			res.PE.resize(nV);
+			res.mom1.resize(nV);
+			res.mom2.resize(nV);
+			res.mominert.resize(nV);
+			res.covariance.resize(nV);
 
-			for (auto it = _shp->_latticePtsStd.begin(), ot = _shp->_latticePtsRi.begin(); 
-				it != _shp->_latticePtsStd.end(); it++, ot++)
+			for (auto it = _shp->latticePtsStd.begin(), ot = _shp->latticePtsRi.begin(); 
+				it != _shp->latticePtsStd.end(); ++it, ++ot)
 			{
 				// it->first is the points id. it->second is its matrixop coords (1x3 matrix)
 				// Mult by rotaion matrix to get 3x1 rotated matrix
 
-				matrixop pt = Roteff * (it->transpose() - b_mean);
-				double x = pt.get(2,0,0);
-				double y = pt.get(2,1,0);
-				double z = pt.get(2,2,0);
-				size_t diel = ot->get(2,0,0);
+				const Eigen::Vector3f s = (*it) - b_mean;
+				const Eigen::Vector3f pt = Roteff * s;
+				const double x = pt(0);
+				const double y = pt(1);
+				const double z = pt(2);
+				const size_t diel = (*ot)(0);
 
-				//vector<double> vpt(3);
-				//pt.to<std::vector<double> >(vpt);
 				acc_x[0](x, covariate1 = y, covariate2 = z);
 				acc_y[0](y, covariate1 = x, covariate2 = z);
 				acc_z[0](z, covariate1 = x, covariate2 = y);
@@ -125,113 +99,113 @@ namespace rtmath {
 			// Are other quantities needed?
 
 			// Export to class matrixops
-			res.min.set(boost::accumulators::min(acc_x[0]),2,0,0);
-			res.min.set(boost::accumulators::min(acc_y[0]),2,1,0);
-			res.min.set(boost::accumulators::min(acc_z[0]),2,2,0);
-			res.min.set(boost::accumulators::min(acc_r[0]),2,3,0);
+			res.min(0) = boost::accumulators::min(acc_x[0]);
+			res.min(1) = boost::accumulators::min(acc_y[0]);
+			res.min(2) = boost::accumulators::min(acc_z[0]);
+			res.min(3) = boost::accumulators::min(acc_r[0]);
 
-			res.max.set(boost::accumulators::max(acc_x[0]),2,0,0);
-			res.max.set(boost::accumulators::max(acc_y[0]),2,1,0);
-			res.max.set(boost::accumulators::max(acc_z[0]),2,2,0);
-			res.max.set(boost::accumulators::max(acc_r[0]),2,3,0);
+			res.max(0) = boost::accumulators::max(acc_x[0]);
+			res.max(1) = boost::accumulators::max(acc_y[0]);
+			res.max(2) = boost::accumulators::max(acc_z[0]);
+			res.max(3) = boost::accumulators::max(acc_r[0]);
 
-			res.sum.set(boost::accumulators::sum(acc_x[0]),2,0,0);
-			res.sum.set(boost::accumulators::sum(acc_y[0]),2,1,0);
-			res.sum.set(boost::accumulators::sum(acc_z[0]),2,2,0);
-			res.sum.set(boost::accumulators::sum(acc_r[0]),2,3,0);
+			res.sum(0) = boost::accumulators::sum(acc_x[0]);
+			res.sum(1) = boost::accumulators::sum(acc_y[0]);
+			res.sum(2) = boost::accumulators::sum(acc_z[0]);
+			res.sum(3) = boost::accumulators::sum(acc_r[0]);
 
-			res.skewness.set(boost::accumulators::skewness(acc_x[0]),2,0,0);
-			res.skewness.set(boost::accumulators::skewness(acc_y[0]),2,1,0);
-			res.skewness.set(boost::accumulators::skewness(acc_z[0]),2,2,0);
-			res.skewness.set(boost::accumulators::skewness(acc_r[0]),2,3,0);
+			res.skewness(0) = boost::accumulators::skewness(acc_x[0]);
+			res.skewness(1) = boost::accumulators::skewness(acc_y[0]);
+			res.skewness(2) = boost::accumulators::skewness(acc_z[0]);
+			res.skewness(3) = boost::accumulators::skewness(acc_r[0]);
 
-			res.kurtosis.set(boost::accumulators::kurtosis(acc_x[0]),2,0,0);
-			res.kurtosis.set(boost::accumulators::kurtosis(acc_y[0]),2,1,0);
-			res.kurtosis.set(boost::accumulators::kurtosis(acc_z[0]),2,2,0);
-			res.kurtosis.set(boost::accumulators::kurtosis(acc_r[0]),2,3,0);
+			res.kurtosis(0) = boost::accumulators::kurtosis(acc_x[0]);
+			res.kurtosis(1) = boost::accumulators::kurtosis(acc_y[0]);
+			res.kurtosis(2) = boost::accumulators::kurtosis(acc_z[0]);
+			res.kurtosis(3) = boost::accumulators::kurtosis(acc_r[0]);
 
 			// Absolue value-dependent quantities
 
-			res.abs_min.set(boost::accumulators::min(abs_x),2,0,0); // abs, not acc here
-			res.abs_min.set(boost::accumulators::min(abs_y),2,1,0);
-			res.abs_min.set(boost::accumulators::min(abs_z),2,2,0);
+			res.abs_min(0) = boost::accumulators::min(abs_x); // abs, not acc here
+			res.abs_min(1) = boost::accumulators::min(abs_y);
+			res.abs_min(2) = boost::accumulators::min(abs_z);
 
-			res.abs_max.set(boost::accumulators::max(abs_x),2,0,0); // abs, not acc here
-			res.abs_max.set(boost::accumulators::max(abs_y),2,1,0);
-			res.abs_max.set(boost::accumulators::max(abs_z),2,2,0);
+			res.abs_max(0) = boost::accumulators::max(abs_x); // abs, not acc here
+			res.abs_max(1) = boost::accumulators::max(abs_y);
+			res.abs_max(2) = boost::accumulators::max(abs_z);
 
-			res.abs_mean.set(boost::accumulators::moment<1>(abs_x),2,0,0); // abs, not acc here
-			res.abs_mean.set(boost::accumulators::moment<1>(abs_y),2,1,0);
-			res.abs_mean.set(boost::accumulators::moment<1>(abs_z),2,2,0);
+			res.abs_mean(0) = boost::accumulators::moment<1>(abs_x); // abs, not acc here
+			res.abs_mean(1) = boost::accumulators::moment<1>(abs_y);
+			res.abs_mean(2) = boost::accumulators::moment<1>(abs_z);
 
 			// Aspect ratios
 			// Absolute aspect ratio
-			res.as_abs.set(1,2,0,0);
-			res.as_abs.set(boost::accumulators::max(abs_x)/boost::accumulators::max(abs_y),2,0,1);
-			res.as_abs.set(boost::accumulators::max(abs_x)/boost::accumulators::max(abs_z),2,0,2);
-			res.as_abs.set(boost::accumulators::max(abs_y)/boost::accumulators::max(abs_x),2,1,0);
-			res.as_abs.set(1,2,1,1);
-			res.as_abs.set(boost::accumulators::max(abs_y)/boost::accumulators::max(abs_z),2,1,2);
-			res.as_abs.set(boost::accumulators::max(abs_z)/boost::accumulators::max(abs_x),2,2,0);
-			res.as_abs.set(boost::accumulators::max(abs_z)/boost::accumulators::max(abs_y),2,2,1);
-			res.as_abs.set(1,2,2,2);
+			res.as_abs(0,0) = 1;
+			res.as_abs(0,1) = boost::accumulators::max(abs_x)/boost::accumulators::max(abs_y);
+			res.as_abs(0,2) = boost::accumulators::max(abs_x)/boost::accumulators::max(abs_z);
+			res.as_abs(1,0) = boost::accumulators::max(abs_y)/boost::accumulators::max(abs_x);
+			res.as_abs(1,1) = 1;
+			res.as_abs(1,2) = boost::accumulators::max(abs_y)/boost::accumulators::max(abs_z);
+			res.as_abs(2,0) = boost::accumulators::max(abs_z)/boost::accumulators::max(abs_x);
+			res.as_abs(2,1) = boost::accumulators::max(abs_z)/boost::accumulators::max(abs_y);
+			res.as_abs(2,2) = 1;
 
 			// Absolute mean
-			res.as_abs_mean.set(1,2,0,0);
-			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_y),2,0,1);
-			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_z),2,0,2);
-			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_x),2,1,0);
-			res.as_abs_mean.set(1,2,1,1);
-			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_z),2,1,2);
-			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_x),2,2,0);
-			res.as_abs_mean.set(boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_y),2,2,1);
-			res.as_abs_mean.set(1,2,2,2);
+			res.as_abs_mean(0,0) = 1;
+			res.as_abs_mean(0,1) = boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_y);
+			res.as_abs_mean(0,2) = boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_z);
+			res.as_abs_mean(1,0) = boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_x);
+			res.as_abs_mean(1,1) = 1;
+			res.as_abs_mean(1,2) = boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_z);
+			res.as_abs_mean(2,0) = boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_x);
+			res.as_abs_mean(2,1) = boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_y);
+			res.as_abs_mean(2,2) = 1;
 
 			// Absolute rms
-			res.as_rms.set(1,2,0,0);
-			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_x[0])/boost::accumulators::moment<2>(acc_y[0])),2,0,1);
-			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_x[0])/boost::accumulators::moment<2>(acc_z[0])),2,0,2);
-			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_y[0])/boost::accumulators::moment<2>(acc_x[0])),2,1,0);
-			res.as_rms.set(1,2,1,1);
-			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_y[0])/boost::accumulators::moment<2>(acc_z[0])),2,1,2);
-			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_z[0])/boost::accumulators::moment<2>(acc_x[0])),2,2,0);
-			res.as_rms.set(sqrt(boost::accumulators::moment<2>(acc_z[0])/boost::accumulators::moment<2>(acc_y[0])),2,2,1);
-			res.as_rms.set(1,2,2,2);
+			res.as_rms(0,0) = 1;
+			res.as_rms(0,1) = sqrt(boost::accumulators::moment<2>(acc_x[0])/boost::accumulators::moment<2>(acc_y[0]));
+			res.as_rms(0,2) = sqrt(boost::accumulators::moment<2>(acc_x[0])/boost::accumulators::moment<2>(acc_z[0]));
+			res.as_rms(1,0) = sqrt(boost::accumulators::moment<2>(acc_y[0])/boost::accumulators::moment<2>(acc_x[0]));
+			res.as_rms(1,1) = 1;
+			res.as_rms(1,2) = sqrt(boost::accumulators::moment<2>(acc_y[0])/boost::accumulators::moment<2>(acc_z[0]));
+			res.as_rms(2,0) = sqrt(boost::accumulators::moment<2>(acc_z[0])/boost::accumulators::moment<2>(acc_x[0]));
+			res.as_rms(2,1) = sqrt(boost::accumulators::moment<2>(acc_z[0])/boost::accumulators::moment<2>(acc_y[0]));
+			res.as_rms(2,2) = 1;
 
 			// RMS accumulators - rms is the square root of the 2nd moment
-			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_x[0])),2,0,0);
-			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_y[0])),2,1,0);
-			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_z[0])),2,2,0);
-			res.rms_mean.set(sqrt(boost::accumulators::variance(acc_r[0])),2,3,0);
+			res.rms_mean(0) = sqrt(boost::accumulators::variance(acc_x[0]));
+			res.rms_mean(1) = sqrt(boost::accumulators::variance(acc_y[0]));
+			res.rms_mean(2) = sqrt(boost::accumulators::variance(acc_z[0]));
+			res.rms_mean(3) = sqrt(boost::accumulators::variance(acc_r[0]));
 
-			const size_t _N = _shp->_numPoints;
-			const matrixop &d = _shp->_d;
-			const double dxdydz = d.get(2,0,0) * d.get(2,0,1) * d.get(2,0,2);
+			const size_t _N = _shp->numPoints;
+			const Eigen::Array3f &d = _shp->d;
+			const double dxdydz = d(0) * d(1) * d(2);
 
 			for (size_t i=0; i<nV; i++)
 			{
-				res.mom1[i].set(boost::accumulators::moment<1>(acc_x[i]),2,0,0);
-				res.mom1[i].set(boost::accumulators::moment<1>(acc_y[i]),2,1,0);
-				res.mom1[i].set(boost::accumulators::moment<1>(acc_z[i]),2,2,0);
-				res.mom1[i].set(boost::accumulators::moment<1>(acc_r[i]),2,3,0);
+				res.mom1[i](0) = boost::accumulators::moment<1>(acc_x[i]);
+				res.mom1[i](1) = boost::accumulators::moment<1>(acc_y[i]);
+				res.mom1[i](2) = boost::accumulators::moment<1>(acc_z[i]);
+				res.mom1[i](3) = boost::accumulators::moment<1>(acc_r[i]);
 
-				res.mom2[i].set(boost::accumulators::moment<2>(acc_x[i]),2,0,0);
-				res.mom2[i].set(boost::accumulators::moment<2>(acc_y[i]),2,1,0);
-				res.mom2[i].set(boost::accumulators::moment<2>(acc_z[i]),2,2,0);
-				res.mom2[i].set(boost::accumulators::moment<2>(acc_r[i]),2,3,0);
+				res.mom2[i](0) = boost::accumulators::moment<2>(acc_x[i]);
+				res.mom2[i](1) = boost::accumulators::moment<2>(acc_y[i]);
+				res.mom2[i](2) = boost::accumulators::moment<2>(acc_z[i]);
+				res.mom2[i](3) = boost::accumulators::moment<2>(acc_r[i]);
 
 				//covariance
-				res.covariance[i].set(boost::accumulators::variance(acc_x[i]),2,0,0);
+				res.covariance[i](0,0) = boost::accumulators::variance(acc_x[i]);
 				//boost::accumulators::covariance(acc_x, covariate1);
 				//boost::accumulators::covariance(acc_x, covariate2);
-				res.covariance[i].set(boost::accumulators::covariance(acc_x[i], covariate1),2,0,1);
-				res.covariance[i].set(boost::accumulators::covariance(acc_x[i], covariate2),2,0,2);
-				res.covariance[i].set(boost::accumulators::covariance(acc_y[i], covariate1),2,1,0);
-				res.covariance[i].set(boost::accumulators::variance(acc_y[i]),2,1,1);
-				res.covariance[i].set(boost::accumulators::covariance(acc_y[i], covariate2),2,1,2);
-				res.covariance[i].set(boost::accumulators::covariance(acc_z[i], covariate1),2,2,0);
-				res.covariance[i].set(boost::accumulators::covariance(acc_z[i], covariate2),2,2,1);
-				res.covariance[i].set(boost::accumulators::variance(acc_z[i]),2,2,2);
+				res.covariance[i](0,1) = boost::accumulators::covariance(acc_x[i], covariate1);
+				res.covariance[i](0,2) = boost::accumulators::covariance(acc_x[i], covariate2);
+				res.covariance[i](1,0) = boost::accumulators::covariance(acc_y[i], covariate1);
+				res.covariance[i](1,1) = boost::accumulators::variance(acc_y[i]);
+				res.covariance[i](1,2) = boost::accumulators::covariance(acc_y[i], covariate2);
+				res.covariance[i](2,0) = boost::accumulators::covariance(acc_z[i], covariate1);
+				res.covariance[i](2,1) = boost::accumulators::covariance(acc_z[i], covariate2);
+				res.covariance[i](2,2) = boost::accumulators::variance(acc_z[i]);
 
 				// Calculate moments of inertia
 				double val = 0;
@@ -243,42 +217,42 @@ namespace rtmath {
 				// I_xx
 				val = boost::accumulators::moment<2>(acc_y[i]) + boost::accumulators::moment<2>(acc_z[i]);
 				val *= _N * dxdydz;
-				res.mominert[i].set(val,2,0,0);
+				res.mominert[i](0,0) = val;
 
 				// I_yy
 				val = boost::accumulators::moment<2>(acc_x[i]) + boost::accumulators::moment<2>(acc_z[i]);
 				val *= _N * dxdydz;
-				res.mominert[i].set(val,2,1,1);
+				res.mominert[i](1,1) = val;
 
 				// I_zz
 				val = boost::accumulators::moment<2>(acc_x[i]) + boost::accumulators::moment<2>(acc_y[i]);
 				val *= _N * dxdydz;
-				res.mominert[i].set(val,2,2,2);
+				res.mominert[i](2,2) = val;
 
 				// I_xy and I_yx
-				val = res.covariance[i].get(2,1,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_y[i]) );
+				val = res.covariance[i](1,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_y[i]) );
 				val *= -1.0 * _N * dxdydz;
-				res.mominert[i].set(val,2,0,1);
-				res.mominert[i].set(val,2,1,0);
+				res.mominert[i](0,1) = val;
+				res.mominert[i](1,0) = val;
 
 				// I_xz and I_zx
-				val = res.covariance[i].get(2,2,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_z[i]) );
+				val = res.covariance[i](2,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_z[i]) );
 				val *= -1.0 * _N * dxdydz;
-				res.mominert[i].set(val,2,0,2);
-				res.mominert[i].set(val,2,2,0);
+				res.mominert[i](0,2) = val;
+				res.mominert[i](2,0) = val;
 
 				// I_yz and I_zy
-				val = res.covariance[i].get(2,2,1) + (boost::accumulators::moment<1>(acc_y[i]) * boost::accumulators::moment<1>(acc_z[i]) );
+				val = res.covariance[i](2,1) + (boost::accumulators::moment<1>(acc_y[i]) * boost::accumulators::moment<1>(acc_z[i]) );
 				val *= -1.0 * _N * dxdydz;
-				res.mominert[i].set(val,2,2,1);
-				res.mominert[i].set(val,2,1,2);
+				res.mominert[i](2,1) = val;
+				res.mominert[i](1,2) = val;
 
 				// Calculate the potential energy
 				const double g = 9.80665; // m/s^2
 				// I do not need the partial mass means to be zero here
-				res.PE[i].set(g*boost::accumulators::sum(acc_x[i]),2,0,0);
-				res.PE[i].set(g*boost::accumulators::sum(acc_y[i]),2,1,0);
-				res.PE[i].set(g*boost::accumulators::sum(acc_z[i]),2,2,0);
+				res.PE[i](0) = g*boost::accumulators::sum(acc_x[i]);
+				res.PE[i](1) = g*boost::accumulators::sum(acc_y[i]);
+				res.PE[i](2) = g*boost::accumulators::sum(acc_z[i]);
 			}
 
 			// Use std move to insert into set
@@ -290,19 +264,13 @@ namespace rtmath {
 
 
 		shapeFileStatsRotated::shapeFileStatsRotated()
-			: min(2,4,1), max(2,4,1), sum(2,4,1), skewness(2,4,1), kurtosis(2,4,1),
-			abs_min(2,3,1), abs_max(2,3,1), abs_mean(2,3,1),
-			as_abs(2,3,3), as_abs_mean(2,3,3), as_rms(2,3,3),
-			rms_mean(2,4,1), areas(2,3,1)
 		{
 			this->beta = 0;
 			this->theta = 0;
 			this->phi = 0;
 		}
 
-		shapeFileStatsRotated::~shapeFileStatsRotated()
-		{
-		}
+		shapeFileStatsRotated::~shapeFileStatsRotated() { }
 
 		bool shapeFileStatsRotated::operator<(const shapeFileStatsRotated &rhs) const
 		{

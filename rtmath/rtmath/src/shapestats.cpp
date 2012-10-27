@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 
-#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h"
@@ -45,12 +44,9 @@ namespace rtmath {
 			_doQhull = val;
 		}
 
-		shapeFileStats::shapeFileStats()
-		{
-		}
+		shapeFileStats::shapeFileStats() { }
 
 		shapeFileStatsBase::shapeFileStatsBase()
-			: b_min(2,3,1), b_max(2,3,1), b_mean(2,3,1), rot(2,3,3), invrot(2,3,3)
 		{
 			beta = 0;
 			theta = 0;
@@ -86,9 +82,7 @@ namespace rtmath {
 			//_shp = boost::shared_ptr<shapefile>(new shapefile);
 		}
 
-		shapeFileStatsBase::~shapeFileStatsBase()
-		{
-		}
+		shapeFileStatsBase::~shapeFileStatsBase() { }
 
 		bool shapeFileStatsBase::load()
 		{
@@ -120,7 +114,7 @@ namespace rtmath {
 			// Iterate accumulator as function of radial distance from center of mass
 
 			// Pull in some vars from the shapefile
-			const size_t _N = _shp->_numPoints;
+			const size_t _N = _shp->numPoints;
 			
 			if (!_N)
 			{
@@ -128,24 +122,21 @@ namespace rtmath {
 			}
 
 			// Calculate volume elements
-			const matrixop &d = _shp->_d;
-			double dxdydz = d.get(2,0,0) * d.get(2,0,1) * d.get(2,0,2);
+			double dxdydz = _shp->d(0) * _shp->d(1) * _shp->d(2);
 			V_cell_const = dxdydz;
 			V_dipoles_const = dxdydz * _N;
 			aeff_dipoles_const = pow(V_dipoles_const*3./(4.*boost::math::constants::pi<double>()),1./3.);
 
-			const matrixop &a1 = _shp->_a1;
-			const matrixop &a2 = _shp->_a2;
-			const matrixop &a3 = _shp->_a3;
-			//_a1 = a1;
-			//_a2 = a2;
+			const Eigen::Array3f &a1 = _shp->a1;
+			const Eigen::Array3f &a2 = _shp->a2;
+			const Eigen::Array3f &a3 = _shp->a3;
 			// Figure out the base rotation from a1 = <1,0,0>, a2 = <0,1,0> that 
 			// gives the current a1, a2.
 
 			double thetar, betar, phir;
 			// Theta is the angle between a1 and xlf
 			// From dot product, theta = acos(a1.xlf)
-			double dp = a1.get(2,0,0); // need only x component, as xlf is the unit vector in +x
+			double dp = a1(0); // need only x component, as xlf is the unit vector in +x
 			thetar = acos(dp);
 
 			// From a1 = x_lf*cos(theta) + y_lf*sin(theta)*cos(phi) + z_lf*sin(theta)*sin(phi),
@@ -153,17 +144,17 @@ namespace rtmath {
 			double stheta = sin(thetar);
 			if (thetar)
 			{
-				double acphi = a1.get(2,0,1) / stheta;
+				double acphi = a1(1) / stheta;
 				phir = acos(acphi);
 
 				// Finally, a2_x = -sin(theta)cos(beta)
-				double cbeta = a2.get(2,0,0) / stheta * -1;
+				double cbeta = a2(0) / stheta * -1;
 				betar = acos(cbeta);
 			} else {
 				// theta is zero, so gimbal locking occurs. assume phi = 0.
 				phir = 0;
 				// must use alternate definition to get beta
-				double cosbeta = a2.get(2,0,1);
+				double cosbeta = a2(1);
 				betar = acos(cosbeta);
 			}
 
@@ -214,28 +205,27 @@ namespace rtmath {
 			
 			// Do two passes to be able to renormalize coordinates
 			accumulator_set<double, stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
-			for (auto it = _shp->_latticePtsStd.begin(); it != _shp->_latticePtsStd.end(); it++)
+			for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
 			{
-				m_x(it->get(2,0,0));
-				m_y(it->get(2,0,1));
-				m_z(it->get(2,0,2));
+				m_x((*it)(0));
+				m_y((*it)(1));
+				m_z((*it)(2));
 			}
 
-			b_min.set(boost::accumulators::min(m_x),2,0,0);
-			b_min.set(boost::accumulators::min(m_y),2,1,0);
-			b_min.set(boost::accumulators::min(m_z),2,2,0);
+			b_min(0) = boost::accumulators::min(m_x);
+			b_min(1) = boost::accumulators::min(m_y);
+			b_min(2) = boost::accumulators::min(m_z);
 
-			b_max.set(boost::accumulators::max(m_x),2,0,0);
-			b_max.set(boost::accumulators::max(m_y),2,1,0);
-			b_max.set(boost::accumulators::max(m_z),2,2,0);
+			b_max(0) = boost::accumulators::max(m_x);
+			b_max(1) = boost::accumulators::max(m_y);
+			b_max(2) = boost::accumulators::max(m_z);
 
-			b_mean.set(boost::accumulators::mean(m_x),2,0,0);
-			b_mean.set(boost::accumulators::mean(m_y),2,1,0);
-			b_mean.set(boost::accumulators::mean(m_z),2,2,0);
-
+			b_mean(0) = boost::accumulators::mean(m_x);
+			b_mean(1) = boost::accumulators::mean(m_y);
+			b_mean(2) = boost::accumulators::mean(m_z);
 
 			// Figure out diameter of smallest circumscribing sphere
-			convexHull cvHull(_shp->_latticePtsStd);
+			convexHull cvHull(_shp->latticePtsStd);
 			if (qhull_enabled)
 			{
 				cvHull.constructHull();
@@ -264,14 +254,14 @@ namespace rtmath {
 				auto pdr = calcStatsRot(0,0,0);
 				V_ellipsoid_max = boost::math::constants::pi<double>() / 6.0;
 				// Using diameters, and factor in prev line reflects this
-				V_ellipsoid_max *= pdr->max.get(2,0,0) - pdr->min.get(2,0,0);
-				V_ellipsoid_max *= pdr->max.get(2,1,0) - pdr->min.get(2,1,0);
-				V_ellipsoid_max *= pdr->max.get(2,2,0) - pdr->min.get(2,2,0);
+				V_ellipsoid_max *= pdr->max(0) - pdr->min(0);
+				V_ellipsoid_max *= pdr->max(1) - pdr->min(1);
+				V_ellipsoid_max *= pdr->max(2) - pdr->min(2);
 
 				V_ellipsoid_rms = 4.0 * boost::math::constants::pi<double>() / 3.0;
-				V_ellipsoid_rms *= pdr->rms_mean.get(2,0,0);
-				V_ellipsoid_rms *= pdr->rms_mean.get(2,1,0);
-				V_ellipsoid_rms *= pdr->rms_mean.get(2,2,0);
+				V_ellipsoid_rms *= pdr->rms_mean(0);
+				V_ellipsoid_rms *= pdr->rms_mean(1);
+				V_ellipsoid_rms *= pdr->rms_mean(2);
 
 				aeff_ellipsoid_max = pow(3.0 * V_ellipsoid_max / (4.0 * boost::math::constants::pi<double>()),1./3.);
 				aeff_ellipsoid_rms = pow(3.0 * V_ellipsoid_rms / (4.0 * boost::math::constants::pi<double>()),1./3.);

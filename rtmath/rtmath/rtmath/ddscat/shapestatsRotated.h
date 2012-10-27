@@ -4,7 +4,9 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include "shapefile.h"
-#include "../matrixop.h"
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include<Eigen/StdVector>
 
 namespace rtmath {
 	//class matrixop;
@@ -28,18 +30,21 @@ namespace rtmath {
 			// For physically-united quantities, construct a shapeFileStatsRotatedView.
 
 			// After normalization
-			matrixop min, max, sum, skewness, kurtosis;
+			Eigen::Vector4f min, max, sum, skewness, kurtosis;
 			// Moments
-			std::vector<matrixop> mom1, mom2, mominert;
-			std::vector<matrixop> covariance, PE;
+			std::vector<Eigen::Vector4f,Eigen::aligned_allocator<Eigen::Vector4f> > 
+				mom1, mom2;
+			std::vector<Eigen::Matrix3f> mominert, covariance;
+			std::vector<Eigen::Vector3f> PE;
 
-			matrixop abs_min, abs_max, abs_mean, rms_mean;
+			Eigen::Vector4f abs_min, abs_max, abs_mean, rms_mean;
 
 			// Aspect ratios
-			matrixop as_abs, as_abs_mean, as_rms;
+			Eigen::Matrix3f as_abs, as_abs_mean, as_rms;
 
 			// Cross-sectional areas
-			matrixop areas;
+			Eigen::Vector3f areas;
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
 	}
 }

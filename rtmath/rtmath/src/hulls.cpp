@@ -16,18 +16,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/vtk_io.h>
 #include <pcl/point_types.h>
-#include <pcl/kdtree/kdtree.h>
-#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
-#include <pcl/surface/gp3.h>
-#include <pcl/surface/grid_projection.h>
-#include <pcl/surface/marching_cubes.h>
-#include <pcl/surface/mls.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/filters/passthrough.h>
-#include <pcl/filters/project_inliers.h>
-#include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl/surface/concave_hull.h>
 #include <pcl/PolygonMesh.h>
@@ -50,6 +39,25 @@ namespace rtmath
 			pcl::io::saveVTKFile(filename.c_str(),pbc);
 		}
 
+		void writeVTKpoints(const std::string &filename, const std::vector<Eigen::Vector3f> &src)
+		{
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+			const size_t N = src.size();
+			cloud->reserve(N);
+			
+			for (auto it = src.begin(); it != src.end(); it++)
+			{
+				const double x = (*it)(0);
+				const double y = (*it)(1);
+				const double z = (*it)(2);
+				cloud->push_back(pcl::PointXYZ(x,y,z));
+			}
+
+			sensor_msgs::PointCloud2 pbc;
+			pcl::toROSMsg(*cloud, pbc);
+			pcl::io::saveVTKFile(filename.c_str(),pbc);
+		}
+		/*
 		void writeVTKpoints(const std::string &filename, const std::vector<matrixop> &src)
 		{
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -68,30 +76,30 @@ namespace rtmath
 			pcl::toROSMsg(*cloud, pbc);
 			pcl::io::saveVTKFile(filename.c_str(),pbc);
 		}
-
+		*/
 		hull::hull()
 		{
 			_volume = 0;
 			_surfarea = 0;
 			hull_enabled = true;
+			_points = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
+			_hullPts = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		}
 
-		hull::~hull()
-		{
-		}
+		hull::~hull() { }
 
-		hull::hull(const std::vector<matrixop> &backend)
+		hull::hull(const std::vector<Eigen::Vector3f> &backend)
 		{
-			_points.reserve(backend.size());
+			_points->reserve(backend.size());
 			for (auto it = backend.begin(); it != backend.end(); ++it)
 			{
-				const double x = it->get(2,0,0);
-				const double y = it->get(2,0,1);
-				const double z = it->get(2,0,2);
-				_points.push_back(pcl::PointXYZ(x,y,z));
+				const double x = (*it)(0);
+				const double y = (*it)(1);
+				const double z = (*it)(2);
+				_points->push_back(pcl::PointXYZ(x,y,z));
 			}
 
-			_hullPts = _points;
+			_hullPts = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 			_volume = 0;
 			_surfarea = 0;
 		}
@@ -99,7 +107,7 @@ namespace rtmath
 		hull::hull(const pcl::PointCloud<pcl::PointXYZ> &backend)
 		{
 			_points = backend;
-			_hullPts = backend;
+			_hullPts = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 			_volume = 0;
 			_surfarea = 0;
 		}
@@ -116,7 +124,7 @@ namespace rtmath
 			pcl::io::saveVTKFile (filename.c_str(), triangles);
 		}
 
-		convexHull::convexHull(const std::vector<matrixop> &src)
+		convexHull::convexHull(const std::vector<Eigen::Vector3f> &src)
 			: hull(src)
 		{
 		}
@@ -132,19 +140,16 @@ namespace rtmath
 
 		void convexHull::constructHull()
 		{
-			_hullPts.clear();
+			_hullPts->clear();
 
-			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-			const size_t N = _points.size();
-			cloud->resize(N);
-			std::copy(_points.begin(),_points.end(),cloud->begin());
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(_points);
 
 			pcl::ConvexHull<pcl::PointXYZ> chull;
 			// Dimension is not set because it is also used for 2d shapes
 			//chull.setDimension(3); // Dimension 3 fails for dendrites
 			chull.setComputeAreaVolume(true);
 			chull.setInputCloud (cloud);
-			chull.reconstruct (_hullPts, _polygons);
+			chull.reconstruct (_hullPts.get(), _polygons);
 			_volume = chull.getTotalVolume();
 			_surfarea = chull.getTotalArea();
 		}
@@ -152,9 +157,9 @@ namespace rtmath
 		double convexHull::maxDiameter() const
 		{
 			double maxD = 0;
-			const pcl::PointCloud<pcl::PointXYZ>* base = nullptr;
-			if (hull_enabled) base = &_hullPts;
-			else base = &_points;
+			const pcl::PointCloud<pcl::PointXYZ>::Ptr base;
+			if (hull_enabled) base = _hullPts;
+			else base = _points;
 
 			// This function is too slow
 			//pcl::PointXYZ min, max;
@@ -183,7 +188,7 @@ namespace rtmath
 			return _surfarea;
 		}
 
-		concaveHull::concaveHull(const std::vector<matrixop> &src)
+		concaveHull::concaveHull(const std::vector<Eigen::Vector3f> &src)
 			: hull(src)
 		{
 		}
@@ -199,18 +204,16 @@ namespace rtmath
 		
 		void concaveHull::constructHull(double alpha)
 		{
-			_hullPts.clear();
+			_hullPts->clear();
 
-			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-			const size_t N = _points.size();
-			cloud->resize(N);
-			std::copy(_points.begin(),_points.end(),cloud->begin());
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (_points);
+			//std::copy(_points.begin(),_points.end(),cloud->begin());
 
 			pcl::ConcaveHull<pcl::PointXYZ> chull;
 			//chull.setDimension(3);
 			chull.setInputCloud (cloud);
 			chull.setAlpha(alpha);
-			chull.reconstruct (_hullPts, _polygons);
+			chull.reconstruct (_hullPts.get(), _polygons);
 
 			//_findVS();
 		}
