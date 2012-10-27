@@ -10,7 +10,6 @@
 #include <complex>
 #include "../matrixop.h"
 #include "../phaseFunc.h"
-#include "cdf-ddscat.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)

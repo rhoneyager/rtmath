@@ -5,7 +5,9 @@
 #include <vector>
 #include <map>
 #include <set>
-#include "../matrixop.h"
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/StdVector>
 #include "shapestats.h"
 
 // Using macro expansion here to define names

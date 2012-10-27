@@ -108,7 +108,6 @@
     <ClInclude Include="rtmath\da\damatrix_quad.h" />
     <ClInclude Include="rtmath\da\daPf.h" />
     <ClInclude Include="rtmath\da\daStatic.h" />
-    <ClInclude Include="rtmath\ddscat\cdf-ddscat.h" />
     <ClInclude Include="rtmath\ddscat\ddLoader.h" />
     <ClInclude Include="rtmath\ddscat\ddOutput.h" />
     <ClInclude Include="rtmath\ddscat\ddOutputEnsemble.h" />

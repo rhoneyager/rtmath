@@ -90,9 +90,6 @@
     <ClInclude Include="rtmath\da\daStatic.h">
       <Filter>Header Files\da</Filter>
     </ClInclude>
-    <ClInclude Include="rtmath\ddscat\cdf-ddscat.h">
-      <Filter>Header Files\ddscat</Filter>
-    </ClInclude>
     <ClInclude Include="rtmath\ddscat\ddLoader.h">
       <Filter>Header Files\ddscat</Filter>
     </ClInclude>
