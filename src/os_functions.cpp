@@ -65,6 +65,15 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 }
 #endif
 
+extern "C" {
+	void RYAN_DEBUG_DLEXPORT ryan_debug_dummy()
+	{
+		// Dummy function that is used in auto-link
+		int i=0;
+		i++;
+	}
+}
+
 namespace ryan_debug {
 
 		// Don't export this symbol (not in header)
