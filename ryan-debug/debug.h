@@ -29,17 +29,22 @@
 
 namespace ryan_debug
 {
+	// appEntry and appExit are setup on dll load. No need to call them 
+	// using msvc or gcc. Others may require an explicit call.
 	void RYAN_DEBUG_DLEXPORT appEntry();
 	void RYAN_DEBUG_DLEXPORT appExit();
-	bool RYAN_DEBUG_DLEXPORT pidExists(int pid);
+
+	// Does the app pause on termination? Auto-detected.
 	bool RYAN_DEBUG_DLEXPORT waitOnExit();
+	void RYAN_DEBUG_DLEXPORT waitOnExit(bool);
+	bool RYAN_DEBUG_DLEXPORT waitOnExitForce();
+
+	// Process detection functions
+	bool RYAN_DEBUG_DLEXPORT pidExists(int pid);
 	int RYAN_DEBUG_DLEXPORT getPID();
 	int RYAN_DEBUG_DLEXPORT getPPID(int pid);
+
+	// Print the compiler information for the debug library to std::cerr.
+	void RYAN_DEBUG_DLEXPORT printDebugInfo();
 }
 
-/*
-extern "C"
-{
-	void RYAN_DEBUG_DLEXPORT ryan_debug_dummy();
-}
-*/

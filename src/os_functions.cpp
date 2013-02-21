@@ -41,6 +41,7 @@
 #endif
 
 #include "../ryan-debug/debug.h"
+#include "../ryan-debug/info.h"
 
 // DLL binding and unbinding code
 #ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
@@ -158,8 +159,7 @@ namespace ryan_debug {
 //			rtmath::debug::listuniqueobj(cerr, false);
 //#endif
 
-			bool wait = doWaitOnExit;
-			if (wait)
+			if (doWaitOnExit)
 			{
 //#ifdef _WIN32
 //				_CrtDumpMemoryLeaks();
@@ -224,7 +224,19 @@ namespace ryan_debug {
 			// Execution should not reach this point
 		}
 
+		void waitOnExit(bool val)
+		{
+			doWaitOnExit = val;
+		}
+
 		bool waitOnExit()
+		{
+			static bool check = true;
+			if (check) waitOnExit(waitOnExitForce());
+			return doWaitOnExit;
+		}
+
+		bool waitOnExitForce()
 		{
 #ifdef _WIN32
 			// Get pid and parent pid
@@ -338,5 +350,9 @@ namespace ryan_debug {
 			return 0;
 		}
 
+		void printDebugInfo()
+		{
+			debug_preamble(std::cerr);
+		}
 }
 

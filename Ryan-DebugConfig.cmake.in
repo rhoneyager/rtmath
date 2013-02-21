@@ -1,0 +1,17 @@
+# - Config file for the Ryan-Debug package
+# It defines the following variables
+#  RYAN-DEBUG_INCLUDE_DIRS - include directories
+#  RYAN-DEBUG_LIBRARIES    - libraries to link against
+#  RYAN-DEBUG_EXECUTABLE   - an executable
+ 
+# Compute paths
+get_filename_component(RYAN-DEBUG_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(RYAN-DEBUG_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${RYAN-DEBUG_CMAKE_DIR}/Ryan-DebugTargets.cmake")
+ 
+# These are IMPORTED targets created by FooBarTargets.cmake
+set(RYAN-DEBUG_LIBRARIES Ryan-Debug)
+#set(RYAN-DEBUG_EXECUTABLE bar)
+
