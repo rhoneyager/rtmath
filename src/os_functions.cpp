@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 #include <cstdlib>
+#include <cstdio>
 #ifdef _WIN32
 //#include "../../rtmath/rtmath/ROOTlink.h"
 #include <Windows.h>
