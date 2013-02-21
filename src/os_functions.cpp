@@ -3,6 +3,8 @@
 // Tells if, on windows, the parent process is cmd or explorer
 // Will be used in apps on exit to determine if the program should wait 
 // before terminating or not
+#define RYAN_DEBUG_EXPORTING
+#define RYAN_DEBUG_NO_LINK
 
 #include <boost/filesystem.hpp>
 #include <iostream>
