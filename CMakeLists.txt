@@ -8,7 +8,7 @@ project(Ryan-Debug C CXX)
 
 set(MAJOR 0)
 set(MINOR 5)
-set(REVISION 0)
+set(REVISION 1)
 set(RYAN-DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
 
@@ -45,8 +45,13 @@ set (hdrs
 
 set(srcs-test src/test.cpp)
 
+if(WIN32)
+	set (srcs ${srcs} src/lib.rc)
+endif()
+
 source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
+
 
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -80,6 +85,11 @@ configure_file(Ryan-DebugConfigVersion.cmake.in
 INSTALL(TARGETS Ryan-Debug
 	EXPORT Ryan-DebugTargets
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	COMPONENT Libraries
+	)
+
+INSTALL(TARGETS Ryan-Debug
+	#EXPORT Ryan-DebugTargets
 	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
 	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
 	COMPONENT Libraries
@@ -93,6 +103,7 @@ INSTALL(DIRECTORY Ryan-Debug/
 	)
 
 INSTALL(TARGETS Ryan-Debug-test
+	EXPORT Ryan-DebugTargets
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	COMPONENT Applications
 	)
@@ -104,6 +115,37 @@ INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan-DebugConfig.cm
 INSTALL(EXPORT Ryan-DebugTargets DESTINATION
 	"${INSTALL_CMAKE_DIR}" COMPONENT Libraries)
 
+# Also install / pack the relevant boost libraries into the install tree
+
+# Do extention swapping
+if(WIN32)
+	set(dllext ".dll")
+	set(libext "[.]lib")
+else()
+	set(dllext ".so")
+	set(libext "[.]a")
+endif()
+
+STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_D_DLL ${Boost_FILESYSTEM_LIBRARY_DEBUG} )
+STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_R_DLL ${Boost_FILESYSTEM_LIBRARY_RELEASE} )
+STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_D_DLL ${Boost_SYSTEM_LIBRARY_DEBUG} )
+STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_R_DLL ${Boost_SYSTEM_LIBRARY_RELEASE} )
+
+INSTALL(FILES 
+	${FILESYSTEM_D_DLL}
+	${SYSTEM_D_DLL}
+	DESTINATION ${INSTALL_BIN_DIR}
+	COMPONENT Libraries
+	CONFIGURATIONS Debug
+	)
+
+INSTALL(FILES 
+	${FILESYSTEM_R_DLL}
+	${SYSTEM_R_DLL}
+	DESTINATION ${INSTALL_BIN_DIR}
+	COMPONENT Libraries
+	CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
+	)
 
 set(CPACK_PACKAGE_NAME "Ryan-Debug")
 set(CPACK_PACKAGE_VENDOR "Ryan Honeyager")
