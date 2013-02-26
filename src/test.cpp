@@ -1,6 +1,6 @@
 #include <iostream>
-#include "../ryan-debug/debug.h"
-#include "../ryan-debug/info.h"
+#include "../Ryan-Debug/debug.h"
+#include "../Ryan-Debug/info.h"
 
 int main(int, char**)
 {

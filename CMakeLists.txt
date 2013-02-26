@@ -32,9 +32,10 @@ set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 #endforeach()
  
 
-set(liblist ${Boost_LIBRARIES})
 
 find_package(Boost COMPONENTS filesystem system REQUIRED)
+set(liblist ${Boost_LIBRARIES})
+
 set( srcs
 	src/os_functions.cpp
 	)
@@ -81,15 +82,16 @@ configure_file(Ryan-DebugConfigVersion.cmake.in
 	"${PROJECT_BINARY_DIR}/Ryan-DebugConfigVersion.cmake" @ONLY)
  
 
+if(WIN32 AND NOT CYGWIN) # NSIS bug
+INSTALL(TARGETS Ryan-Debug
+	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	COMPONENT Libraries
+	)
+endif()
 
 INSTALL(TARGETS Ryan-Debug
 	EXPORT Ryan-DebugTargets
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-	COMPONENT Libraries
-	)
-
-INSTALL(TARGETS Ryan-Debug
-	#EXPORT Ryan-DebugTargets
 	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
 	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
 	COMPONENT Libraries

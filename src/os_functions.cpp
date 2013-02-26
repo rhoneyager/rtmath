@@ -40,8 +40,8 @@
 #endif
 #endif
 
-#include "../ryan-debug/debug.h"
-#include "../ryan-debug/info.h"
+#include "../Ryan-Debug/debug.h"
+#include "../Ryan-Debug/info.h"
 
 // DLL binding and unbinding code
 #ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
