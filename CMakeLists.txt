@@ -14,27 +14,37 @@ set(RYAN-DEBUG_VERSION
 
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
-set(INSTALL_INC_DIR include CACHE PATH "Installation directory for headers")
+set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
 if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
+	set (INSTEXT ON)
 else()
 	set(DEF_INSTALL_CMAKE_DIR lib/CMake/Ryan-Debug)
+	set (INSTEXT OFF)
 endif()
+option (INSTALL_EXTERNALS
+	"Install external library dll files?" ${INSTEXT})
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
  
 # Make relative paths absolute (needed later on)
-#foreach(p LIB BIN INCLUDE CMAKE)
-#	set(var INSTALL_${p}_DIR)
-#	if(NOT IS_ABSOLUTE "${${var}}")
-#		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-#	endif()
-#endforeach()
+foreach(p LIB BIN INCLUDE CMAKE)
+	set(var INSTALL_${p}_DIR)
+	if(NOT IS_ABSOLUTE "${${var}}")
+		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+	endif()
+endforeach()
  
 
 
 find_package(Boost COMPONENTS filesystem system REQUIRED)
-set(liblist ${Boost_LIBRARIES})
+include_directories(${BOOST_INCLUDEDIR})
+if (WIN32 AND NOT CYGWIN) # Boost auto-link
+	link_directories(${BOOST_LIBRARYDIR})
+else()
+	set(liblist ${Boost_LIBRARIES})
+endif()
+#message("${liblist}")
 
 set( srcs
 	src/os_functions.cpp
@@ -54,8 +64,6 @@ source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
 
 
-include_directories(${Boost_INCLUDE_DIRS})
-
 add_library(Ryan-Debug SHARED ${srcs} ${hdrs} )
 target_link_libraries(Ryan-Debug ${liblist})
 set_target_properties(Ryan-Debug PROPERTIES FOLDER "Libs")
@@ -67,14 +75,20 @@ set_target_properties(Ryan-Debug-test PROPERTIES FOLDER "Apps")
 export(TARGETS Ryan-Debug
 	FILE "${PROJECT_BINARY_DIR}/Ryan-DebugTargets.cmake")
 export(PACKAGE Ryan-Debug)
-#file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
-#	"${INSTALL_INCLUDE_DIR}")
+
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+	"${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+
+# For the local tree
 configure_file(Ryan-DebugConfig.cmake.in
 	"${PROJECT_BINARY_DIR}/Ryan-DebugConfig.cmake" @ONLY)
-# ... for the install tree
+# ... and for the install tree
 set(CONF_INCLUDE_DIRS "\${RYAN-DEBUG_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+
+#message("${CONF_INCLUDE_DIRS}")
+
 configure_file(Ryan-DebugConfig.cmake.in
 	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan-DebugConfig.cmake" @ONLY)
 # ... for both
@@ -99,7 +113,7 @@ INSTALL(TARGETS Ryan-Debug
 
 INSTALL(DIRECTORY Ryan-Debug/
 	EXPORT Ryan-DebugTargets
-	DESTINATION ${INSTALL_INC_DIR}/Ryan-Debug
+	DESTINATION ${INSTALL_INCLUDE_DIR}/Ryan-Debug
 	COMPONENT Headers
 	FILES_MATCHING PATTERN "*.h"
 	)
@@ -133,21 +147,23 @@ STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_R_DLL ${Boost_FILESYSTEM_L
 STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_D_DLL ${Boost_SYSTEM_LIBRARY_DEBUG} )
 STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_R_DLL ${Boost_SYSTEM_LIBRARY_RELEASE} )
 
-INSTALL(FILES 
-	${FILESYSTEM_D_DLL}
-	${SYSTEM_D_DLL}
-	DESTINATION ${INSTALL_BIN_DIR}
-	COMPONENT Libraries
-	CONFIGURATIONS Debug
-	)
+if (INSTALL_EXTERNALS)
+	INSTALL(FILES 
+		${FILESYSTEM_D_DLL}
+		${SYSTEM_D_DLL}
+		DESTINATION ${INSTALL_BIN_DIR}
+		COMPONENT Libraries
+		CONFIGURATIONS Debug
+		)
 
-INSTALL(FILES 
-	${FILESYSTEM_R_DLL}
-	${SYSTEM_R_DLL}
-	DESTINATION ${INSTALL_BIN_DIR}
-	COMPONENT Libraries
-	CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
-	)
+	INSTALL(FILES 
+		${FILESYSTEM_R_DLL}
+		${SYSTEM_R_DLL}
+		DESTINATION ${INSTALL_BIN_DIR}
+		COMPONENT Libraries
+		CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
+		)
+endif()
 
 set(CPACK_PACKAGE_NAME "Ryan-Debug")
 set(CPACK_PACKAGE_VENDOR "Ryan Honeyager")

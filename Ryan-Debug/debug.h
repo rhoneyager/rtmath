@@ -2,12 +2,7 @@
 
 #ifndef RYAN_DEBUG_NO_LINK
 #ifdef _MSC_FULL_VER
-#ifdef RYAN_DEBUG_LINK_STATIC
-#pragma comment(lib, "ryan-debug_static.lib")
-#else
-#pragma comment(lib, "ryan-debug.lib")
 #pragma comment(linker, "/include:_ryan_debug_dummy")
-#endif
 #endif
 #endif
 
