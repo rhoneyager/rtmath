@@ -192,6 +192,7 @@ set(CPACK_COMPONENT_HEADERS_DEPENDS Libraries)
 set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries)
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 
+set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_SOURCE_DIR}/ryan-debug.spec.in")
 set(CPACK_RPM_PACKAGE_REQUIRES
         "boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6"
         )
