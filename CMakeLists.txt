@@ -8,7 +8,7 @@ project(Ryan-Debug C CXX)
 
 set(MAJOR 0)
 set(MINOR 5)
-set(REVISION 2)
+set(REVISION 3)
 set(RYAN-DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
 
