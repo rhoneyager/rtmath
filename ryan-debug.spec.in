@@ -16,7 +16,8 @@ Vendor:         @CPACK_RPM_PACKAGE_VENDOR@
 @TMP_RPM_AUTOREQ@
 @TMP_RPM_AUTOREQPROV@
 @TMP_RPM_BUILDARCH@
-@TMP_RPM_PREFIX@
+#@TMP_RPM_PREFIX@
+Prefix: /usr
 
 %define _rpmdir @CPACK_RPM_DIRECTORY@
 %define _rpmfilename @CPACK_RPM_FILE_NAME@
@@ -78,6 +79,24 @@ mv "@CPACK_TOPLEVEL_DIRECTORY@/tmpBBroot" $RPM_BUILD_ROOT
 %config "/usr/lib64/CMake/Ryan-Debug/Ryan-DebugConfigVersion.cmake"
 %config "/usr/lib64/CMake/Ryan-Debug/Ryan-DebugTargets.cmake"
 %config "/usr/lib64/CMake/Ryan-Debug/Ryan-DebugTargets-noconfig.cmake"
+
+#%dir "@CMAKE_INSTALL_PREFIX@"
+#%dir "@CMAKE_INSTALL_PREFIX@/@INSTALL_BIN_DIR@"
+#%dir "@CMAKE_INSTALL_PREFIX@/@INSTALL_LIB_DIR@"
+#%dir "@CMAKE_INSTALL_PREFIX@/@INSTALL_LIB_DIR@/CMake"
+#%dir "@CMAKE_INSTALL_PREFIX@/@INSTALL_CMAKE_DIR@"
+#%dir "@CMAKE_INSTALL_PREFIX@/@INSTALL_INCLUDE_DIR@"
+#%dir "@CMAKE_INSTALL_PREFIX@/@INSTALL_INCLUDE_DIR@/Ryan-Debug"
+#"@CMAKE_INSTALL_PREFIX@/@INSTALL_INCLUDE_DIR@/Ryan-Debug/info.h"
+#"@CMAKE_INSTALL_PREFIX@/@INSTALL_INCLUDE_DIR@/Ryan-Debug/debug.h"
+#
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_LIB_DIR@/libRyan-Debug.so"
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_INCLUDE_DIR@/Ryan-Debug/"
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_BIN_DIR@/Ryan-Debug-test"
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_CMAKE_DIR@/Ryan-DebugConfig.cmake"
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_CMAKE_DIR@/Ryan-DebugConfigVersion.cmake"
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_CMAKE_DIR@/Ryan-DebugTargets.cmake"
+#%config "@CMAKE_INSTALL_PREFIX@/@INSTALL_CMAKE_DIR@/Ryan-DebugTargets-noconfig.cmake"
 
 
 

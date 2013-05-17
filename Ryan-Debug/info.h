@@ -3,9 +3,15 @@
 
 namespace ryan_debug
 {
-	// This function is designed to provide information on a compiler's
-	// build environment. It is a header function because it is designed 
-	// to reflect the compiler variables of an external project's code.
+	/** 
+	 * \brief Provides information about the build environment during compilation.
+	 *
+	 * This function is designed to provide information on a compiler's
+	 * build environment. It is a header function because it is designed 
+	 * to reflect the compiler variables of an external project's code.
+	 *
+	 * @param out The output stream that receives the information.
+	 */
 	inline void debug_preamble(std::ostream &out = std::cerr)
 	{
 		out << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;

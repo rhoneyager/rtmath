@@ -45,16 +45,20 @@
 
 // DLL binding and unbinding code
 #ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
+
+/// GCC - code that is executed on DLL import
 void __attribute__ ((constructor)) debug_gcc_init()
 {
 	ryan_debug::appEntry();
 }
 
+/// GCC - code that is executed on DLL unload
 void __attribute__ ((destructor)) debug_gcc_fini()
 {
 }
 #endif
 #ifdef _MSC_FULL_VER
+/// MSVC - code that is executed on DLL load and unload
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	if (dwReason == DLL_PROCESS_ATTACH)
@@ -67,6 +71,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 #endif
 
 extern "C" {
+	/// Useless function that is required for MSVC autolink (using the header debug.h)
 	void RYAN_DEBUG_DLEXPORT ryan_debug_dummy()
 	{
 		// Dummy function that is used in auto-link
@@ -83,9 +88,22 @@ namespace ryan_debug {
 		bool _consoleTerminated = false;
 #endif
 
+		/// Private flag that determines if the app waits for the user to press 'Enter' to terminate it at the end of execution.
 		bool doWaitOnExit = false;
 
 		// Regular defs start here
+
+		/** 
+		 * \brief Entry function that gets called when a debugged application first loads
+		 * 
+		 * This function gets called at the beginning of an application's execution
+		 * (generally). It:
+		 * - determines if the app should wait on exit (to keep the console open)
+		 * - resets the console title in case any other library overrides it.
+		 *   A good example of this is the CERN ROOT image lobraries.
+		 * - Overrides the console control key handlers on Windows. This lets a user 
+		 *   exit with CTRL-C without the debug code causing the app to crash.
+		 */
 		void appEntry()
 		{
 			doWaitOnExit = waitOnExit();
@@ -141,6 +159,16 @@ namespace ryan_debug {
 #endif
 		}
 
+		/**
+		 * \brief Function called on application exit to hold the console window open
+		 *
+		 * This function is the completion of the appEntry() code.
+		 * If the window is already closed (such as by the user clicking the X or 
+		 * pressing CTRL-C), then it silently falls through.
+		 * Otherwise, it examines the doWaitOnExit flag.
+		 * If the application is spawned in its own window (parent is not cmd.exe), 
+		 * then it prompts the user to press the return key.
+		 */
 		void appExit()
 		{
 			using namespace std;
@@ -169,7 +197,9 @@ namespace ryan_debug {
 			}
 
 		}
+
 #ifdef _WIN32
+		/// Windows handler for window close events.
 		BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType )
 		{
 			/*
@@ -183,6 +213,7 @@ namespace ryan_debug {
 			return false;
 		}
 #endif
+		/// Checks whether a process with the given pid exists.
 		bool pidExists(int pid)
 		{
 			// Function needed because Qt is insufficient, and Windows / Unix have 
@@ -224,11 +255,13 @@ namespace ryan_debug {
 			// Execution should not reach this point
 		}
 
+		/// Allows the linked app to force / prohibit waiting on exit
 		void waitOnExit(bool val)
 		{
 			doWaitOnExit = val;
 		}
 
+		/// Will this app execution result in waiting on exit?
 		bool waitOnExit()
 		{
 			static bool check = true;
@@ -236,6 +269,7 @@ namespace ryan_debug {
 			return doWaitOnExit;
 		}
 
+		/// Checks parent PID and name to see if the app should wait on exit.
 		bool waitOnExitForce()
 		{
 #ifdef _WIN32
@@ -302,6 +336,7 @@ namespace ryan_debug {
 #endif
 		}
 
+		/// OS-independent function that returns the PID of the running process
 		int getPID()
 		{
 #ifdef _WIN32
@@ -321,6 +356,7 @@ namespace ryan_debug {
 			return 0;
 		}
 
+		/// OS-independent function that returns the PID of the parent of a given process
 		int getPPID(int pid)
 		{
 #ifdef _WIN32
@@ -350,6 +386,10 @@ namespace ryan_debug {
 			return 0;
 		}
 
+		/**
+		 * \brief Prints compiler and library information that was present when the 
+		 * Ryan-Debug library was compiled.
+		 */
 		void printDebugInfo()
 		{
 			debug_preamble(std::cerr);

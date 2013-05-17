@@ -8,7 +8,7 @@ project(Ryan-Debug C CXX)
 
 set(MAJOR 0)
 set(MINOR 5)
-set(REVISION 3)
+set(REVISION 4)
 set(RYAN-DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
 
@@ -19,14 +19,56 @@ if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
 	set (INSTEXT ON)
 else()
-	set(DEF_INSTALL_CMAKE_DIR lib/CMake/Ryan-Debug)
+	set(DEF_INSTALL_CMAKE_DIR ${INSTALL_LIB_DIR}/CMake/Ryan-Debug)
 	set (INSTEXT OFF)
 endif()
 option (INSTALL_EXTERNALS
 	"Install external library dll files?" ${INSTEXT})
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
- 
+
+find_package(Doxygen)
+option (BUILD_DOCUMENTATION
+	"Build the documentation for this library" OFF)
+
+if(BUILD_DOCUMENTATION)
+
+	option (BUILD_DOCUMENTATION_IN_ALL
+		"Build documentation automatically with 'make all'. Also used for 'make install' and 'make package'" OFF)
+
+	if (NOT DOXYGEN_FOUND)
+		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
+	endif()
+
+	set(INSTALL_DOC_DIR share/doc/Ryan-Debug-${RYAN-DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
+	configure_file(Doxyfile.in
+		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
+
+	if (BUILD_DOCUMENTATION_IN_ALL)
+		set (ALL_FLAG ALL)
+	else()
+		set (ALL_FLAG "")
+	endif()
+
+	# This builds the html docs
+	add_custom_target(doc-html ${ALL_FLAG}
+		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMENT "Generating API html documentation with Doxygen" VERBATIM 
+		)
+	# This builds the latex docs
+	add_custom_target(doc-latex ${ALL_FLAG}
+		latex refman.tex 
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex
+		COMMENT "Generating API pdf documentation with Doxygen" VERBATIM
+		)
+
+	add_custom_target(docs ${ALL_FLAG} DEPENDS doc-html doc-latex)
+endif()
+
+configure_file(ryan-debug.spec.in
+	"${PROJECT_BINARY_DIR}/ryan-debug.spec" @ONLY)
+
 # Make relative paths absolute (needed later on)
 foreach(p LIB BIN INCLUDE CMAKE)
 	set(var INSTALL_${p}_DIR)
@@ -94,7 +136,6 @@ configure_file(Ryan-DebugConfig.cmake.in
 configure_file(Ryan-DebugConfigVersion.cmake.in
 	"${PROJECT_BINARY_DIR}/Ryan-DebugConfigVersion.cmake" @ONLY)
  
-
 if(WIN32 AND NOT CYGWIN) # NSIS bug
 INSTALL(TARGETS Ryan-Debug
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
@@ -111,7 +152,7 @@ INSTALL(TARGETS Ryan-Debug
 	)
 
 INSTALL(DIRECTORY Ryan-Debug/
-	EXPORT Ryan-DebugTargets
+#	EXPORT Ryan-DebugTargets
 	DESTINATION ${INSTALL_INCLUDE_DIR}/Ryan-Debug
 	COMPONENT Headers
 	FILES_MATCHING PATTERN "*.h"
@@ -122,6 +163,16 @@ INSTALL(TARGETS Ryan-Debug-test
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	COMPONENT Applications
 	)
+
+if (BUILD_DOCUMENTATION_IN_ALL)
+	# Provides html and pdf
+	install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} docs)")
+	# html
+	install(DIRECTORY ${CMAKE_BINARY_DIR}/docs/html/ DESTINATION ${INSTALL_DOC_DIR}/html)
+	# pdf
+	install(DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex/ DESTINATION ${INSTALL_DOC_DIR}/latex)
+endif()
+
 
 INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan-DebugConfig.cmake"
 	"${PROJECT_BINARY_DIR}/Ryan-DebugConfigVersion.cmake"
@@ -191,7 +242,16 @@ set(CPACK_COMPONENT_HEADERS_DEPENDS Libraries)
 set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries)
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 
-set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_SOURCE_DIR}/ryan-debug.spec.in")
+#set(CPACK_SET_DESTDIR 1)
+set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+#message("${CPACK_PACKAGING_INSTALL_PREFIX}")
+#set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_BINARY_DIR}/ryan-debug.spec")
+#set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_SOURCE_DIR}/ryan-debug.spec.in")
+
+# Fixing RPM EXPORT issue
+#set(CPACK_IGNORE_FILES ".*EXPORT$" ".*Ryan-DebugTargets$")
+#set(CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
+
 set(CPACK_RPM_PACKAGE_REQUIRES
         "boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6"
         )
