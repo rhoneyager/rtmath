@@ -2,7 +2,11 @@
 
 #ifndef RYAN_DEBUG_NO_LINK
 #ifdef _MSC_FULL_VER
+#ifdef _M_X64
+#pragma comment(linker, "/include:ryan_debug_dummy")
+#else
 #pragma comment(linker, "/include:_ryan_debug_dummy")
+#endif
 #endif
 #endif
 
