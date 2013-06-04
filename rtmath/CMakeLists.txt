@@ -92,6 +92,46 @@ option ( BUILD_APPS
 option ( RTMATH_OLD_QT
 	"Set this flag if an older version of Qt4 is present. Ensures compatibility" OFF)
 
+find_package(Doxygen)
+option (BUILD_DOCUMENTATION
+	"Build the documentation for this library" OFF)
+if(BUILD_DOCUMENTATION)
+
+	option (BUILD_DOCUMENTATION_IN_ALL
+		"Build documentation automatically with 'make all'. Also used for 'make install' and 'make package'" OFF)
+
+	if (NOT DOXYGEN_FOUND)
+		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
+	endif()
+
+	set(INSTALL_DOC_DIR share/doc/rtmath-${RTMATH_VERSION} CACHE PATH "Installation directory for documentation")
+	configure_file(Doxyfile.in
+		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
+
+	if (BUILD_DOCUMENTATION_IN_ALL)
+		set (ALL_FLAG ALL)
+	else()
+		set (ALL_FLAG "")
+	endif()
+
+	# This builds the html docs
+	add_custom_target(doc-html ${ALL_FLAG}
+		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMENT "Generating API html documentation with Doxygen" VERBATIM
+	)
+	# This builds the latex docs
+	add_custom_target(doc-latex ${ALL_FLAG}
+		latex refman.tex
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex
+		COMMENT "Generating API pdf documentation with Doxygen" VERBATIM
+	)
+
+	add_custom_target(docs ${ALL_FLAG} DEPENDS doc-html doc-latex)
+endif()
+
+
+
 # Find the packages for the core libraries. Applications do their own supplemental package finding.
 #	find_package(ROOT REQUIRED)
 #	find_package(NetCDF REQUIRED)
@@ -164,7 +204,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "rtmath - radiative transfer math library"
 set(CPACK_PACKAGE_VERSION "${RTMATH_VERSION}")
 set(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH ${REVISION})
+set(CPACK_PACKAGE_VERSION_PATCH "${REVISION}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "rtmath")
 set(CPACK_PACKAGE_CONTACT "Ryan Honeyager (rhoneyager@fsu.edu)")
 
