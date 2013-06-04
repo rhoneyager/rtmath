@@ -1,7 +1,9 @@
 include (common)
 
 add_executable (rtmath-expand-shorthand expand.cpp)
-addapp(rtmath-expand-shorthand)
+set_target_properties( rtmath-expand-shorthand PROPERTIES FOLDER "Apps")
+target_link_libraries(rtmath-expand-shorthand ${rtmath_core-libs} rtmath_core)
+INSTALL(TARGETS rtmath-expand-shorthand RUNTIME DESTINATION bin COMPONENT Applications)
 
 if(BUILD_TESTING)
 	add_test (paramSet rtmath-expand-shorthand 0)

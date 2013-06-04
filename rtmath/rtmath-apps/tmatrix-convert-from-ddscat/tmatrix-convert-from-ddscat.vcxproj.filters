@@ -18,21 +18,6 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
-    <Filter Include="Generated Files">
-      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
-      <Extensions>moc;h;cpp</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Generated Files\Debug">
-      <UniqueIdentifier>{29e1ef43-973e-4839-b2ee-e8560760dd3e}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Generated Files\Release">
-      <UniqueIdentifier>{2138a053-e103-4089-abdd-ce61134f5b19}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -41,16 +26,10 @@
     <ClCompile Include="frmmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_frmmain.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_frmmain.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\qrc_frmmain.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="converter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="converter2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,18 +43,11 @@
     <CustomBuild Include="frmmain.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_frmmain.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="converter.h">
+    <CustomBuild Include="converter.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CMakeLists.txt">
+    </CustomBuild>
+    <CustomBuild Include="CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </None>
+    </CustomBuild>
   </ItemGroup>
 </Project>

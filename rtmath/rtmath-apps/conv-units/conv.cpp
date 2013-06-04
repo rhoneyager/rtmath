@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
+#include <Ryan-Debug/debug.h>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
@@ -21,7 +22,6 @@ int main(int argc, char** argv)
 	using namespace rtmath;
 	try {
 		// Process some of the flags
-		rtmath::debug::appEntry(argc, argv);
 
 		namespace po = boost::program_options;
 

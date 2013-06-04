@@ -1,12 +1,10 @@
 include (common)
-set(rtmath-shape-basicdata_LIBRARIES "")
-set(rtmath-shape-basicdata_INCLUDE_DIRS "")
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable (rtmath-shape-basicdata main.cpp)
 
-add_package_dependency(rtmath-shape-basicdata DEPENDS_ON ROOT)
-set(rtmath-shape-basicdata_LIBRARIES "${rtmath-shape-basicdata_LIBRARIES};Spectrum")
-
-addapp(rtmath-shape-basicdata)
-#message("${rtmath-shape-basicdata_LIBRARIES}")
+set_target_properties( rtmath-shape-basicdata PROPERTIES FOLDER "Apps")
+target_link_libraries(rtmath-shape-basicdata ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
+INSTALL(TARGETS rtmath-shape-basicdata RUNTIME DESTINATION bin COMPONENT Applications)
 

@@ -2,7 +2,6 @@
 // It will add extra functionality, such as a better selection of refractive index
 // calculation functions. It will also be able to handle both ice and water.
 
-#include "../../rtmath/rtmath/ROOTlink.h"
 #include <memory>
 #include <complex>
 #include <cmath>
@@ -16,14 +15,13 @@
 #include <set>
 #include <vector>
 #include <map>
-//#include "../../rtmath/rtmath/"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan-Debug/debug.h>
 #include "../../rtmath/rtmath/refract.h"
+#include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/ddscat/dielTabFile.h"
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
-
-
-void write(const std::complex<double> &ref, bool mtab);
+#include "../../rtmath/rtmath/error/error.h"
 
 enum PHASE {
 	ICE,
@@ -31,18 +29,11 @@ enum PHASE {
 	AIR
 };
 
-struct ptdata {
-	Float_t temp, freq, nu;
-	Float_t fIce, fWat, fAir;
-	Float_t MeffReal, MeffImag;
-	char method[30];
-};
-
 int main(int argc, char** argv)
 {
 	using namespace std;
 	try {
-		rtmath::debug::appEntry(argc, argv);
+		//rtmath::debug::appEntry(argc, argv);
 		bool mtab = false;
 
 		// detect if rtmath-mtab is being called
@@ -51,16 +42,19 @@ int main(int argc, char** argv)
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
-			("output,o", po::value<string>(), "Write ROOT output table of results")
 			("mtab,m", "Produce mtab-style output")
 			("debug", "Produce debug output")
-			("frequency,f", po::value<string>(), "List of frequencies (GHz)")
+			("frequency,f", po::value<string>(), "List of frequencies (default of GHz). Can also take rtmath.conf-provided frequency key (ex: GPM_freqs).")
+			("frequency-units", po::value<string>()->default_value("GHz"), "Units for all frequencies.")
+			("wavelength-units", po::value<string>()->default_value("um"), "Units for all wavelengths.")
 			("temperature,T", po::value<string>(), "List of temperatures (K)")
 			("volume-fraction-ice,i", po::value<string >(), "Volume fractions [0,1] for mixed phase volumes. If not given, calculate from others.")
 			("volume-fraction-water,w", po::value<string>(), "Water volume fractions. If not given, calculation depends on presence of both ice and water fractions. If both are given, w = 1 - a - i. If only one is given, assume that water fraction is zero.")
 			("volume-fraction-air,a", po::value<string>(), "Air volume fraction. If not given, calculate from others.")
 			("nu", po::value<string>()->default_value("0.85"), "Value of nu for Sihvola (default is 0.85. Range is [0,2].")
-			("method", po::value<string>()->default_value("Sihvola"), "Method used to calculate the resulting dielectric (Sihvola, Debye, Maxwell-Garnett). Only matters if volume gractions are given. Then, default is Sihvola.")
+			("method", po::value<string>()->default_value("Sihvola"), "Method used to calculate the resulting dielectric "
+			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
+			"Only matters if volume fractions are given. Then, default is Sihvola.")
 			;
 
 		po::positional_options_description p;
@@ -73,21 +67,19 @@ int main(int argc, char** argv)
 			vm );
 		po::notify (vm);
 
-		string method, sTemps, sFreqs, sNus, ofile;
+		rtmath::ddscat::dielTab dfile;
+		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen;
 		set<double> temps, freqs, nus;
 		map<PHASE,string> vsVols;
 		map<PHASE,set<double> > vVols;
-		bool fileWrite = false;
 		bool debug = false;
+
+		unitsFreq = vm["frequency-units"].as<string>();
+		unitsWvlen = vm["wavelength-units"].as<string>();
 
 		if (vm.count("debug"))
 			debug = true;
 
-		if (vm.count("output"))
-		{
-			fileWrite = true;
-			ofile = vm["output"].as<string>();
-		}
 		if (vm.count("method"))
 			method = vm["method"].as<string>();
 		if (vm.count("temperature"))
@@ -131,22 +123,13 @@ int main(int argc, char** argv)
 
 		if (mtab)
 		{
-			if (temps.size() > 1 || freqs.size() > 1 || nus.size() > 1 || vVols.size() > 1)
+			if (temps.size() > 1 || nus.size() > 1 || vVols.size() > 1)
 			{
-				throw rtmath::debug::xBadInput("mtab output requires only one frequency and temperature");
+				throw rtmath::debug::xBadInput("mtab output can only vary by frequency");
 			}
 		}
 
 		// Preprocessing done!
-
-		TFile *file = nullptr;
-		if (fileWrite)
-		{
-			file = new TFile(ofile.c_str(), "RECREATE");
-		}
-		TTree *tree = new TTree("T","Refractive Indice Calculations");
-		ptdata pt;
-		tree->Branch("tuple",&pt,"temp/F:freq/F:nu/F:fIce/F:fWat/F:fAir/F:MeffReal/F:MeffImag/F:method/C");
 
 		// Figure out tuples of volume fractions
 		// Tuple ordering is ice, water, air
@@ -232,8 +215,12 @@ int main(int argc, char** argv)
 		// Actual calculations
 		for (auto T = temps.begin(); T != temps.end(); ++T)
 		{
-			for (auto freq = freqs.begin(); freq != freqs.end(); ++freq)
+			for (auto tempfreq = freqs.begin(); tempfreq != freqs.end(); ++tempfreq)
 			{
+				// Yes, this is ugly, but I wanted to avoid renaming everything.
+				boost::shared_ptr<double> freq(new double); // in GHz
+				rtmath::units::conv_spec cnv(unitsFreq, "GHz");
+				*freq = cnv.convert(*tempfreq);
 				for (auto nu = nus.begin(); nu != nus.end(); ++nu)
 				{
 					for (auto frac = fracs.begin(); frac != fracs.end(); ++frac)
@@ -242,12 +229,11 @@ int main(int argc, char** argv)
 						complex<double> mAir(1.0,0);
 						complex<double> mWat;
 						complex<double> mIce;
-						rtmath::refract::mice(*freq,*T,mIce);
-						rtmath::refract::mwater(*freq,*T,mWat);
 
 						double fIce = frac->get<0>();
 						double fWat = frac->get<1>();
 						double fAir = frac->get<2>();
+
 						if (fIce == 0 && fWat == 0 && fAir == 0)
 						{
 							if (*T < 273.15)
@@ -257,6 +243,11 @@ int main(int argc, char** argv)
 								fWat = 1.0;
 							}
 						}
+
+						if (fIce)
+							rtmath::refract::mIce(*freq,*T,mIce);
+						if (fWat)
+							rtmath::refract::mWater(*freq,*T,mWat);
 
 						if (debug)
 							cerr << fIce << "," << fWat << "," << fAir << "," << *T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
@@ -283,43 +274,39 @@ int main(int argc, char** argv)
 						} else if (method == "Debye")
 						{
 							rtmath::refract::debyeDry(mIce,mAir,fIce, mEff);
-						} else if (method == "Maxwell-Garnett")
+						} else if (method == "Maxwell-Garnett-Spheres")
 						{
-							rtmath::refract::maxwellGarnett(mIce,mWat,mAir,fIce,fWat,mEff);
+							rtmath::refract::maxwellGarnettSpheres(mIce,mAir,fIce,mEff);
+						} else if (method == "Maxwell-Garnett-Ellipsoids")
+						{
+							rtmath::refract::maxwellGarnettEllipsoids(mIce,mAir,fIce,mEff);
 						} else {
+							cerr << "Unknown method: " << method << endl;
 							throw rtmath::debug::xBadInput(method.c_str());
 						}
 
 						// Write effective refractive index
-						if (!fileWrite)
+						if (mtab)
 						{
-							write(mEff,mtab);
+							// Convert frequency (GHz) to wavelength (um)
+							// units may be overridden by user options
+							// freq is already converted to GHz at this point.
+							rtmath::units::conv_spec cnv("GHz", unitsWvlen);
+							double wvlen = cnv.convert(*freq);
+							dfile.freqMMap[wvlen] = mEff;
+							//write(mEff,mtab);
 						} else {
-							// Prep for special ROOT file writing
-							pt.freq = *freq;
-							pt.temp = *T;
-							pt.nu = *nu;
-							pt.fIce = fIce;
-							pt.fWat = fWat;
-							pt.fAir = fAir;
-							pt.MeffReal = mEff.real();
-							pt.MeffImag = mEff.imag();;
-							strncpy(pt.method,method.c_str(),28);
-
-							tree->Fill();
+							cout.setf( ios::scientific, ios::floatfield);
+							cout.precision(7);
+							cout << " ( " << mEff.real() << " , " << mEff.imag() << " ) " << endl;
 						}
 					}
 				}
 			}
 		}
 
-		if (fileWrite)
-		{
-			// Do special ROOT file writing
-			tree->Write();
-			file->Close();
-			delete tree;
-			delete file;
+		if (mtab) {
+			dfile.write(cout);
 		}
 
 	}
@@ -331,24 +318,4 @@ int main(int argc, char** argv)
 	}
 
 	return 0;
-}
-
-void write(const std::complex<double> &ref, bool mtab)
-{
-	using namespace std;
-//	rtmath::refract::mice(f,temp,ref);
-	cout.setf( ios::scientific, ios::floatfield);
-	cout.precision(7);
-	if (!mtab)
-	{
-		cout << " ( " << ref.real() << " , " << ref.imag() << " ) " << endl;
-	} else {
-		cout << " m = " << ref.real() << " + " << (-1.0 *ref.imag()) << " i" << endl;
-		cout << " 1 2 3 0 0 = columns for wave, Re(n), Im(n), eps1, eps2" << endl;
-		cout << " LAMBDA  Re(N)   Im(N)" << endl;
-		cout << " 0.000001    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
-		cout << " 1.000000    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
-		cout << " 100000.0    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
-	}
-
 }

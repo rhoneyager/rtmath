@@ -1,13 +1,8 @@
 include (common)
-set(rtmath-getm_LIBRARIES "")
-set(rtmath-getm_INCLUDE_DIRS "")
-set(rtmath-genmtab_LIBRARIES "")
-set(rtmath-genmtab_INCLUDE_DIRS "")
 
 add_executable (rtmath-getm getm.cpp)
-add_package_dependency(rtmath-getm DEPENDS_ON ROOT)
-addapp(rtmath-getm)
-add_executable (rtmath-genmtab getm.cpp)
-add_package_dependency(rtmath-genmtab DEPENDS_ON ROOT)
-addapp(rtmath-genmtab)
+set_target_properties( rtmath-getm PROPERTIES FOLDER "Apps")
+target_link_libraries(rtmath-getm ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
+INSTALL(TARGETS rtmath-getm RUNTIME DESTINATION bin COMPONENT Applications)
+
 

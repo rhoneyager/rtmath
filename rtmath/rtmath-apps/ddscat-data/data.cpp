@@ -8,11 +8,12 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <string>
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan-Debug/debug.h>
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
 {
@@ -20,7 +21,6 @@ int main(int argc, char** argv)
 	{
 		using namespace std;
 		cerr << "rtmath-ddscat-data\n\n";
-		rtmath::debug::appEntry(argc, argv);
 		namespace po = boost::program_options;
 
 		po::options_description desc("Allowed options");

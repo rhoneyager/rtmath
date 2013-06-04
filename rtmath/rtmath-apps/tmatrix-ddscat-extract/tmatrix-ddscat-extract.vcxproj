@@ -11,18 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4187C2B0-3CCD-403F-B670-89A564D6C8EF}</ProjectGuid>
-    <RootNamespace>rtmath_serialization</RootNamespace>
+    <ProjectGuid>{F7BF7D81-DB85-4573-BAA4-03A58B7BD85D}</ProjectGuid>
+    <RootNamespace>tmatrixddscatextract</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -41,15 +43,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalOptions>/Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -58,10 +57,6 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>../rtmath/Stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -70,36 +65,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\rtmath\src\ddparGenerator_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\ddpar_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\ddScattMatrix_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\rotations_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\shapefile_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\shapestatsRotated_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\shapestats_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\shapes_serialization.cpp" />
-    <ClCompile Include="..\..\rtmath\src\Stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\rtmath\src\tmData_serialization.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddOutputSingle_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddOutput_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddparGenerator_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddpar_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\ddScattMatrix_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\rotations_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapefile_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapestatsRotated_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapestats_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\shapes_serialization.h" />
-    <ClInclude Include="..\..\rtmath\rtmath\Serialization\tmData_serialization.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\rtmath_core\rtmath_core.vcxproj">
+    <ProjectReference Include="..\..\rtmath-libs\rtmath-mie\rtmath-mie.vcxproj">
+      <Project>{803a64c4-2af0-458f-b7fa-0683c6c5a687}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\rtmath-libs\rtmath_core\rtmath_core.vcxproj">
       <Project>{42ef064f-64a8-42f5-9acb-07e1908997bf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\rtmath-libs\rtmath_ddscat\rtmath_ddscat.vcxproj">
+      <Project>{b0e3ea2f-4ba7-4eaf-a4f5-75debe26e352}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\rtmath-libs\rtmath_serialization\rtmath_serialization.vcxproj">
+      <Project>{38486b38-75ca-4e16-a431-b09b8de4cfb9}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

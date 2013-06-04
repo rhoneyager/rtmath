@@ -52,15 +52,16 @@ class dataset
 {
 public:
 	dataset() : id("") {}
-	dataset(const std::string &prefix)
-		: id(prefix)
+	dataset(const std::string &prefix) //, size_t ignore_prefix_length = 0)
+		: id(prefix) //, ignore_prefix_length(ignore_prefix_length)
 	{
 	}
 	std::string id;
 	boost::filesystem::path shape;
 	std::vector<boost::filesystem::path> avgs;
+	//size_t ignore_prefix_length;
 
-	static std::string getPrefix(const boost::filesystem::path &filename)
+	static std::string getPrefix(const boost::filesystem::path &filename, bool useParent = true, size_t ignore_prefix_length = 0)
 	{
 		// Prefix is the parent path and the first part of the filename.
 		// Parent path is included to allow recursion without naming conflicts
@@ -71,6 +72,12 @@ public:
 		// avg files are 1mm14_t_f.avg
 		// So, search for first occurance of '_' and 'shape'. Truncate.
 		string sleaf = pleaf.string();
+		// Remove the first ignore_prefix_length characters from the prefix calculation
+		if (ignore_prefix_length)
+		{
+			if (sleaf.size() < ignore_prefix_length) throw;
+			sleaf = sleaf.substr(ignore_prefix_length);
+		}
 		size_t pund = sleaf.find('_');
 		size_t pshape = sleaf.find("shape");
 		size_t pos = 0;
@@ -78,8 +85,12 @@ public:
 		else if (pshape == string::npos && pund) pos = pund;
 		else if (pshape == pund == string::npos) throw;
 		else pos = (pund < pshape) ? pund : pshape;
-		string prefix = filename.parent_path().string();
-		prefix.append("/");
+		string prefix;
+		if (useParent)
+		{
+			string prefix = filename.parent_path().string();
+			prefix.append("/");
+		}
 		prefix.append(sleaf.substr(0,pos));
 		return prefix;
 	}
@@ -172,6 +183,9 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("output,o", po::value<string>()->default_value("results.csv"), "output csv file")
+			("ignore-prefix-length", po::value<size_t>()->default_value(0), 
+			 "Ignore the first n characters in the filename")
+			("use-parent", po::value<bool>()->default_value(true), "Prepend parent path for id matching")
 			//("root", "Indicates that ROOT output is also desired")
 
 			("disable-qhull", "Disable qhull calculations for the shapes.");
@@ -189,6 +203,8 @@ int main(int argc, char** argv)
 		if (vm.count("disable-qhull"))
 			rtmath::ddscat::shapeFileStats::doQhull(false);
 
+		size_t ignore_prefix_length = vm["ignore-prefix-length"].as<size_t>();
+		bool prependParent = vm["use-parent"].as<bool>();
 		vector<string> rawinputs = vm["input"].as< vector<string> >();
 		map<string,dataset> data;
 
@@ -201,7 +217,7 @@ int main(int argc, char** argv)
 		auto insertMapping = [&](const boost::filesystem::path &p)
 		{
 			if (dataset::isValid(p) == false) return;
-			std::string prefix = dataset::getPrefix(p);
+			std::string prefix = dataset::getPrefix(p, prependParent, ignore_prefix_length);
 			if (!data.count(prefix))
 				data[prefix] = std::move(dataset(prefix));
 			if (dataset::isShape(p))
@@ -261,12 +277,22 @@ int main(int argc, char** argv)
 			cerr << "Processing " << it->first << endl;
 			if (it->second.shape.string() == "") continue;
 			if (it->second.avgs.size() == 0) continue;
-			boost::shared_ptr<rtmath::ddscat::shapeFileStats> sstats
-				= rtmath::ddscat::shapeFileStats::genStats(it->second.shape.string());
-
+			cerr << "\t" << it->second.shape.string() << endl;
+			boost::shared_ptr<rtmath::ddscat::shapeFileStats> sstats;
+			//	= rtmath::ddscat::shapeFileStats::genStats(it->second.shape.string());
+			// Look at file name. If it has .stats.xml, then it is a precomputed stats file.
+ 			if (it->second.shape.string().find(".stats.xml") != string::npos)
+			{
+				sstats = boost::shared_ptr<rtmath::ddscat::shapeFileStats>(new rtmath::ddscat::shapeFileStats);
+				rtmath::serialization::read<rtmath::ddscat::shapeFileStats>(*sstats,it->second.shape.string());
+				//auto i = it->second.shape.string().find(".stats.xml");
+				//pDest = pDest.substr(0,i); // Strip exerything after and including .stats.xml
+			} else {
+				sstats = rtmath::ddscat::shapeFileStats::genStats(it->second.shape.string());
+			}
 			for (auto ot = it->second.avgs.begin(); ot != it->second.avgs.end(); ++ot)
 			{
-				cerr << *ot << std::endl;
+				cerr << "\t\t" << *ot << std::endl;
 
 				using namespace rtmath::ddscat;
 				// This file is a .avg file. Read it.

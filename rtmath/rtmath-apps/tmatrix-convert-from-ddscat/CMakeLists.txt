@@ -20,14 +20,14 @@ include_directories (
 )
 
 add_executable (rtmath-tmatrix-convert-from-ddscat-qt 
-	main.cpp frmmain.cpp converter.cpp
+	main.cpp frmmain.cpp converter.cpp converter2.cpp
 	${tmconvert-qt_MOC_SRCS}
 	${tmconvert-qt_UI_HDRS}
 	)
 
-add_package_dependency(rtmath-tmatrix-convert-from-ddscat-qt DEPENDS_ON ROOT)
+#add_package_dependency(rtmath-tmatrix-convert-from-ddscat-qt DEPENDS_ON ROOT)
 
 addapp(rtmath-tmatrix-convert-from-ddscat-qt)
 INCLUDE( ${QT_USE_FILE} )
-TARGET_LINK_LIBRARIES( rtmath-tmatrix-convert-from-ddscat-qt ${QT_LIBRARIES} tmatrix-cpp tmatrix-fortran)
+TARGET_LINK_LIBRARIES( rtmath-tmatrix-convert-from-ddscat-qt ${QT_LIBRARIES} tmatrix-cpp tmatrix-fortran tmatrix-serialization)
 

@@ -8,11 +8,6 @@
 #pragma warning( disable : 4244 ) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data in FLANN
 #pragma warning( disable : 4068 ) // unknown gcc pragmas
 
-//#include "../../rtmath/rtmath/ROOTlink.h"
-#include "../../rtmath/rtmath/VTKlink.h"
-#include "../../rtmath/rtmath/Garrett/pclstuff.h"
-#include "../../rtmath/rtmath/MagickLINK.h"
-
 #include <cmath>
 #include <memory>
 #include <iostream>
@@ -28,15 +23,15 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <Ryan-Debug/debug.h>
+
 #pragma warning( pop ) 
-#include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
-#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
-#include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
 {
@@ -46,7 +41,6 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-ddscat-ddpar\n\n";
-		rtmath::debug::appEntry(argc, argv);
 
 		namespace po = boost::program_options;
 
@@ -59,19 +53,23 @@ int main(int argc, char** argv)
 			("input,i", po::value< string >(), "input ddscat.par file")
 			("output,o", po::value< string >(), "output ddscat.par file (defaults to input)")
 
-			("set-version,v", po::value<size_t>(), "Specify version (70,72)")
+			("set-version,v", po::value<size_t>(), "Specify version (70, 72, ...)")
 			("set-frequency,f", po::value<double>(), "Specify frequency (GHz)")
 			("set-aeff,a", po::value<double>(), "Set effective radius (um)")
 			("set-shape", po::value<string>(), "Set SHAPE parameter (FROM_FILE, ...)")
 			("set-shapeparams", po::value<vector<double> >(), "Set shape params (double, double, double)")
 			("set-intermediate-output", po::value<bool>(), "Set IWRKSC")
+			("set-diels,D", po::value<vector<std::string> >(), "Set dielectric files. Can specify multiple times for "
+			 "multiple refractive indices. In this case, the dielectrics follow command-line ordering.")
 
-			("get-version", "Get version (70, 72)")
+			("get-version", "Get version (70, 72, ...)")
 			("get-frequency", "Get frequency (GHz)")
 			("get-aeff", "Get effective radius (um)")
 			("get-shape", "Get SHAPE parameter (FROM_FILE, ...)")
 			("get-shapeparams", "Get shape parameters")
-			("get-intermediate-output", "Get IWRKSC");
+			("get-intermediate-output", "Get IWRKSC")
+			("get-diels", "Get all dielectrics")
+			;
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -83,24 +81,24 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		string input = vm["input"].as< string >();
-		string output = input;
-		if (vm.count("input"))
+		if (!vm.count("input"))
 		{
-			// Validate input file
-			path pi(input);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(input.c_str());
-			if (is_directory(pi))
-			{
-				path pt = pi / "ddscat.par";
-				if (exists(pt)) input = pt.string();
-				else throw rtmath::debug::xPathExistsWrongType(input.c_str());
-			}
-			cerr << "Input par file is: " << input << endl;
-		} else {
 			cerr << "Need to specify input file.\n" << desc << endl;
 			return 1;
 		}
+
+		string input = vm["input"].as< string >();
+		string output = input;
+		// Validate input file
+		path pi(input);
+		if (!exists(pi)) throw rtmath::debug::xMissingFile(input.c_str());
+		if (is_directory(pi))
+		{
+			path pt = pi / "ddscat.par";
+			if (exists(pt)) input = pt.string();
+			else throw rtmath::debug::xPathExistsWrongType(input.c_str());
+		}
+		cerr << "Input par file is: " << input << endl;
 
 		bool doWrite = false;
 
@@ -147,6 +145,16 @@ int main(int argc, char** argv)
 			bool iwrksc = par->writeSca();
 			cout << "iwrksc: " << iwrksc << endl;
 		}
+		if (vm.count("get-diels"))
+		{
+			cout << "diels:" << endl;
+			vector<string> dielFiles;
+			par->getDiels(dielFiles);
+			for (auto &file : dielFiles)
+			{
+				cout << "\t" << file << endl;
+			}
+		}
 		if (vm.count("set-version"))
 		{
 			doWrite = true;
@@ -186,6 +194,13 @@ int main(int argc, char** argv)
 			doWrite = true;
 			bool iwrksc = vm["set-intermediate-output"].as<bool>();
 			par->writeSca(iwrksc);
+		}
+		if (vm.count("set-diels"))
+		{
+			doWrite = true;
+			vector<string> dielFiles;
+			dielFiles = vm["set-diels"].as<vector<string> >();
+			par->setDiels(dielFiles);
 		}
 
 		if (vm.count("output")) output = vm["output"].as< string >();

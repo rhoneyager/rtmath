@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
+#include <Ryan-Debug/debug.h>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/config.h"
@@ -16,7 +17,6 @@ int main(int argc, char** argv)
 	using namespace rtmath::config;
 	try {
 		cerr << "Parameter expansion program" << endl;
-		rtmath::debug::appEntry(argc,argv);
 
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options");

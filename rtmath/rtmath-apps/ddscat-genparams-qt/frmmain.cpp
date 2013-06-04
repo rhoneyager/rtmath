@@ -3,7 +3,7 @@
 #include "frmtarget.h"
 
 //#include "../../rtmath/rtmath/ROOTlink.h"
-#include "../../rtmath/rtmath/qt_funcs.h"
+//#include "../../rtmath/rtmath/qt_funcs.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/ddparGenerator_serialization.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"

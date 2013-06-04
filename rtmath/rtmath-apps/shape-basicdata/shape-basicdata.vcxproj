@@ -66,6 +66,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\rtmath-libs\rtmath_serialization\rtmath_serialization.vcxproj">
+      <Project>{4187c2b0-3ccd-403f-b670-89a564d6c8ef}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\rtmath\rtmath.vcxproj">
       <Project>{b80ce2c2-2d78-464d-b936-8977bc6083d7}</Project>
     </ProjectReference>

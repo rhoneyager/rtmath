@@ -6,8 +6,6 @@
 #pragma warning( disable : 4068 ) // warning on unknown pragmas - GCC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include "../../rtmath/rtmath/ROOTlink.h"
-#include "../../rtmath/rtmath/VTKlink.h"
 
 #include <cmath>
 #include <memory>
@@ -26,6 +24,7 @@
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 
+/*
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/vtk_io.h>
 #include <pcl/io/vtk_lib_io.h>
@@ -38,9 +37,12 @@
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
+*/
+
+#include <Ryan-Debug/debug.h>
+#include <Ryan-Serialization/serialization.h>
 
 #pragma warning( pop ) 
-#include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
@@ -48,13 +50,10 @@
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
-#include "../../rtmath/rtmath/error/error.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/MagickLINK.h"
-#include "../../rtmath/rtmath/Garrett/pclstuff.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
-#include "../../rtmath/rtmath/matrixop.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 
 #pragma GCC diagnostic pop
 
@@ -66,7 +65,6 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-shape-basicdata\n\n";
-		rtmath::debug::appEntry(argc, argv);
 
 		namespace po = boost::program_options;
 
@@ -269,17 +267,17 @@ int main(int argc, char** argv)
 				cout << "\tAxy\tAxz\tAyz\n";
 				auto rt = sstats->rotations.begin();
 				cout << "Abs\t" 
-					<< (*rt)->as_abs.get(2,0,1) << "\t" 
-					<< (*rt)->as_abs.get(2,0,2) << "\t" 
-					<< (*rt)->as_abs.get(2,1,2) << endl;
+					<< (*rt)->as_abs(0,1) << "\t" 
+					<< (*rt)->as_abs(0,2) << "\t" 
+					<< (*rt)->as_abs(1,2) << endl;
 				cout << "Amean\t"
-					<< (*rt)->as_abs_mean.get(2,0,1) << "\t" 
-					<< (*rt)->as_abs_mean.get(2,0,2) << "\t" 
-					<< (*rt)->as_abs_mean.get(2,1,2) << endl;
+					<< (*rt)->as_abs_mean(0,1) << "\t" 
+					<< (*rt)->as_abs_mean(0,2) << "\t" 
+					<< (*rt)->as_abs_mean(1,2) << endl;
 				cout << "RMS\t"
-					<< (*rt)->as_rms.get(2,0,1) << "\t" 
-					<< (*rt)->as_rms.get(2,0,2) << "\t" 
-					<< (*rt)->as_rms.get(2,1,2) << endl;
+					<< (*rt)->as_rms(0,1) << "\t" 
+					<< (*rt)->as_rms(0,2) << "\t" 
+					<< (*rt)->as_rms(1,2) << endl;
 				cout << endl;
 			}
 
@@ -300,14 +298,14 @@ int main(int argc, char** argv)
 
 			if (vm.count("convex-hull"))
 			{
-				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->filename.c_str());
 				string ofname = *it;
 				ofname.append("-convex-hull.vtk");
 				rtmath::ddscat::convexHull cvx(*(sstats->_shp->_pclObj->cloud));
 				cvx.constructHull();
 				cvx.writeVTKhull(ofname);
-				cout << "Hull has volume: " << cvx._volume << endl;
-				cout << "Hull has surface area: " << cvx._surfarea << endl;
+				cout << "Hull has volume: " << cvx.volume() << endl;
+				cout << "Hull has surface area: " << cvx.surfaceArea() << endl;
 				//cout << "Hull has " << cvx._nFaces << " faces." << endl;
 
 				if (vm.count("output-hull-points"))
@@ -334,7 +332,7 @@ int main(int argc, char** argv)
 				paramSet<double> chulls(salphas);
 				for (auto ot = chulls.begin(); ot != chulls.end(); ot++)
 				{
-					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
+					if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->filename.c_str());
 					ostringstream fname;
 					fname << *it << "-concave-hull-" << *ot << ".vtk";
 					rtmath::ddscat::concaveHull ccv(*(sstats->_shp->_pclObj->cloud));
@@ -374,7 +372,7 @@ int main(int argc, char** argv)
 			{
 				const double lambda = 2.0; // In case of concave hull
 				string snumbins = vm["radial-distribution"].as<string>();
-				paramSet<size_t> numbins(snumbins);
+				paramSet<size_t> numbins(snumbins)
 				if (!sstats->load()) throw rtmath::debug::xMissingFile(sstats->_shp->_filename.c_str());
 				if (!dSpacing) throw rtmath::debug::xBadInput("Need dipole spacings for radial distribution plot");
 				boost::shared_ptr<rtmath::ddscat::shapeFileStatsRotatedView> sstatsRView
@@ -495,6 +493,12 @@ int main(int argc, char** argv)
 						h2->Fit("fit");
 						//hb->Draw("same");
 						//tC->Update();
+						cerr << endl;
+						for (Int_t p=0; p< maxRange*3; p++)
+						{
+							cerr << p << "\t" << par[p] << endl;
+						}
+						cerr << endl;
 					}
 
 

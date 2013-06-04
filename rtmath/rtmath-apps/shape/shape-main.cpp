@@ -22,6 +22,9 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/serialization/vector.hpp>
+
+#include <Ryan-Debug/debug.h>
+#include <Ryan-Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
@@ -40,8 +43,6 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-shape\n\n";
-		rtmath::debug::appEntry(argc, argv);
-		//config::parseParams p(argc,argv);
 
 		namespace po = boost::program_options;
 
@@ -186,7 +187,7 @@ int main(int argc, char** argv)
 				//singleStats.push_back(std::move(sstats));
 				string ofile = *it;
 				ofile.append(".stats.xml");
-				rtmath::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,ofile);
+				::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,ofile);
 			} else {
 				Stats.push_back(std::move(sstats));
 			}
@@ -194,7 +195,7 @@ int main(int argc, char** argv)
 
 		cerr << "Done calculating. Writing results." << endl;
 		if (!sepOutputs)
-			rtmath::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
+			::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
 		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)
