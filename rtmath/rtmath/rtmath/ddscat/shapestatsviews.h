@@ -6,40 +6,45 @@
 #include <map>
 #include <set>
 #include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/StdVector>
 #include "shapestats.h"
 
-// Using macro expansion here to define names
+// MSVC 2010 and 2012 do not implement the full decltype definition. They rely on an 
+// older version, where I cannot use the :: scope operator.
+#if _MSC_VER <= 1700
+#include <utility>
+#define decltype(...) \
+  std::identity<decltype(__VA_ARGS__)>::type
+#endif
+
+// Macro expansion defines a function varname() that accesses the base object 
+// and performs appropriate scaling. Works for default types and Eigen templates.
 #define D_SCALED(varname, power) \
-	double varname() const {\
-		double ft = pow(_d, (double) power); \
-		double val = _base->varname; \
-		return val * ft; }
-#define D_MAT_SCALED(varname, power) \
-	matrixop varname() const {\
-		double d = pow(_d, (double) power); \
-		matrixop val = _base->varname; \
-		matrixop res = val * d; \
-		return res; }
-#define D_MAT_SCALED_INDEXED(varname, power) \
-	matrixop varname(size_t index) const {\
-		double d = pow(_d, (double) power); \
-		matrixop val = _base->varname[index]; \
-		matrixop res = val * d; \
-		return res; }
+	decltype(_base->varname) varname() const {\
+		float d = pow(_d, (float) power); \
+		return _base->varname * d; }
+// More complex template that can work with vectors of matrices 
+#define D_SCALED_INDEXED(varname, power) \
+	decltype(_base->varname)::value_type varname(size_t index) const {\
+		float d = pow(_d, (float) power); \
+		return _base->varname[index] * d; }
 #define D_MAT_SCALED_INDEXED_OTHER(varname, power, multname) \
 	matrixop varname(size_t index) const {\
-		double d = pow(_d, (double) power); \
+		float d = pow(_d, (double) power); \
 		matrixop val = _base->varname[index]; \
 		matrixop res = val * d * multname[index]; \
 		return res; }
 
+
+
 namespace rtmath {
 	namespace ddscat {
 
-		class shapeFileStatsRotatedView : public shapeFileStatsRotated
+		class shapeFileStatsRotatedView //: public shapeFileStatsRotated
 		{
+		private: // moved to top of class for the MSVC parser for _base
+			double _d;
+			const boost::shared_ptr<const shapeFileStatsRotated> _base;
+			std::vector<double> _masses, _densities;
 		public:
 			shapeFileStatsRotatedView(const boost::shared_ptr<const shapeFileStatsRotated> &base, double dSpacing)
 				: _base(base), _d(dSpacing) {}
@@ -58,35 +63,37 @@ namespace rtmath {
 			// These are divided by constituent objects (distinct materials with 
 			// each having its own mass and density).
 			// mom1, mom2, covariance are fine by themselves
-			D_MAT_SCALED_INDEXED(mom1, 1);
-			D_MAT_SCALED_INDEXED(mom2, 2);
-			D_MAT_SCALED_INDEXED(covariance, 2);
+			
+			D_SCALED(mom1, 1);
+			D_SCALED(mom2, 2);
+			D_SCALED_INDEXED(covariance, 2);
+			/*
 			// Moment of inertia requires material density
 			D_MAT_SCALED_INDEXED_OTHER(mominert, 3, _densities);
 			// PE requires multiplication by material mass
 			D_MAT_SCALED_INDEXED_OTHER(PE, 1, _masses);
+			*/
 
-			D_MAT_SCALED(min, 1);
-			D_MAT_SCALED(max, 1);
-			D_MAT_SCALED(sum, 1);
+			D_SCALED(min, 1);
+			D_SCALED(max, 1);
+			D_SCALED(sum, 1);
 
-			D_MAT_SCALED(abs_min, 1);
-			D_MAT_SCALED(abs_max, 1);
-			D_MAT_SCALED(abs_mean, 1);
-			D_MAT_SCALED(rms_mean, 1);
+			D_SCALED(abs_min, 1);
+			D_SCALED(abs_max, 1);
+			D_SCALED(abs_mean, 1);
+			D_SCALED(rms_mean, 1);
 
-			D_MAT_SCALED(as_abs, 0);
-			D_MAT_SCALED(as_abs_mean, 0);
-			D_MAT_SCALED(as_rms, 0);
+			D_SCALED(as_abs, 0);
+			D_SCALED(as_abs_mean, 0);
+			D_SCALED(as_rms, 0);
 
-		private:
-			double _d;
-			const boost::shared_ptr<const shapeFileStatsRotated> _base;
-			std::vector<double> _masses, _densities;
 		};
 
-		class shapeFileStatsDipoleView : public shapeFileStatsBase
+		class shapeFileStatsDipoleView //: public shapeFileStatsBase
 		{
+		private:
+			double _d;
+			const boost::shared_ptr<shapeFileStatsBase> _base;
 		public:
 			shapeFileStatsDipoleView(const boost::shared_ptr<shapeFileStatsBase> &base, double dSpacing)
 				: _base(base), _d(dSpacing) {}
@@ -119,15 +126,13 @@ namespace rtmath {
 			D_SCALED(f_convex_hull, 0);
 			D_SCALED(f_ellipsoid_max, 0);
 			D_SCALED(f_ellipsoid_rms, 0);
-		private:
-			double _d;
-			const boost::shared_ptr<shapeFileStatsBase> _base;
 		};
 
 	}
 }
 
 #undef D_SCALED
-#undef D_MAT_SCALED
-#undef D_MAT_SCALED_INDEXED
+#undef D_SCALED_INDEXED
 #undef D_MAT_SCALED_INDEXED_OTHER
+#undef decltype // undefine the bug fix
+

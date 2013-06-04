@@ -1,12 +1,13 @@
 #pragma once
+#pragma message("TODO: no need for separate serialization header if forward declared properly")
+
+#include <boost/serialization/version.hpp>
 
 namespace rtmath
 {
 	namespace tmatrix
 	{
-		struct tmIn;
-		struct tmOut;
-		struct tmRun;
+		class tmStats;
 		class tmData;
 	}
 }
@@ -16,12 +17,10 @@ namespace boost
 	namespace serialization
 	{
 		template<class Archive>
-		void serialize(Archive & ar, rtmath::tmatrix::tmIn & g, const unsigned int version);
-		template<class Archive>
-		void serialize(Archive & ar, rtmath::tmatrix::tmOut & g, const unsigned int version);
-		template<class Archive>
-		void serialize(Archive & ar, rtmath::tmatrix::tmRun & g, const unsigned int version);
+		void serialize(Archive & ar, rtmath::tmatrix::tmStats & g, const unsigned int version);
 		template<class Archive>
 		void serialize(Archive & ar, rtmath::tmatrix::tmData & g, const unsigned int version);
 	}
 }
+
+BOOST_CLASS_VERSION(rtmath::tmatrix::tmData, 1);

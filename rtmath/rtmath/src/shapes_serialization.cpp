@@ -1,14 +1,16 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/ddscat/shapes.h"
-#include "../rtmath/Serialization/common_templates_serialization.h"
-#include "../rtmath/Serialization/rotations_serialization.h"
-#include "../rtmath/Serialization/shapes_serialization.h"
-#include "../rtmath/Serialization/serialization_macros.h"
-
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+
+#include "../rtmath/ddscat/shapes.h"
+#include "../rtmath/Serialization/common_templates_serialization.h"
+#include "../rtmath/Serialization/rotations_serialization.h"
+#include "../rtmath/Serialization/shapes_serialization.h"
+#include "../rtmath/Serialization/eigen_serialization.h"
+#include "../rtmath/Serialization/serialization_macros.h"
+
 
 namespace boost
 {

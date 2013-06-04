@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <exception>
+#include <Ryan-Debug/debug.h>
 
 #define BOOST_TEST_MODULE rtmath
 #define BOOST_TEST_NO_MAIN
@@ -24,8 +25,8 @@ int BOOST_TEST_CALL_DECL
 main( int argc, char* argv[] )
 {
 	try {
-		rtmath::debug::appEntry(argc,argv);
-		rtmath::debug::debug_preamble();
+		//rtmath::debug::appEntry(argc,argv);
+		//rtmath::debug::debug_preamble();
 
 		return ::boost::unit_test::unit_test_main( &init_unit_test, argc, argv );
 	}

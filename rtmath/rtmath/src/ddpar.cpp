@@ -13,11 +13,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddpar.h"
+#include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/config.h"
 #include "../rtmath/ddscat/rotations.h"
+#include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -302,8 +303,7 @@ namespace rtmath {
 
 			// Write file version
 			string ver;
-			if (_version == 70) ver = "7.0.8";
-			else if (_version == 72) ver = "7.2.1";
+			ver = rtmath::ddscat::ddVersions::getVerString(_version);
 			out << "' ========= Parameter file for v" << ver << " =================== '" << endl;
 
 			// Loop through and write parameters and comments
@@ -312,8 +312,22 @@ namespace rtmath {
 				// If key is valid for this output version, write it
 				if (it->second->versionValid(_version))
 					it->second->write(out);
+
+				// Check here for dielectric write. Always goes after NCOMP.
+				if (it->first == ddParParsers::NCOMP)
+				{
+					int i = 1;
+					for (auto ot = _diels.begin(); ot != _diels.end(); ++ot, ++i)
+					{
+						ostringstream o;
+						// "...file with refractive index" + " #"
+						o << " " << i;
+						string plid = o.str();
+						(*ot)->write(out, plid);
+					}
+				}
 			}
-			for (auto ot = _scaPlanes.begin(); ot != _scaPlanes.end(); ot++)
+			for (auto ot = _scaPlanes.begin(); ot != _scaPlanes.end(); ++ot)
 			{
 				// If key is valid for this output version, write it
 				if (ot->second->versionValid(_version))
@@ -535,6 +549,36 @@ namespace rtmath {
 			insertPlane(n, res);
 		}
 
+		void ddPar::getDiels(std::vector<std::string>& res) const
+		{
+			//boost::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > res;
+			for (auto &diel : _diels)
+			{
+				std::string val;
+				diel->get(val);
+				res.push_back(val);
+			}
+		}
+
+		void ddPar::setDiels(const std::vector<std::string>& src)
+		{
+			_diels.clear();
+			// Set individual dielectrics
+			for (auto &file : src)
+			{
+				boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> > res
+					(new ddParParsers::ddParLineSimple<std::string>(ddParParsers::IREFR));
+				res->set(file);
+				_diels.push_back(res);
+			}
+
+			// And update the count
+			boost::shared_ptr< ddParParsers::ddParLineSimple<int> > line
+				(new ddParParsers::ddParLineSimple<int>(ddParParsers::NCOMP));
+			line->set((int) _diels.size());
+			insertKey(ddParParsers::NCOMP,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
 		void ddPar::populateDefaults(bool overwrite, const std::string &src) const
 		{
 			// Populates missing items for this version with default
@@ -599,7 +643,7 @@ namespace rtmath {
 
 		void ddPar::_init()
 		{
-			_version = 72;
+			_version = rtmath::ddscat::ddVersions::getDefaultVer();
 		}
 
 		void ddPar::read(std::istream &stream, bool overlay)
@@ -615,6 +659,7 @@ namespace rtmath {
 			{
 				_parsedData.clear();
 				_scaPlanes.clear();
+				_diels.clear();
 			}
 
 			size_t line = 1;
@@ -677,8 +722,14 @@ namespace rtmath {
 					// like ddParSimple<string>
 					std::string vz = boost::algorithm::trim_right_copy(vals[0]);
 					ptr->read(vz);
-					// Scattering plane info goes into a separate structure
-					if (ptr->id() < ddParParsers::PLANE1)
+					// Individual dielectric files fo insta a separate structure
+					if (ptr->id() == ddParParsers::IREFR)
+					{
+						_diels.push_back(
+							boost::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ptr));
+					}
+					// Everything but diels and scattering plane go here
+					else if (ptr->id() < ddParParsers::PLANE1)
 					{
 						if (_parsedData.count(ptr->id()))
 						{
@@ -719,7 +770,7 @@ namespace rtmath {
 			static bool loaded = false;
 			if (!loaded)
 			{
-				shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
+				std::shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
 				string sBasePar, scwd;
 				cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
 				cRoot->getCWD(scwd);
@@ -742,7 +793,7 @@ namespace rtmath {
 					}
 				}
 
-				rtmath::debug::instances::registerInstance( "ddPar::defaultInstance", reinterpret_cast<void*>(s_inst));
+				//rtmath::debug::instances::registerInstance( "ddPar::defaultInstance", reinterpret_cast<void*>(s_inst));
 				loaded = true;
 			}
 			return s_inst;
@@ -872,7 +923,7 @@ namespace rtmath {
 
 			bool ddParLine::versionValid(size_t ver) const
 			{
-				if (ver == 72)
+				if (rtmath::ddscat::ddVersions::isVerWithin(ver,72,0))
 				{
 					switch (_id)
 					{
@@ -882,7 +933,7 @@ namespace rtmath {
 						return true;
 					}
 				}
-				if (ver == 70)
+				if (rtmath::ddscat::ddVersions::isVerWithin(ver,0,72)) // up through 7.1 (inclusive)
 				{
 					switch (_id)
 					{
@@ -998,7 +1049,7 @@ namespace rtmath {
 					key = "NCOMP = number of dielectric materials";
 					break;
 				case IREFR:
-					key = "file with refractive index 1";
+					key = "file with refractive index";
 					break;
 				case NRFLD:
 					key = "NRFLD (=0 to skip nearfield calc., =1 to calculate nearfield E)";

@@ -1,6 +1,7 @@
 #pragma once
+#pragma message("Note: shapestats_serialization.h is a dead header")
 
-#include "matrixop_serialization.h"
+/*
 #include "shapestatsRotated_serialization.h"
 #include "shapefile_serialization.h"
 
@@ -15,3 +16,4 @@ namespace boost
 		void serialize(Archive & ar, rtmath::ddscat::shapeFileStats & g, const unsigned int version);
 	}
 }
+*/

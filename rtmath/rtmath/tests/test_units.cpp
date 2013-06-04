@@ -1,11 +1,10 @@
 #include <string>
 #include <iostream>
-#include <memory>
 #define BOOST_TEST_DYN_LINK
 #include "../rtmath/units.h"
-#include "../rtmath/error/error.h"
 
 #include <boost/test/unit_test.hpp>
+#include "../rtmath/error/error.h"
 
 BOOST_AUTO_TEST_SUITE(test_units);
 

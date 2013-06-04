@@ -1,9 +1,9 @@
 #include "../rtmath/Stdafx.h"
 
+#include <Ryan-Serialization/serialization.h>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
-#include "../rtmath/serialization.h"
 
 #include "../rtmath/Serialization/shapestats_serialization.h"
 
@@ -20,7 +20,7 @@ namespace rtmath {
 
 			if (statsfile.size())
 			{
-				rtmath::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,statsfile);
+				::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,statsfile);
 			}
 
 			boost::shared_ptr<shapeFileStats> p(new shapeFileStats(sstats));

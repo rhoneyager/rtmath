@@ -1,17 +1,24 @@
 #pragma once
-#include "mie-piNCalc.h"
+#include <boost/shared_ptr.hpp>
+#include "../defs.h"
 
-namespace mie {
+#pragma warning(push)
+#pragma warning(disable: 4251) // dll-interface needed warning even though the affected member is private
+namespace rtmath
+{
+	namespace mie {
+		class piNCalc;
+		class DLEXPORT tauNCalc {
+		public:
+			tauNCalc(double mu);
+			double calc(size_t n) const;
+		private:
+			const double mu;
+			boost::shared_ptr<piNCalc> pin;
+		};
 
-	class tauNCalc {
-	public:
-		tauNCalc(double mu);
-		~tauNCalc();
-		double calc(unsigned int n);
-		double mu;
-		piNCalc* pin;
+
 	};
+}
 
-
-}; // end mie
-
+#pragma warning(pop)

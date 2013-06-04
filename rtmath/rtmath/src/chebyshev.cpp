@@ -85,5 +85,5 @@ namespace rtmath {
 
 
 
-}; // end namespace rtmath
+} // end namespace rtmath
 

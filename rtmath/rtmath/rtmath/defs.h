@@ -3,6 +3,24 @@
 #include <cstdint>
 #include <cmath>
 
+#ifdef EXPORTING
+#ifdef _MSC_FULL_VER
+#define DLEXPORT __declspec(dllexport)
+#else
+#define DLEXPORT
+#endif
+#else
+#ifdef _MSC_FULL_VER
+#ifdef SHARED
+#define DLEXPORT __declspec(dllimport)
+#else
+#define DLEXPORT
+#endif
+#else
+#define DLEXPORT
+#endif
+#endif
+
 namespace rtmath {
 
 	typedef struct _UINT128 {
@@ -57,5 +75,5 @@ namespace rtmath {
 	};
 #endif
 
-}; // end namespace rtmath
+}
 

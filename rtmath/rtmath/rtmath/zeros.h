@@ -1,26 +1,29 @@
 #pragma once
 #include <complex>
+#include <functional>
 
 #include "error/error.h"
-#include "polynomial.h"
-#include "quadrature.h"
+//#include "polynomial.h"
+//#include "quadrature.h"
 
 namespace rtmath {
 
 	namespace zeros {
-		//double findzero(double a, double b, double (*evalfunc)(double) );
-		double findzero(double a, double b, evalfunction* evaltarget);
+		// Zero-finding implementation - Brent's method
+		double findzero(double a, double b, const std::function<double(double) > & evaltarget);
 
-		template<class T>
-		void complexSecant(const T &f, 
-			std::complex<double> guess_a, std::complex<double> guess_b,
-			std::complex<double> &zero, double eps = 0.0001, size_t maxIter = 50)
+		// f is an arbitrary class with operator(). So, a functional / lambda function does work.
+		template<class T, class U>
+		U secantMethod(const T &f, 
+			U guess_a, U guess_b,
+			double eps = 0.000001, size_t maxIter = 50)
 		{
 			// Secant method is defined by recurrance
 			// xn = x_(n-1) - f(x_(n-1)) * (x_(n-1) - x_(n-2)) / (f(x_(n-1)) - f(x_(n-2)))
 			using namespace std;
-			complex<double> xn = guess_a, xn1 = guess_b, xn2;
-			complex<double> fxn1, fxn2;
+			U zero;
+			U xn = guess_a, xn1 = guess_b, xn2;
+			U fxn1, fxn2;
 			size_t i=0;
 			do {
 				xn2 = xn1;
@@ -32,11 +35,12 @@ namespace rtmath {
 				xn = xn1 - fxn1 * (xn1 - xn2) / (fxn1 - fxn2);
 			} while ( (abs(xn-xn1) > eps) && (i++ < maxIter));
 
-			if (i == maxIter) throw debug::xModelOutOfRange(xn.real());
+			if (i >= maxIter) throw debug::xModelOutOfRange(abs(xn));
 			zero = xn;
+			return zero;
 		}
 
-	}; // end namespace zeros
+	}
 
-}; // end namespace rtmath
+}
 

@@ -1,9 +1,3 @@
-/*
- * config.cpp
- *
- *  Created on: Jun 24, 2011
- *      Author: reh9650
- */
 #include "../rtmath/Stdafx.h"
 #include <iostream>
 #include <fstream>

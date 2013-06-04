@@ -2,10 +2,14 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <Eigen/Core>
+//#include <Eigen/Dense>
+#include <Eigen/StdVector>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
+//#include "../matrixop.h"
 #include "shapefile.h"
 #include "shapestatsRotated.h"
 
@@ -56,32 +60,31 @@ namespace rtmath {
 			double beta, theta, phi;
 
 			// The constant multipliers! d is unknown!
-			double V_cell_const, V_dipoles_const;
-			double aeff_dipoles_const;
+			float V_cell_const, V_dipoles_const;
+			float aeff_dipoles_const;
 
 			// These require convex hull calculations
-			double max_distance;
-			double a_circum_sphere;
-			double V_circum_sphere;
-			double SA_circum_sphere;
+			float max_distance;
+			float a_circum_sphere;
+			float V_circum_sphere;
+			float SA_circum_sphere;
 			
-			double V_convex_hull;
-			double aeff_V_convex_hull;
-			double SA_convex_hull;
-			double aeff_SA_convex_hull;
+			float V_convex_hull;
+			float aeff_V_convex_hull;
+			float SA_convex_hull;
+			float aeff_SA_convex_hull;
 
 			// Special stats calculated only in default orientation
-			//
-			double V_ellipsoid_max;
-			double aeff_ellipsoid_max;
-			double V_ellipsoid_rms;
-			double aeff_ellipsoid_rms;
+			float V_ellipsoid_max;
+			float aeff_ellipsoid_max;
+			float V_ellipsoid_rms;
+			float aeff_ellipsoid_rms;
 
 			// Extend to get volume fractions
-			double f_circum_sphere;
-			double f_convex_hull;
-			double f_ellipsoid_max;
-			double f_ellipsoid_rms;
+			float f_circum_sphere;
+			float f_convex_hull;
+			float f_ellipsoid_max;
+			float f_ellipsoid_rms;
 
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;
@@ -94,6 +97,7 @@ namespace rtmath {
 
 			// The object
 			boost::shared_ptr<shapefile> _shp;
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		protected:
 			shapeFileStatsBase();
 			
@@ -101,7 +105,7 @@ namespace rtmath {
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
 				Archive &, shapeFileStatsBase &, const unsigned int);
-			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+			
 		};
 
 		class shapeFileStats : public shapeFileStatsBase
@@ -115,6 +119,7 @@ namespace rtmath {
 				const std::string &shpfile, const std::string &statsfile = "");
 			static void doQhull(bool);
 			static bool doQhull();
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
 
 	}

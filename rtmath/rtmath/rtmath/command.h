@@ -3,19 +3,12 @@
 // These commands are strings sent through MPI, through standard sockets, 
 // through pipes, or are located in config segments.
 // This is useful in coordinating several disparate processes.
-#include <algorithm>
 #include <string>
 #include <sstream>
-#include <memory>
-#include <boost/math/constants/constants.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include <set>
 #include <vector>
-#include "error/debug.h"
-#include "error/error.h"
+
+namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath {
 	namespace config {
@@ -174,6 +167,6 @@ namespace rtmath {
 		};
 
 
-	}; // end namespace config
-}; // end namespace rtmath
+	} // end namespace config
+} // end namespace rtmath
 

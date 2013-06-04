@@ -14,13 +14,17 @@
 #include <set>
 #include <complex>
 #include <boost/cstdint.hpp>
+#include <tmatrix/tmatrix.h>
+#include "../mie/mie.h"
 #include "shapestats.h"
+
+#pragma message("TODO: no need for separate serialization header if forward declared properly")
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
 	namespace tmatrix {
-		struct tmRun;
 		class tmData;
+		class tmStats;
 	}
 }
 
@@ -30,6 +34,8 @@ namespace boost
 	namespace serialization
 	{
 		template <class Archive>
+		void serialize(Archive &, rtmath::tmatrix::tmStats &, const unsigned int);
+		template <class Archive>
 		void serialize(Archive &, rtmath::tmatrix::tmData &, const unsigned int);
 	}
 }
@@ -38,46 +44,43 @@ namespace rtmath
 {
 	namespace tmatrix
 	{
-		// I am providing structures equivalent to the 
-		// tmatrix-provided ones. This is because I 
-		// do not want rtmath to have a direct dependence 
-		// on the tmatrix library.
+		// rtmath can have a dependency on the tmatrix 
+		// serialization code, since the tmatrix library can 
+		// be built without fortran code. However, the 
+		// tmatrix library must still be built.
 
-		// A conversion library will be provided for 
-		// programs, but it will be at a higher level.
-		struct tmIn
+		// Stats class
+		class tmStats
 		{
-			tmIn();
-			double axi, rat, lam, mrr, mri,
-			       eps, ddelt, alpha, beta,
-			       thet0, thet, phi0, phi;
-			boost::int32_t np, ndgs;
-		};
+		public:
+			tmStats();
+			// Has Qsca, Qabs, Qbk for different phi
+			//std::map<double, std::map<std::string, double> > stats;
+			std::map<std::string, double> stats;
 
-		struct tmOut
-		{
-			tmOut();
-			std::complex<double> S[4];
-			double P[4][4];
-		};
+			// And include a nested tmStats on a per-rotation basis.
+			//std::set<boost::shared_ptr<tmStats> > nested;
 
-		struct tmRun
-		{
-			tmIn invars;
-			tmOut res;
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive &, tmStats &, const unsigned int);
 		};
 
 		class tmData
 		{
 		public:
+			tmData();
 			std::string ddparpath;
-			double dipoleSpacing, T, freq, nu;
+			std::string dielpath;
+			double dipoleSpacing, T, freq, nu, sizep;
 			std::complex<double> reff;
 			std::string volMeth, dielMeth, shapeMeth, angleMeth;
 
 			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 
-			std::vector<boost::shared_ptr< tmRun > > data;
+			std::vector<boost::shared_ptr< const ::tmatrix::OriAngleRes > > data;
+			std::vector<boost::shared_ptr< const rtmath::mie::mieAngleRes> > miedata;
+			boost::shared_ptr<tmStats> tstats;
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
 				Archive &, tmData &, const unsigned int);

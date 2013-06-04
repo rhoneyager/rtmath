@@ -8,12 +8,44 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/zeros.h"
 
+void rtmath::refract::mWater(double f, double t, std::complex<double> &m)
+{
+	if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
+	if (f < 1000)
+	{
+		if (t >= 273)
+		{
+			mWaterLiebe(f,t,m);
+		} else {
+			throw rtmath::debug::xModelOutOfRange(t);
+		}
+	} else {
+		throw rtmath::debug::xModelOutOfRange(f);
+	}
+}
+
+void rtmath::refract::mIce(double f, double t, std::complex<double> &m)
+{
+if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
+	if (f < 1000)
+	{
+		if (t <= 278)
+		{
+			mIceMatzler(f,t,m);
+		} else {
+			throw rtmath::debug::xModelOutOfRange(t);
+		}
+	} else {
+		throw rtmath::debug::xModelOutOfRange(f);
+	}
+}
+
 // Water complex refractive index
 // from Liu's mcx.f
 // LIEBE, HUFFORD AND MANABE, INT. J. IR & MM WAVES V.12, pp.659-675
 //  (1991);  Liebe et al, AGARD Conf. Proc. 542, May 1993.
 // Valid from 0 to 1000 GHz. freq in GHz, temp in K
-void rtmath::refract::mwater(double f, double t, std::complex<double> &m)
+void rtmath::refract::mWaterLiebe(double f, double t, std::complex<double> &m)
 {
 	if (f < 0 || f > 1000)
 		throw rtmath::debug::xModelOutOfRange(f);
@@ -33,7 +65,7 @@ void rtmath::refract::mwater(double f, double t, std::complex<double> &m)
 
 // Ice complex refractive index
 // based on Christian Matzler (2006)
-void rtmath::refract::mice(double f, double t, std::complex<double> &m)
+void rtmath::refract::mIceMatzler(double f, double t, std::complex<double> &m)
 {
 	double er = 0;
 	if (t>243.0)
@@ -41,13 +73,13 @@ void rtmath::refract::mice(double f, double t, std::complex<double> &m)
 	else
 		er = 3.1611+4.3e-4*(t-243.0);
 	// Imaginary part
-	double theta = 300.0/(t-1.0);
+	double theta = 300.0/(t)-1.0;
 	double alpha = (0.00504+0.0062*theta)*exp(-22.1*theta);
 	double dbeta = exp(-9.963+0.0372*(t-273.16));
 	const double B1 = 0.0207;
 	const double B2 = 1.16e-11;
 	const double b = 335;
-	double betam = B1/t*exp(b/t)/pow((exp(b/t)-1.0),2)+B2*f*2.0;
+	double betam = B1/t*exp(b/t)/pow((exp(b/t)-1.0),2)+B2*pow(f,2.0);
 	double beta = betam+dbeta;
 	double ei = alpha/f+beta*f;
 	std::complex<double> e(er,-ei);
@@ -55,7 +87,7 @@ void rtmath::refract::mice(double f, double t, std::complex<double> &m)
 }
 
 void rtmath::refract::writeDiel(const std::string &filename, 
-	const std::complex<double> &ref)
+								const std::complex<double> &ref)
 {
 	using namespace std;
 	ofstream out(filename.c_str());
@@ -69,8 +101,36 @@ void rtmath::refract::writeDiel(const std::string &filename,
 	out << " 100000.0    " << ref.real() << "      " << (-1.0*ref.imag()) << endl;
 }
 
+
+void rtmath::refract::bruggeman(std::complex<double> Ma, std::complex<double> Mb, 
+								double fa, std::complex<double> &Mres)
+{
+	using namespace std;
+	complex<double> eA, eB, eRes;
+	mToE(Ma,eA);
+	mToE(Mb,eB);
+
+	// Liu's formula is derived only for mAmbient = 1. I want a more general case to make 
+	// dielectric chaining easier.
+	auto formula = [&](std::complex<double> x) -> std::complex<double>
+	{
+		// f (( eA - eE ) / (eA + 2eE) ) + (1-f) (( eB - eE ) / (eB + 2eE) ) = 0
+		using namespace std;
+		complex<double> res, pa, pb;
+		pa = complex<double>(fa,0) * (eA - x) / (eA + (complex<double>(2.,0)*x));
+		pb = complex<double>(1.-fa,0) * (eB - x) / (eB + (complex<double>(2.,0)*x));
+		res = pa + pb;
+		return res;
+	};
+
+	complex<double> gA(1.0,1.0), gB(1.55,1.45);
+	eRes = zeros::secantMethod(formula, gA, gB);
+
+	eToM(eRes,Mres);
+}
+
 void rtmath::refract::debyeDry(std::complex<double> Ma, std::complex<double> Mb, 
-	double fa, std::complex<double> &Mres)
+							   double fa, std::complex<double> &Mres)
 {
 	using namespace std;
 	std::complex<double> eA, eB, eRes;
@@ -86,22 +146,8 @@ void rtmath::refract::debyeDry(std::complex<double> Ma, std::complex<double> Mb,
 	eToM(eRes,Mres);
 }
 
-void rtmath::refract::maxwellGarnett(std::complex<double> Mice, std::complex<double> Mwater, 
-	std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres)
-{
-	using namespace std;
-	std::complex<double> Miw;
-
-	// Ice is the inclusion in water, which is the inclusion in air
-	double frac = 0;
-	if (fWater+fIce == 0) frac = 0;
-	else frac = fIce / (fWater + fIce);
-	maxwellGarnettSimple(Mice, Mwater, frac, Miw);
-	maxwellGarnettSimple(Miw, Mair, fIce + fWater, Mres);
-}
-
-void rtmath::refract::maxwellGarnettSimple(std::complex<double> Ma, std::complex<double> Mb, 
-	double fa, std::complex<double> &Mres)
+void rtmath::refract::maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, 
+											double fa, std::complex<double> &Mres)
 {
 	using namespace std;
 	std::complex<double> eA, eB, eRes;
@@ -116,8 +162,26 @@ void rtmath::refract::maxwellGarnettSimple(std::complex<double> Ma, std::complex
 	eToM(eRes,Mres);
 }
 
+void rtmath::refract::maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, 
+											double fa, std::complex<double> &Mres)
+{
+	using namespace std;
+	std::complex<double> eA, eB, eRes;
+	mToE(Ma,eA);
+	mToE(Mb,eB);
+
+	complex<double> betaA = complex<double>(2.,0)*eB/(eA-eB);
+	complex<double> betaB = ( ((eA)/(eA-eB)) * log(eA/eB) ) - complex<double>(1.,0);
+	complex<double> beta = betaA * betaB;
+
+	complex<double> cf(fa,0), cfc(1.-fa,0);
+
+	eRes = ( (cfc*eB) + (cf*beta*eA) )/(cfc + (cf*beta) );
+	eToM(eRes,Mres);
+}
+
 void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb, 
-	double fa, double nu, std::complex<double> &Mres)
+							  double fa, double nu, std::complex<double> &Mres)
 {
 	using namespace std;
 	std::complex<double> eA, eB, eRes;
@@ -142,7 +206,7 @@ void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb,
 	};
 
 	complex<double> gA(1.0,1.0), gB(1.55,1.45);
-	zeros::complexSecant(formula, gA, gB, eRes);
+	eRes = zeros::secantMethod(formula, gA, gB);
 	eToM(eRes,Mres);
 }
 
@@ -155,3 +219,49 @@ void rtmath::refract::eToM(std::complex<double> e, std::complex<double> &m)
 {
 	m = sqrt(e);
 }
+
+
+void rtmath::refract::MultiInclusions(
+	const std::vector<basicDielectricTransform> &funcs,
+	const std::vector<double> &fs, 
+	const std::vector<std::complex<double> > &ms, 
+	std::complex<double> &Mres)
+{
+	//if (fs.size() != ms.size() + 1) throw rtmath::debug::xBadInput("Array sizes are not the same");
+	//if (fs.size() != funcs.size()) throw rtmath::debug::xBadInput("Array sizes are not the same");
+
+	using namespace std;
+	
+	double fTot = 0.0;
+	double fEnv = 1.0;
+
+	Mres = ms.at(0);
+	fTot = fs.at(0);
+
+	// Ordering is most to least enclosed
+	for (size_t i=1; i<funcs.size(); ++i)
+	{
+		// ms[0] is the initial refractive index (innermost material), and fs[0] is its volume fraction
+		complex<double> mA = Mres;
+		fTot += fs.at(i);
+		if (!fTot) continue;
+		funcs.at(i)(mA, ms.at(i), fs.at(i-1) / fTot, Mres);
+	}
+}
+
+
+/*
+void rtmath::refract::maxwellGarnett(std::complex<double> Mice, std::complex<double> Mwater, 
+									 std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres)
+{
+	using namespace std;
+	std::complex<double> Miw;
+
+	// Ice is the inclusion in water, which is the inclusion in air
+	double frac = 0;
+	if (fWater+fIce == 0) frac = 0;
+	else frac = fIce / (fWater + fIce);
+	maxwellGarnettSpheres(Mice, Mwater, frac, Miw);
+	maxwellGarnettSpheres(Miw, Mair, fIce + fWater, Mres);
+}
+*/

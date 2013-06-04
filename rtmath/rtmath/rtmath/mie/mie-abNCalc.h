@@ -1,23 +1,30 @@
 #pragma once
-#include "mie-AnCalc.h"
-#include "mie-wnCalc.h"
-#include<complex>
+#include <boost/shared_ptr.hpp>
+#include <complex>
+#include "../defs.h"
 
-namespace mie {
+#pragma warning(push)
+#pragma warning(disable: 4251) // dll-interface needed warning even though the affected member is private
 
-class abNCalc {
-public:
-    // Need index of refraction and x
-    abNCalc(const std::complex<double> &m, double x);
-    ~abNCalc();
-    void calc(unsigned int n, std::complex<double> &aRes, std::complex<double> &bRes);
-private:
-    std::complex<double> m;
-    double x;
-    wnCalc *wn;
-    AnCalc *an;
-};
+namespace rtmath {
+	namespace mie {
+		class wnCalc;
+		class AnCalc;
+
+		class DLEXPORT abNCalc {
+		public:
+			// Need index of refraction and sizep
+			abNCalc(const std::complex<double> &m, double sizep);
+			void calc(unsigned int n, std::complex<double> &aRes, std::complex<double> &bRes) const;
+		private:
+			const std::complex<double> m;
+			const double sizep;
+			boost::shared_ptr<wnCalc> wn;
+			boost::shared_ptr<AnCalc> an;
+		};
 
 
-}; //end mie
+	}
+}
 
+#pragma warning(pop)

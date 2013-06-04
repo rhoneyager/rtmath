@@ -6,12 +6,17 @@
 
 #include <string>
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
+#pragma message("Warning: pclstuff.h needs revision")
 #include <pcl/point_types.h>
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 namespace rtmath
 {

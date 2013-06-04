@@ -7,7 +7,7 @@
 namespace rtmath {
 
 	namespace zeros {
-		double findzero(double a, double b, evalfunction* f )
+		double findzero(double a, double b, const std::function<double(double) > &f )
 		{
 			using namespace std;
 			/* Define the basic testing variables.
@@ -21,12 +21,12 @@ namespace rtmath {
 			double fcint = 1E-13;
 			double fa, fb, fc, fd, fs = 1.0;
 			unsigned int i=0;
-			fa = f->eval(a);
-			fb = f->eval(b);
+			fa = f(a);
+			fb = f(b);
 
 			// Bad starting points if fa*fb > 0
 			if (fa*fb > 0) 
-				throw rtmath::debug::xBadInput("Bad selection of a,b");
+				throw rtmath::debug::xBadInput("Bad selection of a,b. f(a) and f(b) need to have opposite signs.");
 
 			if ( abs(fa) < abs(fb) )
 			{
@@ -34,13 +34,13 @@ namespace rtmath {
 				double junk = b;
 				b = a;
 				a = junk;
-				fa = f->eval(a);
-				fb = f->eval(b);
+				fa = f(a);
+				fb = f(b);
 			}
 
 			double c = a; // A testing point
 			double s = 0, d = 0;  // Initialize these to stop VS whining
-			fc = f->eval(c);
+			fc = f(c);
 			bool mflag = true; // Flag for method stuff
 			while (fb != 0 || fs != 0 || abs(b-a) > convint)
 			{
@@ -72,21 +72,21 @@ namespace rtmath {
 					mflag = false;
 				}
 
-				fs = f->eval(s);
+				fs = f(s);
 
 				d = c;
 				c = b;
 
-				fd = f->eval(d);
-				fc = f->eval(c);
+				fd = f(d);
+				fc = f(c);
 
 				if (fa * fs < 0)
 				{
 					b = s;
-					fb = f->eval(b);
+					fb = f(b);
 				} else {
 					a = s;
-					fa = f->eval(a);
+					fa = f(a);
 				}
 
 
@@ -96,8 +96,8 @@ namespace rtmath {
 					double junk = b;
 					b = a;
 					a = junk;
-					fa = f->eval(a);
-					fb = f->eval(b);
+					fa = f(a);
+					fb = f(b);
 				}
 				i++;
 				//if (i > 100) break;
@@ -105,6 +105,8 @@ namespace rtmath {
 			}
 			return s;
 		}
-	};
-}; // end rtmath
+
+
+	}
+}
 

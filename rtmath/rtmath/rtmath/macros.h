@@ -6,7 +6,6 @@
 * Macros here redirect to the standard function or a custom inlined varient, depending on the compiler.
 */
 
-#include <string>
 #include <cmath>
 
 namespace rtmath {
@@ -220,9 +219,9 @@ namespace rtmath {
 
 			return p;
 		}
-	};
+	}
 
-};
+}
 
 
 #ifdef _WIN32

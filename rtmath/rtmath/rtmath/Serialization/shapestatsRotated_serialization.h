@@ -1,6 +1,5 @@
 #pragma once
-
-#include "matrixop_serialization.h"
+#pragma message("Note: shapestatsRotated_serialization.h is a dead header")
 
 namespace rtmath
 {

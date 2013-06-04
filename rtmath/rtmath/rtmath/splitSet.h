@@ -22,6 +22,6 @@ namespace rtmath {
 			const std::map<std::string, 
 			std::string> *aliases);
 
-	}; // end namespace config
-}; // end namespace rtmath
+	}
+}
 

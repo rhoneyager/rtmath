@@ -10,22 +10,21 @@ TODO: combine the two Cheby defs, and create a class for the recursion relations
 This way, relation code can be automatically handled
    */
 
-#include "../polynomial.h"
 #include "recursivePolynomial.h"
-#include <vector>
 
 namespace rtmath {
+	class polynomial;
 	namespace recPolys {
 		class chebyshevA : public recPoly {
 			public:
-				virtual void get(unsigned int rank, polynomial &res) const override;
+				virtual void get(unsigned int rank, polynomial &res) const ;
 		};
 		class chebyshevB : public recPoly {
 			public:
-				virtual void get(unsigned int rank, polynomial &res) const override;
+				virtual void get(unsigned int rank, polynomial &res) const ;
 		};
-	}; // end recPolys
-}; // end rtmath
+	}
+}
 
 
 

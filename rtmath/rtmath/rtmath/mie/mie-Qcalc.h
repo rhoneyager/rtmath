@@ -1,22 +1,25 @@
 #pragma once
-#include<complex>
-#include "mie-abNCalc.h"
+#include <complex>
+#include "../defs.h"
 
-namespace mie {
+#pragma warning(push)
+#pragma warning(disable: 4251) // dll-interface needed warning even though the affected member is private
 
+namespace rtmath {
+	namespace mie {
 
-class Qcalc
-{
-public:
-	Qcalc(const std::complex<double> &m);
-	Qcalc(const std::complex<double> &m, double tolerance, double atol);
-	~Qcalc(void);
-	void calc(double x, double &Qext, double &Qsca, double &Qabs, double &g);
-private:
-	std::complex<double> _m;
-	double _tolerance;
-	double _atol;
-};
+		class DLEXPORT Qcalc
+		{
+		public:
+			Qcalc(const std::complex<double> &m, double tolerance = 1.01, double atol = 1.e-9);
+			void calc(double sizep, double &Qext, double &Qsca, double &Qabs, double &Qbk, double &g) const;
+		private:
+			const std::complex<double> _m;
+			const double _tolerance;
+			const double _atol;
+		};
 
-}; // end mie
+	}
+}
 
+#pragma warning(pop)

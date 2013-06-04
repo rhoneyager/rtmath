@@ -1,4 +1,5 @@
 #include "../rtmath/Stdafx.h"
+#include "../rtmath/polynomial.h"
 #include "../rtmath/polynomials/legendre.h"
 #include <vector>
 
@@ -45,5 +46,5 @@ namespace rtmath {
 			return;
 		}
 	}
-}; // end namespace rtmath
+} // end namespace rtmath
 

@@ -1,5 +1,27 @@
 #include "../rtmath/Stdafx.h"
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+#pragma warning( disable : 4244 ) // annoying double to float issues in boost
 
+#include <set>
+#include <boost/math/constants/constants.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/covariance.hpp>
+#include <boost/accumulators/statistics/density.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/kurtosis.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/moment.hpp>
+#include <boost/accumulators/statistics/skewness.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/variates/covariate.hpp>
+#include <boost/filesystem.hpp>
+#include <Eigen/Dense>
+
+//#include "../rtmath/matrixop.h"
+#include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h"
@@ -27,11 +49,15 @@ namespace rtmath {
 		shapeFileStats::shapeFileStats(const shapefile &shp)
 		{
 			_shp = boost::shared_ptr<shapefile>(new shapefile(shp));
+			calcStatsBase();
+			calcStatsRot(0,0,0);
 		}
 
 		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp)
 		{
 			_shp = boost::shared_ptr<shapefile>(new shapefile(*shp));
+			calcStatsBase();
+			calcStatsRot(0,0,0);
 		}
 
 		bool shapeFileStats::doQhull()
@@ -88,9 +114,9 @@ namespace rtmath {
 		{
 			// Return true if shape is loaded or can be loaded (and load it)
 			// Return false if shape CANNOT be loaded
-			if (_shp->_latticePts.size() ) return true;
+			if (_shp->latticePts.size() ) return true;
 
-			std::string fname = _shp->_filename;
+			std::string fname = _shp->filename;
 			if (boost::filesystem::exists(boost::filesystem::path(fname)))
 			{
 				boost::shared_ptr<shapefile> nshp(new shapefile(fname));
@@ -122,10 +148,10 @@ namespace rtmath {
 			}
 
 			// Calculate volume elements
-			double dxdydz = _shp->d(0) * _shp->d(1) * _shp->d(2);
+			float dxdydz = _shp->d(0) * _shp->d(1) * _shp->d(2);
 			V_cell_const = dxdydz;
 			V_dipoles_const = dxdydz * _N;
-			aeff_dipoles_const = pow(V_dipoles_const*3./(4.*boost::math::constants::pi<double>()),1./3.);
+			aeff_dipoles_const = pow(V_dipoles_const*3.f/(4.f*boost::math::constants::pi<float>()),1.f/3.f);
 
 			const Eigen::Array3f &a1 = _shp->a1;
 			const Eigen::Array3f &a2 = _shp->a2;
@@ -133,28 +159,28 @@ namespace rtmath {
 			// Figure out the base rotation from a1 = <1,0,0>, a2 = <0,1,0> that 
 			// gives the current a1, a2.
 
-			double thetar, betar, phir;
+			float thetar, betar, phir;
 			// Theta is the angle between a1 and xlf
 			// From dot product, theta = acos(a1.xlf)
-			double dp = a1(0); // need only x component, as xlf is the unit vector in +x
+			float dp = a1(0); // need only x component, as xlf is the unit vector in +x
 			thetar = acos(dp);
 
 			// From a1 = x_lf*cos(theta) + y_lf*sin(theta)*cos(phi) + z_lf*sin(theta)*sin(phi),
 			// can use either y_lf or z_lf components to get phi
-			double stheta = sin(thetar);
+			float stheta = sin(thetar);
 			if (thetar)
 			{
-				double acphi = a1(1) / stheta;
+				float acphi = a1(1) / stheta;
 				phir = acos(acphi);
 
 				// Finally, a2_x = -sin(theta)cos(beta)
-				double cbeta = a2(0) / stheta * -1;
+				float cbeta = a2(0) / stheta * -1.f;
 				betar = acos(cbeta);
 			} else {
 				// theta is zero, so gimbal locking occurs. assume phi = 0.
 				phir = 0;
 				// must use alternate definition to get beta
-				double cosbeta = a2(1);
+				float cosbeta = a2(1);
 				betar = acos(cosbeta);
 			}
 
@@ -167,49 +193,22 @@ namespace rtmath {
 				phi = phir * scale;
 			}
 
-			// And figure out the effective rotation matrix of the existing file
-			{
-				double cb = cos(beta);
-				double ct = cos(theta);
-				double cp = cos(phi);
-				double sb = sin(beta);
-				double st = sin(theta);
-				double sp = sin(phi);
-				matrixop Rx(2,3,3), Ry(2,3,3), Rz(2,3,3);
-
-				Rx.set(1,2,0,0);
-				Rx.set(cp,2,1,1);
-				Rx.set(cp,2,2,2);
-				Rx.set(sp,2,2,1);
-				Rx.set(-sp,2,1,2);
-
-				Ry.set(cb,2,0,0);
-				Ry.set(1 ,2,1,1);
-				Ry.set(cb,2,2,2);
-				Ry.set(sb,2,0,2);
-				Ry.set(-sb,2,2,0);
-
-				Rz.set(ct,2,0,0);
-				Rz.set(ct,2,1,1);
-				Rz.set(1,2,2,2);
-				Rz.set(st,2,1,0);
-				Rz.set(-st,2,0,1);
-
-				rot = Ry*Rx*Rz;
-				invrot = rot.inverse();
-			}
+			rotationMatrix<float>(theta, phi, beta, rot);
+			invrot = rot.inverse();
 
 			// Define statistics for max, min, mean, std dev, skewness, kurtosis, moment of inertia
 			using namespace boost::accumulators;
 			//using namespace boost::accumulators::tag;
 			
 			// Do two passes to be able to renormalize coordinates
-			accumulator_set<double, stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
-			for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
+			accumulator_set<float, stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
+			//for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
+			for (size_t i = 0; i < _shp->numPoints; i++)
 			{
-				m_x((*it)(0));
-				m_y((*it)(1));
-				m_z((*it)(2));
+				auto it = _shp->latticePts.block<1,3>(i,0);
+				m_x((it)(0));
+				m_y((it)(1));
+				m_z((it)(2));
 			}
 
 			b_min(0) = boost::accumulators::min(m_x);
@@ -230,18 +229,18 @@ namespace rtmath {
 			{
 				cvHull.constructHull();
 			} else {
-				cvHull.hull_enabled = false;
+				cvHull.hullEnabled(false);
 			}
 			max_distance = cvHull.maxDiameter();
 
 			a_circum_sphere = max_distance / 2.0;
-			V_circum_sphere = boost::math::constants::pi<double>() * 4.0 * pow(a_circum_sphere,3.0) / 3.0;
-			SA_circum_sphere = boost::math::constants::pi<double>() * 4.0 * pow(a_circum_sphere,2.0);
+			V_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,3.0f) / 3.0f;
+			SA_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,2.0f);
 
 			V_convex_hull = cvHull.volume();
-			aeff_V_convex_hull = pow(3.0 * V_convex_hull / (4.0 * boost::math::constants::pi<double>()),1./3.);
-			SA_convex_hull = cvHull.surface_area();
-			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0 * boost::math::constants::pi<double>()),0.5);
+			aeff_V_convex_hull = pow(3.0 * V_convex_hull / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
+			SA_convex_hull = cvHull.surfaceArea();
+			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0f * boost::math::constants::pi<float>()),0.5);
 
 			_currVersion = _maxVersion;
 			_valid = true;
@@ -252,19 +251,19 @@ namespace rtmath {
 			{
 				// At beginning by default, as it is the only entry at this point!
 				auto pdr = calcStatsRot(0,0,0);
-				V_ellipsoid_max = boost::math::constants::pi<double>() / 6.0;
+				V_ellipsoid_max = boost::math::constants::pi<float>() / 6.0f;
 				// Using diameters, and factor in prev line reflects this
 				V_ellipsoid_max *= pdr->max(0) - pdr->min(0);
 				V_ellipsoid_max *= pdr->max(1) - pdr->min(1);
 				V_ellipsoid_max *= pdr->max(2) - pdr->min(2);
 
-				V_ellipsoid_rms = 4.0 * boost::math::constants::pi<double>() / 3.0;
-				V_ellipsoid_rms *= pdr->rms_mean(0);
-				V_ellipsoid_rms *= pdr->rms_mean(1);
-				V_ellipsoid_rms *= pdr->rms_mean(2);
+				V_ellipsoid_rms = 4.0f * boost::math::constants::pi<float>() / 3.0f;
+				V_ellipsoid_max *= pdr->max(0) - pdr->min(0);
+				V_ellipsoid_max *= pdr->max(1) - pdr->min(1);
+				V_ellipsoid_max *= pdr->max(2) - pdr->min(2);
 
-				aeff_ellipsoid_max = pow(3.0 * V_ellipsoid_max / (4.0 * boost::math::constants::pi<double>()),1./3.);
-				aeff_ellipsoid_rms = pow(3.0 * V_ellipsoid_rms / (4.0 * boost::math::constants::pi<double>()),1./3.);
+				aeff_ellipsoid_max = pow(3.0f * V_ellipsoid_max / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
+				aeff_ellipsoid_rms = pow(3.0f * V_ellipsoid_rms / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
 			}
 
 			// Volume fractions

@@ -1,24 +1,19 @@
 #include "../rtmath/Stdafx.h"
 #include <algorithm>
 #include <string>
-#include <sstream>
 #include <map>
 #include <vector>
 #include <set>
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 #include <boost/math/constants/constants.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
 #include "../rtmath/splitSet.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
+
+#pragma warning( disable : 4244 ) // lots of template math involves doubles, and I'm sick of static casting
 
 namespace rtmath {
 	namespace config {
@@ -199,7 +194,7 @@ namespace rtmath {
 		SPEC_SPLITSET(float);
 		SPEC_SPLITSET(double);
 
-	}; // end namespace config
-}; // end namespace rtmath
+	}
+}
 
 

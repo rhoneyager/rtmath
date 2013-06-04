@@ -7,22 +7,19 @@
    */
 
 #include <map>
-#include <complex>
-#include <set>
 #include <iostream>
-#include <sstream>
 #include <cstdarg>
 #include "quadrature.h"
 
 namespace rtmath {
 
-	class polynomial : public evalfunction {
+	class polynomial {
 		public:
 			polynomial(); 
 			polynomial(unsigned int pow, double val); 
 			polynomial(size_t ndims, ...); 
 			polynomial(const polynomial &orig);
-			~polynomial(void);
+			virtual ~polynomial(void);
 
 			void toDoubleArray(double *target) const;
 			void fromDoubleArray(size_t maxdeg, const double *source); // maxdeg is highest degree
@@ -60,7 +57,7 @@ namespace rtmath {
 			polynomial& operator *= (double);
 			polynomial& operator ^= (unsigned int);
 
-			polynomial deriv(unsigned int deg) const;
+			polynomial deriv(unsigned int deg = 1) const;
 			//polynomial integ(unsigned int deg) const;
 
 			//void zeros(std::multiset<std::complex<double> > &zpts) const;

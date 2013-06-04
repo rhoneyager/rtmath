@@ -1,15 +1,9 @@
 #include "../rtmath/Stdafx.h"
 #include <iostream>
+#include <string>
 #include <cmath>
-#include <vector>
-#include <complex>
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
-
-
 
 #include "../rtmath/polynomial.h"
-#include "../rtmath/matrixop.h"
 
 namespace rtmath {
 

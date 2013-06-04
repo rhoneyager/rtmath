@@ -6,10 +6,8 @@
 #include <initializer_list>
 #endif
 
-
-#include "../rtmath/error/error.h"
 #include "../rtmath/depGraph.h"
-
+#include "../rtmath/error/error.h"
 
 namespace rtmath
 {

@@ -1,9 +1,11 @@
 #pragma once
+//#include "../Serialization/serialization_macros.h"
+//#include <boost/serialization/export.hpp>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <set>
+#include <Eigen/Core>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -21,6 +23,7 @@ namespace boost
 	{
 		template <class Archive>
 		void serialize(Archive &, rtmath::ddscat::shapefile &, const unsigned int);
+		//EXPORT(serialize, rtmath::ddscat::shapefile);
 	}
 }
 
@@ -45,13 +48,12 @@ namespace rtmath {
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 			std::string filename;
-
-			std::vector<Eigen::Vector3f> 
+			//std::vector<Eigen::Vector3f> 
+			Eigen::Matrix<float, Eigen::Dynamic, 3>
 				latticePts, // Untransformed points
 				latticePtsStd, // Points with coord translation based on file properties
 				latticePtsNorm, // Points with coord transform to mean center of shape
 				latticePtsRi; // Dielectric information
-
 			size_t numPoints;
 			std::set<size_t> Dielectrics;
 			std::string desc;
@@ -60,6 +62,10 @@ namespace rtmath {
 			// usually a1 = x_lf, a2 = y_lf
 			// choice of a1 and a2 can reorient the shape (useful for KE, PE constraints)
 			Eigen::Array3f a1, a2, a3, d, x0, xd;
+
+			// These are RAW values (no mean or d scaling)
+			Eigen::Array3f mins, maxs, means;
+
 			//boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
 			
 			friend class shapeFileStatsBase;
@@ -76,3 +82,6 @@ namespace rtmath {
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob);
 std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
+
+
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)

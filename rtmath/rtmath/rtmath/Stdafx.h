@@ -3,13 +3,15 @@
 // but are changed infrequently
 
 #pragma once
-
+/*
 #pragma warning( disable : 4068 ) // ignore GCC pragmas
 #pragma warning( disable : 4244 ) // even though that part of code is never reached
 #pragma warning( disable : 4146 ) // annoying boost garbage
 #pragma warning( disable : 4800 )
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
+*/
+/*
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -23,10 +25,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+*/
 // Define filesystem version 3 for compile issues with older boost
 #define BOOST_FILESYSTEM_VERSION 3
-
+/*
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/covariance.hpp>
@@ -65,6 +67,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-
+*/
 //#pragma warning( push )
 

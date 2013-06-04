@@ -19,7 +19,7 @@
    of the type of interpolation (lineal, bicubic, etc.), and the functions 
    provised provide a set of weights associated with each coordinate.
    */
-
+#pragma message("Warning: interpolatable.h needs revision")
 namespace rtmath {
 
 	namespace interpolation {
@@ -52,10 +52,11 @@ namespace rtmath {
 
 		public:
 
-			std::unordered_map<
+			//std::unordered_map<
+			std::map<
 				coords::cyclic<double>, 
-				std::shared_ptr<const ddscat::ddScattMatrix>, 
-				boost::hash<coords::cyclic<double> > 
+				std::shared_ptr<const ddscat::ddScattMatrix> //, 
+				//boost::hash<coords::cyclic<double> > 
 				> _interpMap;
 
 			mutable std::set<std::shared_ptr<const ddscat::ddScattMatrix> > _scattMatricesRaw;

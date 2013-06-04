@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "error/debug.h"
+//#include "error/debug.h"
 #include "da/daLayer.h"
 #include "matrixop.h"
 #include "da/damatrix.h"

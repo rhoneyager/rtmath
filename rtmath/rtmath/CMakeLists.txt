@@ -16,22 +16,28 @@ include (files_src.cmake)
 set (libsrcs ${srcfiles})
 
 
+# Shared/static flag
+if(WIN32 AND NOT CYGWIN)
+	set (sflag STATIC)
+else()
+	set (sflag SHARED)
+endif()
+
 # Custom prebuild step based on os
-IF(${UNIX})
-	add_custom_command (
-		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
-ENDIF(${UNIX})
-IF(${WIN32})
+IF(WIN32 AND NOT CYGWIN)
 	add_custom_command (
 		COMMAND prebuild.bat "${CMAKE_CURRENT_BINARY_DIR}"
 		COMMENT Running custom commands to set paths and query the repository information.
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
-ENDIF(${WIN32})
+else()
+	add_custom_command (
+		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+ENDIF()
 
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/rtmath/cmake-settings.h.in"
@@ -46,96 +52,112 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-# Win32 MSVC builds really prefer a static lib build.
-IF(${WIN32})
-	add_library (rtmath STATIC 
-			${libsrcs} 
-			${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
-			${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
-			${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
-			)
-ELSE()
-	add_library (rtmath SHARED 
-			${libsrcs} 
-			${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
-			${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
-			${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
-			)
-ENDIF()
-
-# Used to allow VS default project to coexist with cmake project
-add_definitions(-DWITH_CMAKE)
-
-#add_library (rtmath-static STATIC 
-#		${libsrcs} 
-#		${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
-#		${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h 
-#		${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
-#		)
-
-get_target_property(rtmath_INCLUDE_DIRS rtmath INCLUDE_DIRECTORIES)
-if (NOT rtmath_INCLUDE_DIRS)
-	set(rtmath_INCLUDE_DIRS "")
-	set(rtmath-tests_INCLUDE_DIRS "")
+add_library (rtmath_core ${sflag}
+	${rtmath_core-files} 
+	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
+	${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
+	${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
+	)
+IF(DEFINED COMMON_CFLAGS )
+	set_target_properties(rtmath_core PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 endif()
-#get_target_property(rtmath_LIBRARIES rtmath LIBRARIES)
-set(rtmath_LIBRARIES "")
-set(rtmath-tests_LIBRARIES "")
+SET_TARGET_PROPERTIES( rtmath_core PROPERTIES RELEASE_POSTFIX _Release )
+SET_TARGET_PROPERTIES( rtmath_core PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
+SET_TARGET_PROPERTIES( rtmath_core PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
+SET_TARGET_PROPERTIES( rtmath_core PROPERTIES DEBUG_POSTFIX _Debug )
+set_target_properties(rtmath_core PROPERTIES FOLDER "Libs")
 
-#message(${rtmath_LIBRARIES})
-#message(${rtmath_INCLUDE_DIRS})
 
-if(LOAD_PACKAGES)	
-	#add_package_dependency(rtmath DEPENDS_ON HDF5)
-#	add_package_dependency(rtmath DEPENDS_ON NetCDF)
+find_package(Boost COMPONENTS program_options serialization iostreams filesystem system unit_test_framework regex REQUIRED)
+if(WIN32 AND NOT CYGWIN) # Boost autolink
+else()
+	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
+		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
+		${Boost_PROGRAM_OPTIONS_LIBRARY})
+endif()
+find_package(Ryan-Debug REQUIRED)
+find_package(Ryan-Serialization REQUIRED)
+find_package(Eigen3 REQUIRED)
+include_directories(EIGEN3_INCLUDE_DIR)
+
+set (rtmath_core-libs ${rtmath_core-libs} Ryan-Debug Ryan-Serialization)
+target_link_libraries(rtmath_core ${rtmath_core-libs})
+
+
+
+
+
+
+add_library (rtmath_mie ${sflag}
+	${rtmath_mie-files})
+IF(DEFINED COMMON_CFLAGS )
+	set_target_properties(rtmath_mie PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+endif()
+SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES RELEASE_POSTFIX _Release )
+SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
+SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
+SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES DEBUG_POSTFIX _Debug )
+set_target_properties( rtmath_mie PROPERTIES FOLDER "Libs")
+set (rtmath_mie-libs rtmath_core ${rtmath_core-libs})
+target_link_libraries(rtmath_mie ${rtmath_mie-libs})
+
+
+
+
+add_library (rtmath_ddscat ${sflag}
+	${rtmath_ddscat-files}
+	)
+IF(DEFINED COMMON_CFLAGS )
+	set_target_properties(rtmath_ddscat PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+endif()
+SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES RELEASE_POSTFIX _Release )
+SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
+SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
+SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES DEBUG_POSTFIX _Debug )
+set_target_properties( rtmath_ddscat PROPERTIES FOLDER "Libs")
+
+find_package(tmatrix REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+#add_definitions(${PCL_DEFINITIONS})
+
+
+set (rtmath_ddscat-libs rtmath_core ${rtmath_core-libs} rtmath_mie ${rtmath_mie-libs} 
+	tmatrix-cpp tmatrix-fortran
+	${Boost_REGEX_LIBRARY}	
+	${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} 
+	${PCL_SEGMENTATION_LIBRARIES} ${PCL_SURFACE_LIBRARIES})
+target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
+
+
+
+
+#add_dependencies(rtmath_ddscat ${rtmath_ddscat-libs})
+
 #	add_package_dependency(rtmath DEPENDS_ON ROOT)
-	add_package_dependency(rtmath DEPENDS_ON Boost)
-	add_package_dependency(rtmath DEPENDS_ON VTK)
-	add_package_dependency(rtmath DEPENDS_ON PCL)
-	add_package_dependency(rtmath DEPENDS_ON ImageMagick)
-	#add_package_dependency(rtmath DEPENDS_ON )
-	#add_package_dependency(rtmath DEPENDS_ON )
+#	add_package_dependency(rtmath DEPENDS_ON VTK)
+#	add_package_dependency(rtmath DEPENDS_ON PCL)
+#	add_package_dependency(rtmath DEPENDS_ON ImageMagick)
+
+#include_directories(${rtmath_INCLUDE_DIRS})
+#set(rtmath_INCLUDES ${rtmath_INCLUDE_DIRS} CACHE INTERNAL "rtmath-included dirs")
+#set(rtmath_LIBS ${rtmath_LIBRARIES} CACHE INTERNAL "rtmath-included libs")
+
+#target_link_libraries (rtmath tmatrix-serialization rtmath-mie)
+
+if (BUILD_TESTING)
+	add_executable(rtmath_core_tests ${rtmath_core_test-files})
+	add_executable(rtmath_mie_tests ${rtmath_mie_test-files})
+IF(DEFINED COMMON_CFLAGS )
+	set_target_properties(rtmath_core_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	set_target_properties(rtmath_mie_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 endif()
-IF(USE_OPENMP)
-	IF (${OPENMP_FOUND})
-		add_package_dependency(rtmath DEPENDS_ON OpenMP)
-	endif()
-endif()
+set_target_properties( rtmath_core_tests PROPERTIES FOLDER "Tests")
+target_link_libraries(rtmath_core_tests ${rtmath_core-libs} rtmath_core)
+set_target_properties( rtmath_mie_tests PROPERTIES FOLDER "Tests")
+target_link_libraries(rtmath_mie_tests ${rtmath_mie-libs} rtmath_mie)
 
-include_directories(${rtmath_INCLUDE_DIRS})
-set(rtmath_INCLUDES ${rtmath_INCLUDE_DIRS} CACHE INTERNAL "rtmath-included dirs")
-set(rtmath_LIBS ${rtmath_LIBRARIES} CACHE INTERNAL "rtmath-included libs")
-
-#message("${rtmath_INCLUDES}")
-#message("${rtmath_LIBS}")
-
-#add_package_dependency(rtmath-static DEPENDS_ON rtmathDummy)
-#set(rtmath-static_LIBRARIES ${rtmath_LIBRARIES})
-#set(rtmath-static_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
-target_link_libraries (rtmath ${COMMON_LIBS})
-target_link_libraries (rtmath ${rtmath_LIBRARIES})
-#target_link_libraries (rtmath-static ${COMMON_LIBS})
-#target_link_libraries (rtmath-static ${rtmath-static_LIBRARIES})
-option ( RTMATH-TESTS
-	"Build the testing code" OFF)
-
-if (RTMATH-TESTS)
-
-aux_source_directory (tests modtests)
-add_executable (rtmath-tests ${modtests})
-# Ensure that the dynamic library builds first (so prebuild will have run)
-add_dependencies (rtmath-tests rtmath)
-target_link_libraries (rtmath-tests rtmath)
-#target_link_libraries(rtmath-tests 
-
-#add_package_dependency(rtmath-tests DEPENDS_ON rtmathDummy)
-set(rtmath-tests_LIBRARIES ${rtmath_LIBRARIES})
-set(rtmath-tests_INCLUDE_DIRS ${rtmath_INCLUDE_DIRS})
-add_package_dependency(rtmath-tests DEPENDS_ON ROOT)
-add_package_dependency(rtmath-tests DEPENDS_ON PCL)
-
-target_link_libraries (rtmath-tests ${COMMON_LIBS})
-target_link_libraries (rtmath-tests ${rtmath-tests_LIBRARIES})
 endif()
 #target_link_libraries(rtmath-tests 
 #	boost_filesystem 
@@ -143,22 +165,6 @@ endif()
 #	boost_unit_test_framework 
 #	boost_system
 #)
-
-IF(DEFINED COMMON_CFLAGS )
-	set_target_properties(rtmath PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-#	set_target_properties(rtmath-static PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-if(RTMATH-TESTS)
-	set_target_properties(rtmath-tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-ENDIF()
-ENDIF()
-
-set_target_properties(rtmath PROPERTIES FOLDER "Libs")
-#set_target_properties(rtmath-static PROPERTIES FOLDER "Libs")
-IF(RTMATH-TESTS)
-set_target_properties(rtmath-tests PROPERTIES FOLDER "Tests")
-ENDIF()
-#add_header_files(headers)
-
 
 
 # Install targets. This ensures that the library is in a valid location, 
@@ -175,24 +181,23 @@ endif()
 
 # Headers
 INSTALL(DIRECTORY rtmath 
-	DESTINATION include
+	DESTINATION ${INSTALL_INCLUDE_DIR}
 	COMPONENT Headers
-	PATTERN ".svn" EXCLUDE
-	PATTERN ".in" EXCLUDE
+	FILES_MATCHING PATTERN "*.h"
 	)
 
 IF(RTMATH-TESTS)
 # Executables and libraries
 INSTALL(TARGETS rtmath-tests
-	RUNTIME DESTINATION bin
+	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	COMPONENT Tests
 	)
 ENDIF()
 
-INSTALL(TARGETS rtmath # rtmath-static
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib${LIB_SUFFIX}
-	ARCHIVE DESTINATION lib${LIB_SUFFIX}
+INSTALL(TARGETS rtmath_core rtmath_ddscat rtmath_mie # rtmath-static
+	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
 	COMPONENT Libraries
 	)
 

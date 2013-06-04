@@ -2,13 +2,15 @@
 
 #include <functional>
 #include <complex>
-#include "enums.h"
-#include "error/debug.h"
-#include "matrixop.h"
-#include "da/damatrix.h"
 #include <map>
 #include <string>
+#include <Eigen/Core>
+//#include "enums.h"
+//#include "matrixop.h"
+//#include "da/damatrix.h"
 
+
+#pragma message("Warning: phaseFunc.h needs the pf class moved elsewhere, + interpolation")
 namespace rtmath {
 
 	namespace phaseFuncs
@@ -18,25 +20,28 @@ namespace rtmath {
 		// the ability to generate an extinction matrix. Eventually, Mueller matrix 
 		// inversion routines will also go here.
 
-		// The following function provides a pointer to the desired phase function 
+		// The following function provides a reference to the desired phase function 
 		// routine. This is implemented to allow user choice in Mueller method.
 		void selectMueller(const std::string &id,
-			std::function<void(const std::complex<double> Sn[4], double Snn[4][4])>&);
+			std::function<void(const Eigen::Matrix2cd&, Eigen::Matrix4d&)>&);
 
 		// Note following conventions: matrix is [[S2, S3][S4,S1]] = [[Sn0, Sn1][Sn2, Sn3]]
 		// Sn is the matrix in linear form {S1, S2, S3, S4}, so it should avoid any 
 		// of the subsequent issues with forgetting the index transformations.
 
-		void muellerBH(const std::complex<double> Sn[4], double Snn[4][4]);
-		void muellerTMATRIX(const std::complex<double> Sn[4], double Snn[4][4]);
+		void muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
+		void muellerTMATRIX(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
 
-		//std::function<void(const std::complex<double> Sn[4], double Snn[4][4])> 
-
-
-		void convertFtoS(const std::complex<double> f[2][2], std::complex<double> Sn[4], double phi, 
+		void convertFtoS(const Eigen::Matrix2cd &f, Eigen::Matrix2cd& Sn, double phi, 
 			std::complex<double> a, std::complex<double> b, std::complex<double> c, std::complex<double> d);
-	} // end namespace phasefuncs
 
+		void invertS(const Eigen::Matrix4d &Snn, const Eigen::Matrix4d &Knn, double fGHz, Eigen::Matrix2cd& Sn);
+
+		void genExtinctionMatrix(Eigen::Matrix4d &Knn, const Eigen::Matrix2cd &Sn, double fGHz);
+
+	}
+
+	/* // These will be reimplemented by the da code?
 	class phaseFunc // TODO: rewrite this.
 	{
 	public:
@@ -48,26 +53,23 @@ namespace rtmath {
 		//virtual void eval(double mu, double mun, double phir, double Pnn[4][4], double res[4][4]);
 		// calc constructs the base P matrix, centered on mu=mu0
 		//virtual void calc(double mu, std::complex<double> &m, double x, double Pnn[4][4]) = 0;
-		// And, give the same function as a matrixop class
-		//virtual void calc(double mu, std::complex<double> &m, double x, matrixop &Pnn);
-		virtual std::shared_ptr<matrixop> eval(double alpha) const = 0;
+		//virtual std::shared_ptr<matrixop> eval(double alpha) const = 0;
 	protected:
-		mutable std::map<double,std::shared_ptr<matrixop> > _eval_cache;
+		//mutable std::map<double,std::shared_ptr<matrixop> > _eval_cache;
 	};
 
-	class scattMatrix // TODO: rewrite this to make it easier to understand and be derived from.
+	class scattMatrix
 	{
 	public:
-		scattMatrix(void);
-		virtual ~scattMatrix(void);
+		scattMatrix(void) {}
+		virtual ~scattMatrix(void) {}
 		// Calculate the scattering amplitude matrix for a given mu.
 		// Here, mu = cos(alpha), the total scattering angle.
 		virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
 	public:
 		// f is the frequency
-		static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
-		static void _genExtinctionMatrix(double Knn[4][4], const std::complex<double> Sn[4], double fGHz);
-		static void _invertS(const double Snn[4][4], const double Knn[4][4], double fGHz, std::complex<double> Sn[4]);
-	};
+		//static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
 
+	};
+	*/
 } // end namespace rtmath

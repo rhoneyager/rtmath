@@ -1,9 +1,12 @@
 #include <string>
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
+#include <Ryan-Serialization/serialization.h>
+#include "../rtmath/Serialization/serialization_macros.h"
 #include "../rtmath/matrixop.h"
-#include "../rtmath/serialization.h"
-#include "../rtmath/Serialization/matrixop_serialization.h"
+
+//#include "../rtmath/serialization.h"
+//#include "../rtmath/Serialization/matrixop_serialization.h"
 
 //#define BOOST_TEST_MODULE matrixop
 //#define BOOST_TEST_DYN_LINK
@@ -261,6 +264,7 @@ BOOST_AUTO_TEST_CASE(matrixop_det) {
 // Check _getpos
 
 // Check serialization / loading
+/*
 BOOST_AUTO_TEST_CASE(matrixop_serialization) {
 	using namespace std;
 	using namespace rtmath;
@@ -273,16 +277,19 @@ BOOST_AUTO_TEST_CASE(matrixop_serialization) {
 
 	string sObj;
 	ostringstream out;
-	serialization::write<matrixop>(a,out);
+	::serialization::write<matrixop>(a,out);
 	sObj = out.str();
 	//cout << sObj << endl;
 	istringstream in(sObj);
-	serialization::read<matrixop>(b,in);
+	::serialization::read<matrixop>(b,in);
 
 	bool res = false;
 	if (b == a) res = true;
 	BOOST_CHECK(res==true);
 }
+
+
+*/
 
 BOOST_AUTO_TEST_SUITE_END();
 

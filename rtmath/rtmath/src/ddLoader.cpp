@@ -10,13 +10,12 @@
 #include <boost/tokenizer.hpp>
 #include "../rtmath/atmos.h"
 #include "../rtmath/absorb.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/config.h"
 #include "../rtmath/command.h"
-#include "../rtmath/ddscat/ddscat.h"
 
 #include "../rtmath/ddscat/ddLoader.h"
 
+#include "../rtmath/error/error.h"
 namespace rtmath {
 
 	ddLoader::ddLoader()

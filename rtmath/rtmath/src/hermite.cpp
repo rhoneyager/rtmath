@@ -1,4 +1,5 @@
 #include "../rtmath/Stdafx.h"
+#include "../rtmath/polynomial.h"
 #include "../rtmath/polynomials/hermite.h"
 #include <vector>
 
@@ -84,5 +85,5 @@ namespace rtmath {
 
 
 
-}; // end namespace rtmath
+} // end namespace rtmath
 

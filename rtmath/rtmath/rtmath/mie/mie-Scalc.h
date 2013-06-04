@@ -1,24 +1,27 @@
 #pragma once
 #include <complex>
-#include "../phaseFunc.h"
+#include <Eigen/Core>
+#include "../defs.h"
 
-namespace mie {
+#pragma warning(push)
+#pragma warning(disable: 4251) // dll-interface needed warning even though the affected member is private
 
-class Scalc : 
-	public rtmath::scattMatrix
-{
-public:
-	Scalc(const std::complex<double> &m, double x);
-	Scalc(const std::complex<double> &m, double x, double tol, double atol);
-	~Scalc(void);
-	void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]);
-	//void calc(double mu, std::complex<double> &Sa, std::complex<double> &Sb, double &Ssq);
-private:
-	std::complex<double> _m;
-	double _x;
-	double _tolerance;
-	double _atol;
-};
+namespace rtmath {
+	namespace mie {
 
-}; // end mie
+		class DLEXPORT Scalc 
+		{
+		public:
+			Scalc(const std::complex<double> &m, double sizep, double tol = 1.01, double atol = 1.e-8);
+			void calc(double mu, Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn) const;
+		private:
+			const std::complex<double> _m;
+			const double sizep;
+			const double _tolerance;
+			const double _atol;
+		};
 
+	}
+}
+
+#pragma warning(pop)

@@ -1,9 +1,15 @@
 #include "../rtmath/Stdafx.h"
+
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+
 #include <algorithm>
 #include <cmath>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <fstream>
 #include "../rtmath/matrixop.h"
 #include "../rtmath/error/error.h"
-
 
 namespace rtmath {
 

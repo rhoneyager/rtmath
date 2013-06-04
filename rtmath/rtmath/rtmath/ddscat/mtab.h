@@ -15,11 +15,11 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <unordered_map>
+#include <functional>
 #include <complex>
-#include "../matrixop.h"
 #include "../refract.h"
 
+#pragma message("Warning: mtab.h is deprecated")
 namespace rtmath {
 	namespace ddscat {
 
@@ -28,7 +28,8 @@ namespace rtmath {
 		class mtab
 		{
 		public:
-			mtab(void (*provider)(double, double, std::complex<double>&) = &rtmath::refract::mice);
+			mtab(std::function<void(double,double,std::complex<double>&)> = rtmath::refract::mIce);
+			//mtab(void (*provider)(double, double, std::complex<double>&) = &rtmath::refract::mice);
 			virtual ~mtab();
 
 			void f(double newF) { _f = newF; }
@@ -44,7 +45,8 @@ namespace rtmath {
 			//mtab();
 			double _f;
 			double _T;
-			void (*_provider)(double, double, std::complex<double>&);
+			std::function<void(double,double,std::complex<double>&)> _provider;
+			//void (*_provider)(double, double, std::complex<double>&);
 		};
 	}
 }

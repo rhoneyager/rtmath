@@ -1,7 +1,26 @@
 #include "../rtmath/Stdafx.h"
+#pragma warning( disable : 4244 ) // annoying double to float issues in boost
+
+#include <functional>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/covariance.hpp>
+#include <boost/accumulators/statistics/density.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/kurtosis.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/moment.hpp>
+#include <boost/accumulators/statistics/skewness.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/variates/covariate.hpp>
+#include <boost/math/constants/constants.hpp>
+#include <Eigen/Dense>
 
 #include "../rtmath/ddscat/shapestatsRotated.h"
 #include "../rtmath/ddscat/shapestats.h"
+#include "../rtmath/ddscat/rotations.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -23,27 +42,21 @@ namespace rtmath {
 				return *it;
 			}
 
-			const double drconv = 2.0*boost::math::constants::pi<double>()/180.0;
-			// Do right-handed rotation
-			// It's just easier to express the overall rotation as the multiplication of
-			// the component Gimbal matrices.
 			Eigen::Matrix3f Roteff;
-			// TODO: check the rotations!
-			Roteff = Eigen::AngleAxisf(theta*drconv, Eigen::Vector3f::UnitZ())
-				* Eigen::AngleAxisf(phi*drconv, Eigen::Vector3f::UnitX())
-				* Eigen::AngleAxisf(beta*drconv, Eigen::Vector3f::UnitY())
-				* rot;
-
+			rotationMatrix<float>( (float) theta,(float) phi,(float) beta,Roteff);
+			// Normally, Reff = RyRxRz. But, the rotation is a1,a2-dependent, 
+			// which are specified in the file. Apply effective rotation matrix also.
+			
 			using namespace boost::accumulators;
 
 			// Figure out potential energy
 			// Using moment<1> to rescale value by dividing by the total number of points.
 			// I'm currently ignoring the mass term, so am making the ansatz that the whole flake 
 			// has unit mass.
-			accumulator_set<double, stats<tag::min, tag::max, tag::moment<1> > > abs_x, abs_y, abs_z;
+			accumulator_set<float, stats<tag::min, tag::max, tag::moment<1> > > abs_x, abs_y, abs_z;
 			// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
 			// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
-			std::vector<accumulator_set<double, stats<
+			typedef std::vector<accumulator_set<float, stats<
 				tag::min,
 				tag::max, 
 				tag::moment<1>,
@@ -53,33 +66,44 @@ namespace rtmath {
 				tag::kurtosis,
 				// Covariances are special
 				tag::variance,
-				tag::covariance<double, tag::covariate1>,
-				tag::covariance<double, tag::covariate2>
-			> > > acc_x, acc_y, acc_z, acc_r; //acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
+				tag::covariance<float, tag::covariate1>,
+				tag::covariance<float, tag::covariate2>
+			> > > acc_type;
+			acc_type acc_x, acc_y, acc_z, acc_r;
+			//acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
 
 			const size_t nV = _shp->Dielectrics.size()+1;
 			acc_x.resize(nV); // Assumes that the dielectrics start at 1.
 			acc_y.resize(nV); // Will probably crash if not.
 			acc_z.resize(nV);
 			acc_r.resize(nV);
-			res.PE.resize(nV);
-			res.mom1.resize(nV);
-			res.mom2.resize(nV);
+			res.PE.resize(nV, 3);
+			res.mom1.resize(nV, 4);
+			res.mom2.resize(nV, 4);
 			res.mominert.resize(nV);
 			res.covariance.resize(nV);
 
-			for (auto it = _shp->latticePtsStd.begin(), ot = _shp->latticePtsRi.begin(); 
-				it != _shp->latticePtsStd.end(); ++it, ++ot)
-			{
-				// it->first is the points id. it->second is its matrixop coords (1x3 matrix)
-				// Mult by rotaion matrix to get 3x1 rotated matrix
+			res.min.resize(nV,4);
+			res.max.resize(nV,4);
+			res.sum.resize(nV,4);
+			res.skewness.resize(nV,4);
+			res.kurtosis.resize(nV,4);
 
-				const Eigen::Vector3f s = (*it) - b_mean;
+			//for (auto it = _shp->latticePtsStd.begin(), ot = _shp->latticePtsRi.begin(); 
+			//	it != _shp->latticePtsStd.end(); ++it, ++ot)
+			for (size_t i = 0; i < _shp->numPoints; i++)
+			{
+				auto iit = _shp->latticePts.block<1,3>(i,0);
+				auto iot = _shp->latticePtsRi.block<1,3>(i,0);
+				auto it = &iit; // Laziness when adapting the algorithm
+				auto ot = &iot;
+
+				const Eigen::Vector3f s = (*it).transpose() - b_mean;
 				const Eigen::Vector3f pt = Roteff * s;
 				const double x = pt(0);
 				const double y = pt(1);
 				const double z = pt(2);
-				const size_t diel = (*ot)(0);
+				const size_t diel = (const size_t) (*ot)(0);
 
 				acc_x[0](x, covariate1 = y, covariate2 = z);
 				acc_y[0](y, covariate1 = x, covariate2 = z);
@@ -97,22 +121,34 @@ namespace rtmath {
 			}
 
 			// Are other quantities needed?
+			/*
+			auto makeMapXYZR = [&](size_t index, Eigen::Matrix<float, Eigen::Dynamic, 4>& m, std::function<float(acc_type::value_type)>& f)
+			//decltype(boost::accumulators::m
+			//auto makeMapXYZR = [&](size_t index, Eigen::Matrix<float, Eigen::Dynamic, 4>& m, decltype(boost::accumulators::min)& f)
+			{
+				m(index,0) = f(acc_x[index]);
+				m(index,1) = f(acc_y[index]);
+				m(index,2) = f(acc_z[index]);
+				m(index,3) = f(acc_r[index]);
+			};
 
-			// Export to class matrixops
-			res.min(0) = boost::accumulators::min(acc_x[0]);
-			res.min(1) = boost::accumulators::min(acc_y[0]);
-			res.min(2) = boost::accumulators::min(acc_z[0]);
-			res.min(3) = boost::accumulators::min(acc_r[0]);
+			makeMapXYZR(0, res.min, boost::accumulators::min);
+			makeMapXYZR(0, res.max, boost::accumulators::max);
+			*/
+			res.min(0,0) = boost::accumulators::min(acc_x[0]);
+			res.min(0,1) = boost::accumulators::min(acc_y[0]);
+			res.min(0,2) = boost::accumulators::min(acc_z[0]);
+			res.min(0,3) = boost::accumulators::min(acc_r[0]);
 
-			res.max(0) = boost::accumulators::max(acc_x[0]);
-			res.max(1) = boost::accumulators::max(acc_y[0]);
-			res.max(2) = boost::accumulators::max(acc_z[0]);
-			res.max(3) = boost::accumulators::max(acc_r[0]);
+			res.max(0,0) = boost::accumulators::max(acc_x[0]);
+			res.max(0,1) = boost::accumulators::max(acc_y[0]);
+			res.max(0,2) = boost::accumulators::max(acc_z[0]);
+			res.max(0,3) = boost::accumulators::max(acc_r[0]);
 
-			res.sum(0) = boost::accumulators::sum(acc_x[0]);
-			res.sum(1) = boost::accumulators::sum(acc_y[0]);
-			res.sum(2) = boost::accumulators::sum(acc_z[0]);
-			res.sum(3) = boost::accumulators::sum(acc_r[0]);
+			res.sum(0,0) = boost::accumulators::sum(acc_x[0]);
+			res.sum(0,1) = boost::accumulators::sum(acc_y[0]);
+			res.sum(0,2) = boost::accumulators::sum(acc_z[0]);
+			res.sum(0,3) = boost::accumulators::sum(acc_r[0]);
 
 			res.skewness(0) = boost::accumulators::skewness(acc_x[0]);
 			res.skewness(1) = boost::accumulators::skewness(acc_y[0]);
@@ -180,19 +216,19 @@ namespace rtmath {
 
 			const size_t _N = _shp->numPoints;
 			const Eigen::Array3f &d = _shp->d;
-			const double dxdydz = d(0) * d(1) * d(2);
+			const float dxdydz = d(0) * d(1) * d(2);
 
 			for (size_t i=0; i<nV; i++)
 			{
-				res.mom1[i](0) = boost::accumulators::moment<1>(acc_x[i]);
-				res.mom1[i](1) = boost::accumulators::moment<1>(acc_y[i]);
-				res.mom1[i](2) = boost::accumulators::moment<1>(acc_z[i]);
-				res.mom1[i](3) = boost::accumulators::moment<1>(acc_r[i]);
+				res.mom1(i,0) = boost::accumulators::moment<1>(acc_x[i]);
+				res.mom1(i,1) = boost::accumulators::moment<1>(acc_y[i]);
+				res.mom1(i,2) = boost::accumulators::moment<1>(acc_z[i]);
+				res.mom1(i,3) = boost::accumulators::moment<1>(acc_r[i]);
 
-				res.mom2[i](0) = boost::accumulators::moment<2>(acc_x[i]);
-				res.mom2[i](1) = boost::accumulators::moment<2>(acc_y[i]);
-				res.mom2[i](2) = boost::accumulators::moment<2>(acc_z[i]);
-				res.mom2[i](3) = boost::accumulators::moment<2>(acc_r[i]);
+				res.mom2(i,0) = boost::accumulators::moment<2>(acc_x[i]);
+				res.mom2(i,1) = boost::accumulators::moment<2>(acc_y[i]);
+				res.mom2(i,2) = boost::accumulators::moment<2>(acc_z[i]);
+				res.mom2(i,3) = boost::accumulators::moment<2>(acc_r[i]);
 
 				//covariance
 				res.covariance[i](0,0) = boost::accumulators::variance(acc_x[i]);
@@ -208,7 +244,7 @@ namespace rtmath {
 				res.covariance[i](2,2) = boost::accumulators::variance(acc_z[i]);
 
 				// Calculate moments of inertia
-				double val = 0;
+				float val = 0;
 
 				// See derivation in Summer 2012 notebook
 
@@ -231,28 +267,28 @@ namespace rtmath {
 
 				// I_xy and I_yx
 				val = res.covariance[i](1,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_y[i]) );
-				val *= -1.0 * _N * dxdydz;
+				val *= -1.0f * _N * dxdydz;
 				res.mominert[i](0,1) = val;
 				res.mominert[i](1,0) = val;
 
 				// I_xz and I_zx
 				val = res.covariance[i](2,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_z[i]) );
-				val *= -1.0 * _N * dxdydz;
+				val *= -1.0f * _N * dxdydz;
 				res.mominert[i](0,2) = val;
 				res.mominert[i](2,0) = val;
 
 				// I_yz and I_zy
 				val = res.covariance[i](2,1) + (boost::accumulators::moment<1>(acc_y[i]) * boost::accumulators::moment<1>(acc_z[i]) );
-				val *= -1.0 * _N * dxdydz;
+				val *= -1.0f * _N * dxdydz;
 				res.mominert[i](2,1) = val;
 				res.mominert[i](1,2) = val;
 
 				// Calculate the potential energy
-				const double g = 9.80665; // m/s^2
+				const float g = 9.80665f; // m/s^2
 				// I do not need the partial mass means to be zero here
-				res.PE[i](0) = g*boost::accumulators::sum(acc_x[i]);
-				res.PE[i](1) = g*boost::accumulators::sum(acc_y[i]);
-				res.PE[i](2) = g*boost::accumulators::sum(acc_z[i]);
+				res.PE(i,0) = g*boost::accumulators::sum(acc_x[i]);
+				res.PE(i,1) = g*boost::accumulators::sum(acc_y[i]);
+				res.PE(i,2) = g*boost::accumulators::sum(acc_z[i]);
 			}
 
 			// Use std move to insert into set

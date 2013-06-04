@@ -8,8 +8,9 @@
 #include <cstdio>
 #include <cstring>
 #include <complex>
-#include "../matrixop.h"
-#include "../phaseFunc.h"
+//#include "../matrixop.h"
+//#include "../phaseFunc.h"
+//#include "cdf-ddscat.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)
@@ -62,7 +63,7 @@ namespace rtmath {
 			//virtual double weight(double point) const;
 		};
 
-	}; // end ddscat
+	} // end ddscat
 
-}; // end rtmath
+} // end rtmath
 

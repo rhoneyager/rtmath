@@ -17,8 +17,8 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-#include "../matrixop.h"
-#include "../coords.h"
+//#include "../matrixop.h"
+//#include "../coords.h"
 #include "../common_templates.h"
 #include "../depGraph.h"
 #include "rotations.h"

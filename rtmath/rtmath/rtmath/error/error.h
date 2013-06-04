@@ -7,20 +7,6 @@
 #include <iostream>
 #include "debug_mem.h"
 
-// Redefine throws so that the location of the code in error is recorded
-#ifdef _DEBUG
-#ifdef _MSC_FULL_VER
-// I need to be careful with MSVC, since this line disagrees with some of the boost headers. So,
-// error.h should be loaded after the default system headers
-#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
-#endif
-#ifdef __GNUC__
-#define throw (rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
-#endif
-#define TASSERT(x) if(x) ; else throw rtmath::debug::xAssert(#x)
-#else
-#define TASSERT(x) NULL;
-#endif
 
 //#define ERRSTD : public xError { protected: void _setmessage(); };
 #define ERRSTD(x) class x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
@@ -31,14 +17,15 @@ namespace rtmath
 {
 	namespace debug
 	{
-		class xError
+		class xError : public std::exception
 		{
 			// This is the parent error class. Everything inherits from this.
 		public:
-			xError();
-			virtual ~xError();
-			virtual void message(std::string &message) const;
-			virtual void Display(std::ostream &out = std::cerr) const;
+			xError() throw(); // Using throw() because MSVC2012 does not have noexcept
+			virtual ~xError() throw();
+			virtual void message(std::string &message) const throw();
+			virtual void Display(std::ostream &out = std::cerr) const throw();
+			virtual const char* what() const throw();
 			bool hasLoc() const;
 		public: // The static functions for:
 			// providing error handling to the UI (message boxes and the like)
@@ -100,19 +87,20 @@ namespace rtmath
 		// Unknown error
 		ERRSTD(xOtherError);
 
-		// A convenient way to mark a class as obsolete and prevent execution 
-		// of functions that use the obsolete class is to make the class derive from obsoleted.
-		class obsoleted
-		{
-		public:
-			obsoleted();
-		};
+	} // end debug
+} // end rtmath
 
-		class defective
-		{
-		public:
-			defective();
-		};
-
-	}; // end debug
-}; // end rtmath
+// Redefine throws so that the location of the code in error is recorded
+#ifdef _DEBUG
+#ifdef _MSC_FULL_VER
+// I need to be careful with MSVC, since this line disagrees with some of the boost headers. So,
+// error.h should be loaded after the default system headers
+//#define throw (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+#endif
+#ifdef __GNUC__
+//#define throw (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
+#endif
+#define TASSERT(x) if(x) ; else throw ::rtmath::debug::xAssert(#x)
+#else
+#define TASSERT(x) NULL;
+#endif

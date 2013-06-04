@@ -35,6 +35,7 @@ BOOST_AUTO_TEST_CASE(debug_setloc)
 		BOOST_CHECK_EQUAL(err.hasLoc(), true);
 	}
 }
+
 #endif
 
 BOOST_AUTO_TEST_CASE(debug_class_markers) {

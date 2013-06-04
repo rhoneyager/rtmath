@@ -46,7 +46,7 @@ namespace rtmath {
 					read(lin);
 				}
 				virtual void read(const std::string &val) = 0;
-				virtual void write(std::ostream &out) = 0;
+				virtual void write(std::ostream &out, const std::string &suffix = "") = 0;
 
 				void writeComment(std::ostream &out)
 				{
@@ -79,7 +79,7 @@ namespace rtmath {
 					: ddParLine(id) {}
 				virtual ~ddParLineSimpleBase() {}
 				virtual void read(const std::string &val) = 0;
-				virtual void write(std::ostream &out) = 0;
+				virtual void write(std::ostream &out, const std::string &suffix = "") = 0;
 
 				void get(T &val) const { val = _val; }
 				void set(const T &val) { _val = val; }
@@ -95,7 +95,7 @@ namespace rtmath {
 				ddParLineSimple(ParId id = UNKNOWN) 
 					: ddParLineSimpleBase<T>(id) {}
 				~ddParLineSimple() {}
-				virtual void write(std::ostream &out)
+				virtual void write(std::ostream &out, const std::string &suffix = "")
 				{
 					this->writeComment(out);
 					std::string idstr;
@@ -103,7 +103,7 @@ namespace rtmath {
 					if (this->_endWriteWithEndl)
 					{
 						idString(this->_id,idstr);
-						out << " = " << idstr << std::endl;
+						out << " = " << idstr << suffix << std::endl;
 					}
 				}
 				virtual void read(const std::string &val)
@@ -126,7 +126,7 @@ namespace rtmath {
 				ddParLineSimple(ParId id = UNKNOWN) 
 					: ddParLineSimpleBase(id) {}
 				~ddParLineSimple() {}
-				virtual void write(std::ostream &out)
+				virtual void write(std::ostream &out, const std::string &suffix = "")
 				{
 					this->writeComment(out);
 					std::string idstr;
@@ -134,7 +134,7 @@ namespace rtmath {
 					if (this->_endWriteWithEndl)
 					{
 						idString(this->_id,idstr);
-						out << " = " << idstr << std::endl;
+						out << " = " << idstr << suffix << std::endl;
 					}
 				}
 				virtual void read(const std::string &val)
@@ -152,11 +152,7 @@ namespace rtmath {
 				ddParLineSimplePlural(ParId id = UNKNOWN) 
 					: ddParLine(id) { }
 				virtual ~ddParLineSimplePlural() {}
-				virtual void write(std::ostream &out)
-				{
-					write(out,"");
-				}
-				virtual void write(std::ostream &out, const std::string &suffix)
+				virtual void write(std::ostream &out, const std::string &suffix = "")
 				{
 					this->writeComment(out);
 					std::string idstr;
@@ -204,7 +200,7 @@ namespace rtmath {
 				ddParTuples(size_t tuplesize, ParId id = UNKNOWN) 
 					: ddParLineSimplePlural<T>(id) { _tuplesize = tuplesize; }
 				virtual ~ddParTuples() {}
-				virtual void write(std::ostream &out)
+				virtual void write(std::ostream &out, const std::string &suffix = "")
 				{
 					this->writeComment(out);
 					std::string idstr;
@@ -223,7 +219,7 @@ namespace rtmath {
 					if (this->_endWriteWithEndl)
 					{
 						idString(this->_id,idstr);
-						out << " = " << idstr << std::endl;
+						out << " = " << idstr << suffix << std::endl;
 					}
 				}
 			protected:
@@ -269,7 +265,7 @@ namespace rtmath {
 						num++;
 					}
 				}
-				virtual void write(std::ostream &out)
+				virtual void write(std::ostream &out, const std::string &suffix = "")
 				{
 					this->writeComment(out);
 					std::string idstr;
@@ -288,7 +284,7 @@ namespace rtmath {
 					if (this->_endWriteWithEndl)
 					{
 						idString(this->_id,idstr);
-						out << " = " << idstr << std::endl;
+						out << " = " << idstr << suffix << std::endl;
 					}
 				}
 				void setSep(size_t numT, size_t nVals) const
@@ -406,7 +402,8 @@ namespace rtmath {
 			accessorString(getShape,setShape,ddParParsers::CSHAPE);
 			accessorSimplePlural(shpar,ddParParsers::SHAPEPARAMS,double, 3);
 
-			// TODO: add diel.tab stuff : num refractive materials, and array for stuff like with scaPlanes
+			void setDiels(const std::vector<std::string>&);
+			void getDiels(std::vector<std::string>&) const;
 
 			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
 			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double, 6);
@@ -477,6 +474,10 @@ namespace rtmath {
 			mutable std::map<size_t,
 				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
 				_scaPlanes;
+
+			mutable std::vector<
+				boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> > >
+				_diels;
 
 			template<class T>
 			T __getSimple(ddParParsers::ParId key) const;

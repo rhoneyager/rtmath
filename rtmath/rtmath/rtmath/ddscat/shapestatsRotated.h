@@ -3,10 +3,27 @@
 #include <map>
 #include <set>
 #include <boost/shared_ptr.hpp>
-#include "shapefile.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+
+namespace rtmath
+{
+	namespace ddscat
+	{
+		class shapeFileStatsRotated;
+	}
+}
+
+namespace boost
+{
+	namespace serialization
+	{
+		template <class Archive>
+		void serialize(Archive & ar, rtmath::ddscat::shapeFileStatsRotated & g, const unsigned int version);
+	}
+}
+
 
 namespace rtmath {
 	//class matrixop;
@@ -30,14 +47,16 @@ namespace rtmath {
 			// For physically-united quantities, construct a shapeFileStatsRotatedView.
 
 			// After normalization
-			Eigen::Vector4f min, max, sum, skewness, kurtosis;
-			// Moments
-			std::vector<Eigen::Vector4f,Eigen::aligned_allocator<Eigen::Vector4f> > 
+			// for components, col 0-x,1-y,2-z,3-r. row is for each material, 0 row is out of all
+			Eigen::Matrix<float, Eigen::Dynamic, 4>
+				min, max, sum, skewness, kurtosis,
 				mom1, mom2;
+			// vectors of 3x3 matrices
 			std::vector<Eigen::Matrix3f> mominert, covariance;
-			std::vector<Eigen::Vector3f> PE;
+			// Row vectors for each material, cols are x, y, z
+			Eigen::Matrix<float, Eigen::Dynamic, 3> PE;
 
-			Eigen::Vector4f abs_min, abs_max, abs_mean, rms_mean;
+			Eigen::Matrix3f abs_min, abs_max, abs_mean, rms_mean;
 
 			// Aspect ratios
 			Eigen::Matrix3f as_abs, as_abs_mean, as_rms;

@@ -9,7 +9,9 @@ namespace rtmath {
 		{
 		}
 
-		mtab::mtab(void (*provider)(double, double, std::complex<double>&) )
+		//mtab::mtab(void (*provider)(double, double, std::complex<double>&) )
+		mtab::mtab(
+			std::function<void(double,double,std::complex<double>&)> provider)
 		{
 			_provider = provider;
 			_T = 0;

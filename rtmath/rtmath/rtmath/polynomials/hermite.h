@@ -9,20 +9,19 @@
    */
 
 #include "recursivePolynomial.h"
-#include "../polynomial.h"
-#include <vector>
 
 namespace rtmath {
+	class polynomial;
 	namespace recPolys {
 		class hermite : public recPoly {
 			public:
-				virtual void get(unsigned int rank, polynomial &res) const override;
+				virtual void get(unsigned int rank, polynomial &res) const ;
 		};
 		class hermitePhys : public recPoly {
 			public:
-				virtual void get(unsigned int rank, polynomial &res) const override;
+				virtual void get(unsigned int rank, polynomial &res) const ;
 		};
-	};
-};
+	}
+}
 
 

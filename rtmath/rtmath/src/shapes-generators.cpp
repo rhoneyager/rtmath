@@ -54,7 +54,8 @@ namespace rtmath {
 				res->shapeConstraints = shapeConstraints;
 				return res;
 			}
-			GETOBJKEY();
+			
+			//GETOBJKEY();
 			// Last resort
 			{
 				boost::shared_ptr<shapeModifiable> res(new shapeModifiable);
@@ -120,7 +121,7 @@ namespace rtmath {
 				units::conv_temp tconv(units, "K");
 				TK = tconv.convert(val);
 
-				refract::mice(fGHz, TK, m);
+				refract::mIce(fGHz, TK, m);
 				refract::writeDiel(filename,m);
 
 				//GETOBJKEY();
@@ -248,7 +249,7 @@ namespace rtmath {
 				//shapeModifiable::_constructGraph(false); // shapeModifiable constructor does this
 				_createVertex("CSHAPE", true);
 				_set("CSHAPE", 0, "FROM_FILE"); // Need to do it here since this has no dependencies
-				GETOBJKEY(); // Add other properties to prevent throwing.
+				//GETOBJKEY(); // Add other properties to prevent throwing.
 				// TODO: eventually allow for shape.dat manipulation, which would then use these properties.
 				//_set("CSHAPE", 0, "FROM_FILE");
 				if (makegraph)
@@ -298,7 +299,7 @@ namespace rtmath {
 				if (!exists(p))
 					throw rtmath::debug::xMissingFile(fSource.c_str());
 
-GETOBJKEY();
+//GETOBJKEY();
 //				boost::filesystem::copy_file(p, boost::filesystem::path(fname));
 
 				/*

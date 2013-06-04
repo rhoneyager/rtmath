@@ -1,18 +1,18 @@
 #pragma once
 
 // The damatrix is the fundamental unit for doubling-adding calculations
-
 #include <memory>
 #include <map>
 #include <unordered_map>
-#include <boost/unordered_map.hpp> // Instead of std::unordered map, for now
+//#pragma message("d-3")
+#include <boost/unordered/unordered_map.hpp> // Instead of std::unordered map, for now
+#include <limits.h>	
 #include "../enums.h"
 #include "../mapid.h"
 #include "../matrixop.h"
-#include <limits.h>	
 #include "../defs.h"
-#include "../error/error.h"
 #include "damatrix_quad.h"
+//#include "../error/error.h"
 
 namespace rtmath {
 	

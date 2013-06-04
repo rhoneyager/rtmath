@@ -1,13 +1,14 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/error/error.h"
 #include <iostream>
 #include <sstream>
+#include "../rtmath/error/error.h"
+
 
 namespace rtmath {
 	namespace debug {
 		void (*xError::_errHandlerFunc)(const char*) = NULL;
 
-		xError::xError()
+		xError::xError() throw()
 		{
 			using namespace rtmath::debug::memcheck;
 			file = __file__;
@@ -21,21 +22,11 @@ namespace rtmath {
 			return true;
 		}
 
-		xError::~xError()
+		xError::~xError() throw()
 		{
 		}
 
-		obsoleted::obsoleted()
-		{
-			throw rtmath::debug::xObsolete();
-		}
-
-		defective::defective()
-		{
-			throw rtmath::debug::xDefective();
-		}
-
-		void xError::message(std::string &message) const 
+		void xError::message(std::string &message) const throw()
 		{
 			std::ostringstream out;
 			if (_message.size())
@@ -53,7 +44,7 @@ namespace rtmath {
 			message = out.str();
 		}
 
-		void xError::Display(std::ostream &out) const
+		void xError::Display(std::ostream &out) const throw()
 		{
 			std::string sout;
 			this->message(sout);
@@ -65,6 +56,14 @@ namespace rtmath {
 				// Send to std. err.
 				out << sout;
 			}
+		}
+
+		const char* xError::what() const throw()
+		{
+			std::ostringstream out;
+			Display(out);
+			std::string w = out.str();
+			return w.c_str();
 		}
 
 		void xError::setHandler(void (*func)(const char*))

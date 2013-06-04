@@ -6,13 +6,14 @@
 #include <set>
 #include <complex>
 #include <boost/shared_ptr.hpp>
-#include "../matrixop.h"
-#include "../interpolatable.h"
+#include <boost/enable_shared_from_this.hpp>
+#include <Eigen/Core>
+//#include "../interpolatable.h"
 #include "../phaseFunc.h"
 #include "ddScattMatrix.h"
 #include "shapefile.h"
-#include "../da/daStatic.h"
-#include "../coords.h"
+//#include "../da/daStatic.h"
+//#include "../coords.h"
 //#include "../depGraph.h"
 
 namespace rtmath {
@@ -33,17 +34,17 @@ namespace rtmath {
 			NUM_STAT_ENTRIES
 		};
 
-		class ddOutputSingle
+		class ddOutputSingle : public boost::enable_shared_from_this<ddOutputSingle>
 		{
 			// Class contains the output of a single ddscat fml / sca or avg file
 			// Doesn't quite inherit from daStatic.
 			// Note: ensemble providers inherit from this!
 		public:
-			ddOutputSingle(const std::string &filename = "");
+			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();
 
 			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
-			void readFile(const std::string &filename);
+			void readFile(const std::string &filename, const std::string &type = "");
 			void writeFile(const std::string &filename) const;
 
 			void writeFML(std::ostream &out) const;
@@ -57,33 +58,38 @@ namespace rtmath {
 			void readFML(std::istream &in);
 			void readSCA(std::istream &in);
 			void readAVG(std::istream &in);
-			void readHeader(std::istream &in, const std::string &sstop = "Qext"); //
+			void readHeader(std::istream &in, const std::string &sstop = "Qext");
 			void readStatTable(std::istream &in);
 			void readMueller(std::istream &in);
 			void readF(std::istream &in);
 
+			#pragma message("Warning: ddOutputSingle needs correct normalization and default values")
+			boost::shared_ptr<ddOutputSingle> normalize() const; // Normalize based on P11 // TODO
+
 			size_t version() const;
 			void version(size_t);
-			double beta() const; //
-			double theta() const; //
-			double phi() const; //
-			double wave() const; //
-			double aeff() const; //
-			double dipoleSpacing() const; //
+			double beta() const;
+			double theta() const;
+			double phi() const;
+			double wave() const;
+			double aeff() const;
+			double dipoleSpacing() const;
 
 			double getStatEntry(stat_entries e) const;
+			boost::shared_ptr<ddOutputSingleObj> getObj(const std::string &id) const;
 
 			bool operator<(const ddOutputSingle &rhs) const;
+			typedef std::map<size_t, std::pair<size_t, size_t> > mMuellerIndices;
 		protected:
 			size_t _version;
+			mMuellerIndices _muellerMap;
 			double _beta, _theta, _phi, _wave, _aeff;
-			void _init(); //
+			void _init();
 			//void _populateDefaults();
 			std::map< std::string, boost::shared_ptr<ddOutputSingleObj> >
 				_objMap;
 			std::vector<double> _statTable;
-			std::map< rtmath::coords::cyclic<double> , 
-				boost::shared_ptr<const ddscat::ddScattMatrix> >
+			std::set<boost::shared_ptr<const ddscat::ddScattMatrix> >
 				_scattMatricesRaw;
 		};
 

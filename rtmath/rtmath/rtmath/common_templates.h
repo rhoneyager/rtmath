@@ -1,14 +1,12 @@
 #pragma once
 /* Contains common templates used in various functions.
-* Such as a null_deleter used to elude shared_ptr 
-* difficulties with *this.
 */
 
-#include <sstream>
+//#include <sstream>
 #include <set>
 #include <vector>
 #include <string>
-#include <boost/tuple/tuple.hpp> 
+//#include <boost/tuple/tuple.hpp> 
 #include <boost/lexical_cast.hpp>
 
 #include "defs.h"
@@ -33,31 +31,12 @@ namespace boost
 }
 */
 
-struct null_deleter
-{
-	template <class T> void operator()(T *) {}
-};
-
-
 namespace rtmath
 {
 	// Template functions that tie into command.h
 	// These can hold a set of values and convert to/from a string using the command.h notation
 	// Conveniently, this can be extended to also give units or variable type with std::pair
 	// or the larger boost library equivalent
-
-	class hashable
-	{
-	public:
-		hashable() {}
-		virtual ~hashable() {}
-		inline HASH_t hash() const
-		{
-			HASH_t res;
-			HASH(this, sizeof(*this), HASHSEED, &res);
-			return res;
-		}
-	};
 
 	template <class T>
 	class paramSet

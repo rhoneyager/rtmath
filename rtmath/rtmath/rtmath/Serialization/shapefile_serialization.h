@@ -1,4 +1,7 @@
 #pragma once
+#pragma message("TODO: no need for separate serialization header if forward declared properly")
+
+#include <boost/serialization/export.hpp>
 
 namespace rtmath
 {
@@ -17,3 +20,4 @@ namespace boost
 	}
 }
 
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)

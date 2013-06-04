@@ -1,0 +1,242 @@
+
+# Atmos
+set (atmos-src
+	src/absorb.cpp
+	src/absorber.cpp
+	src/atmos.cpp
+	src/atmoslayer.cpp
+	)
+set (atmos-hdr
+	rtmath/absorb.h
+	rtmath/atmos.h
+	rtmath/atmoslayer.h
+	rtmath/lbl.h
+	)
+source_group("Source Files\\Atmos" FILES ${atmos-src})
+source_group("Header Files\\Atmos" FILES ${atmos-hdr})
+
+# da
+set (da-src
+	src/daDiagonalMatrix.cpp
+	src/daInitLayer.cpp
+	src/daLayer.cpp
+	src/damatrix.cpp
+	src/damatrix_quad.cpp
+	src/daPf.cpp
+	src/daStatic.cpp
+	)
+set (da-hdr
+	rtmath/da/daDiagonalMatrix.h
+	rtmath/da/daInitLayer.h
+	rtmath/da/daLayer.h
+	rtmath/da/damatrix.h
+	rtmath/da/damatrix_override.h
+	rtmath/da/damatrix_quad.h
+	rtmath/da/daPf.h
+	rtmath/da/daStatic.h
+	)
+source_group("Source Files\\da" FILES ${da-src})
+source_group("Header Files\\da" FILES ${da-hdr})
+
+# ddscat
+set (ddscat-src
+	src/ddLoader.cpp
+#	src/ddOutput.cpp
+#	src/ddOutputEnsemble.cpp
+	src/ddOutputSingle.cpp
+	src/ddpar.cpp
+	src/ddparGenerator.cpp
+	src/ddscat.cpp
+	src/ddScattMatrix.cpp
+	src/ddweights.cpp
+	src/dielTabFile.cpp
+	src/hulls.cpp
+	src/mtab.cpp
+	src/rotations.cpp
+	src/runScripts.cpp
+	src/shapefile.cpp
+	src/shapes.cpp
+	src/shapestats.cpp
+	src/shapestats_genstats.cpp
+	src/shapestatsRotated.cpp
+	src/shapes-generators.cpp
+	src/tmData.cpp
+	)
+set (ddscat-hdr
+	rtmath/ddscat/cdf-ddscat.h
+	rtmath/ddscat/ddavg.h
+	rtmath/ddscat/ddLoader.h
+	rtmath/ddscat/ddOutput.h
+	rtmath/ddscat/ddOutputEnsemble.h
+	rtmath/ddscat/ddOutputSingle.h
+	rtmath/ddscat/ddpar.h
+	rtmath/ddscat/ddparGenerator.h
+	rtmath/ddscat/ddscat.h
+	rtmath/ddscat/ddScattMatrix.h
+	rtmath/ddscat/ddweights.h
+	rtmath/ddscat/dielTabFile.h
+	rtmath/ddscat/hulls.h
+	rtmath/ddscat/mtab.h
+	rtmath/ddscat/parids.h
+	rtmath/ddscat/rotations.h
+	rtmath/ddscat/runScripts.h
+	rtmath/ddscat/shapefile.h
+	rtmath/ddscat/shapes.h
+	rtmath/ddscat/shapestats.h
+	rtmath/ddscat/shapestatsRotated.h
+	rtmath/ddscat/shapestatsviews.h
+	rtmath/ddscat/tmData.h
+	)
+source_group("Source Files\\ddscat" FILES ${ddscat-src})
+source_group("Header Files\\ddscat" FILES ${ddscat-hdr})
+
+# Garrett
+set (garrett-src
+	src/image.cpp
+	src/mesh.cpp
+	src/pclstuff.cpp
+	)
+set (garrett-hdr
+	rtmath/Garrett/image.h
+	rtmath/Garrett/mesh.h
+	rtmath/Garrett/pclstuff.h
+	)
+source_group("Source Files\\Garrett" FILES ${garrett-src})
+source_group("Header Files\\Garrett" FILES ${garrett-hdr})
+
+# mie
+set (mie-src
+#	src/ddOutputMie.cpp
+	src/mie-abNCalc.cpp
+	src/mie-AnCalc.cpp
+	src/mie-phaseFunc.cpp
+	src/mie-piNCalc.cpp
+	src/mie-Qcalc.cpp
+	src/mie-Scalc.cpp
+#	src/mieScattMatrix.cpp
+	src/mie-tauNCalc.cpp
+	src/mie-wnCalc.cpp
+	)
+set (mie-hdr
+	rtmath/mie/ddOutputMie.h
+	rtmath/mie/mie.h
+	rtmath/mie/mie-abNCalc.h
+	rtmath/mie/mie-AnCalc.h
+	rtmath/mie/mie-phaseFunc.h
+	rtmath/mie/mie-piNCalc.h
+	rtmath/mie/mie-Qcalc.h
+	rtmath/mie/mie-Scalc.h
+	rtmath/mie/mieScattMatrix.h
+	rtmath/mie/mie-tauNCalc.h
+	rtmath/mie/mie-wnCalc.h
+	)
+source_group("Source Files\\mie" FILES ${mie-src})
+source_group("Header Files\\mie" FILES ${mie-hdr})
+
+# Polynomials
+set (polynomials-src
+	src/chebyshev.cpp
+	src/hermite.cpp
+	src/laguerre.cpp
+	src/legendre.cpp
+	src/recursivePolynomial.cpp
+	)
+set (polynomials-hdr
+	rtmath/polynomials/chebyshev.h
+	rtmath/polynomials/hermite.h
+	rtmath/polynomials/laguerre.h
+	rtmath/polynomials/legendre.h
+	rtmath/polynomials/recursivePolynomial.h
+	)
+source_group("Source Files\\Polynomials" FILES ${polynomials-src})
+source_group("Header Files\\Polynomials" FILES ${polynomials-hdr})
+
+# Public Domain
+set (publicdomain-src
+	src/MurmurHash3.cpp
+	)
+set (publicdomain-hdr
+	rtmath/Public_Domain/MurmurHash3.h
+	)
+source_group("Source Files\\Public Domain" FILES ${publicdomain-src})
+source_group("Header Files\\Public Domain" FILES ${publicdomain-hdr})
+
+# rayleigh
+set (rayleigh-src
+	src/Qcalc-Rayleigh.cpp
+	src/rayleighPhaseFunc.cpp
+	src/Scalc-Rayleigh.cpp
+	)
+set (rayleigh-hdr
+	rtmath/rayleigh/Qcalc-Rayleigh.h
+	rtmath/rayleigh/rayleigh.h
+	rtmath/rayleigh/rayleighPhaseFunc.h
+	rtmath/rayleigh/Scalc-Rayleigh.h
+	)
+source_group("Source Files\\rayleigh" FILES ${rayleigh-src})
+source_group("Header Files\\rayleigh" FILES ${rayleigh-hdr})
+
+# Serialization
+set (serialization-src
+	src/common_templates_serialization.cpp
+	src/ddpar_serialization.cpp
+	src/ddparGenerator_serialization.cpp
+	src/matrixop_serialization.cpp
+	src/rotations_serialization.cpp
+	src/shapefile_serialization.cpp
+	src/shapes_serialization.cpp
+	src/shapestats_serialization.cpp
+	src/shapestatsRotated_serialization.cpp
+	src/tmData_serialization.cpp
+	)
+set (serialization-hdr
+	rtmath/Serialization/common_templates_serialization.h
+	rtmath/Serialization/ddpar_serialization.h
+	rtmath/Serialization/ddparGenerator_serialization.h
+	rtmath/Serialization/matrixop_serialization.h
+	rtmath/Serialization/rotations_serialization.h
+	rtmath/Serialization/serialization_macros.h
+	rtmath/Serialization/shapefile_serialization.h
+	rtmath/Serialization/shapes_serialization.h
+	rtmath/Serialization/shapestats_serialization.h
+	rtmath/Serialization/shapestatsRotated_serialization.h
+	rtmath/Serialization/tmData_serialization.h
+	)
+source_group("Source Files\\Serialization" FILES ${serialization-src})
+source_group("Header Files\\Serialization" FILES ${serialization-hdr})
+
+# /Other
+
+# Resource Files
+set (resource-files
+	app.ico
+	app.rc
+	getRev.csh
+	prebuild.bat
+	prebuild.csh
+	Readme.txt
+	rtlogo.png
+	)
+source_group("Resource Files" FILES ${resource-files})
+
+
+
+# Final rules to provide with build targets
+set (srcfiles
+	${cmake-other}
+	${resource-files}
+	${atmos-src}			${atmos-hdr}
+	${da-src}				${da-hdr}
+	${ddscat-src}			${ddscat-hdr}
+	${error-src}			${error-hdr}
+	${garrett-src}			${garrett-hdr}
+	${general-src}			${general-hdr}
+	${gridded-src}			${gridded-hdr}
+	${mie-src}				${mie-hdr}
+	${polynomials-src}		${polynomials-hdr}
+	${publicdomain-src}		${publicdomain-hdr}
+	${rayleigh-src}			${rayleigh-hdr}
+	${serialization-src}		${serialization-hdr}
+	)
+
+# And we're done

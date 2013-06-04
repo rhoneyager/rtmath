@@ -12,29 +12,7 @@
 
 namespace rtmath {
 	namespace units {
-
-		// TODO: remove hasUnits, as it's useless in light of std::pair...
-		class hasUnits
-		{
-		public:
-			hasUnits(double quant, const std::string &sUnits)
-				:
-				_units(sUnits),
-				_quant(quant)
-				{ }
-			double quant() const { return _quant; }
-			void units(std::string &sUnits) const { sUnits = _units; }
-			inline std::string units() const { std::string sUnits; units(sUnits); return sUnits; }
-			bool operator<(const hasUnits &rhs) const
-			{
-				if (_units != rhs._units) return _units < rhs._units;
-				if (_quant != rhs._quant) return _quant < rhs._quant;
-				return false;
-			}
-		private:
-			std::string _units;
-			double _quant;
-		};
+		typedef std::pair<double, std::string> unit_pair;
 
 		// Class is virtual. May be overridden with classes that do formulaic operations,
 		// such as converters to density in ppmv

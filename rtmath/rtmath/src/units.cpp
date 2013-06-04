@@ -1,18 +1,6 @@
 #include "../rtmath/Stdafx.h"
-#include <memory>
-#include <vector>
-#include <map>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <locale>
-#include <boost/filesystem.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/units/systems/si.hpp> // Used for atmos readins!
 #include "../rtmath/units.h"
 #include "../rtmath/error/error.h"
-
-using namespace boost::units;
 
 namespace rtmath {
 	namespace units {

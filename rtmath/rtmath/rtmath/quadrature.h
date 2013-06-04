@@ -9,26 +9,21 @@ These functions should be called appropriately (set up a function pointer
 or a class that provides an eval member and inherits from the function 
 base class
 */
-#include <map>
 #include <set>
+#include <cstddef> // size_t
+#include <functional>
 
 namespace rtmath {
 
 	//extern const double _gaussian_lagrange_prepump[];
 
-	class evalfunction // an evaluatable function (allows class evaluation)
-	{
-	public:
-		evalfunction();
-		virtual ~evalfunction();
-		virtual double eval(double val) const = 0;
-		virtual double operator() (double) const = 0;
-	};
-
 	namespace quadrature {
-		double quad_eval_leg(double a, double b, unsigned int degree, const evalfunction *f);
-		extern const double _gaussian_lagrange_prepump[];
+		double quad_eval_leg(double a, double b, unsigned int degree, 
+			const std::function<double(double) > &f);
+//		extern const double _gaussian_lagrange_prepump[];
+//		void getQuadPtsLeg(size_t degree, std::set<double> &pts);
 
-		void getQuadPtsLeg(size_t degree, std::set<double> &pts);
-	};
-}; // end namespace rtmath
+		typedef std::pair<double, double> ptWeight;
+		void getQuadPtsLeg(size_t deg, std::set<ptWeight>&);
+	}
+}

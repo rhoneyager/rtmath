@@ -3,10 +3,11 @@
 #include <string>
 #include <set>
 #include <boost/shared_ptr.hpp>
+#include <Eigen/Core>
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
-	class matrixop;
+	//class matrixop;
 	namespace ddscat {
 		class rotationsBase;
 		class rotations;
@@ -90,10 +91,10 @@ namespace rtmath {
 
 		// Function to calculate Gimbal matrices and effective rotation matrix.
 		// Using ddscat conventions.
-		void rotationMatrix(double thetad, double phid, double betad,
-			matrixop &Rx, matrixop &Ry, matrixop &Rz, matrixop &Reff);
-		void rotationMatrix(double thetad, double phid, double betad,
-			matrixop &Reff);
+		template<class T>
+		void rotationMatrix(T thetad, T phid, T betad,
+			Eigen::Matrix<T, 3, 3, 0, 3, 3> &Reff);
 
+		// TODO: Should some extern template magic go here?
 	}
 }

@@ -1,23 +1,25 @@
 #include "../rtmath/Stdafx.h"
-
-#include "../rtmath/error/error.h"
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+#pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
+#include <Ryan-Serialization/serialization.h>
+#include <boost/filesystem.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
+#include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/Serialization/ddparGenerator_serialization.h"
 #include "../rtmath/ddscat/runScripts.h"
-#include "../rtmath/serialization.h"
 
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
 
-		ddParGeneratorBase::~ddParGeneratorBase()
-		{
-		}
+		ddParGeneratorBase::~ddParGeneratorBase() {}
 
-		ddParGeneratorBase::ddParGeneratorBase()
-			:
-		ddscatVer(72),
+		ddParGeneratorBase::ddParGeneratorBase() : 
 			compressResults(false),
 			genIndivScripts(true),
 			genMassScript(true),
@@ -25,7 +27,7 @@ namespace rtmath {
 			registerDatabase(false),
 			doExport(true)
 		{
-
+			ddscatVer = rtmath::ddscat::ddVersions::getDefaultVer();
 		}
 
 		ddParGenerator::ddParGenerator()
@@ -40,9 +42,7 @@ namespace rtmath {
 			// Figure out the type of shape, and produce an appropriate base shape
 		}
 
-		ddParGenerator::~ddParGenerator()
-		{
-		}
+		ddParGenerator::~ddParGenerator() {}
 
 		void ddParGenerator::generate(const std::string &basedir) const
 		{
@@ -82,7 +82,7 @@ namespace rtmath {
 				(*it)->shape->write( pdir.string(), base );
 
 				// Write run definitions
-				rtmath::serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
+				::serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
 
 				// Write individual run script
 				runScriptIndiv iscript = (*it)->shape->prepRunScript(dirname, *this);
@@ -161,7 +161,7 @@ namespace rtmath {
 
 
 					// first - parameter name. pair->first is value, pair->second is units
-					multimap<const string, rtmath::units::hasUnits> constraintsVaried;
+					multimap<const string, rtmath::units::unit_pair> constraintsVaried;
 					//multimap<string, pair<double, string> > constraintsVaried;
 					set<string> variedNames;
 
@@ -185,7 +185,7 @@ namespace rtmath {
 									const string &name = ot->first;
 									const string &units = ot->second->units;
 									const double val = *ut;
-									constraintsVaried.insert(pair<const string,units::hasUnits>(name, units::hasUnits(val,units)));
+									constraintsVaried.insert(pair<const string,units::unit_pair>(name, units::unit_pair(val,units)));
 									//constraintsVaried.insert(make_pair<string,pair<double,string> >(name,make_pair<double,string>(val, units)));
 									if (variedNames.count(ot->first) == 0)
 										variedNames.insert(ot->first);
@@ -198,8 +198,8 @@ namespace rtmath {
 					/*
 					// get rid of duplicates (they are possible still)
 					{
-						multimap<const string, rtmath::units::hasUnits > constraintsVariedUnique;
-						multimap<const string, rtmath::units::hasUnits >::iterator dt;
+						multimap<const string, rtmath::units::unit_pair > constraintsVariedUnique;
+						multimap<const string, rtmath::units::unit_pair >::iterator dt;
 						// unique_copy will not work due to predicate differences
 						//dt = unique_copy(constraintsVaried.begin(), constraintsVaried.end(), constraintsVariedUnique.begin());
 						for (auto ot = constraintsVaried.begin(); ot != constraintsVaried.end(); ++ot)
@@ -211,7 +211,7 @@ namespace rtmath {
 					}
 					*/
 					// Collect the elements into sets of variedNames
-					map<const string, set<rtmath::units::hasUnits > > vmap;
+					map<const string, set<rtmath::units::unit_pair > > vmap;
 					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
 					{
 						//pair<multimap<string,pair<double,string> >::iterator, multimap<string,pair<double,string> >::iterator >
@@ -220,8 +220,8 @@ namespace rtmath {
 						{
 							if (!vmap.count(*ot))
 							{
-								static const set<rtmath::units::hasUnits > base;
-								vmap.insert(pair<string,set<rtmath::units::hasUnits > >(*ot,base));
+								static const set<rtmath::units::unit_pair > base;
+								vmap.insert(pair<string,set<rtmath::units::unit_pair > >(*ot,base));
 							}
 							vmap.at(*ot).insert(ut->second);
 						}
@@ -229,8 +229,8 @@ namespace rtmath {
 					
 					// And now to permute everything.....
 					// Set all iterators to begin
-					// map<const string, set<rtmath::units::hasUnits > > vmap;
-					map<string, set<rtmath::units::hasUnits >::iterator> mapit;
+					// map<const string, set<rtmath::units::unit_pair > > vmap;
+					map<string, set<rtmath::units::unit_pair >::iterator> mapit;
 					for (auto ot = variedNames.begin(); ot != variedNames.end(); ot++)
 						mapit[*ot] = vmap[*ot].begin();
 
@@ -267,9 +267,9 @@ namespace rtmath {
 								double val;
 								string name, units;
 
-								val = ot->second->quant();
+								val = ot->second->first;
 								name = ot->first;
-								units = ot->second->units();
+								units = ot->second->second;
 
 								//std::cout << "\t" << name << "\t" << val << "\t" << units << std::endl;
 

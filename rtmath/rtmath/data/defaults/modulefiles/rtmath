@@ -2,8 +2,7 @@
 #
 #  rtmath module for use with 'environment-modules' package:
 #
-conflict		rtmath rtmath-devel
-module load pcl
+conflict		rtmath 
 prepend-path		PATH		@CMAKE_INSTALL_PREFIX@/bin
 prepend-path		LD_LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
 prepend-path		LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@

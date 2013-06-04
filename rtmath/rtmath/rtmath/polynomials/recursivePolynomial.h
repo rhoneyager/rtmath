@@ -1,8 +1,7 @@
 #pragma once
-#include "../polynomial.h"
-
 
 namespace rtmath {
+	class polynomial;
 	namespace recPolys {
 		// Define a pure virtual class that provides structure to the set of 
 		// recursive polynomials. The recursive polynomials do not instiantize.
@@ -15,7 +14,7 @@ namespace rtmath {
 		class recPoly {
 			public:
 				recPoly() {}
-				virtual ~recPoly();
+				virtual ~recPoly() {}
 				virtual void get(unsigned int degree, polynomial &res) const = 0;
 				/*
 				inline virtual polynomial get(unsigned int degree) const

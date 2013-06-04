@@ -1,22 +1,23 @@
 #include "../rtmath/Stdafx.h"
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
+#include <set>
 #include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 //#include <boost/chrono.hpp>
 #include <cmath>
-#include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/macros.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -59,7 +60,7 @@ namespace rtmath {
 			{
 				if (this->filename.size())
 				{
-					fname = this->filename;
+					fname = filename;
 				} else {
 					throw rtmath::debug::xBadInput("Must specify filename");
 				}
@@ -171,19 +172,26 @@ namespace rtmath {
 					}
 				}
 
-				
-				latticePts.reserve(numPoints);
-				latticePtsRi.reserve(numPoints);
-				latticePtsStd.reserve(numPoints);
-				latticePtsNorm.reserve(numPoints);
+				latticePts.resize(numPoints,3);
+				latticePtsRi.resize(numPoints,3);
+				latticePtsStd.resize(numPoints,3);
+				latticePtsNorm.resize(numPoints,3);
 			}
 
-			Eigen::Vector3f crdsm, crdsi; // point location and diel entries
+			using namespace boost::accumulators;
+			accumulator_set<float, stats<
+				tag::min,
+				tag::max, 
+				tag::mean> > m_x, m_y, m_z, r_x, r_y, r_z;
+
+			//Eigen::Vector3f crdsm, crdsi; // point location and diel entries
 			set<size_t> mediaIds;
 			size_t posa = 0, posb = pend+1;
 			// Load in the lattice points through iteration and macro.h-based double extraction
 			for (size_t i=0; i< numPoints; i++)
 			{
+				auto crdsm = latticePts.block<1,3>(i,0);
+				auto crdsi = latticePtsRi.block<1,3>(i,0);
 				for (size_t j=0; j<7; j++)
 				{
 					// Seek to first nonspace character
@@ -198,12 +206,12 @@ namespace rtmath {
 					else crdsi(j-4) = val;
 				}
 
-				if (mediaIds.count(crdsi(0)) == 0) mediaIds.insert(crdsi(0));
-				if (mediaIds.count(crdsi(1)) == 0) mediaIds.insert(crdsi(1));
-				if (mediaIds.count(crdsi(2)) == 0) mediaIds.insert(crdsi(2));
+				if (!mediaIds.count((size_t) crdsi(0))) mediaIds.insert((size_t) crdsi(0));
+				if (!mediaIds.count((size_t) crdsi(1))) mediaIds.insert((size_t) crdsi(1));
+				if (!mediaIds.count((size_t) crdsi(2))) mediaIds.insert((size_t) crdsi(2));
 
-				latticePts.push_back(move(crdsm));
-				latticePtsRi.push_back(move(crdsi));
+				//latticePts.block<1,3>(i,0) = crdsm;
+				//latticePtsRi.block<1,3>(i,0) = crdsi;
 			}
 
 			Dielectrics = mediaIds;
@@ -217,34 +225,55 @@ namespace rtmath {
 			// The scaling factors and basis vectors are already in place.
 			xd = x0 * d;
 			
-			using namespace boost::accumulators;
-			accumulator_set<double, stats<tag::mean> > m_x, m_y, m_z;
-
-			for (auto it = latticePts.begin(); it != latticePts.end(); ++it)
+			//for (auto it = latticePts.begin(); it != latticePts.end(); ++it)
+			for (size_t i=0; i< numPoints; i++)
 			{
+				auto crdsm = latticePts.block<1,3>(i,0);
+				//auto crdsi = latticePtsRi.block<1,3>(i,0);
 				// Do componentwise multiplication to do scaling
-				Eigen::Array3f crd = it->array() * d;
-				Eigen::Vector3f crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
+				Eigen::Array3f crd = crdsm.array() * d.transpose();
+				auto crdsc = latticePtsStd.block<1,3>(i,0);
+				//Eigen::Vector3f -> next line
+				crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
 
 				// Need to do stat collection here because the midpoint is usually not set correctly!
+
+				r_x(crdsm(0));
+				r_y(crdsm(1));
+				r_z(crdsm(2));
 
 				m_x(crdsc(0));
 				m_y(crdsc(1));
 				m_z(crdsc(2));
 
 				// Save in latticePtsStd
-				latticePtsStd.push_back(move(crdsc));
+				//latticePtsStd.push_back(move(crdsc));
 			}
 
 			// Need to renormalize data points. Mean should be at 0, 0, 0 for plotting!
-			for (auto it = latticePtsStd.begin(); it != latticePtsStd.end(); it++)
+			//for (auto it = latticePtsStd.begin(); it != latticePtsStd.end(); it++)
+			for (size_t i=0; i< numPoints; i++)
 			{
-				Eigen::Vector3f pt = *it;
-				pt(0) -= boost::accumulators::mean(m_x);
-				pt(1) -= boost::accumulators::mean(m_y);
-				pt(2) -= boost::accumulators::mean(m_z);
-				latticePtsNorm.push_back(move(pt));
+				auto pt = latticePts.block<1,3>(i,0);
+				auto Npt = latticePtsNorm.block<1,3>(i,0);
+				//Eigen::Vector3f pt = *it;
+				Npt(0) = pt(0) - boost::accumulators::mean(m_x);
+				Npt(1) = pt(1) - boost::accumulators::mean(m_y);
+				Npt(2) = pt(2) - boost::accumulators::mean(m_z);
+				//latticePtsNorm.push_back(move(pt));
 			}
+
+			mins(0) = boost::accumulators::min(r_x);
+			mins(1) = boost::accumulators::min(r_y);
+			mins(2) = boost::accumulators::min(r_z);
+
+			maxs(0) = boost::accumulators::max(r_x);
+			maxs(1) = boost::accumulators::max(r_y);
+			maxs(2) = boost::accumulators::max(r_z);
+
+			means(0) = boost::accumulators::mean(r_x);
+			means(1) = boost::accumulators::mean(r_y);
+			means(2) = boost::accumulators::mean(r_z);
 		}
 
 		void shapefile::write(std::ostream &out) const
@@ -274,13 +303,14 @@ namespace rtmath {
 			out << "\t= X0(1-3) = location in lattice of target origin" << endl;
 			out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
 			size_t i=1;
-			auto it = latticePts.begin();
-			auto ot = latticePtsRi.begin();
-			for (; it != latticePts.end(); ++it, ++ot, ++i)
+
+			for (size_t j=0; j< numPoints; j++, i++)
 			{
+				auto it = latticePts.block<1,3>(j,0);
+				auto ot = latticePtsRi.block<1,3>(j,0);
 				out << "\t" << i << "\t";
-				out << (*it)(0) << "\t" << (*it)(1) << "\t" << (*it)(2) << "\t";
-				out << (*ot)(0) << "\t" << (*ot)(1) << "\t" << (*ot)(2);
+				out << (it)(0) << "\t" << (it)(1) << "\t" << (it)(2) << "\t";
+				out << (ot)(0) << "\t" << (ot)(1) << "\t" << (ot)(2);
 				out << endl;
 			}
 		}

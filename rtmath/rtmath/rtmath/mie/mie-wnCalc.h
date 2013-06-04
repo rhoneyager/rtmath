@@ -1,20 +1,23 @@
 #pragma once
-
+#include "../defs.h"
 #include<complex>
 #include<map>
 
-namespace mie {
+#pragma warning(push)
+#pragma warning(disable: 4251) // dll-interface needed warning even though the affected member is private
+namespace rtmath {
+	namespace mie {
 
-	class wnCalc
-	{
-	public:
-		wnCalc(double x);
-		std::complex<double> calc(int n);
-		~wnCalc(void);
-	private:
-		std::map<int, std::complex<double> > _Wn;
-		double _x;
-	};
+		class DLEXPORT wnCalc
+		{
+		public:
+			wnCalc(double sizep);
+			std::complex<double> calc(int n) const;
+		private:
+			mutable std::map<int, std::complex<double> > _Wn;
+			const double _sizep;
+		};
 
-}; // end mie
-
+	}
+}
+#pragma warning(pop)

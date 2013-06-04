@@ -8,7 +8,7 @@
 
 namespace rtmath {
 	// Used as an easy structure for mapping and function parameters
-	class mapid : public hashable
+	class mapid
 	{
 	public:
 		friend struct std::less<rtmath::mapid>;
@@ -61,24 +61,12 @@ namespace rtmath {
 		}
 	};
 
-	// Supporting code to allow boost unordered map
-	inline std::size_t hash_value(mapid const& x)
-	{
-		return (size_t) x.hash();
-	}
+	
 }; // end namespace rtmath
 
 // Supporting code to allow an unordered map of mapid (for damatrix)
 // Using standard namespace for C++11
 namespace std {
-	template <> struct hash<rtmath::mapid>
-	{
-		size_t operator()(const rtmath::mapid & x) const
-		{
-			// Really need to cast for the unordered map to work
-			return (size_t) x.hash();
-		}
-	};
 
 
 	template <> struct less<rtmath::mapid >

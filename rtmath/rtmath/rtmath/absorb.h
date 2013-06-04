@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 #include <boost/shared_ptr.hpp>
-#include "error/debug.h"
+//#include "error/debug.h"
 #include "atmos.h"
 
 namespace rtmath {

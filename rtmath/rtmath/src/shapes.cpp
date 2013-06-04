@@ -19,12 +19,12 @@
 #include <cmath>
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/shapes.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
 #include "../rtmath/ddscat/runScripts.h"
+#include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -171,7 +171,7 @@ namespace rtmath {
 				// So, I need to convert density from kg/um^3 to kg/m^3
 				
 				// TODO: implement this converter
-				GETOBJKEY();
+				//GETOBJKEY();
 
 				_get("density",raw,units);
 				double dens = raw;
@@ -217,14 +217,14 @@ namespace rtmath {
 				_get("density",raw,units);
 				density = raw; //conv_vol(units,"um^3").convert(raw);
 				// TODO: implement this converter
-				GETOBJKEY();
+				//GETOBJKEY();
 
 				_set("volume", mass / density, "um^3");
 			} else if (id == "DENS_V__MASS")
 			{
 				double density, volume;
 				// TODO: implement density converter
-				GETOBJKEY();
+				//GETOBJKEY();
 
 				_get("density", density, units);
 
@@ -240,7 +240,7 @@ namespace rtmath {
 				_get("freq", raw, units); freq = conv_spec(units,"GHz").convert(raw);
 				_get("temp", raw, units); temp = conv_temp(units, "K").convert(raw);
 
-				refract::mice(freq, temp, m);
+				refract::mIce(freq, temp, m);
 				_set("IREFR_R", m.real(), "");
 				_set("IREFR_IM", m.imag(), "");
 			} else 

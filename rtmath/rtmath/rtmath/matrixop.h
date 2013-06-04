@@ -29,7 +29,7 @@ namespace boost
 	ptr.push_back(ival); } va_end(indices); y(ptr,res); return res; }
 
 namespace rtmath {
-
+	#pragma message("Warning: matrixop is deprecated")
 	class matrixop
 		// Defines a generalized set of tensor operations
 		// For now, just use it as a 2d matrix

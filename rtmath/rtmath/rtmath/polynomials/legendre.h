@@ -7,18 +7,17 @@
    Used when calculating Gaussian quadratures.
    */
 
-#include "../polynomial.h"
 #include "recursivePolynomial.h"
-#include <vector>
 
 namespace rtmath {
+	class polynomial;
 	namespace recPolys {
 		class legendre : public recPoly {
 			public:
-				virtual void get(unsigned int rank, polynomial &res) const override;
+				virtual void get(unsigned int rank, polynomial &res) const ;
 		};
-	}; // end recpolys
-};
+	} // end recpolys
+}
 
 
 

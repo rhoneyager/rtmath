@@ -1,14 +1,17 @@
 #include "../rtmath/Stdafx.h"
-#include "../rtmath/matrixop.h"
+#include <Eigen/Core>
+//#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/Serialization/matrixop_serialization.h"
-
-#include "../rtmath/Serialization/serialization_macros.h"
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/version.hpp>
+//#include <boost/serialization/version.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
+
+#include "../rtmath/Serialization/serialization_macros.h"
+#include "../rtmath/Serialization/eigen_serialization.h"
+
 
 namespace boost
 {
@@ -17,15 +20,16 @@ namespace boost
 		template<class Archive>
 		void serialize(Archive &ar, rtmath::ddscat::shapefile &g, const unsigned int version)
 		{
-				ar & boost::serialization::make_nvp("filename", g._filename);
-				ar & boost::serialization::make_nvp("N", g._numPoints);
-				ar & boost::serialization::make_nvp("Dielectrics", g._Dielectrics);
-				ar & boost::serialization::make_nvp("a1", g._a1);
-				ar & boost::serialization::make_nvp("a2", g._a2);
-				ar & boost::serialization::make_nvp("a3", g._a3);
-				ar & boost::serialization::make_nvp("d", g._d);
-				ar & boost::serialization::make_nvp("x0", g._x0);
-				ar & boost::serialization::make_nvp("xd", g._xd);
+				ar & make_nvp("Filename", g.filename);
+				ar & make_nvp("Description", g.desc);
+				ar & make_nvp("N", g.numPoints);
+				ar & make_nvp("Dielectrics", g.Dielectrics);
+				ar & make_nvp("a1", g.a1);
+				ar & make_nvp("a2", g.a2);
+				ar & make_nvp("a3", g.a3);
+				ar & make_nvp("d", g.d);
+				ar & make_nvp("x0", g.x0);
+				ar & make_nvp("xd", g.xd);
 		}
 
 		EXPORT(serialize,rtmath::ddscat::shapefile);

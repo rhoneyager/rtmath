@@ -1,18 +1,10 @@
 #include "../rtmath/Stdafx.h"
 #include <string>
-#include <memory>
 #include <vector>
 #include <set>
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../rtmath/command.h"
-#include "../rtmath/error/debug.h"
 
 namespace rtmath {
 	namespace config {
@@ -197,7 +189,7 @@ namespace rtmath {
 			return false;
 		}
 
-	}; // end namespace config
-}; // end namespace rtmath
+	} // end namespace config
+} // end namespace rtmath
 
 

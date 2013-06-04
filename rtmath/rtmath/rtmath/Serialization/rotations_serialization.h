@@ -1,4 +1,5 @@
 #pragma once
+#pragma message("TODO: no need for separate serialization header if forward declared properly")
 
 namespace rtmath
 {

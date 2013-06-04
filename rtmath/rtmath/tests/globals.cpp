@@ -10,19 +10,19 @@
 
 #include "globals.h"
 #include "../rtmath/error/error.h"
-#include "../rtmath/config.h"
-#include "../rtmath/ddscat/ddpar.h"
+//#include "../rtmath/config.h"
+//#include "../rtmath/ddscat/ddpar.h"
 
 globals::globals()
-	: cRoot(nullptr)
+	//: cRoot(nullptr)
 {
 	BOOST_TEST_MESSAGE( "Loading globals" );
 	instance() = this; // Really only meant to be invoked once
 	//rtmath::debug::instances::registerInstance( "test globals", reinterpret_cast<void*>(this));
 
 	try {
-		findDirs();
-		loadConfig();
+		//findDirs();
+		//loadConfig();
 	}
 	catch (rtmath::debug::xError &err)
 	{
@@ -41,6 +41,7 @@ globals::~globals()
 	BOOST_TEST_MESSAGE( "Unloading globals" );
 }
 
+/*
 void globals::findDirs()
 {
 	using namespace std;
@@ -97,13 +98,15 @@ void globals::loadConfig()
 	}
 }
 
+*/
+
 globals*& globals::instance()
 {
 	static globals* s_inst = nullptr;
 	return s_inst;
 }
 
-
+/*
 
 ddparloader::ddparloader()
 	: defaultKey(false),
@@ -141,3 +144,4 @@ ddparloader::~ddparloader()
 {
 }
 
+*/

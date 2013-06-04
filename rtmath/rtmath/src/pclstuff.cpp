@@ -1,8 +1,8 @@
 #include "../rtmath/Stdafx.h"
 
 //#include "../rtmath/ROOTlink.h"
-#include "../rtmath/MagickLINK.h"
-#include "../rtmath/PCLlink.h"
+//#include "../rtmath/MagickLINK.h"
+//#include "../rtmath/PCLlink.h"
 
 #include <algorithm>
 #include <iostream>
@@ -12,7 +12,7 @@
 #include <set>
 #include <map>
 
-#include <Magick++.h>
+//#include <Magick++.h>
 
 #include <boost/filesystem.hpp>
 
@@ -78,6 +78,8 @@ namespace rtmath
 
 		void pointContainer::readPNG(const std::string &filename)
 		{
+			throw rtmath::debug::xUnimplementedFunction();
+			/*
 			using namespace Magick;
 			using namespace std;
 			cloud->points.clear();
@@ -119,6 +121,7 @@ namespace rtmath
 				}
 			}
 			cout << "Processed " << cloud->points.size() << " points" << endl;
+			*/
 		}
 
 		void pointContainer::writePNG(const std::string &filename) const
