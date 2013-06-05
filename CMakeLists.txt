@@ -46,11 +46,6 @@ set(MODULES_FILENAME
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
 
-configure_file (
-	"${CMAKE_CURRENT_SOURCE_DIR}/environment/ryan-debug"
-	"${PROJECT_BINARY_DIR}/module-ryan-debug"
-	)
-
 find_package(Doxygen)
 option (BUILD_DOCUMENTATION
 	"Build the documentation for this library" OFF)
@@ -101,7 +96,10 @@ foreach(p LIB BIN INCLUDE CMAKE)
 	endif()
 endforeach()
  
-
+configure_file (
+	"${CMAKE_CURRENT_SOURCE_DIR}/environment/ryan-debug"
+	"${PROJECT_BINARY_DIR}/module-ryan-debug"
+	)
 
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 include_directories(${BOOST_INCLUDEDIR})
