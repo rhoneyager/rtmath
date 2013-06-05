@@ -1,6 +1,6 @@
 #%Module 1.0
 #
-#  ryan-debug module for use with 'environment-modules' package:
+#  ryan_debug module for use with 'environment-modules' package:
 #
 
 prepend-path		PATH		@INSTALL_BIN_DIR@
@@ -9,5 +9,5 @@ prepend-path		LIBRARY_PATH	@INSTALL_LIB_DIR@
 prepend-path		INCLUDE		@INSTALL_INCLUDE_DIR@
 prepend-path		C_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
 prepend-path		CPLUS_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
-setenv			Ryan-Debug_DIR	@INSTALL_CMAKE_DIR@
+setenv			Ryan_Debug_DIR	@INSTALL_CMAKE_DIR@
 

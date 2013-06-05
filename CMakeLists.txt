@@ -4,12 +4,12 @@
 # Will handle easy project imports
 
 cmake_minimum_required (VERSION 2.8)
-project(Ryan-Debug C CXX)
+project(Ryan_Debug C CXX)
 
 set(MAJOR 0)
 set(MINOR 5)
-set(REVISION 5)
-set(RYAN-DEBUG_VERSION
+set(REVISION 6)
+set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
 
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
@@ -19,7 +19,7 @@ if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
 	set (INSTEXT ON)
 else()
-	set(DEF_INSTALL_CMAKE_DIR ${INSTALL_LIB_DIR}/CMake/Ryan-Debug)
+	set(DEF_INSTALL_CMAKE_DIR ${INSTALL_LIB_DIR}/CMake/Ryan_Debug)
 	set (INSTEXT OFF)
 endif()
 option (INSTALL_EXTERNALS
@@ -38,7 +38,7 @@ SET( ENV_MOD_DIR_PREFIX
 	"Environment-modules package file install directory"
 )
 set(MODULES_FILENAME
-	ryan-debug
+	Ryan_Debug
 )
 
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
@@ -62,7 +62,7 @@ if(BUILD_DOCUMENTATION)
 		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
 	endif()
 
-	set(INSTALL_DOC_DIR share/doc/Ryan-Debug-${RYAN-DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
+	set(INSTALL_DOC_DIR share/doc/Ryan_Debug-${RYAN_DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
 	configure_file(Doxyfile.in
 		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
 
@@ -128,19 +128,19 @@ source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
 
 
-add_library(Ryan-Debug SHARED ${srcs} ${hdrs} 
+add_library(Ryan_Debug SHARED ${srcs} ${hdrs} 
 	"${PROJECT_BINARY_DIR}/module-ryan-debug"
 	)
-target_link_libraries(Ryan-Debug ${liblist})
-set_target_properties(Ryan-Debug PROPERTIES FOLDER "Libs")
+target_link_libraries(Ryan_Debug ${liblist})
+set_target_properties(Ryan_Debug PROPERTIES FOLDER "Libs")
 
-add_executable(Ryan-Debug-test ${srcs-test})
-target_link_libraries(Ryan-Debug-test ${liblist} Ryan-Debug)
-set_target_properties(Ryan-Debug-test PROPERTIES FOLDER "Apps")
+add_executable(Ryan_Debug-test ${srcs-test})
+target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)
+set_target_properties(Ryan_Debug-test PROPERTIES FOLDER "Apps")
 
-export(TARGETS Ryan-Debug
-	FILE "${PROJECT_BINARY_DIR}/Ryan-DebugTargets.cmake")
-export(PACKAGE Ryan-Debug)
+export(TARGETS Ryan_Debug
+	FILE "${PROJECT_BINARY_DIR}/Ryan_DebugTargets.cmake")
+export(PACKAGE Ryan_Debug)
 
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
 	"${INSTALL_INCLUDE_DIR}")
@@ -148,27 +148,27 @@ file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(Ryan-DebugConfig.cmake.in
-	"${PROJECT_BINARY_DIR}/Ryan-DebugConfig.cmake" @ONLY)
+	"${PROJECT_BINARY_DIR}/Ryan_DebugConfig.cmake" @ONLY)
 # ... and for the install tree
-set(CONF_INCLUDE_DIRS "\${RYAN-DEBUG_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+set(CONF_INCLUDE_DIRS "\${RYAN_DEBUG_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 
 #message("${CONF_INCLUDE_DIRS}")
 
 configure_file(Ryan-DebugConfig.cmake.in
-	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan-DebugConfig.cmake" @ONLY)
+	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan_DebugConfig.cmake" @ONLY)
 # ... for both
 configure_file(Ryan-DebugConfigVersion.cmake.in
-	"${PROJECT_BINARY_DIR}/Ryan-DebugConfigVersion.cmake" @ONLY)
+	"${PROJECT_BINARY_DIR}/Ryan_DebugConfigVersion.cmake" @ONLY)
  
 if(WIN32 AND NOT CYGWIN) # NSIS bug
-INSTALL(TARGETS Ryan-Debug
+INSTALL(TARGETS Ryan_Debug
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	COMPONENT Libraries
 	)
 endif()
 
-INSTALL(TARGETS Ryan-Debug
-	EXPORT Ryan-DebugTargets
+INSTALL(TARGETS Ryan_Debug
+	EXPORT Ryan_DebugTargets
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
 	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
@@ -176,7 +176,7 @@ INSTALL(TARGETS Ryan-Debug
 	)
 
 INSTALL(DIRECTORY Ryan-Debug/
-#	EXPORT Ryan-DebugTargets
+#	EXPORT Ryan_DebugTargets
 	DESTINATION ${INSTALL_INCLUDE_DIR}/Ryan-Debug
 	COMPONENT Headers
 	FILES_MATCHING PATTERN "*.h"
@@ -191,8 +191,8 @@ IF(INSTALL_MODULES AND NOT WIN32)
 	)
 ENDIF()
 
-INSTALL(TARGETS Ryan-Debug-test
-	EXPORT Ryan-DebugTargets
+INSTALL(TARGETS Ryan_Debug-test
+	EXPORT Ryan_DebugTargets
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	COMPONENT Applications
 	)
@@ -207,11 +207,11 @@ if (BUILD_DOCUMENTATION_IN_ALL)
 endif()
 
 
-INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan-DebugConfig.cmake"
-	"${PROJECT_BINARY_DIR}/Ryan-DebugConfigVersion.cmake"
+INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan_DebugConfig.cmake"
+	"${PROJECT_BINARY_DIR}/Ryan_DebugConfigVersion.cmake"
 	DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT Libraries)
 
-INSTALL(EXPORT Ryan-DebugTargets DESTINATION
+INSTALL(EXPORT Ryan_DebugTargets DESTINATION
 	"${INSTALL_CMAKE_DIR}" COMPONENT Libraries)
 
 # Also install / pack the relevant boost libraries into the install tree
@@ -248,14 +248,14 @@ if (INSTALL_EXTERNALS)
 		)
 endif()
 
-set(CPACK_PACKAGE_NAME "Ryan-Debug")
+set(CPACK_PACKAGE_NAME "Ryan_Debug")
 set(CPACK_PACKAGE_VENDOR "Ryan Honeyager")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Ryan-Debug - Ryan's debugging library")
-set(CPACK_PACKAGE_VERSION "${RYAN-DEBUG_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Ryan_Debug - Ryan's debugging library")
+set(CPACK_PACKAGE_VERSION "${RYAN_DEBUG_VERSION}")
 set(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH ${REVISION})
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "Ryan-Debug")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Ryan_Debug")
 set(CPACK_PACKAGE_CONTACT "Ryan Honeyager (rhoneyager@fsu.edu)")
 
 set (CPACK_COMPONENTS_ALL
@@ -282,7 +282,7 @@ set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 #set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_SOURCE_DIR}/ryan-debug.spec.in")
 
 # Fixing RPM EXPORT issue
-#set(CPACK_IGNORE_FILES ".*EXPORT$" ".*Ryan-DebugTargets$")
+#set(CPACK_IGNORE_FILES ".*EXPORT$" ".*Ryan_DebugTargets$")
 #set(CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
 
 set(CPACK_RPM_PACKAGE_REQUIRES
