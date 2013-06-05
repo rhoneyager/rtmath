@@ -8,7 +8,7 @@ project(Ryan-Debug C CXX)
 
 set(MAJOR 0)
 set(MINOR 5)
-set(REVISION 4)
+set(REVISION 5)
 set(RYAN-DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
 
@@ -24,8 +24,30 @@ else()
 endif()
 option (INSTALL_EXTERNALS
 	"Install external library dll files?" ${INSTEXT})
+
+if(WIN32 AND NOT CYGWIN)
+	set (modinstall OFF)
+else()
+	set (modinstall ON)
+endif()
+option ( INSTALL_MODULES
+	"Install the environment-modules package file. Does nothing on Windows." ${modinstall})
+SET( ENV_MOD_DIR_PREFIX
+	/etc/modulefiles
+	CACHE STRING
+	"Environment-modules package file install directory"
+)
+set(MODULES_FILENAME
+	ryan-debug
+)
+
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
+
+configure_file (
+	"${CMAKE_CURRENT_SOURCE_DIR}/environment/ryan-debug"
+	"${PROJECT_BINARY_DIR}/module-ryan-debug"
+	)
 
 find_package(Doxygen)
 option (BUILD_DOCUMENTATION
@@ -66,8 +88,8 @@ if(BUILD_DOCUMENTATION)
 	add_custom_target(docs ${ALL_FLAG} DEPENDS doc-html doc-latex)
 endif()
 
-configure_file(ryan-debug.spec.in
-	"${PROJECT_BINARY_DIR}/ryan-debug.spec" @ONLY)
+#configure_file(ryan-debug.spec.in
+#	"${PROJECT_BINARY_DIR}/ryan-debug.spec" @ONLY)
 
 # Make relative paths absolute (needed later on)
 foreach(p LIB BIN INCLUDE CMAKE)
@@ -106,7 +128,9 @@ source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
 
 
-add_library(Ryan-Debug SHARED ${srcs} ${hdrs} )
+add_library(Ryan-Debug SHARED ${srcs} ${hdrs} 
+	"${PROJECT_BINARY_DIR}/module-ryan-debug"
+	)
 target_link_libraries(Ryan-Debug ${liblist})
 set_target_properties(Ryan-Debug PROPERTIES FOLDER "Libs")
 
@@ -157,6 +181,15 @@ INSTALL(DIRECTORY Ryan-Debug/
 	COMPONENT Headers
 	FILES_MATCHING PATTERN "*.h"
 	)
+
+IF(INSTALL_MODULES AND NOT WIN32)
+	INSTALL(
+		FILES ${PROJECT_BINARY_DIR}/module-ryan-debug
+		DESTINATION ${ENV_MOD_DIR_PREFIX}
+		COMPONENT Environment
+		RENAME ${MODULES_FILENAME}
+	)
+ENDIF()
 
 INSTALL(TARGETS Ryan-Debug-test
 	EXPORT Ryan-DebugTargets
