@@ -18,7 +18,7 @@
 //#include <cstdlib>
 
 #include <Ryan-Debug/debug.h>
-#include <Ryan-Serialization/serialization.h>
+#include <Ryan_Serialization/serialization.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/octree/octree.h>

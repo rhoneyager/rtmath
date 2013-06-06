@@ -24,7 +24,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include <Ryan-Debug/debug.h>
-#include <Ryan-Serialization/serialization.h>
+#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"

@@ -80,12 +80,12 @@ namespace rtmath
 			pcl::toROSMsg(src, pbc);
 			pcl::io::saveVTKFile(filename.c_str(),pbc);
 		}
-		*/
+
 		hull::hull()
 		{
 			_p = boost::shared_ptr<hullData>(new hullData);
-			_points = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
-			_hullPts = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
+			//_points = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
+			//_hullPts = pcl::PointCloud<pcl::PointXYZ>::Ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		}
 
 		hull::~hull() { }

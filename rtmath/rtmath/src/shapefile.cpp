@@ -17,6 +17,7 @@
 //#include <boost/chrono.hpp>
 #include <cmath>
 #include "../rtmath/macros.h"
+#include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/error/error.h"
 
 namespace rtmath {

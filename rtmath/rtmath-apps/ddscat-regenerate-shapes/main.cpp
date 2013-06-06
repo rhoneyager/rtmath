@@ -13,7 +13,7 @@
 #include <vector>
 #include <cstdlib>
 #include <Ryan-Debug/debug.h>
-#include <Ryan-Serialization/serialization.h>
+#include <Ryan_Serialization/serialization.h>
 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"

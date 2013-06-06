@@ -2,11 +2,16 @@
 #
 #  rtmath module for use with 'environment-modules' package:
 #
+prereq			Ryan_Debug
+prereq			Ryan_Serialization
+prereq			tmatrix
+
 conflict		rtmath 
-prepend-path		PATH		@CMAKE_INSTALL_PREFIX@/bin
-prepend-path		LD_LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
-prepend-path		LIBRARY_PATH	@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
-prepend-path		INCLUDE		@CMAKE_INSTALL_PREFIX@/include
-prepend-path		C_INCLUDE_PATH	@CMAKE_INSTALL_PREFIX@/include
-prepend-path		CPLUS_INCLUDE_PATH	@CMAKE_INSTALL_PREFIX@/include
+prepend-path		PATH		@INSTALL_BIN_DIR@
+prepend-path		LD_LIBRARY_PATH	@INSTALL_LIB_DIR@
+prepend-path		LIBRARY_PATH	@INSTALL_LIB_DIR@
+prepend-path		INCLUDE		@INSTALL_INCLUDE_DIR@
+prepend-path		C_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
+prepend-path		CPLUS_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
+setenv			rtmath_DIR	@INSTALL_CMAKE_DIR@
 

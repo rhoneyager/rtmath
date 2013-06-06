@@ -39,6 +39,15 @@ else()
 	)
 ENDIF()
 
+# Make relative paths absolute (needed later on)
+foreach(p LIB BIN INCLUDE CMAKE)
+	set(var INSTALL_${p}_DIR)
+	if(NOT IS_ABSOLUTE "${${var}}")
+		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+	endif()
+endforeach()
+
+
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/rtmath/cmake-settings.h.in"
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
@@ -69,18 +78,21 @@ set_target_properties(rtmath_core PROPERTIES FOLDER "Libs")
 
 
 find_package(Boost COMPONENTS program_options serialization iostreams filesystem system unit_test_framework regex REQUIRED)
+#message("${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
+#                ${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
+#                ${Boost_PROGRAM_OPTIONS_LIBRARY}")
 if(WIN32 AND NOT CYGWIN) # Boost autolink
 else()
 	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
 		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 		${Boost_PROGRAM_OPTIONS_LIBRARY})
 endif()
-find_package(Ryan-Debug REQUIRED)
-find_package(Ryan-Serialization REQUIRED)
+find_package(Ryan_Debug REQUIRED)
+find_package(Ryan_Serialization REQUIRED)
 find_package(Eigen3 REQUIRED)
 include_directories(EIGEN3_INCLUDE_DIR)
 
-set (rtmath_core-libs ${rtmath_core-libs} Ryan-Debug Ryan-Serialization)
+set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug Ryan_Serialization)
 target_link_libraries(rtmath_core ${rtmath_core-libs})
 
 

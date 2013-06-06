@@ -1,7 +1,7 @@
 #include "../rtmath/Stdafx.h"
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
-#include <Ryan-Serialization/serialization.h>
+#include <Ryan_Serialization/serialization.h>
 #include <boost/filesystem.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>

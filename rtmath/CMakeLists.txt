@@ -234,7 +234,7 @@ set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries Data)
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
 
 set(CPACK_RPM_PACKAGE_REQUIRES 
-	"cmake >= 2.8, tcsh, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.7, ryan-vtk-5-10, ryan-pcl-1-6, ryan-qhull-2011, ryan-debug, ryan-serialization"
+	"cmake >= 2.8, tcsh, boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.7, ryan-vtk-5-10, ryan-pcl-1-6, ryan-qhull-2011, Ryan_Debug, Ryan_Serialization, Ryan_tmatrix"
 	)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
