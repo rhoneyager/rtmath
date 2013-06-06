@@ -12,6 +12,6 @@ set(RYAN_DEBUG_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
 include("${RYAN_DEBUG_CMAKE_DIR}/Ryan_DebugTargets.cmake")
  
 # These are IMPORTED targets created by FooBarTargets.cmake
-set(RYAN-DEBUG_LIBRARIES Ryan_Debug)
+set(RYAN_DEBUG_LIBRARIES Ryan_Debug)
 #set(RYAN-DEBUG_EXECUTABLE bar)
 
