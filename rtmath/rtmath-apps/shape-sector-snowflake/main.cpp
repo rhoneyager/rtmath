@@ -1,7 +1,4 @@
-/* This program produces shapefiles based on rectangular prisms.
- * Multiple prisms may be selected, and 'negative' regions may 
- * be excised. This allows for the generation of a few rather 
- * useful test cases.
+/* This program produces shapefiles based on half-ellipsoids.
  */
 
 #pragma warning( push )
@@ -21,27 +18,30 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <Eigen/Dense>
 
-#include "../../rtmath/rtmath/VTKlink.h"
+//#include "../../rtmath/rtmath/VTKlink.h"
 
 #include <boost/program_options.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/round.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
 
+#include "../../rtmath/rtmath/denseMatrix.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/matrixop.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/denseMatrix.h"
 
-void rangeSectorSnowflake(const double rhw[3], const double c[3], 
-	double mins[3], double maxs[3])
+void rangeSectorSnowflake(const float rhw[3], const float c[3], 
+	float mins[3], float maxs[3])
 {
 	using namespace std;
 	// This can be narrowed, but it's irrelevent for now
-	double rMax = max (max( rhw[0]+1, rhw[1]+1), rhw[2]+1);
+	float rMax = max (max( rhw[0]+1, rhw[1]+1), rhw[2]+1);
 	for (size_t i=0; i<3; i++)
 	{
 		mins[i] = c[i] - rMax;
@@ -49,8 +49,8 @@ void rangeSectorSnowflake(const double rhw[3], const double c[3],
 	}
 }
 
-void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const double c[3], 
-	const double n[3], const std::set<double> &angles, bool sign)
+void fillSectorSnowflake(rtmath::denseMatrix &dm, const float rhw[3], const float c[3], 
+	const float n[3], const std::set<float> &angles, bool sign)
 {
 	using namespace std;
 	using namespace rtmath;
@@ -59,23 +59,23 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 	// Constraints include the angle (plane normal) and the bounding sphere.
 
 	// Build the base arm shape
-	double mins[3], maxs[3];
+	float mins[3], maxs[3];
 	rangeSectorSnowflake(rhw, c, mins, maxs);
-	double sizeX = maxs[0] - mins[0] + 1.0;
-	double sizeY = maxs[1] - mins[1] + 1.0;
-	double sizeZ = maxs[2] - mins[2] + 1.0;
+	float sizeX = maxs[0] - mins[0] + 1.0f;
+	float sizeY = maxs[1] - mins[1] + 1.0f;
+	float sizeZ = maxs[2] - mins[2] + 1.0f;
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cBase(new pcl::PointCloud<pcl::PointXYZ>);
-	cBase->reserve(sizeX*sizeY*sizeZ);
+	cBase->reserve( (size_t) (sizeX*sizeY*sizeZ));
 
 	//rtmath::denseMatrix mask((size_t) sizeX,(size_t) sizeY,(size_t) sizeZ);
-	for (double x = mins[0]; x <=maxs[0]; x++)
+	for (float x = mins[0]; x <=maxs[0]; x++)
 	{
-		for (double y = mins[1]; y <=maxs[1]; y++)
+		for (float y = mins[1]; y <=maxs[1]; y++)
 		{
-			for (double z = mins[2]; z <=maxs[2]; z++)
+			for (float z = mins[2]; z <=maxs[2]; z++)
 			{
-				if (0.25 >= pow((x-c[0])/rhw[0],2.0) + pow((y-c[1])/rhw[1],2.0) + pow((z-c[2])/rhw[2],2.0))
+				if (0.25 >= pow((x-c[0])/rhw[0],2.0f) + pow((y-c[1])/rhw[1],2.0f) + pow((z-c[2])/rhw[2],2.0f))
 				{
 					if (x-c[0] >= 0)
 					{
@@ -94,9 +94,9 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 	pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree (new pcl::KdTreeFLANN<pcl::PointXYZ>);
 	tree->setInputCloud (cBase);
 
-	double nx = n[0] * boost::math::constants::pi<double>() / 180.0;
-	double ny = n[1] * boost::math::constants::pi<double>() / 180.0;
-	double nz = n[2] * boost::math::constants::pi<double>() / 180.0;
+	float nx = n[0] * boost::math::constants::pi<float>() / 180.0f;
+	float ny = n[1] * boost::math::constants::pi<float>() / 180.0f;
+	float nz = n[2] * boost::math::constants::pi<float>() / 180.0f;
 	// Taking the base arm and duplicating it through rotations. Note: we cannot just copy from the base to 
 	// the destination since we get rounding errors. A better method is to assign a dense matrix to the original 
 	// copy and go through the rotations, comparing to the copy.
@@ -108,13 +108,13 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 		// c is the center
 		// n is the collection of rotations relative to the +x direction
 		// each angle is the angle beta for the shape rotation
-		double na = *it * boost::math::constants::pi<double>() / 180.0;
+		float na = *it * boost::math::constants::pi<float>() / 180.0f;
 
 		// Construct corresponding rotation and inverse rotation matrices
-		Eigen::Matrix3d Ref, Rinv; // Ref should be YXZ?
-		Ref = Eigen::AngleAxisd(nx, Eigen::Vector3d::UnitZ())
-			* Eigen::AngleAxisd(ny, Eigen::Vector3d::UnitX())
-			* Eigen::AngleAxisd(nz+na, Eigen::Vector3d::UnitY());
+		Eigen::Matrix3f Ref, Rinv; // Ref should be YXZ?
+		Ref = Eigen::AngleAxisf(nx, Eigen::Vector3f::UnitZ())
+			* Eigen::AngleAxisf(ny, Eigen::Vector3f::UnitX())
+			* Eigen::AngleAxisf(nz+na, Eigen::Vector3f::UnitY());
 
 		Rinv = Ref.inverse();
 		cout << Rinv;
@@ -124,23 +124,27 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 
 		// Test each possible point and run it through the inverse rotation matrix. If it is within a  
 		// small distance (one dipole spacing) of an original point, mark the location as filled.
-		for (double x = mins[0]; x <=maxs[0]; x++)
+		for (float x = mins[0]; x <=maxs[0]; x++)
 		{
-			for (double y = mins[1]; y <=maxs[1]; y++)
+			for (float y = mins[1]; y <=maxs[1]; y++)
 			{
-				for (double z = mins[2]; z <=maxs[2]; z++)
+				for (float z = mins[2]; z <=maxs[2]; z++)
 				{
-					double xc = x-c[0], yc = y-c[1], zc = z - c[2];
-					auto res = Rinv * Eigen::Vector3d(xc,yc,zc);
-					double xp = res(0,0), yp = res(1,0), zp = res(2,0);
+					float xc = x-c[0], yc = y-c[1], zc = z - c[2];
+					auto res = Rinv * Eigen::Vector3f(xc,yc,zc);
+					float xp = res(0,0), yp = res(1,0), zp = res(2,0);
 					pcl::PointXYZ testpoint(xp,yp,zp);
 					vector<int> k_indices;
 					vector<float> d_sq;
+
+//#pragma warning( push )
+//#pragma warning( disable : 4244 ) // Irritating PCL double / float stuff caused by this function
 					tree->radiusSearch(testpoint,1.0, k_indices, d_sq);
+//#pragma warning( pop )
 
 					if (d_sq.size())
 					{
-						dm.set(x-mins[0]+c[0],y-mins[1]+c[1],z-mins[2]+c[2],sign);
+						dm.set((size_t) (x-mins[0]+c[0]),(size_t) (y-mins[1]+c[1]),(size_t) (z-mins[2]+c[2]),sign);
 					}
 
 				}
@@ -154,8 +158,8 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const double rhw[3], const dou
 
 struct fillSet
 {
-	double rhw[3], c[3], n[3];
-	std::set<double> angles;
+	float rhw[3], c[3], n[3];
+	std::set<float> angles;
 	bool sign;
 };
 
@@ -167,8 +171,6 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-shape-sector-snowflake\n\n";
-		rtmath::debug::appEntry(argc, argv);
-
 		namespace po = boost::program_options;
 
 		po::positional_options_description p;
@@ -311,12 +313,12 @@ int main(int argc, char** argv)
 		// Second pass fills in the shape into memory. Dense memory layout is selected, since we are dealing with rectangles.
 		// Third pass writes the dipoles to disk
 		using namespace boost::accumulators;
-		accumulator_set<double, stats<tag::min, tag::max> > sx, sy, sz;
-		accumulator_set<double, stats<tag::sum> > svolmax;
+		accumulator_set<float, stats<tag::min, tag::max> > sx, sy, sz;
+		accumulator_set<float, stats<tag::sum> > svolmax;
 		cerr << "Pass 1" << endl;
 		for (auto it = vfills.begin(); it != vfills.end(); ++it)
 		{
-			double imins[3], imaxs[3];
+			float imins[3], imaxs[3];
 			rangeSectorSnowflake(it->rhw,it->c,imins,imaxs);
 
 			sx(imins[0]);
@@ -335,22 +337,22 @@ int main(int argc, char** argv)
 			inshp.read(vm["input"].as<string>());
 			rtmath::ddscat::shapeFileStats::doQhull(false);
 			rtmath::ddscat::shapeFileStats inStats(inshp);
-			sx(inStats.b_min.get(2,0,0));
-			sx(inStats.b_max.get(2,0,0));
-			sy(inStats.b_min.get(2,1,0));
-			sy(inStats.b_max.get(2,1,0));
-			sz(inStats.b_min.get(2,2,0));
-			sz(inStats.b_max.get(2,2,0));
+			sx(inStats.b_min(0));
+			sx(inStats.b_max(0));
+			sy(inStats.b_min(1));
+			sy(inStats.b_max(1));
+			sz(inStats.b_min(2));
+			sz(inStats.b_max(2));
 		}
 
 		// svolmax now has the max amount of memory required for processing.
-		size_t sizeX = boost::accumulators::max(sx) - boost::accumulators::min(sx) + 1;
-		size_t sizeY = boost::accumulators::max(sy) - boost::accumulators::min(sy) + 1;
-		size_t sizeZ = boost::accumulators::max(sz) - boost::accumulators::min(sz) + 1;
+		size_t sizeX = (size_t) (boost::accumulators::max(sx) - boost::accumulators::min(sx) + 1.f);
+		size_t sizeY = (size_t) (boost::accumulators::max(sy) - boost::accumulators::min(sy) + 1.f);
+		size_t sizeZ = (size_t) (boost::accumulators::max(sz) - boost::accumulators::min(sz) + 1.f);
 		denseMatrix dm(sizeX, sizeY, sizeZ);
-		int offsetX = boost::accumulators::min(sx);
-		int offsetY = boost::accumulators::min(sx);
-		int offsetZ = boost::accumulators::min(sx);
+		int offsetX = (int) boost::accumulators::min(sx);
+		int offsetY = (int) boost::accumulators::min(sx);
+		int offsetZ = (int) boost::accumulators::min(sx);
 		
 		cerr << "Max possible dimensions of final shape:" << endl;
 		cerr << "x - " << boost::accumulators::min(sx) << ":" << boost::accumulators::max(sx) << endl;
@@ -362,11 +364,12 @@ int main(int argc, char** argv)
 		// If an input shape is provided, place it into the array.
 		if (vm.count("input"))
 		{
-			for (auto it = inshp._latticePts.begin(); it != inshp._latticePts.end(); ++it)
+			for (size_t i=0; i < inshp.numPoints; ++i)
 			{
-				size_t ix = (size_t) it->get(2,0,0) - offsetX;
-				size_t iy = (size_t) it->get(2,0,1) - offsetY;
-				size_t iz = (size_t) it->get(2,0,2) - offsetZ;
+				auto it = inshp.latticePts.block<1,3>(i,0);
+				size_t ix = (size_t) (it(0) - offsetX);
+				size_t iy = (size_t) (it(1) - offsetY);
+				size_t iz = (size_t) (it(2) - offsetZ);
 				dm.set(ix, iy, iz, true);
 			}
 		}
@@ -443,12 +446,7 @@ int main(int argc, char** argv)
 			}
 		}
 	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		cerr << endl;
-		return 1;
-	} catch (std::exception &e)
+	catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
 		return 1;
