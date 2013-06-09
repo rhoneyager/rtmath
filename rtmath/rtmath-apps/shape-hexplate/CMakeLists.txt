@@ -6,7 +6,7 @@ find_package(PCL REQUIRED COMPONENTS common io octree segmentation surface)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-add_executable (rtmath-shape-hexplate main.cpp)
+add_executable (rtmath-shape-hexplate main.cpp relGraph.cpp relGraph.h)
 
 set_target_properties( rtmath-shape-hexplate PROPERTIES FOLDER "Apps")
 target_link_libraries(rtmath-shape-hexplate ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat

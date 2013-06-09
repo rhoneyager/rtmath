@@ -36,7 +36,9 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
-void rangeSectorSnowflake(const float rhw[3], const float c[3], 
+#include "relGraph.h"
+
+void rangeTriangle(const float rhw[3], const float c[3], 
 	float mins[3], float maxs[3])
 {
 	using namespace std;
@@ -49,7 +51,7 @@ void rangeSectorSnowflake(const float rhw[3], const float c[3],
 	}
 }
 
-void fillSectorSnowflake(rtmath::denseMatrix &dm, const float rhw[3], const float c[3], 
+void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3], 
 	const float n[3], const std::set<float> &angles, bool sign)
 {
 	using namespace std;
@@ -60,7 +62,7 @@ void fillSectorSnowflake(rtmath::denseMatrix &dm, const float rhw[3], const floa
 
 	// Build the base arm shape
 	float mins[3], maxs[3];
-	rangeSectorSnowflake(rhw, c, mins, maxs);
+	rangeTriangle(rhw, c, mins, maxs);
 	float sizeX = maxs[0] - mins[0] + 1.0f;
 	float sizeY = maxs[1] - mins[1] + 1.0f;
 	float sizeZ = maxs[2] - mins[2] + 1.0f;
@@ -173,9 +175,6 @@ int main(int argc, char** argv)
 		cerr << "rtmath-shape-hexplate\n\n";
 		namespace po = boost::program_options;
 
-		po::positional_options_description p;
-		p.add("fill", -1);
-
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("help,h", "produce help message")
@@ -196,13 +195,20 @@ int main(int argc, char** argv)
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
+			options(desc).run(), vm);
 		po::notify(vm);    
 
-		if (vm.count("help") || argc == 1) {
-			cerr << desc << "\n";
-			return 1;
-		}
+		auto doHelp = [&](const std::string &message)
+		{
+			std::cerr << message << std::endl;
+			std::cerr << desc << std::endl;
+			exit(1);
+		};
+
+		if (vm.count("help") || argc == 1) doHelp("");
+
+		if (!vm.count("dipole-spacing")) doHelp("Must specify dipole spacing factor");
+		double dSpacing = vm["dipole-spacing"].as<double>();
 
 		ostream *pout = nullptr;
 		ofstream ofile;
@@ -215,29 +221,56 @@ int main(int argc, char** argv)
 		}
 		ostream &out = *pout;
 
-		double fixedAR = 0;
-		if (vm.count("aspect-ratio")) fixedAR = vm["aspect-ratio"].as<double>();
-		double scaleAR = vm["scale-aspect-ratio"].as<double>();
+		shape_hexplate::hexRelns relations;
 
-		bool calcAeff = false, calcDiam = false, calcThickness = false;
-		double aeff = 0;
-		double diameter = 0;
-		double thickness = 0;
-		
-		if (vm.count("aeff")) aeff = vm["aeff"].as<double>();
-		else calcAeff = true;
+		if (vm.count("aspect-ratio")) relations.ar = vm["aspect-ratio"].as<double>();
+		else relations.calcAR = true;
+		relations.scaleAR = vm["scale-aspect-ratio"].as<double>();
 
-		if (vm.count("diameter")) diameter = vm["diameter"].as<double>();
-		else calcDiam = true;
+		if (vm.count("aeff")) relations.aeff = vm["aeff"].as<double>();
+		else relations.calcAeff = true;
 
-		if (vm.count("thickness")) thickness = vm["thickness"].as<double>();
-		else calcThickness = true;
+		if (vm.count("diameter")) relations.diam = vm["diameter"].as<double>();
+		else relations.calcDiam = true;
 
-		double dSpacing = vm["dipole-spacing"].as<double>();
+		if (vm.count("thickness")) relations.thick = vm["thickness"].as<double>();
+		else relations.calcThick = true;
 
-		// Check for parameter (value) clashes.
-		
-		// Fill in any missing values.
+		// Now, try to fill in the missing variables
+		try
+		{
+			relations.update(); // First, without standard AR formula
+		} catch (rtmath::debug::xBadInput &)
+		{
+			// Exception if the AR cannot be determined. Use the standard formula.
+			try
+			{
+				relations.update(1);
+			} catch (rtmath::debug::xBadInput &e)
+			{
+				throw e; // Fully bad input set
+			}
+		}
+
+		vector<fillSet> vfills;
+		fillSet a;
+		a.rhw[0] = relations.diam / 2.0; // The trianglular prism side lengths
+		a.rhw[1] = relations.diam / 2.0;
+		a.rhw[2] = relations.thick;
+		a.c[0] = 0; // Set the center of rotation at zero for now
+		a.c[1] = 0;
+		a.c[2] = 0;
+		a.sign = true; // Writing positive space
+		a.n[0] = 0; // Normal orientation
+		a.n[1] = 0;
+		a.n[2] = 0;
+		a.angles.insert(0); // Form hexagon by repeating triangle six times
+		a.angles.insert(60);
+		a.angles.insert(120);
+		a.angles.insert(180);
+		a.angles.insert(240);
+		a.angles.insert(300);
+		vfills.push_back(move(a));
 
 		// Do three passes. First pass allows for dimensioning and memory allocation.
 		// Second pass fills in the shape into memory. Dense memory layout is selected, since we are dealing with rectangles.
@@ -249,7 +282,7 @@ int main(int argc, char** argv)
 		for (auto it = vfills.begin(); it != vfills.end(); ++it)
 		{
 			float imins[3], imaxs[3];
-			rangeSectorSnowflake(it->rhw,it->c,imins,imaxs);
+			rangeTriangle(it->rhw,it->c,imins,imaxs);
 
 			sx(imins[0]);
 			sx(imaxs[0]);
@@ -261,6 +294,7 @@ int main(int argc, char** argv)
 		}
 
 		// If an input file is specified, load it here and determine its statistics for the min / max dimensioning.
+		/*
 		rtmath::ddscat::shapefile inshp;
 		if (vm.count("input"))
 		{
@@ -274,6 +308,7 @@ int main(int argc, char** argv)
 			sz(inStats.b_min(2));
 			sz(inStats.b_max(2));
 		}
+		*/
 
 		// svolmax now has the max amount of memory required for processing.
 		size_t sizeX = (size_t) (boost::accumulators::max(sx) - boost::accumulators::min(sx) + 1.f);
@@ -292,6 +327,7 @@ int main(int argc, char** argv)
 
 		cerr << "Pass 2" << endl;
 		// If an input shape is provided, place it into the array.
+		/*
 		if (vm.count("input"))
 		{
 			for (size_t i=0; i < inshp.numPoints; ++i)
@@ -303,11 +339,12 @@ int main(int argc, char** argv)
 				dm.set(ix, iy, iz, true);
 			}
 		}
+		*/
 
 		// Iterate over each fill statement. Expand fill statement.
 		for (auto it = vfills.begin(); it != vfills.end(); ++it)
 		{
-			fillSectorSnowflake(dm,it->rhw,it->c,it->n,it->angles,it->sign);
+			fillTriangle(dm,it->rhw,it->c,it->n,it->angles,it->sign);
 		}
 
 		// A final pass is needed to calculate the shape center of mass
