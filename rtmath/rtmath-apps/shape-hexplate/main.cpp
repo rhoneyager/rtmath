@@ -131,8 +131,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 			* Eigen::AngleAxisf(nz+na, Eigen::Vector3f::UnitY());
 
 		Rinv = Ref.inverse();
-		//cerr << Rinv;
-		//cerr << endl;
+		//cerr << Rinv << endl;
 
 
 
@@ -153,6 +152,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 
 //#pragma warning( push )
 //#pragma warning( disable : 4244 ) // Irritating PCL double / float stuff caused by this function
+					// TODO: need to use a better method, as this is SLOW for d=1.
 					tree->radiusSearch(testpoint,1.0, k_indices, d_sq);
 //#pragma warning( pop )
 
@@ -433,9 +433,9 @@ int main(int argc, char** argv)
 		out << dX << "\t" << dY << "\t" << dZ; //cWrite(vm["d"].as<string>());
 		out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)\n";
 
-		out << "\t" << boost::accumulators::mean(mX) + offsetX
-			<< "\t" << boost::accumulators::mean(mY) + offsetY
-			<< "\t" << boost::accumulators::mean(mZ) + offsetZ
+		out << "\t" << boost::accumulators::mean(mX) //+ offsetX
+			<< "\t" << boost::accumulators::mean(mY) //+ offsetY
+			<< "\t" << boost::accumulators::mean(mZ) //+ offsetZ
 			<< "\t= X0(1-3) = location in lattice of target origin" << endl;
 		out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
 
