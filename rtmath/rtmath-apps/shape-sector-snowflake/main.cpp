@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <set>
