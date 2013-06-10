@@ -2,6 +2,7 @@
  */
 
 #pragma warning( push )
+#pragma warning( disable : 4503 ) // Decorated name length exceeded
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
 #pragma warning( disable : 4800 ) // forcing non-bool type to true or false
 #include <cmath>
@@ -24,6 +25,7 @@
 #include <boost/shared_array.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/round.hpp>
+#include <boost/math/special_functions/trunc.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/filesystem.hpp>
@@ -56,7 +58,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 {
 	using namespace std;
 	using namespace rtmath;
-	// Draw half-ellipses specified by the inputs to make sector snowflake shapes
+	// Draw triangles specified by the inputs to make sector snowflake shapes
 	// For speed, use the PCL. Create a uniform grid, then filter based on constraints.
 	// Constraints include the angle (plane normal) and the bounding sphere.
 
@@ -71,23 +73,21 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 	cBase->reserve( (size_t) (sizeX*sizeY*sizeZ));
 
 	//rtmath::denseMatrix mask((size_t) sizeX,(size_t) sizeY,(size_t) sizeZ);
-	for (float x = mins[0]; x <=maxs[0]; x++)
+	for (float x=0; x <= rhw[0]; x++)
 	{
-		for (float y = mins[1]; y <=maxs[1]; y++)
+		for (float y= -rhw[1]/2.f; y <= rhw[1]/2.f; y++)
 		{
-			for (float z = mins[2]; z <=maxs[2]; z++)
+			for (float z = -rhw[2]/2.f; z <= rhw[2]/2.f; z++)
 			{
-				if (0.25 >= pow((x-c[0])/rhw[0],2.0f) + pow((y-c[1])/rhw[1],2.0f) + pow((z-c[2])/rhw[2],2.0f))
+				if ( (rhw[1]/2.) / rhw[0] >= abs(y/z) ) // Check based on slope
 				{
-					if (x-c[0] >= 0)
+					cBase->push_back(pcl::PointXYZ(x-c[0],y-c[1],z-c[2]));
+					/*
+					if (x-mins[0] > 1200 || y-mins[1] > 1200 || z-mins[2] > 1200)
 					{
-						cBase->push_back(pcl::PointXYZ(x-c[0],y-c[1],z-c[2]));
-						if (x-mins[0] > 1200 || y-mins[1] > 1200 || z-mins[2] > 1200)
-						{
-							cerr << "Error\n";
-						}
-						//dm.set(x-mins[0],y-mins[1],z-mins[2],true);
+						cerr << "Error\n";
 					}
+					*/
 				}
 			}
 		}
@@ -252,11 +252,21 @@ int main(int argc, char** argv)
 			}
 		}
 
+		// Determine the size of the triangles, given the selected dipole spacing
+		// I want to have integral values for filling in the hexagonal plate.
+		float sX = (float) (boost::math::trunc(relations.diam * sqrt(3.) / (2.0 * dSpacing)) + 1.0);
+		float sY = (float) (boost::math::trunc(relations.diam / dSpacing) + 1.0);
+		float sZ = (float) (boost::math::trunc(relations.thick / dSpacing) + 1.0);
+
+		float dX = (float) ((relations.diam * sqrt(3.) / (2.0 * dSpacing)) + 1.0) / sX; // Dipole shape scaling actors
+		float dY = (float) ((relations.diam / dSpacing) + 1.0) / sY;
+		float dZ = (float) ((relations.thick / dSpacing) + 1.0) / sZ;
+
 		vector<fillSet> vfills;
 		fillSet a;
-		a.rhw[0] = relations.diam / 2.0; // The trianglular prism side lengths
-		a.rhw[1] = relations.diam / 2.0;
-		a.rhw[2] = relations.thick;
+		a.rhw[0] = sX; // x length
+		a.rhw[1] = sY; // y length
+		a.rhw[2] = sZ; // thickness
 		a.c[0] = 0; // Set the center of rotation at zero for now
 		a.c[1] = 0;
 		a.c[2] = 0;
@@ -384,7 +394,8 @@ int main(int argc, char** argv)
 		out << "\t= target vector a1 (in TF)\n";
 		cWrite(vm["a2"].as<string>());
 		out << "\t= target vector a2 (in TF)\n";
-		cWrite(vm["d"].as<string>());
+		
+		out << dX << "\t" << dY << "\t" << dZ; //cWrite(vm["d"].as<string>());
 		out << "\t= d_x/d  d_y/d  d_x/d  (normally 1 1 1)\n";
 
 		out << "\t" << boost::accumulators::mean(mX) + offsetX
