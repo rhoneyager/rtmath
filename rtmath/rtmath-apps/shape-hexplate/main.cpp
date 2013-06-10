@@ -37,6 +37,7 @@
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include "relGraph.h"
@@ -85,10 +86,14 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 			{
 				// Check based on slope. Fails for the origin,
 				// where the second test comes in handy.
-				if ( (rhw[1]/2.) / rhw[0] >= abs(y/x) || (x==0 && abs(y) < 0.6))
+				// Note the small tweak to the slope formula to get rid of roundoff issues.
+				if ( ((1.+rhw[1])/2.) / rhw[0] >= abs(y/x) || (x==0 && abs(y) < 0.6))
 				{
 					// Indices are switched (so I can avoid redoing the formulas)
-					cBase->push_back(pcl::PointXYZ(x-c[0],z-c[2],y-c[1]));
+					double rX = x-c[0];
+					double rY = y-c[1];
+					double rZ = z-c[2];
+					cBase->push_back(pcl::PointXYZ(rX,rZ,rY));
 					/*
 					if (x-mins[0] > 1200 || y-mins[1] > 1200 || z-mins[2] > 1200)
 					{
@@ -148,7 +153,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 
 //#pragma warning( push )
 //#pragma warning( disable : 4244 ) // Irritating PCL double / float stuff caused by this function
-					tree->radiusSearch(testpoint,1.1, k_indices, d_sq);
+					tree->radiusSearch(testpoint,1.0, k_indices, d_sq);
 //#pragma warning( pop )
 
 					if (d_sq.size())
@@ -197,6 +202,7 @@ int main(int argc, char** argv)
 			("title", po::value<string>()->default_value("shape-hexplate generated shape"), "The description enclosed in the shape file")
 			("a1", po::value<string>()->default_value("1,0,0"), "The a1 vector in csv form")
 			("a2", po::value<string>()->default_value("0,1,0"), "The a2 vector in csv form")
+			("n", po::value<string>()->default_value("90,0,0"), "The n vector in csv form (degrees)")
 //			("d", po::value<string>()->default_value("1,1,1"), "Dipole scaling factor")
 			;
 
@@ -227,6 +233,19 @@ int main(int argc, char** argv)
 			pout = &cout;
 		}
 		ostream &out = *pout;
+
+		auto splitArray = [&](string inval, vector<double> &res)
+		{
+			typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+			boost::char_separator<char> sepcom(",");
+			tokenizer tk(inval, sepcom);
+			for (auto it = tk.begin(); it != tk.end(); ++it)
+				res.push_back(boost::lexical_cast<double>(*it));
+		};
+
+		vector<double> ns;
+		splitArray(vm["n"].as<string>(), ns);
+		if (ns.size() != 3) doHelp("Must properly specify n");
 
 		shape_hexplate::hexRelns relations;
 
@@ -287,9 +306,9 @@ int main(int argc, char** argv)
 		a.c[1] = 0;
 		a.c[2] = 0;
 		a.sign = true; // Writing positive space
-		a.n[0] = 0; // Normal orientation
-		a.n[1] = 0;
-		a.n[2] = 0;
+		a.n[0] = ns[0]; // Normal orientation is the command-line default
+		a.n[1] = ns[1];
+		a.n[2] = ns[2];
 		a.angles.insert(0); // Form hexagon by repeating triangle six times
 		a.angles.insert(60);
 		a.angles.insert(120);

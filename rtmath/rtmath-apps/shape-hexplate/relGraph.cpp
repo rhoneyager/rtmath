@@ -111,7 +111,10 @@ namespace shape_hexplate
 
 		// Create vertices for end variables
 		for (auto it = varnames.begin(); it != varnames.end(); ++it)
-			_createVertex(*it, true);
+		{
+			auto vert = _createVertex(*it, true);
+			//std::cerr << *it << " - " << vert.get() << "\n";
+		}
 
 		// Create vertices representing function relationships
 		// This is a table that lists the name of the new node, the variable being calculated, 
@@ -129,7 +132,10 @@ namespace shape_hexplate
 			"AEFF__V",					"v",				"aeff",
 			"V__AEFF",					"aeff",				"v",
 			"AR_V__THICK",				"thick",			"ar,v",
-			"V_SCALE__AUTOTHICK",		"thick",			"v,scalear"
+			"AEFF_SCALE__AR",			"ar",				"aeff,scalear"
+// TODO: fix and add the final two conversions
+//			"THICK_SCALE__AR",			"ar",				"thick,scalear",
+//			"DIAM_SCALE__AR",			"ar",				"diam,scalear"
 		};
 
 		for (size_t i=0; i< varmapnames_size; i = i + 3)
@@ -140,6 +146,7 @@ namespace shape_hexplate
 
 			auto vert = _createVertex(name, starget, deps);
 			vert->setVertexRunnableCode(this);
+			//std::cerr << name << " - " << vert.get() << "\n";
 		}
 
 
@@ -286,7 +293,10 @@ namespace shape_hexplate
 		if (id == "AEFF__V") return true;
 		if (id == "V__AEFF") return true;
 		if (id == "AR_V__THICK") return true;
-		if (id == "V_SCALE__AUTOTHICK") return true;
+		if (id == "AEFF_SCALE__AR") return true;
+		if (id == "THICK_SCALE__AR") return true;
+		if (id == "DIAM_SCALE__AR") return true;
+		//if (id == "V_SCALE__AUTOTHICK") return true;
 		return false;
 	}
 
@@ -300,12 +310,15 @@ namespace shape_hexplate
 		// It's all really just in the name of extensibility.
 		const double pi = boost::math::constants::pi<double>();
 
-		cerr << "Scale-AR:\t" << scaleAR << endl;
-		cerr << "Diameter:\t" << diam << endl;
-		cerr << "Thickness:\t" << thick << endl;
-		cerr << "AR:\t\t" << ar << endl;
-		cerr << "Aeff:\t\t" << aeff << endl;
-		cerr << "V:\t\t" << v << endl;
+		auto disp = [&]()
+		{
+			cerr << "Scale-AR:\t" << scaleAR << endl;
+			cerr << "Diameter:\t" << diam << endl;
+			cerr << "Thickness:\t" << thick << endl;
+			cerr << "AR:\t\t" << ar << endl;
+			cerr << "Aeff:\t\t" << aeff << endl;
+			cerr << "V:\t\t" << v << endl;
+		};
 
 		std::cerr << "Running " << id << std::endl;
 
@@ -353,6 +366,22 @@ namespace shape_hexplate
 			*/
 			double expr = 8. * v / (ar*ar*3.*sqrt(3.));
 			thick = pow(expr,1./3.);
+		} else if (id == "AEFF_SCALE__AR")
+		{
+			// Derived in my notebook
+			double expr = 32. * pi / (9.*sqrt(3.)) * pow(2.,2./0.449) * pow(aeff,3.);
+			double resa = pow(expr, (-1.0 + (1./0.449)) / (1.0 + (2./0.449)) );
+			double resb = resa * scaleAR * pow(2.,-1.0/0.449);
+			ar = resb;
+		} else if (id == "DIAM_SCALE__AR")
+		{
+			// Derived in my notebook
+			ar = scaleAR / 2.02 * pow(diam,0.451);
+		} else if (id == "THICK_SCALE__AR")
+		{
+			ar = scaleAR * pow(2.02,-1./0.449) * pow(thick,-1.0+1./0.449);
+			// Derived in my notebook
+			/*
 		} else if (id == "V_SCALE__AUTOTHICK")
 		{
 			// diam = (thick/2.02)^(1/0.449)
@@ -361,16 +390,11 @@ namespace shape_hexplate
 
 			double expr = v * 8. * pow(2.02,2./0.449) / (scaleAR*scaleAR * 3. * sqrt(3.));
 			thick = pow(expr,1./(1.+(2./0.449)));
-			// Lambda calculates THICK from V and the aeff scaling factor
-			/*
-			auto func = [&](double val) -> double
-			{
-				double res = v - (3.*sqrt(3.)/8. * thick * pow(thick/2.02,2./0.449) * pow(scaleAR,2.) );
-				cerr << res << endl;
-				return res;
-			};
-
-			thick = rtmath::zeros::secantMethod(func, 1., 2.);
+			double al = pow(thick/2.02,1./0.449);
+			cerr << "AL: " << al << endl;
+			double aar = al / thick;
+			cerr << "AAR: " << aar << endl;
+			
 			*/
 		} else if (id == "")
 		{

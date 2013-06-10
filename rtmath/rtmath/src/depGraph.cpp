@@ -49,7 +49,7 @@ namespace rtmath
 		{
 			_slots.insert(slot);
 			// Check if the parent is OR. If so, set the parent's signal
-			if (slot->_slotOR)
+			if (!slot->_slotOR)
 				slot->_addSignal( this->shared_from_this() );
 		}
 
@@ -98,13 +98,19 @@ namespace rtmath
 			_useless.clear();
 			// Do this way for shared/weak_ptr conversion
 			for (auto it = _vertices.begin(); it != _vertices.end(); it++)
+			{
+				//std::cerr << "Adding vertex " << it->get() << "\n";
 				_remaining.insert(*it);
+			}
 			//_remaining = _vertices;
 
 			_filled = provided;
 			// Remove provided from remaining
 			for (auto it = provided.begin(); it != provided.end(); it++)
+			{
+				//std::cerr << "Vertex " << it->lock().get() << " is provided\n";
 				_remaining.erase(*it);
+			}
 
 			size_t order = 0;
 			// Loop each depth layer
@@ -120,20 +126,26 @@ namespace rtmath
 					bool ready = false;
 					if (it->expired()) continue;
 					auto IT = it->lock();
+					//std::cerr << "Checking " << IT.get() << " with " << IT->_slots.size() 
+					//	<< " slots\n";
 					if (!IT->_slots.size()) ready = true;
 
 					// Check to see if signals exist and if they are filled
 					bool signalblock = (IT->_signals.size()) ? true : false;
-					for (auto ot = IT->_signals.begin(); ot != IT->_signals.end(); ot++)
+					//std::cerr << "\tHas " << IT->_signals.size() << " signals\n";
+					int i = 0;
+					for (auto ot = IT->_signals.begin(); ot != IT->_signals.end(); ++ot, ++i)
 					{
 						if (!_filled.count(*ot))
 						{
+							//std::cerr << "\tSignal " << i << " " << ot->lock().get() << " not filled\n";
 							signalblock = false;
 							break;
 						}
 					}
 					if (signalblock)
 					{
+						//std::cerr << "\tSignal is filled, so this vertex is unnecessary\n";
 						_useless.insert(*it);
 						cleanup.insert(*it);
 						continue;
