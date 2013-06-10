@@ -38,13 +38,15 @@ namespace rtmath
 		class vertex : public boost::enable_shared_from_this<vertex>
 		{
 		public:
-			vertex(bool OR = false) : _slotOR(OR) { } // TODO: set _target to nullptr 
+			vertex(bool OR = false) : _slotOR(OR), _target(nullptr) { }
 			virtual ~vertex();
 			inline bool isOR() const { return _slotOR; }
 			void addSlot(boost::shared_ptr<vertex> slot);
-			void run(boost::shared_ptr<vertexRunnable> target) const;
-			void run() const;
+			void run(boost::shared_ptr<vertexRunnable> target, const std::string &id = "") const;
+			void run(vertexRunnable*, const std::string &id = "") const;
+			void run(const std::string &id = "") const;
 			void setVertexRunnableCode(boost::shared_ptr<vertexRunnable> target);
+			void setVertexRunnableCode(vertexRunnable* target);
 
 			// Make connector between two criteria
 			//			static std::shared_ptr<vertex> connect(
@@ -64,7 +66,8 @@ namespace rtmath
 #endif
 
 		protected:
-			boost::shared_ptr<vertexRunnable> _target;
+			//boost::shared_ptr<vertexRunnable> _target;
+			vertexRunnable* _target;
 			bool _slotOR;
 			void _addSignal(boost::weak_ptr<vertex> signal);
 			setWeakVertex _signals, _slots;

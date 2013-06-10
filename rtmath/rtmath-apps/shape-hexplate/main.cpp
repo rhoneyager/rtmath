@@ -74,15 +74,21 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 	cBase->reserve( (size_t) (sizeX*sizeY*sizeZ));
 
 	//rtmath::denseMatrix mask((size_t) sizeX,(size_t) sizeY,(size_t) sizeZ);
+	// rhw[0] is x-length
+	// rhw[1] is y-length
+	// rhw[2] is thickness
 	for (float x=0; x <= rhw[0]; x++)
 	{
 		for (float y= -rhw[1]/2.f; y <= rhw[1]/2.f; y++)
 		{
 			for (float z = -rhw[2]/2.f; z <= rhw[2]/2.f; z++)
 			{
-				if ( (rhw[1]/2.) / rhw[0] >= abs(y/z) ) // Check based on slope
+				// Check based on slope. Fails for the origin,
+				// where the second test comes in handy.
+				if ( (rhw[1]/2.) / rhw[0] >= abs(y/x) || (x==0 && abs(y) < 0.6))
 				{
-					cBase->push_back(pcl::PointXYZ(x-c[0],y-c[1],z-c[2]));
+					// Indices are switched (so I can avoid redoing the formulas)
+					cBase->push_back(pcl::PointXYZ(x-c[0],z-c[2],y-c[1]));
 					/*
 					if (x-mins[0] > 1200 || y-mins[1] > 1200 || z-mins[2] > 1200)
 					{
@@ -120,8 +126,8 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 			* Eigen::AngleAxisf(nz+na, Eigen::Vector3f::UnitY());
 
 		Rinv = Ref.inverse();
-		cout << Rinv;
-		cout << endl;
+		//cerr << Rinv;
+		//cerr << endl;
 
 
 
@@ -142,7 +148,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 
 //#pragma warning( push )
 //#pragma warning( disable : 4244 ) // Irritating PCL double / float stuff caused by this function
-					tree->radiusSearch(testpoint,1.0, k_indices, d_sq);
+					tree->radiusSearch(testpoint,1.1, k_indices, d_sq);
 //#pragma warning( pop )
 
 					if (d_sq.size())
@@ -241,17 +247,26 @@ int main(int argc, char** argv)
 		try
 		{
 			relations.update(); // First, without standard AR formula
-		} catch (rtmath::debug::xBadInput &)
+		} catch (std::exception &)
 		{
 			// Exception if the AR cannot be determined. Use the standard formula.
 			try
 			{
+				std::cerr << "Trying automatic AR" << std::endl;
 				relations.update(1);
-			} catch (rtmath::debug::xBadInput &e)
+			} catch (std::exception &e)
 			{
+				std::cerr << e.what() << std::endl;
 				throw e; // Fully bad input set
 			}
 		}
+
+		cerr << "Scale-AR:\t" << relations.scaleAR << endl;
+		cerr << "Diameter:\t" << relations.diam << endl;
+		cerr << "Thickness:\t" << relations.thick << endl;
+		cerr << "AR:\t\t" << relations.ar << endl;
+		cerr << "Aeff:\t\t" << relations.aeff << endl;
+		cerr << "V:\t\t" << relations.v << endl;
 
 		// Determine the size of the triangles, given the selected dipole spacing
 		// I want to have integral values for filling in the hexagonal plate.

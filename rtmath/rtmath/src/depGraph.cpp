@@ -58,18 +58,29 @@ namespace rtmath
 			_signals.insert(signal);
 		}
 
-		void vertex::run(boost::shared_ptr<vertexRunnable> target) const
+		void vertex::run(boost::shared_ptr<vertexRunnable> target, const std::string &id) const
 		{
-			target->run();
+			target->run(id);
 		}
 
-		void vertex::run() const
+		void vertex::run(vertexRunnable *target, const std::string &id) const
+		{
+			if (target)
+				target->run(id);
+		}
+
+		void vertex::run(const std::string &id) const
 		{
 			if (_target)
-				_target->run();
+				_target->run(id);
 		}
 
 		void vertex::setVertexRunnableCode(boost::shared_ptr<vertexRunnable> target)
+		{
+			_target = target.get();
+		}
+
+		void vertex::setVertexRunnableCode(vertexRunnable* target)
 		{
 			_target = target;
 		}
