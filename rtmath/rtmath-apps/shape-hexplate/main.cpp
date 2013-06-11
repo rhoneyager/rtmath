@@ -47,7 +47,7 @@ void rangeTriangle(const float rhw[3], const float c[3],
 {
 	using namespace std;
 	// This can be narrowed, but it's irrelevent for now
-	float rMax = max (max( rhw[0]+1, rhw[1]+1), rhw[2]+1);
+	float rMax = max (max( rhw[0]+1, (rhw[1]/2.f)+1), (rhw[2]/2.f)+1);
 	for (size_t i=0; i<3; i++)
 	{
 		mins[i] = c[i] - rMax;
@@ -78,6 +78,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 	// rhw[0] is x-length
 	// rhw[1] is y-length
 	// rhw[2] is thickness
+	size_t nP = 0;
 	for (float x=0; x <= rhw[0]; x++)
 	{
 		for (float y= -rhw[1]/2.f; y <= rhw[1]/2.f; y++)
@@ -94,6 +95,7 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 					double rY = y-c[1];
 					double rZ = z-c[2];
 					cBase->push_back(pcl::PointXYZ(rX,rZ,rY));
+					nP++;
 					/*
 					if (x-mins[0] > 1200 || y-mins[1] > 1200 || z-mins[2] > 1200)
 					{
@@ -104,7 +106,9 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 			}
 		}
 	}
-	
+	std::cerr << "NP: " << nP << std::endl;
+	nP = 0;
+
 	pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree (new pcl::KdTreeFLANN<pcl::PointXYZ>);
 	tree->setInputCloud (cBase);
 
@@ -159,15 +163,17 @@ void fillTriangle(rtmath::denseMatrix &dm, const float rhw[3], const float c[3],
 					if (d_sq.size())
 					{
 						dm.set((size_t) (x-mins[0]+c[0]),(size_t) (y-mins[1]+c[1]),(size_t) (z-mins[2]+c[2]),sign);
+						nP++;
 					}
 
 				}
 			}
-		}
+		} // end loop over x
+		std::cerr << "NP2: " << nP << std::endl;
+		std::cerr << "dm size: " << dm.numOn << std::endl;
+	} // end angle loop
+	std::cerr << "NP3: " << nP << std::endl;
 
-
-	}
-	
 }
 
 struct fillSet
@@ -289,17 +295,43 @@ int main(int argc, char** argv)
 
 		// Determine the size of the triangles, given the selected dipole spacing
 		// I want to have integral values for filling in the hexagonal plate.
-		float sX = (float) (boost::math::trunc(relations.diam * sqrt(3.) / (2.0 * dSpacing)) + 1.0);
-		float sY = (float) (boost::math::trunc(relations.diam / dSpacing) + 1.0);
+		float sX = (float) (boost::math::trunc(relations.diam * sqrt(3.) / (4.0 * dSpacing)) + 1.0);
+		float sY = (float) (boost::math::trunc(relations.diam / (2.0*dSpacing)) + 1.0);
 		float sZ = (float) (boost::math::trunc(relations.thick / dSpacing) + 1.0);
 
-		float dX = (float) ((relations.diam * sqrt(3.) / (2.0 * dSpacing)) + 1.0) / sX; // Dipole shape scaling actors
-		float dY = (float) ((relations.diam / dSpacing) + 1.0) / sY;
+		float dX = (float) ((relations.diam * sqrt(3.) / (4.0 * dSpacing)) + 1.0) / sX; // Dipole shape scaling actors
+		float dY = (float) ((relations.diam / (2.0 * dSpacing)) + 1.0) / sY;
 		float dZ = (float) ((relations.thick / dSpacing) + 1.0) / sZ;
+
+#define print(x) cerr << #x << "\t" << x << endl;
+		print(sX);
+		print(sY);
+		print(sZ);
+		print(dX);
+		print(dY);
+		print(dZ);
+		float vTriangleLarge = relations.v / 6.0f;
+		print(vTriangleLarge);
+		float vTriangleSmall = relations.v/12.0f;
+		print(vTriangleSmall);
+		float aTriangleSmall = vTriangleSmall / relations.thick;
+		print(aTriangleSmall);
+
+		float aTriangleSXY = 0.25 * sX * sY;
+		print(aTriangleSXY);
+
+		float vSXYZt = aTriangleSXY * sZ;
+		print(vSXYZt);
+		float vSXYZ = vSXYZt * 12.0f;
+		print(vSXYZ);
+		float dScale = dX * dY * dZ;
+		print(dScale);
+		float dScaleFlat = dX*dY;
+		print(dScaleFlat);
 
 		vector<fillSet> vfills;
 		fillSet a;
-		a.rhw[0] = sX; // x length
+		a.rhw[0] = sX; // triangle x length
 		a.rhw[1] = sY; // y length
 		a.rhw[2] = sZ; // thickness
 		a.c[0] = 0; // Set the center of rotation at zero for now
