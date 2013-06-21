@@ -64,9 +64,6 @@ if(BUILD_DOCUMENTATION)
 	configure_file(Doxyfile.in
 		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
 
-	configure_file(src/lib.rc.in
-		"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
-
 	if (BUILD_DOCUMENTATION_IN_ALL)
 		set (ALL_FLAG ALL)
 	else()
@@ -109,6 +106,9 @@ ENDIF()
 
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
+configure_file(src/lib.rc.in
+	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
 
 # Make relative paths absolute (needed later on)
 foreach(p LIB BIN INCLUDE CMAKE)

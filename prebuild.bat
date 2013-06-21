@@ -6,7 +6,7 @@ for /f "useback tokens=*" %%a in ('%str%') do set str=%%~a
 set "outfile=%str%/debug_subversion.h"
 echo "Outputting to %outfile%"
 
-subwcrev . "rtmath/error/debug_subversion.h.template" "%outfile%" -f
+subwcrev . "debug_subversion.h.template" "%outfile%" -f
 
 rem set ln=%USERPROFILE%\.rtmath
 rem set lnb=%ln:\=/%

@@ -1,7 +1,11 @@
-﻿// Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
+//#include "resource.h"
+#include "@CMAKE_SOURCE_DIR@/src/resource.h"
 #include <debug_subversion.h>
+
+#define QUOTE(str) #str
+#define EXPAND_AND_QUOTE(str) QUOTE(str)
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -69,12 +73,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Ryan Honeyager"
             VALUE "FileDescription", "Provides debug functions to Ryan's programs"
-            VALUE "FileVersion", "@MAJOR@,@MINOR@,@REVISION@," #SUB_REV
+            VALUE "FileVersion", "@MAJOR@,@MINOR@,@REVISION@," EXPAND_AND_QUOTE(SUB_REV)
             VALUE "InternalName", "Ryan-Debug"
             VALUE "LegalCopyright", "Copyright (C) 2013"
             VALUE "OriginalFilename", "Ryan-Debug.dll"
             VALUE "ProductName", "Ryan-Debug"
-            VALUE "ProductVersion", "@MAJOR@,@MINOR@,@REVISION@," #SUB_REV
+            VALUE "ProductVersion", "@MAJOR@,@MINOR@,@REVISION@," EXPAND_AND_QUOTE(SUB_REV)
         END
     END
     BLOCK "VarFileInfo"

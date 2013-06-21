@@ -497,5 +497,7 @@ std::ostream & operator<<(std::ostream &stream, const ryan_debug::processInfo &o
 	// TODO: parse and write the environment
 
 	stream << endl;
+
+	return stream;
 }
 
