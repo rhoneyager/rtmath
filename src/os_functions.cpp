@@ -29,6 +29,7 @@
 #include <cstdlib>
 #include <crtdbg.h>
 
+#undef environ // COnflicts with my structure
 #endif
 #ifdef __unix__
 #include <unistd.h>
@@ -261,6 +262,55 @@ namespace ryan_debug {
 		// Execution should not reach this point
 	}
 
+
+#ifdef _WIN32
+	/// Windows function for getting process name and path
+	bool getPathWIN32(DWORD pid, boost::filesystem::path &modPath, boost::filesystem::path &filename)
+	{
+		HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		if (NULL == h) return false;
+		// Get parent process name
+		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
+								//| PROCESS_VM_READ
+								,FALSE, pid );
+		if (NULL == h) return false;
+		TCHAR szModName[600];
+		DWORD success = 0;
+		DWORD sz = sizeof(szModName) / sizeof(TCHAR);
+		success = QueryFullProcessImageName(h,0,szModName,&sz);
+		//success = GetModuleFileNameEx(h,NULL,szModName,sizeof(szModName) / sizeof(TCHAR));
+
+		// If using unicode and not multibyte...
+		// Convert wchar to char in preparation for string and path conversion
+#ifdef UNICODE
+
+		size_t origsize = wcslen(szModName) + 1;
+
+		const size_t newsize = 600;
+		size_t convertedChars = 0;
+		char nstring[newsize];
+		wcstombs_s(&convertedChars, nstring, origsize, szModName, _TRUNCATE);
+		boost::filesystem::path modPathm(nstring);
+#else
+		boost::filesystem::path modPathm(szModName);
+#endif
+		boost::filesystem::path filenamem = modPathm.filename();
+
+		modPath = modPathm;
+		filename = filenamem;
+
+		CloseHandle(h);
+		if (!success) 
+		{
+			success = GetLastError();
+			std::cout << "Failure\n" << success << std::endl;
+			return false;
+		}
+		return true;
+	}
+#endif
+
+
 	/// Allows the linked app to force / prohibit waiting on exit
 	void waitOnExit(bool val)
 	{
@@ -299,37 +349,9 @@ namespace ryan_debug {
 		CloseHandle(h);
 
 		// Get parent process name
-		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
-								//| PROCESS_VM_READ
-								,FALSE, ppid );
-		if (NULL == h) return false;
-		TCHAR szModName[600];
-		DWORD success = 0;
-		DWORD sz = sizeof(szModName) / sizeof(TCHAR);
-		success = QueryFullProcessImageName(h,0,szModName,&sz);
-		//success = GetModuleFileNameEx(h,NULL,szModName,sizeof(szModName) / sizeof(TCHAR));
+		boost::filesystem::path filename, filepath;
+		getPathWIN32(ppid, filepath, filename);
 
-		// If using unicode and not multibyte...
-		// Convert wchar to char in preparation for string and path conversion
-#ifdef UNICODE
-
-		size_t origsize = wcslen(szModName) + 1;
-
-		const size_t newsize = 600;
-		size_t convertedChars = 0;
-		char nstring[newsize];
-		wcstombs_s(&convertedChars, nstring, origsize, szModName, _TRUNCATE);
-		boost::filesystem::path modPath(nstring);
-#else
-		boost::filesystem::path modPath(szModName);
-#endif
-		boost::filesystem::path filename = modPath.filename();
-		CloseHandle(h);
-		if (!success) 
-		{
-			success = GetLastError();
-			std::cout << "Failure\n" << success << std::endl;
-		}
 		//std::cout << filename.string() << std::endl;
 		// If run from cmd, no need to wait
 		if (filename.string() == "cmd.exe") return false;
@@ -462,7 +484,15 @@ namespace ryan_debug {
 		return res;
 #endif
 #ifdef _WIN32
-		throw std::string("Unimplemented on WIN32"); // unimplemented
+		//throw std::string("Unimplemented on WIN32"); // unimplemented
+		boost::filesystem::path filename, filepath;
+		getPathWIN32((DWORD) pid, filepath, filename); // int always fits in DWORD
+		res.name = filename.string();
+		res.path = filepath.string();
+		res.cmdline;
+		res.cwd;
+		res.startTime;
+		res.environ;
 		return res;
 #endif
 		// Should only reach here if not unix or win32. An odd possibility.

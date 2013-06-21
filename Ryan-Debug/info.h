@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 
+#define QUOTE(str) #str
+#define EXPAND_AND_QUOTE(str) QUOTE(str)
+
 namespace ryan_debug
 {
 	/** 
@@ -16,10 +19,11 @@ namespace ryan_debug
 	{
 		out << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
 #ifdef SUB_SOURCE
-		out << "SVN Revision " << SUB_REV << std::endl;
-		out << "SVN Revision Date: " << SUB_DATE << std::endl;
+		// Trying to switch to internal strings for Linux library compile
+		out << "SVN Revision " EXPAND_AND_QUOTE(SUB_REV) << std::endl;
+		out << "SVN Revision Date: " SUB_DATE << std::endl;
 //			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
-		out << "SVN Source: " << SUB_SOURCE << std::endl;
+		out << "SVN Source: " SUB_SOURCE << std::endl;
 #else
 		out << "SVN Repository Information Unknown" << std::endl;
 #endif
@@ -29,9 +33,9 @@ namespace ryan_debug
 		out << "Release Version" << std::endl;
 #endif
 #ifdef _OPENMP
-		out << "OpenMP Supported" << std::endl;
+		out << "OpenMP Enabled in Compiler" << std::endl;
 #else
-		out << "OpenMP Disabled" << std::endl;
+		out << "OpenMP Disabled in Compiler" << std::endl;
 #endif
 #ifdef __amd64
 		out << "64-bit build" << std::endl;

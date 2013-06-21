@@ -45,24 +45,33 @@ namespace ryan_debug
 	bool RYAN_DEBUG_DLEXPORT pidExists(int pid);
 	int RYAN_DEBUG_DLEXPORT getPID();
 	int RYAN_DEBUG_DLEXPORT getPPID(int pid);
-	processInfo getInfo(int pid);
+	processInfo RYAN_DEBUG_DLEXPORT getInfo(int pid);
 
 	// Print the compiler information for the debug library to std::cerr.
 	void RYAN_DEBUG_DLEXPORT printDebugInfo();
 
-	// Contains information about a process
+	/// Contains information about a process
 	struct processInfo
 	{
+		/// Executable name
 		std::string name;
+		/// Executable path
 		std::string path;
+		/// Current working directory
 		std::string cwd;
+		/// Environment variables
 		std::string environ;
+		/// Command-line
 		std::string cmdline;
+		/// Process start time
 		std::string startTime;
+		/// Process ID
 		int pid;
+		/// Process ID of parent
 		int ppid;
 	};
 }
 
-std::ostream & operator<<(std::ostream&, const ryan_debug::processInfo&);
+/// Allows writing of a ryan_debug::processInfo structure to a stream
+RYAN_DEBUG_DLEXPORT std::ostream &  operator<<(std::ostream&, const ryan_debug::processInfo&);
 
