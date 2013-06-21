@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include <cstdlib>
 #include <cstdio>
 #include <time.h>
@@ -462,12 +463,21 @@ namespace ryan_debug {
 			// TODO: figure out what to do with this.
 			path pcmd(pp / "cmdline");
 			ifstream scmdline(pcmd.string().c_str());
-			scmdline >> res.cmdline;
+			const int length = 1024;
+			char *buffer = new char[length];
+			while (scmdline.good())
+			{
+				scmdline.read(buffer,length);
+				res.cmdline.append(buffer,scmdline.gcount());
+			}
+			//scmdline >> res.cmdline;
+			// Replace command-line null symbols with spaces
+			std::replace(res.cmdline.begin(),res.cmdline.end(),
+					'\0', ' ');
 
 			path penv(pp / "environ");
 			ifstream senviron(penv.string().c_str());
-			const int length = 1024;
-			char *buffer = new char[length];
+
 			while (senviron.good())
 			{
 				senviron.read(buffer,length);
