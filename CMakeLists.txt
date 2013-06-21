@@ -16,6 +16,7 @@ set(RYAN_DEBUG_VERSION
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
+set(INSTALL_DOC_DIR share/doc/Ryan_Debug-${RYAN_DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
 if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
 	set (INSTEXT ON)
@@ -60,7 +61,7 @@ if(BUILD_DOCUMENTATION)
 		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
 	endif()
 
-	set(INSTALL_DOC_DIR share/doc/Ryan_Debug-${RYAN_DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
+
 	configure_file(Doxyfile.in
 		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
 
@@ -111,7 +112,7 @@ configure_file(src/lib.rc.in
 	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
 
 # Make relative paths absolute (needed later on)
-foreach(p LIB BIN INCLUDE CMAKE)
+foreach(p LIB BIN INCLUDE CMAKE DOC)
 	set(var INSTALL_${p}_DIR)
 	if(NOT IS_ABSOLUTE "${${var}}")
 		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
@@ -229,6 +230,8 @@ if (BUILD_DOCUMENTATION_IN_ALL)
 	install(DIRECTORY ${CMAKE_BINARY_DIR}/docs/html/ DESTINATION ${INSTALL_DOC_DIR}/html)
 	# pdf
 	install(DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex/ DESTINATION ${INSTALL_DOC_DIR}/latex)
+	# man
+	install(DIRECTORY ${CMAKE_BINARY_DIR}/docs/man/ DESTINATION ${INSTALL_DOC_DIR}/man)
 endif()
 
 
