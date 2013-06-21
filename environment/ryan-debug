@@ -9,5 +9,6 @@ prepend-path		LIBRARY_PATH	@INSTALL_LIB_DIR@
 prepend-path		INCLUDE		@INSTALL_INCLUDE_DIR@
 prepend-path		C_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
 prepend-path		CPLUS_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
+prepend-path		MANPATH		@INSTALL_DOC_DIR@/man
 setenv			Ryan_Debug_DIR	@INSTALL_CMAKE_DIR@
 
