@@ -24,10 +24,13 @@
 #endif
 #endif
 
-
+#include <string>
+//#include <vector>
 
 namespace ryan_debug
 {
+	struct processInfo;
+
 	// appEntry and appExit are setup on dll load. No need to call them 
 	// using msvc or gcc. Others may require an explicit call.
 	void RYAN_DEBUG_DLEXPORT appEntry();
@@ -42,8 +45,24 @@ namespace ryan_debug
 	bool RYAN_DEBUG_DLEXPORT pidExists(int pid);
 	int RYAN_DEBUG_DLEXPORT getPID();
 	int RYAN_DEBUG_DLEXPORT getPPID(int pid);
+	processInfo getInfo(int pid);
 
 	// Print the compiler information for the debug library to std::cerr.
 	void RYAN_DEBUG_DLEXPORT printDebugInfo();
+
+	// Contains information about a process
+	struct processInfo
+	{
+		std::string name;
+		std::string path;
+		std::string cwd;
+		std::string environ;
+		std::string cmdline;
+		std::string startTime;
+		int pid;
+		int ppid;
+	};
 }
+
+std::ostream & operator<<(std::ostream&, const ryan_debug::processInfo&);
 

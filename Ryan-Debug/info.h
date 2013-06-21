@@ -15,7 +15,7 @@ namespace ryan_debug
 	inline void debug_preamble(std::ostream &out = std::cerr)
 	{
 		out << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
-#ifdef SUB_REV
+#ifdef SUB_SOURCE
 		out << "SVN Revision " << SUB_REV << std::endl;
 		out << "SVN Revision Date: " << SUB_DATE << std::endl;
 //			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;

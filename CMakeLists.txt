@@ -7,8 +7,9 @@ cmake_minimum_required (VERSION 2.8)
 project(Ryan_Debug C CXX)
 
 set(MAJOR 0)
-set(MINOR 5)
-set(REVISION 6)
+set(MINOR 6)
+set(REVISION 1)
+
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
 
@@ -63,6 +64,9 @@ if(BUILD_DOCUMENTATION)
 	configure_file(Doxyfile.in
 		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
 
+	configure_file(src/lib.rc.in
+		"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
+
 	if (BUILD_DOCUMENTATION_IN_ALL)
 		set (ALL_FLAG ALL)
 	else()
@@ -87,6 +91,24 @@ endif()
 
 #configure_file(ryan-debug.spec.in
 #	"${PROJECT_BINARY_DIR}/ryan-debug.spec" @ONLY)
+# Custom prebuild step based on os
+IF(WIN32 AND NOT CYGWIN)
+	add_custom_command (
+		COMMAND prebuild.bat "${CMAKE_CURRENT_BINARY_DIR}"
+		COMMENT Running custom commands to set paths and query the repository information.
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+else()
+	add_custom_command (
+		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+ENDIF()
+
+# Add in script-generated includes
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Make relative paths absolute (needed later on)
 foreach(p LIB BIN INCLUDE CMAKE)
@@ -101,7 +123,7 @@ configure_file (
 	"${PROJECT_BINARY_DIR}/module-ryan-debug"
 	)
 
-find_package(Boost COMPONENTS filesystem system REQUIRED)
+find_package(Boost COMPONENTS filesystem program_options system REQUIRED)
 include_directories(${BOOST_INCLUDEDIR})
 if (WIN32 AND NOT CYGWIN) # Boost auto-link
 	link_directories(${BOOST_LIBRARYDIR})
@@ -116,12 +138,13 @@ set( srcs
 set (hdrs
 	Ryan-Debug/debug.h
 	Ryan-Debug/info.h
+	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
 	)
 
-set(srcs-test src/test.cpp)
+#set(srcs-test src/test.cpp)
 
 if(WIN32)
-	set (srcs ${srcs} src/lib.rc)
+	set (srcs ${srcs} "${PROJECT_BINARY_DIR}/lib.rc" )
 endif()
 
 source_group("Header Files" FILES ${hdrs})
@@ -134,9 +157,9 @@ add_library(Ryan_Debug SHARED ${srcs} ${hdrs}
 target_link_libraries(Ryan_Debug ${liblist})
 set_target_properties(Ryan_Debug PROPERTIES FOLDER "Libs")
 
-add_executable(Ryan_Debug-test ${srcs-test})
-target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)
-set_target_properties(Ryan_Debug-test PROPERTIES FOLDER "Apps")
+#add_executable(Ryan_Debug-test ${srcs-test})
+#target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)
+#set_target_properties(Ryan_Debug-test PROPERTIES FOLDER "Apps")
 
 export(TARGETS Ryan_Debug
 	FILE "${PROJECT_BINARY_DIR}/Ryan_DebugTargets.cmake")
@@ -191,11 +214,13 @@ IF(INSTALL_MODULES AND NOT WIN32)
 	)
 ENDIF()
 
-INSTALL(TARGETS Ryan_Debug-test
-	EXPORT Ryan_DebugTargets
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-	COMPONENT Applications
-	)
+add_subdirectory(apps)
+
+#INSTALL(TARGETS Ryan_Debug-test
+#	EXPORT Ryan_DebugTargets
+#	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+#	COMPONENT Applications
+#	)
 
 if (BUILD_DOCUMENTATION_IN_ALL)
 	# Provides html and pdf
@@ -227,6 +252,8 @@ endif()
 
 STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_D_DLL ${Boost_FILESYSTEM_LIBRARY_DEBUG} )
 STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_R_DLL ${Boost_FILESYSTEM_LIBRARY_RELEASE} )
+STRING ( REGEX REPLACE ${libext} ${dllext} PROGRAM_D_DLL ${Boost_PROGRAM_OPTIONS_LIBRARY_DEBUG} )
+STRING ( REGEX REPLACE ${libext} ${dllext} PROGRAM_R_DLL ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} )
 STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_D_DLL ${Boost_SYSTEM_LIBRARY_DEBUG} )
 STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_R_DLL ${Boost_SYSTEM_LIBRARY_RELEASE} )
 
@@ -234,6 +261,7 @@ if (INSTALL_EXTERNALS)
 	INSTALL(FILES 
 		${FILESYSTEM_D_DLL}
 		${SYSTEM_D_DLL}
+		${PROGRAM_D_DLL}
 		DESTINATION ${INSTALL_BIN_DIR}
 		COMPONENT Libraries
 		CONFIGURATIONS Debug
@@ -242,6 +270,7 @@ if (INSTALL_EXTERNALS)
 	INSTALL(FILES 
 		${FILESYSTEM_R_DLL}
 		${SYSTEM_R_DLL}
+		${PROGRAM_R_DLL}
 		DESTINATION ${INSTALL_BIN_DIR}
 		COMPONENT Libraries
 		CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
