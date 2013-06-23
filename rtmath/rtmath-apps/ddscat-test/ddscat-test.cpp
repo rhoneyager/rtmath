@@ -59,11 +59,44 @@ int main(int argc, char** argv)
 
 		int numFailures = 0;
 
+		// If mismatched file type, report failure.
+		boost::filesystem::path pInput(sInput), pBase(sBase);
+		if (pInput.extension() != pBase.extension())
+		{
+			std::cerr << "File types do not match!" << endl;
+			exit(2);
+		}
+
 		using namespace rtmath::ddscat;
 		ddOutputSingle ddInput(sInput), ddBase(sBase);
 
 		// Check header strings
-		//TODO!
+		ddOutputSingle::headerMap mapInput, mapBase;
+		ddInput.getHeaderMaps(mapInput);
+		ddBase.getHeaderMaps(mapBase);
+		{
+			auto it = mapInput.begin();
+			auto ot = mapBase.begin();
+			if (mapInput.size() != mapBase.size())
+				throw rtmath::debug::xBadInput("Headers have different sizes!");
+			while (it != mapInput.end() && ot != mapBase.end())
+			{
+				if (it->first != ot->first) 
+				{
+					// Unaligned header symbols
+					throw rtmath::debug::xBadInput(
+							"Files do not have the same header quantities");
+				}
+				if (it->second->operator!=(*(ot->second)))
+				{
+					// A mismatch has occurred
+					numFailures++;
+					std::cerr << "Header mismatch:\n\t";
+					std::cerr << *(it->second) << "\t" << *(ot->second);
+				}
+				++it; ++ot;
+			}
+		}
 
 		// Check the stat tables
 		ddOutputSingle::statTableType statsInput, statsBase;
@@ -82,7 +115,7 @@ int main(int argc, char** argv)
 			numFailures++;
 			// Convert j to the appropriate stat table entry name and 
 			// report the failure.
-			std::cerr << "Mismatch in " 
+			std::cerr << "Stat table mismatch in " 
 				<< getStatNameFromId( (rtmath::ddscat::stat_entries) j)
 				<< " - " << a << " versus " << b << std::endl;
 		}
@@ -94,15 +127,42 @@ int main(int argc, char** argv)
 		ddOutputSingle::scattMatricesContainer scattInput, scattBase;
 		ddInput.getScattMatrices(scattInput);
 		ddBase.getScattMatrices(scattBase);
+		/*
+		for (auto &jt : scattInput)
+		{
+			std::cerr << jt->theta() << "\t" << jt->phi() << "\t" << jt->pol() << endl;
+		}
+		return 0;
+		 */
 		{
 			auto it = scattInput.begin();
 			auto ot = scattBase.begin();
 			while (it != scattInput.end() && ot != scattBase.end())
 			{
-				if (it->id() != ot->id()) throw;
-				// Check freq, theta, phi
+				if ((*it)->id() != (*ot)->id())
+					throw rtmath::debug::xBadInput("Scattering matrix type mismatch");
+				// Check freq, theta, phi, pol
+				//std::cerr << "\tpol: " << (*it)->pol() << "\t" << (*ot)->pol() << "\t" 
+				//	<< abs( ((*it)->pol() - (*ot)->pol()) / (*ot)->pol()) * 100. << std::endl;
+				if (!(*it)->compareTolHeader((**ot), tolerance))
+				{
+					std::cerr << "First part of matrix entry exceeds tolerances.\n"
+						<< "\ttheta: " << (*ot)->theta() << "\t" << (*it)->theta() << "\n"
+						<< "\tphi: " << (*ot)->phi() << "\t\t" << (*it)->phi() << "\n"
+						<< "\tpol: " << (*ot)->pol() << "\t" << (*it)->pol() << "\n";
+					numFailures++;
+					++it; ++ot;
+					continue;
+				}
 				// Cast to correct subtype and compare entries
+				// TODO!
 				++it; ++ot;
+			}
+			if (it != scattInput.end() || ot != scattBase.end())
+			{
+				std::cerr << "Matrix size mismatch. Input has " << scattInput.size() 
+					<< " entries, whereas base has " << scattBase.size() << " entries.\n";
+				numFailures++;
 			}
 		}
 

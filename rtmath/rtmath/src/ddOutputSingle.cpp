@@ -30,13 +30,13 @@ namespace
 	public:
 		ddver() { _version = rtmath::ddscat::ddVersions::getDefaultVer(); }
 		virtual ~ddver() {}
-		virtual void write(std::ostream &out, size_t)
+		virtual void write(std::ostream &out, size_t) const override
 		{
 			out << " DDSCAT --- ";
 			out << rtmath::ddscat::ddVersions::getVerAvgHeaderString(_version);
 			out << std::endl;
 		}
-		virtual void read(std::istream &in)
+		virtual void read(std::istream &in) override
 		{
 			std::string lin;
 			std::getline(in,lin);
@@ -45,7 +45,7 @@ namespace
 		size_t _version;
 		size_t version() const { return _version; }
 		void version(size_t n) { _version = n; }
-		virtual std::string value() const
+		virtual std::string value() const override
 		{
 			std::ostringstream out;
 			out << _version;
@@ -57,15 +57,15 @@ namespace
 	public:
 		ddstring() {}
 		virtual ~ddstring() {}
-		virtual void write(std::ostream &out, size_t)
+		virtual void write(std::ostream &out, size_t) const override
 		{
 			out << s << std::endl;
 		}
-		virtual void read(std::istream &in)
+		virtual void read(std::istream &in) override
 		{
 			std::getline(in,s);
 		}
-		virtual std::string value() const { return s; }
+		virtual std::string value() const override { return s; }
 		std::string s;
 	};
 	class ddtarget : public ::rtmath::ddscat::ddOutputSingleObj
@@ -73,12 +73,12 @@ namespace
 	public:
 		ddtarget() {}
 		virtual ~ddtarget() {}
-		virtual void write(std::ostream &out, size_t)
+		virtual void write(std::ostream &out, size_t) const override
 		{
 			out << " TARGET --- ";
 			out << s << std::endl;
 		}
-		virtual void read(std::istream &in)
+		virtual void read(std::istream &in) override
 		{
 			std::string lin;
 			std::getline(in,lin);
@@ -88,7 +88,7 @@ namespace
 			// Not all Liu avg files are correct in this respect
 			boost::algorithm::trim(s);
 		}
-		virtual std::string value() const { return s; }
+		virtual std::string value() const override { return s; }
 		std::string s;
 	};
 	class ddSval : public ::rtmath::ddscat::ddOutputSingleObj
@@ -96,11 +96,11 @@ namespace
 	public:
 		ddSval(const std::string &tail) {this->tail = tail;}
 		virtual ~ddSval() {}
-		virtual void write(std::ostream &out, size_t)
+		virtual void write(std::ostream &out, size_t) const override
 		{
 			out << s << "--- " << tail << std::endl;
 		}
-		virtual void read(std::istream &in)
+		virtual void read(std::istream &in) override
 		{
 			std::string lin;
 			std::getline(in,lin);
@@ -108,6 +108,7 @@ namespace
 			s = lin.substr(0,p);
 		}
 		std::string s, tail;
+		virtual std::string value() const override { return s; }
 	};
 
 	template <class T>
@@ -116,17 +117,17 @@ namespace
 	public:
 		ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") {this->pos = pos; this->head = head; this->tail = tail;}
 		virtual ~ddNval() {}
-		virtual void write(std::ostream &out, size_t)
+		virtual void write(std::ostream &out, size_t) const override
 		{
 			out << head << val << tail << std::endl;
 		}
-		virtual std::string value() const
+		virtual std::string value() const override
 		{
 			std::ostringstream out;
 			out << val;
 			return out.str();
 		}
-		virtual void read(std::istream &in)
+		virtual void read(std::istream &in) override
 		{
 			std::string lin;
 			std::getline(in,lin);
@@ -357,7 +358,6 @@ namespace rtmath {
 				tokenizer t(lin, sep);
 
 				// Expecting the first line to begin with theta phi Pol. ...
-				//std::cerr << "Parsing line " << lin << std::endl;
 				if (std::isalpha(lin.at(0)))
 				{
 					size_t i=0; // Column number
@@ -379,7 +379,7 @@ namespace rtmath {
 	#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine")
 				} else {
 					// Parse the Mueller entries
-
+					//std::cerr << "Parsing " << lin << std::endl;
 					// TODO: check this
 					// The ordering is theta, phi, polarization, and then the 
 					// relevant matrix entries
@@ -403,6 +403,7 @@ namespace rtmath {
 						boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
 
 					_scattMatricesRaw.insert(matC);
+					//std::cerr << _scattMatricesRaw.size() << " elements\n";
 				}
 			}
 		}
@@ -526,6 +527,11 @@ namespace rtmath {
 		double ddOutputSingle::getStatEntry(stat_entries e) const 
 		{
 			return _statTable[e];
+		}
+
+		void ddOutputSingle::getHeaderMaps(headerMap &res) const
+		{
+			res = _objMap;
 		}
 
 		void ddOutputSingle::writeAVG(std::ostream &out) const
@@ -797,7 +803,7 @@ namespace rtmath {
 			_muellerMap[7] = std::pair<size_t, size_t>(2,0);
 			_muellerMap[8] = std::pair<size_t, size_t>(3,0);
 		}
-		
+
 		ddOutputSingle::~ddOutputSingle() {}
 
 		size_t ddOutputSingle::version() const
@@ -955,6 +961,27 @@ namespace rtmath {
 			if (line.find("BETA")!=std::string::npos) res = "beta";
 			if (line.find("THETA")!=std::string::npos) res = "theta";
 			if (line.find("PHI")!=std::string::npos) res = "phi";
+		}
+
+		bool ddOutputSingleObj::operator==(const ddOutputSingleObj &rhs) const
+		{
+			// In absence of an id field (for introspection), simply write
+			// the values ob both objects and do a comparison.
+
+			std::ostringstream oa, ob;
+			write(oa, 0);
+			rhs.write(ob, 0);
+			std::string sa = oa.str(), sb = ob.str();
+			//std::cerr << sa << sb << std::endl;
+			//sa = value();
+			//sb = rhs.value();
+			//std::cerr << "\t" << sa << std::endl << "\t" << sb << std::endl;
+			return sa == sb;
+		}
+
+		bool ddOutputSingleObj::operator!=(const ddOutputSingleObj &rhs) const
+		{
+			return !operator==(rhs);
 		}
 
 		/*
@@ -1143,4 +1170,11 @@ namespace rtmath {
 
 	} // end ddscat
 } // end rtmath
+
+std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSingleObj &ob)
+{
+	ob.write(stream);
+	return stream;
+}
+
 

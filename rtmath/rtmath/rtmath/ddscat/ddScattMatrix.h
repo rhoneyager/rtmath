@@ -39,14 +39,31 @@ namespace rtmath
 			inline double thetan() const { return _thetan; }
 			inline double phi() const { return _phi; }
 			inline double phin() const { return _phin; }
-			
+
 			virtual bool operator<(const ddScattMatrix&) const;
+
+			virtual bool compareTolHeader(const ddScattMatrix&, double tolPercent) const;
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		//protected:
 			mutable PnnType _Pnn;
 			//mutable boost::shared_ptr<matrixop> _Pnn;
 			double _pol;
 			double _freq, _theta, _thetan, _phi, _phin;
+		};
+
+		// TODO: move this into a lower-level header
+		template <typename T>
+		struct sharedComparator
+		{
+			bool operator()(const T &lhs, const T &rhs) const
+			{
+				//std::cerr << "Comparing " << lhs << "\t" << rhs << "\t";
+				//bool a = (lhs < rhs);
+				//std::cerr << a << "\t";
+				bool res = (lhs)->operator<(*rhs);
+				//std::cerr << res << std::endl;
+				return res;
+			}
 		};
 
 		class ddScattMatrixF : public ddScattMatrix

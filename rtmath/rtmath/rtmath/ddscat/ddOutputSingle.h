@@ -12,12 +12,13 @@
 #include "../phaseFunc.h"
 #include "ddScattMatrix.h"
 #include "shapefile.h"
+#include "ddVersions.h"
 //#include "../da/daStatic.h"
 //#include "../coords.h"
 //#include "../depGraph.h"
 
 namespace rtmath {
-	
+
 	namespace ddscat {
 
 		class ddOutputSingleObj;
@@ -81,22 +82,30 @@ namespace rtmath {
 
 			void getStatTable(statTableType&) const;
 			double getStatEntry(stat_entries e) const;
-			boost::shared_ptr<ddOutputSingleObj> getObj(const std::string &id) const;
 
 			bool operator<(const ddOutputSingle &rhs) const;
 			typedef std::map<size_t, std::pair<size_t, size_t> > mMuellerIndices;
 
-			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix> > 
+#pragma message("scattMatricesContainer needs to have ordering based on " \
+		"internal orientation, not based on pointers!")
+//			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix> > 
+			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix>,
+					ddscat::sharedComparator<boost::shared_ptr<const ddscat::ddScattMatrix> > >
 				scattMatricesContainer;
 			void getScattMatrices(scattMatricesContainer&) const;
+
+			typedef std::map< std::string, boost::shared_ptr<ddOutputSingleObj> >
+				headerMap;
+			void getHeaderMaps(headerMap&) const;
+			boost::shared_ptr<ddOutputSingleObj> getObj(const std::string &id) const;
+
 		protected:
 			size_t _version;
 			mMuellerIndices _muellerMap;
 			double _beta, _theta, _phi, _wave, _aeff;
 			void _init();
 			//void _populateDefaults();
-			std::map< std::string, boost::shared_ptr<ddOutputSingleObj> >
-				_objMap;
+			headerMap _objMap;
 			statTableType _statTable;
 			scattMatricesContainer _scattMatricesRaw;
 		};
@@ -107,9 +116,12 @@ namespace rtmath {
 			friend class ddOutputSingle;
 			ddOutputSingleObj();
 			virtual ~ddOutputSingleObj();
-			virtual void write(std::ostream &out, size_t version) const {}
-			virtual void read(std::istream &in) {}
-			virtual std::string value() const {return std::string(); }
+			virtual void write(std::ostream &out, size_t version
+					= rtmath::ddscat::ddVersions::getDefaultVer()) const = 0;
+			virtual void read(std::istream &in) = 0;
+			virtual std::string value() const = 0; //{return std::string(); }
+			virtual bool operator==(const ddOutputSingleObj&) const;
+			virtual bool operator!=(const ddOutputSingleObj&) const;
 			static void findMap(const std::string &line, std::string &res); //
 			static boost::shared_ptr<ddOutputSingleObj> constructObj
 				(const std::string &key);
@@ -118,4 +130,6 @@ namespace rtmath {
 	}
 
 }
+
+std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSingleObj &ob);
 

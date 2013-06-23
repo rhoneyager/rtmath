@@ -32,12 +32,28 @@ namespace rtmath {
 
 		bool ddScattMatrix::operator<(const ddScattMatrix &rhs) const
 		{
-			if (_freq < rhs._freq) return false;
-			if (_theta < rhs._theta) return false;
-			if (_thetan < rhs._thetan) return false;
-			if (_phi < rhs._phi) return false;
-			if (_phin < rhs._phin) return false;
-			if (_pol < rhs._pol) return false;
+#define comp(x) if (x != rhs.x) return (x < rhs.x);
+			comp(_freq);
+			comp(_phi);
+			comp(_theta);
+			comp(_phin);
+			comp(_thetan);
+			comp(_pol);
+#undef comp
+			return false;
+		}
+
+		bool ddScattMatrix::compareTolHeader(const ddScattMatrix &rhs, double tol) const
+		{
+			// NOTE: the preprocessor handles math in a different order!
+#define tol(x) if ( abs( 100.*x/rhs.x - 100.0 ) > tol) return false;
+			tol(_freq);
+			tol(_theta);
+			tol(_thetan);
+			tol(_phi);
+			tol(_phin);
+			tol(_pol);
+#undef tol
 			return true;
 		}
 
