@@ -57,6 +57,19 @@ int main(int argc, char** argv)
 		tolerance = vm["tolerance"].as<double>();
 		toleranceAbs = vm["tolerance-abs"].as<double>();
 
+		// Tolerance evaluator
+		auto fTol = [tolerance,toleranceAbs](double a, double b)->bool
+		{
+			if (abs(a) < toleranceAbs && abs(b) < toleranceAbs)
+			{
+				if (abs(a-b) > toleranceAbs) return false;
+				return true;
+			} else {
+				if ( abs((a-b)/b)*100. > tolerance) return false;
+				return true;
+			}
+		};
+
 		int numFailures = 0;
 
 		// If mismatched file type, report failure.
@@ -108,14 +121,15 @@ int main(int argc, char** argv)
 			double a = statsBase[j];
 			// Check for tolerance in percentage and in abs terms.
 			// If both criteria fail, then report a failure.
-			if (abs( (a - b) / a) 
-					* 100 < tolerance) continue;
-			if (abs(a - b) < toleranceAbs) continue;
+			if (fTol(a,b)) continue;
+			//if (abs( (a - b) / a)
+			//		* 100 < tolerance) continue;
+			//if (abs(a - b) < toleranceAbs) continue;
 			// By here, a failure has occurred
 			numFailures++;
-			// Convert j to the appropriate stat table entry name and 
+			// Convert j to the appropriate stat table entry name and
 			// report the failure.
-			std::cerr << "Stat table mismatch in " 
+			std::cerr << "Stat table mismatch in "
 				<< getStatNameFromId( (rtmath::ddscat::stat_entries) j)
 				<< " - " << a << " versus " << b << std::endl;
 		}
@@ -154,8 +168,59 @@ int main(int argc, char** argv)
 					++it; ++ot;
 					continue;
 				}
+
 				// Cast to correct subtype and compare entries
-				// TODO!
+				if ((*it)->id() == rtmath::ddscat::P)
+				{
+					// Mueller matrix comparison
+					auto mI = (*it)->mueller();
+					auto mB = (*ot)->mueller();
+					bool fail = false;
+					// Matrices are 4x4 double
+					for (size_t i=0; i<4 && !fail; i++)
+					{
+						for (size_t j=0; j<4 & !fail; j++)
+						{
+							if (!fTol(mI(i,j),mB(i,j))) fail = true;
+						}
+					}
+					if (fail)
+					{
+						numFailures++;
+						std::cerr << "Matrix entry exceeds tolerance: "
+							<< "theta: " << (*ot)->theta()
+							<< " phi: " << (*ot)->phi()
+							<< " pol: " << (*ot)->pol() << "\n"
+							<< mI << "\n\n" << mB << endl;
+					}
+				} else {
+					// FML matrix comparison
+					boost::shared_ptr<const ddScattMatrixF> sfi(
+						boost::dynamic_pointer_cast<const ddScattMatrixF>(*it));
+					boost::shared_ptr<const ddScattMatrixF> sfb(
+						boost::dynamic_pointer_cast<const ddScattMatrixF>(*it));
+					ddScattMatrix::FType fI = sfi->getF();
+					ddScattMatrix::FType fB = sfb->getF();
+					// Matrices are 2x2 complex double
+					bool fail = false;
+					for (size_t i=0; i<2 && !fail; i++)
+					{
+						for (size_t j=0; j<2 && !fail; j++)
+						{
+							if (!fTol(fI(i,j).real(),fB(i,j).real())) fail = true;
+							if (!fTol(fI(i,j).imag(),fB(i,j).imag())) fail = true;
+						}
+					}
+					if (fail)
+					{
+						numFailures++;
+						std::cerr << "Matrix entry exceeds tolerance: "
+							<< "theta: " << (*ot)->theta()
+							<< " phi: " << (*ot)->phi()
+							<< " pol: " << (*ot)->pol() << "\n"
+							<< fI << "\n\n" << fB << endl;
+					}
+				}
 				++it; ++ot;
 			}
 			if (it != scattInput.end() || ot != scattBase.end())
@@ -166,17 +231,10 @@ int main(int argc, char** argv)
 			}
 		}
 
-		//if (dispScat)
-		{
-			//cout << "Mueller matrix:\n";
-			//ddfile.writeMueller(cout);
-			//cout << endl;
-		}
-
 		if (numFailures)
 		{
 			cout << "There were " << numFailures << " failures." << endl;
-			return 2;
+			return numFailures;
 		} else {
 			cout << "All tests passed!" << endl;
 		}
