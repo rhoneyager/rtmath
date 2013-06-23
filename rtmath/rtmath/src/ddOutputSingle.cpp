@@ -30,7 +30,7 @@ namespace
 	public:
 		ddver() { _version = rtmath::ddscat::ddVersions::getDefaultVer(); }
 		virtual ~ddver() {}
-		virtual void write(std::ostream &out)
+		virtual void write(std::ostream &out, size_t)
 		{
 			out << " DDSCAT --- ";
 			out << rtmath::ddscat::ddVersions::getVerAvgHeaderString(_version);
@@ -45,13 +45,19 @@ namespace
 		size_t _version;
 		size_t version() const { return _version; }
 		void version(size_t n) { _version = n; }
+		virtual std::string value() const
+		{
+			std::ostringstream out;
+			out << _version;
+			return out.str();
+		}
 	};
 	class ddstring : public ::rtmath::ddscat::ddOutputSingleObj
 	{
 	public:
 		ddstring() {}
 		virtual ~ddstring() {}
-		virtual void write(std::ostream &out)
+		virtual void write(std::ostream &out, size_t)
 		{
 			out << s << std::endl;
 		}
@@ -67,7 +73,7 @@ namespace
 	public:
 		ddtarget() {}
 		virtual ~ddtarget() {}
-		virtual void write(std::ostream &out)
+		virtual void write(std::ostream &out, size_t)
 		{
 			out << " TARGET --- ";
 			out << s << std::endl;
@@ -90,7 +96,7 @@ namespace
 	public:
 		ddSval(const std::string &tail) {this->tail = tail;}
 		virtual ~ddSval() {}
-		virtual void write(std::ostream &out)
+		virtual void write(std::ostream &out, size_t)
 		{
 			out << s << "--- " << tail << std::endl;
 		}
@@ -110,7 +116,7 @@ namespace
 	public:
 		ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") {this->pos = pos; this->head = head; this->tail = tail;}
 		virtual ~ddNval() {}
-		virtual void write(std::ostream &out)
+		virtual void write(std::ostream &out, size_t)
 		{
 			out << head << val << tail << std::endl;
 		}
@@ -138,6 +144,37 @@ namespace
 
 namespace rtmath {
 	namespace ddscat {
+
+		std::string getStatNameFromId(stat_entries id)
+		{
+#define str(s) #s
+#define CHECK(x) if(id==x) return str(x)
+			/*
+			 *			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
+			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
+			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
+			QPOL,DQPHA,
+			QSCAG11,QSCAG21,GSCAG31,ITER1,MXITER1,NSCA1,
+			QSCAG12,QSCAG22,GSCAG32,ITER2,MXITER2,NSCA2,
+			QSCAG1M,QSCAG2M,QSCAG3M,
+			*/
+			CHECK(QEXT1); CHECK(QABS1); CHECK(QSCA1);
+			CHECK(G11); CHECK(G21); CHECK(QBK1); CHECK(QPHA1);
+			CHECK(QEXT2); CHECK(QABS2); CHECK(QSCA2);
+			CHECK(G12); CHECK(G22); CHECK(QBK2); CHECK(QPHA2);
+			CHECK(QEXTM); CHECK(QABSM); CHECK(QSCAM);
+			CHECK(G1M); CHECK(G2M); CHECK(QBKM); CHECK(QPHAM);
+			CHECK(QPOL); CHECK(DQPHA);
+			CHECK(QSCAG11); CHECK(QSCAG21); CHECK(GSCAG31);
+			CHECK(ITER1); CHECK(MXITER1); CHECK(NSCA1);
+			CHECK(QSCAG12); CHECK(QSCAG22); CHECK(GSCAG32);
+			CHECK(ITER2); CHECK(MXITER2); CHECK(NSCA2);
+			CHECK(QSCAG1M); CHECK(QSCAG2M); CHECK(QSCAG3M);
+
+			throw rtmath::debug::xBadInput(str(id));
+#undef CHECK
+#undef str
+		}
 
 		ddOutputSingleObj::ddOutputSingleObj() { }
 
@@ -258,7 +295,7 @@ namespace rtmath {
 			{
 				std::getline(in,lin);
 				if (lin == "") return;
-				// Parse the string to get rid of spaces. This is used to determine 
+				// Parse the string to get rid of spaces. This is used to determine
 				// if we are still in the S matrix header or in the actual data
 				boost::trim(lin);
 				if (std::isalpha(lin.at(0))) continue;
@@ -320,17 +357,21 @@ namespace rtmath {
 				tokenizer t(lin, sep);
 
 				// Expecting the first line to begin with theta phi Pol. ...
+				//std::cerr << "Parsing line " << lin << std::endl;
 				if (std::isalpha(lin.at(0)))
 				{
 					size_t i=0; // Column number
 					for (auto it = t.begin(); it != t.end(); ++it, ++i)
 					{
+						//std::cerr << "\t i: " << i << " it: " << *it << std::endl;
 						// Mueller entry columns have a '_'
-						size_t loc;
-						if (loc = it->find('_') == string::npos) continue;
+						size_t loc = it->find("_");
+						if (loc == string::npos) continue;
+						//std::cerr << it->substr(loc+1) << std::endl;
 						size_t id = (size_t) atoi(it->substr(loc+1).c_str());
 						size_t row = (id / 10) - 1; // Annoying start at 1...
 						size_t col = (id % 10) - 1;
+						//std::cerr << "mIndices loc: " << loc << " id: " << id << " i: " << i << " row: " << row << " col: " << col << std::endl;
 						mIndices[i] = std::pair<size_t,size_t>(row,col);
 					}
 
@@ -413,6 +454,7 @@ namespace rtmath {
 				if (key == "phi") _phi = boost::lexical_cast<double>(obj->value());
 				if (key == "wave") _wave = boost::lexical_cast<double>(obj->value());
 				if (key == "aeff") _aeff = boost::lexical_cast<double>(obj->value());
+				if (key == "version") _version = boost::lexical_cast<size_t>(obj->value());
 			}
 		}
 
@@ -471,6 +513,16 @@ namespace rtmath {
 			out.width(0);
 		}
 
+		void ddOutputSingle::getScattMatrices(scattMatricesContainer& c) const
+		{
+			c = _scattMatricesRaw;
+		}
+
+		void ddOutputSingle::getStatTable(statTableType &res) const
+		{
+			res = _statTable;
+		}
+
 		double ddOutputSingle::getStatEntry(stat_entries e) const 
 		{
 			return _statTable[e];
@@ -483,42 +535,43 @@ namespace rtmath {
 			// TODO
 
 			// Write the file in the appropriate order
-			_objMap.at("version")->write(out);
-			_objMap.at("target")->write(out);
-			_objMap.at("solnmeth")->write(out);
-			_objMap.at("polarizability")->write(out);
-			_objMap.at("shape")->write(out);
-			_objMap.at("numdipoles")->write(out);
+#define WRITE(x) _objMap.at(x)->write(out,_version)
+			WRITE("version");
+			WRITE("target");
+			WRITE("solnmeth");
+			WRITE("polarizability");
+			WRITE("shape");
+			WRITE("numdipoles");
 
-			_objMap.at("d/aeff")->write(out);
-			_objMap.at("d")->write(out);
+			WRITE("d/aeff");
+			WRITE("d");
 
-			_objMap.at("aeff")->write(out);
-			_objMap.at("wave")->write(out);
-			_objMap.at("k.aeff")->write(out);
+			WRITE("aeff");
+			WRITE("wave");
+			WRITE("k.aeff");
 			if (rtmath::ddscat::ddVersions::isVerWithin(_version,72,0))
-				_objMap.at("nambient")->write(out);
-			_objMap.at("neps")->write(out);
-			_objMap.at("tol")->write(out);
-			
-			_objMap.at("a1tgt")->write(out);
-			_objMap.at("a2tgt")->write(out);
-			_objMap.at("navg")->write(out);
+				WRITE("nambient");
+			WRITE("neps");
+			WRITE("tol");
 
-			_objMap.at("kveclf")->write(out);
-			_objMap.at("incpol1lf")->write(out);
-			_objMap.at("incpol2lf")->write(out);
+			WRITE("a1tgt");
+			WRITE("a2tgt");
+			WRITE("navg");
 
-			_objMap.at("betarange")->write(out);
-			_objMap.at("thetarange")->write(out);
-			_objMap.at("phirange")->write(out);
+			WRITE("kveclf");
+			WRITE("incpol1lf");
+			WRITE("incpol2lf");
+
+			WRITE("betarange");
+			WRITE("thetarange");
+			WRITE("phirange");
 
 			out << endl;
 
-			_objMap.at("etasca")->write(out);
-			
-			_objMap.at("avgnumori")->write(out);
-			_objMap.at("avgnumpol")->write(out);
+			WRITE("etasca");
+
+			WRITE("avgnumori");
+			WRITE("avgnumpol");
 
 			// Write the odd table of Qsca and the others
 			writeStatTable(out);
@@ -546,7 +599,7 @@ namespace rtmath {
 				boost::shared_ptr<const ddscat::ddScattMatrix> sf(*it);
 				out << endl;
 				out.width(6);
-				
+
 				out << (*it)->theta() << "\t";
 				out << (*it)->phi()  << "\t";
 				out.width(9);
@@ -567,44 +620,44 @@ namespace rtmath {
 			// TODO
 
 			// Write the file in the appropriate order
-			_objMap.at("version")->write(out);
-			_objMap.at("target")->write(out);
-			_objMap.at("solnmeth")->write(out);
-			_objMap.at("polarizability")->write(out);
-			_objMap.at("shape")->write(out);
-			_objMap.at("numdipoles")->write(out);
+			WRITE("version");
+			WRITE("target");
+			WRITE("solnmeth");
+			WRITE("polarizability");
+			WRITE("shape");
+			WRITE("numdipoles");
 
-			_objMap.at("d/aeff")->write(out);
-			_objMap.at("d")->write(out);
+			WRITE("d/aeff");
+			WRITE("d");
 			out << "----- physical extent of target volume in Target Frame ------" << endl;
-			_objMap.at("xtf")->write(out);
-			_objMap.at("ytf")->write(out);
-			_objMap.at("ztf")->write(out);
+			WRITE("xtf");
+			WRITE("ytf");
+			WRITE("ztf");
 
-			_objMap.at("aeff")->write(out);
-			_objMap.at("wave")->write(out);
-			_objMap.at("k.aeff")->write(out);
+			WRITE("aeff");
+			WRITE("wave");
+			WRITE("k.aeff");
 			if (rtmath::ddscat::ddVersions::isVerWithin(_version,72,0))
-				_objMap.at("nambient")->write(out);
-			_objMap.at("neps")->write(out);
-			_objMap.at("tol")->write(out);
-			
-			_objMap.at("a1tgt")->write(out);
-			_objMap.at("a2tgt")->write(out);
-			_objMap.at("navg")->write(out);
+				WRITE("nambient");
+			WRITE("neps");
+			WRITE("tol");
 
-			_objMap.at("kvectf")->write(out);
-			_objMap.at("incpol1tf")->write(out);
-			_objMap.at("incpol2tf")->write(out);
-			_objMap.at("kveclf")->write(out);
-			_objMap.at("incpol1lf")->write(out);
-			_objMap.at("incpol2lf")->write(out);
+			WRITE("a1tgt");
+			WRITE("a2tgt");
+			WRITE("navg");
 
-			_objMap.at("beta")->write(out);
-			_objMap.at("theta")->write(out);
-			_objMap.at("phi")->write(out);
+			WRITE("kvectf");
+			WRITE("incpol1tf");
+			WRITE("incpol2tf");
+			WRITE("kveclf");
+			WRITE("incpol1lf");
+			WRITE("incpol2lf");
 
-			_objMap.at("etasca")->write(out);
+			WRITE("beta");
+			WRITE("theta");
+			WRITE("phi");
+
+			WRITE("etasca");
 
 			// Write the odd table of Qsca and the others
 			writeStatTable(out);
@@ -620,32 +673,32 @@ namespace rtmath {
 			// TODO
 
 			// Write the file in the appropriate order
-			_objMap.at("version")->write(out);
-			_objMap.at("target")->write(out);
-			_objMap.at("solnmeth")->write(out);
-			_objMap.at("polarizability")->write(out);
-			_objMap.at("shape")->write(out);
-			_objMap.at("numdipoles")->write(out);
+			WRITE("version");
+			WRITE("target");
+			WRITE("solnmeth");
+			WRITE("polarizability");
+			WRITE("shape");
+			WRITE("numdipoles");
 
-			_objMap.at("aeff")->write(out);
-			_objMap.at("wave")->write(out);
-			_objMap.at("k.aeff")->write(out);
+			WRITE("aeff");
+			WRITE("wave");
+			WRITE("k.aeff");
 			if (rtmath::ddscat::ddVersions::isVerWithin(_version,72,0))
-				_objMap.at("nambient")->write(out);
-			_objMap.at("neps")->write(out);
-			_objMap.at("tol")->write(out);
-			_objMap.at("navg")->write(out);
-			_objMap.at("a1tgt")->write(out);
-			_objMap.at("a2tgt")->write(out);
-			_objMap.at("kvectf")->write(out);
-			_objMap.at("incpol1tf")->write(out);
-			_objMap.at("incpol2tf")->write(out);
-			_objMap.at("kveclf")->write(out);
-			_objMap.at("incpol1lf")->write(out);
-			_objMap.at("incpol2lf")->write(out);
-			_objMap.at("beta")->write(out);
-			_objMap.at("theta")->write(out);
-			_objMap.at("phi")->write(out);
+				WRITE("nambient");
+			WRITE("neps");
+			WRITE("tol");
+			WRITE("navg");
+			WRITE("a1tgt");
+			WRITE("a2tgt");
+			WRITE("kvectf");
+			WRITE("incpol1tf");
+			WRITE("incpol2tf");
+			WRITE("kveclf");
+			WRITE("incpol1lf");
+			WRITE("incpol2lf");
+			WRITE("beta");
+			WRITE("theta");
+			WRITE("phi");
 
 			out << "     Finite target:" << endl;
 			out << "     e_m dot E(r) = i*exp(ikr)*f_ml*E_inc(0)/(kr)" << endl;
@@ -795,8 +848,30 @@ namespace rtmath {
 
 			if (key == "version") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddver>(new ddver));
 			if (key == "target") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddtarget>(new ddtarget));
-			if (key == "solnmeth") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddSval>(new ddSval("method of solution") ));
-			if (key == "polarizability") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddSval>(new ddSval("prescription for polarizabilies") ));
+			// DDSCAT 7.3+ write the solution method and
+			// polarizability differently
+			// TODO: give these a specialized version-dependent
+			// string class that holds a pointer to the writer?
+#pragma message("Handle solnmeth and polarizability version differences when writing")
+			{
+				const std::string solnmeth_old = "method of solution";
+				const std::string solnmeth_new = "DDA method";
+				const std::string polarizability_old = "prescription for polarizabilities";
+				const std::string polarizability_new = "CCG method";
+				std::string solnmeth, polarizability;
+				size_t version = 0;
+				if (!version) version = ddVersions::getDefaultVer();
+				if (ddVersions::isVerWithin(version,73,0))
+				{
+					solnmeth = solnmeth_new;
+					polarizability = polarizability_new;
+				} else {
+					solnmeth = solnmeth_old;
+					polarizability = polarizability_old;
+				}
+				if (key == "solnmeth") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddSval>(new ddSval(solnmeth) ));
+				if (key == "polarizability") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddSval>(new ddSval(polarizability) ));
+			}
 			if (key == "shape") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddSval>(new ddSval("shape") ));
 			if (key == "numdipoles") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<size_t> >(new ddNval<size_t>(0, "", " = NAT0 = number of dipoles") ));
 			if (key == "d/aeff") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(0, "", " = d/aeff for this target [d=dipole spacing]") ));
@@ -845,8 +920,10 @@ namespace rtmath {
 			//if (line.find("")!=std::string::npos) res = "";
 			if (line.find("DDSCAT ---")!=std::string::npos) res = "version";
 			if (line.find("TARGET ---")!=std::string::npos) res = "target";
-			if (line.find("--- method of solution")!=std::string::npos) res = "solnmeth";
-			if (line.find(" --- prescription for ")!=std::string::npos) res = "polarizability";
+			// DDSCAT 7.3 writes solnmeth and polarizability
+			// lines differently
+			if (line.find("--- method of solution")!=std::string::npos || line.find("--- DDA method")!=std::string::npos) res = "solnmeth";
+			if (line.find(" --- prescription for ")!=std::string::npos || line.find("--- CCG method")!=std::string::npos) res = "polarizability";
 			if (line.find("--- shape")!=std::string::npos) res = "shape";
 			if (line.find("NAT0")!=std::string::npos) res = "numdipoles";
 			if (line.find("= d/aeff for this target")!=std::string::npos) res = "d/aeff";

@@ -34,6 +34,8 @@ namespace rtmath {
 			NUM_STAT_ENTRIES
 		};
 
+		std::string getStatNameFromId(stat_entries);
+
 		class ddOutputSingle : public boost::enable_shared_from_this<ddOutputSingle>
 		{
 			// Class contains the output of a single ddscat fml / sca or avg file
@@ -75,11 +77,18 @@ namespace rtmath {
 			double aeff() const;
 			double dipoleSpacing() const;
 
+			typedef std::vector<double> statTableType;
+
+			void getStatTable(statTableType&) const;
 			double getStatEntry(stat_entries e) const;
 			boost::shared_ptr<ddOutputSingleObj> getObj(const std::string &id) const;
 
 			bool operator<(const ddOutputSingle &rhs) const;
 			typedef std::map<size_t, std::pair<size_t, size_t> > mMuellerIndices;
+
+			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix> > 
+				scattMatricesContainer;
+			void getScattMatrices(scattMatricesContainer&) const;
 		protected:
 			size_t _version;
 			mMuellerIndices _muellerMap;
@@ -88,9 +97,8 @@ namespace rtmath {
 			//void _populateDefaults();
 			std::map< std::string, boost::shared_ptr<ddOutputSingleObj> >
 				_objMap;
-			std::vector<double> _statTable;
-			std::set<boost::shared_ptr<const ddscat::ddScattMatrix> >
-				_scattMatricesRaw;
+			statTableType _statTable;
+			scattMatricesContainer _scattMatricesRaw;
 		};
 
 		class ddOutputSingleObj
@@ -99,7 +107,7 @@ namespace rtmath {
 			friend class ddOutputSingle;
 			ddOutputSingleObj();
 			virtual ~ddOutputSingleObj();
-			virtual void write(std::ostream &out) const {}
+			virtual void write(std::ostream &out, size_t version) const {}
 			virtual void read(std::istream &in) {}
 			virtual std::string value() const {return std::string(); }
 			static void findMap(const std::string &line, std::string &res); //
@@ -107,7 +115,6 @@ namespace rtmath {
 				(const std::string &key);
 		};
 
-		
 	}
 
 }

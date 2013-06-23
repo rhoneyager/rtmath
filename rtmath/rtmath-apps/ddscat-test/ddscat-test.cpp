@@ -62,6 +62,50 @@ int main(int argc, char** argv)
 		using namespace rtmath::ddscat;
 		ddOutputSingle ddInput(sInput), ddBase(sBase);
 
+		// Check header strings
+		//TODO!
+
+		// Check the stat tables
+		ddOutputSingle::statTableType statsInput, statsBase;
+		ddInput.getStatTable(statsInput);
+		ddBase.getStatTable(statsBase);
+		for (size_t j=0; j<(size_t) rtmath::ddscat::NUM_STAT_ENTRIES; j++)
+		{
+			double b = statsInput[j];
+			double a = statsBase[j];
+			// Check for tolerance in percentage and in abs terms.
+			// If both criteria fail, then report a failure.
+			if (abs( (a - b) / a) 
+					* 100 < tolerance) continue;
+			if (abs(a - b) < toleranceAbs) continue;
+			// By here, a failure has occurred
+			numFailures++;
+			// Convert j to the appropriate stat table entry name and 
+			// report the failure.
+			std::cerr << "Mismatch in " 
+				<< getStatNameFromId( (rtmath::ddscat::stat_entries) j)
+				<< " - " << a << " versus " << b << std::endl;
+		}
+
+		// Check FML / Mueller matrices
+		// Get collections of scattering matrices
+		// Iterate through each collection. Check that type and values are the same.
+		// Ordering should have been preserved.
+		ddOutputSingle::scattMatricesContainer scattInput, scattBase;
+		ddInput.getScattMatrices(scattInput);
+		ddBase.getScattMatrices(scattBase);
+		{
+			auto it = scattInput.begin();
+			auto ot = scattBase.begin();
+			while (it != scattInput.end() && ot != scattBase.end())
+			{
+				if (it->id() != ot->id()) throw;
+				// Check freq, theta, phi
+				// Cast to correct subtype and compare entries
+				++it; ++ot;
+			}
+		}
+
 		//if (dispScat)
 		{
 			//cout << "Mueller matrix:\n";
