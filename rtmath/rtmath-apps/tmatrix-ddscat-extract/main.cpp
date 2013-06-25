@@ -56,12 +56,12 @@
 #include "../../rtmath/rtmath/ddscat/tmData.h"
 #include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
-#include "../../rtmath-libs/rtmath-mie/mie-serialization.h"
-#include "../../rtmath-libs/rtmath-mie/mie.h"
+#include "../../rtmath/rtmath/mie/mie-serialization.h"
+#include "../../rtmath/rtmath/mie/mie.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
-#include "../../rtmath/rtmath/ddscat/shapestatsviews.h"
+//#include "../../rtmath/rtmath/ddscat/shapestatsviews.h"
 #include "../../rtmath/rtmath/error/error.h"
 
 void writeCSVheader(std::ostream &out)
@@ -207,25 +207,23 @@ int main(int argc, char** argv)
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
 			options(desc).positional(p).run(), vm);
-		po::notify(vm);    
+		po::notify(vm);
 
 		vector<string> rawinputs; // May be expanded by os.
 
-		if (vm.count("help") || argc == 1) {
-			cerr << desc << "\n";
-			return 2;
-		}
+		auto doHelp = [&](const std::string &message)
+		{
+			cerr << message << endl;
+			cerr << desc << endl;
+			exit(1);
+		};
+		if (vm.count("help") || argc == 1) doHelp("");
 
 		bool verbose = false;
 		if (vm.count("verbose")) verbose = true;
 		size_t ignore_prefix_length = vm["ignore-prefix-length"].as<size_t>();
 
-		if (!vm.count("inputs"))
-		{
-			cerr << "Need to specify input files\n";
-			cerr << desc << "\n";
-			return 1;
-		}
+		if (!vm.count("inputs")) doHelp("Need to specify input files.");
 		rawinputs = vm["inputs"].as<vector<string> >();
 
 		if (vm.count("match-folders-only"))
@@ -290,8 +288,7 @@ int main(int argc, char** argv)
 					pf = expandSymlinks(pf);
 					insertMapping(pf); // already does dir checking
 				}
-			} else 
-			{
+			} else {
 				insertMapping(*it);
 			}
 		}
@@ -433,3 +430,4 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
+

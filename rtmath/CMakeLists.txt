@@ -184,6 +184,8 @@ ENDIF()
 
 # The target processing
 add_definitions(-DWITH_CMAKE)
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 # Recurse into the subdirectories
 # add_subdirectory (deps)
 #add_subdirectory (rtmath-libs/rtmath-mie)
