@@ -8,7 +8,7 @@ project(Ryan_Debug C CXX)
 
 set(MAJOR 0)
 set(MINOR 6)
-set(REVISION 1)
+set(REVISION 2)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION})
@@ -19,7 +19,7 @@ set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
 set(INSTALL_DOC_DIR share/doc/Ryan_Debug-${RYAN_DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
 if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
-	set (INSTEXT ON)
+	set (INSTEXT OFF)
 else()
 	set(DEF_INSTALL_CMAKE_DIR ${INSTALL_LIB_DIR}/CMake/Ryan_Debug)
 	set (INSTEXT OFF)
@@ -137,8 +137,8 @@ set( srcs
 	src/os_functions.cpp
 	)
 set (hdrs
-	Ryan-Debug/debug.h
-	Ryan-Debug/info.h
+	Ryan_Debug/debug.h
+	Ryan_Debug/info.h
 	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
 	)
 

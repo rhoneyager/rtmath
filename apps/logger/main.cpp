@@ -3,8 +3,8 @@
 #include <vector>
 #include <boost/program_options.hpp>
 
-#include "../../Ryan-Debug/debug.h"
-#include "../../Ryan-Debug/info.h"
+#include "../../Ryan_Debug/debug.h"
+#include "../../Ryan_Debug/info.h"
 
 /// This application provides recursive process information for the specified pid.
 /// If no pid is specified, starts at the current process.
@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 {
 	try {
 		using namespace std;
-		using namespace ryan_debug;
+		using namespace Ryan_Debug;
 		namespace po = boost::program_options;
 		po::positional_options_description p;
 		p.add("pid", 1);

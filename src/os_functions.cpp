@@ -30,7 +30,7 @@
 #include <cstdlib>
 #include <crtdbg.h>
 
-#undef environ // COnflicts with my structure
+#undef environ // Conflicts with my structure
 #endif
 #ifdef __unix__
 #include <unistd.h>
@@ -48,8 +48,8 @@
 #endif
 
 
-#include "../Ryan-Debug/debug.h"
-#include "../Ryan-Debug/info.h"
+#include "../Ryan_Debug/debug.h"
+#include "../Ryan_Debug/info.h"
 
 // DLL binding and unbinding code
 #ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
@@ -57,7 +57,7 @@
 /// GCC - code that is executed on DLL import
 void __attribute__ ((constructor)) debug_gcc_init()
 {
-	ryan_debug::appEntry();
+	Ryan_Debug::appEntry();
 }
 
 /// GCC - code that is executed on DLL unload
@@ -71,7 +71,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	if (dwReason == DLL_PROCESS_ATTACH)
 	{
-		ryan_debug::appEntry();
+		Ryan_Debug::appEntry();
 		// DisableThreadLibraryCalls(hInstance);
 	}
 	return true;
@@ -80,7 +80,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 
 extern "C" {
 	/// Useless function that is required for MSVC autolink (using the header debug.h)
-	void RYAN_DEBUG_DLEXPORT ryan_debug_dummy()
+	void RYAN_DEBUG_DLEXPORT Ryan_Debug_dummy()
 	{
 		// Dummy function that is used in auto-link
 		int i=0;
@@ -88,7 +88,7 @@ extern "C" {
 	}
 }
 
-namespace ryan_debug {
+namespace Ryan_Debug {
 
 	// Don't export this symbol (not in header)
 #ifdef _WIN32
@@ -522,7 +522,7 @@ namespace ryan_debug {
 /**
  * \brief Provides functaionality to write processInfo in a stream.
  **/
-std::ostream & operator<<(std::ostream &stream, const ryan_debug::processInfo &obj)
+std::ostream & operator<<(std::ostream &stream, const Ryan_Debug::processInfo &obj)
 {
 	using std::endl;
 	stream << "Process Info for " << obj.name << endl;

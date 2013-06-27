@@ -4,7 +4,7 @@
 #define QUOTE(str) #str
 #define EXPAND_AND_QUOTE(str) QUOTE(str)
 
-namespace ryan_debug
+namespace Ryan_Debug
 {
 	/** 
 	 * \brief Provides information about the build environment during compilation.

@@ -3,9 +3,9 @@
 #ifndef RYAN_DEBUG_NO_LINK
 #ifdef _MSC_FULL_VER
 #ifdef _M_X64
-#pragma comment(linker, "/include:ryan_debug_dummy")
+#pragma comment(linker, "/include:Ryan_Debug_dummy")
 #else
-#pragma comment(linker, "/include:_ryan_debug_dummy")
+#pragma comment(linker, "/include:_Ryan_Debug_dummy")
 #endif
 #endif
 #endif
@@ -27,7 +27,7 @@
 #include <string>
 //#include <vector>
 
-namespace ryan_debug
+namespace Ryan_Debug
 {
 	struct processInfo;
 
@@ -73,5 +73,5 @@ namespace ryan_debug
 }
 
 /// Allows writing of a ryan_debug::processInfo structure to a stream
-RYAN_DEBUG_DLEXPORT std::ostream &  operator<<(std::ostream&, const ryan_debug::processInfo&);
+RYAN_DEBUG_DLEXPORT std::ostream &  operator<<(std::ostream&, const Ryan_Debug::processInfo&);
 
