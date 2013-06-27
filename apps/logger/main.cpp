@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 			info = getInfo(pid);
 			cout << info;
 			if (showEnviron)
-				cout << "Environment Variables:\n" << info._environ << endl;
+				cout << "Environment Variables:\n" << info.environ << endl;
 			cout << endl;
 			if (pid == info.ppid) break; // linux shells
 			pid = info.ppid;
