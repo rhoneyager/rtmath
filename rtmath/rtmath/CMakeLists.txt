@@ -128,7 +128,8 @@ SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithD
 SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES DEBUG_POSTFIX _Debug )
 set_target_properties( rtmath_ddscat PROPERTIES FOLDER "Libs")
 
-find_package(tmatrix REQUIRED)
+find_package(tmatrixFortran REQUIRED)
+find_package(tmatrixCpp REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})

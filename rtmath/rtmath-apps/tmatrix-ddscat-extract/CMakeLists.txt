@@ -8,7 +8,8 @@ add_executable (rtmath-tmatrix-ddscat-extract
 	main.cpp 
 	)
 
-find_package(tmatrix REQUIRED)
+find_package(tmatrixFortran REQUIRED)
+find_package(tmatrixCpp REQUIRED)
 target_link_libraries( rtmath-tmatrix-ddscat-extract 
 	rtmath_core 
 	rtmath_mie 
