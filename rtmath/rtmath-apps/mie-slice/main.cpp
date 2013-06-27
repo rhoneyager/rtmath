@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	using namespace std;
 #ifdef _WIN32
-	::serialization::disable_auto_compression(true);
+	//::serialization::disable_auto_compression(true);
 #endif
 	try {
 		cerr << argv[0]<< endl;

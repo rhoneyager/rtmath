@@ -2,7 +2,7 @@
 #pragma message("TODO: no need for separate serialization header if forward declared properly")
 
 #include <boost/serialization/version.hpp>
-
+#include <boost/serialization/vector.hpp>
 namespace rtmath
 {
 	namespace tmatrix

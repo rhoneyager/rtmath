@@ -1,4 +1,4 @@
-#define EXPORTING
+#define EXPORTING_RTMATH
 #include "../rtmath/mie/mie-piNCalc.h"
 
 namespace rtmath {

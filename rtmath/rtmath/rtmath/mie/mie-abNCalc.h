@@ -11,7 +11,7 @@ namespace rtmath {
 		class wnCalc;
 		class AnCalc;
 
-		class DLEXPORT abNCalc {
+		class DLEXPORT_RTMATH abNCalc {
 		public:
 			// Need index of refraction and sizep
 			abNCalc(const std::complex<double> &m, double sizep);

@@ -12,6 +12,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 
 find_package(tmatrixFortran REQUIRED)
 find_package(tmatrixCpp REQUIRED)
+include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
 target_link_libraries( rtmath-tmatrix-oneellip 
 	rtmath_core 
 	rtmath_mie 

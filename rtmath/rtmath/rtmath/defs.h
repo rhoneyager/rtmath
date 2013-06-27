@@ -3,21 +3,21 @@
 #include <cstdint>
 #include <cmath>
 
-#ifdef EXPORTING
+#ifdef EXPORTING_RTMATH
 #ifdef _MSC_FULL_VER
-#define DLEXPORT __declspec(dllexport)
+#define DLEXPORT_RTMATH __declspec(dllexport)
 #else
-#define DLEXPORT
+#define DLEXPORT_RTMATH
 #endif
 #else
 #ifdef _MSC_FULL_VER
 #ifdef SHARED
-#define DLEXPORT __declspec(dllimport)
+#define DLEXPORT_RTMATH __declspec(dllimport)
 #else
-#define DLEXPORT
+#define DLEXPORT_RTMATH
 #endif
 #else
-#define DLEXPORT
+#define DLEXPORT_RTMATH
 #endif
 #endif
 

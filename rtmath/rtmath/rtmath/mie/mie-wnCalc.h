@@ -8,7 +8,7 @@
 namespace rtmath {
 	namespace mie {
 
-		class DLEXPORT wnCalc
+		class DLEXPORT_RTMATH wnCalc
 		{
 		public:
 			wnCalc(double sizep);

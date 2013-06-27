@@ -9,7 +9,7 @@
 namespace rtmath {
 	namespace mie {
 
-		class DLEXPORT Scalc 
+		class DLEXPORT_RTMATH Scalc 
 		{
 		public:
 			Scalc(const std::complex<double> &m, double sizep, double tol = 1.01, double atol = 1.e-8);

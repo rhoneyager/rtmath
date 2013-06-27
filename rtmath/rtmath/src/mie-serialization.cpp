@@ -9,7 +9,7 @@
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/set.hpp>
 
-#define EXPORTING
+#define EXPORTING_RTMATH
 
 #include "../rtmath/mie/mie.h"
 
@@ -21,8 +21,8 @@
 //#include <boost/archive/text_iarchive.hpp>
 
 #define EXPORT(U,T) \
-	template void DLEXPORT U(boost::archive::xml_oarchive &, T &, const unsigned int); \
-	template void DLEXPORT U(boost::archive::xml_iarchive &, T &, const unsigned int);
+	template void DLEXPORT_RTMATH U(boost::archive::xml_oarchive &, T &, const unsigned int); \
+	template void DLEXPORT_RTMATH U(boost::archive::xml_iarchive &, T &, const unsigned int);
 // 	template void U(boost::archive::text_oarchive &, T &, const unsigned int); 
 //	template void U(boost::archive::text_iarchive &, T &, const unsigned int); 
 

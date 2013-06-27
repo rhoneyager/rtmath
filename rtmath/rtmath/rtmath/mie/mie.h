@@ -30,11 +30,11 @@ namespace boost
 	namespace serialization
 	{
 		template <class Archive>
-		void DLEXPORT serialize(Archive &, rtmath::mie::mieParams &, const unsigned int);
+		void DLEXPORT_RTMATH serialize(Archive &, rtmath::mie::mieParams &, const unsigned int);
 		template <class Archive>
-		void DLEXPORT serialize(Archive &, rtmath::mie::mieCalc &, const unsigned int);
+		void DLEXPORT_RTMATH serialize(Archive &, rtmath::mie::mieCalc &, const unsigned int);
 		template <class Archive>
-		void DLEXPORT serialize(Archive &, rtmath::mie::mieAngleRes &, const unsigned int);
+		void DLEXPORT_RTMATH serialize(Archive &, rtmath::mie::mieAngleRes &, const unsigned int);
 	}
 }
 
@@ -52,14 +52,14 @@ namespace rtmath
 {
 	namespace mie
 	{
-		struct DLEXPORT mieBase
+		struct DLEXPORT_RTMATH mieBase
 		{
 			mieBase();
 			double AXI, LAM, MRR, MRI, DDELT;
 			bool operator<(const mieBase&) const;
 		};
 
-		class DLEXPORT mieParams
+		class DLEXPORT_RTMATH mieParams
 		{
 		public:
 			virtual ~mieParams() {}
@@ -82,7 +82,7 @@ namespace rtmath
 				Archive &, mieParams &, const unsigned int);
 		};
 
-		class DLEXPORT mieCalc
+		class DLEXPORT_RTMATH mieCalc
 		{
 		public:
 			mieCalc();
@@ -108,7 +108,7 @@ namespace rtmath
 				Archive &, ::rtmath::mie::mieAngleRes &, const unsigned int);
 		};
 
-		class DLEXPORT mieAngleRes
+		class DLEXPORT_RTMATH mieAngleRes
 		{
 		private:
 
@@ -144,7 +144,7 @@ namespace rtmath
 
 		// Function that gets unpolarized differential backscatter
 		// cross-section.
-		double DLEXPORT getDifferentialBackscatterCrossSectionUnpol(
+		double DLEXPORT_RTMATH getDifferentialBackscatterCrossSectionUnpol(
 			boost::shared_ptr<const mieCalc> om);
 
 #pragma warning(pop)

@@ -10,7 +10,7 @@
 namespace rtmath {
 	namespace mie {
 
-		class DLEXPORT AnCalc
+		class DLEXPORT_RTMATH AnCalc
 		{
 		public:
 			std::complex<double> calc(size_t n) const;
