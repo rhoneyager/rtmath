@@ -1,4 +1,11 @@
-add_executable (Ryan_Debug-logger main.cpp)
+include (SVNinfo)
+
+configure_file(logger.rc.in
+	"${CMAKE_CURRENT_BINARY_DIR}/logger.rc" @ONLY)
+
+add_executable (Ryan_Debug-logger 
+	main.cpp
+	"${CMAKE_CURRENT_BINARY_DIR}/logger.rc")
 set_target_properties( Ryan_Debug-logger PROPERTIES FOLDER "Apps")
 #message("liblist: ${liblist}")
 target_link_libraries(Ryan_Debug-logger ${liblist} Ryan_Debug)

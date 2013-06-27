@@ -20,10 +20,19 @@ namespace Ryan_Debug
 		out << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
 #ifdef SUB_SOURCE
 		// Trying to switch to internal strings for Linux library compile
-		out << "SVN Revision " EXPAND_AND_QUOTE(SUB_REV) << std::endl;
-		out << "SVN Revision Date: " SUB_DATE << std::endl;
+#ifdef SUB_REV
+		out << "SVN Revision " << SUB_REV << std::endl;
+#endif
+#ifdef SUB_DATE
+		out << "SVN Revision Date: " << SUB_DATE << std::endl;
+#endif
 //			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
-		out << "SVN Source: " SUB_SOURCE << std::endl;
+#ifdef SUB_SOURCE
+		out << "SVN Source: " << SUB_SOURCE << std::endl;
+#endif
+#ifdef SUB_UUID
+		out << "SVN UUID: " << SUB_UUID << std::endl;
+#endif
 #else
 		out << "SVN Repository Information Unknown" << std::endl;
 #endif

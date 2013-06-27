@@ -483,6 +483,9 @@ namespace Ryan_Debug {
 				senviron.read(buffer,length);
 				res.environ.append(buffer,senviron.gcount());
 			}
+			// Replace environment null symbols with newlines
+			std::replace(res.environ.begin(),res.environ.end(),
+					'\0', '\n');
 			delete[] buffer;
 
 			// start time is the timestamp of the /proc/pid folder.
@@ -536,7 +539,7 @@ std::ostream & operator<<(std::ostream &stream, const Ryan_Debug::processInfo &o
 	// stream << "\tEnviron:\n";
 	// TODO: parse and write the environment
 
-	stream << endl;
+	//stream << endl;
 
 	return stream;
 }

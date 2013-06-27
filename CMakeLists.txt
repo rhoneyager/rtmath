@@ -6,12 +6,21 @@
 cmake_minimum_required (VERSION 2.8)
 project(Ryan_Debug C CXX)
 
+# Add path for custom modules
+set(CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_SOURCE_DIR}/CMakeRules/"
+)
+
+# Set the svn variables
+include (SVNinfo)
+
 set(MAJOR 0)
 set(MINOR 6)
 set(REVISION 2)
 
 set(RYAN_DEBUG_VERSION
-	${MAJOR}.${MINOR}.${REVISION})
+	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
 
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
@@ -19,13 +28,9 @@ set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
 set(INSTALL_DOC_DIR share/doc/Ryan_Debug-${RYAN_DEBUG_VERSION} CACHE PATH "Installation directory for documentation")
 if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
-	set (INSTEXT OFF)
 else()
 	set(DEF_INSTALL_CMAKE_DIR ${INSTALL_LIB_DIR}/CMake/Ryan_Debug)
-	set (INSTEXT OFF)
 endif()
-option (INSTALL_EXTERNALS
-	"Install external library dll files?" ${INSTEXT})
 
 if(WIN32 AND NOT CYGWIN)
 	set (modinstall OFF)
@@ -87,23 +92,11 @@ if(BUILD_DOCUMENTATION)
 	add_custom_target(docs ${ALL_FLAG} DEPENDS doc-html doc-latex)
 endif()
 
-#configure_file(ryan-debug.spec.in
-#	"${PROJECT_BINARY_DIR}/ryan-debug.spec" @ONLY)
-# Custom prebuild step based on os
-IF(WIN32 AND NOT CYGWIN)
-	add_custom_command (
-		COMMAND prebuild.bat "${CMAKE_CURRENT_BINARY_DIR}"
-		COMMENT Running custom commands to set paths and query the repository information.
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
-else()
-	add_custom_command (
-		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
-ENDIF()
+# Configure the subversion.h file
+configure_file(
+	"debug_subversion.h.template"
+	"${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h" @ONLY)
+
 
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
@@ -241,44 +234,6 @@ INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan_DebugConfig.cm
 
 INSTALL(EXPORT Ryan_DebugTargets DESTINATION
 	"${INSTALL_CMAKE_DIR}" COMPONENT Libraries)
-
-# Also install / pack the relevant boost libraries into the install tree
-
-# Do extention swapping
-if(WIN32)
-	set(dllext ".dll")
-	set(libext "[.]lib")
-else()
-	set(dllext ".so")
-	set(libext "[.]a")
-endif()
-
-STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_D_DLL ${Boost_FILESYSTEM_LIBRARY_DEBUG} )
-STRING ( REGEX REPLACE ${libext} ${dllext} FILESYSTEM_R_DLL ${Boost_FILESYSTEM_LIBRARY_RELEASE} )
-STRING ( REGEX REPLACE ${libext} ${dllext} PROGRAM_D_DLL ${Boost_PROGRAM_OPTIONS_LIBRARY_DEBUG} )
-STRING ( REGEX REPLACE ${libext} ${dllext} PROGRAM_R_DLL ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} )
-STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_D_DLL ${Boost_SYSTEM_LIBRARY_DEBUG} )
-STRING ( REGEX REPLACE ${libext} ${dllext} SYSTEM_R_DLL ${Boost_SYSTEM_LIBRARY_RELEASE} )
-
-if (INSTALL_EXTERNALS)
-	INSTALL(FILES 
-		${FILESYSTEM_D_DLL}
-		${SYSTEM_D_DLL}
-		${PROGRAM_D_DLL}
-		DESTINATION ${INSTALL_BIN_DIR}
-		COMPONENT Libraries
-		CONFIGURATIONS Debug
-		)
-
-	INSTALL(FILES 
-		${FILESYSTEM_R_DLL}
-		${SYSTEM_R_DLL}
-		${PROGRAM_R_DLL}
-		DESTINATION ${INSTALL_BIN_DIR}
-		COMPONENT Libraries
-		CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
-		)
-endif()
 
 set(CPACK_PACKAGE_NAME "Ryan_Debug")
 set(CPACK_PACKAGE_VENDOR "Ryan Honeyager")

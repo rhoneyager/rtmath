@@ -24,8 +24,7 @@ int main(int argc, char **argv)
 			("help,h", "produce help message")
 			("pid,p", po::value<int>(), "The pid to query. If not specified, "
 			 "defaults to the pid of this process.")
-			("message,m", po::value<string>(), "A message to be appended to "
-			 "the output. Useful in scripting.")
+			("environ,e", "Also show the environment variables (long output)")
 			;
 
 		po::variables_map vm;
@@ -39,9 +38,12 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
+		bool showEnviron = false;
+		if (vm.count("environ")) showEnviron = true;
+
 		int pid = 0;
 		if (vm.count("pid")) pid = vm["pid"].as<int>();
-		else pid = getPID();
+		else pid = getPPID(getPID());
 		if (!pidExists(pid))
 		{
 			cerr << "Specified PID " << pid << " is invalid." << endl;
@@ -55,6 +57,9 @@ int main(int argc, char **argv)
 			if (!pid) break; // Recursed to 0
 			info = getInfo(pid);
 			cout << info;
+			if (showEnviron)
+				cout << "Environment Variables:\n" << info._environ << endl;
+			cout << endl;
 			if (pid == info.ppid) break; // linux shells
 			pid = info.ppid;
 			if (info.name == "devenv.exe") break; // VS
@@ -66,12 +71,6 @@ int main(int argc, char **argv)
 			if (info.name == "explorer.exe") break;
 			if (info.name == "at") break;
 			if (info.name == "cron") break;
-		}
-
-		if (vm.count("message"))
-		{
-			string m = vm["message"].as<string>();
-			cout << m << endl;
 		}
 
 		//ryan_debug::printDebugInfo();
