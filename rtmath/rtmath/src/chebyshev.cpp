@@ -3,6 +3,7 @@
 #include "../rtmath/polynomial.h"
 #include <vector>
 
+/// Holds the polynomial caches for both types of Chebyshev polynomials
 namespace {
 	std::vector<rtmath::polynomial> _cacheA, _cacheB;
 };

@@ -3,6 +3,7 @@
 #include "../rtmath/polynomials/legendre.h"
 #include <vector>
 
+/// \brief Holds the legendre polynomial cache
 namespace {
 	std::vector<rtmath::polynomial> _cache;
 };

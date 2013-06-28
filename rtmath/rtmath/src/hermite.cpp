@@ -3,6 +3,7 @@
 #include "../rtmath/polynomials/hermite.h"
 #include <vector>
 
+/// Holds the polynomial caches for both types of Hermite polynomials
 namespace {
 	std::vector<rtmath::polynomial> _cacheH, _cacheHP;
 };

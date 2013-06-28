@@ -3,6 +3,7 @@
 #include "../rtmath/polynomials/laguerre.h"
 #include <vector>
 
+/// \brief Holds the Laguerre polynomial cache.
 namespace {
 	std::vector<rtmath::polynomial> _cache;
 };

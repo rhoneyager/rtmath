@@ -1,25 +1,39 @@
 #pragma once
 
-/* Hermite polynomial functions
-   Provides ability to calculate Hermite polynomials and 
-   their roots.
-
-   Used when calculating gaussian quadratures.
-
-   */
-
 #include "recursivePolynomial.h"
 
 namespace rtmath {
 	class polynomial;
 	namespace recPolys {
+		/** \brief Hermite polynomial function
+
+		Provides ability to calculate Hermite polynomials and 
+		their roots.
+
+		Used when calculating Gaussian quadratures.
+
+		\f[
+		He_n(x) = (-1)^n e^{\frac{x^2}{2}} \frac{d^n}{dx^n} e^\frac{-x^2}{2}
+		\f]
+		**/
 		class hermite : public recPoly {
-			public:
-				virtual void get(unsigned int rank, polynomial &res) const ;
+		public:
+			virtual void get(unsigned int rank, polynomial &res) const ;
 		};
+		/** \brief Hermite polynomial function
+
+		Provides ability to calculate Hermite polynomials and 
+		their roots.
+
+		Used when calculating Gaussian quadratures.
+
+		\f[
+		H_n(x) = (-1)^n e^{x^2} \frac{d^n}{dx^n} e^{-x^2}
+		\f]
+		**/
 		class hermitePhys : public recPoly {
-			public:
-				virtual void get(unsigned int rank, polynomial &res) const ;
+		public:
+			virtual void get(unsigned int rank, polynomial &res) const ;
 		};
 	}
 }

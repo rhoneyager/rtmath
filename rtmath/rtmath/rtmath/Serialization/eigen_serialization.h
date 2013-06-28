@@ -6,6 +6,7 @@ namespace boost
 {
 	namespace serialization
 	{
+		/// Definition to serialize all Eigen::Matrix types
 		template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 		inline void serialize(
 			Archive & ar, 
@@ -18,6 +19,7 @@ namespace boost
 			//	ar & t.data()[i];
 		}
 
+		/// Definition to serialize all Eigen::Array types
 		template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 		inline void serialize(
 			Archive & ar, 

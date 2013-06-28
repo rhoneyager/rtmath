@@ -22,14 +22,18 @@ namespace boost
 			ar & boost::serialization::make_nvp("values_expanded", g._expanded);
 		}
 
-/*		EXPORT(serialize,rtmath::paramSet<double>);
+		/* These do not work:
+		EXPORT(serialize,rtmath::paramSet<double>);
 		EXPORT(serialize,rtmath::paramSet<float>);
 		EXPORT(serialize,rtmath::paramSet<int>);
 		EXPORT(serialize,rtmath::paramSet<size_t>);
 		EXPORT(serialize,rtmath::paramSet<std::string>);
-*/
-	template void serialize<boost::archive::xml_oarchive, double>(boost::archive::xml_oarchive &, rtmath::paramSet<double> &, const unsigned int);
-	template void serialize(boost::archive::xml_iarchive &, rtmath::paramSet<double> &, const unsigned int);
+		*/
+	
+		/// \todo Reimplement the paramSet serialization definition for base types other than doubles.
+
+		template void serialize<boost::archive::xml_oarchive, double>(boost::archive::xml_oarchive &, rtmath::paramSet<double> &, const unsigned int);
+		template void serialize(boost::archive::xml_iarchive &, rtmath::paramSet<double> &, const unsigned int);
 
 
 	}

@@ -14,11 +14,15 @@ namespace rtmath
 {
 	namespace debug
 	{
-		// Generate the startup message giving 
-		// library information
+		/// Generate the startup message giving library information
 		void debug_preamble(std::ostream &out = std::cerr);
+		/// Get revision of the code
 		int rev(void);
+		/// Write the last recorded code position. Used in error throw messages.
 		void dumpErrorLocation(std::ostream &out = std::cerr);
+		/// \brief Class used in counting number of times a certain code position 
+		/// was passed.
+		/// \deprecated keymap is no longer used
 		struct keymap
 		{
 		public:
@@ -46,8 +50,7 @@ namespace rtmath
 
 	} // end namespace debug
 
-// Throw unimplemented function
-
+/// \def UNIMPLEMENTED() Macro to throw unimplemented function error with function signature
 #ifdef __GNUC__
 #define UNIMPLEMENTED() { throw ::rtmath::debug::xUnimplementedFunction(__PRETTY_FUNCTION__); };
 #endif
@@ -55,13 +58,4 @@ namespace rtmath
 #define UNIMPLEMENTED() { throw ::rtmath::debug::xUnimplementedFunction(__FUNCSIG__); };
 #endif
 
-// Die on error
-#ifdef __GNUC__
-#define DIE() { throw ::rtmath::debug::diemsg(__FILE__,__LINE__,__PRETTY_FUNCTION__); };
-#endif
-#ifdef _MSC_FULL_VER
-#define DIE() { throw ::rtmath::debug::diemsg(__FILE__,__LINE__,__FUNCSIG__); };
-#endif
-
 } // end namespace rtmath
-

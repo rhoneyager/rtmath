@@ -105,15 +105,5 @@ namespace rtmath
 			out << std::endl;
 		};
 
-		std::string diemsg(const char* file, int line, const char* sig)
-		{
-			using namespace std;
-			std::ostringstream message(ostringstream::out);
-			message << "---FATAL ERROR--- \nExecution stopped in " << sig << endl
-				<< " in " << file << endl
-				<< " at line " << line << endl << endl;
-			return message.str();
-		}
-
 	} // end debug
 } // end rtmath

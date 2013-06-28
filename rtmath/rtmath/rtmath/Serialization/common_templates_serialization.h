@@ -11,13 +11,14 @@ namespace boost
 {
 	namespace serialization
 	{
+		/// Definition to serialize all paramSet objects.
 		template <class Archive, class T>
 		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
 
 
-
+		/// \todo Fix boost tuple serialization to work with LLVM/CLANG.
 		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
-
+		// Breaks in CLANG!
 /*
 #define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
 	ar & boost::serialization::make_nvp("element",t.get< which >());
