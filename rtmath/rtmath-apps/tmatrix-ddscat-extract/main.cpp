@@ -54,7 +54,7 @@
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/tmData.h"
-#include "../../rtmath/rtmath/serialization.h"
+#include <Ryan_Serialization/serialization.h>
 #include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
 #include "../../rtmath/rtmath/mie/mie-serialization.h"
 #include "../../rtmath/rtmath/mie/mie.h"
@@ -351,7 +351,7 @@ int main(int argc, char** argv)
 					{
 						td = tmcache.at(ot->string());
 					} else {
-						rtmath::serialization::read<std::vector<rtmath::tmatrix::tmData> >
+						::Ryan_Serialization::read<std::vector<rtmath::tmatrix::tmData> >
 							(td, ot->string());
 						tmcache[ot->string()] = td;
 					}

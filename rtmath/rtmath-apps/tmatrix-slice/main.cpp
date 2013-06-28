@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 {
 	using namespace std;
 #ifdef _WIN32
-	::serialization::disable_auto_compression(true);
+	//::Ryan_Serialization::disable_auto_compression(true);
 #endif
 	try {
 		cerr << argv[0]<< endl;
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 				<< Qbk << "," << Qext << "," << Qsca << endl;
 			
 			if (noxml == false)
-				::serialization::write(data, string(ofile).append(".xml"));
+				::Ryan_Serialization::write(data, string(ofile).append(".xml"));
 		}
 
 		return 0;

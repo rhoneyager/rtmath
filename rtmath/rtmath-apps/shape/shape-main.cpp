@@ -187,7 +187,7 @@ int main(int argc, char** argv)
 				//singleStats.push_back(std::move(sstats));
 				string ofile = *it;
 				ofile.append(".stats.xml");
-				::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,ofile);
+				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(sstats,ofile);
 			} else {
 				Stats.push_back(std::move(sstats));
 			}
@@ -195,7 +195,7 @@ int main(int argc, char** argv)
 
 		cerr << "Done calculating. Writing results." << endl;
 		if (!sepOutputs)
-			::serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
+			::Ryan_Serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
 		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)
