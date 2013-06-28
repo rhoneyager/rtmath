@@ -150,7 +150,7 @@ set(rtmath_ddscat-files
 	src/ddweights.cpp
 	src/dielTabFile.cpp
 	src/hulls.cpp
-	src/mtab.cpp
+	# src/mtab.cpp
 	#	src/pclstuff.cpp
 	src/rotations.cpp
 	src/rotations_serialization.cpp

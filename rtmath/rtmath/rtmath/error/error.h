@@ -1,35 +1,42 @@
 /* error.h - handling routines for all errors that can be thrown */
 #pragma once
 
-#pragma warning( disable : 4996 )
+#pragma warning( disable : 4996 ) // Deprecated function warning
 
 #include "../Stdafx.h"
 #include <iostream>
 #include "debug_mem.h"
 
-
-//#define ERRSTD : public xError { protected: void _setmessage(); };
+/// \def ERRSTD(x) Defines an exception class that takes no arguments.
 #define ERRSTD(x) class x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
+/// \def ERRSTR(x) Defines an exception class that takes a string as an argument
 #define ERRSTR(x) class x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
+/// \def ERRDOU(x) Defines an exception class that takes a double as an argument
 #define ERRDOU(x) class x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
 
 namespace rtmath
 {
 	namespace debug
 	{
+		/// \brief This is the parent error class. Everything inherits from this.
+		/// \note Using throw() because MSVC2012 does not have noexcept
 		class xError : public std::exception
 		{
-			// This is the parent error class. Everything inherits from this.
 		public:
-			xError() throw(); // Using throw() because MSVC2012 does not have noexcept
+			xError() throw(); 
 			virtual ~xError() throw();
 			virtual void message(std::string &message) const throw();
 			virtual void Display(std::ostream &out = std::cerr) const throw();
 			virtual const char* what() const throw();
 			bool hasLoc() const;
-		public: // The static functions for:
-			// providing error handling to the UI (message boxes and the like)
-			// if not set, sent to stderr.
+		public: 
+			/**
+			 * \brief Handler function that passes error messages
+			 *
+			 * Allows code to define static functions for
+			 * providing error handling to the UI (message boxes and the like).
+			 * If not set, sent to stderr.
+			 **/
 			static void setHandler(void (*func)(const char*));
 		protected:
 			std::string _message;
@@ -40,51 +47,50 @@ namespace rtmath
 			int line;
 		};
 
-		// The throwable assert call failed! It's like assert, but will throw
+		/// The throwable assert call failed! It's like assert, but will throw
 		ERRSTR(xAssert);
 
-		// The values passed to the function are nonsensical
-		// TODO: extend to also take a string for an error message
+		/// The values passed to the function are nonsensical
 		ERRSTR(xBadInput);
 
-		// The model (typically for optical depth) was called for a value outside
-		// of the expected domain of the function. Results will be nonsensical.
+		/// \brief The model (typically for optical depth) was called for a value outside
+		/// of the expected domain of the function. Results will be nonsensical.
 		ERRDOU(xModelOutOfRange);
 
-		// ddscat data missing for this frequency.
+		/// ddscat data missing for this frequency.
 		ERRDOU(xMissingFrequency);
 
-		// The file that is opened for reading is empty
+		/// The file that is opened for reading is empty
 		ERRSTR(xEmptyInputFile);
 
-		// File to be opened for reading does not exist
+		/// File to be opened for reading does not exist
 		ERRSTR(xMissingFile);
 
-		// File / directory to be created already exists and is not the desired type
+		/// File / directory to be created already exists and is not the desired type
 		ERRSTR(xPathExistsWrongType);
 
-		// File format is unknown
+		/// File format is unknown
 		ERRSTR(xUnknownFileFormat);
 
-		// A function has not been defined. Always stops execution.
+		/// A function has not been defined. Always stops execution.
 		ERRSTD(xUnimplementedFunction);
 
-		// An array went out of bounds.
+		/// An array went out of bounds.
 		ERRSTD(xArrayOutOfBounds);
 
-		// Attempting to eval a damatrix that is locked and a cached source cannot be found
+		/// Attempting to eval a damatrix that is locked and a cached source cannot be found
 		ERRSTD(xLockedNotInCache);
 
-		// Function has been obsoleted.
+		/// Function has been obsoleted.
 		ERRSTD(xObsolete);
 
-		// Function is known to be defective.
+		/// Function is known to be defective.
 		ERRSTD(xDefective);
 
-		// Singular matrix detected.
+		/// Singular matrix detected.
 		ERRSTD(xSingular);
 
-		// Unknown error
+		/// Unknown error
 		ERRSTD(xOtherError);
 
 	} // end debug

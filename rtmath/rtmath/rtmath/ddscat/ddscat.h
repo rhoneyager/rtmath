@@ -7,14 +7,14 @@
 #include <cstdio>
 #include <cstring>
 #include <complex>
-#include "../matrixop.h"
-#include "../phaseFunc.h"
+//#include "../matrixop.h"
+//#include "../phaseFunc.h"
 //#include "cdf-ddscat.h"
-#include "ddScattMatrix.h"
+//#include "ddScattMatrix.h"
 
 // Needs extensive use of filesystem
 // (for reading whole directories, manipulating paths, ...)
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 
 /* ddscat.h - Set of classes used for creating ddscat runs, loading ddscat output into model as a daPf,
  * converting ddscat output into the much older format used for comparison with Evas' rt4, and some

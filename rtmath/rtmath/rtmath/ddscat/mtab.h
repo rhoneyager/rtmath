@@ -19,6 +19,9 @@
 #include <complex>
 #include "../refract.h"
 
+
+#pragma deprecated(mtab)
+
 #pragma message("Warning: mtab.h is deprecated")
 namespace rtmath {
 	namespace ddscat {
