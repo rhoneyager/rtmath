@@ -63,7 +63,7 @@ namespace rtmath {
 
 			// Now, iterate over the conbinations of initial parameters.
 			ddParIteration itSetup(*this);
-			//rtmath::serialization::write<ddParIteration>(itSetup, "debugIteration.xml");
+			//Ryan_Serialization::write<ddParIteration>(itSetup, "debugIteration.xml");
 			ddParIteration::const_iterator it;
 			for (it = itSetup.begin(); it != itSetup.end(); it++)
 			{
@@ -82,7 +82,7 @@ namespace rtmath {
 				(*it)->shape->write( pdir.string(), base );
 
 				// Write run definitions
-				::serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
+				::Ryan_Serialization::write<ddParIterator>(**it,(pdir/"ddparIterator.xml").string());
 
 				// Write individual run script
 				runScriptIndiv iscript = (*it)->shape->prepRunScript(dirname, *this);

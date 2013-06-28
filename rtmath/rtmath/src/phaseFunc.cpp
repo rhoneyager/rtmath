@@ -145,9 +145,10 @@ namespace rtmath {
 			Snn(3,3) = scratch.real();
 		}
 
+		/// \todo Test rtmath::phasefuncs::invertS
+		#pragma message("phaseFunc.cpp: Test invertS")
 		void invertS(const Eigen::Matrix4d &Snn, const Eigen::Matrix4d &Knn, double fGHz, Eigen::Matrix2cd& Sn)
 		{
-			#pragma message("phaseFunc.cpp: Test invertS")
 			// TODO: make sure it's correct via testing. Am I solving for the correct matrix?
 			const double PI = boost::math::constants::pi<double>();
 
@@ -199,10 +200,12 @@ namespace rtmath {
 			Sn(1,1).real(val);
 		}
 
+#pragma message("phaseFunc.cpp: Test genExtinctionMatrix")
+		/// \todo Test rtmath::phaseFuncs::genExtinctionMatrix
 		void genExtinctionMatrix(Eigen::Matrix4d &Knn, const Eigen::Matrix2cd &Sn, double fGHz)
 		{
 			// TODO: make sure it's correct via testing. Am I solving for the correct matrix?
-#pragma message("phaseFunc.cpp: Test genExtinctionMatrix")
+
 
 			// Convert f in GHz to Hz
 			units::conv_spec cnv("GHz","Hz");

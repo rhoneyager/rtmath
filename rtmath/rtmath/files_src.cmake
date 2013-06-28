@@ -41,7 +41,7 @@ set(rtmath_core_general
 	src/denseMatrix.cpp
 	src/density.cpp
 	src/depGraph.cpp
-	src/matrixop.cpp
+	#src/matrixop.cpp
 	#src/os_functions.cpp
 	src/phaseFunc.cpp
 	src/polynomial.cpp
@@ -84,7 +84,7 @@ set(rtmath_core_serialization
 	rtmath/Serialization/serialization_macros.h
 	src/common_templates_serialization.cpp
 	#src/eigen_serialization.cpp
-	src/matrixop_serialization.cpp
+	#src/matrixop_serialization.cpp
 	)
 source_group("Serialization" FILES ${rtmath_core_serialization})
 

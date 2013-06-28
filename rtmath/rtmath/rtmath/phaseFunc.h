@@ -6,13 +6,13 @@
 #include <string>
 #include <Eigen/Core>
 //#include "enums.h"
-//#include "matrixop.h"
 //#include "da/damatrix.h"
 
 
 #pragma message("Warning: phaseFunc.h needs the pf class moved elsewhere, + interpolation")
 namespace rtmath {
 
+	/// \todo Need to move pf class elsewhere and add interpolation
 	namespace phaseFuncs
 	{
 		// This namespace provides the different type of radiative transfer matrix 

@@ -20,7 +20,7 @@ namespace rtmath {
 
 			if (statsfile.size())
 			{
-				::serialization::write<rtmath::ddscat::shapeFileStats >(sstats,statsfile);
+				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(sstats,statsfile);
 			}
 
 			boost::shared_ptr<shapeFileStats> p(new shapeFileStats(sstats));

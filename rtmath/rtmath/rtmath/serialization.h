@@ -18,6 +18,8 @@
 
 #include "../rtmath/error/error.h"
 
+#pragma message("rtmath/serialization.h is a deprecated header. Switch to Ryan_Serialization version!")
+
 namespace rtmath {
 	namespace serialization {
 

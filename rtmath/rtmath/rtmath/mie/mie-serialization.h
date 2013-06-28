@@ -17,13 +17,13 @@ namespace boost
 	namespace serialization
 	{
 		template <class Archive>
-		void DLEXPORT serialize(Archive & ar, rtmath::mie::mieParams & g, const unsigned int version);
+		void DLEXPORT_RTMATH serialize(Archive & ar, rtmath::mie::mieParams & g, const unsigned int version);
 
 		template <class Archive>
-		void DLEXPORT serialize(Archive & ar, rtmath::mie::mieCalc & g, const unsigned int version);
+		void DLEXPORT_RTMATH serialize(Archive & ar, rtmath::mie::mieCalc & g, const unsigned int version);
 
 		template <class Archive>
-		void DLEXPORT serialize(Archive & ar, rtmath::mie::mieAngleRes & g, const unsigned int version);
+		void DLEXPORT_RTMATH serialize(Archive & ar, rtmath::mie::mieAngleRes & g, const unsigned int version);
 
 	}
 }
