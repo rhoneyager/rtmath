@@ -215,6 +215,14 @@ int main(int argc, char** argv)
 			new rtmath::ddscat::shapefile);
 		//rtmath::ddscat::shapefile shpout = shp;
 		shpout->desc = shp->desc;
+		{ // Add descriptive naming
+			std::ostringstream idname;
+			idname << " with scaling factor " << scale;
+			if (hasThreshold)
+				idname << " and a filling threshold of " << threshold;
+			std::string ids = idname.str();
+			shpout->desc.append(ids);
+		}
 		shpout->a1 = shp->a1;
 		shpout->a2 = shp->a2;
 		shpout->a3 = shp->a3;

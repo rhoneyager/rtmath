@@ -23,6 +23,7 @@ namespace rtmath {
 
 		class ddOutputSingleObj;
 
+		/// The listing of the stat table entries
 		enum stat_entries
 		{
 			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
@@ -35,13 +36,18 @@ namespace rtmath {
 			NUM_STAT_ENTRIES
 		};
 
+		/// \brief Converts the stat_entries id to a string for display.
+		/// \todo Add reverse case, converting from string to id.
 		std::string getStatNameFromId(stat_entries);
 
+		/** Class contains the output of a single ddscat fml / sca or avg file
+		 *
+		 * Doesn't quite inherit from daStatic.
+		 * \note Ensemble providers inherit from this!
+		 * \todo Extend to handle multiple dielectrics
+		 **/
 		class ddOutputSingle : public boost::enable_shared_from_this<ddOutputSingle>
 		{
-			// Class contains the output of a single ddscat fml / sca or avg file
-			// Doesn't quite inherit from daStatic.
-			// Note: ensemble providers inherit from this!
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();
@@ -66,7 +72,8 @@ namespace rtmath {
 			void readMueller(std::istream &in);
 			void readF(std::istream &in);
 
-			#pragma message("Warning: ddOutputSingle needs correct normalization and default values")
+			/// Normalize based on P11
+			/// \todo Needs correct normalization and default values
 			boost::shared_ptr<ddOutputSingle> normalize() const; // Normalize based on P11 // TODO
 
 			size_t version() const;
@@ -86,8 +93,6 @@ namespace rtmath {
 			bool operator<(const ddOutputSingle &rhs) const;
 			typedef std::map<size_t, std::pair<size_t, size_t> > mMuellerIndices;
 
-#pragma message("scattMatricesContainer needs to have ordering based on " \
-		"internal orientation, not based on pointers!")
 //			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix> > 
 			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix>,
 					ddscat::sharedComparator<boost::shared_ptr<const ddscat::ddScattMatrix> > >

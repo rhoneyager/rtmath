@@ -181,6 +181,7 @@ namespace rtmath {
 
 		ddOutputSingleObj::~ddOutputSingleObj() { }
 
+#pragma message("Warning: ddOutputSingle needs correct normalization and default values")
 		boost::shared_ptr<ddOutputSingle> ddOutputSingle::normalize() const
 		{
 			// Following the Mishchenko normalization condition, take and compute the Mueller matrix entries 
@@ -196,7 +197,7 @@ namespace rtmath {
 
 			// Take each pf and multiply by the normalization constraint
 			boost::shared_ptr<ddOutputSingle> res(new ddOutputSingle);
-			throw;
+			throw debug::xUnimplementedFunction();
 			return res;
 		}
 
