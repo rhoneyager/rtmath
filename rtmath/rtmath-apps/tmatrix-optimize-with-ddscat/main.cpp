@@ -197,6 +197,14 @@ int main(int argc, char** argv)
 		if (!vm.count("inputs")) doHelp("Need to specify input files.");
 		rawinputs = vm["inputs"].as<vector<string> >();
 
+		bool writeStats = false;
+		string statsDir;
+		if (vm.count("stats-dir"))
+		{
+			writeStats = true;
+			statsDir = vm["stats-dir"].as<string>();
+		}
+
 		using namespace boost::filesystem;
 
 		// sca and fml files have no reference to the originating ddscat runs. However, 
@@ -272,11 +280,32 @@ int main(int argc, char** argv)
 		for (auto it = data.begin(); it != data.end(); ++it)
 		{
 			cerr << "Processing " << it->first << endl;
+			// Skip if there are no ddscat results to use
 			if (it->second.ddres.size() == 0) continue;
 			// Skip if no shape or shape stats file
-
+			if (it->second.shapefile.empty() && it->second.shapestats.empty()) continue;
+			
 			// If no shape stats file, generate one
 			// And place generated stats file in specified directory
+			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
+			if (!it->second.shapestats.empty())
+				Ryan_Serialization::read(stats,it->second.shapestats.string());
+			/// \todo Add Ryan_Serialization::read--- T = read<..>(file) alias.
+			else
+			{
+				// Generate the stats. 
+				string statfilename;
+				if (writeStats)
+				{
+					it->second.shapestats = path(statsDir);
+					it->second.shapestats /= it->second.shapefile.filename();
+					it->second.shapestats += "-stats.xml";
+				}
+				stats = rtmath::ddscat::shapeFileStats::genStats(
+					it->second.shapefile.string(), // File to load
+					it->second.shapestats.string() // Stats file to save
+					);
+			}
 
 			// Read the ddscat results
 
