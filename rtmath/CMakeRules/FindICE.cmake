@@ -50,7 +50,7 @@ find_path( ICE_HOME_INCLUDE_ICE Ice.h
   C:/Ice-3.4.0/include/Ice
   C:/Ice-3.3.0-VC80/include/Ice
   C:/Ice-3.3.0/include/Ice
-  #  "C:/Program Files (x86)/ZeroC/Ice-3.5.0/include/Ice"
+  "C:/Program Files (x86)/ZeroC/Ice-3.5.0/include/Ice"
   # Windows needs to check for vc110 and x64 flags
   )
 # message( STATUS "DEBUG: Ice.h is apparently found in : ${ICE_HOME_INCLUDE_ICE}" )
@@ -70,9 +70,31 @@ if( ICE_HOME_INCLUDE_ICE )
 
     # include and lib dirs are easy
     set( ICE_INCLUDE_DIR ${ICE_HOME}/include )
-    set( ICE_LIBRARY_DIR ${ICE_HOME}/lib ) # But, this does not catch lib64
-    file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_HOME}/li*/libSlice.so)
-    get_filename_component( ICE_LIBRARY_DIR_HINT_PATH ${ICE_LIBRARY_DIR_HINT} PATH)
+    set( ICE_LIBRARY_DIR ${ICE_HOME}/lib ) # But, this does not catch lib64 on linux
+    set( ICE_LIBRARY_PREFIX ${ICE_LIBRARY_DIR})
+    # For windows, query cmake for the compiler and compiled architecture
+    # I care about x86/64 and msvc version.
+    if(DEFINED MSVC_VERSION)
+	    if (MSVC_VERSION GREATER 1600) # 1700 and up
+		    set (ICE_LIBRARY_PREFIX ${ICE_LIBRARY_PREFIX}/vc110)
+	    endif()
+	    if (CMAKE_CL_64)
+		    set (ICE_LIBRARY_PREFIX ${ICE_LIBRARY_PREFIX}/x64)
+	    endif()
+    endif()
+    file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/libSlice.so)
+    if (NOT ICE_LIBRARY_DIR_HINT)
+	    file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/slice.lib)
+    endif()
+    get_filename_component( ICE_LIBRARY_DIR_HINT_PATH "${ICE_LIBRARY_DIR_HINT}" PATH)
+
+    # exe dir
+    set (ICE_BIN_DIR ${ICE_HOME}/bin)
+    if (NOT ICE_BIN_DIR_HINT)
+	    file( GLOB_RECURSE ICE_BIN_DIR_HINT ${ICE_HOME}/bin/slice2cpp*)
+    endif()
+    get_filename_component( ICE_BIN_DIR_HINT_PATH "${ICE_BIN_DIR_HINT}" PATH)
+
     
     # Slice files are often installed elsewhere
     file( GLOB_RECURSE ICE_SLICE_ICE_HINT /usr/share/Ice-*/Communicator.ice )
