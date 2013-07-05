@@ -25,126 +25,11 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
 //#include "../../rtmath/rtmath/ddscat/shapestatsviews.h" /// \todo Fix shapestatsviews?
+
+#include "dataset.h"
+#include "run.h"
+
 #include "../../rtmath/rtmath/error/error.h"
-
-/// Class that matches shapefiles to run results.
-/// \todo Retool this to match shape files, shape stats and ddscat results
-class dataset
-{
-public:
-	dataset() : id("") {}
-	dataset(const std::string &prefix) : id(prefix) {}
-	// For holly stuff, the shape id is before the first underscore.
-	// Other stuff may be appended at the end (lev2), but she nicely splits the folders!
-	std::string id;
-	// avg file provides freq, dielectric info, qsca, qbk, qext, aeff, d
-	std::vector<boost::filesystem::path> ddres; // all avg results (.avg)
-	boost::filesystem::path shapestats; // shape stats (.xml)
-	boost::filesystem::path shapefile; // the shape file (.shp, _shape.txt)
-
-	// holly shape files are like 1mm14shape.txt or 1mm1_..._shape.txt
-	// liu shape files are like avg_5000.shp
-	// stat results end in .xml (+.bz2,+...)
-	// holly avg files follow 1mm14_t_f.avg
-	// liu avg files follow avg_3000[.*]
-	static std::string getPrefix(const boost::filesystem::path &filename)
-	{
-		// Prefix is the first part of the filename.
-		using namespace std;
-		using namespace boost::filesystem;
-		path pleaf = filename.filename();
-		path proot = filename.parent_path();
-		string sleaf = pleaf.string(); // the filename
-
-		size_t pund = sleaf.find('_'); // May be liu or holly
-		size_t pshape = sleaf.find("shape"); // Only Holly
-		size_t pshp = sleaf.find(".shp"); // Only Liu
-		size_t pavg = sleaf.find("avg_"); // Only Liu
-
-		bool isLiu = false, isHolly = false;
-		if (pshp != string::npos) isLiu = true;
-		if (pavg != string::npos) isLiu = true;
-		if ((pshape != string::npos) && !isLiu) isHolly = true;
-		if ((pund != string::npos) && !isLiu) isHolly = true;
-
-		// Based on detection criteria, perform appropriate truncation
-		if (isLiu)
-		{
-			// Liu avg files need no manipulation.
-			// Remove .shp - pshp for raw shapes and tmatrix results
-			if (pshp != string::npos)
-				sleaf = sleaf.substr(0,pshp);
-			// Raw liu shapes, tmatrix results re now truncated
-		}
-		if (isHolly)
-		{
-			size_t pos = 0;
-			if ((pund != string::npos) && (pavg != string::npos)) pund = string::npos;
-			if (pund == string::npos && pshape != string::npos) pos = pshape;
-			else if (pshape == string::npos && pund != string::npos) pos = pund;
-			else if (pshape == pund == string::npos) throw;
-			else pos = (pund < pshape) ? pund : pshape;
-			sleaf = sleaf.substr(0,pos);
-		}
-
-		return sleaf;
-	}
-	static bool isValid(const boost::filesystem::path &filename)
-	{
-		using namespace boost::filesystem;
-		using namespace std;
-		if (is_directory(filename)) return false;
-		if (isAvg(filename)) return true;
-		if (isShape(filename)) return true;
-		if (isShapeStats(filename)) return true;
-		return false;
-	}
-	static bool isAvg(const boost::filesystem::path &filename)
-	{
-		using namespace boost::filesystem;
-		using namespace std;
-		path pleaf = filename.filename();
-
-		//string meth; // replaced with std::string()
-		if (Ryan_Serialization::detect_compression(pleaf.string(), std::string()))
-			pleaf.replace_extension();
-
-		path ext = pleaf.extension();
-
-		if (ext.string() == ".avg") return true;
-		return false;
-	}
-	static bool isShape(const boost::filesystem::path &filename)
-	{
-		using namespace boost::filesystem;
-		using namespace std;
-		path pleaf = filename.filename();
-
-		//string meth; // replaced with std::string()
-		if (Ryan_Serialization::detect_compression(pleaf.string(), std::string()))
-			pleaf.replace_extension();
-
-		path ext = pleaf.extension();
-		if (ext.string() == ".shp") return true;
-		if (pleaf.string().find_last_of("shape.txt") != string::npos) return true; // Lazy check
-		return false;
-	}
-	static bool isShapeStats(const boost::filesystem::path &filename)
-	{
-		using namespace boost::filesystem;
-		using namespace std;
-		path pleaf = filename.filename();
-
-		//string meth; // replaced with std::string()
-		if (Ryan_Serialization::detect_compression(pleaf.string(), std::string()))
-			pleaf.replace_extension();
-
-		path ext = pleaf.extension();
-		if (ext.string() == ".xml") return true;
-		return false;
-	}
-};
-
 
 int main(int argc, char** argv)
 {
@@ -283,35 +168,27 @@ int main(int argc, char** argv)
 			// Skip if there are no ddscat results to use
 			if (it->second.ddres.size() == 0) continue;
 			// Skip if no shape or shape stats file
-			if (it->second.shapefile.empty() && it->second.shapestats.empty()) continue;
+			if (it->second.shapefile.empty() && it->second.shapestatsfile.empty()) continue;
 			
 			// If no shape stats file, generate one
 			// And place generated stats file in specified directory
-			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
-			if (!it->second.shapestats.empty())
-				Ryan_Serialization::read(stats,it->second.shapestats.string());
-			/// \todo Add Ryan_Serialization::read--- T = read<..>(file) alias.
-			else
-			{
-				// Generate the stats. 
-				string statfilename;
-				if (writeStats)
-				{
-					it->second.shapestats = path(statsDir);
-					it->second.shapestats /= it->second.shapefile.filename();
-					it->second.shapestats += "-stats.xml";
-				}
-				stats = rtmath::ddscat::shapeFileStats::genStats(
-					it->second.shapefile.string(), // File to load
-					it->second.shapestats.string() // Stats file to save
-					);
-			}
+			// And read the stats results
+			it->second.prepStats(writeStats,statsDir);
+			// Stats results give volume fraction
 
 			// Read the ddscat results
-
-
 			// A cache is created for each object to prevent multiple loads.
-			// It is dumped at the end of reading each data set.
+			it->second.ddloaded.resize(it->second.ddres.size());
+#pragma omp parallel for
+			for (size_t i=0; i< it->second.ddres.size(); ++i)
+			{
+				// Three file types:
+				// - raw ddscat output
+				// - compressed ddscat output
+				// - serialized ddscat output
+
+			}
+
 			map<std::string, std::vector<rtmath::tmatrix::tmData> > tmcache;
 			map<std::string, rtmath::ddscat::ddOutputSingle> ddcache;
 

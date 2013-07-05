@@ -5,6 +5,10 @@ include_directories (
 )
 
 add_executable (rtmath-tmatrix-optimize-with-ddscat
+	dataset.cpp
+	dataset.h
+	run.cpp
+	run.h
 	main.cpp 
 	)
 
