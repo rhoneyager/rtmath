@@ -117,10 +117,18 @@ configure_file (
 	"${PROJECT_BINARY_DIR}/module-ryan-debug"
 	)
 
+
 find_package(Boost COMPONENTS filesystem program_options system REQUIRED)
-include_directories(${BOOST_INCLUDEDIR})
-if (WIN32 AND NOT CYGWIN) # Boost auto-link
-	link_directories(${BOOST_LIBRARYDIR})
+include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
+if (WIN32 AND NOT CYGWIN)
+	option ( AUTOLINK_BOOST
+		"Automatically link Boost" ON)
+	if (AUTOLINK_BOOST)
+		link_directories(${Boost_LIBRARY_DIR})
+	else()
+		add_definitions(-DBOOST_ALL_NO_LIB)
+		set(liblist ${Boost_LIBRARIES})
+	endif()
 else()
 	set(liblist ${Boost_LIBRARIES})
 endif()
