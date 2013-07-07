@@ -17,6 +17,25 @@
 //#include "../coords.h"
 //#include "../depGraph.h"
 
+namespace rtmath
+{
+	namespace ddscat
+	{
+		class ddOutputSingleObj;
+		class ddOutputSingle;
+	}
+}
+
+namespace boost
+{
+	namespace serialization
+	{
+		/// Serialization definition for ddOutputSingle
+		template <class Archive>
+		void serialize(Archive&, rtmath::ddscat::ddOutputSingle&, const unsigned int);
+	}
+}
+
 namespace rtmath {
 
 	namespace ddscat {
@@ -39,6 +58,28 @@ namespace rtmath {
 		/// \brief Converts the stat_entries id to a string for display.
 		/// \todo Add reverse case, converting from string to id.
 		std::string getStatNameFromId(stat_entries);
+
+		/// Stream-formatting template enums that handle I/O.
+		enum ddOutputSingleAsType
+		{
+			/// I/O as .avg file
+			AVG,
+			/// I/O as .sca file
+			SCA,
+			/// I/O as .fml file
+			FML
+		};
+		/// Class to handle stream-formatting.
+		class ddOutputSingleAsClass
+		{
+			/// Private constructor invoked by ddOutputSingle::as<T>
+			ddOutputSingleAsClass(ddOutputSingle&, ddOutputSingleAsType);
+			friend class ddOutputSingle;
+			/// Type of file I/O
+			ddOutputSingleAsType _type;
+			/// Reference to object
+			ddOutputSingle &_ref;
+		};
 
 		/** Class contains the output of a single ddscat fml / sca or avg file
 		 *
@@ -104,15 +145,31 @@ namespace rtmath {
 			void getHeaderMaps(headerMap&) const;
 			boost::shared_ptr<ddOutputSingleObj> getObj(const std::string &id) const;
 
+
+			/// Function to modify I/O stream type
+			template <ddOutputSingleAsType T>
+			void as();
+			template <ddOutputSingleAsType T>
+			void as() const;
+
+			//void asAVG() const;
+			//void asSCA() const;
+			//void asFML() const;
 		protected:
+			/// The ddscat version of the file
 			size_t _version;
 			mMuellerIndices _muellerMap;
 			double _beta, _theta, _phi, _wave, _aeff;
+			/// Handles role of delegated constructor
 			void _init();
 			//void _populateDefaults();
 			headerMap _objMap;
 			statTableType _statTable;
 			scattMatricesContainer _scattMatricesRaw;
+
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive&, ddOutputSingle&, const unsigned int);
 		};
 
 		class ddOutputSingleObj

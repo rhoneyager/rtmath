@@ -179,7 +179,6 @@ int main(int argc, char** argv)
 			// Read the ddscat results
 			// A cache is created for each object to prevent multiple loads.
 			it->second.ddloaded.resize(it->second.ddres.size());
-#pragma omp parallel for
 			for (size_t i=0; i< it->second.ddres.size(); ++i)
 			{
 				// Three file types:
