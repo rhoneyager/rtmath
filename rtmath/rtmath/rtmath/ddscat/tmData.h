@@ -18,8 +18,6 @@
 #include "../mie/mie.h"
 #include "shapestats.h"
 
-#pragma message("TODO: no need for separate serialization header if forward declared properly")
-
 // Forward declaration for boost::serialization below
 namespace rtmath {
 	namespace tmatrix {

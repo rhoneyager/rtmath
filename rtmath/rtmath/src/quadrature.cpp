@@ -134,7 +134,7 @@ namespace rtmath {
 			// find the zeros of the function in the range [0,1].
 			rtmath::recPolys::legendre lpgen; // TODO: rewrite the generators
 			rtmath::polynomial lp, dlp;
-			lpgen.get(deg, lp);
+			lpgen.get((unsigned int) deg, lp);
 			dlp = lp.deriv(1); // dlp = P'
 
 			//lp.print();

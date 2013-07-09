@@ -1,5 +1,5 @@
 #pragma once
-#pragma message("Note: shapestatsRotated_serialization.h is a dead header")
+#pragma deprecated(shapestatsRotated_serialization_h)
 
 namespace rtmath
 {

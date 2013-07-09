@@ -61,6 +61,36 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
+find_package(Boost COMPONENTS program_options serialization iostreams filesystem system unit_test_framework regex REQUIRED)
+include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
+#message("${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
+#                ${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
+#                ${Boost_PROGRAM_OPTIONS_LIBRARY}")
+if(WIN32 AND NOT CYGWIN)
+	option ( AUTOLINK_BOOST
+		"Automatically link Boost" ON)
+	if (AUTOLINK_BOOST)
+		link_directories(${Boost_LIBRARY_DIR})
+		set(rtmath_core-libs "")
+	else()
+		add_definitions(-DBOOST_ALL_NO_LIB)
+		set(rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
+		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
+		${Boost_PROGRAM_OPTIONS_LIBRARY})
+	endif()
+else()
+	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
+		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
+		${Boost_PROGRAM_OPTIONS_LIBRARY})
+endif()
+
+find_package(Ryan_Debug REQUIRED)
+find_package(Ryan_Serialization REQUIRED)
+find_package(Eigen3 REQUIRED)
+include_directories(EIGEN3_INCLUDE_DIR)
+include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
+include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
+
 add_library (rtmath_core ${sflag}
 	${rtmath_core-files} 
 	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
@@ -77,20 +107,7 @@ SET_TARGET_PROPERTIES( rtmath_core PROPERTIES DEBUG_POSTFIX _Debug )
 set_target_properties(rtmath_core PROPERTIES FOLDER "Libs")
 
 
-find_package(Boost COMPONENTS program_options serialization iostreams filesystem system unit_test_framework regex REQUIRED)
-#message("${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
-#                ${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-#                ${Boost_PROGRAM_OPTIONS_LIBRARY}")
-if(WIN32 AND NOT CYGWIN) # Boost autolink
-else()
-	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
-		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-		${Boost_PROGRAM_OPTIONS_LIBRARY})
-endif()
-find_package(Ryan_Debug REQUIRED)
-find_package(Ryan_Serialization REQUIRED)
-find_package(Eigen3 REQUIRED)
-include_directories(EIGEN3_INCLUDE_DIR)
+
 
 set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug Ryan_Serialization)
 target_link_libraries(rtmath_core ${rtmath_core-libs})
@@ -116,6 +133,13 @@ target_link_libraries(rtmath_mie ${rtmath_mie-libs})
 
 
 
+find_package(tmatrixFortran REQUIRED)
+find_package(tmatrixCpp REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
+include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+
 add_library (rtmath_ddscat ${sflag}
 	${rtmath_ddscat-files}
 	)
@@ -128,12 +152,7 @@ SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithD
 SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES DEBUG_POSTFIX _Debug )
 set_target_properties( rtmath_ddscat PROPERTIES FOLDER "Libs")
 
-find_package(tmatrixFortran REQUIRED)
-find_package(tmatrixCpp REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
-include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
+
 #add_definitions(${PCL_DEFINITIONS})
 
 

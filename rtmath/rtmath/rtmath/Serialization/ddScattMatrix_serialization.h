@@ -1,5 +1,5 @@
 #pragma once
-#pragma deprecated(ddScattMatrix_serialization.h)
+#pragma deprecated(ddScattMatrix_serialization_h)
 
 #include <boost/serialization/export.hpp>
 #include "eigen_serialization.h"

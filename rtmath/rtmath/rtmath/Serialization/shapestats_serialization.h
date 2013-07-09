@@ -1,5 +1,5 @@
 #pragma once
-#pragma message("Note: shapestats_serialization.h is a dead header")
+#pragma deprecated(shapestats_serialization_h)
 
 /*
 #include "shapestatsRotated_serialization.h"

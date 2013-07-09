@@ -596,6 +596,10 @@ namespace rtmath {
 
 			bool __getStringBool(ddParParsers::ParId id, const std::string &bfalse, const std::string &btrue) const;
 			void __setStringBool(ddParParsers::ParId id, bool v, const std::string &bfalse, const std::string &btrue);
+
+			template <class Archive>
+			friend void ::boost::serialization::serialize(
+				Archive&, ddPar&, const unsigned int);
 		};
 
 #undef accessorSimple

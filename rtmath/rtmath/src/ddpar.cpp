@@ -451,7 +451,7 @@ namespace rtmath {
 				(new ddParParsers::ddParLineMixed<double, std::string>(3,4, ddParParsers::AEFF));
 			line->set<double>(0,min);
 			line->set<double>(1,max);
-			line->set<double>(2,n);
+			line->set<double>(2,(double) n);
 			line->set<std::string>(3,spacing);
 			insertKey(ddParParsers::AEFF,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
 		}

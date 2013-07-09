@@ -47,10 +47,10 @@ namespace boost
 		{
 			if (version)
 			{
-				ar & boost::serialization::make_nvp("version", _version);
-				ar & boost::serialization::make_nvp("parsedData", _parsedData);
-				ar & boost::serialization::make_nvp("scaPlanes", _scaPlanes);
-				ar & boost::serialization::make_nvp("diels", _diels);
+				ar & boost::serialization::make_nvp("version", g._version);
+				ar & boost::serialization::make_nvp("parsedData", g._parsedData);
+				ar & boost::serialization::make_nvp("scaPlanes", g._scaPlanes);
+				ar & boost::serialization::make_nvp("diels", g._diels);
 			} else {
 				// Older versions just write the ddscat.par file as a big string.
 				boost::serialization::split_free(ar, g, version);

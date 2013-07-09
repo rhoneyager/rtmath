@@ -1,5 +1,5 @@
 #pragma once
-#pragma message("TODO: no need for separate serialization header if forward declared properly")
+#pragma deprecated(rotations_serialization_h)
 
 namespace rtmath
 {

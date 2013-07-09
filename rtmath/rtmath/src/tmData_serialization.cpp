@@ -13,7 +13,7 @@
 #include "../rtmath/Serialization/tmData_serialization.h"
 #include "../rtmath/Serialization/shapestats_serialization.h"
 #include <tmatrix/tmatrix.h>
-#include <tmatrix/tmatrix-serialization.h>
+//#include <tmatrix/tmatrix-serialization.h>
 #include "../rtmath/Serialization/serialization_macros.h"
 #include "../rtmath/mie/mie-serialization.h"
 #include "../rtmath/mie/mie.h"

@@ -28,9 +28,9 @@ namespace rtmath {
 			for (size_t i = An.size(); i <= n; i++)
 			{
 				complex<double> res(0.0,0.0);
-				res = (complex<double>(i,0))/(sizep*m) - An[i-1];
+				res = (complex<double>((double) i,0))/(sizep*m) - An[i-1];
 				res = complex<double>(1.0,0.0) / res;
-				res += -1.0 * (complex<double>(i,0.0)/(sizep*m));
+				res += -1.0 * (complex<double>((double) i,0.0)/(sizep*m));
 				An.push_back(std::move(res));
 			}
 			return An[n];

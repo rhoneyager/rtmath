@@ -36,7 +36,7 @@ namespace rtmath {
 			// Start at first unknown polynomial and build up
 			polynomial x(1,1); // The x operator
 			polynomial newpoly;
-			for (unsigned int i=_cacheA.size(); i<=rank ; i++)
+			for (size_t i=_cacheA.size(); i<=rank ; i++)
 			{
 				newpoly.erase();
 				newpoly = (x * _cacheA[i-1] * 2.0 ) - ( _cacheA[i-2] );
@@ -73,7 +73,7 @@ namespace rtmath {
 			// Start at first unknown polynomial and build up
 			polynomial x(1,1); // The x operator
 			polynomial newpoly;
-			for (unsigned int i=_cacheB.size(); i<=rank ; i++)
+			for (size_t i=_cacheB.size(); i<=rank ; i++)
 			{
 				newpoly.erase();
 				newpoly = (x * _cacheB[i-1] * 2.0 ) - ( _cacheB[i-2] );

@@ -38,7 +38,7 @@ namespace rtmath {
 			polynomial xop; // The x operator
 			xop.coeff(1,1);
 			polynomial newpoly;
-			for (unsigned int i=_cache.size(); i<=rank ; i++)
+			for (size_t i=_cache.size(); i<=rank ; i++)
 			{
 				newpoly.erase();
 				newpoly = ( _cache[i-1] * (xop * -1.0 + (2.0*i) - 1.0) * (1.0/i) ) - (( _cache[i-2] * (i-1.0) ) * (1.0/i) );

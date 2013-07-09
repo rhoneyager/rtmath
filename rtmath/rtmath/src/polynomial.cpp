@@ -60,7 +60,7 @@ namespace rtmath {
 		erase();
 		for (size_t i=0; i<=maxdeg; i++)
 		{
-			coeff(i,source[i]);
+			coeff((unsigned int) i,source[i]);
 		}
 	}
 
@@ -70,7 +70,7 @@ namespace rtmath {
 		size_t n = maxPow();
 		for (size_t i=0; i<=n; i++)
 		{
-			target[i] = coeff(i);
+			target[i] = coeff((unsigned int) i);
 		}
 	}
 

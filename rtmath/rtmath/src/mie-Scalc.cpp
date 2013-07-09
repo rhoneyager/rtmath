@@ -43,7 +43,7 @@ namespace rtmath {
 				double pinRes;
 				double taunRes;
 				// Do iteration of the sum
-				abn.calc(n, an, bn);
+				abn.calc((unsigned int) n, an, bn);
 				pinRes = piN.calc(n);
 				taunRes = tauN.calc(n);
 

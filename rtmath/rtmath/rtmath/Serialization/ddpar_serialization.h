@@ -1,5 +1,5 @@
 #pragma once
-#pragma deprecated(ddpar_serialization.h)
+#pragma deprecated(ddpar_serialization_h)
 
 namespace rtmath
 {

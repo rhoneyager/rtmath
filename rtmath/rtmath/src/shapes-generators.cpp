@@ -397,7 +397,7 @@ namespace rtmath {
 				for (size_t i=1; i<=3; i++)
 				{
 					// Figure out var x, y, z
-					const char vi = 'x' + i - 1;
+					const char vi = 'x' + (const char) i - 1;
 
 					ostringstream svrad;
 					svrad << "a" << vi; // ax, ay, az
