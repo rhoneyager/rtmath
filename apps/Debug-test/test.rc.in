@@ -78,7 +78,7 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 2013"
             VALUE "OriginalFilename", "Ryan_Debug-test.exe"
             VALUE "ProductName", "Ryan_Debug-test"
-            VALUE "ProductVersion", "@MAJOR@,@MINOR@,@REVISION@,@SVNREVISION@"
+            VALUE "ProductVersion", "@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@"
         END
     END
     BLOCK "VarFileInfo"

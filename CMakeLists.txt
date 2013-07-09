@@ -17,7 +17,7 @@ include (SVNinfo)
 
 set(MAJOR 0)
 set(MINOR 6)
-set(REVISION 2)
+set(REVISION 3)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
@@ -152,12 +152,29 @@ endif()
 source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
 
+set(configappend "")
+if(MSVC)
+	#message( STATUS "CMAKE_CL_64: ${CMAKE_CL_64}")
+	if (CMAKE_CL_64)
+		set(configappend "_x64")
+	else()
+		set(configappend "_x86")
+	endif()
+	add_definitions(-DCONF="${configappend}")
+	#add_definitions(-DCONF="$(Configuration)${configappend}")
+	#set(CONF "\"$(Configuration)\"")
+	set(CONF CONF)
+endif()
 
 add_library(Ryan_Debug SHARED ${srcs} ${hdrs} 
 	"${PROJECT_BINARY_DIR}/module-ryan-debug"
 	)
 target_link_libraries(Ryan_Debug ${liblist})
 set_target_properties(Ryan_Debug PROPERTIES FOLDER "Libs")
+SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELEASE_POSTFIX ${configappend} )
+SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES MINSIZEREL_POSTFIX ${configappend} )
+SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELWITHDEBINFO_POSTFIX ${configappend} )
+SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES DEBUG_POSTFIX ${configappend} )
 
 #add_executable(Ryan_Debug-test ${srcs-test})
 #target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)

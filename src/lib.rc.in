@@ -74,11 +74,11 @@ BEGIN
             VALUE "CompanyName", "Ryan Honeyager"
             VALUE "FileDescription", "Provides debug functions to Ryan's programs"
             VALUE "FileVersion", "@MAJOR@,@MINOR@,@REVISION@," EXPAND_AND_QUOTE(SUB_REV)
-            VALUE "InternalName", "Ryan-Debug"
+            VALUE "InternalName", "Ryan_Debug"
             VALUE "LegalCopyright", "Copyright (C) 2013"
-            VALUE "OriginalFilename", "Ryan-Debug.dll"
-            VALUE "ProductName", "Ryan-Debug"
-            VALUE "ProductVersion", "@MAJOR@,@MINOR@,@REVISION@," EXPAND_AND_QUOTE(SUB_REV)
+            VALUE "OriginalFilename", "Ryan_Debug" CONF ".dll"
+            VALUE "ProductName", "Ryan_Debug"
+            VALUE "ProductVersion", "@MAJOR@.@MINOR@.@REVISION@." EXPAND_AND_QUOTE(SUB_REV)
         END
     END
     BLOCK "VarFileInfo"
