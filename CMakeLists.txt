@@ -171,10 +171,12 @@ add_library(Ryan_Debug SHARED ${srcs} ${hdrs}
 	)
 target_link_libraries(Ryan_Debug ${liblist})
 set_target_properties(Ryan_Debug PROPERTIES FOLDER "Libs")
+if (configappend)
 SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELEASE_POSTFIX ${configappend} )
 SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES MINSIZEREL_POSTFIX ${configappend} )
 SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELWITHDEBINFO_POSTFIX ${configappend} )
 SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES DEBUG_POSTFIX ${configappend} )
+endif()
 
 #add_executable(Ryan_Debug-test ${srcs-test})
 #target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)
