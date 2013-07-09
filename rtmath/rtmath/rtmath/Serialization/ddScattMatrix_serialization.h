@@ -1,5 +1,5 @@
 #pragma once
-#pragma message("TODO: no need for separate serialization header if forward declared properly")
+#pragma deprecated(ddScattMatrix_serialization.h)
 
 #include <boost/serialization/export.hpp>
 #include "eigen_serialization.h"

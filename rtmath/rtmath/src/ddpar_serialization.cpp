@@ -61,4 +61,4 @@ namespace boost
 }
 
 BOOST_CLASS_VERSION(rtmath::ddscat::ddPar, 1);
-
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddPar);

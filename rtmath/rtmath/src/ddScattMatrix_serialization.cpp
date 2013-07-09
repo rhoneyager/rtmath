@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
-#include "../rtmath/Serialization/ddScattMatrix_serialization.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
 
@@ -54,6 +53,6 @@ namespace boost
 
 //BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile)
 
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrix)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixF)
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixP)
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrix);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixF);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixP);

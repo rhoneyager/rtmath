@@ -607,3 +607,4 @@ namespace rtmath {
 	}
 }
 
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddPar);
