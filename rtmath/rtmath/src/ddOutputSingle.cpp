@@ -16,15 +16,28 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/units.h"
 #include "../rtmath/quadrature.h"
 #include "../rtmath/error/error.h"
+#include "../rtmath/Serialization/serialization_macros.h"
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/split_free.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
-namespace
-{
+// These can no longer be in an anonymous namespace due to serialization requirements.
+//namespace
+//{
 	class ddver : public ::rtmath::ddscat::ddOutputSingleObj
 	{
 	public:
@@ -51,6 +64,13 @@ namespace
 			out << _version;
 			return out.str();
 		}
+	private:
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("version", _version);
+		}
 	};
 	class ddstring : public ::rtmath::ddscat::ddOutputSingleObj
 	{
@@ -67,6 +87,13 @@ namespace
 		}
 		virtual std::string value() const override { return s; }
 		std::string s;
+	private:
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("str", s);
+		}
 	};
 	class ddtarget : public ::rtmath::ddscat::ddOutputSingleObj
 	{
@@ -90,11 +117,18 @@ namespace
 		}
 		virtual std::string value() const override { return s; }
 		std::string s;
+	private:
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("target", s);
+		}
 	};
 	class ddSval : public ::rtmath::ddscat::ddOutputSingleObj
 	{
 	public:
-		ddSval(const std::string &tail) {this->tail = tail;}
+		ddSval(const std::string &tail = "") {this->tail = tail;}
 		virtual ~ddSval() {}
 		virtual void write(std::ostream &out, size_t) const override
 		{
@@ -109,6 +143,14 @@ namespace
 		}
 		std::string s, tail;
 		virtual std::string value() const override { return s; }
+	private:
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("s", s);
+			ar & boost::serialization::make_nvp("tail", tail);
+		}
 	};
 
 	template <class T>
@@ -139,9 +181,26 @@ namespace
 		size_t pos;
 		T val;
 		std::string head, tail;
+	private:
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("pos", pos);
+			ar & boost::serialization::make_nvp("val", val);
+			ar & boost::serialization::make_nvp("head", head);
+			ar & boost::serialization::make_nvp("tail", tail);
+		}
 	};
 
-}
+	
+	BOOST_CLASS_EXPORT(ddver);
+	BOOST_CLASS_EXPORT(ddstring);
+	BOOST_CLASS_EXPORT(ddtarget);
+	BOOST_CLASS_EXPORT(ddSval);
+	BOOST_CLASS_EXPORT(ddNval<size_t>);
+	BOOST_CLASS_EXPORT(ddNval<double>);
+//}
 
 namespace rtmath {
 	namespace ddscat {
@@ -201,23 +260,44 @@ namespace rtmath {
 			return res;
 		}
 
-		void ddOutputSingle::writeFile(const std::string &filename) const
+		void ddOutputSingle::writeFile(const std::string &filename, const std::string &type) const
 		{
-			// Look at extension of file
+			using namespace Ryan_Serialization;
+			std::string cmeth, uncompressed;
+
+			/// \todo Add a table to determine which file types are automatically compressed on saving.
+			/// For those types, automatically apply compression.
+#pragma message("TODO: add a table to determine which file types are automatically compressed on saving")
+
+			uncompressed_name(filename, uncompressed, cmeth);
+			boost::filesystem::path p(uncompressed);
+			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+
+			std::string utype = type;
+			if (!utype.size()) utype = pext.string();
+
+			
 			std::ofstream out(filename.c_str());
-			boost::filesystem::path p(filename);
-			boost::filesystem::path pext = p.extension();
-			if (pext.string() == ".sca")
+			using namespace boost::iostreams;
+			filtering_ostream sout;
+			if (cmeth.size())
+				prep_compression(cmeth, sout);
+			sout.push(out);
+
+			if (utype == ".sca")
 			{
-				writeSCA(out);
-			} else if (pext.string() == ".fml")
+				writeSCA(sout);
+			} else if (utype == ".fml")
 			{
-				writeFML(out);
-			} else if (pext.string() == ".avg")
+				writeFML(sout);
+			} else if (utype == ".avg")
 			{
-				writeAVG(out);
+				writeAVG(sout);
+			} else if (utype == ".xml")
+			{
+				Ryan_Serialization::write<ddOutputSingle>(*this, sout, "rtmath::ddscat::ddOutputSingle");
 			} else {
-				throw rtmath::debug::xBadInput(filename.c_str());
+				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}
 		}
 
@@ -256,22 +336,44 @@ namespace rtmath {
 
 		void ddOutputSingle::readFile(const std::string &filename, const std::string &type)
 		{
-			// Look at extension of file
+			// First, detect if the file is compressed.
+			using namespace Ryan_Serialization;
+			std::string cmeth, uncompressed;
+			// Combination of detection of compressed file, file type and existence.
+			if (!detect_compressed(filename, cmeth, uncompressed))
+				throw rtmath::debug::xMissingFile(filename.c_str());
+			//uncompressed_name(filename, uncompressed, cmeth);
+			boost::filesystem::path p(uncompressed);
+			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+
 			std::ifstream in(filename.c_str());
-			boost::filesystem::path p(filename);
-			boost::filesystem::path pext = p.extension();
+			// Consutuct an filtering_iostream that matches the type of compression used.
+			using namespace boost::iostreams;
+			filtering_istream sin;
+			if (cmeth.size())
+				prep_decompression(cmeth, sin);
+			sin.push(in);
+
 			if (type.size()) pext = boost::filesystem::path(type);
 			if (pext.string() == ".sca")
 			{
-				readSCA(in);
+				readSCA(sin);
 			} else if (pext.string() == ".fml")
 			{
-				readFML(in);
+				readFML(sin);
 			} else if (pext.string() == ".avg")
 			{
-				readAVG(in);
+				readAVG(sin);
+			} else if (pext.string() == ".xml")
+			{
+				// This is a serialized file. Verify that it has the correct identifier, and 
+				// load the serialized object directly
+
+				/// \todo Check ddOutputSingle serialized read and write direct functions.
+#pragma message("TODO: check ddOutputSingle serialized read and write direct functions")
+				Ryan_Serialization::read<ddOutputSingle>(*this, sin, "rtmath::ddscat::ddOutputSingle");
 			} else {
-				throw rtmath::debug::xMissingFile(filename.c_str());
+				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}
 		}
 
@@ -1179,3 +1281,39 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSi
 }
 
 
+
+
+
+namespace boost
+{
+	namespace serialization
+	{
+		template <class Archive>
+		void serialize(Archive & ar, rtmath::ddscat::ddOutputSingle & g, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("version", g._version);
+			ar & boost::serialization::make_nvp("wave", g._wave);
+			ar & boost::serialization::make_nvp("aeff", g._aeff);
+			ar & boost::serialization::make_nvp("objMap", g._objMap);
+			ar & boost::serialization::make_nvp("beta", g._beta);
+			ar & boost::serialization::make_nvp("theta", g._theta);
+			ar & boost::serialization::make_nvp("phi", g._phi);
+			ar & boost::serialization::make_nvp("statTable", g._statTable);
+			ar & boost::serialization::make_nvp("muellerMap", g._muellerMap);
+			ar & boost::serialization::make_nvp("scattMatricesRaw", g._scattMatricesRaw);
+		}
+
+		template <class Archive>
+		void serialize(Archive & ar, rtmath::ddscat::ddOutputSingleObj & g, const unsigned int version)
+		{
+			// The derived classes handle everything!
+			// All of their serialization methods are private and exist only in this file.
+		}
+
+		EXPORT(serialize, rtmath::ddscat::ddOutputSingle);
+		//EXPORT(serialize, rtmath::ddscat::ddOutputSingleObj);
+	}
+}
+
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingle);
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingleObj);

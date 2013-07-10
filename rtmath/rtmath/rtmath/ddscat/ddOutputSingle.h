@@ -7,6 +7,8 @@
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/assume_abstract.hpp>
 #include <Eigen/Core>
 //#include "../interpolatable.h"
 #include "../phaseFunc.h"
@@ -30,6 +32,10 @@ namespace boost
 {
 	namespace serialization
 	{
+		/// Serialization definition for ddOutputSingleObj
+		template <class Archive>
+		void serialize(Archive&, rtmath::ddscat::ddOutputSingleObj&, const unsigned int);
+
 		/// Serialization definition for ddOutputSingle
 		template <class Archive>
 		void serialize(Archive&, rtmath::ddscat::ddOutputSingle&, const unsigned int);
@@ -95,7 +101,7 @@ namespace rtmath {
 
 			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
 			void readFile(const std::string &filename, const std::string &type = "");
-			void writeFile(const std::string &filename) const;
+			void writeFile(const std::string &filename, const std::string &type = "") const;
 
 			void writeFML(std::ostream &out) const;
 			void writeSCA(std::ostream &out) const;
@@ -167,6 +173,7 @@ namespace rtmath {
 			statTableType _statTable;
 			scattMatricesContainer _scattMatricesRaw;
 
+		private:
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
 				Archive&, ddOutputSingle&, const unsigned int);
@@ -175,7 +182,6 @@ namespace rtmath {
 		class ddOutputSingleObj
 		{
 		public:
-			friend class ddOutputSingle;
 			ddOutputSingleObj();
 			virtual ~ddOutputSingleObj();
 			virtual void write(std::ostream &out, size_t version
@@ -187,6 +193,11 @@ namespace rtmath {
 			static void findMap(const std::string &line, std::string &res); //
 			static boost::shared_ptr<ddOutputSingleObj> constructObj
 				(const std::string &key);
+		private:
+			friend class ddOutputSingle;
+			template<class Archive> 
+			friend void ::boost::serialization::serialize(
+				Archive&, ddOutputSingleObj&, const unsigned int);
 		};
 
 	}
@@ -195,3 +206,6 @@ namespace rtmath {
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSingleObj &ob);
 
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingle);
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingleObj);
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputSingleObj);
