@@ -17,6 +17,8 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <boost/serialization/export.hpp>
+
 //#include "../matrixop.h"
 //#include "../coords.h"
 #include "../common_templates.h"
@@ -82,9 +84,6 @@ namespace rtmath {
 
 		class shapeConstraint
 		{
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, shapeConstraint &, const unsigned int);
 		public:
 			shapeConstraint();
 			shapeConstraint(
@@ -288,3 +287,10 @@ namespace rtmath {
 
 	}
 }
+
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::constrainable)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shape)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::ellipsoid)

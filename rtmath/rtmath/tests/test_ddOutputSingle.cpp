@@ -6,10 +6,10 @@
 #include <boost/filesystem.hpp>
 #include <memory>
 
-#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/ddpar.h"
-//#include "../rtmath/Serialization/ddpar_serialization.h"
+#include "../rtmath/Serialization/ddpar_serialization.h"
+#include "../rtmath/serialization.h"
 
 using namespace rtmath;
 using namespace rtmath::ddscat;
@@ -331,13 +331,13 @@ BOOST_AUTO_TEST_CASE(ddpar_serialization)
 
 	string sObj;
 	ostringstream out;
-	Ryan_Serialization::write<ddPar>(a,out);
+	rtmath::serialization::write<ddPar>(a,out);
 	sObj = out.str();
 	istringstream in(sObj);
 
 //rtmath::serialization::write<ddPar>(a,"a.ddscat.par");
 
-	Ryan_Serialization::read<ddPar>(b,in);
+	rtmath::serialization::read<ddPar>(b,in);
 //rtmath::serialization::write<ddPar>(b,"b.ddscat.par");
 
 	BOOST_CHECK(a==b);

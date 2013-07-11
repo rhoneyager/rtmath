@@ -1,5 +1,6 @@
 #pragma once
 #pragma deprecated(rotations_serialization_h)
+#pragma message("rotations_serialization.h is deprecated")
 
 namespace rtmath
 {

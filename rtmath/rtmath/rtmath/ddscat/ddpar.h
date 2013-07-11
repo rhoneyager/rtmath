@@ -47,8 +47,8 @@ namespace boost
 		//template<class Archive>
 		//void load(Archive &ar, rtmath::ddscat::ddPar &g, const unsigned int version);
 
-		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddPar & g, const unsigned int version);
+		//template <class Archive>
+		//void serialize(Archive & ar, rtmath::ddscat::ddPar & g, const unsigned int version);
 	}
 }
 
@@ -597,9 +597,16 @@ namespace rtmath {
 			bool __getStringBool(ddParParsers::ParId id, const std::string &bfalse, const std::string &btrue) const;
 			void __setStringBool(ddParParsers::ParId id, bool v, const std::string &bfalse, const std::string &btrue);
 
-			template <class Archive>
-			friend void ::boost::serialization::serialize(
-				Archive&, ddPar&, const unsigned int);
+			//template <class Archive>
+			//friend void ::boost::serialization::serialize(
+			//	Archive&, ddPar&, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
+			template<class Archive>
+			void save(Archive & ar, const unsigned int version) const;
+			template<class Archive>
+			void load(Archive & ar, const unsigned int version);
 		};
 
 #undef accessorSimple

@@ -11,28 +11,28 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	namespace ddscat
 	{
 		
 		template<class Archive>
-		void save(Archive &ar, const rtmath::ddscat::ddPar &g, const unsigned int version)
+		void ddPar::save(Archive &ar, const unsigned int version) const
 		{
 				std::ostringstream out;
-				g.write(out);
+				write(out);
 				std::string _savedata;
 				_savedata = out.str();
 				ar & boost::serialization::make_nvp("Par_File", _savedata);
 		}
 
 		template<class Archive>
-		void load(Archive &ar, rtmath::ddscat::ddPar &g, const unsigned int version)
+		void ddPar::load(Archive &ar, const unsigned int version)
 		{
 				std::string _savedata;
 				ar & boost::serialization::make_nvp("Par_File", _savedata);
 				std::istringstream in(_savedata);
-				g.read(in);
+				read(in);
 		}
 		/*
 		template <class Archive>
@@ -43,20 +43,23 @@ namespace boost
 		*/
 
 		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddPar & g, const unsigned int version)
+		void ddPar::serialize(Archive & ar, const unsigned int version)
 		{
 			if (version)
 			{
-				ar & boost::serialization::make_nvp("version", g._version);
-				ar & boost::serialization::make_nvp("parsedData", g._parsedData);
-				ar & boost::serialization::make_nvp("scaPlanes", g._scaPlanes);
-				ar & boost::serialization::make_nvp("diels", g._diels);
+				ar & boost::serialization::make_nvp("version", _version);
+				ar & boost::serialization::make_nvp("parsedData", _parsedData);
+				ar & boost::serialization::make_nvp("scaPlanes", _scaPlanes);
+				ar & boost::serialization::make_nvp("diels", _diels);
 			} else {
-				// Older versions just write the ddscat.par file as a big string.
-				boost::serialization::split_free(ar, g, version);
+				// Older versions just write the ddscat.par file as a big strin
+				//boost::serialization::split_free(ar, g, version);
+				boost::serialization::split_member(ar, *this, version);
 			}
 		}
-		EXPORT(serialize, rtmath::ddscat::ddPar);
+		EXPORTINTERNAL(rtmath::ddscat::ddPar::serialize);
+		//EXPORTINTERNAL(rtmath::ddscat::ddPar::load);
+		//EXPORTINTERNAL(rtmath::ddscat::ddPar::save);
 	}
 }
 

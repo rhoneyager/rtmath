@@ -5,7 +5,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include "../rtmath/ddscat/ddparGenerator.h"
-#include "../rtmath/Serialization/ddparGenerator_serialization.h"
+//#include "../rtmath/Serialization/ddparGenerator_serialization.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 
 

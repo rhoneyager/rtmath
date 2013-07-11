@@ -1,13 +1,20 @@
 #pragma once
-//#include "../Serialization/serialization_macros.h"
-//#include <boost/serialization/export.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <set>
 #include <Eigen/Core>
-#include <Eigen/Core>
 #include <Eigen/Dense>
+
+#include "../rtmath/Serialization/serialization_macros.h"
+#include "../rtmath/Serialization/eigen_serialization.h"
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/split_free.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
@@ -22,7 +29,7 @@ namespace boost
 	namespace serialization
 	{
 		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::shapefile &, const unsigned int);
+		void serialize(Archive&, rtmath::ddscat::shapefile&, const unsigned int);
 		//EXPORT(serialize, rtmath::ddscat::shapefile);
 	}
 }
@@ -71,9 +78,11 @@ namespace rtmath {
 			friend class shapeFileStatsBase;
 			friend class shapeFileStats;
 			friend class convexHull;
+			/*
 			template<class Archive> 
 			friend void ::boost::serialization::serialize(
 				Archive &, shapefile &, const unsigned int);
+			*/
 		};
 
 
@@ -85,3 +94,4 @@ std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
 
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)

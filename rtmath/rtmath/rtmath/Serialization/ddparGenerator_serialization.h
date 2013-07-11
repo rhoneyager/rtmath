@@ -1,6 +1,8 @@
 #pragma once
 #pragma deprecated(ddparGenerator_serialization_h)
+#pragma message("ddparGenerator_serialization.h is deprecated")
 
+/*
 #include <boost/serialization/export.hpp>
 
 #include "rotations_serialization.h"
@@ -38,3 +40,6 @@ namespace boost
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGeneratorBase)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGenerator)
+
+*/
+

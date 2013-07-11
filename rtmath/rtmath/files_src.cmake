@@ -222,3 +222,18 @@ set (rtmath_mie_test-files
 	tests/mie-twn.cpp
 	)
 
+set (rtmath_ddscat_test-files
+	tests/test.cpp
+	tests/globals.cpp
+	tests/globals.h
+	tests/test_ddpar.cpp
+	#tests/test_ddparGenerator.cpp
+	#tests/test_ddOutputSingle.cpp
+	#tests/test_ddScattMatrix.cpp
+	tests/test_shapefile.cpp
+	#tests/test_shapestats.cpp
+	# Add rotations, shapestats_scaled, hulls, 
+	# ddversions, ddweights, ensemble functions, 
+	# tmdata, dieltabfile
+	)
+

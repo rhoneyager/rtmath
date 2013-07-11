@@ -1,6 +1,5 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/ddscat/rotations.h"
-#include "../rtmath/Serialization/rotations_serialization.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 
 #include <boost/serialization/base_object.hpp>
@@ -38,3 +37,6 @@ namespace boost
 	}
 }
 
+
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::rotationsBase);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::rotations);

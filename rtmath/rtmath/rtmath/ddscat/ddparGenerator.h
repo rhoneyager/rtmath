@@ -13,6 +13,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/serialization/export.hpp>
 
 #include "ddpar.h"
 #include "shapes.h"
@@ -78,9 +79,6 @@ namespace rtmath {
 
 			friend class ddParIteration;
 			friend class ddParIterator;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ddParGeneratorBase &, const unsigned int);
 		};
 
 		class ddParGenerator;
@@ -164,3 +162,5 @@ namespace rtmath {
 	} // end ddscat
 } // end rtmath
 
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGeneratorBase)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGenerator)

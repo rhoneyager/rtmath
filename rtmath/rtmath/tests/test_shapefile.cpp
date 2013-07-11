@@ -8,15 +8,15 @@
 #include <memory>
 #include <set>
 
-#include "../rtmath/PCLlink.h"
+#include <Ryan_Serialization/serialization.h>
+
 #include "../rtmath/ddscat/hulls.h"
-#include "../rtmath/error/error.h"
+#include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
-#include "../rtmath/Serialization/shapestats_serialization.h"
-#include "../rtmath/serialization.h"
+//#include "../rtmath/Serialization/shapefile_serialization.h"
+//#include "../rtmath/Serialization/shapestats_serialization.h"
 #include "../rtmath/units.h"
-
-
+#include "../rtmath/error/error.h"
 
 BOOST_AUTO_TEST_SUITE(test_shapefile);
 using namespace rtmath;
@@ -50,15 +50,15 @@ BOOST_AUTO_TEST_CASE(shapefile_serialization)
 {
 	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
 	ostringstream out;
-	rtmath::serialization::write<shapefile>(shp,out);
+	Ryan_Serialization::write<shapefile>(shp,out);
 
 	string s = out.str();
 
 	istringstream in(s);
 	shapefile sb;
-	rtmath::serialization::read<shapefile>(sb,in);
+	Ryan_Serialization::read<shapefile>(sb,in);
 
-	BOOST_CHECK(shp._filename == sb._filename);
+	BOOST_CHECK(shp.filename == sb.filename);
 }
 
 // Test shapefile stats
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 	sshp.calcStatsRot(30,30,30);
 
 	BOOST_TEST_MESSAGE("Writing");
-	rtmath::serialization::write<shapeFileStats>(sshp,"shpstats.xml");
+	Ryan_Serialization::write<shapeFileStats>(sshp,"shpstats.xml");
 }
 
 BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
@@ -94,20 +94,21 @@ BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
 
 	shapeFileStats sshpb;
 	ostringstream out;
-	rtmath::serialization::write<shapeFileStats>(sshp,out);
+	Ryan_Serialization::write<shapeFileStats>(sshp,out);
 	string s = out.str();
 
 	istringstream in(s);
-	rtmath::serialization::read<shapeFileStats>(sshpb,in);
+	Ryan_Serialization::read<shapeFileStats>(sshpb,in);
 
 	BOOST_CHECK(sshp.max_distance == sshpb.max_distance);
 
 	shapeFileStats sshpc;
-	rtmath::serialization::write<shapeFileStats>(sshp,"testmini.xml");
-	rtmath::serialization::read<shapeFileStats>(sshpc,"testmini.xml");
+	Ryan_Serialization::write<shapeFileStats>(sshp,"testmini.xml");
+	Ryan_Serialization::read<shapeFileStats>(sshpc,"testmini.xml");
 	BOOST_CHECK(sshp.max_distance == sshpc.max_distance);
 }
 
+/*
 BOOST_AUTO_TEST_CASE(shapefile_vtk)
 {
 	shapefile shp((globals::instance()->pTestData / "ddscat-snow-33-23-23.shp").string());
@@ -135,6 +136,7 @@ BOOST_AUTO_TEST_CASE(shapefile_vtk)
 		writeVTKpoints(fpts.str(), ccv._hullPts);
 	}
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END();
 

@@ -11,5 +11,9 @@
 	template void U(::boost::archive::xml_oarchive &, T &, const unsigned int); \
 	template void U(::boost::archive::xml_iarchive &, T &, const unsigned int);
 
+#define EXPORTINTERNAL(U) \
+	template void U(::boost::archive::xml_oarchive &, const unsigned int); \
+	template void U(::boost::archive::xml_iarchive &, const unsigned int);
+
 // 	template void U(boost::archive::text_oarchive &, T &, const unsigned int); 
 //	template void U(boost::archive::text_iarchive &, T &, const unsigned int); 

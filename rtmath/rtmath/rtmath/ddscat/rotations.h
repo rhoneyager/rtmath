@@ -4,6 +4,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
+#include <boost/serialization/export.hpp>
 
 // Forward declaration for boost::serialization below
 namespace rtmath {
@@ -84,9 +85,6 @@ namespace rtmath {
 			bool operator!=(const rotations &rhs) const;
 			bool operator<(const rotations &rhs) const;
 
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, rotations &, const unsigned int);
 		};
 
 		// Function to calculate Gimbal matrices and effective rotation matrix.
@@ -98,3 +96,7 @@ namespace rtmath {
 		// TODO: Should some extern template magic go here?
 	}
 }
+
+
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::rotationsBase);
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::rotations);

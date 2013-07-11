@@ -1,6 +1,8 @@
 #pragma once
 #pragma deprecated(shapes_serialization_h)
+#pragma message("shapes_serialization.h is deprecated")
 
+/*
 #include <boost/serialization/export.hpp>
 
 namespace rtmath
@@ -53,3 +55,4 @@ BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeModifiable)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_ddscat)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::from_file)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapes::ellipsoid)
+*/

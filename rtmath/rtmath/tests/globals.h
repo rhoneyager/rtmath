@@ -6,7 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <memory>
-/*
+
 namespace rtmath {
 	namespace config {
 		class configsegment;
@@ -15,20 +15,20 @@ namespace rtmath {
 		class ddPar;
 	};
 }
-*/
+
 struct globals
 {
 public:
 	globals();
 	~globals();
 	static globals*& instance();
-	//void findDirs();
-	//void loadConfig();
-	//std::shared_ptr<rtmath::config::configsegment> cRoot;
-	//boost::filesystem::path pFullData, pTestData, pProfiles, pRtconf;
+	void findDirs();
+	void loadConfig();
+	std::shared_ptr<rtmath::config::configsegment> cRoot;
+	boost::filesystem::path pFullData, pTestData, pProfiles, pRtconf;
 };
 
-/*
+
 struct ddparloader
 {
 	ddparloader();
@@ -39,4 +39,4 @@ struct ddparloader
 	boost::filesystem::path pCWD;
 	rtmath::ddscat::ddPar *testPar;
 };
-*/
+

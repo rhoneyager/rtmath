@@ -5,7 +5,7 @@
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
-//#include <boost/serialization/version.hpp>
+#include <boost/serialization/version.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
 
@@ -30,11 +30,23 @@ namespace boost
 				ar & make_nvp("d", g.d);
 				ar & make_nvp("x0", g.x0);
 				ar & make_nvp("xd", g.xd);
+				if (version)
+				{
+					// Write out the points. Eigen's serialization routines should work well here.
+					ar & make_nvp("latticePts", g.latticePts);
+					ar & make_nvp("latticePtsStd", g.latticePtsStd);
+					ar & make_nvp("latticePtsNorm", g.latticePtsNorm);
+					ar & make_nvp("latticePtsRi", g.latticePtsRi);
+					
+					ar & make_nvp("mins", g.mins);
+					ar & make_nvp("maxs", g.maxs);
+					ar & make_nvp("means", g.means);
+				}
 		}
 
 		EXPORT(serialize,rtmath::ddscat::shapefile);
 	}
 }
 
-//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile)
-
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile);
+BOOST_CLASS_VERSION(rtmath::ddscat::shapefile, 1);

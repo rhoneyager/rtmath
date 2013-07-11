@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 #include <exception>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 
 #define BOOST_TEST_MODULE rtmath
 #define BOOST_TEST_NO_MAIN

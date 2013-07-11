@@ -1,6 +1,7 @@
 #pragma once
 #pragma deprecated(shapefile_serialization_h)
-
+#pragma message("shapefile_serialization.h is deprecated")
+/*
 #include <boost/serialization/export.hpp>
 
 namespace rtmath
@@ -20,4 +21,6 @@ namespace boost
 	}
 }
 
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
+//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
+*/
+

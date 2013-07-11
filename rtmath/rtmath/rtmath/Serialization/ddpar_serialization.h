@@ -1,6 +1,8 @@
 #pragma once
 #pragma deprecated(ddpar_serialization_h)
+#pragma message("ddpar_serialization.h is a deprecated header. Switch to Ryan_Serialization version!")
 
+/*
 namespace rtmath
 {
 	namespace ddscat
@@ -24,3 +26,4 @@ namespace boost
 	}
 }
 
+*/

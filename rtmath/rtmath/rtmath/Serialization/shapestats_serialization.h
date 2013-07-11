@@ -1,5 +1,6 @@
 #pragma once
 #pragma deprecated(shapestats_serialization_h)
+#pragma message("shapestats_serialization.h is deprecated")
 
 /*
 #include "shapestatsRotated_serialization.h"
