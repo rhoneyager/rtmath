@@ -36,8 +36,8 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 // These can no longer be in an anonymous namespace due to serialization requirements.
-//namespace
-//{
+namespace
+{
 	class ddver : public ::rtmath::ddscat::ddOutputSingleObj
 	{
 	public:
@@ -192,15 +192,17 @@
 			ar & boost::serialization::make_nvp("tail", tail);
 		}
 	};
-
+}
 	
-	BOOST_CLASS_EXPORT(ddver);
-	BOOST_CLASS_EXPORT(ddstring);
-	BOOST_CLASS_EXPORT(ddtarget);
-	BOOST_CLASS_EXPORT(ddSval);
-	BOOST_CLASS_EXPORT(ddNval<size_t>);
-	BOOST_CLASS_EXPORT(ddNval<double>);
-//}
+BOOST_CLASS_EXPORT(ddver);
+BOOST_CLASS_EXPORT(ddstring);
+BOOST_CLASS_EXPORT(ddtarget);
+BOOST_CLASS_EXPORT(ddSval);
+BOOST_CLASS_EXPORT(ddNval<size_t>);
+BOOST_CLASS_EXPORT(ddNval<double>);
+
+// No need for EXPORTINTERNAL since these functions are file-local.
+//EXPORTINTERNAL(ddver::serialize);
 
 namespace rtmath {
 	namespace ddscat {
@@ -1284,34 +1286,34 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::ddOutputSi
 
 
 
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	namespace ddscat
 	{
 		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddOutputSingle & g, const unsigned int version)
+		void ddOutputSingle::serialize(Archive & ar, const unsigned int version)
 		{
-			ar & boost::serialization::make_nvp("version", g._version);
-			ar & boost::serialization::make_nvp("wave", g._wave);
-			ar & boost::serialization::make_nvp("aeff", g._aeff);
-			ar & boost::serialization::make_nvp("objMap", g._objMap);
-			ar & boost::serialization::make_nvp("beta", g._beta);
-			ar & boost::serialization::make_nvp("theta", g._theta);
-			ar & boost::serialization::make_nvp("phi", g._phi);
-			ar & boost::serialization::make_nvp("statTable", g._statTable);
-			ar & boost::serialization::make_nvp("muellerMap", g._muellerMap);
-			ar & boost::serialization::make_nvp("scattMatricesRaw", g._scattMatricesRaw);
+			ar & boost::serialization::make_nvp("version", _version);
+			ar & boost::serialization::make_nvp("wave", _wave);
+			ar & boost::serialization::make_nvp("aeff", _aeff);
+			ar & boost::serialization::make_nvp("objMap", _objMap);
+			ar & boost::serialization::make_nvp("beta", _beta);
+			ar & boost::serialization::make_nvp("theta", _theta);
+			ar & boost::serialization::make_nvp("phi", _phi);
+			ar & boost::serialization::make_nvp("statTable", _statTable);
+			ar & boost::serialization::make_nvp("muellerMap", _muellerMap);
+			ar & boost::serialization::make_nvp("scattMatricesRaw", _scattMatricesRaw);
 		}
 
 		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddOutputSingleObj & g, const unsigned int version)
+		void ddOutputSingleObj::serialize(Archive & ar, const unsigned int version)
 		{
 			// The derived classes handle everything!
 			// All of their serialization methods are private and exist only in this file.
 		}
 
-		EXPORT(serialize, rtmath::ddscat::ddOutputSingle);
-		//EXPORT(serialize, rtmath::ddscat::ddOutputSingleObj);
+		EXPORTINTERNAL(rtmath::ddscat::ddOutputSingle::serialize);
+		//EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleObj::serialize);
 	}
 }
 

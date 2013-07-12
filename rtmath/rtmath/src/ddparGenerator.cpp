@@ -9,7 +9,6 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddparGenerator.h"
 #include "../rtmath/ddscat/ddVersions.h"
-#include "../rtmath/Serialization/ddparGenerator_serialization.h"
 #include "../rtmath/ddscat/runScripts.h"
 
 #include "../rtmath/error/error.h"

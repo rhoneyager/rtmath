@@ -7,6 +7,8 @@
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/strong_typedef.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 #include <set>
 #include <map>
 #include <vector>
@@ -23,18 +25,6 @@ namespace rtmath
 		class mieParams;
 		class mieCalc;
 		class mieAngleRes;
-	}
-}
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void DLEXPORT_RTMATH serialize(Archive &, rtmath::mie::mieParams &, const unsigned int);
-		template <class Archive>
-		void DLEXPORT_RTMATH serialize(Archive &, rtmath::mie::mieCalc &, const unsigned int);
-		template <class Archive>
-		void DLEXPORT_RTMATH serialize(Archive &, rtmath::mie::mieAngleRes &, const unsigned int);
 	}
 }
 
@@ -61,6 +51,9 @@ namespace rtmath
 
 		class DLEXPORT_RTMATH mieParams
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			virtual ~mieParams() {}
 			static boost::shared_ptr<const mieParams> create(const mieBase&);
@@ -77,13 +70,13 @@ namespace rtmath
 		private:
 			friend class mieCalc;
 			friend class mieAngleRes;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, mieParams &, const unsigned int);
 		};
 
 		class DLEXPORT_RTMATH mieCalc
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			mieCalc();
 			virtual ~mieCalc() {}
@@ -99,19 +92,13 @@ namespace rtmath
 			double g;
 			double walb;
 			double sizep;
-		private:
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, mieCalc &, const unsigned int);
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ::rtmath::mie::mieAngleRes &, const unsigned int);
 		};
 
 		class DLEXPORT_RTMATH mieAngleRes
 		{
-		private:
-
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			mieAngleRes();
 			boost::shared_ptr<const mieCalc> mc;
@@ -128,12 +115,6 @@ namespace rtmath
 			Eigen::Matrix4d P;
 			//boost::shared_ptr< const std::vector<std::complex<tDouble> > > S;
 			//boost::shared_ptr< const std::vector<tDouble> > P;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, mieAngleRes &, const unsigned int);
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ::rtmath::mie::mieCalc &, const unsigned int);
 		public:
 			// Needs to apply common block and execute tmat-dep code
 			static boost::shared_ptr<mieAngleRes> calc(
@@ -151,4 +132,7 @@ namespace rtmath
 	}
 }
 
+BOOST_CLASS_EXPORT_KEY(rtmath::mie::mieParams);
+BOOST_CLASS_EXPORT_KEY(rtmath::mie::mieCalc);
+BOOST_CLASS_EXPORT_KEY(rtmath::mie::mieAngleRes);
 

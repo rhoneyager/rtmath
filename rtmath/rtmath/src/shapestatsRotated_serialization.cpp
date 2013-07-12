@@ -4,11 +4,8 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/vector.hpp>
 #include "../rtmath/ddscat/shapestatsRotated.h"
-#include "../rtmath/Serialization/shapestatsRotated_serialization.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 #include "../rtmath/Serialization/eigen_serialization.h"
-
-
 
 namespace rtmath
 {

@@ -16,12 +16,41 @@
 #include "Public_Domain/MurmurHash3.h"
 
 // Forward declaration for boost::serialization below
-/*
 namespace rtmath {
 	template <class T>
 	class paramSet;
 }
+
+namespace boost
+{
+	namespace serialization
+	{
+		/// Definition to serialize all paramSet objects.
+		/// \note Need to use the external definition because of a MSVC 2012 bug.
+		/// \todo Check for bug resolution in MSVC 2013.
+		template <class Archive, class T>
+		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
+	}
+/// \todo Fix boost tuple serialization to work with LLVM/CLANG.
+		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
+		// Breaks in CLANG!
+/*
+#define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
+	ar & boost::serialization::make_nvp("element",t.get< which >());
+
+#define GENERATE_TUPLE_SERIALIZE(z,nargs,unused)                        \
+	template< typename Archive, BOOST_PP_ENUM_PARAMS(nargs,typename T) > \
+	void serialize(Archive & ar,                                        \
+	boost::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
+	const unsigned int version)                          \
+		{                                                                   \
+		BOOST_PP_REPEAT_FROM_TO(0,nargs,GENERATE_ELEMENT_SERIALIZE,~);    \
+		}
+
+
+		BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
 */
+}
 
 namespace rtmath
 {
@@ -36,6 +65,8 @@ namespace rtmath
 		friend class ::boost::serialization::access;
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version);
+		template<class Archive, class T> friend
+		void ::boost::serialization::serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 

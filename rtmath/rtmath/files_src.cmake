@@ -111,12 +111,9 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/ddOutputEnsemble.h
 	rtmath/ddscat/ddOutputSingle.h
 	rtmath/ddscat/ddpar.h
-	rtmath/Serialization/ddpar_serialization.h
 	rtmath/ddscat/ddparGenerator.h
-	rtmath/Serialization/ddparGenerator_serialization.h
 	rtmath/ddscat/ddscat.h
 	rtmath/ddscat/ddScattMatrix.h
-	rtmath/Serialization/ddScattMatrix_serialization.h
 	rtmath/ddscat/ddVersions.h
 	rtmath/ddscat/ddweights.h
 	rtmath/ddscat/dielTabFile.h
@@ -124,19 +121,13 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/mtab.h
 	rtmath/ddscat/parids.h
 	rtmath/ddscat/rotations.h
-	rtmath/Serialization/rotations_serialization.h
 	rtmath/ddscat/runScripts.h
 	rtmath/ddscat/shapefile.h
-	rtmath/Serialization/shapefile_serialization.h
 	rtmath/ddscat/shapes.h
-	rtmath/Serialization/shapes_serialization.h
 	rtmath/ddscat/shapestats.h
-	rtmath/Serialization/shapestats_serialization.h
 	rtmath/ddscat/shapestatsRotated.h
-	rtmath/Serialization/shapestatsRotated_serialization.h
 	rtmath/ddscat/shapestatsviews.h
 	rtmath/ddscat/tmData.h
-	rtmath/Serialization/tmData_serialization.h
 	#	src/ddLoader.cpp
 	src/ddOutputSingle.cpp
 	src/ddpar.cpp

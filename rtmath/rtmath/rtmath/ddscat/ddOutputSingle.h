@@ -95,6 +95,9 @@ namespace rtmath {
 		 **/
 		class ddOutputSingle : public boost::enable_shared_from_this<ddOutputSingle>
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();
@@ -224,6 +227,9 @@ namespace rtmath {
 		/// Base class for ddOutputSingle header entries
 		class ddOutputSingleObj
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			ddOutputSingleObj();
 			virtual ~ddOutputSingleObj();
@@ -251,9 +257,6 @@ namespace rtmath {
 				(const std::string &key);
 		private:
 			friend class ddOutputSingle;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive&, ddOutputSingleObj&, const unsigned int);
 		};
 
 	}

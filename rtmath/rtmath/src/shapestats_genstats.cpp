@@ -1,11 +1,8 @@
 #include "../rtmath/Stdafx.h"
 
 #include <Ryan_Serialization/serialization.h>
-//#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
-
-#include "../rtmath/Serialization/shapestats_serialization.h"
 
 namespace rtmath {
 	namespace ddscat {

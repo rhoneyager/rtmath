@@ -9,14 +9,6 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
 
-namespace rtmath
-{
-	namespace ddscat
-	{
-		class shapeFileStatsRotated;
-	}
-}
-
 namespace rtmath {
 	namespace ddscat {
 
@@ -62,4 +54,4 @@ namespace rtmath {
 	}
 }
 
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated);

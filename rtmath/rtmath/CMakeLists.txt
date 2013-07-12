@@ -22,6 +22,9 @@ if(WIN32 AND NOT CYGWIN)
 else()
 	set (sflag SHARED)
 endif()
+# Library flag - add_definitions works with targets in and below this directory
+#add_definitions("-DEXPORTING_RTMATH")
+#set (libflag "/D EXPORTING_RTMATH")
 
 # Custom prebuild step based on os
 IF(WIN32 AND NOT CYGWIN)
