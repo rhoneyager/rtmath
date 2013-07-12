@@ -76,15 +76,10 @@ int main(int argc, char** argv)
 		}
 		cout << endl << endl;
 	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		return 1;
-	}
 	catch (std::exception &e)
 	{
-		cerr << "exception caught: " << e.what() << endl;
-		return 2;
+		cerr << e.what() << endl;
+		return 1;
 	}
 	return 0;
 }
