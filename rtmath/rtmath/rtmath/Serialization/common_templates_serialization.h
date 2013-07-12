@@ -1,4 +1,5 @@
 #pragma once
+#pragma message("common_templates_serialization.h is deprecated")
 //#include <boost/preprocessor/repetition.hpp> // used for boost tuple serialization
 
 namespace rtmath
@@ -12,8 +13,8 @@ namespace boost
 	namespace serialization
 	{
 		/// Definition to serialize all paramSet objects.
-		template <class Archive, class T>
-		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
+		//template <class Archive, class T>
+		//void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
 
 
 		/// \todo Fix boost tuple serialization to work with LLVM/CLANG.

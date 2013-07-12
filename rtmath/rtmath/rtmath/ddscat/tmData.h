@@ -14,29 +14,11 @@
 #include <set>
 #include <complex>
 #include <boost/cstdint.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 #include <tmatrix/tmatrix.h>
 #include "../mie/mie.h"
 #include "shapestats.h"
-
-// Forward declaration for boost::serialization below
-namespace rtmath {
-	namespace tmatrix {
-		class tmData;
-		class tmStats;
-	}
-}
-
-// Need these so the template friends can work
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive &, rtmath::tmatrix::tmStats &, const unsigned int);
-		template <class Archive>
-		void serialize(Archive &, rtmath::tmatrix::tmData &, const unsigned int);
-	}
-}
 
 namespace rtmath
 {
@@ -50,6 +32,9 @@ namespace rtmath
 		// Stats class
 		class tmStats
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			tmStats();
 			// Has Qsca, Qabs, Qbk for different phi
@@ -58,14 +43,13 @@ namespace rtmath
 
 			// And include a nested tmStats on a per-rotation basis.
 			//std::set<boost::shared_ptr<tmStats> > nested;
-
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, tmStats &, const unsigned int);
 		};
 
 		class tmData
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			tmData();
 			std::string ddparpath;
@@ -79,9 +63,9 @@ namespace rtmath
 			std::vector<boost::shared_ptr< const ::tmatrix::OriAngleRes > > data;
 			std::vector<boost::shared_ptr< const rtmath::mie::mieAngleRes> > miedata;
 			boost::shared_ptr<tmStats> tstats;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, tmData &, const unsigned int);
 		};
 	}
 }
+
+BOOST_CLASS_EXPORT_KEY(rtmath::tmatrix::tmStats)
+BOOST_CLASS_EXPORT_KEY(rtmath::tmatrix::tmData)

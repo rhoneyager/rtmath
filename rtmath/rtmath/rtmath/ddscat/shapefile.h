@@ -16,24 +16,6 @@
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
 
-// Forward declaration for boost::serialization below
-namespace rtmath {
-	namespace ddscat {
-		class shapefile;
-	}
-}
-
-// Need these so the template friends can work
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive&, rtmath::ddscat::shapefile&, const unsigned int);
-		//EXPORT(serialize, rtmath::ddscat::shapefile);
-	}
-}
-
 namespace rtmath {
 	namespace ddscat {
 
@@ -52,6 +34,9 @@ namespace rtmath {
 			shapefile();
 		private:
 			void _init();
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 			std::string filename;
@@ -78,11 +63,7 @@ namespace rtmath {
 			friend class shapeFileStatsBase;
 			friend class shapeFileStats;
 			friend class convexHull;
-			/*
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, shapefile &, const unsigned int);
-			*/
+			
 		};
 
 

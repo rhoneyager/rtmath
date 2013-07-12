@@ -18,6 +18,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 
 //#include "../matrixop.h"
 //#include "../coords.h"
@@ -32,7 +33,8 @@
 //double _density; // kg / um^3
 //double _T; // Temperature, K, used in water density calculations
 
-// Forward declaration for boost::serialization below
+
+// Forward declarations
 namespace rtmath {
 	namespace ddscat
 	{
@@ -54,7 +56,7 @@ namespace rtmath {
 		}
 	}
 }
-
+/*
 // Need these so the template friends can work
 namespace boost
 {
@@ -76,6 +78,7 @@ namespace boost
 		void serialize(Archive &, rtmath::ddscat::shapes::ellipsoid &, const unsigned int);
 	}
 }
+*/
 
 namespace rtmath {
 	namespace ddscat {
@@ -84,6 +87,9 @@ namespace rtmath {
 
 		class shapeConstraint
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			shapeConstraint();
 			shapeConstraint(
@@ -126,23 +132,22 @@ namespace rtmath {
 
 		class constrainable
 		{
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, constrainable &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		protected:
 			constrainable(){}
 		public:
 			virtual ~constrainable() {}
 			void addConstraint(shapeConstraintPtr);
 			shapeConstraintContainer shapeConstraints;
-			friend class boost::serialization::access;
 		};
 
 		class shape : public constrainable, public std::enable_shared_from_this<shape>
 		{
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, shape &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			shape();
 			virtual ~shape();
@@ -158,14 +163,13 @@ namespace rtmath {
 			// Convenient aliases to avoid repeated multimap searching
 			bool _get(const std::string &id, double &val, std::string &units) const;
 			void _set(const std::string &id, double val, const std::string &units);
-			friend class boost::serialization::access;
 		};
 
 		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
 		{
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, shapeModifiable &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			typedef boost::bimap< std::string, boost::shared_ptr<rtmath::graphs::vertex> > vertexMap;
 			typedef rtmath::graphs::setWeakVertex vertexSet;
@@ -218,9 +222,9 @@ namespace rtmath {
 			// _ddscat is a class that provides some of the writing functions for file output.
 			class from_ddscat : public shapeModifiable
 			{
-				template<class Archive> 
-				friend void ::boost::serialization::serialize(
-					Archive &, from_ddscat &, const unsigned int);
+				friend class ::boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version);
 			protected:
 				from_ddscat();
 				virtual ~from_ddscat();
@@ -239,7 +243,6 @@ namespace rtmath {
 				//void exportShape(const std::string &filename) const;
 				void exportDDPAR(ddPar &out) const;
 				void exportDDPAR(const std::string &filename, const ddPar &ddbase) const;
-				friend class boost::serialization::access;
 			};
 
 			// from_file provides a target for ddscat shape.dat file processing.
@@ -248,9 +251,9 @@ namespace rtmath {
 			//       Should this be in another class?
 			class from_file : public from_ddscat
 			{
-				template<class Archive> 
-				friend void ::boost::serialization::serialize(
-					Archive &, from_file &, const unsigned int);
+				friend class ::boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version);
 			public:
 				from_file();
 				virtual ~from_file();
@@ -270,9 +273,9 @@ namespace rtmath {
 			
 			class ellipsoid : public from_ddscat
 			{
-				template<class Archive> 
-				friend void ::boost::serialization::serialize(
-					Archive &, ellipsoid &, const unsigned int);
+				friend class ::boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version);
 			public:
 				ellipsoid();
 				virtual ~ellipsoid();

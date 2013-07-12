@@ -1,6 +1,6 @@
 #pragma once
 #pragma deprecated(tmData_serialization_h)
-
+#pragma message("tmData_serialization.h is deprecated")
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/vector.hpp>
 namespace rtmath

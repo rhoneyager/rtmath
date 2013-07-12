@@ -7,33 +7,33 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/set.hpp>
 
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	namespace ddscat
 	{
 		template<class Archive>
-		void serialize(Archive &ar, rtmath::ddscat::rotationsBase &g, const unsigned int version)
+		void rotationsBase::serialize(Archive &ar, const unsigned int version)
 		{
-				ar & boost::serialization::make_nvp("bMin", g._bMin);
-				ar & boost::serialization::make_nvp("bMax",g._bMax);
-				ar & boost::serialization::make_nvp("bN",g._bN);
-				ar & boost::serialization::make_nvp("tMin", g._tMin);
-				ar & boost::serialization::make_nvp("tMax", g._tMax);
-				ar & boost::serialization::make_nvp("tN", g._tN);
-				ar & boost::serialization::make_nvp("pMin",g._pMin);
-				ar & boost::serialization::make_nvp("pMax",g._pMax);
-				ar & boost::serialization::make_nvp("pN", g._pN);
+				ar & boost::serialization::make_nvp("bMin", _bMin);
+				ar & boost::serialization::make_nvp("bMax",_bMax);
+				ar & boost::serialization::make_nvp("bN",_bN);
+				ar & boost::serialization::make_nvp("tMin", _tMin);
+				ar & boost::serialization::make_nvp("tMax", _tMax);
+				ar & boost::serialization::make_nvp("tN", _tN);
+				ar & boost::serialization::make_nvp("pMin",_pMin);
+				ar & boost::serialization::make_nvp("pMax",_pMax);
+				ar & boost::serialization::make_nvp("pN", _pN);
 		}
 
 		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::rotations & g, const unsigned int version)
+		void rotations::serialize(Archive & ar, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("rtmath_ddscat_rotationsBase", 
-				boost::serialization::base_object<rtmath::ddscat::rotationsBase>(g));
+				boost::serialization::base_object<rtmath::ddscat::rotationsBase>(*this));
 		}
 
-		EXPORT(serialize,rtmath::ddscat::rotationsBase);
-		EXPORT(serialize,rtmath::ddscat::rotations);
+		EXPORTINTERNAL(rtmath::ddscat::rotationsBase::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::rotations::serialize);
 	}
 }
 

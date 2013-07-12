@@ -13,38 +13,38 @@
 #include "../rtmath/Serialization/eigen_serialization.h"
 
 
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	namespace ddscat
 	{
 		template<class Archive>
-		void serialize(Archive &ar, rtmath::ddscat::shapefile &g, const unsigned int version)
+		void shapefile::serialize(Archive &ar, const unsigned int version)
 		{
-				ar & make_nvp("Filename", g.filename);
-				ar & make_nvp("Description", g.desc);
-				ar & make_nvp("N", g.numPoints);
-				ar & make_nvp("Dielectrics", g.Dielectrics);
-				ar & make_nvp("a1", g.a1);
-				ar & make_nvp("a2", g.a2);
-				ar & make_nvp("a3", g.a3);
-				ar & make_nvp("d", g.d);
-				ar & make_nvp("x0", g.x0);
-				ar & make_nvp("xd", g.xd);
+				ar & boost::serialization::make_nvp("Filename", filename);
+				ar & boost::serialization::make_nvp("Description", desc);
+				ar & boost::serialization::make_nvp("N", numPoints);
+				ar & boost::serialization::make_nvp("Dielectrics", Dielectrics);
+				ar & boost::serialization::make_nvp("a1", a1);
+				ar & boost::serialization::make_nvp("a2", a2);
+				ar & boost::serialization::make_nvp("a3", a3);
+				ar & boost::serialization::make_nvp("d", d);
+				ar & boost::serialization::make_nvp("x0", x0);
+				ar & boost::serialization::make_nvp("xd", xd);
 				if (version)
 				{
 					// Write out the points. Eigen's serialization routines should work well here.
-					ar & make_nvp("latticePts", g.latticePts);
-					ar & make_nvp("latticePtsStd", g.latticePtsStd);
-					ar & make_nvp("latticePtsNorm", g.latticePtsNorm);
-					ar & make_nvp("latticePtsRi", g.latticePtsRi);
+					ar & boost::serialization::make_nvp("latticePts", latticePts);
+					ar & boost::serialization::make_nvp("latticePtsStd", latticePtsStd);
+					ar & boost::serialization::make_nvp("latticePtsNorm", latticePtsNorm);
+					ar & boost::serialization::make_nvp("latticePtsRi", latticePtsRi);
 					
-					ar & make_nvp("mins", g.mins);
-					ar & make_nvp("maxs", g.maxs);
-					ar & make_nvp("means", g.means);
+					ar & boost::serialization::make_nvp("mins", mins);
+					ar & boost::serialization::make_nvp("maxs", maxs);
+					ar & boost::serialization::make_nvp("means", means);
 				}
 		}
 
-		EXPORT(serialize,rtmath::ddscat::shapefile);
+		EXPORTINTERNAL(rtmath::ddscat::shapefile::serialize);
 	}
 }
 

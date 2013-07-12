@@ -6,6 +6,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 
 namespace rtmath
 {
@@ -15,23 +17,15 @@ namespace rtmath
 	}
 }
 
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::shapeFileStatsRotated & g, const unsigned int version);
-	}
-}
-
-
 namespace rtmath {
-	//class matrixop;
 	namespace ddscat {
 
 		// Lightweight POD class that can be placed in a set
 		class shapeFileStatsRotated
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		public:
 			shapeFileStatsRotated();
 			~shapeFileStatsRotated();
@@ -68,3 +62,4 @@ namespace rtmath {
 	}
 }
 
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated)

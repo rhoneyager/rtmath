@@ -28,6 +28,7 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
 
+/*
 namespace rtmath
 {
 	namespace ddscat
@@ -52,7 +53,7 @@ namespace boost
 	}
 }
 
-
+*/
 
 namespace rtmath {
 	namespace ddscat {

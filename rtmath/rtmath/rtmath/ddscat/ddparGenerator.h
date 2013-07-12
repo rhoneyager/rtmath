@@ -14,6 +14,7 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 
 #include "ddpar.h"
 #include "shapes.h"
@@ -30,24 +31,6 @@ namespace rtmath {
 		class ddParIterator;
 		class ddPar;
 		class ddParGenerator;
-	}
-}
-
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::ddParGeneratorBase &, const unsigned int);
-
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::ddParGenerator &, const unsigned int);
-
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::ddParIteration &, const unsigned int);
-
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::ddParIterator &, const unsigned int);
 	}
 }
 
@@ -79,6 +62,10 @@ namespace rtmath {
 
 			friend class ddParIteration;
 			friend class ddParIterator;
+
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		class ddParGenerator;
@@ -104,12 +91,9 @@ namespace rtmath {
 
 			friend class ddParIteration;
 			friend class ddParGenerator;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ::rtmath::ddscat::ddParIterator &, const unsigned int);
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ::rtmath::ddscat::ddParIteration &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		private:
 			//const ddParGenerator &_gen;
 			const ddParGenerator *_genp;
@@ -133,12 +117,9 @@ namespace rtmath {
 			//const ddParGenerator &_gen;
 			const ddParGenerator *_genp;
 			void _populate();
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ddParIteration &, const unsigned int);
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ::rtmath::ddscat::ddParIterator &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		class ddParGenerator : public ddParGeneratorBase
@@ -154,9 +135,9 @@ namespace rtmath {
 			void setDefaultBase(const ddPar &base);
 			friend class ddParIteration;
 			friend class ddParIterator;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, ddParGenerator &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 	} // end ddscat

@@ -8,6 +8,8 @@
 #include <string>
 //#include <boost/tuple/tuple.hpp> 
 #include <boost/lexical_cast.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 
 #include "defs.h"
 #include "splitSet.h"
@@ -18,16 +20,6 @@
 namespace rtmath {
 	template <class T>
 	class paramSet;
-}
-
-// Need these so the template friends can work
-namespace boost
-{
-	namespace serialization
-	{
-		template <class T, class Archive>
-		void serialize(Archive &, rtmath::paramSet<T> &, const unsigned int);
-	}
 }
 */
 
@@ -41,9 +33,9 @@ namespace rtmath
 	template <class T>
 	class paramSet
 	{
-//		template<class Archive> 
-//		friend void ::boost::serialization::serialize(
-//			Archive &, paramSet<T> &, const unsigned int);
+		friend class ::boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 
@@ -108,7 +100,7 @@ namespace rtmath
 		{
 			return !(operator==(rhs));
 		}
-//	private:
+	private:
 		std::set<T> _expanded;
 		std::string _shorthand;
 		const std::map<std::string, std::string> *_aliases;
@@ -120,5 +112,8 @@ namespace rtmath
 
 }
 
-
-
+BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<double>);
+BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<float>);
+BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<int>);
+BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<size_t>);
+BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<std::string>);

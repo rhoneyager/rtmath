@@ -5,28 +5,16 @@
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/access.hpp>
 
-// Forward declaration for boost::serialization below
+// Forward declarations
 namespace rtmath {
-	//class matrixop;
 	namespace ddscat {
 		class rotationsBase;
 		class rotations;
 	}
 }
 
-// Need these so the template friends can work
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::rotationsBase &, const unsigned int);
-
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::rotations &, const unsigned int);
-	}
-}
 
 namespace rtmath {
 	namespace ddscat {
@@ -43,9 +31,9 @@ namespace rtmath {
 			double _pMin, _pMax;
 			size_t _bN, _tN, _pN;
 
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, rotationsBase &, const unsigned int);
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		class rotations : public rotationsBase
@@ -85,6 +73,9 @@ namespace rtmath {
 			bool operator!=(const rotations &rhs) const;
 			bool operator<(const rotations &rhs) const;
 
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		// Function to calculate Gimbal matrices and effective rotation matrix.

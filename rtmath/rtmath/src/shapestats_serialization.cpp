@@ -4,78 +4,73 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/set.hpp>
-//#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/Serialization/shapefile_serialization.h"
 #include "../rtmath/ddscat/shapestats.h"
-#include "../rtmath/Serialization/shapestats_serialization.h"
 #include "../rtmath/Serialization/eigen_serialization.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 
-
-
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	namespace ddscat
 	{
 		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::shapeFileStatsBase & g, const unsigned int version)
+		void shapeFileStatsBase::serialize(Archive & ar, const unsigned int version)
 		{
-			g._currVersion = version;
-			ar & boost::serialization::make_nvp("shapefile", g._shp);
+			_currVersion = version;
+			ar & boost::serialization::make_nvp("shapefile", _shp);
 
-			ar & boost::serialization::make_nvp("beta", g.beta);
-			ar & boost::serialization::make_nvp("theta", g.theta);
-			ar & boost::serialization::make_nvp("phi", g.phi);
-			ar & boost::serialization::make_nvp("Effective_Rotation", g.rot);
-			ar & boost::serialization::make_nvp("Inverse_Effective_Rotation", g.invrot);
+			ar & boost::serialization::make_nvp("beta", beta);
+			ar & boost::serialization::make_nvp("theta", theta);
+			ar & boost::serialization::make_nvp("phi", phi);
+			ar & boost::serialization::make_nvp("Effective_Rotation", rot);
+			ar & boost::serialization::make_nvp("Inverse_Effective_Rotation", invrot);
 
-			ar & boost::serialization::make_nvp("b_min", g.b_min);
-			ar & boost::serialization::make_nvp("b_max", g.b_max);
-			ar & boost::serialization::make_nvp("b_mean", g.b_mean);
+			ar & boost::serialization::make_nvp("b_min", b_min);
+			ar & boost::serialization::make_nvp("b_max", b_max);
+			ar & boost::serialization::make_nvp("b_mean", b_mean);
 
-			ar & boost::serialization::make_nvp("V_cell_const", g.V_cell_const);
-			ar & boost::serialization::make_nvp("V_dipoles_const", g.V_dipoles_const);
-			ar & boost::serialization::make_nvp("aeff_dipoles_const", g.aeff_dipoles_const);
+			ar & boost::serialization::make_nvp("V_cell_const", V_cell_const);
+			ar & boost::serialization::make_nvp("V_dipoles_const", V_dipoles_const);
+			ar & boost::serialization::make_nvp("aeff_dipoles_const", aeff_dipoles_const);
 
 			switch (version)
 			{
 			default:
 			case 1:
-				ar & boost::serialization::make_nvp("qhull_enabled", g.qhull_enabled);
+				ar & boost::serialization::make_nvp("qhull_enabled", qhull_enabled);
 			case 0:
-				ar & boost::serialization::make_nvp("max_distance", g.max_distance);
-				ar & boost::serialization::make_nvp("a_circum_sphere", g.a_circum_sphere);
-				ar & boost::serialization::make_nvp("V_circum_sphere", g.V_circum_sphere);
-				ar & boost::serialization::make_nvp("SA_circum_sphere", g.SA_circum_sphere);
-				ar & boost::serialization::make_nvp("V_convex_hull", g.V_convex_hull);
-				ar & boost::serialization::make_nvp("aeff_V_convex_hull", g.aeff_V_convex_hull);
-				ar & boost::serialization::make_nvp("SA_convex_hull", g.SA_convex_hull);
-				ar & boost::serialization::make_nvp("aeff_SA_convex_hull", g.aeff_SA_convex_hull);
-				ar & boost::serialization::make_nvp("V_ellipsoid_max", g.V_ellipsoid_max);
-				ar & boost::serialization::make_nvp("aeff_ellipsoid_max", g.aeff_ellipsoid_max);
-				ar & boost::serialization::make_nvp("V_ellipsoid_rms", g.V_ellipsoid_rms);
-				ar & boost::serialization::make_nvp("aeff_ellipsoid_rms", g.aeff_ellipsoid_rms);
-				ar & boost::serialization::make_nvp("f_circum_sphere", g.f_circum_sphere);
-				ar & boost::serialization::make_nvp("f_convex_hull", g.f_convex_hull);
-				ar & boost::serialization::make_nvp("f_ellipsoid_max", g.f_ellipsoid_max);
-				ar & boost::serialization::make_nvp("f_ellipsoid_rms", g.f_ellipsoid_rms);
+				ar & boost::serialization::make_nvp("max_distance", max_distance);
+				ar & boost::serialization::make_nvp("a_circum_sphere", a_circum_sphere);
+				ar & boost::serialization::make_nvp("V_circum_sphere", V_circum_sphere);
+				ar & boost::serialization::make_nvp("SA_circum_sphere", SA_circum_sphere);
+				ar & boost::serialization::make_nvp("V_convex_hull", V_convex_hull);
+				ar & boost::serialization::make_nvp("aeff_V_convex_hull", aeff_V_convex_hull);
+				ar & boost::serialization::make_nvp("SA_convex_hull", SA_convex_hull);
+				ar & boost::serialization::make_nvp("aeff_SA_convex_hull", aeff_SA_convex_hull);
+				ar & boost::serialization::make_nvp("V_ellipsoid_max", V_ellipsoid_max);
+				ar & boost::serialization::make_nvp("aeff_ellipsoid_max", aeff_ellipsoid_max);
+				ar & boost::serialization::make_nvp("V_ellipsoid_rms", V_ellipsoid_rms);
+				ar & boost::serialization::make_nvp("aeff_ellipsoid_rms", aeff_ellipsoid_rms);
+				ar & boost::serialization::make_nvp("f_circum_sphere", f_circum_sphere);
+				ar & boost::serialization::make_nvp("f_convex_hull", f_convex_hull);
+				ar & boost::serialization::make_nvp("f_ellipsoid_max", f_ellipsoid_max);
+				ar & boost::serialization::make_nvp("f_ellipsoid_rms", f_ellipsoid_rms);
 				break;
 			}
 
-			ar & boost::serialization::make_nvp("Rotation_Dependent", g.rotations);
+			ar & boost::serialization::make_nvp("Rotation_Dependent", rotations);
 		}
 
 		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::shapeFileStats & g, const unsigned int version)
+		void shapeFileStats::serialize(Archive & ar, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp(
 				"rtmath_ddscat_shapeFileStatsBase",
-				boost::serialization::base_object<rtmath::ddscat::shapeFileStatsBase>(g));
+				boost::serialization::base_object<rtmath::ddscat::shapeFileStatsBase>(*this));
 		}
 
-		EXPORT(serialize,rtmath::ddscat::shapeFileStatsBase);
-		EXPORT(serialize,rtmath::ddscat::shapeFileStats);
+		EXPORTINTERNAL(rtmath::ddscat::shapeFileStatsBase::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::shapeFileStats::serialize);
 	}
 }
 

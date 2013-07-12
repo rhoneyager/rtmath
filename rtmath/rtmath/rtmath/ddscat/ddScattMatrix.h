@@ -15,21 +15,6 @@ namespace rtmath
 	}
 }
 
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddScattMatrix & g, const unsigned int version);
-
-		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddScattMatrixF & g, const unsigned int version);
-
-		template <class Archive>
-		void serialize(Archive & ar, rtmath::ddscat::ddScattMatrixP & g, const unsigned int version);
-	}
-}
-
 namespace rtmath
 {
 	namespace ddscat
@@ -71,11 +56,15 @@ namespace rtmath
 
 			virtual bool compareTolHeader(const ddScattMatrix&, double tolPercent) const;
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-		//protected:
+		protected:
 			mutable PnnType _Pnn;
 			//mutable boost::shared_ptr<matrixop> _Pnn;
 			double _pol;
 			double _freq, _theta, _thetan, _phi, _phin;
+
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		// TODO: move this into a lower-level header
@@ -108,13 +97,17 @@ namespace rtmath
 			//void setF(std::istream &lss); // Include this higher up
 			inline FType getF() const { return _f; }
 			inline FType getS() const { return _s; }
-		//protected:
+		protected:
 			void _calcS();
 			void _calcP() const;
 			mutable FType _f, _s;
 			//boost::shared_array<std::complex<double> > _f, _s;
 			//boost::shared_ptr<matrixop> _fRe, _fIm; // Should store as shared_array
 			//boost::shared_ptr<matrixop> _sRe, _sIm;
+
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		/* class ddScattMatrixS : public ddScattMatrix
@@ -131,6 +124,10 @@ namespace rtmath
 			virtual scattMatrixType id() const { return P; }
 			inline void setP(const PnnType& v) { _Pnn = v; }
 			PnnType getP() const { return _Pnn; }
+
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		};
 	}
 }

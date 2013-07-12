@@ -9,27 +9,14 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
-//#include "../matrixop.h"
 #include "shapefile.h"
 #include "shapestatsRotated.h"
 
-// Forward declaration for boost::serialization below
+// Forward declarations
 namespace rtmath {
 	namespace ddscat {
 		class shapeFileStatsBase;
 		class shapeFileStats;
-	}
-}
-
-// Need these so the template friends can work
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::shapeFileStatsBase &, const unsigned int);
-		template <class Archive>
-		void serialize(Archive &, rtmath::ddscat::shapeFileStats &, const unsigned int);
 	}
 }
 
@@ -100,11 +87,11 @@ namespace rtmath {
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		protected:
 			shapeFileStatsBase();
-			
 			bool _valid;
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive &, shapeFileStatsBase &, const unsigned int);
+
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 			
 		};
 
@@ -119,6 +106,10 @@ namespace rtmath {
 				const std::string &shpfile, const std::string &statsfile = "");
 			static void doQhull(bool);
 			static bool doQhull();
+
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
 

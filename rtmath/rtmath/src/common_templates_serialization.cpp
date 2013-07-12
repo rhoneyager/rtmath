@@ -1,7 +1,6 @@
 #include "../rtmath/Stdafx.h"
 #include <string>
 #include "../rtmath/common_templates.h"
-#include "../rtmath/Serialization/common_templates_serialization.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
 
@@ -11,30 +10,28 @@
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
 
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	template <class Archive, class T>
+	void paramSet<T>::serialize(Archive & ar, const unsigned int version)
 	{
-		template <class Archive, class T>
-		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("values_short", g._shorthand);
-			ar & boost::serialization::make_nvp("values_expanded", g._expanded);
-		}
-
-		/* These do not work:
-		EXPORT(serialize,rtmath::paramSet<double>);
-		EXPORT(serialize,rtmath::paramSet<float>);
-		EXPORT(serialize,rtmath::paramSet<int>);
-		EXPORT(serialize,rtmath::paramSet<size_t>);
-		EXPORT(serialize,rtmath::paramSet<std::string>);
-		*/
-	
-		/// \todo Reimplement the paramSet serialization definition for base types other than doubles.
-
-		template void serialize<boost::archive::xml_oarchive, double>(boost::archive::xml_oarchive &, rtmath::paramSet<double> &, const unsigned int);
-		template void serialize(boost::archive::xml_iarchive &, rtmath::paramSet<double> &, const unsigned int);
-
-
+		ar & boost::serialization::make_nvp("values_short", _shorthand);
+		ar & boost::serialization::make_nvp("values_expanded", _expanded);
 	}
+
+	EXPORTINTERNAL(rtmath::paramSet<double>::serialize);
+	/*
+	EXPORTINTERNAL(rtmath::paramSet<float>::serialize);
+	EXPORTINTERNAL(rtmath::paramSet<int>::serialize);
+	EXPORTINTERNAL(rtmath::paramSet<size_t>::serialize);
+	EXPORTINTERNAL(rtmath::paramSet<std::string>::serialize);
+	*/
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<double>);
+/*
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<float>);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<int>);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<size_t>);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<std::string>);
+*/

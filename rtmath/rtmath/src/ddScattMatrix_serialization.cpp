@@ -10,44 +10,44 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/complex.hpp>
 
-namespace boost
+namespace rtmath
 {
-	namespace serialization
+	namespace ddscat
 	{
 		template<class Archive>
-		void serialize(Archive &ar, rtmath::ddscat::ddScattMatrix &g, const unsigned int version)
+		void ddScattMatrix::serialize(Archive &ar, const unsigned int version)
 		{
-			ar & boost::serialization::make_nvp("Polarization", g._pol);
-			ar & boost::serialization::make_nvp("Frequency", g._freq);
-			ar & boost::serialization::make_nvp("Theta", g._theta);
-			ar & boost::serialization::make_nvp("Theta_0", g._thetan);
-			ar & boost::serialization::make_nvp("Phi", g._phi);
-			ar & boost::serialization::make_nvp("Phi_0", g._phin);
+			ar & boost::serialization::make_nvp("Polarization", _pol);
+			ar & boost::serialization::make_nvp("Frequency", _freq);
+			ar & boost::serialization::make_nvp("Theta", _theta);
+			ar & boost::serialization::make_nvp("Theta_0", _thetan);
+			ar & boost::serialization::make_nvp("Phi", _phi);
+			ar & boost::serialization::make_nvp("Phi_0", _phin);
 
-			ar & boost::serialization::make_nvp("Pnn", g._Pnn);
+			ar & boost::serialization::make_nvp("Pnn", _Pnn);
 		}
 
 		template<class Archive>
-		void serialize(Archive &ar, rtmath::ddscat::ddScattMatrixF &g, const unsigned int version)
+		void ddScattMatrixF::serialize(Archive &ar, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp(
 				"rtmath_ddscat_ddScattMatrix",
-				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(g));
-			ar & boost::serialization::make_nvp("f", g._f);
-			ar & boost::serialization::make_nvp("S", g._s);
+				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(*this));
+			ar & boost::serialization::make_nvp("f", _f);
+			ar & boost::serialization::make_nvp("S", _s);
 		}
 
 		template<class Archive>
-		void serialize(Archive &ar, rtmath::ddscat::ddScattMatrixP &g, const unsigned int version)
+		void ddScattMatrixP::serialize(Archive &ar, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp(
 				"rtmath_ddscat_ddScattMatrix",
-				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(g));
+				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(*this));
 		}
 
-		EXPORT(serialize,rtmath::ddscat::ddScattMatrix);
-		EXPORT(serialize,rtmath::ddscat::ddScattMatrixF);
-		EXPORT(serialize,rtmath::ddscat::ddScattMatrixP);
+		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrix::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrixF::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrixP::serialize);
 	}
 }
 
