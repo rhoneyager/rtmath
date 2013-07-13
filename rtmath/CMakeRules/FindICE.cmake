@@ -84,9 +84,13 @@ if( ICE_HOME_INCLUDE_ICE )
     endif()
     file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/libSlice.so)
     if (NOT ICE_LIBRARY_DIR_HINT)
+	 file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/../lib64/libSlice.so)
+	if (NOT ICE_LIBRARY_DIR_HINT)
 	    file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/slice.lib)
+	endif()
     endif()
     get_filename_component( ICE_LIBRARY_DIR_HINT_PATH "${ICE_LIBRARY_DIR_HINT}" PATH)
+#    get_filename_component( ICE_LIBRARY_DIR_HINT_PATH "${ICE_LIBRARY_DIR_HINT}" PATH)
 
     # exe dir
     set (ICE_BIN_DIR ${ICE_HOME}/bin)
