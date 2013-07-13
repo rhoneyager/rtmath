@@ -65,7 +65,7 @@ namespace rtmath
 		friend class ::boost::serialization::access;
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version);
-		template<class Archive, class T> friend
+		template<class Archive> friend
 		void ::boost::serialization::serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;

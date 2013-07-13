@@ -64,7 +64,8 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-find_package(Boost COMPONENTS program_options serialization iostreams filesystem system unit_test_framework regex REQUIRED)
+find_package(Boost COMPONENTS program_options 
+	serialization iostreams filesystem system unit_test_framework regex REQUIRED)
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 #message("${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
 #                ${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
@@ -139,10 +140,9 @@ target_link_libraries(rtmath_mie ${rtmath_mie-libs})
 find_package(tmatrixFortran REQUIRED)
 find_package(tmatrixCpp REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
+link_directories(${PCL_LIBRARY_DIRS})
 include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
 include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-
 add_library (rtmath_ddscat ${sflag}
 	${rtmath_ddscat-files}
 	)

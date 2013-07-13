@@ -19,7 +19,7 @@ namespace boost
 		/// paramSet serialization
 		/// \note MSVC 2012 cannot compile the internal definition properly. It has issues 
 		/// with nested templates. This is why the external definition is still used.
-		template <class Archive, class T>
+		template <class T, class Archive>
 		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("values_short", g._shorthand);

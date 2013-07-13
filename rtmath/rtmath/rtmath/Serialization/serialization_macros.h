@@ -20,7 +20,7 @@
 /// and below have a compiler bug.
 
 #define EXPORTTEMPLATE(U,T,W) \
-	template void DLEXPORT_RTMATH U<::boost::archive::xml_oarchive, T>(::boost::archive::xml_oarchive &,W<T>&, const unsigned int); \
+	template void DLEXPORT_RTMATH U<T, ::boost::archive::xml_oarchive>(::boost::archive::xml_oarchive &,W<T>&, const unsigned int); \
 	template void DLEXPORT_RTMATH U(::boost::archive::xml_iarchive &, W<T> &, const unsigned int);
 
 /// \def EXPORTINTERNAL(U) 
