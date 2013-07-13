@@ -163,10 +163,10 @@ ENDIF()
 
 # Enable C++11
 # g++
-IF(${CMAKE_COMPILER_IS_GNUCXX})
+IF(CMAKE_COMPILER_IS_GNUCXX)
 	if ("${COMMON_CFLAGS}" MATCHES "0x")
 	else()
-		SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++0x)
+		SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++11)
 	endif()
 ENDIF()
 
@@ -178,7 +178,11 @@ IF(MSVC)
 	endif()
 	add_definitions(-DCONF="$(Configuration)")
 else()
-	add_definitions(-DCONF="${CMAKE_BUILD_TYPE}")
+	if (NOT CMAKE_BUILD_TYPE)
+		add_definitions(-DCONF="Release")
+	else()
+		add_definitions(-DCONF="${CMAKE_BUILD_TYPE}")
+	endif()
 ENDIF()
 
 

@@ -3,12 +3,11 @@
 #include <map>
 #include <set>
 #include <Eigen/Core>
-//#include <Eigen/Dense>
 #include <Eigen/StdVector>
-
-#include <Eigen/Core>
 #include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
+#include <boost/serialization/version.hpp>
+
 #include "shapefile.h"
 #include "shapestatsRotated.h"
 
@@ -115,3 +114,6 @@ namespace rtmath {
 
 	}
 }
+
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 1)
+

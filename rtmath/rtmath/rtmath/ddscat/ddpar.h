@@ -620,3 +620,6 @@ namespace rtmath {
 }
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddPar);
+//BOOST_CLASS_VERSION(rtmath::ddscat::ddPar, 1);
+
+

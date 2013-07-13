@@ -95,6 +95,8 @@ BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
 	shapeFileStats sshpb;
 	ostringstream out;
 	Ryan_Serialization::write<shapeFileStats>(sshp,out);
+	Ryan_Serialization::write<shapeFileStats>(sshp,"testmini.xml");
+
 	string s = out.str();
 
 	istringstream in(s);
@@ -103,7 +105,6 @@ BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
 	BOOST_CHECK(sshp.max_distance == sshpb.max_distance);
 
 	shapeFileStats sshpc;
-	Ryan_Serialization::write<shapeFileStats>(sshp,"testmini.xml");
 	Ryan_Serialization::read<shapeFileStats>(sshpc,"testmini.xml");
 	BOOST_CHECK(sshp.max_distance == sshpc.max_distance);
 }

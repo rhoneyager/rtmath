@@ -49,4 +49,4 @@ namespace rtmath
 }
 
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile);
-BOOST_CLASS_VERSION(rtmath::ddscat::shapefile, 1);
+

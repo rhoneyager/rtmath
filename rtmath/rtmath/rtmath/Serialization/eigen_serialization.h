@@ -14,6 +14,7 @@ namespace boost
 			const unsigned int file_version
 			) 
 		{
+/// \todo Allocate matrix
 			ar & boost::serialization::make_array(t.data(), t.size());
 			//for(size_t i=0; i<t.size(); i++)
 			//	ar & t.data()[i];
@@ -27,6 +28,7 @@ namespace boost
 			const unsigned int file_version
 			) 
 		{
+/// \todo Allocate matrix
 			ar & boost::serialization::make_array(t.data(), t.size());
 		}
 

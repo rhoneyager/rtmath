@@ -53,7 +53,7 @@ namespace rtmath
 				ar & boost::serialization::make_nvp("aeff_ellipsoid_rms", aeff_ellipsoid_rms);
 				ar & boost::serialization::make_nvp("f_circum_sphere", f_circum_sphere);
 				ar & boost::serialization::make_nvp("f_convex_hull", f_convex_hull);
-				ar & boost::serialization::make_nvp("f_ellipsoid_max", f_ellipsoid_max);
+				//ar & boost::serialization::make_nvp("f_ellipsoid_max", f_ellipsoid_max);
 				ar & boost::serialization::make_nvp("f_ellipsoid_rms", f_ellipsoid_rms);
 				break;
 			}
@@ -74,5 +74,4 @@ namespace rtmath
 	}
 }
 
-BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, 1)
 

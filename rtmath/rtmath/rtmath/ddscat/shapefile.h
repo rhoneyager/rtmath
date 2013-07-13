@@ -75,4 +75,7 @@ std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
 
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile);
+//BOOST_CLASS_VERSION(rtmath::ddscat::shapefile, 1);
+
+
