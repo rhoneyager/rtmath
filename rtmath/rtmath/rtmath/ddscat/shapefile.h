@@ -8,6 +8,7 @@
 
 #include "../Serialization/serialization_macros.h"
 #include "../Serialization/eigen_serialization.h"
+#include "../hash.h"
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/export.hpp>
@@ -34,6 +35,7 @@ namespace rtmath {
 			shapefile();
 		private:
 			void _init();
+			mutable HASH_t _localhash;
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
@@ -49,6 +51,9 @@ namespace rtmath {
 			size_t numPoints;
 			std::set<size_t> Dielectrics;
 			std::string desc;
+			/// Calculates the hash of the given shapefile. Used as a reference when 
+			/// serializing the shape. The hash table allows for smaller stats files.
+			HASH_t hash() const;
 			// Specified in shape.dat
 			// a1 and a2 are the INITIAL vectors (before rotation!)
 			// usually a1 = x_lf, a2 = y_lf
@@ -76,6 +81,6 @@ std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile);
-//BOOST_CLASS_VERSION(rtmath::ddscat::shapefile, 1);
+BOOST_CLASS_VERSION(rtmath::ddscat::shapefile, 1);
 
 

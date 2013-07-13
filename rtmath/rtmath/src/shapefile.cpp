@@ -50,6 +50,16 @@ namespace rtmath {
 			filename = "";
 		}
 
+		HASH_t shapefile::hash() const
+		{
+			std::string res;
+			std::ostringstream out;
+			write(out);
+			res = out.str();
+			this->_localhash = HASH(res.c_str(),res.size());
+			return this->_localhash;
+		}
+
 		void shapefile::read(const std::string &filename)
 		{
 			using namespace std;
@@ -275,6 +285,8 @@ namespace rtmath {
 			means(0) = boost::accumulators::mean(r_x);
 			means(1) = boost::accumulators::mean(r_y);
 			means(2) = boost::accumulators::mean(r_z);
+
+			hash();
 		}
 
 		void shapefile::write(std::ostream &out) const

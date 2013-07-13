@@ -14,10 +14,15 @@ namespace boost
 			const unsigned int file_version
 			) 
 		{
-/// \todo Allocate matrix
-			ar & boost::serialization::make_array(t.data(), t.size());
-			//for(size_t i=0; i<t.size(); i++)
-			//	ar & t.data()[i];
+			//boost::serialization::split_free(ar, *this, version);
+			// Doing this all in one function
+			using namespace boost::serialization;
+			int rows = t.rows(), cols = t.cols();
+			ar & make_nvp("Rows", rows);
+			ar & make_nvp("Cols", cols);
+			if (rows != t.rows() || cols != t.cols())
+				t.resize(rows,cols);
+			ar & make_nvp("Data", make_array(t.data(), t.size()));
 		}
 
 		/// Definition to serialize all Eigen::Array types
@@ -28,11 +33,16 @@ namespace boost
 			const unsigned int file_version
 			) 
 		{
-/// \todo Allocate matrix
-			ar & boost::serialization::make_array(t.data(), t.size());
+			//ar & boost::serialization::make_array(t.data(), t.size());
+			using namespace boost::serialization;
+			int rows = t.rows(), cols = t.cols();
+			ar & make_nvp("Rows", rows);
+			ar & make_nvp("Cols", cols);
+			if (rows != t.rows() || cols != t.cols())
+				t.resize(rows,cols);
+			ar & make_nvp("Data", make_array(t.data(), t.size()));
+
 		}
-
-
 
 		//template <class Archive>
 		//void serialize(Archive & ar, Eigen::MatrixXd & g, const unsigned int version);

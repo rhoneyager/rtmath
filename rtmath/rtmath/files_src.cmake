@@ -24,6 +24,7 @@ set(rtmath_core_general
 	rtmath/density.h
 	rtmath/depGraph.h
 	rtmath/derivatives.h
+	rtmath/hash.h
 	rtmath/interpolatable.h
 	rtmath/macros.h
 	rtmath/matrixop.h
@@ -41,6 +42,7 @@ set(rtmath_core_general
 	src/denseMatrix.cpp
 	src/density.cpp
 	src/depGraph.cpp
+	src/hash.cpp
 	#src/matrixop.cpp
 	#src/os_functions.cpp
 	src/phaseFunc.cpp

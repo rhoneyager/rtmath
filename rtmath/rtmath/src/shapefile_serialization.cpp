@@ -21,6 +21,8 @@ namespace rtmath
 		void shapefile::serialize(Archive &ar, const unsigned int version)
 		{
 				ar & boost::serialization::make_nvp("Filename", filename);
+				if (version) // Hash the shapefile for searching
+					ar & boost::serialization::make_nvp("Hash", _localhash);
 				ar & boost::serialization::make_nvp("Description", desc);
 				ar & boost::serialization::make_nvp("N", numPoints);
 				ar & boost::serialization::make_nvp("Dielectrics", Dielectrics);
@@ -30,6 +32,7 @@ namespace rtmath
 				ar & boost::serialization::make_nvp("d", d);
 				ar & boost::serialization::make_nvp("x0", x0);
 				ar & boost::serialization::make_nvp("xd", xd);
+/*
 				if (version)
 				{
 					// Write out the points. Eigen's serialization routines should work well here.
@@ -42,6 +45,7 @@ namespace rtmath
 					ar & boost::serialization::make_nvp("maxs", maxs);
 					ar & boost::serialization::make_nvp("means", means);
 				}
+*/
 		}
 
 		EXPORTINTERNAL(rtmath::ddscat::shapefile::serialize);
