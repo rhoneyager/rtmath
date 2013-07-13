@@ -29,7 +29,7 @@ namespace boost
 		/// \note Need to use the external definition because of a MSVC 2012 bug.
 		/// \todo Check for bug resolution in MSVC 2013.
 		template <class Archive, class T>
-		void serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
+		void serialize(Archive&, rtmath::paramSet<T>&, const unsigned int);
 	}
 /// \todo Fix boost tuple serialization to work with LLVM/CLANG.
 		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
@@ -62,11 +62,14 @@ namespace rtmath
 	template <class T>
 	class paramSet
 	{
-		friend class ::boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version);
-		template<class Archive> friend
-		void ::boost::serialization::serialize(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
+		//friend class ::boost::serialization::access;
+		//template<class Archive>
+		//void serialize(Archive & ar, const unsigned int version);
+		//
+		//template<class Archive> friend
+		//void ::boost::serialization::serialize<Archive,T>(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
+		template<class Archive, class U> friend
+		void ::boost::serialization::serialize(Archive&, paramSet<U>&, const unsigned int);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 
@@ -148,3 +151,4 @@ BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<float>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<int>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<size_t>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<std::string>);
+

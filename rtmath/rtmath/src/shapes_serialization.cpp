@@ -5,7 +5,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include "../rtmath/ddscat/shapes.h"
-#include "../rtmath/Serialization/common_templates_serialization.h"
+#include "../rtmath/common_templates.h"
 //#include "../rtmath/Serialization/shapes_serialization.h"
 #include "../rtmath/Serialization/eigen_serialization.h"
 #include "../rtmath/Serialization/serialization_macros.h"

@@ -78,7 +78,6 @@ source_group("Public Domain" FILES ${rtmath_core_publicdomain})
 
 
 set(rtmath_core_serialization
-	rtmath/Serialization/common_templates_serialization.h
 	rtmath/Serialization/eigen_serialization.h
 	#rtmath/Serialization/matrixop_serialization.h
 	rtmath/Serialization/serialization_macros.h

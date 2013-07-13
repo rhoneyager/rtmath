@@ -1,8 +1,8 @@
 #pragma once
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 /// \def EXPORT(U,T) 
 /// Defines the exportable types (txt, xml) for all rtmath objects. 
@@ -10,7 +10,10 @@
 
 #define EXPORT(U,T) \
 	template void DLEXPORT_RTMATH U(::boost::archive::xml_oarchive &, T &, const unsigned int); \
-	template void DLEXPORT_RTMATH U(::boost::archive::xml_iarchive &, T &, const unsigned int);
+	template void DLEXPORT_RTMATH U(::boost::archive::xml_iarchive &, T &, const unsigned int); \
+	template void DLEXPORT_RTMATH U(::boost::archive::text_oarchive &, T &, const unsigned int); \
+	template void DLEXPORT_RTMATH U(::boost::archive::text_iarchive &, T &, const unsigned int);
+
 
 /// \def EXPORTTEMPLATE(U,T,W) 
 /// Defines exportable types for template objects.
@@ -20,8 +23,11 @@
 /// and below have a compiler bug.
 
 #define EXPORTTEMPLATE(U,T,W) \
-	template void DLEXPORT_RTMATH U<T, ::boost::archive::xml_oarchive>(::boost::archive::xml_oarchive &,W<T>&, const unsigned int); \
-	template void DLEXPORT_RTMATH U(::boost::archive::xml_iarchive &, W<T> &, const unsigned int);
+	template void DLEXPORT_RTMATH U(::boost::archive::xml_oarchive &, W<T>&, const unsigned int); \
+	template void DLEXPORT_RTMATH U(::boost::archive::xml_iarchive &, W<T>&, const unsigned int); \
+	template void DLEXPORT_RTMATH U(::boost::archive::text_oarchive &, W<T>&, const unsigned int); \
+	template void DLEXPORT_RTMATH U(::boost::archive::text_iarchive &, W<T>&, const unsigned int);
+
 
 /// \def EXPORTINTERNAL(U) 
 /// Used when defining serializations that are defined internally 
@@ -30,7 +36,10 @@
 
 #define EXPORTINTERNAL(U) \
 	template void U(::boost::archive::xml_oarchive &, const unsigned int); \
-	template void U(::boost::archive::xml_iarchive &, const unsigned int);
+	template void U(::boost::archive::xml_iarchive &, const unsigned int); \
+	template void U(::boost::archive::text_oarchive &, const unsigned int); \
+	template void U(::boost::archive::text_iarchive &, const unsigned int);
+
 
 // 	template void U(boost::archive::text_oarchive &, T &, const unsigned int); 
 //	template void U(boost::archive::text_iarchive &, T &, const unsigned int); 

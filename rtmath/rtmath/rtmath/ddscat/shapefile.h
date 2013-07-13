@@ -6,8 +6,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include "../rtmath/Serialization/serialization_macros.h"
-#include "../rtmath/Serialization/eigen_serialization.h"
+#include "../Serialization/serialization_macros.h"
+#include "../Serialization/eigen_serialization.h"
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/export.hpp>

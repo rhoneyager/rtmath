@@ -61,7 +61,7 @@ namespace rtmath
 			//mutable boost::shared_ptr<matrixop> _Pnn;
 			double _pol;
 			double _freq, _theta, _thetan, _phi, _phin;
-
+		private:
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
@@ -133,7 +133,7 @@ namespace rtmath
 }
 
 
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrix)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixF)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixP)
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrix);
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixF);
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixP);
 

@@ -28,20 +28,6 @@ namespace rtmath
 	}
 }
 
-namespace boost
-{
-	namespace serialization
-	{
-		/// Serialization definition for ddOutputSingleObj
-		template <class Archive>
-		void serialize(Archive&, rtmath::ddscat::ddOutputSingleObj&, const unsigned int);
-
-		/// Serialization definition for ddOutputSingle
-		template <class Archive>
-		void serialize(Archive&, rtmath::ddscat::ddOutputSingle&, const unsigned int);
-	}
-}
-
 namespace rtmath {
 
 	namespace ddscat {
@@ -217,11 +203,6 @@ namespace rtmath {
 			/// Container for sca and fml scattering matrices
 			/// \see ddScattMatrix
 			scattMatricesContainer _scattMatricesRaw;
-
-		private:
-			template<class Archive> 
-			friend void ::boost::serialization::serialize(
-				Archive&, ddOutputSingle&, const unsigned int);
 		};
 
 		/// Base class for ddOutputSingle header entries
@@ -271,5 +252,6 @@ std::istream & operator>>(std::istream&, rtmath::ddscat:: &);
 */
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingle);
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingleObj);
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingleObj);
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputSingleObj);
+

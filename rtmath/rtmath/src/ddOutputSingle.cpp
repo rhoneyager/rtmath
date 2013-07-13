@@ -1313,9 +1313,10 @@ namespace rtmath
 		}
 
 		EXPORTINTERNAL(rtmath::ddscat::ddOutputSingle::serialize);
-		//EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleObj::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleObj::serialize);
 	}
 }
 
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingle);
-//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingleObj);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingleObj);
+
