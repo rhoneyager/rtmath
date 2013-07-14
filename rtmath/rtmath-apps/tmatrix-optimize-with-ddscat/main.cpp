@@ -20,7 +20,7 @@
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/tmData.h"
 #include <Ryan_Serialization/serialization.h>
-#include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
+#include "../../rtmath/rtmath/ddscat/tmData.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 			if (dataset::isShape(p))
 				data[prefix].shapefile = p;
 			if (dataset::isShapeStats(p))
-				data[prefix].shapestats = p;
+				data[prefix].shapestatsfile = p;
 		};
 
 		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
@@ -185,8 +185,17 @@ int main(int argc, char** argv)
 				// - raw ddscat output
 				// - compressed ddscat output
 				// - serialized ddscat output
-
+				// All typed are now handled by the ddOutputSingle read function.
+				it->second.ddloaded[i] = boost::shared_ptr<rtmath::ddscat::ddOutputSingle>
+					(new rtmath::ddscat::ddOutputSingle(it->second.ddres[i].string()));
 			}
+
+			// Everything is now loaded for this datum. Add it to the run.
+
+
+
+
+
 
 			map<std::string, std::vector<rtmath::tmatrix::tmData> > tmcache;
 			map<std::string, rtmath::ddscat::ddOutputSingle> ddcache;

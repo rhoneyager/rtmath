@@ -4,6 +4,7 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
+#include <complex>
 
 namespace rtmath
 {

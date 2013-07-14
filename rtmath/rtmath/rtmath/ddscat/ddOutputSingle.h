@@ -148,6 +148,9 @@ namespace rtmath {
 			/// Interdipole spacing (not all read types)
 			double dipoleSpacing() const;
 
+			/// Refractive index
+			std::complex<double> getM() const;
+
 			typedef std::vector<double> statTableType;
 
 			/// Extract the entire stat table. Used in ddscat-test.
@@ -191,6 +194,7 @@ namespace rtmath {
 			size_t _version;
 			/// The listing of the stored Mueller indices
 			mMuellerIndices _muellerMap;
+			// These values are kept here for ordering purposes
 			double _beta, _theta, _phi, _wave, _aeff;
 			/// Handles role of delegated constructor
 			void _init();

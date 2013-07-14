@@ -30,6 +30,7 @@
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/complex.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/map.hpp>
@@ -192,6 +193,46 @@ namespace
 			ar & boost::serialization::make_nvp("tail", tail);
 		}
 	};
+
+	class ddM : public ::rtmath::ddscat::ddOutputSingleObj
+	{
+	public:
+		virtual void write(std::ostream &out, size_t) const override
+		{
+			// Using formatted io operations
+			out << "n = ( " << m.real() << " , " << m.imag() << "),  eps.= (  "
+				<< eps.real() << " ,  " << eps.imag() << ")  |m|kd=  "
+				<< std::endl;
+		}
+		virtual void read(std::istream &in) override
+		{
+			// all ranges are INCLUSIVE
+			// mreal in cols 4-11
+			// mimag in cols 13-20
+			// eps real in 32-40
+			// eps imag in 42-49
+			// mkd in 59-66
+			// substance number in 78+
+			std::getline(in,s);
+		}
+		virtual std::string value() const override { return std::string(); }
+		std::complex<double> getM() const { return m; }
+		std::complex<double> getEps() const { return eps; }
+		float getMkd() const { return mkd; }
+		std::complex<double> m, eps;
+		float mkd;
+		size_t subst;
+	private:
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("m", m);
+			ar & boost::serialization::make_nvp("eps", eps);
+			ar & boost::serialization::make_nvp("mkd", mkd);
+			ar & boost::serialization::make_nvp("subst", subst);
+		}
+	};
 }
 	
 BOOST_CLASS_EXPORT(ddver);
@@ -200,6 +241,7 @@ BOOST_CLASS_EXPORT(ddtarget);
 BOOST_CLASS_EXPORT(ddSval);
 BOOST_CLASS_EXPORT(ddNval<size_t>);
 BOOST_CLASS_EXPORT(ddNval<double>);
+BOOST_CLASS_EXPORT(ddM);
 
 // No need for EXPORTINTERNAL since these functions are file-local.
 //EXPORTINTERNAL(ddver::serialize);
@@ -831,6 +873,13 @@ namespace rtmath {
 			return boost::lexical_cast<double>(_objMap.at("d")->value());
 		}
 
+		std::complex<double> ddOutputSingle::getM() const
+		{
+			// if (key == "neps") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddM>(new ddM));
+			auto obj = boost::dynamic_pointer_cast<ddM>(_objMap.at("neps"));
+			return obj->getM();
+		}
+
 		void ddOutputSingle::writeF(std::ostream &out) const
 		{
 			using namespace std;
@@ -993,7 +1042,7 @@ namespace rtmath {
 			if (key == "k.aeff") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, "K*AEFF= ", " = 2*pi*aeff/lambda") ));
 			if (key == "nambient") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, "NAMBIENT= ", " = refractive index of ambient medium") ));
 
-			if (key == "neps") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+			if (key == "neps") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddM>(new ddM));
 
 			if (key == "tol") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, "   TOL= ", " = error tolerance for CCG method") ));
 			if (key == "a1tgt") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
