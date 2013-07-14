@@ -13,6 +13,8 @@ namespace rtmath {
 	}
 	namespace ddscat {
 		class ddPar;
+		class ddOutputSingle;
+		class ddScattMatrix;
 	};
 }
 
@@ -40,3 +42,12 @@ struct ddparloader
 	rtmath::ddscat::ddPar *testPar;
 };
 
+struct ddOutputSingleLoader
+{
+	ddOutputSingleLoader();
+	~ddOutputSingleLoader();
+	boost::filesystem::path pAvg1, pAvg2, pSca, pFml, pXml, pXmlbz2;
+	boost::filesystem::path pCWD;
+	boost::shared_ptr<rtmath::ddscat::ddOutputSingle> oAvg1, oAvg2, 
+		oSca, oFml, oXml, oXmlbz2;
+};

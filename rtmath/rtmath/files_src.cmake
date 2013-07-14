@@ -220,7 +220,7 @@ set (rtmath_ddscat_test-files
 	tests/globals.h
 	tests/test_ddpar.cpp
 	#tests/test_ddparGenerator.cpp
-	#tests/test_ddOutputSingle.cpp
+	tests/test_ddOutputSingle.cpp
 	#tests/test_ddScattMatrix.cpp
 	tests/test_shapefile.cpp
 	#tests/test_shapestats.cpp

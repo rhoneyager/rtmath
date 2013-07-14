@@ -6,10 +6,9 @@
 #include <boost/filesystem.hpp>
 #include <memory>
 
+#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/ddpar.h"
-#include "../rtmath/Serialization/ddpar_serialization.h"
-#include "../rtmath/serialization.h"
 
 using namespace rtmath;
 using namespace rtmath::ddscat;

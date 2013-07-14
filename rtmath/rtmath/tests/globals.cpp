@@ -140,8 +140,28 @@ ddparloader::ddparloader()
 	}
 }
 
+ddOutputSingleLoader::ddOutputSingleLoader()
+{
+	using namespace std;
+	using namespace boost::filesystem;
+	string sAvg1, sAvg2, sSca, sFml, sXml, sXmlbz2;
+	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Avg1", sAvg1);
+	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Avg2", sAvg2);
+	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Sca", sSca);
+	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Fml", sFml);
+	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Xml1", sXml);
+	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Xml2", sXmlbz2);
+
+	pAvg1 = boost::filesystem::path(sAvg1);
+	pAvg2 = boost::filesystem::path(sAvg2);
+	pSca = boost::filesystem::path(sSca);
+	pFml = boost::filesystem::path(sFml);
+	pXml = boost::filesystem::path(sXml);
+	pXmlbz2 = boost::filesystem::path(sXmlbz2);
+}
+
 ddparloader::~ddparloader()
 {
 }
 
-
+ddOutputSingleLoader::~ddOutputSingleLoader() {}
