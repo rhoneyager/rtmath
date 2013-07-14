@@ -152,12 +152,12 @@ ddOutputSingleLoader::ddOutputSingleLoader()
 	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Xml1", sXml);
 	globals::instance()->cRoot->getVal<string>("ddOutputSingle/Xml2", sXmlbz2);
 
-	pAvg1 = boost::filesystem::path(sAvg1);
-	pAvg2 = boost::filesystem::path(sAvg2);
-	pSca = boost::filesystem::path(sSca);
-	pFml = boost::filesystem::path(sFml);
-	pXml = boost::filesystem::path(sXml);
-	pXmlbz2 = boost::filesystem::path(sXmlbz2);
+	pAvg1 = globals::instance()->pTestData / boost::filesystem::path(sAvg1);
+	pAvg2 = globals::instance()->pTestData / boost::filesystem::path(sAvg2);
+	pSca = globals::instance()->pTestData / boost::filesystem::path(sSca);
+	pFml = globals::instance()->pTestData / boost::filesystem::path(sFml);
+	pXml = globals::instance()->pTestData / boost::filesystem::path(sXml);
+	pXmlbz2 = globals::instance()->pTestData / boost::filesystem::path(sXmlbz2);
 }
 
 ddparloader::~ddparloader()
