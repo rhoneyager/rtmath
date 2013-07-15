@@ -200,12 +200,16 @@ namespace
 		virtual void write(std::ostream &out, size_t) const override
 		{
 			// Using formatted io operations
-			out << "n = ( " << m.real() << " , " << m.imag() << "),  eps.= (  "
-				<< eps.real() << " ,  " << eps.imag() << ")  |m|kd=  "
-				<< std::endl;
+			using std::setw;
+			out << "n = (" << setw(w) << m.real() << "," << setw(w) << m.imag()
+				<< "), eps.= (" << setw(w) << eps.real() << "," << setw(w) << eps.imag()
+				<< ")  |m|kd=" << setw(w) << mkd << " for subs. " << subst << std::endl;
 		}
 		virtual void read(std::istream &in) override
 		{
+			std::string str;
+			std::getline(in,str);
+			// todo: fix listed ranges (stars are correct, ends are not, but w is)
 			// all ranges are INCLUSIVE
 			// mreal in cols 4-11
 			// mimag in cols 13-20
@@ -213,7 +217,17 @@ namespace
 			// eps imag in 42-49
 			// mkd in 59-66
 			// substance number in 78+
-			std::getline(in,s);
+			double mre, mim, ere, eim;
+			using boost::lexical_cast;
+			using boost::algorithm::trim_copy;
+			mre = lexical_cast<double>(trim_copy(str.substr(4,w)));
+			mim = lexical_cast<double>(trim_copy(str.substr(13,w)));
+			ere = lexical_cast<double>(trim_copy(str.substr(32,w)));
+			eim = lexical_cast<double>(trim_copy(str.substr(42,w)));
+			mkd = lexical_cast<float>(trim_copy(str.substr(59,w)));
+			subst = lexical_cast<size_t>(trim_copy(str.substr(78,2)));
+			m = std::complex<double>(mre,mim);
+			eps = std::complex<double>(ere,eim);
 		}
 		virtual std::string value() const override { return std::string(); }
 		std::complex<double> getM() const { return m; }
@@ -221,6 +235,7 @@ namespace
 		float getMkd() const { return mkd; }
 		std::complex<double> m, eps;
 		float mkd;
+		const size_t w = 8;
 		size_t subst;
 	private:
 		friend class boost::serialization::access;

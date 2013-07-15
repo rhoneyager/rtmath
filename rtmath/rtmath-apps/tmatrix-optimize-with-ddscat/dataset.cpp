@@ -1,8 +1,8 @@
 #include <Ryan_Serialization/serialization.h>
+#include <boost/serialization/shared_ptr.hpp>
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "dataset.h"
-
 
 dataset::dataset() : id("") {}
 
