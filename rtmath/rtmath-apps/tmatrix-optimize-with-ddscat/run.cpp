@@ -108,7 +108,7 @@ boost::shared_ptr<tmRun> tmRun::run()
 		pt->tmQabs = to->qext - to->qsca;
 		pt->tmQext = to->qext;
 		pt->tmQsca = to->qsca;
-		pt->tmQbk = getDifferentialBackscatterCrossSectionUnpol(to);
+		pt->tmQbk = tmatrix::getDifferentialBackscatterCrossSectionUnpol(to);
 
 		// Figure out the error terma
 		pt->errQabs = pow(pt->tmQabs - spt->ddQabs, 2.0f);
