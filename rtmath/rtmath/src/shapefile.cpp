@@ -14,6 +14,9 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <Ryan_Serialization/serialization.h>
+
 //#include <boost/chrono.hpp>
 #include <cmath>
 #include "../rtmath/macros.h"
@@ -65,21 +68,14 @@ namespace rtmath {
 			using namespace std;
 			using namespace boost::interprocess;
 			using namespace boost::filesystem;
+			// Detect if the input file is compressed
+			using namespace Ryan_Serialization;
+			std::string cmeth, fname;
+			if (!detect_compressed(filename, cmeth, fname))
+				throw rtmath::debug::xMissingFile(filename.c_str());
 
-			string fname = filename;
-			if (fname == "")
-			{
-				if (this->filename.size())
-				{
-					fname = filename;
-				} else {
-					throw rtmath::debug::xBadInput("Must specify filename");
-				}
-			}
-
-			if (!exists(path(fname)))
-				throw rtmath::debug::xMissingFile(fname.c_str());
-
+			// Do a direct map into memory. It's faster than stream i/o for reading a large file.
+			// Plus, all other operations can be done solely in memory.
 			size_t fsize = (size_t) file_size(path(fname)); // bytes
 
 			file_mapping m_file(
@@ -95,10 +91,23 @@ namespace rtmath {
 
 			void* start = region.get_address();
 			const char* a = (char*) start;
-
 			this->filename = fname;
 			string s(a, fsize);
-			readString(s);
+
+			// s can contain either compressed or uncompressed input at this point.
+			if (cmeth.size())
+			{
+				boost::iostreams::filtering_istream sin;
+				prep_decompression(cmeth, sin);
+				sin.push(s);
+				std::ostringstream buffer;
+				/// \todo Check if rdbuf works on a boost iostreams object
+				buffer << sin.rdbuf();
+				string suncompressed = buffer.str();
+				readString(suncompressed);
+			} else {
+				readString(s);
+			}
 		}
 
 		void shapefile::read(std::istream &in, size_t length)
@@ -294,11 +303,30 @@ namespace rtmath {
 			print(out);
 		}
 
-		void shapefile::write(const std::string &filename) const
+		void shapefile::write(const std::string &filename, bool autoCompress) const
 		{
+			using namespace Ryan_Serialization;
 			using namespace std;
-			ofstream out(filename.c_str());
-			write(out);
+			using boost::filesystem::path;
+			
+			std::string cmeth;
+			std::ostringstream outfile;
+			if (Ryan_Serialization::detect_compression(filename, cmeth))
+				autoCompress = true;
+			if (autoCompress)
+				Ryan_Serialization::select_compression(filename, cmeth);
+			/// \todo Ryan_Serialization::select_compression should also return the compressed 
+			/// file name as an optional parameter.
+			outfile << filename << cmeth;
+			std::string soutfile = outfile.str();
+
+			ofstream out(soutfile.c_str());
+			using namespace boost::iostreams;
+			filtering_ostream sout;
+			if (cmeth.size())
+				prep_compression(cmeth, sout);
+			sout.push(out);
+			write(sout);
 		}
 
 		void shapefile::print(std::ostream &out) const
@@ -344,7 +372,4 @@ std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob)
 	ob.read(stream);
 	return stream;
 }
-
-
-//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile)
 

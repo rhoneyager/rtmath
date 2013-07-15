@@ -28,33 +28,6 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
 
-/*
-namespace rtmath
-{
-	namespace ddscat
-	{
-		class ddPar;
-		// ddParParsers are templates, and they have all serialization information in definition.
-	}
-}
-
-namespace boost
-{
-	namespace serialization
-	{
-		//template<class Archive>
-		//void save(Archive &ar, const rtmath::ddscat::ddPar &g, const unsigned int version);
-
-		//template<class Archive>
-		//void load(Archive &ar, rtmath::ddscat::ddPar &g, const unsigned int version);
-
-		//template <class Archive>
-		//void serialize(Archive & ar, rtmath::ddscat::ddPar & g, const unsigned int version);
-	}
-}
-
-*/
-
 namespace rtmath {
 	namespace ddscat {
 

@@ -27,10 +27,21 @@ namespace rtmath {
 			shapefile(std::istream &in);
 			~shapefile();
 			void print(std::ostream &out) const;
+			/** \brief Read in a shapefile (compression allowed)
+			 * 
+			 * If a standard (uncompressed) file cannot be found, also search for 
+			 * a compressed file.
+			**/
 			void read(const std::string &filename = "");
+			/// Read a shape from an istream (no compression)
 			void read(std::istream &in, size_t length = 0);
+			/// Read in a shapefile, in uncompressed string form
 			void readString(const std::string &in);
-			void write(const std::string &fname) const;
+			/// Write a shapefile (compression allowed)
+			/// \param autoCompress determines whether any output should be 
+			/// automatically compressed. Specifying a compressed output filename 
+			/// always forces compression.
+			void write(const std::string &fname, bool autoCompress = false) const;
 			void write(std::ostream &out) const;
 			shapefile();
 		private:

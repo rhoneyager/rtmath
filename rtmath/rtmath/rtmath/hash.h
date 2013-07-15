@@ -16,7 +16,7 @@ namespace rtmath {
 
 	/// Hash type definitions based on architecture
 //#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
-	typedef UINT128 HASH_t;
+	typedef _UINT128 HASH_t;
 //#else
 //	typedef uint32_t HASH_t;
 //#endif
