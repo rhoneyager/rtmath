@@ -2,21 +2,21 @@
 /* defs.h - Header containing typedefs and other defines for many things */
 #include <cstdint>
 #include <cmath>
+#include <boost/serialization/export.hpp>
 
 namespace rtmath {
 
 	/// Used for hashing
-	typedef struct _UINT128 {
+	struct UINT128 {
 		uint64_t lower;
 		uint64_t upper;
-	} UINT128, 
-		*PUINT128;
+	};
 
 //#define LARGEHASH
 
 	/// Hash type definitions based on architecture
 //#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
-	typedef _UINT128 HASH_t;
+	typedef UINT128 HASH_t;
 //#else
 //	typedef uint32_t HASH_t;
 //#endif
@@ -68,3 +68,4 @@ namespace boost
 	}
 }
 
+BOOST_CLASS_EXPORT_KEY(rtmath::UINT128);

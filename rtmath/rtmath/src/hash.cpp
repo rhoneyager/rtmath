@@ -22,7 +22,7 @@ namespace boost
 	namespace serialization
 	{
 		template<class Archive>
-		void serialize(Archive &ar, rtmath::_UINT128 &g, const unsigned int version)
+		void serialize(Archive &ar, rtmath::UINT128 &g, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("upper", g.upper);
 			ar & boost::serialization::make_nvp("lower", g.lower);
