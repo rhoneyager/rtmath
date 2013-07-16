@@ -17,6 +17,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
+#include "ddVersions.h"
 #include "parids.h"
 //#include "../parsers.h"
 
@@ -35,8 +36,12 @@ namespace rtmath {
 
 		namespace ddParParsers
 		{
-			void idString(ParId id, std::string &key);
-			bool commentString(ParId id, std::string &key);
+			/// \brief Takes the internal key id and converts it into 
+			/// the standard comment string
+			/// \todo Change idString to also take version information.
+			/// The comments of some of the keys change in v73.
+			void idString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
+			bool commentString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
 
 			// A very abstract base class
 			class ddParLine
@@ -54,12 +59,12 @@ namespace rtmath {
 					read(lin);
 				}
 				virtual void read(const std::string &val) = 0;
-				virtual void write(std::ostream &out, const std::string &suffix = "") = 0;
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "") = 0;
 
-				void writeComment(std::ostream &out)
+				void writeComment(std::ostream &out, size_t version)
 				{
 					std::string comment;
-					if (commentString(_id, comment))
+					if (commentString(_id, comment, version))
 						out << comment << std::endl;
 				}
 				//inline size_t line() const { return _line; }
@@ -95,7 +100,7 @@ namespace rtmath {
 					: ddParLine(id) {}
 				virtual ~ddParLineSimpleBase() {}
 				virtual void read(const std::string &val) = 0;
-				virtual void write(std::ostream &out, const std::string &suffix = "") = 0;
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "") = 0;
 
 				void get(T &val) const { val = _val; }
 				void set(const T &val) { _val = val; }
@@ -120,9 +125,9 @@ namespace rtmath {
 				ddParLineSimple(ParId id = UNKNOWN) 
 					: ddParLineSimpleBase<T>(id) {}
 				~ddParLineSimple() {}
-				virtual void write(std::ostream &out, const std::string &suffix = "")
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
 				{
-					this->writeComment(out);
+					this->writeComment(out, version);
 					std::string idstr;
 					out << this->_val << " ";
 					if (this->_endWriteWithEndl)
@@ -159,9 +164,9 @@ namespace rtmath {
 				ddParLineSimple(ParId id = UNKNOWN) 
 					: ddParLineSimpleBase(id) {}
 				~ddParLineSimple() {}
-				virtual void write(std::ostream &out, const std::string &suffix = "")
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
 				{
-					this->writeComment(out);
+					this->writeComment(out, version);
 					std::string idstr;
 					out << "\'" << _val << "\'";
 					if (this->_endWriteWithEndl)
@@ -193,9 +198,9 @@ namespace rtmath {
 				ddParLineSimplePlural(ParId id = UNKNOWN) 
 					: ddParLine(id) { }
 				virtual ~ddParLineSimplePlural() {}
-				virtual void write(std::ostream &out, const std::string &suffix = "")
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
 				{
-					this->writeComment(out);
+					this->writeComment(out, version);
 					std::string idstr;
 					for (auto it = _val.begin(); it != _val.end(); ++it)
 						out << *it << " ";
@@ -250,9 +255,9 @@ namespace rtmath {
 				ddParTuples(size_t tuplesize, ParId id = UNKNOWN) 
 					: ddParLineSimplePlural<T>(id) { _tuplesize = tuplesize; }
 				virtual ~ddParTuples() {}
-				virtual void write(std::ostream &out, const std::string &suffix = "")
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
 				{
-					this->writeComment(out);
+					this->writeComment(out, version);
 					std::string idstr;
 					for (size_t i = 0; i < this->_val.size(); i++)
 					{
@@ -324,21 +329,21 @@ namespace rtmath {
 						num++;
 					}
 				}
-				virtual void write(std::ostream &out, const std::string &suffix = "")
+				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
 				{
-					this->writeComment(out);
+					this->writeComment(out, version);
 					std::string idstr;
 					// Each separate member is used to write
 					// Suppress the endline emitted by the members
 					for (auto it = _t.begin(); it != _t.end(); ++it)
 					{
 						it->endWriteWithEndl(false);
-						it->write(out);
+						it->write(out, version);
 					}
 					for (auto it = _r.begin(); it != _r.end(); ++it)
 					{
 						it->endWriteWithEndl(false);
-						it->write(out);
+						it->write(out, version);
 					}
 					if (this->_endWriteWithEndl)
 					{
@@ -454,6 +459,7 @@ namespace rtmath {
 
 			void readFile(const std::string &filename, bool overlay = false);
 			void writeFile(const std::string &filename) const;
+			/// \todo Add in line number matching as a backup when key parsing fails
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream &stream) const;
 			bool operator==(const ddPar &rhs) const;

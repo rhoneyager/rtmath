@@ -31,8 +31,8 @@ namespace rtmath {
 				if (_id != rhs._id) return false;
 				if (_endWriteWithEndl != rhs._endWriteWithEndl) return false;
 				std::ostringstream oT, oR;
-				write(oT);
-				rhs.write(oR);
+				write(oT, ddVersions::getDefaultVer());
+				rhs.write(oR, ddVersions::getDefaultVer());
 				std::string sT = oT.str(), sR = oR.str();
 				if (sT != sR) return false;
 
@@ -48,8 +48,8 @@ namespace rtmath {
 			{
 				if (_id != rhs._id) return (_id < rhs._id);
 				std::ostringstream oT, oR;
-				write(oT);
-				rhs.write(oR);
+				write(oT, ddVersions::getDefaultVer());
+				rhs.write(oR, ddVersions::getDefaultVer());
 				std::string sT = oT.str(), sR = oR.str();
 				return (sT < sR);
 			}
@@ -311,7 +311,7 @@ namespace rtmath {
 			{
 				// If key is valid for this output version, write it
 				if (it->second->versionValid(_version))
-					it->second->write(out);
+					it->second->write(out,_version);
 
 				// Check here for dielectric write. Always goes after NCOMP.
 				if (it->first == ddParParsers::NCOMP)
@@ -323,7 +323,7 @@ namespace rtmath {
 						// "...file with refractive index" + " #"
 						o << " " << i;
 						string plid = o.str();
-						(*ot)->write(out, plid);
+						(*ot)->write(out, _version, plid);
 					}
 				}
 			}
@@ -336,7 +336,7 @@ namespace rtmath {
 					// "...for plane" + " #"
 					o << " " << boost::lexical_cast<std::string>(ot->first);
 					string plid = o.str();
-					ot->second->write(out, plid);
+					ot->second->write(out, _version, plid);
 				}
 			}
 		}
@@ -813,7 +813,7 @@ namespace rtmath {
 				else if (key.find("CMDSOL") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimple<std::string> >
 					( new ddParLineSimple<std::string>(CMDSOL) );
-				else if (key.find("CMDFFT") != string::npos)
+				else if (key.find("FFT") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimple<std::string> >
 					( new ddParLineSimple<std::string>(CMDFFT) );
 				else if (key.find("CALPHA") != string::npos)
@@ -859,7 +859,7 @@ namespace rtmath {
 					ptr = boost::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(ETASCA) );
 
-				// TODO: fix wavelengths and aeff to read two doubles, a size_t and a string
+				/// \todo fix wavelengths and aeff to read two doubles, a size_t and a string
 				else if (key.find("wavelengths") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, std::string> >
 					( new ddParLineMixed<double, std::string>(3, 4, WAVELENGTHS));
@@ -867,7 +867,7 @@ namespace rtmath {
 					ptr = boost::shared_ptr<ddParLineSimple<double> > 
 					( new ddParLineSimple<double>(NAMBIENT) );
 				// version 7.0 NAMBIENT
-				else if (key.find("aeff") != string::npos)
+				else if (key.find("eff") != string::npos)
 					ptr = boost::shared_ptr<ddParLineMixed<double, std::string> >
 					( new ddParLineMixed<double, std::string>(3, 4, AEFF));
 
@@ -949,7 +949,7 @@ namespace rtmath {
 				return true;
 			}
 
-			bool commentString(ParId id, std::string &key)
+			bool commentString(ParId id, std::string &key, size_t version)
 			{
 				switch (id)
 				{
@@ -969,16 +969,31 @@ namespace rtmath {
 					key = "'**** Error Tolerance ****'";
 					break;
 				case MXITER:
-					key = "'**** maximum number of iterations allowed ****'";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "'**** maximum number of iterations allowed ****'";
+					} else {
+						key = "'**** Maximum number of iterations ****'";
+					}
 					break;
 				case GAMMA:
-					key = "'**** Interaction cutoff parameter for PBC calculations ****'";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "'**** Interaction cutoff parameter for PBC calculations ****'";
+					} else {
+						key = "'**** Integration cutoff parameter for PBC calculations ****'";
+					}
 					break;
 				case ETASCA:
 					key = "'**** Angular resolution for calculation of <cos>, etc. ****'";
 					break;
 				case WAVELENGTHS:
-					key = "'**** Wavelengths (micron) ****'";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "'**** Wavelengths (micron) ****'";
+					} else {
+						key = "'**** Vacuum wavelengths (micron) ****'";
+					}
 					break;
 				case NAMBIENT:
 					key = "'**** Refractive index of ambient medium'";
@@ -993,7 +1008,12 @@ namespace rtmath {
 					key = "'**** Specify which output files to write ****'";
 					break;
 				case NBETA:
-					key = "'**** Prescribe Target Rotations ****'";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "'**** Prescribe Target Rotations ****'";
+					} else {
+						key = "'**** Specify Target Rotations ****'";
+					}
 					break;
 				case IWAV:
 					key = "'**** Specify first IWAV, IRAD, IORI (normally 0 0 0) ****'";
@@ -1017,7 +1037,7 @@ namespace rtmath {
 				boost::algorithm::erase_all(out, "\'");
 			}
 
-			void idString(ParId id, std::string &key)
+			void idString(ParId id, std::string &key, size_t version)
 			{
 				switch (id)
 				{
@@ -1028,7 +1048,12 @@ namespace rtmath {
 					key = "CMDSOL*6 (PBCGS2, PBCGST, PETRKP) -- select solution method";
 					break;
 				case CMDFFT:
-					key = "CMDFFT*6 (GPFAFT, FFTMKL)";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "CMDFFT*6 (GPFAFT, FFTMKL) --- FFT method";
+					} else {
+						key = "CMETHD*6 (GPFAFT, FFTMKL) -- FFT method";
+					}
 					break;
 				case CALPHA:
 					key = "CALPHA*6 (GKDLDR, LATTDR)";
@@ -1070,13 +1095,23 @@ namespace rtmath {
 					key = "ETASCA (number of angles is proportional to [(3+x)/ETASCA]^2 )";
 					break;
 				case WAVELENGTHS:
-					key = "wavelengths";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "wavelengths";
+					} else {
+						key = "wavelengths (first,last,how many,how=LIN,INV,LOG)";
+					}
 					break;
 				case NAMBIENT:
 					key = "NAMBIENT";
 					break;
 				case AEFF:
-					key = "aeff";
+					if (ddVersions::isVerWithin(version, 0, 73))
+					{
+						key = "aeff";
+					} else {
+						key = "eff. radii (first, last, how many, how=LIN,INV,LOG)";
+					}
 					break;
 				case POLSTATE:
 					key = "Polarization state e01 (k along x axis)";
