@@ -10,6 +10,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
 
 #include "defs.h"
 #include "splitSet.h"
@@ -21,6 +23,7 @@ namespace rtmath {
 	class paramSet;
 }
 
+/*
 namespace boost
 {
 	namespace serialization
@@ -34,7 +37,7 @@ namespace boost
 /// \todo Fix boost tuple serialization to work with LLVM/CLANG.
 		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
 		// Breaks in CLANG!
-/*
+
 #define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
 	ar & boost::serialization::make_nvp("element",t.get< which >());
 
@@ -49,8 +52,8 @@ namespace boost
 
 
 		BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
-*/
 }
+*/
 
 namespace rtmath
 {
@@ -62,14 +65,18 @@ namespace rtmath
 	template <class T>
 	class paramSet
 	{
-		//friend class ::boost::serialization::access;
-		//template<class Archive>
-		//void serialize(Archive & ar, const unsigned int version);
+		// Serialization of this template is annoyingly frustrating thanks to gcc and msvc issues
+		// involving nested templates. Basically, it HAS to be done in the header.
+		friend class ::boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("values_short", _shorthand);
+			ar & boost::serialization::make_nvp("values_expanded", _expanded);
+		}
 		//
-		//template<class Archive> friend
-		//void ::boost::serialization::serialize<Archive,T>(Archive & ar, rtmath::paramSet<T> & g, const unsigned int version);
-		template<class Archive, class U> friend
-		void ::boost::serialization::serialize(Archive&, paramSet<U>&, const unsigned int);
+		//template<class Archive, class U> friend
+		//void ::boost::serialization::serialize(Archive&, paramSet<U>&, const unsigned int);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 
@@ -146,9 +153,10 @@ namespace rtmath
 
 }
 
+/*
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<double>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<float>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<int>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<size_t>);
 BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<std::string>);
-
+*/

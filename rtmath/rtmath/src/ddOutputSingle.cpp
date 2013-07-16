@@ -197,6 +197,7 @@ namespace
 	class ddM : public ::rtmath::ddscat::ddOutputSingleObj
 	{
 	public:
+		ddM() : w(8) {}
 		virtual void write(std::ostream &out, size_t) const override
 		{
 			// Using formatted io operations
@@ -235,7 +236,7 @@ namespace
 		float getMkd() const { return mkd; }
 		std::complex<double> m, eps;
 		float mkd;
-		const size_t w = 8;
+		const size_t w;
 		size_t subst;
 	private:
 		friend class boost::serialization::access;

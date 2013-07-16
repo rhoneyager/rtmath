@@ -17,7 +17,8 @@ namespace boost
 			//boost::serialization::split_free(ar, *this, version);
 			// Doing this all in one function
 			using namespace boost::serialization;
-			int rows = t.rows(), cols = t.cols();
+			// rows and cols have slightly different types depending on platform and architecture.
+			auto rows = t.rows(), cols = t.cols();
 			ar & make_nvp("Rows", rows);
 			ar & make_nvp("Cols", cols);
 			if (rows != t.rows() || cols != t.cols())
@@ -35,7 +36,7 @@ namespace boost
 		{
 			//ar & boost::serialization::make_array(t.data(), t.size());
 			using namespace boost::serialization;
-			int rows = t.rows(), cols = t.cols();
+			auto rows = t.rows(), cols = t.cols();
 			ar & make_nvp("Rows", rows);
 			ar & make_nvp("Cols", cols);
 			if (rows != t.rows() || cols != t.cols())

@@ -11,7 +11,7 @@
 #include <boost/serialization/string.hpp>
 
 //#include "../rtmath/Serialization/common_templates_serialization.h"
-
+/*
 namespace boost
 {
 	namespace serialization
@@ -42,7 +42,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<float>);
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<int>);
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<size_t>);
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::paramSet<std::string>);
-
+*/
 // MSVC2012 can't compile this...
 /*
 namespace rtmath
