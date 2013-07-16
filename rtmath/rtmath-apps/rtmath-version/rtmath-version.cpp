@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char* argv[])
@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 	using namespace rtmath;
 
 	rtmath::debug::debug_preamble();
-	ryan_debug::printDebugInfo();
+	Ryan_Debug::printDebugInfo();
 
 	return 0;
 }

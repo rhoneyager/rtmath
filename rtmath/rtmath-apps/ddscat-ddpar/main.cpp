@@ -23,7 +23,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"

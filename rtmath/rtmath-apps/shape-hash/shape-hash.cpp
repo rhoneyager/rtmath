@@ -141,16 +141,18 @@ int main(int argc, char** argv)
 				/// \todo See if hard-linking is possible
 				// For now, just do a file write
 				path pShapeHashed = pShapeDir / pHashName;
+				std::string a,b;
 				if (!Ryan_Serialization::detect_compressed(pShapeHashed.string(), 
-					std::string(), std::string()))
+					a, b))
 					shp.write(pShapeHashed.string(), true);
 			}
 			if (doStats)
 			{
 				cerr << "\tCalculating baseline statistics" << endl;
 				path pStatsHashed = pStatsDir / pHashName;
+				std::string a, b;
 				if (!Ryan_Serialization::detect_compressed(pStatsHashed.string(), 
-					std::string(), std::string()))
+					a, b))
 				{
 					rtmath::ddscat::shapeFileStats sstats(shp);
 					sstats.calcStatsBase();

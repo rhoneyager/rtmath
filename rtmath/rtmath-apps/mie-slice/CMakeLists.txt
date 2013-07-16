@@ -10,7 +10,9 @@ add_executable (rtmath-mie-slice
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-find_package(tmatrix REQUIRED)
+find_package(tmatrixCpp REQUIRED)
+find_package(tmatrixFortran REQUIRED)
+
 target_link_libraries( rtmath-mie-slice 
 	rtmath_core 
 	rtmath_mie 

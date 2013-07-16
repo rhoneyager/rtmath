@@ -7,7 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <string>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"

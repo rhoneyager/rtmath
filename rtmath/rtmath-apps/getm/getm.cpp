@@ -15,7 +15,7 @@
 #include <set>
 #include <vector>
 #include <map>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"

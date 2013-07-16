@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/config.h"

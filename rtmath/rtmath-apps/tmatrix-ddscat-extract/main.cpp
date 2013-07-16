@@ -55,8 +55,6 @@
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/tmData.h"
 #include <Ryan_Serialization/serialization.h>
-#include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
-#include "../../rtmath/rtmath/mie/mie-serialization.h"
 #include "../../rtmath/rtmath/mie/mie.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"

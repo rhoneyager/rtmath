@@ -23,7 +23,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"

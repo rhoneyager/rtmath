@@ -23,7 +23,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
@@ -31,8 +31,6 @@
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/Serialization/shapestats_serialization.h"
-#include "../../rtmath/rtmath/serialization.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)

@@ -11,7 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"

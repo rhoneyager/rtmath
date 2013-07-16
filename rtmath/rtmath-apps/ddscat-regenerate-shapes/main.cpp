@@ -12,7 +12,7 @@
 #include <list>
 #include <vector>
 #include <cstdlib>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"

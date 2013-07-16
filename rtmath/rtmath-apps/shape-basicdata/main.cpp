@@ -39,7 +39,7 @@
 #include <vtkIntArray.h>
 */
 
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 
 #pragma warning( pop ) 

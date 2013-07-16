@@ -8,7 +8,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 #include <tmatrix/tmatrix.h>
 #include "../../rtmath/rtmath/splitSet.h"
@@ -16,7 +16,7 @@
 #include "../../rtmath/rtmath/ddscat/tmData.h"
 #include "../../rtmath/rtmath/mie/mie.h"
 #include "../../rtmath/rtmath/mie/mie-Qcalc.h"
-#include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
+//#include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
 #include "../../rtmath/rtmath/units.h"
 
 int main(int argc, char *argv[])

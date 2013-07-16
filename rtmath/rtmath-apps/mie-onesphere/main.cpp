@@ -7,7 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
-#include <Ryan-Debug/debug.h>
+#include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/mie/mie.h"

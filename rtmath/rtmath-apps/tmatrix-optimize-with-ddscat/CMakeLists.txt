@@ -20,8 +20,10 @@ find_package(tmatrixCpp REQUIRED)
 target_link_libraries( rtmath-tmatrix-optimize-with-ddscat 
 	rtmath_core 
 	rtmath_mie 
+	rtmath_ddscat
 	${rtmath_core-libs}
 	${rtmath_mie-libs}
+	${rtmath_ddscat-libs}
 	tmatrix-cpp
 	tmatrix-fortran
 	)

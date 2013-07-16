@@ -69,8 +69,8 @@ bool dataset::isAvg(const boost::filesystem::path &filename)
 	using namespace std;
 	path pleaf = filename.filename();
 
-	//string meth; // replaced with std::string()
-	if (Ryan_Serialization::detect_compression(pleaf.string(), std::string()))
+	string meth; // replaced with std::string()
+	if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
 		pleaf.replace_extension();
 
 	path ext = pleaf.extension();
@@ -85,8 +85,8 @@ bool dataset::isShape(const boost::filesystem::path &filename)
 	using namespace std;
 	path pleaf = filename.filename();
 
-	//string meth; // replaced with std::string()
-	if (Ryan_Serialization::detect_compression(pleaf.string(), std::string()))
+	string meth; // replaced with std::string()
+	if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
 		pleaf.replace_extension();
 
 	path ext = pleaf.extension();
@@ -101,8 +101,8 @@ bool dataset::isShapeStats(const boost::filesystem::path &filename)
 	using namespace std;
 	path pleaf = filename.filename();
 
-	//string meth; // replaced with std::string()
-	if (Ryan_Serialization::detect_compression(pleaf.string(), std::string()))
+	string meth; // replaced with std::string()
+	if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
 		pleaf.replace_extension();
 
 	path ext = pleaf.extension();

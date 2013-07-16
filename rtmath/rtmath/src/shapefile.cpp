@@ -99,10 +99,12 @@ namespace rtmath {
 			{
 				boost::iostreams::filtering_istream sin;
 				prep_decompression(cmeth, sin);
-				sin.push(s);
+/// \todo Fix the compressed read stuff. Lots of compile errors
+				throw rtmath::debug::xUnimplementedFunction();
+				//sin.push(s);
 				std::ostringstream buffer;
 				/// \todo Check if rdbuf works on a boost iostreams object
-				buffer << sin.rdbuf();
+				//buffer << sin.rdbuf();
 				string suncompressed = buffer.str();
 				readString(suncompressed);
 			} else {
