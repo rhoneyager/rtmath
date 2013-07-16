@@ -1,4 +1,5 @@
 #include "../rtmath/Stdafx.h"
+#include "../rtmath/defs.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/Public_Domain/MurmurHash3.h"
 #include "../rtmath/Serialization/serialization_macros.h"
@@ -28,7 +29,7 @@ namespace boost
 			ar & boost::serialization::make_nvp("lower", g.lower);
 		}
 
-		//EXPORT(
+		EXPORT(serialize, rtmath::UINT128);
 		//EXPORTINTERNAL(rtmath::hash::serialize);
 	}
 }
