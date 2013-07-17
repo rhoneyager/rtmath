@@ -319,7 +319,8 @@ namespace rtmath {
 				Ryan_Serialization::select_compression(filename, cmeth);
 			/// \todo Ryan_Serialization::select_compression should also return the compressed 
 			/// file name as an optional parameter.
-			outfile << filename << "." << cmeth;
+			outfile << filename;
+			if (cmeth.size()) outfile << "." << cmeth;
 			std::string soutfile = outfile.str();
 
 			ofstream out(soutfile.c_str());
