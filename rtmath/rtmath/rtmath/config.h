@@ -27,13 +27,12 @@
 #include <boost/lexical_cast.hpp>
 
 
-// TODO: fix findSegment so that it works
-// TODO: more throwable errors
-// TODO: findSegment check for not found condition (currently returns garbage)
-// TODO: restructure to explicitly enable symlinks
 namespace rtmath {
 	namespace config {
-
+		/// \todo fix findSegment so that it works
+		/// \todo findSegment check for not found condition (currently returns garbage)
+		/// \todo restructure to explicitly enable symlinks
+		/// \todo Switch to boost::shared_ptr
 		class configsegment : public std::enable_shared_from_this<configsegment> {
 		public:
 			static std::shared_ptr<configsegment> create(const std::string &name);

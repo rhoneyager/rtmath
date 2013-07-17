@@ -5,6 +5,8 @@
 #include <boost/filesystem.hpp>
 #include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
+
 
 // Special compile-time generated files that build needs
 #include "debug_subversion.h"
@@ -112,7 +114,7 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				if (!relseg) throw;
+				if (!relseg) throw rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
 				bool res = relseg->hasVal(keystripped);
@@ -147,7 +149,7 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				if (!relseg) throw;
+				if (!relseg) throw rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
 				bool res = relseg->getVal(keystripped,value);
@@ -300,7 +302,7 @@ namespace rtmath {
 					{
 						// Close container
 						cseg = cseg->getParent();
-						if (!cseg) throw; // Shouldn't happen unless syntax error
+						if (!cseg) throw rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
 					} else {
 						// New container
 						// Remove spaces, tabs, < and > from original input line
