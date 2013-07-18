@@ -93,14 +93,16 @@ namespace rtmath {
 			const char* a = (char*) start;
 			this->filename = fname;
 			string s(a, fsize);
+			std::istringstream ss(s);
 
 			
 			boost::iostreams::filtering_istream sin;
 			// s can contain either compressed or uncompressed input at this point.
 			if (cmeth.size())
 				prep_decompression(cmeth, sin);
-			sin.push(s);
-			readString(sin);
+			sin.push(ss);
+			//sin.push(a);
+			read(sin);
 		}
 
 		void shapefile::readHeader(std::istream &in)
@@ -181,7 +183,7 @@ namespace rtmath {
 
 			//Eigen::Vector3f crdsm, crdsi; // point location and diel entries
 			set<size_t> mediaIds;
-			size_t posa = 0, posb = pend+1;
+			size_t posa = 0, posb = 0; //pend+1;
 			// Load in the lattice points through iteration and macro.h-based double extraction
 			for (size_t i=0; i< numPoints; i++)
 			{
