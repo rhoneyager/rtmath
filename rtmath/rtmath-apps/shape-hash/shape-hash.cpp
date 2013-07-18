@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "rtmath-shape\n\n";
+		cerr << "rtmath-shape-hash\n\n";
 
 		namespace po = boost::program_options;
 
