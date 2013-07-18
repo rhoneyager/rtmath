@@ -34,9 +34,7 @@ namespace rtmath {
 			**/
 			void read(const std::string &filename = "");
 			/// Read a shape from an istream (no compression)
-			void read(std::istream &in, size_t length = 0);
-			/// Read in a shapefile, in uncompressed string form
-			void readString(const std::string &in);
+			void read(std::istream &in);
 			/// Write a shapefile (compression allowed)
 			/// \param autoCompress determines whether any output should be 
 			/// automatically compressed. Specifying a compressed output filename 
@@ -46,6 +44,7 @@ namespace rtmath {
 			shapefile();
 		private:
 			void _init();
+			void readHeader(std::istream &in);
 			mutable HASH_t _localhash;
 			friend class ::boost::serialization::access;
 			template<class Archive>

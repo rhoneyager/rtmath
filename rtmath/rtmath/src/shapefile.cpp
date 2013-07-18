@@ -112,22 +112,8 @@ namespace rtmath {
 			}
 		}
 
-		void shapefile::read(std::istream &in, size_t length)
+		void shapefile::readHeader(std::istream &in)
 		{
-			using namespace std;
-			if (!length)
-			{
-				in.seekg(0, ios::end);
-				length = (size_t) in.tellg();
-				in.seekg(0, ios::beg);
-			}
-
-			char* sb = new char[length];
-			in.read(sb,length);
-			string s(sb,length);
-			delete[] sb;
-
-			readString(s);
 		}
 
 		void shapefile::readString(const std::string &in)
@@ -136,8 +122,6 @@ namespace rtmath {
 			// macros.h). These were used when I implemented lbl, and are very fast.
 			using namespace std;
 			_init();
-
-			size_t length = in.size();
 
 			// First, do header processing
 			//boost::chrono::system_clock::time_point cstart = boost::chrono::system_clock::now();
