@@ -432,8 +432,8 @@ namespace rtmath {
 				("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
 				//("rotations", po::value<string>(), "Specify rotations directly, in ") // static option
 				/// \todo Check for options conflict / default_value priority with shape-hash
-				("do-hash-shapes", po::value<bool>()->default_value(false), "Create shape hash links")
-				("do-hash-stats", po::value<bool>()->default_value(false), "Create shape stats")
+				//("do-hash-shapes", po::value<bool>()->default_value(false), "Create shape hash links")
+				//("do-hash-stats", po::value<bool>()->default_value(false), "Create shape stats")
 				;
 			/// \todo make do-hash-* static, with automatic shape and stat writing on read?
 

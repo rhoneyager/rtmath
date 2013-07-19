@@ -44,23 +44,23 @@ int main(int argc, char** argv)
 		po::positional_options_description p;
 		p.add("input", -1);
 
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
+			config("Config options"), hidden("Hidden options"), oall("all options");
+		ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >(), "input shape files")
-			("hash-shape-dir", po::value<string>(), "Override the hash shape directory")
-			("hash-stats-dir", po::value<string>(), "Override the hash stats directory")
 			("do-shapes", po::value<bool>()->default_value(true), "Create shape hash links")
 			("do-stats", po::value<bool>()->default_value(true), "Create shape stats")
+			;
 
-			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats")
-			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats")
-			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats")
-			("disable-qhull", "Disable qhull calculations for the stats");
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
+			options(oall).positional(p).run(), vm);
 		po::notify(vm);    
 
 		if (vm.count("help") || argc == 1) {
@@ -68,34 +68,10 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		if (vm.count("disable-qhull"))
-			rtmath::ddscat::shapeFileStats::doQhull(false);
+		ddscat::shapeFileStats::process_static_options(vm);
+
 		bool doShapes = vm["do-shapes"].as<bool>();
 		bool doStats = vm["do-stats"].as<bool>();
-
-		/// \todo Add config parsing of command-line options, and chage how config is stored
-		auto conf = rtmath::config::loadRtconfRoot();
-		string shapeDir;
-		auto chash = conf->getChild("ddscat")->getChild("hash");
-		chash->getVal<string>("shapeDir",shapeDir);
-		if (vm.count("hash-shape-dir")) shapeDir = vm["hash-shape-dir"].as<string>();
-		string statsDir;
-		chash->getVal<string>("statsDir",statsDir);
-		if (vm.count("hash-stats-dir")) statsDir = vm["hash-stats-dir"].as<string>();
-		// Check directory existence
-		path pShapeDir(shapeDir), pStatsDir(statsDir);
-		auto validateDir = [&](path p) -> bool
-		{
-			while (is_symlink(p))
-				p = boost::filesystem::absolute(read_symlink(p), p.parent_path());
-			if (!exists(p)) return false;
-			if (is_directory(p)) return true;
-			return false;
-		};
-		std::cerr << "Using shape hash directory " << pShapeDir << std::endl;
-		std::cerr << "Using stats hash directory " << pStatsDir << std::endl;
-		if (!validateDir(pShapeDir)) throw debug::xMissingFile(shapeDir.c_str());
-		if (!validateDir(pStatsDir)) throw debug::xMissingFile(statsDir.c_str());
 
 		vector<string> inputs = vm["input"].as< vector<string> >();
 		if (vm.count("input"))
@@ -117,18 +93,6 @@ int main(int argc, char** argv)
 			if (is_directory(pi)) 
 				throw rtmath::debug::xPathExistsWrongType(it->c_str());
 		}
-
-		// Specify beta, theta, phi rotations
-		string sbeta = vm["betas"].as<string>();
-		string stheta = vm["thetas"].as<string>();
-		string sphi = vm["phis"].as<string>();
-
-		paramSet<double> betas(sbeta);
-		paramSet<double> thetas(stheta);
-		paramSet<double> phis(sphi);
-
-		//vector<rtmath::ddscat::shapeFileStats> Stats;
-		//Stats.reserve(inputs.size());
 
 		for (auto it = inputs.begin(); it != inputs.end(); it++)
 		{
@@ -162,21 +126,8 @@ int main(int argc, char** argv)
 					Ryan_Serialization::read<rtmath::ddscat::shapeFileStats>
 						(sstats, pStatsHashed.string(), "rtmath::ddscat::shapeFileStats");
 				} else {
-					sstats = rtmath::ddscat::shapeFileStats(shp);
 					cerr << "\tCalculating baseline statistics.\n";
-					sstats.calcStatsBase();
-				}
-				for (auto beta = betas.begin(); beta != betas.end(); beta++)
-				{
-					for (auto theta = thetas.begin(); theta != thetas.end(); theta++)
-					{
-						for (auto phi = phis.begin(); phi != phis.end(); phi++)
-						{
-							cerr << "\tCalculating rotation (beta,theta,phi): ("
-								<< *beta << ", " << *theta << ", " << *phi << ")" << endl;
-							sstats.calcStatsRot(*beta,*theta,*phi);
-						}
-					}
+					sstats = rtmath::ddscat::shapeFileStats(shp);
 				}
 				Ryan_Serialization::write<rtmath::ddscat::shapeFileStats>(sstats, 
 					pStatsHashed.string(), "rtmath::ddscat::shapeFileStats", true);
