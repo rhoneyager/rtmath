@@ -18,24 +18,35 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/variates/covariate.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <Eigen/Dense>
+
+#include <Ryan_Serialization/serialization.h>
 
 //#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h"
+#include "../rtmath/common_templates.h"
+#include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
 namespace {
-	bool _doQhull = true;
+	/// \todo Reenable qhull bindings
+	bool _doQhull = false;
+	std::vector<boost::tuple<double, double, double> > defaultRots;
+	boost::filesystem::path pHashShapes, pHashStats;
+	bool autoHashShapes = false;
+	bool autoHashStats = false;
 }
 
 namespace rtmath {
 	namespace ddscat {
 
-		const unsigned int shapeFileStatsBase::_maxVersion = 0;
+		const unsigned int shapeFileStatsBase::_maxVersion = SHAPESTATS_VERSION;
 
 		bool rotComp::operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
 			const boost::shared_ptr<const shapeFileStatsRotated> &rhs) const
@@ -50,14 +61,12 @@ namespace rtmath {
 		{
 			_shp = boost::shared_ptr<shapefile>(new shapefile(shp));
 			calcStatsBase();
-			calcStatsRot(0,0,0);
 		}
 
 		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp)
 		{
 			_shp = boost::shared_ptr<shapefile>(new shapefile(*shp));
 			calcStatsBase();
-			calcStatsRot(0,0,0);
 		}
 
 		bool shapeFileStats::doQhull()
@@ -102,30 +111,14 @@ namespace rtmath {
 
 			_currVersion = _maxVersion;
 			_valid = false;
-			qhull_enabled = shapeFileStats::doQhull();
+			/// \todo Reenable qhull
+			qhull_enabled = false; //shapeFileStats::doQhull();
 
 			// Need to fill with something for serialization to work with
 			//_shp = boost::shared_ptr<shapefile>(new shapefile);
 		}
 
 		shapeFileStatsBase::~shapeFileStatsBase() { }
-
-		bool shapeFileStatsBase::load()
-		{
-			// Return true if shape is loaded or can be loaded (and load it)
-			// Return false if shape CANNOT be loaded
-			if (_shp->latticePts.size() ) return true;
-
-			std::string fname = _shp->filename;
-			if (boost::filesystem::exists(boost::filesystem::path(fname)))
-			{
-				boost::shared_ptr<shapefile> nshp(new shapefile(fname));
-				_shp = nshp;
-				return true;
-			} else {
-				return false;
-			}
-		}
 
 		void shapeFileStatsBase::calcStatsBase()
 		{
@@ -224,6 +217,36 @@ namespace rtmath {
 			b_mean(2) = boost::accumulators::mean(m_z);
 
 			// Figure out diameter of smallest circumscribing sphere
+			/// \todo Find max diameter based on the convex hull points!
+			auto fMaxDiameter = [&](const Eigen::Matrix<float, 3, Eigen::Dynamic> &base) -> double
+			{
+				double maxD = 0;
+				size_t a = 0, b = 0;
+
+				for (size_t i = 0; i < (size_t) base.cols(); i++)
+				{
+					auto it = base.block<1,3>(i,0);
+					
+					for (size_t j=0; j<(size_t) base.cols(); j++)
+					{
+						auto ot = base.block<1,3>(j,0);
+						float d = pow(it(0)-ot(0),2.f)
+							+ pow(it(1)-ot(1),2.f)
+							+ pow(it(2)-ot(2),2.f);
+						if (d > maxD)
+						{
+							maxD = d;
+							a = i;
+							b = j;
+						}
+					}
+				}
+
+				return sqrt(maxD);
+			};
+
+
+			/*
 			convexHull cvHull(_shp->latticePtsStd);
 			if (qhull_enabled)
 			{
@@ -232,14 +255,17 @@ namespace rtmath {
 				cvHull.hullEnabled(false);
 			}
 			max_distance = cvHull.maxDiameter();
+			*/
+			max_distance = fMaxDiameter(_shp->latticePtsStd);
 
 			a_circum_sphere = max_distance / 2.0;
 			V_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,3.0f) / 3.0f;
 			SA_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,2.0f);
 
-			V_convex_hull = cvHull.volume();
+			/// \todo Reenable convex hull code
+			//V_convex_hull = cvHull.volume();
 			aeff_V_convex_hull = pow(3.0 * V_convex_hull / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
-			SA_convex_hull = cvHull.surfaceArea();
+			//SA_convex_hull = cvHull.surfaceArea();
 			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0f * boost::math::constants::pi<float>()),0.5);
 
 			_currVersion = _maxVersion;
@@ -268,12 +294,211 @@ namespace rtmath {
 
 			// Volume fractions
 			f_circum_sphere = V_dipoles_const / V_circum_sphere;
-			f_convex_hull = V_dipoles_const / V_convex_hull;
+			f_convex_hull = (V_convex_hull) ? V_dipoles_const / V_convex_hull : -1.f;
 			f_ellipsoid_max = V_dipoles_const / V_ellipsoid_max;
 			f_ellipsoid_rms = V_dipoles_const / V_ellipsoid_rms;
 
+			// Calculate all default (from config or command-line) rotations
+			for (auto rot : defaultRots)
+			{
+				calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
+			}
 		}
 
+		bool shapeFileStats::needsUpgrade() const
+		{
+			// No need to upgrade from 1->2. Qhull disabled, and this calc should be preserved.
+			if (_currVersion == 1 && _maxVersion == 2) return false;
+			// Standard case
+			if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
+			return false;
+		}
+
+		bool shapeFileStatsBase::load()
+		{
+			std::string a,b; // Dummy vars
+
+			// Return true if shape is loaded or can be loaded (and load it)
+			// Return false if shape CANNOT be loaded
+			if (_shp->latticePts.size() ) return true;
+
+			boost::shared_ptr<shapefile> nshp;
+
+			// Reload initial stats file by 1) hash or 2) filename
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+			path pHashShape = pHashShapes / boost::lexical_cast<std::string>(_shp->hash().lower);
+			if (Ryan_Serialization::detect_compressed(pHashShape.string(), a, b))
+				nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
+			//else if (boost::filesystem::exists(boost::filesystem::path(_shp->filename)))
+			else if (Ryan_Serialization::detect_compressed(_shp->filename, a, b))
+				nshp = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
+			else
+				return false;
+			_shp = nshp;
+			return true;
+		}
+
+		boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
+			const std::string &shpfile, const std::string &statsfile)
+		{
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+			std::string a,b; // Dummy vars
+
+			boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
+
+			// Preferentially use the local file, if it exists
+			if (Ryan_Serialization::detect_compressed(statsfile, a, b))
+			//if (exists(path(statsfile)))
+			{
+				::Ryan_Serialization::read<shapeFileStats>(*res, statsfile, "rtmath::ddscat::shapeFileStats");
+				return res;
+			}
+			
+			// Local file does not exist. Does it exist in the hash database?
+			// Generate basic stats for a file.
+			rtmath::ddscat::shapefile shp(shpfile);
+
+			// Check the hash to see if it's already been done before
+			// Also see if the statsfile exists
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			path pHashShape = pHashShapes / boost::lexical_cast<std::string>(shp.hash().lower);
+			if (!Ryan_Serialization::detect_compressed(pHashShape.string(), 
+				a, b) && autoHashShapes)
+			{
+				shp.write(pHashShape.string(), true);
+			}
+			path pHashStat = pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
+			if (Ryan_Serialization::detect_compressed(pHashShape.string(), a, b))
+				::Ryan_Serialization::read<shapeFileStats>(*res, pHashStat.string(), "rtmath::ddscat::shapeFileStats");
+			else
+			{
+				// This takes care or base stat calculation and rotation stat calculations
+				res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+			}
+
+			if (statsfile.size())
+			{
+				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(*res,statsfile,"rtmath::ddscat::shapeFileStats");
+			}
+			if (autoHashStats)
+			{
+				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(*res,pHashStat.string(),"rtmath::ddscat::shapeFileStats");
+			}
+
+			return res;
+		}
+
+		void shapeFileStats::upgrade()
+		{
+			if (!needsUpgrade()) return;
+			load();
+
+			// Recalculate base stats
+			calcStatsBase();
+
+			// Redo each rotation
+			std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > oldRotations
+				= rotations;
+			rotations.clear();
+			for (auto rot : oldRotations)
+			{
+				calcStatsRot(rot->beta, rot->theta, rot->phi);
+			}
+
+		}
+
+		void shapeFileStats::add_options(
+			boost::program_options::options_description &cmdline,
+			boost::program_options::options_description &config,
+			boost::program_options::options_description &hidden)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+
+			// hash-shape-dir and hash-stats-dir can be found in rtmath.conf. 
+			// So, using another config file is useless.
+			cmdline.add_options()
+				("hash-shape-dir", po::value<string>(), "Override the hash shape directory") // static option
+				("hash-stats-dir", po::value<string>(), "Override the hash stats directory") // static option
+				;
+
+			config.add_options()
+				("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
+				("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
+				("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
+				//("rotations", po::value<string>(), "Specify rotations directly, in ") // static option
+				/// \todo Check for options conflict / default_value priority with shape-hash
+				("do-hash-shapes", po::value<bool>()->default_value(false), "Create shape hash links")
+				("do-hash-stats", po::value<bool>()->default_value(false), "Create shape stats")
+				;
+			/// \todo make do-hash-* static, with automatic shape and stat writing on read?
+
+			hidden.add_options()
+				("disable-qhull", "Disable qhull calculations for the stats") // static option
+				;
+		}
+
+		void shapeFileStats::process_static_options(
+			boost::program_options::variables_map &vm)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+			using boost::filesystem::path;
+
+			if (vm.count("disable-qhull")) doQhull(false);
+
+			initPaths();
+			if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());
+			if (vm.count("hash-stats-dir")) pHashStats = path(vm["hash-stats-dir"].as<string>());
+
+			// Rotations can be used to automatically set defaults for rotated shape stats
+			// Rotations are always specified (thanks to default_value)
+			string sbetas = vm["betas"].as<string>();
+			paramSet<double> betas(sbetas);
+			string sthetas = vm["thetas"].as<string>();
+			paramSet<double> thetas(sthetas);
+			string sphis = vm["phis"].as<string>();
+			paramSet<double> phis(sphis);
+
+			defaultRots.clear();
+			for (auto beta : betas) for (auto theta : thetas) for (auto phi : phis)
+				defaultRots.push_back(boost::tuple<double,double,double>(beta,theta,phi));
+			
+			// Validate paths
+			auto validateDir = [&](path p) -> bool
+			{
+				while (is_symlink(p))
+					p = boost::filesystem::absolute(read_symlink(p), p.parent_path());
+				if (!exists(p)) return false;
+				if (is_directory(p)) return true;
+				return false;
+			};
+			if (!validateDir(pHashShapes)) throw debug::xMissingFile(pHashShapes.string().c_str());
+			if (!validateDir(pHashStats)) throw debug::xMissingFile(pHashStats.string().c_str());
+		}
+
+		void shapeFileStats::initPaths()
+		{
+			using namespace boost::filesystem;
+			using std::string;
+			if (!pHashShapes.empty()) return;
+
+			auto conf = rtmath::config::loadRtconfRoot();
+			string shapeDir;
+			auto chash = conf->getChild("ddscat")->getChild("hash");
+			chash->getVal<string>("shapeDir",shapeDir);
+			//if (vm.count("hash-shape-dir")) shapeDir = vm["hash-shape-dir"].as<string>();
+			string statsDir;
+			chash->getVal<string>("statsDir",statsDir);
+			//if (vm.count("hash-stats-dir")) statsDir = vm["hash-stats-dir"].as<string>();
+
+			pHashShapes = path(shapeDir);
+			pHashStats = path(statsDir);
+		}
 	}
 }
 

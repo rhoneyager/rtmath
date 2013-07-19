@@ -139,10 +139,12 @@ target_link_libraries(rtmath_mie ${rtmath_mie-libs})
 
 find_package(tmatrixFortran REQUIRED)
 find_package(tmatrixCpp REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
-link_directories(${PCL_LIBRARY_DIRS})
+find_package(Qhull REQUIRED)
+include_directories(${QHULL_INCLUDE_DIRS})
+#find_package(PCL REQUIRED COMPONENTS common io segmentation surface)
+#link_directories(${PCL_LIBRARY_DIRS})
 include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
+#include_directories(${PCL_INCLUDE_DIRS})
 add_library (rtmath_ddscat ${sflag}
 	${rtmath_ddscat-files}
 	)
@@ -161,9 +163,11 @@ set_target_properties( rtmath_ddscat PROPERTIES FOLDER "Libs")
 
 set (rtmath_ddscat-libs rtmath_core ${rtmath_core-libs} rtmath_mie ${rtmath_mie-libs} 
 	tmatrix-cpp tmatrix-fortran
-	${Boost_REGEX_LIBRARY}	
-	${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} 
-	${PCL_SEGMENTATION_LIBRARIES} ${PCL_SURFACE_LIBRARIES})
+	${Boost_REGEX_LIBRARY}
+	${QHULL_LIBRARIES}
+	)
+	#	${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} 
+	#	${PCL_SEGMENTATION_LIBRARIES} ${PCL_SURFACE_LIBRARIES})
 target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 

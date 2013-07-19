@@ -141,7 +141,7 @@ set(rtmath_ddscat-files
 	src/ddVersions.cpp
 	src/ddweights.cpp
 	src/dielTabFile.cpp
-	src/hulls.cpp
+	#src/hulls.cpp
 	# src/mtab.cpp
 	#	src/pclstuff.cpp
 	src/rotations.cpp
@@ -153,7 +153,7 @@ set(rtmath_ddscat-files
 	src/shapes_serialization.cpp
 	src/shapestats.cpp
 	src/shapestats_serialization.cpp
-	src/shapestats_genstats.cpp
+	#src/shapestats_genstats.cpp
 	src/shapestatsRotated.cpp
 	src/shapestatsRotated_serialization.cpp
 	src/shapes-generators.cpp

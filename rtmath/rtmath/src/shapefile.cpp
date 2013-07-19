@@ -55,11 +55,14 @@ namespace rtmath {
 
 		HASH_t shapefile::hash() const
 		{
-			std::string res;
-			std::ostringstream out;
-			write(out);
-			res = out.str();
-			this->_localhash = HASH(res.c_str(),res.size());
+			if (numPoints)
+			{
+				std::string res;
+				std::ostringstream out;
+				write(out);
+				res = out.str();
+				this->_localhash = HASH(res.c_str(),res.size());
+			}
 			return this->_localhash;
 		}
 
