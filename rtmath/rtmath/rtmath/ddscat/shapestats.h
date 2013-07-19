@@ -22,6 +22,7 @@ namespace rtmath {
 
 namespace boost { namespace program_options { 
 	class options_description; class variables_map; } }
+namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath {
 	namespace ddscat {
@@ -138,9 +139,18 @@ namespace rtmath {
 				boost::program_options::options_description &config,
 				boost::program_options::options_description &hidden);
 			/// Processes static options defined in add_options
+			/// \todo Add processor for non-static options
 			static void process_static_options(
 				boost::program_options::variables_map &vm);
-			/// 
+			/**
+			 * \brief Retrieve the base hash paths
+			 *
+			 * \item pHashShapes is the base shape hash directory
+			 * \item pHashStats is the base stats hash directory
+			 **/
+			static void getHashPaths(
+				boost::filesystem::path &pHashShapes,
+				boost::filesystem::path &pHashStats);
 
 		private:
 			friend class ::boost::serialization::access;

@@ -2,70 +2,47 @@
 /* defs.h - Header containing typedefs and other defines for many things */
 #include <cstdint>
 #include <cmath>
+#include <iostream>
+#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+//#include <boost/filesystem.hpp>
+
+namespace boost {namespace filesystem { class path; } }
 
 namespace rtmath {
 
 	/// Used for hashing
-	struct UINT128 {
+	class UINT128 {
+	public:
 		uint64_t lower;
 		uint64_t upper;
+		inline bool operator<(const UINT128 &rhs) const
+		{
+			if (upper != rhs.upper) return upper < rhs.upper;
+			if (lower != rhs.lower) return lower < rhs.lower;
+			return false;
+		}
+	private:
+		friend class ::boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version);
 	};
 
-//#define LARGEHASH
-
-	/// Hash type definitions based on architecture
-//#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
 	typedef UINT128 HASH_t;
-//#else
-//	typedef uint32_t HASH_t;
-//#endif
-
-	/// Hash function definitions based on architecture
-	/// Both MurmurHash3 functions take the same arguments in the same order
-	/// void MurmurHash3_...  ( const void * key, int len, uint32_t seed, void * out );
-//#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
-//#define HASH MurmurHash3_x64_128
-//#else
-//#define HASH MurmurHash3_x86_32
-//#endif
-
 #define HASHSEED 2387213
 
-HASH_t HASH(const void *key, int len);
+	/// Wrapper function that calculates the hash of an object (key) with length (len).
+	HASH_t HASH(const void *key, int len);
 
-//#if (defined(_M_X64) || defined(__amd64)) && defined(LARGEHASH)
-	struct hashcomp
-	{
-		bool operator() (const HASH_t &lhs, const HASH_t &rhs) const
-		{
-			//if ( (lhs.upper + lhs.lower) > (rhs.upper + rhs.lower) ) return true; // another way of comparing
-			if (lhs.upper != rhs.upper) return lhs.upper < rhs.upper;
-			if (lhs.lower != rhs.lower) return lhs.lower < rhs.lower;
-			return false;
-		}
-	};
-/*
-#else
-	struct hashcomp
-	{
-		bool operator() (const HASH_t &lhs, const HASH_t &rhs) const
-		{
-			if (lhs != rhs) return lhs < rhs;
-			return false;
-		}
-	};
-#endif
-*/
-}
+	/// \brief Function to find a hash in a directory hash structure.
+	/// Does not modify hash tree structure.
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash);
+	/// \brief Function to determine where a new hash should be stored in a hash path.
+	/// May create new subhash folders.
+	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash);
 
-namespace boost
-{
-	namespace serialization
-	{
-		template <class Archive>
-		void serialize(Archive&, rtmath::UINT128&, const unsigned int);
-	}
 }
 
 BOOST_CLASS_EXPORT_KEY(rtmath::UINT128);
+
+

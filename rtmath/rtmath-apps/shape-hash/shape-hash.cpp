@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
 			options(oall).positional(p).run(), vm);
-		po::notify(vm);    
+		po::notify(vm);
 
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
@@ -72,6 +72,9 @@ int main(int argc, char** argv)
 
 		bool doShapes = vm["do-shapes"].as<bool>();
 		bool doStats = vm["do-stats"].as<bool>();
+
+		boost::filesystem::path pShapeDir, pStatsDir;
+		ddscat::shapeFileStats::getHashPaths(pShapeDir, pStatsDir);
 
 		vector<string> inputs = vm["input"].as< vector<string> >();
 		if (vm.count("input"))
@@ -108,19 +111,16 @@ int main(int argc, char** argv)
 				cerr << "\tCreating hashed shape file.\n";
 				/// \todo See if hard-linking is possible
 				// For now, just do a file write
-				path pShapeHashed = pShapeDir / pHashName;
-				std::string a,b;
-				if (!Ryan_Serialization::detect_compressed(pShapeHashed.string(), 
-					a, b))
+				path pShapeHashed = storeHash(pShapeDir, hash);
+				if (!Ryan_Serialization::detect_compressed(pShapeHashed.string()))
 					shp.write(pShapeHashed.string(), true);
 				else cerr << "\tShape file hash already exists.\n";
 			}
 			if (doStats)
 			{
-				path pStatsHashed = pStatsDir / pHashName;
-				std::string a, b;
+				path pStatsHashed = storeHash(pStatsDir,hash);
 				rtmath::ddscat::shapeFileStats sstats;
-				if (Ryan_Serialization::detect_compressed(pStatsHashed.string(), a, b))
+				if (Ryan_Serialization::detect_compressed(pStatsHashed.string()))
 				{
 					std::cerr << "\tStats file with hash already exists. Appending.\n";
 					Ryan_Serialization::read<rtmath::ddscat::shapeFileStats>

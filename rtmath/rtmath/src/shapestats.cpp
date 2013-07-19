@@ -316,8 +316,6 @@ namespace rtmath {
 
 		bool shapeFileStatsBase::load()
 		{
-			std::string a,b; // Dummy vars
-
 			// Return true if shape is loaded or can be loaded (and load it)
 			// Return false if shape CANNOT be loaded
 			if (_shp->latticePts.size() ) return true;
@@ -327,11 +325,14 @@ namespace rtmath {
 			// Reload initial stats file by 1) hash or 2) filename
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
-			path pHashShape = pHashShapes / boost::lexical_cast<std::string>(_shp->hash().lower);
-			if (Ryan_Serialization::detect_compressed(pHashShape.string(), a, b))
+			path pHashShape = findHash(pHashShapes, _shp->hash());
+			if (!pHashShape.empty())
 				nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
+			//path pHashShape = pHashShapes / boost::lexical_cast<std::string>(_shp->hash().lower);
+			//if (Ryan_Serialization::detect_compressed(pHashShape.string()))
+			//	nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
 			//else if (boost::filesystem::exists(boost::filesystem::path(_shp->filename)))
-			else if (Ryan_Serialization::detect_compressed(_shp->filename, a, b))
+			else if (Ryan_Serialization::detect_compressed(_shp->filename))
 				nshp = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
 			else
 				return false;
@@ -339,23 +340,30 @@ namespace rtmath {
 			return true;
 		}
 
+		void shapeFileStats::getHashPaths(
+			boost::filesystem::path &HashShapes,
+			boost::filesystem::path &HashStats)
+		{
+			HashShapes = pHashShapes;
+			HashStats = pHashStats;
+		}
+
 		boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
 			const std::string &shpfile, const std::string &statsfile)
 		{
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
-			std::string a,b; // Dummy vars
 
 			boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
 
 			// Preferentially use the local file, if it exists
-			if (Ryan_Serialization::detect_compressed(statsfile, a, b))
+			if (Ryan_Serialization::detect_compressed(statsfile))
 			//if (exists(path(statsfile)))
 			{
 				::Ryan_Serialization::read<shapeFileStats>(*res, statsfile, "rtmath::ddscat::shapeFileStats");
 				return res;
 			}
-			
+
 			// Local file does not exist. Does it exist in the hash database?
 			// Generate basic stats for a file.
 			rtmath::ddscat::shapefile shp(shpfile);
@@ -365,14 +373,15 @@ namespace rtmath {
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
 
-			path pHashShape = pHashShapes / boost::lexical_cast<std::string>(shp.hash().lower);
-			if (!Ryan_Serialization::detect_compressed(pHashShape.string(), 
-				a, b) && autoHashShapes)
+			path pHashShape = storeHash(pHashShapes,shp.hash());
+			//pHashShapes / boost::lexical_cast<std::string>(shp.hash().lower);
+			if (!Ryan_Serialization::detect_compressed(pHashShape.string()) && autoHashShapes)
 			{
 				shp.write(pHashShape.string(), true);
 			}
-			path pHashStat = pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
-			if (Ryan_Serialization::detect_compressed(pHashShape.string(), a, b))
+			path pHashStat = storeHash(pHashStats,shp.hash());
+			//pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
+			if (Ryan_Serialization::detect_compressed(pHashStat.string()))
 				::Ryan_Serialization::read<shapeFileStats>(*res, pHashStat.string(), "rtmath::ddscat::shapeFileStats");
 			else
 			{
@@ -467,7 +476,7 @@ namespace rtmath {
 			defaultRots.clear();
 			for (auto beta : betas) for (auto theta : thetas) for (auto phi : phis)
 				defaultRots.push_back(boost::tuple<double,double,double>(beta,theta,phi));
-			
+
 			// Validate paths
 			auto validateDir = [&](path p) -> bool
 			{
