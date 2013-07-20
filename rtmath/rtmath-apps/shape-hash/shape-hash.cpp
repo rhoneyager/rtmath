@@ -47,6 +47,7 @@ int main(int argc, char** argv)
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		Ryan_Serialization::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
+		Ryan_Serialization::process_static_options(vm);
 		ddscat::shapeFileStats::process_static_options(vm);
 
 		bool doShapes = vm["do-shapes"].as<bool>();
