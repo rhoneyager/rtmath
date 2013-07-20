@@ -186,20 +186,21 @@ namespace rtmath {
 
 			//Eigen::Vector3f crdsm, crdsi; // point location and diel entries
 			set<size_t> mediaIds;
-			size_t posa = 0, posb = 0; //pend+1;
+			//size_t posa = 0, posb = 0; //pend+1;
 			// Load in the lattice points through iteration and macro.h-based double extraction
 			for (size_t i=0; i< numPoints; i++)
 			{
 				string in;
 				std::getline(iin,in);
+				size_t posa = 0, posb = 0; //pend+1;
 				auto crdsm = latticePts.block<1,3>(i,0);
 				auto crdsi = latticePtsRi.block<1,3>(i,0);
 				for (size_t j=0; j<7; j++)
 				{
 					// Seek to first nonspace character
-					posa = in.find_first_not_of(" \t\n", posb);
+					posa = in.find_first_not_of(" \t\n\0", posb);
 					// Find first space after this position
-					posb = in.find_first_of(" \t\n", posa);
+					posb = in.find_first_of(" \t\n\0", posa);
 					size_t len = posb - posa;
 					float val;
 					val = (float) rtmath::macros::m_atof(&(in.data()[posa]),len);
