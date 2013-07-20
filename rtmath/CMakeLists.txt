@@ -164,10 +164,7 @@ ENDIF()
 # Enable C++11
 # g++
 IF(CMAKE_COMPILER_IS_GNUCXX)
-	if ("${COMMON_CFLAGS}" MATCHES "0x")
-	else()
-		SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++11)
-	endif()
+	SET (COMMON_CFLAGS ${COMMON_CFLAGS} -std=c++11)
 ENDIF()
 
 IF(MSVC)

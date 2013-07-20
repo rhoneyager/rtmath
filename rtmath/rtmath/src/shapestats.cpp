@@ -218,10 +218,11 @@ namespace rtmath {
 
 			// Figure out diameter of smallest circumscribing sphere
 			/// \todo Find max diameter based on the convex hull points!
-			auto fMaxDiameter = [&](const Eigen::Matrix<float, 3, Eigen::Dynamic> &base) -> double
+			auto fMaxDiameter = [](const Eigen::Matrix<float, Eigen::Dynamic, 3> &base) -> double
 			{
 				double maxD = 0;
 				size_t a = 0, b = 0;
+				//std::cerr << "Rows: " << base.rows() << " cols: " << base.cols() << std::endl;
 
 				for (size_t i = 0; i < (size_t) base.cols(); i++)
 				{
