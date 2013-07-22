@@ -24,32 +24,19 @@
 #include "../rtmath/ddscat/hulls.h"
 #include "../rtmath/error/error.h"
 
-namespace
-{
-	/*
-	void writeVTKpoints(const std::string &filename, const vtkSmartPointer< vtkPoints > &src)
-	{
-	vtkSmartPointer<vtkXMLUnstructuredDataWriter> pointsWriter = 
-	vtkSmartPointer<vtkXMLUnstructuredDataWriter>::New();
-	pointsWriter->SetFileName(filename.c_str());
-	pointsWriter->SetInput(src);
-	pointsWriter->Write();
-	}*/
-
-	void writeVTKpolys(const std::string &filename, const vtkSmartPointer< vtkPolyData > &src)
-	{
-		vtkSmartPointer<vtkXMLPolyDataWriter> pointsWriter = 
-			vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-		pointsWriter->SetFileName(filename.c_str());
-		pointsWriter->SetInput(src);
-		pointsWriter->Write();
-	}
-}
-
 namespace rtmath
 {
 	namespace ddscat
 	{
+		void writeVTKpolys(const std::string &filename, const vtkSmartPointer< vtkPolyData > &src)
+		{
+			vtkSmartPointer<vtkXMLPolyDataWriter> pointsWriter = 
+				vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+			pointsWriter->SetFileName(filename.c_str());
+			pointsWriter->SetInput(src);
+			pointsWriter->Write();
+		}
+
 		class hullData
 		{
 		public:
@@ -153,7 +140,9 @@ namespace rtmath
 			_p->vproj = massFilter->GetVolumeProjected();
 
 			_p->hullPts = surfaceFilter->GetOutput()->GetPoints();
-			_p->polygons->SetPoints(_p->hullPts);
+			_p->polygons = hullFilter->GetOutput();
+			//_p->polygons->SetPolys(surfaceFilter->GetOutput()->GetPolys());
+			//_p->polygons->SetPoints(_p->hullPts);
 
 			// Just calculate the max diameter here
 			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base) -> double

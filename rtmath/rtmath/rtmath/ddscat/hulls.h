@@ -12,8 +12,9 @@ namespace rtmath
 {
 	namespace ddscat
 	{
-
-		//void writeVTKpoints(const std::string &filename, const pcl::PointCloud<pcl::PointXYZ> &src);
+		// This requires vtk
+		//void writeVTKpolys(const std::string &filename, 
+		//	const vtkSmartPointer< vtkPolyData > &src);
 
 		class hullData;
 
