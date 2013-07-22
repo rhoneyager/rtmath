@@ -22,9 +22,16 @@ namespace rtmath
 		public:
 			hull(const Eigen::Matrix<float, Eigen::Dynamic, 3> &backend);
 			virtual ~hull() {}
+			/// Write raw input points and polygons
+			void writeVTKraw(const std::string &filename) const;
+			/// Write hull points and ploygons
 			void writeVTKhull(const std::string &filename) const;
+			/// Hull volume
 			double volume() const;
+			/// Hull surface area
 			double surfaceArea() const;
+			/// Max distance between two points in hull
+			double maxDiameter() const;
 		protected:
 			boost::shared_ptr<hullData> _p;
 		public:
@@ -36,9 +43,9 @@ namespace rtmath
 		public:
 			convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>&);
 			virtual ~convexHull() {}
+			/// Construct the convex hull, and populate the quantities
+			/// \todo Invoke in constructor
 			void constructHull();
-			double maxDiameter() const;
-			double maxDiameter(Eigen::Matrix<float, 2, 3> &range) const;
 		};
 
 		/*

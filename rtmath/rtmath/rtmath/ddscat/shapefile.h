@@ -40,7 +40,10 @@ namespace rtmath {
 			/// automatically compressed. Specifying a compressed output filename 
 			/// always forces compression.
 			void write(const std::string &fname, bool autoCompress = false) const;
+			/// Write a shapefile to a stream (no compression)
 			void write(std::ostream &out) const;
+			/// Export a shapefile to vtk output
+			void writeVTK(const std::string &fname) const;
 			shapefile();
 		private:
 			void _init();
@@ -80,8 +83,6 @@ namespace rtmath {
 			friend class convexHull;
 			
 		};
-
-
 	}
 }
 

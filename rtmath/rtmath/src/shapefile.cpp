@@ -7,6 +7,8 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <cmath>
+//#include <boost/chrono.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/interprocess/file_mapping.hpp>
@@ -15,12 +17,11 @@
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <Ryan_Serialization/serialization.h>
 
-//#include <boost/chrono.hpp>
-#include <cmath>
+#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
 #include "../rtmath/ddscat/shapefile.h"
+#include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
 #include "../rtmath/error/error.h"
 
 namespace rtmath {
@@ -61,7 +62,7 @@ namespace rtmath {
 				std::ostringstream out;
 				write(out);
 				res = out.str();
-				this->_localhash = HASH(res.c_str(),res.size());
+				this->_localhash = HASH(res.c_str(),(int) res.size());
 			}
 			return this->_localhash;
 		}
@@ -286,6 +287,12 @@ namespace rtmath {
 			print(out);
 		}
 
+		void shapefile::writeVTK(const std::string &fname) const
+		{
+			rtmath::ddscat::convexHull hull(latticePtsStd);
+			hull.writeVTKraw(fname);
+		}
+
 		void shapefile::write(const std::string &filename, bool autoCompress) const
 		{
 			using namespace Ryan_Serialization;
@@ -300,6 +307,8 @@ namespace rtmath {
 				Ryan_Serialization::select_compression(filename, cmeth);
 			/// \todo Ryan_Serialization::select_compression should also return the compressed 
 			/// file name as an optional parameter.
+
+			/// \todo Check file extension for a vtk file, and save points and surface
 			outfile << filename;
 			if (cmeth.size()) outfile << "." << cmeth;
 			std::string soutfile = outfile.str();

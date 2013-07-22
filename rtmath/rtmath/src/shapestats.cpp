@@ -275,7 +275,7 @@ namespace rtmath {
 		{
 			// Return true if shape is loaded or can be loaded (and load it)
 			// Return false if shape CANNOT be loaded
-			if (_shp->latticePts.size() ) return true;
+			if (_shp->latticePts.rows() ) return true;
 
 			boost::shared_ptr<shapefile> nshp;
 

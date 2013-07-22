@@ -97,9 +97,14 @@ namespace rtmath
 			_p->rawpolygons->SetPoints(_p->points);
 		}
 
-		void hull::writeVTKhull(const std::string &filename) const
+		void hull::writeVTKraw(const std::string &filename) const
 		{
 			writeVTKpolys(filename, _p->rawpolygons);
+		}
+
+		void hull::writeVTKhull(const std::string &filename) const
+		{
+			writeVTKpolys(filename, _p->polygons);
 		}
 
 		//convexHull::convexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
@@ -148,6 +153,7 @@ namespace rtmath
 			_p->vproj = massFilter->GetVolumeProjected();
 
 			_p->hullPts = surfaceFilter->GetOutput()->GetPoints();
+			_p->polygons->SetPoints(_p->hullPts);
 
 			// Just calculate the max diameter here
 			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base) -> double
@@ -183,7 +189,7 @@ namespace rtmath
 			_p->diameter = fMaxDiameter(_p->hullPts);
 		}
 
-		double convexHull::maxDiameter() const { return _p->diameter; }
+		double hull::maxDiameter() const { return _p->diameter; }
 
 		double hull::volume() const { return _p->volume; }
 
