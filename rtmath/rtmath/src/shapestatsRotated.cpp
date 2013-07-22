@@ -25,6 +25,15 @@
 namespace rtmath {
 	namespace ddscat {
 
+		const unsigned int shapeFileStatsRotated::_maxVersion = SHAPESTATS_ROTATED_VERSION;
+		
+		bool shapeFileStatsRotated::needsUpgrade() const
+		{
+			// Standard case
+			if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
+			return false;
+		}
+
 		boost::shared_ptr<const shapeFileStatsRotated> shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi)
 		{
 			boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
@@ -299,12 +308,8 @@ namespace rtmath {
 		}
 
 
-		shapeFileStatsRotated::shapeFileStatsRotated()
-		{
-			this->beta = 0;
-			this->theta = 0;
-			this->phi = 0;
-		}
+		shapeFileStatsRotated::shapeFileStatsRotated() : 
+			beta(0), theta(0), phi(0), _currVersion(-1) { }
 
 		shapeFileStatsRotated::~shapeFileStatsRotated() { }
 

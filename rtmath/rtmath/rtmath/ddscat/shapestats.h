@@ -34,7 +34,7 @@ namespace rtmath {
 
 		/*
 		 * Version history:
-		 * 2 - qhull disabled, to remove pcl dependence. Hence, all qhull-derived terms are zero
+		 * 2 - removed qhull_enabled flag, as vtk convex hulls are now used
 		 * 1 - added qhull enabled / disabled flag when recording calculations
 		 * 0 - 
 		 */
@@ -85,7 +85,6 @@ namespace rtmath {
 
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;
-			bool qhull_enabled;
 
 			// Before normalization and rotation
 			Eigen::Vector3f b_min, b_max, b_mean;
@@ -97,7 +96,6 @@ namespace rtmath {
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		protected:
 			shapeFileStatsBase();
-			bool _valid;
 
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -124,8 +122,6 @@ namespace rtmath {
 			/// \note Reads and writes to hash database for precomputed stats
 			static boost::shared_ptr<shapeFileStats> genStats(
 				const std::string &shpfile, const std::string &statsfile = "");
-			static void doQhull(bool);
-			static bool doQhull();
 
 			/**
 			 * \brief Adds passes shapestats options to a program

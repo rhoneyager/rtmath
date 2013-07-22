@@ -14,6 +14,7 @@ namespace rtmath
 		template <class Archive>
 		void shapeFileStatsRotated::serialize(Archive & ar, const unsigned int version)
 		{
+			_currVersion = version;
 			using boost::serialization::make_nvp;
 			ar & make_nvp("beta", beta);
 			ar & make_nvp("theta", theta);

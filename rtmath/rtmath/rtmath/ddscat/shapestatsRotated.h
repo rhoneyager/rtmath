@@ -8,6 +8,7 @@
 #include <Eigen/StdVector>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
 
 namespace rtmath {
 	namespace ddscat {
@@ -49,9 +50,20 @@ namespace rtmath {
 
 			// Cross-sectional areas
 			Eigen::Vector3f areas;
+
+			/// Should the stats be recalculated in the newest version?
+			bool needsUpgrade() const;
+		private:
+			static const unsigned int _maxVersion;
+			unsigned int _currVersion;
+		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
 	}
 }
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapeFileStatsRotated);
+
+#define SHAPESTATS_ROTATED_VERSION 2
+BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsRotated, SHAPESTATS_ROTATED_VERSION);
+

@@ -20,6 +20,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <limits>
 #include <Eigen/Dense>
 
 #include <Ryan_Serialization/serialization.h>
@@ -35,8 +36,6 @@
 #include "../rtmath/error/error.h"
 
 namespace {
-	/// \todo Reenable qhull bindings
-	bool _doQhull = false;
 	std::vector<boost::tuple<double, double, double> > defaultRots;
 	boost::filesystem::path pHashShapes, pHashStats;
 	bool autoHashShapes = false;
@@ -69,16 +68,6 @@ namespace rtmath {
 			calcStatsBase();
 		}
 
-		bool shapeFileStats::doQhull()
-		{
-			return _doQhull;
-		}
-
-		void shapeFileStats::doQhull(bool val)
-		{
-			_doQhull = val;
-		}
-
 		shapeFileStats::shapeFileStats() { }
 
 		shapeFileStatsBase::shapeFileStatsBase()
@@ -109,10 +98,7 @@ namespace rtmath {
 			f_ellipsoid_max = 0;
 			f_ellipsoid_rms = 0;
 
-			_currVersion = _maxVersion;
-			_valid = false;
-			/// \todo Reenable qhull
-			qhull_enabled = false; //shapeFileStats::doQhull();
+			_currVersion = -1;
 
 			// Need to fill with something for serialization to work with
 			//_shp = boost::shared_ptr<shapefile>(new shapefile);
@@ -216,62 +202,20 @@ namespace rtmath {
 			b_mean(1) = boost::accumulators::mean(m_y);
 			b_mean(2) = boost::accumulators::mean(m_z);
 
-			// Figure out diameter of smallest circumscribing sphere
-			/// \todo Find max diameter based on the convex hull points!
-			auto fMaxDiameter = [](const Eigen::Matrix<float, Eigen::Dynamic, 3> &base) -> double
-			{
-				double maxD = 0;
-				size_t a = 0, b = 0;
-				//std::cerr << "Rows: " << base.rows() << " cols: " << base.cols() << std::endl;
-
-				for (size_t i = 0; i < (size_t) base.cols(); i++)
-				{
-					auto it = base.block<1,3>(i,0);
-					
-					for (size_t j=0; j<(size_t) base.cols(); j++)
-					{
-						auto ot = base.block<1,3>(j,0);
-						float d = pow(it(0)-ot(0),2.f)
-							+ pow(it(1)-ot(1),2.f)
-							+ pow(it(2)-ot(2),2.f);
-						if (d > maxD)
-						{
-							maxD = d;
-							a = i;
-							b = j;
-						}
-					}
-				}
-
-				return sqrt(maxD);
-			};
-
-
-			/*
 			convexHull cvHull(_shp->latticePtsStd);
-			if (qhull_enabled)
-			{
-				cvHull.constructHull();
-			} else {
-				cvHull.hullEnabled(false);
-			}
+			cvHull.constructHull();
 			max_distance = cvHull.maxDiameter();
-			*/
-			max_distance = fMaxDiameter(_shp->latticePtsStd);
-
+			
 			a_circum_sphere = max_distance / 2.0;
 			V_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,3.0f) / 3.0f;
 			SA_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,2.0f);
 
-			/// \todo Reenable convex hull code
-			//V_convex_hull = cvHull.volume();
+			V_convex_hull = cvHull.volume();
 			aeff_V_convex_hull = pow(3.0 * V_convex_hull / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
-			//SA_convex_hull = cvHull.surfaceArea();
+			SA_convex_hull = cvHull.surfaceArea();
 			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0f * boost::math::constants::pi<float>()),0.5);
 
 			_currVersion = _maxVersion;
-			_valid = true;
-
 
 			// Calculate rotated stats to avoid having to duplicate code
 			// From the 0,0,0 rotation,
@@ -280,14 +224,16 @@ namespace rtmath {
 				auto pdr = calcStatsRot(0,0,0);
 				V_ellipsoid_max = boost::math::constants::pi<float>() / 6.0f;
 				// Using diameters, and factor in prev line reflects this
-				V_ellipsoid_max *= pdr->max(0) - pdr->min(0);
-				V_ellipsoid_max *= pdr->max(1) - pdr->min(1);
-				V_ellipsoid_max *= pdr->max(2) - pdr->min(2);
+
+				/// \todo Check V_ellipsoid_max and V_ellipsoid_rms calculations!
+				V_ellipsoid_max *= pdr->max(0,0) - pdr->min(0,0);
+				V_ellipsoid_max *= pdr->max(0,1) - pdr->min(0,1);
+				V_ellipsoid_max *= pdr->max(0,2) - pdr->min(0,2);
 
 				V_ellipsoid_rms = 4.0f * boost::math::constants::pi<float>() / 3.0f;
-				V_ellipsoid_max *= pdr->max(0) - pdr->min(0);
-				V_ellipsoid_max *= pdr->max(1) - pdr->min(1);
-				V_ellipsoid_max *= pdr->max(2) - pdr->min(2);
+				V_ellipsoid_rms *= pdr->max(0,0) - pdr->min(0,0);
+				V_ellipsoid_rms *= pdr->max(0,1) - pdr->min(0,1);
+				V_ellipsoid_rms *= pdr->max(0,2) - pdr->min(0,2);
 
 				aeff_ellipsoid_max = pow(3.0f * V_ellipsoid_max / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
 				aeff_ellipsoid_rms = pow(3.0f * V_ellipsoid_rms / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
@@ -295,10 +241,22 @@ namespace rtmath {
 
 			// Volume fractions
 			f_circum_sphere = V_dipoles_const / V_circum_sphere;
-			f_convex_hull = (V_convex_hull) ? V_dipoles_const / V_convex_hull : -1.f;
+			f_convex_hull = V_dipoles_const / V_convex_hull;
 			f_ellipsoid_max = V_dipoles_const / V_ellipsoid_max;
 			f_ellipsoid_rms = V_dipoles_const / V_ellipsoid_rms;
 
+			auto fCheck = [](float &val)
+			{
+				// Chech for indeterminacy
+				if (val != val) val = -1.f;
+				if (fabs(val) == std::numeric_limits<float>::infinity()) val = -1.f;
+			};
+
+			fCheck(f_circum_sphere);
+			fCheck(f_convex_hull);
+			fCheck(f_ellipsoid_max);
+			fCheck(f_ellipsoid_rms);
+			
 			// Calculate all default (from config or command-line) rotations
 			for (auto rot : defaultRots)
 			{
@@ -308,8 +266,6 @@ namespace rtmath {
 
 		bool shapeFileStats::needsUpgrade() const
 		{
-			// No need to upgrade from 1->2. Qhull disabled, and this calc should be preserved.
-			if (_currVersion == 1 && _maxVersion == 2) return false;
 			// Standard case
 			if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
 			return false;
@@ -416,7 +372,10 @@ namespace rtmath {
 			rotations.clear();
 			for (auto rot : oldRotations)
 			{
-				calcStatsRot(rot->beta, rot->theta, rot->phi);
+				if (rot->needsUpgrade())
+					calcStatsRot(rot->beta, rot->theta, rot->phi);
+				else
+					rotations.insert(rot);
 			}
 
 		}
@@ -448,7 +407,6 @@ namespace rtmath {
 			/// \todo make do-hash-* static, with automatic shape and stat writing on read?
 
 			hidden.add_options()
-				("disable-qhull", "Disable qhull calculations for the stats") // static option
 				;
 		}
 
@@ -458,8 +416,6 @@ namespace rtmath {
 			namespace po = boost::program_options;
 			using std::string;
 			using boost::filesystem::path;
-
-			if (vm.count("disable-qhull")) doQhull(false);
 
 			initPaths();
 			if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());

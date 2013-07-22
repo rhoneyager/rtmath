@@ -33,11 +33,15 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("V_dipoles_const", V_dipoles_const);
 			ar & boost::serialization::make_nvp("aeff_dipoles_const", aeff_dipoles_const);
 
+			if (version < 2)
+			{
+				bool qhull_enabled;
+				ar & boost::serialization::make_nvp("qhull_enabled", qhull_enabled);
+			}
+
 			switch (version)
 			{
 			default:
-			case 1:
-				ar & boost::serialization::make_nvp("qhull_enabled", qhull_enabled);
 			case 0:
 				ar & boost::serialization::make_nvp("max_distance", max_distance);
 				ar & boost::serialization::make_nvp("a_circum_sphere", a_circum_sphere);
@@ -53,7 +57,7 @@ namespace rtmath
 				ar & boost::serialization::make_nvp("aeff_ellipsoid_rms", aeff_ellipsoid_rms);
 				ar & boost::serialization::make_nvp("f_circum_sphere", f_circum_sphere);
 				ar & boost::serialization::make_nvp("f_convex_hull", f_convex_hull);
-				//ar & boost::serialization::make_nvp("f_ellipsoid_max", f_ellipsoid_max);
+				ar & boost::serialization::make_nvp("f_ellipsoid_max", f_ellipsoid_max);
 				ar & boost::serialization::make_nvp("f_ellipsoid_rms", f_ellipsoid_rms);
 				break;
 			}
