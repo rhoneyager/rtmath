@@ -186,9 +186,7 @@ int main(int argc, char** argv)
 			("ignore-prefix-length", po::value<size_t>()->default_value(0), 
 			 "Ignore the first n characters in the filename")
 			("use-parent", po::value<bool>()->default_value(true), "Prepend parent path for id matching")
-			//("root", "Indicates that ROOT output is also desired")
-
-			("disable-qhull", "Disable qhull calculations for the shapes.");
+			;
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -199,9 +197,6 @@ int main(int argc, char** argv)
 			cerr << desc << "\n";
 			return 1;
 		}
-
-		if (vm.count("disable-qhull"))
-			rtmath::ddscat::shapeFileStats::doQhull(false);
 
 		size_t ignore_prefix_length = vm["ignore-prefix-length"].as<size_t>();
 		bool prependParent = vm["use-parent"].as<bool>();

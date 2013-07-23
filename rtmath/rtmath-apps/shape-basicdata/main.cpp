@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
 			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations")
 			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations")
-			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites.");
+			;
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -121,9 +121,6 @@ int main(int argc, char** argv)
 			cerr << desc << "\n";
 			return 1;
 		}
-
-		if (vm.count("disable-qhull"))
-			rtmath::ddscat::shapeFileStats::doQhull(false);
 
 		double dSpacing = 0;
 		if (vm.count("dipole-spacing")) 

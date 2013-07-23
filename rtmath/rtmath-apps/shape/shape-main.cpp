@@ -47,30 +47,34 @@ int main(int argc, char** argv)
 		po::positional_options_description p;
 		p.add("input", -1);
 
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
+			config("Config options"), hidden("Hidden options"), oall("all options");
+		ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		Ryan_Serialization::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("trial-run,T", "Only list what would be done")
 			("input,i", po::value< vector<string> >(), "input shape files")
 			("output,o", po::value<string>(), "output filename")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
-			("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations")
-			("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations")
-			("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations")
-			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites.");
+			;
+
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
-		po::notify(vm);    
+			options(oall).positional(p).run(), vm);
+		po::notify(vm);
 
 		if (vm.count("help") || argc == 1) {
 			cerr << desc << "\n";
 			return 1;
 		}
 
-		if (vm.count("disable-qhull"))
-			rtmath::ddscat::shapeFileStats::doQhull(false);
+		Ryan_Serialization::process_static_options(vm);
+		ddscat::shapeFileStats::process_static_options(vm);
 
 		vector<string> inputs = vm["input"].as< vector<string> >();
 		if (vm.count("input"))
@@ -87,7 +91,7 @@ int main(int argc, char** argv)
 		// No vectors! They are hard to detect before readins, leading to input stream errors.
 		bool sepOutputs = true;
 		//if (vm.count("separate-outputs")) sepOutputs = true;
-		
+
 		string output; 
 		if (!sepOutputs)
 		{
@@ -126,6 +130,7 @@ int main(int argc, char** argv)
 		}
 
 		// Specify beta, theta, phi rotations
+		/*
 		string sbeta = vm["betas"].as<string>();
 		string stheta = vm["thetas"].as<string>();
 		string sphi = vm["phis"].as<string>();
@@ -145,8 +150,8 @@ int main(int argc, char** argv)
 		for (auto it = phis.begin(); it != phis.end(); it++)
 			cerr << *it << " ";
 		cerr << endl;
+		*/
 
-		
 
 		if (vm.count("trial-run")) 
 		{
@@ -165,7 +170,8 @@ int main(int argc, char** argv)
 
 			cerr << "\tCalculating baseline statistics" << endl;
 			rtmath::ddscat::shapeFileStats sstats(shp);
-			sstats.calcStatsBase();
+			//sstats.calcStatsBase();
+			/*
 			for (auto beta = betas.begin(); beta != betas.end(); beta++)
 			{
 				for (auto theta = thetas.begin(); theta != thetas.end(); theta++)
@@ -178,7 +184,8 @@ int main(int argc, char** argv)
 					}
 				}
 			}
-			
+			*/
+
 			if (sepOutputs)
 			{
 				//vector<rtmath::ddscat::shapeFileStats> singleStats;

@@ -106,7 +106,6 @@ int main(int argc, char** argv)
 			new rtmath::ddscat::shapefile(input));
 
 		// Find min / max of points using shapestats
-		//shapeFileStats::doQhull(false);
 		//boost::shared_ptr<const shapeFileStats> sstats = boost::shared_ptr<const shapeFileStats>(
 		//	new shapeFileStats(shp));
 

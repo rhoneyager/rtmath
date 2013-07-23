@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 			 "Override dipole spacing to a fixed value (um)")
 			("dipole-spacing-file", po::value<string>(),
 			 "Get dipole spacings from the specified file. Useful in Liu conversions.")
-			("disable-qhull", "Disable qhull calculations for the shapes. Needed for Liu dendrites.")
 			("suffix", po::value<string>(), "Append suffix to generated files")
 			("nu,n", po::value<double>()->default_value(0.85), 
 			 "Specify nu for Sihvola")
@@ -94,9 +93,6 @@ int main(int argc, char *argv[])
 
 		if (vm.count("use-mie"))
 			useMie = true;
-
-		if (vm.count("disable-qhull")) qhull_enabled = false;
-		rtmath::ddscat::shapeFileStats::doQhull(qhull_enabled);
 
 		vector<string> inputs;
 		if (vm.count("shapefiles"))

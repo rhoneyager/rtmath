@@ -129,7 +129,6 @@ int main(int argc, char** argv)
 		if (vm.count("input"))
 		{
 			inshp.read(vm["input"].as<string>());
-			rtmath::ddscat::shapeFileStats::doQhull(false);
 			rtmath::ddscat::shapeFileStats inStats(inshp);
 			sx(inStats.b_min.get(2,0,0));
 			sx(inStats.b_max.get(2,0,0));
