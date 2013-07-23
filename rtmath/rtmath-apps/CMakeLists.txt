@@ -11,7 +11,7 @@ include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
 option (BUILD_APPS_DEPEND_PCL
 	"Build apps that depend on PCL"
-	OFF)
+	ON)
 
 #add_subdirectory (absorb-slab)
 #add_subdirectory (arm-index-files)
@@ -45,6 +45,7 @@ add_subdirectory (shape)
 #add_subdirectory (shape-combo)
 add_subdirectory (shape-hash)
 add_subdirectory (shape-hull)
+add_subdirectory (shape-rehash)
 if (BUILD_APPS_DEPEND_PCL)
 add_subdirectory (shape-hexplate)
 ##add_subdirectory (shape-rectprism)

@@ -37,10 +37,11 @@ namespace rtmath {
 	/// \brief Function to find a hash in a directory hash structure.
 	/// Does not modify hash tree structure.
 	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash);
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash);
 	/// \brief Function to determine where a new hash should be stored in a hash path.
 	/// May create new subhash folders.
 	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash);
-
+	boost::filesystem::path storeHash(const boost::filesystem::path &base, const std::string &hash);
 }
 
 BOOST_CLASS_EXPORT_KEY(rtmath::UINT128);

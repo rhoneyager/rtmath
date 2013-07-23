@@ -14,14 +14,14 @@
 
 namespace rtmath {
 
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash)
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash)
 	{
 		using namespace boost::filesystem;
 		using boost::lexical_cast;
 		using Ryan_Serialization::detect_compressed;
 		using std::string;
 
-		string sHashName = lexical_cast<string>(hash.lower);
+		string sHashName = hash;
 		string sHashStart = sHashName.substr(0,2);
 		path pHashName(sHashName);
 		path pHashStart(sHashStart);
@@ -37,14 +37,19 @@ namespace rtmath {
 		return path("");
 	}
 
-	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash)
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash)
+	{
+		return findHash(base, boost::lexical_cast<std::string>(hash.lower));
+	}
+
+	boost::filesystem::path storeHash(const boost::filesystem::path &base, const std::string &hash)
 	{
 		using namespace boost::filesystem;
 		using boost::lexical_cast;
 		using Ryan_Serialization::detect_compressed;
 		using std::string;
 
-		string sHashName = lexical_cast<string>(hash.lower);
+		string sHashName = hash;
 		string sHashStart = sHashName.substr(0,2);
 		path pHashName(sHashName);
 		path pHashStart(sHashStart);
@@ -56,6 +61,11 @@ namespace rtmath {
 			create_directory(base / pHashStart);
 
 		return base/pHashStart/pHashName;
+	}
+
+	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash)
+	{
+		return storeHash(base, boost::lexical_cast<std::string>(hash.lower));
 	}
 
 	HASH_t HASH(const void *key, int len)

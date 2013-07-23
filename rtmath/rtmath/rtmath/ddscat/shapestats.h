@@ -111,9 +111,9 @@ namespace rtmath {
 			shapeFileStats(const boost::shared_ptr<const shapefile> &shp);
 			/// Should the stats file be recalculated in the newest version?
 			bool needsUpgrade() const;
-		private:
 			/// Recalculate all stats, using the newest version of the code
 			void upgrade();
+		private:
 			/// Gets some initial path information from rtmath.conf
 			static void initPaths();
 		public:
