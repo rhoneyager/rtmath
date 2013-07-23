@@ -80,6 +80,7 @@ int main(int argc, char** argv)
 				recursive_directory_iterator(), back_inserter(cands));
 			for (const auto &f : cands)
 			{
+				if (is_directory(f)) continue;
 				std::string hash, meth;
 				Ryan_Serialization::uncompressed_name(f.string(), hash, meth);
 				hashes.push_back(hash);
