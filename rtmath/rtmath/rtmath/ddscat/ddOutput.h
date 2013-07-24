@@ -84,6 +84,15 @@ namespace rtmath {
 
 			/// Generate ddOutput from a set of files
 			/// Generate ddOutput from a set of ddOutputSingle
+			static boost::shared_ptr<ddOutput> generate(
+				boost::shared_ptr<ddOutputSingle> avg,
+				boost::shared_ptr<shapefile> shape,
+				std::set<boost::shared_ptr<ddOutputSingle> > sources);
+
+			/// Generate ddOutput from a .avg file and a shape only
+			static boost::shared_ptr<ddOutput> generate(
+				boost::shared_ptr<ddOutputSingle> avg,
+				boost::shared_ptr<shapefile> shape);
 		};
 
 		/*

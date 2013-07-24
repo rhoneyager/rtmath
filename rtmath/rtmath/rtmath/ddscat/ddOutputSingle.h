@@ -170,6 +170,11 @@ namespace rtmath {
 			/// Extract all scattering matrices. Used in ddscat-test.
 			void getScattMatrices(scattMatricesContainer&) const;
 
+			/// Count the scattering P matrices
+			size_t numP() const;
+			/// Count the scattering F matrices
+			size_t numF() const;
+
 			typedef std::map< std::string, boost::shared_ptr<ddOutputSingleObj> >
 				headerMap;
 			/// Extract all headers. Used in ddscat-test.

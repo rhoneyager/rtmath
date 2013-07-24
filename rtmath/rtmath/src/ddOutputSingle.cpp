@@ -677,6 +677,22 @@ namespace rtmath {
 			out.width(0);
 		}
 
+		size_t ddOutputSingle::numP() const
+		{
+			size_t i = 0;
+			for (const auto &m : _scattMatricesRaw)
+				if (m->id == rtmath::ddscat::P) ++i;
+			return i;
+		}
+
+		size_t ddOutputSingle::numF() const
+		{
+			size_t i = 0;
+			for (const auto &m : _scattMatricesRaw)
+				if (m->id == rtmath::ddscat::F) ++i;
+			return i;
+		}
+
 		void ddOutputSingle::getScattMatrices(scattMatricesContainer& c) const
 		{
 			c = _scattMatricesRaw;
