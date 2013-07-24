@@ -7,17 +7,39 @@
 #include <cstdio>
 #include <cstring>
 #include <complex>
-#include "../matrixop.h"
-#include "../phaseFunc.h"
-#include "ddOutputSingle.h"
-#include "ddScattMatrix.h"
-#include "ddweights.h"
-#include "../interpolatable.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/version.hpp>
+//#include "ddOutputSingle.h"
+//#include "ddScattMatrix.h"
+//#include "ddweights.h"
+#include "../hash.h"
 
 namespace rtmath {
 
 	namespace ddscat {
+		class ddOutputSingle;
+		class ddOutput;
+		class ddOutputEnsemble;
+		class shapefile;
+		class shapeFileStats;
 
+
+		/**
+		 * \brief The ensemble subclasses reweight the data to represent various ensemble schemes
+		 **/
+		class ddOutputEnsemble
+		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
+		public:
+			ddOutputEnsemble();
+		};
+
+		/*
 		// Not a child of ddOutputSingle, but a provider for ddOutput
 		// This class instead CREATES a ddOutputSingle that
 		// reflects the weighting distribution as-is (not updated if original
@@ -77,7 +99,11 @@ namespace rtmath {
 		private:
 			size_t _coord_varying;
 		};
+		*/
+	}
+}
 
-	} // end ddscat
-} // end rtmath
+
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputEnsemble);
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputEnsemble);
 

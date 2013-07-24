@@ -11,10 +11,9 @@
 #include <complex>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/distributions/normal.hpp>
-#include "../rtmath/matrixop.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddOutputEnsemble.h"
 #include "../rtmath/ddscat/ddweights.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -27,6 +26,7 @@ namespace rtmath {
 		{
 		}
 
+		/*
 		ddOutputEnsembleGaussian::ddOutputEnsembleGaussian(double sigma, size_t coord_varying)
 		{
 			_sigma = sigma;
@@ -269,6 +269,7 @@ namespace rtmath {
 			res = *it->second;
 
 		}
+		*/
 
-	} // end ddscat
-} // end rtmath
+	}
+}

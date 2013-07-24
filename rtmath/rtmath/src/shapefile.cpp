@@ -17,10 +17,13 @@
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
+#include "../rtmath/hash.h"
 #include "../rtmath/ddscat/shapefile.h"
+#include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
 #include "../rtmath/error/error.h"
 
@@ -65,6 +68,34 @@ namespace rtmath {
 				this->_localhash = HASH(res.c_str(),(int) res.size());
 			}
 			return this->_localhash;
+		}
+
+		boost::shared_ptr<shapefile> shapefile::loadHash(
+				const HASH_t &hash)
+		{
+			return loadHash(boost::lexical_cast<std::string>(hash.lower));
+		}
+
+		boost::shared_ptr<shapefile> shapefile::loadHash(
+			const std::string &hash)
+		{
+			boost::shared_ptr<shapefile> res;
+
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			path pHashShapes;
+			path pHashStats;
+			shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+
+			path pHashShape = findHash(pHashShapes, hash);
+			if (!pHashShape.empty())
+				res = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
+			//else if (Ryan_Serialization::detect_compressed(_shp->filename))
+			//	res = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
+			else
+				throw rtmath::debug::xMissingFile(hash.c_str());
+			return res;
 		}
 
 		void shapefile::read(const std::string &filename)

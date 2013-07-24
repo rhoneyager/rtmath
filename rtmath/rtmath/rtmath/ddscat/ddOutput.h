@@ -7,16 +7,86 @@
 #include <cstdio>
 #include <cstring>
 #include <complex>
-#include "../matrixop.h"
-#include "../phaseFunc.h"
-#include "ddOutputEnsemble.h"
-#include "ddOutputSingle.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/version.hpp>
+
+#include "../hash.h"
+//#include "../matrixop.h"
+//#include "../phaseFunc.h"
+//#include "ddOutputEnsemble.h"
+//#include "ddOutputSingle.h"
 //#include "ddScattMatrix.h"
-#include "shapefile.h"
+//#include "shapefile.h"
 
 namespace rtmath {
 	namespace ddscat {
 
+		class ddOutputSingle;
+		class ddOutputEnsemble;
+		class shapefile;
+		class shapeFileStats;
+
+		/** \brief Expresses the result of a ddscat run.
+		 *
+		 * This class can contain the complete output of a ddscat run. This includes 
+		 * the shapefile, stats, sca, fml and avg files.
+		 *
+		 * This provides output for a single frequency, refractive index set and 
+		 * effective radius. The most general type of ddscat run may contain many 
+		 * permutations of these.
+		 **/
+		class ddOutput
+		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
+		public:
+			ddOutput();
+
+			/// A brief description of the run
+			std::string description;
+			/// Frequency (GHz)
+			double freq;
+			/// Effective radius (um)
+			double aeff;
+			/// Refractive indices (in order in ddscat.par file)
+			std::vector<std::complex<double> > ms;
+			/// Paths of source files. Used in consolidation.
+			std::set<std::string> sources;
+			/// User-set brief description snippets. Used in isolating sets of runs.
+			std::set<std::string> tags;
+
+			/// The ensemble average results
+			boost::shared_ptr<ddOutputSingle> avg;
+			/// Raw sca inputs
+			std::set<boost::shared_ptr<ddOutputSingle> > scas;
+			/// Raw fml inputs
+			std::set<boost::shared_ptr<ddOutputSingle> > fmls;
+
+			/// Weights for the sca and fml files in the average
+			std::vector<std::pair<boost::shared_ptr<ddOutputSingle>, float> > weights;
+			
+			/// Hash of shape file contents (an identifier)
+			HASH_t shapeHash;
+			/// The shape file (may load fully later)
+			mutable boost::shared_ptr<shapefile> shape;
+			/// Shape file statistics
+			mutable boost::shared_ptr<shapeFileStats> stats;
+			/// Load the full shape file
+			void loadShape();
+
+			/// Pointer to any ensemble generator used to generate the avg results
+			boost::shared_ptr<ddOutputEnsemble> generator;
+
+
+			/// Generate ddOutput from a set of files
+			/// Generate ddOutput from a set of ddOutputSingle
+		};
+
+		/*
 		class ddOutput {
 			// Class represents the output of a ddscat run
 			// Can be loaded by specifying the path of a ddscat.par file
@@ -52,7 +122,10 @@ namespace rtmath {
 		private:
 			void _init();
 		};
+		*/
 
 	} // end ddscat
 } // end rtmath
 
+
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutput);

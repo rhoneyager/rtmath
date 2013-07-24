@@ -130,6 +130,10 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/shapestatsviews.h
 	rtmath/ddscat/tmData.h
 	#	src/ddLoader.cpp
+	src/ddOutput.cpp
+	src/ddOutput_serialization.cpp
+	src/ddOutputEnsemble.cpp
+	src/ddOutputEnsemble_serialization.cpp
 	src/ddOutputSingle.cpp
 	src/ddpar.cpp
 	src/ddpar_serialization.cpp

@@ -465,6 +465,48 @@ namespace rtmath {
 			pHashShapes = path(shapeDir);
 			pHashStats = path(statsDir);
 		}
+
+		boost::shared_ptr<shapeFileStats> shapeFileStats::loadHash(
+				const HASH_t &hash)
+		{
+			return loadHash(boost::lexical_cast<std::string>(hash.lower));
+		}
+
+		boost::shared_ptr<shapeFileStats> shapeFileStats::loadHash(
+			const std::string &hash)
+		{
+			boost::shared_ptr<shapeFileStats> res(new shapeFileStats);
+
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			path pHashShapes;
+			path pHashStats;
+			shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+
+			path pHashStat = findHash(pHashStats, hash);
+			if (!pHashStat.empty())
+			{
+				res = boost::shared_ptr<shapeFileStats>(new shapeFileStats());
+				res->read(pHashStat.string());
+			}
+			else
+				throw rtmath::debug::xMissingFile(hash.c_str());
+			return res;
+		}
+
+		//boost::shared_ptr<shapeFileStats> 
+		void shapeFileStats::read(const std::string &src)
+		{
+			//boost::shared_ptr<shapeFileStats> res(new shapeFileStats);
+			Ryan_Serialization::read<shapeFileStats>(*this,src, "rtmath::ddscat::shapeFileStats");
+			//return res;
+		}
+
+		void shapeFileStats::write(const std::string &filename) const
+		{
+			Ryan_Serialization::write<shapeFileStats>(*this, filename, "rtmath::ddscat::shapeFileStats");
+		}
 	}
 }
 

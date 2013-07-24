@@ -7,20 +7,37 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <unordered_map>
 #include <complex>
 #include <boost/filesystem.hpp>
 #include <cmath>
-#include "../rtmath/matrixop.h"
-#include "../rtmath/error/error.h"
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddOutputEnsemble.h"
+#include "../rtmath/hash.h"
 #include "../rtmath/ddscat/shapefile.h"
+#include "../rtmath/ddscat/shapestats.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
-		
+		ddOutput::ddOutput() : 
+			freq(0), aeff(0)
+		{
+		}
+
+		void ddOutput::loadShape()
+		{
+			// Load stats and shape based on the hash
+			stats = shapeFileStats::loadHash(this->shapeHash);
+			stats->load();
+			shape = stats->_shp;
+		}
+
+
+
+
+
+		/*
 		ddOutput::ddOutput()
 		{
 			_init();
@@ -171,6 +188,6 @@ namespace rtmath {
 			// as this many references would be too complex. Instead, it will be standalone.
 			provider.genEnsemble(_mapOutputSingleRaw,res);
 		}
-
-	} // end ddscat
-} // end rtmath
+		*/
+	}
+}

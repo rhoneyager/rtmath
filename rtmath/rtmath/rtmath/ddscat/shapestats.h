@@ -113,6 +113,11 @@ namespace rtmath {
 			bool needsUpgrade() const;
 			/// Recalculate all stats, using the newest version of the code
 			void upgrade();
+			/// Write stats to file (convenience function to mask the Ryan_Serialization call)
+			void write(const std::string &filename) const;
+			/// Load stats from serialized file.
+			/// A convenience function that calls Ryan_Serialization
+			void read(const std::string &src);
 		private:
 			/// Gets some initial path information from rtmath.conf
 			static void initPaths();
@@ -148,6 +153,14 @@ namespace rtmath {
 				boost::filesystem::path &pHashShapes,
 				boost::filesystem::path &pHashStats);
 
+			/// Load stats based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
+			static boost::shared_ptr<shapeFileStats> loadHash(
+				const HASH_t &hash);
+			/// Load stats based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
+			static boost::shared_ptr<shapeFileStats> loadHash(
+				const std::string &hash);
 		private:
 			friend class ::boost::serialization::access;
 			template<class Archive>

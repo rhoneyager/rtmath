@@ -9,6 +9,7 @@
 #include "../Serialization/serialization_macros.h"
 #include "../Serialization/eigen_serialization.h"
 #include "../hash.h"
+#include <boost/shared_ptr.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/export.hpp>
@@ -82,6 +83,14 @@ namespace rtmath {
 			friend class shapeFileStats;
 			friend class convexHull;
 			
+			/// Convenience functions to load shape based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
+			static boost::shared_ptr<shapefile> loadHash(
+				const HASH_t &hash);
+			/// Convenience functions to load shape based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
+			static boost::shared_ptr<shapefile> loadHash(
+				const std::string &hash);
 		};
 	}
 }
