@@ -20,25 +20,8 @@ namespace rtmath
 		template<class Archive>
 		void ddOutputEnsemble::serialize(Archive &ar, const unsigned int version)
 		{
-			/*
-			ar & boost::serialization::make_nvp("Description", description);
-			ar & boost::serialization::make_nvp("Tags", tags);
-			ar & boost::serialization::make_nvp("Sources", sources);
-			ar & boost::serialization::make_nvp("Frequency", freq);
-			ar & boost::serialization::make_nvp("aeff", aeff);
-			ar & boost::serialization::make_nvp("Refractive Indices", ms);
-
-			// stats and shape are handled by the loadShape function
-			ar & boost::serialization::make_nvp("shapeHash", shapeHash);
-			
-			// Generator may point to nothing (indicates original ddscat data)
-			ar & boost::serialization::make_nvp("generator", generator);
-
-			ar & boost::serialization::make_nvp("avg", avg);
-			ar & boost::serialization::make_nvp("scas", scas);
-			ar & boost::serialization::make_nvp("fmls", fmls);
-			ar & boost::serialization::make_nvp("Weights", weights);
-			*/
+			ar & boost::serialization::make_nvp("Source", src);
+			ar & boost::serialization::make_nvp("Result", res);
 		}
 
 		EXPORTINTERNAL(rtmath::ddscat::ddOutputEnsemble::serialize);

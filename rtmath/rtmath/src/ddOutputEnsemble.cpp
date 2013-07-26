@@ -7,23 +7,59 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <multiset>
 #include <unordered_map>
 #include <complex>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/distributions/normal.hpp>
 #include "../rtmath/ddscat/ddOutputEnsemble.h"
+#include "../rtmath/ddscat/ddOutputSingle.h"
+#include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
 
-		ddOutputEnsemble::ddOutputEnsemble()
+		ddOutputEnsemble::ddOutputEnsemble(boost::shared_ptr<ddOutput> source) : src(source)
 		{
+			res = boost::shared_ptr<ddOutput>(new ddOutput());
+			/// \todo Give ensemble class naming function
+			res->description = "Ensemble output";
+			res->tags = src->tags;
+			res->tags.insert("Ensemble output");
+
+			res->freq = src->freq;
+			res->aeff = src->aeff;
+			res->ms = src->ms;
+			res->sources = src->sources;
+			res->scas = src->scas;
+			res->fmls = src->fmls;
+
+			res->avg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle());
+			
+			res->stats = src->stats;
+			res->shape = src->shape;
+			res->shapeHash = src->shapeHash;
+			res->parfile = src->parfile;
+			res->generator = shared_from_this();
 		}
 
-		ddOutputEnsemble::~ddOutputEnsemble()
+		ddOutputEnsembleSimple::ddOutputEnsembleSimple(boost::shared_ptr<ddOutput> source) 
+			: ddOutputEnsemble(source)
 		{
+			// Construct the avg file by simply averaging all sca outputs
+			// This assumes that the sca files have the same scale for scattering output
+
+			float numScas = (float) res->scas.size();
+			for (auto &sca : res->scas)
+			{
+				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
+					(sca, 1.0f / numScas));
+			}
+
+			/// \todo Construct the ddOutputSingle here
+			throw debug::xUnimplementedFunction();
 		}
 
 		/*

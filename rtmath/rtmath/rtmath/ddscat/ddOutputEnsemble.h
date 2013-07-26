@@ -3,9 +3,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <bitset>
-#include <cstdio>
-#include <cstring>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -30,13 +27,25 @@ namespace rtmath {
 		/**
 		 * \brief The ensemble subclasses reweight the data to represent various ensemble schemes
 		 **/
-		class ddOutputEnsemble
+		class ddOutputEnsemble : public boost::enable_shared_from_this<ddOutputEnsemble>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+		protected:
+			ddOutputEnsemble(boost::shared_ptr<ddOutput> source);
+			virtual ~ddOutputEnsemble() {}
+			boost::shared_ptr<ddOutput> src, res;
+		};
+
+		/// The trivial ensemble class that duplicates DDSCAT results
+		class ddOutputEnsembleSimple : public ddOutputEnsemble
+		{
+		protected:
+			ddOutputEnsembleSimple(boost::shared_ptr<ddOutput> source);
 		public:
-			ddOutputEnsemble();
+			virtual ~ddOutputEnsembleSimple() {}
+			//virtual boost::shared_ptr<ddOutput> generate() const override;
 		};
 
 		/*

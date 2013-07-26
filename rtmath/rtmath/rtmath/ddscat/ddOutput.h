@@ -1,11 +1,7 @@
 #pragma once
-#include <memory>
 #include <string>
 #include <vector>
 #include <map>
-#include <bitset>
-#include <cstdio>
-#include <cstring>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -28,6 +24,7 @@ namespace rtmath {
 		class ddOutputEnsemble;
 		class shapefile;
 		class shapeFileStats;
+		class ddPar;
 
 		/** \brief Expresses the result of a ddscat run.
 		 *
@@ -55,9 +52,9 @@ namespace rtmath {
 			/// Refractive indices (in order in ddscat.par file)
 			std::vector<std::complex<double> > ms;
 			/// Paths of source files. Used in consolidation.
-			std::set<std::string> sources;
+			std::multiset<std::string> sources;
 			/// User-set brief description snippets. Used in isolating sets of runs.
-			std::set<std::string> tags;
+			std::multiset<std::string> tags;
 
 			/// The ensemble average results
 			boost::shared_ptr<ddOutputSingle> avg;
@@ -66,8 +63,9 @@ namespace rtmath {
 			/// Raw fml inputs
 			std::set<boost::shared_ptr<ddOutputSingle> > fmls;
 
-			/// Weights for the sca and fml files in the average
-			std::vector<std::pair<boost::shared_ptr<ddOutputSingle>, float> > weights;
+			/// Weights for the sca and fml files in the average.
+			/// Sum of all of these should equal unity.
+			std::map<boost::shared_ptr<ddOutputSingle>, float > weights;
 			
 			/// Hash of shape file contents (an identifier)
 			HASH_t shapeHash;
@@ -78,11 +76,13 @@ namespace rtmath {
 			/// Load the full shape file
 			void loadShape();
 
+			/// The ddscat parameter file
+			mutable boost::shared_ptr<ddPar> parfile;
+
 			/// Pointer to any ensemble generator used to generate the avg results
 			boost::shared_ptr<ddOutputEnsemble> generator;
 
-
-			/// Generate ddOutput from a set of files
+			/*
 			/// Generate ddOutput from a set of ddOutputSingle
 			static boost::shared_ptr<ddOutput> generate(
 				boost::shared_ptr<ddOutputSingle> avg,
@@ -93,6 +93,11 @@ namespace rtmath {
 			static boost::shared_ptr<ddOutput> generate(
 				boost::shared_ptr<ddOutputSingle> avg,
 				boost::shared_ptr<shapefile> shape);
+			*/
+
+			/// Generate ddOutput from a ddscat output directory
+			static boost::shared_ptr<ddOutput> generate(
+				const std::string &dir);
 		};
 
 		/*

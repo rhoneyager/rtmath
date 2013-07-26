@@ -14,6 +14,7 @@ namespace rtmath {
 	/// Used for hashing
 	class UINT128 {
 	public:
+		UINT128() : lower(0), upper(0) {}
 		uint64_t lower;
 		uint64_t upper;
 		inline bool operator<(const UINT128 &rhs) const

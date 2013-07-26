@@ -115,6 +115,8 @@ namespace rtmath {
 			void upgrade();
 			/// Write stats to file (convenience function to mask the Ryan_Serialization call)
 			void write(const std::string &filename) const;
+			/// Write stats to the hash file (convenience function)
+			void writeToHash() const;
 			/// Load stats from serialized file.
 			/// A convenience function that calls Ryan_Serialization
 			void read(const std::string &src);
@@ -127,6 +129,11 @@ namespace rtmath {
 			/// \note Reads and writes to hash database for precomputed stats
 			static boost::shared_ptr<shapeFileStats> genStats(
 				const std::string &shpfile, const std::string &statsfile = "");
+			/// \brief Generate / load shapefile stats for the given shape.
+			///
+			/// \note Reads and writes to hash database for precomputed stats
+			static boost::shared_ptr<shapeFileStats> genStats(
+				const boost::shared_ptr<shapefile> &shp);
 
 			/**
 			 * \brief Adds passes shapestats options to a program

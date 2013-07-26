@@ -41,6 +41,8 @@ namespace rtmath {
 			/// automatically compressed. Specifying a compressed output filename 
 			/// always forces compression.
 			void write(const std::string &fname, bool autoCompress = false) const;
+			/// Write shape to the hash directory (convenience function)
+			void writeToHash() const;
 			/// Write a shapefile to a stream (no compression)
 			void write(std::ostream &out) const;
 			/// Export a shapefile to vtk output

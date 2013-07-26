@@ -358,6 +358,42 @@ namespace rtmath {
 			return res;
 		}
 
+		boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
+			const boost::shared_ptr<shapefile> &shp)
+		{
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
+
+			// Check the hash to see if it's already been done before
+			// Also see if the statsfile exists
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			path pHashShape = storeHash(pHashShapes,shp->hash());
+			if (!Ryan_Serialization::detect_compressed(pHashShape.string()) && autoHashShapes)
+			{
+				shp->write(pHashShape.string(), true);
+			}
+			path pHashStat = storeHash(pHashStats,shp->hash());
+			//pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
+			if (Ryan_Serialization::detect_compressed(pHashStat.string()))
+				::Ryan_Serialization::read<shapeFileStats>(*res, pHashStat.string(), "rtmath::ddscat::shapeFileStats");
+			else
+			{
+				// This takes care or base stat calculation and rotation stat calculations
+				res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+			}
+
+			if (autoHashStats)
+			{
+				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(*res,pHashStat.string(),"rtmath::ddscat::shapeFileStats");
+			}
+
+			return res;
+		}
+
 		void shapeFileStats::upgrade()
 		{
 			if (!needsUpgrade()) return;
@@ -506,6 +542,18 @@ namespace rtmath {
 		void shapeFileStats::write(const std::string &filename) const
 		{
 			Ryan_Serialization::write<shapeFileStats>(*this, filename, "rtmath::ddscat::shapeFileStats");
+		}
+
+		void shapeFileStats::writeToHash() const
+		{
+			using boost::filesystem::path;
+
+			path pHashShapes;
+			path pHashStats;
+			shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+
+			path pHashStat = storeHash(pHashStats, _shp->hash);
+			write(pHashStat.string());
 		}
 	}
 }

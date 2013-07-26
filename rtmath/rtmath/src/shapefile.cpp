@@ -98,6 +98,20 @@ namespace rtmath {
 			return res;
 		}
 
+		void shapefile::writeToHash() const
+		{
+			using boost::filesystem::path;
+
+			path pHashShapes;
+			path pHashStats;
+			shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+
+			path pHashShape = storeHash(pHashShapes, _localhash);
+			// If a shape matching the hash already exists, there is no need to write an identical file
+			if (!Ryan_Serialization::detect_compressed(pHashShape.string()))
+				write(pHashShape.string(), true);
+		}
+
 		void shapefile::read(const std::string &filename)
 		{
 			using namespace std;
