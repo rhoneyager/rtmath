@@ -109,10 +109,11 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/ddavg.h
 	rtmath/ddscat/ddLoader.h
 	rtmath/ddscat/ddOutput.h
-	rtmath/ddscat/ddOutputEnsemble.h
+	rtmath/ddscat/ddOutputGenerator.h
 	rtmath/ddscat/ddOutputSingle.h
 	rtmath/ddscat/ddpar.h
 	rtmath/ddscat/ddparGenerator.h
+	rtmath/ddscat/ddRunSet.h
 	rtmath/ddscat/ddscat.h
 	rtmath/ddscat/ddScattMatrix.h
 	rtmath/ddscat/ddVersions.h
@@ -132,13 +133,14 @@ set(rtmath_ddscat-files
 	#	src/ddLoader.cpp
 	src/ddOutput.cpp
 	src/ddOutput_serialization.cpp
-	src/ddOutputEnsemble.cpp
-	src/ddOutputEnsemble_serialization.cpp
+	src/ddOutputGenerator.cpp
+	src/ddOutputGenerator_serialization.cpp
 	src/ddOutputSingle.cpp
 	src/ddpar.cpp
 	src/ddpar_serialization.cpp
 	src/ddparGenerator.cpp
 	src/ddparGenerator_serialization.cpp
+	src/ddRunSet.cpp
 	src/ddscat.cpp
 	src/ddScattMatrix.cpp
 	src/ddScattMatrix_serialization.cpp

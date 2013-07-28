@@ -15,17 +15,6 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-// Forward declaration for boost::serialization below
-namespace rtmath
-{
-}
-namespace boost
-{
-	namespace serialization
-	{
-	}
-}
-
 namespace rtmath
 {
 	namespace ddscat
