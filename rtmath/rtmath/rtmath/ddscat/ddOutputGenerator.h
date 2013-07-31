@@ -19,7 +19,7 @@ namespace rtmath {
 	namespace ddscat {
 		class ddOutputSingle;
 		class ddOutput;
-		class ddOutputEnsemble;
+		class ddOutputGenerator;
 		class shapefile;
 		class shapeFileStats;
 
@@ -27,24 +27,26 @@ namespace rtmath {
 		/**
 		 * \brief The ensemble subclasses reweight the data to represent various ensemble schemes
 		 **/
-		class ddOutputEnsemble : public boost::enable_shared_from_this<ddOutputEnsemble>
+		class ddOutputGenerator : public boost::enable_shared_from_this<ddOutputGenerator>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+			ddOutputGenerator();
+		public:
+			virtual ~ddOutputGenerator() {}
 		protected:
-			ddOutputEnsemble(boost::shared_ptr<ddOutput> source);
-			virtual ~ddOutputEnsemble() {}
+			ddOutputGenerator(boost::shared_ptr<ddOutput> source);
 			boost::shared_ptr<ddOutput> src, res;
 		};
 
 		/// The trivial ensemble class that duplicates DDSCAT results
-		class ddOutputEnsembleSimple : public ddOutputEnsemble
+		class ddOutputGeneratorSimple : public ddOutputGenerator
 		{
 		protected:
-			ddOutputEnsembleSimple(boost::shared_ptr<ddOutput> source);
+			ddOutputGeneratorSimple(boost::shared_ptr<ddOutput> source);
 		public:
-			virtual ~ddOutputEnsembleSimple() {}
+			virtual ~ddOutputGeneratorSimple() {}
 			//virtual boost::shared_ptr<ddOutput> generate() const override;
 		};
 
@@ -113,6 +115,6 @@ namespace rtmath {
 }
 
 
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputEnsemble);
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputEnsemble);
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputGenerator);
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputGenerator);
 

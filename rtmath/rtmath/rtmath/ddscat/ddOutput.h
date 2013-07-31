@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -21,7 +22,7 @@ namespace rtmath {
 	namespace ddscat {
 
 		class ddOutputSingle;
-		class ddOutputEnsemble;
+		class ddOutputGenerator;
 		class shapefile;
 		class shapeFileStats;
 		class ddPar;
@@ -80,7 +81,7 @@ namespace rtmath {
 			mutable boost::shared_ptr<ddPar> parfile;
 
 			/// Pointer to any ensemble generator used to generate the avg results
-			boost::shared_ptr<ddOutputEnsemble> generator;
+			boost::shared_ptr<ddOutputGenerator> generator;
 
 			/*
 			/// Generate ddOutput from a set of ddOutputSingle

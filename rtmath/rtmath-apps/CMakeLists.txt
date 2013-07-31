@@ -62,6 +62,7 @@ add_subdirectory (tmatrix-optimize-with-ddscat)
 add_subdirectory (tmatrix-slice)
 #add_subdirectory (transmittance)
 #add_subdirectory (uuid)
+add_subdirectory (vtktest)
 
 # Control option for creating qt apps
 option ( MAKE_GUIS

@@ -1,6 +1,6 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/ddscat/ddOutput.h"
-#include "../rtmath/ddscat/ddOutputEnsemble.h"
+#include "../rtmath/ddscat/ddOutputGenerator.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
 
@@ -18,14 +18,14 @@ namespace rtmath
 	namespace ddscat
 	{
 		template<class Archive>
-		void ddOutputEnsemble::serialize(Archive &ar, const unsigned int version)
+		void ddOutputGenerator::serialize(Archive &ar, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("Source", src);
 			ar & boost::serialization::make_nvp("Result", res);
 		}
 
-		EXPORTINTERNAL(rtmath::ddscat::ddOutputEnsemble::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::ddOutputGenerator::serialize);
 	}
 }
 
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputEnsemble);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGenerator);

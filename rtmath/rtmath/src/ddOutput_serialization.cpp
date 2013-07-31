@@ -1,5 +1,8 @@
 #include "../rtmath/Stdafx.h"
 #include "../rtmath/ddscat/ddOutput.h"
+#include "../rtmath/ddscat/ddOutputGenerator.h"
+#include "../rtmath/ddscat/ddOutputSingle.h"
+#include "../rtmath/ddscat/ddpar.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
 
@@ -7,6 +10,7 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/shared_ptr.hpp>

@@ -552,7 +552,7 @@ namespace rtmath {
 			path pHashStats;
 			shapeFileStats::getHashPaths(pHashShapes, pHashStats);
 
-			path pHashStat = storeHash(pHashStats, _shp->hash);
+			path pHashStat = storeHash(pHashStats, _shp->_localhash);
 			write(pHashStat.string());
 		}
 	}

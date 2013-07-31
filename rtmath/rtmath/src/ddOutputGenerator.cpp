@@ -7,12 +7,11 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <multiset>
 #include <unordered_map>
 #include <complex>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/distributions/normal.hpp>
-#include "../rtmath/ddscat/ddOutputEnsemble.h"
+#include "../rtmath/ddscat/ddOutputGenerator.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddweights.h"
@@ -21,7 +20,9 @@
 namespace rtmath {
 	namespace ddscat {
 
-		ddOutputEnsemble::ddOutputEnsemble(boost::shared_ptr<ddOutput> source) : src(source)
+		ddOutputGenerator::ddOutputGenerator() {}
+
+		ddOutputGenerator::ddOutputGenerator(boost::shared_ptr<ddOutput> source) : src(source)
 		{
 			res = boost::shared_ptr<ddOutput>(new ddOutput());
 			/// \todo Give ensemble class naming function
@@ -45,8 +46,8 @@ namespace rtmath {
 			res->generator = shared_from_this();
 		}
 
-		ddOutputEnsembleSimple::ddOutputEnsembleSimple(boost::shared_ptr<ddOutput> source) 
-			: ddOutputEnsemble(source)
+		ddOutputGeneratorSimple::ddOutputGeneratorSimple(boost::shared_ptr<ddOutput> source) 
+			: ddOutputGenerator(source)
 		{
 			// Construct the avg file by simply averaging all sca outputs
 			// This assumes that the sca files have the same scale for scattering output

@@ -8,18 +8,25 @@
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 
+#include <vtkCellArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 #include <vtkDelaunay3D.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkSphereSource.h>
+#include <vtkSmoothPolyDataFilter.h>
+#include <vtkStructuredGrid.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkXMLStructuredGridWriter.h>
 #include <vtkCellArray.h>
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkMassProperties.h>
 #include <vtkTriangleFilter.h>
 #include <vtkHull.h>
+#include <vtkVersion.h>
 
 #include "../rtmath/ddscat/hulls.h"
 #include "../rtmath/error/error.h"
@@ -53,6 +60,7 @@ namespace rtmath
 			vtkSmartPointer<vtkPolyData> rawpolygons;
 			mutable vtkSmartPointer<vtkPoints> hullPts;
 			vtkSmartPointer<vtkPolyData> polygons;
+			vtkSmartPointer<vtkSmoothPolyDataFilter> hull;
 			double volume, surfarea, diameter;
 			double vx, vy, vz, vproj;
 		};
@@ -91,7 +99,12 @@ namespace rtmath
 
 		void hull::writeVTKhull(const std::string &filename) const
 		{
-			writeVTKpolys(filename, _p->polygons);
+			//writeVTKpolys(filename, _p->polygons);
+			vtkSmartPointer<vtkXMLPolyDataWriter> writer = 
+				vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+			writer->SetInputConnection(_p->hull->GetOutputPort());
+			writer->SetFileName(filename.c_str());
+			writer->Write();
 		}
 
 		//convexHull::convexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
@@ -101,32 +114,43 @@ namespace rtmath
 
 		void convexHull::constructHull()
 		{
-			_p->hullPts->SetNumberOfPoints(_p->points->GetNumberOfPoints());
 
 			// Create the convex hull
 			/*
-			vtkSmartPointer<vtkDelaunay3D> delaunay = 
-			vtkSmartPointer< vtkDelaunay3D >::New();
-			delaunay->SetInput(_p->rawpolygons);
-			delaunay->Update();
-			*/
 			vtkSmartPointer<vtkHull> hullFilter = 
 				vtkSmartPointer<vtkHull>::New();
 			hullFilter->SetInput(_p->rawpolygons);
 			//hullFilter->SetInputConnection(reader->GetOutputPort());
 			hullFilter->AddCubeFacePlanes ();
 			hullFilter->Update();
+			*/
+			/*
+			vtkSmartPointer<vtkDelaunay3D> delaunay3D =
+				vtkSmartPointer<vtkDelaunay3D>::New();
+			delaunay3D->SetInput (_p->rawpolygons);
+			delaunay3D->Update();
+			*/
 
-			vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
-				vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-			surfaceFilter->SetInputConnection(hullFilter->GetOutputPort());
-			surfaceFilter->Update();
+			vtkSmartPointer<vtkSphereSource> sphereSource = 
+			vtkSmartPointer<vtkSphereSource>::New();
+			sphereSource->SetRadius(50);
+			sphereSource->SetPhiResolution(5);
+			sphereSource->SetThetaResolution(5);
+			sphereSource->Update();
 
+			vtkSmartPointer<vtkSmoothPolyDataFilter> smoothFilter = 
+			vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+			smoothFilter->SetInputConnection(0, sphereSource->GetOutputPort());
+			smoothFilter->SetInput(1, _p->rawpolygons);
+			// ERROR: NO CELLS TO SUBDIVIDE! Am I loading the input properly?
+			smoothFilter->Update();
+			/*
 			vtkSmartPointer<vtkTriangleFilter> triFilter = 
 				vtkSmartPointer<vtkTriangleFilter>::New();
-			triFilter->SetInputConnection(surfaceFilter->GetOutputPort());
+			triFilter->SetInputConnection(delaunay3D->GetOutputPort());
 			triFilter->Update();
 
+			
 			vtkSmartPointer<vtkMassProperties> massFilter = 
 				vtkSmartPointer<vtkMassProperties>::New();
 			massFilter->SetInputConnection(triFilter->GetOutputPort());
@@ -138,11 +162,13 @@ namespace rtmath
 			_p->vy = massFilter->GetVolumeY();
 			_p->vz = massFilter->GetVolumeZ();
 			_p->vproj = massFilter->GetVolumeProjected();
+			*/
 
-			_p->hullPts = surfaceFilter->GetOutput()->GetPoints();
-			_p->polygons = hullFilter->GetOutput();
-			//_p->polygons->SetPolys(surfaceFilter->GetOutput()->GetPolys());
-			//_p->polygons->SetPoints(_p->hullPts);
+			_p->hull = smoothFilter;
+			// Change this!!!!!!
+			_p->hullPts->SetNumberOfPoints(_p->points->GetNumberOfPoints());
+			_p->hullPts = smoothFilter->GetOutput()->GetPoints();
+			//_p->polygons = delaunay3D->GetOutput();
 
 			// Just calculate the max diameter here
 			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base) -> double

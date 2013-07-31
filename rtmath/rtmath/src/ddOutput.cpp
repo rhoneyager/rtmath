@@ -15,7 +15,7 @@
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
-#include "../rtmath/ddscat/ddOutputEnsemble.h"
+#include "../rtmath/ddscat/ddOutputGenerator.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
