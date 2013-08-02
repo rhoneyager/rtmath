@@ -158,13 +158,11 @@ int main(int argc, char** argv)
 
 		// Finally, create the rotation tuples
 		std::map<boost::tuple<double,double,double>, size_t> rots;
-		for (auto &b : vbetas)
-			for (auto &t : vthetas)
-				for (auto &p : vphis)
-				{
-					rtmath::ddscat::rotations::populateRotations(b,t,p,rots);
-				}
-
+		for (size_t i=0; i<vbetas.size(); ++i)
+		{
+			rtmath::ddscat::rotations::populateRotations(
+				vbetas[i],vthetas[i],vphis[i],rots);
+		}
 
 		// Construct the voronoi diagram
 		bool lincosphi = vm["lincosphi"].as<bool>();
