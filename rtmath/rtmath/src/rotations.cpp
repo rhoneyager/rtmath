@@ -5,6 +5,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <boost/tuple/tuple_comparison.hpp>
 
 //#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/ddpar.h"
@@ -13,6 +14,40 @@
 
 namespace rtmath {
 	namespace ddscat {
+
+		void rotations::populateRotations(const std::set<double> &betas,
+			const std::set<double> &thetas, const std::set<double> &phis,
+			std::map<boost::tuple<double,double,double>, size_t> &out)
+		{
+			// Do NOT clear the output.
+			for (auto &beta : betas)
+				for (auto &theta : thetas)
+					for (auto &phi : phis)
+					{
+						boost::tuple<double,double,double> rot(beta,theta,phi);
+						// Find near matches
+						std::map<boost::tuple<double,double,double>, size_t>::iterator it;
+						it = std::find_if(out.begin(), out.end(),
+							[&rot](std::pair<const boost::tuple<double,double,double>, size_t> &v) -> bool
+						{
+							// If overall distance is less than 1e-6, then this is the 
+							// same point.
+							double dsq = pow(rot.get<0>() - v.first.get<0>(), 2.)
+								+ pow(rot.get<1>() - v.first.get<1>(), 2.)
+								+ pow(rot.get<2>() - v.first.get<2>(), 2.);
+							if (dsq < 1.e-3) return true;
+							return false;
+						});
+
+						if (it == out.end())
+						{
+							out.insert(std::pair<boost::tuple<double,double,double>, size_t>
+								(rot, 1));
+						} else {
+							it->second++;
+						}
+					}
+		}
 
 		rotationsBase::rotationsBase()
 			:

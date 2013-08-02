@@ -141,6 +141,9 @@ find_package(tmatrixFortran REQUIRED)
 find_package(tmatrixCpp REQUIRED)
 #find_package(Qhull REQUIRED)
 #include_directories(${QHULL_INCLUDE_DIRS})
+find_package(Voro REQUIRED)
+include_directories(${VORO_INCLUDE_DIRS})
+
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 include_directories(BEFORE ${VTK_INCLUDE_DIRS})
@@ -161,6 +164,7 @@ set (rtmath_ddscat-libs rtmath_core ${rtmath_core-libs} rtmath_mie ${rtmath_mie-
 	tmatrix-cpp tmatrix-fortran
 	${Boost_REGEX_LIBRARY}
 	${VTK_LIBRARIES}
+	${VORO_LIBRARIES}
 	)
 	#	${QHULL_LIBRARIES}
 	#	${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} 

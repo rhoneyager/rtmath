@@ -2,10 +2,12 @@
 
 #include <string>
 #include <set>
+#include <map>
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/tuple/tuple.hpp>
 
 // Forward declarations
 namespace rtmath {
@@ -76,6 +78,15 @@ namespace rtmath {
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+
+			/** \brief Convenience function to generate rotations based on 
+			 * betas, thetas and phis. Handles degeneracy.
+			 *
+			 * \param out is the map between a given rotation and its level of degeneracy.
+			 **/
+			static void populateRotations(const std::set<double> &betas,
+				const std::set<double> &thetas, const std::set<double> &phis,
+				std::map<boost::tuple<double,double,double>, size_t> &out);
 		};
 
 		// Function to calculate Gimbal matrices and effective rotation matrix.
