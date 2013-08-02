@@ -15,6 +15,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
 
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
@@ -33,6 +34,8 @@ int main(int argc, char** argv)
 	using namespace std;
 	using namespace rtmath;
 	using namespace boost::filesystem;
+
+	const double pi = boost::math::constants::pi<double>();
 
 	try {
 		cerr << "rtmath-orientation-weights\n\n";
@@ -165,14 +168,24 @@ int main(int argc, char** argv)
 
 		// Construct the voronoi diagram
 		bool lincosphi = vm["lincosphi"].as<bool>();
+		if (lincosphi)
+		{
+			tMin = -1.; //cos(pi*tMin/180.);
+			tMax = 1.; //cos(pi*tMax/180.);
+		}
 		voro::container con(bMin, bMax, tMin, tMax, pMin, pMax, nb, nt, np,
 			true, true, true, 8);
 		int id = 0;
+		std::cout << "Constructing Voronoi diagram\n";
 		for (auto &rot : rots)
 		{
 			double th = rot.first.get<1>();
-			if (lincosphi) th = cos(th);
-			con.put(id,rot.first.get<0>(),th,rot.first.get<2>());
+			double t = th;
+			if (lincosphi) th = cos(pi*th/180.);
+			double b = rot.first.get<0>();
+			double p = rot.first.get<2>();
+			std::cout << id << " " << b << "\t" << t << "\t" << th << "\t" << p << std::endl;
+			con.put(id,b,th,p);
 			++id;
 		}
 
@@ -181,7 +194,8 @@ int main(int argc, char** argv)
 		double vvol=con.sum_cell_volumes();
 		std::cout << "Container volume: " << cvol
 			<< "\nVoroni volume: " << vvol
-			<< "\tDifference: " << vvol-cvol << std::endl;
+			<< "\tDifference: " << vvol-cvol 
+			<< "\tFraction: " << cvol/vvol << std::endl;
 
 		if (vm.count("output"))
 		{
@@ -194,7 +208,7 @@ int main(int argc, char** argv)
 			double b, t, p, v, rw, dw;
 			if(cl.start()) do if(con.compute_cell(c,cl)) {
 				cl.pos(b,t,p);
-				if (lincosphi) t = acos(t);
+				//if (lincosphi) t = acos(t);
 				v = c.volume();
 				// Raw weight can be determined because the sum of all cell volumes is known
 				rw = v / vvol;
@@ -203,12 +217,14 @@ int main(int argc, char** argv)
 				double degen = 0;
 				std::map<boost::tuple<double,double,double>, size_t>::const_iterator it;
 				it = std::find_if(rots.begin(), rots.end(),
-					[b,t,p](std::pair<const boost::tuple<double,double,double>, size_t> &v) -> bool
+					[pi,b,t,p,lincosphi](std::pair<const boost::tuple<double,double,double>, size_t> &v) -> bool
 				{
 					// If overall distance is less than 1e-6, then this is the 
 					// same point.
+					double ct = v.first.get<1>();
+					if (lincosphi) ct = cos(pi*ct/180.);
 					double dsq = pow(b - v.first.get<0>(), 2.)
-						+ pow(t - v.first.get<1>(), 2.)
+						+ pow(t - ct, 2.)
 						+ pow(p - v.first.get<2>(), 2.);
 					if (dsq < 1.e-3) return true;
 					return false;
@@ -222,6 +238,10 @@ int main(int argc, char** argv)
 				degen = (double) it->second;
 				dw = rw / degen;
 				
+				if (lincosphi)
+				{
+					t = acos(t)*180./pi;
+				}
 				out << b << "\t" << t << "\t" << p << "\t" << v << "\t" << rw
 					<< "\t" << degen << "\t" << dw << std::endl;
 			} while (cl.inc());
