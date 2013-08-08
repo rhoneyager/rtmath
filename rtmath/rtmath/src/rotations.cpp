@@ -274,12 +274,11 @@ namespace rtmath {
 			T thetar = thetad * scale;
 			T phir = phid * scale;
 
-#pragma message("TODO: check rotationMatrix calculation")
 			using namespace Eigen;
 			typedef Matrix<T, 3, 1, 0, 3, 1> vt;
 			Reff = AngleAxis<T>(thetar, vt::UnitZ())
 				* AngleAxis<T>(phir, vt::UnitX())
-				* AngleAxis<T>(betar, vt::UnitY());
+				* AngleAxis<T>(betar, vt::UnitZ());
 		}
 
 		template void rotationMatrix(double thetad, double phid, double betad,

@@ -132,18 +132,24 @@ namespace rtmath {
 								// Linear in cos
 								// start, end are in degrees
 								const double pi = boost::math::constants::pi<double>();
+								int ai = (int) (interval) % 2;
 								double cs = cos(start * pi / 180.0);
 								double ce = cos(end * pi / 180.0);
-								double increment = (ce - cs) / (interval);
+								double increment = (ai) ? (ce - cs) / (interval-1) : (ce - cs) / (interval);
 								if (increment == 0) expanded.insert(start);
 								if (increment < 0)
 								{
 									increment *= -1.0;
 									std::swap(cs,ce);
 								}
-								for (double j=cs+(increment/2.0); j<ce+(increment/100.0);j+=increment)
+								// For even n, divide into intervals and use the midpoint of the interval.
+								// For odd n, use the endpoints. Note that the weights for orientations 
+								// (not computed here) will be different for the two choices.
+								if (!ai) cs += increment/2.0;
+								for (double j=cs; j<ce+(increment/10.0);j+=increment)
 								{
-									double k = (acos((double) j) * 180.0 / pi);
+									// max and min to avoid j>1 and j<-1 error from rounding
+									double k = (acos((double) max(min(j,1.0),-1.0)) * 180.0 / pi);
 									if (expanded.count((T) k) == 0)
 										expanded.insert((T) k);
 								}

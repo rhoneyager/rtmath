@@ -64,6 +64,9 @@ int main(int argc, char** argv)
 			("draw-gnuplot-cells", po::value<string>(), "Write gnuplot cells")
 			("draw-povray-particles", po::value<string>(), "Write povray particles")
 			("draw-povray-cells", po::value<string>(), "Write povray cells")
+			;
+
+		hidden.add_options()
 			("bMin", po::value<double>()->default_value(0), "Min beta rotation")
 			("tMin", po::value<double>()->default_value(0), "Min theta rotation")
 			("pMin", po::value<double>()->default_value(0), "Min phi rotation")
@@ -172,7 +175,7 @@ int main(int argc, char** argv)
 			tMax = 1.; //cos(pi*tMax/180.);
 		}
 		voro::container con(bMin, bMax, tMin, tMax, pMin, pMax, nb, nt, np,
-			true, true, true, 8);
+			true, false, true, 8);
 		int id = 0;
 		std::cout << "Constructing Voronoi diagram\n";
 		for (auto &rot : rots)
@@ -182,8 +185,20 @@ int main(int argc, char** argv)
 			if (lincosphi) th = cos(pi*th/180.);
 			double b = rot.first.get<0>();
 			double p = rot.first.get<2>();
-			std::cout << id << " " << b << "\t" << t << "\t" << th << "\t" << p << std::endl;
+			std::cout << "orig " << id << " " << b << "\t" << t << "\t" << th << "\t" << p << std::endl;
 			con.put(id,b,th,p);
+			++id;
+			// Also populate the dual
+			double tp = 180 - t;
+			if (tp < 0) tp += 180.;
+			double pp = p + 180.;
+			if (pp >= 360) pp -= 360;
+			double bp = b + 180.;
+			if (bp >= 360) bp -= 360;
+			double tpp = tp;
+			if (lincosphi) tpp = cos(pi*tp/180.);
+			std::cout << "dual " << id << " " << bp << "\t" << tp << "\t" << tpp << "\t" << pp << std::endl;
+			con.put(id,bp,tpp,pp);
 			++id;
 		}
 
