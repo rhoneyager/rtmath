@@ -5,16 +5,19 @@
 
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 
-
+#include <Voro++/voro++.hh>
 
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkDelaunay3D.h>
+#include <vtkDecimatePro.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkSphereSource.h>
 #include <vtkSmoothPolyDataFilter.h>
@@ -53,18 +56,122 @@ namespace rtmath
 				: volume(0), surfarea(0), vx(0), vy(0), vz(0), vproj(0), diameter(0)
 			{
 				points = vtkSmartPointer< vtkPoints >::New();
+				surfacePoints = vtkSmartPointer< vtkPoints >::New();
 				hullPts = vtkSmartPointer< vtkPoints >::New();
 				rawpolygons = vtkSmartPointer< vtkPolyData >::New();
 				polygons = vtkSmartPointer< vtkPolyData >::New();
+				surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
 			}
 			virtual ~hullData() {}
+			vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter;
 			vtkSmartPointer<vtkPoints> points;
+			vtkSmartPointer<vtkPoints> surfacePoints;
 			vtkSmartPointer<vtkPolyData> rawpolygons;
 			mutable vtkSmartPointer<vtkPoints> hullPts;
 			vtkSmartPointer<vtkPolyData> polygons;
-			vtkSmartPointer<vtkSmoothPolyDataFilter> hull;
+			vtkSmartPointer<vtkDelaunay3D> hull;
 			double volume, surfarea, diameter;
 			double vx, vy, vz, vproj;
+
+			/// Function to calculate the Voronoi cells and partition them 
+			/// into cells on the surface and cells within the volume.
+			void calcVoronoi()
+			{
+				// Take the raw points, get the boundaries, and construct 
+				// a container. I will id the 'surface' cells as those that 
+				// have a face that matches the container boundary.
+
+				// Start with determining the container bounds
+				using namespace boost::accumulators;
+				std::vector<accumulator_set<double, stats<tag::min, tag::max> > > m(3);
+				//for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
+				for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
+				{
+					double crds[3];
+					points->GetPoint(i,crds);
+					for (size_t j=0;j<3;j++)
+						m[j](crds[j]);
+				}
+				double mins[3], maxs[3];
+				for (size_t j=0; j<3; j++)
+				{
+					mins[j] = boost::accumulators::min(m[j]);
+					maxs[j] = boost::accumulators::max(m[j]);
+				}
+
+				// Set up the number of blocks that the container is divided into
+				const int n_x=6,n_y=6,n_z=6;
+				using namespace voro;
+				container con(mins[0],maxs[0],mins[1],maxs[1],mins[2],maxs[2],n_x,n_y,n_z,false,false,false,8);
+
+				// Add particles into the container
+				for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
+				{
+					double crds[3];
+					points->GetPoint(i,crds);
+					con.put((int) i, crds[0], crds[1], crds[2]);
+				}
+
+				// Check each particle to see if on the container surface
+				surfacePoints->SetNumberOfPoints(points->GetNumberOfPoints());
+				size_t numSurfacePoints = 0;
+
+				voronoicell_neighbor c;
+				c_loop_all cl(con);
+				if (cl.start()) do if (con.compute_cell(c,cl)) {
+					double crds[3];
+					cl.pos(crds[0],crds[1],crds[2]);
+					int id = cl.pid();
+					std::vector<int> neigh,f_vert;
+					std::vector<double> v;
+					c.neighbors(neigh);
+					c.face_vertices(f_vert);
+					c.vertices(crds[0],crds[1],crds[2],v);
+
+					// Loop over all faces of the Voronoi cell
+					// For faces that touch the walls, the neighbor number is negative
+					for (auto &i : neigh)
+					{
+						if (i<0)
+						{
+							surfacePoints->SetPoint(numSurfacePoints,crds);
+							numSurfacePoints++;
+							break;
+						}
+					}
+				} while (cl.inc());
+				surfacePoints->SetNumberOfPoints(numSurfacePoints);
+
+				/* --- replaced by the above block ---
+				for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
+				{
+					double crds[3];
+					points->GetPoint(i,crds);
+					// For a face to be on the container surface, all of the points will 
+					// have at least one coordinate that matches the container boundary
+					auto checkIndex = [&](size_t index) -> bool
+					{
+						//if (abs((crds[index] - maxs[index])/maxs[index]) < 0.01) return true;
+						//if (abs((crds[index] - mins[index])/mins[index]) < 0.01) return true;
+						// Get the voronoi cell that corresponds with the coordinates
+						return false;
+					};
+					bool isBnd = false;
+					if (checkIndex(0)) isBnd = true;
+					if (checkIndex(1)) isBnd = true;
+					if (checkIndex(2)) isBnd = true;
+					if (isBnd)
+					{
+						surfacePoints->SetPoint(numSurfacePoints,crds);
+						numSurfacePoints++;
+					}
+				}
+				
+				surfacePoints->SetNumberOfPoints(numSurfacePoints);
+				*/
+
+
+			}
 		};
 
 		hull::hull()
@@ -104,7 +211,7 @@ namespace rtmath
 			//writeVTKpolys(filename, _p->polygons);
 			vtkSmartPointer<vtkXMLPolyDataWriter> writer = 
 				vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-			writer->SetInputConnection(_p->hull->GetOutputPort());
+			writer->SetInputConnection(_p->surfaceFilter->GetOutputPort());
 			writer->SetFileName(filename.c_str());
 			writer->Write();
 		}
@@ -116,6 +223,8 @@ namespace rtmath
 
 		void convexHull::constructHull()
 		{
+			/// \todo Move this to a funtion that executes on library load
+			vtkObject::GlobalWarningDisplayOff();
 
 			// Create the convex hull
 			/*
@@ -126,13 +235,17 @@ namespace rtmath
 			hullFilter->AddCubeFacePlanes ();
 			hullFilter->Update();
 			*/
-			/*
+			
+			_p->calcVoronoi();
+			vtkSmartPointer<vtkPolyData> surfacePointsPolys = vtkSmartPointer< vtkPolyData >::New();
+			surfacePointsPolys->SetPoints(_p->surfacePoints);
+
 			vtkSmartPointer<vtkDelaunay3D> delaunay3D =
 				vtkSmartPointer<vtkDelaunay3D>::New();
-			delaunay3D->SetInput (_p->rawpolygons);
+			delaunay3D->SetInput(surfacePointsPolys);
 			delaunay3D->Update();
-			*/
 
+			/*
 			vtkSmartPointer<vtkSphereSource> sphereSource = 
 			vtkSmartPointer<vtkSphereSource>::New();
 			sphereSource->SetRadius(50);
@@ -146,10 +259,24 @@ namespace rtmath
 			smoothFilter->SetInput(1, _p->rawpolygons);
 			// ERROR: NO CELLS TO SUBDIVIDE! Am I loading the input properly?
 			smoothFilter->Update();
-			/*
+			*/
+			
+			/* /// Useless here for actual writing of file
+			vtkSmartPointer<vtkDecimatePro> decimate =
+				vtkSmartPointer<vtkDecimatePro>::New();
+			decimate->SetInputConnection(delaunay3D->GetOutputPort());
+			decimate->SetBoundaryVertexDeletion(1);
+			decimate->SetPreserveTopology(1);
+			decimate->SetTargetReduction(1.0);
+			decimate->Update();
+			*/
+
+			_p->surfaceFilter->SetInputConnection(delaunay3D->GetOutputPort());
+			_p->surfaceFilter->Update();
+
 			vtkSmartPointer<vtkTriangleFilter> triFilter = 
 				vtkSmartPointer<vtkTriangleFilter>::New();
-			triFilter->SetInputConnection(delaunay3D->GetOutputPort());
+			triFilter->SetInputConnection(_p->surfaceFilter->GetOutputPort());
 			triFilter->Update();
 
 			
@@ -164,12 +291,12 @@ namespace rtmath
 			_p->vy = massFilter->GetVolumeY();
 			_p->vz = massFilter->GetVolumeZ();
 			_p->vproj = massFilter->GetVolumeProjected();
-			*/
+			
 
-			_p->hull = smoothFilter;
+			_p->hull = delaunay3D;
 			// Change this!!!!!!
 			_p->hullPts->SetNumberOfPoints(_p->points->GetNumberOfPoints());
-			_p->hullPts = smoothFilter->GetOutput()->GetPoints();
+			_p->hullPts = delaunay3D->GetOutput()->GetPoints();
 			//_p->polygons = delaunay3D->GetOutput();
 
 			// Just calculate the max diameter here
