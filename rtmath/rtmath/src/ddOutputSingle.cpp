@@ -36,7 +36,6 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-// These can no longer be in an anonymous namespace due to serialization requirements.
 namespace
 {
 	class ddver : public ::rtmath::ddscat::ddOutputSingleObj
@@ -116,6 +115,7 @@ namespace
 			// Not all Liu avg files are correct in this respect
 			boost::algorithm::trim(s);
 		}
+		void setTarget(const std::string &n) { s = n; }
 		virtual std::string value() const override { return s; }
 		std::string s;
 	private:
@@ -444,6 +444,19 @@ namespace rtmath {
 			objc->version(nv);
 			_objMap["version"] = obj;
 			_version = nv;
+		}
+
+		void ddOutputSingle::getTARGET(std::string &target) const
+		{
+			target = _objMap.at("target")->value();
+		}
+
+		void ddOutputSingle::setTARGET(const std::string &target)
+		{
+			auto obj = ddOutputSingleObj::constructObj("target");
+			auto objc = boost::dynamic_pointer_cast<ddtarget>(obj);
+			objc->setTarget(target);
+			_objMap["target"] = obj;
 		}
 
 		void ddOutputSingle::readF(std::istream &in)

@@ -116,6 +116,7 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/ddRunSet.h
 	rtmath/ddscat/ddscat.h
 	rtmath/ddscat/ddScattMatrix.h
+	rtmath/ddscat/ddUtil.h
 	rtmath/ddscat/ddVersions.h
 	rtmath/ddscat/ddweights.h
 	rtmath/ddscat/dielTabFile.h
@@ -144,6 +145,7 @@ set(rtmath_ddscat-files
 	src/ddscat.cpp
 	src/ddScattMatrix.cpp
 	src/ddScattMatrix_serialization.cpp
+	src/ddUtil.cpp
 	src/ddVersions.cpp
 	src/ddweights.cpp
 	src/dielTabFile.cpp

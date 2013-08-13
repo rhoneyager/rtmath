@@ -26,12 +26,17 @@
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
+#include <vtkPolyDataToImageStencil.h>
 #include <vtkCellArray.h>
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkMassProperties.h>
 #include <vtkTriangleFilter.h>
 #include <vtkHull.h>
+#include <vtkImageData.h>
 #include <vtkVersion.h>
+#include <vtkMarchingCubes.h>
+#include <vtkImplicitModeller.h>
+#include <vtkVoxelModeller.h>
 
 #include "../rtmath/ddscat/hulls.h"
 #include "../rtmath/error/error.h"
@@ -53,35 +58,37 @@ namespace rtmath
 		{
 		public:
 			hullData()
-				: volume(0), surfarea(0), vx(0), vy(0), vz(0), vproj(0), diameter(0)
+				: volume(0), surfarea(0), vx(0), vy(0), vz(0), vproj(0), diameter(0),
+				boundsCalced(false), voronoiCalced(false), mcCalced(false)
 			{
 				points = vtkSmartPointer< vtkPoints >::New();
 				surfacePoints = vtkSmartPointer< vtkPoints >::New();
-				hullPts = vtkSmartPointer< vtkPoints >::New();
-				rawpolygons = vtkSmartPointer< vtkPolyData >::New();
 				polygons = vtkSmartPointer< vtkPolyData >::New();
 				surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+				decimate = vtkSmartPointer<vtkDecimatePro>::New();
+				mc = vtkSmartPointer<vtkMarchingCubes>::New();
+				std::fill_n(mins,3,0);
+				std::fill_n(maxs,3,0);
 			}
 			virtual ~hullData() {}
 			vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter;
 			vtkSmartPointer<vtkPoints> points;
+			vtkSmartPointer<vtkDecimatePro> decimate;
 			vtkSmartPointer<vtkPoints> surfacePoints;
-			vtkSmartPointer<vtkPolyData> rawpolygons;
-			mutable vtkSmartPointer<vtkPoints> hullPts;
 			vtkSmartPointer<vtkPolyData> polygons;
 			vtkSmartPointer<vtkDelaunay3D> hull;
+			vtkSmartPointer<vtkMarchingCubes> mc;
 			double volume, surfarea, diameter;
 			double vx, vy, vz, vproj;
+			double mins[3], maxs[3];
+			bool boundsCalced;
+			bool voronoiCalced, mcCalced;
 
-			/// Function to calculate the Voronoi cells and partition them 
-			/// into cells on the surface and cells within the volume.
-			void calcVoronoi()
+			/// Function to calculate the bounds of the shape
+			void calcBounds()
 			{
-				// Take the raw points, get the boundaries, and construct 
-				// a container. I will id the 'surface' cells as those that 
-				// have a face that matches the container boundary.
+				if (boundsCalced) return;
 
-				// Start with determining the container bounds
 				using namespace boost::accumulators;
 				std::vector<accumulator_set<double, stats<tag::min, tag::max> > > m(3);
 				//for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
@@ -92,12 +99,27 @@ namespace rtmath
 					for (size_t j=0;j<3;j++)
 						m[j](crds[j]);
 				}
-				double mins[3], maxs[3];
+				//double mins[3], maxs[3];
 				for (size_t j=0; j<3; j++)
 				{
 					mins[j] = boost::accumulators::min(m[j]);
 					maxs[j] = boost::accumulators::max(m[j]);
 				}
+
+				boundsCalced=true;
+			}
+
+			/// Function to calculate the Voronoi cells and partition them 
+			/// into cells on the surface and cells within the volume.
+			void calcVoronoi()
+			{
+				if (voronoiCalced) return;
+				// Take the raw points, get the boundaries, and construct 
+				// a container. I will id the 'surface' cells as those that 
+				// have a face that matches the container boundary.
+
+				// Start with determining the container bounds
+				calcBounds();
 
 				// Set up the number of blocks that the container is divided into
 				const int n_x=6,n_y=6,n_z=6;
@@ -170,7 +192,45 @@ namespace rtmath
 				surfacePoints->SetNumberOfPoints(numSurfacePoints);
 				*/
 
+				voronoiCalced = true;
+			}
+			/// Function to generate the surface using marching cubes
+			void calcMarchingCubes()
+			{
+				if (mcCalced) return;
+				calcBounds();
 
+				vtkSmartPointer<vtkPolyData> pointsPolys = vtkSmartPointer< vtkPolyData >::New();
+				pointsPolys->SetPoints(points);
+
+				vtkSmartPointer<vtkImageData> volume =
+					vtkSmartPointer<vtkImageData>::New();
+
+				vtkSmartPointer<vtkVoxelModeller> voxelModeller = 
+					vtkSmartPointer<vtkVoxelModeller>::New();
+				//vtkSmartPointer<vtkImplicitModeller> voxelModeller = 
+				//	vtkSmartPointer<vtkImplicitModeller>::New();
+				voxelModeller->SetSampleDimensions(50,50,50);
+				voxelModeller->SetModelBounds(mins[0],maxs[0],mins[1],maxs[1],mins[2],maxs[2]);
+				voxelModeller->SetScalarTypeToFloat();
+				voxelModeller->SetMaximumDistance(.1);
+
+				voxelModeller->SetInput(pointsPolys);
+				voxelModeller->Update();
+				volume->DeepCopy(voxelModeller->GetOutput());
+
+
+				mc->SetInput(volume);
+
+				mc->ComputeNormalsOn();
+				mc->ComputeGradientsOn();
+				mc->ComputeScalarsOn();
+				double isoValue = 0.5;
+				mc->GenerateValues(3,0.5,2.5);
+				//mc->SetValue(0, isoValue);
+				mc->Update();
+
+				mcCalced = true;
 			}
 		};
 
@@ -178,15 +238,6 @@ namespace rtmath
 		{
 			_p = boost::shared_ptr<hullData>(new hullData);
 		}
-
-		/*
-		hull::hull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &backend)
-		{
-		_p = boost::shared_ptr<hullData>(new hullData);
-		_p->points = backend;
-		_p->hullPts = backend;
-		}
-		*/
 
 		hull::hull(const Eigen::Matrix<float, Eigen::Dynamic, 3> &backend)
 		{
@@ -198,12 +249,17 @@ namespace rtmath
 				auto it = backend.block<1,3>(i,0);
 				_p->points->SetPoint(i, it(0), it(1), it(2));
 			}
-			_p->rawpolygons->SetPoints(_p->points);
 		}
 
 		void hull::writeVTKraw(const std::string &filename) const
 		{
-			writeVTKpolys(filename, _p->rawpolygons);
+			//writeVTKpolys(filename, _p->rawpolygons);
+			_p->calcMarchingCubes();
+			vtkSmartPointer<vtkXMLPolyDataWriter> writer = 
+				vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+			writer->SetInputConnection(_p->mc->GetOutputPort());
+			writer->SetFileName(filename.c_str());
+			writer->Write();
 		}
 
 		void hull::writeVTKhull(const std::string &filename) const
@@ -219,24 +275,17 @@ namespace rtmath
 		//convexHull::convexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
 		//	: hull(src) {}
 
-		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>& src) : hull(src) {}
+		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>& src) : hull(src)
+		{
+		}
 
 		void convexHull::constructHull()
 		{
 			/// \todo Move this to a funtion that executes on library load
 			vtkObject::GlobalWarningDisplayOff();
 
-			// Create the convex hull
-			/*
-			vtkSmartPointer<vtkHull> hullFilter = 
-				vtkSmartPointer<vtkHull>::New();
-			hullFilter->SetInput(_p->rawpolygons);
-			//hullFilter->SetInputConnection(reader->GetOutputPort());
-			hullFilter->AddCubeFacePlanes ();
-			hullFilter->Update();
-			*/
-			
 			_p->calcVoronoi();
+
 			vtkSmartPointer<vtkPolyData> surfacePointsPolys = vtkSmartPointer< vtkPolyData >::New();
 			surfacePointsPolys->SetPoints(_p->surfacePoints);
 
@@ -245,31 +294,12 @@ namespace rtmath
 			delaunay3D->SetInput(surfacePointsPolys);
 			delaunay3D->Update();
 
-			/*
-			vtkSmartPointer<vtkSphereSource> sphereSource = 
-			vtkSmartPointer<vtkSphereSource>::New();
-			sphereSource->SetRadius(50);
-			sphereSource->SetPhiResolution(5);
-			sphereSource->SetThetaResolution(5);
-			sphereSource->Update();
-
-			vtkSmartPointer<vtkSmoothPolyDataFilter> smoothFilter = 
-			vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
-			smoothFilter->SetInputConnection(0, sphereSource->GetOutputPort());
-			smoothFilter->SetInput(1, _p->rawpolygons);
-			// ERROR: NO CELLS TO SUBDIVIDE! Am I loading the input properly?
-			smoothFilter->Update();
-			*/
 			
-			/* /// Useless here for actual writing of file
-			vtkSmartPointer<vtkDecimatePro> decimate =
-				vtkSmartPointer<vtkDecimatePro>::New();
-			decimate->SetInputConnection(delaunay3D->GetOutputPort());
-			decimate->SetBoundaryVertexDeletion(1);
-			decimate->SetPreserveTopology(1);
-			decimate->SetTargetReduction(1.0);
-			decimate->Update();
-			*/
+			_p->decimate->SetInputConnection(delaunay3D->GetOutputPort());
+			_p->decimate->SetBoundaryVertexDeletion(1);
+			_p->decimate->SetPreserveTopology(1);
+			_p->decimate->SetTargetReduction(1.0);
+			_p->decimate->Update();
 
 			_p->surfaceFilter->SetInputConnection(delaunay3D->GetOutputPort());
 			_p->surfaceFilter->Update();
@@ -295,9 +325,6 @@ namespace rtmath
 
 			_p->hull = delaunay3D;
 			// Change this!!!!!!
-			_p->hullPts->SetNumberOfPoints(_p->points->GetNumberOfPoints());
-			_p->hullPts = delaunay3D->GetOutput()->GetPoints();
-			//_p->polygons = delaunay3D->GetOutput();
 
 			// Just calculate the max diameter here
 			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base) -> double
@@ -330,7 +357,7 @@ namespace rtmath
 				return sqrt(maxD);
 			};
 
-			_p->diameter = fMaxDiameter(_p->hullPts);
+			_p->diameter = fMaxDiameter(_p->decimate->GetOutput()->GetPoints());
 		}
 
 		double hull::maxDiameter() const { return _p->diameter; }
@@ -339,28 +366,6 @@ namespace rtmath
 
 		double hull::surfaceArea() const { return _p->surfarea; }
 
-		/*
-		//concaveHull::concaveHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
-		//	: hull(src) { }
-
-		concaveHull::concaveHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>& src) : hull(src) {}
-
-		concaveHull::~concaveHull() { }
-
-		void concaveHull::constructHull(double alpha)
-		{
-		_p->hullPts->clear();
-
-		pcl::ConcaveHull<pcl::PointXYZ> chull;
-		chull.setDimension(3);
-		chull.setInputCloud (_p->points);
-		chull.setAlpha(alpha);
-		chull.reconstruct(*(_p->hullPts.get()), _p->polygons);
-
-		//_findVS();
-		}
-
-		*/
 	}
 }
 

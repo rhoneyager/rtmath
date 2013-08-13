@@ -182,7 +182,10 @@ namespace rtmath {
 			/// Extract a single header line, by key.
 			/// \see ddOutputSingleObj
 			boost::shared_ptr<ddOutputSingleObj> getObj(const std::string &id) const;
-
+			/// Convenience function for getting the TARGET information
+			void getTARGET(std::string &target) const;
+			/// Convenience function for setting the TARGET information
+			void setTARGET(const std::string &target);
 
 			/// Function to modify I/O stream type
 			template <ddOutputSingleAsType T>
