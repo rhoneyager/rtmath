@@ -64,7 +64,7 @@ namespace rtmath
 				if (target.find("(tag") != std::string::npos) return;
 
 				std::ostringstream out;
-				out << "(tag ";
+				out << " (tag ";
 
 				out << "hash/" << hash.lower;
 
@@ -77,7 +77,7 @@ namespace rtmath
 				out << " time " << timestamp;
 				out << " )";
 
-				target = out.str();
+				target.append(out.str());
 
 				f.setTARGET(target);
 

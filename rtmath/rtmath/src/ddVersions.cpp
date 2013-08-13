@@ -38,7 +38,7 @@ namespace
 		avgMap.insert( verMapType::value_type(721, "DDSCAT 7.2.1 [12.05.14]" ) );
 		avgMap.insert( verMapType::value_type(722, "DDSCAT 7.2.2 [12.06.05]" ) );
 		avgMap.insert( verMapType::value_type(73, "DDSCAT 7.3 [13.04.04]-BETA" ) );
-		avgMap.insert( verMapType::value_type(730, "DDSCAT 7.3.0 [13.04.04]-BETA" ) );
+		avgMap.insert( verMapType::value_type(730, "DDSCAT 7.3.0 [13.05.03]" ) );
 	}
 }
 
