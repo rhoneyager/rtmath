@@ -39,222 +39,243 @@
 namespace rtmath
 {
 	namespace ddscat {
-	namespace ddOutputSingleKeys {
-	class ddver : public ::rtmath::ddscat::ddOutputSingleObj
-	{
-	public:
-		ddver() { _version = rtmath::ddscat::ddVersions::getDefaultVer(); }
-		virtual ~ddver() {}
-		virtual void write(std::ostream &out, size_t) const override
-		{
-			out << " DDSCAT --- ";
-			out << rtmath::ddscat::ddVersions::getVerAvgHeaderString(_version);
-			out << std::endl;
-		}
-		virtual void read(std::istream &in) override
-		{
-			std::string lin;
-			std::getline(in,lin);
-			_version = rtmath::ddscat::ddVersions::getVerId(lin);
-		}
-		size_t _version;
-		size_t version() const { return _version; }
-		void version(size_t n) { _version = n; }
-		virtual std::string value() const override
-		{
-			std::ostringstream out;
-			out << _version;
-			return out.str();
-		}
-	private:
-		friend class boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("version", _version);
-		}
-	};
-	class ddstring : public ::rtmath::ddscat::ddOutputSingleObj
-	{
-	public:
-		ddstring() {}
-		virtual ~ddstring() {}
-		virtual void write(std::ostream &out, size_t) const override
-		{
-			out << s << std::endl;
-		}
-		virtual void read(std::istream &in) override
-		{
-			std::getline(in,s);
-		}
-		virtual std::string value() const override { return s; }
-		std::string s;
-	private:
-		friend class boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("str", s);
-		}
-	};
-	class ddtarget : public ::rtmath::ddscat::ddOutputSingleObj
-	{
-	public:
-		ddtarget() {}
-		virtual ~ddtarget() {}
-		virtual void write(std::ostream &out, size_t) const override
-		{
-			out << " TARGET --- ";
-			out << s << std::endl;
-		}
-		virtual void read(std::istream &in) override
-		{
-			std::string lin;
-			std::getline(in,lin);
-			size_t p = lin.find("---");
-			s = lin.substr(p+3);
-			// Remove any leading and lagging spaces
-			// Not all Liu avg files are correct in this respect
-			boost::algorithm::trim(s);
-		}
-		void setTarget(const std::string &n) { s = n; }
-		virtual std::string value() const override { return s; }
-		std::string s;
-	private:
-		friend class boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("target", s);
-		}
-	};
-	class ddSval : public ::rtmath::ddscat::ddOutputSingleObj
-	{
-	public:
-		ddSval(const std::string &tail = "") {this->tail = tail;}
-		virtual ~ddSval() {}
-		virtual void write(std::ostream &out, size_t) const override
-		{
-			out << s << "--- " << tail << std::endl;
-		}
-		virtual void read(std::istream &in) override
-		{
-			std::string lin;
-			std::getline(in,lin);
-			size_t p = lin.find("--- ");
-			s = lin.substr(0,p);
-		}
-		std::string s, tail;
-		virtual std::string value() const override { return s; }
-	private:
-		friend class boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("s", s);
-			ar & boost::serialization::make_nvp("tail", tail);
-		}
-	};
+		namespace ddOutputSingleKeys {
+			class ddver : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddver() { _version = rtmath::ddscat::ddVersions::getDefaultVer(); }
+				virtual ~ddver() {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					out << " DDSCAT --- ";
+					out << rtmath::ddscat::ddVersions::getVerAvgHeaderString(_version);
+					out << std::endl;
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string lin;
+					std::getline(in,lin);
+					_version = rtmath::ddscat::ddVersions::getVerId(lin);
+				}
+				size_t _version;
+				size_t version() const { return _version; }
+				void version(size_t n) { _version = n; }
+				virtual std::string value() const override
+				{
+					std::ostringstream out;
+					out << _version;
+					return out.str();
+				}
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("version", _version);
+				}
+			};
+			class ddstring : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddstring() {}
+				virtual ~ddstring() {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					out << s << std::endl;
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::getline(in,s);
+				}
+				virtual std::string value() const override { return s; }
+				std::string s;
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("str", s);
+				}
+			};
+			class ddtarget : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddtarget() {}
+				virtual ~ddtarget() {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					out << " TARGET --- ";
+					out << s << std::endl;
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string lin;
+					std::getline(in,lin);
+					size_t p = lin.find("---");
+					s = lin.substr(p+3);
+					// Remove any leading and lagging spaces
+					// Not all Liu avg files are correct in this respect
+					boost::algorithm::trim(s);
+				}
+				void setTarget(const std::string &n) { s = n; }
+				virtual std::string value() const override { return s; }
+				std::string s;
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("target", s);
+				}
+			};
+			class ddSval : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddSval(const std::string &tail = "") {this->tail = tail;}
+				virtual ~ddSval() {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					out << s << "--- " << tail << std::endl;
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string lin;
+					std::getline(in,lin);
+					size_t p = lin.find("--- ");
+					s = lin.substr(0,p);
+				}
+				std::string s, tail;
+				virtual std::string value() const override { return s; }
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("s", s);
+					ar & boost::serialization::make_nvp("tail", tail);
+				}
+			};
 
-	template <class T>
-	class ddNval : public ::rtmath::ddscat::ddOutputSingleObj
-	{
-	public:
-		ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") {this->pos = pos; this->head = head; this->tail = tail;}
-		virtual ~ddNval() {}
-		virtual void write(std::ostream &out, size_t) const override
-		{
-			out << head << val << tail << std::endl;
-		}
-		virtual std::string value() const override
-		{
-			std::ostringstream out;
-			out << val;
-			return out.str();
-		}
-		virtual void read(std::istream &in) override
-		{
-			std::string lin;
-			std::getline(in,lin);
-			std::istringstream ii(lin);
-			for (size_t i=0; i<pos; i++)
-				ii >> lin;
-			ii >> val;
-		}
-		size_t pos;
-		T val;
-		std::string head, tail;
-	private:
-		friend class boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("pos", pos);
-			ar & boost::serialization::make_nvp("val", val);
-			ar & boost::serialization::make_nvp("head", head);
-			ar & boost::serialization::make_nvp("tail", tail);
-		}
-	};
+			template <class T>
+			class ddNval : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") {this->pos = pos; this->head = head; this->tail = tail;}
+				virtual ~ddNval() {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					out << head << val << tail << std::endl;
+				}
+				virtual std::string value() const override
+				{
+					std::ostringstream out;
+					out << val;
+					return out.str();
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string lin;
+					std::getline(in,lin);
+					std::istringstream ii(lin);
+					for (size_t i=0; i<pos; i++)
+						ii >> lin;
+					ii >> val;
+				}
+				size_t pos;
+				T val;
+				std::string head, tail;
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("pos", pos);
+					ar & boost::serialization::make_nvp("val", val);
+					ar & boost::serialization::make_nvp("head", head);
+					ar & boost::serialization::make_nvp("tail", tail);
+				}
+			};
 
-	class ddM : public ::rtmath::ddscat::ddOutputSingleObj
-	{
-	public:
-		ddM() : w(8) {}
-		virtual void write(std::ostream &out, size_t) const override
-		{
-			// Using formatted io operations
-			using std::setw;
-			out << "n = (" << setw(w) << m.real() << "," << setw(w) << m.imag()
-				<< "), eps.= (" << setw(w) << eps.real() << "," << setw(w) << eps.imag()
-				<< ")  |m|kd=" << setw(w) << mkd << " for subs. " << subst << std::endl;
+			class ddM : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddM() : w(8) {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					// Using formatted io operations
+					using std::setw;
+					out << "n = (" << setw(w) << m.real() << "," << setw(w) << m.imag()
+						<< "), eps.= (" << setw(w) << eps.real() << "," << setw(w) << eps.imag()
+						<< ")  |m|kd=" << setw(w) << mkd << " for subs. " << subst << std::endl;
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string str;
+					std::getline(in,str);
+					// todo: fix listed ranges (stars are correct, ends are not, but w is)
+					// all ranges are INCLUSIVE
+					// mreal in cols 4-11
+					// mimag in cols 13-20
+					// eps real in 32-40
+					// eps imag in 42-49
+					// mkd in 59-66
+					// substance number in 78+
+					double mre, mim, ere, eim;
+					using boost::lexical_cast;
+					using boost::algorithm::trim_copy;
+					mre = lexical_cast<double>(trim_copy(str.substr(4,w)));
+					mim = lexical_cast<double>(trim_copy(str.substr(13,w)));
+					ere = lexical_cast<double>(trim_copy(str.substr(32,w)));
+					eim = lexical_cast<double>(trim_copy(str.substr(42,w)));
+					mkd = lexical_cast<float>(trim_copy(str.substr(59,w)));
+					subst = lexical_cast<size_t>(trim_copy(str.substr(78,2)));
+					m = std::complex<double>(mre,mim);
+					eps = std::complex<double>(ere,eim);
+				}
+				virtual std::string value() const override { return std::string(); }
+				std::complex<double> getM() const { return m; }
+				std::complex<double> getEps() const { return eps; }
+				float getMkd() const { return mkd; }
+				std::complex<double> m, eps;
+				float mkd;
+				const size_t w;
+				size_t subst;
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("m", m);
+					ar & boost::serialization::make_nvp("eps", eps);
+					ar & boost::serialization::make_nvp("mkd", mkd);
+					ar & boost::serialization::make_nvp("subst", subst);
+				}
+			};
 		}
-		virtual void read(std::istream &in) override
-		{
-			std::string str;
-			std::getline(in,str);
-			// todo: fix listed ranges (stars are correct, ends are not, but w is)
-			// all ranges are INCLUSIVE
-			// mreal in cols 4-11
-			// mimag in cols 13-20
-			// eps real in 32-40
-			// eps imag in 42-49
-			// mkd in 59-66
-			// substance number in 78+
-			double mre, mim, ere, eim;
-			using boost::lexical_cast;
-			using boost::algorithm::trim_copy;
-			mre = lexical_cast<double>(trim_copy(str.substr(4,w)));
-			mim = lexical_cast<double>(trim_copy(str.substr(13,w)));
-			ere = lexical_cast<double>(trim_copy(str.substr(32,w)));
-			eim = lexical_cast<double>(trim_copy(str.substr(42,w)));
-			mkd = lexical_cast<float>(trim_copy(str.substr(59,w)));
-			subst = lexical_cast<size_t>(trim_copy(str.substr(78,2)));
-			m = std::complex<double>(mre,mim);
-			eps = std::complex<double>(ere,eim);
-		}
-		virtual std::string value() const override { return std::string(); }
-		std::complex<double> getM() const { return m; }
-		std::complex<double> getEps() const { return eps; }
-		float getMkd() const { return mkd; }
-		std::complex<double> m, eps;
-		float mkd;
-		const size_t w;
-		size_t subst;
-	private:
-		friend class boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("m", m);
-			ar & boost::serialization::make_nvp("eps", eps);
-			ar & boost::serialization::make_nvp("mkd", mkd);
-			ar & boost::serialization::make_nvp("subst", subst);
-		}
-	};
+	}
 }
-}
-}
-	
+
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingle);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingleObj);
+
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddver);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddstring);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddtarget);
@@ -263,8 +284,15 @@ BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddNval<size_t>);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddNval<double>);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddM);
 
-// No need for EXPORTINTERNAL since these functions are file-local.
-//EXPORTINTERNAL(ddver::serialize);
+/*
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddver::serialize);
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddstring::serialize);
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddtarget::serialize);
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddSval::serialize);
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddNval<size_t>::serialize);
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddNval<double>::serialize);
+EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddM::serialize);
+*/
 
 namespace rtmath {
 	namespace ddscat {
@@ -275,7 +303,7 @@ namespace rtmath {
 #define str(s) #s
 #define CHECK(x) if(id==x) return str(x)
 			/*
-			 *			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
+			*			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
 			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
 			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
 			QPOL,DQPHA,
@@ -341,7 +369,7 @@ namespace rtmath {
 			std::string utype = type;
 			if (!utype.size()) utype = pext.string();
 
-			
+
 			std::ofstream out(filename.c_str());
 			using namespace boost::iostreams;
 			filtering_ostream sout;
@@ -403,11 +431,12 @@ namespace rtmath {
 		{
 			// First, detect if the file is compressed.
 			using namespace Ryan_Serialization;
-			std::string cmeth, uncompressed;
+			std::string cmeth, target, uncompressed;
 			// Combination of detection of compressed file, file type and existence.
-			if (!detect_compressed(filename, cmeth, uncompressed))
+			if (!detect_compressed(filename, cmeth, target))
 				throw rtmath::debug::xMissingFile(filename.c_str());
-			//uncompressed_name(filename, uncompressed, cmeth);
+			uncompressed_name(target, uncompressed, cmeth);
+
 			boost::filesystem::path p(uncompressed);
 			boost::filesystem::path pext = p.extension(); // Uncompressed extension
 
@@ -557,7 +586,7 @@ namespace rtmath {
 					}
 
 					// TODO: add function that generates the correct mueller relations from here
-	#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine")
+#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine")
 				} else {
 					// Parse the Mueller entries
 					//std::cerr << "Parsing " << lin << std::endl;
@@ -576,7 +605,7 @@ namespace rtmath {
 					{
 						P(ot->second.first, ot->second.second) = vals[ot->first]; // See Mueller header read
 					}
-	#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine (part b)")
+#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine (part b)")
 					mat->setP(P);
 					mat->pol(vals[2]);
 
@@ -1129,42 +1158,42 @@ namespace rtmath {
 			res = "";
 			//if (line.find("")!=std::string::npos) res = "";
 			if (line.find("DDSCAT ---")!=std::string::npos) res = "version";
-			if (line.find("TARGET ---")!=std::string::npos) res = "target";
+			else if (line.find("TARGET ---")!=std::string::npos) res = "target";
 			// DDSCAT 7.3 writes solnmeth and polarizability
 			// lines differently
-			if (line.find("--- method of solution")!=std::string::npos || line.find("--- DDA method")!=std::string::npos) res = "solnmeth";
-			if (line.find(" --- prescription for ")!=std::string::npos || line.find("--- CCG method")!=std::string::npos) res = "polarizability";
-			if (line.find("--- shape")!=std::string::npos) res = "shape";
-			if (line.find("NAT0")!=std::string::npos) res = "numdipoles";
-			if (line.find("= d/aeff for this target")!=std::string::npos) res = "d/aeff";
-			if (line.find("= d (physical units)")!=std::string::npos) res = "d";
-			if (line.find("effective radius (physical units)")!=std::string::npos) res = "aeff";
-			if (line.find("wavelength")!=std::string::npos) res = "wave";
-			if (line.find("K*AEFF")!=std::string::npos) res = "k.aeff";
-			if (line.find("NAMBIENT")!=std::string::npos) res = "nambient";
-			if (line.find("eps.=")!=std::string::npos) res = "neps";
-			if (line.find("TOL")!=std::string::npos) res = "tol";
-			if (line.find("target axis A1 in Target Frame")!=std::string::npos) res = "a1tgt";
-			if (line.find("target axis A2 in Target Frame")!=std::string::npos) res = "a2tgt";
-			if (line.find("NAVG")!=std::string::npos) res = "navg";
-			if (line.find("k vector (latt. units) in Lab Frame")!=std::string::npos) res = "kveclf";
-			if (line.find("k vector (latt. units) in TF")!=std::string::npos) res = "kvectf";
-			if (line.find("inc.pol.vec. 1 in LF")!=std::string::npos) res = "incpol1lf";
-			if (line.find("inc.pol.vec. 2 in LF")!=std::string::npos) res = "incpol2lf";
-			if (line.find("inc.pol.vec. 1 in TF")!=std::string::npos) res = "incpol1tf";
-			if (line.find("inc.pol.vec. 2 in TF")!=std::string::npos) res = "incpol2tf"; //
-			if (line.find("beta_min")!=std::string::npos) res = "betarange";
-			if (line.find("theta_min")!=std::string::npos) res = "thetarange";
-			if (line.find("phi_min")!=std::string::npos) res = "phirange";
-			if (line.find("ETASCA")!=std::string::npos) res = "etasca";
-			if (line.find("target orientations")!=std::string::npos) res = "avgnumori";
-			if (line.find("incident polarizations")!=std::string::npos) res = "avgnumpol";
-			if (line.find("xmin,xmax")!=std::string::npos) res = "xtf";
-			if (line.find("ymin,ymax")!=std::string::npos) res = "ytf";
-			if (line.find("zmin,zmax")!=std::string::npos) res = "ztf";
-			if (line.find("BETA")!=std::string::npos) res = "beta";
-			if (line.find("THETA")!=std::string::npos) res = "theta";
-			if (line.find("PHI")!=std::string::npos) res = "phi";
+			else if (line.find("--- method of solution")!=std::string::npos || line.find("--- DDA method")!=std::string::npos) res = "solnmeth";
+			else if (line.find(" --- prescription for ")!=std::string::npos || line.find("--- CCG method")!=std::string::npos) res = "polarizability";
+			else if (line.find("--- shape")!=std::string::npos) res = "shape";
+			else if (line.find("NAT0")!=std::string::npos) res = "numdipoles";
+			else if (line.find("= d/aeff for this target")!=std::string::npos) res = "d/aeff";
+			else if (line.find("= d (physical units)")!=std::string::npos) res = "d";
+			else if (line.find("effective radius (physical units)")!=std::string::npos) res = "aeff";
+			else if (line.find("wavelength")!=std::string::npos) res = "wave";
+			else if (line.find("K*AEFF")!=std::string::npos) res = "k.aeff";
+			else if (line.find("NAMBIENT")!=std::string::npos) res = "nambient";
+			else if (line.find("eps.=")!=std::string::npos) res = "neps";
+			else if (line.find("TOL")!=std::string::npos) res = "tol";
+			else if (line.find("target axis A1 in Target Frame")!=std::string::npos) res = "a1tgt";
+			else if (line.find("target axis A2 in Target Frame")!=std::string::npos) res = "a2tgt";
+			else if (line.find("NAVG")!=std::string::npos) res = "navg";
+			else if (line.find("k vector (latt. units) in Lab Frame")!=std::string::npos) res = "kveclf";
+			else if (line.find("k vector (latt. units) in TF")!=std::string::npos) res = "kvectf";
+			else if (line.find("inc.pol.vec. 1 in LF")!=std::string::npos) res = "incpol1lf";
+			else if (line.find("inc.pol.vec. 2 in LF")!=std::string::npos) res = "incpol2lf";
+			else if (line.find("inc.pol.vec. 1 in TF")!=std::string::npos) res = "incpol1tf";
+			else if (line.find("inc.pol.vec. 2 in TF")!=std::string::npos) res = "incpol2tf"; //
+			else if (line.find("beta_min")!=std::string::npos) res = "betarange"; // NOTE: else if used because BETA vould conflict with the id
+			else if (line.find("theta_min")!=std::string::npos) res = "thetarange";
+			else if (line.find("phi_min")!=std::string::npos) res = "phirange";
+			else if (line.find("ETASCA")!=std::string::npos) res = "etasca";
+			else if (line.find("target orientations")!=std::string::npos) res = "avgnumori";
+			else if (line.find("incident polarizations")!=std::string::npos) res = "avgnumpol";
+			else if (line.find("xmin,xmax")!=std::string::npos) res = "xtf";
+			else if (line.find("ymin,ymax")!=std::string::npos) res = "ytf";
+			else if (line.find("zmin,zmax")!=std::string::npos) res = "ztf";
+			else if (line.find("BETA")!=std::string::npos) res = "beta";
+			else if (line.find("THETA")!=std::string::npos) res = "theta";
+			else if (line.find("PHI")!=std::string::npos) res = "phi";
 		}
 
 		bool ddOutputSingleObj::operator==(const ddOutputSingleObj &rhs) const
@@ -1191,184 +1220,184 @@ namespace rtmath {
 		/*
 		void ddOutputSingle::writeEvans(std::ostream &out, double freq) const
 		{
-			using namespace std;
-			// Takes the scattering data, generates the appropriate
-			// phase, extinction matrices and emission vectors for a given
-			// frequency, and writes the necessary file.
+		using namespace std;
+		// Takes the scattering data, generates the appropriate
+		// phase, extinction matrices and emission vectors for a given
+		// frequency, and writes the necessary file.
 
-			// Generate quadrature points
-			set<double> qangles;
-			// Let's get the quadrature angles from gaussian quadrature
-			// Other quadrature methods can be coded in as well
-			const size_t deg = 7;
-			quadrature::getQuadPtsLeg(deg,qangles);
-			// The quadrature points are on interval (-1,1)
-			// Need to get mapping between angles in degrees and these points
-			// can handle this by mapping mu = cos(theta).
+		// Generate quadrature points
+		set<double> qangles;
+		// Let's get the quadrature angles from gaussian quadrature
+		// Other quadrature methods can be coded in as well
+		const size_t deg = 7;
+		quadrature::getQuadPtsLeg(deg,qangles);
+		// The quadrature points are on interval (-1,1)
+		// Need to get mapping between angles in degrees and these points
+		// can handle this by mapping mu = cos(theta).
 
-			// For phase functions, need to look at both incoming and outgoing angle
-			// in cos(theta)
-			// ddscat output always has incoming angle at zero degrees, with a varying output angle.
-			// However, the targets may be rotated to simulate the angle change.
-			// In this case, however, we likely just have a single ensemble pf from the data
-			// TODO!!!!!
-			std::map<coords::cyclic<double>, std::shared_ptr<const ddscat::ddScattMatrix> >
-				interped;
-			// Need to interpolate phase matrices to the correct quadrature points
-			for (auto it = qangles.begin(); it != qangles.end(); it++)
-			{
-				// TODO: convert angle into cyclic coords
-				throw rtmath::debug::xUnimplementedFunction();
-				coords::cyclic<double> crd;
-				std::shared_ptr<const ddscat::ddScattMatrix> interres;
-				interpolate(crd, interres);
-				interped[crd] = interres;
-			}
+		// For phase functions, need to look at both incoming and outgoing angle
+		// in cos(theta)
+		// ddscat output always has incoming angle at zero degrees, with a varying output angle.
+		// However, the targets may be rotated to simulate the angle change.
+		// In this case, however, we likely just have a single ensemble pf from the data
+		// TODO!!!!!
+		std::map<coords::cyclic<double>, std::shared_ptr<const ddscat::ddScattMatrix> >
+		interped;
+		// Need to interpolate phase matrices to the correct quadrature points
+		for (auto it = qangles.begin(); it != qangles.end(); it++)
+		{
+		// TODO: convert angle into cyclic coords
+		throw rtmath::debug::xUnimplementedFunction();
+		coords::cyclic<double> crd;
+		std::shared_ptr<const ddscat::ddScattMatrix> interres;
+		interpolate(crd, interres);
+		interped[crd] = interres;
+		}
 
-			// First, write commented header information
-			// This includes where the scattering information is from, and a
-			// discription of each of these files
-			out << "C  ddscat rtmath output for " << endl;
-			out << "C  theta " << _theta << " phi " << _phi << " beta " << _beta << endl;
-			out << "C  at f = " << _freq << " GHz" << endl;
+		// First, write commented header information
+		// This includes where the scattering information is from, and a
+		// discription of each of these files
+		out << "C  ddscat rtmath output for " << endl;
+		out << "C  theta " << _theta << " phi " << _phi << " beta " << _beta << endl;
+		out << "C  at f = " << _freq << " GHz" << endl;
 
-			// Next is the degree and type of quadrature
-			cout << "   8    0   'GAUSSIAN         '" << endl;
+		// Next is the degree and type of quadrature
+		cout << "   8    0   'GAUSSIAN         '" << endl;
 
-			// Output each scattering matrix at the designated quadrature incoming
-			// and outgoing angles
-			out << "C   SCATTERING MATRIX" << endl;
-			for (auto it = interped.begin(); it != interped.end(); ++it)
-			{
-				// Write incoming angle, outcoming angle, 0
-			}
+		// Output each scattering matrix at the designated quadrature incoming
+		// and outgoing angles
+		out << "C   SCATTERING MATRIX" << endl;
+		for (auto it = interped.begin(); it != interped.end(); ++it)
+		{
+		// Write incoming angle, outcoming angle, 0
+		}
 
-			// Write the extinction matrix at each quadrature angle
-			out << "C   EXTINCTION MATRIX" << endl;
-			for (auto it = interped.begin(); it != interped.end(); ++it)
-			{
-				// Write incoming angle
-			}
+		// Write the extinction matrix at each quadrature angle
+		out << "C   EXTINCTION MATRIX" << endl;
+		for (auto it = interped.begin(); it != interped.end(); ++it)
+		{
+		// Write incoming angle
+		}
 
-			// Output the emission vectors
-			out << "C   EMISSION VECTOR" << endl;
-			for (auto it = interped.begin(); it != interped.end(); ++it)
-			{
-				// Write incoming angle and the four stokes parameters
-			}
-			// Evans fortran files lack a newline at EOF.
+		// Output the emission vectors
+		out << "C   EMISSION VECTOR" << endl;
+		for (auto it = interped.begin(); it != interped.end(); ++it)
+		{
+		// Write incoming angle and the four stokes parameters
+		}
+		// Evans fortran files lack a newline at EOF.
 		}
 		*/
 
 		/*
 		void ddOutputSingle::loadFile(const std::string &filename)
 		{
-			using namespace std;
-			// File loading routine is important!
-			// Load a standard .fml file. Parse each line for certain key words.
-			clear();
-			bool dataseg = false;
-			this->_filename = filename;
+		using namespace std;
+		// File loading routine is important!
+		// Load a standard .fml file. Parse each line for certain key words.
+		clear();
+		bool dataseg = false;
+		this->_filename = filename;
 
-			// If a shape is not loaded, then try to load the corresponding shapefile
-			using namespace boost::filesystem;
-			path pshapepath, p, pfile(filename);
-			p = pfile.parent_path();
-			string shapepath;
-			{
-				// Figure out where the shape file is located.
-				path ptarget = p / "target.out";
-				path pshapedat = p / "shape.dat";
-				if (exists(ptarget))
-				{ pshapepath = ptarget;
-				} else if (exists(pshapedat))
-				{ pshapepath = pshapedat;
-				} else {
-					throw rtmath::debug::xMissingFile("shape.dat or target.out");
-				}
-				shapepath = pshapepath.string();
-				if (exists(pshapepath) && !_shape)
-					_shape = boost::shared_ptr<shapefile>(new shapefile(shapepath));
-			}
+		// If a shape is not loaded, then try to load the corresponding shapefile
+		using namespace boost::filesystem;
+		path pshapepath, p, pfile(filename);
+		p = pfile.parent_path();
+		string shapepath;
+		{
+		// Figure out where the shape file is located.
+		path ptarget = p / "target.out";
+		path pshapedat = p / "shape.dat";
+		if (exists(ptarget))
+		{ pshapepath = ptarget;
+		} else if (exists(pshapedat))
+		{ pshapepath = pshapedat;
+		} else {
+		throw rtmath::debug::xMissingFile("shape.dat or target.out");
+		}
+		shapepath = pshapepath.string();
+		if (exists(pshapepath) && !_shape)
+		_shape = boost::shared_ptr<shapefile>(new shapefile(shapepath));
+		}
 
-			ifstream in(filename.c_str(), std::ifstream::in);
-			while (in.good())
-			{
-				// Read a line
-				string lin;
-				std::getline(in,lin);
-				istringstream lss(lin);
-				// Expand line using convenient expansion function
-				//vector<string> seg;
-				//splitString(lin, ' ', seg);
+		ifstream in(filename.c_str(), std::ifstream::in);
+		while (in.good())
+		{
+		// Read a line
+		string lin;
+		std::getline(in,lin);
+		istringstream lss(lin);
+		// Expand line using convenient expansion function
+		//vector<string> seg;
+		//splitString(lin, ' ', seg);
 
-				// Are we in the data segment?
-				if (dataseg)
-				{
-					// In data segment
-					// Entry not modified after this, because it is const
-					std::shared_ptr<const ddScattMatrix> nscat (new ddScattMatrix(_freq,lss));
-					// Save to the maps and sets
-					// Totally assuming that no duplicate entry exists
-					_insert(nscat);
-				} else {
-					// Still in header segment
-					string junk;
-					// Search for key strings in file
+		// Are we in the data segment?
+		if (dataseg)
+		{
+		// In data segment
+		// Entry not modified after this, because it is const
+		std::shared_ptr<const ddScattMatrix> nscat (new ddScattMatrix(_freq,lss));
+		// Save to the maps and sets
+		// Totally assuming that no duplicate entry exists
+		_insert(nscat);
+		} else {
+		// Still in header segment
+		string junk;
+		// Search for key strings in file
 
-					// BETA
-					if (lin.find("BETA") != string::npos)
-					{
-						lss >> junk; // get rid of first word
-						lss >> junk;
-						lss >> _beta;
-					}
-					// THETA
-					if (lin.find("THETA") != string::npos)
-					{
-						lss >> junk; // get rid of first word
-						// Theta is unlike Beta and Phi, as there is
-						// no space between THETA and =
-						lss >> _theta;
-					}
-					// PHI
-					if (lin.find("PHI") != string::npos)
-					{
-						lss >> junk; // get rid of first word
-						lss >> junk;
-						lss >> _phi;
-					}
-					// NAT0
-					if (lin.find("NAT0") != string::npos)
-					{
-						lss >> _numDipoles;
-					}
-					// AEFF
-					if (lin.find("AEFF") != string::npos)
-					{
-						lss >> junk; // get rid of first word
-						lss >> _reff;
-					}
-					// WAVE
-					if (lin.find("WAVE") != string::npos)
-					{
-						// BAD --- WAVE runs against size...
-						//lss >> junk; // get rid of first word
-						//lss >> _wavelength;
-						// Instead, read wave from column 7 (starting at 0) to 17
-						_wavelength = atof( lin.substr( 7, 10 ).c_str() );
-						// Also do a conversion from wavelength to frequency,
-						// for easier comparisons later
-						units::conv_spec wvtof("um","GHz");
-						_freq = wvtof.convert(_wavelength);
-					}
-					// theta --- indicates last line of header
-					if (lin.find("Re(f_11)") != string::npos)
-					{
-						dataseg = true;
-					}
-				}
-			}
+		// BETA
+		if (lin.find("BETA") != string::npos)
+		{
+		lss >> junk; // get rid of first word
+		lss >> junk;
+		lss >> _beta;
+		}
+		// THETA
+		if (lin.find("THETA") != string::npos)
+		{
+		lss >> junk; // get rid of first word
+		// Theta is unlike Beta and Phi, as there is
+		// no space between THETA and =
+		lss >> _theta;
+		}
+		// PHI
+		if (lin.find("PHI") != string::npos)
+		{
+		lss >> junk; // get rid of first word
+		lss >> junk;
+		lss >> _phi;
+		}
+		// NAT0
+		if (lin.find("NAT0") != string::npos)
+		{
+		lss >> _numDipoles;
+		}
+		// AEFF
+		if (lin.find("AEFF") != string::npos)
+		{
+		lss >> junk; // get rid of first word
+		lss >> _reff;
+		}
+		// WAVE
+		if (lin.find("WAVE") != string::npos)
+		{
+		// BAD --- WAVE runs against size...
+		//lss >> junk; // get rid of first word
+		//lss >> _wavelength;
+		// Instead, read wave from column 7 (starting at 0) to 17
+		_wavelength = atof( lin.substr( 7, 10 ).c_str() );
+		// Also do a conversion from wavelength to frequency,
+		// for easier comparisons later
+		units::conv_spec wvtof("um","GHz");
+		_freq = wvtof.convert(_wavelength);
+		}
+		// theta --- indicates last line of header
+		if (lin.find("Re(f_11)") != string::npos)
+		{
+		dataseg = true;
+		}
+		}
+		}
 		}
 		*/
 
@@ -1415,7 +1444,4 @@ namespace rtmath
 		EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleObj::serialize);
 	}
 }
-
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingle);
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputSingleObj);
 

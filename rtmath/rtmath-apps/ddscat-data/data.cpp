@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 				string uname, meth, ext;
 				Ryan_Serialization::uncompressed_name(f.string(), uname, meth);
 				ext = path(uname).extension().string();
-				if (ext == ".avg" || ext == ".sca" || ext == ".fml")
+				if (ext == ".avg" || ext == ".sca" || ext == ".fml" || ext == ".xml")
 				{
 					using namespace rtmath::ddscat;
 					//std::function<void(const std::complex<double> Sn[4], double Snn[4][4])>
