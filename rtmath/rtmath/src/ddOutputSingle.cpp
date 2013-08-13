@@ -36,8 +36,10 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-namespace
+namespace rtmath
 {
+	namespace ddscat {
+	namespace ddOutputSingleKeys {
 	class ddver : public ::rtmath::ddscat::ddOutputSingleObj
 	{
 	public:
@@ -250,20 +252,23 @@ namespace
 		}
 	};
 }
+}
+}
 	
-BOOST_CLASS_EXPORT(ddver);
-BOOST_CLASS_EXPORT(ddstring);
-BOOST_CLASS_EXPORT(ddtarget);
-BOOST_CLASS_EXPORT(ddSval);
-BOOST_CLASS_EXPORT(ddNval<size_t>);
-BOOST_CLASS_EXPORT(ddNval<double>);
-BOOST_CLASS_EXPORT(ddM);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddver);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddstring);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddtarget);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddSval);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddNval<size_t>);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddNval<double>);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddM);
 
 // No need for EXPORTINTERNAL since these functions are file-local.
 //EXPORTINTERNAL(ddver::serialize);
 
 namespace rtmath {
 	namespace ddscat {
+		using namespace rtmath::ddscat::ddOutputSingleKeys;
 
 		std::string getStatNameFromId(stat_entries id)
 		{

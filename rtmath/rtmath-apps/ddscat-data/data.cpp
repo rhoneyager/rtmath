@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 		desc.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input file")
-			//("output,o", po::value<string>(), "specify output file")
+			("output,o", po::value<string>(), "specify output file")
 			//("Mueller-method", po::value<string>()->default_value("bh"),
 			//	"Specify method used to determine Mueller matrix (tmatrix, bh, ddscat). bh and ddscat are equivalent.")
 			("stats", "display file stats")
@@ -89,8 +89,12 @@ int main(int argc, char** argv)
 			if (is_directory(p) && tag) rtmath::ddscat::ddUtil::tagTARGETs(p);
 			if (tag) continue;
 			vector<path> pCand;
-			copy(recursive_directory_iterator(p,symlink_option::no_recurse), 
-				recursive_directory_iterator(), back_inserter(pCand));
+			if (is_directory(p))
+				copy(recursive_directory_iterator(p,symlink_option::no_recurse), 
+					recursive_directory_iterator(), back_inserter(pCand));
+			else pCand.push_back(p);
+			if (pCand.size() > 1 && sOutput.size()) doHelp("Only one input file allowed if "
+				"output file is written.");
 			for (const auto &f : pCand)
 			{
 				if (is_directory(f)) continue;
@@ -132,14 +136,16 @@ int main(int argc, char** argv)
 						ddfile.writeMueller(cout);
 						cout << endl;
 					}
+
+					if (sOutput.size())
+						ddfile.writeFile(sOutput);
+
 				}
 			}
 		}
 
 
 
-		//		if (sOutput.size())
-		//			ddfile.writeFile(sOutput);
 	}
 	catch (std::exception &e)
 	{
