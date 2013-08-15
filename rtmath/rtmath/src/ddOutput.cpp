@@ -97,7 +97,12 @@ namespace rtmath {
 
 			// Set a basic source descriptor
 			res->sources.insert(dir);
-			// Set a basic tag?
+			// Set a basic tag based on the avg file's TARGET line
+			{
+				std::string starget;
+				res->avg->getTARGET(starget);
+				res->tags.insert(starget);
+			}
 
 			// Set the frequency and effective radius
 			res->freq = units::conv_spec("um","GHz").convert(res->avg->wave());
@@ -106,12 +111,53 @@ namespace rtmath {
 			// Set generator to null generator
 			// Nothing need be done
 
-			// Set isotropic weights
+			// Set weights to ddscat standards.
+			// Isotropic if there are an even number of thetas
+			/// \todo Using simpson's rule weights if odd.
+#pragma message("TODO: simpson's rule implementation")
 			float numScas = (float) res->scas.size();
+			float numThetas;
+			{
+				std::set<double> thetas;
+				/// \todo Implement ddOutputSingle::numThetas function for avg file?
+				for (auto &sca : res->scas)
+				{
+					if (!thetas.count(sca->theta())) thetas.insert(sca->theta());
+				}
+				numThetas = thetas.size();
+			}
+			/// \todo Put this elsewhere, for the ddOutPutEnsembleDDSCAT function to also use
 			for (auto &sca : res->scas)
 			{
+				double weight = 0;
+				auto fApprox = [](double a, double b) -> bool
+				{
+					if (abs((a-b)/a) < 0.001) return true;
+					return false;
+				};
+				if (fApprox(sca->theta(),0) || fApprox(sca->theta(),180))
+				{
+					// Simpson's rule case
+					// int_a^b f(x)dx = (b-a)/6 * [f(a)+4f((a+b)/2)+f(b)]
+					// Thetas are the _midpoints_ of the intervals, so the integration
+					/** \note From Orient.f90
+					!** Specify weight factors WGTA, WGTB
+					!   (Note: weight function WGTA = 4*pi*P/(NTHETA*NPHI), where
+					!    P=(probability/solid angle) of orientation in direction THETA,PHI .
+					!    The orientational averaging program automatically samples uniformly
+					!    in cos(theta) to allow for d(solid angle)=sin(theta)d(theta)d(phi).
+					!   Present version assumes random orientations.
+					!   When NTHETA is >1 and even, we use trapezoidal integration
+					!   When NTHETA is >1 and odd, we use Simpson's rule integration.
+					**/
+					/// \todo Change this
+					weight = 1.0f / numScas; // Isotropic case
+
+				} else {
+					weight = 1.0f / numScas; // Isotropic case
+				}
 				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
-					(sca, 1.0f / numScas));
+					(sca, weight));
 			}
 
 			// Populate ms
@@ -135,23 +181,6 @@ namespace rtmath {
 
 
 		/*
-		ddOutput::ddOutput()
-		{
-			_init();
-		}
-
-		ddOutput::ddOutput(const std::string &ddparfile)
-		{
-			_init();
-			loadFile(ddparfile);
-		}
-
-		void ddOutput::_init()
-		{
-			_filename = "";
-			_shape = 0;
-		}
-
 		void ddOutput::clear()
 		{
 			_init();
@@ -188,93 +217,6 @@ namespace rtmath {
 			// TODO: throw stuff?
 			//throw rtmath::debug::xUnimplementedFunction();
 			return;
-		}
-
-		void ddOutput::freqs(std::set<double> &freq) const
-		{
-			freq.clear();
-			// Iterate through ddOutputSingle to get set of frequencies
-			for (auto it = _outputSingleRaw.begin(); it != _outputSingleRaw.end(); ++it)
-			{
-				double f = (*it)->freq();
-				if (freq.count(f) == 0)
-					freq.insert(f);
-			}
-		}
-
-		void ddOutput::loadFile(const std::string &ddparfile)
-		{
-			using namespace std;
-			using namespace boost::filesystem;
-
-			boost::filesystem::path p(ddparfile.c_str()), dir, ddfile;
-			if (!exists(p)) throw rtmath::debug::xMissingFile(ddparfile.c_str());
-			if (is_regular_file(p))
-			{
-				// Need to extract the directory path
-				ddfile = p;
-				dir = p.parent_path();
-			}
-			if (is_directory(p))
-			{
-				// Need to extract the path for ddscat.par
-				dir = p;
-				ddfile = p / "ddscat.par";
-			}
-			if (!exists(ddfile))
-			{
-				throw rtmath::debug::xMissingFile(ddfile.string().c_str());
-			}
-			//cerr << "Directory: " << dir << endl;
-			//cerr << "ddscat par: " << ddfile << endl;
-
-			// Find and load the shapefile
-			boost::filesystem::path pshapepath;
-			string shapepath;
-			{
-				// Figure out where the shape file is located.
-				path ptarget = p / "target.out";
-				path pshapedat = p / "shape.dat";
-				if (exists(ptarget))
-				{ pshapepath = ptarget;
-				} else if (exists(pshapedat))
-				{ pshapepath = pshapedat;
-				} else {
-					throw rtmath::debug::xMissingFile("shape.dat or target.out");
-				}
-				shapepath = pshapepath.string();
-				if (exists(pshapepath))
-					_shape = shared_ptr<shapefile>(new shapefile(shapepath));
-			}
-
-			// Use boost to select and open all files in path
-			// Iterate through each .fml file and load
-			vector<path> files;
-			copy(directory_iterator(dir), directory_iterator(), back_inserter(files));
-
-			//cerr << "There are " << files.size() << " files in the directory." << endl;
-			// Iterate through file list for .fml files
-			vector<path>::const_iterator it;
-			size_t counter = 0;
-			for (it = files.begin(); it != files.end(); it++)
-			{
-				//cout << *it << "\t" << it->extension() << endl;
-//				it->extension().str();
-//				if (string(".fml").compare(it->extension().c_str()) == 0)
-				if (it->extension().string() == string(".fml") )
-				{
-					// Load the file
-					//cout << "Loading " << it->string() << endl;
-					//ddOutputSingle news(it->string());
-					std::shared_ptr<const ddscat::ddOutputSingle> news 
-						(new ddscat::ddOutputSingle(it->string()));
-					//coords::cyclic<double> crds = news->genCoords(); // not used
-					this->insert(news);
-					counter++;
-				}
-			}
-			//cerr << "Of these, " << counter << " fml files were loaded." << endl;
-
 		}
 
 		void ddOutput::ensemble(const ddOutputEnsemble &provider, ddOutputSingle &res) const

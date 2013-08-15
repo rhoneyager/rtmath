@@ -35,6 +35,7 @@ namespace rtmath {
 			ddOutputGenerator();
 		public:
 			virtual ~ddOutputGenerator() {}
+			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const = 0;
 		protected:
 			ddOutputGenerator(boost::shared_ptr<ddOutput> source);
 			boost::shared_ptr<ddOutput> src, res;
@@ -44,11 +45,24 @@ namespace rtmath {
 		class ddOutputGeneratorSimple : public ddOutputGenerator
 		{
 		protected:
+			/// Standard constructor
 			ddOutputGeneratorSimple(boost::shared_ptr<ddOutput> source);
+			/// Constructor used when loading a DDSCAT results folder for the first time
+			ddOutputGeneratorSimple(std::set<boost::shared_ptr<ddOutputSingle> > &scas);
 		public:
 			virtual ~ddOutputGeneratorSimple() {}
-			//virtual boost::shared_ptr<ddOutput> generate() const override;
+			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const override;
+			virtual boost::shared_ptr<ddOutput> generate(std::set<boost::shared_ptr<ddOutputSingle> > &scas) const;
 		};
+
+		/// \todo Modify ddweights to get default weighting factors based on solid angle
+		/// \todo Modify ddweights to get weighting factors based on ddscat defaults
+
+		/// \todo Add interpolation class elsewhere. The interpolation class will be able to interpolate a rotation and 
+		/// a set of scattering angles.
+
+
+		/// \todo Add truncated Gaussian ensemble generator. Will restrict in one or more dimensions.
 
 		/*
 		// Not a child of ddOutputSingle, but a provider for ddOutput

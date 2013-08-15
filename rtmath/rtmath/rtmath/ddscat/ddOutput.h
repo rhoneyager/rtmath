@@ -83,6 +83,13 @@ namespace rtmath {
 			/// Pointer to any ensemble generator used to generate the avg results
 			boost::shared_ptr<ddOutputGenerator> generator;
 
+			/// Write output to file (using serialization). (TODO)
+			void writeFile(const std::string &filename, const std::string &type = "") const;
+
+			/// Generate a standardized file name (for saving) based on the 
+			/// ddOutput contents. (TODO)
+			std::string genName() const;
+
 			/*
 			/// Generate ddOutput from a set of ddOutputSingle
 			static boost::shared_ptr<ddOutput> generate(
@@ -99,6 +106,8 @@ namespace rtmath {
 			/// Generate ddOutput from a ddscat output directory
 			static boost::shared_ptr<ddOutput> generate(
 				const std::string &dir);
+
+			
 		};
 
 		/*
