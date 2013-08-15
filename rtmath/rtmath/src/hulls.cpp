@@ -357,7 +357,7 @@ namespace rtmath
 				return sqrt(maxD);
 			};
 
-			_p->diameter = fMaxDiameter(_p->decimate->GetOutput()->GetPoints());
+			_p->diameter = fMaxDiameter(delaunay3D->GetOutput()->GetPoints());
 		}
 
 		double hull::maxDiameter() const { return _p->diameter; }

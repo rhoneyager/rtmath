@@ -124,12 +124,12 @@ namespace rtmath {
 				{
 					if (!thetas.count(sca->theta())) thetas.insert(sca->theta());
 				}
-				numThetas = thetas.size();
+				numThetas = (float) thetas.size();
 			}
 			/// \todo Put this elsewhere, for the ddOutPutEnsembleDDSCAT function to also use
 			for (auto &sca : res->scas)
 			{
-				double weight = 0;
+				float weight = 0;
 				auto fApprox = [](double a, double b) -> bool
 				{
 					if (abs((a-b)/a) < 0.001) return true;

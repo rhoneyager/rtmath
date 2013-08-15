@@ -358,7 +358,7 @@ namespace rtmath {
 			if (cmeth.size()) outfile << "." << cmeth;
 			std::string soutfile = outfile.str();
 
-			ofstream out(soutfile.c_str());
+			ofstream out(soutfile.c_str(), ios_base::out | ios_base::binary);
 			using namespace boost::iostreams;
 			filtering_ostream sout;
 			if (cmeth.size())

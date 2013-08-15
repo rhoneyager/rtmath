@@ -370,7 +370,7 @@ namespace rtmath {
 			if (!utype.size()) utype = pext.string();
 
 
-			std::ofstream out(filename.c_str());
+			std::ofstream out(filename.c_str(), std::ios_base::out | std::ios_base::binary);
 			using namespace boost::iostreams;
 			filtering_ostream sout;
 			if (cmeth.size())
