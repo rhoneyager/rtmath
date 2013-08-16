@@ -13,6 +13,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/iostreams/filter/newline.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
@@ -409,6 +410,8 @@ namespace rtmath {
 			filtering_ostream sout;
 			if (cmeth.size())
 				prep_compression(cmeth, sout);
+
+			sout.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
 			sout.push(out);
 
 			if (utype == ".sca")
@@ -486,6 +489,7 @@ namespace rtmath {
 			filtering_istream sin;
 			if (cmeth.size())
 				prep_decompression(cmeth, sin);
+			sin.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
 			sin.push(in);
 
 			if (type.size()) pext = boost::filesystem::path(type); // pext is first set a few lines above
