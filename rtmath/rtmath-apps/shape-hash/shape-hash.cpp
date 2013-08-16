@@ -120,7 +120,10 @@ int main(int argc, char** argv)
 			}
 			if (doStats)
 			{
-				path pStatsHashed = storeHash(pStatsDir,hash);
+				path pStatsHashedCand = storeHash(pStatsDir,hash);
+				path pStatsHashed;
+				Ryan_Serialization::serialization_method sm = Ryan_Serialization::select_format(pStatsHashedCand, pStatsHashed);
+
 				rtmath::ddscat::shapeFileStats sstats;
 				if (Ryan_Serialization::detect_compressed(pStatsHashed.string()))
 				{

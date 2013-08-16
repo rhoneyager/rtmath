@@ -1,8 +1,10 @@
 #pragma once
 /* defs.h - Header containing typedefs and other defines for many things */
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <iostream>
+#include <string>
+#include <vector>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 //#include <boost/filesystem.hpp>
@@ -37,8 +39,9 @@ namespace rtmath {
 
 	/// \brief Function to find a hash in a directory hash structure.
 	/// Does not modify hash tree structure.
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash);
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash);
+	/// \param extensions is a list of extensions (i.e. ".sca") to check.
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash, const std::vector<std::string> &extensions = std::vector<std::string>() );
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash, const std::vector<std::string> &extensions = std::vector<std::string>() );
 	/// \brief Function to determine where a new hash should be stored in a hash path.
 	/// May create new subhash folders.
 	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash);

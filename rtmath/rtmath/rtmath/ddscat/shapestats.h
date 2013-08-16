@@ -119,7 +119,7 @@ namespace rtmath {
 			void writeToHash() const;
 			/// Load stats from serialized file.
 			/// A convenience function that calls Ryan_Serialization
-			void read(const std::string &src);
+			void read(const std::string &filename);
 		private:
 			/// Gets some initial path information from rtmath.conf
 			static void initPaths();

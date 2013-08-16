@@ -369,6 +369,12 @@ namespace rtmath {
 			std::string utype = type;
 			if (!utype.size()) utype = pext.string();
 
+			// Serialization gets its own override
+			if (Ryan_Serialization::known_format(utype))
+			{
+				Ryan_Serialization::write<ddOutputSingle>(*this, filename, "rtmath::ddscat::ddOutputSingle");
+				return;
+			}
 
 			std::ofstream out(filename.c_str(), std::ios_base::out | std::ios_base::binary);
 			using namespace boost::iostreams;
@@ -386,9 +392,6 @@ namespace rtmath {
 			} else if (utype == ".avg")
 			{
 				writeAVG(sout);
-			} else if (utype == ".xml")
-			{
-				Ryan_Serialization::write<ddOutputSingle>(*this, sout, "rtmath::ddscat::ddOutputSingle");
 			} else {
 				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}
@@ -440,7 +443,16 @@ namespace rtmath {
 			boost::filesystem::path p(uncompressed);
 			boost::filesystem::path pext = p.extension(); // Uncompressed extension
 
-			std::ifstream in(filename.c_str());
+			// Serialization gets its own override
+			if (Ryan_Serialization::known_format(pext))
+			{
+				// This is a serialized file. Verify that it has the correct identifier, and 
+				// load the serialized object directly
+				Ryan_Serialization::read<ddOutputSingle>(*this, filename, "rtmath::ddscat::ddOutputSingle");
+				return;
+			}
+
+			std::ifstream in(filename.c_str(), std::ios_base::binary | std::ios_base::in);
 			// Consutuct an filtering_iostream that matches the type of compression used.
 			using namespace boost::iostreams;
 			filtering_istream sin;
@@ -448,7 +460,7 @@ namespace rtmath {
 				prep_decompression(cmeth, sin);
 			sin.push(in);
 
-			if (type.size()) pext = boost::filesystem::path(type);
+			if (type.size()) pext = boost::filesystem::path(type); // pext is first set a few lines above
 			if (pext.string() == ".sca")
 			{
 				readSCA(sin);
@@ -458,14 +470,6 @@ namespace rtmath {
 			} else if (pext.string() == ".avg")
 			{
 				readAVG(sin);
-			} else if (pext.string() == ".xml")
-			{
-				// This is a serialized file. Verify that it has the correct identifier, and 
-				// load the serialized object directly
-
-				/// \todo Check ddOutputSingle serialized read and write direct functions.
-#pragma message("TODO: check ddOutputSingle serialized read and write direct functions")
-				Ryan_Serialization::read<ddOutputSingle>(*this, sin, "rtmath::ddscat::ddOutputSingle");
 			} else {
 				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}

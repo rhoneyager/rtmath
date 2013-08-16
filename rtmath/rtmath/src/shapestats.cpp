@@ -282,7 +282,10 @@ namespace rtmath {
 			// Reload initial stats file by 1) hash or 2) filename
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
-			path pHashShape = findHash(pHashShapes, _shp->hash());
+			std::vector<std::string> extensions;
+			extensions.push_back(".xml");
+			extensions.push_back(".st");
+			path pHashShape = findHash(pHashShapes, _shp->hash(), extensions);
 			if (!pHashShape.empty())
 				nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
 			//path pHashShape = pHashShapes / boost::lexical_cast<std::string>(_shp->hash().lower);
@@ -315,11 +318,16 @@ namespace rtmath {
 
 			// Preferentially use the local file, if it exists
 			if (Ryan_Serialization::detect_compressed(statsfile))
-			//if (exists(path(statsfile)))
+			{
+				res->read(statsfile);
+				return res;
+			}
+			/*
 			{
 				::Ryan_Serialization::read<shapeFileStats>(*res, statsfile, "rtmath::ddscat::shapeFileStats");
 				return res;
 			}
+			*/
 
 			// Local file does not exist. Does it exist in the hash database?
 			// Generate basic stats for a file.
@@ -327,8 +335,7 @@ namespace rtmath {
 
 			// Check the hash to see if it's already been done before
 			// Also see if the statsfile exists
-			using boost::filesystem::path;
-			using boost::filesystem::exists;
+			using namespace boost::filesystem;
 
 			path pHashShape = storeHash(pHashShapes,shp.hash());
 			//pHashShapes / boost::lexical_cast<std::string>(shp.hash().lower);
@@ -336,12 +343,22 @@ namespace rtmath {
 			{
 				shp.write(pHashShape.string(), true);
 			}
-			path pHashStat = storeHash(pHashStats,shp.hash());
-			//pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
-			if (Ryan_Serialization::detect_compressed(pHashStat.string()))
-				::Ryan_Serialization::read<shapeFileStats>(*res, pHashStat.string(), "rtmath::ddscat::shapeFileStats");
-			else
+			path pHashStat = storeHash(pHashStats,shp.hash()); // Path + hash. No extension yet.
+			// Query the directory for all files matching the pHashStat at the beginning.
+			using std::vector;
+			vector<path> cands;
+			copy(directory_iterator(pHashStat.parent_path()), directory_iterator(), back_inserter(cands));
+			// There really should only be one file matching a hash in a directory. Pick the first.
+			decltype(cands.begin()) it = std::find_if(cands.begin(), cands.end(), [&pHashStat](const path &p)
 			{
+				// Left-sided compare
+				if (p.filename().string().find(pHashStat.filename().string()) == 0) return true;
+				return false;
+			});
+			if (it != cands.end())
+			{
+				::Ryan_Serialization::read<shapeFileStats>(*res, it->string(), "rtmath::ddscat::shapeFileStats");
+			} else {
 				// This takes care or base stat calculation and rotation stat calculations
 				res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 			}
@@ -352,7 +369,10 @@ namespace rtmath {
 			}
 			if (autoHashStats)
 			{
-				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(*res,pHashStat.string(),"rtmath::ddscat::shapeFileStats");
+				// Query Ryan_Serialization for the default extension.
+				path pRes;
+				Ryan_Serialization::serialization_method sm = Ryan_Serialization::select_format(pHashStat, pRes);
+				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(*res,pRes.string(),"rtmath::ddscat::shapeFileStats");
 			}
 
 			return res;
@@ -532,11 +552,9 @@ namespace rtmath {
 		}
 
 		//boost::shared_ptr<shapeFileStats> 
-		void shapeFileStats::read(const std::string &src)
+		void shapeFileStats::read(const std::string &filename)
 		{
-			//boost::shared_ptr<shapeFileStats> res(new shapeFileStats);
-			Ryan_Serialization::read<shapeFileStats>(*this,src, "rtmath::ddscat::shapeFileStats");
-			//return res;
+			Ryan_Serialization::read<shapeFileStats>(*this,filename, "rtmath::ddscat::shapeFileStats");
 		}
 
 		void shapeFileStats::write(const std::string &filename) const

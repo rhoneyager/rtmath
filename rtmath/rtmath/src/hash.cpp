@@ -14,7 +14,8 @@
 
 namespace rtmath {
 
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash)
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash,
+		const std::vector<std::string> &extensions)
 	{
 		using namespace boost::filesystem;
 		using boost::lexical_cast;
@@ -26,20 +27,30 @@ namespace rtmath {
 		path pHashName(sHashName);
 		path pHashStart(sHashStart);
 
-		// First, check the base directory
-		path pBaseCand = base / pHashName;
-		if( detect_compressed(pBaseCand.string()) ) return pBaseCand;
+		std::vector<std::string> ext = extensions;
+		if (!ext.size()) ext.push_back("");
+		for (auto e : ext)
+		{
+			// First, check the base directory
+			path pBaseCand = base / pHashName;
+			pBaseCand += e;
 
-		// Then, check in subfolders corresponding to the first two digits of the hash
-		path pSubCand = base / pHashStart / pHashName;
-		if (detect_compressed(pSubCand.string() )) return pSubCand;
+			if( detect_compressed(pBaseCand) ) return pBaseCand;
 
+			// Then, check in subfolders corresponding to the first two digits of the hash
+			path pSubCand = base / pHashStart / pHashName;
+			pSubCand += e;
+			if (detect_compressed(pSubCand)) return pSubCand;
+		}
+
+		
 		return path("");
 	}
 
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash)
+	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash,
+		const std::vector<std::string> &extensions)
 	{
-		return findHash(base, boost::lexical_cast<std::string>(hash.lower));
+		return findHash(base, boost::lexical_cast<std::string>(hash.lower), extensions);
 	}
 
 	boost::filesystem::path storeHash(const boost::filesystem::path &base, const std::string &hash)
