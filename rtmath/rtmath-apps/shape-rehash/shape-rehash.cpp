@@ -44,6 +44,7 @@ int main(int argc, char** argv)
 
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
+		rtmath::debug::add_options(cmdline, config, hidden);
 		ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		Ryan_Serialization::add_options(cmdline, config, hidden);
 
@@ -59,13 +60,20 @@ int main(int argc, char** argv)
 			options(oall).positional(p).run(), vm);
 		po::notify(vm);
 
-		if (vm.count("help") || argc == 1) {
-			cerr << desc << "\n";
-			return 1;
-		}
-
+		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
 		ddscat::shapeFileStats::process_static_options(vm);
+
+		auto doHelp = [&](const std::string &message)
+		{
+			cerr << desc << "\n";
+			if (message.size())
+				cerr << message << "\n";
+			exit(1);
+		};
+
+		if (vm.count("help") || argc == 1) doHelp("");
+		
 
 		boost::filesystem::path pShapeDir, pStatsDir;
 		ddscat::shapeFileStats::getHashPaths(pShapeDir, pStatsDir);

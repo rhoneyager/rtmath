@@ -136,7 +136,7 @@ namespace rtmath {
 				const boost::shared_ptr<shapefile> &shp);
 
 			/**
-			 * \brief Adds passes shapestats options to a program
+			 * \brief Adds shapestats options to a program
 			 *
 			 * \item cmdline provides options only allowed on the command line
 			 * \item config provides options available on the command line and in a config file

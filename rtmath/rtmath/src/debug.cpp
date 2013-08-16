@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 #include <boost/version.hpp>
+#include <boost/program_options.hpp>
+#include <Ryan_Debug/debug.h>
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/debug_mem.h"
 
@@ -15,6 +17,12 @@
 #ifdef WITH_CMAKE
 #include "cmake-settings.h"
 #endif
+
+namespace {
+	boost::program_options::options_description *pcmdline = nullptr;
+	boost::program_options::options_description *pconfig = nullptr;
+	boost::program_options::options_description *phidden = nullptr;
+}
 
 namespace rtmath
 {
@@ -44,7 +52,7 @@ namespace rtmath
 #ifdef SUB_REV
 			out << "SVN Revision " << SUB_REV << std::endl;
 			out << "SVN Revision Date: " << SUB_DATE << std::endl;
-//			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
+			//			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
 			out << "SVN Source: " << SUB_SOURCE << std::endl;
 #else
 			out << "SVN Repository Information Unknown" << std::endl;
@@ -100,10 +108,63 @@ namespace rtmath
 			out << "Microsoft Visual Studio Compiler Version " << _MSC_FULL_VER << std::endl;
 #endif
 			out << "Boost version " << BOOST_LIB_VERSION << std::endl;
-			
-			out << std::endl;
-			out << std::endl;
-		};
 
-	} // end debug
-} // end rtmath
+			out << std::endl;
+			out << std::endl;
+		}
+
+		void add_options(
+			boost::program_options::options_description &cmdline,
+			boost::program_options::options_description &config,
+			boost::program_options::options_description &hidden)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+
+			pcmdline = &cmdline;
+			pconfig = &config;
+			phidden = &hidden;
+
+			/// \todo Add option for default rtmath.conf location
+
+			cmdline.add_options()
+				("version", "Print rtmath library version information and exit")
+				;
+
+			config.add_options()
+				;
+			
+			hidden.add_options()
+				("help-verbose", "Print out all possible program options")
+				;
+		}
+
+		void process_static_options(
+			boost::program_options::variables_map &vm)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+			
+			if (vm.count("help-verbose"))
+			{
+				po::options_description oall("All Options");
+				oall.add(*pcmdline).add(*pconfig).add(*phidden);
+
+				std::cerr << oall << std::endl;
+				exit(2);
+			}
+
+			if (vm.count("version"))
+			{
+				std::cerr << "rtmath library information: \n";
+				debug_preamble(std::cerr);
+				/// \todo Add serialization and tmatrix information
+				std::cerr << "Ryan_Debug library information: \n";
+				Ryan_Debug::printDebugInfo();
+				exit(2);
+			}
+		}
+
+
+	}
+}

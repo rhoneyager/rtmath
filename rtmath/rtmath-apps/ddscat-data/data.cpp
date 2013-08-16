@@ -12,6 +12,7 @@
 #include <Ryan_Serialization/serialization.h>
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
+//#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/error/debug.h"
@@ -25,8 +26,13 @@ int main(int argc, char** argv)
 		cerr << "rtmath-ddscat-data\n\n";
 		namespace po = boost::program_options;
 
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
+			config("Config options"), hidden("Hidden options"), oall("all options");
+		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		rtmath::debug::add_options(cmdline, config, hidden);
+		Ryan_Serialization::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input file")
 			("output,o", po::value<string>(), "specify output file")
@@ -43,10 +49,17 @@ int main(int argc, char** argv)
 		p.add("input",-1);
 		//p.add("output",2);
 
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
+			options(oall).positional(p).run(), vm);
 		po::notify(vm);    
+
+		rtmath::debug::process_static_options(vm);
+		Ryan_Serialization::process_static_options(vm);
+		//rtmath::ddscat::shapeFileStats::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
 		{
@@ -91,7 +104,7 @@ int main(int argc, char** argv)
 			vector<path> pCand;
 			if (is_directory(p))
 				copy(recursive_directory_iterator(p,symlink_option::no_recurse), 
-					recursive_directory_iterator(), back_inserter(pCand));
+				recursive_directory_iterator(), back_inserter(pCand));
 			else pCand.push_back(p);
 			if (pCand.size() > 1 && sOutput.size()) doHelp("Only one input file allowed if "
 				"output file is written.");
