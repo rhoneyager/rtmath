@@ -236,14 +236,42 @@ namespace rtmath
 					// mkd in 59-66
 					// substance number in 78+
 					double mre, mim, ere, eim;
+
+					// Differernt ddscat versions write their numbers differently. There are 
+					// no set ranges. I'll use a slow approach to sieve them out from the 
+					// surrounding other symbols. Valid numeric digits are numbers and '.'
+					std::vector<std::string> snums;
+					char lchar = 0; // last character
+					char cchar = 0; // current character
+					std::string csnum; // current numeric string
+
+					auto nDone = [&]()
+					{
+						if (csnum.size()) snums.push_back(csnum);
+						csnum.clear();
+					};
+
+					for (const auto &c : str)
+					{
+						cchar = c;
+						if (std::isdigit(c)) csnum.push_back(c);
+						else if (c == '.' && std::isdigit(lchar)) csnum.push_back(c);
+						else if (csnum.size()) nDone();
+
+						lchar = c;
+					}
+					nDone();
+
+					if (snums.size() < 6) throw debug::xBadInput("Cannot parse refractive index in ddOutputSingleKeys::ddM");
+
 					using boost::lexical_cast;
 					using boost::algorithm::trim_copy;
-					mre = lexical_cast<double>(trim_copy(str.substr(4,w)));
-					mim = lexical_cast<double>(trim_copy(str.substr(13,w)));
-					ere = lexical_cast<double>(trim_copy(str.substr(32,w)));
-					eim = lexical_cast<double>(trim_copy(str.substr(42,w)));
-					mkd = lexical_cast<float>(trim_copy(str.substr(59,w)));
-					subst = lexical_cast<size_t>(trim_copy(str.substr(78,2)));
+					mre = lexical_cast<double>(snums[0]);
+					mim = lexical_cast<double>(snums[1]);
+					ere = lexical_cast<double>(snums[2]);
+					eim = lexical_cast<double>(snums[3]);
+					mkd = lexical_cast<float>(snums[4]);
+					subst = lexical_cast<size_t>(snums[5]);
 					m = std::complex<double>(mre,mim);
 					eps = std::complex<double>(ere,eim);
 				}
@@ -559,10 +587,10 @@ namespace rtmath {
 			while(in.good())
 			{
 				std::getline(in,lin);
-				if (lin == "") return;
 				// Parse the string to get rid of spaces. This is used to determine 
 				// if we are still in the S matrix header or in the actual data
 				boost::trim(lin);
+				if (!lin.size()) continue;
 				//std::cerr << lin << std::endl;
 				// TODO: parse the header line to get the list of matrix entries known
 				// TODO: use symmetry relationships in a depGraph to get the other 
@@ -656,7 +684,7 @@ namespace rtmath {
 				ddOutputSingleObj::findMap(lin,key);
 				if (key == "")
 				{
-					if (lin == "") continue;
+					if (lin == "" || lin == "\r") continue;
 					cerr << "Unknown line: " << lin << endl;
 					continue;
 				}
@@ -704,7 +732,7 @@ namespace rtmath {
 			out.width(0);
 			out << " Qpol= " << _statTable[(size_t) QPOL] << 
 				"                                                  " << 
-				"dQpha=";
+				"dQpha= ";
 			out.width(11);
 			out << _statTable[(size_t) DQPHA] << endl;
 
@@ -834,17 +862,18 @@ namespace rtmath {
 			{
 				boost::shared_ptr<const ddscat::ddScattMatrix> sf(*it);
 				out << endl;
-				out.width(6);
-
-				out << (*it)->theta() << "\t";
-				out << (*it)->phi()  << "\t";
-				out.width(9);
-				out << sf->pol();
-				out.width(12);
+				//out.width(6);
+				using namespace std;
+				//out.width(6);
+				out << fixed << right << showpoint << setprecision(2) << setw(6) << (*it)->theta() << " ";
+				out << setw(6) << (*it)->phi()  << " ";
+				//out.width(8);
+				out << setprecision(5) << setw(8) << sf->pol() << " ";
+				//out.width(10);
 				ddScattMatrix::PnnType p = sf->mueller();
 				for (auto ot = _muellerMap.begin(); ot != _muellerMap.end(); ++ot)
 				{
-					out << "\t" << p(ot->second.first, ot->second.second);
+					out << " " << scientific << setprecision(4) << setw(10) << p(ot->second.first, ot->second.second);
 				}
 			}
 		}
