@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <complex>
 #include <Eigen/Core>
 #include <boost/shared_ptr.hpp>
@@ -19,20 +20,21 @@ namespace rtmath
 {
 	namespace ddscat
 	{
-		// This is now a base class because there are two ways for
-		// specifying scattering: the complex scattering amplitude 
-		// matrix or the scattering phase matrix. ddscat intermediate 
-		// output gives the complex matrix which is more useful. The 
-		// P matrix is harder to derive from, but is found in the 
-		// .avg files and in tmatrix code.
-
-		enum scattMatrixType
+		enum class scattMatrixType
 		{
 			F,
 			P
 		};
 
-		class ddScattMatrix
+		/**
+		* This is now a base class because there are two ways for
+		* specifying scattering: the complex scattering amplitude 
+		* matrix or the scattering phase matrix. ddscat intermediate 
+		* output gives the complex matrix which is more useful. The 
+		* P matrix is harder to derive from, but is found in the 
+		* .avg files and in tmatrix code.
+		**/
+		class DLEXPORT_rtmath_ddscat ddScattMatrix
 		{
 		public:
 			typedef Eigen::Matrix4d PnnType;
@@ -44,7 +46,7 @@ namespace rtmath
 			virtual PnnType mueller() const;
 			inline double pol() const {return _pol;}
 			inline void pol(double p) {_pol = p;}
-			virtual scattMatrixType id() const { return P; }
+			virtual scattMatrixType id() const { return scattMatrixType::P; }
 
 			inline double freq() const { return _freq; }
 			inline double theta() const { return _theta; }
@@ -67,7 +69,7 @@ namespace rtmath
 			void serialize(Archive & ar, const unsigned int version);
 		};
 
-		// TODO: move this into a lower-level header
+		/// \todo Move this into a lower-level header
 		template <typename T>
 		struct sharedComparator
 		{
@@ -82,15 +84,15 @@ namespace rtmath
 			}
 		};
 
-		class ddScattMatrixF : public ddScattMatrix
+		class DLEXPORT_rtmath_ddscat ddScattMatrixF : public ddScattMatrix
 		{
 		public:
-			// Needs frequency (GHz) and phi (degrees) for P and K calculations
+			/// Needs frequency (GHz) and phi (degrees) for P and K calculations
 			ddScattMatrixF(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
 				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
 			virtual ~ddScattMatrixF();
 			//ddScattMatrixF & operator = (const ddScattMatrixF&);
-			virtual scattMatrixType id() const { return F; }
+			virtual scattMatrixType id() const { return scattMatrixType::F; }
 			// matrixop extinction() const;
 			virtual PnnType mueller() const;
 			void setF(const FType& fs);
@@ -114,14 +116,14 @@ namespace rtmath
 		{
 		}; */
 
-		class ddScattMatrixP : public ddScattMatrix
+		class DLEXPORT_rtmath_ddscat ddScattMatrixP : public ddScattMatrix
 		{
 		public:
 			ddScattMatrixP(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
 				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
 			virtual ~ddScattMatrixP() {}
 			//ddScattMatrixP & operator = (const ddScattMatrixP&);
-			virtual scattMatrixType id() const { return P; }
+			virtual scattMatrixType id() const { return scattMatrixType::P; }
 			inline void setP(const PnnType& v) { _Pnn = v; }
 			PnnType getP() const { return _Pnn; }
 

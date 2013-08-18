@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -21,7 +22,7 @@
 namespace rtmath {
 	namespace ddscat {
 
-		class shapefile
+		class DLEXPORT_rtmath_ddscat shapefile
 		{
 		public:
 			shapefile(const std::string &filename);

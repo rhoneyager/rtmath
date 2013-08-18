@@ -1,20 +1,7 @@
 #pragma once
-#include <memory>
-#include <string>
-#include <vector>
+#include "../defs.h"
 #include <map>
 #include <set>
-#include <bitset>
-#include <cstdio>
-#include <cstring>
-#include <complex>
-//#include "../matrixop.h"
-//#include "../phaseFunc.h"
-//#include "cdf-ddscat.h"
-
-// Needs extensive use of filesystem
-// (for reading whole directories, manipulating paths, ...)
-#include <boost/filesystem.hpp>
 
 /* ddweights - The ddscat code was becoming too large, so the weighting functions
  * are now located here */
@@ -24,7 +11,7 @@ namespace rtmath {
 
 	namespace ddscat {
 
-		class weights
+		class DLEXPORT_rtmath_ddscat weights
 		{
 		public:
 			weights() {}
@@ -38,9 +25,9 @@ namespace rtmath {
 			
 		};
 
-		// Gaussian weights where the point is always guaranteed to be positive
-		// It's really double gaussian on an interval of [0,infinity)
-		class gaussianPosWeights : public weights
+		/// Gaussian weights where the point is always guaranteed to be positive. 
+		/// It's really double gaussian on an interval of [0,infinity)
+		class DLEXPORT_rtmath_ddscat gaussianPosWeights : public weights
 		{
 		public:
 			gaussianPosWeights(double sigma, const std::multiset<double> &points);
@@ -53,9 +40,9 @@ namespace rtmath {
 			double _sigma;
 		};
 
-		// Isotropic weighting scheme
-		// Useful for comparing with ddscat ensemble result
-		class isoPosWeights : public weights
+		/// Isotropic weighting scheme. 
+		/// Useful for comparing with ddscat ensemble result
+		class DLEXPORT_rtmath_ddscat isoPosWeights : public weights
 		{
 		public:
 			isoPosWeights(const std::multiset<double> &points);
@@ -63,7 +50,7 @@ namespace rtmath {
 			//virtual double weight(double point) const;
 		};
 
-	} // end ddscat
+	}
 
-} // end rtmath
+}
 

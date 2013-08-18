@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -36,7 +37,7 @@ namespace rtmath {
 		 * effective radius. The most general type of ddscat run may contain many 
 		 * permutations of these.
 		 **/
-		class ddOutput
+		class DLEXPORT_rtmath_ddscat ddOutput
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>

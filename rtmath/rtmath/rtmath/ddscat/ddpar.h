@@ -1,18 +1,12 @@
 #pragma once
-/* This header contains the functions for parsing ddscat.par files. It is used to both 
- * extract information necessary for shapefile formation, and is used when upgrading 
- * ddscat versions. It also provides writing functionality for the files.
- */
-
+#include "../defs.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <memory>
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
-#include <unordered_map>
 #include <complex>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -34,23 +28,25 @@ namespace rtmath {
 
 		class rotations;
 
+		/// \brief Contains the functions for parsing ddscat.par files. 
+		/// \todo Take these functions and move them into the cpp file.
 		namespace ddParParsers
 		{
 			/// \brief Takes the internal key id and converts it into 
 			/// the standard comment string
 			/// \todo Change idString to also take version information.
 			/// The comments of some of the keys change in v73.
-			void idString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
-			bool commentString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
+			void SHARED_PRIVATE idString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
+			bool SHARED_PRIVATE commentString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
 
-			// A very abstract base class
-			class ddParLine
+			/// A very abstract base class
+			class SHARED_PRIVATE ddParLine
 			{
 			public:
 				friend struct std::less<rtmath::ddscat::ddParParsers::ddParLine>;
 				ddParLine(ParId id = UNKNOWN) { _id = id; _endWriteWithEndl = true; }
 				virtual ~ddParLine() {}
-				// Read does NOT split keys and vals!!!!!
+				/// Read does NOT split keys and vals!!!!!
 				virtual void read(std::istream &in)
 				{
 					// No key / val separation here...
@@ -91,7 +87,7 @@ namespace rtmath {
 				}
 			};
 
-			// Added this as a level of abstraction to prevent code duplication
+			/// Added this as a level of abstraction to prevent code duplication
 			template <class T>
 			class ddParLineSimpleBase : public ddParLine
 			{
@@ -155,7 +151,7 @@ namespace rtmath {
 			};
 
 			// Put parser def here so the subsequent class can load it
-			void pString(const std::string &in, std::string &out);
+			void SHARED_PRIVATE pString(const std::string &in, std::string &out);
 
 			template <>
 			class ddParLineSimple <std::string> : public ddParLineSimpleBase<std::string>
@@ -247,7 +243,7 @@ namespace rtmath {
 				}
 			};
 			
-			// This is a special case for paired numbers.
+			/// This is a special case for paired numbers.
 			template <class T>
 			class ddParTuples : public ddParLineSimplePlural<T>
 			{
@@ -420,33 +416,38 @@ namespace rtmath {
 				}
 			};
 
-			boost::shared_ptr<ddParLine> mapKeys(const std::string &key);
+			boost::shared_ptr<ddParLine> SHARED_PRIVATE mapKeys(const std::string &key);
 		}
 
 
 #define accessorSimple(name,id,valtype) \
-		valtype name() const { return __getSimple<valtype>(id); } \
-		void name(const valtype &v) { __setSimple<valtype>(id, v); }
+		inline valtype name() const { return __getSimple<valtype>(id); } \
+		inline void name(const valtype &v) { __setSimple<valtype>(id, v); }
 
 // Special case where a bool is stored in the file as an int
 #define accessorSimpleBool(name,id) \
-	bool name() const { return __getSimpleBool(id); } \
-	void name(const bool &v) { __setSimpleBool(id, v); }
+	inline bool name() const { return __getSimpleBool(id); } \
+	inline void name(const bool &v) { __setSimpleBool(id, v); }
 
 #define accessorSimplePlural(name,id,valtype,sz) \
-	valtype name(size_t index) const { return __getSimplePlural<valtype>(id, index); } \
-	void name(size_t index, const valtype &v) { __setSimplePlural<valtype>(id, index, sz, v); } 
+	inline valtype name(size_t index) const { return __getSimplePlural<valtype>(id, index); } \
+	inline void name(size_t index, const valtype &v) { __setSimplePlural<valtype>(id, index, sz, v); } 
 
 #define accessorString(getname,setname,id) \
-	void getname(std::string &val) const { __getString(id, val); } \
-	void setname(const std::string &v) { __setString(id, v); }
+	inline void getname(std::string &val) const { __getString(id, val); } \
+	inline void setname(const std::string &v) { __setString(id, v); }
 
 #define accessorStringBool(name,id,bfalse,btrue) \
-	bool name() const { return __getStringBool(id, bfalse, btrue); } \
-	void name(bool v) { __setStringBool(id, v, bfalse, btrue); }
+	inline bool name() const { return __getStringBool(id, bfalse, btrue); } \
+	inline void name(bool v) { __setStringBool(id, v, bfalse, btrue); }
 
-
-		class ddPar
+		/**
+		* \brief Provides ddscat.par manipulation.
+		* 
+		* Used to both extract information necessary for shapefile formation, and used when 
+		* upgrading ddscat versions. It also provides writing functionality for the files.
+		**/
+		class DLEXPORT_rtmath_ddscat ddPar
 		{
 		public:
 			static ddPar*& defaultInstance();

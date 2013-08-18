@@ -143,10 +143,10 @@ find_package(tmatrixFortran REQUIRED)
 find_package(tmatrixCpp REQUIRED)
 
 include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
-add_library (rtmath_ddscat ${sflag}
+add_library (rtmath_ddscat SHARED
 	${rtmath_ddscat-files}
 	)
-addlib(rtmath_ddscat ${sflag})
+addlib(rtmath_ddscat SHARED)
 add_precompiled_header(rtmath_ddscat Stdafx-ddscat.h)
 set (rtmath_ddscat-libs 
 	rtmath_core ${rtmath_core-libs} 
@@ -160,6 +160,7 @@ target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 #add_library(rtmath_da ${sflag} ${rtmath_da-files})
 #addlib(rtmath_da)
+#add_precompiled_header(rtmath_da Stdafx-da.h)
 #set (rtmath_da-libs rtmath_core ${rtmath_core-libs} 
 #	)
 #target_link_libraries(rtmath_da ${rtmath_da-libs})
@@ -167,6 +168,7 @@ target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 #add_library(rtmath_mc ${sflag} ${rtmath_mc-files})
 #addlib(rtmath_mc)
+#add_precompiled_header(rtmath_mc Stdafx-mc.h)
 #set (rtmath_mc-libs rtmath_core ${rtmath_core-libs} 
 #	)
 #target_link_libraries(rtmath_mc ${rtmath_mc-libs})

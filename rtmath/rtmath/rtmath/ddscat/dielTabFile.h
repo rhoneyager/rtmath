@@ -1,13 +1,5 @@
 #pragma once
-/* This file provides facilities for reading / writing 
- * diel.tab files, in both Liu and Draine forms. The difference 
- * in the forms is that Liu's form just provides three points 
- * that give constant interpolation values for the dielectric 
- * constant of ice at constant temperature. The actual diel.tab 
- * behavior allows for a more-complete interpolation, which is 
- * what I will support
- */
-
+#include "../defs.h"
 #include <complex>
 #include <functional>
 #include <iostream>
@@ -19,6 +11,7 @@ namespace rtmath
 {
 	namespace ddscat
 	{
+		/// Container for the enum class colMap
 		namespace dielColumns
 		{
 			enum colMap
@@ -32,13 +25,23 @@ namespace rtmath
 			};
 		}
 
-		/* This class can read and write diel.tab files that match the 
-		 * code in ddscat. Each file has a header and can display frequency 
-		 * -dependent dielectrics using m or e. The reading and writing of 
-		 * these files is quite customizable, allowing for column reordering 
-		 * and suppression.
-		*/
-		class dielTab
+
+		/** \brief Provides facilities for reading / writing 
+		* diel.tab files, in both Liu and Draine forms. 
+		*
+		* The difference in the forms is that Liu's 
+		* form just provides three points that give constant interpolation 
+		* values for the dielectric constant of ice at constant 
+		* temperature. The actual diel.tab behavior allows for a 
+		* more-complete interpolation, which is what I will support.
+		*
+		* This class can read and write diel.tab files that match the 
+		* code in ddscat. Each file has a header and can display frequency 
+		* -dependent dielectrics using m or e. The reading and writing of 
+		* these files is quite customizable, allowing for column reordering 
+		* and suppression.
+		**/
+		class DLEXPORT_rtmath_ddscat dielTab
 		{
 		public:
 			dielTab();
@@ -57,20 +60,25 @@ namespace rtmath
 			std::map<double, std::complex<double> > freqMMap;
 			size_t colMaps[dielColumns::NUMCOLS];
 
-			// The static generator can produce a diel.tab file given 
-			// a set of frequencies. If the number of frequencies is less 
-			// than three, then interpolation would fail and a Liu-style 
-			// diel.tab file will be generated. The function also takes 
-			// a functional object that provides the refractive indices. 
-			// Imaginary refractive index parts are always taken as positive 
-			// values per ddscat conventions.
-
-			// If the refractive indices are already known, then the generator is 
-			// not necessary, and the freqMMap can simply be populated with 
-			// the known frequency pairs.
+			
 
 			typedef std::function<std::complex<double> (double freq) > mProvider;
 
+			/**
+			* \brief The static generator can produce a diel.tab file given 
+			* a set of frequencies. 
+			*
+			* If the number of frequencies is less 
+			* than three, then interpolation would fail and a Liu-style 
+			* diel.tab file will be generated. The function also takes 
+			* a functional object that provides the refractive indices. 
+			* Imaginary refractive index parts are always taken as positive 
+			* values per ddscat conventions.
+
+			* If the refractive indices are already known, then the generator is 
+			* not necessary, and the freqMMap can simply be populated with 
+			* the known frequency pairs.
+			**/
 			template<class freqIter>
 			static boost::shared_ptr<dielTab> 
 				generate(mProvider provider, const freqIter pstart, const freqIter pend)
@@ -98,7 +106,7 @@ namespace rtmath
 				return tgt;
 			}
 
-			// Generates a diel.tab structure equivalent to the rtmath::refract::writeDiel function
+			/// Generates a diel.tab structure equivalent to the rtmath::refract::writeDiel function
 			static boost::shared_ptr<dielTab>
 				generate(const std::complex<double> &m)
 			{

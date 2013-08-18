@@ -1,10 +1,5 @@
 #pragma once
-/* The generator acts to construct a set of ddscat.par files and the associated 
-* mtabs based on a template and a set of varied parameters.
-* The parameter variation generates separate files, primarily because ddscat
-* doesn't have the necessary sophistication to deal with our common usage scenarios.
-*/
-
+#include "../defs.h"
 #include <set>
 #include <string>
 #include <boost/enable_shared_from_this.hpp>
@@ -37,7 +32,8 @@ namespace rtmath {
 namespace rtmath {
 	namespace ddscat {
 
-		class ddParGeneratorBase : public constrainable
+		class DLEXPORT_rtmath_ddscat ddParGeneratorBase 
+			: public constrainable
 		{
 		public:
 			ddParGeneratorBase();
@@ -70,7 +66,7 @@ namespace rtmath {
 
 		class ddParGenerator;
 
-		class ddParIterator
+		class DLEXPORT_rtmath_ddscat ddParIterator
 		{
 		public:
 			// Constructor takes the pointer so we don't have to copy every conceivable property
@@ -101,8 +97,8 @@ namespace rtmath {
 			ddParIterator(); // TODO: set serialization to not need this. Also, making it private is hard.
 		};
 
-		// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
-		class ddParIteration
+		/// This whole class exists just to encapsulate all of the conversion and iteration into a separate step
+		class DLEXPORT_rtmath_ddscat ddParIteration
 		{
 		public:
 			ddParIteration(const ddParGenerator &gen);
@@ -122,7 +118,13 @@ namespace rtmath {
 			void serialize(Archive & ar, const unsigned int version);
 		};
 
-		class ddParGenerator : public ddParGeneratorBase
+		/** 
+		* The generator acts to construct a set of ddscat.par files and the associated 
+		* mtabs based on a template and a set of varied parameters.
+		* The parameter variation generates separate files, primarily because ddscat
+		* doesn't have the necessary sophistication to deal with our common usage scenarios.
+		**/
+		class DLEXPORT_rtmath_ddscat ddParGenerator : public ddParGeneratorBase
 		{
 		public:
 			ddParGenerator();
@@ -140,8 +142,8 @@ namespace rtmath {
 			void serialize(Archive & ar, const unsigned int version);
 		};
 
-	} // end ddscat
-} // end rtmath
+	}
+}
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGeneratorBase)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddParGenerator)

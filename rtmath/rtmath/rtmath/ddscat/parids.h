@@ -4,6 +4,7 @@ namespace rtmath {
 	namespace ddscat {
 		namespace ddParParsers {
 
+			/// \todo Switch to an enum class
 			enum ParId
 			{
 				CMTORQ,			// string
@@ -16,10 +17,10 @@ namespace rtmath {
 				SHAPEPARAMS,	// double	3
 				NCOMP,			// size_t
 				IREFR,			// string
-				NRFLD,			// size_t (bool)				version 7.2
-				FRACT_EXTENS,	// double	6					version 7.2
+				NRFLD,			// size_t (bool)				version 7.2+
+				FRACT_EXTENS,	// double	6					version 7.2+
 				TOL,			// double
-				MXITER,			// size_t						version 7.2
+				MXITER,			// size_t						version 7.2+
 				GAMMA,			// double
 				ETASCA,			// double
 

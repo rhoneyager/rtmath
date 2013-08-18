@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../defs.h"
 /* The purpose of this header is to generate the mtab files - files which contain 
  * information on the index of refraction for a scatterer. This index of refraction 
  * is frequency and temperature-dependent, and it also depends on the material and 
@@ -28,7 +28,7 @@ namespace rtmath {
 
 		// Use a function pointer to specify the provider.
 		// The provider is a function of the form void (double f, double t, complex<double> &m)
-		class mtab
+		class DEPRECATED mtab
 		{
 		public:
 			mtab(std::function<void(double,double,std::complex<double>&)> = rtmath::refract::mIce);

@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <vector>
 #include <map>
 #include <set>
@@ -38,7 +39,7 @@ namespace rtmath {
 		 * 1 - added qhull enabled / disabled flag when recording calculations
 		 * 0 - 
 		 */
-		class shapeFileStatsBase
+		class DLEXPORT_rtmath_ddscat shapeFileStatsBase
 		{
 		public:
 			virtual ~shapeFileStatsBase();
@@ -103,7 +104,7 @@ namespace rtmath {
 			
 		};
 
-		class shapeFileStats : public shapeFileStatsBase
+		class DLEXPORT_rtmath_ddscat shapeFileStats : public shapeFileStatsBase
 		{
 		public:
 			shapeFileStats();

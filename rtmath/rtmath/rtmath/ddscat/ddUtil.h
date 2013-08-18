@@ -1,13 +1,8 @@
 #pragma once
+#include "../defs.h"
 #include "../hash.h"
 
-namespace boost
-{
-	namespace filesystem
-	{
-		class path;
-	}
-}
+namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath
 {
@@ -25,7 +20,7 @@ namespace rtmath
 			* \param out is the ddscat version identifier
 			* \todo Make this function accessible elsewhere
 			**/
-			bool getModuleLoadedDDSCAT(std::string &out);
+			bool DLEXPORT_rtmath_ddscat getModuleLoadedDDSCAT(std::string &out);
 
 			/**
 			 * \brief Modifies the TARGET string of a ddscat output file 
@@ -35,7 +30,8 @@ namespace rtmath
 			 * file hash and a timestamp. If these features are already 
 			 * detected, it does nothing.
 			 **/
-			void tagTARGET(const boost::filesystem::path &pFile,
+			void DLEXPORT_rtmath_ddscat tagTARGET(
+				const boost::filesystem::path &pFile,
 				HASH_t &hash, const std::string &ddver);
 
 			/**
@@ -44,7 +40,8 @@ namespace rtmath
 			 *
 			 * \see tagTARGET
 			 **/
-			void tagTARGETs(const boost::filesystem::path &pBase);
+			void DLEXPORT_rtmath_ddscat tagTARGETs(
+				const boost::filesystem::path &pBase);
 
 			/**
 			 * \brief Find appropriate files in a ddscat run directory
@@ -52,7 +49,8 @@ namespace rtmath
 			 * Finds the par file and shape file for a run given a base path.
 			 * The base path can be a file or a directory.
 			 **/
-			void findDDFiles(const boost::filesystem::path &pBase,
+			void DLEXPORT_rtmath_ddscat findDDFiles(
+				const boost::filesystem::path &pBase,
 				boost::filesystem::path &pPar,
 				boost::filesystem::path &pShp);
 		}

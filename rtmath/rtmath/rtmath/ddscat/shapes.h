@@ -1,6 +1,6 @@
 #pragma once
 #pragma warning(disable:4503) // decorated name length exceeded. with boost bimap mpl
-
+#include "../defs.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -85,7 +85,7 @@ namespace rtmath {
 		
 		typedef boost::shared_ptr<const shapeConstraint> shapeConstraintPtr;
 
-		class shapeConstraint
+		class DLEXPORT_rtmath_ddscat shapeConstraint
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -128,9 +128,9 @@ namespace rtmath {
 		// really making it an indexed set
 		typedef std::multimap< std::string, shapeConstraintPtr > shapeConstraintContainer;
 
-		void addConstraint(shapeConstraintContainer &container, shapeConstraintPtr constraint);
+		void DLEXPORT_rtmath_ddscat addConstraint(shapeConstraintContainer &container, shapeConstraintPtr constraint);
 
-		class constrainable
+		class DLEXPORT_rtmath_ddscat constrainable
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -143,7 +143,7 @@ namespace rtmath {
 			shapeConstraintContainer shapeConstraints;
 		};
 
-		class shape : public constrainable, public std::enable_shared_from_this<shape>
+		class DLEXPORT_rtmath_ddscat shape : public constrainable, public std::enable_shared_from_this<shape>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -165,7 +165,7 @@ namespace rtmath {
 			void _set(const std::string &id, double val, const std::string &units);
 		};
 
-		class shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
+		class DLEXPORT_rtmath_ddscat shapeModifiable : public shape, protected rtmath::graphs::vertexRunnable
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -220,7 +220,7 @@ namespace rtmath {
 		namespace shapes
 		{
 			// _ddscat is a class that provides some of the writing functions for file output.
-			class from_ddscat : public shapeModifiable
+			class DLEXPORT_rtmath_ddscat from_ddscat : public shapeModifiable
 			{
 				friend class ::boost::serialization::access;
 				template<class Archive>
@@ -249,7 +249,7 @@ namespace rtmath {
 			// TODO: allow for stretching/squeezing and aspect ratio manipulation
 			//       needs knowledge of shape file statistics (like length, width, depth)
 			//       Should this be in another class?
-			class from_file : public from_ddscat
+			class DLEXPORT_rtmath_ddscat from_file : public from_ddscat
 			{
 				friend class ::boost::serialization::access;
 				template<class Archive>
@@ -271,7 +271,7 @@ namespace rtmath {
 			};
 
 			
-			class ellipsoid : public from_ddscat
+			class DLEXPORT_rtmath_ddscat ellipsoid : public from_ddscat
 			{
 				friend class ::boost::serialization::access;
 				template<class Archive>

@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <vector>
 #include <map>
 #include <set>
@@ -14,7 +15,7 @@ namespace rtmath {
 	namespace ddscat {
 
 		// Lightweight POD class that can be placed in a set
-		class shapeFileStatsRotated
+		class DLEXPORT_rtmath_ddscat shapeFileStatsRotated
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>

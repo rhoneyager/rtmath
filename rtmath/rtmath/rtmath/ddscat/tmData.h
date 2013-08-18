@@ -6,7 +6,7 @@
  * tmatrix data easily provides scattering information but gives no absorption calculations.
  * Absorptive calculations are required for a full rt solution.
  */
-
+#include "../defs.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <map>
@@ -29,8 +29,8 @@ namespace rtmath
 		// be built without fortran code. However, the 
 		// tmatrix library must still be built.
 
-		// Stats class
-		class tmStats
+		/// Stats class
+		class DLEXPORT_rtmath_ddscat tmStats
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -45,7 +45,7 @@ namespace rtmath
 			//std::set<boost::shared_ptr<tmStats> > nested;
 		};
 
-		class tmData
+		class DLEXPORT_rtmath_ddscat tmData
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>

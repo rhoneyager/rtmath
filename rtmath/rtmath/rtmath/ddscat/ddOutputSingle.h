@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -49,7 +50,7 @@ namespace rtmath {
 
 		/// \brief Converts the stat_entries id to a string for display.
 		/// \todo Add reverse case, converting from string to id.
-		std::string getStatNameFromId(stat_entries);
+		std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries);
 
 		/// Stream-formatting template enums that handle I/O.
 		enum ddOutputSingleAsType
@@ -62,7 +63,7 @@ namespace rtmath {
 			FML
 		};
 		/// Class to handle stream-formatting.
-		class ddOutputSingleAsClass
+		class DLEXPORT_rtmath_ddscat ddOutputSingleAsClass
 		{
 			/// Private constructor invoked by ddOutputSingle::as<T>
 			ddOutputSingleAsClass(ddOutputSingle&, ddOutputSingleAsType);
@@ -79,7 +80,8 @@ namespace rtmath {
 		 * \note Ensemble providers inherit from this!
 		 * \todo Extend to handle multiple dielectrics
 		 **/
-		class ddOutputSingle : public boost::enable_shared_from_this<ddOutputSingle>
+		class DLEXPORT_rtmath_ddscat ddOutputSingle 
+			: public boost::enable_shared_from_this<ddOutputSingle>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -218,7 +220,7 @@ namespace rtmath {
 		};
 
 		/// Base class for ddOutputSingle header entries
-		class ddOutputSingleObj
+		class SHARED_INTERNAL ddOutputSingleObj
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>

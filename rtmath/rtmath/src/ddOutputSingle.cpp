@@ -41,7 +41,7 @@ namespace rtmath
 {
 	namespace ddscat {
 		namespace ddOutputSingleKeys {
-			class ddver : public ::rtmath::ddscat::ddOutputSingleObj
+			class SHARED_INTERNAL ddver : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
 				ddver() { _version = rtmath::ddscat::ddVersions::getDefaultVer(); }
@@ -78,7 +78,7 @@ namespace rtmath
 					ar & boost::serialization::make_nvp("version", _version);
 				}
 			};
-			class ddstring : public ::rtmath::ddscat::ddOutputSingleObj
+			class SHARED_INTERNAL ddstring : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
 				ddstring() {}
@@ -104,7 +104,7 @@ namespace rtmath
 					ar & boost::serialization::make_nvp("str", s);
 				}
 			};
-			class ddtarget : public ::rtmath::ddscat::ddOutputSingleObj
+			class SHARED_INTERNAL ddtarget : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
 				ddtarget() {}
@@ -138,7 +138,7 @@ namespace rtmath
 					ar & boost::serialization::make_nvp("target", s);
 				}
 			};
-			class ddSval : public ::rtmath::ddscat::ddOutputSingleObj
+			class SHARED_INTERNAL ddSval : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
 				ddSval(const std::string &tail = "") {this->tail = tail;}
@@ -212,7 +212,7 @@ namespace rtmath
 				}
 			};
 
-			class ddM : public ::rtmath::ddscat::ddOutputSingleObj
+			class SHARED_INTERNAL ddM : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
 				ddM() : w(8) {}
@@ -764,7 +764,7 @@ namespace rtmath {
 		{
 			size_t i = 0;
 			for (const auto &m : _scattMatricesRaw)
-				if (m->id() == rtmath::ddscat::P) ++i;
+				if (m->id() == rtmath::ddscat::scattMatrixType::P) ++i;
 			return i;
 		}
 
@@ -772,7 +772,7 @@ namespace rtmath {
 		{
 			size_t i = 0;
 			for (const auto &m : _scattMatricesRaw)
-				if (m->id() == rtmath::ddscat::F) ++i;
+				if (m->id() == rtmath::ddscat::scattMatrixType::F) ++i;
 			return i;
 		}
 
@@ -1002,7 +1002,7 @@ namespace rtmath {
 			out << " theta   phi  Re(f_11)   Im(f_11)   Re(f_21)   Im(f_21)   Re(f_12)   Im(f_12)   Re(f_22)   Im(f_22)";
 			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
 			{
-				if ((*it)->id() != F) continue;
+				if ((*it)->id() != scattMatrixType::F) continue;
 				boost::shared_ptr<const ddscat::ddScattMatrixF> sf(
 					boost::dynamic_pointer_cast<const ddscat::ddScattMatrixF>(*it));
 				out << endl;
@@ -1029,7 +1029,7 @@ namespace rtmath {
 			out << " theta   phi  Re(S_11)   Im(S_11)   Re(S_21)   Im(S_21)   Re(S_12)   Im(S_12)   Re(f_22)   Im(f_22)";
 			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
 			{
-				if ((*it)->id() != F) continue;
+				if ((*it)->id() != scattMatrixType::F) continue;
 				boost::shared_ptr<const ddscat::ddScattMatrixF> sf(
 					boost::dynamic_pointer_cast<const ddscat::ddScattMatrixF>(*it));
 				out << endl;

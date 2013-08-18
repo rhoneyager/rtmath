@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 /* ddLoader.h
  * These functions are used by atmos to map a pf entry in an atmosphere
  * to the matching scattering, extinction and emission matrices. There
@@ -16,7 +17,7 @@
 
 namespace rtmath {
 
-	class ddLoader
+	class DEPRECATED ddLoader
 	{
 		// This class is pure virtual...
 	public:
@@ -36,7 +37,7 @@ namespace rtmath {
 			(const std::string &id, const std::string &prepend);
 	};
 
-	class ddLoaderFile : public ddLoader
+	class DEPRECATED ddLoaderFile : public ddLoader
 	{
 	public:
 		ddLoaderFile(const std::string &id, const std::string &subheader);
@@ -45,7 +46,7 @@ namespace rtmath {
 		std::shared_ptr<rtmath::ddscat::ddOutput> _ddset;
 	};
 
-	class ddLoaderMie : public ddLoader
+	class DEPRECATED ddLoaderMie : public ddLoader
 	{
 	public:
 		ddLoaderMie(const std::string &id, const std::string &subheader);

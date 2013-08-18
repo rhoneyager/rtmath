@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../defs.h"
 #include <string>
 #include <set>
 #include <map>
@@ -22,7 +22,7 @@ namespace rtmath {
 	namespace ddscat {
 		class ddPar;
 
-		class rotationsBase
+		class DLEXPORT_rtmath_ddscat rotationsBase
 		{
 		public:
 			rotationsBase();
@@ -38,7 +38,7 @@ namespace rtmath {
 			void serialize(Archive & ar, const unsigned int version);
 		};
 
-		class rotations : public rotationsBase
+		class DLEXPORT_rtmath_ddscat rotations : public rotationsBase
 		{
 		public:
 			rotations();

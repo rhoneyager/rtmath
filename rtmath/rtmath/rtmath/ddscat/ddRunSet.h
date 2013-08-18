@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../defs.h"
 #include <string>
 #include <vector>
 #include <boost/filesystem.hpp>
@@ -25,7 +25,7 @@ namespace rtmath
 		* 
 		* \note avg file provides freq, dielectric info, qsca, qbk, qext, aeff, d
 		**/
-		class dataset
+		class DLEXPORT_rtmath_ddscat dataset
 		{
 		public:
 			dataset();

@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 /* Provides individual and mass run scripts for ddParGenerator outputs
  */
 
@@ -10,7 +11,7 @@ namespace rtmath {
 
 		class ddParGenerator;
 
-		class runScriptIndiv
+		class DLEXPORT_rtmath_ddscat runScriptIndiv
 		{
 		public:
 			runScriptIndiv(const std::string &uuid, const ddParGenerator &gen)
@@ -27,7 +28,7 @@ namespace rtmath {
 			std::set<std::string> _files;
 		};
 
-		class runScriptGlobal
+		class DLEXPORT_rtmath_ddscat runScriptGlobal
 		{
 		public:
 			runScriptGlobal(const ddParGenerator &gen);

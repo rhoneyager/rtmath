@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
@@ -27,7 +28,8 @@ namespace rtmath {
 		/**
 		 * \brief The ensemble subclasses reweight the data to represent various ensemble schemes
 		 **/
-		class ddOutputGenerator : public boost::enable_shared_from_this<ddOutputGenerator>
+		class DLEXPORT_rtmath_ddscat ddOutputGenerator 
+			: public boost::enable_shared_from_this<ddOutputGenerator>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -42,7 +44,8 @@ namespace rtmath {
 		};
 
 		/// The trivial ensemble class that duplicates DDSCAT results
-		class ddOutputGeneratorSimple : public ddOutputGenerator
+		class DLEXPORT_rtmath_ddscat ddOutputGeneratorSimple 
+			: public ddOutputGenerator
 		{
 		protected:
 			/// Standard constructor
