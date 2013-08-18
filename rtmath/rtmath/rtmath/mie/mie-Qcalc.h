@@ -8,7 +8,7 @@
 namespace rtmath {
 	namespace mie {
 
-		class DLEXPORT_RTMATH Qcalc
+		class DLEXPORT_rtmath_mie Qcalc
 		{
 		public:
 			Qcalc(const std::complex<double> &m, double tolerance = 1.01, double atol = 1.e-9);

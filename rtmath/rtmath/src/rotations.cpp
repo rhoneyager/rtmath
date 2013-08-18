@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include <sstream>
 #include <string>
 #include <set>

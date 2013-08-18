@@ -1,5 +1,6 @@
 /* error.h - handling routines for all errors that can be thrown */
 #pragma once
+#include "../defs.h"
 
 #pragma warning( disable : 4996 ) // Deprecated function warning
 
@@ -8,11 +9,11 @@
 #include "debug_mem.h"
 
 /// \def ERRSTD(x) Defines an exception class that takes no arguments.
-#define ERRSTD(x) class x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
+#define ERRSTD(x) class DLEXPORT_rtmath_core x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
 /// \def ERRSTR(x) Defines an exception class that takes a string as an argument
-#define ERRSTR(x) class x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
+#define ERRSTR(x) class DLEXPORT_rtmath_core x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
 /// \def ERRDOU(x) Defines an exception class that takes a double as an argument
-#define ERRDOU(x) class x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
+#define ERRDOU(x) class DLEXPORT_rtmath_core x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
 
 namespace rtmath
 {
@@ -20,7 +21,7 @@ namespace rtmath
 	{
 		/// \brief This is the parent error class. Everything inherits from this.
 		/// \note Using throw() because MSVC2012 does not have noexcept
-		class xError : public std::exception
+		class DLEXPORT_rtmath_core xError : public std::exception
 		{
 		public:
 			xError() throw(); 
@@ -93,8 +94,8 @@ namespace rtmath
 		/// Unknown error
 		ERRSTD(xOtherError);
 
-	} // end debug
-} // end rtmath
+	}
+}
 
 // Redefine throws so that the location of the code in error is recorded
 #ifdef _DEBUG
@@ -102,11 +103,13 @@ namespace rtmath
 // I need to be careful with MSVC, since this line disagrees with some of the boost headers. So,
 // error.h should be loaded after the default system headers
 //#define throw (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+#define RTthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 #endif
 #ifdef __GNUC__
 //#define throw (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
+#define RTthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
 #endif
-#define TASSERT(x) if(x) ; else throw ::rtmath::debug::xAssert(#x)
+#define TASSERT(x) if(x) ; else RTthrow ::rtmath::debug::xAssert(#x)
 #else
 #define TASSERT(x) NULL;
 #endif

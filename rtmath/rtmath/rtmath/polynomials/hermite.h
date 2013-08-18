@@ -16,7 +16,7 @@ namespace rtmath {
 		He_n(x) = (-1)^n e^{\frac{x^2}{2}} \frac{d^n}{dx^n} e^\frac{-x^2}{2}
 		\f]
 		**/
-		class hermite : public recPoly {
+		class DLEXPORT_rtmath_core hermite : public recPoly {
 		public:
 			virtual void get(unsigned int rank, polynomial &res) const ;
 		};
@@ -31,7 +31,7 @@ namespace rtmath {
 		H_n(x) = (-1)^n e^{x^2} \frac{d^n}{dx^n} e^{-x^2}
 		\f]
 		**/
-		class hermitePhys : public recPoly {
+		class DLEXPORT_rtmath_core hermitePhys : public recPoly {
 		public:
 			virtual void get(unsigned int rank, polynomial &res) const ;
 		};

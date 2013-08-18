@@ -1,5 +1,4 @@
-// Provides blackbody stuff and thermal emission information
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 //#include "../rtmath/error/error.h"

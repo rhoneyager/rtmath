@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include "../rtmath/polynomial.h"
 #include "../rtmath/polynomials/hermite.h"
 #include <vector>

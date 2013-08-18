@@ -1,4 +1,5 @@
 #pragma once
+#include "defs.h"
 
 #include <functional>
 #include <complex>
@@ -12,32 +13,35 @@
 #pragma message("Warning: phaseFunc.h needs the pf class moved elsewhere, + interpolation")
 namespace rtmath {
 
-	/// \todo Need to move pf class elsewhere and add interpolation
+	/** \brief This namespace provides the different type of radiative 
+	* transfer matrix manipulations.
+	* 
+	* This includes several Mueller matrix generation methods and 
+	* the ability to generate an extinction matrix. Eventually, Mueller matrix 
+	* inversion routines will also go here.
+	*
+	* \todo Need to move pf class elsewhere and add interpolation
+	**/
 	namespace phaseFuncs
 	{
-		// This namespace provides the different type of radiative transfer matrix 
-		// manipulations. This includes several Mueller matrix generation methods and 
-		// the ability to generate an extinction matrix. Eventually, Mueller matrix 
-		// inversion routines will also go here.
-
-		// The following function provides a reference to the desired phase function 
-		// routine. This is implemented to allow user choice in Mueller method.
-		void selectMueller(const std::string &id,
+		/// Provides a reference to the desired phase function 
+		/// routine. This is implemented to allow user choice in Mueller method.
+		void DLEXPORT_rtmath_core selectMueller(const std::string &id,
 			std::function<void(const Eigen::Matrix2cd&, Eigen::Matrix4d&)>&);
 
 		// Note following conventions: matrix is [[S2, S3][S4,S1]] = [[Sn0, Sn1][Sn2, Sn3]]
 		// Sn is the matrix in linear form {S1, S2, S3, S4}, so it should avoid any 
 		// of the subsequent issues with forgetting the index transformations.
 
-		void muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
-		void muellerTMATRIX(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
+		void DLEXPORT_rtmath_core muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
+		void DLEXPORT_rtmath_core muellerTMATRIX(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
 
-		void convertFtoS(const Eigen::Matrix2cd &f, Eigen::Matrix2cd& Sn, double phi, 
+		void DLEXPORT_rtmath_core convertFtoS(const Eigen::Matrix2cd &f, Eigen::Matrix2cd& Sn, double phi, 
 			std::complex<double> a, std::complex<double> b, std::complex<double> c, std::complex<double> d);
 
-		void invertS(const Eigen::Matrix4d &Snn, const Eigen::Matrix4d &Knn, double fGHz, Eigen::Matrix2cd& Sn);
+		void DLEXPORT_rtmath_core invertS(const Eigen::Matrix4d &Snn, const Eigen::Matrix4d &Knn, double fGHz, Eigen::Matrix2cd& Sn);
 
-		void genExtinctionMatrix(Eigen::Matrix4d &Knn, const Eigen::Matrix2cd &Sn, double fGHz);
+		void DLEXPORT_rtmath_core genExtinctionMatrix(Eigen::Matrix4d &Knn, const Eigen::Matrix2cd &Sn, double fGHz);
 
 	}
 
@@ -72,4 +76,4 @@ namespace rtmath {
 
 	};
 	*/
-} // end namespace rtmath
+}

@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include "../rtmath/units.h"
 #include "../rtmath/error/error.h"
 

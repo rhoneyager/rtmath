@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #include <iostream>
 #include <fstream>

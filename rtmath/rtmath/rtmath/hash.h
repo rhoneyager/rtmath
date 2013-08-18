@@ -1,4 +1,5 @@
 #pragma once
+#include "defs.h"
 /* defs.h - Header containing typedefs and other defines for many things */
 #include <cmath>
 #include <cstdint>
@@ -14,7 +15,7 @@ namespace boost {namespace filesystem { class path; } }
 namespace rtmath {
 
 	/// Used for hashing
-	class UINT128 {
+	class DLEXPORT_rtmath_core UINT128 {
 	public:
 		UINT128() : lower(0), upper(0) {}
 		uint64_t lower;
@@ -35,17 +36,17 @@ namespace rtmath {
 #define HASHSEED 2387213
 
 	/// Wrapper function that calculates the hash of an object (key) with length (len).
-	HASH_t HASH(const void *key, int len);
+	HASH_t DLEXPORT_rtmath_core HASH(const void *key, int len);
 
 	/// \brief Function to find a hash in a directory hash structure.
 	/// Does not modify hash tree structure.
 	/// \param extensions is a list of extensions (i.e. ".sca") to check.
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash, const std::vector<std::string> &extensions = std::vector<std::string>() );
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash, const std::vector<std::string> &extensions = std::vector<std::string>() );
+	boost::filesystem::path DLEXPORT_rtmath_core findHash(const boost::filesystem::path &base, const HASH_t &hash, const std::vector<std::string> &extensions = std::vector<std::string>() );
+	boost::filesystem::path DLEXPORT_rtmath_core findHash(const boost::filesystem::path &base, const std::string &hash, const std::vector<std::string> &extensions = std::vector<std::string>() );
 	/// \brief Function to determine where a new hash should be stored in a hash path.
 	/// May create new subhash folders.
-	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash);
-	boost::filesystem::path storeHash(const boost::filesystem::path &base, const std::string &hash);
+	boost::filesystem::path DLEXPORT_rtmath_core storeHash(const boost::filesystem::path &base, const HASH_t &hash);
+	boost::filesystem::path DLEXPORT_rtmath_core storeHash(const boost::filesystem::path &base, const std::string &hash);
 }
 
 BOOST_CLASS_EXPORT_KEY(rtmath::UINT128);

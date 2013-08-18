@@ -1,8 +1,6 @@
 #pragma once
-// This contains the class used for processing commands.
-// These commands are strings sent through MPI, through standard sockets, 
-// through pipes, or are located in config segments.
-// This is useful in coordinating several disparate processes.
+#include "defs.h"
+
 #include <string>
 #include <sstream>
 #include <set>
@@ -11,21 +9,29 @@
 namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath {
+	/** \brief This contains the classes used for processing commands.
+	*
+	* These commands are strings sent through MPI, through standard sockets, 
+	* through pipes, or are located in config segments.
+	* This is useful in coordinating several disparate processes.
+	**/
 	namespace config {
-		void processCommands(const char* commands);
+		/// Function to process received commands
+		/// \deprecated Function was never fully implemented.
+		void SHARED_PRIVATE DEPRECATED processCommands(const char* commands);
 
-		// parseParams is my implementation of a runtime command-line 
-		// processor. It can find various arguments and their associated 
-		// parameters. It can also convert between different storage units.
-		class parseParams
+		/// parseParams is my implementation of a runtime command-line 
+		/// processor. It can find various arguments and their associated 
+		/// parameters. It can also convert between different storage units.
+		class DLEXPORT_rtmath_core parseParams
 		{
 		public:
 			parseParams(int argc, char** argv);
 
-			// Check only for parameter existence
+			/// Check only for parameter existence
 			bool readParam(const char* oName);
 
-			// Read first occurance of the same flag only
+			/// Read first occurance of the same flag only
 			template <class T> bool readParam(const char* oName, T &val) const
 			{
 				// Find the option
@@ -45,9 +51,9 @@ namespace rtmath {
 				return false;
 			}
 
-			// Read multiple occurances of the same flag, preserving value order
-			// If no intervening flags, will continue reading options, thus
-			// allowing for shell-provided globbing
+			/// Read multiple occurances of the same flag, preserving value order
+			/// If no intervening flags, will continue reading options, thus
+			/// allowing for shell-provided globbing
 			template <class T> bool readParam(const char* oName, std::vector<T> &vals) const
 			{
 				// Find the option
@@ -77,7 +83,7 @@ namespace rtmath {
 				return false;
 			}
 
-			// Read first occurance of the same flag only
+			/// Read first occurance of the same flag only
 			template <class T> bool readParam(const char* oName, size_t num, T *vals) const
 			{
 				// Find the option
@@ -100,7 +106,7 @@ namespace rtmath {
 				return false;
 			}
 
-			// Read multiple occurances of the same flag, preserving value order
+			/// Read multiple occurances of the same flag, preserving value order
 			template <class T> bool readParam(const char* oName, size_t num, std::vector< std::vector<T> > &vals) const
 			{
 				vals.clear();
@@ -135,18 +141,20 @@ namespace rtmath {
 			char _flag;
 		};
 
-		// findFile is another useful class, geared towards locating a file.
-		// It is used in atmospheric profile searches, where the profile 
-		// may be located in several directories and may contain various 
-		// prefixes or suffixes.
-		// Note: paths have ordering. Suffixes don't.
-		class findFile
+		/** \brief findFile is another useful class, geared towards locating a file.
+		*
+		* It is used in atmospheric profile searches, where the profile 
+		* may be located in several directories and may contain various 
+		* prefixes or suffixes.
+		* \note Paths have ordering. Suffixes don't.
+		**/
+		class DLEXPORT_rtmath_core findFile
 		{
 		public:
-			// Default dumb constructor
+			/// Default dumb constructor
 			findFile();
-			// Set a default search path and a set of default optional extensions
-			// searchPath and suffixes may be comma-delimited for convenience
+			/// Set a default search path and a set of default optional extensions
+			/// searchPath and suffixes may be comma-delimited for convenience
 			findFile(const std::string &searchPath,
 				const std::string &suffixes);
 			findFile(const std::vector<std::string> &searchPath,
@@ -167,6 +175,6 @@ namespace rtmath {
 		};
 
 
-	} // end namespace config
-} // end namespace rtmath
+	}
+}
 

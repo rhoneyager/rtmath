@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <string>
 #include "../rtmath/common_templates.h"
 

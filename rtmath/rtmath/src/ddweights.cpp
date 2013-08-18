@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include <iostream>
 #include <boost/math/special_functions/erf.hpp>
 #include <memory>

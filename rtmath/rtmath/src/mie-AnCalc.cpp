@@ -1,4 +1,4 @@
-#define EXPORTING_RTMATH
+#include "Stdafx-mie.h"
 #include "../rtmath/mie/mie-AnCalc.h"
 
 namespace rtmath {

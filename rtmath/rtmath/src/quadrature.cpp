@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <vector>
 #include <set>
 #include <map>

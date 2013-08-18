@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include <Eigen/Core>
 //#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/shapefile.h"

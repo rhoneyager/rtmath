@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 

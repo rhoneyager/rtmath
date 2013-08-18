@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include "../rtmath/error/debug_mem.h"
 #include <cstring>
 

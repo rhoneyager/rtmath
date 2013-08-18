@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include <algorithm>
 #include <cmath>
 #include "../rtmath/ddscat/tmData.h"

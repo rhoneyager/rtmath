@@ -42,14 +42,14 @@ namespace rtmath
 {
 	namespace mie
 	{
-		struct DLEXPORT_RTMATH mieBase
+		struct DLEXPORT_rtmath_mie mieBase
 		{
 			mieBase();
 			double AXI, LAM, MRR, MRI, DDELT;
 			bool operator<(const mieBase&) const;
 		};
 
-		class DLEXPORT_RTMATH mieParams
+		class DLEXPORT_rtmath_mie mieParams
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -72,7 +72,7 @@ namespace rtmath
 			friend class mieAngleRes;
 		};
 
-		class DLEXPORT_RTMATH mieCalc
+		class DLEXPORT_rtmath_mie mieCalc
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -94,7 +94,7 @@ namespace rtmath
 			double sizep;
 		};
 
-		class DLEXPORT_RTMATH mieAngleRes
+		class DLEXPORT_rtmath_mie mieAngleRes
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -125,7 +125,7 @@ namespace rtmath
 
 		// Function that gets unpolarized differential backscatter
 		// cross-section.
-		double DLEXPORT_RTMATH getDifferentialBackscatterCrossSectionUnpol(
+		double DLEXPORT_rtmath_mie getDifferentialBackscatterCrossSectionUnpol(
 			boost::shared_ptr<const mieCalc> om);
 
 #pragma warning(pop)

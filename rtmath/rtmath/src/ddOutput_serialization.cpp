@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputGenerator.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"

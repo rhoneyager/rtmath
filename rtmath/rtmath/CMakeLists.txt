@@ -95,97 +95,82 @@ include_directories(EIGEN3_INCLUDE_DIR)
 include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
 include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
-add_library (rtmath_core ${sflag}
+add_library (rtmath_core SHARED
 	${rtmath_core-files} 
 	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
 	${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
 	${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
 	)
-IF(DEFINED COMMON_CFLAGS )
-	set_target_properties(rtmath_core PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-endif()
-SET_TARGET_PROPERTIES( rtmath_core PROPERTIES RELEASE_POSTFIX _Release )
-SET_TARGET_PROPERTIES( rtmath_core PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
-SET_TARGET_PROPERTIES( rtmath_core PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
-SET_TARGET_PROPERTIES( rtmath_core PROPERTIES DEBUG_POSTFIX _Debug )
-set_target_properties(rtmath_core PROPERTIES FOLDER "Libs")
-
-
-
-
+addlib(rtmath_core SHARED)
+add_precompiled_header(rtmath_core Stdafx-core.h)
 set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug Ryan_Serialization)
 target_link_libraries(rtmath_core ${rtmath_core-libs})
 
 
-
-
-
-
-add_library (rtmath_mie ${sflag}
+add_library (rtmath_mie SHARED
 	${rtmath_mie-files})
-IF(DEFINED COMMON_CFLAGS )
-	set_target_properties(rtmath_mie PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-endif()
-SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES RELEASE_POSTFIX _Release )
-SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
-SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
-SET_TARGET_PROPERTIES( rtmath_mie PROPERTIES DEBUG_POSTFIX _Debug )
-set_target_properties( rtmath_mie PROPERTIES FOLDER "Libs")
+addlib(rtmath_mie SHARED)
+add_precompiled_header(rtmath_mie Stdafx-mie.h)
 set (rtmath_mie-libs rtmath_core ${rtmath_core-libs})
 target_link_libraries(rtmath_mie ${rtmath_mie-libs})
 
 
 
-
-find_package(tmatrixFortran REQUIRED)
-find_package(tmatrixCpp REQUIRED)
-#find_package(Qhull REQUIRED)
-#include_directories(${QHULL_INCLUDE_DIRS})
 find_package(Voro REQUIRED)
 include_directories(${VORO_INCLUDE_DIRS})
-
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 include_directories(BEFORE ${VTK_INCLUDE_DIRS})
-include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
-add_library (rtmath_ddscat ${sflag}
-	${rtmath_ddscat-files}
-	)
-IF(DEFINED COMMON_CFLAGS )
-	set_target_properties(rtmath_ddscat PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-endif()
-SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES RELEASE_POSTFIX _Release )
-SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
-SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
-SET_TARGET_PROPERTIES( rtmath_ddscat PROPERTIES DEBUG_POSTFIX _Debug )
-set_target_properties( rtmath_ddscat PROPERTIES FOLDER "Libs")
+#find_package(Qhull REQUIRED)
+#include_directories(${QHULL_INCLUDE_DIRS})
 
-set (rtmath_ddscat-libs rtmath_core ${rtmath_core-libs} rtmath_mie ${rtmath_mie-libs} 
-	tmatrix-cpp tmatrix-fortran
-	${Boost_REGEX_LIBRARY}
+
+add_library(rtmath_voronoi SHARED ${rtmath_voronoi-files})
+addlib(rtmath_voronoi SHARED)
+add_precompiled_header(rtmath_voronoi Stdafx-voronoi.h)
+set (rtmath_voronoi-libs rtmath_core ${rtmath_core-libs} 
 	${VTK_LIBRARIES}
 	${VORO_LIBRARIES}
 	)
 	#	${QHULL_LIBRARIES}
 	#	${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} 
 	#	${PCL_SEGMENTATION_LIBRARIES} ${PCL_SURFACE_LIBRARIES})
+target_link_libraries(rtmath_voronoi ${rtmath_voronoi-libs})
+
+
+
+find_package(tmatrixFortran REQUIRED)
+find_package(tmatrixCpp REQUIRED)
+
+include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
+add_library (rtmath_ddscat ${sflag}
+	${rtmath_ddscat-files}
+	)
+addlib(rtmath_ddscat ${sflag})
+add_precompiled_header(rtmath_ddscat Stdafx-ddscat.h)
+set (rtmath_ddscat-libs 
+	rtmath_core ${rtmath_core-libs} 
+	rtmath_mie ${rtmath_mie-libs} 
+	rtmath_voronoi ${rtmath_voronoi-libs}
+	tmatrix-cpp tmatrix-fortran
+	${Boost_REGEX_LIBRARY}
+	)
 target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 
+#add_library(rtmath_da ${sflag} ${rtmath_da-files})
+#addlib(rtmath_da)
+#set (rtmath_da-libs rtmath_core ${rtmath_core-libs} 
+#	)
+#target_link_libraries(rtmath_da ${rtmath_da-libs})
 
 
-#add_dependencies(rtmath_ddscat ${rtmath_ddscat-libs})
+#add_library(rtmath_mc ${sflag} ${rtmath_mc-files})
+#addlib(rtmath_mc)
+#set (rtmath_mc-libs rtmath_core ${rtmath_core-libs} 
+#	)
+#target_link_libraries(rtmath_mc ${rtmath_mc-libs})
 
-#	add_package_dependency(rtmath DEPENDS_ON ROOT)
-#	add_package_dependency(rtmath DEPENDS_ON VTK)
-#	add_package_dependency(rtmath DEPENDS_ON PCL)
-#	add_package_dependency(rtmath DEPENDS_ON ImageMagick)
-
-#include_directories(${rtmath_INCLUDE_DIRS})
-#set(rtmath_INCLUDES ${rtmath_INCLUDE_DIRS} CACHE INTERNAL "rtmath-included dirs")
-#set(rtmath_LIBS ${rtmath_LIBRARIES} CACHE INTERNAL "rtmath-included libs")
-
-#target_link_libraries (rtmath tmatrix-serialization rtmath-mie)
 
 if (BUILD_TESTING)
 	add_executable(rtmath_core_tests ${rtmath_core_test-files})

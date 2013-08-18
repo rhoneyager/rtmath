@@ -14,7 +14,7 @@ namespace rtmath {
 
 		Used when calculating Clenshaw-Curtis quadratures.
 		**/
-		class chebyshevA : public recPoly {
+		class DLEXPORT_rtmath_core chebyshevA : public recPoly {
 		public:
 			virtual void get(unsigned int rank, polynomial &res) const ;
 		};
@@ -25,7 +25,7 @@ namespace rtmath {
 
 		Used when calculating Clenshaw-Curtis quadratures.
 		**/
-		class chebyshevB : public recPoly {
+		class DLEXPORT_rtmath_core chebyshevB : public recPoly {
 		public:
 			virtual void get(unsigned int rank, polynomial &res) const ;
 		};

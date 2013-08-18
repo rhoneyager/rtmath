@@ -1,22 +1,5 @@
-/* config.h - describes the structure that should be contained in options files that
- * involve the rtmath library. This is to avoid having so create system-specific answer
- * files or having to reenter options on each execution. The actual configuration files
- * will be based on the structure of Apache's httpd.conf.
- *
- * There are general options and specific containers. The file can reference other files
- * as well. Global options are visible in the subcontainers, though these may be
- * overridden for granularity and to allow for reusing files between multiple machines.
- * The rtmath main program will parse the file and look for it in a set of pre-programmed
- * locations upon execution.
- *
- * Once a main config file is read, the config options specify the next step. Daemons
- * will prepare themselves for runs and will then wait for a connection. Further
- * instructions will be transmitted in a structure similar to that of the standard
- * config file. That necessary execute blurb, if present in a console application,
- * will determine what the app does. If missing, an interactive app will just ask
- * the user what to do.
- */
 #pragma once
+#include "defs.h"
 
 #include <string>
 #include <iostream>
@@ -26,14 +9,33 @@
 #include <memory>
 #include <boost/lexical_cast.hpp>
 
-
 namespace rtmath {
+	/** \brief describes the structure that should be contained in options files that
+	 * involve the rtmath library.
+	 * 
+	 * This is to avoid having so create system-specific answer files or 
+	 * having to reenter options on each execution. The actual configuration files
+	 * will be based on the structure of Apache's httpd.conf.
+	 *
+	 * There are general options and specific containers. The file can reference other files
+	 * as well. Global options are visible in the subcontainers, though these may be
+	 * overridden for granularity and to allow for reusing files between multiple machines.
+	 * The rtmath main program will parse the file and look for it in a set of pre-programmed
+	 * locations upon execution.
+	 *
+	 * Once a main config file is read, the config options specify the next step. Daemons
+	 * will prepare themselves for runs and will then wait for a connection. Further
+	 * instructions will be transmitted in a structure similar to that of the standard
+	 * config file. That necessary execute blurb, if present in a console application,
+	 * will determine what the app does. If missing, an interactive app will just ask
+	 * the user what to do.
+	 **/
 	namespace config {
 		/// \todo fix findSegment so that it works
 		/// \todo findSegment check for not found condition (currently returns garbage)
 		/// \todo restructure to explicitly enable symlinks
 		/// \todo Switch to boost::shared_ptr
-		class configsegment : public std::enable_shared_from_this<configsegment> {
+		class DLEXPORT_rtmath_core configsegment : public std::enable_shared_from_this<configsegment> {
 		public:
 			static std::shared_ptr<configsegment> create(const std::string &name);
 			static std::shared_ptr<configsegment> create(const std::string &name, 
@@ -76,8 +78,8 @@ namespace rtmath {
 		public: // And let's have a static loading function here!
 			static std::shared_ptr<configsegment> loadFile(const char* filename, std::shared_ptr<configsegment> root);
 			static std::shared_ptr<configsegment> loadFile(std::istream &indata, std::shared_ptr<configsegment> root, const std::string &cwd = "./");
-			friend std::ostream& operator<<(std::ostream& stream, const rtmath::config::configsegment &ob);
-			friend std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
+			friend DLEXPORT_rtmath_core std::ostream& operator<< (std::ostream& stream, const rtmath::config::configsegment &ob);
+			//friend std::istream& std::operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
 		};
 
 		// Easy-to-use function that looks in config for a property. If not found, ask the user!
@@ -93,22 +95,18 @@ namespace rtmath {
 			return res;
 		}
 
-		void getConfigDefaultFile(std::string &filename);
-		std::shared_ptr<configsegment> getRtconfRoot();
-		std::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename = "");
-		void setRtconfRoot(std::shared_ptr<configsegment> &root);
+		void DLEXPORT_rtmath_core getConfigDefaultFile(std::string &filename);
+		std::shared_ptr<configsegment> DLEXPORT_rtmath_core getRtconfRoot();
+		std::shared_ptr<configsegment> DLEXPORT_rtmath_core loadRtconfRoot(const std::string &filename = "");
+		void DLEXPORT_rtmath_core setRtconfRoot(std::shared_ptr<configsegment> &root);
 
-		extern std::shared_ptr<configsegment> _rtconfroot;
+		//extern std::shared_ptr<configsegment> _rtconfroot;
 
-		std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
-		std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
+		/// Take the object, and print in the appropriate form, using recursion
+		DLEXPORT_rtmath_core std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
+		/// Take the object, and input in the appropriate form, using recursion
+		DLEXPORT_rtmath_core std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
 
-	}; // end namespace config
-}; // end namespace rtmath
-
-// ostream override
-//std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
-// istream override
-//std::istream& std::istream::operator>> (std::istream &stream, rtmath::config::configsegment &ob);
-
+	}
+}
 

@@ -1,10 +1,5 @@
 #pragma once
-
-/* Polynomial header
-   Code is used to provide support for representing polynomials in vectors
-   Support for differentiation, integration, adding, recursion, ...
-   Needed for Legendre polynomial stuff
-   */
+#include "defs.h"
 
 #include <map>
 #include <iostream>
@@ -13,7 +8,13 @@
 
 namespace rtmath {
 
-	class polynomial {
+	/** \brief Polynomial class
+	*
+	* Code is used to provide support for representing polynomials in vectors
+	* Support for differentiation, integration, adding, recursion, ...
+	* Needed for Legendre polynomial stuff
+	**/
+	class DLEXPORT_rtmath_core polynomial {
 		public:
 			polynomial(); 
 			polynomial(unsigned int pow, double val); 
@@ -83,7 +84,7 @@ namespace rtmath {
 };
 
 
-std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob);
+DLEXPORT_rtmath_core std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob);
 //std::istream &operator>>(std::istream &stream, rtmath::polynomial &ob);
 
 

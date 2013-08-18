@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <iostream>
 #include <sstream>
 #include "../rtmath/error/error.h"
@@ -6,7 +6,7 @@
 
 namespace rtmath {
 	namespace debug {
-		void (*xError::_errHandlerFunc)(const char*) = NULL;
+		void SHARED_PRIVATE (*xError::_errHandlerFunc)(const char*) = NULL;
 
 		xError::xError() throw()
 		{

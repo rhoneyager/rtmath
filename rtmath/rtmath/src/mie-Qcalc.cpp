@@ -1,4 +1,4 @@
-#define EXPORTING_RTMATH
+#include "Stdafx-mie.h"
 #include "../rtmath/mie/mie-Qcalc.h"
 #include "../rtmath/mie/mie-abNCalc.h"
 

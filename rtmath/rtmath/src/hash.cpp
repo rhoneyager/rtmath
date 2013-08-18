@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include "../rtmath/defs.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/Public_Domain/MurmurHash3.h"

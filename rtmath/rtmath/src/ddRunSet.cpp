@@ -1,3 +1,4 @@
+#include "Stdafx-ddscat.h"
 #include <Ryan_Serialization/serialization.h>
 #include <boost/serialization/shared_ptr.hpp>
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
@@ -49,7 +50,8 @@ namespace rtmath {
 				if ((pund != string::npos) && (pavg != string::npos)) pund = string::npos;
 				if (pund == string::npos && pshape != string::npos) pos = pshape;
 				else if (pshape == string::npos && pund != string::npos) pos = pund;
-				else if (pshape == pund == string::npos) throw;
+				else if (pshape == string::npos) throw;
+				else if (pund == string::npos) throw;
 				else pos = (pund < pshape) ? pund : pshape;
 				sleaf = sleaf.substr(0,pos);
 			}

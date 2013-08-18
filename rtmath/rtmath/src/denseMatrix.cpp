@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #include "../rtmath/denseMatrix.h"
 

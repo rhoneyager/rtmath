@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <algorithm>
 #include <string>
 #include <map>
@@ -192,7 +192,7 @@ namespace rtmath {
 		}
 
 #define SPEC_SPLITSET(T) \
-	template void splitSet<T>(const std::string &instr, std::set<T> &expanded, \
+	template void DLEXPORT_rtmath_core splitSet<T>(const std::string &instr, std::set<T> &expanded, \
 		const std::map<std::string, std::string> *aliases);
 
 		SPEC_SPLITSET(int);

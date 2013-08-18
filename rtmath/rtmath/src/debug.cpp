@@ -3,7 +3,7 @@
 * and versioning code resides.
 */
 
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <iostream>
 #include <sstream>
 #include <boost/version.hpp>
@@ -19,9 +19,9 @@
 #endif
 
 namespace {
-	boost::program_options::options_description *pcmdline = nullptr;
-	boost::program_options::options_description *pconfig = nullptr;
-	boost::program_options::options_description *phidden = nullptr;
+	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
+	boost::program_options::options_description SHARED_PRIVATE *pconfig = nullptr;
+	boost::program_options::options_description SHARED_PRIVATE *phidden = nullptr;
 }
 
 namespace rtmath

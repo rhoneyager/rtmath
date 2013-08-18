@@ -1,4 +1,6 @@
 #pragma once
+#include "defs.h"
+
 #include <complex>
 #include <functional>
 
@@ -10,7 +12,7 @@ namespace rtmath {
 
 	namespace zeros {
 		// Zero-finding implementation - Brent's method
-		double findzero(double a, double b, const std::function<double(double) > & evaltarget);
+		double DLEXPORT_rtmath_core findzero(double a, double b, const std::function<double(double) > & evaltarget);
 
 		// f is an arbitrary class with operator(). So, a functional / lambda function does work.
 		template<class T, class U>

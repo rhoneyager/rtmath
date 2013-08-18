@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include "../rtmath/polynomials/chebyshev.h"
 #include "../rtmath/polynomial.h"
 #include <vector>

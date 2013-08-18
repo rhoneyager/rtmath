@@ -104,6 +104,15 @@ set (resource-files
 	)
 source_group("Resource Files" FILES ${resource-files})
 
+
+
+set(rtmath_voronoi-files
+	rtmath/ddscat/hulls.h
+	src/hulls.cpp
+	src/Stdafx-voronoi.cpp
+	src/Stdafx-voronoi.h
+	)
+
 set(rtmath_ddscat-files
 	#rtmath/ddscat/cdf-ddscat.h
 	rtmath/ddscat/ddavg.h
@@ -120,7 +129,6 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/ddVersions.h
 	rtmath/ddscat/ddweights.h
 	rtmath/ddscat/dielTabFile.h
-	rtmath/ddscat/hulls.h
 	rtmath/ddscat/mtab.h
 	rtmath/ddscat/parids.h
 	rtmath/ddscat/rotations.h
@@ -149,7 +157,6 @@ set(rtmath_ddscat-files
 	src/ddVersions.cpp
 	src/ddweights.cpp
 	src/dielTabFile.cpp
-	src/hulls.cpp
 	# src/mtab.cpp
 	#	src/pclstuff.cpp
 	src/rotations.cpp
@@ -167,6 +174,8 @@ set(rtmath_ddscat-files
 	src/shapes-generators.cpp
 	src/tmData.cpp
 	src/tmData_serialization.cpp
+	src/Stdafx-ddscat.cpp
+	src/Stdafx-ddscat.h
 	)
 #source_group("Resource Files" FILES ${resource-files})
 
@@ -189,6 +198,15 @@ set(rtmath_mie-files
 	src/mie-serialization.cpp
 	src/mie-tauNCalc.cpp
 	src/mie-wnCalc.cpp
+	src/Stdafx-mie.cpp
+	src/Stdafx-mie.h
+	)
+
+
+set(rtmath_da-files
+	)
+
+set(rtmath_mc-files
 	)
 
 # Final rules to provide with build targets
@@ -200,6 +218,8 @@ set (rtmath_core-files
 	${rtmath_core_polynomials}
 	${rtmath_core_publicdomain}
 	${rtmath_core_serialization}
+	src/Stdafx-core.cpp
+	src/Stdafx-core.h
 	)
 
 set (rtmath_core_test-files

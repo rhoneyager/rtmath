@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -624,7 +624,7 @@ namespace rtmath {
 };
 
 
-// istream / ostream overrides, used for getting and setting polynomials
+/// istream / ostream overrides, used for getting and setting polynomials
 std::ostream & operator<<(std::ostream &stream, const rtmath::polynomial &ob)
 {
 	// Quick and easy output for now

@@ -4,7 +4,9 @@
 # compiler flags. 
 
 include (addapp)
+include (addlib)
 include (AddPackageDependency)
+include (PrecompiledHeader)
 #include_directories (AFTER SYSTEM ${ROOT_INCLUDES})
 #set (COMMON_LIBS ${COMMON_LIBS} ${ROOT_LIBRARIES})
 

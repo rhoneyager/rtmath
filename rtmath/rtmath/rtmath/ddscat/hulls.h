@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 #include <string>
 #include <vector>
 #include <set>
@@ -18,7 +19,7 @@ namespace rtmath
 
 		class hullData;
 
-		class hull
+		class DLEXPORT_rtmath_voronoi hull
 		{
 		public:
 			hull(const Eigen::Matrix<float, Eigen::Dynamic, 3> &backend);
@@ -39,7 +40,7 @@ namespace rtmath
 			hull();
 		};
 
-		class convexHull : public hull
+		class DLEXPORT_rtmath_voronoi convexHull : public hull
 		{
 		public:
 			convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>&);

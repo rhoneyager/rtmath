@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #pragma warning( disable : 4244 ) // annoying double to float issues in boost
 
 #include <functional>

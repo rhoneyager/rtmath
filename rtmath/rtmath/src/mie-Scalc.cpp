@@ -1,4 +1,4 @@
-#define EXPORTING_RTMATH
+#include "Stdafx-mie.h"
 #include "../rtmath/phaseFunc.h"
 #include "../rtmath/mie/mie-Scalc.h"
 #include "../rtmath/mie/mie-abNCalc.h"

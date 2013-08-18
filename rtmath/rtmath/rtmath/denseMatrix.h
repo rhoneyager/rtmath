@@ -1,14 +1,20 @@
 #pragma once
+#include "defs.h"
 #include <boost/shared_array.hpp>
 #include <boost/cstdint.hpp>
 
-/* denseMatrix holds a dense matrix of bools. Each bool occupies one bit of 
-* storage space. The matrix is aligned on 32-byte words. It is fast. */
 
 namespace rtmath
 {
-
-	class denseMatrix
+	
+	/** \brief denseMatrix holds a dense matrix of bools. 
+	* 
+	* Each bool occupies one bit of 
+	* storage space. The matrix is aligned on 32-byte words. It is fast.
+	* 
+	* \todo Examine using a vector<bool>
+	**/
+	class DLEXPORT_rtmath_core denseMatrix
 	{
 	public:
 		denseMatrix(size_t sx, size_t sy, size_t sz);

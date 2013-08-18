@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <complex>
 #include <algorithm>
 #include <cmath>
@@ -46,7 +46,7 @@ namespace rtmath {
 			else if (tid == "tmatrix")
 				f = muellerTMATRIX;
 			else
-				throw rtmath::debug::xBadInput(id.c_str()); // TODO: use another xError? Create a new one?
+				throw rtmath::debug::xBadInput(id.c_str()); /// \todo use another xError? Create a new one?
 		}
 
 		void muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn)

@@ -1,4 +1,5 @@
 #pragma once
+#include "../defs.h"
 
 namespace rtmath {
 	class polynomial;
@@ -14,8 +15,10 @@ namespace rtmath {
 		
 		 \note Due to limitaions with static data members, the cached data store
 		 must be defined in each polynomial.
+
+		 \todo Try to replace the derived classes with the boost::math functions.
 		 **/
-		class recPoly {
+		class DLEXPORT_rtmath_core recPoly {
 			public:
 				recPoly() {}
 				virtual ~recPoly() {}

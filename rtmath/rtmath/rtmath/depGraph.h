@@ -1,4 +1,5 @@
 #pragma once
+#include "defs.h"
 #include <list>
 #include <map>
 #include <memory>
@@ -19,7 +20,7 @@ namespace rtmath
 		class graph;
 		class vertex;
 
-		class vertexRunnable
+		class DLEXPORT_rtmath_core vertexRunnable
 		{
 		public:
 			vertexRunnable() {}
@@ -35,7 +36,7 @@ namespace rtmath
 		typedef std::set< boost::shared_ptr<vertex> > setShrdVertex;
 		typedef std::list< boost::weak_ptr<vertex> > listWeakVertex;
 
-		class vertex : public boost::enable_shared_from_this<vertex>
+		class DLEXPORT_rtmath_core vertex : public boost::enable_shared_from_this<vertex>
 		{
 		public:
 			vertex(bool OR = false) : _slotOR(OR), _target(nullptr) { }
@@ -75,7 +76,7 @@ namespace rtmath
 		};
 
 
-		class graph : public boost::enable_shared_from_this<graph>
+		class DLEXPORT_rtmath_core graph : public boost::enable_shared_from_this<graph>
 		{
 		public:
 			graph(const setShrdVertex &vertices);

@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <string>
 #include <vector>
 #include <set>
@@ -189,7 +189,7 @@ namespace rtmath {
 			return false;
 		}
 
-	} // end namespace config
-} // end namespace rtmath
+	}
+}
 
 

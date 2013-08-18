@@ -8,7 +8,7 @@ namespace rtmath
 {
 	namespace mie {
 		class piNCalc;
-		class DLEXPORT_RTMATH tauNCalc {
+		class DLEXPORT_rtmath_mie tauNCalc {
 		public:
 			tauNCalc(double mu);
 			double calc(size_t n) const;

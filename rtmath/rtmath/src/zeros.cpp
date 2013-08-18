@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include "../rtmath/zeros.h"
 #include "../rtmath/error/debug.h"
 //#include <cstdlib>

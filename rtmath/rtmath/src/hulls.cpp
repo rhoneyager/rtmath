@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-voronoi.h"
 #pragma warning( disable : 4996 )
 #pragma warning( disable : 4305 )
 #pragma warning( disable : 4244 )
@@ -45,7 +45,7 @@ namespace rtmath
 {
 	namespace ddscat
 	{
-		void writeVTKpolys(const std::string &filename, const vtkSmartPointer< vtkPolyData > &src)
+		void SHARED_INTERNAL writeVTKpolys(const std::string &filename, const vtkSmartPointer< vtkPolyData > &src)
 		{
 			vtkSmartPointer<vtkXMLPolyDataWriter> pointsWriter = 
 				vtkSmartPointer<vtkXMLPolyDataWriter>::New();
@@ -54,7 +54,7 @@ namespace rtmath
 			pointsWriter->Write();
 		}
 
-		class hullData
+		class SHARED_INTERNAL hullData
 		{
 		public:
 			hullData()

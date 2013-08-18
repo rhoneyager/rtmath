@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <cmath>
 #include <map>
 #include "../rtmath/density.h"
@@ -8,12 +8,12 @@
 /* This file contains the tables and functions for the density of ice-1h
  * and supercooled water */
 
-// Initialize the tables only once in a private namespace to improve function call times
+/// Initialize the tables only once in a private namespace to improve function call times
 namespace
 {
 	std::map<double, double> denIce, denSuperWater, denWater;
 
-	void initSuperWater()
+	void SHARED_PRIVATE initSuperWater()
 	{
 		static bool inited = false;
 		if (inited) return;
@@ -29,7 +29,7 @@ namespace
 		inited = true;
 	}
 
-	void initIce()
+	void SHARED_PRIVATE initIce()
 	{
 		static bool inited = false;
 		if (inited) return;
@@ -55,7 +55,7 @@ namespace
 		inited = true;
 	}
 
-	double interpMap(double target, const std::map<double,double> &m)
+	double SHARED_PRIVATE interpMap(double target, const std::map<double,double> &m)
 	{
 		auto lower = m.lower_bound(target);
 		if (lower->first == target) return lower->second;
@@ -71,8 +71,6 @@ namespace
 		return res;
 
 	}
-
-
 }
 
 namespace rtmath

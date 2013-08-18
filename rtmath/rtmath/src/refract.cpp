@@ -1,7 +1,7 @@
 // Code segment directly based on Liu's code. Rewritten in C++ so that it may be 
 // compiled in an MSVC environment
 
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <cmath>
 #include <complex>
 #include <fstream>

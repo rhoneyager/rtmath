@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-ddscat.h"
 #include <boost/filesystem.hpp>
 #include "../rtmath/ddscat/runScripts.h"
 #include "../rtmath/ddscat/ddparGenerator.h"

@@ -9,7 +9,7 @@
 namespace rtmath {
 	namespace mie {
 
-		class DLEXPORT_RTMATH piNCalc {
+		class DLEXPORT_rtmath_mie piNCalc {
 		public:
 			piNCalc(double mu);
 			const double mu;

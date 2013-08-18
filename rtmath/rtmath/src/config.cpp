@@ -1,4 +1,4 @@
-#include "../rtmath/Stdafx.h"
+#include "Stdafx-core.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -66,7 +66,7 @@ namespace rtmath {
 			std::shared_ptr<configsegment> cseg = getPtr();
 
 			// If first part of key is '/', seek to root
-			
+
 			if (key[0] == '/')
 			{
 				std::shared_ptr<configsegment> cpar = this->_parent.lock();
@@ -77,7 +77,7 @@ namespace rtmath {
 				}
 				cseg = cpar;
 			}
-			
+
 
 			std::string dkey = key.substr(0,key.find_last_of('/')+1);
 			// Go down the tree, pulling out one '/' at a time, until done
@@ -276,7 +276,7 @@ namespace rtmath {
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
 				//root = std::shared_ptr<configsegment>(new configsegment("ROOT"));
-				root = create("ROOT");
+					root = create("ROOT");
 
 			std::shared_ptr<configsegment> cseg = root; // The current container in the tree
 			if (cseg->_cwd.size() == 0) cseg->_cwd = cwd;
@@ -399,11 +399,11 @@ namespace rtmath {
 				filename = RTC;
 			else if (exists(testSys))
 				filename = SYS_RTC;
-			
+
 			return;
 		}
 
-		std::shared_ptr<configsegment> _rtconfroot = nullptr;
+		std::shared_ptr<configsegment> SHARED_INTERNAL _rtconfroot = nullptr;
 
 		std::shared_ptr<configsegment> getRtconfRoot()
 		{
@@ -425,10 +425,10 @@ namespace rtmath {
 			return cnf;
 		}
 
-		std::ostream& operator<< (std::ostream& stream, const rtmath::config::configsegment &ob)
+
+		std::ostream& operator<< (std::ostream& stream, const ::rtmath::config::configsegment &ob)
 		{
-			// Take the object, and print in the appropriate form, using recursion
-			// TODO: allow for include statements
+			/// \todo allow for include statements
 			using namespace std;
 			string name = ob.name();
 			stream << "<" << name << ">" << endl;
@@ -451,16 +451,11 @@ namespace rtmath {
 		}
 
 
-		std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob)
+		std::istream& operator>> (std::istream &stream, std::shared_ptr<::rtmath::config::configsegment> &ob)
 		{
-			//std::string fname;
-			//stream >> fname;
-			//ob = rtmath::config::configsegment::loadFile(fname.c_str(),ob);
 			ob = rtmath::config::configsegment::loadFile(stream,nullptr);
 			return stream;
 		}
-
-	}; // end config
-};// end rtmath
-
+	}
+}
 

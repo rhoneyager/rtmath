@@ -1,4 +1,5 @@
 #pragma once
+#include "defs.h"
 #include <complex>
 #include <functional>
 #include <string>
@@ -7,24 +8,24 @@
 namespace rtmath {
 	namespace refract {
 		// m to e converters
-		void mToE(std::complex<double> m, std::complex<double> &e);
-		void eToM(std::complex<double> e, std::complex<double> &m);
+		void DLEXPORT_rtmath_core mToE(std::complex<double> m, std::complex<double> &e);
+		void DLEXPORT_rtmath_core eToM(std::complex<double> e, std::complex<double> &m);
 
 		// Dielectric providers - these use f and T to automatically determine the correct
 		// base dielectric function to use.
-		void mWater(double f, double t, std::complex<double> &m);
-		void mIce(double f, double t, std::complex<double> &m);
+		void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m);
+		void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m);
 
 
 		// The raw dielectric providers
 
 		// Water complex refractive index
 		// Liebe, Hufford and Manabe (1991)
-		void mWaterLiebe(double f, double t, std::complex<double> &m);
+		void DLEXPORT_rtmath_core mWaterLiebe(double f, double t, std::complex<double> &m);
 
 		// Ice complex refractive index
 		// Christian Matzler (2006)
-		void mIceMatzler(double f, double t, std::complex<double> &m);
+		void DLEXPORT_rtmath_core mIceMatzler(double f, double t, std::complex<double> &m);
 
 
 
@@ -33,7 +34,7 @@ namespace rtmath {
 
 		// basic Liu-based diel.tab writer
 		// Deprecated
-		void writeDiel(const std::string &filename, 
+		void DLEXPORT_rtmath_core DEPRECATED writeDiel(const std::string &filename, 
 			const std::complex<double> &m);
 
 		// Refractive index transformations
@@ -43,11 +44,11 @@ namespace rtmath {
 
 		// Bruggeman (1935) / Landauer (1952) / Polder and van Santen (1946) / Effective Medium
 		// See Bohren and Battan (1980)
-		void bruggeman(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
+		void DLEXPORT_rtmath_core bruggeman(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 		// Bohren and Battan (1980)
 		// Debye formula (specific case of Clausius-Mosotti)
-		void debyeDry(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
+		void DLEXPORT_rtmath_core debyeDry(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 
 
@@ -55,17 +56,17 @@ namespace rtmath {
 		//void maxwellGarnettSpheresMulti(std::complex<double> Mice, std::complex<double> Mwater, std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres);
 
 		// Maxwell-Garnet - assuming that ice spheres are inclusions and water is the surrounding medium
-		void maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
+		void DLEXPORT_rtmath_core maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 		// Maxwell-Garnett - assuming ellipsoidal inclusions
 		// Bohren and Battan (1982)
-		void maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
+		void DLEXPORT_rtmath_core maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 		// Sihvola (1989) - requires extra parameter, nu.
 		// nu = 0 -> Maxwell-Garnett for spherical inclusions
 		// nu = 2 -> Bruggeman
 		// Petty and Huang (2010) use nu = 0.85.
-		void sihvola(std::complex<double> Ma, std::complex<double> Mb, double fa, double nu, std::complex<double> &Mres);
+		void DLEXPORT_rtmath_core sihvola(std::complex<double> Ma, std::complex<double> Mb, double fa, double nu, std::complex<double> &Mres);
 
 		struct sihvolaBinder
 		{

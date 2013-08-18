@@ -11,7 +11,7 @@ namespace rtmath {
 
 		Used when calculating Gaussian quadratures.
 		**/
-		class laguerre : public recPoly {
+		class DLEXPORT_rtmath_core laguerre : public recPoly {
 		public:
 			virtual void get(unsigned int rank, polynomial &res) const ;
 		};

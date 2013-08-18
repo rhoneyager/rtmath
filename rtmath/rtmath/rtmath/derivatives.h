@@ -1,11 +1,12 @@
 #pragma once
+#include "defs.h"
 
 namespace rtmath
 {
 	namespace derivatives
 	{
 		/**
-		Provides the nth derivative with a given set of sample points
+		\brief Provides the nth derivative with a given set of sample points
 
 		This template provides the capability of finding the nth central 
 		derivative of an arbitrary function (func). Func must provide 
@@ -19,14 +20,16 @@ namespace rtmath
 		restricted to classes / types that obey the standard C++ 
 		arithmetic operations).
 
-		@param T The floating point type used for evaluations and returns
-		@param sample_points The number of points used in the finite difference kernel
-		@param dx The step size for the sample points
-		@param x The point at which the derivative should be evaluated
-		@return The result of the derivative operation
-		*/
+		\param T The floating point type used for evaluations and returns
+		\param sample_points The number of points used in the finite difference kernel
+		\param dx The step size for the sample points
+		\param x The point at which the derivative should be evaluated
+		\return The result of the derivative operation
+
+		\todo Implement this.
+		**/
 		template <typename T, class Function_type>
-		T derivative_base(Function_type func, const std::vector<T> &sample_points, T dx, T x)
+		T ERR_UNIMPLEMENTED derivative_base(Function_type func, const std::vector<T> &sample_points, T dx, T x)
 		{
 #pragma message("rtmath::derivatives::derivative is unimplemented")
 			throw; // Unimplemented
