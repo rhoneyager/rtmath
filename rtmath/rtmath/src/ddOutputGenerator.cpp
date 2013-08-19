@@ -45,7 +45,7 @@ namespace rtmath {
 			res->parfile = src->parfile;
 			res->generator = shared_from_this();
 		}
-
+		/*
 		ddOutputGeneratorSimple::ddOutputGeneratorSimple(boost::shared_ptr<ddOutput> source) 
 			: ddOutputGenerator(source)
 		{
@@ -62,7 +62,7 @@ namespace rtmath {
 			/// \todo Construct the ddOutputSingle here
 			throw debug::xUnimplementedFunction();
 		}
-
+		*/
 		/*
 		ddOutputEnsembleGaussian::ddOutputEnsembleGaussian(double sigma, size_t coord_varying)
 		{

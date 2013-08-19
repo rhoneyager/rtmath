@@ -44,7 +44,8 @@ namespace rtmath {
 		};
 
 		/// The trivial ensemble class that duplicates DDSCAT results
-		class DLEXPORT_rtmath_ddscat ddOutputGeneratorSimple 
+		/*
+		class ddOutputGeneratorSimple 
 			: public ddOutputGenerator
 		{
 		protected:
@@ -57,6 +58,7 @@ namespace rtmath {
 			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const override;
 			virtual boost::shared_ptr<ddOutput> generate(std::set<boost::shared_ptr<ddOutputSingle> > &scas) const;
 		};
+		*/
 
 		/// \todo Modify ddweights to get default weighting factors based on solid angle
 		/// \todo Modify ddweights to get weighting factors based on ddscat defaults

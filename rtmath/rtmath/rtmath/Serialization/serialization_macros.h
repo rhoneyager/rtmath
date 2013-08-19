@@ -34,10 +34,10 @@
 /// in a class (where boost::serialization::access is a friend). This is the preferred type of export.
 /// \note DLEXPORT_RTMATH tag is not needed, as it is defined in an exported class.
 #define EXPORTINTERNAL(U) \
-	template void SHARED_INTERNAL U(::boost::archive::xml_oarchive &, const unsigned int); \
-	template void SHARED_INTERNAL U(::boost::archive::xml_iarchive &, const unsigned int); \
-	template void SHARED_INTERNAL U(::boost::archive::text_oarchive &, const unsigned int); \
-	template void SHARED_INTERNAL U(::boost::archive::text_iarchive &, const unsigned int);
+	template void SHARED_EXPORT U(::boost::archive::xml_oarchive &, const unsigned int); \
+	template void SHARED_EXPORT U(::boost::archive::xml_iarchive &, const unsigned int); \
+	template void SHARED_EXPORT U(::boost::archive::text_oarchive &, const unsigned int); \
+	template void SHARED_EXPORT U(::boost::archive::text_iarchive &, const unsigned int);
 
 
 // 	template void U(boost::archive::text_oarchive &, T &, const unsigned int); 
