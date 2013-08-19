@@ -45,12 +45,14 @@ namespace rtmath {
 			res->parfile = src->parfile;
 			res->generator = shared_from_this();
 		}
-		/*
-		ddOutputGeneratorSimple::ddOutputGeneratorSimple(boost::shared_ptr<ddOutput> source) 
+		
+		ddOutputGeneratorIsoAll::ddOutputGeneratorIsoAll(boost::shared_ptr<ddOutput> source) 
 			: ddOutputGenerator(source)
 		{
 			// Construct the avg file by simply averaging all sca outputs
 			// This assumes that the sca files have the same scale for scattering output
+
+			// Retrieve the rotation parameters and reconstruct the weights
 
 			float numScas = (float) res->scas.size();
 			for (auto &sca : res->scas)
@@ -62,7 +64,85 @@ namespace rtmath {
 			/// \todo Construct the ddOutputSingle here
 			throw debug::xUnimplementedFunction();
 		}
-		*/
+
+		ddOutputGeneratorDDSCAT::ddOutputGeneratorDDSCAT(boost::shared_ptr<ddOutput> source) 
+			: ddOutputGenerator(source)
+		{
+			// Construct the avg file by simply averaging all sca outputs
+			// This assumes that the sca files have the same scale for scattering output
+
+			// Retrieve the rotation parameters and reconstruct the weights
+			// Use a lazy rotation retrieval method - iterate through all sca values
+			std::set<double> betas, thetas, phis;
+			for (const auto sca : res->scas)
+			{
+				betas.emplace(sca->beta());
+				thetas.emplace(sca->theta());
+				phis.emplace(sca->phi());
+			}
+			if (!betas.size() || !thetas.size() || !phis.size()) 
+				throw debug::xBadInput("Need sca input files for ddOutputGeneratorDDSCAT");
+			double bMin = *(betas.begin());
+			double tMin = *(thetas.begin());
+			double pMin = *(phis.begin());
+			double bMax = *(betas.rbegin());
+			double tMax = *(thetas.rbegin());
+			double pMax = *(phis.rbegin());
+			size_t nB = betas.size();
+			size_t nT = thetas.size();
+			size_t nP = phis.size();
+
+			ddWeightsDDSCAT wts(bMin, bMax, nB, tMin, tMax, nT, pMin, pMax, nP);
+
+			float numScas = (float) res->scas.size();
+			for (auto &sca : res->scas)
+			{
+				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
+					(sca, wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
+			}
+
+			/// \todo Construct the ddOutputSingle here
+			throw debug::xUnimplementedFunction();
+		}
+		
+		ddOutputGeneratorThetaAligned::ddOutputGeneratorThetaAligned(
+			boost::shared_ptr<ddOutput> source, double theta) 
+			: ddOutputGenerator(source)
+		{
+			// Construct the avg file by simply averaging all sca outputs
+			// This assumes that the sca files have the same scale for scattering output
+
+			// Retrieve the rotation parameters and reconstruct the weights
+			// Use a lazy rotation retrieval method - iterate through all sca values
+			std::set<double> betas, phis;
+			for (const auto sca : res->scas)
+			{
+				betas.emplace(sca->beta());
+				phis.emplace(sca->phi());
+			}
+			if (!betas.size() || !phis.size()) 
+				throw debug::xBadInput("Need sca input files for ddOutputGeneratorDDSCAT");
+			double bMin = *(betas.begin());
+			double pMin = *(phis.begin());
+			double bMax = *(betas.rbegin());
+			double pMax = *(phis.rbegin());
+			size_t nB = betas.size();
+			size_t nP = phis.size();
+
+			ddWeightsDDSCAT wts(bMin, bMax, nB, theta, theta, 1, pMin, pMax, nP);
+
+			float numScas = (float) res->scas.size();
+			for (auto &sca : res->scas)
+			{
+				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
+					(sca, wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
+			}
+
+			/// \todo Construct the ddOutputSingle here
+			throw debug::xUnimplementedFunction();
+		}
+		
+
 		/*
 		ddOutputEnsembleGaussian::ddOutputEnsembleGaussian(double sigma, size_t coord_varying)
 		{

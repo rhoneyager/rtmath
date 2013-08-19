@@ -1,5 +1,6 @@
 #pragma once
 #include "../defs.h"
+#include "rotations.h"
 #include <map>
 #include <set>
 
@@ -10,24 +11,71 @@
 namespace rtmath {
 
 	namespace ddscat {
+		class rotations;
 
-		class DLEXPORT_rtmath_ddscat weights
+		/// Base class that handles independent weighting in one direction
+		class DLEXPORT_rtmath_ddscat ddWeights
 		{
 		public:
-			weights() {}
-			virtual ~weights() {}
-			virtual double weight(double point) const;
+			virtual ~ddWeights() {}
+			/// Base weight
+			virtual double weightBase(double point) const;
+			/// Weight (accounting for degeneracy)
+			virtual double weightDegen(double point) const;
 			void getWeights(std::map<double,double> &weights) const;
 			void getFreqs(std::map<double,size_t> &freqs) const;
 		protected:
-			std::map<double,double> _pointWeights;
-			std::map<double,size_t> _pointFreqs;
-			
+			ddWeights() {}
+			typedef std::map<double,double> IndependentWeights;
+			/// Weight at each coordinate
+			IndependentWeights weights;
+			/// Degeneracy table (may be used in derived classes)
+			std::map<double,size_t> freqs;
 		};
 
+		/// Generate linearly-spaced weights
+		class DLEXPORT_rtmath_ddscat ddWeightsLinInt
+			: public ddWeights
+		{
+		public:
+			ddWeightsLinInt(double start, double end, size_t n);
+			virtual ~ddWeightsLinInt() {};
+		};
+
+		/// Generate cosine-spaced weighting points, following 
+		/// DDSCAT's convention about weights for odd or even 
+		/// interval numbers.
+		class DLEXPORT_rtmath_ddscat ddWeightsCosInt
+			: public ddWeights
+		{
+		public:
+			ddWeightsCosInt(double start, double end, size_t n);
+			virtual ~ddWeightsCosInt() {};
+		};
+
+		class DLEXPORT_rtmath_ddscat ddWeightsDDSCAT
+		{
+		public:
+			/// Constructor that takes raw rotation values.
+			ddWeightsDDSCAT(
+				double bMin, double bMax, size_t nB,
+				double tMin, double tMax, size_t nT,
+				double pMin, double pMax, size_t nP);
+			/// Constructor that extracts the rotations.
+			ddWeightsDDSCAT(const rotations&);
+			virtual ~ddWeightsDDSCAT() {}
+
+			double getWeight(double beta, double thata, double phi) const;
+		private:
+			ddWeightsCosInt wThetas;
+			ddWeightsLinInt wPhis;
+			ddWeightsLinInt wBetas;
+		};
+
+		/*
 		/// Gaussian weights where the point is always guaranteed to be positive. 
 		/// It's really double gaussian on an interval of [0,infinity)
-		class DLEXPORT_rtmath_ddscat gaussianPosWeights : public weights
+		class DLEXPORT_rtmath_ddscat gaussianPosWeights : public ddWeights
 		{
 		public:
 			gaussianPosWeights(double sigma, const std::multiset<double> &points);
@@ -42,13 +90,14 @@ namespace rtmath {
 
 		/// Isotropic weighting scheme. 
 		/// Useful for comparing with ddscat ensemble result
-		class DLEXPORT_rtmath_ddscat isoPosWeights : public weights
+		class DLEXPORT_rtmath_ddscat isoPosWeights : public ddWeights
 		{
 		public:
 			isoPosWeights(const std::multiset<double> &points);
 			virtual ~isoPosWeights();
 			//virtual double weight(double point) const;
 		};
+		*/
 
 	}
 

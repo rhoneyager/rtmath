@@ -19,6 +19,108 @@ namespace rtmath {
 	namespace config {
 
 		template <class T>
+		void splitSet(
+			const T &Tstart, const T &Tend, const T &Tinterval,
+			const std::string &Tspecializer,
+			std::set<T> &expanded)
+		{
+			using namespace std;
+			double start, end, interval;
+			start = boost::lexical_cast<double>(Tstart);
+			end = boost::lexical_cast<double>(Tend);
+			interval = boost::lexical_cast<double>(Tinterval);
+			std::string specializer(Tspecializer);
+			std::transform(specializer.begin(),specializer.end(),specializer.begin(),::tolower);
+			if (specializer == "")
+			{
+				if ((start > end && interval > 0) || (start < end && interval < 0))
+				{
+					// Die from invalid range
+					// Should really throw error
+					throw rtmath::debug::xBadInput("Invalid range");
+				}
+				for (double j=start;j<=end+(interval/100.0);j+=interval)
+				{
+					if (expanded.count((T) j) == 0)
+						expanded.insert((T) j);
+				}
+			} else if (specializer == "lin") {
+				// Linear spacing
+				double increment = (end - start) / (interval); // so interval of 1 gives midpoint
+				if (!increment) expanded.insert((T) start);
+				for (double j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
+				{
+					if (expanded.count((T) j) == 0)
+						expanded.insert((T) j);
+				}
+			} else if (specializer == "log") {
+				if (start == 0 || end == 0)
+					throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
+				double is = log10( (double) start); 
+				double ie = log10( (double) end); 
+				double increment = (ie - is) / (interval);
+				if (!increment) expanded.insert((T) start);
+				for (double j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
+				{
+					double k = pow((double) 10.0, (double) j);
+					if (expanded.count((T) k) == 0)
+						expanded.insert((T) k);
+				}
+			} else if (specializer == "inv") {
+				if (start == 0 || end == 0)
+					throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
+				double is = 1.0 / start; 
+				double ie = 1.0 / end; 
+				double increment = (is - ie) / (interval);
+				if (!increment) expanded.insert((T) start);
+				for (double j=ie+(increment/2.0); j<is+(increment/100.0);j+=increment)
+				{
+					double k = (1.0) / j;
+					if (expanded.count((T) k) == 0)
+						expanded.insert((T) k);
+				}
+			} else if (specializer == "cos") {
+				// Linear in cos
+				// start, end are in degrees
+				const double pi = boost::math::constants::pi<double>();
+				int ai = (int) (interval) % 2;
+				double cs = cos(start * pi / 180.0);
+				double ce = cos(end * pi / 180.0);
+				double increment = (ai) ? (ce - cs) / (interval-1) : (ce - cs) / (interval);
+				if (increment == 0) expanded.insert(start);
+				if (increment < 0)
+				{
+					increment *= -1.0;
+					std::swap(cs,ce);
+				}
+				// For even n, divide into intervals and use the midpoint of the interval.
+				// For odd n, use the endpoints. Note that the weights for orientations 
+				// (not computed here) will be different for the two choices.
+				if (!ai) cs += increment/2.0;
+				for (double j=cs; j<ce+(increment/10.0);j+=increment)
+				{
+					// max and min to avoid j>1 and j<-1 error from rounding
+					double k = (acos((double) max(min(j,1.0),-1.0)) * 180.0 / pi);
+					if (expanded.count((T) k) == 0)
+						expanded.insert((T) k);
+				}
+			} else {
+				throw rtmath::debug::xBadInput("Bad input in inner splitSet");
+			}
+		}
+
+#define SPEC_SPLITSET_A(T) \
+	template void DLEXPORT_rtmath_core splitSet<T>(const T&, const T&, \
+	const T&, const std::string&, std::set<T> &);
+
+		SPEC_SPLITSET_A(int);
+		SPEC_SPLITSET_A(size_t);
+		SPEC_SPLITSET_A(float);
+		SPEC_SPLITSET_A(double);
+
+
+
+		template <class T>
 		void splitSet(const std::string &instr, std::set<T> &expanded,
 			const std::map<std::string, std::string> *aliases)
 		{
@@ -77,85 +179,10 @@ namespace rtmath {
 							start = (double) range[0];
 							end = (double) range[range.size()-1];
 							if (range.size() > 2) interval = (double) range[1];
-							std::transform(specializer.begin(),specializer.end(),specializer.begin(),::tolower);
-							if (specializer == "")
-							{
-								if ((start > end && interval > 0) || (start < end && interval < 0))
-								{
-									// Die from invalid range
-									// Should really throw error
-									throw rtmath::debug::xBadInput(ot->c_str());
-									//cerr << "Invalid range " << *ot << endl;
-									//exit(1);
-								}
-								for (double j=start;j<=end+(interval/100.0);j+=interval)
-								{
-									if (expanded.count((T) j) == 0)
-										expanded.insert((T) j);
-								}
-							} else if (specializer == "lin") {
-								// Linear spacing
-								double increment = (end - start) / (interval); // so interval of 1 gives midpoint
-								if (!increment) expanded.insert((T) start);
-								for (double j=start+(increment/2.0); j<end+(increment/100.0);j+=increment)
-								{
-									if (expanded.count((T) j) == 0)
-										expanded.insert((T) j);
-								}
-							} else if (specializer == "log") {
-								if (start == 0 || end == 0)
-									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
-								double is = log10( (double) start); 
-								double ie = log10( (double) end); 
-								double increment = (ie - is) / (interval);
-								if (!increment) expanded.insert((T) start);
-								for (double j=is+(increment/2.0); j<ie+(increment/100.0);j+=increment)
-								{
-									double k = pow((double) 10.0, (double) j);
-									if (expanded.count((T) k) == 0)
-										expanded.insert((T) k);
-								}
-							} else if (specializer == "inv") {
-								if (start == 0 || end == 0)
-									throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
-								double is = 1.0 / start; 
-								double ie = 1.0 / end; 
-								double increment = (is - ie) / (interval);
-								if (!increment) expanded.insert((T) start);
-								for (double j=ie+(increment/2.0); j<is+(increment/100.0);j+=increment)
-								{
-									double k = (1.0) / j;
-									if (expanded.count((T) k) == 0)
-										expanded.insert((T) k);
-								}
-							} else if (specializer == "cos") {
-								// Linear in cos
-								// start, end are in degrees
-								const double pi = boost::math::constants::pi<double>();
-								int ai = (int) (interval) % 2;
-								double cs = cos(start * pi / 180.0);
-								double ce = cos(end * pi / 180.0);
-								double increment = (ai) ? (ce - cs) / (interval-1) : (ce - cs) / (interval);
-								if (increment == 0) expanded.insert(start);
-								if (increment < 0)
-								{
-									increment *= -1.0;
-									std::swap(cs,ce);
-								}
-								// For even n, divide into intervals and use the midpoint of the interval.
-								// For odd n, use the endpoints. Note that the weights for orientations 
-								// (not computed here) will be different for the two choices.
-								if (!ai) cs += increment/2.0;
-								for (double j=cs; j<ce+(increment/10.0);j+=increment)
-								{
-									// max and min to avoid j>1 and j<-1 error from rounding
-									double k = (acos((double) max(min(j,1.0),-1.0)) * 180.0 / pi);
-									if (expanded.count((T) k) == 0)
-										expanded.insert((T) k);
-								}
-							} else {
-								throw rtmath::debug::xBadInput(ot->c_str());
-							}
+
+							// I'm moving the logic to the other template definition, as it 
+							// let's me split stuff without casts back to strings.
+							splitSet<T>(start, end, interval, specializer, expanded);
 						}
 					}
 				}
@@ -193,7 +220,7 @@ namespace rtmath {
 
 #define SPEC_SPLITSET(T) \
 	template void DLEXPORT_rtmath_core splitSet<T>(const std::string &instr, std::set<T> &expanded, \
-		const std::map<std::string, std::string> *aliases);
+	const std::map<std::string, std::string> *aliases);
 
 		SPEC_SPLITSET(int);
 		SPEC_SPLITSET(size_t);

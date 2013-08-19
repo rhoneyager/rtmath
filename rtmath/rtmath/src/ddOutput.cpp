@@ -16,6 +16,7 @@
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddOutputGenerator.h"
+#include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
@@ -27,6 +28,41 @@ namespace rtmath {
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0)
 		{
+		}
+
+		void ddOutput::updateAVG()
+		{
+			if (!scas.size()) return; // Nothing to do
+
+			boost::shared_ptr<ddOutputSingle> navg(new ddOutputSingle);
+			//if (!avg) navg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle);
+			//else navg = 
+
+			/// \todo Adjust ddOutputSingle with a 'reload' function, which updates 
+			// values of _beta and others.
+			/// \todo Implement header creation here
+
+			// Construct a ddOutputSingle based on the sca files and the weights.
+			ddOutputSingle::statTableType stats;
+			stats.resize(NUM_STAT_ENTRIES, 0);
+			
+			for (const auto &wtm : weights)
+			{
+				// Update the stats table
+				ddOutputSingle::statTableType istats;
+				wtm.first->getStatTable(istats);
+
+				for (size_t i=0; i<NUM_STAT_ENTRIES; ++i)
+					stats[i] += istats[i] * wtm.second;
+
+				// Update the Mueller matrix table
+				// Use the angle spacings of the first sca file. If the others do 
+				// not fall in line, then throw an error for now.
+				/// \todo Eventually just interpolate.
+
+			}
+
+			// Store the stats and the Mueller matrix results
 		}
 
 		void ddOutput::loadShape()
@@ -45,7 +81,7 @@ namespace rtmath {
 			using std::vector;
 			path pBase(dir);
 			if (!exists(pBase)) throw debug::xMissingFile(dir.c_str());
-			
+
 			// Single level iteration through the path tree
 			vector<path> cands;
 			copy(directory_iterator(pBase), directory_iterator(), back_inserter(cands));
@@ -112,52 +148,36 @@ namespace rtmath {
 			// Nothing need be done
 
 			// Set weights to ddscat standards.
-			// Isotropic if there are an even number of thetas
-			/// \todo Using simpson's rule weights if odd.
-#pragma message("TODO: simpson's rule implementation")
-			float numScas = (float) res->scas.size();
-			float numThetas;
+			/// \todo This duplicates the ensemble generator! Combine the code.
 			{
-				std::set<double> thetas;
-				/// \todo Implement ddOutputSingle::numThetas function for avg file?
+				std::set<double> betas, thetas, phis;
+				for (const auto sca : res->scas)
+				{
+					betas.emplace(sca->beta());
+					thetas.emplace(sca->theta());
+					phis.emplace(sca->phi());
+				}
+				if (!betas.size() || !thetas.size() || !phis.size()) 
+					throw debug::xBadInput("Need sca input files for ddOutputGeneratorDDSCAT");
+				double bMin = *(betas.begin());
+				double tMin = *(thetas.begin());
+				double pMin = *(phis.begin());
+				double bMax = *(betas.rbegin());
+				double tMax = *(thetas.rbegin());
+				double pMax = *(phis.rbegin());
+				size_t nB = betas.size();
+				size_t nT = thetas.size();
+				size_t nP = phis.size();
+
+				ddWeightsDDSCAT wts(bMin, bMax, nB, tMin, tMax, nT, pMin, pMax, nP);
+
+				float numScas = (float) res->scas.size();
 				for (auto &sca : res->scas)
 				{
-					if (!thetas.count(sca->theta())) thetas.insert(sca->theta());
+					res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
+						(sca, wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
 				}
-				numThetas = (float) thetas.size();
-			}
-			/// \todo Put this elsewhere, for the ddOutPutEnsembleDDSCAT function to also use
-			for (auto &sca : res->scas)
-			{
-				float weight = 0;
-				auto fApprox = [](double a, double b) -> bool
-				{
-					if (abs((a-b)/a) < 0.001) return true;
-					return false;
-				};
-				if (fApprox(sca->theta(),0) || fApprox(sca->theta(),180))
-				{
-					// Simpson's rule case
-					// int_a^b f(x)dx = (b-a)/6 * [f(a)+4f((a+b)/2)+f(b)]
-					// Thetas are the _midpoints_ of the intervals, so the integration
-					/** \note From Orient.f90
-					!** Specify weight factors WGTA, WGTB
-					!   (Note: weight function WGTA = 4*pi*P/(NTHETA*NPHI), where
-					!    P=(probability/solid angle) of orientation in direction THETA,PHI .
-					!    The orientational averaging program automatically samples uniformly
-					!    in cos(theta) to allow for d(solid angle)=sin(theta)d(theta)d(phi).
-					!   Present version assumes random orientations.
-					!   When NTHETA is >1 and even, we use trapezoidal integration
-					!   When NTHETA is >1 and odd, we use Simpson's rule integration.
-					**/
-					/// \todo Change this
-					weight = 1.0f / numScas; // Isotropic case
 
-				} else {
-					weight = 1.0f / numScas; // Isotropic case
-				}
-				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
-					(sca, weight));
 			}
 
 			// Populate ms
@@ -183,49 +203,49 @@ namespace rtmath {
 		/*
 		void ddOutput::clear()
 		{
-			_init();
-			_outputSingleRaw.clear();
-			_mapOutputSingleRaw.clear();
+		_init();
+		_outputSingleRaw.clear();
+		_mapOutputSingleRaw.clear();
 		}
 
 		void ddOutput::insert(const std::shared_ptr<const ddscat::ddOutputSingle> &obj)
 		{
-			_outputSingleRaw.insert(obj);
-			if (_mapOutputSingleRaw.count(obj->genCoords()) == 0)
-				_mapOutputSingleRaw[obj->genCoords()] = obj;
+		_outputSingleRaw.insert(obj);
+		if (_mapOutputSingleRaw.count(obj->genCoords()) == 0)
+		_mapOutputSingleRaw[obj->genCoords()] = obj;
 		}
 
 		void ddOutput::get(const coords::cyclic<double> &crds, 
-			std::shared_ptr<const ddscat::ddOutputSingle> &obj,
-			bool interpolate) const
+		std::shared_ptr<const ddscat::ddOutputSingle> &obj,
+		bool interpolate) const
 		{
-			if (_mapOutputSingleRaw.count(crds))
-			{
-				obj = _mapOutputSingleRaw.at(crds);
-				return;
-			}
+		if (_mapOutputSingleRaw.count(crds))
+		{
+		obj = _mapOutputSingleRaw.at(crds);
+		return;
+		}
 
-			if (interpolate)
-			{
-				obj = nullptr;
-				throw rtmath::debug::xUnimplementedFunction();
-				return;
-			}
+		if (interpolate)
+		{
+		obj = nullptr;
+		throw rtmath::debug::xUnimplementedFunction();
+		return;
+		}
 
-			// Failure to get appropriate output
-			obj = nullptr;
-			// TODO: throw stuff?
-			//throw rtmath::debug::xUnimplementedFunction();
-			return;
+		// Failure to get appropriate output
+		obj = nullptr;
+		// TODO: throw stuff?
+		//throw rtmath::debug::xUnimplementedFunction();
+		return;
 		}
 
 		void ddOutput::ensemble(const ddOutputEnsemble &provider, ddOutputSingle &res) const
 		{
-			// Will pass _mapOutputSingleRaw to the provider,
-			// as it already has the coordinate mappings.
-			// The ddOutputSingle entry will not refer to the originating ScattMatrices,
-			// as this many references would be too complex. Instead, it will be standalone.
-			provider.genEnsemble(_mapOutputSingleRaw,res);
+		// Will pass _mapOutputSingleRaw to the provider,
+		// as it already has the coordinate mappings.
+		// The ddOutputSingle entry will not refer to the originating ScattMatrices,
+		// as this many references would be too complex. Instead, it will be standalone.
+		provider.genEnsemble(_mapOutputSingleRaw,res);
 		}
 		*/
 	}

@@ -5,27 +5,115 @@
 #include <cmath>
 #include <boost/math/distributions/normal.hpp>
 //#include "../rtmath/ddscat/ddscat.h"
+#include "../rtmath/splitSet.h"
 #include "../rtmath/ddscat/ddweights.h"
+#include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/error/error.h"
-
-
-// The ddscat code was becoming too large, so the weighting functions
-// will go in this file.
-
 
 namespace rtmath {
 	namespace ddscat {
 
-		void weights::getWeights(std::map<double,double> &weights) const
+		void ddWeights::getWeights(std::map<double,double> &weights) const
 		{
-			weights = _pointWeights;
+			weights = weights;
 		}
 
-		void weights::getFreqs(std::map<double,size_t> &freqs) const
+		void ddWeights::getFreqs(std::map<double,size_t> &freqs) const
 		{
-			freqs = _pointFreqs;
+			freqs = this->freqs;
+		}
+		
+		double ddWeights::weightBase(double point) const
+		{
+			// Implementing a comparator here because exact double comparisons 
+			// cause the usual problems.
+			auto it = std::find_if(weights.cbegin(), weights.cend(), [&](const std::pair<double,double> &p)
+			{
+				if (abs((point - p.first) / p.first) < 0.0001) return true;
+				return false;
+			});
+			if (it != weights.cend())
+				return it->second;
+			return 0.0;
 		}
 
+		double ddWeights::weightDegen(double point) const
+		{
+			double wt = weightBase(point);
+			if (wt)
+			{
+				double degen = 1.0;
+				// Comparator for double precision issues
+				auto it = std::find_if(freqs.cbegin(), freqs.cend(), [&](const std::pair<double,size_t> &p)
+				{
+					if (abs((point - p.first) / p.first) < 0.0001) return true;
+					return false;
+				});
+				if (it != freqs.cend()) degen *= (double) it->second;
+				return wt / degen;
+			}
+			return 0.0;
+		}
+
+		ddWeightsLinInt::ddWeightsLinInt(double start, double end, size_t n)
+		{
+			double dn = (double) n;
+			std::set<double> pts;
+			rtmath::config::splitSet(start, end, dn, "lin", pts);
+			for (auto &pt : pts)
+				weights[pt] = 1. / (double) pts.size();
+		}
+
+		ddWeightsCosInt::ddWeightsCosInt(double start, double end, size_t n)
+		{
+			double dn = (double) n;
+			std::set<double> pts;
+			rtmath::config::splitSet(start, end, dn, "cos", pts);
+			if (pts.size() % 2 == 0) // even n
+			{
+				for (auto &pt : pts)
+					weights[pt] = 1. / (double) pts.size();
+			} else { // odd n
+				// First (0) and last (pts.size()-1) points have weighting of 1 / pts.size()
+				// Points 1, 3, 5, ... have weights of 4 / pts.size()
+				// Points 2, 4, 6, ... have weights of 2 / pts.size()
+				size_t i=0;
+				double wtb = 1. / (double) pts.size();
+				for (auto it = pts.cbegin(); it != pts.cend(); ++it, ++i)
+				{
+					if (i == 0 || i == pts.size() - 1)
+						weights[*it] = wtb;
+					else if (i % 2)
+						weights[*it] = 4. * wtb;
+					else
+						weights[*it] = 2. * wtb;
+				}
+			}
+		}
+
+		ddWeightsDDSCAT::ddWeightsDDSCAT(
+			double bMin, double bMax, size_t nB,
+			double tMin, double tMax, size_t nT,
+			double pMin, double pMax, size_t nP) :
+			wThetas(tMin, tMax, nT),
+			wBetas(bMin, bMax, nB),
+			wPhis(pMin, pMax, nP)
+		{ }
+
+		ddWeightsDDSCAT::ddWeightsDDSCAT(const rotations& rots) :
+			wThetas(rots.tMin(), rots.tMax(), rots.tN()),
+			wBetas(rots.bMin(), rots.bMax(), rots.bN()),
+			wPhis(rots.pMin(), rots.pMax(), rots.pN())
+		{ }
+
+		double ddWeightsDDSCAT::getWeight(double beta, double theta, double phi) const
+		{
+			return wBetas.weightBase(beta)
+				* wThetas.weightBase(theta)
+				* wPhis.weightBase(phi);
+		}
+
+		/*
 		gaussianPosWeights::~gaussianPosWeights()
 		{
 		}
@@ -127,13 +215,6 @@ namespace rtmath {
 			_pointWeights = _newpointWeights;
 		}
 
-		double weights::weight(double point) const
-		{
-			if (_pointWeights.count(point))
-				return _pointWeights.at(point);
-			return 0.0;
-		}
-
 		isoPosWeights::~isoPosWeights()
 		{
 		}
@@ -157,6 +238,7 @@ namespace rtmath {
 				_pointFreqs[*it] = points.count(*it);
 			}
 		}
+		*/
 
-	}; // end ddscat
-}; // end rtmath
+	}
+}

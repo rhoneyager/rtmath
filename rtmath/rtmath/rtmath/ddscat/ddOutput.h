@@ -91,6 +91,10 @@ namespace rtmath {
 			/// ddOutput contents. (TODO)
 			std::string genName() const;
 
+			/// Generate a ddOutputSingle .avg object that reflects the 
+			/// sca file weights.
+			void updateAVG();
+
 			/*
 			/// Generate ddOutput from a set of ddOutputSingle
 			static boost::shared_ptr<ddOutput> generate(

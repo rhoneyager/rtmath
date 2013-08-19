@@ -27,6 +27,13 @@ namespace rtmath {
 			const std::map<std::string, 
 			std::string> *aliases);
 
+		/// Shortcut that already passes parsed information
+		template <class T>
+		void splitSet(
+			const T &start, const T &end, const T &interval,
+			const std::string &specializer,
+			std::set<T> &expanded);
+
 	}
 }
 

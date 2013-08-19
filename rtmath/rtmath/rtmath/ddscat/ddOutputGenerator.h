@@ -43,25 +43,62 @@ namespace rtmath {
 			boost::shared_ptr<ddOutput> src, res;
 		};
 
-		/// The trivial ensemble class that duplicates DDSCAT results
-		/*
-		class ddOutputGeneratorSimple 
+		/// The 'dumb' ensemble class that assumes that all weights are the same, 
+		/// ignoring cos(theta) effects.
+		class ddOutputGeneratorIsoAll 
 			: public ddOutputGenerator
 		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
 		protected:
 			/// Standard constructor
-			ddOutputGeneratorSimple(boost::shared_ptr<ddOutput> source);
+			ddOutputGeneratorIsoAll(boost::shared_ptr<ddOutput> source);
 			/// Constructor used when loading a DDSCAT results folder for the first time
-			ddOutputGeneratorSimple(std::set<boost::shared_ptr<ddOutputSingle> > &scas);
+			ddOutputGeneratorIsoAll(std::set<boost::shared_ptr<ddOutputSingle> > &scas);
 		public:
-			virtual ~ddOutputGeneratorSimple() {}
+			virtual ~ddOutputGeneratorIsoAll() {}
 			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const override;
 			virtual boost::shared_ptr<ddOutput> generate(std::set<boost::shared_ptr<ddOutputSingle> > &scas) const;
 		};
-		*/
 
-		/// \todo Modify ddweights to get default weighting factors based on solid angle
-		/// \todo Modify ddweights to get weighting factors based on ddscat defaults
+		/// The trivial ensemble class that duplicates DDSCAT results
+		class ddOutputGeneratorDDSCAT 
+			: public ddOutputGenerator
+		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
+		protected:
+			/// Standard constructor
+			ddOutputGeneratorDDSCAT(boost::shared_ptr<ddOutput> source);
+			/// Constructor used when loading a DDSCAT results folder for the first time
+			ddOutputGeneratorDDSCAT(std::set<boost::shared_ptr<ddOutputSingle> > &scas);
+		public:
+			virtual ~ddOutputGeneratorDDSCAT() {}
+			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const override;
+			virtual boost::shared_ptr<ddOutput> generate(std::set<boost::shared_ptr<ddOutputSingle> > &scas) const;
+		};
+
+		/// Ensemble class that filters DDSCAT results to only match a certain theta value (usually zero).
+		/// Represents the fully-aligned case.
+		class ddOutputGeneratorThetaAligned
+			: public ddOutputGenerator
+		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
+		protected:
+			/// Standard constructor
+			ddOutputGeneratorThetaAligned(boost::shared_ptr<ddOutput> source, double theta = 0);
+			/// Constructor used when loading a DDSCAT results folder for the first time
+			ddOutputGeneratorThetaAligned(std::set<boost::shared_ptr<ddOutputSingle> > &scas, double theta = 0);
+		public:
+			virtual ~ddOutputGeneratorThetaAligned() {}
+			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const override;
+			virtual boost::shared_ptr<ddOutput> generate(std::set<boost::shared_ptr<ddOutputSingle> > &scas) const;
+		};
+		
 
 		/// \todo Add interpolation class elsewhere. The interpolation class will be able to interpolate a rotation and 
 		/// a set of scattering angles.
