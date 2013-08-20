@@ -88,6 +88,11 @@ namespace rtmath {
 				double ce = cos(end * pi / 180.0);
 				double increment = (ai) ? (ce - cs) / (interval-1) : (ce - cs) / (interval);
 				if (increment == 0) expanded.insert(start);
+				if (increment != increment) // nan check - occurs when selecting only one value, and bounds are the same
+				{
+					expanded.insert(start);
+					return;
+				}
 				if (increment < 0)
 				{
 					increment *= -1.0;

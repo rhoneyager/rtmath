@@ -42,7 +42,7 @@ namespace rtmath {
 			ddOutputGenerator(boost::shared_ptr<ddOutput> source);
 			boost::shared_ptr<ddOutput> src, res;
 		};
-
+		/*
 		/// The 'dumb' ensemble class that assumes that all weights are the same, 
 		/// ignoring cos(theta) effects.
 		class ddOutputGeneratorIsoAll 
@@ -98,7 +98,7 @@ namespace rtmath {
 			virtual boost::shared_ptr<ddOutput> generate(boost::shared_ptr<ddOutput> source) const override;
 			virtual boost::shared_ptr<ddOutput> generate(std::set<boost::shared_ptr<ddOutputSingle> > &scas) const;
 		};
-		
+		*/
 
 		/// \todo Add interpolation class elsewhere. The interpolation class will be able to interpolate a rotation and 
 		/// a set of scattering angles.

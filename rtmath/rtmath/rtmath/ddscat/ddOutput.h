@@ -73,19 +73,24 @@ namespace rtmath {
 			HASH_t shapeHash;
 			/// The shape file (may load fully later)
 			mutable boost::shared_ptr<shapefile> shape;
-			/// Shape file statistics
+			/// Shape file statistics (may load fully later)
 			mutable boost::shared_ptr<shapeFileStats> stats;
-			/// Load the full shape file
+			/// Load the full shape file and stats
 			void loadShape();
 
 			/// The ddscat parameter file
-			mutable boost::shared_ptr<ddPar> parfile;
+			boost::shared_ptr<ddPar> parfile;
 
 			/// Pointer to any ensemble generator used to generate the avg results
+			///
+			/// Empty if ddOutput was directly loaded from a ddscat run.
 			boost::shared_ptr<ddOutputGenerator> generator;
 
-			/// Write output to file (using serialization). (TODO)
-			void writeFile(const std::string &filename, const std::string &type = "") const;
+			/// Write output to file (using serialization)
+			void writeFile(const std::string &filename) const;
+
+			/// Read xml file (using serialization)
+			void readFile(const std::string &filename);
 
 			/// Generate a standardized file name (for saving) based on the 
 			/// ddOutput contents. (TODO)
@@ -93,6 +98,7 @@ namespace rtmath {
 
 			/// Generate a ddOutputSingle .avg object that reflects the 
 			/// sca file weights.
+			/// \todo Finish implementing
 			void updateAVG();
 
 			/*

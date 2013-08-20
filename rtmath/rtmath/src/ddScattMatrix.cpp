@@ -62,6 +62,14 @@ namespace rtmath {
 			return _Pnn;
 		}
 
+		void ddScattMatrix::_calcPol()
+		{
+			_pol = sqrt( (pow(_Pnn(1,0),2.) + 
+				pow(_Pnn(2,0),2.) + 
+				pow(_Pnn(3,0),2.))
+				/ pow(_Pnn(0,0),2.) );
+		}
+
 		ddScattMatrixF::~ddScattMatrixF() {}
 
 		ddScattMatrixF::PnnType ddScattMatrixF::mueller() const
@@ -93,10 +101,57 @@ namespace rtmath {
 			_calcS();
 			_calcP();
 
-			_pol = sqrt( (pow(_Pnn(1,0),2.) + 
-				pow(_Pnn(2,0),2.) + 
-				pow(_Pnn(3,0),2.))
-				/ pow(_Pnn(0,0),2.) );
+			_calcPol();
+		}
+
+		ddScattMatrixF ddScattMatrixF::operator+(const ddScattMatrixF& rhs) const
+		{
+			if (!compareTolHeader(rhs)) throw(debug::xBadInput(
+				"ddScattMatrices are not of the same header type"));
+			ddScattMatrixF res;
+			
+			res._f = this->_f + rhs._f;
+			res._s = this->_s + rhs._s;
+			res.mueller();
+			res._calcPol();
+
+			return res;
+		}
+
+		ddScattMatrixF ddScattMatrixF::operator*(double rhs) const
+		{
+			ddScattMatrixF res = *this;
+			
+			res._f = this->_f * rhs;
+			res._s = this->_s * rhs;
+			res.mueller();
+			res._calcPol();
+
+			return res;
+		}
+
+		ddScattMatrixP ddScattMatrixP::operator+(const ddScattMatrixP& rhs) const
+		{
+			if (!compareTolHeader(rhs)) throw(debug::xBadInput(
+				"ddScattMatrices are not of the same header type"));
+			ddScattMatrixP res;
+			
+			res._Pnn = this->_Pnn + rhs._Pnn;
+			res.mueller();
+			res._calcPol();
+
+			return res;
+		}
+
+		ddScattMatrixP ddScattMatrixP::operator*(double rhs) const
+		{
+			ddScattMatrixP res = *this;
+			
+			res._Pnn = this->_Pnn * rhs;
+			res.mueller();
+			res._calcPol();
+
+			return res;
 		}
 		
 		/* Include this at a higher level
@@ -149,6 +204,5 @@ namespace rtmath {
 			rtmath::scattMatrix::_genMuellerMatrix(_Pnn,_S);
 		}
 		*/
-	} // end ddscat
-} // end rtmath
-
+	}
+}

@@ -24,7 +24,7 @@ target_link_libraries( rtmath-mie-slice
 	tmatrix-fortran 
 	)
 
-set_target_properties( rtmath-mie-slice PROPERTIES FOLDER "Apps")
+set_target_properties( rtmath-mie-slice PROPERTIES FOLDER "Apps/Mie")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 INSTALL(TARGETS rtmath-mie-slice RUNTIME DESTINATION bin COMPONENT Applications)
 

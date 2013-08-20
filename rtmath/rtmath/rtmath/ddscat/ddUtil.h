@@ -38,10 +38,12 @@ namespace rtmath
 			 * \brief Modifies TARGET strings of all results in a ddscat 
 			 * output directory.
 			 *
+			 * \param forceDDVER will force the ddscat version identifier to a prepassed value
 			 * \see tagTARGET
 			 **/
 			void DLEXPORT_rtmath_ddscat tagTARGETs(
-				const boost::filesystem::path &pBase);
+				const boost::filesystem::path &pBase,
+				const std::string &forceDDVER = std::string());
 
 			/**
 			 * \brief Find appropriate files in a ddscat run directory

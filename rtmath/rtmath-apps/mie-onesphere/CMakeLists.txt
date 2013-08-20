@@ -17,7 +17,7 @@ target_link_libraries( rtmath-mie-onesphere
 	${rtmath_mie-libs}
 	)
 
-set_target_properties( rtmath-mie-onesphere PROPERTIES FOLDER "Apps")
+set_target_properties( rtmath-mie-onesphere PROPERTIES FOLDER "Apps/Mie")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 INSTALL(TARGETS rtmath-mie-onesphere RUNTIME DESTINATION bin COMPONENT Applications)
 

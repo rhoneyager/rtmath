@@ -34,6 +34,8 @@ namespace rtmath {
 		{
 			if (!scas.size()) return; // Nothing to do
 
+			throw debug::xUnimplementedFunction();
+
 			boost::shared_ptr<ddOutputSingle> navg(new ddOutputSingle);
 			//if (!avg) navg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle);
 			//else navg = 
@@ -71,6 +73,50 @@ namespace rtmath {
 			stats = shapeFileStats::loadHash(this->shapeHash);
 			stats->load();
 			shape = stats->_shp;
+		}
+
+		void ddOutput::writeFile(const std::string &filename) const
+		{
+			using namespace Ryan_Serialization;
+			std::string cmeth, uncompressed;
+
+			uncompressed_name(filename, uncompressed, cmeth);
+			boost::filesystem::path p(uncompressed);
+			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+
+			std::string utype = pext.string();
+
+			// Serialization gets its own override
+			if (Ryan_Serialization::known_format(utype))
+			{
+				Ryan_Serialization::write<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
+			} else {
+				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+			}
+		}
+
+		void ddOutput::readFile(const std::string &filename)
+		{
+			// First, detect if the file is compressed.
+			using namespace Ryan_Serialization;
+			std::string cmeth, target, uncompressed;
+			// Combination of detection of compressed file, file type and existence.
+			if (!detect_compressed(filename, cmeth, target))
+				throw rtmath::debug::xMissingFile(filename.c_str());
+			uncompressed_name(target, uncompressed, cmeth);
+
+			boost::filesystem::path p(uncompressed);
+			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+
+			// Serialization gets its own override
+			if (Ryan_Serialization::known_format(pext))
+			{
+				// This is a serialized file. Verify that it has the correct identifier, and 
+				// load the serialized object directly
+				Ryan_Serialization::read<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
+			} else {
+				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+			}
 		}
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir)
@@ -148,7 +194,9 @@ namespace rtmath {
 			// Nothing need be done
 
 			// Set weights to ddscat standards.
-			/// \todo This duplicates the ensemble generator! Combine the code.
+			/// \todo This duplicates the ensemble generator! Combine the code, using this one 
+			/// as the reference implementation (sans the sca-fml recalculation)
+			// Also process any fml files and regenerate full P matrices from the F matrix.
 			{
 				std::set<double> betas, thetas, phis;
 				for (const auto sca : res->scas)
@@ -175,7 +223,41 @@ namespace rtmath {
 				for (auto &sca : res->scas)
 				{
 					res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
-						(sca, wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
+						(sca, (float) wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
+
+					// Search for corresponding fml file
+					// TODO: improve this search
+					auto it = std::find_if(res->fmls.cbegin(), res->fmls.cend(), 
+						[&](const boost::shared_ptr<ddOutputSingle> &of)
+					{
+						auto perr = [](double a, double b) -> bool
+						{
+							if (abs((a-b)/b) < 0.0001) return true;
+							return false;
+						};
+						if (!perr(of->beta(), sca->beta())) return false;
+						if (!perr(of->theta(), sca->theta())) return false;
+						if (!perr(of->phi(), sca->phi())) return false;
+						return true;
+					});
+
+					// Able to fill in the remaining Mueller matrix elements
+					if (it != res->fmls.cend())
+					{
+						ddOutputSingle::scattMatricesContainer 
+							&fs = (*it)->getScattMatrices();
+						ddOutputSingle::scattMatricesContainer 
+							&ss = sca->getScattMatrices();
+						ss.clear();
+						for (auto f : fs)
+						{
+							boost::shared_ptr<ddScattMatrixP> np(new ddScattMatrixP(
+								f->freq(), f->theta(), f->phi(), f->thetan(), f->phin()));
+							np->setP(f->mueller());
+							np->pol(f->pol());
+							ss.insert(np);
+						}
+					}
 				}
 
 			}

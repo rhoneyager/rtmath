@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/operators.hpp>
 #include "../Serialization/eigen_serialization.h"
 
 namespace rtmath
@@ -56,13 +57,15 @@ namespace rtmath
 
 			virtual bool operator<(const ddScattMatrix&) const;
 
-			virtual bool compareTolHeader(const ddScattMatrix&, double tolPercent) const;
+			virtual bool compareTolHeader(const ddScattMatrix&, double tolPercent = 0.01) const;
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		protected:
 			mutable PnnType _Pnn;
 			//mutable boost::shared_ptr<matrixop> _Pnn;
 			double _pol;
 			double _freq, _theta, _thetan, _phi, _phin;
+			/// Calculate polarization from Mueller matrix.
+			void _calcPol();
 		private:
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -84,23 +87,31 @@ namespace rtmath
 			}
 		};
 
-		class DLEXPORT_rtmath_ddscat ddScattMatrixF : public ddScattMatrix
+		class DLEXPORT_rtmath_ddscat ddScattMatrixF : 
+			public ddScattMatrix,
+			boost::additive<ddScattMatrixF>,
+			boost::multiplicative<ddScattMatrixF, double>
 		{
 		public:
 			/// Needs frequency (GHz) and phi (degrees) for P and K calculations
 			ddScattMatrixF(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
 				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
 			virtual ~ddScattMatrixF();
+			ddScattMatrixF operator+(const ddScattMatrixF&) const;
+			ddScattMatrixF operator*(double) const;
 			//ddScattMatrixF & operator = (const ddScattMatrixF&);
 			virtual scattMatrixType id() const { return scattMatrixType::F; }
 			// matrixop extinction() const;
+			/// Calculate Mueller matrix from F matrix
 			virtual PnnType mueller() const;
 			void setF(const FType& fs);
 			//void setF(std::istream &lss); // Include this higher up
 			inline FType getF() const { return _f; }
 			inline FType getS() const { return _s; }
 		protected:
+			/// Calculate S matrix from F matrix
 			void _calcS();
+			/// Calculate Mueller matrix from S matrix
 			void _calcP() const;
 			mutable FType _f, _s;
 			//boost::shared_array<std::complex<double> > _f, _s;
@@ -116,12 +127,18 @@ namespace rtmath
 		{
 		}; */
 
-		class DLEXPORT_rtmath_ddscat ddScattMatrixP : public ddScattMatrix
+		class DLEXPORT_rtmath_ddscat ddScattMatrixP : 
+			public ddScattMatrix,
+			boost::additive<ddScattMatrixP>,
+			boost::multiplicative<ddScattMatrixP, double>
 		{
 		public:
 			ddScattMatrixP(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
 				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
 			virtual ~ddScattMatrixP() {}
+			ddScattMatrixP operator+(const ddScattMatrixP&) const;
+			ddScattMatrixP operator*(double) const;
+
 			//ddScattMatrixP & operator = (const ddScattMatrixP&);
 			virtual scattMatrixType id() const { return scattMatrixType::P; }
 			inline void setP(const PnnType& v) { _Pnn = v; }

@@ -22,7 +22,7 @@ namespace rtmath
 	{
 		namespace ddUtil
 		{
-			void tagTARGETs(const boost::filesystem::path &pBase)
+			void tagTARGETs(const boost::filesystem::path &pBase, const std::string &fddver)
 			{
 				using namespace boost::filesystem;
 				using namespace std;
@@ -32,8 +32,9 @@ namespace rtmath
 				shapefile shp(pShp.string());
 				HASH_t hash = shp.hash();
 
-				string ddver;
-				if (!getModuleLoadedDDSCAT(ddver)) ddver = "UNKNOWN";
+				string ddver = fddver;
+				if (!ddver.size())
+					if (!getModuleLoadedDDSCAT(ddver)) ddver = "UNKNOWN";
 				
 
 				//using namespace boost::posix_time;
@@ -104,7 +105,9 @@ namespace rtmath
 			bool getModuleLoadedDDSCAT(std::string &out)
 			{
 				using namespace std;
-				string modstr(getenv("LOADEDMODULES"));
+				const char* cmods = getenv("LOADEDMODULES");
+				string modstr;
+				if (cmods) modstr = string(cmods);
 				// string is colon-separated. Expand, then find ddscat/
 				typedef boost::tokenizer<boost::char_separator<char> >
 					tokenizer;

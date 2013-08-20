@@ -21,7 +21,7 @@ target_link_libraries( rtmath-tmatrix-ddscat-extract
 	tmatrix-fortran
 	)
 
-set_target_properties( rtmath-tmatrix-ddscat-extract PROPERTIES FOLDER "Apps")
+set_target_properties( rtmath-tmatrix-ddscat-extract PROPERTIES FOLDER "Apps/Tmatrix")
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${TMATRIX_CPP_INCLUDE_DIRS})
 INSTALL(TARGETS rtmath-tmatrix-ddscat-extract RUNTIME DESTINATION bin COMPONENT Applications)
 

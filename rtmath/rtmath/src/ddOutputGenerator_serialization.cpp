@@ -23,7 +23,7 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("Source", src);
 			ar & boost::serialization::make_nvp("Result", res);
 		}
-
+		/*
 		template<class Archive>
 		void ddOutputGeneratorIsoAll::serialize(Archive &ar, const unsigned int version)
 		{
@@ -50,15 +50,15 @@ namespace rtmath
 				boost::serialization::base_object<rtmath::ddscat::ddOutputGenerator>(*this));
 
 		}
-
+		*/
 		EXPORTINTERNAL(rtmath::ddscat::ddOutputGenerator::serialize);
-		EXPORTINTERNAL(rtmath::ddscat::ddOutputGeneratorIsoAll::serialize);
-		EXPORTINTERNAL(rtmath::ddscat::ddOutputGeneratorDDSCAT::serialize);
-		EXPORTINTERNAL(rtmath::ddscat::ddOutputGeneratorThetaAligned::serialize);
+		//EXPORTINTERNAL(rtmath::ddscat::ddOutputGeneratorIsoAll::serialize);
+		//EXPORTINTERNAL(rtmath::ddscat::ddOutputGeneratorDDSCAT::serialize);
+		//EXPORTINTERNAL(rtmath::ddscat::ddOutputGeneratorThetaAligned::serialize);
 	}
 }
 
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGenerator);
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGeneratorIsoAll);
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGeneratorDDSCAT);
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGeneratorThetaAligned);
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGeneratorIsoAll);
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGeneratorDDSCAT);
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutputGeneratorThetaAligned);

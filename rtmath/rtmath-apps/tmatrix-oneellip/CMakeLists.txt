@@ -22,7 +22,7 @@ target_link_libraries( rtmath-tmatrix-oneellip
 	tmatrix-fortran
 	)
 
-set_target_properties( rtmath-tmatrix-oneellip PROPERTIES FOLDER "Apps")
+set_target_properties( rtmath-tmatrix-oneellip PROPERTIES FOLDER "Apps/Tmatrix")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 INSTALL(TARGETS rtmath-tmatrix-oneellip RUNTIME DESTINATION bin COMPONENT Applications)
 

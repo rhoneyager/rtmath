@@ -1,7 +1,7 @@
 include (common)
 
 add_executable (rtmath-version rtmath-version.cpp)
-set_target_properties( rtmath-version PROPERTIES FOLDER "Apps")
+set_target_properties( rtmath-version PROPERTIES FOLDER "Apps/Core")
 target_link_libraries(rtmath-version ${rtmath_core-libs} rtmath_core)
 INSTALL(TARGETS rtmath-version RUNTIME DESTINATION bin COMPONENT Applications)
 

@@ -3,8 +3,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <memory>
-#include <string>
 #include <vector>
 #include <map>
 #include <set>
@@ -696,9 +694,12 @@ namespace rtmath {
 				istringstream ii(lin);
 				obj->read(ii);
 				_objMap[key] = obj;
-				if (key == "beta") _beta = boost::lexical_cast<double>(obj->value());
-				if (key == "theta") _theta = boost::lexical_cast<double>(obj->value());
-				if (key == "phi") _phi = boost::lexical_cast<double>(obj->value());
+				if (key == "beta") 
+					_beta = boost::lexical_cast<double>(obj->value());
+				if (key == "theta") 
+					_theta = boost::lexical_cast<double>(obj->value());
+				if (key == "phi") 
+					_phi = boost::lexical_cast<double>(obj->value());
 				if (key == "wave") _wave = boost::lexical_cast<double>(obj->value());
 				if (key == "aeff") _aeff = boost::lexical_cast<double>(obj->value());
 				if (key == "version") _version = boost::lexical_cast<size_t>(obj->value());
@@ -779,6 +780,11 @@ namespace rtmath {
 		void ddOutputSingle::getScattMatrices(scattMatricesContainer& c) const
 		{
 			c = _scattMatricesRaw;
+		}
+
+		ddOutputSingle::scattMatricesContainer& ddOutputSingle::getScattMatrices()
+		{
+			return _scattMatricesRaw;
 		}
 
 		void ddOutputSingle::getStatTable(statTableType &res) const
@@ -1183,9 +1189,9 @@ namespace rtmath {
 			if (key == "ytf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 			if (key == "ztf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 
-			if (key == "beta") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, " BETA = ", " = rotation of target around A1") ));
+			if (key == "beta") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(2, " BETA = ", " = rotation of target around A1") ));
 			if (key == "theta") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, " THETA= ", " = angle between A1 and k") ));
-			if (key == "phi") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, "  PHI = ", " = rotation of A1 around k") ));
+			if (key == "phi") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(2, "  PHI = ", " = rotation of A1 around k") ));
 
 			return res;
 		}

@@ -171,6 +171,10 @@ namespace rtmath {
 				scattMatricesContainer;
 			/// Extract all scattering matrices. Used in ddscat-test.
 			void getScattMatrices(scattMatricesContainer&) const;
+			/// Get internal scattering matrix object. Allows direct manipulation of stored data.
+			/// \note This can be dangerous, as the returned object will be 
+			/// invalidated when the ddOutputSingle object is destroyed.
+			scattMatricesContainer& getScattMatrices();
 
 			/// Count the scattering P matrices
 			size_t numP() const;

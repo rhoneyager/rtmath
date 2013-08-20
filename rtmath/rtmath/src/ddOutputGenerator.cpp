@@ -19,7 +19,7 @@
 
 namespace rtmath {
 	namespace ddscat {
-
+		/*
 		ddOutputGenerator::ddOutputGenerator() {}
 
 		ddOutputGenerator::ddOutputGenerator(boost::shared_ptr<ddOutput> source) : src(source)
@@ -98,7 +98,7 @@ namespace rtmath {
 			for (auto &sca : res->scas)
 			{
 				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
-					(sca, wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
+					(sca, (float) wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
 			}
 
 			/// \todo Construct the ddOutputSingle here
@@ -135,13 +135,13 @@ namespace rtmath {
 			for (auto &sca : res->scas)
 			{
 				res->weights.insert(std::pair<boost::shared_ptr<ddOutputSingle>, float>
-					(sca, wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
+					(sca, (float) wts.getWeight(sca->beta(), sca->theta(), sca->phi()) ));
 			}
 
 			/// \todo Construct the ddOutputSingle here
 			throw debug::xUnimplementedFunction();
 		}
-		
+		*/
 
 		/*
 		ddOutputEnsembleGaussian::ddOutputEnsembleGaussian(double sigma, size_t coord_varying)
