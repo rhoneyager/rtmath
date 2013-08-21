@@ -1,7 +1,6 @@
 /* orientation-weights
  * This program will calculate the weights for different orientations of a ddOutput object or 
- * a set of ddPar objects.
-*/
+ * a set of ddPar objects. */
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
 #pragma warning( disable : 4800 ) // forcing non-bool type to true or false

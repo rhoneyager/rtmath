@@ -904,7 +904,7 @@ namespace rtmath {
 
 			WRITE("d/aeff");
 			WRITE("d");
-			out << "----- physical extent of target volume in Target Frame ------" << endl;
+			WRITE("physextent");
 			WRITE("xtf");
 			WRITE("ytf");
 			WRITE("ztf");
@@ -974,10 +974,10 @@ namespace rtmath {
 			WRITE("beta");
 			WRITE("theta");
 			WRITE("phi");
+			WRITE("targetperiodicity");
+			WRITE("fmldotline");
+			WRITE("mdef");
 
-			out << "     Finite target:" << endl;
-			out << "     e_m dot E(r) = i*exp(ikr)*f_ml*E_inc(0)/(kr)" << endl;
-			out << "     m=1 in scatt. plane, m=2 perp to scatt. plane" << endl;
 			out << endl;
 
 			// Write the f matrix
@@ -1193,6 +1193,11 @@ namespace rtmath {
 			if (key == "theta") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, " THETA= ", " = angle between A1 and k") ));
 			if (key == "phi") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(2, "  PHI = ", " = rotation of A1 around k") ));
 
+			if (key == "targetperiodicity") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+			if (key == "fmldotline") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+			if (key == "mdef") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+			if (key == "physextent") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+
 			return res;
 		}
 
@@ -1210,14 +1215,15 @@ namespace rtmath {
 			else if (line.find("NAT0")!=std::string::npos) res = "numdipoles";
 			else if (line.find("= d/aeff for this target")!=std::string::npos) res = "d/aeff";
 			else if (line.find("= d (physical units)")!=std::string::npos) res = "d";
+			else if (line.find("physical extent of target volume")!=std::string::npos) res = "physextent";
 			else if (line.find("effective radius (physical units)")!=std::string::npos) res = "aeff";
 			else if (line.find("wavelength")!=std::string::npos) res = "wave";
 			else if (line.find("K*AEFF")!=std::string::npos) res = "k.aeff";
 			else if (line.find("NAMBIENT")!=std::string::npos) res = "nambient";
 			else if (line.find("eps.=")!=std::string::npos) res = "neps";
 			else if (line.find("TOL")!=std::string::npos) res = "tol";
-			else if (line.find("target axis A1 in Target Frame")!=std::string::npos) res = "a1tgt";
-			else if (line.find("target axis A2 in Target Frame")!=std::string::npos) res = "a2tgt";
+			else if (line.find("target axis A1 in")!=std::string::npos) res = "a1tgt"; // target or lab frame
+			else if (line.find("target axis A2 in")!=std::string::npos) res = "a2tgt";
 			else if (line.find("NAVG")!=std::string::npos) res = "navg";
 			else if (line.find("k vector (latt. units) in Lab Frame")!=std::string::npos) res = "kveclf";
 			else if (line.find("k vector (latt. units) in TF")!=std::string::npos) res = "kvectf";
@@ -1237,6 +1243,9 @@ namespace rtmath {
 			else if (line.find("BETA")!=std::string::npos) res = "beta";
 			else if (line.find("THETA")!=std::string::npos) res = "theta";
 			else if (line.find("PHI")!=std::string::npos) res = "phi";
+			else if (line.find("target:")!=std::string::npos) res = "targetperiodicity";
+			else if (line.find("dot")!=std::string::npos) res = "fmldotline";
+			else if (line.find("perp to scatt")!=std::string::npos) res = "mdef";
 		}
 
 		bool ddOutputSingleObj::operator==(const ddOutputSingleObj &rhs) const

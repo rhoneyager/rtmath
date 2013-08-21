@@ -12,12 +12,11 @@
 #include <boost/serialization/version.hpp>
 
 #include "../hash.h"
-//#include "../matrixop.h"
-//#include "../phaseFunc.h"
-//#include "ddOutputEnsemble.h"
-//#include "ddOutputSingle.h"
-//#include "ddScattMatrix.h"
-//#include "shapefile.h"
+
+namespace boost { namespace program_options { 
+	class options_description; class variables_map; } }
+namespace boost { namespace filesystem { class path; } }
+
 
 namespace rtmath {
 	namespace ddscat {
@@ -42,6 +41,7 @@ namespace rtmath {
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+			static void initPaths();
 		public:
 			ddOutput();
 
@@ -60,8 +60,10 @@ namespace rtmath {
 
 			/// The ensemble average results
 			boost::shared_ptr<ddOutputSingle> avg;
-			/// Raw sca inputs
+			/// Constituent sca inputs
 			std::set<boost::shared_ptr<ddOutputSingle> > scas;
+			/// Initial sca inputs before fml recalculation
+			std::set<boost::shared_ptr<ddOutputSingle> > scas_original;
 			/// Raw fml inputs
 			std::set<boost::shared_ptr<ddOutputSingle> > fmls;
 
@@ -118,7 +120,37 @@ namespace rtmath {
 			static boost::shared_ptr<ddOutput> generate(
 				const std::string &dir);
 
-			
+			/**
+			 * \brief Adds ddOutput options to a program
+			 *
+			 * \item cmdline provides options only allowed on the command line
+			 * \item config provides options available on the command line and in a config file
+			 * \item hidden provides options allowed anywhere, but are not displayed to the user
+			 **/
+			static void add_options(
+				boost::program_options::options_description &cmdline,
+				boost::program_options::options_description &config,
+				boost::program_options::options_description &hidden);
+			/// Processes static options defined in add_options
+			/// \todo Add processor for non-static options
+			static void process_static_options(
+				boost::program_options::variables_map &vm);
+			/**
+			 * \brief Retrieve the base hash paths
+			 *
+			 * \item pHashRuns is the base run hash directory
+			 **/
+			static void getHashPaths(
+				boost::filesystem::path &pHashRuns);
+
+			/// Load stats based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
+			static boost::shared_ptr<shapeFileStats> loadHash(
+				const HASH_t &hash);
+			/// Load stats based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
+			static boost::shared_ptr<shapeFileStats> loadHash(
+				const std::string &hash);
 		};
 
 		/*

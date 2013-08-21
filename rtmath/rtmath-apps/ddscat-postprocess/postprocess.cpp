@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 	try
 	{
 		using namespace std;
-		cerr << "rtmath-ddscat-data\n\n";
+		cerr << "rtmath-ddscat-postprocess\n\n";
 		namespace po = boost::program_options;
 
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
@@ -31,7 +31,9 @@ int main(int argc, char** argv)
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::debug::add_options(cmdline, config, hidden);
 		Ryan_Serialization::add_options(cmdline, config, hidden);
+		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
 		rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
@@ -53,7 +55,9 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
+		rtmath::ddscat::ddUtil::process_static_options(vm);
 		rtmath::ddscat::shapeFileStats::process_static_options(vm);
+		rtmath::ddscat::ddOutput::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
 		{
@@ -82,7 +86,7 @@ int main(int argc, char** argv)
 			cerr << "Processing: " << t << endl;
 			if (!is_directory(p)) continue;
 			using namespace rtmath::ddscat;
-			//ddUtil::tagTARGETs(p);
+			ddUtil::tagTARGETs(p);
 			boost::shared_ptr<ddOutput> ddOut = ddOutput::generate(t);
 
 			if (sOutput.size())

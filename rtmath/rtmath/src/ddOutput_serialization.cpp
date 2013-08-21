@@ -40,6 +40,7 @@ namespace rtmath
 
 			ar & boost::serialization::make_nvp("avg", avg);
 			ar & boost::serialization::make_nvp("scas", scas);
+			ar & boost::serialization::make_nvp("scas_original", scas_original);
 			ar & boost::serialization::make_nvp("fmls", fmls);
 			ar & boost::serialization::make_nvp("Weights", weights);
 

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <memory>
 #include <string>
 #include <vector>
 #include <map>
@@ -17,11 +16,18 @@
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddOutputGenerator.h"
 #include "../rtmath/ddscat/ddweights.h"
+#include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/hash.h"
+#include "../rtmath/config.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/units.h"
 #include "../rtmath/error/error.h"
+
+namespace {
+	boost::filesystem::path pHashRuns;
+	//bool autoHashRuns = false;
+}
 
 namespace rtmath {
 	namespace ddscat {
@@ -156,6 +162,7 @@ namespace rtmath {
 					}
 					if (pext.string() == ".sca")
 					{
+						res->scas_original.insert(dds);
 						res->scas.insert(dds);
 					}
 					if (pext.string() == ".fml")
@@ -198,27 +205,10 @@ namespace rtmath {
 			/// as the reference implementation (sans the sca-fml recalculation)
 			// Also process any fml files and regenerate full P matrices from the F matrix.
 			{
-				std::set<double> betas, thetas, phis;
-				for (const auto sca : res->scas)
-				{
-					betas.emplace(sca->beta());
-					thetas.emplace(sca->theta());
-					phis.emplace(sca->phi());
-				}
-				if (!betas.size() || !thetas.size() || !phis.size()) 
-					throw debug::xBadInput("Need sca input files for ddOutputGeneratorDDSCAT");
-				double bMin = *(betas.begin());
-				double tMin = *(thetas.begin());
-				double pMin = *(phis.begin());
-				double bMax = *(betas.rbegin());
-				double tMax = *(thetas.rbegin());
-				double pMax = *(phis.rbegin());
-				size_t nB = betas.size();
-				size_t nT = thetas.size();
-				size_t nP = phis.size();
-
-				ddWeightsDDSCAT wts(bMin, bMax, nB, tMin, tMax, nT, pMin, pMax, nP);
-
+				rtmath::ddscat::rotations rots;
+				res->parfile->getRots(rots);
+				ddWeightsDDSCAT wts(rots);
+				
 				float numScas = (float) res->scas.size();
 				for (auto &sca : res->scas)
 				{
@@ -280,6 +270,62 @@ namespace rtmath {
 			return res;
 		}
 
+		void ddOutput::add_options(
+			boost::program_options::options_description &cmdline,
+			boost::program_options::options_description &config,
+			boost::program_options::options_description &hidden)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+
+			// hash-shape-dir and hash-stats-dir can be found in rtmath.conf. 
+			// So, using another config file is useless.
+			cmdline.add_options()
+				("hash-runs-dir", po::value<string>(), "Override the hash runs directory") // static option
+				;
+
+			config.add_options()
+				;
+
+			hidden.add_options()
+				;
+		}
+
+		void ddOutput::process_static_options(
+			boost::program_options::variables_map &vm)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+			using boost::filesystem::path;
+
+			initPaths();
+			if (vm.count("hash-runs-dir")) pHashRuns = path(vm["hash-runs-dir"].as<string>());
+
+			// Validate paths
+			auto validateDir = [&](path p) -> bool
+			{
+				while (is_symlink(p))
+					p = boost::filesystem::absolute(read_symlink(p), p.parent_path());
+				if (!exists(p)) return false;
+				if (is_directory(p)) return true;
+				return false;
+			};
+			if (!validateDir(pHashRuns)) throw debug::xMissingFile(pHashRuns.string().c_str());
+		}
+
+		void ddOutput::initPaths()
+		{
+			using namespace boost::filesystem;
+			using std::string;
+			if (!pHashRuns.empty()) return;
+
+			auto conf = rtmath::config::loadRtconfRoot();
+			string runsDir;
+			auto chash = conf->getChild("ddscat")->getChild("hash");
+			chash->getVal<string>("runsDir",runsDir);
+			
+			pHashRuns = path(runsDir);
+		}
 
 
 		/*

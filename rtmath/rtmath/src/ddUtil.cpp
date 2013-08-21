@@ -16,6 +16,10 @@
 #include "../rtmath/hash.h"
 #include "../rtmath/ddscat/ddpar.h"
 
+namespace {
+	std::string forcedDDSCATversion;
+}
+
 namespace rtmath
 {
 	namespace ddscat
@@ -35,7 +39,7 @@ namespace rtmath
 				string ddver = fddver;
 				if (!ddver.size())
 					if (!getModuleLoadedDDSCAT(ddver)) ddver = "UNKNOWN";
-				
+
 
 				//using namespace boost::posix_time;
 				//ptime now = second_clock::local_time();
@@ -94,7 +98,7 @@ namespace rtmath
 				using namespace boost::filesystem;
 				path pBase = pStart;
 				if (!is_directory(pStart)) pBase.remove_filename();
-				
+
 				pPar = pBase / "ddscat.par";
 
 				if (exists(pBase / "target.out")) pShp = pBase / "target.out";
@@ -105,6 +109,11 @@ namespace rtmath
 			bool getModuleLoadedDDSCAT(std::string &out)
 			{
 				using namespace std;
+				if (forcedDDSCATversion.size())
+				{
+					out = string("ddscat/").append(forcedDDSCATversion);
+					return true;
+				}
 				const char* cmods = getenv("LOADEDMODULES");
 				string modstr;
 				if (cmods) modstr = string(cmods);
@@ -130,6 +139,35 @@ namespace rtmath
 					return true;
 				}
 				return false;
+			}
+
+			void add_options(
+				boost::program_options::options_description &cmdline,
+				boost::program_options::options_description &config,
+				boost::program_options::options_description &hidden)
+			{
+				namespace po = boost::program_options;
+				using std::string;
+
+				cmdline.add_options()
+					("force-ddscat-detected-version", po::value<string>(), "Override the detected ddscat version")
+					;
+
+				config.add_options()
+					;
+
+				hidden.add_options()
+					;
+			}
+
+			void process_static_options(
+				boost::program_options::variables_map &vm)
+			{
+				namespace po = boost::program_options;
+				using std::string;
+				
+				if (vm.count("force-ddscat-detected-version")) 
+					forcedDDSCATversion = vm["force-ddscat-detected-version"].as<string>();
 			}
 		}
 	}

@@ -55,6 +55,22 @@ namespace rtmath
 				const boost::filesystem::path &pBase,
 				boost::filesystem::path &pPar,
 				boost::filesystem::path &pShp);
+
+			/**
+			 * \brief Adds ddUtils options to a program
+			 *
+			 * \item cmdline provides options only allowed on the command line
+			 * \item config provides options available on the command line and in a config file
+			 * \item hidden provides options allowed anywhere, but are not displayed to the user
+			 **/
+			void DLEXPORT_rtmath_ddscat add_options(
+				boost::program_options::options_description &cmdline,
+				boost::program_options::options_description &config,
+				boost::program_options::options_description &hidden);
+			/// Processes static options defined in add_options
+			/// \todo Add processor for non-static options
+			void DLEXPORT_rtmath_ddscat process_static_options(
+				boost::program_options::variables_map &vm);
 		}
 	}
 }
