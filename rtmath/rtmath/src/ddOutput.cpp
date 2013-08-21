@@ -223,6 +223,7 @@ namespace rtmath {
 						auto perr = [](double a, double b) -> bool
 						{
 							if (abs((a-b)/b) < 0.0001) return true;
+							if (abs(a - b) < 0.0001) return true; // Near-zero value
 							return false;
 						};
 						if (!perr(of->beta(), sca->beta())) return false;

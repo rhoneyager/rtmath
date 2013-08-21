@@ -124,6 +124,69 @@ namespace rtmath {
 		SPEC_SPLITSET_A(double);
 
 
+		template <class T>
+		void extractInterval(
+			const std::string &instr,
+			T &start, T &end, T &interval, size_t &num, std::string &specializer)
+		{
+			using namespace std;
+			// Prepare tokenizer
+			typedef boost::tokenizer<boost::char_separator<char> >
+				tokenizer;
+			boost::char_separator<char> seprange(":");
+			tokenizer trange(instr,seprange);
+			vector<T> range;
+			size_t i = 0;
+			for (auto rt = trange.begin(); rt != trange.end(); rt++, i++)
+			{
+				try {
+					string s = *rt;
+					boost::algorithm::trim(s);
+					if (i < 3)
+					{
+						range.push_back(boost::lexical_cast<T>(s));
+					} else {
+						specializer = s;
+					}
+				}
+				catch (...)
+				{
+					throw rtmath::debug::xBadInput(rt->c_str());
+				}
+			}
+			// Look at range. If one element, just add it. If two or 
+			// three, calculate the inclusive interval
+			if (range.size() == 1)
+			{
+				start = range[0];
+				end = range[0];
+				interval = 0;
+				num = 1;
+			} else {
+				start = range[0];
+				end = range[range.size()-1];
+				interval = 0;
+				if (specializer.size())
+				{
+					if (range.size() > 2) num = (size_t) range[1];
+				} else {
+					if (range.size() > 2) interval = range[1];
+					// Linear spacing, starting at start.
+					num = (size_t) ( ( (end - start) / interval) + 1);
+				}
+			}
+		}
+
+#define SPEC_SPLITSET_INTERVAL(T) \
+	template void DLEXPORT_rtmath_core extractInterval<T>( \
+	const std::string&, T&, T&, T&, size_t&, std::string&);
+
+		SPEC_SPLITSET_INTERVAL(int);
+		SPEC_SPLITSET_INTERVAL(size_t);
+		SPEC_SPLITSET_INTERVAL(float);
+		SPEC_SPLITSET_INTERVAL(double);
+
+
 
 		template <class T>
 		void splitSet(const std::string &instr, std::set<T> &expanded,

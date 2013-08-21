@@ -65,7 +65,7 @@ namespace rtmath {
 			ddWeightsDDSCAT(const rotations&);
 			virtual ~ddWeightsDDSCAT() {}
 
-			double getWeight(double beta, double thata, double phi) const;
+			double getWeight(double beta, double theta, double phi) const;
 		private:
 			ddWeightsCosInt wThetas;
 			ddWeightsLinInt wPhis;

@@ -30,6 +30,7 @@ namespace rtmath {
 			auto it = std::find_if(weights.cbegin(), weights.cend(), [&](const std::pair<double,double> &p)
 			{
 				if (abs((point - p.first) / p.first) < 0.0001) return true;
+				if (abs(point - p.first) < 0.0001) return true; // Near-zero value
 				return false;
 			});
 			if (it != weights.cend())
@@ -47,6 +48,7 @@ namespace rtmath {
 				auto it = std::find_if(freqs.cbegin(), freqs.cend(), [&](const std::pair<double,size_t> &p)
 				{
 					if (abs((point - p.first) / p.first) < 0.0001) return true;
+					if (abs(point - p.first) < 0.0001) return true; // Near-zero value
 					return false;
 				});
 				if (it != freqs.cend()) degen *= (double) it->second;
@@ -78,14 +80,15 @@ namespace rtmath {
 				// Points 1, 3, 5, ... have weights of 4 / pts.size()
 				// Points 2, 4, 6, ... have weights of 2 / pts.size()
 				size_t i=0;
-				double wtb = 1. / (double) pts.size();
+				double wtb = 1. / (3. * ((double) n - 1.));
 				for (auto it = pts.cbegin(); it != pts.cend(); ++it, ++i)
 				{
-					if (i == 0 || i == pts.size() - 1)
-						weights[*it] = wtb;
-					else if (i % 2)
+					weights[*it] = wtb;
+					if (i == 0 || i == n - 1)
+						continue;
+					if (i % 2) // 1, 3, 5, ... Remember, fortran starts at different index.
 						weights[*it] = 4. * wtb;
-					else
+					else if (n >= 5)
 						weights[*it] = 2. * wtb;
 				}
 			}
