@@ -527,7 +527,8 @@ namespace rtmath {
 			_objMap["target"] = obj;
 		}
 
-		void ddOutputSingle::readF(std::istream &in)
+		void ddOutputSingle::readF(std::istream &in, 
+			boost::shared_ptr<const ddScattMatrixConnector> eProvider)
 		{
 			using namespace std;
 			// The frequency is needed when reading this matrix

@@ -124,11 +124,24 @@ include_directories(BEFORE ${VTK_INCLUDE_DIRS})
 #find_package(Qhull REQUIRED)
 #include_directories(${QHULL_INCLUDE_DIRS})
 
+add_library (rtmath_ddscat_base SHARED
+	${rtmath_ddscat_base-files}
+	)
+addlib(rtmath_ddscat_base SHARED)
+add_precompiled_header(rtmath_ddscat_base Stdafx-ddscat_base.h)
+set (rtmath_ddscat_base-libs 
+	rtmath_core ${rtmath_core-libs} 
+	rtmath_mie ${rtmath_mie-libs} 
+	${Boost_REGEX_LIBRARY}
+	)
+target_link_libraries(rtmath_ddscat_base ${rtmath_ddscat_base-libs})
+
 
 add_library(rtmath_voronoi SHARED ${rtmath_voronoi-files})
 addlib(rtmath_voronoi SHARED)
 add_precompiled_header(rtmath_voronoi Stdafx-voronoi.h)
 set (rtmath_voronoi-libs rtmath_core ${rtmath_core-libs} 
+	rtmath_ddscat_base ${rtmath_ddscat_base-libs}
 	${VTK_LIBRARIES}
 	${VORO_LIBRARIES}
 	)
@@ -150,7 +163,8 @@ addlib(rtmath_ddscat ${sflag})
 add_precompiled_header(rtmath_ddscat Stdafx-ddscat.h)
 set (rtmath_ddscat-libs 
 	rtmath_core ${rtmath_core-libs} 
-	rtmath_mie ${rtmath_mie-libs} 
+	rtmath_mie ${rtmath_mie-libs}
+        rtmath_ddscat_base ${rtmath_ddscat_base-libs}	
 	rtmath_voronoi ${rtmath_voronoi-libs}
 	tmatrix-cpp tmatrix-fortran
 	${Boost_REGEX_LIBRARY}

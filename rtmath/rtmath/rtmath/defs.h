@@ -107,6 +107,18 @@
 	#define DLEXPORT_rtmath_voronoi
 #endif
 
+#if SHARED_rtmath_ddscat_base
+	#if EXPORTING_rtmath_ddscat_base
+		#define DLEXPORT_rtmath_ddscat_base SHARED_EXPORT
+	#else
+		#define DLEXPORT_rtmath_ddscat_base SHARED_IMPORT
+	#endif
+#else
+	#define DLEXPORT_rtmath_ddscat_base
+#endif
+
+
+
 #if SHARED_rtmath_ddscat
 	#if EXPORTING_rtmath_ddscat
 		#define DLEXPORT_rtmath_ddscat SHARED_EXPORT

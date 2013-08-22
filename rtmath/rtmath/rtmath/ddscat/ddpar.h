@@ -447,7 +447,7 @@ namespace rtmath {
 		* Used to both extract information necessary for shapefile formation, and used when 
 		* upgrading ddscat versions. It also provides writing functionality for the files.
 		**/
-		class DLEXPORT_rtmath_ddscat ddPar
+		class DLEXPORT_rtmath_ddscat_base ddPar
 		{
 		public:
 			static ddPar*& defaultInstance();

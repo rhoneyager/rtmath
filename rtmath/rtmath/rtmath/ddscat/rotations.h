@@ -22,7 +22,7 @@ namespace rtmath {
 	namespace ddscat {
 		class ddPar;
 
-		class DLEXPORT_rtmath_ddscat rotationsBase
+		class DLEXPORT_rtmath_ddscat_base rotationsBase
 		{
 		public:
 			rotationsBase();
@@ -38,7 +38,7 @@ namespace rtmath {
 			void serialize(Archive & ar, const unsigned int version);
 		};
 
-		class DLEXPORT_rtmath_ddscat rotations : public rotationsBase
+		class DLEXPORT_rtmath_ddscat_base rotations : public rotationsBase
 		{
 		public:
 			rotations();

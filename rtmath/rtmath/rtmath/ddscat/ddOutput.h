@@ -78,7 +78,7 @@ namespace rtmath {
 			/// Shape file statistics (may load fully later)
 			mutable boost::shared_ptr<shapeFileStats> stats;
 			/// Load the full shape file and stats
-			void loadShape();
+			void loadShape() const;
 
 			/// The ddscat parameter file
 			boost::shared_ptr<ddPar> parfile;
@@ -103,6 +103,9 @@ namespace rtmath {
 			/// \todo Finish implementing
 			void updateAVG();
 
+			/// Expand output to a given directory
+			void expand(const std::string &outdir, bool writeShape=false) const;
+
 			/*
 			/// Generate ddOutput from a set of ddOutputSingle
 			static boost::shared_ptr<ddOutput> generate(
@@ -119,6 +122,10 @@ namespace rtmath {
 			/// Generate ddOutput from a ddscat output directory
 			static boost::shared_ptr<ddOutput> generate(
 				const std::string &dir);
+
+			/// Read xml file (using serialization)
+			static boost::shared_ptr<ddOutput> load(const std::string &filename);
+
 
 			/**
 			 * \brief Adds ddOutput options to a program

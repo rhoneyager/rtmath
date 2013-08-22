@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,6 +10,7 @@
 #include <complex>
 #include <boost/math/constants/constants.hpp>
 #include "../rtmath/ddscat/ddScattMatrix.h"
+#include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/units.h"
 #include "../rtmath/phaseFunc.h"
 //#include "../rtmath/coords.h"
@@ -74,17 +75,85 @@ namespace rtmath {
 
 		ddScattMatrixF::PnnType ddScattMatrixF::mueller() const
 		{
+			_calcS();
 			_calcP();
 			return _Pnn;
 		}
 
-		void ddScattMatrixF::_calcS()
+		ddScattMatrixConnector::ddScattMatrixConnector() :
+			e01x(0,0), e01y(1,0), e01z(0,0),
+			e02x(0,0), e02y(0,0), e02z(1,0)
+		{ }
+
+		void ddScattMatrixConnector::calcE2()
+		{
+			typedef std::complex<double> cpl;
+			// e02 = x_lf X e01
+			const cpl xlfx(1,0), xlfy(0,0), xlfz(0,0);
+				
+			e02x = (xlfy * e01z) - (xlfz * e01y);
+			e02y = (xlfz * e01x) - (xlfx * e01z);
+			e02z = (xlfx * e01y) - (xlfy * e01x);
+		}
+
+		ddScattMatrixConnector::ddScattMatrixConnector(const ddPar &src) :
+			e01x(src.PolState(0), src.PolState(1)),
+			e01y(src.PolState(2), src.PolState(3)),
+			e01z(src.PolState(4), src.PolState(5))
+		{
+			if (src.OrthPolState() == 2)
+				calcE2();
+		}
+
+		ddScattMatrixConnector::ddScattMatrixConnector(
+			const std::vector<std::complex<double> >& src)
+		{
+			if (src.size() % 3 != 0 || !src.size()) throw debug::xArrayOutOfBounds();
+			e01x = src[0];
+			e01y = src[1];
+			e01z = src[2];
+			if (src.size() == 3)
+				calcE2();
+			else
+			{
+				e02x = src[3];
+				e02y = src[4];
+				e02z = src[5];
+			}
+		}
+
+		boost::shared_ptr<const ddScattMatrixConnector> 
+			ddScattMatrixConnector::fromVector(
+			const std::vector<std::complex<double> >& vec)
+		{
+			boost::shared_ptr<const ddScattMatrixConnector>
+				res(new ddScattMatrixConnector(vec));
+			return res;
+		}
+
+		boost::shared_ptr<const ddScattMatrixConnector> 
+			ddScattMatrixConnector::fromPar(const ddPar &src)
+		{
+			boost::shared_ptr<const ddScattMatrixConnector>
+				res(new ddScattMatrixConnector(src));
+			return res;
+		}
+
+		boost::shared_ptr<const ddScattMatrixConnector> ddScattMatrixConnector::defaults()
+		{
+			static boost::shared_ptr<const ddScattMatrixConnector>
+				res(new ddScattMatrixConnector());
+			return res;
+		}
+
+		void ddScattMatrixF::_calcS() const
 		{
 			using namespace std;
-			const double PI = boost::math::constants::pi<double>();
-			complex<double> i(0,1);
-			complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
-			complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
+			//const double PI = boost::math::constants::pi<double>();
+			//const complex<double> i(0,1);
+
+			complex<double> a = conj(frame->e01y), b=conj(frame->e01z), 
+				c=conj(frame->e02y), d=conj(frame->e02z);
 			rtmath::phaseFuncs::convertFtoS(_f,_s,_phi,a,b,c,d);
 		}
 

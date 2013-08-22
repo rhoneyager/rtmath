@@ -7,7 +7,8 @@
 #include "error.h"
 
 namespace boost { namespace program_options { 
-	class options_description; class variables_map; } }
+	class options_description; class variables_map; } 
+	namespace filesystem { class path; } }
 
 namespace rtmath
 {
@@ -19,6 +20,9 @@ namespace rtmath
 		int DLEXPORT_rtmath_core rev(void);
 		/// Write the last recorded code position. Used in error throw messages.
 		void DLEXPORT_rtmath_core dumpErrorLocation(std::ostream &out = std::cerr);
+
+		/// Commonly-used function that expands any possible symlink in a path.
+		boost::filesystem::path DLEXPORT_rtmath_core expandSymlink(const boost::filesystem::path &p);
 
 		/**
 		* \brief Adds options to a program

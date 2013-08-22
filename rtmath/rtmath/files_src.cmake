@@ -113,6 +113,25 @@ set(rtmath_voronoi-files
 	src/Stdafx-voronoi.h
 	)
 
+set(rtmath_ddscat_base-files
+	rtmath/ddscat/ddpar.h
+	rtmath/ddscat/parids.h
+	src/ddpar.cpp
+	src/ddpar_serialization.cpp
+	rtmath/ddscat/rotations.h
+	src/rotations.cpp
+	src/rotations_serialization.cpp
+	rtmath/ddscat/dielTabFile.h
+	src/dielTabFile.cpp
+	rtmath/ddscat/ddVersions.h
+	src/ddVersions.cpp
+	rtmath/ddscat/ddScattMatrix.h
+	src/ddScattMatrix.cpp
+	src/ddScattMatrix_serialization.cpp
+	src/Stdafx-ddscat_base.cpp
+	src/Stdafx-ddscat_base.h
+	)
+
 set(rtmath_ddscat-files
 	#rtmath/ddscat/cdf-ddscat.h
 	rtmath/ddscat/ddavg.h
@@ -120,18 +139,12 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/ddOutput.h
 	rtmath/ddscat/ddOutputGenerator.h
 	rtmath/ddscat/ddOutputSingle.h
-	rtmath/ddscat/ddpar.h
 	rtmath/ddscat/ddparGenerator.h
 	rtmath/ddscat/ddRunSet.h
 	rtmath/ddscat/ddscat.h
-	rtmath/ddscat/ddScattMatrix.h
 	rtmath/ddscat/ddUtil.h
-	rtmath/ddscat/ddVersions.h
 	rtmath/ddscat/ddweights.h
-	rtmath/ddscat/dielTabFile.h
 	rtmath/ddscat/mtab.h
-	rtmath/ddscat/parids.h
-	rtmath/ddscat/rotations.h
 	rtmath/ddscat/runScripts.h
 	rtmath/ddscat/shapefile.h
 	rtmath/ddscat/shapes.h
@@ -145,22 +158,14 @@ set(rtmath_ddscat-files
 	src/ddOutputGenerator.cpp
 	src/ddOutputGenerator_serialization.cpp
 	src/ddOutputSingle.cpp
-	src/ddpar.cpp
-	src/ddpar_serialization.cpp
 	src/ddparGenerator.cpp
 	src/ddparGenerator_serialization.cpp
 	src/ddRunSet.cpp
 	src/ddscat.cpp
-	src/ddScattMatrix.cpp
-	src/ddScattMatrix_serialization.cpp
 	src/ddUtil.cpp
-	src/ddVersions.cpp
-	src/ddweights.cpp
-	src/dielTabFile.cpp
+	src/ddweights.cpp	
 	# src/mtab.cpp
 	#	src/pclstuff.cpp
-	src/rotations.cpp
-	src/rotations_serialization.cpp
 	src/runScripts.cpp
 	src/shapefile.cpp
 	src/shapefile_serialization.cpp

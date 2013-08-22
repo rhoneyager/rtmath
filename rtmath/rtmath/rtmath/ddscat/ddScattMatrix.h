@@ -1,6 +1,7 @@
 #pragma once
 #include "../defs.h"
 #include <complex>
+#include <vector>
 #include <Eigen/Core>
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/export.hpp>
@@ -11,6 +12,7 @@ namespace rtmath
 {
 	namespace ddscat
 	{
+		class ddPar;
 		class ddScattMatrix;
 		class ddScattMatrixF;
 		class ddScattMatrixP;
@@ -27,6 +29,34 @@ namespace rtmath
 			P
 		};
 
+		/// Connector object that provides target frame information
+		class DLEXPORT_rtmath_ddscat_base ddScattMatrixConnector
+		{
+			friend class ::boost::serialization::access;
+			template<class Archive>
+			void serialize(Archive & ar, const unsigned int version);
+			ddScattMatrixConnector();
+			ddScattMatrixConnector(const ddPar &src);
+			ddScattMatrixConnector(const std::vector<std::complex<double> >&);
+			/// Calc e2 as x_lf X e1
+			void calcE2();
+		public:
+			/// Predefined defaults
+			static boost::shared_ptr<const ddScattMatrixConnector> defaults();
+			/// Load from a ddscat.par file
+			static boost::shared_ptr<const ddScattMatrixConnector> fromPar(const ddPar &src);
+			/** \brief Directly specify from a ddOutputSingle or elsewhere
+			*
+			* If the vector has six elements, these, in order are e1x, e1y, e1z, e2x, e2y, e2z.
+			* If it has three elements, define e2 as x_lf X e1.
+			**/
+			static boost::shared_ptr<const ddScattMatrixConnector> fromVector(
+				const std::vector<std::complex<double> >&);
+
+			std::complex<double> e01x, e01y, e01z;
+			std::complex<double> e02x, e02y, e02z;
+		};
+
 		/**
 		* This is now a base class because there are two ways for
 		* specifying scattering: the complex scattering amplitude 
@@ -35,7 +65,7 @@ namespace rtmath
 		* P matrix is harder to derive from, but is found in the 
 		* .avg files and in tmatrix code.
 		**/
-		class DLEXPORT_rtmath_ddscat ddScattMatrix
+		class DLEXPORT_rtmath_ddscat_base ddScattMatrix
 		{
 		public:
 			typedef Eigen::Matrix4d PnnType;
@@ -87,15 +117,16 @@ namespace rtmath
 			}
 		};
 
-		class DLEXPORT_rtmath_ddscat ddScattMatrixF : 
+		class DLEXPORT_rtmath_ddscat_base ddScattMatrixF : 
 			public ddScattMatrix,
 			boost::additive<ddScattMatrixF>,
 			boost::multiplicative<ddScattMatrixF, double>
 		{
 		public:
 			/// Needs frequency (GHz) and phi (degrees) for P and K calculations
-			ddScattMatrixF(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
-				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
+			ddScattMatrixF(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0,
+				boost::shared_ptr<const ddScattMatrixConnector> frame = ddScattMatrixConnector::defaults())
+				: ddScattMatrix(freq, theta, phi, thetan, phin), frame(frame) {}
 			virtual ~ddScattMatrixF();
 			ddScattMatrixF operator+(const ddScattMatrixF&) const;
 			ddScattMatrixF operator*(double) const;
@@ -110,14 +141,15 @@ namespace rtmath
 			inline FType getS() const { return _s; }
 		protected:
 			/// Calculate S matrix from F matrix
-			void _calcS();
+			void _calcS() const;
 			/// Calculate Mueller matrix from S matrix
 			void _calcP() const;
 			mutable FType _f, _s;
+			boost::shared_ptr<const ddScattMatrixConnector> frame;
 			//boost::shared_array<std::complex<double> > _f, _s;
 			//boost::shared_ptr<matrixop> _fRe, _fIm; // Should store as shared_array
 			//boost::shared_ptr<matrixop> _sRe, _sIm;
-
+		private:
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
@@ -127,7 +159,7 @@ namespace rtmath
 		{
 		}; */
 
-		class DLEXPORT_rtmath_ddscat ddScattMatrixP : 
+		class DLEXPORT_rtmath_ddscat_base ddScattMatrixP : 
 			public ddScattMatrix,
 			boost::additive<ddScattMatrixP>,
 			boost::multiplicative<ddScattMatrixP, double>
@@ -143,7 +175,7 @@ namespace rtmath
 			virtual scattMatrixType id() const { return scattMatrixType::P; }
 			inline void setP(const PnnType& v) { _Pnn = v; }
 			PnnType getP() const { return _Pnn; }
-
+		private:
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);

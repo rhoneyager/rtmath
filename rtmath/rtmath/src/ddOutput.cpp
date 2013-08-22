@@ -9,6 +9,8 @@
 #include <complex>
 #include <boost/filesystem.hpp>
 #include <cmath>
+#include <ios>
+#include <iomanip>
 #include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/ddscat/ddpar.h"
@@ -22,6 +24,7 @@
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/units.h"
+#include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
 namespace {
@@ -40,7 +43,7 @@ namespace rtmath {
 		{
 			if (!scas.size()) return; // Nothing to do
 
-			throw debug::xUnimplementedFunction();
+			RTthrow debug::xUnimplementedFunction();
 
 			boost::shared_ptr<ddOutputSingle> navg(new ddOutputSingle);
 			//if (!avg) navg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle);
@@ -73,7 +76,7 @@ namespace rtmath {
 			// Store the stats and the Mueller matrix results
 		}
 
-		void ddOutput::loadShape()
+		void ddOutput::loadShape() const
 		{
 			// Load stats and shape based on the hash
 			stats = shapeFileStats::loadHash(this->shapeHash);
@@ -97,7 +100,7 @@ namespace rtmath {
 			{
 				Ryan_Serialization::write<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
 			} else {
-				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+				RTthrow rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}
 		}
 
@@ -108,7 +111,7 @@ namespace rtmath {
 			std::string cmeth, target, uncompressed;
 			// Combination of detection of compressed file, file type and existence.
 			if (!detect_compressed(filename, cmeth, target))
-				throw rtmath::debug::xMissingFile(filename.c_str());
+				RTthrow rtmath::debug::xMissingFile(filename.c_str());
 			uncompressed_name(target, uncompressed, cmeth);
 
 			boost::filesystem::path p(uncompressed);
@@ -121,8 +124,15 @@ namespace rtmath {
 				// load the serialized object directly
 				Ryan_Serialization::read<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
 			} else {
-				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+				RTthrow rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}
+		}
+
+		boost::shared_ptr<ddOutput> ddOutput::load(const std::string &filename)
+		{
+			boost::shared_ptr<ddOutput> res(new ddOutput);
+			res->readFile(filename);
+			return res;
 		}
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir)
@@ -132,7 +142,7 @@ namespace rtmath {
 			using namespace boost::filesystem;
 			using std::vector;
 			path pBase(dir);
-			if (!exists(pBase)) throw debug::xMissingFile(dir.c_str());
+			if (!exists(pBase)) RTthrow debug::xMissingFile(dir.c_str());
 
 			// Single level iteration through the path tree
 			vector<path> cands;
@@ -157,12 +167,13 @@ namespace rtmath {
 					boost::shared_ptr<ddOutputSingle> dds(new ddOutputSingle(p.string()));
 					if (pext.string() == ".avg")
 					{
-						if (res->avg) throw debug::xBadInput("Simple ddOutput generator accepts only one avg file");
+						if (res->avg) RTthrow debug::xBadInput("Simple ddOutput generator accepts only one avg file");
 						res->avg = dds;
 					}
 					if (pext.string() == ".sca")
 					{
-						res->scas_original.insert(dds);
+						boost::shared_ptr<ddOutputSingle> ddsorig(new ddOutputSingle(p.string()));
+						res->scas_original.insert(ddsorig);
 						res->scas.insert(dds);
 					}
 					if (pext.string() == ".fml")
@@ -271,6 +282,95 @@ namespace rtmath {
 			return res;
 		}
 
+		void ddOutput::expand(const std::string &outdir, bool writeShape) const
+		{
+			using namespace boost::filesystem;
+			path pOut(outdir);
+			if (exists(pOut))
+			{
+				path pSym = debug::expandSymlink(pOut);
+				if (!is_directory(pSym))
+					RTthrow debug::xPathExistsWrongType(outdir.c_str());
+			} else {
+				create_directory(pOut);
+			}
+
+			// Write par file
+			this->parfile->writeFile( (path(pOut)/"ddscat.par").string());
+
+			// Write shape file
+			if (writeShape)
+			{
+				if (!this->shape) this->loadShape();
+				shape->write( (path(pOut)/"target.out").string() );
+			}
+
+			// Write avg file
+			avg->writeFile( (path(pOut)/"w000r000.avg").string() );
+
+			auto oname = [](const boost::filesystem::path &base,
+				boost::shared_ptr<ddOutputSingle> d) -> std::string
+			{
+				std::ostringstream n;
+				/// \todo add a unique orientation hash
+				n << d->beta() << "-" << d->theta() << 
+					"-" << d->phi();
+				return (base/path(n.str())).string();
+			};
+			auto onameb = [](const boost::filesystem::path &base,
+				size_t i, size_t ni) -> std::string
+			{
+				using namespace std;
+				ostringstream n;
+				n << "w000r000k";
+				n.width(ni);
+				n.fill('0');
+				n << i;
+				return (base/path(n.str())).string();
+			};
+
+			// Write fmls
+			size_t i=0;
+			for (const auto &fml : fmls)
+			{
+				//std::string fname = oname(pOut,fml);
+				std::string fname = onameb(pOut,i, fmls.size());
+				fname.append(".fml");
+				fml->writeFile(fname);
+			}
+
+			// Write original scas
+			i=0;
+			for (const auto &sca : scas_original)
+			{
+				//std::string fname = oname(pOut,fml);
+				std::string fname = onameb(pOut,i, scas_original.size());
+				fname.append(".sca-original");
+				sca->writeFile(fname, ".sca");
+			}
+
+			// Write scas
+			i=0;
+			for (const auto &sca : scas)
+			{
+				//std::string fname = oname(pOut,fml);
+				std::string fname = onameb(pOut,i, scas.size());
+				fname.append(".sca");
+				sca->writeFile(fname);
+			}
+
+			// Write out the weighting table
+			{
+				std::ofstream owt( (path(pOut)/"weights.tsv").string() );
+				owt << "Theta\tPhi\tBeta\tWeight\n";
+				for (auto w : weights)
+				{
+					owt << w.first->theta() << "\t" << w.first->phi() << "\t"
+						<< w.first->beta() << "\t" << w.second << "\n";
+				}
+			}
+		}
+
 		void ddOutput::add_options(
 			boost::program_options::options_description &cmdline,
 			boost::program_options::options_description &config,
@@ -311,7 +411,7 @@ namespace rtmath {
 				if (is_directory(p)) return true;
 				return false;
 			};
-			if (!validateDir(pHashRuns)) throw debug::xMissingFile(pHashRuns.string().c_str());
+			if (!validateDir(pHashRuns)) RTthrow debug::xMissingFile(pHashRuns.string().c_str());
 		}
 
 		void ddOutput::initPaths()

@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #include <sstream>
 #include <string>
 #include <set>
@@ -281,9 +281,9 @@ namespace rtmath {
 				* AngleAxis<T>(betar, vt::UnitZ());
 		}
 
-		template void rotationMatrix(double thetad, double phid, double betad,
+		template void SHARED_EXPORT rotationMatrix(double thetad, double phid, double betad,
 			Eigen::Matrix3d &Reff);
-		template void rotationMatrix(float thetad, float phid, float betad,
+		template void SHARED_EXPORT rotationMatrix(float thetad, float phid, float betad,
 			Eigen::Matrix3f &Reff);
 	}
 }

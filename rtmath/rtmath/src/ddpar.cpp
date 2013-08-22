@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -664,8 +664,11 @@ namespace rtmath {
 
 			size_t line = 1;
 			{
-				std::string junk;
-				std::getline(stream,junk); // Disregard first line in file
+				// First line in file provides version information
+				std::string vertag;
+				std::getline(stream,vertag);
+				
+				_version = ddVersions::getVerId(vertag);
 			}
 			size_t nScaPlane = 0;
 			string comment;

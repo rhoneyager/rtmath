@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
@@ -14,6 +14,17 @@ namespace rtmath
 {
 	namespace ddscat
 	{
+		template<class Archive>
+		void ddScattMatrixConnector::serialize(Archive &ar, const unsigned int version)
+		{
+			ar & boost::serialization::make_nvp("e01x", e01x);
+			ar & boost::serialization::make_nvp("e01y", e01y);
+			ar & boost::serialization::make_nvp("e01z", e01z);
+			ar & boost::serialization::make_nvp("e02x", e02x);
+			ar & boost::serialization::make_nvp("e02y", e02y);
+			ar & boost::serialization::make_nvp("e02z", e02z);
+		}
+
 		template<class Archive>
 		void ddScattMatrix::serialize(Archive &ar, const unsigned int version)
 		{
@@ -45,6 +56,7 @@ namespace rtmath
 				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(*this));
 		}
 
+		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrixConnector::serialize);
 		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrix::serialize);
 		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrixF::serialize);
 		EXPORTINTERNAL(rtmath::ddscat::ddScattMatrixP::serialize);
@@ -53,6 +65,7 @@ namespace rtmath
 
 //BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile)
 
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixConnector);
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrix);
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixF);
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddScattMatrixP);

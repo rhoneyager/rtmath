@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #include <iostream>
 #include <fstream>
 #include <queue>

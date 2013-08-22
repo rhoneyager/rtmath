@@ -41,7 +41,7 @@ namespace rtmath
 		* these files is quite customizable, allowing for column reordering 
 		* and suppression.
 		**/
-		class DLEXPORT_rtmath_ddscat dielTab
+		class DLEXPORT_rtmath_ddscat_base dielTab
 		{
 		public:
 			dielTab();

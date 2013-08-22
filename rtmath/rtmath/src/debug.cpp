@@ -113,6 +113,21 @@ namespace rtmath
 			out << std::endl;
 		}
 
+		boost::filesystem::path expandSymlink(const boost::filesystem::path &p)
+		{
+			using namespace boost::filesystem;
+			// Set a max depth to avoid infinite loops
+			const size_t maxDepth = 10;
+			size_t d=0;
+			path pf = p;
+			while(is_symlink(pf) && d<maxDepth)
+			{
+				pf = boost::filesystem::absolute(read_symlink(pf), p.parent_path());
+				d++;
+			}
+			return pf;
+		}
+
 		void add_options(
 			boost::program_options::options_description &cmdline,
 			boost::program_options::options_description &config,

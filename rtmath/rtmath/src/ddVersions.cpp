@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 
 #include <boost/thread/mutex.hpp>

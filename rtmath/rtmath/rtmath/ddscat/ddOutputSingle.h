@@ -127,7 +127,7 @@ namespace rtmath {
 			/// Input Mueller matrices
 			void readMueller(std::istream &in);
 			/// Input fml F table
-			void readF(std::istream &in);
+			void readF(std::istream &in, boost::shared_ptr<const ddScattMatrixConnector>);
 
 			/// Normalize based on P11
 			/// \todo Needs correct normalization and default values

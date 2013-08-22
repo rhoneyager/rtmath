@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat.h"
+#include "Stdafx-ddscat_base.h"
 #include "../rtmath/ddscat/ddpar.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
