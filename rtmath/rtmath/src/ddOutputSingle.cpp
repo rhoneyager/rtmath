@@ -210,6 +210,7 @@ namespace rtmath
 				}
 			};
 
+			/// Provides access to refractive indices
 			class SHARED_INTERNAL ddM : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
@@ -236,7 +237,7 @@ namespace rtmath
 					// substance number in 78+
 					double mre, mim, ere, eim;
 
-					// Differernt ddscat versions write their numbers differently. There are 
+					// Different ddscat versions write their numbers differently. There are 
 					// no set ranges. I'll use a slow approach to sieve them out from the 
 					// surrounding other symbols. Valid numeric digits are numbers and '.'
 					std::vector<std::string> snums;
@@ -296,6 +297,102 @@ namespace rtmath
 					ar & boost::serialization::make_nvp("subst", subst);
 				}
 			};
+
+			enum class frameType { LF, TF };
+
+			/// Provides access to polarization vector information
+			class SHARED_INTERNAL ddPolVec
+				 : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddPolVec() : w(8), p(5), frame(frameType::LF), vecnum(0)
+				{
+					pols[0] = std::complex<double>(0,0);
+					pols[1] = std::complex<double>(0,0);
+					pols[2] = std::complex<double>(0,0);
+				}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					// Using formatted io operations
+					using std::setw;
+					using std::setprecision;
+					out << " ( " << setprecision(5) << setw(w) << pols[0].real() << "," 
+						<< setw(w) << pols[0].imag() << ")(" << setw(w) << pols[1].real()
+						<< "," << setw(w) << pols[1].imag() << ")(" << setw(w) 
+						<< pols[2].real() << "," << setw(w) << pols[2].imag()
+						<< ")=inc.pol.vec. " << vecnum << " in ";
+					(frame == frameType::LF) ? out << "LF\n" : out << "TF\n";
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string str;
+					std::getline(in,str);
+					
+					// The first six numbers are doubles. The seventh is a size_t.
+					// The last two characters describe the frame.
+					std::vector<std::string> snums;
+					char lchar = 0; // last character
+					char cchar = 0; // current character
+					std::string csnum; // current numeric string
+
+					auto nDone = [&]()
+					{
+						if (csnum.size()) snums.push_back(csnum);
+						csnum.clear();
+					};
+
+					for (const auto &c : str)
+					{
+						cchar = c;
+						if (std::isdigit(c)) csnum.push_back(c);
+						else if (c == '.' && std::isdigit(lchar)) csnum.push_back(c);
+						else if (csnum.size()) nDone();
+
+						lchar = c;
+					}
+					nDone();
+
+					if (snums.size() < 7) throw debug::xBadInput(
+						"Cannot parse inc.pol.vec. numbers in ddOutputSingleKeys::ddPolVec");
+
+					using boost::lexical_cast;
+					using boost::algorithm::trim_copy;
+					using std::complex;
+					pols[0] = complex<double>(lexical_cast<double>(snums[0]), lexical_cast<double>(snums[1]));
+					pols[1] = complex<double>(lexical_cast<double>(snums[2]), lexical_cast<double>(snums[3]));
+					pols[2] = complex<double>(lexical_cast<double>(snums[4]), lexical_cast<double>(snums[5]));
+					vecnum = lexical_cast<size_t>(snums[6]);
+					auto it = str.find_last_of('F');
+					if (it == std::string::npos) throw debug::xBadInput(
+						"Cannot parse inc.pol.vec. in ddOutputSingleKeys::ddPolVec for frame identifier");
+					it--;
+					if (str.at(it) == 'L') frame = frameType::LF;
+					else if (str.at(it) == 'T') frame = frameType::TF;
+					else throw debug::xBadInput(
+						"Cannot parse inc.pol.vec. in ddOutputSingleKeys::ddPolVec for frame identifier (b)");
+				}
+				virtual std::string value() const override { return std::string(); }
+				std::complex<double> getPol(size_t n) const { return pols[n]; }
+				frameType getFrame() const { return frame; }
+				size_t getVecnum() const { return vecnum; }
+				std::complex<double> pols[3];
+				size_t vecnum;
+				frameType frame;
+				const size_t w;
+				const size_t p;
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("vecnum", vecnum);
+					ar & boost::serialization::make_nvp("frame", frame);
+					ar & boost::serialization::make_nvp("pols", pols);
+				}
+			};
 		}
 	}
 }
@@ -310,6 +407,7 @@ BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddSval);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddNval<size_t>);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddNval<double>);
 BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddM);
+BOOST_CLASS_EXPORT(rtmath::ddscat::ddOutputSingleKeys::ddPolVec);
 
 /*
 EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddver::serialize);
@@ -559,7 +657,8 @@ namespace rtmath {
 					//std::cerr << " i " << i << " - " << vals[i] << "\n";
 				}
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
-				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF(freq, vals[0], vals[1]));
+				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF
+					(freq, vals[0], vals[1],0,0,eProvider));
 				ddScattMatrix::FType fs;
 				fs(0,0) = complex<double>(vals[2],vals[3]);
 				fs(1,0) = complex<double>(vals[4],vals[5]);
@@ -567,7 +666,6 @@ namespace rtmath {
 				fs(1,1) = complex<double>(vals[8],vals[9]);
 				mat->setF(fs);
 
-				// TODO: check if another cast is appropriate
 				boost::shared_ptr<const ddScattMatrix> matC = 
 					boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
 
@@ -656,8 +754,19 @@ namespace rtmath {
 		void ddOutputSingle::readFML(std::istream &in)
 		{
 			readHeader(in,"Re(f_11)");
-			//readStatTable(in);
-			readF(in);
+			// Get e1 and e2 in lab frame from the header data
+			auto obj1 = boost::dynamic_pointer_cast<ddPolVec>(_objMap.at("incpol1lf"));
+			auto obj2 = boost::dynamic_pointer_cast<ddPolVec>(_objMap.at("incpol2lf"));
+			std::vector<std::complex<double> > vs(6);
+			vs[0] = obj1->getPol(0);
+			vs[1] = obj1->getPol(1);
+			vs[2] = obj1->getPol(2);
+			vs[3] = obj2->getPol(0);
+			vs[4] = obj2->getPol(1);
+			vs[5] = obj2->getPol(2);
+			boost::shared_ptr<const ddScattMatrixConnector> cn =
+				ddScattMatrixConnector::fromVector(vs);
+			readF(in, cn);
 		}
 
 		void ddOutputSingle::readSCA(std::istream &in)
@@ -1174,10 +1283,10 @@ namespace rtmath {
 			if (key == "navg") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(1, "  NAVG= ", " = (theta,phi) values used in comp. of Qsca,g") ));
 			if (key == "kveclf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 			if (key == "kvectf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
-			if (key == "incpol1lf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
-			if (key == "incpol2lf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
-			if (key == "incpol1tf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
-			if (key == "incpol2tf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+			if (key == "incpol1lf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddPolVec>(new ddPolVec));
+			if (key == "incpol2lf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddPolVec>(new ddPolVec));
+			if (key == "incpol1tf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddPolVec>(new ddPolVec));
+			if (key == "incpol2tf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddPolVec>(new ddPolVec));
 
 			if (key == "betarange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 			if (key == "thetarange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));

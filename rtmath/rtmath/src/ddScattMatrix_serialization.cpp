@@ -46,6 +46,7 @@ namespace rtmath
 				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(*this));
 			ar & boost::serialization::make_nvp("f", _f);
 			ar & boost::serialization::make_nvp("S", _s);
+			ar & boost::serialization::make_nvp("frame", frame);
 		}
 
 		template<class Archive>

@@ -118,9 +118,9 @@ namespace rtmath
 		};
 
 		class DLEXPORT_rtmath_ddscat_base ddScattMatrixF : 
-			public ddScattMatrix,
-			boost::additive<ddScattMatrixF>,
-			boost::multiplicative<ddScattMatrixF, double>
+			public ddScattMatrix //,
+			//boost::additive<ddScattMatrixF>,
+			//boost::multiplicative<ddScattMatrixF, double>
 		{
 		public:
 			/// Needs frequency (GHz) and phi (degrees) for P and K calculations
@@ -140,9 +140,9 @@ namespace rtmath
 			inline FType getF() const { return _f; }
 			inline FType getS() const { return _s; }
 		protected:
-			/// Calculate S matrix from F matrix
+			/// Calculate scattering amplitude matrix from the scattering (f_ml) matrix
 			void _calcS() const;
-			/// Calculate Mueller matrix from S matrix
+			/// Calculate Mueller matrix from scattering amplitude matrix
 			void _calcP() const;
 			mutable FType _f, _s;
 			boost::shared_ptr<const ddScattMatrixConnector> frame;
@@ -160,9 +160,9 @@ namespace rtmath
 		}; */
 
 		class DLEXPORT_rtmath_ddscat_base ddScattMatrixP : 
-			public ddScattMatrix,
-			boost::additive<ddScattMatrixP>,
-			boost::multiplicative<ddScattMatrixP, double>
+			public ddScattMatrix //,
+			//boost::additive<ddScattMatrixP>,
+			//boost::multiplicative<ddScattMatrixP, double>
 		{
 		public:
 			ddScattMatrixP(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
@@ -183,7 +183,7 @@ namespace rtmath
 	}
 }
 
-
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixConnector);
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrix);
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixF);
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixP);

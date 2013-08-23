@@ -51,50 +51,34 @@ namespace rtmath {
 
 		void muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn)
 		{
-			std::complex<double> scratch;
+			using std::complex;
+			complex<double> scratch;
+			// Sn(2) = Sn(0,0)
+			// Sn(1) = Sn(1,1)
+			// Sn(3) = Sn(0,1)
+			// Sn(4) = Sn(1,0)
+			const complex<double> &S2 = Sn(0,0), &S1 = Sn(1,1), &S3 = Sn(0,1), &S4 = Sn(1,0);
 
-			Snn(0,0) = 0.5 * ( (Sn(0,0)*conj(Sn(0,0))) + (Sn(0,1)*conj(Sn(0,1))) 
-				+ (Sn(1,0)*conj(Sn(1,0))) + (Sn(1,1)*conj(Sn(1,1))) ).real();
+			Snn(0,0) = 0.5 * ( norm(S1) + norm(S2) + norm(S3) + norm(S4) );
+			Snn(0,1) = 0.5 * ( norm(S2) - norm(S1) + norm(S4) - norm(S3) );
+			Snn(0,2) = ( (S2*conj(S3)) + (S1*conj(S4)) ).real();
+			Snn(0,3) = ( (S2*conj(S3)) - (S1*conj(S4)) ).imag();
 
-			Snn(0,1) = 0.5 * ( (Sn(0,0)*conj(Sn(0,0))) - (Sn(0,1)*conj(Sn(0,1))) 
-				+ (Sn(1,0)*conj(Sn(1,0))) - (Sn(1,1)*conj(Sn(1,1)))).real();
+			Snn(1,0) = 0.5 * ( norm(S2) - norm(S1) + norm(S3) - norm(S4) );
+			Snn(1,1) = 0.5 * ( norm(S1) + norm(S2) - norm(S3) - norm(S4) );
+			Snn(1,2) = ( (S2*conj(S3)) - (S1*conj(S4)) ).real();
+			Snn(1,3) = ( (S2*conj(S3)) + (S1*conj(S4)) ).imag();
 
-			scratch = ( (Sn(0,0) * (conj(Sn(0,1)))) + (Sn(1,1) * (conj(Sn(1,0))) ));
-			Snn(0,2) = 1.0 * scratch.real();
+			Snn(2,0) = ( (S2*conj(S4)) + (S1*conj(S3)) ).real();
+			Snn(2,1) = ( (S2*conj(S4)) - (S1*conj(S3)) ).real();
+			Snn(2,2) = ( (S1*conj(S2)) + (S3*conj(S4)) ).real();
+			Snn(2,3) = ( (S2*conj(S1)) + (S4*conj(S3)) ).imag();
 
-			scratch = ( (Sn(0,0) * (conj(Sn(0,1)))) - (Sn(1,1) * (conj(Sn(1,0))) ));
-			Snn(0,3) = 1.0 * scratch.imag();
+			Snn(3,0) = ( (S4*conj(S2)) + (S1*conj(S3)) ).imag();
+			Snn(3,1) = ( (S4*conj(S2)) - (S1*conj(S3)) ).imag();
+			Snn(3,2) = ( (S1*conj(S2)) - (S3*conj(S4)) ).imag();
+			Snn(3,3) = ( (S1*conj(S2)) - (S3*conj(S4)) ).real();
 
-			Snn(1,0) = 0.5 * ( (Sn(0,0)*conj(Sn(0,0))) + (Sn(0,1)*conj(Sn(0,1))) 
-				- (Sn(1,0)*conj(Sn(1,0))) - (Sn(1,1)*conj(Sn(1,1))) ).real();
-
-			Snn(1,1) = 0.5 * ( (Sn(0,0)*conj(Sn(0,0))) - (Sn(0,1)*conj(Sn(0,1)))
-				- (Sn(1,0)*conj(Sn(1,0))) + (Sn(1,1)*conj(Sn(1,1))) ).real();
-
-			scratch = ( (Sn(0,0) * (conj(Sn(0,1)))) - (Sn(1,1) * (conj(Sn(1,0))) ));
-			Snn(1,2) = 1.0 * scratch.real();
-			scratch = ( (Sn(0,0) * (conj(Sn(0,1)))) + (Sn(1,1) * (conj(Sn(1,0))) ));
-			Snn(1,3) = 1.0 * scratch.imag();
-
-			scratch = ( (Sn(0,0) * (conj(Sn(1,0)))) + (Sn(1,1) * (conj(Sn(0,1))) ));
-			Snn(2,0) = 1.0 * scratch.real();
-			scratch = ( (Sn(0,0) * (conj(Sn(1,0)))) - (Sn(1,1) * (conj(Sn(0,1))) ));
-			Snn(2,1) = 1.0 * scratch.real();
-
-			scratch = ( (Sn(1,1) * (conj(Sn(0,0)))) + (Sn(0,1) * (conj(Sn(1,0))) ));
-			Snn(2,2) = scratch.real();
-			scratch = ( (Sn(0,0) * (conj(Sn(1,1)))) + (Sn(1,0) * (conj(Sn(0,1))) ));
-			Snn(2,3) = 1.0 * scratch.imag();
-
-			scratch = ( (conj(Sn(0,0)) * (Sn(1,0))) + (conj(Sn(0,1)) * (Sn(1,1)) ));
-			Snn(3,0) = 1.0 * scratch.imag();
-			scratch = ( (conj(Sn(0,0)) * (Sn(1,0))) - (conj(Sn(0,1)) * (Sn(1,1)) ));
-			Snn(3,1) = 1.0 * scratch.imag();
-
-			scratch = ( (Sn(1,1) * (conj(Sn(0,0)))) - (Sn(0,1) * (conj(Sn(1,0))) ));
-			Snn(3,2) = scratch.imag();
-			scratch = ( (Sn(1,1) * (conj(Sn(0,0)))) - (Sn(0,1) * (conj(Sn(1,0))) ));
-			Snn(3,3) = scratch.real();
 		}
 
 		void muellerTMATRIX(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn)
