@@ -125,9 +125,7 @@ set(rtmath_ddscat_base-files
 	src/dielTabFile.cpp
 	rtmath/ddscat/ddVersions.h
 	src/ddVersions.cpp
-	rtmath/ddscat/ddScattMatrix.h
-	src/ddScattMatrix.cpp
-	src/ddScattMatrix_serialization.cpp
+	
 	src/Stdafx-ddscat_base.cpp
 	src/Stdafx-ddscat_base.h
 	)
@@ -179,6 +177,13 @@ set(rtmath_ddscat-files
 	src/shapes-generators.cpp
 	src/tmData.cpp
 	src/tmData_serialization.cpp
+
+	# ddScattMatrix needs to be in the same dll as ddOutputSingle
+	# for now due to derived class serialization issues.
+	rtmath/ddscat/ddScattMatrix.h
+	src/ddScattMatrix.cpp
+	src/ddScattMatrix_serialization.cpp
+
 	src/Stdafx-ddscat.cpp
 	src/Stdafx-ddscat.h
 	)

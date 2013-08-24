@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat_base.h"
+#include "Stdafx-ddscat.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -21,6 +21,7 @@ namespace rtmath {
 
 		ddScattMatrix::ddScattMatrix(double freq, double theta, double phi, double thetan, double phin) :
 			_pol(0),
+			_pollin(0),
 			_freq(freq),
 			_theta(theta),
 			_thetan(thetan),
@@ -54,6 +55,7 @@ namespace rtmath {
 			tol(_phi);
 			tol(_phin);
 			tol(_pol);
+			tol(_pollin);
 #undef tol
 			return true;
 		}
@@ -61,6 +63,13 @@ namespace rtmath {
 		ddScattMatrix::PnnType ddScattMatrix::mueller() const
 		{
 			return _Pnn;
+		}
+
+		void ddScattMatrix::_calcPolLin()
+		{
+			_pollin = sqrt( (pow(_Pnn(1,0),2.) + 
+				pow(_Pnn(2,0),2.))
+				/ pow(_Pnn(0,0),2.) );
 		}
 
 		void ddScattMatrix::_calcPol()
@@ -151,7 +160,8 @@ namespace rtmath {
 			using namespace std;
 			//const double PI = boost::math::constants::pi<double>();
 			//const complex<double> i(0,1);
-
+			//complex<double> e01x(0,0), e01y(1,0), e01z(0,0), e02x(0,0), e02y(0,0), e02z(1,0);
+			//complex<double> a = conj(e01y), b=conj(e01z), c=conj(e02y), d=conj(e02z);
 			complex<double> a = conj(frame->e01y), b=conj(frame->e01z), 
 				c=conj(frame->e02y), d=conj(frame->e02z);
 			rtmath::phaseFuncs::convertFtoS(_f,_s,_phi,a,b,c,d);
@@ -170,9 +180,10 @@ namespace rtmath {
 			_calcS();
 			_calcP();
 
+			_calcPolLin();
 			_calcPol();
 		}
-
+		/*
 		ddScattMatrixF ddScattMatrixF::operator+(const ddScattMatrixF& rhs) const
 		{
 			if (!compareTolHeader(rhs)) throw(debug::xBadInput(
@@ -222,7 +233,8 @@ namespace rtmath {
 
 			return res;
 		}
-		
+		*/
+
 		/* Include this at a higher level
 		void ddScattMatrixF::setF(std::istream &lss)
 		{

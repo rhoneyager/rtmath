@@ -1,4 +1,4 @@
-#include "Stdafx-ddscat_base.h"
+#include "Stdafx-ddscat.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 
 #include "../rtmath/Serialization/serialization_macros.h"
@@ -41,6 +41,9 @@ namespace rtmath
 		template<class Archive>
 		void ddScattMatrixF::serialize(Archive &ar, const unsigned int version)
 		{
+			//boost::serialization::void_cast_register<ddScattMatrixF, ddScattMatrix>(
+			//	static_cast<ddScattMatrixF *>(NULL),
+			//	static_cast<ddScattMatrix *>(NULL));
 			ar & boost::serialization::make_nvp(
 				"rtmath_ddscat_ddScattMatrix",
 				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(*this));
@@ -52,6 +55,9 @@ namespace rtmath
 		template<class Archive>
 		void ddScattMatrixP::serialize(Archive &ar, const unsigned int version)
 		{
+			//boost::serialization::void_cast_register<ddScattMatrixP, ddScattMatrix>(
+			//	static_cast<ddScattMatrixP *>(NULL),
+			//	static_cast<ddScattMatrix *>(NULL));
 			ar & boost::serialization::make_nvp(
 				"rtmath_ddscat_ddScattMatrix",
 				boost::serialization::base_object<rtmath::ddscat::ddScattMatrix>(*this));

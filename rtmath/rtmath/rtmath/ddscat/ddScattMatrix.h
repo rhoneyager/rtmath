@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
 #include <boost/operators.hpp>
 #include "../Serialization/eigen_serialization.h"
 
@@ -13,6 +14,7 @@ namespace rtmath
 	namespace ddscat
 	{
 		class ddPar;
+		class ddScattMatrixConnector;
 		class ddScattMatrix;
 		class ddScattMatrixF;
 		class ddScattMatrixP;
@@ -30,7 +32,7 @@ namespace rtmath
 		};
 
 		/// Connector object that provides target frame information
-		class DLEXPORT_rtmath_ddscat_base ddScattMatrixConnector
+		class DLEXPORT_rtmath_ddscat ddScattMatrixConnector
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -58,6 +60,8 @@ namespace rtmath
 		};
 
 		/**
+		* \brief Provides the Mueller scattering matrix
+		*
 		* This is now a base class because there are two ways for
 		* specifying scattering: the complex scattering amplitude 
 		* matrix or the scattering phase matrix. ddscat intermediate 
@@ -65,7 +69,7 @@ namespace rtmath
 		* P matrix is harder to derive from, but is found in the 
 		* .avg files and in tmatrix code.
 		**/
-		class DLEXPORT_rtmath_ddscat_base ddScattMatrix
+		class DLEXPORT_rtmath_ddscat ddScattMatrix
 		{
 		public:
 			typedef Eigen::Matrix4d PnnType;
@@ -77,6 +81,8 @@ namespace rtmath
 			virtual PnnType mueller() const;
 			inline double pol() const {return _pol;}
 			inline void pol(double p) {_pol = p;}
+			inline double polLin() const {return _pollin;}
+			inline void polLin(double p) {_pollin = p;}
 			virtual scattMatrixType id() const { return scattMatrixType::P; }
 
 			inline double freq() const { return _freq; }
@@ -93,9 +99,12 @@ namespace rtmath
 			mutable PnnType _Pnn;
 			//mutable boost::shared_ptr<matrixop> _Pnn;
 			double _pol;
+			double _pollin;
 			double _freq, _theta, _thetan, _phi, _phin;
 			/// Calculate polarization from Mueller matrix.
 			void _calcPol();
+			/// Calculate linear polarization (what ddscat reports)
+			void _calcPolLin();
 		private:
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -117,19 +126,27 @@ namespace rtmath
 			}
 		};
 
-		class DLEXPORT_rtmath_ddscat_base ddScattMatrixF : 
+		/**
+		* \brief Provides the amplitude scattering matrix, which can 
+		* be converted into the Mueller matrix.
+		*
+		* \todo Add extinction calculations
+		* \todo Add scattering cross-sections
+		**/
+		class DLEXPORT_rtmath_ddscat ddScattMatrixF : 
 			public ddScattMatrix //,
 			//boost::additive<ddScattMatrixF>,
 			//boost::multiplicative<ddScattMatrixF, double>
 		{
 		public:
 			/// Needs frequency (GHz) and phi (degrees) for P and K calculations
+			
 			ddScattMatrixF(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0,
 				boost::shared_ptr<const ddScattMatrixConnector> frame = ddScattMatrixConnector::defaults())
 				: ddScattMatrix(freq, theta, phi, thetan, phin), frame(frame) {}
 			virtual ~ddScattMatrixF();
-			ddScattMatrixF operator+(const ddScattMatrixF&) const;
-			ddScattMatrixF operator*(double) const;
+			//ddScattMatrixF operator+(const ddScattMatrixF&) const;
+			//ddScattMatrixF operator*(double) const;
 			//ddScattMatrixF & operator = (const ddScattMatrixF&);
 			virtual scattMatrixType id() const { return scattMatrixType::F; }
 			// matrixop extinction() const;
@@ -159,7 +176,8 @@ namespace rtmath
 		{
 		}; */
 
-		class DLEXPORT_rtmath_ddscat_base ddScattMatrixP : 
+		/// Represents data for just a Mueller matrix
+		class DLEXPORT_rtmath_ddscat ddScattMatrixP : 
 			public ddScattMatrix //,
 			//boost::additive<ddScattMatrixP>,
 			//boost::multiplicative<ddScattMatrixP, double>
@@ -168,8 +186,8 @@ namespace rtmath
 			ddScattMatrixP(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
 				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
 			virtual ~ddScattMatrixP() {}
-			ddScattMatrixP operator+(const ddScattMatrixP&) const;
-			ddScattMatrixP operator*(double) const;
+			//ddScattMatrixP operator+(const ddScattMatrixP&) const;
+			//ddScattMatrixP operator*(double) const;
 
 			//ddScattMatrixP & operator = (const ddScattMatrixP&);
 			virtual scattMatrixType id() const { return scattMatrixType::P; }
@@ -188,3 +206,6 @@ BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrix);
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixF);
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixP);
 
+BOOST_CLASS_TRACKING(rtmath::ddscat::ddScattMatrix, boost::serialization::track_always);
+BOOST_CLASS_TRACKING(rtmath::ddscat::ddScattMatrixF, boost::serialization::track_always);
+BOOST_CLASS_TRACKING(rtmath::ddscat::ddScattMatrixP, boost::serialization::track_always);
