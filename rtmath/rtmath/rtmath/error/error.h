@@ -112,4 +112,5 @@ namespace rtmath
 #define TASSERT(x) if(x) ; else RTthrow ::rtmath::debug::xAssert(#x)
 #else
 #define TASSERT(x) NULL;
+#define RTthrow throw
 #endif

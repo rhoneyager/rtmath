@@ -282,6 +282,51 @@ namespace rtmath {
 			return res;
 		}
 
+		boost::shared_ptr<ddOutput> ddOutput::generate(
+			boost::shared_ptr<ddOutputSingle> avg,
+			boost::shared_ptr<ddPar> par, 
+			boost::shared_ptr<shapefile> shape)
+		{
+			boost::shared_ptr<ddOutput> res(new ddOutput());
+			using namespace boost::filesystem;
+			using std::vector;
+
+			res->avg = avg;
+			res->parfile = par;
+			res->shape = shape;
+			res->shapeHash = shape->hash();
+
+
+			// Set a basic source descriptor
+			//res->sources.insert(dir);
+
+			// Set a basic tag based on the avg file's TARGET line
+			{
+				std::string starget;
+				res->avg->getTARGET(starget);
+				res->tags.insert(starget);
+			}
+
+			// Set the frequency and effective radius
+			res->freq = units::conv_spec("um","GHz").convert(res->avg->wave());
+			res->aeff = res->avg->aeff();
+
+			// Set generator to null generator
+			// Nothing need be done
+
+
+			// Populate ms
+			/// \todo Allow for multiple refractive indices
+			res->ms.push_back(res->avg->getM());
+
+			// Save the shape in the hash location, if necessary
+			res->shape->writeToHash();
+			// Resave the stats in the hash location
+			res->stats->writeToHash();
+
+			return res;
+		}
+
 		void ddOutput::expand(const std::string &outdir, bool writeShape) const
 		{
 			using namespace boost::filesystem;
@@ -428,6 +473,12 @@ namespace rtmath {
 			pHashRuns = path(runsDir);
 		}
 
+
+		std::string ddOutput::genName() const
+		{
+			std::string res;
+
+		}
 
 		/*
 		void ddOutput::clear()

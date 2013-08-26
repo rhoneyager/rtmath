@@ -26,6 +26,7 @@ namespace rtmath {
 		class shapefile;
 		class shapeFileStats;
 		class ddPar;
+		class ddOutputGeneratorConnector;
 
 		/** \brief Expresses the result of a ddscat run.
 		 *
@@ -94,8 +95,13 @@ namespace rtmath {
 			/// Read xml file (using serialization)
 			void readFile(const std::string &filename);
 
-			/// Generate a standardized file name (for saving) based on the 
-			/// ddOutput contents. (TODO)
+			/**
+			* \brief Generate a standardized file name (for saving) based on the 
+			* ddOutput contents
+			*
+			* The name is based off of the shape hash, the frequency, the effective 
+			* radius, and the ddscat version tag.
+			**/
 			std::string genName() const;
 
 			/// Generate a ddOutputSingle .avg object that reflects the 
@@ -112,12 +118,15 @@ namespace rtmath {
 				boost::shared_ptr<ddOutputSingle> avg,
 				boost::shared_ptr<shapefile> shape,
 				std::set<boost::shared_ptr<ddOutputSingle> > sources);
+			*/
 
-			/// Generate ddOutput from a .avg file and a shape only
+			/// Generate ddOutput from a .avg file, a .par file and a shape
+			/// \todo Add a settings provider
 			static boost::shared_ptr<ddOutput> generate(
 				boost::shared_ptr<ddOutputSingle> avg,
+				boost::shared_ptr<ddPar> par,
 				boost::shared_ptr<shapefile> shape);
-			*/
+			
 
 			/// Generate ddOutput from a ddscat output directory
 			static boost::shared_ptr<ddOutput> generate(
@@ -198,8 +207,25 @@ namespace rtmath {
 		};
 		*/
 
-	} // end ddscat
-} // end rtmath
+		/**
+		 * \brief Provides an object that represents ddOutput import 
+		 * settings.
+		 *
+		 * This class stores settings for importing, because 
+		 * too many function overloads would result otherwise.
+		 **/
+		class DLEXPORT_rtmath_ddscat ddOutputGeneratorConnector
+		{
+			ddOutputGeneratorConnector();
+			bool doStatCalc;
+			bool shapeHash;
+			bool statHash;
+		public:
+			static boost::shared_ptr<ddOutputGeneratorConnector> instance();
+		};
+
+	}
+}
 
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutput);

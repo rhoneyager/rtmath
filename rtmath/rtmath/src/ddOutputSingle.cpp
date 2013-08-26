@@ -740,7 +740,7 @@ namespace rtmath {
 					}
 #pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine (part b)")
 					mat->setP(P);
-					mat->pol(vals[2]);
+					mat->polLin(vals[2]);
 
 					boost::shared_ptr<const ddScattMatrix> matC = 
 						boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
@@ -988,7 +988,7 @@ namespace rtmath {
 				out << fixed << right << showpoint << setprecision(2) << setw(6) << (*it)->theta() << " ";
 				out << setw(6) << (*it)->phi()  << " ";
 				//out.width(8);
-				out << setprecision(5) << setw(8) << sf->pol() << " ";
+				out << setprecision(5) << setw(8) << sf->polLin() << " ";
 				//out.width(10);
 				ddScattMatrix::PnnType p = sf->mueller();
 				for (auto ot = _muellerMap.begin(); ot != _muellerMap.end(); ++ot)
