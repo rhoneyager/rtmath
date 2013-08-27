@@ -82,6 +82,18 @@ namespace rtmath {
 
 		ddScattMatrixF::~ddScattMatrixF() {}
 
+		ddScattMatrixF* ddScattMatrixF::clone() const
+		{
+			ddScattMatrixF* res = new ddScattMatrixF(*this);
+			return res;
+		}
+
+		ddScattMatrixP* ddScattMatrixP::clone() const
+		{
+			ddScattMatrixP* res = new ddScattMatrixP(*this);
+			return res;
+		}
+
 		ddScattMatrixF::PnnType ddScattMatrixF::mueller() const
 		{
 			_calcS();

@@ -24,6 +24,7 @@ namespace rtmath
 		void ddOutput::serialize(Archive &ar, const unsigned int version)
 		{
 			ar & boost::serialization::make_nvp("Description", description);
+			ar & boost::serialization::make_nvp("DDSCAT_version", ddvertag);
 			ar & boost::serialization::make_nvp("Tags", tags);
 			ar & boost::serialization::make_nvp("Sources", sources);
 			ar & boost::serialization::make_nvp("Frequency", freq);
@@ -39,6 +40,7 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("generator", generator);
 
 			ar & boost::serialization::make_nvp("avg", avg);
+			ar & boost::serialization::make_nvp("avg_original", avg_original);
 			ar & boost::serialization::make_nvp("scas", scas);
 			ar & boost::serialization::make_nvp("scas_original", scas_original);
 			ar & boost::serialization::make_nvp("fmls", fmls);

@@ -76,6 +76,7 @@ namespace rtmath
 			typedef Eigen::Matrix2cd FType;
 			ddScattMatrix(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0);
 			virtual ~ddScattMatrix();
+			virtual ddScattMatrix* clone() const = 0;
 			//ddScattMatrix & operator = (const ddScattMatrix&); // Assignment needed due to arrays
 
 			virtual PnnType mueller() const;
@@ -145,6 +146,7 @@ namespace rtmath
 				boost::shared_ptr<const ddScattMatrixConnector> frame = ddScattMatrixConnector::defaults())
 				: ddScattMatrix(freq, theta, phi, thetan, phin), frame(frame) {}
 			virtual ~ddScattMatrixF();
+			virtual ddScattMatrixF* clone() const;
 			//ddScattMatrixF operator+(const ddScattMatrixF&) const;
 			//ddScattMatrixF operator*(double) const;
 			//ddScattMatrixF & operator = (const ddScattMatrixF&);
@@ -186,6 +188,7 @@ namespace rtmath
 			ddScattMatrixP(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0)
 				: ddScattMatrix(freq, theta, phi, thetan, phin) {}
 			virtual ~ddScattMatrixP() {}
+			virtual ddScattMatrixP* clone() const;
 			//ddScattMatrixP operator+(const ddScattMatrixP&) const;
 			//ddScattMatrixP operator*(double) const;
 

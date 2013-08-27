@@ -1171,6 +1171,24 @@ namespace rtmath {
 			if (infile.size()) readFile(infile,type);
 		}
 
+		ddOutputSingle::ddOutputSingle(const ddOutputSingle &base) :
+			_version(base._version),
+			_muellerMap(base._muellerMap),
+			_beta(base._beta),
+			_theta(base._theta),
+			_phi(base._phi),
+			_wave(base._wave),
+			_aeff(base._aeff),
+			_statTable(base._statTable)
+		{
+			// Perform a deep copy of the scattering matrices
+			for (auto it : base._scattMatricesRaw)
+			{
+				_scattMatricesRaw.insert(
+					boost::shared_ptr<ddScattMatrix>(it->clone()));
+			}
+		}
+
 		void ddOutputSingle::_init()
 		{
 			_version = rtmath::ddscat::ddVersions::getDefaultVer();

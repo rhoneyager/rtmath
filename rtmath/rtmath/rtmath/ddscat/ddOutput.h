@@ -58,9 +58,14 @@ namespace rtmath {
 			std::multiset<std::string> sources;
 			/// User-set brief description snippets. Used in isolating sets of runs.
 			std::multiset<std::string> tags;
+			/// DDSCAT run version tag
+			std::string ddvertag;
 
 			/// The ensemble average results
 			boost::shared_ptr<ddOutputSingle> avg;
+			/// Original avg file, just in case
+			boost::shared_ptr<ddOutputSingle> avg_original;
+
 			/// Constituent sca inputs
 			std::set<boost::shared_ptr<ddOutputSingle> > scas;
 			/// Initial sca inputs before fml recalculation
@@ -135,6 +140,8 @@ namespace rtmath {
 			/// Read xml file (using serialization)
 			static boost::shared_ptr<ddOutput> load(const std::string &filename);
 
+			/// Write run to the hash directory (convenience function)
+			void writeToHash() const;
 
 			/**
 			 * \brief Adds ddOutput options to a program
@@ -161,12 +168,12 @@ namespace rtmath {
 
 			/// Load stats based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
-			static boost::shared_ptr<shapeFileStats> loadHash(
-				const HASH_t &hash);
+			//static boost::shared_ptr<shapeFileStats> loadHash(
+			//	const HASH_t &hash);
 			/// Load stats based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
-			static boost::shared_ptr<shapeFileStats> loadHash(
-				const std::string &hash);
+			//static boost::shared_ptr<shapeFileStats> loadHash(
+			//	const std::string &hash);
 		};
 
 		/*

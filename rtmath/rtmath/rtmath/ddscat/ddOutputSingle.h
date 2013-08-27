@@ -89,6 +89,9 @@ namespace rtmath {
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();
+			/// Deep-copy constructor
+			ddOutputSingle(const ddOutputSingle&);
+
 
 			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
 

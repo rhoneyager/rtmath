@@ -8,6 +8,7 @@
 #include <set>
 #include <complex>
 #include <boost/filesystem.hpp>
+#include <boost/math/special_functions/round.hpp>
 #include <cmath>
 #include <ios>
 #include <iomanip>
@@ -168,12 +169,12 @@ namespace rtmath {
 					if (pext.string() == ".avg")
 					{
 						if (res->avg) RTthrow debug::xBadInput("Simple ddOutput generator accepts only one avg file");
+						res->avg_original = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*dds));
 						res->avg = dds;
 					}
 					if (pext.string() == ".sca")
 					{
-						boost::shared_ptr<ddOutputSingle> ddsorig(new ddOutputSingle(p.string()));
-						res->scas_original.insert(ddsorig);
+						res->scas_original.insert(boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*dds)));
 						res->scas.insert(dds);
 					}
 					if (pext.string() == ".fml")
@@ -202,6 +203,18 @@ namespace rtmath {
 				std::string starget;
 				res->avg->getTARGET(starget);
 				res->tags.insert(starget);
+				// Extract the ddscat version from the target field
+				// Fine "ddscat/" and read until the next space
+				size_t loc = starget.find("ddscat/");
+				if (loc != std::string::npos)
+				{
+					size_t end = 0;
+					end = starget.find_first_of(' ',loc);
+					if (end == std::string::npos)
+						res->ddvertag = starget.substr(loc);
+					else
+						res->ddvertag = starget.substr(loc,end-loc);
+				}
 			}
 
 			// Set the frequency and effective radius
@@ -292,6 +305,7 @@ namespace rtmath {
 			using std::vector;
 
 			res->avg = avg;
+			res->avg_original = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*avg));
 			res->parfile = par;
 			res->shape = shape;
 			res->shapeHash = shape->hash();
@@ -305,6 +319,18 @@ namespace rtmath {
 				std::string starget;
 				res->avg->getTARGET(starget);
 				res->tags.insert(starget);
+				// Extract the ddscat version from the target field
+				// Fine "ddscat/" and read until the next space
+				size_t loc = starget.find("ddscat/");
+				if (loc != std::string::npos)
+				{
+					size_t end = 0;
+					end = starget.find_first_of(' ',loc);
+					if (end == std::string::npos)
+						res->ddvertag = starget.substr(loc);
+					else
+						res->ddvertag = starget.substr(loc,end-loc);
+				}
 			}
 
 			// Set the frequency and effective radius
@@ -473,11 +499,48 @@ namespace rtmath {
 			pHashRuns = path(runsDir);
 		}
 
+		void ddOutput::writeToHash() const
+		{
+			using boost::filesystem::path;
+
+			path pHashRuns;
+			getHashPaths(pHashRuns);
+
+			path pHashRun = storeHash(pHashRuns, shapeHash);
+			// Append the name to the hash
+			std::string n = genName();
+			pHashRun = pHashRun.parent_path() / path(n);
+			if (!Ryan_Serialization::detect_compressed(pHashRun.string()))
+				writeFile(pHashRun.string());
+		}
 
 		std::string ddOutput::genName() const
 		{
 			std::string res;
 
+			/* Name follows this pattern:
+			 - shape hash
+			 - frequency (to nearest tenth)
+			 - aeff (to nearest tenth)
+			 - number of sca matrices
+			 - rotations
+			 - ddscat version tag
+			 */
+
+			boost::filesystem::path p;
+			rotations rots;
+			parfile->getRots(rots);
+
+			std::ostringstream out;
+			out << shapeHash.lower << "-"
+				<< (boost::math::round((float) freq*10.f)/10.f) << "-"
+				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
+				<< scas.size() << "-"
+				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
+				<< ddvertag
+				<< ".xml";
+
+			return res;
 		}
 
 		/*
