@@ -33,7 +33,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
  
-MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
+MACRO(ADD_PRECOMPILED_HEADER _targetName _input _srcDir)
   GET_FILENAME_COMPONENT(_inputWe ${_input} NAME_WE)
   SET(pch_source ${_inputWe}.cpp)
   FOREACH(arg ${ARGN})
@@ -70,13 +70,18 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
  
   IF(CMAKE_COMPILER_IS_GNUCXX)
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
-    SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
+	SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_srcDir}/${_input}")
     SET(_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_name}.gch")
     MAKE_DIRECTORY(${_outdir})
-    SET(_output "${_outdir}/.c++")
-    
+	#SET(_output "${_outdir}/.c++")
+	set(_output "${_outdir}/${_name}.gch")
+ 
+	STRING(TOUPPER "CMAKE_CXX_FLAGS" _flags_var_namea)
+    SET(_compiler_FLAGS ${${_flags_var_namea}})
+   
     STRING(TOUPPER "CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}" _flags_var_name)
-    SET(_compiler_FLAGS ${${_flags_var_name}})
+	LIST(APPEND _compiler_FLAGS ${${_flags_var_name}})
+	#SET(_compiler_FLAGS ${${_flags_var_name}})
     
     GET_DIRECTORY_PROPERTY(_directory_flags INCLUDE_DIRECTORIES)
     FOREACH(item ${_directory_flags})
@@ -85,16 +90,23 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
  
     GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
     LIST(APPEND _compiler_FLAGS ${_directory_flags})
- 
+
+	GET_target_property(${_targetName} PRECOMP_DEFINITIONS COMPILE_DEFINITIONS)
+	GET_target_property(${_targetName} PRECOMP_FLAGS COMPILE_FLAGS)
+	LIST(APPEND _compiler_FLAGS ${PRECOMP_FLAGS})
+	# set_target_property(${_targetName} PROPERTIES COMPILE_DEFINITIONS ${PRECOMP_DEFINITIONS})
+
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
-    MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE ${_compiler_FLAGS} -x c++-header -o {_output} ${_source}")
+	MESSAGE(STATUS "${CMAKE_CXX_COMPILER} -DPCHCOMPILE ${PRECOMP_DEFINITIONS} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
     ADD_CUSTOM_COMMAND(
       OUTPUT ${_output}
-      COMMAND ${CMAKE_CXX_COMPILER} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
+	  COMMAND ${CMAKE_CXX_COMPILER} ${_compiler_FLAGS} -fPIC ${PRECOMP_DEFINITIONS} -x c++-header -o ${_output} ${_source}
       DEPENDS ${_source} )
     ADD_CUSTOM_TARGET(${_targetName}_gch DEPENDS ${_output})
     ADD_DEPENDENCIES(${_targetName} ${_targetName}_gch)
-    SET_TARGET_PROPERTIES(${_targetName} PROPERTIES COMPILE_FLAGS "-include ${_name} -Winvalid-pch")
+	#target_include_directories(${_targetName} PRIVATE ${_outdir})
+	#SET_TARGET_PROPERTIES(${_targetName} PROPERTIES COMPILE_FLAGS "-Winvalid-pch")
+	#SET_TARGET_PROPERTIES(${_targetName} PROPERTIES COMPILE_FLAGS "-include ${_name} -Winvalid-pch")
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO()
 

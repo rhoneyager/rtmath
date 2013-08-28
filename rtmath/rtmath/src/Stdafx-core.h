@@ -1,7 +1,10 @@
 // Stdafx-core.h : include file for standard system include files,
 // or project specific include files that are used frequently,
 // but are changed infrequently
-#pragma once
+//#pragma once
+
+#ifndef STDAFX_CORE_H
+#define STDAFX_CORE_H
 
 #define _CRT_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
@@ -39,7 +42,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
-
 /*
 #pragma warning( disable : 4068 ) // ignore GCC pragmas
 #pragma warning( disable : 4244 ) // even though that part of code is never reached
@@ -76,4 +78,6 @@
 #include <boost/uuid/uuid_io.hpp>
 */
 //#pragma warning( push )
+
+#endif
 

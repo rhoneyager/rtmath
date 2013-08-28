@@ -1,7 +1,10 @@
-// Stdafx-core.h : include file for standard system include files,
+// Stdafx-ddscat.h : include file for standard system include files,
 // or project specific include files that are used frequently,
 // but are changed infrequently
-#pragma once
+//#pragma once
+
+#ifndef STDAFX_DDSCAT_H
+#define STDAFX_DDSCAT_H
 
 #define _CRT_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
@@ -86,4 +89,5 @@
 #include <boost/uuid/uuid_io.hpp>
 */
 //#pragma warning( push )
+#endif
 

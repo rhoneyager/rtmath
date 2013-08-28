@@ -22,6 +22,7 @@
 #define ERR_UNIMPLEMENTED
 #elif defined __GNUC__
 #define DEPRECATED __attribute__ ((deprecated))
+//#define DEPRECATED
 #define WARN_UNIMPLEMENTED __attribute__ ((warning("Unimplemented function is used")))
 #define ERR_UNIMPLEMENTED __attribute__ ((error("Unimplemented function is used")))
 #else
@@ -62,7 +63,7 @@
 	#undef SHARED_INTERNAL
 	#undef SHARED_PRIVATE
 	#define SHARED_EXPORT __attribute__ ((visibility("default")))
-	#define SHARED_IMPORT __attribute__ ((visibility("external")))
+	#define SHARED_IMPORT __attribute__ ((visibility("default")))
 	#define SHARED_INTERNAL __attribute__ ((visibility("hidden")))
 	#define SHARED_PRIVATE __attribute__ ((visibility("internal")))
 #else

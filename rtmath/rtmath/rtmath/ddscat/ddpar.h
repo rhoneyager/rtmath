@@ -36,11 +36,11 @@ namespace rtmath {
 			/// the standard comment string
 			/// \todo Change idString to also take version information.
 			/// The comments of some of the keys change in v73.
-			void SHARED_PRIVATE idString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
-			bool SHARED_PRIVATE commentString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
+			void DLEXPORT_rtmath_ddscat_base idString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
+			bool DLEXPORT_rtmath_ddscat_base commentString(ParId id, std::string &key, size_t version = ddVersions::getDefaultVer());
 
 			/// A very abstract base class
-			class SHARED_PRIVATE ddParLine
+			class DLEXPORT_rtmath_ddscat_base ddParLine
 			{
 			public:
 				friend struct std::less<rtmath::ddscat::ddParParsers::ddParLine>;
@@ -151,7 +151,7 @@ namespace rtmath {
 			};
 
 			// Put parser def here so the subsequent class can load it
-			void SHARED_PRIVATE pString(const std::string &in, std::string &out);
+			void DLEXPORT_rtmath_ddscat_base pString(const std::string &in, std::string &out);
 
 			template <>
 			class ddParLineSimple <std::string> : public ddParLineSimpleBase<std::string>

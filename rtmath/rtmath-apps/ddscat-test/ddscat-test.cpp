@@ -113,7 +113,10 @@ int main(int argc, char** argv)
 					// A mismatch has occurred
 					numFailures++;
 					std::cerr << "Header mismatch:\n\t";
-					std::cerr << *(it->second) << "\t" << *(ot->second);
+					//std::cerr << *(it->second) << "\t" << *(ot->second);
+					/// \todo Fix the ddOutputSingleObj operator<< definition.
+					it->second->write(std::cerr);
+					ot->second->write(std::cerr);
 				}
 				++it; ++ot;
 			}

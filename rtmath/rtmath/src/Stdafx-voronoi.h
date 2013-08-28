@@ -1,7 +1,9 @@
-// Stdafx-core.h : include file for standard system include files,
+// Stdafx-voronoi.h : include file for standard system include files,
 // or project specific include files that are used frequently,
 // but are changed infrequently
-#pragma once
+//#pragma once
+#ifndef STDAFX_VORONOI_H
+#define STDAFX_VORONOI_H
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -50,3 +52,7 @@
 
 
 #include <Eigen/Core>
+
+#endif
+
+

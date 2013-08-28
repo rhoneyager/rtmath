@@ -1,7 +1,9 @@
 // Stdafx-mie.h : include file for standard system include files,
 // or project specific include files that are used frequently,
 // but are changed infrequently
-#pragma once
+//#pragma once
+#ifndef STDAFX_MIE_H
+#define STDAFX_MIE_H
 
 #define _SCL_SECURE_NO_WARNINGS
 
@@ -41,3 +43,6 @@
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4503 ) // decorated name length exceeded. with boost bimap mpl
 */
+
+#endif
+

@@ -102,7 +102,7 @@ add_library (rtmath_core SHARED
 	${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
 	)
 addlib(rtmath_core SHARED)
-add_precompiled_header(rtmath_core Stdafx-core.h)
+add_precompiled_header(rtmath_core Stdafx-core.h src)
 set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug Ryan_Serialization)
 target_link_libraries(rtmath_core ${rtmath_core-libs})
 
@@ -110,7 +110,7 @@ target_link_libraries(rtmath_core ${rtmath_core-libs})
 add_library (rtmath_mie SHARED
 	${rtmath_mie-files})
 addlib(rtmath_mie SHARED)
-add_precompiled_header(rtmath_mie Stdafx-mie.h)
+add_precompiled_header(rtmath_mie Stdafx-mie.h src)
 set (rtmath_mie-libs rtmath_core ${rtmath_core-libs})
 target_link_libraries(rtmath_mie ${rtmath_mie-libs})
 
@@ -128,7 +128,7 @@ add_library (rtmath_ddscat_base SHARED
 	${rtmath_ddscat_base-files}
 	)
 addlib(rtmath_ddscat_base SHARED)
-add_precompiled_header(rtmath_ddscat_base Stdafx-ddscat_base.h)
+add_precompiled_header(rtmath_ddscat_base Stdafx-ddscat_base.h src)
 set (rtmath_ddscat_base-libs 
 	rtmath_core ${rtmath_core-libs} 
 	rtmath_mie ${rtmath_mie-libs} 
@@ -139,7 +139,7 @@ target_link_libraries(rtmath_ddscat_base ${rtmath_ddscat_base-libs})
 
 add_library(rtmath_voronoi SHARED ${rtmath_voronoi-files})
 addlib(rtmath_voronoi SHARED)
-add_precompiled_header(rtmath_voronoi Stdafx-voronoi.h)
+add_precompiled_header(rtmath_voronoi Stdafx-voronoi.h src)
 set (rtmath_voronoi-libs rtmath_core ${rtmath_core-libs} 
 	rtmath_ddscat_base ${rtmath_ddscat_base-libs}
 	${VTK_LIBRARIES}
@@ -160,7 +160,7 @@ add_library (rtmath_ddscat SHARED
 	${rtmath_ddscat-files}
 	)
 addlib(rtmath_ddscat SHARED)
-add_precompiled_header(rtmath_ddscat Stdafx-ddscat.h)
+add_precompiled_header(rtmath_ddscat Stdafx-ddscat.h src)
 set (rtmath_ddscat-libs 
 	rtmath_core ${rtmath_core-libs} 
 	rtmath_mie ${rtmath_mie-libs}
@@ -174,7 +174,7 @@ target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 #add_library(rtmath_da ${sflag} ${rtmath_da-files})
 #addlib(rtmath_da)
-#add_precompiled_header(rtmath_da Stdafx-da.h)
+#add_precompiled_header(rtmath_da Stdafx-da.h src)
 #set (rtmath_da-libs rtmath_core ${rtmath_core-libs} 
 #	)
 #target_link_libraries(rtmath_da ${rtmath_da-libs})
@@ -182,7 +182,7 @@ target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 #add_library(rtmath_mc ${sflag} ${rtmath_mc-files})
 #addlib(rtmath_mc)
-#add_precompiled_header(rtmath_mc Stdafx-mc.h)
+#add_precompiled_header(rtmath_mc Stdafx-mc.h src)
 #set (rtmath_mc-libs rtmath_core ${rtmath_core-libs} 
 #	)
 #target_link_libraries(rtmath_mc ${rtmath_mc-libs})

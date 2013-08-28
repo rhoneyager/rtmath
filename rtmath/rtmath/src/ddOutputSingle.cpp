@@ -168,7 +168,7 @@ namespace rtmath
 			};
 
 			template <class T>
-			class ddNval : public ::rtmath::ddscat::ddOutputSingleObj
+			class SHARED_INTERNAL ddNval : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
 				ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") {this->pos = pos; this->head = head; this->tail = tail;}

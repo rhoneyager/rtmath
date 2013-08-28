@@ -499,14 +499,19 @@ namespace rtmath {
 			pHashRuns = path(runsDir);
 		}
 
+		void ddOutput::getHashPaths(boost::filesystem::path &pHashRunsO)
+		{
+			pHashRunsO = pHashRuns;
+		}
+
 		void ddOutput::writeToHash() const
 		{
 			using boost::filesystem::path;
 
-			path pHashRuns;
-			getHashPaths(pHashRuns);
+			path pHashRunsO;
+			getHashPaths(pHashRunsO);
 
-			path pHashRun = storeHash(pHashRuns, shapeHash);
+			path pHashRun = storeHash(pHashRunsO, shapeHash);
 			// Append the name to the hash
 			std::string n = genName();
 			pHashRun = pHashRun.parent_path() / path(n);
