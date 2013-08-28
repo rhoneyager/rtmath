@@ -1,5 +1,5 @@
 /* This program is designed to manipulate ddscat files. It can set and retreive common ddscat.par variables for use with scripting.
- * It is only designed for ddscat.par files. To modify other files, use a different program */
+* It is only designed for ddscat.par files. To modify other files, use a different program */
 
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
@@ -50,13 +50,14 @@ int main(int argc, char** argv)
 		desc.add_options()
 			("help,h", "produce help message")
 			("write,w", "Insert the ellipsoid information into a ddscat.par file")
+			("write-calltarget-script,s", "Write a script that automatically generates a target.out file. Script is written to stdout.")
 			("input,i", po::value< string >(), "input ddscat.par file")
 			("output,o", po::value< string >(), "output ddscat.par file (defaults to input)")
 
 			("aeff,a", po::value<double>(), "Set effective radius (um)")
 			("dipole-spacing,d", po::value<double>(), "Set interdipole spacing (um)")
 			("aspect-ratios", po::value<string>()->default_value("1:1:1"), 
-			  "Set aspect ratio relations (used to determine SHPAR1-3).")
+			"Set aspect ratio relations (used to determine SHPAR1-3).")
 			;
 
 		po::variables_map vm;
@@ -135,7 +136,7 @@ int main(int argc, char** argv)
 		shpar[0] = (2. * aeff / d) * pow(1./(ar[1]*ar[2]) , 1./3.);
 		shpar[1] = (2. * aeff / d) * pow(pow(ar[1],2.)/ar[2], 1./3.);
 		shpar[2] = (2. * aeff / d) * pow(pow(ar[2],2.)/ar[1], 1./3.);
-				
+
 		par->shpar(0, shpar[0]);
 		par->shpar(1, shpar[1]);
 		par->shpar(2, shpar[2]);
@@ -153,6 +154,15 @@ int main(int argc, char** argv)
 		{
 			cerr << "Output par file is: " << output << endl;
 			par->writeFile(output);
+		}
+		if (vm.count("write-calltarget-script"))
+		{
+			cerr << "Writing a calltarget script to stdout" << endl;
+			cout << "#!/bin/bash\n"
+				<< "echo ELLIPSOID > cts.sh\n"
+				<< "echo " << shpar[0] << "," << shpar[1] << "," << shpar[2] << " >> cts.sh\n"
+				<< "echo 0,0,0 >> cts.sh\n"
+				<< "calltarget < cts.sh\n";
 		}
 	}
 	catch (rtmath::debug::xError &err)
