@@ -39,6 +39,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input directory")
 			("output,o", po::value<string>(), "specify output file")
+			("hash,h", "Store ddscat output in the hash store")
 			;
 
 		po::positional_options_description p;
@@ -71,8 +72,10 @@ int main(int argc, char** argv)
 
 		vector<string> vInput;
 		string sOutput;
+		bool doHash = false;
 		if (vm.count("input")) vInput = vm["input"].as<vector<string> >();
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
+		if (vm.count("hash")) doHash = true;
 
 		if (!vInput.size()) doHelp("Need to specify input directories");
 
@@ -92,6 +95,8 @@ int main(int argc, char** argv)
 			if (sOutput.size())
 				ddOut->writeFile(sOutput);
 
+			if (doHash)
+				ddOut->writeToHash();
 		}
 
 	} catch (std::exception &e)

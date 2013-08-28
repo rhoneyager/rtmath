@@ -40,6 +40,7 @@ int main(int argc, char** argv)
 			("input,i", po::value<string>(),"specify input directory or file")
 			("output,o", po::value<string>(), "specify output directory or file")
 			("output-shape", "If writing an output directory, also write the shape.")
+			("hash,h", "Store ddscat output in the hash store")
 			;
 
 		po::positional_options_description p;
@@ -69,14 +70,19 @@ int main(int argc, char** argv)
 		};
 
 		if (vm.count("help") || argc == 1) doHelp("");
+		
+		bool doHash = false;
+		if (vm.count("hash")) doHash = true;
 
 		string sInput;
 		string sOutput;
 		if (vm.count("input")) sInput = vm["input"].as<string>();
 		else doHelp("Need to specify input");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
-		else ("Need to specify output");
+		else if (!doHash)
+			doHelp("Need to specify output");
 
+		
 		using namespace boost::filesystem;
 		path pInput(sInput);
 		cerr << "Processing: " << sInput << endl;
@@ -105,6 +111,10 @@ int main(int argc, char** argv)
 			ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
 			ddOut->readFile(ps.string());
 		}
+
+		if (doHash)
+			ddOut->writeToHash();
+		if (!sOutput.size()) return 0;
 
 		bool writeDir = false;
 		// Check for the existence of an output directory
