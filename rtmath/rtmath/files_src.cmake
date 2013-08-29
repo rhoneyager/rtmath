@@ -29,7 +29,6 @@ set(rtmath_core_general
 	rtmath/macros.h
 	rtmath/matrixop.h
 	rtmath/phaseFunc.h
-	rtmath/polynomial.h
 	rtmath/quadrature.h
 	rtmath/refract.h
 	rtmath/splitSet.h
@@ -46,7 +45,6 @@ set(rtmath_core_general
 	#src/matrixop.cpp
 	#src/os_functions.cpp
 	src/phaseFunc.cpp
-	src/polynomial.cpp
 	src/quadrature.cpp
 	src/refract.cpp
 	src/splitSet.cpp
@@ -58,6 +56,8 @@ source_group("General" FILES ${rtmath_core_general})
 
 
 set(rtmath_core_polynomials
+	rtmath/polynomial.h
+	src/polynomial.cpp
 	rtmath/polynomials/chebyshev.h
 	rtmath/polynomials/hermite.h
 	rtmath/polynomials/laguerre.h
@@ -130,13 +130,43 @@ set(rtmath_ddscat_base-files
 	src/Stdafx-ddscat_base.h
 	)
 
+set(rtmath_ddscat-shape-files
+	rtmath/ddscat/shapefile.h
+	rtmath/ddscat/shapes.h
+	rtmath/ddscat/shapestats.h
+	rtmath/ddscat/shapestatsRotated.h
+	rtmath/ddscat/shapestatsviews.h
+	src/shapefile.cpp
+	src/shapefile_serialization.cpp
+	src/shapes.cpp
+	src/shapes_serialization.cpp
+	src/shapestats.cpp
+	src/shapestats_serialization.cpp
+	src/shapestatsRotated.cpp
+	src/shapestatsRotated_serialization.cpp
+	#src/shapestats_genstats.cpp
+	src/shapes-generators.cpp
+	)
+source_group("Shapes" FILES ${rtmath_ddscat-shape-files})
+set(rtmath_ddscat-ddoutput-files
+	rtmath/ddscat/ddOutput.h
+	rtmath/ddscat/ddOutputGenerator.h
+	rtmath/ddscat/ddOutputSingle.h
+	rtmath/ddscat/ddScattMatrix.h
+	src/ddOutput.cpp
+	src/ddOutput_serialization.cpp
+	src/ddOutputGenerator.cpp
+	src/ddOutputGenerator_serialization.cpp
+	src/ddOutputSingle.cpp
+	src/ddScattMatrix.cpp
+	src/ddScattMatrix_serialization.cpp
+	)
+source_group("DDSCAT Output" FILES ${rtmath_ddscat-ddoutput-files})
+
 set(rtmath_ddscat-files
 	#rtmath/ddscat/cdf-ddscat.h
 	rtmath/ddscat/ddavg.h
 	rtmath/ddscat/ddLoader.h
-	rtmath/ddscat/ddOutput.h
-	rtmath/ddscat/ddOutputGenerator.h
-	rtmath/ddscat/ddOutputSingle.h
 	rtmath/ddscat/ddparGenerator.h
 	rtmath/ddscat/ddRunSet.h
 	rtmath/ddscat/ddscat.h
@@ -144,18 +174,8 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/ddweights.h
 	rtmath/ddscat/mtab.h
 	rtmath/ddscat/runScripts.h
-	rtmath/ddscat/shapefile.h
-	rtmath/ddscat/shapes.h
-	rtmath/ddscat/shapestats.h
-	rtmath/ddscat/shapestatsRotated.h
-	rtmath/ddscat/shapestatsviews.h
 	rtmath/ddscat/tmData.h
-	#	src/ddLoader.cpp
-	src/ddOutput.cpp
-	src/ddOutput_serialization.cpp
-	src/ddOutputGenerator.cpp
-	src/ddOutputGenerator_serialization.cpp
-	src/ddOutputSingle.cpp
+	# src/ddLoader.cpp
 	src/ddparGenerator.cpp
 	src/ddparGenerator_serialization.cpp
 	src/ddRunSet.cpp
@@ -163,29 +183,14 @@ set(rtmath_ddscat-files
 	src/ddUtil.cpp
 	src/ddweights.cpp	
 	# src/mtab.cpp
-	#	src/pclstuff.cpp
+	# src/pclstuff.cpp
 	src/runScripts.cpp
-	src/shapefile.cpp
-	src/shapefile_serialization.cpp
-	src/shapes.cpp
-	src/shapes_serialization.cpp
-	src/shapestats.cpp
-	src/shapestats_serialization.cpp
-	#src/shapestats_genstats.cpp
-	src/shapestatsRotated.cpp
-	src/shapestatsRotated_serialization.cpp
-	src/shapes-generators.cpp
 	src/tmData.cpp
 	src/tmData_serialization.cpp
-
-	# ddScattMatrix needs to be in the same dll as ddOutputSingle
-	# for now due to derived class serialization issues.
-	rtmath/ddscat/ddScattMatrix.h
-	src/ddScattMatrix.cpp
-	src/ddScattMatrix_serialization.cpp
-
 	src/Stdafx-ddscat.cpp
 	src/Stdafx-ddscat.h
+	${rtmath_ddscat-shape-files}
+	${rtmath_ddscat-ddoutput-files}
 	)
 #source_group("Resource Files" FILES ${resource-files})
 
@@ -212,6 +217,19 @@ set(rtmath_mie-files
 	src/Stdafx-mie.h
 	)
 
+set(rtmath_rt-files
+	src/Stdafx-rt.cpp
+	src/Stdafx-rt.h
+	rtmath/atmos/absorb.h
+	src/absorb.cpp
+	src/absorber.cpp
+	rtmath/atmos/atmos.h
+	src/atmos.cpp
+	rtmath/atmos/atmoslayer.h
+	src/atmoslayer.cpp
+	rtmath/atmos/hitran.h
+	src/hitran.cpp
+	)
 
 set(rtmath_da-files
 	)

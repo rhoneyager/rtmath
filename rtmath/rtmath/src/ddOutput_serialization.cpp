@@ -37,7 +37,7 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("shapeHash", shapeHash);
 			
 			// Generator may point to nothing (indicates original ddscat data)
-			ar & boost::serialization::make_nvp("generator", generator);
+			//ar & boost::serialization::make_nvp("generator", generator);
 
 			ar & boost::serialization::make_nvp("avg", avg);
 			ar & boost::serialization::make_nvp("avg_original", avg_original);

@@ -458,6 +458,22 @@ namespace rtmath {
 
 		ddOutputSingleObj::~ddOutputSingleObj() { }
 
+		void ddOutputSingleObj::setKey(const std::string &k)
+		{
+			key = k;
+		}
+
+		boost::shared_ptr<ddOutputSingleObj> ddOutputSingleObj::clone() const
+		{
+			boost::shared_ptr<ddOutputSingleObj> res = constructObj(key);
+			std::ostringstream out;
+			write(out);
+			std::string sin = out.str();
+			std::istringstream in(sin);
+			res->read(in);
+			return res;
+		}
+
 #pragma message("Warning: ddOutputSingle needs correct normalization and default values")
 		boost::shared_ptr<ddOutputSingle> ddOutputSingle::normalize() const
 		{
@@ -1181,6 +1197,13 @@ namespace rtmath {
 			_aeff(base._aeff),
 			_statTable(base._statTable)
 		{
+			// Perform a deep copy of the header map
+			for (auto it : base._objMap)
+			{
+				_objMap.insert(std::pair<std::string, 
+					boost::shared_ptr<ddOutputSingleObj> >
+					(it.first, it.second->clone()));
+			}
 			// Perform a deep copy of the scattering matrices
 			for (auto it : base._scattMatricesRaw)
 			{
@@ -1326,6 +1349,7 @@ namespace rtmath {
 			if (key == "mdef") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 			if (key == "physextent") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 
+			res->setKey(key);
 			return res;
 		}
 
@@ -1378,6 +1402,7 @@ namespace rtmath {
 
 		bool ddOutputSingleObj::operator==(const ddOutputSingleObj &rhs) const
 		{
+			if (key != rhs.key) return false;
 			// In absence of an id field (for introspection), simply write
 			// the values ob both objects and do a comparison.
 
@@ -1616,8 +1641,7 @@ namespace rtmath
 		template <class Archive>
 		void ddOutputSingleObj::serialize(Archive & ar, const unsigned int version)
 		{
-			// The derived classes handle everything!
-			// All of their serialization methods are private and exist only in this file.
+			ar & boost::serialization::make_nvp("key", key);
 		}
 
 		EXPORTINTERNAL(rtmath::ddscat::ddOutputSingle::serialize);

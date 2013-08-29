@@ -52,7 +52,7 @@ namespace rtmath {
 			//void loadProfileCDF(const std::string &filename);
 			//void saveProfileCDF(const std::string &filename);
 
-			// Calculation of optical depth of atmosphere or parts thereof
+			/// Calculation of optical depth of atmosphere or parts thereof
 			double tau(double f) const;
 			double tau(double f, size_t layernum) const;
 			// Careful: calcs from layerLow (inclusive) to high (exclusive)
@@ -63,6 +63,6 @@ namespace rtmath {
 			void _init();
 		};
 
-	}; // end namespace atmos
+	}
 
-}; // end namespace rtmath
+}

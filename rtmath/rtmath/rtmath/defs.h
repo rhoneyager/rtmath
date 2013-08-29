@@ -130,3 +130,14 @@
 	#define DLEXPORT_rtmath_ddscat
 #endif
 
+
+#if SHARED_rtmath_rt
+	#if EXPORTING_rtmath_rt
+		#define DLEXPORT_rtmath_rt SHARED_EXPORT
+	#else
+		#define DLEXPORT_rtmath_rt SHARED_IMPORT
+	#endif
+#else
+	#define DLEXPORT_rtmath_rt
+#endif
+

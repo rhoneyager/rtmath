@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 			("input,i", po::value<string>(),"specify input directory or file")
 			("output,o", po::value<string>(), "specify output directory or file")
 			("output-shape", "If writing an output directory, also write the shape.")
-			("hash,h", "Store ddscat output in the hash store")
+			("hash,s", "Store ddscat output in the hash store")
 			;
 
 		po::positional_options_description p;

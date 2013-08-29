@@ -251,6 +251,8 @@ namespace rtmath {
 			/// Check inequality of two objects
 			/// \see operator==
 			virtual bool operator!=(const ddOutputSingleObj&) const;
+			/// Duplicate an object
+			virtual boost::shared_ptr<ddOutputSingleObj> clone() const;
 			/// Based on the text in the input line, determine the headerMap key string
 			static void findMap(const std::string &line, std::string &res);
 			/// Construct a ddOutputSingleObject derived class instance to hold the 
@@ -258,6 +260,9 @@ namespace rtmath {
 			static boost::shared_ptr<ddOutputSingleObj> constructObj
 				(const std::string &key);
 		private:
+			/// Set the 'key' of the object
+			void setKey(const std::string&);
+			std::string key;
 			friend class ddOutputSingle;
 		};
 

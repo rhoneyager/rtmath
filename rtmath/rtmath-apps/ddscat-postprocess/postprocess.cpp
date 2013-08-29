@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input directory")
 			("output,o", po::value<string>(), "specify output file")
-			("hash,h", "Store ddscat output in the hash store")
+			("hash,s", "Store ddscat output in the hash store")
 			;
 
 		po::positional_options_description p;

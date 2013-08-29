@@ -1,6 +1,5 @@
 #pragma once
 #include "defs.h"
-/* defs.h - Header containing typedefs and other defines for many things */
 #include <cmath>
 #include <cstdint>
 #include <iostream>

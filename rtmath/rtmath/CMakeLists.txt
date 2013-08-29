@@ -172,6 +172,13 @@ set (rtmath_ddscat-libs
 target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
 
+add_library(rtmath_rt SHARED ${rtmath_rt-files})
+addlib(rtmath_rt SHARED)
+add_precompiled_header(rtmath_rt Stdafx-rt.h src)
+set (rtmath_rt-libs rtmath_core ${rtmath_core-libs}
+	)
+target_link_libraries(rtmath_rt ${rtmath_rt-libs})
+
 #add_library(rtmath_da ${sflag} ${rtmath_da-files})
 #addlib(rtmath_da)
 #add_precompiled_header(rtmath_da Stdafx-da.h src)

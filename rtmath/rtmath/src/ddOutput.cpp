@@ -208,6 +208,7 @@ namespace rtmath {
 				size_t loc = starget.find("ddscat/");
 				if (loc != std::string::npos)
 				{
+					loc += 7;
 					size_t end = 0;
 					end = starget.find_first_of(' ',loc);
 					if (end == std::string::npos)
@@ -324,6 +325,7 @@ namespace rtmath {
 				size_t loc = starget.find("ddscat/");
 				if (loc != std::string::npos)
 				{
+					loc += 7;
 					size_t end = 0;
 					end = starget.find_first_of(' ',loc);
 					if (end == std::string::npos)
@@ -545,6 +547,7 @@ namespace rtmath {
 				<< ddvertag
 				<< ".xml";
 
+			res = out.str();
 			return res;
 		}
 
