@@ -542,6 +542,7 @@ namespace rtmath {
 			out << shapeHash.lower << "-"
 				<< (boost::math::round((float) freq*10.f)/10.f) << "-"
 				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
+				<< (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f) << "-"
 				<< scas.size() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
 				<< ddvertag

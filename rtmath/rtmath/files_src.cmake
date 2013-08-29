@@ -221,14 +221,14 @@ set(rtmath_rt-files
 	src/Stdafx-rt.cpp
 	src/Stdafx-rt.h
 	rtmath/atmos/absorb.h
-	src/absorb.cpp
-	src/absorber.cpp
+	#src/absorb.cpp
+	#src/absorber.cpp
 	rtmath/atmos/atmos.h
-	src/atmos.cpp
+	#src/atmos.cpp
 	rtmath/atmos/atmoslayer.h
-	src/atmoslayer.cpp
+	#src/atmoslayer.cpp
 	rtmath/atmos/hitran.h
-	src/hitran.cpp
+	#src/hitran.cpp
 	)
 
 set(rtmath_da-files
