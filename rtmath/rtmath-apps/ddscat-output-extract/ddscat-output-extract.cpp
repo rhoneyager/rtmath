@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 		else doHelp("Need to specify output file.");
 
 		ofstream out(sOutput.c_str());
-		out << "Filename\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
+		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			"M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
 			"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 		
@@ -127,13 +127,14 @@ int main(int argc, char** argv)
 			ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
 			ddOut->readFile(p.string());
 
-			// out << "Filename\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
+			// out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			// "M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
 			// "Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 			rotations rots;
 			ddOut->parfile->getRots(rots);
 
-			out << p.string() << "\t" << ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
+			out << p.string() << "\t" << ddOut->description << "\t"
+				<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
 				<< ddOut->freq << "\t" << ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
 				<< ddOut->aeff << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
 				<< ddOut->scas.size() << "\t" 
