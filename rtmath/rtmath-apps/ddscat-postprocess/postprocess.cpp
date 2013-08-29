@@ -40,6 +40,8 @@ int main(int argc, char** argv)
 			("input,i", po::value<vector<string> >(),"specify input directory")
 			("output,o", po::value<string>(), "specify output file")
 			("hash,s", "Store ddscat output in the hash store")
+			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
+			("description,d", po::value<string>(), "Describe the output file")
 			;
 
 		po::positional_options_description p;
@@ -71,11 +73,15 @@ int main(int argc, char** argv)
 		if (vm.count("help") || argc == 1) doHelp("");
 
 		vector<string> vInput;
+		vector<string> tags;
+		string sDesc;
 		string sOutput;
 		bool doHash = false;
 		if (vm.count("input")) vInput = vm["input"].as<vector<string> >();
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
+		if (vm.count("description")) sDesc = vm["description"].as<string>();
 		if (vm.count("hash")) doHash = true;
+		if (vm.count("tag")) tags = vm["tag"].as<vector<string> >();
 
 		if (!vInput.size()) doHelp("Need to specify input directories");
 
@@ -91,6 +97,9 @@ int main(int argc, char** argv)
 			using namespace rtmath::ddscat;
 			ddUtil::tagTARGETs(p);
 			boost::shared_ptr<ddOutput> ddOut = ddOutput::generate(t);
+			for (auto &t : tags)
+				ddOut->tags.insert(t);
+			ddOut->description = sDesc;
 
 			if (sOutput.size())
 				ddOut->writeFile(sOutput);

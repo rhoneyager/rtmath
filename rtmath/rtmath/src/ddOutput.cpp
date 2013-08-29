@@ -140,6 +140,7 @@ namespace rtmath {
 		{
 			// Handling typical case with only one .avg output (one frequency, one aeff)
 			boost::shared_ptr<ddOutput> res(new ddOutput());
+			res->sources.insert(dir);
 			using namespace boost::filesystem;
 			using std::vector;
 			path pBase(dir);

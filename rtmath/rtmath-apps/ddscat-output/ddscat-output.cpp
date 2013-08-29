@@ -13,6 +13,7 @@
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
+#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
@@ -37,15 +38,20 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<string>(),"specify input directory or file")
+			("input,i", po::value<vector<string> >(),"specify input directory or file. "
+			"If multiple files are specified, it assumes the first is an avg file, the "
+			"second is a par file, and the third is a shape file. Used for importing "
+			"Holly runs.")
 			("output,o", po::value<string>(), "specify output directory or file")
 			("output-shape", "If writing an output directory, also write the shape.")
 			("hash,s", "Store ddscat output in the hash store")
+			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
+			("description,d", po::value<string>(), "Describe the output file")
 			;
 
 		po::positional_options_description p;
-		p.add("input",1);
-		p.add("output",2);
+		//p.add("input",1);
+		//p.add("output",2);
 
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
@@ -74,9 +80,13 @@ int main(int argc, char** argv)
 		bool doHash = false;
 		if (vm.count("hash")) doHash = true;
 
-		string sInput;
+		vector<string> vsInput;
 		string sOutput;
-		if (vm.count("input")) sInput = vm["input"].as<string>();
+		vector<string> tags;
+		string sDesc;
+		if (vm.count("description")) sDesc = vm["description"].as<string>();
+		if (vm.count("tag")) tags = vm["tag"].as<vector<string> >();
+		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
 		else if (!doHash)
@@ -84,8 +94,8 @@ int main(int argc, char** argv)
 
 		
 		using namespace boost::filesystem;
-		path pInput(sInput);
-		cerr << "Processing: " << sInput << endl;
+		path pInput(*vsInput.begin());
+		cerr << "Processing: " << pInput << endl;
 		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
 		{
 			using namespace boost::filesystem;
@@ -105,12 +115,26 @@ int main(int argc, char** argv)
 		{
 			// Input is a ddscat run
 			ddOut = ddOutput::generate(ps.string());
-		} else {
+		} else if (Ryan_Serialization::known_format(ps)) {
 			// Input may be a ddOutput file
 			// Read will fail if it is not the right file type
 			ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
 			ddOut->readFile(ps.string());
-		}
+		} else if (vsInput.size() == 3)
+		{
+			// Input may use the alternate generator
+			// Takes the format of avg file, par file, shape file
+			// Will fail if the files are not the correct type
+			boost::shared_ptr<ddOutputSingle> avg(new ddOutputSingle(vsInput[0]));
+			boost::shared_ptr<ddPar> par(new ddPar(vsInput[1]));
+			boost::shared_ptr<shapefile> shp(new shapefile(vsInput[2]));
+			ddOut = ddOutput::generate(avg, par, shp);
+		} else doHelp("Unable to parse input expression.");
+
+		if (sDesc.size())
+			ddOut->description = sDesc;
+		for (auto &t : tags)
+			ddOut->tags.insert(t);
 
 		if (doHash)
 			ddOut->writeToHash();
@@ -136,7 +160,7 @@ int main(int argc, char** argv)
 			ddOut->expand(sOutput, outShape);
 		} else {
 			cerr << "Writing file " << sOutput << endl;
-			if (sOutput == sInput)
+			if (sOutput == vsInput.at(0))
 			{
 				cerr << "Output is the same as the input. Doing nothing.\n";
 				return 0;
