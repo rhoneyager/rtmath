@@ -304,6 +304,7 @@ namespace rtmath {
 			boost::filesystem::path &HashShapes,
 			boost::filesystem::path &HashStats)
 		{
+			initPaths();
 			HashShapes = pHashShapes;
 			HashStats = pHashStats;
 		}
@@ -391,6 +392,7 @@ namespace rtmath {
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
 
+			initPaths();
 			path pHashShape = storeHash(pHashShapes,shp->hash());
 			if (!Ryan_Serialization::detect_compressed(pHashShape.string()) && autoHashShapes)
 			{

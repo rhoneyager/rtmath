@@ -20,6 +20,7 @@
 #include "../rtmath/ddscat/ddOutputGenerator.h"
 #include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/ddscat/rotations.h"
+#include "../rtmath/ddscat/ddUtil.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/config.h"
 #include "../rtmath/ddscat/shapefile.h"
@@ -198,25 +199,18 @@ namespace rtmath {
 			}
 
 			// Set a basic source descriptor
-			res->sources.insert(dir);
+			using namespace boost::filesystem;
+			path pdir(dir);
+			path pbdir = absolute(pdir);
+			res->sources.insert(pbdir.string());
 			// Set a basic tag based on the avg file's TARGET line
 			{
 				std::string starget;
 				res->avg->getTARGET(starget);
 				res->tags.insert(starget);
 				// Extract the ddscat version from the target field
-				// Fine "ddscat/" and read until the next space
-				size_t loc = starget.find("ddscat/");
-				if (loc != std::string::npos)
-				{
-					loc += 7;
-					size_t end = 0;
-					end = starget.find_first_of(' ',loc);
-					if (end == std::string::npos)
-						res->ddvertag = starget.substr(loc);
-					else
-						res->ddvertag = starget.substr(loc,end-loc);
-				}
+				// Find "ddscat/" and read until the next space
+				ddUtil::getDDSCATbuild(starget, res->ddvertag);
 			}
 
 			// Set the frequency and effective radius
@@ -311,7 +305,7 @@ namespace rtmath {
 			res->parfile = par;
 			res->shape = shape;
 			res->shapeHash = shape->hash();
-
+			res->stats = shapeFileStats::genStats(res->shape);
 
 			// Set a basic source descriptor
 			//res->sources.insert(dir);
@@ -322,18 +316,8 @@ namespace rtmath {
 				res->avg->getTARGET(starget);
 				res->tags.insert(starget);
 				// Extract the ddscat version from the target field
-				// Fine "ddscat/" and read until the next space
-				size_t loc = starget.find("ddscat/");
-				if (loc != std::string::npos)
-				{
-					loc += 7;
-					size_t end = 0;
-					end = starget.find_first_of(' ',loc);
-					if (end == std::string::npos)
-						res->ddvertag = starget.substr(loc);
-					else
-						res->ddvertag = starget.substr(loc,end-loc);
-				}
+				// Find "ddscat/" and read until the next space
+				ddUtil::getDDSCATbuild(starget, res->ddvertag);
 			}
 
 			// Set the frequency and effective radius

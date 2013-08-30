@@ -11,6 +11,15 @@ namespace rtmath
 		/// Some auxiliary functions for ddscat
 		namespace ddUtil
 		{
+			/// Get forced ddscat module
+			bool DLEXPORT_rtmath_ddscat isDDSCATtagForced(std::string &out);
+
+			/// Get forced ddscat module
+			bool DLEXPORT_rtmath_ddscat isDDSCATtagForced();
+
+			/// Get ddscat build from tagged string
+			void DLEXPORT_rtmath_ddscat getDDSCATbuild(const std::string &in, std::string &out);
+
 			/**
 			* \brief Function gets the version of ddscat based  
 			* on the loaded environment module. 

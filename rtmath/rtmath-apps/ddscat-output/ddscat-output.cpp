@@ -129,6 +129,13 @@ int main(int argc, char** argv)
 			boost::shared_ptr<ddPar> par(new ddPar(vsInput[1]));
 			boost::shared_ptr<shapefile> shp(new shapefile(vsInput[2]));
 			ddOut = ddOutput::generate(avg, par, shp);
+			path pavg(vsInput[0]), ppar(vsInput[1]), pshp(vsInput[2]);
+			path pbavg = absolute(pavg);
+			path pbpar = absolute(ppar);
+			path pbshp = absolute(pshp);
+			ddOut->sources.insert(pbavg.string());
+			ddOut->sources.insert(pbpar.string());
+			ddOut->sources.insert(pbshp.string());
 		} else doHelp("Unable to parse input expression.");
 
 		if (sDesc.size())

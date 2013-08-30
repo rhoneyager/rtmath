@@ -106,6 +106,41 @@ namespace rtmath
 
 			}
 
+			bool isDDSCATtagForced()
+			{
+				if (forcedDDSCATversion.size()) return true;
+				return false;
+			}
+
+			bool isDDSCATtagForced(std::string &out)
+			{
+				out = forcedDDSCATversion;
+				if (out.size()) return true;
+				return false;
+			}
+
+			void getDDSCATbuild(const std::string &in, std::string &out)
+			{
+				if (forcedDDSCATversion.size())
+				{
+					out = forcedDDSCATversion;
+					return;
+				}
+				// Extract the ddscat version from the target field
+				// Fine "ddscat/" and read until the next space
+				size_t loc = in.find("ddscat/");
+				if (loc != std::string::npos)
+				{
+					loc += 7;
+					size_t end = 0;
+					end = in.find_first_of(' ',loc);
+					if (end == std::string::npos)
+						out = in.substr(loc);
+					else
+						out = in.substr(loc,end-loc);
+				}
+			}
+
 			bool getModuleLoadedDDSCAT(std::string &out)
 			{
 				using namespace std;
