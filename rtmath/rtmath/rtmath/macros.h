@@ -1,15 +1,19 @@
 #pragma once
-/* macros.h - macro definitions to speed things up
-* MSVC 2010 runtimes of rtmath can be slow. File reads are hampered 
-* by slow atof calls, and slow parsing of input lines.
-*
-* Macros here redirect to the standard function or a custom inlined varient, depending on the compiler.
-*/
+
 
 #include <cmath>
 
 namespace rtmath {
+	/** \brief Macro definitions to speed things up
+	* 
+	* MSVC 2010 and 2012 runtimes of rtmath can be slow. File reads are hampered 
+	* by slow atof calls, and slow parsing of input lines.
+	*
+	* Macros here redirect to the standard function or a custom inlined varient, 
+	* depending on the compiler.
+	**/
 	namespace macros {
+		/// Convert argument to float
 		inline double m_atof(const char* x, size_t len = 0)
 		{
 			double res = 0.0;
@@ -123,6 +127,7 @@ namespace rtmath {
 			return res;
 		}
 
+		/// Convert argument to int
 		inline int m_atoi(const char *x, size_t len = 0)
 		{
 			int res = 0;
@@ -192,11 +197,14 @@ namespace rtmath {
 			return res;
 		}
 
-		// Borrowed from Ahlquist for use in zero-finding algorithm.
-		// Based on slatec.
+		/**
+		* \brief Find sqrt(a^2+b^2) without overflow or underflow
+		* 
+		* Borrowed from Ahlquist for use in zero-finding algorithm.
+		* Based on slatec.
+		**/
 		inline double pythag(double a, double b)
 		{
-			// Find sqrt(a^2+b^2) without overflow or underflow
 			double p, q, r, t, s;
 			if (abs(p) > abs(q))
 			{
@@ -224,7 +232,7 @@ namespace rtmath {
 }
 
 
-#ifdef _WIN32
+#ifdef _MSC_FULL_VER
 #define M_ATOF(x) rtmath::macros::m_atof(x)
 #define M_ATOI(x) rtmath::macros::m_atoi(x)
 #else
