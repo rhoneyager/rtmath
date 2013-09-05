@@ -42,7 +42,7 @@ namespace rtmath {
 				return 0.0;
 			}
 
-			bool ddWeights::interval(double point, double &start, double &end) const
+			bool ddWeights::interval(double point, double &start, double &end, double &pivot) const
 			{
 				start = point;
 				end = point;
@@ -55,13 +55,14 @@ namespace rtmath {
 					return false;
 					*/
 					// I instead just want to find the containing interval
-					if (p.second.first < point && p.second.second > point) return true;
+					if (p.second.first <= point && p.second.second > point) return true;
 					return false;
 				});
 				if (it != intervals.cend())
 				{
 					start = it->second.first;
 					end = it->second.second;
+					pivot = it->first;
 					return true;
 				}
 				return false;
@@ -201,9 +202,105 @@ namespace rtmath {
 				double beta, double theta, double phi,
 				dp &intBeta, dp &intTheta, dp &intPhi) const
 			{
-				wBetas.interval(beta, intBeta.first, intBeta.second);
-				wThetas.interval(theta, intTheta.first, intTheta.second);
-				wPhis.interval(phi, intPhi.first, intPhi.second);
+				double junk;
+				wBetas.interval(beta, intBeta.first, intBeta.second, junk);
+				wThetas.interval(theta, intTheta.first, intTheta.second, junk);
+				wPhis.interval(phi, intPhi.first, intPhi.second, junk);
+			}
+
+			OrientationWeights1d::~OrientationWeights1d()
+			{
+			}
+
+			OrientationWeights1d::OrientationWeights1d(bool cyclic)
+				: cyclic(cyclic), min(0), max(0), span(0)
+			{
+			}
+
+			void OrientationWeights1d::calcSpan(const ddWeights& w, double &min, double &max, double &span) const
+			{
+				IntervalTable intervals;
+				w.getIntervals(intervals);
+				if (intervals.size() == 0) throw debug::xArrayOutOfBounds();
+				min = intervals.begin()->second.first;
+				max = intervals.rbegin()->second.second;
+				span = max - min;
+			}
+			
+			void OrientationWeights1d::getWeights(weightTable &weights) const
+			{
+				weights = this->weights;
+			}
+
+			Uniform1dWeights::Uniform1dWeights(const ddWeights& dw)
+				: OrientationWeights1d(true)
+			{
+				// Calculate the overall span
+				calcSpan(dw,min,max,span);
+
+				IntervalTable intervals;
+				dw.getIntervals(intervals);
+
+				for (const auto i : intervals)
+				{
+					// Note: DDSCAT does not present any intervals which go past the zero degree point.
+					weights.insert(std::pair<double,double>
+						(i.second.first, (i.second.second - i.second.first) / span) );
+				}
+			}
+
+			double VonMisesWeights::VonMisesPDF(double x, double mu, double kappa)
+			{
+				//const double span = max - min;
+				const double pi = boost::math::constants::pi<double>();
+				//const double scale = span / (2. * pi);
+
+				const double mb1 = boost::math::cyl_bessel_i(0, kappa);
+
+				double pdf = exp(kappa * cos(x - mu) ) / (2. * pi * mb1);
+				return pdf;
+			}
+
+			double VonMisesWeights::VonMisesCDF(double x, double mu, double kappa)
+			{
+				const double pi = boost::math::constants::pi<double>();
+
+				double res = 0;
+				double resprev = 1.0;
+				for (size_t i=1; abs((res-resprev)/resprev) > 0.0001 || i > 100; ++i)
+				{
+					resprev = res;
+
+					double j = (double) i;
+					res += boost::math::cyl_bessel_i(j, kappa) * sin(j*(x-mu)) / j;
+				}
+
+				res *= 2. / boost::math::cyl_bessel_i(0, kappa);
+				res += x;
+				res /= 2. * pi;
+				return res;
+			}
+
+			VonMisesWeights::VonMisesWeights(const ddWeights& dw, double mean, double kappa)
+				: mean(mean), kappa(kappa), OrientationWeights1d(true)
+			{
+				const double pi = boost::math::constants::pi<double>();
+				// Calculate the overall span
+				calcSpan(dw,min,max,span);
+
+				if ( abs(span - ( 360 ) ) > 0.001)
+					throw debug::xArrayOutOfBounds();
+
+				IntervalTable intervals;
+				dw.getIntervals(intervals);
+
+				for (const auto i : intervals)
+				{
+					double weight = VonMisesCDF(i.second.second * pi / 180., mean * pi / 180., kappa * pi / 180.) 
+						- VonMisesCDF(i.second.first * pi / 180., mean * pi / 180., kappa * pi / 180.);
+					// Note: DDSCAT does not present any intervals which go past the zero degree point.
+					weights.insert(std::pair<double,double>(i.second.first, weight ));
+				}
 			}
 
 			/*

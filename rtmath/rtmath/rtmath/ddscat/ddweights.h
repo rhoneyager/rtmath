@@ -16,14 +16,17 @@ namespace rtmath {
 		**/
 		namespace weights {
 
+			/// Weights (without degeneracy): (point, weight)
+			typedef std::map<double,double> IndependentWeights;
+			/// Records degeneracy: (point, degeneracy)
+			typedef std::map<double,size_t> DegeneracyTable;
+			/// Records interval bounds: (point, (min, max) )
+			typedef std::map<double, std::pair<double, double> > IntervalTable;
+
 			/// Base class that handles independent weighting in one direction
 			class DLEXPORT_rtmath_ddscat ddWeights
 			{
 			public:
-				typedef std::map<double,double> IndependentWeights;
-				typedef std::map<double,size_t> DegeneracyTable;
-				typedef std::map<double, std::pair<double, double> > IntervalTable;
-
 				virtual ~ddWeights() {}
 				/// Base weight
 				virtual double weightBase(double point) const;
@@ -31,7 +34,7 @@ namespace rtmath {
 				virtual double weightDegen(double point) const;
 				/// Find the interval that encompasses the provided point
 				virtual bool interval(double point,
-					double &start, double &end) const;
+					double &start, double &end, double &pivot) const;
 
 				/// Provide a copy of the weighting table
 				void getWeights(IndependentWeights &weights) const;
@@ -110,26 +113,84 @@ namespace rtmath {
 			};
 
 
+			/// Base class for weighting distributions in 1d space
+			class DLEXPORT_rtmath_ddscat OrientationWeights1d
+			{
+			public:
+				/// weightTable stores weights based on min interval point and the cdf weight.
+				typedef std::map<double, double> weightTable;
+			protected:
+				/// Is the 1d space cyclic?
+				const bool cyclic;
+				/// Minimum and maximum bounds
+				double min, max, span;
+				/// The weighting table
+				weightTable weights;
+				OrientationWeights1d(bool cyclic);
+				/// Calculate overall span
+				void calcSpan(const ddWeights&, double &min, double &max, double &span) const;
+			public:
+				virtual ~OrientationWeights1d();
+				/// Provide a copy of the weighting table
+				void getWeights(weightTable &weights) const;
+			};
+
+			/// Uniform 1d distribution
+			class DLEXPORT_rtmath_ddscat Uniform1dWeights
+				: public OrientationWeights1d
+			{
+			public:
+				Uniform1dWeights(const ddWeights&);
+			};
+
+			/// Von Mises Distribution
+			class DLEXPORT_rtmath_ddscat VonMisesWeights
+				: public OrientationWeights1d
+			{
+			public:
+				/** \brief Construct Von Mises Weights for a ddWeights interval.
+				*
+				* Here, mean and kappa are in degrees, for DDSCAT consistency.
+				**/
+				VonMisesWeights(const ddWeights&, double mean, double kappa);
+				/** \brief Calculate Von Mises PDF.
+				*
+				* x and mu should be in radians.
+				**/
+				static double VonMisesPDF(double x, double mu, double kappa);
+				/** \brief Calculate Von Mises CDF
+				*
+				* x and mu should be in radians.
+				**/
+				static double VonMisesCDF(double x, double mu, double kappa);
+			protected:
+				double mean;
+				double kappa;
+			};
+
+			/*
 			/// Base class for weighting distributions in 3d space
-			class DLEXPORT_rtmath_ddscat OrientationWeights
+			class DLEXPORT_rtmath_ddscat OrientationWeights3d
 			{
 			protected:
-				OrientationWeights();
+				OrientationWeights3d();
 			public:
-				virtual ~OrientationWeights();
+				virtual ~OrientationWeights3d();
 			};
 
 			/// Provides weights for a Von Mises-Fisher distribution
 			class DLEXPORT_rtmath_ddscat VonMisesFischerWeights
-				: public OrientationWeights
+				: public OrientationWeights3d
 			{
 			};
 
 			/// Provides weights for a Kent Distribution
 			class DLEXPORT_rtmath_ddscat KentWeights
-				: public OrientationWeights
+				: public OrientationWeights3d
 			{
 			};
+
+			*/
 
 			/*
 			/// Gaussian weights where the point is always guaranteed to be positive. 

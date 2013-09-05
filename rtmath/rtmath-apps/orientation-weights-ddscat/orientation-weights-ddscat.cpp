@@ -1,4 +1,4 @@
-/* orientation-weights
+/* orientation-weights-ddscat
  * This program will calculate the weights for different orientations of a ddOutput object or 
  * a set of ddPar objects. */
 #pragma warning( push )
@@ -114,8 +114,8 @@ int main(int argc, char** argv)
 			rot = rtmath::ddscat::rotations(bMin,bMax,nB,tMin,tMax,nT,pMin,pMax,nP);
 		}
 
-		rtmath::ddscat::ddWeightsDDSCAT ddw(rot);
-		rtmath::ddscat::ddWeightsLinInt ddbeta(rot.bMin(), rot.bMax(), rot.bN());
+		rtmath::ddscat::weights::ddWeightsDDSCAT ddw(rot);
+		rtmath::ddscat::weights::ddWeightsLinInt ddbeta(rot.bMin(), rot.bMax(), rot.bN());
 
 		if (vm.count("output"))
 		{
