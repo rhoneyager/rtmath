@@ -63,7 +63,7 @@ namespace rtmath {
 				virtual ~ddWeightsLinInt() {};
 			};
 
-			/// Generate cosine-spaced weighting points, following 
+			/// \brief Generate cosine-spaced weighting points, following 
 			/// DDSCAT's convention about weights for odd or even 
 			/// interval numbers.
 			class DLEXPORT_rtmath_ddscat ddWeightsCosInt
@@ -74,6 +74,7 @@ namespace rtmath {
 				virtual ~ddWeightsCosInt() {};
 			};
 
+			/// Generates weights for imported DDSCAT results
 			class DLEXPORT_rtmath_ddscat ddWeightsDDSCAT
 			{
 			public:
@@ -106,6 +107,28 @@ namespace rtmath {
 				ddWeightsCosInt wThetas;
 				ddWeightsLinInt wPhis;
 				ddWeightsLinInt wBetas;
+			};
+
+
+			/// Base class for weighting distributions in 3d space
+			class DLEXPORT_rtmath_ddscat OrientationWeights
+			{
+			protected:
+				OrientationWeights();
+			public:
+				virtual ~OrientationWeights();
+			};
+
+			/// Provides weights for a Von Mises-Fisher distribution
+			class DLEXPORT_rtmath_ddscat VonMisesFischerWeights
+				: public OrientationWeights
+			{
+			};
+
+			/// Provides weights for a Kent Distribution
+			class DLEXPORT_rtmath_ddscat KentWeights
+				: public OrientationWeights
+			{
 			};
 
 			/*
