@@ -227,7 +227,7 @@ namespace rtmath {
 			{
 				rtmath::ddscat::rotations rots;
 				res->parfile->getRots(rots);
-				ddWeightsDDSCAT wts(rots);
+				weights::ddWeightsDDSCAT wts(rots);
 				
 				float numScas = (float) res->scas.size();
 				for (auto &sca : res->scas)
