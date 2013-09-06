@@ -26,36 +26,45 @@ namespace rtmath {
 			typedef std::map<double, std::pair<double, double> > IntervalTable;
 
 			/// 1d interval table and weights definition
-			enum IntervalTable1dDefs
+			namespace IntervalTable1dDefs
 			{
-				MIN,
-				MAX,
-				PIVOT,
-				WEIGHT_RAW,
-				DEGENERACY,
-				WEIGHT_DEGEN,
-				NUM_ENTRIES_IntervalTable1dDefs
-			};
+				enum IntervalTable1dDefs
+				{
+					MIN,
+					MAX,
+					PIVOT,
+					WEIGHT_RAW,
+					DEGENERACY,
+					WEIGHT_DEGEN,
+					NUM_ENTRIES_IntervalTable1dDefs
+				};
+			}
+			/// The newer 1d table definition
 			typedef std::array<double, IntervalTable1dDefs::NUM_ENTRIES_IntervalTable1dDefs> IntervalTable1dEntry;
+			/// Container for storing data of intervals, degeneracies and weights
 			typedef std::vector<IntervalTable1dEntry> IntervalTable1d;
 
 			/// 3d interval table definitions
-			enum IntervalTable3dDefs
+			namespace IntervalTable3dDefs
 			{
-				BETA_MIN,
-				BETA_MAX,
-				BETA_PIVOT,
-				THETA_MIN,
-				THETA_MAX,
-				THETA_PIVOT,
-				PHI_MIN,
-				PHI_MAX,
-				PHI_PIVOT,
-				WEIGHT,
-				NUM_ENTRIES_IntervalTable3dDefs
-			};
-
+				enum IntervalTable3dDefs
+				{
+					BETA_MIN,
+					BETA_MAX,
+					BETA_PIVOT,
+					THETA_MIN,
+					THETA_MAX,
+					THETA_PIVOT,
+					PHI_MIN,
+					PHI_MAX,
+					PHI_PIVOT,
+					WEIGHT,
+					NUM_ENTRIES_IntervalTable3dDefs
+				};
+			}
+			/// The newer 3d table definition
 			typedef std::array<double, IntervalTable3dDefs::NUM_ENTRIES_IntervalTable3dDefs> IntervalTable3dEntry;
+			/// Container for storing data of intervals, degeneracies and weights
 			typedef std::vector<IntervalTable3dEntry> IntervalTable3d;
 
 			/// Base class that handles independent weighting in one direction
@@ -260,6 +269,8 @@ namespace rtmath {
 				* \todo Fix x and mu bug (should take three coordinates)
 				**/
 				static double VonMisesFisherCDF(double xT1, double xT2, double xP1, double xP2, double muT, double muP, double kappa);
+				/// Convert from angles (degrees) to spherical coordinates, needed for the PDF and CDF functions
+				static void degToSph(const std::vector<double> &in, std::vector<double> &out);
 			protected:
 				double meanTheta;
 				double meanPhi;

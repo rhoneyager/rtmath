@@ -253,7 +253,6 @@ namespace rtmath {
 				wPhis.interval(phi, intPhi.first, intPhi.second, junk);
 			}
 
-
 			OrientationWeights1d::~OrientationWeights1d()
 			{
 			}
@@ -362,6 +361,37 @@ namespace rtmath {
 				weights = this->weights;
 			}
 
+			void VonMisesFisherWeights::degToSph(const std::vector<double> &in, std::vector<double> &out)
+			{
+				// This function begs for initializer lists, but MSVC2012 doesn't support them.
+				out.resize(in.size);
+
+				// Incoming angles are in degrees
+				auto degToRad = [](double deg) -> double
+				{
+					const double pi = boost::math::constants::pi<double>();
+					return deg * pi / 180.;
+				};
+
+				std::vector<double> inRad(in.size());
+				for (size_t i=0; i<in.size(); ++i)
+					inRad[i] = degToRad(in[i]);
+
+				// x_j = sin(theta_1)*sin(theta_2)*...*sin(theta_j-1)*cos(theta_j)  for 1 <= j < p and
+				// x_p = sin(theta_1)*...*sin(theta_p-1)
+
+				for (size_t i=0; i<in.size(); ++i)
+				{
+					out[i] = 1;
+					for (size_t j=0; j<in.size()-1; ++j)
+					{
+						out[i] *= sin(inRad[j]);
+					}
+					out[i] *= cos(inRad[in.size()-1]);
+				}
+				out[in.size()-1] *= sin(inRad[in.size()-1]) / cos(inRad[in.size()-1]); // Replace ending cos with sin.
+			}
+
 			VonMisesFisherWeights::VonMisesFisherWeights(const ddWeightsDDSCAT& dw, double muT, double muP, double kappa)
 				: meanTheta(muT), meanPhi(muP), kappa(kappa), OrientationWeights3d()
 			{
@@ -386,6 +416,7 @@ namespace rtmath {
 					// TODO: Fix bug here. CDF function does not take angles directly. It needs 
 					// conversion of thetas, phis and mus to a different coordinate system.
 
+					std::vector<double> thetas_x(3), phis_x(3), mus_x(3);
 
 
 					double weight = VonMisesFisherCDF(
