@@ -27,6 +27,11 @@ namespace rtmath {
 				intervals = this->intervals;
 			}
 
+			void ddWeights::getIntervals(IntervalTable1d &intervals1d) const
+			{
+				intervals1d = this->intervals1d;
+			}
+
 			double ddWeights::weightBase(double point) const
 			{
 				// Implementing a comparator here because exact double comparisons 
@@ -108,6 +113,15 @@ namespace rtmath {
 
 					intervals.emplace(std::pair<double, std::pair<double, double> >
 						(it->first, std::pair<double, double>(min,max) ) );
+
+					IntervalTable1dEntry ii;
+					ii[IntervalTable1dDefs::MIN] = min;
+					ii[IntervalTable1dDefs::MAX] = max;
+					ii[IntervalTable1dDefs::PIVOT] = it->first;
+					ii[IntervalTable1dDefs::WEIGHT_RAW] = it->second;
+					ii[IntervalTable1dDefs::DEGENERACY] = 1;
+					ii[IntervalTable1dDefs::WEIGHT_DEGEN] = it->second;
+					intervals1d.push_back(std::move(ii));
 				}
 			}
 
@@ -178,7 +192,38 @@ namespace rtmath {
 				wThetas(rots.tMin(), rots.tMax(), rots.tN()),
 				wBetas(rots.bMin(), rots.bMax(), rots.bN()),
 				wPhis(rots.pMin(), rots.pMax(), rots.pN())
-			{ }
+			{
+				IntervalTable1d IntBeta, IntTheta, IntPhi;
+				wBetas.getIntervals(IntBeta);
+				wThetas.getIntervals(IntTheta);
+				wPhis.getIntervals(IntPhi);
+
+				// Populate the IntervalWeights object
+				for (auto &b : IntBeta)
+				for (auto &t : IntTheta)
+				for (auto &p : IntPhi)
+				{
+					IntervalTable3dEntry it;
+					it[IntervalTable3dDefs::BETA_MIN] = b[IntervalTable1dDefs::MIN];
+					it[IntervalTable3dDefs::BETA_MAX] = b[IntervalTable1dDefs::MAX];
+					it[IntervalTable3dDefs::BETA_PIVOT] = b[IntervalTable1dDefs::PIVOT];
+					it[IntervalTable3dDefs::THETA_MIN] = t[IntervalTable1dDefs::MIN];
+					it[IntervalTable3dDefs::THETA_MAX] = t[IntervalTable1dDefs::MAX];
+					it[IntervalTable3dDefs::THETA_PIVOT] = t[IntervalTable1dDefs::PIVOT];
+					it[IntervalTable3dDefs::PHI_MIN] = p[IntervalTable1dDefs::MIN];
+					it[IntervalTable3dDefs::PHI_MAX] = p[IntervalTable1dDefs::MAX];
+					it[IntervalTable3dDefs::PHI_PIVOT] = p[IntervalTable1dDefs::PIVOT];
+					it[IntervalTable3dDefs::WEIGHT] = b[IntervalTable1dDefs::WEIGHT_DEGEN]
+						* t[IntervalTable1dDefs::WEIGHT_DEGEN]
+						* p[IntervalTable1dDefs::WEIGHT_DEGEN];
+					IntervalWeights.push_back(std::move(it));
+				}
+			}
+
+			void ddWeightsDDSCAT::getIntervalTable(IntervalTable3d &res) const
+			{
+				res = IntervalWeights;
+			}
 
 			double ddWeightsDDSCAT::getWeight(double beta, double theta, double phi) const
 			{
@@ -207,6 +252,7 @@ namespace rtmath {
 				wThetas.interval(theta, intTheta.first, intTheta.second, junk);
 				wPhis.interval(phi, intPhi.first, intPhi.second, junk);
 			}
+
 
 			OrientationWeights1d::~OrientationWeights1d()
 			{
@@ -302,6 +348,80 @@ namespace rtmath {
 					weights.insert(std::pair<double,double>(i.second.first, weight ));
 				}
 			}
+
+			OrientationWeights3d::OrientationWeights3d()
+			{
+			}
+
+			OrientationWeights3d::~OrientationWeights3d()
+			{
+			}
+
+			void OrientationWeights3d::getWeights(IntervalTable3d &weights) const
+			{
+				weights = this->weights;
+			}
+
+			VonMisesFisherWeights::VonMisesFisherWeights(const ddWeightsDDSCAT& dw, double muT, double muP, double kappa)
+				: meanTheta(muT), meanPhi(muP), kappa(kappa), OrientationWeights3d()
+			{
+				// For now, assume that the weights will all sum to unity (ddscat has calculated using the usual 
+				// rotation bounds).
+
+				// Assumes that beta orientation weighting is uniform, and that the only variation occurs in 
+				// theta and phi.
+
+				IntervalTable3d intervals;
+				dw.getIntervalTable(intervals);
+
+				auto toRad = [](double val) -> double
+				{
+					const double pi = boost::math::constants::pi<double>();
+					return val * pi / 180.;
+				};
+
+				for (const auto i : intervals)
+				{
+					/// \todo There is a bug here. Fix it!
+					// TODO: Fix bug here. CDF function does not take angles directly. It needs 
+					// conversion of thetas, phis and mus to a different coordinate system.
+
+
+
+					double weight = VonMisesFisherCDF(
+						i[IntervalTable3dDefs::THETA_MIN],i[IntervalTable3dDefs::THETA_MAX],
+						i[IntervalTable3dDefs::PHI_MIN],i[IntervalTable3dDefs::PHI_MAX],
+						muT, muP, kappa);
+					weight /= static_cast<double>(dw.numBetas());
+
+					IntervalTable3dEntry ie = i;
+					ie[IntervalTable3dDefs::WEIGHT] = weight;
+
+					weights.push_back(std::move(ie));
+				}
+			}
+
+			double VonMisesFisherWeights::VonMisesFisherPDF(double xT, double xP, double muT, double muP, double kappa)
+			{
+				const double pi = boost::math::constants::pi<double>();
+				const double C3 = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
+				double vp = (xT * muT) + (xP * muP);
+				double f = C3 * exp(kappa * vp);
+				return f;
+			}
+
+			double VonMisesFisherWeights::VonMisesFisherCDF(double xT1, double xT2, double xP1, double xP2, double muT, double muP, double kappa)
+			{
+				const double pi = boost::math::constants::pi<double>();
+				const double C3 = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
+				
+				double res = C3 / pow(kappa,2.);
+				res *= (1./muT) * ( exp(kappa*muT*xT2) - exp(kappa*muT*xT1) );
+				res *= (1./muP) * ( exp(kappa*muP*xP2) - exp(kappa*muP*xP1) );
+				return res;
+			}
+
+
 
 			/*
 			gaussianPosWeights::~gaussianPosWeights()

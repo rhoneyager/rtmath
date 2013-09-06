@@ -1,9 +1,11 @@
 #pragma once
 #include "../defs.h"
 #include "rotations.h"
+#include <array>
 #include <functional>
 #include <map>
 #include <set>
+#include <vector>
 
 namespace rtmath {
 
@@ -23,11 +25,46 @@ namespace rtmath {
 			/// Records interval bounds: (point, (min, max) )
 			typedef std::map<double, std::pair<double, double> > IntervalTable;
 
+			/// 1d interval table and weights definition
+			enum IntervalTable1dDefs
+			{
+				MIN,
+				MAX,
+				PIVOT,
+				WEIGHT_RAW,
+				DEGENERACY,
+				WEIGHT_DEGEN,
+				NUM_ENTRIES_IntervalTable1dDefs
+			};
+			typedef std::array<double, IntervalTable1dDefs::NUM_ENTRIES_IntervalTable1dDefs> IntervalTable1dEntry;
+			typedef std::vector<IntervalTable1dEntry> IntervalTable1d;
+
+			/// 3d interval table definitions
+			enum IntervalTable3dDefs
+			{
+				BETA_MIN,
+				BETA_MAX,
+				BETA_PIVOT,
+				THETA_MIN,
+				THETA_MAX,
+				THETA_PIVOT,
+				PHI_MIN,
+				PHI_MAX,
+				PHI_PIVOT,
+				WEIGHT,
+				NUM_ENTRIES_IntervalTable3dDefs
+			};
+
+			typedef std::array<double, IntervalTable3dDefs::NUM_ENTRIES_IntervalTable3dDefs> IntervalTable3dEntry;
+			typedef std::vector<IntervalTable3dEntry> IntervalTable3d;
+
 			/// Base class that handles independent weighting in one direction
 			class DLEXPORT_rtmath_ddscat ddWeights
 			{
 			public:
 				virtual ~ddWeights() {}
+				/// Number of points
+				virtual size_t size() const { return weights.size(); }
 				/// Base weight
 				virtual double weightBase(double point) const;
 				/// Weight (accounting for degeneracy)
@@ -42,6 +79,8 @@ namespace rtmath {
 				void getFreqs(DegeneracyTable &freqs) const;
 				/// Provide a copy of the interval table
 				void getIntervals(IntervalTable &intervals) const;
+				/// Provide a copy of the newer interval table
+				void getIntervals(IntervalTable1d &intervals1d) const;
 			protected:
 				ddWeights() {}
 				/// Weight at each coordinate
@@ -51,6 +90,8 @@ namespace rtmath {
 				/// Interval table (for each subinterval midpoint, contains the 
 				/// subinterval bounds). Useful in CDF calculations.
 				IntervalTable intervals;
+				/// Replacement interval table
+				IntervalTable1d intervals1d;
 
 				/// Fill the interval table
 				void fillIntervalTable(double start, double end, 
@@ -106,10 +147,23 @@ namespace rtmath {
 				**/
 				void getIntervalBounds(double beta, double theta, double phi,
 					dp &intBeta, dp &intTheta, dp &intPhi) const;
+
+				/// Provide a copy of the weighting table
+				void getIntervalTable(IntervalTable3d&) const;
+
+				/// Get number of beta orientations
+				size_t numBetas() const { return wBetas.size(); }
+				/// Get number of theta orientations
+				size_t numThetas() const { return wThetas.size(); }
+				/// Get number of phi orientations
+				size_t numPhis() const { return wPhis.size(); }
+				/// Get number of orientations
+				size_t size() const { return wBetas.size() * wThetas.size() * wPhis.size(); }
 			private:
 				ddWeightsCosInt wThetas;
 				ddWeightsLinInt wPhis;
 				ddWeightsLinInt wBetas;
+				IntervalTable3d IntervalWeights;
 			};
 
 
@@ -141,6 +195,7 @@ namespace rtmath {
 			{
 			public:
 				Uniform1dWeights(const ddWeights&);
+				virtual ~Uniform1dWeights() {};
 			};
 
 			/// Von Mises Distribution
@@ -148,6 +203,7 @@ namespace rtmath {
 				: public OrientationWeights1d
 			{
 			public:
+				virtual ~VonMisesWeights() {};
 				/** \brief Construct Von Mises Weights for a ddWeights interval.
 				*
 				* Here, mean and kappa are in degrees, for DDSCAT consistency.
@@ -168,29 +224,49 @@ namespace rtmath {
 				double kappa;
 			};
 
-			/*
+			
 			/// Base class for weighting distributions in 3d space
 			class DLEXPORT_rtmath_ddscat OrientationWeights3d
 			{
-			protected:
-				OrientationWeights3d();
 			public:
 				virtual ~OrientationWeights3d();
+				/// Provide a copy of the weighting table
+				void getWeights(IntervalTable3d &weights) const;
+			protected:
+				OrientationWeights3d();
+				IntervalTable3d weights;
 			};
 
 			/// Provides weights for a Von Mises-Fisher distribution
-			class DLEXPORT_rtmath_ddscat VonMisesFischerWeights
+			class DLEXPORT_rtmath_ddscat VonMisesFisherWeights
 				: public OrientationWeights3d
 			{
+			public:
+				virtual ~VonMisesFisherWeights() {};
+				/** \brief Construct Von Mises-Fisher Weights for a ddWeightsDDSCAT interval.
+				*
+				* Here, mean and kappa are in degrees, for DDSCAT consistency.
+				**/
+				VonMisesFisherWeights(const ddWeightsDDSCAT&, double muT, double muP, double kappa);
+				/** \brief Calculate Von Mises-Fisher PDF.
+				*
+				* x and mus should be in cylindrical coordinates (see Sra 2007 and 2012).
+				* \todo Fix x and mu bug (should take three coordinates)
+				**/
+				static double VonMisesFisherPDF(double xT, double xP, double muT, double muP, double kappa);
+				/** \brief Calculate Von Mises-Fisher CDF
+				*
+				* x and mus should be in cylindrical coordinates (see Sra 2007 and Sra 2012).
+				* \todo Fix x and mu bug (should take three coordinates)
+				**/
+				static double VonMisesFisherCDF(double xT1, double xT2, double xP1, double xP2, double muT, double muP, double kappa);
+			protected:
+				double meanTheta;
+				double meanPhi;
+				double kappa;
 			};
 
-			/// Provides weights for a Kent Distribution
-			class DLEXPORT_rtmath_ddscat KentWeights
-				: public OrientationWeights3d
-			{
-			};
-
-			*/
+			
 
 			/*
 			/// Gaussian weights where the point is always guaranteed to be positive. 
