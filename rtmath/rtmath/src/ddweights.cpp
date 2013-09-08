@@ -361,10 +361,10 @@ namespace rtmath {
 				weights = this->weights;
 			}
 
-			void VonMisesFisherWeights::degToSph(const std::vector<double> &in, std::vector<double> &out)
+			void VonMisesFisherWeights::degToSph(size_t n, const double *in, double *out)
 			{
 				// This function begs for initializer lists, but MSVC2012 doesn't support them.
-				out.resize(in.size);
+				TASSERT(n>0);
 
 				// Incoming angles are in degrees
 				auto degToRad = [](double deg) -> double
@@ -373,23 +373,23 @@ namespace rtmath {
 					return deg * pi / 180.;
 				};
 
-				std::vector<double> inRad(in.size());
-				for (size_t i=0; i<in.size(); ++i)
+				std::vector<double> inRad(n);
+				for (size_t i=0; i<n; ++i)
 					inRad[i] = degToRad(in[i]);
 
 				// x_j = sin(theta_1)*sin(theta_2)*...*sin(theta_j-1)*cos(theta_j)  for 1 <= j < p and
 				// x_p = sin(theta_1)*...*sin(theta_p-1)
 
-				for (size_t i=0; i<in.size(); ++i)
+				for (size_t i=0; i<n; ++i)
 				{
 					out[i] = 1;
-					for (size_t j=0; j<in.size()-1; ++j)
+					for (size_t j=0; j<n-1; ++j)
 					{
 						out[i] *= sin(inRad[j]);
 					}
-					out[i] *= cos(inRad[in.size()-1]);
+					out[i] *= cos(inRad[n-1]);
 				}
-				out[in.size()-1] *= sin(inRad[in.size()-1]) / cos(inRad[in.size()-1]); // Replace ending cos with sin.
+				out[n-1] *= sin(inRad[n-1]) / cos(inRad[n-1]); // Replace ending cos with sin.
 			}
 
 			VonMisesFisherWeights::VonMisesFisherWeights(const ddWeightsDDSCAT& dw, double muT, double muP, double kappa)
@@ -409,6 +409,9 @@ namespace rtmath {
 					const double pi = boost::math::constants::pi<double>();
 					return val * pi / 180.;
 				};
+				
+				const double pi = boost::math::constants::pi<double>();
+				const size_t degree = 3;
 
 				for (const auto i : intervals)
 				{
@@ -416,39 +419,87 @@ namespace rtmath {
 					// TODO: Fix bug here. CDF function does not take angles directly. It needs 
 					// conversion of thetas, phis and mus to a different coordinate system.
 
-					std::vector<double> thetas_x(3), phis_x(3), mus_x(3);
+					double start_deg[degree-1] = {
+						i[IntervalTable3dDefs::THETA_MIN],
+						i[IntervalTable3dDefs::PHI_MIN] };
 
+					double end_deg[degree-1] = {
+						i[IntervalTable3dDefs::THETA_MAX],
+						i[IntervalTable3dDefs::PHI_MAX] };
 
-					double weight = VonMisesFisherCDF(
-						i[IntervalTable3dDefs::THETA_MIN],i[IntervalTable3dDefs::THETA_MAX],
-						i[IntervalTable3dDefs::PHI_MIN],i[IntervalTable3dDefs::PHI_MAX],
-						muT, muP, kappa);
-					weight /= static_cast<double>(dw.numBetas());
+					double mid_deg[degree-1] = {
+						i[IntervalTable3dDefs::THETA_PIVOT],
+						i[IntervalTable3dDefs::PHI_PIVOT] };
+
+					double mus_deg[degree] = { muT, muP };
+					
+					double start_pol[degree-1], end_pol[degree-1], mus_pol[degree-1], mid_pol[degree-1];
+					double start_rad[degree-1], end_rad[degree-1];
+					degToSph(degree-1, start_deg, start_pol);
+					degToSph(degree-1, end_deg, end_pol);
+					degToSph(degree-1, mid_deg, mid_pol);
+					degToSph(degree-1, mus_deg, mus_pol);
+
+					double kappa_rad = toRad(kappa);
+					start_rad[0] = toRad(start_deg[0]);
+					start_rad[1] = toRad(start_deg[1]);
+					end_rad[0] = toRad(end_deg[0]);
+					end_rad[1] = toRad(end_deg[1]);
+
+					auto SA2S = [](const double *start_rad, const double *end_rad) -> double
+					{
+						// Omega = int int sin(theta) dtheta dphi
+						// First is theta, then phi
+						//double res = end_rad[1] - start_rad[1];
+						//res *= (cos(start_rad[0])) - (cos(end_rad[0]));
+
+						double sa = sin((end_rad[0] - start_rad[0]) / 2.);
+						double sb = sin((end_rad[1] - start_rad[1]) / 2.);
+						double res = 4. * asin( sa * sb );
+						return abs(res);
+					};
+
+					double weight = VonMisesFisherPDF(degree-1, mid_pol, mus_pol, kappa_rad);
+					weight *= SA2S(start_rad, end_rad); // Scale based on the sphere solid angle
+					//weight *= 4. * pi; // Scale based on sphere surface area
+					weight /= static_cast<double>(dw.numBetas()); // * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
+					weight *= 2. / pi;
 
 					IntervalTable3dEntry ie = i;
-					ie[IntervalTable3dDefs::WEIGHT] = weight;
+					ie[IntervalTable3dDefs::WEIGHT] = abs(weight);
 
 					weights.push_back(std::move(ie));
 				}
 			}
 
-			double VonMisesFisherWeights::VonMisesFisherPDF(double xT, double xP, double muT, double muP, double kappa)
+			double VonMisesFisherWeights::VonMisesFisherPDF(size_t degree, const double *x, const double *mu, double kappa)
 			{
 				const double pi = boost::math::constants::pi<double>();
-				const double C3 = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
-				double vp = (xT * muT) + (xP * muP);
-				double f = C3 * exp(kappa * vp);
+				//const double C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
+				//	/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
+				const double C = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
+				double vp = 0;
+				for (size_t i=0; i<degree; ++i)
+					vp += x[i] * mu[i];
+				double f = C * exp(kappa * vp);
 				return f;
 			}
 
-			double VonMisesFisherWeights::VonMisesFisherCDF(double xT1, double xT2, double xP1, double xP2, double muT, double muP, double kappa)
+			double VonMisesFisherWeights::VonMisesFisherCDF(size_t degree, const double *x1, const double *x2, const double *mu, double kappa)
 			{
+				// Just integration the PDF doesn't work because the division by mu produces zeros in the denominator.
+				// As such, I'll use a variant of the trapeziod rule.
+				// Note: the Jacobian is r^2 * sin(theta). r is 1 here.
+				// Note: surface area of a sphere is 4pi r^2. Will divide to yield the proper cdf.
+				throw debug::xUnimplementedFunction();
 				const double pi = boost::math::constants::pi<double>();
-				const double C3 = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
+				const double C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
+					/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
+				//const double C3 = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
 				
-				double res = C3 / pow(kappa,2.);
-				res *= (1./muT) * ( exp(kappa*muT*xT2) - exp(kappa*muT*xT1) );
-				res *= (1./muP) * ( exp(kappa*muP*xP2) - exp(kappa*muP*xP1) );
+				double res = C;
+				for (size_t i=0; i<degree; ++i)
+					res *= ( exp(kappa*mu[i]*x2[i]) - exp(kappa*mu[i]*x1[i]) ) / (mu[i] * kappa);
 				return res;
 			}
 

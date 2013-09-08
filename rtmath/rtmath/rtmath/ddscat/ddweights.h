@@ -238,6 +238,7 @@ namespace rtmath {
 			class DLEXPORT_rtmath_ddscat OrientationWeights3d
 			{
 			public:
+				typedef IntervalTable3d weightTable;
 				virtual ~OrientationWeights3d();
 				/// Provide a copy of the weighting table
 				void getWeights(IntervalTable3d &weights) const;
@@ -246,7 +247,14 @@ namespace rtmath {
 				IntervalTable3d weights;
 			};
 
-			/// Provides weights for a Von Mises-Fisher distribution
+			/** \brief Provides weights for a Von Mises-Fisher distribution
+			*
+			* \note The static methods of this class are quite capable of handling 
+			* higher dimensions. This class will eventually inherit from 
+			* a vMF base class that will provide these methods.
+			*
+			* \todo Extend class to lower and higher dimensions.
+			**/
 			class DLEXPORT_rtmath_ddscat VonMisesFisherWeights
 				: public OrientationWeights3d
 			{
@@ -260,17 +268,19 @@ namespace rtmath {
 				/** \brief Calculate Von Mises-Fisher PDF.
 				*
 				* x and mus should be in cylindrical coordinates (see Sra 2007 and 2012).
-				* \todo Fix x and mu bug (should take three coordinates)
+				* \see degToSph
 				**/
-				static double VonMisesFisherPDF(double xT, double xP, double muT, double muP, double kappa);
+				static double VonMisesFisherPDF(size_t degree, const double *x, 
+					const double *mu, double kappa);
 				/** \brief Calculate Von Mises-Fisher CDF
 				*
 				* x and mus should be in cylindrical coordinates (see Sra 2007 and Sra 2012).
-				* \todo Fix x and mu bug (should take three coordinates)
+				* \see degToSph
 				**/
-				static double VonMisesFisherCDF(double xT1, double xT2, double xP1, double xP2, double muT, double muP, double kappa);
+				static double VonMisesFisherCDF(size_t degree, const double *x1, 
+					const double *x2, const double *mu, double kappa);
 				/// Convert from angles (degrees) to spherical coordinates, needed for the PDF and CDF functions
-				static void degToSph(const std::vector<double> &in, std::vector<double> &out);
+				static void degToSph(size_t n, const double *in, double *out);
 			protected:
 				double meanTheta;
 				double meanPhi;

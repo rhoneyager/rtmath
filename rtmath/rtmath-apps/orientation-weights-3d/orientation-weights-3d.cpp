@@ -49,10 +49,10 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<vector<string> >(), "input ddPar file")
-			("betas,b", po::value<vector<string> >(), "Specify beta rotations")
-			("thetas,t", po::value<vector<string> > (), "Specify theta rotations")
-			("phis,p", po::value<vector<string> >(), "Specify phi rotations")
+			("input,i", po::value<string >(), "input ddPar file")
+			("betas,b", po::value<string >(), "Specify beta rotations")
+			("thetas,t", po::value<string > (), "Specify theta rotations")
+			("phis,p", po::value<string >(), "Specify phi rotations")
 			("mean_theta", po::value<double>()->default_value(0),
 			"Theta mean (degrees)")
 			("mean_phi", po::value<double>()->default_value(0),
@@ -119,44 +119,24 @@ int main(int argc, char** argv)
 
 			rot = rtmath::ddscat::rotations(bMin,bMax,nB,tMin,tMax,nT,pMin,pMax,nP);
 		}
+		
+		using namespace rtmath::ddscat::weights;
+		ddWeightsDDSCAT dw(rot);
 
 		double muT = vm["mean_theta"].as<double>();
 		double muP = vm["mean_phi"].as<double>();
 		double kappa = vm["kappa"].as<double>();
 
-		std::string srots, method;
-		method = vm["method"].as<std::string>();
+		std::string method;
+		method = "vmf";
+		//method = vm["method"].as<std::string>();
 		std::transform(method.begin(), method.end(), method.begin(), ::tolower);
 
-		if (vm.count("rotations"))
-			srots = vm["rotations"].as<std::string>();
-
-		// interval is a dummy variable
-
-		using namespace rtmath::ddscat::weights;
-		double Min, Max, interval;
-		std::string specializer;
-		size_t N;
-		rtmath::config::extractInterval(srots, Min, Max,interval, N, specializer);
-		if (specializer != "lin" && specializer != "cos") 
-			throw debug::xBadInput("Interval needs to be linearly or cosine spaced.");
-		
-		boost::shared_ptr<ddWeights> dw;
-		if (specializer == "lin")
+		boost::shared_ptr<OrientationWeights3d> ow;
+		if(method == "vmf")
 		{
-			dw = boost::shared_ptr<ddWeights>(new ddWeightsLinInt (Min, Max, N));
-		} else if (specializer == "cos")
-		{
-			dw = boost::shared_ptr<ddWeights>(new ddWeightsCosInt (Min, Max, N));
-		} else doHelp("Unhandled interval type.");
-
-		boost::shared_ptr<OrientationWeights1d> ow;
-		if (method == "uniform")
-		{
-			ow = boost::shared_ptr<OrientationWeights1d>(new Uniform1dWeights(*dw));
-		} else if (method == "vonmises")
-		{
-			ow = boost::shared_ptr<OrientationWeights1d>(new VonMisesWeights(*dw,mu,kappa));
+			ow = boost::shared_ptr<OrientationWeights3d> (new VonMisesFisherWeights(
+				dw, muT, muP, kappa));
 		} else doHelp("Unknown weighting method");
 
 
@@ -164,19 +144,29 @@ int main(int argc, char** argv)
 		{
 			std::string sofile = vm["output"].as<string>();
 			ofstream out(sofile.c_str());
-			out << "Weightings ( " << method << ", mu = " << mu << ", kappa = " << kappa << " ) for " << Min << ":" << N << ":" << Max << ":" << specializer << endl;
-			out << "Angle midpoint (Degrees)\tAngle low (degrees)\tAngle high (degrees)\tPDF\tCDF\n";
-
-			OrientationWeights1d::weightTable wts;
+			out << "Weightings ( " << method << ", muT = " << muT << ", muP = " << muP << ", kappa = " << kappa << " )" << endl;
+			out << "Beta_min (degrees)\tBeta_max (degrees)\tBeta Pivot (degrees)\t"
+				"Theta_min (degrees)\tTheta_max (degrees)\tTheta Pivot (degrees)\t"
+				"Phi_min (degrees)\tPhi_max (Degrees)\tPhi Pivot (degrees)\t"
+				"PDF\tCDF\n";
+			
+			OrientationWeights3d::weightTable wts;
 			ow->getWeights(wts);
 			double cdf = 0;
 			for (auto it = wts.cbegin(); it != wts.cend(); ++it)
 			{
-				cdf += it->second;
-				double low, high, pivot;
-				dw->interval(it->first, low, high, pivot);
-
-				out << pivot<< "\t" << low << "\t" << high << "\t" << it->second << "\t" << cdf << endl;
+				cdf += it->at(IntervalTable3dDefs::WEIGHT);
+				out << it->at(IntervalTable3dDefs::BETA_MIN) << "\t"
+					<< it->at(IntervalTable3dDefs::BETA_MAX) << "\t"
+					<< it->at(IntervalTable3dDefs::BETA_PIVOT) << "\t"
+					<< it->at(IntervalTable3dDefs::THETA_MIN) << "\t"
+					<< it->at(IntervalTable3dDefs::THETA_MAX) << "\t"
+					<< it->at(IntervalTable3dDefs::THETA_PIVOT) << "\t"
+					<< it->at(IntervalTable3dDefs::PHI_MIN) << "\t"
+					<< it->at(IntervalTable3dDefs::PHI_MAX) << "\t"
+					<< it->at(IntervalTable3dDefs::PHI_PIVOT) << "\t"
+					<< it->at(IntervalTable3dDefs::WEIGHT) << "\t"
+					<< cdf << "\n";
 			}
 		}
 
