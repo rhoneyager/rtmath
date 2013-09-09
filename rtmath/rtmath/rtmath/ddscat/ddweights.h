@@ -279,8 +279,14 @@ namespace rtmath {
 				**/
 				static double VonMisesFisherCDF(size_t degree, const double *x1, 
 					const double *x2, const double *mu, double kappa);
-				/// Convert from angles (degrees) to spherical coordinates, needed for the PDF and CDF functions
-				static void degToSph(size_t n, const double *in, double *out);
+				/** \brief Convert from angles (radians) to Cartesian coordinates, 
+				* needed for the PDF and CDF functions.
+				*
+				* \param n is the vector space dimension
+				* \param in is the input point of the form u(r,theta), theta = (t1, ..., t_n-1), and r = mag(x)
+				* \param out is the output point in Cartesian coordinates
+				**/
+				static void radSphToCrt(size_t n, const double *in, double *out);
 			protected:
 				double meanTheta;
 				double meanPhi;

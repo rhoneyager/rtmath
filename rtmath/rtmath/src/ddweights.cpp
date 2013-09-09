@@ -361,35 +361,24 @@ namespace rtmath {
 				weights = this->weights;
 			}
 
-			void VonMisesFisherWeights::degToSph(size_t n, const double *in, double *out)
+			void VonMisesFisherWeights::radSphToCrt(size_t n, const double *in, double *out)
 			{
 				// This function begs for initializer lists, but MSVC2012 doesn't support them.
 				TASSERT(n>0);
-
-				// Incoming angles are in degrees
-				auto degToRad = [](double deg) -> double
-				{
-					const double pi = boost::math::constants::pi<double>();
-					return deg * pi / 180.;
-				};
-
-				std::vector<double> inRad(n);
-				for (size_t i=0; i<n; ++i)
-					inRad[i] = degToRad(in[i]);
 
 				// x_j = sin(theta_1)*sin(theta_2)*...*sin(theta_j-1)*cos(theta_j)  for 1 <= j < p and
 				// x_p = sin(theta_1)*...*sin(theta_p-1)
 
 				for (size_t i=0; i<n; ++i)
 				{
-					out[i] = 1;
-					for (size_t j=0; j<n-1; ++j)
+					out[i] = in[0]; // r
+					if (i < n-1)
+						out[i] *= cos(in[i+1]);
+					for (size_t j=1; j<=i; ++j)
 					{
-						out[i] *= sin(inRad[j]);
+						out[i] *= sin(in[j]);
 					}
-					out[i] *= cos(inRad[n-1]);
 				}
-				out[n-1] *= sin(inRad[n-1]) / cos(inRad[n-1]); // Replace ending cos with sin.
 			}
 
 			VonMisesFisherWeights::VonMisesFisherWeights(const ddWeightsDDSCAT& dw, double muT, double muP, double kappa)
@@ -408,6 +397,12 @@ namespace rtmath {
 				{
 					const double pi = boost::math::constants::pi<double>();
 					return val * pi / 180.;
+				};
+				auto aToRad = [](size_t n, double *vals, double *res)
+				{
+					const double pi = boost::math::constants::pi<double>();
+					for (size_t i=0;i<n;++i)
+						res[i] = vals[i] * pi / 180.;
 				};
 				
 				const double pi = boost::math::constants::pi<double>();
@@ -431,20 +426,22 @@ namespace rtmath {
 						i[IntervalTable3dDefs::THETA_PIVOT],
 						i[IntervalTable3dDefs::PHI_PIVOT] };
 
-					double mus_deg[degree] = { muT, muP };
+					double mus_deg[degree-1] = { muT, muP };
+
+					double start_rad[degree], end_rad[degree], mid_rad[degree], mus_rad[degree];
+					start_rad[0] = 1; end_rad[0] = 1; mid_rad[0] = 1; mus_rad[0] = 1;
+					aToRad(2, start_deg, start_rad+1);
+					aToRad(2, end_deg, end_rad+1);
+					aToRad(2, mid_deg, mid_rad+1);
+					aToRad(2, mus_deg, mus_rad+1);
 					
-					double start_pol[degree-1], end_pol[degree-1], mus_pol[degree-1], mid_pol[degree-1];
-					double start_rad[degree-1], end_rad[degree-1];
-					degToSph(degree-1, start_deg, start_pol);
-					degToSph(degree-1, end_deg, end_pol);
-					degToSph(degree-1, mid_deg, mid_pol);
-					degToSph(degree-1, mus_deg, mus_pol);
+					double start_pol[degree], end_pol[degree], mid_pol[degree], mus_pol[degree];
+					radSphToCrt(degree, start_rad, start_pol);
+					radSphToCrt(degree, end_rad, end_pol);
+					radSphToCrt(degree, mid_rad, mid_pol);
+					radSphToCrt(degree, mus_rad, mus_pol);
 
 					double kappa_rad = toRad(kappa);
-					start_rad[0] = toRad(start_deg[0]);
-					start_rad[1] = toRad(start_deg[1]);
-					end_rad[0] = toRad(end_deg[0]);
-					end_rad[1] = toRad(end_deg[1]);
 
 					auto SA2S = [](const double *start_rad, const double *end_rad) -> double
 					{
@@ -459,11 +456,11 @@ namespace rtmath {
 						return abs(res);
 					};
 
-					double weight = VonMisesFisherPDF(degree-1, mid_pol, mus_pol, kappa_rad);
-					weight *= SA2S(start_rad, end_rad); // Scale based on the sphere solid angle
+					double weight = VonMisesFisherPDF(degree, mid_pol, mus_pol, kappa_rad);
+					//weight *= SA2S(start_rad, end_rad); // Scale based on the sphere solid angle
 					//weight *= 4. * pi; // Scale based on sphere surface area
-					weight /= static_cast<double>(dw.numBetas()); // * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
-					weight *= 2. / pi;
+					weight /= static_cast<double>(dw.numBetas() * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
+					weight *= 4. * pi;
 
 					IntervalTable3dEntry ie = i;
 					ie[IntervalTable3dDefs::WEIGHT] = abs(weight);
@@ -475,9 +472,9 @@ namespace rtmath {
 			double VonMisesFisherWeights::VonMisesFisherPDF(size_t degree, const double *x, const double *mu, double kappa)
 			{
 				const double pi = boost::math::constants::pi<double>();
-				//const double C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
-				//	/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
-				const double C = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
+				const double C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
+					/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
+				//const double C = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
 				double vp = 0;
 				for (size_t i=0; i<degree; ++i)
 					vp += x[i] * mu[i];
@@ -487,19 +484,22 @@ namespace rtmath {
 
 			double VonMisesFisherWeights::VonMisesFisherCDF(size_t degree, const double *x1, const double *x2, const double *mu, double kappa)
 			{
-				// Just integration the PDF doesn't work because the division by mu produces zeros in the denominator.
-				// As such, I'll use a variant of the trapeziod rule.
 				// Note: the Jacobian is r^2 * sin(theta). r is 1 here.
 				// Note: surface area of a sphere is 4pi r^2. Will divide to yield the proper cdf.
-				throw debug::xUnimplementedFunction();
 				const double pi = boost::math::constants::pi<double>();
-				const double C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
-					/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
-				//const double C3 = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) );
+				double C = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) ); // degree = 3 special case
+				if (degree != 3)
+					C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
+						/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
 				
 				double res = C;
+				double denom = 0;
 				for (size_t i=0; i<degree; ++i)
+				{
 					res *= ( exp(kappa*mu[i]*x2[i]) - exp(kappa*mu[i]*x1[i]) ) / (mu[i] * kappa);
+					denom += mu[i] * kappa;
+				}
+				res /= denom;
 				return res;
 			}
 
