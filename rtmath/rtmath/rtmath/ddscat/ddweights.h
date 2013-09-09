@@ -293,7 +293,22 @@ namespace rtmath {
 				double kappa;
 			};
 
-			
+			/// Provides a bimodal vMF distribution, which better matches flake results
+			class DLEXPORT_rtmath_ddscat BimodalVonMisesFisherWeights
+				: public OrientationWeights3d
+			{
+			public:
+				virtual ~BimodalVonMisesFisherWeights() {};
+				/** \brief Construct Bimodal Von Mises-Fisher Weights for a ddWeightsDDSCAT interval.
+				*
+				* Here, mean and kappa are in degrees, for DDSCAT consistency.
+				**/
+				BimodalVonMisesFisherWeights(const ddWeightsDDSCAT&, double muT, double muP, double kappa);
+			protected:
+				double meanTheta;
+				double meanPhi;
+				double kappa;
+			};
 
 			/*
 			/// Gaussian weights where the point is always guaranteed to be positive. 

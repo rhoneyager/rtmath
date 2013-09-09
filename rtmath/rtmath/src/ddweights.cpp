@@ -503,6 +503,101 @@ namespace rtmath {
 				return res;
 			}
 
+			BimodalVonMisesFisherWeights::BimodalVonMisesFisherWeights(const ddWeightsDDSCAT& dw, double muT, double muP, double kappa)
+				: meanTheta(muT), meanPhi(muP), kappa(kappa), OrientationWeights3d()
+			{
+				// For now, assume that the weights will all sum to unity (ddscat has calculated using the usual 
+				// rotation bounds).
+
+				// Assumes that beta orientation weighting is uniform, and that the only variation occurs in 
+				// theta and phi.
+
+				IntervalTable3d intervals;
+				dw.getIntervalTable(intervals);
+
+				auto toRad = [](double val) -> double
+				{
+					const double pi = boost::math::constants::pi<double>();
+					return val * pi / 180.;
+				};
+				auto aToRad = [](size_t n, double *vals, double *res)
+				{
+					const double pi = boost::math::constants::pi<double>();
+					for (size_t i=0;i<n;++i)
+						res[i] = vals[i] * pi / 180.;
+				};
+				
+				const double pi = boost::math::constants::pi<double>();
+				const size_t degree = 3;
+
+				for (const auto i : intervals)
+				{
+					/// \todo There is a bug here. Fix it!
+					// TODO: Fix bug here. CDF function does not take angles directly. It needs 
+					// conversion of thetas, phis and mus to a different coordinate system.
+
+					double start_deg[degree-1] = {
+						i[IntervalTable3dDefs::THETA_MIN],
+						i[IntervalTable3dDefs::PHI_MIN] };
+
+					double end_deg[degree-1] = {
+						i[IntervalTable3dDefs::THETA_MAX],
+						i[IntervalTable3dDefs::PHI_MAX] };
+
+					double mid_deg[degree-1] = {
+						i[IntervalTable3dDefs::THETA_PIVOT],
+						i[IntervalTable3dDefs::PHI_PIVOT] };
+
+					double mus_deg[degree-1] = { muT, muP };
+
+					double mus_deg_b[degree-1] = { 180. - muT, muP + 180. };
+
+					double start_rad[degree], end_rad[degree], mid_rad[degree], mus_rad[degree], mus_b_rad[degree];
+					start_rad[0] = 1; end_rad[0] = 1; mid_rad[0] = 1; mus_rad[0] = 1; mus_b_rad[0] = 1;
+					aToRad(2, start_deg, start_rad+1);
+					aToRad(2, end_deg, end_rad+1);
+					aToRad(2, mid_deg, mid_rad+1);
+					aToRad(2, mus_deg, mus_rad+1);
+					aToRad(2, mus_deg_b, mus_b_rad+1);
+					
+					double start_pol[degree], end_pol[degree], mid_pol[degree], mus_pol[degree], mus_b_pol[degree];
+					VonMisesFisherWeights::radSphToCrt(degree, start_rad, start_pol);
+					VonMisesFisherWeights::radSphToCrt(degree, end_rad, end_pol);
+					VonMisesFisherWeights::radSphToCrt(degree, mid_rad, mid_pol);
+					VonMisesFisherWeights::radSphToCrt(degree, mus_rad, mus_pol);
+					
+					VonMisesFisherWeights::radSphToCrt(degree, mus_b_rad, mus_b_pol);
+
+					double kappa_rad = toRad(kappa);
+
+					auto SA2S = [](const double *start_rad, const double *end_rad) -> double
+					{
+						// Omega = int int sin(theta) dtheta dphi
+						// First is theta, then phi
+						//double res = end_rad[1] - start_rad[1];
+						//res *= (cos(start_rad[0])) - (cos(end_rad[0]));
+
+						double sa = sin((end_rad[0] - start_rad[0]) / 2.);
+						double sb = sin((end_rad[1] - start_rad[1]) / 2.);
+						double res = 4. * asin( sa * sb );
+						return abs(res);
+					};
+
+					double weight_a = VonMisesFisherWeights::VonMisesFisherPDF(degree, mid_pol, mus_pol, kappa_rad);
+					double weight_b = VonMisesFisherWeights::VonMisesFisherPDF(degree, mid_pol, mus_b_pol, kappa_rad);
+					//weight_a /= static_cast<double>(dw.numBetas() * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
+					//weight_a *= 4. * pi;
+					//weight_b /= static_cast<double>(dw.numBetas() * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
+					//weight_b *= 4. * pi;
+					double weight = sqrt((weight_a * weight_a) + (weight_b * weight_b));
+					weight /= static_cast<double>(dw.numBetas() * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
+					weight *= 4. * pi / sqrt(2);
+					IntervalTable3dEntry ie = i;
+					ie[IntervalTable3dDefs::WEIGHT] = abs(weight);
+
+					weights.push_back(std::move(ie));
+				}
+			}
 
 
 			/*

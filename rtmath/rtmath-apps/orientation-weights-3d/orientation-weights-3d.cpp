@@ -61,6 +61,8 @@ int main(int argc, char** argv)
 			"Kappa (degrees) is comparable to 1/sigma^2. Limit of infinity for uniform distribution, "
 			"and 0 for only the mean.")
 			("output,o", po::value<string>(), "Output weight file")
+			("method", po::value<string>()->default_value("vMFdual"), "Specify the method used in the orientation "
+			"calculations (vMF, vMFdual).");
 			;
 
 		hidden.add_options()
@@ -128,14 +130,18 @@ int main(int argc, char** argv)
 		double kappa = vm["kappa"].as<double>();
 
 		std::string method;
-		method = "vmf";
-		//method = vm["method"].as<std::string>();
+		//method = "vmf";
+		method = vm["method"].as<std::string>();
 		std::transform(method.begin(), method.end(), method.begin(), ::tolower);
 
 		boost::shared_ptr<OrientationWeights3d> ow;
 		if(method == "vmf")
 		{
 			ow = boost::shared_ptr<OrientationWeights3d> (new VonMisesFisherWeights(
+				dw, muT, muP, kappa));
+		} else if (method == "vmfdual")
+		{
+			ow = boost::shared_ptr<OrientationWeights3d> (new BimodalVonMisesFisherWeights(
 				dw, muT, muP, kappa));
 		} else doHelp("Unknown weighting method");
 
