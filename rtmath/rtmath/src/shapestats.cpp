@@ -24,8 +24,6 @@
 #include <Eigen/Dense>
 
 #include <Ryan_Serialization/serialization.h>
-
-//#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"

@@ -86,7 +86,7 @@ namespace rtmath {
 			acc_y.resize(nV); // Will probably crash if not.
 			acc_z.resize(nV);
 			acc_r.resize(nV);
-			res.PE.resize(nV, 3);
+			res.PE.resize(nV, 4);
 			res.mom1.resize(nV, 4);
 			res.mom2.resize(nV, 4);
 			res.mominert.resize(nV);
@@ -144,30 +144,6 @@ namespace rtmath {
 			makeMapXYZR(0, res.min, boost::accumulators::min);
 			makeMapXYZR(0, res.max, boost::accumulators::max);
 			*/
-			res.min(0,0) = boost::accumulators::min(acc_x[0]);
-			res.min(0,1) = boost::accumulators::min(acc_y[0]);
-			res.min(0,2) = boost::accumulators::min(acc_z[0]);
-			res.min(0,3) = boost::accumulators::min(acc_r[0]);
-
-			res.max(0,0) = boost::accumulators::max(acc_x[0]);
-			res.max(0,1) = boost::accumulators::max(acc_y[0]);
-			res.max(0,2) = boost::accumulators::max(acc_z[0]);
-			res.max(0,3) = boost::accumulators::max(acc_r[0]);
-
-			res.sum(0,0) = boost::accumulators::sum(acc_x[0]);
-			res.sum(0,1) = boost::accumulators::sum(acc_y[0]);
-			res.sum(0,2) = boost::accumulators::sum(acc_z[0]);
-			res.sum(0,3) = boost::accumulators::sum(acc_r[0]);
-
-			res.skewness(0) = boost::accumulators::skewness(acc_x[0]);
-			res.skewness(1) = boost::accumulators::skewness(acc_y[0]);
-			res.skewness(2) = boost::accumulators::skewness(acc_z[0]);
-			res.skewness(3) = boost::accumulators::skewness(acc_r[0]);
-
-			res.kurtosis(0) = boost::accumulators::kurtosis(acc_x[0]);
-			res.kurtosis(1) = boost::accumulators::kurtosis(acc_y[0]);
-			res.kurtosis(2) = boost::accumulators::kurtosis(acc_z[0]);
-			res.kurtosis(3) = boost::accumulators::kurtosis(acc_r[0]);
 
 			// Absolue value-dependent quantities
 
@@ -229,6 +205,31 @@ namespace rtmath {
 
 			for (size_t i=0; i<nV; i++)
 			{
+				res.min(i,0) = boost::accumulators::min(acc_x[i]);
+				res.min(i,1) = boost::accumulators::min(acc_y[i]);
+				res.min(i,2) = boost::accumulators::min(acc_z[i]);
+				res.min(i,3) = boost::accumulators::min(acc_r[i]);
+
+				res.max(i,0) = boost::accumulators::max(acc_x[i]);
+				res.max(i,1) = boost::accumulators::max(acc_y[i]);
+				res.max(i,2) = boost::accumulators::max(acc_z[i]);
+				res.max(i,3) = boost::accumulators::max(acc_r[i]);
+
+				res.sum(i,0) = boost::accumulators::sum(acc_x[i]);
+				res.sum(i,1) = boost::accumulators::sum(acc_y[i]);
+				res.sum(i,2) = boost::accumulators::sum(acc_z[i]);
+				res.sum(i,3) = boost::accumulators::sum(acc_r[i]);
+
+				res.skewness(i,0) = boost::accumulators::skewness(acc_x[i]);
+				res.skewness(i,1) = boost::accumulators::skewness(acc_y[i]);
+				res.skewness(i,2) = boost::accumulators::skewness(acc_z[i]);
+				res.skewness(i,3) = boost::accumulators::skewness(acc_r[i]);
+
+				res.kurtosis(i,0) = boost::accumulators::kurtosis(acc_x[i]);
+				res.kurtosis(i,1) = boost::accumulators::kurtosis(acc_y[i]);
+				res.kurtosis(i,2) = boost::accumulators::kurtosis(acc_z[i]);
+				res.kurtosis(i,3) = boost::accumulators::kurtosis(acc_r[i]);
+
 				res.mom1(i,0) = boost::accumulators::moment<1>(acc_x[i]);
 				res.mom1(i,1) = boost::accumulators::moment<1>(acc_y[i]);
 				res.mom1(i,2) = boost::accumulators::moment<1>(acc_z[i]);
@@ -298,7 +299,12 @@ namespace rtmath {
 				res.PE(i,0) = g*boost::accumulators::sum(acc_x[i]);
 				res.PE(i,1) = g*boost::accumulators::sum(acc_y[i]);
 				res.PE(i,2) = g*boost::accumulators::sum(acc_z[i]);
+				res.PE(i,3) = 0; // Writing dir_mat_t, but with three elements instead of four.
 			}
+
+			res.areas(0) = 0;
+			res.areas(1) = 0;
+			res.areas(2) = 0;
 
 			// Use std move to insert into set
 			//boost::shared_ptr<const shapeFileStatsRotated> cpres

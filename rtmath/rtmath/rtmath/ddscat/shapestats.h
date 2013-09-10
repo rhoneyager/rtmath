@@ -33,27 +33,29 @@ namespace rtmath {
 				const boost::shared_ptr<const shapeFileStatsRotated> &rhs) const;
 		};
 
-		/*
-		 * Version history:
+		/**
+		 * Version history for shapeFileStats, shapeFileStatsRotated and base classes:
+		 *
+		 * 3 - Bug fixes
 		 * 2 - removed qhull_enabled flag, as vtk convex hulls are now used
 		 * 1 - added qhull enabled / disabled flag when recording calculations
 		 * 0 - 
-		 */
+		 **/
 		class DLEXPORT_rtmath_ddscat shapeFileStatsBase
 		{
 		public:
 			virtual ~shapeFileStatsBase();
-			// Function that, if the shapefile referenced is not loaded, reloads the shapefile
-			// Required for hulling or stats adding operations
+			/// \brief Function that, if the shapefile referenced is not loaded, reloads the 
+			/// shapefile. Required for hulling or stats adding operations.
 			bool load();
 
 			// Set rotation matrix, with each value in degrees
 			//void setRot(double beta, double theta, double phi);
 			void calcStatsBase();
-			// calcStatsRot calculates the stats RELATIVE to the shapefile default rot.
+			/// calcStatsRot calculates the stats RELATIVE to the shapefile default rot.
 			boost::shared_ptr<const shapeFileStatsRotated> calcStatsRot(double beta, double theta, double phi);
 
-			// rot is the effective rotation designated by the choice of a1 and a2
+			/// rot is the effective rotation designated by the choice of a1 and a2
 			Eigen::Matrix3f rot, invrot;
 			double beta, theta, phi;
 
@@ -92,7 +94,7 @@ namespace rtmath {
 
 			std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
 
-			// The object
+			/// The shape
 			boost::shared_ptr<shapefile> _shp;
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		protected:
@@ -180,6 +182,6 @@ namespace rtmath {
 	}
 }
 
-#define SHAPESTATS_VERSION 2
+#define SHAPESTATS_VERSION 3
 BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, SHAPESTATS_VERSION);
 
