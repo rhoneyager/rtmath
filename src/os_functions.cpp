@@ -270,6 +270,7 @@ namespace Ryan_Debug {
 	{
 		HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (NULL == h) return false;
+		CloseHandle(h);
 		// Get parent process name
 		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
 								//| PROCESS_VM_READ
