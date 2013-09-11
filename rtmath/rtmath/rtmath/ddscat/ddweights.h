@@ -310,6 +310,35 @@ namespace rtmath {
 				double kappa;
 			};
 
+			/// Provides weighting based on the base DDSCAT weights
+			class DLEXPORT_rtmath_ddscat DDSCAT3dWeights
+				: public OrientationWeights3d
+			{
+			public:
+				virtual ~DDSCAT3dWeights() {};
+				/** \brief Construct DDSCAT Weights based on a ddWeightsDDSCAT interval.
+				*
+				* This is a trivial adapter to allow 3d weights to be computed easily 
+				* using shared pointers to OrientationWeights3d objects.
+				**/
+				DDSCAT3dWeights(const ddWeightsDDSCAT&);
+			};
+
+			/**
+			 * \brief Adds weighting function support options to a program
+			 *
+			 * \item cmdline provides options only allowed on the command line
+			 * \item config provides options available on the command line and in a config file
+			 * \item hidden provides options allowed anywhere, but are not displayed to the user
+			 **/
+			//void add_options(
+			//	boost::program_options::options_description &cmdline,
+			//	boost::program_options::options_description &config,
+			//	boost::program_options::options_description &hidden);
+			/// Processes options defined in add_options
+			//void process_static_options(
+			//	boost::program_options::variables_map &vm);
+
 			/*
 			/// Gaussian weights where the point is always guaranteed to be positive. 
 			/// It's really double gaussian on an interval of [0,infinity)

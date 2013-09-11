@@ -12,6 +12,8 @@
 #include <cmath>
 #include <ios>
 #include <iomanip>
+#include <thread>
+#include <mutex>
 #include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/ddscat/ddpar.h"
@@ -149,16 +151,25 @@ namespace rtmath {
 
 			// Single level iteration through the path tree
 			vector<path> cands;
+			cands.reserve(50000);
 			copy(directory_iterator(pBase), directory_iterator(), back_inserter(cands));
-			for (const path& p : cands)
+			
+			std::mutex m_scas, m_fmls, m_shape, m_avg, m_par;
+			std::mutex m_pathlist, m_filecheck;
+
+			auto process_path = [&](const path &p)
 			{
+				std::cerr << "\t\t" << p << std::endl;
 				// Handle compressed files (in case my or Liu's scripts compressed the input)
 				std::string uncompressed, meth;
-				Ryan_Serialization::uncompressed_name(p.string(), uncompressed, meth);
+				{
+					std::lock_guard<std::mutex> lock(m_filecheck);
+					Ryan_Serialization::uncompressed_name(p.string(), uncompressed, meth);
+				}
 				path praw(uncompressed);
 				// Extract entension of files in ._ form
 				// Note: some files (like mtable) have no extension. I don't use these.
-				if (!praw.has_extension()) continue;
+				if (!praw.has_extension()) return;
 				path pext = praw.extension();
 				// .avg, .sca and .fml are ddOutputSingle objects. Place them in appropriate places.
 				// .out (target.out) and shape.dat refer to the shapefile. Only one needs to be loaded.
@@ -170,32 +181,67 @@ namespace rtmath {
 					boost::shared_ptr<ddOutputSingle> dds(new ddOutputSingle(p.string()));
 					if (pext.string() == ".avg")
 					{
+						std::lock_guard<std::mutex> lock(m_avg);
 						if (res->avg) RTthrow debug::xBadInput("Simple ddOutput generator accepts only one avg file");
 						res->avg_original = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*dds));
 						res->avg = dds;
 					}
 					if (pext.string() == ".sca")
 					{
-						res->scas_original.insert(boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*dds)));
+						boost::shared_ptr<ddOutputSingle> sorig(new ddOutputSingle(*dds));
+						std::lock_guard<std::mutex> lock(m_scas);
+						res->scas_original.insert(sorig);
 						res->scas.insert(dds);
 					}
 					if (pext.string() == ".fml")
 					{
+						std::lock_guard<std::mutex> lock(m_fmls);
 						res->fmls.insert(dds);
 					}
 				} else if (pext.string() == ".par")
 				{
+					std::lock_guard<std::mutex> lock(m_par);
 					res->parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
 				} else if (pext.string() == ".dat" || pext.string() == ".out")
 				{
-					if (res->shape) continue; // Only needs to be loaded once
+					std::lock_guard<std::mutex> lock(m_shape);
+					if (res->shape) return; // Only needs to be loaded once
 					// Note: the hashed object is the fundamental thing here that needs to be loaded
 					// The other stuff is only loaded for processing, and is not serialized directly.
 					res->shape = boost::shared_ptr<shapefile>(new shapefile(p.string()));
 					// Get the hash and load the stats
 					res->shapeHash = res->shape->hash();
-					res->stats = shapeFileStats::genStats(res->shape);
+					//res->stats = shapeFileStats::genStats(res->shape);
 				}
+			};
+
+			auto process_paths = [&]()
+			{
+				path p;
+				for (;;)
+				{
+					{
+						std::lock_guard<std::mutex> lock(m_pathlist);
+
+						if (!cands.size()) return;
+						p = cands.back();
+						cands.pop_back();
+					}
+					
+					process_path(p);
+				}
+			};
+
+			const size_t numThreads = 4;
+			std::vector<std::thread> pool;
+			for (size_t i=0; i<numThreads;i++)
+			{
+				std::thread t(process_paths);
+				pool.push_back(std::move(t));
+			}
+			for (size_t i=0; i<numThreads;i++)
+			{
+				pool[i].join();
 			}
 
 			// Set a basic source descriptor
@@ -280,13 +326,13 @@ namespace rtmath {
 			// Have the stats add in all relevant rotations
 			for (auto &sca : res->scas)
 			{
-				res->stats->calcStatsRot(sca->beta(), sca->theta(), sca->phi());
+				//res->stats->calcStatsRot(sca->beta(), sca->theta(), sca->phi());
 			}
 
 			// Save the shape in the hash location, if necessary
 			res->shape->writeToHash();
 			// Resave the stats in the hash location
-			res->stats->writeToHash();
+			//res->stats->writeToHash();
 
 			return res;
 		}

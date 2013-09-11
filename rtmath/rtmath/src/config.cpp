@@ -420,6 +420,7 @@ namespace rtmath {
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			std::string fn = filename;
 			if (fn == "") getConfigDefaultFile(fn);
+			if (fn == "") throw debug::xMissingFile("Cannot find the rtmath.conf file");
 			std::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
 			if (cnf != nullptr) _rtconfroot = cnf;
 			return cnf;

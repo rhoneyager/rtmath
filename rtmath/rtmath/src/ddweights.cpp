@@ -11,6 +11,74 @@
 namespace rtmath {
 	namespace ddscat {
 		namespace weights {
+			/*
+			void add_options(
+				boost::program_options::options_description &cmdline,
+				boost::program_options::options_description &config,
+				boost::program_options::options_description &hidden)
+			{
+				namespace po = boost::program_options;
+				using std::string;
+
+				// hash-shape-dir and hash-stats-dir can be found in rtmath.conf. 
+				// So, using another config file is useless.
+				cmdline.add_options()
+					("hash-shape-dir", po::value<string>(), "Override the hash shape directory") // static option
+					("hash-stats-dir", po::value<string>(), "Override the hash stats directory") // static option
+					;
+
+				config.add_options()
+					("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
+					("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
+					("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
+					//("rotations", po::value<string>(), "Specify rotations directly, in ") // static option
+					/// \todo Check for options conflict / default_value priority with shape-hash
+					//("do-hash-shapes", po::value<bool>()->default_value(false), "Create shape hash links")
+					//("do-hash-stats", po::value<bool>()->default_value(false), "Create shape stats")
+					;
+				/// \todo make do-hash-* static, with automatic shape and stat writing on read?
+
+				hidden.add_options()
+					;
+			}
+
+			void process_static_options(
+				boost::program_options::variables_map &vm)
+			{
+				namespace po = boost::program_options;
+				using std::string;
+				using boost::filesystem::path;
+
+				initPaths();
+				if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());
+				if (vm.count("hash-stats-dir")) pHashStats = path(vm["hash-stats-dir"].as<string>());
+
+				// Rotations can be used to automatically set defaults for rotated shape stats
+				// Rotations are always specified (thanks to default_value)
+				string sbetas = vm["betas"].as<string>();
+				paramSet<double> betas(sbetas);
+				string sthetas = vm["thetas"].as<string>();
+				paramSet<double> thetas(sthetas);
+				string sphis = vm["phis"].as<string>();
+				paramSet<double> phis(sphis);
+
+				defaultRots.clear();
+				for (auto beta : betas) for (auto theta : thetas) for (auto phi : phis)
+					defaultRots.push_back(boost::tuple<double,double,double>(beta,theta,phi));
+
+				// Validate paths
+				auto validateDir = [&](path p) -> bool
+				{
+					while (is_symlink(p))
+						p = boost::filesystem::absolute(read_symlink(p), p.parent_path());
+					if (!exists(p)) return false;
+					if (is_directory(p)) return true;
+					return false;
+				};
+				if (!validateDir(pHashShapes)) throw debug::xMissingFile(pHashShapes.string().c_str());
+				if (!validateDir(pHashStats)) throw debug::xMissingFile(pHashStats.string().c_str());
+			}
+			*/
 
 			void ddWeights::getWeights(IndependentWeights &weights) const
 			{
@@ -132,7 +200,7 @@ namespace rtmath {
 				rtmath::config::splitSet(start, end, dn, "lin", pts);
 				for (auto &pt : pts)
 					weights[pt] = 1. / (double) pts.size();
-				
+
 				auto mp = [](double a,double b) -> double
 				{
 					return ( ( a / 2.) + (b / 2.) );
@@ -148,13 +216,13 @@ namespace rtmath {
 				if (pts.size() % 2 == 0) // even n
 				{
 					for (auto &pt : pts)
-						weights[pt] = 1. / (double) pts.size();
+						weights[pt] = 1. / dn;
 				} else { // odd n
 					// First (0) and last (pts.size()-1) points have weighting of 1 / pts.size()
 					// Points 1, 3, 5, ... have weights of 4 / pts.size()
 					// Points 2, 4, 6, ... have weights of 2 / pts.size()
 					size_t i=0;
-					double wtb = 1. / (3. * ((double) n - 1.));
+					double wtb = 1. / (3. * (dn - 1.));
 					for (auto it = pts.cbegin(); it != pts.cend(); ++it, ++i)
 					{
 						weights[*it] = wtb;
@@ -200,24 +268,24 @@ namespace rtmath {
 
 				// Populate the IntervalWeights object
 				for (auto &b : IntBeta)
-				for (auto &t : IntTheta)
-				for (auto &p : IntPhi)
-				{
-					IntervalTable3dEntry it;
-					it[IntervalTable3dDefs::BETA_MIN] = b[IntervalTable1dDefs::MIN];
-					it[IntervalTable3dDefs::BETA_MAX] = b[IntervalTable1dDefs::MAX];
-					it[IntervalTable3dDefs::BETA_PIVOT] = b[IntervalTable1dDefs::PIVOT];
-					it[IntervalTable3dDefs::THETA_MIN] = t[IntervalTable1dDefs::MIN];
-					it[IntervalTable3dDefs::THETA_MAX] = t[IntervalTable1dDefs::MAX];
-					it[IntervalTable3dDefs::THETA_PIVOT] = t[IntervalTable1dDefs::PIVOT];
-					it[IntervalTable3dDefs::PHI_MIN] = p[IntervalTable1dDefs::MIN];
-					it[IntervalTable3dDefs::PHI_MAX] = p[IntervalTable1dDefs::MAX];
-					it[IntervalTable3dDefs::PHI_PIVOT] = p[IntervalTable1dDefs::PIVOT];
-					it[IntervalTable3dDefs::WEIGHT] = b[IntervalTable1dDefs::WEIGHT_DEGEN]
-						* t[IntervalTable1dDefs::WEIGHT_DEGEN]
-						* p[IntervalTable1dDefs::WEIGHT_DEGEN];
-					IntervalWeights.push_back(std::move(it));
-				}
+					for (auto &t : IntTheta)
+						for (auto &p : IntPhi)
+						{
+							IntervalTable3dEntry it;
+							it[IntervalTable3dDefs::BETA_MIN] = b[IntervalTable1dDefs::MIN];
+							it[IntervalTable3dDefs::BETA_MAX] = b[IntervalTable1dDefs::MAX];
+							it[IntervalTable3dDefs::BETA_PIVOT] = b[IntervalTable1dDefs::PIVOT];
+							it[IntervalTable3dDefs::THETA_MIN] = t[IntervalTable1dDefs::MIN];
+							it[IntervalTable3dDefs::THETA_MAX] = t[IntervalTable1dDefs::MAX];
+							it[IntervalTable3dDefs::THETA_PIVOT] = t[IntervalTable1dDefs::PIVOT];
+							it[IntervalTable3dDefs::PHI_MIN] = p[IntervalTable1dDefs::MIN];
+							it[IntervalTable3dDefs::PHI_MAX] = p[IntervalTable1dDefs::MAX];
+							it[IntervalTable3dDefs::PHI_PIVOT] = p[IntervalTable1dDefs::PIVOT];
+							it[IntervalTable3dDefs::WEIGHT] = b[IntervalTable1dDefs::WEIGHT_DEGEN]
+							* t[IntervalTable1dDefs::WEIGHT_DEGEN]
+							* p[IntervalTable1dDefs::WEIGHT_DEGEN];
+							IntervalWeights.push_back(std::move(it));
+						}
 			}
 
 			void ddWeightsDDSCAT::getIntervalTable(IntervalTable3d &res) const
@@ -271,7 +339,7 @@ namespace rtmath {
 				max = intervals.rbegin()->second.second;
 				span = max - min;
 			}
-			
+
 			void OrientationWeights1d::getWeights(weightTable &weights) const
 			{
 				weights = this->weights;
@@ -404,7 +472,7 @@ namespace rtmath {
 					for (size_t i=0;i<n;++i)
 						res[i] = vals[i] * pi / 180.;
 				};
-				
+
 				const double pi = boost::math::constants::pi<double>();
 				const size_t degree = 3;
 
@@ -434,7 +502,7 @@ namespace rtmath {
 					aToRad(2, end_deg, end_rad+1);
 					aToRad(2, mid_deg, mid_rad+1);
 					aToRad(2, mus_deg, mus_rad+1);
-					
+
 					double start_pol[degree], end_pol[degree], mid_pol[degree], mus_pol[degree];
 					radSphToCrt(degree, start_rad, start_pol);
 					radSphToCrt(degree, end_rad, end_pol);
@@ -490,8 +558,8 @@ namespace rtmath {
 				double C = kappa / ( 2.*pi * (exp(kappa) - exp(-kappa) ) ); // degree = 3 special case
 				if (degree != 3)
 					C = pow(kappa,( static_cast<double>(degree)/2.)-1.)
-						/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
-				
+					/ (pow(2.*pi,static_cast<double>(degree)/2.) * boost::math::cyl_bessel_i(( static_cast<double>(degree)/2.)-1, kappa));
+
 				double res = C;
 				double denom = 0;
 				for (size_t i=0; i<degree; ++i)
@@ -526,7 +594,7 @@ namespace rtmath {
 					for (size_t i=0;i<n;++i)
 						res[i] = vals[i] * pi / 180.;
 				};
-				
+
 				const double pi = boost::math::constants::pi<double>();
 				const size_t degree = 3;
 
@@ -559,13 +627,13 @@ namespace rtmath {
 					aToRad(2, mid_deg, mid_rad+1);
 					aToRad(2, mus_deg, mus_rad+1);
 					aToRad(2, mus_deg_b, mus_b_rad+1);
-					
+
 					double start_pol[degree], end_pol[degree], mid_pol[degree], mus_pol[degree], mus_b_pol[degree];
 					VonMisesFisherWeights::radSphToCrt(degree, start_rad, start_pol);
 					VonMisesFisherWeights::radSphToCrt(degree, end_rad, end_pol);
 					VonMisesFisherWeights::radSphToCrt(degree, mid_rad, mid_pol);
 					VonMisesFisherWeights::radSphToCrt(degree, mus_rad, mus_pol);
-					
+
 					VonMisesFisherWeights::radSphToCrt(degree, mus_b_rad, mus_b_pol);
 
 					double kappa_rad = toRad(kappa);
@@ -599,6 +667,18 @@ namespace rtmath {
 				}
 			}
 
+			DDSCAT3dWeights::DDSCAT3dWeights(const ddWeightsDDSCAT& dw)
+			{
+				IntervalTable3d intervals;
+				dw.getIntervalTable(intervals);
+
+				for (const auto i : intervals)
+				{
+					IntervalTable3dEntry ie = i;
+					//ie[IntervalTable3dDefs::WEIGHT] = abs(weight);
+					weights.push_back(std::move(ie));
+				}
+			}
 
 			/*
 			gaussianPosWeights::~gaussianPosWeights()
