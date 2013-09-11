@@ -21,6 +21,11 @@ namespace rtmath
 		/// Write the last recorded code position. Used in error throw messages.
 		void DLEXPORT_rtmath_core dumpErrorLocation(std::ostream &out = std::cerr);
 
+		/// \brief Get number of threads available in the system
+		/// \todo Transfer to Ryan_Debug.
+		/// \todo Finish implementation using Windows and Linux system calls.
+		size_t DLEXPORT_rtmath_core getConcurrentThreadsSupported();
+
 		/// Commonly-used function that expands any possible symlink in a path.
 		boost::filesystem::path DLEXPORT_rtmath_core expandSymlink(const boost::filesystem::path &p);
 

@@ -71,6 +71,8 @@ namespace rtmath {
 			/// Calculates the hash of the given shapefile. Used as a reference when 
 			/// serializing the shape. The hash table allows for smaller stats files.
 			HASH_t hash() const;
+			/// Force a hash to be recalculated
+			HASH_t rehash() const;
 			// Specified in shape.dat
 			// a1 and a2 are the INITIAL vectors (before rotation!)
 			// usually a1 = x_lf, a2 = y_lf

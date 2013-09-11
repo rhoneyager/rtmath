@@ -6,6 +6,8 @@
 #include "Stdafx-core.h"
 #include <iostream>
 #include <sstream>
+#include <thread>
+#include <mutex>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
@@ -22,6 +24,8 @@ namespace {
 	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
 	boost::program_options::options_description SHARED_PRIVATE *pconfig = nullptr;
 	boost::program_options::options_description SHARED_PRIVATE *phidden = nullptr;
+	size_t sys_num_threads = 0;
+	std::mutex m_sys_num_threads;
 }
 
 namespace rtmath
@@ -34,6 +38,15 @@ namespace rtmath
 			out << "Line: " << memcheck::__line__ << std::endl;
 			out << "Caller: " << memcheck::__caller__ << std::endl;
 			out << std::endl;
+		}
+
+		size_t DLEXPORT_rtmath_core getConcurrentThreadsSupported()
+		{
+			std::lock_guard<std::mutex> lock(m_sys_num_threads);
+			if (sys_num_threads) return sys_num_threads;
+			sys_num_threads = static_cast<size_t> (std::thread::hardware_concurrency());
+			if (!sys_num_threads) return 4;
+			return sys_num_threads;
 		}
 
 		int rev(void)

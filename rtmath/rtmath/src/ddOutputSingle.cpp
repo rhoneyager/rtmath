@@ -15,14 +15,13 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
 
 #include <Ryan_Serialization/serialization.h>
-#include "../rtmath/ddscat/ddOutputSingle.h"
-#include "../rtmath/ddscat/ddScattMatrix.h"
-#include "../rtmath/ddscat/ddVersions.h"
-#include "../rtmath/units.h"
-#include "../rtmath/quadrature.h"
-#include "../rtmath/error/error.h"
+
 #include "../rtmath/Serialization/serialization_macros.h"
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -34,6 +33,14 @@
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+
+#include "../rtmath/ddscat/ddOutputSingle.h"
+#include "../rtmath/ddscat/ddScattMatrix.h"
+#include "../rtmath/ddscat/ddVersions.h"
+#include "../rtmath/units.h"
+#include "../rtmath/macros.h"
+#include "../rtmath/quadrature.h"
+#include "../rtmath/error/error.h"
 
 namespace rtmath
 {
@@ -331,9 +338,11 @@ namespace rtmath
 					// The first six numbers are doubles. The seventh is a size_t.
 					// The last two characters describe the frame.
 					std::vector<std::string> snums;
+					snums.reserve(30);
 					char lchar = 0; // last character
 					char cchar = 0; // current character
 					std::string csnum; // current numeric string
+					csnum.reserve(200);
 
 					auto nDone = [&]()
 					{
@@ -358,9 +367,9 @@ namespace rtmath
 					using boost::lexical_cast;
 					using boost::algorithm::trim_copy;
 					using std::complex;
-					pols[0] = complex<double>(lexical_cast<double>(snums[0]), lexical_cast<double>(snums[1]));
-					pols[1] = complex<double>(lexical_cast<double>(snums[2]), lexical_cast<double>(snums[3]));
-					pols[2] = complex<double>(lexical_cast<double>(snums[4]), lexical_cast<double>(snums[5]));
+					pols[0] = complex<double>(macros::m_atof(snums[0].c_str()), macros::m_atof(snums[1].c_str()));
+					pols[1] = complex<double>(macros::m_atof(snums[2].c_str()), macros::m_atof(snums[3].c_str()));
+					pols[2] = complex<double>(macros::m_atof(snums[4].c_str()), macros::m_atof(snums[5].c_str()));
 					vecnum = lexical_cast<size_t>(snums[6]);
 					auto it = str.find_last_of('F');
 					if (it == std::string::npos) throw debug::xBadInput(
@@ -419,6 +428,45 @@ EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddNval<double>::serialize);
 EXPORTINTERNAL(rtmath::ddscat::ddOutputSingleKeys::ddM::serialize);
 */
 
+
+/// Internal namespace for the reader parsers
+namespace {
+	namespace qi = boost::spirit::qi;
+	namespace ascii = boost::spirit::ascii;
+	namespace phoenix = boost::phoenix;
+
+	/** \brief Parses space-separated numbers.
+	*
+	* \see rtmath::ddscat::ddOutputSingle::readF
+	* \see rtmath::ddscat::ddOutputSingle::readMueller
+	**/
+	template <typename Iterator>
+	bool parse_numbers_space(Iterator first, Iterator last, std::vector<double>& v)
+	{
+		using qi::double_;
+		using qi::phrase_parse;
+		using qi::_1;
+		using ascii::space;
+		using phoenix::push_back;
+
+		bool r = phrase_parse(first, last,
+
+			//  Begin grammar
+			(
+			*double_
+			)
+			,
+			//  End grammar
+
+			space, v);
+
+		if (first != last) // fail if we did not get a full match
+			return false;
+		return r;
+	}
+}
+
+
 namespace rtmath {
 	namespace ddscat {
 		using namespace rtmath::ddscat::ddOutputSingleKeys;
@@ -428,7 +476,7 @@ namespace rtmath {
 #define str(s) #s
 #define CHECK(x) if(id==x) return str(x)
 			/*
-			*			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
+			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
 			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
 			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
 			QPOL,DQPHA,
@@ -659,19 +707,13 @@ namespace rtmath {
 				// if we are still in the S matrix header or in the actual data
 				boost::trim(lin);
 				if (std::isalpha(lin.at(0))) continue;
-				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-				boost::char_separator<char> sep("\t ");
-				tokenizer t(lin, sep);
 
-				// TODO: check this
-				// The ordering is theta, phi, S11 (real and complex), S12, S21, S22
-				size_t i=0;
-				double vals[10];
-				for (auto it = t.begin(); it != t.end(); ++it, ++i)
-				{
-					vals[i] = boost::lexical_cast<double>(*it);
-					//std::cerr << " i " << i << " - " << vals[i] << "\n";
-				}
+				std::vector<double> vals;
+				vals.reserve(10);
+
+				if (!parse_numbers_space(lin.begin(), lin.end(), vals))
+					throw debug::xBadInput("Cannot parse F entry");
+
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
 				boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF
 					(freq, vals[0], vals[1],0,0,eProvider));
@@ -712,13 +754,13 @@ namespace rtmath {
 				// TODO: parse the header line to get the list of matrix entries known
 				// TODO: use symmetry relationships in a depGraph to get the other 
 				// mueller matrix entries.
-				typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-				boost::char_separator<char> sep("\t ");
-				tokenizer t(lin, sep);
-
+				
 				// Expecting the first line to begin with theta phi Pol. ...
 				if (std::isalpha(lin.at(0)))
 				{
+					typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+					boost::char_separator<char> sep("\t ");
+					tokenizer t(lin, sep);
 					size_t i=0; // Column number
 					for (auto it = t.begin(); it != t.end(); ++it, ++i)
 					{
@@ -744,8 +786,12 @@ namespace rtmath {
 					// relevant matrix entries
 					// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 					vector<double> vals;
-					for (auto it = t.begin(); it != t.end(); ++it)
-						vals.push_back(boost::lexical_cast<double>(*it));
+					if (!parse_numbers_space(lin.begin(), lin.end(), vals))
+						throw debug::xBadInput("Cannot parse Mueller entry");
+
+					//for (auto it = t.begin(); it != t.end(); ++it)
+					//	vals.push_back(rtmath::macros::m_atof(it->data(), it->size())); // Speedup using my own atof
+						//vals.push_back(boost::lexical_cast<double>(*it));
 					// ddScattMatrixF constructor takes frequency (GHz) and phi
 					boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP(freq, vals[0], vals[1]));
 					ddScattMatrix::PnnType P;

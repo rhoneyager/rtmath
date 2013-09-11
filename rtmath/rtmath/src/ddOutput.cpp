@@ -217,22 +217,28 @@ namespace rtmath {
 
 			auto process_paths = [&]()
 			{
-				path p;
-				for (;;)
-				{
+				try {
+					path p;
+					for (;;)
 					{
-						std::lock_guard<std::mutex> lock(m_pathlist);
+						{
+							std::lock_guard<std::mutex> lock(m_pathlist);
 
-						if (!cands.size()) return;
-						p = cands.back();
-						cands.pop_back();
-					}
+							if (!cands.size()) return;
+							p = cands.back();
+							cands.pop_back();
+						}
 					
-					process_path(p);
+						process_path(p);
+					}
+				} catch (std::exception &e)
+				{
+					std::cerr << e.what() << std::endl;
+					return;
 				}
 			};
 
-			const size_t numThreads = 4;
+			const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
 			std::vector<std::thread> pool;
 			for (size_t i=0; i<numThreads;i++)
 			{
