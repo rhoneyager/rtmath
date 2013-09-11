@@ -89,8 +89,8 @@ int main(int argc, char** argv)
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
-		else if (!doHash)
-			doHelp("Need to specify output");
+		//else if (!doHash)
+		//	doHelp("Need to specify output");
 
 		
 		using namespace boost::filesystem;
