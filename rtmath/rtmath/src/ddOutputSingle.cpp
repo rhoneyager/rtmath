@@ -178,7 +178,9 @@ namespace rtmath
 			class SHARED_INTERNAL ddNval : public ::rtmath::ddscat::ddOutputSingleObj
 			{
 			public:
-				ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") {this->pos = pos; this->head = head; this->tail = tail;}
+				ddNval(size_t pos = 0, const std::string &head = "", const std::string &tail = "") :
+					pos(pos), head(head), tail(tail), val(0)
+				{}
 				virtual ~ddNval() {}
 				virtual void write(std::ostream &out, size_t) const override
 				{
@@ -769,7 +771,7 @@ namespace rtmath {
 						size_t loc = it->find("_");
 						if (loc == string::npos) continue;
 						//std::cerr << it->substr(loc+1) << std::endl;
-						size_t id = (size_t) atoi(it->substr(loc+1).c_str());
+						size_t id = (size_t) macros::m_atoi(it->substr(loc+1).c_str());
 						size_t row = (id / 10) - 1; // Annoying start at 1...
 						size_t col = (id % 10) - 1;
 						//std::cerr << "mIndices loc: " << loc << " id: " << id << " i: " << i << " row: " << row << " col: " << col << std::endl;
@@ -786,6 +788,7 @@ namespace rtmath {
 					// relevant matrix entries
 					// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 					vector<double> vals;
+					vals.reserve(10);
 					if (!parse_numbers_space(lin.begin(), lin.end(), vals))
 						throw debug::xBadInput("Cannot parse Mueller entry");
 
