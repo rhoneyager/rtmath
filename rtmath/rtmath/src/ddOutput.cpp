@@ -159,11 +159,11 @@ namespace rtmath {
 
 			auto process_path = [&](const path &p)
 			{
-				std::cerr << "\t\t" << p << std::endl;
 				// Handle compressed files (in case my or Liu's scripts compressed the input)
 				std::string uncompressed, meth;
 				{
 					std::lock_guard<std::mutex> lock(m_filecheck);
+					std::cerr << "\t\t" << p << std::endl;
 					Ryan_Serialization::uncompressed_name(p.string(), uncompressed, meth);
 				}
 				path praw(uncompressed);
