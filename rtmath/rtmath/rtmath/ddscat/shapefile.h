@@ -35,8 +35,8 @@ namespace rtmath {
 			 * a compressed file.
 			**/
 			void read(const std::string &filename = "");
-			/// Read a shape from an istream (no compression)
-			void read(std::istream &in);
+			/// Read a shape from a memory buffer
+			void readContents(const char *in);
 			/// Write a shapefile (compression allowed)
 			/// \param autoCompress determines whether any output should be 
 			/// automatically compressed. Specifying a compressed output filename 
@@ -51,7 +51,7 @@ namespace rtmath {
 			shapefile();
 		private:
 			void _init();
-			void readHeader(std::istream &in);
+			void readHeader(const char *in, size_t &headerEnd);
 			mutable HASH_t _localhash;
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -101,7 +101,7 @@ namespace rtmath {
 }
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob);
-std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
+//std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
 
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)

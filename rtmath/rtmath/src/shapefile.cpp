@@ -7,8 +7,10 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <thread>
+#include <mutex>
 #include <cmath>
-//#include <boost/chrono.hpp>
+#include <cstring>
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/interprocess/file_mapping.hpp>
@@ -18,8 +20,10 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/lexical_cast.hpp>
-#include <thread>
-#include <mutex>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
 
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
@@ -29,6 +33,42 @@
 #include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
+
+/// Internal namespace for the reader parsers
+namespace {
+	namespace qi = boost::spirit::qi;
+	namespace ascii = boost::spirit::ascii;
+	namespace phoenix = boost::phoenix;
+
+	/** \brief Parses space-separated shapefile entries.
+	**/
+	template <typename Iterator>
+	bool parse_shapefile_entries(Iterator first, Iterator last, std::vector<unsigned long>& v)
+	{
+		using qi::double_;
+		using qi::ulong_;
+		using qi::phrase_parse;
+		using qi::_1;
+		using ascii::space;
+		using phoenix::push_back;
+
+		bool r = phrase_parse(first, last,
+
+			//  Begin grammar
+			(
+			// *ulong_[push_back(phoenix::ref(v), _1)]
+			*ulong_
+			)
+			,
+			//  End grammar
+
+			space, v);
+
+		if (first != last) // fail if we did not get a full match
+			return false;
+		return r;
+	}
+}
 
 namespace rtmath {
 	namespace ddscat {
@@ -50,7 +90,14 @@ namespace rtmath {
 		shapefile::shapefile(std::istream &in)
 		{
 			_init();
-			read(in);
+			std::ostringstream so;
+			boost::iostreams::copy(in, so);
+			std::string s;
+			s = so.str();
+			this->_localhash = HASH(s.c_str(),(int) s.size());
+
+			std::istringstream ss_unc(s);
+			read(s);
 		}
 
 		void shapefile::_init()
@@ -150,32 +197,49 @@ namespace rtmath {
 			void* start = region.get_address();
 			const char* a = (char*) start;
 			this->filename = fname;
+			
 			string s(a, fsize);
 			std::istringstream ss(s);
 
 			
 			boost::iostreams::filtering_istream sin;
-			// s can contain either compressed or uncompressed input at this point.
+			// sin can contain either compressed or uncompressed input at this point.
 			if (cmeth.size())
 				prep_decompression(cmeth, sin);
 			sin.push(ss);
-			//sin.push(a);
-			read(sin);
+			
+			string suncompressed;
+			suncompressed.reserve(1024*1024*10);
+			std::ostringstream so;
+			boost::iostreams::copy(sin, so);
+			suncompressed = so.str();
+			this->_localhash = HASH(suncompressed.c_str(),(int) suncompressed.size());
+
+			istringstream ss_unc(suncompressed);
+			readContents(suncompressed.c_str());
 		}
 
-		void shapefile::readHeader(std::istream &in)
+		void shapefile::readHeader(const char* in, size_t &headerEnd)
 		{
 			using namespace std;
 			_init();
 
 			// Do header processing using istreams.
 			// The previous method used strings, but this didn't work with compressed reads.
+			//size_t &pend = headerEnd;
+			const char* pend = in;
+			const char* pstart = in;
 
 			// The header is seven lines long
 			for (size_t i=0; i<7; i++)
 			{
-				string lin;
-				std::getline(in,lin);
+				pstart = pend;
+				pend = strchr(pend, '\n');
+				pend++; // Get rid of the newline
+				//pend = in.find_first_of("\n", pend+1);
+				string lin(pstart, pend-pstart-1);
+				//std::getline(in,lin);
+				
 				size_t posa = 0, posb = 0;
 				Eigen::Array3f *v = nullptr;
 				switch (i)
@@ -220,73 +284,56 @@ namespace rtmath {
 				}
 			}
 
+			headerEnd = (pend - in) / sizeof(char);
 			latticePts.resize(numPoints,3);
 			latticePtsRi.resize(numPoints,3);
 			latticePtsStd.resize(numPoints,3);
 			latticePtsNorm.resize(numPoints,3);
 		}
 
-		void shapefile::read(std::istream &iin)
+		void shapefile::readContents(const char *iin)
 		{
 			// Since istringstream is so slow, I'm dusting off my old atof macros (in 
 			// macros.h). These were used when I implemented lbl, and are very fast.
-			readHeader(iin);
+			size_t headerEnd = 0;
+			readHeader(iin, headerEnd);
+
+			// Figure out third lattice vector in target frame
+			a3(0) = a1(1)*a2(2)-a1(2)*a2(1);
+			a3(1) = a1(2)*a2(0)-a1(0)*a2(2);
+			a3(2) = a1(0)*a2(1)-a1(1)*a2(0);
+			xd = x0 * d;
 
 			using namespace std;
 			const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
 
 			//Eigen::Vector3f crdsm, crdsi; // point location and diel entries
-			set<size_t> mediaIds;
-			//size_t posa = 0, posb = 0; //pend+1;
-			// Load in the lattice points through iteration and macro.h-based double extraction
-			size_t lastmedia = 0; // Used to speed up tree searches in mediaIds
-			// TODO: parallelize this function
-			for (size_t i=0; i< numPoints; i++)
+			const char* pa = &iin[headerEnd];
+			const char* pb = strchr(pa+1, '\0');
+
+			//std::vector<std::vector<unsigned long>> parser_vals(numThreads);
+			//for (auto &pv : parser_vals)
+			//	pv.reserve((numPoints * 7));
+			//parse_shapefile_entries(pa,pb, parser_vals);
+
+			// Threading the parser to read in and process the points
+			std::vector<std::thread> pool;
+			std::mutex m_pool, m_media;
+			// Create the pool of point ranges to read (partly based on pa and pb range)
+			std::vector<std::pair<const char*, const char*> > point_ranges, point_ranges_b;
+			point_ranges.reserve(numThreads * 21);
+			const char* pe = pa;
+			while (pe < pb)
 			{
-				string in;
-				in.reserve(100);
-				// TODO: avoid the line allocation entirely
-				std::getline(iin,in);
-				size_t posa = 0, posb = 0; //pend+1;
-				auto crdsm = latticePts.block<1,3>(i,0);
-				auto crdsi = latticePtsRi.block<1,3>(i,0);
-				for (size_t j=0; j<7; j++)
-				{
-					// Seek to first nonspace character
-					posa = in.find_first_not_of(" \t\n\0", posb);
-					// Find first space after this position
-					posb = in.find_first_of(" \t\n\0", posa);
-					size_t len = posb - posa;
-					float val;
-					val = (float) rtmath::macros::m_atof(&(in.data()[posa]),len);
-					if (j==0) continue;
-					if (j<=3) crdsm(j-1) = val;
-					else crdsi(j-4) = val;
+				const char* ps = pe;
+				pe += (pb - pa) / (numThreads * 20);
+				if (pe >= pb) pe = pb;
+				else {
+					pe = strchr(pe, '\n');
 				}
-
-				auto checkMedia = [&mediaIds, &lastmedia](size_t id)
-				{
-					if (id == lastmedia) return;
-					if (!mediaIds.count(id))
-						mediaIds.insert(id);
-					lastmedia = id;
-				};
-
-				checkMedia( static_cast<size_t>(crdsi(0)) );
-				checkMedia( static_cast<size_t>(crdsi(1)) );
-				checkMedia( static_cast<size_t>(crdsi(2)) );
+				point_ranges.push_back(std::move(std::pair<const char*, const char*>(ps,pe)));
 			}
-
-			Dielectrics = mediaIds;
-			
-			// Figure out third lattice vector in target frame
-			a3(0) = a1(1)*a2(2)-a1(2)*a2(1);
-			a3(1) = a1(2)*a2(0)-a1(0)*a2(2);
-			a3(2) = a1(0)*a2(1)-a1(1)*a2(0);
-
-			// Do a second pass and generate the lattice from the lattice points
-			// The scaling factors and basis vectors are already in place.
-			xd = x0 * d;
+			point_ranges_b = point_ranges;
 
 			using namespace boost::accumulators;
 			vector<accumulator_set<float, stats<
@@ -304,20 +351,42 @@ namespace rtmath {
 				tag::mean,
 				tag::count> > sr_x, sr_y, sr_z;
 
-			/**
-			 * \brief Calculate preliminary stats.
-			 * \param index is the accumulator set index in the vector to use.
-			 * \param start is the start of the point range to process.
-			 * \param end is the end of the point range to process.
-			 **/
-			auto prelimStats = [&](size_t index, size_t start, size_t end)
+
+			auto process_pool_raws_import = [&](size_t index, const char* start, const char* end)
 			{
-				//for (auto it = latticePts.begin(); it != latticePts.end(); ++it)
-				for (size_t i=start; i< end; i++)
+				std::vector<unsigned long> parser_vals;
+				parser_vals.reserve((numPoints * 8) / (numThreads*19));
+
+				parse_shapefile_entries(start,end, parser_vals);
+				size_t lastmedia = 0; // Used to speed up tree searches in mediaIds
+				set<size_t> mediaIds;
+
+				for (size_t i=0; i < parser_vals.size() / 7; ++i)
 				{
-					auto crdsm = latticePts.block<1,3>(i,0);
-					//auto crdsi = latticePtsRi.block<1,3>(i,0);
-					// Do componentwise multiplication to do scaling
+					size_t pIndex = parser_vals.at(7*i) - 1;
+					auto crdsm = latticePts.block<1,3>(pIndex,0);
+					auto crdsi = latticePtsRi.block<1,3>(pIndex,0);
+					for (size_t j=1; j<7; j++)
+					{
+						float val = (float) parser_vals.at( (7*i) + j );
+						//val = (float) rtmath::macros::m_atof(&(in.data()[posa]),len);
+						//if (j==0) continue;
+						if (j<=3) crdsm(j-1) = val;
+						else crdsi(j-4) = val;
+					}
+
+					auto checkMedia = [&mediaIds, &lastmedia](size_t id)
+					{
+						if (id == lastmedia) return;
+						if (!mediaIds.count(id))
+							mediaIds.insert(id);
+						lastmedia = id;
+					};
+
+					checkMedia( static_cast<size_t>(crdsi(0)) );
+					checkMedia( static_cast<size_t>(crdsi(1)) );
+					checkMedia( static_cast<size_t>(crdsi(2)) );
+
 					Eigen::Array3f crd = crdsm.array() * d.transpose();
 					auto crdsc = latticePtsStd.block<1,3>(i,0);
 					//Eigen::Vector3f -> next line
@@ -332,12 +401,48 @@ namespace rtmath {
 					m_x[index](crdsc(0));
 					m_y[index](crdsc(1));
 					m_z[index](crdsc(2));
+				}
+				std::lock_guard<std::mutex> lock(m_media);
+				for (auto id : mediaIds)
+					Dielectrics.emplace(id);
+			};
 
-					// Save in latticePtsStd
-					//latticePtsStd.push_back(move(crdsc));
+			auto process_pool_raws = [&](size_t i)
+			{
+				try {
+					std::pair<const char*, const char*> p;
+					for (;;)
+					{
+						{
+							std::lock_guard<std::mutex> lock(m_pool);
+
+							if (!point_ranges.size()) return;
+							p = point_ranges.back();
+							point_ranges.pop_back();
+						}
+					
+						process_pool_raws_import(i, p.first, p.second);
+					}
+				} catch (std::exception &e)
+				{
+					std::cerr << e.what() << std::endl;
+					return;
 				}
 			};
-			
+			for (size_t i=0; i<numThreads;i++)
+			{
+				std::thread t(process_pool_raws,i);
+				pool.push_back(std::move(t));
+			}
+			for (size_t i=0; i<numThreads;i++)
+			{
+				pool[i].join();
+			}
+			pool.clear();
+			point_ranges = point_ranges_b;
+
+
+
 			// Process in threads using sets of 500 points each. Threads are in a pool until all points are processed.
 			std::vector<std::pair<size_t, size_t> > cands_init, cands;
 			size_t i=0;
@@ -349,42 +454,6 @@ namespace rtmath {
 				i = maxBound;
 			}
 			cands = cands_init;
-
-			std::mutex m_pool;
-			auto process_pool_prelim = [&](size_t index)
-			{
-				try {
-					std::pair<size_t, size_t> p;
-					for (;;)
-					{
-						{
-							std::lock_guard<std::mutex> lock(m_pool);
-
-							if (!cands.size()) return;
-							p = cands.back();
-							cands.pop_back();
-						}
-					
-						prelimStats(index, p.first, p.second);
-					}
-				} catch (std::exception &e)
-				{
-					std::cerr << e.what() << std::endl;
-					return;
-				}
-			};
-			std::vector<std::thread> pool;
-			for (size_t i=0; i<numThreads;i++)
-			{
-				std::thread t(process_pool_prelim,i);
-				pool.push_back(std::move(t));
-			}
-			for (size_t i=0; i<numThreads;i++)
-			{
-				pool[i].join();
-			}
-
-
 
 			// Combine the stat entries
 			auto findMean = [&](
@@ -515,6 +584,7 @@ namespace rtmath {
 			write(sout);
 		}
 
+		/// \todo Revamp to provide much faster writes.
 		void shapefile::print(std::ostream &out) const
 		{
 			using namespace std;
@@ -550,12 +620,6 @@ namespace rtmath {
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob)
 {
 	ob.print(stream);
-	return stream;
-}
-
-std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob)
-{
-	ob.read(stream);
 	return stream;
 }
 
