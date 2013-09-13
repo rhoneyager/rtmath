@@ -160,13 +160,13 @@ namespace rtmath {
 			auto process_path = [&](const path &p)
 			{
 				// Handle compressed files (in case my or Liu's scripts compressed the input)
-				std::string uncompressed, meth;
+				path praw;
+				std::string meth;
 				{
 					std::lock_guard<std::mutex> lock(m_filecheck);
-					std::cerr << "\t\t" << p << std::endl;
-					Ryan_Serialization::uncompressed_name(p.string(), uncompressed, meth);
+					//std::cerr << "\t\t" << p << "\n";
+					Ryan_Serialization::uncompressed_name(p, praw, meth);
 				}
-				path praw(uncompressed);
 				// Extract entension of files in ._ form
 				// Note: some files (like mtable) have no extension. I don't use these.
 				if (!praw.has_extension()) return;
