@@ -701,6 +701,10 @@ namespace rtmath {
 				freq = units::conv_spec("um","GHz").convert(wave());
 
 			string lin;
+			
+			std::vector<double> vals;
+			vals.reserve(10);
+
 			while(in.good())
 			{
 				std::getline(in,lin);
@@ -710,9 +714,7 @@ namespace rtmath {
 				boost::trim(lin);
 				if (std::isalpha(lin.at(0))) continue;
 
-				std::vector<double> vals;
-				vals.reserve(10);
-
+				vals.clear();
 				if (!parse_numbers_space(lin.begin(), lin.end(), vals))
 					throw debug::xBadInput("Cannot parse F entry");
 
@@ -744,6 +746,8 @@ namespace rtmath {
 			string lin;
 			mMuellerIndices &mIndices = _muellerMap;
 			mIndices.clear();
+			vector<double> vals;
+			vals.reserve(10);
 
 			while(in.good())
 			{
@@ -787,8 +791,7 @@ namespace rtmath {
 					// The ordering is theta, phi, polarization, and then the 
 					// relevant matrix entries
 					// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
-					vector<double> vals;
-					vals.reserve(10);
+					vals.clear();
 					if (!parse_numbers_space(lin.begin(), lin.end(), vals))
 						throw debug::xBadInput("Cannot parse Mueller entry");
 

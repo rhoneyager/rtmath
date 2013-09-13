@@ -322,6 +322,9 @@ namespace rtmath {
 			// Create the pool of point ranges to read (partly based on pa and pb range)
 			std::vector<std::pair<const char*, const char*> > point_ranges, point_ranges_b;
 			point_ranges.reserve(numThreads * 21);
+			std::vector<std::vector<unsigned long> > parser_vals(numThreads);
+			for (auto &p : parser_vals)
+				p.reserve((numPoints * 8) / (numThreads*19));
 			const char* pe = pa;
 			while (pe < pb)
 			{
@@ -354,21 +357,18 @@ namespace rtmath {
 
 			auto process_pool_raws_import = [&](size_t index, const char* start, const char* end)
 			{
-				std::vector<unsigned long> parser_vals;
-				parser_vals.reserve((numPoints * 8) / (numThreads*19));
-
-				parse_shapefile_entries(start,end, parser_vals);
+				parse_shapefile_entries(start,end, parser_vals[index]);
 				size_t lastmedia = 0; // Used to speed up tree searches in mediaIds
 				set<size_t> mediaIds;
 
-				for (size_t i=0; i < parser_vals.size() / 7; ++i)
+				for (size_t i=0; i < parser_vals[index].size() / 7; ++i)
 				{
-					size_t pIndex = parser_vals.at(7*i) - 1;
+					size_t pIndex = parser_vals[index].at(7*i) - 1;
 					auto crdsm = latticePts.block<1,3>(pIndex,0);
 					auto crdsi = latticePtsRi.block<1,3>(pIndex,0);
 					for (size_t j=1; j<7; j++)
 					{
-						float val = (float) parser_vals.at( (7*i) + j );
+						float val = (float) parser_vals[index].at( (7*i) + j );
 						//val = (float) rtmath::macros::m_atof(&(in.data()[posa]),len);
 						//if (j==0) continue;
 						if (j<=3) crdsm(j-1) = val;
