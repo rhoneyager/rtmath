@@ -19,6 +19,8 @@
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/qi_omit.hpp>
+#include <boost/spirit/include/qi_repeat.hpp>
 
 #include <Ryan_Serialization/serialization.h>
 
@@ -41,6 +43,43 @@
 #include "../rtmath/macros.h"
 #include "../rtmath/quadrature.h"
 #include "../rtmath/error/error.h"
+
+/// Internal namespace for the reader parsers
+namespace {
+	namespace qi = boost::spirit::qi;
+	namespace ascii = boost::spirit::ascii;
+	namespace phoenix = boost::phoenix;
+
+	/// Parses a set number of doubles mixed with text in a line
+	template <typename Iterator>
+	bool parse_string_ddNval(Iterator first, Iterator last, size_t pos, double &val)
+	{
+		using qi::double_;
+		using qi::ulong_;
+		using qi::char_;
+		using qi::phrase_parse;
+		using qi::_1;
+		using ascii::space;
+		using phoenix::push_back;
+		using qi::repeat;
+		using qi::omit;
+
+		bool r = phrase_parse(first, last,
+
+			//  Begin grammar
+			(
+			omit[repeat(pos)[*char_("a-zA-Z.*=,/-()<>^_:")] ] >> double_
+			)
+			,
+			//  End grammar
+
+			space, val);
+
+		if (first != last) // fail if we did not get a full match
+			return false;
+		return r;
+	}
+}
 
 namespace rtmath
 {
@@ -194,12 +233,11 @@ namespace rtmath
 				}
 				virtual void read(std::istream &in) override
 				{
-					std::string lin;
+					std::string lin, junk;
 					std::getline(in,lin);
-					std::istringstream ii(lin);
-					for (size_t i=0; i<pos; i++)
-						ii >> lin;
-					ii >> val;
+					double pv = 0;
+					parse_string_ddNval(lin.begin(), lin.end(), pos, pv);
+					val = static_cast<T>(pv);
 				}
 				size_t pos;
 				T val;

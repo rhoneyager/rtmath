@@ -254,12 +254,15 @@ namespace rtmath {
 			wThetas(tMin, tMax, nT),
 				wBetas(bMin, bMax, nB),
 				wPhis(pMin, pMax, nP)
-			{ }
+			{ _init(); }
 
 			ddWeightsDDSCAT::ddWeightsDDSCAT(const rotations& rots) :
 				wThetas(rots.tMin(), rots.tMax(), rots.tN()),
 				wBetas(rots.bMin(), rots.bMax(), rots.bN()),
 				wPhis(rots.pMin(), rots.pMax(), rots.pN())
+			{ _init(); }
+
+			void ddWeightsDDSCAT::_init()
 			{
 				IntervalTable1d IntBeta, IntTheta, IntPhi;
 				wBetas.getIntervals(IntBeta);
@@ -268,24 +271,24 @@ namespace rtmath {
 
 				// Populate the IntervalWeights object
 				for (auto &b : IntBeta)
-					for (auto &t : IntTheta)
-						for (auto &p : IntPhi)
-						{
-							IntervalTable3dEntry it;
-							it[IntervalTable3dDefs::BETA_MIN] = b[IntervalTable1dDefs::MIN];
-							it[IntervalTable3dDefs::BETA_MAX] = b[IntervalTable1dDefs::MAX];
-							it[IntervalTable3dDefs::BETA_PIVOT] = b[IntervalTable1dDefs::PIVOT];
-							it[IntervalTable3dDefs::THETA_MIN] = t[IntervalTable1dDefs::MIN];
-							it[IntervalTable3dDefs::THETA_MAX] = t[IntervalTable1dDefs::MAX];
-							it[IntervalTable3dDefs::THETA_PIVOT] = t[IntervalTable1dDefs::PIVOT];
-							it[IntervalTable3dDefs::PHI_MIN] = p[IntervalTable1dDefs::MIN];
-							it[IntervalTable3dDefs::PHI_MAX] = p[IntervalTable1dDefs::MAX];
-							it[IntervalTable3dDefs::PHI_PIVOT] = p[IntervalTable1dDefs::PIVOT];
-							it[IntervalTable3dDefs::WEIGHT] = b[IntervalTable1dDefs::WEIGHT_DEGEN]
-							* t[IntervalTable1dDefs::WEIGHT_DEGEN]
-							* p[IntervalTable1dDefs::WEIGHT_DEGEN];
-							IntervalWeights.push_back(std::move(it));
-						}
+				for (auto &t : IntTheta)
+				for (auto &p : IntPhi)
+				{
+					IntervalTable3dEntry it;
+					it[IntervalTable3dDefs::BETA_MIN] = b[IntervalTable1dDefs::MIN];
+					it[IntervalTable3dDefs::BETA_MAX] = b[IntervalTable1dDefs::MAX];
+					it[IntervalTable3dDefs::BETA_PIVOT] = b[IntervalTable1dDefs::PIVOT];
+					it[IntervalTable3dDefs::THETA_MIN] = t[IntervalTable1dDefs::MIN];
+					it[IntervalTable3dDefs::THETA_MAX] = t[IntervalTable1dDefs::MAX];
+					it[IntervalTable3dDefs::THETA_PIVOT] = t[IntervalTable1dDefs::PIVOT];
+					it[IntervalTable3dDefs::PHI_MIN] = p[IntervalTable1dDefs::MIN];
+					it[IntervalTable3dDefs::PHI_MAX] = p[IntervalTable1dDefs::MAX];
+					it[IntervalTable3dDefs::PHI_PIVOT] = p[IntervalTable1dDefs::PIVOT];
+					it[IntervalTable3dDefs::WEIGHT] = b[IntervalTable1dDefs::WEIGHT_DEGEN]
+					* t[IntervalTable1dDefs::WEIGHT_DEGEN]
+					* p[IntervalTable1dDefs::WEIGHT_DEGEN];
+					IntervalWeights.push_back(std::move(it));
+				}
 			}
 
 			void ddWeightsDDSCAT::getIntervalTable(IntervalTable3d &res) const

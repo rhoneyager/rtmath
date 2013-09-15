@@ -68,6 +68,60 @@ namespace {
 			return false;
 		return r;
 	}
+
+	/*
+	struct parse_stats
+	{
+		parse_stats() : mins(3,0), maxs(3,0), means(3,0) {}
+		std::vector<double> mins, maxs, means;
+	};
+
+	template <typename Iterator>
+	bool parse_shapefile_entries_new(Iterator first, Iterator last, std::vector<unsigned long>& v, parse_stats &s, size_t n)
+	{
+		using qi::double_;
+		using qi::ulong_;
+		using qi::phrase_parse;
+		using qi::_1;
+		using qi::_2;
+		using ascii::space;
+		using phoenix::ref;
+		using phoenix::push_back;
+
+		bool r = phrase_parse(first, last,
+
+			//  Begin grammar
+			(
+			*(
+			// Cell ID
+			double_[push_back(phoenix::ref(v), _1)] >> 
+			// X
+			double_ >> 
+			// Y
+			double_ >> 
+			// Z
+			double_ >> 
+			// iX
+			ulong_ >> 
+			// iY
+			ulong_ >> 
+			// iZ
+			ulong_
+			)
+			// *ulong_[push_back(phoenix::ref(v), _1)]
+			//*ulong_
+			)
+			,
+			//  End grammar
+
+			space, v);
+
+		if (first != last) // fail if we did not get a full match
+			return false;
+		return r;
+	}
+
+	*/
 }
 
 namespace rtmath {

@@ -11,11 +11,59 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/qi_omit.hpp>
+#include <boost/spirit/include/qi_repeat.hpp>
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/error/error.h"
+
+
+/// Internal namespace for the reader parsers
+namespace {
+	namespace qi = boost::spirit::qi;
+	namespace ascii = boost::spirit::ascii;
+	namespace phoenix = boost::phoenix;
+
+	/// Parses a version number string
+	template <typename Iterator>
+	bool parse_ddversion(Iterator first, Iterator last, std::vector<unsigned int> &v)
+	{
+		using qi::double_;
+		using qi::uint_;
+		using qi::char_;
+		using qi::phrase_parse;
+		using qi::_1;
+		using ascii::space;
+		using phoenix::push_back;
+		using qi::repeat;
+		using qi::omit;
+
+		bool r = phrase_parse(first, last,
+
+			//  Begin grammar
+			(
+			//omit[string("DDSCAT")] >> 
+			omit[repeat(0,6)[*char_("a-zA-Z,-.='")]] >>
+			uint_[push_back(phoenix::ref(v), _1)] >> 
+			*( '.' >> uint_[push_back(phoenix::ref(v), _1)] )
+			// >> omit[repeat[*char_]]
+			)
+			,
+			//  End grammar
+
+			space);
+
+		if (first != last) // fail if we did not get a full match
+			return false;
+		return r;
+	}
+}
 
 namespace
 {
@@ -57,6 +105,21 @@ namespace rtmath
 				start = s.begin();
 				end = s.end();
 
+				std::vector<unsigned int> v;
+				parse_ddversion(start,end,v);
+
+				size_t ret = 0;
+				if (!v.size()) throw rtmath::debug::xBadInput("Bad version id");
+				for (auto it = v.begin(); it != v.end(); ++it)
+				{
+					//                                std::cerr << "Token " << *it << std::endl;
+					size_t i = static_cast<size_t>(*it);
+					ret *= 10;
+					ret += i;
+				}
+
+				return ret;
+				/*
 				static const boost::regex e("[0-9]\\.[0-9]\\.[0-9]");
 				static const boost::regex eb("[0-9]\\.[0-9]");
 				boost::match_results<std::string::const_iterator> what;
@@ -81,6 +144,7 @@ namespace rtmath
 				}
 
 				return ret;
+				*/
 			}
 
 			std::string getVerString(size_t id)

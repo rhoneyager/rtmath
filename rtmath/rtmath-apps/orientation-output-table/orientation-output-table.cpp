@@ -122,7 +122,6 @@ int main(int argc, char** argv)
 		if (is_directory(ps))
 		{
 			// Input is a ddscat run
-			boost::shared_ptr<ddOutput> ddOut;
 			ddOut = ddOutput::generate(ps.string());
 		} else if (Ryan_Serialization::known_format(ps)) {
 			// Input may be a ddOutput file
@@ -132,7 +131,12 @@ int main(int argc, char** argv)
 		} else doHelp("Unable to parse input expression.");
 
 		ddOut->parfile->getRots(rot);
-		
+		double Qbk_iso = 0;
+		double Qsca_iso = 0;
+		Qbk_iso = ddOut->avg->getStatEntry(ddscat::stat_entries::QBKM);
+		Qsca_iso = ddOut->avg->getStatEntry(ddscat::stat_entries::QSCAM);
+
+
 		using namespace rtmath::ddscat::weights;
 		ddWeightsDDSCAT dw(rot);
 
@@ -150,7 +154,9 @@ int main(int argc, char** argv)
 		ofstream out(sofile.c_str());
 
 		out << "Method\tShape Hash\teta\tkappa\tmu_theta\tmu_phi\tFrequency (GHz)\tAeff (um)\t"
-			"Qsca_m\tQbk_m\n";
+			"Qsca_m\tQbk_m\tWeight_CDF\tQsca_norm\tQbk_norm\tQsca_iso\tQbk_iso\t"
+			"Qsca_ratio\tQbk_ratio\tQsca_norm_ratio\tQbk_norm_ratio\t"
+			"Qsca_pe\tQbk_pe\tQsca_norm_pe\tQbk_norm_pe\n";
 
 		for (auto &kappa : kappas)
 		for (auto &eta : etas)
@@ -172,7 +178,7 @@ int main(int argc, char** argv)
 			
 			OrientationWeights3d::weightTable wts;
 			ow->getWeights(wts);
-			double Qsca = 0, Qbk = 0;
+			double Qsca = 0, Qbk = 0, CDF = 0;
 			
 			for (auto it = wts.cbegin(); it != wts.cend(); ++it)
 			{
@@ -181,12 +187,21 @@ int main(int argc, char** argv)
 				auto ot = std::find_if(ddOut->scas.cbegin(), ddOut->scas.cend(),
 					[&](const boost::shared_ptr<ddOutputSingle> &val)
 				{
-					if (val->beta() < it->at(IntervalTable3dDefs::BETA_MIN)) return false;
-					if (val->beta() >= it->at(IntervalTable3dDefs::BETA_MAX)) return false;
-					if (val->theta() < it->at(IntervalTable3dDefs::THETA_MIN)) return false;
-					if (val->theta() >= it->at(IntervalTable3dDefs::THETA_MAX)) return false;
-					if (val->phi() < it->at(IntervalTable3dDefs::PHI_MIN)) return false;
-					if (val->phi() >= it->at(IntervalTable3dDefs::PHI_PIVOT)) return false;
+					if (rot.bN() > 1)
+					{
+						if (val->beta() < it->at(IntervalTable3dDefs::BETA_MIN) - 1.e-5) return false;
+						if (val->beta() > it->at(IntervalTable3dDefs::BETA_MAX) + 1.e-5) return false;
+					}
+					if (rot.tN() > 1)
+					{
+						if (val->theta() < it->at(IntervalTable3dDefs::THETA_MIN) - 1.e-5) return false;
+						if (val->theta() > it->at(IntervalTable3dDefs::THETA_MAX) + 1.e-5) return false;
+					}
+					if (rot.pN() > 1)
+					{
+						if (val->phi() < it->at(IntervalTable3dDefs::PHI_MIN) - 1.e-5) return false;
+						if (val->phi() > it->at(IntervalTable3dDefs::PHI_MAX) + 1.e-5) return false;
+					}
 					return true;
 				});
 				if (ot == ddOut->scas.cend())
@@ -200,7 +215,14 @@ int main(int argc, char** argv)
 
 				Qsca += (*ot)->getStatEntry(QSCAM) * it->at(IntervalTable3dDefs::WEIGHT);
 				Qbk += (*ot)->getStatEntry(QBKM) * it->at(IntervalTable3dDefs::WEIGHT);
+				CDF += it->at(IntervalTable3dDefs::WEIGHT);
 			}
+
+			auto pe = [](double val, double ref) -> double
+			{
+				double res = abs((val-ref)/ref) * 100;
+				return res;
+			};
 
 			out << method << "\t"
 				<< ddOut->shapeHash.lower << "\t"
@@ -211,7 +233,21 @@ int main(int argc, char** argv)
 				<< ddOut->freq << "\t"
 				<< ddOut->aeff << "\t"
 				<< Qsca << "\t"
-				<< Qbk << "\n";
+				<< Qbk << "\t"
+				<< CDF << "\t"
+				<< Qsca / CDF << "\t"
+				<< Qbk / CDF << "\t"
+				<< Qsca_iso << "\t"
+				<< Qbk_iso << "\t"
+				<< (Qsca) / Qsca_iso << "\t"
+				<< (Qbk) / Qbk_iso << "\t"
+				<< (Qsca / CDF) / Qsca_iso << "\t"
+				<< (Qbk / CDF) / Qbk_iso << "\t"
+				<< pe(Qsca,Qsca_iso) << "\t"
+				<< pe(Qbk,Qbk_iso) << "\t"
+				<< pe(Qsca/CDF, Qsca_iso) << "\t"
+				<< pe(Qbk/CDF, Qbk_iso) << "\n"
+				;
 
 		}
 

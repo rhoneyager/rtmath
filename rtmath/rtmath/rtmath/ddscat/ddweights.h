@@ -169,6 +169,7 @@ namespace rtmath {
 				/// Get number of orientations
 				size_t size() const { return wBetas.size() * wThetas.size() * wPhis.size(); }
 			private:
+				void _init();
 				ddWeightsCosInt wThetas;
 				ddWeightsLinInt wPhis;
 				ddWeightsLinInt wBetas;
