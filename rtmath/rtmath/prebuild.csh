@@ -1,6 +1,8 @@
 #!/bin/tcsh
 echo "Running pre-build"
 set RTMATHCONF = $HOME/.rtmath
+set RTMATHCONFB = $HOME/rtmath.conf
+set RTMATHCONFC = $HOME/rtmath/rtmath.conf
 #set RTMATHCONF = /home/rhoneyag/.rtmath
 echo "Getting revision information"
 # Set the subversion revision and repository information
@@ -18,4 +20,7 @@ echo "#define SUB_REV $rev" >> $file
 echo "#define SUB_DATE "\""$dt"\"" " >> $file
 echo "#define SUB_SOURCE "\""$url"\"" " >> $file
 echo "#define RTC "\""$RTMATHCONF"\""" >> $file
+echo "#define RTCB "\""$RTMATHCONFB"\""" >> $file
+echo "#define RTCC "\""$RTMATHCONFC"\""" >> $file
+
 

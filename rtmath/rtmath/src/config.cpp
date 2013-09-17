@@ -394,9 +394,15 @@ namespace rtmath {
 			filename = "";
 			using namespace boost::filesystem;
 			path testUser(RTC);
+			path testUserB(RTCB);
+			path testUserC(RTCC);
 			path testSys(SYS_RTC);
 			if (exists(testUser))
 				filename = RTC;
+			if (exists(testUserB))
+				filename = RTCB;
+			if (exists(testUserC))
+				filename = RTCC;
 			else if (exists(testSys))
 				filename = SYS_RTC;
 

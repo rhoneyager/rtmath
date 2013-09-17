@@ -12,6 +12,14 @@ set ln=%USERPROFILE%\.rtmath
 set lnb=%ln:\=/%
 echo #define RTC "%lnb%" >> %1/debug_subversion.h
 
+set lnc=%USERPROFILE%\rtmath.conf
+set lnd=%lnc:\=/%
+echo #define RTCB "%lnd%" >> %1/debug_subversion.h
+
+set lne=%USERPROFILE%\rtmath\rtmath.conf
+set lnf=%lne:\=/%
+echo #define RTCC "%lnf%" >> %1/debug_subversion.h
+
 goto end
 
 :error
