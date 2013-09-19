@@ -1,12 +1,38 @@
 #include "Stdafx-ddscat.h"
 #include <cmath>
+#include <ctime>
+#include <mutex>
+#include <atomic>
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/erf.hpp>
+#include <boost/random/random_device.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_on_sphere.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
 #include "../rtmath/splitSet.h"
 #include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/error/error.h"
+
+
+/// Namespace contains random number generator information
+namespace
+{
+	typedef boost::random::mt19937 gen_type;
+	gen_type rand_gen;
+	std::mutex rand_mutex;
+	std::atomic<bool> inited(false);
+	void init_rand()
+	{
+		if (inited) return;
+		std::lock_guard<std::mutex> lock(rand_mutex);
+
+		rand_gen.seed(static_cast<unsigned int>(std::time(0)));
+		inited = true;
+	}
+}
 
 namespace rtmath {
 	namespace ddscat {
@@ -79,6 +105,9 @@ namespace rtmath {
 				if (!validateDir(pHashStats)) throw debug::xMissingFile(pHashStats.string().c_str());
 			}
 			*/
+
+			ddWeights::ddWeights(double start, double end, size_t n)
+				: start(start), end(end), n(n) {}
 
 			void ddWeights::getWeights(IndependentWeights &weights) const
 			{
@@ -194,6 +223,7 @@ namespace rtmath {
 			}
 
 			ddWeightsLinInt::ddWeightsLinInt(double start, double end, size_t n)
+				: ddWeights(start, end, n)
 			{
 				double dn = (double) n;
 				std::set<double> pts;
@@ -209,6 +239,7 @@ namespace rtmath {
 			}
 
 			ddWeightsCosInt::ddWeightsCosInt(double start, double end, size_t n)
+				: ddWeights(start, end, n)
 			{
 				double dn = (double) n;
 				std::set<double> pts;
@@ -246,6 +277,60 @@ namespace rtmath {
 				};
 				fillIntervalTable(start, end, mpc);
 			}
+
+			/*
+			double ddWeightsLinInt::getRandomPoint() const
+			{
+				init_rand();
+				std::lock_guard<std::mutex> lock(rand_mutex);
+				boost::random::uniform_real_distribution<double> dist(start,end);
+				double val = dist(rand_gen);
+				return val;
+			}
+
+			void ddWeightsLinInt::getRandomPoints(size_t n, std::vector<double> &out) const
+			{
+				init_rand();
+				out.clear();
+				out.reserve(n);
+				
+				std::lock_guard<std::mutex> lock(rand_mutex);
+				boost::random::uniform_real_distribution<double> dist(start,end);
+				for (size_t i=0; i<n; i++)
+				{
+					double val = dist(rand_gen);
+					out.push_back(val);
+				}
+			}
+
+			double ddWeightsCosInt::getRandomPoint() const
+			{
+				init_rand();
+				std::lock_guard<std::mutex> lock(rand_mutex);
+				boost::random::uniform_on_sphere<double> dist(1);
+				boost::variate_generator<gen_type&, boost::uniform_on_sphere<double> >
+					random_on_sphere(rand_gen, dist);
+				std::vector<double> random_sphere_point = random_on_sphere();
+				return random_sphere_point.at(0);
+			}
+
+			void ddWeightsCosInt::getRandomPoints(size_t n, std::vector<double> &out) const
+			{
+				out.clear();
+				out.reserve(n);
+
+				init_rand();
+				std::lock_guard<std::mutex> lock(rand_mutex);
+				boost::random::uniform_on_sphere<double> dist(1);
+				boost::variate_generator<gen_type&, boost::uniform_on_sphere<double> >
+					random_on_sphere(rand_gen, dist);
+				for (size_t i=0; i<n; i++)
+				{
+					std::vector<double> random_sphere_point = random_on_sphere();
+					out.push_back(random_sphere_point.at(0));
+				}
+			}
+			*/
 
 			ddWeightsDDSCAT::ddWeightsDDSCAT(
 				double bMin, double bMax, size_t nB,

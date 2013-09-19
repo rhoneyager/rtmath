@@ -90,8 +90,18 @@ namespace rtmath {
 				void getIntervals(IntervalTable &intervals) const;
 				/// Provide a copy of the newer interval table
 				void getIntervals(IntervalTable1d &intervals1d) const;
+				// Get a random point in the interval range
+				//virtual double getRandomPoint() const = 0;
+				// Get random points in the interval range
+				//virtual void getRandomPoints(size_t n, std::vector<double> &) const = 0;
 			protected:
-				ddWeights() {}
+				ddWeights(double start = 0, double end = 0, size_t n = 0);
+				/// Start point
+				double start;
+				/// End point
+				double end;
+				/// Number of points
+				size_t n;
 				/// Weight at each coordinate
 				IndependentWeights weights;
 				/// Degeneracy table (may be used in derived classes)
@@ -114,6 +124,8 @@ namespace rtmath {
 			public:
 				ddWeightsLinInt(double start, double end, size_t n);
 				virtual ~ddWeightsLinInt() {};
+				//virtual double getRandomPoint() const override;
+				//virtual void getRandomPoints(size_t n, std::vector<double> &) const override;
 			};
 
 			/// \brief Generate cosine-spaced weighting points, following 
@@ -125,6 +137,8 @@ namespace rtmath {
 			public:
 				ddWeightsCosInt(double start, double end, size_t n);
 				virtual ~ddWeightsCosInt() {};
+				//virtual double getRandomPoint() const override;
+				//virtual void getRandomPoints(size_t n, std::vector<double> &) const override;
 			};
 
 			/// Generates weights for imported DDSCAT results
