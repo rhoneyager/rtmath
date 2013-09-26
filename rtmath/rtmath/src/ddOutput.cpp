@@ -256,6 +256,7 @@ namespace rtmath {
 			path pbdir = absolute(pdir);
 			res->sources.insert(pbdir.string());
 			// Set a basic tag based on the avg file's TARGET line
+			if (res->avg)
 			{
 				std::string starget;
 				res->avg->getTARGET(starget);
@@ -266,8 +267,14 @@ namespace rtmath {
 			}
 
 			// Set the frequency and effective radius
-			res->freq = units::conv_spec("um","GHz").convert(res->avg->wave());
-			res->aeff = res->avg->aeff();
+			if (res->avg)
+			{
+				res->freq = units::conv_spec("um","GHz").convert(res->avg->wave());
+				res->aeff = res->avg->aeff();
+			} else {
+				res->aeff = 0;
+				res->freq = 0;
+			}
 
 			// Set generator to null generator
 			// Nothing need be done
@@ -327,7 +334,8 @@ namespace rtmath {
 
 			// Populate ms
 			/// \todo Allow for multiple refractive indices
-			res->ms.push_back(res->avg->getM());
+			if (res->avg)
+				res->ms.push_back(res->avg->getM());
 
 			// Have the stats add in all relevant rotations
 			for (auto &sca : res->scas)
@@ -363,6 +371,7 @@ namespace rtmath {
 			//res->sources.insert(dir);
 
 			// Set a basic tag based on the avg file's TARGET line
+			if (res->avg)
 			{
 				std::string starget;
 				res->avg->getTARGET(starget);
@@ -373,8 +382,14 @@ namespace rtmath {
 			}
 
 			// Set the frequency and effective radius
-			res->freq = units::conv_spec("um","GHz").convert(res->avg->wave());
-			res->aeff = res->avg->aeff();
+			if (res->avg)
+			{
+				res->freq = units::conv_spec("um","GHz").convert(res->avg->wave());
+				res->aeff = res->avg->aeff();
+			} else{
+				res->aeff = 0;
+				res->freq = 0;
+			}
 
 			// Set generator to null generator
 			// Nothing need be done
@@ -382,7 +397,8 @@ namespace rtmath {
 
 			// Populate ms
 			/// \todo Allow for multiple refractive indices
-			res->ms.push_back(res->avg->getM());
+			if (res->avg)
+				res->ms.push_back(res->avg->getM());
 
 			// Save the shape in the hash location, if necessary
 			res->shape->writeToHash();

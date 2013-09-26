@@ -3,6 +3,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
+#include <complex>
 #include <iostream>
 #include <string>
 #include <Ryan_Debug/debug.h>
@@ -137,10 +138,18 @@ int main(int argc, char** argv)
 
 			rotations rots;
 			ddOut->parfile->getRots(rots);
-			double Qbk_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QBKM);
-			double Qsca_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QSCAM);
-			double Qabs_iso = ddOut->avg->getStatEntry(stat_entries::QABSM);
-			double Qext_iso = ddOut->avg->getStatEntry(stat_entries::QEXTM);
+
+			double Qbk_iso = 0;
+			double Qsca_iso = 0;
+			double Qabs_iso = 0;
+			double Qext_iso = 0;
+			if (ddOut->avg)
+			{
+				Qbk_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QBKM);
+				Qsca_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QSCAM);
+				Qabs_iso = ddOut->avg->getStatEntry(stat_entries::QABSM);
+				Qext_iso = ddOut->avg->getStatEntry(stat_entries::QEXTM);
+			}
 			using namespace rtmath::ddscat::weights;
 			ddWeightsDDSCAT dw(rots);
 			OrientationWeights3d::weightTable wts;
@@ -188,14 +197,16 @@ int main(int argc, char** argv)
 				"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"
 				"Beta\tTheta\tPhi\tWeight\tQsca_ori\tQbk_ori\tQabs_ori\tQext_ori"<< endl;
 				*/
+				std::complex<double> m;
+				if (ddOut->ms.size()) m = ddOut->ms.at(0);
 				out << p.string() << "\t" << ddOut->description << "\t"
 					<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
-					<< ddOut->freq << "\t" << ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
+					<< ddOut->freq << "\t" << m.real() << "\t" << m.imag() << "\t"
 					<< ddOut->aeff << "\t"
-					<< ddOut->avg->getStatEntry(stat_entries::QSCAM) << "\t"
-					<< ddOut->avg->getStatEntry(stat_entries::QBKM) << "\t"
-					<< ddOut->avg->getStatEntry(stat_entries::QABSM) << "\t"
-					<< ddOut->avg->getStatEntry(stat_entries::QEXTM) << "\t"
+					<< Qsca_iso << "\t"
+					<< Qbk_iso << "\t"
+					<< Qabs_iso << "\t"
+					<< Qext_iso << "\t"
 					<< (*ot)->beta() << "\t" << (*ot)->theta() << "\t" << (*ot)->phi() << "\t"
 					<< it->at(IntervalTable3dDefs::WEIGHT) << "\t"
 					<< (*ot)->getStatEntry(stat_entries::QSCAM) << "\t"
