@@ -158,6 +158,7 @@ int main(int argc, char** argv)
 
 			ow->getWeights(wts);
 
+			/// \todo Fix program to work with random distributions!!!!!
 			
 			for (auto it = wts.cbegin(); it != wts.cend(); ++it)
 			{
@@ -183,14 +184,19 @@ int main(int argc, char** argv)
 					}
 					return true;
 				});
+				double wt = 0;
 				if (ot == ddOut->scas.cend())
 				{
-					cerr << "Could not match rotation ("
-						<< it->at(IntervalTable3dDefs::BETA_PIVOT) << ", "
-						<< it->at(IntervalTable3dDefs::THETA_PIVOT) << ", "
-						<< it->at(IntervalTable3dDefs::PHI_PIVOT) << ").\n";
-					continue;
-				}
+					// Only do matching if gridded weights are indicated.
+					if (Qbk_iso)
+					{
+						cerr << "Could not match rotation ("
+							<< it->at(IntervalTable3dDefs::BETA_PIVOT) << ", "
+							<< it->at(IntervalTable3dDefs::THETA_PIVOT) << ", "
+							<< it->at(IntervalTable3dDefs::PHI_PIVOT) << ").\n";
+						continue;
+					} else wt = 0;
+				} else wt = it->at(IntervalTable3dDefs::WEIGHT);
 
 				/* out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 				"M_real\tM_imag\tAeff (um)\t"
@@ -208,7 +214,7 @@ int main(int argc, char** argv)
 					<< Qabs_iso << "\t"
 					<< Qext_iso << "\t"
 					<< (*ot)->beta() << "\t" << (*ot)->theta() << "\t" << (*ot)->phi() << "\t"
-					<< it->at(IntervalTable3dDefs::WEIGHT) << "\t"
+					<< wt << "\t"
 					<< (*ot)->getStatEntry(stat_entries::QSCAM) << "\t"
 					<< (*ot)->getStatEntry(stat_entries::QBKM) << "\t"
 					<< (*ot)->getStatEntry(stat_entries::QABSM) << "\t"
