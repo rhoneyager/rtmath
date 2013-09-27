@@ -190,6 +190,22 @@ namespace rtmath {
 				IntervalTable3d IntervalWeights;
 			};
 
+			/// Generates weights for imported DDSCAT results with a statistically random orientation distribution
+			/*
+			class DLEXPORT_rtmath_ddscat ddWeightsDDSCATrandom
+			{
+			public:
+				/// Constructor that takes the number of rotations considered
+				ddWeightsDDSCATrandom(size_t n);
+				virtual ~ddWeightsDDSCATrandom() {}
+				/// Gets the weight for a given orientation
+				double getWeight(double beta, double theta, double phi) const;
+				/// Get the number of orientations
+				size_t size() const {return n;}
+			protected:
+				size_t n;
+			};
+			*/
 
 			/// Base class for weighting distributions in 1d space
 			class DLEXPORT_rtmath_ddscat OrientationWeights1d
