@@ -18,6 +18,7 @@
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
+#include "../../rtmath/rtmath/units.h"
 //#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
@@ -43,6 +44,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input directories or files")
 			("output,o", po::value<string>(), "specify output file (.tsv)")
+			("isotropic-weights,I", "Force weights to be isotropic. Used for nonstandard ddscat sets.")
 			;
 
 		po::positional_options_description p;
@@ -79,12 +81,18 @@ int main(int argc, char** argv)
 		else doHelp("Need to specify input(s)");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
 		else doHelp("Need to specify output file.");
+		bool isoWts = false;
+		if (vm.count("isotropic-weights")) isoWts = true;
 
 		ofstream out(sOutput.c_str());
 		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			"M_real\tM_imag\tAeff (um)\t"
-			"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso\t"
-			"Beta\tTheta\tPhi\tWeight\tQsca_ori\tQbk_ori\tQabs_ori\tQext_ori"<< endl;
+			"Qsca_m_iso\tQbk_m_iso\tQabs_m_iso\tQext_m_iso\t"
+			"Beta\tTheta\tPhi\tWeight\t"
+			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\t"
+			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\t"
+			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori"
+			<< endl;
 
 		using namespace boost::filesystem;
 		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
@@ -158,67 +166,85 @@ int main(int argc, char** argv)
 
 			ow->getWeights(wts);
 
-			/// \todo Fix program to work with random distributions!!!!!
-			
-			for (auto it = wts.cbegin(); it != wts.cend(); ++it)
+
+			for (const auto &it : ddOut->scas)
 			{
-				// Find the appropriate sca file
-				/// \todo Rewrite to add weighting table to ddOutput better.
-				auto ot = std::find_if(ddOut->scas.cbegin(), ddOut->scas.cend(),
-					[&](const boost::shared_ptr<ddOutputSingle> &val)
+				// Find the appropriate weight.
+				// If not found, just set to the isotropic case weight.
+				auto ot = wts.cend();
+				if (!isoWts)
 				{
-					if (rots.bN() > 1)
+					ot = std::find_if(wts.cbegin(), wts.cend(), 
+					[&](const IntervalTable3dEntry &val)
 					{
-						if (val->beta() < it->at(IntervalTable3dDefs::BETA_MIN) - 1.e-5) return false;
-						if (val->beta() > it->at(IntervalTable3dDefs::BETA_MAX) + 1.e-5) return false;
-					}
-					if (rots.tN() > 1)
-					{
-						if (val->theta() < it->at(IntervalTable3dDefs::THETA_MIN) - 1.e-5) return false;
-						if (val->theta() > it->at(IntervalTable3dDefs::THETA_MAX) + 1.e-5) return false;
-					}
-					if (rots.pN() > 1)
-					{
-						if (val->phi() < it->at(IntervalTable3dDefs::PHI_MIN) - 1.e-5) return false;
-						if (val->phi() > it->at(IntervalTable3dDefs::PHI_MAX) + 1.e-5) return false;
-					}
-					return true;
-				});
+						if (rots.bN() > 1)
+						{
+							if (it->beta() < val.at(IntervalTable3dDefs::BETA_MIN) - 1.e-5) return false;
+							if (it->beta() > val.at(IntervalTable3dDefs::BETA_MAX) + 1.e-5) return false;
+						}
+						if (rots.tN() > 1)
+						{
+							if (it->theta() < val.at(IntervalTable3dDefs::THETA_MIN) - 1.e-5) return false;
+							if (it->theta() > val.at(IntervalTable3dDefs::THETA_MAX) + 1.e-5) return false;
+						}
+						if (rots.pN() > 1)
+						{
+							if (it->phi() < val.at(IntervalTable3dDefs::PHI_MIN) - 1.e-5) return false;
+							if (it->phi() > val.at(IntervalTable3dDefs::PHI_MAX) + 1.e-5) return false;
+						}
+						return true;
+					});
+				}
 				double wt = 0;
-				if (ot == ddOut->scas.cend())
+				if (ot == wts.cend())
 				{
 					// Only do matching if gridded weights are indicated.
 					if (Qbk_iso)
 					{
 						cerr << "Could not match rotation ("
-							<< it->at(IntervalTable3dDefs::BETA_PIVOT) << ", "
-							<< it->at(IntervalTable3dDefs::THETA_PIVOT) << ", "
-							<< it->at(IntervalTable3dDefs::PHI_PIVOT) << ").\n";
+							<< it->beta() << ", "
+							<< it->theta() << ", "
+							<< it->phi() << ").\n";
 						continue;
-					} else wt = 0;
-				} else wt = it->at(IntervalTable3dDefs::WEIGHT);
+					} else {
+						if (isoWts)
+							wt = 1. / static_cast<double>(ddOut->scas.size());
+						else wt = -1.;
+					}
+				} else wt = ot->at(IntervalTable3dDefs::WEIGHT);
 
 				/* out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 				"M_real\tM_imag\tAeff (um)\t"
 				"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"
 				"Beta\tTheta\tPhi\tWeight\tQsca_ori\tQbk_ori\tQabs_ori\tQext_ori"<< endl;
 				*/
-				std::complex<double> m;
-				if (ddOut->ms.size()) m = ddOut->ms.at(0);
+				std::complex<double> m = it->getM();
+				double freq = rtmath::units::conv_spec("um","GHz").convert(it->wave());
 				out << p.string() << "\t" << ddOut->description << "\t"
 					<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
-					<< ddOut->freq << "\t" << m.real() << "\t" << m.imag() << "\t"
-					<< ddOut->aeff << "\t"
+					<< freq << "\t" << m.real() << "\t" << m.imag() << "\t"
+					<< it->aeff() << "\t"
 					<< Qsca_iso << "\t"
 					<< Qbk_iso << "\t"
 					<< Qabs_iso << "\t"
 					<< Qext_iso << "\t"
-					<< (*ot)->beta() << "\t" << (*ot)->theta() << "\t" << (*ot)->phi() << "\t"
+					<< it->beta() << "\t" << it->theta() << "\t" << it->phi() << "\t"
 					<< wt << "\t"
-					<< (*ot)->getStatEntry(stat_entries::QSCAM) << "\t"
-					<< (*ot)->getStatEntry(stat_entries::QBKM) << "\t"
-					<< (*ot)->getStatEntry(stat_entries::QABSM) << "\t"
-					<< (*ot)->getStatEntry(stat_entries::QEXTM) << "\n"
+					<< it->getStatEntry(stat_entries::QSCAM) << "\t"
+					<< it->getStatEntry(stat_entries::QBKM) << "\t"
+					<< it->getStatEntry(stat_entries::QABSM) << "\t"
+					<< it->getStatEntry(stat_entries::QEXTM) << "\t"
+					<< it->getStatEntry(stat_entries::G1M) << "\t"
+					<< it->getStatEntry(stat_entries::QSCA1) << "\t"
+					<< it->getStatEntry(stat_entries::QBK1) << "\t"
+					<< it->getStatEntry(stat_entries::QABS1) << "\t"
+					<< it->getStatEntry(stat_entries::QEXT1) << "\t"
+					<< it->getStatEntry(stat_entries::G11) << "\t"
+					<< it->getStatEntry(stat_entries::QSCA2) << "\t"
+					<< it->getStatEntry(stat_entries::QBK2) << "\t"
+					<< it->getStatEntry(stat_entries::QABS2) << "\t"
+					<< it->getStatEntry(stat_entries::QEXT2) << "\t"
+					<< it->getStatEntry(stat_entries::G12) << "\n"
 					;
 			}
 		}

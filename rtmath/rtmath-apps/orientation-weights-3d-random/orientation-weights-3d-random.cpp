@@ -179,6 +179,7 @@ int main(int argc, char** argv)
 					"set n=0\n"
 					"while ($n < " << n << ")\n"
 					"\tcd $n\n"
+					"\techo \"$n / 6156\"\n"
 					"\tset OMP_NUM_THREADS=4\n"
 					"\tddscat >& ddscat.log\n"
 					"\tcp w000r000k000.sca ../summary/r${n}.sca\n"
