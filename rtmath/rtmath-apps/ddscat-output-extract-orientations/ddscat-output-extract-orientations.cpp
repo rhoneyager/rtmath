@@ -89,9 +89,9 @@ int main(int argc, char** argv)
 			"M_real\tM_imag\tAeff (um)\t"
 			"Qsca_m_iso\tQbk_m_iso\tQabs_m_iso\tQext_m_iso\t"
 			"Beta\tTheta\tPhi\tWeight\t"
-			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\t"
-			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\t"
-			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori"
+			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
+			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
+			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori"
 			<< endl;
 
 		using namespace boost::filesystem;
@@ -213,11 +213,6 @@ int main(int argc, char** argv)
 					}
 				} else wt = ot->at(IntervalTable3dDefs::WEIGHT);
 
-				/* out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
-				"M_real\tM_imag\tAeff (um)\t"
-				"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"
-				"Beta\tTheta\tPhi\tWeight\tQsca_ori\tQbk_ori\tQabs_ori\tQext_ori"<< endl;
-				*/
 				std::complex<double> m = it->getM();
 				double freq = rtmath::units::conv_spec("um","GHz").convert(it->wave());
 				out << p.string() << "\t" << ddOut->description << "\t"
