@@ -247,6 +247,7 @@ int main(int argc, char** argv)
 					<< it->getStatEntry(stat_entries::G12) << "\n"
 					;
 			}
+			std::cerr << "\tProcessed " << ddOut->scas.size() << " orientations.\n";
 		}
 
 	} catch (std::exception &e)

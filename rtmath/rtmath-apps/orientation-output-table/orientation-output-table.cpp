@@ -212,11 +212,15 @@ int main(int argc, char** argv)
 						});
 						if (ot == ddOut->scas.cend())
 						{
-							cerr << "Could not match rotation ("
-								<< it->at(IntervalTable3dDefs::BETA_PIVOT) << ", "
-								<< it->at(IntervalTable3dDefs::THETA_PIVOT) << ", "
-								<< it->at(IntervalTable3dDefs::PHI_PIVOT) << ").\n";
-							continue;
+							// Only attempt matching for the gridded orientation case.
+							if (Qbk_iso)
+							{
+								cerr << "Could not match rotation ("
+									<< it->at(IntervalTable3dDefs::BETA_PIVOT) << ", "
+									<< it->at(IntervalTable3dDefs::THETA_PIVOT) << ", "
+									<< it->at(IntervalTable3dDefs::PHI_PIVOT) << ").\n";
+								continue;
+							}
 						}
 
 						Qsca += (*ot)->getStatEntry(QSCAM) * it->at(IntervalTable3dDefs::WEIGHT);

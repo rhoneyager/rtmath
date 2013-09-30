@@ -285,7 +285,8 @@ namespace rtmath {
 			// Also process any fml files and regenerate full P matrices from the F matrix.
 			{
 				rtmath::ddscat::rotations rots;
-				res->parfile->getRots(rots);
+				if (res->parfile)
+					res->parfile->getRots(rots);
 				weights::ddWeightsDDSCAT wts(rots);
 				
 				float numScas = (float) res->scas.size();
@@ -344,8 +345,10 @@ namespace rtmath {
 			}
 
 			// Save the shape in the hash location, if necessary
-			res->shape->writeToHash();
+			if (res->shape)
+				res->shape->writeToHash();
 			// Resave the stats in the hash location
+			// if (res->stats)
 			//res->stats->writeToHash();
 
 			return res;
