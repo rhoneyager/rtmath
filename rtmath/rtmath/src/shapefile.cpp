@@ -649,10 +649,10 @@ namespace rtmath {
 				"# DATA_COMPONENTS: is optional and tells the BOV reader how many\n"
 				"# components your data has. 1=scalar, 2=complex number, 3=vector,\n"
 				"# 4 and beyond indicate an array variable. You can use \"COMPLEX\"\n"
-				"# instead of “2” for complex numbers. When your data consists of\n"
+				"# instead of \"2\" for complex numbers. When your data consists of\n"
 				"# multiple components, all components for a cell or node are written\n"
 				"# sequentially to the file before going to the next cell or node.\n"
-				"DATA_COMPONENTS: 3\n";
+				"DATA_COMPONENTS: 1\n";
 			// Then, write the data file
 			//ofstream out(sDataFile.c_str(), std::ios::binary | std::ios::out);
 			FILE * pOut;
@@ -662,20 +662,21 @@ namespace rtmath {
 			const size_t sy = static_cast<size_t>(maxs(1) - mins(1));
 			const size_t sz = static_cast<size_t>(maxs(2) - mins(2));
 			const size_t size = sx * sy * sz;
-			std::unique_ptr<short[]> array(new short[size*3]);
-			std::fill_n(array.get(), size*3, 0);
+			std::unique_ptr<short[]> array(new short[size*1]);
+			std::fill_n(array.get(), size*1, 0);
 			for (size_t i=0; i < numPoints; ++i)
 			{
 				auto crdsm = latticePts.block<1,3>(i,0);
 				auto crdsi = latticePtsRi.block<1,3>(i,0);
 				
-				size_t start = crdsm(2) * sx * sy;
-				start += crdsm(1) * sx;
-				start += crdsm(0);
+				size_t start = static_cast<size_t>(crdsm(2)) * sx * sy;
+				start += static_cast<size_t>(crdsm(1)) * sx;
+				start += static_cast<size_t>(crdsm(0));
+				start *= 1;
 
 				array[start+0] = static_cast<short>(crdsi(0));
-				array[start+1] = static_cast<short>(crdsi(1));
-				array[start+2] = static_cast<short>(crdsi(2));
+				//array[start+1] = static_cast<short>(crdsi(1));
+				//array[start+2] = static_cast<short>(crdsi(2));
 			}
 			fwrite((void*)array.get(), sizeof(short), size, pOut);
 			fclose(pOut);
