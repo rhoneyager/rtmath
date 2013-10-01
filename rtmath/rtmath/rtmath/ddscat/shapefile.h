@@ -48,6 +48,8 @@ namespace rtmath {
 			void write(std::ostream &out) const;
 			/// Export a shapefile to vtk output
 			void writeVTK(const std::string &fname) const;
+			/// Export a shapefile to bov output
+			void writeBOV(const std::string &prefix) const;
 			shapefile();
 		private:
 			void _init();

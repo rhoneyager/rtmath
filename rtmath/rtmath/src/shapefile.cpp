@@ -2,6 +2,7 @@
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -10,6 +11,7 @@
 #include <thread>
 #include <mutex>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -607,6 +609,76 @@ namespace rtmath {
 		{
 			rtmath::ddscat::convexHull hull(latticePtsStd);
 			hull.writeVTKraw(fname);
+		}
+
+		void shapefile::writeBOV(const std::string &prefix) const
+		{
+			using namespace boost::filesystem;
+			using std::string;
+			using std::ofstream;
+			string sDataFile = string(prefix).append(".dat");
+			string sCtrlFile = string(prefix).append(".bov");
+			path pDatafile = path(sDataFile).filename();
+			// First, write the control file
+			ofstream oct(sCtrlFile.c_str(), std::ios::binary | std::ios::out);
+			oct << "TIME: 0\n"
+				"DATA_FILE: " << pDatafile.string() << "\n"
+				"# The data file size corresponds to the raw flake dimensions\n"
+				"DATA_SIZE: "
+				<< static_cast<int>(maxs(0) - mins(0)) << " "
+				<< static_cast<int>(maxs(1) - mins(1)) << " "
+				<< static_cast<int>(maxs(2) - mins(2)) << "\n"
+				"# Allowable values for DATA_FORMAT are: BYTE,SHORT,INT,FLOAT,DOUBLE\n"
+				"DATA_FORMAT: SHORT\n"
+				"VARIABLE: Composition\n"
+				"# Endian representation of the computer that created the data.\n"
+				"# Intel is LITTLE, many other processors are BIG.\n"
+				"DATA_ENDIAN: LITTLE\n"
+				"# Centering refers to how the data is distributed in a cell. If you\n"
+				"# give \"zonal\" then it’s 1 data value per zone. Otherwise the data\n"
+				"# will be centered at the nodes.\n"
+				"CENTERING: zonal\n"
+				"# BRICK_ORIGIN lets you specify a new coordinate system origin for\n"
+				"# the mesh that will be created to suit your data.\n"
+				"BRICK_ORIGIN: "
+				<< static_cast<int>(x0(0)) << " "
+				<< static_cast<int>(x0(1)) << " "
+				<< static_cast<int>(x0(2)) << "\n"
+				"# BRICK_SIZE lets you specify the size of the brick.\n"
+				"BRICK_SIZE: 10. 10. 10.\n"
+				"# DATA_COMPONENTS: is optional and tells the BOV reader how many\n"
+				"# components your data has. 1=scalar, 2=complex number, 3=vector,\n"
+				"# 4 and beyond indicate an array variable. You can use \"COMPLEX\"\n"
+				"# instead of “2” for complex numbers. When your data consists of\n"
+				"# multiple components, all components for a cell or node are written\n"
+				"# sequentially to the file before going to the next cell or node.\n"
+				"DATA_COMPONENTS: 3\n";
+			// Then, write the data file
+			//ofstream out(sDataFile.c_str(), std::ios::binary | std::ios::out);
+			FILE * pOut;
+			pOut = fopen(sDataFile.c_str(), "wb");
+			// Allocate an array of the correct size
+			const size_t sx = static_cast<size_t>(maxs(0) - mins(0));
+			const size_t sy = static_cast<size_t>(maxs(1) - mins(1));
+			const size_t sz = static_cast<size_t>(maxs(2) - mins(2));
+			const size_t size = sx * sy * sz;
+			std::unique_ptr<short[]> array(new short[size*3]);
+			std::fill_n(array.get(), size*3, 0);
+			for (size_t i=0; i < numPoints; ++i)
+			{
+				auto crdsm = latticePts.block<1,3>(i,0);
+				auto crdsi = latticePtsRi.block<1,3>(i,0);
+				
+				size_t start = crdsm(2) * sx * sy;
+				start += crdsm(1) * sx;
+				start += crdsm(0);
+
+				array[start+0] = static_cast<short>(crdsi(0));
+				array[start+1] = static_cast<short>(crdsi(1));
+				array[start+2] = static_cast<short>(crdsi(2));
+			}
+			fwrite((void*)array.get(), sizeof(short), size, pOut);
+			fclose(pOut);
 		}
 
 		void shapefile::write(const std::string &filename, bool autoCompress) const
