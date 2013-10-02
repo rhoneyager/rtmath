@@ -61,6 +61,7 @@ int main(int argc, char** argv)
 		{
 			string bPrefix = vm["bov"].as<string>();
 			cerr << "Writing BOV files with prefix " << bPrefix << endl;
+			//shp.write(string(bPrefix).append("-orig.dat"));
 			shp.writeBOV(bPrefix);
 		}
 

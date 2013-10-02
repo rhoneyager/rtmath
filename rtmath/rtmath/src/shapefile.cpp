@@ -444,7 +444,7 @@ namespace rtmath {
 					checkMedia( static_cast<size_t>(crdsi(2)) );
 
 					Eigen::Array3f crd = crdsm.array() * d.transpose();
-					auto crdsc = latticePtsStd.block<1,3>(i,0);
+					auto crdsc = latticePtsStd.block<1,3>(pIndex,0);
 					//Eigen::Vector3f -> next line
 					crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
 
@@ -534,13 +534,15 @@ namespace rtmath {
 			{
 				for (auto it = mSrc.cbegin(); it != mSrc.cend(); ++it)
 				{
+					float mmin = boost::accumulators::min(*it);
+					float mmax = boost::accumulators::max(*it);
 					if (it == mSrc.cbegin())
 					{
-						mins(index) = boost::accumulators::min(*it);
-						maxs(index) = boost::accumulators::max(*it);
+						mins(index) = mmin;
+						maxs(index) = mmax;
 					} else {
-						if (mins(index) > boost::accumulators::min(*it)) mins(index) = boost::accumulators::min(*it);
-						if (maxs(index) < boost::accumulators::max(*it)) mins(index) = boost::accumulators::max(*it);
+						if (mins(index) > mmin) mins(index) = mmin;
+						if (maxs(index) < mmax) maxs(index) = mmax;
 					}
 				}
 			};
@@ -619,15 +621,19 @@ namespace rtmath {
 			string sDataFile = string(prefix).append(".dat");
 			string sCtrlFile = string(prefix).append(".bov");
 			path pDatafile = path(sDataFile).filename();
+
+			int maxX = static_cast<int>(maxs(0)), maxY = static_cast<int>(maxs(1)), maxZ = static_cast<int>(maxs(2));
+			int minX = static_cast<int>(mins(0)), minY = static_cast<int>(mins(1)), minZ = static_cast<int>(mins(2));
+
 			// First, write the control file
 			ofstream oct(sCtrlFile.c_str(), std::ios::binary | std::ios::out);
 			oct << "TIME: 0\n"
 				"DATA_FILE: " << pDatafile.string() << "\n"
 				"# The data file size corresponds to the raw flake dimensions\n"
 				"DATA_SIZE: "
-				<< static_cast<int>(maxs(0) - mins(0)) << " "
-				<< static_cast<int>(maxs(1) - mins(1)) << " "
-				<< static_cast<int>(maxs(2) - mins(2)) << "\n"
+				<< maxX + 1 - minX << " "
+				<< maxY + 1 - minY << " "
+				<< maxZ + 1 - minZ << "\n"
 				"# Allowable values for DATA_FORMAT are: BYTE,SHORT,INT,FLOAT,DOUBLE\n"
 				"DATA_FORMAT: SHORT\n"
 				"VARIABLE: Composition\n"
@@ -658,23 +664,25 @@ namespace rtmath {
 			FILE * pOut;
 			pOut = fopen(sDataFile.c_str(), "wb");
 			// Allocate an array of the correct size
-			const size_t sx = static_cast<size_t>(maxs(0) - mins(0));
-			const size_t sy = static_cast<size_t>(maxs(1) - mins(1));
-			const size_t sz = static_cast<size_t>(maxs(2) - mins(2));
+			const size_t sx = static_cast<size_t>(maxX + 1 - minX);
+			const size_t sy = static_cast<size_t>(maxY + 1 - minY);
+			const size_t sz = static_cast<size_t>(maxZ + 1 - minZ);
 			const size_t size = sx * sy * sz;
 			std::unique_ptr<short[]> array(new short[size*1]);
 			std::fill_n(array.get(), size*1, 0);
 			for (size_t i=0; i < numPoints; ++i)
 			{
 				auto crdsm = latticePts.block<1,3>(i,0);
+				float x = crdsm(0), y = crdsm(1), z = crdsm(2);
 				auto crdsi = latticePtsRi.block<1,3>(i,0);
+				short diel = static_cast<short>(crdsi(0));
 				
-				size_t start = static_cast<size_t>(crdsm(2)) * sx * sy;
-				start += static_cast<size_t>(crdsm(1)) * sx;
-				start += static_cast<size_t>(crdsm(0));
+				size_t start = static_cast<size_t>(x - minX) * sy * sz;
+				start += static_cast<size_t>(y - minY) * sz;
+				start += static_cast<size_t>(z - minZ);
 				start *= 1;
 
-				array[start+0] = static_cast<short>(crdsi(0));
+				array[start+0] = diel;
 				//array[start+1] = static_cast<short>(crdsi(1));
 				//array[start+2] = static_cast<short>(crdsi(2));
 			}
