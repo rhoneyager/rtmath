@@ -24,6 +24,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Serialization/serialization.h>
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
@@ -47,8 +48,13 @@ int main(int argc, char** argv)
 		po::positional_options_description p;
 		p.add("input", -1);
 
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
+			config("Config options"), hidden("Hidden options"), oall("all options");
+		rtmath::debug::add_options(cmdline, config, hidden);
+		ddscat::ddPar::add_options(cmdline, config, hidden);
+		Ryan_Serialization::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< string >(), "input ddscat.par file")
 			("output,o", po::value< string >(), "output ddscat.par file (defaults to input)")
@@ -71,21 +77,29 @@ int main(int argc, char** argv)
 			("get-diels", "Get all dielectrics")
 			;
 
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
-		po::notify(vm);    
+			options(oall).positional(p).run(), vm);
+		po::notify(vm);  
 
-		if (vm.count("help") || argc == 1) {
-			cerr << desc << "\n";
-			return 1;
-		}
-
-		if (!vm.count("input"))
+		auto doHelp = [&](const std::string &message)
 		{
-			cerr << "Need to specify input file.\n" << desc << endl;
-			return 1;
-		}
+			cerr << desc << "\n";
+			if (message.size())
+				cerr << message << "\n";
+			exit(1);
+		};
+
+		if (vm.count("help") || argc == 1) doHelp("");
+
+		rtmath::debug::process_static_options(vm);
+		Ryan_Serialization::process_static_options(vm);
+		ddscat::ddPar::process_static_options(vm);
+
+		if (!vm.count("input")) doHelp("Need to specify input file.\n");
 
 		string input = vm["input"].as< string >();
 		string output = input;

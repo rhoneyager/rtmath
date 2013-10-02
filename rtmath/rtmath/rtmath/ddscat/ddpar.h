@@ -450,7 +450,25 @@ namespace rtmath {
 		class DLEXPORT_rtmath_ddscat_base ddPar
 		{
 		public:
+			/// Load the default ddscat.par file, used in setting default values
 			static ddPar*& defaultInstance();
+
+			/**
+			 * \brief Adds ddPar options to a program
+			 *
+			 * \item cmdline provides options only allowed on the command line
+			 * \item config provides options available on the command line and in a config file
+			 * \item hidden provides options allowed anywhere, but are not displayed to the user
+			 **/
+			static void add_options(
+				boost::program_options::options_description &cmdline,
+				boost::program_options::options_description &config,
+				boost::program_options::options_description &hidden);
+			/// Processes static options defined in add_options
+			/// \todo Add processor for non-static options
+			static void process_static_options(
+				boost::program_options::variables_map &vm);
+
 
 			ddPar();
 			ddPar(const ddPar &src); // Copy constructor
@@ -459,7 +477,7 @@ namespace rtmath {
 			ddPar & operator=(const ddPar &rhs);
 
 			void readFile(const std::string &filename, bool overlay = false);
-			void writeFile(const std::string &filename) const;
+			void writeFile(const std::string &filename, const std::string &type = "") const;
 			/// \todo Add in line number matching as a backup when key parsing fails
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream &stream) const;

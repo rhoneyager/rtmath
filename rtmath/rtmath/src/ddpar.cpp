@@ -8,17 +8,113 @@
 #include <set>
 #include <complex>
 #include <boost/algorithm/string.hpp>
+#include <boost/iostreams/filter/newline.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
+#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/config.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
+
+namespace {
+	
+	boost::filesystem::path pDefaultPar;
+	const std::string ddparDefaultInternal = 
+		"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>\n"
+		"<!DOCTYPE boost_serialization>\n"
+		"<boost_serialization signature=\"serialization::archive\" version=\"10\">\n"
+		"<identifier>rtmath::ddscat::ddPar</identifier>\n"
+		"<obj class_id=\"0\" tracking_level=\"1\" version=\"0\" object_id=\"_0\">\n"
+		"	<Par_File>&apos; ========= Parameter file for v7.3 =================== &apos;\n"
+		"&apos;**** Preliminaries ****&apos;\n"
+		"&apos;NOTORQ&apos; = CMTORQ*6 (NOTORQ, DOTORQ) -- either do or skip torque calculations\n"
+		"&apos;PBCGS2&apos; = CMDSOL*6 (PBCGS2, PBCGST, PETRKP) -- select solution method\n"
+		"&apos;GPFAFT&apos; = CMDFFT*6 (GPFAFT, FFTMKL) --- FFT method\n"
+		"&apos;GKDLDR&apos; = CALPHA*6 (GKDLDR, LATTDR)\n"
+		"&apos;NOTBIN&apos; = CBINFLAG (NOTBIN, ORIBIN, ALLBIN)\n"
+		"&apos;**** Initial Memory Allocation ****&apos;\n"
+		"101 101 101  = dimension\n"
+		"&apos;**** Target Geometry and Composition ****&apos;\n"
+		"&apos;FROM_FILE&apos; = CSHAPE*9 shape directive\n"
+		"101 101 101  = shape parameters 1-3\n"
+		"1  = NCOMP = number of dielectric materials\n"
+		"&apos;diel.tab&apos; = file with refractive index 1\n"
+		"&apos;**** Additional Nearfield calculation? ****&apos;\n"
+		"0  = NRFLD (=0 to skip nearfield calc., =1 to calculate nearfield E)\n"
+		"0 0 0 0 0 0  = (fract. extens. of calc. vol. in -x,+x,-y,+y,-z,+z)\n"
+		"&apos;**** Error Tolerance ****&apos;\n"
+		"1e-005  = TOL = MAX ALLOWED (NORM OF |G&gt;=AC|E&gt;-ACA|X&gt;)/(NORM OF AC|E&gt;)\n"
+		"&apos;**** Maximum number of iterations ****&apos;\n"
+		"300  = MXITER\n"
+		"&apos;**** Integration cutoff parameter for PBC calculations ****&apos;\n"
+		"0.005  = GAMMA (1e-2 is normal, 3e-3 for greater accuracy)\n"
+		"&apos;**** Angular resolution for calculation of &lt;cos&gt;, etc. ****&apos;\n"
+		"0.5  = ETASCA (number of angles is proportional to [(3+x)/ETASCA]^2 )\n"
+		"&apos;**** Vacuum wavelengths (micron) ****&apos;\n"
+		"3189.28 3189.28 1 &apos;LIN&apos; = wavelengths\n"
+		"&apos;**** Refractive index of ambient medium&apos;\n"
+		"1  = NAMBIENT\n"
+		"&apos;**** Effective Radii (micron) **** &apos;\n"
+		"616.221 616.221 1 &apos;LIN&apos; = aeff\n"
+		"&apos;**** Define Incident Polarizations ****&apos;\n"
+		"(0,0) (1,0) (0,0)  = Polarization state e01 (k along x axis)\n"
+		"2  = IORTH  (=1 to do only pol. state e01; =2 to also do orth. pol. state)\n"
+		"&apos;**** Specify which output files to write ****&apos;\n"
+		"1  = IWRKSC (=0 to suppress, =1 to write &quot;.sca&quot; file for each target orient.\n"
+		"&apos;**** Specify Target Rotations ****&apos;\n"
+		"0 0 1  = BETAMI, BETAMX, NBETA  (beta=rotation around a1)\n"
+		"0 90 10  = THETMI, THETMX, NTHETA (theta=angle between a1 and k)\n"
+		"0 0 1  = PHIMIN, PHIMAX, NPHI (phi=rotation angle of a1 around k)\n"
+		"&apos;**** Specify first IWAV, IRAD, IORI (normally 0 0 0) ****&apos;\n"
+		"0 0 0  = first IWAV, first IRAD, first IORI (0 0 0 to begin fresh)\n"
+		"&apos;**** Select Elements of S_ij Matrix to Print ****&apos;\n"
+		"6  = NSMELTS = number of elements of S_ij to print (not more than 9)\n"
+		"11 12 21 22 31 41  = indices ij of elements to print\n"
+		"&apos;**** Specify Scattered Directions ****&apos;\n"
+		"&apos;LFRAME&apos; = CMDFRM (LFRAME, TFRAME for Lab Frame or Target Frame)\n"
+		"2  = NPLANES = number of scattering planes\n"
+		"0 0 180 10  = phi, thetan_min, thetan_max, dtheta (in deg) for plane 1\n"
+		"90 0 180 10  = phi, thetan_min, thetan_max, dtheta (in deg) for plane 2\n"
+		"</Par_File>\n"
+		"</obj>\n"
+		;
+
+	/// \todo This function should contain much of ddPar::defaultInstance
+	void initPaths()
+	{
+		static bool loaded = false;
+		if (loaded) return;
+		using std::string;
+		using namespace rtmath;
+		using boost::filesystem::path;
+
+		try {
+			// First try to load using rtmath.conf location
+			std::shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
+			string sBasePar, scwd;
+			cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
+			cRoot->getCWD(scwd);
+
+			path pscwd(scwd), psBasePar(sBasePar);
+			pscwd.remove_filename();
+
+			if (psBasePar.is_relative()) psBasePar = pscwd / psBasePar;
+			pDefaultPar = psBasePar;
+		} catch (std::exception&)
+		{
+			// If rtmath.conf cannot be found, or if the loading fails, default to the internal file.
+		}
+
+		loaded = true;
+	}
+	
+}
 
 namespace rtmath {
 	namespace ddscat {
@@ -280,17 +376,99 @@ namespace rtmath {
 			// Check file existence
 			using namespace std;
 			using namespace boost::filesystem;
-			path p(filename);
-			if (!boost::filesystem::exists(p)) throw debug::xMissingFile(filename.c_str());
-			ifstream in(filename.c_str());
-			read(in, overlay);
+			using namespace Ryan_Serialization;
+			std::string cmeth, target, uncompressed;
+			// Combination of detection of compressed file, file type and existence.
+			if (!detect_compressed(filename, cmeth, target))
+				throw rtmath::debug::xMissingFile(filename.c_str());
+			uncompressed_name(target, uncompressed, cmeth);
+
+			boost::filesystem::path p(uncompressed);
+			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+
+			// Serialization gets its own override
+			if (Ryan_Serialization::known_format(pext))
+			{
+				// This is a serialized file. Verify that it has the correct identifier, and 
+				// load the serialized object directly
+				Ryan_Serialization::read<ddPar>(*this, filename, "rtmath::ddscat::ddPar");
+				return;
+			}
+
+			std::ifstream in(filename.c_str(), std::ios_base::binary | std::ios_base::in);
+			// Consutuct an filtering_iostream that matches the type of compression used.
+			using namespace boost::iostreams;
+			filtering_istream sin;
+			if (cmeth.size())
+				prep_decompression(cmeth, sin);
+			sin.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
+			sin.push(in);
+
+			/*
+			if (type.size()) pext = boost::filesystem::path(type); // pext is first set a few lines above
+			if (pext.string() == ".sca")
+			{
+				readSCA(sin);
+			} else if (pext.string() == ".fml")
+			{
+				readFML(sin);
+			} else if (pext.string() == ".avg")
+			{
+				readAVG(sin);
+			} else {
+				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+			}
+			*/
+
+			read(sin, overlay);
 		}
 
-		void ddPar::writeFile(const std::string &filename) const
+		void ddPar::writeFile(const std::string &filename, const std::string &type) const
 		{
 			populateDefaults();
-			std::ofstream out(filename.c_str());
-			write(out);
+			//std::ofstream out(filename.c_str());
+			//write(out);
+
+
+			using namespace Ryan_Serialization;
+			std::string cmeth, uncompressed;
+			uncompressed_name(filename, uncompressed, cmeth);
+			boost::filesystem::path p(uncompressed);
+			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+
+			std::string utype = type;
+			if (!utype.size()) utype = pext.string();
+
+			// Serialization gets its own override
+			if (Ryan_Serialization::known_format(utype))
+			{
+				Ryan_Serialization::write<ddPar>(*this, filename, "rtmath::ddscat::ddPar");
+				return;
+			}
+
+			std::ofstream out(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+			using namespace boost::iostreams;
+			filtering_ostream sout;
+			if (cmeth.size())
+				prep_compression(cmeth, sout);
+
+			sout.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
+			sout.push(out);
+			write(sout);
+			/*
+			if (utype == ".sca")
+			{
+				writeSCA(sout);
+			} else if (utype == ".fml")
+			{
+				writeFML(sout);
+			} else if (utype == ".avg")
+			{
+				writeAVG(sout);
+			} else {
+				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
+			}
+			*/
 		}
 
 		void ddPar::write(std::ostream &out) const
@@ -773,26 +951,25 @@ namespace rtmath {
 			static bool loaded = false;
 			if (!loaded)
 			{
-				std::shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
-				string sBasePar, scwd;
-				cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
-				cRoot->getCWD(scwd);
-
-				path pscwd(scwd), psBasePar(sBasePar);
-				pscwd.remove_filename();
-
-				if (psBasePar.is_relative()) psBasePar = pscwd / psBasePar;
-
-				if (psBasePar.string().size() && boost::filesystem::exists(path(psBasePar)))
+				initPaths();
+				if (pDefaultPar.string().size() && boost::filesystem::exists(path(pDefaultPar)))
 				{
-					s_inst = new ddPar(psBasePar.string(), false);
+					s_inst = new ddPar(pDefaultPar.string(), false);
 				} else {
-					// Cannot get default instance.....
-					if (psBasePar.string().size())
+					// Attempt to load the internal instance
+					try {
+						s_inst = new ddPar;
+						Ryan_Serialization::readString(*s_inst, ddparDefaultInternal, "rtmath::ddscat::ddPar");
+
+					} catch (std::exception&)
 					{
-						throw rtmath::debug::xMissingFile(psBasePar.string().c_str());
-					} else {
-						throw rtmath::debug::xOtherError();
+						// Cannot get default instance.....
+						if (pDefaultPar.string().size())
+						{
+							throw rtmath::debug::xMissingFile(pDefaultPar.string().c_str());
+						} else {
+							throw rtmath::debug::xOtherError();
+						}
 					}
 				}
 
@@ -801,6 +978,50 @@ namespace rtmath {
 			}
 			return s_inst;
 		}
+
+		void ddPar::add_options(
+			boost::program_options::options_description &cmdline,
+			boost::program_options::options_description &config,
+			boost::program_options::options_description &hidden)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+
+			// hash-shape-dir and hash-stats-dir can be found in rtmath.conf. 
+			// So, using another config file is useless.
+			cmdline.add_options()
+				("default-ddpar", po::value<string>(), "Override the default ddscat.par file") // static option
+				;
+
+			config.add_options()
+				;
+
+			hidden.add_options()
+				;
+		}
+
+		void ddPar::process_static_options(
+			boost::program_options::variables_map &vm)
+		{
+			namespace po = boost::program_options;
+			using std::string;
+			using boost::filesystem::path;
+
+			initPaths();
+			if (vm.count("default-ddpar")) pDefaultPar = path(vm["default-ddpar"].as<string>());
+
+			// Validate paths
+			auto validateFile = [&](path p) -> bool
+			{
+				while (is_symlink(p))
+					p = boost::filesystem::absolute(read_symlink(p), p.parent_path());
+				if (!boost::filesystem::exists(p)) return false;
+				if (is_directory(p)) return false;
+				return true;
+			};
+			//if (!validateFile(pDefaultPar)) throw debug::xMissingFile(pDefaultPar.string().c_str());
+		}
+
 
 		namespace ddParParsers
 		{
