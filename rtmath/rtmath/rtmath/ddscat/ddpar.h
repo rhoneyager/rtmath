@@ -23,6 +23,10 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
 
+namespace boost { namespace program_options { 
+	class options_description; class variables_map; } }
+namespace boost { namespace filesystem { class path; } }
+
 namespace rtmath {
 	namespace ddscat {
 
