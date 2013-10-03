@@ -108,8 +108,17 @@ int main(int argc, char** argv)
 			}
 		};
 
-		matchIDS(shapes);
-		matchIDS(avgs);
+		/*
+		if (avgs.size() == 1)
+		{
+			// Special case where the exact data is specified
+			string prefix = "";
+
+		} else {
+			*/
+			matchIDS(shapes);
+			matchIDS(avgs);
+		//}
 		rtmath::ddscat::ddPar parFile(par);
 
 		for (auto &d : maps)
@@ -122,7 +131,12 @@ int main(int argc, char** argv)
 				path p = pa / path(pavg).filename();
 				boost::filesystem::create_directory(p);
 				// Creating shapefile hard links if possible
-				boost::filesystem::create_hard_link(d.second.shapefile, p / path("shape.dat"));
+				try {
+					boost::filesystem::create_hard_link(d.second.shapefile, p / path("shape.dat"));
+				} catch (std::exception&)
+				{
+					boost::filesystem::create_symlink(d.second.shapefile, p / path("shape.dat"));
+				}
 				// Write the diel.tab files
 				/// \todo Write a file for each dielectric
 				boost::shared_ptr<dielTab> diel = dielTab::generate(avg.getM());
