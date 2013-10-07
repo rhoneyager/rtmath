@@ -8,6 +8,60 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/zeros.h"
 
+namespace {
+	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
+	boost::program_options::options_description SHARED_PRIVATE *pconfig = nullptr;
+	boost::program_options::options_description SHARED_PRIVATE *phidden = nullptr;
+	double nu = 0;
+	std::complex<double> m_force;
+}
+
+void rtmath::refract::add_options(
+	boost::program_options::options_description &cmdline,
+	boost::program_options::options_description &config,
+	boost::program_options::options_description &hidden)
+{
+	namespace po = boost::program_options;
+	using std::string;
+
+	pcmdline = &cmdline;
+	pconfig = &config;
+	phidden = &hidden;
+
+	/// \todo Add option for default rtmath.conf location
+
+	cmdline.add_options()
+		("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
+		("mr", po::value<double>(), "Override real refractive index value")
+		("mi", po::value<double>(), "Override imaginary refractive index value")
+		("refractive-method", po::value<string>()->default_value("mg-ellipsoids"),
+		"Specify the dielectric method to use in calculations (mg-spheres, "
+		"mg-ellipsoids, sihvola, bruggeman, debye, maxwell-garnett (mg) )")
+		;
+
+	config.add_options()
+		;
+
+	hidden.add_options()
+		;
+}
+
+void rtmath::refract::process_static_options(
+	boost::program_options::variables_map &vm)
+{
+	namespace po = boost::program_options;
+	using std::string;
+
+	if (vm.count("nu")) nu = vm["nu"].as<double>();
+	if (vm.count("mr") || vm.count("mi"))
+	{
+		m_force = std::complex<double>(vm["mr"].as<double>(),
+			vm["mi"].as<double>());
+	}
+
+	// Add in refractive method calculations here.
+}
+
 void rtmath::refract::mWater(double f, double t, std::complex<double> &m)
 {
 	if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
@@ -26,7 +80,7 @@ void rtmath::refract::mWater(double f, double t, std::complex<double> &m)
 
 void rtmath::refract::mIce(double f, double t, std::complex<double> &m)
 {
-if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
+	if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
 	if (f < 1000)
 	{
 		if (t <= 278)
@@ -163,7 +217,7 @@ void rtmath::refract::maxwellGarnettSpheres(std::complex<double> Ma, std::comple
 }
 
 void rtmath::refract::maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, 
-											double fa, std::complex<double> &Mres)
+											   double fa, std::complex<double> &Mres)
 {
 	using namespace std;
 	std::complex<double> eA, eB, eRes;
@@ -231,7 +285,7 @@ void rtmath::refract::MultiInclusions(
 	//if (fs.size() != funcs.size()) throw rtmath::debug::xBadInput("Array sizes are not the same");
 
 	using namespace std;
-	
+
 	double fTot = 0.0;
 	double fEnv = 1.0;
 
@@ -252,16 +306,16 @@ void rtmath::refract::MultiInclusions(
 
 /*
 void rtmath::refract::maxwellGarnett(std::complex<double> Mice, std::complex<double> Mwater, 
-									 std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres)
+std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres)
 {
-	using namespace std;
-	std::complex<double> Miw;
+using namespace std;
+std::complex<double> Miw;
 
-	// Ice is the inclusion in water, which is the inclusion in air
-	double frac = 0;
-	if (fWater+fIce == 0) frac = 0;
-	else frac = fIce / (fWater + fIce);
-	maxwellGarnettSpheres(Mice, Mwater, frac, Miw);
-	maxwellGarnettSpheres(Miw, Mair, fIce + fWater, Mres);
+// Ice is the inclusion in water, which is the inclusion in air
+double frac = 0;
+if (fWater+fIce == 0) frac = 0;
+else frac = fIce / (fWater + fIce);
+maxwellGarnettSpheres(Mice, Mwater, frac, Miw);
+maxwellGarnettSpheres(Miw, Mair, fIce + fWater, Mres);
 }
 */

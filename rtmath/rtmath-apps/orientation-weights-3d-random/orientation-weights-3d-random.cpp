@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
+		debug::add_options(cmdline, config, hidden);
 		//ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		//Ryan_Serialization::add_options(cmdline, config, hidden);
 
@@ -92,6 +93,8 @@ int main(int argc, char** argv)
 		po::store(po::command_line_parser(argc, argv).
 			options(oall).positional(p).run(), vm);
 		po::notify(vm);
+
+		debug::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
 		{

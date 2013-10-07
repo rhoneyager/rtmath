@@ -7,24 +7,24 @@
 
 namespace rtmath {
 	namespace refract {
-		// m to e converters
+		/// m to e converters
 		void DLEXPORT_rtmath_core mToE(std::complex<double> m, std::complex<double> &e);
 		void DLEXPORT_rtmath_core eToM(std::complex<double> e, std::complex<double> &m);
 
-		// Dielectric providers - these use f and T to automatically determine the correct
-		// base dielectric function to use.
+		/// Dielectric providers - these use f and T to automatically determine the correct
+		/// base dielectric function to use.
 		void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m);
 		void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m);
 
 
 		// The raw dielectric providers
 
-		// Water complex refractive index
-		// Liebe, Hufford and Manabe (1991)
+		/// Water complex refractive index
+		/// Liebe, Hufford and Manabe (1991)
 		void DLEXPORT_rtmath_core mWaterLiebe(double f, double t, std::complex<double> &m);
 
-		// Ice complex refractive index
-		// Christian Matzler (2006)
+		/// Ice complex refractive index
+		/// Christian Matzler (2006)
 		void DLEXPORT_rtmath_core mIceMatzler(double f, double t, std::complex<double> &m);
 
 
@@ -32,8 +32,8 @@ namespace rtmath {
 
 
 
-		// basic Liu-based diel.tab writer
-		// Deprecated
+		/// basic Liu-based diel.tab writer
+		/// Deprecated
 		void DLEXPORT_rtmath_core DEPRECATED writeDiel(const std::string &filename, 
 			const std::complex<double> &m);
 
@@ -42,12 +42,12 @@ namespace rtmath {
 		// With given volume fractions (f).
 		
 
-		// Bruggeman (1935) / Landauer (1952) / Polder and van Santen (1946) / Effective Medium
-		// See Bohren and Battan (1980)
+		/// Bruggeman (1935) / Landauer (1952) / Polder and van Santen (1946) / Effective Medium
+		/// See Bohren and Battan (1980)
 		void DLEXPORT_rtmath_core bruggeman(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
-		// Bohren and Battan (1980)
-		// Debye formula (specific case of Clausius-Mosotti)
+		/// Bohren and Battan (1980)
+		/// Debye formula (specific case of Clausius-Mosotti)
 		void DLEXPORT_rtmath_core debyeDry(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 
@@ -55,17 +55,17 @@ namespace rtmath {
 		// Maxwell-Garnett - assuming sphere inclusions with standard ice / water / air dielectric
 		//void maxwellGarnettSpheresMulti(std::complex<double> Mice, std::complex<double> Mwater, std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres);
 
-		// Maxwell-Garnet - assuming that ice spheres are inclusions and water is the surrounding medium
+		/// Maxwell-Garnet - assuming that ice spheres are inclusions and water is the surrounding medium
 		void DLEXPORT_rtmath_core maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
-		// Maxwell-Garnett - assuming ellipsoidal inclusions
-		// Bohren and Battan (1982)
+		/// Maxwell-Garnett - assuming ellipsoidal inclusions
+		/// Bohren and Battan (1982)
 		void DLEXPORT_rtmath_core maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
-		// Sihvola (1989) - requires extra parameter, nu.
-		// nu = 0 -> Maxwell-Garnett for spherical inclusions
-		// nu = 2 -> Bruggeman
-		// Petty and Huang (2010) use nu = 0.85.
+		/// Sihvola (1989) - requires extra parameter, nu.
+		/// nu = 0 -> Maxwell-Garnett for spherical inclusions
+		/// nu = 2 -> Bruggeman
+		/// Petty and Huang (2010) use nu = 0.85.
 		void DLEXPORT_rtmath_core sihvola(std::complex<double> Ma, std::complex<double> Mb, double fa, double nu, std::complex<double> &Mres);
 
 		struct sihvolaBinder
@@ -113,7 +113,21 @@ namespace rtmath {
 		// Converter function bindings for volume fraction / density fraction
 
 
-		// Bindings for config files / command-line parsing in Boost
+		/**
+		* \brief Adds options to a program
+		*
+		* \item cmdline provides options only allowed on the command line
+		* \item config provides options available on the command line and in a config file
+		* \item hidden provides options allowed anywhere, but are not displayed to the user
+		**/
+		void DLEXPORT_rtmath_core add_options(
+			boost::program_options::options_description &cmdline,
+			boost::program_options::options_description &config,
+			boost::program_options::options_description &hidden);
+		/// Processes static options defined in add_options
+		/// \todo Add processor for non-static options
+		void DLEXPORT_rtmath_core process_static_options(
+			boost::program_options::variables_map &vm);
 
 	}
 }

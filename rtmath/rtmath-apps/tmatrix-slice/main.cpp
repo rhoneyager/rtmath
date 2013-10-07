@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	//::Ryan_Serialization::disable_auto_compression(true);
 #endif
 	try {
-		cerr << argv[0]<< endl;
+		cerr << "rtmath-tmatrix-slice" << endl;
 		// Do processing of argv
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options");

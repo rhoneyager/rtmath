@@ -1,6 +1,11 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/random/random_device.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_on_sphere.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
 #include <fstream>
 #include <complex>
 #include <set>
@@ -19,7 +24,7 @@ int main(int argc, char *argv[])
 {
 	using namespace std;
 	try {
-		cerr << argv[0]<< endl;
+		cerr << "rtmath-tmatrix-oneellip" << endl;
 		// Do processing of argv
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options");
@@ -35,8 +40,10 @@ int main(int argc, char *argv[])
 			("scale-aeff", "Scale effective radius based on volume fraction")
 			("mr", po::value<double>(), "Override real refractive index value")
 			("mi", po::value<double>(), "Override imaginary refractive index value")
-			("alphas", po::value<string>()->default_value("0"), "Set beta rotations for backscatter calculation. UNDER DEVELOPMENT.")
+			("alphas", po::value<string>()->default_value("0"), "Set first rotation for backscatter calculation. UNDER DEVELOPMENT.")
 			("betas", po::value<string>()->default_value("0"), "Set second rotation for backscatter calculation. UNDER DEVELOPMENT.")
+			("random-rotations,r", po::value<size_t>()->default_value(6156),
+			"Replaces standard alpha and beta angles with random points.")
 		;
 
 		po::variables_map vm;
@@ -89,14 +96,33 @@ int main(int argc, char *argv[])
 		rtmath::config::splitSet(vm["alphas"].as<string>(), alphas);
 		rtmath::config::splitSet(vm["betas"].as<string>(), betas);
 
+		// Precalculate the standard angle pairs
+		std::vector<std::pair<double, double> > angles_pre;
+		angles_pre.reserve(alphas.size() * betas.size());
+		for (const double &alpha : alphas)
+			for (const double &beta : betas)
+			{
+				angles_pre.push_back(std::pair<double,double>(alpha,beta));
+			}
+
 		// The actual runs begin here
 		using namespace tmatrix;
 		//using namespace rtmath::mie;
 		using namespace std;
+		
+		const double pi = boost::math::constants::pi<double>();
+		typedef boost::random::mt19937 gen_type;
+		gen_type rand_gen;
+		rand_gen.seed(static_cast<unsigned int>(std::time(0)));
+		boost::random::uniform_on_sphere<double> dist(3);
+		boost::variate_generator<gen_type&, boost::uniform_on_sphere<double> >
+			random_on_sphere(rand_gen, dist);
+		boost::random::uniform_real_distribution<double> distUni(0,2.*pi);
+
 
 		ofstream out( string(oprefix).append(".csv").c_str());
-		out << "Temperature (K),Frequency (GHz),Effective Radius (um),Aspect Ratio,"
-			"mrr,-mri,Volume Fraction,nu,Size Parameter,Qabs,Qsca,Qext,Qbk" << endl;
+		out << "Temperature (K)\tFrequency (GHz)\tEffective Radius (um)\tAspect Ratio\t"
+			"mrr\tmri\tVolume Fraction\tnu\tSize Parameter\tAlpha (degrees)\tBeta (degrees)\tQabs_iso\tQsca_iso\tQext_iso\tQsca\tQbk" << endl;
 
 		for (const double &temp : temps)
 		for (const double &freq : freqs)
@@ -132,11 +158,7 @@ int main(int argc, char *argv[])
 			double lam = rtmath::units::conv_spec("GHz","um").convert(freq);
 			const double sizep = 2. * boost::math::constants::pi<double>() * aeff / lam;
 			
-			double Qbk = 0; // Will be divided over the number of rotations later
-			double Qext = 0;
-			double Qsca = 0;
-			double Qabs = 0;
-			double g = 0;
+			
 
 			tmatrixBase base;
 			base.AXI = saeff;
@@ -145,41 +167,68 @@ int main(int argc, char *argv[])
 			base.MRI = abs(m.imag());
 			base.EPS = aspect;
 			if ( abs(aspect - 1.0) < 0.00001 ) base.EPS = 1.0001;
+			const double k = 2. * pi / lam;
 			boost::shared_ptr<const tmatrixParams> params = tmatrixParams::create(base);
 
 			const double nRots = (double) alphas.size() * (double) betas.size();
 
-			for (const double &alpha : alphas)
-			for (const double &beta : betas)
+			vector<std::pair<double,double> > angles;
+			if (!vm.count("random-rotations"))
 			{
-				auto res = OriTmatrix::calc(params, alpha, beta);
-				Qsca += res->qsca / nRots;
-				Qext += res->qext / nRots;
-				Qbk += getDifferentialBackscatterCrossSectionUnpol(res) / nRots;
+				angles = angles_pre;
+			} else {
+				size_t n = vm["random-rotations"].as<size_t>();
+				angles.reserve(n);
+
+				for (size_t i=0; i<n; ++i)
+				{
+					// Convert from cartesian coordinates to rotation angles (in degrees)
+					// The norm of the input vector is unity.
+					auto radToDeg = [&pi](double rad) -> double
+					{
+						double res = rad * 180 / pi;
+						return res;
+					};
+
+					vector<double> crdsCartesian = random_on_sphere();
+
+					//float beta_R = distUni(rand_gen);
+					//float &r = beta_R;
+			
+					double theta_R = acos(crdsCartesian[2]);
+					double phi_R = atan2(crdsCartesian[1], crdsCartesian[0]) + pi;
+
+					double theta_D = radToDeg(theta_R);
+					double phi_D = radToDeg(phi_R);
+
+					angles.push_back(std::pair<double,double>(theta_D,phi_D));
+				}
 			}
 
-			Qabs = Qext - Qsca;
-			g = 0;
+			for (const auto &angle : angles)
+			{
+				const double &alpha = angle.first;
+				const double &beta = angle.second;
+				auto res = OriTmatrix::calc(params, alpha, beta);
+				auto ang = OriAngleRes::calc(res, 0, 0, 180, 0); // theta = 0, phi = 90
+				double C_sphere = pi * pow(saeff,2.0);
+				double Qbk = getDifferentialBackscatterCrossSectionUnpol(res);
+				double Qext_iso = res->qext;
+				double Qsca_iso = res->qsca;
+				
+				double Qsca = 8. * pi / (3. * k * k) * ang->getP(0,0) / C_sphere; // at theta = 0, phi = pi / 2.
+				// unpolarized version for generalized ellipsoid. see yurkin 2013.
+				//double Qext = 0;
+				//double g = 0;
+				double Qabs_iso = Qext_iso - Qsca_iso;
+				//double Qabs = Qext - Qsca;
 
-
-			// FIX: scaling relation
-			//double k = sizep / aeff; // = 2pi / wvlen
-			//Qbk *= k * k;
-			//Qbk /= aeff;
-			//Qbk /= boost::math::constants::pi<double>() * aeff * aeff;
-			//Qbk *= sizep * sizep;
-
-			// Just for compatibility
-			//mieAngleRes::calc(res, 180);
-			//auto angres = mieAngleRes::calc(res, 180);
-			//cout << "P11 = " << angres->getP(0,0) << endl;
-			//cout << "Qbksc,unpol = " << getDifferentialBackscatterCrossSectionUnpol(res) << endl;
-			
-			out << temp << "," << freq << "," << aeff << "," << aspect << ","
-				<< m.real() << "," << abs(m.imag()) << "," << vfrac << "," 
-				<< nu << "," << sizep << ","
-				<< Qabs << "," << Qsca << "," << Qext << "," << Qbk << endl;
-			
+				out << temp << "\t" << freq << "\t" << aeff << "\t" << aspect << "\t"
+				<< m.real() << "\t" << abs(m.imag()) << "\t" << vfrac << "\t" 
+				<< nu << "\t" << sizep << "\t" << alpha << "\t" << beta << "\t"
+				<< Qabs_iso << "\t" << Qsca_iso << "\t" << Qext_iso << "\t"
+				<< Qsca << "\t" << Qbk << endl;
+			}
 		}
 
 		return 0;
