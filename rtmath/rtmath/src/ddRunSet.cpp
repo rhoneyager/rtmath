@@ -25,6 +25,12 @@ namespace rtmath {
 			string sleaf = pleaf.string(); // the filename
 
 			size_t pund = sleaf.find('_'); // May be liu or holly
+			if (pund != string::npos)
+			{
+				size_t pb = sleaf.find_first_not_of("0123456789", pund+1);
+				//size_t pb = sleaf.find('_', pund+1);
+				if (pb != string::npos) pund = pb;
+			}
 			size_t pshape = sleaf.find("shape"); // Only Holly
 			size_t pshp = sleaf.find(".shp"); // Only Liu
 			size_t pavg = sleaf.find("avg_"); // Only Liu

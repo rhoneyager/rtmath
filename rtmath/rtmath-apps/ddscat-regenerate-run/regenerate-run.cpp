@@ -50,8 +50,8 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("avg,a", po::value<vector<string> >(), "Select avg files")
-			("shape,s", po::value<vector<string> >(), "Select shape files")
+			("avg,a", po::value<vector<string> >()->multitoken(), "Select avg files")
+			("shape,s", po::value<vector<string> >()->multitoken(), "Select shape files")
 			("par,p", po::value<string>(), "Select par file")
 			("output,o", po::value<string>(), "Select output directory base")
 			("dielectric-files", po::value<vector<string> >(),
@@ -59,17 +59,15 @@ int main(int argc, char** argv)
 			"These will override the standard par file choices.")
 			("use-avg-dielectrics",
 			"Use the refractive indices that appear in each avg file.")
+			("force-frequency", po::value<double>(), "Override frequency (GHz)")
 			;
-
-		po::positional_options_description p;
-		//p.add("inputs",-1);
 
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(oall).positional(p).run(), vm);
+			options(oall).run(), vm);
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
@@ -117,16 +115,16 @@ int main(int argc, char** argv)
 				d = p.string();
 			}
 		}
-		
+
 		using namespace boost::filesystem;
 		using namespace rtmath::ddscat;
 
 		// Check / create output base directory
 		path pOut(outbase);
-		if (exists(outbase)) doHelp("Need to select an empty output directory");
-		boost::filesystem::create_directory(pOut);
+		if (!exists(outbase)) //doHelp("Need to select an empty output directory");
+			boost::filesystem::create_directory(pOut);
 
-		// No recursion / symlink following here. Everything is treated 
+		// No recursion / symlink following here. Everything is treated
 		// as a valid input.
 		using rtmath::ddscat::dataset;
 
@@ -135,21 +133,26 @@ int main(int argc, char** argv)
 			for (auto &it : v)
 			{
 				string prefix = dataset::getPrefix(it);
+				cerr << "p: " << prefix << " init " << it << endl;
 				if (!maps.count(prefix))
+				{
 					maps[prefix] = dataset(prefix);
+					cerr << "Adding prefix " << prefix << " from file " << it << endl;
+				}
 				path pfile(it);
 				if (!exists(pfile)) continue;
 				if (!dataset::isValid(pfile)) continue;
 				if (dataset::isAvg(pfile)) maps[prefix].ddres.push_back(pfile);
-				if (dataset::isShape(pfile)) maps[prefix].shapefile = pfile;
+				else if (dataset::isShape(pfile)) maps[prefix].shapefile = pfile;
 			}
 		};
 
-		if (avgs.size() == 1)
+		if (0) // avgs.size() == 1)
 		{
 			// Special case where the exact data is specified
 			string prefix = dataset::getPrefix(path(avgs[0]));
 			if (!prefix.size()) prefix = "manual";
+			cerr << "Single avg file: " << avgs[0] << endl;
 			maps[prefix] = dataset(prefix);
 			maps[prefix].ddres.push_back(path(avgs[0]));
 			maps[prefix].shapefile = path(shapes.at(0));
@@ -162,7 +165,10 @@ int main(int argc, char** argv)
 		for (auto &d : maps)
 		{
 			path pa = pOut / path(d.first);
-			boost::filesystem::create_directory(pa);
+			cerr << "Processing " << pa << endl;
+			cerr << "\t" << d.second.shapefile << endl;
+			if (!boost::filesystem::exists(pa))
+				boost::filesystem::create_directory(pa);
 			for (auto &pavg : d.second.ddres)
 			{
 				ddOutputSingle avg(pavg.string());
@@ -176,10 +182,12 @@ int main(int argc, char** argv)
 					try {
 						// Then try making symlinks
 						boost::filesystem::create_symlink( makePathAbsolute(d.second.shapefile), p / path("shape.dat"));
-					} catch (std::exception&)
+					} catch (std::exception &e)
 					{
+						cerr << "Cannot make link to shape file " << d.second.shapefile << endl;
+						continue;
 						// Then just do direct copying
-						boost::filesystem::copy_file(d.second.shapefile, p / path("shape.dat"));
+						//boost::filesystem::copy_file(d.second.shapefile, p / path("shape.dat"));
 					}
 				}
 				ddPar ppar = parFile;
@@ -195,11 +203,18 @@ int main(int argc, char** argv)
 						ppar.setDiels(dielectrics);
 					// If no dieletrics set, then the par file skeleton defaults are fine.
 				}
-				
-				ppar.setAeff(avg.aeff(),avg.aeff(),1,"lin");
-				ppar.setWavelengths(avg.wave(), avg.wave(), 1, "lin");
+
+				ppar.setAeff(avg.aeff(),avg.aeff(),1,"LIN");
+				if (vm.count("force-frequency"))
+				{
+					double f = vm["force-frequency"].as<double>();
+					double wave = rtmath::units::conv_spec("GHz","um").convert(f);
+					ppar.setWavelengths(wave,wave,1,"LIN");
+				} else {
+					ppar.setWavelengths(avg.wave(), avg.wave(), 1, "LIN");
+				}
 				// Rotations will match the par file.
-				// Scattering angle selection witll match the par file.
+				// Scattering angle selection will match the par file.
 				ppar.writeFile( (p / path("ddscat.par")).string() );
 			}
 		}
