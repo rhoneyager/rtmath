@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 			("mi", po::value<double>(), "Override imaginary refractive index value")
 			("alphas", po::value<string>()->default_value("0"), "Set first rotation for backscatter calculation. UNDER DEVELOPMENT.")
 			("betas", po::value<string>()->default_value("0"), "Set second rotation for backscatter calculation. UNDER DEVELOPMENT.")
-			("random-rotations,r", po::value<size_t>()->default_value(6156),
+			("random-rotations,r", po::value<size_t>(),
 			"Replaces standard alpha and beta angles with random points.")
 		;
 
@@ -102,7 +102,9 @@ int main(int argc, char *argv[])
 		for (const double &alpha : alphas)
 			for (const double &beta : betas)
 			{
-				angles_pre.push_back(std::pair<double,double>(alpha,beta));
+				double ra = alpha;
+				if (ra >= 179.9) ra = 179.99; /// \todo Fix the tmatrix code here.
+				angles_pre.push_back(std::pair<double,double>(ra,beta));
 			}
 
 		// The actual runs begin here
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
 		boost::random::uniform_real_distribution<double> distUni(0,2.*pi);
 
 
-		ofstream out( string(oprefix).append(".csv").c_str());
+		ofstream out( string(oprefix).append(".tsv").c_str());
 		out << "Temperature (K)\tFrequency (GHz)\tEffective Radius (um)\tAspect Ratio\t"
 			"mrr\tmri\tVolume Fraction\tnu\tSize Parameter\tAlpha (degrees)\tBeta (degrees)\tQabs_iso\tQsca_iso\tQext_iso\tQsca\tQbk" << endl;
 
@@ -199,7 +201,7 @@ int main(int argc, char *argv[])
 					double phi_R = atan2(crdsCartesian[1], crdsCartesian[0]) + pi;
 
 					double theta_D = radToDeg(theta_R);
-					double phi_D = radToDeg(phi_R);
+					double phi_D = radToDeg(phi_R) / 2.;
 
 					angles.push_back(std::pair<double,double>(theta_D,phi_D));
 				}
@@ -216,7 +218,9 @@ int main(int argc, char *argv[])
 				double Qext_iso = res->qext;
 				double Qsca_iso = res->qsca;
 				
-				double Qsca = 8. * pi / (3. * k * k) * ang->getP(0,0) / C_sphere; // at theta = 0, phi = pi / 2.
+				double p = saeff / 2.;
+
+				double Qsca = 8. * pi / (3. * k * k) * ang->getP(0,0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
 				// unpolarized version for generalized ellipsoid. see yurkin 2013.
 				//double Qext = 0;
 				//double g = 0;
