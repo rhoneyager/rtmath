@@ -101,14 +101,14 @@ int main(int argc, char** argv)
 		{
 			path p(rin);
 			path ps = expandSymlinks(p);
-			if (is_directory(ps))
-			{
-				vector<path> cands;
-				copy(recursive_directory_iterator(ps,symlink_option::recurse), 
-					recursive_directory_iterator(), back_inserter(inputs));
-			} else {
+			//if (is_directory(ps))
+			//{
+			//	vector<path> cands;
+			//	copy(recursive_directory_iterator(ps,symlink_option::recurse), 
+			//		recursive_directory_iterator(), back_inserter(inputs));
+			//} else {
 				inputs.push_back(ps);
-			}
+			//}
 		}
 
 		for (const path &p : inputs)
