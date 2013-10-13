@@ -207,6 +207,7 @@ namespace rtmath {
 				{
 					std::lock_guard<std::mutex> lock(m_shape);
 					if (res->shape) return; // Only needs to be loaded once
+					if (noLoadRots) return;
 					// Note: the hashed object is the fundamental thing here that needs to be loaded
 					// The other stuff is only loaded for processing, and is not serialized directly.
 					res->shape = boost::shared_ptr<shapefile>(new shapefile(p.string()));

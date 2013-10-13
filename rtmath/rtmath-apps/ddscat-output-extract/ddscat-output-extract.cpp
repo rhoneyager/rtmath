@@ -115,16 +115,12 @@ int main(int argc, char** argv)
 		{
 			cerr << "Processing: " << p << endl;
 			using namespace rtmath::ddscat;
-			boost::shared_ptr<ddOutput> ddOut;
+			boost::shared_ptr<ddOutput> ddOut(new ddOutput);
 
 			if (is_directory(p))
-			{
 				ddOut = ddOutput::generate(p.string(), true);
-			} else if (Ryan_Serialization::known_format(p))
-			{
-				ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
+			else if (Ryan_Serialization::known_format(p))
 				ddOut->readFile(p.string());
-			}
 			else if (!Ryan_Serialization::known_format(p))
 			{
 				cerr << "\tWrong / unknown file type for this program.\n";
