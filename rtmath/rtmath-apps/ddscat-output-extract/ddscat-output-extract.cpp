@@ -114,18 +114,22 @@ int main(int argc, char** argv)
 		for (const path &p : inputs)
 		{
 			cerr << "Processing: " << p << endl;
-			if (is_directory(p)) continue;
-			if (!Ryan_Serialization::known_format(p))
-			{
-				cerr << "\tWrong file type\n";
-				continue;
-			}
-
-			
 			using namespace rtmath::ddscat;
 			boost::shared_ptr<ddOutput> ddOut;
-			ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
-			ddOut->readFile(p.string());
+
+			if (is_directory(p))
+			{
+				ddOut = ddOutput::generate(p.string(), true);
+			} else if (Ryan_Serialization::known_format(p))
+			{
+				ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
+				ddOut->readFile(p.string());
+			}
+			else if (!Ryan_Serialization::known_format(p))
+			{
+				cerr << "\tWrong / unknown file type for this program.\n";
+				continue;
+			}
 
 			// out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			// "M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"

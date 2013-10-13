@@ -25,6 +25,8 @@ namespace rtmath {
 			string sleaf = pleaf.string(); // the filename
 
 			size_t pund = sleaf.find('_'); // May be liu or holly
+			/// \todo Change to autodetect all of Holly's naming schemes.
+			// TODO: Fix here
 			if (pund != string::npos)
 			{
 				size_t pb = sleaf.find_first_not_of("0123456789", pund+1);

@@ -135,7 +135,7 @@ namespace rtmath {
 
 			/// Generate ddOutput from a ddscat output directory
 			static boost::shared_ptr<ddOutput> generate(
-				const std::string &dir);
+				const std::string &dir, bool noLoadRots = false);
 
 			/// Read xml file (using serialization)
 			static boost::shared_ptr<ddOutput> load(const std::string &filename);

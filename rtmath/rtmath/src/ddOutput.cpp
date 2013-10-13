@@ -139,7 +139,7 @@ namespace rtmath {
 			return res;
 		}
 
-		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir)
+		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
 		{
 			// Handling typical case with only one .avg output (one frequency, one aeff)
 			boost::shared_ptr<ddOutput> res(new ddOutput());
@@ -178,6 +178,7 @@ namespace rtmath {
 				// detecting the overall run time, but not necessary for now.
 				if (pext.string() == ".avg" || pext.string() == ".sca" || pext.string() == ".fml")
 				{
+					if (pext.string() != ".avg" && noLoadRots) return;
 					boost::shared_ptr<ddOutputSingle> dds(new ddOutputSingle(p.string()));
 					if (pext.string() == ".avg")
 					{
