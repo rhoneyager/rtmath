@@ -45,10 +45,10 @@ namespace {
 	/** \brief Parses space-separated shapefile entries.
 	**/
 	template <typename Iterator>
-	bool parse_shapefile_entries(Iterator first, Iterator last, std::vector<unsigned long>& v)
+	bool parse_shapefile_entries(Iterator first, Iterator last, std::vector<long>& v)
 	{
 		using qi::double_;
-		using qi::ulong_;
+		using qi::long_;
 		using qi::phrase_parse;
 		using qi::_1;
 		using ascii::space;
@@ -58,8 +58,8 @@ namespace {
 
 			//  Begin grammar
 			(
-			// *ulong_[push_back(phoenix::ref(v), _1)]
-			*ulong_
+			// *long_[push_back(phoenix::ref(v), _1)]
+			*long_
 			)
 			,
 			//  End grammar
@@ -367,7 +367,7 @@ namespace rtmath {
 			const char* pa = &iin[headerEnd];
 			const char* pb = strchr(pa+1, '\0');
 
-			//std::vector<std::vector<unsigned long>> parser_vals(numThreads);
+			//std::vector<std::vector<long>> parser_vals(numThreads);
 			//for (auto &pv : parser_vals)
 			//	pv.reserve((numPoints * 7));
 			//parse_shapefile_entries(pa,pb, parser_vals);
@@ -378,7 +378,7 @@ namespace rtmath {
 			// Create the pool of point ranges to read (partly based on pa and pb range)
 			std::vector<std::pair<const char*, const char*> > point_ranges, point_ranges_b;
 			point_ranges.reserve(numThreads * 21);
-			std::vector<std::vector<unsigned long> > parser_vals(numThreads);
+			std::vector<std::vector<long> > parser_vals(numThreads);
 			for (auto &p : parser_vals)
 				p.reserve((numPoints * 8) / (numThreads*19));
 			const char* pe = pa;
