@@ -84,8 +84,8 @@ int main(int argc, char** argv)
 
 		if (!vInput.size()) doHelp("Need to specify input files");
 
-		if (vInput.size() > 1 && vm.count("output")) doHelp("You can only specify "
-			"an output file if there is a single input file.");
+		//if (vInput.size() > 1 && vm.count("output")) doHelp("You can only specify "
+		//	"an output file if there is a single input file.");
 
 		bool dispScat = false;
 		bool dispS = false;
