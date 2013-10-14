@@ -15,6 +15,7 @@
 //#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
@@ -44,6 +45,7 @@ int main(int argc, char** argv)
 			("F", "display F")
 			("Mueller", "display mueller matrix")
 			("tag,t", "Tags the files with the standard ddscat version and run time information")
+			("tsv", "Tabulate files in tab-separated-value format")
 			;
 
 		po::positional_options_description p;
@@ -90,11 +92,18 @@ int main(int argc, char** argv)
 		bool dispStat = false;
 		bool dispF = false;
 		bool tag = false;
+		bool tsv = false;
 		if (vm.count("Mueller")) dispScat = true;
 		if (vm.count("F")) dispF = true;
 		if (vm.count("S")) dispS = true;
 		if (vm.count("stats")) dispStat = true;
 		if (vm.count("tag")) tag = true;
+		if (vm.count("tsv")) tsv = true;
+
+		std::ostringstream out;
+		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
+			"M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
+			"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 
 		for (const std::string &t : vInput)
 		{
@@ -108,7 +117,7 @@ int main(int argc, char** argv)
 				copy(recursive_directory_iterator(p,symlink_option::no_recurse), 
 				recursive_directory_iterator(), back_inserter(pCand));
 			else pCand.push_back(p);
-			if (pCand.size() > 1 && sOutput.size()) doHelp("Only one input file allowed if "
+			if (pCand.size() > 1 && sOutput.size() && !tsv) doHelp("Only one input file allowed if "
 				"output file is written.");
 			for (const auto &f : pCand)
 			{
@@ -152,10 +161,26 @@ int main(int argc, char** argv)
 						cout << endl;
 					}
 
-					if (sOutput.size())
+					double freq = rtmath::units::conv_spec("um","GHz").convert(ddfile.wave());
+					out << f.string() << "\t\t\t\t"
+						<< freq << "\t" << ddfile.getM().real() << "\t" << ddfile.getM().imag() << "\t"
+						<< ddfile.aeff() << "\t-1\t-1\t-1\t-1\t"
+						<< ddfile.getStatEntry(stat_entries::QSCAM) << "\t"
+						<< ddfile.getStatEntry(stat_entries::QBKM) << "\t"
+						<< ddfile.getStatEntry(stat_entries::QABSM) << "\t"
+						<< ddfile.getStatEntry(stat_entries::QEXTM) << "\n";
+
+					if (sOutput.size() && !tsv)
 						ddfile.writeFile(sOutput);
 
 				}
+			}
+
+			if (sOutput.size() && tsv)
+			{
+				std::ofstream fout(sOutput.c_str());
+				string txt = out.str();
+				fout << txt;
 			}
 		}
 
