@@ -41,6 +41,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input directories or files")
 			("output,o", po::value<string>(), "specify output file (.tsv)")
+			("force-description", po::value<string>(), "Override the description of each entry")
 			;
 
 		po::positional_options_description p;
@@ -77,6 +78,9 @@ int main(int argc, char** argv)
 		else doHelp("Need to specify input(s)");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
 		else doHelp("Need to specify output file.");
+
+		string sDescrip;
+		if (vm.count("force-description")) sDescrip = vm["force-description"].as<string>();
 
 		ofstream out(sOutput.c_str());
 		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
@@ -132,6 +136,11 @@ int main(int argc, char** argv)
 			// "Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 			rotations rots;
 			ddOut->parfile->getRots(rots);
+
+			// Recover from segfaulted runs when done in a script.
+			if (!ddOut->avg) continue;
+
+			if (sDescrip.size()) ddOut->description = sDescrip;
 
 			out << p.string() << "\t" << ddOut->description << "\t"
 				<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
