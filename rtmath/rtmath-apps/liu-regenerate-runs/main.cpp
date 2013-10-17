@@ -1,6 +1,7 @@
 /* This program will read in Liu data and will regenerate the 
  * corresponding shape files used for running.
  */
+#define _SCL_SECURE_NO_WARNINGS // Annoying Boost issue
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -14,17 +15,14 @@
 #include <list>
 #include <vector>
 
+#include <Ryan_Debug/debug.h>
+
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
-#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
-#include "../../rtmath/rtmath/ddscat/tmData.h"
-#include "../../rtmath/rtmath/serialization.h"
-#include "../../rtmath/rtmath/Serialization/tmData_serialization.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapestatsRotated.h"
-#include "../../rtmath/rtmath/ddscat/shapestatsviews.h"
 #include "../../rtmath/rtmath/error/error.h"
 
 void getId(const boost::filesystem::path &p,
