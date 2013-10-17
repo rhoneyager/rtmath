@@ -10,6 +10,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <list>
