@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 		else doHelp("Need to specify output file.");
 		if (vm.count("standard")) sStd = vm["standard"].as<string>();
 		else if (!fixedConcentration) doHelp("Need to specify standard run.");
-		if (vm.count("concentration")) sStdConcentrations = vm["concentrations"].as<string>();
+		if (vm.count("concentration")) sStdConcentrations = vm["concentration"].as<string>();
 		else doHelp("Need to specify standard concentration parameters.");
 		sNadirs = vm["nadir"].as<string>();
 
@@ -171,15 +171,18 @@ int main(int argc, char** argv)
 		};
 
 		boost::shared_ptr<ddOutput> ddStandard;
-		ddLoad(path(sStd), ddStandard);
-		// Use the standard run to provide a set of uniform initial weights
-		rotations srot;
-		ddStandard->parfile->getRots(srot);
-		ddWeightsDDSCAT dw(srot);
-		// Calculate the moment of inertia / PE function for the initial flake
-		// TODO!
+		
 		if (!fixedConcentration)
+		{
+			ddLoad(path(sStd), ddStandard);
+			// Use the standard run to provide a set of uniform initial weights
+			rotations srot;
+			ddStandard->parfile->getRots(srot);
+			ddWeightsDDSCAT dw(srot);
+			// Calculate the moment of inertia / PE function for the initial flake
+			// TODO!
 			throw rtmath::debug::xUnimplementedFunction();
+		}
 
 		// Iterate over the results
 		for (const path &p : inputs)
