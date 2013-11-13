@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 		out << "Standard\tStandard Concentration\tNadir Angle\tFilename\tConcentration\tDescription\t"
 			"Shape Hash\tDDSCAT Version Tag\tFrequency (GHz)\tM_real\tM_imag\tAeff (um)\t"
 			"Qsca_m_iso\tQbk_m_iso\tQabs_m_iso\tQext_m_iso\t"
-			"# Betas\t# Thetas\t# Phis\t"
+			"# Angles\t"
 			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
 			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
 			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori"
@@ -230,7 +230,7 @@ int main(int argc, char** argv)
 				for (auto nadir = nadirs.begin(); nadir != nadirs.end(); ++nadir)
 				{
 					const double muP = 0;
-					const double muT = *nadir;
+					const double muT = -1.0 * *nadir;
 
 					// Iterate over the results
 
