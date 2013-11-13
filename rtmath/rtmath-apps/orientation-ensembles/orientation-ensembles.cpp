@@ -49,11 +49,12 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<vector<string> >(),"specify input directories or files")
+			("input,i", po::value<vector<string> >()->multitoken(),"specify input directories or files")
 			("standard,s", po::value<string>(), "specify the file that is used as the "
 			"standard for relative weighting")
 			("concentration,k", po::value<string>(), "specify the standard concentration "
 			"parameters for weighting")
+			("fixed-concentration,f", "Set all flakes to have the standardized concentration parameters")
 			("nadir,n", po::value<string>()->default_value("0"), "specify the "
 			"nadir angles for observing")
 			("output,o", po::value<string>(), "specify output file (.tsv)")
@@ -92,12 +93,14 @@ int main(int argc, char** argv)
 		string sStd;
 		string sStdConcentrations;
 		string sNadirs;
+		bool fixedConcentration = false;
+		if (vm.count("fixed-concentration")) fixedConcentration = true;
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input(s)");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
 		else doHelp("Need to specify output file.");
 		if (vm.count("standard")) sStd = vm["standard"].as<string>();
-		else doHelp("Need to specify standard run.");
+		else if (!fixedConcentration) doHelp("Need to specify standard run.");
 		if (vm.count("concentration")) sStdConcentrations = vm["concentrations"].as<string>();
 		else doHelp("Need to specify standard concentration parameters.");
 		sNadirs = vm["nadir"].as<string>();
@@ -175,7 +178,8 @@ int main(int argc, char** argv)
 		ddWeightsDDSCAT dw(srot);
 		// Calculate the moment of inertia / PE function for the initial flake
 		// TODO!
-		throw;
+		if (!fixedConcentration)
+			throw rtmath::debug::xUnimplementedFunction();
 
 		// Iterate over the results
 		for (const path &p : inputs)
@@ -185,7 +189,7 @@ int main(int argc, char** argv)
 			boost::shared_ptr<ddOutput> ddOut;
 			try { 
 				ddLoad(p, ddOut);
-			} catch (rtmath::debug::xUnknownFileFormat &err)
+			} catch (rtmath::debug::xUnknownFileFormat &)
 			{ continue; }
 
 			rotations rot;
@@ -194,7 +198,8 @@ int main(int argc, char** argv)
 
 			// Calculate the moment of inertia / PE function for this flake
 			// TODO!
-			throw;
+			if (!fixedConcentration)
+				throw rtmath::debug::xUnimplementedFunction();
 
 			double Qbk_iso = 0;
 			double Qsca_iso = 0;
@@ -213,8 +218,10 @@ int main(int argc, char** argv)
 			{
 				// Calculate the concentration parameter (based on the standard)
 				// TODO!
-				throw;
 				double conc = 0;
+				if (!fixedConcentration)
+					throw rtmath::debug::xUnimplementedFunction();
+				else conc = *stdConc;
 
 				// Iterate over all nadir angles
 				for (auto nadir = nadirs.begin(); nadir != nadirs.end(); ++nadir)
