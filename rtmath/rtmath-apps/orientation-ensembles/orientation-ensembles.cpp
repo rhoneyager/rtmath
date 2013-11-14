@@ -115,7 +115,8 @@ int main(int argc, char** argv)
 			"# Angles\t"
 			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
 			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
-			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori"
+			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori\t"
+			"\% Error Qbk\t\% Error Qsca"
 			<< endl;
 
 
@@ -257,23 +258,37 @@ int main(int argc, char** argv)
 							ot = std::find_if(wts.cbegin(), wts.cend(), 
 								[&](const IntervalTable3dEntry &val)
 							{
+								// Using a metric approach to avoid linux / windows precision differences
+								double metric = 0;
 								if (rot.bN() > 1)
 								{
-									if (it->beta() < val.at(IntervalTable3dDefs::BETA_MIN) - 1.e-5) return false;
-									if (it->beta() > val.at(IntervalTable3dDefs::BETA_MAX) + 1.e-5) return false;
+									if (it->beta() < val.at(IntervalTable3dDefs::BETA_MIN) - 1.e-5)
+										metric += pow(it->beta()-val.at(IntervalTable3dDefs::BETA_MIN),2.);
+									if (it->beta() > val.at(IntervalTable3dDefs::BETA_MAX) + 1.e-5)
+										metric += pow(it->beta()-val.at(IntervalTable3dDefs::BETA_MAX),2.);
 								}
 								if (rot.tN() > 1)
 								{
-									if (it->theta() < val.at(IntervalTable3dDefs::THETA_MIN) - 1.e-5) return false;
-									if (it->theta() > val.at(IntervalTable3dDefs::THETA_MAX) + 1.e-5) return false;
+									if (it->theta() < val.at(IntervalTable3dDefs::THETA_MIN) - 1.e-5)
+										metric += pow(it->theta()-val.at(IntervalTable3dDefs::THETA_MIN),2.);
+									if (it->theta() > val.at(IntervalTable3dDefs::THETA_MAX) + 1.e-5)
+										metric += pow(it->theta()-val.at(IntervalTable3dDefs::THETA_MAX),2.);
 								}
 								if (rot.pN() > 1)
 								{
-									if (it->phi() < val.at(IntervalTable3dDefs::PHI_MIN) - 1.e-5) return false;
-									if (it->phi() > val.at(IntervalTable3dDefs::PHI_MAX) + 1.e-5) return false;
+									if (it->phi() < val.at(IntervalTable3dDefs::PHI_MIN) - 1.e-5)
+										metric += pow(it->phi()-val.at(IntervalTable3dDefs::PHI_MIN),2.);
+									if (it->phi() > val.at(IntervalTable3dDefs::PHI_MAX) + 1.e-5)
+										metric += pow(it->phi()-val.at(IntervalTable3dDefs::PHI_MAX),2.);
 								}
+								//cerr << it->beta() << " " << it->theta() << " " << it->phi() << " " << metric << "\n";
+								if (metric > 1.e-4) return false;
 								return true;
 							});
+							/* if (ot != wts.cend())
+							{
+								cerr << "\nMatched " << it->beta() << " " << it->theta() << " " << it->phi() << " ";
+							} */
 						}
 						double wt = 0;
 						if (ot == wts.cend())
@@ -291,15 +306,22 @@ int main(int argc, char** argv)
 									wt = 1. / static_cast<double>(ddOut->scas.size());
 								else wt = -1.;
 							}
-						} else wt = ot->at(IntervalTable3dDefs::WEIGHT);
+						} else {
+							wt = ot->at(IntervalTable3dDefs::WEIGHT);
+							//for (auto a = ot->begin(); a != ot->end(); ++a)
+							//	std::cerr << " " << *a;
+							//std::cerr << std::endl;
+						}
 
 						// Add weighted rotation to the calculated cross-sections
 						ddOutputSingle::statTableType is;
 						it->getStatTable(is);
 						std::valarray<double> s(is.data(), is.size());
 						stats += s * wt;
+						//cerr << wt << "\t";
 					}
 
+					if (ddOut->ms.size() == 0) continue;
 					std::complex<double> m = ddOut->ms.at(0);
 					/*
 					ofstream out(sOutput.c_str());
@@ -309,7 +331,8 @@ int main(int argc, char** argv)
 					"# rots\t"
 					"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
 					"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
-					"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori"
+					"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori\t"
+					"\% Error Qbk\t\% Error Qsca"
 					<< endl;
 					*/
 					out << sStd << "\t" << *stdConc << "\t" << *nadir << "\t"
@@ -336,9 +359,11 @@ int main(int argc, char** argv)
 						<< stats[stat_entries::QBK2] << "\t"
 						<< stats[stat_entries::QABS2] << "\t"
 						<< stats[stat_entries::QEXT2] << "\t"
-						<< stats[stat_entries::G12] << "\n"
+						<< stats[stat_entries::G12] << "\t"
+						<< 100. * (stats[stat_entries::QBKM]- Qbk_iso)/ Qbk_iso << "\t"
+						<< 100. * (stats[stat_entries::QSCAM] - Qsca_iso)/ Qsca_iso << "\n";
 						;
-					std::cerr << "\tProcessed " << ddOut->scas.size() << " orientations.\n";
+					std::cerr << "\tProcessed conc " << conc << " nadir " << *nadir << " with " << ddOut->scas.size() << " orientations.\n";
 				}
 			}
 		}

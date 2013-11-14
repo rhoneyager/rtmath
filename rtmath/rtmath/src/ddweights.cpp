@@ -635,6 +635,8 @@ namespace rtmath {
 				for (size_t i=0; i<degree; ++i)
 					vp += x[i] * mu[i];
 				double f = C * exp(kappa * vp);
+
+				//std::cerr << "PDF: deg:" << degree << " f:" << f << " C:" << C << " k:" << kappa << " vp:" << vp << std::endl;
 				return f;
 			}
 
@@ -748,8 +750,14 @@ namespace rtmath {
 					double weight = sqrt((weight_a * weight_a) + (weight_b * weight_b));
 					weight /= static_cast<double>(dw.numBetas() * dw.numThetas() * dw.numPhis()); // Account for multiple betas here.
 					weight *= 4. * pi / sqrt(2);
+					//std::cerr << "w: " << weight << " wa:" << weight_a << " wb:" << weight_b << std::endl;
 					IntervalTable3dEntry ie = i;
-					ie[IntervalTable3dDefs::WEIGHT] = abs(weight);
+					if (weight <0) weight *= -1.0; // oddly, abs(weight) gives zeros on linux gcc 4.8.1...
+					ie[IntervalTable3dDefs::WEIGHT] = weight;
+
+					//for (auto a = ie.begin(); a != ie.end(); ++a)
+					//	std::cerr << " " << *a;
+					//std::cerr << " " << weight << std::endl;
 
 					weights.push_back(std::move(ie));
 				}
