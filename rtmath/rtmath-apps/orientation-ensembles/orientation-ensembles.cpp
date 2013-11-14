@@ -229,8 +229,8 @@ int main(int argc, char** argv)
 				// Iterate over all nadir angles
 				for (auto nadir = nadirs.begin(); nadir != nadirs.end(); ++nadir)
 				{
-					const double muP = 0;
-					const double muT = -1.0 * *nadir;
+					const double muP = 45;
+					const double muT = 1.0 * *nadir;
 
 					// Iterate over the results
 
