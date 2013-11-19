@@ -20,8 +20,8 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 
-#include <pcl/point_cloud.h>
-#include <pcl/octree/octree.h>
+//#include <pcl/point_cloud.h>
+//#include <pcl/octree/octree.h>
 
 #include "../../rtmath/rtmath/denseMatrix.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
@@ -53,8 +53,8 @@ int main(int argc, char** argv)
 			"Specify the base dipole spacing (microns)")*/
 			("output,o", po::value<string>()->default_value("./decimated.shp"),
 			"Specify output file")
-			("twolevels", po::value<unsigned int>(), "Give output shape only two levels, "
-			"with the resultant cells being filled or not using a threshold.")
+			//("twolevels", po::value<unsigned int>(), "Give output shape only two levels, "
+			//"with the resultant cells being filled or not using a threshold.")
 			("factor,f", po::value<unsigned int>()->default_value(2),
 			"scaling factor (in each direction)")
 			;
@@ -86,9 +86,9 @@ int main(int argc, char** argv)
 
 		bool expand = (vm.count("expand")) ? true : false;
 
-		bool hasThreshold = (vm.count("twolevels")) ? true : false;
-		int threshold = 0;
-		if (hasThreshold) threshold = vm["twolevels"].as<unsigned int>();
+		//bool hasThreshold = (vm.count("twolevels")) ? true : false;
+		//int threshold = 0;
+		//if (hasThreshold) threshold = vm["twolevels"].as<unsigned int>();
 
 		// TODO: add in diel commands here
 
@@ -109,131 +109,7 @@ int main(int argc, char** argv)
 		//boost::shared_ptr<const shapeFileStats> sstats = boost::shared_ptr<const shapeFileStats>(
 		//	new shapeFileStats(shp));
 
-		// Use pcl to create a point cloud of the existing points
-		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-		pcl::PointCloud<pcl::PointXYZI>::Ptr cloudDec (new pcl::PointCloud<pcl::PointXYZI>);
-
-		// Insert points into the cloud
-		cloud->points.resize(shp->numPoints);
-		cloud->width = shp->numPoints;
-		cloud->height = 1;
-
-		cloudDec->points.reserve(shp->numPoints);
-		for (size_t i=0; i< shp->numPoints; ++i)
-		{
-			cloud->points[i].x = shp->latticePts(i,0);
-			cloud->points[i].y = shp->latticePts(i,1);
-			cloud->points[i].z = shp->latticePts(i,2);
-		}
-
-		float resolution = (float) scale;
-		pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> octree(resolution);
-
-		octree.setInputCloud(cloud);
-		octree.addPointsFromInputCloud();
-
-		// Calculate decimation factor (max number of filled points within voxel)
-//		unsigned int nMax = pow((unsigned int) scale,3);
-
-		// The search point spans every voxel in the grid
-		using namespace std;
-		//cerr << shp->mins(0) << ", " << shp->maxs(0) << endl;
-		//cerr << shp->mins(1) << ", " << shp->maxs(1) << endl;
-		//cerr << shp->mins(2) << ", " << shp->maxs(2) << endl;
-
-		for (float x=shp->mins(0); x <= shp->maxs(0); x += scale)
-			for (float y=shp->mins(1); y <= shp->maxs(1); y += scale)
-				for (float z=shp->mins(2); z <= shp->maxs(2); z+= scale)
-				{
-//					cerr << "X " << x << " Y " << y << " Z " << z << endl;
-					pcl::PointXYZ searchPoint;
-					searchPoint.x = x;
-					searchPoint.y = y;
-					searchPoint.z = z;
-
-					// Aggregate points based on voxel. 
-					std::vector<int> pointIdxVec;
-
-					// Based on search point, find the total number of points in this voxel
-					// Store information (and new dielectric index) into a new shapefile
-					if (octree.voxelSearch (searchPoint, pointIdxVec))
-//					octree.voxelSearch(searchPoint, pointIdxVec);
-					{
-						/*
-						std::cerr << "Neighbors within voxel search at (" << searchPoint.x 
-							<< " " << searchPoint.y 
-							<< " " << searchPoint.z << ") " 
-							<< pointIdxVec.size() << std::endl;
-						
-						for (size_t i = 0; i < pointIdxVec.size (); ++i)
-							std::cout << "    " << cloud->points[pointIdxVec[i]].x 
-							<< " " << cloud->points[pointIdxVec[i]].y 
-							<< " " << cloud->points[pointIdxVec[i]].z << std::endl;
-						*/
-
-						// Scaling points to grid (starting grid at zero)
-						float sx = (x - shp->mins(0)) / (float) scale;
-						float sy = (y - shp->mins(1)) / (float) scale;
-						float sz = (z - shp->mins(2)) / (float) scale;
-
-						pcl::PointXYZI decPoint;
-						decPoint.x = sx;
-						decPoint.y = sy;
-						decPoint.z = sz;
-						decPoint.intensity = (hasThreshold) ? 
-							((pointIdxVec.size() > (size_t) threshold) ? 1.0f : 0)
-							: (float) pointIdxVec.size();
-
-						if (decPoint.intensity)
-							cloudDec->points.push_back(decPoint);
-					}
-/*
-					int K = 2;
-
-					std::vector<int> pointIdxNKNSearch;
-					std::vector<float> pointNKNSquaredDistance;
-
-					std::cerr << "K nearest neighbor search at (" << searchPoint.x 
-					    << " " << searchPoint.y 
-					    << " " << searchPoint.z
-					    << ") with K=" << K << std::endl;
-
-					if (octree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
-					{
-						for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
-							std::cerr << "    "  <<   cloud->points[ pointIdxNKNSearch[i] ].x 
-								<< " " << cloud->points[ pointIdxNKNSearch[i] ].y 
-								<< " " << cloud->points[ pointIdxNKNSearch[i] ].z 
-								<< " (squared distance: " << pointNKNSquaredDistance[i] << ")" << std::endl;
-					}
-*/
-				}
-
-		// Recalculate mean, and write the shapefile
-		boost::shared_ptr<shapefile> shpout = boost::shared_ptr<shapefile>(
-			new rtmath::ddscat::shapefile);
-		//rtmath::ddscat::shapefile shpout = shp;
-		shpout->desc = shp->desc;
-		{ // Add descriptive naming
-			std::ostringstream idname;
-			idname << " with scaling factor " << scale;
-			if (hasThreshold)
-				idname << " and a filling threshold of " << threshold;
-			std::string ids = idname.str();
-			shpout->desc.append(ids);
-		}
-		shpout->a1 = shp->a1;
-		shpout->a2 = shp->a2;
-		shpout->a3 = shp->a3;
-		shpout->d = shp->d;
-		shpout->xd = shp->xd;
-		shpout->Dielectrics = shp->Dielectrics;
-		
-		shpout->filename = output;
-		shpout->numPoints = cloudDec->points.size();
-
-		shpout->latticePts.resize(shpout->numPoints,3);
-		shpout->latticePtsRi.resize(shpout->numPoints,3);
+		boost::shared_ptr<shapefile> shpout = shp->decimate((size_t) scale);
 
 		using namespace boost::accumulators;
 		// Finding the new mean, the easier way.
@@ -241,14 +117,6 @@ int main(int argc, char** argv)
 
 		for (size_t i=0; i<shpout->numPoints; ++i)
 		{
-			shpout->latticePts(i,0) = cloudDec->points[i].x;
-			shpout->latticePts(i,1) = cloudDec->points[i].y;
-			shpout->latticePts(i,2) = cloudDec->points[i].z;
-
-			shpout->latticePtsRi(i,0) = cloudDec->points[i].intensity;
-			shpout->latticePtsRi(i,1) = cloudDec->points[i].intensity;
-			shpout->latticePtsRi(i,2) = cloudDec->points[i].intensity;
-
 			m_x(shpout->latticePts(i,0));
 			m_y(shpout->latticePts(i,1));
 			m_z(shpout->latticePts(i,2));

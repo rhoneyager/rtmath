@@ -1,5 +1,6 @@
 #include "Stdafx-ddscat.h"
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -8,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <tuple>
 #include <thread>
 #include <mutex>
 #include <cmath>
@@ -30,6 +32,7 @@
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
+#include "../rtmath/denseMatrix.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
@@ -74,53 +77,53 @@ namespace {
 	/*
 	struct parse_stats
 	{
-		parse_stats() : mins(3,0), maxs(3,0), means(3,0) {}
-		std::vector<double> mins, maxs, means;
+	parse_stats() : mins(3,0), maxs(3,0), means(3,0) {}
+	std::vector<double> mins, maxs, means;
 	};
 
 	template <typename Iterator>
 	bool parse_shapefile_entries_new(Iterator first, Iterator last, std::vector<unsigned long>& v, parse_stats &s, size_t n)
 	{
-		using qi::double_;
-		using qi::ulong_;
-		using qi::phrase_parse;
-		using qi::_1;
-		using qi::_2;
-		using ascii::space;
-		using phoenix::ref;
-		using phoenix::push_back;
+	using qi::double_;
+	using qi::ulong_;
+	using qi::phrase_parse;
+	using qi::_1;
+	using qi::_2;
+	using ascii::space;
+	using phoenix::ref;
+	using phoenix::push_back;
 
-		bool r = phrase_parse(first, last,
+	bool r = phrase_parse(first, last,
 
-			//  Begin grammar
-			(
-			*(
-			// Cell ID
-			double_[push_back(phoenix::ref(v), _1)] >> 
-			// X
-			double_ >> 
-			// Y
-			double_ >> 
-			// Z
-			double_ >> 
-			// iX
-			ulong_ >> 
-			// iY
-			ulong_ >> 
-			// iZ
-			ulong_
-			)
-			// *ulong_[push_back(phoenix::ref(v), _1)]
-			//*ulong_
-			)
-			,
-			//  End grammar
+	//  Begin grammar
+	(
+	*(
+	// Cell ID
+	double_[push_back(phoenix::ref(v), _1)] >> 
+	// X
+	double_ >> 
+	// Y
+	double_ >> 
+	// Z
+	double_ >> 
+	// iX
+	ulong_ >> 
+	// iY
+	ulong_ >> 
+	// iZ
+	ulong_
+	)
+	// *ulong_[push_back(phoenix::ref(v), _1)]
+	//*ulong_
+	)
+	,
+	//  End grammar
 
-			space, v);
+	space, v);
 
-		if (first != last) // fail if we did not get a full match
-			return false;
-		return r;
+	if (first != last) // fail if we did not get a full match
+	return false;
+	return r;
 	}
 
 	*/
@@ -183,7 +186,7 @@ namespace rtmath {
 		}
 
 		boost::shared_ptr<shapefile> shapefile::loadHash(
-				const HASH_t &hash)
+			const HASH_t &hash)
 		{
 			return loadHash(boost::lexical_cast<std::string>(hash.lower));
 		}
@@ -253,17 +256,17 @@ namespace rtmath {
 			void* start = region.get_address();
 			const char* a = (char*) start;
 			this->filename = fname;
-			
+
 			string s(a, fsize);
 			std::istringstream ss(s);
 
-			
+
 			boost::iostreams::filtering_istream sin;
 			// sin can contain either compressed or uncompressed input at this point.
 			if (cmeth.size())
 				prep_decompression(cmeth, sin);
 			sin.push(ss);
-			
+
 			string suncompressed;
 			suncompressed.reserve(1024*1024*10);
 			std::ostringstream so;
@@ -273,6 +276,15 @@ namespace rtmath {
 
 			istringstream ss_unc(suncompressed);
 			readContents(suncompressed.c_str());
+		}
+
+		void shapefile::resize(size_t n)
+		{
+			numPoints = n;
+			latticePts.resize(numPoints,3);
+			latticePtsRi.resize(numPoints,3);
+			latticePtsStd.resize(numPoints,3);
+			latticePtsNorm.resize(numPoints,3);
 		}
 
 		void shapefile::readHeader(const char* in, size_t &headerEnd)
@@ -295,7 +307,7 @@ namespace rtmath {
 				//pend = in.find_first_of("\n", pend+1);
 				string lin(pstart, pend-pstart-1);
 				//std::getline(in,lin);
-				
+
 				size_t posa = 0, posb = 0;
 				Eigen::Array3f *v = nullptr;
 				switch (i)
@@ -341,10 +353,7 @@ namespace rtmath {
 			}
 
 			headerEnd = (pend - in) / sizeof(char);
-			latticePts.resize(numPoints,3);
-			latticePtsRi.resize(numPoints,3);
-			latticePtsStd.resize(numPoints,3);
-			latticePtsNorm.resize(numPoints,3);
+			resize(numPoints);
 		}
 
 		void shapefile::readContents(const char *iin)
@@ -400,7 +409,7 @@ namespace rtmath {
 				tag::max, 
 				tag::mean,
 				tag::count> > > 
-				 // These only need mean and count, but are here for ease in typing lambdas.
+				// These only need mean and count, but are here for ease in typing lambdas.
 				m_x(numThreads), m_y(numThreads), m_z(numThreads),
 				// These need all parameters.
 				r_x(numThreads), r_y(numThreads), r_z(numThreads);
@@ -476,7 +485,7 @@ namespace rtmath {
 							p = point_ranges.back();
 							point_ranges.pop_back();
 						}
-					
+
 						process_pool_raws_import(i, p.first, p.second);
 					}
 				} catch (std::exception &e)
@@ -517,13 +526,13 @@ namespace rtmath {
 				&mSrc, float &mMean)
 			{
 				for (auto &ac : mSrc)
-				mMean += boost::accumulators::mean(ac) * (float) boost::accumulators::count(ac) / (float) numPoints;
+					mMean += boost::accumulators::mean(ac) * (float) boost::accumulators::count(ac) / (float) numPoints;
 			};
 			float mm_x = 0, mm_y = 0, mm_z = 0;
 			findMean(m_x, mm_x); findMean(m_y, mm_y); findMean(m_z, mm_z);
 			float mr_x = 0, mr_y = 0, mr_z = 0;
 			findMean(r_x, mr_x); findMean(r_y, mr_y); findMean(r_z, mr_z);
-			
+
 			means(0) = mr_x;
 			means(1) = mr_y;
 			means(2) = mr_z;
@@ -576,7 +585,7 @@ namespace rtmath {
 							p = cands.back();
 							cands.pop_back();
 						}
-					
+
 						postStats(p.first, p.second);
 					}
 				} catch (std::exception &e)
@@ -598,7 +607,7 @@ namespace rtmath {
 				pool[i].join();
 			}
 
-			
+
 			hash();
 		}
 
@@ -611,6 +620,88 @@ namespace rtmath {
 		{
 			rtmath::ddscat::convexHull hull(latticePtsStd);
 			hull.writeVTKraw(fname);
+		}
+
+		boost::shared_ptr<shapefile> shapefile::decimate(size_t degree) const
+		{
+			boost::shared_ptr<shapefile> res(new shapefile);
+
+			// Move points into a denseMatrix
+			size_t maxX = static_cast<size_t>(maxs(0)), maxY = static_cast<size_t>(maxs(1)), maxZ = static_cast<size_t>(maxs(2));
+			size_t minX = static_cast<size_t>(mins(0)), minY = static_cast<size_t>(mins(1)), minZ = static_cast<size_t>(mins(2));
+			size_t spanX = maxX-minX, spanY = maxY-minY, spanZ = maxZ-minZ;
+			size_t rsX = (spanX / degree) + 1, rsY = (spanY / degree) + 1, rsZ = (spanZ / degree) + 1;
+
+			std::vector<short> vals(rsX*rsY*rsZ);
+
+			auto getIndex = [&](float x, float y, float z) -> size_t
+			{
+				size_t index = 0;
+				size_t sX = (size_t) x / degree;
+				size_t sY = (size_t) y / degree;
+				size_t sZ = (size_t) z / degree;
+				index = (sX * (rsY * rsZ)) + (sY * rsZ) + sZ;
+				return index;
+			};
+
+			auto getCrds = [&](size_t index) -> std::tuple<size_t,size_t,size_t>
+			{
+				size_t x=index / (rsY*rsZ);
+				index -= x*rsY*rsZ;
+				size_t y=index / rsZ;
+				index -= y*rsZ;
+				size_t z = index;
+				return std::tuple<size_t,size_t,size_t>(x,y,z);
+			};
+
+			// Iterate over all points and bin into the appropriate set
+			for (size_t i=0; i < numPoints; ++i)
+			{
+				auto crdsm = latticePts.block<1,3>(i,0);
+				float x = crdsm(0), y = crdsm(1), z = crdsm(2);
+				size_t index = getIndex(x,y,z);
+				vals.at(index)++;
+			}
+
+			// Count the decimated points with nonzero values
+			size_t num = vals.size() - std::count(vals.begin(), vals.end(), 0);
+
+			res->a1 = a1;
+			res->a2 = a2;
+			res->a3 = a3;
+			res->d = d;
+			res->desc = desc;
+			res->Dielectrics = Dielectrics;
+			res->filename = filename;
+			res->xd = xd;
+
+			// Rescale x0 to point to the new center
+			res->x0 = x0 / (float) degree;
+			// Set the dielectrics
+			res->Dielectrics.clear();
+			for (size_t i=0; i<pow(degree,3); ++i)
+				res->Dielectrics.insert(i+1);
+
+			res->resize(num);
+
+			// Set the decimated values
+			size_t point = 0;
+			for (size_t i=0; i<vals.size(); ++i)
+			{
+				if (vals.at(i) == 0) continue;
+				point++;
+				auto t = getCrds(i);
+				auto crdsm = res->latticePts.block<1,3>(point,0);
+				auto crdsi = res->latticePtsRi.block<1,3>(point,0);
+				crdsm(0) = (float) std::get<0>(t);
+				crdsm(1) = (float) std::get<1>(t);
+				crdsm(2) = (float) std::get<2>(t);
+				crdsi(0) = vals.at(i);
+				crdsi(1) = vals.at(i);
+				crdsi(2) = vals.at(i);
+			}
+
+			return res;
 		}
 
 		void shapefile::writeBOV(const std::string &prefix) const
@@ -676,7 +767,7 @@ namespace rtmath {
 				float x = crdsm(0), y = crdsm(1), z = crdsm(2);
 				auto crdsi = latticePtsRi.block<1,3>(i,0);
 				short diel = static_cast<short>(crdsi(0));
-				
+
 				size_t start = static_cast<size_t>(x - minX) * sy * sz;
 				start += static_cast<size_t>(y - minY) * sz;
 				start += static_cast<size_t>(z - minZ);
@@ -695,7 +786,7 @@ namespace rtmath {
 			using namespace Ryan_Serialization;
 			using namespace std;
 			using boost::filesystem::path;
-			
+
 			std::string cmeth;
 			std::ostringstream outfile;
 			if (Ryan_Serialization::detect_compression(filename, cmeth))

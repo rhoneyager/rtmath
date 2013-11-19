@@ -50,10 +50,23 @@ namespace rtmath {
 			void writeVTK(const std::string &fname) const;
 			/// Export a shapefile to bov output
 			void writeBOV(const std::string &prefix) const;
+
+			/** \brief Decimate a shapefile
+			* This version of the function examines the number of dipoles in a given degree^3
+			* unit cube, and then constructs a smaller shapefile object with the matching parameters.
+			*
+			* The refractive indices can be externally manipulated to produce threshold values.
+			*
+			* \note Only works correctly when decimating a shape with one dielectric.
+			**/
+			boost::shared_ptr<shapefile> decimate(size_t degree = 2) const;
+
 			shapefile();
 		private:
 			void _init();
 			void readHeader(const char *in, size_t &headerEnd);
+			/// Resizes arrays to hold the desired number of points
+			void resize(size_t num);
 			mutable HASH_t _localhash;
 			friend class ::boost::serialization::access;
 			template<class Archive>
