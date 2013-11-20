@@ -637,9 +637,9 @@ namespace rtmath {
 			auto getIndex = [&](float x, float y, float z) -> size_t
 			{
 				size_t index = 0;
-				size_t sX = (size_t) x / degree;
-				size_t sY = (size_t) y / degree;
-				size_t sZ = (size_t) z / degree;
+				size_t sX = (size_t) (x-minX) / degree;
+				size_t sY = (size_t) (y-minY) / degree;
+				size_t sZ = (size_t) (z-minZ) / degree;
 				index = (sX * (rsY * rsZ)) + (sY * rsZ) + sZ;
 				return index;
 			};
@@ -689,7 +689,6 @@ namespace rtmath {
 			for (size_t i=0; i<vals.size(); ++i)
 			{
 				if (vals.at(i) == 0) continue;
-				point++;
 				auto t = getCrds(i);
 				auto crdsm = res->latticePts.block<1,3>(point,0);
 				auto crdsi = res->latticePtsRi.block<1,3>(point,0);
@@ -699,6 +698,7 @@ namespace rtmath {
 				crdsi(0) = vals.at(i);
 				crdsi(1) = vals.at(i);
 				crdsi(2) = vals.at(i);
+				point++;
 			}
 
 			return res;
@@ -713,18 +713,17 @@ namespace rtmath {
 			string sCtrlFile = string(prefix).append(".bov");
 			path pDatafile = path(sDataFile).filename();
 
-			int maxX = static_cast<int>(maxs(0)), maxY = static_cast<int>(maxs(1)), maxZ = static_cast<int>(maxs(2));
-			int minX = static_cast<int>(mins(0)), minY = static_cast<int>(mins(1)), minZ = static_cast<int>(mins(2));
+			
+			size_t maxX = static_cast<size_t>(maxs(0)), maxY = static_cast<size_t>(maxs(1)), maxZ = static_cast<size_t>(maxs(2));
+			size_t minX = static_cast<size_t>(mins(0)), minY = static_cast<size_t>(mins(1)), minZ = static_cast<size_t>(mins(2));
+			size_t spanX = maxX-minX+1, spanY = maxY-minY+1, spanZ = maxZ-minZ+1;
 
 			// First, write the control file
 			ofstream oct(sCtrlFile.c_str(), std::ios::binary | std::ios::out);
 			oct << "TIME: 0\n"
 				"DATA_FILE: " << pDatafile.string() << "\n"
 				"# The data file size corresponds to the raw flake dimensions\n"
-				"DATA_SIZE: "
-				<< maxX + 1 - minX << " "
-				<< maxY + 1 - minY << " "
-				<< maxZ + 1 - minZ << "\n"
+				"DATA_SIZE: " << spanX << " " << spanY << " " << spanZ << "\n"
 				"# Allowable values for DATA_FORMAT are: BYTE,SHORT,INT,FLOAT,DOUBLE\n"
 				"DATA_FORMAT: SHORT\n"
 				"VARIABLE: Composition\n"
@@ -755,12 +754,21 @@ namespace rtmath {
 			FILE * pOut;
 			pOut = fopen(sDataFile.c_str(), "wb");
 			// Allocate an array of the correct size
-			const size_t sx = static_cast<size_t>(maxX + 1 - minX);
-			const size_t sy = static_cast<size_t>(maxY + 1 - minY);
-			const size_t sz = static_cast<size_t>(maxZ + 1 - minZ);
-			const size_t size = sx * sy * sz;
-			std::unique_ptr<short[]> array(new short[size*1]);
+			const size_t size = spanX * spanY * spanZ;
+			std::unique_ptr<short[]> array(new short[size]);
 			std::fill_n(array.get(), size*1, 0);
+
+			auto getIndex = [&](float x, float y, float z) -> size_t
+			{
+				size_t index = 0;
+				size_t sX = (size_t) (x-minX);
+				size_t sY = (size_t) (y-minY);
+				size_t sZ = (size_t) (z-minZ);
+				//index = (sX * (spanY * spanZ)) + (sY * spanZ) + sZ;
+				index = (sZ * (spanX * spanY)) + (sY * spanX) + sX;
+				return index;
+			};
+
 			for (size_t i=0; i < numPoints; ++i)
 			{
 				auto crdsm = latticePts.block<1,3>(i,0);
@@ -768,10 +776,7 @@ namespace rtmath {
 				auto crdsi = latticePtsRi.block<1,3>(i,0);
 				short diel = static_cast<short>(crdsi(0));
 
-				size_t start = static_cast<size_t>(x - minX) * sy * sz;
-				start += static_cast<size_t>(y - minY) * sz;
-				start += static_cast<size_t>(z - minZ);
-				start *= 1;
+				size_t start = getIndex(x,y,z);
 
 				array[start+0] = diel;
 				//array[start+1] = static_cast<short>(crdsi(1));

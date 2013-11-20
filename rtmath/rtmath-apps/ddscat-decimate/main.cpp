@@ -47,10 +47,10 @@ int main(int argc, char** argv)
 			"Specify input shape file.")
 			/*("inputddpar,p", po::value<string>(),
 			"Specify input ddscat.par file")
-			("inputdir,d", po::value<string>(),
-			"Specify input directory")
-			("base-dipole-spacing", po::value<double>(), 
-			"Specify the base dipole spacing (microns)")*/
+			//("inputdir,d", po::value<string>(),
+			//"Specify input directory")
+			//("base-dipole-spacing", po::value<double>(), 
+			//"Specify the base dipole spacing (microns)")*/
 			("output,o", po::value<string>()->default_value("./decimated.shp"),
 			"Specify output file")
 			//("twolevels", po::value<unsigned int>(), "Give output shape only two levels, "
