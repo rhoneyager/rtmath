@@ -1,7 +1,7 @@
-/* debug.cpp
-* The debugging file, where all of the error-handling
+/**
+* \brief The debugging file, where all of the error-handling
 * and versioning code resides.
-*/
+**/
 
 #include "Stdafx-core.h"
 #include <iostream>
@@ -32,6 +32,8 @@ namespace rtmath
 {
 	namespace debug
 	{
+		std::string SHARED_PRIVATE sConfigDefaultFile;
+
 		void dumpErrorLocation(std::ostream &out)
 		{
 			out << "File: " << memcheck::__file__ << std::endl;
@@ -164,6 +166,10 @@ namespace rtmath
 			
 			hidden.add_options()
 				("help-verbose", "Print out all possible program options")
+				("rtmath-config-file", po::value<std::string>(),
+				"Specify the location of the rtmath configuration file. Overrides "
+				"all other search locations. If it cannot be found, fall back to the "
+				"next option.")
 				;
 		}
 
@@ -190,6 +196,11 @@ namespace rtmath
 				std::cerr << "Ryan_Debug library information: \n";
 				Ryan_Debug::printDebugInfo();
 				exit(2);
+			}
+
+			if (vm.count("rtmath-config-file"))
+			{
+				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
 			}
 		}
 

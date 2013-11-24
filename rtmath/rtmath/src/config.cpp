@@ -1,9 +1,14 @@
 #include "Stdafx-core.h"
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <boost/filesystem.hpp>
+
+#include <Ryan_Debug/debug.h>
+
 #include "../rtmath/config.h"
+#include "../rtmath/splitSet.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -79,20 +84,20 @@ namespace rtmath {
 			}
 
 
-			std::string dkey = key.substr(0,key.find_last_of('/')+1);
+			std::string dkey = key.substr(0, key.find_last_of('/') + 1);
 			// Go down the tree, pulling out one '/' at a time, until done
 			// If entry is missing, create it
 
 			std::string segname;
 			size_t s_start, s_end;
 			s_start = 0;
-			while ( (s_end = dkey.find_first_of('/',s_start)) != std::string::npos)
+			while ((s_end = dkey.find_first_of('/', s_start)) != std::string::npos)
 			{
-				segname = dkey.substr(s_start,s_end-s_start);
+				segname = dkey.substr(s_start, s_end - s_start);
 				if (segname.size() == 0) break;
 				std::shared_ptr<configsegment> newChild = cseg->getChild(segname);
 				//if (newChild == nullptr) newChild = std::shared_ptr<configsegment> (new configsegment(segname,cseg));
-				if (newChild == nullptr) newChild = create(segname,cseg);
+				if (newChild == nullptr) newChild = create(segname, cseg);
 
 				// Advance into the child
 				cseg = newChild;
@@ -116,7 +121,7 @@ namespace rtmath {
 				std::shared_ptr<configsegment> relseg = findSegment(key);
 				if (!relseg) throw rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
-				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
+				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
 				bool res = relseg->hasVal(keystripped);
 				return res;
 			}
@@ -133,7 +138,8 @@ namespace rtmath {
 				if (this->_parent.expired() == false)
 				{
 					return this->_parent.lock()->hasVal(key);
-				} else {
+				}
+				else {
 					return false;
 				}
 			}
@@ -151,8 +157,8 @@ namespace rtmath {
 				std::shared_ptr<configsegment> relseg = findSegment(key);
 				if (!relseg) throw rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
-				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
-				bool res = relseg->getVal(keystripped,value);
+				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
+				bool res = relseg->getVal(keystripped, value);
 				return res;
 			}
 
@@ -168,7 +174,8 @@ namespace rtmath {
 				if (this->_parent.expired() == false)
 				{
 					return this->_parent.lock()->getVal(key, value);
-				} else {
+				}
+				else {
 					return false;
 				}
 			}
@@ -181,8 +188,8 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				string keystripped = key.substr(key.find_last_of('/')+1, key.size());
-				relseg->setVal(keystripped,value);
+				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
+				relseg->setVal(keystripped, value);
 				return;
 			}
 			// Set the value here. Overwrite any pre-existing value
@@ -228,14 +235,14 @@ namespace rtmath {
 		{
 			res.clear();
 			for (auto it = _mapStr.begin(); it != _mapStr.end(); it++)
-				res.insert( it->first );
+				res.insert(it->first);
 		}
 
 		void configsegment::listChildren(std::set<std::string> &res) const
 		{
 			res.clear();
 			for (auto it = _children.begin(); it != _children.end(); it++)
-				res.insert( (*it)->_segname );
+				res.insert((*it)->_segname);
 		}
 
 		void configsegment::getCWD(std::string &cwd) const
@@ -276,7 +283,7 @@ namespace rtmath {
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
 				//root = std::shared_ptr<configsegment>(new configsegment("ROOT"));
-					root = create("ROOT");
+				root = create("ROOT");
 
 			std::shared_ptr<configsegment> cseg = root; // The current container in the tree
 			if (cseg->_cwd.size() == 0) cseg->_cwd = cwd;
@@ -288,7 +295,7 @@ namespace rtmath {
 			while (indata.good())
 			{
 				std::string line, key;
-				std::getline(indata,line); // Read in the line
+				std::getline(indata, line); // Read in the line
 				std::istringstream linestream(line); // A string stream for the line
 				if (line.size() == 0) continue; // Skip empty lines
 
@@ -303,25 +310,27 @@ namespace rtmath {
 						// Close container
 						cseg = cseg->getParent();
 						if (!cseg) throw rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
-					} else {
+					}
+					else {
 						// New container
 						// Remove spaces, tabs, < and > from original input line
-						size_t kstart = line.find_first_of('<')+1;
+						size_t kstart = line.find_first_of('<') + 1;
 						size_t kend = line.find_last_of('>');
-						line = line.substr(kstart,kend-kstart);
+						line = line.substr(kstart, kend - kstart);
 
 						// Now, create the new container and switch to it
 						//std::shared_ptr<configsegment> child (new configsegment(line, cseg));
-						std::shared_ptr<configsegment> child = create(line,cseg);
+						std::shared_ptr<configsegment> child = create(line, cseg);
 						cseg = child;
 					}
-				} else {
+				}
+				else {
 					// A key-value combination is being entered
 					// First part is the key! The rest is the value
 					// Key is in key
 					string value;
-					size_t vstart = line.find(key) + key.size()+1;
-					size_t vend = line.find_last_not_of(' ')+1;
+					size_t vstart = line.find(key) + key.size() + 1;
+					size_t vend = line.find_last_not_of(' ') + 1;
 					// Trim line to get value
 					value = line.substr(vstart, vend - vstart);
 
@@ -330,20 +339,22 @@ namespace rtmath {
 					{
 						// Use Boost to get the full path of the file (use appropriate dir)
 						// rootpath now relative to current file being loaded, NOT tree root (cseg->_cwd) or ROOT
-						boost::filesystem::path rootpath(cwd); 
+						boost::filesystem::path rootpath(cwd);
 						boost::filesystem::path inclpath(value);
 						if (inclpath.is_relative())
 						{
 							// The path on the Include is relative, so make it relative to the first loaded file, typically the root
 							string newfile = (rootpath.parent_path() / value).string();
-							if (!exists(path(newfile))) throw rtmath::debug::xMissingFile( newfile.c_str() );
-							loadFile( newfile.c_str(), cseg);
-						} else {
+							if (!exists(path(newfile))) throw rtmath::debug::xMissingFile(newfile.c_str());
+							loadFile(newfile.c_str(), cseg);
+						}
+						else {
 							// The path is absolute, so use it
-							if (!exists(path(value.c_str()))) throw rtmath::debug::xMissingFile( value.c_str());
+							if (!exists(path(value.c_str()))) throw rtmath::debug::xMissingFile(value.c_str());
 							loadFile(value.c_str(), cseg); // Load a file
 						}
-					} else if (key == "IncludeIfExists") {
+					}
+					else if (key == "IncludeIfExists") {
 						// Use Boost to get the full path of the file (use appropriate dir)
 						static boost::filesystem::path rootpath(cwd); // static, so it is called on the very first file
 						boost::filesystem::path inclpath(value);
@@ -352,16 +363,18 @@ namespace rtmath {
 							// The path on the Include is relative, so make it relative to the first loaded file, typically the root
 							string newfile = (rootpath.parent_path() / value).string();
 							if (!exists(path(newfile))) continue;
-							loadFile( newfile.c_str(), cseg);
-						} else {
+							loadFile(newfile.c_str(), cseg);
+						}
+						else {
 							// The path is absolute, so use it
 							if (!exists(path(value.c_str()))) continue;
 							loadFile(value.c_str(), cseg); // Load a file
 						}
 
-					} else {
+					}
+					else {
 						// Set the key-val combination
-						cseg->setVal(key,value);
+						cseg->setVal(key, value);
 					}
 				}
 
@@ -381,27 +394,81 @@ namespace rtmath {
 			newparent->_children.insert(me);
 		}
 
+		/**
+		* \brief Function that returns the location of the rtmath.conf file
+		*
+		* Finding the default config file has become a rather involved process.
+		* First, check the application execution arguments (if using appEntry).
+		* Second, check the environment variables. Uses the key RTMATH_CONF, and accepts
+		* multiple files, separated by semicolons. Searches for file existence in 
+		* left-to-right order.
+		*
+		* \todo Third, check the system registry (if using Windows).
+		*
+		* Finally, check using the precompiled paths.
+		**/
 		void getConfigDefaultFile(std::string &filename)
 		{
-			// Finding the default config file has become a rather involved process.
-			// First, check the application execution arguments (if using appEntry).
-			// Then, check the system registry (if using Windows).
-			// Third, check the system environment variables
+			filename = "";
+			using namespace boost::filesystem;
+
+			// Check application execution arguments
+			path testCMD(rtmath::debug::sConfigDefaultFile);
+			if (exists(testCMD))
+			{
+				filename = rtmath::debug::sConfigDefaultFile;
+				return;
+			}
+
+			// Checking environment variables
+			{
+				Ryan_Debug::processInfo info = Ryan_Debug::getInfo(Ryan_Debug::getPID());
+				std::map<std::string, std::string> mEnv;
+				config::splitNullMap(info._environ, mEnv);
+				//std::vector<std::string> mCands;
+				auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
+					[](const std::pair<std::string, std::string> &pred)
+				{
+					std::string key = pred.first;
+					std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+					if (key == "rtmath_conf") return true;
+					return false;
+				});
+				if (it != mEnv.cend())
+				{
+					typedef boost::tokenizer<boost::char_separator<char> >
+						tokenizer;
+					boost::char_separator<char> sep(";");
+
+					std::string ssubst;
+					tokenizer tcom(it->second, sep);
+					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+					{
+						path testEnv(it->second);
+						if (exists(testEnv))
+						{
+							filename = it->second;
+							return;
+						}
+					}
+				}
+			}
+
+			// Check the system registry
+			// TODO
 
 			// Finally, just use the default os-dependent path
 			//filename = "/home/rhoneyag/.rtmath";
 			// Macro defining the correct path
-			filename = "";
-			using namespace boost::filesystem;
 			path testUser(RTC);
 			path testUserB(RTCB);
 			path testUserC(RTCC);
 			path testSys(SYS_RTC);
 			if (exists(testUser))
 				filename = RTC;
-			if (exists(testUserB))
+			else if (exists(testUserB))
 				filename = RTCB;
-			if (exists(testUserC))
+			else if (exists(testUserC))
 				filename = RTCC;
 			else if (exists(testSys))
 				filename = SYS_RTC;
@@ -449,7 +516,7 @@ namespace rtmath {
 					}
 				}
 				for (auto ot = ob._mapStr.begin(); ot != ob._mapStr.end(); ++ot)
-					stream << " " << ot->first << " " << ot->second<< endl;
+					stream << " " << ot->first << " " << ot->second << endl;
 				for (auto it = ob._children.begin(); it != ob._children.end(); ++it)
 					stream << (*it);
 			}
@@ -460,7 +527,7 @@ namespace rtmath {
 
 		std::istream& operator>> (std::istream &stream, std::shared_ptr<::rtmath::config::configsegment> &ob)
 		{
-			ob = rtmath::config::configsegment::loadFile(stream,nullptr);
+			ob = rtmath::config::configsegment::loadFile(stream, nullptr);
 			return stream;
 		}
 	}

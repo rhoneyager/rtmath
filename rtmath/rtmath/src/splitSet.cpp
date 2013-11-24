@@ -295,6 +295,70 @@ namespace rtmath {
 		SPEC_SPLITSET(float);
 		SPEC_SPLITSET(double);
 
+
+
+
+		void DLEXPORT_rtmath_core splitNullVector(
+			const std::string &instr, std::vector<std::string> &out)
+		{
+			using namespace std;
+			out.clear();
+			if (!instr.size()) return;
+
+			// Fast string splitting based on null values.
+			const char* start = instr.data();
+			const char* stop = instr.data() + instr.size();
+			while (start < stop)
+			{
+				// Find the next null character
+				const char* sep = start;
+				sep = std::find(start, stop, '\0');
+				if (*start == '\0')
+				{
+					start = sep+1;
+					continue;
+				}
+				out.push_back(std::string(start, sep));
+				start = sep+1;
+			}
+		}
+
+		void DLEXPORT_rtmath_core splitNullMap(
+			const std::string &instr, std::map<std::string, std::string> &out)
+		{
+			using namespace std;
+			out.clear();
+			if (!instr.size()) return;
+
+			// Fast string splitting based on null values.
+			const char* start = instr.data();
+			const char* stop = instr.data() + instr.size();
+			while (start < stop)
+			{
+				// Find the next null character
+				const char* sep = start;
+				sep = std::find(start, stop, '\0');
+				if (*start == '\0')
+				{
+					start = sep+1;
+					continue;
+				}
+				// Split based on location of colon
+				//out.push_back(std::string(start, sep - 1));
+				const char* sepc = std::find(start, sep, '=');
+				// If the : cannot be found, then it is a key with an empty value.
+				std::string key(start, sepc);
+				if (!key.size())
+				{
+					start = sep+1;
+					continue;
+				}
+				std::string val(sepc + 1, sep);
+				out.insert(std::make_pair(key, val));
+				start = sep+1;
+			}
+		}
+
 	}
 }
 

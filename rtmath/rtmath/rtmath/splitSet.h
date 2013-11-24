@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace rtmath {
 	namespace config {
@@ -42,6 +43,23 @@ namespace rtmath {
 			const std::string &instr,
 			T &start, T &end, T &interval, size_t &num,
 			std::string &specializer);
+
+
+
+		/** \brief Convenience function to split a null-separated string list into a vector of strings.
+		*
+		* Commonly-used to split up the results of a Ryan_Debug::ProcessInfo command-line structure.
+		**/
+		void DLEXPORT_rtmath_core splitNullVector(
+			const std::string &instr, std::vector<std::string> &out);
+
+		/** \brief Convenience function to split a null-separated string list into a map of strings.
+		*
+		* Commonly-used to split up the results of a Ryan_Debug::ProcessInfo environment structure.
+		**/
+		void DLEXPORT_rtmath_core splitNullMap(
+			const std::string &instr, std::map<std::string, std::string> &out);
+
 	}
 }
 

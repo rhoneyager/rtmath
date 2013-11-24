@@ -14,10 +14,18 @@ set(rtmath_core_error
 	)
 source_group("Debugging" FILES ${rtmath_core_error})
 
-set(rtmath_core_general
+set(rtmath_core_config
 	rtmath/command.h
-	rtmath/common_templates.h
 	rtmath/config.h
+	rtmath/registry.h
+	src/command.cpp
+	src/config.cpp
+	src/registry.cpp
+	)
+source_group("Configuration" FILES ${rtmath_core_config})
+
+set(rtmath_core_general
+	rtmath/common_templates.h
 	#rtmath/coords.h
 	rtmath/defs.h
 	rtmath/denseMatrix.h
@@ -35,8 +43,6 @@ set(rtmath_core_general
 	rtmath/thermal.h
 	rtmath/units.h
 	rtmath/zeros.h
-	src/command.cpp
-	src/config.cpp
 	#src/coords.cpp
 	src/denseMatrix.cpp
 	src/density.cpp
@@ -243,6 +249,7 @@ set(rtmath_mc-files
 set (rtmath_core-files
 	${cmake-other}
 	${resource-files}
+	${rtmath_core_config}
 	${rtmath_core_error}
 	${rtmath_core_general}
 	${rtmath_core_polynomials}

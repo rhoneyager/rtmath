@@ -3,7 +3,9 @@
 #include "../defs.h"
 
 #include <iostream>
+#include <map>
 #include <string>
+#include <vector>
 #include "error.h"
 
 namespace boost { namespace program_options { 
@@ -45,6 +47,9 @@ namespace rtmath
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
 
+		/// \brief Private variable indication command-line-specified default rtmath config file
+		/// \todo Move into a header-invisible location.
+		extern std::string SHARED_PRIVATE sConfigDefaultFile;
 	}
 
 	/// \def UNIMPLEMENTED() Macro to throw unimplemented function error with function signature
