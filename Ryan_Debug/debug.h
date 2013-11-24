@@ -25,6 +25,7 @@
 #endif
 
 #include <string>
+// Intended as a single dll, so using std::vector is complicated.
 //#include <vector>
 
 namespace Ryan_Debug
@@ -70,6 +71,8 @@ namespace Ryan_Debug
 		/// Process ID of parent
 		int ppid;
 	};
+
+
 }
 
 /// Allows writing of a ryan_debug::processInfo structure to a stream

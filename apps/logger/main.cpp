@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
 		int pid = 0;
 		if (vm.count("pid")) pid = vm["pid"].as<int>();
-		else pid = getPPID(getPID());
+		else pid = getPID(); // getPPID(getPID());
 		if (!pidExists(pid))
 		{
 			cerr << "Specified PID " << pid << " is invalid." << endl;

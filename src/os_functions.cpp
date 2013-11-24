@@ -473,8 +473,8 @@ namespace Ryan_Debug {
 			}
 			//scmdline >> res.cmdline;
 			// Replace command-line null symbols with spaces
-			std::replace(res.cmdline.begin(),res.cmdline.end(),
-					'\0', ' ');
+			//std::replace(res.cmdline.begin(),res.cmdline.end(),
+			//		'\0', ' ');
 
 			path penv(pp / "environ");
 			ifstream senviron(penv.string().c_str());
@@ -485,8 +485,8 @@ namespace Ryan_Debug {
 				res.environ.append(buffer,senviron.gcount());
 			}
 			// Replace environment null symbols with newlines
-			std::replace(res.environ.begin(),res.environ.end(),
-					'\0', '\n');
+			//std::replace(res.environ.begin(),res.environ.end(),
+			//		'\0', '\n');
 			delete[] buffer;
 
 			// start time is the timestamp of the /proc/pid folder.
@@ -503,12 +503,75 @@ namespace Ryan_Debug {
 		getPathWIN32((DWORD) pid, filepath, filename); // int always fits in DWORD
 		res.name = filename.string();
 		res.path = filepath.string();
-		res.cmdline;
-		res.cwd;
 		res.startTime;
-		res.environ;
+
+		int mypid = getPID();
+		if (pid == mypid)
+		{
+			LPTCH penv = GetEnvironmentStrings();
+			LPTCH pend = penv, pprev = '\0';
+			while (*pend || *pprev)
+			{
+				pprev = pend;
+				++pend;
+			}
+
+			// UNICODE not covered by these functions, I think.....
+			// If using unicode and not multibyte...
+			// Convert wchar to char in preparation for string and path conversion
+//#ifdef UNICODE
+			/*
+			size_t origsize = pend - penv + 1;
+
+			const size_t newsize = 3000;
+			size_t convertedChars = 0;
+			char nstring[newsize];
+			wcstombs_s(&convertedChars, nstring, origsize, penv, _TRUNCATE);
+			res.environ = std::string(nstring, nstring+newsize);
+			*/
+//#else
+			res.environ = std::string(penv, pend);
+//#endif
+			FreeEnvironmentStrings(penv);
+
+			res.cmdline = std::string(GetCommandLine());
+
+			DWORD sz = GetCurrentDirectory(0, NULL);
+			LPTSTR cd = new TCHAR[sz];
+			DWORD result = GetCurrentDirectory(2500, cd);
+			res.cwd = std::string(cd);
+			delete[] cd;
+
+		} else {
+			// Privilege escalation required. Need to handle this case.
+			std::cerr << "Privilege escalation required. Need to handle this case." << std::endl;
+			//throw std::string("Privilege escalation required. Need to handle this case.");
+		}
+
+		// Get parent process name
+		HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION
+			//| PROCESS_VM_READ
+			, FALSE, pid);
+		if (NULL == h) throw ("Error in getting handle for process times!");
+		FILETIME pCreation, pExit, pKernel, pUser;
+		if (!GetProcessTimes(h, &pCreation, &pExit, &pKernel, &pUser)) throw ("Error in getting process times!");
+
+		std::ostringstream outCreation;
+		SYSTEMTIME pCreationSystem, pCreationLocal;
+		if (!FileTimeToSystemTime(&pCreation, &pCreationSystem)) throw ("Error in getting process times to system times!");
+		SystemTimeToTzSpecificLocalTime(NULL, &pCreationSystem, &pCreationLocal);
+		outCreation << pCreationLocal.wYear << "-" << pCreationLocal.wMonth << "-" << pCreationLocal.wDay << " "
+			<< pCreationLocal.wHour << ":" << pCreationLocal.wMinute << ":" << pCreationLocal.wSecond << "."
+			<< pCreationLocal.wMilliseconds;
+		res.startTime = outCreation.str();
+
+		CloseHandle(h);
+
 		return res;
 #endif
+
+
+
 		// Should only reach here if not unix or win32. An odd possibility.
 		throw std::string("Unimplemented OS");
 	}
