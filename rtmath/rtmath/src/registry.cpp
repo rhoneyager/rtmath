@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
+#include <boost/shared_ptr.hpp>
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/debug_mem.h"
@@ -40,10 +41,10 @@ namespace {
 	class DLLhandle;
 	std::set<std::string> DLLpathsLoaded;
 	std::vector<rtmath::registry::DLLpreamble> preambles;
-	std::vector<DLLhandle> handles;
+	std::vector<boost::shared_ptr<DLLhandle> > handles;
 
 	std::vector<boost::filesystem::path> searchPaths;
-	bool autoLoadDLLs = true;
+	//bool autoLoadDLLs = true;
 
 	void loadSearchPaths()
 	{
@@ -140,7 +141,7 @@ namespace rtmath
 				("dll-load", po::value<std::vector<std::string> >(),
 				"Specify dlls to load. If passed a directory, it loads all dlls present (one-level). "
 				"Will use search paths in name resolution.")
-				("dll-no-default-locations", "Prevent non-command line dll locations from being read")
+			//	("dll-no-default-locations", "Prevent non-command line dll locations from being read")
 				("print-dll-loaded", "Prints the table of loaded DLLs.")
 				("print-dll-search-paths", "Prints the search paths used when loading dlls.")
 				;
@@ -152,8 +153,8 @@ namespace rtmath
 			namespace po = boost::program_options;
 			using std::string;
 
-			if (vm.count("dll-no-default-locations"))
-				autoLoadDLLs = false;
+			//if (vm.count("dll-no-default-locations"))
+			//	autoLoadDLLs = false;
 
 			if (vm.count("dll-load"))
 			{
@@ -164,7 +165,22 @@ namespace rtmath
 					path op(s);
 
 					// Attempt to find the path if not absolute
-					// TODO
+					if (!op.is_absolute())
+					{
+						auto search = [&](const path& op, path& res) -> bool
+						{
+							for (const path &sp : searchPaths)
+							{
+								if (exists(sp / op))
+								{
+									res = sp / op;
+									return true;
+								}
+							}
+							return false;
+						};
+						if (!search(op, op)) throw debug::xMissingFile(op.string().c_str());
+					}
 
 					// Expand symlinks
 					path p = debug::expandSymlink(op);
@@ -190,6 +206,7 @@ namespace rtmath
 						else {
 							// Search for matching files in the same directory with the dll or so extension.
 							// TODO
+							throw debug::xMissingFile(p.string().c_str());
 						}
 					}
 				}
@@ -206,8 +223,8 @@ namespace rtmath
 		{
 			auto doLoad = [](const std::string &f)
 			{
-				DLLhandle h(f);
-				handles.push_back(std::move(h));
+				boost::shared_ptr<DLLhandle> h(new DLLhandle(f));
+				handles.push_back(h);
 			};
 			// Search for the dll
 			using namespace boost::filesystem;
@@ -248,7 +265,11 @@ namespace rtmath
 					<< "Path:\t" << p.path << std::endl;
 			}
 			out << std::endl;
-			out << "Hook Table:\n-----------------\n";
+			out << "DLL paths loaded:\n----------------\n";
+			for (const auto p : DLLpathsLoaded)
+				out << p << "\n";
+
+			out << "\nHook Table:\n-----------------\n";
 
 			out << std::endl;
 		}

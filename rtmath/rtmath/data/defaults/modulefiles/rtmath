@@ -14,4 +14,5 @@ prepend-path		INCLUDE		@INSTALL_INCLUDE_DIR@
 prepend-path		C_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
 prepend-path		CPLUS_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
 setenv			rtmath_DIR	@INSTALL_CMAKE_DIR@
+prepend-path		rtmath_plugins_DIR	@INSTALL_PLUGIN_DIR@
 
