@@ -170,6 +170,68 @@ namespace rtmath {
 			_message.append("\n");
 		}
 
+		void xDuplicateHook::_setmessage()
+		{
+			_message = "ERROR: duplicate hook detected: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xHandleInUse::_setmessage()
+		{
+			_message = "ERROR: handle is already in use: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xHandleNotOpen::_setmessage()
+		{
+			_message = "ERROR: handle is not open: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xSymbolNotFound::_setmessage()
+		{
+			_message = "ERROR: symbol not found in DLL: ";
+			_message.append(_m);
+			_message.append("\n");
+			_message.append(_n);
+			_message.append("\n");
+		}
+
+		void xBadFunctionMap::_setmessage()
+		{
+			_message = "ERROR: DLL has an incorrect function map: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xBadFunctionReturn::_setmessage()
+		{
+			_message = "ERROR: DLL has an incorrect function map (2): ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xBlockedHookLoad::_setmessage()
+		{
+			_message = "ERROR: another DLL blocked load: ";
+			_message.append(_m);
+			_message.append("\n");
+			_message.append(_n);
+			_message.append("\n");
+		}
+
+		void xBlockedHookUnload::_setmessage()
+		{
+			_message = "ERROR: another DLL blocked unload: ";
+			_message.append(_m);
+			_message.append("\n");
+			_message.append(_n);
+			_message.append("\n");
+		}
+
 		void xOtherError::_setmessage()
 		{
 			_message = "ERROR (unknown)\n";

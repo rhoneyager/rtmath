@@ -13,6 +13,7 @@
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/debug_mem.h"
+#include "../rtmath/registry.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "debug_subversion.h"
@@ -171,6 +172,8 @@ namespace rtmath
 				"all other search locations. If it cannot be found, fall back to the "
 				"next option.")
 				;
+
+			registry::add_options(cmdline, config, hidden);
 		}
 
 		void process_static_options(
@@ -202,6 +205,8 @@ namespace rtmath
 			{
 				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
 			}
+
+			registry::process_static_options(vm);
 		}
 
 

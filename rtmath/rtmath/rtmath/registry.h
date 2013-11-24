@@ -16,7 +16,21 @@ namespace rtmath
 {
 	namespace registry
 	{
-
+		/** \brief This is the basic structure passed by an rtmath DLL to provide 
+		* identity information.
+		**/
+		struct DLLpreamble
+		{
+			/// Short DLL name
+			const char* name;
+			/// Short description
+			const char* description;
+			/// UUID that prevents different versions of the same DLL from being  
+			/// loaded simultaneously.
+			const char* uuid;
+			/// Path of the loaded module (DLL leaves it blank)
+			const char* path;
+		};
 
 		/**
 		* \brief Adds options to a program
@@ -34,5 +48,27 @@ namespace rtmath
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
 
+		/// Load a DLL. If path is not absolute, use search paths.
+		void DLEXPORT_rtmath_core loadDLL(const std::string &filename);
+
+		/// Print loaded DLLs
+		void DLEXPORT_rtmath_core printDLLs(std::ostream &out = std::cerr);
+
+		/// List DLL search paths
+		void DLEXPORT_rtmath_core printDLLsearchPaths(std::ostream &out = std::cerr);
+
+		/// Find a DLL
 	}
 }
+
+extern "C"
+{
+	/// Provides interface for DLLs to register basic information about themselves
+	bool DLEXPORT_rtmath_core rtmath_registry_register_dll(const rtmath::registry::DLLpreamble&);
+
+	/// Provides interface for DLLs to register a function hook
+	bool DLEXPORT_rtmath_core rtmath_registry_register_hook(const char* uuid, const char* topic);
+
+	
+}
+

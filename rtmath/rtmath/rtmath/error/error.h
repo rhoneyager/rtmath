@@ -6,12 +6,15 @@
 
 #include "../Stdafx.h"
 #include <iostream>
+//#include <boost/exception/all.hpp>
 #include "debug_mem.h"
 
 /// \def ERRSTD(x) Defines an exception class that takes no arguments.
 #define ERRSTD(x) class DLEXPORT_rtmath_core x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
 /// \def ERRSTR(x) Defines an exception class that takes a string as an argument
 #define ERRSTR(x) class DLEXPORT_rtmath_core x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
+/// \def ERRSTR(x) Defines an exception class that takes two strings as arguments
+#define ERRSTR2(x) class DLEXPORT_rtmath_core x : public xError { public: x(const char* m, const char* n) : xError() {_m=m; _n=n; _setmessage(); } protected: const char *_m, *_n; void _setmessage(); }
 /// \def ERRDOU(x) Defines an exception class that takes a double as an argument
 #define ERRDOU(x) class DLEXPORT_rtmath_core x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
 
@@ -21,7 +24,7 @@ namespace rtmath
 	{
 		/// \brief This is the parent error class. Everything inherits from this.
 		/// \note Using throw() because MSVC2012 does not have noexcept
-		class DLEXPORT_rtmath_core xError : public std::exception
+		class DLEXPORT_rtmath_core xError : public virtual std::exception //, public virtual boost::exception
 		{
 		public:
 			xError() throw(); 
@@ -90,6 +93,30 @@ namespace rtmath
 
 		/// Singular matrix detected.
 		ERRSTD(xSingular);
+
+		/// Duplicate DLL hook
+		ERRSTR(xDuplicateHook);
+
+		/// Handle in use
+		ERRSTR(xHandleInUse);
+
+		/// Handle not open
+		ERRSTR(xHandleNotOpen);
+
+		/// Symbol not found
+		ERRSTR2(xSymbolNotFound);
+
+		/// DLL symbol map table invalid
+		ERRSTR(xBadFunctionMap);
+
+		/// DLL symbol map table invalid
+		ERRSTR(xBadFunctionReturn);
+
+		/// Another hook blocked the load
+		ERRSTR2(xBlockedHookLoad);
+
+		/// Another hook blocked unload
+		ERRSTR2(xBlockedHookUnload);
 
 		/// Unknown error
 		ERRSTD(xOtherError);
