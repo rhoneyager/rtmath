@@ -7,54 +7,11 @@
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/registry.h"
+#include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
-#ifdef _WIN32
-#include "windows.h"
-#endif
-#ifdef __DLSYM__
-#include "dlfcn.h"
-#endif
-
-#ifdef _WIN32
-typedef HINSTANCE dlHandleType;
-#endif
-#ifdef __APPLE__
-typedef void* dlHandleType;
-#endif
-#ifdef __unix__
-typedef void* dlHandleType;
-#endif
-
 void dllEntry();
-
-// DLL binding and unbinding code
-#ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
-
-/// GCC - code that is executed on DLL import
-void __attribute__((constructor)) plugin_bov_gcc_init()
-{
-	dllEntry();
-}
-
-/// GCC - code that is executed on DLL unload
-void __attribute__((destructor)) plugin_bov_gcc_fini()
-{
-}
-#endif
-#ifdef _MSC_FULL_VER
-/// MSVC - code that is executed on DLL load and unload
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
-{
-	if (dwReason == DLL_PROCESS_ATTACH)
-	{
-		dllEntry();
-		// DisableThreadLibraryCalls(hInstance);
-	}
-	return true;
-}
-#endif
+rtmath_plugin_init(dllEntry);
 
 void dllEntry()
 {

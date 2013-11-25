@@ -18,6 +18,7 @@ set(rtmath_core_config
 	rtmath/command.h
 	rtmath/config.h
 	rtmath/registry.h
+	rtmath/plugin.h
 	src/command.cpp
 	src/config.cpp
 	src/registry.cpp
