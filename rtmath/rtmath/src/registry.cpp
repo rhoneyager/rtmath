@@ -261,8 +261,9 @@ namespace rtmath
 			{
 				out << "Name:\t" << p.name << "\n"
 					<< "Description:\t" << p.description << "\n"
-					<< "UUID:\t" << p.uuid << "\n"
-					<< "Path:\t" << p.path << std::endl;
+					<< "UUID:\t" << p.uuid << "\n";
+				if (p.path)
+					out << "Path:\t" << p.path << std::endl;
 			}
 			out << std::endl;
 			out << "DLL paths loaded:\n----------------\n";
@@ -286,3 +287,18 @@ namespace rtmath
 
 	}
 }
+
+extern "C"
+{
+	bool rtmath_registry_register_dll(const rtmath::registry::DLLpreamble &p)
+	{
+		rtmath::registry::DLLpreamble b = p;
+		preambles.push_back(b);
+		return true;
+	}
+
+	//bool rtmath_registry_register_hook(const char* uuid, const char* topic);
+
+	
+}
+

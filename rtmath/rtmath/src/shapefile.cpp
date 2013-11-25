@@ -36,6 +36,7 @@
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
+#include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 

@@ -30,6 +30,9 @@ namespace rtmath
 			const char* uuid;
 			/// Path of the loaded module (DLL leaves it blank)
 			const char* path;
+			DLLpreamble(const char* name, const char* desc, const char* uuid)
+				: name(name), description(desc), uuid(uuid), path(0) {}
+			DLLpreamble() : name(0), description(0), uuid(0), path(0) {}
 		};
 
 		/**
