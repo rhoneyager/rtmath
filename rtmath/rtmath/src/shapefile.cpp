@@ -787,7 +787,8 @@ namespace rtmath {
 			fclose(pOut);
 		}
 
-		void shapefile::write(const std::string &filename, bool autoCompress) const
+		void shapefile::write(const std::string &filename, bool autoCompress,
+			const std::string &outtype) const
 		{
 			using namespace Ryan_Serialization;
 			using namespace std;
@@ -799,21 +800,53 @@ namespace rtmath {
 				autoCompress = true;
 			if (autoCompress)
 				Ryan_Serialization::select_compression(filename, cmeth);
+
+			// If missing the type, autodetect based on file extension
+			std::string type = outtype;
+			if (!type.size())
+			{
+				std::string uncompressed;
+				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
+				path pext = path(uncompressed).extension();
+
+				// Process dll hooks first
+				// TODO!!!
+
+				if (!type.size())
+				{
+					if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
+					// Default is to write a standard shapefile
+					else type = "shp";
+				}
+			}
+
+			// Now, save the appropriate format based on the type
+
+			// Process dll hooks first
+			// TODO!!!
+
+			// Also handle writes for builtin formats
+
+
 			/// \todo Ryan_Serialization::select_compression should also return the compressed 
 			/// file name as an optional parameter.
 
 			/// \todo Check file extension for a vtk file, and save points and surface
-			outfile << filename;
-			if (cmeth.size()) outfile << "." << cmeth;
-			std::string soutfile = outfile.str();
 
-			ofstream out(soutfile.c_str(), ios_base::out | ios_base::binary);
-			using namespace boost::iostreams;
-			filtering_ostream sout;
-			if (cmeth.size())
-				prep_compression(cmeth, sout);
-			sout.push(out);
-			write(sout);
+			if (type == "shp")
+			{
+				outfile << filename;
+				if (cmeth.size()) outfile << "." << cmeth;
+				std::string soutfile = outfile.str();
+
+				ofstream out(soutfile.c_str(), ios_base::out | ios_base::binary);
+				using namespace boost::iostreams;
+				filtering_ostream sout;
+				if (cmeth.size())
+					prep_compression(cmeth, sout);
+				sout.push(out);
+				write(sout);
+			}
 		}
 
 		/// \todo Revamp to provide much faster writes.

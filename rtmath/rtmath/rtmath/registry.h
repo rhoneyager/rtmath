@@ -3,6 +3,7 @@
 #include "defs.h"
 
 #include <iostream>
+#include <map>
 #include <string>
 
 namespace boost {
@@ -61,6 +62,12 @@ namespace rtmath
 		void DLEXPORT_rtmath_core printDLLsearchPaths(std::ostream &out = std::cerr);
 
 		/// Find a DLL
+
+
+		typedef std::multimap<std::string, void*> classHookMapType;
+		/// Query registry for hooks matching the specified class
+		void DLEXPORT_rtmath_core queryClass(const char* classname,
+			classHookMapType& result);
 	}
 }
 

@@ -46,6 +46,9 @@ namespace {
 	std::vector<boost::filesystem::path> searchPaths;
 	//bool autoLoadDLLs = true;
 
+	typedef std::map<std::string, rtmath::registry::classHookMapType > hookRegistryType;
+	hookRegistryType hookRegistry;
+
 	void loadSearchPaths()
 	{
 		throw rtmath::debug::xUnimplementedFunction();
@@ -269,8 +272,17 @@ namespace rtmath
 			out << "DLL paths loaded:\n----------------\n";
 			for (const auto p : DLLpathsLoaded)
 				out << p << "\n";
+			out << std::endl;
 
-			out << "\nHook Table:\n-----------------\n";
+			out << "\nHook Table:\n-----------------\nClass\tTopic\tPointer";
+			for (const auto hm : hookRegistry)
+			{
+				out << hm.first << "\n";
+				for (const auto h : hm.second)
+				{
+					out << "\t" << h.first << "\t" << h.second << "\n";
+				}
+			}
 
 			out << std::endl;
 		}
@@ -285,6 +297,15 @@ namespace rtmath
 			out << std::endl;
 		}
 
+		void queryClass(const char* classname, classHookMapType& result)
+		{
+			result.clear();
+			std::string shc(classname);
+			if (hookRegistry.count(shc))
+			{
+				result = hookRegistry.at(shc);
+			}
+		}
 	}
 }
 
@@ -293,11 +314,27 @@ extern "C"
 	bool rtmath_registry_register_dll(const rtmath::registry::DLLpreamble &p)
 	{
 		rtmath::registry::DLLpreamble b = p;
+		// \todo Add in dll path to preamble!
 		preambles.push_back(b);
 		return true;
 	}
 
-	//bool rtmath_registry_register_hook(const char* uuid, const char* topic);
+	bool rtmath_registry_register_hook(const char* hookedClass, const char* topic, void* func)
+	{
+		// \todo Replace void* with an appropriate function definition
+
+		std::string shc(hookedClass);
+		if (!hookRegistry.count(shc))
+		{
+			rtmath::registry::classHookMapType newHookMap;
+			hookRegistry.insert(std::pair < std::string, rtmath::registry::classHookMapType >
+				(shc, newHookMap));
+		}
+
+		rtmath::registry::classHookMapType &map = hookRegistry.at(shc);
+
+		map.insert(std::pair<std::string, void*>(topic, func));
+	}
 
 	
 }
