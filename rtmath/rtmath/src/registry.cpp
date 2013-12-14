@@ -319,6 +319,8 @@ extern "C"
 		return true;
 	}
 
+	bool rtmath_registry_register_hook(const char* hookedClass, const char* topic) { return false; }
+	/*
 	bool rtmath_registry_register_hook(const char* hookedClass, const char* topic, void* func)
 	{
 		// \todo Replace void* with an appropriate function definition
@@ -335,7 +337,7 @@ extern "C"
 
 		map.insert(std::pair<std::string, void*>(topic, func));
 	}
-
+	*/
 	
 }
 

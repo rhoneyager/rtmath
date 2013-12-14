@@ -24,6 +24,7 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -128,6 +129,30 @@ namespace {
 	}
 
 	*/
+
+
+	/// Used in quickly printing shapefile
+	template <typename OutputIterator, typename Container>
+	bool print_shapefile_entries(OutputIterator& sink, Container const& v)
+	{
+		using boost::spirit::karma::long_;
+		using boost::spirit::karma::repeat;
+		using boost::spirit::karma::generate_delimited;
+		using boost::spirit::ascii::space;
+
+		bool r = generate_delimited(
+			sink,                           // destination: output iterator
+			*(
+			//repeat(7)()
+			'\t' << long_ << '\t' << // point id
+			long_ << '\t' << long_ << '\t' << long_ << '\t' << // point coordinates
+			long_ << '\t' << long_ << '\t' << long_ << '\n' // dielectric
+			),
+			space,                          // the delimiter-generator
+			v                               // the data to output 
+			);
+		return r;
+	}
 }
 
 namespace rtmath {
@@ -623,37 +648,62 @@ namespace rtmath {
 			hull.writeVTKraw(fname);
 		}
 
-		boost::shared_ptr<shapefile> shapefile::decimate(size_t degree) const
+		size_t shapefile::decimateDielCount(const convolutionCellInfo& info)
+		{
+			return info.numFilled;
+		}
+
+		size_t shapefile::decimateThreshold(const convolutionCellInfo& info,
+			size_t threshold)
+		{
+			if (info.numFilled >= threshold) return info.initDiel;
+			return 0;
+		}
+
+		convolutionCellInfo::convolutionCellInfo() : x(0), y(0), z(0),
+			initDiel(0), sx(0), sy(0), sz(0), numFilled(0), numTotal(0), index(0)
+		{}
+
+		boost::shared_ptr<shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
+			decimationFunction dFunc) const
 		{
 			boost::shared_ptr<shapefile> res(new shapefile);
 
-			// Move points into a denseMatrix
 			size_t maxX = static_cast<size_t>(maxs(0)), maxY = static_cast<size_t>(maxs(1)), maxZ = static_cast<size_t>(maxs(2));
 			size_t minX = static_cast<size_t>(mins(0)), minY = static_cast<size_t>(mins(1)), minZ = static_cast<size_t>(mins(2));
 			size_t spanX = maxX-minX, spanY = maxY-minY, spanZ = maxZ-minZ;
-			size_t rsX = (spanX / degree) + 1, rsY = (spanY / degree) + 1, rsZ = (spanZ / degree) + 1;
-
-			std::vector<short> vals(rsX*rsY*rsZ);
+			size_t rsX = (spanX / dx) + 1, rsY = (spanY / dy) + 1, rsZ = (spanZ / dz) + 1;
 
 			auto getIndex = [&](float x, float y, float z) -> size_t
 			{
 				size_t index = 0;
-				size_t sX = (size_t) (x-minX) / degree;
-				size_t sY = (size_t) (y-minY) / degree;
-				size_t sZ = (size_t) (z-minZ) / degree;
+				size_t sX = (size_t)(x - minX) / dx;
+				size_t sY = (size_t)(y - minY) / dy;
+				size_t sZ = (size_t)(z - minZ) / dz;
 				index = (sX * (rsY * rsZ)) + (sY * rsZ) + sZ;
 				return index;
 			};
 
-			auto getCrds = [&](size_t index) -> std::tuple<size_t,size_t,size_t>
+			auto getCrds = [&](size_t index) -> std::tuple<size_t, size_t, size_t>
 			{
-				size_t x=index / (rsY*rsZ);
+				size_t x = index / (rsY*rsZ);
 				index -= x*rsY*rsZ;
-				size_t y=index / rsZ;
+				size_t y = index / rsZ;
 				index -= y*rsZ;
 				size_t z = index;
-				return std::tuple<size_t,size_t,size_t>(x,y,z);
+				return std::tuple<size_t, size_t, size_t>(x, y, z);
 			};
+
+
+			std::vector<convolutionCellInfo> vals(rsX*rsY*rsZ);
+			for (auto &v : vals)
+			{
+				v.initDiel = 1;
+				v.numTotal = dx * dy * dz;
+				v.sx = dx;
+				v.sy = dy;
+				v.sz = dz;
+			}
 
 			// Iterate over all points and bin into the appropriate set
 			for (size_t i=0; i < numPoints; ++i)
@@ -661,11 +711,17 @@ namespace rtmath {
 				auto crdsm = latticePts.block<1,3>(i,0);
 				float x = crdsm(0), y = crdsm(1), z = crdsm(2);
 				size_t index = getIndex(x,y,z);
-				vals.at(index)++;
+				auto &v = vals.at(index);
+				v.numFilled++;
+				v.index = index;
+				v.x = x;
+				v.y = y;
+				v.z = z;
 			}
 
 			// Count the decimated points with nonzero values
-			size_t num = vals.size() - std::count(vals.begin(), vals.end(), 0);
+			size_t num = vals.size() - std::count_if(vals.begin(), vals.end(), [&]
+				(const convolutionCellInfo& c){if (c.numFilled == 0) return true; return false; });
 
 			res->a1 = a1;
 			res->a2 = a2;
@@ -677,30 +733,35 @@ namespace rtmath {
 			res->xd = xd;
 
 			// Rescale x0 to point to the new center
-			res->x0 = x0 / (float) degree;
-			// Set the dielectrics
-			res->Dielectrics.clear();
-			for (size_t i=0; i<pow(degree,3); ++i)
-				res->Dielectrics.insert(i+1);
+			res->x0 = x0 / Eigen::Array3f((float) dx,(float) dy,(float) dz);
+			
 
 			res->resize(num);
 
+			size_t dielMax = 0;
 			// Set the decimated values
 			size_t point = 0;
 			for (size_t i=0; i<vals.size(); ++i)
 			{
-				if (vals.at(i) == 0) continue;
+				size_t diel = dFunc(vals.at(i));
+				if (diel == 0) continue;
 				auto t = getCrds(i);
 				auto crdsm = res->latticePts.block<1,3>(point,0);
 				auto crdsi = res->latticePtsRi.block<1,3>(point,0);
 				crdsm(0) = (float) std::get<0>(t);
 				crdsm(1) = (float) std::get<1>(t);
 				crdsm(2) = (float) std::get<2>(t);
-				crdsi(0) = vals.at(i);
-				crdsi(1) = vals.at(i);
-				crdsi(2) = vals.at(i);
+				crdsi(0) = (float) diel;
+				crdsi(1) = (float) diel;
+				crdsi(2) = (float) diel;
+				if (dielMax < diel) dielMax = diel;
 				point++;
 			}
+
+			// Set the dielectrics
+			res->Dielectrics.clear();
+			for (size_t i = 1; i <= dielMax; ++i)
+				res->Dielectrics.insert(i);
 
 			return res;
 		}
@@ -866,15 +927,35 @@ namespace rtmath {
 			out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
 			size_t i=1;
 
+			std::vector<long> oi(numPoints * 7);
+
 			for (size_t j=0; j< numPoints; j++, i++)
 			{
 				auto it = latticePts.block<1,3>(j,0);
 				auto ot = latticePtsRi.block<1,3>(j,0);
-				out << "\t" << i << "\t";
-				out << (it)(0) << "\t" << (it)(1) << "\t" << (it)(2) << "\t";
-				out << (ot)(0) << "\t" << (ot)(1) << "\t" << (ot)(2);
-				out << endl;
+				oi[j * 7 + 0] = (long) i;
+				oi[j * 7 + 1] = (long)(it)(0);
+				oi[j * 7 + 2] = (long)(it)(1);
+				oi[j * 7 + 3] = (long)(it)(2);
+				oi[j * 7 + 4] = (long)(ot)(0);
+				oi[j * 7 + 5] = (long)(ot)(1);
+				oi[j * 7 + 6] = (long)(ot)(2);
+
+				//out << "\t" << i << "\t";
+				//out << (it)(0) << "\t" << (it)(1) << "\t" << (it)(2) << "\t";
+				//out << (ot)(0) << "\t" << (ot)(1) << "\t" << (ot)(2);
+				//out << endl;
 			}
+
+			std::string generated;
+			std::back_insert_iterator<std::string> sink(generated);
+			if (!print_shapefile_entries(sink, oi))
+			{
+				// generating failed
+				cerr << "Generating failed\n";
+				throw;
+			}
+			out << generated;
 		}
 
 	}

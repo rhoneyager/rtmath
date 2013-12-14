@@ -1,5 +1,7 @@
 #pragma once
 #include "../defs.h"
+#include <array>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,18 +24,21 @@
 namespace rtmath {
 	namespace ddscat {
 
+		struct convolutionCellInfo;
+
 		class DLEXPORT_rtmath_ddscat shapefile
 		{
 		public:
 			shapefile(const std::string &filename);
 			shapefile(std::istream &in);
 			~shapefile();
+			/// Write ddscat-formatted shapefile to the given output stream.
 			void print(std::ostream &out) const;
 			/** \brief Read in a shapefile (compression allowed)
-			 * 
-			 * If a standard (uncompressed) file cannot be found, also search for 
+			 *
+			 * If a standard (uncompressed) file cannot be found, also search for
 			 * a compressed file.
-			**/
+			 **/
 			void read(const std::string &filename = "");
 			/// Read a shape from a memory buffer
 			void readContents(const char *in);
@@ -47,20 +52,63 @@ namespace rtmath {
 			void writeToHash() const;
 			/// Write a shapefile to a stream (no compression)
 			void write(std::ostream &out) const;
-			/// Export a shapefile to vtk output
+			/// \brief Export a shapefile to vtk output
+			/// \todo Move to plugin
 			void writeVTK(const std::string &fname) const;
-			/// Export a shapefile to bov output
+			/// \brief Export a shapefile to bov output
+			/// \todo Move to plugin
 			void writeBOV(const std::string &prefix) const;
 
-			/** \brief Decimate a shapefile
-			* This version of the function examines the number of dipoles in a given degree^3
-			* unit cube, and then constructs a smaller shapefile object with the matching parameters.
-			*
-			* The refractive indices can be externally manipulated to produce threshold values.
-			*
-			* \note Only works correctly when decimating a shape with one dielectric.
+			/** \brief Function type definition for a function that determines a decimated cell
+			* refractive index.
 			**/
-			boost::shared_ptr<shapefile> decimate(size_t degree = 2) const;
+			typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
+
+			/** \brief Decimate a shapefile
+			* This version of the function examines the number of dipoles in a given dx*dy*dz
+			* unit paralelipipet, and then constructs a smaller shapefile object with the matching parameters.
+			*
+			* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
+			**/
+			boost::shared_ptr<shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
+				decimationFunction dFunc = shapefile::decimateDielCount) const;
+
+			/// \brief Convenience function to decimate using the same degree in each dimension
+			inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
+			
+			/** \brief Upscale a shapefile
+			* This function takes each dipole and multiplies it into a rectangular cell of a given size.
+			*
+			* All refractive indices are the same as the initial dipole.
+			**/
+			//boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
+			/// \brief Convenience function to upscale using the same degree in each dimension
+			//inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const {return enhance(d, d, d);}
+
+			/// \brief Decimation dielectric function that assigns a dielectric
+			/// that corresponds to the number of filled dipoles.
+			static size_t decimateDielCount(const convolutionCellInfo&);
+
+			/// \brief Decimation dielectric function that fills a dielectric 
+			/// based on a threshold value (high-pass, inclusive).
+			static size_t decimateThreshold(const convolutionCellInfo&, size_t threshold);
+
+			/** \brief Get filled cells within a certain distance
+			*
+			* \param rsq is the radius squared for the search
+			* \param out is the output vector that holds the cell indices
+			* \param x,y,s are the coordinates of the search cell
+			**/
+			//void getNeighbors(float x, float y, float z, float rsq, std::vector<size_t>& out) const;
+
+			/** \brief Get filled cells within a certain distance
+			*
+			* \param rsq is the radius squared for the search
+			* \param out is the output vector that holds the cell indices
+			* \param index is the cell lattice point index
+			**/
+			//void getNeighbors(size_t index, float rsq, std::vector<size_t>& out) const;
+
 
 			shapefile();
 		private:
@@ -112,6 +160,17 @@ namespace rtmath {
 			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
 			static boost::shared_ptr<shapefile> loadHash(
 				const std::string &hash);
+		};
+
+		/// Cell information structure for convolution functions
+		struct convolutionCellInfo
+		{
+			convolutionCellInfo();
+			float x, y, z;
+			size_t initDiel;
+			size_t sx, sy, sz;
+			size_t index;
+			size_t numFilled, numTotal;
 		};
 	}
 }

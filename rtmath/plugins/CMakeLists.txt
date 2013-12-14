@@ -11,10 +11,11 @@ include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
 option (BUILD_PLUGINS
 	"Master switch to enable / disable building of plugins" ON)
-
-option (BUILD_PLUGIN_BOV
-	"Build shapefile BOV import / export plugin" ON)
-if (BUILD_PLUGIN_BOV)
-	add_subdirectory (bov)
+if (BUILD_PLUGINS)
+	option (BUILD_PLUGIN_BOV
+		"Build shapefile BOV import / export plugin" ON)
+	if (BUILD_PLUGIN_BOV)
+		add_subdirectory (bov)
+	endif()
 endif()
 

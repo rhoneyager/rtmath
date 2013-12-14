@@ -32,6 +32,7 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< string >(), "input shape file")
+			("output,o", po::value< string >(), "output shape file")
 			("bov,b", po::value<string>(), "output bov file prefix")
 			;
 
@@ -56,6 +57,13 @@ int main(int argc, char** argv)
 		cerr << "Reading input shape file " << input << endl;
 		rtmath::ddscat::shapefile shp;
 		shp.read(input);
+
+		if (vm.count("output"))
+		{
+			string sOutput = vm["output"].as<string>();
+			cerr << "Writing shape file as " << sOutput << endl;
+			shp.write(sOutput);
+		}
 
 		if (vm.count("bov"))
 		{
