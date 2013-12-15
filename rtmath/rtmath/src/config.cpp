@@ -424,7 +424,7 @@ namespace rtmath {
 			{
 				Ryan_Debug::processInfo info = Ryan_Debug::getInfo(Ryan_Debug::getPID());
 				std::map<std::string, std::string> mEnv;
-				config::splitNullMap(info._environ, mEnv);
+				config::splitNullMap(info.environ, mEnv);
 				//std::vector<std::string> mCands;
 				auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
 					[](const std::pair<std::string, std::string> &pred)

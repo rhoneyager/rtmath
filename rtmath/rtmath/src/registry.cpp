@@ -22,8 +22,8 @@
 #ifdef _WIN32
 #include "windows.h"
 #endif
-#ifdef __DLSYM__
-#include "dlfcn.h"
+#ifdef __unix__
+#include <dlfcn.h>
 #endif
 
 #ifdef _WIN32
@@ -76,10 +76,10 @@ namespace {
 			if (DLLpathsLoaded.count(filename)) throw rtmath::debug::xDuplicateHook(fname.c_str());
 			if (dlHandle) throw rtmath::debug::xHandleInUse(fname.c_str());
 			fname = filename;
-#ifdef __DLSYM__ // Indicates that DLSYM is provided (unix, linux, mac, etc. (sometimes even windows))
+#ifdef __unix__ // Indicates that DLSYM is provided (unix, linux, mac, etc. (sometimes even windows))
 			//Check that file exists here
 			this->dlHandle = dlopen(filename.c_str(), RTLD_LAZY);
-			if (dlerror()) throw xFileNotFound(filename);
+			if (dlerror()) throw rtmath::debug::xMissingFile(filename.c_str());
 #endif
 #ifdef _WIN32
 			this->dlHandle = LoadLibrary(filename.c_str());
@@ -106,7 +106,7 @@ namespace {
 		{
 			if (dlHandle == NULL) throw rtmath::debug::xHandleNotOpen(fname.c_str());
 			void* sym;
-#ifdef __DLSYM__
+#ifdef __unix__
 			sym = dlsym(dlHandle, symbol);
 #endif
 #ifdef _WIN32

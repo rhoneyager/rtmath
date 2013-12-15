@@ -104,6 +104,10 @@ add_library (rtmath_core SHARED
 addlib(rtmath_core SHARED)
 add_precompiled_header(rtmath_core Stdafx-core.h src)
 set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug Ryan_Serialization)
+if(WIN32 AND NOT CYGWIN)
+else()
+	set (rtmath_core-libs ${rtmath_core-libs} dl)
+endif()
 target_link_libraries(rtmath_core ${rtmath_core-libs})
 
 

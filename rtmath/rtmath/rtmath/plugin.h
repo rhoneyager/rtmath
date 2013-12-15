@@ -17,7 +17,7 @@
 #include "windows.h"
 typedef HINSTANCE dlHandleType;
 #endif
-#ifdef __DLSYM__
+#ifdef __unix__
 #include "dlfcn.h"
 typedef void* dlHandleType;
 #endif
