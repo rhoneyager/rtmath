@@ -146,6 +146,7 @@ set(rtmath_ddscat-shape-files
 	rtmath/ddscat/shapestatsRotated.h
 	rtmath/ddscat/shapestatsviews.h
 	src/shapefile.cpp
+	src/shapefile_parsers.cpp
 	src/shapefile_serialization.cpp
 	src/shapes.cpp
 	src/shapes_serialization.cpp

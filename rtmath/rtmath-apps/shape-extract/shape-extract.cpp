@@ -2,6 +2,7 @@
  * Reads a shape file and writes the desired visualization format
  */
 
+#include <functional>
 #include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
@@ -34,6 +35,8 @@ int main(int argc, char** argv)
 			("input,i", po::value< string >(), "input shape file")
 			("output,o", po::value< string >(), "output shape file")
 			("bov,b", po::value<string>(), "output bov file prefix")
+			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
+			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			;
 
 		desc.add(cmdline).add(config);
@@ -51,18 +54,37 @@ int main(int argc, char** argv)
 			exit(1);
 		};
 
+		using rtmath::ddscat::shapefile;
+
 		if (vm.count("help") || argc == 1) doHelp("");
 		if (!vm.count("input")) doHelp("Need to specify an input file.");
 		string input = vm["input"].as<string>();
 		cerr << "Reading input shape file " << input << endl;
-		rtmath::ddscat::shapefile shp;
-		shp.read(input);
+		boost::shared_ptr<shapefile> shp(new shapefile);
+		shp->read(input);
+
+		if (vm.count("decimate"))
+		{
+			vector<size_t> kernel = vm["decimate"].as<vector<size_t> >();
+			if (kernel.size() < 3) kernel.assign(3, kernel.at(0));
+			shapefile::decimationFunction df = shapefile::decimateDielCount;
+			if (vm.count("decimate-threshold"))
+			{
+				size_t threshold = vm["decimate-threshold"].as<size_t>();
+				using namespace std::placeholders;
+				//rtmath::ddscat::convolutionCellInfo ci;
+				df = std::bind(shapefile::decimateThreshold,_1,threshold);
+			}
+			boost::shared_ptr<shapefile> dec = shp->decimate
+				(kernel[0], kernel[1], kernel[2], df);
+			shp = dec;
+		}
 
 		if (vm.count("output"))
 		{
 			string sOutput = vm["output"].as<string>();
 			cerr << "Writing shape file as " << sOutput << endl;
-			shp.write(sOutput);
+			shp->write(sOutput);
 		}
 
 		if (vm.count("bov"))
@@ -70,7 +92,7 @@ int main(int argc, char** argv)
 			string bPrefix = vm["bov"].as<string>();
 			cerr << "Writing BOV files with prefix " << bPrefix << endl;
 			//shp.write(string(bPrefix).append("-orig.dat"));
-			shp.writeBOV(bPrefix);
+			shp->writeBOV(bPrefix);
 		}
 
 	}
