@@ -81,9 +81,9 @@ namespace rtmath {
 			*
 			* All refractive indices are the same as the initial dipole.
 			**/
-			//boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
+			boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
 			/// \brief Convenience function to upscale using the same degree in each dimension
-			//inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const {return enhance(d, d, d);}
+			inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const {return enhance(d, d, d);}
 
 			/// \brief Decimation dielectric function that assigns a dielectric
 			/// that corresponds to the number of filled dipoles.
@@ -116,6 +116,8 @@ namespace rtmath {
 			void readHeader(const char *in, size_t &headerEnd);
 			/// Resizes arrays to hold the desired number of points
 			void resize(size_t num);
+			/// Recalculate stats after a manipulation operation
+			void recalcStats();
 			mutable HASH_t _localhash;
 			friend class ::boost::serialization::access;
 			template<class Archive>

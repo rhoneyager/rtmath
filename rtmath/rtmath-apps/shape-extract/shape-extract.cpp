@@ -36,6 +36,7 @@ int main(int argc, char** argv)
 			("output,o", po::value< string >(), "output shape file")
 			("bov,b", po::value<string>(), "output bov file prefix")
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
+			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			;
 
@@ -77,6 +78,15 @@ int main(int argc, char** argv)
 			}
 			boost::shared_ptr<shapefile> dec = shp->decimate
 				(kernel[0], kernel[1], kernel[2], df);
+			shp = dec;
+		}
+
+		if (vm.count("enhance"))
+		{
+			vector<size_t> kernel = vm["enhance"].as<vector<size_t> >();
+			if (kernel.size() < 3) kernel.assign(3, kernel.at(0));
+			boost::shared_ptr<shapefile> dec = shp->enhance
+				(kernel[0], kernel[1], kernel[2]);
 			shp = dec;
 		}
 

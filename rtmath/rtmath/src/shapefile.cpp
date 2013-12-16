@@ -410,8 +410,61 @@ namespace rtmath {
 			for (size_t i = 1; i <= dielMax; ++i)
 				res->Dielectrics.insert(i);
 
+			res->recalcStats();
+
 			return res;
 		}
+
+		boost::shared_ptr<shapefile> shapefile::enhance(size_t dx, size_t dy, size_t dz) const
+		{
+			boost::shared_ptr<shapefile> res(new shapefile);
+
+			size_t maxX = static_cast<size_t>(maxs(0)), maxY = static_cast<size_t>(maxs(1)), maxZ = static_cast<size_t>(maxs(2));
+			size_t minX = static_cast<size_t>(mins(0)), minY = static_cast<size_t>(mins(1)), minZ = static_cast<size_t>(mins(2));
+			size_t spanX = maxX - minX, spanY = maxY - minY, spanZ = maxZ - minZ;
+			size_t rsX = (spanX / dx) + 1, rsY = (spanY / dy) + 1, rsZ = (spanZ / dz) + 1;
+
+			// Resize the resultant shapefile based on the new scale
+			size_t nd = dx * dy * dz;
+			res->resize(nd * numPoints);
+
+			res->a1 = a1;
+			res->a2 = a2;
+			res->a3 = a3;
+			res->d = d;
+			res->desc = desc;
+			res->Dielectrics = Dielectrics;
+			res->filename = filename;
+			res->xd = xd;
+			// Rescale x0 to point to the new center
+			res->x0 = x0 * Eigen::Array3f((float)dx, (float)dy, (float)dz);
+
+
+			// Iterate over all points and bin into the appropriate set
+			for (size_t i = 0; i < numPoints; ++i)
+			{
+				auto crdsm = latticePts.block<1, 3>(i, 0);
+				auto crdsi = latticePtsRi.block<1, 3>(i, 0);
+				
+				for (size_t x = 0; x < dx; ++x)
+				for (size_t y = 0; y < dy; ++y)
+				for (size_t z = 0; z < dz; ++z)
+				{
+					size_t j = (nd * i) + z + (dz*y) + (dz*dy*x);
+					auto rdsm = res->latticePts.block<1, 3>(j, 0);
+					auto rdsi = res->latticePtsRi.block<1, 3>(j, 0);
+					rdsm(0) = crdsm(0) + x;
+					rdsm(1) = crdsm(1) + y;
+					rdsm(2) = crdsm(2) + z;
+					rdsi = crdsi;
+				}
+			}
+
+			res->recalcStats();
+
+			return res;
+		}
+
 
 		void shapefile::writeBOV(const std::string &prefix) const
 		{
