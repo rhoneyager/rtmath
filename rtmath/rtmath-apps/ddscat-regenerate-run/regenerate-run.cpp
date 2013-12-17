@@ -6,6 +6,12 @@
  * avg files provide rotations, aeff, wave, dielectrics and scattering angles.
  * shp files provide the actual shape.
  * par files provide a base when writing a new par file.
+ *
+ * If shape files exist in the same filesystem, uses hard links. If on different
+ * filesystems, uses symlinks. If a new shape file is generated, only one copy of the
+ * file is truly written. Duplicate shape files are matched by hashing.
+ *
+ * Supports shapefile decimation / enhancement.
  */
 
 #include <boost/filesystem.hpp>
@@ -60,6 +66,8 @@ int main(int argc, char** argv)
 			("use-avg-dielectrics",
 			"Use the refractive indices that appear in each avg file.")
 			("force-frequency", po::value<double>(), "Override frequency (GHz)")
+			//("force-intermediate", po::value<bool>(), "Force intermediate output")
+			("match-by-folder", "Instead of matching by standard prefix, match by containing folder")
 			;
 
 		desc.add(cmdline).add(config);
@@ -76,6 +84,8 @@ int main(int argc, char** argv)
 
 		vector<string> avgs, shapes; // May be expanded by os.
 		string par, outbase;
+		bool matchFolder = false;
+		if (vm.count("match-by-folder")) matchFolder = true;
 
 		auto doHelp = [&](const std::string &message)
 		{
@@ -87,12 +97,13 @@ int main(int argc, char** argv)
 		if (vm.count("help") || argc == 1) doHelp("");
 
 		if (!vm.count("shape")) doHelp("Need to specify shape files");
-		if (!vm.count("avg")) doHelp("Need to specify avg files");
+		//if (!vm.count("avg")) doHelp("Need to specify avg files");
 		if (!vm.count("par")) doHelp("Need to specify par file");
 		if (!vm.count("output")) doHelp("Need to specify output");
 
 		shapes = vm["shape"].as<vector<string> >();
-		avgs = vm["avg"].as<vector<string> >();
+		if (vm.count("avg"))
+			avgs = vm["avg"].as<vector<string> >();
 		par = vm["par"].as<string>();
 		outbase = vm["output"].as<string>();
 
@@ -132,7 +143,11 @@ int main(int argc, char** argv)
 		{
 			for (auto &it : v)
 			{
-				string prefix = dataset::getPrefix(it);
+				string prefix;
+				if (!matchFolder)
+					prefix = dataset::getPrefix(it);
+				else
+					prefix = path(prefix).remove_filename().string();
 				cerr << "p: " << prefix << " init " << it << endl;
 				if (!maps.count(prefix))
 				{
@@ -169,53 +184,91 @@ int main(int argc, char** argv)
 			cerr << "\t" << d.second.shapefile << endl;
 			if (!boost::filesystem::exists(pa))
 				boost::filesystem::create_directory(pa);
+
+			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
+			{
+				try {
+					// Creating shapefile hard links if possible
+					boost::filesystem::create_hard_link(d.second.shapefile, spath);
+				}
+				catch (std::exception&)
+				{
+					try {
+						// Then try making symlinks
+						boost::filesystem::create_symlink(makePathAbsolute(d.second.shapefile), spath);
+					}
+					catch (std::exception &e)
+					{
+						cerr << "Cannot make link to shape file " << d.second.shapefile << endl;
+						cerr << "Exception is " << e.what() << endl;
+						return false;
+						// Then just do direct copying
+						//boost::filesystem::copy_file(d.second.shapefile, p / path("shape.dat"));
+					}
+				}
+				return true;
+			};
+			auto createPar = [&](const boost::filesystem::path &ppath, ddPar &ppar, double aeff, double wave, const std::complex<double> &m)
+			{
+				if (vm.count("use-avg-dielectrics"))
+				{
+					if (m.real() == 0)
+					{
+						//throw rtmath::debug::xBadInput("Missing avg file for dielectric calculation");
+						cerr << "Missing avg file for dielectric calculation with " << ppath << endl;
+						return;
+					}
+					/// \todo Allow multiple ms
+					boost::shared_ptr<dielTab> diel = dielTab::generate(m);
+					diel->write((ppath.parent_path() / path("diel.tab")).string());
+					ppar.setDiels(vector<string>(1, string("diel.tab")));
+				}
+				else {
+					if (dielectrics.size())
+						ppar.setDiels(dielectrics);
+					// If no dieletrics set, then the par file skeleton defaults are fine.
+				}
+				// If aeff is zero, just stick with the par file definition
+				if (aeff)
+					ppar.setAeff(aeff, aeff, 1, "LIN");
+
+				if (vm.count("force-frequency"))
+				{
+					double f = vm["force-frequency"].as<double>();
+					double wave = rtmath::units::conv_spec("GHz", "um").convert(f);
+					ppar.setWavelengths(wave, wave, 1, "LIN");
+				}
+				else {
+					// If wave is zero, stick with the par file definition
+					if (wave)
+						ppar.setWavelengths(wave, wave, 1, "LIN");
+				}
+				// Rotations will match the par file.
+				// Scattering angle selection will match the par file.
+				ppar.writeFile(ppath.string());
+			};
+
+
+			// If there are no avg files to regenerate from
+			if (!d.second.ddres.size())
+			{
+				path p = pa / "test";
+				boost::filesystem::create_directory(p);
+				if (!linkShape(p / path("shape.dat"))) continue;
+				ddPar ppar = parFile;
+				// Write the diel.tab files
+				createPar((p / path("ddscat.par")), ppar, 0, 0, std::complex<double>(0,0));
+			}
+			// and if there are avg files to regenerate from
 			for (auto &pavg : d.second.ddres)
 			{
 				ddOutputSingle avg(pavg.string());
 				path p = pa / path(pavg).filename();
 				boost::filesystem::create_directory(p);
-				try {
-					// Creating shapefile hard links if possible
-					boost::filesystem::create_hard_link(d.second.shapefile, p / path("shape.dat"));
-				} catch (std::exception&)
-				{
-					try {
-						// Then try making symlinks
-						boost::filesystem::create_symlink( makePathAbsolute(d.second.shapefile), p / path("shape.dat"));
-					} catch (std::exception &e)
-					{
-						cerr << "Cannot make link to shape file " << d.second.shapefile << endl;
-						continue;
-						// Then just do direct copying
-						//boost::filesystem::copy_file(d.second.shapefile, p / path("shape.dat"));
-					}
-				}
+				if (!linkShape(p / path("shape.dat"))) continue;
 				ddPar ppar = parFile;
 				// Write the diel.tab files
-				if (vm.count("use-avg-dielectrics"))
-				{
-					/// \todo Allow multiple ms
-					boost::shared_ptr<dielTab> diel = dielTab::generate(avg.getM());
-					diel->write( (p / path("diel.tab")).string());
-					ppar.setDiels(vector<string>(1,string("diel.tab")));
-				} else {
-					if (dielectrics.size())
-						ppar.setDiels(dielectrics);
-					// If no dieletrics set, then the par file skeleton defaults are fine.
-				}
-
-				ppar.setAeff(avg.aeff(),avg.aeff(),1,"LIN");
-				if (vm.count("force-frequency"))
-				{
-					double f = vm["force-frequency"].as<double>();
-					double wave = rtmath::units::conv_spec("GHz","um").convert(f);
-					ppar.setWavelengths(wave,wave,1,"LIN");
-				} else {
-					ppar.setWavelengths(avg.wave(), avg.wave(), 1, "LIN");
-				}
-				// Rotations will match the par file.
-				// Scattering angle selection will match the par file.
-				ppar.writeFile( (p / path("ddscat.par")).string() );
+				createPar((p / path("ddscat.par")), ppar, avg.aeff(), avg.wave(), avg.getM());
 			}
 		}
 	} catch (std::exception &e)
