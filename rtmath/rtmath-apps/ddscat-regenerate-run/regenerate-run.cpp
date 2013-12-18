@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("avg,a", po::value<vector<string> >()->multitoken(), "Select avg files")
 			("shape,s", po::value<vector<string> >()->multitoken(), "Select shape files")
-			("par,p", po::value<vector<string> >(), "Select par file")
+			("par,p", po::value<vector<string> >()->multitoken(), "Select par file")
 			("output,o", po::value<string>(), "Select output directory base")
 			("dielectric-files", po::value<vector<string> >(),
 			"Force a set of dielectric files to be used. "
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 					prefix = makePathAbsolute(path(it)).string();
 					prefix = path(prefix).remove_filename().string();
 				}
-				cerr << "p: " << prefix << " init " << it << endl;
+				cerr << "prefix: " << prefix << " for file " << it << endl;
 				if (!maps.count(prefix))
 				{
 					maps[prefix] = dataset(prefix);
@@ -158,10 +158,21 @@ int main(int argc, char** argv)
 				}
 				path pfile(it);
 				if (!exists(pfile)) continue;
-				if (!dataset::isValid(pfile)) continue;
-				if (dataset::isAvg(pfile)) maps[prefix].ddres.push_back(pfile);
-				else if (dataset::isShape(pfile)) maps[prefix].shapefile = pfile;
-				else if (dataset::isPar(pfile)) maps[prefix].parfile = pfile;
+				//if (!dataset::isValid(pfile)) continue;
+				if (dataset::isAvg(pfile)) {
+					maps[prefix].ddres.push_back(pfile);
+					cerr << "\tMatched as avg file\n";
+				} else if (dataset::isPar(pfile) || 
+						pfile.string().find("par") != std::string::npos) {
+					maps[prefix].parfile = pfile;
+					cerr << "\tMatched as par file\n";
+				} else if (!dataset::isValid(pfile)) continue;
+				else if (dataset::isShape(pfile)) {
+					// TODO: shape file match can catch par files. It is 
+					// too loose.
+					maps[prefix].shapefile = pfile;
+					cerr << "\tMatched as shape file\n";
+				}
 			}
 		};
 
@@ -183,18 +194,24 @@ int main(int argc, char** argv)
 
 		for (auto &d : maps)
 		{
-			path pa = pOut / path(d.first);
+			path pa = pOut / (path(d.first).filename());
 			cerr << "Processing " << pa << endl;
-			cerr << "\t" << d.second.shapefile << endl;
+			cerr << "\tUsing shape file " << d.second.shapefile << endl;
 			if (!boost::filesystem::exists(pa))
 				boost::filesystem::create_directory(pa);
 
 			rtmath::ddscat::ddPar parFile;
 			if (d.second.parfile.empty() && pars.size())
+			{
 				parFile = rtmath::ddscat::ddPar(pars[0]);
+				cerr << "\tUsing generic par file " << pars[0] << endl;
+			}
 			else if (d.second.parfile.empty() && !pars.size())
 				throw rtmath::debug::xMissingFile("ddscat.par");
-			else parFile = rtmath::ddscat::ddPar(d.second.parfile.string());
+			else {
+				parFile = rtmath::ddscat::ddPar(d.second.parfile.string());
+				cerr << "\tUsing matched par file " << d.second.parfile.string() << endl;
+			}
 
 			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
 			{
@@ -263,7 +280,8 @@ int main(int argc, char** argv)
 			// If there are no avg files to regenerate from
 			if (!d.second.ddres.size())
 			{
-				path p = pOut / pa.filename();
+				cerr << "\tNot using avg file\n";
+				path p = pa; //pOut / pa.filename();
 				//path p = pa / "test";
 				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
@@ -275,8 +293,10 @@ int main(int argc, char** argv)
 			// and if there are avg files to regenerate from
 			for (auto &pavg : d.second.ddres)
 			{
+				cerr << "Using avg file " << pavg << "\n";
 				ddOutputSingle avg(pavg.string());
-				path p = pOut / pa.filename(); // / path(pavg).filename();
+				path p = pa;
+				// path p = pOut / pa.filename(); // / path(pavg).filename();
 				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
 				if (!linkShape(p / path("shape.dat"))) continue;
