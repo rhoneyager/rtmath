@@ -263,7 +263,9 @@ int main(int argc, char** argv)
 			// If there are no avg files to regenerate from
 			if (!d.second.ddres.size())
 			{
-				path p = pa / "test";
+				path p = pOut / pa.filename();
+				//path p = pa / "test";
+				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
 				if (!linkShape(p / path("shape.dat"))) continue;
 				ddPar ppar = parFile;
@@ -274,7 +276,8 @@ int main(int argc, char** argv)
 			for (auto &pavg : d.second.ddres)
 			{
 				ddOutputSingle avg(pavg.string());
-				path p = pa / path(pavg).filename();
+				path p = pOut / pa.filename(); // / path(pavg).filename();
+				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
 				if (!linkShape(p / path("shape.dat"))) continue;
 				ddPar ppar = parFile;
