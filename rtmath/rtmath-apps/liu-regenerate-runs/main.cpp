@@ -29,7 +29,8 @@
 void getId(const boost::filesystem::path &p,
 		   std::string &ident,
 		   std::string &genCmd,
-		   double &dipoleSpacing)
+		   double &dipoleSpacing,
+		   double &aeff)
 {
 	using namespace boost::filesystem;
 	using namespace std;
@@ -46,13 +47,15 @@ void getId(const boost::filesystem::path &p,
 	// map is called "target"
 	boost::shared_ptr<rtmath::ddscat::ddOutputSingleObj> tobj = df.getObj("target");
 	string target = tobj->value();
+	aeff = df.aeff();
 
 	list<double> tparams; // This holds the numeric parameters from the end
 	int filename_id = 0; // Used for bullet rosettes - from filename
-	bool isRosette = false, isSnowflake = false;
+	bool isRosette = false, isSnowflake = false, isDendrite = false;
 	if (target.find("rosette") != string::npos) isRosette = true;
 	else if (target.find("Snowflake") != string::npos) isSnowflake = true;
-	else throw debug::xBadInput(sp.c_str());
+	else isDendrite = true;
+	//else throw debug::xBadInput(sp.c_str());
 
 	vector<string> sres;
 	boost::algorithm::split(sres, target, boost::algorithm::is_any_of(" "), 
@@ -85,6 +88,7 @@ void getId(const boost::filesystem::path &p,
 	ostringstream cmd;
 	if (isRosette) cmd << "makerosette";
 	if (isSnowflake) cmd << "makesnowflake";
+	if (isDendrite) cmd << "makedendrite";
 	for (auto ot = tparams.begin(); ot != tparams.end(); ++ot)
 		cmd << " " << *ot;
 	if (isRosette) cmd << " " << filename_id; // To prevent decimal values
@@ -163,10 +167,10 @@ int main(int argc, char **argv)
 		for (auto it = rawinputs.begin(); it != rawinputs.end(); ++it)
 		{
 			cout << "Parsing " << *it << endl;
-			double dipoleSpacing;
+			double dipoleSpacing,aeff;
 			string id,genCmd;
 			path p(*it);
-			getId(p,id,genCmd,dipoleSpacing);
+			getId(p,id,genCmd,dipoleSpacing,aeff);
 
 			cout << id << "\t" << dipoleSpacing << "\t" << genCmd << endl;
 			outD << id << "\t" << dipoleSpacing << "\t" << genCmd << endl;

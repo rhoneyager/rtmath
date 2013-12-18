@@ -152,6 +152,8 @@ namespace rtmath {
 			double aeff() const;
 			/// Interdipole spacing (not all read types)
 			double dipoleSpacing() const;
+			/// Number of dipoles (not all read types)
+			size_t numDipoles() const;
 
 			/// Refractive index
 			std::complex<double> getM() const;

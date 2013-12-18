@@ -1211,6 +1211,11 @@ namespace rtmath {
 			return boost::lexical_cast<double>(_objMap.at("d")->value());
 		}
 
+		size_t ddOutputSingle::numDipoles() const
+		{
+			return boost::lexical_cast<size_t>(_objMap.at("numdipoles")->value());
+		}
+
 		std::complex<double> ddOutputSingle::getM() const
 		{
 			// if (key == "neps") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddM>(new ddM));

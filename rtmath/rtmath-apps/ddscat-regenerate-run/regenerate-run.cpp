@@ -37,6 +37,13 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+enum matchCriteria
+{
+	MATCH_STANDARD,
+	MATCH_FOLDERS,
+	MATCH_DIPOLES
+};
+
 int main(int argc, char** argv)
 {
 	using namespace std;
@@ -68,6 +75,9 @@ int main(int argc, char** argv)
 			("force-frequency", po::value<double>(), "Override frequency (GHz)")
 			//("force-intermediate", po::value<bool>(), "Force intermediate output")
 			("match-by-folder", "Instead of matching by standard prefix, match by containing folder")
+			("match-by-dipoles", "Instead of matching by a standard prefix, match avg files and shape "
+			"files by the number of dipoles. Necessary for Liu raw pristine flake extraction. "
+			"Will use a default par file this way.")
 			;
 
 		desc.add(cmdline).add(config);
@@ -80,13 +90,6 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
-		std::map<std::string, rtmath::ddscat::dataset> maps;
-
-		vector<string> avgs, shapes, pars; // May be expanded by os.
-		string outbase;
-		bool matchFolder = false;
-		if (vm.count("match-by-folder")) matchFolder = true;
-
 		auto doHelp = [&](const std::string &message)
 		{
 			cerr << desc << endl;
@@ -94,6 +97,15 @@ int main(int argc, char** argv)
 			exit(1);
 		};
 
+		std::map<std::string, rtmath::ddscat::dataset> maps;
+
+		vector<string> avgs, shapes, pars; // May be expanded by os.
+		string outbase;
+		matchCriteria mc = MATCH_STANDARD;
+		if (vm.count("match-by-folder")) mc = MATCH_FOLDERS;
+		if (vm.count("match-by-dipoles")) mc = MATCH_DIPOLES;
+		
+		
 		if (vm.count("help") || argc == 1) doHelp("");
 
 		if (!vm.count("shape")) doHelp("Need to specify shape files");
@@ -144,11 +156,29 @@ int main(int argc, char** argv)
 			for (auto &it : v)
 			{
 				string prefix;
-				if (!matchFolder)
+				path pfile(it);
+				if (mc == MATCH_STANDARD)
 					prefix = dataset::getPrefix(it);
-				else {
+				else if (mc == MATCH_FOLDERS) {
 					prefix = makePathAbsolute(path(it)).string();
 					prefix = path(prefix).remove_filename().string();
+				} else if (mc == MATCH_DIPOLES) {
+					// If a shape file, read shape and extract dipole number
+					size_t nDipoles = 0;
+					if (dataset::isShape(pfile)) {
+						rtmath::ddscat::shapefile s(pfile.string());
+						nDipoles = s.numPoints;
+					}
+					// If an avg file, read and extract dipole number.
+					else if (dataset::isAvg(pfile)) {
+						rtmath::ddscat::ddOutputSingle a(pfile.string());
+						nDipoles = a.numDipoles();
+					}
+					std::ostringstream ntos;
+					ntos << nDipoles;
+					prefix = ntos.str();
+					//prefix = makePathAbsolute(path(it)).string();
+					//prefix = path(prefix).remove_filename().string();
 				}
 				cerr << "prefix: " << prefix << " for file " << it << endl;
 				if (!maps.count(prefix))
@@ -156,7 +186,6 @@ int main(int argc, char** argv)
 					maps[prefix] = dataset(prefix);
 					cerr << "Adding prefix " << prefix << " from file " << it << endl;
 				}
-				path pfile(it);
 				if (!exists(pfile)) continue;
 				//if (!dataset::isValid(pfile)) continue;
 				if (dataset::isAvg(pfile)) {
@@ -176,6 +205,7 @@ int main(int argc, char** argv)
 			}
 		};
 
+		/*
 		if (0) // avgs.size() == 1)
 		{
 			// Special case where the exact data is specified
@@ -186,11 +216,12 @@ int main(int argc, char** argv)
 			maps[prefix].ddres.push_back(path(avgs[0]));
 			maps[prefix].shapefile = path(shapes.at(0));
 		} else {
+			*/
 			matchIDS(shapes);
 			matchIDS(avgs);
 			if (pars.size() > 1)
 				matchIDS(pars);
-		}
+		//}
 
 		for (auto &d : maps)
 		{
