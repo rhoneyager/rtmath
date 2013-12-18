@@ -91,6 +91,7 @@ namespace rtmath {
 
 			path ext = pleaf.extension();
 
+			if (pleaf.string().find("avg") == 0) return true;
 			if (ext.string() == ".avg") return true;
 			return false;
 		}
