@@ -3,18 +3,13 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
-//#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <map>
-//#include <set>
 #include <tuple>
 #include <thread>
 #include <mutex>
-//#include <cmath>
-//#include <cstdio>
-//#include <cstring>
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/interprocess/file_mapping.hpp>
@@ -25,7 +20,6 @@
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
-//#include "../rtmath/denseMatrix.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
@@ -131,7 +125,12 @@ namespace rtmath {
 				write(pHashShape.string(), true);
 		}
 
-		void shapefile::read(const std::string &filename)
+		void shapefile::readHeaderOnly(const std::string &filename)
+		{
+			read(filename, true);
+		}
+
+		void shapefile::read(const std::string &filename, bool headerOnly)
 		{
 			using namespace std;
 			using namespace boost::interprocess;
@@ -179,7 +178,10 @@ namespace rtmath {
 			this->_localhash = HASH(suncompressed.c_str(),(int) suncompressed.size());
 
 			istringstream ss_unc(suncompressed);
-			readContents(suncompressed.c_str());
+			size_t headerEnd = 0;
+			readHeader(suncompressed.c_str(), headerEnd);
+			if (!headerOnly)
+				readContents(suncompressed.c_str(), headerEnd);
 		}
 
 		void shapefile::resize(size_t n)

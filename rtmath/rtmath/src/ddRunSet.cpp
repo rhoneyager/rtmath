@@ -124,7 +124,7 @@ namespace rtmath {
 
 			path ext = pleaf.extension();
 			if (ext.string() == ".shp") return true;
-			if (pleaf.string().find_last_of("shape.txt") != string::npos) return true; // Lazy check
+			if (pleaf.string().find("shape.txt") != string::npos) return true; // Lazy check
 			return false;
 		}
 

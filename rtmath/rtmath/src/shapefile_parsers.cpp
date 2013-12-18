@@ -141,12 +141,12 @@ namespace rtmath
 	namespace ddscat
 	{
 		/// \todo Remove dependency on boost accumulators for faster compilation
-		void shapefile::readContents(const char *iin)
+		void shapefile::readContents(const char *iin, size_t headerEnd)
 		{
 			// Since istringstream is so slow, I'm dusting off my old atof macros (in 
 			// macros.h). These were used when I implemented lbl, and are very fast.
-			size_t headerEnd = 0;
-			readHeader(iin, headerEnd);
+			//size_t headerEnd = 0;
+			//readHeader(iin, headerEnd);
 
 			// Figure out third lattice vector in target frame
 			a3(0) = a1(1)*a2(2) - a1(2)*a2(1);

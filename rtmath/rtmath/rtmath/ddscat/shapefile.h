@@ -39,9 +39,11 @@ namespace rtmath {
 			 * If a standard (uncompressed) file cannot be found, also search for
 			 * a compressed file.
 			 **/
-			void read(const std::string &filename = "");
-			/// Read a shape from a memory buffer
-			void readContents(const char *in);
+			void read(const std::string &filename = "", bool headerOnly = false);
+			/// Read shape dipoles from a memory buffer
+			void readContents(const char *in, size_t headerEnd);
+			/// Read in ONLY a shape header (for speed with dipole matching)
+			void readHeaderOnly(const std::string &filename);
 			/// Write a shapefile (compression allowed)
 			/// \param autoCompress determines whether any output should be 
 			/// automatically compressed. Specifying a compressed output filename 

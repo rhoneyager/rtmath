@@ -99,7 +99,8 @@ int main(int argc, char** argv)
 
 		std::map<std::string, rtmath::ddscat::dataset> maps;
 
-		vector<string> avgs, shapes, pars; // May be expanded by os.
+		vector<string> iavgs, ishapes, ipars; // May be expanded by os.
+		vector<boost::filesystem::path> avgs, shapes, pars;
 		string outbase;
 		matchCriteria mc = MATCH_STANDARD;
 		if (vm.count("match-by-folder")) mc = MATCH_FOLDERS;
@@ -113,10 +114,10 @@ int main(int argc, char** argv)
 		if (!vm.count("par")) doHelp("Need to specify par file(s)");
 		if (!vm.count("output")) doHelp("Need to specify output");
 
-		shapes = vm["shape"].as<vector<string> >();
+		ishapes = vm["shape"].as<vector<string> >();
 		if (vm.count("avg"))
-			avgs = vm["avg"].as<vector<string> >();
-		pars = vm["par"].as<vector<string> >();
+			iavgs = vm["avg"].as<vector<string> >();
+		ipars = vm["par"].as<vector<string> >();
 		outbase = vm["output"].as<string>();
 
 		auto makePathAbsolute = [](const boost::filesystem::path &p) -> boost::filesystem::path
@@ -151,7 +152,7 @@ int main(int argc, char** argv)
 		// as a valid input.
 		using rtmath::ddscat::dataset;
 
-		auto matchIDS = [&](const vector<string> &v)
+		auto matchIDS = [&](const vector<path> &v)
 		{
 			for (auto &it : v)
 			{
@@ -166,14 +167,17 @@ int main(int argc, char** argv)
 					// If a shape file, read shape and extract dipole number
 					size_t nDipoles = 0;
 					if (dataset::isShape(pfile)) {
-						rtmath::ddscat::shapefile s(pfile.string());
+						rtmath::ddscat::shapefile s;
+						s.readHeaderOnly(pfile.string());
 						nDipoles = s.numPoints;
 					}
 					// If an avg file, read and extract dipole number.
 					else if (dataset::isAvg(pfile)) {
-						rtmath::ddscat::ddOutputSingle a(pfile.string());
+						rtmath::ddscat::ddOutputSingle a;
+						a.readFile(pfile.string(), ".avg");
 						nDipoles = a.numDipoles();
 					}
+					if (!nDipoles) continue; // Prefix 0 is not valid. Wrong file type.
 					std::ostringstream ntos;
 					ntos << nDipoles;
 					prefix = ntos.str();
@@ -205,6 +209,20 @@ int main(int argc, char** argv)
 			}
 		};
 
+		auto expandFolders = [&](const vector<string> &src, vector<path> &dest)
+		{
+			dest.clear();
+			for (auto s : src)
+			{
+				using namespace boost::filesystem;
+				path p(s);
+				if (is_directory(p))
+					copy(directory_iterator(p), 
+					directory_iterator(), back_inserter(dest));
+				else dest.push_back(p);
+			}
+		};
+
 		/*
 		if (0) // avgs.size() == 1)
 		{
@@ -217,10 +235,14 @@ int main(int argc, char** argv)
 			maps[prefix].shapefile = path(shapes.at(0));
 		} else {
 			*/
-			matchIDS(shapes);
-			matchIDS(avgs);
-			if (pars.size() > 1)
-				matchIDS(pars);
+		expandFolders(ishapes, shapes);
+		expandFolders(iavgs, avgs);
+		expandFolders(ipars, pars);
+
+		matchIDS(shapes);
+		matchIDS(avgs);
+		if (pars.size() > 1)
+			matchIDS(pars);
 		//}
 
 		for (auto &d : maps)
@@ -234,7 +256,7 @@ int main(int argc, char** argv)
 			rtmath::ddscat::ddPar parFile;
 			if (d.second.parfile.empty() && pars.size())
 			{
-				parFile = rtmath::ddscat::ddPar(pars[0]);
+				parFile = rtmath::ddscat::ddPar(pars[0].string());
 				cerr << "\tUsing generic par file " << pars[0] << endl;
 			}
 			else if (d.second.parfile.empty() && !pars.size())
@@ -267,7 +289,8 @@ int main(int argc, char** argv)
 				}
 				return true;
 			};
-			auto createPar = [&](const boost::filesystem::path &ppath, ddPar &ppar, double aeff, double wave, const std::complex<double> &m)
+			auto createPar = [&](const boost::filesystem::path &ppath, ddPar &ppar, 
+				double aeff, double wave, const std::complex<double> &m)
 			{
 				if (vm.count("use-avg-dielectrics"))
 				{
