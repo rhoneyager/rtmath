@@ -43,6 +43,8 @@ namespace rtmath
 			boost::filesystem::path shapestatsfile;
 			/// the shape file (.shp, _shape.txt)
 			boost::filesystem::path shapefile;
+			/// the parameter file
+			boost::filesystem::path parfile;
 			/// The actual shape stats.
 			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
 
@@ -62,6 +64,7 @@ namespace rtmath
 			static bool isAvg(const boost::filesystem::path &filename);
 			static bool isShape(const boost::filesystem::path &filename);
 			static bool isShapeStats(const boost::filesystem::path &filename);
+			static bool isPar(const boost::filesystem::path &filename);
 		};
 
 	}

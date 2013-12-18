@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("avg,a", po::value<vector<string> >()->multitoken(), "Select avg files")
 			("shape,s", po::value<vector<string> >()->multitoken(), "Select shape files")
-			("par,p", po::value<string>(), "Select par file")
+			("par,p", po::value<vector<string> >(), "Select par file")
 			("output,o", po::value<string>(), "Select output directory base")
 			("dielectric-files", po::value<vector<string> >(),
 			"Force a set of dielectric files to be used. "
@@ -82,8 +82,8 @@ int main(int argc, char** argv)
 
 		std::map<std::string, rtmath::ddscat::dataset> maps;
 
-		vector<string> avgs, shapes; // May be expanded by os.
-		string par, outbase;
+		vector<string> avgs, shapes, pars; // May be expanded by os.
+		string outbase;
 		bool matchFolder = false;
 		if (vm.count("match-by-folder")) matchFolder = true;
 
@@ -98,13 +98,13 @@ int main(int argc, char** argv)
 
 		if (!vm.count("shape")) doHelp("Need to specify shape files");
 		//if (!vm.count("avg")) doHelp("Need to specify avg files");
-		if (!vm.count("par")) doHelp("Need to specify par file");
+		if (!vm.count("par")) doHelp("Need to specify par file(s)");
 		if (!vm.count("output")) doHelp("Need to specify output");
 
 		shapes = vm["shape"].as<vector<string> >();
 		if (vm.count("avg"))
 			avgs = vm["avg"].as<vector<string> >();
-		par = vm["par"].as<string>();
+		pars = vm["par"].as<vector<string> >();
 		outbase = vm["output"].as<string>();
 
 		auto makePathAbsolute = [](const boost::filesystem::path &p) -> boost::filesystem::path
@@ -146,8 +146,10 @@ int main(int argc, char** argv)
 				string prefix;
 				if (!matchFolder)
 					prefix = dataset::getPrefix(it);
-				else
+				else {
+					prefix = makePathAbsolute(path(it)).string();
 					prefix = path(prefix).remove_filename().string();
+				}
 				cerr << "p: " << prefix << " init " << it << endl;
 				if (!maps.count(prefix))
 				{
@@ -159,6 +161,7 @@ int main(int argc, char** argv)
 				if (!dataset::isValid(pfile)) continue;
 				if (dataset::isAvg(pfile)) maps[prefix].ddres.push_back(pfile);
 				else if (dataset::isShape(pfile)) maps[prefix].shapefile = pfile;
+				else if (dataset::isPar(pfile)) maps[prefix].parfile = pfile;
 			}
 		};
 
@@ -174,8 +177,9 @@ int main(int argc, char** argv)
 		} else {
 			matchIDS(shapes);
 			matchIDS(avgs);
+			if (pars.size() > 1)
+				matchIDS(pars);
 		}
-		rtmath::ddscat::ddPar parFile(par);
 
 		for (auto &d : maps)
 		{
@@ -184,6 +188,13 @@ int main(int argc, char** argv)
 			cerr << "\t" << d.second.shapefile << endl;
 			if (!boost::filesystem::exists(pa))
 				boost::filesystem::create_directory(pa);
+
+			rtmath::ddscat::ddPar parFile;
+			if (d.second.parfile.empty() && pars.size())
+				parFile = rtmath::ddscat::ddPar(pars[0]);
+			else if (d.second.parfile.empty() && !pars.size())
+				throw rtmath::debug::xMissingFile("ddscat.par");
+			else parFile = rtmath::ddscat::ddPar(d.second.parfile.string());
 
 			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
 			{

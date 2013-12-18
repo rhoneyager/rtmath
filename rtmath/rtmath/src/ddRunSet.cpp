@@ -75,6 +75,7 @@ namespace rtmath {
 			if (isAvg(filename)) return true;
 			if (isShape(filename)) return true;
 			if (isShapeStats(filename)) return true;
+			if (isPar(filename)) return true;
 			return false;
 		}
 
@@ -91,6 +92,22 @@ namespace rtmath {
 			path ext = pleaf.extension();
 
 			if (ext.string() == ".avg") return true;
+			return false;
+		}
+
+		bool dataset::isPar(const boost::filesystem::path &filename)
+		{
+			using namespace boost::filesystem;
+			using namespace std;
+			path pleaf = filename.filename();
+
+			string meth; // replaced with std::string()
+			if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
+				pleaf.replace_extension();
+
+			path ext = pleaf.extension();
+
+			if (ext.string() == ".par") return true;
 			return false;
 		}
 
