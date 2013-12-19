@@ -606,7 +606,7 @@ namespace Ryan_Debug {
 	const char* getStartTime(const hProcessInfo hp) {return hp->startTime.c_str(); }
 	int getPID(const hProcessInfo hp) {return hp->pid; }
 	int getPPID(const hProcessInfo hp) {return hp->ppid; }
-	void freeProcessInfo(hProcessInfo hp) { delete hp; hp = nullptr; }
+	void freeProcessInfo(hProcessInfo hp) { delete hp; hp = 0; }
 
 
 	/**
