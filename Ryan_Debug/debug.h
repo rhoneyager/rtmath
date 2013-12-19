@@ -31,6 +31,7 @@
 namespace Ryan_Debug
 {
 	struct processInfo;
+	typedef const processInfo* hProcessInfo;
 
 	// appEntry and appExit are setup on dll load. No need to call them 
 	// using msvc or gcc. Others may require an explicit call.
@@ -45,32 +46,25 @@ namespace Ryan_Debug
 	// Process detection functions
 	bool RYAN_DEBUG_DLEXPORT pidExists(int pid);
 	int RYAN_DEBUG_DLEXPORT getPID();
+	int RYAN_DEBUG_DLEXPORT getPID(const hProcessInfo);
 	int RYAN_DEBUG_DLEXPORT getPPID(int pid);
-	processInfo RYAN_DEBUG_DLEXPORT getInfo(int pid);
+	int RYAN_DEBUG_DLEXPORT getPPID(const hProcessInfo);
+
+	/// Get a handle to a structure representing process information
+	hProcessInfo RYAN_DEBUG_DLEXPORT getInfo(int pid);
+
+	RYAN_DEBUG_DLEXPORT const char* getName(const hProcessInfo);
+	RYAN_DEBUG_DLEXPORT const char* getPath(const hProcessInfo);
+	RYAN_DEBUG_DLEXPORT const char* getCwd(const hProcessInfo);
+	RYAN_DEBUG_DLEXPORT const char* getEnviron(const hProcessInfo, size_t &sz);
+	RYAN_DEBUG_DLEXPORT const char* getCmdline(const hProcessInfo, size_t &sz);
+	RYAN_DEBUG_DLEXPORT const char* getStartTime(const hProcessInfo);
+	void RYAN_DEBUG_DLEXPORT freeProcessInfo(hProcessInfo);
 
 	// Print the compiler information for the debug library to std::cerr.
 	void RYAN_DEBUG_DLEXPORT printDebugInfo();
 
-	/// Contains information about a process
-	struct processInfo
-	{
-		/// Executable name
-		std::string name;
-		/// Executable path
-		std::string path;
-		/// Current working directory
-		std::string cwd;
-		/// Environment variables
-		std::string environ;
-		/// Command-line
-		std::string cmdline;
-		/// Process start time
-		std::string startTime;
-		/// Process ID
-		int pid;
-		/// Process ID of parent
-		int ppid;
-	};
+	
 
 
 }

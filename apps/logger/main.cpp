@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <boost/program_options.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "../../Ryan_Debug/debug.h"
 #include "../../Ryan_Debug/info.h"
@@ -51,26 +52,34 @@ int main(int argc, char **argv)
 		}
 
 		// Recurse through the pids until a suitable endpoint is found.
-		processInfo info;
+		boost::shared_ptr<const processInfo> info;
+		//hProcessInfo info = nullptr;
 		for (;;)
 		{
 			if (!pid) break; // Recursed to 0
-			info = getInfo(pid);
+			info = boost::shared_ptr<const processInfo>(getInfo(pid), freeProcessInfo);
 			cout << info;
 			if (showEnviron)
-				cout << "Environment Variables:\n" << info.environ << endl;
+			{
+				size_t sEnv = 0;
+				const char* cenv = getEnviron(info.get(), sEnv);
+				std::string env(cenv,sEnv);
+				cout << "Environment Variables:\n" << env << endl;
+			}
 			cout << endl;
-			if (pid == info.ppid) break; // linux shells
-			pid = info.ppid;
-			if (info.name == "devenv.exe") break; // VS
-			if (info.name == "screen") break;
-			if (info.name == "bash") break;
-			if (info.name == "tcsh") break;
-			if (info.name == "sshd") break;
-			if (info.name == "cmd.exe") break;
-			if (info.name == "explorer.exe") break;
-			if (info.name == "at") break;
-			if (info.name == "cron") break;
+			if (pid == getPPID(info.get())) break; // linux shells
+			pid = getPID(info.get());
+			const char* cname = getName(info.get());
+			std::string name(cname);
+			if (name == "devenv.exe") break; // VS
+			if (name == "screen") break;
+			if (name == "bash") break;
+			if (name == "tcsh") break;
+			if (name == "sshd") break;
+			if (name == "cmd.exe") break;
+			if (name == "explorer.exe") break;
+			if (name == "at") break;
+			if (name == "cron") break;
 		}
 
 		//ryan_debug::printDebugInfo();

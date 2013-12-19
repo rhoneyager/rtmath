@@ -90,6 +90,27 @@ extern "C" {
 
 namespace Ryan_Debug {
 
+	/// Contains information about a process
+	struct processInfo
+	{
+		/// Executable name
+		std::string name;
+		/// Executable path
+		std::string path;
+		/// Current working directory
+		std::string cwd;
+		/// Environment variables
+		std::string environ;
+		/// Command-line
+		std::string cmdline;
+		/// Process start time
+		std::string startTime;
+		/// Process ID
+		int pid;
+		/// Process ID of parent
+		int ppid;
+	};
+
 	// Don't export this symbol (not in header)
 #ifdef _WIN32
 	BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType ); // Helps gracefully close console
@@ -432,12 +453,12 @@ namespace Ryan_Debug {
 	 *
 	 * \throws std::exception if the process does not exist
 	 **/
-	processInfo getInfo(int pid)
+	hProcessInfo getInfo(int pid)
 	{
-		processInfo res;
-		res.pid = pid;
-		if (!pidExists(pid)) throw std::string("PID does not exist"); // TODO: exception
-		res.ppid = getPPID(pid);
+		processInfo* res = new processInfo;
+		res->pid = pid;
+		if (!pidExists(pid)) throw "PID does not exist"; // TODO: exception
+		res->ppid = getPPID(pid);
 #ifdef __unix__
 		{
 			using namespace boost::filesystem;
@@ -455,9 +476,9 @@ namespace Ryan_Debug {
 			path pscwd = read_symlink(pcwd);
 			path pexename = psexe.filename();
 
-			res.name = pexename.string();
-			res.path = psexe.string();
-			res.cwd = pscwd.string();
+			res->name = pexename.string();
+			res->path = psexe.string();
+			res->cwd = pscwd.string();
 
 			// environ and cmdline can be read as files
 			// both internally use null-terminated strings
@@ -469,11 +490,11 @@ namespace Ryan_Debug {
 			while (scmdline.good())
 			{
 				scmdline.read(buffer,length);
-				res.cmdline.append(buffer,scmdline.gcount());
+				res->cmdline.append(buffer,scmdline.gcount());
 			}
-			//scmdline >> res.cmdline;
+			//scmdline >> res->cmdline;
 			// Replace command-line null symbols with spaces
-			//std::replace(res.cmdline.begin(),res.cmdline.end(),
+			//std::replace(res->cmdline.begin(),res->cmdline.end(),
 			//		'\0', ' ');
 
 			path penv(pp / "environ");
@@ -482,17 +503,17 @@ namespace Ryan_Debug {
 			while (senviron.good())
 			{
 				senviron.read(buffer,length);
-				res.environ.append(buffer,senviron.gcount());
+				res->environ.append(buffer,senviron.gcount());
 			}
 			// Replace environment null symbols with newlines
-			//std::replace(res.environ.begin(),res.environ.end(),
+			//std::replace(res->environ.begin(),res->environ.end(),
 			//		'\0', '\n');
 			delete[] buffer;
 
 			// start time is the timestamp of the /proc/pid folder.
 			std::time_t st = last_write_time(pp);
 			string ct(ctime(&st));
-			res.startTime = ct;
+			res->startTime = ct;
 
 		}
 		return res;
@@ -501,9 +522,9 @@ namespace Ryan_Debug {
 		//throw std::string("Unimplemented on WIN32"); // unimplemented
 		boost::filesystem::path filename, filepath;
 		getPathWIN32((DWORD) pid, filepath, filename); // int always fits in DWORD
-		res.name = filename.string();
-		res.path = filepath.string();
-		res.startTime;
+		res->name = filename.string();
+		res->path = filepath.string();
+		res->startTime;
 
 		int mypid = getPID();
 		if (pid == mypid)
@@ -527,25 +548,26 @@ namespace Ryan_Debug {
 			size_t convertedChars = 0;
 			char nstring[newsize];
 			wcstombs_s(&convertedChars, nstring, origsize, penv, _TRUNCATE);
-			res.environ = std::string(nstring, nstring+newsize);
+			res->environ = std::string(nstring, nstring+newsize);
 			*/
 //#else
-			res.environ = std::string(penv, pend);
+			res->environ = std::string(penv, pend);
 //#endif
 			FreeEnvironmentStrings(penv);
 
-			res.cmdline = std::string(GetCommandLine());
+			res->cmdline = std::string(GetCommandLine());
 
 			DWORD sz = GetCurrentDirectory(0, NULL);
 			LPTSTR cd = new TCHAR[sz];
 			DWORD result = GetCurrentDirectory(2500, cd);
-			res.cwd = std::string(cd);
+			res->cwd = std::string(cd);
 			delete[] cd;
 
 		} else {
 			// Privilege escalation required. Need to handle this case.
-			std::cerr << "Privilege escalation required. Need to handle this case." << std::endl;
-			//throw std::string("Privilege escalation required. Need to handle this case.");
+			std::string err("Privilege escalation required. Need to handle this case.\n");
+			std::cerr << err;
+			throw err.c_str();
 		}
 
 		// Get parent process name
@@ -563,7 +585,7 @@ namespace Ryan_Debug {
 		outCreation << pCreationLocal.wYear << "-" << pCreationLocal.wMonth << "-" << pCreationLocal.wDay << " "
 			<< pCreationLocal.wHour << ":" << pCreationLocal.wMinute << ":" << pCreationLocal.wSecond << "."
 			<< pCreationLocal.wMilliseconds;
-		res.startTime = outCreation.str();
+		res->startTime = outCreation.str();
 
 		CloseHandle(h);
 
@@ -573,8 +595,19 @@ namespace Ryan_Debug {
 
 
 		// Should only reach here if not unix or win32. An odd possibility.
-		throw std::string("Unimplemented OS");
+		throw "Unimplemented OS";
 	}
+
+	const char* getName(const hProcessInfo hp) {return hp->name.c_str(); }
+	const char* getPath(const hProcessInfo hp) {return hp->path.c_str(); }
+	const char* getCwd(const hProcessInfo hp) {return hp->cwd.c_str(); }
+	const char* getEnviron(const hProcessInfo hp, size_t &sz) { sz = hp->environ.size(); return hp->environ.c_str(); }
+	const char* getCmdline(const hProcessInfo hp, size_t &sz) { sz = hp->cmdline.size(); return hp->cmdline.c_str(); }
+	const char* getStartTime(const hProcessInfo hp) {return hp->startTime.c_str(); }
+	int getPID(const hProcessInfo hp) {return hp->pid; }
+	int getPPID(const hProcessInfo hp) {return hp->ppid; }
+	void freeProcessInfo(hProcessInfo hp) { delete hp; hp = nullptr; }
+
 
 	/**
 	 * \brief Prints compiler and library information that was present when the 
@@ -584,6 +617,8 @@ namespace Ryan_Debug {
 	{
 		debug_preamble(std::cerr);
 	}
+
+
 }
 
 /**
