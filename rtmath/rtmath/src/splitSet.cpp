@@ -343,17 +343,29 @@ namespace rtmath {
 					start = sep+1;
 					continue;
 				}
-				// Split based on location of colon
+				// Split based on location of equal sign
 				//out.push_back(std::string(start, sep - 1));
 				const char* sepc = std::find(start, sep, '=');
-				// If the : cannot be found, then it is a key with an empty value.
+				// If the = cannot be found, then it is a key with an empty value.
 				std::string key(start, sepc);
 				if (!key.size())
 				{
 					start = sep+1;
 					continue;
 				}
-				std::string val(sepc + 1, sep);
+				/*
+				if (//sepc+1 >= stop || 
+					//sep > stop || 
+					sepc+1>sep)
+				{
+					std::cerr << "Pointer error: sepc " << &sepc << " sep " << &sep
+						<< " stop " << &stop << " start " << &start << std::endl;
+					throw;
+				}
+				*/
+				std::string val;
+				if (sepc < sep)
+					val = std::string(sepc + 1, sep);
 				out.insert(std::make_pair(key, val));
 				start = sep+1;
 			}

@@ -422,9 +422,16 @@ namespace rtmath {
 
 			// Checking environment variables
 			{
-				Ryan_Debug::processInfo info = Ryan_Debug::getInfo(Ryan_Debug::getPID());
+				using namespace Ryan_Debug;
+				boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
+
+				size_t sEnv = 0;
+				const char* cenv = getEnviron(info.get(), sEnv);
+				std::string env(cenv,sEnv);
+
+				//Ryan_Debug::processInfo info = Ryan_Debug::getInfo(Ryan_Debug::getPID());
 				std::map<std::string, std::string> mEnv;
-				config::splitNullMap(info.environ, mEnv);
+				config::splitNullMap(env, mEnv);
 				//std::vector<std::string> mCands;
 				auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
 					[](const std::pair<std::string, std::string> &pred)

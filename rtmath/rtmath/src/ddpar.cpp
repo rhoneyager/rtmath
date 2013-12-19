@@ -943,23 +943,23 @@ namespace rtmath {
 			}
 		}
 
-		ddPar*& ddPar::defaultInstance()
+		ddPar* ddPar::defaultInstance()
 		{
 			using namespace std;
 			using namespace boost::filesystem;
-			static ddPar* s_inst = nullptr;
+			static ddPar s_inst;
 			static bool loaded = false;
 			if (!loaded)
 			{
 				initPaths();
 				if (pDefaultPar.string().size() && boost::filesystem::exists(path(pDefaultPar)))
 				{
-					s_inst = new ddPar(pDefaultPar.string(), false);
+					s_inst = ddPar(pDefaultPar.string(), false);
 				} else {
 					// Attempt to load the internal instance
 					try {
-						s_inst = new ddPar;
-						Ryan_Serialization::readString(*s_inst, ddparDefaultInternal, "rtmath::ddscat::ddPar");
+						//s_inst = new ddPar;
+						Ryan_Serialization::readString(s_inst, ddparDefaultInternal, "rtmath::ddscat::ddPar");
 
 					} catch (std::exception&)
 					{
@@ -976,7 +976,7 @@ namespace rtmath {
 				//rtmath::debug::instances::registerInstance( "ddPar::defaultInstance", reinterpret_cast<void*>(s_inst));
 				loaded = true;
 			}
-			return s_inst;
+			return &s_inst;
 		}
 
 		void ddPar::add_options(

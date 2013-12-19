@@ -455,7 +455,7 @@ namespace rtmath {
 		{
 		public:
 			/// Load the default ddscat.par file, used in setting default values
-			static ddPar*& defaultInstance();
+			static ddPar* defaultInstance();
 
 			/**
 			 * \brief Adds ddPar options to a program
