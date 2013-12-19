@@ -274,7 +274,7 @@ namespace rtmath {
 			for (size_t i=0; i< dielColumns::NUMCOLS; ++i)
 			{
 				if (size_t loc = colMaps[i] )
-					rmap[loc] = i;
+					rmap[loc-1] = i;
 			}
 			// The reverse map lists the columns in order, and is padded with zeros 
 			// at the end.
