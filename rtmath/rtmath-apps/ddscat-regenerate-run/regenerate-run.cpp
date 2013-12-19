@@ -268,6 +268,7 @@ int main(int argc, char** argv)
 
 			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
 			{
+				if (boost::filesystem::exists(spath)) return false;
 				try {
 					// Creating shapefile hard links if possible
 					boost::filesystem::create_hard_link(d.second.shapefile, spath);
@@ -348,7 +349,7 @@ int main(int argc, char** argv)
 			for (auto &pavg : d.second.ddres)
 			{
 				cerr << "Using avg file " << pavg << "\n";
-				ddOutputSingle avg(pavg.string());
+				ddOutputSingle avg(pavg.string(),".avg");
 				path p = pa;
 				// path p = pOut / pa.filename(); // / path(pavg).filename();
 				cerr << "\tCreating directory " << p << endl;
