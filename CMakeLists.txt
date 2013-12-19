@@ -17,7 +17,7 @@ include (SVNinfo)
 
 set(MAJOR 0)
 set(MINOR 6)
-set(REVISION 3)
+set(REVISION 4)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
