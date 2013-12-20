@@ -31,6 +31,7 @@
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddRunSet.h"
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"
+#include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
@@ -78,6 +79,9 @@ int main(int argc, char** argv)
 			("match-by-dipoles", "Instead of matching by a standard prefix, match avg files and shape "
 			"files by the number of dipoles. Necessary for Liu raw pristine flake extraction. "
 			"Will use a default par file this way.")
+			("calc-dipole-extent", po::value<bool>()->default_value(true), "Read the shape and calculate the "
+			"dimension sizes. Used to tweak the parameter file.")
+			("ice-temp,T", po::value<double>(), "Specify ice temperature. Used if a dielectric is regenerated.")
 			;
 
 		desc.add(cmdline).add(config);
@@ -102,6 +106,7 @@ int main(int argc, char** argv)
 		vector<string> iavgs, ishapes, ipars; // May be expanded by os.
 		vector<boost::filesystem::path> avgs, shapes, pars;
 		string outbase;
+		bool calcDipoleExtent = vm["calc-dipole-extent"].as<bool>();
 		matchCriteria mc = MATCH_STANDARD;
 		if (vm.count("match-by-folder")) mc = MATCH_FOLDERS;
 		if (vm.count("match-by-dipoles")) mc = MATCH_DIPOLES;
@@ -119,6 +124,9 @@ int main(int argc, char** argv)
 			iavgs = vm["avg"].as<vector<string> >();
 		ipars = vm["par"].as<vector<string> >();
 		outbase = vm["output"].as<string>();
+
+		double temp = 0;
+		if (vm.count("ice-temp")) temp = vm["ice-temp"].as<double>();
 
 		auto makePathAbsolute = [](const boost::filesystem::path &p) -> boost::filesystem::path
 		{
@@ -266,6 +274,19 @@ int main(int argc, char** argv)
 				cerr << "\tUsing matched par file " << d.second.parfile.string() << endl;
 			}
 
+			// Reopen the shape file to determine dipole extent
+			vector<size_t> dims(3,0);
+			if (calcDipoleExtent)
+			{
+				rtmath::ddscat::shapefile s;
+				s.read(d.second.shapefile.string());
+				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 1);
+				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 1);
+				dims[2] = (size_t) (s.maxs(2) - s.mins(2) + 1);
+				cerr << "\tDipole extent is " << dims[0] << ", " << dims[1] << ", " << dims[2] << endl;
+			}
+			else cerr << "\tUsing initial dipole extent" << endl;
+
 			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
 			{
 				if (boost::filesystem::exists(spath)) return false;
@@ -291,9 +312,21 @@ int main(int argc, char** argv)
 				return true;
 			};
 			auto createPar = [&](const boost::filesystem::path &ppath, ddPar &ppar, 
-				double aeff, double wave, const std::complex<double> &m)
+				double aeff, double wave, std::complex<double> m)
 			{
-				if (vm.count("use-avg-dielectrics"))
+				if (vm.count("force-frequency"))
+				{
+					double f = vm["force-frequency"].as<double>();
+					wave = rtmath::units::conv_spec("GHz", "um").convert(f);
+					ppar.setWavelengths(wave, wave, 1, "LIN");
+				} else {
+					// If wave is zero, stick with the par file definition
+					if (wave)
+						ppar.setWavelengths(wave, wave, 1, "LIN");
+				}
+
+				if (dielectrics.size()) ppar.setDiels(dielectrics);
+				else if (vm.count("use-avg-dielectrics"))
 				{
 					if (m.real() == 0)
 					{
@@ -306,26 +339,29 @@ int main(int argc, char** argv)
 					diel->write((ppath.parent_path() / path("diel.tab")).string());
 					ppar.setDiels(vector<string>(1, string("diel.tab")));
 				}
-				else {
-					if (dielectrics.size())
-						ppar.setDiels(dielectrics);
-					// If no dieletrics set, then the par file skeleton defaults are fine.
-				}
+				else if (wave && temp) {
+					// Regenerate a dielectric based on the refractive index of ice at this frequency/temp combination.
+					double f = rtmath::units::conv_spec("um", "GHz").convert(wave);
+					rtmath::refract::mIce(f, temp, m);
+					boost::shared_ptr<dielTab> diel = dielTab::generate(m);
+					diel->write((ppath.parent_path() / path("diel.tab")).string());
+					ppar.setDiels(vector<string>(1, string("diel.tab")));
+				} // If no case matches, then the par file skeleton defaults are fine.
+				
 				// If aeff is zero, just stick with the par file definition
 				if (aeff)
 					ppar.setAeff(aeff, aeff, 1, "LIN");
 
-				if (vm.count("force-frequency"))
+				// Set initial memory dimensions
+				if (dims[0])
 				{
-					double f = vm["force-frequency"].as<double>();
-					double wave = rtmath::units::conv_spec("GHz", "um").convert(f);
-					ppar.setWavelengths(wave, wave, 1, "LIN");
+					// Using the older interface, just because it is convenient
+					boost::shared_ptr< ddParParsers::ddParLineSimplePlural<size_t> > line
+						(new ddParParsers::ddParLineSimplePlural<size_t>(ddParParsers::DIMENSION));
+					line->set(dims);
+					ppar.insertKey(ddParParsers::DIMENSION,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
 				}
-				else {
-					// If wave is zero, stick with the par file definition
-					if (wave)
-						ppar.setWavelengths(wave, wave, 1, "LIN");
-				}
+
 				// Rotations will match the par file.
 				// Scattering angle selection will match the par file.
 				ppar.writeFile(ppath.string());

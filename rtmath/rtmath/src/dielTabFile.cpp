@@ -20,8 +20,8 @@ namespace rtmath {
 			colMaps[dielColumns::WAVELENGTH] = 1;
 			colMaps[dielColumns::M_RE] = 2;
 			colMaps[dielColumns::M_IM] = 3;
-			colMaps[dielColumns::E_RE] = 4;
-			colMaps[dielColumns::E_IM] = 5;
+			colMaps[dielColumns::E_RE] = 0;
+			colMaps[dielColumns::E_IM] = 0;
 		}
 
 		dielTab::dielTab()
@@ -245,8 +245,9 @@ namespace rtmath {
 
 			if (!freqMMap.size()) throw rtmath::debug::xArrayOutOfBounds();
 			if (!_colMapsValid()) throw rtmath::debug::xBadInput("Bad diel column mappings");
-			out.setf( ios::scientific, ios::floatfield);
-			out.precision(7);
+			//out.setf( ios::scientific, ios::floatfield);
+			//out.precision(7);
+			out.unsetf(ios_base::floatfield);
 
 			//out << " m = " << ref.real() << " + " << (-1.0 *ref.imag()) << " i" << endl;
 			out << title;
@@ -274,7 +275,8 @@ namespace rtmath {
 			for (size_t i=0; i< dielColumns::NUMCOLS; ++i)
 			{
 				if (size_t loc = colMaps[i] )
-					rmap[loc-1] = i;
+					if (loc) // Not all columns may be displayed
+						rmap[loc-1] = i;
 			}
 			// The reverse map lists the columns in order, and is padded with zeros 
 			// at the end.
