@@ -239,6 +239,9 @@ namespace rtmath {
 			return true;
 		}
 
+		/** \todo Correct writeout to NEVER use scientific notation. For combinations of large and 
+		 * small values, it seems that the standard stream formatters cannot do this.
+		 **/
 		void dielTab::write(std::ostream &out) const
 		{
 			using namespace std;
@@ -327,6 +330,7 @@ namespace rtmath {
 					if (i == dielColumns::E_IM) out << abs(e.imag());
 				}
 			}
+			out << "\n";
 		}
 
 		void dielTab::write(const std::string &filename) const

@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 		{
 			// Load the shape file
 			cerr << "Processing " << *it << endl;
-			rtmath::ddscat::shapefile shp(*it);
+			rtmath::ddscat::shapefile::shapefile shp(*it);
 			HASH_t hash = shp.hash();
 			path pHashName(boost::lexical_cast<std::string>(hash.lower));
 			cerr << "\tHash is " << pHashName << endl;

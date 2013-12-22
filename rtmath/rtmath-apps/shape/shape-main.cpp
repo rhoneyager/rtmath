@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 		{
 			// Load the shape file
 			cerr << "Processing " << *it << endl;
-			rtmath::ddscat::shapefile shp(*it);
+			rtmath::ddscat::shapefile::shapefile shp(*it);
 
 			cerr << "\tCalculating baseline statistics" << endl;
 			rtmath::ddscat::shapeFileStats sstats(shp);

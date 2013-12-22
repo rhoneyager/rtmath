@@ -95,7 +95,7 @@ namespace rtmath {
 			std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
 
 			/// The shape
-			boost::shared_ptr<shapefile> _shp;
+			boost::shared_ptr<shapefile::shapefile> _shp;
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		protected:
 			shapeFileStatsBase();
@@ -110,8 +110,8 @@ namespace rtmath {
 		{
 		public:
 			shapeFileStats();
-			shapeFileStats(const shapefile &shp);
-			shapeFileStats(const boost::shared_ptr<const shapefile> &shp);
+			shapeFileStats(const shapefile::shapefile &shp);
+			shapeFileStats(const boost::shared_ptr<const shapefile::shapefile> &shp);
 			/// Should the stats file be recalculated in the newest version?
 			bool needsUpgrade() const;
 			/// Recalculate all stats, using the newest version of the code
@@ -136,7 +136,7 @@ namespace rtmath {
 			///
 			/// \note Reads and writes to hash database for precomputed stats
 			static boost::shared_ptr<shapeFileStats> genStats(
-				const boost::shared_ptr<shapefile> &shp);
+				const boost::shared_ptr<shapefile::shapefile> &shp);
 
 			/**
 			 * \brief Adds shapestats options to a program

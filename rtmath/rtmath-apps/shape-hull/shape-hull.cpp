@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 			throw rtmath::debug::xPathExistsWrongType(input.c_str());
 
 		// Load the shape file
-		rtmath::ddscat::shapefile shp(input);
+		rtmath::ddscat::shapefile::shapefile shp(input);
 		rtmath::ddscat::convexHull hull(shp.latticePtsStd);
 		if (!convex)
 		{

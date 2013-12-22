@@ -23,7 +23,10 @@ namespace rtmath {
 
 		class ddOutputSingle;
 		class ddOutputGenerator;
-		class shapefile;
+		namespace shapefile
+		{
+			class shapefile;
+		}
 		class shapeFileStats;
 		class ddPar;
 		class ddOutputGeneratorConnector;
@@ -80,7 +83,7 @@ namespace rtmath {
 			/// Hash of shape file contents (an identifier)
 			HASH_t shapeHash;
 			/// The shape file (may load fully later)
-			mutable boost::shared_ptr<shapefile> shape;
+			mutable boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape;
 			/// Shape file statistics (may load fully later)
 			mutable boost::shared_ptr<shapeFileStats> stats;
 			/// Load the full shape file and stats
@@ -130,7 +133,7 @@ namespace rtmath {
 			static boost::shared_ptr<ddOutput> generate(
 				boost::shared_ptr<ddOutputSingle> avg,
 				boost::shared_ptr<ddPar> par,
-				boost::shared_ptr<shapefile> shape);
+				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape);
 			
 
 			/// Generate ddOutput from a ddscat output directory

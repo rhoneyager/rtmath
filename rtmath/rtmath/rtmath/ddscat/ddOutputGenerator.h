@@ -21,7 +21,9 @@ namespace rtmath {
 		class ddOutputSingle;
 		class ddOutput;
 		class ddOutputGenerator;
-		class shapefile;
+		namespace shapefile {
+			class shapefile;
+		}
 		class shapeFileStats;
 
 

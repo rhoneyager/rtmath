@@ -46,8 +46,8 @@ namespace {
 	std::vector<boost::filesystem::path> searchPaths;
 	//bool autoLoadDLLs = true;
 
-	typedef std::map<std::string, rtmath::registry::classHookMapType > hookRegistryType;
-	hookRegistryType hookRegistry;
+	//typedef std::map<std::string, rtmath::registry::classHookMapType > hookRegistryType;
+	//hookRegistryType hookRegistry;
 
 	void loadSearchPaths()
 	{
@@ -274,7 +274,7 @@ namespace rtmath
 				out << p << "\n";
 			out << std::endl;
 
-			out << "\nHook Table:\n-----------------\nClass\tTopic\tPointer";
+			/*out << "\nHook Table:\n-----------------\nClass\tTopic\tPointer";
 			for (const auto hm : hookRegistry)
 			{
 				out << hm.first << "\n";
@@ -283,6 +283,7 @@ namespace rtmath
 					out << "\t" << h.first << "\t" << h.second << "\n";
 				}
 			}
+			*/
 
 			out << std::endl;
 		}
@@ -297,6 +298,7 @@ namespace rtmath
 			out << std::endl;
 		}
 
+		/*
 		void queryClass(const char* classname, classHookMapType& result)
 		{
 			result.clear();
@@ -306,6 +308,7 @@ namespace rtmath
 				result = hookRegistry.at(shc);
 			}
 		}
+		*/
 	}
 }
 
@@ -319,7 +322,7 @@ extern "C"
 		return true;
 	}
 
-	bool rtmath_registry_register_hook(const char* hookedClass, const char* topic) { return false; }
+	//bool rtmath_registry_register_hook(const char* hookedClass, const char* topic) { return false; }
 	/*
 	bool rtmath_registry_register_hook(const char* hookedClass, const char* topic, void* func)
 	{

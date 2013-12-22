@@ -54,15 +54,15 @@ namespace rtmath {
 			return false;
 		}
 
-		shapeFileStats::shapeFileStats(const shapefile &shp)
+		shapeFileStats::shapeFileStats(const shapefile::shapefile &shp)
 		{
-			_shp = boost::shared_ptr<shapefile>(new shapefile(shp));
+			_shp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(shp));
 			calcStatsBase();
 		}
 
-		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile> &shp)
+		shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile::shapefile> &shp)
 		{
-			_shp = boost::shared_ptr<shapefile>(new shapefile(*shp));
+			_shp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(*shp));
 			calcStatsBase();
 		}
 
@@ -275,7 +275,7 @@ namespace rtmath {
 			// Return false if shape CANNOT be loaded
 			if (_shp->latticePts.rows() ) return true;
 
-			boost::shared_ptr<shapefile> nshp;
+			boost::shared_ptr<shapefile::shapefile> nshp;
 
 			// Reload initial stats file by 1) hash or 2) filename
 			using boost::filesystem::path;
@@ -285,13 +285,13 @@ namespace rtmath {
 			extensions.push_back(".st");
 			path pHashShape = findHash(pHashShapes, _shp->hash(), extensions);
 			if (!pHashShape.empty())
-				nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
+				nshp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(pHashShape.string()));
 			//path pHashShape = pHashShapes / boost::lexical_cast<std::string>(_shp->hash().lower);
 			//if (Ryan_Serialization::detect_compressed(pHashShape.string()))
 			//	nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
 			//else if (boost::filesystem::exists(boost::filesystem::path(_shp->filename)))
 			else if (Ryan_Serialization::detect_compressed(_shp->filename))
-				nshp = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
+				nshp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
 			else
 				return false;
 			_shp = nshp;
@@ -330,7 +330,7 @@ namespace rtmath {
 
 			// Local file does not exist. Does it exist in the hash database?
 			// Generate basic stats for a file.
-			rtmath::ddscat::shapefile shp(shpfile);
+			rtmath::ddscat::shapefile::shapefile shp(shpfile);
 
 			// Check the hash to see if it's already been done before
 			// Also see if the statsfile exists
@@ -378,7 +378,7 @@ namespace rtmath {
 		}
 
 		boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
-			const boost::shared_ptr<shapefile> &shp)
+			const boost::shared_ptr<shapefile::shapefile> &shp)
 		{
 			using boost::filesystem::path;
 			using boost::filesystem::exists;

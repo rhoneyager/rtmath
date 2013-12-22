@@ -175,7 +175,7 @@ int main(int argc, char** argv)
 					// If a shape file, read shape and extract dipole number
 					size_t nDipoles = 0;
 					if (dataset::isShape(pfile)) {
-						rtmath::ddscat::shapefile s;
+						rtmath::ddscat::shapefile::shapefile s;
 						s.readHeaderOnly(pfile.string());
 						nDipoles = s.numPoints;
 					}
@@ -278,7 +278,7 @@ int main(int argc, char** argv)
 			vector<size_t> dims(3,0);
 			if (calcDipoleExtent)
 			{
-				rtmath::ddscat::shapefile s;
+				rtmath::ddscat::shapefile::shapefile s;
 				s.read(d.second.shapefile.string());
 				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 3);
 				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 3);

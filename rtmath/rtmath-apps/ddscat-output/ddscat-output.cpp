@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 			// Will fail if the files are not the correct type
 			boost::shared_ptr<ddOutputSingle> avg(new ddOutputSingle(vsInput[0]));
 			boost::shared_ptr<ddPar> par(new ddPar(vsInput[1]));
-			boost::shared_ptr<shapefile> shp(new shapefile(vsInput[2]));
+			boost::shared_ptr<shapefile::shapefile> shp(new shapefile::shapefile(vsInput[2]));
 			ddOut = ddOutput::generate(avg, par, shp);
 			path pavg(vsInput[0]), ppar(vsInput[1]), pshp(vsInput[2]);
 			path pbavg = absolute(pavg);

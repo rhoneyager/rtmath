@@ -12,6 +12,7 @@
 #include "../Serialization/serialization_macros.h"
 #include "../Serialization/eigen_serialization.h"
 #include "../hash.h"
+#include "../registry.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -24,167 +25,194 @@
 namespace rtmath {
 	namespace ddscat {
 
-		struct convolutionCellInfo;
+		class shapeFileStatsBase;
+		class shapeFileStats;
+		class convexHull;
 
-		class DLEXPORT_rtmath_ddscat shapefile
-		{
-		public:
-			shapefile(const std::string &filename);
-			shapefile(std::istream &in);
-			~shapefile();
-			/// Write ddscat-formatted shapefile to the given output stream.
-			void print(std::ostream &out) const;
-			/** \brief Read in a shapefile (compression allowed)
-			 *
-			 * If a standard (uncompressed) file cannot be found, also search for
-			 * a compressed file.
-			 **/
-			void read(const std::string &filename = "", bool headerOnly = false);
-			/// Read shape dipoles from a memory buffer
-			void readContents(const char *in, size_t headerEnd);
-			/// Read in ONLY a shape header (for speed with dipole matching)
-			void readHeaderOnly(const std::string &filename);
-			/// Write a shapefile (compression allowed)
-			/// \param autoCompress determines whether any output should be 
-			/// automatically compressed. Specifying a compressed output filename 
-			/// always forces compression.
-			void write(const std::string &fname, bool autoCompress = false,
-				const std::string &type = "") const;
-			/// Write shape to the hash directory (convenience function)
-			void writeToHash() const;
-			/// Write a shapefile to a stream (no compression)
-			void write(std::ostream &out) const;
-			/// \brief Export a shapefile to vtk output
-			/// \todo Move to plugin
-			void writeVTK(const std::string &fname) const;
-			/// \brief Export a shapefile to bov output
-			/// \todo Move to plugin
-			void writeBOV(const std::string &prefix) const;
+		/// Contains everything to do with low-level manipulation of shape files.
+		namespace shapefile {
+			struct convolutionCellInfo;
 
-			/** \brief Function type definition for a function that determines a decimated cell
-			* refractive index.
-			**/
-			typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
+			// These classes act as template types for specialization of registry functions.
+			// The typedefs match the registry function signatures.
 
-			/** \brief Decimate a shapefile
-			* This version of the function examines the number of dipoles in a given dx*dy*dz
-			* unit paralelipipet, and then constructs a smaller shapefile object with the matching parameters.
-			*
-			* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
-			**/
-			boost::shared_ptr<shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
-				decimationFunction dFunc = shapefile::decimateDielCount) const;
+			/// IO handler structure that gets registered for shapefile read / write operations
+			struct shapefile_IO_class_registry
+			{
+				typedef std::function<bool(const char*)> io_matcher_type;
+				typedef std::function<void(const char*)> io_processor_type;
+				/// Determines if a file can be read / written with this registration
+				io_matcher_type io_matches;
+				/// Handler function for the actual IO operation
+				io_processor_type io_processor;
+			};
 
-			/// \brief Convenience function to decimate using the same degree in each dimension
-			inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
-			
-			/** \brief Upscale a shapefile
-			* This function takes each dipole and multiplies it into a rectangular cell of a given size.
-			*
-			* All refractive indices are the same as the initial dipole.
-			**/
-			boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
-			/// \brief Convenience function to upscale using the same degree in each dimension
-			inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const {return enhance(d, d, d);}
+			class shapefile_IO_input_registry {};
+			class shapefile_IO_output_registry {};
 
-			/// \brief Decimation dielectric function that assigns a dielectric
-			/// that corresponds to the number of filled dipoles.
-			static size_t decimateDielCount(const convolutionCellInfo&);
+			/// Class for reading / writing shapefiles. May be used in statistical calculations.
+			class DLEXPORT_rtmath_ddscat shapefile : 
+				virtual public rtmath::registry::usesDLLregistry<shapefile_IO_input_registry, shapefile_IO_class_registry >,
+				virtual public rtmath::registry::usesDLLregistry<shapefile_IO_output_registry, shapefile_IO_class_registry >
+			{
+			public:
+				shapefile(const std::string &filename);
+				shapefile(std::istream &in);
+				~shapefile();
+				/// Write ddscat-formatted shapefile to the given output stream.
+				void print(std::ostream &out) const;
+				/** \brief Read in a shapefile (compression allowed)
+				 *
+				 * If a standard (uncompressed) file cannot be found, also search for
+				 * a compressed file.
+				 **/
+				void read(const std::string &filename = "", bool headerOnly = false);
+				/// Read shape dipoles from a memory buffer
+				void readContents(const char *in, size_t headerEnd);
+				/// Read in ONLY a shape header (for speed with dipole matching)
+				void readHeaderOnly(const std::string &filename);
+				/// Write a shapefile (compression allowed)
+				/// \param autoCompress determines whether any output should be 
+				/// automatically compressed. Specifying a compressed output filename 
+				/// always forces compression.
+				void write(const std::string &fname, bool autoCompress = false,
+					const std::string &type = "") const;
+				/// Write shape to the hash directory (convenience function)
+				void writeToHash() const;
+				/// Write a shapefile to a stream (no compression)
+				void write(std::ostream &out) const;
+				/// \brief Export a shapefile to vtk output
+				/// \todo Move to plugin
+				void writeVTK(const std::string &fname) const;
+				/// \brief Export a shapefile to bov output
+				/// \todo Move to plugin
+				void writeBOV(const std::string &prefix) const;
 
-			/// \brief Decimation dielectric function that fills a dielectric 
-			/// based on a threshold value (high-pass, inclusive).
-			static size_t decimateThreshold(const convolutionCellInfo&, size_t threshold);
+				/** \brief Function type definition for a function that determines a decimated cell
+				* refractive index.
+				**/
+				typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
 
-			/** \brief Get filled cells within a certain distance
-			*
-			* \param rsq is the radius squared for the search
-			* \param out is the output vector that holds the cell indices
-			* \param x,y,s are the coordinates of the search cell
-			**/
-			//void getNeighbors(float x, float y, float z, float rsq, std::vector<size_t>& out) const;
+				/** \brief Decimate a shapefile
+				* This version of the function examines the number of dipoles in a given dx*dy*dz
+				* unit paralelipipet, and then constructs a smaller shapefile object with the matching parameters.
+				*
+				* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
+				**/
+				boost::shared_ptr<shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
+					decimationFunction dFunc = shapefile::decimateDielCount) const;
 
-			/** \brief Get filled cells within a certain distance
-			*
-			* \param rsq is the radius squared for the search
-			* \param out is the output vector that holds the cell indices
-			* \param index is the cell lattice point index
-			**/
-			//void getNeighbors(size_t index, float rsq, std::vector<size_t>& out) const;
+				/// \brief Convenience function to decimate using the same degree in each dimension
+				inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
+
+				/** \brief Upscale a shapefile
+				* This function takes each dipole and multiplies it into a rectangular cell of a given size.
+				*
+				* All refractive indices are the same as the initial dipole.
+				**/
+				boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
+				/// \brief Convenience function to upscale using the same degree in each dimension
+				inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
+
+				/// \brief Decimation dielectric function that assigns a dielectric
+				/// that corresponds to the number of filled dipoles.
+				static size_t decimateDielCount(const convolutionCellInfo&);
+
+				/// \brief Decimation dielectric function that fills a dielectric 
+				/// based on a threshold value (high-pass, inclusive).
+				static size_t decimateThreshold(const convolutionCellInfo&, size_t threshold);
+
+				/** \brief Get filled cells within a certain distance
+				*
+				* \param rsq is the radius squared for the search
+				* \param out is the output vector that holds the cell indices
+				* \param x,y,s are the coordinates of the search cell
+				**/
+				//void getNeighbors(float x, float y, float z, float rsq, std::vector<size_t>& out) const;
+
+				/** \brief Get filled cells within a certain distance
+				*
+				* \param rsq is the radius squared for the search
+				* \param out is the output vector that holds the cell indices
+				* \param index is the cell lattice point index
+				**/
+				//void getNeighbors(size_t index, float rsq, std::vector<size_t>& out) const;
 
 
-			shapefile();
-		private:
-			void _init();
-			void readHeader(const char *in, size_t &headerEnd);
-			/// Resizes arrays to hold the desired number of points
-			void resize(size_t num);
-			/// Recalculate stats after a manipulation operation
-			void recalcStats();
-			mutable HASH_t _localhash;
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
-		public:
-			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-			std::string filename;
-			//std::vector<Eigen::Vector3f> 
-			Eigen::Matrix<float, Eigen::Dynamic, 3>
-				latticePts, // Untransformed points
-				latticePtsStd, // Points with coord translation based on file properties
-				latticePtsNorm, // Points with coord transform to mean center of shape
-				latticePtsRi; // Dielectric information
-			size_t numPoints;
-			std::set<size_t> Dielectrics;
-			std::string desc;
-			/// Calculates the hash of the given shapefile. Used as a reference when 
-			/// serializing the shape. The hash table allows for smaller stats files.
-			HASH_t hash() const;
-			/// Force a hash to be recalculated
-			HASH_t rehash() const;
-			// Specified in shape.dat
-			// a1 and a2 are the INITIAL vectors (before rotation!)
-			// usually a1 = x_lf, a2 = y_lf
-			// choice of a1 and a2 can reorient the shape (useful for KE, PE constraints)
-			Eigen::Array3f a1, a2, a3, d, x0, xd;
+				shapefile();
+			private:
+				void _init();
+				void readHeader(const char *in, size_t &headerEnd);
+				/// Resizes arrays to hold the desired number of points
+				void resize(size_t num);
+				/// Recalculate stats after a manipulation operation
+				void recalcStats();
+				mutable HASH_t _localhash;
+				friend class ::boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version);
+			public:
+				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+					std::string filename;
+				//std::vector<Eigen::Vector3f> 
+				Eigen::Matrix<float, Eigen::Dynamic, 3>
+					latticePts, // Untransformed points
+					latticePtsStd, // Points with coord translation based on file properties
+					latticePtsNorm, // Points with coord transform to mean center of shape
+					latticePtsRi; // Dielectric information
+				size_t numPoints;
+				std::set<size_t> Dielectrics;
+				std::string desc;
+				/// Calculates the hash of the given shapefile. Used as a reference when 
+				/// serializing the shape. The hash table allows for smaller stats files.
+				HASH_t hash() const;
+				/// Force a hash to be recalculated
+				HASH_t rehash() const;
+				// Specified in shape.dat
+				// a1 and a2 are the INITIAL vectors (before rotation!)
+				// usually a1 = x_lf, a2 = y_lf
+				// choice of a1 and a2 can reorient the shape (useful for KE, PE constraints)
+				Eigen::Array3f a1, a2, a3, d, x0, xd;
 
-			// These are RAW values (no mean or d scaling)
-			Eigen::Array3f mins, maxs, means;
+				// These are RAW values (no mean or d scaling)
+				Eigen::Array3f mins, maxs, means;
 
-			//boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
-			
-			friend class shapeFileStatsBase;
-			friend class shapeFileStats;
-			friend class convexHull;
-			
-			/// Convenience functions to load shape based on hash
-			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
-			static boost::shared_ptr<shapefile> loadHash(
-				const HASH_t &hash);
-			/// Convenience functions to load shape based on hash
-			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
-			static boost::shared_ptr<shapefile> loadHash(
-				const std::string &hash);
-		};
+				//boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
 
-		/// Cell information structure for convolution functions
-		struct convolutionCellInfo
-		{
-			convolutionCellInfo();
-			float x, y, z;
-			size_t initDiel;
-			size_t sx, sy, sz;
-			size_t index;
-			size_t numFilled, numTotal;
-		};
+				friend class ::rtmath::ddscat::shapeFileStatsBase;
+				friend class ::rtmath::ddscat::shapeFileStats;
+				friend class ::rtmath::ddscat::convexHull;
+
+				/// Convenience functions to load shape based on hash
+				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
+				static boost::shared_ptr<shapefile> loadHash(
+					const HASH_t &hash);
+				/// Convenience functions to load shape based on hash
+				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
+				static boost::shared_ptr<shapefile> loadHash(
+					const std::string &hash);
+			};
+
+			/// Cell information structure for convolution functions
+			struct convolutionCellInfo
+			{
+				convolutionCellInfo();
+				float x, y, z;
+				size_t initDiel;
+				size_t sx, sy, sz;
+				size_t index;
+				size_t numFilled, numTotal;
+			};
+		}
 	}
 }
 
-std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile &ob);
+std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile::shapefile &ob);
 //std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
 
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile);
-BOOST_CLASS_VERSION(rtmath::ddscat::shapefile, 1);
+BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile::shapefile);
+BOOST_CLASS_VERSION(rtmath::ddscat::shapefile::shapefile, 1);
 
 

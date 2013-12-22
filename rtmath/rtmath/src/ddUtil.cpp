@@ -33,7 +33,7 @@ namespace rtmath
 				path pPar, pShp;
 				findDDFiles(pBase,pPar,pShp);
 
-				shapefile shp(pShp.string());
+				rtmath::ddscat::shapefile::shapefile shp(pShp.string());
 				HASH_t hash = shp.hash();
 
 				string ddver = fddver;

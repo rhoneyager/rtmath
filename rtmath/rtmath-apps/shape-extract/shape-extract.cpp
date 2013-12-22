@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 			exit(1);
 		};
 
-		using rtmath::ddscat::shapefile;
+		using rtmath::ddscat::shapefile::shapefile;
 
 		if (vm.count("help") || argc == 1) doHelp("");
 		if (!vm.count("input")) doHelp("Need to specify an input file.");

@@ -2,9 +2,12 @@
 #pragma once
 #include "defs.h"
 
-#include <iostream>
-#include <map>
+#include <functional>
+//#include <iostream>
+//#include <map>
+//#include <set>
 #include <string>
+#include <vector>
 
 namespace boost {
 	namespace program_options {
@@ -61,13 +64,34 @@ namespace rtmath
 		/// List DLL search paths
 		void DLEXPORT_rtmath_core printDLLsearchPaths(std::ostream &out = std::cerr);
 
-		/// Find a DLL
+		// Find a DLL
 
 
-		typedef std::multimap<std::string, void*> classHookMapType;
-		/// Query registry for hooks matching the specified class
-		void DLEXPORT_rtmath_core queryClass(const char* classname,
-			classHookMapType& result);
+		// The type used to store all hooks for a class. string is topic.
+		//typedef std::multimap<std::string, void*> classHookMapType;
+		// For a given topic, a set of hooks (types vary by implementation).
+		//typedef std::set<void*> topicHookSetType;
+		// Query registry for hooks matching the specified class
+		//void DLEXPORT_rtmath_core queryClass(const char* classname,
+		//	classHookMapType& result);
+		// Query registry for hooks matching the specified class and next selector
+		//void DLEXPORT_rtmath_core queryClass(const char* classname,
+		//	const char* topicID, topicHookSetType& result);
+
+		template<class registryName, typename signature>
+		class usesDLLregistry
+		{
+		public:
+			typedef std::vector<const signature> hookStorageType;
+		protected:
+			usesDLLregistry() {}
+			void getHooks(hookStorageType& s) const { s = hooks; }
+		private:
+			hookStorageType hooks;
+		public:
+			virtual ~usesDLLregistry() {}
+			void registerHook(const signature &f) { hooks.push_back(f); }
+		};
 	}
 }
 
@@ -76,8 +100,8 @@ extern "C"
 	/// Provides interface for DLLs to register basic information about themselves
 	bool DLEXPORT_rtmath_core rtmath_registry_register_dll(const rtmath::registry::DLLpreamble&);
 
-	/// Provides interface for DLLs to register a function hook
-	bool DLEXPORT_rtmath_core rtmath_registry_register_hook(const char* uuid, const char* topic);
+	// Provides interface for DLLs to register a function hook
+	//bool DLEXPORT_rtmath_core rtmath_registry_register_hook(const char* uuid, const char* topic);
 
 	
 }

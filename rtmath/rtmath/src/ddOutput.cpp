@@ -210,7 +210,8 @@ namespace rtmath {
 					if (noLoadRots) return;
 					// Note: the hashed object is the fundamental thing here that needs to be loaded
 					// The other stuff is only loaded for processing, and is not serialized directly.
-					res->shape = boost::shared_ptr<shapefile>(new shapefile(p.string()));
+					res->shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
+						(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
 					// Get the hash and load the stats
 					res->shapeHash = res->shape->hash();
 					//res->stats = shapeFileStats::genStats(res->shape);
@@ -359,7 +360,7 @@ namespace rtmath {
 		boost::shared_ptr<ddOutput> ddOutput::generate(
 			boost::shared_ptr<ddOutputSingle> avg,
 			boost::shared_ptr<ddPar> par, 
-			boost::shared_ptr<shapefile> shape)
+			boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape)
 		{
 			boost::shared_ptr<ddOutput> res(new ddOutput());
 			using namespace boost::filesystem;

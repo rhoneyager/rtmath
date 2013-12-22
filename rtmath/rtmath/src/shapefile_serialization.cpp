@@ -17,9 +17,12 @@ namespace rtmath
 {
 	namespace ddscat
 	{
-		template<class Archive>
-		void shapefile::serialize(Archive &ar, const unsigned int version)
+		namespace shapefile
 		{
+
+			template<class Archive>
+			void shapefile::serialize(Archive &ar, const unsigned int version)
+			{
 				ar & boost::serialization::make_nvp("Filename", filename);
 				if (version) // Hash the shapefile for searching
 					ar & boost::serialization::make_nvp("Hash", _localhash);
@@ -32,25 +35,26 @@ namespace rtmath
 				ar & boost::serialization::make_nvp("d", d);
 				ar & boost::serialization::make_nvp("x0", x0);
 				ar & boost::serialization::make_nvp("xd", xd);
-/*
-				if (version)
-				{
-					// Write out the points. Eigen's serialization routines should work well here.
-					ar & boost::serialization::make_nvp("latticePts", latticePts);
-					ar & boost::serialization::make_nvp("latticePtsStd", latticePtsStd);
-					ar & boost::serialization::make_nvp("latticePtsNorm", latticePtsNorm);
-					ar & boost::serialization::make_nvp("latticePtsRi", latticePtsRi);
-					
-					ar & boost::serialization::make_nvp("mins", mins);
-					ar & boost::serialization::make_nvp("maxs", maxs);
-					ar & boost::serialization::make_nvp("means", means);
-				}
-*/
-		}
+				/*
+								if (version)
+								{
+								// Write out the points. Eigen's serialization routines should work well here.
+								ar & boost::serialization::make_nvp("latticePts", latticePts);
+								ar & boost::serialization::make_nvp("latticePtsStd", latticePtsStd);
+								ar & boost::serialization::make_nvp("latticePtsNorm", latticePtsNorm);
+								ar & boost::serialization::make_nvp("latticePtsRi", latticePtsRi);
 
-		EXPORTINTERNAL(rtmath::ddscat::shapefile::serialize);
+								ar & boost::serialization::make_nvp("mins", mins);
+								ar & boost::serialization::make_nvp("maxs", maxs);
+								ar & boost::serialization::make_nvp("means", means);
+								}
+								*/
+			}
+
+			EXPORTINTERNAL(rtmath::ddscat::shapefile::shapefile::serialize);
+		}
 	}
 }
 
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile);
+BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::shapefile::shapefile);
 

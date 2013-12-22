@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 			cerr << "Processing " << hash << endl;
 			path pShapeHashed = findHash(pShapeDir, hash);
 
-			rtmath::ddscat::shapefile shp(pShapeHashed.string());
+			rtmath::ddscat::shapefile::shapefile shp(pShapeHashed.string());
 			//HASH_t hash = shp.hash();
 
 			path pStatsHashed = storeHash(pStatsDir,hash);
