@@ -14,6 +14,8 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <Ryan_Debug/debug.h>
+#include "../rtmath/config.h"
+#include "../rtmath/splitSet.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/debug_mem.h"
 #include "../rtmath/error/error.h"
@@ -39,19 +41,129 @@ typedef void* dlHandleType;
 /// DLL information tables
 namespace {
 	class DLLhandle;
+	/// Lists the paths of all loaded dlls
 	std::set<std::string> DLLpathsLoaded;
+	/// DLL information structure
 	std::vector<rtmath::registry::DLLpreamble> preambles;
+	/// Container for the handles of all loaded dlls
 	std::vector<boost::shared_ptr<DLLhandle> > handles;
 
-	std::vector<boost::filesystem::path> searchPaths;
+	/// Recursive and single-level DLL loading paths
+	std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
 	//bool autoLoadDLLs = true;
 
-	//typedef std::map<std::string, rtmath::registry::classHookMapType > hookRegistryType;
-	//hookRegistryType hookRegistry;
-
-	void loadSearchPaths()
+	/// Checks if a file is a dll file
+	bool isDynamic(const boost::filesystem::path &f)
 	{
-		throw rtmath::debug::xUnimplementedFunction();
+		using namespace boost::filesystem;
+		boost::filesystem::path p = f;
+		while (p.has_extension())
+		{
+			path ext = p.extension();
+			if (ext.string() == ".so" || ext.string() == ".dll"
+				|| ext.string() == ".dylib") return true;
+			p.replace_extension();
+		}
+		return false;
+	};
+
+	/// Checks if a dll file matches the build settings of the rtmath library, by file path
+	bool correctVersionByName(const std::string &slower)
+	{
+		using namespace std;
+		// The DLL case probably sould never occur.
+#ifdef _DLL
+		if (slower.find("static") != string::npos) return false;
+#else
+		if (slower.find("dynamic") != string::npos) return false;
+#endif
+		// Debug vs release dlls
+#ifdef _DEBUG
+		if (slower.find("release") != string::npos) return false;
+#else
+		if (slower.find("debug") != string::npos) return false;
+#endif
+		/// Check for x86 vs x64
+#if __amd64 || _M_X64
+		if (slower.find("x86") != string::npos) return false;
+#else
+		if (slower.find("x64") != string::npos) return false;
+#endif
+		/// \todo Check against windows system crt vs version-specific one
+		/// \todo Figure out how to get crt lib name from loaded dll
+		return true;
+	}
+
+	/**
+	 * \brief Determines the search paths for dlls in the rtmath.conf file and in environment variables
+	 *
+	**/
+	void constructSearchPaths(bool use_rtmath_conf = true, bool use_environment = true)
+	{
+		using std::vector;
+		using std::set;
+		using std::string;
+
+		// Checking rtmath.conf
+		if (use_rtmath_conf)
+		{
+			auto rtconf = rtmath::config::loadRtconfRoot();
+			string srecursivePaths, sonePaths;
+			rtconf->getVal("General/Plugins/Recursive", srecursivePaths);
+			rtconf->getVal("General/Plugins/OneLevel", sonePaths);
+			// Split loading paths based on semicolons and commas. Do not trim spaces.
+			set<string> CrecursivePaths, ConePaths;
+			rtmath::config::splitSet(srecursivePaths, CrecursivePaths);
+			rtmath::config::splitSet(sonePaths, ConePaths);
+			for (auto &p : CrecursivePaths)
+				searchPathsRecursive.emplace(boost::filesystem::path(p));
+			for (auto &p : ConePaths)
+				searchPathsOne.emplace(boost::filesystem::path(p));
+		}
+
+		// Checking environment variables
+		if (use_environment)
+		{
+			using namespace Ryan_Debug;
+			boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
+
+			size_t sEnv = 0;
+			const char* cenv = getEnviron(info.get(), sEnv);
+			std::string env(cenv, sEnv);
+
+			//Ryan_Debug::processInfo info = Ryan_Debug::getInfo(Ryan_Debug::getPID());
+			std::map<std::string, std::string> mEnv;
+			rtmath::config::splitNullMap(env, mEnv);
+			//std::vector<std::string> mCands;
+			auto searchFunc = [](const std::pair<std::string, std::string> &pred, const std::string &mKey)
+			{
+				std::string key = pred.first;
+				std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+				if (key == mKey) return true;
+				return false;
+			};
+			auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
+				std::bind(searchFunc,std::placeholders::_2,"rtmath_dlls_recursive"));
+			if (it != mEnv.cend())
+			{
+				typedef boost::tokenizer<boost::char_separator<char> >
+					tokenizer;
+				boost::char_separator<char> sep(";");
+
+				std::string ssubst;
+				tokenizer tcom(it->second, sep);
+				for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+				{
+					using namespace boost::filesystem;
+					path testEnv(it->second);
+					if (exists(testEnv))
+					{
+						filename = it->second;
+						return;
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -92,49 +204,13 @@ namespace {
 					if (!is_regular_file(p)) continue;
 					// Convenient function to recursively check extensions to see if one is so or dll.
 					// Used because of versioning.
-					auto isDynamic = [](const boost::filesystem::path &f) ->bool
-					{
-						boost::filesystem::path p = f;
-						while (p.has_extension())
-						{
-							path ext = p.extension();
-							if (ext.string() == ".so" || ext.string() == ".dll"
-								|| ext.string() == ".dylib") return true;
-							p.replace_extension();
-						}
-						return false;
-					};
+					
 					if (isDynamic(p))
 					{
 						// Check to see if build type is present in the path
 						std::string slower = p.string();
 						// Convert to lower case and do matching from there
 						std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
-
-						auto correctVersionByName = [](const std::string &slower) ->bool
-						{
-							// The DLL case probably sould never occur.
-#ifdef _DLL
-							if (slower.find("static") != string::npos) return false;
-#else
-							if (slower.find("dynamic") != string::npos) return false;
-#endif
-							// Debug vs release dlls
-#ifdef _DEBUG
-							if (slower.find("release") != string::npos) return false;
-#else
-							if (slower.find("debug") != string::npos) return false;
-#endif
-							/// Check for x86 vs x64
-#if __amd64 || _M_X64
-							if (slower.find("x86") != string::npos) return false;
-#else
-							if (slower.find("x64") != string::npos) return false;
-#endif
-							/// \todo Check against windows system crt vs version-specific one
-							/// \todo Figure out how to get crt lib name from loaded dll
-							return true;
-						};
 
 						if (correctVersionByName(p.string()))
 							dlls.push_back(p.string());
@@ -237,6 +313,8 @@ namespace rtmath
 			//	("dll-no-default-locations", "Prevent non-command line dll locations from being read")
 				("print-dll-loaded", "Prints the table of loaded DLLs.")
 				("print-dll-search-paths", "Prints the search paths used when loading dlls.")
+				("rtmath-conf", po::value<std::vector<std::string> >(),
+				"Override location to rtmath.conf file.")
 				;
 		}
 
@@ -245,6 +323,9 @@ namespace rtmath
 		{
 			namespace po = boost::program_options;
 			using std::string;
+
+			if (vm.count("rtmath-conf"))
+				rtmath::config::loadRtconfRoot(vm["rtmath-conf"].as<string>());
 
 			//if (vm.count("dll-no-default-locations"))
 			//	autoLoadDLLs = false;

@@ -97,6 +97,7 @@ namespace rtmath {
 
 		void DLEXPORT_rtmath_core getConfigDefaultFile(std::string &filename);
 		std::shared_ptr<configsegment> DLEXPORT_rtmath_core getRtconfRoot();
+		/// Load the appropriate default rtmath configuration file (default may be overridden in command line, see registry.cpp)
 		std::shared_ptr<configsegment> DLEXPORT_rtmath_core loadRtconfRoot(const std::string &filename = "");
 		void DLEXPORT_rtmath_core setRtconfRoot(std::shared_ptr<configsegment> &root);
 

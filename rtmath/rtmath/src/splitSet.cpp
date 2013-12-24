@@ -264,7 +264,7 @@ namespace rtmath {
 			// Prepare tokenizer
 			typedef boost::tokenizer<boost::char_separator<char> >
 				tokenizer;
-			boost::char_separator<char> sep(",");
+			boost::char_separator<char> sep(",;");
 
 			std::string ssubst;
 
