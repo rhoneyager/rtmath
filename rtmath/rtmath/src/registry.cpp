@@ -54,6 +54,96 @@ namespace {
 		throw rtmath::debug::xUnimplementedFunction();
 	}
 
+	/**
+	 * \brief Locates all DLLs in the search path and loads them.
+	 *
+	 * The search path may be specified / manipulated from several locations:
+	 * - precompiled hints (from cmake)
+	 * - rtmath.conf
+	 * - the command line
+	 *
+	 * This takes all of the starting points in the initial search paths and recurses through the 
+	 * directories, selecting dll and so files for matching. The load routine is aware of the 
+	 * library build mode (Debug, Release, MinSizeRel, RelWithDebInfo). If one of these terms appears 
+	 * in the path (folder tree + filename) of a library, then the dll is only loaded if its 
+	 * build mode matches the library's mode. When the dll is actually loaded (other function), 
+	 * the build mode is reported by the DLL more directly and checked again.
+	 *
+	 * \see searchPaths
+	 * \see loadSearchPaths
+	 * \see rtmath::registry::process_static_options
+	**/
+	void searchDLLs(std::vector<std::string> &dlls)
+	{
+		using namespace boost::filesystem;
+		using namespace std;
+		for (const auto &sbase : searchPaths)
+		{
+			path base(sbase);
+			base = rtmath::debug::expandSymlink(base);
+			if (is_regular_file(base)) dlls.push_back(base.string());
+			else if (is_directory(base))
+			{
+				vector<path> recur;
+				copy(recursive_directory_iterator(base,symlink_option::recurse),
+					recursive_directory_iterator(), back_inserter(recur));
+				for (const auto &p : recur)
+				{
+					if (!is_regular_file(p)) continue;
+					// Convenient function to recursively check extensions to see if one is so or dll.
+					// Used because of versioning.
+					auto isDynamic = [](const boost::filesystem::path &f) ->bool
+					{
+						boost::filesystem::path p = f;
+						while (p.has_extension())
+						{
+							path ext = p.extension();
+							if (ext.string() == ".so" || ext.string() == ".dll"
+								|| ext.string() == ".dylib") return true;
+							p.replace_extension();
+						}
+						return false;
+					};
+					if (isDynamic(p))
+					{
+						// Check to see if build type is present in the path
+						std::string slower = p.string();
+						// Convert to lower case and do matching from there
+						std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
+
+						auto correctVersionByName = [](const std::string &slower) ->bool
+						{
+							// The DLL case probably sould never occur.
+#ifdef _DLL
+							if (slower.find("static") != string::npos) return false;
+#else
+							if (slower.find("dynamic") != string::npos) return false;
+#endif
+							// Debug vs release dlls
+#ifdef _DEBUG
+							if (slower.find("release") != string::npos) return false;
+#else
+							if (slower.find("debug") != string::npos) return false;
+#endif
+							/// Check for x86 vs x64
+#if __amd64 || _M_X64
+							if (slower.find("x86") != string::npos) return false;
+#else
+							if (slower.find("x64") != string::npos) return false;
+#endif
+							/// \todo Check against windows system crt vs version-specific one
+							/// \todo Figure out how to get crt lib name from loaded dll
+							return true;
+						};
+
+						if (correctVersionByName(p.string()))
+							dlls.push_back(p.string());
+					}
+				}
+			}
+		}
+	}
+
 	/** \brief Class that loads the DLL in an os-independent manner.
 	*
 	* Construction is allocation.

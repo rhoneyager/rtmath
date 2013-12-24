@@ -28,8 +28,47 @@
 #include "../rtmath/error/error.h"
 
 namespace rtmath {
+	namespace registry {
+		
+		template <>
+		usesDLLregistry<rtmath::ddscat::shapefile::shapefile_IO_input_registry,
+			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hookStorageType
+			rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
+			rtmath::ddscat::shapefile::shapefile_IO_input_registry,
+			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hooks;
+
+		template <>
+		usesDLLregistry<rtmath::ddscat::shapefile::shapefile_IO_output_registry,
+			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hookStorageType
+			rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
+			rtmath::ddscat::shapefile::shapefile_IO_output_registry,
+			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hooks;
+
+	}
+
 	namespace ddscat {
 		namespace shapefile {
+
+			/*template <>
+			shapefile::usesDLLregistry<shapefile_IO_input_registry,
+				shapefile_IO_class_registry >::hookStorageType
+				shapefile::usesDLLregistry<shapefile_IO_input_registry,
+				shapefile_IO_class_registry >::hooks;
+			*/
+
+			//template<class registryName, typename signature>
+			/* template <>
+			rtmath::registry::usesDLLregistry<shapefile_IO_input_registry,
+				shapefile_IO_class_registry >::hookStorageType
+				shapefile::usesDLLregistry<shapefile_IO_input_registry,
+				shapefile_IO_class_registry >::hooks;
+			*/
+
+			//shapefile::usesDLLregistry<shapefile_IO_output_registry,
+			//	shapefile_IO_class_registry >::hookStorageType
+			//	shapefile::usesDLLregistry<shapefile_IO_output_registry,
+			//	shapefile_IO_class_registry >::hooks;
+
 
 			shapefile::shapefile()
 			{
@@ -624,7 +663,7 @@ namespace rtmath {
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					dllsaver(filename.c_str());
+					dllsaver(filename.c_str(), this);
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.

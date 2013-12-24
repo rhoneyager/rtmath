@@ -85,12 +85,12 @@ namespace rtmath
 			typedef std::vector<const signature> hookStorageType;
 		protected:
 			usesDLLregistry() {}
-			void getHooks(hookStorageType& s) const { s = hooks; }
+			static void getHooks(hookStorageType& s) { s = hooks; }
 		private:
-			hookStorageType hooks;
+			static hookStorageType hooks;
 		public:
 			virtual ~usesDLLregistry() {}
-			void registerHook(const signature &f) { hooks.push_back(f); }
+			static void registerHook(const signature &f) { hooks.push_back(f); }
 		};
 	}
 }

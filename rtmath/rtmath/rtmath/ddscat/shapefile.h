@@ -32,6 +32,7 @@ namespace rtmath {
 		/// Contains everything to do with low-level manipulation of shape files.
 		namespace shapefile {
 			struct convolutionCellInfo;
+			class shapefile;
 
 			// These classes act as template types for specialization of registry functions.
 			// The typedefs match the registry function signatures.
@@ -40,7 +41,7 @@ namespace rtmath {
 			struct shapefile_IO_class_registry
 			{
 				typedef std::function<bool(const char*)> io_matcher_type;
-				typedef std::function<void(const char*)> io_processor_type;
+				typedef std::function<void(const char*, const shapefile*)> io_processor_type;
 				/// Determines if a file can be read / written with this registration
 				io_matcher_type io_matches;
 				/// Handler function for the actual IO operation
