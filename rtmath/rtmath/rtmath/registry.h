@@ -2,6 +2,8 @@
 #pragma once
 #include "defs.h"
 
+#pragma warning( disable : 4661 ) // Exporting vector
+
 #include <functional>
 #include <iostream>
 //#include <map>

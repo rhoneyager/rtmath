@@ -82,6 +82,7 @@ namespace {
 		// Debug vs release dlls
 #ifdef _DEBUG
 		if (slower.find("release") != string::npos) return false;
+		if (slower.find("minsizerel") != string::npos) return false;
 #else
 		if (slower.find("debug") != string::npos) return false;
 #endif

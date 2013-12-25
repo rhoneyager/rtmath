@@ -17,6 +17,11 @@
 void dllEntry();
 rtmath_plugin_init(dllEntry);
 
+bool match_bov_shapefile(const char* bov);
+void write_bov_shapefile(const char* bov, 
+	const rtmath::ddscat::shapefile::shapefile *shp);
+
+
 void dllEntry()
 {
 	static const rtmath::registry::DLLpreamble id(
@@ -25,16 +30,35 @@ void dllEntry()
 		"read and write bov files.",
 		"477DF60F-EEAA-45D1-9E4F-272630E901F9");
 	rtmath_registry_register_dll(id);
+
+	static rtmath::ddscat::shapefile::shapefile_IO_class_registry s;
+	s.io_matches = match_bov_shapefile;
+	s.io_processor = write_bov_shapefile;
+	rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
+		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
+		rtmath::ddscat::shapefile::shapefile_IO_class_registry>::registerHook
+		(s);
 	std::cerr << "plugin-bov dll loaded!\n\n";
 }
 
-void write_bov_shapefile(const rtmath::ddscat::shapefile &shp, const std::string &prefix)
+bool match_bov_shapefile(const char* bov)
 {
 	using namespace boost::filesystem;
 	using std::string;
 	using std::ofstream;
 
-	path pPrefix(prefix);
+	path pPrefix(bov);
+	if (pPrefix.extension() == ".bov") return true;
+	return false;
+}
+
+void write_bov_shapefile(const char* bov, const rtmath::ddscat::shapefile::shapefile *shp)
+{
+	using namespace boost::filesystem;
+	using std::string;
+	using std::ofstream;
+
+	path pPrefix(bov);
 	if (pPrefix.has_extension())
 	{
 		if (pPrefix.extension() == ".bov") pPrefix.replace_extension();
@@ -45,8 +69,8 @@ void write_bov_shapefile(const rtmath::ddscat::shapefile &shp, const std::string
 	path pDatafile = path(sDataFile).filename();
 
 
-	size_t maxX = static_cast<size_t>(shp.maxs(0)), maxY = static_cast<size_t>(shp.maxs(1)), maxZ = static_cast<size_t>(shp.maxs(2));
-	size_t minX = static_cast<size_t>(shp.mins(0)), minY = static_cast<size_t>(shp.mins(1)), minZ = static_cast<size_t>(shp.mins(2));
+	size_t maxX = static_cast<size_t>(shp->maxs(0)), maxY = static_cast<size_t>(shp->maxs(1)), maxZ = static_cast<size_t>(shp->maxs(2));
+	size_t minX = static_cast<size_t>(shp->mins(0)), minY = static_cast<size_t>(shp->mins(1)), minZ = static_cast<size_t>(shp->mins(2));
 	size_t spanX = maxX-minX+1, spanY = maxY-minY+1, spanZ = maxZ-minZ+1;
 
 	// First, write the control file
@@ -68,9 +92,9 @@ void write_bov_shapefile(const rtmath::ddscat::shapefile &shp, const std::string
 		"# BRICK_ORIGIN lets you specify a new coordinate system origin for\n"
 		"# the mesh that will be created to suit your data.\n"
 		"BRICK_ORIGIN: "
-		<< static_cast<int>(shp.x0(0)) << " "
-		<< static_cast<int>(shp.x0(1)) << " "
-		<< static_cast<int>(shp.x0(2)) << "\n"
+		<< static_cast<int>(shp->x0(0)) << " "
+		<< static_cast<int>(shp->x0(1)) << " "
+		<< static_cast<int>(shp->x0(2)) << "\n"
 		"# BRICK_SIZE lets you specify the size of the brick.\n"
 		"BRICK_SIZE: 10. 10. 10.\n"
 		"# DATA_COMPONENTS: is optional and tells the BOV reader how many\n"
@@ -100,11 +124,11 @@ void write_bov_shapefile(const rtmath::ddscat::shapefile &shp, const std::string
 		return index;
 	};
 
-	for (size_t i=0; i < shp.numPoints; ++i)
+	for (size_t i=0; i < shp->numPoints; ++i)
 	{
-		auto crdsm = shp.latticePts.block<1,3>(i,0);
+		auto crdsm = shp->latticePts.block<1,3>(i,0);
 		float x = crdsm(0), y = crdsm(1), z = crdsm(2);
-		auto crdsi = shp.latticePtsRi.block<1,3>(i,0);
+		auto crdsi = shp->latticePtsRi.block<1,3>(i,0);
 		short diel = static_cast<short>(crdsi(0));
 
 		size_t start = getIndex(x,y,z);
@@ -116,76 +140,3 @@ void write_bov_shapefile(const rtmath::ddscat::shapefile &shp, const std::string
 	fwrite((void*)array.get(), sizeof(short), size, pOut);
 	fclose(pOut);
 }
-
-void read_bov_shapefile()
-{
-}
-
-/*
-int main(int argc, char** argv)
-{
-using namespace std;
-using namespace rtmath;
-using namespace boost::filesystem;
-
-try {
-cerr << "rtmath-shape-extract\n\n";
-
-namespace po = boost::program_options;
-
-po::positional_options_description p;
-p.add("input", -1);
-
-po::options_description desc("Allowed options"), cmdline("Command-line options"), 
-config("Config options"), hidden("Hidden options"), oall("all options");
-
-cmdline.add_options()
-("help,h", "produce help message")
-("input,i", po::value< string >(), "input shape file")
-("bov,b", po::value<string>(), "output bov file prefix")
-;
-
-desc.add(cmdline).add(config);
-oall.add(cmdline).add(config).add(hidden);
-
-po::variables_map vm;
-po::store(po::command_line_parser(argc, argv).
-options(oall).positional(p).run(), vm);
-po::notify(vm);
-
-auto doHelp = [&](const std::string &message)
-{
-cerr << desc << "\n";
-if (message.size()) cerr << message << endl;
-exit(1);
-};
-
-if (vm.count("help") || argc == 1) doHelp("");
-if (!vm.count("input")) doHelp("Need to specify an input file.");
-string input = vm["input"].as<string>();
-cerr << "Reading input shape file " << input << endl;
-rtmath::ddscat::shapefile shp;
-shp.read(input);
-
-if (vm.count("bov"))
-{
-string bPrefix = vm["bov"].as<string>();
-cerr << "Writing BOV files with prefix " << bPrefix << endl;
-//shp.write(string(bPrefix).append("-orig.dat"));
-shp.writeBOV(bPrefix);
-}
-
-}
-catch (rtmath::debug::xError &err)
-{
-err.Display();
-cerr << endl;
-return 1;
-} catch (std::exception &e)
-{
-cerr << e.what() << endl;
-return 1;
-}
-return 0;
-}
-*/
