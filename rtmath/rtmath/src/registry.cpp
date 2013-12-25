@@ -38,6 +38,15 @@ typedef void* dlHandleType;
 typedef void* dlHandleType;
 #endif
 
+namespace rtmath
+{
+	namespace registry
+	{
+		/// Recursive and single-level DLL loading paths
+		std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
+	}
+}
+
 /// DLL information tables
 namespace {
 	using rtmath::registry::searchPathsOne;
@@ -118,10 +127,12 @@ namespace {
 		
 		// Default locations
 		// Install path apps
-		searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
+		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
 		//searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
 		// Not in install path apps
-		searchPathsRecursive.emplace(boost::filesystem::path("../../../plugins"));
+		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
+		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../plugins"));
+		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../../plugins"));
 
 
 
@@ -263,8 +274,7 @@ namespace rtmath
 {
 	namespace registry
 	{
-		/// Recursive and single-level DLL loading paths
-		std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
+		
 
 		bool findPath(std::set<boost::filesystem::path> &matches, const boost::filesystem::path &expr,
 			const std::set<boost::filesystem::path> &searchPaths, bool recurse)
@@ -276,6 +286,7 @@ namespace rtmath
 
 			for (const auto &p : searchPaths)
 			{
+				if (!exists(p)) continue;
 				vector<path> recur;
 				if (recurse)
 					copy(recursive_directory_iterator(p, symlink_option::recurse),
@@ -305,6 +316,7 @@ namespace rtmath
 			{
 				path base(sbase);
 				base = rtmath::debug::expandSymlink(base);
+				if (!exists(base)) continue;
 				if (is_regular_file(base)) dlls.push_back(base.string());
 				else if (is_directory(base))
 				{
@@ -328,7 +340,7 @@ namespace rtmath
 							// Convert to lower case and do matching from there
 							std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
 
-							if (correctVersionByName(p.string()))
+							if (correctVersionByName(slower))
 								dlls.push_back(p.string());
 						}
 					}

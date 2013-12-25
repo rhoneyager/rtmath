@@ -10,6 +10,7 @@
 #include <Ryan_Debug/debug.h>
 
 #include "../../rtmath/rtmath/common_templates.h"
+#include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
@@ -40,6 +41,8 @@ int main(int argc, char** argv)
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			;
 
+		rtmath::registry::add_options(cmdline, config, hidden);
+
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
 
@@ -55,9 +58,12 @@ int main(int argc, char** argv)
 			exit(1);
 		};
 
+		rtmath::registry::process_static_options(vm);
+
 		using rtmath::ddscat::shapefile::shapefile;
 
 		if (vm.count("help") || argc == 1) doHelp("");
+
 		if (!vm.count("input")) doHelp("Need to specify an input file.");
 		string input = vm["input"].as<string>();
 		cerr << "Reading input shape file " << input << endl;

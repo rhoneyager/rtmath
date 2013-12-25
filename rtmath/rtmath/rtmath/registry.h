@@ -97,7 +97,7 @@ namespace rtmath
 			const std::set<boost::filesystem::path> &searchPaths, bool recurse);
 
 		/// Recursive and single-level DLL loading paths
-		extern DLEXPORT_rtmath_core std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
+		//extern DLEXPORT_rtmath_core std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
 
 		// The type used to store all hooks for a class. string is topic.
 		//typedef std::multimap<std::string, void*> classHookMapType;
