@@ -3,9 +3,9 @@
 #include "defs.h"
 
 #include <functional>
-//#include <iostream>
+#include <iostream>
 //#include <map>
-//#include <set>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -55,8 +55,10 @@ namespace rtmath
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
 
-		/// Load a DLL. If path is not absolute, use search paths.
+		/// Load a DLL.
 		void DLEXPORT_rtmath_core loadDLL(const std::string &filename);
+		/// Load DLLs.
+		void DLEXPORT_rtmath_core loadDLLs(const std::vector<std::string> &dlls);
 
 		/// Print loaded DLLs
 		void DLEXPORT_rtmath_core printDLLs(std::ostream &out = std::cerr);
@@ -64,8 +66,36 @@ namespace rtmath
 		/// List DLL search paths
 		void DLEXPORT_rtmath_core printDLLsearchPaths(std::ostream &out = std::cerr);
 
-		// Find a DLL
+		/// Find all occurances of a subpath in a search path.
+		bool DLEXPORT_rtmath_core findPath(std::set<boost::filesystem::path> &matches,
+			const boost::filesystem::path &expr,
+			const std::set<boost::filesystem::path> &searchPaths, bool recurse);
 
+		/**
+		* \brief Locates all DLLs in the search path and loads them.
+		*
+		* The search path may be specified / manipulated from several locations:
+		* - precompiled hints (from cmake)
+		* - rtmath.conf
+		* - the command line
+		*
+		* This takes all of the starting points in the initial search paths and recurses through the
+		* directories, selecting dll and so files for matching. The load routine is aware of the
+		* library build mode (Debug, Release, MinSizeRel, RelWithDebInfo). If one of these terms appears
+		* in the path (folder tree + filename) of a library, then the dll is only loaded if its
+		* build mode matches the library's mode. When the dll is actually loaded (other function),
+		* the build mode is reported by the DLL more directly and checked again.
+		*
+		* \see searchPaths
+		* \see loadSearchPaths
+		* \see rtmath::registry::process_static_options
+		**/
+		void DLEXPORT_rtmath_core searchDLLs(std::vector<std::string> &dlls);
+		void DLEXPORT_rtmath_core searchDLLs(std::vector<std::string> &dlls,
+			const std::set<boost::filesystem::path> &searchPaths, bool recurse);
+
+		/// Recursive and single-level DLL loading paths
+		extern DLEXPORT_rtmath_core std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
 
 		// The type used to store all hooks for a class. string is topic.
 		//typedef std::multimap<std::string, void*> classHookMapType;

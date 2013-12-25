@@ -40,6 +40,9 @@ typedef void* dlHandleType;
 
 /// DLL information tables
 namespace {
+	using rtmath::registry::searchPathsOne;
+	using rtmath::registry::searchPathsRecursive;
+
 	class DLLhandle;
 	/// Lists the paths of all loaded dlls
 	std::set<std::string> DLLpathsLoaded;
@@ -48,8 +51,7 @@ namespace {
 	/// Container for the handles of all loaded dlls
 	std::vector<boost::shared_ptr<DLLhandle> > handles;
 
-	/// Recursive and single-level DLL loading paths
-	std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
+	
 	//bool autoLoadDLLs = true;
 
 	/// Checks if a file is a dll file
@@ -98,11 +100,30 @@ namespace {
 	 * \brief Determines the search paths for dlls in the rtmath.conf file and in environment variables
 	 *
 	**/
-	void constructSearchPaths(bool use_rtmath_conf = true, bool use_environment = true)
+	void constructSearchPaths(bool use_cmake = false, bool use_rtmath_conf = true, bool use_environment = true)
 	{
 		using std::vector;
 		using std::set;
 		using std::string;
+
+		// Checking cmake pre-defined locations
+#if REGISTRY_PLUGINS_OVERRIDE_DIR
+		{
+			string regdir(REGISTRY_PLUGINS_OVERRIDE_DIR);
+			if (regdir.size())
+				searchPathsRecursive.emplace(boost::filesystem::path(regdir));
+		}
+#endif
+		
+		// Default locations
+		// Install path apps
+		searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
+		//searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
+		// Not in install path apps
+		searchPathsRecursive.emplace(boost::filesystem::path("../../../plugins"));
+
+
+
 
 		// Checking rtmath.conf
 		if (use_rtmath_conf)
@@ -142,83 +163,33 @@ namespace {
 				if (key == mKey) return true;
 				return false;
 			};
-			auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
-				std::bind(searchFunc,std::placeholders::_2,"rtmath_dlls_recursive"));
-			if (it != mEnv.cend())
+			auto searchEnviron = [&](const std::string &evar, std::set<boost::filesystem::path> &res)
 			{
-				typedef boost::tokenizer<boost::char_separator<char> >
-					tokenizer;
-				boost::char_separator<char> sep(";");
-
-				std::string ssubst;
-				tokenizer tcom(it->second, sep);
-				for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+				auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
+					std::bind(searchFunc, std::placeholders::_1, evar));
+				if (it != mEnv.cend())
 				{
-					using namespace boost::filesystem;
-					path testEnv(it->second);
-					if (exists(testEnv))
+					typedef boost::tokenizer<boost::char_separator<char> >
+						tokenizer;
+					boost::char_separator<char> sep(",;");
+
+					std::string ssubst;
+					tokenizer tcom(it->second, sep);
+					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 					{
-						filename = it->second;
-						return;
+						using namespace boost::filesystem;
+						path testEnv(it->second);
+						if (exists(testEnv))
+							res.emplace(testEnv);
 					}
 				}
-			}
+			};
+			searchEnviron("rtmath_dlls_recursive", searchPathsRecursive);
+			searchEnviron("rtmath_dlls_onelevel", searchPathsOne);
 		}
 	}
 
-	/**
-	 * \brief Locates all DLLs in the search path and loads them.
-	 *
-	 * The search path may be specified / manipulated from several locations:
-	 * - precompiled hints (from cmake)
-	 * - rtmath.conf
-	 * - the command line
-	 *
-	 * This takes all of the starting points in the initial search paths and recurses through the 
-	 * directories, selecting dll and so files for matching. The load routine is aware of the 
-	 * library build mode (Debug, Release, MinSizeRel, RelWithDebInfo). If one of these terms appears 
-	 * in the path (folder tree + filename) of a library, then the dll is only loaded if its 
-	 * build mode matches the library's mode. When the dll is actually loaded (other function), 
-	 * the build mode is reported by the DLL more directly and checked again.
-	 *
-	 * \see searchPaths
-	 * \see loadSearchPaths
-	 * \see rtmath::registry::process_static_options
-	**/
-	void searchDLLs(std::vector<std::string> &dlls)
-	{
-		using namespace boost::filesystem;
-		using namespace std;
-		for (const auto &sbase : searchPaths)
-		{
-			path base(sbase);
-			base = rtmath::debug::expandSymlink(base);
-			if (is_regular_file(base)) dlls.push_back(base.string());
-			else if (is_directory(base))
-			{
-				vector<path> recur;
-				copy(recursive_directory_iterator(base,symlink_option::recurse),
-					recursive_directory_iterator(), back_inserter(recur));
-				for (const auto &p : recur)
-				{
-					if (!is_regular_file(p)) continue;
-					// Convenient function to recursively check extensions to see if one is so or dll.
-					// Used because of versioning.
-					
-					if (isDynamic(p))
-					{
-						// Check to see if build type is present in the path
-						std::string slower = p.string();
-						// Convert to lower case and do matching from there
-						std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
-
-						if (correctVersionByName(p.string()))
-							dlls.push_back(p.string());
-					}
-				}
-			}
-		}
-	}
+	
 
 	/** \brief Class that loads the DLL in an os-independent manner.
 	*
@@ -291,6 +262,87 @@ namespace rtmath
 {
 	namespace registry
 	{
+		/// Recursive and single-level DLL loading paths
+		std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
+
+		bool findPath(std::set<boost::filesystem::path> &matches, const boost::filesystem::path &expr,
+			const std::set<boost::filesystem::path> &searchPaths, bool recurse)
+		{
+			using namespace boost::filesystem;
+			using namespace std;
+
+			path pexpr(expr);
+
+			for (const auto &p : searchPaths)
+			{
+				vector<path> recur;
+				if (recurse)
+					copy(recursive_directory_iterator(p, symlink_option::recurse),
+					recursive_directory_iterator(), back_inserter(recur));
+				else
+					copy(directory_iterator(p),
+					directory_iterator(), back_inserter(recur));
+
+				for (const auto &r : recur)
+				{
+					/// \todo Debug expression evaluation
+					if (absolute(r, p) == pexpr) matches.emplace(r);
+				}
+
+			}
+
+			if (matches.size()) return true;
+			return false;
+		}
+
+		void searchDLLs(std::vector<std::string> &dlls, const std::set<boost::filesystem::path> &searchPaths, bool recurse)
+		{
+			using namespace boost::filesystem;
+			using namespace std;
+
+			for (const auto &sbase : searchPaths)
+			{
+				path base(sbase);
+				base = rtmath::debug::expandSymlink(base);
+				if (is_regular_file(base)) dlls.push_back(base.string());
+				else if (is_directory(base))
+				{
+					vector<path> recur;
+					if (recurse)
+						copy(recursive_directory_iterator(base, symlink_option::recurse),
+						recursive_directory_iterator(), back_inserter(recur));
+					else
+						copy(directory_iterator(base),
+						directory_iterator(), back_inserter(recur));
+					for (const auto &p : recur)
+					{
+						if (!is_regular_file(p)) continue;
+						// Convenient function to recursively check extensions to see if one is so or dll.
+						// Used because of versioning.
+
+						if (isDynamic(p))
+						{
+							// Check to see if build type is present in the path
+							std::string slower = p.string();
+							// Convert to lower case and do matching from there
+							std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
+
+							if (correctVersionByName(p.string()))
+								dlls.push_back(p.string());
+						}
+					}
+				}
+			}
+		}
+
+		void searchDLLs(std::vector<std::string> &dlls)
+		{
+			using namespace boost::filesystem;
+			using namespace std;
+
+			searchDLLs(dlls, searchPathsRecursive, true);
+			searchDLLs(dlls, searchPathsOne, false);
+		}
 
 		void add_options(
 			boost::program_options::options_description &cmdline,
@@ -307,12 +359,13 @@ namespace rtmath
 				;
 
 			hidden.add_options()
-				("dll-load", po::value<std::vector<std::string> >(),
-				"Specify dlls to load. If passed a directory, it loads all dlls present (one-level). "
-				"Will use search paths in name resolution.")
-			//	("dll-no-default-locations", "Prevent non-command line dll locations from being read")
+				("dll-load-onelevel", po::value<std::vector<std::string> >()->multitoken(),
+				"Specify dlls to load. If passed a directory, it loads all dlls present (one-level). ")
+				("dll-load-recursive", po::value<std::vector<std::string> >()->multitoken(),
+				"Specify dlls to load. If passed a directory, it loads all dlls present (recursing). ")
+				//("dll-no-default-locations", "Prevent non-command line dll locations from being read")
 				("print-dll-loaded", "Prints the table of loaded DLLs.")
-				("print-dll-search-paths", "Prints the search paths used when loading dlls.")
+				//("print-dll-search-paths", "Prints the search paths used when loading dlls.")
 				("rtmath-conf", po::value<std::vector<std::string> >(),
 				"Override location to rtmath.conf file.")
 				;
@@ -330,61 +383,37 @@ namespace rtmath
 			//if (vm.count("dll-no-default-locations"))
 			//	autoLoadDLLs = false;
 
-			if (vm.count("dll-load"))
+			if (vm.count("dll-load-onelevel"))
 			{
-				using namespace boost::filesystem;
-				std::vector<std::string> sPaths = vm["dll-load"].as<std::vector<std::string> >();
+				std::vector<std::string> sPaths = vm["dll-load-onelevel"].as<std::vector<std::string> >();
 				for (const auto s : sPaths)
-				{
-					path op(s);
-
-					// Attempt to find the path if not absolute
-					if (!op.is_absolute())
-					{
-						auto search = [&](const path& op, path& res) -> bool
-						{
-							for (const path &sp : searchPaths)
-							{
-								if (exists(sp / op))
-								{
-									res = sp / op;
-									return true;
-								}
-							}
-							return false;
-						};
-						if (!search(op, op)) throw debug::xMissingFile(op.string().c_str());
-					}
-
-					// Expand symlinks
-					path p = debug::expandSymlink(op);
-					if (is_directory(p))
-					{
-						// Open all libs under one level of this directory, following symlinks
-						std::vector<path> cands;
-						copy(directory_iterator(p),
-							directory_iterator(), back_inserter(cands));
-						for (auto f = cands.begin(); f != cands.end(); ++f)
-						{
-							path pf = *f;
-							pf = debug::expandSymlink(pf);
-							path pext = pf.extension();
-							if (pext.string() == ".dll" || pf.string().find(".so") != string::npos)
-							{
-								loadDLL(pf.string());
-							}
-						}
-					} else {
-						if (exists(p))
-							loadDLL(p.string());
-						else {
-							// Search for matching files in the same directory with the dll or so extension.
-							// TODO
-							throw debug::xMissingFile(p.string().c_str());
-						}
-					}
-				}
+					searchPathsOne.emplace(s);
 			}
+
+			if (vm.count("dll-load-recursive"))
+			{
+				std::vector<std::string> sPaths = vm["dll-load-recursive"].as<std::vector<std::string> >();
+				for (const auto s : sPaths)
+					searchPathsRecursive.emplace(s);
+			}
+
+			constructSearchPaths(false, true, true);
+			std::set<boost::filesystem::path> rPaths, oPaths;
+			findPath(rPaths, boost::filesystem::path("default"), searchPathsRecursive, true);
+			findPath(oPaths, boost::filesystem::path("default"), searchPathsOne, false);
+			std::vector<std::string> toLoadDlls;
+			// If a 'default' folder exists in the default search path, then use it for dlls.
+			// If not, then use the base plugins directory.
+			// Any library version / name detecting logic is in loadDLL (called by loadDLLs).
+			if (rPaths.size() || oPaths.size())
+			{
+				searchDLLs(toLoadDlls, rPaths, true);
+				searchDLLs(toLoadDlls, oPaths, false);
+			}
+			else { searchDLLs(toLoadDlls); }
+			
+			loadDLLs(toLoadDlls);
+			
 
 			if (vm.count("print-dll-search-paths"))
 				printDLLsearchPaths();
@@ -393,6 +422,16 @@ namespace rtmath
 				printDLLs();
 		}
 
+		void loadDLLs(const std::vector<std::string> &dlls)
+		{
+			for (const auto &dll : dlls)
+				loadDLL(dll);
+		}
+
+		/// \todo Check for duplicate load
+		/** \todo Check rtmath libraries loaded (core, ddscat, mie, ...). 
+		 * Only load dlls that depend on a loaded rtmath lib, and ignore the rest.
+		 **/
 		void loadDLL(const std::string &filename)
 		{
 			auto doLoad = [](const std::string &f)
@@ -403,29 +442,11 @@ namespace rtmath
 			// Search for the dll
 			using namespace boost::filesystem;
 			path p(filename);
-			if (p.is_absolute())
+			//if (p.is_absolute())
 			{
 				if (exists(p)) doLoad(p.string());
 				else throw debug::xMissingFile(p.string().c_str());
 			}
-			else {
-				// Load in the default search paths
-				if (!searchPaths.size())
-					loadSearchPaths();
-				// Proceed through the search paths to attempt to find the file
-				for (const auto &s : searchPaths)
-				{
-					path pr = boost::filesystem::absolute(p, s);
-					if (exists(pr))
-					{
-						doLoad(pr.string());
-						return;
-					}
-				}
-				// By this point, the path cannot be found
-				throw debug::xMissingFile(p.string().c_str());
-			}
-			
 		}
 
 		void printDLLs(std::ostream &out)
@@ -461,8 +482,14 @@ namespace rtmath
 
 		void printDLLsearchPaths(std::ostream &out)
 		{
-			out << "rtmath DLL registry search paths:\n--------------------\n";
-			for (const auto p : searchPaths)
+			out << "rtmath DLL registry recursive search paths:\n--------------------\n";
+			for (const auto p : searchPathsRecursive)
+			{
+				out << p.string() << "\n";
+			}
+			out << std::endl;
+			out << "rtmath DLL registry one-level search paths:\n--------------------\n";
+			for (const auto p : searchPathsOne)
 			{
 				out << p.string() << "\n";
 			}

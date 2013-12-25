@@ -34,6 +34,8 @@ set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 set(MAJOR 0)
 set(MINOR 2)
 
+set(REGISTRY_PLUGINS_OVERRIDE_DIR ../plugins CACHE PATH "Additional plugin search directory (leave to ../plugins for none)")
+
 # Get subversion revision information - for use in cpack
 #EXECUTE_PROCESS("svn info . | grep Revision: |cut -c11-" 
 #	OUTPUT_VARIABLE REVISION)
