@@ -29,7 +29,17 @@
 
 namespace rtmath {
 	namespace registry {
-		
+
+		/*
+		template struct usesDLLregistry<
+			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
+			::rtmath::ddscat::shapefile::shapefile_IO_class_registry >;
+
+		template struct usesDLLregistry<
+			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
+			::rtmath::ddscat::shapefile::shapefile_IO_class_registry >;
+*/
+
 		template <>
 		usesDLLregistry<rtmath::ddscat::shapefile::shapefile_IO_input_registry,
 			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hookStorageType

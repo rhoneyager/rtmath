@@ -24,18 +24,15 @@
 
 namespace rtmath {
 	namespace ddscat {
-
-		class shapeFileStatsBase;
-		class shapeFileStats;
-		class convexHull;
-
-		/// Contains everything to do with low-level manipulation of shape files.
 		namespace shapefile {
-			struct convolutionCellInfo;
-			class shapefile;
 
 			// These classes act as template types for specialization of registry functions.
 			// The typedefs match the registry function signatures.
+
+			class shapefile;
+
+			class shapefile_IO_input_registry {};
+			class shapefile_IO_output_registry {};
 
 			/// IO handler structure that gets registered for shapefile read / write operations
 			struct shapefile_IO_class_registry
@@ -48,13 +45,38 @@ namespace rtmath {
 				io_processor_type io_processor;
 			};
 
-			class shapefile_IO_input_registry {};
-			class shapefile_IO_output_registry {};
+		}
+	}
+	namespace registry {
+			template <> struct usesDLLregistry<
+				::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
+				::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
 
+			template <> struct usesDLLregistry<
+				::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
+				::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
+
+	}
+	namespace ddscat {
+
+		class shapeFileStatsBase;
+		class shapeFileStats;
+		class convexHull;
+
+		/// Contains everything to do with low-level manipulation of shape files.
+		namespace shapefile {
+			struct convolutionCellInfo;
+			class shapefile;
+
+			
 			/// Class for reading / writing shapefiles. May be used in statistical calculations.
 			class DLEXPORT_rtmath_ddscat shapefile : 
-				virtual public rtmath::registry::usesDLLregistry<shapefile_IO_input_registry, shapefile_IO_class_registry >,
-				virtual public rtmath::registry::usesDLLregistry<shapefile_IO_output_registry, shapefile_IO_class_registry >
+				virtual public ::rtmath::registry::usesDLLregistry<
+				::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
+				::rtmath::ddscat::shapefile::shapefile_IO_class_registry >,
+				virtual public ::rtmath::registry::usesDLLregistry<
+				::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
+				::rtmath::ddscat::shapefile::shapefile_IO_class_registry >
 			{
 			public:
 				shapefile(const std::string &filename);

@@ -9,7 +9,7 @@
 //#include <map>
 #include <set>
 #include <string>
-#include <vector>
+//#include <vector>
 
 namespace boost {
 	namespace program_options {
@@ -114,7 +114,7 @@ namespace rtmath
 		class usesDLLregistry
 		{
 		public:
-			typedef std::vector<const signature> hookStorageType;
+			typedef typename std::vector<signature> hookStorageType;
 		protected:
 			usesDLLregistry() {}
 			static void getHooks(hookStorageType& s) { s = hooks; }
