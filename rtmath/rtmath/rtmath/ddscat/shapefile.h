@@ -48,15 +48,15 @@ namespace rtmath {
 		}
 	}
 	namespace registry {
-		/*
-		extern template <> class usesDLLregistry<
+		
+		extern template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
 			::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
 
-		extern template <> class usesDLLregistry<
+		extern template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 			::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
-		*/
+		
 	}
 	namespace ddscat {
 

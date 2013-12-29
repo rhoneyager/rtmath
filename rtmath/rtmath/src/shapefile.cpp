@@ -30,16 +30,16 @@
 namespace rtmath {
 	namespace registry {
 
-		/*
-		template<> struct usesDLLregistry<
+		
+		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 			::rtmath::ddscat::shapefile::shapefile_IO_class_registry >;
 
-		template<> struct usesDLLregistry<
+		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
 			::rtmath::ddscat::shapefile::shapefile_IO_class_registry >;
-		*/
-
+		
+		/*
 		template <>
 		usesDLLregistry<rtmath::ddscat::shapefile::shapefile_IO_input_registry,
 			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hookStorageType
@@ -53,7 +53,7 @@ namespace rtmath {
 			rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
 			rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hooks;
-
+		*/
 	}
 
 	namespace ddscat {
@@ -625,11 +625,9 @@ namespace rtmath {
 					path pext = path(uncompressed).extension();
 
 					// Process dll hooks first
-					usesDLLregistry<shapefile_IO_output_registry,
-						shapefile_IO_class_registry >::hookStorageType hooks;
-					usesDLLregistry<shapefile_IO_output_registry,
-						shapefile_IO_class_registry >::getHooks(hooks);
-					for (const auto &hook : hooks)
+					auto hooks = usesDLLregistry<shapefile_IO_output_registry,
+						shapefile_IO_class_registry >::getHooks();
+					for (const auto &hook : *hooks)
 					{
 						if (hook.io_matches(uncompressed.c_str()))
 						{

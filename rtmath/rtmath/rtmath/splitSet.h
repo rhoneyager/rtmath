@@ -35,9 +35,7 @@ namespace rtmath {
 			const std::string &specializer,
 			std::set<T> &expanded);
 
-		/** \brief Extracts information from interval notation
-		*
-		**/
+		/// \brief Extracts information from interval notation
 		template <class T>
 		void extractInterval(
 			const std::string &instr,

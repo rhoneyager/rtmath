@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace boost {
 	namespace program_options {
@@ -111,6 +112,17 @@ namespace rtmath
 		//void DLEXPORT_rtmath_core queryClass(const char* classname,
 		//	const char* topicID, topicHookSetType& result);
 
+		/**
+		* \brief Template base class that provides a DLL hook registry for a class.
+		*
+		* The registry is implemented on a per-class basis because different classes 
+		* have different requirements for the DLL registry. Some classes will have both 
+		* reading and writing functions. Each type of function that is registered may 
+		* have a different function signature.
+		*
+		* \param signature is the type that gets registered by the DLLs
+		* \param registryName is a dummy class to provide multiple registries for the same derived class.
+		**/
 		template<class registryName, typename signature>
 		class usesDLLregistry
 		{
@@ -118,12 +130,17 @@ namespace rtmath
 			typedef typename std::vector<signature> hookStorageType;
 		protected:
 			usesDLLregistry() {}
-			static void getHooks(hookStorageType& s) { s = hooks; }
-		private:
-			static hookStorageType hooks;
+			/// \note Implemented as a function-internal static function to avoid gcc template issue.
+			static boost::shared_ptr<hookStorageType> getHooks()
+			{
+				static boost::shared_ptr<hookStorageType> hooks;
+				if (!hooks) hooks = 
+					boost::shared_ptr<hookStorageType>(new hookStorageType);
+				return hooks;
+			}
 		public:
 			virtual ~usesDLLregistry() {}
-			static void registerHook(const signature &f) { hooks.push_back(f); }
+			static void registerHook(const signature &f) { getHooks()->push_back(f); }
 		};
 	}
 }
