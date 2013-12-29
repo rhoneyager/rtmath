@@ -332,7 +332,7 @@ int main(int argc, char** argv)
 		}
 
 		// If an input file is specified, load it here and determine its statistics for the min / max dimensioning.
-		rtmath::ddscat::shapefile inshp;
+		rtmath::ddscat::shapefile::shapefile inshp;
 		if (vm.count("input"))
 		{
 			inshp.read(vm["input"].as<string>());

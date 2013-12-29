@@ -29,13 +29,13 @@ using namespace rtmath::units;
 // Test shapefile read and write
 BOOST_AUTO_TEST_CASE(shapefile_io)
 {
-	shapefile shp((globals::instance()->pTestData / "2mm12shape.txt").string());
+	shapefile::shapefile shp((globals::instance()->pTestData / "2mm12shape.txt").string());
 	
 	ostringstream out, outb;
 	shp.write(out);
 	string str = out.str(), strb;
 	istringstream in(str);
-	shapefile sb(in);
+	shapefile::shapefile sb(in);
 	sb.write(outb);
 	strb = outb.str();
 	BOOST_CHECK(str == strb);
@@ -48,15 +48,15 @@ BOOST_AUTO_TEST_CASE(shapefile_io)
 // Test shapefile serialization
 BOOST_AUTO_TEST_CASE(shapefile_serialization)
 {
-	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
+	shapefile::shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
 	ostringstream out;
-	Ryan_Serialization::write<shapefile>(shp,out);
+	Ryan_Serialization::write<shapefile::shapefile>(shp,out);
 
 	string s = out.str();
 
 	istringstream in(s);
-	shapefile sb;
-	Ryan_Serialization::read<shapefile>(sb,in);
+	shapefile::shapefile sb;
+	Ryan_Serialization::read<shapefile::shapefile>(sb,in);
 
 	BOOST_CHECK(shp.filename == sb.filename);
 }
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(shapefile_serialization)
 // Test shapefile stats
 BOOST_AUTO_TEST_CASE(shapefile_stats)
 {
-	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
+	shapefile::shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
 	shapeFileStats sshp(shp);
 	BOOST_TEST_MESSAGE("Base");
 	sshp.calcStatsBase();
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 
 BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
 {
-	shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
+	shapefile::shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
 	shapeFileStats sshp(shp);
 	sshp.calcStatsBase();
 	sshp.calcStatsRot(0,0,0);
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
 /*
 BOOST_AUTO_TEST_CASE(shapefile_vtk)
 {
-	shapefile shp((globals::instance()->pTestData / "ddscat-snow-33-23-23.shp").string());
+	shapefile::shapefile shp((globals::instance()->pTestData / "ddscat-snow-33-23-23.shp").string());
 	//shapeFileStats sshp(shp);
 	writeVTKpoints("miniflake-points.vtk", shp._latticePtsStd);
 	hull h(shp._latticePtsStd);
