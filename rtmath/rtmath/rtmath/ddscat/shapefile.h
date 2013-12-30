@@ -25,37 +25,24 @@
 namespace rtmath {
 	namespace ddscat {
 		namespace shapefile {
-
-			// These classes act as template types for specialization of registry functions.
-			// The typedefs match the registry function signatures.
-
 			class shapefile;
-
 			class shapefile_IO_input_registry {};
 			class shapefile_IO_output_registry {};
-
-			/// IO handler structure that gets registered for shapefile read / write operations
-			struct shapefile_IO_class_registry
-			{
-				typedef std::function<bool(const char*)> io_matcher_type;
-				typedef std::function<void(const char*, const shapefile*)> io_processor_type;
-				/// Determines if a file can be read / written with this registration
-				io_matcher_type io_matches;
-				/// Handler function for the actual IO operation
-				io_processor_type io_processor;
-			};
-
 		}
 	}
 	namespace registry {
 		
+		extern template struct IO_class_registry<
+			::rtmath::ddscat::shapefile::shapefile>;
+
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
+			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
+			//::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
+			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
 		
 	}
 	namespace ddscat {
@@ -74,10 +61,10 @@ namespace rtmath {
 			class DLEXPORT_rtmath_ddscat shapefile : 
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
-				::rtmath::ddscat::shapefile::shapefile_IO_class_registry >,
+				::rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
-				::rtmath::ddscat::shapefile::shapefile_IO_class_registry >
+				::rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >
 			{
 			public:
 				shapefile(const std::string &filename);
@@ -184,6 +171,16 @@ namespace rtmath {
 					latticePtsStd, // Points with coord translation based on file properties
 					latticePtsNorm, // Points with coord transform to mean center of shape
 					latticePtsRi; // Dielectric information
+				/**
+				 * Container for other, temporary tables, which reflect different information 
+				 * about the shapefile, such as number of dipoles from the surface, the point's 
+				 * contribution to the moment of inertia, or other composition classifiers.
+				 *
+				 * These tables are not saved in the standard shapefile format, though they may 
+				 * be serialized. The bov format should write them out.
+				 **/
+				std::map < std::string, Eigen::Matrix<float, Eigen::Dynamic, 3> > latticeExtras;
+
 				size_t numPoints;
 				std::set<size_t> Dielectrics;
 				std::string desc;
@@ -237,6 +234,6 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile:
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile::shapefile);
-BOOST_CLASS_VERSION(rtmath::ddscat::shapefile::shapefile, 1);
+BOOST_CLASS_VERSION(rtmath::ddscat::shapefile::shapefile, 2);
 
 

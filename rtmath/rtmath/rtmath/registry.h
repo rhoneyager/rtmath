@@ -142,6 +142,19 @@ namespace rtmath
 			virtual ~usesDLLregistry() {}
 			static void registerHook(const signature &f) { getHooks()->push_back(f); }
 		};
+
+
+		/// Convenient template pattern for defining a IO class registry
+		template<class object>
+		struct IO_class_registry
+		{
+			typedef std::function<bool(const char*)> io_matcher_type;
+			typedef std::function<void(const char*, const object*)> io_processor_type;
+			/// Determines if a file can be read / written with this registration
+			io_matcher_type io_matches;
+			/// Handler function for the actual IO operation
+			io_processor_type io_processor;
+		};
 	}
 }
 

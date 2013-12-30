@@ -29,15 +29,16 @@
 
 namespace rtmath {
 	namespace registry {
-
+		template struct IO_class_registry
+			<::rtmath::ddscat::shapefile::shapefile>;
 		
 		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			::rtmath::ddscat::shapefile::shapefile_IO_class_registry >;
+			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
 
 		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			::rtmath::ddscat::shapefile::shapefile_IO_class_registry >;
+			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
 		
 		/*
 		template <>
@@ -241,6 +242,9 @@ namespace rtmath {
 				latticePtsRi.conservativeResize(numPoints, 3);
 				latticePtsStd.conservativeResize(numPoints, 3);
 				latticePtsNorm.conservativeResize(numPoints, 3);
+
+				for (auto &extra : latticeExtras)
+					extra.second.conservativeResize(numPoints, 3);
 			}
 
 			void shapefile::readHeader(const char* in, size_t &headerEnd)
@@ -617,7 +621,7 @@ namespace rtmath {
 
 				// If missing the type, autodetect based on file extension
 				std::string type = outtype;
-				shapefile_IO_class_registry::io_processor_type dllsaver;
+				::rtmath::registry::IO_class_registry<shapefile>::io_processor_type dllsaver;
 				if (!type.size())
 				{
 					std::string uncompressed;
@@ -626,7 +630,7 @@ namespace rtmath {
 
 					// Process dll hooks first
 					auto hooks = usesDLLregistry<shapefile_IO_output_registry,
-						shapefile_IO_class_registry >::getHooks();
+						::rtmath::registry::IO_class_registry<shapefile> >::getHooks();
 					for (const auto &hook : *hooks)
 					{
 						if (hook.io_matches(uncompressed.c_str()))
