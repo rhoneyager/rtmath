@@ -1,4 +1,4 @@
-/// \brief Provides bov file reading and writing to the shapefile class
+/// \brief Provides HDF5 io routines
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <cstdio>
@@ -8,6 +8,8 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+
+//#include <hdf5.h>
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -25,10 +27,9 @@ void write_bov_shapefile(const char* bov,
 void dllEntry()
 {
 	static const rtmath::registry::DLLpreamble id(
-		"Plugin-BOV",
-		"Example plugin to provide shapefile class with the ability to "
-		"read and write bov files.",
-		"477DF60F-EEAA-45D1-9E4F-272630E901F9");
+		"Plugin-HDF5",
+		"Plugin that provides HDF5 io routines for various classes.",
+		"3733FE13-F12A-4AEA-A377-F3FAAE28D5A8");
 	rtmath_registry_register_dll(id);
 
 	static rtmath::registry::IO_class_registry<
@@ -39,7 +40,7 @@ void dllEntry()
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 		rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >
 		::registerHook(s);
-	std::cerr << "plugin-bov dll loaded!\n\n";
+	std::cerr << "plugin-hdf5 dll loaded!\n\n";
 }
 
 bool match_bov_shapefile(const char* bov)

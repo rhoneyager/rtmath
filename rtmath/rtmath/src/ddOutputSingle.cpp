@@ -508,6 +508,15 @@ namespace {
 
 
 namespace rtmath {
+	namespace registry {
+		template struct IO_class_registry
+			<::rtmath::ddscat::ddOutputSingle>;
+
+		template class usesDLLregistry<
+			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
+			IO_class_registry<::rtmath::ddscat::ddOutputSingle> >;
+	}
+
 	namespace ddscat {
 		using namespace rtmath::ddscat::ddOutputSingleKeys;
 

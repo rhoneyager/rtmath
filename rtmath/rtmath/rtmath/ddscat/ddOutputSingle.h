@@ -12,6 +12,7 @@
 #include <boost/serialization/assume_abstract.hpp>
 #include <Eigen/Core>
 //#include "../interpolatable.h"
+#include "../registry.h"
 #include "../phaseFunc.h"
 #include "ddScattMatrix.h"
 #include "shapefile.h"
@@ -26,10 +27,18 @@ namespace rtmath
 	{
 		class ddOutputSingleObj;
 		class ddOutputSingle;
+		//class ddOutputSingle_IO_input_registry {};
+		class ddOutputSingle_IO_output_registry {};
 	}
-}
 
-namespace rtmath {
+	namespace registry {
+		extern template struct IO_class_registry<
+			::rtmath::ddscat::ddOutputSingle>;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
+			IO_class_registry<::rtmath::ddscat::ddOutputSingle> >;
+	}
 
 	namespace ddscat {
 
@@ -80,8 +89,11 @@ namespace rtmath {
 		 * \note Ensemble providers inherit from this!
 		 * \todo Extend to handle multiple dielectrics
 		 **/
-		class DLEXPORT_rtmath_ddscat ddOutputSingle 
-			: public boost::enable_shared_from_this<ddOutputSingle>
+		class DLEXPORT_rtmath_ddscat ddOutputSingle :
+			public boost::enable_shared_from_this<ddOutputSingle>,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
+			::rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutputSingle> >
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
