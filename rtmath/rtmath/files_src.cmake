@@ -162,15 +162,12 @@ set(rtmath_ddscat-ddoutput-files
 	rtmath/ddscat/ddOutput.h
 	rtmath/ddscat/ddOutputGenerator.h
 	rtmath/ddscat/ddOutputSingle.h
-	rtmath/ddscat/ddOutputSingleKeys.h
 	rtmath/ddscat/ddScattMatrix.h
 	src/ddOutput.cpp
 	src/ddOutput_serialization.cpp
 	src/ddOutputGenerator.cpp
 	src/ddOutputGenerator_serialization.cpp
 	src/ddOutputSingle.cpp
-	src/ddOutputSingle_keys.cpp
-	src/ddOutputSingle_parsers.cpp
 	src/ddScattMatrix.cpp
 	src/ddScattMatrix_serialization.cpp
 	)
