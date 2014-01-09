@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <string>
+#include <tuple>
 //#include <boost/tuple/tuple.hpp> 
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/export.hpp>
@@ -23,9 +24,10 @@ namespace rtmath {
 	class paramSet;
 }
 
-/*
+
 namespace boost
 {
+	/*
 	namespace serialization
 	{
 		/// Definition to serialize all paramSet objects.
@@ -34,6 +36,8 @@ namespace boost
 		template <class Archive, class T>
 		void serialize(Archive&, rtmath::paramSet<T>&, const unsigned int);
 	}
+	*/
+
 /// \todo Fix boost tuple serialization to work with LLVM/CLANG.
 		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
 		// Breaks in CLANG!
@@ -44,7 +48,7 @@ namespace boost
 #define GENERATE_TUPLE_SERIALIZE(z,nargs,unused)                        \
 	template< typename Archive, BOOST_PP_ENUM_PARAMS(nargs,typename T) > \
 	void serialize(Archive & ar,                                        \
-	boost::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
+	std::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
 	const unsigned int version)                          \
 		{                                                                   \
 		BOOST_PP_REPEAT_FROM_TO(0,nargs,GENERATE_ELEMENT_SERIALIZE,~);    \
@@ -53,7 +57,7 @@ namespace boost
 
 		BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
 }
-*/
+
 
 namespace rtmath
 {

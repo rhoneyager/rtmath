@@ -25,7 +25,6 @@ namespace rtmath
 {
 	namespace ddscat
 	{
-		class ddOutputSingleObj;
 		class ddOutputSingle;
 		//class ddOutputSingle_IO_input_registry {};
 		class ddOutputSingle_IO_output_registry {};
@@ -240,46 +239,7 @@ namespace rtmath
 			scattMatricesContainer _scattMatricesRaw;
 		};
 
-		/// Base class for ddOutputSingle header entries
-		class SHARED_INTERNAL ddOutputSingleObj
-		{
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
-		public:
-			ddOutputSingleObj();
-			virtual ~ddOutputSingleObj();
-			/// Write header line using formatting appropriate for the 
-			/// specified ddscat version.
-			/// \see rtmath::ddscat::ddVersions
-			virtual void write(std::ostream &out, size_t version
-					= rtmath::ddscat::ddVersions::getDefaultVer()) const = 0;
-			/// Parse header line input into object
-			virtual void read(std::istream &in) = 0;
-			/// Reports object value casted as a std::string. 
-			/// Not all derived classes have a value to report.
-			virtual std::string value() const = 0; //{return std::string(); }
-			/// Check for equality of two objects by writing them and comparing the strings.
-			/// Used in ddscat-test
-			virtual bool operator==(const ddOutputSingleObj&) const;
-			/// Check inequality of two objects
-			/// \see operator==
-			virtual bool operator!=(const ddOutputSingleObj&) const;
-			/// Duplicate an object
-			virtual boost::shared_ptr<ddOutputSingleObj> clone() const;
-			/// Based on the text in the input line, determine the headerMap key string
-			static void findMap(const std::string &line, std::string &res);
-			/// Construct a ddOutputSingleObject derived class instance to hold the 
-			/// specified key type
-			static boost::shared_ptr<ddOutputSingleObj> constructObj
-				(const std::string &key);
-		private:
-			/// Set the 'key' of the object
-			void setKey(const std::string&);
-			std::string key;
-			friend class ddOutputSingle;
-		};
-
+		
 	}
 
 }
@@ -292,6 +252,3 @@ std::istream & operator>>(std::istream&, rtmath::ddscat:: &);
 */
 
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingle);
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingleObj);
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputSingleObj);
-
