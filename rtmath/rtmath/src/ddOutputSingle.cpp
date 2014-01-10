@@ -711,6 +711,9 @@ namespace rtmath {
 			} else if (pext.string() == ".avg")
 			{
 				readAVG(sin);
+			} else if (p.filename().string().find("avg") != std::string::npos)
+			{
+				readAVG(sin);
 			} else {
 				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
 			}

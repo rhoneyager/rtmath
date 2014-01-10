@@ -36,8 +36,8 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("base,b", po::value<vector<string> >(),"specify base files (the reference values)")
-			("input,i", po::value<vector<string> >(), "specify input files (checking against these values)")
+			("base,b", po::value<vector<string> >()->multitoken(),"specify base files (the reference values)")
+			("input,i", po::value<vector<string> >()->multitoken(), "specify input files (checking against these values)")
 			("tolerance,t", po::value<double>()->default_value(5), "Percent tolerance for value checks")
 			("tolerance-abs,a", po::value<double>()->default_value(1.e-6), 
 			"Tolerance for near-zero quantities")
@@ -135,10 +135,11 @@ int main(int argc, char** argv)
 				}
 				if (!nDipoles) return false; // Prefix 0 is not valid. Wrong file type.
 				std::ostringstream ntos;
-				ntos << nDipoles; // dipole number matching
-				ntos << "-" << std::setprecision(4) << m.real() // freq + temperature matching
-					<< "-" << std::setprecision(4) << m.imag()
-					<< "-" << std::setprecision(2) << freq; // frequency matching
+				ntos << nDipoles // dipole number matching
+					// << "-" << std::setprecision(4) << m.real() // freq + temperature matching
+					// << "-" << std::setprecision(4) << m.imag()
+					<< "-" << std::setprecision(2) << freq // frequency matching
+					;
 				prefix = ntos.str();
 				//prefix = makePathAbsolute(path(it)).string();
 				//prefix = path(prefix).remove_filename().string();
@@ -219,10 +220,10 @@ int main(int argc, char** argv)
 			}
 		};
 
-		int numFailures = 0;
 
 		for (const auto &pInput : inputs)
 		{
+			int numFailures = 0;
 			cout << "Processing input file: " << pInput << endl;
 			// Get input file prefix
 			string prefix;
@@ -448,7 +449,7 @@ int main(int argc, char** argv)
 			if (numFailures)
 			{
 				cout << "There were " << numFailures << " failures." << endl;
-				return numFailures;
+				//return numFailures;
 			}
 			else {
 				cout << "All tests passed!" << endl;
