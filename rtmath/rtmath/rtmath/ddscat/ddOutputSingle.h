@@ -160,6 +160,8 @@ namespace rtmath
 			double phi() const;
 			/// Wavelength
 			double wave() const;
+			/// Frequency (convenience function to implicitly convert from wavenumber)
+			double freq() const;
 			/// Effective radius
 			double aeff() const;
 			/// Interdipole spacing (not all read types)

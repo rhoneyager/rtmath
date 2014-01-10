@@ -1362,6 +1362,11 @@ namespace rtmath {
 			return _wave;
 		}
 
+		double ddOutputSingle::freq() const
+		{
+			return rtmath::units::conv_spec("um", "GHz").convert(_wave);
+		}
+
 		double ddOutputSingle::aeff() const
 		{
 			return _aeff;
