@@ -7,6 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <memory>
 #include <set>
+#include <map>
 
 #include <Ryan_Serialization/serialization.h>
 
