@@ -317,9 +317,8 @@ int main(int argc, char** argv)
 					<< it->getStatEntry(stat_entries::QPHA1) << "\t"
 					<< it->getStatEntry(stat_entries::QPHA2) << "\t"
 					<< it->getStatEntry(stat_entries::QPHAM) << "\t"
-					<< it->getStatEntry(stat_entries::DQPHA) << "\t"
-					
-					; // no tab after this
+					<< it->getStatEntry(stat_entries::DQPHA) // no tab after this
+					;
 
 				ddOutputSingle::scattMatricesContainer &fs = (*fml)->getScattMatrices();
 				boost::shared_ptr<const ddScattMatrixF> t0p0, t180p0, t0p90, t180p90;
