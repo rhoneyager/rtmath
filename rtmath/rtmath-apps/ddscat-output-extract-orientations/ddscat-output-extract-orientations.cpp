@@ -91,7 +91,32 @@ int main(int argc, char** argv)
 			"Beta\tTheta\tPhi\tWeight\t"
 			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
 			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
-			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori"
+			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori\t"
+
+			"theta_0_phi_0_ReF11\ttheta_0_phi_0_ImF11\ttheta_0_phi_0_ReF21\ttheta_0_phi_0_ImF21\t"
+			"theta_0_phi_0_ReF12\ttheta_0_phi_0_ImF12\ttheta_0_phi_0_ReF22\ttheta_0_phi_0_ImF22\t"
+			"theta_0_phi_90_ReF11\ttheta_0_phi_90_ImF11\ttheta_0_phi_90_ReF21\ttheta_0_phi_90_ImF21\t"
+			"theta_0_phi_90_ReF12\ttheta_0_phi_90_ImF12\ttheta_0_phi_90_ReF22\ttheta_0_phi_90_ImF22\t"
+
+			"theta_180_phi_0_ReF11\ttheta_180_phi_0_ImF11\ttheta_180_phi_0_ReF21\ttheta_180_phi_0_ImF21\t"
+			"theta_180_phi_0_ReF12\ttheta_180_phi_0_ImF12\ttheta_180_phi_0_ReF22\ttheta_180_phi_0_ImF22\t"
+			"theta_180_phi_90_ReF11\ttheta_180_phi_90_ImF11\ttheta_180_phi_90_ReF21\ttheta_180_phi_90_ImF21\t"
+			"theta_180_phi_90_ReF12\ttheta_180_phi_90_ImF12\ttheta_180_phi_90_ReF22\ttheta_180_phi_90_ImF22\t"
+
+			"theta_0_phi_0_ReS11\ttheta_0_phi_0_ImS11\ttheta_0_phi_0_ReS21\ttheta_0_phi_0_ImS21\t"
+			"theta_0_phi_0_ReS12\ttheta_0_phi_0_ImS12\ttheta_0_phi_0_ReS22\ttheta_0_phi_0_ImS22\t"
+			"theta_0_phi_90_ReS11\ttheta_0_phi_90_ImS11\ttheta_0_phi_90_ReS21\ttheta_0_phi_90_ImS21\t"
+			"theta_0_phi_90_ReS12\ttheta_0_phi_90_ImS12\ttheta_0_phi_90_ReS22\ttheta_0_phi_90_ImS22\t"
+
+			"theta_180_phi_0_ReS11\ttheta_180_phi_0_ImS11\ttheta_180_phi_0_ReS21\ttheta_180_phi_0_ImS21\t"
+			"theta_180_phi_0_ReS12\ttheta_180_phi_0_ImS12\ttheta_180_phi_0_ReS22\ttheta_180_phi_0_ImS22\t"
+			"theta_180_phi_90_ReS11\ttheta_180_phi_90_ImS11\ttheta_180_phi_90_ReS21\ttheta_180_phi_90_ImS21\t"
+			"theta_180_phi_90_ReS12\ttheta_180_phi_90_ImS12\ttheta_180_phi_90_ReS22\ttheta_180_phi_90_ImS22\t"
+
+			"t0p0_P11\tt0p0P12\tt0p0P21\tt0p0P22\tt0p0P31\tt0p0P41\t"
+			"t180p0_P11\tt180p0P12\tt180p0P21\tt180p0P22\tt180p0P31\tt180p0P41\t"
+			"t0p90_P11\tt0p90P12\tt0p90P21\tt0p90P22\tt0p90P31\tt0p90P41\t"
+			"t180p90_P11\tt180p90P12\tt180p90P21\tt180p90P22\tt180p90P31\tt180p90P41"
 			<< endl;
 
 		using namespace boost::filesystem;
@@ -166,9 +191,27 @@ int main(int argc, char** argv)
 
 			ow->getWeights(wts);
 
-
+			
 			for (const auto &it : ddOut->scas)
 			{
+				// Convenient function to perform comparisons based on rotation angle
+				auto hasSameRot = [](double ang, double amin, double amax) -> bool
+				{
+					if (ang < amin - 1.e-5) return false;
+					if (ang > amax + 1.e-5) return false;
+					return true;
+				};
+				auto sameRots = [&hasSameRot](double beta, double theta, double phi,
+					double bmin, double bmax, size_t bn, 
+					double tmin, double tmax, size_t tn,
+					double pmin, double pmax, size_t pn)
+				{
+					if (bn > 1 && !hasSameRot(beta, bmin, bmax)) return false;
+					if (tn > 1 && !hasSameRot(theta, tmin, tmax)) return false;
+					if (pn > 1 && !hasSameRot(phi, pmin, pmax)) return false;
+					return true;
+				};
+
 				// Find the appropriate weight.
 				// If not found, just set to the isotropic case weight.
 				auto ot = wts.cend();
@@ -177,22 +220,10 @@ int main(int argc, char** argv)
 					ot = std::find_if(wts.cbegin(), wts.cend(), 
 					[&](const IntervalTable3dEntry &val)
 					{
-						if (rots.bN() > 1)
-						{
-							if (it->beta() < val.at(IntervalTable3dDefs::BETA_MIN) - 1.e-5) return false;
-							if (it->beta() > val.at(IntervalTable3dDefs::BETA_MAX) + 1.e-5) return false;
-						}
-						if (rots.tN() > 1)
-						{
-							if (it->theta() < val.at(IntervalTable3dDefs::THETA_MIN) - 1.e-5) return false;
-							if (it->theta() > val.at(IntervalTable3dDefs::THETA_MAX) + 1.e-5) return false;
-						}
-						if (rots.pN() > 1)
-						{
-							if (it->phi() < val.at(IntervalTable3dDefs::PHI_MIN) - 1.e-5) return false;
-							if (it->phi() > val.at(IntervalTable3dDefs::PHI_MAX) + 1.e-5) return false;
-						}
-						return true;
+						return sameRots(it->beta(), it->theta(), it->phi(),
+							val.at(IntervalTable3dDefs::BETA_MIN), val.at(IntervalTable3dDefs::BETA_MAX), rots.bN(),
+							val.at(IntervalTable3dDefs::THETA_MIN), val.at(IntervalTable3dDefs::THETA_MAX), rots.tN(),
+							val.at(IntervalTable3dDefs::PHI_MIN), val.at(IntervalTable3dDefs::PHI_MAX), rots.pN());
 					});
 				}
 				double wt = 0;
@@ -201,7 +232,7 @@ int main(int argc, char** argv)
 					// Only do matching if gridded weights are indicated.
 					if (Qbk_iso)
 					{
-						cerr << "Could not match rotation ("
+						cerr << "Could not match rotation when calculating weights ("
 							<< it->beta() << ", "
 							<< it->theta() << ", "
 							<< it->phi() << ").\n";
@@ -215,6 +246,29 @@ int main(int argc, char** argv)
 
 				std::complex<double> m = it->getM();
 				double freq = rtmath::units::conv_spec("um","GHz").convert(it->wave());
+
+				// Find the fml matrix file matching this entry
+				/// \todo Add sca / fml linking as part of ddOutput load
+				auto fml = std::find_if(ddOut->fmls.cbegin(), ddOut->fmls.cend(), 
+					[&](const boost::shared_ptr<ddOutputSingle> &f) -> bool
+				{
+					// Compare based on rotation angle here
+					return sameRots(
+						it->beta(), it->theta(), it->phi(),
+						f->beta(), f->beta(), 2,
+						f->theta(), f->theta(), 2,
+						f->phi(), f->phi(), 2);
+				});
+				if (fml == ddOut->fmls.cend())
+				{
+					// Should never happen
+					cerr << "Could not match rotation when finding fml file ("
+						<< it->beta() << ", "
+						<< it->theta() << ", "
+						<< it->phi() << ").\n";
+					continue;
+				}
+
 				out << p.string() << "\t" << ddOut->description << "\t"
 					<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
 					<< freq << "\t" << m.real() << "\t" << m.imag() << "\t"
@@ -239,8 +293,91 @@ int main(int argc, char** argv)
 					<< it->getStatEntry(stat_entries::QBK2) << "\t"
 					<< it->getStatEntry(stat_entries::QABS2) << "\t"
 					<< it->getStatEntry(stat_entries::QEXT2) << "\t"
-					<< it->getStatEntry(stat_entries::G12) << "\n"
-					;
+					<< it->getStatEntry(stat_entries::G12); // no tab after this
+
+				ddOutputSingle::scattMatricesContainer &fs = (*fml)->getScattMatrices();
+				boost::shared_ptr<const ddScattMatrixF> t0p0, t180p0, t0p90, t180p90;
+				for (const auto &s : fs)
+				{
+					if (s->id() != scattMatrixType::F) continue; // Should never happen
+					if (hasSameRot(s->theta(), 0, 0) && hasSameRot(s->phi(), 0, 0) )
+						t0p0 = boost::dynamic_pointer_cast<const ddScattMatrixF>(s);
+					if (hasSameRot(s->theta(), 180, 180) && hasSameRot(s->phi(), 0, 0))
+						t180p0 = boost::dynamic_pointer_cast<const ddScattMatrixF>(s);
+					if (hasSameRot(s->theta(), 0, 0) && hasSameRot(s->phi(), 90, 90))
+						t0p90 = boost::dynamic_pointer_cast<const ddScattMatrixF>(s);
+					if (hasSameRot(s->theta(), 180, 180) && hasSameRot(s->phi(), 90, 90))
+						t180p90 = boost::dynamic_pointer_cast<const ddScattMatrixF>(s);
+					if (t0p0 && t180p0 && t0p90 && t180p90) break;
+				}
+
+				auto writeFType = [](std::ostream &out, const ddScattMatrix::FType &s)
+				{
+					for (size_t j = 0; j < 2; j++)
+					for (size_t i = 0; i < 2; i++)
+					{
+						// Note the reversed coordinates. This matches ddscat.
+						out << "\t" << s(i, j).real();
+						out << "\t" << s(i, j).imag();
+					}
+				};
+
+				writeFType(out, t0p0->getF());
+				writeFType(out, t180p0->getF());
+				writeFType(out, t0p90->getF());
+				writeFType(out, t180p90->getF());
+
+				writeFType(out, t0p0->getS());
+				writeFType(out, t180p0->getS());
+				writeFType(out, t0p90->getS());
+				writeFType(out, t180p90->getS());
+
+				auto writePType = [](std::ostream &out, const ddScattMatrix::PnnType &p, size_t i, size_t j)
+				{
+					out << "\t" << p(i, j);
+				};
+
+				auto writePTypeStd = [&writePType](std::ostream &out, const ddScattMatrix::PnnType &p)
+				{
+					// Write P11, P12, P21, P22, P31, P41
+					writePType(out, p, 0, 0);
+					writePType(out, p, 0, 1);
+					writePType(out, p, 1, 0);
+					writePType(out, p, 1, 1);
+					writePType(out, p, 2, 0);
+					writePType(out, p, 3, 0);
+				};
+
+				writePTypeStd(out, t0p0->mueller());
+				writePTypeStd(out, t180p0->mueller());
+				writePTypeStd(out, t0p90->mueller());
+				writePTypeStd(out, t180p90->mueller());
+
+
+				out << endl;
+				/*
+
+				"theta_0_phi_0_ReF11\ttheta_0_phi_0_ImF11\ttheta_0_phi_0_ReF21\ttheta_0_phi_0_ImF21\t"
+				"theta_0_phi_0_ReF12\ttheta_0_phi_0_ImF12\ttheta_0_phi_0_ReF22\ttheta_0_phi_0_ImF22\t"
+				"theta_0_phi_90_ReF11\ttheta_0_phi_90_ImF11\ttheta_0_phi_90_ReF21\ttheta_0_phi_90_ImF21\t"
+				"theta_0_phi_90_ReF12\ttheta_0_phi_90_ImF12\ttheta_0_phi_90_ReF22\ttheta_0_phi_90_ImF22\t"
+
+				"theta_180_phi_0_ReF11\ttheta_180_phi_0_ImF11\ttheta_180_phi_0_ReF21\ttheta_180_phi_0_ImF21\t"
+				"theta_180_phi_0_ReF12\ttheta_180_phi_0_ImF12\ttheta_180_phi_0_ReF22\ttheta_180_phi_0_ImF22\t"
+				"theta_180_phi_90_ReF11\ttheta_180_phi_90_ImF11\ttheta_180_phi_90_ReF21\ttheta_180_phi_90_ImF21\t"
+				"theta_180_phi_90_ReF12\ttheta_180_phi_90_ImF12\ttheta_180_phi_90_ReF22\ttheta_180_phi_90_ImF22\t"
+
+				"theta_0_phi_0_ReS11\ttheta_0_phi_0_ImS11\ttheta_0_phi_0_ReS21\ttheta_0_phi_0_ImS21\t"
+				"theta_0_phi_0_ReS12\ttheta_0_phi_0_ImS12\ttheta_0_phi_0_ReS22\ttheta_0_phi_0_ImS22\t"
+				"theta_0_phi_90_ReS11\ttheta_0_phi_90_ImS11\ttheta_0_phi_90_ReS21\ttheta_0_phi_90_ImS21\t"
+				"theta_0_phi_90_ReS12\ttheta_0_phi_90_ImS12\ttheta_0_phi_90_ReS22\ttheta_0_phi_90_ImS22\t"
+
+				"theta_180_phi_0_ReS11\ttheta_180_phi_0_ImS11\ttheta_180_phi_0_ReS21\ttheta_180_phi_0_ImS21\t"
+				"theta_180_phi_0_ReS12\ttheta_180_phi_0_ImS12\ttheta_180_phi_0_ReS22\ttheta_180_phi_0_ImS22\t"
+				"theta_180_phi_90_ReS11\ttheta_180_phi_90_ImS11\ttheta_180_phi_90_ReS21\ttheta_180_phi_90_ImS21\t"
+				"theta_180_phi_90_ReS12\ttheta_180_phi_90_ImS12\ttheta_180_phi_90_ReS22\ttheta_180_phi_90_ImS22"
+
+				*/
 			}
 			std::cerr << "\tProcessed " << ddOut->scas.size() << " orientations.\n";
 		}
