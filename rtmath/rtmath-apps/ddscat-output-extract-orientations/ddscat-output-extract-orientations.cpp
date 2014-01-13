@@ -88,10 +88,13 @@ int main(int argc, char** argv)
 		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			"M_real\tM_imag\tAeff (um)\t"
 			"Qsca_m_iso\tQbk_m_iso\tQabs_m_iso\tQext_m_iso\t"
+			"Qpha_1_iso\tQpha_2_iso\tQpha_m_iso\tdQpha_iso\t"
 			"Beta\tTheta\tPhi\tWeight\t"
 			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
 			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
 			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori\t"
+
+			"Qpha_1_ori\tQpha_2_ori\tQpha_m_ori\tdQpha_ori\t"
 
 			"theta_0_phi_0_ReF11\ttheta_0_phi_0_ImF11\ttheta_0_phi_0_ReF21\ttheta_0_phi_0_ImF21\t"
 			"theta_0_phi_0_ReF12\ttheta_0_phi_0_ImF12\ttheta_0_phi_0_ReF22\ttheta_0_phi_0_ImF22\t"
@@ -114,8 +117,8 @@ int main(int argc, char** argv)
 			"theta_180_phi_90_ReS12\ttheta_180_phi_90_ImS12\ttheta_180_phi_90_ReS22\ttheta_180_phi_90_ImS22\t"
 
 			"t0p0_P11\tt0p0P12\tt0p0P21\tt0p0P22\tt0p0P31\tt0p0P41\t"
-			"t180p0_P11\tt180p0P12\tt180p0P21\tt180p0P22\tt180p0P31\tt180p0P41\t"
 			"t0p90_P11\tt0p90P12\tt0p90P21\tt0p90P22\tt0p90P31\tt0p90P41\t"
+			"t180p0_P11\tt180p0P12\tt180p0P21\tt180p0P22\tt180p0P31\tt180p0P41\t"
 			"t180p90_P11\tt180p90P12\tt180p90P21\tt180p90P22\tt180p90P31\tt180p90P41"
 			<< endl;
 
@@ -176,12 +179,22 @@ int main(int argc, char** argv)
 			double Qsca_iso = 0;
 			double Qabs_iso = 0;
 			double Qext_iso = 0;
+
+			double Qpha_1_iso = 0;
+			double Qpha_2_iso = 0;
+			double Qpha_m_iso = 0;
+			double dQpha_iso = 0;
 			if (ddOut->avg)
 			{
 				Qbk_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QBKM);
 				Qsca_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QSCAM);
 				Qabs_iso = ddOut->avg->getStatEntry(stat_entries::QABSM);
 				Qext_iso = ddOut->avg->getStatEntry(stat_entries::QEXTM);
+
+				Qpha_1_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QPHA1);
+				Qpha_2_iso = ddOut->avg->getStatEntry(rtmath::ddscat::stat_entries::QPHA2);
+				Qpha_m_iso = ddOut->avg->getStatEntry(stat_entries::QPHAM);
+				dQpha_iso = ddOut->avg->getStatEntry(stat_entries::DQPHA);
 			}
 			using namespace rtmath::ddscat::weights;
 			ddWeightsDDSCAT dw(rots);
@@ -277,8 +290,14 @@ int main(int argc, char** argv)
 					<< Qbk_iso << "\t"
 					<< Qabs_iso << "\t"
 					<< Qext_iso << "\t"
+					<< Qpha_1_iso << "\t"
+					<< Qpha_2_iso << "\t"
+					<< Qpha_m_iso << "\t"
+					<< dQpha_iso << "\t"
+
 					<< it->beta() << "\t" << it->theta() << "\t" << it->phi() << "\t"
 					<< wt << "\t"
+
 					<< it->getStatEntry(stat_entries::QSCAM) << "\t"
 					<< it->getStatEntry(stat_entries::QBKM) << "\t"
 					<< it->getStatEntry(stat_entries::QABSM) << "\t"
@@ -293,7 +312,14 @@ int main(int argc, char** argv)
 					<< it->getStatEntry(stat_entries::QBK2) << "\t"
 					<< it->getStatEntry(stat_entries::QABS2) << "\t"
 					<< it->getStatEntry(stat_entries::QEXT2) << "\t"
-					<< it->getStatEntry(stat_entries::G12); // no tab after this
+					<< it->getStatEntry(stat_entries::G12) << "\t"
+
+					<< it->getStatEntry(stat_entries::QPHA1) << "\t"
+					<< it->getStatEntry(stat_entries::QPHA2) << "\t"
+					<< it->getStatEntry(stat_entries::QPHAM) << "\t"
+					<< it->getStatEntry(stat_entries::DQPHA) << "\t"
+					
+					; // no tab after this
 
 				ddOutputSingle::scattMatricesContainer &fs = (*fml)->getScattMatrices();
 				boost::shared_ptr<const ddScattMatrixF> t0p0, t180p0, t0p90, t180p90;
@@ -323,13 +349,13 @@ int main(int argc, char** argv)
 				};
 
 				writeFType(out, t0p0->getF());
-				writeFType(out, t180p0->getF());
 				writeFType(out, t0p90->getF());
+				writeFType(out, t180p0->getF());
 				writeFType(out, t180p90->getF());
 
 				writeFType(out, t0p0->getS());
-				writeFType(out, t180p0->getS());
 				writeFType(out, t0p90->getS());
+				writeFType(out, t180p0->getS());
 				writeFType(out, t180p90->getS());
 
 				auto writePType = [](std::ostream &out, const ddScattMatrix::PnnType &p, size_t i, size_t j)
@@ -349,8 +375,8 @@ int main(int argc, char** argv)
 				};
 
 				writePTypeStd(out, t0p0->mueller());
-				writePTypeStd(out, t180p0->mueller());
 				writePTypeStd(out, t0p90->mueller());
+				writePTypeStd(out, t180p0->mueller());
 				writePTypeStd(out, t180p90->mueller());
 
 
