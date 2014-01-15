@@ -37,140 +37,150 @@
 *
 *****************************************************************************/
 
+#include <iostream>
+#include <stdio.h>
+#include "RectilinearMesh3d.h"
 
-class RectilinearMesh3D : public QuadMesh3D
-{
-public:
-	RectilinearMesh3D(int nx, int ny, int nz) : QuadMesh3D(nx, ny, nz, true)
-	{
-	}
+#define DB_USE_MODERN_DTPTR
+#include <silo.h>
 
-	virtual ~RectilinearMesh3D()
-	{
-	}
+namespace rtmath {
+	namespace plugins {
+		namespace silo {
 
-	virtual float GetX(int x, int, int) const
-	{
-		return coordX[x];
-	}
+			RectilinearMesh3D::RectilinearMesh3D(int nx, int ny, int nz) : QuadMesh3D(nx, ny, nz, true)
+			{
+			}
 
-	virtual float GetY(int, int y, int) const
-	{
-		return coordY[y];
-	}
+			RectilinearMesh3D::~RectilinearMesh3D()
+			{
+			}
 
-	virtual float GetZ(int, int, int z) const
-	{
-		return coordZ[z];
-	}
+			float RectilinearMesh3D::GetX(int x, int, int) const
+			{
+				return coordX[x];
+			}
 
-	void SetX(int x, float val)
-	{
-		coordX[x] = val;
-	}
+			float RectilinearMesh3D::GetY(int, int y, int) const
+			{
+				return coordY[y];
+			}
 
-	void SetY(int y, float val)
-	{
-		coordY[y] = val;
-	}
+			float RectilinearMesh3D::GetZ(int, int, int z) const
+			{
+				return coordZ[z];
+			}
 
-	void SetZ(int z, float val)
-	{
-		coordZ[z] = val;
-	}
+			void RectilinearMesh3D::SetX(int x, float val)
+			{
+				coordX[x] = val;
+			}
 
-	void SetXValues(float minX, float maxX)
-	{
-		SetRange(coordX, minX, maxX, xdim);
-	}
+			void RectilinearMesh3D::SetY(int y, float val)
+			{
+				coordY[y] = val;
+			}
 
-	void SetYValues(float minY, float maxY)
-	{
-		SetRange(coordY, minY, maxY, ydim);
-	}
+			void RectilinearMesh3D::SetZ(int z, float val)
+			{
+				coordZ[z] = val;
+			}
 
-	void SetZValues(float minZ, float maxZ)
-	{
-		SetRange(coordZ, minZ, maxZ, zdim);
-	}
+			void RectilinearMesh3D::SetXValues(float minX, float maxX)
+			{
+				SetRange(coordX, minX, maxX, xdim);
+			}
 
-protected:
-	virtual void WriteMesh(DBfile *db)
-	{
-		float *coords[3] = { coordX, coordY, coordZ };
-		int dims[3] = { xdim, ydim, zdim };
+			void RectilinearMesh3D::SetYValues(float minY, float maxY)
+			{
+				SetRange(coordY, minY, maxY, ydim);
+			}
 
-		DBoptlist *optList = DBMakeOptlist(6);
-		DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
-		DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
-		DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
-		DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
-		DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
-		DBAddOption(optList, DBOPT_ZUNITS, (void*)"parsec");
-		DBPutQuadmesh(db, (char *)meshName.c_str(), NULL, coords, dims, 3,
-			DB_FLOAT, DB_COLLINEAR, optList);
-		DBFreeOptlist(optList);
-	}
+			void RectilinearMesh3D::SetZValues(float minZ, float maxZ)
+			{
+				SetRange(coordZ, minZ, maxZ, zdim);
+			}
 
-	virtual void WriteMeshSlice(DBfile *db, const std::string &newMeshName,
-		int sliceVal, int sliceDimension)
-	{
-		float *slice_coordX, *slice_coordY;
-		int i, dims[2];
+			void RectilinearMesh3D::WriteMesh(DBfile *db)
+			{
+				float *coords[3] = { coordX, coordY, coordZ };
+				int dims[3] = { xdim, ydim, zdim };
 
-		if (sliceDimension == 0)
-		{
-			dims[0] = zdim; dims[1] = ydim;
-			slice_coordX = new float[zdim];
-			for (i = 0; i < zdim; ++i)
-				slice_coordX[i] = coordZ[i];
-			slice_coordY = new float[ydim];
-			for (i = 0; i < ydim; ++i)
-				slice_coordY[i] = coordY[i];
+				DBoptlist *optList = DBMakeOptlist(6);
+				DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
+				DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
+				DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
+				DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
+				DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
+				DBAddOption(optList, DBOPT_ZUNITS, (void*)"parsec");
+				DBPutQuadmesh(db, (char *)meshName.c_str(), NULL, coords, dims, 3,
+					DB_FLOAT, DB_COLLINEAR, optList);
+				DBFreeOptlist(optList);
+			}
+
+			void RectilinearMesh3D::WriteMeshSlice(DBfile *db, const std::string &newMeshName,
+				int sliceVal, int sliceDimension)
+			{
+				float *slice_coordX, *slice_coordY;
+				int i, dims[2];
+
+				if (sliceDimension == 0)
+				{
+					dims[0] = zdim; dims[1] = ydim;
+					slice_coordX = new float[zdim];
+					for (i = 0; i < zdim; ++i)
+						slice_coordX[i] = coordZ[i];
+					slice_coordY = new float[ydim];
+					for (i = 0; i < ydim; ++i)
+						slice_coordY[i] = coordY[i];
+				}
+				else if (sliceDimension == 1)
+				{
+					dims[0] = xdim; dims[1] = zdim;
+					slice_coordX = new float[xdim];
+					for (i = 0; i < xdim; ++i)
+						slice_coordX[i] = coordX[i];
+					slice_coordY = new float[zdim];
+					for (i = 0; i < zdim; ++i)
+						slice_coordY[i] = coordZ[i];
+				}
+				else
+				{
+					dims[0] = xdim; dims[1] = ydim;
+					slice_coordX = new float[xdim];
+					for (i = 0; i < xdim; ++i)
+						slice_coordX[i] = coordX[i];
+					slice_coordY = new float[ydim];
+					for (i = 0; i < ydim; ++i)
+						slice_coordY[i] = coordY[i];
+				}
+
+				float *coords[] = { slice_coordX, slice_coordY };
+
+				DBoptlist *optList = DBMakeOptlist(6);
+				DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
+				DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
+				DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
+				DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
+				DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
+				DBPutQuadmesh(db, (char *)newMeshName.c_str(), NULL, coords, dims, 2,
+					DB_FLOAT, DB_COLLINEAR, optList);
+				DBFreeOptlist(optList);
+
+				delete[] slice_coordX;
+				delete[] slice_coordY;
+			}
+
+			void RectilinearMesh3D::SetRange(float *coord, float minval, float maxval, int steps)
+			{
+				for (int i = 0; i < steps; ++i)
+				{
+					float t = float(i) / float(steps - 1);
+					coord[i] = t*maxval + (1.f - t)*minval;
+				}
+			}
+
+
 		}
-		else if (sliceDimension == 1)
-		{
-			dims[0] = xdim; dims[1] = zdim;
-			slice_coordX = new float[xdim];
-			for (i = 0; i < xdim; ++i)
-				slice_coordX[i] = coordX[i];
-			slice_coordY = new float[zdim];
-			for (i = 0; i < zdim; ++i)
-				slice_coordY[i] = coordZ[i];
-		}
-		else
-		{
-			dims[0] = xdim; dims[1] = ydim;
-			slice_coordX = new float[xdim];
-			for (i = 0; i < xdim; ++i)
-				slice_coordX[i] = coordX[i];
-			slice_coordY = new float[ydim];
-			for (i = 0; i < ydim; ++i)
-				slice_coordY[i] = coordY[i];
-		}
-
-		float *coords[] = { slice_coordX, slice_coordY };
-
-		DBoptlist *optList = DBMakeOptlist(6);
-		DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
-		DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
-		DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
-		DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
-		DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
-		DBPutQuadmesh(db, (char *)newMeshName.c_str(), NULL, coords, dims, 2,
-			DB_FLOAT, DB_COLLINEAR, optList);
-		DBFreeOptlist(optList);
-
-		delete[] slice_coordX;
-		delete[] slice_coordY;
 	}
-
-	void SetRange(float *coord, float minval, float maxval, int steps)
-	{
-		for (int i = 0; i < steps; ++i)
-		{
-			float t = float(i) / float(steps - 1);
-			coord[i] = t*maxval + (1. - t)*minval;
-		}
-	}
-};
+}
