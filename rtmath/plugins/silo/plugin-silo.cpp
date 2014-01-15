@@ -10,10 +10,16 @@
 void dllEntry();
 rtmath_plugin_init(dllEntry);
 
-bool match_silo_shapefile(const char*);
-void write_silo_shapefile(const char*, 
-	const rtmath::ddscat::shapefile::shapefile *shp);
+namespace rtmath {
+	namespace plugins {
+		namespace silo {
 
+			bool match_silo_shapefile(const char*);
+			void write_silo_shapefile(const char*,
+				const rtmath::ddscat::shapefile::shapefile *shp);
+		}
+	}
+}
 
 void dllEntry()
 {
@@ -26,8 +32,8 @@ void dllEntry()
 
 	static rtmath::registry::IO_class_registry<
 		::rtmath::ddscat::shapefile::shapefile> s;
-	s.io_matches = match_silo_shapefile;
-	s.io_processor = write_silo_shapefile;
+	s.io_matches = rtmath::plugins::silo::match_silo_shapefile;
+	s.io_processor = rtmath::plugins::silo::write_silo_shapefile;
 	rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 		rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >

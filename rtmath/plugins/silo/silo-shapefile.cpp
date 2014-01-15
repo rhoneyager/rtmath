@@ -1,6 +1,7 @@
 /// \brief Provides silo file IO
 #define _SCL_SECURE_NO_WARNINGS
 
+#include <array>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -8,6 +9,9 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <tuple>
 
 #define DB_USE_MODERN_DTPTR
 #include <silo.h>
@@ -18,132 +22,127 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
-bool match_silo_shapefile(const char* fsilo)
-{
-	using namespace boost::filesystem;
-	using std::string;
-	using std::ofstream;
+#include "RectilinearMesh3d.h"
+#include "MaterialList.h"
+#include "QuadMesh3d.h"
 
-	path pPrefix(bov);
-	if (pPrefix.extension() == ".silo") return true;
-	return false;
-}
 
-void write_gridless_point_mesh(DBfile *f, const rtmath::ddscat::shapefile::shapefile *shp)
-{
 
-}
+namespace rtmath {
+	namespace plugins {
+		namespace silo {
 
-void write_silo_shapefile(const char* fsilo, const rtmath::ddscat::shapefile::shapefile *shp)
-{
-	using std::string;
-	using std::ofstream;
-	using namespace boost::filesystem;
+			void WritePoints(DBfile *db, const std::array<std::string, 3> &axislabels,
+				const std::array<std::string, 3> &axisunits, 
+				const Eigen::Matrix<float, Eigen::Dynamic, 3> &pts,
+				std::vector<std::tuple<std::string, std::string, 
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > &vals)
+			{
+				// Write the point mesh
+				DBoptlist *optlist = DBMakeOptlist(6);
+				DBAddOption(optlist, DBOPT_XLABEL, (void*)axislabels[0].c_str());
+				DBAddOption(optlist, DBOPT_YLABEL, (void*)axislabels[1].c_str());
+				DBAddOption(optlist, DBOPT_ZLABEL, (void*)axislabels[2].c_str());
+				DBAddOption(optlist, DBOPT_XUNITS, (void *)axisunits[0].c_str());
+				DBAddOption(optlist, DBOPT_YUNITS, (void *)axisunits[0].c_str());
+				DBAddOption(optlist, DBOPT_ZUNITS, (void *)axisunits[0].c_str());
+				const int numPoints = (int)pts.rows();
 
-	DBfile *f = DBCreate(fsilo, DB_CLOBBER, DB_LOCAL,
-		shp->desc.c_str(), // Optional string describing file
-		DB_HDF5);
-	TASSERT(f);
+				// Convert the points, by coordinate, into arrays
+				const float *pcoords[3] = { pts.col(0).data(), 
+					pts.col(1).data(), pts.col(2).data() };
+				DBPutPointmesh(db, "PointMesh", 3, pcoords, numPoints, DB_FLOAT, optlist);
+				DBFreeOptlist(optlist);
 
-	DBMkdir(f, "root");
-	DBSetDir(f, "root");
+				for (const auto &a : vals)
+				{
+					// Write the point var
+					optlist = DBMakeOptlist(1);
+					DBAddOption(optlist, DBOPT_UNITS, (void *)std::get<1>(a).c_str());
+					
+					const float **vals = new const float*[std::get<2>(a).cols()];
+					for (size_t i = 0; i < (size_t) std::get<2>(a).cols(); ++i)
+						vals[i] = std::get<2>(a).col(i).data();
+					//float *vals[1] = { a.second.col(0).data() };
+					DBPutPointvar(db, std::get<0>(a).c_str(), "PointMesh", 
+						(int) std::get<2>(a).cols(), 
+						vals, 
+						numPoints, 
+						DB_FLOAT, 
+						optlist);
+					DBFreeOptlist(optlist);
+					delete[] vals;
+				}
+			}
 
-	// First, let's export the shape into a gridless point mesh
-	write_gridless_point_mesh(f, shp);
+			bool match_silo_shapefile(const char* fsilo)
+			{
+				using namespace boost::filesystem;
+				using std::string;
+				using std::ofstream;
 
-	// First, we want to define the meshes of all of the 'materials' in the shapefile.
+				path pPrefix(fsilo);
+				if (pPrefix.extension() == ".silo") return true;
+				return false;
+			}
 
-	//DBPutQuadmesh(f, )
-	//DBPutQuadvar()
-	DBClose(f);
+			void write_silo_shapefile(const char* fsilo, const rtmath::ddscat::shapefile::shapefile *shp)
+			{
+				using std::string;
+				using std::ofstream;
+				using namespace boost::filesystem;
 
-}
+				DBfile *f = DBCreate(fsilo, DB_CLOBBER, DB_LOCAL,
+					shp->desc.c_str(), // Optional string describing file
+					DB_PDB);
+				TASSERT(f);
 
-void write_silo_shapefile(const char* fsilo, const rtmath::ddscat::shapefile::shapefile *shp)
-{
-	using namespace boost::filesystem;
-	using std::string;
-	using std::ofstream;
+				/*
+				Eigen::Matrix3f steps = shp->maxs - shp->mins + 1;
+				RectilinearMesh3D B((int)steps(0), (int)steps(1), (int)steps(2));
+				B.SetXValues(shp->mins(0), shp->maxs(0));
+				B.SetYValues(shp->mins(1), shp->maxs(1));
+				B.SetZValues(shp->mins(2), shp->maxs(2));
 
-	path pPrefix(fsilo);
-	if (pPrefix.has_extension())
-	{
-		if (pPrefix.extension() == ".silo") pPrefix.replace_extension();
+				for (const auto &diel : shp->Dielectrics)
+				B.AddMaterial(boost::lexical_cast<std::string>(diel).c_str());
+
+				B.WriteFile(f);
+				*/
+
+				std::array<std::string, 3> axislabels = { "x", "y", "z" };
+				std::array<std::string, 3> axisunits = { "dipoles", "dipoles", "dipoles" };
+				
+
+				std::vector<std::tuple<std::string, std::string, 
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > vals;
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Dielectric_x"), std::string("Dimensionless"),
+					shp->latticePtsRi.col(0)));
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Dielectric_y"), std::string("Dimensionless"),
+					shp->latticePtsRi.col(1)));
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Dielectric_z"), std::string("Dimensionless"),
+					shp->latticePtsRi.col(2)));
+
+				for (const auto &extras : shp->latticeExtras)
+				{
+					vals.push_back(std::tuple<std::string, std::string,
+						const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+						(extras.first, std::string("Unknown"),
+						extras.second));
+				}
+					
+				WritePoints(f, axislabels, axisunits, shp->latticePtsStd, vals);
+
+				DBClose(f);
+
+			}
+
+		}
 	}
-
-	string sDataFile = pPrefix.string(); sDataFile.append(".dat");
-	string sCtrlFile = pPrefix.string(); sCtrlFile.append(".bov");
-	path pDatafile = path(sDataFile).filename();
-
-
-	size_t maxX = static_cast<size_t>(shp->maxs(0)), maxY = static_cast<size_t>(shp->maxs(1)), maxZ = static_cast<size_t>(shp->maxs(2));
-	size_t minX = static_cast<size_t>(shp->mins(0)), minY = static_cast<size_t>(shp->mins(1)), minZ = static_cast<size_t>(shp->mins(2));
-	size_t spanX = maxX - minX + 1, spanY = maxY - minY + 1, spanZ = maxZ - minZ + 1;
-
-	// First, write the control file
-	ofstream oct(sCtrlFile.c_str(), std::ios::binary | std::ios::out);
-	oct << "TIME: 0\n"
-		"DATA_FILE: " << pDatafile.string() << "\n"
-		"# The data file size corresponds to the raw flake dimensions\n"
-		"DATA_SIZE: " << spanX << " " << spanY << " " << spanZ << "\n"
-		"# Allowable values for DATA_FORMAT are: BYTE,SHORT,INT,FLOAT,DOUBLE\n"
-		"DATA_FORMAT: SHORT\n"
-		"VARIABLE: Composition\n"
-		"# Endian representation of the computer that created the data.\n"
-		"# Intel is LITTLE, many other processors are BIG.\n"
-		"DATA_ENDIAN: LITTLE\n"
-		"# Centering refers to how the data is distributed in a cell. If you\n"
-		"# give \"zonal\" then it’s 1 data value per zone. Otherwise the data\n"
-		"# will be centered at the nodes.\n"
-		"CENTERING: zonal\n"
-		"# BRICK_ORIGIN lets you specify a new coordinate system origin for\n"
-		"# the mesh that will be created to suit your data.\n"
-		"BRICK_ORIGIN: "
-		<< static_cast<int>(shp->x0(0)) << " "
-		<< static_cast<int>(shp->x0(1)) << " "
-		<< static_cast<int>(shp->x0(2)) << "\n"
-		"# BRICK_SIZE lets you specify the size of the brick.\n"
-		"BRICK_SIZE: 10. 10. 10.\n"
-		"# DATA_COMPONENTS: is optional and tells the BOV reader how many\n"
-		"# components your data has. 1=scalar, 2=complex number, 3=vector,\n"
-		"# 4 and beyond indicate an array variable. You can use \"COMPLEX\"\n"
-		"# instead of \"2\" for complex numbers. When your data consists of\n"
-		"# multiple components, all components for a cell or node are written\n"
-		"# sequentially to the file before going to the next cell or node.\n"
-		"DATA_COMPONENTS: 1\n";
-	// Then, write the data file
-	//ofstream out(sDataFile.c_str(), std::ios::binary | std::ios::out);
-	FILE * pOut;
-	pOut = fopen(sDataFile.c_str(), "wb");
-	// Allocate an array of the correct size
-	const size_t size = spanX * spanY * spanZ;
-	std::unique_ptr<short[]> array(new short[size]);
-	std::fill_n(array.get(), size * 1, 0);
-
-	auto getIndex = [&](float x, float y, float z) -> size_t
-	{
-		size_t index = 0;
-		size_t sX = (size_t)(x - minX);
-		size_t sY = (size_t)(y - minY);
-		size_t sZ = (size_t)(z - minZ);
-		//index = (sX * (spanY * spanZ)) + (sY * spanZ) + sZ;
-		index = (sZ * (spanX * spanY)) + (sY * spanX) + sX;
-		return index;
-	};
-
-	for (size_t i = 0; i < shp->numPoints; ++i)
-	{
-		auto crdsm = shp->latticePts.block<1, 3>(i, 0);
-		float x = crdsm(0), y = crdsm(1), z = crdsm(2);
-		auto crdsi = shp->latticePtsRi.block<1, 3>(i, 0);
-		short diel = static_cast<short>(crdsi(0));
-
-		size_t start = getIndex(x, y, z);
-
-		array[start + 0] = diel;
-		//array[start+1] = static_cast<short>(crdsi(1));
-		//array[start+2] = static_cast<short>(crdsi(2));
-	}
-	fwrite((void*)array.get(), sizeof(short), size, pOut);
-	fclose(pOut);
 }

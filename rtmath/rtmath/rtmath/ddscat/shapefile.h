@@ -180,7 +180,7 @@ namespace rtmath {
 				 * These tables are not saved in the standard shapefile format, though they may 
 				 * be serialized. The bov format should write them out.
 				 **/
-				std::map < std::string, Eigen::Matrix<float, Eigen::Dynamic, 3> > latticeExtras;
+				std::map < std::string, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > latticeExtras;
 
 				size_t numPoints;
 				std::set<size_t> Dielectrics;

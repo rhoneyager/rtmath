@@ -232,7 +232,7 @@ namespace {
 #endif
 #ifdef _WIN32
 			this->dlHandle = LoadLibrary(filename.c_str());
-			if (this->dlHandle == NULL) throw rtmath::debug::xMissingFile(filename.c_str());
+			if (this->dlHandle == NULL) throw rtmath::debug::xBadInput(filename.c_str());
 #endif
 			DLLpathsLoaded.insert(filename);
 		}

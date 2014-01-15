@@ -15,11 +15,21 @@ include_directories(${SILO_INCLUDE_DIRS})
 
 add_library (rtmath_plugin_silo SHARED 
 	plugin-silo.cpp
-	silo-shapefile.cpp)
+	silo-shapefile.cpp
+	CurveMesh3d.cpp
+	CurveMesh3d.h
+	MaterialList.cpp
+	MaterialList.h
+	QuadMesh3d.cpp
+	QuadMesh3d.h
+	RectilinearMesh3d.cpp
+	RectilinearMesh3d.h
+	remake.h
+	)
 addlib(rtmath_plugin_silo SHARED)
 
 set_target_properties( rtmath_plugin_silo PROPERTIES FOLDER "Plugins/Shapes")
-target_link_libraries(rtmath_plugin_silo ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
+target_link_libraries(rtmath_plugin_silo ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat silo)
 INSTALL(TARGETS rtmath_plugin_silo 
 	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
 	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 
