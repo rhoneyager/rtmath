@@ -5,14 +5,14 @@ find_package(HDF5 COMPONENTS C CXX REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
 
-add_library (rtmath-plugin-hdf5 SHARED plugin-hdf5.cpp)
-addlib(rtmath-plugin-hdf5 SHARED)
+add_library (rtmath_plugin_hdf5 SHARED plugin-hdf5.cpp)
+addlib(rtmath_plugin_hdf5 SHARED)
 
-set_target_properties( rtmath-plugin-hdf5 PROPERTIES FOLDER "Plugins/ddscat")
-target_link_libraries(rtmath-plugin-hdf5 
+set_target_properties( rtmath_plugin_hdf5 PROPERTIES FOLDER "Plugins/ddscat")
+target_link_libraries(rtmath_plugin_hdf5 
 	${rtmath_ddscat-libs} rtmath_core rtmath_ddscat
 	${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
-INSTALL(TARGETS rtmath-plugin-hdf5 
+INSTALL(TARGETS rtmath_plugin_hdf5 
 	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
 	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 
 	COMPONENT Plugins)

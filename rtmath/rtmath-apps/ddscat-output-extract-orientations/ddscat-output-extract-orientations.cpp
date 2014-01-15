@@ -1,6 +1,7 @@
 /* This program is designed to extract tsv data from sets of ddOutput files. */
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <complex>
@@ -45,6 +46,7 @@ int main(int argc, char** argv)
 			("input,i", po::value<vector<string> >(),"specify input directories or files")
 			("output,o", po::value<string>(), "specify output file (.tsv)")
 			("isotropic-weights,I", "Force weights to be isotropic. Used for nonstandard ddscat sets.")
+			("temperature,T", po::value<float>()->default_value(0), "Specify temperature (K)")
 			;
 
 		po::positional_options_description p;
@@ -84,8 +86,10 @@ int main(int argc, char** argv)
 		bool isoWts = false;
 		if (vm.count("isotropic-weights")) isoWts = true;
 
+		float temp = vm["temperature"].as<float>();
+
 		ofstream out(sOutput.c_str());
-		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
+		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\tTemperature (K)\t"
 			"M_real\tM_imag\tAeff (um)\t"
 			"Qsca_m_iso\tQbk_m_iso\tQabs_m_iso\tQext_m_iso\t"
 			"Qpha_1_iso\tQpha_2_iso\tQpha_m_iso\tdQpha_iso\t"
@@ -282,12 +286,14 @@ int main(int argc, char** argv)
 					continue;
 				}
 
+				const double pi = boost::math::constants::pi<double>();
+
 				out << p.string() << "\t" << ddOut->description << "\t"
 					<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
-					<< freq << "\t" << m.real() << "\t" << m.imag() << "\t"
+					<< freq << "\t" << temp << "\t" << m.real() << "\t" << m.imag() << "\t"
 					<< it->aeff() << "\t"
 					<< Qsca_iso << "\t"
-					<< Qbk_iso << "\t"
+					<< Qbk_iso * 4. * pi << "\t"
 					<< Qabs_iso << "\t"
 					<< Qext_iso << "\t"
 					<< Qpha_1_iso << "\t"
@@ -299,17 +305,17 @@ int main(int argc, char** argv)
 					<< wt << "\t"
 
 					<< it->getStatEntry(stat_entries::QSCAM) << "\t"
-					<< it->getStatEntry(stat_entries::QBKM) << "\t"
+					<< it->getStatEntry(stat_entries::QBKM) * 4. * pi << "\t"
 					<< it->getStatEntry(stat_entries::QABSM) << "\t"
 					<< it->getStatEntry(stat_entries::QEXTM) << "\t"
 					<< it->getStatEntry(stat_entries::G1M) << "\t"
 					<< it->getStatEntry(stat_entries::QSCA1) << "\t"
-					<< it->getStatEntry(stat_entries::QBK1) << "\t"
+					<< it->getStatEntry(stat_entries::QBK1) * 4. * pi << "\t"
 					<< it->getStatEntry(stat_entries::QABS1) << "\t"
 					<< it->getStatEntry(stat_entries::QEXT1) << "\t"
 					<< it->getStatEntry(stat_entries::G11) << "\t"
 					<< it->getStatEntry(stat_entries::QSCA2) << "\t"
-					<< it->getStatEntry(stat_entries::QBK2) << "\t"
+					<< it->getStatEntry(stat_entries::QBK2) * 4. * pi << "\t"
 					<< it->getStatEntry(stat_entries::QABS2) << "\t"
 					<< it->getStatEntry(stat_entries::QEXT2) << "\t"
 					<< it->getStatEntry(stat_entries::G12) << "\t"

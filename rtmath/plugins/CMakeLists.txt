@@ -17,5 +17,15 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_BOV)
 		add_subdirectory (bov)
 	endif()
+	option (BUILD_PLUGIN_HDF5
+		"Build HDF5 IO plugin" ON)
+	if (BUILD_PLUGIN_HDF5)
+		add_subdirectory (hdf5)
+	endif()
+	option (BUILD_PLUGIN_SILO
+		"Build SILO IO plugin" ON)
+	if (BUILD_PLUGIN_SILO)
+		add_subdirectory (silo)
+	endif()
 endif()
 
