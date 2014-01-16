@@ -18,6 +18,7 @@
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
@@ -32,50 +33,7 @@ namespace rtmath {
 	namespace plugins {
 		namespace silo {
 
-			void WritePoints(DBfile *db, const std::array<std::string, 3> &axislabels,
-				const std::array<std::string, 3> &axisunits, 
-				const Eigen::Matrix<float, Eigen::Dynamic, 3> &pts,
-				std::vector<std::tuple<std::string, std::string, 
-				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > &vals)
-			{
-				// Write the point mesh
-				DBoptlist *optlist = DBMakeOptlist(6);
-				DBAddOption(optlist, DBOPT_XLABEL, (void*)axislabels[0].c_str());
-				DBAddOption(optlist, DBOPT_YLABEL, (void*)axislabels[1].c_str());
-				DBAddOption(optlist, DBOPT_ZLABEL, (void*)axislabels[2].c_str());
-				DBAddOption(optlist, DBOPT_XUNITS, (void *)axisunits[0].c_str());
-				DBAddOption(optlist, DBOPT_YUNITS, (void *)axisunits[0].c_str());
-				DBAddOption(optlist, DBOPT_ZUNITS, (void *)axisunits[0].c_str());
-				const int numPoints = (int)pts.rows();
-
-				// Convert the points, by coordinate, into arrays
-				const float *pcoords[3] = { pts.col(0).data(), 
-					pts.col(1).data(), pts.col(2).data() };
-				DBPutPointmesh(db, "PointMesh", 3, pcoords, numPoints, DB_FLOAT, optlist);
-				DBFreeOptlist(optlist);
-				
-				for (const auto &a : vals)
-				{
-					// Write the point var
-					optlist = DBMakeOptlist(1);
-					DBAddOption(optlist, DBOPT_UNITS, (void *)std::get<1>(a).c_str());
-					
-					const float **vals = new const float*[std::get<2>(a).cols()];
-					for (size_t i = 0; i < (size_t) std::get<2>(a).cols(); ++i)
-						vals[i] = std::get<2>(a).col(i).data();
-					//float *vals[1] = { a.second.col(0).data() };
-					DBPutPointvar(db, std::get<0>(a).c_str(), "PointMesh", 
-						(int) std::get<2>(a).cols(), 
-						vals, 
-						numPoints, 
-						DB_FLOAT, 
-						optlist);
-					DBFreeOptlist(optlist);
-					delete[] vals;
-				}
-			}
-
-			bool match_silo_shapefile(const char* fsilo, const char* type)
+			bool match_silo_ddOutput(const char* fsilo, const char* type)
 			{
 				using namespace boost::filesystem;
 				using std::string;
@@ -88,14 +46,14 @@ namespace rtmath {
 				return false;
 			}
 
-			void write_silo_shapefile(const char* fsilo, const rtmath::ddscat::shapefile::shapefile *shp)
+			void write_silo_ddOutput(const char* fsilo, const rtmath::ddscat::ddOutput *ddo)
 			{
 				using std::string;
 				using std::ofstream;
 				using namespace boost::filesystem;
 
 				DBfile *f = DBCreate(fsilo, DB_CLOBBER, DB_LOCAL,
-					shp->desc.c_str(), // Optional string describing file
+					ddo->description.c_str(), // Optional string describing file
 					DB_PDB);
 				TASSERT(f);
 

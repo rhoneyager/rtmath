@@ -37,6 +37,17 @@ namespace {
 }
 
 namespace rtmath {
+	namespace registry {
+	
+		template struct IO_class_registry
+			<::rtmath::ddscat::ddOutput>;
+		
+		template class usesDLLregistry<
+			::rtmath::ddscat::ddOutput_IO_output_registry,
+			IO_class_registry<::rtmath::ddscat::ddOutput> >;
+		
+	}
+
 	namespace ddscat {
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0)
@@ -88,23 +99,53 @@ namespace rtmath {
 			shape = stats->_shp;
 		}
 
-		void ddOutput::writeFile(const std::string &filename) const
+		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
 		{
 			using namespace Ryan_Serialization;
-			std::string cmeth, uncompressed;
+			using namespace std;
+			using boost::filesystem::path;
+			string cmeth, uncompressed;
 
-			uncompressed_name(filename, uncompressed, cmeth);
-			boost::filesystem::path p(uncompressed);
-			boost::filesystem::path pext = p.extension(); // Uncompressed extension
+			string type = outtype;
+			::rtmath::registry::IO_class_registry<ddOutput>::io_processor_type dllsaver = nullptr;
+			
+			Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
+			path pext = path(uncompressed).extension();
 
-			std::string utype = pext.string();
+			// Process dll hooks first
+			auto hooks = usesDLLregistry<ddOutput_IO_output_registry,
+				::rtmath::registry::IO_class_registry<ddOutput> >::getHooks();
+			for (const auto &hook : *hooks)
+			{
+				if (hook.io_matches(uncompressed.c_str(), type.c_str()))
+				{
+					dllsaver = hook.io_processor;
+					if (!type.size())
+						type = "dll";
+					break;
+				}
+			}
+			if (!type.size())
+			{
+				if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
+				// Default is to write a standard shapefile
+				else type = "shp";
+			}
 
-			// Serialization gets its own override
-			if (Ryan_Serialization::known_format(utype))
+
+			if (type == "serialized")
 			{
 				Ryan_Serialization::write<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
+			}
+			else if (dllsaver)
+			{
+				// Most of these types aren't compressible or implement their
+				// own compression schemes. So, it's not handled at this level.
+				dllsaver(filename.c_str(), this);
 			} else {
-				RTthrow rtmath::debug::xUnknownFileFormat(filename.c_str());
+				// Cannot match a file type to save.
+				// Should never occur.
+				RTthrow debug::xUnknownFileFormat(filename.c_str());
 			}
 		}
 

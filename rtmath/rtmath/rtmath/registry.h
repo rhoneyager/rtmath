@@ -148,7 +148,8 @@ namespace rtmath
 		template<class object>
 		struct IO_class_registry
 		{
-			typedef std::function<bool(const char*)> io_matcher_type;
+			// Matcher takes two parameters, the output filename and an optional 'type'
+			typedef std::function<bool(const char*, const char*)> io_matcher_type;
 			typedef std::function<void(const char*, const object*)> io_processor_type;
 			/// Determines if a file can be read / written with this registration
 			io_matcher_type io_matches;

@@ -12,6 +12,7 @@
 #include <boost/serialization/version.hpp>
 
 #include "../hash.h"
+#include "../registry.h"
 
 namespace boost { namespace program_options { 
 	class options_description; class variables_map; } }
@@ -19,6 +20,19 @@ namespace boost { namespace filesystem { class path; } }
 
 
 namespace rtmath {
+	namespace ddscat {
+		class ddOutput;
+		class ddOutput_IO_output_registry {};
+	}
+	namespace registry {
+		extern template struct IO_class_registry<
+			::rtmath::ddscat::ddOutput>;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddOutput_IO_output_registry,
+			IO_class_registry<::rtmath::ddscat::ddOutput> >;
+		
+	}
 	namespace ddscat {
 
 		class ddOutputSingle;
@@ -40,7 +54,10 @@ namespace rtmath {
 		 * effective radius. The most general type of ddscat run may contain many 
 		 * permutations of these.
 		 **/
-		class DLEXPORT_rtmath_ddscat ddOutput
+		class DLEXPORT_rtmath_ddscat ddOutput :
+			virtual public ::rtmath::registry::usesDLLregistry<
+				::rtmath::ddscat::ddOutput_IO_output_registry, 
+				::rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -97,8 +114,8 @@ namespace rtmath {
 			/// Empty if ddOutput was directly loaded from a ddscat run.
 			//boost::shared_ptr<ddOutputGenerator> generator;
 
-			/// Write output to file (using serialization)
-			void writeFile(const std::string &filename) const;
+			/// Write output to file
+			void writeFile(const std::string &filename, const std::string &type = "") const;
 
 			/// Read xml file (using serialization)
 			void readFile(const std::string &filename);

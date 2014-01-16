@@ -17,7 +17,7 @@
 void dllEntry();
 rtmath_plugin_init(dllEntry);
 
-bool match_bov_shapefile(const char* bov);
+bool match_bov_shapefile(const char* bov, const char* type);
 void write_bov_shapefile(const char* bov, 
 	const rtmath::ddscat::shapefile::shapefile *shp);
 
@@ -42,14 +42,16 @@ void dllEntry()
 	std::cerr << "plugin-bov dll loaded!\n\n";
 }
 
-bool match_bov_shapefile(const char* bov)
+bool match_bov_shapefile(const char* bov, const char* type)
 {
 	using namespace boost::filesystem;
 	using std::string;
 	using std::ofstream;
 
 	path pPrefix(bov);
-	if (pPrefix.extension() == ".bov") return true;
+	string stype(type);
+	if (stype == "bov" || stype == ".bov") return true;
+	else if (pPrefix.extension() == ".bov") return true;
 	return false;
 }
 

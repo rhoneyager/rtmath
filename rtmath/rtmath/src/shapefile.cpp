@@ -40,21 +40,6 @@ namespace rtmath {
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
 			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
 		
-		/*
-		template <>
-		usesDLLregistry<rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hookStorageType
-			rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
-			rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hooks;
-
-		template <>
-		usesDLLregistry<rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hookStorageType
-			rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
-			rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			rtmath::ddscat::shapefile::shapefile_IO_class_registry >::hooks;
-		*/
 	}
 
 	namespace ddscat {
@@ -621,31 +606,30 @@ namespace rtmath {
 
 				// If missing the type, autodetect based on file extension
 				std::string type = outtype;
-				::rtmath::registry::IO_class_registry<shapefile>::io_processor_type dllsaver;
+				::rtmath::registry::IO_class_registry<shapefile>::io_processor_type dllsaver = nullptr;
+				
+				std::string uncompressed;
+				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
+				path pext = path(uncompressed).extension();
+
+				// Process dll hooks first
+				auto hooks = usesDLLregistry<shapefile_IO_output_registry,
+					::rtmath::registry::IO_class_registry<shapefile> >::getHooks();
+				for (const auto &hook : *hooks)
+				{
+					if (hook.io_matches(uncompressed.c_str(), type.c_str()))
+					{
+						dllsaver = hook.io_processor;
+						if (!type.size())
+							type = "dll";
+						break;
+					}
+				}
 				if (!type.size())
 				{
-					std::string uncompressed;
-					Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
-					path pext = path(uncompressed).extension();
-
-					// Process dll hooks first
-					auto hooks = usesDLLregistry<shapefile_IO_output_registry,
-						::rtmath::registry::IO_class_registry<shapefile> >::getHooks();
-					for (const auto &hook : *hooks)
-					{
-						if (hook.io_matches(uncompressed.c_str()))
-						{
-							dllsaver = hook.io_processor;
-							type = "dll";
-							break;
-						}
-					}
-					if (!type.size())
-					{
-						if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
-						// Default is to write a standard shapefile
-						else type = "shp";
-					}
+					if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
+					// Default is to write a standard shapefile
+					else type = "shp";
 				}
 
 				// Now, save the appropriate format based on the type
@@ -671,7 +655,7 @@ namespace rtmath {
 					Ryan_Serialization::write<shapefile>(*this, filename, 
 						"rtmath::ddscat::shapefile::shapefile");
 				}
-				else if (type == "dll")
+				else if (dllsaver)
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
@@ -679,7 +663,7 @@ namespace rtmath {
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					throw debug::xUnknownFileFormat(filename.c_str());
+					RTthrow debug::xUnknownFileFormat(filename.c_str());
 				}
 			}
 
