@@ -49,10 +49,34 @@ namespace rtmath {
 				const int numPoints = (int)pts.rows();
 
 				// Convert the points, by coordinate, into arrays
+				/*
+				float *xs = new float[numPoints];
+				float *ys = new float[numPoints];
+				float *zs = new float[numPoints];
+				std::copy_n(pts.col(0).data(), numPoints, xs);
+				std::copy_n(pts.col(1).data(), numPoints, xs);
+				std::copy_n(pts.col(2).data(), numPoints, xs);
+				*/
+				/*
+				std::cout << "xs\n";
+				for (size_t i=0; i<numPoints;i++)
+					std::cout << i << " - " << pts.col(0).data()[i] << std::endl;
+				std::cout << "ys\n";
+				for (size_t i=0; i<numPoints;i++)
+					std::cout << i << " - " << pts.col(1).data()[i] << std::endl;
+				std::cout << "zs\n";
+				for (size_t i=0; i<numPoints;i++)
+					std::cout << i << " - " << pts.col(2).data()[i] << std::endl;
+				*/
 				const float *pcoords[3] = { pts.col(0).data(), 
 					pts.col(1).data(), pts.col(2).data() };
 				DBPutPointmesh(db, "PointMesh", 3, pcoords, numPoints, DB_FLOAT, optlist);
 				DBFreeOptlist(optlist);
+				/*
+				delete[] xs;
+				delete[] ys;
+				delete[] zs;
+				*/
 
 				for (const auto &a : vals)
 				{
