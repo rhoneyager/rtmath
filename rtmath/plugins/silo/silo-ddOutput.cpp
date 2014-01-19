@@ -20,6 +20,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
@@ -35,8 +36,8 @@ namespace rtmath {
 	namespace plugins {
 		namespace silo {
 
-			/// Function to construct a Cartesian mesh corresponding to the beta and theta rotations
-			void CreateMesh(DBfile *df, const rtmath::ddscat::ddOutput *ddo)
+			/// Function to construct a Spherical mesh corresponding to the beta and theta rotations
+			void CreateMeshSpherical(DBfile *df, const rtmath::ddscat::ddOutput *ddo)
 			{
 
 				// Given the given radius and the rotations, construct vertices at the given locations
@@ -143,6 +144,73 @@ namespace rtmath {
 
 			}
 
+			/// Creates a rectilinear mesh to hold beta, theta, phi paired values
+			void CreateMeshRectilinear(DBfile *df, const rtmath::ddscat::ddOutput *ddo)
+			{
+				using namespace ddscat::weights;
+				using namespace std;
+				ddscat::rotations rot(*(ddo->parfile.get()));
+				ddscat::weights::ddWeightsDDSCAT dw(rot);
+				ddscat::weights::IntervalTable3d wts;
+				dw.getIntervalTable(wts);
+
+				size_t nBetas = dw.numBetas(), nThetas = dw.numThetas(), nPhis = dw.numPhis();
+				int dims[] = { (int) nBetas, (int) nThetas, (int) nPhis};
+				// Construct the coordinate matrices
+				IntervalTable1d betas, thetas, phis;
+				dw.wBetas.getIntervals(betas);
+				dw.wThetas.getIntervals(thetas);
+				dw.wPhis.getIntervals(phis);
+
+				vector<double> abetas, athetas, aphis;
+				for (auto &b : betas)
+					abetas.push_back(b.at(IntervalTable1dDefs::PIVOT));
+				for (auto &b : thetas)
+					athetas.push_back(b.at(IntervalTable1dDefs::PIVOT));
+				for (auto &b : phis)
+					aphis.push_back(b.at(IntervalTable1dDefs::PIVOT));
+
+				double *coords[] = {abetas.data(), athetas.data(), aphis.data() };
+
+				DBPutQuadmesh(df, "CoordsMesh_rect",
+					NULL, coords, dims, 3, DB_DOUBLE, DB_COLLINEAR, NULL);
+			}
+
+			/// Write a node-centerd variable to the mesh
+			void AddToMesh(DBfile *df, const char* mesh, const rtmath::ddscat::ddOutput *ddo,
+				rtmath::ddscat::stat_entries entry)
+			{
+				// sca tables are stored as a plain set (no ordering)
+				ddscat::rotations rot(*(ddo->parfile.get()));
+				ddscat::weights::ddWeightsDDSCAT dw(rot);
+				ddscat::weights::IntervalTable3d wts;
+				dw.getIntervalTable(wts);
+				size_t nBetas = dw.numBetas(), nThetas = dw.numThetas(), nPhis = dw.numPhis();
+				size_t nRots = nBetas * nThetas * nPhis;
+				int dims[] = {(int) nBetas, (int) nThetas, (int) nPhis};
+
+				std::vector<double> output(nRots);
+				auto getIndex = [&](boost::shared_ptr<ddscat::ddOutputSingle> os) -> size_t
+				{
+					size_t iBeta = dw.wBetas.getIndex(os->beta());
+					size_t iTheta = dw.wBetas.getIndex(os->theta());
+					size_t iPhi = dw.wBetas.getIndex(os->phi());
+					size_t index = iPhi + (nPhis * iTheta) + (nThetas * nPhis * iBeta);
+					return index;
+				};
+
+				for (const auto &sca : ddo->scas)
+				{
+					size_t index = getIndex(sca);
+					double val = sca->getStatEntry(entry);
+					output[index] = val;
+				}
+
+				std::string varName = rtmath::ddscat::getStatNameFromId(entry);
+				DBPutQuadvar1(df, varName.c_str(), mesh,
+					(void*) output.data(), dims, 3, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+			}
+
 			bool match_silo_ddOutput(const char* fsilo, const char* type)
 			{
 				using namespace boost::filesystem;
@@ -166,6 +234,23 @@ namespace rtmath {
 					ddo->description.c_str(), // Optional string describing file
 					DB_PDB);
 				TASSERT(f);
+
+				CreateMeshRectilinear(f, ddo);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::G11);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::G12);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::G1M);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QABS1);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QABS2);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QABSM);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QBK1);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QBK2);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QBKM);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QEXT1);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QEXT2);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QEXTM);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QSCA1);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QSCA2);
+				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QSCAM);
 
 				//CreateMesh(f, ddo);
 				/*

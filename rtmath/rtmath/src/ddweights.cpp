@@ -144,6 +144,24 @@ namespace rtmath {
 				return 0.0;
 			}
 
+			size_t ddWeights::getIndex(double point) const
+			{
+				size_t index = 0;
+				double start = 0, end = 0, pivot = 0;
+				interval(point, start, end, pivot);
+				auto it = std::find_if(weights.cbegin(), weights.cend(), [&](const std::pair<double,double> &p)
+				{
+					index++;
+					if (abs((pivot - p.first) / p.first) < 0.0001) return true;
+					if (abs(pivot - p.first) < 0.0001) return true; // Near-zero value
+					return false;
+				});
+				index--;
+				if (it != weights.cend())
+					return index;
+				return 0;
+			}
+
 			bool ddWeights::interval(double point, double &start, double &end, double &pivot) const
 			{
 				start = point;

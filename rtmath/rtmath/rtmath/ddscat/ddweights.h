@@ -94,6 +94,9 @@ namespace rtmath {
 				//virtual double getRandomPoint() const = 0;
 				// Get random points in the interval range
 				//virtual void getRandomPoints(size_t n, std::vector<double> &) const = 0;
+
+				/// Find the index that the provided point fits within
+				size_t getIndex(double point) const;
 			protected:
 				ddWeights(double start = 0, double end = 0, size_t n = 0);
 				/// Start point
@@ -182,11 +185,12 @@ namespace rtmath {
 				size_t numPhis() const { return wPhis.size(); }
 				/// Get number of orientations
 				size_t size() const { return wBetas.size() * wThetas.size() * wPhis.size(); }
-			private:
-				void _init();
 				ddWeightsCosInt wThetas;
 				ddWeightsLinInt wPhis;
 				ddWeightsLinInt wBetas;
+			private:
+				void _init();
+				
 				IntervalTable3d IntervalWeights;
 			};
 

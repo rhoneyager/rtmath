@@ -11,6 +11,7 @@
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
@@ -20,6 +21,8 @@ rtmath_plugin_init(dllEntry);
 bool match_bov_shapefile(const char* bov, const char* type);
 void write_bov_shapefile(const char* bov, 
 	const rtmath::ddscat::shapefile::shapefile *shp);
+void write_bov_ddOutput(const char*,
+	const rtmath::ddscat::ddOutput*);
 
 
 void dllEntry()
@@ -39,7 +42,15 @@ void dllEntry()
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 		rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >
 		::registerHook(s);
-	std::cerr << "plugin-bov dll loaded!\n\n";
+
+	static rtmath::registry::IO_class_registry<
+		::rtmath::ddscat::ddOutput> o;
+	o.io_matches = match_bov_shapefile;
+	o.io_processor = write_bov_ddOutput;
+	rtmath::ddscat::ddOutput::usesDLLregistry<
+		rtmath::ddscat::ddOutput_IO_output_registry,
+		rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >
+		::registerHook(o);
 }
 
 bool match_bov_shapefile(const char* bov, const char* type)
@@ -142,4 +153,9 @@ void write_bov_shapefile(const char* bov, const rtmath::ddscat::shapefile::shape
 	}
 	fwrite((void*)array.get(), sizeof(short), size, pOut);
 	fclose(pOut);
+}
+
+void write_bov_ddOutput(const char* bov, const rtmath::ddscat::ddOutput *ddo)
+{
+	write_bov_shapefile(bov, ddo->shape.get());
 }
