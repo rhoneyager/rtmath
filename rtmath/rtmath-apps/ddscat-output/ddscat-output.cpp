@@ -47,6 +47,7 @@ int main(int argc, char** argv)
 			("hash,s", "Store ddscat output in the hash store")
 			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
 			("description,d", po::value<string>(), "Describe the output file")
+			("directory,D", "Write as a directory")
 			;
 
 		po::positional_options_description p;
@@ -157,7 +158,8 @@ int main(int argc, char** argv)
 		}
 
 		// Check the output extension
-		if (!Ryan_Serialization::known_format(sOutput)) writeDir = true;
+		if (vm.count("directory")) writeDir = true;
+		//if (!Ryan_Serialization::known_format(sOutput)) writeDir = true;
 
 		if (writeDir)
 		{

@@ -16,6 +16,7 @@ include_directories(${SILO_INCLUDE_DIRS})
 add_library (rtmath_plugin_silo SHARED 
 	plugin-silo.cpp
 	silo-shapefile.cpp
+	silo-ddOutput.cpp
 	CurveMesh3d.cpp
 	CurveMesh3d.h
 	MaterialList.cpp
@@ -25,6 +26,8 @@ add_library (rtmath_plugin_silo SHARED
 	RectilinearMesh3d.cpp
 	RectilinearMesh3d.h
 	remake.h
+	WritePoints.cpp
+	WritePoints.h
 	)
 addlib(rtmath_plugin_silo SHARED)
 

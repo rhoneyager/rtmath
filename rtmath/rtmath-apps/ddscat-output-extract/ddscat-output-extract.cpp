@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >(),"specify input directories or files")
-			("output,o", po::value<string>(), "specify output file (.tsv)")
+			("output,o", po::value<string>(), "specify output file")
 			("force-description", po::value<string>(), "Override the description of each entry")
 			;
 

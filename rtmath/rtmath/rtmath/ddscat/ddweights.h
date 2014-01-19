@@ -310,19 +310,39 @@ namespace rtmath {
 				**/
 				static double VonMisesFisherCDF(size_t degree, const double *x1, 
 					const double *x2, const double *mu, double kappa);
-				/** \brief Convert from angles (radians) to Cartesian coordinates, 
-				* needed for the PDF and CDF functions.
-				*
-				* \param n is the vector space dimension
-				* \param in is the input point of the form u(r,theta), theta = (t1, ..., t_n-1), and r = mag(x)
-				* \param out is the output point in Cartesian coordinates
-				**/
-				static void radSphToCrt(size_t n, const double *in, double *out);
 			protected:
 				double meanTheta;
 				double meanPhi;
 				double kappa;
 			};
+
+			/** \brief Convert from angles (radians) to Cartesian coordinates, 
+			* needed for the PDF and CDF functions.
+			*
+			* \param n is the vector space dimension
+			* \param in is the input point of the form u(r,theta), theta = (t1, ..., t_n-1), and r = mag(x)
+			* \param out is the output point in Cartesian coordinates
+			**/
+			template <class T>
+			void radSphToCrt(size_t n, const T* in, T* out)
+			{
+				// This function begs for initializer lists, but MSVC2012 doesn't support them.
+				assert(n>0);
+
+				// x_j = sin(theta_1)*sin(theta_2)*...*sin(theta_j-1)*cos(theta_j)  for 1 <= j < p and
+				// x_p = sin(theta_1)*...*sin(theta_p-1)
+
+				for (size_t i=0; i<n; ++i)
+				{
+					out[i] = in[0]; // r
+					if (i < n-1)
+						out[i] *= cos(in[i+1]);
+					for (size_t j=1; j<=i; ++j)
+					{
+						out[i] *= sin(in[j]);
+					}
+				}
+			}
 
 			/// Provides a bimodal vMF distribution, which better matches flake results
 			class DLEXPORT_rtmath_ddscat BimodalVonMisesFisherWeights

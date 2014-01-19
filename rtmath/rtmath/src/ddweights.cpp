@@ -517,25 +517,6 @@ namespace rtmath {
 				weights = this->weights;
 			}
 
-			void VonMisesFisherWeights::radSphToCrt(size_t n, const double *in, double *out)
-			{
-				// This function begs for initializer lists, but MSVC2012 doesn't support them.
-				TASSERT(n>0);
-
-				// x_j = sin(theta_1)*sin(theta_2)*...*sin(theta_j-1)*cos(theta_j)  for 1 <= j < p and
-				// x_p = sin(theta_1)*...*sin(theta_p-1)
-
-				for (size_t i=0; i<n; ++i)
-				{
-					out[i] = in[0]; // r
-					if (i < n-1)
-						out[i] *= cos(in[i+1]);
-					for (size_t j=1; j<=i; ++j)
-					{
-						out[i] *= sin(in[j]);
-					}
-				}
-			}
 
 			VonMisesFisherWeights::VonMisesFisherWeights(const ddWeightsDDSCAT& dw, double muT, double muP, double kappa)
 				: meanTheta(muT), meanPhi(muP), kappa(kappa), OrientationWeights3d()
@@ -719,12 +700,12 @@ namespace rtmath {
 					aToRad(2, mus_deg_b, mus_b_rad+1);
 
 					double start_pol[degree], end_pol[degree], mid_pol[degree], mus_pol[degree], mus_b_pol[degree];
-					VonMisesFisherWeights::radSphToCrt(degree, start_rad, start_pol);
-					VonMisesFisherWeights::radSphToCrt(degree, end_rad, end_pol);
-					VonMisesFisherWeights::radSphToCrt(degree, mid_rad, mid_pol);
-					VonMisesFisherWeights::radSphToCrt(degree, mus_rad, mus_pol);
+					radSphToCrt(degree, start_rad, start_pol);
+					radSphToCrt(degree, end_rad, end_pol);
+					radSphToCrt(degree, mid_rad, mid_pol);
+					radSphToCrt(degree, mus_rad, mus_pol);
 
-					VonMisesFisherWeights::radSphToCrt(degree, mus_b_rad, mus_b_pol);
+					radSphToCrt(degree, mus_b_rad, mus_b_pol);
 
 					double kappa_rad = toRad(kappa);
 
