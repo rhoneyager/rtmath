@@ -129,7 +129,7 @@ namespace rtmath {
 		ddScattMatrixConnector::ddScattMatrixConnector(
 			const std::vector<std::complex<double> >& src)
 		{
-			if (src.size() % 3 != 0 || !src.size()) throw debug::xArrayOutOfBounds();
+			if (src.size() % 3 != 0 || !src.size()) RTthrow debug::xArrayOutOfBounds();
 			e01x = src[0];
 			e01y = src[1];
 			e01z = src[2];
@@ -198,7 +198,7 @@ namespace rtmath {
 		/*
 		ddScattMatrixF ddScattMatrixF::operator+(const ddScattMatrixF& rhs) const
 		{
-			if (!compareTolHeader(rhs)) throw(debug::xBadInput(
+			if (!compareTolHeader(rhs)) RTthrow(debug::xBadInput(
 				"ddScattMatrices are not of the same header type"));
 			ddScattMatrixF res;
 			
@@ -224,7 +224,7 @@ namespace rtmath {
 
 		ddScattMatrixP ddScattMatrixP::operator+(const ddScattMatrixP& rhs) const
 		{
-			if (!compareTolHeader(rhs)) throw(debug::xBadInput(
+			if (!compareTolHeader(rhs)) RTthrow(debug::xBadInput(
 				"ddScattMatrices are not of the same header type"));
 			ddScattMatrixP res;
 			

@@ -618,7 +618,7 @@ namespace rtmath {
 			// specified order to fill in the rest of the variables.
 			for (auto it = order.begin(); it != order.end(); it++)
 			{
-				boost::shared_ptr<const graphs::vertex> IT = it->lock();
+				boost::shared_ptr<const graphs::vertex> IT = it->first.lock();
 				boost::shared_ptr<graphs::vertex> UT = boost::const_pointer_cast< graphs::vertex >(IT);
 				UT->run();
 			}

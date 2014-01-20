@@ -37,7 +37,7 @@ namespace rtmath {
 				xn = xn1 - fxn1 * (xn1 - xn2) / (fxn1 - fxn2);
 			} while ( (abs(xn-xn1) > eps) && (i++ < maxIter));
 
-			if (i >= maxIter) throw debug::xModelOutOfRange(abs(xn));
+			if (i >= maxIter) RTthrow debug::xModelOutOfRange(abs(xn));
 			zero = xn;
 			return zero;
 		}

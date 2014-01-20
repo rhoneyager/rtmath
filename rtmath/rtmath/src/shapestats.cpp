@@ -499,8 +499,8 @@ namespace rtmath {
 				if (is_directory(p)) return true;
 				return false;
 			};
-			if (!validateDir(pHashShapes)) throw debug::xMissingFile(pHashShapes.string().c_str());
-			if (!validateDir(pHashStats)) throw debug::xMissingFile(pHashStats.string().c_str());
+			if (!validateDir(pHashShapes)) RTthrow debug::xMissingFile(pHashShapes.string().c_str());
+			if (!validateDir(pHashStats)) RTthrow debug::xMissingFile(pHashStats.string().c_str());
 		}
 
 		void shapeFileStats::initPaths()

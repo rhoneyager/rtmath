@@ -119,7 +119,7 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				if (!relseg) throw rtmath::debug::xBadInput(key.c_str());
+				if (!relseg) RTthrow rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
 				bool res = relseg->hasVal(keystripped);
@@ -155,7 +155,7 @@ namespace rtmath {
 			if (key.find('/') != string::npos)
 			{
 				std::shared_ptr<configsegment> relseg = findSegment(key);
-				if (!relseg) throw rtmath::debug::xBadInput(key.c_str());
+				if (!relseg) RTthrow rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
 				bool res = relseg->getVal(keystripped, value);
@@ -259,11 +259,11 @@ namespace rtmath {
 			// Use boost_filesystem as a file existence check
 			boost::filesystem::path p(filename);
 			boost::filesystem::path pabs(boost::filesystem::canonical(p));
-			if (!exists(p)) throw rtmath::debug::xMissingFile(pabs.string().c_str());
-			if (is_directory(p)) throw rtmath::debug::xMissingFile(pabs.string().c_str());
+			if (!exists(p)) RTthrow rtmath::debug::xMissingFile(pabs.string().c_str());
+			if (is_directory(p)) RTthrow rtmath::debug::xMissingFile(pabs.string().c_str());
 			ifstream indata(filename);
-			if (!indata) throw rtmath::debug::xOtherError();
-			if (indata.good() == false) throw rtmath::debug::xEmptyInputFile(filename);
+			if (!indata) RTthrow rtmath::debug::xOtherError();
+			if (indata.good() == false) RTthrow rtmath::debug::xEmptyInputFile(filename);
 
 			return loadFile(indata, root, filename);
 			//return root;
@@ -309,7 +309,7 @@ namespace rtmath {
 					{
 						// Close container
 						cseg = cseg->getParent();
-						if (!cseg) throw rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
+						if (!cseg) RTthrow rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
 					}
 					else {
 						// New container
@@ -345,12 +345,12 @@ namespace rtmath {
 						{
 							// The path on the Include is relative, so make it relative to the first loaded file, typically the root
 							string newfile = (rootpath.parent_path() / value).string();
-							if (!exists(path(newfile))) throw rtmath::debug::xMissingFile(newfile.c_str());
+							if (!exists(path(newfile))) RTthrow rtmath::debug::xMissingFile(newfile.c_str());
 							loadFile(newfile.c_str(), cseg);
 						}
 						else {
 							// The path is absolute, so use it
-							if (!exists(path(value.c_str()))) throw rtmath::debug::xMissingFile(value.c_str());
+							if (!exists(path(value.c_str()))) RTthrow rtmath::debug::xMissingFile(value.c_str());
 							loadFile(value.c_str(), cseg); // Load a file
 						}
 					}
@@ -500,7 +500,7 @@ namespace rtmath {
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			std::string fn = filename;
 			if (fn == "") getConfigDefaultFile(fn);
-			if (fn == "") throw debug::xMissingFile("Cannot find the rtmath.conf file");
+			if (fn == "") RTthrow debug::xMissingFile("Cannot find the rtmath.conf file");
 			std::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
 			if (cnf != nullptr) _rtconfroot = cnf;
 			return cnf;

@@ -8,6 +8,7 @@
 #include "../rtmath/polynomial.h"
 #include "../rtmath/polynomials/legendre.h"
 #include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 
 namespace
 {
@@ -81,8 +82,8 @@ namespace rtmath {
 			unsigned int start = 3 * (unsigned int) ( ( (degree * degree) - degree) / 2);
 			//unsigned int start = 3 * (unsigned int) (-1.0 * (double) degree / 2.0 + (double) degree * (double) degree / 2.0);
 			// Check if the start even exists! If not, generate the necessary points.
-			// TODO: add code. For now, throw if insufficient points
-			if (degree > 7) throw rtmath::debug::xBadInput("Bad quadrature degree");
+			// TODO: add code. For now, RTthrow if insufficient points
+			if (degree > 7) RTthrow rtmath::debug::xBadInput("Bad quadrature degree");
 			*/
 
 //void getGaussLegPtsStd(size_t deg, std::set<ptWeight>& p)
@@ -113,7 +114,7 @@ namespace rtmath {
 		{
 			p.clear();
 			unsigned int start = 3 * (unsigned int) ( ( (degree * degree) - degree) / 2);
-			if (degree > 7) throw rtmath::debug::xBadInput("Bad quadrature degree");
+			if (degree > 7) RTthrow rtmath::debug::xBadInput("Bad quadrature degree");
 			for (unsigned int i = start; i < start + 3 * degree; i+=3)
 				pts.insert(_gaussian_lagrange[i+1]);
 		}

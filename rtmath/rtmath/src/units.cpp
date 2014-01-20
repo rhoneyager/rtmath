@@ -182,7 +182,7 @@ namespace rtmath {
 		{
 			// Less trivial set of conversions
 			// First, if conversion of prefixes is needed, do it.
-			if (!_valid) throw rtmath::debug::xUnimplementedFunction();
+			if (!_valid) RTthrow rtmath::debug::xUnimplementedFunction();
 			double res = in;
 			res *= _Sin;
 

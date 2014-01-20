@@ -10,18 +10,10 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include "../Serialization/serialization_macros.h"
-#include "../Serialization/eigen_serialization.h"
 #include "../hash.h"
 #include "../registry.h"
 #include <boost/shared_ptr.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/split_free.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/vector.hpp>
 #include <boost/serialization/version.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/string.hpp>
 
 namespace rtmath {
 	namespace ddscat {
@@ -93,9 +85,9 @@ namespace rtmath {
 				void writeToHash() const;
 				/// Write a shapefile to a stream (no compression)
 				void write(std::ostream &out) const;
-				/// \brief Export a shapefile to vtk output
-				/// \todo Move to plugin
-				void writeVTK(const std::string &fname) const;
+				// \brief Export a shapefile to vtk output
+				// \todo Move to plugin
+				//void writeVTK(const std::string &fname) const;
 				/** \brief Function type definition for a function that determines a decimated cell
 				* refractive index.
 				**/

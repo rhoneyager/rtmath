@@ -7,6 +7,7 @@
 #include <fstream>
 #include "../rtmath/refract.h"
 #include "../rtmath/zeros.h"
+#include "../rtmath/error/error.h"
 
 namespace {
 	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
@@ -64,7 +65,7 @@ void rtmath::refract::process_static_options(
 
 void rtmath::refract::mWater(double f, double t, std::complex<double> &m)
 {
-	if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
+	if (f< 0) RTthrow rtmath::debug::xModelOutOfRange(f);
 	if (f < 1000)
 	{
 		if (t >= 273)
@@ -80,7 +81,7 @@ void rtmath::refract::mWater(double f, double t, std::complex<double> &m)
 
 void rtmath::refract::mIce(double f, double t, std::complex<double> &m)
 {
-	if (f< 0) throw rtmath::debug::xModelOutOfRange(f);
+	if (f< 0) RTthrow rtmath::debug::xModelOutOfRange(f);
 	if (f < 1000)
 	{
 		if (t <= 278)
@@ -281,8 +282,8 @@ void rtmath::refract::MultiInclusions(
 	const std::vector<std::complex<double> > &ms, 
 	std::complex<double> &Mres)
 {
-	//if (fs.size() != ms.size() + 1) throw rtmath::debug::xBadInput("Array sizes are not the same");
-	//if (fs.size() != funcs.size()) throw rtmath::debug::xBadInput("Array sizes are not the same");
+	//if (fs.size() != ms.size() + 1) RTthrow rtmath::debug::xBadInput("Array sizes are not the same");
+	//if (fs.size() != funcs.size()) RTthrow rtmath::debug::xBadInput("Array sizes are not the same");
 
 	using namespace std;
 

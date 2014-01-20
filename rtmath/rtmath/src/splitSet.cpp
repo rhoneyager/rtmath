@@ -36,7 +36,7 @@ namespace rtmath {
 				if ((start > end && interval > 0) || (start < end && interval < 0))
 				{
 					// Die from invalid range
-					// Should really throw error
+					// Should really RTthrow error
 					throw rtmath::debug::xBadInput("Invalid range");
 				}
 				for (double j=start;j<=end+(interval/100.0);j+=interval)

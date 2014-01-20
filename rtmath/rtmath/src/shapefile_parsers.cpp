@@ -8,11 +8,14 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
+
+#include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
@@ -648,6 +651,43 @@ namespace rtmath
 
 				hash();
 			}
+
+			boost::shared_ptr<shapefile> shapefile::loadHash(
+				const std::string &hash)
+			{
+				boost::shared_ptr<shapefile> res;
+
+				using boost::filesystem::path;
+				using boost::filesystem::exists;
+
+				path pHashShapes;
+				path pHashStats;
+				rtmath::ddscat::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+
+				path pHashShape = findHash(pHashShapes, hash);
+				if (!pHashShape.empty())
+					res = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
+				//else if (Ryan_Serialization::detect_compressed(_shp->filename))
+				//	res = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
+				else
+					throw rtmath::debug::xMissingFile(hash.c_str());
+				return res;
+			}
+
+			void shapefile::writeToHash() const
+			{
+				using boost::filesystem::path;
+
+				path pHashShapes;
+				path pHashStats;
+				rtmath::ddscat::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+
+				path pHashShape = storeHash(pHashShapes, _localhash);
+				// If a shape matching the hash already exists, there is no need to write an identical file
+				if (!Ryan_Serialization::detect_compressed(pHashShape.string()))
+					write(pHashShape.string(), true);
+			}
+
 		}
 	}
 }

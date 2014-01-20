@@ -6,6 +6,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddRunSet.h"
+#include "../../rtmath/rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -58,8 +59,8 @@ namespace rtmath {
 				if ((pund != string::npos) && (pavg != string::npos)) pund = string::npos;
 				if (pund == string::npos && pshape != string::npos) pos = pshape;
 				else if (pshape == string::npos && pund != string::npos) pos = pund;
-				else if (pshape == string::npos) throw;
-				else if (pund == string::npos) throw;
+				else if (pshape == string::npos) RTthrow;
+				else if (pund == string::npos) RTthrow;
 				else pos = (pund < pshape) ? pund : pshape;
 				sleaf = sleaf.substr(0,pos);
 			}

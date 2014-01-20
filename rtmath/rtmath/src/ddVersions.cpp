@@ -109,7 +109,7 @@ namespace rtmath
 				parse_ddversion(start,end,v);
 
 				size_t ret = 0;
-				if (!v.size()) throw rtmath::debug::xBadInput("Bad version id");
+				if (!v.size()) RTthrow rtmath::debug::xBadInput("Bad version id");
 				for (auto it = v.begin(); it != v.end(); ++it)
 				{
 					//                                std::cerr << "Token " << *it << std::endl;
@@ -176,7 +176,7 @@ namespace rtmath
 				initVerMap();
 				std::string s;
 				if (avgMap.count(id)) s = avgMap.at(id);
-				else throw rtmath::debug::xBadInput("getVerAvgHeaderString id not found");
+				else RTthrow rtmath::debug::xBadInput("getVerAvgHeaderString id not found");
 				return s;
 			}
 

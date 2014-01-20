@@ -1,6 +1,5 @@
 #include "Stdafx-ddscat.h"
 #pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
-#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -8,8 +7,6 @@
 #include <vector>
 #include <map>
 #include <tuple>
-#include <thread>
-#include <mutex>
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/interprocess/file_mapping.hpp>
@@ -21,8 +18,6 @@
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/ddscat/shapestats.h"
-#include "../rtmath/ddscat/hulls.h" // Hulls and VTK functions
 #include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
@@ -45,32 +40,7 @@ namespace rtmath {
 	namespace ddscat {
 		namespace shapefile {
 
-			/*template <>
-			shapefile::usesDLLregistry<shapefile_IO_input_registry,
-				shapefile_IO_class_registry >::hookStorageType
-				shapefile::usesDLLregistry<shapefile_IO_input_registry,
-				shapefile_IO_class_registry >::hooks;
-			*/
-
-			//template<class registryName, typename signature>
-			/* template <>
-			rtmath::registry::usesDLLregistry<shapefile_IO_input_registry,
-				shapefile_IO_class_registry >::hookStorageType
-				shapefile::usesDLLregistry<shapefile_IO_input_registry,
-				shapefile_IO_class_registry >::hooks;
-			*/
-
-			//shapefile::usesDLLregistry<shapefile_IO_output_registry,
-			//	shapefile_IO_class_registry >::hookStorageType
-			//	shapefile::usesDLLregistry<shapefile_IO_output_registry,
-			//	shapefile_IO_class_registry >::hooks;
-
-
-			shapefile::shapefile()
-			{
-				_init();
-			}
-
+			shapefile::shapefile() { _init(); }
 			shapefile::~shapefile() { }
 
 			shapefile::shapefile(const std::string &filename)
@@ -95,7 +65,6 @@ namespace rtmath {
 
 			void shapefile::_init()
 			{
-				using namespace std;
 				numPoints = 0;
 				filename = "";
 			}
@@ -121,50 +90,11 @@ namespace rtmath {
 
 			boost::shared_ptr<shapefile> shapefile::loadHash(
 				const HASH_t &hash)
-			{
-				return loadHash(boost::lexical_cast<std::string>(hash.lower));
-			}
+			{ return loadHash(boost::lexical_cast<std::string>(hash.lower)); }
 
-			boost::shared_ptr<shapefile> shapefile::loadHash(
-				const std::string &hash)
-			{
-				boost::shared_ptr<shapefile> res;
-
-				using boost::filesystem::path;
-				using boost::filesystem::exists;
-
-				path pHashShapes;
-				path pHashStats;
-				rtmath::ddscat::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
-
-				path pHashShape = findHash(pHashShapes, hash);
-				if (!pHashShape.empty())
-					res = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
-				//else if (Ryan_Serialization::detect_compressed(_shp->filename))
-				//	res = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
-				else
-					throw rtmath::debug::xMissingFile(hash.c_str());
-				return res;
-			}
-
-			void shapefile::writeToHash() const
-			{
-				using boost::filesystem::path;
-
-				path pHashShapes;
-				path pHashStats;
-				rtmath::ddscat::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
-
-				path pHashShape = storeHash(pHashShapes, _localhash);
-				// If a shape matching the hash already exists, there is no need to write an identical file
-				if (!Ryan_Serialization::detect_compressed(pHashShape.string()))
-					write(pHashShape.string(), true);
-			}
-
+			
 			void shapefile::readHeaderOnly(const std::string &filename)
-			{
-				read(filename, true);
-			}
+			{ read(filename, true); }
 
 			void shapefile::read(const std::string &filename, bool headerOnly)
 			{
@@ -303,20 +233,18 @@ namespace rtmath {
 			}
 
 			void shapefile::write(std::ostream &out) const
-			{
-				print(out);
-			}
+			{ print(out); }
 
+			/*
 			void shapefile::writeVTK(const std::string &fname) const
 			{
 				rtmath::ddscat::convexHull hull(latticePtsStd);
 				hull.writeVTKraw(fname);
 			}
+			*/
 
 			size_t shapefile::decimateDielCount(const convolutionCellInfo& info)
-			{
-				return info.numFilled;
-			}
+			{ return info.numFilled; }
 
 			size_t shapefile::decimateThreshold(const convolutionCellInfo& info,
 				size_t threshold)

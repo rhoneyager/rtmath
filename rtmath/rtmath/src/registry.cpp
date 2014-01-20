@@ -222,17 +222,17 @@ namespace {
 		}
 		void open(const std::string &filename)
 		{
-			if (DLLpathsLoaded.count(filename)) throw rtmath::debug::xDuplicateHook(fname.c_str());
-			if (dlHandle) throw rtmath::debug::xHandleInUse(fname.c_str());
+			if (DLLpathsLoaded.count(filename)) RTthrow rtmath::debug::xDuplicateHook(fname.c_str());
+			if (dlHandle) RTthrow rtmath::debug::xHandleInUse(fname.c_str());
 			fname = filename;
 #ifdef __unix__ // Indicates that DLSYM is provided (unix, linux, mac, etc. (sometimes even windows))
 			//Check that file exists here
 			this->dlHandle = dlopen(filename.c_str(), RTLD_LAZY);
-			if (dlerror()) throw rtmath::debug::xMissingFile(filename.c_str());
+			if (dlerror()) RTthrow rtmath::debug::xMissingFile(filename.c_str());
 #endif
 #ifdef _WIN32
 			this->dlHandle = LoadLibrary(filename.c_str());
-			if (this->dlHandle == NULL) throw rtmath::debug::xBadInput(filename.c_str());
+			if (this->dlHandle == NULL) RTthrow rtmath::debug::xBadInput(filename.c_str());
 #endif
 			DLLpathsLoaded.insert(filename);
 		}
@@ -253,7 +253,7 @@ namespace {
 		}
 		void* getSym(const char* symbol)
 		{
-			if (dlHandle == NULL) throw rtmath::debug::xHandleNotOpen(fname.c_str());
+			if (dlHandle == NULL) RTthrow rtmath::debug::xHandleNotOpen(fname.c_str());
 			void* sym;
 #ifdef __unix__
 			sym = dlsym(dlHandle, symbol);
@@ -261,7 +261,7 @@ namespace {
 #ifdef _WIN32
 			sym = GetProcAddress(dlHandle, symbol);
 #endif
-			if (!sym) throw rtmath::debug::xSymbolNotFound(symbol, fname.c_str());
+			if (!sym) RTthrow rtmath::debug::xSymbolNotFound(symbol, fname.c_str());
 			return (void*)sym;
 		}
 	private:
@@ -458,7 +458,7 @@ namespace rtmath
 			//if (p.is_absolute())
 			{
 				if (exists(p)) doLoad(p.string());
-				else throw debug::xMissingFile(p.string().c_str());
+				else RTthrow debug::xMissingFile(p.string().c_str());
 			}
 		}
 

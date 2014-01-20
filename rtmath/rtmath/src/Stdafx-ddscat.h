@@ -13,10 +13,12 @@
 #define BOOST_FILESYSTEM_VERSION 3
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <complex>
 #include <exception>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <set>
@@ -52,6 +54,7 @@
 
 #include "../rtmath/Serialization/serialization_macros.h"
 #include "../rtmath/Serialization/eigen_serialization.h"
+#include "../rtmath/registry.h"
 
 /*
 #pragma warning( disable : 4068 ) // ignore GCC pragmas

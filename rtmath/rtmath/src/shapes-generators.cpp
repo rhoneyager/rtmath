@@ -107,7 +107,7 @@ namespace rtmath {
 
 				double fGHz;
 				auto it = shapeConstraints.find("freq");
-				if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need freq for diel.tab");
+				if (it == shapeConstraints.end()) RTthrow rtmath::debug::xBadInput("Need freq for diel.tab");
 				val = *(it->second->pset.begin());
 				units = it->second->units;
 				units::conv_spec fconv(units, "GHz");
@@ -115,7 +115,7 @@ namespace rtmath {
 
 				double TK;
 				it = shapeConstraints.find("temp");
-				if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need temp for diel.tab");
+				if (it == shapeConstraints.end()) RTthrow rtmath::debug::xBadInput("Need temp for diel.tab");
 				val = *(it->second->pset.begin());
 				units = it->second->units;
 				units::conv_temp tconv(units, "K");
@@ -180,7 +180,7 @@ namespace rtmath {
 				// AEFF
 				{
 					it = shapeConstraints.find("aeff");
-					if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need aeff for ddscat.par");
+					if (it == shapeConstraints.end()) RTthrow rtmath::debug::xBadInput("Need aeff for ddscat.par");
 					std::string units;
 					double val, aeff;
 					units = it->second->units;
@@ -195,7 +195,7 @@ namespace rtmath {
 				// Wavelength
 				{
 					it = shapeConstraints.find("aeff");
-					if (it == shapeConstraints.end()) throw rtmath::debug::xBadInput("Need aeff for ddscat.par");
+					if (it == shapeConstraints.end()) RTthrow rtmath::debug::xBadInput("Need aeff for ddscat.par");
 					std::string units;
 					double val, wvlen;
 					units = it->second->units;
@@ -249,7 +249,7 @@ namespace rtmath {
 				//shapeModifiable::_constructGraph(false); // shapeModifiable constructor does this
 				_createVertex("CSHAPE", true);
 				_set("CSHAPE", 0, "FROM_FILE"); // Need to do it here since this has no dependencies
-				//GETOBJKEY(); // Add other properties to prevent throwing.
+				//GETOBJKEY(); // Add other properties to prevent RTthrowing.
 				// TODO: eventually allow for shape.dat manipulation, which would then use these properties.
 				//_set("CSHAPE", 0, "FROM_FILE");
 				if (makegraph)

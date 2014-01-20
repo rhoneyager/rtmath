@@ -83,7 +83,7 @@ namespace rtmath
 			// temp is in K, but convert to Celsius for convenience
 			units::conv_temp c("K","C");
 			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -260) throw rtmath::debug::xModelOutOfRange(T);
+			if (Tc > 0 || Tc < -260) RTthrow rtmath::debug::xModelOutOfRange(T);
 
 			return interpMap(Tc, denIce);
 		}
@@ -93,7 +93,7 @@ namespace rtmath
 			initSuperWater();
 			units::conv_temp c("K","C");
 			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -30) throw rtmath::debug::xModelOutOfRange(T);
+			if (Tc > 0 || Tc < -30) RTthrow rtmath::debug::xModelOutOfRange(T);
 
 			return interpMap(Tc, denSuperWater);
 		}

@@ -1019,7 +1019,7 @@ namespace rtmath {
 				if (is_directory(p)) return false;
 				return true;
 			};
-			//if (!validateFile(pDefaultPar)) throw debug::xMissingFile(pDefaultPar.string().c_str());
+			//if (!validateFile(pDefaultPar)) RTthrow debug::xMissingFile(pDefaultPar.string().c_str());
 		}
 
 

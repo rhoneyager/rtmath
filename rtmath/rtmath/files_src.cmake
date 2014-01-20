@@ -49,6 +49,7 @@ set(rtmath_core_general
 	src/density.cpp
 	src/depGraph.cpp
 	src/hash.cpp
+	src/macros.cpp
 	#src/matrixop.cpp
 	#src/os_functions.cpp
 	src/phaseFunc.cpp

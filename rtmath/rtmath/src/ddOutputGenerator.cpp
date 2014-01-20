@@ -381,7 +381,7 @@ namespace rtmath {
 			res.clear();
 
 			using namespace std;
-			if (_mapOutputSingleRaw.size() == 0) throw rtmath::debug::xBadInput("No members to generate ensemble with.");
+			if (_mapOutputSingleRaw.size() == 0) RTthrow rtmath::debug::xBadInput("No members to generate ensemble with.");
 			auto it = _mapOutputSingleRaw.begin();
 			res = *it->second;
 

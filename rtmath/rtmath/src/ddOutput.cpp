@@ -83,7 +83,7 @@ namespace rtmath {
 
 				// Update the Mueller matrix table
 				// Use the angle spacings of the first sca file. If the others do 
-				// not fall in line, then throw an error for now.
+				// not fall in line, then RTthrow an error for now.
 				/// \todo Eventually just interpolate.
 
 			}
@@ -686,7 +686,7 @@ namespace rtmath {
 
 		// Failure to get appropriate output
 		obj = nullptr;
-		// TODO: throw stuff?
+		// TODO: RTthrow stuff?
 		//throw rtmath::debug::xUnimplementedFunction();
 		return;
 		}
