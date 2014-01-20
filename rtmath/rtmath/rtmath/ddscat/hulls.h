@@ -14,6 +14,7 @@ namespace rtmath
 	namespace ddscat
 	{
 		// This requires vtk
+		// Move to a plugin
 		//void writeVTKpolys(const std::string &filename, 
 		//	const vtkSmartPointer< vtkPolyData > &src);
 
@@ -24,9 +25,11 @@ namespace rtmath
 		public:
 			hull(const Eigen::Matrix<float, Eigen::Dynamic, 3> &backend);
 			virtual ~hull() {}
-			/// Write raw input points and polygons
+			/// \brief Write raw input points and polygons
+			/// \todo Move to plugin
 			void writeVTKraw(const std::string &filename) const;
-			/// Write hull points and ploygons
+			/// \brief Write hull points and polygons
+			/// \todo Move to plugin
 			void writeVTKhull(const std::string &filename) const;
 			/// Hull volume
 			double volume() const;
@@ -40,6 +43,7 @@ namespace rtmath
 			hull();
 		};
 
+		/// \todo Move implementation code to vtk plugin
 		class DLEXPORT_rtmath_voronoi convexHull : public hull
 		{
 		public:

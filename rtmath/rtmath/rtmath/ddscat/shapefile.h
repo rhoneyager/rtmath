@@ -96,10 +96,6 @@ namespace rtmath {
 				/// \brief Export a shapefile to vtk output
 				/// \todo Move to plugin
 				void writeVTK(const std::string &fname) const;
-				/// \brief Export a shapefile to bov output
-				/// \todo Move to plugin
-				void writeBOV(const std::string &prefix) const;
-
 				/** \brief Function type definition for a function that determines a decimated cell
 				* refractive index.
 				**/

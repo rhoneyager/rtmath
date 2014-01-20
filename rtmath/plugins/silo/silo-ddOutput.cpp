@@ -145,7 +145,7 @@ namespace rtmath {
 			}
 
 			/// Creates a rectilinear mesh to hold beta, theta, phi paired values
-			void CreateMeshRectilinear(DBfile *df, const rtmath::ddscat::ddOutput *ddo)
+			void CreateMeshRectilinear(DBfile *df, const char* meshname, const rtmath::ddscat::ddOutput *ddo, const size_t dimension = 3)
 			{
 				using namespace ddscat::weights;
 				using namespace std;
@@ -172,13 +172,23 @@ namespace rtmath {
 
 				double *coords[] = {abetas.data(), athetas.data(), aphis.data() };
 
-				DBPutQuadmesh(df, "CoordsMesh_rect",
-					NULL, coords, dims, 3, DB_DOUBLE, DB_COLLINEAR, NULL);
+				DBoptlist *optlist = DBMakeOptlist(6);
+				DBAddOption(optlist, DBOPT_XLABEL, (void*)"Beta");
+				DBAddOption(optlist, DBOPT_YLABEL, (void*)"Theta");
+				DBAddOption(optlist, DBOPT_ZLABEL, (void*)"Phi");
+				DBAddOption(optlist, DBOPT_XUNITS, (void *)"Degrees");
+				DBAddOption(optlist, DBOPT_YUNITS, (void *)"Degrees");
+				DBAddOption(optlist, DBOPT_ZUNITS, (void *)"Degrees");
+
+				DBPutQuadmesh(df, meshname,
+					NULL, coords, dims, (int) dimension, DB_DOUBLE, DB_COLLINEAR, optlist);
+
+				DBFreeOptlist(optlist);
 			}
 
 			/// Write a node-centerd variable to the mesh
-			void AddToMesh(DBfile *df, const char* mesh, const rtmath::ddscat::ddOutput *ddo,
-				rtmath::ddscat::stat_entries entry)
+			void AddToMesh(DBfile *df, const char* meshname, const rtmath::ddscat::ddOutput *ddo,
+				rtmath::ddscat::stat_entries entry, const size_t dimension = 3, const char* varname = "")
 			{
 				// sca tables are stored as a plain set (no ordering)
 				ddscat::rotations rot(*(ddo->parfile.get()));
@@ -195,20 +205,27 @@ namespace rtmath {
 					size_t iBeta = dw.wBetas.getIndex(os->beta());
 					size_t iTheta = dw.wBetas.getIndex(os->theta());
 					size_t iPhi = dw.wBetas.getIndex(os->phi());
-					size_t index = iPhi + (nPhis * iTheta) + (nThetas * nPhis * iBeta);
+					size_t index = (dimension == 3) 
+						? iPhi + (nPhis * iTheta) + (nThetas * nPhis * iBeta) // dimension == 3
+						: iBeta + (nBetas * iTheta); // dimension == 2
 					return index;
 				};
 
 				for (const auto &sca : ddo->scas)
 				{
+					if (dimension == 2)
+						if (0 != dw.wPhis.getIndex(sca->phi()))
+							continue;
 					size_t index = getIndex(sca);
 					double val = sca->getStatEntry(entry);
 					output[index] = val;
 				}
 
-				std::string varName = rtmath::ddscat::getStatNameFromId(entry);
-				DBPutQuadvar1(df, varName.c_str(), mesh,
-					(void*) output.data(), dims, 3, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+				std::string varName(varname);
+				if (!varName.size()) varName = rtmath::ddscat::getStatNameFromId(entry);
+				
+				DBPutQuadvar1(df, varName.c_str(), meshname,
+					(void*) output.data(), dims, (int) dimension, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
 			}
 
 			bool match_silo_ddOutput(const char* fsilo, const char* type)
@@ -235,66 +252,28 @@ namespace rtmath {
 					DB_PDB);
 				TASSERT(f);
 
-				CreateMeshRectilinear(f, ddo);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::G11);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::G12);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::G1M);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QABS1);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QABS2);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QABSM);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QBK1);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QBK2);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QBKM);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QEXT1);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QEXT2);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QEXTM);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QSCA1);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QSCA2);
-				AddToMesh(f, "CoordsMesh_rect", ddo, ddscat::stat_entries::QSCAM);
+				CreateMeshRectilinear(f, "CoordsMesh_rect_3d", ddo);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QABSM);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBK1);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBK2);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBKM);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QEXTM);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCA1);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCA2);
+				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCAM);
 
-				//CreateMesh(f, ddo);
-				/*
-				Eigen::Matrix3f steps = shp->maxs - shp->mins + 1;
-				RectilinearMesh3D B((int)steps(0), (int)steps(1), (int)steps(2));
-				B.SetXValues(shp->mins(0), shp->maxs(0));
-				B.SetYValues(shp->mins(1), shp->maxs(1));
-				B.SetZValues(shp->mins(2), shp->maxs(2));
+				CreateMeshRectilinear(f, "CoordsMesh_rect_2d", ddo, 2);
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QABSM, 2, "QABSM_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBK1, 2, "QBK1_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBK2, 2, "QBK2_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBKM, 2, "QBKM_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QEXTM, 2, "QEXTM_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCA1, 2, "QSCA1_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCA2, 2, "QSCA2_2d");
+				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCAM, 2, "QSCAM_2d");
 
-				for (const auto &diel : shp->Dielectrics)
-				B.AddMaterial(boost::lexical_cast<std::string>(diel).c_str());
 
-				B.WriteFile(f);
-				*/
-
-				auto shp = ddo->shape;
-				std::array<std::string, 3> axislabels = { "x", "y", "z" };
-				std::array<std::string, 3> axisunits = { "dipoles", "dipoles", "dipoles" };
-				
-
-				std::vector<std::tuple<std::string, std::string, 
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > vals;
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_x"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(0)));
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_y"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(1)));
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_z"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(2)));
-
-				for (const auto &extras : shp->latticeExtras)
-				{
-					vals.push_back(std::tuple<std::string, std::string,
-						const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-						(extras.first, std::string("Unknown"),
-						extras.second));
-				}
-					
-				WritePoints(f, axislabels, axisunits, shp->latticePtsStd, vals);
+				writeShape(f, "PointMesh", ddo->shape.get());
 
 				DBClose(f);
 

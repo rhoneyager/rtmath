@@ -34,7 +34,7 @@ namespace rtmath
 
 		typedef std::set< boost::weak_ptr<vertex> > setWeakVertex;
 		typedef std::set< boost::shared_ptr<vertex> > setShrdVertex;
-		typedef std::list< boost::weak_ptr<vertex> > listWeakVertex;
+		typedef std::list< std::pair<boost::weak_ptr<vertex>, size_t> > listWeakVertex;
 
 		class DLEXPORT_rtmath_core vertex : public boost::enable_shared_from_this<vertex>
 		{

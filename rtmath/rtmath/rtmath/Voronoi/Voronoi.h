@@ -73,16 +73,18 @@ namespace rtmath {
 			* It does not persist in serialization and so needs to be recalculated each 
 			* time a Voronoi object is loaded.
 			**/
-			boost::shared_ptr<voro::container> vc;
+			mutable boost::shared_ptr<voro::container> vc;
 
-			/// The standard Eigen source object.
-			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, 3> > src3;
-			/// Eigen source object that is used when a radial weight is used with the points.
-			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, 4> > src4;
+			/// The Eigen source object.
+			boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > src;
 			/// Derived matrices from Voronoi-based algorithms. Results get stored / read from here.
-			std::map<std::string, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > results;
-			/// The other map store for scalar quantities
-			std::map<std::string, float> results_scalar;
+			mutable std::map<std::string, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > results;
+
+			HASH_t hash;
+			/// Recalculates the Voronoi diagram (when constructing, or when restored from serialization)
+			void regenerateVoronoi() const;
+			Eigen::Array3f mins;
+			Eigen::Array3f maxs;
 		public:
 			~VoronoiDiagram() {}
 
@@ -93,8 +95,12 @@ namespace rtmath {
 
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			void writeSurfaceDepth(
+			void calcSurfaceDepth(
 				Eigen::Matrix<float, Eigen::Dynamic, 3> &depthOut) const;
+
+			/// Calculate candidate convex hull points (used in max diameter calculations)
+			void calcCandidateConvexHullPoints(
+				Eigen::Matrix<float, Eigen::Dynamic, 3> &out) const;
 
 			/// Calculate the surface area of the bulk figure
 
@@ -107,21 +113,20 @@ namespace rtmath {
 			/// Save the Voronoi diagram
 			//void writeFile(const std::string &filename, const std::string type = "") const;
 
-			/// Save the voronoi diagram to the given hash
+			// Save the voronoi diagram to the given hash
 			//void writeToHash(HASH_t hash) const;
+			//inline void writeToHash() const { writeToHash(hash); }
 
 
-			/// Generate standard Voronoi diagram, with cells starting with maximum size
+			/// \brief Generate standard Voronoi diagram, with cells starting with maximum size
+			/// \todo Add points shared_ptr overload.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
-				float bounds[6],
-				Eigen::Matrix<float, Eigen::Dynamic, 3> &points
+				Eigen::Array3f &mins, Eigen::Array3f &maxs,
+				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &points
 				);
 
-			/// Load a Voronoi diagram from a given hash
+			// Load a Voronoi diagram from a given hash
 			//static boost::shared_ptr<VoronoiDiagram> loadHash(HASH_t hash);
-
-			/// Generate Voronoi diagram, extracting surface points
-
 
 			friend class ::boost::serialization::access;
 			template<class Archive>

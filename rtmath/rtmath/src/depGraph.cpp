@@ -112,7 +112,7 @@ namespace rtmath
 				_remaining.erase(*it);
 			}
 
-			size_t order = 0;
+			size_t order = 1; // Records pass number in which vertices are filled
 			// Loop each depth layer
 			while (_remaining.size())
 			{
@@ -133,7 +133,7 @@ namespace rtmath
 					// Check to see if signals exist and if they are filled
 					bool signalblock = (IT->_signals.size()) ? true : false;
 					//std::cerr << "\tHas " << IT->_signals.size() << " signals\n";
-					int i = 0;
+					int i = 0; // Used when debugging
 					for (auto ot = IT->_signals.begin(); ot != IT->_signals.end(); ++ot, ++i)
 					{
 						if (!_filled.count(*ot))
@@ -168,13 +168,15 @@ namespace rtmath
 					// If ready, place in _order, _filled and remove from _remaining
 					if (ready)
 					{
-						_order.push_back(*it);
+						_order.push_back(std::pair<boost::weak_ptr<vertex>, size_t>
+							(*it, order));
 						_filled.insert(*it);
 						cleanup.insert(*it);
 						vertices_added++;
 					}
 				}
 
+				order++; // Increment depth count (for storage)
 
 				// Cleanup loop (to erase elements)
 				for (auto ct = cleanup.begin(); ct != cleanup.end(); ct++)

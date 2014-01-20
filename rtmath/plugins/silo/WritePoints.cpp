@@ -7,7 +7,8 @@ namespace rtmath {
 	namespace plugins {
 		namespace silo {
 
-			void WritePoints(DBfile *db, const std::array<std::string, 3> &axislabels,
+			void WritePoints(DBfile *db, const char* name,
+				const std::array<std::string, 3> &axislabels,
 				const std::array<std::string, 3> &axisunits, 
 				const Eigen::Matrix<float, Eigen::Dynamic, 3> &pts,
 				std::vector<std::tuple<std::string, std::string, 
@@ -26,7 +27,7 @@ namespace rtmath {
 				// Convert the points, by coordinate, into arrays
 				const float *pcoords[3] = { pts.col(0).data(), 
 					pts.col(1).data(), pts.col(2).data() };
-				DBPutPointmesh(db, "PointMesh", 3, pcoords, numPoints, DB_FLOAT, optlist);
+				DBPutPointmesh(db, name, 3, pcoords, numPoints, DB_FLOAT, optlist);
 				DBFreeOptlist(optlist);
 				
 				for (const auto &a : vals)
@@ -39,7 +40,7 @@ namespace rtmath {
 					for (size_t i = 0; i < (size_t) std::get<2>(a).cols(); ++i)
 						vals[i] = std::get<2>(a).col(i).data();
 					//float *vals[1] = { a.second.col(0).data() };
-					DBPutPointvar(db, std::get<0>(a).c_str(), "PointMesh", 
+					DBPutPointvar(db, std::get<0>(a).c_str(), name, 
 						(int) std::get<2>(a).cols(), 
 						vals, 
 						numPoints, 

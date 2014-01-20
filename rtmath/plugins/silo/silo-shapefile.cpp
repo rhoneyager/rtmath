@@ -45,6 +45,40 @@ namespace rtmath {
 				return false;
 			}
 
+			void writeShape(DBfile *f, const char* mesh, const rtmath::ddscat::shapefile::shapefile *shp)
+			{
+				std::array<std::string, 3> axislabels = { "x", "y", "z" };
+				std::array<std::string, 3> axisunits = { "dipoles", "dipoles", "dipoles" };
+				
+
+				std::vector<std::tuple<std::string, std::string, 
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > vals;
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Dielectric"), std::string("Dimensionless"),
+					shp->latticePtsRi.col(0)));
+				/*
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Dielectric_y"), std::string("Dimensionless"),
+					shp->latticePtsRi.col(1)));
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Dielectric_z"), std::string("Dimensionless"),
+					shp->latticePtsRi.col(2)));
+				*/
+				for (const auto &extras : shp->latticeExtras)
+				{
+					vals.push_back(std::tuple<std::string, std::string,
+						const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+						(extras.first, std::string(""),
+						extras.second));
+				}
+					
+				WritePoints(f, mesh, axislabels, axisunits, shp->latticePtsStd, vals);
+
+			}
+
 			void write_silo_shapefile(const char* fsilo, const rtmath::ddscat::shapefile::shapefile *shp)
 			{
 				using std::string;
@@ -69,35 +103,7 @@ namespace rtmath {
 				B.WriteFile(f);
 				*/
 
-				std::array<std::string, 3> axislabels = { "x", "y", "z" };
-				std::array<std::string, 3> axisunits = { "dipoles", "dipoles", "dipoles" };
-				
-
-				std::vector<std::tuple<std::string, std::string, 
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > vals;
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_x"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(0)));
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_y"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(1)));
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_z"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(2)));
-
-				for (const auto &extras : shp->latticeExtras)
-				{
-					vals.push_back(std::tuple<std::string, std::string,
-						const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-						(extras.first, std::string("Unknown"),
-						extras.second));
-				}
-					
-				WritePoints(f, axislabels, axisunits, shp->latticePtsStd, vals);
-
+				writeShape(f, "PointMesh", shp);
 				DBClose(f);
 
 			}
