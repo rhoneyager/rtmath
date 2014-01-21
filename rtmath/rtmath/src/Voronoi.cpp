@@ -18,11 +18,11 @@ namespace rtmath
 		{
 			if (vc) return;
 			// Set up the number of blocks that the container is divided into
-			const int n_x=6,n_y=6,n_z=6;
+			const int n_x=50,n_y=50,n_z=50, init_grid=150;
 			using namespace voro;
 			vc = boost::shared_ptr<voro::container>(new container(
 				mins(0),maxs(0),mins(1),maxs(1),mins(2),maxs(2),
-				n_x,n_y,n_z,false,false,false,8));
+				n_x,n_y,n_z,false,false,false,init_grid));
 
 			// Add particles into the container
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
@@ -32,17 +32,16 @@ namespace rtmath
 			}
 		}
 
-		void VoronoiDiagram::calcSurfaceDepth(
-			Eigen::Matrix<float, Eigen::Dynamic, 3> &out) const
+		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepthTrivial() const
 		{
-			if (results.count("SurfaceDepth"))
+			if (results.count("SurfaceDepthTrivial"))
 			{
-				out = results.at("SurfaceDepth");
-				return;
+				return results.at("SurfaceDepthTrivial");
 			}
 			regenerateVoronoi();
 
 			using namespace voro;
+			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
 			out = *src;
 			out.conservativeResize(src->rows(), 4);
 
@@ -50,7 +49,7 @@ namespace rtmath
 			
 			// Construct the dependency graph
 			using namespace rtmath::graphs;
-			std::vector<boost::shared_ptr<vertex> > vertices(src->rows());
+			std::vector<boost::shared_ptr<vertex> > vertices(src->rows()); /// \todo Support serializing the vertices
 			std::map<boost::shared_ptr<vertex>, size_t> vertexIdMap;
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
 			{
@@ -58,17 +57,21 @@ namespace rtmath
 				vertexIdMap[vertices[i]] = i;
 			}
 
+			//double vol = vc->sum_cell_volumes();
+
+			//particle_order po;
 			voronoicell_neighbor c;
 			c_loop_all cl(*(vc.get()));
 			if (cl.start()) do if (vc->compute_cell(c,cl)) {
-				Eigen::Matrix3d crds;
-				cl.pos(crds(0),crds(1),crds(2));
+				//Eigen::Matrix3d crds;
+				//cl.pos(crds(0),crds(1),crds(2));
 				int id = cl.pid(); // Particle id as specified in voronoi cell construction!
+				if (id % 1000 == 0) std::cerr << id << "\n";
 				std::vector<int> neigh,f_vert;
 				std::vector<double> v;
 				c.neighbors(neigh);
-				c.face_vertices(f_vert);
-				c.vertices(crds(0),crds(1),crds(2),v);
+				//c.face_vertices(f_vert);
+				//c.vertices(crds(0),crds(1),crds(2),v);
 
 				// Loop over all faces of the Voronoi cell
 				// For faces that touch the walls, the neighbor number is negative
@@ -87,8 +90,7 @@ namespace rtmath
 			setWeakVertex ignored;
 			setWeakVertex provided;
 
-			Eigen::Matrix<float, Eigen::Dynamic, 3> initFilledPoints;
-			calcCandidateConvexHullPoints(initFilledPoints);
+			auto initFilledPoints = calcCandidateConvexHullPoints();
 
 			for (size_t i=0; i< (size_t) initFilledPoints.rows(); ++i)
 				provided.insert(vertices.at((size_t) initFilledPoints(i, 3)));
@@ -105,20 +107,27 @@ namespace rtmath
 				out(id, 3) = (float) rank;
 			}
 
-			results["SurfaceDepth"] = out;
+			results["SurfaceDepthTrivial"] = std::move(out);
+			return results.at("SurfaceDepthTrivial");
 		}
 
-		void VoronoiDiagram::calcCandidateConvexHullPoints(
-			Eigen::Matrix<float, Eigen::Dynamic, 3> &out) const
+		void VoronoiDiagram::calcSurfaceDepth(
+			Eigen::Matrix<float, Eigen::Dynamic, 4> &out) const
+		{
+			throw;
+		}
+
+		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
+			VoronoiDiagram::calcCandidateConvexHullPoints() const
 		{
 			if (results.count("CandidateConvexHullPoints"))
 			{
-				out = results.at("CandidateConvexHullPoints");
-				return;
+				return results.at("CandidateConvexHullPoints");
 			}
 			regenerateVoronoi();
 
 			using namespace voro;
+			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
 			out.resize(src->rows(), 4);
 
 			// Check each particle to see if on the container surface
@@ -130,11 +139,11 @@ namespace rtmath
 				Eigen::Matrix3d crds;
 				cl.pos(crds(0),crds(1),crds(2));
 				int id = cl.pid();
-				std::vector<int> neigh,f_vert;
-				std::vector<double> v;
+				std::vector<int> neigh; //,f_vert;
+				//std::vector<double> v;
 				c.neighbors(neigh);
-				c.face_vertices(f_vert);
-				c.vertices(crds(0),crds(1),crds(2),v);
+				//c.face_vertices(f_vert);
+				//c.vertices(crds(0),crds(1),crds(2),v);
 
 				// Loop over all faces of the Voronoi cell
 				// For faces that touch the walls, the neighbor number is negative
@@ -153,12 +162,13 @@ namespace rtmath
 			} while (cl.inc());
 			
 			out.conservativeResize(numSurfacePoints, 4);
-			results["CandidateConvexHullPoints"] = out;
+			results["CandidateConvexHullPoints"] = std::move(out);
+			return results.at("CandidateConvexHullPoints");
 		}
 		
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::generateStandard(
 			Eigen::Array3f &mins, Eigen::Array3f &maxs,
-			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &points
+			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> points
 			)
 		{
 			boost::shared_ptr<VoronoiDiagram> res(new VoronoiDiagram);

@@ -96,11 +96,15 @@ namespace rtmath {
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
 			void calcSurfaceDepth(
-				Eigen::Matrix<float, Eigen::Dynamic, 3> &depthOut) const;
+				Eigen::Matrix<float, Eigen::Dynamic, 4> &depthOut) const;
+
+			/// \brief Calculate the 'surface' of the given flake
+			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
+				calcSurfaceDepthTrivial() const;
 
 			/// Calculate candidate convex hull points (used in max diameter calculations)
-			void calcCandidateConvexHullPoints(
-				Eigen::Matrix<float, Eigen::Dynamic, 3> &out) const;
+			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
+				calcCandidateConvexHullPoints() const;
 
 			/// Calculate the surface area of the bulk figure
 
@@ -122,7 +126,7 @@ namespace rtmath {
 			/// \todo Add points shared_ptr overload.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
 				Eigen::Array3f &mins, Eigen::Array3f &maxs,
-				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &points
+				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> points
 				);
 
 			// Load a Voronoi diagram from a given hash

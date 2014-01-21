@@ -25,6 +25,7 @@
 #include "../../rtmath/rtmath/hash.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
+#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/error/debug.h"
@@ -52,8 +53,8 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< string >(), "input shape file")
-			("output,o", po::value<string>(), "Output vtk file (.vtp)")
-			("convex-hull,c", "Calculate and write convex hull")
+			("output,o", po::value<string>(), "Output file")
+			//("convex-hull,c", "Calculate and write convex hull")
 			;
 
 		desc.add(cmdline).add(config);
@@ -98,6 +99,15 @@ int main(int argc, char** argv)
 
 		// Load the shape file
 		rtmath::ddscat::shapefile::shapefile shp(input);
+		using namespace rtmath::Voronoi;
+		auto vd = VoronoiDiagram::generateStandard(shp.mins, shp.maxs, shp.latticePts);
+		auto cvxCands = vd->calcCandidateConvexHullPoints();
+		shp.latticeExtras["cvxCands"] = cvxCands;
+		auto depthTrivial = vd->calcSurfaceDepthTrivial();
+		shp.latticeExtras["depthTrivial"] = depthTrivial.col(3);
+
+		shp.write(output);
+		/*
 		rtmath::ddscat::convexHull hull(shp.latticePtsStd);
 		if (!convex)
 		{
@@ -106,8 +116,7 @@ int main(int argc, char** argv)
 			hull.constructHull();
 			hull.writeVTKhull(output);
 		}
-
-		cerr << "Done." << endl;
+		*/
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
