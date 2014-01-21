@@ -1,6 +1,7 @@
 #include "Stdafx-voronoi.h"
 
 #include <boost/shared_ptr.hpp>
+#include <unordered_map>
 #include <unordered_set>
 #include <Voro++/voro++.hh>
 #include "../rtmath/depGraph.h"
@@ -61,7 +62,8 @@ namespace rtmath
 			// Construct the dependency graph
 			using namespace rtmath::graphs;
 			std::vector<vertex> vertices(src->rows()); /// \todo Support serializing the vertices
-			std::map<vertex*, size_t> vertexIdMap;
+			std::unordered_map<vertex*, size_t> vertexIdMap;
+			vertexIdMap.reserve(src->rows());
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
 			{
 				//vertices[i] = boost::shared_ptr<vertex>(new vertex(true) );
@@ -90,20 +92,26 @@ namespace rtmath
 				for (auto &i : neigh)
 				{
 					if (i<0) continue;
+					auto distsq = [&](size_t i, size_t j) -> float
+					{
+						float res = (out.block(i,0,1,3) - out.block(j,0,1,3)).norm();
+						return res;
+					};
 					
-					vertices[id].addSlot(&vertices[i]);
+					if (distsq(i, id) < 2.2f)
+						vertices[id].addSlot(&vertices[i]);
 				}
 			} while (cl.inc());
 
 			// Construct the set of vertices from the vector
-			rtmath::graphs::setShrdVertex setVertices; //(vertices.begin(), vertices.end());
+			rtmath::graphs::setVertex setVertices; //(vertices.begin(), vertices.end());
 			//setVertices.reserve((size_t) src->rows());
 			for (auto &v : vertices)
 				setVertices.insert(&v);
-			listWeakVertex order;
-			setWeakVertex remaining;
-			setWeakVertex ignored;
-			setWeakVertex provided;
+			orderedVertex order;
+			setVertex remaining;
+			setVertex ignored;
+			setVertex provided;
 
 			auto initFilledPoints = calcCandidateConvexHullPoints();
 

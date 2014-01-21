@@ -144,21 +144,21 @@ set(rtmath_ddscat_base-files
 
 set(rtmath_ddscat-shape-files
 	rtmath/ddscat/shapefile.h
-	rtmath/ddscat/shapes.h
+	#rtmath/ddscat/shapes.h
 	rtmath/ddscat/shapestats.h
 	rtmath/ddscat/shapestatsRotated.h
 	rtmath/ddscat/shapestatsviews.h
 	src/shapefile.cpp
 	src/shapefile_parsers.cpp
 	src/shapefile_serialization.cpp
-	src/shapes.cpp
-	src/shapes_serialization.cpp
+	#src/shapes.cpp
+	#src/shapes_serialization.cpp
 	src/shapestats.cpp
 	src/shapestats_serialization.cpp
 	src/shapestatsRotated.cpp
 	src/shapestatsRotated_serialization.cpp
 	#src/shapestats_genstats.cpp
-	src/shapes-generators.cpp
+	#src/shapes-generators.cpp
 	)
 source_group("Shapes" FILES ${rtmath_ddscat-shape-files})
 set(rtmath_ddscat-ddoutput-files
@@ -180,24 +180,24 @@ set(rtmath_ddscat-files
 	#rtmath/ddscat/cdf-ddscat.h
 	rtmath/ddscat/ddavg.h
 	rtmath/ddscat/ddLoader.h
-	rtmath/ddscat/ddparGenerator.h
+	#rtmath/ddscat/ddparGenerator.h
 	rtmath/ddscat/ddRunSet.h
 	rtmath/ddscat/ddscat.h
 	rtmath/ddscat/ddUtil.h
 	rtmath/ddscat/ddweights.h
 	rtmath/ddscat/mtab.h
-	rtmath/ddscat/runScripts.h
+	#rtmath/ddscat/runScripts.h
 	rtmath/ddscat/tmData.h
 	# src/ddLoader.cpp
-	src/ddparGenerator.cpp
-	src/ddparGenerator_serialization.cpp
+	#src/ddparGenerator.cpp
+	#src/ddparGenerator_serialization.cpp
 	src/ddRunSet.cpp
 	src/ddscat.cpp
 	src/ddUtil.cpp
 	src/ddweights.cpp	
 	# src/mtab.cpp
 	# src/pclstuff.cpp
-	src/runScripts.cpp
+	#src/runScripts.cpp
 	src/tmData.cpp
 	src/tmData_serialization.cpp
 	src/Stdafx-ddscat.cpp

@@ -42,11 +42,29 @@ namespace rtmath
 			return connector;
 		}
 
+		vertex::vertex(bool OR) : _slotOR(OR), _target(nullptr)
+		{
+			//_signals.reserve(12);
+			//_slots.reserve(12);
+			std::fill(_slots.begin(), _slots.end(), nullptr);
+			std::fill(_signals.begin(), _signals.end(), nullptr);
+		}
+
 		vertex::~vertex() {}
 
 		void vertex::addSlot(vertex* slot)
 		{
-			_slots.insert(slot);
+			// Find first unused _slots
+			auto it = std::find_if(_slots.begin(), _slots.end(), 
+				[](const vertex *v)
+			{
+				if (v) return false;
+				return true;
+			});
+			//auto it = std::find(_slots.begin(), _slots.end(), nullptr);
+			if (it == _slots.end()) RTthrow debug::xArrayOutOfBounds();
+			*it = slot;
+			//_slots.insert(slot);
 			// Check if the parent is OR. If so, set the parent's signal
 			if (!slot->_slotOR)
 				slot->_addSignal( this );
@@ -54,7 +72,17 @@ namespace rtmath
 
 		void vertex::_addSignal(vertex* signal)
 		{
-			_signals.insert(signal);
+			//_signals.insert(signal);
+
+			auto it = std::find_if(_signals.begin(), _signals.end(), 
+				[](const vertex *v)
+			{
+				if (v) return false;
+				return true;
+			});
+			//auto it = std::find(_signals.begin(), _signals.end(), nullptr);
+			if (it == _signals.end()) RTthrow debug::xArrayOutOfBounds();
+			*it = signal;
 		}
 
 		void vertex::run(vertexRunnable *target, const std::string &id) const
@@ -74,7 +102,7 @@ namespace rtmath
 			_target = target;
 		}
 
-		graph::graph(const setShrdVertex &vertices)
+		graph::graph(const setVertex &vertices)
 		{
 			_vertices = vertices;
 			/*
@@ -83,14 +111,17 @@ namespace rtmath
 			*/
 		}
 
-		void graph::_generate(const setWeakVertex &provided)
+		void graph::generate(const setVertex &provided, 
+			orderedVertex &_order, 
+			setVertex &_remaining,
+			setVertex &_useless)
 		{
 			_order.clear();
 			_order.reserve(_vertices.size());
-			_filled.clear();
-			//_filled.reserve(_vertices.size());
+			setVertex _filled;
+			_filled.reserve(_vertices.size());
 			_useless.clear();
-			//_useless.reserve(_vertices.size());
+			_useless.reserve(_vertices.size());
 			// Do this way for shared/weak_ptr conversion
 			for (auto it = _vertices.begin(); it != _vertices.end(); it++)
 			{
@@ -111,7 +142,8 @@ namespace rtmath
 			// Loop each depth layer
 			while (_remaining.size())
 			{
-				setWeakVertex cleanup;
+				setVertex cleanup;
+				cleanup.reserve(_vertices.size());
 				size_t vertices_added = 0;
 
 				// First, start with the vertices that have no roots or have a root that is filled
@@ -126,11 +158,19 @@ namespace rtmath
 					if (!IT->_slots.size()) ready = true;
 
 					// Check to see if signals exist and if they are filled
-					bool signalblock = (IT->_signals.size()) ? true : false;
+					auto hasSignal = std::find_if(IT->_signals.begin(), IT->_signals.end(), 
+						[](const vertex *v)
+					{
+						if (v) return true;
+						return false;
+					});
+					bool signalblock = (hasSignal == IT->_signals.end()) ? false : true;
+					//bool signalblock = (IT->_signals.size()) ? true : false;
 					//std::cerr << "\tHas " << IT->_signals.size() << " signals\n";
 					int i = 0; // Used when debugging
 					for (auto ot = IT->_signals.begin(); ot != IT->_signals.end(); ++ot, ++i)
 					{
+						if (!(*ot)) continue;
 						if (!_filled.count(*ot))
 						{
 							//std::cerr << "\tSignal " << i << " " << ot->lock().get() << " not filled\n";
@@ -153,6 +193,7 @@ namespace rtmath
 
 					for (auto ot = IT->_slots.begin(); ot != IT->_slots.end(); ot++)
 					{
+						if (!(*ot)) continue;
 						//if (ot->expired()) continue;
 						if (_filled.count(*ot)) m++;
 						if (m && IT->_slotOR) break; // No need to go on
@@ -184,16 +225,6 @@ namespace rtmath
 			}
 		}
 
-		void graph::generate(const setWeakVertex &provided, 
-			listWeakVertex &order, 
-			setWeakVertex &remaining,
-			setWeakVertex &ignored)
-		{
-			_generate(provided);
-			order = _order;
-			remaining = _remaining;
-			ignored = _useless;
-		}
 
 
 	}

@@ -1,7 +1,8 @@
 #pragma once
 #include "defs.h"
-#include <list>
-#include <map>
+#include <array>
+//#include <list>
+//#include <map>
 //#include <memory>
 #include <set>
 #include <vector>
@@ -34,14 +35,16 @@ namespace rtmath
 			virtual bool runSupported(const std::string &id = "") = 0;
 		};
 
-		typedef std::set< vertex* > setWeakVertex;
-		typedef std::set< vertex* > setShrdVertex;
-		typedef std::vector< std::pair<vertex*, size_t> > listWeakVertex;
+
+		typedef std::unordered_set< vertex* > setVertex;
+		typedef std::vector< std::pair<vertex*, size_t> > orderedVertex;
+		typedef std::array<vertex*, 60> stackVertex;
+
 
 		class DLEXPORT_rtmath_core vertex // : public boost::enable_shared_from_this<vertex>
 		{
 		public:
-			vertex(bool OR = false) : _slotOR(OR), _target(nullptr) { }
+			vertex(bool OR = false);
 			virtual ~vertex();
 			inline void setOR(bool o) { _slotOR = o; }
 			inline bool isOR() const { return _slotOR; }
@@ -72,7 +75,7 @@ namespace rtmath
 			vertexRunnable* _target;
 			bool _slotOR;
 			void _addSignal(vertex* signal);
-			setWeakVertex _signals, _slots;
+			stackVertex _signals, _slots;
 			friend class graph;
 		};
 
@@ -80,16 +83,15 @@ namespace rtmath
 		class DLEXPORT_rtmath_core graph // : public boost::enable_shared_from_this<graph>
 		{
 		public:
-			graph(const setShrdVertex &vertices);
-			void generate(const setWeakVertex &provided, 
-				listWeakVertex &order, 
-				setWeakVertex &remaining,
-				setWeakVertex &ignored);
+			graph(const setVertex &vertices);
+			void generate(const setVertex &provided, 
+				orderedVertex &order, 
+				setVertex &remaining,
+				setVertex &ignored);
 		private:
-			void _generate(const setWeakVertex &provided);
-			setShrdVertex _vertices; 
-			setWeakVertex _remaining, _filled, _unfillable, _useless;
-			listWeakVertex _order;
+			setVertex _vertices; 
+			//setVertex _remaining, _filled, _unfillable, _useless;
+			//orderedVertex _order;
 		};
 
 
