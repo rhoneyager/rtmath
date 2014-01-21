@@ -14,27 +14,26 @@ namespace rtmath
 	namespace graphs
 	{
 #ifdef __GNUC__
-		boost::shared_ptr<vertex> vertex::connect(
-			boost::shared_ptr<vertex> target, 
-			std::initializer_list<boost::shared_ptr<vertex> > depends)
+		vertex* vertex::connect(
+			vertex* target, 
+			std::initializer_list<vertex* > depends)
 		{
 			// Create connector
-			boost::shared_ptr<vertex> connector;
-			connector = boost::shared_ptr<vertex>(new vertex(false) );
+			vertex* connector;
+			connector = vertex*(new vertex(false) );
 			target->addSlot(connector);
-			for (boost::shared_ptr<vertex> it : depends)
+			for (vertex* it : depends)
 				connector->addSlot(it);
 
 			return connector;
 		}
 #endif
 
-		boost::shared_ptr<vertex> vertex::connect(
-			boost::shared_ptr<vertex> target,
-			const std::set<boost::shared_ptr<vertex> > &depends)
+		vertex* vertex::connect(
+			vertex* target,
+			const std::set<vertex* > &depends)
 		{
-			boost::shared_ptr<vertex> connector;
-			connector = boost::shared_ptr<vertex>(new vertex(false) );
+			vertex* connector = new vertex(false);
 			target->addSlot(connector);
 			for (auto it = depends.begin(); it != depends.end(); it++)
 			//for (std::shared_ptr<vertex> it : depends)
@@ -45,22 +44,17 @@ namespace rtmath
 
 		vertex::~vertex() {}
 
-		void vertex::addSlot(boost::shared_ptr<vertex> slot)
+		void vertex::addSlot(vertex* slot)
 		{
 			_slots.insert(slot);
 			// Check if the parent is OR. If so, set the parent's signal
 			if (!slot->_slotOR)
-				slot->_addSignal( this->shared_from_this() );
+				slot->_addSignal( this );
 		}
 
-		void vertex::_addSignal(boost::weak_ptr<vertex> signal)
+		void vertex::_addSignal(vertex* signal)
 		{
 			_signals.insert(signal);
-		}
-
-		void vertex::run(boost::shared_ptr<vertexRunnable> target, const std::string &id) const
-		{
-			target->run(id);
 		}
 
 		void vertex::run(vertexRunnable *target, const std::string &id) const
@@ -75,27 +69,28 @@ namespace rtmath
 				_target->run(id);
 		}
 
-		void vertex::setVertexRunnableCode(boost::shared_ptr<vertexRunnable> target)
-		{
-			_target = target.get();
-		}
-
 		void vertex::setVertexRunnableCode(vertexRunnable* target)
 		{
 			_target = target;
 		}
 
-		graph::graph(const std::set< boost::shared_ptr<vertex> > &vertices)
+		graph::graph(const setShrdVertex &vertices)
 		{
+			_vertices = vertices;
+			/*
 			for (auto it = vertices.begin(); it != vertices.end(); it++)
 				_vertices.insert(*it);
+			*/
 		}
 
 		void graph::_generate(const setWeakVertex &provided)
 		{
 			_order.clear();
+			_order.reserve(_vertices.size());
 			_filled.clear();
+			//_filled.reserve(_vertices.size());
 			_useless.clear();
+			//_useless.reserve(_vertices.size());
 			// Do this way for shared/weak_ptr conversion
 			for (auto it = _vertices.begin(); it != _vertices.end(); it++)
 			{
@@ -124,8 +119,8 @@ namespace rtmath
 				for (auto it = _remaining.begin(); it != _remaining.end(); it++)
 				{
 					bool ready = false;
-					if (it->expired()) continue;
-					auto IT = it->lock();
+					//if (it->expired()) continue;
+					auto IT = *it; //->lock();
 					//std::cerr << "Checking " << IT.get() << " with " << IT->_slots.size() 
 					//	<< " slots\n";
 					if (!IT->_slots.size()) ready = true;
@@ -158,7 +153,7 @@ namespace rtmath
 
 					for (auto ot = IT->_slots.begin(); ot != IT->_slots.end(); ot++)
 					{
-						if (ot->expired()) continue;
+						//if (ot->expired()) continue;
 						if (_filled.count(*ot)) m++;
 						if (m && IT->_slotOR) break; // No need to go on
 					}
@@ -168,7 +163,7 @@ namespace rtmath
 					// If ready, place in _order, _filled and remove from _remaining
 					if (ready)
 					{
-						_order.push_back(std::pair<boost::weak_ptr<vertex>, size_t>
+						_order.push_back(std::pair<vertex*, size_t>
 							(*it, order));
 						_filled.insert(*it);
 						cleanup.insert(*it);

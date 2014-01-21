@@ -171,7 +171,7 @@ namespace rtmath {
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
 		public:
-			typedef boost::bimap< std::string, boost::shared_ptr<rtmath::graphs::vertex> > vertexMap;
+			typedef boost::bimap< std::string, rtmath::graphs::vertex* > vertexMap;
 			typedef rtmath::graphs::setWeakVertex vertexSet;
 
 			shapeModifiable();
@@ -185,7 +185,7 @@ namespace rtmath {
 			// Return vertex mappings
 			void getVertices(vertexMap &mappings);
 			// Search for vertex by name
-			virtual bool mapVertex(const std::string &idstr, boost::shared_ptr<rtmath::graphs::vertex> &vertex);
+			virtual bool mapVertex(const std::string &idstr, rtmath::graphs::vertex* vertex);
 			// Set rotation information
 			void setRots(boost::shared_ptr<rotations> rots);
 			// Prepare an individual run script, given the constraints of the individual shape
@@ -197,17 +197,17 @@ namespace rtmath {
 			// but they will still call this function as a base.
 			virtual void _constructGraph(bool makegraph = true);
 			// Convenient functions to create a vertex and assign a name in _vertexMap
-			virtual boost::shared_ptr<rtmath::graphs::vertex> 
+			virtual rtmath::graphs::vertex*
 				_createVertex(const std::string &name, bool OR = false);
 			// Create vertex like with connect, but by parsing string
-			virtual boost::shared_ptr<rtmath::graphs::vertex>
+			virtual rtmath::graphs::vertex*
 				_createVertex(const std::string &name, 
 				const std::string &target, const std::string &depends);
 			// - Name and add existing vertex (used with vertex::connect)
-			virtual boost::shared_ptr<rtmath::graphs::vertex> 
-				_createVertex(const std::string &name, boost::shared_ptr<rtmath::graphs::vertex> vert);
+			virtual rtmath::graphs::vertex* 
+				_createVertex(const std::string &name, rtmath::graphs::vertex* vert);
 
-			std::set< boost::shared_ptr<rtmath::graphs::vertex> > _vertices;
+			std::set< rtmath::graphs::vertex* > _vertices;
 			vertexMap _vertexMap;
 			boost::shared_ptr<rtmath::graphs::graph> _graph;
 			boost::shared_ptr<rotations> _rots;

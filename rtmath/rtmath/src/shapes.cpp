@@ -413,17 +413,16 @@ namespace rtmath {
 			return runScriptIndiv("", ddParGenerator()); // To prevent errors
 		}
 
-		boost::shared_ptr<rtmath::graphs::vertex> 
+		rtmath::graphs::vertex*
 			shapeModifiable::_createVertex(const std::string &name, bool OR)
 		{
 			using namespace rtmath::graphs;
-			boost::shared_ptr<vertex> connector;
-			connector = boost::shared_ptr<vertex>(new vertex(OR) );
+			vertex* connector = new vertex(OR);
 
 			return _createVertex(name, connector);
 		}
 
-		boost::shared_ptr<rtmath::graphs::vertex> 
+		rtmath::graphs::vertex*
 			shapeModifiable::_createVertex(const std::string &name, 
 			const std::string &target, const std::string &depends)
 		{
@@ -434,8 +433,8 @@ namespace rtmath {
 			typedef boost::tokenizer<boost::char_separator<char> >
 				tokenizer;
 			boost::char_separator<char> sep(",");
-			std::set<boost::shared_ptr<vertex> > setDepends;
-			boost::shared_ptr<vertex> res, ptarget;
+			std::set<vertex* > setDepends;
+			vertex* res = nullptr, *ptarget = nullptr;
 
 			if (!(_vertexMap.left.count(target)))
 				throw rtmath::debug::xBadInput(target.c_str());
@@ -454,8 +453,8 @@ namespace rtmath {
 			return _createVertex(name, res);
 		}
 
-		boost::shared_ptr<rtmath::graphs::vertex> 
-			shapeModifiable::_createVertex(const std::string &name, boost::shared_ptr<rtmath::graphs::vertex> vert)
+		rtmath::graphs::vertex*
+			shapeModifiable::_createVertex(const std::string &name, rtmath::graphs::vertex* vert)
 		{
 			using namespace rtmath::graphs;
 
@@ -579,7 +578,7 @@ namespace rtmath {
 
 				setShrdVertex baseVertices, shrRemaining;
 				for (auto it = remaining.begin(); it != remaining.end(); it++)
-					shrRemaining.insert(it->lock());
+					shrRemaining.insert(*it);
 
 				// baseVertices are those which are not connectors and have no associated run code
 				// use bool vertex::isOR() to determine this
@@ -606,7 +605,7 @@ namespace rtmath {
 					out << "Still need: ";
 					for (auto it = intersection.begin(); it != intersection.end(); it++)
 					{
-						boost::shared_ptr<graphs::vertex> UT = boost::const_pointer_cast< graphs::vertex >(*it);
+						graphs::vertex* UT = (*it);
 						out << _vertexMap.right.at(UT) << ", ";
 					}
 					out << std::endl;
@@ -618,15 +617,15 @@ namespace rtmath {
 			// specified order to fill in the rest of the variables.
 			for (auto it = order.begin(); it != order.end(); it++)
 			{
-				boost::shared_ptr<const graphs::vertex> IT = it->first.lock();
-				boost::shared_ptr<graphs::vertex> UT = boost::const_pointer_cast< graphs::vertex >(IT);
-				UT->run();
+				graphs::vertex* IT = it->first; //.lock();
+				//boost::shared_ptr<graphs::vertex> UT = boost::const_pointer_cast< graphs::vertex >(IT);
+				IT->run();
 			}
 			// And we've updated!
 
 		}
 		
-		bool shapeModifiable::mapVertex(const std::string &idstr, boost::shared_ptr<rtmath::graphs::vertex> &vertex)
+		bool shapeModifiable::mapVertex(const std::string &idstr, rtmath::graphs::vertex* vertex)
 		{
 			if (_vertexMap.left.count(idstr))
 			{

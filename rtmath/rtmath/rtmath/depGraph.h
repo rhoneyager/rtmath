@@ -2,15 +2,17 @@
 #include "defs.h"
 #include <list>
 #include <map>
-#include <memory>
+//#include <memory>
 #include <set>
+#include <vector>
+#include <unordered_set>
 #include <cstdarg>
 #ifdef __GNUC__
 #include <initializer_list>
 #endif
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/weak_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
+//#include <boost/enable_shared_from_this.hpp>
+//#include <boost/weak_ptr.hpp>
 
 namespace rtmath
 {
@@ -32,37 +34,36 @@ namespace rtmath
 			virtual bool runSupported(const std::string &id = "") = 0;
 		};
 
-		typedef std::set< boost::weak_ptr<vertex> > setWeakVertex;
-		typedef std::set< boost::shared_ptr<vertex> > setShrdVertex;
-		typedef std::list< std::pair<boost::weak_ptr<vertex>, size_t> > listWeakVertex;
+		typedef std::set< vertex* > setWeakVertex;
+		typedef std::set< vertex* > setShrdVertex;
+		typedef std::vector< std::pair<vertex*, size_t> > listWeakVertex;
 
-		class DLEXPORT_rtmath_core vertex : public boost::enable_shared_from_this<vertex>
+		class DLEXPORT_rtmath_core vertex // : public boost::enable_shared_from_this<vertex>
 		{
 		public:
 			vertex(bool OR = false) : _slotOR(OR), _target(nullptr) { }
 			virtual ~vertex();
+			inline void setOR(bool o) { _slotOR = o; }
 			inline bool isOR() const { return _slotOR; }
-			void addSlot(boost::shared_ptr<vertex> slot);
-			void run(boost::shared_ptr<vertexRunnable> target, const std::string &id = "") const;
+			void addSlot(vertex* slot);
 			void run(vertexRunnable*, const std::string &id = "") const;
 			void run(const std::string &id = "") const;
-			void setVertexRunnableCode(boost::shared_ptr<vertexRunnable> target);
 			void setVertexRunnableCode(vertexRunnable* target);
 
 			// Make connector between two criteria
 			//			static std::shared_ptr<vertex> connect(
 			//				std::shared_ptr<vertex> target, 
 			//				size_t nDepends, ...); 
-			static boost::shared_ptr<vertex> connect(
-				boost::shared_ptr<vertex> target,
-				const std::set<boost::shared_ptr<vertex> > &depends);
+			static vertex* connect(
+				vertex* target,
+				const std::set<vertex* > &depends);
 			// Fast connect that looks up node id (MANIPULATED_QUANTITY)
 			//static std::shared_ptr<vertex> connect(
 			//	size_t node, size_t numDeps, ...);
 #ifdef __GNUC__
-			static boost::shared_ptr<vertex> connect(
-				boost::shared_ptr<vertex> target,
-				std::initializer_list<boost::shared_ptr<vertex> > depends
+			static vertex* connect(
+				vertex* target,
+				std::initializer_list<vertex* > depends
 				);
 #endif
 
@@ -70,13 +71,13 @@ namespace rtmath
 			//boost::shared_ptr<vertexRunnable> _target;
 			vertexRunnable* _target;
 			bool _slotOR;
-			void _addSignal(boost::weak_ptr<vertex> signal);
+			void _addSignal(vertex* signal);
 			setWeakVertex _signals, _slots;
 			friend class graph;
 		};
 
 
-		class DLEXPORT_rtmath_core graph : public boost::enable_shared_from_this<graph>
+		class DLEXPORT_rtmath_core graph // : public boost::enable_shared_from_this<graph>
 		{
 		public:
 			graph(const setShrdVertex &vertices);

@@ -1,6 +1,7 @@
 #include "Stdafx-voronoi.h"
 
 #include <boost/shared_ptr.hpp>
+#include <unordered_set>
 #include <Voro++/voro++.hh>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
@@ -32,6 +33,16 @@ namespace rtmath
 			}
 		}
 
+		/** This function iterates over the entire diagram, generating the data for all 
+		 * of the cells, with regards to cell ids, voronoi centers and neighbors.
+		 * As needed, will add information about cell vertices and faces.
+		 * This is needed to prevent repetitive looping over the Voronoi structure.
+		 **/
+		void VoronoiDiagram::regenerateFull() const
+		{
+
+		}
+
 		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepthTrivial() const
 		{
 			if (results.count("SurfaceDepthTrivial"))
@@ -44,17 +55,18 @@ namespace rtmath
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
 			out = *src;
 			out.conservativeResize(src->rows(), 4);
-
+			out.col(3) = Eigen::Matrix<float, Eigen::Dynamic, 1>::Zero(src->rows(), 1);
 			// Using depGraph and the initial Candidate Convex Hull points
 			
 			// Construct the dependency graph
 			using namespace rtmath::graphs;
-			std::vector<boost::shared_ptr<vertex> > vertices(src->rows()); /// \todo Support serializing the vertices
-			std::map<boost::shared_ptr<vertex>, size_t> vertexIdMap;
+			std::vector<vertex> vertices(src->rows()); /// \todo Support serializing the vertices
+			std::map<vertex*, size_t> vertexIdMap;
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
 			{
-				vertices[i] = boost::shared_ptr<vertex>(new vertex(true) );
-				vertexIdMap[vertices[i]] = i;
+				//vertices[i] = boost::shared_ptr<vertex>(new vertex(true) );
+				vertices[i].setOR(true);
+				vertexIdMap[&vertices[i]] = i;
 			}
 
 			//double vol = vc->sum_cell_volumes();
@@ -79,12 +91,15 @@ namespace rtmath
 				{
 					if (i<0) continue;
 					
-					vertices[id]->addSlot(vertices[i]);
+					vertices[id].addSlot(&vertices[i]);
 				}
 			} while (cl.inc());
 
 			// Construct the set of vertices from the vector
-			std::set<boost::shared_ptr<vertex> > setVertices(vertices.begin(), vertices.end());
+			rtmath::graphs::setShrdVertex setVertices; //(vertices.begin(), vertices.end());
+			//setVertices.reserve((size_t) src->rows());
+			for (auto &v : vertices)
+				setVertices.insert(&v);
 			listWeakVertex order;
 			setWeakVertex remaining;
 			setWeakVertex ignored;
@@ -93,7 +108,7 @@ namespace rtmath
 			auto initFilledPoints = calcCandidateConvexHullPoints();
 
 			for (size_t i=0; i< (size_t) initFilledPoints.rows(); ++i)
-				provided.insert(vertices.at((size_t) initFilledPoints(i, 3)));
+				provided.insert(&vertices[(size_t) initFilledPoints(i, 3)]);
 
 			graph g(setVertices);
 			g.generate(provided, order, remaining, ignored);
@@ -102,7 +117,7 @@ namespace rtmath
 			for (auto &it : order)
 			{
 				const size_t &rank = it.second;
-				auto IT = it.first.lock();
+				auto IT = it.first;//.lock();
 				size_t id = vertexIdMap.at(IT);
 				out(id, 3) = (float) rank;
 			}
@@ -139,6 +154,7 @@ namespace rtmath
 				Eigen::Matrix3d crds;
 				cl.pos(crds(0),crds(1),crds(2));
 				int id = cl.pid();
+				if (id % 1000 == 0) std::cerr << id << "\n";
 				std::vector<int> neigh; //,f_vert;
 				//std::vector<double> v;
 				c.neighbors(neigh);

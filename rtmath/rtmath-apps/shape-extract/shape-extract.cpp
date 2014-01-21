@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< string >(), "input shape file")
 			("output,o", po::value< string >(), "output shape file")
-			("bov,b", po::value<string>(), "output bov file prefix")
+			//("bov,b", po::value<string>(), "output bov file prefix")
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
 			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
@@ -103,6 +103,7 @@ int main(int argc, char** argv)
 			shp->write(sOutput);
 		}
 
+		/*
 		if (vm.count("bov"))
 		{
 			string bPrefix = vm["bov"].as<string>();
@@ -110,6 +111,7 @@ int main(int argc, char** argv)
 			//shp.write(string(bPrefix).append("-orig.dat"));
 			shp->writeBOV(bPrefix);
 		}
+		*/
 
 	}
 	catch (rtmath::debug::xError &err)

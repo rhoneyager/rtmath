@@ -81,8 +81,10 @@ namespace rtmath {
 			mutable std::map<std::string, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > results;
 
 			HASH_t hash;
-			/// Recalculates the Voronoi diagram (when constructing, or when restored from serialization)
+			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
 			void regenerateVoronoi() const;
+			/// Recalculates all cells in the Voronoi diagram
+			void regenerateFull() const;
 			Eigen::Array3f mins;
 			Eigen::Array3f maxs;
 		public:
