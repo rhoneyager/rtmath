@@ -10,6 +10,7 @@
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/flat_map.hpp>
 #include <boost/interprocess/containers/flat_set.hpp>
+#include <boost/interprocess/containers/set.hpp>
 //#include <boost/interprocess/containers/
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
@@ -100,7 +101,7 @@ namespace rtmath
 			{
 				//vertices[i] = boost::shared_ptr<vertex>(new vertex(true) );
 				vertices[i].setOR(true);
-				vertexIdMap->at(&vertices[i]) = i;
+				(*vertexIdMap)[&vertices[i]] = i;
 			}
 
 			//double vol = vc->sum_cell_volumes();
@@ -137,22 +138,27 @@ namespace rtmath
 
 			// Construct the set of vertex pointers from the vertex vector
 			typedef allocator<vertex*, managed_heap_memory::segment_manager> VertexAllocator;
+			//typedef boost::interprocess::set<vertex*, std::less<vertex*>, VertexAllocator> bSetVertex;
 			//typedef boost::interprocess::flat_set<vertex*, std::less<const vertex*>, VertexAllocator> bSetVertex;
 			typedef boost::unordered_set<vertex*, boost::hash<vertex*>, 
-				std::equal_to<vertex*>, VertexAllocator> bSetVertex;
+				std::equal_to<vertex*>
+				//, VertexAllocator
+				> bSetVertex;
 			VertexAllocator vAllocator (m.get_segment_manager());
-			bSetVertex* setVertices = m.construct<bSetVertex>("setVertices")
-				(boost::hash<vertex*>(), std::equal_to<vertex*>(), 
-				//m.get_allocator<vertex*>());
-				vAllocator);
+			
+			bSetVertex setVertices; //(std::less<vertex*>(), vAllocator);
+
+			//bSetVertex* setVertices = m.construct<bSetVertex>("setVertices")
+				//(boost::hash<vertex*>(), std::equal_to<vertex*>(),
+				//(vAllocator);
 			//typedef std::unordered_set < vertex*, std::hash<vertex*>, std::equal_to<vertex*>,
 			//	boost::pool_allocator<vertex*> > bSetVertex;
 			//bSetVertex setVertices;
 
-			setVertices->reserve((size_t)src->rows());
+			//setVertices.reserve((size_t)src->rows());
 			//rtmath::graphs::setVertex setVertices; //(vertices.begin(), vertices.end());
 			for (auto &v : vertices)
-				setVertices->insert(&v);
+				setVertices.insert(&v);
 			orderedVertex order;
 			bSetVertex remaining;
 			bSetVertex ignored;
@@ -164,7 +170,7 @@ namespace rtmath
 				provided.insert(&vertices[(size_t) initFilledPoints(i, 3)]);
 
 			generateGraph<bSetVertex, orderedVertex>::generate(
-				*setVertices, provided, order, remaining, ignored);
+				setVertices, provided, order, remaining, ignored);
 
 			//graph g(setVertices);
 			//g.generate(provided, order, remaining, ignored);

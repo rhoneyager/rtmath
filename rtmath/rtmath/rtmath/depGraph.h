@@ -93,9 +93,9 @@ namespace rtmath
 			{
 				const size_t numVertices = vertices.size();
 				vertexSet _filled;
-				_filled.reserve(numVertices);
+				//_filled.reserve(numVertices);
 				_filled = provided; /// \todo Use std::copy
-				_filled.reserve(numVertices);
+				//_filled.reserve(numVertices);
 
 				// Do this way for shared/weak_ptr conversion
 				for (auto it = vertices.begin(); it != vertices.end(); it++)
@@ -113,7 +113,7 @@ namespace rtmath
 				while (_remaining.size())
 				{
 					vertexSet cleanup;
-					cleanup.reserve(numVertices);
+					//cleanup.reserve(numVertices);
 					size_t vertices_added = 0;
 
 					// First, start with the vertices that have no roots or have a root that is filled
