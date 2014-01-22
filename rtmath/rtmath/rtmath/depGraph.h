@@ -70,31 +70,131 @@ namespace rtmath
 				);
 #endif
 
-		protected:
+			stackVertex _signals, _slots;
 			//boost::shared_ptr<vertexRunnable> _target;
 			vertexRunnable* _target;
 			bool _slotOR;
 			void _addSignal(vertex* signal);
-			stackVertex _signals, _slots;
 			friend class graph;
 		};
 
 
-		class DLEXPORT_rtmath_core graph // : public boost::enable_shared_from_this<graph>
+		template<typename vertexSet = setVertex,
+			typename orderedVertices = orderedVertex>
+		class generateGraph
 		{
 		public:
-			graph(const setVertex &vertices);
-			void generate(const setVertex &provided, 
-				orderedVertex &order, 
-				setVertex &remaining,
-				setVertex &ignored);
-		private:
-			setVertex _vertices; 
-			//setVertex _remaining, _filled, _unfillable, _useless;
-			//orderedVertex _order;
+			static void generate(
+			const vertexSet &vertices,
+			const vertexSet &provided,
+			orderedVertices &_order,
+			vertexSet &_remaining,
+			vertexSet &ignored)
+			{
+				const size_t numVertices = vertices.size();
+				vertexSet _filled;
+				_filled.reserve(numVertices);
+				_filled = provided; /// \todo Use std::copy
+				_filled.reserve(numVertices);
+
+				// Do this way for shared/weak_ptr conversion
+				for (auto it = vertices.begin(); it != vertices.end(); it++)
+				{
+					//std::cerr << "Adding vertex " << it->get() << "\n";
+					_remaining.insert(*it);
+				}
+
+				// Remove provided from remaining
+				for (auto it = provided.begin(); it != provided.end(); it++)
+					_remaining.erase(*it);
+
+				size_t order = 1; // Records pass number in which vertices are filled
+				// Loop each depth layer
+				while (_remaining.size())
+				{
+					vertexSet cleanup;
+					cleanup.reserve(numVertices);
+					size_t vertices_added = 0;
+
+					// First, start with the vertices that have no roots or have a root that is filled
+					// Remove these from _remaining, add to _filled and place them in the ordering
+					for (auto it = _remaining.begin(); it != _remaining.end(); it++)
+					{
+						bool ready = false;
+						//if (it->expired()) continue;
+						auto IT = *it; //->lock();
+						//std::cerr << "Checking " << IT.get() << " with " << IT->_slots.size() 
+						//	<< " slots\n";
+						if (!IT->_slots.size()) ready = true;
+
+						// Check to see if signals exist and if they are filled
+						auto hasSignal = std::find_if(IT->_signals.begin(), IT->_signals.end(),
+							[](const vertex *v)
+						{
+							if (v) return true;
+							return false;
+						});
+						bool signalblock = (hasSignal == IT->_signals.end()) ? false : true;
+						//bool signalblock = (IT->_signals.size()) ? true : false;
+						//std::cerr << "\tHas " << IT->_signals.size() << " signals\n";
+						int i = 0; // Used when debugging
+						for (auto ot = IT->_signals.begin(); ot != IT->_signals.end(); ++ot, ++i)
+						{
+							if (!(*ot)) continue;
+							if (!_filled.count(*ot))
+							{
+								//std::cerr << "\tSignal " << i << " " << ot->lock().get() << " not filled\n";
+								signalblock = false;
+								break;
+							}
+						}
+						if (signalblock)
+						{
+							//std::cerr << "\tSignal is filled, so this vertex is unnecessary\n";
+							ignored.insert(*it);
+							cleanup.insert(*it);
+							continue;
+						}
+
+						// Check to see if a root is completely filled (hence ready for extraction)
+						// Look at all root members to see if root is filled
+						size_t n = IT->_slots.size();
+						size_t m = 0;
+
+						for (auto ot = IT->_slots.begin(); ot != IT->_slots.end(); ot++)
+						{
+							if (!(*ot)) continue;
+							//if (ot->expired()) continue;
+							if (_filled.count(*ot)) m++;
+							if (m && IT->_slotOR) break; // No need to go on
+						}
+						if (m && IT->_slotOR) ready = true;
+						if (m == n) ready = true;
+
+						// If ready, place in _order, _filled and remove from _remaining
+						if (ready)
+						{
+							_order.push_back(std::pair<vertex*, size_t>
+								(*it, order));
+							_filled.insert(*it);
+							cleanup.insert(*it);
+							vertices_added++;
+						}
+					}
+
+					order++; // Increment depth count (for storage)
+
+					// Cleanup loop (to erase elements)
+					for (auto ct = cleanup.begin(); ct != cleanup.end(); ct++)
+					{
+						_remaining.erase(*ct);
+					}
+
+					// Check for isolates - these are unconnectable in any loop
+					if ((!vertices_added) && _remaining.size()) break;
+				}
+			}
 		};
-
-
 	}
 }
 

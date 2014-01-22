@@ -1,12 +1,30 @@
 #include "Stdafx-voronoi.h"
 
+#include <functional>
+#include <boost/functional/hash.hpp>
+//#include <boost/pool/pool.hpp>
+//#include <boost/pool/pool_alloc.hpp>
+//#include <boost/interprocess/anonymous_shared_memory.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/managed_heap_memory.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/flat_map.hpp>
+#include <boost/interprocess/containers/flat_set.hpp>
+//#include <boost/interprocess/containers/
 #include <boost/shared_ptr.hpp>
-#include <unordered_map>
-#include <unordered_set>
+#include <boost/unordered_set.hpp>
+//#include <unordered_map>
+//#include <unordered_set>
 #include <Voro++/voro++.hh>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/error/error.h"
+
+/*// Internal namespace handles the Voronoi pool implementation
+namespace {
+	
+}
+*/
 
 namespace rtmath
 {
@@ -61,14 +79,28 @@ namespace rtmath
 			
 			// Construct the dependency graph
 			using namespace rtmath::graphs;
-			std::vector<vertex> vertices(src->rows()); /// \todo Support serializing the vertices
-			std::unordered_map<vertex*, size_t> vertexIdMap;
-			vertexIdMap.reserve(src->rows());
+			std::vector<vertex> vertices((size_t) src->rows()); /// \todo Support serializing the vertices
+
+			using namespace boost::interprocess;
+
+			//mapped_region region(anonymous_shared_memory(1024*1024*128));
+			managed_heap_memory m(1024*1024*128);
+			typedef allocator<std::pair<const vertex*, size_t>, managed_heap_memory::segment_manager>
+				PairAllocator;
+			const PairAllocator pairAllocator(m.get_segment_manager());
+			typedef boost::interprocess::flat_map<vertex*, size_t, std::less<const vertex*>,
+				PairAllocator> vIdMap;
+			vIdMap *vertexIdMap = m.construct<vIdMap>("vertexIdMap")
+				(std::less<const vertex*>(), pairAllocator);
+			//std::unordered_map<vertex*, size_t, std::hash<vertex*>, std::equal_to<vertex*>,
+			//	boost::pool_allocator<std::pair<const vertex*, size_t> > > vertexIdMap;
+
+			vertexIdMap->reserve(src->rows());
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
 			{
 				//vertices[i] = boost::shared_ptr<vertex>(new vertex(true) );
 				vertices[i].setOR(true);
-				vertexIdMap[&vertices[i]] = i;
+				vertexIdMap->at(&vertices[i]) = i;
 			}
 
 			//double vol = vc->sum_cell_volumes();
@@ -103,34 +135,55 @@ namespace rtmath
 				}
 			} while (cl.inc());
 
-			// Construct the set of vertices from the vector
-			rtmath::graphs::setVertex setVertices; //(vertices.begin(), vertices.end());
-			//setVertices.reserve((size_t) src->rows());
+			// Construct the set of vertex pointers from the vertex vector
+			typedef allocator<vertex*, managed_heap_memory::segment_manager> VertexAllocator;
+			//typedef boost::interprocess::flat_set<vertex*, std::less<const vertex*>, VertexAllocator> bSetVertex;
+			typedef boost::unordered_set<vertex*, boost::hash<vertex*>, 
+				std::equal_to<vertex*>, VertexAllocator> bSetVertex;
+			VertexAllocator vAllocator (m.get_segment_manager());
+			bSetVertex* setVertices = m.construct<bSetVertex>("setVertices")
+				(boost::hash<vertex*>(), std::equal_to<vertex*>(), 
+				//m.get_allocator<vertex*>());
+				vAllocator);
+			//typedef std::unordered_set < vertex*, std::hash<vertex*>, std::equal_to<vertex*>,
+			//	boost::pool_allocator<vertex*> > bSetVertex;
+			//bSetVertex setVertices;
+
+			setVertices->reserve((size_t)src->rows());
+			//rtmath::graphs::setVertex setVertices; //(vertices.begin(), vertices.end());
 			for (auto &v : vertices)
-				setVertices.insert(&v);
+				setVertices->insert(&v);
 			orderedVertex order;
-			setVertex remaining;
-			setVertex ignored;
-			setVertex provided;
+			bSetVertex remaining;
+			bSetVertex ignored;
+			bSetVertex provided;
 
 			auto initFilledPoints = calcCandidateConvexHullPoints();
 
 			for (size_t i=0; i< (size_t) initFilledPoints.rows(); ++i)
 				provided.insert(&vertices[(size_t) initFilledPoints(i, 3)]);
 
-			graph g(setVertices);
-			g.generate(provided, order, remaining, ignored);
+			generateGraph<bSetVertex, orderedVertex>::generate(
+				*setVertices, provided, order, remaining, ignored);
+
+			//graph g(setVertices);
+			//g.generate(provided, order, remaining, ignored);
+
 			// Provided all have rank zero. order provides depth from the candidate surface cells.
 			// Match the ordered vertices with their row
 			for (auto &it : order)
 			{
 				const size_t &rank = it.second;
 				auto IT = it.first;//.lock();
-				size_t id = vertexIdMap.at(IT);
+				size_t id = vertexIdMap->at(IT);
 				out(id, 3) = (float) rank;
 			}
 
 			results["SurfaceDepthTrivial"] = std::move(out);
+
+			// Free the dependency graph table
+			//boost::singleton_pool<boost::pool_allocator_tag, sizeof(vertex*)>::release_memory();
+
 			return results.at("SurfaceDepthTrivial");
 		}
 
