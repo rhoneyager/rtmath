@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "Output file")
 			//("convex-hull,c", "Calculate and write convex hull")
 			;
-		rtmath::registry::add_options(cmdline, config, hidden);
+		rtmath::debug::add_options(cmdline, config, hidden);
 
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 			options(oall).positional(p).run(), vm);
 		po::notify(vm);
 
-		rtmath::registry::process_static_options(vm);
+		rtmath::debug::process_static_options(vm);
 
 
 		auto doHelp = [&](const std::string &message)

@@ -213,14 +213,14 @@ namespace {
 	class DLLhandle
 	{
 	public:
-		DLLhandle(const std::string &filename) : dlHandle(nullptr)
+		DLLhandle(const std::string &filename, bool critical = false) : dlHandle(nullptr)
 		{
-			open(filename);
+			open(filename, critical);
 		}
 		DLLhandle() : dlHandle(nullptr)
 		{
 		}
-		void open(const std::string &filename)
+		void open(const std::string &filename, bool critical = false)
 		{
 			if (DLLpathsLoaded.count(filename)) RTthrow rtmath::debug::xDuplicateHook(fname.c_str());
 			if (dlHandle) RTthrow rtmath::debug::xHandleInUse(fname.c_str());
@@ -232,7 +232,13 @@ namespace {
 #endif
 #ifdef _WIN32
 			this->dlHandle = LoadLibrary(filename.c_str());
-			if (this->dlHandle == NULL) RTthrow rtmath::debug::xBadInput(filename.c_str());
+			// Could not open the dll for some reason
+			if (this->dlHandle == NULL)
+			{
+				if (critical)
+					RTthrow rtmath::debug::xBadInput(filename.c_str());
+				std::cerr << "Error: Could not open DLL at " << filename << std::endl;
+			}
 #endif
 			DLLpathsLoaded.insert(filename);
 		}

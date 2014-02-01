@@ -1,6 +1,10 @@
 #include "Stdafx-voronoi.h"
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <functional>
+#include <random>
 #include <boost/functional/hash.hpp>
 //#include <boost/pool/pool.hpp>
 //#include <boost/pool/pool_alloc.hpp>
@@ -21,11 +25,71 @@
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/error/error.h"
 
-/*// Internal namespace handles the Voronoi pool implementation
 namespace {
-	
+	// Golden ratio constants
+	const double Phi=0.5*(1+sqrt(5.0));
+	const double phi=0.5*(1-sqrt(5.0));
+
+	class wall_initial_shape : public voro::wall {
+	public:
+		wall_initial_shape() {
+			const double w = 2;
+			v.init(-w,w,-w,w,-w,w);
+			// Create a dodecahedron
+			//v.plane(0,Phi,1);v.plane(0,-Phi,1);v.plane(0,Phi,-1);
+			//v.plane(0,-Phi,-1);v.plane(1,0,Phi);v.plane(-1,0,Phi);
+			//v.plane(1,0,-Phi);v.plane(-1,0,-Phi);v.plane(Phi,1,0);
+			//v.plane(-Phi,1,0);v.plane(Phi,-1,0);v.plane(-Phi,-1,0);
+		};
+		bool point_inside(double x,double y,double z) {return true;}
+		bool cut_cell(voro::voronoicell &c,double x,double y,double z) {
+
+			// Set the cell to be equal to the dodecahedron
+			c=v;
+			return true;
+		}
+		bool cut_cell(voro::voronoicell_neighbor &c,double x,double y,double z) {
+
+			// Set the cell to be equal to the dodecahedron
+			c=v;
+			return true;
+		}
+	private:
+		voro::voronoicell v;
+	};
+	wall_initial_shape wis;
+
+	/// \brief Draws a ploygon in POV-ray format
+	/// \note Taken from voro++ ploygons example, with c-style io translated to c++-style
+	void drawPOV_polygon(std::ostream &out, std::vector<int> &f_vert, std::vector<double> &v,int j)
+	{
+		std::vector<std::string> s(600);
+		int k,l,n=f_vert[j];
+
+		// Create POV-Ray vector strings for each of the vertices
+		for(k=0;k<n;k++) {
+			l=3*f_vert[j+k+1];
+			std::ostringstream o;
+			o << "<" << v[l] << "," << v[l+1] << "," << v[l+2] << ">";
+			s[k] = o.str();
+		}
+
+		// Draw the interior of the polygon
+		out << "union{\n";
+		for(k=2;k<n;k++) 
+			out << "\ttriangle{" << s[0] << "," << s[k-1] << "," << s[k] << "}\n";
+		out << "\ttexture{t1}\n}\n";
+
+		// Draw the outline of the polygon
+		out << "union{\n";
+		for(k=0;k<n;k++) {
+			l=(k+1)%n;
+			out << "\tcylinder{" << s[k] << "," << s[l] << ",r}\n\tsphere{" << s[l] << ",r}\n";
+		}
+		out << "\ttexture{t2}\n}\n";
+	}
 }
-*/
+
 
 namespace rtmath
 {
@@ -44,6 +108,9 @@ namespace rtmath
 			vc = boost::shared_ptr<voro::container>(new container(
 				mins(0),maxs(0),mins(1),maxs(1),mins(2),maxs(2),
 				n_x,n_y,n_z,false,false,false,init_grid));
+
+			//wall_initial_shape wis;
+			vc->add_wall(wis);
 
 			// Add particles into the container
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
@@ -208,6 +275,13 @@ namespace rtmath
 			}
 			regenerateVoronoi();
 
+			// Test output to show cell boundaries for the hull
+			std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
+			//std::default_random_engine generator;
+			//std::binomial_distribution<int> distribution(1, 0.01);
+			//std::discrete_distribution<int> distribution(2,0,1,[](double d){if (d>0.1) return 1; return 2500; });
+			std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
+
 			using namespace voro;
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
 			out.resize(src->rows(), 4);
@@ -222,29 +296,54 @@ namespace rtmath
 				cl.pos(crds(0),crds(1),crds(2));
 				int id = cl.pid();
 				if (id % 1000 == 0) std::cerr << id << "\n";
-				std::vector<int> neigh; //,f_vert;
-				//std::vector<double> v;
+				std::vector<int> neigh, f_vert;
+				std::vector<double> v;
 				c.neighbors(neigh);
-				//c.face_vertices(f_vert);
-				//c.vertices(crds(0),crds(1),crds(2),v);
+				c.face_vertices(f_vert);
+				c.vertices(crds(0),crds(1),crds(2),v);
+
+				// Randomly select every 500th cell and write out the Voronoi boundaries
+				//bool writeBounds = false;
+				//if (distribution(generator) > 0)
+				//{
+				//	std::cerr << "Writing bounds for cell " << id << "\n";
+				//	writeBounds = true;
+				//}
 
 				// Loop over all faces of the Voronoi cell
 				// For faces that touch the walls, the neighbor number is negative
-				for (auto &i : neigh)
+				for (int i=0, j=0; i < neigh.size(); ++i)
+				//for (auto &i : neigh)
 				{
-					if (i<0)
+					bool hasSfc = false;
+					if (neigh[i]<=0)
 					{
 						out(numSurfacePoints, 0) = (float) crds(0);
 						out(numSurfacePoints, 1) = (float) crds(1);
 						out(numSurfacePoints, 2) = (float) crds(2);
 						out(numSurfacePoints, 3) = (float) id; // Initial point id
-						numSurfacePoints++;
-						break;
+						if (!hasSfc)
+						{
+							numSurfacePoints++;
+							hasSfc = true;
+						}
+
+						drawPOV_polygon(oCandidates, f_vert, v, j);
+						//break; // from surface point detection
 					}
+					//else drawPOV_polygon(oint, f_vert, v, j);
+					//if (writeBounds) drawPOV_polygon(oint, f_vert, v, j);
+					//j+=f_vert[j]+1;
 				}
 			} while (cl.inc());
 			
 			out.conservativeResize(numSurfacePoints, 4);
+
+			vc->draw_particles_pov("CandidateConvexHullPoints_p.pov");
+			vc->draw_cells_pov("CandidateConvexHullPoints_v.pov");
+			//vc->draw_particles("CandidateConvexHullPoints_p.gnu");
+			//vc->draw_cells_gnuplot("CandidateConvexHullPoints_v.gnu");
+
 			results["CandidateConvexHullPoints"] = std::move(out);
 			return results.at("CandidateConvexHullPoints");
 		}

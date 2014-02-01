@@ -49,6 +49,9 @@ namespace rtmath
 		* \item cmdline provides options only allowed on the command line
 		* \item config provides options available on the command line and in a config file
 		* \item hidden provides options allowed anywhere, but are not displayed to the user
+		*
+		* \note This gets automatically called by rtmath::debug::add_options
+		* \todo Hide this
 		**/
 		void DLEXPORT_rtmath_core add_options(
 			boost::program_options::options_description &cmdline,
@@ -56,6 +59,8 @@ namespace rtmath
 			boost::program_options::options_description &hidden);
 		/// Processes static options defined in add_options
 		/// \todo Add processor for non-static options
+		/// \note This gets automatically called by rtmath::debug::process_static_options
+		/// \todo Hide this
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
 

@@ -160,6 +160,7 @@ namespace rtmath
 
 			cmdline.add_options()
 				("version", "Print rtmath library version information and exit")
+				("close-on-finish", po::value<bool>(), "Should the app automatically close on termination?")
 				;
 
 			config.add_options()
@@ -205,6 +206,9 @@ namespace rtmath
 			{
 				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
 			}
+
+			if (vm.count("close-on-finish"))
+				Ryan_Debug::waitOnExit(!(vm["close-on-finish"].as<bool>()));
 
 			registry::process_static_options(vm);
 		}
