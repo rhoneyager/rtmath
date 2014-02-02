@@ -119,6 +119,7 @@ namespace rtmath
 			double total_edge_distance;
 			int nFaces, nEdges;
 			Eigen::Matrix3d centroid;
+			Eigen::Matrix3d loc;
 			bool isSurface() const { if (sa_ext) return true; return false; }
 		};
 
@@ -140,7 +141,8 @@ namespace rtmath
 			void calc(voro::voronoicell_neighbor &vc)
 			{
 				Eigen::Matrix3d crds;
-				//cl.pos(crds(0),crds(1),crds(2));
+				/// \todo Add position information here
+				//cl.pos(loc(0),loc(1),loc(2));
 				vc.neighbors(neigh);
 				vc.face_vertices(f_vert);
 				//vc.vertices(crds(0),crds(1),crds(2),v);
@@ -151,6 +153,7 @@ namespace rtmath
 				nFaces = vc.number_of_faces();
 				nEdges = vc.number_of_edges();
 				vc.centroid(centroid(0), centroid(1), centroid(2));
+				
 				max_radius_squared = vc.max_radius_squared();
 				total_edge_distance = vc.total_edge_distance();
 
@@ -167,6 +170,7 @@ namespace rtmath
 		/// Storage container class for the cached Voronoi cell information
 		class CachedVoronoi
 		{
+			friend class VoronoiDiagram;
 		private:
 			mutable boost::interprocess::managed_heap_memory m;
 			mutable double sa, vol;
@@ -183,13 +187,14 @@ namespace rtmath
 
 			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc) : 
 				vc(vc),
-				m(1024*numPoints), 
+				m(10*1024*numPoints), // 10 kb per point should be enough for point lists + vertices
 				intAllocator(m.get_segment_manager()),
 				doubleAllocator(m.get_segment_manager()), 
 				cachedVoronoiCellAllocator(m.get_segment_manager()),
 				sa(0),
 				vol(0)
 			{
+				if (vc) regenerateCache(numPoints);
 			}
 			~CachedVoronoi()
 			{
@@ -224,6 +229,11 @@ namespace rtmath
 			double surfaceArea() const { return sa; }
 			/// Calculate the volume of the bulk figure
 			double volume() const { return vol; }
+			/// Get pointer to the set of stored voronoi cells
+			std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> >* getCells() const
+			{
+				return m.find<std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
+			}
 		};
 
 
@@ -300,13 +310,13 @@ namespace rtmath
 			using namespace boost::interprocess;
 
 			//mapped_region region(anonymous_shared_memory(1024*1024*128));
-			managed_heap_memory m(1024*1024*128);
+			managed_heap_memory &m = precalced->m;
 			typedef allocator<std::pair<const vertex*, size_t>, managed_heap_memory::segment_manager>
 				PairAllocator;
 			const PairAllocator pairAllocator(m.get_segment_manager());
 			typedef boost::interprocess::flat_map<vertex*, size_t, std::less<const vertex*>,
 				PairAllocator> vIdMap;
-			vIdMap *vertexIdMap = m.construct<vIdMap>("vertexIdMap")
+			vIdMap *vertexIdMap = m.construct<vIdMap>("SurfaceDepth_vertexIdMap")
 				(std::less<const vertex*>(), pairAllocator);
 			//std::unordered_map<vertex*, size_t, std::hash<vertex*>, std::equal_to<vertex*>,
 			//	boost::pool_allocator<std::pair<const vertex*, size_t> > > vertexIdMap;
@@ -318,23 +328,15 @@ namespace rtmath
 				vertices[i].setOR(true);
 				(*vertexIdMap)[&vertices[i]] = i;
 			}
-
-			//double vol = vc->sum_cell_volumes();
-
-			//particle_order po;
+			
 			voronoicell_neighbor c;
 			c_loop_all cl(*(vc.get()));
 			if (cl.start()) do if (vc->compute_cell(c,cl)) {
-				//Eigen::Matrix3d crds;
-				//cl.pos(crds(0),crds(1),crds(2));
 				int id = cl.pid(); // Particle id as specified in voronoi cell construction!
 				if (id % 1000 == 0) std::cerr << id << "\n";
 				std::vector<int> neigh,f_vert;
 				std::vector<double> v;
 				c.neighbors(neigh);
-				//c.face_vertices(f_vert);
-				//c.vertices(crds(0),crds(1),crds(2),v);
-
 				// Loop over all faces of the Voronoi cell
 				// For faces that touch the walls, the neighbor number is negative
 				for (auto &i : neigh)
@@ -400,11 +402,10 @@ namespace rtmath
 				out(id, 3) = (float) rank;
 			}
 
+			// Clean up vertex graph
+			m.destroy_ptr(vertexIdMap);
+
 			results["SurfaceDepth"] = std::move(out);
-
-			// Free the dependency graph table
-			//boost::singleton_pool<boost::pool_allocator_tag, sizeof(vertex*)>::release_memory();
-
 			return results.at("SurfaceDepth");
 		}
 
@@ -416,7 +417,28 @@ namespace rtmath
 			{
 				return results.at("CandidateConvexHullPoints");
 			}
-			regenerateVoronoi();
+			regenerateFull();
+
+			using namespace voro;
+			// From the full diagram, extract the surface points only
+			const int n_x=50,n_y=50,n_z=50, init_grid=150;
+			using namespace voro;
+			boost::shared_ptr<voro::container> vcSmall(new container(
+				mins(0),maxs(0),mins(1),maxs(1),mins(2),maxs(2),
+				n_x,n_y,n_z,false,false,false,init_grid));
+			// Iterate over the precalced entries and insert only point that touch a boundary
+			auto icells = precalced->getCells();
+			size_t numCells = 0;
+			for (const auto &cell : *icells)
+			{
+				if (cell.isSurface())
+				{
+					vcSmall->put((int) numCells, cell.loc(0), cell.loc(1), cell.loc(2));
+					numCells++;
+				}
+			}
+
+			boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
 
 			// Test output to show cell boundaries for the hull
 			//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");

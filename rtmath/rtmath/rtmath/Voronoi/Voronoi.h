@@ -125,7 +125,7 @@ namespace rtmath {
 			//inline void writeToHash() const { writeToHash(hash); }
 
 
-			/// \brief Generate standard Voronoi diagram, with cells starting with maximum size
+			/// \brief Generate standard Voronoi diagram, with cells starting with pre-contoured size
 			/// \todo Add points shared_ptr overload.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
 				Eigen::Array3f &mins, Eigen::Array3f &maxs,
