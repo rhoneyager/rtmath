@@ -41,8 +41,9 @@ namespace rtmath {
 
 	namespace Voronoi
 	{
-		//class VoronoiData; // The internal Voronoi object
-
+		
+		class CachedVoronoi;
+		
 
 		/** \brief Encapsulators + generators for Voronoi objects.
 		*
@@ -74,6 +75,9 @@ namespace rtmath {
 			* time a Voronoi object is loaded.
 			**/
 			mutable boost::shared_ptr<voro::container> vc;
+			/// Internal pointer to the internal Voronoi cache
+			/// \todo Move the internal Voro++ object to within here
+			mutable boost::shared_ptr<CachedVoronoi> precalced;
 
 			/// The Eigen source object.
 			boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > src;
@@ -95,23 +99,20 @@ namespace rtmath {
 
 
 
+
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			void calcSurfaceDepth(
-				Eigen::Matrix<float, Eigen::Dynamic, 4> &depthOut) const;
-
-			/// \brief Calculate the 'surface' of the given flake
 			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
-				calcSurfaceDepthTrivial() const;
+				calcSurfaceDepth() const;
 
 			/// Calculate candidate convex hull points (used in max diameter calculations)
 			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
 				calcCandidateConvexHullPoints() const;
 
 			/// Calculate the surface area of the bulk figure
-
+			double surfaceArea() const;
 			/// Calculate the volume of the bulk figure
-
+			double volume() const;
 			/// Calculate projective area of the figure intersecting the specified plane
 
 

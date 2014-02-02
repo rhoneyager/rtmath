@@ -1,10 +1,9 @@
 #include "Stdafx-voronoi.h"
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include <cstdio>
 #include <functional>
-#include <random>
+//#include <random>
+#include <scoped_allocator>
 #include <boost/functional/hash.hpp>
 //#include <boost/pool/pool.hpp>
 //#include <boost/pool/pool_alloc.hpp>
@@ -59,35 +58,36 @@ namespace {
 	};
 	wall_initial_shape wis;
 
-	/// \brief Draws a ploygon in POV-ray format
+	/// \brief Draws a polygon in POV-ray format
 	/// \note Taken from voro++ ploygons example, with c-style io translated to c++-style
-	void drawPOV_polygon(std::ostream &out, std::vector<int> &f_vert, std::vector<double> &v,int j)
+	void drawPOV_polygon(FILE *fp, std::vector<int> &f_vert, std::vector<double> &v,int j)
 	{
-		std::vector<std::string> s(600);
+		//std::vector<std::string> s(600);
+		static char s[30][128];
 		int k,l,n=f_vert[j];
 
 		// Create POV-Ray vector strings for each of the vertices
 		for(k=0;k<n;k++) {
 			l=3*f_vert[j+k+1];
-			std::ostringstream o;
-			o << "<" << v[l] << "," << v[l+1] << "," << v[l+2] << ">";
-			s[k] = o.str();
+			sprintf(s[k],"<%g,%g,%g>",v[l],v[l+1],v[l+2]);
 		}
 
 		// Draw the interior of the polygon
-		out << "union{\n";
+		fputs("union{\n",fp);
 		for(k=2;k<n;k++) 
-			out << "\ttriangle{" << s[0] << "," << s[k-1] << "," << s[k] << "}\n";
-		out << "\ttexture{t1}\n}\n";
+			fprintf(fp,"\ttriangle{%s,%s,%s}\n",s[0],s[k-1],s[k]);
+		fputs("\ttexture{t1}\n}\n",fp);
 
 		// Draw the outline of the polygon
-		out << "union{\n";
+		fputs("union{\n",fp);
 		for(k=0;k<n;k++) {
 			l=(k+1)%n;
-			out << "\tcylinder{" << s[k] << "," << s[l] << ",r}\n\tsphere{" << s[l] << ",r}\n";
+			fprintf(fp,"\tcylinder{%s,%s,r}\n\tsphere{%s,r}\n",
+				s[k],s[l],s[l]);
 		}
-		out << "\ttexture{t2}\n}\n";
+		fputs("\ttexture{t2}\n}\n",fp);
 	}
+
 }
 
 
@@ -95,10 +95,156 @@ namespace rtmath
 {
 	namespace Voronoi
 	{
+		/// Persistent internal Voronoi cell storage object
+		class CachedVoronoiCellBase
+		{
+		protected:
+			void baseInit()
+			{
+				sa_full = 0;
+				sa_ext = 0;
+				vol = 0;
+				max_radius_squared = 0;
+				total_edge_distance = 0;
+				nFaces = 0;
+				nEdges = 0;
+			}
+			CachedVoronoiCellBase() {baseInit();}
+			virtual ~CachedVoronoiCellBase() {}
+		public:
+			double sa_full;
+			double sa_ext;
+			double vol;
+			double max_radius_squared;
+			double total_edge_distance;
+			int nFaces, nEdges;
+			Eigen::Matrix3d centroid;
+			bool isSurface() const { if (sa_ext) return true; return false; }
+		};
+
+		/// Internal aligned class for persistent voronoi cell information storage
+		template <class AllocInt = std::allocator<int>, class AllocDouble = std::allocator<double> >
+		class CachedVoronoiCell : public CachedVoronoiCellBase
+		{
+		private:
+			const AllocInt &allocInt;
+			const AllocDouble &allocDouble;
+		public:
+			virtual ~CachedVoronoiCell() {}
+			CachedVoronoiCell(const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
+				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {init();}
+			CachedVoronoiCell(voro::voronoicell_neighbor &vc, 
+				const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
+				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
+			{ init(); calc(vc); }
+			void calc(voro::voronoicell_neighbor &vc)
+			{
+				Eigen::Matrix3d crds;
+				//cl.pos(crds(0),crds(1),crds(2));
+				vc.neighbors(neigh);
+				vc.face_vertices(f_vert);
+				//vc.vertices(crds(0),crds(1),crds(2),v);
+				vc.face_areas(f_areas);
+
+				vol = vc.volume();
+				sa_full = vc.surface_area();
+				nFaces = vc.number_of_faces();
+				nEdges = vc.number_of_edges();
+				vc.centroid(centroid(0), centroid(1), centroid(2));
+				max_radius_squared = vc.max_radius_squared();
+				total_edge_distance = vc.total_edge_distance();
+
+				for (int i=0; i < neigh.size(); ++i)
+					if (neigh[i]<=0)
+						sa_ext += f_areas[i];
+			}
+
+			std::vector<int, AllocInt> neigh, f_vert;
+			std::vector<double, AllocDouble> f_areas;
+			//std::vector<double> v;
+		};
+
+		/// Storage container class for the cached Voronoi cell information
+		class CachedVoronoi
+		{
+		private:
+			mutable boost::interprocess::managed_heap_memory m;
+			mutable double sa, vol;
+		public:
+			typedef boost::interprocess::allocator<int, boost::interprocess::managed_heap_memory::segment_manager> IntAllocator;
+			typedef boost::interprocess::allocator<double, boost::interprocess::managed_heap_memory::segment_manager> DoubleAllocator;
+			typedef boost::interprocess::allocator<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
+				boost::interprocess::managed_heap_memory::segment_manager> CachedVoronoiCellAllocator;
+			const IntAllocator intAllocator;
+			const DoubleAllocator doubleAllocator;
+			const CachedVoronoiCellAllocator cachedVoronoiCellAllocator;
+
+			mutable boost::shared_ptr<voro::container> vc;
+
+			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc) : 
+				vc(vc),
+				m(1024*numPoints), 
+				intAllocator(m.get_segment_manager()),
+				doubleAllocator(m.get_segment_manager()), 
+				cachedVoronoiCellAllocator(m.get_segment_manager()),
+				sa(0),
+				vol(0)
+			{
+			}
+			~CachedVoronoi()
+			{
+			}
+			void regenerateCache(size_t numPoints) const
+			{
+				if (!vc) return;
+				// Iterate over cells and store cell information (prevents constant recalculations)
+				using namespace boost::interprocess;
+
+				std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > *c = m.find_or_construct
+					<std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells")(cachedVoronoiCellAllocator);
+				if (c->size() != numPoints)
+					c->resize(numPoints);
+
+				using namespace voro;
+				voronoicell_neighbor n;
+				c_loop_all cl(*(vc.get()));
+				if (cl.start()) do if (vc->compute_cell(n,cl)) {
+					int id = cl.pid();
+					if (id % 1000 == 0) std::cerr << id << "\n";
+					c->at(id).calc(n);
+
+					// Set a few fields for convenience
+					vol += c->at(id).vol;
+					sa += c->at(id).sa_ext;
+				} while (cl.inc());
+			}
+			
+			
+			/// Calculate the surface area of the bulk figure
+			double surfaceArea() const { return sa; }
+			/// Calculate the volume of the bulk figure
+			double volume() const { return vol; }
+		};
+
+
+
 		VoronoiDiagram::VoronoiDiagram() {}
 
 		void VoronoiDiagram::setHash(HASH_t hash) { this->hash = hash; }
 
+		double VoronoiDiagram::surfaceArea() const
+		{
+			if (!precalced) return 0;
+			return precalced->surfaceArea();
+		}
+
+		double VoronoiDiagram::volume() const
+		{
+			if (!precalced) return 0;
+			return precalced->volume();
+		}
+
+		/// \note This regenerates the REGULAR diagram, with surface fitting
 		void VoronoiDiagram::regenerateVoronoi() const
 		{
 			if (vc) return;
@@ -121,22 +267,24 @@ namespace rtmath
 		}
 
 		/** This function iterates over the entire diagram, generating the data for all 
-		 * of the cells, with regards to cell ids, voronoi centers and neighbors.
-		 * As needed, will add information about cell vertices and faces.
-		 * This is needed to prevent repetitive looping over the Voronoi structure.
-		 **/
+		* of the cells, with regards to cell ids, voronoi centers and neighbors.
+		* As needed, will add information about cell vertices and faces.
+		* This is needed to prevent repetitive looping over the Voronoi structure.
+		**/
 		void VoronoiDiagram::regenerateFull() const
 		{
-
+			if (precalced) return;
+			if (!vc) regenerateVoronoi();
+			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc));
 		}
 
-		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepthTrivial() const
+		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepth() const
 		{
-			if (results.count("SurfaceDepthTrivial"))
+			if (results.count("SurfaceDepth"))
 			{
-				return results.at("SurfaceDepthTrivial");
+				return results.at("SurfaceDepth");
 			}
-			regenerateVoronoi();
+			regenerateFull();
 
 			using namespace voro;
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
@@ -144,7 +292,7 @@ namespace rtmath
 			out.conservativeResize(src->rows(), 4);
 			out.col(3) = Eigen::Matrix<float, Eigen::Dynamic, 1>::Zero(src->rows(), 1);
 			// Using depGraph and the initial Candidate Convex Hull points
-			
+
 			// Construct the dependency graph
 			using namespace rtmath::graphs;
 			std::vector<vertex> vertices((size_t) src->rows()); /// \todo Support serializing the vertices
@@ -197,7 +345,7 @@ namespace rtmath
 						float res = (out.block(i,0,1,3) - out.block(j,0,1,3)).norm();
 						return res;
 					};
-					
+
 					if (distsq(i, id) < 2.2f)
 						vertices[id].addSlot(&vertices[i]);
 				}
@@ -210,14 +358,14 @@ namespace rtmath
 			typedef boost::unordered_set<vertex*, boost::hash<vertex*>, 
 				std::equal_to<vertex*>
 				//, VertexAllocator
-				> bSetVertex;
+			> bSetVertex;
 			VertexAllocator vAllocator (m.get_segment_manager());
-			
+
 			bSetVertex setVertices; //(std::less<vertex*>(), vAllocator);
 
 			//bSetVertex* setVertices = m.construct<bSetVertex>("setVertices")
-				//(boost::hash<vertex*>(), std::equal_to<vertex*>(),
-				//(vAllocator);
+			//(boost::hash<vertex*>(), std::equal_to<vertex*>(),
+			//(vAllocator);
 			//typedef std::unordered_set < vertex*, std::hash<vertex*>, std::equal_to<vertex*>,
 			//	boost::pool_allocator<vertex*> > bSetVertex;
 			//bSetVertex setVertices;
@@ -252,20 +400,15 @@ namespace rtmath
 				out(id, 3) = (float) rank;
 			}
 
-			results["SurfaceDepthTrivial"] = std::move(out);
+			results["SurfaceDepth"] = std::move(out);
 
 			// Free the dependency graph table
 			//boost::singleton_pool<boost::pool_allocator_tag, sizeof(vertex*)>::release_memory();
 
-			return results.at("SurfaceDepthTrivial");
+			return results.at("SurfaceDepth");
 		}
 
-		void VoronoiDiagram::calcSurfaceDepth(
-			Eigen::Matrix<float, Eigen::Dynamic, 4> &out) const
-		{
-			throw;
-		}
-
+		/// Have this use a separate voronoi container that is 'unshrunk' to get the prospective hull points.
 		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
 			VoronoiDiagram::calcCandidateConvexHullPoints() const
 		{
@@ -276,11 +419,13 @@ namespace rtmath
 			regenerateVoronoi();
 
 			// Test output to show cell boundaries for the hull
-			std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
+			//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
+			FILE *oCandidates=fopen("CandidateConvexHullPoints_extfaces.pov","w");
+
 			//std::default_random_engine generator;
 			//std::binomial_distribution<int> distribution(1, 0.01);
 			//std::discrete_distribution<int> distribution(2,0,1,[](double d){if (d>0.1) return 1; return 2500; });
-			std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
+			//std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
 
 			using namespace voro;
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
@@ -313,7 +458,7 @@ namespace rtmath
 				// Loop over all faces of the Voronoi cell
 				// For faces that touch the walls, the neighbor number is negative
 				for (int i=0, j=0; i < neigh.size(); ++i)
-				//for (auto &i : neigh)
+					//for (auto &i : neigh)
 				{
 					bool hasSfc = false;
 					if (neigh[i]<=0)
@@ -336,18 +481,19 @@ namespace rtmath
 					//j+=f_vert[j]+1;
 				}
 			} while (cl.inc());
-			
+
 			out.conservativeResize(numSurfacePoints, 4);
 
 			vc->draw_particles_pov("CandidateConvexHullPoints_p.pov");
 			vc->draw_cells_pov("CandidateConvexHullPoints_v.pov");
 			//vc->draw_particles("CandidateConvexHullPoints_p.gnu");
 			//vc->draw_cells_gnuplot("CandidateConvexHullPoints_v.gnu");
+			fclose(oCandidates);
 
 			results["CandidateConvexHullPoints"] = std::move(out);
 			return results.at("CandidateConvexHullPoints");
 		}
-		
+
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::generateStandard(
 			Eigen::Array3f &mins, Eigen::Array3f &maxs,
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> points
