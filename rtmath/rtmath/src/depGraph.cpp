@@ -20,7 +20,7 @@ namespace rtmath
 		{
 			// Create connector
 			vertex* connector;
-			connector = vertex*(new vertex(false) );
+			connector = new vertex(false);
 			target->addSlot(connector);
 			for (vertex* it : depends)
 				connector->addSlot(it);

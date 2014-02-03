@@ -122,7 +122,7 @@ set(rtmath_voronoi-files
 	src/Stdafx-voronoi.cpp
 	src/Stdafx-voronoi.h
 	src/Voronoi.cpp
-	src/Voronoi_serialization.cpp
+	src/Voronoi_Serialization.cpp
 	)
 
 set(rtmath_ddscat_base-files
