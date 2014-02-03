@@ -101,6 +101,8 @@ namespace rtmath
 		protected:
 			void baseInit()
 			{
+				id = 0;
+				r = 0;
 				sa_full = 0;
 				sa_ext = 0;
 				vol = 0;
@@ -108,18 +110,32 @@ namespace rtmath
 				total_edge_distance = 0;
 				nFaces = 0;
 				nEdges = 0;
+				pos.setZero();
 			}
 			CachedVoronoiCellBase() {baseInit();}
 			virtual ~CachedVoronoiCellBase() {}
 		public:
+			/// Particle id
+			int id;
+			/// Particle radius (unused)
+			double r;
+			/// Surface area of entire Voronoi cell
 			double sa_full;
+			/// Surface area of the cell that does not touch another cell
 			double sa_ext;
+			/// Particle volume
 			double vol;
+			/// Maximum radius squared from particle centroid
 			double max_radius_squared;
+			/// Sum of all edge lengths
 			double total_edge_distance;
+			/// Number of faces and edges in the particle
 			int nFaces, nEdges;
+			/// Centroid of particle (uncertain of coordinate system)
 			Eigen::Matrix3d centroid;
-			Eigen::Matrix3d loc;
+			/// Position vector of particle
+			Eigen::Matrix3d pos;
+			/// Convenience function to see if the particle touches the 'surface'
 			bool isSurface() const { if (sa_ext) return true; return false; }
 		};
 
@@ -138,11 +154,10 @@ namespace rtmath
 				const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
 				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
 			{ init(); calc(vc); }
+			/// \note Position information must be set separately (not in vc)
 			void calc(voro::voronoicell_neighbor &vc)
 			{
 				Eigen::Matrix3d crds;
-				/// \todo Add position information here
-				//cl.pos(loc(0),loc(1),loc(2));
 				vc.neighbors(neigh);
 				vc.face_vertices(f_vert);
 				//vc.vertices(crds(0),crds(1),crds(2),v);
@@ -162,7 +177,9 @@ namespace rtmath
 						sa_ext += f_areas[i];
 			}
 
+			/// Cell neighbor and vertex lists. The integer in neigh corresponds to the cell id in CachedVoronoi.
 			std::vector<int, AllocInt> neigh, f_vert;
+			/// Areas of each face
 			std::vector<double, AllocDouble> f_areas;
 			//std::vector<double> v;
 		};
@@ -214,7 +231,16 @@ namespace rtmath
 				voronoicell_neighbor n;
 				c_loop_all cl(*(vc.get()));
 				if (cl.start()) do if (vc->compute_cell(n,cl)) {
-					int id = cl.pid();
+					// Quantities explicitly retrieved this way to avoid any c->at(id) potential issues.
+					int id;
+					Eigen::Matrix3d pos;
+					double r;
+					cl.pos(id, pos(0), pos(1), pos(2), r); // getting id directly into field would be problematic
+					
+					c->at(id).id = id;
+					c->at(id).r = r;
+					c->at(id).pos = pos;
+
 					if (id % 1000 == 0) std::cerr << id << "\n";
 					c->at(id).calc(n);
 
@@ -288,6 +314,7 @@ namespace rtmath
 			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc));
 		}
 
+		/// \todo Use the precomputed cell list
 		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepth() const
 		{
 			if (results.count("SurfaceDepth"))
@@ -409,7 +436,7 @@ namespace rtmath
 			return results.at("SurfaceDepth");
 		}
 
-		/// Have this use a separate voronoi container that is 'unshrunk' to get the prospective hull points.
+		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
 		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
 			VoronoiDiagram::calcCandidateConvexHullPoints() const
 		{
@@ -417,10 +444,14 @@ namespace rtmath
 			{
 				return results.at("CandidateConvexHullPoints");
 			}
+			// Computational cost should be around the same with / without first preselecting 
+			// surface points from the more complete diagram. I usually need the full diagram, 
+			// though, and it is more expensive to calculate in the other order.
 			regenerateFull();
 
 			using namespace voro;
-			// From the full diagram, extract the surface points only
+			// From the full diagram, extract the surface points only.
+			// Need to regenerate the cells without a prespecified size.
 			const int n_x=50,n_y=50,n_z=50, init_grid=150;
 			using namespace voro;
 			boost::shared_ptr<voro::container> vcSmall(new container(
@@ -433,21 +464,13 @@ namespace rtmath
 			{
 				if (cell.isSurface())
 				{
-					vcSmall->put((int) numCells, cell.loc(0), cell.loc(1), cell.loc(2));
+					vcSmall->put((int) numCells, cell.pos(0), cell.pos(1), cell.pos(2));
 					numCells++;
 				}
 			}
 
+			// It's optional to use a pool here, since this Voronoi diagram is much smaller than the other.
 			boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
-
-			// Test output to show cell boundaries for the hull
-			//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
-			FILE *oCandidates=fopen("CandidateConvexHullPoints_extfaces.pov","w");
-
-			//std::default_random_engine generator;
-			//std::binomial_distribution<int> distribution(1, 0.01);
-			//std::discrete_distribution<int> distribution(2,0,1,[](double d){if (d>0.1) return 1; return 2500; });
-			//std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
 
 			using namespace voro;
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
@@ -456,61 +479,37 @@ namespace rtmath
 			// Check each particle to see if on the container surface
 			size_t numSurfacePoints = 0;
 
-			voronoicell_neighbor c;
-			c_loop_all cl(*(vc.get()));
-			if (cl.start()) do if (vc->compute_cell(c,cl)) {
-				Eigen::Matrix3d crds;
-				cl.pos(crds(0),crds(1),crds(2));
-				int id = cl.pid();
-				if (id % 1000 == 0) std::cerr << id << "\n";
-				std::vector<int> neigh, f_vert;
-				std::vector<double> v;
-				c.neighbors(neigh);
-				c.face_vertices(f_vert);
-				c.vertices(crds(0),crds(1),crds(2),v);
-
-				// Randomly select every 500th cell and write out the Voronoi boundaries
-				//bool writeBounds = false;
-				//if (distribution(generator) > 0)
-				//{
-				//	std::cerr << "Writing bounds for cell " << id << "\n";
-				//	writeBounds = true;
-				//}
-
-				// Loop over all faces of the Voronoi cell
-				// For faces that touch the walls, the neighbor number is negative
-				for (int i=0, j=0; i < neigh.size(); ++i)
-					//for (auto &i : neigh)
+			// Using the precalced loop here
+			auto cells = precalcedSmall->getCells();
+			for (const auto &cell : *cells)
+			{
+				if (cell.isSurface())
 				{
-					bool hasSfc = false;
-					if (neigh[i]<=0)
-					{
-						out(numSurfacePoints, 0) = (float) crds(0);
-						out(numSurfacePoints, 1) = (float) crds(1);
-						out(numSurfacePoints, 2) = (float) crds(2);
-						out(numSurfacePoints, 3) = (float) id; // Initial point id
-						if (!hasSfc)
-						{
-							numSurfacePoints++;
-							hasSfc = true;
-						}
-
-						drawPOV_polygon(oCandidates, f_vert, v, j);
-						//break; // from surface point detection
-					}
-					//else drawPOV_polygon(oint, f_vert, v, j);
-					//if (writeBounds) drawPOV_polygon(oint, f_vert, v, j);
-					//j+=f_vert[j]+1;
+					out(numSurfacePoints, 0) = (float) cell.pos(0);
+					out(numSurfacePoints, 1) = (float) cell.pos(1);
+					out(numSurfacePoints, 2) = (float) cell.pos(2);
+					out(numSurfacePoints, 3) = (float) cell.id; // Initial point id
+					numSurfacePoints++;
 				}
-			} while (cl.inc());
+			}
 
+			
 			out.conservativeResize(numSurfacePoints, 4);
 
-			vc->draw_particles_pov("CandidateConvexHullPoints_p.pov");
-			vc->draw_cells_pov("CandidateConvexHullPoints_v.pov");
+			// Test output to show cell boundaries for the hull
+			//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
+			//FILE *oCandidates=fopen("CandidateConvexHullPoints_extfaces.pov","w");
+			// Some stuff for random cell highlighting (to be moved to as yet uncreated routines)
+			//std::default_random_engine generator;
+			//std::binomial_distribution<int> distribution(1, 0.01);
+			//std::discrete_distribution<int> distribution(2,0,1,[](double d){if (d>0.1) return 1; return 2500; });
+			//std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
+			//drawPOV_polygon(oCandidates, f_vert, v, j);
+			//vc->draw_particles_pov("CandidateConvexHullPoints_p.pov");
+			//vc->draw_cells_pov("CandidateConvexHullPoints_v.pov");
 			//vc->draw_particles("CandidateConvexHullPoints_p.gnu");
 			//vc->draw_cells_gnuplot("CandidateConvexHullPoints_v.gnu");
-			fclose(oCandidates);
+			//fclose(oCandidates);
 
 			results["CandidateConvexHullPoints"] = std::move(out);
 			return results.at("CandidateConvexHullPoints");
