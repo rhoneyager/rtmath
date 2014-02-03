@@ -71,6 +71,7 @@ namespace rtmath {
 				float V, aeff_V, SA, aeff_SA, f;
 				void calc(const shapeFileStatsBase*,
 					std::function<std::pair<float,float>()>);
+				void calc(const shapeFileStatsBase*);
 			protected:
 				friend class ::boost::serialization::access;
 				template<class Archive>
@@ -80,8 +81,12 @@ namespace rtmath {
 			volumetric Scircum_sphere, Sconvex_hull, 
 				SVoronoi_hull, Sellipsoid_max, Sellipsoid_rms;
 
-			// These require convex hull calculations
 			float max_distance;
+
+			/// \todo Add Voronoi diagram and convex hull storage
+
+			/*
+			// These require convex hull calculations
 			float a_circum_sphere;
 			float V_circum_sphere;
 			float SA_circum_sphere;
@@ -107,7 +112,8 @@ namespace rtmath {
 			float f_convex_hull;
 			float f_Voronoi_hull;
 			float f_ellipsoid_max;
-			float f_ellipsoid_rms;
+			float f_ellipsoid_rms
+				*/
 
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;

@@ -23,7 +23,7 @@ namespace rtmath
 		class DLEXPORT_rtmath_voronoi hull
 		{
 		public:
-			hull(const Eigen::Matrix<float, Eigen::Dynamic, 3> &backend);
+			hull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &backend);
 			virtual ~hull() {}
 			/// \brief Write raw input points and polygons
 			/// \todo Move to plugin
@@ -47,7 +47,7 @@ namespace rtmath
 		class DLEXPORT_rtmath_voronoi convexHull : public hull
 		{
 		public:
-			convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>&);
+			convexHull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&);
 			virtual ~convexHull() {}
 			/// Construct the convex hull, and populate the quantities
 			/// \todo Invoke in constructor
@@ -58,7 +58,7 @@ namespace rtmath
 		class concaveHull : public hull
 		{
 		public:
-			concaveHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>&);
+			concaveHull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&);
 			virtual ~concaveHull() {}
 			void constructHull(double alpha);
 		};

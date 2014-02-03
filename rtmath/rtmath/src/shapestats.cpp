@@ -112,6 +112,26 @@ namespace rtmath {
 			fCheck(aeff_SA);
 		}
 
+		void shapeFileStatsBase::volumetric::calc(const shapeFileStatsBase *s)
+		{
+			aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
+			aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()),0.5);
+			f = V / s->V_cell_const;
+
+			
+			auto fCheck = [](float &val)
+			{
+				// Chech for indeterminacy
+				if (val != val) val = -1.f;
+				if (fabs(val) == std::numeric_limits<float>::infinity()) val = -1.f;
+			};
+			fCheck(f);
+			fCheck(V);
+			fCheck(SA);
+			fCheck(aeff_V);
+			fCheck(aeff_SA);
+		}
+
 		void shapeFileStatsBase::calcStatsBase()
 		{
 			using namespace std;
@@ -234,13 +254,15 @@ namespace rtmath {
 				return res;
 			};
 
+
+
 			Sconvex_hull.calc(this, cvxHullCalc);
 			SVoronoi_hull.calc(this, voroHullCalc);
 			
 			Scircum_sphere.aeff_V = max_distance / 2.0;
 			Scircum_sphere.aeff_SA = max_distance / 2.0;
-			Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,3.0f) / 3.0f;
-			Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,2.0f);
+			Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V,3.0f) / 3.0f;
+			Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
 
 			
 			
@@ -251,21 +273,21 @@ namespace rtmath {
 			{
 				// At beginning by default, as it is the only entry at this point!
 				auto pdr = calcStatsRot(0,0,0);
-				V_ellipsoid_max = boost::math::constants::pi<float>() / 6.0f;
+				Sellipsoid_max.V = boost::math::constants::pi<float>() / 6.0f;
 				// Using diameters, and factor in prev line reflects this
 
 				/// \todo Check V_ellipsoid_max and V_ellipsoid_rms calculations!
-				V_ellipsoid_max *= pdr->max(0,0) - pdr->min(0,0);
-				V_ellipsoid_max *= pdr->max(0,1) - pdr->min(0,1);
-				V_ellipsoid_max *= pdr->max(0,2) - pdr->min(0,2);
+				Sellipsoid_max.V *= pdr->max(0,0) - pdr->min(0,0);
+				Sellipsoid_max.V *= pdr->max(0,1) - pdr->min(0,1);
+				Sellipsoid_max.V *= pdr->max(0,2) - pdr->min(0,2);
 
-				V_ellipsoid_rms = 4.0f * boost::math::constants::pi<float>() / 3.0f;
-				V_ellipsoid_rms *= pdr->max(0,0) - pdr->min(0,0);
-				V_ellipsoid_rms *= pdr->max(0,1) - pdr->min(0,1);
-				V_ellipsoid_rms *= pdr->max(0,2) - pdr->min(0,2);
+				Sellipsoid_rms.V = 4.0f * boost::math::constants::pi<float>() / 3.0f;
+				Sellipsoid_rms.V *= pdr->max(0,0) - pdr->min(0,0);
+				Sellipsoid_rms.V *= pdr->max(0,1) - pdr->min(0,1);
+				Sellipsoid_rms.V *= pdr->max(0,2) - pdr->min(0,2);
 
-				aeff_ellipsoid_max = pow(3.0f * V_ellipsoid_max / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
-				aeff_ellipsoid_rms = pow(3.0f * V_ellipsoid_rms / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
+				Sellipsoid_max.calc(this);
+				Sellipsoid_rms.calc(this);
 			}
 
 

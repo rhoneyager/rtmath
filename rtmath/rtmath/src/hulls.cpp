@@ -59,7 +59,7 @@ namespace rtmath
 		public:
 			hullData()
 				: volume(0), surfarea(0), vx(0), vy(0), vz(0), vproj(0), diameter(0),
-				boundsCalced(false), voronoiCalced(false), mcCalced(false)
+				boundsCalced(false), mcCalced(false)
 			{
 				points = vtkSmartPointer< vtkPoints >::New();
 				surfacePoints = vtkSmartPointer< vtkPoints >::New();
@@ -82,7 +82,7 @@ namespace rtmath
 			double vx, vy, vz, vproj;
 			double mins[3], maxs[3];
 			bool boundsCalced;
-			bool voronoiCalced, mcCalced;
+			bool mcCalced;
 
 			/// Function to calculate the bounds of the shape
 			void calcBounds()
@@ -109,95 +109,6 @@ namespace rtmath
 				boundsCalced=true;
 			}
 
-			/// Function to calculate the Voronoi cells and partition them 
-			/// into cells on the surface and cells within the volume.
-			void calcVoronoi()
-			{
-				/*
-				if (voronoiCalced) return;
-				// Take the raw points, get the boundaries, and construct 
-				// a container. I will id the 'surface' cells as those that 
-				// have a face that matches the container boundary.
-
-				
-				// Start with determining the container bounds
-				calcBounds();
-
-				
-				// Set up the number of blocks that the container is divided into
-				const int n_x=6,n_y=6,n_z=6;
-				using namespace voro;
-				container con(mins[0],maxs[0],mins[1],maxs[1],mins[2],maxs[2],n_x,n_y,n_z,false,false,false,8);
-
-				// Add particles into the container
-				for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
-				{
-					double crds[3];
-					points->GetPoint(i,crds);
-					con.put((int) i, crds[0], crds[1], crds[2]);
-				}
-				*/
-
-				// Check each particle to see if on the container surface
-				surfacePoints->SetNumberOfPoints(points->GetNumberOfPoints());
-				size_t numSurfacePoints = 0;
-
-				voronoicell_neighbor c;
-				c_loop_all cl(con);
-				if (cl.start()) do if (con.compute_cell(c,cl)) {
-					double crds[3];
-					cl.pos(crds[0],crds[1],crds[2]);
-					int id = cl.pid();
-					std::vector<int> neigh,f_vert;
-					std::vector<double> v;
-					c.neighbors(neigh);
-					c.face_vertices(f_vert);
-					c.vertices(crds[0],crds[1],crds[2],v);
-
-					// Loop over all faces of the Voronoi cell
-					// For faces that touch the walls, the neighbor number is negative
-					for (auto &i : neigh)
-					{
-						if (i<0)
-						{
-							surfacePoints->SetPoint(numSurfacePoints,crds);
-							numSurfacePoints++;
-							break;
-						}
-					}
-				} while (cl.inc());
-				surfacePoints->SetNumberOfPoints(numSurfacePoints);
-
-				/* --- replaced by the above block ---
-				for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
-				{
-					double crds[3];
-					points->GetPoint(i,crds);
-					// For a face to be on the container surface, all of the points will 
-					// have at least one coordinate that matches the container boundary
-					auto checkIndex = [&](size_t index) -> bool
-					{
-						//if (abs((crds[index] - maxs[index])/maxs[index]) < 0.01) return true;
-						//if (abs((crds[index] - mins[index])/mins[index]) < 0.01) return true;
-						// Get the voronoi cell that corresponds with the coordinates
-						return false;
-					};
-					bool isBnd = false;
-					if (checkIndex(0)) isBnd = true;
-					if (checkIndex(1)) isBnd = true;
-					if (checkIndex(2)) isBnd = true;
-					if (isBnd)
-					{
-						surfacePoints->SetPoint(numSurfacePoints,crds);
-						numSurfacePoints++;
-					}
-				}
-				
-				surfacePoints->SetNumberOfPoints(numSurfacePoints);
-				*/
-
-				voronoiCalced = true;
-			}
 			/// Function to generate the surface using marching cubes
 			void calcMarchingCubes()
 			{
@@ -243,15 +154,16 @@ namespace rtmath
 			_p = boost::shared_ptr<hullData>(new hullData);
 		}
 
-		hull::hull(const Eigen::Matrix<float, Eigen::Dynamic, 3> &backend)
+		hull::hull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &backend)
 		{
 			_p = boost::shared_ptr<hullData>(new hullData);
 			_p->points->SetNumberOfPoints(backend.rows());
-
+			_p->surfacePoints->SetNumberOfPoints(backend.rows());
 			for (size_t i = 0; i < (size_t) backend.rows(); ++i)
 			{
 				auto it = backend.block<1,3>(i,0);
 				_p->points->SetPoint(i, it(0), it(1), it(2));
+				_p->surfacePoints->SetPoint(i, it(0), it(1), it(2));
 			}
 		}
 
@@ -279,7 +191,9 @@ namespace rtmath
 		//convexHull::convexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
 		//	: hull(src) {}
 
-		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>& src) : hull(src) {}
+		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& src) : hull(src)
+		{
+		}
 
 		void convexHull::constructHull()
 		{
@@ -287,8 +201,6 @@ namespace rtmath
 			vtkObject::GlobalWarningDisplayOff();
 
 			//_p->calcVoronoi();
-
-
 
 			vtkSmartPointer<vtkPolyData> surfacePointsPolys = vtkSmartPointer< vtkPolyData >::New();
 			surfacePointsPolys->SetPoints(_p->surfacePoints);
