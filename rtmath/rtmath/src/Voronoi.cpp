@@ -2,23 +2,17 @@
 
 #include <cstdio>
 #include <functional>
-//#include <random>
 #include <scoped_allocator>
 #include <boost/functional/hash.hpp>
-//#include <boost/pool/pool.hpp>
-//#include <boost/pool/pool_alloc.hpp>
-//#include <boost/interprocess/anonymous_shared_memory.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/managed_heap_memory.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/flat_map.hpp>
 #include <boost/interprocess/containers/flat_set.hpp>
 #include <boost/interprocess/containers/set.hpp>
-//#include <boost/interprocess/containers/
+#include <boost/interprocess/containers/vector.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
-//#include <unordered_map>
-//#include <unordered_set>
 #include <Voro++/voro++.hh>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
@@ -60,6 +54,7 @@ namespace {
 
 	/// \brief Draws a polygon in POV-ray format
 	/// \note Taken from voro++ ploygons example, with c-style io translated to c++-style
+	/// \todo Change to a template to handle different vector allocator types
 	void drawPOV_polygon(FILE *fp, std::vector<int> &f_vert, std::vector<double> &v,int j)
 	{
 		//std::vector<std::string> s(600);
@@ -158,10 +153,20 @@ namespace rtmath
 			void calc(voro::voronoicell_neighbor &vc)
 			{
 				Eigen::Matrix3d crds;
-				vc.neighbors(neigh);
-				vc.face_vertices(f_vert);
+				// Need to copy vectors due to different allocators
+				std::vector<int> lneigh, lf_vert;
+				std::vector<double> lf_areas;
+				vc.neighbors(lneigh);
+				vc.face_vertices(lf_vert);
 				//vc.vertices(crds(0),crds(1),crds(2),v);
-				vc.face_areas(f_areas);
+				vc.face_areas(lf_areas);
+
+				neigh.resize(lneigh.size());
+				std::copy(lneigh.begin(), lneigh.end(), neigh.begin());
+				f_vert.resize(lf_vert.size());
+				std::copy(lf_vert.begin(), lf_vert.end(), f_vert.begin());
+				f_areas.resize(lf_areas.size());
+				std::copy(lf_areas.begin(), lf_areas.end(), f_areas.begin());
 
 				vol = vc.volume();
 				sa_full = vc.surface_area();
@@ -178,9 +183,9 @@ namespace rtmath
 			}
 
 			/// Cell neighbor and vertex lists. The integer in neigh corresponds to the cell id in CachedVoronoi.
-			std::vector<int, AllocInt> neigh, f_vert;
+			boost::interprocess::vector<int, AllocInt> neigh, f_vert;
 			/// Areas of each face
-			std::vector<double, AllocDouble> f_areas;
+			boost::interprocess::vector<double, AllocDouble> f_areas;
 			//std::vector<double> v;
 		};
 
@@ -222,8 +227,10 @@ namespace rtmath
 				// Iterate over cells and store cell information (prevents constant recalculations)
 				using namespace boost::interprocess;
 
-				std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > *c = m.find_or_construct
-					<std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells")(cachedVoronoiCellAllocator);
+				boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > cc(cachedVoronoiCellAllocator);
+				auto c = &cc;
+				//auto c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >
+				//	("cells")(cachedVoronoiCellAllocator);
 				if (c->size() != numPoints)
 					c->resize(numPoints);
 
@@ -256,9 +263,9 @@ namespace rtmath
 			/// Calculate the volume of the bulk figure
 			double volume() const { return vol; }
 			/// Get pointer to the set of stored voronoi cells
-			std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> >* getCells() const
+			boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> >* getCells() const
 			{
-				return m.find<std::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
+				return m.find<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
 			}
 		};
 
@@ -314,7 +321,6 @@ namespace rtmath
 			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc));
 		}
 
-		/// \todo Use the precomputed cell list
 		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepth() const
 		{
 			if (results.count("SurfaceDepth"))
@@ -332,7 +338,9 @@ namespace rtmath
 
 			// Construct the dependency graph
 			using namespace rtmath::graphs;
-			std::vector<vertex> vertices((size_t) src->rows()); /// \todo Support serializing the vertices
+			/// \todo Support exporting the vertices (with connection information) using 
+			/// serialization and graphical (i.e. silo) output.
+			std::vector<vertex> vertices((size_t) src->rows());
 
 			using namespace boost::interprocess;
 
@@ -356,17 +364,13 @@ namespace rtmath
 				(*vertexIdMap)[&vertices[i]] = i;
 			}
 			
-			voronoicell_neighbor c;
-			c_loop_all cl(*(vc.get()));
-			if (cl.start()) do if (vc->compute_cell(c,cl)) {
-				int id = cl.pid(); // Particle id as specified in voronoi cell construction!
+			// Iterate over the precalced entries and insert only point that touch a boundary
+			for (const auto &cell : *(precalced->getCells()))
+			{
+				const int &id = cell.id;
 				if (id % 1000 == 0) std::cerr << id << "\n";
-				std::vector<int> neigh,f_vert;
-				std::vector<double> v;
-				c.neighbors(neigh);
-				// Loop over all faces of the Voronoi cell
-				// For faces that touch the walls, the neighbor number is negative
-				for (auto &i : neigh)
+
+				for (auto &i : cell.neigh)
 				{
 					if (i<0) continue;
 					auto distsq = [&](size_t i, size_t j) -> float
@@ -378,7 +382,7 @@ namespace rtmath
 					if (distsq(i, id) < 2.2f)
 						vertices[id].addSlot(&vertices[i]);
 				}
-			} while (cl.inc());
+			}
 
 			// Construct the set of vertex pointers from the vertex vector
 			typedef allocator<vertex*, managed_heap_memory::segment_manager> VertexAllocator;
@@ -458,9 +462,8 @@ namespace rtmath
 				mins(0),maxs(0),mins(1),maxs(1),mins(2),maxs(2),
 				n_x,n_y,n_z,false,false,false,init_grid));
 			// Iterate over the precalced entries and insert only point that touch a boundary
-			auto icells = precalced->getCells();
 			size_t numCells = 0;
-			for (const auto &cell : *icells)
+			for (const auto &cell : *(precalced->getCells()))
 			{
 				if (cell.isSurface())
 				{
@@ -480,8 +483,7 @@ namespace rtmath
 			size_t numSurfacePoints = 0;
 
 			// Using the precalced loop here
-			auto cells = precalcedSmall->getCells();
-			for (const auto &cell : *cells)
+			for (const auto &cell : *(precalcedSmall->getCells()))
 			{
 				if (cell.isSurface())
 				{

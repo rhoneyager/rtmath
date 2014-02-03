@@ -59,6 +59,9 @@ namespace rtmath {
 		* where the diagram may be lazily evaluated upon usage, and a preexisting
 		* calculation may be loaded from disk based on the rtmath standard hashing
 		* functions.
+		*
+		* \todo Add storage and export of connectivity diagrams (depGraph vertices)
+		* \todo Add io functions (saving / loading hash, better serialization, silo output)
 		**/
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
 			virtual public ::rtmath::registry::usesDLLregistry<
@@ -75,8 +78,9 @@ namespace rtmath {
 			* time a Voronoi object is loaded.
 			**/
 			mutable boost::shared_ptr<voro::container> vc;
-			/// Internal pointer to the internal Voronoi cache
+			/// \brief Internal pointer to the internal Voronoi cache
 			/// \todo Move the internal Voro++ object to within here
+			/// \todo Add precalced object serialization
 			mutable boost::shared_ptr<CachedVoronoi> precalced;
 
 			/// The Eigen source object.

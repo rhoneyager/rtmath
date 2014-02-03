@@ -19,6 +19,7 @@ namespace rtmath
 {
 	namespace Voronoi
 	{
+		/// \todo Add precalced object serialization
 		template<class Archive>
 		void VoronoiDiagram::serialize(Archive &ar, const unsigned int version)
 		{
