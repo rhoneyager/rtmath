@@ -36,6 +36,7 @@ namespace rtmath {
 		/**
 		 * Version history for shapeFileStats, shapeFileStatsRotated and base classes:
 		 *
+		 * 4 - Adding Voronoi hulls, and subclassing V,SA and f values.
 		 * 3 - Bug fixes
 		 * 2 - removed qhull_enabled flag, as vtk convex hulls are now used
 		 * 1 - added qhull enabled / disabled flag when recording calculations
@@ -63,6 +64,22 @@ namespace rtmath {
 			float V_cell_const, V_dipoles_const;
 			float aeff_dipoles_const;
 
+			/// Hold related data together
+			class volumetric
+			{
+			public:
+				float V, aeff_V, SA, aeff_SA, f;
+				void calc(const shapeFileStatsBase*,
+					std::function<std::pair<float,float>()>);
+			protected:
+				friend class ::boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version);
+			};
+
+			volumetric Scircum_sphere, Sconvex_hull, 
+				SVoronoi_hull, Sellipsoid_max, Sellipsoid_rms;
+
 			// These require convex hull calculations
 			float max_distance;
 			float a_circum_sphere;
@@ -74,6 +91,11 @@ namespace rtmath {
 			float SA_convex_hull;
 			float aeff_SA_convex_hull;
 
+			float V_Voronoi_hull;
+			float aeff_V_Voronoi_hull;
+			float SA_Voronoi_hull;
+			float aeff_SA_Voronoi_hull;
+
 			// Special stats calculated only in default orientation
 			float V_ellipsoid_max;
 			float aeff_ellipsoid_max;
@@ -83,6 +105,7 @@ namespace rtmath {
 			// Extend to get volume fractions
 			float f_circum_sphere;
 			float f_convex_hull;
+			float f_Voronoi_hull;
 			float f_ellipsoid_max;
 			float f_ellipsoid_rms;
 
@@ -182,6 +205,6 @@ namespace rtmath {
 	}
 }
 
-#define SHAPESTATS_VERSION 3
+#define SHAPESTATS_VERSION 4
 BOOST_CLASS_VERSION(rtmath::ddscat::shapeFileStatsBase, SHAPESTATS_VERSION);
 

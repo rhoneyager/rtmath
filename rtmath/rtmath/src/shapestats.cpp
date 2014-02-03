@@ -27,12 +27,13 @@
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
-#include "../rtmath/ddscat/hulls.h"
+#include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/common_templates.h"
 #include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
+#include "../rtmath/ddscat/hulls.h"
 namespace {
 	std::vector<boost::tuple<double, double, double> > defaultRots;
 	boost::filesystem::path pHashShapes, pHashStats;
@@ -78,24 +79,6 @@ namespace rtmath {
 			aeff_dipoles_const = 0;
 			max_distance = 0;
 
-			a_circum_sphere = 0;
-			V_circum_sphere = 0;
-			SA_circum_sphere = 0;
-			V_convex_hull = 0;
-			aeff_V_convex_hull = 0;
-			SA_convex_hull = 0;
-			aeff_SA_convex_hull = 0;
-
-			V_ellipsoid_max = 0;
-			aeff_ellipsoid_max = 0;
-			V_ellipsoid_rms = 0;
-			aeff_ellipsoid_rms = 0;
-
-			f_circum_sphere = 0;
-			f_convex_hull = 0;
-			f_ellipsoid_max = 0;
-			f_ellipsoid_rms = 0;
-
 			_currVersion = -1;
 
 			// Need to fill with something for serialization to work with
@@ -103,6 +86,31 @@ namespace rtmath {
 		}
 
 		shapeFileStatsBase::~shapeFileStatsBase() { }
+		
+		void shapeFileStatsBase::volumetric::calc(const shapeFileStatsBase *s,
+			std::function<std::pair<float,float>()> fn)
+		{
+			auto p = fn();
+			V = p.first;
+			SA = p.second;
+
+			aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
+			aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()),0.5);
+			f = V / s->V_cell_const;
+
+			
+			auto fCheck = [](float &val)
+			{
+				// Chech for indeterminacy
+				if (val != val) val = -1.f;
+				if (fabs(val) == std::numeric_limits<float>::infinity()) val = -1.f;
+			};
+			fCheck(f);
+			fCheck(V);
+			fCheck(SA);
+			fCheck(aeff_V);
+			fCheck(aeff_SA);
+		}
 
 		void shapeFileStatsBase::calcStatsBase()
 		{
@@ -120,10 +128,8 @@ namespace rtmath {
 			const size_t _N = _shp->numPoints;
 			
 			if (!_N)
-			{
 				throw rtmath::debug::xBadInput("Stats cannot be calculated because the shapefile is not loaded.");
-			}
-
+			
 			// Calculate volume elements
 			float dxdydz = _shp->d(0) * _shp->d(1) * _shp->d(2);
 			V_cell_const = dxdydz;
@@ -200,19 +206,44 @@ namespace rtmath {
 			b_mean(1) = boost::accumulators::mean(m_y);
 			b_mean(2) = boost::accumulators::mean(m_z);
 
-			convexHull cvHull(_shp->latticePtsStd);
+			// Using the convec hull to get the maximum diameter
+			using namespace rtmath::Voronoi;
+			// Voronoi diagram is used twice - to calcuate voronoi stats and to 
+			// prefilter the points for the convex hull stats.
+			auto vd = VoronoiDiagram::generateStandard(_shp->mins, _shp->maxs, _shp->latticePts);
+
+			auto candidate_hull_points = vd->calcCandidateConvexHullPoints();
+			convexHull cvHull(candidate_hull_points);
 			cvHull.constructHull();
 			max_distance = cvHull.maxDiameter();
 			
-			a_circum_sphere = max_distance / 2.0;
-			V_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,3.0f) / 3.0f;
-			SA_circum_sphere = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,2.0f);
 
-			V_convex_hull = cvHull.volume();
-			aeff_V_convex_hull = pow(3.0 * V_convex_hull / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
-			SA_convex_hull = cvHull.surfaceArea();
-			aeff_SA_convex_hull = pow(SA_convex_hull / (4.0f * boost::math::constants::pi<float>()),0.5);
+			auto voroHullCalc = [&]()
+			{
+				std::pair<float, float> res;
+				res.first = (float) vd->volume();
+				res.second = (float) vd->surfaceArea();
+				return res;
+			};
 
+			auto cvxHullCalc = [&]()
+			{
+				std::pair<float, float> res;
+				res.first = (float) cvHull.volume();
+				res.second = (float) cvHull.surfaceArea();
+				return res;
+			};
+
+			Sconvex_hull.calc(this, cvxHullCalc);
+			SVoronoi_hull.calc(this, voroHullCalc);
+			
+			Scircum_sphere.aeff_V = max_distance / 2.0;
+			Scircum_sphere.aeff_SA = max_distance / 2.0;
+			Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,3.0f) / 3.0f;
+			Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(a_circum_sphere,2.0f);
+
+			
+			
 			_currVersion = _maxVersion;
 
 			// Calculate rotated stats to avoid having to duplicate code
@@ -237,24 +268,7 @@ namespace rtmath {
 				aeff_ellipsoid_rms = pow(3.0f * V_ellipsoid_rms / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
 			}
 
-			// Volume fractions
-			f_circum_sphere = V_dipoles_const / V_circum_sphere;
-			f_convex_hull = V_dipoles_const / V_convex_hull;
-			f_ellipsoid_max = V_dipoles_const / V_ellipsoid_max;
-			f_ellipsoid_rms = V_dipoles_const / V_ellipsoid_rms;
 
-			auto fCheck = [](float &val)
-			{
-				// Chech for indeterminacy
-				if (val != val) val = -1.f;
-				if (fabs(val) == std::numeric_limits<float>::infinity()) val = -1.f;
-			};
-
-			fCheck(f_circum_sphere);
-			fCheck(f_convex_hull);
-			fCheck(f_ellipsoid_max);
-			fCheck(f_ellipsoid_rms);
-			
 			// Calculate all default (from config or command-line) rotations
 			for (auto rot : defaultRots)
 			{

@@ -113,14 +113,17 @@ namespace rtmath
 			/// into cells on the surface and cells within the volume.
 			void calcVoronoi()
 			{
+				/*
 				if (voronoiCalced) return;
 				// Take the raw points, get the boundaries, and construct 
 				// a container. I will id the 'surface' cells as those that 
 				// have a face that matches the container boundary.
 
+				
 				// Start with determining the container bounds
 				calcBounds();
 
+				
 				// Set up the number of blocks that the container is divided into
 				const int n_x=6,n_y=6,n_z=6;
 				using namespace voro;
@@ -133,6 +136,7 @@ namespace rtmath
 					points->GetPoint(i,crds);
 					con.put((int) i, crds[0], crds[1], crds[2]);
 				}
+				*/
 
 				// Check each particle to see if on the container surface
 				surfacePoints->SetNumberOfPoints(points->GetNumberOfPoints());
@@ -275,16 +279,16 @@ namespace rtmath
 		//convexHull::convexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
 		//	: hull(src) {}
 
-		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>& src) : hull(src)
-		{
-		}
+		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, 3>& src) : hull(src) {}
 
 		void convexHull::constructHull()
 		{
 			/// \todo Move this to a funtion that executes on library load
 			vtkObject::GlobalWarningDisplayOff();
 
-			_p->calcVoronoi();
+			//_p->calcVoronoi();
+
+
 
 			vtkSmartPointer<vtkPolyData> surfacePointsPolys = vtkSmartPointer< vtkPolyData >::New();
 			surfacePointsPolys->SetPoints(_p->surfacePoints);
