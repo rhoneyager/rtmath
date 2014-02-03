@@ -139,16 +139,22 @@ namespace rtmath
 		class CachedVoronoiCell : public CachedVoronoiCellBase
 		{
 		private:
-			const AllocInt &allocInt;
-			const AllocDouble &allocDouble;
+			AllocInt allocInt;
+			AllocDouble allocDouble;
 		public:
 			virtual ~CachedVoronoiCell() {}
 			CachedVoronoiCell(const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {init();}
+				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {}
 			CachedVoronoiCell(voro::voronoicell_neighbor &vc, 
 				const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
 				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
-			{ init(); calc(vc); }
+			{ calc(vc); }
+			/// Cell neighbor and vertex lists. The integer in neigh 
+			// corresponds to the cell id in CachedVoronoi.
+			boost::interprocess::vector<int, AllocInt> neigh, f_vert;
+			/// Areas of each face
+			boost::interprocess::vector<double, AllocDouble> f_areas;
+			//std::vector<double> v;
 			/// \note Position information must be set separately (not in vc)
 			void calc(voro::voronoicell_neighbor &vc)
 			{
@@ -181,12 +187,6 @@ namespace rtmath
 					if (neigh[i]<=0)
 						sa_ext += f_areas[i];
 			}
-
-			/// Cell neighbor and vertex lists. The integer in neigh corresponds to the cell id in CachedVoronoi.
-			boost::interprocess::vector<int, AllocInt> neigh, f_vert;
-			/// Areas of each face
-			boost::interprocess::vector<double, AllocDouble> f_areas;
-			//std::vector<double> v;
 		};
 
 		/// Storage container class for the cached Voronoi cell information
@@ -224,15 +224,20 @@ namespace rtmath
 			void regenerateCache(size_t numPoints) const
 			{
 				if (!vc) return;
-				// Iterate over cells and store cell information (prevents constant recalculations)
+				// Iterate over cells and store cell information 
+				// (prevents constant recalculations)
 				using namespace boost::interprocess;
 
-				boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > cc(cachedVoronoiCellAllocator);
-				auto c = &cc;
-				//auto c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >
-				//	("cells")(cachedVoronoiCellAllocator);
+				// boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, CachedVoronoiCellAllocator > cc(cachedVoronoiCellAllocator);
+				// auto c = &cc;
+				auto c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, CachedVoronoiCellAllocator> >
+					("cells")(cachedVoronoiCellAllocator);
 				if (c->size() != numPoints)
 					c->resize(numPoints);
+				//	c->resize(numPoints, 
+				//		CachedVoronoiCell<IntAllocator, DoubleAllocator>
+				//		(intAllocator, doubleAllocator)
+				//		);
 
 				using namespace voro;
 				voronoicell_neighbor n;
