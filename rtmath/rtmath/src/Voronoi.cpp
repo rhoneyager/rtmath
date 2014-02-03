@@ -12,6 +12,7 @@
 #include <boost/interprocess/containers/set.hpp>
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
 #include <Voro++/voro++.hh>
 #include "../rtmath/depGraph.h"
@@ -83,6 +84,17 @@ namespace {
 		fputs("\ttexture{t2}\n}\n",fp);
 	}
 
+	/*
+	class AllocatorContainer : public boost::enable_shared_from_this<AllocatorContainer>
+	{
+		AllocatorContainer() {}
+	public:
+		static boost::shared_ptr<AllocatorContainer> generate()
+		{
+		}
+
+	};
+	*/
 }
 
 
@@ -139,15 +151,18 @@ namespace rtmath
 		class CachedVoronoiCell : public CachedVoronoiCellBase
 		{
 		private:
-			AllocInt allocInt;
-			AllocDouble allocDouble;
+			// Cannot store these because it causes annoying errors when generating operator=.
+			//AllocInt allocInt;
+			//AllocDouble allocDouble;
 		public:
 			virtual ~CachedVoronoiCell() {}
 			CachedVoronoiCell(const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {}
+				: //allocInt(allocInt), allocDouble(allocDouble), 
+				neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {}
 			CachedVoronoiCell(voro::voronoicell_neighbor &vc, 
 				const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: allocInt(allocInt), allocDouble(allocDouble), neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
+				: //allocInt(allocInt), allocDouble(allocDouble), 
+				neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
 			{ calc(vc); }
 			/// Cell neighbor and vertex lists. The integer in neigh 
 			// corresponds to the cell id in CachedVoronoi.
@@ -228,16 +243,14 @@ namespace rtmath
 				// (prevents constant recalculations)
 				using namespace boost::interprocess;
 
-				// boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, CachedVoronoiCellAllocator > cc(cachedVoronoiCellAllocator);
-				// auto c = &cc;
-				auto c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, CachedVoronoiCellAllocator> >
-					("cells")(cachedVoronoiCellAllocator);
+				auto c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
+					CachedVoronoiCellAllocator> >("cells")(cachedVoronoiCellAllocator);
+				// Cannot just use resize(numPoints) here because the appropriate allocators must be specified.
 				if (c->size() != numPoints)
-					c->resize(numPoints);
-				//	c->resize(numPoints, 
-				//		CachedVoronoiCell<IntAllocator, DoubleAllocator>
-				//		(intAllocator, doubleAllocator)
-				//		);
+					c->resize(numPoints, 
+						CachedVoronoiCell<IntAllocator, DoubleAllocator>
+						(intAllocator, doubleAllocator)
+						);
 
 				using namespace voro;
 				voronoicell_neighbor n;
