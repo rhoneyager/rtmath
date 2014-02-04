@@ -107,9 +107,16 @@ int main(int argc, char** argv)
 		using namespace rtmath::Voronoi;
 		auto vd = VoronoiDiagram::generateStandard(shp.mins, shp.maxs, shp.latticePts);
 		auto cvxCands = vd->calcCandidateConvexHullPoints();
-		shp.latticeExtras["cvxCands"] = cvxCands;
+		//shp.latticeExtras["cvxCands"] = cvxCands;
 		auto depth = vd->calcSurfaceDepth();
-		shp.latticeExtras["SurfaceDepth"] = depth.col(3);
+		shp.latticeExtras["SurfaceDepth"] = depth; //.col(3);
+
+		std::ofstream test1("cvxcands.txt");
+		test1 << cvxCands << "\n";
+		test1.close();
+		std::ofstream test2("surfacedepth.txt");
+		test2 << depth << "\n";
+		test2.close();
 
 		shp.write(output);
 		/*

@@ -372,7 +372,7 @@ namespace rtmath
 			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
 			out = *src;
 			out.conservativeResize(src->rows(), 4);
-			out.col(3) = Eigen::Matrix<float, Eigen::Dynamic, 1>::Zero(src->rows(), 1);
+			out.col(3).setZero();
 			// Using depGraph and the initial Candidate Convex Hull points
 
 			// Construct the dependency graph
@@ -524,8 +524,8 @@ namespace rtmath
 			boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
 
 			using namespace voro;
-			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
-			out.resize(src->rows(), 4);
+			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out(src->rows(), 4);
+			out.setZero();
 
 			// Check each particle to see if on the container surface
 			size_t numSurfacePoints = 0;

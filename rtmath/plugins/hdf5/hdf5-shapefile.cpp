@@ -139,7 +139,8 @@ namespace rtmath {
 						fDimExtra[0] = fDimExtra[1];
 						fDimExtra[1] = 1;
 					}
-					int dimensionality = (fDimExtra[1] == 1) ? 1 : 2;
+					//int dimensionality = (fDimExtra[1] == 1) ? 1 : 2;
+					int dimensionality = 2;
 					DataSpace fDimExtraSpace( dimensionality, fDimExtra );
 
 					shared_ptr<DataSet> data(new DataSet(shpextras->createDataSet(e.first.c_str(), PredType::NATIVE_FLOAT, 
