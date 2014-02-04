@@ -146,7 +146,10 @@ namespace rtmath
 			bool isSurface() const { if (sa_ext) return true; return false; }
 		};
 
-		/// Internal aligned class for persistent voronoi cell information storage
+		/// \brief Internal aligned class for persistent voronoi cell information storage
+		/// \note MSVC 2012 has a bug in object construction at runtime. 
+		/// It seems related to passing constructor arguments with two allocators / using the 
+		/// segment manager twice in constructors. As such, I am using static arrays
 		template <class AllocInt = std::allocator<int>, class AllocDouble = std::allocator<double> >
 		class CachedVoronoiCell : public CachedVoronoiCellBase
 		{
@@ -155,20 +158,27 @@ namespace rtmath
 			//AllocInt allocInt;
 			//AllocDouble allocDouble;
 		public:
+			static const size_t ArraySize = 50;
 			virtual ~CachedVoronoiCell() {}
+#ifndef _MSC_FULL_VER
 			CachedVoronoiCell(const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: //allocInt(allocInt), allocDouble(allocDouble), 
-				neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {}
+				: neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {}
 			CachedVoronoiCell(voro::voronoicell_neighbor &vc, 
 				const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: //allocInt(allocInt), allocDouble(allocDouble), 
-				neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
+				: neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
+			{ calc(vc); }
+#endif
+			CachedVoronoiCell()
+			{ }
+			CachedVoronoiCell(voro::voronoicell_neighbor &vc)
 			{ calc(vc); }
 			/// Cell neighbor and vertex lists. The integer in neigh 
 			// corresponds to the cell id in CachedVoronoi.
-			boost::interprocess::vector<int, AllocInt> neigh, f_vert;
+			//boost::interprocess::vector<int, AllocInt> neigh, f_vert;
+			std::array<int, ArraySize> neigh, f_vert;
 			/// Areas of each face
-			boost::interprocess::vector<double, AllocDouble> f_areas;
+			//boost::interprocess::vector<double, AllocDouble> f_areas;
+			std::array<double, ArraySize> f_areas;
 			//std::vector<double> v;
 			/// \note Position information must be set separately (not in vc)
 			void calc(voro::voronoicell_neighbor &vc)
@@ -182,12 +192,13 @@ namespace rtmath
 				//vc.vertices(crds(0),crds(1),crds(2),v);
 				vc.face_areas(lf_areas);
 
-				neigh.resize(lneigh.size());
-				std::copy(lneigh.begin(), lneigh.end(), neigh.begin());
-				f_vert.resize(lf_vert.size());
-				std::copy(lf_vert.begin(), lf_vert.end(), f_vert.begin());
-				f_areas.resize(lf_areas.size());
-				std::copy(lf_areas.begin(), lf_areas.end(), f_areas.begin());
+				//neigh.resize(lneigh.size());
+				
+				std::copy_n(lneigh.begin(), std::min( ArraySize, lneigh.size()) , neigh.begin());
+				//f_vert.resize(lf_vert.size());
+				std::copy_n(lf_vert.begin(), std::min( ArraySize, lf_vert.size()) , f_vert.begin());
+				//f_areas.resize(lf_areas.size());
+				std::copy_n(lf_areas.begin(), std::min( ArraySize, lf_areas.size()) , f_areas.begin());
 
 				vol = vc.volume();
 				sa_full = vc.surface_area();
@@ -221,8 +232,13 @@ namespace rtmath
 			const CachedVoronoiCellAllocator cachedVoronoiCellAllocator;
 
 			mutable boost::shared_ptr<voro::container> vc;
+		private:
+			mutable boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
+				CachedVoronoiCellAllocator> *c;
+		public:
 
 			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc) : 
+				c(nullptr),
 				vc(vc),
 				m(10*1024*numPoints), // 10 kb per point should be enough for point lists + vertices
 				intAllocator(m.get_segment_manager()),
@@ -243,13 +259,14 @@ namespace rtmath
 				// (prevents constant recalculations)
 				using namespace boost::interprocess;
 
-				auto c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
+				c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
 					CachedVoronoiCellAllocator> >("cells")(cachedVoronoiCellAllocator);
 				// Cannot just use resize(numPoints) here because the appropriate allocators must be specified.
 				if (c->size() != numPoints)
-					c->resize(numPoints, 
-						CachedVoronoiCell<IntAllocator, DoubleAllocator>
-						(intAllocator, doubleAllocator)
+					c->resize(numPoints
+						//, CachedVoronoiCell<IntAllocator, DoubleAllocator>()
+						//(m)
+						//(intAllocator, doubleAllocator)
 						);
 
 				using namespace voro;
@@ -262,16 +279,18 @@ namespace rtmath
 					double r;
 					cl.pos(id, pos(0), pos(1), pos(2), r); // getting id directly into field would be problematic
 					
-					c->at(id).id = id;
-					c->at(id).r = r;
-					c->at(id).pos = pos;
+					auto &ci = c->at(id);
+
+					ci.id = id;
+					ci.r = r;
+					ci.pos = pos;
 
 					if (id % 1000 == 0) std::cerr << id << "\n";
-					c->at(id).calc(n);
+					ci.calc(n);
 
 					// Set a few fields for convenience
-					vol += c->at(id).vol;
-					sa += c->at(id).sa_ext;
+					vol += ci.vol;
+					sa += ci.sa_ext;
 				} while (cl.inc());
 			}
 			
@@ -281,9 +300,11 @@ namespace rtmath
 			/// Calculate the volume of the bulk figure
 			double volume() const { return vol; }
 			/// Get pointer to the set of stored voronoi cells
-			boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> >* getCells() const
+			boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
+				CachedVoronoiCellAllocator>* getCells() const
 			{
-				return m.find<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
+				return c;
+				//return m.find<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
 			}
 		};
 
@@ -390,7 +411,7 @@ namespace rtmath
 
 				for (auto &i : cell.neigh)
 				{
-					if (i<0) continue;
+					if (i<=0) continue;
 					auto distsq = [&](size_t i, size_t j) -> float
 					{
 						float res = (out.block(i,0,1,3) - out.block(j,0,1,3)).norm();
@@ -398,7 +419,16 @@ namespace rtmath
 					};
 
 					if (distsq(i, id) < 2.2f)
-						vertices[id].addSlot(&vertices[i]);
+					{
+						if (vertices.size() > id)
+						{
+							vertices[id].addSlot(&vertices[i]);
+						}
+						else {
+							// Something bad is happening
+							std::cerr << "Error\n";
+						}
+					}
 				}
 			}
 

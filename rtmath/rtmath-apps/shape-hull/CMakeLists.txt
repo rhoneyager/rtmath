@@ -16,5 +16,9 @@ endif()
 if (BUILD_PLUGIN_BOV)
 	add_dependencies ( rtmath-shape-hull rtmath_plugin_bov)
 endif()
+if (BUILD_PLUGIN_HDF5)
+	add_dependencies ( rtmath-shape-hull rtmath_plugin_hdf5)
+endif()
+
 
 

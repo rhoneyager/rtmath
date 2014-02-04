@@ -38,7 +38,7 @@ namespace rtmath
 
 		typedef std::unordered_set< vertex* > setVertex;
 		typedef std::vector< std::pair<vertex*, size_t> > orderedVertex;
-		typedef std::array<vertex*, 60> stackVertex;
+		typedef std::array<vertex*, 80> stackVertex;
 
 
 		class DLEXPORT_rtmath_core vertex // : public boost::enable_shared_from_this<vertex>
@@ -48,7 +48,7 @@ namespace rtmath
 			virtual ~vertex();
 			inline void setOR(bool o) { _slotOR = o; }
 			inline bool isOR() const { return _slotOR; }
-			void addSlot(vertex* slot);
+			bool addSlot(vertex* slot);
 			void run(vertexRunnable*, const std::string &id = "") const;
 			void run(const std::string &id = "") const;
 			void setVertexRunnableCode(vertexRunnable* target);
@@ -74,7 +74,7 @@ namespace rtmath
 			//boost::shared_ptr<vertexRunnable> _target;
 			vertexRunnable* _target;
 			bool _slotOR;
-			void _addSignal(vertex* signal);
+			bool _addSignal(vertex* signal);
 			friend class graph;
 		};
 

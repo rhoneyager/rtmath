@@ -52,8 +52,14 @@ namespace rtmath
 
 		vertex::~vertex() {}
 
-		void vertex::addSlot(vertex* slot)
+		bool vertex::addSlot(vertex* slot)
 		{
+			if (this == slot)
+			{
+				std::cerr << "Ignoring vertex as a slot for itself " << this << ".\n";
+				//RTthrow debug::xArrayOutOfBounds();
+				return true;
+			}
 			// Find first unused _slots
 			auto it = std::find_if(_slots.begin(), _slots.end(), 
 				[](const vertex *v)
@@ -62,16 +68,28 @@ namespace rtmath
 				return true;
 			});
 			//auto it = std::find(_slots.begin(), _slots.end(), nullptr);
-			if (it == _slots.end()) RTthrow debug::xArrayOutOfBounds();
+			if (it == _slots.end())
+			{
+				std::cerr << "Cannot find empty vertex for addSlot " << this << " + " << slot << ".\n";
+				//RTthrow debug::xArrayOutOfBounds();
+				return false;
+			}
 			*it = slot;
 			//_slots.insert(slot);
 			// Check if the parent is OR. If so, set the parent's signal
 			if (!slot->_slotOR)
-				slot->_addSignal( this );
+				return slot->_addSignal( this );
+			return true;
 		}
 
-		void vertex::_addSignal(vertex* signal)
+		bool vertex::_addSignal(vertex* signal)
 		{
+			if (this == signal)
+			{
+				std::cerr << "Ignoring vertex as a signal for itself " << this << ".\n";
+				//RTthrow debug::xArrayOutOfBounds();
+				return true;
+			}
 			//_signals.insert(signal);
 
 			auto it = std::find_if(_signals.begin(), _signals.end(), 
@@ -81,8 +99,14 @@ namespace rtmath
 				return true;
 			});
 			//auto it = std::find(_signals.begin(), _signals.end(), nullptr);
-			if (it == _signals.end()) RTthrow debug::xArrayOutOfBounds();
+			if (it == _signals.end()) 
+			{
+				std::cerr << "Cannot find empty vertex for _addSignal " << this << " + " << signal << ".\n";
+				//RTthrow debug::xArrayOutOfBounds();
+				return false;
+			}
 			*it = signal;
+			return true;
 		}
 
 		void vertex::run(vertexRunnable *target, const std::string &id) const
