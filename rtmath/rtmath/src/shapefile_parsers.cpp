@@ -263,7 +263,15 @@ namespace rtmath
 					&mSrc, float &mMean)
 				{
 					for (auto &ac : mSrc)
-						mMean += boost::accumulators::mean(ac) * (float)boost::accumulators::count(ac) / (float)numPoints;
+					{
+						/// \todo Check that all of the accumulators work properly
+						int c = (int) boost::accumulators::count(ac);
+						if (!c) continue;
+						float mean = boost::accumulators::mean(ac);
+						float count = (float)c;
+						float np = (float)numPoints;
+						mMean += mean*count/np;
+					}
 				};
 				float mm_x = 0, mm_y = 0, mm_z = 0;
 				findMean(m_x, mm_x); findMean(m_y, mm_y); findMean(m_z, mm_z);

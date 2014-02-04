@@ -66,7 +66,7 @@ namespace rtmath {
 			void shapefile::_init()
 			{
 				numPoints = 0;
-				filename = "";
+				//filename = "";
 			}
 
 			HASH_t shapefile::hash() const
@@ -165,7 +165,6 @@ namespace rtmath {
 			void shapefile::readHeader(const char* in, size_t &headerEnd)
 			{
 				using namespace std;
-				_init();
 
 				// Do header processing using istreams.
 				// The previous method used strings, but this didn't work with compressed reads.
