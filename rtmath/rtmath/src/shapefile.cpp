@@ -158,8 +158,8 @@ namespace rtmath {
 				latticePtsStd.conservativeResize(numPoints, 3);
 				latticePtsNorm.conservativeResize(numPoints, 3);
 
-				for (auto &extra : latticeExtras)
-					extra.second.conservativeResize(numPoints, 3);
+				//for (auto &extra : latticeExtras)
+				//	extra.second->conservativeResize(numPoints, 3);
 			}
 
 			void shapefile::readHeader(const char* in, size_t &headerEnd)

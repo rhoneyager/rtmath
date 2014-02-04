@@ -70,7 +70,7 @@ namespace rtmath {
 					vals.push_back(std::tuple<std::string, std::string,
 						const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 						(extras.first, std::string(""),
-						extras.second));
+						*(extras.second.get())));
 				}
 					
 				WritePoints(f, mesh, axislabels, axisunits, shp->latticePtsStd, vals);

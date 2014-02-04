@@ -154,14 +154,14 @@ namespace rtmath
 			_p = boost::shared_ptr<hullData>(new hullData);
 		}
 
-		hull::hull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &backend)
+		hull::hull(boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend)
 		{
 			_p = boost::shared_ptr<hullData>(new hullData);
-			_p->points->SetNumberOfPoints(backend.rows());
-			_p->surfacePoints->SetNumberOfPoints(backend.rows());
-			for (size_t i = 0; i < (size_t) backend.rows(); ++i)
+			_p->points->SetNumberOfPoints(backend->rows());
+			_p->surfacePoints->SetNumberOfPoints(backend->rows());
+			for (size_t i = 0; i < (size_t) backend->rows(); ++i)
 			{
-				auto it = backend.block<1,3>(i,0);
+				auto it = backend->block<1,3>(i,0);
 				_p->points->SetPoint(i, it(0), it(1), it(2));
 				_p->surfacePoints->SetPoint(i, it(0), it(1), it(2));
 			}
@@ -191,7 +191,7 @@ namespace rtmath
 		//convexHull::convexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src)
 		//	: hull(src) {}
 
-		convexHull::convexHull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& src) : hull(src)
+		convexHull::convexHull(boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >  src) : hull(src)
 		{
 		}
 

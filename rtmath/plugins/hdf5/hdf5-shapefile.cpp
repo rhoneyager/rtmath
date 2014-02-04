@@ -133,7 +133,7 @@ namespace rtmath {
 				shared_ptr<Group> shpextras(new Group(shpraw->createGroup("Extras")));
 				for (const auto& e : shp->latticeExtras)
 				{
-					hsize_t fDimExtra[] = {e.second.rows(), e.second.cols()};
+					hsize_t fDimExtra[] = {e.second->rows(), e.second->cols()};
 					if (fDimExtra[0] == 1)
 					{
 						fDimExtra[0] = fDimExtra[1];
@@ -145,8 +145,7 @@ namespace rtmath {
 
 					shared_ptr<DataSet> data(new DataSet(shpextras->createDataSet(e.first.c_str(), PredType::NATIVE_FLOAT, 
 					fDimExtraSpace, plist)));
-					// There is a bug somewhere here.....
-					latticePtsRi->write(e.second.data(), PredType::NATIVE_FLOAT);
+					data->write(e.second->data(), PredType::NATIVE_FLOAT);
 				}
 
 				// Write the dielectric information

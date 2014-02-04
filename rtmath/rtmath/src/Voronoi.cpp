@@ -360,7 +360,7 @@ namespace rtmath
 			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc));
 		}
 
-		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& VoronoiDiagram::calcSurfaceDepth() const
+		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceDepth() const
 		{
 			if (results.count("SurfaceDepth"))
 			{
@@ -369,10 +369,10 @@ namespace rtmath
 			regenerateFull();
 
 			using namespace voro;
-			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
-			out = *src;
-			out.conservativeResize(src->rows(), 4);
-			out.col(3).setZero();
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > out
+				(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(*src) );
+			out->conservativeResize(src->rows(), 4);
+			out->col(3).setZero();
 			// Using depGraph and the initial Candidate Convex Hull points
 
 			// Construct the dependency graph
@@ -414,7 +414,7 @@ namespace rtmath
 					if (i<=0) continue;
 					auto distsq = [&](size_t i, size_t j) -> float
 					{
-						float res = (out.block(i,0,1,3) - out.block(j,0,1,3)).norm();
+						float res = (out->block(i,0,1,3) - out->block(j,0,1,3)).norm();
 						return res;
 					};
 
@@ -462,8 +462,8 @@ namespace rtmath
 
 			auto initFilledPoints = calcCandidateConvexHullPoints();
 
-			for (size_t i=0; i< (size_t) initFilledPoints.rows(); ++i)
-				provided.insert(&vertices[(size_t) initFilledPoints(i, 3)]);
+			for (size_t i=0; i< (size_t) initFilledPoints->rows(); ++i)
+				provided.insert(&vertices[(size_t) (*initFilledPoints)(i, 3)]);
 
 			generateGraph<bSetVertex, orderedVertex>::generate(
 				setVertices, provided, order, remaining, ignored);
@@ -478,18 +478,18 @@ namespace rtmath
 				const size_t &rank = it.second;
 				auto IT = it.first;//.lock();
 				size_t id = vertexIdMap->at(IT);
-				out(id, 3) = (float) rank;
+				(*out)(id, 3) = (float) rank;
 			}
 
 			// Clean up vertex graph
 			m.destroy_ptr(vertexIdMap);
 
-			results["SurfaceDepth"] = std::move(out);
-			return results.at("SurfaceDepth");
+			results["SurfaceDepth"] = out;
+			return out;
 		}
 
 		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
-		const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
+		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 			VoronoiDiagram::calcCandidateConvexHullPoints() const
 		{
 			if (results.count("CandidateConvexHullPoints"))
@@ -524,8 +524,9 @@ namespace rtmath
 			boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
 
 			using namespace voro;
-			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out(src->rows(), 4);
-			out.setZero();
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > out(
+				new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(src->rows(), 4));
+			out->setZero();
 
 			// Check each particle to see if on the container surface
 			size_t numSurfacePoints = 0;
@@ -535,16 +536,16 @@ namespace rtmath
 			{
 				if (cell.isSurface())
 				{
-					out(numSurfacePoints, 0) = (float) cell.pos(0);
-					out(numSurfacePoints, 1) = (float) cell.pos(1);
-					out(numSurfacePoints, 2) = (float) cell.pos(2);
-					out(numSurfacePoints, 3) = (float) cell.id; // Initial point id
+					(*out)(numSurfacePoints, 0) = (float) cell.pos(0);
+					(*out)(numSurfacePoints, 1) = (float) cell.pos(1);
+					(*out)(numSurfacePoints, 2) = (float) cell.pos(2);
+					(*out)(numSurfacePoints, 3) = (float) cell.id; // Initial point id
 					numSurfacePoints++;
 				}
 			}
 
 			
-			out.conservativeResize(numSurfacePoints, 4);
+			out->conservativeResize(numSurfacePoints, 4);
 
 			// Test output to show cell boundaries for the hull
 			//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
@@ -561,8 +562,8 @@ namespace rtmath
 			//vc->draw_cells_gnuplot("CandidateConvexHullPoints_v.gnu");
 			//fclose(oCandidates);
 
-			results["CandidateConvexHullPoints"] = std::move(out);
-			return results.at("CandidateConvexHullPoints");
+			results["CandidateConvexHullPoints"] = out;
+			return out;
 		}
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::generateStandard(

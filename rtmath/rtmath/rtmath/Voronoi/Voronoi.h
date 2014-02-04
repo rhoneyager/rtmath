@@ -86,7 +86,7 @@ namespace rtmath {
 			/// The Eigen source object.
 			boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > src;
 			/// Derived matrices from Voronoi-based algorithms. Results get stored / read from here.
-			mutable std::map<std::string, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > results;
+			mutable std::map<std::string, boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > results;
 
 			HASH_t hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
@@ -106,11 +106,11 @@ namespace rtmath {
 
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
 				calcSurfaceDepth() const;
 
 			/// Calculate candidate convex hull points (used in max diameter calculations)
-			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& 
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
 				calcCandidateConvexHullPoints() const;
 
 			/// Calculate the surface area of the bulk figure
