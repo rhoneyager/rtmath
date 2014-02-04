@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< string >(), "input shape file")
-			("output,o", po::value<string>(), "Output file")
+			("output,o", po::value<vector<string> >(), "Output file(s)")
 			//("convex-hull,c", "Calculate and write convex hull")
 			;
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -90,10 +90,9 @@ int main(int argc, char** argv)
 			cerr << "Input file is: " << input << endl;
 		else doHelp("Need to specify an input file");
 
-		string output = vm["output"].as< string >();
-		if (vm.count("output"))
-			cerr << "Output file is: " << output << endl;
-		else doHelp("Need to specify an output file");
+		vector<string> output = vm["output"].as< vector<string> >();
+		if (!vm.count("output"))
+			doHelp("Need to specify output file(s).");
 
 		// Validate input files
 		path pi(input);
@@ -111,24 +110,8 @@ int main(int argc, char** argv)
 		auto depth = vd->calcSurfaceDepth();
 		shp.latticeExtras["SurfaceDepth"] = depth; //.col(3);
 
-		std::ofstream test1("cvxcands.txt");
-		test1 << *cvxCands << "\n";
-		test1.close();
-		std::ofstream test2("surfacedepth.txt");
-		test2 << *depth << "\n";
-		test2.close();
-
-		shp.write(output);
-		/*
-		rtmath::ddscat::convexHull hull(shp.latticePtsStd);
-		if (!convex)
-		{
-			hull.writeVTKraw(output);
-		} else {
-			hull.constructHull();
-			hull.writeVTKhull(output);
-		}
-		*/
+		for (const auto& outfile : output)
+			shp.write(outfile);
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
