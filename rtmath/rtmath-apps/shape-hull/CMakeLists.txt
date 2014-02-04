@@ -10,5 +10,11 @@ set_target_properties( rtmath-shape-hull PROPERTIES FOLDER "Apps/Voronoi")
 target_link_libraries(rtmath-shape-hull ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
 INSTALL(TARGETS rtmath-shape-hull RUNTIME DESTINATION bin COMPONENT Applications)
 
+if (BUILD_PLUGIN_SILO)
+	add_dependencies ( rtmath-shape-hull rtmath_plugin_silo)
+endif()
+if (BUILD_PLUGIN_BOV)
+	add_dependencies ( rtmath-shape-hull rtmath_plugin_bov)
+endif()
 
 

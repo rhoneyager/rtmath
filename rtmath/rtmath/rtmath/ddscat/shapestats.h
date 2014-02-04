@@ -85,36 +85,6 @@ namespace rtmath {
 
 			/// \todo Add Voronoi diagram and convex hull storage
 
-			/*
-			// These require convex hull calculations
-			float a_circum_sphere;
-			float V_circum_sphere;
-			float SA_circum_sphere;
-			
-			float V_convex_hull;
-			float aeff_V_convex_hull;
-			float SA_convex_hull;
-			float aeff_SA_convex_hull;
-
-			float V_Voronoi_hull;
-			float aeff_V_Voronoi_hull;
-			float SA_Voronoi_hull;
-			float aeff_SA_Voronoi_hull;
-
-			// Special stats calculated only in default orientation
-			float V_ellipsoid_max;
-			float aeff_ellipsoid_max;
-			float V_ellipsoid_rms;
-			float aeff_ellipsoid_rms;
-
-			// Extend to get volume fractions
-			float f_circum_sphere;
-			float f_convex_hull;
-			float f_Voronoi_hull;
-			float f_ellipsoid_max;
-			float f_ellipsoid_rms
-				*/
-
 			static const unsigned int _maxVersion;
 			unsigned int _currVersion;
 

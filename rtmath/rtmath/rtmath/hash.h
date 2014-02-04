@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <boost/serialization/access.hpp>
@@ -24,6 +25,13 @@ namespace rtmath {
 			if (upper != rhs.upper) return upper < rhs.upper;
 			if (lower != rhs.lower) return lower < rhs.lower;
 			return false;
+		}
+		std::string string() const
+		{
+			std::ostringstream o;
+			o << lower;
+			std::string res = o.str();
+			return res;
 		}
 	private:
 		friend class ::boost::serialization::access;

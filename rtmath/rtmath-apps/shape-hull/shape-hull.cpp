@@ -108,8 +108,8 @@ int main(int argc, char** argv)
 		auto vd = VoronoiDiagram::generateStandard(shp.mins, shp.maxs, shp.latticePts);
 		auto cvxCands = vd->calcCandidateConvexHullPoints();
 		//shp.latticeExtras["cvxCands"] = cvxCands;
-		auto depthTrivial = vd->calcSurfaceDepthTrivial();
-		shp.latticeExtras["depthTrivial"] = depthTrivial.col(3);
+		auto depth = vd->calcSurfaceDepth();
+		shp.latticeExtras["SurfaceDepth"] = depth.col(3);
 
 		shp.write(output);
 		/*

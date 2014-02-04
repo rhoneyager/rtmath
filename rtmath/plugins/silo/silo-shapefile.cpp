@@ -22,9 +22,6 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
-#include "RectilinearMesh3d.h"
-#include "MaterialList.h"
-#include "QuadMesh3d.h"
 #include "WritePoints.h"
 
 
@@ -45,6 +42,7 @@ namespace rtmath {
 				return false;
 			}
 
+			/// \todo Replace with the new point mesh writing code
 			void writeShape(DBfile *f, const char* mesh, const rtmath::ddscat::shapefile::shapefile *shp)
 			{
 				std::array<std::string, 3> axislabels = { "x", "y", "z" };

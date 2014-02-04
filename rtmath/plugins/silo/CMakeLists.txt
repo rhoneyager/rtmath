@@ -6,9 +6,11 @@ find_package(silo REQUIRED)
 include_directories(${SILO_INCLUDE_DIRS})
 #find_package(netCDF REQUIRED)
 #include_directories(${NetCDF_INCLUDE_DIRS})
-#find_package(HDF5 COMPONENTS C REQUIRED)
-#include_directories(${HDF5_INCLUDE_DIRS})
-#add_definitions(${HDF5_DEFINITIONS})
+find_package(HDF5 COMPONENTS C)
+if (HDF5_FOUND)
+include_directories(${HDF5_INCLUDE_DIRS})
+add_definitions(${HDF5_DEFINITIONS})
+endif()
 #find_package(ZLIB REQUIRED)
 #include_directories(${ZLIB_INCLUDE_DIRS})
 #find_package(SZIP REQUIRED)
@@ -17,14 +19,14 @@ add_library (rtmath_plugin_silo SHARED
 	plugin-silo.cpp
 	silo-shapefile.cpp
 	silo-ddOutput.cpp
-	CurveMesh3d.cpp
-	CurveMesh3d.h
-	MaterialList.cpp
-	MaterialList.h
-	QuadMesh3d.cpp
-	QuadMesh3d.h
-	RectilinearMesh3d.cpp
-	RectilinearMesh3d.h
+	#CurveMesh3d.cpp
+	#CurveMesh3d.h
+	#MaterialList.cpp
+	#MaterialList.h
+	#QuadMesh3d.cpp
+	#QuadMesh3d.h
+	#RectilinearMesh3d.cpp
+	#RectilinearMesh3d.h
 	remake.h
 	WritePoints.cpp
 	WritePoints.h
