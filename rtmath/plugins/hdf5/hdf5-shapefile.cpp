@@ -113,39 +113,45 @@ namespace rtmath {
 				// Write the entire dataset (no hyperslabs necessary)
 				shared_ptr<DataSet> latticePts(new DataSet(shpraw->createDataSet("latticePts", PredType::NATIVE_INT, 
 					fspacePts, plist)));
-				Eigen::Matrix<int, Eigen::Dynamic, 3> latticePtsInt = shp->latticePts.cast<int>();
+				Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> latticePtsInt = shp->latticePts.cast<int>();
 				latticePts->write(latticePtsInt.data(), PredType::NATIVE_INT);
 
 				shared_ptr<DataSet> latticePtsRi(new DataSet(shpraw->createDataSet("latticePtsRi", PredType::NATIVE_INT, 
 					fspacePts, plist)));
-				Eigen::Matrix<int, Eigen::Dynamic, 3> latticePtsRiInt = shp->latticePtsRi.cast<int>();
+				Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> latticePtsRiInt = shp->latticePtsRi.cast<int>();
 				latticePtsRi->write(latticePtsRiInt.data(), PredType::NATIVE_INT);
 
 				shared_ptr<DataSet> latticePtsStd(new DataSet(shpraw->createDataSet("latticePtsStd", PredType::NATIVE_FLOAT, 
 					fspacePts, plist)));
-				latticePtsStd->write(shp->latticePtsStd.data(), PredType::NATIVE_FLOAT);
+				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> latticePtsStdRow(shp->latticePtsStd);
+				latticePtsStd->write(latticePtsStdRow.data(), PredType::NATIVE_FLOAT);
 
 				shared_ptr<DataSet> latticePtsNorm(new DataSet(shpraw->createDataSet("latticePtsNorm", PredType::NATIVE_FLOAT, 
 					fspacePts, plist)));
-				latticePtsNorm->write(shp->latticePtsNorm.data(), PredType::NATIVE_FLOAT);
+				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> latticePtsNormRow(shp->latticePtsNorm);
+				latticePtsNorm->write(latticePtsNormRow.data(), PredType::NATIVE_FLOAT);
 
 				// Write the "extra" arrays
 				shared_ptr<Group> shpextras(new Group(shpraw->createGroup("Extras")));
 				for (const auto& e : shp->latticeExtras)
 				{
 					hsize_t fDimExtra[] = {e.second->rows(), e.second->cols()};
-					if (fDimExtra[0] == 1)
-					{
-						fDimExtra[0] = fDimExtra[1];
-						fDimExtra[1] = 1;
-					}
+					//if (fDimExtra[0] == 1)
+					//{
+					//	fDimExtra[0] = fDimExtra[1];
+					//	fDimExtra[1] = 1;
+					//}
 					//int dimensionality = (fDimExtra[1] == 1) ? 1 : 2;
 					int dimensionality = 2;
 					DataSpace fDimExtraSpace( dimensionality, fDimExtra );
 
 					shared_ptr<DataSet> data(new DataSet(shpextras->createDataSet(e.first.c_str(), PredType::NATIVE_FLOAT, 
 					fDimExtraSpace, plist)));
-					data->write(e.second->data(), PredType::NATIVE_FLOAT);
+					// Store in row-major form temporarily for proper output to hdf5
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> outmatrix(*(e.second));
+
+					//data->write(e.second->data(), PredType::NATIVE_FLOAT);
+					data->write(outmatrix.data(), PredType::NATIVE_FLOAT);
 				}
 
 				// Write the dielectric information
