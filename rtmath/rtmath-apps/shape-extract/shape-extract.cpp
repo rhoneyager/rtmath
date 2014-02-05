@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value< vector<string> >(), "input shape file(s)")
+			("input,i", po::value< vector<string> >()->multitoken(), "input shape file(s)")
 			("output,o", po::value< string >(), "output shape file")
 			//("bov,b", po::value<string>(), "output bov file prefix")
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")

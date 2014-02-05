@@ -92,6 +92,8 @@ namespace rtmath {
 					res = std::shared_ptr<H5::Group>(new H5::Group( base->openGroup( name )));
 				} catch( H5::GroupIException not_found_error ) {
 					res = std::shared_ptr<H5::Group>(new H5::Group( base->createGroup( name )));
+				} catch( H5::FileIException not_found_error ) {
+					res = std::shared_ptr<H5::Group>(new H5::Group( base->createGroup( name )));
 				}
 				return res;
 			}
@@ -240,6 +242,7 @@ namespace rtmath {
 			{
 				using std::shared_ptr;
 				using namespace H5;
+				Exception::dontPrint();
 				std::shared_ptr<hdf5_handle> h;
 				if (!sh)
 				{
@@ -274,7 +277,7 @@ namespace rtmath {
 
 					// Turn off the auto-printing when failure occurs so that we can
 					// handle the errors appropriately
-					//Exception::dontPrint();
+					Exception::dontPrint();
 
 					shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
 					shared_ptr<Group> grpHashes(new Group(file->createGroup("Hashed")));
