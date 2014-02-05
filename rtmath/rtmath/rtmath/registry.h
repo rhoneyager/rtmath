@@ -149,7 +149,28 @@ namespace rtmath
 		};
 
 
-		/// Convenient template pattern for defining a IO class registry
+		/// Base class to handle multiple IO operations on a single file
+		struct IOhandler
+		{
+		protected:
+			IOhandler(const std::string &id) : id(id) {}
+			/// Ensures that plugins do not collide
+			std::string id;
+		public:
+			inline std::string getId() { return id; }
+			virtual ~IOhandler() { }
+			enum class IOtype
+			{
+				READONLY,
+				READWRITE,
+				EXCLUSIVE,
+				TRUNCATE,
+				DEBUG,
+				CREATE
+			};
+		};
+
+		/// Convenient template pattern for defining an IO class registry
 		template<class object>
 		struct IO_class_registry
 		{
@@ -158,9 +179,25 @@ namespace rtmath
 			typedef std::function<void(const char*, const object*)> io_processor_type;
 			/// Determines if a file can be read / written with this registration
 			io_matcher_type io_matches;
+			
 			/// Handler function for the actual IO operation
 			io_processor_type io_processor;
+
+			/// If set, indicates that multiple IO operations are possible with this plugin
+			typedef std::function<bool(const char*, const char*, std::shared_ptr<IOhandler>)> io_multi_matcher_type;
+			io_multi_matcher_type io_multi_matches;
+			/// \brief Definition for an object that can handle multiple reads/writes.
+			/// \param IOhandler is the plugin-provided opaque object that keeps track of 
+			/// the state of the object being accessed.
+			/// \param First const char* is a filename / access string
+			/// \param object* is a pointer to the object being read/written
+			/// \param Second const char* is the object 'key'
+			/// \returns Pointer to a IOhandler object (for example after the first write).
+			typedef std::function<std::shared_ptr<IOhandler>
+				(std::shared_ptr<IOhandler>, const char*, const object*, const char*, IOhandler::IOtype)> io_multi_type;
+			io_multi_type io_multi_processor;
 		};
+
 	}
 }
 

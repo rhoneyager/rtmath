@@ -38,6 +38,8 @@ void dllEntry()
 		::rtmath::ddscat::shapefile::shapefile> s;
 	s.io_matches = match_bov_shapefile;
 	s.io_processor = write_bov_shapefile;
+	s.io_multi_matches = nullptr;
+	s.io_multi_processor = nullptr;
 	rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 		rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >

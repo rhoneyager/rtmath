@@ -21,6 +21,7 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+#include "plugin-hdf5.h"
 
 namespace rtmath {
 	namespace plugins {
@@ -94,6 +95,18 @@ namespace rtmath {
 				return false;
 			}
 			
+			bool match_hdf5_multi(const char* filename, const char* type, std::shared_ptr<rtmath::registry::IOhandler> h)
+			{
+				if (h)
+				{
+					if (h->getId() != PLUGINID) return false;
+					return true;
+				} else {
+					return match_hdf5_shapefile(filename, type);
+				}
+			}
+
+
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::shapefile::shapefile *shp)
@@ -191,6 +204,34 @@ namespace rtmath {
 				addAttrEigen<Eigen::Array3f, Group>(shpraw, "xd", shp->xd);
 
 				return shpraw;
+			}
+
+
+			std::shared_ptr<rtmath::registry::IOhandler> write_hdf5_multi_shapefile
+				(std::shared_ptr<rtmath::registry::IOhandler> sh, 
+				const char* filename, 
+				const rtmath::ddscat::shapefile::shapefile *shp, 
+				const char* key, 
+				rtmath::registry::IOhandler::IOtype iotype)
+			{
+				std::shared_ptr<hdf5_handle> h;
+				if (!sh)
+				{
+					// Access the hdf5 file
+					h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename, iotype));
+				} else {
+					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					h = std::dynamic_pointer_cast<hdf5_handle>(sh);
+				}
+
+				// Check for the existence of the appropriate 
+				// Group "Hashed"
+				// Group "Hashed"/shp->hash
+				// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. (CHECK HARD LINKS)
+
+
+
+				return h; // Pass back the handle
 			}
 
 			/// Routine writes a full, isolated shapefile entry

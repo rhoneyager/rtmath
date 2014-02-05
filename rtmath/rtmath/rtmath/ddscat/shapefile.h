@@ -85,6 +85,13 @@ namespace rtmath {
 				void writeToHash() const;
 				/// Write a shapefile to a stream (no compression)
 				void write(std::ostream &out) const;
+				/// Write to a complex, multiple storage object
+				std::shared_ptr<registry::IOhandler> writeMulti(
+					const char* key,
+					std::shared_ptr<registry::IOhandler> handle = nullptr,
+					const char* filename = "",
+					const char* type = "",
+					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE);
 				// \brief Export a shapefile to vtk output
 				// \todo Move to plugin
 				//void writeVTK(const std::string &fname) const;

@@ -434,6 +434,40 @@ namespace rtmath {
 				return res;
 			}
 
+			std::shared_ptr<registry::IOhandler> shapefile::writeMulti(
+					const char* key,
+					std::shared_ptr<registry::IOhandler> handle,
+					const char* filename,
+					const char* ctype,
+					registry::IOhandler::IOtype accessType)
+			{
+				// All of these objects can handle their own compression
+				::rtmath::registry::IO_class_registry<shapefile>::io_multi_type dllsaver = nullptr;
+				// Process dll hooks first
+				auto hooks = usesDLLregistry<shapefile_IO_output_registry,
+					::rtmath::registry::IO_class_registry<shapefile> >::getHooks();
+				for (const auto &hook : *hooks)
+				{
+					if (!hook.io_multi_matches) continue; // Sanity check
+					if (!hook.io_multi_processor) continue; // Sanity check
+					if (hook.io_multi_matches(filename, ctype, handle))
+					{
+						dllsaver = hook.io_multi_processor;
+						break;
+					}
+				}
+				if (dllsaver)
+				{
+					// Most of these types aren't compressible or implement their
+					// own compression schemes. So, it's not handled at this level.
+					return dllsaver(handle, filename, this, key);
+				} else {
+					// Cannot match a file type to save.
+					// Should never occur.
+					RTthrow debug::xUnknownFileFormat(filename);
+				}
+			}
+
 			void shapefile::write(const std::string &filename, bool autoCompress,
 				const std::string &outtype) const
 			{
