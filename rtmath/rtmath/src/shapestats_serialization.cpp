@@ -13,6 +13,8 @@ namespace rtmath
 {
 	namespace ddscat
 	{
+		namespace stats
+		{
 		template <class Archive>
 		void shapeFileStatsBase::volumetric::serialize(Archive & ar, const unsigned int version)
 		{
@@ -60,12 +62,13 @@ namespace rtmath
 		{
 			ar & boost::serialization::make_nvp(
 				"rtmath_ddscat_shapeFileStatsBase",
-				boost::serialization::base_object<rtmath::ddscat::shapeFileStatsBase>(*this));
+				boost::serialization::base_object<rtmath::ddscat::stats::shapeFileStatsBase>(*this));
 		}
 
-		EXPORTINTERNAL(rtmath::ddscat::shapeFileStatsBase::volumetric::serialize);
-		EXPORTINTERNAL(rtmath::ddscat::shapeFileStatsBase::serialize);
-		EXPORTINTERNAL(rtmath::ddscat::shapeFileStats::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::stats::shapeFileStatsBase::volumetric::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::stats::shapeFileStatsBase::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::stats::shapeFileStats::serialize);
+		}
 	}
 }
 

@@ -129,7 +129,7 @@ void dataset::prepStats(bool writeStats, const std::string& statsDir)
 			shapestats += "-stats.xml";
 			shapestatsfile = shapestats.string();
 		}
-		stats = rtmath::ddscat::shapeFileStats::genStats(
+		stats = rtmath::ddscat::stats::shapeFileStats::genStats(
 			shapefile.string(), // File to load
 			shapestatsfile.string() // Stats file to save
 			);

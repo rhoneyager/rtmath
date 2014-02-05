@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
-		ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		Ryan_Serialization::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 		}
 
 		Ryan_Serialization::process_static_options(vm);
-		ddscat::shapeFileStats::process_static_options(vm);
+		ddscat::stats::shapeFileStats::process_static_options(vm);
 
 		vector<string> inputs = vm["input"].as< vector<string> >();
 		if (vm.count("input"))
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
-		vector<rtmath::ddscat::shapeFileStats> Stats;
+		vector<rtmath::ddscat::stats::shapeFileStats> Stats;
 		Stats.reserve(inputs.size());
 
 		for (auto it = inputs.begin(); it != inputs.end(); it++)
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 			rtmath::ddscat::shapefile::shapefile shp(*it);
 
 			cerr << "\tCalculating baseline statistics" << endl;
-			rtmath::ddscat::shapeFileStats sstats(shp);
+			rtmath::ddscat::stats::shapeFileStats sstats(shp);
 			//sstats.calcStatsBase();
 			/*
 			for (auto beta = betas.begin(); beta != betas.end(); beta++)
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 				//singleStats.push_back(std::move(sstats));
 				string ofile = *it;
 				ofile.append(".stats.xml");
-				::Ryan_Serialization::write<rtmath::ddscat::shapeFileStats >(sstats,ofile);
+				::Ryan_Serialization::write<rtmath::ddscat::stats::shapeFileStats >(sstats,ofile);
 			} else {
 				Stats.push_back(std::move(sstats));
 			}
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 
 		cerr << "Done calculating. Writing results." << endl;
 		if (!sepOutputs)
-			::Ryan_Serialization::write<vector<rtmath::ddscat::shapeFileStats> >(Stats,output);
+			::Ryan_Serialization::write<vector<rtmath::ddscat::stats::shapeFileStats> >(Stats,output);
 		//shp.print(out);
 	}
 	catch (rtmath::debug::xError &err)

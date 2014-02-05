@@ -10,7 +10,10 @@ namespace rtmath
 {
 	namespace ddscat
 	{
-		class shapeFileStats;
+		namespace stats
+		{
+			class shapeFileStats;
+		}
 		class ddOutputSingle;
 	}
 }
@@ -46,7 +49,7 @@ public:
 	/// the shape file (.shp, _shape.txt)
 	boost::filesystem::path shapefile;
 	/// The actual shape stats.
-	boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
+	boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> stats;
 
 	/** \brief Load shape statistics
 	*

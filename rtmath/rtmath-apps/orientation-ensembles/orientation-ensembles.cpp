@@ -40,11 +40,10 @@ int main(int argc, char** argv)
 
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
-		rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::debug::add_options(cmdline, config, hidden);
 		Ryan_Serialization::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
-		rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
@@ -75,7 +74,7 @@ int main(int argc, char** argv)
 		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
 		rtmath::ddscat::ddUtil::process_static_options(vm);
-		rtmath::ddscat::shapeFileStats::process_static_options(vm);
+		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 		rtmath::ddscat::ddOutput::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
@@ -116,7 +115,7 @@ int main(int argc, char** argv)
 			"Qsca_m_ori\tQbk_m_ori\tQabs_m_ori\tQext_m_ori\tG_1_m_ori\t"
 			"Qsca_1_ori\tQbk_1_ori\tQabs_1_ori\tQext_1_ori\tG_1_1_ori\t"
 			"Qsca_2_ori\tQbk_2_ori\tQabs_2_ori\tQext_2_ori\tG_1_2_ori\t"
-			"\% Error Qbk\t\% Error Qsca"
+			"% Error Qbk\t% Error Qsca"
 			<< endl;
 
 

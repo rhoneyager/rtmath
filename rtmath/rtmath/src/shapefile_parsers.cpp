@@ -140,7 +140,7 @@ namespace rtmath
 				point_ranges_b = point_ranges;
 
 				using namespace boost::accumulators;
-				vector<accumulator_set<float, stats<
+				vector<accumulator_set<float, boost::accumulators::stats<
 					tag::min,
 					tag::max,
 					tag::mean,
@@ -149,7 +149,7 @@ namespace rtmath
 					m_x(numThreads), m_y(numThreads), m_z(numThreads),
 					// These need all parameters.
 					r_x(numThreads), r_y(numThreads), r_z(numThreads);
-				accumulator_set<float, stats<
+				accumulator_set<float, boost::accumulators::stats<
 					tag::min,
 					tag::max,
 					tag::mean,
@@ -259,7 +259,7 @@ namespace rtmath
 
 				// Combine the stat entries
 				auto findMean = [&](
-					vector<accumulator_set<float, stats< tag::min, tag::max, tag::mean, tag::count> > >
+					vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
 					&mSrc, float &mMean)
 				{
 					for (auto &ac : mSrc)
@@ -283,7 +283,7 @@ namespace rtmath
 				means(2) = mr_z;
 
 				// Pass through stats and get mins and maxs
-				auto findMinsMaxs = [&](vector<accumulator_set<float, stats< tag::min, tag::max, tag::mean, tag::count> > >
+				auto findMinsMaxs = [&](vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
 					&mSrc, size_t index)
 				{
 					for (auto it = mSrc.cbegin(); it != mSrc.cend(); ++it)
@@ -429,7 +429,7 @@ namespace rtmath
 
 
 				using namespace boost::accumulators;
-				vector<accumulator_set<float, stats<
+				vector<accumulator_set<float, boost::accumulators::stats<
 					tag::min,
 					tag::max,
 					tag::mean,
@@ -438,7 +438,7 @@ namespace rtmath
 					m_x(numThreads), m_y(numThreads), m_z(numThreads),
 					// These need all parameters.
 					r_x(numThreads), r_y(numThreads), r_z(numThreads);
-				accumulator_set<float, stats<
+				accumulator_set<float, boost::accumulators::stats<
 					tag::min,
 					tag::max,
 					tag::mean,
@@ -514,7 +514,7 @@ namespace rtmath
 
 				// Combine the stat entries
 				auto findMean = [&](
-					vector<accumulator_set<float, stats< tag::min, tag::max, tag::mean, tag::count> > >
+					vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
 					&mSrc, float &mMean)
 				{
 					for (auto &ac : mSrc)
@@ -530,7 +530,7 @@ namespace rtmath
 				means(2) = mr_z;
 
 				// Pass through stats and get mins and maxs
-				auto findMinsMaxs = [&](vector<accumulator_set<float, stats< tag::min, tag::max, tag::mean, tag::count> > >
+				auto findMinsMaxs = [&](vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
 					&mSrc, size_t index)
 				{
 					for (auto it = mSrc.cbegin(); it != mSrc.cend(); ++it)
@@ -615,7 +615,7 @@ namespace rtmath
 
 				path pHashShapes;
 				path pHashStats;
-				rtmath::ddscat::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+				rtmath::ddscat::stats::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
 
 				path pHashShape = findHash(pHashShapes, hash);
 				if (!pHashShape.empty())
@@ -633,7 +633,7 @@ namespace rtmath
 
 				path pHashShapes;
 				path pHashStats;
-				rtmath::ddscat::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+				rtmath::ddscat::stats::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
 
 				path pHashShape = storeHash(pHashShapes, _localhash);
 				// If a shape matching the hash already exists, there is no need to write an identical file

@@ -94,7 +94,7 @@ namespace rtmath {
 		void ddOutput::loadShape() const
 		{
 			// Load stats and shape based on the hash
-			stats = shapeFileStats::loadHash(this->shapeHash);
+			stats = stats::shapeFileStats::loadHash(this->shapeHash);
 			stats->load();
 			shape = stats->_shp;
 		}
@@ -412,7 +412,7 @@ namespace rtmath {
 			res->parfile = par;
 			res->shape = shape;
 			res->shapeHash = shape->hash();
-			res->stats = shapeFileStats::genStats(res->shape);
+			res->stats = stats::shapeFileStats::genStats(res->shape);
 
 			// Set a basic source descriptor
 			//res->sources.insert(dir);

@@ -46,7 +46,7 @@ namespace rtmath
 			/// the parameter file
 			boost::filesystem::path parfile;
 			/// The actual shape stats.
-			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
+			boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> stats;
 
 			/** \brief Load shape statistics
 			*

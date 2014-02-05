@@ -41,7 +41,10 @@ namespace rtmath {
 		{
 			class shapefile;
 		}
-		class shapeFileStats;
+		namespace stats
+		{
+			class shapeFileStats;
+		}
 		class ddPar;
 		class ddOutputGeneratorConnector;
 
@@ -102,7 +105,7 @@ namespace rtmath {
 			/// The shape file (may load fully later)
 			mutable boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape;
 			/// Shape file statistics (may load fully later)
-			mutable boost::shared_ptr<shapeFileStats> stats;
+			mutable boost::shared_ptr<stats::shapeFileStats> stats;
 			/// Load the full shape file and stats
 			void loadShape() const;
 

@@ -40,8 +40,10 @@ namespace rtmath {
 	}
 	namespace ddscat {
 
-		class shapeFileStatsBase;
-		class shapeFileStats;
+		namespace stats {
+			class shapeFileStatsBase;
+			class shapeFileStats;
+		}
 		class convexHull;
 
 		/// Contains everything to do with low-level manipulation of shape files.
@@ -196,8 +198,8 @@ namespace rtmath {
 
 				//boost::shared_ptr< rtmath::Garrett::pointContainer > _pclObj;
 
-				friend class ::rtmath::ddscat::shapeFileStatsBase;
-				friend class ::rtmath::ddscat::shapeFileStats;
+				friend class ::rtmath::ddscat::stats::shapeFileStatsBase;
+				friend class ::rtmath::ddscat::stats::shapeFileStats;
 				friend class ::rtmath::ddscat::convexHull;
 
 				/// Convenience functions to load shape based on hash

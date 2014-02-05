@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		rtmath::debug::add_options(cmdline, config, hidden);
-		ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		Ryan_Serialization::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
-		ddscat::shapeFileStats::process_static_options(vm);
+		ddscat::stats::shapeFileStats::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
 		{
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		
 
 		boost::filesystem::path pShapeDir, pStatsDir;
-		ddscat::shapeFileStats::getHashPaths(pShapeDir, pStatsDir);
+		ddscat::stats::shapeFileStats::getHashPaths(pShapeDir, pStatsDir);
 
 		// Iterate through the hashed shapefile list and get the hashes
 		vector<string> hashes;
@@ -105,12 +105,12 @@ int main(int argc, char** argv)
 			//HASH_t hash = shp.hash();
 
 			path pStatsHashed = storeHash(pStatsDir,hash);
-			rtmath::ddscat::shapeFileStats sstats;
+			rtmath::ddscat::stats::shapeFileStats sstats;
 			if (Ryan_Serialization::detect_compressed(pStatsHashed.string()))
 			{
 				std::cerr << "\tStats file with hash already exists. Appending.\n";
 				try {
-					Ryan_Serialization::read<rtmath::ddscat::shapeFileStats>
+					Ryan_Serialization::read<rtmath::ddscat::stats::shapeFileStats>
 						(sstats, pStatsHashed.string(), "rtmath::ddscat::shapeFileStats");
 				} catch (std::exception &e)
 				{
@@ -125,9 +125,9 @@ int main(int argc, char** argv)
 				} else cerr << "\tNo upgrade needed.\n";
 			} else {
 				cerr << "\tCalculating statistics.\n";
-				sstats = rtmath::ddscat::shapeFileStats(shp);
+				sstats = rtmath::ddscat::stats::shapeFileStats(shp);
 			}
-			Ryan_Serialization::write<rtmath::ddscat::shapeFileStats>(sstats, 
+			Ryan_Serialization::write<rtmath::ddscat::stats::shapeFileStats>(sstats, 
 				pStatsHashed.string(), "rtmath::ddscat::shapeFileStats", true);
 		}
 

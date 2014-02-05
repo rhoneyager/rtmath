@@ -58,7 +58,7 @@ namespace rtmath
 			std::complex<double> reff;
 			std::string volMeth, dielMeth, shapeMeth, angleMeth;
 
-			boost::shared_ptr<rtmath::ddscat::shapeFileStats> stats;
+			boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> stats;
 
 			std::vector<boost::shared_ptr< const ::tmatrix::OriAngleRes > > data;
 			std::vector<boost::shared_ptr< const rtmath::mie::mieAngleRes> > miedata;

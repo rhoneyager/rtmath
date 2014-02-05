@@ -4,6 +4,7 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/complex.hpp>
@@ -48,7 +49,7 @@ ddPoint::ddPointSet ddPoint::genFromDataset(const dataset &d)
 		pt->ddM = spt->getM();
 		
 		/// \todo Allow for other base volume fractions
-		pt->volFrac = d.stats->f_ellipsoid_rms;
+		pt->volFrac = d.stats->Sellipsoid_rms.f;
 
 		/// \todo Allow for other determinations of aspect ratio
 		/// \todo Check this
