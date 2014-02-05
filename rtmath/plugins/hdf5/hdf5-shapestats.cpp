@@ -72,9 +72,24 @@ namespace rtmath {
 				addDatasetEigen<shapeFileStatsRotated::dir_mat_t, Group>(grpRot, "mom1", r->mom1);
 				addDatasetEigen<shapeFileStatsRotated::dir_mat_t, Group>(grpRot, "mom2", r->mom2);
 
+				auto addVectorEigen = [&](std::shared_ptr<H5::Group> base, const char* name,
+					const shapeFileStatsRotated::vec_mat_t &val)
+				{
+					shared_ptr<Group> grp(new Group(base->createGroup(name)));
+					for (size_t i=0; i < val.size(); ++i)
+					{
+						std::ostringstream o;
+						o << i;
+						std::string so = o.str();
+						addDatasetEigen<shapeFileStatsRotated::mat_3_t, Group>(grp, so.c_str(), val[i]);
+					}
+				};
 
 				//addDatasetEigen<shapeFileStatsRotated::vec_mat_t, Group>(grpRot, "mominert", r->mominert);
 				//addDatasetEigen<shapeFileStatsRotated::vec_mat_t, Group>(grpRot, "covariance", r->covariance);
+				addVectorEigen(grpRot, "mominert", r->mominert);
+				addVectorEigen(grpRot, "covariance", r->covariance);
+
 
 				addDatasetEigen<shapeFileStatsRotated::dir_mat_t, Group>(grpRot, "PE", r->PE);
 
