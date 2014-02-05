@@ -27,64 +27,6 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
-			/// \param std::shared_ptr<H5::AtomType> is a pointer to a newly-constructed matching type
-			/// \returns A pair of (the matching type, a flag indicating passing by pointer or reference)
-			typedef std::shared_ptr<H5::AtomType> MatchAttributeTypeType;
-			template <class DataType>
-			MatchAttributeTypeType MatchAttributeType() { throw("Unsupported type during attribute conversion in rtmath::plugins::hdf5::MatchAttributeType."); }
-
-			template<> MatchAttributeTypeType MatchAttributeType<std::string>() { return std::shared_ptr<H5::AtomType>(new H5::StrType(0, H5T_VARIABLE)); }
-			template<> MatchAttributeTypeType MatchAttributeType<const char*>() { return std::shared_ptr<H5::AtomType>(new H5::StrType(0, H5T_VARIABLE)); }
-			template<> MatchAttributeTypeType MatchAttributeType<int>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_INT)); }
-			template<> MatchAttributeTypeType MatchAttributeType<unsigned long long>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_ULLONG)); }
-			template<> MatchAttributeTypeType MatchAttributeType<float>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_FLOAT)); }
-			template<> MatchAttributeTypeType MatchAttributeType<double>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_DOUBLE)); }
-
-			/// Handles proper insertion of strings versus other data types
-			template <class DataType>
-			void insertAttr(H5::Attribute &attr, std::shared_ptr<H5::AtomType> vls_type, const DataType& value)
-			{
-				attr.write(*vls_type, &value);
-			}
-			template <> void insertAttr<std::string>(H5::Attribute &attr, std::shared_ptr<H5::AtomType> vls_type, const std::string& value)
-			{
-				attr.write(*vls_type, value);
-			}
-
-			/// Convenient template to add an attribute of a variable type to a group or dataset
-			template <class DataType, class Container>
-			void addAttr(std::shared_ptr<Container> obj, const char* attname, const DataType &value)
-			{
-				std::shared_ptr<H5::AtomType> vls_type = MatchAttributeType<DataType>();
-				H5::DataSpace att_space(H5S_SCALAR);
-				H5::Attribute attr = obj->createAttribute(attname, *vls_type, att_space);
-				insertAttr<DataType>(attr, vls_type, value);
-			}
-			
-			/// Eigen objects have a special writing function, as MSVC 2012 disallows partial template specialization.
-			template <class DataType, class Container>
-			void addAttrEigen(std::shared_ptr<Container> obj, const char* attname, const DataType &value)
-			{
-				hsize_t sz[] = { value.rows(), value.cols() };
-				if (sz[0] == 1)
-				{
-					sz[0] = sz[1];
-					sz[1] = 1;
-				}
-				int dimensionality = (sz[1] == 1) ? 1 : 2;
-
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType::Scalar>();
-				//H5::IntType ftype(H5::PredType::NATIVE_FLOAT);
-				H5::ArrayType vls_type(*ftype, dimensionality, sz);
-
-				H5::DataSpace att_space(H5S_SCALAR);
-				H5::Attribute attr = obj->createAttribute(attname, vls_type, att_space);
-				attr.write(vls_type, value.data());
-			}
-
-			/// \todo Switch to using std::shared_ptr<H5::CommonFG> as the base for faster compilation.
-			//template <class Container>
-			//std::shared_ptr<H5::Group> openOrCreateGroup(const char* name, std::shared_ptr<Container> base)
 			std::shared_ptr<H5::Group> openOrCreateGroup(std::shared_ptr<H5::CommonFG> base, const char* name)
 			{
 				std::shared_ptr<H5::Group> res;

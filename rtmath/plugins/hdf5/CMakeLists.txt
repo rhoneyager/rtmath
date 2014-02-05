@@ -15,6 +15,7 @@ add_library (rtmath_plugin_hdf5 SHARED
 	plugin-hdf5.cpp
 	plugin-hdf5.h
 	hdf5-shapefile.cpp
+	hdf5-shapestats.cpp
 	)
 addlib(rtmath_plugin_hdf5 SHARED)
 
