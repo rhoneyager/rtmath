@@ -82,6 +82,30 @@ namespace rtmath {
 				attr.write(vls_type, value.data());
 			}
 
+			/// \todo Switch to using std::shared_ptr<H5::CommonFG> as the base for faster compilation.
+			//template <class Container>
+			//std::shared_ptr<H5::Group> openOrCreateGroup(const char* name, std::shared_ptr<Container> base)
+			std::shared_ptr<H5::Group> openOrCreateGroup(std::shared_ptr<H5::CommonFG> base, const char* name)
+			{
+				std::shared_ptr<H5::Group> res;
+				try {
+					res = std::shared_ptr<H5::Group>(new H5::Group( base->openGroup( name )));
+				} catch( H5::GroupIException not_found_error ) {
+					res = std::shared_ptr<H5::Group>(new H5::Group( base->createGroup( name )));
+				}
+				return res;
+			}
+
+			bool groupExists(std::shared_ptr<H5::CommonFG> base, const char* name)
+			{
+				try {
+					H5::Group( base->openGroup( name ));
+					return true;
+				} catch( H5::GroupIException not_found_error ) {
+					return false;
+				}
+			}
+
 			bool match_hdf5_shapefile(const char* filename, const char* type)
 			{
 				using namespace boost::filesystem;
@@ -211,9 +235,11 @@ namespace rtmath {
 				(std::shared_ptr<rtmath::registry::IOhandler> sh, 
 				const char* filename, 
 				const rtmath::ddscat::shapefile::shapefile *shp, 
-				const char* key, 
+				const char* key, // Unused for this type of write
 				rtmath::registry::IOhandler::IOtype iotype)
 			{
+				using std::shared_ptr;
+				using namespace H5;
 				std::shared_ptr<hdf5_handle> h;
 				if (!sh)
 				{
@@ -224,12 +250,15 @@ namespace rtmath {
 					h = std::dynamic_pointer_cast<hdf5_handle>(sh);
 				}
 
-				// Check for the existence of the appropriate 
+				// Check for the existence of the appropriate:
 				// Group "Hashed"
+				shared_ptr<Group> grpHashes = openOrCreateGroup(h->file, "Hashed");
 				// Group "Hashed"/shp->hash
-				// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. (CHECK HARD LINKS)
-
-
+				shared_ptr<Group> grpShape = openOrCreateGroup(grpHashes, shp->hash().string().c_str());
+				// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
+				/// \note The unlink operation does not really free the space..... Should warn the user.
+				if (groupExists(grpShape, "Shape")) grpShape->unlink("Shape");
+				shared_ptr<Group> newbase = write_hdf5_shaperawdata(grpShape, shp);
 
 				return h; // Pass back the handle
 			}

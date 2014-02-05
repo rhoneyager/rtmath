@@ -9,6 +9,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <hdf5.h>
+#include <H5Cpp.h>
 
 
 #include "../../rtmath/rtmath/common_templates.h"

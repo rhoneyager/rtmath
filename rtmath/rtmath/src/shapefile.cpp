@@ -460,12 +460,13 @@ namespace rtmath {
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, filename, this, key);
+					return dllsaver(handle, filename, this, key, accessType);
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
 					RTthrow debug::xUnknownFileFormat(filename);
 				}
+				return nullptr; // Should never be reached
 			}
 
 			void shapefile::write(const std::string &filename, bool autoCompress,
