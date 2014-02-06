@@ -194,8 +194,11 @@ namespace rtmath {
 				shared_ptr<Group> grpHash = openOrCreateGroup(grpHashes, s->_shp->hash().string().c_str());
 				// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
 				/// \note The unlink operation does not really free the space..... Should warn the user.
-				if (groupExists(grpHash, "Stats")) grpHash->unlink("Stats");
-				shared_ptr<Group> newbase = write_hdf5_statsrawdata(grpHash, s);
+				if (groupExists(grpHash, "Stats")) return h; //grpHash->unlink("Stats");
+
+				/// \todo Modify to also support external symlinks
+				shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
+				shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 
 				return h; // Pass back the handle
 			}

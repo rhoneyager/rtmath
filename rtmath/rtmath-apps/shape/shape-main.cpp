@@ -60,6 +60,8 @@ int main(int argc, char** argv)
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			;
 
+		rtmath::debug::add_options(cmdline, config, hidden);
+
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
 
@@ -72,7 +74,8 @@ int main(int argc, char** argv)
 			cerr << desc << "\n";
 			return 1;
 		}
-
+		
+		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
 		ddscat::stats::shapeFileStats::process_static_options(vm);
 

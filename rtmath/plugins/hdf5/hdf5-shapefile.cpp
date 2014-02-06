@@ -202,7 +202,7 @@ namespace rtmath {
 				shared_ptr<Group> grpShape = openOrCreateGroup(grpHashes, shp->hash().string().c_str());
 				// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
 				/// \note The unlink operation does not really free the space..... Should warn the user.
-				if (groupExists(grpShape, "Shape")) grpShape->unlink("Shape");
+				if (groupExists(grpShape, "Shape")) return h; //grpShape->unlink("Shape");
 				shared_ptr<Group> newbase = write_hdf5_shaperawdata(grpShape, shp);
 
 				return h; // Pass back the handle

@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			;
 
-		rtmath::registry::add_options(cmdline, config, hidden);
+		rtmath::debug::add_options(cmdline, config, hidden);
 
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
@@ -57,8 +57,8 @@ int main(int argc, char** argv)
 			if (message.size()) cerr << message << endl;
 			exit(1);
 		};
-
-		rtmath::registry::process_static_options(vm);
+		
+		rtmath::debug::process_static_options(vm);
 
 		using rtmath::ddscat::shapefile::shapefile;
 

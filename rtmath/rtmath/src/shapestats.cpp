@@ -39,6 +39,7 @@ namespace {
 	boost::filesystem::path pHashShapes, pHashStats;
 	bool autoHashShapes = false;
 	bool autoHashStats = false;
+	bool doVoronoi = true;
 }
 
 namespace rtmath {
@@ -107,6 +108,7 @@ namespace rtmath {
 				auto p = fn();
 				V = p.first;
 				SA = p.second;
+				if (V<0) return;
 
 				aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
 				aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()),0.5);
@@ -128,6 +130,8 @@ namespace rtmath {
 
 			void shapeFileStatsBase::volumetric::calc(const shapeFileStatsBase *s)
 			{
+				if (V<0) return;
+
 				aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
 				aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()),0.5);
 				f = V / s->V_cell_const;
@@ -244,40 +248,42 @@ namespace rtmath {
 				using namespace rtmath::Voronoi;
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
-				auto vd = VoronoiDiagram::generateStandard(_shp->mins, _shp->maxs, _shp->latticePts);
-
-				auto candidate_hull_points = vd->calcCandidateConvexHullPoints();
-				convexHull cvHull(candidate_hull_points);
-				cvHull.constructHull();
-				max_distance = cvHull.maxDiameter();
-
-
-				auto voroHullCalc = [&]()
+				if (doVoronoi)
 				{
-					std::pair<float, float> res;
-					res.first = (float) vd->volume();
-					res.second = (float) vd->surfaceArea();
-					return res;
-				};
+					auto vd = VoronoiDiagram::generateStandard(_shp->mins, _shp->maxs, _shp->latticePts);
 
-				auto cvxHullCalc = [&]()
-				{
-					std::pair<float, float> res;
-					res.first = (float) cvHull.volume();
-					res.second = (float) cvHull.surfaceArea();
-					return res;
-				};
+					auto candidate_hull_points = vd->calcCandidateConvexHullPoints();
+					convexHull cvHull(candidate_hull_points);
+					cvHull.constructHull();
+					max_distance = cvHull.maxDiameter();
 
 
+					auto voroHullCalc = [&]()
+					{
+						std::pair<float, float> res;
+						res.first = (float) vd->volume();
+						res.second = (float) vd->surfaceArea();
+						return res;
+					};
 
-				Sconvex_hull.calc(this, cvxHullCalc);
-				SVoronoi_hull.calc(this, voroHullCalc);
+					auto cvxHullCalc = [&]()
+					{
+						std::pair<float, float> res;
+						res.first = (float) cvHull.volume();
+						res.second = (float) cvHull.surfaceArea();
+						return res;
+					};
 
-				Scircum_sphere.aeff_V = max_distance / 2.0;
-				Scircum_sphere.aeff_SA = max_distance / 2.0;
-				Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V,3.0f) / 3.0f;
-				Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
 
+
+					Sconvex_hull.calc(this, cvxHullCalc);
+					SVoronoi_hull.calc(this, voroHullCalc);
+
+					Scircum_sphere.aeff_V = max_distance / 2.0;
+					Scircum_sphere.aeff_SA = max_distance / 2.0;
+					Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V,3.0f) / 3.0f;
+					Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
+				}
 
 
 				_currVersion = _maxVersion;
@@ -502,6 +508,7 @@ namespace rtmath {
 					;
 
 				config.add_options()
+					("suppress-voronoi-calcs", "Skip all Voronoi-based calculations (for faster debugging)")
 					("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
 					("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
 					("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
@@ -522,6 +529,8 @@ namespace rtmath {
 				namespace po = boost::program_options;
 				using std::string;
 				using boost::filesystem::path;
+
+				if (vm.count("suppress-voronoi-calcs")) doVoronoi = false;
 
 				initPaths();
 				if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());
