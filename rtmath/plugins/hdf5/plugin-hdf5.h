@@ -101,7 +101,7 @@ namespace rtmath {
 			template <class DataType, class Container>
 			void addAttrEigen(std::shared_ptr<Container> obj, const char* attname, const DataType &value)
 			{
-				hsize_t sz[] = { value.rows(), value.cols() };
+				hsize_t sz[] = { (hsize_t) value.rows(), (hsize_t) value.cols() };
 				if (sz[0] == 1)
 				{
 					sz[0] = sz[1];
@@ -109,7 +109,7 @@ namespace rtmath {
 				}
 				int dimensionality = (sz[1] == 1) ? 1 : 2;
 
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType::Scalar>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar>();
 				//H5::IntType ftype(H5::PredType::NATIVE_FLOAT);
 				H5::ArrayType vls_type(*ftype, dimensionality, sz);
 
@@ -130,10 +130,10 @@ namespace rtmath {
 			void addDatasetEigen(std::shared_ptr<Container> obj, const char* name, const DataType &value)
 			{
 				using namespace H5;
-				hsize_t sz[] = { value.rows(), value.cols() };
+				hsize_t sz[] = { (hsize_t) value.rows(), (hsize_t) value.cols() };
 				int dimensionality = 2;
 				DataSpace fspace(dimensionality, sz);
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType::Scalar>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar>();
 
 				DSetCreatPropList plist;
 				int fillvalue = -1;
@@ -141,7 +141,7 @@ namespace rtmath {
 
 				std::shared_ptr<DataSet> dataset(new DataSet(obj->createDataSet(name, *(ftype.get()), 
 					fspace, plist)));
-				Eigen::Matrix<DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rowmajor(value);
+				Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rowmajor(value);
 				dataset->write(rowmajor.data(), *(ftype.get()));
 			}
 
@@ -150,10 +150,10 @@ namespace rtmath {
 			void addDatasetEigenComplexMethodA(std::shared_ptr<Container> obj, const char* name, const DataType &value)
 			{
 				using namespace H5;
-				hsize_t sz[] = { value.rows(), value.cols() };
+				hsize_t sz[] = { (hsize_t) value.rows(), (hsize_t) value.cols() };
 				int dimensionality = 2;
 				DataSpace fspace(dimensionality, sz);
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType::Scalar::value_type>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar::value_type>();
 
 				DSetCreatPropList plist;
 				int fillvalue = -1;
@@ -165,8 +165,8 @@ namespace rtmath {
 					fspace, plist)));
 				std::shared_ptr<DataSet> datasetImag(new DataSet(obj->createDataSet(snameImag.c_str(), *(ftype.get()), 
 					fspace, plist)));
-				Eigen::Matrix<DataType::Scalar::value_type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmreal(value.real());
-				Eigen::Matrix<DataType::Scalar::value_type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmimag(value.imag());
+				Eigen::Matrix<typename DataType::Scalar::value_type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmreal(value.real());
+				Eigen::Matrix<typename DataType::Scalar::value_type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmimag(value.imag());
 				datasetReal->write(rmreal.data(), *(ftype.get()));
 				datasetImag->write(rmimag.data(), *(ftype.get()));
 			}

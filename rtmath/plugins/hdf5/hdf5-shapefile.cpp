@@ -12,8 +12,6 @@
 #include <tuple>
 
 #include <boost/filesystem.hpp>
-#include <hdf5.h>
-#include <H5Cpp.h>
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -22,6 +20,8 @@
 #include "../../rtmath/rtmath/error/error.h"
 
 #include "plugin-hdf5.h"
+#include <hdf5.h>
+#include <H5Cpp.h>
 
 namespace rtmath {
 	namespace plugins {
@@ -116,7 +116,7 @@ namespace rtmath {
 				shared_ptr<Group> shpextras(new Group(shpraw->createGroup("Extras")));
 				for (const auto& e : shp->latticeExtras)
 				{
-					hsize_t fDimExtra[] = {e.second->rows(), e.second->cols()};
+					hsize_t fDimExtra[] = { (hsize_t) e.second->rows(), (hsize_t) e.second->cols()};
 					//if (fDimExtra[0] == 1)
 					//{
 					//	fDimExtra[0] = fDimExtra[1];

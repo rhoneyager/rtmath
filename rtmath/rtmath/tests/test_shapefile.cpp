@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(shapefile_serialization)
 BOOST_AUTO_TEST_CASE(shapefile_stats)
 {
 	shapefile::shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
-	shapeFileStats sshp(shp);
+	stats::shapeFileStats sshp(shp);
 	BOOST_TEST_MESSAGE("Base");
 	sshp.calcStatsBase();
 	BOOST_TEST_MESSAGE("0 0 0");
@@ -83,30 +83,30 @@ BOOST_AUTO_TEST_CASE(shapefile_stats)
 	sshp.calcStatsRot(30,30,30);
 
 	BOOST_TEST_MESSAGE("Writing");
-	Ryan_Serialization::write<shapeFileStats>(sshp,"shpstats.xml");
+	Ryan_Serialization::write<stats::shapeFileStats>(sshp,"shpstats.xml");
 }
 
 BOOST_AUTO_TEST_CASE(shapefile_stats_serialization)
 {
 	shapefile::shapefile shp((globals::instance()->pTestData / "miniflake.shp").string());
-	shapeFileStats sshp(shp);
+	stats::shapeFileStats sshp(shp);
 	sshp.calcStatsBase();
 	sshp.calcStatsRot(0,0,0);
 
-	shapeFileStats sshpb;
+	stats::shapeFileStats sshpb;
 	ostringstream out;
-	Ryan_Serialization::write<shapeFileStats>(sshp,out);
-	Ryan_Serialization::write<shapeFileStats>(sshp,"testmini.xml");
+	Ryan_Serialization::write<stats::shapeFileStats>(sshp,out);
+	Ryan_Serialization::write<stats::shapeFileStats>(sshp,"testmini.xml");
 
 	string s = out.str();
 
 	istringstream in(s);
-	Ryan_Serialization::read<shapeFileStats>(sshpb,in);
+	Ryan_Serialization::read<stats::shapeFileStats>(sshpb,in);
 
 	BOOST_CHECK(sshp.max_distance == sshpb.max_distance);
 
-	shapeFileStats sshpc;
-	Ryan_Serialization::read<shapeFileStats>(sshpc,"testmini.xml");
+	stats::shapeFileStats sshpc;
+	Ryan_Serialization::read<stats::shapeFileStats>(sshpc,"testmini.xml");
 	BOOST_CHECK(sshp.max_distance == sshpc.max_distance);
 }
 

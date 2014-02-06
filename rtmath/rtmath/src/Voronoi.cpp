@@ -83,23 +83,19 @@ namespace {
 		}
 		fputs("\ttexture{t2}\n}\n",fp);
 	}
-
-	/*
-	class AllocatorContainer : public boost::enable_shared_from_this<AllocatorContainer>
-	{
-		AllocatorContainer() {}
-	public:
-		static boost::shared_ptr<AllocatorContainer> generate()
-		{
-		}
-
-	};
-	*/
 }
 
 
 namespace rtmath
 {
+	namespace registry {
+		template struct IO_class_registry
+			<::rtmath::Voronoi::VoronoiDiagram>;
+		template class usesDLLregistry<
+			::rtmath::Voronoi::Voronoi_IO_output_registry,
+			IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >;
+	}
+
 	namespace Voronoi
 	{
 		/// Persistent internal Voronoi cell storage object
@@ -146,6 +142,7 @@ namespace rtmath
 			bool isSurface() const { if (sa_ext) return true; return false; }
 		};
 
+		const size_t ArraySize = 50;
 		/// \brief Internal aligned class for persistent voronoi cell information storage
 		/// \note MSVC 2012 has a bug in object construction at runtime. 
 		/// It seems related to passing constructor arguments with two allocators / using the 
@@ -158,16 +155,8 @@ namespace rtmath
 			//AllocInt allocInt;
 			//AllocDouble allocDouble;
 		public:
-			static const size_t ArraySize = 50;
+			//static const size_t ArraySize = 50;
 			virtual ~CachedVoronoiCell() {}
-#ifndef _MSC_FULL_VER
-			CachedVoronoiCell(const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: neigh(allocInt), f_vert(allocInt), f_areas(allocDouble) {}
-			CachedVoronoiCell(voro::voronoicell_neighbor &vc, 
-				const AllocInt& allocInt = AllocInt(), const AllocDouble& allocDouble = AllocDouble())
-				: neigh(allocInt), f_vert(allocInt), f_areas(allocDouble)
-			{ calc(vc); }
-#endif
 			CachedVoronoiCell()
 			{ }
 			CachedVoronoiCell(voro::voronoicell_neighbor &vc)

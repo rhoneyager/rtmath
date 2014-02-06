@@ -16,6 +16,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
 #include <tmatrix/tmatrix.h>
 #include "../mie/mie.h"
 #include "shapestats.h"

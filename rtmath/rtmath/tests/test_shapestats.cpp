@@ -18,6 +18,7 @@
 
 using namespace rtmath;
 using namespace rtmath::ddscat;
+using namespace rtmath::ddscat::stats;
 using namespace std;
 using namespace rtmath::config;
 using namespace boost::filesystem;

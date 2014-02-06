@@ -29,7 +29,7 @@ namespace voro
 namespace rtmath {
 	namespace Voronoi {
 		class VoronoiDiagram;
-		class Voronoi_IO_output_registry{};
+		class Voronoi_IO_output_registry {};
 	}
 	namespace registry {
 		extern template struct IO_class_registry<::rtmath::Voronoi::VoronoiDiagram>;

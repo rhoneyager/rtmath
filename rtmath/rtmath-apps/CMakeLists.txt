@@ -96,7 +96,7 @@ if (BUILD_APPS_SHAPE)
 	add_subdirectory (shape-rehash)
 endif()
 if (BUILD_APPS_DEPEND_PCL)
-	add_subdirectory (shape-hexplate)
+	##add_subdirectory (shape-hexplate)
 	##add_subdirectory (shape-rectprism)
 	#add_subdirectory (shape-rosette)
 

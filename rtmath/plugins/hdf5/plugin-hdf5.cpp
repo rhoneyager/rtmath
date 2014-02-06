@@ -2,8 +2,8 @@
 #pragma warning( disable : 4251 ) // warning C4251: dll-interface
 #define _SCL_SECURE_NO_WARNINGS
 
-#include <cstdio>
-#include <cstring>
+//#include <cstdio>
+//#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <string>
