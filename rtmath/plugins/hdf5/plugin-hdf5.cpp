@@ -17,6 +17,7 @@
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
@@ -116,4 +117,15 @@ void dllEntry()
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
 		rtmath::registry::IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >
 		::registerHook(s2);
+
+	static rtmath::registry::IO_class_registry<
+		::rtmath::ddscat::ddOutput> s3;
+	s3.io_matches = rtmath::plugins::hdf5::match_hdf5_shapefile;
+	s3.io_processor = rtmath::plugins::hdf5::write_hdf5_ddOutput;
+	s3.io_multi_matches = rtmath::plugins::hdf5::match_hdf5_multi;
+	s3.io_multi_processor = rtmath::plugins::hdf5::write_hdf5_multi_ddoutputs;
+	rtmath::ddscat::ddOutput::usesDLLregistry<
+		rtmath::ddscat::ddOutput_IO_output_registry,
+		rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >
+		::registerHook(s3);
 }

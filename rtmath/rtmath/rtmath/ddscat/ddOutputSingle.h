@@ -251,6 +251,7 @@ namespace rtmath
 		public:
 			ddOutputSingleObj();
 			virtual ~ddOutputSingleObj();
+			std::string getKey() const { return key; }
 			/// Write header line using formatting appropriate for the 
 			/// specified ddscat version.
 			/// \see rtmath::ddscat::ddVersions

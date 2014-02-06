@@ -1220,6 +1220,7 @@ namespace rtmath {
 
 		double ddOutputSingle::dipoleSpacing() const
 		{
+			if (_objMap.count("d") == 0) return -1;
 			return boost::lexical_cast<double>(_objMap.at("d")->value());
 		}
 

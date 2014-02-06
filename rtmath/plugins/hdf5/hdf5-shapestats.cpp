@@ -140,7 +140,7 @@ namespace rtmath {
 				addAttr<double, Group>(statsraw, "phi", s->phi);
 
 				// Volumetric data
-				shared_ptr<Group> gV(new Group(statsraw->createGroup("Volumentric")));
+				shared_ptr<Group> gV(new Group(statsraw->createGroup("Volumetric")));
 				write_hdf5_statsvolumetric(gV, "Circum_sphere", &(s->Scircum_sphere));
 				write_hdf5_statsvolumetric(gV, "Convex_hull", &(s->Sconvex_hull));
 				write_hdf5_statsvolumetric(gV, "Voronoi_hull", &(s->SVoronoi_hull));
