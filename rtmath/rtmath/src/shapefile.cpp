@@ -439,7 +439,7 @@ namespace rtmath {
 					std::shared_ptr<registry::IOhandler> handle,
 					const char* filename,
 					const char* ctype,
-					registry::IOhandler::IOtype accessType)
+					registry::IOhandler::IOtype accessType) const
 			{
 				// All of these objects can handle their own compression
 				::rtmath::registry::IO_class_registry<shapefile>::io_multi_type dllsaver = nullptr;

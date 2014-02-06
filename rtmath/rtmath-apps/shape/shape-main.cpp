@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
 		// sepOutputs is a vestigial option. I want everything in a separate file automatically. 
 		// No vectors! They are hard to detect before readins, leading to input stream errors.
-		bool sepOutputs = true;
+		bool sepOutputs = false;
 		//if (vm.count("separate-outputs")) sepOutputs = true;
 
 		string output; 
@@ -128,30 +128,6 @@ int main(int argc, char** argv)
 				else throw rtmath::debug::xPathExistsWrongType(it->c_str());
 			}
 		}
-
-		// Specify beta, theta, phi rotations
-		/*
-		string sbeta = vm["betas"].as<string>();
-		string stheta = vm["thetas"].as<string>();
-		string sphi = vm["phis"].as<string>();
-
-		paramSet<double> betas(sbeta);
-		paramSet<double> thetas(stheta);
-		paramSet<double> phis(sphi);
-		cerr << "Betas: ";
-		for (auto it = betas.begin(); it != betas.end(); it++)
-			cerr << *it << " ";
-		cerr << endl;
-		cerr << "Thetas: ";
-		for (auto it = thetas.begin(); it != thetas.end(); it++)
-			cerr << *it << " ";
-		cerr << endl;
-		cerr << "Phis: ";
-		for (auto it = phis.begin(); it != phis.end(); it++)
-			cerr << *it << " ";
-		cerr << endl;
-		*/
-
 
 		if (vm.count("trial-run")) 
 		{
@@ -192,16 +168,24 @@ int main(int argc, char** argv)
 				//singleStats.push_back(std::move(sstats));
 				string ofile = *it;
 				ofile.append(".stats.xml");
-				::Ryan_Serialization::write<rtmath::ddscat::stats::shapeFileStats >(sstats,ofile);
+				sstats.write(ofile);
 			} else {
 				Stats.push_back(std::move(sstats));
 			}
 		}
 
 		cerr << "Done calculating. Writing results." << endl;
+
+		// Need to handle serialization versus plugins properly here.
 		if (!sepOutputs)
-			::Ryan_Serialization::write<vector<rtmath::ddscat::stats::shapeFileStats> >(Stats,output);
-		//shp.print(out);
+		{
+			std::shared_ptr<registry::IOhandler> handle;
+			for (const auto &s : Stats)
+			{
+				handle = s.writeMulti(s._shp->filename.c_str(), handle, output.c_str());
+			}
+		}
+		//::Ryan_Serialization::write<vector<rtmath::ddscat::stats::shapeFileStats> >(Stats,output);
 	}
 	catch (rtmath::debug::xError &err)
 	{

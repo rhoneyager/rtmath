@@ -151,7 +151,7 @@ namespace rtmath {
 					std::shared_ptr<registry::IOhandler> handle = nullptr,
 					const char* filename = "",
 					const char* type = "",
-					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE);
+					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE) const;
 				/// Load stats from serialized file.
 				/// A convenience function that calls Ryan_Serialization
 				void read(const std::string &filename);

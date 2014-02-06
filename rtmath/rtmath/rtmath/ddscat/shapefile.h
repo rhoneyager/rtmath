@@ -93,7 +93,7 @@ namespace rtmath {
 					std::shared_ptr<registry::IOhandler> handle = nullptr,
 					const char* filename = "",
 					const char* type = "",
-					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE);
+					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE) const;
 				// \brief Export a shapefile to vtk output
 				// \todo Move to plugin
 				//void writeVTK(const std::string &fname) const;
