@@ -16,7 +16,7 @@
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
-//#include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
@@ -85,6 +85,9 @@ int main(int argc, char** argv)
 		ofstream out(sOutput.c_str());
 		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			"M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
+			"V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
+			"V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
+			"V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
 			"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 		
 		using namespace boost::filesystem;
@@ -122,7 +125,7 @@ int main(int argc, char** argv)
 			boost::shared_ptr<ddOutput> ddOut(new ddOutput);
 
 			if (is_directory(p))
-				ddOut = ddOutput::generate(p.string(), true);
+				ddOut = ddOutput::generate(p.string(), true, true);
 			else if (Ryan_Serialization::known_format(p))
 				ddOut->readFile(p.string());
 			else if (!Ryan_Serialization::known_format(p))
@@ -133,6 +136,9 @@ int main(int argc, char** argv)
 
 			// out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			// "M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
+			// "V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
+			// "V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
+			// "V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
 			// "Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 			rotations rots;
 			ddOut->parfile->getRots(rots);
@@ -147,6 +153,10 @@ int main(int argc, char** argv)
 				<< ddOut->freq << "\t" << ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
 				<< ddOut->aeff << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
 				<< ddOut->scas.size() << "\t" 
+				<< ddOut->stats->SVoronoi_hull.V << "\t" << ddOut->stats->SVoronoi_hull.SA << "\t" << ddOut->stats->SVoronoi_hull.f << "\t" 
+				<< ddOut->stats->Sconvex_hull.V << "\t" << ddOut->stats->Sconvex_hull.SA << "\t" << ddOut->stats->Sconvex_hull.f << "\t" 
+				<< ddOut->stats->Sellipsoid_max.V << "\t" << ddOut->stats->Sellipsoid_max.SA << "\t" << ddOut->stats->Sellipsoid_max.f << "\t" 
+				<< ddOut->stats->Scircum_sphere.V << "\t" << ddOut->stats->Scircum_sphere.SA << "\t" << ddOut->stats->Scircum_sphere.f << "\t" 
 				<< ddOut->avg->getStatEntry(stat_entries::QSCAM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QBKM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QABSM) << "\t"

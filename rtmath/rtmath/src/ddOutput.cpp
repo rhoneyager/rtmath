@@ -180,7 +180,7 @@ namespace rtmath {
 			return res;
 		}
 
-		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
+		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots, bool dostats)
 		{
 			// Handling typical case with only one .avg output (one frequency, one aeff)
 			boost::shared_ptr<ddOutput> res(new ddOutput());
@@ -255,7 +255,8 @@ namespace rtmath {
 						(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
 					// Get the hash and load the stats
 					res->shapeHash = res->shape->hash();
-					//res->stats = shapeFileStats::genStats(res->shape);
+					if (dostats)
+						res->stats = stats::shapeFileStats::genStats(res->shape);
 				}
 			};
 
