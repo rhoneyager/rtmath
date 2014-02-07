@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 			boost::shared_ptr<ddOutput> ddOut(new ddOutput);
 
 			if (is_directory(p))
-				ddOut = ddOutput::generate(p.string(), true, true);
+				ddOut = ddOutput::generate(p.string(), true);
 			else if (Ryan_Serialization::known_format(p))
 				ddOut->readFile(p.string());
 			else if (!Ryan_Serialization::known_format(p))
