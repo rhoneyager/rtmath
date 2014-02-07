@@ -180,7 +180,7 @@ namespace rtmath {
 			return res;
 		}
 
-		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots, bool dostats)
+		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
 		{
 			// Handling typical case with only one .avg output (one frequency, one aeff)
 			boost::shared_ptr<ddOutput> res(new ddOutput());
@@ -248,15 +248,15 @@ namespace rtmath {
 				{
 					std::lock_guard<std::mutex> lock(m_shape);
 					if (res->shape) return; // Only needs to be loaded once
-					if (noLoadRots) return;
+					//if (noLoadRots) return;
 					// Note: the hashed object is the fundamental thing here that needs to be loaded
 					// The other stuff is only loaded for processing, and is not serialized directly.
 					res->shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
 						(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
 					// Get the hash and load the stats
 					res->shapeHash = res->shape->hash();
-					if (dostats)
-						res->stats = stats::shapeFileStats::genStats(res->shape);
+					//if (dostats)
+					//	res->stats = stats::shapeFileStats::genStats(res->shape);
 				}
 			};
 

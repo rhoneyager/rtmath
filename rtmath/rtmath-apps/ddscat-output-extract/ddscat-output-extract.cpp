@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 			}
 
 			// out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
-			// "M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
+			// "M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\tDipole Spacing\t"
 			// "V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
 			// "V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
 			// "V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
@@ -145,6 +145,30 @@ int main(int argc, char** argv)
 
 			// Recover from segfaulted runs when done in a script.
 			if (!ddOut->avg) continue;
+			if (!ddOut->stats)
+			{
+				if (ddOut->shape)
+					ddOut->stats = boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats>(stats::shapeFileStats::genStats(ddOut->shape));
+			}
+			// Calculate scaled quantities
+			double ds = ddOut->avg->dipoleSpacing();
+
+			double Vvoro = ddOut->stats->SVoronoi_hull.V * pow(ds,3.);
+			double Svoro = ddOut->stats->SVoronoi_hull.SA * pow(ds,2.);
+			double fvoro = ddOut->stats->SVoronoi_hull.f;
+
+			double Vconv = ddOut->stats->Sconvex_hull.V * pow(ds,3.);
+			double Sconv = ddOut->stats->Sconvex_hull.SA * pow(ds,2.);
+			double fconv = ddOut->stats->Sconvex_hull.f;
+
+			double Vellm = ddOut->stats->Sellipsoid_max.V * pow(ds,3.);
+			double Sellm = ddOut->stats->Sellipsoid_max.SA * pow(ds,2.);
+			double fellm = ddOut->stats->Sellipsoid_max.f;
+
+			double Vcirc = ddOut->stats->Scircum_sphere.V * pow(ds,3.);
+			double Scirc = ddOut->stats->Scircum_sphere.SA * pow(ds,2.);
+			double fcirc = ddOut->stats->Scircum_sphere.f;
+
 
 			if (sDescrip.size()) ddOut->description = sDescrip;
 
@@ -152,11 +176,11 @@ int main(int argc, char** argv)
 				<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
 				<< ddOut->freq << "\t" << ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
 				<< ddOut->aeff << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
-				<< ddOut->scas.size() << "\t" 
-				<< ddOut->stats->SVoronoi_hull.V << "\t" << ddOut->stats->SVoronoi_hull.SA << "\t" << ddOut->stats->SVoronoi_hull.f << "\t" 
-				<< ddOut->stats->Sconvex_hull.V << "\t" << ddOut->stats->Sconvex_hull.SA << "\t" << ddOut->stats->Sconvex_hull.f << "\t" 
-				<< ddOut->stats->Sellipsoid_max.V << "\t" << ddOut->stats->Sellipsoid_max.SA << "\t" << ddOut->stats->Sellipsoid_max.f << "\t" 
-				<< ddOut->stats->Scircum_sphere.V << "\t" << ddOut->stats->Scircum_sphere.SA << "\t" << ddOut->stats->Scircum_sphere.f << "\t" 
+				<< ddOut->scas.size() << "\t" << ds << "\t"
+				<< Vvoro << "\t" << Svoro << "\t" << fvoro << "\t" 
+				<< Vconv << "\t" << Sconv << "\t" << fconv << "\t" 
+				<< Vellm << "\t" << Sellm << "\t" << fellm << "\t" 
+				<< Vcirc << "\t" << Scirc << "\t" << fcirc << "\t" 
 				<< ddOut->avg->getStatEntry(stat_entries::QSCAM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QBKM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QABSM) << "\t"
