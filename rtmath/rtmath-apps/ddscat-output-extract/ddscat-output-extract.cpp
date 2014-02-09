@@ -85,9 +85,9 @@ int main(int argc, char** argv)
 		ofstream out(sOutput.c_str());
 		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
 			"M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
-			"V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
-			"V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
-			"V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
+			//"V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
+			//"V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
+			//"V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
 			"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 		
 		using namespace boost::filesystem;
@@ -145,6 +145,7 @@ int main(int argc, char** argv)
 
 			// Recover from segfaulted runs when done in a script.
 			if (!ddOut->avg) continue;
+			/*
 			if (!ddOut->stats)
 			{
 				if (ddOut->shape)
@@ -168,7 +169,7 @@ int main(int argc, char** argv)
 			double Vcirc = ddOut->stats->Scircum_sphere.V * pow(ds,3.);
 			double Scirc = ddOut->stats->Scircum_sphere.SA * pow(ds,2.);
 			double fcirc = ddOut->stats->Scircum_sphere.f;
-
+			*/
 
 			if (sDescrip.size()) ddOut->description = sDescrip;
 
@@ -176,11 +177,11 @@ int main(int argc, char** argv)
 				<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
 				<< ddOut->freq << "\t" << ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
 				<< ddOut->aeff << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
-				<< ddOut->scas.size() << "\t" << ds << "\t"
-				<< Vvoro << "\t" << Svoro << "\t" << fvoro << "\t" 
-				<< Vconv << "\t" << Sconv << "\t" << fconv << "\t" 
-				<< Vellm << "\t" << Sellm << "\t" << fellm << "\t" 
-				<< Vcirc << "\t" << Scirc << "\t" << fcirc << "\t" 
+				<< ddOut->scas.size() << "\t" // << ds << "\t"
+				//<< Vvoro << "\t" << Svoro << "\t" << fvoro << "\t" 
+				//<< Vconv << "\t" << Sconv << "\t" << fconv << "\t" 
+				//<< Vellm << "\t" << Sellm << "\t" << fellm << "\t" 
+				//<< Vcirc << "\t" << Scirc << "\t" << fcirc << "\t" 
 				<< ddOut->avg->getStatEntry(stat_entries::QSCAM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QBKM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QABSM) << "\t"
