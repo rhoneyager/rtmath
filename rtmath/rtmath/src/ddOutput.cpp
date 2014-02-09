@@ -585,7 +585,8 @@ namespace rtmath {
 				if (is_directory(p)) return true;
 				return false;
 			};
-			if (!validateDir(pHashRuns)) RTthrow debug::xMissingFile(pHashRuns.string().c_str());
+			// Will enable after actual use
+			//if (!validateDir(pHashRuns)) RTthrow debug::xMissingFile(pHashRuns.string().c_str());
 		}
 
 		void ddOutput::initPaths()

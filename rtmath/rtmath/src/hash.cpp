@@ -66,7 +66,8 @@ namespace rtmath {
 		path pHashStart(sHashStart);
 
 		if (!exists(base))
-			throw rtmath::debug::xMissingFile(base.string().c_str());
+			return path(""); // Silently fail
+			//RTthrow rtmath::debug::xMissingFile(base.string().c_str());
 
 		if (!exists(base / pHashStart))
 			create_directory(base / pHashStart);

@@ -636,6 +636,7 @@ namespace rtmath
 				rtmath::ddscat::stats::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
 
 				path pHashShape = storeHash(pHashShapes, _localhash);
+				if (pHashShape.string() == "") return; // Silently fail (no hash dir)
 				// If a shape matching the hash already exists, there is no need to write an identical file
 				if (!Ryan_Serialization::detect_compressed(pHashShape.string()))
 					write(pHashShape.string(), true);
