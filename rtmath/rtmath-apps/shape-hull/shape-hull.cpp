@@ -102,16 +102,20 @@ int main(int argc, char** argv)
 			throw rtmath::debug::xPathExistsWrongType(input.c_str());
 
 		// Load the shape file
-		rtmath::ddscat::shapefile::shapefile shp(input);
+		using rtmath::ddscat::shapefile::shapefile;
+		using rtmath::ddscat::stats::shapeFileStats;
+		boost::shared_ptr<shapefile> shp(new shapefile(input));
+		boost::shared_ptr<shapeFileStats> stats = shapeFileStats::genStats(shp);
 		using namespace rtmath::Voronoi;
-		auto vd = VoronoiDiagram::generateStandard(shp.mins, shp.maxs, shp.latticePts);
+		auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
 		auto cvxCands = vd->calcCandidateConvexHullPoints();
-		shp.latticeExtras["cvxCands"] = cvxCands;
+		shp->latticeExtras["cvxCands"] = cvxCands;
 		auto depth = vd->calcSurfaceDepth();
-		shp.latticeExtras["SurfaceDepth"] = depth; //.col(3);
+		shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
 
+		stats->write("out.hdf5");
 		for (const auto& outfile : output)
-			shp.write(outfile);
+			shp->write(outfile);
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
