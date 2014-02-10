@@ -113,9 +113,24 @@ int main(int argc, char** argv)
 		auto depth = vd->calcSurfaceDepth();
 		shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
 
-		stats->write("out.hdf5");
-		for (const auto& outfile : output)
-			shp->write(outfile);
+		/// \todo Enable Linux plugin install
+		std::ofstream out("out.tsv");
+		out << "Hash\tCircum_Sphere_V\tCircum_Sphere_SA\t"
+			"Convex_V\tConvex_SA\t"
+			"Voronoi_V\tVoronoi_SA\t"
+			"EllMax_V\tEllMax_SA\t"
+			"EllRMS_V\n";
+
+		out << shp->hash().lower << "\t"
+			<< stats->Scircum_sphere.V << "\t" << stats->Scircum_sphere.SA << "\t"
+			<< stats->Sconvex_hull.V << "\t" << stats->Sconvex_hull.SA << "\t"
+			<< stats->SVoronoi_hull.V << "\t" << stats->SVoronoi_hull.SA << "\t"
+			<< stats->Sellipsoid_max.V << "\t" << stats->Sellipsoid_max.SA << "\t"
+			<< stats->Sellipsoid_rms.V << "\n";
+
+		//stats->write("out.xml.bz2");
+		//for (const auto& outfile : output)
+		//	shp->write(outfile);
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;

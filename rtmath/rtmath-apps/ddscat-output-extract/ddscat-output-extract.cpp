@@ -83,7 +83,8 @@ int main(int argc, char** argv)
 		if (vm.count("force-description")) sDescrip = vm["force-description"].as<string>();
 
 		ofstream out(sOutput.c_str());
-		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
+		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\t"
+			"Frequency (GHz)\tDipole Spacing (um)\t"
 			"M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
 			//"V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
 			//"V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
@@ -134,7 +135,8 @@ int main(int argc, char** argv)
 				continue;
 			}
 
-			// out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\tFrequency (GHz)\t"
+			// out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\t"
+			// "Frequency (GHz)\tDipole Spacing (um)\t"
 			// "M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\tDipole Spacing\t"
 			// "V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
 			// "V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
@@ -175,7 +177,8 @@ int main(int argc, char** argv)
 
 			out << p.string() << "\t" << ddOut->description << "\t"
 				<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
-				<< ddOut->freq << "\t" << ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
+				<< ddOut->freq << "\t" << ddOut->avg_original->dipoleSpacing() << "\t"
+				<< ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
 				<< ddOut->aeff << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
 				<< ddOut->scas.size() << "\t" // << ds << "\t"
 				//<< Vvoro << "\t" << Svoro << "\t" << fvoro << "\t" 
