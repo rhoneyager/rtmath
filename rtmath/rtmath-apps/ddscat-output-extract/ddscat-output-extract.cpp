@@ -13,6 +13,7 @@
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
+#include "../../rtmath/rtmath/ddscat/ddRunSet.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -42,6 +43,9 @@ int main(int argc, char** argv)
 			("input,i", po::value<vector<string> >(),"specify input directories or files")
 			("output,o", po::value<string>(), "specify output file")
 			("force-description", po::value<string>(), "Override the description of each entry")
+			("shapes,s", po::value<vector<string> >(), 
+			"Specify optional shapefiles for matching against pure avg file input. "
+			"Matching s done based on common elements in the filenames.")
 			;
 
 		po::positional_options_description p;
@@ -72,12 +76,14 @@ int main(int argc, char** argv)
 
 		if (vm.count("help") || argc == 1) doHelp("");
 		
-		vector<string> vsInput;
+		vector<string> vsInput, vsShapes;
 		string sOutput;
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input(s)");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
 		else doHelp("Need to specify output file.");
+
+		if (vm.count("shapes")) vsShapes = vm["shapes"].as<vector<string> >();
 
 		string sDescrip;
 		if (vm.count("force-description")) sDescrip = vm["force-description"].as<string>();
@@ -104,19 +110,18 @@ int main(int argc, char** argv)
 			}
 		};
 
-		vector<path> inputs;
+		vector<path> inputs, shapes;
 		for (const std::string &rin : vsInput)
 		{
 			path p(rin);
 			path ps = expandSymlinks(p);
-			//if (is_directory(ps))
-			//{
-			//	vector<path> cands;
-			//	copy(recursive_directory_iterator(ps,symlink_option::recurse), 
-			//		recursive_directory_iterator(), back_inserter(inputs));
-			//} else {
-				inputs.push_back(ps);
-			//}
+			inputs.push_back(ps);
+		}
+		for (const std::string &rin : vsShapes)
+		{
+			path p(rin);
+			path ps = expandSymlinks(p);
+			shapes.push_back(ps);
 		}
 
 		for (const path &p : inputs)
@@ -129,7 +134,35 @@ int main(int argc, char** argv)
 				ddOut = ddOutput::generate(p.string(), true);
 			else if (Ryan_Serialization::known_format(p))
 				ddOut->readFile(p.string());
-			else if (!Ryan_Serialization::known_format(p))
+			else if (p.extension() == ".avg")
+			{
+				// Attempt to match a shape to the avg file
+				ddOut->avg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(p.string(), "avg"));
+				
+				std::string aPrefix = rtmath::ddscat::dataset::getPrefix(p);
+				cerr << "aPrefix " << aPrefix << endl;
+				boost::filesystem::path ps;
+				bool found = false;
+				for (const auto &s : shapes)
+				{
+					std::string sPrefix = rtmath::ddscat::dataset::getPrefix(s);
+					cerr << "\t" << s << "\t" << sPrefix << endl;
+					if (aPrefix == sPrefix)
+					{
+						ps = s;
+						break;
+					}
+				}
+				if (!ps.string().size())
+				{
+					cerr << "Cannot match " << p << " to any provided shape file.\n";
+					continue;
+				}
+
+				shapefile::shapefile shp(ps.string());
+				ddOut->shapeHash = shp.hash();
+			}
+			else
 			{
 				cerr << "\tWrong / unknown file type for this program.\n";
 				continue;
@@ -142,11 +175,12 @@ int main(int argc, char** argv)
 			// "V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
 			// "V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
 			// "Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
-			rotations rots;
-			ddOut->parfile->getRots(rots);
+			//ddOut->parfile->getRots(rots);
 
 			// Recover from segfaulted runs when done in a script.
 			if (!ddOut->avg) continue;
+			rotations rots;
+			ddOut->avg->getRots(rots);
 			/*
 			if (!ddOut->stats)
 			{
@@ -177,9 +211,9 @@ int main(int argc, char** argv)
 
 			out << p.string() << "\t" << ddOut->description << "\t"
 				<< ddOut->shapeHash.lower << "\t" << ddOut->ddvertag << "\t"
-				<< ddOut->freq << "\t" << ddOut->avg_original->dipoleSpacing() << "\t"
-				<< ddOut->ms.at(0).real() << "\t" << ddOut->ms.at(0).imag() << "\t"
-				<< ddOut->aeff << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
+				<< ddOut->avg->freq() << "\t" << ddOut->avg->dipoleSpacing() << "\t"
+				<< ddOut->avg->getM().real() << "\t" << ddOut->avg->getM().imag() << "\t"
+				<< ddOut->avg->aeff() << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
 				<< ddOut->scas.size() << "\t" // << ds << "\t"
 				//<< Vvoro << "\t" << Svoro << "\t" << fvoro << "\t" 
 				//<< Vconv << "\t" << Sconv << "\t" << fconv << "\t" 

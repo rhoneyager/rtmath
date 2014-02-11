@@ -27,6 +27,7 @@ namespace rtmath
 	{
 		class ddOutputSingleObj;
 		class ddOutputSingle;
+		class rotations;
 		//class ddOutputSingle_IO_input_registry {};
 		class ddOutputSingle_IO_output_registry {};
 	}
@@ -211,6 +212,9 @@ namespace rtmath
 			void getTARGET(std::string &target) const;
 			/// Convenience function for setting the TARGET information
 			void setTARGET(const std::string &target);
+
+			/// Convenience function to extract the rotation information
+			void getRots(rotations &rots) const;
 
 			/// Function to modify I/O stream type
 			template <ddOutputSingleAsType T>

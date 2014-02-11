@@ -39,6 +39,7 @@
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 #include "../rtmath/ddscat/ddVersions.h"
+#include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/units.h"
 #include "../rtmath/macros.h"
 #include "../rtmath/quadrature.h"
@@ -262,6 +263,7 @@ namespace rtmath
 			{
 			public:
 				ddM() : w(8) {}
+				virtual ~ddM() {}
 				virtual void write(std::ostream &out, size_t) const override
 				{
 					// Using formatted io operations
@@ -358,6 +360,7 @@ namespace rtmath
 					pols[1] = std::complex<double>(0,0);
 					pols[2] = std::complex<double>(0,0);
 				}
+				virtual ~ddPolVec() {}
 				virtual void write(std::ostream &out, size_t) const override
 				{
 					// Using formatted io operations
@@ -440,6 +443,65 @@ namespace rtmath
 					ar & boost::serialization::make_nvp("vecnum", vecnum);
 					ar & boost::serialization::make_nvp("frame", frame);
 					ar & boost::serialization::make_nvp("pols", pols);
+				}
+			};
+
+			/// Provides access to rotation information
+			class SHARED_INTERNAL ddRot1d
+				 : public ::rtmath::ddscat::ddOutputSingleObj
+			{
+			public:
+				ddRot1d() : w(7), p(3), min(0), max(0), n(0) {}
+				virtual ~ddRot1d() {}
+				virtual void write(std::ostream &out, size_t) const override
+				{
+					// Using formatted io operations
+					using std::setw;
+					using std::setprecision;
+					out << setprecision(5) << setw(w) << min << " " 
+						<< setprecision(5) << setw(w) << max << " = "
+						<< fieldname << "_min, " << fieldname << "_max ; " << fieldnamecaps
+						<< "=" << n << "\n";
+				}
+				virtual void read(std::istream &in) override
+				{
+					std::string str;
+					std::getline(in,str);
+					
+					// Retrieving three numbers and two strings
+					// Thankfully, the fields are nicely aligned
+					// min is from position 0 to 8 (not inclusive)
+					// max is from 9 to 16
+					// fieldname is from 19 to an underscore
+					// fieldnamecaps is from 41 to 47
+					// n is from 48 to the end of the line
+					min = macros::m_atof(str.data(), 8);
+					max = macros::m_atof(str.data()+9, 8);
+					fieldname = str.substr(19, str.find_first_of('_',19)-19);
+					fieldnamecaps = str.substr(41,6);
+					n = (size_t) macros::m_atoi(str.data()+48);
+				}
+				virtual std::string value() const override { return std::string(); }
+
+				double min, max;
+				size_t n;
+				std::string fieldname, fieldnamecaps;
+
+				const size_t w;
+				const size_t p;
+			private:
+				friend class boost::serialization::access;
+				template<class Archive>
+				void serialize(Archive & ar, const unsigned int version)
+				{
+					ar & boost::serialization::make_nvp(
+						"base",
+						boost::serialization::base_object<rtmath::ddscat::ddOutputSingleObj>(*this));
+					ar & boost::serialization::make_nvp("min", min);
+					ar & boost::serialization::make_nvp("max", max);
+					ar & boost::serialization::make_nvp("n", n);
+					ar & boost::serialization::make_nvp("fieldname", fieldname);
+					ar & boost::serialization::make_nvp("fieldnamecaps", fieldnamecaps);
 				}
 			};
 		}
@@ -1376,6 +1438,19 @@ namespace rtmath {
 			return _aeff;
 		}
 
+		void ddOutputSingle::getRots(rtmath::ddscat::rotations &rots) const
+		{
+			// betarange, thetarange, phirange
+			auto betas = boost::dynamic_pointer_cast<ddRot1d>(_objMap.at("betarange"));
+			auto thetas = boost::dynamic_pointer_cast<ddRot1d>(_objMap.at("thetarange"));
+			auto phis = boost::dynamic_pointer_cast<ddRot1d>(_objMap.at("phirange"));
+			rots = rtmath::ddscat::rotations(betas->min, betas->max, betas->n,
+				thetas->min, thetas->max, thetas->n,
+				phis->min,
+				phis->max,
+				phis->n);
+		}
+
 		bool ddOutputSingle::operator<(const ddOutputSingle &rhs) const
 		{
 			if (_wave != rhs._wave) return _wave < rhs._wave;
@@ -1442,9 +1517,9 @@ namespace rtmath {
 			if (key == "incpol1tf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddPolVec>(new ddPolVec));
 			if (key == "incpol2tf") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddPolVec>(new ddPolVec));
 
-			if (key == "betarange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
-			if (key == "thetarange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
-			if (key == "phirange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
+			if (key == "betarange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddRot1d>(new ddRot1d));
+			if (key == "thetarange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddRot1d>(new ddRot1d));
+			if (key == "phirange") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddRot1d>(new ddRot1d));
 			if (key == "etasca") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddNval<double> >(new ddNval<double>(0, "", " = ETASCA = param. controlling # of scatt. dirs used to calculate <cos> etc.") ));
 			if (key == "avgnumori") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
 			if (key == "avgnumpol") res = boost::dynamic_pointer_cast<ddOutputSingleObj>(boost::shared_ptr<ddstring>(new ddstring));
