@@ -616,17 +616,62 @@ namespace rtmath {
 				Ryan_Serialization::read<shapeFileStats>(*this,filename, "rtmath::ddscat::stats::shapeFileStats");
 			}
 
-			void shapeFileStats::write(const std::string &filename) const
+			void shapeFileStats::write(const std::string &filename, const std::string &outtype) const
 			{
-				Ryan_Serialization::write<shapeFileStats>(*this, filename, "rtmath::ddscat::stats::shapeFileStats");
+				using namespace Ryan_Serialization;
+				using namespace std;
+				using boost::filesystem::path;
+				string cmeth, uncompressed;
+
+				string type = outtype;
+				::rtmath::registry::IO_class_registry<shapeFileStats>::io_processor_type dllsaver = nullptr;
+
+				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
+				path pext = path(uncompressed).extension();
+
+				// Process dll hooks first
+				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
+					::rtmath::registry::IO_class_registry<shapeFileStats> >::getHooks();
+				for (const auto &hook : *hooks)
+				{
+					if (hook.io_matches(uncompressed.c_str(), type.c_str()))
+					{
+						dllsaver = hook.io_processor;
+						if (!type.size())
+							type = "dll";
+						break;
+					}
+				}
+				if (!type.size())
+				{
+					if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
+					// Default is to write a standard shapefile
+					else type = "shp";
+				}
+
+
+				if (type == "serialized")
+				{
+					Ryan_Serialization::write<shapeFileStats>(*this, filename, "rtmath::ddscat::stats::shapeFileStats");
+				}
+				else if (dllsaver)
+				{
+					// Most of these types aren't compressible or implement their
+					// own compression schemes. So, it's not handled at this level.
+					dllsaver(filename.c_str(), this);
+				} else {
+					// Cannot match a file type to save.
+					// Should never occur.
+					RTthrow debug::xUnknownFileFormat(filename.c_str());
+				}
 			}
 
 			std::shared_ptr<registry::IOhandler> shapeFileStats::writeMulti(
-					const char* key,
-					std::shared_ptr<registry::IOhandler> handle,
-					const char* filename,
-					const char* ctype,
-					registry::IOhandler::IOtype accessType) const
+				const char* key,
+				std::shared_ptr<registry::IOhandler> handle,
+				const char* filename,
+				const char* ctype,
+				registry::IOhandler::IOtype accessType) const
 			{
 				// All of these objects can handle their own compression
 				::rtmath::registry::IO_class_registry<shapeFileStats>::io_multi_type dllsaver = nullptr;

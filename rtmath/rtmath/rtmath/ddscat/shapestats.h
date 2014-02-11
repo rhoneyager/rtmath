@@ -73,7 +73,7 @@ namespace rtmath {
 				//void setRot(double beta, double theta, double phi);
 				void calcStatsBase();
 				/// calcStatsRot calculates the stats RELATIVE to the shapefile default rot.
-				boost::shared_ptr<const shapeFileStatsRotated> calcStatsRot(double beta, double theta, double phi);
+				boost::shared_ptr<const shapeFileStatsRotated> calcStatsRot(double beta, double theta, double phi) const;
 
 				/// rot is the effective rotation designated by the choice of a1 and a2
 				Eigen::Matrix3f rot, invrot;
@@ -111,7 +111,7 @@ namespace rtmath {
 				// Before normalization and rotation
 				Eigen::Vector3f b_min, b_max, b_mean;
 
-				std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
+				mutable std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
 
 				/// The shape
 				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> _shp;
@@ -143,7 +143,7 @@ namespace rtmath {
 				/// Recalculate all stats, using the newest version of the code
 				void upgrade();
 				/// Write stats to file (convenience function to mask the Ryan_Serialization call)
-				void write(const std::string &filename) const;
+				void write(const std::string &filename, const std::string &type = "") const;
 				/// Write stats to the hash file (convenience function)
 				void writeToHash() const;
 				/// Write to a complex, multiple storage object

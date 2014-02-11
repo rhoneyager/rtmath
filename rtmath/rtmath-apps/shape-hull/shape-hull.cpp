@@ -8,6 +8,8 @@
 #include <cmath>
 #include <memory>
 #include <iostream>
+#include <fstream>
+#include <ios>
 #include <string>
 #include <vector>
 #include <set>
@@ -31,6 +33,8 @@
 #include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
+namespace rtmath { namespace plugins { namespace internal { namespace tsv { void registerTSV(); } } } }
+
 int main(int argc, char** argv)
 {
 	using namespace std;
@@ -53,8 +57,8 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value< string >(), "input shape file")
-			("output,o", po::value<vector<string> >(), "Output file(s)")
+			("input,i", po::value< vector<string> >()->multitoken(), "Input shape file(s)")
+			("output,o", po::value<vector<string> >(), "Output file(s). Each input is written to all of the outputs.")
 			//("convex-hull,c", "Calculate and write convex hull")
 			;
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -68,6 +72,7 @@ int main(int argc, char** argv)
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
+		rtmath::plugins::internal::tsv::registerTSV();
 
 
 		auto doHelp = [&](const std::string &message)
@@ -85,52 +90,53 @@ int main(int argc, char** argv)
 		bool convex = false;
 		if (vm.count("convex-hull")) convex = true;
 
-		string input = vm["input"].as< string >();
-		if (vm.count("input"))
-			cerr << "Input file is: " << input << endl;
-		else doHelp("Need to specify an input file");
+		vector<string> inputs = vm["input"].as< vector<string> >();
+		if (!vm.count("input"))
+			doHelp("Need to specify input file(s).");
 
 		vector<string> output = vm["output"].as< vector<string> >();
 		if (!vm.count("output"))
 			doHelp("Need to specify output file(s).");
+		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > outputios(output.size());
 
-		// Validate input files
-		path pi(input);
-		if (!exists(pi)) 
-			throw rtmath::debug::xMissingFile(input.c_str());
-		if (is_directory(pi)) 
-			throw rtmath::debug::xPathExistsWrongType(input.c_str());
+		for (const auto &input : inputs)
+		{
+			// Validate input files
+			path pi(input);
+			if (!exists(pi)) 
+				throw rtmath::debug::xMissingFile(input.c_str());
+			if (is_directory(pi)) 
+				throw rtmath::debug::xPathExistsWrongType(input.c_str());
 
-		// Load the shape file
-		using rtmath::ddscat::shapefile::shapefile;
-		using rtmath::ddscat::stats::shapeFileStats;
-		boost::shared_ptr<shapefile> shp(new shapefile(input));
-		boost::shared_ptr<shapeFileStats> stats = shapeFileStats::genStats(shp);
-		using namespace rtmath::Voronoi;
-		auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
-		auto cvxCands = vd->calcCandidateConvexHullPoints();
-		shp->latticeExtras["cvxCands"] = cvxCands;
-		auto depth = vd->calcSurfaceDepth();
-		shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
+			using rtmath::ddscat::shapefile::shapefile;
+			using rtmath::ddscat::stats::shapeFileStats;
+			boost::shared_ptr<shapefile> shp;
+			boost::shared_ptr<shapeFileStats> stats;
+			// Load the shape file
+			try {
 
-		/// \todo Enable Linux plugin install
-		std::ofstream out("out.tsv");
-		out << "Hash\tCircum_Sphere_V\tCircum_Sphere_SA\t"
-			"Convex_V\tConvex_SA\t"
-			"Voronoi_V\tVoronoi_SA\t"
-			"EllMax_V\tEllMax_SA\t"
-			"EllRMS_V\n";
+				shp = boost::shared_ptr<shapefile> (new shapefile(input));
+				stats = shapeFileStats::genStats(shp);
+				using namespace rtmath::Voronoi;
+				auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
+				auto cvxCands = vd->calcCandidateConvexHullPoints();
+				shp->latticeExtras["cvxCands"] = cvxCands;
+				auto depth = vd->calcSurfaceDepth();
+				shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
 
-		out << shp->hash().lower << "\t"
-			<< stats->Scircum_sphere.V << "\t" << stats->Scircum_sphere.SA << "\t"
-			<< stats->Sconvex_hull.V << "\t" << stats->Sconvex_hull.SA << "\t"
-			<< stats->SVoronoi_hull.V << "\t" << stats->SVoronoi_hull.SA << "\t"
-			<< stats->Sellipsoid_max.V << "\t" << stats->Sellipsoid_max.SA << "\t"
-			<< stats->Sellipsoid_rms.V << "\n";
+				
+				/// \todo Enable Linux plugin install in cmake
+				for (size_t i=0; i < output.size(); ++i)
+				{
+					outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
+				}
+			} catch (...)
+			{
+				std::cerr << "Error processing the file: " << input << endl;
+				continue;
+			}
 
-		//stats->write("out.xml.bz2");
-		//for (const auto& outfile : output)
-		//	shp->write(outfile);
+		}
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
@@ -139,3 +145,134 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+// A custom tsv writer is being used here - it's similar to how a plugin does it.
+// This enables writing multiple tsv output files.
+namespace rtmath
+{
+	namespace plugins
+	{
+		namespace internal
+		{
+			namespace tsv
+			{
+				const std::string PLUGINID("shape-hull-tsv");
+				struct tsv_handle : public rtmath::registry::IOhandler
+				{
+					tsv_handle(const char* filename, IOtype t) : IOhandler(PLUGINID) { open(filename, t); }
+					virtual ~tsv_handle() {}
+					void open(const char* filename, IOtype t)
+					{
+						using namespace boost::filesystem;
+						switch (t)
+						{
+						case IOtype::EXCLUSIVE:
+						case IOtype::DEBUG:
+						case IOtype::READONLY:
+							throw;
+							break;
+						case IOtype::CREATE:
+							if (exists(path(filename))) throw("File already exists");
+						case IOtype::TRUNCATE:
+							file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
+							writeHeader();
+							break;
+						case IOtype::READWRITE:
+							{
+								bool e = false;
+								if (exists(path(filename))) e = true;
+								file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
+								if (!e) writeHeader(); // If the file had to be created, give it a header
+							}
+							break;
+						}
+					}
+					void writeHeader()
+					{
+						(*(file.get())) << "Hash\tV_dipoles_const\t"
+							"Circum_Sphere_V\tCircum_Sphere_SA\t"
+							"Convex_V\tConvex_SA\t"
+							"Voronoi_V\tVoronoi_SA\t"
+							"as_abs_xy\tas_abs_xz\tas_abs_yz\t"
+							"as_rms_xy\tas_rms_xz\tas_rms_yz\t"
+							"as_abm_xy\tas_abm_xz\tas_abm_yz\n"
+							;
+					}
+					std::shared_ptr<std::ofstream> file;
+				};
+
+
+				std::shared_ptr<rtmath::registry::IOhandler> write_tsv_multi_shapestats
+					(std::shared_ptr<rtmath::registry::IOhandler> sh, 
+					const char* filename, 
+					const rtmath::ddscat::stats::shapeFileStats *s, 
+					const char* key, // Unused for this type of write
+					rtmath::registry::IOhandler::IOtype iotype)
+				{
+					using std::shared_ptr;
+					std::shared_ptr<tsv_handle> h;
+					if (!sh)
+						h = std::shared_ptr<tsv_handle>(new tsv_handle(filename, iotype));
+					else {
+						if (sh->getId() != "shape-hull-tsv") RTthrow debug::xDuplicateHook("Bad passed plugin");
+						h = std::dynamic_pointer_cast<tsv_handle>(sh);
+					}
+
+					// Initial file creation handles writing the initial header.
+					// So, just write the data.
+					auto r = s->calcStatsRot(0,0,0);
+					(*(h->file.get())) << s->_shp->hash().lower << "\t" << s->V_dipoles_const << "\t"
+						<< s->Scircum_sphere.V << "\t" << s->Scircum_sphere.SA << "\t"
+						<< s->Sconvex_hull.V << "\t" << s->Sconvex_hull.SA << "\t"
+						<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
+						<< r->as_abs(0,1) << "\t" << r->as_abs(0,2) << "\t" << r->as_abs(1,2) << "\t"
+						<< r->as_rms(0,1) << "\t" << r->as_rms(0,2) << "\t" << r->as_rms(1,2) << "\t"
+						<< r->as_abs_mean(0,1) << "\t" << r->as_abs_mean(0,2) << "\t" << r->as_abs_mean(1,2) << "\t"
+						;
+
+					return h; // Pass back the handle
+				}
+
+				/// \todo Make a template for this
+				bool match_tsv(const char* filename, const char* type)
+				{
+					using namespace boost::filesystem;
+					using std::string;
+					using std::ofstream;
+
+					string stype(type);
+					path pPrefix(filename);
+					if (stype == "tsv" || stype == ".tsv") return true;
+					else if (pPrefix.extension() == ".tsv") return true;
+					return false;
+				}
+
+				/// \todo Make a template for this
+				bool match_tsv_multi(const char* filename, const char* type, std::shared_ptr<rtmath::registry::IOhandler> h)
+				{
+					if (h)
+					{
+						if (h->getId() != PLUGINID) return false;
+						return true;
+					} else {
+						return match_tsv(filename, type);
+					}
+				}
+
+				void registerTSV()
+				{
+					static rtmath::registry::IO_class_registry<
+						::rtmath::ddscat::stats::shapeFileStats> s2;
+					s2.io_matches = match_tsv;
+					s2.io_processor = nullptr;
+					s2.io_multi_matches = match_tsv_multi;
+					s2.io_multi_processor = write_tsv_multi_shapestats;
+					rtmath::ddscat::stats::shapeFileStats::usesDLLregistry<
+						rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
+						rtmath::registry::IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >
+						::registerHook(s2);
+				}
+
+			}
+		}
+	}
+}

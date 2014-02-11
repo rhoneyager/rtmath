@@ -140,21 +140,24 @@ namespace rtmath
 				point_ranges_b = point_ranges;
 
 				using namespace boost::accumulators;
-				vector<accumulator_set<float, boost::accumulators::stats<
+				/*
+				//vector<
+				accumulator_set<float, boost::accumulators::stats<
 					tag::min,
 					tag::max,
 					tag::mean,
-					tag::count> > >
+					tag::count> > // >
 					// These only need mean and count, but are here for ease in typing lambdas.
 					m_x(numThreads), m_y(numThreads), m_z(numThreads),
 					// These need all parameters.
 					r_x(numThreads), r_y(numThreads), r_z(numThreads);
+				
 				accumulator_set<float, boost::accumulators::stats<
 					tag::min,
 					tag::max,
 					tag::mean,
 					tag::count> > sr_x, sr_y, sr_z;
-
+				*/
 
 				auto process_pool_raws_import = [&](size_t index, const char* start, const char* end)
 				{
@@ -194,7 +197,7 @@ namespace rtmath
 						crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
 
 						// Need to do stat collection here because the midpoint is usually not set correctly!
-
+						/*
 						r_x[index](crdsm(0));
 						r_y[index](crdsm(1));
 						r_z[index](crdsm(2));
@@ -202,6 +205,7 @@ namespace rtmath
 						m_x[index](crdsc(0));
 						m_y[index](crdsc(1));
 						m_z[index](crdsc(2));
+						*/
 					}
 					std::lock_guard<std::mutex> lock(m_media);
 					for (auto id : mediaIds)
@@ -258,6 +262,7 @@ namespace rtmath
 				cands = cands_init;
 
 				// Combine the stat entries
+				/*
 				auto findMean = [&](
 					vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
 					&mSrc, float &mMean)
@@ -302,6 +307,30 @@ namespace rtmath
 					}
 				};
 				findMinsMaxs(r_x, 0); findMinsMaxs(r_y, 1); findMinsMaxs(r_z, 2);
+				*/
+
+				accumulator_set<float, boost::accumulators::stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
+				//for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
+				for (size_t i = 0; i < numPoints; i++)
+				{
+					auto it = latticePts.block<1,3>(i,0);
+					m_x((it)(0));
+					m_y((it)(1));
+					m_z((it)(2));
+				}
+
+				mins(0) = boost::accumulators::min(m_x);
+				mins(1) = boost::accumulators::min(m_y);
+				mins(2) = boost::accumulators::min(m_z);
+
+				maxs(0) = boost::accumulators::max(m_x);
+				maxs(1) = boost::accumulators::max(m_y);
+				maxs(2) = boost::accumulators::max(m_z);
+
+				means(0) = boost::accumulators::mean(m_x);
+				means(1) = boost::accumulators::mean(m_y);
+				means(2) = boost::accumulators::mean(m_z);
+
 
 				/// Need to renormalize data points. Mean should be at 0, 0, 0 for plotting!
 				auto postStats = [&](size_t start, size_t end)
@@ -311,11 +340,10 @@ namespace rtmath
 					{
 						auto pt = latticePts.block<1, 3>(i, 0);
 						auto Npt = latticePtsNorm.block<1, 3>(i, 0);
-						//Eigen::Vector3f pt = *it;
-						Npt(0) = pt(0) - mm_x;
-						Npt(1) = pt(1) - mm_y;
-						Npt(2) = pt(2) - mm_z;
-						//latticePtsNorm.push_back(move(pt));
+						Npt = pt.array().transpose() - means;
+						//Npt(0) = pt(0) - means(0);
+						//Npt(1) = pt(1) - means(1);
+						//Npt(2) = pt(2) - means(2);
 					}
 				};
 				auto process_pool_post = [&]()

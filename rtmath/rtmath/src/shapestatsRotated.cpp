@@ -36,7 +36,7 @@ namespace rtmath {
 				return false;
 			}
 
-			boost::shared_ptr<const shapeFileStatsRotated> shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi)
+			boost::shared_ptr<const shapeFileStatsRotated> shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi) const
 			{
 				boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
 				shapeFileStatsRotated &res = *pres;
