@@ -1,4 +1,6 @@
 #include "Stdafx-ddscat.h"
+#include <algorithm>
+#include <string>
 #include <Ryan_Serialization/serialization.h>
 #include <boost/serialization/shared_ptr.hpp>
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
@@ -38,6 +40,8 @@ namespace rtmath {
 			size_t pshp = sleaf.find(".shp"); // Only Liu
 			size_t pavg = sleaf.find("avg_"); // Only Liu
 
+			size_t numUnderscores = std::count(sleaf.begin(), sleaf.end(), '_');
+
 			bool isLiu = false, isHolly = false;
 			if (pshp != string::npos) isLiu = true;
 			if (pavg != string::npos) isLiu = true;
@@ -55,6 +59,9 @@ namespace rtmath {
 			}
 			if (isHolly)
 			{
+				// Newer files follow:
+				// ar7_47shape.txt
+				// ar7_44_263_36.5.avg (older file naming handled below)
 				size_t pos = 0;
 				if ((pund != string::npos) && (pavg != string::npos)) pund = string::npos;
 				if (pund == string::npos && pshape != string::npos) pos = pshape;
@@ -63,6 +70,14 @@ namespace rtmath {
 				else if (pund == string::npos) RTthrow;
 				else pos = (pund < pshape) ? pund : pshape;
 				sleaf = sleaf.substr(0,pos);
+
+				// Holly's original files get a bit of extra manipulation
+				if (numUnderscores == 2)
+				{
+					// 5mm9_combo_shape.txt
+					// 5mm9_263_94.0.avg
+					sleaf = sleaf.substr(0, sleaf.find_first_of('_'));
+				}
 			}
 
 			return sleaf;

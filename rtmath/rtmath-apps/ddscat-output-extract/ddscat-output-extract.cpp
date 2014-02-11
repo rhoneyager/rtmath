@@ -40,10 +40,10 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<vector<string> >(),"specify input directories or files")
+			("input,i", po::value<vector<string> >()->multitoken(),"specify input directories or files")
 			("output,o", po::value<string>(), "specify output file")
 			("force-description", po::value<string>(), "Override the description of each entry")
-			("shapes,s", po::value<vector<string> >(), 
+			("shapes,s", po::value<vector<string> >()->multitoken(), 
 			"Specify optional shapefiles for matching against pure avg file input. "
 			"Matching s done based on common elements in the filenames.")
 			;
