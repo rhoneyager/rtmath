@@ -73,11 +73,9 @@ namespace rtmath
 #else
 			out << "SVN Repository Information Unknown" << std::endl;
 #endif
-#ifdef _DEBUG
-			out << "Debug Version" << std::endl;
-#else
-			out << "Release Version" << std::endl;
-#endif
+		std::string buildtype(BUILDTYPE); // defined in cmake config (addlib.cmake)
+		out << "Build type: " << buildtype << std::endl;
+
 #ifdef _OPENMP
 			out << "OpenMP Supported" << std::endl;
 #else

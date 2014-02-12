@@ -79,8 +79,11 @@ namespace {
 	};
 
 	/// Checks if a dll file matches the build settings of the rtmath library, by file path
-	bool correctVersionByName(const std::string &slower)
+	bool correctVersionByName(const std::string &s)
 	{
+		std::string slower = s;
+		std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
+
 		using namespace std;
 		// The DLL case probably sould never occur.
 #ifdef _DLL
@@ -89,12 +92,17 @@ namespace {
 		if (slower.find("dynamic") != string::npos) return false;
 #endif
 		// Debug vs release dlls
-#ifdef _DEBUG
-		if (slower.find("release") != string::npos) return false;
-		if (slower.find("minsizerel") != string::npos) return false;
-#else
-		if (slower.find("debug") != string::npos) return false;
-#endif
+		std::string buildtype(BUILDTYPE); // defined in cmake config (addlib.cmake)
+		std::transform(buildtype.begin(), buildtype.end(), buildtype.begin(), ::tolower);
+
+		if (!slower.find(buildtype))
+		{
+			if (slower.find("release") != string::npos) return false;
+			if (slower.find("minsizerel") != string::npos) return false;
+			if (slower.find("debug") != string::npos) return false;
+			if (slower.find("relwithdebinfo") != string::npos) return false;
+		}
+
 		/// Check for x86 vs x64
 #if __amd64 || _M_X64
 		if (slower.find("x86") != string::npos) return false;
@@ -124,7 +132,9 @@ namespace {
 				searchPathsRecursive.emplace(boost::filesystem::path(regdir));
 		}
 #endif
-		
+		using namespace Ryan_Debug;
+		boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
+	
 		// Default locations
 		// Install path apps
 		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
@@ -134,8 +144,13 @@ namespace {
 		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../plugins"));
 		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../../plugins"));
 
-
-
+		// Relative to application
+		// Install path apps
+		boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
+		appBin.remove_filename();
+		rtmath::registry::searchPathsRecursive.emplace( appBin / "../plugins" );
+		// Build path apps (linux)
+		rtmath::registry::searchPathsRecursive.emplace( appBin / "../../plugins" );
 
 		// Checking rtmath.conf
 		if (use_rtmath_conf)
@@ -157,8 +172,6 @@ namespace {
 		// Checking environment variables
 		if (use_environment)
 		{
-			using namespace Ryan_Debug;
-			boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
 
 			size_t sEnv = 0;
 			const char* cenv = getEnviron(info.get(), sEnv);
@@ -225,6 +238,10 @@ namespace {
 			if (DLLpathsLoaded.count(filename)) RTthrow rtmath::debug::xDuplicateHook(fname.c_str());
 			if (dlHandle) RTthrow rtmath::debug::xHandleInUse(fname.c_str());
 			fname = filename;
+
+// ifdef _DEBUG
+			// std::cerr << "Loading DLL " << filename << std::endl;
+// endif
 #ifdef __unix__ // Indicates that DLSYM is provided (unix, linux, mac, etc. (sometimes even windows))
 			//Check that file exists here
 			this->dlHandle = dlopen(filename.c_str(), RTLD_LAZY);
@@ -294,13 +311,16 @@ namespace rtmath
 			{
 				if (!exists(p)) continue;
 				vector<path> recur;
-				if (recurse)
-					copy(recursive_directory_iterator(p, symlink_option::recurse),
-					recursive_directory_iterator(), back_inserter(recur));
-				else
-					copy(directory_iterator(p),
-					directory_iterator(), back_inserter(recur));
-
+				if (!is_directory(p))
+					recur.push_back(p);
+				else {
+					if (recurse)
+						copy(recursive_directory_iterator(p, symlink_option::recurse),
+						recursive_directory_iterator(), back_inserter(recur));
+					else
+						copy(directory_iterator(p),
+						directory_iterator(), back_inserter(recur));
+				}
 				for (const auto &r : recur)
 				{
 					/// \todo Debug expression evaluation
@@ -343,8 +363,8 @@ namespace rtmath
 						{
 							// Check to see if build type is present in the path
 							std::string slower = p.string();
-							// Convert to lower case and do matching from there
-							std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
+							// Convert to lower case and do matching from there (now in func)
+							//std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
 
 							if (correctVersionByName(slower))
 								dlls.push_back(p.string());
@@ -384,7 +404,7 @@ namespace rtmath
 				"Specify dlls to load. If passed a directory, it loads all dlls present (recursing). ")
 				//("dll-no-default-locations", "Prevent non-command line dll locations from being read")
 				("print-dll-loaded", "Prints the table of loaded DLLs.")
-				//("print-dll-search-paths", "Prints the search paths used when loading dlls.")
+				("print-dll-search-paths", "Prints the search paths used when loading dlls.")
 				("rtmath-conf", po::value<std::vector<std::string> >(),
 				"Override location to rtmath.conf file.")
 				;
@@ -417,6 +437,10 @@ namespace rtmath
 			}
 
 			constructSearchPaths(false, true, true);
+
+			if (vm.count("print-dll-search-paths"))
+				printDLLsearchPaths(std::cerr);
+
 			std::set<boost::filesystem::path> rPaths, oPaths;
 			findPath(rPaths, boost::filesystem::path("default"), searchPathsRecursive, true);
 			findPath(oPaths, boost::filesystem::path("default"), searchPathsOne, false);
@@ -433,9 +457,6 @@ namespace rtmath
 			
 			loadDLLs(toLoadDlls);
 			
-
-			if (vm.count("print-dll-search-paths"))
-				printDLLsearchPaths();
 
 			if (vm.count("print-dll-loaded"))
 				printDLLs();
@@ -473,9 +494,10 @@ namespace rtmath
 			out << "rtmath DLL registry table:\n--------------------\n";
 			for (const auto p : preambles)
 			{
-				out << "Name:\t" << p.name << "\n"
-					<< "Description:\t" << p.description << "\n"
-					<< "UUID:\t" << p.uuid << "\n";
+				out << "Name:\t\t\t" << p.name << "\n"
+					<< "UUID:\t\t\t" << p.uuid << "\n"
+					<< "Description:\t" << p.description << "\n";
+
 				if (p.path)
 					out << "Path:\t" << p.path << std::endl;
 			}

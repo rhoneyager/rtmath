@@ -90,13 +90,13 @@ int main(int argc, char** argv)
 		bool convex = false;
 		if (vm.count("convex-hull")) convex = true;
 
-		vector<string> inputs = vm["input"].as< vector<string> >();
 		if (!vm.count("input"))
 			doHelp("Need to specify input file(s).");
+		vector<string> inputs = vm["input"].as< vector<string> >();
 
-		vector<string> output = vm["output"].as< vector<string> >();
 		if (!vm.count("output"))
 			doHelp("Need to specify output file(s).");
+		vector<string> output = vm["output"].as< vector<string> >();
 		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > outputios(output.size());
 
 		for (const auto &input : inputs)
@@ -130,6 +130,11 @@ int main(int argc, char** argv)
 				{
 					outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
 				}
+			} catch (std::exception &e)
+			{
+				std::cerr << "Error processing the file: " << input << endl;
+				std::cerr << e.what() << std::endl;
+				continue;
 			} catch (...)
 			{
 				std::cerr << "Error processing the file: " << input << endl;
@@ -226,7 +231,8 @@ namespace rtmath
 						<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
 						<< r->as_abs(0,1) << "\t" << r->as_abs(0,2) << "\t" << r->as_abs(1,2) << "\t"
 						<< r->as_rms(0,1) << "\t" << r->as_rms(0,2) << "\t" << r->as_rms(1,2) << "\t"
-						<< r->as_abs_mean(0,1) << "\t" << r->as_abs_mean(0,2) << "\t" << r->as_abs_mean(1,2) << "\t"
+						<< r->as_abs_mean(0,1) << "\t" << r->as_abs_mean(0,2) << "\t" << r->as_abs_mean(1,2)
+						<< std::endl;
 						;
 
 					return h; // Pass back the handle
