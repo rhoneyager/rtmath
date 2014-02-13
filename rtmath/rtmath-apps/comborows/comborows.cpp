@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 
 		// To hold the loaded data
 		// The internal map is the line mapping
-		std::vector<std::map<std::string, std::string> > lines(infiles.size());
+		std::vector<std::multimap<std::string, std::string> > lines(infiles.size());
 		std::vector<std::string> headers(infiles.size());
 		std::vector<std::string> lastheaders(infiles.size());
 
@@ -321,14 +321,19 @@ int main(int argc, char** argv)
 		out << endl;
 
 		// Using the first file as the dictionary
+		// Note: if the dictionary does not contain a key, it is not written to the output, 
+		// even if the other files have it.
 		for (const auto & line : lines[0])
 		{
-			out << line.second << outSep;
+			out << line.second;
 			for (size_t i=1; i<lines.size(); ++i)
 			{
-				if (lines[i].count(line.first)) 
-					out << lines[i].at(line.first) << outSep;
-				// TODO: fill in empty value
+				if (lines[i].count(line.first) == 0) continue; // TODO: fill in empty values
+				auto it = lines[i].equal_range(line.first);
+				for (auto ot = it.first; ot != it.second; ++ot)
+				{
+					out << outSep << ot->second;
+				}
 			}
 			out << endl;
 		}
