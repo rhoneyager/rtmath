@@ -15,6 +15,7 @@
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {
@@ -30,8 +31,11 @@ int main(int argc, char** argv)
 		p.add("input-units", 2);
 		p.add("output-units", 3);
 
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"),
+		config("Config options"), hidden("Hidden options"), oall("all options");
+		rtmath::debug::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< double >(), "Input quantity")
 			("input-units,u", po::value< string >(), "Input units")
@@ -47,10 +51,15 @@ int main(int argc, char** argv)
 
 			("temperature", "Perform temperature conversion (K, C, F, R)");
 
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
-		po::notify(vm);    
+			options(oall).positional(p).run(), vm);
+		po::notify(vm);
+
+		rtmath::debug::process_static_options(vm);
 
 		if (vm.count("help") || !vm.count("input") || 
 			!vm.count("output-units") || !vm.count ("input-units") ) {

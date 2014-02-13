@@ -31,6 +31,7 @@ option (BUILD_APPS_TMATRIX
 #add_subdirectory (atmosplot)
 if (BUILD_APPS_CORE)
 	add_subdirectory (combo)
+	add_subdirectory (comborows)
 	add_subdirectory (conv-units)
 endif()
 #add_subdirectory (da)

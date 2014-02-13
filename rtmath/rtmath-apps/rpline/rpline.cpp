@@ -22,9 +22,13 @@ int main(int argc, char** argv)
 
 		namespace po = boost::program_options;
 
-		po::options_description desc("Allowed options");
+		po::options_description desc("Allowed options"), cmdline("Command-line options"),
+		config("Config options"), hidden("Hidden options"), oall("all options");
+		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		rtmath::debug::add_options(cmdline, config, hidden);
+
 		/// \todo Extend program to make multiple substitutions at the same time.
-		desc.add_options()
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("output,o", po::value<string>(), 
 			"Specify output file")
@@ -45,10 +49,16 @@ int main(int argc, char** argv)
 		po::positional_options_description p;
 		//p.add("inputs",-1);
 
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
+
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
-		po::notify(vm);    
+			options(oall).positional(p).run(), vm);
+		po::notify(vm);
+
+		rtmath::debug::process_static_options(vm);
 
 		auto doHelp = [=](const std::string& message) {
 			if (message.size())

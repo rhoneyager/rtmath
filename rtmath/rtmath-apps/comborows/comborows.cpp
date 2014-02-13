@@ -1,3 +1,5 @@
+/// Program to combine rows of different files based on a common field
+#pragma warning( disable : 4996 ) // -D_SCL_SECURE_NO_WARNINGS
 #include <iostream>
 #include <cmath>
 #include <fstream>
@@ -10,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/splitSet.h"
@@ -20,7 +23,7 @@ int main(int argc, char** argv)
 	using namespace std;
 	using namespace rtmath;
 	try {
-		cerr << "rtmath-combo" << endl;
+		cerr << "rtmath-comborows" << endl;
 
 		namespace po = boost::program_options;
 
@@ -32,25 +35,15 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("output,o", po::value<string>(), 
 			 "Specify output file for merge results")
-			("inputs,i", po::value<vector<string> >(), 
+			("inputs,i", po::value<vector<string> >()->multitoken(), 
 			 "Specify input files. Files must have the same delimation.")
-			("common-columns,c", po::value<vector<string> >(),
+			("common-columns,c", po::value<vector<size_t> >()->multitoken(),
 			 "Columns selected are common to all files, and should "
 			 "be incorporated with the output. Indices start at zero.")
-			("merge-columns,m", po::value<vector<string> >(),
-			 "These columns get merged into the output. Again, indices "
-			 "begin at zero.")
-			("insert-column", 
-			 "Insert a column filled with the 'missing value' specifier into "
-			 "the output. Useful when tagging input data")
-			("insert-column-header", po::value<string>()->default_value("newcol"),
-			 "Specify the new column name for column insertion.")
 			("num-header-lines,s", po::value<size_t>()->default_value(0),
 			 "Header lines are ignored in the merge!")
-			("missing", po::value<string>()->default_value("---"),
-			 "If the files have different numbers of rows, then the output "
-			 "will have missing values. Use this flag to set the resultant "
-			 "column placeholder text.")
+			("missing", po::value<string>()->default_value(""),
+			 "If a match cannot be found, this this value will be used to fill.")
 			("clobber", "Use this flag if you want to overwrite any "
 			 "output file.")
 
@@ -60,7 +53,8 @@ int main(int argc, char** argv)
 			("delim-space", "Use spaces in the delimeter.")
 			("delim-tab", "Use tabs in the delimeter.")
 
-			("preserve-col-names", "Keep column names exactly as-is.")
+			("preserve-col-names", po::value<bool>()->default_value(true), 
+			"Keep column names exactly as-is.")
 			
 			("verbose,v", "Get extra runtime information and a summary of how "
 			 "the command line has been parsed.")
@@ -80,6 +74,9 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
+		using std::cerr;
+		using std::endl;
+
 		vector<string> rawinputs; // May be expanded by os.
 
 		auto doHelp = [=](const std::string& message) {
@@ -90,21 +87,20 @@ int main(int argc, char** argv)
 		};
 		if (vm.count("help") || argc == 1) doHelp("");
 
-		set<string> infiles;
+		vector<string> infiles;
 		string outfile;
 		string inscolheader;
 		bool doInsert = false;
 		size_t numHeaderLines = 0;
-		set<size_t> common_cols;
-		set<size_t> merge_cols;
 		bool clobber = false;
 		bool askClobber = true;
 		bool verbose = false;
 		bool dryrun = false;
 		bool outputExists = false;
 		bool preserveNames = false;
+		vector<size_t> commonCols;
 		string missingValue;
-		string outSep = ",\t ";
+		string outSep = "\t";
 		// Parse console parameters, including the files to merge
 		// Can merge all files of a given extension in a directory
 		// and can merge individually-selected files
@@ -114,28 +110,14 @@ int main(int argc, char** argv)
 
 			// Read in common columns
 			// Using a more interesting use of parseParams
-			vector<string> sCommonCols;
 			if (vm.count("common-columns")) 
-				sCommonCols = vm["common-columns"].as<vector<string> >();
+				commonCols = vm["common-columns"].as<vector<size_t> >();
 			
-			// Read in merge columns
-			vector<string> sMergeCols;
-			if (vm.count("merge-columns")) 
-				sMergeCols = vm["merge-columns"].as<vector<string> >();
-
-			if (vm.count("insert-column"))
-			{
-				doInsert = true;
-				if (vm.count("insert-column-header"))
-					inscolheader = vm["insert-column-header"].as<string>();
-			}
-
 			// Get number of header lines. If not specified, assume no header
 			numHeaderLines = vm["num-header-lines"].as<size_t>();
 
 			// Keep column names exactly as-is?
-			if (vm.count("preserve-col-names"))
-				preserveNames = true;
+			preserveNames = vm["preserve-col-names"].as<bool>();
 
 			// Set missing value string
 			missingValue = vm["missing"].as<string>();
@@ -214,18 +196,12 @@ int main(int argc, char** argv)
 			}
 
 
-			// Expand and validate arguments
-			
-			// Handle the common and merged columns in the same manner
-			for (auto it = sCommonCols.begin(); it != sCommonCols.end(); it++)
-				rtmath::config::splitSet<size_t>(*it,common_cols);
-			for (auto it = sMergeCols.begin(); it != sMergeCols.end(); it++)
-				rtmath::config::splitSet<size_t>(*it,merge_cols);
-
 			// Validate input files beforehand
 			// Note, I'm relying on shell globbing. It's too annoying to
 			// implement myself.
 			// Also, will avoid duplicates (hopefully) by looking at absolute paths
+			infiles = sInFiles;
+			/*
 			for (auto it = sInFiles.begin(); it != sInFiles.end(); it++)
 			{
 				using namespace boost::filesystem;
@@ -236,6 +212,7 @@ int main(int argc, char** argv)
 						if (infiles.count(fabs.string()) == 0)
 							infiles.insert(fabs.string());
 			}
+			*/
 		}
 
 
@@ -260,20 +237,10 @@ int main(int argc, char** argv)
 			if (preserveNames) cerr << "Preserving exact column names.\n";
 			else cerr << "Not preserving exact column names.\n";
 			cerr << "Common columns:";
-			for (auto it = common_cols.begin(); it != common_cols.end(); ++it)
-				cerr << " " << *it;
-			cerr << endl;
-			cerr << "Merge columns:";
-			for (auto it = merge_cols.begin(); it != merge_cols.end(); ++it)
-				cerr << " " << *it;
+			for (const auto &c : commonCols)
+				cerr << " " << c;
 			cerr << endl;
 			cerr << "Missing value: " << missingValue << endl;
-			if (doInsert)
-			{
-				cerr << "Inserting column:" << endl;
-				cerr << "\twith values " << missingValue << endl;
-				cerr << "\tand header " << inscolheader << endl;
-			}
 
 			cerr << "Input files:" << endl;
 			for (auto it = infiles.begin(); it != infiles.end(); ++it)
@@ -296,145 +263,77 @@ int main(int argc, char** argv)
 
 		// Yay! The parameters have been understood. Open the files for input and output.
 
+		// To hold the loaded data
+		// The internal map is the line mapping
+		std::vector<std::map<std::string, std::string> > lines(infiles.size());
+		std::vector<std::string> headers(infiles.size());
+		std::vector<std::string> lastheaders(infiles.size());
+
+		//typedef boost::tokenizer<boost::char_separator<char> >
+		//	tokenizer;
+		//boost::char_separator<char> sep(outSep.c_str());
+
+		// Load in each file, and populate the line mapping
+		for (size_t nf=0;nf<infiles.size(); ++nf)
+		{
+			const auto &f = infiles[nf];
+			ifstream in(f.c_str());
+			string lin;
+			for (size_t i=0; i<numHeaderLines-1; ++i)
+			{
+				std::getline(in,lin);
+				headers.at(nf).append(lin);
+			}
+			if (numHeaderLines)
+			{
+				std::getline(in,lin);
+				// Remove the trailing line break
+				while (size_t found = lin.find_first_of('\n') != string::npos)
+				{ lin.erase(found); }
+				lastheaders.at(nf) = lin;
+			}
+			// Main body processing
+			while (in.good())
+			{
+				std::getline(in,lin);
+				if (!lin.size()) continue;
+				vector<string> strs;
+				boost::split(strs, lin, boost::is_any_of(outSep.c_str()));
+				string key = strs[commonCols[nf]];
+				lines[nf].emplace(std::pair<std::string, std::string>(key, lin));
+			}
+		}
+
 		// These sets hold the loaded data
 		std::map<size_t,std::vector<string> > common;
 		std::map<string, unique_ptr<map<size_t,vector<string> > > > merge;
 
-		typedef boost::tokenizer<boost::char_separator<char> >
-			tokenizer;
-		boost::char_separator<char> sep(outSep.c_str()); //",\t ");
-
-		// Populate the common map with an empty vector
-		vector<string> cloneVector; 
-		for (auto bt = common_cols.begin(); bt != common_cols.end(); ++bt)
-			common[*bt]=cloneVector; // Ugly, but effective
-
-		// Loop through the input files
-		for (auto it = infiles.begin(); it != infiles.end(); it++)
-		{
-			ifstream in(*it);
-			string lin;
-			// Create the file data pools (this file's portion of the merge map)
-			unique_ptr< map<size_t,vector<string> > > pFile (new map<size_t,vector<string> >);
-			for (auto bt = merge_cols.begin(); bt != merge_cols.end(); ++bt)
-				(*pFile)[*bt]=cloneVector; // Ugly, but effective
-			
-			// Advance through the header
-			for (size_t i=0;i<numHeaderLines;i++)
-				std::getline(in,lin);
-
-			while (in.good())
-			{
-				// Begin reading the data line-by-line.
-				getline(in,lin);
-				tokenizer parser(lin,sep);
-				size_t col = 0; // Doesn't like to be near auto on MSVC parser
-				for (auto ot=parser.begin(); ot != parser.end(); ++ot, col++)
-				{
-					// Process common columns, but only for the first file
-					if (common_cols.count(col) && it == infiles.begin())
-						common[col].push_back(*ot);
-
-					// Do the other columns
-					if (merge_cols.count(col))
-						(*pFile)[col].push_back(*ot);
-
-				}
-			}
-			// Add pFile to the merge map
-			merge[*it] = std::move(pFile); // pFile is transferred to the container
-			// Close the input file
-			in.close();
-		}
-
-
-
-		// Now to output the resultant file, finally.
-		ofstream out(outfile.c_str());
-		// Unfortunately, I have the column data, but I really need it in rows...
-		// Here's how the file is written:
-		// Common columns come first, then file-unique columns
-		// These columns have a header indicating the file (if not common) and the source column
-		// For safety, verify the longest number of rows needed for write, and check _all_
-		// bounds.
-		size_t maxRows = 0;
-		for (auto it = common.begin(); it != common.end(); ++it)
-			if (it->second.size() > maxRows) maxRows = it->second.size();
-		// Note: these two auto types are different.
-		for (auto it = merge.begin(); it != merge.end(); ++it)
-			for (auto ot = it->second->begin(); ot != it->second->end(); ++ot)
-				if (ot->second.size() > maxRows) maxRows = ot->second.size();
-
+		
+		// Open the output file and write the header
 		outSep = string(1, outSep.at(0));
-
-		// Good. The number of lines to write has been determined
-		// For file write, note that I'll leave an excess tab at the end. It's easier to code.
-		// Write the header
-		bool pcom = false;
-		for (auto it = common.begin(); it != common.end(); ++it)
+		ofstream out(outfile.c_str());
+		for (const auto &h : headers) out << h;
+		for (size_t i=0; i < lastheaders.size(); ++i)
 		{
-			if (pcom) out << outSep;
-			if (!preserveNames)
-				out << "common-";
-			out << it->first;
-			pcom = true;
-		}
-		for (auto it = merge.begin(); it != merge.end(); ++it)
-			for (auto ot = it->second->begin(); ot != it->second->end(); ++ot)
-			{
-				if (pcom) out << outSep;
-				if (!preserveNames)
-					out << it->first << "-";
-				out << ot->first;
-				pcom = true;
-			}
-		if (doInsert)
-		{
-			if (pcom) out << outSep;
-			out << inscolheader;
+			out << lastheaders[i];
+			if (i != lastheaders.size() - 1) out << outSep;
 		}
 		out << endl;
 
-		// Write the rows
-		for (size_t i=0; i<maxRows;i++)
+		// Using the first file as the dictionary
+		for (const auto & line : lines[0])
 		{
-			pcom = false;
-			// First come the common columns
-			for (auto it = common.begin(); it != common.end(); ++it)
-				if (it->second.size() > i)
-				{
-					if (pcom) out << outSep;
-					out << it->second[i];
-					pcom = true;
-				} else {
-					if (pcom) out << outSep;
-					out << missingValue;
-					pcom = true;
-				}
-			// Then come the merged columns
-			for (auto it = merge.begin(); it != merge.end(); ++it)
-				for (auto ot = it->second->begin(); ot != it->second->end(); ++ot)
-					if (ot->second.size() > i)
-					{
-						if (pcom) out << outSep;
-						out << ot->second[i];
-						pcom = true;
-					} else {
-						if (pcom) out << outSep;
-						out << missingValue;
-						pcom = true;
-					}
-			// Last will come the inserted column
-			if (doInsert)
+			out << line.second << outSep;
+			for (size_t i=1; i<lines.size(); ++i)
 			{
-				if (pcom) out << outSep;
-				out << missingValue;
+				if (lines[i].count(line.first)) 
+					out << lines[i].at(line.first) << outSep;
+				// TODO: fill in empty value
 			}
 			out << endl;
 		}
 
-		// Close the output file
-		out.close();
+
 
 		cerr << "Merge successful." << endl;
 

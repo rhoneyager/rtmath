@@ -8,6 +8,7 @@
 #include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {
@@ -19,8 +20,11 @@ int main(int argc, char** argv)
 		cerr << "Parameter expansion program" << endl;
 
 		namespace po = boost::program_options;
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"),
+		config("Config options"), hidden("Hidden options"), oall("all options");
+		rtmath::debug::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "Produce help message")
 			("split,s", po::value<std::string>(), "The values to be expanded")
 			("aliases,k", po::value<std::string>(), "The key location in the config tables that contains the desired expansion table");
@@ -28,10 +32,15 @@ int main(int argc, char** argv)
 		po::positional_options_description p;
 		p.add("split",1);
 		
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
 		po::variables_map vm;
-		po::store(po::command_line_parser(argc,argv).
-			options(desc).positional(p).run(), vm);
-		po::notify (vm);
+		po::store(po::command_line_parser(argc, argv).
+			options(oall).positional(p).run(), vm);
+		po::notify(vm);
+
+		rtmath::debug::process_static_options(vm);
 
 		if (vm.count("help"))
 		{
