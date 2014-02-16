@@ -157,7 +157,8 @@ namespace rtmath {
 				latticePtsRi.conservativeResize(numPoints, 3);
 				latticePtsStd.conservativeResize(numPoints, 3);
 				latticePtsNorm.conservativeResize(numPoints, 3);
-
+				latticeIndex.conservativeResize(numPoints);
+				latticeIndex.setLinSpaced(numPoints,1,numPoints);
 				//for (auto &extra : latticeExtras)
 				//	extra.second->conservativeResize(numPoints, 3);
 			}
@@ -261,9 +262,9 @@ namespace rtmath {
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 
-				size_t maxX = static_cast<size_t>(maxs(0)), maxY = static_cast<size_t>(maxs(1)), maxZ = static_cast<size_t>(maxs(2));
-				size_t minX = static_cast<size_t>(mins(0)), minY = static_cast<size_t>(mins(1)), minZ = static_cast<size_t>(mins(2));
-				size_t spanX = maxX - minX, spanY = maxY - minY, spanZ = maxZ - minZ;
+				auto maxX = maxs(0), maxY = maxs(1), maxZ = maxs(2);
+				auto minX = mins(0), minY = mins(1), minZ = mins(2);
+				size_t spanX = (size_t) (maxX - minX), spanY = (size_t)(maxY - minY), spanZ = (size_t)(maxZ - minZ);
 				size_t rsX = (spanX / dx) + 1, rsY = (spanY / dy) + 1, rsZ = (spanZ / dz) + 1;
 
 				auto getIndex = [&](float x, float y, float z) -> size_t
@@ -324,9 +325,7 @@ namespace rtmath {
 				res->filename = filename;
 				res->xd = xd;
 
-				// Rescale x0 to point to the new center
-				res->x0 = x0 / Eigen::Array3f((float)dx, (float)dy, (float)dz);
-
+				
 
 				res->resize(num);
 
@@ -347,32 +346,12 @@ namespace rtmath {
 					crdsi(1) = (float)diel;
 					crdsi(2) = (float)diel;
 					if (dielMax < diel) dielMax = diel;
-					if (point == 0)
-					{
-						res->mins = crdsm;
-						res->maxs = crdsm;
-						res->means = crdsm;
-					}
-					else {
-						if (crdsm(0) < res->mins(0)) res->mins(0) = crdsm(0);
-						if (crdsm(1) < res->mins(1)) res->mins(1) = crdsm(1);
-						if (crdsm(2) < res->mins(2)) res->mins(2) = crdsm(2);
-						if (crdsm(0) > res->maxs(0)) res->maxs(0) = crdsm(0);
-						if (crdsm(1) > res->maxs(1)) res->maxs(1) = crdsm(1);
-						if (crdsm(2) > res->maxs(2)) res->maxs(2) = crdsm(2);
-						res->means(0) += crdsm(0);
-						res->means(1) += crdsm(1);
-						res->means(2) += crdsm(2);
-					}
 					point++;
 				}
-				res->means /= (float)(point + 1);
-
+				
+				// Shrink the data store
 				if (point < num)
-				{
-					// Shrink the data store
 					res->resize(point);
-				}
 
 				// Set the dielectrics
 				res->Dielectrics.clear();
@@ -380,6 +359,11 @@ namespace rtmath {
 					res->Dielectrics.insert(i);
 
 				res->recalcStats();
+				// Rescale x0 to point to the new center
+				//res->x0 = x0 / Eigen::Array3f((float)dx, (float)dy, (float)dz);
+				// Cannot just rescale because of negative coordinates.
+				res->x0 = res->means;
+
 
 				return res;
 			}

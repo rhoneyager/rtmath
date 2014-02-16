@@ -106,218 +106,68 @@ namespace rtmath
 				xd = x0 * d;
 
 				using namespace std;
-				const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
+				// Cannot easily multithread due to file format restrictions.
+				//const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
 
 				//Eigen::Vector3f crdsm, crdsi; // point location and diel entries
 				const char* pa = &iin[headerEnd];
 				const char* pb = strchr(pa + 1, '\0');
 
-				//std::vector<std::vector<long>> parser_vals(numThreads);
-				//for (auto &pv : parser_vals)
-				//	pv.reserve((numPoints * 7));
-				//parse_shapefile_entries(pa,pb, parser_vals);
+				std::vector<long> parser_vals; //(numPoints*8);
+				parser_vals.reserve(numPoints*8);
+				parse_shapefile_entries(pa,pb, parser_vals);
 
-				// Threading the parser to read in and process the points
-				std::vector<std::thread> pool;
-				std::mutex m_pool, m_media;
-				// Create the pool of point ranges to read (partly based on pa and pb range)
-				std::vector<std::pair<const char*, const char*> > point_ranges, point_ranges_b;
-				point_ranges.reserve(numThreads * 21);
-				std::vector<std::vector<long> > parser_vals(numThreads);
-				for (auto &p : parser_vals)
-					p.reserve((numPoints * 8) / (numThreads * 19));
-				const char* pe = pa;
-				while (pe < pb)
-				{
-					const char* ps = pe;
-					pe += (pb - pa) / (numThreads * 20);
-					if (pe >= pb) pe = pb;
-					else {
-						pe = strchr(pe, '\n');
-					}
-					point_ranges.push_back(std::move(std::pair<const char*, const char*>(ps, pe)));
-				}
-				point_ranges_b = point_ranges;
 
 				using namespace boost::accumulators;
-				/*
-				//vector<
-				accumulator_set<float, boost::accumulators::stats<
-					tag::min,
-					tag::max,
-					tag::mean,
-					tag::count> > // >
-					// These only need mean and count, but are here for ease in typing lambdas.
-					m_x(numThreads), m_y(numThreads), m_z(numThreads),
-					// These need all parameters.
-					r_x(numThreads), r_y(numThreads), r_z(numThreads);
-				
-				accumulator_set<float, boost::accumulators::stats<
-					tag::min,
-					tag::max,
-					tag::mean,
-					tag::count> > sr_x, sr_y, sr_z;
-				*/
-
-				auto process_pool_raws_import = [&](size_t index, const char* start, const char* end)
-				{
-					parse_shapefile_entries(start, end, parser_vals[index]);
-					size_t lastmedia = 0; // Used to speed up tree searches in mediaIds
-					set<size_t> mediaIds;
-
-					for (size_t i = 0; i < parser_vals[index].size() / 7; ++i)
-					{
-						size_t pIndex = parser_vals[index].at(7 * i) - 1;
-						auto crdsm = latticePts.block<1, 3>(pIndex, 0);
-						auto crdsi = latticePtsRi.block<1, 3>(pIndex, 0);
-						for (size_t j = 1; j < 7; j++)
-						{
-							float val = (float)parser_vals[index].at((7 * i) + j);
-							//val = (float) rtmath::macros::m_atof(&(in.data()[posa]),len);
-							//if (j==0) continue;
-							if (j <= 3) crdsm(j - 1) = val;
-							else crdsi(j - 4) = val;
-						}
-
-						auto checkMedia = [&mediaIds, &lastmedia](size_t id)
-						{
-							if (id == lastmedia) return;
-							if (!mediaIds.count(id))
-								mediaIds.insert(id);
-							lastmedia = id;
-						};
-
-						checkMedia(static_cast<size_t>(crdsi(0)));
-						checkMedia(static_cast<size_t>(crdsi(1)));
-						checkMedia(static_cast<size_t>(crdsi(2)));
-
-						Eigen::Array3f crd = crdsm.array() * d.transpose();
-						auto crdsc = latticePtsStd.block<1, 3>(pIndex, 0);
-						//Eigen::Vector3f -> next line
-						crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
-
-						// Need to do stat collection here because the midpoint is usually not set correctly!
-						/*
-						r_x[index](crdsm(0));
-						r_y[index](crdsm(1));
-						r_z[index](crdsm(2));
-
-						m_x[index](crdsc(0));
-						m_y[index](crdsc(1));
-						m_z[index](crdsc(2));
-						*/
-					}
-					std::lock_guard<std::mutex> lock(m_media);
-					for (auto id : mediaIds)
-						Dielectrics.emplace(id);
-				};
-
-				auto process_pool_raws = [&](size_t i)
-				{
-					try {
-						std::pair<const char*, const char*> p;
-						for (;;)
-						{
-							{
-								std::lock_guard<std::mutex> lock(m_pool);
-
-								if (!point_ranges.size()) return;
-								p = point_ranges.back();
-								point_ranges.pop_back();
-							}
-
-							process_pool_raws_import(i, p.first, p.second);
-						}
-					}
-					catch (std::exception &e)
-					{
-						std::cerr << e.what() << std::endl;
-						return;
-					}
-				};
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					std::thread t(process_pool_raws, i);
-					pool.push_back(std::move(t));
-				}
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					pool[i].join();
-				}
-				pool.clear();
-				point_ranges = point_ranges_b;
-
-
-
-				// Process in threads using sets of 500 points each. Threads are in a pool until all points are processed.
-				std::vector<std::pair<size_t, size_t> > cands_init, cands;
-				size_t i = 0;
-				while (i<numPoints)
-				{
-					size_t maxBound = i + 500;
-					if (maxBound > numPoints) maxBound = numPoints;
-					cands_init.push_back(std::pair<size_t, size_t>(i, maxBound));
-					i = maxBound;
-				}
-				cands = cands_init;
-
-				// Combine the stat entries
-				/*
-				auto findMean = [&](
-					vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
-					&mSrc, float &mMean)
-				{
-					for (auto &ac : mSrc)
-					{
-						/// \todo Check that all of the accumulators work properly
-						int c = (int) boost::accumulators::count(ac);
-						if (!c) continue;
-						float mean = boost::accumulators::mean(ac);
-						float count = (float)c;
-						float np = (float)numPoints;
-						mMean += mean*count/np;
-					}
-				};
-				float mm_x = 0, mm_y = 0, mm_z = 0;
-				findMean(m_x, mm_x); findMean(m_y, mm_y); findMean(m_z, mm_z);
-				float mr_x = 0, mr_y = 0, mr_z = 0;
-				findMean(r_x, mr_x); findMean(r_y, mr_y); findMean(r_z, mr_z);
-
-				means(0) = mr_x;
-				means(1) = mr_y;
-				means(2) = mr_z;
-
-				// Pass through stats and get mins and maxs
-				auto findMinsMaxs = [&](vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
-					&mSrc, size_t index)
-				{
-					for (auto it = mSrc.cbegin(); it != mSrc.cend(); ++it)
-					{
-						float mmin = boost::accumulators::min(*it);
-						float mmax = boost::accumulators::max(*it);
-						if (it == mSrc.cbegin())
-						{
-							mins(index) = mmin;
-							maxs(index) = mmax;
-						}
-						else {
-							if (mins(index) > mmin) mins(index) = mmin;
-							if (maxs(index) < mmax) maxs(index) = mmax;
-						}
-					}
-				};
-				findMinsMaxs(r_x, 0); findMinsMaxs(r_y, 1); findMinsMaxs(r_z, 2);
-				*/
-
 				accumulator_set<float, boost::accumulators::stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
-				//for (auto it = _shp->latticePtsStd.begin(); it != _shp->latticePtsStd.end(); ++it)
-				for (size_t i = 0; i < numPoints; i++)
+				size_t lastmedia = 0; // Used to speed up tree searches in mediaIds
+				set<size_t> mediaIds;
+
+				for (size_t i = 0; i < numPoints; ++i)
 				{
-					auto it = latticePts.block<1,3>(i,0);
-					m_x((it)(0));
-					m_y((it)(1));
-					m_z((it)(2));
+					// First field truly is a dummy variable. No correclation with point ordering at all.
+					//size_t pIndex = parser_vals[index].at(7 * i) - 1;
+					size_t pIndex = 7*i;
+					auto crdsm = latticePts.block<1, 3>(i, 0);
+					auto crdsi = latticePtsRi.block<1, 3>(i, 0);
+					latticeIndex(i) = (int) parser_vals.at(pIndex);
+					for (size_t j = 1; j < 7; j++) // TODO: rewrite using eigen?
+					{
+						float val = (float)parser_vals.at(pIndex + j);
+						if (j <= 3) crdsm(j - 1) = val;
+						else crdsi(j - 4) = val;
+					}
+
+					auto checkMedia = [&mediaIds, &lastmedia](size_t id)
+					{
+						if (id == lastmedia) return;
+						if (!mediaIds.count(id))
+							mediaIds.insert(id);
+						lastmedia = id;
+					};
+
+					checkMedia(static_cast<size_t>(crdsi(0)));
+					checkMedia(static_cast<size_t>(crdsi(1)));
+					checkMedia(static_cast<size_t>(crdsi(2)));
+
+					Eigen::Array3f crd = crdsm.array() * d.transpose();
+					auto crdsc = latticePtsStd.block<1, 3>(i, 0);
+					//Eigen::Vector3f -> next line
+					crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
+
+					// Need to do stat collection here because the midpoint is usually not set correctly!
+					m_x(crdsm(0));
+					m_y(crdsm(1));
+					m_z(crdsm(2));
+					/*
+					r_x(crdsc(0));
+					r_y(crdsc(1));
+					r_z(crdsc(2));
+					*/
 				}
+				for (auto id : mediaIds)
+					Dielectrics.emplace(id);
+
 
 				mins(0) = boost::accumulators::min(m_x);
 				mins(1) = boost::accumulators::min(m_y);
@@ -333,55 +183,13 @@ namespace rtmath
 
 
 				/// Need to renormalize data points. Mean should be at 0, 0, 0 for plotting!
-				auto postStats = [&](size_t start, size_t end)
+				for (size_t i = 0; i < numPoints; i++)
 				{
-					//for (auto it = latticePtsStd.begin(); it != latticePtsStd.end(); it++)
-					for (size_t i = start; i < end; i++)
-					{
-						auto pt = latticePts.block<1, 3>(i, 0);
-						auto Npt = latticePtsNorm.block<1, 3>(i, 0);
-						Npt = pt.array().transpose() - means;
-						//Npt(0) = pt(0) - means(0);
-						//Npt(1) = pt(1) - means(1);
-						//Npt(2) = pt(2) - means(2);
-					}
-				};
-				auto process_pool_post = [&]()
-				{
-					try {
-						std::pair<size_t, size_t> p;
-						for (;;)
-						{
-							{
-								std::lock_guard<std::mutex> lock(m_pool);
-
-								if (!cands.size()) return;
-								p = cands.back();
-								cands.pop_back();
-							}
-
-							postStats(p.first, p.second);
-						}
-					}
-					catch (std::exception &e)
-					{
-						std::cerr << e.what() << std::endl;
-						return;
-					}
-				};
-				// Refresh the pool of points to be processed
-				cands = cands_init;
-				pool.clear();
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					std::thread t(process_pool_post);
-					pool.push_back(std::move(t));
+					auto pt = latticePts.block<1, 3>(i, 0);
+					auto Npt = latticePtsNorm.block<1, 3>(i, 0);
+					Npt = pt.array().transpose() - means;
 				}
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					pool[i].join();
-				}
-
+				
 
 				hash();
 			}
@@ -400,15 +208,16 @@ namespace rtmath
 				out << x0(0) << "\t" << x0(1) << "\t" << x0(2);
 				out << "\t= X0(1-3) = location in lattice of target origin" << endl;
 				out << "\tNo.\tix\tiy\tiz\tICOMP(x, y, z)" << endl;
-				size_t i = 1;
+				//size_t i = 1;
 
 				std::vector<long> oi(numPoints * 7);
 
-				for (size_t j = 0; j < numPoints; j++, i++)
+				for (size_t j = 0; j < numPoints; j++)
 				{
+					long point = latticeIndex(j);
 					auto it = latticePts.block<1, 3>(j, 0);
 					auto ot = latticePtsRi.block<1, 3>(j, 0);
-					oi[j * 7 + 0] = (long)i;
+					oi[j * 7 + 0] = point;
 					oi[j * 7 + 1] = (long)(it)(0);
 					oi[j * 7 + 2] = (long)(it)(1);
 					oi[j * 7 + 3] = (long)(it)(2);

@@ -39,6 +39,7 @@ int main(int argc, char** argv)
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
 			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
+			("description-append", po::value<string>(), "Apend this to the shape description");
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -79,6 +80,11 @@ int main(int argc, char** argv)
 			cerr << "Reading input shape file " << ifile << endl;
 			boost::shared_ptr<shapefile> shp(new shapefile);
 			shp->read(ifile);
+			if (vm.count("description-append"))
+			{
+				std::string da = vm["description-append"].as<std::string>();
+				shp->desc.append(da);
+			}
 
 			if (vm.count("decimate"))
 			{
