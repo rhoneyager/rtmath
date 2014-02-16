@@ -245,199 +245,29 @@ namespace rtmath
 			void shapefile::recalcStats()
 			{
 				using namespace std;
-				const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
-
-				std::vector<std::thread> pool;
-				std::mutex m_pool, m_media;
-
-				xd = x0 * d;
-
-				// Process in threads using sets of 500 points each. Threads are in a pool until all points are processed.
-				std::vector<std::pair<size_t, size_t> > cands_init, cands;
-				size_t i = 0;
-				while (i<numPoints)
-				{
-					size_t maxBound = i + 500;
-					if (maxBound > numPoints) maxBound = numPoints;
-					cands_init.push_back(std::pair<size_t, size_t>(i, maxBound));
-					i = maxBound;
-				}
-				cands = cands_init;
-
-
 				using namespace boost::accumulators;
-				vector<accumulator_set<float, boost::accumulators::stats<
-					tag::min,
-					tag::max,
-					tag::mean,
-					tag::count> > >
-					// These only need mean and count, but are here for ease in typing lambdas.
-					m_x(numThreads), m_y(numThreads), m_z(numThreads),
-					// These need all parameters.
-					r_x(numThreads), r_y(numThreads), r_z(numThreads);
-				accumulator_set<float, boost::accumulators::stats<
-					tag::min,
-					tag::max,
-					tag::mean,
-					tag::count> > sr_x, sr_y, sr_z;
-
-
-
-				auto process_pool_raws_import = [&](size_t index, size_t start, size_t end)
+				accumulator_set<float, boost::accumulators::stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
+				
+				for (size_t i = 0; i < numPoints; i++)
 				{
-					size_t lastmedia = 0; // Used to speed up tree searches in mediaIds
-					set<size_t> mediaIds;
-
-					for (size_t i = start; i < end; ++i)
-					{
-						auto crdsm = latticePts.block<1, 3>(i, 0);
-						auto crdsi = latticePtsRi.block<1, 3>(i, 0);
-
-						Eigen::Array3f crd = crdsm.array() * d.transpose();
-						auto crdsc = latticePtsStd.block<1, 3>(i, 0);
-						//Eigen::Vector3f -> next line
-						crdsc = crd.matrix() - xd.matrix(); // Normalized coordinates!
-
-						// Need to do stat collection here because the midpoint is usually not set correctly!
-
-						r_x[index](crdsm(0));
-						r_y[index](crdsm(1));
-						r_z[index](crdsm(2));
-
-						m_x[index](crdsc(0));
-						m_y[index](crdsc(1));
-						m_z[index](crdsc(2));
-					}
-					std::lock_guard<std::mutex> lock(m_media);
-					for (auto id : mediaIds)
-						Dielectrics.emplace(id);
-				};
-
-				auto process_pool_raws = [&](size_t i)
-				{
-					try {
-						std::pair<size_t, size_t> p;
-						for (;;)
-						{
-							{
-								std::lock_guard<std::mutex> lock(m_pool);
-
-								if (!cands.size()) return;
-								p = cands.back();
-								cands.pop_back();
-							}
-
-							process_pool_raws_import(i, p.first, p.second);
-						}
-					}
-					catch (std::exception &e)
-					{
-						std::cerr << e.what() << std::endl;
-						return;
-					}
-				};
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					std::thread t(process_pool_raws, i);
-					pool.push_back(std::move(t));
+					auto pt = latticePts.block<1, 3>(i, 0);
+					//auto Npt = latticePtsNorm.block<1, 3>(i, 0);
+					//Npt = pt.array().transpose() - means;
+					m_x(pt(0));
+					m_y(pt(1));
+					m_z(pt(2));
 				}
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					pool[i].join();
-				}
-				pool.clear();
+				mins(0) = boost::accumulators::min(m_x);
+				mins(1) = boost::accumulators::min(m_y);
+				mins(2) = boost::accumulators::min(m_z);
 
-				cands = cands_init;
+				maxs(0) = boost::accumulators::max(m_x);
+				maxs(1) = boost::accumulators::max(m_y);
+				maxs(2) = boost::accumulators::max(m_z);
 
-				// Combine the stat entries
-				auto findMean = [&](
-					vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
-					&mSrc, float &mMean)
-				{
-					for (auto &ac : mSrc)
-						mMean += boost::accumulators::mean(ac) * (float)boost::accumulators::count(ac) / (float)numPoints;
-				};
-				float mm_x = 0, mm_y = 0, mm_z = 0;
-				findMean(m_x, mm_x); findMean(m_y, mm_y); findMean(m_z, mm_z);
-				float mr_x = 0, mr_y = 0, mr_z = 0;
-				findMean(r_x, mr_x); findMean(r_y, mr_y); findMean(r_z, mr_z);
-
-				means(0) = mr_x;
-				means(1) = mr_y;
-				means(2) = mr_z;
-
-				// Pass through stats and get mins and maxs
-				auto findMinsMaxs = [&](vector<accumulator_set<float, boost::accumulators::stats< tag::min, tag::max, tag::mean, tag::count> > >
-					&mSrc, size_t index)
-				{
-					for (auto it = mSrc.cbegin(); it != mSrc.cend(); ++it)
-					{
-						float mmin = boost::accumulators::min(*it);
-						float mmax = boost::accumulators::max(*it);
-						if (it == mSrc.cbegin())
-						{
-							mins(index) = mmin;
-							maxs(index) = mmax;
-						}
-						else {
-							if (mins(index) > mmin) mins(index) = mmin;
-							if (maxs(index) < mmax) maxs(index) = mmax;
-						}
-					}
-				};
-				findMinsMaxs(r_x, 0); findMinsMaxs(r_y, 1); findMinsMaxs(r_z, 2);
-
-				/// Need to renormalize data points. Mean should be at 0, 0, 0 for plotting!
-				auto postStats = [&](size_t start, size_t end)
-				{
-					//for (auto it = latticePtsStd.begin(); it != latticePtsStd.end(); it++)
-					for (size_t i = start; i < end; i++)
-					{
-						auto pt = latticePts.block<1, 3>(i, 0);
-						auto Npt = latticePtsNorm.block<1, 3>(i, 0);
-						//Eigen::Vector3f pt = *it;
-						Npt(0) = pt(0) - mm_x;
-						Npt(1) = pt(1) - mm_y;
-						Npt(2) = pt(2) - mm_z;
-						//latticePtsNorm.push_back(move(pt));
-					}
-				};
-				auto process_pool_post = [&]()
-				{
-					try {
-						std::pair<size_t, size_t> p;
-						for (;;)
-						{
-							{
-								std::lock_guard<std::mutex> lock(m_pool);
-
-								if (!cands.size()) return;
-								p = cands.back();
-								cands.pop_back();
-							}
-
-							postStats(p.first, p.second);
-						}
-					}
-					catch (std::exception &e)
-					{
-						std::cerr << e.what() << std::endl;
-						return;
-					}
-				};
-				// Refresh the pool of points to be processed
-				cands = cands_init;
-				pool.clear();
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					std::thread t(process_pool_post);
-					pool.push_back(std::move(t));
-				}
-				for (size_t i = 0; i < numThreads; i++)
-				{
-					pool[i].join();
-				}
-
+				means(0) = boost::accumulators::mean(m_x);
+				means(1) = boost::accumulators::mean(m_y);
+				means(2) = boost::accumulators::mean(m_z);
 
 				hash();
 			}

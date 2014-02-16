@@ -55,6 +55,10 @@ namespace rtmath {
 					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 					(std::string("Dielectric"), std::string("Dimensionless"),
 					shp->latticePtsRi.col(0)));
+				vals.push_back(std::tuple<std::string, std::string,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					(std::string("Point id"), std::string("Dimensionless"),
+					shp->latticeIndex.cast<float>()));
 				/*
 				vals.push_back(std::tuple<std::string, std::string,
 					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >

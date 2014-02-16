@@ -112,6 +112,12 @@ namespace rtmath {
 				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> latticePtsNormRow(shp->latticePtsNorm);
 				latticePtsNorm->write(latticePtsNormRow.data(), PredType::NATIVE_FLOAT);
 
+				hsize_t fDimBasic1[] = {shp->numPoints};
+				DataSpace fspacePts1( 1, fDimBasic1 );
+				shared_ptr<DataSet> latticePtsIndex(new DataSet(shpraw->createDataSet("latticePtsIndex", PredType::NATIVE_INT, 
+					fspacePts1, plist)));
+				latticePtsIndex->write(shp->latticeIndex.data(), PredType::NATIVE_INT);
+
 				// Write the "extra" arrays
 				shared_ptr<Group> shpextras(new Group(shpraw->createGroup("Extras")));
 				for (const auto& e : shp->latticeExtras)
