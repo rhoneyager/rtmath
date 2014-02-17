@@ -31,12 +31,15 @@
 #include "QuadMesh3d.h"
 #include "WritePoints.h"
 
+#include "plugin-silo.h"
+
 
 namespace rtmath {
 	namespace plugins {
 		namespace silo {
 
-			/// Function to construct a Spherical mesh corresponding to the beta and theta rotations
+			/// \brief Function to construct a Spherical mesh corresponding to the beta and theta rotations
+			/// \todo Update to use new system
 			void CreateMeshSpherical(DBfile *df, const rtmath::ddscat::ddOutput *ddo)
 			{
 
@@ -88,7 +91,7 @@ namespace rtmath {
 						it[IntervalTable3dDefs::THETA_PIVOT],
 						it[IntervalTable3dDefs::PHI_PIVOT] };
 
-					
+
 					double start_rad[degree], end_rad[degree], mid_rad[degree];
 					start_rad[0] = 1; end_rad[0] = 1; mid_rad[0] = 1;
 					aToRad(2, start_deg, start_rad+1);
@@ -119,7 +122,7 @@ namespace rtmath {
 				DBAddOption(meshOptList, DBOPT_FACETYPE, (void*) DB_CURVILINEAR);
 				//DBAddOption(meshOptList, 
 
-				
+
 				//const char* axisLabels[] = { "x", "y", "z" };
 				const double *pcoords[3] = {centers.col(0).data(), centers.col(1).data(), centers.col(2).data() };
 				int ndims[] = {(int) dw.numBetas(), (int) dw.numThetas(), 2};
@@ -144,7 +147,8 @@ namespace rtmath {
 
 			}
 
-			/// Creates a rectilinear mesh to hold beta, theta, phi paired values
+			/// \brief Creates a rectilinear mesh to hold beta, theta, phi paired values
+			/// \todo Update to use new system
 			void CreateMeshRectilinear(DBfile *df, const char* meshname, const rtmath::ddscat::ddOutput *ddo, const size_t dimension = 3)
 			{
 				using namespace ddscat::weights;
@@ -186,7 +190,8 @@ namespace rtmath {
 				DBFreeOptlist(optlist);
 			}
 
-			/// Write a node-centerd variable to the mesh
+			/// \brief Write a node-centerd variable to the mesh
+			/// \todo Update to use new system
 			void AddToMesh(DBfile *df, const char* meshname, const rtmath::ddscat::ddOutput *ddo,
 				rtmath::ddscat::stat_entries entry, const size_t dimension = 3, const char* varname = "")
 			{
@@ -223,62 +228,63 @@ namespace rtmath {
 
 				std::string varName(varname);
 				if (!varName.size()) varName = rtmath::ddscat::getStatNameFromId(entry);
-				
+
 				DBPutQuadvar1(df, varName.c_str(), meshname,
 					(void*) output.data(), dims, (int) dimension, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
 			}
 
-			bool match_silo_ddOutput(const char* fsilo, const char* type)
-			{
-				using namespace boost::filesystem;
-				using std::string;
-				using std::ofstream;
-
-				string stype(type);
-				path pPrefix(fsilo);
-				if (stype == "silo" || stype == ".silo") return true;
-				else if (pPrefix.extension() == ".silo") return true;
-				return false;
-			}
-
-			void write_silo_ddOutput(const char* fsilo, const rtmath::ddscat::ddOutput *ddo)
-			{
-				using std::string;
-				using std::ofstream;
-				using namespace boost::filesystem;
-
-				DBfile *f = DBCreate(fsilo, DB_CLOBBER, DB_LOCAL,
-					ddo->description.c_str(), // Optional string describing file
-					DB_PDB);
-				TASSERT(f);
-
-				CreateMeshRectilinear(f, "CoordsMesh_rect_3d", ddo);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QABSM);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBK1);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBK2);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBKM);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QEXTM);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCA1);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCA2);
-				AddToMesh(f, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCAM);
-
-				CreateMeshRectilinear(f, "CoordsMesh_rect_2d", ddo, 2);
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QABSM, 2, "QABSM_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBK1, 2, "QBK1_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBK2, 2, "QBK2_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBKM, 2, "QBKM_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QEXTM, 2, "QEXTM_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCA1, 2, "QSCA1_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCA2, 2, "QSCA2_2d");
-				AddToMesh(f, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCAM, 2, "QSCAM_2d");
-
-
-				writeShape(f, "PointMesh", ddo->shape.get());
-
-				DBClose(f);
-
-			}
 
 		}
+	}
+	
+	namespace registry
+	{
+		using std::shared_ptr;
+		using rtmath::ddscat::ddOutput;
+		using namespace rtmath::plugins::silo;
+
+		shared_ptr<IOhandler> 
+			write_file_type_multi
+			(shared_ptr<IOhandler> sh, const char* filename, 
+			const ddOutput *ddo, const char* key, IOhandler::IOtype iotype)
+		{
+			shared_ptr<silo_handle> h;
+			if (!sh)
+			{
+				// Access the hdf5 file
+				h = shared_ptr<silo_handle>(new silo_handle(filename, iotype));
+			} else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<silo_handle>(sh);
+			}
+
+
+			CreateMeshRectilinear(h->file->df, "CoordsMesh_rect_3d", ddo);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QABSM);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBK1);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBK2);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QBKM);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QEXTM);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCA1);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCA2);
+			AddToMesh(h->file->df, "CoordsMesh_rect_3d", ddo, ddscat::stat_entries::QSCAM);
+
+			CreateMeshRectilinear(h->file->df, "CoordsMesh_rect_2d", ddo, 2);
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QABSM, 2, "QABSM_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBK1, 2, "QBK1_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBK2, 2, "QBK2_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QBKM, 2, "QBKM_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QEXTM, 2, "QEXTM_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCA1, 2, "QSCA1_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCA2, 2, "QSCA2_2d");
+			AddToMesh(h->file->df, "CoordsMesh_rect_2d", ddo, ddscat::stat_entries::QSCAM, 2, "QSCAM_2d");
+
+
+			//writeShape(f, "PointMesh", ddo->shape.get());
+			write_file_type_multi(h, filename, ddo->shape.get(), key, iotype);
+
+			return h;
+		}
+
 	}
 }

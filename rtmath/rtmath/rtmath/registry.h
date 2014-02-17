@@ -198,6 +198,12 @@ namespace rtmath
 			io_multi_type io_multi_processor;
 		};
 
+
+		/// Match file type - use bind to bind the 3rd parameter to the desired extension
+		bool DLEXPORT_rtmath_core match_file_type(const char* filename, const char* type, const char* ext);
+
+		bool DLEXPORT_rtmath_core match_file_type_multi(const char* filename, const char* type, 
+			std::shared_ptr<rtmath::registry::IOhandler> h, const char* pluginid, const char* ext);
 	}
 }
 

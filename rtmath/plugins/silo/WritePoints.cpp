@@ -12,6 +12,8 @@ namespace {
 	template<> DBdatatype getSiloDatatype<double>() { return DB_DOUBLE; }
 	template<> DBdatatype getSiloDatatype<int>() { return DB_INT; }
 	template<> DBdatatype getSiloDatatype<char>() { return DB_CHAR; }
+	template<> DBdatatype getSiloDatatype<long>() { return DB_LONG; }
+	template<> DBdatatype getSiloDatatype<long long>() { return DB_LONG_LONG; }
 }
 
 namespace rtmath {
@@ -123,27 +125,6 @@ namespace rtmath {
 			}
 
 			template <class T>
-			void siloFile::pointMesh<T>::writeData(const char* varname,
-				const T** data, size_t nDims, const char* varUnits)
-			{
-				DBdatatype datatype = getSiloDatatype<T>();
-
-				DBoptlist *optlist = DBMakeOptlist(1);
-				if (varUnits)
-					DBAddOption(optlist, DBOPT_UNITS, (void *)varUnits);
-				DBPutPointvar(parent->df, varname, this->name.c_str(),
-					(int) nDims,
-					(void*) data,
-					(int) this->numPoints,
-					datatype,
-					optlist);
-				DBFreeOptlist(optlist);
-
-			}
-
-
-
-			template <class T>
 			std::shared_ptr<siloFile::rectilinearMesh<T> > siloFile::rectilinearMesh<T>::createMesh(
 				std::shared_ptr<siloFile> parent,
 				const char* name, 
@@ -195,13 +176,17 @@ namespace rtmath {
 					return res;
 			}
 
-			template <class T>
-			void siloFile::rectilinearMesh<T>::writeData(const char* varname,
-				const T** data, size_t nDims, const char* varunits,
+
+			template <class U>
+			void writeQuadData(const char* varname,
+				const char* name, DBfile *df, 
+				const U** data, size_t nDims, 
+				const std::vector<int> &dimsizes,
+				const char* varunits,
 				const char** varnames
 				)
 			{
-				DBdatatype datatype = getSiloDatatype<T>();
+				DBdatatype datatype = getSiloDatatype<U>();
 
 				DBoptlist *optlist = DBMakeOptlist(1);
 				if (varunits)
@@ -213,13 +198,15 @@ namespace rtmath {
 				if (!vn)
 					vn = const_cast<char**> (novarnames.data());
 
-				DBPutQuadvar(parent->df, varname, this->name.c_str(),
+				std::vector<int> dimsizes2 = dimsizes;
+
+				DBPutQuadvar(df, varname, name,
 					(int) nDims,
 					vn,
 					(void*) data,
 					//crdarray,
-					this->dimsizes.data(),
-					(int) this->dimsizes.size(),
+					dimsizes2.data(),
+					(int) dimsizes2.size(),
 					NULL,
 					0,
 					datatype,
@@ -231,17 +218,42 @@ namespace rtmath {
 
 			}
 
+			
+			template <class U>
+			void writePointData(const char* varname, const char* name, DBfile *df, 
+				size_t numPoints,
+				const U** data, size_t nDims, const char* varUnits)
+			{
+				DBdatatype datatype = getSiloDatatype<U>();
+
+				DBoptlist *optlist = DBMakeOptlist(1);
+				if (varUnits)
+					DBAddOption(optlist, DBOPT_UNITS, (void *)varUnits);
+				DBPutPointvar(df, varname, name,
+					(int) nDims,
+					(void*) data,
+					(int) numPoints,
+					datatype,
+					optlist);
+				DBFreeOptlist(optlist);
+			}
 
 
-#define INST_MESHES(x) template class siloFile::mesh<x>; \
+#define INST_MESHES(x) \
+	template class siloFile::mesh<x>; \
 	template class siloFile::pointMesh<x>; \
-	template class siloFile::rectilinearMesh<x>;
+	template class siloFile::rectilinearMesh<x>; \
+	template void writePointData<x>(const char*, const char*, DBfile*, \
+		size_t, const x**, size_t, const char*); \
+	template void writeQuadData<x>(const char*, const char*, DBfile*, \
+		const x**, size_t, const std::vector<int>&, const char*, const char**);
 
 			INST_MESHES(float);
 			INST_MESHES(double);
 			INST_MESHES(int);
 			INST_MESHES(char);
-
+			INST_MESHES(long long);
+			INST_MESHES(long);
 
 		}
 	}

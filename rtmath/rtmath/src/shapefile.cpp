@@ -158,7 +158,7 @@ namespace rtmath {
 				latticePtsStd.conservativeResize(numPoints, 3);
 				latticePtsNorm.conservativeResize(numPoints, 3);
 				latticeIndex.conservativeResize(numPoints);
-				latticeIndex.setLinSpaced(numPoints,1,numPoints);
+				latticeIndex.setLinSpaced(numPoints,1,(int) numPoints);
 				//for (auto &extra : latticeExtras)
 				//	extra.second->conservativeResize(numPoints, 3);
 			}

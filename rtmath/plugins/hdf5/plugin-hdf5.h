@@ -26,42 +26,19 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
-			bool match_hdf5_shapefile(const char*, const char*);
-			bool match_hdf5_multi(const char*, const char*, 
-				std::shared_ptr<rtmath::registry::IOhandler>);
-			void write_hdf5_shapefile(const char*,
-				const rtmath::ddscat::shapefile::shapefile *shp);
-			std::shared_ptr<rtmath::registry::IOhandler> write_hdf5_multi_shapefile
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::shapefile::shapefile *shp, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
-
+			//void write_hdf5_shapefile(const char*,
+			//	const rtmath::ddscat::shapefile::shapefile *shp);
+			
 			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::shapefile::shapefile *shp);
 
-			//bool match_hdf5_shapestats(const char*, const char*);
-			void write_hdf5_shapestats(const char*,
-				const rtmath::ddscat::stats::shapeFileStats *s);
-			std::shared_ptr<rtmath::registry::IOhandler> write_hdf5_multi_shapestats
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::stats::shapeFileStats *s, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
+			//void write_hdf5_shapestats(const char*,
+			//	const rtmath::ddscat::stats::shapeFileStats *s);
 			std::shared_ptr<H5::Group> write_hdf5_statsrawdata(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::stats::shapeFileStats *s);
 
-			void write_hdf5_ddOutput(const char* filename,
-				const rtmath::ddscat::ddOutput*);
-			std::shared_ptr<rtmath::registry::IOhandler> write_hdf5_multi_ddoutputs
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::ddOutput*, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
-
+			//void write_hdf5_ddOutput(const char* filename,
+			//	const rtmath::ddscat::ddOutput*);
 
 			struct hdf5_handle : public rtmath::registry::IOhandler
 			{

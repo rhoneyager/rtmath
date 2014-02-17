@@ -17,6 +17,7 @@ endif()
 
 add_library (rtmath_plugin_silo SHARED 
 	plugin-silo.cpp
+	plugin-silo.h
 	silo-shapefile.cpp
 	silo-ddOutput.cpp
 	#CurveMesh3d.cpp

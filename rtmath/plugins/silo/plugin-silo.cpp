@@ -5,53 +5,76 @@
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
+
+#include "plugin-silo.h"
+#include "WritePoints.h"
 
 void dllEntry();
 rtmath_plugin_init(dllEntry);
 
-namespace rtmath {
-	namespace plugins {
-		namespace silo {
+namespace rtmath
+{
+	namespace plugins
+	{
+		namespace silo
+		{
+			silo_handle::silo_handle(const char* filename, IOtype t)
+				: IOhandler(PLUGINID)
+			{
+				open(filename, t);
+			}
 
-			bool match_silo_shapefile(const char*, const char*);
-			void write_silo_shapefile(const char*,
-				const rtmath::ddscat::shapefile::shapefile *shp);
+			void silo_handle::open(const char* filename, IOtype t)
+			{
+				switch (t)
+				{
+				case IOtype::READWRITE:
+					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_RDWR ));
+					//break;
+				case IOtype::EXCLUSIVE:
+					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_EXCL ));
+					//break;
+				case IOtype::DEBUG:
+					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_DEBUG ));
+					//break;
+				case IOtype::CREATE:
+					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_CREAT ));
+					//break;
+				case IOtype::READONLY:
+					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_RDONLY ));
+					RTthrow rtmath::debug::xUnimplementedFunction();
+					break;
+				case IOtype::TRUNCATE:
+					file = std::shared_ptr<siloFile>(new siloFile(filename));
+					break;
+				}
+			}
 
-			bool match_silo_ddOutput(const char*, const char*);
-			void write_silo_ddOutput(const char*,
-				const rtmath::ddscat::ddOutput*);
 		}
 	}
 }
 
+
 void dllEntry()
 {
+	using namespace rtmath::registry;
+	using namespace rtmath::plugins::silo;
 	static const rtmath::registry::DLLpreamble id(
 		"Plugin-SILO",
 		"Example plugin to provide shapefile class with the ability to "
 		"read and write SILO files.",
-		"f8340412-f146-47c4-8b32-a395d829f7b2");
+		PLUGINID);
 	rtmath_registry_register_dll(id);
 
-	static rtmath::registry::IO_class_registry<
-		::rtmath::ddscat::shapefile::shapefile> s;
-	s.io_matches = rtmath::plugins::silo::match_silo_shapefile;
-	s.io_processor = rtmath::plugins::silo::write_silo_shapefile;
+	genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
+		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
 
-	static rtmath::registry::IO_class_registry<
-		::rtmath::ddscat::ddOutput> o;
-	o.io_matches = rtmath::plugins::silo::match_silo_ddOutput;
-	o.io_processor = rtmath::plugins::silo::write_silo_ddOutput;
+	genAndRegisterIOregistry<::rtmath::ddscat::ddOutput, 
+		rtmath::ddscat::ddOutput_IO_output_registry>("silo",PLUGINID);
 
-	rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
-		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-		rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >
-		::registerHook(s);
-	
-	rtmath::ddscat::ddOutput::usesDLLregistry<
-		rtmath::ddscat::ddOutput_IO_output_registry,
-		rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >
-		::registerHook(o);
+	genAndRegisterIOregistry<::rtmath::ddscat::stats::shapeFileStats, 
+		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("silo",PLUGINID);
 }

@@ -16,6 +16,7 @@ namespace rtmath {
 	}
 	namespace plugins {
 		namespace silo {
+			struct silo_handle;
 
 			void writeShape(DBfile *f, const char* meshname, 
 				const rtmath::ddscat::shapefile::shapefile *shp);
@@ -31,6 +32,20 @@ namespace rtmath {
 				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > &vals);
 
 			
+			template <class U>
+			void writePointData(const char* varname, const char* name, DBfile *df, 
+				size_t numPoints,
+				const U** data, size_t nDims, const char* varUnits);
+
+			template <class U>
+			void writeQuadData(const char* varname,
+				const char* name, DBfile *df, 
+				const U** data, size_t nDims, 
+				const std::vector<int> &dimsizes,
+				const char* varunits,
+				const char** varnames
+				);
+
 			/**
 			* \brief Provides the ability to write various types of meshes and 
 			* data to silo files.
@@ -45,13 +60,16 @@ namespace rtmath {
 			class siloFile : public std::enable_shared_from_this<siloFile>
 			{
 			protected:
+				friend struct silo_handle;
 				class meshBase : protected std::enable_shared_from_this<meshBase> {protected: meshBase() {} virtual ~meshBase() {}};
 				siloFile(const char* filename, const char* desc = nullptr);
 			private:
-				DBfile *df;
+				
 				friend class meshBase;
 				//std::vector<std::weak_ptr<meshBase> > meshes;
 			public:
+				/// \todo Make private after silo-ddOutput is ported.
+				DBfile *df;
 				static std::shared_ptr<siloFile> generate
 					(const char* filename, const char* desc = nullptr)
 				{
@@ -108,14 +126,20 @@ namespace rtmath {
 							crdarray.data(), dimLabels, dimUnits);
 					}
 
+					template <class U>
 					void writeData(const char* varname,
-						const T** data, size_t nDims, const char* varUnits = nullptr);
-
-					void writeData(const char* varname,
-						const T* data, const char* varUnits = nullptr)
+						const U** data, size_t nDims, const char* varUnits = nullptr)
 					{
-						const T * cdata[] = { data };
-						writeData(varname, cdata, 1, varUnits);
+						writePointData<U>(varname, this->name.c_str(), this->parent->df,
+							this->numPoints, data, nDims, varUnits);
+					}
+
+					template <class U>
+					void writeData(const char* varname,
+						const U* data, const char* varUnits = nullptr)
+					{
+						const U * cdata[] = { data };
+						writeData<U>(varname, cdata, 1, varUnits);
 					}
 				};
 
@@ -188,20 +212,26 @@ namespace rtmath {
 						return mesh;
 					}
 
+					template <class U>
 					void writeData(const char* varname,
-						const T** data, size_t nDims, 
-						const char *varunits = nullptr,
-						const char ** varNames = nullptr
-						);
-
-					void writeData(const char* varname,
-						const T* data, 
+						const U** data, size_t nDims, 
 						const char *varunits = nullptr,
 						const char ** varNames = nullptr
 						)
 					{
-						const T *cdata[] = { data };
-						writeData(varname, cdata, 1, varunits, varNames);
+						writeQuadData(varname, this->name.c_str(), this->parent->df,
+							data, nDims, this->dimsizes, varUnits, varnames);
+					}
+
+					template<class U>
+					void writeData(const char* varname,
+						const U* data, 
+						const char *varunits = nullptr,
+						const char ** varNames = nullptr
+						)
+					{
+						const U *cdata[] = { data };
+						writeData<U>(varname, cdata, 1, varunits, varNames);
 					}
 				};
 
@@ -228,50 +258,6 @@ namespace rtmath {
 						name, ndims, dimsizes, dimLabels, dimUnits);
 				}
 
-
-
-				/*
-				/// \note dims is only used for quadmeshes
-				template <class T>
-				void createMesh(const char* name, meshType type, size_t ndims, 
-				size_t numCrds, const T* crdarray[], 
-				const int *dims = nullptr,
-				const char *dimLabels[] = nullptr, const char *dimUnits[] = nullptr);
-
-				template <class T>
-				void createMesh(const char* name, meshType type,
-				const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &crds,
-				const int *dims = nullptr,
-				const char *dimLabels[] = nullptr, const char *dimUnits[] = nullptr,
-				)
-				{
-				T* crdarray = new T[crds.rows()];
-				for (size_t i=0; i<crds.cols(); ++i)
-				crdarray[i] = crds.col(i).data();
-				createMesh<T>(name, type, crds.cols(), crds.rows(), crds.data(), 
-				dims, dimLabels, dimUnits);
-				delete[] crdarray;
-				}
-
-				template <class T>
-				void writeData(const char* meshname, const char* varname, 
-				size_t dimensionality, size_t numPoints, const T* data[],
-				const char* varUnits = nullptr);
-
-				template <class T>
-				void writeData(const char* varname, const char* meshname, 
-				meshType type,
-				const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &data,
-				const char* varUnits = nullptr)
-				{
-				T* dataarray = new T[crds.rows()];
-				for (size_t i=0; i<data.cols(); ++i)
-				dataarray[i] = data.col(i).data();
-				writeData<T>(meshname, varname, data.cols(), data.rows(), dataarray, varUnits);
-				delete[] dataarray;
-				}
-
-				*/
 			};
 		}
 	}

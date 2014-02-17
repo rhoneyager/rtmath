@@ -125,10 +125,14 @@ int main(int argc, char** argv)
 				shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
 
 				
-				/// \todo Enable Linux plugin install in cmake
 				for (size_t i=0; i < output.size(); ++i)
 				{
-					outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
+					try {
+						outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
+					} catch (rtmath::debug::xUnknownFileFormat &e)
+					{
+						std::cerr << "Error: unknown file format when writing " << output[i] << endl;
+					}
 				}
 			} catch (std::exception &e)
 			{

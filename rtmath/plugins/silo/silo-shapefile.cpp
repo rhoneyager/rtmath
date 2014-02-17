@@ -18,98 +18,98 @@
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+#include "plugin-silo.h"
 #include "WritePoints.h"
 
 
 namespace rtmath {
-	namespace plugins {
-		namespace silo {
+	namespace registry {
+		using std::shared_ptr;
+		using rtmath::ddscat::ddOutput;
+		using namespace rtmath::plugins::silo;
 
-			bool match_silo_shapefile(const char* fsilo, const char* type)
+
+		shared_ptr<IOhandler> 
+			write_file_type_multi
+			(shared_ptr<IOhandler> sh, const char* filename, 
+			const rtmath::ddscat::shapefile::shapefile *s, 
+			const char* key, IOhandler::IOtype iotype)
+		{
+			using std::shared_ptr;
+			std::shared_ptr<silo_handle> h;
+			if (!sh)
 			{
-				using namespace boost::filesystem;
-				using std::string;
-				using std::ofstream;
-
-				string stype(type);
-				path pPrefix(fsilo);
-				if (stype == "silo" || stype == ".silo") return true;
-				else if (pPrefix.extension() == ".silo") return true;
-				return false;
+				// Access the hdf5 file
+				h = std::shared_ptr<silo_handle>(new silo_handle(filename, iotype));
+			} else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<silo_handle>(sh);
 			}
 
-			/// \todo Replace with the new point mesh writing code
-			void writeShape(DBfile *f, const char* mesh, const rtmath::ddscat::shapefile::shapefile *shp)
+			/// \todo Modify to also support external symlinks
+			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
+			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
+
+			std::string meshname("Points_");
+			if (key)
+				meshname.append(std::string(key));
+			else meshname.append(s->filename);
+
+			Eigen::MatrixXf lPts(s->latticePts.rows(), s->latticePts.cols());
+			lPts = s->latticePts;
+			const char* axislabels[] = { "x", "y", "z" };
+			const char* axisunits[] = { "dipoles", "dipoles", "dipoles" };
+
+			std::string dielsName = meshname;
+			dielsName.append("_Dielectrics");
+			std::string indexName = meshname;
+			indexName.append("_Point_IDs");
+			auto pm = h->file->createPointMesh<float>(meshname.c_str(), lPts, axislabels, axisunits);
+
+			Eigen::MatrixXi lRi = s->latticePtsRi.col(0).cast<int>();
+			pm->writeData<int>(dielsName.c_str(), lRi.data(), "Dimensionless");
+			Eigen::MatrixXi lIndices = s->latticeIndex.cast<int>();
+			pm->writeData<int>(indexName.c_str(), lIndices.data(), "Dimensionless");
+
+			for (const auto &extras : s->latticeExtras)
 			{
-				std::array<std::string, 3> axislabels = { "x", "y", "z" };
-				std::array<std::string, 3> axisunits = { "dipoles", "dipoles", "dipoles" };
-				
-
-				std::vector<std::tuple<std::string, std::string, 
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > vals;
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(0)));
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Point id"), std::string("Dimensionless"),
-					shp->latticeIndex.cast<float>()));
-				/*
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_y"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(1)));
-				vals.push_back(std::tuple<std::string, std::string,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-					(std::string("Dielectric_z"), std::string("Dimensionless"),
-					shp->latticePtsRi.col(2)));
-				*/
-				for (const auto &extras : shp->latticeExtras)
-				{
-					vals.push_back(std::tuple<std::string, std::string,
-						const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-						(extras.first, std::string(""),
-						*(extras.second.get())));
-				}
-					
-				WritePoints(f, mesh, axislabels, axisunits, shp->latticePtsStd, vals);
-
+				std::string varname = meshname;
+				varname.append(extras.first);
+				pm->writeData<float>(varname.c_str(), extras.second->data(), "Unknown");
 			}
 
-			void write_silo_shapefile(const char* fsilo, const rtmath::ddscat::shapefile::shapefile *shp)
-			{
-				using std::string;
-				using std::ofstream;
-				using namespace boost::filesystem;
-
-				DBfile *f = DBCreate(fsilo, DB_CLOBBER, DB_LOCAL,
-					shp->desc.c_str(), // Optional string describing file
-					DB_PDB);
-				TASSERT(f);
-
-				/*
-				Eigen::Matrix3f steps = shp->maxs - shp->mins + 1;
-				RectilinearMesh3D B((int)steps(0), (int)steps(1), (int)steps(2));
-				B.SetXValues(shp->mins(0), shp->maxs(0));
-				B.SetYValues(shp->mins(1), shp->maxs(1));
-				B.SetZValues(shp->mins(2), shp->maxs(2));
-
-				for (const auto &diel : shp->Dielectrics)
-				B.AddMaterial(boost::lexical_cast<std::string>(diel).c_str());
-
-				B.WriteFile(f);
-				*/
-
-				writeShape(f, "PointMesh", shp);
-				DBClose(f);
-
-			}
-
+			return h; // Pass back the handle
 		}
+
+
+		shared_ptr<IOhandler> 
+			write_file_type_multi
+			(shared_ptr<IOhandler> sh, const char* filename, 
+			const rtmath::ddscat::stats::shapeFileStats *s, 
+			const char* key, IOhandler::IOtype iotype)
+		{
+			using std::shared_ptr;
+			std::shared_ptr<silo_handle> h;
+			if (!sh)
+			{
+				// Access the hdf5 file
+				h = std::shared_ptr<silo_handle>(new silo_handle(filename, iotype));
+			} else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<silo_handle>(sh);
+			}
+
+			write_file_type_multi(h, filename, s->_shp.get(), key, iotype);
+
+
+			return h; // Pass back the handle
+		}
+
+
 	}
 }

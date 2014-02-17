@@ -90,44 +90,19 @@ namespace rtmath {
 
 void dllEntry()
 {
-	static const rtmath::registry::DLLpreamble id(
+	using namespace rtmath::registry;
+	using namespace rtmath::plugins::hdf5;
+	static const DLLpreamble id(
 		"Plugin-HDF5",
 		"Plugin that provides HDF5 io routines for various classes.",
 		PLUGINID);
-	//std::cerr << "\tLoading " << PLUGINID << std::endl;
 	rtmath_registry_register_dll(id);
 
-	static rtmath::registry::IO_class_registry<
-		::rtmath::ddscat::shapefile::shapefile> s;
-	s.io_matches = rtmath::plugins::hdf5::match_hdf5_shapefile;
-	s.io_processor = rtmath::plugins::hdf5::write_hdf5_shapefile;
-	s.io_multi_matches = rtmath::plugins::hdf5::match_hdf5_multi;
-	s.io_multi_processor = rtmath::plugins::hdf5::write_hdf5_multi_shapefile;
-	rtmath::ddscat::shapefile::shapefile::usesDLLregistry<
-		rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-		rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >
-		::registerHook(s);
+	genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile,
+		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry<::rtmath::ddscat::stats::shapeFileStats,
+		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry<::rtmath::ddscat::ddOutput,
+		rtmath::ddscat::ddOutput_IO_output_registry>("hdf5", PLUGINID);
 
-
-	static rtmath::registry::IO_class_registry<
-		::rtmath::ddscat::stats::shapeFileStats> s2;
-	s2.io_matches = rtmath::plugins::hdf5::match_hdf5_shapefile;
-	s2.io_processor = rtmath::plugins::hdf5::write_hdf5_shapestats;
-	s2.io_multi_matches = rtmath::plugins::hdf5::match_hdf5_multi;
-	s2.io_multi_processor = rtmath::plugins::hdf5::write_hdf5_multi_shapestats;
-	rtmath::ddscat::stats::shapeFileStats::usesDLLregistry<
-		rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
-		rtmath::registry::IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >
-		::registerHook(s2);
-
-	static rtmath::registry::IO_class_registry<
-		::rtmath::ddscat::ddOutput> s3;
-	s3.io_matches = rtmath::plugins::hdf5::match_hdf5_shapefile;
-	s3.io_processor = rtmath::plugins::hdf5::write_hdf5_ddOutput;
-	s3.io_multi_matches = rtmath::plugins::hdf5::match_hdf5_multi;
-	s3.io_multi_processor = rtmath::plugins::hdf5::write_hdf5_multi_ddoutputs;
-	rtmath::ddscat::ddOutput::usesDLLregistry<
-		rtmath::ddscat::ddOutput_IO_output_registry,
-		rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >
-		::registerHook(s3);
 }

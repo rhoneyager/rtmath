@@ -30,7 +30,7 @@
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
-			
+
 			std::shared_ptr<H5::Group> write_hdf5_ddScattMatrix(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::ddScattMatrix *v)
 			{
@@ -46,7 +46,7 @@ namespace rtmath {
 				}
 
 				shared_ptr<Group> gv(new Group(base->createGroup(rotid)));
-				
+
 				addAttr<double, Group>(gv, "Pol", v->pol());
 				addAttr<double, Group>(gv, "Pol_Linear", v->polLin());
 				addAttr<double, Group>(gv, "Frequency", v->freq());
@@ -80,12 +80,12 @@ namespace rtmath {
 					o << r->beta() << "," << r->theta() << "," << r->phi();
 					rotid = o.str();
 				}
-				
+
 				shared_ptr<Group> grpRot;
 				if (!inplace)
 					grpRot = shared_ptr<Group> (new Group(base->createGroup(rotid)));
 				else grpRot = base;
-				
+
 				addAttr<double, Group>(grpRot, "Beta", r->beta());
 				addAttr<double, Group>(grpRot, "Theta", r->theta());
 				addAttr<double, Group>(grpRot, "Phi", r->phi());
@@ -164,7 +164,7 @@ namespace rtmath {
 				writeGroup("FML", s->fmls);
 				writeGroup("SCA", s->scas);
 				writeGroup("SCA_original", s->scas_original);
-				
+
 
 				// Weight table (assuming all scas and fmls are accounted for)
 
@@ -183,77 +183,85 @@ namespace rtmath {
 
 			/// \todo Add in writing handlers for ddoutputsingle and ddscatmatrix
 
-			std::shared_ptr<rtmath::registry::IOhandler> write_hdf5_multi_ddoutputs
-				(std::shared_ptr<rtmath::registry::IOhandler> sh, 
-				const char* filename, 
-				const rtmath::ddscat::ddOutput *s, 
-				const char* key, // Unused for this type of write
-				rtmath::registry::IOhandler::IOtype iotype)
-			{
-				using std::shared_ptr;
-				using namespace H5;
-				Exception::dontPrint();
-				std::shared_ptr<hdf5_handle> h;
-				if (!sh)
-				{
-					// Access the hdf5 file
-					h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename, iotype));
-				} else {
-					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
-					h = std::dynamic_pointer_cast<hdf5_handle>(sh);
-				}
 
-				// Check for the existence of the appropriate:
-				// Group "Hashed"
-				shared_ptr<Group> grpHashes = openOrCreateGroup(h->file, "Hashed");
-				// Group "Hashed"/shp->hash
-				shared_ptr<Group> grpHash = openOrCreateGroup(grpHashes, s->shape->hash().string().c_str());
-				// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
-				/// \note The unlink operation does not really free the space..... Should warn the user.
-				shared_ptr<Group> gRuns = openOrCreateGroup(grpHashes, "Runs");
-
-				//if (groupExists(grpRuns, "Stats")) return h; //grpHash->unlink("Stats");
-
-				/// \todo Modify to also support external symlinks
-				shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
-				//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
-				//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
-
-				return h; // Pass back the handle
-			}
-
+			/*
 			/// Routine writes a full, isolated shapefile entry
 			void write_hdf5_ddOutput(const char* filename,
-				const rtmath::ddscat::ddOutput *s)
+			const rtmath::ddscat::ddOutput *s)
 			{
-				try {
-					using std::string;
-					using std::ofstream;
-					using std::shared_ptr;
-					using namespace H5;
+			try {
+			using std::string;
+			using std::ofstream;
+			using std::shared_ptr;
+			using namespace H5;
 
-					// Turn off the auto-printing when failure occurs so that we can
-					// handle the errors appropriately
-					Exception::dontPrint();
+			// Turn off the auto-printing when failure occurs so that we can
+			// handle the errors appropriately
+			Exception::dontPrint();
 
-					shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
-					shared_ptr<Group> grpHashes(new Group(file->createGroup("Hashed")));
-					shared_ptr<Group> shpgroup(new Group(grpHashes->createGroup(s->shape->hash().string().c_str())));
-					shared_ptr<Group> gRuns(new Group(shpgroup->createGroup("Runs")));
-					shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
-					//shared_ptr<Group> shapebase = write_hdf5_shaperawdata(shpgroup, s->_shp.get());
+			shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
+			shared_ptr<Group> grpHashes(new Group(file->createGroup("Hashed")));
+			shared_ptr<Group> shpgroup(new Group(grpHashes->createGroup(s->shape->hash().string().c_str())));
+			shared_ptr<Group> gRuns(new Group(shpgroup->createGroup("Runs")));
+			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
+			//shared_ptr<Group> shapebase = write_hdf5_shaperawdata(shpgroup, s->_shp.get());
 
 
-					//statsbase->link(H5L_TYPE_HARD, ".", "/Stats");
-					//shapebase->link(H5L_TYPE_HARD, ".", "/Shape");
-					//file->link(H5L_TYPE_SOFT, newbase->, "Shape");
-				} catch (std::exception &e)
-				{
-					std::cerr << e.what() << "\n";
-					throw e;
-				}
+			//statsbase->link(H5L_TYPE_HARD, ".", "/Stats");
+			//shapebase->link(H5L_TYPE_HARD, ".", "/Shape");
+			//file->link(H5L_TYPE_SOFT, newbase->, "Shape");
+			} catch (std::exception &e)
+			{
+			std::cerr << e.what() << "\n";
+			throw e;
+			}
+			}
+			*/
+		}
+	}
+
+	namespace registry
+	{
+		using std::shared_ptr;
+		using namespace rtmath::plugins::hdf5;
+		
+		shared_ptr<IOhandler> 
+			write_file_type_multi
+			(shared_ptr<IOhandler> sh, const char* filename, 
+			const rtmath::ddscat::ddOutput *s, 
+			const char* key, IOhandler::IOtype iotype)
+		{
+			using std::shared_ptr;
+			using namespace H5;
+			Exception::dontPrint();
+			std::shared_ptr<hdf5_handle> h;
+			if (!sh)
+			{
+				// Access the hdf5 file
+				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename, iotype));
+			} else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
 			}
 
+			// Check for the existence of the appropriate:
+			// Group "Hashed"
+			shared_ptr<Group> grpHashes = openOrCreateGroup(h->file, "Hashed");
+			// Group "Hashed"/shp->hash
+			shared_ptr<Group> grpHash = openOrCreateGroup(grpHashes, s->shape->hash().string().c_str());
+			// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
+			/// \note The unlink operation does not really free the space..... Should warn the user.
+			shared_ptr<Group> gRuns = openOrCreateGroup(grpHashes, "Runs");
+
+			//if (groupExists(grpRuns, "Stats")) return h; //grpHash->unlink("Stats");
+
+			/// \todo Modify to also support external symlinks
+			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
+			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
+			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
+
+			return h; // Pass back the handle
 		}
+
 	}
 }

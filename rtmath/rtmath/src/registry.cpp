@@ -548,6 +548,35 @@ namespace rtmath
 			}
 		}
 		*/
+
+		bool match_file_type(const char* filename, const char* type, const char* ext)
+		{
+			using namespace boost::filesystem;
+			using std::string;
+			using std::ofstream;
+
+			string sext(ext);
+			string sext2(".");
+			sext2.append(sext);
+			string stype(type);
+			path pPrefix(filename);
+			if (stype == ext || stype == sext2) return true;
+			else if (pPrefix.extension().string() == sext2) return true;
+			return false;
+		}
+
+		bool match_file_type_multi(const char* filename, const char* type, 
+			std::shared_ptr<rtmath::registry::IOhandler> h, const char* pluginid, const char* ext)
+		{
+			std::string spluginid(pluginid);
+			if (h)
+			{
+				if (h->getId() != spluginid) return false;
+				return true;
+			} else {
+				return match_file_type(filename, type, ext);
+			}
+		}
 	}
 }
 
