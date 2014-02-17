@@ -16,6 +16,9 @@
 #include <boost/serialization/version.hpp>
 
 namespace rtmath {
+	namespace Voronoi {
+		class VoronoiDiagram;
+	}
 	namespace ddscat {
 		namespace shapefile {
 			class shapefile;
@@ -179,7 +182,17 @@ namespace rtmath {
 				 * These tables are not saved in the standard shapefile format, though they may 
 				 * be serialized. The bov format should write them out.
 				 **/
-				std::map < std::string, boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > latticeExtras;
+				mutable std::map < std::string, boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > latticeExtras;
+
+				/// Container for temporary Voronoi diagrams
+				mutable std::map < std::string, boost::shared_ptr<Voronoi::VoronoiDiagram> > voronoi_diagrams;
+
+				/// Convenient function override to generate a given Voronoi diagram uniquely
+				boost::shared_ptr<Voronoi::VoronoiDiagram> generateVoronoi(
+					const std::string &name,
+					std::function < boost::shared_ptr<Voronoi::VoronoiDiagram>(
+					Eigen::Array3f, Eigen::Array3f,
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>)>) const;
 
 				size_t numPoints;
 				std::set<size_t> Dielectrics;

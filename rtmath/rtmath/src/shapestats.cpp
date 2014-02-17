@@ -78,7 +78,9 @@ namespace rtmath {
 
 			shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile::shapefile> &shp)
 			{
-				_shp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(*shp));
+				// Should the shape be spliced, or not?
+				_shp = shp;
+				//_shp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(*shp));
 				calcStatsBase();
 			}
 
@@ -250,9 +252,17 @@ namespace rtmath {
 				// prefilter the points for the convex hull stats.
 				if (doVoronoi)
 				{
-					auto vd = VoronoiDiagram::generateStandard(_shp->mins, _shp->maxs, _shp->latticePts);
+					boost::shared_ptr<VoronoiDiagram> vd = _shp->generateVoronoi(
+						"standard", VoronoiDiagram::generateStandard);
 
-					auto candidate_hull_points = vd->calcCandidateConvexHullPoints();
+					boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+						candidate_hull_points;
+					if (_shp->latticeExtras.count("cvxcands"))
+					{
+						candidate_hull_points = _shp->latticeExtras["cvxcands"];
+					} else {
+						candidate_hull_points = vd->calcCandidateConvexHullPoints();
+					}
 					convexHull cvHull(candidate_hull_points);
 					cvHull.constructHull();
 					max_distance = cvHull.maxDiameter();
@@ -434,7 +444,7 @@ namespace rtmath {
 			}
 
 			boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
-				const boost::shared_ptr<shapefile::shapefile> &shp)
+				const boost::shared_ptr<const shapefile::shapefile> &shp)
 			{
 				using boost::filesystem::path;
 				using boost::filesystem::exists;

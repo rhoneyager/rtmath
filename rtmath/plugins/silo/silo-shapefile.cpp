@@ -56,9 +56,9 @@ namespace rtmath {
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 
 			std::string meshname("Points_");
-			if (key)
-				meshname.append(std::string(key));
-			else meshname.append(s->filename);
+			//if (key)
+			//	meshname.append(std::string(key));
+			//else meshname.append(s->filename);
 
 			Eigen::MatrixXf lPts(s->latticePts.rows(), s->latticePts.cols());
 			lPts = s->latticePts;
@@ -66,9 +66,9 @@ namespace rtmath {
 			const char* axisunits[] = { "dipoles", "dipoles", "dipoles" };
 
 			std::string dielsName = meshname;
-			dielsName.append("_Dielectrics");
+			dielsName.append("Dielectrics");
 			std::string indexName = meshname;
-			indexName.append("_Point_IDs");
+			indexName.append("Point_IDs");
 			auto pm = h->file->createPointMesh<float>(meshname.c_str(), lPts, axislabels, axisunits);
 
 			Eigen::MatrixXi lRi = s->latticePtsRi.col(0).cast<int>();
@@ -80,7 +80,19 @@ namespace rtmath {
 			{
 				std::string varname = meshname;
 				varname.append(extras.first);
-				pm->writeData<float>(varname.c_str(), extras.second->data(), "Unknown");
+				if (extras.second->cols() < 4)
+					pm->writeData<float>(varname.c_str(), extras.second->data(), "Unknown");
+				else
+				{
+					// Make a new mesh from the first three columns of the data
+					std::string meshname2(varname);
+					meshname2.append("_mesh");
+					Eigen::MatrixXf pts = extras.second->block(0, 0, extras.second->rows(), 3);
+					// Extract the values
+					Eigen::MatrixXf vals = extras.second->block(0, 3, extras.second->rows(), extras.second->cols() - 3);
+					auto npm = h->file->createPointMesh<float>(meshname2.c_str(), pts, axislabels, axisunits);
+					npm->writeData<float>(varname.c_str(), vals.data(), "Unknown");
+				}
 			}
 
 			return h; // Pass back the handle

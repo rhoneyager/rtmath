@@ -114,7 +114,7 @@ namespace rtmath {
 				mutable std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
 
 				/// The shape
-				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> _shp;
+				boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> _shp;
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 			protected:
 				shapeFileStatsBase();
@@ -169,7 +169,7 @@ namespace rtmath {
 				///
 				/// \note Reads and writes to hash database for precomputed stats
 				static boost::shared_ptr<shapeFileStats> genStats(
-					const boost::shared_ptr<shapefile::shapefile> &shp);
+					const boost::shared_ptr<const shapefile::shapefile> &shp);
 
 				/**
 				* \brief Adds shapestats options to a program

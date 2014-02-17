@@ -115,10 +115,11 @@ int main(int argc, char** argv)
 			// Load the shape file
 			try {
 
-				shp = boost::shared_ptr<shapefile> (new shapefile(input));
-				stats = shapeFileStats::genStats(shp);
 				using namespace rtmath::Voronoi;
-				auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
+				shp = boost::shared_ptr<shapefile> (new shapefile(input));
+				auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
+				stats = shapeFileStats::genStats(shp);
+				//auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
 				auto cvxCands = vd->calcCandidateConvexHullPoints();
 				shp->latticeExtras["cvxCands"] = cvxCands;
 				auto depth = vd->calcSurfaceDepth();
@@ -132,6 +133,7 @@ int main(int argc, char** argv)
 					} catch (rtmath::debug::xUnknownFileFormat &e)
 					{
 						std::cerr << "Error: unknown file format when writing " << output[i] << endl;
+						std::cerr << e.what() << endl;
 					}
 				}
 			} catch (std::exception &e)

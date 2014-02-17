@@ -103,7 +103,7 @@ namespace rtmath {
 			/// Hash of shape file contents (an identifier)
 			HASH_t shapeHash;
 			/// The shape file (may load fully later)
-			mutable boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape;
+			mutable boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> shape;
 			/// Shape file statistics (may load fully later)
 			mutable boost::shared_ptr<stats::shapeFileStats> stats;
 			/// Load the full shape file and stats

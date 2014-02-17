@@ -257,6 +257,20 @@ namespace rtmath {
 				initDiel(0), sx(0), sy(0), sz(0), numFilled(0), numTotal(0), index(0)
 			{}
 
+			boost::shared_ptr<Voronoi::VoronoiDiagram> shapefile::generateVoronoi(
+				const std::string &name,
+				std::function < boost::shared_ptr<Voronoi::VoronoiDiagram>(
+				const Eigen::Array3f, const Eigen::Array3f,
+				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>)> f) const
+			{
+				if (voronoi_diagrams.count(name))
+					return voronoi_diagrams[name];
+				auto res = f(mins, maxs, latticePts);
+
+				voronoi_diagrams[name] = res;
+				return res;
+			}
+
 			boost::shared_ptr<shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
 				decimationFunction dFunc) const
 			{
