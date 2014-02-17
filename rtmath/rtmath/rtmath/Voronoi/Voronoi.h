@@ -109,9 +109,15 @@ namespace rtmath {
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
 				calcSurfaceDepth() const;
 
-			/// Calculate candidate convex hull points (used in max diameter calculations)
+			/// Calculate candidate convex hull points (used in max diameter calculations).
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
 				calcCandidateConvexHullPoints() const;
+
+			/// \brief Calculate the external surface area fraction of all 
+			/// points.
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+				calcPointsSAfracExternal() const;
+
 
 			/// Calculate the surface area of the bulk figure
 			double surfaceArea() const;

@@ -136,7 +136,7 @@ namespace rtmath {
 
 				aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()),1.f/3.f);
 				aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()),0.5);
-				f = V / s->V_cell_const;
+				f = s->V_cell_const / V;
 
 
 				auto fCheck = [](float &val)

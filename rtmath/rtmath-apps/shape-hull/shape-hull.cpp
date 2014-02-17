@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 			//("convex-hull,c", "Calculate and write convex hull")
 			;
 		rtmath::debug::add_options(cmdline, config, hidden);
+		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
@@ -72,6 +73,7 @@ int main(int argc, char** argv)
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
+		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 		rtmath::plugins::internal::tsv::registerTSV();
 
 
@@ -122,8 +124,10 @@ int main(int argc, char** argv)
 				//auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
 				auto cvxCands = vd->calcCandidateConvexHullPoints();
 				shp->latticeExtras["cvxCands"] = cvxCands;
-				auto depth = vd->calcSurfaceDepth();
-				shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
+				auto SAfracExternal = vd->calcPointsSAfracExternal();
+				shp->latticeExtras["SAfracExternal"] = SAfracExternal;
+				//auto depth = vd->calcSurfaceDepth();
+				//shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
 
 				
 				for (size_t i=0; i < output.size(); ++i)

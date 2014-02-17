@@ -139,7 +139,7 @@ namespace rtmath
 			/// Position vector of particle
 			Eigen::Matrix3d pos;
 			/// Convenience function to see if the particle touches the 'surface'
-			bool isSurface() const { if (sa_ext) return true; return false; }
+			bool isSurface() const { if (!sa_full) return false;  if (sa_ext) return true; return false; }
 		};
 
 		const size_t ArraySize = 50;
@@ -451,8 +451,11 @@ namespace rtmath
 
 			auto initFilledPoints = calcCandidateConvexHullPoints();
 
-			for (size_t i=0; i< (size_t) initFilledPoints->rows(); ++i)
-				provided.insert(&vertices[(size_t) (*initFilledPoints)(i, 3)]);
+			for (size_t i = 0; i < (size_t)initFilledPoints->rows(); ++i)
+			{
+				size_t index = (size_t)(*initFilledPoints)(i, 3);
+				provided.insert(&vertices[index]);
+			}
 
 			generateGraph<bSetVertex, orderedVertex>::generate(
 				setVertices, provided, order, remaining, ignored);
@@ -479,11 +482,11 @@ namespace rtmath
 
 		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
 		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-			VoronoiDiagram::calcCandidateConvexHullPoints() const
+			VoronoiDiagram::calcPointsSAfracExternal() const
 		{
-			if (results.count("CandidateConvexHullPoints"))
+			if (results.count("SAfracExternal"))
 			{
-				return results.at("CandidateConvexHullPoints");
+				return results.at("SAfracExternal");
 			}
 			// Computational cost should be around the same with / without first preselecting 
 			// surface points from the more complete diagram. I usually need the full diagram, 
@@ -502,7 +505,7 @@ namespace rtmath
 			size_t numCells = 0;
 			for (const auto &cell : *(precalced->getCells()))
 			{
-				if (cell.isSurface())
+				//if (cell.isSurface())
 				{
 					vcSmall->put((int) numCells, cell.pos(0), cell.pos(1), cell.pos(2));
 					numCells++;
@@ -519,40 +522,116 @@ namespace rtmath
 
 			// Check each particle to see if on the container surface
 			size_t numSurfacePoints = 0;
+			size_t numPointCells = 0;
 
 			// Using the precalced loop here
 			for (const auto &cell : *(precalcedSmall->getCells()))
 			{
-				if (cell.isSurface())
+				//if (cell.isSurface())
+				double extVfrac = cell.sa_ext / cell.sa_full; // Exterior volume fraction test
+				if (!cell.sa_full)
+				{
+					//cerr << "Point cell at " << cell.pos(0) << ", " << cell.pos(1) << ", " << cell.pos(2) << endl;
+					//extVfrac = 0; // Oddly occurs in some of the cells
+					numPointCells++;
+					continue;
+				}
+
 				{
 					(*out)(numSurfacePoints, 0) = (float) cell.pos(0);
 					(*out)(numSurfacePoints, 1) = (float) cell.pos(1);
 					(*out)(numSurfacePoints, 2) = (float) cell.pos(2);
-					(*out)(numSurfacePoints, 3) = (float) cell.id; // Initial point id
+					(*out)(numSurfacePoints, 3) = (float) extVfrac; // cell.id; // Initial point id
 					numSurfacePoints++;
 				}
 			}
 
+			cerr << "Number of point cells: " << numPointCells << endl;
+
 			
 			out->conservativeResize(numSurfacePoints, 4);
 
-			// Test output to show cell boundaries for the hull
-			//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
-			//FILE *oCandidates=fopen("CandidateConvexHullPoints_extfaces.pov","w");
-			// Some stuff for random cell highlighting (to be moved to as yet uncreated routines)
-			//std::default_random_engine generator;
-			//std::binomial_distribution<int> distribution(1, 0.01);
-			//std::discrete_distribution<int> distribution(2,0,1,[](double d){if (d>0.1) return 1; return 2500; });
-			//std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
-			//drawPOV_polygon(oCandidates, f_vert, v, j);
-			//vc->draw_particles_pov("CandidateConvexHullPoints_p.pov");
-			//vc->draw_cells_pov("CandidateConvexHullPoints_v.pov");
-			//vc->draw_particles("CandidateConvexHullPoints_p.gnu");
-			//vc->draw_cells_gnuplot("CandidateConvexHullPoints_v.gnu");
-			//fclose(oCandidates);
-
-			results["CandidateConvexHullPoints"] = out;
+			results["SAfracExternal"] = out;
 			return out;
+		}
+
+		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
+		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+			VoronoiDiagram::calcCandidateConvexHullPoints() const
+		{
+				if (results.count("CandidateConvexHullPoints"))
+				{
+					return results.at("CandidateConvexHullPoints");
+				}
+				// Computational cost should be around the same with / without first preselecting 
+				// surface points from the more complete diagram. I usually need the full diagram, 
+				// though, and it is more expensive to calculate in the other order.
+				regenerateFull();
+
+				using namespace voro;
+				// From the full diagram, extract the surface points only.
+				// Need to regenerate the cells without a prespecified size.
+				const int n_x = 50, n_y = 50, n_z = 50, init_grid = 150;
+				using namespace voro;
+				boost::shared_ptr<voro::container> vcSmall(new container(
+					mins(0), maxs(0), mins(1), maxs(1), mins(2), maxs(2),
+					n_x, n_y, n_z, false, false, false, init_grid));
+				// Iterate over the precalced entries and insert only point that touch a boundary
+				size_t numCells = 0;
+				for (const auto &cell : *(precalced->getCells()))
+				{
+					if (cell.isSurface())
+					{
+						vcSmall->put((int)numCells, cell.pos(0), cell.pos(1), cell.pos(2));
+						numCells++;
+					}
+				}
+
+				// It's optional to use a pool here, since this Voronoi diagram is much smaller than the other.
+				boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
+
+				using namespace voro;
+				boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > out(
+					new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(src->rows(), 4));
+				out->setZero();
+
+				// Check each particle to see if on the container surface
+				size_t numSurfacePoints = 0;
+
+				// Using the precalced loop here
+				for (const auto &cell : *(precalcedSmall->getCells()))
+				{
+					if (cell.isSurface())
+					//double extVfrac = cell.sa_ext / cell.sa_full; // Exterior volume fraction test
+					{
+						(*out)(numSurfacePoints, 0) = (float)cell.pos(0);
+						(*out)(numSurfacePoints, 1) = (float)cell.pos(1);
+						(*out)(numSurfacePoints, 2) = (float)cell.pos(2);
+						(*out)(numSurfacePoints, 3) = (float)cell.id; // Initial point id
+						numSurfacePoints++;
+					}
+				}
+
+
+				out->conservativeResize(numSurfacePoints, 4);
+
+				// Test output to show cell boundaries for the hull
+				//std::ofstream oCandidates("CandidateConvexHullPoints_extfaces.pov");
+				//FILE *oCandidates=fopen("CandidateConvexHullPoints_extfaces.pov","w");
+				// Some stuff for random cell highlighting (to be moved to as yet uncreated routines)
+				//std::default_random_engine generator;
+				//std::binomial_distribution<int> distribution(1, 0.01);
+				//std::discrete_distribution<int> distribution(2,0,1,[](double d){if (d>0.1) return 1; return 2500; });
+				//std::ofstream oint("CandidateConvexHullPoints_intfaces.pov");
+				//drawPOV_polygon(oCandidates, f_vert, v, j);
+				//vc->draw_particles_pov("CandidateConvexHullPoints_p.pov");
+				//vc->draw_cells_pov("CandidateConvexHullPoints_v.pov");
+				//vc->draw_particles("CandidateConvexHullPoints_p.gnu");
+				//vc->draw_cells_gnuplot("CandidateConvexHullPoints_v.gnu");
+				//fclose(oCandidates);
+
+				results["CandidateConvexHullPoints"] = out;
+				return out;
 		}
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::generateStandard(
