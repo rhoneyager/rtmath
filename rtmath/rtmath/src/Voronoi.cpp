@@ -323,7 +323,7 @@ namespace rtmath
 			const int n_x=50,n_y=50,n_z=50, init_grid=150;
 			using namespace voro;
 			vc = boost::shared_ptr<voro::container>(new container(
-				mins(0),maxs(0),mins(1),maxs(1),mins(2),maxs(2),
+				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,
 				n_x,n_y,n_z,false,false,false,init_grid));
 
 			//wall_initial_shape wis;
@@ -362,6 +362,13 @@ namespace rtmath
 				(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(*src) );
 			out->conservativeResize(src->rows(), 4);
 			out->col(3).setZero();
+
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > outVectors
+				(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(*src));
+			outVectors->conservativeResize(src->rows(), 6);
+			outVectors->col(3).setZero();
+			outVectors->col(4).setZero();
+			outVectors->col(5).setZero();
 			// Using depGraph and the initial Candidate Convex Hull points
 
 			// Construct the dependency graph
@@ -467,17 +474,35 @@ namespace rtmath
 			// Match the ordered vertices with their row
 			for (auto &it : order)
 			{
-				const size_t &rank = it.second;
-				auto IT = it.first;//.lock();
+				const size_t &rank = std::get<1>(it); // it.second;
+				auto IT = std::get<0>(it); // .first;//.lock();
+				auto parent = std::get<2>(it);
 				size_t id = vertexIdMap->at(IT);
 				(*out)(id, 3) = (float) rank;
+				if (parent)
+				{
+					size_t parentID = vertexIdMap->at(parent);
+					outVectors->block<1, 3>(id, 3) =
+						outVectors->block<1, 3>(parentID, 0) - outVectors->block<1, 3>(id, 0);
+				}
+				else {
+					outVectors->block<1, 3>(id, 3).setZero();
+				}
 			}
 
 			// Clean up vertex graph
 			m.destroy_ptr(vertexIdMap);
 
 			results["SurfaceDepth"] = out;
+			results["SurfaceDepthVectors"] = outVectors;
 			return out;
+		}
+
+		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceDepthVectors() const
+		{
+			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
+			calcSurfaceDepth();
+			return results.at("SurfaceDepthVectors");
 		}
 
 		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
@@ -499,7 +524,7 @@ namespace rtmath
 			const int n_x=50,n_y=50,n_z=50, init_grid=150;
 			using namespace voro;
 			boost::shared_ptr<voro::container> vcSmall(new container(
-				mins(0),maxs(0),mins(1),maxs(1),mins(2),maxs(2),
+				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,
 				n_x,n_y,n_z,false,false,false,init_grid));
 			// Iterate over the precalced entries and insert only point that touch a boundary
 			size_t numCells = 0;
@@ -574,7 +599,7 @@ namespace rtmath
 				const int n_x = 50, n_y = 50, n_z = 50, init_grid = 150;
 				using namespace voro;
 				boost::shared_ptr<voro::container> vcSmall(new container(
-					mins(0), maxs(0), mins(1), maxs(1), mins(2), maxs(2),
+					mins(0)-1, maxs(0)+1, mins(1)-1, maxs(1)+1, mins(2)-1, maxs(2)+1,
 					n_x, n_y, n_z, false, false, false, init_grid));
 				// Iterate over the precalced entries and insert only point that touch a boundary
 				size_t numCells = 0;

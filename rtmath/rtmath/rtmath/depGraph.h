@@ -37,7 +37,13 @@ namespace rtmath
 
 
 		typedef std::unordered_set< vertex* > setVertex;
-		typedef std::vector< std::pair<vertex*, size_t> > orderedVertex;
+		/// \brief Provides vertex ordering when the graph is filled.
+		/// \param First vertex* is the vertex
+		/// \param size_t is the round in which the vertex was filled.
+		/// \param Second vertex* is the parent vertex that was the 
+		/// source for the filling (if an OR vertex). If null, then 
+		/// there was no single parent.
+		typedef std::vector< std::tuple<vertex*, size_t, vertex*> > orderedVertex;
 		typedef std::array<vertex*, 80> stackVertex;
 
 
@@ -121,6 +127,7 @@ namespace rtmath
 					for (auto it = _remaining.begin(); it != _remaining.end(); it++)
 					{
 						bool ready = false;
+						vertex* parent = nullptr;
 						//if (it->expired()) continue;
 						auto IT = *it; //->lock();
 						//std::cerr << "Checking " << IT.get() << " with " << IT->_slots.size() 
@@ -166,7 +173,11 @@ namespace rtmath
 							if (!(*ot)) continue;
 							//if (ot->expired()) continue;
 							if (_filled.count(*ot)) m++;
-							if (m && IT->_slotOR) break; // No need to go on
+							if (m && IT->_slotOR)
+							{
+								parent = *ot;
+								break; // No need to go on
+							}
 						}
 						if (m && IT->_slotOR) ready = true;
 						if (m == n) ready = true;
@@ -174,8 +185,8 @@ namespace rtmath
 						// If ready, place in _order, _filled and remove from _remaining
 						if (ready)
 						{
-							_order.push_back(std::pair<vertex*, size_t>
-								(*it, order));
+							_order.push_back(std::tuple<vertex*, size_t, vertex*>
+								(*it, order, parent));
 							_filled.insert(*it);
 							cleanup.insert(*it);
 							vertices_added++;

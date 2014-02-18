@@ -126,9 +126,10 @@ int main(int argc, char** argv)
 				shp->latticeExtras["cvxCands"] = cvxCands;
 				auto SAfracExternal = vd->calcPointsSAfracExternal();
 				shp->latticeExtras["SAfracExternal"] = SAfracExternal;
-				//auto depth = vd->calcSurfaceDepth();
-				//shp->latticeExtras["SurfaceDepth"] = depth; //.col(3);
-
+				auto depth = vd->calcSurfaceDepth();
+				shp->latticeExtras["SurfaceDepth"] = depth;
+				auto depthSrc = vd->calcSurfaceDepthVectors();
+				shp->latticeExtras["SurfaceDepthVectors"] = depthSrc;
 				
 				for (size_t i=0; i < output.size(); ++i)
 				{

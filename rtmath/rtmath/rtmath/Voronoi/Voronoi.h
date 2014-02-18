@@ -109,6 +109,12 @@ namespace rtmath {
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
 				calcSurfaceDepth() const;
 
+			/// \brief Calculate the depth from the surface of each cell, and output 
+			/// as an Eigen::Matrix, following the initial point indices.
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+				calcSurfaceDepthVectors() const;
+
+
 			/// Calculate candidate convex hull points (used in max diameter calculations).
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
 				calcCandidateConvexHullPoints() const;
