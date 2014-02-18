@@ -89,9 +89,12 @@ namespace rtmath {
 					meshname2.append("_mesh");
 					Eigen::MatrixXf pts = extras.second->block(0, 0, extras.second->rows(), 3);
 					// Extract the values
-					Eigen::MatrixXf vals = extras.second->block(0, 3, extras.second->rows(), extras.second->cols() - 3);
+					size_t ndims = extras.second->cols() - 3;
+					Eigen::MatrixXf vals = extras.second->block(0, 3, extras.second->rows(), ndims);
 					auto npm = h->file->createPointMesh<float>(meshname2.c_str(), pts, axislabels, axisunits);
-					npm->writeData<float>(varname.c_str(), vals.data(), "Unknown");
+					
+					npm->writeData<float>(varname.c_str(), vals, "Unknown");
+					//npm->writeData<float>(varname.c_str(), vals.data(), "Unknown");
 				}
 			}
 

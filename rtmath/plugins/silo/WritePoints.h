@@ -118,12 +118,23 @@ namespace rtmath {
 						const char *dimLabels[] = nullptr, const char *dimUnits[] = nullptr
 						)
 					{
-						std::vector<const T*> crdarray(crds.rows());
+						std::vector<const T*> crdarray(crds.cols());
 						//std::unique_ptr<T[]> crdarray(new T[crds.rows()]);
 						for (size_t i=0; i<(size_t)crds.cols(); ++i)
 							crdarray[i] = crds.col(i).data();
 						return createMesh(parent, name, crds.cols(), crds.rows(), 
 							crdarray.data(), dimLabels, dimUnits);
+					}
+
+					template <class U>
+					void writeData(const char* varname,
+						const Eigen::Matrix<U, Eigen::Dynamic, Eigen::Dynamic> &vals,
+						const char* varUnits = nullptr)
+					{
+						std::vector<const U*> data(vals.cols());
+						for (size_t i = 0; i<(size_t)vals.cols(); ++i)
+							data[i] = vals.col(i).data();
+						writeData(varname, data.data(), (size_t)vals.cols(), varUnits);
 					}
 
 					template <class U>
