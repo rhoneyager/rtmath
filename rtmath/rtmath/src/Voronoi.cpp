@@ -369,6 +369,13 @@ namespace rtmath
 			outVectors->col(3).setZero();
 			outVectors->col(4).setZero();
 			outVectors->col(5).setZero();
+
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > outNNeighs
+				(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(*src));
+			outNNeighs->conservativeResize(src->rows(), 4);
+			outNNeighs->col(3).setZero();
+
+
 			// Using depGraph and the initial Candidate Convex Hull points
 
 			// Construct the dependency graph
@@ -419,6 +426,7 @@ namespace rtmath
 						if (vertices.size() > id)
 						{
 							vertices[id].addSlot(&vertices[i]);
+							(*outNNeighs)(id, 3)++;
 						}
 						else {
 							// Something bad is happening
@@ -495,6 +503,7 @@ namespace rtmath
 
 			results["SurfaceDepth"] = out;
 			results["SurfaceDepthVectors"] = outVectors;
+			results["SurfaceDepthNumNeighbors"] = outNNeighs;
 			return out;
 		}
 
@@ -505,7 +514,13 @@ namespace rtmath
 			return results.at("SurfaceDepthVectors");
 		}
 
-		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
+		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceNumNeighs() const
+		{
+			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
+			calcSurfaceDepth();
+			return results.at("SurfaceDepthNumNeighbors");
+		}
+
 		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 			VoronoiDiagram::calcPointsSAfracExternal() const
 		{
@@ -519,28 +534,6 @@ namespace rtmath
 			regenerateFull();
 
 			using namespace voro;
-			// From the full diagram, extract the surface points only.
-			// Need to regenerate the cells without a prespecified size.
-			const int n_x=50,n_y=50,n_z=50, init_grid=150;
-			using namespace voro;
-			boost::shared_ptr<voro::container> vcSmall(new container(
-				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,
-				n_x,n_y,n_z,false,false,false,init_grid));
-			// Iterate over the precalced entries and insert only point that touch a boundary
-			size_t numCells = 0;
-			for (const auto &cell : *(precalced->getCells()))
-			{
-				//if (cell.isSurface())
-				{
-					vcSmall->put((int) numCells, cell.pos(0), cell.pos(1), cell.pos(2));
-					numCells++;
-				}
-			}
-
-			// It's optional to use a pool here, since this Voronoi diagram is much smaller than the other.
-			boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
-
-			using namespace voro;
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > out(
 				new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(src->rows(), 4));
 			out->setZero();
@@ -550,7 +543,7 @@ namespace rtmath
 			size_t numPointCells = 0;
 
 			// Using the precalced loop here
-			for (const auto &cell : *(precalcedSmall->getCells()))
+			for (const auto &cell : *(precalced->getCells()))
 			{
 				//if (cell.isSurface())
 				double extVfrac = cell.sa_ext / cell.sa_full; // Exterior volume fraction test
@@ -571,7 +564,8 @@ namespace rtmath
 				}
 			}
 
-			cerr << "Number of point cells: " << numPointCells << endl;
+			if (numPointCells)
+				cerr << "Number of point cells: " << numPointCells << endl;
 
 			
 			out->conservativeResize(numSurfacePoints, 4);

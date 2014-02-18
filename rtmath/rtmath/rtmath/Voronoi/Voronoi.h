@@ -114,6 +114,10 @@ namespace rtmath {
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 				calcSurfaceDepthVectors() const;
 
+			/// \brief Calculate the number of neighbors for each point.
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+				calcSurfaceNumNeighs() const;
+
 
 			/// Calculate candidate convex hull points (used in max diameter calculations).
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
