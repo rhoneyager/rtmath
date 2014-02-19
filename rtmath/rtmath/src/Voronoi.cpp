@@ -375,6 +375,10 @@ namespace rtmath
 			outNNeighs->conservativeResize(src->rows(), 4);
 			outNNeighs->col(3).setZero();
 
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > outOrder
+				(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(*src));
+			outOrder->conservativeResize(src->rows(), 4);
+			outOrder->col(3).setZero();
 
 			// Using depGraph and the initial Candidate Convex Hull points
 
@@ -410,7 +414,8 @@ namespace rtmath
 			for (const auto &cell : *(precalced->getCells()))
 			{
 				const int &id = cell.id;
-				if (id % 1000 == 0) std::cerr << id << "\n";
+				if (id % 1000 == 0) 
+					std::cerr << id << "\n";
 
 				for (auto &i : cell.neigh)
 				{
@@ -427,6 +432,8 @@ namespace rtmath
 						{
 							vertices[id].addSlot(&vertices[i]);
 							(*outNNeighs)(id, 3)++;
+							//std::cerr << "\tAttaching " << id+1 << " (" << &vertices[id]
+							//	<< ") to " << i+1 << " (" << &vertices[i] << ").\n";
 						}
 						else {
 							// Something bad is happening
@@ -454,7 +461,6 @@ namespace rtmath
 			//typedef std::unordered_set < vertex*, std::hash<vertex*>, std::equal_to<vertex*>,
 			//	boost::pool_allocator<vertex*> > bSetVertex;
 			//bSetVertex setVertices;
-
 			//setVertices.reserve((size_t)src->rows());
 			//rtmath::graphs::setVertex setVertices; //(vertices.begin(), vertices.end());
 			for (auto &v : vertices)
@@ -464,12 +470,32 @@ namespace rtmath
 			bSetVertex ignored;
 			bSetVertex provided;
 
-			auto initFilledPoints = calcCandidateConvexHullPoints();
-
+			//auto initFilledPoints = calcCandidateConvexHullPoints();
+			/*
+			Eigen::MatrixXf xinitFilledPoints(4, 4);
+			Eigen::MatrixXf *initFilledPoints = &xinitFilledPoints;
+			{
+				auto cell = precalced->getCells()->begin();
+				for (size_t k = 0; k < 4; k++)
+				{
+					const int &id = cell->id;
+					xinitFilledPoints.block<1, 3>(k, 0) = out->block(id, 0, 1, 3);
+					xinitFilledPoints(k, 3) = (float)id;
+					cerr << "Starting point is: " << id + 1 << " at coords "
+						<< (*out)(id, 0) << ", " << (*out)(id, 1) << ", " << (*out)(id, 2) << "\n";
+					cell++;
+				}
+			}
+			*/
+			auto initFilledPoints = calcPointsSAfracExternal();
+			//cerr << *initFilledPoints << endl;
 			for (size_t i = 0; i < (size_t)initFilledPoints->rows(); ++i)
 			{
-				size_t index = (size_t)(*initFilledPoints)(i, 3);
-				provided.insert(&vertices[index]);
+				//size_t index = (size_t)(*initFilledPoints)(i, 3);
+				float frac = (*initFilledPoints)(i, 3);
+				if (frac < 0.01) continue;
+				provided.insert(&vertices[i]);
+				//cerr << "Matching on " << i << ": " << &vertices[i] << endl;
 			}
 
 			generateGraph<bSetVertex, orderedVertex>::generate(
@@ -480,6 +506,7 @@ namespace rtmath
 
 			// Provided all have rank zero. order provides depth from the candidate surface cells.
 			// Match the ordered vertices with their row
+			size_t k = 0;
 			for (auto &it : order)
 			{
 				const size_t &rank = std::get<1>(it); // it.second;
@@ -496,7 +523,25 @@ namespace rtmath
 				else {
 					outVectors->block<1, 3>(id, 3).setZero();
 				}
+				(*outOrder)(id, 3) = k;
+				k++;
+				//if (rank)
+				/*
+				{
+					cerr << "Point: " << id+1 << " at " << IT << " with rank " << rank << " and coords " 
+						<< (*outVectors)(id, 0) << ", " << (*outVectors)(id, 1) << ", " << (*outVectors)(id, 2) << "\n";
+					if (parent)
+					{
+						size_t parentID = vertexIdMap->at(parent);
+						cerr << "\tFilled via point " << parentID+1 << ": "
+							<< (*outVectors)(parentID, 0) << ", " << (*outVectors)(parentID, 1) << ", " << (*outVectors)(parentID, 2)
+							<< " (" << parent << ")\n";
+					}
+				}
+				*/
 			}
+
+			cerr << endl;
 
 			// Clean up vertex graph
 			m.destroy_ptr(vertexIdMap);
@@ -504,6 +549,7 @@ namespace rtmath
 			results["SurfaceDepth"] = out;
 			results["SurfaceDepthVectors"] = outVectors;
 			results["SurfaceDepthNumNeighbors"] = outNNeighs;
+			results["SurfaceDepthFillingOrder"] = outOrder;
 			return out;
 		}
 
@@ -519,6 +565,13 @@ namespace rtmath
 			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
 			calcSurfaceDepth();
 			return results.at("SurfaceDepthNumNeighbors");
+		}
+
+		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceFillingOrder() const
+		{
+			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
+			calcSurfaceDepth();
+			return results.at("SurfaceDepthFillingOrder");
 		}
 
 		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >

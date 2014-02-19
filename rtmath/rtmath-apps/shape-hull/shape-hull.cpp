@@ -132,6 +132,8 @@ int main(int argc, char** argv)
 				shp->latticeExtras["SurfaceDepthVectors"] = depthSrc;
 				auto depthNeighs = vd->calcSurfaceNumNeighs();
 				shp->latticeExtras["SurfaceDepthNNeighs"] = depthNeighs;
+				auto depthOrder = vd->calcSurfaceFillingOrder();
+				shp->latticeExtras["SurfaceFillingOrder"] = depthOrder;
 
 				for (size_t i=0; i < output.size(); ++i)
 				{

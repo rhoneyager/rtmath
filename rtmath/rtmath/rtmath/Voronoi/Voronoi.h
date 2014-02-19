@@ -118,6 +118,9 @@ namespace rtmath {
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 				calcSurfaceNumNeighs() const;
 
+			/// \brief Debug function to display the filling order of the vertices.
+			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+				calcSurfaceFillingOrder() const;
 
 			/// Calculate candidate convex hull points (used in max diameter calculations).
 			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 

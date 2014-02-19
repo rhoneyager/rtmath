@@ -95,7 +95,7 @@ namespace {
 		std::string buildtype(BUILDTYPE); // defined in cmake config (addlib.cmake)
 		std::transform(buildtype.begin(), buildtype.end(), buildtype.begin(), ::tolower);
 
-		if (!slower.find(buildtype))
+		if (slower.find(buildtype) == string::npos)
 		{
 			if (slower.find("release") != string::npos) return false;
 			if (slower.find("minsizerel") != string::npos) return false;

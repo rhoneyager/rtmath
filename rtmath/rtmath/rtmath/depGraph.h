@@ -85,6 +85,35 @@ namespace rtmath
 		};
 
 
+		/// \brief Convenient template function to get the number of objects in an 
+		/// array, ending with the first null object.
+		template <class T>
+		size_t arraySizeToNull(const T &obj)
+		{
+			size_t res = 0;
+			for (auto it = obj.cbegin(); it != obj.cend(); ++it)
+			{
+				if ((*it) == nullptr) break;
+				res++;
+			}
+			return res;
+		}
+
+		/*
+		/// \brief Convenient template function to get the number objects in an 
+		/// array, ending with the first null object.
+		template <class T>
+		typename decltype(T)::const_iterator arrayNullCEnd(const T &obj)
+		{
+			auto it = obj.cbegin();
+			for (; it != obj.cend(); ++it)
+			{
+				if ((*it) == nullptr) return it;
+			}
+			return obj.cend();
+		}
+		*/
+
 		template<typename vertexSet = setVertex,
 			typename orderedVertices = orderedVertex>
 		class generateGraph
@@ -98,6 +127,7 @@ namespace rtmath
 			vertexSet &ignored)
 			{
 				const size_t numVertices = vertices.size();
+				std::map<vertex*, size_t> ranking;
 				vertexSet _filled;
 				//_filled.reserve(numVertices);
 				_filled = provided; /// \todo Use std::copy
@@ -112,9 +142,12 @@ namespace rtmath
 
 				// Remove provided from remaining
 				for (auto it = provided.begin(); it != provided.end(); it++)
+				{
 					_remaining.erase(*it);
+					ranking[*it] = 0;
+				}
 
-				size_t order = 1; // Records pass number in which vertices are filled
+				//size_t pass = 1; // Records pass number in which vertices are filled
 				// Loop each depth layer
 				while (_remaining.size())
 				{
@@ -132,7 +165,8 @@ namespace rtmath
 						auto IT = *it; //->lock();
 						//std::cerr << "Checking " << IT.get() << " with " << IT->_slots.size() 
 						//	<< " slots\n";
-						if (!IT->_slots.size()) ready = true;
+						if (!arraySizeToNull(IT->_slots)) ready = true;
+						//if (!IT->_slots.size()) ready = true;
 
 						// Check to see if signals exist and if they are filled
 						auto hasSignal = std::find_if(IT->_signals.begin(), IT->_signals.end(),
@@ -145,7 +179,8 @@ namespace rtmath
 						//bool signalblock = (IT->_signals.size()) ? true : false;
 						//std::cerr << "\tHas " << IT->_signals.size() << " signals\n";
 						int i = 0; // Used when debugging
-						for (auto ot = IT->_signals.begin(); ot != IT->_signals.end(); ++ot, ++i)
+						for (auto ot = IT->_signals.cbegin(); ot != IT->_signals.cend(); ++ot, ++i)
+						//for (auto ot = IT->_signals.cbegin(); ot != arrayNullCEnd(IT->_signals); ++ot, ++i)
 						{
 							if (!(*ot)) continue;
 							if (!_filled.count(*ot))
@@ -165,20 +200,40 @@ namespace rtmath
 
 						// Check to see if a root is completely filled (hence ready for extraction)
 						// Look at all root members to see if root is filled
-						size_t n = IT->_slots.size();
+						size_t n = arraySizeToNull(IT->_slots); // IT->_slots.size();
 						size_t m = 0;
+						size_t depth = 1;
+
+						std::multimap<size_t, vertex*> parent_cands;
 
 						for (auto ot = IT->_slots.begin(); ot != IT->_slots.end(); ot++)
+						//for (auto ot = IT->_slots.cbegin(); ot != arrayNullCEnd(IT->_slots); ot++)
 						{
 							if (!(*ot)) continue;
 							//if (ot->expired()) continue;
-							if (_filled.count(*ot)) m++;
-							if (m && IT->_slotOR)
+							if (_filled.count(*ot))
 							{
-								parent = *ot;
-								break; // No need to go on
+								m++;
+
+								size_t d = 0;
+								if (ranking.count(*ot)) d = ranking.at(*ot);
+								parent_cands.insert(std::pair<size_t, vertex*>(d, *ot));
 							}
+							// No longer doing this because of the correct depth search:
+							//if (m && IT->_slotOR) break; 
 						}
+						// Depth search in case of multiple parents
+						if (parent_cands.size())
+						{
+							auto f = parent_cands.begin();
+							parent = f->second;
+							depth = f->first+1;
+						} else {
+							parent = nullptr;
+							depth = 0;
+						}
+
+
 						if (m && IT->_slotOR) ready = true;
 						if (m == n) ready = true;
 
@@ -186,14 +241,15 @@ namespace rtmath
 						if (ready)
 						{
 							_order.push_back(std::tuple<vertex*, size_t, vertex*>
-								(*it, order, parent));
+								(*it, depth, parent));
+							ranking.insert(std::pair<vertex*, size_t>(*it, depth));
 							_filled.insert(*it);
 							cleanup.insert(*it);
 							vertices_added++;
 						}
 					}
 
-					order++; // Increment depth count (for storage)
+					//order++; // Increment depth count (for storage)
 
 					// Cleanup loop (to erase elements)
 					for (auto ct = cleanup.begin(); ct != cleanup.end(); ct++)
