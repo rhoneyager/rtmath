@@ -117,6 +117,10 @@ namespace rtmath
 				parser_vals.reserve(numPoints*8);
 				parse_shapefile_entries(pa,pb, parser_vals);
 
+				if (numPoints == 0) RTthrow debug::xBadInput("Header indicates no dipoles.");
+				if (parser_vals.size() == 0) RTthrow debug::xBadInput("Unable to parse dipoles.");
+				if (parser_vals.size() < ((numPoints - 1) * 7))
+					RTthrow debug::xBadInput("File parsed dipoles do not match header.");
 
 				using namespace boost::accumulators;
 				accumulator_set<float, boost::accumulators::stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
