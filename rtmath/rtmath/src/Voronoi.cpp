@@ -15,6 +15,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
 #include <Voro++/voro++.hh>
+#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/error/error.h"
@@ -142,6 +143,8 @@ namespace rtmath
 			bool isSurface() const { if (!sa_full) return false;  if (sa_ext) return true; return false; }
 		};
 
+		/// \brief Sets the size for the arrays in the CachedVoronoiCell class
+		/// \see CachedVoronoiCell
 		const size_t ArraySize = 50;
 		/// \brief Internal aligned class for persistent voronoi cell information storage
 		/// \note MSVC 2012 has a bug in object construction at runtime. 
@@ -298,10 +301,10 @@ namespace rtmath
 		};
 
 
-
 		VoronoiDiagram::VoronoiDiagram() {}
 
-		void VoronoiDiagram::setHash(HASH_t hash) { this->hash = hash; }
+		void VoronoiDiagram::setHash(HASH_t hash) { this->_hash = hash; }
+		void VoronoiDiagram::hash(HASH_t hash) const { return this->_hash; }
 
 		double VoronoiDiagram::surfaceArea() const
 		{

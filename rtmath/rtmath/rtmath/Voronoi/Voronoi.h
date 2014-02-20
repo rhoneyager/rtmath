@@ -3,11 +3,6 @@
 #include <functional>
 #include <map>
 #include <string>
-
-#include "../Serialization/serialization_macros.h"
-#include "../Serialization/eigen_serialization.h"
-#include "../hash.h"
-#include "../registry.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -18,6 +13,13 @@
 #include <boost/serialization/string.hpp>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+
+#include "../Serialization/serialization_macros.h"
+#include "../Serialization/eigen_serialization.h"
+#include "../hash.h"
+#include "../registry.h"
+#include "../io.h"
+
 
 namespace voro
 {
@@ -66,7 +68,8 @@ namespace rtmath {
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
 			virtual public ::rtmath::registry::usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			::rtmath::registry::IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >
+			::rtmath::registry::IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >,
+			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>
 		{
 		private:
 			VoronoiDiagram();
@@ -88,7 +91,7 @@ namespace rtmath {
 			/// Derived matrices from Voronoi-based algorithms. Results get stored / read from here.
 			mutable std::map<std::string, boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > results;
 
-			HASH_t hash;
+			HASH_t _hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
 			void regenerateVoronoi() const;
 			/// Recalculates all cells in the Voronoi diagram
@@ -100,7 +103,7 @@ namespace rtmath {
 
 			/// Forcibly set the hash to a given value (can be used to match to a shape or stats)
 			void setHash(HASH_t hash);
-
+			HASH_t hash() const;
 
 
 

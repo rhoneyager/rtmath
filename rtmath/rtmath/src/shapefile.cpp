@@ -17,6 +17,7 @@
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
+#include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
@@ -266,6 +267,7 @@ namespace rtmath {
 				if (voronoi_diagrams.count(name))
 					return voronoi_diagrams[name];
 				auto res = f(mins, maxs, latticePts);
+				res->setHash(this->hash());
 
 				voronoi_diagrams[name] = res;
 				return res;

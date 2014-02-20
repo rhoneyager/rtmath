@@ -23,6 +23,7 @@ add_library (rtmath_plugin_hdf5 SHARED
 	hdf5-ddoutput.cpp
 	hdf5-shapefile.cpp
 	hdf5-shapestats.cpp
+	hdf5-voronoi.cpp
 	)
 addlib(rtmath_plugin_hdf5 SHARED)
 

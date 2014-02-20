@@ -6,12 +6,14 @@
 
 #include <functional>
 #include <iostream>
-//#include <map>
+#include <map>
 //#include <list>
 #include <set>
 #include <string>
 #include <vector>
+#include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
+#include "error/error.h"
 
 namespace boost {
 	namespace program_options {
@@ -22,6 +24,12 @@ namespace boost {
 
 namespace rtmath
 {
+	namespace io
+	{
+		template <class obj_class,
+		class output_registry_class>
+		class implementsStandardWriter;
+	}
 	namespace registry
 	{
 		/** \brief This is the basic structure passed by an rtmath DLL to provide 
@@ -134,6 +142,8 @@ namespace rtmath
 		public:
 			typedef typename std::vector<signature> hookStorageType;
 		protected:
+			template <class T, class U>
+			friend class ::rtmath::io::implementsStandardWriter;
 			usesDLLregistry() {}
 			/// \note Implemented as a function-internal static function to avoid gcc template issue.
 			static boost::shared_ptr<hookStorageType> getHooks()
@@ -170,6 +180,42 @@ namespace rtmath
 			};
 		};
 
+		/// \brief Convenient options specification class for use with an IO class registry.
+		/// 
+		/// Used because std::map doesn't like to go beyond template boundaries
+		class options
+		{
+		private:
+			options () {}
+			std::map<std::string, std::string> _mapStr;
+		public:
+			virtual ~options() {}
+			static inline std::shared_ptr<options> generate() {return std::shared_ptr<options>(new options);}
+			inline bool hasVal(const std::string &key) const
+			{
+				if (_mapStr.count(key)) return true;
+				return false;
+			}
+			template <class T> T getVal(const std::string &key) const
+			{
+				if (!hasVal(key)) RTthrow rtmath::debug::xArrayOutOfBounds();
+				std::string valS = _mapStr.at(key);
+				T res = boost::lexical_cast<T>(valS);
+				return res;
+			}
+			template <class T> T getVal(const std::string &key, const T& defaultval) const
+			{
+				if (!hasVal(key)) return defaultval;
+				return getVal(key);
+			}
+			template <class T>
+			void setVal(const std::string &key, const T &value)
+			{
+				std::string valS = boost::lexical_cast<std::string>(value);
+				_mapStr[key] = valS;
+			}
+		};
+
 		/// Convenient template pattern for defining an IO class registry
 		template<class object>
 		struct IO_class_registry
@@ -194,7 +240,8 @@ namespace rtmath
 			/// \param Second const char* is the object 'key'
 			/// \returns Pointer to a IOhandler object (for example after the first write).
 			typedef std::function<std::shared_ptr<IOhandler>
-				(std::shared_ptr<IOhandler>, const char*, const object*, const char*, IOhandler::IOtype)> io_multi_type;
+				(std::shared_ptr<IOhandler>, const char*, const object*, const char*, 
+				IOhandler::IOtype)> io_multi_type;
 			io_multi_type io_multi_processor;
 		};
 

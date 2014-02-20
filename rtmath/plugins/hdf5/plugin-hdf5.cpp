@@ -18,6 +18,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
@@ -104,5 +105,7 @@ void dllEntry()
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("hdf5", PLUGINID);
 	genAndRegisterIOregistry<::rtmath::ddscat::ddOutput,
 		rtmath::ddscat::ddOutput_IO_output_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry<::rtmath::Voronoi::VoronoiDiagram,
+		::rtmath::Voronoi::Voronoi_IO_output_registry>("hdf5", PLUGINID);
 
 }
