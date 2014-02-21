@@ -11,11 +11,13 @@ if(DEFINED HDF5_C_LIBRARIES)
 else()
 	set (h5libs hdf5 hdf5_cpp)
 endif()
-#FIND_PACKAGE(szip)
-#IF (DEFINED SZIP_LIBRARIES)
-#	include_directories(${SZIP_INCLUDE_DIRS})
-#	SET (h5libs ${h5libs} szip)
-#ENDIF()
+FIND_PACKAGE(szip)
+#	message("${SZIP_INCLUDE_DIRS}")
+#	message("${SZIP_LIBRARIES}")
+IF (DEFINED SZIP_LIBRARIES)
+	include_directories(${SZIP_INCLUDE_DIRS})
+	#	SET (h5libs ${h5libs} szip)
+ENDIF()
 
 add_library (rtmath_plugin_hdf5 SHARED 
 	plugin-hdf5.cpp
