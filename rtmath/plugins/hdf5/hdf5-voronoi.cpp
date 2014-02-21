@@ -31,10 +31,12 @@ namespace rtmath {
 
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> write_hdf5_voro(std::shared_ptr<H5::Group> base, 
-				const rtmath::Voronoi::VoronoiDiagram *shp)
+				const rtmath::Voronoi::VoronoiDiagram *v)
 			{
 				using std::shared_ptr;
 				using namespace H5;
+				using namespace rtmath::Voronoi;
+
 
 				shared_ptr<Group> shpraw = base;
 
@@ -43,98 +45,41 @@ namespace rtmath {
 				plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
 
 				// Write out all of the generated diagrams
+				std::map<std::string, VoronoiDiagram::matrixType> results;
+				v->getResultsTable(results);
+				for (const auto &res : results)
+				{
+					hsize_t fDims[] = { res.second->rows(), res.second->cols() };
+					DataSpace fSpace(2, fDims);
+					
+					shared_ptr<DataSet> pts(new DataSet(shpraw->createDataSet(res.first,
+						PredType::NATIVE_FLOAT, fSpace, plist)));
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> data = res.second->cast<float>();
+					pts->write(data.data(), PredType::NATIVE_FLOAT);
+				}
 
 				// Write out all of the cell information
+				shared_ptr<Group> gCells = openOrCreateGroup(shpraw, "Cells");
 
+				addAttr<size_t, Group>(gCells, "NumCells", 0);
+				addAttr<size_t, Group>(gCells, "NumSurfaceCells", 0);
+				addAttr<size_t, Group>(gCells, "NumInteriorCells", 0);
+				addAttr<size_t, Group>(gCells, "Volume", 0);
 
-				// Create a dataspace describing the dataset size
-				hsize_t fDimBasic[] = {shp->numPoints, 3};
-				DataSpace fspacePts( 2, fDimBasic );
-				// Write the entire dataset (no hyperslabs necessary)
-				shared_ptr<DataSet> latticePts(new DataSet(shpraw->createDataSet("latticePts", PredType::NATIVE_INT, 
-					fspacePts, plist)));
-				Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> latticePtsInt = shp->latticePts.cast<int>();
-				latticePts->write(latticePtsInt.data(), PredType::NATIVE_INT);
+				shared_ptr<Group> gDom = openOrCreateGroup(gCells, "Domains");
+				shared_ptr<Group> gSfc = openOrCreateGroup(gDom, "Surface");
+				shared_ptr<Group> gInt = openOrCreateGroup(gDom, "Interior");
 
-				shared_ptr<DataSet> latticePtsRi(new DataSet(shpraw->createDataSet("latticePtsRi", PredType::NATIVE_INT, 
-					fspacePts, plist)));
-				Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> latticePtsRiInt = shp->latticePtsRi.cast<int>();
-				latticePtsRi->write(latticePtsRiInt.data(), PredType::NATIVE_INT);
-
-				shared_ptr<DataSet> latticePtsStd(new DataSet(shpraw->createDataSet("latticePtsStd", PredType::NATIVE_FLOAT, 
-					fspacePts, plist)));
-				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> latticePtsStdRow(shp->latticePtsStd);
-				latticePtsStd->write(latticePtsStdRow.data(), PredType::NATIVE_FLOAT);
-
-				shared_ptr<DataSet> latticePtsNorm(new DataSet(shpraw->createDataSet("latticePtsNorm", PredType::NATIVE_FLOAT, 
-					fspacePts, plist)));
-				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> latticePtsNormRow(shp->latticePtsNorm);
-				latticePtsNorm->write(latticePtsNormRow.data(), PredType::NATIVE_FLOAT);
-
-				hsize_t fDimBasic1[] = {shp->numPoints};
-				DataSpace fspacePts1( 1, fDimBasic1 );
-				shared_ptr<DataSet> latticePtsIndex(new DataSet(shpraw->createDataSet("latticePtsIndex", PredType::NATIVE_INT, 
-					fspacePts1, plist)));
-				latticePtsIndex->write(shp->latticeIndex.data(), PredType::NATIVE_INT);
-
-				// Write the "extra" arrays
-				shared_ptr<Group> shpextras(new Group(shpraw->createGroup("Extras")));
-				for (const auto& e : shp->latticeExtras)
-				{
-					hsize_t fDimExtra[] = { (hsize_t) e.second->rows(), (hsize_t) e.second->cols()};
-					//if (fDimExtra[0] == 1)
-					//{
-					//	fDimExtra[0] = fDimExtra[1];
-					//	fDimExtra[1] = 1;
-					//}
-					//int dimensionality = (fDimExtra[1] == 1) ? 1 : 2;
-					int dimensionality = 2;
-					DataSpace fDimExtraSpace( dimensionality, fDimExtra );
-
-					shared_ptr<DataSet> data(new DataSet(shpextras->createDataSet(e.first.c_str(), PredType::NATIVE_FLOAT, 
-						fDimExtraSpace, plist)));
-					// Store in row-major form temporarily for proper output to hdf5
-					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> outmatrix(*(e.second));
-
-					//data->write(e.second->data(), PredType::NATIVE_FLOAT);
-					data->write(outmatrix.data(), PredType::NATIVE_FLOAT);
-				}
-
-				// Write the dielectric information
-				{
-					hsize_t fDielsSize[] = {shp->Dielectrics.size()};
-					DataSpace fDielsSpace( 1, fDielsSize );
-					shared_ptr<DataSet> diels(new DataSet(shpraw->createDataSet("Dielectrics", PredType::NATIVE_ULLONG, 
-						fDielsSpace, plist)));
-					std::vector<size_t> vd(shp->Dielectrics.begin(), shp->Dielectrics.end());
-					diels->write(vd.data(), PredType::NATIVE_ULLONG);
-				}
-
-
-				// Write the basic information
-
-				// Source hostname/filename pairs
-				addAttr<const char*, Group>(shpraw, "Source_Filename", shp->filename.c_str());
-				// Description
-				addAttr<std::string, Group>(shpraw, "Description", shp->desc);
-				// Number of points
-				addAttr<size_t, Group>(shpraw, "Number_of_points", shp->numPoints);
-				// Dielectrics
-				// The full hash
-				addAttr<uint64_t, Group>(shpraw, "Hash_Lower", shp->hash().lower);
-				addAttr<uint64_t, Group>(shpraw, "Hash_Upper", shp->hash().upper);
-
-				// mins, maxs, means
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "mins", shp->mins);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "maxs", shp->maxs);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "means", shp->means);
-				// a1, a2, a3, d, x0, xd
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "a1", shp->a1);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "a2", shp->a2);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "a3", shp->a3);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "d", shp->d);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "x0", shp->x0);
-				addAttrEigen<Eigen::Array3f, Group>(shpraw, "xd", shp->xd);
+				/* Cell table contains information on the:
+				 * - id
+				 * - surface area
+				 * - exterior surface area
+				 * - surface fraction
+				 * - centroid
+				 * - anchor point
+				 * - integer points within the cell
+				 * - number of integer points within the cell
+				*/
 
 				return shpraw;
 			}

@@ -223,6 +223,24 @@ namespace rtmath {
 						return mesh;
 					}
 
+					static std::shared_ptr<rectilinearMesh<T> > createMesh(
+						std::shared_ptr<siloFile> parent,
+						const char* name,
+						const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &crds,
+						const char *dimLabels[] = nullptr, const char *dimUnits[] = nullptr
+						)
+					{
+						std::vector<const T*> crdarray(crds.cols());
+						//std::unique_ptr<T[]> crdarray(new T[crds.rows()]);
+						for (size_t i = 0; i<(size_t)crds.cols(); ++i)
+							crdarray[i] = crds.col(i).data();
+						int dimsizes[] = { (int) crds.rows(), (int) crds.cols() };
+						return createMesh(parent, name, (size_t) crds.cols(), 
+							const_cast<T**>(crdarray.data()), 
+							dimsizes,
+							dimLabels, dimUnits);
+					}
+
 					template <class U>
 					void writeData(const char* varname,
 						const U** data, size_t nDims, 
@@ -231,7 +249,7 @@ namespace rtmath {
 						)
 					{
 						writeQuadData(varname, this->name.c_str(), this->parent->df,
-							data, nDims, this->dimsizes, varUnits, varnames);
+							data, nDims, this->dimsizes, varunits, varNames);
 					}
 
 					template<class U>
@@ -244,6 +262,17 @@ namespace rtmath {
 						const U *cdata[] = { data };
 						writeData<U>(varname, cdata, 1, varunits, varNames);
 					}
+
+					template <class U>
+					void writeData(const char* varname,
+						const Eigen::Matrix<U, Eigen::Dynamic, Eigen::Dynamic> &vals,
+						const char* varUnits = nullptr)
+					{
+						std::vector<const U*> data(vals.cols());
+						for (size_t i = 0; i<(size_t)vals.cols(); ++i)
+							data[i] = vals.col(i).data();
+						writeData<U>(varname, data.data(), (size_t)vals.cols(), varUnits);
+					}
 				};
 
 				// Delegates for rectilinearMesh
@@ -255,7 +284,7 @@ namespace rtmath {
 					const char *dimUnits[] = nullptr)
 				{
 					return rectilinearMesh<T>::createMesh(shared_from_this(),
-						name, ndims, crdarray, dimsizes, dimLabels, dimUnits);
+						name, ndims, const_cast<T**>(crdarray), dimsizes, dimLabels, dimUnits);
 				}
 
 				template<class T>
@@ -269,6 +298,15 @@ namespace rtmath {
 						name, ndims, dimsizes, dimLabels, dimUnits);
 				}
 
+				template<class T>
+				std::shared_ptr<rectilinearMesh<T> > createRectilinearMesh(
+					const char* name,
+					const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &crds,
+					const char *dimLabels[] = nullptr, const char *dimUnits[] = nullptr)
+				{
+					return rectilinearMesh<T>::createMesh(shared_from_this(),
+						name, crds, dimLabels, dimUnits);
+				}
 			};
 		}
 	}

@@ -227,9 +227,52 @@ namespace rtmath
 		private:
 			mutable boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
 				CachedVoronoiCellAllocator> *c;
+			Eigen::Array3f mins, maxs;
+			mutable Eigen::Array3i span;
+			/// Maps each possible integral coordinate to a given cell.
+			mutable Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> cellmap;
+
+			/// Iterate over all possible coordinates in the container and find a matching cell
+			void generateCellMap() const
+			{
+				// Defining the span as an inclusive bound
+				Eigen::Array3i mins = this->mins.cast<int>(), maxs = this->maxs.cast<int>();
+				span = maxs - mins + 1;
+				int numBoxes = span.prod();
+				cellmap.resize(numBoxes, 4);
+
+				auto getCoords = [&](size_t i)->Eigen::Array3i
+				{
+					Eigen::Array3i crd;
+					// Iterate first over z, then y, then x
+					crd(0) = ((int)i) / (span(2)*span(1));
+					crd(1) = (((int)i) - (crd(0)*span(2)*span(1))) / span(1);
+					crd(2) = ((int)i) % span(2);
+					crd += mins;
+					return crd;
+				};
+
+				// Iterate over all integer combinations
+				// Good candidate for parallelization
+				for (size_t i = 0; i < numBoxes; ++i)
+				{
+					Eigen::Array3i crd = getCoords(i);
+					Eigen::Array3d crdd = crd.cast<double>();
+					Eigen::Array3d pt;
+					int cellId = 0;
+					if (!vc->find_voronoi_cell(crdd(0), crdd(1), crdd(2), pt(0), pt(1), pt(2), cellId))
+					{
+						// Point could not be found
+						// Should not happen
+						cellId = -1;
+					}
+					cellmap(i, 3) = cellId;
+					cellmap.block<1, 3>(i, 0) = crd;
+				}
+			}
 		public:
 
-			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc) : 
+			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc, const Eigen::Array3f &mins, const Eigen::Array3f &maxs) :
 				c(nullptr),
 				vc(vc),
 				m(10*1024*numPoints), // 10 kb per point should be enough for point lists + vertices
@@ -237,7 +280,9 @@ namespace rtmath
 				doubleAllocator(m.get_segment_manager()), 
 				cachedVoronoiCellAllocator(m.get_segment_manager()),
 				sa(0),
-				vol(0)
+				vol(0),
+				mins(mins),
+				maxs(maxs)
 			{
 				if (vc) regenerateCache(numPoints);
 			}
@@ -284,6 +329,8 @@ namespace rtmath
 					vol += ci.vol;
 					sa += ci.sa_ext;
 				} while (cl.inc());
+
+				generateCellMap();
 			}
 			
 			
@@ -291,6 +338,8 @@ namespace rtmath
 			double surfaceArea() const { return sa; }
 			/// Calculate the volume of the bulk figure
 			double volume() const { return vol; }
+			/// Get the span of the bulk figure
+			Eigen::Array3i getSpan() const { return span; }
 			/// Get pointer to the set of stored voronoi cells
 			boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>, 
 				CachedVoronoiCellAllocator>* getCells() const
@@ -298,13 +347,15 @@ namespace rtmath
 				return c;
 				//return m.find<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
 			}
+			/// Get pointer to the mapping between coordinates and the stored cell
+			const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const { return &cellmap; }
 		};
 
 
 		VoronoiDiagram::VoronoiDiagram() {}
 
 		void VoronoiDiagram::setHash(HASH_t hash) { this->_hash = hash; }
-		void VoronoiDiagram::hash(HASH_t hash) const { return this->_hash; }
+		HASH_t VoronoiDiagram::hash() const { return this->_hash; }
 
 		double VoronoiDiagram::surfaceArea() const
 		{
@@ -316,6 +367,19 @@ namespace rtmath
 		{
 			if (!precalced) return 0;
 			return precalced->volume();
+		}
+
+		void VoronoiDiagram::getBounds(Eigen::Array3f &mins, 
+			Eigen::Array3f &maxs, Eigen::Array3f &span) const
+		{
+			mins = this->mins;
+			maxs = this->maxs;
+			span = maxs - mins + 1;
+		}
+
+		void VoronoiDiagram::getResultsTable(std::map<std::string, VoronoiDiagram::matrixType> &res) const
+		{
+			res = results;
 		}
 
 		/// \note This regenerates the REGULAR diagram, with surface fitting
@@ -349,10 +413,27 @@ namespace rtmath
 		{
 			if (precalced) return;
 			if (!vc) regenerateVoronoi();
-			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc));
+			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc, mins, maxs));
 		}
 
-		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceDepth() const
+		const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* VoronoiDiagram::getCellMap() const
+		{
+			regenerateFull();  return precalced->getCellMap();
+		}
+
+		size_t VoronoiDiagram::numPoints() const
+		{
+			return (size_t) src->rows();
+		}
+
+		Eigen::Array3i VoronoiDiagram::getSpan() const
+		{
+			Eigen::Array3f span = maxs - mins + 1;
+			Eigen::Array3i si = span.cast<int>();
+			return si;
+		}
+
+		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceDepth() const
 		{
 			if (results.count("SurfaceDepth"))
 			{
@@ -556,28 +637,28 @@ namespace rtmath
 			return out;
 		}
 
-		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceDepthVectors() const
+		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceDepthVectors() const
 		{
 			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
 			calcSurfaceDepth();
 			return results.at("SurfaceDepthVectors");
 		}
 
-		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceNumNeighs() const
+		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceNumNeighs() const
 		{
 			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
 			calcSurfaceDepth();
 			return results.at("SurfaceDepthNumNeighbors");
 		}
 
-		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::calcSurfaceFillingOrder() const
+		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceFillingOrder() const
 		{
 			// calcSurfaceDepth takes care of everything. This function just returns its second matrix.
 			calcSurfaceDepth();
 			return results.at("SurfaceDepthFillingOrder");
 		}
 
-		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+		VoronoiDiagram::matrixType
 			VoronoiDiagram::calcPointsSAfracExternal() const
 		{
 			if (results.count("SAfracExternal"))
@@ -631,7 +712,7 @@ namespace rtmath
 		}
 
 		/// This uses a separate voronoi container that is 'unshrunk' to get the prospective hull points.
-		boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+		VoronoiDiagram::matrixType
 			VoronoiDiagram::calcCandidateConvexHullPoints() const
 		{
 				if (results.count("CandidateConvexHullPoints"))
@@ -663,7 +744,7 @@ namespace rtmath
 				}
 
 				// It's optional to use a pool here, since this Voronoi diagram is much smaller than the other.
-				boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall));
+				boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall, mins, maxs));
 
 				using namespace voro;
 				boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > out(
@@ -711,7 +792,7 @@ namespace rtmath
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::generateStandard(
 			Eigen::Array3f &mins, Eigen::Array3f &maxs,
-			Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> points
+			const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &points
 			)
 		{
 			boost::shared_ptr<VoronoiDiagram> res(new VoronoiDiagram);

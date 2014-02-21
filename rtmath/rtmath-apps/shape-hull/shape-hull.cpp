@@ -139,6 +139,7 @@ int main(int argc, char** argv)
 				{
 					try {
 						outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
+						outputios[i] = vd->writeMulti("", outputios[i], output[i].c_str());
 					} catch (rtmath::debug::xUnknownFileFormat &e)
 					{
 						std::cerr << "Error: unknown file format when writing " << output[i] << endl;

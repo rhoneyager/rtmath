@@ -7,6 +7,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "plugin-silo.h"
@@ -77,4 +78,7 @@ void dllEntry()
 
 	genAndRegisterIOregistry<::rtmath::ddscat::stats::shapeFileStats, 
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("silo",PLUGINID);
+
+	genAndRegisterIOregistry<::rtmath::Voronoi::VoronoiDiagram,
+		rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);
 }

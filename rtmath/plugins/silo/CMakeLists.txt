@@ -20,6 +20,7 @@ add_library (rtmath_plugin_silo SHARED
 	plugin-silo.h
 	silo-shapefile.cpp
 	silo-ddOutput.cpp
+	silo-voronoi.cpp
 	#CurveMesh3d.cpp
 	#CurveMesh3d.h
 	#MaterialList.cpp

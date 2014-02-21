@@ -255,7 +255,7 @@ namespace rtmath {
 					boost::shared_ptr<VoronoiDiagram> vd = _shp->generateVoronoi(
 						"standard", VoronoiDiagram::generateStandard);
 
-					boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 						candidate_hull_points;
 					if (_shp->latticeExtras.count("cvxcands"))
 					{

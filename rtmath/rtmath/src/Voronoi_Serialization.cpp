@@ -23,10 +23,12 @@ namespace rtmath
 		template<class Archive>
 		void VoronoiDiagram::serialize(Archive &ar, const unsigned int version)
 		{
-			ar & boost::serialization::make_nvp("hash", hash);
+			ar & boost::serialization::make_nvp("hash", _hash);
 			ar & boost::serialization::make_nvp("Source", src);
 			ar & boost::serialization::make_nvp("mins", mins);
 			ar & boost::serialization::make_nvp("maxs", maxs);
+			/// \todo Fix the serialization of "results"? It may fail on 
+			/// read because a constant object is being read.
 			ar & boost::serialization::make_nvp("results", results);
 		}
 

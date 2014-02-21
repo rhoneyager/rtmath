@@ -42,7 +42,7 @@ namespace rtmath
 				const char* key,
 				std::shared_ptr<registry::IOhandler> handle,
 				const char* filename,
-				const char* ctype,
+				const char* ctype = "",
 				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE,
 				std::shared_ptr<registry::options> opts = nullptr) const
 			{

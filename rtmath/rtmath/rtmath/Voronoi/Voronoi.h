@@ -71,6 +71,9 @@ namespace rtmath {
 			::rtmath::registry::IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >,
 			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>
 		{
+		public:
+			typedef boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixType;
+			typedef boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixTypeMutable;
 		private:
 			VoronoiDiagram();
 			/**
@@ -87,9 +90,9 @@ namespace rtmath {
 			mutable boost::shared_ptr<CachedVoronoi> precalced;
 
 			/// The Eigen source object.
-			boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > src;
+			matrixType src;
 			/// Derived matrices from Voronoi-based algorithms. Results get stored / read from here.
-			mutable std::map<std::string, boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > results;
+			mutable std::map<std::string, matrixType > results;
 
 			HASH_t _hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
@@ -105,34 +108,37 @@ namespace rtmath {
 			void setHash(HASH_t hash);
 			HASH_t hash() const;
 
+			void getResultsTable(std::map<std::string, matrixType> &res) const;
 
+			const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
+			
+			void getBounds(Eigen::Array3f &mins, Eigen::Array3f &maxs, Eigen::Array3f &span) const;
+			Eigen::Array3i getSpan() const;
+			size_t numPoints() const;
+			
+			// Takes the output of another function and creates a solid 'hull' for display.
+			//matrixType hullPts(const matrixType &src);
 
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
-				calcSurfaceDepth() const;
+			matrixType calcSurfaceDepth() const;
 
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-				calcSurfaceDepthVectors() const;
+			matrixType calcSurfaceDepthVectors() const;
 
 			/// \brief Calculate the number of neighbors for each point.
-			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-				calcSurfaceNumNeighs() const;
+			matrixType calcSurfaceNumNeighs() const;
 
 			/// \brief Debug function to display the filling order of the vertices.
-			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-				calcSurfaceFillingOrder() const;
+			matrixType calcSurfaceFillingOrder() const;
 
 			/// Calculate candidate convex hull points (used in max diameter calculations).
-			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
-				calcCandidateConvexHullPoints() const;
+			matrixType calcCandidateConvexHullPoints() const;
 
 			/// \brief Calculate the external surface area fraction of all 
 			/// points.
-			boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-				calcPointsSAfracExternal() const;
+			matrixType calcPointsSAfracExternal() const;
 
 
 			/// Calculate the surface area of the bulk figure
@@ -155,7 +161,7 @@ namespace rtmath {
 			/// \todo Add points shared_ptr overload.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
 				Eigen::Array3f &mins, Eigen::Array3f &maxs,
-				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> points
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
 				);
 
 			// Load a Voronoi diagram from a given hash
