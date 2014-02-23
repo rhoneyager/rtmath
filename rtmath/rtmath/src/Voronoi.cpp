@@ -231,7 +231,7 @@ namespace rtmath
 			mutable Eigen::Array3i span;
 			/// Maps each possible integral coordinate to a given cell.
 			mutable Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> cellmap;
-
+			
 			/// Iterate over all possible coordinates in the container and find a matching cell
 			void generateCellMap() const
 			{
@@ -241,20 +241,20 @@ namespace rtmath
 				int numBoxes = span.prod();
 				cellmap.resize(numBoxes, 4);
 
-				auto getCoords = [&](size_t i)->Eigen::Array3i
+				auto getCoords = [&](int i)->Eigen::Array3i
 				{
 					Eigen::Array3i crd;
 					// Iterate first over z, then y, then x
-					crd(0) = ((int)i) / (span(2)*span(1));
-					crd(1) = (((int)i) - (crd(0)*span(2)*span(1))) / span(1);
-					crd(2) = ((int)i) % span(2);
+					crd(0) = i / (span(2)*span(1));
+					crd(1) = (i - (crd(0)*span(2)*span(1))) / span(1);
+					crd(2) = i % span(2);
 					crd += mins;
 					return crd;
 				};
 
 				// Iterate over all integer combinations
-				// Good candidate for parallelization
-				for (size_t i = 0; i < numBoxes; ++i)
+				// Cannot parallelize since find_voronoi_cell is NOT thread-safe. Raises memory access violation exception.
+				for (int i = 0; i < numBoxes; ++i)
 				{
 					Eigen::Array3i crd = getCoords(i);
 					Eigen::Array3d crdd = crd.cast<double>();
@@ -270,6 +270,7 @@ namespace rtmath
 					cellmap.block<1, 3>(i, 0) = crd;
 				}
 			}
+
 		public:
 
 			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc, const Eigen::Array3f &mins, const Eigen::Array3f &maxs) :
