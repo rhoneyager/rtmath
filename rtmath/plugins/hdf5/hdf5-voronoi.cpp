@@ -123,9 +123,9 @@ namespace rtmath {
 
 			std::string skey(key);
 			if (!skey.size()) skey = "Unknown";
-			shared_ptr<Group> grpVoroObj = openOrCreateGroup(grpVoro, skey.c_str());
 			/// \note The unlink operation does not really free the space..... Should warn the user.
-			if (groupExists(grpShape, "Voronoi")) return h; //grpShape->unlink("Shape");
+			if (groupExists(grpVoro, skey.c_str())) return h; //grpShape->unlink("Shape");
+			shared_ptr<Group> grpVoroObj = openOrCreateGroup(grpVoro, skey.c_str());
 			shared_ptr<Group> newbase = write_hdf5_voro(grpVoroObj, v);
 
 			return h; // Pass back the handle
