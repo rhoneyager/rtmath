@@ -246,13 +246,13 @@ namespace rtmath
 					Eigen::Array3i crd;
 					int x, y, z;
 					// Iterate first over z, then y, then x
-					crd(0) = i / (span(2)*span(1));
+					x = i / (span(0)*span(1));
 					//crd(1) = (i % (span(2)*span(1))) / span(2);
-					crd(1) = (i - (crd(0)*span(2)*span(1))) / span(2);
-					crd(2) = i % span(2);
-					x = crd(0); y = crd(1); z = crd(2);
+					y = (i - (x*span(0)*span(1))) / span(0);
+					z = i % span(0);
+					crd(2) = x; crd(1) = y; crd(0) = z;
 					crd += mins;
-					x = crd(0); y = crd(1); z = crd(2);
+					//x = crd(0); y = crd(1); z = crd(2);
 					return crd;
 				};
 
@@ -390,21 +390,27 @@ namespace rtmath
 		{
 			if (vc) return;
 			// Set up the number of blocks that the container is divided into
-			const int n_x=50,n_y=50,n_z=50, init_grid=150;
+			int n_x=50,n_y=50,n_z=50, init_grid=120;
 			using namespace voro;
-			vc = boost::shared_ptr<voro::container>(new container(
-				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,
-				n_x,n_y,n_z,false,false,false,init_grid));
-
-			//wall_initial_shape wis;
-			vc->add_wall(wis);
-
+			auto preVc = boost::shared_ptr<voro::pre_container>(new pre_container(
+				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,false,false,false));
+			
+			
 			// Add particles into the container
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
 			{
 				auto pt = src->block<1, 3>(i, 0);
-				vc->put((int) i, pt(0), pt(1), pt(2));
+				preVc->put((int) i, pt(0), pt(1), pt(2));
 			}
+			preVc->guess_optimal(n_x,n_y,n_z);
+
+			vc = boost::shared_ptr<voro::container>(new container(
+				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,
+				n_x,n_y,n_z,false,false,false,init_grid));
+			//wall_initial_shape wis;
+			vc->add_wall(wis);
+			preVc->setup(*vc);
+
 		}
 
 		/** This function iterates over the entire diagram, generating the data for all 
@@ -730,21 +736,28 @@ namespace rtmath
 				using namespace voro;
 				// From the full diagram, extract the surface points only.
 				// Need to regenerate the cells without a prespecified size.
-				const int n_x = 50, n_y = 50, n_z = 50, init_grid = 150;
+				int n_x = 50, n_y = 50, n_z = 50, init_grid = 40;
 				using namespace voro;
-				boost::shared_ptr<voro::container> vcSmall(new container(
-					mins(0)-1, maxs(0)+1, mins(1)-1, maxs(1)+1, mins(2)-1, maxs(2)+1,
-					n_x, n_y, n_z, false, false, false, init_grid));
+				auto preVc = boost::shared_ptr<voro::pre_container>(new pre_container(
+				mins(0)-1,maxs(0)+1,mins(1)-1,maxs(1)+1,mins(2)-1,maxs(2)+1,false,false,false));
+			
 				// Iterate over the precalced entries and insert only point that touch a boundary
 				size_t numCells = 0;
 				for (const auto &cell : *(precalced->getCells()))
 				{
 					if (cell.isSurface())
 					{
-						vcSmall->put((int)numCells, cell.pos(0), cell.pos(1), cell.pos(2));
+						preVc->put((int)numCells, cell.pos(0), cell.pos(1), cell.pos(2));
 						numCells++;
 					}
 				}
+				
+				
+				boost::shared_ptr<voro::container> vcSmall(new container(
+					mins(0)-1, maxs(0)+1, mins(1)-1, maxs(1)+1, mins(2)-1, maxs(2)+1,
+					n_x, n_y, n_z, false, false, false, init_grid));
+				
+				preVc->setup(*vcSmall);
 
 				// It's optional to use a pool here, since this Voronoi diagram is much smaller than the other.
 				boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall, mins, maxs));

@@ -142,7 +142,7 @@ namespace rtmath {
 
 				DBdatatype datatype = getSiloDatatype<T>();
 
-				DBoptlist *optlist = DBMakeOptlist((int)ndims*2);
+				DBoptlist *optlist = DBMakeOptlist(3+(int)ndims*2);
 				if (dimLabels && dimUnits)
 					for (size_t i=0; i<ndims && i < 3; ++i)
 					{
@@ -160,6 +160,8 @@ namespace rtmath {
 						DBAddOption(optlist, labelVal, (void*)dimLabel);
 						DBAddOption(optlist, unitVal, (void*)dimUnit);
 					}
+
+					//DBAddOption(optlist, DBOPT_MAJORORDER, (void*)1); // Eigen matrices are in column-major ordering!
 
 					DBPutQuadmesh(parent->df, // dbfile
 						name, // mesh name
@@ -191,6 +193,7 @@ namespace rtmath {
 				DBoptlist *optlist = DBMakeOptlist(1);
 				if (varunits)
 					DBAddOption(optlist, DBOPT_UNITS, (void *)varunits);
+				//DBAddOption(optlist, DBOPT_MAJORORDER, (void *)1); // Causes access violation
 
 				char ** vn = const_cast<char**> (varnames);
 				const char* noname = varname;

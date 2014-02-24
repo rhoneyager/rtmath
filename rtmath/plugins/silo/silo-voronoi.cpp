@@ -61,12 +61,12 @@ namespace rtmath {
 				std::map<std::string, VoronoiDiagram::matrixType> tbl;
 				v->getResultsTable(tbl);
 
-				std::cerr << (*cellmap) << std::endl;
 				// Create a common mesh for all of the possible points
 				// The cellmap contains all of the possible points.
 
 
 				const char* axislabels[] = { "x", "y", "z" };
+				//const char* axislabels2[] = { "z", "y", "x" };
 				const char* axisunits[] = { "dipoles", "dipoles", "dipoles" };
 				Eigen::Array3f minsf, maxsf, spanf;
 				v->getBounds(minsf, maxsf, spanf);
@@ -78,10 +78,10 @@ namespace rtmath {
 				ys.setLinSpaced(minsf(1), maxsf(1));
 				zs.setLinSpaced(minsf(2), maxsf(2));
 
-				int dimsizes[] = { span(2), span(1), span(0) };
+				int dimsizes[] = { span(0), span(1), span(2) };
 				// Casting to a float because the silo format requires float or double quad mesh coordinates
 				Eigen::MatrixXf grid = cellmap->cast<float>();
-				const float *dims[] = { zs.data(), ys.data(), xs.data() };
+				const float *dims[] = { xs.data(), ys.data(), zs.data() };
 				
 				// Point mesh --- for debug visualization
 				auto meshp = h->file->createPointMesh<float>("Region_CellIDs_points_mesh",
