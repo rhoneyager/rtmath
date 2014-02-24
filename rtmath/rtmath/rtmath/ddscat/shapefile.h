@@ -68,6 +68,8 @@ namespace rtmath {
 				shapefile(const std::string &filename);
 				shapefile(std::istream &in);
 				~shapefile();
+				/// Function to fix the shape center of mass to match calculated stats
+				void fixStats();
 				/// Write ddscat-formatted shapefile to the given output stream.
 				void print(std::ostream &out) const;
 				/** \brief Read in a shapefile (compression allowed)
@@ -153,6 +155,8 @@ namespace rtmath {
 
 				shapefile();
 			private:
+				/// Read a shapefile from an uncompressed string
+				void readString(const std::string &in, bool headerOnly = false);
 				void _init();
 				void readHeader(const char *in, size_t &headerEnd);
 				/// Resizes arrays to hold the desired number of points

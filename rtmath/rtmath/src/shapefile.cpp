@@ -60,8 +60,8 @@ namespace rtmath {
 				s = so.str();
 				this->_localhash = HASH(s.c_str(), (int)s.size());
 
-				std::istringstream ss_unc(s);
-				read(s);
+				//std::istringstream ss_unc(s);
+				readString(s);
 			}
 
 			void shapefile::_init()
@@ -144,11 +144,16 @@ namespace rtmath {
 				suncompressed = so.str();
 				this->_localhash = HASH(suncompressed.c_str(), (int)suncompressed.size());
 
-				istringstream ss_unc(suncompressed);
+				//istringstream ss_unc(suncompressed);
+				readString(suncompressed);
+			}
+
+			void shapefile::readString(const std::string &in, bool headerOnly)
+			{
 				size_t headerEnd = 0;
-				readHeader(suncompressed.c_str(), headerEnd);
+				readHeader(in.c_str(), headerEnd);
 				if (!headerOnly)
-					readContents(suncompressed.c_str(), headerEnd);
+					readContents(in.c_str(), headerEnd);
 			}
 
 			void shapefile::resize(size_t n)
@@ -546,6 +551,10 @@ namespace rtmath {
 				}
 			}
 
+			void shapefile::fixStats()
+			{
+				x0 = means;
+			}
 
 		}
 	}
