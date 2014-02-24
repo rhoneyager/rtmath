@@ -253,7 +253,7 @@ namespace rtmath {
 				if (doVoronoi)
 				{
 					boost::shared_ptr<VoronoiDiagram> vd = _shp->generateVoronoi(
-						"standard", VoronoiDiagram::generateStandard);
+						std::string("standard"), VoronoiDiagram::generateStandard);
 
 					boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 						candidate_hull_points;

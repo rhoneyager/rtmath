@@ -47,7 +47,7 @@ namespace rtmath
 				std::shared_ptr<registry::options> opts = nullptr) const
 			{
 				// All of these objects can handle their own compression
-				::rtmath::registry::IO_class_registry<obj_class>::io_multi_type dllsaver = nullptr;
+				typename ::rtmath::registry::IO_class_registry<obj_class>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
 				auto hooks = ::rtmath::registry::usesDLLregistry<output_registry_class,
 					::rtmath::registry::IO_class_registry<obj_class> >::getHooks();

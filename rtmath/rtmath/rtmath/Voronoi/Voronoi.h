@@ -160,7 +160,7 @@ namespace rtmath {
 			/// \brief Generate standard Voronoi diagram, with cells starting with pre-contoured size
 			/// \todo Add points shared_ptr overload.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
-				Eigen::Array3f &mins, Eigen::Array3f &maxs,
+				const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
 				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
 				);
 

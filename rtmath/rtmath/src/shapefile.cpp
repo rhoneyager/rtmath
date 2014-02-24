@@ -266,8 +266,8 @@ namespace rtmath {
 			boost::shared_ptr<Voronoi::VoronoiDiagram> shapefile::generateVoronoi(
 				const std::string &name,
 				std::function < boost::shared_ptr<Voronoi::VoronoiDiagram>(
-				const Eigen::Array3f, const Eigen::Array3f,
-				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>)> f) const
+				const Eigen::Array3f&, const Eigen::Array3f&,
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> f) const
 			{
 				if (voronoi_diagrams.count(name))
 					return voronoi_diagrams[name];

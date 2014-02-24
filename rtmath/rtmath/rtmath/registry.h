@@ -206,7 +206,7 @@ namespace rtmath
 			template <class T> T getVal(const std::string &key, const T& defaultval) const
 			{
 				if (!hasVal(key)) return defaultval;
-				return getVal(key);
+				return getVal<T>(key);
 			}
 			template <class T>
 			void setVal(const std::string &key, const T &value)
