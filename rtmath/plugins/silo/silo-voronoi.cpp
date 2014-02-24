@@ -61,6 +61,7 @@ namespace rtmath {
 				std::map<std::string, VoronoiDiagram::matrixType> tbl;
 				v->getResultsTable(tbl);
 
+				std::cerr << (*cellmap) << std::endl;
 				// Create a common mesh for all of the possible points
 				// The cellmap contains all of the possible points.
 
@@ -77,23 +78,28 @@ namespace rtmath {
 				ys.setLinSpaced(minsf(1), maxsf(1));
 				zs.setLinSpaced(minsf(2), maxsf(2));
 
-				int dimsizes[] = { span(0), span(1), span(2) };
+				int dimsizes[] = { span(2), span(1), span(0) };
 				// Casting to a float because the silo format requires float or double quad mesh coordinates
 				Eigen::MatrixXf grid = cellmap->cast<float>();
-				const float *dims[] = { xs.data(), ys.data(), zs.data() };
+				const float *dims[] = { zs.data(), ys.data(), xs.data() };
 				
+				// Point mesh --- for debug visualization
+				auto meshp = h->file->createPointMesh<float>("Region_CellIDs_points_mesh",
+					cellmap->cast<float>().block(0,0,cellmap->rows(),3), axislabels, axisunits);
+				meshp->writeData<float>("Region_CellIDs_points", grid.col(3).data(), "None");
+
+				// Rectilinear space mesh
 				auto mesh = h->file->createRectilinearMesh<float>(
 					meshname.c_str(),
 					3, dims, dimsizes, 
 					axislabels, axisunits);
-					
-
 				// Write the array of zone ids
 				mesh->writeData<float>("Region_CellIDs", grid.col(3).data(), "None");
 				
+
+
 				// For each of the arrays in tbl, attempt to match each to the relevent 
 				// cell listing.
-				/*
 				for (const auto &t : tbl)
 				{
 					const std::string name = t.first;
@@ -103,17 +109,25 @@ namespace rtmath {
 					if ((size_t) m->rows() != v->numPoints()) continue;
 					// If m has 4 or more cols, then the first three are the point location.
 					// If it has 3 or fewer, then the point ids are the row numbers, sequentially.
-
 					size_t numCols = (m->cols() > 3) ? m->cols() - 3 : m->cols();
+					size_t idcol = (m->cols() > 3) ? 3 : 0;
 
-					Eigen::MatrixXf res(cellmap->rows, numCols);
-
-					// Unfortunately, filling the mesh is rather annoying
-
+					Eigen::MatrixXf res(cellmap->rows(), numCols);
+					// It helps to construct a map between the probe point id and the matched point id.
+					// For the cellMap table, the row number is the probe point id. The fourth column is 
+					// the voronoi point id (which is the row of matrix m).
+					for (int i=0; i < cellmap->rows(); ++i)
+					{
+						int probeId = i;
+						int voroId = (*cellmap)(i,idcol);
+						if (voroId >= 0)
+							res.block(i,0,1,numCols) = m->block(voroId,idcol,1,numCols);
+						else res.block(i,0,1,numCols).fill(-1);
+					}
 
 					mesh->writeData<float>(name.c_str(), res);
 				}
-				*/
+				
 
 				return h; // Pass back the handle
 		}

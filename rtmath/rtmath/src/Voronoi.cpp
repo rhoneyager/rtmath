@@ -244,11 +244,15 @@ namespace rtmath
 				auto getCoords = [&](int i)->Eigen::Array3i
 				{
 					Eigen::Array3i crd;
+					int x, y, z;
 					// Iterate first over z, then y, then x
 					crd(0) = i / (span(2)*span(1));
-					crd(1) = (i - (crd(0)*span(2)*span(1))) / span(1);
+					//crd(1) = (i % (span(2)*span(1))) / span(2);
+					crd(1) = (i - (crd(0)*span(2)*span(1))) / span(2);
 					crd(2) = i % span(2);
+					x = crd(0); y = crd(1); z = crd(2);
 					crd += mins;
+					x = crd(0); y = crd(1); z = crd(2);
 					return crd;
 				};
 
@@ -330,8 +334,6 @@ namespace rtmath
 					vol += ci.vol;
 					sa += ci.sa_ext;
 				} while (cl.inc());
-
-				generateCellMap();
 			}
 			
 			
@@ -349,7 +351,7 @@ namespace rtmath
 				//return m.find<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator> > >("cells").first;
 			}
 			/// Get pointer to the mapping between coordinates and the stored cell
-			const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const { return &cellmap; }
+			const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const { generateCellMap(); return &cellmap; }
 		};
 
 
