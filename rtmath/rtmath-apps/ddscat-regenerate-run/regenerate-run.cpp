@@ -280,9 +280,10 @@ int main(int argc, char** argv)
 			{
 				rtmath::ddscat::shapefile::shapefile s;
 				s.read(d.second.shapefile.string());
-				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 3);
-				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 3);
-				dims[2] = (size_t) (s.maxs(2) - s.mins(2) + 3);
+				// Extra padding is needed by ddscat...
+				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 20);
+				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 20);
+				dims[2] = (size_t) (s.maxs(2) - s.mins(2) + 20);
 				cerr << "\tDipole extent is " << dims[0] << ", " << dims[1] << ", " << dims[2] << endl;
 			}
 			else cerr << "\tUsing initial dipole extent" << endl;
