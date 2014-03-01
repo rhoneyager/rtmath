@@ -18,6 +18,7 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -49,7 +50,7 @@ int main(int argc, char** argv)
 {
 	using namespace std;
 	try {
-		cerr << "rtmath-ddscat-regenerate-run\n\n";
+		cerr << "rtmath-ddscat-generate-run\n\n";
 
 		namespace po = boost::program_options;
 		using std::endl;
@@ -64,25 +65,21 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("avg,a", po::value<vector<string> >()->multitoken(), "Select avg files")
 			("shape,s", po::value<vector<string> >()->multitoken(), "Select shape files")
+			("dipole-spacing,d", po::value<double>(), "Specify interdipole spacing")
 			("par,p", po::value<vector<string> >()->multitoken(), "Select par file")
 			("output,o", po::value<string>(), "Select output directory base")
 			("dielectric-files", po::value<vector<string> >(),
 			"Force a set of dielectric files to be used. "
 			"These will override the standard par file choices.")
-			("use-avg-dielectrics",
-			"Use the refractive indices that appear in each avg file.")
-			("force-frequency", po::value<double>(), "Override frequency (GHz)")
-			//("force-intermediate", po::value<bool>(), "Force intermediate output")
-			("match-by-folder", "Instead of matching by standard prefix, match by containing folder")
-			("match-by-dipoles", "Instead of matching by a standard prefix, match avg files and shape "
+			("name-by-folder", "Instead of matching by standard prefix, match by containing folder")
+			("name-by-dipoles", "Instead of matching by a standard prefix, match avg files and shape "
 			"files by the number of dipoles. Necessary for Liu raw pristine flake extraction. "
 			"Will use a default par file this way.")
-			("calc-dipole-extent", po::value<bool>()->default_value(true), "Read the shape and calculate the "
-			"dimension sizes. Used to tweak the parameter file.")
+			("use-avg-dielectrics",
+			"Use the refractive indices that appear in each avg file.")
+			("force-frequency,F", po::value<double>(), "Override frequency (GHz)")
 			("ice-temp,T", po::value<double>(), "Specify ice temperature. Used if a dielectric is regenerated.")
-			("only-one-avg", "Use only one avg file of each id for regeneration.")
 			;
 
 		desc.add(cmdline).add(config);
@@ -104,32 +101,30 @@ int main(int argc, char** argv)
 		
 		if (vm.count("help") || argc == 1) doHelp("");
 
+		matchCriteria mc = MATCH_STANDARD;
+		if (vm.count("name-by-folder")) mc = MATCH_FOLDERS;
+		if (vm.count("name-by-dipoles")) mc = MATCH_DIPOLES;
+
 		std::map<std::string, rtmath::ddscat::dataset> maps;
 
-		vector<string> iavgs, ishapes, ipars; // May be expanded by os.
+		vector<string> ishapes, ipars; // May be expanded by os.
 		vector<boost::filesystem::path> avgs, shapes, pars;
 		string outbase;
-		bool calcDipoleExtent = vm["calc-dipole-extent"].as<bool>();
-		matchCriteria mc = MATCH_STANDARD;
-		if (vm.count("match-by-folder")) mc = MATCH_FOLDERS;
-		if (vm.count("match-by-dipoles")) mc = MATCH_DIPOLES;
 		
-		bool avgOne = false;
-		if (vm.count("only-one-avg")) avgOne = true;
 
 		if (!vm.count("shape")) doHelp("Need to specify shape files");
-		//if (!vm.count("avg")) doHelp("Need to specify avg files");
+		if (!vm.count("dipole-spacing")) doHelp("Need to specify interdipole spacing");
 		if (!vm.count("par")) doHelp("Need to specify par file(s)");
 		if (!vm.count("output")) doHelp("Need to specify output");
 
 		ishapes = vm["shape"].as<vector<string> >();
-		if (vm.count("avg"))
-			iavgs = vm["avg"].as<vector<string> >();
 		ipars = vm["par"].as<vector<string> >();
 		outbase = vm["output"].as<string>();
 
 		double temp = 0;
 		if (vm.count("ice-temp")) temp = vm["ice-temp"].as<double>();
+
+		double dipoleSpacing = vm["dipole-spacing"].as<double>();
 
 		auto makePathAbsolute = [](const boost::filesystem::path &p) -> boost::filesystem::path
 		{
@@ -233,21 +228,7 @@ int main(int argc, char** argv)
 				else dest.push_back(p);
 			}
 		};
-
-		/*
-		if (0) // avgs.size() == 1)
-		{
-			// Special case where the exact data is specified
-			string prefix = dataset::getPrefix(path(avgs[0]));
-			if (!prefix.size()) prefix = "manual";
-			cerr << "Single avg file: " << avgs[0] << endl;
-			maps[prefix] = dataset(prefix);
-			maps[prefix].ddres.push_back(path(avgs[0]));
-			maps[prefix].shapefile = path(shapes.at(0));
-		} else {
-			*/
 		expandFolders(ishapes, shapes);
-		expandFolders(iavgs, avgs);
 		expandFolders(ipars, pars);
 
 		matchIDS(shapes);
@@ -279,17 +260,19 @@ int main(int argc, char** argv)
 
 			// Reopen the shape file to determine dipole extent
 			vector<size_t> dims(3,0);
-			if (calcDipoleExtent)
-			{
-				rtmath::ddscat::shapefile::shapefile s;
-				s.read(d.second.shapefile.string());
-				// Extra padding is needed by ddscat...
-				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 20);
-				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 20);
-				dims[2] = (size_t) (s.maxs(2) - s.mins(2) + 20);
-				cerr << "\tDipole extent is " << dims[0] << ", " << dims[1] << ", " << dims[2] << endl;
-			}
-			else cerr << "\tUsing initial dipole extent" << endl;
+			rtmath::ddscat::shapefile::shapefile s;
+			s.read(d.second.shapefile.string());
+			// Extra padding is needed by ddscat...
+			dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 20);
+			dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 20);
+			dims[2] = (size_t) (s.maxs(2) - s.mins(2) + 20);
+			cerr << "\tDipole extent is " << dims[0] << ", " << dims[1] << ", " << dims[2] << endl;
+			
+			// And use the shapefile number of points to determine the effective radius
+			double Vdipole = (double) s.numPoints * s.d.prod();
+			double Vphys = Vdipole * pow(dipoleSpacing, 3.);
+			double Aphys = pow(3. * Vphys / (4. * boost::math::constants::pi<double>()), 1./3.);
+
 
 			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
 			{
@@ -371,11 +354,7 @@ int main(int argc, char** argv)
 				ppar.writeFile(ppath.string());
 			};
 
-
-			// If there are no avg files to regenerate from
-			if (!d.second.ddres.size())
 			{
-				cerr << "\tNot using avg file\n";
 				path p = pa; //pOut / pa.filename();
 				//path p = pa / "test";
 				cerr << "\tCreating directory " << p << endl;
@@ -383,23 +362,7 @@ int main(int argc, char** argv)
 				if (!linkShape(p / path("shape.dat"))) continue;
 				ddPar ppar = parFile;
 				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), ppar, 0, 0, std::complex<double>(0,0));
-			}
-			// and if there are avg files to regenerate from
-			for (auto &pavg : d.second.ddres)
-			{
-				cerr << "Using avg file " << pavg << "\n";
-				ddOutputSingle avg(pavg.string(),".avg");
-				path p = pa;
-				// path p = pOut / pa.filename(); // / path(pavg).filename();
-				cerr << "\tCreating directory " << p << endl;
-				boost::filesystem::create_directory(p);
-				if (!linkShape(p / path("shape.dat"))) continue;
-				ddPar ppar = parFile;
-				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), ppar, avg.aeff(), avg.wave(), avg.getM());
-
-				if (avgOne) break;
+				createPar((p / path("ddscat.par")), ppar, Aphys, 0, std::complex<double>(0,0));
 			}
 		}
 	} catch (std::exception &e)
