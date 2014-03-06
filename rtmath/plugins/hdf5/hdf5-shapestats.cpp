@@ -154,6 +154,30 @@ namespace rtmath {
 					write_hdf5_statsrotatedrawdata(grpRotations, rot.get());
 				}
 
+				// Extract PE and moment of inertia for ease of plotting
+				Eigen::MatrixXf ptsRots(s->rotations.size(), 3);
+				Eigen::MatrixXf rotPE(s->rotations.size(), 1);
+				Eigen::MatrixXf rotMI(s->rotations.size(), 3);
+				{
+					size_t i=0;
+					for (auto rot = s->rotations.begin(); rot != s->rotations.end(); ++rot, ++i)
+					{
+						ptsRots(i,0) = (float) (*rot)->beta;
+						ptsRots(i,1) = (float) (*rot)->theta;
+						ptsRots(i,2) = (float) (*rot)->phi;
+						rotPE(i,0) = (float) (*rot)->PE(0, 0);
+						rotMI.block(i,0,1,3) = (*rot)->mominert.at(0).block<1,3>(0,0);
+					}
+				}
+				Eigen::MatrixXf pe(s->rotations.size(), 4);
+				pe.block(0,0,s->rotations.size(),3) = ptsRots;
+				pe.col(3) = rotPE;
+				addDatasetEigen<Eigen::MatrixXf, Group>(grpRotations, "PE", pe);
+				Eigen::MatrixXf mi(s->rotations.size(), 6);
+				mi.block(0,0,s->rotations.size(),3) = ptsRots;
+				mi.block(0,3,s->rotations.size(),3) = rotMI;
+				addDatasetEigen<Eigen::MatrixXf, Group>(grpRotations, "Moment_Inertia", mi);
+
 				// And make a soft link to the relevent raw shape information
 				std::string pShape;
 				{

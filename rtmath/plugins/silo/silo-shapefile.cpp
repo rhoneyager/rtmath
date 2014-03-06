@@ -121,6 +121,37 @@ namespace rtmath {
 
 			write_file_type_multi(h, filename, s->_shp.get(), key, iotype);
 
+			// Add in rotation-dependent information, such as the potential energy of each rotation, 
+			// as well as the associated moments of inertia. This will be on both a point mesh and, 
+			// if possible, a gridded mesh.
+
+			std::string hashname = s->_shp->hash().string();
+			std::string ptRotName = "Rotation_mesh_";
+			ptRotName.append(hashname);
+
+			//auto ptsRots = h->file->createPointMesh<float>(ptRotName.c_str(), 
+			Eigen::MatrixXf ptsRots(s->rotations.size(), 3);
+			Eigen::MatrixXf rotPE(s->rotations.size(), 1);
+			Eigen::MatrixXf rotMI(s->rotations.size(), 3);
+			{
+				size_t i=0;
+				for (auto rot = s->rotations.begin(); rot != s->rotations.end(); ++rot, ++i)
+				{
+					ptsRots(i,0) = (float) (*rot)->beta;
+					ptsRots(i,1) = (float) (*rot)->theta;
+					ptsRots(i,2) = (float) (*rot)->phi;
+					rotPE(i,0) = (float) (*rot)->PE(0, 0);
+					rotMI.block(i,0,1,3) = (*rot)->mominert.at(0).block<1,3>(0,0);
+				}
+			}
+			const char *dims[] = { "beta", "theta", "phi" };
+			const char *units[] = { "degrees", "degrees", "degrees" };
+			auto mPtsRots = h->file->createPointMesh<float>(ptRotName.c_str(), ptsRots, dims, units);
+			mPtsRots->writeData<float>(std::string("PE_").append(hashname).c_str(),rotPE,"PE Units (dipole space)");
+			mPtsRots->writeData<float>(std::string("MomInert_").append(hashname).c_str(),rotMI,"Moment of inertia units (dipole space)");
+
+			// TODO: make a mesh creation class that creates a mesh out of an irregular set of points
+
 
 			return h; // Pass back the handle
 		}
