@@ -49,6 +49,13 @@ namespace rtmath {
 					}
 		}
 
+		void rotations::getRots(std::map<boost::tuple<double, double, double>, size_t> &out) const
+		{
+			std::set<double> sb, st, sp;
+			betas(sb); thetas(st); phis(sp);
+			populateRotations(sb, st, sp, out);
+		}
+
 		rotationsBase::rotationsBase()
 			:
 			_bMin(0), _bMax(360), _bN(6),

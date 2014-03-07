@@ -70,6 +70,12 @@ namespace rtmath {
 			void betas(std::set<double> &b) const;
 			void thetas(std::set<double> &t) const;
 			void phis(std::set<double> &p) const;
+			/** \brief Convenience function to generate rotations based on
+			* betas, thetas and phis. Handles degeneracy.
+			*
+			* \param out is the map between a given rotation and its level of degeneracy.
+			**/
+			void getRots(std::map<boost::tuple<double, double, double>, size_t > &) const;
 
 			bool operator==(const rotations &rhs) const;
 			bool operator!=(const rotations &rhs) const;

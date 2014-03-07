@@ -45,6 +45,7 @@ namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath {
 	namespace ddscat {
+		class rotations;
 		namespace stats {
 			struct rotComp
 			{
@@ -69,11 +70,38 @@ namespace rtmath {
 				/// shapefile. Required for hulling or stats adding operations.
 				bool load();
 
+				typedef boost::shared_ptr<const shapeFileStatsRotated> rotPtr;
+
 				// Set rotation matrix, with each value in degrees
 				//void setRot(double beta, double theta, double phi);
 				void calcStatsBase();
 				/// calcStatsRot calculates the stats RELATIVE to the shapefile default rot.
-				boost::shared_ptr<const shapeFileStatsRotated> calcStatsRot(double beta, double theta, double phi) const;
+				rotPtr calcStatsRot(double beta, double theta, double phi) const;
+
+				/** \brief Calculates the orientation with the minimum potential energy function.
+				* 
+				* The orientations being considered are constrained on the 2d plane of beta and theta.
+				* Stats are first calculated on a grid (orientations following defaults, modifiable by the 
+				* command-line) in an attempt to find multiple minima. Then, a minimization library is 
+				* called to find the true minimum. The resultant shared pointer is stored in a special 
+				* entry in the shapeFileStatsBase class.
+				**/
+				rotPtr calcOriMinPE() const;
+
+				/** \brief Calculates the orientation with the greatest possible horizontal aspect ratio.
+				*
+				* This works by first considering the max distance between any two points, found during the 
+				* base stats calculation. The particle is rotated such that the max distance occurs along 
+				* the y axis (so that the particle major axis is perpendicular to incoming radiation in DDSCAT. 
+				* Additionally, the particle points are projected within this axis, and the particle is 
+				* furthermore rotated to ensure that the next greatest aspect ratio (following the projection 
+				* operation) lies along the z axis. The resultant shared pointer is stored in a special entry 
+				* in the shapeFileStatsBase class to avoid recalculation.
+				**/
+				rotPtr calcOriMaxAR() const;
+
+				/// Calculate stats for each rotation to match a ddscat run's rotations
+				void calcStatsRot(const rtmath::ddscat::rotations&) const;
 
 				/// rot is the effective rotation designated by the choice of a1 and a2
 				Eigen::Matrix3f rot, invrot;
@@ -101,23 +129,32 @@ namespace rtmath {
 				volumetric Scircum_sphere, Sconvex_hull, 
 					SVoronoi_hull, Sellipsoid_max, Sellipsoid_rms;
 
+				/// Maximum distance between any two points
 				float max_distance;
+				/// Max distance 1st point
+				//Eigen::Array3f md1;
+				/// Max distance 2nd point
 
 				/// \todo Add Voronoi diagram and convex hull storage
 
+				/// Tracks the current stats version to see if recalculation is required.
 				static const unsigned int _maxVersion;
+				/// Tracks the loaded stats version to see if reaclculation is required.
 				unsigned int _currVersion;
 
 				// Before normalization and rotation
 				Eigen::Vector3f b_min, b_max, b_mean;
 
-				mutable std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > rotations;
+				/// Allows iteration over all calculated rotation stats
+				mutable std::set<rotPtr, rotComp > rotations;
 
 				/// The shape
 				boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> _shp;
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 			protected:
 				shapeFileStatsBase();
+
+				mutable rotPtr _rotMinPE, _rotMaxAR;
 
 				friend class ::boost::serialization::access;
 				template<class Archive>
