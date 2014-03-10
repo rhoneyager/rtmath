@@ -13,14 +13,24 @@ option (BUILD_PLUGINS
 	"Master switch to enable / disable building of plugins" ON)
 if (BUILD_PLUGINS)
 	option (BUILD_PLUGIN_BOV
-		"Build shapefile BOV import / export plugin" ON)
+		"Build shapefile BOV import / export plugin" OFF)
 	if (BUILD_PLUGIN_BOV)
 		add_subdirectory (bov)
+	endif()
+	option (BUILD_PLUGIN_CERES_SOLVER
+		"Build Google Ceres Solver plugin (optimization)" ON)
+	if (BUILD_PLUGIN_CERES_SOLVER)
+		add_subdirectory (ceres-solver)
 	endif()
 	option (BUILD_PLUGIN_HDF5
 		"Build HDF5 IO plugin" ON)
 	if (BUILD_PLUGIN_HDF5)
 		add_subdirectory (hdf5)
+	endif()
+	option (BUILD_PLUGIN_ROOT
+		"Build ROOT plugin (io and plotting)" ON)
+	if (BUILD_PLUGIN_ROOT)
+		add_subdirectory (root)
 	endif()
 	option (BUILD_PLUGIN_SILO
 		"Build SILO IO plugin" ON)
