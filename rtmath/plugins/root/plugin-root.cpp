@@ -1,4 +1,4 @@
-/// \brief Provides silo file IO
+/// \brief Provides Cern ROOT file IO
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <string>
@@ -10,8 +10,7 @@
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 
-#include "plugin-silo.h"
-#include "WritePoints.h"
+#include "plugin-root.h"
 
 void dllEntry();
 rtmath_plugin_init(dllEntry);
@@ -20,15 +19,15 @@ namespace rtmath
 {
 	namespace plugins
 	{
-		namespace silo
+		namespace root
 		{
-			silo_handle::silo_handle(const char* filename, IOtype t)
+			root_handle::root_handle(const char* filename, IOtype t)
 				: IOhandler(PLUGINID)
 			{
 				open(filename, t);
 			}
 
-			void silo_handle::open(const char* filename, IOtype t)
+			void root_handle::open(const char* filename, IOtype t)
 			{
 				switch (t)
 				{
@@ -49,7 +48,7 @@ namespace rtmath
 					RTthrow rtmath::debug::xUnimplementedFunction();
 					break;
 				case IOtype::TRUNCATE:
-					file = std::shared_ptr<siloFile>(new siloFile(filename));
+					//file = std::shared_ptr<rootFile>(new rootFile(filename));
 					break;
 				}
 			}
@@ -62,23 +61,22 @@ namespace rtmath
 void dllEntry()
 {
 	using namespace rtmath::registry;
-	using namespace rtmath::plugins::silo;
+	using namespace rtmath::plugins::root;
 	static const rtmath::registry::DLLpreamble id(
-		"Plugin-SILO",
-		"Example plugin to provide shapefile class with the ability to "
-		"read and write SILO files.",
+		"Plugin-ROOT",
+		"Provides ROOT export of some data, as well as visualizations for "
+		"a few data objects using Cern ROOT.",
 		PLUGINID);
 	rtmath_registry_register_dll(id);
-
+	/*
 	genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
 
 	genAndRegisterIOregistry<::rtmath::ddscat::ddOutput, 
 		rtmath::ddscat::ddOutput_IO_output_registry>("silo",PLUGINID);
-
+		*/
+	/*
 	genAndRegisterIOregistry<::rtmath::ddscat::stats::shapeFileStats, 
-		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("silo",PLUGINID);
-
-	genAndRegisterIOregistry<::rtmath::Voronoi::VoronoiDiagram,
-		rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);
+		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("rootimage",PLUGINID);
+	*/
 }

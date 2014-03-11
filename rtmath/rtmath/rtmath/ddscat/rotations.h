@@ -95,13 +95,28 @@ namespace rtmath {
 				std::map<boost::tuple<double,double,double>, size_t> &out);
 		};
 
-		// Function to calculate Gimbal matrices and effective rotation matrix.
-		// Using ddscat conventions.
+		/// \brief Function to calculate Gimbal matrices and effective rotation matrix.
+		/// Using ddscat conventions.
 		template<class T>
 		void rotationMatrix(T thetad, T phid, T betad,
 			Eigen::Matrix<T, 3, 3, 0, 3, 3> &Reff);
 
-		// TODO: Should some extern template magic go here?
+		/// Calculates the a1 vector, following DDSCAT conventions, for a given rotation.
+		template<class T>
+		void a1(T thetad, T phid, Eigen::Matrix<T, 3, 1, 0, 3, 1> &a1);
+
+		/* Too hard for all three roations. They 
+		 * are mixed between intrinsic and extrinsic rotations, and the 
+		 * DDSCAT convention is neither Euler nor Tait-Bryan angles!
+		/// Decompose a rotation matrix into three DDSCAT rotations.
+		template<class T>
+		void decomposeRotationMatrix(const Eigen::Matrix<T, 3, 1, 0, 3, 1> &norm, 
+			T eff_deg, T &thetad, T &phid, T &betad);
+
+		template<class T>
+		void decomposeRotationMatrix(const Eigen::Matrix<T, 3, 3, 0, 3, 3> &Reff,
+			T &thetad, T &phid, T &betad);
+		*/
 	}
 }
 

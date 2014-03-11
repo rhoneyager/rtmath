@@ -9,7 +9,7 @@
 #include "../../rtmath/rtmath/error/debug.h"
 
 
-#define PLUGINID "f8340412-f146-47c4-8b32-a395d829f7b2"
+#define PLUGINID "94DB89ED-B1B4-412C-8438-F5F54FFD36BF"
 
 
 namespace rtmath {
@@ -21,9 +21,10 @@ namespace rtmath {
 		namespace stats { class shapeFileStats; }
 	}
 	namespace plugins {
-		namespace silo {
-			class siloFile;
+		namespace root {
+			//class rootFile;
 
+			/*
 			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_shapefile
 				(std::shared_ptr<rtmath::registry::IOhandler> h, 
 				const char* filename, 
@@ -44,14 +45,15 @@ namespace rtmath {
 				const rtmath::ddscat::ddOutput*, 
 				const char* key, 
 				rtmath::registry::IOhandler::IOtype iotype);
+			*/
 
-
-			struct silo_handle : public rtmath::registry::IOhandler
+			/// \note Covers .root files, not image export
+			struct root_handle : public rtmath::registry::IOhandler
 			{
-				silo_handle(const char* filename, IOtype t);
-				virtual ~silo_handle() {}
+				root_handle(const char* filename, IOtype t);
+				virtual ~root_handle() {}
 				void open(const char* filename, IOtype t);
-				std::shared_ptr<siloFile> file;
+				//std::shared_ptr<siloFile> file;
 			};
 
 

@@ -151,10 +151,8 @@ namespace rtmath {
 
 			shapeFileStatsBase::rotPtr shapeFileStatsBase::calcOriMaxAR() const
 			{
-				if (_rotMaxAR) return _rotMaxAR;
-
-				_rotMaxAR;
-
+				/// Calculated as part of basic stats calculation (tied in with 
+				/// the convex hull algorithm).
 				return _rotMaxAR;
 			}
 

@@ -271,6 +271,26 @@ namespace rtmath {
 			rtmath::config::splitSet<double>(sphis,p);
 		}
 
+		template<class T>
+		void a1(T thetad, T phid, Eigen::Matrix<T, 3, 1, 0, 3, 1> &a1)
+		{
+			T scale = (boost::math::constants::pi<T>()) / (T) 180.0;
+			T thetar = thetad * scale;
+			T phir = phid * scale;
+
+			using namespace Eigen;
+			typedef Matrix<T, 3, 1, 0, 3, 1> vt;
+			/// DDSCAT uses a strange z-x-x" convention when doing rotations.
+
+			a1 = (vt::UnitX() * cos(thetar))
+				+ (vt::UnitY() * sin(thetar)*cos(phir))
+				+ (vt::UnitZ() * sin(thetar)*sin(phir));
+		}
+
+		template void SHARED_EXPORT a1(double thetad, double phid, 
+			Eigen::Matrix<double, 3, 1, 0, 3, 1> &a1);
+		template void SHARED_EXPORT a1(float thetad, float phid,
+			Eigen::Matrix<float, 3, 1, 0, 3, 1> &a1);
 
 		template<class T>
 		void rotationMatrix(T thetad, T phid, T betad,
@@ -283,15 +303,59 @@ namespace rtmath {
 
 			using namespace Eigen;
 			typedef Matrix<T, 3, 1, 0, 3, 1> vt;
+			/// DDSCAT uses a strange z-x-x" convention when doing rotations.
+
+			vt a1 = (vt::UnitX() * cos(thetar))
+				+ (vt::UnitY() * sin(thetar)*cos(phir))
+				+ (vt::UnitZ() * sin(thetar)*sin(phir));
+
 			Reff = AngleAxis<T>(thetar, vt::UnitZ())
 				* AngleAxis<T>(phir, vt::UnitX())
-				* AngleAxis<T>(betar, vt::UnitZ());
+				* AngleAxis<T>(betar, a1);
 		}
 
 		template void SHARED_EXPORT rotationMatrix(double thetad, double phid, double betad,
 			Eigen::Matrix3d &Reff);
 		template void SHARED_EXPORT rotationMatrix(float thetad, float phid, float betad,
 			Eigen::Matrix3f &Reff);
+
+		/*
+		template<class T>
+		void decomposeRotationMatrix(const Eigen::Matrix<T, 3, 1, 0, 3, 1> &norm,
+			T eff_deg, T &thetad, T &phid, T &betad)
+		{
+			using namespace Eigen;
+			typedef Matrix<T, 3, 1, 0, 3, 1> vt;
+			typedef Matrix<T, 3, 3, 0, 3, 3> vtm;
+			vtm Reff = AngleAxis<T>(eff_deg, norm).toRotationMatrix();
+			// Take the rotation matrix and decompose it into three gimbal rotations,
+			// following ddscat conventions.
+			decomposeRotationMatrix<T>(Reff, thetad, phid, betad);
+		}
+
+		template<class T>
+		void decomposeRotationMatrix(const Eigen::Matrix<T, 3, 3, 0, 3, 3> &Reff,
+			T &thetad, T &phid, T &betad)
+		{
+			using namespace Eigen;
+			Matrix3f a;
+			Vector3f ang = a.eulerAngles(2, 0, 2);
+		}
+
+		template void SHARED_EXPORT decomposeRotationMatrix(
+			const Eigen::Matrix<float, 3, 1, 0, 3, 1> &norm,
+			float eff_deg, float &thetad, float &phid, float &betad);
+		template void SHARED_EXPORT decomposeRotationMatrix(
+			const Eigen::Matrix<double, 3, 1, 0, 3, 1> &norm,
+			double eff_deg, double &thetad, double &phid, double &betad);
+		template void SHARED_EXPORT decomposeRotationMatrix(
+			const Eigen::Matrix<float, 3, 3, 0, 3, 3> &Reff,
+			float &thetad, float &phid, float &betad);
+		template void SHARED_EXPORT decomposeRotationMatrix(
+			const Eigen::Matrix<double, 3, 3, 0, 3, 3> &Reff,
+			double &thetad, double &phid, double &betad);
+			*/
+
 	}
 }
 

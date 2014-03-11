@@ -37,6 +37,8 @@ namespace rtmath
 			double surfaceArea() const;
 			/// Max distance between two points in hull
 			double maxDiameter() const;
+			/// Rotation coordinates to principle axes of hull
+			void principalAxes(double &beta, double &theta, double &phi) const;
 		protected:
 			boost::shared_ptr<hullData> _p;
 		public:

@@ -170,6 +170,12 @@ namespace rtmath {
 					cvHull.constructHull();
 					max_distance = cvHull.maxDiameter();
 
+					// Calculate stats on max aspect ratio
+					{
+						double beta, theta, phi;
+						cvHull.principalAxes(beta, theta, phi);
+						_rotMaxAR = calcStatsRot(beta, theta, phi);
+					}
 
 					auto voroHullCalc = [&]()
 					{
@@ -229,6 +235,7 @@ namespace rtmath {
 				{
 					calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
 				}
+				calcOriMinPE();
 			}
 
 

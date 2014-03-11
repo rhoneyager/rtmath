@@ -9,6 +9,9 @@
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/min.hpp>
+#include <boost/math/constants/constants.hpp>
+
+#include <Eigen/Dense>
 
 #include <Voro++/voro++.hh>
 
@@ -16,6 +19,7 @@
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkDelaunay2D.h>
 #include <vtkDelaunay3D.h>
 #include <vtkDecimatePro.h>
 #include <vtkUnstructuredGrid.h>
@@ -38,6 +42,7 @@
 #include <vtkImplicitModeller.h>
 #include <vtkVoxelModeller.h>
 
+#include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/hulls.h"
 #include "../rtmath/error/error.h"
 
@@ -59,6 +64,8 @@ namespace rtmath
 		public:
 			hullData()
 				: volume(0), surfarea(0), vx(0), vy(0), vz(0), vproj(0), diameter(0),
+				diameter1(0), diameter2(0), diameter3(0),
+				beta(0), theta(0), phi(0),
 				boundsCalced(false), mcCalced(false)
 			{
 				points = vtkSmartPointer< vtkPoints >::New();
@@ -79,7 +86,11 @@ namespace rtmath
 			vtkSmartPointer<vtkDelaunay3D> hull;
 			vtkSmartPointer<vtkMarchingCubes> mc;
 			double volume, surfarea, diameter;
+			/// Max distance information for the three max axes
+			double diameter1, diameter2, diameter3;
 			double vx, vy, vz, vproj;
+			/// Rotations to the principal axes
+			double beta, theta, phi;
 			double mins[3], maxs[3];
 			bool boundsCalced;
 			bool mcCalced;
@@ -243,10 +254,10 @@ namespace rtmath
 			// Change this!!!!!!
 
 			// Just calculate the max diameter here
-			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base) -> double
+			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base, size_t &a, size_t &b) -> double
 			{
 				double maxD = 0;
-				size_t a = 0, b = 0;
+				a = 0;  b = 0;
 				//std::cerr << "Rows: " << base.rows() << " cols: " << base.cols() << std::endl;
 
 				for (size_t i = 0; i < (size_t) base->GetNumberOfPoints(); i++)
@@ -273,7 +284,92 @@ namespace rtmath
 				return sqrt(maxD);
 			};
 
-			_p->diameter = fMaxDiameter(delaunay3D->GetOutput()->GetPoints());
+			// Get max diameter and store the point ids
+			size_t mp1, mp2;
+			_p->diameter = fMaxDiameter(delaunay3D->GetOutput()->GetPoints(), mp1, mp2);
+			_p->diameter1 = _p->diameter;
+			// Use point ids to construct a rotation that puts these points parallel to the x axis
+			auto calcRot = [](const vtkSmartPointer<vtkPoints> &base, size_t &a, size_t &b, double &thetar, double &phir)
+			{
+				double i[3];
+				base->GetPoint(a,i);
+				Eigen::Vector3d va(i[0], i[1], i[2]);
+				base->GetPoint(b, i);
+				Eigen::Vector3d vb(i[0], i[1], i[2]);
+
+				Eigen::Vector3d vnet = va - vb;
+				vnet.normalize();
+
+				// By convenient convention, a1=x^ cos theta + y^ sin theta cos phi + z^ sin theta sin phi
+				// All I really need are theta and phi at this stage, not beta.
+
+				thetar = acos(vnet(0));
+				phir = acos(vnet(1) / sin(thetar));
+			};
+
+			double thetar, phir;
+			calcRot(delaunay3D->GetOutput()->GetPoints(), mp1, mp2, thetar, phir);
+			double scale = (boost::math::constants::pi<double>()) / 180.0;
+			double thetad = thetar / scale;
+			double phid = phir / scale;
+
+			Eigen::Matrix3d RotEff;
+			rtmath::ddscat::rotationMatrix(thetad, phid, 0., RotEff);
+			Eigen::Matrix3d RotInv = RotEff.inverse();
+			// Rotate the points and project into the y-z axis.
+			vtkSmartPointer<vtkPoints> ptsRotated1 = vtkSmartPointer< vtkPoints >::New();
+			vtkSmartPointer<vtkPoints> ptsProj1 = vtkSmartPointer< vtkPoints >::New();
+			ptsRotated1->SetNumberOfPoints(delaunay3D->GetOutput()->GetPoints()->GetNumberOfPoints());
+			ptsProj1->SetNumberOfPoints(delaunay3D->GetOutput()->GetPoints()->GetNumberOfPoints());
+			for (size_t i = 0; i < (size_t)ptsRotated1->GetNumberOfPoints(); ++i)
+			{
+				Eigen::Vector3d x;
+				delaunay3D->GetOutput()->GetPoints()->GetPoint(i, x.data());
+				Eigen::Vector3d y = RotInv * x;
+				ptsRotated1->SetPoint(i, y.data());
+				Eigen::Vector3d z = y;
+				z(0) = 0;
+				ptsProj1->SetPoint(i, z.data());
+			}
+
+			// Get the second max diameter and store the point ids
+			vtkSmartPointer<vtkPolyData> ptsProj1Polys = vtkSmartPointer< vtkPolyData >::New();
+			ptsProj1Polys->SetPoints(ptsProj1);
+
+			vtkSmartPointer<vtkDelaunay2D> delaunay2D =
+				vtkSmartPointer<vtkDelaunay2D>::New();
+			delaunay2D->SetInput(ptsProj1Polys);
+			delaunay2D->Update();
+
+			_p->diameter2 = fMaxDiameter(delaunay2D->GetOutput()->GetPoints(), mp1, mp2);
+
+			// Use these next point ids to construct a rotation with them parallel to the y axis
+
+			auto calcRot2d = [](const vtkSmartPointer<vtkPoints> &base, size_t &a, size_t &b, double &betar)
+			{
+				double i[3];
+				base->GetPoint(a, i);
+				Eigen::Vector3d va(i[0], i[1], i[2]);
+				base->GetPoint(b, i);
+				Eigen::Vector3d vb(i[0], i[1], i[2]);
+
+				Eigen::Vector3d vnet = va - vb;
+				vnet.normalize();
+
+				// By convenient convention, a1=x^ cos theta + y^ sin theta cos phi + z^ sin theta sin phi
+				// All I really need are theta and phi at this stage, not beta.
+
+				betar = atan2(vnet(2), vnet(1));
+			};
+
+			double betar;
+			calcRot2d(delaunay2D->GetOutput()->GetPoints(), mp1, mp2, betar);
+			double betad = betar / scale;
+
+			// Store the required rotation information
+			_p->beta = betad;
+			_p->theta = thetad;
+			_p->phi = phid;
 		}
 
 		double hull::maxDiameter() const { return _p->diameter; }
@@ -281,6 +377,11 @@ namespace rtmath
 		double hull::volume() const { return _p->volume; }
 
 		double hull::surfaceArea() const { return _p->surfarea; }
+
+		void hull::principalAxes(double &beta, double &theta, double &phi) const 
+		{
+			beta = _p->beta; theta = _p->theta; phi = _p->phi;
+		}
 
 	}
 }

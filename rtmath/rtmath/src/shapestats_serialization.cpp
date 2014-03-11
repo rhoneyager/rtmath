@@ -55,6 +55,9 @@ namespace rtmath
 
 
 			ar & boost::serialization::make_nvp("Rotation_Dependent", rotations);
+
+			ar & boost::serialization::make_nvp("Rotation_minPE", _rotMinPE);
+			ar & boost::serialization::make_nvp("Rotation_maxAR", _rotMaxAR);
 		}
 
 		template <class Archive>
