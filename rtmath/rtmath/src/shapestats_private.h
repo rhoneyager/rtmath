@@ -10,6 +10,7 @@ namespace rtmath {
 			extern bool autoHashStats;
 			extern std::vector<boost::tuple<double, double, double> > defaultRots;
 			extern bool doVoronoi;
+			extern bool disableVoronoi;
 		}
 	}
 }

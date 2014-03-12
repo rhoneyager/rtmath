@@ -35,6 +35,8 @@
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkMassProperties.h>
 #include <vtkTriangleFilter.h>
+#include <vtkTransform.h>
+#include <vtkTransformFilter.h>
 #include <vtkHull.h>
 #include <vtkImageData.h>
 #include <vtkVersion.h>
@@ -254,13 +256,13 @@ namespace rtmath
 			// Change this!!!!!!
 
 			// Just calculate the max diameter here
-			auto fMaxDiameter = [](const vtkSmartPointer<vtkPoints> &base, size_t &a, size_t &b) -> double
+			auto fMaxDiameter = [](vtkPoints *base, size_t &a, size_t &b) -> double
 			{
 				double maxD = 0;
 				a = 0;  b = 0;
 				//std::cerr << "Rows: " << base.rows() << " cols: " << base.cols() << std::endl;
-
-				for (size_t i = 0; i < (size_t) base->GetNumberOfPoints(); i++)
+				size_t np = (size_t) base->GetNumberOfPoints();
+				for (size_t i = 0; i < np; i++)
 				{
 					double it[3];
 					base->GetPoint(i, it);
@@ -280,6 +282,12 @@ namespace rtmath
 						}
 					}
 				}
+
+				// These get optimized away, but are kept for debugging
+				double ma[3];
+				double mb[3];
+				base->GetPoint(a, ma);
+				base->GetPoint(b, mb);
 
 				return sqrt(maxD);
 			};
@@ -303,6 +311,7 @@ namespace rtmath
 				// By convenient convention, a1=x^ cos theta + y^ sin theta cos phi + z^ sin theta sin phi
 				// All I really need are theta and phi at this stage, not beta.
 
+				/// \todo Check these: they do not seem correct!
 				thetar = acos(vnet(0));
 				phir = acos(vnet(1) / sin(thetar));
 			};
@@ -329,19 +338,34 @@ namespace rtmath
 				ptsRotated1->SetPoint(i, y.data());
 				Eigen::Vector3d z = y;
 				z(0) = 0;
-				ptsProj1->SetPoint(i, z.data());
+				ptsProj1->SetPoint(i, y.data());
+				//std::cerr << i << "\t" << y.transpose() << std::endl;
 			}
 
 			// Get the second max diameter and store the point ids
+			/* delaunay2d is excessive, as the first delaunay3d output should be small enough
 			vtkSmartPointer<vtkPolyData> ptsProj1Polys = vtkSmartPointer< vtkPolyData >::New();
-			ptsProj1Polys->SetPoints(ptsProj1);
+			ptsProj1Polys->SetPoints(ptsProj1); // Using projected point because of the max diameter calc.
+
+			//// delaunay2d only considers the xy plane! But, my points have x=0!
+			//// Need to implement a vtk transform filter to rotate, and there is no need 
+			//// for ptsProj1.
+			vtkSmartPointer<vtkTransform> transform1 =
+				vtkSmartPointer<vtkTransform>::New();
+			//transform1->PostMultiply();
+			//transform1->Translate(10.0, 0.0, 0.0);
+			transform1->RotateZ(90.0);
 
 			vtkSmartPointer<vtkDelaunay2D> delaunay2D =
 				vtkSmartPointer<vtkDelaunay2D>::New();
+			delaunay2D->SetTransform(transform1);
 			delaunay2D->SetInput(ptsProj1Polys);
 			delaunay2D->Update();
-
-			_p->diameter2 = fMaxDiameter(delaunay2D->GetOutput()->GetPoints(), mp1, mp2);
+			
+			vtkSmartPointer<vtkPoints> delaunay2Dpoints = delaunay2D->GetOutput()->GetPoints();
+			_p->diameter2 = fMaxDiameter(delaunay2Dpoints, mp1, mp2);
+			*/
+			_p->diameter2 = fMaxDiameter(ptsProj1, mp1, mp2);
 
 			// Use these next point ids to construct a rotation with them parallel to the y axis
 
@@ -363,13 +387,19 @@ namespace rtmath
 			};
 
 			double betar;
-			calcRot2d(delaunay2D->GetOutput()->GetPoints(), mp1, mp2, betar);
+			//calcRot2d(delaunay2D->GetOutput()->GetPoints(), mp1, mp2, betar);
+			calcRot2d(ptsProj1, mp1, mp2, betar);
 			double betad = betar / scale;
 
 			// Store the required rotation information
+			if (betad < 0) betad += 360;
+			if (phid < 0) phid += 360;
+			if (thetad < 0) thetad *= -1.;
 			_p->beta = betad;
 			_p->theta = thetad;
 			_p->phi = phid;
+
+			/// \todo Calculate the third diameter, eventually.
 		}
 
 		double hull::maxDiameter() const { return _p->diameter; }

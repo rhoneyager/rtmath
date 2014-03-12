@@ -153,57 +153,70 @@ namespace rtmath {
 				using namespace rtmath::Voronoi;
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
+				boost::shared_ptr<VoronoiDiagram> vd;
 				if (doVoronoi)
 				{
-					boost::shared_ptr<VoronoiDiagram> vd = _shp->generateVoronoi(
+					vd = _shp->generateVoronoi(
 						std::string("standard"), VoronoiDiagram::generateStandard);
-
-					boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
-						candidate_hull_points;
-					if (_shp->latticeExtras.count("cvxcands"))
-					{
-						candidate_hull_points = _shp->latticeExtras["cvxcands"];
-					} else {
-						candidate_hull_points = vd->calcCandidateConvexHullPoints();
-					}
-					convexHull cvHull(candidate_hull_points);
-					cvHull.constructHull();
-					max_distance = cvHull.maxDiameter();
-
-					// Calculate stats on max aspect ratio
-					{
-						double beta, theta, phi;
-						cvHull.principalAxes(beta, theta, phi);
-						_rotMaxAR = calcStatsRot(beta, theta, phi);
-					}
-
-					auto voroHullCalc = [&]()
-					{
-						std::pair<float, float> res;
-						res.first = (float) vd->volume();
-						res.second = (float) vd->surfaceArea();
-						return res;
-					};
-
-					auto cvxHullCalc = [&]()
-					{
-						std::pair<float, float> res;
-						res.first = (float) cvHull.volume();
-						res.second = (float) cvHull.surfaceArea();
-						return res;
-					};
-
-
-
-					Sconvex_hull.calc(this, cvxHullCalc);
-					SVoronoi_hull.calc(this, voroHullCalc);
-
-					Scircum_sphere.aeff_V = max_distance / 2.0;
-					Scircum_sphere.aeff_SA = max_distance / 2.0;
-					Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V,3.0f) / 3.0f;
-					Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
 				}
 
+				boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					candidate_hull_points;
+				if (_shp->latticeExtras.count("cvxcands"))
+				{
+					candidate_hull_points = _shp->latticeExtras["cvxcands"];
+				} else {
+					if (doVoronoi)
+						candidate_hull_points = vd->calcCandidateConvexHullPoints();
+					else {
+						boost::shared_ptr
+							< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > m
+							(new Eigen::MatrixXf(_shp->numPoints, 3));
+						*m = _shp->latticePtsNorm;
+						candidate_hull_points = m;
+					}
+				}
+				convexHull cvHull(candidate_hull_points);
+				cvHull.constructHull();
+				max_distance = cvHull.maxDiameter();
+				
+				// Calculate stats on max aspect ratio
+				{
+					double beta, theta, phi;
+					cvHull.principalAxes(beta, theta, phi);
+					_rotMaxAR = calcStatsRot(beta, theta, phi);
+				}
+
+				auto voroHullCalc = [&]()
+				{
+					std::pair<float, float> res;
+					if (doVoronoi)
+					{
+						res.first = (float)vd->volume();
+						res.second = (float)vd->surfaceArea();
+					}
+					else {
+						res.first = -1.f;
+						res.second = -1.f;
+					}
+					return res;
+				};
+
+				auto cvxHullCalc = [&]()
+				{
+					std::pair<float, float> res;
+					res.first = (float) cvHull.volume();
+					res.second = (float) cvHull.surfaceArea();
+					return res;
+				};
+
+				Sconvex_hull.calc(this, cvxHullCalc);
+				SVoronoi_hull.calc(this, voroHullCalc);
+
+				Scircum_sphere.aeff_V = max_distance / 2.0;
+				Scircum_sphere.aeff_SA = max_distance / 2.0;
+				Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V,3.0f) / 3.0f;
+				Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
 
 				_currVersion = _maxVersion;
 

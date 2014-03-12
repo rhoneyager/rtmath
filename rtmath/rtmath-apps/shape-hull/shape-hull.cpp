@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 
 				using namespace rtmath::Voronoi;
 				shp = boost::shared_ptr<shapefile> (new shapefile(input));
-				auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
 				stats = shapeFileStats::genStats(shp);
-				//auto vd = VoronoiDiagram::generateStandard(shp->mins, shp->maxs, shp->latticePts);
+				// stats already generates this
+				auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
 				auto cvxCands = vd->calcCandidateConvexHullPoints();
 				shp->latticeExtras["cvxCands"] = cvxCands;
 				auto SAfracExternal = vd->calcPointsSAfracExternal();

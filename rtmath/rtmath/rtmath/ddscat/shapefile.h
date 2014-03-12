@@ -171,6 +171,7 @@ namespace rtmath {
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 					std::string filename;
 				//std::vector<Eigen::Vector3f> 
+				/// \todo Move latticePts and the rest into const shared_ptr containers
 				Eigen::Matrix<float, Eigen::Dynamic, 3>
 					latticePts, // Untransformed points
 					latticePtsStd, // Points with coord translation based on file properties

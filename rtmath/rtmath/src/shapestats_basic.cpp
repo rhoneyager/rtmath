@@ -27,6 +27,8 @@ namespace rtmath {
 			SHARED_PRIVATE bool autoHashStats = false;
 			SHARED_PRIVATE std::vector<boost::tuple<double, double, double> > defaultRots;
 			SHARED_PRIVATE bool doVoronoi = true;
+			SHARED_PRIVATE bool disableVoronoi = false;
+			SHARED_PRIVATE bool forceRecalcStats = false;
 
 
 			bool rotComp::operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
@@ -250,7 +252,7 @@ namespace rtmath {
 					if (p.filename().string().find(pHashStat.filename().string()) == 0) return true;
 					return false;
 				});
-				if (it != cands.end())
+				if (it != cands.end() && !forceRecalcStats)
 				{
 					::Ryan_Serialization::read<shapeFileStats>(*res, it->string(), "rtmath::ddscat::stats::shapeFileStats");
 				}
@@ -295,7 +297,7 @@ namespace rtmath {
 				}
 				path pHashStat = storeHash(pHashStats, shp->hash());
 				//pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
-				if (Ryan_Serialization::detect_compressed(pHashStat.string()))
+				if (Ryan_Serialization::detect_compressed(pHashStat.string()) && !forceRecalcStats)
 					::Ryan_Serialization::read<shapeFileStats>(*res, pHashStat.string(), "rtmath::ddscat::stats::shapeFileStats");
 				else
 				{
@@ -349,7 +351,9 @@ namespace rtmath {
 					;
 
 				config.add_options()
-					("suppress-voronoi-calcs", "Skip all Voronoi-based calculations (for faster debugging)")
+					("suppress-voronoi-calcs", "Skip some Voronoi-based calculations (for faster debugging)")
+					//("disable-voronoi", "Disable all Voronoi-based calculations (for faster debugging)")
+					("force-recalc-stats", "Force shape stats recalculation, ignoring the cache. Used in debugging.")
 					("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
 					("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
 					("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
@@ -374,6 +378,8 @@ namespace rtmath {
 				using boost::filesystem::path;
 
 				if (vm.count("suppress-voronoi-calcs")) doVoronoi = false;
+				if (vm.count("disable-voronoi")) disableVoronoi = true;
+				if (vm.count("force-recalc-stats")) forceRecalcStats = true;
 
 				initPaths();
 				if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());
