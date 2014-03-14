@@ -65,10 +65,11 @@ namespace rtmath
 			boost::program_options::options_description &cmdline,
 			boost::program_options::options_description &config,
 			boost::program_options::options_description &hidden);
-		/// Processes static options defined in add_options
-		/// \todo Add processor for non-static options
-		/// \note This gets automatically called by rtmath::debug::process_static_options
-		/// \todo Hide this
+		/** \brief Processes static options defined in add_options
+		 * \todo Add processor for non-static options
+		 * \note This gets automatically called by rtmath::debug::process_static_options
+		 * \todo Hide this from apps
+		 **/
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
 
@@ -111,19 +112,8 @@ namespace rtmath
 		void DLEXPORT_rtmath_core searchDLLs(std::vector<std::string> &dlls,
 			const std::set<boost::filesystem::path> &searchPaths, bool recurse);
 
-		/// Recursive and single-level DLL loading paths
+		// Recursive and single-level DLL loading paths
 		//extern DLEXPORT_rtmath_core std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
-
-		// The type used to store all hooks for a class. string is topic.
-		//typedef std::multimap<std::string, void*> classHookMapType;
-		// For a given topic, a set of hooks (types vary by implementation).
-		//typedef std::set<void*> topicHookSetType;
-		// Query registry for hooks matching the specified class
-		//void DLEXPORT_rtmath_core queryClass(const char* classname,
-		//	classHookMapType& result);
-		// Query registry for hooks matching the specified class and next selector
-		//void DLEXPORT_rtmath_core queryClass(const char* classname,
-		//	const char* topicID, topicHookSetType& result);
 
 		/**
 		* \brief Template base class that provides a DLL hook registry for a class.
@@ -169,6 +159,7 @@ namespace rtmath
 		public:
 			inline std::string getId() { return id; }
 			virtual ~IOhandler() { }
+			/// If modifying these, change IO_options::setVal and getVal.
 			enum class IOtype
 			{
 				READONLY,
@@ -183,14 +174,14 @@ namespace rtmath
 		/// \brief Convenient options specification class for use with an IO class registry.
 		/// 
 		/// Used because std::map doesn't like to go beyond template boundaries
-		class options
+		class IO_options
 		{
 		private:
-			options () {}
+			IO_options () {}
 			std::map<std::string, std::string> _mapStr;
 		public:
-			virtual ~options() {}
-			static inline std::shared_ptr<options> generate() {return std::shared_ptr<options>(new options);}
+			virtual ~IO_options() {}
+			static inline std::shared_ptr<IO_options> generate() {return std::shared_ptr<IO_options>(new IO_options);}
 			inline bool hasVal(const std::string &key) const
 			{
 				if (_mapStr.count(key)) return true;
@@ -203,6 +194,7 @@ namespace rtmath
 				T res = boost::lexical_cast<T>(valS);
 				return res;
 			}
+			template <> IOhandler::IOtype getVal(const std::string &key) const;
 			template <class T> T getVal(const std::string &key, const T& defaultval) const
 			{
 				if (!hasVal(key)) return defaultval;
@@ -214,43 +206,60 @@ namespace rtmath
 				std::string valS = boost::lexical_cast<std::string>(value);
 				_mapStr[key] = valS;
 			}
+			template <> void setVal(const std::string &key, const IOhandler::IOtype &val);
+
+			// Some convenient definitions
+			void filename(const std::string& val) { setVal<std::string>("filename", val); }
+			std::string filename() const { return getVal<std::string>("filename"); }
+			void extension(const std::string& val) { setVal<std::string>("extension", val); }
+			std::string extension() const { return getVal<std::string>("extension"); }
+			void filetype(const std::string &val) { setVal<std::string>("filetype", val); }
+			std::string filetype() const { return getVal<std::string>("filetype"); }
+			void exportType(const std::string &val) { setVal<std::string>("exportType", val); }
+			std::string exportType() const { return getVal<std::string>("exportType"); }
+			void iotype(IOhandler::IOtype &val) { setVal<IOhandler::IOtype>("ioType", val); }
+			IOhandler::IOtype iotype() const { return getVal<IOhandler::IOtype>("ioType"); }
 		};
+
 
 		/// Convenient template pattern for defining an IO class registry
 		template<class object>
 		struct IO_class_registry
 		{
-			// Matcher takes two parameters, the output filename and an optional 'type'
-			typedef std::function<bool(const char*, const char*)> io_matcher_type;
-			typedef std::function<void(const char*, const object*)> io_processor_type;
-			/// Determines if a file can be read / written with this registration
-			io_matcher_type io_matches;
-			
-			/// Handler function for the actual IO operation
-			io_processor_type io_processor;
-
-			/// If set, indicates that multiple IO operations are possible with this plugin
-			typedef std::function<bool(const char*, const char*, std::shared_ptr<IOhandler>)> io_multi_matcher_type;
+			/** \brief If set, indicates that multiple IO operations are possible with this plugin.
+			 * \param IO_options specifies the filename, file type, type of object to export, ...
+			 * It catches everything because of the limitation in MSVC2012 regarding std::bind number of params.
+			 * \param IOhandler is the plugin-provided opaque object that keeps track of 
+			 * the state of the object being accessed.
+			 **/
+			typedef std::function<bool(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>
+				)> io_multi_matcher_type;
 			io_multi_matcher_type io_multi_matches;
-			/// \brief Definition for an object that can handle multiple reads/writes.
-			/// \param IOhandler is the plugin-provided opaque object that keeps track of 
-			/// the state of the object being accessed.
-			/// \param First const char* is a filename / access string
-			/// \param object* is a pointer to the object being read/written
-			/// \param Second const char* is the object 'key'
-			/// \returns Pointer to a IOhandler object (for example after the first write).
+			/** \brief Definition for an object that can handle multiple reads/writes.
+			 * \param IOhandler is the plugin-provided opaque object that keeps track of 
+			 * the state of the object being accessed.
+			 * \param object* is a pointer to the object being read/written
+			 * \param IO_options specifies the filename, file type, type of object to export, ...
+			 * \returns Pointer to a IOhandler object (for example after the first write).
+			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
-				(std::shared_ptr<IOhandler>, const char*, const object*, const char*, 
-				IOhandler::IOtype)> io_multi_type;
+				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, const object*)> io_multi_type;
 			io_multi_type io_multi_processor;
 		};
 
 
-		/// Match file type - use bind to bind the 3rd parameter to the desired extension
-		bool DLEXPORT_rtmath_core match_file_type(const char* filename, const char* type, const char* ext);
+		/// Match file type (basic model) - use bind to bind the 3rd parameter to the desired extension
+		bool DLEXPORT_rtmath_core match_file_type(
+			const char* filename, 
+			const char* type, const char* ext, 
+			const char* op = "", const char* opref = "");
 
-		bool DLEXPORT_rtmath_core match_file_type_multi(const char* filename, const char* type, 
-			std::shared_ptr<rtmath::registry::IOhandler> h, const char* pluginid, const char* ext);
+		/// Matches
+		bool DLEXPORT_rtmath_core match_file_type_multi(
+			std::shared_ptr<rtmath::registry::IOhandler> h,
+			const char* pluginid,
+			std::shared_ptr<IO_options> opts,
+			std::shared_ptr<IO_options> opts2);
 	}
 }
 
@@ -258,11 +267,6 @@ extern "C"
 {
 	/// Provides interface for DLLs to register basic information about themselves
 	bool DLEXPORT_rtmath_core rtmath_registry_register_dll(const rtmath::registry::DLLpreamble&);
-
-	// Provides interface for DLLs to register a function hook
-	//bool DLEXPORT_rtmath_core rtmath_registry_register_hook(const char* uuid, const char* topic);
-
-	
 }
 
 

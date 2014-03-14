@@ -297,8 +297,6 @@ namespace rtmath
 {
 	namespace registry
 	{
-		
-
 		bool findPath(std::set<boost::filesystem::path> &matches, const boost::filesystem::path &expr,
 			const std::set<boost::filesystem::path> &searchPaths, bool recurse)
 		{
@@ -537,24 +535,46 @@ namespace rtmath
 			out << std::endl;
 		}
 
-		/*
-		void queryClass(const char* classname, classHookMapType& result)
+		template <>
+		IOhandler::IOtype IO_options::getVal(const std::string &key) const
 		{
-			result.clear();
-			std::string shc(classname);
-			if (hookRegistry.count(shc))
-			{
-				result = hookRegistry.at(shc);
-			}
+			std::string v;
+			v = getVal<std::string>(key);
+			IOhandler::IOtype val;
+			if ("READONLY" == v) val = IOhandler::IOtype::READONLY;
+			if ("READWRITE" == v) val = IOhandler::IOtype::READWRITE;
+			if ("EXCLUSIVE" == v) val = IOhandler::IOtype::EXCLUSIVE;
+			if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
+			if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
+			if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
 		}
-		*/
 
-		bool match_file_type(const char* filename, const char* type, const char* ext)
+		template <>
+		void IO_options::setVal(const std::string &key, const IOhandler::IOtype& val)
+		{
+			std::string v;
+			if (val == IOhandler::IOtype::READONLY) v = "READONLY";
+			if (val == IOhandler::IOtype::READWRITE) v = "READWRITE";
+			if (val == IOhandler::IOtype::EXCLUSIVE) v = "EXCLUSIVE";
+			if (val == IOhandler::IOtype::TRUNCATE) v = "TRUNCATE";
+			if (val == IOhandler::IOtype::DEBUG) v = "DEBUG";
+			if (val == IOhandler::IOtype::CREATE) v = "CREATE";
+			setVal(key, v);
+		}
+
+		bool match_file_type(const char* filename, const char* type, 
+			const char* ext, const char *op, const char *opref)
 		{
 			using namespace boost::filesystem;
 			using std::string;
 			using std::ofstream;
 
+			// Checking to see if a given export operation is supported.
+			// For regular file saving, this falls through.
+			string sop(op), sopref(opref);
+			if (op != opref) return false;
+
+			// Actually comparing the type and file extension.
 			string sext(ext);
 			string sext2(".");
 			sext2.append(sext);
@@ -565,8 +585,12 @@ namespace rtmath
 			return false;
 		}
 
-		bool match_file_type_multi(const char* filename, const char* type, 
-			std::shared_ptr<rtmath::registry::IOhandler> h, const char* pluginid, const char* ext)
+		bool match_file_type_multi(std::shared_ptr<rtmath::registry::IOhandler> h,
+			const char* pluginid,
+			std::shared_ptr<IO_options> opts,
+			std::shared_ptr<IO_options> opts2)
+		//bool match_file_type_multi(const char* filename, const char* type, 
+		//	std::shared_ptr<rtmath::registry::IOhandler> h, const char* pluginid, const char* ext)
 		{
 			std::string spluginid(pluginid);
 			if (h)
@@ -574,7 +598,11 @@ namespace rtmath
 				if (h->getId() != spluginid) return false;
 				return true;
 			} else {
-				return match_file_type(filename, type, ext);
+				std::string filename = opts->filename();
+				std::string ext = opts->extension();
+				std::string type = opts->filetype();
+				return match_file_type(filename.c_str(), type.c_str(), ext.c_str(), 
+					opts->exportType().c_str(), opts2->exportType().c_str());
 			}
 		}
 	}
@@ -590,25 +618,6 @@ extern "C"
 		return true;
 	}
 
-	//bool rtmath_registry_register_hook(const char* hookedClass, const char* topic) { return false; }
-	/*
-	bool rtmath_registry_register_hook(const char* hookedClass, const char* topic, void* func)
-	{
-		// \todo Replace void* with an appropriate function definition
-
-		std::string shc(hookedClass);
-		if (!hookRegistry.count(shc))
-		{
-			rtmath::registry::classHookMapType newHookMap;
-			hookRegistry.insert(std::pair < std::string, rtmath::registry::classHookMapType >
-				(shc, newHookMap));
-		}
-
-		rtmath::registry::classHookMapType &map = hookRegistry.at(shc);
-
-		map.insert(std::pair<std::string, void*>(topic, func));
-	}
-	*/
 	
 }
 
