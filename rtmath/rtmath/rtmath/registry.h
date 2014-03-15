@@ -207,6 +207,7 @@ namespace rtmath
 				_mapStr[key] = valS;
 			}
 			template <> void setVal(const std::string &key, const IOhandler::IOtype &val);
+			inline void setVal(const std::string &key, const IOhandler::IOtype val) { setVal<IOhandler::IOtype>(key, val); }
 
 			// Some convenient definitions
 			void filename(const std::string& val) { setVal<std::string>("filename", val); }

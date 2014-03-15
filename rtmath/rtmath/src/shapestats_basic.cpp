@@ -473,7 +473,7 @@ namespace rtmath {
 				string cmeth, uncompressed;
 
 				string type = outtype;
-				::rtmath::registry::IO_class_registry<shapeFileStats>::io_processor_type dllsaver = nullptr;
+				::rtmath::registry::IO_class_registry<shapeFileStats>::io_multi_type dllsaver = nullptr;
 
 				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
 				path pext = path(uncompressed).extension();
@@ -481,11 +481,14 @@ namespace rtmath {
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
 					::rtmath::registry::IO_class_registry<shapeFileStats> >::getHooks();
+				auto opts = registry::IO_options::generate();
+				opts->filename(uncompressed);
+				opts->filetype(type);
 				for (const auto &hook : *hooks)
 				{
-					if (hook.io_matches(uncompressed.c_str(), type.c_str()))
+					if (hook.io_multi_matches(nullptr,opts))
 					{
-						dllsaver = hook.io_processor;
+						dllsaver = hook.io_multi_processor;
 						if (!type.size())
 							type = "dll";
 						break;
@@ -507,7 +510,7 @@ namespace rtmath {
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					dllsaver(filename.c_str(), this);
+					dllsaver(nullptr, opts, this);
 				}
 				else {
 					// Cannot match a file type to save.
@@ -528,11 +531,16 @@ namespace rtmath {
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
 					::rtmath::registry::IO_class_registry<shapeFileStats> >::getHooks();
+				auto opts = registry::IO_options::generate();
+				opts->filename(filename);
+				opts->filetype(ctype);
+				opts->iotype(accessType);
+				opts->setVal("key", std::string(key));
 				for (const auto &hook : *hooks)
 				{
 					if (!hook.io_multi_matches) continue; // Sanity check
 					if (!hook.io_multi_processor) continue; // Sanity check
-					if (hook.io_multi_matches(filename, ctype, handle))
+					if (hook.io_multi_matches(nullptr, opts))
 					{
 						dllsaver = hook.io_multi_processor;
 						break;
@@ -542,7 +550,8 @@ namespace rtmath {
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, filename, this, key, accessType);
+					return dllsaver(nullptr, opts, this);
+					//return dllsaver(handle, filename, this, key, accessType);
 				}
 				else {
 					// Cannot match a file type to save.

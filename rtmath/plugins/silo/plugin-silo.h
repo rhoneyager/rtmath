@@ -25,25 +25,19 @@ namespace rtmath {
 			class siloFile;
 
 			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_shapefile
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::shapefile::shapefile *shp, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
+				(std::shared_ptr<rtmath::registry::IOhandler>,
+				std::shared_ptr<rtmath::registry::IO_options>,
+				const rtmath::ddscat::shapefile::shapefile *shp);
 
 			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_shapestats
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::stats::shapeFileStats *s, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
+				(std::shared_ptr<rtmath::registry::IOhandler>,
+				std::shared_ptr<rtmath::registry::IO_options>,
+				const rtmath::ddscat::stats::shapeFileStats *s);
 			
 			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_ddoutputs
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::ddOutput*, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
+				(std::shared_ptr<rtmath::registry::IOhandler>,
+				std::shared_ptr<rtmath::registry::IO_options>,
+				const rtmath::ddscat::ddOutput*);
 
 
 			struct silo_handle : public rtmath::registry::IOhandler

@@ -536,29 +536,32 @@ namespace rtmath
 		}
 
 		template <>
-		IOhandler::IOtype IO_options::getVal(const std::string &key) const
+		IOhandler::IOtype DLEXPORT_rtmath_core IO_options::getVal(const std::string &key) const
 		{
 			std::string v;
 			v = getVal<std::string>(key);
 			IOhandler::IOtype val;
 			if ("READONLY" == v) val = IOhandler::IOtype::READONLY;
-			if ("READWRITE" == v) val = IOhandler::IOtype::READWRITE;
-			if ("EXCLUSIVE" == v) val = IOhandler::IOtype::EXCLUSIVE;
-			if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
-			if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
-			if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
+			else if ("READWRITE" == v) val = IOhandler::IOtype::READWRITE;
+			else if ("EXCLUSIVE" == v) val = IOhandler::IOtype::EXCLUSIVE;
+			else if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
+			else if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
+			else if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
+			else RTthrow debug::xBadInput(v.c_str());
+			return val;
 		}
 
 		template <>
-		void IO_options::setVal(const std::string &key, const IOhandler::IOtype& val)
+		void DLEXPORT_rtmath_core IO_options::setVal(const std::string &key, const IOhandler::IOtype& val)
 		{
 			std::string v;
 			if (val == IOhandler::IOtype::READONLY) v = "READONLY";
-			if (val == IOhandler::IOtype::READWRITE) v = "READWRITE";
-			if (val == IOhandler::IOtype::EXCLUSIVE) v = "EXCLUSIVE";
-			if (val == IOhandler::IOtype::TRUNCATE) v = "TRUNCATE";
-			if (val == IOhandler::IOtype::DEBUG) v = "DEBUG";
-			if (val == IOhandler::IOtype::CREATE) v = "CREATE";
+			else if (val == IOhandler::IOtype::READWRITE) v = "READWRITE";
+			else if (val == IOhandler::IOtype::EXCLUSIVE) v = "EXCLUSIVE";
+			else if (val == IOhandler::IOtype::TRUNCATE) v = "TRUNCATE";
+			else if (val == IOhandler::IOtype::DEBUG) v = "DEBUG";
+			else if (val == IOhandler::IOtype::CREATE) v = "CREATE";
+			else RTthrow debug::xBadInput("Unlisted IOtype value");
 			setVal(key, v);
 		}
 
