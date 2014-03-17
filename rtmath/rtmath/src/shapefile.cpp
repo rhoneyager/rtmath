@@ -461,7 +461,7 @@ namespace rtmath {
 					if (!hook.io_multi_matches) continue; // Sanity check
 					if (!hook.io_multi_processor) continue; // Sanity check
 					//if (hook.io_multi_matches(filename, ctype, handle))
-					if (hook.io_multi_matches(nullptr, opts))
+					if (hook.io_multi_matches(handle, opts))
 					{
 						dllsaver = hook.io_multi_processor;
 						break;

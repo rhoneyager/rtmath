@@ -233,10 +233,12 @@ namespace rtmath {
 		
 		shared_ptr<IOhandler> 
 			write_file_type_multi
-			(shared_ptr<IOhandler> sh, const char* filename, 
-			const rtmath::ddscat::stats::shapeFileStats *s, 
-			const char* key, IOhandler::IOtype iotype)
+			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
+			const rtmath::ddscat::stats::shapeFileStats *s)
 		{
+			std::string filename = opts->filename();
+			IOhandler::IOtype iotype = opts->iotype();
+			std::string key = opts->getVal<std::string>("key");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
@@ -244,7 +246,7 @@ namespace rtmath {
 			if (!sh)
 			{
 				// Access the hdf5 file
-				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename, iotype));
+				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename.c_str(), iotype));
 			} else {
 				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
 				h = std::dynamic_pointer_cast<hdf5_handle>(sh);

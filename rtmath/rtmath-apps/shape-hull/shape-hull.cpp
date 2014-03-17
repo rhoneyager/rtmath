@@ -1,5 +1,5 @@
 /* shape-hull
-* This program is designed to take a shapefile and write a vtk file corresponding 
+* This program is designed to take a shapefile and write a vtk file corresponding
 * to either the initial points or the convex hull.
 */
 #pragma warning( push )
@@ -31,9 +31,10 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/registry.h"
+#include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
-namespace rtmath { namespace plugins { namespace internal { namespace tsv { void registerTSV(); } } } }
+namespace rtmath { namespace registry { void registerTSV(); } }
 
 int main(int argc, char** argv)
 {
@@ -50,7 +51,7 @@ int main(int argc, char** argv)
 		p.add("input", 1);
 		p.add("output", 2);
 
-		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
+		po::options_description desc("Allowed options"), cmdline("Command-line options"),
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		//ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		//Ryan_Serialization::add_options(cmdline, config, hidden);
@@ -59,6 +60,8 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >()->multitoken(), "Input shape file(s)")
 			("output,o", po::value<vector<string> >(), "Output file(s). Each input is written to all of the outputs.")
+			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
+			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			//("convex-hull,c", "Calculate and write convex hull")
 			;
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -74,7 +77,7 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
-		rtmath::plugins::internal::tsv::registerTSV();
+		rtmath::registry::registerTSV();
 
 
 		auto doHelp = [&](const std::string &message)
@@ -99,15 +102,27 @@ int main(int argc, char** argv)
 		if (!vm.count("output"))
 			doHelp("Need to specify output file(s).");
 		vector<string> output = vm["output"].as< vector<string> >();
+
+		bool doExport = false;
+		std::string exportType, exportFilename;
+		if (vm.count("export"))
+		{
+			doExport = true;
+			exportType = vm["export-type"].as<string>();
+			exportFilename = vm["export"].as<string>();
+			cerr << "Exporting to: " << exportFilename << endl;
+		}
+
 		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > outputios(output.size());
+		std::shared_ptr<rtmath::registry::IOhandler> outputexp;
 
 		for (const auto &input : inputs)
 		{
 			// Validate input files
 			path pi(input);
-			if (!exists(pi)) 
+			if (!exists(pi))
 				throw rtmath::debug::xMissingFile(input.c_str());
-			if (is_directory(pi)) 
+			if (is_directory(pi))
 				throw rtmath::debug::xPathExistsWrongType(input.c_str());
 
 			using rtmath::ddscat::shapefile::shapefile;
@@ -118,7 +133,7 @@ int main(int argc, char** argv)
 			try {
 
 				using namespace rtmath::Voronoi;
-				shp = boost::shared_ptr<shapefile> (new shapefile(input));
+				shp = boost::shared_ptr<shapefile>(new shapefile(input));
 				stats = shapeFileStats::genStats(shp);
 				// stats already generates this
 				auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
@@ -135,30 +150,49 @@ int main(int argc, char** argv)
 				auto depthOrder = vd->calcSurfaceFillingOrder();
 				shp->latticeExtras["SurfaceFillingOrder"] = depthOrder;
 
-				for (size_t i=0; i < output.size(); ++i)
+				for (size_t i = 0; i < output.size(); ++i)
 				{
 					try {
-						outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
-						outputios[i] = vd->writeMulti("", outputios[i], output[i].c_str());
-					} catch (rtmath::debug::xUnknownFileFormat &e)
+						if (output[i].size())
+							outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
+					}
+					catch (rtmath::debug::xUnknownFileFormat &e)
 					{
 						std::cerr << "Error: unknown file format when writing " << output[i] << endl;
 						std::cerr << e.what() << endl;
 					}
 				}
-			} catch (std::exception &e)
+				if (doExport) /// \todo Figure out how to do multiple exports (command-line parsing)
+				{
+					try {
+						auto opts = rtmath::registry::IO_options::generate();
+						opts->filename(exportFilename);
+						opts->exportType(exportType);
+						
+						outputexp = vd->writeMulti(outputexp, opts);
+					}
+					catch (rtmath::debug::xUnknownFileFormat &e)
+					{
+						std::cerr << "Error: unknown file format when writing " << exportFilename << endl;
+						std::cerr << e.what() << endl;
+					}
+				}
+			}
+			catch (std::exception &e)
 			{
 				std::cerr << "Error processing the file: " << input << endl;
 				std::cerr << e.what() << std::endl;
 				continue;
-			} catch (...)
+			}
+			catch (...)
 			{
 				std::cerr << "Error processing the file: " << input << endl;
 				continue;
 			}
 
 		}
-	} catch (std::exception &e)
+	}
+	catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
 		return 1;
@@ -170,131 +204,100 @@ int main(int argc, char** argv)
 // This enables writing multiple tsv output files.
 namespace rtmath
 {
-	namespace plugins
+	namespace registry
 	{
-		namespace internal
+		const std::string PLUGINID("shape-hull-tsv");
+		struct tsv_handle : public rtmath::registry::IOhandler
 		{
-			namespace tsv
+			tsv_handle(const char* filename, IOtype t) : IOhandler(PLUGINID) { open(filename, t); }
+			virtual ~tsv_handle() {}
+			void open(const char* filename, IOtype t)
 			{
-				const std::string PLUGINID("shape-hull-tsv");
-				struct tsv_handle : public rtmath::registry::IOhandler
+				using namespace boost::filesystem;
+				switch (t)
 				{
-					tsv_handle(const char* filename, IOtype t) : IOhandler(PLUGINID) { open(filename, t); }
-					virtual ~tsv_handle() {}
-					void open(const char* filename, IOtype t)
-					{
-						using namespace boost::filesystem;
-						switch (t)
-						{
-						case IOtype::EXCLUSIVE:
-						case IOtype::DEBUG:
-						case IOtype::READONLY:
-							throw;
-							break;
-						case IOtype::CREATE:
-							if (exists(path(filename))) throw("File already exists");
-						case IOtype::TRUNCATE:
-							file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
-							writeHeader();
-							break;
-						case IOtype::READWRITE:
-							{
-								bool e = false;
-								if (exists(path(filename))) e = true;
-								file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
-								if (!e) writeHeader(); // If the file had to be created, give it a header
-							}
-							break;
-						}
-					}
-					void writeHeader()
-					{
-						(*(file.get())) << "Hash\tV_dipoles_const\t"
-							"Circum_Sphere_V\tCircum_Sphere_SA\t"
-							"Convex_V\tConvex_SA\t"
-							"Voronoi_V\tVoronoi_SA\t"
-							"as_abs_xy\tas_abs_xz\tas_abs_yz\t"
-							"as_rms_xy\tas_rms_xz\tas_rms_yz\t"
-							"as_abm_xy\tas_abm_xz\tas_abm_yz\n"
-							;
-					}
-					std::shared_ptr<std::ofstream> file;
-				};
-
-
-				std::shared_ptr<rtmath::registry::IOhandler> write_tsv_multi_shapestats
-					(std::shared_ptr<rtmath::registry::IOhandler> sh, 
-					const char* filename, 
-					const rtmath::ddscat::stats::shapeFileStats *s, 
-					const char* key, // Unused for this type of write
-					rtmath::registry::IOhandler::IOtype iotype)
+				case IOtype::EXCLUSIVE:
+				case IOtype::DEBUG:
+				case IOtype::READONLY:
+					throw;
+					break;
+				case IOtype::CREATE:
+					if (exists(path(filename))) throw("File already exists");
+				case IOtype::TRUNCATE:
+					file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
+					writeHeader();
+					break;
+				case IOtype::READWRITE:
 				{
-					using std::shared_ptr;
-					std::shared_ptr<tsv_handle> h;
-					if (!sh)
-						h = std::shared_ptr<tsv_handle>(new tsv_handle(filename, iotype));
-					else {
-						if (sh->getId() != "shape-hull-tsv") RTthrow debug::xDuplicateHook("Bad passed plugin");
-						h = std::dynamic_pointer_cast<tsv_handle>(sh);
-					}
-
-					// Initial file creation handles writing the initial header.
-					// So, just write the data.
-					auto r = s->calcStatsRot(0,0,0);
-					(*(h->file.get())) << s->_shp->hash().lower << "\t" << s->V_dipoles_const << "\t"
-						<< s->Scircum_sphere.V << "\t" << s->Scircum_sphere.SA << "\t"
-						<< s->Sconvex_hull.V << "\t" << s->Sconvex_hull.SA << "\t"
-						<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
-						<< r->as_abs(0,1) << "\t" << r->as_abs(0,2) << "\t" << r->as_abs(1,2) << "\t"
-						<< r->as_rms(0,1) << "\t" << r->as_rms(0,2) << "\t" << r->as_rms(1,2) << "\t"
-						<< r->as_abs_mean(0,1) << "\t" << r->as_abs_mean(0,2) << "\t" << r->as_abs_mean(1,2)
-						<< std::endl;
-						;
-
-					return h; // Pass back the handle
+					bool e = false;
+					if (exists(path(filename))) e = true;
+					file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
+					if (!e) writeHeader(); // If the file had to be created, give it a header
 				}
-
-				/// \todo Make a template for this
-				bool match_tsv(const char* filename, const char* type)
-				{
-					using namespace boost::filesystem;
-					using std::string;
-					using std::ofstream;
-
-					string stype(type);
-					path pPrefix(filename);
-					if (stype == "tsv" || stype == ".tsv") return true;
-					else if (pPrefix.extension() == ".tsv") return true;
-					return false;
+					break;
 				}
-
-				/// \todo Make a template for this
-				bool match_tsv_multi(const char* filename, const char* type, std::shared_ptr<rtmath::registry::IOhandler> h)
-				{
-					if (h)
-					{
-						if (h->getId() != PLUGINID) return false;
-						return true;
-					} else {
-						return match_tsv(filename, type);
-					}
-				}
-
-				void registerTSV()
-				{
-					static rtmath::registry::IO_class_registry<
-						::rtmath::ddscat::stats::shapeFileStats> s2;
-					s2.io_matches = match_tsv;
-					s2.io_processor = nullptr;
-					s2.io_multi_matches = match_tsv_multi;
-					s2.io_multi_processor = write_tsv_multi_shapestats;
-					rtmath::ddscat::stats::shapeFileStats::usesDLLregistry<
-						rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
-						rtmath::registry::IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >
-						::registerHook(s2);
-				}
-
 			}
+			void writeHeader()
+			{
+				(*(file.get())) << "Hash\tV_dipoles_const\t"
+					"Circum_Sphere_V\tCircum_Sphere_SA\t"
+					"Convex_V\tConvex_SA\t"
+					"Voronoi_V\tVoronoi_SA\t"
+					"as_abs_xy\tas_abs_xz\tas_abs_yz\t"
+					"as_rms_xy\tas_rms_xz\tas_rms_yz\t"
+					"as_abm_xy\tas_abm_xz\tas_abm_yz\n"
+					;
+			}
+			std::shared_ptr<std::ofstream> file;
+		};
+
+		using std::shared_ptr;
+		shared_ptr<IOhandler>
+			write_file_type_multi
+			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
+			const rtmath::ddscat::stats::shapeFileStats *s)
+		{
+				std::string exporttype = opts->exportType();
+				if (exporttype != "summary_data") RTthrow debug::xUnimplementedFunction();
+				std::string filename = opts->filename();
+				IOhandler::IOtype iotype = opts->iotype();
+				using std::shared_ptr;
+				std::shared_ptr<tsv_handle> h;
+				if (!sh)
+					h = std::shared_ptr<tsv_handle>(new tsv_handle(filename.c_str(), iotype));
+				else {
+					if (sh->getId() != "shape-hull-tsv") RTthrow debug::xDuplicateHook("Bad passed plugin");
+					h = std::dynamic_pointer_cast<tsv_handle>(sh);
+				}
+
+				// Initial file creation handles writing the initial header.
+				// So, just write the data.
+				auto r = s->calcStatsRot(0, 0, 0);
+				(*(h->file.get())) << s->_shp->hash().lower << "\t" << s->V_dipoles_const << "\t"
+					<< s->Scircum_sphere.V << "\t" << s->Scircum_sphere.SA << "\t"
+					<< s->Sconvex_hull.V << "\t" << s->Sconvex_hull.SA << "\t"
+					<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
+					<< r->as_abs(0, 1) << "\t" << r->as_abs(0, 2) << "\t" << r->as_abs(1, 2) << "\t"
+					<< r->as_rms(0, 1) << "\t" << r->as_rms(0, 2) << "\t" << r->as_rms(1, 2) << "\t"
+					<< r->as_abs_mean(0, 1) << "\t" << r->as_abs_mean(0, 2) << "\t" << r->as_abs_mean(1, 2)
+					<< std::endl;
+				;
+
+				return h; // Pass back the handle
 		}
+
+		void registerTSV()
+		{
+			const size_t nExts = 1;
+			const char* exportExts[nExts] = { "tsv" };
+			rtmath::registry::genAndRegisterIOregistryPlural
+				<::rtmath::ddscat::stats::shapeFileStats,
+				rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
+				nExts, exportExts, "shape-tsv-ars", "summary_data");
+
+
+		}
+
 	}
 }
+

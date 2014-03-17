@@ -524,6 +524,7 @@ namespace rtmath {
 				std::shared_ptr<registry::IOhandler> handle,
 				const char* filename,
 				const char* ctype,
+				const char* exportType,
 				registry::IOhandler::IOtype accessType) const
 			{
 				// All of these objects can handle their own compression
@@ -536,11 +537,12 @@ namespace rtmath {
 				opts->filetype(ctype);
 				opts->iotype(accessType);
 				opts->setVal("key", std::string(key));
+				opts->exportType(exportType);
 				for (const auto &hook : *hooks)
 				{
 					if (!hook.io_multi_matches) continue; // Sanity check
 					if (!hook.io_multi_processor) continue; // Sanity check
-					if (hook.io_multi_matches(nullptr, opts))
+					if (hook.io_multi_matches(handle, opts))
 					{
 						dllsaver = hook.io_multi_processor;
 						break;

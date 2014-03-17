@@ -16,6 +16,7 @@ endif()
 add_library (rtmath_plugin_root SHARED 
 	plugin-root.cpp
 	plugin-root.h
+	root-shapestats.cpp
 	)
 addlib(rtmath_plugin_root SHARED)
 

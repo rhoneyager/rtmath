@@ -536,9 +536,10 @@ namespace rtmath
 		}
 
 		template <>
-		IOhandler::IOtype DLEXPORT_rtmath_core IO_options::getVal(const std::string &key) const
+		IOhandler::IOtype DLEXPORT_rtmath_core IO_options::getVal(const std::string &key, const IOhandler::IOtype &defaultval) const
 		{
 			std::string v;
+			if (!hasVal(key)) return defaultval;
 			v = getVal<std::string>(key);
 			IOhandler::IOtype val;
 			if ("READONLY" == v) val = IOhandler::IOtype::READONLY;
@@ -565,6 +566,7 @@ namespace rtmath
 			setVal(key, v);
 		}
 
+		
 		bool match_file_type(const char* filename, const char* type, 
 			const char* ext, const char *op, const char *opref)
 		{
@@ -575,7 +577,7 @@ namespace rtmath
 			// Checking to see if a given export operation is supported.
 			// For regular file saving, this falls through.
 			string sop(op), sopref(opref);
-			if (op != opref) return false;
+			if (sop.compare(sopref) != 0) return false;
 
 			// Actually comparing the type and file extension.
 			string sext(ext);
@@ -583,8 +585,9 @@ namespace rtmath
 			sext2.append(sext);
 			string stype(type);
 			path pPrefix(filename);
-			if (stype == ext || stype == sext2) return true;
-			else if (pPrefix.extension().string() == sext2) return true;
+			if (stype.compare(sext) == 0 || stype.compare(sext2) == 0) return true;
+
+			else if (pPrefix.extension().string().compare(sext2) == 0) return true;
 			return false;
 		}
 
@@ -602,7 +605,7 @@ namespace rtmath
 				return true;
 			} else {
 				std::string filename = opts->filename();
-				std::string ext = opts->extension();
+				std::string ext = opts2->extension();
 				std::string type = opts->filetype();
 				return match_file_type(filename.c_str(), type.c_str(), ext.c_str(), 
 					opts->exportType().c_str(), opts2->exportType().c_str());

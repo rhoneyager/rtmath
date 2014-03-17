@@ -35,15 +35,17 @@ namespace rtmath {
 
 		shared_ptr<IOhandler>
 			write_file_type_multi
-			(shared_ptr<IOhandler> sh, const char* filename,
-			const rtmath::Voronoi::VoronoiDiagram *v,
-			const char* key, IOhandler::IOtype iotype)
+			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts, 
+			const rtmath::Voronoi::VoronoiDiagram *v)
 		{
+				std::string filename = opts->filename();
+				IOhandler::IOtype iotype = opts->iotype();
+
 				using std::shared_ptr;
 				std::shared_ptr<silo_handle> h;
 				if (!sh)
 				{
-					h = std::shared_ptr<silo_handle>(new silo_handle(filename, iotype));
+					h = std::shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
 				}
 				else {
 					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");

@@ -194,12 +194,12 @@ namespace rtmath
 				T res = boost::lexical_cast<T>(valS);
 				return res;
 			}
-			template <> IOhandler::IOtype getVal(const std::string &key) const;
 			template <class T> T getVal(const std::string &key, const T& defaultval) const
 			{
 				if (!hasVal(key)) return defaultval;
 				return getVal<T>(key);
 			}
+			template <> IOhandler::IOtype getVal(const std::string &key, const IOhandler::IOtype& defaultval) const;
 			template <class T>
 			void setVal(const std::string &key, const T &value)
 			{
@@ -211,15 +211,15 @@ namespace rtmath
 
 			// Some convenient definitions
 			void filename(const std::string& val) { setVal<std::string>("filename", val); }
-			std::string filename() const { return getVal<std::string>("filename"); }
+			std::string filename() const { return getVal<std::string>("filename", ""); }
 			void extension(const std::string& val) { setVal<std::string>("extension", val); }
-			std::string extension() const { return getVal<std::string>("extension"); }
+			std::string extension() const { return getVal<std::string>("extension", ""); }
 			void filetype(const std::string &val) { setVal<std::string>("filetype", val); }
-			std::string filetype() const { return getVal<std::string>("filetype"); }
+			std::string filetype() const { return getVal<std::string>("filetype", ""); }
 			void exportType(const std::string &val) { setVal<std::string>("exportType", val); }
-			std::string exportType() const { return getVal<std::string>("exportType"); }
+			std::string exportType() const { return getVal<std::string>("exportType", ""); }
 			void iotype(IOhandler::IOtype &val) { setVal<IOhandler::IOtype>("ioType", val); }
-			IOhandler::IOtype iotype() const { return getVal<IOhandler::IOtype>("ioType"); }
+			IOhandler::IOtype iotype() const { return getVal<IOhandler::IOtype>("ioType", IOhandler::IOtype::TRUNCATE); }
 		};
 
 
@@ -249,7 +249,13 @@ namespace rtmath
 		};
 
 
-		/// Match file type (basic model) - use bind to bind the 3rd parameter to the desired extension
+		/** \brief Match file type (basic model)
+		* \param filename is the file name
+		* \param ext is the extension to match (provided by the plugin)
+		* \param type is the file's extension (provided by the filename / saver)
+		* \param op is the export operation (provided by the lib caller)
+		* \param opref is the export operation to match (provided by the plugin)
+		**/
 		bool DLEXPORT_rtmath_core match_file_type(
 			const char* filename, 
 			const char* type, const char* ext, 

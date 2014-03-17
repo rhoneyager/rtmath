@@ -48,6 +48,7 @@ namespace rtmath
 					RTthrow rtmath::debug::xUnimplementedFunction();
 					break;
 				case IOtype::TRUNCATE:
+					RTthrow rtmath::debug::xUnimplementedFunction();
 					//file = std::shared_ptr<rootFile>(new rootFile(filename));
 					break;
 				}
@@ -68,15 +69,12 @@ void dllEntry()
 		"a few data objects using Cern ROOT.",
 		PLUGINID);
 	rtmath_registry_register_dll(id);
-	/*
-	genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
-		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
 
-	genAndRegisterIOregistry<::rtmath::ddscat::ddOutput, 
-		rtmath::ddscat::ddOutput_IO_output_registry>("silo",PLUGINID);
-		*/
-	/*
-	genAndRegisterIOregistry<::rtmath::ddscat::stats::shapeFileStats, 
-		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("rootimage",PLUGINID);
-	*/
+	const size_t nExts = 14;
+	const char* exportExts[nExts] = { "png", "jpg", "jpeg", "bmp", "eps", 
+		"ps", "gif", "pdf", "xml", "xpm", "svg", "tiff", "root", "cxx" };
+	genAndRegisterIOregistryPlural<::rtmath::ddscat::stats::shapeFileStats,
+		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
+		nExts, exportExts, PLUGINID, "ar_rot_data");
+
 }

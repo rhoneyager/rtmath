@@ -24,6 +24,7 @@ namespace rtmath {
 		namespace silo {
 			class siloFile;
 
+			/*
 			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_shapefile
 				(std::shared_ptr<rtmath::registry::IOhandler>,
 				std::shared_ptr<rtmath::registry::IO_options>,
@@ -38,6 +39,7 @@ namespace rtmath {
 				(std::shared_ptr<rtmath::registry::IOhandler>,
 				std::shared_ptr<rtmath::registry::IO_options>,
 				const rtmath::ddscat::ddOutput*);
+			*/
 
 
 			struct silo_handle : public rtmath::registry::IOhandler
