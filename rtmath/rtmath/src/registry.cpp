@@ -245,7 +245,13 @@ namespace {
 #ifdef __unix__ // Indicates that DLSYM is provided (unix, linux, mac, etc. (sometimes even windows))
 			//Check that file exists here
 			this->dlHandle = dlopen(filename.c_str(), RTLD_LAZY);
-			if (dlerror()) RTthrow rtmath::debug::xMissingFile(filename.c_str());
+			const char* cerror = dlerror();
+			if (cerror)
+			{
+				std::string serror(cerror);
+				std::cerr << "DLL loading error: " << serror << std::endl;
+				RTthrow rtmath::debug::xMissingFile(filename.c_str());
+			}
 #endif
 #ifdef _WIN32
 			this->dlHandle = LoadLibrary(filename.c_str());
