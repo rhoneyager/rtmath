@@ -170,7 +170,7 @@ namespace rtmath
 				CREATE
 			};
 		};
-
+		
 		/// \brief Convenient options specification class for use with an IO class registry.
 		/// 
 		/// Used because std::map doesn't like to go beyond template boundaries
@@ -199,15 +199,14 @@ namespace rtmath
 				if (!hasVal(key)) return defaultval;
 				return getVal<T>(key);
 			}
-			template <> IOhandler::IOtype getVal(const std::string &key, const IOhandler::IOtype& defaultval) const;
 			template <class T>
 			void setVal(const std::string &key, const T &value)
 			{
 				std::string valS = boost::lexical_cast<std::string>(value);
 				_mapStr[key] = valS;
 			}
-			template <> void setVal(const std::string &key, const IOhandler::IOtype &val);
 			inline void setVal(const std::string &key, const IOhandler::IOtype val) { setVal<IOhandler::IOtype>(key, val); }
+
 
 			// Some convenient definitions
 			void filename(const std::string& val) { setVal<std::string>("filename", val); }
@@ -221,7 +220,6 @@ namespace rtmath
 			void iotype(IOhandler::IOtype &val) { setVal<IOhandler::IOtype>("ioType", val); }
 			IOhandler::IOtype iotype() const { return getVal<IOhandler::IOtype>("ioType", IOhandler::IOtype::TRUNCATE); }
 		};
-
 
 		/// Convenient template pattern for defining an IO class registry
 		template<class object>
@@ -276,4 +274,9 @@ extern "C"
 	bool DLEXPORT_rtmath_core rtmath_registry_register_dll(const rtmath::registry::DLLpreamble&);
 }
 
+// GCC sure has odd attribute positioning rules...
+namespace rtmath { namespace registry {
+std::ostream DLEXPORT_rtmath_core & operator<<(std::ostream&, const ::rtmath::registry::IOhandler::IOtype&);
+std::istream DLEXPORT_rtmath_core & operator>>(std::istream&, ::rtmath::registry::IOhandler::IOtype&);
+} }
 

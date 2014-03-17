@@ -76,7 +76,7 @@ namespace rtmath
 			const char* exportType = "")
 		{
 			auto res = genIOregistry<T>(extension, pluginid, exportType);
-			T::usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
+			T::template usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
 		}
 
 		template <class T, class IO_reg_class>

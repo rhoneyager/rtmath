@@ -534,38 +534,6 @@ namespace rtmath
 			}
 			out << std::endl;
 		}
-
-		template <>
-		IOhandler::IOtype DLEXPORT_rtmath_core IO_options::getVal(const std::string &key, const IOhandler::IOtype &defaultval) const
-		{
-			std::string v;
-			if (!hasVal(key)) return defaultval;
-			v = getVal<std::string>(key);
-			IOhandler::IOtype val;
-			if ("READONLY" == v) val = IOhandler::IOtype::READONLY;
-			else if ("READWRITE" == v) val = IOhandler::IOtype::READWRITE;
-			else if ("EXCLUSIVE" == v) val = IOhandler::IOtype::EXCLUSIVE;
-			else if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
-			else if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
-			else if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
-			else RTthrow debug::xBadInput(v.c_str());
-			return val;
-		}
-
-		template <>
-		void DLEXPORT_rtmath_core IO_options::setVal(const std::string &key, const IOhandler::IOtype& val)
-		{
-			std::string v;
-			if (val == IOhandler::IOtype::READONLY) v = "READONLY";
-			else if (val == IOhandler::IOtype::READWRITE) v = "READWRITE";
-			else if (val == IOhandler::IOtype::EXCLUSIVE) v = "EXCLUSIVE";
-			else if (val == IOhandler::IOtype::TRUNCATE) v = "TRUNCATE";
-			else if (val == IOhandler::IOtype::DEBUG) v = "DEBUG";
-			else if (val == IOhandler::IOtype::CREATE) v = "CREATE";
-			else RTthrow debug::xBadInput("Unlisted IOtype value");
-			setVal(key, v);
-		}
-
 		
 		bool match_file_type(const char* filename, const char* type, 
 			const char* ext, const char *op, const char *opref)
@@ -624,6 +592,41 @@ extern "C"
 		return true;
 	}
 
-	
 }
+
+namespace rtmath { namespace registry {
+
+std::istream& operator>>(std::istream& in, ::rtmath::registry::IOhandler::IOtype& val)
+{
+	using namespace rtmath::registry;
+	char data[50];
+	in >> data;
+	//in.getline(data,48);
+	std::string v(data);
+	if ("READONLY" == v) val = IOhandler::IOtype::READONLY;
+	else if ("READWRITE" == v) val = IOhandler::IOtype::READWRITE;
+	else if ("EXCLUSIVE" == v) val = IOhandler::IOtype::EXCLUSIVE;
+	else if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
+	else if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
+	else if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
+	else RTthrow ::rtmath::debug::xBadInput(v.c_str());
+	return in;
+}
+
+std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::IOhandler::IOtype& val)
+{
+	using namespace rtmath::registry;
+	std::string v;
+	if (val == IOhandler::IOtype::READONLY) v = "READONLY";
+	else if (val == IOhandler::IOtype::READWRITE) v = "READWRITE";
+	else if (val == IOhandler::IOtype::EXCLUSIVE) v = "EXCLUSIVE";
+	else if (val == IOhandler::IOtype::TRUNCATE) v = "TRUNCATE";
+	else if (val == IOhandler::IOtype::DEBUG) v = "DEBUG";
+	else if (val == IOhandler::IOtype::CREATE) v = "CREATE";
+	else RTthrow ::rtmath::debug::xBadInput("Unlisted IOtype value");
+	out << v;
+	return out;
+}
+
+} }
 
