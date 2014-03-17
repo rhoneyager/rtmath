@@ -252,7 +252,7 @@ namespace rtmath {
 					throw;
 					break;
 				case IOtype::CREATE:
-					if (exists(path(filename))) throw("File already exists");
+					if (exists(path(filename))) RTthrow("File already exists");
 				case IOtype::TRUNCATE:
 					file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 					writeHeader();

@@ -552,7 +552,7 @@ namespace rtmath {
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(nullptr, opts, this);
+					return dllsaver(handle, opts, this);
 					//return dllsaver(handle, filename, this, key, accessType);
 				}
 				else {
