@@ -153,8 +153,11 @@ int main(int argc, char** argv)
 				for (size_t i = 0; i < output.size(); ++i)
 				{
 					try {
+						auto opts = registry::IO_options::generate();
+						opts->filename(output[i]);
+
 						if (output[i].size())
-							outputios[i] = stats->writeMulti("", outputios[i], output[i].c_str());
+							outputios[i] = stats->writeMulti(outputios[i], opts);
 					}
 					catch (rtmath::debug::xUnknownFileFormat &e)
 					{

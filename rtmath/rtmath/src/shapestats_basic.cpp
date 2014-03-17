@@ -520,24 +520,22 @@ namespace rtmath {
 			}
 
 			std::shared_ptr<registry::IOhandler> shapeFileStats::writeMulti(
-				const char* key,
-				std::shared_ptr<registry::IOhandler> handle,
-				const char* filename,
-				const char* ctype,
-				const char* exportType,
-				registry::IOhandler::IOtype accessType) const
+				std::shared_ptr<rtmath::registry::IOhandler> handle,
+				std::shared_ptr<rtmath::registry::IO_options> opts) const
 			{
 				// All of these objects can handle their own compression
 				::rtmath::registry::IO_class_registry<shapeFileStats>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
 					::rtmath::registry::IO_class_registry<shapeFileStats> >::getHooks();
+				/*
 				auto opts = registry::IO_options::generate();
 				opts->filename(filename);
 				opts->filetype(ctype);
 				opts->iotype(accessType);
 				opts->setVal("key", std::string(key));
 				opts->exportType(exportType);
+				*/
 				for (const auto &hook : *hooks)
 				{
 					if (!hook.io_multi_matches) continue; // Sanity check
@@ -558,7 +556,7 @@ namespace rtmath {
 				else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(filename);
+					RTthrow debug::xUnknownFileFormat(opts->filename().c_str());
 				}
 				return nullptr; // Should never be reached
 			}

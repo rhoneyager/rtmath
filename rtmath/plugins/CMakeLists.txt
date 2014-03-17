@@ -37,5 +37,10 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_SILO)
 		add_subdirectory (silo)
 	endif()
+	option (BUILD_PLUGIN_TSV
+		"Build TSV export plugin" ON)
+	if (BUILD_PLUGIN_TSV)
+		add_subdirectory(tsv-export)
+	endif()
 endif()
 

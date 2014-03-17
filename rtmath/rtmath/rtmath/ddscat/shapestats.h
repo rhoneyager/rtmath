@@ -185,12 +185,8 @@ namespace rtmath {
 				void writeToHash() const;
 				/// Write or export to a complex, multiple storage object
 				std::shared_ptr<registry::IOhandler> writeMulti(
-					const char* key,
-					std::shared_ptr<registry::IOhandler> handle = nullptr,
-					const char* filename = "",
-					const char* type = "",
-					const char* exportType = "",
-					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE) const;
+					std::shared_ptr<rtmath::registry::IOhandler> handle,
+					std::shared_ptr<rtmath::registry::IO_options> opts) const;
 				
 				/// Load stats from serialized file.
 				/// A convenience function that calls Ryan_Serialization
