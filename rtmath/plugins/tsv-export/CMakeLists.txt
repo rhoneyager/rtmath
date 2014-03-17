@@ -10,6 +10,8 @@ add_library (rtmath_plugin_tsv SHARED
 	plugin-tsv.cpp
 	plugin-tsv.h
 	tsv-shapestats.cpp
+	tsv-shapestats-rotdata.cpp
+	tsv-shapestats-voro.cpp
 	)
 addlib(rtmath_plugin_tsv SHARED)
 

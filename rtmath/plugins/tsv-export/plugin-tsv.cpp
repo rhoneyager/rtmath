@@ -31,5 +31,10 @@ void dllEntry()
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_ARS, "ar_rot_data");
 
+	rtmath::registry::genAndRegisterIOregistryPlural
+		<::rtmath::ddscat::stats::shapeFileStats,
+		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
+		nExts, exportExts, PLUGINID_VORO, "summary_data");
+
 
 }

@@ -82,12 +82,18 @@ namespace rtmath {
 			const rtmath::ddscat::stats::shapeFileStats *s);
 
 		shared_ptr<IOhandler>
+			export_tsv_summary_data
+				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
+				const rtmath::ddscat::stats::shapeFileStats *s);
+
+		shared_ptr<IOhandler>
 			write_file_type_multi
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			const rtmath::ddscat::stats::shapeFileStats *s)
 		{
 				std::string exporttype = opts->exportType();
 				if (exporttype == "ar_rot_data") return export_tsv_ar_rot_data(sh, opts, s);
+				else if (exporttype == "summary_data") return export_tsv_summary_data(sh, opts, s);
 				else { RTthrow debug::xUnimplementedFunction(); }
 				return nullptr;
 		}
