@@ -9,6 +9,9 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 add_library (rtmath_plugin_tsv SHARED 
 	plugin-tsv.cpp
 	plugin-tsv.h
+	tsv-ddoutput.cpp
+	tsv-ddoutput-iso.cpp
+	tsv-ddoutput-ori.cpp
 	tsv-shapestats.cpp
 	tsv-shapestats-rotdata.cpp
 	tsv-shapestats-voro.cpp

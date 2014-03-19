@@ -26,58 +26,60 @@
 
 #include "plugin-tsv.h"
 
+using std::shared_ptr;
+using rtmath::ddscat::ddOutput;
+using namespace rtmath::registry;
 
 namespace rtmath {
-	namespace registry {
-		using std::shared_ptr;
-		using rtmath::ddscat::ddOutput;
+	namespace plugins {
+		namespace tsv {
 
-		struct tsv_summary_handle : public rtmath::registry::IOhandler
-		{
-			tsv_summary_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_VORO) { open(filename, t); }
-			virtual ~tsv_summary_handle() {}
-			void open(const char* filename, IOtype t)
+			struct tsv_summary_handle : public rtmath::registry::IOhandler
 			{
-				using namespace boost::filesystem;
-				switch (t)
+				tsv_summary_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_VORO) { open(filename, t); }
+				virtual ~tsv_summary_handle() {}
+				void open(const char* filename, IOtype t)
 				{
-				case IOtype::EXCLUSIVE:
-				case IOtype::DEBUG:
-				case IOtype::READONLY:
-					RTthrow debug::xOtherError();
-					break;
-				case IOtype::CREATE:
-					if (exists(path(filename))) RTthrow("File already exists");
-				case IOtype::TRUNCATE:
-					file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
-					writeHeader();
-					break;
-				case IOtype::READWRITE:
+					using namespace boost::filesystem;
+					switch (t)
+					{
+					case IOtype::EXCLUSIVE:
+					case IOtype::DEBUG:
+					case IOtype::READONLY:
+						RTthrow debug::xOtherError();
+						break;
+					case IOtype::CREATE:
+						if (exists(path(filename))) RTthrow("File already exists");
+					case IOtype::TRUNCATE:
+						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
+						writeHeader();
+						break;
+					case IOtype::READWRITE:
+						{
+							bool e = false;
+							if (exists(path(filename))) e = true;
+							file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
+							if (!e) writeHeader(); // If the file had to be created, give it a header
+						}
+						break;
+					}
+				}
+				void writeHeader()
 				{
-					bool e = false;
-					if (exists(path(filename))) e = true;
-					file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
-					if (!e) writeHeader(); // If the file had to be created, give it a header
+					(*(file.get())) << "Hash\tV_dipoles_const\t"
+						"Circum_Sphere_V\tCircum_Sphere_SA\t"
+						"Convex_V\tConvex_SA\t"
+						"Voronoi_V\tVoronoi_SA\t"
+						"as_abs_xy\tas_abs_xz\tas_abs_yz\t"
+						"as_rms_xy\tas_rms_xz\tas_rms_yz\t"
+						"as_abm_xy\tas_abm_xz\tas_abm_yz\n"
+						;
 				}
-					break;
-				}
-			}
-			void writeHeader()
-			{
-				(*(file.get())) << "Hash\tV_dipoles_const\t"
-					"Circum_Sphere_V\tCircum_Sphere_SA\t"
-					"Convex_V\tConvex_SA\t"
-					"Voronoi_V\tVoronoi_SA\t"
-					"as_abs_xy\tas_abs_xz\tas_abs_yz\t"
-					"as_rms_xy\tas_rms_xz\tas_rms_yz\t"
-					"as_abm_xy\tas_abm_xz\tas_abm_yz\n"
-					;
-			}
-			std::shared_ptr<std::ofstream> file;
-		};
+				std::shared_ptr<std::ofstream> file;
+			};
 
-		shared_ptr<IOhandler>
-			export_tsv_summary_data
+			shared_ptr<IOhandler>
+				export_tsv_summary_data
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 				const rtmath::ddscat::stats::shapeFileStats *s)
 			{
@@ -111,5 +113,6 @@ namespace rtmath {
 			}
 
 
+		}
 	}
 }

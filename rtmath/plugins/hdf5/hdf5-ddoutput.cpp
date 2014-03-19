@@ -137,6 +137,7 @@ namespace rtmath {
 				addAttr<string, Group>(gRun, "Description", s->description);
 				addAttr<double, Group>(gRun, "Frequency", s->freq);
 				addAttr<double, Group>(gRun, "aeff", s->aeff);
+				addAttr<double, Group>(gRun, "Temperature", s->temp);
 
 				// Refractive indices table
 
@@ -225,8 +226,9 @@ namespace rtmath {
 		using std::shared_ptr;
 		using namespace rtmath::plugins::hdf5;
 		
+		template<>
 		shared_ptr<IOhandler> 
-			write_file_type_multi
+			write_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts, 
 			const rtmath::ddscat::ddOutput *s)
 		{
@@ -255,10 +257,14 @@ namespace rtmath {
 			/// \note The unlink operation does not really free the space..... Should warn the user.
 			shared_ptr<Group> gRuns = openOrCreateGroup(grpHashes, "Runs");
 
+			std::string aeffid("aeff-");
+			aeffid.append(boost::lexical_cast<std::string>( (float) s->aeff ));
+			shared_ptr<Group> gRunsAeff = openOrCreateGroup(gRuns, aeffid.c_str());
+
 			//if (groupExists(grpRuns, "Stats")) return h; //grpHash->unlink("Stats");
 
 			/// \todo Modify to also support external symlinks
-			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
+			shared_ptr<Group> base = write_hdf5_ddOutput(gRunsAeff, s);
 			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 

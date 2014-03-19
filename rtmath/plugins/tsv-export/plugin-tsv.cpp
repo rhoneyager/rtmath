@@ -36,5 +36,13 @@ void dllEntry()
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_VORO, "summary_data");
 
+	rtmath::registry::genAndRegisterIOregistryPlural
+		<::rtmath::ddscat::ddOutput,
+		::rtmath::ddscat::ddOutput_IO_output_registry>(
+		nExts, exportExts, PLUGINID_DDORI, "orientation_data");
 
+	rtmath::registry::genAndRegisterIOregistryPlural
+		<::rtmath::ddscat::ddOutput,
+		::rtmath::ddscat::ddOutput_IO_output_registry>(
+		nExts, exportExts, PLUGINID_DDISO, "isotropic_data");
 }

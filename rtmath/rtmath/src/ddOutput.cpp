@@ -16,6 +16,8 @@
 #include <mutex>
 #include <Ryan_Serialization/serialization.h>
 
+#include "../rtmath/zeros.h"
+#include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
@@ -50,7 +52,7 @@ namespace rtmath {
 
 	namespace ddscat {
 		ddOutput::ddOutput() : 
-			freq(0), aeff(0)
+			freq(0), aeff(0), temp(0)
 		{
 		}
 
@@ -388,6 +390,8 @@ namespace rtmath {
 			if (res->avg)
 				res->ms.push_back(res->avg->getM());
 
+			res->guessTemp();
+
 			// Have the stats add in all relevant rotations
 			for (auto &sca : res->scas)
 			{
@@ -452,6 +456,8 @@ namespace rtmath {
 			/// \todo Allow for multiple refractive indices
 			if (res->avg)
 				res->ms.push_back(res->avg->getM());
+
+			res->guessTemp();
 
 			// Save the shape in the hash location, if necessary
 			res->shape->writeToHash();
@@ -628,6 +634,37 @@ namespace rtmath {
 				writeFile(pHashRun.string());
 		}
 
+		void ddOutput::guessTemp()
+		{
+			using namespace std;
+			try {
+			// Attempt to guess the formula using the secant method.
+			auto formulaTemp = [&](double T) -> double
+			{
+				// 0 = mRes(f,T) - m_known
+				using namespace std;
+				complex<double> mRes;
+				try {
+				rtmath::refract::mIce(freq,T,mRes);
+				} catch (debug::xModelOutOfRange &) {
+					rtmath::refract::mWater(freq,T,mRes);
+				}
+
+				double mNorm = mRes.real() - ms.at(0).real(); //norm(mRes- ms.at(0));
+
+				std::cerr << "fT: " << T << "\t" << mRes << "\t\t" << ms.at(0) << "\t" << mNorm << std::endl;
+				return mNorm;
+			};
+
+			double TA = 263, TB = 233;
+			//complex<double> gA, gB;
+			//refract::mIce(freq, TA, gA);
+			//refract::mIce(freq, TB, gB);
+			temp = zeros::secantMethod(formulaTemp, TA, TB, 0.00001);
+			} catch (debug::xModelOutOfRange &)
+			{temp = 0;}
+		}
+
 		std::string ddOutput::genName() const
 		{
 			std::string res;
@@ -645,11 +682,15 @@ namespace rtmath {
 			rotations rots;
 			parfile->getRots(rots);
 
+			float tDesc = (boost::math::round((float) temp*10.f)/10.f);
+			if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
+
+
 			std::ostringstream out;
 			out << shapeHash.lower << "-"
 				<< (boost::math::round((float) freq*10.f)/10.f) << "-"
 				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
-				<< (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f) << "-"
+				<< tDesc << "-"
 				<< scas.size() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
 				<< ddvertag

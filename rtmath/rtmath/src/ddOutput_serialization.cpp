@@ -29,6 +29,7 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("Sources", sources);
 			ar & boost::serialization::make_nvp("Frequency", freq);
 			ar & boost::serialization::make_nvp("Effective_Radius", aeff);
+			ar & boost::serialization::make_nvp("Temperature", temp);
 			ar & boost::serialization::make_nvp("Refractive_Indices", ms);
 			
 			ar & boost::serialization::make_nvp("par", parfile);

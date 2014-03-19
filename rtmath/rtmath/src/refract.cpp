@@ -243,13 +243,14 @@ void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb,
 	mToE(Ma,eA);
 	mToE(Mb,eB);
 
-	// Formula is:
-	// (e_eff - eb) / (e_eff + 2eb + v(e_eff - eb)) - fa (ea-eb)/(ea+2eb+v(e_eff-eb) = 0
-	// This formula has no analytic solution. It is also complex-valued. Its derivative is hard to calculate.
-	// Because of this, I will be using the complex secant method to find the zeros.
-	// This is also why the other mixing formulas do not call this code.
+	/** Formula is:
+	* (e_eff - eb) / (e_eff + 2eb + v(e_eff - eb)) - fa (ea-eb)/(ea+2eb+v(e_eff-eb) = 0
+	* This formula has no analytic solution. It is also complex-valued. Its derivative is hard to calculate.
+	* Because of this, I will be using the complex secant method to find the zeros.
+	* This is also why the other mixing formulas do not call this code.
+	**/
 
-	auto formula = [&](std::complex<double> x) -> std::complex<double>
+	auto formulaSihvola = [&](std::complex<double> x) -> std::complex<double>
 	{
 		using namespace std;
 		complex<double> res, pa, pb;
@@ -261,7 +262,7 @@ void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb,
 	};
 
 	complex<double> gA(1.0,1.0), gB(1.55,1.45);
-	eRes = zeros::secantMethod(formula, gA, gB);
+	eRes = zeros::secantMethod(formulaSihvola, gA, gB);
 	eToM(eRes,Mres);
 }
 
