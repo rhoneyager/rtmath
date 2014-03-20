@@ -652,7 +652,7 @@ namespace rtmath {
 
 				double mNorm = mRes.real() - ms.at(0).real(); //norm(mRes- ms.at(0));
 
-				std::cerr << "fT: " << T << "\t" << mRes << "\t\t" << ms.at(0) << "\t" << mNorm << std::endl;
+				//std::cerr << "fT: " << T << "\t" << mRes << "\t\t" << ms.at(0) << "\t" << mNorm << std::endl;
 				return mNorm;
 			};
 

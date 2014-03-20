@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 			("particle-scaling-method,p", po::value<string>()->default_value("uniform"),
 			"The method of weighting the orientations (uniform - all particles have the same "
 			"rotation profile, ...(TODO)")
-			("kappa", po::value<string>()->default_value("0:100:1000:exp"),
+			("kappa", po::value<string>()->default_value("0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000"),
 			"Kappa (degrees) is comparable to 1/sigma^2. Limit of infinity for only the mean, "
 			"and 0 for an isotropic uniform distribution.")
 			("mean_theta", po::value<double>()->default_value(0),
@@ -365,6 +365,7 @@ int main(int argc, char** argv)
 		for (const auto &kappa : kappas)
 			for (const auto &obsAngle : obsangles)
 			{
+				std::cerr << "kappa " << kappa << "\tobsang " << obsAngle << std::endl;
 				auto tangledata = adata.at(kappa).at(obsAngle);
 				double Ze = 0, Zeraw = 0, ke = 0, ks = 0, sumWts = 0;
 				double lambda;
@@ -382,6 +383,7 @@ int main(int argc, char** argv)
 					sumWts += awt;
 					lambda = s.lambda;
 					m = s.m;
+					std::cerr << "\t" << s.aeff << "\t" << s.Qbk << "\t" << s.Qsca << "\t" << awt << std::endl;
 				}
 				Zeraw = Ze;
 				Ze *= pow(lambda, 4.) / pow(pi, 5.);
