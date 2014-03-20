@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 			("kappa", po::value<string>()->default_value("0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000"),
 			"Kappa (degrees) is comparable to 1/sigma^2. Limit of infinity for only the mean, "
 			"and 0 for an isotropic uniform distribution.")
-			("mean_theta", po::value<double>()->default_value(0),
+			("mean_theta", po::value<double>()->default_value(90),
 			"Theta mean (degrees)")
 			("mean_phi", po::value<double>()->default_value(90),
 			"Phi mean (degrees)")
