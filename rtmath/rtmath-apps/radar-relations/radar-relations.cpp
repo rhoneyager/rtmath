@@ -383,7 +383,8 @@ int main(int argc, char** argv)
 					sumWts += awt;
 					lambda = s.lambda;
 					m = s.m;
-					std::cerr << "\t" << s.aeff << "\t" << s.Qbk << "\t" << s.Qsca << "\t" << awt << std::endl;
+					std::cerr << "\t" << s.aeff << "\t" << s.Qbk << "\t" 
+						<< s.Qsca << "\t" << awt << "\t" << sf << std::endl;
 				}
 				Zeraw = Ze;
 				Ze *= pow(lambda, 4.) / pow(pi, 5.);
