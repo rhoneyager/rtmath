@@ -7,6 +7,7 @@
 #include <complex>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 #include "../../rtmath/rtmath/common_templates.h"
@@ -23,6 +24,33 @@
 //#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
+
+struct particledata
+{
+	rtmath::HASH_t hash;
+	double aeff;
+	double Qsca, Qbk, Qext, Qabs;
+	double Qsca_iso, Qbk_iso, Qext_iso, Qabs_iso;
+	double sumWt;
+	double kappa, obsAngle;
+
+	double lambda;
+	std::complex<double> m;
+
+	particledata() : aeff(0), Qsca(0), Qbk(0), Qext(0), Qabs(0),
+		Qsca_iso(0), Qbk_iso(0), Qext_iso(0), Qabs_iso(0), sumWt(0),
+		kappa(0), obsAngle(0), lambda(0) {}
+};
+
+struct angledata
+{
+	double kappa;
+	double obsAngle;
+	
+	std::vector<particledata> pershape;
+
+	angledata() : kappa(0), obsAngle(0) {}
+};
 
 int main(int argc, char** argv)
 {
@@ -105,11 +133,11 @@ int main(int argc, char** argv)
 		if (vm.count("help") || argc == 1) doHelp("");
 
 		vector<string> vsInput;
-		string sOutput;
+		vector<string> vsOutput;
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input(s)");
-		//if (vm.count("output")) sOutput = vm["output"].as<string>();
-		//else doHelp("Need to specify output file.");
+		if (vm.count("output")) vsOutput = vm["output"].as<vector<string> >();
+		//else doHelp("Need to specify output file(s).");
 
 		double muT = vm["mean_theta"].as<double>();
 		double muP = vm["mean_phi"].as<double>();
@@ -123,8 +151,18 @@ int main(int argc, char** argv)
 		rtmath::config::splitSet(skappas, kappas);
 		rtmath::config::splitSet(sobsangles, obsangles);
 
+		std::ofstream outSingle("outsingle.tsv");
+		outSingle << "Hash\tAeff (um)\tObservation Angle (degrees)\tConcentration Parameter "
+			"(1/degrees^2)\tdQbksc\tQsca\tQabs\tQext\tQbk_iso\tQsca_iso\tQabs_iso\tQext_iso" << std::endl;
+		std::ofstream outEnsWeights("outensweights.tsv");
+		outEnsWeights << "Hash\tAeff\tWeight" << std::endl;
+		std::ofstream outEnsemble("outens.tsv");
+		outEnsemble << "Observation Angle (degrees)\tConcentration Parameter "
+			"(1/degrees^2)\tZe\tk_e\tk_s\tCDF\tZeraw" << std::endl;
 
 
+		// Define a table for storing the results for the ensemble calculation step
+		std::map<double, std::map<double, std::shared_ptr<angledata> > > adata;
 
 		using namespace boost::filesystem;
 		for (const std::string &rin : vsInput)
@@ -171,6 +209,24 @@ int main(int argc, char** argv)
 			for (const auto &kappa : kappas)
 				for (const auto &obsAngle : obsangles)
 				{
+					std::shared_ptr<angledata> tangledata;
+					if (!adata.count(kappa))
+					{
+						std::map<double, std::shared_ptr<angledata> > newmap;
+						adata[kappa] = newmap;
+					}
+					if (adata[kappa].count(obsAngle)) tangledata = adata.at(kappa).at(obsAngle);
+					else {
+						tangledata = std::shared_ptr<angledata>(new angledata);
+						adata.at(kappa).insert(std::pair<double, std::shared_ptr<angledata> >
+							(obsAngle, tangledata));
+					}
+
+					particledata pdata;
+					pdata.kappa = kappa;
+					pdata.obsAngle = obsAngle;
+					pdata.lambda = ddOut->avg->wave();
+					pdata.m = ddOut->avg->getM();
 
 
 					/// \todo Add a static function to autoselect the orientation weights.
@@ -193,11 +249,6 @@ int main(int argc, char** argv)
 					else doHelp("Unknown weighting method");
 
 					ow->getWeights(wts);
-
-					double Qbk = 0;
-					double Qsca = 0;
-					double Qabs = 0;
-					double Qext = 0;
 
 
 					for (const auto &it : ddOut->scas)
@@ -240,10 +291,11 @@ int main(int argc, char** argv)
 
 						if (wt > 0)
 						{
-							Qbk += wt * it->getStatEntry(stat_entries::QBKM);
-							Qsca += wt * it->getStatEntry(stat_entries::QSCAM);
-							Qabs += wt * it->getStatEntry(stat_entries::QABSM);
-							Qext += wt * it->getStatEntry(stat_entries::QEXTM);
+							pdata.Qbk += wt * it->getStatEntry(stat_entries::QBKM);
+							pdata.Qsca += wt * it->getStatEntry(stat_entries::QSCAM);
+							pdata.Qabs += wt * it->getStatEntry(stat_entries::QABSM);
+							pdata.Qext += wt * it->getStatEntry(stat_entries::QEXTM);
+							pdata.sumWt += wt;
 						}
 
 						std::complex<double> m = it->getM();
@@ -276,12 +328,67 @@ int main(int argc, char** argv)
 
 					// The weighted cross-sections have been calculated.
 					// Write them.
+					pdata.Qbk_iso = ddOut->avg->getStatEntry(stat_entries::QBKM);
+					pdata.Qsca_iso = ddOut->avg->getStatEntry(stat_entries::QSCAM);
+					pdata.Qabs_iso = ddOut->avg->getStatEntry(stat_entries::QABSM);
+					pdata.Qext_iso = ddOut->avg->getStatEntry(stat_entries::QEXTM);
+
+					outSingle << ddOut->shapeHash.lower << "\t" << ddOut->aeff << "\t"
+						<< obsAngle << "\t" << kappa << "\t"
+						<< pdata.Qbk << "\t" << pdata.Qsca << "\t" 
+						<< pdata.Qabs << "\t" << pdata.Qext << "\t"
+						<< pdata.Qbk_iso << "\t" << pdata.Qsca_iso 
+						<< "\t" << pdata.Qabs_iso << "\t" << pdata.Qext_iso
+						<< std::endl;
 
 
+					// Store weighted cross-section results.
+					pdata.aeff = ddOut->aeff;
+					pdata.hash = ddOut->shapeHash;
+
+					tangledata->pershape.push_back(std::move(pdata));
 				}
 			std::cerr << "\tProcessed " << ddOut->scas.size() << " orientations.\n";
 		}
 
+		// Done reading input files and preprocessing.
+		// Now, take the effective radii and use to generate weights for each shape
+
+		std::map<uint64_t, double> aeffweights; // map between shape hash and associated weight
+		// Generate the weights based on user settings
+
+		// Write the weights
+		for (const auto &aw : aeffweights)
+			outEnsWeights << aw.first << "\t" << aw.second << std::endl;
+
+		// Iterate over observation angles and kappas to determine volumetric quantities
+		for (const auto &kappa : kappas)
+			for (const auto &obsAngle : obsangles)
+			{
+				auto tangledata = adata.at(kappa).at(obsAngle);
+				double Ze = 0, Zeraw = 0, ke = 0, ks = 0, sumWts = 0;
+				double lambda;
+				std::complex<double> m;
+				for (const auto &s : tangledata->pershape) // iterate over loaded shapes
+				{
+					double awt = 0;
+					if (aeffweights.count(s.hash.lower))
+						awt = aeffweights.at(s.hash.lower);
+					else awt = (1. / (double) tangledata->pershape.size());
+					double sf = pi * pow(s.aeff, 2.); // Q to sigma scaling factor
+					Ze += s.Qbk * sf * 4. * pi;
+					ke += s.Qext * sf;
+					ks = s.Qsca * sf;
+					sumWts += awt;
+					lambda = s.lambda;
+					m = s.m;
+				}
+				Zeraw = Ze;
+				Ze *= pow(lambda, 4.) / pow(pi, 5.);
+				Ze *= norm((m*m + std::complex<double>(2., 0)) / (m*m + std::complex<double>(-1., 0)));
+				outEnsemble << obsAngle << "\t" << kappa << "\t" 
+					<< Ze << "\t" << ke << "\t" << ks << "\t" << sumWts << "\t" << Zeraw << std::endl;
+			}
 	}
 	catch (std::exception &e)
 	{
