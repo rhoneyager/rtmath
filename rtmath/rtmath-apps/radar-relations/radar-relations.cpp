@@ -184,8 +184,8 @@ int main(int argc, char** argv)
 					ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
 					ddOut->readFile(p.string());
 				}
-				catch (rtmath::debug::xUnknownFileFormat &) {
-					cerr << "\tWrong file type\n";
+				catch (...) {
+					cerr << "\tBad read (probably wrong file type)\n";
 					continue;
 				}
 			}
