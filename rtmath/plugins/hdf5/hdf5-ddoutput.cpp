@@ -69,7 +69,9 @@ namespace rtmath {
 			}
 
 			std::shared_ptr<H5::Group> write_hdf5_ddOutputSingle(std::shared_ptr<H5::Group> base, 
-				const rtmath::ddscat::ddOutputSingle *r, bool inplace = false)
+				const rtmath::ddscat::ddOutputSingle *r, size_t index = 0,
+				Eigen::MatrixXf *tblOri = nullptr, Eigen::MatrixXf *tblSca = nullptr, 
+				bool inplace = false)
 			{
 				using std::shared_ptr;
 				using namespace H5;
@@ -155,19 +157,50 @@ namespace rtmath {
 					shared_ptr<Group> gEnso(new Group(gRun->createGroup("Ensemble_Original")));
 					write_hdf5_ddOutputSingle(gEnso, s->avg_original.get(), true);
 				}
+
+
+				// Get number of orientations, and allocate a matrix to hold al of the cross-sectional results
+				size_t numOris = s->scas.size();
+				// Orientation summary table lists:
+				// - beta, theta, phi
+				// - isotropic weight
+				// - Qsca_m, Qbk_m, Qabs_m, Qext_m, g_m
+				// - link to full orientation results
+				Eigen::MatrixXf tblOri(numOris, 9);
+				// Get number of scattering angles from the avg table
+				size_t numScaAngles = s->avg->getScattMatrices().size();
+				// FML summary table lists:
+				// - Beta, Theta, Phi
+				// - theta, phi
+				// - All fs (interlaced complex float, 8 total)
+				// SCA summary table liats:
+				// - Beta, Theta, Phi, theta, phi
+				// - Polarization
+				// - All Ss (16)
+				Eigen::MatrixXf tblFML(numScaAngles * numOris, 13);
+				Eigen::MatrixXf tblSCA(numScaAngles * numOris, 22);
+
+
+
 				auto writeGroup = [&](const char* grpname, 
-					const std::set<boost::shared_ptr<rtmath::ddscat::ddOutputSingle> > &o)
+					const std::set<boost::shared_ptr<rtmath::ddscat::ddOutputSingle> > &o,
+					Eigen::MatrixXf *oritable, Eigen::MatrixXf *stable)
 				{
 					shared_ptr<Group> g(new Group(gRun->createGroup(grpname)));
+					size_t i = 0; // Index for table writing
 					for (const auto& f : o)
-						write_hdf5_ddOutputSingle(g, f.get());
+					{
+						write_hdf5_ddOutputSingle(g, f.get(), i, &tblOri, &tblSca);
+						++i;
+					}
 				};
-				writeGroup("FML", s->fmls);
-				writeGroup("SCA", s->scas);
-				writeGroup("SCA_original", s->scas_original);
+				writeGroup("FML", s->fmls, true);
+				writeGroup("SCA", s->scas, true);
+				writeGroup("SCA_original", s->scas_original, false);
 
-
-				// Weight table (assuming all scas and fmls are accounted for)
+				addDatasetEigen(gRun, "Cross_Sections", tblOri);
+				addDatasetEigen(gRun, "FML_Data", tblFML);
+				addDatasetEigen(gRun, "Scattering_Data", tblSCA);
 
 				// Stats link
 
@@ -184,40 +217,6 @@ namespace rtmath {
 
 			/// \todo Add in writing handlers for ddoutputsingle and ddscatmatrix
 
-
-			/*
-			/// Routine writes a full, isolated shapefile entry
-			void write_hdf5_ddOutput(const char* filename,
-			const rtmath::ddscat::ddOutput *s)
-			{
-			try {
-			using std::string;
-			using std::ofstream;
-			using std::shared_ptr;
-			using namespace H5;
-
-			// Turn off the auto-printing when failure occurs so that we can
-			// handle the errors appropriately
-			Exception::dontPrint();
-
-			shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
-			shared_ptr<Group> grpHashes(new Group(file->createGroup("Hashed")));
-			shared_ptr<Group> shpgroup(new Group(grpHashes->createGroup(s->shape->hash().string().c_str())));
-			shared_ptr<Group> gRuns(new Group(shpgroup->createGroup("Runs")));
-			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
-			//shared_ptr<Group> shapebase = write_hdf5_shaperawdata(shpgroup, s->_shp.get());
-
-
-			//statsbase->link(H5L_TYPE_HARD, ".", "/Stats");
-			//shapebase->link(H5L_TYPE_HARD, ".", "/Shape");
-			//file->link(H5L_TYPE_SOFT, newbase->, "Shape");
-			} catch (std::exception &e)
-			{
-			std::cerr << e.what() << "\n";
-			throw e;
-			}
-			}
-			*/
 		}
 	}
 
