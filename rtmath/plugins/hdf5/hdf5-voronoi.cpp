@@ -49,7 +49,7 @@ namespace rtmath {
 				v->getResultsTable(results);
 				for (const auto &res : results)
 				{
-					hsize_t fDims[] = { res.second->rows(), res.second->cols() };
+					hsize_t fDims[] = { (hsize_t) res.second->rows(), (hsize_t) res.second->cols() };
 					DataSpace fSpace(2, fDims);
 					
 					shared_ptr<DataSet> pts(new DataSet(shpraw->createDataSet(res.first,
@@ -94,8 +94,9 @@ namespace rtmath {
 		using namespace rtmath::plugins::hdf5;
 		
 
+		template<>
 		shared_ptr<IOhandler> 
-			write_file_type_multi
+			write_file_type_multi<rtmath::Voronoi::VoronoiDiagram>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts, 
 			const rtmath::Voronoi::VoronoiDiagram *v)
 		{
