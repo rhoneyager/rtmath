@@ -31,6 +31,7 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
+			/// \deprecated Writing now goes through the ddOutputSingle write function
 			std::shared_ptr<H5::Group> write_hdf5_ddScattMatrix(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::ddScattMatrix *v)
 			{
@@ -68,21 +69,21 @@ namespace rtmath {
 				return gv;
 			}
 
-			std::shared_ptr<H5::Group> write_hdf5_ddOutputSingle(std::shared_ptr<H5::Group> base, 
+			void write_hdf5_ddOutputSingle(
 				const rtmath::ddscat::ddOutputSingle *r, size_t index = 0,
-				Eigen::MatrixXf *tblOri = nullptr, Eigen::MatrixXf *tblSca = nullptr, 
-				bool inplace = false)
+				Eigen::MatrixXf *tblOri = nullptr, Eigen::MatrixXf *tblSca = nullptr)
 			{
 				using std::shared_ptr;
 				using namespace H5;
+				using namespace ddscat;
 
+				/*
 				std::string rotid;
 				{
 					std::ostringstream o;
 					o << r->beta() << "," << r->theta() << "," << r->phi();
 					rotid = o.str();
 				}
-
 				shared_ptr<Group> grpRot;
 				if (!inplace)
 					grpRot = shared_ptr<Group> (new Group(base->createGroup(rotid)));
@@ -111,17 +112,67 @@ namespace rtmath {
 				}
 
 				// Stat table
-
+				*/
 				// Scattering matrices
+				//shared_ptr<Group> g(new Group(grpRot->createGroup("Scattering_Matrices")));
+				ddOutputSingle::scattMatricesContainer c;
+				r->getScattMatrices(c);
+				size_t i=0;
+				for (const auto &mat : c)
 				{
-					shared_ptr<Group> g(new Group(grpRot->createGroup("Scattering_Matrices")));
-					ddscat::ddOutputSingle::scattMatricesContainer c;
-					r->getScattMatrices(c);
-					for (const auto &mat : c)
-						write_hdf5_ddScattMatrix(g, mat.get());
+					if (tblOri)
+					{
+						ddscat::ddOutputSingle::statTableType stats;
+						r->getStatTable(stats);
+						double blockds[20] = {
+							r->freq(), r->aeff(),
+							r->beta(), r->theta(), r->phi(),
+							stats[stat_entries::QSCAM],
+							stats[stat_entries::QSCA1],
+							stats[stat_entries::QSCA2],
+							stats[stat_entries::QBKM],
+							stats[stat_entries::QBK1],
+							stats[stat_entries::QBK2],
+							stats[stat_entries::QABSM],
+							stats[stat_entries::QABS1],
+							stats[stat_entries::QABS2],
+							stats[stat_entries::QEXTM],
+							stats[stat_entries::QEXT1],
+							stats[stat_entries::QEXT2],
+							stats[stat_entries::G1M],
+							stats[stat_entries::G11],
+							stats[stat_entries::G12]
+						};
+						tblOri->block<1,20>(index,0) = 
+							Eigen::Map<Eigen::VectorXd>(blockds,20).cast<float>();
+
+					}
+					if (tblSca)
+					{
+						// Only the FML files are stored. The rest can be regenerated from these.
+						if (mat->id() == scattMatrixType::F)
+						{
+							const ddScattMatrixF *vv = dynamic_cast<const ddScattMatrixF*>(mat.get());
+							auto F = vv->getF();
+							//addDatasetEigenComplexMethodA<ddScattMatrix::FType, Group>(gv, "F", vv->getF());
+							//addDatasetEigenComplexMethodA<ddScattMatrix::FType, Group>(gv, "S", vv->getS());
+							double blockd[15] = {
+								r->freq(), r->aeff(),
+								r->beta(), r->theta(), r->phi(),
+								vv->theta(), vv->phi(),
+								F(0,0).real(), F(0,0).imag(),
+								F(0,1).real(), F(0,1).imag(),
+								F(1,0).real(), F(1,0).imag(),
+								F(1,1).real(), F(1,1).imag()
+							};
+							tblSca->block<1,15>((c.size() * index)+i,0) = 
+								Eigen::Map<Eigen::VectorXd>(blockd,15).cast<float>();
+						}
+					}
+					++i;
 				}
 
-				return grpRot;
+				//return grpRot;
 			}
 
 			/// \param base is the base (./Runs) to write the subgroups to.
@@ -152,33 +203,20 @@ namespace rtmath {
 
 				// Ensemble average results
 				{
-					shared_ptr<Group> gEns(new Group(gRun->createGroup("Ensemble")));
-					write_hdf5_ddOutputSingle(gEns, s->avg.get(), true);
-					shared_ptr<Group> gEnso(new Group(gRun->createGroup("Ensemble_Original")));
-					write_hdf5_ddOutputSingle(gEnso, s->avg_original.get(), true);
+					//shared_ptr<Group> gEns(new Group(gRun->createGroup("Ensemble")));
+					//write_hdf5_ddOutputSingle(gEns, s->avg.get());
+					//shared_ptr<Group> gEnso(new Group(gRun->createGroup("Ensemble_Original")));
+					//write_hdf5_ddOutputSingle(gEnso, s->avg_original.get());
 				}
 
 
 				// Get number of orientations, and allocate a matrix to hold al of the cross-sectional results
 				size_t numOris = s->scas.size();
-				// Orientation summary table lists:
-				// - beta, theta, phi
-				// - isotropic weight
-				// - Qsca_m, Qbk_m, Qabs_m, Qext_m, g_m
-				// - link to full orientation results
-				Eigen::MatrixXf tblOri(numOris, 9);
+				Eigen::MatrixXf tblOri(numOris, 20);
 				// Get number of scattering angles from the avg table
 				size_t numScaAngles = s->avg->getScattMatrices().size();
-				// FML summary table lists:
-				// - Beta, Theta, Phi
-				// - theta, phi
-				// - All fs (interlaced complex float, 8 total)
-				// SCA summary table liats:
-				// - Beta, Theta, Phi, theta, phi
-				// - Polarization
-				// - All Ss (16)
-				Eigen::MatrixXf tblFML(numScaAngles * numOris, 13);
-				Eigen::MatrixXf tblSCA(numScaAngles * numOris, 22);
+				Eigen::MatrixXf tblFML(numScaAngles * numOris, 15);
+				//Eigen::MatrixXf tblSCA(numScaAngles * numOris, 22);
 
 
 
@@ -186,21 +224,23 @@ namespace rtmath {
 					const std::set<boost::shared_ptr<rtmath::ddscat::ddOutputSingle> > &o,
 					Eigen::MatrixXf *oritable, Eigen::MatrixXf *stable)
 				{
-					shared_ptr<Group> g(new Group(gRun->createGroup(grpname)));
+					//shared_ptr<Group> g(new Group(gRun->createGroup(grpname)));
 					size_t i = 0; // Index for table writing
 					for (const auto& f : o)
 					{
-						write_hdf5_ddOutputSingle(g, f.get(), i, &tblOri, &tblSca);
+						write_hdf5_ddOutputSingle(f.get(), i, oritable, stable);
 						++i;
 					}
 				};
-				writeGroup("FML", s->fmls, true);
-				writeGroup("SCA", s->scas, true);
-				writeGroup("SCA_original", s->scas_original, false);
+				//writeGroup("SCA_original", s->scas_original, nullptr, nullptr);
+				writeGroup("FML", s->fmls, nullptr, &tblFML);
+				writeGroup("SCA", s->scas, &tblOri, nullptr);
 
 				addDatasetEigen(gRun, "Cross_Sections", tblOri);
 				addDatasetEigen(gRun, "FML_Data", tblFML);
-				addDatasetEigen(gRun, "Scattering_Data", tblSCA);
+				//addDatasetEigen(gRun, "Scattering_Data", tblSCA);
+
+				// Add a special ddOutputSingle entry for the avg file
 
 				// Stats link
 
@@ -233,7 +273,7 @@ namespace rtmath {
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key");
+			std::string key = opts->getVal<std::string>("key", "");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
@@ -254,16 +294,16 @@ namespace rtmath {
 			shared_ptr<Group> grpHash = openOrCreateGroup(grpHashes, s->shape->hash().string().c_str());
 			// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
 			/// \note The unlink operation does not really free the space..... Should warn the user.
-			shared_ptr<Group> gRuns = openOrCreateGroup(grpHashes, "Runs");
+			shared_ptr<Group> gRuns = openOrCreateGroup(grpHash, "Runs");
 
-			std::string aeffid("aeff-");
-			aeffid.append(boost::lexical_cast<std::string>( (float) s->aeff ));
-			shared_ptr<Group> gRunsAeff = openOrCreateGroup(gRuns, aeffid.c_str());
+			//std::string aeffid("aeff-");
+			//aeffid.append(boost::lexical_cast<std::string>( (float) s->aeff ));
+			//shared_ptr<Group> gRunsAeff = openOrCreateGroup(gRuns, aeffid.c_str());
 
 			//if (groupExists(grpRuns, "Stats")) return h; //grpHash->unlink("Stats");
 
 			/// \todo Modify to also support external symlinks
-			shared_ptr<Group> base = write_hdf5_ddOutput(gRunsAeff, s);
+			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
 			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 
