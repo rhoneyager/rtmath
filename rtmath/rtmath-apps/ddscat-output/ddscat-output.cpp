@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<vector<string> >(),"specify input directory or file.")
+			("input,i", po::value<vector<string> >()->multitoken(),"specify input directory or file.")
 			("from-summary-files", "Indicate the first input file is an avg file, the "
 			"second is a par file, and the third is a shape file. Used for importing "
 			"Holly runs.")
@@ -50,17 +50,13 @@ int main(int argc, char** argv)
 			("directory,D", "Write as a directory")
 			;
 
-		po::positional_options_description p;
-		//p.add("input",1);
-		//p.add("output",2);
-
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
-			options(oall).positional(p).run(), vm);
-		po::notify(vm);    
+			options(oall).run(), vm);
+		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
@@ -142,9 +138,17 @@ int main(int argc, char** argv)
 			} else if (Ryan_Serialization::known_format(ps)) {
 				// Input may be a ddOutput file
 				// Read will fail if it is not the right file type
+				try {
 				ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
 				ddOut->readFile(ps.string());
-			} else doHelp("Unable to parse input expression.");
+				} catch (...) {
+					std::cerr << "Unable to load " << ps.string() << std::endl;
+					continue;
+				}
+			} else {
+				std::cerr << "Unable to load " << ps.string() << std::endl;
+				continue;
+			}
 
 			if (sDesc.size())
 				ddOut->description = sDesc;
@@ -170,12 +174,12 @@ int main(int argc, char** argv)
 
 			if (writeDir)
 			{
-				cerr << "Expanding into directory " << sOutput << endl;
+				//cerr << "Expanding into directory " << sOutput << endl;
 				bool outShape = false;
 				if (vm.count("output-shape")) outShape = true;
 				ddOut->expand(sOutput, outShape);
 			} else {
-				cerr << "Writing file " << sOutput << endl;
+				//cerr << "Writing file " << sOutput << endl;
 				if (sOutput == vsInput.at(0))
 				{
 					cerr << "Output is the same as the input. Doing nothing.\n";
