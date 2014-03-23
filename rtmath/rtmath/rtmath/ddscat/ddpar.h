@@ -13,7 +13,7 @@
 #include <boost/shared_ptr.hpp>
 #include "ddVersions.h"
 #include "parids.h"
-//#include "../parsers.h"
+#include "../hash.h"
 
 // For ddParParsers
 #include "../Serialization/serialization_macros.h"
@@ -505,6 +505,7 @@ namespace rtmath {
 
 			void setDiels(const std::vector<std::string>&);
 			void getDiels(std::vector<std::string>&) const;
+			void getDielHashes(std::vector<HASH_t>&) const;
 
 			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
 			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double, 6);
@@ -583,6 +584,10 @@ namespace rtmath {
 			mutable std::vector<
 				boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> > >
 				_diels;
+
+			mutable std::vector< HASH_t > _dielHashes;
+
+			std::string _filename;
 
 			template<class T>
 			T __getSimple(ddParParsers::ParId key) const;

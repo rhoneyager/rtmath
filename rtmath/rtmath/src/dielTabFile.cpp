@@ -241,6 +241,10 @@ namespace rtmath {
 
 		/** \todo Correct writeout to NEVER use scientific notation. For combinations of large and 
 		 * small values, it seems that the standard stream formatters cannot do this.
+		 *
+		 * \warning Current writing routine may confuse DDSCAT when too much precition is 
+		 * used with dielectrics. Must not trigger scientific notation when handling both large and 
+		 * small values.
 		 **/
 		void dielTab::write(std::ostream &out) const
 		{
@@ -338,6 +342,15 @@ namespace rtmath {
 			using namespace std;
 			ofstream out(filename.c_str());
 			write(out);
+		}
+
+		HASH_t dielTab::hash() const
+		{
+			using namespace std;
+			ostringstream out;
+			write(out);
+			string sout = out.str();
+			return HASH(sout.c_str(), (int) sout.size());
 		}
 
 		std::complex<double> dielTab::interpolate(double freq) const

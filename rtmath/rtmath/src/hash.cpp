@@ -8,6 +8,9 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include "../rtmath/error/error.h"
@@ -78,6 +81,53 @@ namespace rtmath {
 	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash)
 	{
 		return storeHash(base, boost::lexical_cast<std::string>(hash.lower));
+	}
+
+	HASH_t HASHfile(const std::string& filename)
+	{
+		using namespace boost::interprocess;
+		using namespace boost::filesystem;
+
+		using namespace Ryan_Serialization;
+		std::string cmeth, fname;
+		if (!detect_compressed(filename, cmeth, fname))
+			throw rtmath::debug::xMissingFile(filename.c_str());
+
+		// Do a direct map into memory. It's faster than stream i/o for reading a large file.
+		// Plus, all other operations can be done solely in memory.
+		size_t fsize = (size_t)file_size(path(fname)); // bytes
+
+		file_mapping m_file(
+			fname.c_str(),
+			read_only
+			);
+
+		mapped_region region(
+			m_file,
+			read_only,
+			0,
+			fsize);
+
+		void* start = region.get_address();
+		const char* a = (char*)start;
+
+		std::string s(a, fsize);
+		std::istringstream ss(s);
+
+
+		boost::iostreams::filtering_istream sin;
+		// sin can contain either compressed or uncompressed input at this point.
+		if (cmeth.size())
+			prep_decompression(cmeth, sin);
+		sin.push(ss);
+
+		std::string suncompressed;
+		suncompressed.reserve(1024 * 1024 * 10);
+		std::ostringstream so;
+		boost::iostreams::copy(sin, so);
+		suncompressed = so.str();
+
+		return HASH(suncompressed.c_str(), (int)suncompressed.size());
 	}
 
 	HASH_t HASH(const void *key, int len)

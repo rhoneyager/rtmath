@@ -707,6 +707,38 @@ namespace rtmath {
 			return res;
 		}
 
+		std::string ddOutput::genNameSmall() const
+		{
+			std::string res;
+
+			/* Name follows this pattern:
+			 - frequency (to nearest tenth)
+			 - aeff (to nearest tenth)
+			 - number of sca matrices
+			 - rotations
+			 - ddscat version tag
+			 */
+
+			boost::filesystem::path p;
+			rotations rots;
+			parfile->getRots(rots);
+
+			float tDesc = (boost::math::round((float) temp*10.f)/10.f);
+			if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
+
+
+			std::ostringstream out;
+			out << (boost::math::round((float) freq*10.f)/10.f) << "-"
+				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
+				<< tDesc << "-"
+				<< scas.size() << "-"
+				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
+				<< ddvertag;
+
+			res = out.str();
+			return res;
+		}
+
 		/*
 		void ddOutput::clear()
 		{

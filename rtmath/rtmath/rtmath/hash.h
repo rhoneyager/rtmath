@@ -45,6 +45,9 @@ namespace rtmath {
 	/// Wrapper function that calculates the hash of an object (key) with length (len).
 	HASH_t DLEXPORT_rtmath_core HASH(const void *key, int len);
 
+	/// Wrapper function to read and hash a file (handles compression, too!)
+	HASH_t DLEXPORT_rtmath_core HASHfile(const std::string& filename);
+
 	/// \brief Function to find a hash in a directory hash structure.
 	/// Does not modify hash tree structure.
 	/// \param extensions is a list of extensions (i.e. ".sca") to check.

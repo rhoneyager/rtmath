@@ -134,10 +134,19 @@ namespace rtmath {
 			* \brief Generate a standardized file name (for saving) based on the 
 			* ddOutput contents
 			*
-			* The name is based off of the shape hash, the frequency, the effective 
-			* radius, and the ddscat version tag.
+			* The name is based off of the shape hash, the frequency, temperature, 
+			* the effective radius, and the ddscat version tag.
 			**/
 			std::string genName() const;
+
+			/**
+			* \brief Generate a standardized file name (for saving) based on the 
+			* ddOutput contents
+			*
+			* The name is based off of the the frequency, temperature, the effective 
+			* radius, and the ddscat version tag.
+			**/
+			std::string genNameSmall() const;
 
 			/// Generate a ddOutputSingle .avg object that reflects the 
 			/// sca file weights.

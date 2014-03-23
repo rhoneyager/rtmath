@@ -68,7 +68,12 @@ namespace rtmath {
 					cdiels[i] = diels[i].c_str();
 				addAttr<size_t, Group>(grpPar, "NCOMP", diels.size());
 				addDatasetArray<const char*, Group>(grpPar, "Dielectrics", cdiels.size(), 1, cdiels.data());
-				/// \todo Read dielectrics and determine hashes
+				std::vector<HASH_t> dielhashes;
+				r->getDielHashes(dielhashes);
+				std::vector<uint64_t> cdielhashes(dielhashes.size());
+				for (size_t i=0; i<dielhashes.size(); ++i)
+					cdielhashes[i] = dielhashes[i].lower;
+				addDatasetArray<uint64_t, Group>(grpPar, "Dielectric_Hashes", cdielhashes.size(), 1, cdielhashes.data());
 				/*
 				hsize_t dieldims[1] = {(hsize_t) diels.size()};
 				DataSpace dfspace(1, dieldims);

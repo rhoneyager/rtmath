@@ -1,5 +1,6 @@
 #pragma once
 #include "../defs.h"
+#include "../hash.h"
 #include <complex>
 #include <functional>
 #include <iostream>
@@ -48,17 +49,30 @@ namespace rtmath
 			dielTab(const std::string &filename);
 			virtual ~dielTab() {}
 
+			/// \brief Read dielectric information from a file
+			/// \param filename is the name of the file to read. If blank, use _filename.
 			void read(const std::string &filename = "");
+			/// Read dielectric information from a stream
 			void read(std::istream &in, size_t length = 0);
+			/// Read dielectric information from a string
 			void readString(const std::string &in);
+			/// Write dielectric information to a file
 			void write(const std::string &fname) const;
+			/// Write dielectric information to a stream
 			void write(std::ostream &out) const;
 
+			/// Interpolate the dielectric at a frequency based on known values
 			std::complex<double> interpolate(double freq) const;
 
+			/// Description of the dielectric information
 			std::string title;
+			/// Mapping between frequency and known dielectric values
 			std::map<double, std::complex<double> > freqMMap;
+			/// Mappings between the column ordering in the dielectric file and the structure data
 			size_t colMaps[dielColumns::NUMCOLS];
+
+			/// Calculates the hash of the dielectic. Convenience function.
+			HASH_t hash() const;
 
 			
 

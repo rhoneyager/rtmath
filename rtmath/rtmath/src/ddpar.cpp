@@ -397,6 +397,8 @@ namespace rtmath {
 				return;
 			}
 
+			this->_filename = filename;
+
 			std::ifstream in(filename.c_str(), std::ios_base::binary | std::ios_base::in);
 			// Consutuct an filtering_iostream that matches the type of compression used.
 			using namespace boost::iostreams;
@@ -778,6 +780,11 @@ namespace rtmath {
 			}
 		}
 
+		void ddPar::getDielHashes(std::vector<HASH_t>& res) const
+		{
+			res = _dielHashes;
+		}
+
 		void ddPar::setDiels(const std::vector<std::string>& src)
 		{
 			_diels.clear();
@@ -943,11 +950,25 @@ namespace rtmath {
 					// like ddParSimple<string>
 					std::string vz = boost::algorithm::trim_right_copy(vals[0]);
 					ptr->read(vz);
-					// Individual dielectric files fo insta a separate structure
+					// Individual dielectric files go into a separate structure
+					// Also, if the dielectric files can be found, calculate their hashes
 					if (ptr->id() == ddParParsers::IREFR)
 					{
-						_diels.push_back(
-							boost::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ptr));
+						auto p = boost::dynamic_pointer_cast<ddParParsers::ddParLineSimple<std::string> >(ptr);
+						_diels.push_back(p);
+						std::string dval;
+						p->get(dval);
+						using namespace boost::filesystem;
+						path ppar = path(_filename);
+						path pval(dval);
+						path prel = boost::filesystem::absolute(pval, ppar);
+
+						if (boost::filesystem::exists(prel))
+						{
+							_dielHashes.push_back(HASHfile(prel.string()));
+						} else _dielHashes.push_back(HASH_t());
+
+						//_dielHashes.push_back(HASHfile(dval));
 					}
 					// Everything but diels and scattering plane go here
 					else if (ptr->id() < ddParParsers::PLANE1)

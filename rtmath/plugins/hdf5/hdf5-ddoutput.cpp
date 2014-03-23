@@ -27,6 +27,8 @@
 
 #include "plugin-hdf5.h"
 
+#include "cmake-settings.h"
+
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
@@ -89,29 +91,51 @@ namespace rtmath {
 					{
 						ddscat::ddOutputSingle::statTableType stats;
 						r->getStatTable(stats);
-						/// \todo Write all of the table
-						/// \todo store dielectric information in a third table
-						double blockds[20] = {
+						// The column ordering matches the stat_entries ordering, making reads easier.
+						double blockds[43] = {
 							r->freq(), r->aeff(),
 							r->beta(), r->theta(), r->phi(),
-							stats[stat_entries::QSCAM],
-							stats[stat_entries::QSCA1],
-							stats[stat_entries::QSCA2],
-							stats[stat_entries::QBKM],
-							stats[stat_entries::QBK1],
-							stats[stat_entries::QBK2],
-							stats[stat_entries::QABSM],
-							stats[stat_entries::QABS1],
-							stats[stat_entries::QABS2],
-							stats[stat_entries::QEXTM],
 							stats[stat_entries::QEXT1],
-							stats[stat_entries::QEXT2],
-							stats[stat_entries::G1M],
+							stats[stat_entries::QABS1],
+							stats[stat_entries::QSCA1],
 							stats[stat_entries::G11],
-							stats[stat_entries::G12]
+							stats[stat_entries::G21],
+							stats[stat_entries::QBK1],
+							stats[stat_entries::QPHA1],
+							stats[stat_entries::QEXT2],
+							stats[stat_entries::QABS2],
+							stats[stat_entries::QSCA2],
+							stats[stat_entries::G12],
+							stats[stat_entries::G22],
+							stats[stat_entries::QBK2],
+							stats[stat_entries::QPHA2],
+							stats[stat_entries::QEXTM],
+							stats[stat_entries::QABSM],
+							stats[stat_entries::QSCAM],
+							stats[stat_entries::G1M],
+							stats[stat_entries::G2M],
+							stats[stat_entries::QBKM],
+							stats[stat_entries::QPHAM],
+							stats[stat_entries::QPOL],
+							stats[stat_entries::DQPHA],
+							stats[stat_entries::QSCAG11],
+							stats[stat_entries::QSCAG21],
+							stats[stat_entries::QSCAG31],
+							stats[stat_entries::ITER1],
+							stats[stat_entries::MXITER1],
+							stats[stat_entries::NSCA1],
+							stats[stat_entries::QSCAG12],
+							stats[stat_entries::QSCAG22],
+							stats[stat_entries::QSCAG32],
+							stats[stat_entries::ITER2],
+							stats[stat_entries::MXITER2],
+							stats[stat_entries::NSCA2],
+							stats[stat_entries::QSCAG1M],
+							stats[stat_entries::QSCAG2M],
+							stats[stat_entries::QSCAG3M]
 						};
-						tblOri->block<1,20>(index,0) = 
-							Eigen::Map<Eigen::VectorXd>(blockds,20).cast<float>();
+						tblOri->block<1,43>(index,0) = 
+							Eigen::Map<Eigen::VectorXd>(blockds,43).cast<float>();
 
 					}
 					if (tblSca)
@@ -152,7 +176,7 @@ namespace rtmath {
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
 				/// \todo Pick a better naming function for hdf5-internal runs
-				shared_ptr<Group> gRun(new Group(base->createGroup(s->genName())));
+				shared_ptr<Group> gRun(new Group(base->createGroup(s->genNameSmall())));
 
 
 				addAttr<string, Group>(gRun, "Description", s->description);
@@ -180,7 +204,7 @@ namespace rtmath {
 
 				// Get number of orientations, and allocate a matrix to hold al of the cross-sectional results
 				size_t numOris = s->scas.size();
-				Eigen::MatrixXf tblOri(numOris, 20);
+				Eigen::MatrixXf tblOri(numOris, 43);
 				// Get number of scattering angles from the avg table
 				size_t numScaAngles = s->avg->getScattMatrices().size();
 				Eigen::MatrixXf tblFML(numScaAngles * numOris, 15);
@@ -204,22 +228,57 @@ namespace rtmath {
 				writeGroup("FML", s->fmls, nullptr, &tblFML);
 				writeGroup("SCA", s->scas, &tblOri, nullptr);
 
-				addDatasetEigen(gRun, "Cross_Sections", tblOri);
-				addDatasetEigen(gRun, "FML_Data", tblFML);
+				// Enable compression
+				hsize_t chunk_dimsOri[2] = { (hsize_t) numOris, 1 };
+				hsize_t chunk_dimsFML[2] = { (hsize_t) numScaAngles, 15 };
+				auto plistOri = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plistOri->setChunk(2, chunk_dimsOri);
+				auto plistFML = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plistFML->setChunk(2, chunk_dimsFML);
+				/* // SZIP compression disabled for now
+#if COMPRESS_SZIP
+				unsigned szip_options_mask = H5_SZIP_NN_OPTION_MASK;
+				unsigned szip_pixels_per_block = 16;
+				plistOri->setSzip(szip_options_mask, szip_pixels_per_block);
+				plistFML->setSzip(szip_options_mask, szip_pixels_per_block);
+				*/
+#if COMPRESS_ZLIB
+				plistOri->setDeflate(6);
+				plistFML->setDeflate(6);
+#endif
+
+
+				addDatasetEigen(gRun, "Cross_Sections", tblOri, plistOri);
+				addDatasetEigen(gRun, "FML_Data", tblFML, plistFML);
 				//addDatasetEigen(gRun, "Scattering_Data", tblSCA);
 
 				// Add a special ddOutputSingle entry for the avg file
 
-				// If stats are written to this file, make a symlink
-
-				// Insert stats information given known dipole spacing
-
+				
 				// Shapefile link
 				//addAttr<string,Group>(gRun, "Shapehash_full", s->shapeHash.string());
 				addAttr<uint64_t,Group>(gRun, "Shapehash_lower", s->shapeHash.lower);
 				addAttr<uint64_t,Group>(gRun, "Shapehash_upper", s->shapeHash.upper);
 
 				// If a shapefile is written to this file, make a symlink
+				std::string pShape;
+				{
+					std::ostringstream o;
+					o << "/Hashed/" << s->shapeHash.string() << "/Shape";
+					pShape = o.str();
+				}
+				gRun->link(H5L_TYPE_SOFT, pShape, "Shape");
+
+				// If stats are written to this file, make a symlink
+				std::string pStats;
+				{
+					std::ostringstream o;
+					o << "/Hashed/" << s->shapeHash.string() << "/Stats";
+					pShape = o.str();
+				}
+				gRun->link(H5L_TYPE_SOFT, pShape, "Stats");
+				// Insert stats information given known dipole spacing
+
 
 				// ddscat.par file
 				write_hdf5_ddPar(gRun, s->parfile.get());

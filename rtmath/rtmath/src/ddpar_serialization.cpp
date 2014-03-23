@@ -51,8 +51,10 @@ namespace rtmath
 				ar & boost::serialization::make_nvp("parsedData", _parsedData);
 				ar & boost::serialization::make_nvp("scaPlanes", _scaPlanes);
 				ar & boost::serialization::make_nvp("diels", _diels);
+				ar & boost::serialization::make_nvp("dielHashes", _dielHashes);
+				ar & boost::serialization::make_nvp("from_filename", _filename);
 			} else {
-				// Older versions just write the ddscat.par file as a big strin
+				// Older versions just write the ddscat.par file as a big string
 				//boost::serialization::split_free(ar, g, version);
 				boost::serialization::split_member(ar, *this, version);
 			}

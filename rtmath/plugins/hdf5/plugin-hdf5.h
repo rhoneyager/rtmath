@@ -108,7 +108,8 @@ namespace rtmath {
 
 			/// Convenience function to write an Eigen object, in the correct format
 			template <class DataType, class Container>
-			void addDatasetEigen(std::shared_ptr<Container> obj, const char* name, const DataType &value)
+			void addDatasetEigen(std::shared_ptr<Container> obj, const char* name, 
+				const DataType &value, std::shared_ptr<H5::DSetCreatPropList> iplist = nullptr)
 			{
 				using namespace H5;
 				hsize_t sz[] = { (hsize_t) value.rows(), (hsize_t) value.cols() };
@@ -116,19 +117,28 @@ namespace rtmath {
 				DataSpace fspace(dimensionality, sz);
 				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar>();
 
-				DSetCreatPropList plist;
-				int fillvalue = -1;
-				plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
+				std::shared_ptr<DSetCreatPropList> plist;
+				if (iplist) plist = iplist;
+				else
+				{
+					plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+					if (!isStrType<DataType>())
+					{
+						int fillvalue = -1;
+						plist->setFillValue(PredType::NATIVE_INT, &fillvalue);
+					}
+				}
 
 				std::shared_ptr<DataSet> dataset(new DataSet(obj->createDataSet(name, *(ftype.get()), 
-					fspace, plist)));
+					fspace, *(plist.get())   )));
 				Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rowmajor(value);
 				dataset->write(rowmajor.data(), *(ftype.get()));
 			}
 
 			/// Convenience function to write a complex-valued Eigen dataset in a consistent manner
 			template <class DataType, class Container>
-			void addDatasetEigenComplexMethodA(std::shared_ptr<Container> obj, const char* name, const DataType &value)
+			void addDatasetEigenComplexMethodA(std::shared_ptr<Container> obj, const char* name, 
+				const DataType &value, std::shared_ptr<H5::DSetCreatPropList> iplist = nullptr)
 			{
 				using namespace H5;
 				hsize_t sz[] = { (hsize_t) value.rows(), (hsize_t) value.cols() };
@@ -136,16 +146,24 @@ namespace rtmath {
 				DataSpace fspace(dimensionality, sz);
 				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar::value_type>();
 
-				DSetCreatPropList plist;
-				int fillvalue = -1;
-				plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
+				std::shared_ptr<DSetCreatPropList> plist;
+				if (iplist) plist = iplist;
+				else
+				{
+					plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+					if (!isStrType<DataType>())
+					{
+						int fillvalue = -1;
+						plist->setFillValue(PredType::NATIVE_INT, &fillvalue);
+					}
+				}
 
 				std::string snameReal(name); snameReal.append("_real");
 				std::string snameImag(name); snameImag.append("_imag");
 				std::shared_ptr<DataSet> datasetReal(new DataSet(obj->createDataSet(snameReal.c_str(), *(ftype.get()), 
-					fspace, plist)));
+					fspace, *(plist.get()))));
 				std::shared_ptr<DataSet> datasetImag(new DataSet(obj->createDataSet(snameImag.c_str(), *(ftype.get()), 
-					fspace, plist)));
+					fspace, *(plist.get()))));
 				Eigen::Matrix<typename DataType::Scalar::value_type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmreal(value.real());
 				Eigen::Matrix<typename DataType::Scalar::value_type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmimag(value.imag());
 				datasetReal->write(rmreal.data(), *(ftype.get()));
@@ -153,29 +171,36 @@ namespace rtmath {
 			}
 
 			template <class DataType, class Container>
-			void addDatasetArray(std::shared_ptr<Container> obj, const char* name, size_t rows, size_t cols, const DataType *values)
+			void addDatasetArray(std::shared_ptr<Container> obj, const char* name, size_t rows, size_t cols, 
+				const DataType *values, std::shared_ptr<H5::DSetCreatPropList> iplist = nullptr)
 			{
 				using namespace H5;
 				hsize_t sz[] = { (hsize_t) rows, (hsize_t) cols };
 				int dimensionality = 2;
 				DataSpace fspace(dimensionality, sz);
 				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
-				DSetCreatPropList plist;
-				if (!isStrType<DataType>())
+				std::shared_ptr<DSetCreatPropList> plist;
+				if (iplist) plist = iplist;
+				else
 				{
-					int fillvalue = -1;
-					plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
+					plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+					if (!isStrType<DataType>())
+					{
+						int fillvalue = -1;
+						plist->setFillValue(PredType::NATIVE_INT, &fillvalue);
+					}
 				}
 
 				std::shared_ptr<DataSet> dataset(new DataSet(obj->createDataSet(name, *(ftype.get()), 
-					fspace, plist)));
+					fspace, *(plist.get()))));
 				dataset->write(values, *(ftype.get()));
 			}
 
 			template <class DataType, class Container>
-			void addDatasetArray(std::shared_ptr<Container> obj, const char* name, size_t rows, const DataType *values)
+			void addDatasetArray(std::shared_ptr<Container> obj, const char* name, size_t rows, 
+				const DataType *values, std::shared_ptr<H5::DSetCreatPropList> iplist = nullptr)
 			{
-				addDatasetArray(obj, name, rows, 1, values);
+				addDatasetArray(obj, name, rows, 1, values, iplist);
 			}
 		}
 	}

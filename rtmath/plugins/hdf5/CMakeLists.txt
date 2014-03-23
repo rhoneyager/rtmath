@@ -19,6 +19,9 @@ IF (DEFINED SZIP_LIBRARIES)
 	#	SET (h5libs ${h5libs} szip)
 ENDIF()
 
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
+
+
 add_library (rtmath_plugin_hdf5 SHARED 
 	plugin-hdf5.cpp
 	plugin-hdf5.h
