@@ -18,6 +18,7 @@
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/config.h"
+#include "../rtmath/splitSet.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
@@ -67,6 +68,7 @@ namespace {
 		"2  = IORTH  (=1 to do only pol. state e01; =2 to also do orth. pol. state)\n"
 		"&apos;**** Specify which output files to write ****&apos;\n"
 		"1  = IWRKSC (=0 to suppress, =1 to write &quot;.sca&quot; file for each target orient.\n"
+		"0 = IWRPOL (=0 to suppress, =1 to write &quot;.pol&quot; file for each (BETA,THETA)\n"
 		"&apos;**** Specify Target Rotations ****&apos;\n"
 		"0 0 1  = BETAMI, BETAMX, NBETA  (beta=rotation around a1)\n"
 		"0 90 10  = THETMI, THETMX, NTHETA (theta=angle between a1 and k)\n"
@@ -606,6 +608,44 @@ namespace rtmath {
 			line->get<std::string>(3,spacing);
 		}
 
+		std::string ddPar::getAeff() const
+		{
+			/// \todo Add in tab file reading
+			double min, max;
+			size_t n;
+			std::string spacing, res;
+			getAeff(min,max,n,spacing);
+			std::ostringstream out;
+			out << min << ":" << n << ":" << max << ":" << spacing;
+			res = out.str();
+			return res;
+		}
+
+		void ddPar::getAeff(std::set<double> &aeffs) const
+		{
+			std::string in = getAeff();
+			rtmath::config::splitSet<double>(in, aeffs);
+		}
+
+		void ddPar::getWavelengths(std::set<double> &wvs) const
+		{
+			std::string in = getWavelengths();
+			rtmath::config::splitSet<double>(in, wvs);
+		}
+
+		std::string ddPar::getWavelengths() const
+		{
+			/// \todo Add in tab file reading
+			double min, max;
+			size_t n;
+			std::string spacing, res;
+			getWavelengths(min,max,n,spacing);
+			std::ostringstream out;
+			out << min << ":" << n << ":" << max << ":" << spacing;
+			res = out.str();
+			return res;
+		}
+
 		void ddPar::getWavelengths(double &min, double &max, size_t &n, std::string &spacing) const
 		{
 			boost::shared_ptr< const ddParParsers::ddParLineMixed<double, std::string> > line;
@@ -1119,8 +1159,8 @@ namespace rtmath {
 					ptr = boost::shared_ptr<ddParLineMixed<double, size_t> >
 					( new ddParLineMixed<double, size_t>(2, 3, NPHI));
 				else if (key.find("IWAV") != string::npos)
-					ptr = boost::shared_ptr<ddParLineSimplePlural<double> >
-					( new ddParLineSimplePlural<double>(IWAV) );
+					ptr = boost::shared_ptr<ddParLineSimplePlural<int> >
+					( new ddParLineSimplePlural<int>(IWAV) );
 				else if (key.find("NSMELTS") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimple<std::size_t> > 
 					( new ddParLineSimple<std::size_t>(NSMELTS) );

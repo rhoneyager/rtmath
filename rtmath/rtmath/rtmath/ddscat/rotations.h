@@ -65,8 +65,11 @@ namespace rtmath {
 			// ddPar output function
 			void out(ddPar &dest) const;
 			void betas(std::string &dest) const;
+			inline std::string betas() const { std::string res; betas(res); return res; }
 			void thetas(std::string &dest) const;
+			inline std::string thetas() const { std::string res; thetas(res); return res; }
 			void phis(std::string &dest) const;
+			inline std::string phis() const { std::string res; phis(res); return res; }
 			void betas(std::set<double> &b) const;
 			void thetas(std::set<double> &t) const;
 			void phis(std::set<double> &p) const;

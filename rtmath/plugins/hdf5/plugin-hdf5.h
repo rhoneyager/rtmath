@@ -55,6 +55,10 @@ namespace rtmath {
 			template <class DataType>
 			MatchAttributeTypeType MatchAttributeType();
 			
+			/// Check to see if output type is for a string
+			template <class DataType> bool isStrType() { return false; }
+			template<> bool isStrType<std::string>();
+			template<> bool isStrType<const char*>();
 			
 			/// Handles proper insertion of strings versus other data types
 			template <class DataType>
@@ -148,6 +152,31 @@ namespace rtmath {
 				datasetImag->write(rmimag.data(), *(ftype.get()));
 			}
 
+			template <class DataType, class Container>
+			void addDatasetArray(std::shared_ptr<Container> obj, const char* name, size_t rows, size_t cols, const DataType *values)
+			{
+				using namespace H5;
+				hsize_t sz[] = { (hsize_t) rows, (hsize_t) cols };
+				int dimensionality = 2;
+				DataSpace fspace(dimensionality, sz);
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType>();
+				DSetCreatPropList plist;
+				if (!isStrType<typename DataType>())
+				{
+					int fillvalue = -1;
+					plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
+				}
+
+				std::shared_ptr<DataSet> dataset(new DataSet(obj->createDataSet(name, *(ftype.get()), 
+					fspace, plist)));
+				dataset->write(values, *(ftype.get()));
+			}
+
+			template <class DataType, class Container>
+			void addDatasetArray(std::shared_ptr<Container> obj, const char* name, size_t rows, const DataType *values)
+			{
+				addDatasetArray(obj, name, rows, 1, values);
+			}
 		}
 	}
 }

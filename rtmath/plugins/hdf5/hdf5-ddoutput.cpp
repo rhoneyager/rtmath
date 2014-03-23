@@ -31,43 +31,8 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
-			/// \deprecated Writing now goes through the ddOutputSingle write function
-			std::shared_ptr<H5::Group> write_hdf5_ddScattMatrix(std::shared_ptr<H5::Group> base, 
-				const rtmath::ddscat::ddScattMatrix *v)
-			{
-				using std::shared_ptr;
-				using namespace H5;
-				using namespace rtmath::ddscat;
-
-				std::string rotid;
-				{
-					std::ostringstream o;
-					o << v->theta() << "," << v->phi() << "," << v->thetan() << "," << v->phin();
-					rotid = o.str();
-				}
-
-				shared_ptr<Group> gv(new Group(base->createGroup(rotid)));
-
-				addAttr<double, Group>(gv, "Pol", v->pol());
-				addAttr<double, Group>(gv, "Pol_Linear", v->polLin());
-				addAttr<double, Group>(gv, "Frequency", v->freq());
-				addAttr<double, Group>(gv, "theta", v->theta());
-				addAttr<double, Group>(gv, "thetan", v->thetan());
-				addAttr<double, Group>(gv, "phi", v->phi());
-				addAttr<double, Group>(gv, "phin", v->phin());
-
-				addDatasetEigen<ddScattMatrix::PnnType, Group>(gv, "Mueller", v->mueller());
-
-				if (v->id() == scattMatrixType::F)
-				{
-					const ddScattMatrixF *vv = dynamic_cast<const ddScattMatrixF*>(v);
-					/// \todo Add complex double support
-					addDatasetEigenComplexMethodA<ddScattMatrix::FType, Group>(gv, "F", vv->getF());
-					addDatasetEigenComplexMethodA<ddScattMatrix::FType, Group>(gv, "S", vv->getS());
-				}
-
-				return gv;
-			}
+			void write_hdf5_ddPar(std::shared_ptr<H5::Group> base, 
+				const rtmath::ddscat::ddPar *r);
 
 			void write_hdf5_ddOutputSingle(
 				const rtmath::ddscat::ddOutputSingle *r, size_t index = 0,
@@ -242,14 +207,19 @@ namespace rtmath {
 
 				// Add a special ddOutputSingle entry for the avg file
 
-				// Stats link
+				// If stats are written to this file, make a symlink
 
 				// Insert stats information given known dipole spacing
 
 				// Shapefile link
+				//addAttr<string,Group>(gRun, "Shapehash_full", s->shapeHash.string());
+				addAttr<uint64_t,Group>(gRun, "Shapehash_lower", s->shapeHash.lower);
+				addAttr<uint64_t,Group>(gRun, "Shapehash_upper", s->shapeHash.upper);
+
+				// If a shapefile is written to this file, make a symlink
 
 				// ddscat.par file
-
+				write_hdf5_ddPar(gRun, s->parfile.get());
 
 
 				return gRun;

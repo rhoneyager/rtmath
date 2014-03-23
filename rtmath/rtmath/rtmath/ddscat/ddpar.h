@@ -439,6 +439,7 @@ namespace rtmath {
 
 #define accessorString(getname,setname,id) \
 	inline void getname(std::string &val) const { __getString(id, val); } \
+	inline std::string getname() const { std::string val; __getString(id, val); return val; } \
 	inline void setname(const std::string &v) { __setString(id, v); }
 
 #define accessorStringBool(name,id,bfalse,btrue) \
@@ -514,11 +515,15 @@ namespace rtmath {
 
 			void setWavelengths(double min, double max, size_t n, const std::string &spacing);
 			void getWavelengths(double &min, double &max, size_t &n, std::string &spacing) const;
+			void getWavelengths(std::set<double> &) const;
+			std::string getWavelengths() const;
 
 			accessorSimple(nAmbient,ddParParsers::NAMBIENT,double);
 
 			void setAeff(double min, double max, size_t n, const std::string &spacing);
 			void getAeff(double &min, double &max, size_t &n, std::string &spacing) const;
+			void getAeff(std::set<double> &) const;
+			std::string getAeff() const;
 
 			accessorSimplePlural(PolState,ddParParsers::POLSTATE,double, 6);
 			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
@@ -528,7 +533,7 @@ namespace rtmath {
 			void getRots(rotations &rots) const;
 			void setRots(const rotations &rots);
 
-			accessorSimplePlural(firstOri,ddParParsers::IWAV,double, 3);
+			accessorSimplePlural(firstOri,ddParParsers::IWAV,int, 3);
 
 			void getSIJ(std::set<size_t> &sij) const;
 			void setSIJ(const std::set<size_t> &sij);
