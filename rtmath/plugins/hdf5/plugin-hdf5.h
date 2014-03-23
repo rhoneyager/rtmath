@@ -159,9 +159,9 @@ namespace rtmath {
 				hsize_t sz[] = { (hsize_t) rows, (hsize_t) cols };
 				int dimensionality = 2;
 				DataSpace fspace(dimensionality, sz);
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
 				DSetCreatPropList plist;
-				if (!isStrType<typename DataType>())
+				if (!isStrType<DataType>())
 				{
 					int fillvalue = -1;
 					plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
