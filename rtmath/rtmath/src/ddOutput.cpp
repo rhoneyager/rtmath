@@ -103,6 +103,12 @@ namespace rtmath {
 
 		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
 		{
+			this->write(filename, outtype);
+		}
+
+		/*
+		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
+		{
 			using namespace Ryan_Serialization;
 			using namespace std;
 			using boost::filesystem::path;
@@ -155,6 +161,7 @@ namespace rtmath {
 				RTthrow debug::xUnknownFileFormat(filename.c_str());
 			}
 		}
+		*/
 
 		void ddOutput::readFile(const std::string &filename)
 		{

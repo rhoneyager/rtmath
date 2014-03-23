@@ -13,6 +13,7 @@
 
 #include "../hash.h"
 #include "../registry.h"
+#include "../io.h"
 
 namespace boost { namespace program_options { 
 	class options_description; class variables_map; } }
@@ -60,7 +61,8 @@ namespace rtmath {
 		class DLEXPORT_rtmath_ddscat ddOutput :
 			virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::ddOutput_IO_output_registry, 
-				::rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >
+				::rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >,
+			virtual public ::rtmath::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -122,7 +124,7 @@ namespace rtmath {
 			/// Empty if ddOutput was directly loaded from a ddscat run.
 			//boost::shared_ptr<ddOutputGenerator> generator;
 
-			/// Write output to file
+			/// Write output to file (redirects to io.h), kept for compatibility.
 			void writeFile(const std::string &filename, const std::string &type = "") const;
 
 			/// Read xml file (using serialization)

@@ -79,45 +79,6 @@ namespace rtmath
 				}
 				return nullptr; // Should never be reached
 			}
-
-			/*
-			std::shared_ptr<registry::IOhandler> writeMulti(
-				const char* key,
-				std::shared_ptr<registry::IOhandler> handle,
-				const char* filename,
-				const char* ctype = "",
-				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE,
-				std::shared_ptr<registry::options> opts = nullptr) const
-			{
-				// All of these objects can handle their own compression
-				typename ::rtmath::registry::IO_class_registry<obj_class>::io_multi_type dllsaver = nullptr;
-				// Process dll hooks first
-				auto hooks = ::rtmath::registry::usesDLLregistry<output_registry_class,
-					::rtmath::registry::IO_class_registry<obj_class> >::getHooks();
-				for (const auto &hook : *hooks)
-				{
-					if (!hook.io_multi_matches) continue; // Sanity check
-					if (!hook.io_multi_processor) continue; // Sanity check
-					if (hook.io_multi_matches(filename, ctype, handle))
-					{
-						dllsaver = hook.io_multi_processor;
-						break;
-					}
-				}
-				if (dllsaver)
-				{
-					// Most of these types aren't compressible or implement their
-					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
-				} else {
-					// Cannot match a file type to save.
-					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(filename);
-				}
-				return nullptr; // Should never be reached
-			}
-			*/
-
 		};
 	}
 }
