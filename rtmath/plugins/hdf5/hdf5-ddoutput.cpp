@@ -89,6 +89,8 @@ namespace rtmath {
 					{
 						ddscat::ddOutputSingle::statTableType stats;
 						r->getStatTable(stats);
+						/// \todo Write all of the table
+						/// \todo store dielectric information in a third table
 						double blockds[20] = {
 							r->freq(), r->aeff(),
 							r->beta(), r->theta(), r->phi(),
@@ -149,6 +151,7 @@ namespace rtmath {
 				using namespace H5;
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
+				/// \todo Pick a better naming function for hdf5-internal runs
 				shared_ptr<Group> gRun(new Group(base->createGroup(s->genName())));
 
 
