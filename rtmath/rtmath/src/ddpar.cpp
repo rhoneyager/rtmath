@@ -959,7 +959,7 @@ namespace rtmath {
 						std::string dval;
 						p->get(dval);
 						using namespace boost::filesystem;
-						path ppar = path(_filename);
+						path ppar = path(_filename).remove_filename();
 						path pval(dval);
 						path prel = boost::filesystem::absolute(pval, ppar);
 
