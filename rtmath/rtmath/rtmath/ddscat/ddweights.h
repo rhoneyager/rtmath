@@ -277,6 +277,8 @@ namespace rtmath {
 				virtual ~OrientationWeights3d();
 				/// Provide a copy of the weighting table
 				void getWeights(IntervalTable3d &weights) const;
+				/// Find the weight for the cell containing the specified point
+				double getWeight(double beta, double theta, double phi) const;
 			protected:
 				OrientationWeights3d();
 				IntervalTable3d weights;

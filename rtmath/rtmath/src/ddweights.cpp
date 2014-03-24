@@ -530,6 +530,37 @@ namespace rtmath {
 			{
 			}
 
+			double OrientationWeights3d::getWeight(double beta, double theta, double phi) const
+			{
+				for (auto it = this->weights.cbegin(); it != this->weights.cend(); ++it)
+				{
+					double bmin = it->at(IntervalTable3dDefs::BETA_MIN),
+						bmax = it->at(IntervalTable3dDefs::BETA_MAX),
+						tmin = it->at(IntervalTable3dDefs::THETA_MIN),
+						tmax = it->at(IntervalTable3dDefs::THETA_MAX),
+						pmin = it->at(IntervalTable3dDefs::PHI_MIN),
+						pmax = it->at(IntervalTable3dDefs::PHI_MAX);
+					if (beta < bmin || beta > bmax) continue;
+					if (theta < tmin || theta > tmax) continue;
+					if (phi < pmin || phi > pmax) continue;
+
+					/*
+					std::cerr << it->at(IntervalTable3dDefs::BETA_MIN) <<
+						"\t" << it->at(IntervalTable3dDefs::BETA_MAX) <<
+						"\t" << it->at(IntervalTable3dDefs::THETA_MIN) <<
+						"\t" << it->at(IntervalTable3dDefs::THETA_MAX) <<
+						"\t" << it->at(IntervalTable3dDefs::PHI_MIN) <<
+						"\t" << it->at(IntervalTable3dDefs::PHI_MAX) << 
+						"\t" << it->at(IntervalTable3dDefs::WEIGHT) <<
+						std::endl;
+					*/
+
+					double weight = it->at(IntervalTable3dDefs::WEIGHT);
+					return weight;
+				}
+				return 0;
+			}
+
 			void OrientationWeights3d::getWeights(IntervalTable3d &weights) const
 			{
 				weights = this->weights;
