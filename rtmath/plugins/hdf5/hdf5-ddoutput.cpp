@@ -185,6 +185,13 @@ namespace rtmath {
 				addAttr<double, Group>(gRun, "Temperature", s->temp);
 
 				// Refractive indices table
+				Eigen::MatrixXf refrs((int) s->ms.size(), 2);
+				for (size_t i=0; i < s->ms.size(); ++i)
+				{
+					refrs(i,0) = (float) s->ms[i].real();
+					refrs(i,1) = (float) s->ms[i].imag();
+				}
+				addDatasetEigen(gRun, "Refractive_Indices", refrs);
 
 				// Source file paths
 
