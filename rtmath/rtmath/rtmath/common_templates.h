@@ -6,7 +6,7 @@
 #include <set>
 #include <vector>
 #include <string>
-//#include <boost/tuple/tuple.hpp> 
+//#include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
@@ -151,6 +151,22 @@ namespace rtmath
 		}
 	};
 
+
+	
+	/// Allows for easy ordering of objects within sets
+	template <typename T>
+	struct sharedComparator
+	{
+		bool operator()(const T &lhs, const T &rhs) const
+		{
+			//std::cerr << "Comparing " << lhs << "\t" << rhs << "\t";
+			//bool a = (lhs < rhs);
+			//std::cerr << a << "\t";
+			bool res = (lhs)->operator<(*rhs);
+			//std::cerr << res << std::endl;
+			return res;
+		}
+	};
 }
 
 /*

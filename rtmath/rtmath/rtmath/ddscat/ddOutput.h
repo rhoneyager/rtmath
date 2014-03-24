@@ -12,8 +12,10 @@
 #include <boost/serialization/version.hpp>
 
 #include "../hash.h"
+#include "../common_templates.h"
 #include "../registry.h"
 #include "../io.h"
+
 
 namespace boost { namespace program_options { 
 	class options_description; class variables_map; } }
@@ -97,11 +99,14 @@ namespace rtmath {
 			boost::shared_ptr<ddOutputSingle> avg_original;
 
 			/// Constituent sca inputs
-			std::set<boost::shared_ptr<ddOutputSingle> > scas;
+			std::set<boost::shared_ptr<ddOutputSingle>, 
+				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > scas;
 			/// Initial sca inputs before fml recalculation
-			std::set<boost::shared_ptr<ddOutputSingle> > scas_original;
+			std::set<boost::shared_ptr<ddOutputSingle>, 
+				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > scas_original;
 			/// Raw fml inputs
-			std::set<boost::shared_ptr<ddOutputSingle> > fmls;
+			std::set<boost::shared_ptr<ddOutputSingle>, 
+				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > fmls;
 
 			/// Weights for the sca and fml files in the average.
 			/// Sum of all of these should equal unity.

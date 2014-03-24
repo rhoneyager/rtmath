@@ -220,7 +220,8 @@ namespace rtmath {
 
 
 				auto writeGroup = [&](const char* grpname, 
-					const std::set<boost::shared_ptr<rtmath::ddscat::ddOutputSingle> > &o,
+					const std::set<boost::shared_ptr<rtmath::ddscat::ddOutputSingle>, 
+					sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > &o,
 					Eigen::MatrixXf *oritable, Eigen::MatrixXf *stable)
 				{
 					//shared_ptr<Group> g(new Group(gRun->createGroup(grpname)));

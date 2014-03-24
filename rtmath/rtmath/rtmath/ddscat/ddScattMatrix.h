@@ -8,6 +8,7 @@
 #include <boost/serialization/tracking.hpp>
 #include <boost/operators.hpp>
 #include "../Serialization/eigen_serialization.h"
+#include "../common_templates.h"
 
 namespace rtmath
 {
@@ -112,20 +113,6 @@ namespace rtmath
 			void serialize(Archive & ar, const unsigned int version);
 		};
 
-		/// \todo Move this into a lower-level header
-		template <typename T>
-		struct sharedComparator
-		{
-			bool operator()(const T &lhs, const T &rhs) const
-			{
-				//std::cerr << "Comparing " << lhs << "\t" << rhs << "\t";
-				//bool a = (lhs < rhs);
-				//std::cerr << a << "\t";
-				bool res = (lhs)->operator<(*rhs);
-				//std::cerr << res << std::endl;
-				return res;
-			}
-		};
 
 		/**
 		* \brief Provides the amplitude scattering matrix, which can 

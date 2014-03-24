@@ -13,6 +13,7 @@
 #include <Eigen/Core>
 //#include "../interpolatable.h"
 #include "../registry.h"
+#include "../common_templates.h"
 #include "../phaseFunc.h"
 #include "ddScattMatrix.h"
 #include "shapefile.h"
@@ -187,7 +188,7 @@ namespace rtmath
 
 //			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix> > 
 			typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix>,
-					ddscat::sharedComparator<boost::shared_ptr<const ddscat::ddScattMatrix> > >
+					sharedComparator<boost::shared_ptr<const ddscat::ddScattMatrix> > >
 				scattMatricesContainer;
 			/// Extract all scattering matrices. Used in ddscat-test.
 			void getScattMatrices(scattMatricesContainer&) const;
