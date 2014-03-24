@@ -269,6 +269,7 @@ namespace rtmath {
 				}
 				gRun->link(H5L_TYPE_SOFT, pShape, "Shape");
 
+
 				// If stats are written to this file, make a symlink
 				std::string pStats;
 				{
@@ -336,6 +337,10 @@ namespace rtmath {
 
 			/// \todo Modify to also support external symlinks
 			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
+
+			write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
+				(h, opts, s->shape.get());
+
 			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 

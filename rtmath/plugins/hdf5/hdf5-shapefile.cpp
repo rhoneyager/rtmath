@@ -22,6 +22,7 @@
 #include "plugin-hdf5.h"
 #include <hdf5.h>
 #include <H5Cpp.h>
+#include "cmake-settings.h"
 
 namespace rtmath {
 	namespace plugins {
@@ -156,35 +157,6 @@ namespace rtmath {
 				return shpraw;
 			}
 
-
-			/*
-			/// Routine writes a full, isolated shapefile entry
-			void write_hdf5_shapefile(const char* filename, const rtmath::ddscat::shapefile::shapefile *shp)
-			{
-			try {
-			using std::string;
-			using std::ofstream;
-			using std::shared_ptr;
-			using namespace H5;
-
-			// Turn off the auto-printing when failure occurs so that we can
-			// handle the errors appropriately
-			Exception::dontPrint();
-
-			shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
-			shared_ptr<Group> grpHashes(new Group(file->createGroup("Hashed")));
-			shared_ptr<Group> shpgroup(new Group(grpHashes->createGroup(shp->hash().string().c_str())));
-			shared_ptr<Group> newbase = write_hdf5_shaperawdata(shpgroup, shp);
-
-			newbase->link(H5L_TYPE_HARD, ".", "/Shape");
-			//file->link(H5L_TYPE_SOFT, newbase->, "Shape");
-			} catch (std::exception &e)
-			{
-			std::cerr << e.what() << "\n";
-			throw e;
-			}
-			}
-			*/
 		}
 	}
 
@@ -201,7 +173,7 @@ namespace rtmath {
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key");
+			std::string key = opts->getVal<std::string>("key", "");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
