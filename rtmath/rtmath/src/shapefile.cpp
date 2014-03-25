@@ -73,6 +73,11 @@ namespace rtmath {
 				//filename = "";
 			}
 
+			void shapefile::setHash(const HASH_t &h)
+			{
+				_localhash = h;
+			}
+
 			HASH_t shapefile::hash() const
 			{
 				if (_localhash.lower) return _localhash;

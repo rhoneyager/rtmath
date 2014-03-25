@@ -81,6 +81,11 @@ namespace rtmath {
 			{
 				attr.write(*vls_type, value);
 			}
+			template <> void loadAttr<std::string>(H5::Attribute &attr, std::shared_ptr<H5::AtomType> vls_type, std::string& value)
+			{
+				attr.read(*vls_type, value);
+				//attr.write(*vls_type, value);
+			}
 			/*
 			template <> void insertAttr<char const*>(H5::Attribute &, std::shared_ptr<H5::AtomType>, char const * const &);
 			template <> void insertAttr<int>(H5::Attribute &, std::shared_ptr<H5::AtomType>, const int&);
@@ -114,8 +119,8 @@ void dllEntry()
 		::rtmath::Voronoi::Voronoi_IO_output_registry>("hdf5", PLUGINID);
 
 
-	//genAndRegisterIOregistry_reader<::rtmath::ddscat::shapefile::shapefile,
-	//	rtmath::ddscat::shapefile::shapefile_IO_input_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry_reader<::rtmath::ddscat::shapefile::shapefile,
+		rtmath::ddscat::shapefile::shapefile_IO_input_registry>("hdf5", PLUGINID);
 	//genAndRegisterIOregistry_reader<::rtmath::ddscat::stats::shapeFileStats,
 	//	rtmath::ddscat::stats::shapeFileStats_IO_input_registry>("hdf5", PLUGINID);
 	//genAndRegisterIOregistry_reader<::rtmath::ddscat::ddOutput,

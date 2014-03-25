@@ -41,6 +41,19 @@ namespace rtmath {
 				return res;
 			}
 
+			std::shared_ptr<H5::Group> openGroup(std::shared_ptr<H5::CommonFG> base, const char* name)
+			{
+				std::shared_ptr<H5::Group> res;
+				try {
+					res = std::shared_ptr<H5::Group>(new H5::Group( base->openGroup( name )));
+				} catch( H5::GroupIException not_found_error ) {
+					return nullptr;
+				} catch( H5::FileIException not_found_error ) {
+					return nullptr;
+				}
+				return res;
+			}
+
 			bool groupExists(std::shared_ptr<H5::CommonFG> base, const char* name)
 			{
 				try {
@@ -157,6 +170,8 @@ namespace rtmath {
 				return shpraw;
 			}
 
+			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> &shp);
 		}
 	}
 
@@ -196,6 +211,10 @@ namespace rtmath {
 			/// \note The unlink operation does not really free the space..... Should warn the user.
 			if (groupExists(grpShape, "Shape")) return h; //grpShape->unlink("Shape");
 			shared_ptr<Group> newbase = write_hdf5_shaperawdata(grpShape, shp);
+
+			// An example...
+			//boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shpcheck(new rtmath::ddscat::shapefile::shapefile);
+			//read_hdf5_shaperawdata(openGroup(grpShape, "Shape"), shpcheck);
 
 			return h; // Pass back the handle
 		}

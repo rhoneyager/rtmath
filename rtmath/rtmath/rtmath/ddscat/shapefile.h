@@ -75,6 +75,8 @@ namespace rtmath {
 				void fixStats();
 				/// Write ddscat-formatted shapefile to the given output stream.
 				void print(std::ostream &out) const;
+				/// Resizes arrays to hold the desired number of points
+				void resize(size_t num);
 				/** \brief Read in a shapefile (compression allowed)
 				 *
 				 * If a standard (uncompressed) file cannot be found, also search for
@@ -162,8 +164,6 @@ namespace rtmath {
 				void readString(const std::string &in, bool headerOnly = false);
 				void _init();
 				void readHeader(const char *in, size_t &headerEnd);
-				/// Resizes arrays to hold the desired number of points
-				void resize(size_t num);
 				/// Recalculate stats after a manipulation operation
 				void recalcStats();
 				mutable HASH_t _localhash;
@@ -208,6 +208,8 @@ namespace rtmath {
 				/// Calculates the hash of the given shapefile. Used as a reference when 
 				/// serializing the shape. The hash table allows for smaller stats files.
 				HASH_t hash() const;
+				/// Forcibly set the hash of the shapefile
+				void setHash(const HASH_t &);
 				/// Force a hash to be recalculated
 				HASH_t rehash() const;
 				// Specified in shape.dat
