@@ -574,6 +574,9 @@ namespace rtmath {
 		template struct IO_class_registry_writer
 			<::rtmath::ddscat::ddOutputSingle>;
 
+//		template struct IO_class_registry_reader
+//			<::rtmath::ddscat::ddOutputSingle>;
+
 		template class usesDLLregistry<
 			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
 			IO_class_registry_writer<::rtmath::ddscat::ddOutputSingle> >;

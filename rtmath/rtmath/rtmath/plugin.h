@@ -102,7 +102,7 @@ namespace rtmath
 #ifdef _MSC_FULL_VER
 			T::usesDLLregistry<IO_reg_class, IO_class_registry_writer<T> >::registerHook(res);
 #else
-			T::template usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
+			T::template usesDLLregistry<IO_reg_class, IO_class_registry_writer<T> >::registerHook(res);
 #endif
 		}
 
@@ -116,7 +116,7 @@ namespace rtmath
 #ifdef _MSC_FULL_VER
 			T::usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
 #else
-			T::template usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
+			T::template usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
 #endif
 		}
 

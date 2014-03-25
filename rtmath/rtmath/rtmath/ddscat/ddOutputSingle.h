@@ -34,12 +34,12 @@ namespace rtmath
 	}
 
 	namespace registry {
-		extern template struct IO_class_registry<
+		extern template struct IO_class_registry_writer<
 			::rtmath::ddscat::ddOutputSingle>;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
-			IO_class_registry<::rtmath::ddscat::ddOutputSingle> >;
+			IO_class_registry_writer<::rtmath::ddscat::ddOutputSingle> >;
 	}
 
 	namespace ddscat {

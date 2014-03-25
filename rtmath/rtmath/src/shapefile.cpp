@@ -27,14 +27,17 @@ namespace rtmath {
 	namespace registry {
 		template struct IO_class_registry_writer
 			<::rtmath::ddscat::shapefile::shapefile>;
-		
+
+		template struct IO_class_registry_reader
+			<::rtmath::ddscat::shapefile::shapefile>;
+
 		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
 
 		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >;
 		
 	}
 

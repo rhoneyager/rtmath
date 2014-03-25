@@ -42,13 +42,16 @@ namespace rtmath {
 		template struct IO_class_registry_writer
 			<::rtmath::ddscat::stats::shapeFileStats>;
 
+		template struct IO_class_registry_reader
+			<::rtmath::ddscat::stats::shapeFileStats>;
+
 		template class usesDLLregistry<
 			::rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
 			IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> >;
 
 		template class usesDLLregistry<
 			::rtmath::ddscat::stats::shapeFileStats_IO_input_registry,
-			IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> >;
+			IO_class_registry_reader<::rtmath::ddscat::stats::shapeFileStats> >;
 
 	}
 	namespace ddscat {
