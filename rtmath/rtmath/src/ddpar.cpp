@@ -785,6 +785,11 @@ namespace rtmath {
 			res = _dielHashes;
 		}
 
+		void ddPar::setDielHashes(std::vector<HASH_t>& res)
+		{
+			_dielHashes = res;
+		}
+
 		void ddPar::setDiels(const std::vector<std::string>& src)
 		{
 			_diels.clear();

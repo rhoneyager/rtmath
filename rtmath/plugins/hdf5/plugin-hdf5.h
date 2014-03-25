@@ -310,6 +310,40 @@ namespace rtmath {
 				value = rowmajor;
 				delete[] sz;
 			}
+
+			template <class DataType, class Container>
+			void readDatasetArray(std::shared_ptr<Container> obj, const char* name, 
+				DataType *values)
+			{
+				using namespace H5;
+
+				H5::DataSet dataset = obj->openDataSet(name);
+				H5T_class_t type_class = dataset.getTypeClass();
+				DataSpace fspace = dataset.getSpace();
+				/*
+				int rank = fspace.getSimpleExtentNdims();
+
+				hsize_t *sz = new hsize_t[rank];
+				int dimensionality = fspace.getSimpleExtentDims( sz, NULL);
+
+				if (dimensionality == 2)
+					value.resize(sz[0], sz[1]);
+				else if (dimensionality == 1)
+				{
+					// Odd, but it keeps row and column-vectors separate.
+					if (value.cols() == 1)
+						value.resize(sz[0], 1);
+					else value.resize(1, sz[0]);
+				}
+				*/
+				
+				//DataSpace fspace(dimensionality, sz);
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType>();
+
+				dataset.read(values, *(ftype.get()));
+				//delete[] sz;
+			}
+
 		}
 	}
 }

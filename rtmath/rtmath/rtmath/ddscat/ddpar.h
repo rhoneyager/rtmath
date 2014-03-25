@@ -506,6 +506,7 @@ namespace rtmath {
 			void setDiels(const std::vector<std::string>&);
 			void getDiels(std::vector<std::string>&) const;
 			void getDielHashes(std::vector<HASH_t>&) const;
+			void setDielHashes(std::vector<HASH_t>&);
 
 			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
 			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double, 6);

@@ -18,6 +18,7 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddScattMatrix.h"
@@ -35,6 +36,8 @@ namespace rtmath {
 
 			void write_hdf5_ddPar(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::ddPar *r);
+			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar, 
+				boost::shared_ptr<rtmath::ddscat::ddPar> &r);
 
 			void write_hdf5_ddOutputSingle(
 				const rtmath::ddscat::ddOutputSingle *r, size_t index = 0,
@@ -294,6 +297,12 @@ namespace rtmath {
 
 				// ddscat.par file
 				write_hdf5_ddPar(gRun, s->parfile.get());
+
+				// Testing ddscat.par read...
+				boost::shared_ptr<rtmath::ddscat::ddPar> stest(new rtmath::ddscat::ddPar);
+				shared_ptr<Group> grpPar = openGroup(gRun, "par");
+				read_hdf5_ddPar(grpPar, stest);
+				stest->write(std::cout);
 
 
 				return gRun;

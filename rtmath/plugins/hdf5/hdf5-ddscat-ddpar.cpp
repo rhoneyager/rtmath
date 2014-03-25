@@ -70,10 +70,13 @@ namespace rtmath {
 				addDatasetArray<const char*, Group>(grpPar, "Dielectrics", cdiels.size(), 1, cdiels.data());
 				std::vector<HASH_t> dielhashes;
 				r->getDielHashes(dielhashes);
-				std::vector<uint64_t> cdielhashes(dielhashes.size());
+				std::vector<uint64_t> cdielhashes(dielhashes.size()*2);
 				for (size_t i=0; i<dielhashes.size(); ++i)
-					cdielhashes[i] = dielhashes[i].lower;
-				addDatasetArray<uint64_t, Group>(grpPar, "Dielectric_Hashes", cdielhashes.size(), 1, cdielhashes.data());
+				{
+					cdielhashes[2*i] = dielhashes[i].lower;
+					cdielhashes[2*i+1] = dielhashes[i].upper;
+				}
+				addDatasetArray<uint64_t, Group>(grpPar, "Dielectric_Hashes", cdielhashes.size(), 2, cdielhashes.data());
 				/*
 				hsize_t dieldims[1] = {(hsize_t) diels.size()};
 				DataSpace dfspace(1, dieldims);
