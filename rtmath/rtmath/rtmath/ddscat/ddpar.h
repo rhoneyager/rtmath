@@ -437,6 +437,11 @@ namespace rtmath {
 	inline valtype name(size_t index) const { return __getSimplePlural<valtype>(id, index); } \
 	inline void name(size_t index, const valtype &v) { __setSimplePlural<valtype>(id, index, sz, v); } 
 
+#define accessorSimplePluralTuple(name,id,valtype,sz,tuplesz) \
+	inline valtype name(size_t index) const { return __getSimplePlural<valtype>(id, index); } \
+	inline void name(size_t index, const valtype &v) { __setSimplePluralTuple<valtype>(id, index, sz, v, tuplesz); } 
+
+
 #define accessorString(getname,setname,id) \
 	inline void getname(std::string &val) const { __getString(id, val); } \
 	inline std::string getname() const { std::string val; __getString(id, val); return val; } \
@@ -527,7 +532,7 @@ namespace rtmath {
 			void getAeff(std::set<double> &) const;
 			std::string getAeff() const;
 
-			accessorSimplePlural(PolState,ddParParsers::POLSTATE,double, 6);
+			accessorSimplePluralTuple(PolState,ddParParsers::POLSTATE,double, 6, 2);
 			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
 			accessorSimpleBool(writePol,ddParParsers::IWRPOL);
 			accessorSimpleBool(writeSca,ddParParsers::IWRKSC);
@@ -604,6 +609,13 @@ namespace rtmath {
 
 			template<class valtype>
 			void __setSimplePlural(ddParParsers::ParId key, size_t index, size_t maxSize, const valtype &v);
+
+			//template<class valtype>
+			//valtype __getSimplePluralTuple(ddParParsers::ParId key, size_t index) const;
+
+			template<class valtype>
+			void __setSimplePluralTuple(ddParParsers::ParId key, size_t index, size_t maxSize, const valtype &v, size_t tuplesz);
+
 
 			void __getString(ddParParsers::ParId id, std::string &val) const;
 			void __setString(ddParParsers::ParId id, const std::string &val);

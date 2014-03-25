@@ -299,10 +299,10 @@ namespace rtmath {
 				write_hdf5_ddPar(gRun, s->parfile.get());
 
 				// Testing ddscat.par read...
-				boost::shared_ptr<rtmath::ddscat::ddPar> stest(new rtmath::ddscat::ddPar);
-				shared_ptr<Group> grpPar = openGroup(gRun, "par");
-				read_hdf5_ddPar(grpPar, stest);
-				stest->write(std::cout);
+				//boost::shared_ptr<rtmath::ddscat::ddPar> stest(new rtmath::ddscat::ddPar);
+				//shared_ptr<Group> grpPar = openGroup(gRun, "par");
+				//read_hdf5_ddPar(grpPar, stest);
+				//stest->write(std::cout);
 
 
 				return gRun;

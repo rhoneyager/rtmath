@@ -249,6 +249,30 @@ namespace rtmath {
 		template void ddPar::__setSimplePlural<double>(ddParParsers::ParId, size_t, size_t, const double&);
 		template void ddPar::__setSimplePlural<int>(ddParParsers::ParId, size_t, size_t, const int&);
 
+		template<class valtype>
+		void ddPar::__setSimplePluralTuple(ddParParsers::ParId id, size_t index, size_t maxSize, const valtype &v, size_t tuplesz)
+		{ 
+			boost::shared_ptr< ddParParsers::ddParTuples<valtype> > line;
+			boost::shared_ptr< ddParParsers::ddParLine > linein;
+			// does key exist? if so, load it and prepare for update
+			if (exists(id))
+			{
+				getKey(id, linein);
+				line = boost::static_pointer_cast< ddParParsers::ddParTuples<valtype> >(linein);
+			} else {
+				line = boost::shared_ptr<ddParParsers::ddParTuples<valtype> > 
+					(new ddParParsers::ddParTuples<valtype> (tuplesz,id));
+				line->resize(maxSize);
+			}
+			line->set(index,v);
+			insertKey(id,boost::static_pointer_cast< ddParParsers::ddParLine >(line));
+		}
+
+		template void ddPar::__setSimplePluralTuple<size_t>(ddParParsers::ParId, size_t, size_t, const size_t&, size_t);
+		template void ddPar::__setSimplePluralTuple<bool>(ddParParsers::ParId, size_t, size_t, const bool&, size_t);
+		template void ddPar::__setSimplePluralTuple<double>(ddParParsers::ParId, size_t, size_t, const double&, size_t);
+		template void ddPar::__setSimplePluralTuple<int>(ddParParsers::ParId, size_t, size_t, const int&, size_t);
+
 		void ddPar::__getString(ddParParsers::ParId id, std::string &val) const
 		{ 
 			boost::shared_ptr<const ddParParsers::ddParLineSimple<std::string> > line;
