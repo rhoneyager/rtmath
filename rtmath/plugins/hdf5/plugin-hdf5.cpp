@@ -104,13 +104,20 @@ void dllEntry()
 		PLUGINID);
 	rtmath_registry_register_dll(id);
 
-	genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile,
+	genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile,
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("hdf5", PLUGINID);
-	genAndRegisterIOregistry<::rtmath::ddscat::stats::shapeFileStats,
+	genAndRegisterIOregistry_writer<::rtmath::ddscat::stats::shapeFileStats,
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("hdf5", PLUGINID);
-	genAndRegisterIOregistry<::rtmath::ddscat::ddOutput,
+	genAndRegisterIOregistry_writer<::rtmath::ddscat::ddOutput,
 		rtmath::ddscat::ddOutput_IO_output_registry>("hdf5", PLUGINID);
-	genAndRegisterIOregistry<::rtmath::Voronoi::VoronoiDiagram,
+	genAndRegisterIOregistry_writer<::rtmath::Voronoi::VoronoiDiagram,
 		::rtmath::Voronoi::Voronoi_IO_output_registry>("hdf5", PLUGINID);
 
+
+	//genAndRegisterIOregistry_reader<::rtmath::ddscat::shapefile::shapefile,
+	//	rtmath::ddscat::shapefile::shapefile_IO_input_registry>("hdf5", PLUGINID);
+	//genAndRegisterIOregistry_reader<::rtmath::ddscat::stats::shapeFileStats,
+	//	rtmath::ddscat::stats::shapeFileStats_IO_input_registry>("hdf5", PLUGINID);
+	//genAndRegisterIOregistry_reader<::rtmath::ddscat::ddOutput,
+	//	rtmath::ddscat::ddOutput_IO_input_registry>("hdf5", PLUGINID);
 }

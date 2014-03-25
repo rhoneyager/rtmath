@@ -26,22 +26,22 @@ void dllEntry()
 
 	const size_t nExts = 1;
 	const char* exportExts[nExts] = { "tsv" };
-	genAndRegisterIOregistryPlural
+	genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_ARS, "ar_rot_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural
+	rtmath::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_VORO, "summary_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural
+	rtmath::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDORI, "orientation_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural
+	rtmath::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDISO, "isotropic_data");

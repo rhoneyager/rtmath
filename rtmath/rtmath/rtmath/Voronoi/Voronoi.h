@@ -34,11 +34,11 @@ namespace rtmath {
 		class Voronoi_IO_output_registry {};
 	}
 	namespace registry {
-		extern template struct IO_class_registry<::rtmath::Voronoi::VoronoiDiagram>;
+		extern template struct IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram>;
 
 		extern template class usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >;
+			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
 	}
 
 	namespace Voronoi
@@ -68,7 +68,7 @@ namespace rtmath {
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
 			virtual public ::rtmath::registry::usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			::rtmath::registry::IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >,
+			::rtmath::registry::IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >,
 			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>
 		{
 		public:

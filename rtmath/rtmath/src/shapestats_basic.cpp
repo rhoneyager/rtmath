@@ -473,14 +473,14 @@ namespace rtmath {
 				string cmeth, uncompressed;
 
 				string type = outtype;
-				::rtmath::registry::IO_class_registry<shapeFileStats>::io_multi_type dllsaver = nullptr;
+				::rtmath::registry::IO_class_registry_writer<shapeFileStats>::io_multi_type dllsaver = nullptr;
 
 				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
 				path pext = path(uncompressed).extension();
 
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
-					::rtmath::registry::IO_class_registry<shapeFileStats> >::getHooks();
+					::rtmath::registry::IO_class_registry_writer<shapeFileStats> >::getHooks();
 				auto opts = registry::IO_options::generate();
 				opts->filename(uncompressed);
 				opts->filetype(type);
@@ -524,10 +524,10 @@ namespace rtmath {
 				std::shared_ptr<rtmath::registry::IO_options> opts) const
 			{
 				// All of these objects can handle their own compression
-				::rtmath::registry::IO_class_registry<shapeFileStats>::io_multi_type dllsaver = nullptr;
+				::rtmath::registry::IO_class_registry_writer<shapeFileStats>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
-					::rtmath::registry::IO_class_registry<shapeFileStats> >::getHooks();
+					::rtmath::registry::IO_class_registry_writer<shapeFileStats> >::getHooks();
 				/*
 				auto opts = registry::IO_options::generate();
 				opts->filename(filename);

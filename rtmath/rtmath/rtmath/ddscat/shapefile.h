@@ -28,17 +28,20 @@ namespace rtmath {
 	}
 	namespace registry {
 		
-		extern template struct IO_class_registry<
+		extern template struct IO_class_registry_writer<
+			::rtmath::ddscat::shapefile::shapefile>;
+
+		extern template struct IO_class_registry_reader<
 			::rtmath::ddscat::shapefile::shapefile>;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >;
 			//::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
 		
 	}
 	namespace ddscat {
@@ -59,10 +62,10 @@ namespace rtmath {
 			class DLEXPORT_rtmath_ddscat shapefile : 
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
-				::rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >,
+				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
-				::rtmath::registry::IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >
+				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >
 			{
 			public:
 				shapefile(const std::string &filename);

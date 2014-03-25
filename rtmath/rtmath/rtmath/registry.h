@@ -225,6 +225,7 @@ namespace rtmath
 		template<class object>
 		struct IO_class_registry
 		{
+			virtual ~IO_class_registry() {}
 			/** \brief If set, indicates that multiple IO operations are possible with this plugin.
 			 * \param IO_options specifies the filename, file type, type of object to export, ...
 			 * It catches everything because of the limitation in MSVC2012 regarding std::bind number of params.
@@ -234,6 +235,12 @@ namespace rtmath
 			typedef std::function<bool(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>
 				)> io_multi_matcher_type;
 			io_multi_matcher_type io_multi_matches;
+		};
+
+		template<class object>
+		struct IO_class_registry_writer : IO_class_registry<object>
+		{
+			virtual ~IO_class_registry_writer() {}
 			/** \brief Definition for an object that can handle multiple reads/writes.
 			 * \param IOhandler is the plugin-provided opaque object that keeps track of 
 			 * the state of the object being accessed.
@@ -243,6 +250,23 @@ namespace rtmath
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, const object*)> io_multi_type;
+			io_multi_type io_multi_processor;
+		};
+
+		template<class object>
+		struct IO_class_registry_reader : IO_class_registry<object>
+		{
+			virtual ~IO_class_registry_reader() {}
+			/** \brief Definition for an object that can handle multiple reads/writes.
+			 * \param IOhandler is the plugin-provided opaque object that keeps track of 
+			 * the state of the object being accessed.
+			 * \param object* is a pointer to the object being read/written
+			 * \param IO_options specifies the filename, file type, type of object to export, ...
+			 * \returns Pointer to a IOhandler object (for example after the first write).
+			 **/
+			typedef std::function<std::shared_ptr<IOhandler>
+				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
+				std::vector<boost::shared_ptr<object> > &)> io_multi_type;
 			io_multi_type io_multi_processor;
 		};
 

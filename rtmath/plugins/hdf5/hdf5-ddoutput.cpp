@@ -360,5 +360,42 @@ namespace rtmath {
 			return h; // Pass back the handle
 		}
 
+		template<>
+		shared_ptr<IOhandler>
+			read_file_type_multi<rtmath::ddscat::ddOutput>
+			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
+			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s)
+		{
+			std::string filename = opts->filename();
+			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+			//IOhandler::IOtype iotype = opts->iotype();
+			std::string key = opts->getVal<std::string>("key", "");
+			using std::shared_ptr;
+			using namespace H5;
+			Exception::dontPrint();
+			std::shared_ptr<hdf5_handle> h;
+			if (!sh)
+			{
+				// Access the hdf5 file
+				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename.c_str(), iotype));
+			} else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
+			}
+
+			/* The reader function will attempt to load ddOutput files that match the opts 
+			 * search descriptions.
+			 * opts can search:
+			 * - by hash
+			 * - by effective radius
+			 * - random particle
+			 * - by temperature
+			 * - by frequency
+			 **/
+			/// \todo Implement opts searching features
+
+
+			return h;
+		}
 	}
 }

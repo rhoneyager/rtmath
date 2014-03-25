@@ -25,16 +25,16 @@
 
 namespace rtmath {
 	namespace registry {
-		template struct IO_class_registry
+		template struct IO_class_registry_writer
 			<::rtmath::ddscat::shapefile::shapefile>;
 		
 		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
 
 		template class usesDLLregistry<
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			IO_class_registry<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
 		
 	}
 
@@ -447,10 +447,10 @@ namespace rtmath {
 					registry::IOhandler::IOtype accessType) const
 			{
 				// All of these objects can handle their own compression
-				::rtmath::registry::IO_class_registry<shapefile>::io_multi_type dllsaver = nullptr;
+				::rtmath::registry::IO_class_registry_writer<shapefile>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapefile_IO_output_registry,
-					::rtmath::registry::IO_class_registry<shapefile> >::getHooks();
+					::rtmath::registry::IO_class_registry_writer<shapefile> >::getHooks();
 				auto opts = registry::IO_options::generate();
 				opts->filename(filename);
 				opts->filetype(ctype);
@@ -497,7 +497,7 @@ namespace rtmath {
 
 				// If missing the type, autodetect based on file extension
 				std::string type = outtype;
-				::rtmath::registry::IO_class_registry<shapefile>::io_multi_type dllsaver = nullptr;
+				::rtmath::registry::IO_class_registry_writer<shapefile>::io_multi_type dllsaver = nullptr;
 				
 				std::string uncompressed;
 				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
@@ -505,7 +505,7 @@ namespace rtmath {
 
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapefile_IO_output_registry,
-					::rtmath::registry::IO_class_registry<shapefile> >::getHooks();
+					::rtmath::registry::IO_class_registry_writer<shapefile> >::getHooks();
 				auto opts = registry::IO_options::generate();
 				opts->filename(uncompressed);
 				opts->filetype(type);

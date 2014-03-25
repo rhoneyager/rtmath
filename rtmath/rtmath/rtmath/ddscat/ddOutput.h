@@ -26,14 +26,22 @@ namespace rtmath {
 	namespace ddscat {
 		class ddOutput;
 		class ddOutput_IO_output_registry {};
+		class ddOutput_IO_input_registry {};
 	}
 	namespace registry {
-		extern template struct IO_class_registry<
+		extern template struct IO_class_registry_writer<
 			::rtmath::ddscat::ddOutput>;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::ddOutput_IO_output_registry,
-			IO_class_registry<::rtmath::ddscat::ddOutput> >;
+			IO_class_registry_writer<::rtmath::ddscat::ddOutput> >;
+
+		extern template struct IO_class_registry_reader<
+			::rtmath::ddscat::ddOutput>;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddOutput_IO_input_registry,
+			IO_class_registry_reader<::rtmath::ddscat::ddOutput> >;
 		
 	}
 	namespace ddscat {
@@ -63,8 +71,11 @@ namespace rtmath {
 		class DLEXPORT_rtmath_ddscat ddOutput :
 			virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::ddOutput_IO_output_registry, 
-				::rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutput> >,
-			virtual public ::rtmath::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>
+				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutput> >,
+			virtual public ::rtmath::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>,
+			virtual public ::rtmath::registry::usesDLLregistry<
+				::rtmath::ddscat::ddOutput_IO_input_registry, 
+				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>

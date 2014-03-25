@@ -34,16 +34,13 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::IO_options> opts,
 			const T *obj);
 
-		/*
 		template <class T>
-		void write_file_type_single(const char* filename, const T *obj, 
-			IOhandler::IOtype iotype)
-		{
-			write_file_type_multi(nullptr, filename, obj, "", iotype);
-		}
-		*/
+		std::shared_ptr<rtmath::registry::IOhandler> read_file_type_multi
+			(std::shared_ptr<rtmath::registry::IOhandler> sh, 
+			std::shared_ptr<rtmath::registry::IO_options> opts,
+			std::vector<boost::shared_ptr<T> > &vec);
 
-		/** \brief Convenience function for setting up the IO_class_registry objects
+		/** \brief Convenience function for setting up the IO_class_registry_writer objects
 		*
 		* \param T is the object type to be written
 		* \param U is the object multi-writer handler type
@@ -52,13 +49,13 @@ namespace rtmath
 		* \param custom_writeSingle is an optional single type writer that is not the custom one.
 		**/
 		template<class T>
-		IO_class_registry<T>
-			genIOregistry(
+		IO_class_registry_writer<T>
+			genIOregistry_writer(
 			const char* extension,
 			const char* pluginid,
 			const char* exportType = "")
 		{
-			IO_class_registry<T> res;
+			IO_class_registry_writer<T> res;
 			//res.io_matches = std::bind(match_file_type, _1, _2, extension);
 			auto opts2 = IO_options::generate();
 			opts2->extension(extension);
@@ -69,22 +66,62 @@ namespace rtmath
 			return res;
 		}
 
-		template <class T, class IO_reg_class>
-		void genAndRegisterIOregistry(
+		/** \brief Convenience function for setting up the IO_class_registry_writer objects
+		*
+		* \param T is the object type to be written
+		* \param U is the object multi-writer handler type
+		* \param extension is the extension of the file (hdf5, silo, tsv, ...)
+		* \param writeMulti is an optional multi-type writer. If not specified, the writer has a default name that must be specialized.
+		* \param custom_writeSingle is an optional single type writer that is not the custom one.
+		**/
+		template<class T>
+		IO_class_registry_reader<T>
+			genIOregistry_reader(
 			const char* extension,
 			const char* pluginid,
 			const char* exportType = "")
 		{
-			auto res = genIOregistry<T>(extension, pluginid, exportType);
+			IO_class_registry_reader<T> res;
+			//res.io_matches = std::bind(match_file_type, _1, _2, extension);
+			auto opts2 = IO_options::generate();
+			opts2->extension(extension);
+			opts2->exportType(exportType);
+			res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
+
+			res.io_multi_processor = read_file_type_multi<T>;
+			return res;
+		}
+
+		template <class T, class IO_reg_class>
+		void genAndRegisterIOregistry_writer(
+			const char* extension,
+			const char* pluginid,
+			const char* exportType = "")
+		{
+			auto res = genIOregistry_writer<T>(extension, pluginid, exportType);
 #ifdef _MSC_FULL_VER
-			T::usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
+			T::usesDLLregistry<IO_reg_class, IO_class_registry_writer<T> >::registerHook(res);
 #else
 			T::template usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
 #endif
 		}
 
 		template <class T, class IO_reg_class>
-		void genAndRegisterIOregistryPlural(
+		void genAndRegisterIOregistry_reader(
+			const char* extension,
+			const char* pluginid,
+			const char* exportType = "")
+		{
+			auto res = genIOregistry_reader<T>(extension, pluginid, exportType);
+#ifdef _MSC_FULL_VER
+			T::usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
+#else
+			T::template usesDLLregistry<IO_reg_class, IO_class_registry<T> >::registerHook(res);
+#endif
+		}
+
+		template <class T, class IO_reg_class>
+		void genAndRegisterIOregistryPlural_writer(
 			size_t nExt,
 			const char** extensions,
 			const char* pluginid,
@@ -92,7 +129,7 @@ namespace rtmath
 		{
 			for (size_t i = 0; i < nExt; ++i)
 			{
-				genAndRegisterIOregistry<T, IO_reg_class>(extensions[i],
+				genAndRegisterIOregistry_writer<T, IO_reg_class>(extensions[i],
 					pluginid, exportType);
 			}
 		}

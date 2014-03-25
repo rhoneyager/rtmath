@@ -25,16 +25,19 @@ namespace rtmath {
 	}
 	namespace registry {
 		
-		extern template struct IO_class_registry<
+		extern template struct IO_class_registry_writer<
+			::rtmath::ddscat::stats::shapeFileStats>;
+
+		extern template struct IO_class_registry_reader<
 			::rtmath::ddscat::stats::shapeFileStats>;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::stats::shapeFileStats_IO_input_registry,
-			IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >;
+			IO_class_registry_reader<::rtmath::ddscat::stats::shapeFileStats> >;
 
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
-			IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >;
+			IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> >;
 		
 	}
 }
@@ -166,10 +169,10 @@ namespace rtmath {
 				: public shapeFileStatsBase,
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::stats::shapeFileStats_IO_input_registry, 
-				::rtmath::registry::IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >,
+				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::stats::shapeFileStats> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::stats::shapeFileStats_IO_output_registry, 
-				::rtmath::registry::IO_class_registry<::rtmath::ddscat::stats::shapeFileStats> >
+				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> >
 			{
 			public:
 				shapeFileStats();

@@ -90,11 +90,11 @@ namespace {
 namespace rtmath
 {
 	namespace registry {
-		template struct IO_class_registry
+		template struct IO_class_registry_writer
 			<::rtmath::Voronoi::VoronoiDiagram>;
 		template class usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			IO_class_registry<::rtmath::Voronoi::VoronoiDiagram> >;
+			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
 	}
 
 	namespace Voronoi

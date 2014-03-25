@@ -95,7 +95,7 @@ namespace rtmath
 			public boost::enable_shared_from_this<ddOutputSingle>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
-			::rtmath::registry::IO_class_registry<::rtmath::ddscat::ddOutputSingle> >
+			::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutputSingle> >
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>

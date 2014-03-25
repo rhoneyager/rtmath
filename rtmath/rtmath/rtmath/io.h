@@ -50,10 +50,10 @@ namespace rtmath
 				) const
 			{
 				// All of these objects can handle their own compression
-				typename ::rtmath::registry::IO_class_registry<obj_class>::io_multi_type dllsaver = nullptr;
+				typename ::rtmath::registry::IO_class_registry_writer<obj_class>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
 				auto hooks = ::rtmath::registry::usesDLLregistry<output_registry_class,
-					::rtmath::registry::IO_class_registry<obj_class> >::getHooks();
+					::rtmath::registry::IO_class_registry_writer<obj_class> >::getHooks();
 				for (const auto &hook : *hooks)
 				{
 					if (!hook.io_multi_matches) continue; // Sanity check
