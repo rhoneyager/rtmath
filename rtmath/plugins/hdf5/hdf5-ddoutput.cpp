@@ -168,6 +168,7 @@ namespace rtmath {
 
 			/// \param base is the base (./Runs) to write the subgroups to.
 			std::shared_ptr<H5::Group> write_hdf5_ddOutput(std::shared_ptr<H5::Group> base, 
+				std::shared_ptr<rtmath::registry::IO_options> opts, 
 				const rtmath::ddscat::ddOutput *s)
 			{
 				using std::string;
@@ -255,9 +256,11 @@ namespace rtmath {
 				plistFML->setDeflate(6);
 #endif
 
+				bool writeFML = opts->getVal("writeFMLs", true);
 
 				addDatasetEigen(gRun, "Cross_Sections", tblOri, plistOri);
-				addDatasetEigen(gRun, "FML_Data", tblFML, plistFML);
+				if (writeFML)
+					addDatasetEigen(gRun, "FML_Data", tblFML, plistFML);
 				//addDatasetEigen(gRun, "Scattering_Data", tblSCA);
 
 				// Add a special ddOutputSingle entry for the avg file
@@ -344,10 +347,12 @@ namespace rtmath {
 			//if (groupExists(grpRuns, "Stats")) return h; //grpHash->unlink("Stats");
 
 			/// \todo Modify to also support external symlinks
-			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, s);
+			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, opts, s);
 
-			write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
-				(h, opts, s->shape.get());
+			bool writeShape = opts->getVal("writeShapes", true);
+			if (writeShape)
+				write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
+					(h, opts, s->shape.get());
 
 			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());

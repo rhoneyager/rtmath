@@ -48,6 +48,9 @@ int main(int argc, char** argv)
 			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
 			("description,d", po::value<string>(), "Describe the output file")
 			("directory,D", "Write as a directory")
+
+			("write-fmls", po::value<bool>()->default_value(true), "Write FML data into output file")
+			("write-shapes", po::value<bool>()->default_value(true), "Write shapefile data into output file")
 			;
 
 		desc.add(cmdline).add(config);
@@ -91,8 +94,13 @@ int main(int argc, char** argv)
 		bool fromSummary = false;
 		if (vm.count("from-summary-files")) fromSummary = true;
 
+		bool writeFML = vm["write-fmls"].as<bool>();
+		bool writeShapes = vm["write-shapes"].as<bool>();
+
 		auto opts = rtmath::registry::IO_options::generate();
 		opts->filename(sOutput);
+		opts->setVal<bool>("writeFMLs", writeFML);
+		opts->setVal<bool>("writeShapes", writeShapes);
 		std::shared_ptr<rtmath::registry::IOhandler> writer;
 
 		using namespace boost::filesystem;

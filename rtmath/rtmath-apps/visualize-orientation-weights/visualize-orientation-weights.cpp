@@ -19,6 +19,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -34,6 +35,8 @@
 //#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
@@ -58,19 +61,28 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<string >(), "input ddscat run")
+			("input,i", po::value<string >(), "input ddscat run (needs shapefile and actual run output)")
 			("betas,b", po::value<string >()->default_value("0"), "Specify beta rotations")
-			("thetas,t", po::value<string >()->default_value("0:9:180:cos"), "Specify theta rotations")
-			("phis,p", po::value<string >()->default_value("0:8:360:lin"), "Specify phi rotations")
-			("mean_theta", po::value<double>()->default_value(0),
+			("thetas,t", po::value<string >()->default_value("0:19:180:cos"), "Specify theta rotations")
+			("phis,p", po::value<string >()->default_value("0:18:360:lin"), "Specify phi rotations")
+			("mean_theta", po::value<double>()->default_value(90),
 			"Theta mean (degrees)")
-			("mean_phi", po::value<double>()->default_value(0),
+			("mean_phi", po::value<double>()->default_value(90),
 			"Phi mean (degrees)")
 			("kappa", po::value<double>()->default_value(10),
 			"Kappa (degrees) is comparable to 1/sigma^2. Limit of infinity for uniform distribution, "
 			"and 0 for only the mean.")
 			("method", po::value<string>()->default_value("vMFdual"), "Specify the method used in the orientation "
-			"calculations (vMF, vMFdual).");
+			"calculations (vMF, vMFdual).")
+
+			("color-by", po::value<string>()->default_value("weight"), "Specify the coloring method "
+			"(none, weight, Qbk, Qsca)")
+			("scale-by", po::value<string>()->default_value("none"), "Specify the surface scaling method "
+			"(none, weight, Qbk, Qsca)")
+			("show-shape", po::value<bool>()->default_value(true), "Display the shape inside of the contour")
+			("color-transparency", po::value<float>()->default_value(0.3), "Sets the alpha for the "
+			"coloring process, to show the underlying shape.")
+			("cull-backface", po::value<bool>()->default_value(true), "Enable backface culling")
 		;
 
 		hidden.add_options()
@@ -91,7 +103,19 @@ int main(int argc, char** argv)
 			exit(1);
 		};
 
+		//if (!vm.count("input")) doHelp("Must specify an input file");
+		//std::string input = vm["input"].as<string>();
+		float alpha = vm["color-transparency"].as<float>();
+		bool cullBackface = vm["cull-backface"].as<bool>();
+
 		//if (vm.count("help") || argc == 1) doHelp("");
+
+
+
+		boost::shared_ptr<rtmath::ddscat::ddOutput> data(new rtmath::ddscat::ddOutput);
+		data->readFile(
+
+
 
 		std::string sbetas, sthetas, sphis;
 
@@ -158,7 +182,7 @@ int main(int argc, char** argv)
 		sphere->SetThetaResolution((int) nT);
 		sphere->SetPhiResolution((int) nP);
 		sphere->SetLatLongTessellation(1);
-		sphere->SetRadius(1);
+		sphere->SetRadius(4);
 		sphere->Update();
 
 		// Create scalar data to associate with the vertices of the sphere
@@ -188,12 +212,15 @@ int main(int argc, char** argv)
 			weight -= 1.;
 			weight *= 100.;
 
-			std::cerr << x.transpose() << "\t- " << angles.transpose() 
-				<< "\t- " << weight << std::endl;
+			//std::cerr << x.transpose() << "\t- " << angles.transpose() 
+			//	<< "\t- " << weight << std::endl;
 			if (weight > maxwt) maxwt = weight;
 			if (weight < minwt) minwt = weight;
 
 			scalars->SetValue(i, static_cast<float>(weight));
+
+			x(0) = x(0) * 2.;
+			pts->SetPoint(i,x.data());
 			//scalars->SetValue(i, static_cast<float>(i) / numPts);
 		}
 		vtkSmartPointer<vtkPolyData> poly =
@@ -211,6 +238,7 @@ int main(int argc, char** argv)
 		mapper->ScalarVisibilityOn();
 		mapper->SetScalarModeToUsePointData();
 		mapper->SetColorModeToMapScalars();
+		
 		if (minwt < 0) minwt *= 1.2;
 		else minwt /= 1.2;
 		maxwt *= 1.20;
@@ -219,6 +247,9 @@ int main(int argc, char** argv)
 		vtkSmartPointer<vtkActor> actor =
 			vtkSmartPointer<vtkActor>::New();
 		actor->SetMapper(mapper);
+		actor->GetProperty()->SetOpacity(alpha);
+		if (cullBackface)
+			actor->GetProperty()->SetBackfaceCulling(1);
 
 		vtkSmartPointer<vtkScalarBarActor> scalarBar =
 			vtkSmartPointer<vtkScalarBarActor>::New();
@@ -232,6 +263,8 @@ int main(int argc, char** argv)
 		hueLut->SetTableRange(0, 1);
 		hueLut->SetHueRange(0, 1);
 		hueLut->SetSaturationRange(1, 1);
+		//hueLut->SetAlpha(alpha);
+		//hueLut->SetAlphaRange(0, alpha);
 		hueLut->SetValueRange(1, 1);
 		hueLut->Build();
 
@@ -249,6 +282,12 @@ int main(int argc, char** argv)
 		vtkSmartPointer<vtkRenderWindow> renderWindow =
 			vtkSmartPointer<vtkRenderWindow>::New();
 		renderWindow->AddRenderer(renderer);
+		// These following are needed for transparency to correctly display
+		renderWindow->SetAlphaBitPlanes(1);
+		renderWindow->SetMultiSamples(0);
+		renderer->SetUseDepthPeeling(1);
+		renderer->SetMaximumNumberOfPeels(100);
+		renderer->SetOcclusionRatio(0.1);
 
 		// Create an interactor
 		vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
