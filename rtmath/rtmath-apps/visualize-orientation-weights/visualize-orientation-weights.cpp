@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 			("scale-by", po::value<string>()->default_value("none"), "Specify the surface scaling method "
 			"(none, weight, Qbk, Qsca)")
 			("show-shape", po::value<bool>()->default_value(true), "Display the shape inside of the contour")
-			("color-transparency", po::value<float>()->default_value(0.3), "Sets the alpha for the "
+			("color-transparency", po::value<float>()->default_value(1), "Sets the alpha for the "
 			"coloring process, to show the underlying shape.")
 			("cull-backface", po::value<bool>()->default_value(true), "Enable backface culling")
 		;
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
 
 		boost::shared_ptr<rtmath::ddscat::ddOutput> data(new rtmath::ddscat::ddOutput);
-		data->readFile(
+		//data->readFile(
 
 
 
@@ -219,8 +219,8 @@ int main(int argc, char** argv)
 
 			scalars->SetValue(i, static_cast<float>(weight));
 
-			x(0) = x(0) * 2.;
-			pts->SetPoint(i,x.data());
+			//x(0) = x(0) * 2.;
+			//pts->SetPoint(i,x.data());
 			//scalars->SetValue(i, static_cast<float>(i) / numPts);
 		}
 		vtkSmartPointer<vtkPolyData> poly =

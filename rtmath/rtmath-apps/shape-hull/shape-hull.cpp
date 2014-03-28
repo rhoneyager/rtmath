@@ -95,8 +95,8 @@ int main(int argc, char** argv)
 			doHelp("Need to specify input file(s).");
 		vector<string> inputs = vm["input"].as< vector<string> >();
 
-		if (!vm.count("output"))
-			doHelp("Need to specify output file(s).");
+		//if (!vm.count("output"))
+		//	doHelp("Need to specify output file(s).");
 		vector<string> output = vm["output"].as< vector<string> >();
 
 		bool doExport = false;
