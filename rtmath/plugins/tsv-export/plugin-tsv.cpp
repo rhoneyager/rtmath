@@ -46,3 +46,5 @@ void dllEntry()
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDISO, "isotropic_data");
 }
+
+

@@ -338,7 +338,7 @@ namespace rtmath {
 				*/
 				
 				//DataSpace fspace(dimensionality, sz);
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
 
 				dataset.read(values, *(ftype.get()));
 				//delete[] sz;

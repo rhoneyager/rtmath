@@ -97,7 +97,9 @@ int main(int argc, char** argv)
 
 		//if (!vm.count("output"))
 		//	doHelp("Need to specify output file(s).");
-		vector<string> output = vm["output"].as< vector<string> >();
+		vector<string> output;
+		if (vm.count("output"))
+			output = vm["output"].as< vector<string> >();
 
 		bool doExport = false;
 		std::string exportType, exportFilename;
@@ -106,7 +108,7 @@ int main(int argc, char** argv)
 			doExport = true;
 			exportType = vm["export-type"].as<string>();
 			exportFilename = vm["export"].as<string>();
-			cerr << "Exporting to: " << exportFilename << endl;
+			cerr << "Exporting to: " << exportFilename << " with format " << exportType << endl;
 		}
 
 		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > outputios(output.size());

@@ -18,6 +18,7 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddScattMatrix.h"
@@ -73,6 +74,7 @@ namespace rtmath {
 				// Tags
 
 				// DDSCAT run version tag
+				/*
 				readAttr<string, Group>(base, "DDSCAT_Version_Tag", s->ddvertag);
 
 				// Ensemble average results
@@ -181,14 +183,6 @@ namespace rtmath {
 				rtmath::config::extractInterval(sWaves, wMin, wMax, wJunk, wN, sSpecialized);
 				r->setWavelengths(wMin, wMax, wN, sSpecialized);
 
-				/// \todo Add tab file support for wavelengths
-				/*
-				std::set<double> wavelengths;
-				r->getWavelengths(wavelengths);
-				std::vector<double> vwvs(wavelengths.begin(), wavelengths.end());
-				addDatasetArray<double, Group>(grpPar, "Wavelengths", vwvs.size(), 1, vwvs.data());
-				*/
-
 				readAttrSet<double, Group>(grpPar, "NAMBIENT", r,&rtmath::ddscat::ddPar::nAmbient);
 
 				// Effective radii
@@ -196,13 +190,6 @@ namespace rtmath {
 				rtmath::config::extractInterval(sWaves, wMin, wMax, wJunk, wN, sSpecialized);
 				r->setAeff(wMin, wMax, wN, sSpecialized);
 
-				/// \todo Add tab file support for effective radii
-				/*
-				std::set<double> aeffs;
-				r->getWavelengths(aeffs);
-				std::vector<double> va(aeffs.begin(), aeffs.end());
-				addDatasetArray<double, Group>(grpPar, "Effective_Radii", va.size(), 1, va.data());
-				*/
 
 				// Incident polarizations (needed for fml conversions!)
 				Eigen::VectorXd ipol(6);
@@ -267,6 +254,7 @@ namespace rtmath {
 						dtheta = planes(i,3);
 					r->setPlane(i+1,phi,thetan_min,thetan_max,dtheta);
 				}
+				*/
 
 				//return grpRot;
 				return true;
@@ -274,57 +262,4 @@ namespace rtmath {
 		}
 	}
 
-	namespace registry
-	{
-		using std::shared_ptr;
-		using namespace rtmath::plugins::hdf5;
-		
-		template<>
-		shared_ptr<IOhandler>
-			read_file_type_multi<rtmath::ddscat::ddPar>
-			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s)
-		{
-			std::string filename = opts->filename();
-			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
-			//IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key", "");
-			using std::shared_ptr;
-			using namespace H5;
-			Exception::dontPrint();
-			std::shared_ptr<hdf5_handle> h;
-			if (!sh)
-			{
-				// Access the hdf5 file
-				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename.c_str(), iotype));
-			} else {
-				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
-				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
-			}
-
-			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) return h;
-			// Iterate over hash entries
-			hsize_t nObjs = grpHashes->getNumObjs();
-			for (hsize_t i=0; i<nObjs; ++i)
-			{
-				std::string hashname = grpHashes->getObjnameByIdx(i);
-				H5G_obj_t t = grpHashes->getObjTypeByIdx(i);
-				if (t != H5G_obj_t::H5G_GROUP) continue;
-
-				shared_ptr<Group> grpHash = openGroup(grpHashes, hashname.c_str());
-
-				shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-				if (!grpShape) continue;
-
-				boost::shared_ptr<rtmath::ddscat::ddPar> res(new rtmath::ddscat::ddPar);
-				if (read_hdf5_ddPar(grpShape, res))
-					s.push_back(res);
-			}
-
-			/// \todo Implement opts searching features
-
-			return h;
-		}
-	}
 }
