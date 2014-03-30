@@ -484,6 +484,18 @@ namespace rtmath {
 	inline bool name() const { return __getStringBool(id, bfalse, btrue); } \
 	inline void name(bool v) { __setStringBool(id, v, bfalse, btrue); }
 
+		/// Provides local readers and writers for ddscat ddpar data (it's a binder)
+		class DLEXPORT_rtmath_ddscat_base implementsDDPAR :
+			virtual public rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
+			ddPar_IO_input_registry>
+		{
+		public:
+			virtual ~implementsDDPAR() {}
+		protected:
+			implementsDDPAR();
+			static const std::set<std::string>& known_formats();
+		};
+
 		/**
 		* \brief Provides ddscat.par manipulation.
 		*
@@ -500,7 +512,8 @@ namespace rtmath {
 			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
 			//virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>//,
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
-			::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>
+			::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>,
+			virtual public implementsDDPAR
 		{
 		public:
 			/// Load the default ddscat.par file, used in setting default values
@@ -532,8 +545,12 @@ namespace rtmath {
 			void readFile(const std::string &filename, bool overlay = false);
 			/// \todo Add in line number matching as a backup when key parsing fails
 			void read(std::istream &stream, bool overlay = false);
+			void write(std::ostream&) const;
 			/// Write a standard DDSCAT par file to the output stream
-			void writeDDSCAT(std::ostream &stream) const;
+			static void writeDDSCAT(const ddPar*, std::ostream &);
+			/// Read a standard DDSCAT par file from an input stream
+			static void readDDSCAT(ddPar*, std::istream &, bool overlay = false);
+
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;
 			ddPar* clone() const;

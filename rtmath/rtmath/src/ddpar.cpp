@@ -121,6 +121,24 @@ namespace {
 namespace rtmath {
 	namespace ddscat {
 
+		implementsDDPAR::implementsDDPAR() :
+			rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
+			ddPar_IO_input_registry>(ddPar::writeDDSCAT, ddPar::readDDSCAT, known_formats())
+		{}
+
+		const std::set<std::string>& implementsDDPAR::known_formats()
+		{
+			static std::set<std::string> mtypes;
+			static std::mutex mlock;
+			// Prevent threading clashes
+			{
+				std::lock_guard<std::mutex> lck(mlock);
+				if (!mtypes.size())
+					mtypes.insert("par");
+			}
+			return mtypes;
+		}
+
 		ddPar::ddPar()
 		{
 			_init();
@@ -151,8 +169,8 @@ namespace rtmath {
 		{
 			std::string sThis, sRhs;
 			std::ostringstream oThis, oRhs;
-			write(oThis);
-			rhs.write(oRhs);
+			writeDDSCAT(this, oThis);
+			writeDDSCAT(&rhs, oRhs);
 			sThis = oThis.str();
 			sRhs = oRhs.str();
 			return (sThis == sRhs);
@@ -169,7 +187,7 @@ namespace rtmath {
 			{
 				_version = rhs._version;
 				std::ostringstream out;
-				rhs.write(out);
+				writeDDSCAT(&rhs, out);
 				std::string data = out.str();
 				std::istringstream in(data);
 				read(in);
@@ -182,7 +200,7 @@ namespace rtmath {
 			// Expensive copy constructor. Implements cloning to avoid screwups.
 			_version = src._version;
 			std::ostringstream out;
-			src.write(out);
+			writeDDSCAT(&src, out);
 			std::string data = out.str();
 			std::istringstream in(data);
 			read(in);
@@ -195,7 +213,7 @@ namespace rtmath {
 			lhs->_version = _version;
 			
 			std::ostringstream out;
-			write(out);
+			writeDDSCAT(this, out);
 			std::string data = out.str();
 			std::istringstream in(data);
 
@@ -295,7 +313,7 @@ namespace rtmath {
 		*/
 
 
-		void ddPar::write(std::ostream &out) const
+		void ddPar::writeDDSCAT(const ddPar *p, std::ostream &out)
 		{
 			// Writing is much easier than reading!
 			using namespace std;
@@ -305,40 +323,40 @@ namespace rtmath {
 
 			// Write file version
 			string ver;
-			ver = rtmath::ddscat::ddVersions::getVerString(_version);
+			ver = rtmath::ddscat::ddVersions::getVerString(p->_version);
 			out << "' ========= Parameter file for v" << ver << " =================== '" << endl;
 
 			// Loop through and write parameters and comments
-			for (auto it = _parsedData.begin(); it != _parsedData.end(); it++)
+			for (auto it = p->_parsedData.begin(); it != p->_parsedData.end(); it++)
 			{
 				// If key is valid for this output version, write it
-				if (it->second->versionValid(_version))
-					it->second->write(out,_version);
+				if (it->second->versionValid(p->_version))
+					it->second->write(out, p->_version);
 
 				// Check here for dielectric write. Always goes after NCOMP.
 				if (it->first == ddParParsers::NCOMP)
 				{
 					int i = 1;
-					for (auto ot = _diels.begin(); ot != _diels.end(); ++ot, ++i)
+					for (auto ot = p->_diels.begin(); ot != p->_diels.end(); ++ot, ++i)
 					{
 						ostringstream o;
 						// "...file with refractive index" + " #"
 						o << " " << i;
 						string plid = o.str();
-						(*ot)->write(out, _version, plid);
+						(*ot)->write(out, p->_version, plid);
 					}
 				}
 			}
-			for (auto ot = _scaPlanes.begin(); ot != _scaPlanes.end(); ++ot)
+			for (auto ot = p->_scaPlanes.begin(); ot != p->_scaPlanes.end(); ++ot)
 			{
 				// If key is valid for this output version, write it
-				if (ot->second->versionValid(_version))
+				if (ot->second->versionValid(p->_version))
 				{
 					ostringstream o;
 					// "...for plane" + " #"
 					o << " " << boost::lexical_cast<std::string>(ot->first);
 					string plid = o.str();
-					ot->second->write(out, _version, plid);
+					ot->second->write(out, p->_version, plid);
 				}
 			}
 		}
@@ -350,6 +368,16 @@ namespace rtmath {
 				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, 
 				ddPar_IO_input_registry>::set_sname("rtmath::ddscat::ddpar");
 
+		}
+
+		void ddPar::readDDSCAT(ddPar *src, std::istream &in, bool overlay)
+		{
+			src->read(in, overlay);
+		}
+
+		void ddPar::write(std::ostream& out) const
+		{
+			writeDDSCAT(this, out);
 		}
 
 		void ddPar::read(std::istream &stream, bool overlay)

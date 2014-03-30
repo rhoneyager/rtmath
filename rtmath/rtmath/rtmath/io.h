@@ -16,15 +16,16 @@ namespace rtmath
 {
 	namespace io
 	{
-		namespace Serialization
+		/// Provides uniform access semantics for compressible text file reading and writing
+		namespace TextFiles
 		{
 			/// Opaque pointer to hide boost stream internals
 			class hSerialization;
 
-			/// Handles serialization IO for various classes.
+			/// Handles serialization IO for various classes. Also works for compressible text files (ddpar, ...)
 			struct DLEXPORT_rtmath_core serialization_handle : public rtmath::registry::IOhandler
 			{
-				serialization_handle(const char* filename, 
+				serialization_handle(const char* filename,
 					rtmath::registry::IOhandler::IOtype t);
 				virtual ~serialization_handle();
 				void open(const char* filename, IOtype t);
@@ -66,151 +67,298 @@ namespace rtmath
 				std::unique_ptr<hSerialization> h;
 			};
 
+			template <class obj_class>
+			void writeSerialization(const obj_class* obj, std::ostream &out, const std::string &filename, const char* sname)
+			{
+				using namespace Ryan_Serialization;
+				serialization_method sm = select_format(filename);
+				if (sm == serialization_method::XML)
+					::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(*obj, out, sname);
+				else if (sm == serialization_method::TEXT)
+					::Ryan_Serialization::write<obj_class, boost::archive::text_oarchive>(*obj, out, sname);
+				else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
+			}
+
+			template <class obj_class>
+			void readSerialization(obj_class *obj, std::istream &in, const std::string &filename, const char* sname)
+			{
+				using namespace Ryan_Serialization;
+				serialization_method sm = select_format(filename);
+				if (sm == serialization_method::XML)
+					::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*obj, in, sname);
+				else if (sm == serialization_method::TEXT)
+					::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*obj, in, sname);
+				else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
+
+			}
+
+			template <class obj_class>
+			std::shared_ptr<rtmath::registry::IOhandler> writeFunc(
+				std::shared_ptr<rtmath::registry::IOhandler> sh,
+				std::shared_ptr<rtmath::registry::IO_options> opts,
+				const obj_class *obj,
+				const std::function<void(const obj_class*, std::ostream&)> &writer)
+			{
+				std::string exporttype = opts->exportType();
+				std::string filename = opts->filename();
+				IOhandler::IOtype iotype = opts->iotype();
+				std::string key = opts->getVal<std::string>("key", "");
+				using std::shared_ptr;
+
+				std::shared_ptr<serialization_handle> h;
+				if (!sh)
+					h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
+				else {
+					if (sh->getId() != std::string(serialization_handle::getSHid()))
+						RTthrow debug::xDuplicateHook("Bad passed plugin");
+					h = std::dynamic_pointer_cast<serialization_handle>(sh);
+				}
+
+				// serialization_handle handles compression details
+				// Write to a stream, not to a file
+				writer(obj, *(h->writer.get()), filename);
+				
+				return h; // Pass back the handle
+			};
+
+			template <class obj_class>
+			std::shared_ptr<rtmath::registry::IOhandler> readFunc(
+				std::shared_ptr<rtmath::registry::IOhandler> sh,
+				std::shared_ptr<rtmath::registry::IO_options> opts,
+				obj_class *obj,
+				const std::function<void(obj_class*, std::istream&)> &reader)
+			{
+				std::string exporttype = opts->exportType();
+				std::string filename = opts->filename();
+				IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+				std::string key = opts->getVal<std::string>("key", "");
+				using std::shared_ptr;
+
+				std::shared_ptr<serialization_handle> h;
+				if (!sh)
+					h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
+				else {
+					if (sh->getId() != std::string(serialization_handle::getSHid()))
+						RTthrow debug::xDuplicateHook("Bad passed plugin");
+					h = std::dynamic_pointer_cast<serialization_handle>(sh);
+				}
+
+				// serialization_handle handles compression details
+				// Read from a stream, not to a file. Filename is for serialization method detection.
+				reader(obj, *(h->reader.get()), filename);
+
+				return h; // Pass back the handle
+			};
+
+		}
+
+		/** \brief Template that registers reading and writing methods with the io registry
+		 * 
+		 * This is the base template that is used when implementing a custom reader/writer to the 
+		 * core library code, such as the ddscat readers in ddPar, ddOutputSingle and shapefile.
+		 * It is also leveraged in the serialization code.
+		 * Any code that reads text files serially and would like optional compression can take advantage of this.
+		 **/
+		template <class obj_class,
+		class output_registry_class,
+		class input_registry_class>
+		class implementsIO
+		{
+		public:
+			virtual ~implementsIO() {}
+		private:
+			const std::set<std::string> matchExts;
+		protected:
+			implementsIO(const std::set<std::string> &exts) : matchExts(exts)
+			{
+				// Call the binder code
+				static bool inited = false; // No need for a static class def.
+				static std::mutex mlock;
+				// Prevent threading clashes
+				{
+					std::lock_guard<std::mutex> lck(mlock);
+					if (!inited)
+					{
+						setup();
+						inited = true;
+					}
+				}
+			}
+			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer) = 0;
+			virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader) = 0;
+
+			virtual void setup()
+			{
+				using namespace registry;
+				using namespace std;
+
+
+				// Link the functions to the registry
+				// Note: the standard genAndRegisterIOregistryPlural_writer will not work here, 
+				// as function names would clash.
+
+				// Custom matcher function will match all serialization-supported types!
+				//const std::set<std::string> &exts = serialization_handle::known_formats();
+				for (const auto &ext : matchExts)
+				{
+					// ! Generate writer
+					using namespace std::placeholders;
+					IO_class_registry_writer<obj_class> writer;
+					makeWriter(writer);
+					// ! Register writer
+#ifdef _MSC_FULL_VER
+					obj_class::usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(writer);
+#else
+					obj_class::template usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(writer);
+#endif
+
+					// ! Generate reader
+					IO_class_registry_writer<obj_class> reader;
+					makeReader(reader);
+					// ! Register reader
+#ifdef _MSC_FULL_VER
+					obj_class::usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(reader);
+#else
+					obj_class::template usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(reader);
+#endif
+
+				}
+			};
+		};
+
+		template <class obj_class,
+		class output_registry_class,
+		class input_registry_class>
+		class implementsIObasic :
+			virtual public implementsIO<obj_class, output_registry_class,
+			input_registry_class>
+		{
+		public:
+			virtual ~implementsIObasic() {}
+		private:
+			typedef const std::function<void(const obj_class*, std::ostream&)> outFunc;
+			outFunc &outF;
+			typedef const std::function<void(obj_class*, std::istream&)> inFunc;
+			inFunc &inF;
+		protected:
+			implementsIObasic(outFunc &outF, inFunc &inF, const std::set<std::string> &exts) : 
+				outF(outF), inF(inF), implementsIO(exts) {}
+			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
+			{
+				writer.io_multi_matches = std::bind(
+					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
+					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), _2);
+				auto writerBinder = [&](
+					std::shared_ptr<rtmath::registry::IOhandler> sh,
+					std::shared_ptr<rtmath::registry::IO_options> opts,
+					const ddPar* obj) -> std::shared_ptr<rtmath::registry::IOhandler>
+				{
+					using namespace rtmath::registry;
+					using namespace rtmath::io::TextFiles;
+					std::string exporttype = opts->exportType();
+					std::string filename = opts->filename();
+					IOhandler::IOtype iotype = opts->iotype();
+					std::string key = opts->getVal<std::string>("key", "");
+					using std::shared_ptr;
+
+					std::shared_ptr<serialization_handle> h;
+					if (!sh)
+						h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
+					else {
+						if (sh->getId() != std::string(serialization_handle::getSHid()))
+							RTthrow debug::xDuplicateHook("Bad passed plugin");
+						h = std::dynamic_pointer_cast<serialization_handle>(sh);
+					}
+
+					// serialization_handle handles compression details
+					// Write to a stream, not to a file
+					outF(obj, *(h->writer.get()));
+
+					return h; // Pass back the handle
+				};
+				writer.io_multi_processor = writerBinder; // std::bind(writerBinder, _1, _2, _3);
+			}
+			virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
+			{
+				reader.io_multi_matches = std::bind(
+					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
+					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), _2);
+				auto readerBinder = [&](
+					std::shared_ptr<rtmath::registry::IOhandler> sh,
+					std::shared_ptr<rtmath::registry::IO_options> opts,
+					ddPar *obj) -> std::shared_ptr<rtmath::registry::IOhandler>
+				{
+					using namespace rtmath::registry;
+					using namespace rtmath::io::TextFiles;
+					std::string exporttype = opts->exportType();
+					std::string filename = opts->filename();
+					IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+					std::string key = opts->getVal<std::string>("key", "");
+					using std::shared_ptr;
+
+					std::shared_ptr<serialization_handle> h;
+					if (!sh)
+						h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
+					else {
+						if (sh->getId() != std::string(serialization_handle::getSHid()))
+							RTthrow debug::xDuplicateHook("Bad passed plugin");
+						h = std::dynamic_pointer_cast<serialization_handle>(sh);
+					}
+
+					// serialization_handle handles compression details
+					// Read from a stream, not to a file. Filename is for serialization method detection.
+					inF(obj, *(h->reader.get()));
+					//reader(obj, *(h->reader.get()), filename);
+
+					return h; // Pass back the handle
+				};
+				reader.io_multi_processor = readerBinder;
+				//reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, _1, _2, _3,
+				//	std::bind(TextFiles::readSerialization<obj_class>, _1, _2, _3, sname));
+			}
+		};
+
+		namespace Serialization
+		{
+			
 			/// Template that registers object serialization with the io registry.
 			template <class obj_class,
 			class output_registry_class,
 			class input_registry_class>
-			class implementsSerialization
+			class implementsSerialization : 
+				virtual public implementsIO<obj_class, output_registry_class,
+				input_registry_class>
 			{
 			public:
-				~implementsSerialization() {}
+				virtual ~implementsSerialization() {}
 			protected:
 				/// \brief This function can be used in place of entering it in the constructor, 
 				/// for compilers that don't support delegating constructors (to save on typing).
 				void set_sname(const char* nname) { sname = nname; }
 				const char* sname;
 				/// \param sname is the serialization object key
-				implementsSerialization(const char* sname = "") : sname(sname)
+				implementsSerialization(const char* sname = "") : sname(sname), 
+					implementsIO<obj_class, output_registry_class,
+					input_registry_class>(io::TextFiles::serialization_handle::known_formats())
+				{}
+
+				virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 				{
-					// Call the binder code
-					static bool inited = false; // No need for a static class def.
-					static std::mutex mlock;
-					// Prevent threading clashes
-					{
-						std::lock_guard<std::mutex> lck(mlock);
-						if (!inited)
-						{
-							setup();
-							inited = true;
-						}
-					}
+					writer.io_multi_matches = std::bind(serialization_handle::match_file_type_multi,
+						std::placeholders::_1, serialization_handle::getSHid(), _2);
+					writer.io_multi_processor = std::bind(TextFiles::writeFunc<obj_class>, _1, _2, _3,
+						std::bind(TextFiles::writeSerialization<obj_class>, _1, _2, _3, sname));
+				}
+				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
+				{
+					reader.io_multi_matches = std::bind(serialization_handle::match_file_type_multi,
+						std::placeholders::_1, serialization_handle::getSHid(), _2);
+					//reader.io_multi_processor = writeFunc; // The lambda from above
+					reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, _1, _2, _3,
+						std::bind(TextFiles::readSerialization<obj_class>, _1, _2, _3, sname));
+					//reader.io_multi_processor = write_file_type_multi<T>;
 				}
 
-				void setup()
-				{
-					using namespace registry;
-					using namespace std;
-					// Automatically implement the actual io functions using lambdas!
-					auto writeFunc = [&](
-						shared_ptr<IOhandler> sh, 
-						shared_ptr<IO_options> opts,
-						const obj_class *obj)
-						-> shared_ptr<IOhandler>
-					{
-						std::string exporttype = opts->exportType();
-						std::string filename = opts->filename();
-						IOhandler::IOtype iotype = opts->iotype();
-						std::string key = opts->getVal<std::string>("key", "");
-						using std::shared_ptr;
-						
-						std::shared_ptr<serialization_handle> h;
-						if (!sh)
-							h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
-						else {
-							if (sh->getId() != std::string(serialization_handle::getSHid())) 
-								RTthrow debug::xDuplicateHook("Bad passed plugin");
-							h = std::dynamic_pointer_cast<serialization_handle>(sh);
-						}
-
-						// serialization_handle handles compression details
-
-						// Write to a stream, not to a file
-						using namespace Ryan_Serialization;
-						serialization_method sm = select_format(filename);
-						if (sm == serialization_method::XML)
-							::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(*obj, *(h->writer.get()), sname);
-						else if (sm == serialization_method::TEXT)
-							::Ryan_Serialization::write<obj_class, boost::archive::text_oarchive>(*obj, *(h->writer.get()), sname);
-						else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
-
-						return h; // Pass back the handle
-					};
-
-					auto readFunc = [&](
-						shared_ptr<IOhandler> sh,
-						shared_ptr<IO_options> opts,
-						const obj_class *obj)
-						-> shared_ptr<IOhandler>
-					{
-						std::string exporttype = opts->exportType();
-						std::string filename = opts->filename();
-						IOhandler::IOtype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
-						std::string key = opts->getVal<std::string>("key", "");
-						using std::shared_ptr;
-
-						std::shared_ptr<serialization_handle> h;
-						if (!sh)
-							h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
-						else {
-							if (sh->getId() != std::string(serialization_handle::getSHid()))
-								RTthrow debug::xDuplicateHook("Bad passed plugin");
-							h = std::dynamic_pointer_cast<serialization_handle>(sh);
-						}
-
-						// serialization_handle handles compression details
-
-						// Read from a stream, not to a file
-						using namespace Ryan_Serialization;
-						serialization_method sm = select_format(filename);
-						if (sm == serialization_method::XML)
-							::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*obj, *(h->reader.get()), sname);
-						else if (sm == serialization_method::TEXT)
-							::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*obj, *(h->reader.get()), sname);
-						else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
-
-						return h; // Pass back the handle
-					};
-
-
-					// Link the functions to the registry
-					// Note: the standard genAndRegisterIOregistryPlural_writer will not work here, 
-					// as function names would clash.
-
-					// Custom matcher function will match all serialization-supported types!
-					const std::set<std::string> &exts = serialization_handle::known_formats();
-					for (const auto &ext : exts)
-					{
-						// ! Generate writer
-						IO_class_registry_writer<obj_class> writer;
-						writer.io_multi_matches = std::bind(serialization_handle::match_file_type_multi,
-							std::placeholders::_1, serialization_handle::getSHid(), std::placeholders::_2);
-						writer.io_multi_processor = writeFunc; // The lambda from above
-						//writer.io_multi_processor = write_file_type_multi<T>;
-
-						// ! Register writer
-#ifdef _MSC_FULL_VER
-						obj_class::usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(writer);
-#else
-						obj_class::template usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(writer);
-#endif
-
-
-						// ! Generate reader
-						/*
-						IO_class_registry_reader<obj_class> reader;
-						reader.io_multi_matches = std::bind(serialization_handle::match_file_type_multi,
-							std::placeholders::_1, serialization_handle::getSHid(), std::placeholders::_2);
-						reader.io_multi_processor = readFunc; // The lambda from above
-
-						// ! Register reader
-#ifdef _MSC_FULL_VER
-						obj_class::usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(reader);
-#else
-						obj_class::template usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(reader);
-#endif
-						*/
-					}
-				}
 			};
 		}
 

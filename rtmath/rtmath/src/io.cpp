@@ -20,7 +20,7 @@ namespace rtmath
 {
 	namespace io
 	{
-		namespace Serialization
+		namespace TextFiles
 		{
 			class hSerialization
 			{
@@ -44,8 +44,8 @@ namespace rtmath
 				return hid;
 			}
 
-			serialization_handle::serialization_handle(const char* filename, 
-				rtmath::registry::IOhandler::IOtype t) :
+			serialization_handle::serialization_handle(const char* filename,
+				::rtmath::registry::IOhandler::IOtype t) :
 				IOhandler(hid), h(new hSerialization)
 			{
 				open(filename, t);
@@ -53,7 +53,7 @@ namespace rtmath
 
 			serialization_handle::~serialization_handle() {}
 
-			void serialization_handle::open(const char* filename, IOtype t)
+			void serialization_handle::open(const char* filename, ::rtmath::registry::IOhandler::IOtype t)
 			{
 				using namespace boost::filesystem;
 				switch (t)
@@ -148,7 +148,7 @@ namespace rtmath
 				return mtypes;
 			}
 
-			bool serialization_handle::match_file_type(const char* filename, 
+			bool serialization_handle::match_file_type(const char* filename,
 				const char* type, const char *op)
 			{
 				using namespace boost::filesystem;
