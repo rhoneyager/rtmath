@@ -92,12 +92,12 @@ namespace rtmath
 				boost::filesystem::path p(uncompressed);
 				boost::filesystem::path pext = p.extension(); // Uncompressed extension
 
-				h->fi.swap(std::unique_ptr<std::ifstream>
-					(new std::ifstream(fname, std::ios_base::binary | std::ios_base::in)));
+				h->fi = std::unique_ptr<std::ifstream>
+					(new std::ifstream(fname, std::ios_base::binary | std::ios_base::in));
 				// Consutuct an filtering_iostream that matches the type of compression used.
 				using namespace boost::iostreams;
 
-				h->bfi.swap(std::shared_ptr<filtering_istream>
+				h->bfi = (std::shared_ptr<filtering_istream>
 					(new filtering_istream));
 				if (cmeth.size())
 					prep_decompression(cmeth, *(h->bfi.get()));
@@ -116,12 +116,12 @@ namespace rtmath
 				boost::filesystem::path pext = p.extension(); // Uncompressed extension
 
 
-				h->fo.swap(std::unique_ptr<std::ofstream>
+				h->fo = (std::unique_ptr<std::ofstream>
 					(new std::ofstream(fname, std::ios_base::binary | std::ios_base::out)));
 				// Consutuct an filtering_iostream that matches the type of compression used.
 				using namespace boost::iostreams;
 
-				h->bfo.swap(std::shared_ptr<filtering_ostream>
+				h->bfo = (std::shared_ptr<filtering_ostream>
 					(new filtering_ostream));
 				if (cmeth.size())
 					prep_compression(cmeth, *(h->bfo.get()));

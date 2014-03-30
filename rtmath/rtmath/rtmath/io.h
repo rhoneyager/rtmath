@@ -99,6 +99,7 @@ namespace rtmath
 				void setup()
 				{
 					using namespace registry;
+					using namespace std;
 					// Automatically implement the actual io functions using lambdas!
 					auto writeFunc = [&](
 						shared_ptr<IOhandler> sh, 
@@ -124,11 +125,12 @@ namespace rtmath
 						// serialization_handle handles compression details
 
 						// Write to a stream, not to a file
-						Ryan_Serialization::serialization_method sm = Ryan_Serialization::select_format(filename);
+						using namespace Ryan_Serialization;
+						serialization_method sm = select_format(filename);
 						if (sm == serialization_method::XML)
-							::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(obj, h->writer, sname);
+							::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(*obj, *(h->writer.get()), sname);
 						else if (sm == serialization_method::TEXT)
-							::Ryan_Serialization::write<obj_class, boost::archive::text_oarchive>(obj, h->writer, sname);
+							::Ryan_Serialization::write<obj_class, boost::archive::text_oarchive>(*obj, *(h->writer.get()), sname);
 						else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
 
 						return h; // Pass back the handle
@@ -271,7 +273,7 @@ namespace rtmath
 				return false;
 			}
 		};
-
+/*
 		template <class obj_class,
 		class input_registry_class>
 		class implementsStandardReader
@@ -285,7 +287,7 @@ namespace rtmath
 			bool baseRead(const std::string &filename, const std::string &outtype) const
 			{
 				auto opts = rtmath::registry::IO_options::generate();
-				opts->setVal<bool>("autocompress", autoCompress);
+				//opts->setVal<bool>("autocompress", autoCompress);
 				opts->filename(filename);
 				opts->setVal("key", filename);
 				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE;
@@ -360,5 +362,6 @@ namespace rtmath
 				return false;
 			}
 		};
+	*/
 	}
 }
