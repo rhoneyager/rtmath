@@ -98,8 +98,8 @@ namespace rtmath {
 				//	const std::string &type = "") const;
 				/// Write shape to the hash directory (convenience function)
 				void writeToHash() const;
-				/// Write a shapefile to a stream (no compression)
-				void write(std::ostream &out) const;
+				/// Write a standard DDSCAT shapefile to a stream (no compression)
+				void writeDDSCAT(std::ostream &out) const;
 				/// Write to a complex, multiple storage object
 				//std::shared_ptr<registry::IOhandler> writeMulti(
 				//	const char* key,

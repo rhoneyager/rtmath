@@ -501,7 +501,7 @@ namespace rtmath {
 			if (writeShape)
 			{
 				if (!this->shape) this->loadShape();
-				shape->write( (path(pOut)/"target.out").string() );
+				shape->writeFile( (path(pOut)/"target.out").string() );
 			}
 
 			// Write avg file

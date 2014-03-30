@@ -136,6 +136,42 @@ namespace rtmath
 						return h; // Pass back the handle
 					};
 
+					auto readFunc = [&](
+						shared_ptr<IOhandler> sh,
+						shared_ptr<IO_options> opts,
+						const obj_class *obj)
+						-> shared_ptr<IOhandler>
+					{
+						std::string exporttype = opts->exportType();
+						std::string filename = opts->filename();
+						IOhandler::IOtype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+						std::string key = opts->getVal<std::string>("key", "");
+						using std::shared_ptr;
+
+						std::shared_ptr<serialization_handle> h;
+						if (!sh)
+							h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
+						else {
+							if (sh->getId() != std::string(serialization_handle::getSHid()))
+								RTthrow debug::xDuplicateHook("Bad passed plugin");
+							h = std::dynamic_pointer_cast<serialization_handle>(sh);
+						}
+
+						// serialization_handle handles compression details
+
+						// Read from a stream, not to a file
+						using namespace Ryan_Serialization;
+						serialization_method sm = select_format(filename);
+						if (sm == serialization_method::XML)
+							::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*obj, *(h->reader.get()), sname);
+						else if (sm == serialization_method::TEXT)
+							::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*obj, *(h->reader.get()), sname);
+						else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
+
+						return h; // Pass back the handle
+					};
+
+
 					// Link the functions to the registry
 					// Note: the standard genAndRegisterIOregistryPlural_writer will not work here, 
 					// as function names would clash.
@@ -213,7 +249,13 @@ namespace rtmath
 		public:
 			virtual ~implementsStandardWriter() {}
 
-			virtual void write(const std::string &filename, const std::string &outtype) const
+			/// Duplicate to avoid clashes and having to speify a full template name...
+			virtual void writeFile(const std::string &filename, const std::string &outtype = "") const
+			{
+				baseWrite(filename, outtype);
+			}
+
+			virtual void write(const std::string &filename, const std::string &outtype = "") const
 			{
 				baseWrite(filename, outtype);
 			}

@@ -530,10 +530,10 @@ namespace rtmath {
 			ddPar & operator=(const ddPar &rhs);
 
 			void readFile(const std::string &filename, bool overlay = false);
-			//void writeFile(const std::string &filename, const std::string &type = "") const;
 			/// \todo Add in line number matching as a backup when key parsing fails
 			void read(std::istream &stream, bool overlay = false);
-			void write(std::ostream &stream) const;
+			/// Write a standard DDSCAT par file to the output stream
+			void writeDDSCAT(std::ostream &stream) const;
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;
 			ddPar* clone() const;
