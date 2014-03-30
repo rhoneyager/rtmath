@@ -557,6 +557,7 @@ namespace rtmath {
 			void setDielHashes(std::vector<HASH_t>&);
 
 			accessorSimpleBool(doNearField, ddParParsers::NRFLD);
+#undef near // Annoying MSVC thing
 			accessorSimplePlural(near, ddParParsers::FRACT_EXTENS, double, 6);
 			accessorSimple(maxTol, ddParParsers::TOL, double);
 			accessorSimple(maxIter, ddParParsers::MXITER, size_t);
