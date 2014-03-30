@@ -115,6 +115,13 @@ namespace rtmath {
 			_message.append("\n");
 		}
 
+		void xFileExists::_setmessage()
+		{
+			_message = "ERROR: Creating a file, but it already exists. \nInput file: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
 		void xPathExistsWrongType::_setmessage()
 		{
 			_message = "ERROR: The requested path already exists and is the wrong type.\nPath: ";
@@ -125,6 +132,13 @@ namespace rtmath {
 		void xUnknownFileFormat::_setmessage()
 		{
 			_message = "ERROR: File format unknown or unexpected. \nInput file: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xUnsupportedIOaction::_setmessage()
+		{
+			_message = "ERROR: IO operation unsupported. \nInput file: ";
 			_message.append(_m);
 			_message.append("\n");
 		}

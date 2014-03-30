@@ -70,6 +70,9 @@ namespace rtmath
 		/// File to be opened for reading does not exist
 		ERRSTR(xMissingFile);
 
+		/// File to be opened for writing already exists
+		ERRSTR(xFileExists);
+
 		/// File / directory to be created already exists and is not the desired type
 		ERRSTR(xPathExistsWrongType);
 
@@ -120,6 +123,11 @@ namespace rtmath
 
 		/// Unknown error
 		ERRSTD(xOtherError);
+
+		/// Unsupported IO action
+		ERRSTR(xUnsupportedIOaction);
+
+
 
 	}
 }

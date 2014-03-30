@@ -165,17 +165,19 @@ int main(int argc, char** argv)
 				}
 				if (doExport) /// \todo Figure out how to do multiple exports (command-line parsing)
 				{
+					auto opts = rtmath::registry::IO_options::generate();
+					opts->filename(exportFilename);
+					opts->exportType(exportType);
 					try {
-						auto opts = rtmath::registry::IO_options::generate();
-						opts->filename(exportFilename);
-						opts->exportType(exportType);
-						
-						outputexp = vd->writeMulti(outputexp, opts);
-					}
-					catch (rtmath::debug::xUnknownFileFormat &e)
-					{
-						std::cerr << "Error: unknown file format when writing " << exportFilename << endl;
-						std::cerr << e.what() << endl;
+						if (vd->canWriteMulti(outputexp, opts))
+							outputexp = vd->writeMulti(outputexp, opts);
+						else if (stats->canWriteMulti(outputexp, opts))
+							outputexp = stats->writeMulti(outputexp, opts);
+						else if (shp->canWriteMulti(outputexp, opts))
+							outputexp = shp->writeMulti(outputexp, opts);
+					} catch (rtmath::debug::xUnknownFileFormat &e) {
+							std::cerr << "Error: unknown file format when writing " << exportFilename << endl;
+							std::cerr << e.what() << endl;
 					}
 				}
 			}

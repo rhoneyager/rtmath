@@ -12,6 +12,7 @@
 
 #include "../hash.h"
 #include "../registry.h"
+#include "../io.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/version.hpp>
 
@@ -65,7 +66,9 @@ namespace rtmath {
 				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
-				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >
+				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
+				virtual public ::rtmath::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>//,
+				//virtual public ::rtmath::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>
 			{
 			public:
 				shapefile(const std::string &filename);
@@ -91,19 +94,19 @@ namespace rtmath {
 				/// \param autoCompress determines whether any output should be 
 				/// automatically compressed. Specifying a compressed output filename 
 				/// always forces compression.
-				void write(const std::string &fname, bool autoCompress = false,
-					const std::string &type = "") const;
+				//void write(const std::string &fname, bool autoCompress = false,
+				//	const std::string &type = "") const;
 				/// Write shape to the hash directory (convenience function)
 				void writeToHash() const;
 				/// Write a shapefile to a stream (no compression)
 				void write(std::ostream &out) const;
 				/// Write to a complex, multiple storage object
-				std::shared_ptr<registry::IOhandler> writeMulti(
-					const char* key,
-					std::shared_ptr<registry::IOhandler> handle = nullptr,
-					const char* filename = "",
-					const char* type = "",
-					registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE) const;
+				//std::shared_ptr<registry::IOhandler> writeMulti(
+				//	const char* key,
+				//	std::shared_ptr<registry::IOhandler> handle = nullptr,
+				//	const char* filename = "",
+				//	const char* type = "",
+				//	registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE) const;
 				// \brief Export a shapefile to vtk output
 				// \todo Move to plugin
 				//void writeVTK(const std::string &fname) const;

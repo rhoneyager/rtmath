@@ -150,10 +150,10 @@ namespace rtmath
 
 
 		/// Base class to handle multiple IO operations on a single file
-		struct IOhandler
+		struct DLEXPORT_rtmath_core IOhandler
 		{
 		protected:
-			IOhandler(const std::string &id) : id(id) {}
+			IOhandler(const std::string &id);
 			/// Ensures that plugins do not collide
 			std::string id;
 		public:

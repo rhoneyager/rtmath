@@ -14,6 +14,8 @@
 #include "ddVersions.h"
 #include "parids.h"
 #include "../hash.h"
+#include "../registry.h"
+#include "../io.h"
 
 // For ddParParsers
 #include "../Serialization/serialization_macros.h"
@@ -23,11 +25,36 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
 
-namespace boost { namespace program_options { 
-	class options_description; class variables_map; } }
+namespace boost {
+	namespace program_options {
+		class options_description; class variables_map;
+	}
+}
 namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath {
+	namespace ddscat {
+		class ddPar;
+		class ddPar_IO_input_registry {};
+		class ddPar_IO_output_registry {};
+	}
+	namespace registry {
+
+		extern template struct IO_class_registry_writer<
+			::rtmath::ddscat::ddPar>;
+
+		extern template struct IO_class_registry_reader<
+			::rtmath::ddscat::ddPar>;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddPar_IO_input_registry,
+			IO_class_registry_reader<::rtmath::ddscat::ddPar> >;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddPar_IO_output_registry,
+			IO_class_registry_writer<::rtmath::ddscat::ddPar> >;
+
+	}
 	namespace ddscat {
 
 		class rotations;
@@ -55,7 +82,7 @@ namespace rtmath {
 				{
 					// No key / val separation here...
 					std::string lin;
-					std::getline(in,lin);
+					std::getline(in, lin);
 					read(lin);
 				}
 				virtual void read(const std::string &val) = 0;
@@ -96,7 +123,7 @@ namespace rtmath {
 			class ddParLineSimpleBase : public ddParLine
 			{
 			public:
-				ddParLineSimpleBase(ParId id = UNKNOWN) 
+				ddParLineSimpleBase(ParId id = UNKNOWN)
 					: ddParLine(id) {}
 				virtual ~ddParLineSimpleBase() {}
 				virtual void read(const std::string &val) = 0;
@@ -122,7 +149,7 @@ namespace rtmath {
 			class ddParLineSimple : public ddParLineSimpleBase<T>
 			{
 			public:
-				ddParLineSimple(ParId id = UNKNOWN) 
+				ddParLineSimple(ParId id = UNKNOWN)
 					: ddParLineSimpleBase<T>(id) {}
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
@@ -132,7 +159,7 @@ namespace rtmath {
 					out << this->_val << " ";
 					if (this->_endWriteWithEndl)
 					{
-						idString(this->_id,idstr);
+						idString(this->_id, idstr);
 						out << " = " << idstr << suffix << std::endl;
 					}
 				}
@@ -161,7 +188,7 @@ namespace rtmath {
 			class ddParLineSimple <std::string> : public ddParLineSimpleBase<std::string>
 			{
 			public:
-				ddParLineSimple(ParId id = UNKNOWN) 
+				ddParLineSimple(ParId id = UNKNOWN)
 					: ddParLineSimpleBase(id) {}
 				~ddParLineSimple() {}
 				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
@@ -171,14 +198,14 @@ namespace rtmath {
 					out << "\'" << _val << "\'";
 					if (this->_endWriteWithEndl)
 					{
-						idString(this->_id,idstr);
+						idString(this->_id, idstr);
 						out << " = " << idstr << suffix << std::endl;
 					}
 				}
 				virtual void read(const std::string &val)
 				{
 					std::string pstr;
-					pString(val,pstr);
+					pString(val, pstr);
 					set(pstr);
 				}
 			private:
@@ -195,7 +222,7 @@ namespace rtmath {
 			class ddParLineSimplePlural : public ddParLine
 			{
 			public:
-				ddParLineSimplePlural(ParId id = UNKNOWN) 
+				ddParLineSimplePlural(ParId id = UNKNOWN)
 					: ddParLine(id) { }
 				virtual ~ddParLineSimplePlural() {}
 				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
@@ -206,7 +233,7 @@ namespace rtmath {
 						out << *it << " ";
 					if (this->_endWriteWithEndl)
 					{
-						idString(this->_id,idstr);
+						idString(this->_id, idstr);
 						out << " = " << idstr << suffix << std::endl;
 					}
 				}
@@ -217,8 +244,8 @@ namespace rtmath {
 					typedef boost::tokenizer<boost::char_separator<char> >
 						tokenizer;
 					boost::char_separator<char> sep(" \t(),");
-					tokenizer tcom(val,sep);
-					for (auto it=tcom.begin(); it != tcom.end(); ++it)
+					tokenizer tcom(val, sep);
+					for (auto it = tcom.begin(); it != tcom.end(); ++it)
 					{
 						std::istringstream strm(*it);
 						T trgt;
@@ -246,13 +273,13 @@ namespace rtmath {
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine>(*this));
 				}
 			};
-			
+
 			/// This is a special case for paired numbers.
 			template <class T>
 			class ddParTuples : public ddParLineSimplePlural<T>
 			{
 			public:
-				ddParTuples(size_t tuplesize, ParId id = UNKNOWN) 
+				ddParTuples(size_t tuplesize, ParId id = UNKNOWN)
 					: ddParLineSimplePlural<T>(id) { _tuplesize = tuplesize; }
 				virtual ~ddParTuples() {}
 				virtual void write(std::ostream &out, size_t version, const std::string &suffix = "")
@@ -267,13 +294,14 @@ namespace rtmath {
 						if ((i % _tuplesize) == (_tuplesize - 1))
 						{
 							out << ") ";
-						} else {
+						}
+						else {
 							out << ",";
 						}
 					}
 					if (this->_endWriteWithEndl)
 					{
-						idString(this->_id,idstr);
+						idString(this->_id, idstr);
 						out << " = " << idstr << suffix << std::endl;
 					}
 				}
@@ -290,12 +318,14 @@ namespace rtmath {
 				}
 			};
 
-			template <class T, class R> 
+			template <class T, class R>
 			class ddParLineMixed : public ddParLine
 			{
 			public:
-				ddParLineMixed(size_t numT, size_t nVals, ParId id = UNKNOWN) 
-					: ddParLine(id) { setSep(numT, nVals); }
+				ddParLineMixed(size_t numT, size_t nVals, ParId id = UNKNOWN)
+					: ddParLine(id) {
+					setSep(numT, nVals);
+				}
 				virtual ~ddParLineMixed() {}
 				virtual void read(const std::string &val)
 				{
@@ -308,9 +338,9 @@ namespace rtmath {
 					typedef boost::tokenizer<boost::char_separator<char> >
 						tokenizer;
 					boost::char_separator<char> sep(" \t()");
-					tokenizer tcom(val,sep);
+					tokenizer tcom(val, sep);
 					size_t num = 0;
-					for (auto it=tcom.begin(); it != tcom.end(); ++it)
+					for (auto it = tcom.begin(); it != tcom.end(); ++it)
 					{
 						//val.push_back(*it);
 						// Select where to insert based on position
@@ -320,10 +350,11 @@ namespace rtmath {
 							in.read(*it);
 							_t[num] = in;
 							//_t.push_back(in);
-						} else {
+						}
+						else {
 							ddParLineSimple<R> in;
 							in.read(*it);
-							_r[num-_numT] = in;
+							_r[num - _numT] = in;
 							//_r.push_back(in);
 						}
 						num++;
@@ -347,7 +378,7 @@ namespace rtmath {
 					}
 					if (this->_endWriteWithEndl)
 					{
-						idString(this->_id,idstr);
+						idString(this->_id, idstr);
 						out << " = " << idstr << suffix << std::endl;
 					}
 				}
@@ -372,7 +403,8 @@ namespace rtmath {
 						index -= _numT;
 						_r[index].get(pval);
 						val = boost::lexical_cast<S>(pval);
-					} else {
+					}
+					else {
 						T pval;
 						_t[index].get(pval);
 						val = boost::lexical_cast<S>(pval);
@@ -391,7 +423,8 @@ namespace rtmath {
 						R pval;
 						irm >> pval;
 						_r[index].set(pval);
-					} else {
+					}
+					else {
 						std::ostringstream srm;
 						srm << val;
 						std::istringstream irm(srm.str());
@@ -425,10 +458,10 @@ namespace rtmath {
 
 
 #define accessorSimple(name,id,valtype) \
-		inline valtype name() const { return __getSimple<valtype>(id); } \
-		inline void name(const valtype &v) { __setSimple<valtype>(id, v); }
+	inline valtype name() const { return __getSimple<valtype>(id); } \
+	inline void name(const valtype &v) { __setSimple<valtype>(id, v); }
 
-// Special case where a bool is stored in the file as an int
+		// Special case where a bool is stored in the file as an int
 #define accessorSimpleBool(name,id) \
 	inline bool name() const { return __getSimpleBool(id); } \
 	inline void name(const bool &v) { __setSimpleBool(id, v); }
@@ -453,11 +486,21 @@ namespace rtmath {
 
 		/**
 		* \brief Provides ddscat.par manipulation.
-		* 
-		* Used to both extract information necessary for shapefile formation, and used when 
+		*
+		* Used to both extract information necessary for shapefile formation, and used when
 		* upgrading ddscat versions. It also provides writing functionality for the files.
 		**/
-		class DLEXPORT_rtmath_ddscat_base ddPar
+		class DLEXPORT_rtmath_ddscat_base ddPar :
+			virtual public ::rtmath::registry::usesDLLregistry<
+			::rtmath::ddscat::ddPar_IO_input_registry,
+			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddPar> >,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			::rtmath::ddscat::ddPar_IO_output_registry,
+			::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
+			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
+			//virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>//,
+			virtual public ::rtmath::io::Serialization::implementsSerialization<
+			::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>
 		{
 		public:
 			/// Load the default ddscat.par file, used in setting default values
@@ -487,7 +530,7 @@ namespace rtmath {
 			ddPar & operator=(const ddPar &rhs);
 
 			void readFile(const std::string &filename, bool overlay = false);
-			void writeFile(const std::string &filename, const std::string &type = "") const;
+			//void writeFile(const std::string &filename, const std::string &type = "") const;
 			/// \todo Add in line number matching as a backup when key parsing fails
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream &stream) const;
@@ -498,55 +541,55 @@ namespace rtmath {
 			inline void version(size_t nv) { _version = nv; }
 
 			// Easy to use accessor functions
-			accessorStringBool(doTorques,ddParParsers::CMTORQ,"NOTORQ","DOTORQ");
-			accessorString(getSolnMeth,setSolnMeth,ddParParsers::CMDSOL);
-			accessorString(getFFTsolver,setFFTsolver,ddParParsers::CMDFFT);
-			accessorString(getCalpha,setCalpha,ddParParsers::CALPHA);
-			accessorString(getBinning,setBinning,ddParParsers::CBINFLAG);
-			accessorSimplePlural(Imem,ddParParsers::DIMENSION,size_t,3);
+			accessorStringBool(doTorques, ddParParsers::CMTORQ, "NOTORQ", "DOTORQ");
+			accessorString(getSolnMeth, setSolnMeth, ddParParsers::CMDSOL);
+			accessorString(getFFTsolver, setFFTsolver, ddParParsers::CMDFFT);
+			accessorString(getCalpha, setCalpha, ddParParsers::CALPHA);
+			accessorString(getBinning, setBinning, ddParParsers::CBINFLAG);
+			accessorSimplePlural(Imem, ddParParsers::DIMENSION, size_t, 3);
 
-			accessorString(getShape,setShape,ddParParsers::CSHAPE);
-			accessorSimplePlural(shpar,ddParParsers::SHAPEPARAMS,double, 3);
+			accessorString(getShape, setShape, ddParParsers::CSHAPE);
+			accessorSimplePlural(shpar, ddParParsers::SHAPEPARAMS, double, 3);
 
 			void setDiels(const std::vector<std::string>&);
 			void getDiels(std::vector<std::string>&) const;
 			void getDielHashes(std::vector<HASH_t>&) const;
 			void setDielHashes(std::vector<HASH_t>&);
 
-			accessorSimpleBool(doNearField,ddParParsers::NRFLD);
-			accessorSimplePlural(near,ddParParsers::FRACT_EXTENS,double, 6);
-			accessorSimple(maxTol,ddParParsers::TOL,double);
-			accessorSimple(maxIter,ddParParsers::MXITER,size_t);
-			accessorSimple(gamma,ddParParsers::GAMMA,double);
-			accessorSimple(etasca,ddParParsers::ETASCA,double);
+			accessorSimpleBool(doNearField, ddParParsers::NRFLD);
+			accessorSimplePlural(near, ddParParsers::FRACT_EXTENS, double, 6);
+			accessorSimple(maxTol, ddParParsers::TOL, double);
+			accessorSimple(maxIter, ddParParsers::MXITER, size_t);
+			accessorSimple(gamma, ddParParsers::GAMMA, double);
+			accessorSimple(etasca, ddParParsers::ETASCA, double);
 
 			void setWavelengths(double min, double max, size_t n, const std::string &spacing);
 			void getWavelengths(double &min, double &max, size_t &n, std::string &spacing) const;
 			void getWavelengths(std::set<double> &) const;
 			std::string getWavelengths() const;
 
-			accessorSimple(nAmbient,ddParParsers::NAMBIENT,double);
+			accessorSimple(nAmbient, ddParParsers::NAMBIENT, double);
 
 			void setAeff(double min, double max, size_t n, const std::string &spacing);
 			void getAeff(double &min, double &max, size_t &n, std::string &spacing) const;
 			void getAeff(std::set<double> &) const;
 			std::string getAeff() const;
 
-			accessorSimplePluralTuple(PolState,ddParParsers::POLSTATE,double, 6, 2);
-			accessorSimple(OrthPolState,ddParParsers::IORTH,size_t);
-			accessorSimpleBool(writePol,ddParParsers::IWRPOL);
-			accessorSimpleBool(writeSca,ddParParsers::IWRKSC);
+			accessorSimplePluralTuple(PolState, ddParParsers::POLSTATE, double, 6, 2);
+			accessorSimple(OrthPolState, ddParParsers::IORTH, size_t);
+			accessorSimpleBool(writePol, ddParParsers::IWRPOL);
+			accessorSimpleBool(writeSca, ddParParsers::IWRKSC);
 
 			void getRots(rotations &rots) const;
 			void setRots(const rotations &rots);
 
-			accessorSimplePlural(firstOri,ddParParsers::IWAV,int, 3);
+			accessorSimplePlural(firstOri, ddParParsers::IWAV, int, 3);
 
 			void getSIJ(std::set<size_t> &sij) const;
 			void setSIJ(const std::set<size_t> &sij);
 
-			accessorString(getCMDFRM,setCMDFRM,ddParParsers::CMDFRM);
-			accessorSimple(numPlanes,ddParParsers::NPLANES,size_t);
+			accessorString(getCMDFRM, setCMDFRM, ddParParsers::CMDFRM);
+			accessorSimple(numPlanes, ddParParsers::NPLANES, size_t);
 			// Scattering planes
 			void getPlane(size_t n, double &phi, double &thetan_min, double &thetan_max, double &dtheta) const;
 			void setPlane(size_t n, double phi, double thetan_min, double thetan_max, double dtheta);
@@ -557,8 +600,8 @@ namespace rtmath {
 			void getKey(ddParParsers::ParId key, boost::shared_ptr<const ddParParsers::ddParLine> &res) const;
 			inline boost::shared_ptr<ddParParsers::ddParLine> getKey(ddParParsers::ParId key)
 			{
-				boost::shared_ptr<ddParParsers::ddParLine> res ;//= nullptr;
-				getKey(key,res);
+				boost::shared_ptr<ddParParsers::ddParLine> res;//= nullptr;
+				getKey(key, res);
 				return res;
 			}
 			bool exists(ddParParsers::ParId key) const;
@@ -568,8 +611,8 @@ namespace rtmath {
 			void getPlane(size_t key, boost::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const;
 			inline boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > getPlane(size_t key)
 			{
-				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res ;//= nullptr;
-				getPlane(key,res);
+				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > res;//= nullptr;
+				getPlane(key, res);
 				return res;
 			}
 			void insertPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res);
@@ -579,12 +622,12 @@ namespace rtmath {
 			void _init();
 			size_t _version;
 
-			mutable std::map<ddParParsers::ParId, 
-				boost::shared_ptr<ddParParsers::ddParLine> > 
+			mutable std::map<ddParParsers::ParId,
+				boost::shared_ptr<ddParParsers::ddParLine> >
 				_parsedData;
 
 			mutable std::map<size_t,
-				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > > 
+				boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > >
 				_scaPlanes;
 
 			mutable std::vector<

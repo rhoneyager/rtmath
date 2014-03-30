@@ -540,6 +540,8 @@ namespace rtmath
 			}
 			out << std::endl;
 		}
+
+		IOhandler::IOhandler(const std::string &id) : id(id) {}
 		
 		bool match_file_type(const char* filename, const char* type, 
 			const char* ext, const char *op, const char *opref)

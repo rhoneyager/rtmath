@@ -93,6 +93,7 @@ set(rtmath_core_serialization
 	#rtmath/Serialization/matrixop_serialization.h
 	rtmath/Serialization/serialization_macros.h
 	src/common_templates_serialization.cpp
+	src/io.cpp
 	#src/eigen_serialization.cpp
 	#src/matrixop_serialization.cpp
 	)
@@ -130,6 +131,8 @@ set(rtmath_ddscat_base-files
 	rtmath/ddscat/ddpar.h
 	rtmath/ddscat/parids.h
 	src/ddpar.cpp
+	src/ddpar-keys.cpp
+	src/ddpar-parsers.cpp
 	src/ddpar_serialization.cpp
 	rtmath/ddscat/rotations.h
 	src/rotations.cpp

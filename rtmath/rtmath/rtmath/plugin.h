@@ -40,15 +40,33 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::IO_options> opts,
 			std::vector<boost::shared_ptr<T> > &vec);
 
+		/** \brief Template (designed to be overridable) that can be used to 
+		 * force a different writing function for io.
+		 *
+		 * \param T is the class being written.
+		 * \param IO_reg_class is the registry used. Used only in specialization to force 
+		 * a custom write function with a different naming scheme (e.g. core library writes).
+		 **/
+		/*
+		template <class T, class IO_reg_class>
+		typename IO_class_registry_writer<T>::io_multi_type
+			selectWriter()
+		{
+			return write_file_type_multi<T>;
+		}
+		*/
+
 		/** \brief Convenience function for setting up the IO_class_registry_writer objects
 		*
 		* \param T is the object type to be written
 		* \param U is the object multi-writer handler type
+		* \param IO_reg_class is used ONLY for selecting the writer, to allow overrides. If not 
+		* attempting to override, the parameter is unused.
 		* \param extension is the extension of the file (hdf5, silo, tsv, ...)
 		* \param writeMulti is an optional multi-type writer. If not specified, the writer has a default name that must be specialized.
 		* \param custom_writeSingle is an optional single type writer that is not the custom one.
 		**/
-		template<class T>
+		template<class T> //, class IO_reg_class>
 		IO_class_registry_writer<T>
 			genIOregistry_writer(
 			const char* extension,
@@ -56,39 +74,15 @@ namespace rtmath
 			const char* exportType = "")
 		{
 			IO_class_registry_writer<T> res;
-			//res.io_matches = std::bind(match_file_type, _1, _2, extension);
+			res.io_matches = std::bind(match_file_type, _1, _2, extension);
 			auto opts2 = IO_options::generate();
 			opts2->extension(extension);
 			opts2->exportType(exportType);
-			res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
+			//res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
 
+			//res.io_multi_processor = writer;
 			res.io_multi_processor = write_file_type_multi<T>;
-			return res;
-		}
-
-		/** \brief Convenience function for setting up the IO_class_registry_writer objects
-		*
-		* \param T is the object type to be written
-		* \param U is the object multi-writer handler type
-		* \param extension is the extension of the file (hdf5, silo, tsv, ...)
-		* \param writeMulti is an optional multi-type writer. If not specified, the writer has a default name that must be specialized.
-		* \param custom_writeSingle is an optional single type writer that is not the custom one.
-		**/
-		template<class T>
-		IO_class_registry_reader<T>
-			genIOregistry_reader(
-			const char* extension,
-			const char* pluginid,
-			const char* exportType = "")
-		{
-			IO_class_registry_reader<T> res;
-			//res.io_matches = std::bind(match_file_type, _1, _2, extension);
-			auto opts2 = IO_options::generate();
-			opts2->extension(extension);
-			opts2->exportType(exportType);
-			res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
-
-			res.io_multi_processor = read_file_type_multi<T>;
+			//res.io_multi_processor = selectWriter<T, IO_reg_class>();
 			return res;
 		}
 
@@ -106,19 +100,6 @@ namespace rtmath
 #endif
 		}
 
-		template <class T, class IO_reg_class>
-		void genAndRegisterIOregistry_reader(
-			const char* extension,
-			const char* pluginid,
-			const char* exportType = "")
-		{
-			auto res = genIOregistry_reader<T>(extension, pluginid, exportType);
-#ifdef _MSC_FULL_VER
-			T::usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
-#else
-			T::template usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
-#endif
-		}
 
 		template <class T, class IO_reg_class>
 		void genAndRegisterIOregistryPlural_writer(
@@ -132,6 +113,48 @@ namespace rtmath
 				genAndRegisterIOregistry_writer<T, IO_reg_class>(extensions[i],
 					pluginid, exportType);
 			}
+		}
+
+
+		/** \brief Convenience function for setting up the IO_class_registry_writer objects
+		*
+		* \param T is the object type to be written
+		* \param U is the object multi-writer handler type
+		* \param extension is the extension of the file (hdf5, silo, tsv, ...)
+		* \param writeMulti is an optional multi-type writer. If not specified, the writer has a default name that must be specialized.
+		* \param custom_writeSingle is an optional single type writer that is not the custom one.
+		**/
+		template<class T>
+		IO_class_registry_reader<T>
+			genIOregistry_reader(
+			const char* extension,
+			const char* pluginid,
+			const char* exportType = "")
+		{
+				IO_class_registry_reader<T> res;
+				//res.io_matches = std::bind(match_file_type, _1, _2, extension);
+				auto opts2 = IO_options::generate();
+				opts2->extension(extension);
+				opts2->exportType(exportType);
+				res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
+
+				res.io_multi_processor = read_file_type_multi<T>;
+				return res;
+		}
+
+
+		template <class T, class IO_reg_class>
+		void genAndRegisterIOregistry_reader(
+			const char* extension,
+			const char* pluginid,
+			const char* exportType = "")
+		{
+			auto res = genIOregistry_reader<T>(extension, pluginid, exportType);
+#ifdef _MSC_FULL_VER
+			T::usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
+#else
+			T::template usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
+#endif
 		}
 
 	}
