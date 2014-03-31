@@ -51,7 +51,9 @@ namespace rtmath
 				open(filename, t);
 			}
 
-			serialization_handle::~serialization_handle() {}
+			serialization_handle::~serialization_handle()
+			{
+			}
 
 			void serialization_handle::open(const char* filename, ::rtmath::registry::IOhandler::IOtype t)
 			{
@@ -149,13 +151,15 @@ namespace rtmath
 			}
 
 			bool serialization_handle::match_file_type(const char* filename,
-				const char* type, const char *op)
+				const char* type,
+				const std::set<std::string> &mtypes, 
+				const char *op)
 			{
 				using namespace boost::filesystem;
 				using std::string;
 				using std::ofstream;
 
-				const std::set<string> &mtypes = known_formats();
+				//const std::set<string> &mtypes = known_formats();
 
 				string sop(op);
 				if (sop.size()) return false;
@@ -188,7 +192,8 @@ namespace rtmath
 			bool serialization_handle::match_file_type_multi(
 				std::shared_ptr<rtmath::registry::IOhandler> h,
 				const char* pluginid,
-				std::shared_ptr<rtmath::registry::IO_options> opts)
+				std::shared_ptr<rtmath::registry::IO_options> opts, 
+					const std::set<std::string> &mtypes)
 			{
 				std::string spluginid(pluginid);
 				if (h)
@@ -199,7 +204,7 @@ namespace rtmath
 				else {
 					std::string filename = opts->filename();
 					std::string type = opts->filetype();
-					return match_file_type(filename.c_str(), type.c_str(),
+					return match_file_type(filename.c_str(), type.c_str(), mtypes,
 						opts->exportType().c_str());
 				}
 			}

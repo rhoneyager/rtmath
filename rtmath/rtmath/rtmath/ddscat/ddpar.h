@@ -37,6 +37,8 @@ namespace rtmath {
 		class ddPar;
 		class ddPar_IO_input_registry {};
 		class ddPar_IO_output_registry {};
+		class ddPar_serialization {};
+		class ddPar_Standard {};
 	}
 	namespace registry {
 
@@ -487,7 +489,7 @@ namespace rtmath {
 		/// Provides local readers and writers for ddscat ddpar data (it's a binder)
 		class DLEXPORT_rtmath_ddscat_base implementsDDPAR :
 			private rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
-			ddPar_IO_input_registry>
+			ddPar_IO_input_registry, ddPar_Standard>
 		{
 		public:
 			virtual ~implementsDDPAR() {}
@@ -513,7 +515,7 @@ namespace rtmath {
 			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
 			virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>,
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
-				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>,
+				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry, ddPar_serialization>,
 			virtual public implementsDDPAR
 		{
 		public:

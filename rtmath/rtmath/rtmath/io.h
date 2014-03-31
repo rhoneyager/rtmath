@@ -43,7 +43,15 @@ namespace rtmath
 				static bool match_file_type(
 					const char* filename,
 					const char* type,
+					const std::set<std::string> &mtypes,
 					const char* op = "");
+				static bool match_file_type(
+					const char* filename,
+					const char* type,
+					const char* op = "")
+				{
+					return match_file_type(filename, type, known_formats(), op);
+				}
 
 				/** \brief Match file type for serialized data
 				* \param h is and existing IO handler.
@@ -53,10 +61,11 @@ namespace rtmath
 				static bool match_file_type_multi(
 					std::shared_ptr<rtmath::registry::IOhandler> h,
 					const char* pluginid,
-					std::shared_ptr<rtmath::registry::IO_options> opts);
+					std::shared_ptr<rtmath::registry::IO_options> opts, 
+					const std::set<std::string> &mtypes);
 
-				std::shared_ptr<std::ostream> writer;
-				std::shared_ptr<std::istream> reader;
+				std::weak_ptr<std::ostream> writer;
+				std::weak_ptr<std::istream> reader;
 
 				static const std::set<std::string>& known_formats();
 
@@ -125,7 +134,7 @@ namespace rtmath
 
 				// serialization_handle handles compression details
 				// Write to a stream, not to a file
-				writer(obj, *(h->writer.get()), opts); //, filename);
+				writer(obj, *(h->writer.lock().get()), opts); //, filename);
 				
 				return h; // Pass back the handle
 			};
@@ -156,7 +165,7 @@ namespace rtmath
 
 				// serialization_handle handles compression details
 				// Read from a stream, not to a file. Filename is for serialization method detection.
-				reader(obj, *(h->reader.get()), opts); //, filename);
+				reader(obj, *(h->reader.lock().get()), opts); //, filename);
 
 				return h; // Pass back the handle
 			};
@@ -172,15 +181,20 @@ namespace rtmath
 		 **/
 		template <class obj_class,
 		class output_registry_class,
-		class input_registry_class>
+		class input_registry_class,
+		class obj_io_separator>
 		class implementsIO
 		{
 		public:
 			virtual ~implementsIO() {}
-		private:
+		protected:
 			const std::set<std::string> &matchExts;
 		protected:
-			implementsIO(const std::set<std::string> &exts) : matchExts(exts)
+			implementsIO(const std::set<std::string> &exts) : matchExts(exts) {}
+			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer) = 0;
+			virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader) = 0;
+
+			virtual void doImplementsIOsetup()
 			{
 				// Call the binder code
 				static bool inited = false; // No need for a static class def.
@@ -195,14 +209,14 @@ namespace rtmath
 					}
 				}
 			}
-			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer) = 0;
-			virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader) = 0;
-
+		private:
 			virtual void setup()
 			{
 				using namespace registry;
 				using namespace std;
 
+				static std::vector<IO_class_registry_writer<obj_class> > writers;
+				static std::vector<IO_class_registry_reader<obj_class> > readers;
 
 				// Link the functions to the registry
 				// Note: the standard genAndRegisterIOregistryPlural_writer will not work here, 
@@ -216,21 +230,23 @@ namespace rtmath
 					using namespace std::placeholders;
 					IO_class_registry_writer<obj_class> writer;
 					makeWriter(writer);
+					writers.push_back(std::move(writer));
 					// ! Register writer
 #ifdef _MSC_FULL_VER
-					obj_class::usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(writer);
+					obj_class::usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(*(writers.rbegin()));
 #else
-					obj_class::template usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(writer);
+					obj_class::template usesDLLregistry<output_registry_class, IO_class_registry_writer<obj_class> >::registerHook(*(writers.rbegin()));
 #endif
 
 					// ! Generate reader
 					IO_class_registry_reader<obj_class> reader;
 					makeReader(reader);
+					readers.push_back(std::move(reader));
 					// ! Register reader
 #ifdef _MSC_FULL_VER
-					obj_class::usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(reader);
+					obj_class::usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(*(readers.rbegin()));
 #else
-					obj_class::template usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(reader);
+					obj_class::template usesDLLregistry<input_registry_class, IO_class_registry_reader<obj_class> >::registerHook(*(readers.rbegin()));
 #endif
 
 				}
@@ -239,10 +255,11 @@ namespace rtmath
 
 		template <class obj_class,
 		class output_registry_class,
-		class input_registry_class>
+		class input_registry_class,
+		class obj_io_separator>
 		class implementsIObasic :
 			protected implementsIO<obj_class, output_registry_class,
-			input_registry_class>
+			input_registry_class, obj_io_separator>
 		{
 		public:
 			virtual ~implementsIObasic() {}
@@ -253,19 +270,23 @@ namespace rtmath
 			inFunc &inF;
 		protected:
 			implementsIObasic(outFunc &outF, inFunc &inF, const std::set<std::string> &exts) : 
-				outF(outF), inF(inF) , implementsIO<obj_class, output_registry_class,
-				input_registry_class>(exts) {}
-			//{}
+				outF(outF), inF(inF), implementsIO<obj_class, output_registry_class,
+				input_registry_class, obj_io_separator>(exts)
+			{
+				implementsIO<obj_class, output_registry_class,
+					input_registry_class, obj_io_separator>::doImplementsIOsetup();
+			}
 			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 			{
 				writer.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
 					std::placeholders::_1, 
-					rtmath::io::TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
+					rtmath::io::TextFiles::serialization_handle::getSHid(), 
+					std::placeholders::_2, matchExts);
 				auto writerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
-					const obj_class* obj) -> std::shared_ptr<rtmath::registry::IOhandler>
+					const obj_class* obj, outFunc outF) -> std::shared_ptr<rtmath::registry::IOhandler>
 				{
 					using namespace rtmath::registry;
 					using namespace rtmath::io::TextFiles;
@@ -286,22 +307,25 @@ namespace rtmath
 
 					// serialization_handle handles compression details
 					// Write to a stream, not to a file
-					outF(obj, *(h->writer.get()));
+					outF(obj, *(h->writer.lock().get()));
 
 					return h; // Pass back the handle
 				};
-				writer.io_multi_processor = writerBinder; // std::bind(writerBinder, _1, _2, _3);
+				//writer.io_multi_processor = std::move(writerBinder); // std::bind(writerBinder, _1, _2, _3);
+				writer.io_multi_processor = std::bind(writerBinder,
+					std::placeholders::_1,std::placeholders::_2,std::placeholders::_3,
+					outF);
 			}
 			virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 			{
 				reader.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
 					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), 
-					std::placeholders::_2);
+					std::placeholders::_2, matchExts);
 				auto readerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
-					obj_class *obj) -> std::shared_ptr<rtmath::registry::IOhandler>
+					obj_class *obj, inFunc inF) -> std::shared_ptr<rtmath::registry::IOhandler>
 				{
 					using namespace rtmath::registry;
 					using namespace rtmath::io::TextFiles;
@@ -322,14 +346,14 @@ namespace rtmath
 
 					// serialization_handle handles compression details
 					// Read from a stream, not to a file. Filename is for serialization method detection.
-					inF(obj, *(h->reader.get()));
+					inF(obj, *(h->reader.lock().get()));
 					//reader(obj, *(h->reader.get()), filename);
 
 					return h; // Pass back the handle
 				};
-				reader.io_multi_processor = readerBinder;
-				//reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, _1, _2, _3,
-				//	std::bind(TextFiles::readSerialization<obj_class>, _1, _2, _3, sname));
+				reader.io_multi_processor = std::bind(readerBinder,
+					std::placeholders::_1,std::placeholders::_2,std::placeholders::_3,
+					inF);
 			}
 		};
 
@@ -339,10 +363,11 @@ namespace rtmath
 			/// Template that registers object serialization with the io registry.
 			template <class obj_class,
 			class output_registry_class,
-			class input_registry_class>
+			class input_registry_class,
+			class obj_io_separator>
 			class implementsSerialization : 
 				private implementsIO<obj_class, output_registry_class,
-				input_registry_class>
+				input_registry_class, obj_io_separator>
 			{
 			public:
 				virtual ~implementsSerialization() {}
@@ -354,8 +379,11 @@ namespace rtmath
 				/// \param sname is the serialization object key
 				implementsSerialization(const char* sname = "") : sname(sname), 
 					implementsIO<obj_class, output_registry_class,
-					input_registry_class>(io::TextFiles::serialization_handle::known_formats())
-				{}
+					input_registry_class, obj_io_separator>(io::TextFiles::serialization_handle::known_formats())
+				{
+					implementsIO<obj_class, output_registry_class,
+					input_registry_class, obj_io_separator>::doImplementsIOsetup();
+				}
 
 			private:
 				/** \brief Fixes a deficiency in the C++11 STL
@@ -399,10 +427,12 @@ namespace rtmath
 					chainedSerializer() {}
 				};
 
+			protected:
 				virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 				{
 					writer.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
-						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
+						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), 
+						std::placeholders::_2, io::TextFiles::serialization_handle::known_formats());
 
 					writer.io_multi_processor = chainedSerializer<const obj_class, std::ostream, 
 						registry::IO_class_registry_writer<obj_class> >::genFunc(
@@ -411,7 +441,8 @@ namespace rtmath
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 				{
 					reader.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
-						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
+						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), 
+						std::placeholders::_2, io::TextFiles::serialization_handle::known_formats());
 					reader.io_multi_processor = chainedSerializer<obj_class, std::istream, 
 						registry::IO_class_registry_reader<obj_class> >::genFunc(
 						TextFiles::readSerialization<obj_class>, TextFiles::readFunc<obj_class>, sname);

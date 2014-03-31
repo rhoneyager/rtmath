@@ -123,7 +123,7 @@ namespace rtmath {
 
 		implementsDDPAR::implementsDDPAR() :
 			rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
-			ddPar_IO_input_registry>(ddPar::writeDDSCAT, ddPar::readDDSCATdef, known_formats())
+			ddPar_IO_input_registry, ddPar_Standard>(ddPar::writeDDSCAT, ddPar::readDDSCATdef, known_formats())
 		{}
 
 		const std::set<std::string>& implementsDDPAR::known_formats()
@@ -134,7 +134,7 @@ namespace rtmath {
 			{
 				std::lock_guard<std::mutex> lck(mlock);
 				if (!mtypes.size())
-					mtypes.insert("par");
+					mtypes.insert(".par");
 			}
 			return mtypes;
 		}
@@ -350,7 +350,7 @@ namespace rtmath {
 			_version = rtmath::ddscat::ddVersions::getDefaultVer();
 			::rtmath::io::Serialization::implementsSerialization<
 				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, 
-				ddPar_IO_input_registry>::set_sname("rtmath::ddscat::ddpar");
+				ddPar_IO_input_registry, ddPar_serialization>::set_sname("rtmath::ddscat::ddpar");
 
 		}
 

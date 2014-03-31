@@ -218,7 +218,7 @@ int main(int argc, char** argv)
 		}
 
 		if (vm.count("output")) output = vm["output"].as< string >();
-		if (doWrite)
+		if (doWrite || vm.count("output"))
 		{
 			cerr << "Output par file is: " << output << endl;
 			par->writeFile(output);
