@@ -370,10 +370,10 @@ namespace rtmath
 				template <class T, class stream>
 				struct chainedSerializer
 				{
-					typedef std::function<void(const T*, stream&, std::shared_ptr<registry::IO_options>)> InnerFuncActual;
-					typedef std::function<void(const T*, stream&, std::shared_ptr<registry::IO_options>, const char*)> InnerFunc;
+					typedef std::function<void(T*, stream&, std::shared_ptr<registry::IO_options>)> InnerFuncActual;
+					typedef std::function<void(T*, stream&, std::shared_ptr<registry::IO_options>, const char*)> InnerFunc;
 					typedef std::function<std::shared_ptr<registry::IOhandler>(std::shared_ptr<registry::IOhandler>, 
-						std::shared_ptr<registry::IO_options>, const T*, InnerFuncActual)> OuterFunc;
+						std::shared_ptr<registry::IO_options>, T*, InnerFuncActual)> OuterFunc;
 
 					static typename registry::IO_class_registry_writer<T>::io_multi_type 
 						genFunc(InnerFunc i, OuterFunc o, const char* sname)
@@ -382,12 +382,12 @@ namespace rtmath
 						typename IO_class_registry_writer<T>::io_multi_type res;
 						auto resfunc = 
 							[&](std::shared_ptr<IOhandler> ioh, std::shared_ptr<IO_options> ioo, 
-								const T* obj) -> std::shared_ptr<IOhandler>
+								T* obj) -> std::shared_ptr<IOhandler>
 						{
 							std::shared_ptr<IOhandler> a;
 							a = o(ioh, ioo, obj, std::bind(i,
-										std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-										sname));
+								std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+								sname));
 							return a;
 						};
 
@@ -404,24 +404,21 @@ namespace rtmath
 					writer.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
 						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
 
-					writer.io_multi_processor = chainedSerializer<obj_class, std::ostream>::genFunc(
+					writer.io_multi_processor = chainedSerializer<const obj_class, std::ostream>::genFunc(
 						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>, sname);
-
-					//writer.io_multi_processor = std::bind(chainedSerializer<const obj_class, std::ostream>::func,
-					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, 
-					//	TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>); //, sname);
 				}
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 				{
 					reader.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
 						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
-					//reader.io_multi_processor = writeFunc; // The lambda from above
-					auto boundReaderFunc = std::bind(TextFiles::readSerialization<obj_class>, 
-						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
+					//auto boundReaderFunc = std::bind(TextFiles::readSerialization<obj_class>, 
+					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
 					//reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, 
 					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
 					//	boundReaderFunc);
 					//reader.io_multi_processor = write_file_type_multi<T>;
+					reader.io_multi_processor = chainedSerializer<obj_class, std::istream>::genFunc(
+						TextFiles::readSerialization<obj_class>, TextFiles::readFunc<obj_class>, sname);
 				}
 
 			};
