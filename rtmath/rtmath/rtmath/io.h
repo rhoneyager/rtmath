@@ -68,10 +68,13 @@ namespace rtmath
 			};
 
 			template <class obj_class>
-			void writeSerialization(const obj_class* obj, std::ostream &out, const std::string &filename, const char* sname)
+			void writeSerialization(const obj_class* obj, 
+				std::ostream &out, 
+				std::shared_ptr<const rtmath::registry::IO_options> opts,
+				const char* sname)
 			{
 				using namespace Ryan_Serialization;
-				serialization_method sm = select_format(filename);
+				serialization_method sm = select_format(opts->filename());
 				if (sm == serialization_method::XML)
 					::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(*obj, out, sname);
 				else if (sm == serialization_method::TEXT)
@@ -80,10 +83,13 @@ namespace rtmath
 			}
 
 			template <class obj_class>
-			void readSerialization(obj_class *obj, std::istream &in, const std::string &filename, const char* sname)
+			void readSerialization(obj_class *obj, 
+				std::istream &in, 
+				std::shared_ptr<const rtmath::registry::IO_options> opts,
+				const char* sname)
 			{
 				using namespace Ryan_Serialization;
-				serialization_method sm = select_format(filename);
+				serialization_method sm = select_format(opts->filename());
 				if (sm == serialization_method::XML)
 					::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*obj, in, sname);
 				else if (sm == serialization_method::TEXT)
@@ -97,11 +103,12 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::IOhandler> sh,
 				std::shared_ptr<rtmath::registry::IO_options> opts,
 				const obj_class *obj,
-				const std::function<void(const obj_class*, std::ostream&)> &writer)
+				const std::function<void(const obj_class*, std::ostream&, 
+				std::shared_ptr<rtmath::registry::IO_options>)> &writer)
 			{
 				std::string exporttype = opts->exportType();
 				std::string filename = opts->filename();
-				IOhandler::IOtype iotype = opts->iotype();
+				registry::IOhandler::IOtype iotype = opts->iotype();
 				std::string key = opts->getVal<std::string>("key", "");
 				using std::shared_ptr;
 
@@ -116,7 +123,7 @@ namespace rtmath
 
 				// serialization_handle handles compression details
 				// Write to a stream, not to a file
-				writer(obj, *(h->writer.get()), filename);
+				writer(obj, *(h->writer.get()), opts); //, filename);
 				
 				return h; // Pass back the handle
 			};
@@ -126,11 +133,13 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::IOhandler> sh,
 				std::shared_ptr<rtmath::registry::IO_options> opts,
 				obj_class *obj,
-				const std::function<void(obj_class*, std::istream&)> &reader)
+				const std::function<void(obj_class*, std::istream&,
+				std::shared_ptr<rtmath::registry::IO_options>)> &reader)
 			{
 				std::string exporttype = opts->exportType();
 				std::string filename = opts->filename();
-				IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+				registry::IOhandler::IOtype iotype = opts->getVal<registry::IOhandler::IOtype>
+					("iotype", registry::IOhandler::IOtype::READONLY);
 				std::string key = opts->getVal<std::string>("key", "");
 				using std::shared_ptr;
 
@@ -145,7 +154,7 @@ namespace rtmath
 
 				// serialization_handle handles compression details
 				// Read from a stream, not to a file. Filename is for serialization method detection.
-				reader(obj, *(h->reader.get()), filename);
+				reader(obj, *(h->reader.get()), opts); //, filename);
 
 				return h; // Pass back the handle
 			};
@@ -167,7 +176,7 @@ namespace rtmath
 		public:
 			virtual ~implementsIO() {}
 		private:
-			const std::set<std::string> matchExts;
+			const std::set<std::string> &matchExts;
 		protected:
 			implementsIO(const std::set<std::string> &exts) : matchExts(exts)
 			{
@@ -213,7 +222,7 @@ namespace rtmath
 #endif
 
 					// ! Generate reader
-					IO_class_registry_writer<obj_class> reader;
+					IO_class_registry_reader<obj_class> reader;
 					makeReader(reader);
 					// ! Register reader
 #ifdef _MSC_FULL_VER
@@ -230,7 +239,7 @@ namespace rtmath
 		class output_registry_class,
 		class input_registry_class>
 		class implementsIObasic :
-			virtual public implementsIO<obj_class, output_registry_class,
+			protected implementsIO<obj_class, output_registry_class,
 			input_registry_class>
 		{
 		public:
@@ -242,16 +251,18 @@ namespace rtmath
 			inFunc &inF;
 		protected:
 			implementsIObasic(outFunc &outF, inFunc &inF, const std::set<std::string> &exts) : 
-				outF(outF), inF(inF), implementsIO(exts) {}
+				outF(outF), inF(inF) , implementsIO(exts) {}
+			//{}
 			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 			{
 				writer.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
-					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), _2);
+					std::placeholders::_1, 
+					rtmath::io::TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
 				auto writerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
-					const ddPar* obj) -> std::shared_ptr<rtmath::registry::IOhandler>
+					const obj_class* obj) -> std::shared_ptr<rtmath::registry::IOhandler>
 				{
 					using namespace rtmath::registry;
 					using namespace rtmath::io::TextFiles;
@@ -282,11 +293,12 @@ namespace rtmath
 			{
 				reader.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
-					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), _2);
+					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), 
+					std::placeholders::_2);
 				auto readerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
-					ddPar *obj) -> std::shared_ptr<rtmath::registry::IOhandler>
+					obj_class *obj) -> std::shared_ptr<rtmath::registry::IOhandler>
 				{
 					using namespace rtmath::registry;
 					using namespace rtmath::io::TextFiles;
@@ -326,7 +338,7 @@ namespace rtmath
 			class output_registry_class,
 			class input_registry_class>
 			class implementsSerialization : 
-				virtual public implementsIO<obj_class, output_registry_class,
+				private implementsIO<obj_class, output_registry_class,
 				input_registry_class>
 			{
 			public:
@@ -342,20 +354,27 @@ namespace rtmath
 					input_registry_class>(io::TextFiles::serialization_handle::known_formats())
 				{}
 
+			private:
 				virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 				{
-					writer.io_multi_matches = std::bind(serialization_handle::match_file_type_multi,
-						std::placeholders::_1, serialization_handle::getSHid(), _2);
-					writer.io_multi_processor = std::bind(TextFiles::writeFunc<obj_class>, _1, _2, _3,
-						std::bind(TextFiles::writeSerialization<obj_class>, _1, _2, _3, sname));
+					writer.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
+						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
+					auto boundWriterFunc = std::bind(TextFiles::writeSerialization<obj_class>, 
+						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
+					writer.io_multi_processor = std::bind(TextFiles::writeFunc<obj_class>, 
+						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+						boundWriterFunc);
 				}
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 				{
-					reader.io_multi_matches = std::bind(serialization_handle::match_file_type_multi,
-						std::placeholders::_1, serialization_handle::getSHid(), _2);
+					reader.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
+						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
 					//reader.io_multi_processor = writeFunc; // The lambda from above
-					reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, _1, _2, _3,
-						std::bind(TextFiles::readSerialization<obj_class>, _1, _2, _3, sname));
+					auto boundReaderFunc = std::bind(TextFiles::readSerialization<obj_class>, 
+						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
+					//reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, 
+					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+					//	boundReaderFunc);
 					//reader.io_multi_processor = write_file_type_multi<T>;
 				}
 

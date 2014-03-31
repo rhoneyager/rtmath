@@ -123,7 +123,7 @@ namespace rtmath {
 
 		implementsDDPAR::implementsDDPAR() :
 			rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
-			ddPar_IO_input_registry>(ddPar::writeDDSCAT, ddPar::readDDSCAT, known_formats())
+			ddPar_IO_input_registry>(ddPar::writeDDSCAT, ddPar::readDDSCATdef, known_formats())
 		{}
 
 		const std::set<std::string>& implementsDDPAR::known_formats()
@@ -373,6 +373,11 @@ namespace rtmath {
 		void ddPar::readDDSCAT(ddPar *src, std::istream &in, bool overlay)
 		{
 			src->read(in, overlay);
+		}
+
+		void ddPar::readDDSCATdef(ddPar *src, std::istream &in)
+		{
+			readDDSCAT(src, in, false);
 		}
 
 		void ddPar::write(std::ostream& out) const

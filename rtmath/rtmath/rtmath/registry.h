@@ -266,7 +266,8 @@ namespace rtmath
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
-				std::vector<boost::shared_ptr<object> > &)> io_multi_type;
+				object*)> io_multi_type;
+			//	std::vector<boost::shared_ptr<object> > &)> io_multi_type;
 			io_multi_type io_multi_processor;
 		};
 

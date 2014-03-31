@@ -486,13 +486,14 @@ namespace rtmath {
 
 		/// Provides local readers and writers for ddscat ddpar data (it's a binder)
 		class DLEXPORT_rtmath_ddscat_base implementsDDPAR :
-			virtual public rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
+			private rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
 			ddPar_IO_input_registry>
 		{
 		public:
 			virtual ~implementsDDPAR() {}
 		protected:
 			implementsDDPAR();
+		private:
 			static const std::set<std::string>& known_formats();
 		};
 
@@ -504,15 +505,15 @@ namespace rtmath {
 		**/
 		class DLEXPORT_rtmath_ddscat_base ddPar :
 			virtual public ::rtmath::registry::usesDLLregistry<
-			::rtmath::ddscat::ddPar_IO_input_registry,
-			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddPar> >,
+				::rtmath::ddscat::ddPar_IO_input_registry,
+				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddPar> >,
 			virtual public ::rtmath::registry::usesDLLregistry<
-			::rtmath::ddscat::ddPar_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
+				::rtmath::ddscat::ddPar_IO_output_registry,
+				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
 			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
 			//virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>//,
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
-			::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>,
+				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>,
 			virtual public implementsDDPAR
 		{
 		public:
@@ -550,6 +551,8 @@ namespace rtmath {
 			static void writeDDSCAT(const ddPar*, std::ostream &);
 			/// Read a standard DDSCAT par file from an input stream
 			static void readDDSCAT(ddPar*, std::istream &, bool overlay = false);
+			/// \note Default parameter case is split because of function binding.
+			static void readDDSCATdef(ddPar*, std::istream&);
 
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;
