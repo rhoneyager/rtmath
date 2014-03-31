@@ -511,7 +511,7 @@ namespace rtmath {
 				::rtmath::ddscat::ddPar_IO_output_registry,
 				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
 			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
-			//virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>//,
+			virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>,
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
 				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry>,
 			virtual public implementsDDPAR
@@ -543,7 +543,7 @@ namespace rtmath {
 			~ddPar();
 			ddPar & operator=(const ddPar &rhs);
 
-			void readFile(const std::string &filename, bool overlay = false);
+			//void readFile(const std::string &filename, bool overlay = false);
 			/// \todo Add in line number matching as a backup when key parsing fails
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream&) const;

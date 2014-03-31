@@ -222,6 +222,7 @@ namespace rtmath {
 			return lhs;
 		}
 
+		/*
 		void ddPar::readFile(const std::string &filename, bool overlay)
 		{
 			// Check file existence
@@ -257,26 +258,10 @@ namespace rtmath {
 			sin.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
 			sin.push(in);
 
-			/*
-			if (type.size()) pext = boost::filesystem::path(type); // pext is first set a few lines above
-			if (pext.string() == ".sca")
-			{
-				readSCA(sin);
-			} else if (pext.string() == ".fml")
-			{
-				readFML(sin);
-			} else if (pext.string() == ".avg")
-			{
-				readAVG(sin);
-			} else {
-				throw rtmath::debug::xUnknownFileFormat(filename.c_str());
-			}
-			*/
-
 			read(sin, overlay);
 		}
 
-		/*
+		
 		void ddPar::writeFile(const std::string &filename, const std::string &type) const
 		{
 			populateDefaults();
@@ -311,7 +296,6 @@ namespace rtmath {
 			write(sout);
 		}
 		*/
-
 
 		void ddPar::writeDDSCAT(const ddPar *p, std::ostream &out)
 		{

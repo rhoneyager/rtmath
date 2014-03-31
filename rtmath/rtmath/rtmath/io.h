@@ -412,12 +412,6 @@ namespace rtmath
 				{
 					reader.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
 						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
-					//auto boundReaderFunc = std::bind(TextFiles::readSerialization<obj_class>, 
-					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
-					//reader.io_multi_processor = std::bind(TextFiles::readFunc<obj_class>, 
-					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-					//	boundReaderFunc);
-					//reader.io_multi_processor = write_file_type_multi<T>;
 					reader.io_multi_processor = chainedSerializer<obj_class, std::istream, 
 						registry::IO_class_registry_reader<obj_class> >::genFunc(
 						TextFiles::readSerialization<obj_class>, TextFiles::readFunc<obj_class>, sname);
@@ -527,28 +521,29 @@ namespace rtmath
 				return false;
 			}
 		};
-/*
+
 		template <class obj_class,
 		class input_registry_class>
 		class implementsStandardReader
 		{
 		protected:
+			// Controls whether boost::serialization can write this file.
+			//bool serializable;
 			implementsStandardReader()
 			{}
 
-			/// This actually handles the template reading i/o. It can report the 
+			/// This actually handles the template writing i/o. It can report the 
 			/// success of the write to a calling parent class.
-			bool baseRead(const std::string &filename, const std::string &outtype) const
+			bool baseRead(const std::string &filename, const std::string &outtype)
 			{
 				auto opts = rtmath::registry::IO_options::generate();
-				//opts->setVal<bool>("autocompress", autoCompress);
 				opts->filename(filename);
 				opts->setVal("key", filename);
-				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE;
+				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::READONLY;
 				opts->iotype(accessType);
 				opts->filetype(outtype);
-				auto res = writeMulti(nullptr, opts);
-				//auto res = writeMulti(filename.c_str(), nullptr, filename.c_str(),
+				auto res = readMulti(nullptr, opts);
+				//auto res = readMulti(filename.c_str(), nullptr, filename.c_str(),
 				//	outtype.c_str(), registry::IOhandler::IOtype::TRUNCATE, opts);
 				if (res) return true;
 				return false;
@@ -556,7 +551,13 @@ namespace rtmath
 		public:
 			virtual ~implementsStandardReader() {}
 
-			virtual void read(const std::string &filename, const std::string &outtype) const
+			/// Duplicate to avoid clashes and having to speify a full template name...
+			virtual void readFile(const std::string &filename, const std::string &outtype = "")
+			{
+				baseRead(filename, outtype);
+			}
+
+			virtual void read(const std::string &filename, const std::string &outtype = "")
 			{
 				baseRead(filename, outtype);
 			}
@@ -564,7 +565,7 @@ namespace rtmath
 			std::shared_ptr<registry::IOhandler> readMulti(
 				std::shared_ptr<rtmath::registry::IOhandler> handle,
 				std::shared_ptr<rtmath::registry::IO_options> opts
-				) const
+				)
 			{
 				// All of these objects can handle their own compression
 				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_multi_type dllsaver = nullptr;
@@ -586,7 +587,7 @@ namespace rtmath
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, opts, dynamic_cast<const obj_class*>(this));
+					return dllsaver(handle, opts, dynamic_cast<obj_class*>(this));
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 				}
 				else {
@@ -616,6 +617,6 @@ namespace rtmath
 				return false;
 			}
 		};
-	*/
+
 	}
 }
