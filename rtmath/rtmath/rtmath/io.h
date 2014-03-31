@@ -367,7 +367,7 @@ namespace rtmath
 				*
 				* \note This entire class is designed to be static.
 				**/
-				template <class T, class stream>
+				template <class T, class stream, class registryType>
 				struct chainedSerializer
 				{
 					typedef std::function<void(T*, stream&, std::shared_ptr<registry::IO_options>)> InnerFuncActual;
@@ -375,11 +375,11 @@ namespace rtmath
 					typedef std::function<std::shared_ptr<registry::IOhandler>(std::shared_ptr<registry::IOhandler>, 
 						std::shared_ptr<registry::IO_options>, T*, InnerFuncActual)> OuterFunc;
 
-					static typename registry::IO_class_registry_writer<T>::io_multi_type 
+					static typename registryType::io_multi_type 
 						genFunc(InnerFunc i, OuterFunc o, const char* sname)
 					{
 						using namespace rtmath::registry;
-						typename IO_class_registry_writer<T>::io_multi_type res;
+						typename registryType::io_multi_type res;
 						auto resfunc = 
 							[&](std::shared_ptr<IOhandler> ioh, std::shared_ptr<IO_options> ioo, 
 								T* obj) -> std::shared_ptr<IOhandler>
@@ -404,7 +404,8 @@ namespace rtmath
 					writer.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
 						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
 
-					writer.io_multi_processor = chainedSerializer<const obj_class, std::ostream>::genFunc(
+					writer.io_multi_processor = chainedSerializer<const obj_class, std::ostream, 
+						registry::IO_class_registry_writer<obj_class> >::genFunc(
 						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>, sname);
 				}
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
@@ -417,7 +418,8 @@ namespace rtmath
 					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
 					//	boundReaderFunc);
 					//reader.io_multi_processor = write_file_type_multi<T>;
-					reader.io_multi_processor = chainedSerializer<obj_class, std::istream>::genFunc(
+					reader.io_multi_processor = chainedSerializer<obj_class, std::istream, 
+						registry::IO_class_registry_reader<obj_class> >::genFunc(
 						TextFiles::readSerialization<obj_class>, TextFiles::readFunc<obj_class>, sname);
 				}
 
