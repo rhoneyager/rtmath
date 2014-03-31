@@ -7,6 +7,8 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+//#include <boost/bind.hpp>
+//#include <boost/bind/protect.hpp>
 #include <Ryan_Serialization/serialization.h>
 #include "registry.h"
 #include "plugin.h"
@@ -70,7 +72,7 @@ namespace rtmath
 			template <class obj_class>
 			void writeSerialization(const obj_class* obj, 
 				std::ostream &out, 
-				std::shared_ptr<const rtmath::registry::IO_options> opts,
+				std::shared_ptr<rtmath::registry::IO_options> opts,
 				const char* sname)
 			{
 				using namespace Ryan_Serialization;
@@ -356,15 +358,59 @@ namespace rtmath
 				{}
 
 			private:
+				/** \brief Fixes a deficiency in the C++11 STL
+				*
+				* Unfortunately, std::bind is less capable than boost::bind in that it isn't as friendly with
+				* function chaining, and there is no real equivalent for boost::protect in the C++11 standard.
+				* I prefer using pure C++11 for the dll interface, so I have to define a template forwarder 
+				* function that handles the read and write serialization operations. 
+				*
+				* \note This entire class is designed to be static.
+				**/
+				template <class T, class stream>
+				struct chainedSerializer
+				{
+					typedef std::function<void(T*, stream&, std::shared_ptr<registry::IO_options>, const char*)> InnerFunc;
+					typedef std::function<std::shared_ptr<registry::IOhandler>(std::shared_ptr<registry::IOhandler>, 
+						std::shared_ptr<registry::IO_options>, T*, const InnerFunc&)> OuterFunc;
+					
+					typedef std::pair<InnerFunc, OuterFunc> funcs; // Doing this to stay under 5 terms in the bind
+
+					static std::shared_ptr<registry::IOhandler> func(
+						std::shared_ptr<registry::IOhandler> ioh , std::shared_ptr<registry::IO_options> ioo, T* obj,
+						funcs f, const char* sname)
+					{
+						f.second(ioh, ioo, obj, std::bind(f.first,
+							std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname));
+					}
+					
+				private:
+					chainedSerializer() {}
+				};
+
 				virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 				{
 					writer.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
 						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
-					auto boundWriterFunc = std::bind(TextFiles::writeSerialization<obj_class>, 
-						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
-					writer.io_multi_processor = std::bind(TextFiles::writeFunc<obj_class>, 
-						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-						boundWriterFunc);
+					//const auto boundWriterFunc = boost::bind(TextFiles::writeSerialization<obj_class>, 
+					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname);
+					//writer.io_multi_processor = std::bind(TextFiles::writeFunc<obj_class>, 
+					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+					//	boost::protect(boundWriterFunc));
+
+					//static chainedSerializer<const obj_class, std::ostream> sout =
+					//	chainedSerializer<const obj_class, std::ostream>::generate(
+					//	TextFiles::writeSerialization<obj_class>,
+					//	TextFiles::writeFunc<obj_class>
+					//	);
+
+					chainedSerializer<const obj_class, std::ostream>::funcs p(
+						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>);
+
+					writer.io_multi_processor = std::bind(chainedSerializer<const obj_class, std::ostream>::func,
+						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, 
+						p, sname);
+						
 				}
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 				{
