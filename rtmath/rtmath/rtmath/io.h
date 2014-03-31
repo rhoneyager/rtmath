@@ -410,7 +410,7 @@ namespace rtmath
 						typename registryType::io_multi_type res;
 						auto resfunc = 
 							[&](std::shared_ptr<IOhandler> ioh, std::shared_ptr<IO_options> ioo, 
-								T* obj) -> std::shared_ptr<IOhandler>
+								T* obj, InnerFunc i, OuterFunc o) -> std::shared_ptr<IOhandler>
 						{
 							std::shared_ptr<IOhandler> a;
 							a = o(ioh, ioo, obj, std::bind(i,
@@ -419,7 +419,8 @@ namespace rtmath
 							return a;
 						};
 
-						res = resfunc;
+						res = std::bind(resfunc, std::placeholders::_1, std::placeholders::_2, 
+							std::placeholders::_3, i, o);
 						return res;
 					}
 
