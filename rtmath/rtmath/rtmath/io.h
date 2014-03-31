@@ -374,13 +374,17 @@ namespace rtmath
 					typedef std::function<std::shared_ptr<registry::IOhandler>(std::shared_ptr<registry::IOhandler>, 
 						std::shared_ptr<registry::IO_options>, T*, const InnerFunc&)> OuterFunc;
 
-					static std::shared_ptr<registry::IOhandler> func(
-						std::shared_ptr<registry::IOhandler> ioh , std::shared_ptr<registry::IO_options> ioo, T* obj,
-						InnerFunc i, OuterFunc o)
+					static typename registry::IO_class_registry_writer<T>::io_multi_type 
+						genFunc(InnerFunc i, OuterFunc o, const char* sname)
 					{
-						const char* sname = "";
-						o(ioh, ioo, obj, std::bind(i,
-							std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, sname));
+						typename registry::IO_class_registry_writer<T>::io_multi_type res = 
+							[&](std::shared_ptr<registry::IOhandler>, std::shared_ptr<registry::IO_options>, 
+								T*) -> std::shared_ptr<registry::IOhandler>
+						{
+							return nullptr;
+						};
+
+						return res;
 					}
 
 				private:
@@ -392,9 +396,12 @@ namespace rtmath
 					writer.io_multi_matches = std::bind(TextFiles::serialization_handle::match_file_type_multi,
 						std::placeholders::_1, TextFiles::serialization_handle::getSHid(), std::placeholders::_2);
 
-					writer.io_multi_processor = std::bind(chainedSerializer<const obj_class, std::ostream>::func,
-						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, 
-						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>); //, sname);
+					writer.io_multi_processor = chainedSerializer<const obj_class, std::ostream>::genFunc(
+						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>, sname);
+
+					//writer.io_multi_processor = std::bind(chainedSerializer<const obj_class, std::ostream>::func,
+					//	std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, 
+					//	TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>); //, sname);
 				}
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 				{
