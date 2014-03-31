@@ -35,14 +35,12 @@ namespace rtmath {
 
 		void ddPar::getKey(ddParParsers::ParId key, boost::shared_ptr<ddParParsers::ddParLine> &res)
 		{
-			res;//= nullptr;
 			if (_parsedData.count(key))
 				res = _parsedData[key];
 		}
 
 		void ddPar::getKey(ddParParsers::ParId key, boost::shared_ptr<const ddParParsers::ddParLine> &res) const
 		{
-			res;//= nullptr;
 			if (_parsedData.count(key))
 				res = _parsedData[key];
 		}
@@ -225,14 +223,12 @@ namespace rtmath {
 
 		void ddPar::getPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)
 		{
-			res;//= nullptr;
 			if (_scaPlanes.count(key))
 				res = _scaPlanes[key];
 		}
 
 		void ddPar::getPlane(size_t key, boost::shared_ptr<const ddParParsers::ddParLineSimplePlural<double> > &res) const
 		{
-			res;//= nullptr;
 			if (_scaPlanes.count(key))
 				res = _scaPlanes[key];
 		}
