@@ -251,7 +251,8 @@ namespace rtmath
 			inFunc &inF;
 		protected:
 			implementsIObasic(outFunc &outF, inFunc &inF, const std::set<std::string> &exts) : 
-				outF(outF), inF(inF) , implementsIO(exts) {}
+				outF(outF), inF(inF) , implementsIO<obj_class, output_registry_class,
+				input_registry_class>(exts) {}
 			//{}
 			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 			{
