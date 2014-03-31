@@ -375,6 +375,7 @@ namespace rtmath
 				/// \brief This function can be used in place of entering it in the constructor, 
 				/// for compilers that don't support delegating constructors (to save on typing).
 				void set_sname(const char* nname) { sname = nname; }
+				const char* get_sname() const { return sname; }
 				const char* sname;
 				/// \param sname is the serialization object key
 				implementsSerialization(const char* sname = "") : sname(sname), 
@@ -403,24 +404,33 @@ namespace rtmath
 					typedef std::function<std::shared_ptr<registry::IOhandler>(std::shared_ptr<registry::IOhandler>, 
 						std::shared_ptr<registry::IO_options>, T*, InnerFuncActual)> OuterFunc;
 
+					struct params
+					{
+						InnerFunc i; 
+						OuterFunc o;
+						//const char* sname;
+						params(InnerFunc i, OuterFunc o) : i(i), o(o) {}
+					};
+
 					static typename registryType::io_multi_type 
-						genFunc(InnerFunc i, OuterFunc o, const char* sname)
+						genFunc(InnerFunc i, OuterFunc o)
 					{
 						using namespace rtmath::registry;
 						typename registryType::io_multi_type res;
 						auto resfunc = 
 							[&](std::shared_ptr<IOhandler> ioh, std::shared_ptr<IO_options> ioo, 
-								T* obj, InnerFunc i, OuterFunc o) -> std::shared_ptr<IOhandler>
+								T* obj, const params& params) -> std::shared_ptr<IOhandler>
 						{
 							std::shared_ptr<IOhandler> a;
-							a = o(ioh, ioo, obj, std::bind(i,
+							a = params.o(ioh, ioo, obj, std::bind(params.i,
 								std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-								sname));
+								obj->get_sname()));
+								//params.sname));
 							return a;
 						};
 
 						res = std::bind(resfunc, std::placeholders::_1, std::placeholders::_2, 
-							std::placeholders::_3, i, o);
+							std::placeholders::_3, params(i,o));
 						return res;
 					}
 
@@ -437,7 +447,7 @@ namespace rtmath
 
 					writer.io_multi_processor = chainedSerializer<const obj_class, std::ostream, 
 						registry::IO_class_registry_writer<obj_class> >::genFunc(
-						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>, sname);
+						TextFiles::writeSerialization<obj_class>, TextFiles::writeFunc<obj_class>);
 				}
 				virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 				{
@@ -446,7 +456,7 @@ namespace rtmath
 						std::placeholders::_2, io::TextFiles::serialization_handle::known_formats());
 					reader.io_multi_processor = chainedSerializer<obj_class, std::istream, 
 						registry::IO_class_registry_reader<obj_class> >::genFunc(
-						TextFiles::readSerialization<obj_class>, TextFiles::readFunc<obj_class>, sname);
+						TextFiles::readSerialization<obj_class>, TextFiles::readFunc<obj_class>);
 				}
 
 			};
