@@ -148,6 +148,15 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lck(mlock);
 				if (!mtypes.size())
 					mtypes.insert(".par");
+				if (io::TextFiles::serialization_handle::compressionEnabled())
+				{
+					std::string sctypes;
+					std::set<std::string> ctypes;
+					Ryan_Serialization::known_compressions(sctypes, ".par");
+					rtmath::config::splitSet(sctypes, ctypes);
+					for (const auto & t : ctypes)
+						mtypes.emplace(t);
+				}
 			}
 			return mtypes;
 		}

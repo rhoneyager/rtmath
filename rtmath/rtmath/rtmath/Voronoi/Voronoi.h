@@ -32,10 +32,14 @@ namespace rtmath {
 	namespace Voronoi {
 		class VoronoiDiagram;
 		class Voronoi_IO_output_registry {};
+		class Voronoi_IO_input_registry {};
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram>;
-
+		extern template struct IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram>;
+		extern template class usesDLLregistry<
+			::rtmath::Voronoi::Voronoi_IO_input_registry,
+			IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >;
 		extern template class usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
 			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
@@ -67,9 +71,13 @@ namespace rtmath {
 		**/
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
 			virtual public ::rtmath::registry::usesDLLregistry<
-			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >,
-			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>
+				::rtmath::Voronoi::Voronoi_IO_input_registry,
+				::rtmath::registry::IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >,
+			virtual public ::rtmath::registry::usesDLLregistry<
+				::rtmath::Voronoi::Voronoi_IO_output_registry,
+				::rtmath::registry::IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >,
+			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>,
+			virtual public ::rtmath::io::implementsStandardReader<VoronoiDiagram, Voronoi_IO_input_registry>
 		{
 		public:
 			typedef boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixType;

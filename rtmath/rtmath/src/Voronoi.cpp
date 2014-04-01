@@ -95,6 +95,12 @@ namespace rtmath
 		template class usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
 			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
+
+		template struct IO_class_registry_reader
+			<::rtmath::Voronoi::VoronoiDiagram>;
+		template class usesDLLregistry<
+			::rtmath::Voronoi::Voronoi_IO_input_registry,
+			IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >;
 	}
 
 	namespace Voronoi

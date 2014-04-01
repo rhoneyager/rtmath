@@ -19,6 +19,7 @@
 #include "../rtmath/hash.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/shapefile.h"
+#include "../rtmath/splitSet.h"
 #include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
@@ -43,6 +44,40 @@ namespace rtmath {
 
 	namespace ddscat {
 		namespace shapefile {
+
+				implementsDDSHP::implementsDDSHP() :
+				rtmath::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
+				shapefile_IO_input_registry, shapefile_Standard>(shapefile::writeDDSCAT, shapefile::readDDSCATdef, known_formats())
+				{}
+
+			const std::set<std::string>& implementsDDSHP::known_formats()
+			{
+				static std::set<std::string> mtypes;
+				static std::mutex mlock;
+				// Prevent threading clashes
+				{
+					std::lock_guard<std::mutex> lck(mlock);
+					if (!mtypes.size())
+					{
+						mtypes.insert(".shp");
+						mtypes.insert("shape.txt");
+					}
+					if (io::TextFiles::serialization_handle::compressionEnabled())
+					{
+						std::string sctypes;
+						std::set<std::string> ctypes;
+						Ryan_Serialization::known_compressions(sctypes, ".shp");
+						rtmath::config::splitSet(sctypes, ctypes);
+						for (const auto & t : ctypes)
+							mtypes.emplace(t);
+						Ryan_Serialization::known_compressions(sctypes, "shape.txt");
+						rtmath::config::splitSet(sctypes, ctypes);
+						for (const auto & t : ctypes)
+							mtypes.emplace(t);
+					}
+				}
+				return mtypes;
+			}
 
 			shapefile::shapefile() { _init(); }
 			shapefile::~shapefile() { }
@@ -71,6 +106,9 @@ namespace rtmath {
 			{
 				numPoints = 0;
 				//filename = "";
+				::rtmath::io::Serialization::implementsSerialization<
+					shapefile, shapefile_IO_output_registry, 
+					shapefile_IO_input_registry, shapefile_serialization>::set_sname("rtmath::ddscat::shapefile::shapefile");
 			}
 
 			void shapefile::setHash(const HASH_t &h)

@@ -67,8 +67,11 @@ namespace rtmath
 				std::weak_ptr<std::ostream> writer;
 				std::weak_ptr<std::istream> reader;
 
+				/// Provides known extensions (xml, st * compression pairs) to match against
 				static const std::set<std::string>& known_formats();
 
+				/// Reports whether compression is enabled at all (master switch in io.cpp)
+				static bool compressionEnabled();
 			private:
 				/// Load file (prepare input stream)
 				void load(const char*);

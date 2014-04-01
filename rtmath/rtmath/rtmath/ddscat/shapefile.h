@@ -25,6 +25,8 @@ namespace rtmath {
 			class shapefile;
 			class shapefile_IO_input_registry {};
 			class shapefile_IO_output_registry {};
+			class shapefile_serialization {};
+			class shapefile_Standard {};
 		}
 	}
 	namespace registry {
@@ -58,17 +60,32 @@ namespace rtmath {
 			struct convolutionCellInfo;
 			class shapefile;
 
+			/// Provides local readers and writers for ddscat ddpar data (it's a binder)
+			class DLEXPORT_rtmath_ddscat implementsDDSHP :
+				private rtmath::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
+				shapefile_IO_input_registry, shapefile_Standard>
+			{
+			public:
+				virtual ~implementsDDSHP() {}
+			protected:
+				implementsDDSHP();
+			private:
+				static const std::set<std::string>& known_formats();
+			};
 			
 			/// Class for reading / writing shapefiles. May be used in statistical calculations.
 			class DLEXPORT_rtmath_ddscat shapefile : 
 				virtual public ::rtmath::registry::usesDLLregistry<
-				::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
-				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
+					::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
+					::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
-				::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
-				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
-				virtual public ::rtmath::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>//,
-				//virtual public ::rtmath::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>
+					::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
+					::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
+				virtual public ::rtmath::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>,
+				virtual public ::rtmath::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>,
+				virtual public ::rtmath::io::Serialization::implementsSerialization<
+					shapefile, shapefile_IO_output_registry, shapefile_IO_input_registry, shapefile_serialization>,
+				virtual public implementsDDSHP
 			{
 			public:
 				shapefile(const std::string &filename);

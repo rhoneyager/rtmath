@@ -39,6 +39,13 @@ namespace rtmath
 				std::shared_ptr<boost::iostreams::filtering_ostream> bfo;
 			};
 
+
+			bool serialization_handle::compressionEnabled()
+			{
+				/// \note Disabled because it is not working on Windows AND Linux. Very odd.
+				return false;
+			}
+
 			const char* serialization_handle::getSHid()
 			{
 				return hid;
@@ -143,7 +150,7 @@ namespace rtmath
 					if (!mtypes.size())
 					{
 						std::string formats;
-						Ryan_Serialization::known_formats(formats, true);
+						Ryan_Serialization::known_formats(formats, compressionEnabled());
 						rtmath::config::splitSet(formats, mtypes);
 					}
 				}
