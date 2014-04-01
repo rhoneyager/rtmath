@@ -141,7 +141,7 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & boost::serialization::make_nvp("val", _val);
-					ar & boost::serialization::make_nvp("rtmath_ddscat_ddParParsers_ddParLine",
+					ar & boost::serialization::make_nvp("ddParParsers_ddParLine",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine>(*this));
 				}
 			};
@@ -178,7 +178,7 @@ namespace rtmath {
 				template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & boost::serialization::make_nvp("rtmath_ddscat_ddParParsers_ddParLineSimpleBase<T>",
+					ar & boost::serialization::make_nvp("ddParParsers_ddParLineSimpleBase_T",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLineSimpleBase<T> >(*this));
 				}
 			};
@@ -215,7 +215,7 @@ namespace rtmath {
 				template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
 				{
-					ar & boost::serialization::make_nvp("rtmath_ddscat_ddParParsers_ddParLineSimpleBase<std::string>",
+					ar & boost::serialization::make_nvp("ddParParsers_ddParLineSimpleBase_std_string",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLineSimpleBase<std::string> >(*this));
 				}
 			};
@@ -271,7 +271,7 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & boost::serialization::make_nvp("val", _val);
-					ar & boost::serialization::make_nvp("rtmath_ddscat_ddParParsers_ddParLine",
+					ar & boost::serialization::make_nvp("ddParParsers_ddParLine",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine>(*this));
 				}
 			};
@@ -315,7 +315,7 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version)
 				{
 					ar & boost::serialization::make_nvp("tuplesize", _tuplesize);
-					ar & boost::serialization::make_nvp("rtmath_ddscat_ddParParsers_ddParLineSimplePlural<T>",
+					ar & boost::serialization::make_nvp("ddParParsers_ddParLineSimplePlural<T>",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLineSimplePlural<T> >(*this));
 				}
 			};
@@ -450,7 +450,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("nVals", _nVals);
 					ar & boost::serialization::make_nvp("t", _t);
 					ar & boost::serialization::make_nvp("r", _r);
-					ar & boost::serialization::make_nvp("rtmath_ddscat_ddParParsers_ddParLine",
+					ar & boost::serialization::make_nvp("ddParParsers_ddParLine",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine >(*this));
 				}
 			};

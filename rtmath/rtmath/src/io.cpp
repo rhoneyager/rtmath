@@ -119,7 +119,7 @@ namespace rtmath
 
 
 				h->fo = (std::unique_ptr<std::ofstream>
-					(new std::ofstream(fname, std::ios_base::binary | std::ios_base::out)));
+					(new std::ofstream(fname, std::ios_base::trunc | std::ios_base::binary | std::ios_base::out)));
 				// Consutuct an filtering_iostream that matches the type of compression used.
 				using namespace boost::iostreams;
 

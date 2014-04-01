@@ -10,6 +10,10 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/type_traits/is_enum.hpp>
+
+template <class T>
+typename boost::enable_if<boost::is_enum<T> >::type serialize(const T&); //use casts here
 
 namespace rtmath
 {
@@ -45,12 +49,14 @@ namespace rtmath
 		template <class Archive>
 		void ddPar::serialize(Archive & ar, const unsigned int version)
 		{
+			// Version set to zero to avoid tripping on _parsedData
+			/// \todo Fix serialization issue
 			if (version)
 			{
 				ar & boost::serialization::make_nvp("version", _version);
-				ar & boost::serialization::make_nvp("parsedData", _parsedData);
+				ar & boost::serialization::make_nvp("parsedData", _parsedData); //!
 				ar & boost::serialization::make_nvp("scaPlanes", _scaPlanes);
-				ar & boost::serialization::make_nvp("diels", _diels);
+				ar & boost::serialization::make_nvp("dielectrics", _diels);
 				ar & boost::serialization::make_nvp("dielHashes", _dielHashes);
 				ar & boost::serialization::make_nvp("from_filename", _filename);
 			} else {
