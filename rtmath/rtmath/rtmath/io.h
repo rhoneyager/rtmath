@@ -282,7 +282,7 @@ namespace rtmath
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
 					std::placeholders::_1, 
 					rtmath::io::TextFiles::serialization_handle::getSHid(), 
-					std::placeholders::_2, matchExts);
+					std::placeholders::_2, this->matchExts);
 				auto writerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
@@ -321,7 +321,7 @@ namespace rtmath
 				reader.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
 					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), 
-					std::placeholders::_2, matchExts);
+					std::placeholders::_2, this->matchExts);
 				auto readerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
