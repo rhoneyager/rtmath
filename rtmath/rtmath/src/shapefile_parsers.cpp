@@ -22,6 +22,9 @@
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
+#undef min
+#undef max
+
 /// Internal namespace for the reader parsers
 namespace {
 	namespace qi = boost::spirit::qi;
@@ -310,7 +313,7 @@ namespace rtmath
 				if (pHashShape.string() == "") return; // Silently fail (no hash dir)
 				// If a shape matching the hash already exists, there is no need to write an identical file
 				if (!Ryan_Serialization::detect_compressed(pHashShape.string()))
-					write(pHashShape.string(), true);
+					writeFile(pHashShape.string());
 			}
 
 		}

@@ -177,6 +177,7 @@ set(rtmath_ddscat-ddoutput-files
 	src/ddOutputGenerator.cpp
 	src/ddOutputGenerator_serialization.cpp
 	src/ddOutputSingle.cpp
+	src/ddOutputSingle_b.cpp
 	src/ddScattMatrix.cpp
 	src/ddScattMatrix_serialization.cpp
 	)

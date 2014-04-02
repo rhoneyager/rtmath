@@ -61,6 +61,9 @@ namespace rtmath {
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0), temp(0)
 		{
+			::rtmath::io::Serialization::implementsSerialization<
+				ddOutput, ddOutput_IO_output_registry,
+				ddOutput_IO_input_registry, ddOutput_serialization>::set_sname("rtmath::ddscat::ddOutput");
 		}
 
 		void ddOutput::updateAVG()
@@ -108,12 +111,12 @@ namespace rtmath {
 			shape = stats->_shp;
 		}
 
+		/*
 		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
 		{
 			this->write(filename, outtype);
 		}
 
-		/*
 		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
 		{
 			using namespace Ryan_Serialization;
@@ -168,7 +171,6 @@ namespace rtmath {
 				RTthrow debug::xUnknownFileFormat(filename.c_str());
 			}
 		}
-		*/
 
 		void ddOutput::readFile(const std::string &filename)
 		{
@@ -200,6 +202,7 @@ namespace rtmath {
 			res->readFile(filename);
 			return res;
 		}
+        */
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
 		{

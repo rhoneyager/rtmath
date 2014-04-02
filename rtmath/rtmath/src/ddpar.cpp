@@ -191,8 +191,8 @@ namespace rtmath {
 		{
 			std::string sThis, sRhs;
 			std::ostringstream oThis, oRhs;
-			writeDDSCAT(this, oThis);
-			writeDDSCAT(&rhs, oRhs);
+			writeDDSCAT(this, oThis, nullptr);
+			writeDDSCAT(&rhs, oRhs, nullptr);
 			sThis = oThis.str();
 			sRhs = oRhs.str();
 			return (sThis == sRhs);
@@ -209,7 +209,7 @@ namespace rtmath {
 			{
 				_version = rhs._version;
 				std::ostringstream out;
-				writeDDSCAT(&rhs, out);
+				writeDDSCAT(&rhs, out, nullptr);
 				std::string data = out.str();
 				std::istringstream in(data);
 				read(in);
@@ -222,7 +222,7 @@ namespace rtmath {
 			// Expensive copy constructor. Implements cloning to avoid screwups.
 			_version = src._version;
 			std::ostringstream out;
-			writeDDSCAT(&src, out);
+			writeDDSCAT(&src, out, nullptr);
 			std::string data = out.str();
 			std::istringstream in(data);
 			read(in);
@@ -235,7 +235,7 @@ namespace rtmath {
 			lhs->_version = _version;
 			
 			std::ostringstream out;
-			writeDDSCAT(this, out);
+			writeDDSCAT(this, out, nullptr);
 			std::string data = out.str();
 			std::istringstream in(data);
 
@@ -319,7 +319,7 @@ namespace rtmath {
 		}
 		*/
 
-		void ddPar::writeDDSCAT(const ddPar *p, std::ostream &out)
+		void ddPar::writeDDSCAT(const ddPar *p, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
 		{
 			// Writing is much easier than reading!
 			using namespace std;
@@ -381,14 +381,14 @@ namespace rtmath {
 			src->read(in, overlay);
 		}
 
-		void ddPar::readDDSCATdef(ddPar *src, std::istream &in)
+		void ddPar::readDDSCATdef(ddPar *src, std::istream &in, std::shared_ptr<registry::IO_options>)
 		{
 			readDDSCAT(src, in, false);
 		}
 
 		void ddPar::write(std::ostream& out) const
 		{
-			writeDDSCAT(this, out);
+			writeDDSCAT(this, out, nullptr);
 		}
 
 		void ddPar::read(std::istream &stream, bool overlay)

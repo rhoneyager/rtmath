@@ -550,11 +550,11 @@ namespace rtmath {
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream&) const;
 			/// Write a standard DDSCAT par file to the output stream
-			static void writeDDSCAT(const ddPar*, std::ostream &);
+			static void writeDDSCAT(const ddPar*, std::ostream &, std::shared_ptr<registry::IO_options>);
 			/// Read a standard DDSCAT par file from an input stream
 			static void readDDSCAT(ddPar*, std::istream &, bool overlay = false);
 			/// \note Default parameter case is split because of function binding.
-			static void readDDSCATdef(ddPar*, std::istream&);
+			static void readDDSCATdef(ddPar*, std::istream&, std::shared_ptr<registry::IO_options>);
 
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;

@@ -12,6 +12,7 @@
 
 #include "shapefile.h"
 #include "shapestatsRotated.h"
+#include "../io.h"
 
 // Forward declarations
 namespace rtmath {
@@ -21,6 +22,7 @@ namespace rtmath {
 			class shapeFileStats;
 			class shapeFileStats_IO_input_registry {};
 			class shapeFileStats_IO_output_registry {};
+			class shapeFileStats_serialization {};
 		}
 	}
 	namespace registry {
@@ -168,11 +170,16 @@ namespace rtmath {
 			class DLEXPORT_rtmath_ddscat shapeFileStats 
 				: public shapeFileStatsBase,
 				virtual public ::rtmath::registry::usesDLLregistry<
-				::rtmath::ddscat::stats::shapeFileStats_IO_input_registry, 
-				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::stats::shapeFileStats> >,
+				    shapeFileStats_IO_input_registry, 
+				    ::rtmath::registry::IO_class_registry_reader<shapeFileStats> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
-				::rtmath::ddscat::stats::shapeFileStats_IO_output_registry, 
-				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> >
+				    shapeFileStats_IO_output_registry, 
+				    ::rtmath::registry::IO_class_registry_writer<shapeFileStats> >,
+				virtual public ::rtmath::io::implementsStandardWriter<shapeFileStats, shapeFileStats_IO_output_registry>,
+				virtual public ::rtmath::io::implementsStandardReader<shapeFileStats, shapeFileStats_IO_input_registry>,
+				virtual public ::rtmath::io::Serialization::implementsSerialization<
+				    shapeFileStats, shapeFileStats_IO_output_registry, 
+                    shapeFileStats_IO_input_registry, shapeFileStats_serialization>
 			{
 			public:
 				shapeFileStats();
@@ -182,21 +189,22 @@ namespace rtmath {
 				bool needsUpgrade() const;
 				/// Recalculate all stats, using the newest version of the code
 				void upgrade();
-				/// Write stats to file (convenience function to mask the Ryan_Serialization call)
-				void write(const std::string &filename, const std::string &type = "") const;
-				/// Write stats to the hash file (convenience function)
+				// Write stats to file (convenience function to mask the Ryan_Serialization call)
+				//void write(const std::string &filename, const std::string &type = "") const;
+				// Write stats to the hash file (convenience function)
 				void writeToHash() const;
-				/// Write or export to a complex, multiple storage object
-				std::shared_ptr<registry::IOhandler> writeMulti(
-					std::shared_ptr<rtmath::registry::IOhandler> handle,
-					std::shared_ptr<rtmath::registry::IO_options> opts) const;
+				// Write or export to a complex, multiple storage object
+				//std::shared_ptr<registry::IOhandler> writeMulti(
+				//	std::shared_ptr<rtmath::registry::IOhandler> handle,
+				//	std::shared_ptr<rtmath::registry::IO_options> opts) const;
 				
-				/// Load stats from serialized file.
-				/// A convenience function that calls Ryan_Serialization
-				void read(const std::string &filename);
+				// Load stats from serialized file.
+				// A convenience function that calls Ryan_Serialization
+				//void read(const std::string &filename);
 			private:
 				/// Gets some initial path information from rtmath.conf
 				static void initPaths();
+				void _init();
 			public:
 				/// \brief Generate shapefile stats for the given shape. Optionally write them to statsfile.
 				///

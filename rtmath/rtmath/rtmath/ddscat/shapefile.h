@@ -97,16 +97,11 @@ namespace rtmath {
 				void print(std::ostream &out) const;
 				/// Resizes arrays to hold the desired number of points
 				void resize(size_t num);
-				/** \brief Read in a shapefile (compression allowed)
-				 *
-				 * If a standard (uncompressed) file cannot be found, also search for
-				 * a compressed file.
-				 **/
-				void read(const std::string &filename = "", bool headerOnly = false);
 				/// Read shape dipoles from a memory buffer
 				void readContents(const char *in, size_t headerEnd);
-				/// Read in ONLY a shape header (for speed with dipole matching)
-				void readHeaderOnly(const std::string &filename);
+				/// Read in ONLY a shape header (for speed with dipole matching) - string, NOT a filename
+				void readHeaderOnly(const std::string &str);
+				static void readDDSCAT(shapefile*, std::istream&, std::shared_ptr<registry::IO_options>);
 				/// Write a shapefile (compression allowed)
 				/// \param autoCompress determines whether any output should be 
 				/// automatically compressed. Specifying a compressed output filename 
@@ -116,7 +111,7 @@ namespace rtmath {
 				/// Write shape to the hash directory (convenience function)
 				void writeToHash() const;
 				/// Write a standard DDSCAT shapefile to a stream (no compression)
-				void writeDDSCAT(std::ostream &out) const;
+				static void writeDDSCAT(const shapefile*, std::ostream &, std::shared_ptr<registry::IO_options>);
 				/// Write to a complex, multiple storage object
 				//std::shared_ptr<registry::IOhandler> writeMulti(
 				//	const char* key,

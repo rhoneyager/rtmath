@@ -37,6 +37,10 @@
 
 #include "shapestats_private.h"
 
+
+#undef min
+#undef max
+
 namespace rtmath {
 	namespace registry {
 		template struct IO_class_registry_writer

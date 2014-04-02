@@ -45,10 +45,10 @@ namespace rtmath {
 	namespace ddscat {
 		namespace shapefile {
 
-				implementsDDSHP::implementsDDSHP() :
+			implementsDDSHP::implementsDDSHP() :
 				rtmath::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
-				shapefile_IO_input_registry, shapefile_Standard>(shapefile::writeDDSCAT, shapefile::readDDSCATdef, known_formats())
-				{}
+				shapefile_IO_input_registry, shapefile_Standard>(shapefile::writeDDSCAT, shapefile::readDDSCAT, known_formats())
+			{}
 
 			const std::set<std::string>& implementsDDSHP::known_formats()
 			{
@@ -61,16 +61,17 @@ namespace rtmath {
 					{
 						mtypes.insert(".shp");
 						mtypes.insert("shape.txt");
+						mtypes.insert("shape.dat");
+						mtypes.insert("target.out");
 					}
 					if (io::TextFiles::serialization_handle::compressionEnabled())
 					{
 						std::string sctypes;
 						std::set<std::string> ctypes;
 						Ryan_Serialization::known_compressions(sctypes, ".shp");
-						rtmath::config::splitSet(sctypes, ctypes);
-						for (const auto & t : ctypes)
-							mtypes.emplace(t);
 						Ryan_Serialization::known_compressions(sctypes, "shape.txt");
+						Ryan_Serialization::known_compressions(sctypes, "shape.dat");
+						Ryan_Serialization::known_compressions(sctypes, "target.out");
 						rtmath::config::splitSet(sctypes, ctypes);
 						for (const auto & t : ctypes)
 							mtypes.emplace(t);
@@ -128,7 +129,7 @@ namespace rtmath {
 				{
 					std::string res;
 					std::ostringstream out;
-					write(out);
+					print(out);
 					res = out.str();
 					this->_localhash = HASH(res.c_str(), (int)res.size());
 				}
@@ -140,9 +141,12 @@ namespace rtmath {
 			{ return loadHash(boost::lexical_cast<std::string>(hash.lower)); }
 
 			
-			void shapefile::readHeaderOnly(const std::string &filename)
-			{ read(filename, true); }
+			void shapefile::readHeaderOnly(const std::string &str)
+			{
+				readString(str, true);
+			}
 
+			/*
 			void shapefile::read(const std::string &filename, bool headerOnly)
 			{
 				using namespace std;
@@ -191,8 +195,9 @@ namespace rtmath {
 				this->_localhash = HASH(suncompressed.c_str(), (int)suncompressed.size());
 
 				//istringstream ss_unc(suncompressed);
-				readString(suncompressed);
+				readString(suncompressed, headerOnly);
 			}
+            */
 
 			void shapefile::readString(const std::string &in, bool headerOnly)
 			{
@@ -284,8 +289,17 @@ namespace rtmath {
 				resize(numPoints);
 			}
 
-			void shapefile::write(std::ostream &out) const
-			{ print(out); }
+			void shapefile::writeDDSCAT(const shapefile *s, std::ostream &out, std::shared_ptr<registry::IO_options>)
+			{ s->print(out); }
+
+			void shapefile::readDDSCAT(shapefile *s, std::istream &in, std::shared_ptr<registry::IO_options> opts)
+			{
+				std::ostringstream so;
+				boost::iostreams::copy(in, so);
+				std::string str = so.str();
+				bool headerOnly = opts->getVal<bool>("headerOnly", false);
+				s->readString(str, headerOnly);
+			}
 
 			/*
 			void shapefile::writeVTK(const std::string &fname) const
@@ -485,6 +499,7 @@ namespace rtmath {
 				return res;
 			}
 
+			/*
 			std::shared_ptr<registry::IOhandler> shapefile::writeMulti(
 					const char* key,
 					std::shared_ptr<registry::IOhandler> handle,
@@ -608,6 +623,7 @@ namespace rtmath {
 					RTthrow debug::xUnknownFileFormat(filename.c_str());
 				}
 			}
+            */
 
 			void shapefile::fixStats()
 			{

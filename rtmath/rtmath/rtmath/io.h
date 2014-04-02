@@ -267,9 +267,9 @@ namespace rtmath
 		public:
 			virtual ~implementsIObasic() {}
 		private:
-			typedef const std::function<void(const obj_class*, std::ostream&)> outFunc;
+			typedef const std::function<void(const obj_class*, std::ostream&, std::shared_ptr<rtmath::registry::IO_options>)> outFunc;
 			outFunc &outF;
-			typedef const std::function<void(obj_class*, std::istream&)> inFunc;
+			typedef const std::function<void(obj_class*, std::istream&, std::shared_ptr<rtmath::registry::IO_options>)> inFunc;
 			inFunc &inF;
 		protected:
 			implementsIObasic(outFunc &outF, inFunc &inF, const std::set<std::string> &exts) : 
@@ -310,7 +310,7 @@ namespace rtmath
 
 					// serialization_handle handles compression details
 					// Write to a stream, not to a file
-					outF(obj, *(h->writer.lock().get()));
+					outF(obj, *(h->writer.lock().get()), opts);
 
 					return h; // Pass back the handle
 				};
@@ -349,7 +349,7 @@ namespace rtmath
 
 					// serialization_handle handles compression details
 					// Read from a stream, not to a file. Filename is for serialization method detection.
-					inF(obj, *(h->reader.lock().get()));
+					inF(obj, *(h->reader.lock().get()), opts);
 					//reader(obj, *(h->reader.get()), filename);
 
 					return h; // Pass back the handle

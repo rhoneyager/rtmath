@@ -18,6 +18,7 @@
 #include "ddScattMatrix.h"
 #include "shapefile.h"
 #include "ddVersions.h"
+#include "../io.h"
 //#include "../da/daStatic.h"
 //#include "../coords.h"
 //#include "../depGraph.h"
@@ -29,8 +30,10 @@ namespace rtmath
 		class ddOutputSingleObj;
 		class ddOutputSingle;
 		class rotations;
-		//class ddOutputSingle_IO_input_registry {};
+		class ddOutputSingle_IO_input_registry {};
 		class ddOutputSingle_IO_output_registry {};
+		class ddOutputSingle_serialization {};
+		class ddOutputSingle_Standard {};
 	}
 
 	namespace registry {
@@ -40,6 +43,13 @@ namespace rtmath
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
 			IO_class_registry_writer<::rtmath::ddscat::ddOutputSingle> >;
+
+		extern template struct IO_class_registry_reader<
+			::rtmath::ddscat::ddOutputSingle>;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddOutputSingle_IO_input_registry,
+			IO_class_registry_reader<::rtmath::ddscat::ddOutputSingle> >;
 	}
 
 	namespace ddscat {
@@ -85,6 +95,19 @@ namespace rtmath
 			ddOutputSingle &_ref;
 		};
 
+		/// Provides local readers and writers for ddscat data (it's a binder)
+		class DLEXPORT_rtmath_ddscat implementsDDRES :
+			private rtmath::io::implementsIObasic<ddOutputSingle, ddOutputSingle_IO_output_registry,
+			ddOutputSingle_IO_input_registry, ddOutputSingle_Standard>
+		{
+		public:
+			virtual ~implementsDDRES() {}
+		protected:
+			implementsDDRES();
+		private:
+			static const std::set<std::string>& known_formats();
+		};
+
 		/** Class contains the output of a single ddscat fml / sca or avg file
 		 *
 		 * Doesn't quite inherit from daStatic.
@@ -94,8 +117,16 @@ namespace rtmath
 		class DLEXPORT_rtmath_ddscat ddOutputSingle :
 			public boost::enable_shared_from_this<ddOutputSingle>,
 			virtual public ::rtmath::registry::usesDLLregistry<
-			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutputSingle> >
+			    ::rtmath::ddscat::ddOutputSingle_IO_output_registry,
+			    ::rtmath::registry::IO_class_registry_writer<ddOutputSingle> >,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			    ::rtmath::ddscat::ddOutputSingle_IO_input_registry,
+			    ::rtmath::registry::IO_class_registry_reader<ddOutputSingle> >,
+			virtual public ::rtmath::io::implementsStandardWriter<ddOutputSingle, ddOutputSingle_IO_output_registry>,
+			virtual public ::rtmath::io::implementsStandardReader<ddOutputSingle, ddOutputSingle_IO_input_registry>,
+			virtual public ::rtmath::io::Serialization::implementsSerialization<
+		    	ddOutputSingle, ddOutputSingle_IO_output_registry, ddOutputSingle_IO_input_registry, ddOutputSingle_serialization>,
+			virtual public implementsDDRES
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -109,10 +140,12 @@ namespace rtmath
 
 			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
 
-			/// Read a sca, fml, avg or xml file. Handles compression.
-			void readFile(const std::string &filename, const std::string &type = "");
-			/// Write a sca, fml, avg or xml file. Handles compression.
-			void writeFile(const std::string &filename, const std::string &type = "") const;
+			// Read a sca, fml, avg or xml file. Handles compression.
+			//void readFile(const std::string &filename, const std::string &type = "");
+			// Write a sca, fml, avg or xml file. Handles compression.
+			//void writeFile(const std::string &filename, const std::string &type = "") const;
+			static void readDDSCAT(ddOutputSingle*, std::istream&, std::shared_ptr<registry::IO_options>);
+			static void writeDDSCAT(const ddOutputSingle*, std::ostream &, std::shared_ptr<registry::IO_options>);
 
 			/// Output in fml format
 			void writeFML(std::ostream &out) const;

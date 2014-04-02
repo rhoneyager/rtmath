@@ -42,19 +42,21 @@ namespace rtmath {
 
 			shapeFileStats::shapeFileStats(const shapefile::shapefile &shp)
 			{
+				_init();
 				_shp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(shp));
 				calcStatsBase();
 			}
 
 			shapeFileStats::shapeFileStats(const boost::shared_ptr<const shapefile::shapefile> &shp)
 			{
+				_init();
 				// Should the shape be spliced, or not?
 				_shp = shp;
 				//_shp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(*shp));
 				calcStatsBase();
 			}
 
-			shapeFileStats::shapeFileStats() { }
+			shapeFileStats::shapeFileStats() { _init();  }
 
 
 			shapeFileStatsBase::shapeFileStatsBase()
@@ -158,6 +160,12 @@ namespace rtmath {
 				return _rotMaxAR;
 			}
 
+			void shapeFileStats::_init()
+			{
+				::rtmath::io::Serialization::implementsSerialization<
+					shapeFileStats, shapeFileStats_IO_output_registry,
+					shapeFileStats_IO_input_registry, shapeFileStats_serialization>::set_sname("rtmath::ddscat::stats::shapeFileStats");
+			}
 
 			bool shapeFileStats::needsUpgrade() const
 			{
@@ -238,7 +246,8 @@ namespace rtmath {
 				//pHashShapes / boost::lexical_cast<std::string>(shp.hash().lower);
 				if (!Ryan_Serialization::detect_compressed(pHashShape.string()) && autoHashShapes)
 				{
-					shp.write(pHashShape.string(), true);
+                    /// \todo Somehow, automatically write compression
+					shp.write(pHashShape.string());
 				}
 				path pHashStat = storeHash(pHashStats, shp.hash()); // Path + hash. No extension yet.
 				// Query the directory for all files matching the pHashStat at the beginning.
@@ -293,7 +302,8 @@ namespace rtmath {
 				path pHashShape = storeHash(pHashShapes, shp->hash());
 				if (!Ryan_Serialization::detect_compressed(pHashShape.string()) && autoHashShapes)
 				{
-					shp->write(pHashShape.string(), true);
+                    /// \todo Reenable compression (may involve a writeMulti call with options)
+					shp->write(pHashShape.string());
 				}
 				path pHashStat = storeHash(pHashStats, shp->hash());
 				//pHashStats / boost::lexical_cast<std::string>(shp.hash().lower);
@@ -460,6 +470,7 @@ namespace rtmath {
 			}
 
 			//boost::shared_ptr<shapeFileStats> 
+			/*
 			void shapeFileStats::read(const std::string &filename)
 			{
 				Ryan_Serialization::read<shapeFileStats>(*this, filename, "rtmath::ddscat::stats::shapeFileStats");
@@ -528,14 +539,7 @@ namespace rtmath {
 				// Process dll hooks first
 				auto hooks = usesDLLregistry<shapeFileStats_IO_output_registry,
 					::rtmath::registry::IO_class_registry_writer<shapeFileStats> >::getHooks();
-				/*
-				auto opts = registry::IO_options::generate();
-				opts->filename(filename);
-				opts->filetype(ctype);
-				opts->iotype(accessType);
-				opts->setVal("key", std::string(key));
-				opts->exportType(exportType);
-				*/
+				
 				for (const auto &hook : *hooks)
 				{
 					if (!hook.io_multi_matches) continue; // Sanity check
@@ -560,7 +564,7 @@ namespace rtmath {
 				}
 				return nullptr; // Should never be reached
 			}
-
+            */
 
 			void shapeFileStats::writeToHash() const
 			{

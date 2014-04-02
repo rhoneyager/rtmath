@@ -149,6 +149,8 @@ namespace rtmath {
 
 				// Absolue value-dependent quantities
 
+#undef min
+#undef max
 				res.abs_min(0) = boost::accumulators::min(abs_x); // abs, not acc here
 				res.abs_min(1) = boost::accumulators::min(abs_y);
 				res.abs_min(2) = boost::accumulators::min(abs_z);
@@ -207,6 +209,8 @@ namespace rtmath {
 
 				for (size_t i=0; i<nV; i++)
 				{
+#undef min
+#undef max
 					res.min(i,0) = boost::accumulators::min(acc_x[i]);
 					res.min(i,1) = boost::accumulators::min(acc_y[i]);
 					res.min(i,2) = boost::accumulators::min(acc_z[i]);

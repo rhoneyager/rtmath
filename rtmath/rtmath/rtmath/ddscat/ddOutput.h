@@ -27,6 +27,7 @@ namespace rtmath {
 		class ddOutput;
 		class ddOutput_IO_output_registry {};
 		class ddOutput_IO_input_registry {};
+		class ddOutput_serialization {};
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
@@ -75,7 +76,10 @@ namespace rtmath {
 			virtual public ::rtmath::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::ddOutput_IO_input_registry, 
-				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >
+				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
+			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
+			virtual public ::rtmath::io::Serialization::implementsSerialization<
+			    ddOutput, ddOutput_IO_output_registry, ddOutput_IO_input_registry, ddOutput_serialization>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -141,10 +145,10 @@ namespace rtmath {
 			//boost::shared_ptr<ddOutputGenerator> generator;
 
 			/// Write output to file (redirects to io.h), kept for compatibility.
-			void writeFile(const std::string &filename, const std::string &type = "") const;
+			//void writeFile(const std::string &filename, const std::string &type = "") const;
 
 			/// Read xml file (using serialization)
-			void readFile(const std::string &filename);
+			//void readFile(const std::string &filename);
 
 			/**
 			* \brief Generate a standardized file name (for saving) based on the 
@@ -193,7 +197,7 @@ namespace rtmath {
 				const std::string &dir, bool noLoadRots = false);
 
 			/// Read xml file (using serialization)
-			static boost::shared_ptr<ddOutput> load(const std::string &filename);
+			//static boost::shared_ptr<ddOutput> load(const std::string &filename);
 
 			/// Write run to the hash directory (convenience function)
 			void writeToHash() const;
