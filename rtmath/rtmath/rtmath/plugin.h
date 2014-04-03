@@ -38,6 +38,12 @@ namespace rtmath
 		std::shared_ptr<rtmath::registry::IOhandler> read_file_type_multi
 			(std::shared_ptr<rtmath::registry::IOhandler> sh, 
 			std::shared_ptr<rtmath::registry::IO_options> opts,
+			T *obj);
+
+		template <class T>
+		std::shared_ptr<rtmath::registry::IOhandler> read_file_type_vector
+			(std::shared_ptr<rtmath::registry::IOhandler> sh, 
+			std::shared_ptr<rtmath::registry::IO_options> opts,
 			std::vector<boost::shared_ptr<T> > &vec);
 
 		/** \brief Template (designed to be overridable) that can be used to 
@@ -139,6 +145,7 @@ namespace rtmath
 				res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
 
 				res.io_multi_processor = read_file_type_multi<T>;
+				res.io_vector_processor = read_file_type_vector<T>;
 				return res;
 		}
 

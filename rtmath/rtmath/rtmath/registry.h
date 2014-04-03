@@ -267,13 +267,26 @@ namespace rtmath
 			 * the state of the object being accessed.
 			 * \param object* is a pointer to the object being read/written
 			 * \param IO_options specifies the filename, file type, type of object to export, ...
-			 * \returns Pointer to a IOhandler object (for example after the first write).
+			 * \returns Pointer to a IOhandler object (for example after the first read).
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
 				object*)> io_multi_type;
-			//	std::vector<boost::shared_ptr<object> > &)> io_multi_type;
 			io_multi_type io_multi_processor;
+
+			/** \brief Handles reading multiple objects from a single source
+			 * \param IOhandler is the plugin-provided opaque object that keeps track of 
+			 * the state of the object being accessed.
+			 * \param std::vector<boost::shared_ptr<object> > & is a pointer to the object container.
+			 * \param IO_options specifies the filename, file type, type of object to export, ...
+			 * It also provides the ability to select objects from the source matching various criteria.
+			 * Selection abilities vary based on the plugin.
+			 * \returns Pointer to a IOhandler object (for example after the first read).
+			 **/
+			typedef std::function<std::shared_ptr<IOhandler>
+				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
+				std::vector<boost::shared_ptr<object> > &)> io_vector_type;
+			io_vector_type io_vector_processor;
 		};
 
 
