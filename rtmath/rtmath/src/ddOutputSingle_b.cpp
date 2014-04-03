@@ -29,15 +29,9 @@ namespace rtmath {
 		{
 #define str(s) #s
 #define CHECK(x) if(id==x) return str(x)
-			/*
-			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
-			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
-			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
-			QPOL,DQPHA,
-			QSCAG11,QSCAG21,GSCAG31,ITER1,MXITER1,NSCA1,
-			QSCAG12,QSCAG22,GSCAG32,ITER2,MXITER2,NSCA2,
-			QSCAG1M,QSCAG2M,QSCAG3M,
-			*/
+			CHECK(BETA); CHECK(THETA); CHECK(PHI);
+			CHECK(WAVE); CHECK(FREQ); CHECK(AEFF); CHECK(DIPOLESPACING);
+
 			CHECK(QEXT1); CHECK(QABS1); CHECK(QSCA1);
 			CHECK(G11); CHECK(G21); CHECK(QBK1); CHECK(QPHA1);
 			CHECK(QEXT2); CHECK(QABS2); CHECK(QSCA2);
@@ -51,6 +45,17 @@ namespace rtmath {
 			CHECK(ITER2); CHECK(MXITER2); CHECK(NSCA2);
 			CHECK(QSCAG1M); CHECK(QSCAG2M); CHECK(QSCAG3M);
 
+			throw rtmath::debug::xBadInput(str(id));
+#undef CHECK
+#undef str
+		}
+
+		std::string getStatNameFromId(stat_entries_size_ts id)
+		{
+#define str(s) #s
+#define CHECK(x) if(id==x) return str(x)
+			CHECK(VERSION); CHECK(NUM_DIPOLES);
+			CHECK(NUMP); CHECK(NUMF);
 			throw rtmath::debug::xBadInput(str(id));
 #undef CHECK
 #undef str
@@ -149,7 +154,7 @@ namespace rtmath {
 			out << "          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
 			out << " JO=1: ";
 			out.width(11);
-			for (size_t i = 0; i< (size_t)QEXT2; i++)
+			for (size_t i = (size_t)QEXT1; i< (size_t)QEXT2; i++)
 				out << "\t" << _statTable[i];
 			out << endl;
 			out.width(0);
@@ -215,7 +220,7 @@ namespace rtmath {
 			// TODO
 
 			// Write the file in the appropriate order
-#define WRITE(x) _objMap.at(x)->write(out,_version)
+#define WRITE(x) _objMap.at(x)->write(out,version())
 			WRITE("version");
 			WRITE("target");
 			WRITE("solnmeth");
@@ -229,7 +234,7 @@ namespace rtmath {
 			WRITE("aeff");
 			WRITE("wave");
 			WRITE("k.aeff");
-			if (rtmath::ddscat::ddVersions::isVerWithin(_version, 72, 0))
+			if (rtmath::ddscat::ddVersions::isVerWithin(version(), 72, 0))
 				WRITE("nambient");
 			WRITE("neps");
 			WRITE("tol");
@@ -318,7 +323,7 @@ namespace rtmath {
 			WRITE("aeff");
 			WRITE("wave");
 			WRITE("k.aeff");
-			if (rtmath::ddscat::ddVersions::isVerWithin(_version, 72, 0))
+			if (rtmath::ddscat::ddVersions::isVerWithin(version(), 72, 0))
 				WRITE("nambient");
 			WRITE("neps");
 			WRITE("tol");
@@ -364,7 +369,7 @@ namespace rtmath {
 			WRITE("aeff");
 			WRITE("wave");
 			WRITE("k.aeff");
-			if (rtmath::ddscat::ddVersions::isVerWithin(_version, 72, 0))
+			if (rtmath::ddscat::ddVersions::isVerWithin(version(), 72, 0))
 				WRITE("nambient");
 			WRITE("neps");
 			WRITE("tol");
@@ -393,18 +398,22 @@ namespace rtmath {
 
 		size_t ddOutputSingle::numP() const
 		{
-			size_t i = 0;
-			for (const auto &m : _scattMatricesRaw)
-				if (m->id() == rtmath::ddscat::scattMatrixType::P) ++i;
-			return i;
+			//if (_statTable_Size_ts.at(stat_entries_size_ts::NUMP))
+			return _statTable_Size_ts.at(stat_entries_size_ts::NUMP);
+			//size_t i = 0;
+			//for (const auto &m : _scattMatricesRaw)
+			//	if (m->id() == rtmath::ddscat::scattMatrixType::P) ++i;
+			//return i;
 		}
 
 		size_t ddOutputSingle::numF() const
 		{
-			size_t i = 0;
-			for (const auto &m : _scattMatricesRaw)
-				if (m->id() == rtmath::ddscat::scattMatrixType::F) ++i;
-			return i;
+			//if (_statTable_Size_ts.at(stat_entries_size_ts::NUMF))
+			return _statTable_Size_ts.at(stat_entries_size_ts::NUMF);
+			//size_t i = 0;
+			//for (const auto &m : _scattMatricesRaw)
+			//	if (m->id() == rtmath::ddscat::scattMatrixType::F) ++i;
+			//return i;
 		}
 
 		void ddOutputSingle::getScattMatrices(scattMatricesContainer& c) const
@@ -422,10 +431,22 @@ namespace rtmath {
 			res = _statTable;
 		}
 
+		void ddOutputSingle::getStatTable(statTableTypeSize_ts &res) const
+		{
+			res = _statTable_Size_ts;
+		}
+
+
 		double ddOutputSingle::getStatEntry(stat_entries e) const
 		{
 			return _statTable[e];
 		}
+
+		size_t ddOutputSingle::getStatEntry(stat_entries_size_ts e) const
+		{
+			return _statTable_Size_ts[e];
+		}
+
 
 		void ddOutputSingle::getHeaderMaps(headerMap &res) const
 		{
@@ -440,14 +461,9 @@ namespace rtmath {
 		}
 
 		ddOutputSingle::ddOutputSingle(const ddOutputSingle &base) :
-			_version(base._version),
 			_muellerMap(base._muellerMap),
-			_beta(base._beta),
-			_theta(base._theta),
-			_phi(base._phi),
-			_wave(base._wave),
-			_aeff(base._aeff),
-			_statTable(base._statTable)
+			_statTable(base._statTable),
+			_statTable_Size_ts(base._statTable_Size_ts)
 		{
 			// Perform a deep copy of the header map
 			for (auto it : base._objMap)
@@ -466,13 +482,11 @@ namespace rtmath {
 
 		void ddOutputSingle::_init()
 		{
-			_version = rtmath::ddscat::ddVersions::getDefaultVer();
-			_beta = 0;
-			_theta = 0;
-			_phi = 0;
-			_wave = 0;
-			_aeff = 0;
-			_statTable.resize(NUM_STAT_ENTRIES);
+			_statTable_Size_ts.resize(stat_entries_size_ts::NUM_STAT_ENTRIES_INTS, 0);
+			_statTable_Size_ts.at(stat_entries_size_ts::VERSION) 
+				= rtmath::ddscat::ddVersions::getDefaultVer();
+
+			_statTable.resize(NUM_STAT_ENTRIES, 0);
 
 			// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 			_muellerMap[3] = std::pair<size_t, size_t>(0, 0);
@@ -492,49 +506,52 @@ namespace rtmath {
 
 		size_t ddOutputSingle::version() const
 		{
-			return _version;
+			return _statTable_Size_ts.at(stat_entries_size_ts::VERSION);
 		}
 
 		double ddOutputSingle::beta() const
 		{
-			return _beta;
+			return _statTable.at(stat_entries::BETA); 
 		}
 
 		double ddOutputSingle::theta() const
 		{
-			return _theta;
+			return _statTable.at(stat_entries::THETA); 
 		}
 
 		double ddOutputSingle::phi() const
 		{
-			return _phi;
+			return _statTable.at(stat_entries::PHI); 
 		}
 
 
 		double ddOutputSingle::wave() const
 		{
-			return _wave;
+			return _statTable.at(stat_entries::WAVE); 
 		}
 
 		double ddOutputSingle::freq() const
 		{
-			return rtmath::units::conv_spec("um", "GHz").convert(_wave);
+			return _statTable.at(stat_entries::FREQ); 
 		}
 
 		double ddOutputSingle::aeff() const
 		{
-			return _aeff;
+			return _statTable.at(stat_entries::AEFF); 
 		}
 
 
 		bool ddOutputSingle::operator<(const ddOutputSingle &rhs) const
 		{
-			if (_wave != rhs._wave) return _wave < rhs._wave;
-			if (_aeff != rhs._aeff) return _aeff < rhs._aeff;
-			if (_beta != rhs._beta) return _beta < rhs._beta;
-			if (_theta != rhs._theta) return _theta < rhs._theta;
-			if (_phi != rhs._phi) return _phi < rhs._phi;
+#define comp(x) if (_statTable.at(x) != rhs._statTable.at(x)) \
+	return _statTable.at(x) < rhs._statTable.at(x);
+			comp(stat_entries::WAVE);
+			comp(stat_entries::AEFF);
+			comp(stat_entries::BETA);
+			comp(stat_entries::THETA);
+			comp(stat_entries::PHI);
 			return false;
+#undef comp
 		}
 
 
@@ -563,13 +580,12 @@ namespace rtmath {
 
 		double ddOutputSingle::dipoleSpacing() const
 		{
-			if (_objMap.count("d") == 0) return -1;
-			return boost::lexical_cast<double>(_objMap.at("d")->value());
+			return _statTable.at(stat_entries::DIPOLESPACING);
 		}
 
 		size_t ddOutputSingle::numDipoles() const
 		{
-			return boost::lexical_cast<size_t>(_objMap.at("numdipoles")->value());
+			return _statTable_Size_ts.at(stat_entries_size_ts::NUM_DIPOLES); 
 		}
 
 
@@ -587,7 +603,7 @@ namespace rtmath {
 			// First line was detected by the calling function, so it is outside of the istream now.
 			//std::getline(in,line); // "          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
 			in >> line; // " JO=1: ";
-			for (size_t i = 0; i< (size_t)QEXT2; i++)
+			for (size_t i = QEXT1; i< (size_t)QEXT2; i++)
 				in >> _statTable[i];
 			in >> line; // " JO=2: ";
 			for (size_t i = (size_t)QEXT2; i< (size_t)QEXTM; i++)

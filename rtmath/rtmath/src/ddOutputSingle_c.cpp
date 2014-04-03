@@ -152,6 +152,8 @@ namespace rtmath {
 					//std::cerr << _scattMatricesRaw.size() << " elements\n";
 				}
 			}
+
+			_statTable_Size_ts.at(stat_entries_size_ts::NUMP) = _scattMatricesRaw.size();
 		}
 
 
@@ -198,8 +200,8 @@ namespace rtmath {
 
 				_scattMatricesRaw.insert(matC);
 			}
+
+			_statTable_Size_ts.at(stat_entries_size_ts::NUMF) = _scattMatricesRaw.size();
 		}
-
-
 	}
 }

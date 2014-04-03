@@ -163,7 +163,8 @@ namespace rtmath {
 			auto objc = boost::dynamic_pointer_cast<ddver>(obj);
 			objc->version(nv);
 			_objMap["version"] = obj;
-			_version = nv;
+			//_version = nv;
+			_statTable_Size_ts.at(stat_entries_size_ts::VERSION) = nv;
 		}
 
 		void ddOutputSingle::getTARGET(std::string &target) const
@@ -208,15 +209,19 @@ namespace rtmath {
 				obj->read(ii);
 				_objMap[key] = obj;
 				if (key == "beta")
-					_beta = boost::lexical_cast<double>(obj->value());
+					_statTable.at(stat_entries::BETA) = boost::lexical_cast<double>(obj->value());
 				if (key == "theta")
-					_theta = boost::lexical_cast<double>(obj->value());
+					_statTable.at(stat_entries::THETA) = boost::lexical_cast<double>(obj->value());
 				if (key == "phi")
-					_phi = boost::lexical_cast<double>(obj->value());
-				if (key == "wave") _wave = boost::lexical_cast<double>(obj->value());
-				if (key == "aeff") _aeff = boost::lexical_cast<double>(obj->value());
-				if (key == "version") _version = boost::lexical_cast<size_t>(obj->value());
+					_statTable.at(stat_entries::PHI) = boost::lexical_cast<double>(obj->value());
+				if (key == "wave") _statTable.at(stat_entries::WAVE) = boost::lexical_cast<double>(obj->value());
+				if (key == "aeff") _statTable.at(stat_entries::AEFF) = boost::lexical_cast<double>(obj->value());
+				if (key == "version") _statTable_Size_ts.at(stat_entries_size_ts::VERSION) = boost::lexical_cast<size_t>(obj->value());
+				if (key == "d") _statTable.at(stat_entries::DIPOLESPACING) = boost::lexical_cast<double>(obj->value());
+				if (key == "numdipoles") _statTable_Size_ts.at(stat_entries_size_ts::NUM_DIPOLES) = boost::lexical_cast<size_t>(obj->value());
 			}
+
+			_statTable.at(stat_entries::FREQ) = rtmath::units::conv_spec("um", "GHz").convert(_statTable.at(stat_entries::WAVE));
 		}
 
 		void ddOutputSingle::readFML(std::istream &in)
@@ -309,6 +314,15 @@ namespace rtmath {
 				phis->max,
 				phis->n);
 		}
+
+		/*
+		void a()
+		{
+			Eigen::MatrixXd d(2, stat_entries::NUM_STAT_ENTRIES);
+			//Eigen::Block<double, 1, stat_entries::NUM_STAT_ENTRIES> b(;
+			//b = d.block<1, stat_entries::NUM_STAT_ENTRIES>(0,0);
+		}
+		*/
 
 		/*
 		void ddOutputSingle::writeEvans(std::ostream &out, double freq) const

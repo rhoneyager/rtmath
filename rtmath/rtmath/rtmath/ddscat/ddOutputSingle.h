@@ -11,6 +11,7 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 #include <Eigen/Core>
+#include <Eigen/Dense>
 //#include "../interpolatable.h"
 #include "../registry.h"
 #include "../common_templates.h"
@@ -59,6 +60,7 @@ namespace rtmath
 		/// The listing of the stat table entries
 		enum stat_entries
 		{
+			BETA,THETA,PHI,WAVE,FREQ,AEFF,DIPOLESPACING,
 			QEXT1,QABS1,QSCA1,G11,G21,QBK1,QPHA1,
 			QEXT2,QABS2,QSCA2,G12,G22,QBK2,QPHA2,
 			QEXTM,QABSM,QSCAM,G1M,G2M,QBKM,QPHAM,
@@ -69,31 +71,16 @@ namespace rtmath
 			NUM_STAT_ENTRIES
 		};
 
+		enum stat_entries_size_ts
+		{
+			VERSION,NUM_DIPOLES,NUMP,NUMF,
+			NUM_STAT_ENTRIES_INTS
+		};
+
 		/// \brief Converts the stat_entries id to a string for display.
 		/// \todo Add reverse case, converting from string to id.
 		std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries);
-
-		/// Stream-formatting template enums that handle I/O.
-		enum ddOutputSingleAsType
-		{
-			/// I/O as .avg file
-			AVG,
-			/// I/O as .sca file
-			SCA,
-			/// I/O as .fml file
-			FML
-		};
-		/// Class to handle stream-formatting.
-		class DLEXPORT_rtmath_ddscat ddOutputSingleAsClass
-		{
-			/// Private constructor invoked by ddOutputSingle::as<T>
-			ddOutputSingleAsClass(ddOutputSingle&, ddOutputSingleAsType);
-			friend class ddOutputSingle;
-			/// Type of file I/O
-			ddOutputSingleAsType _type;
-			/// Reference to object
-			ddOutputSingle &_ref;
-		};
+		std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries_size_ts);
 
 		/// Provides local readers and writers for ddscat data (it's a binder)
 		class DLEXPORT_rtmath_ddscat implementsDDRES :
@@ -137,13 +124,6 @@ namespace rtmath
 			/// Deep-copy constructor
 			ddOutputSingle(const ddOutputSingle&);
 
-
-			// Direct reading and writing of ddscat-formatted files (avg, sca and fml)
-
-			// Read a sca, fml, avg or xml file. Handles compression.
-			//void readFile(const std::string &filename, const std::string &type = "");
-			// Write a sca, fml, avg or xml file. Handles compression.
-			//void writeFile(const std::string &filename, const std::string &type = "") const;
 			static void readDDSCAT(ddOutputSingle*, std::istream&, std::shared_ptr<registry::IO_options>);
 			static void writeDDSCAT(const ddOutputSingle*, std::ostream &, std::shared_ptr<registry::IO_options>);
 
@@ -208,12 +188,16 @@ namespace rtmath
 			std::complex<double> getM() const;
 
 			typedef std::vector<double> statTableType;
+			typedef std::vector<size_t> statTableTypeSize_ts;
 
-			/// Extract the entire stat table. Used in ddscat-test.
+			/// Extract the entire stat table. Used in ddscat-test, io and fast weighting.
 			void getStatTable(statTableType&) const;
+			void getStatTable(statTableTypeSize_ts&) const;
 			/// Get an individual stat entry.
 			/// \see stat_entries
 			double getStatEntry(stat_entries e) const;
+			size_t getStatEntry(stat_entries_size_ts e) const;
+
 
 			/// Provides ordering in sets, based on wavelength, aeff, and rotations.
 			bool operator<(const ddOutputSingle &rhs) const;
@@ -250,34 +234,31 @@ namespace rtmath
 			/// Convenience function to extract the rotation information
 			void getRots(rotations &rots) const;
 
-			/// Function to modify I/O stream type
-			template <ddOutputSingleAsType T>
-			void as();
-			/// Function to modify I/O stream type
-			template <ddOutputSingleAsType T>
-			void as() const;
-
-			//void asAVG() const;
-			//void asSCA() const;
-			//void asFML() const;
 		protected:
-			/// The ddscat version of the file
-			size_t _version;
+			// The ddscat version of the file
+			//size_t _version;
 			/// The listing of the stored Mueller indices
 			mMuellerIndices _muellerMap;
 			// These values are kept here for ordering purposes
-			double _beta, _theta, _phi, _wave, _aeff;
+			//double _beta, _theta, _phi, _wave, _aeff;
 			/// Handles role of delegated constructor
 			void _init();
 			//void _populateDefaults();
 			/// Container for the file header
 			headerMap _objMap;
-			/// Container for the stat table
+			/// Containers for the stat table
 			/// \see stat_entries
 			statTableType _statTable;
+			statTableTypeSize_ts _statTable_Size_ts;
+
 			/// Container for sca and fml scattering matrices
 			/// \see ddScattMatrix
 			scattMatricesContainer _scattMatricesRaw;
+
+			// Internal stat table objects (when not linked to a ddOutput)
+			
+			/// Eigen mapping for a table that holds the base info and stat entries
+			//Eigen::Block<
 		};
 
 		/// Base class for ddOutputSingle header entries
