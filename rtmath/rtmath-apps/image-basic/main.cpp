@@ -99,16 +99,38 @@ int main(int argc, char** argv)
 
 		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > exportHandlers(exportTypes.size());
 
-		for (const auto &si : inputs)
+		auto expandFolders = [&](const vector<string> &src, vector<path> &dest)
+		{
+			dest.clear();
+			for (auto s : src)
+			{
+				using namespace boost::filesystem;
+				path p(s);
+				if (is_directory(p))
+					copy(directory_iterator(p), 
+					directory_iterator(), back_inserter(dest));
+				else dest.push_back(p);
+			}
+		};
+
+		vector<boost::filesystem::path> vinputs;
+		expandFolders(inputs, vinputs);
+
+		for (const auto &si : vinputs)
 		{
 			// Validate input file
 			path pi(si);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.c_str());
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
 			cerr << "Input file is: " << si << endl;
 
 			using namespace rtmath::images;
-			boost::shared_ptr<image> im
-				( new image(si) );
+			boost::shared_ptr<image> im;
+			try {
+				im = boost::shared_ptr<image>( new image(si.string()) );
+			} catch (...) {
+				std::cerr << "Error processing " << si << ". Skipping." << std::endl;
+				continue;
+			}
 
 			im->doStats();
 
@@ -127,7 +149,7 @@ int main(int argc, char** argv)
 				p += boost::filesystem::path(".tsv");
 				opts->filename(p.string());
 				opts->exportType(exportTypes[i]);
-				opts->setVal<std::string>("source", si);
+				opts->setVal<std::string>("source", si.string());
 				try {
 					try {
 						if (im->canWriteMulti(exportHandlers[i], opts))
