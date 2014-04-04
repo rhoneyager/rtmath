@@ -1,4 +1,4 @@
-/// \brief Provides Cern ROOT file IO
+/// \brief Provides TSV file IO
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <string>

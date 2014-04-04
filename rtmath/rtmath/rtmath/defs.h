@@ -141,3 +141,12 @@
 	#define DLEXPORT_rtmath_rt
 #endif
 
+#if SHARED_rtmath_images
+	#if EXPORTING_rtmath_images
+		#define DLEXPORT_rtmath_images SHARED_EXPORT
+	#else
+		#define DLEXPORT_rtmath_images SHARED_IMPORT
+	#endif
+#else
+	#define DLEXPORT_rtmath_images
+#endif

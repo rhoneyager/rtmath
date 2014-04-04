@@ -233,6 +233,15 @@ set (rtmath_rt-libs rtmath_core ${rtmath_core-libs}
 	)
 target_link_libraries(rtmath_rt ${rtmath_rt-libs})
 
+add_library(rtmath_images SHARED ${rtmath_images-files})
+addlib(rtmath_images SHARED)
+add_precompiled_header(rtmath_images Stdafx-images.h src)
+set (rtmath_images-libs rtmath_core ${rtmath_core-libs}
+	rtmath_voronoi ${rtmath_voronoi-libs}
+	)
+target_link_libraries(rtmath_images ${rtmath_images-libs})
+
+
 #add_library(rtmath_da ${sflag} ${rtmath_da-files})
 #addlib(rtmath_da)
 #add_precompiled_header(rtmath_da Stdafx-da.h src)

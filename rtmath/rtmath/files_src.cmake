@@ -260,6 +260,15 @@ set(rtmath_da-files
 set(rtmath_mc-files
 	)
 
+set(rtmath_images-files
+	src/Stdafx-images.cpp
+	src/Stdafx-images.h
+	src/imageSet.cpp
+	src/image.cpp
+	rtmath/images/image.h
+	rtmath/images/imageSet.h
+	)
+
 # Final rules to provide with build targets
 set (rtmath_core-files
 	${cmake-other}

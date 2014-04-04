@@ -90,7 +90,7 @@ namespace rtmath {
 			public:
 				shapefile(const std::string &filename);
 				shapefile(std::istream &in);
-				~shapefile();
+				virtual ~shapefile();
 				/// Function to fix the shape center of mass to match calculated stats
 				void fixStats();
 				/// Write ddscat-formatted shapefile to the given output stream.

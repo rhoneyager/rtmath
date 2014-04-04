@@ -80,11 +80,11 @@ namespace rtmath
 			const char* exportType = "")
 		{
 			IO_class_registry_writer<T> res;
-			res.io_matches = std::bind(match_file_type, _1, _2, extension);
+			//res.io_multi_matches = std::bind(match_file_type, _1, _2, extension);
 			auto opts2 = IO_options::generate();
 			opts2->extension(extension);
 			opts2->exportType(exportType);
-			//res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
+			res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
 
 			//res.io_multi_processor = writer;
 			res.io_multi_processor = write_file_type_multi<T>;
@@ -164,6 +164,20 @@ namespace rtmath
 #endif
 		}
 
+
+		template <class T, class IO_reg_class>
+		void genAndRegisterIOregistryPlural_reader(
+			size_t nExt,
+			const char** extensions,
+			const char* pluginid,
+			const char* exportType = "")
+		{
+			for (size_t i = 0; i < nExt; ++i)
+			{
+				genAndRegisterIOregistry_reader<T, IO_reg_class>(extensions[i],
+					pluginid, exportType);
+			}
+		}
 	}
 }
 

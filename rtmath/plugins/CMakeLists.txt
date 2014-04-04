@@ -27,6 +27,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_HDF5)
 		add_subdirectory (hdf5)
 	endif()
+	option (BUILD_PLUGIN_IMAGEMAGICK
+		"Build ImageMagick IO plugin" ON)
+	if (BUILD_PLUGIN_IMAGEMAGICK)
+		add_subdirectory (ImageMagick)
+	endif()
 	option (BUILD_PLUGIN_ROOT
 		"Build ROOT plugin (io and plotting)" ON)
 	if (BUILD_PLUGIN_ROOT)
