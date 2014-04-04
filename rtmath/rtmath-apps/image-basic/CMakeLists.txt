@@ -11,3 +11,6 @@ if (BUILD_PLUGIN_IMAGEMAGICK)
 	add_dependencies ( rtmath-image-basic rtmath_plugin_ImageMagick)
 endif()
 
+if (BUILD_PLUGIN_TSV)
+	add_dependencies ( rtmath-image-basic rtmath_plugin_tsv)
+endif()

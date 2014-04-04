@@ -7,6 +7,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/images/image.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 
@@ -45,6 +46,11 @@ void dllEntry()
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDISO, "isotropic_data");
+
+	rtmath::registry::genAndRegisterIOregistryPlural_writer
+		<::rtmath::images::image,
+		::rtmath::images::image_IO_output_registry>(
+		nExts, exportExts, PLUGINID_IMAGE, "image_basicstats");
 }
 
 

@@ -14,6 +14,7 @@
 #define PLUGINID_VORO "B77570C4-C2D2-471C-B24A-A279061E363B-voro"
 #define PLUGINID_DDORI "B77570C4-C2D2-471C-B24A-A279061E363B-ddori"
 #define PLUGINID_DDISO "B77570C4-C2D2-471C-B24A-A279061E363B-ddiso"
+#define PLUGINID_IMAGE "B77570C4-C2D2-471C-B24A-A279061E363B-image"
 
 namespace rtmath {
 	namespace ddscat {
@@ -22,6 +23,9 @@ namespace rtmath {
 		class ddScattMatrix;
 		namespace shapefile { class shapefile; }
 		namespace stats { class shapeFileStats; }
+	}
+	namespace images {
+		class image;
 	}
 }
 

@@ -55,6 +55,12 @@ namespace rtmath
 				boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > 
 				imageMaps;
 
+			void doStats();
+
+			/// x, y, val
+			Eigen::Vector3f mins, maxs, means, variances;
+			size_t numTotal, numFilled;
+			float frac;
 		};
 	}
 }

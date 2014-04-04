@@ -52,8 +52,10 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value< string >(), "input image file")
-			("output,o", po::value< string >(), "output image file")
+			("input,i", po::value< vector<string> >()->multitoken(), "input image files")
+			("output-prefix,o", po::value< string >(), "output image file prefix")
+			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. image_stats)")
+			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			;
 
 		desc.add(cmdline).add(config);
@@ -76,24 +78,75 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
-		if (!vm.count("input")) doHelp("Need to specify input file.\n");
+		if (!vm.count("input")) doHelp("Need to specify input file(s).\n");
 
-		string input = vm["input"].as< string >();
+		vector<string > inputs = vm["input"].as< vector<string > >();
 
-		if (!vm.count("output")) doHelp("Need to specify output file.\n");
-		string output = vm["output"].as< string >();
+		if (!vm.count("output-prefix")) doHelp("Need to specify output file prefix.\n");
+		string output;
+		if (vm.count("output-prefix"))
+		{
+			output= vm["output-prefix"].as< string >();
+			using namespace boost::filesystem;
+			path pOut(output);
+			if (!boost::filesystem::exists(pOut)) boost::filesystem::create_directory(pOut);
+			else if (!boost::filesystem::is_directory(pOut))
+				RTthrow rtmath::debug::xPathExistsWrongType(output.c_str());
+		}
 
-		// Validate input file
-		path pi(input);
-		if (!exists(pi)) throw rtmath::debug::xMissingFile(input.c_str());
-		cerr << "Input file is: " << input << endl;
+		vector<string> exportTypes;
+		if (vm.count("export-types")) exportTypes = vm["export-types"].as<vector<string> >();
 
-		using namespace rtmath::images;
-		boost::shared_ptr<image> im
-			( new image(input) );
+		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > exportHandlers(exportTypes.size());
 
+		for (const auto &si : inputs)
+		{
+			// Validate input file
+			path pi(si);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.c_str());
+			cerr << "Input file is: " << si << endl;
 
-		im->write(output);
+			using namespace rtmath::images;
+			boost::shared_ptr<image> im
+				( new image(si) );
+
+			im->doStats();
+
+			if (output.size())
+			{
+				boost::filesystem::path pout(output);
+				pout = pout / pi.filename();
+				im->write(pout.string());
+			}
+			for (size_t i = 0; i < exportTypes.size(); ++i)
+			{
+				auto opts = registry::IO_options::generate();
+				boost::filesystem::path p(".");
+				if (output.size()) p = boost::filesystem::path(output);
+				p = p / exportTypes[i];
+				p += boost::filesystem::path(".tsv");
+				opts->filename(p.string());
+				opts->exportType(exportTypes[i]);
+				opts->setVal<std::string>("source", si);
+				try {
+					try {
+						if (im->canWriteMulti(exportHandlers[i], opts))
+							exportHandlers[i] = im->writeMulti(exportHandlers[i], opts);
+						else 
+							std::cerr << "Error: unknown export type " << exportTypes[i] 
+						<< " when writing " << p.string() << endl;
+					} catch (rtmath::debug::xUnknownFileFormat &e) {
+						std::cerr << "Error: unknown file format when writing " << p.string() << endl;
+						std::cerr << e.what() << endl;
+					}
+				}
+				catch (rtmath::debug::xUnknownFileFormat &e)
+				{
+					std::cerr << "Error: unknown file format when writing " << p.string() << endl;
+					std::cerr << e.what() << endl;
+				}
+			}
+		}
 	}
 	catch (rtmath::debug::xError &err)
 	{

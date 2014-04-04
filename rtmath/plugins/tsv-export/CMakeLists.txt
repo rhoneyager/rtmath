@@ -12,6 +12,7 @@ add_library (rtmath_plugin_tsv SHARED
 	tsv-ddoutput.cpp
 	tsv-ddoutput-iso.cpp
 	tsv-ddoutput-ori.cpp
+	tsv-image-basicstats.cpp
 	tsv-shapestats.cpp
 	tsv-shapestats-rotdata.cpp
 	tsv-shapestats-voro.cpp
@@ -19,7 +20,7 @@ add_library (rtmath_plugin_tsv SHARED
 addlib(rtmath_plugin_tsv SHARED)
 
 set_target_properties( rtmath_plugin_tsv PROPERTIES FOLDER "Plugins/Shapes")
-target_link_libraries(rtmath_plugin_tsv ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${ROOT_LIBRARIES})
+target_link_libraries(rtmath_plugin_tsv ${rtmath_images-libs} rtmath_images ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${ROOT_LIBRARIES})
 INSTALL(TARGETS rtmath_plugin_tsv 
 	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
 	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 

@@ -1,5 +1,16 @@
 #include "Stdafx-images.h"
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+
 #include "../rtmath/images/image.h"
+
+#undef min
+#undef max
 
 namespace rtmath {
 	namespace registry {
@@ -27,8 +38,45 @@ namespace rtmath {
 			this->read(filename);
 		}
 
-		image::image()
+		image::image() {}
+
+		void image::doStats()
 		{
+			auto mat = imageMaps.at("raw");
+			using namespace boost::accumulators;
+			accumulator_set<float, boost::accumulators::stats
+				<tag::mean, tag::min, tag::max, tag::variance> > m_x, m_y, m_val;
+			numFilled = 0;
+			numTotal = (size_t) (mat->rows() * mat->cols());
+			for (int i = 0; i < mat->rows(); i++)
+				for (int j=0; j < mat->cols(); j++)
+			{
+				float val = (*mat)(i,j);
+				if (val > 0.05)
+				{
+					m_x((float) (i));
+					m_y((float) (j));
+					m_val(val);
+					numFilled++;
+				}
+			}
+			mins(0) = boost::accumulators::min(m_x);
+			mins(1) = boost::accumulators::min(m_y);
+			mins(2) = boost::accumulators::min(m_val);
+
+			maxs(0) = boost::accumulators::max(m_x);
+			maxs(1) = boost::accumulators::max(m_y);
+			maxs(2) = boost::accumulators::max(m_val);
+
+			means(0) = boost::accumulators::mean(m_x);
+			means(1) = boost::accumulators::mean(m_y);
+			means(2) = boost::accumulators::mean(m_val);
+
+			variances(0) = boost::accumulators::variance(m_x);
+			variances(1) = boost::accumulators::variance(m_y);
+			variances(2) = boost::accumulators::variance(m_val);
+
+			frac = ((float) numFilled) / ((float) numTotal);
 		}
 	}
 }
