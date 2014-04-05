@@ -32,6 +32,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_IMAGEMAGICK)
 		add_subdirectory (ImageMagick)
 	endif()
+	option (BUILD_PLUGIN_NETCDF
+		"Build NETCDF IO plugin" ON)
+	if (BUILD_PLUGIN_NETCDF)
+		add_subdirectory (netcdf)
+	endif()
 	option (BUILD_PLUGIN_ROOT
 		"Build ROOT plugin (io and plotting)" ON)
 	if (BUILD_PLUGIN_ROOT)
