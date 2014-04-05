@@ -29,7 +29,7 @@ namespace rtmath {
 		namespace hdf5 {
 
 			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
-				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> &shp)
+				rtmath::ddscat::shapefile::shapefile *shp)
 			{
 				using std::shared_ptr;
 				using namespace H5;
@@ -127,12 +127,12 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > &s)
+			rtmath::ddscat::shapefile::shapefile *s)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
 			//IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key", "");
+			std::string key = opts->getVal<std::string>("key");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
@@ -147,8 +147,15 @@ namespace rtmath {
 			}
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) return h;
+			if (!grpHashes) RTthrow debug::xMissingFile(key.c_str());
+
+			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
+			shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
+			if (!grpShape) RTthrow debug::xMissingFile(key.c_str());
+			read_hdf5_shaperawdata(grpShape, s);
+
 			// Iterate over hash entries
+			/*
 			hsize_t nObjs = grpHashes->getNumObjs();
 			for (hsize_t i=0; i<nObjs; ++i)
 			{
@@ -161,14 +168,25 @@ namespace rtmath {
 				shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
 				if (!grpShape) continue;
 
-				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> res(new rtmath::ddscat::shapefile::shapefile);
-				if (read_hdf5_shaperawdata(grpShape, res))
-					s.push_back(res);
+				//boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> res(new rtmath::ddscat::shapefile::shapefile);
+				//if (read_hdf5_shaperawdata(grpShape, res))
+				//	s.push_back(res);
+				read_hdf5_shaperawdata(grpShape, s);
 			}
-
+			*/
 			/// \todo Implement opts searching features
 
 			return h;
+		}
+
+		template<>
+		std::shared_ptr<IOhandler>
+			read_file_type_vector<rtmath::ddscat::shapefile::shapefile>
+			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
+			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > &s)
+		{
+			RTthrow debug::xUnimplementedFunction();
+			return sh;
 		}
 	}
 }
