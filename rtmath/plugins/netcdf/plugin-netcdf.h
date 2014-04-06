@@ -9,7 +9,7 @@
 #include "../../rtmath/rtmath/error/debug.h"
 
 
-#define PLUGINID "6341FE06-83C0-4EA6-87E0-8CFABD170C32"
+#define PLUGINID "B30B35AF-8F61-4DB2-B42D-BADA08928717"
 
 
 namespace rtmath {

@@ -76,16 +76,21 @@ namespace rtmath
 				std::string site;
 				/// ARM subsite (C1, ...)
 				std::string subsite;
+				std::string subsiteFull;
 
 				/// Data product
 				std::string product;
 
-				/// Instrument coordinates
-				double lat, lon;
+				/// Data level
+				std::string datalevel;
+
+				/// Instrument coordinates (degrees, degrees, meters above sea level)
+				float lat, lon, alt;
 
 				/// Start time
-
+				boost::posix_time::ptime startTime;
 				/// End time
+				boost::posix_time::ptime endTime;
 
 				/// File size (bytes)
 				size_t filesize;

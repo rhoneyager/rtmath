@@ -14,12 +14,11 @@ addlib(rtmath_plugin_netcdf SHARED)
 
 set_target_properties( rtmath_plugin_netcdf PROPERTIES FOLDER "Plugins/RT")
 target_link_libraries(rtmath_plugin_netcdf 
-	${rtmath_ddscat-libs} 
+	${rtmath_data-libs} 
 	rtmath_core 
-	rtmath_ddscat 
-	rtmath_images
-	${rtmath_images-libs}
-	${netcdf_LIBRARIES})
+	rtmath_voronoi
+	rtmath_data
+	netcdf)
 INSTALL(TARGETS rtmath_plugin_netcdf 
 	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
 	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 
