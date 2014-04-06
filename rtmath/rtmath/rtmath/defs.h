@@ -150,3 +150,13 @@
 #else
 	#define DLEXPORT_rtmath_images
 #endif
+
+#if SHARED_rtmath_data
+	#if EXPORTING_rtmath_data
+		#define DLEXPORT_rtmath_data SHARED_EXPORT
+	#else
+		#define DLEXPORT_rtmath_data SHARED_IMPORT
+	#endif
+#else
+	#define DLEXPORT_rtmath_data
+#endif

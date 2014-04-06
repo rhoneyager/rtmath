@@ -225,6 +225,14 @@ set (rtmath_ddscat-libs
 	)
 target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
+add_library(rtmath_data SHARED ${rtmath_data-files})
+addlib(rtmath_data SHARED)
+add_precompiled_header(rtmath_data Stdafx-data.h src)
+set (rtmath_data-libs rtmath_core ${rtmath_core-libs}
+	rtmath_voronoi ${rtmath_voronoi-libs}
+	)
+target_link_libraries(rtmath_data ${rtmath_data-libs})
+
 
 add_library(rtmath_rt SHARED ${rtmath_rt-files})
 addlib(rtmath_rt SHARED)

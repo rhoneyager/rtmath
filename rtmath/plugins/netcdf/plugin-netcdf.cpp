@@ -8,6 +8,7 @@
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "plugin-netcdf.h"
+#include <netcdf.h>
 
 void dllEntry();
 rtmath_plugin_init(dllEntry);
@@ -19,48 +20,84 @@ namespace rtmath
 		namespace netcdf
 		{
 			netcdf_handle::netcdf_handle(const char* filename, IOtype t)
-				: IOhandler(PLUGINID)
+				: IOhandler(PLUGINID), file(-1), headerOpen(false), readable(false), writeable(false)
 			{
 				open(filename, t);
 			}
 
 			void netcdf_handle::open(const char* filename, IOtype t)
 			{
-				switch (t)
-				{
-					/*
-					case IOtype::READWRITE:
-						file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_RDWR ));
-						break;
+				try {
+					switch (t)
+					{
 					case IOtype::EXCLUSIVE:
-						file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_EXCL ));
-						break;
 					case IOtype::DEBUG:
-						file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_DEBUG ));
-						break;
-					case IOtype::CREATE:
-						file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_CREAT ));
+						RTthrow rtmath::debug::xUnimplementedFunction();
 						break;
 					case IOtype::READONLY:
-						file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_RDONLY ));
+						{
+							int status = nc_open(filename, 0, &file);
+							if (status != NC_NOERR) handle_error(status);
+							readable = true;
+						}
 						break;
+					case IOtype::READWRITE:
+						{
+							int status = nc_open(filename, NC_WRITE, &file);
+							if (status != NC_NOERR) handle_error(status);
+							readable = true;
+							writeable = true;
+						}
+						break;
+					case IOtype::CREATE:
+						if (boost::filesystem::exists(boost::filesystem::path(filename)))
+							RTthrow debug::xFileExists(filename);
 					case IOtype::TRUNCATE:
-						file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_TRUNC ));
+						{
+							int status = nc_create(filename, 0, &file);
+							if (status != NC_NOERR) handle_error(status);
+							headerOpen = true;
+							writeable = true;
+						}
 						break;
-					*/
-				case IOtype::READWRITE:
-				case IOtype::EXCLUSIVE:
-				case IOtype::DEBUG:
-					RTthrow rtmath::debug::xUnimplementedFunction();
-					break;
-				case IOtype::READONLY:
-				case IOtype::CREATE:
-				case IOtype::TRUNCATE:
-					break;
+					}
+				} catch (std::exception &e) {
+					std::cerr << "Error caught in netcdf_handle::open!\n"
+						<< "\tFilename: " << filename << "\n"
+						<< "\tIOtype: " << t << std::endl;
+					RTthrow e;
 				}
 			}
 
+			void netcdf_handle::handle_error(int status)
+			{
+				std::cerr << "netcdf library error " << status << std::endl;
+				RTthrow debug::xOtherError();
+			}
+
+			netcdf_handle::~netcdf_handle()
+			{
+				if (file >= 0)
+				{
+					nc_close(file);
+				}
+			}
+
+			void netcdf_handle::openHeader()
+			{
+				// It's a bit useless for netcdf4, but occasionally a v3 file could be written...
+				if (headerOpen) return;
+				nc_redef(file);
+			}
+
+			void netcdf_handle::closeHeader()
+			{
+				// It's a bit useless for netcdf4, but occasionally a v3 file could be written...
+				if (!headerOpen) return;
+				nc_enddef(file);
+			}
 		}
+
 	}
 }
 
@@ -78,13 +115,13 @@ void dllEntry()
 	const char* exts[nExts] = { "cdf", "nc" };
 	/*
 	genAndRegisterIOregistryPlural_writer
-		<::rtmath::images::image,
-		rtmath::images::image_IO_output_registry>(
-		nExts, exts, PLUGINID, "");
+	<::rtmath::images::image,
+	rtmath::images::image_IO_output_registry>(
+	nExts, exts, PLUGINID, "");
 
 	genAndRegisterIOregistryPlural_reader
-		<::rtmath::images::image,
-		rtmath::images::image_IO_input_registry>(
-		nExts, exts, PLUGINID);
+	<::rtmath::images::image,
+	rtmath::images::image_IO_input_registry>(
+	nExts, exts, PLUGINID);
 	*/
 }

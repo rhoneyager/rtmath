@@ -260,6 +260,13 @@ set(rtmath_da-files
 set(rtmath_mc-files
 	)
 
+set(rtmath_data-files
+	src/Stdafx-data.cpp
+	src/Stdafx-data.h
+	src/arm_info.cpp
+	rtmath/data/arm_info.h
+	)
+
 set(rtmath_images-files
 	src/Stdafx-images.cpp
 	src/Stdafx-images.h
