@@ -55,31 +55,24 @@ namespace rtmath
 
 				cout << "Image is " << size_x << " x " << size_y << endl;
 
+				img.type(GrayscaleType);
+				Pixels view(img);
+				//PixelPacket* p = img.getPixels(0,0,img.columns(),img.rows());
+
 				boost::shared_ptr<Eigen::MatrixXf> eim(new Eigen::MatrixXf(size_x, size_y));
 				eim->setZero();
 
-				//pixels = pcache.get(start_x, start_y, size_x, size_y);
-				// pixels now contains the pixels accessable by pointer
-				// pixels can be rescaled in brightness values, or 
-				// can have the dimensions transformed in 
-				// the point cloud array. For now, though, just 
-				// translate directly into the PCL format.
-				for (int row=0;row< size_x;row++)
-				{
-					for (int col=0;col< size_y;col++)
+				for (size_t col=0; col< img.columns(); ++col)
+					for (size_t row=0; row<img.rows(); ++row)
 					{
-						// Cast upwards to grayscale and 
-						// extract shade
-						ColorGray c = img.pixelColor(row,col);
-						// zval ranges from 0 to 1.0
-						float zval = (float) c.shade();
+						Quantum r = (view.get(row,col,1,1))->red;
+						float zval = static_cast<float>(r)/static_cast<float>(QuantumRange);
 						if (zval < 0.0005f) continue;
 
 						(*eim)(row,col) = zval;
-
 					}
-				}
-				return eim;
+
+					return eim;
 			}
 
 			void writeImage(const std::string &filename, 

@@ -298,8 +298,8 @@ namespace rtmath {
 
 
 
-		void DLEXPORT_rtmath_core splitNullVector(
-			const std::string &instr, std::vector<std::string> &out)
+		void DLEXPORT_rtmath_core splitVector(
+			const std::string &instr, std::vector<std::string> &out, char delim)
 		{
 			using namespace std;
 			out.clear();
@@ -312,8 +312,8 @@ namespace rtmath {
 			{
 				// Find the next null character
 				const char* sep = start;
-				sep = std::find(start, stop, '\0');
-				if (*start == '\0')
+				sep = std::find(start, stop, delim);
+				if (*start == delim)
 				{
 					start = sep+1;
 					continue;

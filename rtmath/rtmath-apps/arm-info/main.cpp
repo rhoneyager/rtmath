@@ -31,6 +31,9 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+enum class linkMethod { HARD, SOFT, COPY };
+
+
 int main(int argc, char** argv)
 {
 	using namespace std;
@@ -56,6 +59,11 @@ int main(int argc, char** argv)
 			("output-prefix,o", po::value< string >(), "output file prefix")
 			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. image_stats)")
 			("show-index-location", "Option to generate a unique folder name for indexing / storing the file consistently")
+			("index-base", po::value<string>(), "If set, link files into an indexed directory tree, starting at index-base."
+			"Linking / copying behavior is set by the link-method flag")
+			("link-method", po::value<string>()->default_value("hard,copy"), "Sets link method attempted order. \"hard,copy\" "
+			"means that hard links will be attempted first. If these fail, then fall back to just copying the file. "
+			"Options are combinations of hard,soft,copy.")
 			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			;
 
@@ -93,6 +101,20 @@ int main(int argc, char** argv)
 			else if (!boost::filesystem::is_directory(pOut))
 				RTthrow rtmath::debug::xPathExistsWrongType(output.c_str());
 		}
+
+		vector<string> vslinkMethods;
+		vector<linkMethod> linkMethods;
+		string slinkMethods = vm["link-method"].as<string>();
+		config::splitVector(slinkMethods, vslinkMethods, ',');
+		for (const auto &slm : vslinkMethods)
+		{
+			if (slm == "hard") linkMethods.push_back(linkMethod::HARD);
+			if (slm == "soft") linkMethods.push_back(linkMethod::SOFT);
+			if (slm == "copy") linkMethods.push_back(linkMethod::COPY);
+		}
+		string sindexBase;
+		if (vm.count("index-base")) sindexBase = vm["index-base"].as<string>();
+		path indexBase(sindexBase);
 
 		vector<string> exportTypes;
 		if (vm.count("export-types")) exportTypes = vm["export-types"].as<vector<string> >();
@@ -133,7 +155,10 @@ int main(int argc, char** argv)
 			// Validate input file
 			path pi(si);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
+			if (is_symlink(pi)) pi = boost::filesystem::read_symlink(pi);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
 			if (is_directory(pi)) continue;
+
 			//cerr << "Input: " << si << endl;
 			cerr << pi.filename() << endl;
 
@@ -151,7 +176,54 @@ int main(int argc, char** argv)
 				<< im->startTime << "\t" << im->endTime << "\t" << "\n\t"
 				<< im->lat << "\t" << im->lon << "\t" << im->alt << std::endl;
 
-			if (index) cout << "\t" << im->indexLocation() << endl;
+			string sindexLocation = im->indexLocation();
+			path indexLocation(sindexLocation);
+			if (index) cout << "\t" << sindexLocation << endl;
+			if (sindexBase.size())
+			{
+				try {
+					path pdir = indexBase / indexLocation;
+					// Create this directory if not found
+					if (!exists(pdir)) boost::filesystem::create_directories(pdir);
+					if (!is_directory(pdir)) RTthrow debug::xPathExistsWrongType(pdir.string().c_str());
+
+					path pfile = pdir / pi.filename();
+					if (!exists(pfile)) {
+
+						bool success = false;
+						for (const auto & meth : linkMethods)
+						{
+							try {
+								if (meth == linkMethod::HARD) {
+									boost::filesystem::create_hard_link(pi, pfile);
+									cerr << "Created hard link.\n";
+									success = true;
+									break;
+								} else if (meth == linkMethod::SOFT) {
+									boost::filesystem::create_symlink(pi, pfile);
+									cerr << "Created symlink.\n";
+									success = true;
+									break;
+								} else if (meth == linkMethod::COPY) {
+									boost::filesystem::copy(pi, pfile);
+									cerr << "Copied file.\n";
+									success = true;
+									break;
+								}
+							} catch (std::exception &e) {
+								cerr << e.what() << endl;
+								continue;
+							}
+						}
+						if (!success) RTthrow debug::xUnsupportedIOaction("Cannot create indexed location");
+					} else {
+						cerr << "File at" << pfile << " already exists. Skipping." << endl;
+					}
+				} catch (...) {
+					std::cerr << "Error indexing file. Skipping index operation." << std::endl;
+					continue;
+				}
+			}
 
 			if (output.size())
 			{

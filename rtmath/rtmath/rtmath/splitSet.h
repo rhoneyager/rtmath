@@ -48,8 +48,10 @@ namespace rtmath {
 		*
 		* Commonly-used to split up the results of a Ryan_Debug::ProcessInfo command-line structure.
 		**/
-		void DLEXPORT_rtmath_core splitNullVector(
-			const std::string &instr, std::vector<std::string> &out);
+		void DLEXPORT_rtmath_core splitVector(
+			const std::string &instr, std::vector<std::string> &out, char delim = '\0');
+		inline void DLEXPORT_rtmath_core splitNullVector(
+			const std::string &instr, std::vector<std::string> &out) { splitVector(instr, out); }
 
 		/** \brief Convenience function to split a null-separated string list into a map of strings.
 		*
