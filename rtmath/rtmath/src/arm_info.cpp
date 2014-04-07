@@ -8,6 +8,8 @@
 #include <boost/date_time/gregorian/greg_serialize.hpp>
 #include <boost/date_time/posix_time/time_serialize.hpp>
 
+#include <sstream>
+
 #include "../rtmath/Serialization/serialization_macros.h"
 
 #include "../rtmath/data/arm_info.h"
@@ -59,11 +61,34 @@ namespace rtmath
 					arm_IO_input_registry, arm_info_serialization>::set_sname("rtmath::data::arm::arm_info");
 			}
 
+			std::string arm_info::indexLocation() const
+			{
+				/* Follows the pattern:
+				 * - product
+				 * - stream
+				 * - year
+				 * - site
+				 * - subsite
+				 * - datalevel
+				 */
+				int year = 0;
+				// Year gets converted from startTime
+				year = startTime.date().year();
+
+				std::ostringstream out;
+				out << product << "/";
+				if (stream.size()) out << stream << "/";
+				out << year << "/" << site << "/"
+					<< subsite << "/" << datalevel;
+				std::string res = out.str();
+				return res;
+			}
+
 			template<class Archive>
 			void arm_info::serialize(Archive &ar, const unsigned int version)
 			{
 				ar & boost::serialization::make_nvp("filename", filename);
-				ar & boost::serialization::make_nvp("Hash", hash);
+				//ar & boost::serialization::make_nvp("Hash", hash);
 				ar & boost::serialization::make_nvp("site", site);
 				ar & boost::serialization::make_nvp("subsite", subsite);
 				ar & boost::serialization::make_nvp("subsiteFull", subsiteFull);

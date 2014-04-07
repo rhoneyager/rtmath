@@ -16,7 +16,7 @@ FIND_PACKAGE(SZIP)
 #	message("${SZIP_LIBRARIES}")
 IF (DEFINED SZIP_LIBRARIES)
 	include_directories(${SZIP_INCLUDE_DIRS})
-	#	SET (h5libs ${h5libs} szip)
+		SET (h5libs ${h5libs} szip)
 ENDIF()
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")

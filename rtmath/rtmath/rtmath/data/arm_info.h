@@ -80,6 +80,9 @@ namespace rtmath
 
 				/// Data product
 				std::string product;
+				std::string productFull;
+				/// Data stream
+				std::string stream;
 
 				/// Data level
 				std::string datalevel;
@@ -95,8 +98,11 @@ namespace rtmath
 				/// File size (bytes)
 				size_t filesize;
 
-				/// File hash
-				HASH_t hash;
+				// File hash (disabled since some of these files are large)
+				//HASH_t hash;
+
+				/// Returns a unique folder location to hold this file
+				std::string indexLocation() const;
 
 			private:
 				void _init();
