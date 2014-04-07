@@ -133,6 +133,7 @@ int main(int argc, char** argv)
 			// Validate input file
 			path pi(si);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
+			if (is_directory(pi)) continue;
 			//cerr << "Input: " << si << endl;
 			cerr << pi.filename() << endl;
 
