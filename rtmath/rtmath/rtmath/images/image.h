@@ -59,7 +59,7 @@ namespace rtmath
 
 			/// x, y, val
 			Eigen::Vector3f mins, maxs, means, variances;
-			size_t numTotal, numFilled;
+			size_t numTotal, numFilled, rows, cols;
 			float frac;
 		};
 	}

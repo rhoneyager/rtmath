@@ -71,7 +71,7 @@ namespace rtmath {
 				}
 				void writeHeader()
 				{
-					(*(file.get())) << "Filename\t"
+					(*(file.get())) << "Filename\trows\tcols\t"
 						"min_x\tmin_y\tmin_val\t"
 						"max_x\tmax_y\tmax_val\t"
 						"mean_x\tmean_y\tmean_val\t"
@@ -90,6 +90,8 @@ namespace rtmath {
 			{
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();
+				bool onlyFilename = opts->getVal<bool>("onlyFilename", false);
+
 
 				using std::shared_ptr;
 				std::shared_ptr<tsv_image_basicstats_handle> h;
@@ -104,7 +106,10 @@ namespace rtmath {
 
 				std::string source = opts->getVal<std::string>("source", "");
 
-				(*(h->file.get())) << source << "\t" 
+				boost::filesystem::path psource(source);
+				if (onlyFilename) psource = psource.filename();
+
+				(*(h->file.get())) << psource.string() << "\t" << s->rows << "\t" << s->cols << "\t"
 					<< s->mins(0) << "\t" << s->mins(1) << "\t" << s->mins(2) << "\t"
 					<< s->maxs(0) << "\t" << s->maxs(1) << "\t" << s->maxs(2) << "\t"
 					<< s->means(0) << "\t" << s->means(1) << "\t" << s->means(2) << "\t"

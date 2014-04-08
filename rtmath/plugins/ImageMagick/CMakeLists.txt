@@ -3,9 +3,9 @@ find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
-#message("Include ${ImageMagick_INCLUDE_DIRS}")
+#message("Include ${ImageMagick_LIBRARIES}")
 include_directories(${ImageMagick_INCLUDE_DIRS})
-
+add_definitions(-DNOAUTOLINK_MAGICK)
 add_library (rtmath_plugin_ImageMagick SHARED 
 	plugin-ImageMagick.cpp
 	plugin-ImageMagick.h

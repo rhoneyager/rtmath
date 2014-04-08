@@ -53,6 +53,7 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >()->multitoken(), "input image files")
+			("write-raws", po::value<bool>()->default_value(false), "Write raw images in output path")
 			("output-prefix,o", po::value< string >(), "output image file prefix")
 			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. image_stats)")
 			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
@@ -81,6 +82,8 @@ int main(int argc, char** argv)
 		if (!vm.count("input")) doHelp("Need to specify input file(s).\n");
 
 		vector<string > inputs = vm["input"].as< vector<string > >();
+
+		bool writeRaws = vm["write-raws"].as<bool>();
 
 		if (!vm.count("output-prefix")) doHelp("Need to specify output file prefix.\n");
 		string output;
@@ -137,8 +140,11 @@ int main(int argc, char** argv)
 			if (output.size())
 			{
 				boost::filesystem::path pout(output);
-				pout = pout / pi.filename();
-				im->write(pout.string());
+				boost::filesystem::path praws = pout / boost::filesystem::path("raws");
+				if (writeRaws) boost::filesystem::create_directory(praws);
+				praws = praws / pi.filename();
+				if (writeRaws)
+					im->write(praws.string());
 			}
 			for (size_t i = 0; i < exportTypes.size(); ++i)
 			{
@@ -150,6 +156,7 @@ int main(int argc, char** argv)
 				opts->filename(p.string());
 				opts->exportType(exportTypes[i]);
 				opts->setVal<std::string>("source", si.string());
+				opts->setVal<bool>("onlyFilename", true);
 				try {
 					try {
 						if (im->canWriteMulti(exportHandlers[i], opts))

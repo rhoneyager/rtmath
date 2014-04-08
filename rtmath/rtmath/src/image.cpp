@@ -48,8 +48,11 @@ namespace rtmath {
 				<tag::mean, tag::min, tag::max, tag::variance> > m_x, m_y, m_val;
 			numFilled = 0;
 			numTotal = (size_t) (mat->rows() * mat->cols());
-			for (int i = 0; i < mat->rows(); i++)
-				for (int j=0; j < mat->cols(); j++)
+			rows = (size_t) mat->rows();
+			cols = (size_t) mat->cols();
+			// Excluding the outermost pixels since the raw images have a pizel or two set in a corner.
+			for (int i = 1; i < mat->rows()-1; i++)
+				for (int j=1; j < mat->cols()-1; j++)
 			{
 				float val = (*mat)(i,j);
 				if (val > 0.05)

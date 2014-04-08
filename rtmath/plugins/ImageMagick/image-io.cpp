@@ -23,10 +23,11 @@ namespace rtmath
 	{
 		namespace ImageMagick
 		{
-			boost::shared_ptr<Eigen::MatrixXf> readImage(const std::string &filename)
+			boost::shared_ptr<Eigen::MatrixXf> readImage(const std::string& filename)
 			{
 				using namespace Magick;
 				using namespace std;
+				cerr << "\n" << filename << endl;
 
 				// First, use ImageMagick to read the file
 				Image img;
@@ -59,13 +60,13 @@ namespace rtmath
 				Pixels view(img);
 				//PixelPacket* p = img.getPixels(0,0,img.columns(),img.rows());
 
-				boost::shared_ptr<Eigen::MatrixXf> eim(new Eigen::MatrixXf(size_x, size_y));
+				boost::shared_ptr<Eigen::MatrixXf> eim(new Eigen::MatrixXf(size_y, size_x));
 				eim->setZero();
 
 				for (size_t col=0; col< img.columns(); ++col)
 					for (size_t row=0; row<img.rows(); ++row)
 					{
-						Quantum r = (view.get(row,col,1,1))->red;
+						Quantum r = (view.get(col,row,1,1))->red;
 						float zval = static_cast<float>(r)/static_cast<float>(QuantumRange);
 						if (zval < 0.0005f) continue;
 
