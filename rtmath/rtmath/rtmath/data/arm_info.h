@@ -2,7 +2,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/serialization/version.hpp>
+//#include <boost/serialization/version.hpp>
 #include <boost/date_time.hpp>
 #include "../defs.h"
 #include "../hash.h"
@@ -20,7 +20,7 @@ namespace rtmath
 			class arm_IO_input_registry {};
 			// Used when convertiong file formats and writing database entries.
 			class arm_IO_output_registry {};
-			class arm_info_serialization {};
+//			class arm_info_serialization {};
 			class dataStreamHandler {};
 		}
 	}
@@ -66,9 +66,9 @@ namespace rtmath
 					::rtmath::data::arm::arm_IO_output_registry, 
 					::rtmath::registry::IO_class_registry_writer<arm_info> >,
 				virtual public ::rtmath::io::implementsStandardWriter<arm_info, arm_IO_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<arm_info, arm_IO_input_registry>,
-				virtual public ::rtmath::io::Serialization::implementsSerialization<
-					arm_info, arm_IO_output_registry, arm_IO_input_registry, arm_info_serialization>
+				virtual public ::rtmath::io::implementsStandardReader<arm_info, arm_IO_input_registry>
+//				virtual public ::rtmath::io::Serialization::implementsSerialization<
+//					arm_info, arm_IO_output_registry, arm_IO_input_registry, arm_info_serialization>
 			{
 			public:
 				arm_info();
@@ -116,12 +116,13 @@ namespace rtmath
 
 			private:
 				void _init();
-				friend class ::boost::serialization::access;
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version);
+//				friend class ::boost::serialization::access;
+//				template<class Archive>
+//				void serialize(Archive & ar, const unsigned int version);
 			};
 		}
 	}
 }
-BOOST_CLASS_EXPORT_KEY(::rtmath::data::arm::arm_info);
-BOOST_CLASS_VERSION(::rtmath::data::arm::arm_info, 0);
+//BOOST_CLASS_EXPORT_KEY(::rtmath::data::arm::arm_info);
+//BOOST_CLASS_VERSION(::rtmath::data::arm::arm_info, 0);
+

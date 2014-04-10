@@ -7,7 +7,7 @@
 # ROOT_LIBRARY_DIR    PATH to the library directory 
 #
 # Updated by K. Smith (ksmith37@nd.edu) to properly handle
-#  dependncies in ROOT_GENERATE_DICTIONARY
+#  dependencies in ROOT_GENERATE_DICTIONARY
 
 find_program(ROOT_CONFIG_EXECUTABLE root-config
   PATHS $ENV{ROOTSYS}/bin)

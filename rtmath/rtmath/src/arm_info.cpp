@@ -1,5 +1,5 @@
 #include "Stdafx-data.h"
-
+/*
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
@@ -7,10 +7,10 @@
 #include <boost/serialization/string.hpp>
 #include <boost/date_time/gregorian/greg_serialize.hpp>
 #include <boost/date_time/posix_time/time_serialize.hpp>
-
+*/
 #include <sstream>
 
-#include "../rtmath/Serialization/serialization_macros.h"
+//#include "../rtmath/Serialization/serialization_macros.h"
 
 #include "../rtmath/data/arm_info.h"
 
@@ -58,9 +58,9 @@ namespace rtmath
 				lon = 0;
 				alt = 0;
 				//filename = "";
-				::rtmath::io::Serialization::implementsSerialization<
-					arm_info, arm_IO_output_registry, 
-					arm_IO_input_registry, arm_info_serialization>::set_sname("rtmath::data::arm::arm_info");
+//				::rtmath::io::Serialization::implementsSerialization<
+//					arm_info, arm_IO_output_registry, 
+//					arm_IO_input_registry, arm_info_serialization>::set_sname("rtmath::data::arm::arm_info");
 			}
 
 			boost::shared_ptr<dataStreamHandler> arm_info::getHandler() const
@@ -94,6 +94,7 @@ namespace rtmath
 				return res;
 			}
 
+			/*
 			template<class Archive>
 			void arm_info::serialize(Archive &ar, const unsigned int version)
 			{
@@ -113,9 +114,10 @@ namespace rtmath
 			}
 
 			EXPORTINTERNAL(::rtmath::data::arm::arm_info::serialize);
+			*/
 		}
 	}
 }
 
-BOOST_CLASS_EXPORT_IMPLEMENT(::rtmath::data::arm::arm_info);
+//BOOST_CLASS_EXPORT_IMPLEMENT(::rtmath::data::arm::arm_info);
 
