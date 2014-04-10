@@ -1,4 +1,10 @@
 /// \brief Provides ImageMagick file IO
+
+#include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/data/arm_info.h"
+#include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
+
+
 #define _SCL_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(push)
@@ -7,6 +13,7 @@
 #pragma warning( disable : 4018 ) // signed/unsigned mismatch (ROOT)
 #pragma warning( disable : 4244 ) // conversion from 'float' to '__int64', possible loss of data (ROOT)
 
+#include <Windows4Root.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TGraph2D.h>
@@ -23,10 +30,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/data/arm_info.h"
-#include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
+
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 
 #include "plugin-root.h"
 
@@ -85,7 +92,8 @@ namespace rtmath
 				otitle << "Pass " << numPass << " for " << s->info->filename;
 				std::string stitle = otitle.str();
 				// Interface with ROOT for plotting
-				std::shared_ptr<TCanvas> canvas(new TCanvas("tc", stitle.c_str(), 1920, 1080));
+				std::shared_ptr<TCanvas> canvas(new  TCanvas()  );
+				//std::shared_ptr<TCanvas> canvas(new TCanvas("tc", stitle.c_str(), 1920, 1080));
 				Double_t rmin = static_cast<Double_t>(ranges(0));
 				Double_t rmax = static_cast<Double_t>(ranges.bottomRows<1>()(0));
 
