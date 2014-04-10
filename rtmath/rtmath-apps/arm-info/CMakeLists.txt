@@ -11,11 +11,12 @@ INSTALL(TARGETS rtmath-arm-info RUNTIME DESTINATION bin COMPONENT Applications)
 #	add_dependencies ( rtmath-arm-info rtmath_plugin_ImageMagick)
 #endif()
 
-# Add ROOT output for temporal plots?
-
 # Add a database plugin dependency, too...
 if (BUILD_PLUGIN_NETCDF)
 	add_dependencies ( rtmath-arm-info rtmath_plugin_netcdf)
+endif()
+if (BUILD_PLUGIN_ROOT)
+	add_dependencies ( rtmath-arm-info rtmath_plugin_root)
 endif()
 if (BUILD_PLUGIN_TSV)
 	add_dependencies ( rtmath-arm-info rtmath_plugin_tsv)

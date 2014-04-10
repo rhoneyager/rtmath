@@ -4,10 +4,13 @@
 #include <string>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/ddscat/ddOutput.h"
-#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
+//#include "../../rtmath/rtmath/ddscat/shapefile.h"
+//#include "../../rtmath/rtmath/ddscat/shapestats.h"
+//#include "../../rtmath/rtmath/ddscat/ddOutput.h"
+//#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
+
+#include "../../rtmath/rtmath/data/arm_info.h"
+#include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "plugin-root.h"
@@ -29,6 +32,9 @@ namespace rtmath
 
 			void root_handle::open(const char* filename, IOtype t)
 			{
+				/// \note Dummy function, as no handling of ROOT files is implemented. 
+				/// Plugin is used for image export.
+				return;
 				switch (t)
 				{
 				case IOtype::READWRITE:
@@ -73,8 +79,15 @@ void dllEntry()
 	const size_t nExts = 14;
 	const char* exportExts[nExts] = { "png", "jpg", "jpeg", "bmp", "eps", 
 		"ps", "gif", "pdf", "xml", "xpm", "svg", "tiff", "root", "cxx" };
-	genAndRegisterIOregistryPlural<::rtmath::ddscat::stats::shapeFileStats,
-		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
-		nExts, exportExts, PLUGINID, "ar_rot_data");
+	//genAndRegisterIOregistryPlural_writer<::rtmath::ddscat::stats::shapeFileStats,
+	//	rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
+	//	nExts, exportExts, PLUGINID, "ar_rot_data");
 
+	genAndRegisterIOregistryPlural_writer<::rtmath::data::arm::arm_scanning_radar_sacr,
+		::rtmath::data::arm::arm_IO_output_registry>(
+		nExts, exportExts, PLUGINID, "reflectivity");
+
+	//genAndRegisterIOregistryPlural_writer<::rtmath::data::arm::arm_scanning_radar_sacr,
+	//	::rtmath::data::arm::arm_IO_output_registry>(
+	//	nExts, exportExts, PLUGINID, "reflectivity_angscaled");
 }

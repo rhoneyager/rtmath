@@ -85,11 +85,11 @@ namespace rtmath
 				/// Elevation angle (degrees) (~30749 elements)
 				Eigen::ArrayXf elevations;
 				/// Time offsets (in seconds) from start of run (~30749 elements)
-				Eigen::ArrayXi time_offsets;
+				Eigen::ArrayXd time_offsets;
 				/// Indicees for start and end of each sweep
 				Eigen::ArrayXi sweep_start_ray_index, sweep_end_ray_index;
 				/// Stores reflectivity as a function of elevation, azimuth, then range (30749 x 949 elements)
-				Eigen::ArrayXf reflectivity;
+				Eigen::Array<float, Eigen::Dynamic, Eigen::Dynamic> reflectivity;
 
 				// Skipping read of mean_dipole_velocity, spectral_width, and linear depolarization ratio
 

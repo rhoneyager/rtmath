@@ -23,6 +23,8 @@ find_package(netcdf REQUIRED)
 include_directories(${netcdf_INCLUDE_DIRS})
 
 add_library (rtmath_plugin_netcdf SHARED 
+	nc-arm_info.cpp
+	nc-sacr.cpp
 	plugin-netcdf.cpp
 	plugin-netcdf.h
 	)

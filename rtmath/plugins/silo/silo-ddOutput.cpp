@@ -243,6 +243,7 @@ namespace rtmath {
 		using rtmath::ddscat::ddOutput;
 		using namespace rtmath::plugins::silo;
 
+		template<>
 		shared_ptr<IOhandler> 
 			write_file_type_multi
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,

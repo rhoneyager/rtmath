@@ -16,12 +16,16 @@ endif()
 add_library (rtmath_plugin_root SHARED 
 	plugin-root.cpp
 	plugin-root.h
-	root-shapestats.cpp
+	root-sacr.cpp
+	# root-shapestats.cpp
 	)
 addlib(rtmath_plugin_root SHARED)
 
 set_target_properties( rtmath_plugin_root PROPERTIES FOLDER "Plugins/Shapes")
-target_link_libraries(rtmath_plugin_root ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${ROOT_LIBRARIES})
+target_link_libraries(rtmath_plugin_root 
+	${rtmath_ddscat-libs} rtmath_core rtmath_ddscat 
+	${rtmath_data-libs} rtmath_data
+	${ROOT_LIBRARIES})
 INSTALL(TARGETS rtmath_plugin_root 
 	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
 	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 

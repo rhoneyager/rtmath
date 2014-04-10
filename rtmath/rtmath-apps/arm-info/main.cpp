@@ -179,6 +179,9 @@ int main(int argc, char** argv)
 				<< im->startTime << "\t" << im->endTime << "\t" << "\n\t"
 				<< im->lat << "\t" << im->lon << "\t" << im->alt << endl;
 
+			boost::shared_ptr<dataStreamHandler> loadedData;
+			loadedData = im->getHandler();
+
 			string sindexLocation = im->indexLocation();
 			path indexLocation(sindexLocation);
 			if (index) cout << "\t" << sindexLocation << endl;
