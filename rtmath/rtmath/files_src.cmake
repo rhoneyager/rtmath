@@ -265,6 +265,8 @@ set(rtmath_data-files
 	src/Stdafx-data.h
 	src/arm_info.cpp
 	rtmath/data/arm_info.h
+	src/arm_scanning_radar_sacr.cpp
+	rtmath/data/arm_scanning_radar_sacr.h
 	)
 
 set(rtmath_images-files

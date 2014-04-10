@@ -58,6 +58,7 @@ int main(int argc, char** argv)
 			("recursive,r", "Select recursive directory input")
 			("output-prefix,o", po::value< string >(), "output file prefix")
 			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. image_stats)")
+			("show-summary", po::value<bool>()->default_value(true), "Show summary of analysis")
 			("show-index-location", "Option to generate a unique folder name for indexing / storing the file consistently")
 			("index-base", po::value<string>(), "If set, link files into an indexed directory tree, starting at index-base."
 			"Linking / copying behavior is set by the link-method flag")
@@ -127,6 +128,7 @@ int main(int argc, char** argv)
 		if (vm.count("recursive")) recurse = true;
 		bool index = false;
 		if (vm.count("show-index-location")) index = true;
+		bool summary = vm["show-summary"].as<bool>();
 		auto expandFolders = [&](const vector<string> &src, vector<path> &dest)
 		{
 			dest.clear();
@@ -167,14 +169,15 @@ int main(int argc, char** argv)
 			try {
 				im = boost::shared_ptr<arm_info>( new arm_info(si.string()) );
 			} catch (...) {
-				std::cerr << "Error processing file. Skipping." << std::endl;
+				cerr << "Error processing file. Skipping." << endl;
 				continue;
 			}
 
-			std::cerr << "\t" << im->site << "\t" << im->subsite << "\n\t"
+			if (summary)
+				cerr << "\t" << im->site << "\t" << im->subsite << "\n\t"
 				<< im->product << "\t" << im->stream << "\t" << im->datalevel << "\n\t"
 				<< im->startTime << "\t" << im->endTime << "\t" << "\n\t"
-				<< im->lat << "\t" << im->lon << "\t" << im->alt << std::endl;
+				<< im->lat << "\t" << im->lon << "\t" << im->alt << endl;
 
 			string sindexLocation = im->indexLocation();
 			path indexLocation(sindexLocation);

@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/date_time.hpp>
 #include "../defs.h"
@@ -19,6 +21,7 @@ namespace rtmath
 			// Used when convertiong file formats and writing database entries.
 			class arm_IO_output_registry {};
 			class arm_info_serialization {};
+			class dataStreamHandler {};
 		}
 	}
 	namespace registry {
@@ -43,6 +46,8 @@ namespace rtmath
 	{
 		namespace arm
 		{
+			class dataStreamHandler;
+
 			/** \brief Ascertains information about a data file from ARM.
 			*
 			* This class reads a file from ARM, determines the type of instrument used, 
@@ -53,6 +58,7 @@ namespace rtmath
 			* Writes / exports database and tsv information.
 			**/
 			class DLEXPORT_rtmath_data arm_info :
+				virtual public boost::enable_shared_from_this<arm_info>,
 				virtual public ::rtmath::registry::usesDLLregistry<
 					::rtmath::data::arm::arm_IO_input_registry, 
 					::rtmath::registry::IO_class_registry_reader<arm_info> >,
@@ -103,6 +109,10 @@ namespace rtmath
 
 				/// Returns a unique folder location to hold this file
 				std::string indexLocation() const;
+
+				/// \brief Based on the datastream, if there is a handler, then return a shared pointer to the 
+				/// appropriate stream analysis type.
+				boost::shared_ptr<dataStreamHandler> getHandler() const;
 
 			private:
 				void _init();

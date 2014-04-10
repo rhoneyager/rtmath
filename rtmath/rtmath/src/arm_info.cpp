@@ -13,6 +13,8 @@
 #include "../rtmath/Serialization/serialization_macros.h"
 
 #include "../rtmath/data/arm_info.h"
+
+#include "../rtmath/data/arm_scanning_radar_sacr.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -59,6 +61,14 @@ namespace rtmath
 				::rtmath::io::Serialization::implementsSerialization<
 					arm_info, arm_IO_output_registry, 
 					arm_IO_input_registry, arm_info_serialization>::set_sname("rtmath::data::arm::arm_info");
+			}
+
+			boost::shared_ptr<dataStreamHandler> arm_info::getHandler() const
+			{
+				boost::shared_ptr<dataStreamHandler> res;
+				if (product == "wsacr") res = boost::shared_ptr<dataStreamHandler>(
+					new arm_scanning_radar_sacr(filename));
+				return res;
 			}
 
 			std::string arm_info::indexLocation() const
