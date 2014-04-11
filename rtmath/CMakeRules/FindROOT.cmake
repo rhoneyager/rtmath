@@ -26,10 +26,26 @@ else()
   if ("${wincheck}" STREQUAL "%1 is not a valid Win32 application")
 	  set(ROOTSYS $ENV{ROOTSYS})
 	  set(ROOT_INCLUDE_DIR ${ROOTSYS}/include)
-	  set(ROOT_LIBRARIES libCore libCint libRIO libNet libHist
-		  libGraf  libGraf3d libGpad libTree libSpectrum
-		  libRint libPostscript libMatrix libPhysics
-		  libMathCore libThread)
+	  set(ROOT_LIBRARY_DIR ${ROOTSYS}lib)
+	  set(ROOT_LIBRARIES 
+		  ${ROOT_LIBRARY_DIR}/libGpad.lib 
+		  ${ROOT_LIBRARY_DIR}/libCore.lib
+		  ${ROOT_LIBRARY_DIR}/libCint.lib 
+		  ${ROOT_LIBRARY_DIR}/libRIO.lib 
+		  ${ROOT_LIBRARY_DIR}/libNet.lib 
+		  ${ROOT_LIBRARY_DIR}/libHist.lib
+		  ${ROOT_LIBRARY_DIR}/libGui.lib 
+		  ${ROOT_LIBRARY_DIR}/libGraf.lib 
+		  ${ROOT_LIBRARY_DIR}/libGraf3d.lib 
+		  ${ROOT_LIBRARY_DIR}/libTree.lib 
+		  ${ROOT_LIBRARY_DIR}/libSpectrum.lib
+		  ${ROOT_LIBRARY_DIR}/libRint.lib 
+		  ${ROOT_LIBRARY_DIR}/libPostscript.lib 
+		  ${ROOT_LIBRARY_DIR}/libMatrix.lib 
+		  ${ROOT_LIBRARY_DIR}/libPhysics.lib
+		  ${ROOT_LIBRARY_DIR}/libMathCore.lib 
+		  ${ROOT_LIBRARY_DIR}/libThread.lib
+		  )
 	  set(ROOT_VERSION unknown)
   else()
 
