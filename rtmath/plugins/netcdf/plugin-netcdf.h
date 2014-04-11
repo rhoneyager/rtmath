@@ -108,7 +108,7 @@ namespace rtmath {
 					// Define the matrix
 					/// \note Variable is read with last dimension varying fastest. No idea how this converts to Eigen. Will 
 					/// determine when reading actual data.
-					Eigen::Matrix<DataType, Eigen::Dynamic, Eigen::Dynamic> res(dimLens[0], dimLens[1]);
+					Eigen::Matrix<DataType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> res(dimLens[0], dimLens[1]);
 					status = getNCvar<DataType>(parentId, varid, res.data());
 					if (status) h->handle_error(status);
 					return res;
