@@ -17,11 +17,11 @@ namespace rtmath
 			::rtmath::data::arm::arm_scanning_radar_sacr>;
 
 		template class usesDLLregistry<
-			::rtmath::data::arm::arm_IO_input_registry,
+			::rtmath::data::arm::arm_IO_sacr_input_registry,
 			IO_class_registry_reader<::rtmath::data::arm::arm_scanning_radar_sacr> >;
 
 		template class usesDLLregistry<
-			::rtmath::data::arm::arm_IO_output_registry,
+			::rtmath::data::arm::arm_IO_sacr_output_registry,
 			IO_class_registry_writer<::rtmath::data::arm::arm_scanning_radar_sacr> >;
 		
 	}

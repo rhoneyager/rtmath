@@ -66,8 +66,9 @@ namespace rtmath
 			boost::shared_ptr<dataStreamHandler> arm_info::getHandler() const
 			{
 				boost::shared_ptr<dataStreamHandler> res;
-				if (product == "wsacr") res = boost::shared_ptr<dataStreamHandler>(
-					new arm_scanning_radar_sacr(filename));
+				//if (product == "wsacr") res = boost::shared_ptr<dataStreamHandler>(
+				//	new arm_scanning_radar_sacr(filename));
+				RTthrow debug::xUnimplementedFunction();
 				return res;
 			}
 

@@ -1,4 +1,4 @@
-/* This program is designed to index arm data. */
+/* This program is designed to process scanning radar data from ARM */
 
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
@@ -26,13 +26,11 @@
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/data/arm_info.h"
+#include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
-
-enum class linkMethod { HARD, SOFT, COPY };
-
 
 int main(int argc, char** argv)
 {
@@ -41,7 +39,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "rtmath-arm-info\n\n";
+		cerr << "rtmath-arm-sacr\n\n";
 
 		namespace po = boost::program_options;
 
@@ -57,14 +55,8 @@ int main(int argc, char** argv)
 			("input,i", po::value< vector<string> >()->multitoken(), "input files")
 			("recursive,r", "Select recursive directory input")
 			("output-prefix,o", po::value< string >(), "output file prefix")
-			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. image_stats)")
+			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. reflectivity)")
 			("show-summary", po::value<bool>()->default_value(true), "Show summary of analysis")
-			("show-index-location", "Option to generate a unique folder name for indexing / storing the file consistently")
-			("index-base", po::value<string>(), "If set, link files into an indexed directory tree, starting at index-base."
-			"Linking / copying behavior is set by the link-method flag")
-			("link-method", po::value<string>()->default_value("hard,copy"), "Sets link method attempted order. \"hard,copy\" "
-			"means that hard links will be attempted first. If these fail, then fall back to just copying the file. "
-			"Options are combinations of hard,soft,copy.")
 			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			;
 
@@ -103,20 +95,6 @@ int main(int argc, char** argv)
 				RTthrow rtmath::debug::xPathExistsWrongType(output.c_str());
 		}
 
-		vector<string> vslinkMethods;
-		vector<linkMethod> linkMethods;
-		string slinkMethods = vm["link-method"].as<string>();
-		config::splitVector(slinkMethods, vslinkMethods, ',');
-		for (const auto &slm : vslinkMethods)
-		{
-			if (slm == "hard") linkMethods.push_back(linkMethod::HARD);
-			if (slm == "soft") linkMethods.push_back(linkMethod::SOFT);
-			if (slm == "copy") linkMethods.push_back(linkMethod::COPY);
-		}
-		string sindexBase;
-		if (vm.count("index-base")) sindexBase = vm["index-base"].as<string>();
-		path indexBase(sindexBase);
-
 		vector<string> exportTypes;
 		if (vm.count("export-types")) exportTypes = vm["export-types"].as<vector<string> >();
 
@@ -126,8 +104,6 @@ int main(int argc, char** argv)
 
 		bool recurse = false;
 		if (vm.count("recursive")) recurse = true;
-		bool index = false;
-		if (vm.count("show-index-location")) index = true;
 		bool summary = vm["show-summary"].as<bool>();
 		auto expandFolders = [&](const vector<string> &src, vector<path> &dest)
 		{
@@ -179,79 +155,40 @@ int main(int argc, char** argv)
 				<< im->startTime << "\t" << im->endTime << "\t" << "\n\t"
 				<< im->lat << "\t" << im->lon << "\t" << im->alt << endl;
 
-			//boost::shared_ptr<dataStreamHandler> loadedData;
-			//loadedData = im->getHandler();
-
-			string sindexLocation = im->indexLocation();
-			path indexLocation(sindexLocation);
-			if (index) cout << "\t" << sindexLocation << endl;
-			if (sindexBase.size())
+			if (im->product.find("sacr") == string::npos)
 			{
-				try {
-					path pdir = indexBase / indexLocation;
-					// Create this directory if not found
-					if (!exists(pdir)) boost::filesystem::create_directories(pdir);
-					if (!is_directory(pdir)) RTthrow debug::xPathExistsWrongType(pdir.string().c_str());
-
-					path pfile = pdir / pi.filename();
-					if (!exists(pfile)) {
-
-						bool success = false;
-						for (const auto & meth : linkMethods)
-						{
-							try {
-								if (meth == linkMethod::HARD) {
-									boost::filesystem::create_hard_link(pi, pfile);
-									cerr << "Created hard link.\n";
-									success = true;
-									break;
-								} else if (meth == linkMethod::SOFT) {
-									boost::filesystem::create_symlink(pi, pfile);
-									cerr << "Created symlink.\n";
-									success = true;
-									break;
-								} else if (meth == linkMethod::COPY) {
-									boost::filesystem::copy(pi, pfile);
-									cerr << "Copied file.\n";
-									success = true;
-									break;
-								}
-							} catch (std::exception &e) {
-								cerr << e.what() << endl;
-								continue;
-							}
-						}
-						if (!success) RTthrow debug::xUnsupportedIOaction("Cannot create indexed location");
-					} else {
-						cerr << "File at" << pfile << " already exists. Skipping." << endl;
-					}
-				} catch (...) {
-					std::cerr << "Error indexing file. Skipping index operation." << std::endl;
-					continue;
-				}
+				cerr << "File does not contain SACR information. Skipping." << endl;
+				continue;
 			}
 
-			if (output.size())
-			{
-				boost::filesystem::path pout(output);
-				pout = pout / pi.filename();
-				pout += ".xml";
-				im->write(pout.string());
-			}
+			//boost::shared_ptr<dataStreamHandler> loadedData = im->getHandler();
+			boost::shared_ptr<arm_scanning_radar_sacr> data (new arm_scanning_radar_sacr(si.string()));
+			//	= boost::dynamic_pointer_cast<arm_scanning_radar_sacr>(loadedData);
+
 			for (size_t i = 0; i < exportTypes.size(); ++i)
 			{
 				auto opts = registry::IO_options::generate();
-				boost::filesystem::path p(".");
+				boost::filesystem::path p("."), pextless(pi.filename());
+				pextless.replace_extension();
 				if (output.size()) p = boost::filesystem::path(output);
-				p = p / exportTypes[i];
+				p = p / pextless;
+				p += ".";
+				p += exportTypes[i];
 				p += boost::filesystem::path(".tsv");
 				opts->filename(p.string());
 				opts->exportType(exportTypes[i]);
 				opts->setVal<std::string>("source", si.string());
 				try {
 					try {
-						if (im->canWriteMulti(exportHandlers[i], opts))
-							exportHandlers[i] = im->writeMulti(exportHandlers[i], opts);
+						if (data->canWriteMulti(exportHandlers[i], opts))
+						{
+							size_t pass = 0;
+							//for (size_t pass=0; pass < (size_t) data->sweep_start_ray_index.size(); ++pass)
+							{
+								opts->setVal<size_t>("pass", pass);
+								exportHandlers[i] = data->writeMulti(exportHandlers[i], opts);
+							}
+						}
 						else 
 							std::cerr << "Error: unknown export type " << exportTypes[i] 
 						<< " when writing " << p.string() << endl;

@@ -4,6 +4,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
+
 find_package(HDF5 COMPONENTS C)
 if (HDF5_FOUND)
 include_directories(${HDF5_INCLUDE_DIRS})

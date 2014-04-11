@@ -20,9 +20,9 @@ namespace rtmath
 		{
 			class arm_scanning_radar_sacr;
 			// Reader bindings for netcdf files and database entries.
-			//class arm_IO_input_registry {};
+			class arm_IO_sacr_input_registry {};
 			// Used when convertiong file formats and writing database entries.
-			//class arm_IO_output_registry {};
+			class arm_IO_sacr_output_registry {};
 			//class arm_info_serialization {};
 		}
 	}
@@ -35,12 +35,11 @@ namespace rtmath
 			::rtmath::data::arm::arm_scanning_radar_sacr>;
 
 		extern template class usesDLLregistry<
-			::rtmath::data::arm::arm_IO_input_registry,
+			::rtmath::data::arm::arm_IO_sacr_input_registry,
 			IO_class_registry_reader<::rtmath::data::arm::arm_scanning_radar_sacr> >;
-			//::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
 
 		extern template class usesDLLregistry<
-			::rtmath::data::arm::arm_IO_output_registry,
+			::rtmath::data::arm::arm_IO_sacr_output_registry,
 			IO_class_registry_writer<::rtmath::data::arm::arm_scanning_radar_sacr> >;
 		
 	}
@@ -62,14 +61,14 @@ namespace rtmath
 			class DLEXPORT_rtmath_data arm_scanning_radar_sacr :
 				virtual public boost::enable_shared_from_this<arm_scanning_radar_sacr>,
 				virtual public ::rtmath::registry::usesDLLregistry<
-					::rtmath::data::arm::arm_IO_input_registry, 
+					::rtmath::data::arm::arm_IO_sacr_input_registry, 
 					::rtmath::registry::IO_class_registry_reader<arm_scanning_radar_sacr> >,
 				virtual public ::rtmath::registry::usesDLLregistry<
-					::rtmath::data::arm::arm_IO_output_registry, 
+					::rtmath::data::arm::arm_IO_sacr_output_registry, 
 					::rtmath::registry::IO_class_registry_writer<arm_scanning_radar_sacr> >,
-				virtual public ::rtmath::io::implementsStandardWriter<arm_scanning_radar_sacr, arm_IO_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<arm_scanning_radar_sacr, arm_IO_input_registry>,
-				virtual public dataStreamHandler
+				virtual public ::rtmath::io::implementsStandardWriter<arm_scanning_radar_sacr, arm_IO_sacr_output_registry>,
+				virtual public ::rtmath::io::implementsStandardReader<arm_scanning_radar_sacr, arm_IO_sacr_input_registry>//,
+				//public dataStreamHandler
 			{
 			public:
 				arm_scanning_radar_sacr();

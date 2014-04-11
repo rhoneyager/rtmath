@@ -183,6 +183,6 @@ void dllEntry()
 
 	genAndRegisterIOregistryPlural_reader
 		<::rtmath::data::arm::arm_scanning_radar_sacr,
-		::rtmath::data::arm::arm_IO_input_registry>(
+		::rtmath::data::arm::arm_IO_sacr_input_registry>(
 		nExts, exts, PLUGINID);
 }

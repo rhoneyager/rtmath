@@ -150,7 +150,11 @@ namespace rtmath
 			}
 		public:
 			virtual ~usesDLLregistry() {}
-			static void registerHook(const signature &f) { getHooks()->push_back(f); }
+			static void registerHook(const signature &f)
+			{
+				boost::shared_ptr<hookStorageType> hookstore = getHooks();
+				hookstore->push_back(f); 
+			}
 		};
 
 

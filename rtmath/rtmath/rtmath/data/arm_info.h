@@ -21,7 +21,7 @@ namespace rtmath
 			// Used when convertiong file formats and writing database entries.
 			class arm_IO_output_registry {};
 //			class arm_info_serialization {};
-			class dataStreamHandler {};
+			class DLEXPORT_rtmath_data dataStreamHandler { public: virtual ~dataStreamHandler() {} };
 		}
 	}
 	namespace registry {
