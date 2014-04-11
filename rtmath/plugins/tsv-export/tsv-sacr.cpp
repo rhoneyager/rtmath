@@ -125,8 +125,8 @@ namespace rtmath
 				const float pi = boost::math::constants::pi<float>();
 				Eigen::ArrayXf elevationsRad = elevations * pi / 180.f;
 				Eigen::ArrayXf xs, ys;
-				xs = elevationsRad.cos() * ranges;
-				ys = elevationsRad.sin() * ranges;
+				xs = elevationsRad.cos();// * ranges;
+				ys = elevationsRad.sin();// * ranges;
 
 				// Start time
 				using namespace boost::posix_time;
@@ -145,7 +145,7 @@ namespace rtmath
 					boost::posix_time::ptime t = s->info->startTime + seconds(static_cast<long>(time_offsets(i))); 
 					*(h->file.get()) << s->info->filename << "\t" << numPass << "\t"
 						<< t << "\t" << elevations(i) << "\t" << azimuths(i) << "\t" << ranges(rbin) << "\t"
-						<< xs(i) << "\t" << ys(i) << "\t" << refl_pass(i,rbin) << std::endl;
+						<< xs(i) * ranges(rbin) << "\t" << ys(i) * ranges(rbin) << "\t" << refl_pass(i,rbin) << std::endl;
 				}
 			}
 		}
