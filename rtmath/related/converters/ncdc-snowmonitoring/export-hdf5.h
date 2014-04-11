@@ -199,6 +199,7 @@ namespace exports
 			using namespace H5;
 			hsize_t sz[] = { (hsize_t) rows, (hsize_t) cols };
 			int dimensionality = 2;
+			if (cols == 1) dimensionality = 1;
 			DataSpace fspace(dimensionality, sz);
 			std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
 			std::shared_ptr<DSetCreatPropList> plist;

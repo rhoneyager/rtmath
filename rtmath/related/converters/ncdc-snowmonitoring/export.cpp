@@ -36,14 +36,17 @@ void exportToHDF(const std::string &filename,
 		daystrs[i] = boost::lexical_cast<string>(start+boost::gregorian::days((long) i));
 		daysB[i] = daystrs[i].c_str();
 	}
+
 	auto tblDates = addDatasetArray<const char*, Group>(grpData, "Dates", daysB.size(), 1, daysB.data());
 	addAttr<string, DataSet>(tblDates, "Start_Date", sstart);
 	addAttr<string, DataSet>(tblDates, "End_Date", send);
 
-	// Construct station table
 
+	// Construct station table (compound data)
+	// Coop#, Lat, Lon, StnID, City, County, State, Start Date, End Date, numObs
 
 	// Construct the observation table
+
 
 }
 
