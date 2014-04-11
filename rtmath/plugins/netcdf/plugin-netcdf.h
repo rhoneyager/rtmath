@@ -87,7 +87,7 @@ namespace rtmath {
 					nc_type vartype;
 					status = nc_inq_vartype(parentId, varid, &vartype);
 					if (status) h->handle_error(status);
-					if (!AttrMatches<typename DataType>(vartype)) RTthrow debug::xBadInput(name);
+					if (!AttrMatches<DataType>(vartype)) RTthrow debug::xBadInput(name);
 
 					int ndims = 0;
 					status = nc_inq_varndims(parentId, varid, &ndims);
@@ -108,8 +108,8 @@ namespace rtmath {
 					// Define the matrix
 					/// \note Variable is read with last dimension varying fastest. No idea how this converts to Eigen. Will 
 					/// determine when reading actual data.
-					Eigen::Matrix<typename DataType, Eigen::Dynamic, Eigen::Dynamic> res(dimLens[0], dimLens[1]);
-					status = getNCvar<typename DataType>(parentId, varid, res.data());
+					Eigen::Matrix<DataType, Eigen::Dynamic, Eigen::Dynamic> res(dimLens[0], dimLens[1]);
+					status = getNCvar<DataType>(parentId, varid, res.data());
 					if (status) h->handle_error(status);
 					return res;
 			}

@@ -176,6 +176,7 @@ int main(int argc, char** argv)
 				p += exportTypes[i];
 				p += boost::filesystem::path(".tsv");
 				opts->filename(p.string());
+				opts->setVal<std::string>("key", p.string());
 				opts->exportType(exportTypes[i]);
 				opts->setVal<std::string>("source", si.string());
 				try {

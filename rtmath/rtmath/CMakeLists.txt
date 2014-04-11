@@ -319,7 +319,8 @@ INSTALL(TARGETS rtmath-tests
 	)
 ENDIF()
 
-INSTALL(TARGETS rtmath_core rtmath_ddscat rtmath_ddscat_base rtmath_voronoi rtmath_mie
+INSTALL(TARGETS rtmath_core rtmath_ddscat rtmath_ddscat_base 
+	rtmath_voronoi rtmath_mie rtmath_data rtmath_images
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
 	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
