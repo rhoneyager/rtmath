@@ -33,6 +33,7 @@ public:
 	void addObs(const boost::gregorian::date &time, float val);
 private:
 	void _init();
+public:
 	std::vector<std::pair<boost::gregorian::date, float> > _obs;
 };
 

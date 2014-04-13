@@ -45,7 +45,8 @@ void station::addObs(const boost::gregorian::date &time, float val)
 		if (startTime > time) startTime = time;
 		if (endTime < time) endTime = time;
 	}
-	numObs++;
+	if (val >= 0)
+		numObs++;
 }
 
 std::ostream & operator<<(std::ostream &out, const station &ob)
