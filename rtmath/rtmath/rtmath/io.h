@@ -191,7 +191,9 @@ namespace rtmath
 		public:
 			virtual ~implementsIO() {}
 		protected:
-			const std::set<std::string> &matchExts;
+			/// \note Cannot use a reference because it ruins the assignment operator
+			/// \todo Add custom copy constructor / assignment operator
+			const std::set<std::string> matchExts;
 		protected:
 			implementsIO(const std::set<std::string> &exts) : matchExts(exts) {}
 			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer) = 0;
