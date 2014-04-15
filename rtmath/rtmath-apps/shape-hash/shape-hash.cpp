@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 				// For now, just do a file write
 				path pShapeHashed = storeHash(pShapeDir, hash);
 				if (!Ryan_Serialization::detect_compressed(pShapeHashed.string()))
-					shp.write(pShapeHashed.string(), true);
+					shp.write(pShapeHashed.string());
 				else cerr << "\tShape file hash already exists.\n";
 			}
 			if (doStats)

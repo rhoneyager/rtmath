@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 					size_t threshold = vm["decimate-threshold"].as<size_t>();
 					using namespace std::placeholders;
 					//rtmath::ddscat::convolutionCellInfo ci;
-					df = std::bind(shapefile::decimateThreshold,_1,threshold);
+					df = std::bind(shapefile::decimateThreshold,std::placeholders::_1,threshold);
 				}
 				boost::shared_ptr<shapefile> dec = shp->decimate
 					(kernel[0], kernel[1], kernel[2], df);
@@ -126,7 +126,9 @@ int main(int argc, char** argv)
 
 			if (multiWrite)
 			{
-				handle = shp->writeMulti(shp->filename.c_str(), handle, sOutput.c_str());
+				auto opts = registry::IO_options::generate();
+				opts->filename(shp->filename);
+				handle = shp->writeMulti(handle, opts);
 			} else {
 				// Standard write
 				shp->write(sOutput);
