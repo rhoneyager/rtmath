@@ -20,6 +20,7 @@
 #include "../../rtmath/rtmath/error/error.h"
 
 #include "plugin-hdf5.h"
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include <hdf5.h>
 #include <H5Cpp.h>
 #include "cmake-settings.h"
@@ -27,44 +28,6 @@
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
-
-			std::shared_ptr<H5::Group> openOrCreateGroup(std::shared_ptr<H5::CommonFG> base, const char* name)
-			{
-				std::shared_ptr<H5::Group> res;
-				try {
-					res = std::shared_ptr<H5::Group>(new H5::Group( base->openGroup( name )));
-				} catch( H5::GroupIException not_found_error ) {
-					res = std::shared_ptr<H5::Group>(new H5::Group( base->createGroup( name )));
-				} catch( H5::FileIException not_found_error ) {
-					res = std::shared_ptr<H5::Group>(new H5::Group( base->createGroup( name )));
-				}
-				return res;
-			}
-
-			std::shared_ptr<H5::Group> openGroup(std::shared_ptr<H5::CommonFG> base, const char* name)
-			{
-				std::shared_ptr<H5::Group> res;
-				try {
-					res = std::shared_ptr<H5::Group>(new H5::Group( base->openGroup( name )));
-				} catch( H5::GroupIException not_found_error ) {
-					return nullptr;
-				} catch( H5::FileIException not_found_error ) {
-					return nullptr;
-				}
-				return res;
-			}
-
-			bool groupExists(std::shared_ptr<H5::CommonFG> base, const char* name)
-			{
-				try {
-					H5::Group( base->openGroup( name ));
-					return true;
-				} catch( H5::GroupIException not_found_error ) {
-					return false;
-				}
-			}
-
-
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
 				const rtmath::ddscat::shapefile::shapefile *shp)

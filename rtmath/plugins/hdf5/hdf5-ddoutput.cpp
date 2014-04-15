@@ -12,21 +12,23 @@
 #include <tuple>
 
 #include <boost/filesystem.hpp>
-#include <hdf5.h>
-#include <H5Cpp.h>
 
 #include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
 #include "../../rtmath/rtmath/ddscat/ddScattMatrix.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+#include <hdf5.h>
+#include <H5Cpp.h>
 #include "plugin-hdf5.h"
+
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 
 #include "cmake-settings.h"
 
@@ -92,50 +94,50 @@ namespace rtmath {
 				{
 					if (tblOri)
 					{
-						ddscat::ddOutputSingle::statTableType stats;
-						r->getStatTable(stats);
+						ddscat::ddOutputSingle::statTableType tstats;
+						r->getStatTable(tstats);
 						// The column ordering matches the stat_entries ordering, making reads easier.
 						double blockds[43] = {
 							r->freq(), r->aeff(),
 							r->beta(), r->theta(), r->phi(),
-							stats[stat_entries::QEXT1],
-							stats[stat_entries::QABS1],
-							stats[stat_entries::QSCA1],
-							stats[stat_entries::G11],
-							stats[stat_entries::G21],
-							stats[stat_entries::QBK1],
-							stats[stat_entries::QPHA1],
-							stats[stat_entries::QEXT2],
-							stats[stat_entries::QABS2],
-							stats[stat_entries::QSCA2],
-							stats[stat_entries::G12],
-							stats[stat_entries::G22],
-							stats[stat_entries::QBK2],
-							stats[stat_entries::QPHA2],
-							stats[stat_entries::QEXTM],
-							stats[stat_entries::QABSM],
-							stats[stat_entries::QSCAM],
-							stats[stat_entries::G1M],
-							stats[stat_entries::G2M],
-							stats[stat_entries::QBKM],
-							stats[stat_entries::QPHAM],
-							stats[stat_entries::QPOL],
-							stats[stat_entries::DQPHA],
-							stats[stat_entries::QSCAG11],
-							stats[stat_entries::QSCAG21],
-							stats[stat_entries::QSCAG31],
-							stats[stat_entries::ITER1],
-							stats[stat_entries::MXITER1],
-							stats[stat_entries::NSCA1],
-							stats[stat_entries::QSCAG12],
-							stats[stat_entries::QSCAG22],
-							stats[stat_entries::QSCAG32],
-							stats[stat_entries::ITER2],
-							stats[stat_entries::MXITER2],
-							stats[stat_entries::NSCA2],
-							stats[stat_entries::QSCAG1M],
-							stats[stat_entries::QSCAG2M],
-							stats[stat_entries::QSCAG3M]
+							tstats[stat_entries::QEXT1],
+							tstats[stat_entries::QABS1],
+							tstats[stat_entries::QSCA1],
+							tstats[stat_entries::G11],
+							tstats[stat_entries::G21],
+							tstats[stat_entries::QBK1],
+							tstats[stat_entries::QPHA1],
+							tstats[stat_entries::QEXT2],
+							tstats[stat_entries::QABS2],
+							tstats[stat_entries::QSCA2],
+							tstats[stat_entries::G12],
+							tstats[stat_entries::G22],
+							tstats[stat_entries::QBK2],
+							tstats[stat_entries::QPHA2],
+							tstats[stat_entries::QEXTM],
+							tstats[stat_entries::QABSM],
+							tstats[stat_entries::QSCAM],
+							tstats[stat_entries::G1M],
+							tstats[stat_entries::G2M],
+							tstats[stat_entries::QBKM],
+							tstats[stat_entries::QPHAM],
+							tstats[stat_entries::QPOL],
+							tstats[stat_entries::DQPHA],
+							tstats[stat_entries::QSCAG11],
+							tstats[stat_entries::QSCAG21],
+							tstats[stat_entries::QSCAG31],
+							tstats[stat_entries::ITER1],
+							tstats[stat_entries::MXITER1],
+							tstats[stat_entries::NSCA1],
+							tstats[stat_entries::QSCAG12],
+							tstats[stat_entries::QSCAG22],
+							tstats[stat_entries::QSCAG32],
+							tstats[stat_entries::ITER2],
+							tstats[stat_entries::MXITER2],
+							tstats[stat_entries::NSCA2],
+							tstats[stat_entries::QSCAG1M],
+							tstats[stat_entries::QSCAG2M],
+							tstats[stat_entries::QSCAG3M]
 						};
 						tblOri->block<1,43>(index,0) = 
 							Eigen::Map<Eigen::VectorXd>(blockds,43).cast<float>();
@@ -373,7 +375,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s)
+			rtmath::ddscat::ddOutput *s)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);

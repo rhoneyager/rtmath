@@ -24,6 +24,7 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "plugin-hdf5.h"
 
 namespace rtmath {

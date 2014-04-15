@@ -19,6 +19,8 @@ IF (DEFINED SZIP_LIBRARIES)
 		SET (h5libs ${h5libs} szip)
 ENDIF()
 
+add_subdirectory (../../related/rtmath_hdf5_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_hdf5_cpp")
+
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
 
 
@@ -40,6 +42,7 @@ set_target_properties( rtmath_plugin_hdf5 PROPERTIES FOLDER "Plugins/ddscat")
 target_link_libraries(rtmath_plugin_hdf5 
 	${rtmath_ddscat-libs} rtmath_core rtmath_ddscat
 	${h5libs}
+	rtmath_hdf5_cpp
 	)
 INSTALL(TARGETS rtmath_plugin_hdf5 
 	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 

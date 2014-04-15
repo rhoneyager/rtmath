@@ -15,6 +15,7 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"

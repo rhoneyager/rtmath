@@ -20,6 +20,7 @@
 #include "../../rtmath/rtmath/error/error.h"
 
 #include "plugin-hdf5.h"
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include <hdf5.h>
 #include <H5Cpp.h>
 #include "cmake-settings.h"
