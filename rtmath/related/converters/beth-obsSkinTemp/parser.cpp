@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 //#include <boost/tokenizer.hpp>
 
@@ -12,9 +13,12 @@
 #include <boost/spirit/include/qi_omit.hpp>
 #include <boost/spirit/include/qi_repeat.hpp>
 
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 
 #include "parser.h"
-#include "station.h"
+#include "observation.h"
 
 namespace {
 	namespace qi = boost::spirit::qi;
@@ -48,71 +52,40 @@ namespace {
 	}
 }
 
-void parse_file(int month, int year, const std::string &filename, std::map<int,station> &stations)
+void parse_file(const std::string &filename, std::vector<observation> &obs)
 {
-	std::ifstream in(filename.c_str());
-	// Iterate over all lines in the file. 
-	// Only process lines with the third character being a number.
-	// This conveniently ignores all other fields.
-	while (in.good())
+	// For better performance, the input files will be memory-mapped
+	using namespace boost::interprocess;
+	using namespace boost::filesystem;
+	size_t fsize = (size_t)file_size(path(filename)); // bytes
+
+	file_mapping m_file(
+		filename.c_str(),
+		read_only
+		);
+
+	mapped_region region(
+		m_file,
+		read_only,
+		0,
+		fsize);
+
+	void* start = region.get_address();
+	const char* a = (char*)start;
+
+	std::vector<float> vals;
+	vals.reserve(6000000);
+	parse_numbers_space(a, a + fsize, vals);
+	std::cerr << "Vals #: " << vals.size() << "\t"
+		<< (int)(vals.size()) / 10 << "\t" << (int)(vals.size()) % 10 << std::endl;
+
+	for (size_t i = 0; i < vals.size(); i += 10)
 	{
-		std::string lin;
-		std::getline(in, lin);
-		try {
-			//boost::trim(lin);
-			if (!lin.size()) continue;
-			if (lin.size() < 15) continue;
-			if (!std::isdigit(lin.at(1))) continue;
-
-			using std::string;
-			string slat = lin.substr(0,6);
-			string slon = lin.substr(7,7);
-			string scoop = lin.substr(15,6);
-			string sstnid = lin.substr(22,8);
-			string state = lin.substr(31,2);
-			string city = lin.substr(34,30);
-			string county = lin.substr(66,25);
-			string selev = lin.substr(93,6);
-			boost::trim(slat);
-			boost::trim(slon);
-			boost::trim(scoop);
-			boost::trim(sstnid);
-			boost::trim(state);
-			boost::trim(city);
-			boost::trim(county);
-			boost::trim(selev);
-
-			// After this are the snowfall rates for the given dates in the month
-			std::vector<float> vals;
-			vals.reserve(31);
-			parse_numbers_space(lin.begin()+100, lin.end(), vals);
-
-			using boost::lexical_cast;
-			int COOP = lexical_cast<int>(scoop);
-			float lat = lexical_cast<float>(slat);
-			float lon = lexical_cast<float>(slon);
-			float elev = lexical_cast<float>(selev);
-			
-			// Add to / construct station information
-			if (!stations.count(COOP))
-			{
-				station newstation(COOP, lat, lon, elev, sstnid, state, city, county);
-				stations[COOP] = std::move(newstation);
-			}
-
-			for (size_t i=0; i<vals.size(); ++i)
-			{
-				using namespace boost::posix_time;
-				using namespace boost::gregorian;
-				date d(year, month, (unsigned short) (i+1) );
-				//s->startTime = ptime(b, seconds(static_cast<long>(base_time(0, 0))));
-				stations[COOP].addObs(d, vals[i]);
-			}
-
-		} catch (std::exception &e) {
-			std::cerr << "Cannot parse: " << e.what() << std::endl
-				<< "Line: " << lin << std::endl
-				<< "Filename: " << filename << std::endl;
-		}
+		// Constructor makes ingest easy
+		observation o(vals.data() + i);
+		obs.push_back(std::move(o));
 	}
+
+	std::cerr << "Read " << vals.size() / 10 << " observations." << std::endl;
+
 }

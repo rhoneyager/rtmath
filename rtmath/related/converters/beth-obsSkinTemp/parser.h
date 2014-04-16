@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-#include <map>
+#include <vector>
 
-class station;
+struct observation;
 
-void parse_file(int month, int year, const std::string &filename, std::map<int,station> &stations);
+void parse_file(const std::string &filename, std::vector<observation> &obs);

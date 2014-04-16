@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-project(ncdc-snowmonitoring CXX C)
+project(obsSkinTemp CXX C)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
@@ -13,7 +13,7 @@ set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
 if(WIN32 AND NOT CYGWIN)
 	set(DEF_INSTALL_CMAKE_DIR CMake)
 else()
-	set(DEF_INSTALL_CMAKE_DIR lib/CMake/ncdc-snowmonitoring)
+	set(DEF_INSTALL_CMAKE_DIR lib/CMake/obsSkinTemp)
 endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
@@ -47,7 +47,7 @@ if(BUILD_DOCUMENTATION)
 		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
 	endif()
 
-	set(INSTALL_DOC_DIR share/doc/rtmath-${RTMATH_VERSION} CACHE PATH "Installation directory for documentation")
+	set(INSTALL_DOC_DIR share/doc/obsSkinTemp-${VERSION} CACHE PATH "Installation directory for documentation")
 	configure_file(Doxyfile.in
 		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
 
@@ -145,18 +145,18 @@ IF (DEFINED SZIP_LIBRARIES)
 		SET (h5libs ${h5libs} szip)
 ENDIF()
 
-add_executable (ncdc-snowmonitoring-convert 
+add_subdirectory (../../rtmath_hdf5_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_hdf5_cpp")
+
+add_executable (obsSkinTemp-convert 
 	export.cpp
 	export.h
-	export-hdf5.cpp
-	export-hdf5.h
 	main.cpp
 	parser.cpp
 	parser.h
-	station.cpp
-	station.h
+	observation.cpp
+	observation.h
 	)
-target_link_libraries(ncdc-snowmonitoring-convert ${h5libs} ${libs})
-INSTALL(TARGETS ncdc-snowmonitoring-convert RUNTIME DESTINATION bin COMPONENT Applications)
+target_link_libraries(obsSkinTemp-convert ${h5libs} ${libs} rtmath_hdf5_cpp)
+INSTALL(TARGETS obsSkinTemp-convert RUNTIME DESTINATION bin COMPONENT Applications)
 
 

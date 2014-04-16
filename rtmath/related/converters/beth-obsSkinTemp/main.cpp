@@ -1,5 +1,4 @@
-/* This program is designed to process scanning radar data from ARM */
-
+/* This program ingests Beth's data and generates hdf5 files */
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -12,7 +11,7 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "station.h"
+#include "observation.h"
 #include "parser.h"
 #include "export.h"
 
@@ -22,7 +21,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "ncdc-snowmonitoring-convert\n\n";
+		cerr << "obsSkinTemp-convert\n\n";
 
 		namespace po = boost::program_options;
 
@@ -83,7 +82,8 @@ int main(int argc, char** argv)
 		vector<boost::filesystem::path> vinputs;
 		expandFolders(inputs, vinputs);
 
-		std::map<int,station> stations;
+		std::vector<observation> obs;
+		obs.reserve(12000000);
 
 		for (const auto &si : vinputs)
 		{
@@ -94,39 +94,28 @@ int main(int argc, char** argv)
 			if (!exists(pi)) throw std::string("Missing symbolic link location ").append(pi.string());
 			if (is_directory(pi)) continue;
 			if (pi.filename().string().at(0) == '.') continue;
-			if (pi.extension().string() != ".txt") continue;
-			if (pi.string().find("snfl.txt") == string::npos) continue;
+			if (pi.extension().string() != ".dat") continue;
+			if (pi.string().find("landObsSkintempLR") == string::npos) continue;
 
 			cerr << "Input: " << si << endl;
 			//cerr << "Input: " << pi.filename() << endl;
 
-			// From the filename, determine the month and year of the observations.
-			int month = boost::lexical_cast<int>(pi.filename().string().substr(0,2));
-			int year = boost::lexical_cast<int>(pi.filename().string().substr(3,4));
-
-			parse_file(month, year, pi.string(), stations);
+			parse_file(pi.string(), obs);
 		}
 
-		if (!stations.size()) throw std::string("No station data was successfully read!");
+		if (!obs.size()) throw std::string("No data was successfully read!");
 
-		// Calculate start and end dates
-		boost::gregorian::date start = stations.begin()->second.startTime;
-		boost::gregorian::date end = stations.begin()->second.endTime;
-		for (const auto & s : stations)
-		{
-			//cout << s.second;
-			if (start > s.second.startTime) start = s.second.startTime;
-			if (end < s.second.endTime) end = s.second.endTime;
-		}
-		cerr << "Read data for " << stations.size() << " stations.\n";
-		cerr << "Start date: " << start << "\nEnd Date: " << end << endl;
-
-		exportToHDF(output, start, end, stations);
+		exportToHDF(output, obs);
 		
 	}
 	catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
+		return 1;
+	}
+	catch (std::string &e)
+	{
+		cerr << e << endl;
 		return 1;
 	}
 	return 0;

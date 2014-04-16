@@ -1,12 +1,10 @@
 #pragma once
-#include <map>
+#include <vector>
 #include <string>
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-class station;
+struct observation;
 
 void exportToHDF(const std::string &filename, 
-				 const boost::gregorian::date &start,
-				 const boost::gregorian::date &end,
-				 const std::map<int,station> &stations);
+				 const std::vector<observation> &obs);

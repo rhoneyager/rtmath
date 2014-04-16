@@ -1,34 +1,35 @@
 #include <boost/lexical_cast.hpp>
-#include "station.h"
+#include "observation.h"
 #include "export.h"
-#include "export-hdf5.h"
+#include "../../rtmath_hdf5_cpp/export-hdf5.h"
 
 void exportToHDF(const std::string &filename, 
-				 const boost::gregorian::date &start,
-				 const boost::gregorian::date &end,
-				 const std::map<int,station> &stations)
+				 const std::vector<observation> &obs)
 {
 	using namespace H5;
 	Exception::dontPrint();
-	using namespace exports::hdf5;
+	using namespace rtmath::plugins::hdf5;
 	using namespace std;
 	std::shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
-	shared_ptr<Group> grpData = openOrCreateGroup(file, "NCDCsnowData");
+	shared_ptr<Group> grpData = openOrCreateGroup(file, "landObsSkintempLR");
 
 	// Set some basic global attributes
 	addAttr<string, Group>(grpData, "Source", "Imported data "
-		"from http://www.ncdc.noaa.gov/snow-and-ice/dly-data.php");
-	string sstart = boost::lexical_cast<string>(start);
-	string send = boost::lexical_cast<string>(end);
+		"from Beth files");
 
-	addAttr<string, Group>(grpData, "Start_Date", sstart);
-	addAttr<string, Group>(grpData, "End_Date", send);
-	addAttr<int, Group>(grpData, "Missing_Value", -9999);
+	/// \todo Add ingest filenames!
 
+	/// \todo Add date range + domain information
+	//string sstart = boost::lexical_cast<string>(start);
+	//string send = boost::lexical_cast<string>(end);
+
+	//addAttr<string, Group>(grpData, "Start_Date", sstart);
+	//addAttr<string, Group>(grpData, "End_Date", send);
+	addAttr<float, Group>(grpData, "Missing_Value", -99.9f);
+	/*
 	// Construct time tables (as date (string))
-	auto numDays = (end - start).days() + 1;
-	//Eigen::MatrixXi daysA = Eigen::MatrixXi::LinSpaced(0, (int) numDays);
-
+	//auto numDays = (end - start).days() + 1;
+	
 	vector<string> daystrs(numDays);
 	vector<const char*> daysB(numDays);
 	for (size_t i=0; i<daystrs.size(); ++i)
@@ -41,87 +42,43 @@ void exportToHDF(const std::string &filename,
 	addAttr<string, DataSet>(tblDates, "Start_Date", sstart);
 	addAttr<string, DataSet>(tblDates, "End_Date", send);
 
-
-	// Construct station table
-	// Coop#, Lat, Lon, StnID, City, County, State, Start Date, End Date, numObs
-
-	
-	struct stationData
-	{
-		int COOP;
-		float Lat, Lon, Elev;
-		int numObs;
-		// Using const char* because the compound writes have no string override.
-		const char *StnID, *State, *City, *County;
-		const char *start, *end;
-		// Not written directly. These act as anchors for the const char* representation of the start and end times.
-		string sstart, send;
-	};
-
-	vector<stationData> sdata(stations.size());
+	*/
 
 	int row = 0;
-	for (const auto & s : stations)
-	{
-		auto &d = sdata[row];
-		d.COOP = s.second.COOP;
-		d.Lat = s.second.Lat;
-		d.Lon = s.second.Lon;
-		d.Elev = s.second.Elev;
-		d.StnID = s.second.StnID.c_str();
-		d.State = s.second.State.c_str();
-		d.City = s.second.City.c_str();
-		d.County = s.second.County.c_str();
-
-		d.numObs = (int) s.second.numObs;
-		d.sstart = boost::lexical_cast<string>(s.second.startTime);
-		d.send = boost::lexical_cast<string>(s.second.endTime);
-		d.start = d.sstart.c_str();
-		d.end = d.send.c_str();
-
-		row++;
-	}
 	// Writing a compound datatype
 	{
-		hsize_t dim[1] = {sdata.size()};
+		hsize_t dim[1] = {obs.size()};
 		DataSpace space(1, dim);
-		CompType stationType(sizeof(stationData));
-		stationType.insertMember("COOP", HOFFSET(stationData, COOP), PredType::NATIVE_INT);
-		stationType.insertMember("Latitude", HOFFSET(stationData, Lat), PredType::NATIVE_FLOAT);
-		stationType.insertMember("Longitude", HOFFSET(stationData, Lon), PredType::NATIVE_FLOAT);
-		stationType.insertMember("Elevation", HOFFSET(stationData, Elev), PredType::NATIVE_FLOAT);
+		CompType obsType(sizeof(observation));
+		obsType.insertMember("Latitude", HOFFSET(observation, lat), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Longitude", HOFFSET(observation, lon), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Time", HOFFSET(observation, sTime), PredType::NATIVE_LONG);
+		obsType.insertMember("Temperature", HOFFSET(observation, temp), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Wet_Bulb_Temperature", HOFFSET(observation, wbTemp), PredType::NATIVE_FLOAT);
 
-		//std::shared_ptr<H5::AtomType> strtype(new H5::StrType(0, H5T_VARIABLE));
-		H5::StrType strtype(0, H5T_VARIABLE);
+		obsType.insertMember("Rain_SnowFlag", HOFFSET(observation, rain_snowFlag), PredType::NATIVE_INT);
 
-		stationType.insertMember("Station_ID", HOFFSET(stationData, StnID), strtype);
-		stationType.insertMember("State", HOFFSET(stationData, State), strtype);
-		stationType.insertMember("City", HOFFSET(stationData, City), strtype);
-		stationType.insertMember("County", HOFFSET(stationData, County), strtype);
-		stationType.insertMember("Start_Date", HOFFSET(stationData, start), strtype);
-		stationType.insertMember("End_Date", HOFFSET(stationData, end), strtype);
+		obsType.insertMember("Pressure", HOFFSET(observation, pres), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Skin_Temperature", HOFFSET(observation, skinTemp), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Lapse_Rate", HOFFSET(observation, lapseRate), PredType::NATIVE_FLOAT);
 
 
-		stationType.insertMember("Number_of_Observations", HOFFSET(stationData, numObs), PredType::NATIVE_INT);
+		std::shared_ptr<DataSet> sdataset(new DataSet(grpData->createDataSet("Observations", obsType, space)));
+		sdataset->write(obs.data(), obsType);
 
-
-		std::shared_ptr<DataSet> sdataset(new DataSet(grpData->createDataSet("Station_Data", stationType, space)));
-		sdataset->write(sdata.data(), stationType);
-
-		addAttr<string, DataSet>(sdataset, "COOP", "The COOP# of the site");
 		addAttr<string, DataSet>(sdataset, "Latitude", "Site latitude (-90 to 90 degrees)");
 		addAttr<string, DataSet>(sdataset, "Longitude", "Site longitude (-180 to 180 degrees)");
-		addAttr<string, DataSet>(sdataset, "Elevation", "Site elevation");
-		addAttr<string, DataSet>(sdataset, "Station_ID", "The station ID of the site");
-		addAttr<string, DataSet>(sdataset, "State", "The state.");
-		addAttr<string, DataSet>(sdataset, "City", "The city / station name.");
-		addAttr<string, DataSet>(sdataset, "County", "The county.");
-		addAttr<string, DataSet>(sdataset, "Start_Date", "The date (as a string) of the first reported observation");
-		addAttr<string, DataSet>(sdataset, "End_Date", "The date (as a string) of the last reported observation.");
-		addAttr<string, DataSet>(sdataset, "Number_of_Observations", "The number of observations over the measured interval (measurements reporting >= 0).");
+		addAttr<string, DataSet>(sdataset, "Time", "Observation Time (seconds since 1/1/1970 00:00 GMT)");
+		addAttr<string, DataSet>(sdataset, "Temperature", "Temperature in Celsius");
+		addAttr<string, DataSet>(sdataset, "Wet_Bulb_Temperature", "Wet bulb temperature in Celsius");
+		addAttr<string, DataSet>(sdataset, "Rain_SnowFlag", "flag = 0 indicates rain; flag = 1 indicates snow");
+		addAttr<string, DataSet>(sdataset, "Pressure", "Pressure in hPa");
+		addAttr<string, DataSet>(sdataset, "Skin_Temperature", "Skin temperature (K)");
+		addAttr<string, DataSet>(sdataset, "Lapse_Rate", "Lapse rate (UNKNOWN units, missing value is 99.99f.)");
 	}
 
 
+	/*
 	// Construct the observation table
 	Eigen::MatrixXf obs(stations.size(),daysB.size());
 	obs.fill(-9999.f);
@@ -144,10 +101,7 @@ void exportToHDF(const std::string &filename,
 	plistObs->setChunk(2, chunk_obs);
 	// If zlib is found
 	plistObs->setDeflate(6);
-
-	auto tblObs = addDatasetEigen<Eigen::MatrixXf, Group>(grpData, "Observations", obs, plistObs);
-	addAttr<float, DataSet>(tblObs, "Missing_Value", -9999.0f);
-	addAttr<string, DataSet>(tblObs, "Dimensions", "The rows correspond to the sites in the Station_Data table. The columns correspond to the dates in the Dates table.");
+	*/
 }
 
 
