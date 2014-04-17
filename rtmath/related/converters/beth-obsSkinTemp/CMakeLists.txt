@@ -104,9 +104,6 @@ foreach(p LIB PLUGIN BIN INCLUDE CMAKE)
 endforeach()
 
 
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
-
 find_package(Boost COMPONENTS program_options 
 	iostreams filesystem system REQUIRED)
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
@@ -127,6 +124,13 @@ else()
 		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 		${Boost_PROGRAM_OPTIONS_LIBRARY})
 endif()
+
+find_package(Ryan_Debug REQUIRED)
+find_package(Ryan_Serialization REQUIRED)
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
+include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
 find_package(HDF5 COMPONENTS C CXX REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR_CPP})
@@ -156,7 +160,7 @@ add_executable (obsSkinTemp-convert
 	observation.cpp
 	observation.h
 	)
-target_link_libraries(obsSkinTemp-convert ${h5libs} ${libs} rtmath_hdf5_cpp)
+target_link_libraries(obsSkinTemp-convert ${h5libs} ${libs} rtmath_hdf5_cpp Ryan_Debug Ryan_Serialization)
 INSTALL(TARGETS obsSkinTemp-convert RUNTIME DESTINATION bin COMPONENT Applications)
 
 

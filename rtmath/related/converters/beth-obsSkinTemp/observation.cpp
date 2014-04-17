@@ -20,10 +20,10 @@ observation::observation(float lat, float lon,
 	sTime = static_cast<long>((time - ptime(b)).total_seconds());
 }
 
-observation::observation(const float p[10])
+observation::observation(const double p[10])
 {
-	lat = p[0];
-	lon = p[1];
+	lat = static_cast<float>(p[0]);
+	lon = static_cast<float>(p[1]);
 	{ // time
 		int ip = static_cast<int>(p[2]);
 		int year = ip / 10000;
@@ -31,7 +31,7 @@ observation::observation(const float p[10])
 		int md = ip - (year * 10000);
 		int month = md / 100;
 
-		float hour = p[3];
+		float hour = static_cast<float>(p[3]);
 		// Second conversion because ptime duration needs a long int.
 		float sec = hour * 3600.f;
 
@@ -43,12 +43,12 @@ observation::observation(const float p[10])
 		date a(1970, Jan, 1);
 		sTime = static_cast<long>((time - ptime(a)).total_seconds());
 	}
-	temp = p[4];
-	wbTemp = p[5];
-	rain_snowFlag = (p[6] > 0) ? 1 : 0;
-	pres = p[7];
-	skinTemp = p[8];
-	lapseRate = p[9];
+	temp = static_cast<float>(p[4]);
+	wbTemp = static_cast<float>(p[5]);
+	rain_snowFlag = ((p[6] > 0) ? 1 : 0 );
+	pres = static_cast<float>(p[7]);
+	skinTemp = static_cast<float>(p[8]);
+	lapseRate = static_cast<float>(p[9]);
 }
 
 /*

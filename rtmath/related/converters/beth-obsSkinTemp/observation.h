@@ -12,7 +12,7 @@ public:
 		boost::posix_time::ptime time,
 		float temp, float wbTemp, int rain_snowFlag,
 		float pres, float skinTemp, float lapseRate);
-	observation(const float ivals[10]);
+	observation(const double ivals[10]);
 	~observation();
 
 	float lat, lon;

@@ -11,6 +11,8 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <Ryan_Debug/debug.h>
+
 #include "observation.h"
 #include "parser.h"
 #include "export.h"
@@ -94,7 +96,7 @@ int main(int argc, char** argv)
 			if (!exists(pi)) throw std::string("Missing symbolic link location ").append(pi.string());
 			if (is_directory(pi)) continue;
 			if (pi.filename().string().at(0) == '.') continue;
-			if (pi.extension().string() != ".dat") continue;
+			//if (pi.extension().string() != ".dat") continue;
 			if (pi.string().find("landObsSkintempLR") == string::npos) continue;
 
 			cerr << "Input: " << si << endl;
