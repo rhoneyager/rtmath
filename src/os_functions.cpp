@@ -10,6 +10,7 @@
 #include <debug_subversion.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -17,6 +18,8 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstdio>
+#include <thread>
+#include <mutex>
 #include <time.h>
 #ifdef _WIN32
 //#include "../../rtmath/rtmath/ROOTlink.h"
@@ -46,7 +49,6 @@
 //#include <Magick++.h>
 #endif
 #endif
-
 
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/info.h"
@@ -88,6 +90,11 @@ extern "C" {
 	}
 }
 
+namespace {
+	size_t sys_num_threads = 0;
+	std::mutex m_sys_num_threads;
+}
+
 namespace Ryan_Debug {
 
 	/// Contains information about a process
@@ -123,16 +130,16 @@ namespace Ryan_Debug {
 	// Regular defs start here
 
 	/** 
-	 * \brief Entry function that gets called when a debugged application first loads
-	 * 
-	 * This function gets called at the beginning of an application's execution
-	 * (generally). It:
-	 * - determines if the app should wait on exit (to keep the console open)
-	 * - resets the console title in case any other library overrides it.
-	 *   A good example of this is the CERN ROOT image lobraries.
-	 * - Overrides the console control key handlers on Windows. This lets a user 
-	 *   exit with CTRL-C without the debug code causing the app to crash.
-	 */
+	* \brief Entry function that gets called when a debugged application first loads
+	* 
+	* This function gets called at the beginning of an application's execution
+	* (generally). It:
+	* - determines if the app should wait on exit (to keep the console open)
+	* - resets the console title in case any other library overrides it.
+	*   A good example of this is the CERN ROOT image lobraries.
+	* - Overrides the console control key handlers on Windows. This lets a user 
+	*   exit with CTRL-C without the debug code causing the app to crash.
+	*/
 	void appEntry()
 	{
 		doWaitOnExit = waitOnExit();
@@ -148,7 +155,7 @@ namespace Ryan_Debug {
 #endif
 
 		// ROOT info message suppression
-//			gErrorIgnoreLevel = 2000;
+		//			gErrorIgnoreLevel = 2000;
 
 		// Prevent ROOT from renaming the console title on Windows
 		// Do this by setting the window name to its file name and path
@@ -166,8 +173,8 @@ namespace Ryan_Debug {
 
 		// Get parent process name
 		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
-								//| PROCESS_VM_READ
-								,FALSE, pid );
+			//| PROCESS_VM_READ
+			,FALSE, pid );
 		if (NULL == h) return;
 		TCHAR szModName[600];
 		DWORD success = 0;
@@ -189,15 +196,15 @@ namespace Ryan_Debug {
 	}
 
 	/**
-	 * \brief Function called on application exit to hold the console window open
-	 *
-	 * This function is the completion of the appEntry() code.
-	 * If the window is already closed (such as by the user clicking the X or 
-	 * pressing CTRL-C), then it silently falls through.
-	 * Otherwise, it examines the doWaitOnExit flag.
-	 * If the application is spawned in its own window (parent is not cmd.exe), 
-	 * then it prompts the user to press the return key.
-	 */
+	* \brief Function called on application exit to hold the console window open
+	*
+	* This function is the completion of the appEntry() code.
+	* If the window is already closed (such as by the user clicking the X or 
+	* pressing CTRL-C), then it silently falls through.
+	* Otherwise, it examines the doWaitOnExit flag.
+	* If the application is spawned in its own window (parent is not cmd.exe), 
+	* then it prompts the user to press the return key.
+	*/
 	void appExit()
 	{
 		using namespace std;
@@ -210,17 +217,17 @@ namespace Ryan_Debug {
 			return;
 		}
 #endif
-		
-		
+
+
 		cerr << endl << endl;
-//			rtmath::debug::listuniqueobj(cerr, false);
-//#endif
+		//			rtmath::debug::listuniqueobj(cerr, false);
+		//#endif
 
 		if (doWaitOnExit)
 		{
-//#ifdef _WIN32
-//				_CrtDumpMemoryLeaks();
-//#endif
+			//#ifdef _WIN32
+			//				_CrtDumpMemoryLeaks();
+			//#endif
 			cerr << endl << "Program terminated. Press return to exit." << endl;
 			std::getchar();
 		}
@@ -234,8 +241,8 @@ namespace Ryan_Debug {
 		/*
 		if (dwCtrlType == CTRL_CLOSE_EVENT)
 		{
-			_consoleTerminated = true;
-			//return true;
+		_consoleTerminated = true;
+		//return true;
 		}
 		*/
 		_consoleTerminated = true;
@@ -294,8 +301,8 @@ namespace Ryan_Debug {
 		CloseHandle(h);
 		// Get parent process name
 		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
-								//| PROCESS_VM_READ
-								,FALSE, pid );
+			//| PROCESS_VM_READ
+			,FALSE, pid );
 		if (NULL == h) return false;
 		TCHAR szModName[600];
 		DWORD success = 0;
@@ -438,21 +445,21 @@ namespace Ryan_Debug {
 	}
 
 	/**
-	 * \brief Provides information about the given process.
-	 *
-	 * Reads in process information from /proc or by querying the os.
-	 * Returns a structure containing the process:
-	 * - PID
-	 * - PPID
-	 * - Executable name
-	 * - Executable path
-	 * - Current working directory
-	 * - Environment
-	 * - Command-line
-	 * - Process start time
-	 *
-	 * \throws std::exception if the process does not exist
-	 **/
+	* \brief Provides information about the given process.
+	*
+	* Reads in process information from /proc or by querying the os.
+	* Returns a structure containing the process:
+	* - PID
+	* - PPID
+	* - Executable name
+	* - Executable path
+	* - Current working directory
+	* - Environment
+	* - Command-line
+	* - Process start time
+	*
+	* \throws std::exception if the process does not exist
+	**/
 	hProcessInfo getInfo(int pid)
 	{
 		processInfo* res = new processInfo;
@@ -540,7 +547,7 @@ namespace Ryan_Debug {
 			// UNICODE not covered by these functions, I think.....
 			// If using unicode and not multibyte...
 			// Convert wchar to char in preparation for string and path conversion
-//#ifdef UNICODE
+			//#ifdef UNICODE
 			/*
 			size_t origsize = pend - penv + 1;
 
@@ -550,9 +557,9 @@ namespace Ryan_Debug {
 			wcstombs_s(&convertedChars, nstring, origsize, penv, _TRUNCATE);
 			res->environ = std::string(nstring, nstring+newsize);
 			*/
-//#else
+			//#else
 			res->environ = std::string(penv, pend);
-//#endif
+			//#endif
 			FreeEnvironmentStrings(penv);
 
 			res->cmdline = std::string(GetCommandLine());
@@ -610,20 +617,91 @@ namespace Ryan_Debug {
 
 
 	/**
-	 * \brief Prints compiler and library information that was present when the 
-	 * Ryan-Debug library was compiled.
-	 */
+	* \brief Prints compiler and library information that was present when the 
+	* Ryan-Debug library was compiled.
+	*/
 	void printDebugInfo()
 	{
 		debug_preamble(std::cerr);
 	}
 
+	/// \todo Finish implementation using Windows and Linux system calls.
+	size_t getConcurrentThreadsSupported()
+	{
+		std::lock_guard<std::mutex> lock(m_sys_num_threads);
+		if (sys_num_threads) return sys_num_threads;
+		sys_num_threads = static_cast<size_t> (std::thread::hardware_concurrency());
+		if (!sys_num_threads) return 4;
+		return sys_num_threads;
+	}
+
+	void add_options(
+		boost::program_options::options_description &cmdline,
+		boost::program_options::options_description &config,
+		boost::program_options::options_description &hidden)
+	{
+		namespace po = boost::program_options;
+		using std::string;
+
+		//pcmdline = &cmdline;
+		//pconfig = &config;
+		//phidden = &hidden;
+
+		/// \todo Add option for default rtmath.conf location
+
+		cmdline.add_options()
+			("close-on-finish", po::value<bool>(), "Should the app automatically close on termination?")
+			;
+
+		config.add_options()
+			;
+
+		hidden.add_options()
+			("debug-version", "Print Ryan_Debug library version information and exit")
+			//("help-verbose", "Print out all possible program options")
+			("set-num-threads", po::value<size_t>(), "Set suggested of threads")
+			;
+	}
+
+	void process_static_options(
+		boost::program_options::variables_map &vm)
+	{
+		namespace po = boost::program_options;
+		using std::string;
+
+		/*
+		if (vm.count("help-verbose"))
+		{
+			po::options_description oall("All Options");
+			oall.add(*pcmdline).add(*pconfig).add(*phidden);
+
+			std::cerr << oall << std::endl;
+			exit(2);
+		}
+		*/
+
+		if (vm.count("debug-version"))
+		{
+			std::cerr << "Ryan_Debug library information: \n";
+			Ryan_Debug::printDebugInfo();
+			exit(2);
+		}
+
+		if (vm.count("close-on-finish"))
+			Ryan_Debug::waitOnExit(!(vm["close-on-finish"].as<bool>()));
+
+		if (vm.count("set-num-threads"))
+		{
+			std::lock_guard<std::mutex> lock(m_sys_num_threads);
+			sys_num_threads = vm["set-num-threads"].as<size_t>();
+		}
+	}
 
 }
 
 /**
- * \brief Provides functaionality to write processInfo in a stream.
- **/
+* \brief Provides functaionality to write processInfo in a stream.
+**/
 std::ostream & operator<<(std::ostream &stream, const Ryan_Debug::processInfo &obj)
 {
 	using std::endl;

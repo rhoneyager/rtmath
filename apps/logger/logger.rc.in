@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "Logging program that traces process chains"
             VALUE "FileVersion", "@MAJOR@,@MINOR@,@REVISION@,@SVNREVISION@"
             VALUE "InternalName", "Ryan_Debug"
-            VALUE "LegalCopyright", "Copyright (C) 2013"
+            VALUE "LegalCopyright", "Copyright (C) 2014 Ryan Honeyager"
             VALUE "OriginalFilename", "Ryan_Debug-logger.exe"
             VALUE "ProductName", "Ryan_Debug-logger"
             VALUE "ProductVersion", "@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@"

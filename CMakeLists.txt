@@ -16,8 +16,8 @@ set(CMAKE_MODULE_PATH
 include (SVNinfo)
 
 set(MAJOR 0)
-set(MINOR 6)
-set(REVISION 4)
+set(MINOR 7)
+set(REVISION 0)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})

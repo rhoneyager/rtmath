@@ -25,8 +25,18 @@
 #endif
 
 #include <string>
+#include <ostream>
 // Intended as a single dll, so using std::vector is complicated.
 //#include <vector>
+
+namespace boost
+{
+	namespace program_options {
+		class options_description;
+		class variables_map;
+	}
+}
+
 
 namespace Ryan_Debug
 {
@@ -64,9 +74,24 @@ namespace Ryan_Debug
 	// Print the compiler information for the debug library to std::cerr.
 	void RYAN_DEBUG_DLEXPORT printDebugInfo();
 
-	
+	/// \brief Get number of threads available in the system
+	/// \todo Finish implementation using Windows and Linux system calls.
+	size_t RYAN_DEBUG_DLEXPORT getConcurrentThreadsSupported();
 
-
+	/**
+	* \brief Adds options to a program
+	*
+	* \item cmdline provides options only allowed on the command line
+	* \item config provides options available on the command line and in a config file
+	* \item hidden provides options allowed anywhere, but are not displayed to the user
+	**/
+	void RYAN_DEBUG_DLEXPORT add_options(
+		boost::program_options::options_description &cmdline,
+		boost::program_options::options_description &config,
+		boost::program_options::options_description &hidden);
+	/// Processes static options defined in add_options
+	void RYAN_DEBUG_DLEXPORT process_static_options(
+		boost::program_options::variables_map &vm);
 }
 
 /// Allows writing of a ryan_debug::processInfo structure to a stream
