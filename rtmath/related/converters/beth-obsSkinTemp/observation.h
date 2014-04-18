@@ -8,23 +8,28 @@ struct observation
 {
 public:
 	observation();
+	/*
 	observation(float lat, float lon,
 		boost::posix_time::ptime time,
 		float temp, float wbTemp, int rain_snowFlag,
 		float pres, float skinTemp, float lapseRate);
+	*/
 	observation(const double ivals[10]);
 	~observation();
 
-	float lat, lon;
+	int lat;
+	int lon;
 
 	boost::posix_time::ptime time;
-	long sTime;
+	int sTime;
 
-	float temp, wbTemp;
+	int temp, wbTemp;
 
 	int rain_snowFlag;
 
-	float pres, skinTemp, lapseRate;
+	int pres;
+	int skinTemp;
+	int lapseRate;
 
 };
 

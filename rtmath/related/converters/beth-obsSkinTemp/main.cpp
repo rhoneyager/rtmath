@@ -116,7 +116,17 @@ int main(int argc, char** argv)
 			return false;
 		});
 
-		exportToHDF(output, obs);
+		// Add in some padding to allow chunking to work.
+		// There are 22407693 entries in the sample ingest.
+		// Do a chunk for every 10000 entries.
+		size_t rawSize = obs.size();
+		const size_t chunkSize = 10000;
+		size_t numChunks = (obs.size() / chunkSize);
+		if (obs.size() % chunkSize) numChunks++;
+		size_t targetSize = numChunks*chunkSize;
+		obs.resize(targetSize);
+
+		exportToHDF(output, obs, rawSize, chunkSize);
 		
 	}
 	catch (std::exception &e)

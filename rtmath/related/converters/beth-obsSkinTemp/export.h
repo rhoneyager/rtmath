@@ -7,4 +7,5 @@
 struct observation;
 
 void exportToHDF(const std::string &filename, 
-				 const std::vector<observation> &obs);
+				 const std::vector<observation> &obs,
+				 size_t rawSize, size_t chunkSize);

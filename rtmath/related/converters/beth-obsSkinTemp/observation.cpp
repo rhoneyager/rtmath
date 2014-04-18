@@ -3,10 +3,11 @@
 
 observation::observation() :
 lat(0), lon(0), temp(0), wbTemp(0), rain_snowFlag(0), pres(0), 
-skinTemp(0), lapseRate(99.99f), sTime(0)
+skinTemp(0), lapseRate(9999), sTime(0)
 {}
 
 observation::~observation() {}
+/*
 observation::observation(float lat, float lon,
 	boost::posix_time::ptime time,
 	float temp, float wbTemp, int rain_snowFlag,
@@ -19,11 +20,12 @@ observation::observation(float lat, float lon,
 	date b(1970, Jan, 1);
 	sTime = static_cast<long>((time - ptime(b)).total_seconds());
 }
+	*/
 
 observation::observation(const double p[10])
 {
-	lat = static_cast<float>(p[0]);
-	lon = static_cast<float>(p[1]);
+	lat = static_cast<int>(p[0]*100);
+	lon = static_cast<int>(p[1]*100);
 	{ // time
 		int ip = static_cast<int>(p[2]);
 		int year = ip / 10000;
@@ -41,14 +43,14 @@ observation::observation(const double p[10])
 		time = ptime(b, seconds(static_cast<long>(sec)));
 
 		date a(1970, Jan, 1);
-		sTime = static_cast<long>((time - ptime(a)).total_seconds());
+		sTime = static_cast<int>((time - ptime(a)).total_seconds());
 	}
-	temp = static_cast<float>(p[4]);
-	wbTemp = static_cast<float>(p[5]);
+	temp = static_cast<int>(p[4]*1000);
+	wbTemp = static_cast<int>(p[5]*1000);
 	rain_snowFlag = ((p[6] > 0) ? 1 : 0 );
-	pres = static_cast<float>(p[7]);
-	skinTemp = static_cast<float>(p[8]);
-	lapseRate = static_cast<float>(p[9]);
+	pres = static_cast<int>(p[7]*10);
+	skinTemp = static_cast<int>(p[8]*10000);
+	lapseRate = static_cast<int>(p[9]*100);
 }
 
 /*

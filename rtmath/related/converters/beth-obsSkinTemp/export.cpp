@@ -4,7 +4,8 @@
 #include "../../rtmath_hdf5_cpp/export-hdf5.h"
 
 void exportToHDF(const std::string &filename, 
-				 const std::vector<observation> &obs)
+				 const std::vector<observation> &obs,
+				 size_t rawSize, size_t chunkSize)
 {
 	using namespace H5;
 	Exception::dontPrint();
@@ -25,7 +26,7 @@ void exportToHDF(const std::string &filename,
 
 	//addAttr<string, Group>(grpData, "Start_Date", sstart);
 	//addAttr<string, Group>(grpData, "End_Date", send);
-	addAttr<float, Group>(grpData, "Missing_Value", -99.9f);
+	addAttr<short, Group>(grpData, "Missing_Value", 9999);
 	/*
 	// Construct time tables (as date (string))
 	//auto numDays = (end - start).days() + 1;
@@ -44,26 +45,64 @@ void exportToHDF(const std::string &filename,
 
 	*/
 
+	Eigen::MatrixXi mdataset((int) obs.size(), 9);
+	for (int i=0; i<(int) obs.size();++i)
+	{
+		mdataset(i,0) = obs[i].lat;
+		mdataset(i,1) = obs[i].lon;
+		mdataset(i,2) = obs[i].sTime;
+		mdataset(i,3) = obs[i].temp;
+		mdataset(i,4) = obs[i].wbTemp;
+		mdataset(i,5) = obs[i].rain_snowFlag;
+		mdataset(i,6) = obs[i].pres;
+		mdataset(i,7) = obs[i].skinTemp;
+		mdataset(i,8) = obs[i].lapseRate;
+	}
+	std::shared_ptr<DSetCreatPropList> plist;
+	plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+	int fillvalue = 9999;
+	plist->setFillValue(PredType::NATIVE_INT, &fillvalue);
+	if (chunkSize)
+	{
+		hsize_t chunking[2] = { (hsize_t) chunkSize, 9 };
+		plist->setChunk(2, chunking);
+		plist->setDeflate(6);
+	}
+
+	addDatasetEigen(grpData, "Observations", mdataset, plist);
+
+	/*
 	int row = 0;
 	// Writing a compound datatype
 	{
 		hsize_t dim[1] = {obs.size()};
 		DataSpace space(1, dim);
 		CompType obsType(sizeof(observation));
-		obsType.insertMember("Latitude", HOFFSET(observation, lat), PredType::NATIVE_FLOAT);
-		obsType.insertMember("Longitude", HOFFSET(observation, lon), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Latitude", HOFFSET(observation, lat), PredType::NATIVE_SHORT);
+		obsType.insertMember("Longitude", HOFFSET(observation, lon), PredType::NATIVE_USHORT);
 		obsType.insertMember("Time", HOFFSET(observation, sTime), PredType::NATIVE_LONG);
-		obsType.insertMember("Temperature", HOFFSET(observation, temp), PredType::NATIVE_FLOAT);
-		obsType.insertMember("Wet_Bulb_Temperature", HOFFSET(observation, wbTemp), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Temperature", HOFFSET(observation, temp), PredType::NATIVE_SHORT);
+		obsType.insertMember("Wet_Bulb_Temperature", HOFFSET(observation, wbTemp), PredType::NATIVE_SHORT);
 
-		obsType.insertMember("Rain_SnowFlag", HOFFSET(observation, rain_snowFlag), PredType::NATIVE_INT);
+		obsType.insertMember("Rain_SnowFlag", HOFFSET(observation, rain_snowFlag), PredType::NATIVE_SHORT);
 
-		obsType.insertMember("Pressure", HOFFSET(observation, pres), PredType::NATIVE_FLOAT);
-		obsType.insertMember("Skin_Temperature", HOFFSET(observation, skinTemp), PredType::NATIVE_FLOAT);
-		obsType.insertMember("Lapse_Rate", HOFFSET(observation, lapseRate), PredType::NATIVE_FLOAT);
+		obsType.insertMember("Pressure", HOFFSET(observation, pres), PredType::NATIVE_SHORT);
+		obsType.insertMember("Skin_Temperature", HOFFSET(observation, skinTemp), PredType::NATIVE_SHORT);
+		obsType.insertMember("Lapse_Rate", HOFFSET(observation, lapseRate), PredType::NATIVE_SHORT);
 
 
-		std::shared_ptr<DataSet> sdataset(new DataSet(grpData->createDataSet("Observations", obsType, space)));
+		std::shared_ptr<DSetCreatPropList> plist;
+		plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+		//int fillvalue = -1;
+		//plist->setFillValue(PredType::NATIVE_INT, &fillvalue);
+		if (chunkSize)
+		{
+			hsize_t chunking[2] = { (hsize_t) chunkSize, 1 };
+			plist->setChunk(2, chunking);
+			plist->setDeflate(6);
+		}
+
+		std::shared_ptr<DataSet> sdataset(new DataSet(grpData->createDataSet("Observations", obsType, space, *(plist.get()))));
 		sdataset->write(obs.data(), obsType);
 
 		addAttr<string, DataSet>(sdataset, "Latitude", "Site latitude (-90 to 90 degrees)");
@@ -75,33 +114,10 @@ void exportToHDF(const std::string &filename,
 		addAttr<string, DataSet>(sdataset, "Pressure", "Pressure in hPa");
 		addAttr<string, DataSet>(sdataset, "Skin_Temperature", "Skin temperature (K)");
 		addAttr<string, DataSet>(sdataset, "Lapse_Rate", "Lapse rate (UNKNOWN units, missing value is 99.99f.)");
+		addAttr<size_t, DataSet>(sdataset, "Raw_size", rawSize); // Rows to read (on account of chunking)
 	}
-
-
-	/*
-	// Construct the observation table
-	Eigen::MatrixXf obs(stations.size(),daysB.size());
-	obs.fill(-9999.f);
-
-	row=0;
-	for (const auto & s : stations)
-	{
-		for (int j=0; j< (int) s.second._obs.size(); ++j)
-		{
-			const auto &ob = s.second._obs.at(j);
-
-			int index = (ob.first - start).days();
-			obs(row,index) = ob.second;
-		}
-		row++;
-	}
-
-	hsize_t chunk_obs[2] = { (hsize_t) stations.size(), daysB.size() };
-	auto plistObs = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-	plistObs->setChunk(2, chunk_obs);
-	// If zlib is found
-	plistObs->setDeflate(6);
 	*/
+
 }
 
 
