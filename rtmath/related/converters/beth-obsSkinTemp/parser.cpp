@@ -233,7 +233,7 @@ void parse_file(const std::string &filename, std::vector<observation> &obs)
 	}
 	
 	
-	size_t numThreads = 6; //Ryan_Debug::getConcurrentThreadsSupported();
+	size_t numThreads = Ryan_Debug::getConcurrentThreadsSupported();
 	for (size_t i = 0; i<numThreads; i++)
 	{
 		std::thread t(process_chunk_queue);

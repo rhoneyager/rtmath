@@ -107,6 +107,15 @@ int main(int argc, char** argv)
 
 		if (!obs.size()) throw std::string("No data was successfully read!");
 
+		std::sort(obs.begin(), obs.end(), [](const observation &a, const observation &b) -> bool
+		{
+			if (a.temp != b.temp) return a.temp < b.temp;
+			if (a.skinTemp != b.skinTemp) return a.skinTemp < b.skinTemp;
+			if (a.wbTemp != b.wbTemp) return a.wbTemp < b.wbTemp;
+			if (a.pres != b.pres) return a.pres < b.pres;
+			return false;
+		});
+
 		exportToHDF(output, obs);
 		
 	}
