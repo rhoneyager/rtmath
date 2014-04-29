@@ -1,0 +1,28 @@
+Scripting for manifest generation and catalog creation for Ryan_Debug_x64.dll
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+    <assemblyIdentity type="win32" name="Ryan.Debug.DebugAssembly" version="0.7.0.45" processorArchitecture="x64" publicKeyToken="ca89aae88144abf2"></assemblyIdentity>
+    <file name="Ryan_Debug_x64.dll"></file>
+</assembly>
+
+
+Older initial example:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+    <assemblyIdentity 
+        type="win32" 
+        name="Microsoft.Windows.MySampleAssembly" 
+        version="1.0.0.0" 
+        processorArchitecture="x86"         
+        publicKeyToken="0000000000000000"/>
+    <file name="myfile.dll"/>
+</assembly>
+
+
+- The publicKeyToken was extracted from the signing cert CA using
+  pktextract signing.cer
+- mt.exe -manifest Ryan_Debug.manifest -hashupdate -makecdfs
+- makecat Ryan_Debug.manifest.cdf
+- signtool sign /t http://timestamp.verisign.com/scripts/timestamp.dll Ryan_Debug.cat
+

@@ -33,25 +33,64 @@ else()
 endif()
 
 if(WIN32 AND NOT CYGWIN)
+	set (usesmodules OFF)
 	set (modinstall OFF)
 else()
+	set (usesmodules ON)
 	set (modinstall ON)
 endif()
-option ( INSTALL_MODULES
-	"Install the environment-modules package file. Does nothing on Windows." ${modinstall})
-SET( ENV_MOD_DIR_PREFIX
-	/etc/modulefiles
-	CACHE STRING
-	"Environment-modules package file install directory"
-)
-set(MODULES_FILENAME
-	Ryan_Debug
-	CACHE STRING
-	"Name of module file"
-)
+
+if(usesmodules)
+	option ( INSTALL_MODULES
+		"Install the environment-modules package file. Does nothing on Windows." ${modinstall})
+	SET( ENV_MOD_DIR_PREFIX
+		/etc/modulefiles
+		CACHE STRING
+		"Environment-modules package file install directory"
+	)
+	set(MODULES_FILENAME
+		Ryan_Debug
+		CACHE STRING
+		"Name of module file"
+	)
+endif()
+
+# Assembly manifest information
+if (WIN32 AND NOT CYGWIN)
+	option (MAKE_ASSEMBLY "Create an application assembly" ON)
+	set(ASSEMBLY_PUBLICKEYTOKEN
+		"ca89aae88144abf2"
+		CACHE STRING
+		"Public id of signing key (defaulting to Liulab-3 CA)"
+		)
+	set (ASSEMBLY_SIGN ON)
+	#option (ASSEMBLY_SIGN
+	#	"Sign assembly and all binaries" ON)
+
+	# Default install directory is under bin/.
+	# Directory is designed to be copy-ready, for easy private deployment.
+	# Example app manifest include snippet is under this directory, in sampleapp.manifest.
+	set(ASSEMBLY_MINVERSION
+		"${MAJOR}.${MINOR}.0.0"
+		CACHE STRING
+		"Specify the minimum version that this assembly can override (used when assembly is shared)")
+
+	set(INSTALL_ASSEMBLY_DIR ${INSTALL_BIN_DIR}/Ryan.Debug.DebugAssembly)
+else()
+	set(MAKE_ASSEMBLY OFF)
+	set(INSTALL_ASSEMBLY_DIR ${INSTALL_BIN_DIR})
+	set(ASSEMBLY_SIGN OFF)
+endif()
 
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
+
+if (WIN32 AND NOT CYGWIN)
+# TODO: Add logic when creating a Wix installer to include and specialize raw cmake 
+# files with string substitution for appropriate install directories.
+# TODO: Add configurable Wix installer script.
+# TODO: Add signtool support in Wix script
+endif()
 
 find_package(Doxygen)
 option (BUILD_DOCUMENTATION
@@ -105,7 +144,7 @@ configure_file(src/lib.rc.in
 	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
 
 # Make relative paths absolute (needed later on)
-foreach(p LIB BIN INCLUDE CMAKE DOC)
+foreach(p LIB BIN INCLUDE CMAKE DOC ASSEMBLY)
 	set(var INSTALL_${p}_DIR)
 	if(NOT IS_ABSOLUTE "${${var}}")
 		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
@@ -145,7 +184,7 @@ set (hdrs
 
 #set(srcs-test src/test.cpp)
 
-if(WIN32)
+if(WIN32 AND NOT CYGWIN)
 	set (srcs ${srcs} "${PROJECT_BINARY_DIR}/lib.rc" )
 endif()
 
@@ -172,11 +211,92 @@ add_library(Ryan_Debug SHARED ${srcs} ${hdrs}
 target_link_libraries(Ryan_Debug ${liblist})
 set_target_properties(Ryan_Debug PROPERTIES FOLDER "Libs")
 if (configappend)
-SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELEASE_POSTFIX ${configappend} )
-SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES MINSIZEREL_POSTFIX ${configappend} )
-SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELWITHDEBINFO_POSTFIX ${configappend} )
-SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES DEBUG_POSTFIX ${configappend} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELEASE_POSTFIX ${configappend} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES MINSIZEREL_POSTFIX ${configappend} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RELWITHDEBINFO_POSTFIX ${configappend} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES DEBUG_POSTFIX ${configappend} )
 endif()
+
+if (MAKE_ASSEMBLY)
+	# Main DLL
+	configure_file(
+		"Ryan.Debug.DebugAssembly.manifest.template"
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.pre.manifest" @ONLY)
+
+	# Shared assembly redirect
+	set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly")
+	configure_file(
+		"Ryan.Debug.DebugAssembly.manifest.publisher.template"
+		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}" @ONLY)
+
+	# App snippets
+	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest")
+	configure_file(
+		"Ryan.Debug.DebugAssembly.app.manifest.template"
+		"${MANIFEST_APP_SNIPPET_NAME}" @ONLY)
+
+	
+	# Sign the dll file and the apps
+	add_custom_command(TARGET Ryan_Debug POST_BUILD
+		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:Ryan_Debug>
+		COMMENT "Signing the library"
+		)
+	#	add_custom_target(Ryan_Debug_Signing
+	#		DEPENDS Ryan_Debug
+	#		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:Ryan_Debug>
+	#		COMMENT "Signing the library"
+	#		VERBATIM
+	#		)
+	
+	#add_custom_target(Ryan_Debug_Manifest_Hashing_test
+	#	COMMAND echo mt.exe -manifest "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.pre.manifest" 
+	#	-hashupdate:"$<TARGET_FILE_DIR:Ryan_Debug>" -makecdfs -out:"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest" 
+	#	DEPENDS Ryan_Debug
+	#	COMMENT "Adding dll assembly hash information"
+	#	)
+
+	# Fill in the hashes in the dll assembly
+	add_custom_target(Ryan_Debug_Manifest_Hashing
+		COMMAND mt.exe -manifest Ryan.Debug.DebugAssembly.pre.manifest 
+		-hashupdate:"$<TARGET_FILE_DIR:Ryan_Debug>" -makecdfs -out:Ryan.Debug.DebugAssembly.manifest
+		DEPENDS Ryan_Debug
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Adding dll assembly hash information"
+		)
+
+	# Make the assembly catalog
+	add_custom_target(Ryan_Debug_Create_Catalog
+		COMMAND makecat.exe Ryan.Debug.DebugAssembly.manifest.cdf
+		DEPENDS Ryan_Debug_Manifest_Hashing
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Making the assembly catalog"
+		)
+
+	# Sign the assembly catalog
+	add_custom_target(Ryan_Debug_Sign_Catalog
+		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
+		DEPENDS Ryan_Debug_Create_Catalog
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Signing the catalog"
+		)
+
+	# Add installation targets for the library manifest, the sample app manifest and the library catalog
+	INSTALL(FILES 
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
+		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest"
+		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
+
+	# Also add a copy here to enable DLL listing when not found
+	# Sxs doesn't realize that it should try another assembly.....
+	#INSTALL(FILES
+	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
+	#	DESTINATION "${INSTALL_BIN_DIR}" COMPONENT Libraries)
+endif()
+
+add_subdirectory(apps)
 
 #add_executable(Ryan_Debug-test ${srcs-test})
 #target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)
@@ -206,14 +326,14 @@ configure_file(Ryan-DebugConfigVersion.cmake.in
  
 if(WIN32 AND NOT CYGWIN) # NSIS bug
 INSTALL(TARGETS Ryan_Debug
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	RUNTIME DESTINATION ${INSTALL_ASSEMBLY_DIR}
 	COMPONENT Libraries
 	)
 endif()
 
 INSTALL(TARGETS Ryan_Debug
 	EXPORT Ryan_DebugTargets
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	RUNTIME DESTINATION ${INSTALL_ASSEMBLY_DIR}
 	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
 	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
 	COMPONENT Libraries
@@ -226,7 +346,7 @@ INSTALL(DIRECTORY Ryan_Debug/
 	FILES_MATCHING PATTERN "*.h"
 	)
 
-IF(INSTALL_MODULES AND NOT WIN32)
+IF(INSTALL_MODULES)
 	INSTALL(
 		FILES ${PROJECT_BINARY_DIR}/module-ryan-debug
 		DESTINATION ${ENV_MOD_DIR_PREFIX}
@@ -235,7 +355,16 @@ IF(INSTALL_MODULES AND NOT WIN32)
 	)
 ENDIF()
 
-add_subdirectory(apps)
+
+#if(SIGN_BINARIES)
+#	add_custom_target(lib-sign ALL
+#		signtool.exe sign /t http://timestamp.digicert.com /a */*/*.exe */*.dll
+#		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#		COMMENT "Signing binaries" VERBATIM
+#		DEPENDS Ryan_Debug Ryan_Debug-test Ryan_Debug-logger
+#		)
+#endif()
+
 
 #INSTALL(TARGETS Ryan_Debug-test
 #	EXPORT Ryan_DebugTargets

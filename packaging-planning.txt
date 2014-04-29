@@ -1,0 +1,39 @@
+Planning for Wix installers:
+
+Scripting:
+- Take object, run config for x86, x64 and all combinations of build settings
+- Install these to a test install directory
+- Create a batch script to:
+ - Ensure everything signable is signed
+ - Run Wix on this directory
+
+Ryan_Debug
+- First installer needed.
+- Available as a merge module.
+- Versions:
+ - x86 / x64
+- Dependencies:
+ - Visual C++ / Intel runtimes
+ - boost filesystem, program_options, system
+  - export as a merge module matching the necessary configuration?
+  - static on intel, dynamic on others
+- DLL and EXE signing
+- Package signing
+- Upgradable
+ - Requires a bootstrapper
+- Needs a user interface to specify install options and location
+- CMake registry entries
+- environment-modules support for loading modules
+- standard system path support
+- look into customizing dll library load locations in the linker
+
+- Register Ryan_Debug-test in 
+  HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths
+  HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\App Paths
+
+
+
+First, create the boost sxs assembly
+- One for each boost version + compiler combination + build flags
+ - Boost dlls require zlib1.dll and libbz2.dll
+

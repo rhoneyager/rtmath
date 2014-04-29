@@ -1,4 +1,7 @@
 // OS-dependent functions that provide tons of useful information
+// Always bind to the most recent version of the C++ runtime library
+#define _BIND_TO_CURRENT_VCLIBS_VERSION 1
+
 
 // Tells if, on windows, the parent process is cmd or explorer
 // Will be used in apps on exit to determine if the program should wait 
