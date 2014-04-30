@@ -276,7 +276,7 @@ if (MAKE_ASSEMBLY)
 		)
 
 	# Sign the assembly catalog
-	add_custom_target(Ryan_Debug_Sign_Catalog
+	add_custom_target(Ryan_Debug_Sign_Catalog ALL
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
 		DEPENDS Ryan_Debug_Create_Catalog
@@ -289,7 +289,7 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
 		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest"
+		#"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest"
 		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
 
 	INSTALL(FILES
