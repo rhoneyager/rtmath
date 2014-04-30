@@ -8,6 +8,9 @@
       Comments='Provides the Ryan_Debug library (various versions)' Manufacturer='Ryan Honeyager'
       InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' Platform='x64' />
 
+    <Condition Message="This application is only supported on 64-bit Windows Vista, Windows Server 2008, or higher.">
+      <![CDATA[Installed OR (VersionNT64 >= 600)]]>
+    </Condition>
 
     <Media Id='1' Cabinet='Ryan_Debug_x64.cab' EmbedCab='yes' DiskPrompt='Ryan_Debug_x64' />
     <Property Id='DiskPrompt' Value="Ryan_Debug x64 vc110" />
@@ -21,7 +24,7 @@
                 <Component Id='Dll' Guid='A1574708-A1BD-4271-B1CA-B5755748CAF7' Win64='yes'>
                   <File Id='RawDll' Name='Ryan_Debug_x64.dll' DiskId='1' Source='bin/Ryan.Debug.DebugAssembly/Ryan_Debug_x64.dll' KeyPath='yes' />
                   <File Id='policyFile' Name='policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly' DiskId='1' Source='bin/Ryan.Debug.DebugAssembly/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly' KeyPath='no' />
-                  <File Id='appManifest' Name='Ryan.Debug.DebugAssembly.app.manifest' DiskId='1' Source='bin/Ryan.Debug.DebugAssembly/Ryan.Debug.DebugAssembly.app.manifest' KeyPath='no' />
+                  <!--<File Id='appManifest' Name='Ryan.Debug.DebugAssembly.app.manifest' DiskId='1' Source='bin/Ryan.Debug.DebugAssembly/Ryan.Debug.DebugAssembly.app.manifest' KeyPath='no' /> -->
                   <File Id='catalog' Name='Ryan.Debug.DebugAssembly.cat' DiskId='1' Source='bin/Ryan.Debug.DebugAssembly/Ryan.Debug.DebugAssembly.cat' KeyPath='no' />
                   <File Id='dllManifest' Name='Ryan.Debug.DebugAssembly.manifest' DiskId='1' Source='bin/Ryan.Debug.DebugAssembly/Ryan.Debug.DebugAssembly.manifest' KeyPath='no' />
                 </Component>
@@ -43,7 +46,7 @@
               </Directory>
             </Directory>
             <Directory Id='libdir' Name='lib'>
-              <Component Id='lib' Guid='00C833CB-EAFF-4710-BEC2-DB32ACCCA3C8' Win64='yes'>
+              <Component Id='lib110' Guid='00C833CB-EAFF-4710-BEC2-DB32ACCCA3C8' Win64='yes'>
                 <File Id='DebugLib' Name='Ryan_Debug_x64.lib' DiskId='1' Source='lib/Ryan_Debug_x64.lib' KeyPath='yes' />
               </Component>
             </Directory>
@@ -51,13 +54,27 @@
         </Directory>
       </Directory>
     </Directory>
-      <Feature Id='Complete' Level='1'>
-        <ComponentRef Id='Dll' />
-        <ComponentRef Id='AppLogger' />
-        <ComponentRef Id='AppTest' />
-        <ComponentRef Id='headers' />
-        <ComponentRef Id='lib' />
+    
+      <Feature Id='Complete' Title='Ryan_Debug' Description='The complete package' Level='1' Display='expand' ConfigurableDirectory='INSTALLDIR' AllowAdvertise='no'>
+        <Feature Id='Development' Title='Development' Description='Header files and linker libraries for app development.' Level='1' AllowAdvertise='no'>
+          <ComponentRef Id='headers' />
+          <Feature Id='lib_vc110' Title='MSVC 2012' Description='Linker libraries for MSVC 2012' Level='1' AllowAdvertise='no'>
+            <ComponentRef Id='lib110' />
+          </Feature>
+        </Feature>
+        <Feature Id='DllAssembly' Title='Libraries' Description='The core libraries' Level='1' Absent='disallow' AllowAdvertise='no'>
+          <ComponentRef Id='Dll' />
+        </Feature>
+        <Feature Id='Apps' Title='Applications' Description='Sample applications' Level='1' AllowAdvertise='no'>
+          <ComponentRef Id='AppLogger' />
+          <ComponentRef Id='AppTest' />
+        </Feature>
       </Feature>
+
+    <UIRef Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    
     </Product>
 </Wix>
 

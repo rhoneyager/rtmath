@@ -14,7 +14,7 @@
 				processorArchitecture="amd64" 
 				publicKeyToken="@ASSEMBLY_PUBLICKEYTOKEN@"/>
 			<bindingRedirect 
-				oldVersion="@ASSEMBLY_MINVERSION@-@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@"
+				oldVersion="@ASSEMBLY_MINVERSION@-@MAJOR@.@MINOR@.@REVISION@.@PREVSVNREVISION@"
 				newVersion="@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@" />
 		</dependentAssembly>
 	</dependency>

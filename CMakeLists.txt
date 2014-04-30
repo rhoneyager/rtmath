@@ -22,6 +22,8 @@ set(REVISION 0)
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
 
+math(EXPR PREVSVNREVISION "${SVNREVISION} - 1")
+
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
