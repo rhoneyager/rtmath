@@ -24,6 +24,10 @@
 #endif
 #endif
 
+#ifdef _MSC_FULL_VER
+#include "Ryan.Debug.DebugAssembly.manifest.h"
+#endif
+
 #include <string>
 #include <ostream>
 // Intended as a single dll, so using std::vector is complicated.
@@ -52,6 +56,11 @@ namespace Ryan_Debug
 	bool RYAN_DEBUG_DLEXPORT waitOnExit();
 	void RYAN_DEBUG_DLEXPORT waitOnExit(bool);
 	bool RYAN_DEBUG_DLEXPORT waitOnExitForce();
+
+#ifdef _WIN32
+	/// Is the current program running in admin mode (WIN32 only)
+	bool RYAN_DEBUG_DLEXPORT IsAppRunningAsAdminMode();
+#endif
 
 	// Process detection functions
 	bool RYAN_DEBUG_DLEXPORT pidExists(int pid);

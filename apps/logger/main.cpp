@@ -6,6 +6,7 @@
 
 #include "../../Ryan_Debug/debug.h"
 #include "../../Ryan_Debug/info.h"
+#include "Ryan.Debug.DebugAssembly.manifest.h"
 
 /// This application provides recursive process information for the specified pid.
 /// If no pid is specified, starts at the current process.
@@ -58,7 +59,7 @@ int main(int argc, char **argv)
 		{
 			if (!pid) break; // Recursed to 0
 			info = boost::shared_ptr<const processInfo>(getInfo(pid), freeProcessInfo);
-			cout << info;
+			cout << *(info.get());
 			if (showEnviron)
 			{
 				size_t sEnv = 0;
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
 			}
 			cout << endl;
 			if (pid == getPPID(info.get())) break; // linux shells
-			pid = getPID(info.get());
+			pid = getPPID(info.get());
 			const char* cname = getName(info.get());
 			std::string name(cname);
 			if (name == "devenv.exe") break; // VS

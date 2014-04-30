@@ -218,10 +218,19 @@ if (configappend)
 endif()
 
 if (MAKE_ASSEMBLY)
+	# Install script
+	configure_file("Ryan_Debug.template.wxs"
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs" @ONLY)
+
 	# Main DLL
 	configure_file(
 		"Ryan.Debug.DebugAssembly.manifest.template"
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.pre.manifest" @ONLY)
+
+	# Alternate SxS assembly formulation - the full manifest is embedded into the dll
+	configure_file(
+		"Ryan.Debug.DebugAssembly.manifest.single.template"
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.single.pre.manifest" @ONLY)
 
 	# Shared assembly redirect
 	set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly")
@@ -230,9 +239,9 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}" @ONLY)
 
 	# App snippets
-	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest")
+	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest.h")
 	configure_file(
-		"Ryan.Debug.DebugAssembly.app.manifest.template"
+		"src/manifestref.h.in"
 		"${MANIFEST_APP_SNIPPET_NAME}" @ONLY)
 
 	
@@ -241,12 +250,6 @@ if (MAKE_ASSEMBLY)
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:Ryan_Debug>
 		COMMENT "Signing the library"
 		)
-	#	add_custom_target(Ryan_Debug_Signing
-	#		DEPENDS Ryan_Debug
-	#		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:Ryan_Debug>
-	#		COMMENT "Signing the library"
-	#		VERBATIM
-	#		)
 	
 	#add_custom_target(Ryan_Debug_Manifest_Hashing_test
 	#	COMMAND echo mt.exe -manifest "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.pre.manifest" 
@@ -289,11 +292,63 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest"
 		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
 
-	# Also add a copy here to enable DLL listing when not found
-	# Sxs doesn't realize that it should try another assembly.....
+	INSTALL(FILES
+		"${MANIFEST_APP_SNIPPET_NAME}"
+		DESTINATION "${INSTALL_INCLUDE_DIR}/Ryan_Debug" COMPONENT Headers)
+
+	INSTALL(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
+		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
+
+	# The single-dll form of the assembly is generated here...
+	#add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
+	#	COMMAND copy "$<TARGET_FILE:Ryan_Debug>" "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
+	#	DEPENDS Ryan_Debug
+	#	)
+	#add_custom_target(Ryan_Debug_Embed_Manifest_Single
+	#	COMMAND mt.exe -manifest "Ryan.Debug.DebugAssembly.single.pre.manifest" 
+	#	-outputresource:"Ryan.Debug.DebugAssembly.dll"\;\#1
+	#	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
+	#	COMMENT "Embedding single dll-version manifest into dll"
+	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	#	)
+	# Sign the single dll
+	#add_custom_target(Ryan_Debug_Sign_DLL_Single
+	#	COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+	#	"Ryan.Debug.DebugAssembly.dll"
+	#	DEPENDS Ryan_Debug_Embed_Manifest_Single
+	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	#	COMMENT "Signing the single dll form"
+	#	)
+	# Extract the assembly catalog
+	#add_custom_target(Ryan_Debug_Manifest_Single_Extract
+	#	COMMAND mt.exe -inputresource "Ryan.Debug.DebugAssembly.dll"\;\#1
+	#	-hashupdate:"Ryan.Debug.DebugAssembly.dll" -makecdfs 
+	#	DEPENDS Ryan_Debug_Embed_Manifest_Single
+	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	#	COMMENT "Adding dll assembly hash information"
+	#	)
+	# Make the assembly catalog
+	#add_custom_target(Ryan_Debug_Create_Catalog_Single
+	#	COMMAND makecat.exe Ryan.Debug.DebugAssembly.cdf
+	#	DEPENDS Ryan_Debug_Manifest_Single_Extract
+	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	#	COMMENT "Making the assembly catalog"
+	#	)
+	# Sign the assembly catalog
+	#add_custom_target(Ryan_Debug_Sign_Catalog_Single
+	#	COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
+	#	DEPENDS Ryan_Debug_Manifest_Single_Extract
+	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	#	COMMENT "Signing the catalog"
+	#	)
+	# Add installation targets for the library manifest
 	#INSTALL(FILES
-	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
-	#	DESTINATION "${INSTALL_BIN_DIR}" COMPONENT Libraries)
+	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
+	#	DESTINATION "${INSTALL_BIN_DIR}" COMPONENT Libraries
+	#	)
+
 endif()
 
 add_subdirectory(apps)

@@ -88,7 +88,7 @@ extern "C" {
 	void RYAN_DEBUG_DLEXPORT Ryan_Debug_dummy()
 	{
 		// Dummy function that is used in auto-link
-		int i=0;
+		int i = 0;
 		i++;
 	}
 }
@@ -123,7 +123,7 @@ namespace Ryan_Debug {
 
 	// Don't export this symbol (not in header)
 #ifdef _WIN32
-	BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType ); // Helps gracefully close console
+	BOOL WINAPI _CloseHandlerRoutine(DWORD dwCtrlType); // Helps gracefully close console
 	bool _consoleTerminated = false;
 #endif
 
@@ -132,15 +132,15 @@ namespace Ryan_Debug {
 
 	// Regular defs start here
 
-	/** 
+	/**
 	* \brief Entry function that gets called when a debugged application first loads
-	* 
+	*
 	* This function gets called at the beginning of an application's execution
 	* (generally). It:
 	* - determines if the app should wait on exit (to keep the console open)
 	* - resets the console title in case any other library overrides it.
 	*   A good example of this is the CERN ROOT image lobraries.
-	* - Overrides the console control key handlers on Windows. This lets a user 
+	* - Overrides the console control key handlers on Windows. This lets a user
 	*   exit with CTRL-C without the debug code causing the app to crash.
 	*/
 	void appEntry()
@@ -175,14 +175,14 @@ namespace Ryan_Debug {
 		CloseHandle(h);
 
 		// Get parent process name
-		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
+		h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION
 			//| PROCESS_VM_READ
-			,FALSE, pid );
+			, FALSE, pid);
 		if (NULL == h) return;
 		TCHAR szModName[600];
 		DWORD success = 0;
 		DWORD sz = sizeof(szModName) / sizeof(TCHAR);
-		success = QueryFullProcessImageName(h,0,szModName,&sz);
+		success = QueryFullProcessImageName(h, 0, szModName, &sz);
 
 		// Set Console Title
 		SetConsoleTitle(szModName);
@@ -202,10 +202,10 @@ namespace Ryan_Debug {
 	* \brief Function called on application exit to hold the console window open
 	*
 	* This function is the completion of the appEntry() code.
-	* If the window is already closed (such as by the user clicking the X or 
+	* If the window is already closed (such as by the user clicking the X or
 	* pressing CTRL-C), then it silently falls through.
 	* Otherwise, it examines the doWaitOnExit flag.
-	* If the application is spawned in its own window (parent is not cmd.exe), 
+	* If the application is spawned in its own window (parent is not cmd.exe),
 	* then it prompts the user to press the return key.
 	*/
 	void appExit()
@@ -239,7 +239,7 @@ namespace Ryan_Debug {
 
 #ifdef _WIN32
 	/// Windows handler for window close events.
-	BOOL WINAPI _CloseHandlerRoutine( DWORD dwCtrlType )
+	BOOL WINAPI _CloseHandlerRoutine(DWORD dwCtrlType)
 	{
 		/*
 		if (dwCtrlType == CTRL_CLOSE_EVENT)
@@ -259,7 +259,7 @@ namespace Ryan_Debug {
 		// different methods of ascertaining this.
 #ifdef _WIN32
 		HANDLE h;
-		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid );
+		h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
 		if (h)
 		{
 			DWORD code = 0;
@@ -269,16 +269,19 @@ namespace Ryan_Debug {
 				if (code == STILL_ACTIVE)
 				{
 					return true;
-				} else {
+				}
+				else {
 					return false;
 				}
-			} else {
+			}
+			else {
 				CloseHandle(h);
 				return false;
 			}
 			CloseHandle(h);
 			return true;
-		} else {
+		}
+		else {
 			return false;
 		}
 #endif
@@ -303,14 +306,14 @@ namespace Ryan_Debug {
 		if (NULL == h) return false;
 		CloseHandle(h);
 		// Get parent process name
-		h = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION
+		h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION
 			//| PROCESS_VM_READ
-			,FALSE, pid );
+			, FALSE, pid);
 		if (NULL == h) return false;
 		TCHAR szModName[600];
 		DWORD success = 0;
 		DWORD sz = sizeof(szModName) / sizeof(TCHAR);
-		success = QueryFullProcessImageName(h,0,szModName,&sz);
+		success = QueryFullProcessImageName(h, 0, szModName, &sz);
 		//success = GetModuleFileNameEx(h,NULL,szModName,sizeof(szModName) / sizeof(TCHAR));
 
 		// If using unicode and not multibyte...
@@ -333,13 +336,60 @@ namespace Ryan_Debug {
 		filename = filenamem;
 
 		CloseHandle(h);
-		if (!success) 
+		if (!success)
 		{
 			success = GetLastError();
 			std::cout << "Failure\n" << success << std::endl;
 			return false;
 		}
 		return true;
+	}
+
+
+	bool IsAppRunningAsAdminMode()
+	{
+		BOOL fIsRunAsAdmin = FALSE;
+		DWORD dwError = ERROR_SUCCESS;
+		PSID pAdministratorsGroup = NULL;
+
+		// Allocate and initialize a SID of the administrators group.
+		SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+		if (!AllocateAndInitializeSid(
+			&NtAuthority,
+			2,
+			SECURITY_BUILTIN_DOMAIN_RID,
+			DOMAIN_ALIAS_RID_ADMINS,
+			0, 0, 0, 0, 0, 0,
+			&pAdministratorsGroup))
+		{
+			dwError = GetLastError();
+			goto Cleanup;
+		}
+
+		// Determine whether the SID of administrators group is enabled in 
+		// the primary access token of the process.
+		if (!CheckTokenMembership(NULL, pAdministratorsGroup, &fIsRunAsAdmin))
+		{
+			dwError = GetLastError();
+			goto Cleanup;
+		}
+
+	Cleanup:
+		// Centralized cleanup for all allocated resources.
+		if (pAdministratorsGroup)
+		{
+			FreeSid(pAdministratorsGroup);
+			pAdministratorsGroup = NULL;
+		}
+
+		// Throw the error if something failed in the function.
+		if (ERROR_SUCCESS != dwError)
+		{
+			throw dwError;
+		}
+
+		if (fIsRunAsAdmin) return true;
+		return false;
 	}
 #endif
 
@@ -375,7 +425,7 @@ namespace Ryan_Debug {
 					ppid = pe.th32ParentProcessID;
 					//printf("PID: %i; PPID: %i\n", pid, pe.th32ParentProcessID);
 				}
-			} while( Process32Next(h, &pe));
+			} while (Process32Next(h, &pe));
 		}
 
 		//std::cout << "Pid " << pid << "\nPPID " << ppid << std::endl;
@@ -408,11 +458,11 @@ namespace Ryan_Debug {
 		pe.dwSize = sizeof(PROCESSENTRY32);
 		pid = GetCurrentProcessId();
 		CloseHandle(h);
-		return (int) pid;
+		return (int)pid;
 #endif
 #ifdef __unix__
 		//pid_t getpid(void);
-		return (int) getpid();
+		return (int)getpid();
 #endif
 		return 0;
 	}
@@ -499,8 +549,8 @@ namespace Ryan_Debug {
 			char *buffer = new char[length];
 			while (scmdline.good())
 			{
-				scmdline.read(buffer,length);
-				res->cmdline.append(buffer,scmdline.gcount());
+				scmdline.read(buffer, length);
+				res->cmdline.append(buffer, scmdline.gcount());
 			}
 			//scmdline >> res->cmdline;
 			// Replace command-line null symbols with spaces
@@ -512,8 +562,8 @@ namespace Ryan_Debug {
 
 			while (senviron.good())
 			{
-				senviron.read(buffer,length);
-				res->environ.append(buffer,senviron.gcount());
+				senviron.read(buffer, length);
+				res->environ.append(buffer, senviron.gcount());
 			}
 			// Replace environment null symbols with newlines
 			//std::replace(res->environ.begin(),res->environ.end(),
@@ -531,13 +581,13 @@ namespace Ryan_Debug {
 #ifdef _WIN32
 		//throw std::string("Unimplemented on WIN32"); // unimplemented
 		boost::filesystem::path filename, filepath;
-		getPathWIN32((DWORD) pid, filepath, filename); // int always fits in DWORD
+		getPathWIN32((DWORD)pid, filepath, filename); // int always fits in DWORD
 		res->name = filename.string();
 		res->path = filepath.string();
 		res->startTime;
 
 		int mypid = getPID();
-		if (pid == mypid)
+		if (pid == mypid || IsAppRunningAsAdminMode())
 		{
 			LPTCH penv = GetEnvironmentStrings();
 			LPTCH pend = penv, pprev = '\0';
@@ -573,11 +623,12 @@ namespace Ryan_Debug {
 			res->cwd = std::string(cd);
 			delete[] cd;
 
-		} else {
+		}
+		else {
 			// Privilege escalation required. Need to handle this case.
-			std::string err("Privilege escalation required. Need to handle this case.\n");
+			std::string err("Privilege escalation required to get full process information for another process. UNIMPLEMENTED.\n");
 			std::cerr << err;
-			throw err.c_str();
+			//throw err.c_str();
 		}
 
 		// Get parent process name
@@ -608,19 +659,19 @@ namespace Ryan_Debug {
 		throw "Unimplemented OS";
 	}
 
-	const char* getName(const hProcessInfo hp) {return hp->name.c_str(); }
-	const char* getPath(const hProcessInfo hp) {return hp->path.c_str(); }
-	const char* getCwd(const hProcessInfo hp) {return hp->cwd.c_str(); }
+	const char* getName(const hProcessInfo hp) { return hp->name.c_str(); }
+	const char* getPath(const hProcessInfo hp) { return hp->path.c_str(); }
+	const char* getCwd(const hProcessInfo hp) { return hp->cwd.c_str(); }
 	const char* getEnviron(const hProcessInfo hp, size_t &sz) { sz = hp->environ.size(); return hp->environ.c_str(); }
 	const char* getCmdline(const hProcessInfo hp, size_t &sz) { sz = hp->cmdline.size(); return hp->cmdline.c_str(); }
-	const char* getStartTime(const hProcessInfo hp) {return hp->startTime.c_str(); }
-	int getPID(const hProcessInfo hp) {return hp->pid; }
-	int getPPID(const hProcessInfo hp) {return hp->ppid; }
+	const char* getStartTime(const hProcessInfo hp) { return hp->startTime.c_str(); }
+	int getPID(const hProcessInfo hp) { return hp->pid; }
+	int getPPID(const hProcessInfo hp) { return hp->ppid; }
 	void freeProcessInfo(hProcessInfo hp) { delete hp; hp = 0; }
 
 
 	/**
-	* \brief Prints compiler and library information that was present when the 
+	* \brief Prints compiler and library information that was present when the
 	* Ryan-Debug library was compiled.
 	*/
 	void printDebugInfo()
@@ -675,11 +726,11 @@ namespace Ryan_Debug {
 		/*
 		if (vm.count("help-verbose"))
 		{
-			po::options_description oall("All Options");
-			oall.add(*pcmdline).add(*pconfig).add(*phidden);
+		po::options_description oall("All Options");
+		oall.add(*pcmdline).add(*pconfig).add(*phidden);
 
-			std::cerr << oall << std::endl;
-			exit(2);
+		std::cerr << oall << std::endl;
+		exit(2);
 		}
 		*/
 

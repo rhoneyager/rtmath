@@ -1,0 +1,22 @@
+#pragma once
+
+#ifndef IGNORE_MANIFESTS
+#ifndef RYAN_DEBUG_EXPORTING
+
+#pragma region Includes and Manifest Dependencies
+
+// Enable manifest referencing
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='x86' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='ia64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='amd64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='*' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#endif
+#pragma endregion
+
+#endif
+#endif
+
