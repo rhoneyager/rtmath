@@ -21,16 +21,21 @@ int main(int argc, char **argv)
 		po::positional_options_description p;
 		p.add("pid", 1);
 		p.add("message", -1);
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description cmdline("Command-line options"), config("Config options"), 
+			hidden("Hidden options"), desc("Allowed options"), oall("all options");
+		Ryan_Debug::add_options(cmdline, config, hidden);
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("pid,p", po::value<int>(), "The pid to query. If not specified, "
 			 "defaults to the pid of this process.")
 			("environ,e", "Also show the environment variables (long output)")
 			;
 
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
 		po::variables_map vm;
-		po::store(po::command_line_parser(argc, argv).options(desc).
+		po::store(po::command_line_parser(argc, argv).options(oall).
 			  positional(p).run(), vm);
 		po::notify(vm);
 
@@ -39,6 +44,9 @@ int main(int argc, char **argv)
 			cerr << desc << endl;
 			return 1;
 		}
+
+		Ryan_Debug::process_static_options(vm);
+
 
 		bool showEnviron = false;
 		if (vm.count("environ")) showEnviron = true;
@@ -70,6 +78,7 @@ int main(int argc, char **argv)
 			cout << endl;
 			if (pid == getPPID(info.get())) break; // linux shells
 			pid = getPPID(info.get());
+			if (!pid) break;
 			const char* cname = getName(info.get());
 			std::string name(cname);
 			if (name == "devenv.exe") break; // VS
