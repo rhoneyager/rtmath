@@ -146,12 +146,12 @@ configure_file(src/lib.rc.in
 	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
 
 # Make relative paths absolute (needed later on)
-foreach(p LIB BIN INCLUDE CMAKE DOC ASSEMBLY)
-	set(var INSTALL_${p}_DIR)
-	if(NOT IS_ABSOLUTE "${${var}}")
-		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-	endif()
-endforeach()
+#foreach(p LIB BIN INCLUDE CMAKE DOC ASSEMBLY)
+#	set(var INSTALL_${p}_DIR)
+#	if(NOT IS_ABSOLUTE "${${var}}")
+#		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+#	endif()
+#endforeach()
  
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/environment/ryan-debug"
@@ -235,7 +235,7 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.single.pre.manifest" @ONLY)
 
 	# Shared assembly redirect
-	set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly")
+	set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest")
 	configure_file(
 		"Ryan.Debug.DebugAssembly.manifest.publisher.template"
 		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}" @ONLY)
@@ -283,7 +283,31 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
 		DEPENDS Ryan_Debug_Create_Catalog
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Signing the catalog"
+		COMMENT "Signing the assembly catalog"
+		)
+
+	# Create the policy cdf
+	add_custom_target(Ryan_Debug_Policy_Hashing
+		COMMAND mt.exe -manifest ${PublisherManifestName} -makecdfs
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Adding policy hash information"
+		)
+
+	# Make the policy catalog
+	add_custom_target(Ryan_Debug_Create_Policy_Catalog
+		COMMAND makecat.exe policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest.cdf
+		DEPENDS Ryan_Debug_Policy_Hashing
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Making the policy catalog"
+		)
+
+	# Sign the policy catalog
+	add_custom_target(Ryan_Debug_Sign_Policy_Catalog ALL
+		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+		policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat
+		DEPENDS Ryan_Debug_Create_Policy_Catalog
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Signing the policy catalog"
 		)
 
 	# Add installation targets for the library manifest, the sample app manifest and the library catalog
@@ -291,6 +315,7 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
 		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
+		"${CMAKE_CURRENT_BINARY_DIR}/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat"
 		#"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest"
 		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
 
@@ -363,15 +388,35 @@ export(TARGETS Ryan_Debug
 	FILE "${PROJECT_BINARY_DIR}/Ryan_DebugTargets.cmake")
 export(PACKAGE Ryan_Debug)
 
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
-	"${INSTALL_INCLUDE_DIR}")
+
+# Constructing relative and absolute paths, needed for the cmake export file header locator
+# Absolute paths: ABS_INSTALL_${p}_DIR
+# Relative paths: REL_${p}_DIR
+foreach(p LIB BIN INCLUDE CMAKE DOC ASSEMBLY)
+	set(var ABS_INSTALL_${p}_DIR)
+	set(ABS_INSTALL_${p}_DIR ${INSTALL_${p}_DIR})
+	if(NOT IS_ABSOLUTE "${${var}}")
+		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+	endif()
+	#message("ABS_INSTALL_${p}_DIR - ${${var}}")
+endforeach()
+foreach(p LIB BIN INCLUDE DOC ASSEMBLY)
+	set(var ABS_INSTALL_${p}_DIR)
+	#message("RELATIVE_PATH REL_${p}_DIR ${ABS_INSTALL_CMAKE_DIR} ${${var}}")
+	file(RELATIVE_PATH REL_${p}_DIR "${ABS_INSTALL_CMAKE_DIR}" "${${var}}")
+	#message("      - ${REL_${p}_DIR}")
+endforeach()
+
+#file(RELATIVE_PATH REL_INCLUDE_DIR "${ABS_INSTALL_CMAKE_DIR}"
+#	"${INSTALL_INCLUDE_DIR}")
 
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(Ryan-DebugConfig.cmake.in
 	"${PROJECT_BINARY_DIR}/Ryan_DebugConfig.cmake" @ONLY)
 # ... and for the install tree
-set(CONF_INCLUDE_DIRS "\${RYAN_DEBUG_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+set(CONF_INCLUDE_DIRS "\${RYAN_DEBUG_CMAKE_DIR}/${REL_INCLUDE_DIR}") # Before WiX
+#set(CONF_INCLUDE_DIRS "")
 
 #message("${CONF_INCLUDE_DIRS}")
 
@@ -380,24 +425,24 @@ configure_file(Ryan-DebugConfig.cmake.in
 # ... for both
 configure_file(Ryan-DebugConfigVersion.cmake.in
 	"${PROJECT_BINARY_DIR}/Ryan_DebugConfigVersion.cmake" @ONLY)
- 
+
+#message("${INSTALL_CMAKE_DIR}/${REL_ASSEMBLY_DIR}")
 if(WIN32 AND NOT CYGWIN) # NSIS bug
 INSTALL(TARGETS Ryan_Debug
-	RUNTIME DESTINATION ${INSTALL_ASSEMBLY_DIR}
+	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_ASSEMBLY_DIR}
 	COMPONENT Libraries
 	)
 endif()
 
 INSTALL(TARGETS Ryan_Debug
 	EXPORT Ryan_DebugTargets
-	RUNTIME DESTINATION ${INSTALL_ASSEMBLY_DIR}
-	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
-	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
+	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_ASSEMBLY_DIR}
+	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}
+	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}
 	COMPONENT Libraries
 	)
 
 INSTALL(DIRECTORY Ryan_Debug/
-#	EXPORT Ryan_DebugTargets
 	DESTINATION ${INSTALL_INCLUDE_DIR}/Ryan_Debug
 	COMPONENT Headers
 	FILES_MATCHING PATTERN "*.h"
@@ -411,23 +456,6 @@ IF(INSTALL_MODULES)
 		RENAME ${MODULES_FILENAME}
 	)
 ENDIF()
-
-
-#if(SIGN_BINARIES)
-#	add_custom_target(lib-sign ALL
-#		signtool.exe sign /t http://timestamp.digicert.com /a */*/*.exe */*.dll
-#		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#		COMMENT "Signing binaries" VERBATIM
-#		DEPENDS Ryan_Debug Ryan_Debug-test Ryan_Debug-logger
-#		)
-#endif()
-
-
-#INSTALL(TARGETS Ryan_Debug-test
-#	EXPORT Ryan_DebugTargets
-#	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-#	COMPONENT Applications
-#	)
 
 if (BUILD_DOCUMENTATION_IN_ALL)
 	# Provides html and pdf
@@ -447,53 +475,5 @@ INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan_DebugConfig.cm
 
 INSTALL(EXPORT Ryan_DebugTargets DESTINATION
 	"${INSTALL_CMAKE_DIR}" COMPONENT Libraries)
-
-set(CPACK_PACKAGE_NAME "Ryan_Debug")
-set(CPACK_PACKAGE_VENDOR "Ryan Honeyager")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Ryan_Debug - Ryan's debugging library")
-set(CPACK_PACKAGE_VERSION "${RYAN_DEBUG_VERSION}")
-set(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH ${REVISION})
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "Ryan_Debug")
-set(CPACK_PACKAGE_CONTACT "Ryan Honeyager (rhoneyager@fsu.edu)")
-
-set (CPACK_COMPONENTS_ALL
-        Libraries
-        Headers
-	Applications
-)
-
-set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION
-	"The testing apps")
-set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION
-        "The compiled libraries")
-set(CPACK_COMPONENT_HEADERS_DESCRIPTION
-        "Headers for code development")
-
-set(CPACK_COMPONENT_HEADERS_DEPENDS Libraries)
-set(CPACK_COMPONENT_APPLICATIONS_DEPENDS Libraries)
-set(CPACK_COMPONENT_LIBRARIES_REQUIRED 1)
-
-#set(CPACK_SET_DESTDIR 1)
-set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-#message("${CPACK_PACKAGING_INSTALL_PREFIX}")
-#set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_BINARY_DIR}/ryan-debug.spec")
-#set(CPACK_RPM_USER_BINARY_SPECFILE "${PROJECT_SOURCE_DIR}/ryan-debug.spec.in")
-
-# Fixing RPM EXPORT issue
-#set(CPACK_IGNORE_FILES ".*EXPORT$" ".*Ryan_DebugTargets$")
-#set(CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
-
-set(CPACK_RPM_PACKAGE_REQUIRES
-        "boost-devel >= 1.45, boost-filesystem, gcc-c++ >= 4.6"
-        )
-
-set(CPACK_DEBIAN_PACKAGE_DEPENDS
-        "libboost-dev (>= 1.46.1), libboost-filesystem-dev (>= 1.46.1), g++ (>= 4:4.6.1)"
-        )
-
-# This must always be last!
-include(CPack)
 
 
