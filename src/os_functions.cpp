@@ -753,24 +753,24 @@ namespace Ryan_Debug {
 	* \brief Prints compiler and library information that was present when the
 	* Ryan-Debug library was compiled.
 	*/
-	void printDebugInfo()
+	void printDebugInfo(std::ostream &out)
 	{
 		using std::cerr;
 		using std::string;
 		using std::endl;
 		using boost::filesystem::path;
-		cerr << "Ryan_Debug information\n"
+		out << "Ryan_Debug information\n"
 			<< "Version: " << RYAN_DEBUG_MAJOR << "." << RYAN_DEBUG_MINOR << "."
 			<< RYAN_DEBUG_REVISION << "." << RYAN_DEBUG_SVNREVISION << endl;
 #ifdef _WIN32
 		string currentPath = GetModulePath();
-		cerr << "Active location: " << currentPath << endl;
+		out << "Active location: " << currentPath << endl;
 #endif
-		cerr << "Loaded modules: \n";
-		enumModules(getPID(), std::cerr);
+		out << "Loaded modules: \n";
+		enumModules(getPID(), out);
 
 
-		debug_preamble(std::cerr);
+		debug_preamble(out);
 	}
 
 	/// \todo Finish implementation using Windows and Linux system calls.

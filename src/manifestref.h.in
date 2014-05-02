@@ -6,10 +6,10 @@
 // The manifest component name depends on whether a debug or release build is using the app.
 // This is for ease of use when debugging.
 #ifndef RYAN_DEBUG_ASSEMBLY_RELEASE
-#define RYAN_DEBUG_ASSEMBLY_RELEASE "'@ASSEMBLY_NAME_RELEASE@'"
+#define RYAN_DEBUG_ASSEMBLY_RELEASE "'@ASSEMBLY_NAME_Release@'"
 #endif
 #ifndef RYAN_DEBUG_ASSEMBLY_DEBUG
-#define RYAN_DEBUG_ASSEMBLY_DEBUG "'@ASSEMBLY_NAME_DEBUG@'"
+#define RYAN_DEBUG_ASSEMBLY_DEBUG "'@ASSEMBLY_NAME_Debug@'"
 #endif
 
 #ifndef RYAN_DEBUG_ASSEMBLY_NAME

@@ -80,8 +80,8 @@ namespace Ryan_Debug
 	RYAN_DEBUG_DLEXPORT const char* getStartTime(const hProcessInfo);
 	void RYAN_DEBUG_DLEXPORT freeProcessInfo(hProcessInfo);
 
-	// Print the compiler information for the debug library to std::cerr.
-	void RYAN_DEBUG_DLEXPORT printDebugInfo();
+	/// Print the compiler information for the debug library.
+	void RYAN_DEBUG_DLEXPORT printDebugInfo(std::ostream &out = std::cerr);
 
 	/// \brief Get number of threads available in the system
 	/// \todo Finish implementation using Windows and Linux system calls.
