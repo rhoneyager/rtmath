@@ -265,20 +265,21 @@ if (MAKE_ASSEMBLY)
 		)
 
 	# Add installation targets for the library manifest, the sample app manifest and the library catalog
-	#INSTALL(FILES 
-	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
-	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
-	#	"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
-	#	"${CMAKE_CURRENT_BINARY_DIR}/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat"
-	#	DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
+	INSTALL(FILES 
+		"${CMAKE_CURRENT_BINARY_DIR}/Release/Ryan.Debug.DebugAssembly.cat"
+		"${CMAKE_CURRENT_BINARY_DIR}/Release/Ryan.Debug.DebugAssembly.manifest"
+		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
+		"${CMAKE_CURRENT_BINARY_DIR}/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat"
+		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
 
 	#INSTALL(FILES
 	#	"${MANIFEST_APP_SNIPPET_NAME}"
 	#	DESTINATION "${INSTALL_INCLUDE_DIR}/Ryan_Debug" COMPONENT Headers)
 
-	#INSTALL(FILES
-	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
-	#	DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
+	INSTALL(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
+		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
+		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
 
 endif()
 

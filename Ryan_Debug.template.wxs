@@ -106,14 +106,14 @@
               
               <Component Id='AppLogger' Guid='4EF4648F-761F-428D-9230-2CD85F7C9B10' Win64='yes'>
                 <File Id='AppLogger1' Name='Ryan_Debug-logger.exe' DiskId='1' Source='bin/Ryan_Debug-logger.exe' KeyPath='yes' />
-                <RegistryKey Id='AppLoggerRegPaths' Root='HKLM' Key='Software\Microsoft\Windows\CurrentVersion\App Paths\Ryan_Debug-logger.exe' Action='createAndRemoveOnUninstall'>
+                <RegistryKey Root='HKLM' Key='Software\Microsoft\Windows\CurrentVersion\App Paths\Ryan_Debug-logger.exe'>
                   <RegistryValue Type='string' Name='Path' Value='[INSTALLDIR]\bin'/>
                   <RegistryValue Type='string' Value='[INSTALLDIR]\bin\Ryan_Debug-logger.exe'/>
                 </RegistryKey>
               </Component>
               <Component Id='AppTest' Guid='8C027D04-1D10-4BC6-8DC1-B7489C13B47F' Win64='yes'>
                 <File Id='AppTest1' Name='Ryan_Debug-test.exe' DiskId='1' Source='bin/Ryan_Debug-test.exe' KeyPath='yes' />
-                <RegistryKey Id='AppTestRegPaths' Root='HKLM' Key='Software\Microsoft\Windows\CurrentVersion\App Paths\Ryan_Debug-test.exe' Action='createAndRemoveOnUninstall'>
+                <RegistryKey Root='HKLM' Key='Software\Microsoft\Windows\CurrentVersion\App Paths\Ryan_Debug-test.exe'>
                   <RegistryValue Type='string' Name='Path' Value='[INSTALLDIR]\bin'/>
                   <RegistryValue Type='string' Value='[INSTALLDIR]\bin\Ryan_Debug-test.exe'/>
                 </RegistryKey>
