@@ -3,17 +3,46 @@
 #ifndef IGNORE_MANIFESTS
 #ifndef RYAN_DEBUG_EXPORTING
 
+// The manifest component name depends on whether a debug or release build is using the app.
+// This is for ease of use when debugging.
+#ifndef RYAN_DEBUG_ASSEMBLY_RELEASE
+#define RYAN_DEBUG_ASSEMBLY_RELEASE "'@ASSEMBLY_NAME_RELEASE@'"
+#endif
+#ifndef RYAN_DEBUG_ASSEMBLY_DEBUG
+#define RYAN_DEBUG_ASSEMBLY_DEBUG "'@ASSEMBLY_NAME_DEBUG@'"
+#endif
+
+#ifndef RYAN_DEBUG_ASSEMBLY_NAME
+#ifdef RYAN_DEBUG_FORCE_RELEASE
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELEASE
+#else
+#ifdef BUILDTYPE
+#if (BUILDTYPE == "Debug") || (BUILDTYPE == "RelWithDebInfo")
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_DEBUG
+#else
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELEASE
+#endif
+#else
+#ifdef _DEBUG
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_DEBUG
+#else
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELEASE
+#endif
+#endif
+#endif
+#endif
+
 #pragma region Includes and Manifest Dependencies
 
 // Enable manifest referencing
 #if defined _M_IX86
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='x86' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='x86' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
 #elif defined _M_IA64
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='ia64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='ia64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
 #elif defined _M_X64
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='amd64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='amd64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
 #else
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Ryan.Debug.DebugAssembly' version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='*' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='*' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
 #endif
 #pragma endregion
 

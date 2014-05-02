@@ -60,6 +60,16 @@ endif()
 # Assembly manifest information
 if (WIN32 AND NOT CYGWIN)
 	option (MAKE_ASSEMBLY "Create an application assembly" ON)
+	set(ASSEMBLY_NAME_Debug
+		"Ryan.Debug.Debug"
+		CACHE STRING
+		"Assembly name for debug builds")
+	set(ASSEMBLY_NAME_RelWithDebInfo ${ASSEMBLY_NAME_Debug})
+	set(ASSEMBLY_NAME_Release
+		"Ryan.Debug.DebugAssembly"
+		CACHE STRING
+		"Assembly name for release builds")
+	set(ASSEMBLY_NAME_MinSizeRel ${ASSEMBLY_NAME_Release})
 	set(ASSEMBLY_PUBLICKEYTOKEN
 		"ca89aae88144abf2"
 		CACHE STRING
@@ -87,51 +97,6 @@ endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")
 
-if (WIN32 AND NOT CYGWIN)
-# TODO: Add logic when creating a Wix installer to include and specialize raw cmake 
-# files with string substitution for appropriate install directories.
-# TODO: Add configurable Wix installer script.
-# TODO: Add signtool support in Wix script
-endif()
-
-find_package(Doxygen)
-option (BUILD_DOCUMENTATION
-	"Build the documentation for this library" OFF)
-
-if(BUILD_DOCUMENTATION)
-
-	option (BUILD_DOCUMENTATION_IN_ALL
-		"Build documentation automatically with 'make all'. Also used for 'make install' and 'make package'" OFF)
-
-	if (NOT DOXYGEN_FOUND)
-		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
-	endif()
-
-
-	configure_file(Doxyfile.in
-		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
-
-	if (BUILD_DOCUMENTATION_IN_ALL)
-		set (ALL_FLAG ALL)
-	else()
-		set (ALL_FLAG "")
-	endif()
-
-	# This builds the html docs
-	add_custom_target(doc-html ${ALL_FLAG}
-		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-		COMMENT "Generating API html documentation with Doxygen" VERBATIM 
-		)
-	# This builds the latex docs
-	add_custom_target(doc-latex ${ALL_FLAG}
-		latex refman.tex 
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex
-		COMMENT "Generating API pdf documentation with Doxygen" VERBATIM
-		)
-
-	add_custom_target(docs ${ALL_FLAG} DEPENDS doc-html doc-latex)
-endif()
 
 # Configure the subversion.h file
 configure_file(
@@ -144,6 +109,8 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 configure_file(src/lib.rc.in
 	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
+configure_file(src/versioninfo.h.in
+	"${PROJECT_BINARY_DIR}/versioninfo.h" @ONLY)
 
 # Make relative paths absolute (needed later on)
 #foreach(p LIB BIN INCLUDE CMAKE DOC ASSEMBLY)
@@ -219,23 +186,39 @@ if (configappend)
 	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES DEBUG_POSTFIX ${configappend} )
 endif()
 
+
 if (MAKE_ASSEMBLY)
+	# Set dll properties for assembly name
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES Release_ASSEMBLY ${ASSEMBLY_NAME_Release} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES MinSizeRel_ASSEMBLY ${ASSEMBLY_NAME_MinSizeRel} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RelWithDebInfo_ASSEMBLY ${ASSEMBLY_NAME_RelWithDebInfo} )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES Debug_ASSEMBLY ${ASSEMBLY_NAME_Debug} )
+
 	# Install script
 	configure_file("Ryan_Debug.template.wxs"
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs" @ONLY)
 
 	# Main DLL
-	configure_file(
-		"Ryan.Debug.DebugAssembly.manifest.template"
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.pre.manifest" @ONLY)
 
+	foreach(p Debug RelWithDebInfo MinSizeRel Release)
+		set(ASSEMBLY_NAME ${ASSEMBLY_NAME_${p}})
+		configure_file(
+			"Ryan.Debug.DebugAssembly.manifest.template"
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/Ryan.Debug.DebugAssembly.pre.manifest" @ONLY)
+	endforeach()
+
+	
 	# Alternate SxS assembly formulation - the full manifest is embedded into the dll
-	configure_file(
-		"Ryan.Debug.DebugAssembly.manifest.single.template"
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.single.pre.manifest" @ONLY)
+	#configure_file(
+	#	"Ryan.Debug.DebugAssembly.manifest.single.template"
+	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.single.pre.manifest" @ONLY)
 
 	# Shared assembly redirect
 	set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest")
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES Release_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_Release}.manifest" )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES MinSizeRel_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_MinSizeRel}.manifest" )
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES RelWithDebInfo_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_RelWithDebInfo}.manifest")
+	SET_TARGET_PROPERTIES( Ryan_Debug PROPERTIES Debug_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_Debug}.manifest" )
 	configure_file(
 		"Ryan.Debug.DebugAssembly.manifest.publisher.template"
 		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}" @ONLY)
@@ -249,132 +232,53 @@ if (MAKE_ASSEMBLY)
 	
 	# Sign the dll file and the apps
 	add_custom_command(TARGET Ryan_Debug POST_BUILD
+		COMMAND echo $<CONFIGURATION> - Signing DLL
+		COMMAND cd $<CONFIGURATION>
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:Ryan_Debug>
-		COMMENT "Signing the library"
+		COMMAND echo Updating manifest with hashes and making CDF
+		COMMAND mt.exe -manifest Ryan.Debug.DebugAssembly.pre.manifest
+			-makecdfs 
+			-out:$<TARGET_PROPERTY:Ryan_Debug,$<CONFIGURATION>_ASSEMBLY>.manifest
+		COMMAND echo Making catalog
+		COMMAND echo makecat.exe -v $<TARGET_PROPERTY:Ryan_Debug,$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
+		COMMAND makecat.exe -v $<TARGET_PROPERTY:Ryan_Debug,$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
+		COMMAND echo Signing catalog
+		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+			 "$<TARGET_FILE_DIR:Ryan_Debug>/$<TARGET_PROPERTY:Ryan_Debug,$<CONFIGURATION>_ASSEMBLY>.cat"
+		COMMAND cd ..
 		)
-	
-	#add_custom_target(Ryan_Debug_Manifest_Hashing_test
-	#	COMMAND echo mt.exe -manifest "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.pre.manifest" 
-	#	-hashupdate:"$<TARGET_FILE_DIR:Ryan_Debug>" -makecdfs -out:"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest" 
-	#	DEPENDS Ryan_Debug
-	#	COMMENT "Adding dll assembly hash information"
-	#	)
-
-	# Fill in the hashes in the dll assembly
-	add_custom_target(Ryan_Debug_Manifest_Hashing
-		COMMAND mt.exe -manifest Ryan.Debug.DebugAssembly.pre.manifest 
-		-hashupdate:"$<TARGET_FILE_DIR:Ryan_Debug>" -makecdfs -out:Ryan.Debug.DebugAssembly.manifest
+	add_custom_target(Ryan_Debug-Policy-Publish ALL
 		DEPENDS Ryan_Debug
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Adding dll assembly hash information"
-		)
-
-	# Make the assembly catalog
-	add_custom_target(Ryan_Debug_Create_Catalog
-		COMMAND makecat.exe Ryan.Debug.DebugAssembly.manifest.cdf
-		DEPENDS Ryan_Debug_Manifest_Hashing
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Making the assembly catalog"
-		)
-
-	# Sign the assembly catalog
-	add_custom_target(Ryan_Debug_Sign_Catalog ALL
-		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
-		DEPENDS Ryan_Debug_Create_Catalog
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Signing the assembly catalog"
-		)
-
-	# Create the policy cdf
-	add_custom_target(Ryan_Debug_Policy_Hashing
-		COMMAND mt.exe -manifest ${PublisherManifestName} -makecdfs
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Adding policy hash information"
-		)
-
-	# Make the policy catalog
-	add_custom_target(Ryan_Debug_Create_Policy_Catalog
+		COMMAND echo Creating the policy cdf
+		COMMAND echo mt.exe -manifest ${PublisherManifestName} -makecdfs 
+		#-out:${PublisherManifestName}
+		COMMAND mt.exe -manifest ${PublisherManifestName} -makecdfs 
+		#-out:${PublisherManifestName}
+		COMMAND echo Make the policy catalog
+		COMMAND echo makecat.exe policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest.cdf
 		COMMAND makecat.exe policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest.cdf
-		DEPENDS Ryan_Debug_Policy_Hashing
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Making the policy catalog"
-		)
-
-	# Sign the policy catalog
-	add_custom_target(Ryan_Debug_Sign_Policy_Catalog ALL
+		COMMAND echo Sign the policy catalog
+		COMMAND echo signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+			policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
-		policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat
-		DEPENDS Ryan_Debug_Create_Policy_Catalog
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Signing the policy catalog"
+			policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat
 		)
 
 	# Add installation targets for the library manifest, the sample app manifest and the library catalog
-	INSTALL(FILES 
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
-		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
-		"${CMAKE_CURRENT_BINARY_DIR}/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat"
-		#"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.app.manifest"
-		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
-
-	INSTALL(FILES
-		"${MANIFEST_APP_SNIPPET_NAME}"
-		DESTINATION "${INSTALL_INCLUDE_DIR}/Ryan_Debug" COMPONENT Headers)
-
-	INSTALL(FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
-		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
-
-	# The single-dll form of the assembly is generated here...
-	#add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
-	#	COMMAND copy "$<TARGET_FILE:Ryan_Debug>" "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
-	#	DEPENDS Ryan_Debug
-	#	)
-	#add_custom_target(Ryan_Debug_Embed_Manifest_Single
-	#	COMMAND mt.exe -manifest "Ryan.Debug.DebugAssembly.single.pre.manifest" 
-	#	-outputresource:"Ryan.Debug.DebugAssembly.dll"\;\#1
-	#	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
-	#	COMMENT "Embedding single dll-version manifest into dll"
-	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	#	)
-	# Sign the single dll
-	#add_custom_target(Ryan_Debug_Sign_DLL_Single
-	#	COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
-	#	"Ryan.Debug.DebugAssembly.dll"
-	#	DEPENDS Ryan_Debug_Embed_Manifest_Single
-	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	#	COMMENT "Signing the single dll form"
-	#	)
-	# Extract the assembly catalog
-	#add_custom_target(Ryan_Debug_Manifest_Single_Extract
-	#	COMMAND mt.exe -inputresource "Ryan.Debug.DebugAssembly.dll"\;\#1
-	#	-hashupdate:"Ryan.Debug.DebugAssembly.dll" -makecdfs 
-	#	DEPENDS Ryan_Debug_Embed_Manifest_Single
-	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	#	COMMENT "Adding dll assembly hash information"
-	#	)
-	# Make the assembly catalog
-	#add_custom_target(Ryan_Debug_Create_Catalog_Single
-	#	COMMAND makecat.exe Ryan.Debug.DebugAssembly.cdf
-	#	DEPENDS Ryan_Debug_Manifest_Single_Extract
-	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	#	COMMENT "Making the assembly catalog"
-	#	)
-	# Sign the assembly catalog
-	#add_custom_target(Ryan_Debug_Sign_Catalog_Single
-	#	COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+	#INSTALL(FILES 
 	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.cat"
-	#	DEPENDS Ryan_Debug_Manifest_Single_Extract
-	#	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	#	COMMENT "Signing the catalog"
-	#	)
-	# Add installation targets for the library manifest
+	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.manifest"
+	#	"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
+	#	"${CMAKE_CURRENT_BINARY_DIR}/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat"
+	#	DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
+
 	#INSTALL(FILES
-	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.DebugAssembly.dll"
-	#	DESTINATION "${INSTALL_BIN_DIR}" COMPONENT Libraries
-	#	)
+	#	"${MANIFEST_APP_SNIPPET_NAME}"
+	#	DESTINATION "${INSTALL_INCLUDE_DIR}/Ryan_Debug" COMPONENT Headers)
+
+	#INSTALL(FILES
+	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
+	#	DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
 
 endif()
 
@@ -456,6 +360,45 @@ IF(INSTALL_MODULES)
 		RENAME ${MODULES_FILENAME}
 	)
 ENDIF()
+
+find_package(Doxygen)
+option (BUILD_DOCUMENTATION
+	"Build the documentation for this library" OFF)
+
+if(BUILD_DOCUMENTATION)
+
+	option (BUILD_DOCUMENTATION_IN_ALL
+		"Build documentation automatically with 'make all'. Also used for 'make install' and 'make package'" OFF)
+
+	if (NOT DOXYGEN_FOUND)
+		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
+	endif()
+
+
+	configure_file(Doxyfile.in
+		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
+
+	if (BUILD_DOCUMENTATION_IN_ALL)
+		set (ALL_FLAG ALL)
+	else()
+		set (ALL_FLAG "")
+	endif()
+
+	# This builds the html docs
+	add_custom_target(doc-html ${ALL_FLAG}
+		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMENT "Generating API html documentation with Doxygen" VERBATIM 
+		)
+	# This builds the latex docs
+	add_custom_target(doc-latex ${ALL_FLAG}
+		latex refman.tex 
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex
+		COMMENT "Generating API pdf documentation with Doxygen" VERBATIM
+		)
+
+	add_custom_target(docs ${ALL_FLAG} DEPENDS doc-html doc-latex)
+endif()
 
 if (BUILD_DOCUMENTATION_IN_ALL)
 	# Provides html and pdf

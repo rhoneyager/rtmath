@@ -55,6 +55,7 @@
 
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/info.h"
+#include "versioninfo.h"
 
 // DLL binding and unbinding code
 #ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
@@ -299,6 +300,25 @@ namespace Ryan_Debug {
 
 
 #ifdef _WIN32
+	/// Convert from unicode string to multibyte
+	std::string convertStr(const LPTSTR instr)
+	{
+		
+#ifdef UNICODE
+		size_t origsize = wcslen(instr) + 1;
+
+		const size_t newsize = origsize*4;
+		size_t convertedChars = 0;
+		char nstring[newsize];
+		wcstombs_s(&convertedChars, nstring, origsize, instr, _TRUNCATE);
+		// Destination string was always null-terminated!
+		std::string res(nstring);
+#else
+		std::string res(instr);
+#endif
+		return std::move(res);
+	}
+
 	/// Windows function for getting process name and path
 	bool getPathWIN32(DWORD pid, boost::filesystem::path &modPath, boost::filesystem::path &filename)
 	{
@@ -316,20 +336,9 @@ namespace Ryan_Debug {
 		success = QueryFullProcessImageName(h, 0, szModName, &sz);
 		//success = GetModuleFileNameEx(h,NULL,szModName,sizeof(szModName) / sizeof(TCHAR));
 
-		// If using unicode and not multibyte...
-		// Convert wchar to char in preparation for string and path conversion
-#ifdef UNICODE
+		std::string strModName = convertStr(szModName); // See previous function
+		boost::filesystem::path modPathm(strModName);
 
-		size_t origsize = wcslen(szModName) + 1;
-
-		const size_t newsize = 600;
-		size_t convertedChars = 0;
-		char nstring[newsize];
-		wcstombs_s(&convertedChars, nstring, origsize, szModName, _TRUNCATE);
-		boost::filesystem::path modPathm(nstring);
-#else
-		boost::filesystem::path modPathm(szModName);
-#endif
 		boost::filesystem::path filenamem = modPathm.filename();
 
 		modPath = modPathm;
@@ -452,6 +461,7 @@ namespace Ryan_Debug {
 	{
 #ifdef _WIN32
 		DWORD pid = 0;
+		/// \note The HANDLE stuff can be removed.
 		HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (NULL == h) return false;
 		PROCESSENTRY32 pe = { 0 };
@@ -669,6 +679,75 @@ namespace Ryan_Debug {
 	int getPPID(const hProcessInfo hp) { return hp->ppid; }
 	void freeProcessInfo(hProcessInfo hp) { delete hp; hp = 0; }
 
+#ifdef _WIN32
+	/** \brief Get the current module that a Ryan_Debug function is executing from.
+	*
+	* Used because sxs loading means that multiple copies may be lying around, 
+	* and we want to figure out who is using which (to indicate what needs to be recompiled).
+	*
+	* \note Borrowed from http://stackoverflow.com/questions/557081/how-do-i-get-the-hmodule-for-the-currently-executing-code
+	**/
+	HMODULE GetCurrentModule()
+	{ // NB: XP+ solution!
+		HMODULE hModule = NULL;
+		GetModuleHandleEx(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+			(LPCTSTR)GetCurrentModule,
+			&hModule);
+
+		return hModule;
+	}
+
+	std::string GetModulePath(HMODULE mod = NULL)
+	{
+		std::string out;
+		if (!mod) mod = GetCurrentModule();
+		if (!mod) return std::move(out);
+		const DWORD nSize = MAX_PATH * 4;
+		TCHAR filename[nSize];
+		DWORD sz = GetModuleFileName(mod, filename, nSize);
+		out = convertStr(filename);
+		return std::move(out);
+	}
+#endif
+
+	/// Enumerate the modules in a given process.
+	void enumModules(int pid, std::ostream &out = std::cerr)
+	{
+#ifdef _WIN32
+		HANDLE h = NULL, snapshot = NULL;
+		try {
+
+			h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+			if (!h || h == INVALID_HANDLE_VALUE) throw("Cannot get handle h");
+			snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid);
+			if (!snapshot || snapshot == INVALID_HANDLE_VALUE) throw("Cannot get handle snapshot");
+			std::shared_ptr<MODULEENTRY32> mod(new MODULEENTRY32);
+			mod->dwSize = sizeof(MODULEENTRY32); // Annoying requirement
+			if (!Module32First(snapshot, mod.get())) throw("Cannot list first module");
+			out << "\tName\tPath\n";
+			do {
+				//std::string modPath = GetModulePath(mod->hModule);
+				std::string modName = convertStr(mod->szModule);
+				std::string modPath = convertStr(mod->szExePath);
+
+				out << "\t" << modName << "\t" << modPath << std::endl;
+			} while (Module32Next(snapshot, mod.get()));
+		}
+		catch (const char *err) {
+			out << "\t" << err << std::endl;
+		}
+		if (snapshot && snapshot != INVALID_HANDLE_VALUE) CloseHandle(snapshot);
+		if (h && h != INVALID_HANDLE_VALUE) CloseHandle(h);
+#endif
+#ifdef __unix__
+		out << "WARNING: Need to implement enumModules!!!!!" << std::endl;
+		return;
+#endif
+		// Execution should not reach this point
+	}
+
+
 
 	/**
 	* \brief Prints compiler and library information that was present when the
@@ -676,6 +755,21 @@ namespace Ryan_Debug {
 	*/
 	void printDebugInfo()
 	{
+		using std::cerr;
+		using std::string;
+		using std::endl;
+		using boost::filesystem::path;
+		cerr << "Ryan_Debug information\n"
+			<< "Version: " << RYAN_DEBUG_MAJOR << "." << RYAN_DEBUG_MINOR << "."
+			<< RYAN_DEBUG_REVISION << "." << RYAN_DEBUG_SVNREVISION << endl;
+#ifdef _WIN32
+		string currentPath = GetModulePath();
+		cerr << "Active location: " << currentPath << endl;
+#endif
+		cerr << "Loaded modules: \n";
+		enumModules(getPID(), std::cerr);
+
+
 		debug_preamble(std::cerr);
 	}
 
