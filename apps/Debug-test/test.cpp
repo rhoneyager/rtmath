@@ -2,7 +2,7 @@
 #include <boost/program_options.hpp>
 #include "../../Ryan_Debug/debug.h"
 #include "../../Ryan_Debug/info.h"
-#include "Ryan.Debug.DebugAssembly.manifest.h"
+//#include "Ryan.Debug.DebugAssembly.manifest.h"
 
 int main(int argc, char** argv)
 {

@@ -6,7 +6,6 @@
 
 #include "../../Ryan_Debug/debug.h"
 #include "../../Ryan_Debug/info.h"
-#include "Ryan.Debug.DebugAssembly.manifest.h"
 
 /// This application provides recursive process information for the specified pid.
 /// If no pid is specified, starts at the current process.
