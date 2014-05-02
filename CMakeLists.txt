@@ -119,11 +119,6 @@ configure_file(src/versioninfo.h.in
 #		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
 #	endif()
 #endforeach()
- 
-configure_file (
-	"${CMAKE_CURRENT_SOURCE_DIR}/environment/ryan-debug"
-	"${PROJECT_BINARY_DIR}/module-ryan-debug"
-	)
 
 
 find_package(Boost COMPONENTS filesystem program_options system REQUIRED)
@@ -312,6 +307,13 @@ foreach(p LIB BIN INCLUDE DOC ASSEMBLY)
 	file(RELATIVE_PATH REL_${p}_DIR "${ABS_INSTALL_CMAKE_DIR}" "${${var}}")
 	#message("      - ${REL_${p}_DIR}")
 endforeach()
+
+ 
+configure_file (
+	"${CMAKE_CURRENT_SOURCE_DIR}/environment/ryan-debug"
+	"${PROJECT_BINARY_DIR}/module-ryan-debug"
+	)
+
 
 #file(RELATIVE_PATH REL_INCLUDE_DIR "${ABS_INSTALL_CMAKE_DIR}"
 #	"${INSTALL_INCLUDE_DIR}")

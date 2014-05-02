@@ -3,12 +3,12 @@
 #  ryan_debug module for use with 'environment-modules' package:
 #
 
-prepend-path		PATH		@INSTALL_BIN_DIR@
-prepend-path		LD_LIBRARY_PATH	@INSTALL_LIB_DIR@
-prepend-path		LIBRARY_PATH	@INSTALL_LIB_DIR@
-prepend-path		INCLUDE		@INSTALL_INCLUDE_DIR@
-prepend-path		C_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
-prepend-path		CPLUS_INCLUDE_PATH	@INSTALL_INCLUDE_DIR@
-prepend-path		MANPATH		@INSTALL_DOC_DIR@/man
-setenv			Ryan_Debug_DIR	@INSTALL_CMAKE_DIR@
+prepend-path		PATH		@ABS_INSTALL_BIN_DIR@
+prepend-path		LD_LIBRARY_PATH	@ABS_INSTALL_LIB_DIR@
+prepend-path		LIBRARY_PATH	@ABS_INSTALL_LIB_DIR@
+prepend-path		INCLUDE		@ABS_INSTALL_INCLUDE_DIR@
+prepend-path		C_INCLUDE_PATH	@ABS_INSTALL_INCLUDE_DIR@
+prepend-path		CPLUS_INCLUDE_PATH	@ABS_INSTALL_INCLUDE_DIR@
+prepend-path		MANPATH		@ABS_INSTALL_DOC_DIR@/man
+setenv			Ryan_Debug_DIR	@ABS_INSTALL_CMAKE_DIR@
 
