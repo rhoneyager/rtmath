@@ -42,6 +42,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dlfcn.h>
+#include <link.h>
 #endif
 
 //#include <TError.h> // ROOT info message suppression
@@ -710,6 +711,36 @@ namespace Ryan_Debug {
 		return std::move(out);
 	}
 #endif
+#ifdef __unix__
+	std::string GetModulePath(void *addr = NULL)
+	{
+		std::string out;
+		Dl_info info;
+		if (dladdr((void*) GetModulePath, &info) )
+		{
+			out = std::string(info.dli_fname);
+		}
+		return out;
+	}
+
+		// Keeping function definition this way to preserve compatibility with gcc 4.7
+		int moduleCallback(dl_phdr_info *info, size_t sz, void* data)
+		{
+			std::ostream &out = std::cerr;
+			std::string name(info->dlpi_name);
+			if (!name.size()) return 0;
+			out << "\t" << info->dlpi_name << " (" << info->dlpi_phnum 
+				<< " segments)" << std::endl;
+			/*for (int j=0; j< info->dlpi_phnum; ++j)
+			{
+				out << "\t\theader " << j << ": address="
+					<< (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr)
+					<< "\n";
+			}
+			*/
+			return 0;
+		}
+#endif
 
 	/// Enumerate the modules in a given process.
 	void enumModules(int pid, std::ostream &out = std::cerr)
@@ -739,9 +770,20 @@ namespace Ryan_Debug {
 		}
 		if (snapshot && snapshot != INVALID_HANDLE_VALUE) CloseHandle(snapshot);
 		if (h && h != INVALID_HANDLE_VALUE) CloseHandle(h);
+		return;
 #endif
-#ifdef __unix__
-		out << "WARNING: Need to implement enumModules!!!!!" << std::endl;
+#ifdef __unix__ // _WIN32 block will have handled cygwin case
+		// Depends on dladdr existence. Found in gcc, clang, intel.
+		// Also depends on dl_iterate_phdr
+		/*
+		dl_iterate_phdr(std::bind(moduleCallback,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3,
+					out)
+					, NULL);
+					*/
+		dl_iterate_phdr(moduleCallback, NULL);
 		return;
 #endif
 		// Execution should not reach this point
@@ -762,10 +804,8 @@ namespace Ryan_Debug {
 		out << "Ryan_Debug information\n"
 			<< "Version: " << RYAN_DEBUG_MAJOR << "." << RYAN_DEBUG_MINOR << "."
 			<< RYAN_DEBUG_REVISION << "." << RYAN_DEBUG_SVNREVISION << endl;
-#ifdef _WIN32
 		string currentPath = GetModulePath();
 		out << "Active location: " << currentPath << endl;
-#endif
 		out << "Loaded modules: \n";
 		enumModules(getPID(), out);
 

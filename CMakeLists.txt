@@ -133,7 +133,7 @@ if (WIN32 AND NOT CYGWIN)
 		set(liblist ${Boost_LIBRARIES})
 	endif()
 else()
-	set(liblist ${Boost_LIBRARIES})
+	set(liblist ${Boost_LIBRARIES} dl)
 endif()
 #message("${liblist}")
 
