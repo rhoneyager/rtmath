@@ -1,0 +1,23 @@
+macro(addconfiginfo appname )
+	set(configappend "")
+	if (MSVC)
+		if (CMAKE_CL_64)
+			set(configappend "_x64")
+		else()
+			set(configappend "_x86")
+		endif()
+		add_definitions(-DCONF="$(Configuration)${configappend}")
+		set(CONF CONF)
+	endif()
+	if (MINGW)
+		add_definitions(-DCONF="${CMAKE_BUILD_TYPE}")
+		set(CONF "\"${CMAKE_BUILD_TYPE}\"")
+	endif()
+
+	SET_TARGET_PROPERTIES( ${appname} PROPERTIES RELEASE_POSTFIX _Release${configappend} )
+	SET_TARGET_PROPERTIES( ${appname} PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel${configappend} )
+	SET_TARGET_PROPERTIES( ${appname} PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo${configappend} )
+	SET_TARGET_PROPERTIES( ${appname} PROPERTIES DEBUG_POSTFIX _Debug${configappend})
+
+endmacro(addconfiginfo appname )
+

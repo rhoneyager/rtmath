@@ -5,13 +5,15 @@ macro(addlib libname libshared)
 	#	set(${appname}_LIBRARIES "")
 	#	set(${appname}_INCLUDE_DIRS "")
 	#endif()
+
+
 	IF(DEFINED COMMON_CFLAGS )
 		set_target_properties(${libname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 	endif()
-	SET_TARGET_PROPERTIES( ${libname} PROPERTIES RELEASE_POSTFIX _Release )
-	SET_TARGET_PROPERTIES( ${libname} PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel )
-	SET_TARGET_PROPERTIES( ${libname} PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo )
-	SET_TARGET_PROPERTIES( ${libname} PROPERTIES DEBUG_POSTFIX _Debug )
+	SET_TARGET_PROPERTIES( ${libname} PROPERTIES RELEASE_POSTFIX _Release${configappend} )
+	SET_TARGET_PROPERTIES( ${libname} PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel${configappend} )
+	SET_TARGET_PROPERTIES( ${libname} PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo${configappend} )
+	SET_TARGET_PROPERTIES( ${libname} PROPERTIES DEBUG_POSTFIX _Debug${configappend} )
 	set_target_properties( ${libname} PROPERTIES FOLDER "Libs")
 
 	
