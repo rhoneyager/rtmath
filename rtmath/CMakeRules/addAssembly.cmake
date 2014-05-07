@@ -7,21 +7,21 @@ macro(addAssembly basename )
 if (WIN32 AND NOT CYGWIN)
 	option (MAKE_ASSEMBLY "Create an application assembly" ON)
 	set(ASSEMBLY_NAME_Debug
-		"Ryan.${basename}.Debug"
-		CACHE STRING
-		"Assembly name for debug builds")
+		"Ryan.${basename}.Debug")
+		#CACHE STRING
+		#"Assembly name for debug builds")
 	set(ASSEMBLY_NAME_RelWithDebInfo
-		"Ryan.${basename}.RelWithDebInfo"
-		CACHE STRING
-		"Assembly name for RelWithDebInfo builds")
+		"Ryan.${basename}.RelWithDebInfo")
+		#CACHE STRING
+		#"Assembly name for RelWithDebInfo builds")
 	set(ASSEMBLY_NAME_Release
-		"Ryan.${basename}.Release"
-		CACHE STRING
-		"Assembly name for release builds")
+		"Ryan.${basename}.Release")
+		#CACHE STRING
+		#"Assembly name for release builds")
 	set(ASSEMBLY_NAME_MinSizeRel
-		"Ryan.${basename}.MinSizeRel"
-		CACHE STRING
-		"Assembly name for MinSizeRel builds")
+		"Ryan.${basename}.MinSizeRel")
+		#CACHE STRING
+		#"Assembly name for MinSizeRel builds")
 	set(ASSEMBLY_PUBLICKEYTOKEN
 		"ca89aae88144abf2"
 		CACHE STRING
@@ -48,7 +48,7 @@ endif()
  
 endmacro(addAssembly basename )
 
-macro(implementAssembly basename targetname packagein)
+macro(implementAssembly basename targetname ) #packagein)
 	# Set dll properties for assembly name
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES Release_ASSEMBLY ${ASSEMBLY_NAME_Release} )
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES MinSizeRel_ASSEMBLY ${ASSEMBLY_NAME_MinSizeRel} )
@@ -56,8 +56,8 @@ macro(implementAssembly basename targetname packagein)
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES Debug_ASSEMBLY ${ASSEMBLY_NAME_Debug} )
 
 	# Install script
-	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${packagein}"
-		"${CMAKE_CURRENT_BINARY_DIR}/${packagein}" @ONLY)
+	#configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${packagein}"
+	#	"${CMAKE_CURRENT_BINARY_DIR}/${packagein}" @ONLY)
 
 	# Main DLL
 
@@ -76,19 +76,25 @@ macro(implementAssembly basename targetname packagein)
 	#	"${CMAKE_CURRENT_BINARY_DIR}/Ryan.Debug.Release.single.pre.manifest" @ONLY)
 
 	# Shared assembly redirect
-	set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.manifest")
+	#set (PublisherManifestName "policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.manifest")
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES Release_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_Release}.manifest" )
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES MinSizeRel_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_MinSizeRel}.manifest" )
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES RelWithDebInfo_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_RelWithDebInfo}.manifest")
 	SET_TARGET_PROPERTIES( ${targetname} PROPERTIES Debug_PUBLISHER "policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_Debug}.manifest" )
-	configure_file(
-		"Ryan.${basename}.Release.manifest.publisher.template"
-		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}" @ONLY)
+	#configure_file(
+	#	"Ryan.${basename}.Release.manifest.publisher.template"
+	#	"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}" @ONLY)
+	# TODO: For each configuration, configure a SEPARATE policy file!
+	foreach(p Debug RelWithDebInfo MinSizeRel Release)
+		configure_file(
+			"Ryan.${basename}.Release.manifest.publisher.template"
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_${p}}.manifest" @ONLY)
+	endforeach()	
 
 	# App snippets
 	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.${basename}.Release.manifest.h")
 	configure_file(
-		"cpp/manifestref.h.in"
+		"manifestref.h.in"
 		"${MANIFEST_APP_SNIPPET_NAME}" @ONLY)
 
 	
@@ -98,7 +104,8 @@ macro(implementAssembly basename targetname packagein)
 		COMMAND cd $<CONFIGURATION>
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:${targetname}>
 		COMMAND echo Updating manifest with hashes and making CDF
-		COMMAND mt.exe -manifest Ryan.${basename}.Release.pre.manifest
+		COMMAND mt.exe -manifest $<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.pre.manifest
+			-hashupdate:.
 			-makecdfs 
 			-out:$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest
 		COMMAND echo Making catalog
@@ -107,42 +114,41 @@ macro(implementAssembly basename targetname packagein)
 		COMMAND echo Signing catalog
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
 			 "$<TARGET_FILE_DIR:${targetname}>/$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.cat"
-		COMMAND cd ..
-		)
-	add_custom_target(Ryan_${basename}-Policy-Publish ALL
-		DEPENDS ${targetname}
 		COMMAND echo Creating the policy cdf
-		COMMAND echo mt.exe -manifest ${PublisherManifestName} -makecdfs 
-		#-out:${PublisherManifestName}
-		COMMAND mt.exe -manifest ${PublisherManifestName} -makecdfs 
-		#-out:${PublisherManifestName}
+		COMMAND echo mt.exe -manifest policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest -makecdfs
+		COMMAND mt.exe -manifest policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest -makecdfs 
 		COMMAND echo Make the policy catalog
-		COMMAND echo makecat.exe policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.manifest.cdf
-		COMMAND makecat.exe policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.manifest.cdf
+		COMMAND echo makecat.exe policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
+		COMMAND makecat.exe policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
 		COMMAND echo Sign the policy catalog
 		COMMAND echo signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
-			policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.cat
+			policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.cat
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
-			policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.cat
+			policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.cat
+		COMMAND cd ..
 		)
 
-	# Add installation targets for the library manifest, the sample app manifest and the library catalog
-	INSTALL(FILES 
-		"${CMAKE_CURRENT_BINARY_DIR}/Release/Ryan.${basename}.Release.cat"
-		"${CMAKE_CURRENT_BINARY_DIR}/Release/Ryan.${basename}.Release.manifest"
-		"${CMAKE_CURRENT_BINARY_DIR}/${PublisherManifestName}"
-		"${CMAKE_CURRENT_BINARY_DIR}/policy.@MAJOR@.@MINOR@.Ryan.${basename}.Release.cat"
-		DESTINATION "${INSTALL_ASSEMBLY_DIR}" COMPONENT Libraries)
+	foreach(p Debug RelWithDebInfo MinSizeRel Release)
+		INSTALL(FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/${ASSEMBLY_NAME_${p}}.cat"
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/${ASSEMBLY_NAME_${p}}.manifest"
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_${p}}.manifest"
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_${p}}.cat"
+			DESTINATION "${INSTALL_BIN_DIR}/${ASSEMBLY_NAME_${p}}${configappend}"
+			CONFIGURATIONS ${p}
+			COMPONENT Libraries
+			)
+	endforeach()	
 
 	INSTALL(FILES
 		"${MANIFEST_APP_SNIPPET_NAME}"
 		DESTINATION "${INSTALL_INCLUDE_DIR}/${basename}" COMPONENT Headers)
 
-	INSTALL(FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/${packagein}"
-		"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
-		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
-		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
+	#INSTALL(FILES
+	#	"${CMAKE_CURRENT_BINARY_DIR}/${packagein}"
+	#	"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
+	#	"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
+	#	DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
 
-endmacro(implementAssembly basename targetname packagein)
+endmacro(implementAssembly basename targetname ) #packagein)
 
