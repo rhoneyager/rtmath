@@ -6,5 +6,5 @@
 		version="@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@" 
 		processorArchitecture="amd64" 
 		publicKeyToken="@ASSEMBLY_PUBLICKEYTOKEN@"/>
-    <file name="Ryan_Debug_x64.dll"></file>
+    <file name="@ASSEMBLY_LIB_NAME@"></file>
 </assembly>
