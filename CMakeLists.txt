@@ -22,6 +22,7 @@ include(addInstallDirs)
 include(addModuleFiles)
 include(addBoostUniform)
 include(adddocs)
+include(generateAssemblyGuid)
 
 set(MAJOR 0)
 set(MINOR 7)
@@ -84,11 +85,12 @@ if (NOT DEFINED MAKE_ASSEMBLY)
 endif()
 
 if (MAKE_ASSEMBLY)
-
 	foreach(p Debug RelWithDebInfo MinSizeRel Release)
 		set(ASSEMBLY_NAME ${ASSEMBLY_NAME_${p}})
 		set(ASSEMBLY_LIB_NAME Ryan_Debug_${p}${configappend}.dll)
-		set(ASSEMBLY_MANIFEST_DIR bin//)
+		#set(ASSEMBLY_MANIFEST_DIR bin//)
+		generateAssemblyGuid(Ryan_Debug ${p} policy sxspolicyguid)
+		generateAssemblyGuid(Ryan_Debug ${p} public sxspublicguid)
 		configure_file(
 			"Ryan.Debug.DebugAssembly.manifest.template"
 			"${CMAKE_CURRENT_BINARY_DIR}/${p}/Ryan.Ryan_Debug.${p}${configappend}.pre.manifest" @ONLY)
@@ -108,6 +110,7 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
 		"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
 		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
+		"${CMAKE_CURRENT_SOURCE_DIR}/license.rtf"
 		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
 endif()
 
