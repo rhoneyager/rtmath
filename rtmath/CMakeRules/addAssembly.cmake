@@ -7,19 +7,19 @@ macro(addAssembly basename )
 if (WIN32 AND NOT CYGWIN)
 	option (MAKE_ASSEMBLY "Create an application assembly" ON)
 	set(ASSEMBLY_NAME_Debug
-		"Ryan.${basename}.Debug")
+		"Ryan.${basename}.Debug${configappend}")
 		#CACHE STRING
 		#"Assembly name for debug builds")
 	set(ASSEMBLY_NAME_RelWithDebInfo
-		"Ryan.${basename}.RelWithDebInfo")
+		"Ryan.${basename}.RelWithDebInfo${configappend}")
 		#CACHE STRING
 		#"Assembly name for RelWithDebInfo builds")
 	set(ASSEMBLY_NAME_Release
-		"Ryan.${basename}.Release")
+		"Ryan.${basename}.Release${configappend}")
 		#CACHE STRING
 		#"Assembly name for release builds")
 	set(ASSEMBLY_NAME_MinSizeRel
-		"Ryan.${basename}.MinSizeRel")
+		"Ryan.${basename}.MinSizeRel${configappend}")
 		#CACHE STRING
 		#"Assembly name for MinSizeRel builds")
 	set(ASSEMBLY_PUBLICKEYTOKEN
@@ -134,12 +134,17 @@ macro(implementAssembly basename targetname ) #packagein)
 			"${CMAKE_CURRENT_BINARY_DIR}/${p}/${ASSEMBLY_NAME_${p}}.manifest"
 			"${CMAKE_CURRENT_BINARY_DIR}/${p}/policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_${p}}.manifest"
 			"${CMAKE_CURRENT_BINARY_DIR}/${p}/policy.@MAJOR@.@MINOR@.${ASSEMBLY_NAME_${p}}.cat"
-			DESTINATION "${INSTALL_BIN_DIR}/${ASSEMBLY_NAME_${p}}${configappend}"
+			DESTINATION "${INSTALL_BIN_DIR}/bin${configappend}"
 			CONFIGURATIONS ${p}
 			COMPONENT Libraries
 			)
-	endforeach()	
-
+		INSTALL(FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/sxs_${ASSEMBLY_NAME_${p}}.wxs" # Configured in main CMakeLists.txt
+			DESTINATION "${INSTALL_INCLUDE_DIR}/../installer"
+			CONFIGURATIONS ${p}
+			COMPONENT Scripts
+			)
+	endforeach()
 	INSTALL(FILES
 		"${MANIFEST_APP_SNIPPET_NAME}"
 		DESTINATION "${INSTALL_INCLUDE_DIR}/${basename}" COMPONENT Headers)

@@ -12,9 +12,9 @@ else()
 endif()
 
 if(WIN32 AND NOT CYGWIN)
-	set(DEF_INSTALL_CMAKE_DIR CMake)
+	set(DEF_INSTALL_CMAKE_DIR CMake/conf${configappend})
 else()
-	set(DEF_INSTALL_CMAKE_DIR lib/CMake/${basename})
+	set(DEF_INSTALL_CMAKE_DIR lib/CMake/${basename}/conf${configappend})
 endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 	"Installation directory for CMake files")

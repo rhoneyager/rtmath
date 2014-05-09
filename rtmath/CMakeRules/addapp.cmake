@@ -11,11 +11,6 @@ endif()
 
 	add_package_dependency(${appname} DEPENDS_ON rtmathDummy)
 
-#	Are these really both needed?
-#	link_directories(${PCL_LIBRARY_DIRS})
-#	add_definitions(${PCL_DEFINITIONS})
-
-#	target_link_libraries (${appname} tmatrix-cpp tmatrix-serialization)
 	target_link_libraries (${appname} ${${appname}_LIBRARIES})
 IF(DEFINED COMMON_LIBS )
 	target_link_libraries (${appname} ${COMMON_LIBS})

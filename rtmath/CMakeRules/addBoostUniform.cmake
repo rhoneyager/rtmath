@@ -13,8 +13,8 @@ if (WIN32 AND NOT CYGWIN)
 else()
 	set(WINBOOST_AUTOLINK OFF)
 endif()
-
-find_package(Boost COMPONENTS ${argv} REQUIRED)
+#message("argv ${ARGV} ${args}")
+find_package(Boost COMPONENTS ${ARGV} REQUIRED)
 if (NOT WINBOOST_AUTOLINK)
 	if (Boost_LIBRARIES)
 		set(liblist ${liblist} ${Boost_LIBRARIES})
@@ -27,7 +27,7 @@ else()
 endif()
 
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
-
+#message("boost ${Boost_LIBRARY_DIR}")
 link_directories(${Boost_LIBRARY_DIR})
 
 
@@ -42,5 +42,5 @@ link_directories(${Boost_LIBRARY_DIR})
 #endif()
 
 
-endmacro(addBoostUniform )
+endmacro(addBoostUniform args)
 
