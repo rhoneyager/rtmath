@@ -25,7 +25,7 @@
 #endif
 
 #ifdef _MSC_FULL_VER
-#include "Ryan.Debug.DebugAssembly.manifest.h"
+#include "Ryan.Ryan_Debug.Release.manifest.h"
 #endif
 
 #include <string>

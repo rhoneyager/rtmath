@@ -2,7 +2,7 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 	<assemblyIdentity type="win32-policy" 
 		publicKeyToken="@ASSEMBLY_PUBLICKEYTOKEN@" 
-		name="policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly" 
+		name="policy.@MAJOR@.@MINOR@.@ASSEMBLY_NAME@" 
 		version="@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@" 
 		language="en-us" 
 		processorArchitecture="amd64"/>
@@ -10,7 +10,7 @@
 		<dependentAssembly>
 			<assemblyIdentity 
 				type="win32" 
-				name="Ryan.Debug.DebugAssembly" 
+				name="@ASSEMBLY_NAME@" 
 				processorArchitecture="amd64" 
 				publicKeyToken="@ASSEMBLY_PUBLICKEYTOKEN@"/>
 			<bindingRedirect 

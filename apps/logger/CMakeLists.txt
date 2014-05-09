@@ -1,5 +1,6 @@
 include (SVNinfo)
 include (signing)
+include (addconfiginfo)
 
 configure_file(logger.rc.in
 	"${CMAKE_CURRENT_BINARY_DIR}/logger.rc" @ONLY)
@@ -14,6 +15,7 @@ add_executable (Ryan_Debug-logger
 	"${CMAKE_CURRENT_BINARY_DIR}/logger.rc"
 	${addfiles})
 set_target_properties( Ryan_Debug-logger PROPERTIES FOLDER "Apps")
+addconfiginfo(Ryan_Debug-logger)
 #message("liblist: ${liblist}")
 target_link_libraries(Ryan_Debug-logger ${liblist} Ryan_Debug)
 if (MAKE_ASSEMBLY)
@@ -22,7 +24,7 @@ endif()
 
 INSTALL(TARGETS Ryan_Debug-logger
 	EXPORT Ryan_DebugTargets
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 	COMPONENT Applications
 	)
 

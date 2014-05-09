@@ -14,18 +14,18 @@ set(CMAKE_MODULE_PATH
 
 # Set the svn variables
 include(SVNinfo)
+include(addBaseProject)
 include(addlib)
 include(addAssembly)
 include(addconfiginfo)
 include(addInstallDirs)
 include(addModuleFiles)
-include(addBaseProject)
 include(addBoostUniform)
 include(adddocs)
 
 set(MAJOR 0)
 set(MINOR 7)
-set(REVISION 1)
+set(REVISION 2)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
@@ -88,15 +88,22 @@ if (MAKE_ASSEMBLY)
 	foreach(p Debug RelWithDebInfo MinSizeRel Release)
 		set(ASSEMBLY_NAME ${ASSEMBLY_NAME_${p}})
 		set(ASSEMBLY_LIB_NAME Ryan_Debug_${p}${configappend}.dll)
+		set(ASSEMBLY_MANIFEST_DIR bin//)
 		configure_file(
 			"Ryan.Debug.DebugAssembly.manifest.template"
-			"${CMAKE_CURRENT_BINARY_DIR}/${p}/Ryan.Ryan_Debug.${p}.pre.manifest" @ONLY)
-		
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/Ryan.Ryan_Debug.${p}${configappend}.pre.manifest" @ONLY)
+		configure_file(
+			"${CMAKE_CURRENT_SOURCE_DIR}/sxs.template.wxs"
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/sxs_${ASSEMBLY_NAME_${p}}.wxs" @ONLY)	
 	endforeach()
 	implementAssembly(Ryan_Debug Ryan_Debug )
-	
+	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.template.wxs"
+		"${CMAKE_CURRENT_BINARY_DIR}/config${configappend}.wxs" @ONLY)
 	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Ryan_Debug.template.wxs"
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs" @ONLY)
+	INSTALL(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/config${configappend}.wxs"
+		DESTINATION "${INSTALL_INCLUDE_DIR}/../installer" COMPONENT Scripts)
 	INSTALL(FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
 		"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
@@ -142,28 +149,30 @@ configure_file(Ryan-DebugConfigVersion.cmake.in
 
 #message("${INSTALL_CMAKE_DIR}/${REL_ASSEMBLY_DIR}")
 
-foreach(p Debug RelWithDebInfo MinSizeRel Release)
+#foreach(p Debug RelWithDebInfo MinSizeRel Release)
 	if(WIN32 AND NOT CYGWIN) # NSIS bug
 	INSTALL(TARGETS Ryan_Debug
-		RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/${ASSEMBLY_NAME_${p}}${configappend}
+		RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 		COMPONENT Libraries
-		CONFIGURATIONS ${p}
+		#CONFIGURATIONS ${p}
 		)
 	endif()
 
 	INSTALL(TARGETS Ryan_Debug
 		EXPORT Ryan_DebugTargets
-		RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/${ASSEMBLY_NAME_${p}}${configappend}
-		LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/${ASSEMBLY_NAME_${p}}${configappend}
-		ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/${ASSEMBLY_NAME_${p}}${configappend}
+		RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
+		LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
+		ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
 		COMPONENT Libraries
-		CONFIGURATIONS ${p}
+		#CONFIGURATIONS ${p}
 		)
 
-	#INSTALL(EXPORT Ryan_DebugTargets DESTINATION
-	#	"${INSTALL_CMAKE_DIR}" COMPONENT Libraries CONFIGURATIONS ${p})
+	INSTALL(EXPORT Ryan_DebugTargets DESTINATION
+		${INSTALL_CMAKE_DIR} COMPONENT Libraries 
+		#CONFIGURATIONS ${p}
+		)
 
-endforeach()
+#endforeach()
 
 
 
@@ -186,6 +195,6 @@ adddocs()
 
 INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan_DebugConfig.cmake"
 	"${PROJECT_BINARY_DIR}/Ryan_DebugConfigVersion.cmake"
-	DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT Libraries)
+	DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT Libraries)
 
 
