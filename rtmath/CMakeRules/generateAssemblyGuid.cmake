@@ -5,6 +5,9 @@ macro(generateAssemblyGuid assemblyName config type output)
 	# {E9FFCBCE-5F4E-4F29-BC65-B99F08F3C04F}
 	# {779993BD-3F58-4E0B-B40A-5EC35BE1D612}
 	set(SXSGUID_Ryan_Debug 77B702E8-)
+	set(SXSGUID_Ryan_Serialization E1DFC1EE-)
+	set(SXSGUID_Tmatrix E9FFCBCE-)
+	set(SXSGUID_rtmath 779993BD-)
 	set(SXSGUID_Debug 5E6F-)
 	set(SXSGUID_Release 7502-)
 	set(SXSGUID_RelWithDebInfo 5F4E-)

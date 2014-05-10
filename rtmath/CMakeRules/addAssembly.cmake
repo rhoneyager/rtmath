@@ -92,7 +92,7 @@ macro(implementAssembly basename targetname ) #packagein)
 	endforeach()	
 
 	# App snippets
-	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.${basename}.Release.manifest.h")
+	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.${basename}.manifest.h")
 	configure_file(
 		"manifestref.h.in"
 		"${MANIFEST_APP_SNIPPET_NAME}" @ONLY)
@@ -104,6 +104,10 @@ macro(implementAssembly basename targetname ) #packagein)
 		COMMAND cd $<CONFIGURATION>
 		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:${targetname}>
 		COMMAND echo Updating manifest with hashes and making CDF
+		COMMAND echo mt.exe -manifest $<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.pre.manifest
+			-hashupdate:.
+			-makecdfs 
+			-out:$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest
 		COMMAND mt.exe -manifest $<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.pre.manifest
 			-hashupdate:.
 			-makecdfs 
