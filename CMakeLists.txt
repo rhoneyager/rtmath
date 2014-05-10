@@ -93,7 +93,7 @@ if (MAKE_ASSEMBLY)
 		generateAssemblyGuid(Ryan_Debug ${p} public sxspublicguid)
 		configure_file(
 			"Ryan.Debug.DebugAssembly.manifest.template"
-			"${CMAKE_CURRENT_BINARY_DIR}/${p}/Ryan.Ryan_Debug.${p}${configappend}.pre.manifest" @ONLY)
+			"${CMAKE_CURRENT_BINARY_DIR}/${p}/${ASSEMBLY_NAME_${p}}.pre.manifest" @ONLY)
 		configure_file(
 			"${CMAKE_CURRENT_SOURCE_DIR}/sxs.template.wxs"
 			"${CMAKE_CURRENT_BINARY_DIR}/${p}/sxs_${ASSEMBLY_NAME_${p}}.wxs" @ONLY)	
@@ -109,6 +109,7 @@ if (MAKE_ASSEMBLY)
 	INSTALL(FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
 		"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
+		"${CMAKE_CURRENT_SOURCE_DIR}/collectdirs.bat"
 		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
 		"${CMAKE_CURRENT_SOURCE_DIR}/license.rtf"
 		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
