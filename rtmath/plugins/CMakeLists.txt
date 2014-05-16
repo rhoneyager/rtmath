@@ -47,6 +47,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_SILO)
 		add_subdirectory (silo)
 	endif()
+	option (BUILD_PLUGIN_TMATRIX
+		"Build Tmatrix plugin" ON)
+	if (BUILD_PLUGIN_TMATRIX)
+		add_subdirectory(tmatrix)
+	endif()
 	option (BUILD_PLUGIN_TSV
 		"Build TSV export plugin" ON)
 	if (BUILD_PLUGIN_TSV)

@@ -113,6 +113,10 @@ namespace rtmath {
 		// Converter function bindings for volume fraction / density fraction
 
 
+
+		// Temperature-guessing
+		double DLEXPORT_rtmath_core guessTemp(double freq, const std::complex<double>&);
+
 		/**
 		* \brief Adds options to a program
 		*

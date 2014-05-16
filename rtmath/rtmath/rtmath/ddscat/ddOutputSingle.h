@@ -57,7 +57,10 @@ namespace rtmath
 
 		class ddOutputSingleObj;
 
-		/// The listing of the stat table entries
+		/// \brief The listing of the stat table entries
+		///
+		/// \note These have to be aligned with ddOutput::oriColDefs
+		/// \see ddOutput::oriColDefs
 		enum stat_entries
 		{
 			BETA,THETA,PHI,WAVE,FREQ,AEFF,DIPOLESPACING,
@@ -118,6 +121,10 @@ namespace rtmath
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+			friend class ddOutput;
+			
+			void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index);
+			void doExportFMLs(boost::shared_ptr<ddOutput> parent, size_t startIndex);
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();
@@ -126,6 +133,9 @@ namespace rtmath
 
 			static void readDDSCAT(ddOutputSingle*, std::istream&, std::shared_ptr<registry::IO_options>);
 			static void writeDDSCAT(const ddOutputSingle*, std::ostream &, std::shared_ptr<registry::IO_options>);
+
+			/// Guess the temperature, assuming ice.
+			double guessTemp() const;
 
 			/// Output in fml format
 			void writeFML(std::ostream &out) const;
@@ -234,6 +244,8 @@ namespace rtmath
 			/// Convenience function to extract the rotation information
 			void getRots(rotations &rots) const;
 
+			/// Get a connector representing the polarization state
+			boost::shared_ptr<const ddScattMatrixConnector> getConnector() const;
 		protected:
 			// The ddscat version of the file
 			//size_t _version;
@@ -246,6 +258,7 @@ namespace rtmath
 			//void _populateDefaults();
 			/// Container for the file header
 			headerMap _objMap;
+			
 			/// Containers for the stat table
 			/// \see stat_entries
 			statTableType _statTable;
@@ -255,10 +268,6 @@ namespace rtmath
 			/// \see ddScattMatrix
 			scattMatricesContainer _scattMatricesRaw;
 
-			// Internal stat table objects (when not linked to a ddOutput)
-			
-			/// Eigen mapping for a table that holds the base info and stat entries
-			//Eigen::Block<
 		};
 
 		/// Base class for ddOutputSingle header entries

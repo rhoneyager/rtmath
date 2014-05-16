@@ -92,7 +92,24 @@ namespace {
 		if (slower.find("dynamic") != string::npos) return false;
 #endif
 		// Debug vs release dlls
-		std::string buildtype(BUILDTYPE); // defined in cmake config (addlib.cmake)
+		std::string buildtype; // defined in cmake config (addlib.cmake)
+
+		// TODO: move these definitions to an appropriate header?
+#define BUILDTYPE_Debug 1
+#define BUILDTYPE_Release 2
+#define BUILDTYPE_MinSizeRel 3
+#define BUILDTYPE_RelWithDebInfo 4
+
+#if BUILDTYPE == BUILDTYPE_Debug
+		buildtype = "Debug";
+#elif BUILDTYPE == BUILDTYPE_Release
+		buildtype = "Release";
+#elif BUILDTYPE == BUILDTYPE_MinSizeRel
+		buildtype = "MinSizeRel";
+#elif BUILDTYPE == BUILDTYPE_Release
+		buildtype = "Release";
+#else
+#endif
 		std::transform(buildtype.begin(), buildtype.end(), buildtype.begin(), ::tolower);
 
 		if (slower.find(buildtype) == string::npos)

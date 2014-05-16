@@ -1,6 +1,11 @@
 # Create the rtmath library
 
 include (common)
+include(addconfiginfo)
+include(addlib)
+include(addAssembly)
+include(generateAssemblyGuid)
+
 
 # Really should specify the files manually, 
 # but I can just delete the build and recreate for now.
@@ -41,14 +46,6 @@ else()
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 ENDIF()
-
-# Make relative paths absolute (needed later on)
-foreach(p LIB PLUGIN BIN INCLUDE CMAKE)
-	set(var INSTALL_${p}_DIR)
-	if(NOT IS_ABSOLUTE "${${var}}")
-		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-	endif()
-endforeach()
 
 # Needed here to properly configure
 set(COMPRESS_ZLIB 0)
@@ -114,27 +111,14 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-find_package(Boost COMPONENTS program_options 
-	serialization iostreams filesystem system unit_test_framework regex REQUIRED)
+addBoostUniform(program_options serialization iostreams filesystem system unit_test_framework regex)
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
-#message("${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
-#                ${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-#                ${Boost_PROGRAM_OPTIONS_LIBRARY}")
+link_directories(${Boost_LIBRARY_DIR})
 if(WIN32 AND NOT CYGWIN)
-	option ( AUTOLINK_BOOST
-		"Automatically link Boost" ON)
-	if (AUTOLINK_BOOST)
-		link_directories(${Boost_LIBRARY_DIR})
-		set(rtmath_core-libs "")
-	else()
-		add_definitions(-DBOOST_ALL_NO_LIB)
-		set(rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
-		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-		${Boost_PROGRAM_OPTIONS_LIBRARY})
-	endif()
+	set(rtmath_core-libs "")
 else()
 	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
-		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
+		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
 		${Boost_PROGRAM_OPTIONS_LIBRARY})
 endif()
 
@@ -186,7 +170,6 @@ add_precompiled_header(rtmath_ddscat_base Stdafx-ddscat_base.h src)
 set (rtmath_ddscat_base-libs 
 	rtmath_core ${rtmath_core-libs} 
 	rtmath_mie ${rtmath_mie-libs} 
-	${Boost_REGEX_LIBRARY}
 	)
 target_link_libraries(rtmath_ddscat_base ${rtmath_ddscat_base-libs})
 
@@ -200,16 +183,9 @@ set (rtmath_voronoi-libs rtmath_core ${rtmath_core-libs}
 	${VORO_LIBRARIES}
 	)
 	#	${QHULL_LIBRARIES}
-	#	${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} 
-	#	${PCL_SEGMENTATION_LIBRARIES} ${PCL_SURFACE_LIBRARIES})
 target_link_libraries(rtmath_voronoi ${rtmath_voronoi-libs})
 
 
-
-find_package(tmatrixFortran REQUIRED)
-find_package(tmatrixCpp REQUIRED)
-
-include_directories(${TMATRIX_CPP_INCLUDE_DIRS})
 add_library (rtmath_ddscat SHARED
 	${rtmath_ddscat-files}
 	)
@@ -220,8 +196,6 @@ set (rtmath_ddscat-libs
 	rtmath_mie ${rtmath_mie-libs}
         rtmath_ddscat_base ${rtmath_ddscat_base-libs}	
 	rtmath_voronoi ${rtmath_voronoi-libs}
-	tmatrix-cpp tmatrix-fortran
-	${Boost_REGEX_LIBRARY}
 	)
 target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
 
@@ -284,13 +258,6 @@ set_target_properties( rtmath_ddscat_tests PROPERTIES FOLDER "Tests")
 target_link_libraries(rtmath_ddscat_tests ${rtmath_ddscat-libs} rtmath_core rtmath_mie rtmath_ddscat ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 endif()
-#target_link_libraries(rtmath-tests 
-#	boost_filesystem 
-#	boost_date_time 
-#	boost_unit_test_framework 
-#	boost_system
-#)
-
 
 # Install targets. This ensures that the library is in a valid location, 
 # and places the testing program in the appropriate directory.

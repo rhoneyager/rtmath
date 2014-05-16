@@ -11,8 +11,7 @@ namespace rtmath
 		{
 		}
 
-		tmData::tmData()
-			:
+		tmData::tmData() :
 				dipoleSpacing(0),
 				T(0),
 				nu(0),

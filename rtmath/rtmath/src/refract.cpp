@@ -276,6 +276,42 @@ void rtmath::refract::eToM(std::complex<double> e, std::complex<double> &m)
 	m = sqrt(e);
 }
 
+double rtmath::refract::guessTemp(double freq, const std::complex<double>& m)
+{
+	using namespace std;
+	try {
+		// Attempt to guess the formula using the secant method.
+		auto formulaTemp = [&](double T) -> double
+		{
+			// 0 = mRes(f,T) - m_known
+			using namespace std;
+			complex<double> mRes;
+			try {
+				rtmath::refract::mIce(freq, T, mRes);
+			}
+			catch (rtmath::debug::xModelOutOfRange &) {
+				rtmath::refract::mWater(freq, T, mRes);
+			}
+
+			double mNorm = mRes.real() - m.real(); //norm(mRes- ms.at(0));
+
+			//std::cerr << "fT: " << T << "\t" << mRes << "\t\t" << ms.at(0) << "\t" << mNorm << std::endl;
+			return mNorm;
+		};
+
+		double TA = 263, TB = 233, temp = 0;
+		//complex<double> gA, gB;
+		//refract::mIce(freq, TA, gA);
+		//refract::mIce(freq, TB, gB);
+		temp = zeros::secantMethod(formulaTemp, TA, TB, 0.00001);
+		return temp;
+	}
+	catch (debug::xModelOutOfRange &)
+	{
+		return 0;
+	}
+}
+
 
 void rtmath::refract::MultiInclusions(
 	const std::vector<basicDielectricTransform> &funcs,

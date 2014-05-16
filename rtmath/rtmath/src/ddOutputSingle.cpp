@@ -16,11 +16,13 @@
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/ddOutputSingleKeys.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/ddscat/rotations.h"
+#include "../rtmath/refract.h"
 #include "../rtmath/units.h"
 #include "../rtmath/macros.h"
 #include "../rtmath/quadrature.h"
@@ -157,6 +159,41 @@ namespace rtmath {
 		*/
 
 
+
+		void ddOutputSingle::doExportOri(boost::shared_ptr<ddOutput> p, size_t index)
+		{
+			auto o = p->oridata->block<1, ddOutput::NUM_ORICOLDEFS>(index, 0);
+			o(ddOutput::FREQ) = static_cast<float>(freq());
+			o(ddOutput::AEFF) = static_cast<float>(aeff());
+			o(ddOutput::BETA) = static_cast<float>(beta());
+			o(ddOutput::THETA) = static_cast<float>(theta());
+			o(ddOutput::PHI) = static_cast<float>(phi());
+
+			auto cn = getConnector();
+			o(ddOutput::E01XR) = static_cast<float>(cn->e01x.real());
+			o(ddOutput::E01XI) = static_cast<float>(cn->e01x.imag());
+			o(ddOutput::E01YR) = static_cast<float>(cn->e01y.real());
+			o(ddOutput::E01YI) = static_cast<float>(cn->e01y.imag());
+			o(ddOutput::E01ZR) = static_cast<float>(cn->e01z.real());
+			o(ddOutput::E01ZI) = static_cast<float>(cn->e01z.imag());
+
+			o(ddOutput::E02XR) = static_cast<float>(cn->e02x.real());
+			o(ddOutput::E02XI) = static_cast<float>(cn->e02x.imag());
+			o(ddOutput::E02YR) = static_cast<float>(cn->e02y.real());
+			o(ddOutput::E02YI) = static_cast<float>(cn->e02y.imag());
+			o(ddOutput::E02ZR) = static_cast<float>(cn->e02z.real());
+			o(ddOutput::E02ZI) = static_cast<float>(cn->e02z.imag());
+
+			//Copy from _statTable::QEXT1 through QSCAG3M, inclusively;
+			auto s = p->oridata->block<1, 
+				ddOutput::NUM_ORICOLDEFS - ddOutput::QEXT1>
+				(index, ddOutput::QEXT1);
+			s = Eigen::Map<Eigen::MatrixXd>
+				(_statTable.data() + ddscat::QEXT1, 1, ddscat::NUM_STAT_ENTRIES - ddscat::QEXT1)
+				.cast<Eigen::MatrixXf>();
+			
+		}
+
 		void ddOutputSingle::version(size_t nv)
 		{
 			auto obj = ddOutputSingleObj::constructObj("version");
@@ -224,10 +261,8 @@ namespace rtmath {
 			_statTable.at(stat_entries::FREQ) = rtmath::units::conv_spec("um", "GHz").convert(_statTable.at(stat_entries::WAVE));
 		}
 
-		void ddOutputSingle::readFML(std::istream &in)
+		boost::shared_ptr<const ddScattMatrixConnector> ddOutputSingle::getConnector() const
 		{
-			readHeader(in, "Re(f_11)");
-			// Get e1 and e2 in lab frame from the header data
 			auto obj1 = boost::dynamic_pointer_cast<ddPolVec>(_objMap.at("incpol1lf"));
 			auto obj2 = boost::dynamic_pointer_cast<ddPolVec>(_objMap.at("incpol2lf"));
 			std::vector<std::complex<double> > vs(6);
@@ -239,6 +274,14 @@ namespace rtmath {
 			vs[5] = obj2->getPol(2);
 			boost::shared_ptr<const ddScattMatrixConnector> cn =
 				ddScattMatrixConnector::fromVector(vs);
+			return cn;
+		}
+
+		void ddOutputSingle::readFML(std::istream &in)
+		{
+			readHeader(in, "Re(f_11)");
+			// Get e1 and e2 in lab frame from the header data
+			auto cn = getConnector();
 			readF(in, cn);
 		}
 
@@ -313,6 +356,12 @@ namespace rtmath {
 				phis->min,
 				phis->max,
 				phis->n);
+		}
+
+		/// \todo Extend to select a nonzero refractive index entry
+		double ddOutputSingle::guessTemp() const
+		{
+			return rtmath::refract::guessTemp(freq(), getM());
 		}
 
 		/*

@@ -85,8 +85,8 @@ namespace rtmath {
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
 			static void initPaths();
-			/// Guess the temperature, assuming ice.
-			void guessTemp();
+			void resize(size_t numOris, size_t numTotAngles);
+			//void regenerateScas(); TODO
 		public:
 			ddOutput();
 
@@ -123,9 +123,45 @@ namespace rtmath {
 			std::set<boost::shared_ptr<ddOutputSingle>, 
 				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > fmls;
 
+			/// Definitions of orientation table columns
+			enum oriColDefs
+			{
+				// Basic stuff
+				FREQ, AEFF, BETA, THETA, PHI,
+				// Polarization vector information (needed to reconstruct Mueller matrix)
+				E01XR, E01XI, E01YR, E01YI, E01ZR, E01ZI,
+				E02XR, E02XI, E02YR, E02YI, E02ZR, E02ZI,
+				// Cross-sections, asymmetry parameters, etc. (TODO: split integer data)
+				QEXT1, QABS1, QSCA1, G11, G21, QBK1, QPHA1,
+				QEXT2, QABS2, QSCA2, G12, G22, QBK2, QPHA2,
+				QEXTM, QABSM, QSCAM, G1M, G2M, QBKM, QPHAM,
+				QPOL, DQPHA, 
+				QSCAG11, QSCAG21, QSCAG31, ITER1, MXITER1, NSCA1,
+				QSCAG12, QSCAG22, QSCAG32, ITER2, MXITER2, NSCA2,
+				QSCAG1M, QSCAG2M, QSCAG3M,
+				NUM_ORICOLDEFS
+			};
+			/// Table containing orientation data (cross-sections, etc.)
+			/// Set when listing folder.
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, NUM_ORICOLDEFS> > oridata;
+			/// Table containing fml data
+			enum fmlColDefs
+			{
+				/// Match to a ORI index (TODO: use an integer)
+				ORIINDEX,
+				/// Scattering-angle specific
+				THETAB, PHIB, 
+				F00R, F00I, F01R, F01I, F10R, F10I, F11R, F11I,
+				NUM_FMLCOLDEFS
+			};
+			/// Table containing fml data. Delayed allocation because the size resides within a file being read.
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, NUM_FMLCOLDEFS> > fmldata;
+			
+
 			/// Weights for the sca and fml files in the average.
 			/// Sum of all of these should equal unity.
-			std::map<boost::shared_ptr<ddOutputSingle>, float > weights;
+			typedef std::map<boost::shared_ptr<ddOutputSingle>, float > weights;
+			//static boost::shared_ptr<ddOutputSingle> genAvg(const weights&);
 			
 			/// Hash of shape file contents (an identifier)
 			HASH_t shapeHash;
@@ -143,12 +179,6 @@ namespace rtmath {
 			///
 			/// Empty if ddOutput was directly loaded from a ddscat run.
 			//boost::shared_ptr<ddOutputGenerator> generator;
-
-			/// Write output to file (redirects to io.h), kept for compatibility.
-			//void writeFile(const std::string &filename, const std::string &type = "") const;
-
-			/// Read xml file (using serialization)
-			//void readFile(const std::string &filename);
 
 			/**
 			* \brief Generate a standardized file name (for saving) based on the 
@@ -171,7 +201,7 @@ namespace rtmath {
 			/// Generate a ddOutputSingle .avg object that reflects the 
 			/// sca file weights.
 			/// \todo Finish implementing
-			void updateAVG();
+			//void updateAVG();
 
 			/// Expand output to a given directory
 			void expand(const std::string &outdir, bool writeShape=false) const;
@@ -196,8 +226,13 @@ namespace rtmath {
 			static boost::shared_ptr<ddOutput> generate(
 				const std::string &dir, bool noLoadRots = false);
 
-			/// Read xml file (using serialization)
-			//static boost::shared_ptr<ddOutput> load(const std::string &filename);
+			/// Generate ddOutput
+			static boost::shared_ptr<ddOutput> ddOutput::generate(
+				boost::shared_ptr<ddOutputSingle> avg,
+				boost::shared_ptr<ddPar> par,
+				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape,
+				const std::vector< boost::shared_ptr<ddOutputSingle> > &fmls,
+				const std::vector< boost::shared_ptr<ddOutputSingle> > &scas);
 
 			/// Write run to the hash directory (convenience function)
 			void writeToHash() const;
