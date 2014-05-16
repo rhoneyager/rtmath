@@ -4,7 +4,6 @@
 		publicKeyToken="@ASSEMBLY_PUBLICKEYTOKEN@" 
 		name="policy.@MAJOR@.@MINOR@.@ASSEMBLY_NAME@" 
 		version="@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@" 
-		language="en-us" 
 		processorArchitecture="amd64"/>
 	<dependency>
 		<dependentAssembly>
