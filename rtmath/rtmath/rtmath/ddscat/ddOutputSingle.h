@@ -123,8 +123,9 @@ namespace rtmath
 			void serialize(Archive & ar, const unsigned int version);
 			friend class ddOutput;
 			
-			void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index);
+			void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index, bool isavg = false);
 			void doExportFMLs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
+			//void doExportSCAs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();

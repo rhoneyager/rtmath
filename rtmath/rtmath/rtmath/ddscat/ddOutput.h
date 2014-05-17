@@ -71,15 +71,15 @@ namespace rtmath {
 		 **/
 		class DLEXPORT_rtmath_ddscat ddOutput :
 			virtual public ::rtmath::registry::usesDLLregistry<
-				::rtmath::ddscat::ddOutput_IO_output_registry, 
-				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutput> >,
+			::rtmath::ddscat::ddOutput_IO_output_registry,
+			::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutput> >,
 			virtual public ::rtmath::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>,
 			virtual public ::rtmath::registry::usesDLLregistry<
-				::rtmath::ddscat::ddOutput_IO_input_registry, 
-				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
+			::rtmath::ddscat::ddOutput_IO_input_registry,
+			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
 			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
-			    ddOutput, ddOutput_IO_output_registry, ddOutput_IO_input_registry, ddOutput_serialization>
+			ddOutput, ddOutput_IO_output_registry, ddOutput_IO_input_registry, ddOutput_serialization>
 		{
 			friend class ::boost::serialization::access;
 			template<class Archive>
@@ -114,48 +114,58 @@ namespace rtmath {
 			boost::shared_ptr<ddOutputSingle> avg_original;
 
 			/// Constituent sca inputs
-			std::set<boost::shared_ptr<ddOutputSingle>, 
+			std::set<boost::shared_ptr<ddOutputSingle>,
 				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > scas;
 			/// Initial sca inputs before fml recalculation
-			std::set<boost::shared_ptr<ddOutputSingle>, 
+			std::set<boost::shared_ptr<ddOutputSingle>,
 				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > scas_original;
 			/// Raw fml inputs
-			std::set<boost::shared_ptr<ddOutputSingle>, 
+			std::set<boost::shared_ptr<ddOutputSingle>,
 				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > fmls;
 
-			/// Definitions of orientation table columns
-			enum oriColDefs
+			/// Encapsulating enum in namespace, as an enum class is too restrictive
+			class oriColDefs
 			{
-				// Basic stuff
-				FREQ, AEFF, BETA, THETA, PHI,
-				// Polarization vector information (needed to reconstruct Mueller matrix)
-				E01XR, E01XI, E01YR, E01YI, E01ZR, E01ZI,
-				E02XR, E02XI, E02YR, E02YI, E02ZR, E02ZI,
-				// Cross-sections, asymmetry parameters, etc. (TODO: split integer data)
-				QEXT1, QABS1, QSCA1, G11, G21, QBK1, QPHA1,
-				QEXT2, QABS2, QSCA2, G12, G22, QBK2, QPHA2,
-				QEXTM, QABSM, QSCAM, G1M, G2M, QBKM, QPHAM,
-				QPOL, DQPHA, 
-				QSCAG11, QSCAG21, QSCAG31, ITER1, MXITER1, NSCA1,
-				QSCAG12, QSCAG22, QSCAG32, ITER2, MXITER2, NSCA2,
-				QSCAG1M, QSCAG2M, QSCAG3M,
-				NUM_ORICOLDEFS
+				/// Definitions of orientation table columns
+			public: enum oriDefs
+				{
+					// Basic stuff
+					FREQ, AEFF, BETA, THETA, PHI,
+					// Polarization vector information (needed to reconstruct Mueller matrix)
+					E01XR, E01XI, E01YR, E01YI, E01ZR, E01ZI,
+					E02XR, E02XI, E02YR, E02YI, E02ZR, E02ZI,
+					// Cross-sections, asymmetry parameters, etc. (TODO: split integer data)
+					QEXT1, QABS1, QSCA1, G11, G21, QBK1, QPHA1,
+					QEXT2, QABS2, QSCA2, G12, G22, QBK2, QPHA2,
+					QEXTM, QABSM, QSCAM, G1M, G2M, QBKM, QPHAM,
+					QPOL, DQPHA,
+					QSCAG11, QSCAG21, QSCAG31, ITER1, MXITER1, NSCA1,
+					QSCAG12, QSCAG22, QSCAG32, ITER2, MXITER2, NSCA2,
+					QSCAG1M, QSCAG2M, QSCAG3M,
+					NUM_ORICOLDEFS
+				};
 			};
 			/// Table containing orientation data (cross-sections, etc.)
 			/// Set when listing folder.
-			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, NUM_ORICOLDEFS> > oridata;
-			/// Table containing fml data
-			enum fmlColDefs
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, oriColDefs::NUM_ORICOLDEFS> > oridata;
+			boost::shared_ptr<Eigen::Matrix<float, 1, oriColDefs::NUM_ORICOLDEFS> > avgoridata;
+
+			/// Encapsulating enum in namespace, as an enum class is too restrictive
+			class fmlColDefs
 			{
-				/// Match to a ORI index (TODO: use an integer)
-				ORIINDEX,
-				/// Scattering-angle specific
-				THETAB, PHIB, 
-				F00R, F00I, F01R, F01I, F10R, F10I, F11R, F11I,
-				NUM_FMLCOLDEFS
+				/// Table containing fml data
+			public: enum fmlDefs
+				{
+					/// Match to a ORI index (TODO: use an integer)
+					ORIINDEX,
+					/// Scattering-angle specific
+					THETAB, PHIB,
+					F00R, F00I, F01R, F01I, F10R, F10I, F11R, F11I,
+					NUM_FMLCOLDEFS
+				};
 			};
 			/// Table containing fml data. Delayed allocation because the size resides within a file being read.
-			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, NUM_FMLCOLDEFS> > fmldata;
+			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> > fmldata;
 			
 
 			/// Weights for the sca and fml files in the average.

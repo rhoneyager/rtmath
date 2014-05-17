@@ -41,136 +41,6 @@ namespace rtmath {
 			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar, 
 				boost::shared_ptr<rtmath::ddscat::ddPar> &r);
 
-			void write_hdf5_ddOutputSingle(
-				const rtmath::ddscat::ddOutputSingle *r, size_t index = 0,
-				Eigen::MatrixXf *tblOri = nullptr, Eigen::MatrixXf *tblSca = nullptr)
-			{
-				using std::shared_ptr;
-				using namespace H5;
-				using namespace ddscat;
-
-				/*
-				std::string rotid;
-				{
-					std::ostringstream o;
-					o << r->beta() << "," << r->theta() << "," << r->phi();
-					rotid = o.str();
-				}
-				shared_ptr<Group> grpRot;
-				if (!inplace)
-					grpRot = shared_ptr<Group> (new Group(base->createGroup(rotid)));
-				else grpRot = base;
-
-				addAttr<double, Group>(grpRot, "Beta", r->beta());
-				addAttr<double, Group>(grpRot, "Theta", r->theta());
-				addAttr<double, Group>(grpRot, "Phi", r->phi());
-
-				addAttr<double, Group>(grpRot, "Wavelength", r->wave());
-				addAttr<double, Group>(grpRot, "Frequency", r->freq());
-				addAttr<double, Group>(grpRot, "aeff", r->aeff());
-				addAttr<double, Group>(grpRot, "Dipole_Spacing", r->dipoleSpacing());
-				addAttr<size_t, Group>(grpRot, "Num_Dipoles", r->numDipoles());
-
-				addAttr<size_t, Group>(grpRot, "version", r->version());
-
-				/// \todo add complex double support
-				//addAttr<std::complex<double>, Group>(grpRot, "Refractive_Index", r->getM());
-
-				// Header Entries
-				//shared_ptr<Group> headers(new Group(grpRot->createGroup("Headers")));
-				{
-					// Create a dataset from strings
-
-				}
-
-				// Stat table
-				*/
-				// Scattering matrices
-				//shared_ptr<Group> g(new Group(grpRot->createGroup("Scattering_Matrices")));
-				ddOutputSingle::scattMatricesContainer c;
-				r->getScattMatrices(c);
-				size_t i=0;
-				for (const auto &mat : c)
-				{
-					if (tblOri)
-					{
-						ddscat::ddOutputSingle::statTableType tstats;
-						r->getStatTable(tstats);
-						// The column ordering matches the stat_entries ordering, making reads easier.
-						double blockds[43] = {
-							r->freq(), r->aeff(),
-							r->beta(), r->theta(), r->phi(),
-							tstats[stat_entries::QEXT1],
-							tstats[stat_entries::QABS1],
-							tstats[stat_entries::QSCA1],
-							tstats[stat_entries::G11],
-							tstats[stat_entries::G21],
-							tstats[stat_entries::QBK1],
-							tstats[stat_entries::QPHA1],
-							tstats[stat_entries::QEXT2],
-							tstats[stat_entries::QABS2],
-							tstats[stat_entries::QSCA2],
-							tstats[stat_entries::G12],
-							tstats[stat_entries::G22],
-							tstats[stat_entries::QBK2],
-							tstats[stat_entries::QPHA2],
-							tstats[stat_entries::QEXTM],
-							tstats[stat_entries::QABSM],
-							tstats[stat_entries::QSCAM],
-							tstats[stat_entries::G1M],
-							tstats[stat_entries::G2M],
-							tstats[stat_entries::QBKM],
-							tstats[stat_entries::QPHAM],
-							tstats[stat_entries::QPOL],
-							tstats[stat_entries::DQPHA],
-							tstats[stat_entries::QSCAG11],
-							tstats[stat_entries::QSCAG21],
-							tstats[stat_entries::QSCAG31],
-							tstats[stat_entries::ITER1],
-							tstats[stat_entries::MXITER1],
-							tstats[stat_entries::NSCA1],
-							tstats[stat_entries::QSCAG12],
-							tstats[stat_entries::QSCAG22],
-							tstats[stat_entries::QSCAG32],
-							tstats[stat_entries::ITER2],
-							tstats[stat_entries::MXITER2],
-							tstats[stat_entries::NSCA2],
-							tstats[stat_entries::QSCAG1M],
-							tstats[stat_entries::QSCAG2M],
-							tstats[stat_entries::QSCAG3M]
-						};
-						tblOri->block<1,43>(index,0) = 
-							Eigen::Map<Eigen::VectorXd>(blockds,43).cast<float>();
-
-					}
-					if (tblSca)
-					{
-						// Only the FML files are stored. The rest can be regenerated from these.
-						if (mat->id() == scattMatrixType::F)
-						{
-							const ddScattMatrixF *vv = dynamic_cast<const ddScattMatrixF*>(mat.get());
-							auto F = vv->getF();
-							//addDatasetEigenComplexMethodA<ddScattMatrix::FType, Group>(gv, "F", vv->getF());
-							//addDatasetEigenComplexMethodA<ddScattMatrix::FType, Group>(gv, "S", vv->getS());
-							double blockd[15] = {
-								r->freq(), r->aeff(),
-								r->beta(), r->theta(), r->phi(),
-								vv->theta(), vv->phi(),
-								F(0,0).real(), F(0,0).imag(),
-								F(0,1).real(), F(0,1).imag(),
-								F(1,0).real(), F(1,0).imag(),
-								F(1,1).real(), F(1,1).imag()
-							};
-							tblSca->block<1,15>((c.size() * index)+i,0) = 
-								Eigen::Map<Eigen::VectorXd>(blockd,15).cast<float>();
-						}
-					}
-					++i;
-				}
-
-				//return grpRot;
-			}
-
 			/// \param base is the base (./Runs) to write the subgroups to.
 			std::shared_ptr<H5::Group> write_hdf5_ddOutput(std::shared_ptr<H5::Group> base, 
 				std::shared_ptr<rtmath::registry::IO_options> opts, 
@@ -179,6 +49,8 @@ namespace rtmath {
 				using std::string;
 				using std::shared_ptr;
 				using namespace H5;
+
+				bool writeFML = opts->getVal<bool>("writeFML", true);
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
 				/// \todo Pick a better naming function for hdf5-internal runs
@@ -206,45 +78,9 @@ namespace rtmath {
 				// DDSCAT run verion tag
 				addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
 
-				// Ensemble average results
-				{
-					//shared_ptr<Group> gEns(new Group(gRun->createGroup("Ensemble")));
-					//write_hdf5_ddOutputSingle(gEns, s->avg.get());
-					//shared_ptr<Group> gEnso(new Group(gRun->createGroup("Ensemble_Original")));
-					//write_hdf5_ddOutputSingle(gEnso, s->avg_original.get());
-				}
-
-
-				// Get number of orientations, and allocate a matrix to hold al of the cross-sectional results
-				size_t numOris = s->scas.size();
-				Eigen::MatrixXf tblOri(numOris, 43);
-				// Get number of scattering angles from the avg table
-				size_t numScaAngles = s->avg->getScattMatrices().size();
-				Eigen::MatrixXf tblFML(numScaAngles * numOris, 15);
-				//Eigen::MatrixXf tblSCA(numScaAngles * numOris, 22);
-
-
-
-				auto writeGroup = [&](const char* grpname, 
-					const std::set<boost::shared_ptr<rtmath::ddscat::ddOutputSingle>, 
-					sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > &o,
-					Eigen::MatrixXf *oritable, Eigen::MatrixXf *stable)
-				{
-					//shared_ptr<Group> g(new Group(gRun->createGroup(grpname)));
-					size_t i = 0; // Index for table writing
-					for (const auto& f : o)
-					{
-						write_hdf5_ddOutputSingle(f.get(), i, oritable, stable);
-						++i;
-					}
-				};
-				//writeGroup("SCA_original", s->scas_original, nullptr, nullptr);
-				writeGroup("FML", s->fmls, nullptr, &tblFML);
-				writeGroup("SCA", s->scas, &tblOri, nullptr);
-
 				// Enable compression
-				hsize_t chunk_dimsOri[2] = { (hsize_t) numOris, 1 };
-				hsize_t chunk_dimsFML[2] = { (hsize_t) numScaAngles, 15 };
+				hsize_t chunk_dimsOri[2] = { (hsize_t) s->oridata->rows(), 1 };
+				hsize_t chunk_dimsFML[2] = { (hsize_t) s->fmldata->rows(), 11 };
 				auto plistOri = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
 				plistOri->setChunk(2, chunk_dimsOri);
 				auto plistFML = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
@@ -261,14 +97,12 @@ namespace rtmath {
 				plistFML->setDeflate(6);
 #endif
 
-				bool writeFML = opts->getVal("writeFMLs", true);
-
-				addDatasetEigen(gRun, "Cross_Sections", tblOri, plistOri);
+				addDatasetEigen(gRun, "Cross_Sections", *(s->oridata), plistOri);
+				if (s->avg)
+					addDatasetEigen(gRun, "Isotropic_Cross_Sections", *(s->avgoridata));
 				if (writeFML)
-					addDatasetEigen(gRun, "FML_Data", tblFML, plistFML);
-				//addDatasetEigen(gRun, "Scattering_Data", tblSCA);
-
-				// Add a special ddOutputSingle entry for the avg file
+					addDatasetEigen(gRun, "FML_Data", *(s->fmldata), plistFML);
+				//addDatasetEigen(gRun, "Scattering_Data", s->scadata);
 
 				
 				// Shapefile link
@@ -309,9 +143,6 @@ namespace rtmath {
 
 				return gRun;
 			}
-
-			/// \todo Add in writing handlers for ddoutputsingle and ddscatmatrix
-
 		}
 	}
 

@@ -160,42 +160,45 @@ namespace rtmath {
 
 
 
-		void ddOutputSingle::doExportOri(boost::shared_ptr<ddOutput> p, size_t index)
+		void ddOutputSingle::doExportOri(boost::shared_ptr<ddOutput> p, size_t index, bool isavg)
 		{
-			auto o = p->oridata->block<1, ddOutput::NUM_ORICOLDEFS>(index, 0);
-			o(ddOutput::FREQ) = static_cast<float>(freq());
-			o(ddOutput::AEFF) = static_cast<float>(aeff());
-			o(ddOutput::BETA) = static_cast<float>(beta());
-			o(ddOutput::THETA) = static_cast<float>(theta());
-			o(ddOutput::PHI) = static_cast<float>(phi());
+			auto o = p->oridata->block<1, ddOutput::oriColDefs::NUM_ORICOLDEFS>(index, 0);
+			// If avg file, the previous block index is always zero.
+			if (isavg)
+				o = p->avgoridata->block<1, ddOutput::oriColDefs::NUM_ORICOLDEFS>(index, 0);
+			o(ddOutput::oriColDefs::FREQ) = static_cast<float>(freq());
+			o(ddOutput::oriColDefs::AEFF) = static_cast<float>(aeff());
+			o(ddOutput::oriColDefs::BETA) = static_cast<float>(beta());
+			o(ddOutput::oriColDefs::THETA) = static_cast<float>(theta());
+			o(ddOutput::oriColDefs::PHI) = static_cast<float>(phi());
 
 			auto cn = getConnector();
-			o(ddOutput::E01XR) = static_cast<float>(cn->e01x.real());
-			o(ddOutput::E01XI) = static_cast<float>(cn->e01x.imag());
-			o(ddOutput::E01YR) = static_cast<float>(cn->e01y.real());
-			o(ddOutput::E01YI) = static_cast<float>(cn->e01y.imag());
-			o(ddOutput::E01ZR) = static_cast<float>(cn->e01z.real());
-			o(ddOutput::E01ZI) = static_cast<float>(cn->e01z.imag());
+			o(ddOutput::oriColDefs::E01XR) = static_cast<float>(cn->e01x.real());
+			o(ddOutput::oriColDefs::E01XI) = static_cast<float>(cn->e01x.imag());
+			o(ddOutput::oriColDefs::E01YR) = static_cast<float>(cn->e01y.real());
+			o(ddOutput::oriColDefs::E01YI) = static_cast<float>(cn->e01y.imag());
+			o(ddOutput::oriColDefs::E01ZR) = static_cast<float>(cn->e01z.real());
+			o(ddOutput::oriColDefs::E01ZI) = static_cast<float>(cn->e01z.imag());
 
-			o(ddOutput::E02XR) = static_cast<float>(cn->e02x.real());
-			o(ddOutput::E02XI) = static_cast<float>(cn->e02x.imag());
-			o(ddOutput::E02YR) = static_cast<float>(cn->e02y.real());
-			o(ddOutput::E02YI) = static_cast<float>(cn->e02y.imag());
-			o(ddOutput::E02ZR) = static_cast<float>(cn->e02z.real());
-			o(ddOutput::E02ZI) = static_cast<float>(cn->e02z.imag());
+			o(ddOutput::oriColDefs::E02XR) = static_cast<float>(cn->e02x.real());
+			o(ddOutput::oriColDefs::E02XI) = static_cast<float>(cn->e02x.imag());
+			o(ddOutput::oriColDefs::E02YR) = static_cast<float>(cn->e02y.real());
+			o(ddOutput::oriColDefs::E02YI) = static_cast<float>(cn->e02y.imag());
+			o(ddOutput::oriColDefs::E02ZR) = static_cast<float>(cn->e02z.real());
+			o(ddOutput::oriColDefs::E02ZI) = static_cast<float>(cn->e02z.imag());
 
 			//Copy from _statTable::QEXT1 through QSCAG3M, inclusively;
 			auto s = p->oridata->block<1, 
-				ddOutput::NUM_ORICOLDEFS - ddOutput::QEXT1>
-				(index, ddOutput::QEXT1);
+				ddOutput::oriColDefs::NUM_ORICOLDEFS - ddOutput::oriColDefs::QEXT1>
+				(index, ddOutput::oriColDefs::QEXT1);
 			for (size_t i = 0; i < ddscat::NUM_STAT_ENTRIES - ddscat::QEXT1; ++i)
-				o(ddOutput::QEXT1 + i) = static_cast<float>(_statTable.at(ddscat::QEXT1 +i));
+				o(ddOutput::oriColDefs::QEXT1 + i) = static_cast<float>(_statTable.at(ddscat::QEXT1 + i));
 
 		}
 
 		void ddOutputSingle::doExportFMLs(boost::shared_ptr<ddOutput> p, size_t startIndex, size_t oriIndex)
 		{
-			auto o = p->fmldata->block(startIndex, 0, numF(), ddOutput::NUM_FMLCOLDEFS);
+			auto o = p->fmldata->block(startIndex, 0, numF(), ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
 			size_t i = 0;
 			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
 			{
@@ -204,21 +207,52 @@ namespace rtmath {
 
 				auto f = s->getF();
 				
-				o(i, ddOutput::ORIINDEX) = static_cast<float>(oriIndex);
-				o(i, ddOutput::THETAB) = static_cast<float>((*it)->theta());
-				o(i, ddOutput::PHIB) = static_cast<float>((*it)->phi());
-				o(i, ddOutput::F00R) = static_cast<float>(f(0, 0).real());
-				o(i, ddOutput::F00I) = static_cast<float>(f(0, 0).imag());
-				o(i, ddOutput::F01R) = static_cast<float>(f(0, 1).real());
-				o(i, ddOutput::F01I) = static_cast<float>(f(0, 1).imag());
-				o(i, ddOutput::F10R) = static_cast<float>(f(1, 0).real());
-				o(i, ddOutput::F10I) = static_cast<float>(f(1, 0).imag());
-				o(i, ddOutput::F11R) = static_cast<float>(f(1, 1).real());
-				o(i, ddOutput::F11I) = static_cast<float>(f(1, 1).imag());
+				o(i, ddOutput::fmlColDefs::ORIINDEX) = static_cast<float>(oriIndex);
+				o(i, ddOutput::fmlColDefs::THETAB) = static_cast<float>((*it)->theta());
+				o(i, ddOutput::fmlColDefs::PHIB) = static_cast<float>((*it)->phi());
+				o(i, ddOutput::fmlColDefs::F00R) = static_cast<float>(f(0, 0).real());
+				o(i, ddOutput::fmlColDefs::F00I) = static_cast<float>(f(0, 0).imag());
+				o(i, ddOutput::fmlColDefs::F01R) = static_cast<float>(f(0, 1).real());
+				o(i, ddOutput::fmlColDefs::F01I) = static_cast<float>(f(0, 1).imag());
+				o(i, ddOutput::fmlColDefs::F10R) = static_cast<float>(f(1, 0).real());
+				o(i, ddOutput::fmlColDefs::F10I) = static_cast<float>(f(1, 0).imag());
+				o(i, ddOutput::fmlColDefs::F11R) = static_cast<float>(f(1, 1).real());
+				o(i, ddOutput::fmlColDefs::F11I) = static_cast<float>(f(1, 1).imag());
 
 				i++;
 			}
 		}
+
+		/*
+		void ddOutputSingle::doExportSCAs(boost::shared_ptr<ddOutput> p, size_t startIndex, size_t oriIndex)
+		{
+			auto o = p->scadata->block(startIndex, 0, numP(), ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
+			size_t i = 0;
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				if ((*it)->id() != scattMatrixType::P) continue;
+				auto s = boost::dynamic_pointer_cast<const ddscat::ddScattMatrixP>(*it);
+
+				auto P = s->getP();
+
+				o(i, ddOutput::ORIINDEX) = static_cast<float>(oriIndex);
+				o(i, ddOutput::THETAB) = static_cast<float>((*it)->theta());
+				o(i, ddOutput::PHIB) = static_cast<float>((*it)->phi());
+				o(i, ddOutput::PHIB) = static_cast<float>((*it)->pol());
+				o(i, ddOutput::PHIB) = static_cast<float>((*it)->polLin());
+				o(i, ddOutput::F00R) = static_cast<float>(P(0, 0));
+				o(i, ddOutput::F00I) = static_cast<float>(P(0, 1));
+				o(i, ddOutput::F01R) = static_cast<float>(P(0, 2));
+				o(i, ddOutput::F01I) = static_cast<float>(P(0, 3));
+				o(i, ddOutput::F10R) = static_cast<float>(P(1, 0));
+				o(i, ddOutput::F10I) = static_cast<float>(P(1, 1));
+				o(i, ddOutput::F11R) = static_cast<float>(P(1, 2));
+				o(i, ddOutput::F11I) = static_cast<float>(P(1, 3));
+
+				i++;
+			}
+		}
+		*/
 
 		void ddOutputSingle::version(size_t nv)
 		{

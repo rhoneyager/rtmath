@@ -250,6 +250,9 @@ namespace rtmath {
 				{
 					(*it)->doExportOri(res, i);
 				}
+
+				if (avg)
+					avg->doExportOri(res, 0, true);
 				
 			}
 
@@ -314,7 +317,18 @@ namespace rtmath {
 		**/
 		void ddOutput::resize(size_t numOris, size_t numTotAngles)
 		{
+			if (!oridata) oridata = boost::shared_ptr
+				<Eigen::Matrix<float, Eigen::Dynamic, oriColDefs::NUM_ORICOLDEFS> >
+				(new Eigen::Matrix<float, Eigen::Dynamic, oriColDefs::NUM_ORICOLDEFS>
+				(numOris, oriColDefs::NUM_ORICOLDEFS));
 			oridata->conservativeResize(numOris, Eigen::NoChange);
+			if (!avgoridata) avgoridata = boost::shared_ptr
+				<Eigen::Matrix<float, 1, oriColDefs::NUM_ORICOLDEFS> >
+				(new Eigen::Matrix<float, 1, oriColDefs::NUM_ORICOLDEFS>());
+			if (!fmldata) fmldata = boost::shared_ptr
+				<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
+				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>
+				(numOris, fmlColDefs::NUM_FMLCOLDEFS));
 			fmldata->conservativeResize(numTotAngles, Eigen::NoChange);
 		}
 
