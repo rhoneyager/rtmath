@@ -188,10 +188,36 @@ namespace rtmath {
 			auto s = p->oridata->block<1, 
 				ddOutput::NUM_ORICOLDEFS - ddOutput::QEXT1>
 				(index, ddOutput::QEXT1);
-			s = Eigen::Map<Eigen::MatrixXd>
-				(_statTable.data() + ddscat::QEXT1, 1, ddscat::NUM_STAT_ENTRIES - ddscat::QEXT1)
-				.cast<Eigen::MatrixXf>();
-			
+			for (size_t i = 0; i < ddscat::NUM_STAT_ENTRIES - ddscat::QEXT1; ++i)
+				o(ddOutput::QEXT1 + i) = static_cast<float>(_statTable.at(ddscat::QEXT1 +i));
+
+		}
+
+		void ddOutputSingle::doExportFMLs(boost::shared_ptr<ddOutput> p, size_t startIndex, size_t oriIndex)
+		{
+			auto o = p->fmldata->block(startIndex, 0, numF(), ddOutput::NUM_FMLCOLDEFS);
+			size_t i = 0;
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				if ((*it)->id() != scattMatrixType::F) continue;
+				auto s = boost::dynamic_pointer_cast<const ddscat::ddScattMatrixF>(*it);
+
+				auto f = s->getF();
+				
+				o(i, ddOutput::ORIINDEX) = static_cast<float>(oriIndex);
+				o(i, ddOutput::THETAB) = static_cast<float>((*it)->theta());
+				o(i, ddOutput::PHIB) = static_cast<float>((*it)->phi());
+				o(i, ddOutput::F00R) = static_cast<float>(f(0, 0).real());
+				o(i, ddOutput::F00I) = static_cast<float>(f(0, 0).imag());
+				o(i, ddOutput::F01R) = static_cast<float>(f(0, 1).real());
+				o(i, ddOutput::F01I) = static_cast<float>(f(0, 1).imag());
+				o(i, ddOutput::F10R) = static_cast<float>(f(1, 0).real());
+				o(i, ddOutput::F10I) = static_cast<float>(f(1, 0).imag());
+				o(i, ddOutput::F11R) = static_cast<float>(f(1, 1).real());
+				o(i, ddOutput::F11I) = static_cast<float>(f(1, 1).imag());
+
+				i++;
+			}
 		}
 
 		void ddOutputSingle::version(size_t nv)

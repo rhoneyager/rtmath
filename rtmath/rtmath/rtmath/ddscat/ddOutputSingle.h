@@ -124,7 +124,7 @@ namespace rtmath
 			friend class ddOutput;
 			
 			void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index);
-			void doExportFMLs(boost::shared_ptr<ddOutput> parent, size_t startIndex);
+			void doExportFMLs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
 			virtual ~ddOutputSingle();

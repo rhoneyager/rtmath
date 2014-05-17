@@ -238,10 +238,10 @@ namespace rtmath {
 					numTotAngles += f->numF(); // getScattMatrices().size();
 				res->resize(res->fmls.size(), numTotAngles);
 
-				size_t i = 0;
-				for (auto it = res->fmls.begin(); it != res->fmls.end(); ++it)
+				size_t i = 0, j=0;
+				for (auto it = res->fmls.begin(); it != res->fmls.end(); ++it, ++j)
 				{
-					(*it)->doExportFMLs(res, i);
+					(*it)->doExportFMLs(res, i, j);
 					i += (*it)->numF();
 				}
 				i = 0;
