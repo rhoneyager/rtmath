@@ -74,7 +74,26 @@ namespace rtmath {
 				} catch( H5::GroupIException not_found_error ) {
 					return false;
 				}
+				catch (H5::FileIException not_found_error) {
+					return false;
+				}
 			}
+
+			bool datasetExists(std::shared_ptr<H5::CommonFG> base, const char* name)
+			{
+				try {
+					H5::DataSet(base->openDataSet(name));
+					return true;
+				}
+				catch (H5::GroupIException not_found_error) {
+					return false;
+				}
+				catch (H5::FileIException not_found_error) {
+					return false;
+				}
+			}
+
+
 		}
 	}
 }

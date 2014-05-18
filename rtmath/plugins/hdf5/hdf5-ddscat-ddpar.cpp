@@ -31,15 +31,13 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
-			void write_hdf5_ddPar(std::shared_ptr<H5::Group> base, 
+			void write_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
 				const rtmath::ddscat::ddPar *r)
 			{
 				using std::shared_ptr;
 				using std::string;
 				using namespace H5;
 				using namespace ddscat;
-
-				auto grpPar = shared_ptr<Group> (new Group(base->createGroup("par")));
 
 				addAttr<size_t, Group>(grpPar, "Version", r->version());
 

@@ -132,7 +132,9 @@ namespace rtmath {
 
 
 				// ddscat.par file
-				write_hdf5_ddPar(gRun, s->parfile.get());
+				write_hdf5_ddPar(
+					shared_ptr<Group>(new Group(base->createGroup("par"))), 
+					s->parfile.get());
 
 				// Testing ddscat.par read...
 				//boost::shared_ptr<rtmath::ddscat::ddPar> stest(new rtmath::ddscat::ddPar);

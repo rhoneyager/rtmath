@@ -128,6 +128,9 @@ namespace rtmath {
 			/// \returns nullptr is the group does not exist.
 			std::shared_ptr<H5::Group> openGroup(std::shared_ptr<H5::CommonFG> base, const char* name);
 
+			/// Convenience function to check if a given dataset exists
+			bool datasetExists(std::shared_ptr<H5::CommonFG> base, const char* name);
+
 			/// Convenience function to write an Eigen object, in the correct format
 			template <class DataType, class Container>
 			std::shared_ptr<H5::DataSet> addDatasetEigen(std::shared_ptr<Container> obj, const char* name, 

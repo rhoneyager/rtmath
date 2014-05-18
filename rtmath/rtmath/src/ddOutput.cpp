@@ -64,6 +64,8 @@ namespace rtmath {
 			::rtmath::io::Serialization::implementsSerialization<
 				ddOutput, ddOutput_IO_output_registry,
 				ddOutput_IO_input_registry, ddOutput_serialization>::set_sname("rtmath::ddscat::ddOutput");
+
+			resize(0, 0);
 		}
 
 		/*

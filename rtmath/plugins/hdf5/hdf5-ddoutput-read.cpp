@@ -52,7 +52,10 @@ namespace rtmath {
 				(*r.*f)(val);
 			}
 
-			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, 
+			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
+				rtmath::ddscat::ddPar *r);
+
+			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts, 
 				boost::shared_ptr<rtmath::ddscat::ddOutput> &r)
 			{
 				using std::shared_ptr;
@@ -75,189 +78,31 @@ namespace rtmath {
 				// Tags
 
 				// DDSCAT run version tag
-				/*
-				readAttr<string, Group>(base, "DDSCAT_Version_Tag", s->ddvertag);
+				readAttr<string, Group>(base, "DDSCAT_Version_Tag", r->ddvertag);
 
-				// Ensemble average results
+
+				readDatasetEigen(base, "Cross_Sections", *(r->oridata));
+				if (datasetExists(base, "Isotropic_Cross_Sections"))
+					readDatasetEigen(base, "Isotropic_Cross_Sections", *(r->avgoridata));
+
+				bool readFML = opts->getVal<bool>("readFML", true);
+				if (readFML && datasetExists(base, "FML_Data"))
 				{
-					//shared_ptr<Group> gEns(new Group(gRun->createGroup("Ensemble")));
-					//write_hdf5_ddOutputSingle(gEns, s->avg.get());
-					//shared_ptr<Group> gEnso(new Group(gRun->createGroup("Ensemble_Original")));
-					//write_hdf5_ddOutputSingle(gEnso, s->avg_original.get());
+					readDatasetEigen(base, "FML_Data", *(r->fmldata));
 				}
+				//readDatasetEigen(base, "Scattering_Data", r->scadata);
 
-				/// \todo Change the write operation to include sca headers!
+				readAttr<uint64_t, Group>(base, "Shapehash_lower", r->shapeHash.lower);
+				readAttr<uint64_t, Group>(base, "Shapehash_upper", r->shapeHash.upper);
 
-				// Get number of orientations, and allocate a matrix to hold al of the cross-sectional results
-				size_t numOris = s->scas.size();
-				Eigen::MatrixXf tblOri(numOris, 43);
-				// Get number of scattering angles from the avg table
-				size_t numScaAngles = s->avg->getScattMatrices().size();
-				Eigen::MatrixXf tblFML(numScaAngles * numOris, 15);
-				//Eigen::MatrixXf tblSCA(numScaAngles * numOris, 22);
+				// The shapefiles are loaded in a separate bit of code, and they have their own search 
+				// directory. The same applies to shape stats. As such, don't read the symlinks in this 
+				// iteration of the code.
 
-
-
-
-
-				readAttrSet<size_t, Group>(grpPar, "Version", r,&rtmath::ddscat::ddPar::version);
-
-				int ival;
-				readAttr<int, Group>(grpPar, "CMTORQ", ival);
-				if (ival) r->doTorques(true);
-				else r->doTorques(false);
-
-				readAttrSet<string, Group>(grpPar, "CMDSOL", r,&rtmath::ddscat::ddPar::setSolnMeth);
-
-				readAttrSet<string, Group>(grpPar, "CMDFFT", r,&rtmath::ddscat::ddPar::setFFTsolver);
-				readAttrSet<string, Group>(grpPar, "CALPHA", r,&rtmath::ddscat::ddPar::setCalpha);
-				readAttrSet<string, Group>(grpPar, "CBINFLAG", r,&rtmath::ddscat::ddPar::setBinning);
-
-				Eigen::Vector3i Imem;
-				readAttrEigen<Eigen::Vector3i, Group>(grpPar, "dimension", Imem);
-				r->Imem(0,Imem(0));
-				r->Imem(1, Imem(1));
-				r->Imem(2, Imem(2));
-				readAttrSet<string, Group>(grpPar, "CSHAPE", r,&rtmath::ddscat::ddPar::setShape);
-				Eigen::Vector3d shparams;
-				readAttrEigen<Eigen::Vector3d, Group>(grpPar, "shape_parameters", shparams);
-				r->shpar(0, shparams(0));
-				r->shpar(1, shparams(1));
-				r->shpar(2, shparams(2));
-
-				// Dielectrics go here
-				// Write both number of dielectrics (attr) and the list (dataset)
-				size_t nDiels;
-				readAttr<size_t, Group>(grpPar, "NCOMP", nDiels);
-				std::vector<string> diels(nDiels);
-				std::vector<const char*> cdiels(diels.size());
-				
-				readDatasetArray<const char*, Group>(grpPar, "Dielectrics", cdiels.data());
-				for (size_t i=0; i<cdiels.size(); ++i)
-					diels[i] = string(cdiels[i]);
-				r->setDiels(diels);
-
-				Eigen::Matrix<uint64_t, Eigen::Dynamic, Eigen::Dynamic> dielhashes;
-				
-				readDatasetEigen<Eigen::Matrix<uint64_t, Eigen::Dynamic, Eigen::Dynamic>, Group>
-					(grpPar, "Dielectric_Hashes", dielhashes);
-				std::vector<HASH_t> vdielhashes((size_t) dielhashes.rows());
-				for (size_t i=0; i<(size_t) dielhashes.rows(); ++i)
-				{
-					vdielhashes[i].lower = dielhashes(i,0);
-					vdielhashes[i].upper = dielhashes(i,1);
-				}
-				r->setDielHashes(vdielhashes);
-
-				
-				for (size_t i=0; i<diels.size(); ++i)
-					cdiels[i] = diels[i].c_str();
-				r->setDiels(diels);
-
-				
-
-				readAttr<int, Group>(grpPar, "NRFLD", ival);
-				if (ival) r->doNearField(true);
-				else r->doNearField(false);
-
-				Eigen::VectorXd extent(6);
-				readAttrEigen<Eigen::VectorXd, Group>(grpPar, "near_extent", extent);
-#undef near // No idea where this gets defined...
-				r->near(0,extent(0));
-				r->near(1,extent(1));
-				r->near(2,extent(2));
-				r->near(3,extent(3));
-				r->near(4,extent(4));
-				r->near(5,extent(5));
-
-
-				readAttrSet<double, Group>(grpPar, "TOL", r,&rtmath::ddscat::ddPar::maxTol);
-				readAttrSet<size_t, Group>(grpPar, "MXITER", r,&rtmath::ddscat::ddPar::maxIter);
-				readAttrSet<double, Group>(grpPar, "GAMMA", r,&rtmath::ddscat::ddPar::gamma);
-				readAttrSet<double, Group>(grpPar, "ETASCA", r,&rtmath::ddscat::ddPar::etasca);
-				
-				// Wavelengths
-				string sWaves, sSpecialized;
-				readAttr<string, Group>(grpPar, "Wavelengths_str", sWaves);
-				double wMin, wMax, wJunk;
-				size_t wN;
-				rtmath::config::extractInterval(sWaves, wMin, wMax, wJunk, wN, sSpecialized);
-				r->setWavelengths(wMin, wMax, wN, sSpecialized);
-
-				readAttrSet<double, Group>(grpPar, "NAMBIENT", r,&rtmath::ddscat::ddPar::nAmbient);
-
-				// Effective radii
-				readAttr<string, Group>(grpPar, "Effective_Radii_str", sWaves);
-				rtmath::config::extractInterval(sWaves, wMin, wMax, wJunk, wN, sSpecialized);
-				r->setAeff(wMin, wMax, wN, sSpecialized);
-
-
-				// Incident polarizations (needed for fml conversions!)
-				Eigen::VectorXd ipol(6);
-				readAttrEigen<Eigen::VectorXd, Group>(grpPar, "PolState", ipol);
-				r->PolState(0,ipol(0));
-				r->PolState(1,ipol(1));
-				r->PolState(2,ipol(2));
-				r->PolState(3,ipol(3));
-				r->PolState(4,ipol(4));
-				r->PolState(5,ipol(5));
-				readAttrSet<size_t, Group>(grpPar, "IORTH", r,&rtmath::ddscat::ddPar::OrthPolState);
-				
-				// IWRPOL is retired. It was dropped in 7.2.
-				//addAttr<bool, Group>(grpPar, "IWRPOL", r->writePol());
-				readAttr<int, Group>(grpPar, "IWRKSC", ival);
-				if (ival) r->writeSca(true);
-				else r->writeSca(false);
-
-				// Rotations
-				// Beta, Theta, Phi
-				string betas, thetas, phis, sjunk;
-				readAttr<string, Group>(grpPar, "Betas", betas);
-				readAttr<string, Group>(grpPar, "Thetas", thetas);
-				readAttr<string, Group>(grpPar, "Phis", phis);
-				double bMin, bMax, tMin, tMax, pMin, pMax, junk;
-				size_t bN, tN, pN;
-				rtmath::config::extractInterval(betas, bMin, bMax, junk, bN, sjunk);
-				rtmath::config::extractInterval(thetas, tMin, tMax, junk, tN, sjunk);
-				rtmath::config::extractInterval(phis, pMin, pMax, junk, pN, sjunk);
-
-				rotations rot(bMin,bMax,bN,tMin,tMax,tN,pMin,pMax,pN);
-				r->setRots(rot);
-				
-
-				Eigen::Vector3i iwav;
-				readAttrEigen<Eigen::Vector3i, Group>(grpPar, "firstOri", iwav);
-				r->firstOri(0,iwav(0));
-				r->firstOri(1,iwav(1));
-				r->firstOri(2,iwav(2));
-
-				// Get SIJ matrix
-				Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic> sijs;
-				std::set<size_t> ssij;
-				readDatasetEigen<Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic>, Group>
-					(grpPar, "SIJs", sijs);
-				for (size_t i=0; i<(size_t)sijs.rows(); ++i)
-					ssij.insert(sijs(i,0));
-				r->setSIJ(ssij);
-				
-
-				readAttrSet<string, Group>(grpPar, "CMDFRM", r,&rtmath::ddscat::ddPar::setCMDFRM);
-
-				//readAttr<size_t, Group>(grpPar, "NPLANES", r->numPlanes());
-				Eigen::MatrixXd planes; //(r->numPlanes(), 4);
-				readDatasetEigen<Eigen::MatrixXd, Group>(grpPar, "Planes", planes);
-				// Write out scattering plane information
-				for (size_t i=0; i < (size_t) planes.rows(); ++i)
-				{
-					double phi = planes(i,0), 
-						thetan_min = planes(i,1), 
-						thetan_max = planes(i,2), 
-						dtheta = planes(i,3);
-					r->setPlane(i+1,phi,thetan_min,thetan_max,dtheta);
-				}
-				*/
-
-				//return grpRot;
+				// Do, however, read the ddscat.par file, since some of these values are useful when 
+				// interpreting the ddscat run.
+				r->parfile = boost::shared_ptr<ddPar>(new ddPar);
+				read_hdf5_ddPar(openGroup(base, "par"), r->parfile.get());
 				return true;
 			}
 		}
