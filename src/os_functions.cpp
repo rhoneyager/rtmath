@@ -448,6 +448,9 @@ namespace Ryan_Debug {
 		//std::cout << filename.string() << std::endl;
 		// If run from cmd, no need to wait
 		if (filename.string() == "cmd.exe") return false;
+		// Cygwin
+		if (filename.string() == "bash.exe") return false;
+		if (filename.string() == "tcsh.exe") return false;
 		// Don't need these due to end return. Just for reference.
 		//if (filename.string() == "devenv.exe") return true;
 		//if (filename.string() == "explorer.exe") return true;

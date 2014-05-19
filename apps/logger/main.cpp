@@ -89,6 +89,13 @@ int main(int argc, char **argv)
 			if (name == "explorer.exe") break;
 			if (name == "at") break;
 			if (name == "cron") break;
+			// Cygwin
+#ifdef _WIN32
+			if (name == "bash.exe") break;
+			if (name == "tcsh.exe") break;
+			if (name == "screen.exe") break;
+			if (name == "sshd.exe") break;
+#endif
 		}
 
 		//ryan_debug::printDebugInfo();
