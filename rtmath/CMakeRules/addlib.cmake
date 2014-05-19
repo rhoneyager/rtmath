@@ -1,10 +1,17 @@
 # CMake script to add a rtmath library
 
-macro(addlib libname libshared)
+macro(addlib libname libshared )
 	#if (NOT ${appname}_INCLUDE_DIRS)
 	#	set(${appname}_LIBRARIES "")
 	#	set(${appname}_INCLUDE_DIRS "")
 	#endif()
+	if ("" STREQUAL ${ARGV2})
+		message("nd")
+		set(headername ${libname})
+	else()
+		set(headername ${ARGV2})
+	endif()
+	#message("${headername} ${ARGV2} ${libname} ${ARGC} ${ARGV}")
 
 
 	IF(DEFINED COMMON_CFLAGS )
@@ -22,11 +29,11 @@ macro(addlib libname libshared)
 	#	BUILDTYPE="${CMAKE_BUILD_TYPE}")
 	target_compile_definitions(${libname} PRIVATE BUILDTYPE=BUILDTYPE_$<CONFIGURATION>)
 	# These two are for symbol export
-	target_compile_definitions(${libname} PRIVATE EXPORTING_${libname})
-	target_compile_definitions(${libname} PUBLIC SHARED_${libname}=$<STREQUAL:${libshared},SHARED>)
+	target_compile_definitions(${libname} PRIVATE EXPORTING_${headername})
+	target_compile_definitions(${libname} PUBLIC SHARED_${headername}=$<STREQUAL:${libshared},SHARED>)
 	#set (${libname}-libs rtmath_core ${rtmath_core-libs})
 	#target_link_libraries(${libname} ${libname}-libs)
 
-endmacro(addlib libname)
+endmacro(addlib libname headername)
 
 
