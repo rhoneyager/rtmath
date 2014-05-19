@@ -18,7 +18,7 @@ if (usesmodules)
 		"Environment-modules package file install directory"
 	)
 
-	set(MODULES_FILENAME ${version})
+	set(MODULES_FILENAME ${version}${configappend})
 
 	SET( CMAKE_INSTALL_PREFIX_SUGGESTED 
 		"/opt/${basename}/${version}"

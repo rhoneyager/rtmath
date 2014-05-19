@@ -1,13 +1,10 @@
 macro(addconfiginfo appname )
 	if (MSVC)
-		add_definitions(-DCONF="$(Configuration)${configappend}")
 		add_definitions(-DBUILDTYPE=BUILDTYPE_$(Configuration))
 		#set(CONF CONF)
 	else()
 	#if (MINGW)
-		add_definitions(-DCONF="${CMAKE_BUILD_TYPE}")
 		add_definitions(-DBUILDTYPE=BUILDTYPE_${CMAKE_BUILD_TYPE})
-		set(CONF "\"${CMAKE_BUILD_TYPE}\"")
 	endif()
 	
 
