@@ -57,6 +57,7 @@
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/info.h"
 #include "versioninfo.h"
+#include "internal.h"
 
 // DLL binding and unbinding code
 #ifndef _MSC_FULL_VER //__GNUC__, __llvm__, __clang__, __INTEL_COMPILER, ...
@@ -331,7 +332,7 @@ namespace Ryan_Debug {
 			//| PROCESS_VM_READ
 			, FALSE, pid);
 		if (NULL == h) return false;
-		TCHAR szModName[600];
+		TCHAR szModName[MAX_PATH];
 		DWORD success = 0;
 		DWORD sz = sizeof(szModName) / sizeof(TCHAR);
 		success = QueryFullProcessImageName(h, 0, szModName, &sz);

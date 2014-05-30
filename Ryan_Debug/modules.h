@@ -4,10 +4,6 @@
 
 namespace boost
 {
-	namespace program_options {
-		class options_description;
-		class variables_map;
-	}
 	namespace filesystem {
 		class path;
 	}
@@ -16,6 +12,11 @@ namespace boost
 namespace Ryan_Debug
 {
 	boost::filesystem::path RYAN_DEBUG_DLEXPORT convertUnix(const boost::filesystem::path &p);
+
+#ifdef _WIN32
+	bool RYAN_DEBUG_DLEXPORT findCygwinBaseDir(boost::filesystem::path &p);
+#endif
+	bool RYAN_DEBUG_DLEXPORT findUserHomeDir(boost::filesystem::path &p);
 }
 
 

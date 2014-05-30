@@ -66,6 +66,7 @@ set (hdrs
 	Ryan_Debug/debug.h
 	Ryan_Debug/info.h
 	Ryan_Debug/modules.h
+	src/internal.h
 	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
 	)
 
