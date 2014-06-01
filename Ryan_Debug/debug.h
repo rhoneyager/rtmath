@@ -2,6 +2,7 @@
 #include "defs.h"
 
 #include <string>
+#include <iostream>
 #include <ostream>
 // Intended as a single dll, so using std::vector is complicated.
 //#include <vector>
