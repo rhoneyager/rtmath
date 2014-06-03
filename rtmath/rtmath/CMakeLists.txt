@@ -145,12 +145,12 @@ endif()
 target_link_libraries(rtmath_core ${rtmath_core-libs})
 
 
-add_library (rtmath_mie SHARED
-	${rtmath_mie-files})
-addlib(rtmath_mie SHARED)
-add_precompiled_header(rtmath_mie Stdafx-mie.h src)
-set (rtmath_mie-libs rtmath_core ${rtmath_core-libs})
-target_link_libraries(rtmath_mie ${rtmath_mie-libs})
+#add_library (rtmath_mie SHARED
+#	${rtmath_mie-files})
+#addlib(rtmath_mie SHARED)
+#add_precompiled_header(rtmath_mie Stdafx-mie.h src)
+#set (rtmath_mie-libs rtmath_core ${rtmath_core-libs})
+#target_link_libraries(rtmath_mie ${rtmath_mie-libs})
 
 
 
@@ -169,7 +169,7 @@ addlib(rtmath_ddscat_base SHARED)
 add_precompiled_header(rtmath_ddscat_base Stdafx-ddscat_base.h src)
 set (rtmath_ddscat_base-libs 
 	rtmath_core ${rtmath_core-libs} 
-	rtmath_mie ${rtmath_mie-libs} 
+	#	rtmath_mie ${rtmath_mie-libs} 
 	)
 target_link_libraries(rtmath_ddscat_base ${rtmath_ddscat_base-libs})
 
@@ -193,7 +193,7 @@ addlib(rtmath_ddscat SHARED)
 add_precompiled_header(rtmath_ddscat Stdafx-ddscat.h src)
 set (rtmath_ddscat-libs 
 	rtmath_core ${rtmath_core-libs} 
-	rtmath_mie ${rtmath_mie-libs}
+	#	rtmath_mie ${rtmath_mie-libs}
         rtmath_ddscat_base ${rtmath_ddscat_base-libs}	
 	rtmath_voronoi ${rtmath_voronoi-libs}
 	)
@@ -242,18 +242,18 @@ target_link_libraries(rtmath_images ${rtmath_images-libs})
 
 if (BUILD_TESTING)
 	add_executable(rtmath_core_tests ${rtmath_core_test-files})
-	add_executable(rtmath_mie_tests ${rtmath_mie_test-files})
+	#add_executable(rtmath_mie_tests ${rtmath_mie_test-files})
 	add_executable(rtmath_ddscat_tests ${rtmath_ddscat_test-files})
 IF(DEFINED COMMON_CFLAGS )
 	set_target_properties(rtmath_core_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-	set_target_properties(rtmath_mie_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	#set_target_properties(rtmath_mie_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 	set_target_properties(rtmath_ddscat_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 endif()
 set_target_properties( rtmath_core_tests PROPERTIES FOLDER "Tests")
 #target_link_libraries(rtmath_core_tests ${rtmath_core-libs} rtmath_core ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 target_link_libraries(rtmath_core_tests ${rtmath_ddscat-libs} rtmath_core rtmath_mie rtmath_ddscat ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-set_target_properties( rtmath_mie_tests PROPERTIES FOLDER "Tests")
-target_link_libraries(rtmath_mie_tests ${rtmath_ddscat-libs} rtmath_core rtmath_mie rtmath_ddscat ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+#set_target_properties( rtmath_mie_tests PROPERTIES FOLDER "Tests")
+#target_link_libraries(rtmath_mie_tests ${rtmath_ddscat-libs} rtmath_core rtmath_mie rtmath_ddscat ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 set_target_properties( rtmath_ddscat_tests PROPERTIES FOLDER "Tests")
 target_link_libraries(rtmath_ddscat_tests ${rtmath_ddscat-libs} rtmath_core rtmath_mie rtmath_ddscat ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
@@ -287,7 +287,8 @@ INSTALL(TARGETS rtmath-tests
 ENDIF()
 
 INSTALL(TARGETS rtmath_core rtmath_ddscat rtmath_ddscat_base 
-	rtmath_voronoi rtmath_mie rtmath_data rtmath_images
+	rtmath_voronoi rtmath_data rtmath_images
+	# rtmath_mie
 	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
 	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}

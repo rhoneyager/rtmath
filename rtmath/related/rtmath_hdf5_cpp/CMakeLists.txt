@@ -36,7 +36,7 @@ set_target_properties( rtmath_hdf5_cpp PROPERTIES FOLDER "Related")
 target_link_libraries(rtmath_hdf5_cpp ${h5libs} ${libs})
 
 INSTALL(TARGETS rtmath_hdf5_cpp
-	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
-	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 
+	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}/plugins
+	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}/plugins
 	COMPONENT Plugins)
 

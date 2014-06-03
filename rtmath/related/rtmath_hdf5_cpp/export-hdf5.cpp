@@ -15,6 +15,8 @@ namespace rtmath {
 			template<> MatchAttributeTypeType MatchAttributeType<unsigned long long>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_ULLONG)); }
 			template<> MatchAttributeTypeType MatchAttributeType<unsigned long>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_ULONG)); }
 			template<> MatchAttributeTypeType MatchAttributeType<float>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_FLOAT)); }
+			template<> MatchAttributeTypeType MatchAttributeType<short>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_SHORT)); }
+			template<> MatchAttributeTypeType MatchAttributeType<unsigned short>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_USHORT)); }
 			template<> MatchAttributeTypeType MatchAttributeType<double>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_DOUBLE)); }
 			// \note bools are not recommended in HDF5. This type may be switched later on.
 			//template<> MatchAttributeTypeType MatchAttributeType<bool>() { return std::shared_ptr<H5::AtomType>(new H5::IntType(H5::PredType::NATIVE_HBOOL)); }

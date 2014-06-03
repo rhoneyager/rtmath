@@ -1,6 +1,4 @@
 # Build the apps
-find_package(Boost COMPONENTS program_options 
-	serialization iostreams filesystem system unit_test_framework regex REQUIRED)
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 find_package(Ryan_Debug REQUIRED)
 find_package(Ryan_Serialization REQUIRED)
@@ -18,7 +16,7 @@ if (BUILD_PLUGINS)
 		add_subdirectory (bov)
 	endif()
 	option (BUILD_PLUGIN_CERES_SOLVER
-		"Build Google Ceres Solver plugin (optimization)" ON)
+		"Build Google Ceres Solver plugin (optimization)" OFF)
 	if (BUILD_PLUGIN_CERES_SOLVER)
 		add_subdirectory (ceres-solver)
 	endif()
@@ -38,7 +36,7 @@ if (BUILD_PLUGINS)
 		add_subdirectory (netcdf)
 	endif()
 	option (BUILD_PLUGIN_ROOT
-		"Build ROOT plugin (io and plotting)" ON)
+		"Build ROOT plugin (io and plotting)" OFF)
 	if (BUILD_PLUGIN_ROOT)
 		add_subdirectory (root)
 	endif()
