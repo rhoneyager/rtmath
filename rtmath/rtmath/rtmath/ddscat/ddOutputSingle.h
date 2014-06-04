@@ -8,8 +8,6 @@
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/assume_abstract.hpp>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 //#include "../interpolatable.h"
@@ -114,13 +112,8 @@ namespace rtmath
 			    ::rtmath::registry::IO_class_registry_reader<ddOutputSingle> >,
 			virtual public ::rtmath::io::implementsStandardWriter<ddOutputSingle, ddOutputSingle_IO_output_registry>,
 			virtual public ::rtmath::io::implementsStandardReader<ddOutputSingle, ddOutputSingle_IO_input_registry>,
-			virtual public ::rtmath::io::Serialization::implementsSerialization<
-		    	ddOutputSingle, ddOutputSingle_IO_output_registry, ddOutputSingle_IO_input_registry, ddOutputSingle_serialization>,
 			virtual public implementsDDRES
 		{
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
 			friend class ddOutput;
 			
 			void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index, bool isavg = false);
@@ -325,8 +318,3 @@ std::ostream & operator<<(std::ostream&, const rtmath::ddscat::ddOutputSingleObj
 std::ostream & operator<<(std::ostream&, const rtmath::ddscat:: &);
 std::istream & operator>>(std::istream&, rtmath::ddscat:: &);
 */
-
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingle);
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutputSingleObj);
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(rtmath::ddscat::ddOutputSingleObj);
-

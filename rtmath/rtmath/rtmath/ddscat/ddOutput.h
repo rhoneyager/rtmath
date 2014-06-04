@@ -128,17 +128,27 @@ namespace rtmath {
 				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > fmls;
 
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
-			class oriColDefs
-			{
-				/// Definitions of orientation table columns
-			public: enum oriDefs
+
+			class stat_entries {
+			public:
+				enum stat_entries_doubles
 				{
-					// Basic stuff
-					FREQ, AEFF, BETA, THETA, PHI,
-					// Polarization vector information (needed to reconstruct Mueller matrix)
-					E01XR, E01XI, E01YR, E01YI, E01ZR, E01ZI,
-					E02XR, E02XI, E02YR, E02YI, E02ZR, E02ZI,
-					// Cross-sections, asymmetry parameters, etc. (TODO: split integer data)
+					// D/AEFF
+					D, XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, AEFF, WAVE, FREQ,
+					// K*AEFF
+					NAMBIENT,
+					TOL,
+					TA1TFX, TA1TFY, TA1TFZ,
+					TA2TFX, TA2TFY, TA2TFZ,
+					TFKX, TFXY, TFKZ,
+					IPV1TFXR, IPV1TFXI, IPV1TFYR, IPV1TFYI, IPV1TFZR, IPV1TFZI,
+					IPV2TFXR, IPV2TFXI, IPV2TFYR, IPV2TFYI, IPV2TFZR, IPV2TFZI,
+					TA1LFX, TA1LFY, TA1LFZ,
+					TA2LFX, TA2LFY, TA2LFZ,
+					LFKX, LFKY, LFKZ,
+					IPV1LFXR, IPV1LFXI, IPV1LFYR, IPV1LFYI, IPV1LFZR, IPV1LFZI,
+					IPV2LFXR, IPV2LFXI, IPV2LFYR, IPV2LFYI, IPV2LFZR, IPV2LFZI,
+					BETA, THETA, PHI, ETASCA,
 					QEXT1, QABS1, QSCA1, G11, G21, QBK1, QPHA1,
 					QEXT2, QABS2, QSCA2, G12, G22, QBK2, QPHA2,
 					QEXTM, QABSM, QSCAM, G1M, G2M, QBKM, QPHAM,
@@ -146,13 +156,35 @@ namespace rtmath {
 					QSCAG11, QSCAG21, QSCAG31, ITER1, MXITER1, NSCA1,
 					QSCAG12, QSCAG22, QSCAG32, ITER2, MXITER2, NSCA2,
 					QSCAG1M, QSCAG2M, QSCAG3M,
-					NUM_ORICOLDEFS
+					NUM_STAT_ENTRIES_DOUBLES
+				};
+
+				enum stat_entries_size_ts
+				{
+					// DOWEIGHT indicates whether this is an avg entry or a raw oriented result.
+					VERSION, NUM_DIPOLES, NAVG, NUMP, NUMF, DOWEIGHT,
+					NUM_STAT_ENTRIES_INTS
+				};
+
+				enum stat_entries_strings {
+					TARGET,
+					DDAMETH,
+					CCGMETH,
+					SHAPE,
+					NUM_STAT_ENTRIES_STRINGS
 				};
 			};
+
 			/// Table containing orientation data (cross-sections, etc.)
 			/// Set when listing folder.
-			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, oriColDefs::NUM_ORICOLDEFS> > oridata;
-			boost::shared_ptr<Eigen::Matrix<float, 1, oriColDefs::NUM_ORICOLDEFS> > avgoridata;
+			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > oridata_d;
+			Eigen::Matrix<size_t, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_INTS> > oridata_i;
+			std::vector<std::array<std::string, stat_entries::NUM_STAT_ENTRIES_STRINGS> > oridata_s;
+
+			//Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > avgoridata_d;
+			//Eigen::Matrix<size_t, 1, stat_entries::NUM_STAT_ENTRIES_INTS> > avgoridata_i;
+			//std::array<std::string, stat_entries::stat_entries > avgoridata_s;
+
 
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
 			class fmlColDefs
@@ -174,7 +206,7 @@ namespace rtmath {
 
 			/// Weights for the sca and fml files in the average.
 			/// Sum of all of these should equal unity.
-			typedef std::map<boost::shared_ptr<ddOutputSingle>, float > weights;
+			//typedef std::map<boost::shared_ptr<ddOutputSingle>, float > weights;
 			//static boost::shared_ptr<ddOutputSingle> genAvg(const weights&);
 			
 			/// Hash of shape file contents (an identifier)

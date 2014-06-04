@@ -4,8 +4,6 @@
 #include <vector>
 #include <Eigen/Core>
 #include <boost/shared_ptr.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 #include <boost/operators.hpp>
 #include "../Serialization/eigen_serialization.h"
 #include "../common_templates.h"
@@ -107,10 +105,6 @@ namespace rtmath
 			void _calcPol();
 			/// Calculate linear polarization (what ddscat reports)
 			void _calcPolLin();
-		private:
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
 		};
 
 
@@ -155,10 +149,6 @@ namespace rtmath
 			//boost::shared_array<std::complex<double> > _f, _s;
 			//boost::shared_ptr<matrixop> _fRe, _fIm; // Should store as shared_array
 			//boost::shared_ptr<matrixop> _sRe, _sIm;
-		private:
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
 		};
 
 		/* class ddScattMatrixS : public ddScattMatrix
@@ -183,19 +173,6 @@ namespace rtmath
 			virtual scattMatrixType id() const { return scattMatrixType::P; }
 			inline void setP(const PnnType& v) { _Pnn = v; }
 			PnnType getP() const { return _Pnn; }
-		private:
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
 		};
 	}
 }
-
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixConnector);
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrix);
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixF);
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddScattMatrixP);
-
-BOOST_CLASS_TRACKING(rtmath::ddscat::ddScattMatrix, boost::serialization::track_always);
-BOOST_CLASS_TRACKING(rtmath::ddscat::ddScattMatrixF, boost::serialization::track_always);
-BOOST_CLASS_TRACKING(rtmath::ddscat::ddScattMatrixP, boost::serialization::track_always);

@@ -171,7 +171,9 @@ set(rtmath_ddscat-ddoutput-files
 	rtmath/ddscat/ddOutput.h
 	rtmath/ddscat/ddOutputGenerator.h
 	rtmath/ddscat/ddOutputSingle.h
+	rtmath/ddscat/ddOriData.h
 	rtmath/ddscat/ddScattMatrix.h
+	src/ddOriData.cpp
 	src/ddOutput.cpp
 	src/ddOutput_serialization.cpp
 	src/ddOutputGenerator.cpp
