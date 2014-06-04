@@ -56,110 +56,6 @@ namespace rtmath {
 		}
 
 
-		/*
-		void ddOutputSingle::writeFile(const std::string &filename, const std::string &type) const
-		{
-		using namespace Ryan_Serialization;
-		std::string cmeth, uncompressed;
-
-		/// \todo Add a table to determine which file types are automatically compressed on saving.
-		/// For those types, automatically apply compression.
-		#pragma message("TODO: add a table to determine which file types are automatically compressed on saving")
-
-		uncompressed_name(filename, uncompressed, cmeth);
-		boost::filesystem::path p(uncompressed);
-		boost::filesystem::path pext = p.extension(); // Uncompressed extension
-
-		std::string utype = type;
-		if (!utype.size()) utype = pext.string();
-
-		// Serialization gets its own override
-		if (Ryan_Serialization::known_format(utype))
-		{
-		Ryan_Serialization::write<ddOutputSingle>(*this, filename, "rtmath::ddscat::ddOutputSingle");
-		return;
-		}
-
-		std::ofstream out(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-		using namespace boost::iostreams;
-		filtering_ostream sout;
-		if (cmeth.size())
-		prep_compression(cmeth, sout);
-
-		sout.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
-		sout.push(out);
-
-		if (utype == ".sca")
-		{
-		writeSCA(sout);
-		} else if (utype == ".fml")
-		{
-		writeFML(sout);
-		} else if (utype == ".avg")
-		{
-		writeAVG(sout);
-		} else {
-		throw rtmath::debug::xUnknownFileFormat(filename.c_str());
-		}
-		}
-
-		void ddOutputSingle::readFile(const std::string &filename, const std::string &type)
-		{
-		// First, detect if the file is compressed.
-		using namespace Ryan_Serialization;
-		std::string cmeth, target, uncompressed;
-		// Combination of detection of compressed file, file type and existence.
-		if (!detect_compressed(filename, cmeth, target))
-		throw rtmath::debug::xMissingFile(filename.c_str());
-		uncompressed_name(target, uncompressed, cmeth);
-
-		boost::filesystem::path p(uncompressed);
-		boost::filesystem::path pext = p.extension(); // Uncompressed extension
-
-		// Serialization gets its own override
-		if (Ryan_Serialization::known_format(pext))
-		{
-		// This is a serialized file. Verify that it has the correct identifier, and
-		// load the serialized object directly
-		Ryan_Serialization::read<ddOutputSingle>(*this, filename, "rtmath::ddscat::ddOutputSingle");
-		return;
-		}
-
-		std::ifstream in(filename.c_str(), std::ios_base::binary | std::ios_base::in);
-		// Consutuct an filtering_iostream that matches the type of compression used.
-		using namespace boost::iostreams;
-		filtering_istream sin;
-		if (cmeth.size())
-		prep_decompression(cmeth, sin);
-		sin.push(boost::iostreams::newline_filter(boost::iostreams::newline::posix));
-		sin.push(in);
-
-		if (type.size()) pext = boost::filesystem::path(type); // pext is first set a few lines above
-		if (pext.string() == ".sca")
-		{
-		readSCA(sin);
-		}
-		else if (pext.string() == ".fml")
-		{
-		readFML(sin);
-		}
-		else if (pext.string() == ".avg")
-		{
-		readAVG(sin);
-		}
-		else if (p.filename().string().find("avg") != std::string::npos)
-		{
-		readAVG(sin);
-		}
-		else {
-		throw rtmath::debug::xUnknownFileFormat(filename.c_str());
-		}
-		}
-
-		*/
-
-
-
 		void ddOutputSingle::doExportOri(boost::shared_ptr<ddOutput> p, size_t index, bool isavg)
 		{
 			auto o = p->oridata->block<1, ddOutput::oriColDefs::NUM_ORICOLDEFS>(index, 0);
@@ -222,6 +118,70 @@ namespace rtmath {
 				i++;
 			}
 		}
+
+		void ddOutputSingle::doImportOri(boost::shared_ptr<ddOutput> p, size_t index, bool isavg)
+		{
+			// The fml code is what imports the phase matrix
+			// The index parameter corresponds to the orientation index. All entries in the fml 
+			// table (if any) will also be imported and bound.
+
+			auto o = p->oridata->block<1, ddOutput::oriColDefs::NUM_ORICOLDEFS>(index, 0);
+			// If avg file, the previous block index is always zero.
+			if (isavg)
+				o = p->avgoridata->block<1, ddOutput::oriColDefs::NUM_ORICOLDEFS>(index, 0);
+
+			// Set the frequency, effective radius and orientation
+			// TODO: these need to be updated if a file is written
+			_statTable.at(stat_entries::FREQ) = static_cast<double>(o(ddOutput::oriColDefs::FREQ));
+			_statTable.at(stat_entries::AEFF) = static_cast<double>(o(ddOutput::oriColDefs::AEFF));
+			_statTable.at(stat_entries::BETA) = static_cast<double>(o(ddOutput::oriColDefs::BETA));
+			_statTable.at(stat_entries::THETA) = static_cast<double>(o(ddOutput::oriColDefs::THETA));
+			_statTable.at(stat_entries::PHI) = static_cast<double>(o(ddOutput::oriColDefs::PHI));
+
+			// Set the cross-sections
+			//Copy from _statTable::QEXT1 through QSCAG3M, inclusively;
+			auto s = p->oridata->block<1,
+				ddOutput::oriColDefs::NUM_ORICOLDEFS - ddOutput::oriColDefs::QEXT1>
+				(index, ddOutput::oriColDefs::QEXT1);
+			for (size_t i = 0; i < ddscat::NUM_STAT_ENTRIES - ddscat::QEXT1; ++i)
+				_statTable.at(ddscat::QEXT1 + i) = static_cast<double>(o(ddOutput::oriColDefs::QEXT1 + i));
+
+			// Generate a connector for fml conversion
+			vector<complex<double> > frameVals;
+			frameVals.push_back(complex<double>((double)o(ddOutput::oriColDefs::E01XR), (double)o(ddOutput::oriColDefs::E01XI));
+			frameVals.push_back(complex<double>((double)o(ddOutput::oriColDefs::E01YR), (double)o(ddOutput::oriColDefs::E01YI));
+			frameVals.push_back(complex<double>((double)o(ddOutput::oriColDefs::E01ZR), (double)o(ddOutput::oriColDefs::E01ZI));
+			frameVals.push_back(complex<double>((double)o(ddOutput::oriColDefs::E02XR), (double)o(ddOutput::oriColDefs::E02XI));
+			frameVals.push_back(complex<double>((double)o(ddOutput::oriColDefs::E02YR), (double)o(ddOutput::oriColDefs::E02YI));
+			frameVals.push_back(complex<double>((double)o(ddOutput::oriColDefs::E02ZR), (double)o(ddOutput::oriColDefs::E02ZI));
+			boost::shared_ptr<const ddScattMatrixConnector> frame = ddScattMatrixConnector::fromVector(frameVals);
+
+			// Look for any fml table entries, and add these.
+			auto o = p->fmldata->block(startIndex, 0, numF(), ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
+			size_t i = 0;
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				if ((*it)->id() != scattMatrixType::F) continue;
+				auto s = boost::dynamic_pointer_cast<const ddscat::ddScattMatrixF>(*it);
+
+				auto f = s->getF();
+
+				o(i, ddOutput::fmlColDefs::ORIINDEX) = static_cast<float>(oriIndex);
+				o(i, ddOutput::fmlColDefs::THETAB) = static_cast<float>((*it)->theta());
+				o(i, ddOutput::fmlColDefs::PHIB) = static_cast<float>((*it)->phi());
+				o(i, ddOutput::fmlColDefs::F00R) = static_cast<float>(f(0, 0).real());
+				o(i, ddOutput::fmlColDefs::F00I) = static_cast<float>(f(0, 0).imag());
+				o(i, ddOutput::fmlColDefs::F01R) = static_cast<float>(f(0, 1).real());
+				o(i, ddOutput::fmlColDefs::F01I) = static_cast<float>(f(0, 1).imag());
+				o(i, ddOutput::fmlColDefs::F10R) = static_cast<float>(f(1, 0).real());
+				o(i, ddOutput::fmlColDefs::F10I) = static_cast<float>(f(1, 0).imag());
+				o(i, ddOutput::fmlColDefs::F11R) = static_cast<float>(f(1, 1).real());
+				o(i, ddOutput::fmlColDefs::F11I) = static_cast<float>(f(1, 1).imag());
+
+				i++;
+			}
+		}
+
 
 		/*
 		void ddOutputSingle::doExportSCAs(boost::shared_ptr<ddOutput> p, size_t startIndex, size_t oriIndex)
@@ -319,6 +279,19 @@ namespace rtmath {
 			}
 
 			_statTable.at(stat_entries::FREQ) = rtmath::units::conv_spec("um", "GHz").convert(_statTable.at(stat_entries::WAVE));
+		}
+
+		void ddOutputSingle::setConnector(boost::shared_ptr<const ddScattMatrixConnector> cn)
+		{
+			// TODO: create incpol1f at object creation
+			auto obj1 = boost::dynamic_pointer_cast<ddPolVec>(_objMap.at("incpol1lf"));
+			auto obj2 = boost::dynamic_pointer_cast<ddPolVec>(_objMap.at("incpol2lf"));
+			obj1->setPol(0, cn->e01x);
+			obj1->setPol(1, cn->e01y);
+			obj1->setPol(2, cn->e01z);
+			obj2->setPol(0, cn->e02x);
+			obj2->setPol(1, cn->e02y);
+			obj2->setPol(2, cn->e02z);
 		}
 
 		boost::shared_ptr<const ddScattMatrixConnector> ddOutputSingle::getConnector() const
@@ -424,14 +397,6 @@ namespace rtmath {
 			return rtmath::refract::guessTemp(freq(), getM());
 		}
 
-		/*
-		void a()
-		{
-			Eigen::MatrixXd d(2, stat_entries::NUM_STAT_ENTRIES);
-			//Eigen::Block<double, 1, stat_entries::NUM_STAT_ENTRIES> b(;
-			//b = d.block<1, stat_entries::NUM_STAT_ENTRIES>(0,0);
-		}
-		*/
 
 		/*
 		void ddOutputSingle::writeEvans(std::ostream &out, double freq) const

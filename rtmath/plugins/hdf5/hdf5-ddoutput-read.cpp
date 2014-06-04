@@ -103,6 +103,7 @@ namespace rtmath {
 				// interpreting the ddscat run.
 				r->parfile = boost::shared_ptr<ddPar>(new ddPar);
 				read_hdf5_ddPar(openGroup(base, "par"), r->parfile.get());
+				r->doImport();
 				return true;
 			}
 		}

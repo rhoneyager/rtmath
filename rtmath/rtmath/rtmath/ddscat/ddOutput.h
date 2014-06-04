@@ -86,9 +86,13 @@ namespace rtmath {
 			void serialize(Archive & ar, const unsigned int version);
 			static void initPaths();
 			void resize(size_t numOris, size_t numTotAngles);
+
 			//void regenerateScas(); TODO
 		public:
 			ddOutput();
+
+			/// Regenerates ddOutputSingle entries from tables (used in hdf5 read)
+			void doImport();
 
 			/// A brief description of the run
 			std::string description;

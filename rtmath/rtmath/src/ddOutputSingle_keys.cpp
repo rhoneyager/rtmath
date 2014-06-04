@@ -236,6 +236,7 @@ namespace rtmath
 			}
 			std::string ddPolVec::value() const  { return std::string(); }
 			std::complex<double> ddPolVec::getPol(size_t n) const { return pols[n]; }
+			void ddPolVec::setPol(size_t n, const std::complex<double> &p) { pols[n] = p; }
 			frameType ddPolVec::getFrame() const { return frame; }
 			size_t ddPolVec::getVecnum() const { return vecnum; }
 			template<class Archive>

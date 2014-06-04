@@ -125,6 +125,7 @@ namespace rtmath
 			
 			void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index, bool isavg = false);
 			void doExportFMLs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
+			void doImportOri(boost::shared_ptr<ddOutput> parent, size_t index, bool isavg = false);
 			//void doExportSCAs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
 		public:
 			ddOutputSingle(const std::string &filename = "", const std::string &type = "");
@@ -247,6 +248,8 @@ namespace rtmath
 
 			/// Get a connector representing the polarization state
 			boost::shared_ptr<const ddScattMatrixConnector> getConnector() const;
+			/// Set connector representing polarization state.
+			void setConnector(boost::shared_ptr<const ddScattMatrixConnector> cn);
 		protected:
 			// The ddscat version of the file
 			//size_t _version;

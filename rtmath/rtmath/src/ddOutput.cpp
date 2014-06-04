@@ -58,6 +58,15 @@ namespace rtmath {
 	}
 
 	namespace ddscat {
+		void ddOutput::doImport()
+		{
+			// Create fml entries
+			size_t numFMLs = static_cast<size_t>(fmldata->rows());
+			size_t numSCAs = static_cast<size_t>(oridata->rows());
+
+			// Create sca entries.
+		}
+
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0), temp(0)
 		{

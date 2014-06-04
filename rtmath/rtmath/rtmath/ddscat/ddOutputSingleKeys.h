@@ -160,6 +160,7 @@ namespace rtmath
 				virtual void read(std::istream &in) override;
 				virtual std::string value() const override;
 				std::complex<double> getPol(size_t n) const;
+				void setPol(size_t n, const std::complex<double> &p);
 				frameType getFrame() const;
 				size_t getVecnum() const;
 				std::complex<double> pols[3];

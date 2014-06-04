@@ -281,7 +281,7 @@ INSTALL(DIRECTORY rtmath
 IF(RTMATH-TESTS)
 # Executables and libraries
 INSTALL(TARGETS rtmath-tests
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 	COMPONENT Tests
 	)
 ENDIF()
@@ -289,9 +289,9 @@ ENDIF()
 INSTALL(TARGETS rtmath_core rtmath_ddscat rtmath_ddscat_base 
 	rtmath_voronoi rtmath_data rtmath_images
 	# rtmath_mie
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-	LIBRARY DESTINATION ${INSTALL_LIB_DIR}
-	ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
+	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
+	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
+	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
 	COMPONENT Libraries
 	)
 
