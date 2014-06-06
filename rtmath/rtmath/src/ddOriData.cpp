@@ -18,7 +18,6 @@
 
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/ddOriData.h"
-#include "../rtmath/ddscat/ddOutputSingleKeys.h"
 #include "../rtmath/ddscat/ddScattMatrix.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/ddscat/rotations.h"
@@ -28,6 +27,7 @@
 #include "../rtmath/quadrature.h"
 #include "../rtmath/error/error.h"
 
+#include "ddOriDataParsers.h"
 
 namespace rtmath {
 
@@ -52,7 +52,7 @@ namespace rtmath {
 
 		implementsDDRES::implementsDDRES() :
 			rtmath::io::implementsIObasic<ddOriData, ddOriData_IO_output_registry,
-			ddOriData_IO_input_registry, ddOutputSingle_Standard>(ddOriData::writeDDSCAT, ddOriData::readDDSCAT, known_formats())
+			ddOriData_IO_input_registry, ddOriData_Standard>(ddOriData::writeDDSCAT, ddOriData::readDDSCAT, known_formats())
 		{}
 
 		const std::set<std::string>& implementsDDRES::known_formats()
@@ -175,166 +175,74 @@ namespace rtmath {
 			readF(in, cn);
 		}
 
-		namespace ddOriDataParsers
-		{
-			struct version
-			{
-				/// \note Version is specified internally, and defaults to the latest version.
-				static void write(std::ostream &out, size_t v){
-					out << " DDSCAT --- ";
-					out << rtmath::ddscat::ddVersions::getVerAvgHeaderString(v);
-					out << std::endl;
-				}
-				static size_t read(std::istream &in, size_t)
-				{
-					std::string lin;
-					std::getline(in, lin);
-					return rtmath::ddscat::ddVersions::getVerId(lin);
-				}
-			};
-			struct simpleString
-			{
-				static void write(std::ostream &out, size_t, const std::string &s, const std::string &p)
-				{
-					out << " " << p << " --- ";
-					out << s << std::endl;
-				}
-				static void read(std::istream &in, std::string &s)
-				{
-					std::string lin;
-					std::getline(in, lin);
-					size_t p = lin.find("---");
-					s = lin.substr(p + 3);
-					// Remove any leading and lagging spaces
-					// Not all Liu avg files are correct in this respect
-					boost::algorithm::trim(s);
-				}
-			};
-			struct simpleStringRev
-			{
-				static void write(std::ostream &out, size_t, const std::string &s, const std::string &p)
-				{
-					out << " " << s << " --- ";
-					out << p << std::endl;
-				}
-				static void read(std::istream &in, std::string &s)
-				{
-					std::string lin;
-					std::getline(in, lin);
-					size_t p = lin.find("---");
-					s = lin.substr(0, p - 1);
-					// Remove any leading and lagging spaces
-					// Not all Liu avg files are correct in this respect
-					boost::algorithm::trim(s);
-				}
-			};
-			
-			template <class T>
-			struct simpleNumRev
-			{
-				static void write(std::ostream &out, size_t, const T &s, const std::string &p, size_t pwd = 2, size_t wd = 10)
-				{
-					std::string sp(' ', pwd);
-					out << sp;
-					out.width(wd);
-					out << std::left << s << " = ";
-					out << p << std::endl;
-				}
-				static void read(std::istream &in, T &s)
-				{
-					std::string lin;
-					std::getline(in, lin);
-					size_t p = lin.find("=");
-					std::string ss;
-					ss = lin.substr(0, p - 1);
-					// Remove any leading and lagging spaces
-					// Not all Liu avg files are correct in this respect
-					boost::algorithm::trim(ss);
-					using namespace rtmath::macros;
-					s = fastCast<T>(ss);
-				}
-			};
-
-			template <class T>
-			struct simpleNumCompound
-			{
-				static void write(std::ostream &out, size_t, const T &val, size_t wd, 
-					const std::string &pre, const std::string &post)
-				{
-					out << pre;
-					out.width(wd);
-					out << std::right << val << " = ";
-					out << p << std::endl;
-				}
-				static void read(std::istream &in, T &s)
-				{
-					std::string lin;
-					std::getline(in, lin);
-					size_t p = lin.find("=");
-					size_t pend = lin.find("=", p + 1);
-					std::string ss;
-					ss = lin.substr(p+1, pend-p);
-					// Remove any leading and lagging spaces
-					// Not all Liu avg files are correct in this respect
-					boost::algorithm::trim(ss);
-					using namespace rtmath::macros;
-					s = fastCast<T>(ss);
-				}
-			};
-		}
-
 
 		void ddOriData::writeAVG(std::ostream &out) const
 		{
 			// Write the file in the appropriate order
 			using namespace std;
 			using namespace ddOriDataParsers;
-			using namespace ddOutput::stat_entries;
-			const auto &od = _parent.oridata_d.at(_row);
+			//using namespace ddOutput::stat_entries;
+			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row,0);
 			const auto &os = _parent.oridata_s.at(_row);
-			const auto &oi = _parent.oridata_i.at(_row);
+			const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 			version::write(out, this->version());
-			simpleString::write(out, this->version(), os.at(TARGET), "TARGET");
-			simpleStringRev::write(out, this->version(), os.at(CCGMETH), "DDA method");
-			simpleStringRev::write(out, this->version(), os.at(DDAMETH), "CCG method");
-			simpleStringRev::write(out, this->version(), os.at(SHAPE), "shape");
-			simpleNumRev<size_t>::write(out, this->version(), oi.at(NUM_DIPOLES), "NAT0 = number of dipoles");
-			double daeff = od.at(D) / od.at(AEFF);
+			simpleString::write(out, this->version(), os.at(ddOutput::stat_entries::TARGET), "TARGET");
+			simpleStringRev::write(out, this->version(), os.at(ddOutput::stat_entries::CCGMETH), "DDA method");
+			simpleStringRev::write(out, this->version(), os.at(ddOutput::stat_entries::DDAMETH), "CCG method");
+			simpleStringRev::write(out, this->version(), os.at(ddOutput::stat_entries::SHAPE), "shape");
+			simpleNumRev<size_t>::write(out, this->version(), oi(ddOutput::stat_entries::NUM_DIPOLES), "NAT0 = number of dipoles");
+			double daeff = od(ddOutput::stat_entries::D) / od(ddOutput::stat_entries::AEFF);
 			simpleNumRev<double>::write(out, this->version(), daeff, "d/aeff for this target [d=dipole spacing]");
-			simpleNumRev<double>::write(out, this->version(), od.at(D), "d (physical units)");
+			simpleNumRev<double>::write(out, this->version(), od(ddOutput::stat_entries::D), "d (physical units)");
 
-			simpleNumCompound<double>::write(out, this->version(), od.at(AEFF), 12, "  AEFF=  ", "effective radius (physical units)");
-			simpleNumCompound<double>::write(out, this->version(), od.at(WAVE), 12, "  WAVE=  ", "wavelength (in vacuo, physical units)");
-			double kaeff = 2. * boost::math::constants::pi<double>() * od.at(AEFF) / od.at(WAVE);
+			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::AEFF), 12, "  AEFF=  ", "effective radius (physical units)");
+			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::WAVE), 12, "  WAVE=  ", "wavelength (in vacuo, physical units)");
+			double k = 2. * boost::math::constants::pi<double>() / od(ddOutput::stat_entries::WAVE);
+			double kaeff = 2. * boost::math::constants::pi<double>() * od(ddOutput::stat_entries::AEFF) / od(ddOutput::stat_entries::WAVE);
 			simpleNumCompound<double>::write(out, this->version(), kaeff, 12, "K*AEFF=  ", "2*pi*aeff/lambda");
 			if (rtmath::ddscat::ddVersions::isVerWithin(version(), 72, 0))
-				simpleNumCompound<double>::write(out, this->version(), od.at(NAMBIENT), 8, "NAMBIENT=    ", "refractive index of ambient medium");
+				simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::NAMBIENT), 8, "NAMBIENT=    ", "refractive index of ambient medium");
 
 			// Write refractive indices (plural)
-			WRITE(neps);
+			for (size_t i = 0; i < ms.size(); ++i)
+				refractive::write(out, this->version(), i + 1, ms[i], k, od(ddOutput::stat_entries::D));
 
-			simpleNumCompound<double>::write(out, this->version(), od.at(TOL), 9, "   TOL= ", " error tolerance for CCG method");
+			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::TOL), 9, "   TOL= ", " error tolerance for CCG method");
+			
+			std::vector<double> a(3);
+			a[0] = od(ddOutput::stat_entries::TA1TFX); a[1] = od(ddOutput::stat_entries::TA1TFY); a[2] = od(ddOutput::stat_entries::TA1TFZ);
+			ddAxisVec::write(out, this->version(), a, 1, frameType::TF);
+			a[0] = od(ddOutput::stat_entries::TA2TFX); a[1] = od(ddOutput::stat_entries::TA2TFY); a[2] = od(ddOutput::stat_entries::TA2TFZ);
+			ddAxisVec::write(out, this->version(), a, 2, frameType::TF);
+			
 
-			WRITE(a1tgt);
-			WRITE(a2tgt);
+			simpleNumCompound<size_t>::write(out, this->version(), oi(ddOutput::stat_entries::NAVG), 5, "  NAVG= ", "(theta,phi) values used in comp. of Qsca,g");
 
-			simpleNumCompound<size_t>::write(out, this->version(), oi.at(NAVG), 5, "  NAVG= ", "(theta,phi) values used in comp. of Qsca,g");
+			a[0] = od(ddOutput::stat_entries::LFKX); a[1] = od(ddOutput::stat_entries::LFKY); a[2] = od(ddOutput::stat_entries::LFKZ);
+			ddAxisVec::write(out, this->version(), a, 0, frameType::TF);
 
-			WRITE(kveclf);
-			WRITE(incpol1lf);
-			WRITE(incpol2lf);
+			std::vector<std::complex<double> > iv(3);
+			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFXR), od(ddOutput::stat_entries::IPV1LFXI));
+			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFYR), od(ddOutput::stat_entries::IPV1LFYI));
+			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFZR), od(ddOutput::stat_entries::IPV1LFZI));
+			ddPolVec::write(out, this->version(), iv, 1, frameType::LF);
+			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFXR), od(ddOutput::stat_entries::IPV2LFXI));
+			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFYR), od(ddOutput::stat_entries::IPV2LFYI));
+			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFZR), od(ddOutput::stat_entries::IPV2LFZI));
+			ddPolVec::write(out, this->version(), iv, 2, frameType::LF);
 
-			WRITE(betarange);
-			WRITE(thetarange);
-			WRITE(phirange);
+			ddRot1d::write(out, this->version(), "beta", 0, 360, 0, "BETA");
+			ddRot1d::write(out, this->version(), "theta", 0, 180, 0, "THETA");
+			ddRot1d::write(out, this->version(), "phi", 0, 360, 0, "PHI");
 
 			out << endl;
 
-			simpleNumRev<double>::write(out, this->version(), od.at(ETASCA), 
+			simpleNumRev<double>::write(out, this->version(), od(ddOutput::stat_entries::ETASCA),
 				"ETASCA = param. controlling # of scatt. dirs used to calculate <cos> etc.", 1, 6);
 			
-			WRITE(avgnumori);
-			WRITE(avgnumpol);
+			out << " Results averaged over " << 0 << " target orientations\n"
+				<< "                   and    2 incident polarizations\n";
+			
 
 			// Write the odd table of Qsca and the others
 			writeStatTable(out);

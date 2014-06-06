@@ -47,8 +47,8 @@ namespace rtmath {
 	}
 	namespace ddscat {
 
-		class ddOutputSingle;
-		class ddOutputGenerator;
+		class ddOriData;
+		//class ddOutputGenerator;
 		namespace shapefile
 		{
 			class shapefile;
@@ -58,7 +58,7 @@ namespace rtmath {
 			class shapeFileStats;
 		}
 		class ddPar;
-		class ddOutputGeneratorConnector;
+		//class ddOutputGeneratorConnector;
 
 		/** \brief Expresses the result of a ddscat run.
 		 *
@@ -112,21 +112,6 @@ namespace rtmath {
 			/// DDSCAT run version tag
 			std::string ddvertag;
 
-			/// The ensemble average results
-			boost::shared_ptr<ddOutputSingle> avg;
-			/// Original avg file, just in case
-			boost::shared_ptr<ddOutputSingle> avg_original;
-
-			/// Constituent sca inputs
-			std::set<boost::shared_ptr<ddOutputSingle>,
-				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > scas;
-			/// Initial sca inputs before fml recalculation
-			std::set<boost::shared_ptr<ddOutputSingle>,
-				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > scas_original;
-			/// Raw fml inputs
-			std::set<boost::shared_ptr<ddOutputSingle>,
-				sharedComparator<boost::shared_ptr<const ddscat::ddOutputSingle> > > fmls;
-
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
 
 			class stat_entries {
@@ -177,8 +162,8 @@ namespace rtmath {
 
 			/// Table containing orientation data (cross-sections, etc.)
 			/// Set when listing folder.
-			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > oridata_d;
-			Eigen::Matrix<size_t, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_INTS> > oridata_i;
+			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> oridata_d;
+			Eigen::Matrix<size_t, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_INTS> oridata_i;
 			std::vector<std::array<std::string, stat_entries::NUM_STAT_ENTRIES_STRINGS> > oridata_s;
 
 			//Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > avgoridata_d;
@@ -263,7 +248,7 @@ namespace rtmath {
 			/// Generate ddOutput from a .avg file, a .par file and a shape
 			/// \todo Add a settings provider
 			static boost::shared_ptr<ddOutput> generate(
-				boost::shared_ptr<ddOutputSingle> avg,
+				boost::shared_ptr<ddOriData> avg,
 				boost::shared_ptr<ddPar> par,
 				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape);
 			
@@ -274,11 +259,11 @@ namespace rtmath {
 
 			/// Generate ddOutput
 			static boost::shared_ptr<ddOutput> ddOutput::generate(
-				boost::shared_ptr<ddOutputSingle> avg,
+				boost::shared_ptr<ddOriData> avg,
 				boost::shared_ptr<ddPar> par,
 				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape,
-				const std::vector< boost::shared_ptr<ddOutputSingle> > &fmls,
-				const std::vector< boost::shared_ptr<ddOutputSingle> > &scas);
+				const std::vector< boost::shared_ptr<ddOriData> > &fmls,
+				const std::vector< boost::shared_ptr<ddOriData> > &scas);
 
 			/// Write run to the hash directory (convenience function)
 			void writeToHash() const;
@@ -314,23 +299,6 @@ namespace rtmath {
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 			//static boost::shared_ptr<shapeFileStats> loadHash(
 			//	const std::string &hash);
-		};
-
-		/**
-		 * \brief Provides an object that represents ddOutput import 
-		 * settings.
-		 *
-		 * This class stores settings for importing, because 
-		 * too many function overloads would result otherwise.
-		 **/
-		class DLEXPORT_rtmath_ddscat ddOutputGeneratorConnector
-		{
-			ddOutputGeneratorConnector();
-			bool doStatCalc;
-			bool shapeHash;
-			bool statHash;
-		public:
-			static boost::shared_ptr<ddOutputGeneratorConnector> instance();
 		};
 
 	}

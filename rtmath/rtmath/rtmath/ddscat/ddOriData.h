@@ -13,10 +13,10 @@
 //#include "../interpolatable.h"
 #include "../registry.h"
 #include "../common_templates.h"
-#include "../phaseFunc.h"
-#include "ddScattMatrix.h"
-#include "shapefile.h"
+//#include "../phaseFunc.h"
+#include "ddOutput.h"
 #include "ddVersions.h"
+#include "ddScattMatrix.h"
 #include "../io.h"
 
 namespace rtmath {
@@ -26,6 +26,7 @@ namespace rtmath {
 		class ddOriData_IO_input_registry {};
 		class ddOriData_IO_output_registry {};
 		class ddOriData_Standard {};
+		class ddScattMatrixConnector;
 	}
 
 	namespace registry {
@@ -33,14 +34,14 @@ namespace rtmath {
 			::rtmath::ddscat::ddOriData > ;
 
 		extern template class usesDLLregistry <
-			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
+			::rtmath::ddscat::ddOriData_IO_output_registry,
 			IO_class_registry_writer<::rtmath::ddscat::ddOriData> > ;
 
 		extern template struct IO_class_registry_reader <
 			::rtmath::ddscat::ddOriData > ;
 
 		extern template class usesDLLregistry <
-			::rtmath::ddscat::ddOutputSingle_IO_input_registry,
+			::rtmath::ddscat::ddOriData_IO_input_registry,
 			IO_class_registry_reader<::rtmath::ddscat::ddOriData> > ;
 	}
 
@@ -48,13 +49,13 @@ namespace rtmath {
 		
 		/// \brief Converts the stat_entries id to a string for display.
 		/// \todo Add reverse case, converting from string to id.
-		std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries);
-		std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries_size_ts);
+		//std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries);
+		//std::string DLEXPORT_rtmath_ddscat getStatNameFromId(stat_entries_size_ts);
 
 		/// Provides local readers and writers for ddscat data (it's a binder)
 		class DLEXPORT_rtmath_ddscat implementsDDRES :
-			private rtmath::io::implementsIObasic<ddOutputSingle, ddOutputSingle_IO_output_registry,
-			ddOutputSingle_IO_input_registry, ddOutputSingle_Standard>
+			private rtmath::io::implementsIObasic<ddOriData, ddOriData_IO_output_registry,
+			ddOriData_IO_input_registry, ddOriData_Standard>
 		{
 		public:
 			virtual ~implementsDDRES() {}
@@ -71,13 +72,13 @@ namespace rtmath {
 		class DLEXPORT_rtmath_ddscat ddOriData :
 			public boost::enable_shared_from_this<ddOriData>,
 			virtual public ::rtmath::registry::usesDLLregistry<
-			::rtmath::ddscat::ddOutputSingle_IO_output_registry,
+			::rtmath::ddscat::ddOriData_IO_output_registry,
 			::rtmath::registry::IO_class_registry_writer<ddOriData> >,
 			virtual public ::rtmath::registry::usesDLLregistry<
-			::rtmath::ddscat::ddOutputSingle_IO_input_registry,
+			::rtmath::ddscat::ddOriData_IO_input_registry,
 			::rtmath::registry::IO_class_registry_reader<ddOriData> >,
-			virtual public ::rtmath::io::implementsStandardWriter<ddOriData, ddOutputSingle_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<ddOriData, ddOutputSingle_IO_input_registry>,
+			virtual public ::rtmath::io::implementsStandardWriter<ddOriData, ddOriData_IO_output_registry>,
+			virtual public ::rtmath::io::implementsStandardReader<ddOriData, ddOriData_IO_input_registry>,
 			virtual public implementsDDRES
 		{
 			friend class ddOutput;
@@ -113,7 +114,7 @@ namespace rtmath {
 			void readMueller(std::istream &in);
 			void readF(std::istream &in, boost::shared_ptr<const ddScattMatrixConnector>);
 
-
+			/*
 #define accessorRW(name,id,valtype) \
 	inline valtype name() const { return __getSimple<valtype>((int) id); } \
 	inline void name(const valtype &v) { __setSimple<valtype>((int) id, v); }
@@ -130,6 +131,9 @@ namespace rtmath {
 			accessorRW(aeff, stat_entries::AEFF, double);
 			accessorRW(dipoleSpacing, stat_entries::DIPOLESPACING, double);
 			accessorRW(numDipoles, stat_entries::NUM_DIPOLES, size_t);
+			*/
+
+			size_t version() const;
 
 			std::complex<double> M(size_t dielIndex = 0) const;
 			void M(const std::complex<double>&, size_t dielIndex = 0);
@@ -148,7 +152,7 @@ namespace rtmath {
 			//typedef std::map<size_t, std::pair<size_t, size_t> > mMuellerIndices;
 
 			/** Need sorting only on load. **/
-			typedef std::vector < ddscatt::ddScattMatrixF >
+			typedef std::vector < ddscat::ddScattMatrixF >
 				scattMatricesContainer;
 			//typedef std::vector < boost::shared_ptr<const ddscat::ddScattMatrix> >
 			//	scattMatricesContainer;
@@ -204,7 +208,11 @@ namespace rtmath {
 			/// Container for sca and fml scattering matrices
 			/// \see ddScattMatrix
 			scattMatricesContainer _scattMatricesRaw;
+			/// Container for refractive indices
+			std::vector<std::complex<double> > ms;
+			/// Binding to the relevant ddOutput object
 			ddOutput &_parent;
+			/// Row in the ddOutput tables
 			size_t _row;
 		};
 
