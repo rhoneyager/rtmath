@@ -5,7 +5,6 @@
 #include <Eigen/Core>
 #include <boost/shared_ptr.hpp>
 #include <boost/operators.hpp>
-#include "../Serialization/eigen_serialization.h"
 #include "../common_templates.h"
 
 namespace rtmath

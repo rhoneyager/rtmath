@@ -66,6 +66,10 @@ namespace rtmath
 				{
 					std::string lin;
 					std::getline(in, lin);
+					read(lin, s);
+				}
+				static void read(const std::string &lin, T &s)
+				{
 					size_t p = lin.find("=");
 					size_t pend = lin.find("=", p + 1);
 					std::string ss;
@@ -89,6 +93,7 @@ namespace rtmath
 				static void write(std::ostream &out, size_t ver, size_t inum, 
 					const std::complex<double> &m, double k, double d);
 				static void read(std::istream &in, size_t &subst, std::complex<double> &m);
+				static void read(const std::string &str, size_t &subst, std::complex<double> &m);
 			};
 
 			struct ddRot1d
@@ -115,6 +120,12 @@ namespace rtmath
 				static void read(std::istream &in, std::vector<double> &v, size_t &axisnum, frameType &frame);
 			};
 			
+			struct ddPhysExtent
+			{
+				static void read(std::istream &in, double &a, double &b, char &axisname);
+				static void write(std::ostream &out, size_t, const double a, const double b,
+					char axisname);
+			};
 
 		}
 	}
