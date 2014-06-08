@@ -524,8 +524,6 @@ namespace rtmath
 						mIndices[i] = std::pair<size_t, size_t>(row, col);
 					}
 
-					// TODO: add function that generates the correct mueller relations from here
-#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine")
 				}
 				else {
 					// Parse the Mueller entries
@@ -545,11 +543,11 @@ namespace rtmath
 					boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP(freq, vals[0], vals[1]));
 					ddScattMatrix::PnnType P;
 
-					for (auto ot = mIndices.begin(); ot != mIndices.end(); ++ot)
+					size_t j = 0;
+					for (auto ot = mIndices.begin(); ot != mIndices.end(); ++ot, ++j)
 					{
-						P(ot->second.first, ot->second.second) = vals[ot->first]; // See Mueller header read
+						P(ot->first, ot->second) = vals[j]; // See Mueller header read
 					}
-#pragma message("Warning: ddOutputSingle needs the Mueller matrix filling routine (part b)")
 					mat->setP(P);
 					mat->polLin(vals[2]);
 

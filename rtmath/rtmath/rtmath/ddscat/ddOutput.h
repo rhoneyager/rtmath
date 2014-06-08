@@ -7,9 +7,9 @@
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/assume_abstract.hpp>
-#include <boost/serialization/version.hpp>
+//#include <boost/serialization/export.hpp>
+//#include <boost/serialization/assume_abstract.hpp>
+//#include <boost/serialization/version.hpp>
 
 #include "../hash.h"
 #include "../common_templates.h"
@@ -27,7 +27,7 @@ namespace rtmath {
 		class ddOutput;
 		class ddOutput_IO_output_registry {};
 		class ddOutput_IO_input_registry {};
-		class ddOutput_serialization {};
+		//class ddOutput_serialization {};
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
@@ -77,17 +77,11 @@ namespace rtmath {
 			virtual public ::rtmath::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOutput_IO_input_registry,
 			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
-			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
-			virtual public ::rtmath::io::Serialization::implementsSerialization<
-			ddOutput, ddOutput_IO_output_registry, ddOutput_IO_input_registry, ddOutput_serialization>
+			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>
 		{
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
 			static void initPaths();
 			void resize(size_t numOris, size_t numTotAngles);
-
-			//void regenerateScas(); TODO
+			void resizeFML(size_t numTotAngles);
 		public:
 			ddOutput();
 
@@ -113,7 +107,6 @@ namespace rtmath {
 			std::string ddvertag;
 
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
-
 			class stat_entries {
 			public:
 				enum stat_entries_doubles
@@ -303,6 +296,3 @@ namespace rtmath {
 
 	}
 }
-
-
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddOutput);

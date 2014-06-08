@@ -148,6 +148,63 @@ namespace rtmath {
 			//	= rtmath::ddscat::ddVersions::getDefaultVer();
 		}
 
+
+
+		void ddOriData::doExportFMLs(size_t startIndex) const
+		{
+			auto o = _parent.fmldata->block(startIndex, 0, numMat(), ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
+			size_t i = 0;
+			for (auto it = _scattMatricesRaw.begin(); it != _scattMatricesRaw.end(); ++it)
+			{
+				if ((*it).id() != scattMatrixType::F) continue;
+				//auto s = boost::dynamic_pointer_cast<const ddscat::ddScattMatrixF>(*it);
+
+				auto f = it->getF();
+
+				o(i, ddOutput::fmlColDefs::ORIINDEX) = static_cast<float>(_row);
+				o(i, ddOutput::fmlColDefs::THETAB) = static_cast<float>((*it).theta());
+				o(i, ddOutput::fmlColDefs::PHIB) = static_cast<float>((*it).phi());
+				o(i, ddOutput::fmlColDefs::F00R) = static_cast<float>(f(0, 0).real());
+				o(i, ddOutput::fmlColDefs::F00I) = static_cast<float>(f(0, 0).imag());
+				o(i, ddOutput::fmlColDefs::F01R) = static_cast<float>(f(0, 1).real());
+				o(i, ddOutput::fmlColDefs::F01I) = static_cast<float>(f(0, 1).imag());
+				o(i, ddOutput::fmlColDefs::F10R) = static_cast<float>(f(1, 0).real());
+				o(i, ddOutput::fmlColDefs::F10I) = static_cast<float>(f(1, 0).imag());
+				o(i, ddOutput::fmlColDefs::F11R) = static_cast<float>(f(1, 1).real());
+				o(i, ddOutput::fmlColDefs::F11I) = static_cast<float>(f(1, 1).imag());
+
+				i++;
+			}
+		}
+
+		void ddOriData::doImportFMLs(size_t startIndex, size_t n)
+		{
+			auto o = _parent.fmldata->block(startIndex, 0, n, ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
+			size_t i = 0;
+			_scattMatricesRaw.clear();
+			_scattMatricesRaw.reserve(n);
+			using std::complex;
+			for (i = 0; i < n; ++i)
+			{
+				ddScattMatrixF mat(freq(), o(i, ddOutput::fmlColDefs::THETAB), o(i, ddOutput::fmlColDefs::PHIB), 
+					0, 0, getConnector());
+				ddScattMatrix::FType fs;
+				fs(0, 0) = complex<double>(o(i, ddOutput::fmlColDefs::F00R), o(i, ddOutput::fmlColDefs::F00I));
+				fs(1, 0) = complex<double>(o(i, ddOutput::fmlColDefs::F01R), o(i, ddOutput::fmlColDefs::F01I));
+				fs(0, 1) = complex<double>(o(i, ddOutput::fmlColDefs::F10R), o(i, ddOutput::fmlColDefs::F10I));
+				fs(1, 1) = complex<double>(o(i, ddOutput::fmlColDefs::F11R), o(i, ddOutput::fmlColDefs::F11I));
+				mat.setF(fs);
+
+				//boost::shared_ptr<const ddScattMatrix> matC =
+				//	boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
+
+				//_scattMatricesRaw.push_back(matC);
+				_scattMatricesRaw.push_back(mat);
+			}
+		}
+
+
+
 		ddOriData::~ddOriData() {}
 
 		/// Input in avg format

@@ -14,14 +14,12 @@
 #include <iomanip>
 #include <thread>
 #include <mutex>
-#include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/zeros.h"
 #include "../rtmath/refract.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddOutput.h"
-#include "../rtmath/ddscat/ddOutputSingle.h"
-#include "../rtmath/ddscat/ddOutputGenerator.h"
+#include "../rtmath/ddscat/ddOriData.h"
 #include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/ddUtil.h"
@@ -70,10 +68,6 @@ namespace rtmath {
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0), temp(0)
 		{
-			::rtmath::io::Serialization::implementsSerialization<
-				ddOutput, ddOutput_IO_output_registry,
-				ddOutput_IO_input_registry, ddOutput_serialization>::set_sname("rtmath::ddscat::ddOutput");
-
 			resize(0, 0);
 		}
 
@@ -328,14 +322,14 @@ namespace rtmath {
 		**/
 		void ddOutput::resize(size_t numOris, size_t numTotAngles)
 		{
-			if (!oridata) oridata = boost::shared_ptr
-				<Eigen::Matrix<float, Eigen::Dynamic, oriColDefs::NUM_ORICOLDEFS> >
-				(new Eigen::Matrix<float, Eigen::Dynamic, oriColDefs::NUM_ORICOLDEFS>
-				(numOris, oriColDefs::NUM_ORICOLDEFS));
-			oridata->conservativeResize(numOris, Eigen::NoChange);
-			if (!avgoridata) avgoridata = boost::shared_ptr
-				<Eigen::Matrix<float, 1, oriColDefs::NUM_ORICOLDEFS> >
-				(new Eigen::Matrix<float, 1, oriColDefs::NUM_ORICOLDEFS>());
+			oridata_d.conservativeResize(numOris, Eigen::NoChange);
+			oridata_i.conservativeResize(numOris, Eigen::NoChange);
+			oridata_s.resize(numOris);
+			if (numTotAngles) resizeFML(numTotAngles);
+		}
+
+		void ddOutput::resizeFML(size_t numTotAngles)
+		{
 			if (!fmldata) fmldata = boost::shared_ptr
 				<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
 				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>

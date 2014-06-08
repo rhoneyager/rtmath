@@ -83,10 +83,8 @@ namespace rtmath {
 		{
 			friend class ddOutput;
 
-			//void doExportOri(boost::shared_ptr<ddOutput> parent, size_t index, bool isavg = false);
-			//void doExportFMLs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
-			//void doImportOri(boost::shared_ptr<ddOutput> parent, size_t index, bool isavg = false);
-			//void doExportSCAs(boost::shared_ptr<ddOutput> parent, size_t startIndex, size_t oriIndex);
+			void doExportFMLs(size_t startIndex) const;
+			void doImportFMLs(size_t startIndex, size_t n);
 		public:
 			ddOriData(ddOutput &parent, size_t row,
 				const std::string &filename = "", const std::string &type = "");
