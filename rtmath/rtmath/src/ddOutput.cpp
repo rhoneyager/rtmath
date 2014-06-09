@@ -250,8 +250,8 @@ namespace rtmath {
 		{
 			if (!fmldata) fmldata = boost::shared_ptr
 				<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
-				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>
-				(numOris, fmlColDefs::NUM_FMLCOLDEFS));
+				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>());
+				//(numTotAngles, fmlColDefs::NUM_FMLCOLDEFS));
 			fmldata->conservativeResize(numTotAngles, Eigen::NoChange);
 		}
 
@@ -315,10 +315,10 @@ namespace rtmath {
 				}
 				// Extract entension of files in ._ form
 				// Note: some files (like mtable) have no extension. I don't use these.
-				if (!praw.has_extension()) return;
+				if (!praw.has_extension()) continue;
 				path pext = praw.extension();
 				path pfileid = praw;
-				pfileid.remove_extension();
+				pfileid.replace_extension();
 
 				if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
 				if (pext.string() == ".sca" || pext.string() == ".fml" || pext.string() == ".avg")
@@ -343,7 +343,7 @@ namespace rtmath {
 			oris.reserve(orisources.size());
 			for (const auto &s : orisources)
 				oris.push_back(s.second);
-			resize(numOris, 0); // fml size is not yet known. These entries will be imported later.
+			res->resize(oris.size(), 0); // fml size is not yet known. These entries will be imported later.
 			vector<ddOriData > fmls;
 			fmls.reserve(orisources.size());
 			size_t count = 0;
@@ -421,48 +421,41 @@ namespace rtmath {
 			shapeHash = shape->hash();
 			stats = stats::shapeFileStats::genStats(shape);
 
-			boost::shared_ptr<ddOutputSingle> base = avg;
-			if (!base && scas.size()) base = scas.at(0);
-
-			// Set a basic tag based on the avg file's TARGET line
-			if (base)
+			// Pull the information from the first loaded entry
+			if (oridata_s.size())
 			{
-				std::string starget;
-				base->getTARGET(starget);
-				res->tags.insert(starget);
+				const size_t _row = 0;
+				auto &od = oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+				auto &os = oridata_s.at(_row);
+				auto &oi = oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
+
+				ddOriData data(*this, _row);
+
+				tags.insert(os.at(stat_entries::TARGET));
 				// Extract the ddscat version from the target field
 				// Find "ddscat/" and read until the next space
-				ddUtil::getDDSCATbuild(starget, res->ddvertag);
+				ddUtil::getDDSCATbuild(os.at(stat_entries::TARGET), ddvertag);
+
+				freq = data.freq();
+				aeff = data.aeff();
+				temp = data.guessTemp();
+
+				//parfile->
+				//ms.push_back(base->getM());
 			}
-
-			// Set the frequency and effective radius
-			if (base)
-			{
-				res->freq = units::conv_spec("um", "GHz").convert(base->wave());
-				res->aeff = base->aeff();
+			else {
+				aeff = 0;
+				freq = 0;
 			}
-			else{
-				res->aeff = 0;
-				res->freq = 0;
-			}
-
-			// Populate ms
-			/// \todo Allow for multiple refractive indices
-			if (base)
-				res->ms.push_back(base->getM());
-
-			if (base)
-				res->temp = base->guessTemp();
-
+			
 			// Save the shape in the hash location, if necessary
 			shape->writeToHash();
 			// Resave the stats in the hash location
 			stats->writeToHash();
 
-			return res;
 		}
 
-		void ddOutput::expand(const std::string &outdir, bool writeShape) const
+		void ddOutput::expand(const std::string &outdir, bool writeShape) //const
 		{
 			using namespace boost::filesystem;
 			path pOut(outdir);
@@ -485,7 +478,7 @@ namespace rtmath {
 				if (!this->shape) this->loadShape();
 				shape->writeFile( (path(pOut)/"target.out").string() );
 			}
-
+			/*
 			auto oname = [](const boost::filesystem::path &base,
 				boost::shared_ptr<ddOutputSingle> d) -> std::string
 			{
@@ -495,6 +488,7 @@ namespace rtmath {
 					"-" << d->phi();
 				return (base/path(n.str())).string();
 			};
+			*/
 			auto onameb = [](const boost::filesystem::path &base,
 				size_t i, size_t ni) -> std::string
 			{
@@ -646,7 +640,7 @@ namespace rtmath {
 			parfile->getRots(rots);
 
 			float tDesc = (boost::math::round((float) temp*10.f)/10.f);
-			if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
+			//if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
 
 
 			std::ostringstream out;
@@ -654,7 +648,7 @@ namespace rtmath {
 				<< (boost::math::round((float) freq*10.f)/10.f) << "-"
 				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
 				<< tDesc << "-"
-				<< scas.size() << "-"
+				<< oridata_s.size() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
 				<< ddvertag
 				<< ".xml";
@@ -680,14 +674,14 @@ namespace rtmath {
 			parfile->getRots(rots);
 
 			float tDesc = (boost::math::round((float) temp*10.f)/10.f);
-			if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
+			//if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
 
 
 			std::ostringstream out;
 			out << (boost::math::round((float) freq*10.f)/10.f) << "-"
 				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
 				<< tDesc << "-"
-				<< scas.size() << "-"
+				<< oridata_s.size() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
 				<< ddvertag;
 

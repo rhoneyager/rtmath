@@ -98,8 +98,8 @@ namespace rtmath {
 			/// Temperature (K)
 			double temp;
 
-			/// Refractive indices (in order in ddscat.par file)
-			std::vector<std::complex<double> > ms;
+			/// Refractive indices
+			//std::vector<std::complex<double> > ms;
 			/// Paths of source files. Used in consolidation.
 			std::multiset<std::string> sources;
 			/// User-set brief description snippets. Used in isolating sets of runs.
@@ -229,7 +229,7 @@ namespace rtmath {
 			//void updateAVG();
 
 			/// Expand output to a given directory
-			void expand(const std::string &outdir, bool writeShape=false) const;
+			void expand(const std::string &outdir, bool writeShape = false); // const;
 
 
 			/// Generate ddOutput from a ddscat output directory
