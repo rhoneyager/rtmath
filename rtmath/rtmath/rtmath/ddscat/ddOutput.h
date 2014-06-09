@@ -82,11 +82,12 @@ namespace rtmath {
 			static void initPaths();
 			void resize(size_t numOris, size_t numTotAngles);
 			void resizeFML(size_t numTotAngles);
+			void finalize();
 		public:
 			ddOutput();
 
 			/// Regenerates ddOutputSingle entries from tables (used in hdf5 read)
-			void doImport();
+			//void doImport();
 
 			/// A brief description of the run
 			std::string description;
@@ -230,33 +231,10 @@ namespace rtmath {
 			/// Expand output to a given directory
 			void expand(const std::string &outdir, bool writeShape=false) const;
 
-			/*
-			/// Generate ddOutput from a set of ddOutputSingle
-			static boost::shared_ptr<ddOutput> generate(
-				boost::shared_ptr<ddOutputSingle> avg,
-				boost::shared_ptr<shapefile> shape,
-				std::set<boost::shared_ptr<ddOutputSingle> > sources);
-			*/
-
-			/// Generate ddOutput from a .avg file, a .par file and a shape
-			/// \todo Add a settings provider
-			static boost::shared_ptr<ddOutput> generate(
-				boost::shared_ptr<ddOriData> avg,
-				boost::shared_ptr<ddPar> par,
-				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape);
-			
 
 			/// Generate ddOutput from a ddscat output directory
 			static boost::shared_ptr<ddOutput> generate(
 				const std::string &dir, bool noLoadRots = false);
-
-			/// Generate ddOutput
-			static boost::shared_ptr<ddOutput> ddOutput::generate(
-				boost::shared_ptr<ddOriData> avg,
-				boost::shared_ptr<ddPar> par,
-				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape,
-				const std::vector< boost::shared_ptr<ddOriData> > &fmls,
-				const std::vector< boost::shared_ptr<ddOriData> > &scas);
 
 			/// Write run to the hash directory (convenience function)
 			void writeToHash() const;

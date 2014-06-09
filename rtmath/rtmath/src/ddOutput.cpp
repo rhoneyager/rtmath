@@ -56,14 +56,30 @@ namespace rtmath {
 	}
 
 	namespace ddscat {
+		/*
 		void ddOutput::doImport()
 		{
-			// Create fml entries
-			size_t numFMLs = static_cast<size_t>(fmldata->rows());
-			size_t numSCAs = static_cast<size_t>(oridata->rows());
+			size_t nOris = static_cast<size_t>(oridata_s.rows());
+			size_t nAngles = 0;
+			for (size_t i = 0; i < nOris; ++i)
+			{
+				if (oridata_i(i, stat_entries::DOWEIGHT))
+				{
+					nAngles += oridata_i(im stat_entries::NUMF);
+				}
+			}
 
-			// Create sca entries.
+			resizeFML(nAngles);
+
+			for (size_t i = 0, j = 0; i < nOris; ++i)
+			{
+				if (oridata_i(i, stat_entries::DOWEIGHT))
+				{
+
+				}
+			}
 		}
+		*/
 
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0), temp(0)
@@ -210,104 +226,6 @@ namespace rtmath {
 		}
         */
 
-		boost::shared_ptr<ddOutput> ddOutput::generate(
-			boost::shared_ptr<ddOutputSingle> avg,
-			boost::shared_ptr<ddPar> par,
-			boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape,
-			const std::vector< boost::shared_ptr<ddOutputSingle> > &fmls,
-			const std::vector< boost::shared_ptr<ddOutputSingle> > &scas
-			)
-		{
-			boost::shared_ptr<ddOutput> res(new ddOutput());
-			using namespace boost::filesystem;
-			using std::vector;
-
-			res->avg = avg;
-			res->avg_original = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*avg));
-			res->parfile = par;
-			res->shape = shape;
-			res->shapeHash = shape->hash();
-			res->stats = stats::shapeFileStats::genStats(res->shape);
-
-			for (auto &f : fmls)
-				res->fmls.insert(f);
-			for (auto &s : scas)
-				res->scas_original.insert(s);
-			// Performing relocation of data tables in a separate step, to take advantage of sorting.
-			// Depends on sca and fml sets having their proper size, as these indices are used.
-			// SCAs provide cross-sections. FMLs provide complex amplitude matrices.
-			{
-				size_t numOris = res->fmls.size();
-				size_t numTotAngles = 0;
-				for (const auto f : res->fmls)
-					numTotAngles += f->numF(); // getScattMatrices().size();
-				res->resize(res->fmls.size(), numTotAngles);
-
-				size_t i = 0, j=0;
-				for (auto it = res->fmls.begin(); it != res->fmls.end(); ++it, ++j)
-				{
-					(*it)->doExportFMLs(res, i, j);
-					i += (*it)->numF();
-				}
-				i = 0;
-				// Relocate cross-sections
-				for (auto it = res->scas_original.begin(); it != res->scas_original.end(); ++it)
-				{
-					(*it)->doExportOri(res, i);
-				}
-
-				if (avg)
-					avg->doExportOri(res, 0, true);
-				
-			}
-
-			//res->regenerateScas();
-
-			boost::shared_ptr<ddOutputSingle> base = avg;
-			if (!base && scas.size()) base = scas.at(0);
-
-			// Set a basic tag based on the avg file's TARGET line
-			if (base)
-			{
-				std::string starget;
-				base->getTARGET(starget);
-				res->tags.insert(starget);
-				// Extract the ddscat version from the target field
-				// Find "ddscat/" and read until the next space
-				ddUtil::getDDSCATbuild(starget, res->ddvertag);
-			}
-
-			// Set the frequency and effective radius
-			if (base)
-			{
-				res->freq = units::conv_spec("um", "GHz").convert(base->wave());
-				res->aeff = base->aeff();
-			}
-			else{
-				res->aeff = 0;
-				res->freq = 0;
-			}
-
-			// Set generator to null generator
-			// Nothing need be done
-
-
-			// Populate ms
-			/// \todo Allow for multiple refractive indices
-			if (base)
-				res->ms.push_back(base->getM());
-
-			if (base)
-				res->temp = base->guessTemp();
-
-			// Save the shape in the hash location, if necessary
-			res->shape->writeToHash();
-			// Resave the stats in the hash location
-			res->stats->writeToHash();
-
-			return res;
-		}
-
 		/** \brief Resize the orientation and fml tables
 		*
 		* The resizing operation is usually performed when data is loaded.
@@ -339,6 +257,7 @@ namespace rtmath {
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
 		{
+			boost::shared_ptr<ddOutput> res(new ddOutput());
 			using namespace boost::filesystem;
 			using boost::shared_ptr;
 			using std::vector;
@@ -354,89 +273,107 @@ namespace rtmath {
 			// Iterate over and load each file. Loading files in parallel because each read operation is 
 			// rather slow. The ddscat file parsers could use much improvement.
 
-			shared_ptr<ddOutputSingle> avg;
 			shared_ptr<ddPar> parfile;
 			shared_ptr<shapefile::shapefile> shape;
-			vector<shared_ptr<ddOutputSingle> > fmls, scas;
-			std::mutex m_fmls, m_scas, m_other, m_pathlist, m_filecheck;
+			std::mutex m_fmls, m_fmlmap, m_shape, m_par, m_other, m_pathlist, m_filecheck;
 
+			// Pair up matching sca and fml files for a combined read.
+			// Keys with only an sca entry are avg files.
+			std::map<path, std::pair<path, path> > orisources;
 
-			auto process_path = [&](const path &p)
+			const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
+			std::vector<std::thread> pool;
+
+			auto loadShape = [&](const path &p)
+			{
+				std::lock_guard<std::mutex> lock(m_shape);
+				if (shape) return; // Only needs to be loaded once
+				//if (noLoadRots) return;
+				// Note: the hashed object is the fundamental thing here that needs to be loaded
+				// The other stuff is only loaded for processing, and is not serialized directly.
+				shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
+					(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
+				// Get the hash and load the stats
+				//shapeHash = res->shape->hash();
+				//if (dostats)
+				//	res->stats = stats::shapeFileStats::genStats(res->shape);
+			};
+			auto loadPar = [&](const path &p)
+			{
+				std::lock_guard<std::mutex> lock(m_par);
+				parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
+			};
+
+			for (const auto &p : cands)
 			{
 				// Handle compressed files (in case my or Liu's scripts compressed the input)
 				path praw;
 				std::string meth;
 				{
-					std::lock_guard<std::mutex> lock(m_filecheck);
-					//std::cerr << "\t\t" << p << "\n";
+					//std::lock_guard<std::mutex> lock(m_filecheck);
 					Ryan_Serialization::uncompressed_name(p, praw, meth);
 				}
 				// Extract entension of files in ._ form
 				// Note: some files (like mtable) have no extension. I don't use these.
 				if (!praw.has_extension()) return;
 				path pext = praw.extension();
-				// .avg, .sca and .fml are ddOutputSingle objects. Place them in appropriate places.
-				// .out (target.out) and shape.dat refer to the shapefile. Only one needs to be loaded.
-				// .par refers to the ddscat.par file. Useful in describing run inputs.
-				// .log indicates a saved ddscat log file (implemented in my scripts). Useful for 
-				// detecting the overall run time, but not necessary for now.
-				if (pext.string() == ".avg" || pext.string() == ".sca" || pext.string() == ".fml")
+				path pfileid = praw;
+				pfileid.remove_extension();
+
+				if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
+				if (pext.string() == ".sca" || pext.string() == ".fml" || pext.string() == ".avg")
 				{
-					if (pext.string() != ".avg" && noLoadRots) return;
-					boost::shared_ptr<ddOutputSingle> dds(new ddOutputSingle(p.string()));
-					if (pext.string() == ".avg")
+					if (!orisources.count(pfileid)) orisources[pfileid] = std::pair<path, path>(path(), path());
+					if (pext.string() == ".sca" || pext.string() == ".avg")
 					{
-						std::lock_guard<std::mutex> lock(m_other);
-						if (avg) RTthrow debug::xBadInput("Simple ddOutput generator accepts only one avg file");
-						//avg_original = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle(*dds));
-						avg = dds;
+						orisources[pfileid].second = praw;
+					} else {
+						orisources[pfileid].first = praw;
 					}
-					if (pext.string() == ".sca")
-					{
-						//boost::shared_ptr<ddOutputSingle> sorig(new ddOutputSingle(*dds));
-						std::lock_guard<std::mutex> lock(m_scas);
-						//scas_original.push_back(sorig);
-						scas.push_back(dds);
-					}
-					if (pext.string() == ".fml")
-					{
-						std::lock_guard<std::mutex> lock(m_fmls);
-						fmls.push_back(dds);
-					}
+				} else if (pext.string() == ".par") {
+					std::thread t(loadPar, praw);
+					pool.push_back(std::move(t));
+				} else if (pext.string() == ".dat" || pext.string() == ".out") {
+					std::thread t(loadShape, praw);
+					pool.push_back(std::move(t));
 				}
-				else if (pext.string() == ".par")
+			}
+
+			std::vector<std::pair<path, path> > oris;
+			oris.reserve(orisources.size());
+			for (const auto &s : orisources)
+				oris.push_back(s.second);
+			resize(numOris, 0); // fml size is not yet known. These entries will be imported later.
+			vector<ddOriData > fmls;
+			fmls.reserve(orisources.size());
+			size_t count = 0;
+
+			auto process_path = [&](const std::pair<path, path> &p)
+			{
+				size_t mycount = count;
 				{
-					std::lock_guard<std::mutex> lock(m_other);
-					parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
+					std::lock_guard<std::mutex> lock(m_fmls);
+					++count;
 				}
-				else if (pext.string() == ".dat" || pext.string() == ".out")
+				ddOriData dat(*res, mycount, p.second.string(), p.first.string());
 				{
-					std::lock_guard<std::mutex> lock(m_other);
-					if (shape) return; // Only needs to be loaded once
-					//if (noLoadRots) return;
-					// Note: the hashed object is the fundamental thing here that needs to be loaded
-					// The other stuff is only loaded for processing, and is not serialized directly.
-					shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
-						(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
-					// Get the hash and load the stats
-					//shapeHash = res->shape->hash();
-					//if (dostats)
-					//	res->stats = stats::shapeFileStats::genStats(res->shape);
+					std::lock_guard<std::mutex> lock(m_fmlmap);
+					fmls.push_back(std::move(dat));
 				}
 			};
 
 			auto process_paths = [&]()
 			{
 				try {
-					path p;
+					std::pair<path, path> p;
 					for (;;)
 					{
 						{
 							std::lock_guard<std::mutex> lock(m_pathlist);
 
-							if (!cands.size()) return;
-							p = cands.back();
-							cands.pop_back();
+							if (!oris.size()) return;
+							p = oris.back();
+							oris.pop_back();
 						}
 
 						process_path(p);
@@ -449,39 +386,80 @@ namespace rtmath {
 				}
 			};
 
-			const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
-			std::vector<std::thread> pool;
+
+
 			for (size_t i = 0; i<numThreads; i++)
 			{
 				std::thread t(process_paths);
 				pool.push_back(std::move(t));
 			}
-			for (size_t i = 0; i<numThreads; i++)
-			{
-				pool[i].join();
-			}
+			for (auto &t : pool)
+				t.join();
+
+			/// \todo Do table resorting for better memory access for both the orientation and fml tables.
+
+
 
 			// Apply consistent generation
-			auto res = generate(avg, parfile, shape, fmls, scas);
+			//auto res = generate(avg, parfile, shape, fmls, scas);
+			res->finalize();
 
 			// Tag the source directory and ddscat version
 			path pdir(dir);
 			path pbdir = absolute(pdir);
 			res->sources.insert(pbdir.string());
 
-
-
 			return res;
 		}
 
-		/** Alias to the full generator function. **/
-		boost::shared_ptr<ddOutput> ddOutput::generate(
-			boost::shared_ptr<ddOutputSingle> avg,
-			boost::shared_ptr<ddPar> par, 
-			boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shape)
+
+		void ddOutput::finalize()
 		{
-			const std::vector< boost::shared_ptr<ddOutputSingle> > fmls, scas;
-			return generate(avg, par, shape, fmls, scas);
+			using namespace boost::filesystem;
+			using std::vector;
+
+			shapeHash = shape->hash();
+			stats = stats::shapeFileStats::genStats(shape);
+
+			boost::shared_ptr<ddOutputSingle> base = avg;
+			if (!base && scas.size()) base = scas.at(0);
+
+			// Set a basic tag based on the avg file's TARGET line
+			if (base)
+			{
+				std::string starget;
+				base->getTARGET(starget);
+				res->tags.insert(starget);
+				// Extract the ddscat version from the target field
+				// Find "ddscat/" and read until the next space
+				ddUtil::getDDSCATbuild(starget, res->ddvertag);
+			}
+
+			// Set the frequency and effective radius
+			if (base)
+			{
+				res->freq = units::conv_spec("um", "GHz").convert(base->wave());
+				res->aeff = base->aeff();
+			}
+			else{
+				res->aeff = 0;
+				res->freq = 0;
+			}
+
+			// Populate ms
+			/// \todo Allow for multiple refractive indices
+			if (base)
+				res->ms.push_back(base->getM());
+
+			if (base)
+				res->temp = base->guessTemp();
+
+			// Save the shape in the hash location, if necessary
+			shape->writeToHash();
+			// Resave the stats in the hash location
+			stats->writeToHash();
+
+			return res;
 		}
 
 		void ddOutput::expand(const std::string &outdir, bool writeShape) const
@@ -508,10 +486,6 @@ namespace rtmath {
 				shape->writeFile( (path(pOut)/"target.out").string() );
 			}
 
-			// Write avg file
-			if (avg)
-				avg->writeFile( (path(pOut)/"w000r000.avg").string() );
-
 			auto oname = [](const boost::filesystem::path &base,
 				boost::shared_ptr<ddOutputSingle> d) -> std::string
 			{
@@ -526,41 +500,39 @@ namespace rtmath {
 			{
 				using namespace std;
 				ostringstream n;
-				n << "w000r000k";
-				n.width(ni);
-				n.fill('0');
-				n << i;
+				n << "w000r000"; //k";
+				if (ni) {
+					n << "k";
+					n.width(ni);
+					n.fill('0');
+					n << i;
+				}
 				return (base/path(n.str())).string();
 			};
 
 			// Write fmls
-			size_t i=0;
-			for (const auto &fml : fmls)
+			for (size_t i = 0; i < oridata_s.size(); ++i)
 			{
-				//std::string fname = oname(pOut,fml);
-				std::string fname = onameb(pOut,i, fmls.size());
-				fname.append(".fml");
-				fml->writeFile(fname);
-			}
+				if (oridata_i(i, stat_entries::DOWEIGHT)) {
+					std::string basename = onameb(pOut, i, 4);
+					std::string fmlname = basename;
+					std::string scaname = basename;
+					fmlname.append(".fml");
+					scaname.append(".sca");
 
-			// Write original scas
-			i=0;
-			for (const auto &sca : scas_original)
-			{
-				//std::string fname = oname(pOut,fml);
-				std::string fname = onameb(pOut,i, scas_original.size());
-				fname.append(".sca-original");
-				sca->writeFile(fname, ".sca");
-			}
+					ddOriData obj(*this, i);
+					obj.doImportFMLs();
+					obj.writeFile(fmlname);
+					obj.writeFile(scaname);
+				} else {
+					// File is an avg file of some sort
+					std::string basename = onameb(pOut, i, 0);
+					basename.append(".avg");
 
-			// Write scas
-			i=0;
-			for (const auto &sca : scas)
-			{
-				//std::string fname = oname(pOut,fml);
-				std::string fname = onameb(pOut,i, scas.size());
-				fname.append(".sca");
-				sca->writeFile(fname);
+					ddOriData obj(*this, i);
+					//obj.doImportFMLs();
+					obj.writeFile(basename);
+				}
 			}
 
 			/*

@@ -135,11 +135,15 @@ namespace rtmath {
 			}
 		}
 
-		ddOriData::ddOriData(ddOutput &parent, size_t row, const std::string &infile, const std::string &type) :
+		ddOriData::ddOriData(ddOutput &parent, size_t row, 
+			const std::string &filenameSCA, 
+			const std::string &filenameFML) :
 			_parent(parent), _row(row)
 		{
 			_init();
-			if (infile.size()) readFile(infile, type);
+			// Double read to capture fml data and cross-sections in one container.
+			if (filenameSCA.size()) readFile(filenameSCA);
+			if (filenameFML.size()) readFile(filenameFML);
 		}
 		
 		void ddOriData::_init()
@@ -175,6 +179,34 @@ namespace rtmath {
 
 				i++;
 			}
+		}
+
+		void ddOriData::doImportFMLs()
+		{
+			size_t startRow = 0;
+			size_t stopRow = 0;
+			bool startFound = false;
+			bool endFound = false;
+			for (size_t i = 0; i < _parent.fmldata->rows(), ++i)
+			{
+				size_t oriindex = static_cast<size_t>((*(parent.fmldata))(i, fmlColDefs::ORIINDEX));
+				if (!startFound && oriindex == _row)
+				{
+					startFound = true;
+					startRow = oriindex;
+				}
+				if (startFound && oriindex != row)
+				{
+					endFound = true;
+					stopRow = oriindex;
+					break;
+				}
+			}
+			if (!startFound) return;
+			if (!endFound) stopRow = _parent.fmldata->rows();
+			if (stopRow <= startRow) RTthrow debug::xArrayOutOfBounds();
+
+			doImportFMLs(startRow, stopRow - startRow);
 		}
 
 		void ddOriData::doImportFMLs(size_t startIndex, size_t n)

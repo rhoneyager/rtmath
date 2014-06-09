@@ -85,9 +85,11 @@ namespace rtmath {
 
 			void doExportFMLs(size_t startIndex) const;
 			void doImportFMLs(size_t startIndex, size_t n);
+			void doImportFMLs();
 		public:
 			ddOriData(ddOutput &parent, size_t row,
-				const std::string &filename = "", const std::string &type = "");
+				const std::string &filenameSCA = "", const std::string &filenameFML = "");
+			//ddOriData(ddOutput &parent, size_t row, )
 			virtual ~ddOriData();
 
 			// Binders for the standard ddscat formats
