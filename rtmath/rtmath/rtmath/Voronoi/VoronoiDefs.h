@@ -3,7 +3,7 @@
 
 #include "../defs.h"
 #include <boost/shared_ptr.hpp>
-//#include <Voro++/voro++.hh>
+//#include <Voro/voro++.hh>
 
 namespace voro
 {

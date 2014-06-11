@@ -19,7 +19,7 @@
 namespace rtmath
 {
 	namespace ddscat
-	{
+	{/*
 		template<class Archive>
 		void ddOutput::serialize(Archive &ar, const unsigned int version)
 		{
@@ -49,8 +49,8 @@ namespace rtmath
 
 		}
 
-		EXPORTINTERNAL(rtmath::ddscat::ddOutput::serialize);
+		EXPORTINTERNAL(rtmath::ddscat::ddOutput::serialize);*/
 	}
 }
 
-BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutput);
+//BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddOutput);

@@ -39,7 +39,7 @@ namespace rtmath
 			 * file hash and a timestamp. If these features are already 
 			 * detected, it does nothing.
 			 **/
-			void DLEXPORT_rtmath_ddscat tagTARGET(
+			void ERR_UNIMPLEMENTED DLEXPORT_rtmath_ddscat tagTARGET(
 				const boost::filesystem::path &pFile,
 				HASH_t &hash, const std::string &ddver);
 
@@ -50,7 +50,7 @@ namespace rtmath
 			 * \param forceDDVER will force the ddscat version identifier to a prepassed value
 			 * \see tagTARGET
 			 **/
-			void DLEXPORT_rtmath_ddscat tagTARGETs(
+			void ERR_UNIMPLEMENTED DLEXPORT_rtmath_ddscat tagTARGETs(
 				const boost::filesystem::path &pBase,
 				const std::string &forceDDVER = std::string());
 

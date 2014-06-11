@@ -67,6 +67,11 @@ namespace {
 	bool isDynamic(const boost::filesystem::path &f)
 	{
 		using namespace boost::filesystem;
+		std::string s = f.string(); // Faster, though less accurate
+		if (s.find(".so") != std::string::npos) return true;
+		if (s.find(".dll") != std::string::npos) return true;
+		if (s.find(".dylib") != std::string::npos) return true;
+		/*
 		boost::filesystem::path p = f;
 		while (p.has_extension())
 		{
@@ -75,6 +80,7 @@ namespace {
 				|| ext.string() == ".dylib") return true;
 			p.replace_extension();
 		}
+		*/
 		return false;
 	};
 
@@ -154,20 +160,23 @@ namespace {
 	
 		// Default locations
 		// Install path apps
+
+		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("plugins"));
 		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
 		//searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
 		// Not in install path apps
-		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
-		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../plugins"));
-		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../../plugins"));
+		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
+		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../plugins"));
+		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../../../plugins"));
 
 		// Relative to application
 		// Install path apps
 		boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
 		appBin.remove_filename();
+		//rtmath::registry::searchPathsRecursive.emplace(appBin / "plugins");
 		rtmath::registry::searchPathsRecursive.emplace( appBin / "../plugins" );
 		// Build path apps (linux)
-		rtmath::registry::searchPathsRecursive.emplace( appBin / "../../plugins" );
+		//rtmath::registry::searchPathsRecursive.emplace( appBin / "../../plugins" );
 
 		// Checking rtmath.conf
 		if (use_rtmath_conf)
@@ -332,6 +341,7 @@ namespace rtmath
 			{
 				if (!exists(p)) continue;
 				vector<path> recur;
+				//recur.reserve(50000);
 				if (!is_directory(p))
 					recur.push_back(p);
 				else {
@@ -368,6 +378,7 @@ namespace rtmath
 				else if (is_directory(base))
 				{
 					vector<path> recur;
+					//recur.reserve(50000);
 					if (recurse)
 						copy(recursive_directory_iterator(base, symlink_option::recurse),
 						recursive_directory_iterator(), back_inserter(recur));

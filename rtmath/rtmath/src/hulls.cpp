@@ -13,7 +13,7 @@
 
 #include <Eigen/Dense>
 
-#include <Voro++/voro++.hh>
+#include <Voro/voro++.hh>
 
 #include <vtkCellArray.h>
 #include <vtkPoints.h>

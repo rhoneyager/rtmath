@@ -214,6 +214,23 @@ namespace rtmath {
 			return p;
 		}
 		*/
+
+		template<> double fastCast(const std::string &ss)
+		{
+			return M_ATOF(ss.data());
+		}
+		template<> float fastCast(const std::string &ss)
+		{
+			return static_cast<float>(M_ATOF(ss.data()));
+		}
+		template<> size_t fastCast(const std::string &ss)
+		{
+			return static_cast<size_t>(M_ATOI(ss.data()));
+		}
+		template<> int fastCast(const std::string &ss)
+		{
+			return M_ATOI(ss.data());
+		}
 	}
 }
 

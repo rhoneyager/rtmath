@@ -27,7 +27,7 @@
 #include <boost/shared_ptr.hpp>
 
 #pragma warning( disable : 4244 ) // warning C4244: 'return' : conversion from '__int64' to 'int', possible loss of data
-#include <Voro++/voro++.hh>
+#include <Voro/voro++.hh>
 
 #include <vtkCellArray.h>
 #include <vtkPoints.h>

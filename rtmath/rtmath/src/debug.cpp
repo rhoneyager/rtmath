@@ -73,7 +73,7 @@ namespace rtmath
 #else
 			out << "SVN Repository Information Unknown" << std::endl;
 #endif
-		std::string buildtype(BUILDTYPE); // defined in cmake config (addlib.cmake)
+		std::string buildtype(CMAKE_INTDIR); // defined in cmake config (addlib.cmake)
 		out << "Build type: " << buildtype << std::endl;
 
 #ifdef _OPENMP

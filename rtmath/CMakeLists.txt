@@ -89,6 +89,13 @@ ENDIF()
 add_definitions(-DWITH_CMAKE)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+
+# Set a uniform output directory (to make app debugs easier)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_Debug ${CMAKE_BINARY_DIR}/Debug)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_Release ${CMAKE_BINARY_DIR}/Release)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MinSizeRel ${CMAKE_BINARY_DIR}/MinSizeRel)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RelWithDebInfo ${CMAKE_BINARY_DIR}/RelWithDebInfo)
+
 # Recurse into the subdirectories
 # add_subdirectory (deps)
 #add_subdirectory (rtmath-libs/rtmath-mie)

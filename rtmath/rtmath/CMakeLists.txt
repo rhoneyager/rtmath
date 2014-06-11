@@ -143,7 +143,7 @@ else()
 	set (rtmath_core-libs ${rtmath_core-libs} dl)
 endif()
 target_link_libraries(rtmath_core ${rtmath_core-libs})
-
+storebin(rtmath_core)
 
 #add_library (rtmath_mie SHARED
 #	${rtmath_mie-files})
@@ -151,6 +151,7 @@ target_link_libraries(rtmath_core ${rtmath_core-libs})
 #add_precompiled_header(rtmath_mie Stdafx-mie.h src)
 #set (rtmath_mie-libs rtmath_core ${rtmath_core-libs})
 #target_link_libraries(rtmath_mie ${rtmath_mie-libs})
+#storebin(rtmath_core)
 
 
 
@@ -172,6 +173,7 @@ set (rtmath_ddscat_base-libs
 	#	rtmath_mie ${rtmath_mie-libs} 
 	)
 target_link_libraries(rtmath_ddscat_base ${rtmath_ddscat_base-libs})
+storebin(rtmath_ddscat_base)
 
 
 add_library(rtmath_voronoi SHARED ${rtmath_voronoi-files})
@@ -184,6 +186,7 @@ set (rtmath_voronoi-libs rtmath_core ${rtmath_core-libs}
 	)
 	#	${QHULL_LIBRARIES}
 target_link_libraries(rtmath_voronoi ${rtmath_voronoi-libs})
+storebin(rtmath_voronoi)
 
 
 add_library (rtmath_ddscat SHARED
@@ -198,6 +201,7 @@ set (rtmath_ddscat-libs
 	rtmath_voronoi ${rtmath_voronoi-libs}
 	)
 target_link_libraries(rtmath_ddscat ${rtmath_ddscat-libs})
+storebin(rtmath_ddscat)
 
 add_library(rtmath_data SHARED ${rtmath_data-files})
 addlib(rtmath_data SHARED)
@@ -206,6 +210,7 @@ set (rtmath_data-libs rtmath_core ${rtmath_core-libs}
 	rtmath_voronoi ${rtmath_voronoi-libs}
 	)
 target_link_libraries(rtmath_data ${rtmath_data-libs})
+storebin(rtmath_data)
 
 
 add_library(rtmath_rt SHARED ${rtmath_rt-files})
@@ -214,6 +219,7 @@ add_precompiled_header(rtmath_rt Stdafx-rt.h src)
 set (rtmath_rt-libs rtmath_core ${rtmath_core-libs}
 	)
 target_link_libraries(rtmath_rt ${rtmath_rt-libs})
+storebin(rtmath_rt)
 
 add_library(rtmath_images SHARED ${rtmath_images-files})
 addlib(rtmath_images SHARED)
@@ -222,6 +228,7 @@ set (rtmath_images-libs rtmath_core ${rtmath_core-libs}
 	rtmath_voronoi ${rtmath_voronoi-libs}
 	)
 target_link_libraries(rtmath_images ${rtmath_images-libs})
+storebin(rtmath_images)
 
 
 #add_library(rtmath_da ${sflag} ${rtmath_da-files})
@@ -242,8 +249,12 @@ target_link_libraries(rtmath_images ${rtmath_images-libs})
 
 if (BUILD_TESTING)
 	add_executable(rtmath_core_tests ${rtmath_core_test-files})
+	storebin(rtmath_core_tests)
+
 	#add_executable(rtmath_mie_tests ${rtmath_mie_test-files})
 	add_executable(rtmath_ddscat_tests ${rtmath_ddscat_test-files})
+	storebin(rtmath_ddscat_tests)
+
 IF(DEFINED COMMON_CFLAGS )
 	set_target_properties(rtmath_core_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
 	#set_target_properties(rtmath_mie_tests PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})

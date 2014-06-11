@@ -1,11 +1,12 @@
 include (common)
+include (commonRtmathApps)
+
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable (rtmath-arm-info main.cpp)
-set_target_properties( rtmath-arm-info PROPERTIES FOLDER "Apps/Data")
 target_link_libraries(rtmath-arm-info ${rtmath_data-libs} rtmath_core rtmath_data)
-INSTALL(TARGETS rtmath-arm-info RUNTIME DESTINATION bin COMPONENT Applications)
+addapp(rtmath-arm-info Data)
 
 #if (BUILD_PLUGIN_IMAGEMAGICK)
 #	add_dependencies ( rtmath-arm-info rtmath_plugin_ImageMagick)

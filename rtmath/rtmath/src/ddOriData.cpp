@@ -187,15 +187,15 @@ namespace rtmath {
 			size_t stopRow = 0;
 			bool startFound = false;
 			bool endFound = false;
-			for (size_t i = 0; i < _parent.fmldata->rows(), ++i)
+			for (size_t i = 0; i < (size_t) _parent.fmldata->rows(); ++i)
 			{
-				size_t oriindex = static_cast<size_t>((*(parent.fmldata))(i, fmlColDefs::ORIINDEX));
+				size_t oriindex = static_cast<size_t>((*(_parent.fmldata))(i, ddOutput::fmlColDefs::ORIINDEX));
 				if (!startFound && oriindex == _row)
 				{
 					startFound = true;
 					startRow = oriindex;
 				}
-				if (startFound && oriindex != row)
+				if (startFound && oriindex != _row)
 				{
 					endFound = true;
 					stopRow = oriindex;

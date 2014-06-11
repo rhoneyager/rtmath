@@ -14,6 +14,7 @@ namespace rtmath
 {
 	namespace ddscat
 	{
+
 		template<class Archive>
 		void ddScattMatrixConnector::serialize(Archive &ar, const unsigned int version)
 		{

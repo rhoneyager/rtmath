@@ -20,7 +20,7 @@
 #include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
-#include <Voro++/voro++.hh>
+#include <Voro/voro++.hh>
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"

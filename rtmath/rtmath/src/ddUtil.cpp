@@ -11,7 +11,7 @@
 #include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/ddscat/ddUtil.h"
-#include "../rtmath/ddscat/ddOutputSingle.h"
+//#include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/ddscat/ddpar.h"
@@ -26,6 +26,7 @@ namespace rtmath
 	{
 		namespace ddUtil
 		{
+			/*
 			void tagTARGETs(const boost::filesystem::path &pBase, const std::string &fddver)
 			{
 				using namespace boost::filesystem;
@@ -59,7 +60,7 @@ namespace rtmath
 						tagTARGET(f,hash,ddver);
 				}
 			}
-
+			
 			void tagTARGET(const boost::filesystem::path &pFile, 
 				HASH_t &hash, const std::string &ddver)
 			{
@@ -90,7 +91,7 @@ namespace rtmath
 				f.writeFile(pFile.string());
 				boost::filesystem::last_write_time(pFile,lwt);
 			}
-
+			*/
 			void findDDFiles(const boost::filesystem::path &pStart,
 				boost::filesystem::path &pPar,
 				boost::filesystem::path &pShp)

@@ -102,7 +102,7 @@ namespace rtmath
 		 * \note Ensemble providers inherit from this!
 		 * \todo Extend to handle multiple dielectrics
 		 **/
-		class DLEXPORT_rtmath_ddscat ddOutputSingle :
+		class DLEXPORT_rtmath_ddscat DEPRECATED ddOutputSingle :
 			public boost::enable_shared_from_this<ddOutputSingle>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 			    ::rtmath::ddscat::ddOutputSingle_IO_output_registry,
@@ -318,3 +318,5 @@ std::ostream & operator<<(std::ostream&, const rtmath::ddscat::ddOutputSingleObj
 std::ostream & operator<<(std::ostream&, const rtmath::ddscat:: &);
 std::istream & operator>>(std::istream&, rtmath::ddscat:: &);
 */
+
+#pragma deprecated(ddOutputSingle)

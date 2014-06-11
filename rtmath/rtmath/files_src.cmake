@@ -169,24 +169,24 @@ set(rtmath_ddscat-shape-files
 source_group("Shapes" FILES ${rtmath_ddscat-shape-files})
 set(rtmath_ddscat-ddoutput-files
 	rtmath/ddscat/ddOutput.h
-	rtmath/ddscat/ddOutputGenerator.h
-	rtmath/ddscat/ddOutputSingle.h
+	#rtmath/ddscat/ddOutputGenerator.h
+	#rtmath/ddscat/ddOutputSingle.h
 	rtmath/ddscat/ddOriData.h
 	rtmath/ddscat/ddScattMatrix.h
 	src/ddOriData.cpp
 	src/ddOriDataParsers.cpp
 	src/ddOriDataParsers.h
 	src/ddOutput.cpp
-	src/ddOutput_serialization.cpp
-	src/ddOutputGenerator.cpp
-	src/ddOutputGenerator_serialization.cpp
-	src/ddOutputSingle.cpp
-	src/ddOutputSingle_b.cpp
-	src/ddOutputSingle_c.cpp
-	src/ddOutputSingle_keys.cpp
-	src/ddOutputSingle_keys_b.cpp
+	#src/ddOutput_serialization.cpp
+	#src/ddOutputGenerator.cpp
+	#src/ddOutputGenerator_serialization.cpp
+	#src/ddOutputSingle.cpp
+	#src/ddOutputSingle_b.cpp
+	#src/ddOutputSingle_c.cpp
+	#src/ddOutputSingle_keys.cpp
+	#src/ddOutputSingle_keys_b.cpp
 	src/ddScattMatrix.cpp
-	src/ddScattMatrix_serialization.cpp
+	#src/ddScattMatrix_serialization.cpp
 	)
 source_group("DDSCAT Output" FILES ${rtmath_ddscat-ddoutput-files})
 
@@ -212,8 +212,8 @@ set(rtmath_ddscat-files
 	# src/mtab.cpp
 	# src/pclstuff.cpp
 	#src/runScripts.cpp
-	src/tmData.cpp
-	src/tmData_serialization.cpp
+	#src/tmData.cpp
+	#src/tmData_serialization.cpp
 	src/Stdafx-ddscat.cpp
 	src/Stdafx-ddscat.h
 	${rtmath_ddscat-shape-files}

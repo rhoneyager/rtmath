@@ -42,11 +42,13 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
-		if (vm.count("help"))
+		auto doHelp = [&]()
 		{
 			std::cerr << desc << std::endl;
 			exit(1);
-		}
+		};
+
+		if (vm.count("help")) doHelp();
 
 		std::string src, nodename;
 		bool mapAliases = false;
@@ -57,10 +59,8 @@ int main(int argc, char** argv)
 			nodename = vm["aliases"].as<std::string>();
 		}
 
-		if (vm.count("split"))
-		{
-			src = vm["split"].as<std::string>();
-		}
+		if (!vm.count("split")) doHelp();
+		src = vm["split"].as<std::string>();
 
 		// Will attempt to load a parameter and will perform expansion based on 
 		// paramset expansion from key/value combinations found in rtmath.conf

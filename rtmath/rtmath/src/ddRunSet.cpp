@@ -3,7 +3,7 @@
 #include <string>
 #include <Ryan_Serialization/serialization.h>
 #include <boost/serialization/shared_ptr.hpp>
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
+#include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"

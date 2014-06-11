@@ -1,8 +1,6 @@
 # Build the apps
-include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
-include_directories(EIGEN3_INCLUDE_DIR)
+
 include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
-include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
 #option (BUILD_APPS_DEPEND_PCL
 #	"Build apps that depend on PCL"
@@ -38,8 +36,8 @@ addappdir(expand-shorthand ON)
 addappdir(getm ON)
 addappdir(image-basic ON)
 addappdir(liu-regenerate-runs ON)
-addappdir(mie-onesphere ON)
-addappdir(mie-slice ON)
+#addappdir(mie-onesphere ON)
+#addappdir(mie-slice ON)
 addappdir(orientation-ensembles ON)
 addappdir(orientation-output-table ON)
 addappdir(orientation-weights ON)
@@ -56,11 +54,12 @@ addappdir(shape-hash ON)
 addappdir(shape-hull ON)
 addappdir(shape-perturb-interior ON)
 addappdir(shape-rehash ON)
-addappdir(tmatrix-ddscat-extract ON)
-addappdir(tmatrix-oneellip ON)
-addappdir(tmatrix-optimize-with-ddscat OFF)
-addappdir(tmatrix-slice ON)
+#addappdir(tmatrix-ddscat-extract ON)
+#addappdir(tmatrix-oneellip ON)
+#addappdir(tmatrix-optimize-with-ddscat OFF)
+#addappdir(tmatrix-slice ON)
 addappdir(visualize-orientation-weights OFF)
+
 #add_subdirectory (da)
 #add_subdirectory (db-catalog-ddscat)
 #add_subdirectory (ddparse)

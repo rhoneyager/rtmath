@@ -19,7 +19,7 @@
 #if defined _MSC_FULL_VER
 #define DEPRECATED __declspec(deprecated)
 #define WARN_UNIMPLEMENTED
-#define ERR_UNIMPLEMENTED
+#define ERR_UNIMPLEMENTED __declspec(deprecated("Function is unimplemented / is commented out"))
 #elif defined __GNUC__
 #define DEPRECATED __attribute__ ((deprecated))
 //#define DEPRECATED
