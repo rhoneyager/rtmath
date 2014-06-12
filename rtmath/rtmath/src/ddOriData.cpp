@@ -248,6 +248,10 @@ namespace rtmath {
 			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			auto &os = _parent.oridata_s.at(_row);
 			auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
+			// Zero any unread entries (occurs only with an avg file, not with sca+fml pairs)
+			od.setZero();
+			oi.setZero();
+
 			std::string junk;
 
 			oi(ddOutput::stat_entries::VERSION) = version::read(in, this->version());
@@ -291,6 +295,7 @@ namespace rtmath {
 			od(ddOutput::stat_entries::TA2TFX) = a[0]; od(ddOutput::stat_entries::TA2TFY) = a[1]; od(ddOutput::stat_entries::TA2TFZ) = a[2];
 
 			simpleNumCompound<size_t>::read(in, oi(ddOutput::stat_entries::NAVG));
+			oi(ddOutput::stat_entries::DOWEIGHT) = 0;
 
 			ddAxisVec::read(in, a, axisnum, frm);
 			od(ddOutput::stat_entries::TFKX) = a[0]; od(ddOutput::stat_entries::TFKY) = a[1]; od(ddOutput::stat_entries::TFKZ) = a[2];
@@ -332,6 +337,8 @@ namespace rtmath {
 			auto &os = _parent.oridata_s.at(_row);
 			auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 			std::string junk;
+
+			
 
 			oi(ddOutput::stat_entries::VERSION) = version::read(in, this->version());
 			simpleString::read(in, os[ddOutput::stat_entries::TARGET]);
@@ -377,6 +384,7 @@ namespace rtmath {
 			od(ddOutput::stat_entries::TA2TFX) = a[0]; od(ddOutput::stat_entries::TA2TFY) = a[1]; od(ddOutput::stat_entries::TA2TFZ) = a[2];
 
 			simpleNumCompound<size_t>::read(in, oi(ddOutput::stat_entries::NAVG));
+			oi(ddOutput::stat_entries::DOWEIGHT) = 1;
 
 			ddAxisVec::read(in, a, axisnum, frm);
 			od(ddOutput::stat_entries::TFKX) = a[0]; od(ddOutput::stat_entries::TFKY) = a[1]; od(ddOutput::stat_entries::TFKZ) = a[2];

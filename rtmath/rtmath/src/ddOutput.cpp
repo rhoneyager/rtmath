@@ -468,6 +468,8 @@ namespace rtmath {
 				// Resave the stats in the hash location
 				//stats->writeToHash();
 			}
+
+			if (!ddvertag.size()) ddvertag = "unknown";
 		}
 
 		void ddOutput::expand(const std::string &outdir, bool writeShape) //const
