@@ -400,7 +400,16 @@ namespace rtmath {
 				t.join();
 
 			/// \todo Do table resorting for better memory access for both the orientation and fml tables.
-
+			size_t numAngles = 0;
+			for (const auto &f : fmls) // Avg files have no fml entries - only cross-sections are stored
+				numAngles += f.numMat();
+			res->resizeFML(numAngles);
+			size_t i = 0;
+			for (const auto &f : fmls)
+			{
+				f.doExportFMLs(i);
+				i += f.numMat();
+			}
 
 
 			// Apply consistent generation
