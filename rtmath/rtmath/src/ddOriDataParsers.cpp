@@ -325,6 +325,7 @@ namespace rtmath
 					cchar = c;
 					if (std::isdigit(c)) csnum.push_back(c);
 					else if (c == '.' && std::isdigit(lchar)) csnum.push_back(c);
+					else if (c == '-') csnum.push_back(c);
 					else if (csnum.size()) nDone();
 
 					lchar = c;
@@ -396,6 +397,7 @@ namespace rtmath
 					cchar = c;
 					if (std::isdigit(c)) csnum.push_back(c);
 					else if (c == '.' && std::isdigit(lchar)) csnum.push_back(c);
+					else if (c == '-') csnum.push_back(c);
 					else if (csnum.size()) nDone();
 
 					lchar = c;
@@ -459,6 +461,7 @@ namespace rtmath
 					cchar = c;
 					if (std::isdigit(c)) csnum.push_back(c);
 					else if (c == '.' && std::isdigit(lchar)) csnum.push_back(c);
+					else if (c == '-') csnum.push_back(c);
 					else if (csnum.size()) nDone();
 
 					lchar = c;

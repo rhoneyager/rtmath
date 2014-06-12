@@ -11,7 +11,7 @@
 #include "../../rtmath/rtmath/hash.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
+#include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
 #include "../../rtmath/rtmath/ddscat/ddRunSet.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"

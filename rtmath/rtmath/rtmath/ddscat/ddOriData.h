@@ -228,7 +228,7 @@ namespace rtmath {
 			/// \see ddScattMatrix
 			scattMatricesContainer _scattMatricesRaw;
 			/// Container for refractive indices
-			std::vector<std::complex<double> > ms;
+			//std::vector<std::complex<double> > ms;
 			/// Binding to the relevant ddOutput object
 			ddOutput &_parent;
 			/// Row in the ddOutput tables

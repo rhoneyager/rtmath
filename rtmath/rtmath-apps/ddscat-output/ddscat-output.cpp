@@ -3,15 +3,18 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <Eigen/Core>
+#include <Eigen/Dense>
 #include <iostream>
 #include <string>
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Serialization/serialization.h>
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/hash.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
+#include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -123,6 +126,7 @@ int main(int argc, char** argv)
 
 			using namespace rtmath::ddscat;
 			boost::shared_ptr<ddOutput> ddOut;
+			/*
 			if (fromSummary)
 			{
 				// Input may use the alternate generator
@@ -139,7 +143,9 @@ int main(int argc, char** argv)
 				ddOut->sources.insert(pbavg.string());
 				ddOut->sources.insert(pbpar.string());
 				ddOut->sources.insert(pbshp.string());
-			} else if (is_directory(ps))
+			} else 
+				*/
+				if (is_directory(ps))
 			{
 				// Input is a ddscat run
 				ddOut = ddOutput::generate(ps.string());

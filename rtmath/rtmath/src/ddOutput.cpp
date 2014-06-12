@@ -243,15 +243,16 @@ namespace rtmath {
 			oridata_d.conservativeResize(numOris, Eigen::NoChange);
 			oridata_i.conservativeResize(numOris, Eigen::NoChange);
 			oridata_s.resize(numOris);
+			ms.resize(numOris);
+			numOriData = numOris;
+			if (!fmldata) fmldata = boost::shared_ptr
+				<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
+				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>());
 			if (numTotAngles) resizeFML(numTotAngles);
 		}
 
 		void ddOutput::resizeFML(size_t numTotAngles)
 		{
-			if (!fmldata) fmldata = boost::shared_ptr
-				<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
-				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>());
-				//(numTotAngles, fmlColDefs::NUM_FMLCOLDEFS));
 			fmldata->conservativeResize(numTotAngles, Eigen::NoChange);
 		}
 
@@ -273,8 +274,8 @@ namespace rtmath {
 			// Iterate over and load each file. Loading files in parallel because each read operation is 
 			// rather slow. The ddscat file parsers could use much improvement.
 
-			shared_ptr<ddPar> parfile;
-			shared_ptr<shapefile::shapefile> shape;
+			//shared_ptr<ddPar> parfile;
+			//shared_ptr<shapefile::shapefile> shape;
 			std::mutex m_fmls, m_fmlmap, m_shape, m_par, m_other, m_pathlist, m_filecheck;
 
 			// Pair up matching sca and fml files for a combined read.
@@ -287,11 +288,11 @@ namespace rtmath {
 			auto loadShape = [&](const path &p)
 			{
 				std::lock_guard<std::mutex> lock(m_shape);
-				if (shape) return; // Only needs to be loaded once
+				if (res->shape) return; // Only needs to be loaded once
 				//if (noLoadRots) return;
 				// Note: the hashed object is the fundamental thing here that needs to be loaded
 				// The other stuff is only loaded for processing, and is not serialized directly.
-				shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
+				res->shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
 					(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
 				// Get the hash and load the stats
 				//shapeHash = res->shape->hash();
@@ -301,7 +302,7 @@ namespace rtmath {
 			auto loadPar = [&](const path &p)
 			{
 				std::lock_guard<std::mutex> lock(m_par);
-				parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
+				res->parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
 			};
 
 			for (const auto &p : cands)
@@ -330,10 +331,12 @@ namespace rtmath {
 					} else {
 						orisources[pfileid].first = praw;
 					}
-				} else if (pext.string() == ".par") {
+				} else if (praw.filename().string() == "ddscat.par") { // Match full name
 					std::thread t(loadPar, praw);
 					pool.push_back(std::move(t));
-				} else if (pext.string() == ".dat" || pext.string() == ".out") {
+				} else if (praw.filename().string() == "shape.dat") { // Match full name
+					/// \todo Add target.out loading and hashing for consistency verification
+					//|| praw.filename().string() == "target.out") { // Match full name
 					std::thread t(loadShape, praw);
 					pool.push_back(std::move(t));
 				}
@@ -418,10 +421,15 @@ namespace rtmath {
 			using namespace boost::filesystem;
 			using std::vector;
 
-			shapeHash = shape->hash();
-			stats = stats::shapeFileStats::genStats(shape);
+			if (shape)
+			{
+				shapeHash = shape->hash();
+				// Stats can be requested at another time
+				//stats = stats::shapeFileStats::genStats(shape);
+			}
 
 			// Pull the information from the first loaded entry
+			/// \todo Pull the information from the first avg file?
 			if (oridata_s.size())
 			{
 				const size_t _row = 0;
@@ -439,20 +447,18 @@ namespace rtmath {
 				freq = data.freq();
 				aeff = data.aeff();
 				temp = data.guessTemp();
-
-				//parfile->
-				//ms.push_back(base->getM());
 			}
 			else {
 				aeff = 0;
 				freq = 0;
 			}
 			
-			// Save the shape in the hash location, if necessary
-			shape->writeToHash();
-			// Resave the stats in the hash location
-			stats->writeToHash();
-
+			if (shape) {
+				// Save the shape in the hash location, if necessary
+				shape->writeToHash();
+				// Resave the stats in the hash location
+				//stats->writeToHash();
+			}
 		}
 
 		void ddOutput::expand(const std::string &outdir, bool writeShape) //const

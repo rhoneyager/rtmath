@@ -14,7 +14,7 @@
 #include <boost/filesystem.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
+#include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
@@ -63,6 +63,7 @@ namespace rtmath {
 				addAttr<double, Group>(gRun, "Temperature", s->temp);
 
 				// Refractive indices table
+				/*
 				Eigen::MatrixXf refrs((int) s->ms.size(), 2);
 				for (size_t i=0; i < s->ms.size(); ++i)
 				{
@@ -70,7 +71,7 @@ namespace rtmath {
 					refrs(i,1) = (float) s->ms[i].imag();
 				}
 				addDatasetEigen(gRun, "Refractive_Indices", refrs);
-
+				*/
 				// Source file paths
 
 				// Tags
@@ -79,8 +80,9 @@ namespace rtmath {
 				addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
 
 				// Enable compression
-				hsize_t chunk_dimsOri[2] = { (hsize_t) s->oridata->rows(), 1 };
-				hsize_t chunk_dimsFML[2] = { (hsize_t) s->fmldata->rows(), 11 };
+				hsize_t chunk_dimsOri[2] = { (hsize_t)s->oridata_d.rows(), 1 };
+				hsize_t chunk_dimsFML[2] = { (hsize_t) s->fmldata->rows(), 
+					rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS };
 				auto plistOri = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
 				plistOri->setChunk(2, chunk_dimsOri);
 				auto plistFML = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
@@ -97,9 +99,11 @@ namespace rtmath {
 				plistFML->setDeflate(6);
 #endif
 
-				addDatasetEigen(gRun, "Cross_Sections", *(s->oridata), plistOri);
-				if (s->avg)
-					addDatasetEigen(gRun, "Isotropic_Cross_Sections", *(s->avgoridata));
+				addDatasetEigen(gRun, "Cross_Sections_d", (s->oridata_d), plistOri);
+				addDatasetEigen(gRun, "Cross_Sections_i", (s->oridata_i), plistOri);
+				//addDatasetEigen(gRun, "Cross_Sections_s", (s->oridata_s)); // , plistOri);
+				//if (s->avg)
+				//	addDatasetEigen(gRun, "Isotropic_Cross_Sections", *(s->avgoridata));
 				if (writeFML)
 					addDatasetEigen(gRun, "FML_Data", *(s->fmldata), plistFML);
 				//addDatasetEigen(gRun, "Scattering_Data", s->scadata);

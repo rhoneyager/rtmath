@@ -7,6 +7,9 @@
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+
+#include <Eigen/Core>
+#include <Eigen/Dense>
 //#include <boost/serialization/export.hpp>
 //#include <boost/serialization/assume_abstract.hpp>
 //#include <boost/serialization/version.hpp>
@@ -98,8 +101,6 @@ namespace rtmath {
 			/// Temperature (K)
 			double temp;
 
-			/// Refractive indices
-			//std::vector<std::complex<double> > ms;
 			/// Paths of source files. Used in consolidation.
 			std::multiset<std::string> sources;
 			/// User-set brief description snippets. Used in isolating sets of runs.
@@ -163,6 +164,13 @@ namespace rtmath {
 			//Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > avgoridata_d;
 			//Eigen::Matrix<size_t, 1, stat_entries::NUM_STAT_ENTRIES_INTS> > avgoridata_i;
 			//std::array<std::string, stat_entries::stat_entries > avgoridata_s;
+
+
+			/// Refractive indices
+			std::vector<std::vector<std::complex<double> > > ms;
+
+			/// Number of stored orientations + averages
+			size_t numOriData;
 
 
 			/// Encapsulating enum in namespace, as an enum class is too restrictive

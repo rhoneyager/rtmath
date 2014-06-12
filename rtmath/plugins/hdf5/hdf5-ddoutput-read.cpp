@@ -14,7 +14,7 @@
 #include <boost/filesystem.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
+#include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
@@ -68,10 +68,12 @@ namespace rtmath {
 				readAttr<double, Group>(base, "aeff", r->aeff);
 				readAttr<double, Group>(base, "Temperature", r->temp);
 
+				/*
 				Eigen::MatrixXf refrs;
 				readDatasetEigen<Eigen::MatrixXf, Group>(base, "Refractive_Indices", refrs);
 				for (size_t i=0; i< (size_t) refrs.rows(); ++i)
 					r->ms.push_back(std::complex<double>( refrs(i,0), refrs(i,1) ));
+				*/
 
 				// Source file paths
 
@@ -81,9 +83,10 @@ namespace rtmath {
 				readAttr<string, Group>(base, "DDSCAT_Version_Tag", r->ddvertag);
 
 
-				readDatasetEigen(base, "Cross_Sections", *(r->oridata));
-				if (datasetExists(base, "Isotropic_Cross_Sections"))
-					readDatasetEigen(base, "Isotropic_Cross_Sections", *(r->avgoridata));
+				readDatasetEigen(base, "Cross_Sections_d", (r->oridata_d));
+				readDatasetEigen(base, "Cross_Sections_i", (r->oridata_i));
+				//if (datasetExists(base, "Isotropic_Cross_Sections"))
+				//	readDatasetEigen(base, "Isotropic_Cross_Sections", *(r->avgoridata));
 
 				bool readFML = opts->getVal<bool>("readFML", true);
 				if (readFML && datasetExists(base, "FML_Data"))
@@ -103,7 +106,7 @@ namespace rtmath {
 				// interpreting the ddscat run.
 				r->parfile = boost::shared_ptr<ddPar>(new ddPar);
 				read_hdf5_ddPar(openGroup(base, "par"), r->parfile.get());
-				r->doImport();
+				//r->doImport();
 				return true;
 			}
 		}

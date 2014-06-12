@@ -277,7 +277,7 @@ namespace rtmath {
 				size_t subst = 0;
 				std::complex<double> m;
 				refractive::read(lin, subst, m);
-				ms.push_back(m);
+				_parent.ms[_row].push_back(m);
 			}
 
 			simpleNumCompound<double>::read(lin, od(ddOutput::stat_entries::TOL)); // lin from refractive index read
@@ -363,7 +363,7 @@ namespace rtmath {
 				size_t subst = 0;
 				std::complex<double> m;
 				refractive::read(lin, subst, m);
-				ms.push_back(m);
+				//_parent.ms[_row].push_back(m); // FML read instead does this - AVG read still does it.
 			}
 
 			simpleNumCompound<double>::read(lin, od(ddOutput::stat_entries::TOL)); // lin from refractive index read
@@ -392,6 +392,12 @@ namespace rtmath {
 			od(ddOutput::stat_entries::IPV2TFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV2TFXI) = iv[0].imag();
 			od(ddOutput::stat_entries::IPV2TFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV2TFYI) = iv[1].imag();
 			od(ddOutput::stat_entries::IPV2TFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV2TFZI) = iv[2].imag();
+
+			ddAxisVec::read(in, a, axisnum, frm);
+			od(ddOutput::stat_entries::TA1LFX) = a[0]; od(ddOutput::stat_entries::TA1LFY) = a[1]; od(ddOutput::stat_entries::TA1LFZ) = a[2];
+			ddAxisVec::read(in, a, axisnum, frm);
+			od(ddOutput::stat_entries::TA2LFX) = a[0]; od(ddOutput::stat_entries::TA2LFY) = a[1]; od(ddOutput::stat_entries::TA2LFZ) = a[2];
+
 
 			ddAxisVec::read(in, a, axisnum, frm);
 			od(ddOutput::stat_entries::LFKX) = a[0]; od(ddOutput::stat_entries::LFKY) = a[1]; od(ddOutput::stat_entries::LFKZ) = a[2];
@@ -434,8 +440,8 @@ namespace rtmath {
 			simpleStringRev::read(in, os[ddOutput::stat_entries::CCGMETH]);
 			simpleStringRev::read(in, os[ddOutput::stat_entries::SHAPE]);
 			simpleNumRev<size_t>::read(in, oi(ddOutput::stat_entries::NUM_DIPOLES));
-			std::getline(in, junk); // d/aeff
-			simpleNumRev<double>::read(in, od(ddOutput::stat_entries::D));
+			//std::getline(in, junk); // d/aeff
+			//simpleNumRev<double>::read(in, od(ddOutput::stat_entries::D));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::AEFF));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::WAVE));
 			od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
@@ -453,7 +459,7 @@ namespace rtmath {
 				size_t subst = 0;
 				std::complex<double> m;
 				refractive::read(lin, subst, m);
-				ms.push_back(m);
+				_parent.ms[_row].push_back(m);
 			}
 
 			simpleNumCompound<double>::read(lin, od(ddOutput::stat_entries::TOL)); // lin from refractive index read
@@ -540,8 +546,8 @@ namespace rtmath {
 				simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::NAMBIENT), 8, "NAMBIENT=    ", "refractive index of ambient medium");
 
 			// Write refractive indices (plural)
-			for (size_t i = 0; i < ms.size(); ++i)
-				refractive::write(out, this->version(), i + 1, ms[i], k, od(ddOutput::stat_entries::D));
+			for (size_t i = 0; i < _parent.ms[_row].size(); ++i)
+				refractive::write(out, this->version(), i + 1, _parent.ms[_row][i], k, od(ddOutput::stat_entries::D));
 
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::TOL), 9, "   TOL= ", " error tolerance for CCG method");
 			
@@ -620,8 +626,8 @@ namespace rtmath {
 				simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::NAMBIENT), 8, "NAMBIENT=    ", "refractive index of ambient medium");
 
 			// Write refractive indices (plural)
-			for (size_t i = 0; i < ms.size(); ++i)
-				refractive::write(out, this->version(), i + 1, ms[i], k, od(ddOutput::stat_entries::D));
+			for (size_t i = 0; i < _parent.ms[_row].size(); ++i)
+				refractive::write(out, this->version(), i + 1, _parent.ms[_row][i], k, od(ddOutput::stat_entries::D));
 
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::TOL), 9, "   TOL= ", " error tolerance for CCG method");
 
@@ -647,6 +653,12 @@ namespace rtmath {
 			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV2TFYR), od(ddOutput::stat_entries::IPV2TFYI));
 			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV2TFZR), od(ddOutput::stat_entries::IPV2TFZI));
 			ddPolVec::write(out, this->version(), iv, 2, frameType::TF);
+
+
+			a[0] = od(ddOutput::stat_entries::TA1LFX); a[1] = od(ddOutput::stat_entries::TA1LFY); a[2] = od(ddOutput::stat_entries::TA1LFZ);
+			ddAxisVec::write(out, this->version(), a, 1, frameType::LF);
+			a[0] = od(ddOutput::stat_entries::TA2LFX); a[1] = od(ddOutput::stat_entries::TA2LFY); a[2] = od(ddOutput::stat_entries::TA2LFZ);
+			ddAxisVec::write(out, this->version(), a, 2, frameType::LF);
 
 
 			a[0] = od(ddOutput::stat_entries::LFKX); a[1] = od(ddOutput::stat_entries::LFKY); a[2] = od(ddOutput::stat_entries::LFKZ);
@@ -696,9 +708,9 @@ namespace rtmath {
 			simpleStringRev::write(out, this->version(), os.at(ddOutput::stat_entries::CCGMETH), "DDA method");
 			simpleStringRev::write(out, this->version(), os.at(ddOutput::stat_entries::SHAPE), "shape");
 			simpleNumRev<size_t>::write(out, this->version(), oi(ddOutput::stat_entries::NUM_DIPOLES), "NAT0 = number of dipoles");
-			double daeff = od(ddOutput::stat_entries::D) / od(ddOutput::stat_entries::AEFF);
-			simpleNumRev<double>::write(out, this->version(), daeff, "d/aeff for this target [d=dipole spacing]");
-			simpleNumRev<double>::write(out, this->version(), od(ddOutput::stat_entries::D), "d (physical units)");
+			//double daeff = od(ddOutput::stat_entries::D) / od(ddOutput::stat_entries::AEFF);
+			//simpleNumRev<double>::write(out, this->version(), daeff, "d/aeff for this target [d=dipole spacing]");
+			//simpleNumRev<double>::write(out, this->version(), od(ddOutput::stat_entries::D), "d (physical units)");
 
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::AEFF), 12, "  AEFF=  ", "effective radius (physical units)");
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::WAVE), 12, "  WAVE=  ", "wavelength (in vacuo, physical units)");
@@ -709,8 +721,8 @@ namespace rtmath {
 				simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::NAMBIENT), 8, "NAMBIENT=    ", "refractive index of ambient medium");
 
 			// Write refractive indices (plural)
-			for (size_t i = 0; i < ms.size(); ++i)
-				refractive::write(out, this->version(), i + 1, ms[i], k, od(ddOutput::stat_entries::D));
+			for (size_t i = 0; i < _parent.ms[_row].size(); ++i)
+				refractive::write(out, this->version(), i + 1, _parent.ms[_row][i], k, od(ddOutput::stat_entries::D));
 
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::TOL), 9, "   TOL= ", " error tolerance for CCG method");
 
@@ -1017,19 +1029,19 @@ namespace rtmath {
 
 		std::complex<double> ddOriData::M(size_t dielIndex) const
 		{
-			if (ms.size() > dielIndex) return ms[dielIndex];
+			if (_parent.ms[_row].size() > dielIndex) return _parent.ms[_row][dielIndex];
 			RTthrow debug::xArrayOutOfBounds();
-			return std::complex<double>(0, 0); // needed to suppress msvc warning
+			return std::complex<double>(0, 0); // needed to suppress _parent.ms[_row]vc warning
 		}
 		void ddOriData::M(const std::complex<double>& m, size_t dielIndex)
 		{
-			if (ms.size() < dielIndex) ms.resize(dielIndex + 1);
-			ms[dielIndex] = m;
+			if (_parent.ms[_row].size() < dielIndex) _parent.ms[_row].resize(dielIndex + 1);
+			_parent.ms[_row][dielIndex] = m;
 		}
 
 		size_t ddOriData::numM() const
 		{
-			return ms.size();
+			return _parent.ms[_row].size();
 		}
 
 

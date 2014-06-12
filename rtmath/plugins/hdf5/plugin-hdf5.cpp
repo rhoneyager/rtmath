@@ -10,19 +10,19 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-#include <hdf5.h>
-#include <H5Cpp.h>
-
-
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include "plugin-hdf5.h"
+
+#include <hdf5.h>
+#include <H5Cpp.h>
+
 
 void dllEntry();
 rtmath_plugin_init(dllEntry);
