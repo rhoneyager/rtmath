@@ -142,7 +142,7 @@ namespace rtmath {
 				enum stat_entries_size_ts
 				{
 					// DOWEIGHT indicates whether this is an avg entry or a raw oriented result.
-					VERSION, NUM_DIPOLES, NAVG, NUMP, NUMF, DOWEIGHT,
+					VERSION, NUM_DIPOLES, NAVG, DOWEIGHT,
 					NUM_STAT_ENTRIES_INTS
 				};
 
