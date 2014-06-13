@@ -809,7 +809,7 @@ namespace Ryan_Debug {
 		const size_t len = 256;
 		char hname[len];
 		int res = 0;
-		res = getlogin_r(char *hname, size_t len);
+		res = getlogin_r(hname, len);
 		if (res) return 0;
 		username = std::string(hname);
 #endif

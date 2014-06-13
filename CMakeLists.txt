@@ -79,10 +79,18 @@ endif()
 source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+
 add_library(Ryan_Debug SHARED ${srcs} ${hdrs} 
 	"${PROJECT_BINARY_DIR}/module-ryan-debug"
 	)
 target_link_libraries(Ryan_Debug ${liblist})
+if(WIN32 AND NOT CYGWIN)
+ELSE()
+	target_link_libraries(Ryan_Debug dl)
+ENDIF()
 addlib(Ryan_Debug SHARED)
 if (NOT DEFINED MAKE_ASSEMBLY)
 	signing(Ryan_Debug) # Will be part of the assembly code

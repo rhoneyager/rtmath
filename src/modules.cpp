@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 
-#ifdef unix
+#ifdef __unix__
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
