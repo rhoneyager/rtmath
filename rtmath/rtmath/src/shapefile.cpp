@@ -26,7 +26,7 @@
 
 namespace {
 	std::set<std::string> mtypes;
-	std::mutex mlock;
+	std::mutex mlock_shp;
 }
 
 namespace rtmath {
@@ -62,7 +62,7 @@ namespace rtmath {
 				//static std::mutex mlock;
 				// Prevent threading clashes
 				{
-					std::lock_guard<std::mutex> lck(mlock);
+					std::lock_guard<std::mutex> lck(mlock_shp);
 					if (!mtypes.size())
 					{
 						mtypes.insert(".shp");

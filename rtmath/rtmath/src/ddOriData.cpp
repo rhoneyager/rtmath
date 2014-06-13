@@ -261,7 +261,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 
-			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			ddOutput::shared_data s;
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
@@ -359,7 +359,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 
-			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			ddOutput::shared_data s;
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
@@ -473,7 +473,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 
-			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			ddOutput::shared_data s;
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
@@ -579,7 +579,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
-			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row,0);
+			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row,0);
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -657,7 +657,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
-			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -760,7 +760,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
-			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -845,7 +845,7 @@ namespace rtmath {
 		{
 			if (!_connector)
 			{
-				const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+				const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 				std::vector<std::complex<double> > v;
 				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV1LFXR), od(ddOutput::stat_entries::IPV1LFXI)));
 				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV1LFYR), od(ddOutput::stat_entries::IPV1LFYI)));
@@ -866,7 +866,7 @@ namespace rtmath {
 
 		void ddOriData::writeStatTable(std::ostream &out) const
 		{
-			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 			using namespace std;
@@ -918,7 +918,7 @@ namespace rtmath {
 
 		void ddOriData::readStatTable(std::istream &in)
 		{
-			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//auto &os = _parent.oridata_s.at(_row);
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -955,7 +955,7 @@ namespace rtmath {
 
 		double ddOriData::guessTemp(size_t dielIndex) const
 		{
-			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			return rtmath::refract::guessTemp(od(ddOutput::stat_entries::FREQ), M(dielIndex));
 		}
 
@@ -1067,7 +1067,7 @@ namespace rtmath {
 
 		bool ddOriData::operator<(const ddOriData &rhs) const
 		{
-			const auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 

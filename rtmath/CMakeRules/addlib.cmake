@@ -13,9 +13,9 @@ macro(addlib libname libshared )
 	#message("${headername} ${ARGV2} ${libname} ${ARGC} ${ARGV}")
 
 
-	IF(DEFINED COMMON_CFLAGS )
-		set_target_properties(${libname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
-	endif()
+	#	IF(DEFINED COMMON_CFLAGS )
+	#	set_target_properties(${libname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	#endif()
 	SET_TARGET_PROPERTIES( ${libname} PROPERTIES RELEASE_POSTFIX _Release${configappend} )
 	SET_TARGET_PROPERTIES( ${libname} PROPERTIES MINSIZEREL_POSTFIX _MinSizeRel${configappend} )
 	SET_TARGET_PROPERTIES( ${libname} PROPERTIES RELWITHDEBINFO_POSTFIX _RelWithDebInfo${configappend} )
@@ -26,6 +26,7 @@ macro(addlib libname libshared )
 	# This is for determining the build type (esp. used in registry code)
 	#target_compile_definitions(${libname} PRIVATE
 	#	BUILDTYPE="${CMAKE_BUILD_TYPE}")
+	target_compile_definitions(${libname} PRIVATE BUILDCONF="${CMAKE_BUILD_TYPE}")
 	target_compile_definitions(${libname} PRIVATE BUILDTYPE=BUILDTYPE_$<CONFIGURATION>)
 	# These two are for symbol export
 	target_compile_definitions(${libname} PRIVATE EXPORTING_${headername})

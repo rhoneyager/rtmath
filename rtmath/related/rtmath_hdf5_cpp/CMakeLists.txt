@@ -32,6 +32,7 @@ add_library (rtmath_hdf5_cpp STATIC
 	export-hdf5.cpp
 	export-hdf5.h
 	)
+add_definitions(-fPIC)
 set_target_properties( rtmath_hdf5_cpp PROPERTIES FOLDER "Related")
 target_link_libraries(rtmath_hdf5_cpp ${h5libs} ${libs})
 

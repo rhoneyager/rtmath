@@ -120,10 +120,10 @@ namespace rtmath {
 
 			
 #define accessorRW(name,id,valtype) \
-	inline valtype name() const { return __getSimple<valtype>((int) id); } \
-	inline void name(const valtype &v) { __setSimple<valtype>((int) id, v); }
+	inline valtype name() const { return __getSimpleDouble((int) id); } \
+	inline void name(const valtype &v) { __setSimpleDouble((int) id, v); }
 #define accessorRO(name,id,valtype) \
-	inline valtype name() const { return __getSimple<valtype>((int) id); }
+	inline valtype name() const { return __getSimpleDouble((int) id); }
 
 			size_t version() const;
 			//accessorRW(version, ddOutput::stat_entries::VERSION, size_t);
@@ -197,19 +197,10 @@ namespace rtmath {
 			//std::string getStatEntry(stat_entries::stat_entries_strings e) const;
 
 		protected:
-
-			template< class valtype>
-			valtype __getSimple(int id) const { throw; }
-			//template<> size_t __getSimple<size_t>(int id) const { return _parent.oridata_i(_row, id); }
-			template<> double __getSimple<double>(int id) const { return _parent.oridata_d(_row, id); }
-			//template<> std::string __getSimple<std::string>(int id) const { return _parent.oridata_s.at(_row).at(id); }
+			double __getSimpleDouble(int id) const { return _parent.oridata_d(_row, id); }
 			template<class valtype>
-			void __setSimple(int id, const valtype val) { __setSimpleRef(id, val); }
-			template<class valtype>
-			void __setSimpleRef(int id, const valtype &val) { throw; }
-			//template<> void __setSimpleRef<size_t>(int id, const size_t &val) { _parent.oridata_i(_row, id) = val; }
-			template<> void __setSimpleRef<double>(int id, const double &val) { _parent.oridata_d(_row, id) = val; }
-			//template<> void __setSimpleRef<std::string>(int id, const std::string &val) { _parent.oridata_s.at(_row).at(id) = val; }
+			void __setSimpleDouble(int id, const valtype val) { __setSimpleRefDouble(id, val); }
+			void __setSimpleRefDouble(int id, const double &val) { _parent.oridata_d(_row, id) = val; }
 
 
 			/// Handles role of delegated constructor

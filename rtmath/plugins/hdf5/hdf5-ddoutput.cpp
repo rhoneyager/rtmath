@@ -159,7 +159,7 @@ namespace rtmath {
 					//addAttr<string, DataSet>(csd, "VERSION", "0.2");
 					for (size_t i = 0; i < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES; ++i)
 					{
-						std::string lbl = rtmath::ddscat::ddOutput::stat_entries::stringify<double>((int) i);
+						std::string lbl = rtmath::ddscat::ddOutput::stat_entries::stringify((int) i);
 						std::ostringstream fldname;
 						fldname << "FIELD_" << i << "_NAME";
 						std::string sfldname = fldname.str();
@@ -226,7 +226,7 @@ namespace rtmath {
 						//addAttr<string, DataSet>(csd, "VERSION", "0.2");
 						for (size_t i = 0; i < rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS; ++i)
 						{
-							std::string lbl = rtmath::ddscat::ddOutput::fmlColDefs::stringify<float>((int)i);
+							std::string lbl = rtmath::ddscat::ddOutput::fmlColDefs::stringify((int)i);
 							std::ostringstream fldname;
 							fldname << "FIELD_" << i << "_NAME";
 							std::string sfldname = fldname.str();

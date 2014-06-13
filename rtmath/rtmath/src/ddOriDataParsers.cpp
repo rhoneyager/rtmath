@@ -22,10 +22,11 @@
 #include <boost/spirit/include/qi_repeat.hpp>
 
 #include "../rtmath/ddscat/ddOriData.h"
+#include "../rtmath/macros.h"
 #include "ddOriDataParsers.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/units.h"
-#include "../rtmath/macros.h"
+
 #include "../rtmath/refract.h"
 #include "../rtmath/error/error.h"
 
@@ -84,7 +85,7 @@ namespace rtmath
 
 					//  Begin grammar
 					(
-					omit[repeat(pos)[*char_("a-zA-Z.*=,/-()<>^_:")]] >> double_[push_back(phoenix::ref(v), _1)]
+					omit[repeat(pos)[*char_("a-zA-Z.*=,/-()<>^_:")]] >> double_[push_back(phoenix::ref(val), _1)]
 					)
 					,
 					//  End grammar
@@ -481,7 +482,7 @@ namespace rtmath
 			using namespace std;
 			using namespace rtmath::ddscat::ddOriDataParsers;
 
-			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//auto &os = _parent.oridata_s.at(_row);
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -574,7 +575,7 @@ namespace rtmath
 			using namespace std;
 			using namespace rtmath::ddscat::ddOriDataParsers;
 
-			auto &od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			//auto &os = _parent.oridata_s.at(_row);
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 

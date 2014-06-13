@@ -474,7 +474,7 @@ namespace rtmath {
 			if (oridata_d.rows())
 			{
 				const size_t _row = 0;
-				auto &od = oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+				auto od = oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 				//auto &os = oridata_s.at(_row);
 				//auto &oi = oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -495,7 +495,7 @@ namespace rtmath {
 			
 			if (shape) {
 				// Save the shape in the hash location, if necessary
-				shape->writeToHash();
+				//shape->writeToHash();
 				// Resave the stats in the hash location
 				//stats->writeToHash();
 			}
@@ -752,8 +752,7 @@ namespace rtmath {
 			return res;
 		}
 
-		template<>
-		std::string ddOutput::stat_entries::stringify<double>(int val)
+		std::string ddOutput::stat_entries::stringify(int val)
 		{
 #define _tostr(a) #a
 #define tostr(a) _tostr(a)
@@ -819,8 +818,7 @@ namespace rtmath {
 		}
 		*/
 
-		template<>
-		std::string ddOutput::fmlColDefs::stringify<float>(int val)
+		std::string ddOutput::fmlColDefs::stringify(int val)
 		{
 #define _tostr(a) #a
 #define tostr(a) _tostr(a)

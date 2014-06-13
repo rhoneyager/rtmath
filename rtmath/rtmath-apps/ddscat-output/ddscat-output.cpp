@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 			("hash,s", "Store ddscat output in the hash store")
 			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
 			("description,d", po::value<string>(), "Describe the output file")
-			("hostname,h", po::value<string>(), "hostname of system used to generate data")
+			("hostname,H", po::value<string>(), "hostname of system used to generate data")
 			("directory,D", "Write as a directory")
 
 			("write-fmls", po::value<bool>()->default_value(true), "Write FML data into output file")

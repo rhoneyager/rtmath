@@ -115,6 +115,7 @@ namespace {
 #elif BUILDTYPE == BUILDTYPE_Release
 		buildtype = "Release";
 #else
+		buildtype = BUILDCONF;
 #endif
 		std::transform(buildtype.begin(), buildtype.end(), buildtype.begin(), ::tolower);
 

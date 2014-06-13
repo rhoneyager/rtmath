@@ -179,8 +179,8 @@ namespace rtmath {
 				};
 				*/
 
-				template<class T> static std::string stringify(int val) { return std::string(); }
-				template<> static DLEXPORT_rtmath_ddscat std::string stringify<double>(int val);
+				//template<class T> static std::string stringify(int val) { return std::string(); }
+				static DLEXPORT_rtmath_ddscat std::string stringify(int val);
 				//template<> static DLEXPORT_rtmath_ddscat std::string stringify<size_t>(int val);
 				//template<> static DLEXPORT_rtmath_ddscat std::string stringify<std::string>(int val);
 			};
@@ -224,8 +224,7 @@ namespace rtmath {
 					F00R, F00I, F01R, F01I, F10R, F10I, F11R, F11I,
 					NUM_FMLCOLDEFS
 				};
-				template<class T> static std::string stringify(int val);
-				template<> static DLEXPORT_rtmath_ddscat std::string stringify<float>(int val);
+				static DLEXPORT_rtmath_ddscat std::string stringify(int val);
 			};
 			/// Table containing fml data. Delayed allocation because the size resides within a file being read.
 			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> > fmldata;
