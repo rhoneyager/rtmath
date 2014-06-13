@@ -880,6 +880,8 @@ namespace Ryan_Debug {
 		out << "Active location: " << currentPath << endl;
 		out << "Loaded modules: \n";
 		enumModules(getPID(), out);
+		out << "Username: " << getUsername() << endl
+			<< "Machine name: " << getHostname() << endl;
 
 
 		debug_preamble(out);
