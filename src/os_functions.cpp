@@ -27,10 +27,13 @@
 #ifdef _WIN32
 //#include "../../rtmath/rtmath/ROOTlink.h"
 #include <Windows.h>
+//#include <Winsock2.h>
 #include <TlHelp32.h>
 #include <Psapi.h>
 
 #pragma comment(lib, "Psapi")
+#pragma comment(lib, "Ws2_32")
+#pragma comment(lib, "Advapi32")
 
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
@@ -99,6 +102,10 @@ extern "C" {
 namespace {
 	size_t sys_num_threads = 0;
 	std::mutex m_sys_num_threads;
+
+	std::mutex m_sys_names;
+	std::string hostname;
+	std::string username;
 }
 
 namespace Ryan_Debug {
@@ -793,7 +800,54 @@ namespace Ryan_Debug {
 		// Execution should not reach this point
 	}
 
+	const char* getUsername()
+	{
+		std::lock_guard<std::mutex> lock(m_sys_names);
+		if (username.size()) return username.c_str();
 
+#ifdef __unix__
+		const size_t len = 256;
+		char hname[len];
+		int res = 0;
+		res = getlogin_r(char *hname, size_t len);
+		if (res) return 0;
+		username = std::string(hname);
+		return username.c_str();
+#endif
+#ifdef _WIN32
+		BOOL res = false;
+		TCHAR hname[256];
+		DWORD len = 0;
+		res = GetUserName(hname, &len);
+		if (res)
+		{
+			username = convertStr(hname);
+			return username.c_str();
+		}
+#endif
+		
+		return 0;
+	}
+
+	const char* getHostname()
+	{
+		std::lock_guard<std::mutex> lock(m_sys_names);
+		if (hostname.size()) return hostname.c_str();
+
+		const size_t len = 256;
+		char hname[len];
+		int res = 0;
+#ifdef __unix__
+		res = gethostname(hname, len);
+		
+#endif
+#ifdef _WIN32
+		res = gethostname(hname, len);
+#endif
+		if (res) return 0;
+		hostname = std::string(hname);
+		return hostname.c_str();
+	}
 
 	/**
 	* \brief Prints compiler and library information that was present when the

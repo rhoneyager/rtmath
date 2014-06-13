@@ -57,6 +57,12 @@ namespace Ryan_Debug
 	RYAN_DEBUG_DLEXPORT const char* getStartTime(const hProcessInfo);
 	void RYAN_DEBUG_DLEXPORT freeProcessInfo(hProcessInfo);
 
+	/// Get current username
+	RYAN_DEBUG_DLEXPORT const char* getUsername();
+
+	/// Get system hostname
+	RYAN_DEBUG_DLEXPORT const char* getHostname();
+
 	/// Print the compiler information for the debug library.
 	void RYAN_DEBUG_DLEXPORT printDebugInfo(std::ostream &out = std::cerr);
 
