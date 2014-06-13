@@ -9,11 +9,16 @@
 #include <complex>
 #include <boost/filesystem.hpp>
 #include <boost/math/special_functions/round.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <cmath>
 #include <ios>
 #include <iomanip>
 #include <thread>
 #include <mutex>
+
+
+#include <Ryan_Debug/debug.h>
 
 #include "../rtmath/zeros.h"
 #include "../rtmath/refract.h"
@@ -34,6 +39,8 @@
 namespace {
 	boost::filesystem::path pHashRuns;
 	//bool autoHashRuns = false;
+	static bool isFMLforced = false;
+	static bool forceWriteFML = true;
 }
 
 namespace rtmath {
@@ -81,11 +88,18 @@ namespace rtmath {
 		}
 		*/
 
+		void ddOutput::isForcingFMLwrite(bool& a, bool& b)
+		{
+			a = isFMLforced; b = forceWriteFML;
+		}
+
 		ddOutput::ddOutput() : 
-			freq(0), aeff(0), temp(0)
+			freq(0), aeff(0), temp(0), numOriData(0), ingest_rtmath_version(0)
 		{
 			resize(0, 0);
 		}
+
+		ddOutput::shared_data::shared_data() : version(0), num_dipoles(0), navg(0) {}
 
 		/*
 		void ddOutput::updateAVG()
@@ -241,8 +255,8 @@ namespace rtmath {
 		void ddOutput::resize(size_t numOris, size_t numTotAngles)
 		{
 			oridata_d.conservativeResize(numOris, Eigen::NoChange);
-			oridata_i.conservativeResize(numOris, Eigen::NoChange);
-			oridata_s.resize(numOris);
+			//oridata_i.conservativeResize(numOris, Eigen::NoChange);
+			//oridata_s.resize(1);
 			ms.resize(numOris);
 			numOriData = numOris;
 			if (!fmldata) fmldata = boost::shared_ptr
@@ -299,6 +313,20 @@ namespace rtmath {
 				//if (dostats)
 				//	res->stats = stats::shapeFileStats::genStats(res->shape);
 			};
+			auto loadShapeParsed = [&](const path &p)
+			{
+				std::lock_guard<std::mutex> lock(m_shape);
+				if (res->shape) return; // Only needs to be loaded once
+				//if (noLoadRots) return;
+				// Note: the hashed object is the fundamental thing here that needs to be loaded
+				// The other stuff is only loaded for processing, and is not serialized directly.
+				res->parsedShapeHash = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
+					(new ::rtmath::ddscat::shapefile::shapefile(p.string()))->hash();
+				// Get the hash and load the stats
+				//shapeHash = res->shape->hash();
+				//if (dostats)
+				//	res->stats = stats::shapeFileStats::genStats(res->shape);
+			};
 			auto loadPar = [&](const path &p)
 			{
 				std::lock_guard<std::mutex> lock(m_par);
@@ -335,9 +363,10 @@ namespace rtmath {
 					std::thread t(loadPar, praw);
 					pool.push_back(std::move(t));
 				} else if (praw.filename().string() == "shape.dat") { // Match full name
-					/// \todo Add target.out loading and hashing for consistency verification
-					//|| praw.filename().string() == "target.out") { // Match full name
 					std::thread t(loadShape, praw);
+					pool.push_back(std::move(t));
+				} else if (praw.filename().string() == "target.out") { // Match full name
+					std::thread t(loadShapeParsed, praw);
 					pool.push_back(std::move(t));
 				}
 			}
@@ -437,21 +466,23 @@ namespace rtmath {
 				//stats = stats::shapeFileStats::genStats(shape);
 			}
 
+
+			tags.insert(std::pair<std::string, std::string>("target", s.target));
+
 			// Pull the information from the first loaded entry
 			/// \todo Pull the information from the first avg file?
-			if (oridata_s.size())
+			if (oridata_d.rows())
 			{
 				const size_t _row = 0;
 				auto &od = oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
-				auto &os = oridata_s.at(_row);
-				auto &oi = oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
+				//auto &os = oridata_s.at(_row);
+				//auto &oi = oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
 				ddOriData data(*this, _row);
 
-				tags.insert(os.at(stat_entries::TARGET));
 				// Extract the ddscat version from the target field
 				// Find "ddscat/" and read until the next space
-				ddUtil::getDDSCATbuild(os.at(stat_entries::TARGET), ddvertag);
+				ddUtil::getDDSCATbuild(s.target, ddvertag);
 
 				freq = data.freq();
 				aeff = data.aeff();
@@ -470,6 +501,13 @@ namespace rtmath {
 			}
 
 			if (!ddvertag.size()) ddvertag = "unknown";
+			ingest_hostname = Ryan_Debug::getHostname();
+			ingest_username = Ryan_Debug::getUsername();
+			using namespace boost::posix_time;
+			using namespace boost::gregorian;
+			ptime now = second_clock::local_time();
+			ingest_timestamp = to_iso_string(now);
+			ingest_rtmath_version = rtmath::debug::rev();
 		}
 
 		void ddOutput::expand(const std::string &outdir, bool writeShape) //const
@@ -522,9 +560,9 @@ namespace rtmath {
 			};
 
 			// Write fmls
-			for (size_t i = 0; i < oridata_s.size(); ++i)
+			for (size_t i = 0; i < (size_t) oridata_d.rows(); ++i)
 			{
-				if (oridata_i(i, stat_entries::DOWEIGHT)) {
+				if (oridata_d(i, stat_entries::DOWEIGHT)) {
 					std::string basename = onameb(pOut, i, 4);
 					std::string fmlname = basename;
 					std::string scaname = basename;
@@ -578,6 +616,7 @@ namespace rtmath {
 				;
 
 			hidden.add_options()
+				("ddOutput-force-write-fmls", po::value<bool>(), "Force / disable fml table writing")
 				;
 		}
 
@@ -602,6 +641,13 @@ namespace rtmath {
 			};
 			// Will enable after actual use
 			//if (!validateDir(pHashRuns)) RTthrow debug::xMissingFile(pHashRuns.string().c_str());
+
+			if (vm.count("ddOutput-force-write-fmls"))
+			{
+				isFMLforced = true;
+				forceWriteFML = vm["ddOutput-force-write-fmls"].as<bool>();
+			}
+
 		}
 
 		void ddOutput::initPaths()
@@ -665,7 +711,7 @@ namespace rtmath {
 				<< (boost::math::round((float) freq*10.f)/10.f) << "-"
 				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
 				<< tDesc << "-"
-				<< oridata_s.size() << "-"
+				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
 				<< ddvertag
 				<< ".xml";
@@ -698,13 +744,96 @@ namespace rtmath {
 			out << (boost::math::round((float) freq*10.f)/10.f) << "-"
 				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
 				<< tDesc << "-"
-				<< oridata_s.size() << "-"
+				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
 				<< ddvertag;
 
 			res = out.str();
 			return res;
 		}
+
+		template<>
+		std::string ddOutput::stat_entries::stringify<double>(int val)
+		{
+#define _tostr(a) #a
+#define tostr(a) _tostr(a)
+#define check(a) if (val == a) return std::string( tostr(a) );
+			check(D); check(XMIN); check(XMAX); check(YMIN);
+			check(YMAX); check(ZMIN); check(ZMAX); check(AEFF);
+			check(WAVE); check(FREQ); //check(NAMBIENT); check(TOL);
+			check(TA1TFX); check(TA1TFY); check(TA1TFZ); check(TA2TFX);
+			check(TA2TFY); check(TA2TFZ); check(TFKX); check(TFKY);
+			check(TFKZ); check(IPV1TFXR); check(IPV1TFXI); check(IPV1TFYR);
+			check(IPV1TFYI); check(IPV1TFZR); check(IPV1TFZI); check(IPV2TFXR);
+			check(IPV2TFXI); check(IPV2TFYR); check(IPV2TFYI); check(IPV2TFZR);
+			check(IPV2TFZI); check(TA1LFX); check(TA1LFY); check(TA1LFZ);
+			check(TA2LFX); check(TA2LFY); check(TA2LFZ); check(LFKX);
+			check(LFKY); check(LFKZ); check(IPV1LFXR); check(IPV1LFXI);
+			check(IPV1LFYR); check(IPV1LFYI); check(IPV1LFZR); check(IPV1LFZI);
+			check(IPV2LFXR); check(IPV2LFXI); check(IPV2LFYR); check(IPV2LFYI);
+			check(IPV2LFZR); check(IPV2LFZI); check(BETA); check(THETA);
+			check(PHI); //check(ETASCA); 
+			check(QEXT1); check(QABS1);
+			check(QSCA1); check(G11); check(G21); check(QBK1);
+			check(QPHA1); check(QEXT2); check(QABS2); check(QSCA2);
+			check(G12); check(G22); check(QBK2); check(QPHA2);
+			check(QEXTM); check(QABSM); check(QSCAM); check(G1M);
+			check(G2M); check(QBKM); check(QPHAM); check(QPOL);
+			check(DQPHA); check(QSCAG11); check(QSCAG21); check(QSCAG31);
+			check(ITER1); check(MXITER1); check(NSCA1); check(QSCAG12);
+			check(QSCAG22); check(QSCAG32); check(ITER2); check(MXITER2);
+			check(NSCA2); check(QSCAG1M); check(QSCAG2M); check(QSCAG3M);
+			check(DOWEIGHT);
+			return std::string("");
+#undef _tostr
+#undef tostr
+#undef check
+		}
+
+		/*
+		template<>
+		std::string ddOutput::stat_entries::stringify<size_t>(int val)
+		{
+#define _tostr(a) #a
+#define tostr(a) _tostr(a)
+#define check(a) if (val == a) return std::string( tostr(a) );
+			//check(VERSION); check(NUM_DIPOLES); check(NAVG); check(DOWEIGHT);
+			return std::string("");
+#undef _tostr
+#undef tostr
+#undef check
+		}
+		
+
+		template<>
+		std::string ddOutput::stat_entries::stringify<std::string>(int val)
+		{
+#define _tostr(a) #a
+#define tostr(a) _tostr(a)
+#define check(a) if (val == a) return std::string( tostr(a) );
+			check(TARGET); check(DDAMETH); check(CCGMETH); check(SHAPE);
+			return std::string("");
+#undef _tostr
+#undef tostr
+#undef check
+		}
+		*/
+
+		template<>
+		std::string ddOutput::fmlColDefs::stringify<float>(int val)
+		{
+#define _tostr(a) #a
+#define tostr(a) _tostr(a)
+#define check(a) if (val == a) return std::string( tostr(a) );
+			check(ORIINDEX); check(THETAB); check(PHIB);
+			check(F00R); check(F00I); check(F01R); check(F01I);
+			check(F10R); check(F10I); check(F11R); check(F11I);
+			return std::string("");
+#undef _tostr
+#undef tostr
+#undef check
+		}
+
 
 		/*
 		void ddOutput::clear()

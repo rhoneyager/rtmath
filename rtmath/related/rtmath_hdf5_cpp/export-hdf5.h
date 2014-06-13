@@ -15,6 +15,8 @@ namespace rtmath {
 	{
 		namespace hdf5
 		{
+			/// Provides a method for calculating the offsets from std::arrays of data
+#define ARRAYOFFSET(TYPE, INDEX) [](){TYPE a; return (size_t) &a[INDEX] - (size_t) &a; }()
 
 			std::shared_ptr<H5::Group> openOrCreateGroup(std::shared_ptr<H5::CommonFG> base, const char* name);
 			std::shared_ptr<H5::Group> openGroup(std::shared_ptr<H5::CommonFG> base, const char* name);

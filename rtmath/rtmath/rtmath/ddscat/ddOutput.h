@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <mutex>
 #include <set>
 #include <complex>
 #include <boost/shared_ptr.hpp>
@@ -86,6 +87,9 @@ namespace rtmath {
 			void resize(size_t numOris, size_t numTotAngles);
 			void resizeFML(size_t numTotAngles);
 			void finalize();
+			static void isForcingFMLwrite(bool&, bool&);
+			std::mutex mtxUpdate;
+			friend class ddOriData;
 		public:
 			ddOutput();
 
@@ -94,6 +98,19 @@ namespace rtmath {
 
 			/// A brief description of the run
 			std::string description;
+
+			/// When the run was imported
+			std::string ingest_timestamp;
+			/// The system that the run was imported on
+			std::string ingest_hostname;
+			/// The user account that imported the run
+			std::string ingest_username;
+			/// The host that the run was on
+			std::string hostname;
+			/// Revision of the rtmath code for ingest
+			int ingest_rtmath_version;
+			
+
 			/// Frequency (GHz)
 			double freq;
 			/// Effective radius (um)
@@ -104,20 +121,22 @@ namespace rtmath {
 			/// Paths of source files. Used in consolidation.
 			std::multiset<std::string> sources;
 			/// User-set brief description snippets. Used in isolating sets of runs.
-			std::multiset<std::string> tags;
+			std::multimap<std::string, std::string> tags;
 			/// DDSCAT run version tag
 			std::string ddvertag;
 
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
 			class stat_entries {
+				/// \note Every time these are changed, the stringify code also needs to be updated
+				/// \see stringify
 			public:
 				enum stat_entries_doubles
 				{
 					// D/AEFF
 					D, XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, AEFF, WAVE, FREQ,
 					// K*AEFF
-					NAMBIENT,
-					TOL,
+					//NAMBIENT,
+					//TOL,
 					TA1TFX, TA1TFY, TA1TFZ,
 					TA2TFX, TA2TFY, TA2TFZ,
 					TFKX, TFKY, TFKZ,
@@ -128,7 +147,7 @@ namespace rtmath {
 					LFKX, LFKY, LFKZ,
 					IPV1LFXR, IPV1LFXI, IPV1LFYR, IPV1LFYI, IPV1LFZR, IPV1LFZI,
 					IPV2LFXR, IPV2LFXI, IPV2LFYR, IPV2LFYI, IPV2LFZR, IPV2LFZI,
-					BETA, THETA, PHI, ETASCA,
+					BETA, THETA, PHI, //ETASCA,
 					QEXT1, QABS1, QSCA1, G11, G21, QBK1, QPHA1,
 					QEXT2, QABS2, QSCA2, G12, G22, QBK2, QPHA2,
 					QEXTM, QABSM, QSCAM, G1M, G2M, QBKM, QPHAM,
@@ -136,16 +155,21 @@ namespace rtmath {
 					QSCAG11, QSCAG21, QSCAG31, ITER1, MXITER1, NSCA1,
 					QSCAG12, QSCAG22, QSCAG32, ITER2, MXITER2, NSCA2,
 					QSCAG1M, QSCAG2M, QSCAG3M,
+					DOWEIGHT,
 					NUM_STAT_ENTRIES_DOUBLES
 				};
 
+				/*
 				enum stat_entries_size_ts
 				{
 					// DOWEIGHT indicates whether this is an avg entry or a raw oriented result.
-					VERSION, NUM_DIPOLES, NAVG, DOWEIGHT,
+					//VERSION, NUM_DIPOLES, NAVG, 
+					DOWEIGHT,
 					NUM_STAT_ENTRIES_INTS
 				};
+				*/
 
+				/*
 				enum stat_entries_strings {
 					TARGET,
 					DDAMETH,
@@ -153,13 +177,26 @@ namespace rtmath {
 					SHAPE,
 					NUM_STAT_ENTRIES_STRINGS
 				};
+				*/
+
+				template<class T> static std::string stringify(int val) { return std::string(); }
+				template<> static DLEXPORT_rtmath_ddscat std::string stringify<double>(int val);
+				//template<> static DLEXPORT_rtmath_ddscat std::string stringify<size_t>(int val);
+				//template<> static DLEXPORT_rtmath_ddscat std::string stringify<std::string>(int val);
 			};
+
+			struct shared_data
+			{
+				shared_data();
+				size_t version, num_dipoles, navg;
+				std::string target; // , ddameth, ccgmeth, hdr_shape;
+			} s;
 
 			/// Table containing orientation data (cross-sections, etc.)
 			/// Set when listing folder.
 			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> oridata_d;
-			Eigen::Matrix<size_t, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_INTS> oridata_i;
-			std::vector<std::array<std::string, stat_entries::NUM_STAT_ENTRIES_STRINGS> > oridata_s;
+			//Eigen::Matrix<size_t, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_INTS> oridata_i;
+			//std::vector<std::array<std::string, stat_entries::NUM_STAT_ENTRIES_STRINGS> > oridata_s;
 
 			//Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > avgoridata_d;
 			//Eigen::Matrix<size_t, 1, stat_entries::NUM_STAT_ENTRIES_INTS> > avgoridata_i;
@@ -176,8 +213,9 @@ namespace rtmath {
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
 			class fmlColDefs
 			{
+			public:
 				/// Table containing fml data
-			public: enum fmlDefs
+				enum fmlDefs
 				{
 					/// Match to a ORI index (TODO: use an integer)
 					ORIINDEX,
@@ -186,6 +224,8 @@ namespace rtmath {
 					F00R, F00I, F01R, F01I, F10R, F10I, F11R, F11I,
 					NUM_FMLCOLDEFS
 				};
+				template<class T> static std::string stringify(int val);
+				template<> static DLEXPORT_rtmath_ddscat std::string stringify<float>(int val);
 			};
 			/// Table containing fml data. Delayed allocation because the size resides within a file being read.
 			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> > fmldata;
@@ -198,11 +238,13 @@ namespace rtmath {
 			
 			/// Hash of shape file contents (an identifier)
 			HASH_t shapeHash;
+			/// DDSCAT-parsed shapefile hash
+			HASH_t parsedShapeHash;
 			/// The shape file (may load fully later)
 			mutable boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> shape;
 			/// Shape file statistics (may load fully later)
 			mutable boost::shared_ptr<stats::shapeFileStats> stats;
-			/// Load the full shape file and stats
+			/// Load the full shape file and stats (uses shapeHash)
 			void loadShape() const;
 
 			/// The ddscat parameter file

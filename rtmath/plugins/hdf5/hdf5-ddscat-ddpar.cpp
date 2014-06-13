@@ -75,7 +75,7 @@ namespace rtmath {
 					cdielhashes[2*i] = dielhashes[i].lower;
 					cdielhashes[2*i+1] = dielhashes[i].upper;
 				}
-				addDatasetArray<uint64_t, Group>(grpPar, "Dielectric_Hashes", cdielhashes.size(), 2, cdielhashes.data());
+				addDatasetArray<uint64_t, Group>(grpPar, "Dielectric_Hashes", cdielhashes.size() / 2, 2, cdielhashes.data());
 				/*
 				hsize_t dieldims[1] = {(hsize_t) diels.size()};
 				DataSpace dfspace(1, dieldims);

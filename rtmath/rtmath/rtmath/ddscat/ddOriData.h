@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <mutex>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -124,7 +125,8 @@ namespace rtmath {
 #define accessorRO(name,id,valtype) \
 	inline valtype name() const { return __getSimple<valtype>((int) id); }
 
-			accessorRW(version, ddOutput::stat_entries::VERSION, size_t);
+			size_t version() const;
+			//accessorRW(version, ddOutput::stat_entries::VERSION, size_t);
 			accessorRW(beta, ddOutput::stat_entries::BETA, double);
 			accessorRW(theta, ddOutput::stat_entries::THETA, double);
 			accessorRW(phi, ddOutput::stat_entries::PHI, double);
@@ -133,7 +135,8 @@ namespace rtmath {
 			accessorRO(freq, ddOutput::stat_entries::FREQ, double);
 			accessorRO(aeff, ddOutput::stat_entries::AEFF, double);
 			accessorRO(dipoleSpacing, ddOutput::stat_entries::D, double);
-			accessorRO(numDipoles, ddOutput::stat_entries::NUM_DIPOLES, size_t);
+			//accessorRO(numDipoles, ddOutput::stat_entries::NUM_DIPOLES, size_t);
+			size_t numDipoles() const;
 			
 
 			std::complex<double> M(size_t dielIndex = 0) const;
@@ -197,16 +200,16 @@ namespace rtmath {
 
 			template< class valtype>
 			valtype __getSimple(int id) const { throw; }
-			template<> size_t __getSimple<size_t>(int id) const { return _parent.oridata_i(_row, id); }
+			//template<> size_t __getSimple<size_t>(int id) const { return _parent.oridata_i(_row, id); }
 			template<> double __getSimple<double>(int id) const { return _parent.oridata_d(_row, id); }
-			template<> std::string __getSimple<std::string>(int id) const { return _parent.oridata_s.at(_row).at(id); }
+			//template<> std::string __getSimple<std::string>(int id) const { return _parent.oridata_s.at(_row).at(id); }
 			template<class valtype>
 			void __setSimple(int id, const valtype val) { __setSimpleRef(id, val); }
 			template<class valtype>
 			void __setSimpleRef(int id, const valtype &val) { throw; }
-			template<> void __setSimpleRef<size_t>(int id, const size_t &val) { _parent.oridata_i(_row, id) = val; }
+			//template<> void __setSimpleRef<size_t>(int id, const size_t &val) { _parent.oridata_i(_row, id) = val; }
 			template<> void __setSimpleRef<double>(int id, const double &val) { _parent.oridata_d(_row, id) = val; }
-			template<> void __setSimpleRef<std::string>(int id, const std::string &val) { _parent.oridata_s.at(_row).at(id) = val; }
+			//template<> void __setSimpleRef<std::string>(int id, const std::string &val) { _parent.oridata_s.at(_row).at(id) = val; }
 
 
 			/// Handles role of delegated constructor

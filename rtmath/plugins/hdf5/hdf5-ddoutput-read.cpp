@@ -84,7 +84,7 @@ namespace rtmath {
 
 
 				readDatasetEigen(base, "Cross_Sections_d", (r->oridata_d));
-				readDatasetEigen(base, "Cross_Sections_i", (r->oridata_i));
+				//readDatasetEigen(base, "Cross_Sections_i", (r->oridata_i));
 				//if (datasetExists(base, "Isotropic_Cross_Sections"))
 				//	readDatasetEigen(base, "Isotropic_Cross_Sections", *(r->avgoridata));
 

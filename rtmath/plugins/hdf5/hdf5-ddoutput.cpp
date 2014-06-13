@@ -1,6 +1,7 @@
 /// \brief Provides hdf5 file IO
 #define _SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4251 ) // warning C4251: dll-interface
+#pragma warning( disable : 4506 ) // warning C4251: spurious error (no definition for inline function) from boost/serialization/singleton.hpp
 
 #include <array>
 #include <iostream>
@@ -58,23 +59,72 @@ namespace rtmath {
 
 
 				addAttr<string, Group>(gRun, "Description", s->description);
+				addAttr<string, Group>(gRun, "ingest_timestamp", s->ingest_timestamp);
+				addAttr<string, Group>(gRun, "ingest_hostname", s->ingest_hostname);
+				addAttr<int, Group>(gRun, "ingest_rtmath_version", s->ingest_rtmath_version);
+				addAttr<size_t, Group>(gRun, "Num_Avgs_for_cos", s->s.navg);
+				addAttr<string, Group>(gRun, "hostname", s->hostname);
 				addAttr<double, Group>(gRun, "Frequency", s->freq);
 				addAttr<double, Group>(gRun, "aeff", s->aeff);
 				addAttr<double, Group>(gRun, "Temperature", s->temp);
+
+
+				addAttr<size_t, Group>(gRun, "DDSCAT_Version_Num", s->s.version);
+				addAttr<size_t, Group>(gRun, "Num_Dipoles", s->s.num_dipoles);
+				addAttr<size_t, Group>(gRun, "Num_Avgs_for_cos", s->s.navg);
+
+
+				addAttr<string, Group>(gRun, "target", s->s.target);
+				//addAttr<string, Group>(gRun, "ddameth", s->ddameth);
+				//addAttr<string, Group>(gRun, "ccgmeth", s->ccgmeth);
+				//addAttr<string, Group>(gRun, "hdr_shape", s->hdr_shape);
+
 
 				// Refractive indices table
 				/*
 				Eigen::MatrixXf refrs((int) s->ms.size(), 2);
 				for (size_t i=0; i < s->ms.size(); ++i)
 				{
-					refrs(i,0) = (float) s->ms[i].real();
-					refrs(i,1) = (float) s->ms[i].imag();
+				refrs(i,0) = (float) s->ms[i].real();
+				refrs(i,1) = (float) s->ms[i].imag();
 				}
 				addDatasetEigen(gRun, "Refractive_Indices", refrs);
 				*/
 				// Source file paths
-
+				{
+					std::vector<string> srcs(s->sources.begin(), s->sources.end());
+					std::vector<const char*> csrcs(srcs.size());
+					for (size_t i = 0; i<srcs.size(); ++i)
+						csrcs[i] = srcs[i].c_str();
+					addAttr<size_t, Group>(gRun, "Num_Source_Files", srcs.size());
+					addDatasetArray<const char*, Group>(gRun, "Sources", csrcs.size(), 1, csrcs.data());
+				}
 				// Tags
+				{
+					addAttr<size_t, Group>(gRun, "Num_Tags", s->tags.size());
+					
+					const size_t nTagCols = 2;
+					typedef std::array<const char*, nTagCols> strdata;
+					std::vector<strdata> sdata(s->tags.size());
+					size_t i = 0;
+					for (const auto &t : s->tags)
+					{
+						sdata.at(i).at(0) = t.first.c_str();
+						sdata.at(i).at(1) = t.second.c_str();
+						++i;
+					}
+
+					hsize_t dim[1] = { static_cast<hsize_t>(s->tags.size()) };
+					DataSpace space(1, dim);
+					// May have to cast array to a private structure
+					H5::StrType strtype(0, H5T_VARIABLE);
+					CompType stringTableType(sizeof(strdata));
+					stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
+					stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
+					std::shared_ptr<DataSet> sdataset(new DataSet(gRun->createDataSet(
+						"Tags", stringTableType, space)));
+					sdataset->write(sdata.data(), stringTableType);
+				}
 
 				// DDSCAT run verion tag
 				addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
@@ -99,13 +149,92 @@ namespace rtmath {
 				plistFML->setDeflate(6);
 #endif
 
-				addDatasetEigen(gRun, "Cross_Sections_d", (s->oridata_d), plistOri);
-				addDatasetEigen(gRun, "Cross_Sections_i", (s->oridata_i), plistOri);
+				auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), plistOri);
+				//auto csi = addDatasetEigen(gRun, "Cross_Sections_i", (s->oridata_i), plistOri);
+
+				// Add special labeling information to the columns
+				// The simple datasets are not tables, so the column labels will not match these.
+				{
+					//addAttr<string, DataSet>(csd, "CLASS", "TABLE");
+					//addAttr<string, DataSet>(csd, "VERSION", "0.2");
+					for (size_t i = 0; i < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES; ++i)
+					{
+						std::string lbl = rtmath::ddscat::ddOutput::stat_entries::stringify<double>((int) i);
+						std::ostringstream fldname;
+						fldname << "FIELD_" << i << "_NAME";
+						std::string sfldname = fldname.str();
+						addAttr<string, DataSet>(csd, sfldname.c_str(), lbl);
+					}
+
+				}
+
+				/*
+				// String table can't be compressed...
+				// This will be written as a compound datatype
+				{
+					typedef std::array<const char*, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_STRINGS> strdata;
+					std::vector<strdata> sdata(s->oridata_s.size());
+					for (size_t i = 0; i < s->oridata_s.size(); ++i)
+						for (size_t j = 0; j < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_STRINGS; ++j)
+						{
+						sdata.at(i).at(j) = s->oridata_s.at(i).at(j).c_str();
+						}
+
+
+					hsize_t dim[1] = { static_cast<hsize_t>(s->oridata_s.size()) };
+					DataSpace space(1, dim);
+					// May have to cast array to a private structure
+					H5::StrType strtype(0, H5T_VARIABLE);
+
+					CompType stringTableType(sizeof(strdata));
+					//#define HOFFSETORIG(TYPE, MEMBER) ((size_t) &((TYPE *)0)-> MEMBER)
+					
+					if (0) {
+					std::cerr << ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::TARGET) << " "
+						<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::DDAMETH) << " "
+						<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::CCGMETH) << " "
+						<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::SHAPE) << " "
+						<< sizeof(strdata) << " " 
+						<< (size_t) &(sdata[0]) - (size_t) sdata[0].data() << " " 
+						<< (size_t) &(sdata[1]) - (size_t)sdata[1].data() << " " 
+						<< (size_t) &(sdata[0].at(1)) - (size_t)&(sdata[0]) << " "
+						<< (size_t)&(sdata[0].at(2)) - (size_t)&(sdata[0]) << " "
+						<< (size_t)&(sdata[0].at(3)) - (size_t)&(sdata[0]) << " "
+						<< std::endl;
+					}
+
+					stringTableType.insertMember("TARGET", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::TARGET), strtype);
+					stringTableType.insertMember("DDAMETH", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::DDAMETH), strtype);
+					stringTableType.insertMember("CCGMETH", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::CCGMETH), strtype);
+					stringTableType.insertMember("SHAPE", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::SHAPE), strtype);
+					std::shared_ptr<DataSet> sdataset(new DataSet(gRun->createDataSet(
+						"Cross_Sections_s", stringTableType, space)));
+					sdataset->write(sdata.data(), stringTableType);
+				}
+				*/
+
 				//addDatasetEigen(gRun, "Cross_Sections_s", (s->oridata_s)); // , plistOri);
 				//if (s->avg)
 				//	addDatasetEigen(gRun, "Isotropic_Cross_Sections", *(s->avgoridata));
 				if (writeFML)
-					addDatasetEigen(gRun, "FML_Data", *(s->fmldata), plistFML);
+				{
+					auto ft = addDatasetEigen(gRun, "FML_Data", *(s->fmldata), plistFML);
+					// Add special labeling information to the columns
+					// The simple datasets are not tables, so the column labels will not match these.
+					{
+						//addAttr<string, DataSet>(csd, "CLASS", "TABLE");
+						//addAttr<string, DataSet>(csd, "VERSION", "0.2");
+						for (size_t i = 0; i < rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS; ++i)
+						{
+							std::string lbl = rtmath::ddscat::ddOutput::fmlColDefs::stringify<float>((int)i);
+							std::ostringstream fldname;
+							fldname << "FIELD_" << i << "_NAME";
+							std::string sfldname = fldname.str();
+							addAttr<string, DataSet>(ft, sfldname.c_str(), lbl);
+						}
+
+					}
+				}
 				//addDatasetEigen(gRun, "Scattering_Data", s->scadata);
 
 				
@@ -113,6 +242,9 @@ namespace rtmath {
 				//addAttr<string,Group>(gRun, "Shapehash_full", s->shapeHash.string());
 				addAttr<uint64_t,Group>(gRun, "Shapehash_lower", s->shapeHash.lower);
 				addAttr<uint64_t,Group>(gRun, "Shapehash_upper", s->shapeHash.upper);
+				addAttr<uint64_t, Group>(gRun, "ParsedShapehash_lower", s->parsedShapeHash.lower);
+				addAttr<uint64_t, Group>(gRun, "ParsedShapehash_upper", s->parsedShapeHash.upper);
+
 
 				// If a shapefile is written to this file, make a symlink
 				std::string pShape;
@@ -125,6 +257,7 @@ namespace rtmath {
 
 
 				// If stats are written to this file, make a symlink
+				/*
 				std::string pStats;
 				{
 					std::ostringstream o;
@@ -132,6 +265,7 @@ namespace rtmath {
 					pShape = o.str();
 				}
 				gRun->link(H5L_TYPE_SOFT, pShape, "Stats");
+				*/
 				// Insert stats information given known dipole spacing
 
 

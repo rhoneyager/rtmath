@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "specify output directory or file")
 			("output-shape", "If writing an output directory, also write the shape.")
 			("hash,s", "Store ddscat output in the hash store")
-			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
+			//("tag,t", po::value<vector<string> >(), "Add extra information to output file")
 			("description,d", po::value<string>(), "Describe the output file")
 			("directory,D", "Write as a directory")
 
@@ -85,10 +85,10 @@ int main(int argc, char** argv)
 
 		vector<string> vsInput;
 		string sOutput;
-		vector<string> tags;
+		vector<std::pair<string,string> > tags;
 		string sDesc;
 		if (vm.count("description")) sDesc = vm["description"].as<string>();
-		if (vm.count("tag")) tags = vm["tag"].as<vector<string> >();
+		//if (vm.count("tag")) tags = vm["tag"].as<vector<string> >(); // Need to do tag splitting
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
@@ -166,8 +166,8 @@ int main(int argc, char** argv)
 
 			if (sDesc.size())
 				ddOut->description = sDesc;
-			for (auto &t : tags)
-				ddOut->tags.insert(t);
+			//for (auto &t : tags)
+			//	ddOut->tags.insert(t);
 
 			if (doHash)
 				ddOut->writeToHash();
