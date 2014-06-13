@@ -71,7 +71,7 @@ namespace rtmath {
 
 				addAttr<size_t, Group>(gRun, "DDSCAT_Version_Num", s->s.version);
 				addAttr<size_t, Group>(gRun, "Num_Dipoles", s->s.num_dipoles);
-				addAttr<size_t, Group>(gRun, "Num_Avgs_for_cos", s->s.navg);
+				addAttr<size_t, Group>(gRun, "Num_Avgs_cos", s->s.navg);
 
 
 				addAttr<string, Group>(gRun, "target", s->s.target);

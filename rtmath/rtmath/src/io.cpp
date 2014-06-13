@@ -14,6 +14,9 @@
 
 namespace {
 	const char* hid = "io_implementsSerialization";
+	std::set<std::string> mtypes;
+	std::mutex mlock_serialization_handle;
+	std::mutex mlock_implementsIO;
 }
 
 namespace rtmath
@@ -142,11 +145,12 @@ namespace rtmath
 
 			const std::set<std::string>& serialization_handle::known_formats()
 			{
-				static std::set<std::string> mtypes;
-				static std::mutex mlock;
+				// Moved to hidden file scope to avoid race condition
+				//static std::set<std::string> mtypes;
+				//static std::mutex mlock;
 				// Prevent threading clashes
 				{
-					std::lock_guard<std::mutex> lck(mlock);
+					std::lock_guard<std::mutex> lck(mlock_serialization_handle);
 					if (!mtypes.size())
 					{
 						std::string formats;
@@ -216,6 +220,11 @@ namespace rtmath
 				}
 			}
 
+		}
+
+		std::mutex& getLock()
+		{
+			return mlock_implementsIO;
 		}
 	}
 }

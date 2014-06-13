@@ -24,6 +24,11 @@
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
+namespace {
+	std::set<std::string> mtypes;
+	std::mutex mlock;
+}
+
 namespace rtmath {
 	namespace registry {
 		template struct IO_class_registry_writer
@@ -52,8 +57,9 @@ namespace rtmath {
 
 			const std::set<std::string>& implementsDDSHP::known_formats()
 			{
-				static std::set<std::string> mtypes;
-				static std::mutex mlock;
+				// Moved to hidden file scope to avoid race condition
+				//static std::set<std::string> mtypes;
+				//static std::mutex mlock;
 				// Prevent threading clashes
 				{
 					std::lock_guard<std::mutex> lck(mlock);

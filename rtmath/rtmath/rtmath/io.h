@@ -175,6 +175,9 @@ namespace rtmath
 
 		}
 
+		/// Exists to give the implementsIO template a uniform lock, preventing a race condition
+		DLEXPORT_rtmath_core std::mutex&  getLock();
+
 		/** \brief Template that registers reading and writing methods with the io registry
 		 * 
 		 * This is the base template that is used when implementing a custom reader/writer to the 
@@ -202,11 +205,11 @@ namespace rtmath
 			virtual void doImplementsIOsetup()
 			{
 				// Call the binder code
-				static bool inited = false; // No need for a static class def.
-				static std::mutex mlock;
+				std::mutex &mlock = getLock();
 				// Prevent threading clashes
 				{
 					std::lock_guard<std::mutex> lck(mlock);
+					static bool inited = false; // No need for a static class def.
 					if (!inited)
 					{
 						setup();

@@ -115,7 +115,9 @@ namespace {
 
 		loaded = true;
 	}
-	
+
+	std::set<std::string> mtypes;
+	std::mutex mlock;
 }
 
 namespace rtmath {
@@ -141,8 +143,9 @@ namespace rtmath {
 
 		const std::set<std::string>& implementsDDPAR::known_formats()
 		{
-			static std::set<std::string> mtypes;
-			static std::mutex mlock;
+			// Moved to hidden file scope to avoid race condition
+			//static std::set<std::string> mtypes;
+			//static std::mutex mlock;
 			// Prevent threading clashes
 			{
 				std::lock_guard<std::mutex> lck(mlock);

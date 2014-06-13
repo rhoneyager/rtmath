@@ -316,7 +316,7 @@ namespace rtmath {
 			auto loadShapeParsed = [&](const path &p)
 			{
 				std::lock_guard<std::mutex> lock(m_shape);
-				if (res->shape) return; // Only needs to be loaded once
+				if (res->parsedShapeHash.lower) return; // Only needs to be loaded once
 				//if (noLoadRots) return;
 				// Note: the hashed object is the fundamental thing here that needs to be loaded
 				// The other stuff is only loaded for processing, and is not serialized directly.

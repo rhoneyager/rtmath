@@ -46,13 +46,16 @@ int main(int argc, char** argv)
 			"second is a par file, and the third is a shape file. Used for importing "
 			"Holly runs.")
 			("output,o", po::value<string>(), "specify output directory or file")
+			("output-aux", po::value<string>(), "optional auxiliary output file (with separate writing options)")
 			("output-shape", "If writing an output directory, also write the shape.")
 			("hash,s", "Store ddscat output in the hash store")
-			//("tag,t", po::value<vector<string> >(), "Add extra information to output file")
+			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
 			("description,d", po::value<string>(), "Describe the output file")
+			("hostname,h", po::value<string>(), "hostname of system used to generate data")
 			("directory,D", "Write as a directory")
 
 			("write-fmls", po::value<bool>()->default_value(true), "Write FML data into output file")
+			("write-fmls-aux", po::value<bool>()->default_value(false), "Write FML data into aux output file")
 			("write-shapes", po::value<bool>()->default_value(true), "Write shapefile data into output file")
 			;
 
@@ -83,28 +86,49 @@ int main(int argc, char** argv)
 		bool doHash = false;
 		if (vm.count("hash")) doHash = true;
 
+		string hostname;
+		if (vm.count("hostname")) hostname = vm["hostname"].as<string>();
 		vector<string> vsInput;
-		string sOutput;
+		string sOutput, sOutputAux;
 		vector<std::pair<string,string> > tags;
+		vector<string> tags_pre;
 		string sDesc;
 		if (vm.count("description")) sDesc = vm["description"].as<string>();
-		//if (vm.count("tag")) tags = vm["tag"].as<vector<string> >(); // Need to do tag splitting
+		if (vm.count("tag")) tags_pre = vm["tag"].as<vector<string> >();
+		{ // do tag splitting
+			vector<string> out;
+			for (const auto &v : tags_pre)
+			{
+				rtmath::config::splitVector(v, out, '=');
+				if (out.size() < 2) out.push_back("");
+				tags.push_back(std::pair<string, string>(out[0], out[1]));
+				out.clear();
+			}
+		}
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
+		if (vm.count("output-aux")) sOutputAux = vm["output-aux"].as<string>();
 		//else if (!doHash)
 		//	doHelp("Need to specify output");
 		bool fromSummary = false;
 		if (vm.count("from-summary-files")) fromSummary = true;
 
 		bool writeFML = vm["write-fmls"].as<bool>();
+		bool writeFMLaux = vm["write-fmls-aux"].as<bool>();
 		bool writeShapes = vm["write-shapes"].as<bool>();
 
 		auto opts = rtmath::registry::IO_options::generate();
 		opts->filename(sOutput);
-		opts->setVal<bool>("writeFMLs", writeFML);
+		opts->setVal<bool>("writeFML", writeFML);
 		opts->setVal<bool>("writeShapes", writeShapes);
-		std::shared_ptr<rtmath::registry::IOhandler> writer;
+
+		auto optsaux = rtmath::registry::IO_options::generate();
+		optsaux->filename(sOutputAux);
+		optsaux->setVal<bool>("writeFML", writeFMLaux);
+		optsaux->setVal<bool>("writeShapes", writeShapes);
+
+		std::shared_ptr<rtmath::registry::IOhandler> writer, writeraux;
 
 		using namespace boost::filesystem;
 		for (const auto &i : vsInput)
@@ -166,43 +190,58 @@ int main(int argc, char** argv)
 
 			if (sDesc.size())
 				ddOut->description = sDesc;
-			//for (auto &t : tags)
-			//	ddOut->tags.insert(t);
+			ddOut->hostname = hostname;
+			for (auto &t : tags)
+				ddOut->tags.insert(t);
 
 			if (doHash)
 				ddOut->writeToHash();
-			if (!sOutput.size()) return 0;
 
-			bool writeDir = false;
-			// Check for the existence of an output directory
-			path pOut(sOutput);
-			if (exists(pOut))
+
+			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
 			{
-				path pOutS = expandSymlinks(pOut);
-				if (is_directory(pOutS)) writeDir = true;
-			}
+				if (!oopts->filename().size()) return;
 
-			// Check the output extension
-			if (vm.count("directory")) writeDir = true;
-			//if (!Ryan_Serialization::known_format(sOutput)) writeDir = true;
-
-			if (writeDir)
-			{
-				//cerr << "Expanding into directory " << sOutput << endl;
-				bool outShape = false;
-				if (vm.count("output-shape")) outShape = true;
-				ddOut->expand(sOutput, outShape);
-			} else {
-				//cerr << "Writing file " << sOutput << endl;
-				if (sOutput == vsInput.at(0))
+				bool writeDir = false;
+				// Check for the existence of an output directory
+				path pOut(oopts->filename());
+				if (exists(pOut))
 				{
-					cerr << "Output is the same as the input. Doing nothing.\n";
-					return 0;
+					path pOutS = expandSymlinks(pOut);
+					if (is_directory(pOutS)) writeDir = true;
 				}
 
-				writer = ddOut->writeMulti(writer, opts);
-				//ddOut->writeFile(sOutput);
-			}
+				// Check the output extension
+				if (vm.count("directory")) writeDir = true;
+				//if (!Ryan_Serialization::known_format(sOutput)) writeDir = true;
+
+				if (writeDir)
+				{
+					//cerr << "Expanding into directory " << sOutput << endl;
+					bool outShape = false;
+					if (vm.count("output-shape")) outShape = true;
+					ddOut->expand(oopts->filename(), outShape);
+				}
+				else {
+					//cerr << "Writing file " << sOutput << endl;
+					if (sOutput == vsInput.at(0))
+					{
+						cerr << "Output is the same as the input. Doing nothing.\n";
+						return;
+					}
+
+					w = ddOut->writeMulti(w, oopts);
+
+
+					//ddOut->writeFile(sOutput);
+				}
+
+			};
+
+			if (sOutput.size())
+				doWrite(opts, writer);
+			if (sOutputAux.size())
+				doWrite(optsaux, writeraux);
 
 			if (fromSummary) break;
 		}
