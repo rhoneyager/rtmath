@@ -812,21 +812,23 @@ namespace Ryan_Debug {
 		res = getlogin_r(char *hname, size_t len);
 		if (res) return 0;
 		username = std::string(hname);
-		return username.c_str();
 #endif
 #ifdef _WIN32
 		BOOL res = false;
-		TCHAR hname[256];
-		DWORD len = 0;
+		const DWORD clen = 256;
+		DWORD len = clen;
+		TCHAR hname[clen];
 		res = GetUserName(hname, &len);
 		if (res)
 		{
 			username = convertStr(hname);
-			return username.c_str();
+		}
+		else {
+			DWORD err = GetLastError();
+			std::cerr << "getUsername failed with error " << err << std::endl;
 		}
 #endif
-		
-		return 0;
+		return username.c_str();
 	}
 
 	const char* getHostname()
@@ -834,18 +836,30 @@ namespace Ryan_Debug {
 		std::lock_guard<std::mutex> lock(m_sys_names);
 		if (hostname.size()) return hostname.c_str();
 
+		
+#ifdef __unix__
 		const size_t len = 256;
 		char hname[len];
 		int res = 0;
-#ifdef __unix__
 		res = gethostname(hname, len);
-		
+		if (hname)
+			hostname = std::string(hname);
 #endif
 #ifdef _WIN32
-		res = gethostname(hname, len);
+		BOOL res = false;
+		const DWORD clen = MAX_COMPUTERNAME_LENGTH + 1;
+		DWORD len = clen;
+		TCHAR hname[clen];
+		res = GetComputerName(hname, &len);
+		if (res)
+		{
+			hostname = convertStr(hname);
+		}
+		else {
+			DWORD err = GetLastError();
+			std::cerr << "getHostname failed with error " << err << std::endl;
+		}
 #endif
-		if (res) return 0;
-		hostname = std::string(hname);
 		return hostname.c_str();
 	}
 
