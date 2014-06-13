@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 
 		auto doHelp = [&](const std::string &message)
 		{
+			cerr << desc << endl;
 			cerr << message << endl;
 			exit(1);
 		};
