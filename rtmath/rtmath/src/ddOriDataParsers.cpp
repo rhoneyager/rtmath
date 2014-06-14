@@ -487,7 +487,7 @@ namespace rtmath
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
 			// The frequency is needed when reading this matrix
-			const double &freq = od(ddOutput::stat_entries::FREQ);
+			const double f = freq();
 
 			string lin;
 			mMuellerIndices mIndices;// = _muellerMap;
@@ -544,7 +544,7 @@ namespace rtmath
 					//	vals.push_back(rtmath::macros::m_atof(it->data(), it->size())); // Speedup using my own atof
 					//vals.push_back(boost::lexical_cast<double>(*it));
 					// ddScattMatrixF constructor takes frequency (GHz) and phi
-					boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP(freq, vals[0], vals[1]));
+					boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP(f, vals[0], vals[1]));
 					ddScattMatrix::PnnType P;
 
 					size_t j = 0;
@@ -580,7 +580,7 @@ namespace rtmath
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
 			// The frequency is needed when reading this matrix
-			const double &freq = od(ddOutput::stat_entries::FREQ);
+			const double f = freq();
 
 			string lin;
 
@@ -603,7 +603,7 @@ namespace rtmath
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
 				//boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF
 				//	(freq, vals[0], vals[1], 0, 0, eProvider));
-				ddScattMatrixF mat(freq, vals[0], vals[1], 0, 0, eProvider);
+				ddScattMatrixF mat(f, vals[0], vals[1], 0, 0, eProvider);
 				ddScattMatrix::FType fs;
 				fs(0, 0) = complex<double>(vals[2], vals[3]);
 				fs(1, 0) = complex<double>(vals[4], vals[5]);

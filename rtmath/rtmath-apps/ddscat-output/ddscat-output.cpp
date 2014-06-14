@@ -9,7 +9,6 @@
 #include <iostream>
 #include <string>
 #include <Ryan_Debug/debug.h>
-//#include <Ryan_Serialization/serialization.h>
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/hash.h"
 #include "../../rtmath/rtmath/splitSet.h"
@@ -54,6 +53,7 @@ int main(int argc, char** argv)
 			("hostname,H", po::value<string>(), "hostname of system used to generate data")
 			("directory,D", "Write as a directory")
 
+			("write-oris", po::value<bool>()->default_value(true), "Write ORI data into output file")
 			("write-fmls", po::value<bool>()->default_value(true), "Write FML data into output file")
 			("write-fmls-aux", po::value<bool>()->default_value(false), "Write FML data into aux output file")
 			("write-shapes", po::value<bool>()->default_value(true), "Write shapefile data into output file")
@@ -114,17 +114,20 @@ int main(int argc, char** argv)
 		bool fromSummary = false;
 		if (vm.count("from-summary-files")) fromSummary = true;
 
+		bool writeORI = vm["write-oris"].as<bool>();
 		bool writeFML = vm["write-fmls"].as<bool>();
 		bool writeFMLaux = vm["write-fmls-aux"].as<bool>();
 		bool writeShapes = vm["write-shapes"].as<bool>();
 
 		auto opts = rtmath::registry::IO_options::generate();
 		opts->filename(sOutput);
+		opts->setVal<bool>("writeORI", writeORI);
 		opts->setVal<bool>("writeFML", writeFML);
 		opts->setVal<bool>("writeShapes", writeShapes);
 
 		auto optsaux = rtmath::registry::IO_options::generate();
 		optsaux->filename(sOutputAux);
+		optsaux->setVal<bool>("writeORI", writeORI);
 		optsaux->setVal<bool>("writeFML", writeFMLaux);
 		optsaux->setVal<bool>("writeShapes", writeShapes);
 

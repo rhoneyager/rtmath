@@ -132,7 +132,8 @@ namespace rtmath {
 			accessorRW(phi, ddOutput::stat_entries::PHI, double);
 			// Wavelength and frequency set need a special override (affects WAVE, FREQ and D)
 			accessorRO(wave, ddOutput::stat_entries::WAVE, double);
-			accessorRO(freq, ddOutput::stat_entries::FREQ, double);
+			double freq() const;
+			//accessorRO(freq, ddOutput::stat_entries::FREQ, double);
 			accessorRO(aeff, ddOutput::stat_entries::AEFF, double);
 			accessorRO(dipoleSpacing, ddOutput::stat_entries::D, double);
 			//accessorRO(numDipoles, ddOutput::stat_entries::NUM_DIPOLES, size_t);

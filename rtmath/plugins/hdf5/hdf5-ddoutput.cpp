@@ -51,6 +51,7 @@ namespace rtmath {
 				using std::shared_ptr;
 				using namespace H5;
 
+				bool writeORI = opts->getVal<bool>("writeORI", true);
 				bool writeFML = opts->getVal<bool>("writeFML", true);
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
@@ -78,6 +79,24 @@ namespace rtmath {
 				//addAttr<string, Group>(gRun, "ddameth", s->ddameth);
 				//addAttr<string, Group>(gRun, "ccgmeth", s->ccgmeth);
 				//addAttr<string, Group>(gRun, "hdr_shape", s->hdr_shape);
+
+				addAttrArray<double, Group>(gRun, "mins", s->s.mins.data(), 1, 3);
+				addAttrArray<double, Group>(gRun, "maxs", s->s.maxs.data(), 1, 3);
+				addAttrArray<double, Group>(gRun, "TA1TF", s->s.TA1TF.data(), 1, 3);
+				addAttrArray<double, Group>(gRun, "TA2TF", s->s.TA2TF.data(), 1, 3);
+				addAttrArray<double, Group>(gRun, "LFX", s->s.LFK.data(), 1, 3);
+
+				addAttrComplex<std::complex<double>, Group>
+					(gRun, "IPV1LF", s->s.IPV1LF.data(), 1, 3);
+				addAttrComplex<std::complex<double>, Group>
+					(gRun, "IPV2LF", s->s.IPV2LF.data(), 1, 3);
+
+				addAttr<size_t, Group>(gRun, "iter1", s->s.iter1);
+				addAttr<size_t, Group>(gRun, "mxiter1", s->s.mxiter1);
+				addAttr<size_t, Group>(gRun, "nsca1", s->s.nsca1);
+				addAttr<size_t, Group>(gRun, "iter2", s->s.iter2);
+				addAttr<size_t, Group>(gRun, "mxiter2", s->s.mxiter2);
+				addAttr<size_t, Group>(gRun, "nsca2", s->s.nsca2);
 
 
 				// Refractive indices table
@@ -149,23 +168,26 @@ namespace rtmath {
 				plistFML->setDeflate(6);
 #endif
 
-				auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), plistOri);
-				//auto csi = addDatasetEigen(gRun, "Cross_Sections_i", (s->oridata_i), plistOri);
-
-				// Add special labeling information to the columns
-				// The simple datasets are not tables, so the column labels will not match these.
+				if (writeORI)
 				{
-					//addAttr<string, DataSet>(csd, "CLASS", "TABLE");
-					//addAttr<string, DataSet>(csd, "VERSION", "0.2");
-					for (size_t i = 0; i < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES; ++i)
-					{
-						std::string lbl = rtmath::ddscat::ddOutput::stat_entries::stringify((int) i);
-						std::ostringstream fldname;
-						fldname << "FIELD_" << i << "_NAME";
-						std::string sfldname = fldname.str();
-						addAttr<string, DataSet>(csd, sfldname.c_str(), lbl);
-					}
+					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), plistOri);
+					//auto csi = addDatasetEigen(gRun, "Cross_Sections_i", (s->oridata_i), plistOri);
 
+					// Add special labeling information to the columns
+					// The simple datasets are not tables, so the column labels will not match these.
+					{
+						//addAttr<string, DataSet>(csd, "CLASS", "TABLE");
+						//addAttr<string, DataSet>(csd, "VERSION", "0.2");
+						for (size_t i = 0; i < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES; ++i)
+						{
+							std::string lbl = rtmath::ddscat::ddOutput::stat_entries::stringify((int) i);
+							std::ostringstream fldname;
+							fldname << "FIELD_" << i << "_NAME";
+							std::string sfldname = fldname.str();
+							addAttr<string, DataSet>(csd, sfldname.c_str(), lbl);
+						}
+
+					}
 				}
 
 				/*

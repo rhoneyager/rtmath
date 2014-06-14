@@ -253,6 +253,12 @@ namespace rtmath {
 			return _parent.s.num_dipoles;
 		}
 
+		double ddOriData::freq() const
+		{
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			return units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
+		}
+
 		ddOriData::~ddOriData() {}
 
 		/// Input in avg format
@@ -287,7 +293,7 @@ namespace rtmath {
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::AEFF));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::WAVE));
 
-			od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
+			//od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
 
 			std::getline(in, junk); // k*aeff
 			if (rtmath::ddscat::ddVersions::isVerWithin(s.version, 72, 0))
@@ -312,12 +318,12 @@ namespace rtmath {
 			size_t axisnum = 0;
 			frameType frm = frameType::TF;
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TA1TFX) = a[0]; od(ddOutput::stat_entries::TA1TFY) = a[1]; od(ddOutput::stat_entries::TA1TFZ) = a[2];
+			s.TA1TF[0] = a[0]; s.TA1TF[1] = a[1]; s.TA1TF[2] = a[2];
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TA2TFX) = a[0]; od(ddOutput::stat_entries::TA2TFY) = a[1]; od(ddOutput::stat_entries::TA2TFZ) = a[2];
+			s.TA2TF[0] = a[0]; s.TA2TF[1] = a[1]; s.TA2TF[2] = a[2];
 
 			simpleNumCompound<size_t>::read(in, s.navg);
-			od(ddOutput::stat_entries::DOWEIGHT) = 0;
+			//od(ddOutput::stat_entries::DOWEIGHT) = 0;
 
 			ddAxisVec::read(in, a, axisnum, frm);
 			od(ddOutput::stat_entries::TFKX) = a[0]; od(ddOutput::stat_entries::TFKY) = a[1]; od(ddOutput::stat_entries::TFKZ) = a[2];
@@ -346,11 +352,11 @@ namespace rtmath {
 			std::getline(in, junk); //"          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
 
 			readStatTable(in);
-			//readMueller(in);
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
+			//readMueller(in);
 		}
 
 		/// Input in sca format
@@ -380,13 +386,13 @@ namespace rtmath {
 			std::getline(in, junk); // d/aeff
 			simpleNumRev<double>::read(in, od(ddOutput::stat_entries::D));
 			std::getline(in, junk); // physical extent
-			ddPhysExtent::read(in, od(ddOutput::stat_entries::XMIN), od(ddOutput::stat_entries::XMAX), junk[0]);
-			ddPhysExtent::read(in, od(ddOutput::stat_entries::YMIN), od(ddOutput::stat_entries::YMAX), junk[0]);
-			ddPhysExtent::read(in, od(ddOutput::stat_entries::ZMIN), od(ddOutput::stat_entries::ZMAX), junk[0]);
+			ddPhysExtent::read(in, s.mins[0], s.maxs[0], junk[0]);
+			ddPhysExtent::read(in, s.mins[1], s.maxs[1], junk[0]);
+			ddPhysExtent::read(in, s.mins[2], s.maxs[2], junk[0]);
 
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::AEFF));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::WAVE));
-			od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
+			//od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
 
 			std::getline(in, junk); // k*aeff
 			if (rtmath::ddscat::ddVersions::isVerWithin(s.version, 72, 0))
@@ -411,12 +417,12 @@ namespace rtmath {
 			size_t axisnum = 0;
 			frameType frm = frameType::TF;
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TA1TFX) = a[0]; od(ddOutput::stat_entries::TA1TFY) = a[1]; od(ddOutput::stat_entries::TA1TFZ) = a[2];
+			s.TA1TF[0] = a[0]; s.TA1TF[1] = a[1]; s.TA1TF[2] = a[2];
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TA2TFX) = a[0]; od(ddOutput::stat_entries::TA2TFY) = a[1]; od(ddOutput::stat_entries::TA2TFZ) = a[2];
+			s.TA2TF[0] = a[0]; s.TA2TF[1] = a[1]; s.TA2TF[2] = a[2];
 
 			simpleNumCompound<size_t>::read(in, s.navg);
-			od(ddOutput::stat_entries::DOWEIGHT) = 1;
+			//od(ddOutput::stat_entries::DOWEIGHT) = 1;
 
 			ddAxisVec::read(in, a, axisnum, frm);
 			od(ddOutput::stat_entries::TFKX) = a[0]; od(ddOutput::stat_entries::TFKY) = a[1]; od(ddOutput::stat_entries::TFKZ) = a[2];
@@ -440,16 +446,16 @@ namespace rtmath {
 
 
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::LFKX) = a[0]; od(ddOutput::stat_entries::LFKY) = a[1]; od(ddOutput::stat_entries::LFKZ) = a[2];
+			s.LFK[0] = a[0]; s.LFK[1] = a[1]; s.LFK[2] = a[2];
 
 			ddPolVec::read(in, iv, vecnum, frm);
-			od(ddOutput::stat_entries::IPV1LFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV1LFXI) = iv[0].imag();
-			od(ddOutput::stat_entries::IPV1LFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV1LFYI) = iv[1].imag();
-			od(ddOutput::stat_entries::IPV1LFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV1LFZI) = iv[2].imag();
+			s.IPV1LF[0] = iv[0];
+			s.IPV1LF[1] = iv[1];
+			s.IPV1LF[2] = iv[2];
 			ddPolVec::read(in, iv, vecnum, frm);
-			od(ddOutput::stat_entries::IPV2LFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV2LFXI) = iv[0].imag();
-			od(ddOutput::stat_entries::IPV2LFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV2LFYI) = iv[1].imag();
-			od(ddOutput::stat_entries::IPV2LFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV2LFZI) = iv[2].imag();
+			s.IPV2LF[0] = iv[0];
+			s.IPV2LF[1] = iv[1];
+			s.IPV2LF[2] = iv[2];
 
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::BETA));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::THETA));
@@ -460,11 +466,11 @@ namespace rtmath {
 			std::getline(in, junk); //"          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
 
 			readStatTable(in);
-			//readMueller(in);
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
+			//readMueller(in);
 		}
 
 		/// Input in fml format
@@ -493,7 +499,7 @@ namespace rtmath {
 			//simpleNumRev<double>::read(in, od(ddOutput::stat_entries::D));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::AEFF));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::WAVE));
-			od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
+			//od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
 
 			std::getline(in, junk); // k*aeff
 			if (rtmath::ddscat::ddVersions::isVerWithin(s.version, 72, 0))
@@ -514,15 +520,15 @@ namespace rtmath {
 
 			//simpleNumCompound<double>::read(lin, od(ddOutput::stat_entries::TOL)); // lin from refractive index read
 			simpleNumCompound<size_t>::read(in, s.navg);
-			od(ddOutput::stat_entries::DOWEIGHT) = 1;
+			//od(ddOutput::stat_entries::DOWEIGHT) = 1;
 
 			std::vector<double> a(3);
 			size_t axisnum = 0;
 			frameType frm = frameType::TF;
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TA1TFX) = a[0]; od(ddOutput::stat_entries::TA1TFY) = a[1]; od(ddOutput::stat_entries::TA1TFZ) = a[2];
+			s.TA1TF[0] = a[0]; s.TA1TF[1] = a[1]; s.TA1TF[2] = a[2];
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TA2TFX) = a[0]; od(ddOutput::stat_entries::TA2TFY) = a[1]; od(ddOutput::stat_entries::TA2TFZ) = a[2];
+			s.TA2TF[0] = a[0]; s.TA2TF[1] = a[1]; s.TA2TF[2] = a[2];
 			ddAxisVec::read(in, a, axisnum, frm);
 			od(ddOutput::stat_entries::TFKX) = a[0]; od(ddOutput::stat_entries::TFKY) = a[1]; od(ddOutput::stat_entries::TFKZ) = a[2];
 
@@ -539,16 +545,16 @@ namespace rtmath {
 			od(ddOutput::stat_entries::IPV2TFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV2TFZI) = iv[2].imag();
 
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::LFKX) = a[0]; od(ddOutput::stat_entries::LFKY) = a[1]; od(ddOutput::stat_entries::LFKZ) = a[2];
+			s.LFK[0] = a[0]; s.LFK[1] = a[1]; s.LFK[2] = a[2];
 
 			ddPolVec::read(in, iv, vecnum, frm);
-			od(ddOutput::stat_entries::IPV1LFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV1LFXI) = iv[0].imag();
-			od(ddOutput::stat_entries::IPV1LFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV1LFYI) = iv[1].imag();
-			od(ddOutput::stat_entries::IPV1LFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV1LFZI) = iv[2].imag();
+			s.IPV1LF[0] = iv[0];
+			s.IPV1LF[1] = iv[1];
+			s.IPV1LF[2] = iv[2];
 			ddPolVec::read(in, iv, vecnum, frm);
-			od(ddOutput::stat_entries::IPV2LFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV2LFXI) = iv[0].imag();
-			od(ddOutput::stat_entries::IPV2LFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV2LFYI) = iv[1].imag();
-			od(ddOutput::stat_entries::IPV2LFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV2LFZI) = iv[2].imag();
+			s.IPV2LF[0] = iv[0];
+			s.IPV2LF[1] = iv[1];
+			s.IPV2LF[2] = iv[2];
 
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::BETA));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::THETA));
@@ -565,11 +571,11 @@ namespace rtmath {
 			auto cn = getConnector();
 			_scattMatricesRaw.clear();
 			_scattMatricesRaw.reserve(40);
-			readF(in, cn);
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
+			readF(in, cn);
 		}
 
 
@@ -580,6 +586,7 @@ namespace rtmath {
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
 			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row,0);
+			const auto &s = _parent.s;
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -610,25 +617,25 @@ namespace rtmath {
 			simpleNumCompound<double>::write(out, this->version(), _parent.parfile->maxTol(), 9, "   TOL= ", " error tolerance for CCG method");
 			
 			std::vector<double> a(3);
-			a[0] = od(ddOutput::stat_entries::TA1TFX); a[1] = od(ddOutput::stat_entries::TA1TFY); a[2] = od(ddOutput::stat_entries::TA1TFZ);
+			a[0] = s.TA1TF[0]; a[1] = s.TA1TF[1]; a[2] = s.TA1TF[2];
 			ddAxisVec::write(out, this->version(), a, 1, frameType::TF);
-			a[0] = od(ddOutput::stat_entries::TA2TFX); a[1] = od(ddOutput::stat_entries::TA2TFY); a[2] = od(ddOutput::stat_entries::TA2TFZ);
+			a[0] = s.TA2TF[0]; a[1] = s.TA2TF[1]; a[2] = s.TA2TF[2];
 			ddAxisVec::write(out, this->version(), a, 2, frameType::TF);
 			
 
 			simpleNumCompound<size_t>::write(out, this->version(), _parent.s.navg, 5, "  NAVG= ", "(theta,phi) values used in comp. of Qsca,g");
 
-			a[0] = od(ddOutput::stat_entries::LFKX); a[1] = od(ddOutput::stat_entries::LFKY); a[2] = od(ddOutput::stat_entries::LFKZ);
+			a[0] = s.LFK[0]; a[1] = s.LFK[1]; a[2] = s.LFK[2];
 			ddAxisVec::write(out, this->version(), a, 0, frameType::LF);
 
 			std::vector<std::complex<double> > iv(3);
-			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFXR), od(ddOutput::stat_entries::IPV1LFXI));
-			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFYR), od(ddOutput::stat_entries::IPV1LFYI));
-			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFZR), od(ddOutput::stat_entries::IPV1LFZI));
+			iv[0] = s.IPV1LF[0];
+			iv[1] = s.IPV1LF[1];
+			iv[2] = s.IPV1LF[2];
 			ddPolVec::write(out, this->version(), iv, 1, frameType::LF);
-			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFXR), od(ddOutput::stat_entries::IPV2LFXI));
-			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFYR), od(ddOutput::stat_entries::IPV2LFYI));
-			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFZR), od(ddOutput::stat_entries::IPV2LFZI));
+			iv[0] = s.IPV2LF[0];
+			iv[1] = s.IPV2LF[1];
+			iv[2] = s.IPV2LF[2];
 			ddPolVec::write(out, this->version(), iv, 2, frameType::LF);
 
 			ddRot1d::write(out, this->version(), "beta", 0, 360, 0, "BETA");
@@ -658,6 +665,7 @@ namespace rtmath {
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
 			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto &s = _parent.s;
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -672,9 +680,9 @@ namespace rtmath {
 			simpleNumRev<double>::write(out, this->version(), od(ddOutput::stat_entries::D), "d (physical units)");
 
 			out << "----- physical extent of target volume in Target Frame ------\n";
-			ddPhysExtent::write(out, this->version(), od(ddOutput::stat_entries::XMIN), od(ddOutput::stat_entries::XMAX), 'x');
-			ddPhysExtent::write(out, this->version(), od(ddOutput::stat_entries::YMIN), od(ddOutput::stat_entries::YMAX), 'y');
-			ddPhysExtent::write(out, this->version(), od(ddOutput::stat_entries::ZMIN), od(ddOutput::stat_entries::ZMAX), 'z');
+			ddPhysExtent::write(out, this->version(), s.mins[0], s.maxs[0], 'x');
+			ddPhysExtent::write(out, this->version(), s.mins[1], s.maxs[1], 'y');
+			ddPhysExtent::write(out, this->version(), s.mins[2], s.maxs[2], 'z');
 
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::AEFF), 12, "  AEFF=  ", "effective radius (physical units)");
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::WAVE), 12, "  WAVE=  ", "wavelength (in vacuo, physical units)");
@@ -693,9 +701,9 @@ namespace rtmath {
 			simpleNumCompound<double>::write(out, this->version(), _parent.parfile->maxTol(), 9, "   TOL= ", " error tolerance for CCG method");
 
 			std::vector<double> a(3);
-			a[0] = od(ddOutput::stat_entries::TA1TFX); a[1] = od(ddOutput::stat_entries::TA1TFY); a[2] = od(ddOutput::stat_entries::TA1TFZ);
+			a[0] = s.TA1TF[0]; a[1] = s.TA1TF[1]; a[2] = s.TA1TF[2];
 			ddAxisVec::write(out, this->version(), a, 1, frameType::TF);
-			a[0] = od(ddOutput::stat_entries::TA2TFX); a[1] = od(ddOutput::stat_entries::TA2TFY); a[2] = od(ddOutput::stat_entries::TA2TFZ);
+			a[0] = s.TA2TF[0]; a[1] = s.TA2TF[1]; a[2] = s.TA2TF[2];
 			ddAxisVec::write(out, this->version(), a, 2, frameType::TF);
 
 
@@ -722,16 +730,15 @@ namespace rtmath {
 			ddAxisVec::write(out, this->version(), a, 2, frameType::LF);
 
 
-			a[0] = od(ddOutput::stat_entries::LFKX); a[1] = od(ddOutput::stat_entries::LFKY); a[2] = od(ddOutput::stat_entries::LFKZ);
+			a[0] = s.LFK[0]; a[1] = s.LFK[1]; a[2] = s.LFK[2];
 			ddAxisVec::write(out, this->version(), a, 0, frameType::LF);
-
-			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFXR), od(ddOutput::stat_entries::IPV1LFXI));
-			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFYR), od(ddOutput::stat_entries::IPV1LFYI));
-			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFZR), od(ddOutput::stat_entries::IPV1LFZI));
+			iv[0] = s.IPV1LF[0];
+			iv[1] = s.IPV1LF[1];
+			iv[2] = s.IPV1LF[2];
 			ddPolVec::write(out, this->version(), iv, 1, frameType::LF);
-			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFXR), od(ddOutput::stat_entries::IPV2LFXI));
-			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFYR), od(ddOutput::stat_entries::IPV2LFYI));
-			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFZR), od(ddOutput::stat_entries::IPV2LFZI));
+			iv[0] = s.IPV2LF[0];
+			iv[1] = s.IPV2LF[1];
+			iv[2] = s.IPV2LF[2];
 			ddPolVec::write(out, this->version(), iv, 2, frameType::LF);
 
 			simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::BETA), 7, " BETA =", "rotation of target around A1");
@@ -761,6 +768,7 @@ namespace rtmath {
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
 			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto &s = _parent.s;
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -795,9 +803,9 @@ namespace rtmath {
 
 
 			std::vector<double> a(3);
-			a[0] = od(ddOutput::stat_entries::TA1TFX); a[1] = od(ddOutput::stat_entries::TA1TFY); a[2] = od(ddOutput::stat_entries::TA1TFZ);
+			a[0] = s.TA1TF[0]; a[1] = s.TA1TF[1]; a[2] = s.TA1TF[2];
 			ddAxisVec::write(out, this->version(), a, 1, frameType::TF);
-			a[0] = od(ddOutput::stat_entries::TA2TFX); a[1] = od(ddOutput::stat_entries::TA2TFY); a[2] = od(ddOutput::stat_entries::TA2TFZ);
+			a[0] = s.TA2TF[0]; a[1] = s.TA2TF[1]; a[2] = s.TA2TF[2];
 			ddAxisVec::write(out, this->version(), a, 2, frameType::TF);
 
 			a[0] = od(ddOutput::stat_entries::TFKX); a[1] = od(ddOutput::stat_entries::TFKY); a[2] = od(ddOutput::stat_entries::TFKZ);
@@ -814,16 +822,15 @@ namespace rtmath {
 			ddPolVec::write(out, this->version(), iv, 2, frameType::TF);
 
 
-			a[0] = od(ddOutput::stat_entries::LFKX); a[1] = od(ddOutput::stat_entries::LFKY); a[2] = od(ddOutput::stat_entries::LFKZ);
+			a[0] = s.LFK[0]; a[1] = s.LFK[1]; a[2] = s.LFK[2];
 			ddAxisVec::write(out, this->version(), a, 0, frameType::LF);
-
-			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFXR), od(ddOutput::stat_entries::IPV1LFXI));
-			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFYR), od(ddOutput::stat_entries::IPV1LFYI));
-			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV1LFZR), od(ddOutput::stat_entries::IPV1LFZI));
+			iv[0] = s.IPV1LF[0];
+			iv[1] = s.IPV1LF[1];
+			iv[2] = s.IPV1LF[2];
 			ddPolVec::write(out, this->version(), iv, 1, frameType::LF);
-			iv[0] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFXR), od(ddOutput::stat_entries::IPV2LFXI));
-			iv[1] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFYR), od(ddOutput::stat_entries::IPV2LFYI));
-			iv[2] = std::complex<double>(od(ddOutput::stat_entries::IPV2LFZR), od(ddOutput::stat_entries::IPV2LFZI));
+			iv[0] = s.IPV2LF[0];
+			iv[1] = s.IPV2LF[1];
+			iv[2] = s.IPV2LF[2];
 			ddPolVec::write(out, this->version(), iv, 2, frameType::LF);
 
 
@@ -845,14 +852,14 @@ namespace rtmath {
 		{
 			if (!_connector)
 			{
-				const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+				//const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 				std::vector<std::complex<double> > v;
-				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV1LFXR), od(ddOutput::stat_entries::IPV1LFXI)));
-				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV1LFYR), od(ddOutput::stat_entries::IPV1LFYI)));
-				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV1LFZR), od(ddOutput::stat_entries::IPV1LFZI)));
-				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV2LFXR), od(ddOutput::stat_entries::IPV2LFXI)));
-				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV2LFYR), od(ddOutput::stat_entries::IPV2LFYI)));
-				v.push_back(std::complex<double>(od(ddOutput::stat_entries::IPV2LFZR), od(ddOutput::stat_entries::IPV2LFZI)));
+				v.push_back(_parent.s.IPV1LF[0]);
+				v.push_back(_parent.s.IPV1LF[1]);
+				v.push_back(_parent.s.IPV1LF[2]);
+				v.push_back(_parent.s.IPV2LF[0]);
+				v.push_back(_parent.s.IPV2LF[1]);
+				v.push_back(_parent.s.IPV2LF[2]);
 				_connector = ddScattMatrixConnector::fromVector(v);
 			}
 			return _connector;
@@ -956,7 +963,7 @@ namespace rtmath {
 		double ddOriData::guessTemp(size_t dielIndex) const
 		{
 			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
-			return rtmath::refract::guessTemp(od(ddOutput::stat_entries::FREQ), M(dielIndex));
+			return rtmath::refract::guessTemp(freq(), M(dielIndex));
 		}
 
 		void ddOriData::writeF(std::ostream &out) const
@@ -1078,8 +1085,8 @@ namespace rtmath {
 			
 #define CHECKD(x) if( od(x) != rod(x)) return od(x) < rod(x);
 #define CHECKI(x) if( oi(x) != roi(x)) return oi(x) < roi(x);
-			CHECKD(ddOutput::stat_entries::DOWEIGHT);
-			CHECKD(ddOutput::stat_entries::FREQ);
+			//CHECKD(ddOutput::stat_entries::DOWEIGHT);
+			CHECKD(ddOutput::stat_entries::WAVE);
 			CHECKD(ddOutput::stat_entries::AEFF);
 			if (_parent.s.num_dipoles != rhs._parent.s.num_dipoles) return _parent.s.num_dipoles < rhs._parent.s.num_dipoles;
 			//CHECKI(ddOutput::stat_entries::NUM_DIPOLES);

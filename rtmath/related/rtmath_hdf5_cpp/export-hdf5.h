@@ -51,11 +51,12 @@ namespace rtmath {
 				insertAttr<DataType>(attr, vls_type, value);
 			}
 
-			/// Eigen objects have a special writing function, as MSVC 2012 disallows partial template specialization.
+			/// Writes an array (or vector) of objects
 			template <class DataType, class Container>
-			void addAttrEigen(std::shared_ptr<Container> obj, const char* attname, const DataType &value)
+			void addAttrArray(std::shared_ptr<Container> obj, const char* attname, 
+					const DataType *value, size_t rows, size_t cols)
 			{
-				hsize_t sz[] = { (hsize_t) value.rows(), (hsize_t) value.cols() };
+				hsize_t sz[] = { (hsize_t) rows, (hsize_t) cols };
 				if (sz[0] == 1)
 				{
 					sz[0] = sz[1];
@@ -63,15 +64,46 @@ namespace rtmath {
 				}
 				int dimensionality = (sz[1] == 1) ? 1 : 2;
 
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
 				//H5::IntType ftype(H5::PredType::NATIVE_FLOAT);
 				H5::ArrayType vls_type(*ftype, dimensionality, sz);
 
 				H5::DataSpace att_space(H5S_SCALAR);
 				H5::Attribute attr = obj->createAttribute(attname, vls_type, att_space);
-				attr.write(vls_type, value.data());
+				attr.write(vls_type, value);
 			}
 
+			/// Eigen objects have a special writing function, as MSVC 2012 disallows partial template specialization.
+			template <class DataType, class Container>
+			void addAttrEigen(std::shared_ptr<Container> obj, const char* attname, 
+					const DataType &value)
+			{
+				addAttrArray<typename DataType::Scalar, Container>(
+						obj, attname, value.data(), (size_t) value.rows(), (size_t) value.cols() );
+			}
+
+			/// Attribute writing for complex objects
+			template <class DataType, class Container>
+			void addAttrComplex(std::shared_ptr<Container> obj, const char* attname, 
+					const DataType *value, size_t rows, size_t cols)
+			{
+				Eigen::Matrix<typename DataType::value_type, Eigen::Dynamic, Eigen::Dynamic> mr, mi;
+				mr.resize(rows, cols); mi.resize(rows, cols);
+				for (size_t i=0; i< rows; ++i)
+					for (size_t j=0; j < cols; ++j)
+					{
+						mr(i,j) = value[i*cols+j].real();
+						mi(i,j) = value[i*cols+j].imag();
+					}
+				std::string attR(attname); attR.append("_r");
+				std::string attI(attname); attI.append("_i");
+				addAttrEigen<Eigen::Matrix<typename DataType::value_type, 
+					Eigen::Dynamic, Eigen::Dynamic>, Container>
+						(obj, attR.c_str(), mr);
+				addAttrEigen<Eigen::Matrix<typename DataType::value_type, 
+					Eigen::Dynamic, Eigen::Dynamic>, Container>
+						(obj, attI.c_str(), mi);
+			}
 
 
 			/// Handles proper insertion of strings versus other data types

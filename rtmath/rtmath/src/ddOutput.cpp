@@ -350,7 +350,7 @@ namespace rtmath {
 				pfileid.replace_extension();
 
 				if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
-				if (pext.string() == ".sca" || pext.string() == ".fml" || pext.string() == ".avg")
+				if (pext.string() == ".sca" || pext.string() == ".fml" ) // disable avg: || pext.string() == ".avg")
 				{
 					if (!orisources.count(pfileid)) orisources[pfileid] = std::pair<path, path>(path(), path());
 					if (pext.string() == ".sca" || pext.string() == ".avg")
@@ -562,7 +562,7 @@ namespace rtmath {
 			// Write fmls
 			for (size_t i = 0; i < (size_t) oridata_d.rows(); ++i)
 			{
-				if (oridata_d(i, stat_entries::DOWEIGHT)) {
+				//if (oridata_d(i, stat_entries::DOWEIGHT)) {
 					std::string basename = onameb(pOut, i, 4);
 					std::string fmlname = basename;
 					std::string scaname = basename;
@@ -573,6 +573,7 @@ namespace rtmath {
 					obj.doImportFMLs();
 					obj.writeFile(fmlname);
 					obj.writeFile(scaname);
+					/*
 				} else {
 					// File is an avg file of some sort
 					std::string basename = onameb(pOut, i, 0);
@@ -582,6 +583,7 @@ namespace rtmath {
 					//obj.doImportFMLs();
 					obj.writeFile(basename);
 				}
+					*/
 			}
 
 			/*
@@ -757,20 +759,24 @@ namespace rtmath {
 #define _tostr(a) #a
 #define tostr(a) _tostr(a)
 #define check(a) if (val == a) return std::string( tostr(a) );
-			check(D); check(XMIN); check(XMAX); check(YMIN);
-			check(YMAX); check(ZMIN); check(ZMAX); check(AEFF);
-			check(WAVE); check(FREQ); //check(NAMBIENT); check(TOL);
-			check(TA1TFX); check(TA1TFY); check(TA1TFZ); check(TA2TFX);
-			check(TA2TFY); check(TA2TFZ); check(TFKX); check(TFKY);
+			check(D); //check(XMIN); check(XMAX); check(YMIN);
+			//check(YMAX); check(ZMIN); check(ZMAX); 
+			check(AEFF);
+			check(WAVE); //check(FREQ); //check(NAMBIENT); check(TOL);
+			//check(TA1TFX); check(TA1TFY); check(TA1TFZ); check(TA2TFX);
+			//check(TA2TFY); check(TA2TFZ); 
+			check(TFKX); check(TFKY);
 			check(TFKZ); check(IPV1TFXR); check(IPV1TFXI); check(IPV1TFYR);
 			check(IPV1TFYI); check(IPV1TFZR); check(IPV1TFZI); check(IPV2TFXR);
 			check(IPV2TFXI); check(IPV2TFYR); check(IPV2TFYI); check(IPV2TFZR);
 			check(IPV2TFZI); check(TA1LFX); check(TA1LFY); check(TA1LFZ);
-			check(TA2LFX); check(TA2LFY); check(TA2LFZ); check(LFKX);
-			check(LFKY); check(LFKZ); check(IPV1LFXR); check(IPV1LFXI);
-			check(IPV1LFYR); check(IPV1LFYI); check(IPV1LFZR); check(IPV1LFZI);
-			check(IPV2LFXR); check(IPV2LFXI); check(IPV2LFYR); check(IPV2LFYI);
-			check(IPV2LFZR); check(IPV2LFZI); check(BETA); check(THETA);
+			check(TA2LFX); check(TA2LFY); check(TA2LFZ); 
+			//check(LFKX);
+			//check(LFKY); check(LFKZ); check(IPV1LFXR); check(IPV1LFXI);
+			//check(IPV1LFYR); check(IPV1LFYI); check(IPV1LFZR); check(IPV1LFZI);
+			//check(IPV2LFXR); check(IPV2LFXI); check(IPV2LFYR); check(IPV2LFYI);
+			//check(IPV2LFZR); check(IPV2LFZI); 
+			check(BETA); check(THETA);
 			check(PHI); //check(ETASCA); 
 			check(QEXT1); check(QABS1);
 			check(QSCA1); check(G11); check(G21); check(QBK1);
@@ -779,10 +785,13 @@ namespace rtmath {
 			check(QEXTM); check(QABSM); check(QSCAM); check(G1M);
 			check(G2M); check(QBKM); check(QPHAM); check(QPOL);
 			check(DQPHA); check(QSCAG11); check(QSCAG21); check(QSCAG31);
-			check(ITER1); check(MXITER1); check(NSCA1); check(QSCAG12);
-			check(QSCAG22); check(QSCAG32); check(ITER2); check(MXITER2);
-			check(NSCA2); check(QSCAG1M); check(QSCAG2M); check(QSCAG3M);
-			check(DOWEIGHT);
+			//check(ITER1); check(MXITER1); check(NSCA1); 
+			check(QSCAG12);
+			check(QSCAG22); check(QSCAG32); 
+			//check(ITER2); check(MXITER2);
+			//check(NSCA2); 
+			check(QSCAG1M); check(QSCAG2M); check(QSCAG3M);
+			//check(DOWEIGHT);
 			return std::string("");
 #undef _tostr
 #undef tostr
