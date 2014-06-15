@@ -163,7 +163,7 @@ namespace {
 		// Install path apps
 
 		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("plugins"));
-		rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
+		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../plugins"));
 		//searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
 		// Not in install path apps
 		//rtmath::registry::searchPathsRecursive.emplace(boost::filesystem::path("../../plugins"));
@@ -175,9 +175,17 @@ namespace {
 		boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
 		appBin.remove_filename();
 		//rtmath::registry::searchPathsRecursive.emplace(appBin / "plugins");
-		rtmath::registry::searchPathsRecursive.emplace( appBin / "../plugins" );
+		//rtmath::registry::searchPathsRecursive.emplace( appBin / "../plugins" );
 		// Build path apps (linux)
 		//rtmath::registry::searchPathsRecursive.emplace( appBin / "../../plugins" );
+
+		// Relative to library
+		using namespace Ryan_Debug;
+		auto modinfo = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) constructSearchPaths), freeModuleInfo);
+		boost::filesystem::path libpath(getPath(modinfo.get()));
+		libpath.remove_filename();
+		rtmath::registry::searchPathsRecursive.emplace(libpath / "plugins");
+
 
 		// Checking rtmath.conf
 		if (use_rtmath_conf)
@@ -236,6 +244,7 @@ namespace {
 					}
 				}
 			};
+			searchEnviron("rtmath_plugins_DIR", searchPathsRecursive);
 			searchEnviron("rtmath_dlls_recursive", searchPathsRecursive);
 			searchEnviron("rtmath_dlls_onelevel", searchPathsOne);
 		}

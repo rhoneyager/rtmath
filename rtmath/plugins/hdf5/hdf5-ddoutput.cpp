@@ -53,6 +53,7 @@ namespace rtmath {
 
 				bool writeORI = opts->getVal<bool>("writeORI", true);
 				bool writeFML = opts->getVal<bool>("writeFML", true);
+				bool writeSHP = opts->getVal<bool>("writeSHP", true);
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
 				/// \todo Pick a better naming function for hdf5-internal runs
@@ -275,7 +276,8 @@ namespace rtmath {
 					o << "/Hashed/" << s->shapeHash.string() << "/Shape";
 					pShape = o.str();
 				}
-				gRun->link(H5L_TYPE_SOFT, pShape, "Shape");
+				if (writeSHP)
+					gRun->link(H5L_TYPE_SOFT, pShape, "Shape");
 
 
 				// If stats are written to this file, make a symlink
@@ -353,7 +355,7 @@ namespace rtmath {
 			/// \todo Modify to also support external symlinks
 			shared_ptr<Group> base = write_hdf5_ddOutput(gRuns, opts, s);
 
-			bool writeShape = opts->getVal("writeShapes", true);
+			bool writeShape = opts->getVal<bool>("writeSHP", true);
 			if (writeShape)
 				write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 					(h, opts, s->shape.get());

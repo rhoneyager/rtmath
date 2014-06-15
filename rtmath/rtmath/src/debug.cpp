@@ -168,6 +168,8 @@ namespace rtmath
 			
 			hidden.add_options()
 				("help-verbose", "Print out all possible program options")
+				("help-all", "Print out all possible program options")
+				("help-full", "Print out all possible program options")
 				("rtmath-config-file", po::value<std::string>(),
 				"Specify the location of the rtmath configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
@@ -183,7 +185,7 @@ namespace rtmath
 			namespace po = boost::program_options;
 			using std::string;
 			
-			if (vm.count("help-verbose"))
+			if (vm.count("help-verbose") || vm.count("help-all") || vm.count("help-full"))
 			{
 				po::options_description oall("All Options");
 				oall.add(*pcmdline).add(*pconfig).add(*phidden);

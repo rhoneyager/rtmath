@@ -52,8 +52,13 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value< vector<string> >(), "input shape files")
+			("input,i", po::value< vector<string> >(), "input shape files. "
+			 "Can specify a directory for recursive search.")
 			("do-shapes", po::value<bool>()->default_value(true), "Create shape hash links")
+			("do-shapes-targetout", po::value<bool>()->default_value(true), 
+			 "Create shape hash links for target.out files encountered in the "
+			 "assimilation process. Only works when paired with an standard shape "
+			 "file using the recursive directory import mode.")
 			("do-stats", po::value<bool>()->default_value(true), "Create shape stats")
 			;
 

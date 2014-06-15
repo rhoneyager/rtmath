@@ -123,13 +123,13 @@ int main(int argc, char** argv)
 		opts->filename(sOutput);
 		opts->setVal<bool>("writeORI", writeORI);
 		opts->setVal<bool>("writeFML", writeFML);
-		opts->setVal<bool>("writeShapes", writeShapes);
+		opts->setVal<bool>("writeSHP", writeShapes);
 
 		auto optsaux = rtmath::registry::IO_options::generate();
 		optsaux->filename(sOutputAux);
 		optsaux->setVal<bool>("writeORI", writeORI);
 		optsaux->setVal<bool>("writeFML", writeFMLaux);
-		optsaux->setVal<bool>("writeShapes", writeShapes);
+		optsaux->setVal<bool>("writeSHP", writeShapes);
 
 		std::shared_ptr<rtmath::registry::IOhandler> writer, writeraux;
 

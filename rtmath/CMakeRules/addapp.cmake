@@ -6,7 +6,7 @@
 macro(addapp appname foldername)
 	#message("${foldername} ${appname}")
 	set_target_properties( ${appname} PROPERTIES FOLDER "Apps/${foldername}")
-INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin COMPONENT Applications)
+	INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin/bin@configappend@ COMPONENT Applications)
 	
 	#if (NOT ${appname}_INCLUDE_DIRS)
 	#set(${appname}_LIBRARIES "")
