@@ -154,8 +154,8 @@ namespace rtmath {
 					QEXT2, QABS2, QSCA2, G12, G22, QBK2, QPHA2,
 					QEXTM, QABSM, QSCAM, G1M, G2M, QBKM, QPHAM,
 					QPOL, DQPHA,
-					QSCAG11, QSCAG21, QSCAG31, //////////////ITER1, MXITER1, NSCA1,
-					QSCAG12, QSCAG22, QSCAG32, //////////////ITER2, MXITER2, NSCA2,
+					QSCAG11, QSCAG21, QSCAG31, ITER1, MXITER1, NSCA1,
+					QSCAG12, QSCAG22, QSCAG32, ITER2, MXITER2, NSCA2,
 					QSCAG1M, QSCAG2M, QSCAG3M,
 					///////////////DOWEIGHT,
 					NUM_STAT_ENTRIES_DOUBLES
@@ -198,8 +198,8 @@ namespace rtmath {
 				std::array<double, 3> TA2TF;
 				std::array<double, 3> LFK;
 				std::array<std::complex<double>, 3> IPV1LF, IPV2LF;
-				size_t iter1, mxiter1, nsca1,
-					   iter2, mxiter2, nsca2;
+				//size_t iter1, mxiter1, nsca1,
+				//	   iter2, mxiter2, nsca2;
 			} s;
 
 			/// Table containing orientation data (cross-sections, etc.)

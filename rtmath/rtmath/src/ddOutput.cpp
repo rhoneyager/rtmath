@@ -785,11 +785,10 @@ namespace rtmath {
 			check(QEXTM); check(QABSM); check(QSCAM); check(G1M);
 			check(G2M); check(QBKM); check(QPHAM); check(QPOL);
 			check(DQPHA); check(QSCAG11); check(QSCAG21); check(QSCAG31);
-			//check(ITER1); check(MXITER1); check(NSCA1); 
+			check(ITER1); check(MXITER1); check(NSCA1); 
 			check(QSCAG12);
 			check(QSCAG22); check(QSCAG32); 
-			//check(ITER2); check(MXITER2);
-			//check(NSCA2); 
+			check(ITER2); check(MXITER2); check(NSCA2); 
 			check(QSCAG1M); check(QSCAG2M); check(QSCAG3M);
 			//check(DOWEIGHT);
 			return std::string("");

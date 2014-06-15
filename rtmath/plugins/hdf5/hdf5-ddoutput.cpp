@@ -64,7 +64,6 @@ namespace rtmath {
 				addAttr<string, Group>(gRun, "ingest_timestamp", s->ingest_timestamp);
 				addAttr<string, Group>(gRun, "ingest_hostname", s->ingest_hostname);
 				addAttr<int, Group>(gRun, "ingest_rtmath_version", s->ingest_rtmath_version);
-				addAttr<size_t, Group>(gRun, "Num_Avgs_for_cos", s->s.navg);
 				addAttr<string, Group>(gRun, "hostname", s->hostname);
 				addAttr<double, Group>(gRun, "Frequency", s->freq);
 				addAttr<double, Group>(gRun, "aeff", s->aeff);
@@ -85,19 +84,12 @@ namespace rtmath {
 				addAttrArray<double, Group>(gRun, "maxs", s->s.maxs.data(), 1, 3);
 				addAttrArray<double, Group>(gRun, "TA1TF", s->s.TA1TF.data(), 1, 3);
 				addAttrArray<double, Group>(gRun, "TA2TF", s->s.TA2TF.data(), 1, 3);
-				addAttrArray<double, Group>(gRun, "LFX", s->s.LFK.data(), 1, 3);
+				addAttrArray<double, Group>(gRun, "LFK", s->s.LFK.data(), 1, 3);
 
 				addAttrComplex<std::complex<double>, Group>
 					(gRun, "IPV1LF", s->s.IPV1LF.data(), 1, 3);
 				addAttrComplex<std::complex<double>, Group>
 					(gRun, "IPV2LF", s->s.IPV2LF.data(), 1, 3);
-
-				addAttr<size_t, Group>(gRun, "iter1", s->s.iter1);
-				addAttr<size_t, Group>(gRun, "mxiter1", s->s.mxiter1);
-				addAttr<size_t, Group>(gRun, "nsca1", s->s.nsca1);
-				addAttr<size_t, Group>(gRun, "iter2", s->s.iter2);
-				addAttr<size_t, Group>(gRun, "mxiter2", s->s.mxiter2);
-				addAttr<size_t, Group>(gRun, "nsca2", s->s.nsca2);
 
 
 				// Refractive indices table
@@ -116,7 +108,7 @@ namespace rtmath {
 					std::vector<const char*> csrcs(srcs.size());
 					for (size_t i = 0; i<srcs.size(); ++i)
 						csrcs[i] = srcs[i].c_str();
-					addAttr<size_t, Group>(gRun, "Num_Source_Files", srcs.size());
+					//addAttr<size_t, Group>(gRun, "Num_Source_Paths", srcs.size());
 					addDatasetArray<const char*, Group>(gRun, "Sources", csrcs.size(), 1, csrcs.data());
 				}
 				// Tags
