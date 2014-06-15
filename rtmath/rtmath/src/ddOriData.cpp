@@ -256,6 +256,7 @@ namespace rtmath {
 		double ddOriData::freq() const
 		{
 			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			//std::cerr << _row << " freq() " << od(ddOutput::stat_entries::WAVE) << std::endl;
 			return units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
 		}
 
@@ -498,7 +499,7 @@ namespace rtmath {
 			//std::getline(in, junk); // d/aeff
 			//simpleNumRev<double>::read(in, od(ddOutput::stat_entries::D));
 			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::AEFF));
-			simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::WAVE));
+			std::getline(in, junk); // (Bad FREQ lines in FML!) simpleNumCompound<double>::read(in, od(ddOutput::stat_entries::WAVE));
 			//od(ddOutput::stat_entries::FREQ) = units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
 
 			std::getline(in, junk); // k*aeff

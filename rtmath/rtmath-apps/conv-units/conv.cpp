@@ -26,11 +26,6 @@ int main(int argc, char** argv)
 
 		namespace po = boost::program_options;
 
-		po::positional_options_description p;
-		p.add("input", 1);
-		p.add("input-units", 2);
-		p.add("output-units", 3);
-
 		po::options_description desc("Allowed options"), cmdline("Command-line options"),
 		config("Config options"), hidden("Hidden options"), oall("all options");
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -44,12 +39,16 @@ int main(int argc, char** argv)
 			("density", "Convert density units")
 			("mass", "Convert mass  units (kg, g, ...)")
 			("length", "Convert length units (m, km, ft, ...)")
-			("spec", "Interconvert spectral units (frequency, wavelength, wavenumber)")
-
+			("spec", "Interconvert spectral units (frequency, wavelength, wavenumber) (DEFAULT)")
 			("volume","Convert units of volume (m^3, ...)")
 			("pressure", "Convert units of pressure (Pa, hPa, atm)")
 
 			("temperature", "Perform temperature conversion (K, C, F, R)");
+
+		po::positional_options_description p;
+		p.add("input",1);
+		p.add("input-units",2);
+		p.add("output-units",3);
 
 		desc.add(cmdline).add(config);
 		oall.add(cmdline).add(config).add(hidden);
@@ -91,9 +90,10 @@ int main(int argc, char** argv)
 		} else if (vm.count("temperature")) {
 			cnv = boost::shared_ptr<rtmath::units::conv_temp>(new rtmath::units::conv_temp(inUnits,outUnits));
 		} else {
-			cerr << "Must specify a valid type of unit to convert (temperature, linear distance, ...)\n";
-			cerr << desc << endl;
-			return 1;
+			cnv = boost::shared_ptr<rtmath::units::conv_spec>(new rtmath::units::conv_spec(inUnits,outUnits));
+			//cerr << "Must specify a valid type of unit to convert (temperature, linear distance, ...)\n";
+			//cerr << desc << endl;
+			//return 1;
 		}
 
 		

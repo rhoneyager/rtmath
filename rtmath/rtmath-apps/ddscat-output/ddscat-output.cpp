@@ -183,13 +183,16 @@ int main(int argc, char** argv)
 				ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
 				ddOut->readFile(ps.string());
 				} catch (...) {
-					std::cerr << "Unable to load " << ps.string() << std::endl;
+					std::cerr << " Unable to load " << ps.string() << std::endl;
 					continue;
 				}
 			} else {
-				std::cerr << "Unable to load " << ps.string() << std::endl;
+				std::cerr << " Unable to load " << ps.string() << std::endl;
 				continue;
 			}
+
+			std::cerr << " Frequency: " << ddOut->freq << " GHz\n";
+			std::cerr << " Temperature: " << ddOut->temp << " K." << std::endl;
 
 			if (sDesc.size())
 				ddOut->description = sDesc;

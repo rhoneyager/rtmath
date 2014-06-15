@@ -38,6 +38,8 @@ int main(int argc, char** argv)
 			("force-flake-type,t", po::value<string>(), "forces flake type (dendrite, ar_correct_main, ...")
 			("force-ddscat-version,v", po::value<string>(), "force ddscat version")
 			("force-polarization,p", po::value<string>(), "force polarization (lin,rhc,...)")
+			("force-perturbation,P", po::value<bool>(), "force perturbation to on or off")
+			("force-decimation,d", po::value<bool>(), "force decimation to on or off")
 			;
 		po::positional_options_description p;
 		p.add("input",-1);
@@ -90,6 +92,17 @@ int main(int argc, char** argv)
 			ddver = vm["force-ddscat-version"].as<string>();
 			default_ver = true;
 		}
+		bool default_decimation = false, default_perturbation = false;
+		bool force_decimation = false, force_perturbation = false;
+		if (vm.count("force-decimation")) {
+			default_decimation = vm["force-decimation"].as<bool>();
+			force_decimation = true;
+		}
+		if (vm.count("force-perturbation")) {
+			default_perturbation = vm["force-perturbation"].as<bool>();
+			force_perturbation = true;
+		}
+
 
 		using namespace boost::filesystem;
 		size_t num = 0;
@@ -113,12 +126,15 @@ int main(int argc, char** argv)
 			cout << "Processing: " << pInput << " --- # " << num << " / " << mxnum << endl;
 			//if (is_regular_file(ps) && !Ryan_Serialization::known_format(ps)) continue;
 
-			auto isYes = [](bool def) -> bool
+			auto isYes = [](const std::string &q, bool defopt, bool force, bool forcedef) -> bool
 			{
+				//std::cerr << "\n" << force << " " << forcedef << std::endl;
+				if (force) return forcedef;
+				std::cout << q;
 				std::string res;
 				getline(cin, res);
-				if (!res.size()) return def;
-				if (res == "\n") return def;
+				if (!res.size()) return defopt;
+				if (res == "\n") return defopt;
 				if (res[0] == '1' || res[0] == 'y' || res[0] == 'Y' 
 						|| res[0] == 'T' || res[0] == 't') return true;
 				return false;
@@ -151,17 +167,15 @@ int main(int argc, char** argv)
 			string poltag("pol=");
 			poltag.append(pol);
 			tags.push_back(poltag);
-			cout << " Is this run decimated [no]? ";
-			if (isYes(false)) {
+			if (isYes(" Is this run decimated [no]? ", false, force_decimation, default_decimation)) {
 				string s;
 				int level = 2, threshold = 0;
 				cout << "  Decimation level [2]: ";
 				getline(cin, s);
 				if (!s.size() || s == "\n") level = 2;
 				else level = M_ATOI(s.c_str());
-				cout << "  Does the decimation work on a threshold [yes]? ";
 				bool isThres = true;
-				if (isThres = isYes(true)) {
+				if (isThres = isYes("  Does the decimation work on a threshold [yes]? ", true, false, false)) {
 					threshold = (level*level*level)/2;
 					cout << "  Decimation threshold [" << threshold << "]: ";
 					getline(cin,s);
@@ -177,8 +191,7 @@ int main(int argc, char** argv)
 			} else {
 				tags.push_back("decimation=none");
 			}
-			cout << " Is this run perturbed [no]? ";
-			if (isYes(false)) {
+			if (isYes(" Is this run perturbed [no]? ", false, force_perturbation, default_perturbation)) {
 				cout << "  Perturbation type [internal]: ";
 				string ptype;
 				getline(cin,ptype);
