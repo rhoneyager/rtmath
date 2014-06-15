@@ -713,12 +713,19 @@ namespace Ryan_Debug {
 	std::string GetModulePath(HMODULE mod = NULL)
 	{
 		std::string out;
-		if (!mod) mod = GetCurrentModule();
-		if (!mod) return std::move(out);
+		bool freeAtEnd = false;
+		if (!mod)
+		{
+			mod = GetCurrentModule();
+			if (!mod) return std::move(out);
+			freeAtEnd = true;
+		}
 		const DWORD nSize = MAX_PATH * 4;
 		TCHAR filename[nSize];
 		DWORD sz = GetModuleFileName(mod, filename, nSize);
 		out = convertStr(filename);
+		if (freeAtEnd)
+			FreeLibrary(mod);
 		return std::move(out);
 	}
 #endif
@@ -727,7 +734,9 @@ namespace Ryan_Debug {
 	{
 		std::string out;
 		Dl_info info;
-		if (dladdr((void*) GetModulePath, &info) )
+		void *addrb = addr;
+		if (!addrb) addrb = (void*) GetModulePath;
+		if (dladdr(addrb, &info) )
 		{
 			out = std::string(info.dli_fname);
 		}
@@ -752,6 +761,50 @@ namespace Ryan_Debug {
 			return 0;
 		}
 #endif
+
+	struct moduleInfo
+	{
+		std::string path;
+	};
+
+	hModuleInfo getModuleInfo(void* func)
+	{
+
+		std::string modpath;
+#ifdef __unix__
+		modpath = GetModulePath(func);
+#endif
+#ifdef _WIN32
+		BOOL success = false;
+		if (func)
+		{
+			// Get path of func
+			DWORD flags = GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS;
+			LPCTSTR lpModuleName = (LPCTSTR) func;
+			HMODULE mod;
+			success = GetModuleHandleEx(flags, lpModuleName, &mod);
+			if (!success) return nullptr;
+			modpath = GetModulePath(mod);
+			FreeLibrary(mod);
+		} else {
+			// Get Ryan_Debug dll path
+			modpath = GetModulePath();
+		}
+#endif
+		moduleInfo* h = new moduleInfo;
+		h->path = modpath;
+		return h;
+	}
+
+	const char* getPath(const hModuleInfo h)
+	{
+		return h->path.c_str();
+	}
+
+	void freeModuleInfo(hModuleInfo h)
+	{
+		delete h;
+	}
 
 	/// Enumerate the modules in a given process.
 	void enumModules(int pid, std::ostream &out = std::cerr)
