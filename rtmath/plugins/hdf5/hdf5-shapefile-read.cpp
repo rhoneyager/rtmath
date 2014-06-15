@@ -62,7 +62,46 @@ namespace rtmath {
 				readAttrEigen<Eigen::Array3f, Group>(base, "x0", shp->x0);
 				readAttrEigen<Eigen::Array3f, Group>(base, "xd", shp->xd);
 
-				
+				// Tags
+				{
+					//addAttr<size_t, Group>(shpraw, "Num_Tags", shp->tags.size());
+
+					const size_t nTagCols = 2;
+					typedef std::array<const char*, nTagCols> strdata;
+					// Get size of the tags object
+					size_t numTags = 0;
+					readAttr<size_t, Group>(base, "Num_Tags", numTags);
+					std::vector<strdata> sdata(numTags);
+
+					hsize_t dim[1] = { static_cast<hsize_t>(numTags) };
+					DataSpace space(1, dim);
+					// May have to cast array to a private structure
+					H5::StrType strtype(0, H5T_VARIABLE);
+					CompType stringTableType(sizeof(strdata));
+					stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
+					stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
+
+					std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Tags")));
+					sdataset->read(sdata.data(), stringTableType);
+
+
+
+					//std::shared_ptr<DataSet> sdataset(new DataSet(base->createDataSet(
+					//	"Tags", stringTableType, space)));
+					//sdataset->write(sdata.data(), stringTableType);
+
+
+					//size_t i = 0;
+					for (const auto &t : sdata)
+					{
+						shp->tags.insert(std::pair<std::string, std::string>(
+							std::string(t.at(0)), std::string(t.at(1))));
+						//sdata.at(i).at(0) = t.first.c_str();
+						//sdata.at(i).at(1) = t.second.c_str();
+						//++i;
+					}
+				}
+
 				// Read in tables:
 				Eigen::Matrix<int, Eigen::Dynamic, 1> lptsi;
 				// Dielectrics
@@ -82,17 +121,30 @@ namespace rtmath {
 					(base, "latticePtsIndex", lptsi);
 				shp->latticeIndex = lptsi;
 				// latticePtsNorm
-				readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
-					(base, "latticePtsNorm", lptsf);
+				//readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
+				//	(base, "latticePtsNorm", lptsf);
 				shp->latticePtsNorm = lptsf;
+				for (size_t i = 0; i < numPoints; i++)
+				{
+					auto pt = shp->latticePts.block<1, 3>(i, 0);
+					auto Npt = shp->latticePtsNorm.block<1, 3>(i, 0);
+					Npt = pt.array().transpose() - shp->means;
+				}
 				// latticePtsRi
 				readDatasetEigen<Eigen::Matrix<int, Eigen::Dynamic, 3>, Group>
 					(base, "latticePtsRi", lpts);
 				shp->latticePtsRi = lpts.cast<float>();
 				// latticePtsStd
-				readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
-					(base, "latticePtsStd", lptsf);
+				//readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
+				//	(base, "latticePtsStd", lptsf);
 				shp->latticePtsStd = lptsf;
+				for (size_t i = 0; i < numPoints; i++)
+				{
+					auto pt = shp->latticePts.block<1, 3>(i, 0);
+					Eigen::Array3f crd = pt.array() * shp->d.transpose();
+					auto Npt = shp->latticePtsStd.block<1, 3>(i, 0);
+					Npt = crd.matrix() - shp->xd.matrix();
+				}
 
 				// Extras group
 				// Read in all extras tables
@@ -111,6 +163,7 @@ namespace rtmath {
 						(grpExtras, name.c_str(), *(mextra));
 					shp->latticeExtras[name] = mextra;
 				}
+
 
 				return true;
 			}
@@ -155,39 +208,60 @@ namespace rtmath {
 			if (!grpShape) RTthrow debug::xMissingFile(key.c_str());
 			read_hdf5_shaperawdata(grpShape, s);
 
-			// Iterate over hash entries
-			/*
-			hsize_t nObjs = grpHashes->getNumObjs();
-			for (hsize_t i=0; i<nObjs; ++i)
-			{
-				std::string hashname = grpHashes->getObjnameByIdx(i);
-				H5G_obj_t t = grpHashes->getObjTypeByIdx(i);
-				if (t != H5G_obj_t::H5G_GROUP) continue;
-
-				shared_ptr<Group> grpHash = openGroup(grpHashes, hashname.c_str());
-
-				shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-				if (!grpShape) continue;
-
-				//boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> res(new rtmath::ddscat::shapefile::shapefile);
-				//if (read_hdf5_shaperawdata(grpShape, res))
-				//	s.push_back(res);
-				read_hdf5_shaperawdata(grpShape, s);
-			}
-			*/
-			/// \todo Implement opts searching features
-
 			return h;
 		}
 
+		/// \brief Reads in all shapefile entries in file.
+		/// \todo Add opts selector information to eventually narrow the returned data.
 		template<>
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<rtmath::ddscat::shapefile::shapefile>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > &s)
 		{
-			RTthrow debug::xUnimplementedFunction();
-			return sh;
+			std::string filename = opts->filename();
+			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+			//IOhandler::IOtype iotype = opts->iotype();
+			std::string key = opts->getVal<std::string>("key");
+			using std::shared_ptr;
+			using namespace H5;
+			Exception::dontPrint();
+			std::shared_ptr<hdf5_handle> h;
+			if (!sh)
+			{
+				// Access the hdf5 file
+				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename.c_str(), iotype));
+			}
+			else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
+			}
+
+			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
+			if (grpHashes)
+			{
+				hsize_t sz = grpHashes->getNumObjs();
+				//s.reserve(s.size() + sz);
+				for (hsize_t i = 0; i < sz; ++i)
+				{
+					std::string hname = grpHashes->getObjnameByIdx(i);
+					H5G_obj_t t = grpHashes->getObjTypeByIdx(i);
+					if (t != H5G_obj_t::H5G_GROUP) continue;
+
+					shared_ptr<Group> grpHash = openGroup(grpHashes, hname.c_str());
+					if (!grpHash) continue; // Should never happen
+					shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
+					if (grpShape)
+					{
+						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> 
+							shp(new rtmath::ddscat::shapefile::shapefile);
+						read_hdf5_shaperawdata(grpShape, shp.get());
+						s.push_back(shp);
+					}
+				}
+			}
+
+			return h;
 		}
 	}
 }

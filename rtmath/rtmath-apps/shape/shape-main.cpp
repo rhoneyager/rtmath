@@ -1,5 +1,5 @@
 /* shape
- * A program designed for analyzing ddscat shape.par files and the associated ___ files output when 
+ * A program designed for analyzing ddscat shape.dat files and the associated ___ files output when 
  * ddscat runs. The shape file is loaded, and various properties of the shape are analyzed. 
  * In particular, the moments of inertia are calculated for the shape, and its most likely 
  * axis, given lamellar-like flow conditions, is calculated. This is important because it 
@@ -82,10 +82,13 @@ int main(int argc, char** argv)
 			options(oall).positional(p).run(), vm);
 		po::notify(vm);
 
-		if (vm.count("help") || argc == 1) {
-			cerr << desc << "\n";
-			return 1;
-		}
+		auto doHelp = [&](const std::string &m)
+		{
+			std::cerr << desc << "\n" << m << std::endl;
+			exit(1);
+		};
+
+		if (vm.count("help") || argc == 1) doHelp("");
 		
 		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
@@ -101,10 +104,7 @@ int main(int argc, char** argv)
 			cerr << "Input files are:" << endl;
 			for (auto it = inputs.begin(); it != inputs.end(); it++)
 				cerr << "\t" << *it << "\n";
-		} else {
-			cerr << "Need to specify input files.\n" << desc << endl;
-			return 1;
-		}
+		} else doHelp("Need to specify input files.");
 
 		// sepOutputs is a vestigial option. I want everything in a separate file automatically. 
 		// No vectors! They are hard to detect before readins, leading to input stream errors.
@@ -112,7 +112,6 @@ int main(int argc, char** argv)
 		bool doExport = false;
 		std::string exportType, exportFilename;
 		//if (vm.count("separate-outputs")) sepOutputs = true;
-
 
 		string output; 
 		
@@ -151,8 +150,8 @@ int main(int argc, char** argv)
 			return 0;
 		}
 
-		vector<rtmath::ddscat::stats::shapeFileStats> Stats;
-		Stats.reserve(inputs.size());
+		//vector<rtmath::ddscat::stats::shapeFileStats> Stats;
+		//Stats.reserve(inputs.size());
 
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
 
@@ -161,37 +160,50 @@ int main(int argc, char** argv)
 		
 		//opts->filetype(ctype);
 		opts->exportType(exportType);
-
+		opts->filename(output);
 		opts->setVal<double>("dSpacing", dSpacing);
 		optsExport->setVal<double>("dSpacing", dSpacing);
+		optsExport->filename(exportFilename);
+		optsExport->exportType(exportType);
+		//opts->setVal("key", sstats._shp->filename);
+		//optsExport->setVal("key", sstats._shp->filename);
 
+		using std::vector;
+		using namespace rtmath::ddscat;
+		vector<boost::shared_ptr<shapefile::shapefile> > shapes;
 		for (auto it = inputs.begin(); it != inputs.end(); it++)
 		{
-			// Load the shape file
 			cerr << "Processing " << *it << endl;
-			rtmath::ddscat::shapefile::shapefile shp(*it);
+			auto iopts = registry::IO_options::generate();
+			iopts->filename(*it);
+			// Handle not needed as the read context is used only once.
+			if (shapefile::shapefile::canReadVector(iopts))
+				shapefile::shapefile::readVector(nullptr, iopts, shapes);
+			else {
+				boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
+				s->readFile(*it);
+				shapes.push_back(s);
+			}
 
-			cerr << "\tCalculating statistics" << endl;
-			rtmath::ddscat::stats::shapeFileStats sstats(shp);
-			
-			opts->filename(output);
-			opts->setVal("key", sstats._shp->filename);
-
-			optsExport->filename(exportFilename);
-			optsExport->setVal("key", sstats._shp->filename);
-			optsExport->exportType(exportType);
-
-			if (output.size())
-				handle = sstats.writeMulti(handle, opts);
-			if (doExport)
-				exportHandle = sstats.writeMulti(exportHandle, optsExport);
-
-			Stats.push_back(std::move(sstats));
 		}
 
-		// Need to handle serialization versus plugins properly here.
-		
-		//::Ryan_Serialization::write<vector<rtmath::ddscat::stats::shapeFileStats> >(Stats,output);
+		for (const auto &shp : shapes)
+		{
+			cerr << "Shape " << shp->hash().lower << endl;
+
+			//cerr << "\tCalculating statistics" << endl;
+			//rtmath::ddscat::stats::shapeFileStats sstats(shp);
+			
+			if (output.size())
+				handle = shp->writeMulti(handle, opts);
+			//	handle = sstats.writeMulti(handle, opts);
+			if (doExport)
+				exportHandle = shp->writeMulti(exportHandle, optsExport);
+			//	exportHandle = sstats.writeMulti(exportHandle, optsExport);
+
+			//Stats.push_back(std::move(sstats));
+		}
+
 	}
 	catch (rtmath::debug::xError &err)
 	{

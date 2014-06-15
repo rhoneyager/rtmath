@@ -195,8 +195,10 @@ namespace rtmath {
 					latticePtsStd, // Points with coord translation based on file properties
 					latticePtsNorm, // Points with coord transform to mean center of shape
 					latticePtsRi; // Dielectric information
-				/// Te first field in the point listings. Provides a nonunique point id.
+				/// The first field in the point listings. Provides a nonunique point id.
 				Eigen::Matrix<int, Eigen::Dynamic, 1> latticeIndex;
+				/// Tags used to describe the shape (decimation, perturbations, ...). Not saved in .shp format.
+				std::multimap<std::string, std::string> tags;
 				/**
 				 * Container for other, temporary tables, which reflect different information 
 				 * about the shapefile, such as number of dipoles from the surface, the point's 

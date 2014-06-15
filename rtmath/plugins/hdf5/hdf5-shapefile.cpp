@@ -161,6 +161,33 @@ namespace rtmath {
 					addAttrEigen<Eigen::Array3f, Group>(shpraw, "d", shp->d);
 					addAttrEigen<Eigen::Array3f, Group>(shpraw, "x0", shp->x0);
 					addAttrEigen<Eigen::Array3f, Group>(shpraw, "xd", shp->xd);
+
+					// Tags
+					{
+						addAttr<size_t, Group>(shpraw, "Num_Tags", shp->tags.size());
+
+						const size_t nTagCols = 2;
+						typedef std::array<const char*, nTagCols> strdata;
+						std::vector<strdata> sdata(shp->tags.size());
+						size_t i = 0;
+						for (const auto &t : shp->tags)
+						{
+							sdata.at(i).at(0) = t.first.c_str();
+							sdata.at(i).at(1) = t.second.c_str();
+							++i;
+						}
+
+						hsize_t dim[1] = { static_cast<hsize_t>(shp->tags.size()) };
+						DataSpace space(1, dim);
+						// May have to cast array to a private structure
+						H5::StrType strtype(0, H5T_VARIABLE);
+						CompType stringTableType(sizeof(strdata));
+						stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
+						stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
+						std::shared_ptr<DataSet> sdataset(new DataSet(shpraw->createDataSet(
+							"Tags", stringTableType, space)));
+						sdataset->write(sdata.data(), stringTableType);
+					}
 				}
 				catch (H5::Exception &e)
 				{

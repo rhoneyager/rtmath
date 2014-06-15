@@ -362,6 +362,11 @@ namespace rtmath
 				reader.io_multi_processor = std::bind(readerBinder,
 					std::placeholders::_1,std::placeholders::_2,std::placeholders::_3,
 					inF);
+
+				//auto vectorReaderBinder
+				reader.io_vector_processor = std::bind(vectorReaderBinder,
+					std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+					inF);
 			}
 		};
 
@@ -638,6 +643,55 @@ namespace rtmath
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
 					return dllsaver(handle, opts, dynamic_cast<obj_class*>(this));
+					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
+				}
+				else {
+					// Cannot match a file type to save.
+					// Should never occur.
+					RTthrow debug::xUnknownFileFormat(opts->filename().c_str());
+				}
+				return nullptr; // Should never be reached
+			}
+
+			/// Read all matching contained results into a vector
+			static std::shared_ptr<registry::IOhandler> readVector(
+				std::shared_ptr<rtmath::registry::IOhandler> handle,
+				std::shared_ptr<rtmath::registry::IO_options> opts,
+				std::vector<boost::shared_ptr<obj_class> > &v
+				)
+			{
+				// All of these objects can handle their own compression
+				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_vector_type dllv = nullptr;
+				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_multi_type dllm = nullptr;
+				// Process dll hooks first
+				auto hooks = ::rtmath::registry::usesDLLregistry<input_registry_class,
+					::rtmath::registry::IO_class_registry_reader<obj_class> >::getHooks();
+				for (const auto &hook : *hooks)
+				{
+					if (!hook.io_multi_matches) continue; // Sanity check
+					//if (hook.io_multi_matches(filename, ctype, handle))
+					if (hook.io_multi_matches(handle, opts))
+					{
+						if (hook.io_vector_processor)
+							dllv = hook.io_vector_processor;
+						else if (hook.io_multi_processor)
+							dllm = hook.io_multi_processor;
+						else continue; // No vector or multi reader - shouldn't happen if io_multi_matches, but fail to next plugin
+						break;
+					}
+				}
+				if (dllv || dllm)
+				{
+					// Most of these types aren't compressible or implement their
+					// own compression schemes. So, it's not handled at this level.
+					if (dllv) return dllv(handle, opts, v);
+					else {
+						// obj_Class must be default-constructable to work here
+						boost::shared_ptr<obj_class> obj(new obj_class);
+						auto res = dllm(handle, opts, obj.get());
+						v.push_back(obj);
+						return res;
+					}
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 				}
 				else {
