@@ -40,6 +40,10 @@ int main(int argc, char** argv)
 			("force-polarization,p", po::value<string>(), "force polarization (lin,rhc,...)")
 			("force-perturbation,P", po::value<bool>(), "force perturbation to on or off")
 			("force-decimation,d", po::value<bool>(), "force decimation to on or off")
+			("ingest-ddoutput", po::value<bool>()->default_value(true), "Generate hdf5 files for ddscat output")
+			("ingest-shapefiles", po::value<bool>()->default_value(false), "Generate hdf5 files for shapefiles")
+			("store-shapefile-hashes", po::value<bool>()->default_value(true), "Store hashed shapefile results "
+			 "if ingest-shapefiles is turned on.)")
 			;
 		po::positional_options_description p;
 		p.add("input",-1);
@@ -64,6 +68,9 @@ int main(int argc, char** argv)
 
 		if (vm.count("help") || argc == 1) doHelp("");
 
+		bool ingest_ddoutput = vm["ingest-ddoutput"].as<bool>();
+		bool ingest_shapefiles = vm["ingest-shapefiles"].as<bool>();
+		bool hash_shapefiles = vm["store-shapefile-hashes"].as<bool>();
 		vector<string> vsInput;
 		string sOutput;
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
@@ -142,6 +149,7 @@ int main(int argc, char** argv)
 			using namespace std;
 			string hostname;
 			vector<string> tags;
+			vector<string> stags;
 			if (!default_runclass)
 			{
 				cout << " Type of flake (dendrite,prolate,...): ";
@@ -151,6 +159,7 @@ int main(int argc, char** argv)
 			string cltag("flake_classification=");
 			cltag.append(runclass);
 			tags.push_back(cltag);
+			stags.push_back(cltag);
 			if (!default_ver) {
 				cout << " DDSCAT version [7.3.0_130527_r1-intel-openmp-checked]: ";
 				getline(cin, ddver);
@@ -188,6 +197,7 @@ int main(int argc, char** argv)
 				else out << "_scaled";
 				string stag(out.str());
 				tags.push_back(stag);
+				stags.push_back(stag);
 			} else {
 				tags.push_back("decimation=none");
 			}
@@ -202,7 +212,11 @@ int main(int argc, char** argv)
 				ostringstream out;
 				out << "perturbation=" << ptype << "_" << pthres;
 				tags.push_back(out.str());
-			} else tags.push_back("perturbation=none");
+				stags.push_back(out.str());
+			} else {
+				tags.push_back("perturbation=none");
+				stags.push_back("perturbation=none");
+			}
 			cout << " Suffix (_thorough?): ";
 			string suffix;
 			getline(cin,suffix);
@@ -228,17 +242,27 @@ int main(int argc, char** argv)
 				pextract = "extract/*";
 			}
 
-			ofile << "rtmath-ddscat-output -i " << pextract.string() << " --write-shapes=0 "
-				"-H " << hostname << " --force-ddscat-detected-version " 
-				<< ddver << " -d " << runclass << " ";
-			for (const auto &t : tags)
-				ofile << "-t \"" << t << "\" ";
-			ofile << "-o hdf-full/$outfull --output-aux hdf-ori/$outori" << endl;
+			if (ingest_ddoutput) {
+				ofile << "rtmath-ddscat-output -i " << pextract.string() << " --write-shapes=0 "
+					"-H " << hostname << " --force-ddscat-detected-version " 
+					<< ddver << " -d " << runclass << " ";
+				for (const auto &t : tags)
+					ofile << "-t \"" << t << "\" ";
+				ofile << "-o hdf-full/$outfull --output-aux hdf-ori/$outori" << endl;
 
-			ofile << "if ( $? ) then\n"
-				"rm hdf-full/$outfull hdf-ori/$outori\n"
-				"echo " << ps.string() << " >> bad_ingest.log\n"
-				"endif" << endl;
+				ofile << "if ( $? ) then\n"
+					"rm hdf-full/$outfull hdf-ori/$outori\n"
+					"echo " << ps.string() << " >> bad_ingest.log\n"
+					"endif" << endl;
+			}
+
+			if (ingest_shapefiles) {
+				ofile << "rtmath-shape -i " << pextract.string();
+				for (const auto &t : stags)
+					ofile << " -t \"" << t << "\" -o hdf-shp/shapes.hdf5";
+				if (hash_shapefiles)
+					ofile << " --hash";
+			}
 
 			ofile << "rm -rf extract" << endl << endl;
 		}
