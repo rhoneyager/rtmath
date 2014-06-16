@@ -82,8 +82,8 @@ namespace rtmath {
 		public:
 			typedef boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixType;
 			typedef boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixTypeMutable;
-		private:
 			VoronoiDiagram();
+		private:
 			/**
 			* \brief Internal pointer to the Voro++ object
 			*

@@ -39,7 +39,6 @@ add_library (rtmath_plugin_hdf5 SHARED
 	)
 addlib(rtmath_plugin_hdf5 SHARED)
 
-set_target_properties( rtmath_plugin_hdf5 PROPERTIES FOLDER "Plugins/ddscat")
 target_link_libraries(rtmath_plugin_hdf5 
 	${rtmath_ddscat-libs} rtmath_core rtmath_ddscat
 	${h5libs}
@@ -49,4 +48,5 @@ INSTALL(TARGETS rtmath_plugin_hdf5
 	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 	COMPONENT Plugins)
+addplugin(rtmath_plugin_hdf5 io)
 

@@ -24,6 +24,12 @@ namespace rtmath
 			void shapefile::serialize(Archive &ar, const unsigned int version)
 			{
 				ar & boost::serialization::make_nvp("Filename", filename);
+				if (version >= 3) {
+					ar & boost::serialization::make_nvp("ingest_timestamp", ingest_timestamp);
+					ar & boost::serialization::make_nvp("ingest_hostname", ingest_hostname);
+					ar & boost::serialization::make_nvp("ingest_username", ingest_username);
+					ar & boost::serialization::make_nvp("ingest_rtmath_version", ingest_rtmath_version);
+				}
 				if (version) // Hash the shapefile for searching
 					ar & boost::serialization::make_nvp("Hash", _localhash);
 				ar & boost::serialization::make_nvp("Description", desc);

@@ -79,7 +79,7 @@ namespace rtmath {
 			::rtmath::ddscat::ddOriData_IO_input_registry,
 			::rtmath::registry::IO_class_registry_reader<ddOriData> >,
 			virtual public ::rtmath::io::implementsStandardWriter<ddOriData, ddOriData_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<ddOriData, ddOriData_IO_input_registry>,
+			virtual public ::rtmath::io::implementsStandardSingleReader<ddOriData, ddOriData_IO_input_registry>,
 			virtual public implementsDDRES
 		{
 			friend class ddOutput;

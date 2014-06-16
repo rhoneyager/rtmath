@@ -69,6 +69,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
+			("tag,t", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			;
 
@@ -94,6 +95,19 @@ int main(int argc, char** argv)
 		Ryan_Serialization::process_static_options(vm);
 		ddscat::stats::shapeFileStats::process_static_options(vm);
 
+		vector<std::pair<string, string> > tags;
+		vector<string> tags_pre;
+		if (vm.count("tag")) tags_pre = vm["tag"].as<vector<string> >();
+		{ // do tag splitting
+			vector<string> out;
+			for (const auto &v : tags_pre)
+			{
+				rtmath::config::splitVector(v, out, '=');
+				if (out.size() < 2) out.push_back("");
+				tags.push_back(std::pair<string, string>(out[0], out[1]));
+				out.clear();
+			}
+		}
 
 		if (vm.count("dipole-spacing"))
 			dSpacing = vm["dipole-spacing"].as<double>();
@@ -130,6 +144,7 @@ int main(int argc, char** argv)
 		}
 
 		// Validate input files
+		vector<string> vinputs;
 		for (auto it = inputs.begin(); it != inputs.end(); it++)
 		{
 			path pi(*it);
@@ -138,10 +153,11 @@ int main(int argc, char** argv)
 			{
 				path pt = pi / "target.out";
 				path ps = pi / "shape.dat";
-				if (exists(pt)) *it = pt.string();
-				else if (exists(ps)) *it = ps.string();
-				else throw rtmath::debug::xPathExistsWrongType(it->c_str());
-			}
+				if (exists(pt)) vinputs.push_back(pt.string());
+				if (exists(ps)) vinputs.push_back(ps.string());
+				else continue;
+				//else throw rtmath::debug::xPathExistsWrongType(it->c_str());
+			} else vinputs.push_back(*it);
 		}
 
 		if (vm.count("trial-run")) 
@@ -171,13 +187,13 @@ int main(int argc, char** argv)
 		using std::vector;
 		using namespace rtmath::ddscat;
 		vector<boost::shared_ptr<shapefile::shapefile> > shapes;
-		for (auto it = inputs.begin(); it != inputs.end(); it++)
+		for (auto it = vinputs.begin(); it != vinputs.end(); ++it)
 		{
 			cerr << "Processing " << *it << endl;
 			auto iopts = registry::IO_options::generate();
 			iopts->filename(*it);
 			// Handle not needed as the read context is used only once.
-			if (shapefile::shapefile::canReadVector(iopts))
+			if (shapefile::shapefile::canReadMulti(nullptr,iopts))
 				shapefile::shapefile::readVector(nullptr, iopts, shapes);
 			else {
 				boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
@@ -191,6 +207,8 @@ int main(int argc, char** argv)
 		{
 			cerr << "Shape " << shp->hash().lower << endl;
 
+			for (auto &t : tags)
+				shp->tags.insert(t);
 			//cerr << "\tCalculating statistics" << endl;
 			//rtmath::ddscat::stats::shapeFileStats sstats(shp);
 			

@@ -133,75 +133,64 @@ int main(int argc, char** argv)
 
 		std::shared_ptr<rtmath::registry::IOhandler> writer, writeraux;
 
+		using std::vector;
+		using namespace rtmath::ddscat;
+		vector<boost::shared_ptr<ddOutput> > runs;
+
+		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
+		{
+			using namespace boost::filesystem;
+			if (is_symlink(p))
+			{
+				path pf = boost::filesystem::absolute(read_symlink(p), p.parent_path());
+				return pf;
+			}
+			else {
+				return p;
+			}
+		};
+
 		using namespace boost::filesystem;
 		for (const auto &i : vsInput)
 		{
-			path pInput(i);
-			cerr << "Processing: " << pInput << endl;
-			auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
-			{
-				using namespace boost::filesystem;
-				if (is_symlink(p))
-				{
-					path pf = boost::filesystem::absolute(read_symlink(p), p.parent_path());
-					return pf;
-				} else {
-					return p;
-				}
-			};
-			path ps = expandSymlinks(pInput);
+			cerr << "Processing " << i << endl;
+			path ps = expandSymlinks(i);
 
-			using namespace rtmath::ddscat;
-			boost::shared_ptr<ddOutput> ddOut;
-			/*
-			if (fromSummary)
-			{
-				// Input may use the alternate generator
-				// Takes the format of avg file, par file, shape file
-				// Will fail if the files are not the correct type
-				boost::shared_ptr<ddOutputSingle> avg(new ddOutputSingle(vsInput[0]));
-				boost::shared_ptr<ddPar> par(new ddPar(vsInput[1]));
-				boost::shared_ptr<shapefile::shapefile> shp(new shapefile::shapefile(vsInput[2]));
-				ddOut = ddOutput::generate(avg, par, shp);
-				path pavg(vsInput[0]), ppar(vsInput[1]), pshp(vsInput[2]);
-				path pbavg = absolute(pavg);
-				path pbpar = absolute(ppar);
-				path pbshp = absolute(pshp);
-				ddOut->sources.insert(pbavg.string());
-				ddOut->sources.insert(pbpar.string());
-				ddOut->sources.insert(pbshp.string());
-			} else 
-				*/
-				if (is_directory(ps))
+			auto iopts = rtmath::registry::IO_options::generate();
+			iopts->filename(i);
+			// Handle not needed as the read context is used only once.
+			if (is_directory(ps))
 			{
 				// Input is a ddscat run
-				ddOut = ddOutput::generate(ps.string());
-			} else if (Ryan_Serialization::known_format(ps)) {
-				// Input may be a ddOutput file
-				// Read will fail if it is not the right file type
-				try {
-				ddOut = boost::shared_ptr<ddOutput>(new ddOutput);
-				ddOut->readFile(ps.string());
-				} catch (...) {
-					std::cerr << " Unable to load " << ps.string() << std::endl;
-					continue;
-				}
-			} else {
-				std::cerr << " Unable to load " << ps.string() << std::endl;
-				continue;
+				boost::shared_ptr<ddOutput> s(new ddOutput);
+				s = ddOutput::generate(ps.string());
+				runs.push_back(s);
+			} else if (ddOutput::canReadMulti(nullptr, iopts))
+				ddOutput::readVector(nullptr, iopts, runs);
+			else {
+				// This fallback shouldn't happen...
+				boost::shared_ptr<ddOutput> s(new ddOutput);
+				s->readFile(i);
+				runs.push_back(s);
 			}
 
-			std::cerr << " Frequency: " << ddOut->freq << " GHz\n";
-			std::cerr << " Temperature: " << ddOut->temp << " K." << std::endl;
+		}
+
+
+		for (const auto &run : runs)
+		{
+			cerr << "Run: " << run->genName() << endl;
+			std::cerr << " Frequency: " << run->freq << " GHz\n";
+			std::cerr << " Temperature: " << run->temp << " K." << std::endl;
 
 			if (sDesc.size())
-				ddOut->description = sDesc;
-			ddOut->hostname = hostname;
+				run->description = sDesc;
+			run->hostname = hostname;
 			for (auto &t : tags)
-				ddOut->tags.insert(t);
+				run->tags.insert(t);
 
 			if (doHash)
-				ddOut->writeToHash();
+				run->writeToHash();
 
 
 			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
@@ -226,7 +215,7 @@ int main(int argc, char** argv)
 					//cerr << "Expanding into directory " << sOutput << endl;
 					bool outShape = false;
 					if (vm.count("output-shape")) outShape = true;
-					ddOut->expand(oopts->filename(), outShape);
+					run->expand(oopts->filename(), outShape);
 				}
 				else {
 					//cerr << "Writing file " << sOutput << endl;
@@ -236,7 +225,7 @@ int main(int argc, char** argv)
 						return;
 					}
 
-					w = ddOut->writeMulti(w, oopts);
+					w = run->writeMulti(w, oopts);
 
 
 					//ddOut->writeFile(sOutput);

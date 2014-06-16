@@ -42,6 +42,9 @@ namespace rtmath {
 			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar, 
 				boost::shared_ptr<rtmath::ddscat::ddPar> &r);
 
+			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts,
+				rtmath::ddscat::ddOutput *r);
+
 			/// \param base is the base (./Runs) to write the subgroups to.
 			std::shared_ptr<H5::Group> write_hdf5_ddOutput(std::shared_ptr<H5::Group> base, 
 				std::shared_ptr<rtmath::registry::IO_options> opts, 
@@ -63,6 +66,7 @@ namespace rtmath {
 				addAttr<string, Group>(gRun, "Description", s->description);
 				addAttr<string, Group>(gRun, "ingest_timestamp", s->ingest_timestamp);
 				addAttr<string, Group>(gRun, "ingest_hostname", s->ingest_hostname);
+				addAttr<string, Group>(gRun, "ingest_username", s->ingest_username); // Not all ingests have this...
 				addAttr<int, Group>(gRun, "ingest_rtmath_version", s->ingest_rtmath_version);
 				addAttr<string, Group>(gRun, "hostname", s->hostname);
 				addAttr<double, Group>(gRun, "Frequency", s->freq);
@@ -108,7 +112,7 @@ namespace rtmath {
 					std::vector<const char*> csrcs(srcs.size());
 					for (size_t i = 0; i<srcs.size(); ++i)
 						csrcs[i] = srcs[i].c_str();
-					//addAttr<size_t, Group>(gRun, "Num_Source_Paths", srcs.size());
+					addAttr<size_t, Group>(gRun, "Num_Source_Paths", srcs.size());
 					addDatasetArray<const char*, Group>(gRun, "Sources", csrcs.size(), 1, csrcs.data());
 				}
 				// Tags
@@ -307,6 +311,8 @@ namespace rtmath {
 		using std::shared_ptr;
 		using namespace rtmath::plugins::hdf5;
 		
+
+
 		template<>
 		shared_ptr<IOhandler> 
 			write_file_type_multi<rtmath::ddscat::ddOutput>
@@ -367,7 +373,8 @@ namespace rtmath {
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
 			//IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key", "");
+			std::string hash = opts->getVal<std::string>("hash");
+			std::string key = opts->getVal<std::string>("key");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
@@ -381,17 +388,76 @@ namespace rtmath {
 				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
 			}
 
-			/* The reader function will attempt to load ddOutput files that match the opts 
-			 * search descriptions.
-			 * opts can search:
-			 * - by hash
-			 * - by effective radius
-			 * - random particle
-			 * - by temperature
-			 * - by frequency
-			 **/
-			/// \todo Implement opts searching features
+			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
+			if (!grpHashes) RTthrow debug::xMissingFile(key.c_str());
+			shared_ptr<Group> grpHash = openGroup(grpHashes, hash.c_str());
+			if (!grpHash) RTthrow debug::xMissingFile(hash.c_str());
+			shared_ptr<Group> grpRuns = openGroup(h->file, "Runs");
+			if (!grpRuns) RTthrow debug::xMissingFile(key.c_str());
+			shared_ptr<Group> grpRun = openGroup(grpRuns, key.c_str());
+			if (!grpRun) RTthrow debug::xMissingFile(key.c_str());
+			read_hdf5_ddOutput(grpRun, opts, s);
 
+			return h;
+		}
+
+		template<>
+		std::shared_ptr<IOhandler>
+			read_file_type_vector<rtmath::ddscat::ddOutput>
+			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
+			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s)
+		{
+			std::string filename = opts->filename();
+			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+			//IOhandler::IOtype iotype = opts->iotype();
+			std::string key = opts->getVal<std::string>("key", "");
+			using std::shared_ptr;
+			using namespace H5;
+			Exception::dontPrint();
+			std::shared_ptr<hdf5_handle> h;
+			if (!sh)
+			{
+				// Access the hdf5 file
+				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename.c_str(), iotype));
+			}
+			else {
+				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
+			}
+
+			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
+			if (grpHashes)
+			{
+				hsize_t sz = grpHashes->getNumObjs();
+				//s.reserve(s.size() + sz);
+				for (hsize_t i = 0; i < sz; ++i)
+				{
+					std::string hname = grpHashes->getObjnameByIdx(i);
+					H5G_obj_t t = grpHashes->getObjTypeByIdx(i);
+					if (t != H5G_obj_t::H5G_GROUP) continue;
+					if (key.size() && key != hname) continue;
+
+					shared_ptr<Group> grpHash = openGroup(grpHashes, hname.c_str());
+					if (!grpHash) continue; // Should never happen
+					shared_ptr<Group> grpRuns = openGroup(grpHash, "Runs");
+					if (!grpRuns) continue;
+
+					hsize_t rz = grpRuns->getNumObjs();
+					for (hsize_t i = 0; i < sz; ++i)
+					{
+						std::string runname = grpRuns->getObjnameByIdx(i);
+						H5G_obj_t t = grpRuns->getObjTypeByIdx(i);
+						if (t != H5G_obj_t::H5G_GROUP) continue;
+						shared_ptr<H5::Group> grpRun = openGroup(grpRuns, runname.c_str());
+						if (!grpRun) continue;
+
+						boost::shared_ptr<rtmath::ddscat::ddOutput>
+							run(new rtmath::ddscat::ddOutput);
+						read_hdf5_ddOutput(grpRun, opts, run.get());
+						s.push_back(run);
+					}
+				}
+			}
 
 			return h;
 		}

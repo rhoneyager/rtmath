@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -125,6 +126,34 @@ namespace rtmath {
 				loadAttr<DataType>(attr, vls_type, value);
 			}
 
+			/// Reads an array (or vector) of objects
+			template <class DataType, class Container>
+			void readAttrArray(std::shared_ptr<Container> obj, const char* attname,
+				DataType *value, size_t rows, size_t cols)
+			{
+				H5::Attribute attr = obj->openAttribute(attname);
+				int dimensionality = attr.getArrayType().getArrayNDims();
+				hsize_t *sz = new hsize_t[dimensionality];
+				attr.getArrayType().getArrayDims(sz);
+
+				if (sz[0] != rows) throw("Rows mismatch in readAttrArray");
+				if (sz[1] != cols) throw("Cols mismatch in readAttrArray");
+
+				//if (dimensionality == 2)
+				//	value.resize(sz[0], sz[1]);
+				//else if (dimensionality == 1)
+				//	value.resize(sz[0]);
+
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType>();
+				//H5::IntType ftype(H5::PredType::NATIVE_FLOAT);
+				H5::ArrayType vls_type(*ftype, dimensionality, sz);
+
+				//H5::DataSpace att_space(H5S_SCALAR);
+				//H5::Attribute attr = obj->createAttribute(attname, vls_type, att_space);
+				attr.read(vls_type, value);
+				delete[] sz;
+			}
+
 			/// Eigen objects have a special writing function, as MSVC 2012 disallows partial template specialization.
 			template <class DataType, class Container>
 			void readAttrEigen(std::shared_ptr<Container> obj, const char* attname, DataType &value)
@@ -137,7 +166,7 @@ namespace rtmath {
 				if (dimensionality == 2)
 					value.resize(sz[0], sz[1]);
 				else if (dimensionality == 1)
-					value.resize(sz[0]);
+					value.resize(sz[0], 1);
 
 				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType::Scalar>();
 				//H5::IntType ftype(H5::PredType::NATIVE_FLOAT);
@@ -149,7 +178,32 @@ namespace rtmath {
 				delete[] sz;
 			}
 
+			/// Attribute reading for complex objects
+			template <class DataType, class Container>
+			void readAttrComplex(std::shared_ptr<Container> obj, const char* attname,
+				DataType *value, size_t rows, size_t cols)
+			{
+				Eigen::Matrix<typename DataType::value_type, Eigen::Dynamic, Eigen::Dynamic> mr, mi;
+				mr.resize(rows, cols); mi.resize(rows, cols);
+				
+				std::string attR(attname); attR.append("_r");
+				std::string attI(attname); attI.append("_i");
+				readAttrEigen<Eigen::Matrix<typename DataType::value_type,
+					Eigen::Dynamic, Eigen::Dynamic>, Container>
+					(obj, attR.c_str(), mr);
+				readAttrEigen<Eigen::Matrix<typename DataType::value_type,
+					Eigen::Dynamic, Eigen::Dynamic>, Container>
+					(obj, attI.c_str(), mi);
 
+				for (size_t i = 0; i< rows; ++i)
+				for (size_t j = 0; j < cols; ++j)
+				{
+				value[i*cols + j] = std::complex<typename DataType::value_type>(mr(i, j), mi(i, j));
+				}
+			}
+
+
+			bool attrExists(std::shared_ptr<H5::H5Object> obj, const char* attname);
 
 			/// Convenience function to either open or create a group
 			std::shared_ptr<H5::Group> openOrCreateGroup(
@@ -322,6 +376,24 @@ namespace rtmath {
 				delete[] sz;
 			}
 
+			template <class Container>
+			void readDatasetDimensions(std::shared_ptr<Container> obj, const char* name, std::vector<size_t> &out)
+			{
+				using namespace H5;
+
+				H5::DataSet dataset = obj->openDataSet(name);
+				H5T_class_t type_class = dataset.getTypeClass();
+				DataSpace fspace = dataset.getSpace();
+				int rank = fspace.getSimpleExtentNdims();
+
+				hsize_t *sz = new hsize_t[rank];
+				int dimensionality = fspace.getSimpleExtentDims( sz, NULL);
+				for (size_t i = 0; i < rank; ++i)
+					out.push_back(sz[i]);
+
+				delete[] sz;
+			}
+
 			template <class DataType, class Container>
 			void readDatasetArray(std::shared_ptr<Container> obj, const char* name, 
 				DataType *values)
@@ -354,6 +426,8 @@ namespace rtmath {
 				dataset.read(values, *(ftype.get()));
 				//delete[] sz;
 			}
+
+
 		}
 	}
 }

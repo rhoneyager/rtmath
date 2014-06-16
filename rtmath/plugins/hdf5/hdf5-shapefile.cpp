@@ -141,6 +141,10 @@ namespace rtmath {
 
 					// Source hostname/filename pairs
 					addAttr<const char*, Group>(shpraw, "Source_Filename", shp->filename.c_str());
+					addAttr<std::string, Group>(shpraw, "ingest_timestamp", shp->ingest_timestamp);
+					addAttr<std::string, Group>(shpraw, "ingest_hostname", shp->ingest_hostname);
+					addAttr<int, Group>(shpraw, "ingest_rtmath_version", shp->ingest_rtmath_version);
+					addAttr<std::string, Group>(shpraw, "ingest_username", shp->ingest_username);
 					// Description
 					addAttr<std::string, Group>(shpraw, "Description", shp->desc);
 					// Number of points
@@ -166,27 +170,30 @@ namespace rtmath {
 					{
 						addAttr<size_t, Group>(shpraw, "Num_Tags", shp->tags.size());
 
-						const size_t nTagCols = 2;
-						typedef std::array<const char*, nTagCols> strdata;
-						std::vector<strdata> sdata(shp->tags.size());
-						size_t i = 0;
-						for (const auto &t : shp->tags)
+						if (shp->tags.size())
 						{
-							sdata.at(i).at(0) = t.first.c_str();
-							sdata.at(i).at(1) = t.second.c_str();
-							++i;
-						}
+							const size_t nTagCols = 2;
+							typedef std::array<const char*, nTagCols> strdata;
+							std::vector<strdata> sdata(shp->tags.size());
+							size_t i = 0;
+							for (const auto &t : shp->tags)
+							{
+								sdata.at(i).at(0) = t.first.c_str();
+								sdata.at(i).at(1) = t.second.c_str();
+								++i;
+							}
 
-						hsize_t dim[1] = { static_cast<hsize_t>(shp->tags.size()) };
-						DataSpace space(1, dim);
-						// May have to cast array to a private structure
-						H5::StrType strtype(0, H5T_VARIABLE);
-						CompType stringTableType(sizeof(strdata));
-						stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
-						stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
-						std::shared_ptr<DataSet> sdataset(new DataSet(shpraw->createDataSet(
-							"Tags", stringTableType, space)));
-						sdataset->write(sdata.data(), stringTableType);
+							hsize_t dim[1] = { static_cast<hsize_t>(shp->tags.size()) };
+							DataSpace space(1, dim);
+							// May have to cast array to a private structure
+							H5::StrType strtype(0, H5T_VARIABLE);
+							CompType stringTableType(sizeof(strdata));
+							stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
+							stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
+							std::shared_ptr<DataSet> sdataset(new DataSet(shpraw->createDataSet(
+								"Tags", stringTableType, space)));
+							sdataset->write(sdata.data(), stringTableType);
+						}
 					}
 				}
 				catch (H5::Exception &e)

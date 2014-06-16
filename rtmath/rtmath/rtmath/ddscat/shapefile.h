@@ -187,7 +187,18 @@ namespace rtmath {
 				void serialize(Archive & ar, const unsigned int version);
 			public:
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-					std::string filename;
+
+				/// Original filename
+				std::string filename;
+				/// When timported
+				std::string ingest_timestamp;
+				/// The system that was imported on
+				std::string ingest_hostname;
+				/// The user account that imported the shape
+				std::string ingest_username;
+				/// Revision of the rtmath code for ingest
+				int ingest_rtmath_version;
+
 				//std::vector<Eigen::Vector3f> 
 				/// \todo Move latticePts and the rest into const shared_ptr containers
 				Eigen::Matrix<float, Eigen::Dynamic, 3>
@@ -274,6 +285,6 @@ std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile:
 
 //BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile::shapefile);
-BOOST_CLASS_VERSION(rtmath::ddscat::shapefile::shapefile, 2);
+BOOST_CLASS_VERSION(rtmath::ddscat::shapefile::shapefile, 3);
 
 

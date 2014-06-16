@@ -68,6 +68,23 @@ namespace rtmath {
 				return res;
 			}
 
+			bool attrExists(std::shared_ptr<H5::H5Object> base, const char* name)
+			{
+				try {
+					H5::Attribute(base->openAttribute(name));
+					return true;
+				}
+				catch (H5::AttributeIException not_found_error) {
+					return false;
+				}
+				catch (H5::FileIException not_found_error) {
+					return false;
+				}
+				catch (H5::GroupIException not_found_error) {
+					return false;
+				}
+			}
+
 			bool groupExists(std::shared_ptr<H5::CommonFG> base, const char* name)
 			{
 				try {

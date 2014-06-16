@@ -10,6 +10,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <tuple>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 
@@ -56,7 +57,7 @@ namespace rtmath {
 				rtmath::ddscat::ddPar *r);
 
 			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts, 
-				boost::shared_ptr<rtmath::ddscat::ddOutput> &r)
+				rtmath::ddscat::ddOutput *r)
 			{
 				using std::shared_ptr;
 				using std::string;
@@ -67,6 +68,28 @@ namespace rtmath {
 				readAttr<double, Group>(base, "Frequency", r->freq);
 				readAttr<double, Group>(base, "aeff", r->aeff);
 				readAttr<double, Group>(base, "Temperature", r->temp);
+				readAttr<string, Group>(base, "ingest_timestamp", r->ingest_timestamp);
+				readAttr<string, Group>(base, "ingest_hostname", r->ingest_hostname);
+				if (attrExists(base, "ingest_username"))
+					readAttr<string, Group>(base, "ingest_username", r->ingest_username);
+				readAttr<int, Group>(base, "ingest_rtmath_version", r->ingest_rtmath_version);
+				readAttr<string, Group>(base, "hostname", r->hostname);
+
+				readAttr<size_t, Group>(base, "DDSCAT_Version_Num", r->s.version);
+				readAttr<size_t, Group>(base, "Num_Dipoles", r->s.num_dipoles);
+				readAttr<size_t, Group>(base, "Num_Avgs_cos", r->s.navg);
+				readAttr<string, Group>(base, "target", r->s.target);
+
+				readAttrArray<double, Group>(base, "mins", r->s.mins.data(), 1, 3);
+				readAttrArray<double, Group>(base, "maxs", r->s.maxs.data(), 1, 3);
+				readAttrArray<double, Group>(base, "TA1TF", r->s.TA1TF.data(), 1, 3);
+				readAttrArray<double, Group>(base, "TA2TF", r->s.TA2TF.data(), 1, 3);
+				readAttrArray<double, Group>(base, "LFK", r->s.LFK.data(), 1, 3);
+
+				readAttrComplex<std::complex<double>, Group>
+					(base, "IPV1LF", r->s.IPV1LF.data(), 1, 3);
+				readAttrComplex<std::complex<double>, Group>
+					(base, "IPV2LF", r->s.IPV2LF.data(), 1, 3);
 
 				/*
 				Eigen::MatrixXf refrs;
@@ -76,32 +99,68 @@ namespace rtmath {
 				*/
 
 				// Source file paths
+				{
+					std::vector<size_t> dims;
+					readDatasetDimensions<Group>(base, "Sources", dims);
+					std::vector<const char*> csrcs(dims[0]);
+					readDatasetArray<const char*, Group>(base, "Sources", csrcs.data());
+					for (size_t i = 0; i<csrcs.size(); ++i)
+						r->sources.insert(std::string(csrcs[i]));
+					
+				}
 
 				// Tags
+				{
+					const size_t nTagCols = 2;
+					typedef std::array<const char*, nTagCols> strdata;
+					// Get size of the tags object
+					size_t numTags = 0;
+					readAttr<size_t, Group>(base, "Num_Tags", numTags);
+
+					if (numTags)
+					{
+						std::vector<strdata> sdata(numTags);
+
+						hsize_t dim[1] = { static_cast<hsize_t>(numTags) };
+						DataSpace space(1, dim);
+						// May have to cast array to a private structure
+						H5::StrType strtype(0, H5T_VARIABLE);
+						CompType stringTableType(sizeof(strdata));
+						stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
+						stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
+
+						std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Tags")));
+						sdataset->read(sdata.data(), stringTableType);
+
+						for (const auto &t : sdata)
+						{
+							r->tags.insert(std::pair<std::string, std::string>(
+								std::string(t.at(0)), std::string(t.at(1))));
+						}
+					}
+				}
 
 				// DDSCAT run version tag
 				readAttr<string, Group>(base, "DDSCAT_Version_Tag", r->ddvertag);
 
-
-				readDatasetEigen(base, "Cross_Sections_d", (r->oridata_d));
-				//readDatasetEigen(base, "Cross_Sections_i", (r->oridata_i));
-				//if (datasetExists(base, "Isotropic_Cross_Sections"))
-				//	readDatasetEigen(base, "Isotropic_Cross_Sections", *(r->avgoridata));
-
-				bool readFML = opts->getVal<bool>("readFML", true);
-				if (readFML && datasetExists(base, "FML_Data"))
-				{
-					readDatasetEigen(base, "FML_Data", *(r->fmldata));
-				}
-				//readDatasetEigen(base, "Scattering_Data", r->scadata);
-
 				readAttr<uint64_t, Group>(base, "Shapehash_lower", r->shapeHash.lower);
 				readAttr<uint64_t, Group>(base, "Shapehash_upper", r->shapeHash.upper);
+				readAttr<uint64_t, Group>(base, "ParsedShapehash_lower", r->parsedShapeHash.lower);
+				readAttr<uint64_t, Group>(base, "ParsedShapehash_upper", r->parsedShapeHash.upper);
 
-				// The shapefiles are loaded in a separate bit of code, and they have their own search 
+				//bool readSHP = opts->getVal<bool>("readSHP", false);
+				bool readORI = opts->getVal<bool>("readORI", true);
+				bool readFML = opts->getVal<bool>("readFML", true);
+
+				if (readORI && datasetExists(base, "Cross_Sections"))
+					readDatasetEigen(base, "Cross_Sections", (r->oridata_d));
+				if (readFML && datasetExists(base, "FML_Data"))
+					readDatasetEigen(base, "FML_Data", *(r->fmldata));
+				// The shapefiles are loaded in a separate bit of code, and they have their own search
 				// directory. The same applies to shape stats. As such, don't read the symlinks in this 
 				// iteration of the code.
-
+				//if (readSHP && 0)
+				
 				// Do, however, read the ddscat.par file, since some of these values are useful when 
 				// interpreting the ddscat run.
 				r->parfile = boost::shared_ptr<ddPar>(new ddPar);

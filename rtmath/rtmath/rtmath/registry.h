@@ -32,6 +32,9 @@ namespace rtmath
 		template <class obj_class,
 		class input_registry_class>
 		class implementsStandardReader;
+		template <class obj_class,
+		class input_registry_class>
+		class implementsStandardSingleReader;
 	}
 	namespace registry
 	{
@@ -139,6 +142,8 @@ namespace rtmath
 			friend class ::rtmath::io::implementsStandardWriter;
 			template <class T, class U>
 			friend class ::rtmath::io::implementsStandardReader;
+			template <class T, class U>
+			friend class ::rtmath::io::implementsStandardSingleReader;
 			usesDLLregistry() {}
 			/// \note Implemented as a function-internal static function to avoid gcc template issue.
 			static boost::shared_ptr<hookStorageType> getHooks()

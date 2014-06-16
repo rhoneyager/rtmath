@@ -363,10 +363,43 @@ namespace rtmath
 					std::placeholders::_1,std::placeholders::_2,std::placeholders::_3,
 					inF);
 
-				//auto vectorReaderBinder
+				// The vector reader gets ignored for the standard reader class. The standard file types 
+				// get handled by the single object reader.
+				/*
+				auto vectorReaderBinder = [&](
+					std::shared_ptr<rtmath::registry::IOhandler> sh,
+					std::shared_ptr<rtmath::registry::IO_options> opts,
+					std::vector<boost::shared_ptr<obj_class> > &obj, inFunc inF) 
+					-> std::shared_ptr<rtmath::registry::IOhandler>
+				{
+					using namespace rtmath::registry;
+					using namespace rtmath::io::TextFiles;
+					std::string exporttype = opts->exportType();
+					std::string filename = opts->filename();
+					IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+					std::string key = opts->getVal<std::string>("key", "");
+					using std::shared_ptr;
+
+					std::shared_ptr<serialization_handle> h;
+					if (!sh)
+						h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
+					else {
+						if (sh->getId() != std::string(serialization_handle::getSHid()))
+							RTthrow debug::xDuplicateHook("Bad passed plugin");
+						h = std::dynamic_pointer_cast<serialization_handle>(sh);
+					}
+
+					// serialization_handle handles compression details
+					// Read from a stream, not to a file. Filename is for serialization method detection.
+					inF(obj, *(h->reader.lock().get()), opts); // CHANGE THIS
+					//reader(obj, *(h->reader.get()), filename);
+
+					return h; // Pass back the handle
+				};
 				reader.io_vector_processor = std::bind(vectorReaderBinder,
 					std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
 					inF);
+				*/
 			}
 		};
 
@@ -577,14 +610,15 @@ namespace rtmath
 			}
 		};
 
+		
 		template <class obj_class,
 		class input_registry_class>
-		class implementsStandardReader
+		class implementsStandardSingleReader
 		{
 		protected:
 			// Controls whether boost::serialization can write this file.
 			//bool serializable;
-			implementsStandardReader()
+			implementsStandardSingleReader()
 			{}
 
 			/// This actually handles the template writing i/o. It can report the 
@@ -604,7 +638,7 @@ namespace rtmath
 				return false;
 			}
 		public:
-			virtual ~implementsStandardReader() {}
+			virtual ~implementsStandardSingleReader() {}
 
 			/// Duplicate to avoid clashes and having to speify a full template name...
 			virtual void readFile(const std::string &filename, const std::string &outtype = "")
@@ -652,6 +686,37 @@ namespace rtmath
 				}
 				return nullptr; // Should never be reached
 			}
+
+			static bool canReadMulti(
+				std::shared_ptr<rtmath::registry::IOhandler> handle,
+				std::shared_ptr<rtmath::registry::IO_options> opts
+				)
+			{
+				auto hooks = ::rtmath::registry::usesDLLregistry<input_registry_class,
+					::rtmath::registry::IO_class_registry_reader<obj_class> >::getHooks();
+				for (const auto &hook : *hooks)
+				{
+					if (!hook.io_multi_matches) continue; // Sanity check
+					if (!hook.io_multi_processor && !hook.io_vector_processor) continue; // Sanity check
+					if (hook.io_multi_matches(handle, opts))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		};
+
+		template <class obj_class,
+		class input_registry_class>
+		class implementsStandardReader : public implementsStandardSingleReader<obj_class, input_registry_class>
+		{
+		protected:
+			implementsStandardReader() : implementsStandardSingleReader()
+			{}
+		public:
+			virtual ~implementsStandardReader() {}
+
 
 			/// Read all matching contained results into a vector
 			static std::shared_ptr<registry::IOhandler> readVector(
@@ -702,25 +767,9 @@ namespace rtmath
 				return nullptr; // Should never be reached
 			}
 
-			bool canReadMulti(
-				std::shared_ptr<rtmath::registry::IOhandler> handle,
-				std::shared_ptr<rtmath::registry::IO_options> opts
-				) const
-			{
-				auto hooks = ::rtmath::registry::usesDLLregistry<input_registry_class,
-					::rtmath::registry::IO_class_registry_reader<obj_class> >::getHooks();
-				for (const auto &hook : *hooks)
-				{
-					if (!hook.io_multi_matches) continue; // Sanity check
-					if (!hook.io_multi_processor) continue; // Sanity check
-					if (hook.io_multi_matches(handle, opts))
-					{
-						return true;
-					}
-				}
-				return false;
-			}
 		};
+
+
 
 	}
 }

@@ -50,6 +50,10 @@ namespace rtmath {
 				shp->resize(numPoints);
 				// Source_filename
 				readAttr<std::string, Group>(base, "Source_Filename", shp->filename);
+				readAttr<std::string, Group>(base, "ingest_timestamp", shp->ingest_timestamp);
+				readAttr<std::string, Group>(base, "ingest_hostname", shp->ingest_hostname);
+				readAttr<int, Group>(base, "ingest_rtmath_version", shp->ingest_rtmath_version);
+				readAttr<std::string, Group>(base, "ingest_username", shp->ingest_username);
 				// mins, maxs, means
 				readAttrEigen<Eigen::Array3f, Group>(base, "mins", shp->mins);
 				readAttrEigen<Eigen::Array3f, Group>(base, "maxs", shp->maxs);
@@ -71,34 +75,38 @@ namespace rtmath {
 					// Get size of the tags object
 					size_t numTags = 0;
 					readAttr<size_t, Group>(base, "Num_Tags", numTags);
-					std::vector<strdata> sdata(numTags);
 
-					hsize_t dim[1] = { static_cast<hsize_t>(numTags) };
-					DataSpace space(1, dim);
-					// May have to cast array to a private structure
-					H5::StrType strtype(0, H5T_VARIABLE);
-					CompType stringTableType(sizeof(strdata));
-					stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
-					stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
-
-					std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Tags")));
-					sdataset->read(sdata.data(), stringTableType);
-
-
-
-					//std::shared_ptr<DataSet> sdataset(new DataSet(base->createDataSet(
-					//	"Tags", stringTableType, space)));
-					//sdataset->write(sdata.data(), stringTableType);
-
-
-					//size_t i = 0;
-					for (const auto &t : sdata)
+					if (numTags)
 					{
-						shp->tags.insert(std::pair<std::string, std::string>(
-							std::string(t.at(0)), std::string(t.at(1))));
-						//sdata.at(i).at(0) = t.first.c_str();
-						//sdata.at(i).at(1) = t.second.c_str();
-						//++i;
+						std::vector<strdata> sdata(numTags);
+
+						hsize_t dim[1] = { static_cast<hsize_t>(numTags) };
+						DataSpace space(1, dim);
+						// May have to cast array to a private structure
+						H5::StrType strtype(0, H5T_VARIABLE);
+						CompType stringTableType(sizeof(strdata));
+						stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
+						stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
+
+						std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Tags")));
+						sdataset->read(sdata.data(), stringTableType);
+
+
+
+						//std::shared_ptr<DataSet> sdataset(new DataSet(base->createDataSet(
+						//	"Tags", stringTableType, space)));
+						//sdataset->write(sdata.data(), stringTableType);
+
+
+						//size_t i = 0;
+						for (const auto &t : sdata)
+						{
+							shp->tags.insert(std::pair<std::string, std::string>(
+								std::string(t.at(0)), std::string(t.at(1))));
+							//sdata.at(i).at(0) = t.first.c_str();
+							//sdata.at(i).at(1) = t.second.c_str();
+							//++i;
+						}
 					}
 				}
 
@@ -123,7 +131,7 @@ namespace rtmath {
 				// latticePtsNorm
 				//readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
 				//	(base, "latticePtsNorm", lptsf);
-				shp->latticePtsNorm = lptsf;
+				shp->latticePtsNorm.resizeLike(shp->latticePts);
 				for (size_t i = 0; i < numPoints; i++)
 				{
 					auto pt = shp->latticePts.block<1, 3>(i, 0);
@@ -137,7 +145,7 @@ namespace rtmath {
 				// latticePtsStd
 				//readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
 				//	(base, "latticePtsStd", lptsf);
-				shp->latticePtsStd = lptsf;
+				shp->latticePtsStd.resizeLike(shp->latticePts);
 				for (size_t i = 0; i < numPoints; i++)
 				{
 					auto pt = shp->latticePts.block<1, 3>(i, 0);
@@ -222,7 +230,7 @@ namespace rtmath {
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
 			//IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key");
+			std::string key = opts->getVal<std::string>("key", "");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
@@ -247,6 +255,7 @@ namespace rtmath {
 					std::string hname = grpHashes->getObjnameByIdx(i);
 					H5G_obj_t t = grpHashes->getObjTypeByIdx(i);
 					if (t != H5G_obj_t::H5G_GROUP) continue;
+					if (key.size() && key != hname) continue;
 
 					shared_ptr<Group> grpHash = openGroup(grpHashes, hname.c_str());
 					if (!grpHash) continue; // Should never happen

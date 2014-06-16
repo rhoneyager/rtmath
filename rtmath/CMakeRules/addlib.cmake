@@ -49,3 +49,29 @@ set_target_properties( ${objname}
 
 endmacro(storebin objname)
 
+macro(storeplugin objname)
+set_target_properties( ${objname}
+    PROPERTIES
+    #  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    # LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Debug/plugins"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Release/plugins"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/MinSizeRel/plugins"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/RelWithDebInfo/plugins"
+)
+
+endmacro(storeplugin objname)
+
+macro(addplugin appname foldername)
+	set_target_properties( ${appname} PROPERTIES FOLDER "Plugins/${foldername}")
+	INSTALL(TARGETS ${appname} 
+		LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
+		ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
+		COMPONENT Plugins)
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+	IF(DEFINED COMMON_CFLAGS) 
+		set_target_properties(${appname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})
+	ENDIF()
+	storeplugin(${appname})
+endmacro(addplugin appname)

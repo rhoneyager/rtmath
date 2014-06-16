@@ -8,12 +8,15 @@
 #include <map>
 #include <tuple>
 #include <boost/filesystem.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
@@ -305,6 +308,17 @@ namespace rtmath {
 				std::string str = so.str();
 				bool headerOnly = opts->getVal<bool>("headerOnly", false);
 				s->readString(str, headerOnly);
+				
+				// This is a standard ddscat file, so add the ingest tags
+				s->filename = opts->filename();
+				using namespace boost::posix_time;
+				using namespace boost::gregorian;
+				ptime now = second_clock::local_time();
+				s->ingest_timestamp = to_iso_string(now);
+				s->ingest_hostname = Ryan_Debug::getHostname();
+				s->ingest_username = Ryan_Debug::getUsername();
+				s->ingest_rtmath_version = rtmath::debug::rev();;
+
 			}
 
 			/*
