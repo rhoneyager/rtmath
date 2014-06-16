@@ -712,7 +712,7 @@ namespace rtmath
 		class implementsStandardReader : public implementsStandardSingleReader<obj_class, input_registry_class>
 		{
 		protected:
-			implementsStandardReader() : implementsStandardSingleReader()
+			implementsStandardReader() : implementsStandardSingleReader<obj_class, input_registry_class>()
 			{}
 		public:
 			virtual ~implementsStandardReader() {}

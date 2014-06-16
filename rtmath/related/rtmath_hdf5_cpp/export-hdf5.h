@@ -144,7 +144,7 @@ namespace rtmath {
 				//else if (dimensionality == 1)
 				//	value.resize(sz[0]);
 
-				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<typename DataType>();
+				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
 				//H5::IntType ftype(H5::PredType::NATIVE_FLOAT);
 				H5::ArrayType vls_type(*ftype, dimensionality, sz);
 
