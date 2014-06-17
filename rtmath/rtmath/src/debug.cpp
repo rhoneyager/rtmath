@@ -14,6 +14,7 @@
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/debug_mem.h"
 #include "../rtmath/registry.h"
+#include "../rtmath/hash.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "debug_subversion.h"
@@ -174,6 +175,7 @@ namespace rtmath
 				"Specify the location of the rtmath configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
 				"next option.")
+				("hash-dir", po::value<std::vector<string> >(), "Add a hash directory")
 				;
 
 			registry::add_options(cmdline, config, hidden);
@@ -211,6 +213,18 @@ namespace rtmath
 
 			if (vm.count("close-on-finish"))
 				Ryan_Debug::waitOnExit(!(vm["close-on-finish"].as<bool>()));
+
+			if (vm.count("hash-dir"))
+			{
+				std::vector<string> hashDirs = vm["hash-dir"].as<std::vector<string> >();
+				for (const auto &p : hashDirs)
+				{
+					std::shared_ptr<hashStore> h(new hashStore);
+					h->writable = true;
+					h->base = boost::filesystem::path(p);
+					hashStore::addHashStore(h, 0);
+				}
+			}
 
 			registry::process_static_options(vm);
 		}

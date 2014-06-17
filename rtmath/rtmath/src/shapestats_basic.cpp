@@ -14,6 +14,7 @@
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/common_templates.h"
 #include "../rtmath/config.h"
+#include "../rtmath/hash.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 #include "shapestats_private.h"
@@ -22,7 +23,6 @@ namespace rtmath {
 	namespace ddscat {
 		namespace stats {
 			const unsigned int shapeFileStatsBase::_maxVersion = SHAPESTATS_VERSION;
-			SHARED_PRIVATE boost::filesystem::path pHashShapes, pHashStats;
 			SHARED_PRIVATE bool autoHashShapes = false;
 			SHARED_PRIVATE bool autoHashStats = false;
 			SHARED_PRIVATE std::vector<boost::tuple<double, double, double> > defaultRots;
@@ -182,36 +182,19 @@ namespace rtmath {
 
 				boost::shared_ptr<shapefile::shapefile> nshp;
 
-				// Reload initial stats file by 1) hash or 2) filename
+				// Reload initial shape file by 1) hash or 2) filename
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
-				std::vector<std::string> extensions;
-				extensions.push_back(".xml");
-				extensions.push_back(".st");
-				path pHashShape = findHash(pHashShapes, _shp->hash(), extensions);
-				if (!pHashShape.empty())
-					nshp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(pHashShape.string()));
-				//path pHashShape = pHashShapes / boost::lexical_cast<std::string>(_shp->hash().lower);
-				//if (Ryan_Serialization::detect_compressed(pHashShape.string()))
-				//	nshp = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
-				//else if (boost::filesystem::exists(boost::filesystem::path(_shp->filename)))
-				else if (Ryan_Serialization::detect_compressed(_shp->filename))
+				if (nshp = shapefile::shapefile::loadHash(_shp->hash()))
+					_shp = nshp;
+				else if (Ryan_Serialization::detect_compressed(_shp->filename)) {
 					nshp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
+					_shp = nshp;
+				}
 				else
 					return false;
-				_shp = nshp;
 				return true;
 			}
-
-			void shapeFileStats::getHashPaths(
-				boost::filesystem::path &HashShapes,
-				boost::filesystem::path &HashStats)
-			{
-				initPaths();
-				HashShapes = pHashShapes;
-				HashStats = pHashStats;
-			}
-
 
 			boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
 				const std::string &shpfile, const std::string &statsfile)
@@ -219,31 +202,25 @@ namespace rtmath {
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
-
+				
 				// Preferentially use the local file, if it exists
 				if (Ryan_Serialization::detect_compressed(statsfile))
 				{
+					boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
 					res->read(statsfile);
 					return res;
 				}
-				/*
-				{
-				::Ryan_Serialization::read<shapeFileStats>(*res, statsfile, "rtmath::ddscat::shapeFileStats");
-				return res;
-				}
-				*/
 
 				// Local file does not exist. Does it exist in the hash database?
 				// Generate basic stats for a file.
 				rtmath::ddscat::shapefile::shapefile shp(shpfile);
 
-				// Check the hash to see if it's already been done before
-				// Also see if the statsfile exists
-				using namespace boost::filesystem;
+				boost::shared_ptr<shapeFileStats> s = loadHash(shp.hash().string());
+				if (s) return s;
+				else {
 
-				path pHashShape = storeHash(pHashShapes, shp.hash());
-				//pHashShapes / boost::lexical_cast<std::string>(shp.hash().lower);
+				}
+
 				if (!Ryan_Serialization::detect_compressed(pHashShape.string()) && autoHashShapes)
 				{
                     /// \todo Somehow, automatically write compression
@@ -356,8 +333,8 @@ namespace rtmath {
 				// hash-shape-dir and hash-stats-dir can be found in rtmath.conf. 
 				// So, using another config file is useless.
 				cmdline.add_options()
-					("hash-shape-dir", po::value<string>(), "Override the hash shape directory") // static option
-					("hash-stats-dir", po::value<string>(), "Override the hash stats directory") // static option
+					//("hash-shape-dir", po::value<string>(), "Override the hash shape directory") // static option
+					//("hash-stats-dir", po::value<string>(), "Override the hash stats directory") // static option
 					;
 
 				config.add_options()
@@ -392,8 +369,8 @@ namespace rtmath {
 				if (vm.count("force-recalc-stats")) forceRecalcStats = true;
 
 				initPaths();
-				if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());
-				if (vm.count("hash-stats-dir")) pHashStats = path(vm["hash-stats-dir"].as<string>());
+				//if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());
+				//if (vm.count("hash-stats-dir")) pHashStats = path(vm["hash-stats-dir"].as<string>());
 
 				// Rotations can be used to automatically set defaults for rotated shape stats
 				// Rotations are always specified (thanks to default_value)
@@ -409,6 +386,7 @@ namespace rtmath {
 					defaultRots.push_back(boost::tuple<double, double, double>(beta, theta, phi));
 
 				// Validate paths
+				/*
 				auto validateDir = [&](path p) -> bool
 				{
 					while (is_symlink(p))
@@ -417,27 +395,7 @@ namespace rtmath {
 					if (is_directory(p)) return true;
 					return false;
 				};
-				if (!validateDir(pHashShapes)) RTthrow debug::xMissingFile(pHashShapes.string().c_str());
-				if (!validateDir(pHashStats)) RTthrow debug::xMissingFile(pHashStats.string().c_str());
-			}
-
-			void shapeFileStats::initPaths()
-			{
-				using namespace boost::filesystem;
-				using std::string;
-				if (!pHashShapes.empty()) return;
-
-				auto conf = rtmath::config::loadRtconfRoot();
-				string shapeDir;
-				auto chash = conf->getChild("ddscat")->getChild("hash");
-				chash->getVal<string>("shapeDir", shapeDir);
-				//if (vm.count("hash-shape-dir")) shapeDir = vm["hash-shape-dir"].as<string>();
-				string statsDir;
-				chash->getVal<string>("statsDir", statsDir);
-				//if (vm.count("hash-stats-dir")) statsDir = vm["hash-stats-dir"].as<string>();
-
-				pHashShapes = path(shapeDir);
-				pHashStats = path(statsDir);
+				*/
 			}
 
 			boost::shared_ptr<shapeFileStats> shapeFileStats::loadHash(
@@ -449,23 +407,19 @@ namespace rtmath {
 			boost::shared_ptr<shapeFileStats> shapeFileStats::loadHash(
 				const std::string &hash)
 			{
-				boost::shared_ptr<shapeFileStats> res(new shapeFileStats);
+				boost::shared_ptr<shapefile> res;
 
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				path pHashShapes;
-				path pHashStats;
-				shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+				std::shared_ptr<registry::IOhandler> sh;
+				std::shared_ptr<registry::IO_options> opts;
 
-				path pHashStat = findHash(pHashStats, hash);
-				if (!pHashStat.empty())
+				if (hashStore::findHashObj(hash, "stats.hdf5", sh, opts))
 				{
-					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats());
-					res->read(pHashStat.string());
+					res = boost::shared_ptr<shapefile>(new shapefile);
+					res->readMulti(sh, opts);
 				}
-				else
-					throw rtmath::debug::xMissingFile(hash.c_str());
 				return res;
 			}
 
@@ -570,12 +524,18 @@ namespace rtmath {
 			{
 				using boost::filesystem::path;
 
-				path pHashShapes;
-				path pHashStats;
-				shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+				std::shared_ptr<registry::IOhandler> sh;
+				std::shared_ptr<registry::IO_options> opts;
 
-				path pHashStat = storeHash(pHashStats, _shp->_localhash);
-				write(pHashStat.string());
+				// Only store hash if a storage mechanism can be found
+				if (hashStore::storeHash(_shp->_localhash.string(), "stats.hdf5", sh, opts))
+				{
+					if (!Ryan_Serialization::detect_compressed(opts->filename()))
+						this->writeMulti(sh, opts);
+				}
+				else {
+					std::cerr << "Cannot write shape to hash " << _localhash.string() << std::endl;
+				}
 			}
 
 		}

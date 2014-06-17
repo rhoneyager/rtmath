@@ -232,16 +232,6 @@ namespace rtmath {
 				/// \todo Add processor for non-static options
 				static void process_static_options(
 					boost::program_options::variables_map &vm);
-				/**
-				* \brief Retrieve the base hash paths
-				*
-				* \item pHashShapes is the base shape hash directory
-				* \item pHashStats is the base stats hash directory
-				**/
-				static void getHashPaths(
-					boost::filesystem::path &pHashShapes,
-					boost::filesystem::path &pHashStats);
-
 				/// Load stats based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 				static boost::shared_ptr<shapeFileStats> loadHash(

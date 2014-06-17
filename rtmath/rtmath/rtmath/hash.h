@@ -8,9 +8,14 @@
 #include <vector>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+
+#include "registry.h"
 //#include <boost/filesystem.hpp>
 
-namespace boost {namespace filesystem { class path; } }
+namespace boost {
+	namespace filesystem { class path; } 
+	//namespace program_options { class variables_map; } 
+}
 
 namespace rtmath {
 
@@ -49,43 +54,32 @@ namespace rtmath {
 	HASH_t DLEXPORT_rtmath_core HASHfile(const std::string& filename);
 
 
-	struct hashStore;
-	typedef boost::shared_ptr<const hashStore> pHashStore;
-	typedef std::vector<pHashStore> hashStores;
-	struct DLEXPORT_rtmath_core hashStore {
-		bool writable;
-		std::string objtype;
-		boost::filesystem::path base;
-		bool local;
-		bool localCache;
-		/// Extensions that get matched when searching for existing files
-		std::vector<std::string> extensions;
-		/// Add compressed files to search path
-		bool compressible;
-		enum class default_hashstores
-		{
-			SHAPEFILE,
-			SHAPESTATS,
-			VORONOI
-		};
-		static hashStores findHashStore(default_hashstores);
-		static hashStores findHashStore(const std::string &objtype);
-		static boost::filesystem::path findHash(const hashStores&, const HASH_t&);
-		static boost::filesystem::path findHash(const hashStores&, const std::string&);
-		static boost::filesystem::path storeHash(const hashStores&, const HASH_t&);
-		static boost::filesystem::path storeHash(const hashStores&, const std::string&);
+	class hashStore;
+	typedef std::shared_ptr<const hashStore> pHashStore;
+	class DLEXPORT_rtmath_core hashStore {
+	public:
+		static bool findHashObj(const std::string &hash, const std::string &key,
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts);
+		static bool storeHash(const std::string&, const std::string &key,
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts);
+		static void addHashStore(pHashStore, size_t priority);
+	public:
+		virtual bool storeHashInStore(const std::string& hash, const std::string &key,
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts
+			) const;
+		virtual bool findHashInStore(const std::string &hash, const std::string &key,
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const;
 
-		boost::filesystem::path storeHash(const HASH_t&);
-		boost::filesystem::path storeHash(const std::string&);
-
-		/// \brief Function to find a hash in a directory hash structure.
-		/// Does not modify hash tree structure.
-		bool findHash(const HASH_t&, boost::filesystem::path&);
-		bool findHash(const std::string&, boost::filesystem::path&);
-		~hashStore();
-	private:
+	public:
 		hashStore();
-		hashStore(const boost::filesystem::path&, const std::string &objtype, bool writable, bool local);
+		/// Base location of the hash database
+		boost::filesystem::path base;
+		/// Indicates whether this store is read-only
+		bool writable;
+		
+	public:
+		~hashStore();
+	
 	};
 
 }

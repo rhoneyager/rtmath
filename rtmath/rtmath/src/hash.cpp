@@ -4,6 +4,8 @@
 #include "../rtmath/Public_Domain/MurmurHash3.h"
 #include "../rtmath/Serialization/serialization_macros.h"
 
+#include <mutex>
+#include <map>
 #include <Ryan_Serialization/serialization.h>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
@@ -13,10 +15,49 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include "../rtmath/config.h"
 #include "../rtmath/error/error.h"
+
+/// Handles private hash functions
+namespace {
+	std::mutex mHashStore;
+	std::multimap<size_t, rtmath::pHashStore> stores;
+
+	void loadStores()
+	{
+		static bool inited = false;
+		// Already locked by calling function
+		if (inited) return;
+		inited = true;
+
+		/// \todo Implement most of this function
+
+		// Stores can be folder trees, single hdf5 files, and websites.
+		// The store database can be stored in sql. 
+		/// \todo Add entries in registry for store registration
+
+		// Each entry in the store has a priority, reflecting its use order.
+		// The highest-priority writable store is used for writing, and the first store 
+		// having a given key is used when reading.
+
+		// For now, just default to loading the rtmath.conf-listed store, if any.
+		{
+			auto conf = rtmath::config::loadRtconfRoot();
+			std::string shapeDir;
+			auto chash = conf->getChild("ddscat")->getChild("hash");
+			chash->getVal<std::string>("shapeDir", shapeDir);
+
+			std::shared_ptr<rtmath::hashStore> h(new rtmath::hashStore);
+			h->writable = true;
+			h->base = boost::filesystem::path(shapeDir);
+			rtmath::hashStore::addHashStore(h, 100);
+		}
+	}
+}
 
 namespace rtmath {
 
+	/*
 	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash,
 		const std::vector<std::string> &extensions)
 	{
@@ -50,12 +91,6 @@ namespace rtmath {
 		return path("");
 	}
 
-	boost::filesystem::path findHash(const boost::filesystem::path &base, const HASH_t &hash,
-		const std::vector<std::string> &extensions)
-	{
-		return findHash(base, boost::lexical_cast<std::string>(hash.lower), extensions);
-	}
-
 	boost::filesystem::path storeHash(const boost::filesystem::path &base, const std::string &hash)
 	{
 		using namespace boost::filesystem;
@@ -77,11 +112,134 @@ namespace rtmath {
 
 		return base/pHashStart/pHashName;
 	}
+	*/
 
-	boost::filesystem::path storeHash(const boost::filesystem::path &base, const HASH_t &hash)
+	hashStore::~hashStore() {}
+
+	bool hashStore::storeHashInStore(const std::string& h, const std::string &key, 
+		std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const
 	{
-		return storeHash(base, boost::lexical_cast<std::string>(hash.lower));
+		opts = registry::IO_options::generate();
+		sh = nullptr; // IOhandler is not needed for the basic filesystem store
+		if (!writable) return false;
+
+		using namespace boost::filesystem;
+		using boost::lexical_cast;
+		using Ryan_Serialization::detect_compressed;
+		using std::string;
+
+		const string sHashName = h;
+		const string sHashStart = sHashName.substr(0, 2);
+		path pHashName(sHashName);
+		path pHashStart(sHashStart);
+
+		
+		if (!exists(base))
+			RTthrow debug::xMissingFolder(base.string().c_str());
+		
+		if (!exists(base / pHashStart))
+			create_directory(base / pHashStart);
+		
+		path p = base / pHashStart / pHashName;
+
+		if (!exists(p))
+			create_directory(p);
+
+		opts->setVal<std::string>("folder", p.string());
+		if (!key.size()) return true;
+
+		path pf = p / path(key);
+		string meth;
+		path target;
+		if (detect_compressed(pf, meth, target))
+		{
+			opts->filename(target.string());
+			opts->setVal<string>("compression_method", meth);
+			opts->setVal<string>("base_filename", pf.string());
+		}
+		else {
+			opts->filename(pf.string());
+			opts->setVal<string>("base_filename", pf.string());
+			string meth;
+			Ryan_Serialization::select_compression(pf.string(), meth);
+			opts->setVal<string>("compression_method", meth);
+		}
+		return true;
 	}
+
+	bool hashStore::findHashInStore(const std::string &hash, const std::string &key,
+		std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const
+	{
+		opts = registry::IO_options::generate();
+		sh = nullptr; // IOhandler is not needed for the basic filesystem store
+
+		using namespace boost::filesystem;
+		using boost::lexical_cast;
+		using Ryan_Serialization::detect_compressed;
+		using std::string;
+
+		const string sHashName = hash;
+		const string sHashStart = sHashName.substr(0, 2);
+		path pHashName(sHashName);
+		path pHashStart(sHashStart);
+
+
+		if (!exists(base))
+			return false;
+		if (!exists(base / pHashStart))
+			return false;
+		path p = base / pHashStart / pHashName;
+		if (!exists(p))
+			return false;
+
+		opts->setVal<std::string>("folder", p.string());
+		if (!key.size()) return true;
+		path pf = p / path(key);
+		string meth;
+		path target;
+		if (detect_compressed(pf, meth, target))
+		{
+			opts->filename(target.string());
+			opts->setVal<string>("compression_method", meth);
+			opts->setVal<string>("base_filename", pf.string());
+			return true;
+		}
+		return false;
+	}
+
+
+	void hashStore::addHashStore(pHashStore p, size_t priority)
+	{
+		std::lock_guard<std::mutex> lck(mHashStore);
+		loadStores();
+		stores.insert ( std::pair<size_t, pHashStore>(priority, p));
+	}
+
+
+	bool hashStore::storeHash(const std::string& h, const std::string &key,
+		std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts)
+	{
+		// Make sure that the store backend is loaded
+		std::lock_guard<std::mutex> lck(mHashStore);
+		loadStores();
+
+		for (auto &s : stores)
+			if (s.second->storeHashInStore(h, key, sh, opts)) return true;
+		return false;
+	}
+
+	bool hashStore::findHashObj(const std::string& h, const std::string &key,
+		std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts)
+	{
+		// Make sure that the store backend is loaded
+		std::lock_guard<std::mutex> lck(mHashStore);
+		loadStores();
+
+		for (const auto &s : stores)
+			if (s.second->findHashInStore(h, key, sh, opts)) return true;
+		return false;
+	}
+
 
 	HASH_t HASHfile(const std::string& filename)
 	{

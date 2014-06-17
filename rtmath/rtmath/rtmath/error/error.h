@@ -67,6 +67,9 @@ namespace rtmath
 		/// The file that is opened for reading is empty
 		ERRSTR(xEmptyInputFile);
 
+		/// Folder does not exist
+		ERRSTR(xMissingFolder);
+
 		/// File to be opened for reading does not exist
 		ERRSTR(xMissingFile);
 

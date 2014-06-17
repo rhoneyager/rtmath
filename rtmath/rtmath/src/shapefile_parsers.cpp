@@ -18,7 +18,7 @@
 #include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/ddscat/shapestats.h"
+#include "../rtmath/hash.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -282,22 +282,19 @@ namespace rtmath
 			boost::shared_ptr<shapefile> shapefile::loadHash(
 				const std::string &hash)
 			{
-				boost::shared_ptr<shapefile> res;
+				boost::shared_ptr<shapefile> res(new shapefile);
 
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				path pHashShapes;
-				path pHashStats;
-				rtmath::ddscat::stats::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+				std::shared_ptr<registry::IOhandler> sh;
+				std::shared_ptr<registry::IO_options> opts;
 
-				path pHashShape = findHash(pHashShapes, hash);
-				if (!pHashShape.empty())
-					res = boost::shared_ptr<shapefile>(new shapefile(pHashShape.string()));
-				//else if (Ryan_Serialization::detect_compressed(_shp->filename))
-				//	res = boost::shared_ptr<shapefile>(new shapefile(_shp->filename));
-				else
-					throw rtmath::debug::xMissingFile(hash.c_str());
+				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				{
+					res = boost::shared_ptr<shapefile>(new shapefile);
+					res->readMulti(sh, opts);
+				}
 				return res;
 			}
 
@@ -305,15 +302,18 @@ namespace rtmath
 			{
 				using boost::filesystem::path;
 
-				path pHashShapes;
-				path pHashStats;
-				rtmath::ddscat::stats::shapeFileStats::getHashPaths(pHashShapes, pHashStats);
+				std::shared_ptr<registry::IOhandler> sh;
+				std::shared_ptr<registry::IO_options> opts;
 
-				path pHashShape = storeHash(pHashShapes, _localhash);
-				if (pHashShape.string() == "") return; // Silently fail (no hash dir)
-				// If a shape matching the hash already exists, there is no need to write an identical file
-				if (!Ryan_Serialization::detect_compressed(pHashShape.string()))
-					writeFile(pHashShape.string());
+				// Only store hash if a storage mechanism can be found
+				if (hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts))
+				{
+					if (!Ryan_Serialization::detect_compressed(opts->filename()))
+						this->writeMulti(sh, opts);
+				}
+				else {
+					std::cerr << "Cannot write shape to hash " << _localhash.string() << std::endl;
+				}
 			}
 
 		}
