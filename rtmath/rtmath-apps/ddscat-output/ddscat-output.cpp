@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "specify output directory or file")
 			("output-aux", po::value<string>(), "optional auxiliary output file (with separate writing options)")
 			("output-shape", "If writing an output directory, also write the shape.")
-			("hash,s", "Store ddscat output in the hash store")
+			//("hash,s", "Store ddscat output in the hash store")
 			("tag,t", po::value<vector<string> >(), "Add extra information to output file")
 			("description,d", po::value<string>(), "Describe the output file")
 			("hostname,H", po::value<string>(), "hostname of system used to generate data")
@@ -189,8 +189,8 @@ int main(int argc, char** argv)
 			for (auto &t : tags)
 				run->tags.insert(t);
 
-			if (doHash)
-				run->writeToHash();
+			//if (doHash)
+			//	run->writeToHash();
 
 
 			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)

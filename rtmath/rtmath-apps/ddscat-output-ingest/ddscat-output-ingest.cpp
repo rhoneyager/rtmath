@@ -40,6 +40,7 @@ int main(int argc, char** argv)
 			("force-polarization,p", po::value<string>(), "force polarization (lin,rhc,...)")
 			("force-perturbation,P", po::value<bool>(), "force perturbation to on or off")
 			("force-decimation,d", po::value<bool>(), "force decimation to on or off")
+			("force-hash-dir", po::value<string>(), "force hash directory")
 			("ingest-ddoutput", po::value<bool>()->default_value(true), "Generate hdf5 files for ddscat output")
 			("ingest-shapefiles", po::value<bool>()->default_value(false), "Generate hdf5 files for shapefiles")
 			("store-shapefile-hashes", po::value<bool>()->default_value(true), "Store hashed shapefile results "
@@ -71,12 +72,20 @@ int main(int argc, char** argv)
 		bool ingest_ddoutput = vm["ingest-ddoutput"].as<bool>();
 		bool ingest_shapefiles = vm["ingest-shapefiles"].as<bool>();
 		bool hash_shapefiles = vm["store-shapefile-hashes"].as<bool>();
+
 		vector<string> vsInput;
 		string sOutput;
 		if (vm.count("input")) vsInput = vm["input"].as<vector<string> >();
 		else doHelp("Need to specify input");
 		if (vm.count("output")) sOutput = vm["output"].as<string>();
 		else doHelp("Need to specify output");
+
+		bool force_hash_dir = false;
+		string hdir;
+		if (vm.count("force-hash-dir")) {
+			force_hash_dir = true;
+			hdir = vm["force-hash-dir"].as<string>();
+		}
 
 		ofstream ofile(sOutput.c_str());
 
@@ -200,6 +209,7 @@ int main(int argc, char** argv)
 				stags.push_back(stag);
 			} else {
 				tags.push_back("decimation=none");
+				stags.push_back("decimation=none");
 			}
 			if (isYes(" Is this run perturbed [no]? ", false, force_perturbation, default_perturbation)) {
 				cout << "  Perturbation type [internal]: ";
@@ -259,9 +269,16 @@ int main(int argc, char** argv)
 			if (ingest_shapefiles) {
 				ofile << "rtmath-shape -i " << pextract.string();
 				for (const auto &t : stags)
-					ofile << " -t \"" << t << "\" -o hdf-shp/shapes.hdf5";
+					ofile << " --tag \"" << t << "\"";
 				if (hash_shapefiles)
-					ofile << " --hash";
+					ofile << " --hash-shape";
+				else ofile << " -o shape.hdf5";
+				if (force_hash_dir)
+					ofile << " --hash-dir " << hdir;
+				ofile << "\nif ( $? ) then\n"
+					//"rm hdf-shp/$outfull hdf-ori/$outori\n"
+					"echo " << ps.string() << " >> bad_ingest.log\n"
+					"endif" << endl;
 			}
 
 			ofile << "rm -rf extract" << endl << endl;

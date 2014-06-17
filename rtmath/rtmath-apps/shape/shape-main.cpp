@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
-			("tag,t", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
+			("tag", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("hash-shape", "Store shapefile hash")
 			("hash-stats", "Store shapefile hash")
@@ -99,8 +99,9 @@ int main(int argc, char** argv)
 
 		vector<std::pair<string, string> > tags;
 		vector<string> tags_pre;
-		if (vm.count("tag")) tags_pre = vm["tag"].as<vector<string> >();
+		if (vm.count("tag"))
 		{ // do tag splitting
+			tags_pre = vm["tag"].as<vector<string> >();
 			vector<string> out;
 			for (const auto &v : tags_pre)
 			{
@@ -194,26 +195,31 @@ int main(int argc, char** argv)
 			cerr << "Processing " << *it << endl;
 			auto iopts = registry::IO_options::generate();
 			iopts->filename(*it);
-			// Handle not needed as the read context is used only once.
-			if (shapefile::shapefile::canReadMulti(nullptr,iopts))
-				shapefile::shapefile::readVector(nullptr, iopts, shapes);
-			else {
-				boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
-				s->readFile(*it);
-				shapes.push_back(s);
+			try {
+				// Handle not needed as the read context is used only once.
+				if (shapefile::shapefile::canReadMulti(nullptr,iopts))
+					shapefile::shapefile::readVector(nullptr, iopts, shapes);
+				else {
+					boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
+					s->readFile(*it);
+					shapes.push_back(s);
+				}
+			} catch (std::exception &e)
+			{
+				cerr << e.what() << std::endl;
+				continue;
 			}
-
 		}
 
 		for (const auto &shp : shapes)
 		{
 			cerr << "Shape " << shp->hash().lower << endl;
+			for (auto &t : tags)
+				shp->tags.insert(t);
 
 			if (vm.count("hash-shape")) shp->writeToHash();
 			//if (vm.count("hash-stats")) stats->writeToHash();
 
-			for (auto &t : tags)
-				shp->tags.insert(t);
 			//cerr << "\tCalculating statistics" << endl;
 			//rtmath::ddscat::stats::shapeFileStats sstats(shp);
 			
