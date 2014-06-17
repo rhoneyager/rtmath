@@ -4,18 +4,9 @@
 #include <map>
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/split_free.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/string.hpp>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include "../Serialization/serialization_macros.h"
-#include "../Serialization/eigen_serialization.h"
 #include "../hash.h"
 #include "../registry.h"
 #include "../io.h"
@@ -175,9 +166,6 @@ namespace rtmath {
 			// Load a Voronoi diagram from a given hash
 			//static boost::shared_ptr<VoronoiDiagram> loadHash(HASH_t hash);
 
-			friend class ::boost::serialization::access;
-			template<class Archive>
-			void serialize(Archive & ar, const unsigned int version);
 		};
 	}
 }
