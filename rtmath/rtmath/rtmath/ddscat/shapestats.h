@@ -202,8 +202,6 @@ namespace rtmath {
 				// A convenience function that calls Ryan_Serialization
 				//void read(const std::string &filename);
 			private:
-				/// Gets some initial path information from rtmath.conf
-				static void initPaths();
 				void _init();
 			public:
 				/// \brief Generate shapefile stats for the given shape. Optionally write them to statsfile.

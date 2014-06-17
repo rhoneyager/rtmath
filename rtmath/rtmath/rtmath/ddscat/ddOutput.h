@@ -83,7 +83,6 @@ namespace rtmath {
 			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
 			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>
 		{
-			static void initPaths();
 			void resize(size_t numOris, size_t numTotAngles);
 			void resizeFML(size_t numTotAngles);
 			void finalize();
@@ -296,7 +295,7 @@ namespace rtmath {
 				const std::string &dir, bool noLoadRots = false);
 
 			/// Write run to the hash directory (convenience function)
-			void writeToHash() const;
+			//void writeToHash() const;
 
 			/**
 			 * \brief Adds ddOutput options to a program
@@ -313,14 +312,7 @@ namespace rtmath {
 			/// \todo Add processor for non-static options
 			static void process_static_options(
 				boost::program_options::variables_map &vm);
-			/**
-			 * \brief Retrieve the base hash paths
-			 *
-			 * \item pHashRuns is the base run hash directory
-			 **/
-			static void getHashPaths(
-				boost::filesystem::path &pHashRuns);
-
+			
 			/// Load stats based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 			//static boost::shared_ptr<shapeFileStats> loadHash(

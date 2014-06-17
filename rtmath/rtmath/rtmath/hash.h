@@ -10,12 +10,12 @@
 #include <boost/serialization/export.hpp>
 
 #include "registry.h"
-//#include <boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
 
-namespace boost {
-	namespace filesystem { class path; } 
+//namespace boost {
+	//namespace filesystem { class path; } 
 	//namespace program_options { class variables_map; } 
-}
+//}
 
 namespace rtmath {
 

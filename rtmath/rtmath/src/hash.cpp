@@ -114,12 +114,13 @@ namespace rtmath {
 	}
 	*/
 
+	hashStore::hashStore() {}
 	hashStore::~hashStore() {}
 
 	bool hashStore::storeHashInStore(const std::string& h, const std::string &key, 
 		std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const
 	{
-		opts = registry::IO_options::generate();
+		opts = registry::IO_options::generate(registry::IOhandler::IOtype::TRUNCATE);
 		sh = nullptr; // IOhandler is not needed for the basic filesystem store
 		if (!writable) return false;
 
@@ -170,7 +171,7 @@ namespace rtmath {
 	bool hashStore::findHashInStore(const std::string &hash, const std::string &key,
 		std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const
 	{
-		opts = registry::IO_options::generate();
+		opts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 		sh = nullptr; // IOhandler is not needed for the basic filesystem store
 
 		using namespace boost::filesystem;
@@ -210,7 +211,6 @@ namespace rtmath {
 
 	void hashStore::addHashStore(pHashStore p, size_t priority)
 	{
-		std::lock_guard<std::mutex> lck(mHashStore);
 		loadStores();
 		stores.insert ( std::pair<size_t, pHashStore>(priority, p));
 	}

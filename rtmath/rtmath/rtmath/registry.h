@@ -195,7 +195,8 @@ namespace rtmath
 			std::map<std::string, std::string> _mapStr;
 		public:
 			virtual ~IO_options() {}
-			static inline std::shared_ptr<IO_options> generate() {return std::shared_ptr<IO_options>(new IO_options);}
+			static inline std::shared_ptr<IO_options> generate(IOhandler::IOtype v = IOhandler::IOtype::TRUNCATE) 
+			{ auto res = std::shared_ptr<IO_options>(new IO_options); res->iotype(v); return res; }
 			inline bool hasVal(const std::string &key) const
 			{
 				if (_mapStr.count(key)) return true;

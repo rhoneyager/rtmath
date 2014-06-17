@@ -611,7 +611,6 @@ namespace rtmath {
 			// hash-shape-dir and hash-stats-dir can be found in rtmath.conf. 
 			// So, using another config file is useless.
 			cmdline.add_options()
-				("hash-runs-dir", po::value<string>(), "Override the hash runs directory") // static option
 				;
 
 			config.add_options()
@@ -628,9 +627,6 @@ namespace rtmath {
 			namespace po = boost::program_options;
 			using std::string;
 			using boost::filesystem::path;
-
-			initPaths();
-			if (vm.count("hash-runs-dir")) pHashRuns = path(vm["hash-runs-dir"].as<string>());
 
 			// Validate paths
 			auto validateDir = [&](path p) -> bool
@@ -652,25 +648,7 @@ namespace rtmath {
 
 		}
 
-		void ddOutput::initPaths()
-		{
-			using namespace boost::filesystem;
-			using std::string;
-			if (!pHashRuns.empty()) return;
-
-			auto conf = rtmath::config::loadRtconfRoot();
-			string runsDir;
-			auto chash = conf->getChild("ddscat")->getChild("hash");
-			chash->getVal<string>("runsDir",runsDir);
-			
-			pHashRuns = path(runsDir);
-		}
-
-		void ddOutput::getHashPaths(boost::filesystem::path &pHashRunsO)
-		{
-			pHashRunsO = pHashRuns;
-		}
-
+		/*
 		void ddOutput::writeToHash() const
 		{
 			using boost::filesystem::path;
@@ -685,6 +663,7 @@ namespace rtmath {
 			if (!Ryan_Serialization::detect_compressed(pHashRun.string()))
 				writeFile(pHashRun.string());
 		}
+		*/
 
 
 		std::string ddOutput::genName() const

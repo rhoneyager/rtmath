@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
-		Ryan_Serialization::add_options(cmdline, config, hidden);
+		//Ryan_Serialization::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
@@ -71,6 +71,8 @@ int main(int argc, char** argv)
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("tag,t", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
+			("hash-shape", "Store shapefile hash")
+			("hash-stats", "Store shapefile hash")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -92,7 +94,7 @@ int main(int argc, char** argv)
 		if (vm.count("help") || argc == 1) doHelp("");
 		
 		rtmath::debug::process_static_options(vm);
-		Ryan_Serialization::process_static_options(vm);
+		//Ryan_Serialization::process_static_options(vm);
 		ddscat::stats::shapeFileStats::process_static_options(vm);
 
 		vector<std::pair<string, string> > tags;
@@ -206,6 +208,9 @@ int main(int argc, char** argv)
 		for (const auto &shp : shapes)
 		{
 			cerr << "Shape " << shp->hash().lower << endl;
+
+			if (vm.count("hash-shape")) shp->writeToHash();
+			//if (vm.count("hash-stats")) stats->writeToHash();
 
 			for (auto &t : tags)
 				shp->tags.insert(t);
