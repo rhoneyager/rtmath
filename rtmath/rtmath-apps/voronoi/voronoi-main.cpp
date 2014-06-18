@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("inputshp,s", po::value< vector<string> >(), "Input shape files")
+			("inputshp,s", po::value< vector<string> >()->multitoken(), "Input shape files")
 			("output,o", po::value<string>(), "Output filename of Voronoi diagram file")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
