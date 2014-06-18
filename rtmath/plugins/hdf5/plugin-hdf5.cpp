@@ -91,6 +91,8 @@ void dllEntry()
 		rtmath::ddscat::shapefile::shapefile_IO_input_registry>("hdf5", PLUGINID);
 	//genAndRegisterIOregistry_reader<::rtmath::ddscat::stats::shapeFileStats,
 	//	rtmath::ddscat::stats::shapeFileStats_IO_input_registry>("hdf5", PLUGINID);
-	//genAndRegisterIOregistry_reader<::rtmath::ddscat::ddOutput,
-	//	rtmath::ddscat::ddOutput_IO_input_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry_reader<::rtmath::ddscat::ddOutput,
+		rtmath::ddscat::ddOutput_IO_input_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry_reader<::rtmath::Voronoi::VoronoiDiagram,
+		::rtmath::Voronoi::Voronoi_IO_input_registry>("hdf5", PLUGINID);
 }

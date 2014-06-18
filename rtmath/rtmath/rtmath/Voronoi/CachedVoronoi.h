@@ -32,7 +32,7 @@ namespace rtmath {
 		class DLEXPORT_rtmath_voronoi CachedVoronoi : public CachedVoronoi_MaxNeighbors
 		{
 			friend class VoronoiDiagram;
-		private:
+		public: // TODO: make private and change the hdf5 reader into a friend
 			//mutable boost::interprocess::managed_heap_memory m;
 			mutable double sa, vol;
 		public:
@@ -81,6 +81,7 @@ namespace rtmath {
 
 			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc, 
 				const Eigen::Array3f &mins, const Eigen::Array3f &maxs);
+			CachedVoronoi(); // Used in hdf5 read
 			~CachedVoronoi();
 			void regenerateCache(size_t numPoints);
 

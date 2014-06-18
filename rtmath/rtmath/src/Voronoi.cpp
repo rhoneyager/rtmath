@@ -20,6 +20,7 @@
 #include <Voro/voro++.hh>
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
+#include <string>
 #include "../rtmath/hash.h"
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
@@ -627,10 +628,11 @@ namespace rtmath
 			using boost::filesystem::exists;
 
 			std::shared_ptr<registry::IOhandler> sh;
-			std::shared_ptr<registry::IO_options> opts;
+			std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
 			if (hashStore::findHashObj(hash, "voronoi.hdf5", sh, opts))
 			{
+				opts->setVal<std::string>("hash", hash);
 				res = boost::shared_ptr<VoronoiDiagram>(new VoronoiDiagram);
 				res->readMulti(sh, opts);
 			}

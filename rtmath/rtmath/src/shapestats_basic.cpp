@@ -351,7 +351,7 @@ namespace rtmath {
 				using boost::filesystem::exists;
 
 				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts;
+				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
 				if (hashStore::findHashObj(hash, "stats.hdf5", sh, opts))
 				{

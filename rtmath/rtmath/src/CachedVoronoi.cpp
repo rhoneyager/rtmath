@@ -38,6 +38,8 @@ namespace rtmath
 
 		}
 
+		CachedVoronoi::CachedVoronoi() {}
+
 		CachedVoronoi::CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc, const Eigen::Array3f &mins, const Eigen::Array3f &maxs) :
 			vc(vc),
 			sa(0),
@@ -51,6 +53,7 @@ namespace rtmath
 
 		void CachedVoronoi::generateCellMap() const
 		{
+			if (cellmap.rows() > 0) return;
 			// Defining the span as an inclusive bound
 			Eigen::Array3i mins = this->mins.cast<int>(), maxs = this->maxs.cast<int>();
 			span = maxs - mins + 1;

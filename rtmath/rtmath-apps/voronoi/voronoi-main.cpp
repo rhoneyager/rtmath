@@ -49,6 +49,7 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("inputshp,s", po::value< vector<string> >()->multitoken(), "Input shape files")
+			("inputvoro,v", po::value<vector<string> >(), "Input voronoi diagrams")
 			("output,o", po::value<string>(), "Output filename of Voronoi diagram file")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
@@ -76,13 +77,23 @@ int main(int argc, char** argv)
 		rtmath::debug::process_static_options(vm);
 		//Ryan_Serialization::process_static_options(vm);
 
-		vector<string> inputshp = vm["inputshp"].as< vector<string> >();
+		vector<string> inputshp;
 		if (vm.count("inputshp"))
 		{
-			cerr << "Input files are:" << endl;
+			inputshp = vm["inputshp"].as< vector<string> >();
+			cerr << "Input shape files are:" << endl;
 			for (auto it = inputshp.begin(); it != inputshp.end(); ++it)
 				cerr << "\t" << *it << "\n";
-		} else doHelp("Need to specify input shape files.");
+		};
+
+		vector<string> inputvoro;
+		if (vm.count("inputvoro"))
+		{
+			inputvoro = vm["inputvoro"].as<vector<string> >();
+			cerr << "Input voronoi diagrams are:" << endl;
+			for (auto it = inputvoro.begin(); it != inputvoro.end(); ++it)
+				cerr << "\t" << *it << "\n";
+		};
 
 		// No vectors! They are hard to detect before readins, leading to input stream errors.
 		bool doExport = false;
@@ -120,6 +131,15 @@ int main(int argc, char** argv)
 			} else vinputs.push_back(*it);
 		}
 
+		vector<string> vdinputs;
+		for (auto it = inputvoro.begin(); it != inputvoro.end(); ++it)
+		{
+			path pi(*it);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (is_directory(pi)) continue;
+			vdinputs.push_back(*it);
+		}
+
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
 
 		auto opts = registry::IO_options::generate();
@@ -139,7 +159,7 @@ int main(int argc, char** argv)
 		for (auto it = vinputs.begin(); it != vinputs.end(); ++it)
 		{
 			cerr << "Processing " << *it << endl;
-			auto iopts = registry::IO_options::generate();
+			auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 			iopts->filename(*it);
 			try {
 				// Handle not needed as the read context is used only once.
@@ -157,16 +177,46 @@ int main(int argc, char** argv)
 			}
 		}
 
+
+		using namespace rtmath::Voronoi;
+		vector<boost::shared_ptr<Voronoi::VoronoiDiagram> > voros;
 		for (const auto &shp : shapes)
 		{
-			cerr << "Hash " << shp->hash().lower << endl;
-
-			using namespace rtmath::Voronoi;
+			cerr << "Generating Voronoi diagrams for hash " << shp->hash().lower << endl;
 			boost::shared_ptr<VoronoiDiagram> vd;
 			vd = shp->generateVoronoi(
 				std::string("standard"), VoronoiDiagram::generateStandard);
 			vd->calcSurfaceDepth();
 			vd->calcCandidateConvexHullPoints();
+
+			voros.push_back(vd);
+		}
+		for (auto it = vdinputs.begin(); it != vdinputs.end(); ++it)
+		{
+			cerr << "Processing stored Voronoi data " << *it << endl;
+			auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
+			iopts->filename(*it);
+			try {
+				// Handle not needed as the read context is used only once.
+				if (VoronoiDiagram::canReadMulti(nullptr, iopts))
+					VoronoiDiagram::readVector(nullptr, iopts, voros);
+				else {
+					boost::shared_ptr<VoronoiDiagram> s(new VoronoiDiagram);
+					s->readFile(*it);
+					voros.push_back(s);
+				}
+			}
+			catch (std::exception &e)
+			{
+				cerr << e.what() << std::endl;
+				continue;
+			}
+		}
+
+		for (const auto &vd : voros)
+		{
+			cerr << "Processing hash " << vd->hash().lower << endl;
+
 			if (vm.count("hash-voronoi"))
 				vd->writeToHash();
 

@@ -232,7 +232,7 @@ namespace rtmath
 			std::string filetype() const { return getVal<std::string>("filetype", ""); }
 			void exportType(const std::string &val) { setVal<std::string>("exportType", val); }
 			std::string exportType() const { return getVal<std::string>("exportType", ""); }
-			void iotype(IOhandler::IOtype &val) { setVal<IOhandler::IOtype>("ioType", val); }
+			void iotype(IOhandler::IOtype val) { setVal<IOhandler::IOtype>("ioType", val); }
 			IOhandler::IOtype iotype() const { return getVal<IOhandler::IOtype>("ioType", IOhandler::IOtype::TRUNCATE); }
 		};
 
