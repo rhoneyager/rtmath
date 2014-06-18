@@ -43,7 +43,10 @@ int main(int argc, char** argv)
 			("force-hash-dir", po::value<string>(), "force hash directory")
 			("ingest-ddoutput", po::value<bool>()->default_value(true), "Generate hdf5 files for ddscat output")
 			("ingest-shapefiles", po::value<bool>()->default_value(false), "Generate hdf5 files for shapefiles")
+			("ingest-targetout", po::value<bool>()->default_value(false), "Generate hdf5 files for target.out files")
 			("store-shapefile-hashes", po::value<bool>()->default_value(true), "Store hashed shapefile results "
+			 "if ingest-shapefiles is turned on.)")
+			("store-voronoi-hashes", po::value<bool>()->default_value(true), "Store hashed Voronoi diagram results "
 			 "if ingest-shapefiles is turned on.)")
 			;
 		po::positional_options_description p;

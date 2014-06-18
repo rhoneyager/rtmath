@@ -20,6 +20,7 @@
 #include <Voro/voro++.hh>
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
+#include "../rtmath/hash.h"
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
@@ -115,7 +116,7 @@ namespace rtmath
 
 		VoronoiDiagram::VoronoiDiagram()
 		{
-			ingest_hostname = Ryan_Debug::getHostname();
+			hostname = Ryan_Debug::getHostname();
 			ingest_username = Ryan_Debug::getUsername();
 			using namespace boost::posix_time;
 			using namespace boost::gregorian;
@@ -616,6 +617,56 @@ namespace rtmath
 				Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(points));
 			return res;
 		}
+
+		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::loadHash(
+			const std::string &hash)
+		{
+			boost::shared_ptr<VoronoiDiagram> res;
+
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			std::shared_ptr<registry::IOhandler> sh;
+			std::shared_ptr<registry::IO_options> opts;
+
+			if (hashStore::findHashObj(hash, "voronoi.hdf5", sh, opts))
+			{
+				res = boost::shared_ptr<VoronoiDiagram>(new VoronoiDiagram);
+				res->readMulti(sh, opts);
+			}
+			return res;
+		}
+
+		void VoronoiDiagram::writeToHash() const
+		{
+			using boost::filesystem::path;
+
+			std::shared_ptr<registry::IOhandler> sh;
+			std::shared_ptr<registry::IO_options> opts;
+
+			if (_hash.lower == 0)
+			{
+				std::cerr << "Attempting to write voronoi diagram to hash, but hash is not set." << std::endl;
+				return;
+			}
+
+			// Only store hash if a storage mechanism can be found
+			if (hashStore::storeHash(_hash.string(), "voronoi.hdf5", sh, opts))
+			{
+				if (!Ryan_Serialization::detect_compressed(opts->filename()))
+					this->writeMulti(sh, opts);
+			}
+			else {
+				std::cerr << "Cannot write voronoi diagram to hash " << _hash.string() << std::endl;
+			}
+		}
+
+		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::loadHash(
+			const HASH_t &hash)
+		{
+			return loadHash(boost::lexical_cast<std::string>(hash.lower));
+		}
+
 
 
 	}

@@ -111,11 +111,9 @@ namespace rtmath {
 			/// When calculated
 			std::string ingest_timestamp;
 			/// The system that the calculation was on
-			std::string ingest_hostname;
+			std::string hostname;
 			/// The user account that performed the calculation
 			std::string ingest_username;
-			/// The host that performed the calculation
-			std::string hostname;
 			/// Revision of the rtmath code for ingest
 			int ingest_rtmath_version;
 
@@ -178,6 +176,16 @@ namespace rtmath {
 			// Load a Voronoi diagram from a given hash
 			//static boost::shared_ptr<VoronoiDiagram> loadHash(HASH_t hash);
 
+			/// Convenience functions to load shape based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
+			static boost::shared_ptr<VoronoiDiagram> loadHash(
+				const HASH_t &hash);
+			/// Convenience functions to load shape based on hash
+			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
+			static boost::shared_ptr<VoronoiDiagram> loadHash(
+				const std::string &hash);
+			/// Write to the hash directory (convenience function)
+			void writeToHash() const;
 		};
 	}
 }

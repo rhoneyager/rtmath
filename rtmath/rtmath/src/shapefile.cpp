@@ -351,8 +351,14 @@ namespace rtmath {
 			{
 				if (voronoi_diagrams.count(name))
 					return voronoi_diagrams[name];
-				auto res = f(mins, maxs, latticePts);
-				res->setHash(this->hash());
+				// Attempt to load the voronoi diagram from the hash database.
+				boost::shared_ptr<Voronoi::VoronoiDiagram> res;
+				res = Voronoi::VoronoiDiagram::loadHash(hash());
+				std::cerr << "shapefile::generateVoronoi needs voronoi hdf5 read to be completed" << std::endl;
+				if (!res) {
+					res = f(mins, maxs, latticePts);
+					res->setHash(this->hash());
+				}
 
 				voronoi_diagrams[name] = res;
 				return res;

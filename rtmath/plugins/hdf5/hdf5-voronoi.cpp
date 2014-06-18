@@ -25,9 +25,39 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
+#include "cmake-settings.h"
+
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
+
+			template <class T>
+			void stringifyArray(size_t rows, size_t mxcols, T &obj, std::vector<std::string> &res, std::vector<const char*> &resb, char sep = ',')
+			{
+				res.resize(rows);
+				resb.resize(rows);
+				for (size_t i = 0; i < rows; ++i)
+				{
+					std::ostringstream out;
+					size_t lastcol = 0;
+					for (size_t j = 0; j < mxcols; ++j)
+					{
+						if (obj(i, j) != 0)
+						{
+							// Output everything from the previous mark to the present
+							for (size_t c = lastcol; c < j; ++c)
+							{
+								out << obj(i, c) << sep;
+							}
+							lastcol = j;
+						}
+					}
+					out << obj(i, lastcol);
+
+					res[i] = out.str();
+					resb[i] = res[i].c_str();
+				}
+			}
 
 
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
@@ -43,10 +73,9 @@ namespace rtmath {
 				//shared_ptr<Group> base(new Group(g->createGroup("Voronoi")));
 
 				addAttr<string, Group>(base, "ingest_timestamp", s->ingest_timestamp);
-				addAttr<string, Group>(base, "ingest_hostname", s->ingest_hostname);
+				addAttr<string, Group>(base, "hostname", s->hostname);
 				addAttr<string, Group>(base, "ingest_username", s->ingest_username); // Not all ingests have this...
 				addAttr<int, Group>(base, "ingest_rtmath_version", s->ingest_rtmath_version);
-				addAttr<string, Group>(base, "hostname", s->hostname);
 
 				addAttr<uint64_t, Group>(base, "Hash_lower", s->hash().lower);
 				addAttr<uint64_t, Group>(base, "Hash_upper", s->hash().upper);
@@ -62,29 +91,19 @@ namespace rtmath {
 				addAttr<double, Group>(base, "volume", s->volume());
 
 				// Enable compression
-				hsize_t chunk_colwise[2] = { (hsize_t)s->numPoints(), 1 };
-				hsize_t chunk_cell_doubles[2] = { (hsize_t)s->numPoints(), CachedVoronoi::NUM_CELL_DEFS_DOUBLES };
-				hsize_t chunk_cell_ints[2] = { (hsize_t)s->numPoints(), CachedVoronoi::NUM_CELL_DEFS_INTS };
-				hsize_t chunk_cell_CachedVoronoi_MaxNeighbors_VAL[2] = { (hsize_t)s->numPoints(), CachedVoronoi_MaxNeighbors_VAL };
-				auto plistCol = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-				plistCol->setChunk(2, chunk_colwise);
-				auto plistDoubles = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-				plistDoubles->setChunk(2, chunk_cell_doubles);
-				auto plistInts = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-				plistInts->setChunk(2, chunk_cell_ints);
-				auto plistArray = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-				plistArray->setChunk(2, chunk_cell_CachedVoronoi_MaxNeighbors_VAL);
-				//int fillvalue = -1;
-				//plistCol->setFillValue(PredType::NATIVE_INT, &fillvalue);
+				auto make_plist = [](size_t rows, size_t cols)
+				{
+					hsize_t chunk[2] = { (hsize_t)rows, (hsize_t)cols };
+					auto plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+					plist->setChunk(2, chunk);
 #if COMPRESS_ZLIB
-				plistCol->setDeflate(6);
-				plistDoubles->setDeflate(6);
-				plistInts->setDeflate(6);
-				plistArray->setDeflate(6);
+					plist->setDeflate(6);
 #endif
+					return plist;
+				};
 
 				// Store the source matrix
-				addDatasetEigen(base, "Source", *(s->src), plistCol);
+				addDatasetEigen(base, "Source", *(s->src), make_plist((size_t)s->src->rows(), (size_t)s->src->cols()));
 
 				// Store the precalced objects
 				shared_ptr<Group> grpcache(new Group(base->createGroup("Voronoi_Cache")));
@@ -93,13 +112,30 @@ namespace rtmath {
 					shared_ptr<Group> grp(new Group(grpcache->createGroup(e.first)));
 					// Store the cell map
 					auto cellmap = e.second->getCellMap();
-					addDatasetEigen(grp, "Cell_Map", *cellmap, plistCol);
 
-					addDatasetEigen(grp, "tblDoubles", e.second->tblDoubles, plistDoubles);
-					addDatasetEigen(grp, "tblInts", e.second->tblInts, plistInts);
-					addDatasetEigen(grp, "tblCellNeighs", e.second->tblCellNeighs, plistArray);
-					addDatasetEigen(grp, "tblCellF_verts", e.second->tblCellF_verts, plistArray);
-					addDatasetEigen(grp, "tblCellF_areas", e.second->tblCellF_areas, plistArray);
+					addDatasetEigen(grp, "Cell_Map", *cellmap, make_plist((size_t)cellmap->rows(), (size_t)cellmap->cols()));
+
+
+					addDatasetEigen(grp, "tblDoubles", e.second->tblDoubles, make_plist((size_t)e.second->tblDoubles.rows(), (size_t)e.second->tblDoubles.cols()));
+					addDatasetEigen(grp, "tblInts", e.second->tblInts, make_plist((size_t)e.second->tblInts.rows(), (size_t)e.second->tblInts.cols()));
+
+					/*
+					std::vector<std::string> res;
+					std::vector<const char*> resb;
+
+					stringifyArray((size_t)e.second->tblCellNeighs.rows(), (size_t)e.second->tblCellNeighs.cols(), e.second->tblCellNeighs, res, resb);
+					addDatasetArray<const char*, Group>(grp, "tblCellNeighs", resb.size(), 1, resb.data());
+
+					stringifyArray((size_t)e.second->tblCellF_verts.rows(), (size_t)e.second->tblCellF_verts.cols(), e.second->tblCellF_verts, res, resb);
+					addDatasetArray<const char*, Group>(grp, "tblCellF_verts", resb.size(), 1, resb.data());
+
+					stringifyArray((size_t)e.second->tblCellF_areas.rows(), (size_t)e.second->tblCellF_areas.cols(), e.second->tblCellF_areas, res, resb);
+					addDatasetArray<const char*, Group>(grp, "tblCellF_areas", resb.size(), 1, resb.data());
+					*/
+
+					addDatasetEigen(grp, "tblCellNeighs", e.second->tblCellNeighs, make_plist((size_t)e.second->tblCellNeighs.rows(), (size_t)e.second->tblCellNeighs.cols()));
+					addDatasetEigen(grp, "tblCellF_verts", e.second->tblCellF_verts, make_plist((size_t)e.second->tblCellF_verts.rows(), (size_t)e.second->tblCellF_verts.cols()));
+					addDatasetEigen(grp, "tblCellF_areas", e.second->tblCellF_areas, make_plist((size_t)e.second->tblCellF_areas.rows(), (size_t)e.second->tblCellF_areas.cols()));
 					addAttrEigen<Eigen::Array3f, Group>(grp, "mins", e.second->mins);
 					addAttrEigen<Eigen::Array3f, Group>(grp, "maxs", e.second->maxs);
 					addAttrEigen<Eigen::Array3i, Group>(grp, "span", e.second->span);
@@ -115,14 +151,8 @@ namespace rtmath {
 				// Write out all of the generated diagrams
 				for (const auto &res : results)
 				{
-					hsize_t fDims[] = { (hsize_t) res.second->rows(), (hsize_t) res.second->cols() };
-					DataSpace fSpace(2, fDims);
-					auto plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-					plist->setChunk(2, fDims);
-#if COMPRESS_ZLIB
-					plist->setDeflate(6);
-#endif
-					addDatasetEigen(grpres, res.first.c_str(), *(res.second.get()), plist);
+					auto resb = res.second->block(0, 3, res.second->rows(), res.second->cols() - 3);
+					addDatasetEigen(grpres, res.first.c_str(), resb, make_plist((size_t)resb.rows(), (size_t)resb.cols()));
 				}
 
 				/*
@@ -160,7 +190,7 @@ namespace rtmath {
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key", "");
+			std::string key = opts->getVal<std::string>("key", "standard");
 
 			using std::shared_ptr;
 			using namespace H5;
@@ -183,7 +213,8 @@ namespace rtmath {
 			// Group "Hashed"/shp->hash/"Voronoi". If it exists, overwrite it. There should be no hard links here.
 			shared_ptr<Group> grpVoro = openOrCreateGroup(grpShape, "Voronoi");
 
-			write_hdf5_voro(grpVoro, opts, v);
+			shared_ptr<Group> grp = openOrCreateGroup(grpVoro, key.c_str());
+			write_hdf5_voro(grp, opts, v);
 
 			return h; // Pass back the handle
 		}

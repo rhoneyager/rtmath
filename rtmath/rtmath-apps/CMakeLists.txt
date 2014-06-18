@@ -61,6 +61,7 @@ addappdir(shape-rehash ON)
 #addappdir(tmatrix-optimize-with-ddscat OFF)
 #addappdir(tmatrix-slice ON)
 addappdir(visualize-orientation-weights OFF)
+addappdir(voronoi ON)
 
 #add_subdirectory (da)
 #add_subdirectory (db-catalog-ddscat)
