@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <functional>
 #include <scoped_allocator>
+#include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/managed_heap_memory.hpp>
@@ -11,15 +12,18 @@
 #include <boost/interprocess/containers/flat_set.hpp>
 #include <boost/interprocess/containers/set.hpp>
 #include <boost/interprocess/containers/vector.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
 #include <Voro/voro++.hh>
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
-#include "../rtmath/Voronoi/CachedVoronoiCell.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
+#include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
 namespace {
@@ -109,21 +113,30 @@ namespace rtmath
 	{
 		
 
-		VoronoiDiagram::VoronoiDiagram() {}
+		VoronoiDiagram::VoronoiDiagram()
+		{
+			ingest_hostname = Ryan_Debug::getHostname();
+			ingest_username = Ryan_Debug::getUsername();
+			using namespace boost::posix_time;
+			using namespace boost::gregorian;
+			ptime now = second_clock::local_time();
+			ingest_timestamp = to_iso_string(now);
+			ingest_rtmath_version = rtmath::debug::rev();
+		}
 
 		void VoronoiDiagram::setHash(HASH_t hash) { this->_hash = hash; }
 		HASH_t VoronoiDiagram::hash() const { return this->_hash; }
 
 		double VoronoiDiagram::surfaceArea() const
 		{
-			if (!precalced) return 0;
-			return precalced->surfaceArea();
+			if (!cache.count("precalced")) return 0;
+			return cache.at("precalced")->surfaceArea();
 		}
 
 		double VoronoiDiagram::volume() const
 		{
-			if (!precalced) return 0;
-			return precalced->volume();
+			if (!cache.count("precalced")) return 0;
+			return cache.at("precalced")->volume();
 		}
 
 		void VoronoiDiagram::getBounds(Eigen::Array3f &mins, 
@@ -174,14 +187,14 @@ namespace rtmath
 		**/
 		void VoronoiDiagram::regenerateFull() const
 		{
-			if (precalced) return;
+			if (cache.count("precalced")) return;
 			if (!vc) regenerateVoronoi();
-			precalced = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t) src->rows(), vc, mins, maxs));
+			cache["precalced"] = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi((size_t)src->rows(), vc, mins, maxs));
 		}
 
 		const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* VoronoiDiagram::getCellMap() const
 		{
-			regenerateFull();  return precalced->getCellMap();
+			regenerateFull();  return cache.at("precalced")->getCellMap();
 		}
 
 		size_t VoronoiDiagram::numPoints() const
@@ -238,16 +251,21 @@ namespace rtmath
 			using namespace boost::interprocess;
 
 			//mapped_region region(anonymous_shared_memory(1024*1024*128));
-			managed_heap_memory &m = precalced->m;
+			/*
+			managed_heap_memory &m = cache["precalced"]->m;
 			typedef allocator<std::pair<const vertex*, size_t>, managed_heap_memory::segment_manager>
 				PairAllocator;
 			const PairAllocator pairAllocator(m.get_segment_manager());
 			typedef boost::interprocess::flat_map<vertex*, size_t, std::less<const vertex*>,
 				PairAllocator> vIdMap;
+				
 			vIdMap *vertexIdMap = m.construct<vIdMap>("SurfaceDepth_vertexIdMap")
 				(std::less<const vertex*>(), pairAllocator);
+				*/
 			//std::unordered_map<vertex*, size_t, std::hash<vertex*>, std::equal_to<vertex*>,
 			//	boost::pool_allocator<std::pair<const vertex*, size_t> > > vertexIdMap;
+			std::unordered_map<vertex*, size_t, std::hash<vertex*>, std::equal_to<vertex*> > vmap;
+			auto vertexIdMap = &vmap;
 
 			vertexIdMap->reserve(src->rows());
 			for (size_t i=0; i < (size_t) src->rows(); ++i)
@@ -258,14 +276,21 @@ namespace rtmath
 			}
 			
 			// Iterate over the precalced entries and insert only point that touch a boundary
-			for (const auto &cell : *(precalced->getCells()))
+			//for (const auto &cell : *(precalced->getCells()))
+			for (size_t row = 0; row < (size_t)cache["precalced"]->tblDoubles.rows(); ++row)
 			{
-				const int &id = cell.id;
+				auto od = cache["precalced"]->tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(row, 0);
+				auto oi = cache["precalced"]->tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(row, 0);
+
+				const int &id = oi(CachedVoronoi::ID);
 				if (id % 1000 == 0) 
 					std::cerr << id << "\n";
 
-				for (auto &i : cell.neigh)
+				//for (auto &i : cell.neigh)
+				for (size_t col = 0; col < CachedVoronoi_MaxNeighbors_VAL; ++col)
 				{
+					size_t i = static_cast<size_t>(cache["precalced"]->tblCellNeighs(row, col));
+
 					if (i<=0) continue;
 					auto distsq = [&](size_t i, size_t j) -> float
 					{
@@ -298,7 +323,7 @@ namespace rtmath
 				std::equal_to<vertex*>
 				//, VertexAllocator
 			> bSetVertex;
-			VertexAllocator vAllocator (m.get_segment_manager());
+			//VertexAllocator vAllocator (m.get_segment_manager());
 
 			bSetVertex setVertices; //(std::less<vertex*>(), vAllocator);
 
@@ -322,7 +347,7 @@ namespace rtmath
 			Eigen::MatrixXf xinitFilledPoints(4, 4);
 			Eigen::MatrixXf *initFilledPoints = &xinitFilledPoints;
 			{
-				auto cell = precalced->getCells()->begin();
+				auto cell = cache["precalced"]->getCells()->begin();
 				for (size_t k = 0; k < 4; k++)
 				{
 					const int &id = cell->id;
@@ -391,7 +416,7 @@ namespace rtmath
 			cerr << endl;
 
 			// Clean up vertex graph
-			m.destroy_ptr(vertexIdMap);
+			//m.destroy_ptr(vertexIdMap);
 
 			results["SurfaceDepth"] = out;
 			results["SurfaceDepthVectors"] = outVectors;
@@ -443,11 +468,15 @@ namespace rtmath
 			size_t numPointCells = 0;
 
 			// Using the precalced loop here
-			for (const auto &cell : *(precalced->getCells()))
+			for (size_t i = 0; i < (size_t)cache["precalced"]->tblDoubles.rows(); ++i)
+			//for (const auto &cell : *(precalced->getCells()))
 			{
+				auto od = cache["precalced"]->tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(i, 0);
+				auto oi = cache["precalced"]->tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(i, 0);
+
 				//if (cell.isSurface())
-				double extVfrac = cell.sa_ext / cell.sa_full; // Exterior volume fraction test
-				if (!cell.sa_full)
+				double extVfrac = od(CachedVoronoi::SA_EXT) / od(CachedVoronoi::SA_FULL); // Exterior volume fraction test
+				if (!od(CachedVoronoi::SA_FULL))
 				{
 					//cerr << "Point cell at " << cell.pos(0) << ", " << cell.pos(1) << ", " << cell.pos(2) << endl;
 					//extVfrac = 0; // Oddly occurs in some of the cells
@@ -456,9 +485,9 @@ namespace rtmath
 				}
 
 				{
-					(*out)(numSurfacePoints, 0) = (float) cell.pos(0);
-					(*out)(numSurfacePoints, 1) = (float) cell.pos(1);
-					(*out)(numSurfacePoints, 2) = (float) cell.pos(2);
+					(*out)(numSurfacePoints, 0) = (float)od(CachedVoronoi::POS_X);
+					(*out)(numSurfacePoints, 1) = (float)od(CachedVoronoi::POS_Y);
+					(*out)(numSurfacePoints, 2) = (float)od(CachedVoronoi::POS_Z);
 					(*out)(numSurfacePoints, 3) = (float) extVfrac; // cell.id; // Initial point id
 					numSurfacePoints++;
 				}
@@ -497,11 +526,19 @@ namespace rtmath
 			
 				// Iterate over the precalced entries and insert only point that touch a boundary
 				size_t numCells = 0;
-				for (const auto &cell : *(precalced->getCells()))
+				for (size_t i = 0; i < (size_t)cache["precalced"]->tblDoubles.rows(); ++i)
+				//for (const auto &cell : *(cache["precalced"]->getCells()))
 				{
-					if (cell.isSurface())
+					auto od = cache["precalced"]->tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(i, 0);
+					auto oi = cache["precalced"]->tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(i, 0);
+
+					//if (cell.isSurface())
+					if (od(CachedVoronoi::SA_EXT))
 					{
-						preVc->put((int)numCells, cell.pos(0), cell.pos(1), cell.pos(2));
+						preVc->put((int)numCells, 
+							(float)od(CachedVoronoi::POS_X), 
+							(float)od(CachedVoronoi::POS_Y), 
+							(float)od(CachedVoronoi::POS_Z));
 						numCells++;
 					}
 				}
@@ -514,7 +551,7 @@ namespace rtmath
 				preVc->setup(*vcSmall);
 
 				// It's optional to use a pool here, since this Voronoi diagram is much smaller than the other.
-				boost::shared_ptr<CachedVoronoi> precalcedSmall(new CachedVoronoi(numCells, vcSmall, mins, maxs));
+				cache["precalcedSmall"] = boost::shared_ptr<CachedVoronoi>(new CachedVoronoi(numCells, vcSmall, mins, maxs));
 
 				using namespace voro;
 				boost::shared_ptr< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > out(
@@ -525,15 +562,21 @@ namespace rtmath
 				size_t numSurfacePoints = 0;
 
 				// Using the precalced loop here
-				for (const auto &cell : *(precalcedSmall->getCells()))
+
+				for (size_t i = 0; i < (size_t)cache["precalcedSmall"]->tblDoubles.rows(); ++i)
+				//for (const auto &cell : *(precalcedSmall->getCells()))
 				{
-					if (cell.isSurface())
+					auto od = cache["precalcedSmall"]->tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(i, 0);
+					auto oi = cache["precalcedSmall"]->tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(i, 0);
+
+					if (od(CachedVoronoi::SA_EXT))
+					//if (cell.isSurface())
 					//double extVfrac = cell.sa_ext / cell.sa_full; // Exterior volume fraction test
 					{
-						(*out)(numSurfacePoints, 0) = (float)cell.pos(0);
-						(*out)(numSurfacePoints, 1) = (float)cell.pos(1);
-						(*out)(numSurfacePoints, 2) = (float)cell.pos(2);
-						(*out)(numSurfacePoints, 3) = (float)cell.id; // Initial point id
+						(*out)(numSurfacePoints, 0) = (float)od(CachedVoronoi::POS_X);
+						(*out)(numSurfacePoints, 1) = (float)od(CachedVoronoi::POS_Y);
+						(*out)(numSurfacePoints, 2) = (float)od(CachedVoronoi::POS_Z);
+						(*out)(numSurfacePoints, 3) = (float)oi(CachedVoronoi::ID); // Initial point id
 						numSurfacePoints++;
 					}
 				}

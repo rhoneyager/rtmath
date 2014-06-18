@@ -74,7 +74,7 @@ namespace rtmath {
 			typedef boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixType;
 			typedef boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixTypeMutable;
 			VoronoiDiagram();
-		private:
+		public:
 			/**
 			* \brief Internal pointer to the Voro++ object
 			*
@@ -86,7 +86,8 @@ namespace rtmath {
 			/// \brief Internal pointer to the internal Voronoi cache
 			/// \todo Move the internal Voro++ object to within here
 			/// \todo Add precalced object serialization
-			mutable boost::shared_ptr<CachedVoronoi> precalced;
+			mutable std::map<std::string, boost::shared_ptr<CachedVoronoi> > cache;
+			//mutable boost::shared_ptr<CachedVoronoi> precalced, precalcedSmall;
 
 			/// The Eigen source object.
 			matrixType src;
@@ -106,6 +107,17 @@ namespace rtmath {
 			/// Forcibly set the hash to a given value (can be used to match to a shape or stats)
 			void setHash(HASH_t hash);
 			HASH_t hash() const;
+
+			/// When calculated
+			std::string ingest_timestamp;
+			/// The system that the calculation was on
+			std::string ingest_hostname;
+			/// The user account that performed the calculation
+			std::string ingest_username;
+			/// The host that performed the calculation
+			std::string hostname;
+			/// Revision of the rtmath code for ingest
+			int ingest_rtmath_version;
 
 			void getResultsTable(std::map<std::string, matrixType> &res) const;
 

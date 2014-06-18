@@ -16,7 +16,6 @@
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
-#include "../rtmath/Voronoi/CachedVoronoiCell.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
 #include "../rtmath/error/error.h"
 
@@ -25,21 +24,30 @@ namespace rtmath
 	namespace Voronoi {
 		CachedVoronoi::~CachedVoronoi() {}
 
+		void CachedVoronoi::resize(size_t n)
+		{
+			tblDoubles.resize(n, NUM_CELL_DEFS_DOUBLES);
+			tblInts.resize(n, NUM_CELL_DEFS_INTS);
+			tblCellNeighs.resize(n, CachedVoronoi_MaxNeighbors::value);
+			tblCellF_verts.resize(n, CachedVoronoi_MaxNeighbors::value);
+			tblCellF_areas.resize(n, CachedVoronoi_MaxNeighbors::value);
+
+			tblCellNeighs.setZero();
+			tblCellF_verts.setZero();
+			tblCellF_areas.setZero();
+
+		}
+
 		CachedVoronoi::CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc, const Eigen::Array3f &mins, const Eigen::Array3f &maxs) :
-			c(nullptr),
 			vc(vc),
-			m(10 * 1024 * numPoints), // 10 kb per point should be enough for point lists + vertices
-			intAllocator(m.get_segment_manager()),
-			doubleAllocator(m.get_segment_manager()),
-			cachedVoronoiCellAllocator(m.get_segment_manager()),
 			sa(0),
 			vol(0),
 			mins(mins),
 			maxs(maxs)
 		{
+			resize(numPoints);
 			if (vc) regenerateCache(numPoints);
 		}
-
 
 		void CachedVoronoi::generateCellMap() const
 		{
@@ -84,22 +92,16 @@ namespace rtmath
 		}
 
 
-		void CachedVoronoi::regenerateCache(size_t numPoints) const
+		void CachedVoronoi::regenerateCache(size_t numPoints)
 		{
 			if (!vc) return;
 			// Iterate over cells and store cell information 
 			// (prevents constant recalculations)
 			using namespace boost::interprocess;
 
-			c = m.find_or_construct<boost::interprocess::vector<CachedVoronoiCell<IntAllocator, DoubleAllocator>,
-				CachedVoronoiCellAllocator> >("cells")(cachedVoronoiCellAllocator);
 			// Cannot just use resize(numPoints) here because the appropriate allocators must be specified.
-			if (c->size() != numPoints)
-				c->resize(numPoints
-				//, CachedVoronoiCell<IntAllocator, DoubleAllocator>()
-				//(m)
-				//(intAllocator, doubleAllocator)
-				);
+			//if (c.size() != numPoints)
+			//	c.resize(numPoints);
 
 			using namespace voro;
 			voronoicell_neighbor n;
@@ -111,19 +113,68 @@ namespace rtmath
 				double r;
 				cl.pos(id, pos(0), pos(1), pos(2), r); // getting id directly into field would be problematic
 
-				auto &ci = c->at(id);
-
-				ci.id = id;
-				ci.r = r;
-				ci.pos = pos;
-
 				if (id % 1000 == 0) std::cerr << id << "\n";
-				ci.calc(n);
 
-				// Set a few fields for convenience
-				vol += ci.vol;
-				sa += ci.sa_ext;
+				auto od = tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(id, 0);
+				auto oi = tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(id, 0);
+
+				// These are found from the iterator...
+				oi(CachedVoronoi::ID) = id;
+				od(CachedVoronoi::RADIUS) = r;
+				od(CachedVoronoi::POS_X) = pos(0);
+				od(CachedVoronoi::POS_Y) = pos(1);
+				od(CachedVoronoi::POS_Z) = pos(2);
+
+				// Get the rest of the parameters
+				calcCell(n, id);
+
+				vol += od(CachedVoronoi::VOLUME);
+				sa += od(CachedVoronoi::SA_EXT);
+
 			} while (cl.inc());
+		}
+
+
+		void CachedVoronoi::calcCell(voro::voronoicell_neighbor &vc, size_t _row)
+		{
+			auto od = tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(_row, 0);
+			auto oi = tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(_row, 0);
+
+			Eigen::Matrix3d crds;
+			// Need to copy vectors due to potentially different allocators
+			std::vector<int> lneigh, lf_vert;
+			std::vector<double> lf_areas;
+			vc.neighbors(lneigh);
+			vc.face_vertices(lf_vert);
+			//vc.vertices(crds(0),crds(1),crds(2),v);
+			vc.face_areas(lf_areas);
+
+			const size_t cArraySize = CachedVoronoi_MaxNeighbors::value;
+
+			auto neigh = tblCellNeighs.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
+			auto f_vert = tblCellF_verts.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
+			auto f_areas = tblCellF_areas.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
+
+			for (size_t i = 0; i < std::min(cArraySize, lneigh.size()); ++i)
+				neigh(i) = lneigh[i];
+			for (size_t i = 0; i < std::min(cArraySize, lf_vert.size()); ++i)
+				f_vert(i) = lf_vert[i];
+			for (size_t i = 0; i < std::min(cArraySize, lf_areas.size()); ++i)
+				f_areas(i) = lf_areas[i];
+
+			od(CachedVoronoi::VOLUME) = vc.volume();
+			od(CachedVoronoi::SA_FULL) = vc.surface_area();
+			oi(CachedVoronoi::NFACES) = vc.number_of_faces();
+			oi(CachedVoronoi::NEDGES) = vc.number_of_edges();
+			vc.centroid(od(CachedVoronoi::CENTROID_X), od(CachedVoronoi::CENTROID_Y), od(CachedVoronoi::CENTROID_Z));
+
+			od(CachedVoronoi::MAX_RADIUS_SQUARED) = vc.max_radius_squared();
+			od(CachedVoronoi::TOTAL_EDGE_DISTANCE) = vc.total_edge_distance();
+
+			od(CachedVoronoi::SA_EXT) = 0;
+			for (int i = 0; i < lneigh.size(); ++i)
+				if (lneigh[i] <= 0)
+					od(CachedVoronoi::SA_EXT) += f_areas[i];
 		}
 
 	}

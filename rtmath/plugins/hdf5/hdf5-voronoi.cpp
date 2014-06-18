@@ -14,8 +14,8 @@
 #include <boost/filesystem.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
-//#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
+#include "../../rtmath/rtmath/Voronoi/CachedVoronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
@@ -32,33 +32,100 @@ namespace rtmath {
 
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> write_hdf5_voro(std::shared_ptr<H5::Group> base, 
-				const rtmath::Voronoi::VoronoiDiagram *v)
+				std::shared_ptr<rtmath::registry::IO_options> opts,
+				const rtmath::Voronoi::VoronoiDiagram *s)
 			{
 				using std::shared_ptr;
+				using std::string;
 				using namespace H5;
 				using namespace rtmath::Voronoi;
 
+				//shared_ptr<Group> base(new Group(g->createGroup("Voronoi")));
 
-				shared_ptr<Group> shpraw = base;
+				addAttr<string, Group>(base, "ingest_timestamp", s->ingest_timestamp);
+				addAttr<string, Group>(base, "ingest_hostname", s->ingest_hostname);
+				addAttr<string, Group>(base, "ingest_username", s->ingest_username); // Not all ingests have this...
+				addAttr<int, Group>(base, "ingest_rtmath_version", s->ingest_rtmath_version);
+				addAttr<string, Group>(base, "hostname", s->hostname);
 
-				int fillvalue = -1;   /* Fill value for the dataset */
-				DSetCreatPropList plist;
-				plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
+				addAttr<uint64_t, Group>(base, "Hash_lower", s->hash().lower);
+				addAttr<uint64_t, Group>(base, "Hash_upper", s->hash().upper);
+				addAttr<size_t, Group>(base, "Num_Points", s->numPoints());
 
-				// Write out all of the generated diagrams
+				Eigen::Array3f mins, maxs, span;
+				s->getBounds(mins, maxs, span);
+				addAttrEigen<Eigen::Array3f, Group>(base, "mins", mins);
+				addAttrEigen<Eigen::Array3f, Group>(base, "maxs", maxs);
+				addAttrEigen<Eigen::Array3f, Group>(base, "span", span);
+
+				addAttr<double, Group>(base, "surfaceArea", s->surfaceArea());
+				addAttr<double, Group>(base, "volume", s->volume());
+
+				// Enable compression
+				hsize_t chunk_colwise[2] = { (hsize_t)s->numPoints(), 1 };
+				hsize_t chunk_cell_doubles[2] = { (hsize_t)s->numPoints(), CachedVoronoi::NUM_CELL_DEFS_DOUBLES };
+				hsize_t chunk_cell_ints[2] = { (hsize_t)s->numPoints(), CachedVoronoi::NUM_CELL_DEFS_INTS };
+				hsize_t chunk_cell_CachedVoronoi_MaxNeighbors_VAL[2] = { (hsize_t)s->numPoints(), CachedVoronoi_MaxNeighbors_VAL };
+				auto plistCol = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plistCol->setChunk(2, chunk_colwise);
+				auto plistDoubles = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plistDoubles->setChunk(2, chunk_cell_doubles);
+				auto plistInts = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plistInts->setChunk(2, chunk_cell_ints);
+				auto plistArray = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plistArray->setChunk(2, chunk_cell_CachedVoronoi_MaxNeighbors_VAL);
+				//int fillvalue = -1;
+				//plistCol->setFillValue(PredType::NATIVE_INT, &fillvalue);
+#if COMPRESS_ZLIB
+				plistCol->setDeflate(6);
+				plistDoubles->setDeflate(6);
+				plistInts->setDeflate(6);
+				plistArray->setDeflate(6);
+#endif
+
+				// Store the source matrix
+				addDatasetEigen(base, "Source", *(s->src), plistCol);
+
+				// Store the precalced objects
+				shared_ptr<Group> grpcache(new Group(base->createGroup("Voronoi_Cache")));
+				for (const auto& e : s->cache)
+				{
+					shared_ptr<Group> grp(new Group(grpcache->createGroup(e.first)));
+					// Store the cell map
+					auto cellmap = e.second->getCellMap();
+					addDatasetEigen(grp, "Cell_Map", *cellmap, plistCol);
+
+					addDatasetEigen(grp, "tblDoubles", e.second->tblDoubles, plistDoubles);
+					addDatasetEigen(grp, "tblInts", e.second->tblInts, plistInts);
+					addDatasetEigen(grp, "tblCellNeighs", e.second->tblCellNeighs, plistArray);
+					addDatasetEigen(grp, "tblCellF_verts", e.second->tblCellF_verts, plistArray);
+					addDatasetEigen(grp, "tblCellF_areas", e.second->tblCellF_areas, plistArray);
+					addAttrEigen<Eigen::Array3f, Group>(grp, "mins", e.second->mins);
+					addAttrEigen<Eigen::Array3f, Group>(grp, "maxs", e.second->maxs);
+					addAttrEigen<Eigen::Array3i, Group>(grp, "span", e.second->span);
+
+					addAttr<double, Group>(grp, "surfaceArea", e.second->surfaceArea());
+					addAttr<double, Group>(grp, "volume", e.second->volume());
+				}
+
+				// Store the results tables
 				std::map<std::string, VoronoiDiagram::matrixType> results;
-				v->getResultsTable(results);
+				s->getResultsTable(results);
+				shared_ptr<Group> grpres(new Group(base->createGroup("Results")));
+				// Write out all of the generated diagrams
 				for (const auto &res : results)
 				{
 					hsize_t fDims[] = { (hsize_t) res.second->rows(), (hsize_t) res.second->cols() };
 					DataSpace fSpace(2, fDims);
-					
-					shared_ptr<DataSet> pts(new DataSet(shpraw->createDataSet(res.first,
-						PredType::NATIVE_FLOAT, fSpace, plist)));
-					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> data = res.second->cast<float>();
-					pts->write(data.data(), PredType::NATIVE_FLOAT);
+					auto plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+					plist->setChunk(2, fDims);
+#if COMPRESS_ZLIB
+					plist->setDeflate(6);
+#endif
+					addDatasetEigen(grpres, res.first.c_str(), *(res.second.get()), plist);
 				}
 
+				/*
 				// Write out all of the cell information
 				shared_ptr<Group> gCells = openOrCreateGroup(shpraw, "Cells");
 
@@ -70,19 +137,9 @@ namespace rtmath {
 				shared_ptr<Group> gDom = openOrCreateGroup(gCells, "Domains");
 				shared_ptr<Group> gSfc = openOrCreateGroup(gDom, "Surface");
 				shared_ptr<Group> gInt = openOrCreateGroup(gDom, "Interior");
-
-				/* Cell table contains information on the:
-				 * - id
-				 * - surface area
-				 * - exterior surface area
-				 * - surface fraction
-				 * - centroid
-				 * - anchor point
-				 * - integer points within the cell
-				 * - number of integer points within the cell
 				*/
 
-				return shpraw;
+				return base;
 			}
 
 
@@ -103,7 +160,7 @@ namespace rtmath {
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key");
+			std::string key = opts->getVal<std::string>("key", "");
 
 			using std::shared_ptr;
 			using namespace H5;
@@ -126,12 +183,7 @@ namespace rtmath {
 			// Group "Hashed"/shp->hash/"Voronoi". If it exists, overwrite it. There should be no hard links here.
 			shared_ptr<Group> grpVoro = openOrCreateGroup(grpShape, "Voronoi");
 
-			std::string skey(key);
-			if (!skey.size()) skey = "Unknown";
-			/// \note The unlink operation does not really free the space..... Should warn the user.
-			if (groupExists(grpVoro, skey.c_str())) return h; //grpShape->unlink("Shape");
-			shared_ptr<Group> grpVoroObj = openOrCreateGroup(grpVoro, skey.c_str());
-			shared_ptr<Group> newbase = write_hdf5_voro(grpVoroObj, v);
+			write_hdf5_voro(grpVoro, opts, v);
 
 			return h; // Pass back the handle
 		}

@@ -118,16 +118,14 @@ source_group("Resource Files" FILES ${resource-files})
 
 set(rtmath_voronoi-files
 	rtmath/Voronoi/CachedVoronoi.h
-	rtmath/Voronoi/CachedVoronoiCell.h
 	rtmath/Voronoi/Voronoi.h
 	rtmath/ddscat/hulls.h
 	src/CachedVoronoi.cpp
-	src/CachedVoronoiCell.cpp
 	src/hulls.cpp
 	src/Stdafx-voronoi.cpp
 	src/Stdafx-voronoi.h
 	src/Voronoi.cpp
-	src/Voronoi_Serialization.cpp
+	#src/Voronoi_Serialization.cpp
 	)
 
 set(rtmath_ddscat_base-files
