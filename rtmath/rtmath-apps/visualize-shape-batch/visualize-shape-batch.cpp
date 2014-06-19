@@ -119,7 +119,22 @@ int main(int argc, char** argv)
 			{
 				path ps = pi / "shape.dat";
 				if (exists(ps)) vinputs.push_back(ps.string());
-				else continue;
+				//else continue;
+				else {
+					// Iterate over directory (one level) and pull all hdf5 files
+					using namespace boost::filesystem;
+					vector<path> cands;
+					copy(directory_iterator(pi),
+						directory_iterator(), back_inserter(cands));
+					for (const auto &f : cands)
+					{
+						if (is_directory(f)) continue;
+						std::string unc, meth;
+						Ryan_Serialization::uncompressed_name(f.string(), unc, meth);
+						if (path(unc).extension().string() == ".hdf5")
+							vinputs.push_back(f.string());
+					}
+				}
 				//else throw rtmath::debug::xPathExistsWrongType(it->c_str());
 			}
 			else vinputs.push_back(*it);
@@ -130,8 +145,22 @@ int main(int argc, char** argv)
 		{
 			path pi(*it);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
-			if (is_directory(pi)) continue;
-			vdinputs.push_back(*it);
+			if (is_directory(pi))
+			{
+				// Iterate over directory (one level) and pull all hdf5 files
+				using namespace boost::filesystem;
+				vector<path> cands;
+				copy(directory_iterator(pi),
+					directory_iterator(), back_inserter(cands));
+				for (const auto &f : cands)
+				{
+					if (is_directory(f)) continue;
+					std::string unc, meth;
+					Ryan_Serialization::uncompressed_name(f.string(), unc, meth);
+					if (path(unc).extension().string() == ".hdf5")
+						vdinputs.push_back(f.string());
+				}
+			} else vdinputs.push_back(*it);
 		}
 
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
