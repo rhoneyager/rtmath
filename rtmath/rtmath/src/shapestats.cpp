@@ -188,11 +188,11 @@ namespace rtmath {
 				max_distance = cvHull.maxDiameter();
 				
 				// Calculate stats on max aspect ratio
-				{
+				/*{
 					double beta, theta, phi;
 					cvHull.principalAxes(beta, theta, phi);
 					_rotMaxAR = calcStatsRot(beta, theta, phi);
-				}
+				}*/
 
 				auto voroHullCalc = [&]()
 				{
@@ -224,6 +224,7 @@ namespace rtmath {
 				Scircum_sphere.aeff_SA = max_distance / 2.0;
 				Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V,3.0f) / 3.0f;
 				Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
+				Scircum_sphere.calc(this);
 
 				_currVersion = _maxVersion;
 
@@ -240,13 +241,13 @@ namespace rtmath {
 					Sellipsoid_max.V *= pdr->max(0,1) - pdr->min(0,1);
 					Sellipsoid_max.V *= pdr->max(0,2) - pdr->min(0,2);
 
-					Sellipsoid_rms.V = 4.0f * boost::math::constants::pi<float>() / 3.0f;
-					Sellipsoid_rms.V *= pdr->max(0,0) - pdr->min(0,0);
-					Sellipsoid_rms.V *= pdr->max(0,1) - pdr->min(0,1);
-					Sellipsoid_rms.V *= pdr->max(0,2) - pdr->min(0,2);
+					//Sellipsoid_rms.V = 4.0f * boost::math::constants::pi<float>() / 3.0f;
+					//Sellipsoid_rms.V *= pdr->max(0,0) - pdr->min(0,0);
+					//Sellipsoid_rms.V *= pdr->max(0,1) - pdr->min(0,1);
+					//Sellipsoid_rms.V *= pdr->max(0,2) - pdr->min(0,2);
 
 					Sellipsoid_max.calc(this);
-					Sellipsoid_rms.calc(this);
+					//Sellipsoid_rms.calc(this);
 				}
 
 
@@ -255,7 +256,7 @@ namespace rtmath {
 				{
 					calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
 				}
-				calcOriMinPE();
+				//calcOriMinPE();
 			}
 
 

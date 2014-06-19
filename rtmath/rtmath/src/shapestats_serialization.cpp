@@ -31,6 +31,14 @@ namespace rtmath
 			_currVersion = version;
 			ar & boost::serialization::make_nvp("shapefile", _shp);
 
+			if (version >= 5)
+			{
+				ar & boost::serialization::make_nvp("ingest_timestamp", ingest_timestamp);
+				ar & boost::serialization::make_nvp("ingest_hostname", ingest_hostname);
+				ar & boost::serialization::make_nvp("ingest_username", ingest_username);
+				ar & boost::serialization::make_nvp("ingest_rtmath_version", ingest_rtmath_version);
+			}
+
 			ar & boost::serialization::make_nvp("beta", beta);
 			ar & boost::serialization::make_nvp("theta", theta);
 			ar & boost::serialization::make_nvp("phi", phi);

@@ -108,6 +108,15 @@ namespace rtmath {
 				/// Calculate stats for each rotation to match a ddscat run's rotations
 				void calcStatsRot(const rtmath::ddscat::rotations&) const;
 
+				/// When the run was imported
+				std::string ingest_timestamp;
+				/// The system that the run was imported on
+				std::string ingest_hostname;
+				/// The user account that imported the run
+				std::string ingest_username;
+				/// Revision of the rtmath code for ingest
+				int ingest_rtmath_version;
+
 				/// rot is the effective rotation designated by the choice of a1 and a2
 				Eigen::Matrix3f rot, invrot;
 				double beta, theta, phi;
@@ -131,8 +140,8 @@ namespace rtmath {
 					void serialize(Archive & ar, const unsigned int version);
 				};
 
-				volumetric Scircum_sphere, Sconvex_hull, 
-					SVoronoi_hull, Sellipsoid_max, Sellipsoid_rms;
+				volumetric Scircum_sphere, Sconvex_hull,
+					SVoronoi_hull, Sellipsoid_max; // , Sellipsoid_rms;
 
 				/// Maximum distance between any two points
 				float max_distance;
@@ -249,6 +258,6 @@ namespace rtmath {
 	}
 }
 
-#define SHAPESTATS_VERSION 4
+#define SHAPESTATS_VERSION 5
 BOOST_CLASS_VERSION(::rtmath::ddscat::stats::shapeFileStatsBase, SHAPESTATS_VERSION);
 

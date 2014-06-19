@@ -116,9 +116,26 @@ namespace rtmath {
 
 				shared_ptr<Group> statsraw(new Group(base->createGroup("Stats")));
 
+				auto make_plist = [](size_t rows, size_t cols)
+				{
+					hsize_t chunk[2] = { (hsize_t)rows, (hsize_t)cols };
+					auto plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+					plist->setChunk(2, chunk);
+#if COMPRESS_ZLIB
+					plist->setDeflate(6);
+#endif
+					return plist;
+				};
+
 				int fillvalue = -1;   /* Fill value for the dataset */
 				DSetCreatPropList plist;
 				plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
+
+				using std::string;
+				addAttr<string, Group>(statsraw, "ingest_timestamp", s->ingest_timestamp);
+				addAttr<string, Group>(statsraw, "ingest_hostname", s->ingest_hostname);
+				addAttr<string, Group>(statsraw, "ingest_username", s->ingest_username); // Not all ingests have this...
+				addAttr<int, Group>(statsraw, "ingest_rtmath_version", s->ingest_rtmath_version);
 
 				// The full hash
 				addAttr<uint64_t, Group>(statsraw, "Hash_Lower", s->_shp->hash().lower);
@@ -141,12 +158,57 @@ namespace rtmath {
 				addAttr<double, Group>(statsraw, "phi", s->phi);
 
 				// Volumetric data
-				shared_ptr<Group> gV(new Group(statsraw->createGroup("Volumetric")));
-				write_hdf5_statsvolumetric(gV, "Circum_sphere", &(s->Scircum_sphere));
-				write_hdf5_statsvolumetric(gV, "Convex_hull", &(s->Sconvex_hull));
-				write_hdf5_statsvolumetric(gV, "Voronoi_hull", &(s->SVoronoi_hull));
-				write_hdf5_statsvolumetric(gV, "Ellipsoid_max", &(s->Sellipsoid_max));
-				write_hdf5_statsvolumetric(gV, "Ellipsoid_rms", &(s->Sellipsoid_rms));
+				{
+					struct vdata {
+						const char* name;
+						float V, SA, aeff_SA, aeff_V, f;
+					};
+
+					const char* names[4] = { "Circum_Sphere", "Convex_Hull", "Voronoi_Hull", "Ellipsoid_Max" };
+
+					std::array<vdata, 4> data;
+					data[0].name = names[0]; data[0].V = s->Scircum_sphere.V; data[0].SA = s->Scircum_sphere.SA; 
+					data[0].aeff_V = s->Scircum_sphere.aeff_V; data[0].aeff_SA = s->Scircum_sphere.aeff_SA; data[0].f = s->Scircum_sphere.f;
+
+					data[1].name = names[1]; data[1].V = s->Sconvex_hull.V; data[1].SA = s->Sconvex_hull.SA;
+					data[1].aeff_V = s->Sconvex_hull.aeff_V; data[1].aeff_SA = s->Sconvex_hull.aeff_SA; data[1].f = s->Sconvex_hull.f;
+
+					data[2].name = names[2]; data[2].V = s->SVoronoi_hull.V; data[2].SA = s->SVoronoi_hull.SA;
+					data[2].aeff_V = s->SVoronoi_hull.aeff_V; data[2].aeff_SA = s->SVoronoi_hull.aeff_SA; data[2].f = s->SVoronoi_hull.f;
+
+					data[3].name = names[3]; data[3].V = s->Sellipsoid_max.V; data[3].SA = s->Sellipsoid_max.SA;
+					data[3].aeff_V = s->Sellipsoid_max.aeff_V; data[3].aeff_SA = s->Sellipsoid_max.aeff_SA; data[3].f = s->Sellipsoid_max.f;
+
+					//data[4].name = names[4]; data[4].V = s->Sellipsoid_rms.V; data[4].SA = s->Sellipsoid_rms.SA;
+					//data[4].aeff_V = s->Sellipsoid_rms.aeff_V; data[4].aeff_SA = s->Sellipsoid_rms.aeff_SA; data[4].f = s->Sellipsoid_rms.f;
+
+					hsize_t dim[1] = { data.size() };
+					DataSpace space(1, dim);
+					CompType sType(sizeof(vdata));
+					H5::StrType strtype(0, H5T_VARIABLE);
+
+					sType.insertMember("Method", HOFFSET(vdata, name), strtype);
+					sType.insertMember("V", HOFFSET(vdata, V), PredType::NATIVE_FLOAT);
+					sType.insertMember("SA", HOFFSET(vdata, SA), PredType::NATIVE_FLOAT);
+					sType.insertMember("aeff_V", HOFFSET(vdata, aeff_V), PredType::NATIVE_FLOAT);
+					sType.insertMember("aeff_SA", HOFFSET(vdata, aeff_SA), PredType::NATIVE_FLOAT);
+					sType.insertMember("f", HOFFSET(vdata, f), PredType::NATIVE_FLOAT);
+
+
+					std::shared_ptr<DataSet> gV(new DataSet(statsraw->createDataSet("Volumetric", sType, space)));
+					gV->write(data.data(), sType);
+
+					//std::shared_ptr<H5::AtomType> strtype(new H5::StrType(0, H5T_VARIABLE));
+					
+					/*
+					shared_ptr<Group> gV(new Group(statsraw->createGroup("Volumetric")));
+					write_hdf5_statsvolumetric(gV, "Circum_sphere", &(s->Scircum_sphere));
+					write_hdf5_statsvolumetric(gV, "Convex_hull", &(s->Sconvex_hull));
+					write_hdf5_statsvolumetric(gV, "Voronoi_hull", &(s->SVoronoi_hull));
+					write_hdf5_statsvolumetric(gV, "Ellipsoid_max", &(s->Sellipsoid_max));
+					write_hdf5_statsvolumetric(gV, "Ellipsoid_rms", &(s->Sellipsoid_rms));
+					*/
+				}
 
 				// Rotations
 				shared_ptr<Group> grpRotations(new Group(statsraw->createGroup("Rotations")));
@@ -180,6 +242,7 @@ namespace rtmath {
 				addDatasetEigen<Eigen::MatrixXf, Group>(grpRotations, "Moment_Inertia", mi);
 
 				// And make a soft link to the relevent raw shape information
+				/*
 				std::string pShape;
 				{
 					std::ostringstream o;
@@ -187,43 +250,11 @@ namespace rtmath {
 					pShape = o.str();
 				}
 				statsraw->link(H5L_TYPE_SOFT, pShape, "Shape");
+				*/
 
 				return statsraw;
 			}
 
-
-			/*
-			/// Routine writes a full, isolated shapefile entry
-			void write_hdf5_shapestats(const char* filename,
-			const rtmath::ddscat::stats::shapeFileStats *s)
-			{
-			try {
-			using std::string;
-			using std::ofstream;
-			using std::shared_ptr;
-			using namespace H5;
-
-			// Turn off the auto-printing when failure occurs so that we can
-			// handle the errors appropriately
-			Exception::dontPrint();
-
-			shared_ptr<H5File> file(new H5File(filename, H5F_ACC_TRUNC ));
-			shared_ptr<Group> grpHashes(new Group(file->createGroup("Hashed")));
-			shared_ptr<Group> shpgroup(new Group(grpHashes->createGroup(s->_shp->hash().string().c_str())));
-			shared_ptr<Group> statsbase = write_hdf5_statsrawdata(shpgroup, s);
-			shared_ptr<Group> shapebase = write_hdf5_shaperawdata(shpgroup, s->_shp.get());
-
-
-			statsbase->link(H5L_TYPE_HARD, ".", "/Stats");
-			shapebase->link(H5L_TYPE_HARD, ".", "/Shape");
-			//file->link(H5L_TYPE_SOFT, newbase->, "Shape");
-			} catch (std::exception &e)
-			{
-			std::cerr << e.what() << "\n";
-			throw e;
-			}
-			}
-			*/
 		}
 	}
 
@@ -240,7 +271,7 @@ namespace rtmath {
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();
-			std::string key = opts->getVal<std::string>("key");
+			std::string key = opts->getVal<std::string>("key", "");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
@@ -265,7 +296,6 @@ namespace rtmath {
 
 			/// \todo Modify to also support external symlinks
 			shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
-			shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 
 			return h; // Pass back the handle
 		}

@@ -4,9 +4,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <limits>
 #include <Eigen/Dense>
 
+#include <Ryan_Debug/debug.h>
 #include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
@@ -88,7 +91,7 @@ namespace rtmath {
 
 				aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()), 1.f / 3.f);
 				aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()), 0.5);
-				f = V / s->V_cell_const;
+				f = s->V_dipoles_const / V;
 
 
 				auto fCheck = [](float &val)
@@ -110,7 +113,7 @@ namespace rtmath {
 
 				aeff_V = pow(3.0 * V / (4.0f * boost::math::constants::pi<float>()), 1.f / 3.f);
 				aeff_SA = pow(SA / (4.0f * boost::math::constants::pi<float>()), 0.5);
-				f = s->V_cell_const / V;
+				f = s->V_dipoles_const / V;
 
 
 				auto fCheck = [](float &val)
@@ -136,6 +139,7 @@ namespace rtmath {
 				}
 			}
 
+			/// \todo Actually do minimization routine here
 			shapeFileStatsBase::rotPtr shapeFileStatsBase::calcOriMinPE() const
 			{
 				if (_rotMinPE) return _rotMinPE;
@@ -153,6 +157,7 @@ namespace rtmath {
 				return _rotMinPE;
 			}
 
+			/// \todo Fix max AR calculation
 			shapeFileStatsBase::rotPtr shapeFileStatsBase::calcOriMaxAR() const
 			{
 				/// Calculated as part of basic stats calculation (tied in with 
@@ -165,6 +170,14 @@ namespace rtmath {
 				::rtmath::io::Serialization::implementsSerialization<
 					shapeFileStats, shapeFileStats_IO_output_registry,
 					shapeFileStats_IO_input_registry, shapeFileStats_serialization>::set_sname("rtmath::ddscat::stats::shapeFileStats");
+
+				ingest_hostname = Ryan_Debug::getHostname();
+				ingest_username = Ryan_Debug::getUsername();
+				using namespace boost::posix_time;
+				using namespace boost::gregorian;
+				ptime now = second_clock::local_time();
+				ingest_timestamp = to_iso_string(now);
+				ingest_rtmath_version = rtmath::debug::rev();
 			}
 
 			bool shapeFileStats::needsUpgrade() const
@@ -353,7 +366,7 @@ namespace rtmath {
 				std::shared_ptr<registry::IOhandler> sh;
 				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-				if (hashStore::findHashObj(hash, "stats.hdf5", sh, opts))
+				if (hashStore::findHashObj(hash, "stats-r1.hdf5", sh, opts))
 				{
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats);
 					res->readMulti(sh, opts);
@@ -467,7 +480,7 @@ namespace rtmath {
 				std::shared_ptr<registry::IO_options> opts;
 
 				// Only store hash if a storage mechanism can be found
-				if (hashStore::storeHash(_shp->_localhash.string(), "stats.hdf5", sh, opts))
+				if (hashStore::storeHash(_shp->_localhash.string(), "stats-r1.hdf5", sh, opts))
 				{
 					if (!Ryan_Serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);
