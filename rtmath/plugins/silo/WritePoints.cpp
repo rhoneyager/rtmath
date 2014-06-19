@@ -70,7 +70,9 @@ namespace rtmath {
 			{
 				df = DBCreate(filename, DB_CLOBBER, DB_LOCAL,
 					desc, // Optional string describing file
-					DB_PDB);
+					//DB_HDF5
+					DB_PDB
+					);
 				assert(df);
 			}
 

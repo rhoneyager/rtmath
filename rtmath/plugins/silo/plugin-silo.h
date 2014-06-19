@@ -15,7 +15,7 @@
 namespace rtmath {
 	namespace ddscat {
 		class ddOutput;
-		class ddOutputSingle;
+		//class ddOutputSingle;
 		class ddScattMatrix;
 		namespace shapefile { class shapefile; }
 		namespace stats { class shapeFileStats; }

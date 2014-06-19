@@ -54,6 +54,7 @@ int main(int argc, char** argv)
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("hash-voronoi", "Store standard Voronoi diagram")
+			("store-shape", "Store standard shape data in output")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -99,6 +100,9 @@ int main(int argc, char** argv)
 		bool doExport = false;
 		std::string exportType, exportFilename;
 		//if (vm.count("separate-outputs")) sepOutputs = true;
+
+		bool storeShape = false;
+		if (vm.count("store-shape")) storeShape = true;
 
 		string output; 
 		
@@ -226,6 +230,14 @@ int main(int argc, char** argv)
 			if (doExport)
 				exportHandle = vd->writeMulti(exportHandle, optsExport);
 			//	exportHandle = sstats.writeMulti(exportHandle, optsExport);
+
+			if (storeShape)
+			{
+				/// \todo Add an in-memory cache to hash.cpp and hash.h
+				auto shp = shapefile::shapefile::loadHash(vd->hash().string());
+				if (output.size())
+					handle = shp->writeMulti(handle, opts);
+			}
 
 			//Stats.push_back(std::move(sstats));
 		}

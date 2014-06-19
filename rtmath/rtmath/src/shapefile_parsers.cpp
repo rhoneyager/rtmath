@@ -292,6 +292,7 @@ namespace rtmath
 
 				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
 				{
+					opts->setVal<std::string>("key", hash);
 					res = boost::shared_ptr<shapefile>(new shapefile);
 					res->readMulti(sh, opts);
 				}

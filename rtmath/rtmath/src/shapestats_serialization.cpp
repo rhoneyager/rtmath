@@ -59,7 +59,8 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("Sconvex_hull", Sconvex_hull);
 			ar & boost::serialization::make_nvp("SVoronoi_hull", SVoronoi_hull);
 			ar & boost::serialization::make_nvp("Sellipsoid_max", Sellipsoid_max);
-			ar & boost::serialization::make_nvp("Sellipsoid_rms", Sellipsoid_rms);
+			
+			//ar & boost::serialization::make_nvp("Sellipsoid_rms", Sellipsoid_rms);
 
 
 			ar & boost::serialization::make_nvp("Rotation_Dependent", rotations);

@@ -73,11 +73,11 @@ void dllEntry()
 	genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile, 
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
 
-	genAndRegisterIOregistry_writer<::rtmath::ddscat::ddOutput, 
-		rtmath::ddscat::ddOutput_IO_output_registry>("silo",PLUGINID);
+	//genAndRegisterIOregistry_writer<::rtmath::ddscat::ddOutput, 
+	//	rtmath::ddscat::ddOutput_IO_output_registry>("silo",PLUGINID);
 
-	genAndRegisterIOregistry_writer<::rtmath::ddscat::stats::shapeFileStats, 
-		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("silo",PLUGINID);
+	//genAndRegisterIOregistry_writer<::rtmath::ddscat::stats::shapeFileStats, 
+	//	rtmath::ddscat::stats::shapeFileStats_IO_output_registry>("silo",PLUGINID);
 
 	genAndRegisterIOregistry_writer<::rtmath::Voronoi::VoronoiDiagram,
 		rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);

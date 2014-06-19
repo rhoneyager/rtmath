@@ -13,9 +13,6 @@
 #include <Eigen/Dense>
 #include <tuple>
 
-#define DB_USE_MODERN_DTPTR
-#include <silo.h>
-
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -24,6 +21,9 @@
 
 #include "plugin-silo.h"
 #include "WritePoints.h"
+
+#define DB_USE_MODERN_DTPTR
+#include <silo.h>
 
 
 namespace rtmath {

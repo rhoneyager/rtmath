@@ -105,6 +105,7 @@ namespace rtmath {
 		}
 
 
+		/*
 		shared_ptr<IOhandler>
 			write_file_type_multi
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
@@ -161,7 +162,7 @@ namespace rtmath {
 
 				return h; // Pass back the handle
 		}
-
+		*/
 
 	}
 }
