@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 			else vinputs.push_back(*it);
 		}
 
-		std::shared_ptr<registry::IOhandler> handle, exportHandle;
+		
 
 		
 		using std::vector;
@@ -163,6 +163,7 @@ int main(int argc, char** argv)
 					auto opts = registry::IO_options::generate();
 					opts->filename(filename);
 
+					std::shared_ptr<registry::IOhandler> handle;
 					handle = vd->writeMulti(handle, opts);
 					//handle = vd.second->writeMulti(handle, opts);
 
