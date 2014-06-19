@@ -62,6 +62,7 @@ addappdir(stats ON)
 #addappdir(tmatrix-optimize-with-ddscat OFF)
 #addappdir(tmatrix-slice ON)
 addappdir(visualize-orientation-weights OFF)
+addappdir(visualize-shape-batch OFF)
 addappdir(voronoi ON)
 
 #add_subdirectory (da)
