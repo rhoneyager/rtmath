@@ -74,11 +74,68 @@ namespace rtmath {
 				indexName.append("Point_IDs");
 				auto pm = h->file->createPointMesh<float>(meshname.c_str(), lPts, axislabels, axisunits);
 
+				// Create a 3d mesh, also for the dielectrics
+				Eigen::Array3i mins = s->mins.cast<int>(), maxs = s->maxs.cast<int>();
+				// Doing this so that the ends of the shape do not get chopped off
+				mins -= 2 * Eigen::Array3i::Ones(); maxs += 2 * Eigen::Array3i::Ones();
+				Eigen::Array3i span = maxs - mins + 1;
+				int meshSize = span.prod();
+				auto getCoords = [&](int i)->Eigen::Array3i
+				{
+					Eigen::Array3i crd;
+					int x, y, z;
+					// Iterate first over z, then y, then x
+					x = i / (span(0)*span(1));
+					//crd(1) = (i % (span(2)*span(1))) / span(2);
+					y = (i - (x*span(0)*span(1))) / span(0); // it's not (i - i), as x involves an INTEGER division!
+					z = i % span(0);
+					crd(2) = x; crd(1) = y; crd(0) = z;
+					crd += mins;
+					//x = crd(0); y = crd(1); z = crd(2);
+					return crd;
+				};
+				auto getIndex = [&](Eigen::Array3i i) -> int
+				{
+					int res = 0;
+					i -= mins;
+					res = span(0) * span(1) * i(2);
+					res += span(0) * i(1);
+					res += i(0);
+					//int x = i(2), y = i(1), z = i(0);
+					//res = z + (span(2) * (y + (span(1)*x)));
+					return res;
+				};
+				Eigen::MatrixXf mDiels(meshSize, 1);
+				mDiels.setZero();
+				for (size_t i = 0; i < (size_t)s->latticePts.rows(); ++i)
+				{
+					Eigen::Array3i a; a(0) = (int)s->latticePts(i, 0);
+					a(1) = (int)s->latticePts(i, 1); a(2) = (int)s->latticePts(i, 2);
+					int index = getIndex(a);
+					mDiels(index, 0) = (float) s->latticePtsRi(i, 0);
+				}
+				Eigen::VectorXf xs(span(0), 1), ys(span(1), 1), zs(span(2), 1);
+				xs.setLinSpaced(s->mins(0), s->maxs(0));
+				ys.setLinSpaced(s->mins(1), s->maxs(1));
+				zs.setLinSpaced(s->mins(2), s->maxs(2));
+
+				int dimsizes[] = { span(0), span(1), span(2) };
+				const float *dims[] = { xs.data(), ys.data(), zs.data() };
+				auto mesh = h->file->createRectilinearMesh<float>(
+					"Shp_Mesh",
+					3, dims, dimsizes,
+					axislabels, axisunits);
+				// Write the array of zone ids
+				mesh->writeData<float>("Shp_Mesh_Dielectrics", mDiels.data(), "None");
+
+
+				// Write the other matrices
 				Eigen::MatrixXi lRi = s->latticePtsRi.col(0).cast<int>();
 				pm->writeData<int>(dielsName.c_str(), lRi.data(), "Dimensionless");
 				Eigen::MatrixXi lIndices = s->latticeIndex.cast<int>();
 				pm->writeData<int>(indexName.c_str(), lIndices.data(), "Dimensionless");
 
+				// Write the extra matrices
 				for (const auto &extras : s->latticeExtras)
 				{
 					std::string varname = meshname;

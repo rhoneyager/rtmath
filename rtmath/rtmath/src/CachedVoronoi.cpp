@@ -56,6 +56,13 @@ namespace rtmath
 			if (cellmap.rows() > 0) return;
 			// Defining the span as an inclusive bound
 			Eigen::Array3i mins = this->mins.cast<int>(), maxs = this->maxs.cast<int>();
+			// so that the ends of the shape do not get chopped off...
+			// NOTE: if changed here, need to update silo-voronoi.cpp with it also
+			// NOTE: no need to do this, as VisIt and ParaView do not support coloring on an existing contour, 
+			//       so the meshes can differ.
+			// NOTE: if changed, will break existing stored voronoi data :(
+			//mins -= 2 * Eigen::Array3i::Ones(); maxs += 2 * Eigen::Array3i::Ones();
+
 			span = maxs - mins + 1;
 			int numBoxes = span.prod();
 			cellmap.resize(numBoxes, 4);
@@ -67,7 +74,7 @@ namespace rtmath
 				// Iterate first over z, then y, then x
 				x = i / (span(0)*span(1));
 				//crd(1) = (i % (span(2)*span(1))) / span(2);
-				y = (i - (x*span(0)*span(1))) / span(0);
+				y = (i - (x*span(0)*span(1))) / span(0); // it's not (i - i), as x involves an INTEGER division!
 				z = i % span(0);
 				crd(2) = x; crd(1) = y; crd(0) = z;
 				crd += mins;
