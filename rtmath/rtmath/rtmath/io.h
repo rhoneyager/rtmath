@@ -769,6 +769,21 @@ namespace rtmath
 
 		};
 
+		/// Quick template to read objects, depending on vector read support.
+		template <class T>
+		void readObjs(std::vector<boost::shared_ptr<T> > &rinputs, const std::string &fname)
+		{
+			auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
+			iopts->filename(fname);
+			if (T::canReadMulti(nullptr, iopts))
+				T::readVector(nullptr, iopts, rinputs);
+			else {
+				boost::shared_ptr<T> s(new T);
+				s->readFile(fname);
+				rinputs.push_back(s);
+			}
+		};
+
 
 
 	}
