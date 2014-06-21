@@ -18,7 +18,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <Eigen/Dense>
 
-#include "../rtmath/ddscat/shapestatsRotated.h"
+//#include "../rtmath/ddscat/shapestatsRotated.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/ddscat/rotations.h"
 
@@ -27,34 +27,31 @@ namespace rtmath {
 
 		namespace stats {
 
-			const unsigned int shapeFileStatsRotated::_maxVersion = SHAPESTATS_ROTATED_VERSION;
-
-			bool shapeFileStatsRotated::needsUpgrade() const
+			shapeFileStatsBase::rotPtr shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi) const
 			{
-				// Standard case
-				if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
-				return false;
-			}
+				//boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
+				//shapeFileStatsRotated &res = *pres;
 
-			boost::shared_ptr<const shapeFileStatsRotated> shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi) const
-			{
-				boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
-				shapeFileStatsRotated &res = *pres;
+				rotData pres;
+				crd &crd = pres.get<0>();
+				basicTable &tbl = pres.get<1>();
+				matrixTable &mat = pres.get<2>();
+				vectorTable &vec = pres.get<3>();
 
-				res.beta = beta;
-				res.theta = theta;
-				res.phi = phi;
+				crd.get<0>() = beta;
+				crd.get<1>() = theta;
+				crd.get<2>() = phi;
 				// Please note that the set rotations has a special comparator to allow for 
 				// rotational ordering intrusive to a shared pointer, which allows for the 
 				// avoidance of a map.
-				if (rotations.count(pres)) // Already calculated
+				if (rotstats.count(pres)) // Already calculated
 				{
-					auto it = rotations.find(pres);
-					return *it;
+					auto it = rotstats.find(pres);
+					return it;
 				}
 
 				Eigen::Matrix3f Roteff;
-				rotationMatrix<float>( (float) theta,(float) phi,(float) beta,Roteff);
+				rotationMatrix<float>((float)theta, (float)phi, (float)beta, Roteff);
 				// Normally, Reff = RyRxRz. But, the rotation is a1,a2-dependent, 
 				// which are specified in the file. Apply effective rotation matrix also.
 
@@ -67,9 +64,9 @@ namespace rtmath {
 				accumulator_set<float, boost::accumulators::stats<tag::min, tag::max, tag::moment<1> > > abs_x, abs_y, abs_z;
 				// Tried http://stackoverflow.com/questions/4316716/is-it-possible-to-use-boost-accumulators-with-vectors?rq=1
 				// with accumulator_set<vector<double>, ...), but it does not compile on msvc 2010
-				typedef std::vector<accumulator_set<float, boost::accumulators::stats<
+				typedef accumulator_set<float, boost::accumulators::stats <
 					tag::min,
-					tag::max, 
+					tag::max,
 					tag::moment<1>,
 					tag::moment<2>,
 					tag::sum,
@@ -78,52 +75,27 @@ namespace rtmath {
 					// Covariances are special
 					tag::variance,
 					tag::covariance<float, tag::covariate1>,
-					tag::covariance<float, tag::covariate2>
-				> > > acc_type;
+					tag::covariance < float, tag::covariate2 >
+				> > acc_type;
 				acc_type acc_x, acc_y, acc_z, acc_r;
 				//acc(std::vector<double>(3)); //acc_x, acc_y, acc_z;
-
-				const size_t nV = _shp->Dielectrics.size()+1;
-				acc_x.resize(nV); // Assumes that the dielectrics start at 1.
-				acc_y.resize(nV); // Will probably crash if not.
-				acc_z.resize(nV);
-				acc_r.resize(nV);
-				res.PE.resize(nV, 4);
-				res.mom1.resize(nV, 4);
-				res.mom2.resize(nV, 4);
-				res.mominert.resize(nV);
-				res.covariance.resize(nV);
-
-				res.min.resize(nV,4);
-				res.max.resize(nV,4);
-				res.sum.resize(nV,4);
-				res.skewness.resize(nV,4);
-				res.kurtosis.resize(nV,4);
 
 				//for (auto it = _shp->latticePtsStd.begin(), ot = _shp->latticePtsRi.begin(); 
 				//	it != _shp->latticePtsStd.end(); ++it, ++ot)
 				for (size_t i = 0; i < _shp->numPoints; i++)
 				{
-					auto iit = _shp->latticePts.block<1,3>(i,0);
-					auto iot = _shp->latticePtsRi.block<1,3>(i,0);
+					auto iit = _shp->latticePts.block<1, 3>(i, 0);
 					auto it = &iit; // Laziness when adapting the algorithm
-					auto ot = &iot;
 
 					const Eigen::Vector3f s = (*it).transpose() - b_mean;
 					const Eigen::Vector3f pt = Roteff * s;
 					const double x = pt(0);
 					const double y = pt(1);
 					const double z = pt(2);
-					const size_t diel = (const size_t) (*ot)(0);
-
-					acc_x[0](x, covariate1 = y, covariate2 = z);
-					acc_y[0](y, covariate1 = x, covariate2 = z);
-					acc_z[0](z, covariate1 = x, covariate2 = y);
-					acc_r[0](sqrt((x*x)+(y*y)+(z*z)), covariate1 = x, covariate2 = y);
-					acc_x[diel](x, covariate1 = y, covariate2 = z);
-					acc_y[diel](y, covariate1 = x, covariate2 = z);
-					acc_z[diel](z, covariate1 = x, covariate2 = y);
-					acc_r[diel](sqrt((x*x)+(y*y)+(z*z)), covariate1 = x, covariate2 = y);
+					acc_x(x, covariate1 = y, covariate2 = z);
+					acc_y(y, covariate1 = x, covariate2 = z);
+					acc_z(z, covariate1 = x, covariate2 = y);
+					acc_r(sqrt((x*x) + (y*y) + (z*z)), covariate1 = x, covariate2 = y);
 					abs_x(abs(x));
 					abs_y(abs(y));
 					abs_z(abs(z));
@@ -131,208 +103,198 @@ namespace rtmath {
 					// Accumulators are in TF frame? Check against Holly code
 				}
 
-				// Are other quantities needed?
-				/*
-				auto makeMapXYZR = [&](size_t index, Eigen::Matrix<float, Eigen::Dynamic, 4>& m, std::function<float(acc_type::value_type)>& f)
-				//decltype(boost::accumulators::m
-				//auto makeMapXYZR = [&](size_t index, Eigen::Matrix<float, Eigen::Dynamic, 4>& m, decltype(boost::accumulators::min)& f)
-				{
-				m(index,0) = f(acc_x[index]);
-				m(index,1) = f(acc_y[index]);
-				m(index,2) = f(acc_z[index]);
-				m(index,3) = f(acc_r[index]);
-				};
-
-				makeMapXYZR(0, res.min, boost::accumulators::min);
-				makeMapXYZR(0, res.max, boost::accumulators::max);
-				*/
-
-				// Absolue value-dependent quantities
 
 #undef min
 #undef max
-				res.abs_min(0) = boost::accumulators::min(abs_x); // abs, not acc here
-				res.abs_min(1) = boost::accumulators::min(abs_y);
-				res.abs_min(2) = boost::accumulators::min(abs_z);
+				vec[rotColDefs::MIN](0) = boost::accumulators::min(acc_x);
+				vec[rotColDefs::MIN](1) = boost::accumulators::min(acc_y);
+				vec[rotColDefs::MIN](2) = boost::accumulators::min(acc_z);
+				vec[rotColDefs::MIN](3) = boost::accumulators::min(acc_r);
 
-				res.abs_max(0) = boost::accumulators::max(abs_x); // abs, not acc here
-				res.abs_max(1) = boost::accumulators::max(abs_y);
-				res.abs_max(2) = boost::accumulators::max(abs_z);
+				vec[rotColDefs::MAX](0) = boost::accumulators::max(acc_x);
+				vec[rotColDefs::MAX](1) = boost::accumulators::max(acc_y);
+				vec[rotColDefs::MAX](2) = boost::accumulators::max(acc_z);
+				vec[rotColDefs::MAX](3) = boost::accumulators::max(acc_r);
 
-				res.abs_mean(0) = boost::accumulators::moment<1>(abs_x); // abs, not acc here
-				res.abs_mean(1) = boost::accumulators::moment<1>(abs_y);
-				res.abs_mean(2) = boost::accumulators::moment<1>(abs_z);
+				vec[rotColDefs::SUM](0) = boost::accumulators::sum(acc_x);
+				vec[rotColDefs::SUM](1) = boost::accumulators::sum(acc_y);
+				vec[rotColDefs::SUM](2) = boost::accumulators::sum(acc_z);
+				vec[rotColDefs::SUM](3) = boost::accumulators::sum(acc_r);
+
+				vec[rotColDefs::SKEWNESS](0) = boost::accumulators::skewness(acc_x);
+				vec[rotColDefs::SKEWNESS](1) = boost::accumulators::skewness(acc_y);
+				vec[rotColDefs::SKEWNESS](2) = boost::accumulators::skewness(acc_z);
+				vec[rotColDefs::SKEWNESS](3) = boost::accumulators::skewness(acc_r);
+
+				vec[rotColDefs::KURTOSIS](0) = boost::accumulators::kurtosis(acc_x);
+				vec[rotColDefs::KURTOSIS](1) = boost::accumulators::kurtosis(acc_y);
+				vec[rotColDefs::KURTOSIS](2) = boost::accumulators::kurtosis(acc_z);
+				vec[rotColDefs::KURTOSIS](3) = boost::accumulators::kurtosis(acc_r);
+
+				vec[rotColDefs::MOM1](0) = boost::accumulators::moment<1>(acc_x);
+				vec[rotColDefs::MOM1](1) = boost::accumulators::moment<1>(acc_y);
+				vec[rotColDefs::MOM1](2) = boost::accumulators::moment<1>(acc_z);
+				vec[rotColDefs::MOM1](3) = boost::accumulators::moment<1>(acc_r);
+
+				vec[rotColDefs::MOM2](0) = boost::accumulators::moment<2>(acc_x);
+				vec[rotColDefs::MOM2](1) = boost::accumulators::moment<2>(acc_y);
+				vec[rotColDefs::MOM2](2) = boost::accumulators::moment<2>(acc_z);
+				vec[rotColDefs::MOM2](3) = boost::accumulators::moment<2>(acc_r);
+
+				vec[rotColDefs::ABS_MIN](0) = boost::accumulators::min(abs_x); // abs, not acc here
+				vec[rotColDefs::ABS_MIN](1) = boost::accumulators::min(abs_y);
+				vec[rotColDefs::ABS_MIN](2) = boost::accumulators::min(abs_z);
+
+				vec[rotColDefs::ABS_MAX](0) = boost::accumulators::max(abs_x); // abs, not acc here
+				vec[rotColDefs::ABS_MAX](1) = boost::accumulators::max(abs_y);
+				vec[rotColDefs::ABS_MAX](2) = boost::accumulators::max(abs_z);
+
+				vec[rotColDefs::ABS_MEAN](0) = boost::accumulators::moment<1>(abs_x); // abs, not acc here
+				vec[rotColDefs::ABS_MEAN](1) = boost::accumulators::moment<1>(abs_y);
+				vec[rotColDefs::ABS_MEAN](2) = boost::accumulators::moment<1>(abs_z);
+
+
+				// RMS accumulators - rms is the square root of the 2nd moment
+				vec[rotColDefs::RMS_MEAN](0) = sqrt(boost::accumulators::variance(acc_x));
+				vec[rotColDefs::RMS_MEAN](1) = sqrt(boost::accumulators::variance(acc_y));
+				vec[rotColDefs::RMS_MEAN](2) = sqrt(boost::accumulators::variance(acc_z));
+				vec[rotColDefs::RMS_MEAN](3) = sqrt(boost::accumulators::variance(acc_r));
 
 				// Aspect ratios
 				// Absolute aspect ratio
-				res.as_abs(0,0) = 1;
-				res.as_abs(0,1) = boost::accumulators::max(abs_x)/boost::accumulators::max(abs_y);
-				res.as_abs(0,2) = boost::accumulators::max(abs_x)/boost::accumulators::max(abs_z);
-				res.as_abs(1,0) = boost::accumulators::max(abs_y)/boost::accumulators::max(abs_x);
-				res.as_abs(1,1) = 1;
-				res.as_abs(1,2) = boost::accumulators::max(abs_y)/boost::accumulators::max(abs_z);
-				res.as_abs(2,0) = boost::accumulators::max(abs_z)/boost::accumulators::max(abs_x);
-				res.as_abs(2,1) = boost::accumulators::max(abs_z)/boost::accumulators::max(abs_y);
-				res.as_abs(2,2) = 1;
+				mat[rotColDefs::AS_ABS](0, 0) = 1;
+				mat[rotColDefs::AS_ABS](0, 1) = boost::accumulators::max(abs_x) / boost::accumulators::max(abs_y);
+				mat[rotColDefs::AS_ABS](0, 2) = boost::accumulators::max(abs_x) / boost::accumulators::max(abs_z);
+				mat[rotColDefs::AS_ABS](1, 0) = boost::accumulators::max(abs_y) / boost::accumulators::max(abs_x);
+				mat[rotColDefs::AS_ABS](1, 1) = 1;
+				mat[rotColDefs::AS_ABS](1, 2) = boost::accumulators::max(abs_y) / boost::accumulators::max(abs_z);
+				mat[rotColDefs::AS_ABS](2, 0) = boost::accumulators::max(abs_z) / boost::accumulators::max(abs_x);
+				mat[rotColDefs::AS_ABS](2, 1) = boost::accumulators::max(abs_z) / boost::accumulators::max(abs_y);
+				mat[rotColDefs::AS_ABS](2, 2) = 1;
 
 				// Absolute mean
-				res.as_abs_mean(0,0) = 1;
-				res.as_abs_mean(0,1) = boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_y);
-				res.as_abs_mean(0,2) = boost::accumulators::moment<1>(abs_x)/boost::accumulators::moment<1>(abs_z);
-				res.as_abs_mean(1,0) = boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_x);
-				res.as_abs_mean(1,1) = 1;
-				res.as_abs_mean(1,2) = boost::accumulators::moment<1>(abs_y)/boost::accumulators::moment<1>(abs_z);
-				res.as_abs_mean(2,0) = boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_x);
-				res.as_abs_mean(2,1) = boost::accumulators::moment<1>(abs_z)/boost::accumulators::moment<1>(abs_y);
-				res.as_abs_mean(2,2) = 1;
+				mat[rotColDefs::AS_ABS_MEAN](0, 0) = 1;
+				mat[rotColDefs::AS_ABS_MEAN](0, 1) = boost::accumulators::moment<1>(abs_x) / boost::accumulators::moment<1>(abs_y);
+				mat[rotColDefs::AS_ABS_MEAN](0, 2) = boost::accumulators::moment<1>(abs_x) / boost::accumulators::moment<1>(abs_z);
+				mat[rotColDefs::AS_ABS_MEAN](1, 0) = boost::accumulators::moment<1>(abs_y) / boost::accumulators::moment<1>(abs_x);
+				mat[rotColDefs::AS_ABS_MEAN](1, 1) = 1;
+				mat[rotColDefs::AS_ABS_MEAN](1, 2) = boost::accumulators::moment<1>(abs_y) / boost::accumulators::moment<1>(abs_z);
+				mat[rotColDefs::AS_ABS_MEAN](2, 0) = boost::accumulators::moment<1>(abs_z) / boost::accumulators::moment<1>(abs_x);
+				mat[rotColDefs::AS_ABS_MEAN](2, 1) = boost::accumulators::moment<1>(abs_z) / boost::accumulators::moment<1>(abs_y);
+				mat[rotColDefs::AS_ABS_MEAN](2, 2) = 1;
 
 				// Absolute rms
-				res.as_rms(0,0) = 1;
-				res.as_rms(0,1) = sqrt(boost::accumulators::moment<2>(acc_x[0])/boost::accumulators::moment<2>(acc_y[0]));
-				res.as_rms(0,2) = sqrt(boost::accumulators::moment<2>(acc_x[0])/boost::accumulators::moment<2>(acc_z[0]));
-				res.as_rms(1,0) = sqrt(boost::accumulators::moment<2>(acc_y[0])/boost::accumulators::moment<2>(acc_x[0]));
-				res.as_rms(1,1) = 1;
-				res.as_rms(1,2) = sqrt(boost::accumulators::moment<2>(acc_y[0])/boost::accumulators::moment<2>(acc_z[0]));
-				res.as_rms(2,0) = sqrt(boost::accumulators::moment<2>(acc_z[0])/boost::accumulators::moment<2>(acc_x[0]));
-				res.as_rms(2,1) = sqrt(boost::accumulators::moment<2>(acc_z[0])/boost::accumulators::moment<2>(acc_y[0]));
-				res.as_rms(2,2) = 1;
-
-				// RMS accumulators - rms is the square root of the 2nd moment
-				res.rms_mean(0) = sqrt(boost::accumulators::variance(acc_x[0]));
-				res.rms_mean(1) = sqrt(boost::accumulators::variance(acc_y[0]));
-				res.rms_mean(2) = sqrt(boost::accumulators::variance(acc_z[0]));
-				res.rms_mean(3) = sqrt(boost::accumulators::variance(acc_r[0]));
+				mat[rotColDefs::AS_RMS](0, 0) = 1;
+				mat[rotColDefs::AS_RMS](0, 1) = sqrt(boost::accumulators::moment<2>(acc_x) / boost::accumulators::moment<2>(acc_y));
+				mat[rotColDefs::AS_RMS](0, 2) = sqrt(boost::accumulators::moment<2>(acc_x) / boost::accumulators::moment<2>(acc_z));
+				mat[rotColDefs::AS_RMS](1, 0) = sqrt(boost::accumulators::moment<2>(acc_y) / boost::accumulators::moment<2>(acc_x));
+				mat[rotColDefs::AS_RMS](1, 1) = 1;
+				mat[rotColDefs::AS_RMS](1, 2) = sqrt(boost::accumulators::moment<2>(acc_y) / boost::accumulators::moment<2>(acc_z));
+				mat[rotColDefs::AS_RMS](2, 0) = sqrt(boost::accumulators::moment<2>(acc_z) / boost::accumulators::moment<2>(acc_x));
+				mat[rotColDefs::AS_RMS](2, 1) = sqrt(boost::accumulators::moment<2>(acc_z) / boost::accumulators::moment<2>(acc_y));
+				mat[rotColDefs::AS_RMS](2, 2) = 1;
 
 				const size_t _N = _shp->numPoints;
 				const Eigen::Array3f &d = _shp->d;
 				const float dxdydz = d(0) * d(1) * d(2);
 
-				for (size_t i=0; i<nV; i++)
-				{
-#undef min
-#undef max
-					res.min(i,0) = boost::accumulators::min(acc_x[i]);
-					res.min(i,1) = boost::accumulators::min(acc_y[i]);
-					res.min(i,2) = boost::accumulators::min(acc_z[i]);
-					res.min(i,3) = boost::accumulators::min(acc_r[i]);
 
-					res.max(i,0) = boost::accumulators::max(acc_x[i]);
-					res.max(i,1) = boost::accumulators::max(acc_y[i]);
-					res.max(i,2) = boost::accumulators::max(acc_z[i]);
-					res.max(i,3) = boost::accumulators::max(acc_r[i]);
+				//covariance
+				mat[rotColDefs::COVARIANCE](0, 0) = boost::accumulators::variance(acc_x);
+				//boost::accumulators::covariance(acc_x, covariate1);
+				//boost::accumulators::covariance(acc_x, covariate2);
+				mat[rotColDefs::COVARIANCE](0, 1) = boost::accumulators::covariance(acc_x, covariate1);
+				mat[rotColDefs::COVARIANCE](0, 2) = boost::accumulators::covariance(acc_x, covariate2);
+				mat[rotColDefs::COVARIANCE](1, 0) = boost::accumulators::covariance(acc_y, covariate1);
+				mat[rotColDefs::COVARIANCE](1, 1) = boost::accumulators::variance(acc_y);
+				mat[rotColDefs::COVARIANCE](1, 2) = boost::accumulators::covariance(acc_y, covariate2);
+				mat[rotColDefs::COVARIANCE](2, 0) = boost::accumulators::covariance(acc_z, covariate1);
+				mat[rotColDefs::COVARIANCE](2, 1) = boost::accumulators::covariance(acc_z, covariate2);
+				mat[rotColDefs::COVARIANCE](2, 2) = boost::accumulators::variance(acc_z);
 
-					res.sum(i,0) = boost::accumulators::sum(acc_x[i]);
-					res.sum(i,1) = boost::accumulators::sum(acc_y[i]);
-					res.sum(i,2) = boost::accumulators::sum(acc_z[i]);
-					res.sum(i,3) = boost::accumulators::sum(acc_r[i]);
+				// Calculate moments of inertia
+				float val = 0;
 
-					res.skewness(i,0) = boost::accumulators::skewness(acc_x[i]);
-					res.skewness(i,1) = boost::accumulators::skewness(acc_y[i]);
-					res.skewness(i,2) = boost::accumulators::skewness(acc_z[i]);
-					res.skewness(i,3) = boost::accumulators::skewness(acc_r[i]);
+				// See derivation in Summer 2012 notebook
 
-					res.kurtosis(i,0) = boost::accumulators::kurtosis(acc_x[i]);
-					res.kurtosis(i,1) = boost::accumulators::kurtosis(acc_y[i]);
-					res.kurtosis(i,2) = boost::accumulators::kurtosis(acc_z[i]);
-					res.kurtosis(i,3) = boost::accumulators::kurtosis(acc_r[i]);
+				// All of these are the partial moments. They need to be scaled by the cell _density_,
+				// as multiplying by dxdydz is a volume.
+				// I_xx
+				val = boost::accumulators::moment<2>(acc_y) +boost::accumulators::moment<2>(acc_z);
+				val *= _N * dxdydz;
+				mat[rotColDefs::MOMINERT](0, 0) = val;
 
-					res.mom1(i,0) = boost::accumulators::moment<1>(acc_x[i]);
-					res.mom1(i,1) = boost::accumulators::moment<1>(acc_y[i]);
-					res.mom1(i,2) = boost::accumulators::moment<1>(acc_z[i]);
-					res.mom1(i,3) = boost::accumulators::moment<1>(acc_r[i]);
+				// I_yy
+				val = boost::accumulators::moment<2>(acc_x) +boost::accumulators::moment<2>(acc_z);
+				val *= _N * dxdydz;
+				mat[rotColDefs::MOMINERT](1, 1) = val;
 
-					res.mom2(i,0) = boost::accumulators::moment<2>(acc_x[i]);
-					res.mom2(i,1) = boost::accumulators::moment<2>(acc_y[i]);
-					res.mom2(i,2) = boost::accumulators::moment<2>(acc_z[i]);
-					res.mom2(i,3) = boost::accumulators::moment<2>(acc_r[i]);
+				// I_zz
+				val = boost::accumulators::moment<2>(acc_x) +boost::accumulators::moment<2>(acc_y);
+				val *= _N * dxdydz;
+				mat[rotColDefs::MOMINERT](2, 2) = val;
 
-					//covariance
-					res.covariance[i](0,0) = boost::accumulators::variance(acc_x[i]);
-					//boost::accumulators::covariance(acc_x, covariate1);
-					//boost::accumulators::covariance(acc_x, covariate2);
-					res.covariance[i](0,1) = boost::accumulators::covariance(acc_x[i], covariate1);
-					res.covariance[i](0,2) = boost::accumulators::covariance(acc_x[i], covariate2);
-					res.covariance[i](1,0) = boost::accumulators::covariance(acc_y[i], covariate1);
-					res.covariance[i](1,1) = boost::accumulators::variance(acc_y[i]);
-					res.covariance[i](1,2) = boost::accumulators::covariance(acc_y[i], covariate2);
-					res.covariance[i](2,0) = boost::accumulators::covariance(acc_z[i], covariate1);
-					res.covariance[i](2,1) = boost::accumulators::covariance(acc_z[i], covariate2);
-					res.covariance[i](2,2) = boost::accumulators::variance(acc_z[i]);
+				// I_xy and I_yx
+				val = mat[rotColDefs::COVARIANCE](1, 0) + (boost::accumulators::moment<1>(acc_x) * boost::accumulators::moment<1>(acc_y));
+				val *= -1.0f * _N * dxdydz;
+				mat[rotColDefs::MOMINERT](0, 1) = val;
+				mat[rotColDefs::MOMINERT](1, 0) = val;
 
-					// Calculate moments of inertia
-					float val = 0;
+				// I_xz and I_zx
+				val = mat[rotColDefs::COVARIANCE](2, 0) + (boost::accumulators::moment<1>(acc_x) * boost::accumulators::moment<1>(acc_z));
+				val *= -1.0f * _N * dxdydz;
+				mat[rotColDefs::MOMINERT](0, 2) = val;
+				mat[rotColDefs::MOMINERT](2, 0) = val;
 
-					// See derivation in Summer 2012 notebook
+				// I_yz and I_zy
+				val = mat[rotColDefs::COVARIANCE](2, 1) + (boost::accumulators::moment<1>(acc_y) * boost::accumulators::moment<1>(acc_z));
+				val *= -1.0f * _N * dxdydz;
+				mat[rotColDefs::MOMINERT](2, 1) = val;
+				mat[rotColDefs::MOMINERT](1, 2) = val;
 
-					// All of these are the partial moments. They need to be scaled by the cell _density_,
-					// as multiplying by dxdydz is a volume.
-					// I_xx
-					val = boost::accumulators::moment<2>(acc_y[i]) + boost::accumulators::moment<2>(acc_z[i]);
-					val *= _N * dxdydz;
-					res.mominert[i](0,0) = val;
+				// Calculate the potential energy
+				const float g = 9.80665f; // m/s^2
+				// I do not need the partial mass means to be zero here
+				vec[rotColDefs::PE](0) = g*boost::accumulators::sum(acc_x);
+				vec[rotColDefs::PE](1) = g*boost::accumulators::sum(acc_y);
+				vec[rotColDefs::PE](2) = g*boost::accumulators::sum(acc_z);
+				vec[rotColDefs::PE](3) = 0; // Writing dir_mat_t, but with three elements instead of four.
 
-					// I_yy
-					val = boost::accumulators::moment<2>(acc_x[i]) + boost::accumulators::moment<2>(acc_z[i]);
-					val *= _N * dxdydz;
-					res.mominert[i](1,1) = val;
+				vec[rotColDefs::AREA](0) = 0;
+				vec[rotColDefs::AREA](1) = 0;
+				vec[rotColDefs::AREA](2) = 0;
+				vec[rotColDefs::AREA](3) = 0;
 
-					// I_zz
-					val = boost::accumulators::moment<2>(acc_x[i]) + boost::accumulators::moment<2>(acc_y[i]);
-					val *= _N * dxdydz;
-					res.mominert[i](2,2) = val;
+				vec[rotColDefs::PERIMETER](0) = 0;
+				vec[rotColDefs::PERIMETER](1) = 0;
+				vec[rotColDefs::PERIMETER](2) = 0;
+				vec[rotColDefs::PERIMETER](3) = 0;
 
-					// I_xy and I_yx
-					val = res.covariance[i](1,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_y[i]) );
-					val *= -1.0f * _N * dxdydz;
-					res.mominert[i](0,1) = val;
-					res.mominert[i](1,0) = val;
-
-					// I_xz and I_zx
-					val = res.covariance[i](2,0) + (boost::accumulators::moment<1>(acc_x[i]) * boost::accumulators::moment<1>(acc_z[i]) );
-					val *= -1.0f * _N * dxdydz;
-					res.mominert[i](0,2) = val;
-					res.mominert[i](2,0) = val;
-
-					// I_yz and I_zy
-					val = res.covariance[i](2,1) + (boost::accumulators::moment<1>(acc_y[i]) * boost::accumulators::moment<1>(acc_z[i]) );
-					val *= -1.0f * _N * dxdydz;
-					res.mominert[i](2,1) = val;
-					res.mominert[i](1,2) = val;
-
-					// Calculate the potential energy
-					const float g = 9.80665f; // m/s^2
-					// I do not need the partial mass means to be zero here
-					res.PE(i,0) = g*boost::accumulators::sum(acc_x[i]);
-					res.PE(i,1) = g*boost::accumulators::sum(acc_y[i]);
-					res.PE(i,2) = g*boost::accumulators::sum(acc_z[i]);
-					res.PE(i,3) = 0; // Writing dir_mat_t, but with three elements instead of four.
-				}
-
-				res.areas(0) = 0;
-				res.areas(1) = 0;
-				res.areas(2) = 0;
 
 				// Use std move to insert into set
 				//boost::shared_ptr<const shapeFileStatsRotated> cpres
 				//	= boost::const_pointer_cast<
-				rotations.insert(pres);
-				return pres;
+				auto r = rotstats.insert(pres);
+				return r.first;
 			}
 
 
-			shapeFileStatsRotated::shapeFileStatsRotated() : 
-				beta(0), theta(0), phi(0), _currVersion(-1) { }
 
-			shapeFileStatsRotated::~shapeFileStatsRotated() { }
+		}
+	}
+}
 
-			bool shapeFileStatsRotated::operator<(const shapeFileStatsRotated &rhs) const
-			{
-				if (beta!=rhs.beta) return beta<rhs.beta;
-				if (theta!=rhs.theta) return theta<rhs.theta;
-				if (phi!=rhs.phi) return phi<rhs.phi;
-				return false;
-			}
+namespace std {
+	template<>
+	struct less<::rtmath::ddscat::stats::shapeFileStatsBase::rotComp>
+	{
+		bool operator()(const ::rtmath::ddscat::stats::shapeFileStatsBase::rotComp& lhs, const ::rtmath::ddscat::stats::shapeFileStatsBase::rotComp& rhs) const
+		{
+			if (lhs.get<0>().get<0>() != rhs.get<0>().get<0>()) return lhs.get<0>().get<0>() < rhs.get<0>().get<0>();
+			if (lhs.get<0>().get<1>() != rhs.get<0>().get<1>()) return lhs.get<0>().get<1>() < rhs.get<0>().get<1>();
+			if (lhs.get<0>().get<2>() != rhs.get<0>().get<2>()) return lhs.get<0>().get<2>() < rhs.get<0>().get<2>();
 
+			return false;
 		}
 	}
 }

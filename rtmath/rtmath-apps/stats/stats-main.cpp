@@ -251,7 +251,10 @@ int main(int argc, char** argv)
 			std::map<boost::tuple<double, double, double>, size_t > rots;
 			vd.first->getRots(rots);
 			for (auto &r : rots)
+			{
+				cerr << " " << r.first.get<0>() << ", " << r.first.get<1>() << ", " << r.first.get<2>() << std::endl;
 				vd.second->calcStatsRot(r.first.get<0>(), r.first.get<1>(), r.first.get<2>());
+			}
 
 			if (vm.count("hash-stats"))
 				vd.second->writeToHash();
