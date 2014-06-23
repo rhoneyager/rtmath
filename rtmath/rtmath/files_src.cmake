@@ -92,7 +92,7 @@ set(rtmath_core_serialization
 	rtmath/Serialization/eigen_serialization.h
 	#rtmath/Serialization/matrixop_serialization.h
 	rtmath/Serialization/serialization_macros.h
-	src/common_templates_serialization.cpp
+	#src/common_templates_serialization.cpp
 	src/io.cpp
 	#src/eigen_serialization.cpp
 	#src/matrixop_serialization.cpp
@@ -156,14 +156,14 @@ set(rtmath_ddscat-shape-files
 	rtmath/ddscat/shapestatsviews.h
 	src/shapefile.cpp
 	src/shapefile_parsers.cpp
-	src/shapefile_serialization.cpp
+	#src/shapefile_serialization.cpp
 	#src/shapes.cpp
 	#src/shapes_serialization.cpp
 	src/shapestats.cpp
 	src/shapestats_basic.cpp
-	src/shapestats_serialization.cpp
+	#src/shapestats_serialization.cpp
 	src/shapestatsRotated.cpp
-	src/shapestatsRotated_serialization.cpp
+	#src/shapestatsRotated_serialization.cpp
 	#src/shapestats_genstats.cpp
 	#src/shapes-generators.cpp
 	)

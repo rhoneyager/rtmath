@@ -86,6 +86,7 @@ namespace rtmath
 			vtkSmartPointer<vtkPoints> surfacePoints;
 			vtkSmartPointer<vtkPolyData> polygons;
 			vtkSmartPointer<vtkDelaunay3D> hull;
+			vtkSmartPointer<vtkDelaunay2D> hull2d;
 			vtkSmartPointer<vtkMarchingCubes> mc;
 			double volume, surfarea, diameter;
 			/// Max distance information for the three max axes
@@ -296,6 +297,40 @@ namespace rtmath
 			size_t mp1, mp2;
 			_p->diameter = fMaxDiameter(delaunay3D->GetOutput()->GetPoints(), mp1, mp2);
 			_p->diameter1 = _p->diameter;
+
+
+
+			_p->hull2d = vtkSmartPointer<vtkDelaunay2D>::New();
+			_p->hull2d->SetInput(surfacePointsPolys);
+			_p->hull2d->Update();
+
+			vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter2 = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+			vtkSmartPointer<vtkDecimatePro> decimate2 = vtkSmartPointer<vtkDecimatePro>::New();
+			
+			decimate2->SetInputConnection(_p->hull2d->GetOutputPort());
+			decimate2->SetBoundaryVertexDeletion(1);
+			decimate2->SetPreserveTopology(1);
+			decimate2->SetTargetReduction(1.0);
+			decimate2->Update();
+
+			surfaceFilter2->SetInputConnection(_p->hull2d->GetOutputPort());
+			surfaceFilter2->Update();
+
+			vtkSmartPointer<vtkTriangleFilter> triFilter2 =
+				vtkSmartPointer<vtkTriangleFilter>::New();
+			triFilter2->SetInputConnection(surfaceFilter2->GetOutputPort());
+			triFilter2->Update();
+
+
+			vtkSmartPointer<vtkMassProperties> massFilter2 =
+				vtkSmartPointer<vtkMassProperties>::New();
+			massFilter2->SetInputConnection(triFilter->GetOutputPort());
+			massFilter2->Update();
+
+			double v = massFilter2->GetVolume();
+			double sa = massFilter2->GetSurfaceArea();
+			
+			/*
 			// Use point ids to construct a rotation that puts these points parallel to the x axis
 			auto calcRot = [](const vtkSmartPointer<vtkPoints> &base, size_t &a, size_t &b, double &thetar, double &phir)
 			{
@@ -343,28 +378,6 @@ namespace rtmath
 			}
 
 			// Get the second max diameter and store the point ids
-			/* delaunay2d is excessive, as the first delaunay3d output should be small enough
-			vtkSmartPointer<vtkPolyData> ptsProj1Polys = vtkSmartPointer< vtkPolyData >::New();
-			ptsProj1Polys->SetPoints(ptsProj1); // Using projected point because of the max diameter calc.
-
-			//// delaunay2d only considers the xy plane! But, my points have x=0!
-			//// Need to implement a vtk transform filter to rotate, and there is no need 
-			//// for ptsProj1.
-			vtkSmartPointer<vtkTransform> transform1 =
-				vtkSmartPointer<vtkTransform>::New();
-			//transform1->PostMultiply();
-			//transform1->Translate(10.0, 0.0, 0.0);
-			transform1->RotateZ(90.0);
-
-			vtkSmartPointer<vtkDelaunay2D> delaunay2D =
-				vtkSmartPointer<vtkDelaunay2D>::New();
-			delaunay2D->SetTransform(transform1);
-			delaunay2D->SetInput(ptsProj1Polys);
-			delaunay2D->Update();
-			
-			vtkSmartPointer<vtkPoints> delaunay2Dpoints = delaunay2D->GetOutput()->GetPoints();
-			_p->diameter2 = fMaxDiameter(delaunay2Dpoints, mp1, mp2);
-			*/
 			_p->diameter2 = fMaxDiameter(ptsProj1, mp1, mp2);
 
 			// Use these next point ids to construct a rotation with them parallel to the y axis
@@ -400,6 +413,7 @@ namespace rtmath
 			_p->phi = phid;
 
 			/// \todo Calculate the third diameter, eventually.
+			*/
 		}
 
 		double hull::maxDiameter() const { return _p->diameter; }

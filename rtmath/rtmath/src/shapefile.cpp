@@ -116,9 +116,9 @@ namespace rtmath {
 			{
 				numPoints = 0;
 				//filename = "";
-				::rtmath::io::Serialization::implementsSerialization<
-					shapefile, shapefile_IO_output_registry, 
-					shapefile_IO_input_registry, shapefile_serialization>::set_sname("rtmath::ddscat::shapefile::shapefile");
+				//::rtmath::io::Serialization::implementsSerialization<
+				//	shapefile, shapefile_IO_output_registry, 
+				//	shapefile_IO_input_registry, shapefile_serialization>::set_sname("rtmath::ddscat::shapefile::shapefile");
 			}
 
 			void shapefile::setHash(const HASH_t &h)

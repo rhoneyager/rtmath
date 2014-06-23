@@ -163,8 +163,7 @@ namespace rtmath {
 		{
 			if (!shapestatsfile.empty())
 			{
-				Ryan_Serialization::read(stats,shapestatsfile.string());
-				/// \todo Add Ryan_Serialization::read--- T = read<..>(file) alias.
+				stats = ddscat::stats::shapeFileStats::genStats(shapefile.string(), shapestatsfile.string());
 			} else {
 				// Generate the stats.
 				using namespace std;

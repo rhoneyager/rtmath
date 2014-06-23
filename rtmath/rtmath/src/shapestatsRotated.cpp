@@ -20,6 +20,7 @@
 
 //#include "../rtmath/ddscat/shapestatsRotated.h"
 #include "../rtmath/ddscat/shapestats.h"
+#include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/rotations.h"
 
 namespace rtmath {
@@ -33,14 +34,14 @@ namespace rtmath {
 				//shapeFileStatsRotated &res = *pres;
 
 				rotData pres;
-				crd &crd = pres.get<0>();
+				crd &c = pres.get<0>();
 				basicTable &tbl = pres.get<1>();
 				matrixTable &mat = pres.get<2>();
 				vectorTable &vec = pres.get<3>();
 
-				crd.get<0>() = beta;
-				crd.get<1>() = theta;
-				crd.get<2>() = phi;
+				c.get<0>() = beta;
+				c.get<1>() = theta;
+				c.get<2>() = phi;
 				// Please note that the set rotations has a special comparator to allow for 
 				// rotational ordering intrusive to a shared pointer, which allows for the 
 				// avoidance of a map.
@@ -260,15 +261,31 @@ namespace rtmath {
 				vec[rotColDefs::PE](2) = g*boost::accumulators::sum(acc_z);
 				vec[rotColDefs::PE](3) = 0; // Writing dir_mat_t, but with three elements instead of four.
 
-				vec[rotColDefs::AREA](0) = 0;
-				vec[rotColDefs::AREA](1) = 0;
-				vec[rotColDefs::AREA](2) = 0;
-				vec[rotColDefs::AREA](3) = 0;
+				// Take the voronoi convex hull candidate points, rotate then and project, and find the 2d hull
+				auto vcpts = vd->calcCandidateConvexHullPoints();
+				for (size_t i = 0; i < (size_t) vcpts->rows(); i++)
+				{
+					auto iit = vcpts->block<1, 3>(i, 0);
+					auto it = &iit; // Laziness when adapting the algorithm
 
-				vec[rotColDefs::PERIMETER](0) = 0;
-				vec[rotColDefs::PERIMETER](1) = 0;
-				vec[rotColDefs::PERIMETER](2) = 0;
-				vec[rotColDefs::PERIMETER](3) = 0;
+					const Eigen::Vector3f s = (*it).transpose() - b_mean;
+					const Eigen::Vector3f pt = Roteff * s;
+					const double x = pt(0);
+					const double y = pt(1);
+					const double z = pt(2);
+					
+
+				}
+
+				vec[rotColDefs::AREA_CONVEX](0) = 0;
+				vec[rotColDefs::AREA_CONVEX](1) = 0;
+				vec[rotColDefs::AREA_CONVEX](2) = 0;
+				vec[rotColDefs::AREA_CONVEX](3) = 0;
+
+				vec[rotColDefs::PERIMETER_CONVEX](0) = 0;
+				vec[rotColDefs::PERIMETER_CONVEX](1) = 0;
+				vec[rotColDefs::PERIMETER_CONVEX](2) = 0;
+				vec[rotColDefs::PERIMETER_CONVEX](3) = 0;
 
 
 				// Use std move to insert into set
@@ -280,21 +297,6 @@ namespace rtmath {
 
 
 
-		}
-	}
-}
-
-namespace std {
-	template<>
-	struct less<::rtmath::ddscat::stats::shapeFileStatsBase::rotComp>
-	{
-		bool operator()(const ::rtmath::ddscat::stats::shapeFileStatsBase::rotComp& lhs, const ::rtmath::ddscat::stats::shapeFileStatsBase::rotComp& rhs) const
-		{
-			if (lhs.get<0>().get<0>() != rhs.get<0>().get<0>()) return lhs.get<0>().get<0>() < rhs.get<0>().get<0>();
-			if (lhs.get<0>().get<1>() != rhs.get<0>().get<1>()) return lhs.get<0>().get<1>() < rhs.get<0>().get<1>();
-			if (lhs.get<0>().get<2>() != rhs.get<0>().get<2>()) return lhs.get<0>().get<2>() < rhs.get<0>().get<2>();
-
-			return false;
 		}
 	}
 }

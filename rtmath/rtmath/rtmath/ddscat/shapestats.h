@@ -3,11 +3,11 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>
 #include <Eigen/StdVector>
 #include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
-#include <boost/serialization/version.hpp>
 //#include <boost/program_options.hpp>
 
 #include "shapefile.h"
@@ -23,8 +23,56 @@ namespace rtmath {
 			class shapeFileStats_IO_input_registry {};
 			class shapeFileStats_IO_output_registry {};
 			class shapeFileStats_serialization {};
+			class rotColDefs
+			{
+			public:
+				enum rotDefs {
+					BETA, THETA, PHI,
+					NUM_ROTDEFS_FLOAT
+				};
+				enum vectorDefs {
+					MIN, MAX, SUM, SKEWNESS, KURTOSIS, MOM1, MOM2,
+					PE, AREA_CONVEX, PERIMETER_CONVEX,
+					ABS_MIN, ABS_MAX, ABS_MEAN, RMS_MEAN,
+					NUM_VECTORDEFS
+				};
+				enum matrixDefs {
+					AS_ABS, AS_ABS_MEAN, AS_RMS, MOMINERT, COVARIANCE,
+					NUM_MATRIXDEFS
+				};
+			};
+			typedef boost::tuple<float, float, float> crd;
+			typedef std::array<float, rotColDefs::NUM_ROTDEFS_FLOAT> basicTable;
+			typedef Eigen::Matrix3f matType;
+			typedef Eigen::Vector4f vecType;
+			typedef std::array<matType, rotColDefs::NUM_MATRIXDEFS> matrixTable;
+			typedef std::array<vecType, rotColDefs::NUM_VECTORDEFS> vectorTable;
+			// coordinates, basic table, moments of inertia, covariances
+			typedef boost::tuple<crd, basicTable, matrixTable, vectorTable> rotData;
+
+
 		}
 	}
+	namespace Voronoi { class VoronoiDiagram; }
+}
+
+namespace std {
+	/// \note specializing a STRUCT, so afaik this has to occur in this header - cannot move to a .cpp file 
+	template<>
+	struct less<::rtmath::ddscat::stats::rotData>
+	{
+		bool operator()(const ::rtmath::ddscat::stats::rotData& lhs, const ::rtmath::ddscat::stats::rotData& rhs) const
+		{
+			if (lhs.get<0>().get<0>() != rhs.get<0>().get<0>()) return lhs.get<0>().get<0>() < rhs.get<0>().get<0>();
+			if (lhs.get<0>().get<1>() != rhs.get<0>().get<1>()) return lhs.get<0>().get<1>() < rhs.get<0>().get<1>();
+			if (lhs.get<0>().get<2>() != rhs.get<0>().get<2>()) return lhs.get<0>().get<2>() < rhs.get<0>().get<2>();
+
+			return false;
+		}
+	};
+}
+
+namespace rtmath {
 	namespace registry {
 		
 		extern template struct IO_class_registry_writer<
@@ -53,6 +101,8 @@ namespace rtmath {
 		class rotations;
 		namespace stats {
 
+
+			
 			/**
 			* Version history for shapeFileStats, shapeFileStatsRotated and base classes:
 			*
@@ -111,8 +161,6 @@ namespace rtmath {
 				//Eigen::Array3f md1;
 				/// Max distance 2nd point
 
-				/// \todo Add Voronoi diagram and convex hull storage
-
 				/// Tracks the current stats version to see if recalculation is required.
 				static const unsigned int _maxVersion;
 				/// Tracks the loaded stats version to see if reaclculation is required.
@@ -122,32 +170,7 @@ namespace rtmath {
 				Eigen::Vector3f b_min, b_max, b_mean;
 
 
-				class rotColDefs
-				{
-				public:
-					enum rotDefs {
-						BETA, THETA, PHI,
-						NUM_ROTDEFS_FLOAT
-					};
-					enum vectorDefs {
-						MIN, MAX, SUM, SKEWNESS, KURTOSIS, MOM1, MOM2, 
-						PE, AREA, PERIMETER, 
-						ABS_MIN, ABS_MAX, ABS_MEAN, RMS_MEAN,
-						NUM_VECTORDEFS
-					};
-					enum matrixDefs {
-						AS_ABS, AS_ABS_MEAN, AS_RMS, MOMINERT, COVARIANCE,
-						NUM_MATRIXDEFS
-					};
-				};
-				typedef boost::tuple<float, float, float> crd;
-				typedef std::array<float, rotColDefs::NUM_ROTDEFS_FLOAT> basicTable;
-				typedef Eigen::Matrix3f matType;
-				typedef Eigen::Vector4f vecType;
-				typedef std::array<matType, rotColDefs::NUM_MATRIXDEFS> matrixTable;
-				typedef std::array<vecType, rotColDefs::NUM_VECTORDEFS> vectorTable;
-				// coordinates, basic table, moments of inertia, covariances
-				typedef boost::tuple<crd, basicTable, matrixTable, vectorTable> rotData;
+				
 				mutable std::set<rotData> rotstats;
 				typedef std::set<rotData>::const_iterator rotPtr;
 				//typedef boost::shared_ptr<const shapeFileStatsRotated> rotPtr;
@@ -192,9 +215,9 @@ namespace rtmath {
 
 				mutable rotPtr _rotMinPE, _rotMaxAR;
 
-				friend class ::boost::serialization::access;
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version);
+				/// Holds the Voronoi diagram (now used when calculating per-orientation area and perimeter)
+				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
+
 
 			};
 
@@ -207,10 +230,10 @@ namespace rtmath {
 				    shapeFileStats_IO_output_registry, 
 				    ::rtmath::registry::IO_class_registry_writer<shapeFileStats> >,
 				virtual public ::rtmath::io::implementsStandardWriter<shapeFileStats, shapeFileStats_IO_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<shapeFileStats, shapeFileStats_IO_input_registry>,
-				virtual public ::rtmath::io::Serialization::implementsSerialization<
-				    shapeFileStats, shapeFileStats_IO_output_registry, 
-                    shapeFileStats_IO_input_registry, shapeFileStats_serialization>
+				virtual public ::rtmath::io::implementsStandardReader<shapeFileStats, shapeFileStats_IO_input_registry>//,
+				//virtual public ::rtmath::io::Serialization::implementsSerialization<
+				//	shapeFileStats, shapeFileStats_IO_output_registry, 
+                //	shapeFileStats_IO_input_registry, shapeFileStats_serialization>
 			{
 			public:
 				shapeFileStats();
@@ -269,24 +292,9 @@ namespace rtmath {
 				/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 				static boost::shared_ptr<shapeFileStats> loadHash(
 					const std::string &hash);
-			private:
-				friend class ::boost::serialization::access;
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version);
 			public:
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 			};
 		}
-	}
-}
-
-#define SHAPESTATS_VERSION 5
-BOOST_CLASS_VERSION(::rtmath::ddscat::stats::shapeFileStatsBase, SHAPESTATS_VERSION);
-
-namespace std {
-	template<>
-	struct less<::rtmath::ddscat::stats::shapeFileStatsBase::rotComp>
-	{
-		bool operator()(const ::rtmath::ddscat::stats::shapeFileStatsBase::rotComp& k1, const ::rtmath::ddscat::stats::shapeFileStatsBase::rotComp& k2) const;
 	}
 }

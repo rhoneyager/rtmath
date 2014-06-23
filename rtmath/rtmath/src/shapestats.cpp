@@ -160,7 +160,7 @@ namespace rtmath {
 				using namespace rtmath::Voronoi;
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
-				boost::shared_ptr<VoronoiDiagram> vd;
+				//boost::shared_ptr<VoronoiDiagram> vd;
 				if (doVoronoi)
 				{
 					vd = _shp->generateVoronoi(
@@ -226,20 +226,26 @@ namespace rtmath {
 				Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA,2.0f);
 				Scircum_sphere.calc(this);
 
-				_currVersion = _maxVersion;
+				_currVersion = -1;
 
 				// Calculate rotated stats to avoid having to duplicate code
 				// From the 0,0,0 rotation,
 				{
 					// At beginning by default, as it is the only entry at this point!
 					auto pdr = calcStatsRot(0,0,0);
+					const crd &c = pdr->get<0>();
+					const basicTable &tbl = pdr->get<1>();
+					const matrixTable &mat = pdr->get<2>();
+					const vectorTable &vec = pdr->get<3>();
+
+
 					Sellipsoid_max.V = boost::math::constants::pi<float>() / 6.0f;
 					// Using diameters, and factor in prev line reflects this
 
 					/// \todo Check V_ellipsoid_max and V_ellipsoid_rms calculations!
-					Sellipsoid_max.V *= pdr->max(0,0) - pdr->min(0,0);
-					Sellipsoid_max.V *= pdr->max(0,1) - pdr->min(0,1);
-					Sellipsoid_max.V *= pdr->max(0,2) - pdr->min(0,2);
+					Sellipsoid_max.V *= vec[rotColDefs::MAX](0) - vec[rotColDefs::MIN](0);
+					Sellipsoid_max.V *= vec[rotColDefs::MAX](1) - vec[rotColDefs::MIN](1);
+					Sellipsoid_max.V *= vec[rotColDefs::MAX](2) - vec[rotColDefs::MIN](2);
 
 					//Sellipsoid_rms.V = 4.0f * boost::math::constants::pi<float>() / 3.0f;
 					//Sellipsoid_rms.V *= pdr->max(0,0) - pdr->min(0,0);

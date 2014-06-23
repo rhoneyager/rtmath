@@ -14,7 +14,6 @@
 #include "../registry.h"
 #include "../io.h"
 #include <boost/shared_ptr.hpp>
-#include <boost/serialization/version.hpp>
 
 namespace rtmath {
 	namespace Voronoi {
@@ -83,8 +82,8 @@ namespace rtmath {
 					::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
 				virtual public ::rtmath::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>,
 				virtual public ::rtmath::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>,
-				virtual public ::rtmath::io::Serialization::implementsSerialization<
-					shapefile, shapefile_IO_output_registry, shapefile_IO_input_registry, shapefile_serialization>,
+				//virtual public ::rtmath::io::Serialization::implementsSerialization<
+				//	shapefile, shapefile_IO_output_registry, shapefile_IO_input_registry, shapefile_serialization>,
 				virtual public implementsDDSHP
 			{
 			public:
@@ -182,9 +181,6 @@ namespace rtmath {
 				/// Recalculate stats after a manipulation operation
 				void recalcStats();
 				mutable HASH_t _localhash;
-				friend class ::boost::serialization::access;
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version);
 			public:
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -281,10 +277,4 @@ namespace rtmath {
 
 std::ostream & operator<<(std::ostream &stream, const rtmath::ddscat::shapefile::shapefile &ob);
 //std::istream & operator>>(std::istream &stream, rtmath::ddscat::shapefile &ob);
-
-
-//BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile)
-BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::shapefile::shapefile);
-BOOST_CLASS_VERSION(rtmath::ddscat::shapefile::shapefile, 3);
-
 

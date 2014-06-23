@@ -25,7 +25,7 @@
 namespace rtmath {
 	namespace ddscat {
 		namespace stats {
-			const unsigned int shapeFileStatsBase::_maxVersion = SHAPESTATS_VERSION;
+			//const unsigned int shapeFileStatsBase::_maxVersion = SHAPESTATS_VERSION;
 			SHARED_PRIVATE bool autoHashShapes = false;
 			SHARED_PRIVATE bool autoHashStats = false;
 			SHARED_PRIVATE std::vector<boost::tuple<double, double, double> > defaultRots;
@@ -33,15 +33,6 @@ namespace rtmath {
 			SHARED_PRIVATE bool disableVoronoi = false;
 			SHARED_PRIVATE bool forceRecalcStats = false;
 
-
-			bool rotComp::operator()(const boost::shared_ptr<const shapeFileStatsRotated> &lhs,
-				const boost::shared_ptr<const shapeFileStatsRotated> &rhs) const
-			{
-				if (lhs->beta != rhs->beta) return lhs->beta < rhs->beta;
-				if (lhs->theta != rhs->theta) return lhs->theta < rhs->theta;
-				if (lhs->phi != rhs->phi) return lhs->phi < rhs->phi;
-				return false;
-			}
 
 			shapeFileStats::shapeFileStats(const shapefile::shapefile &shp)
 			{
@@ -142,6 +133,7 @@ namespace rtmath {
 			/// \todo Actually do minimization routine here
 			shapeFileStatsBase::rotPtr shapeFileStatsBase::calcOriMinPE() const
 			{
+				/*
 				if (_rotMinPE) return _rotMinPE;
 				/// \todo Implement a ceres-solver plugin.
 				/// Until then, just select the lowest PE from a grid
@@ -153,7 +145,7 @@ namespace rtmath {
 						if (r->PE(0, 0) < _rotMinPE->PE(0, 0)) _rotMinPE = r;
 					}
 				}
-
+				*/
 				return _rotMinPE;
 			}
 
@@ -167,9 +159,9 @@ namespace rtmath {
 
 			void shapeFileStats::_init()
 			{
-				::rtmath::io::Serialization::implementsSerialization<
-					shapeFileStats, shapeFileStats_IO_output_registry,
-					shapeFileStats_IO_input_registry, shapeFileStats_serialization>::set_sname("rtmath::ddscat::stats::shapeFileStats");
+				//::rtmath::io::Serialization::implementsSerialization<
+				//	shapeFileStats, shapeFileStats_IO_output_registry,
+				//	shapeFileStats_IO_input_registry, shapeFileStats_serialization>::set_sname("rtmath::ddscat::stats::shapeFileStats");
 
 				ingest_hostname = Ryan_Debug::getHostname();
 				ingest_username = Ryan_Debug::getUsername();
@@ -183,7 +175,7 @@ namespace rtmath {
 			bool shapeFileStats::needsUpgrade() const
 			{
 				// Standard case
-				if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
+				//if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
 				return false;
 			}
 
@@ -206,6 +198,11 @@ namespace rtmath {
 				}
 				else
 					return false;
+
+				// Load the Voronoi diagram also
+				vd = _shp->generateVoronoi(
+					std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
+
 				return true;
 			}
 
@@ -260,15 +257,12 @@ namespace rtmath {
 				calcStatsBase();
 
 				// Redo each rotation
-				std::set<boost::shared_ptr<const shapeFileStatsRotated>, rotComp > oldRotations
-					= rotations;
-				rotations.clear();
+				std::set<rotData> oldRotations = rotstats;
+				rotstats.clear();
 				for (auto rot : oldRotations)
 				{
-					if (rot->needsUpgrade())
-						calcStatsRot(rot->beta, rot->theta, rot->phi);
-					else
-						rotations.insert(rot);
+					const crd &c = rot.get<0>();
+					calcStatsRot(c.get<0>(), c.get<1>(), c.get<2>());
 				}
 
 			}

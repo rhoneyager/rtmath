@@ -4,6 +4,7 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/array.hpp>
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Serialization/eigen_serialization.h"
@@ -63,7 +64,7 @@ namespace rtmath
 			//ar & boost::serialization::make_nvp("Sellipsoid_rms", Sellipsoid_rms);
 
 
-			ar & boost::serialization::make_nvp("Rotation_Dependent", rotations);
+			ar & boost::serialization::make_nvp("Rotation_Dependent", rotstats);
 
 			ar & boost::serialization::make_nvp("Rotation_minPE", _rotMinPE);
 			ar & boost::serialization::make_nvp("Rotation_maxAR", _rotMaxAR);
