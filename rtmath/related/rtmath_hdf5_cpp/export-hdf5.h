@@ -427,6 +427,41 @@ namespace rtmath {
 				//delete[] sz;
 			}
 
+			/// \brief Add column names to table.
+			/// \param num is the number of columns
+			/// \param stride allows name duplication (for vectors)
+			template <class Container>
+			void addColNames(std::shared_ptr<Container> obj, size_t num, const std::function<std::string(int)> &s, size_t stride = 0, size_t mCols = 0)
+			{
+				size_t nstride = stride;
+				if (!nstride) nstride = 1;
+				for (size_t i = 0; i < num; ++i)
+				{
+					size_t j = i / nstride;
+					std::string lbl = s((int)j);
+					std::ostringstream fldname;
+					fldname << "FIELD_" << i+1 << "_NAME";
+					std::string sfldname = fldname.str();
+					if (stride)
+					{
+						size_t k = i % nstride;
+						if (!mCols) {
+							if (k == 0) lbl.append("_X");
+							if (k == 1) lbl.append("_Y");
+							if (k == 2) lbl.append("_Z");
+							if (k == 3) lbl.append("_R");
+						}
+						else {
+							size_t row = k / mCols;
+							size_t col = k % mCols;
+							std::ostringstream iappend;
+							iappend << "_" << row << "_" << col;
+							lbl.append(iappend.str());
+						}
+					}
+					addAttr<std::string, Container>(obj, sfldname.c_str(), lbl);
+				}
+			}
 
 		}
 	}

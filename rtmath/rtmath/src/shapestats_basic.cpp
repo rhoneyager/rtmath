@@ -261,8 +261,8 @@ namespace rtmath {
 				rotstats.clear();
 				for (auto rot : oldRotations)
 				{
-					const crd &c = rot.get<0>();
-					calcStatsRot(c.get<0>(), c.get<1>(), c.get<2>());
+					const basicTable &tbl = rot.get<0>();
+					calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
 				}
 
 			}
@@ -484,6 +484,36 @@ namespace rtmath {
 				}
 			}
 
+
+#define _tostr(a) #a
+#define tostr(a) _tostr(a)
+#define check(a) if (val == a) return std::string( tostr(a) );
+			std::string rotColDefs::stringifyBasic(int val)
+			{
+				check(BETA); check(THETA); check(PHI);
+				return std::string("");
+			}
+
+			std::string rotColDefs::stringifyVector(int val)
+			{
+				check(MIN); check(MAX); check(SUM);
+				check(SKEWNESS); check(KURTOSIS); check(MOM1);
+				check(MOM2); check(PE); check(AREA_CONVEX);
+				check(PERIMETER_CONVEX); check(ABS_MIN); check(ABS_MAX);
+				check(ABS_MEAN); check(RMS_MEAN);
+				return std::string("");
+			}
+
+			std::string rotColDefs::stringifyMatrix(int val)
+			{
+				check(AS_ABS); check(AS_ABS_MEAN); check(AS_RMS);
+				check(MOMINERT); check(COVARIANCE);
+				return std::string("");
+			}
+
+#undef _tostr
+#undef tostr
+#undef check
 		}
 	}
 }

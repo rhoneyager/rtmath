@@ -23,7 +23,7 @@ namespace rtmath {
 			class shapeFileStats_IO_input_registry {};
 			class shapeFileStats_IO_output_registry {};
 			class shapeFileStats_serialization {};
-			class rotColDefs
+			class DLEXPORT_rtmath_ddscat rotColDefs
 			{
 			public:
 				enum rotDefs {
@@ -40,15 +40,17 @@ namespace rtmath {
 					AS_ABS, AS_ABS_MEAN, AS_RMS, MOMINERT, COVARIANCE,
 					NUM_MATRIXDEFS
 				};
+				static std::string stringifyBasic(int);
+				static std::string stringifyVector(int);
+				static std::string stringifyMatrix(int);
 			};
-			typedef boost::tuple<float, float, float> crd;
 			typedef std::array<float, rotColDefs::NUM_ROTDEFS_FLOAT> basicTable;
 			typedef Eigen::Matrix3f matType;
 			typedef Eigen::Vector4f vecType;
 			typedef std::array<matType, rotColDefs::NUM_MATRIXDEFS> matrixTable;
 			typedef std::array<vecType, rotColDefs::NUM_VECTORDEFS> vectorTable;
 			// coordinates, basic table, moments of inertia, covariances
-			typedef boost::tuple<crd, basicTable, matrixTable, vectorTable> rotData;
+			typedef boost::tuple<basicTable, matrixTable, vectorTable> rotData;
 
 
 		}
@@ -63,9 +65,10 @@ namespace std {
 	{
 		bool operator()(const ::rtmath::ddscat::stats::rotData& lhs, const ::rtmath::ddscat::stats::rotData& rhs) const
 		{
-			if (lhs.get<0>().get<0>() != rhs.get<0>().get<0>()) return lhs.get<0>().get<0>() < rhs.get<0>().get<0>();
-			if (lhs.get<0>().get<1>() != rhs.get<0>().get<1>()) return lhs.get<0>().get<1>() < rhs.get<0>().get<1>();
-			if (lhs.get<0>().get<2>() != rhs.get<0>().get<2>()) return lhs.get<0>().get<2>() < rhs.get<0>().get<2>();
+			using namespace ::rtmath::ddscat::stats;
+			if (lhs.get<0>()[rotColDefs::BETA] != rhs.get<0>()[rotColDefs::BETA]) return lhs.get<0>()[rotColDefs::BETA] < rhs.get<0>()[rotColDefs::BETA];
+			if (lhs.get<0>()[1] != rhs.get<0>()[rotColDefs::THETA]) return lhs.get<0>()[rotColDefs::THETA] < rhs.get<0>()[rotColDefs::THETA];
+			if (lhs.get<0>()[2] != rhs.get<0>()[rotColDefs::PHI]) return lhs.get<0>()[rotColDefs::PHI] < rhs.get<0>()[rotColDefs::PHI];
 
 			return false;
 		}

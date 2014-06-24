@@ -233,10 +233,9 @@ namespace rtmath {
 				{
 					// At beginning by default, as it is the only entry at this point!
 					auto pdr = calcStatsRot(0,0,0);
-					const crd &c = pdr->get<0>();
-					const basicTable &tbl = pdr->get<1>();
-					const matrixTable &mat = pdr->get<2>();
-					const vectorTable &vec = pdr->get<3>();
+					const basicTable &tbl = pdr->get<0>();
+					const matrixTable &mat = pdr->get<1>();
+					const vectorTable &vec = pdr->get<2>();
 
 
 					Sellipsoid_max.V = boost::math::constants::pi<float>() / 6.0f;
@@ -261,6 +260,8 @@ namespace rtmath {
 				for (auto rot : defaultRots)
 				{
 					calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
+					//const basicTable &tbl = rot.get<0>();
+					//calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
 				}
 				//calcOriMinPE();
 			}

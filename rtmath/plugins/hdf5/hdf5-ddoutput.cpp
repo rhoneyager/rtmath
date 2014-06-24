@@ -168,23 +168,8 @@ namespace rtmath {
 				if (writeORI)
 				{
 					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), plistOri);
-					//auto csi = addDatasetEigen(gRun, "Cross_Sections_i", (s->oridata_i), plistOri);
-
-					// Add special labeling information to the columns
-					// The simple datasets are not tables, so the column labels will not match these.
-					{
-						//addAttr<string, DataSet>(csd, "CLASS", "TABLE");
-						//addAttr<string, DataSet>(csd, "VERSION", "0.2");
-						for (size_t i = 0; i < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES; ++i)
-						{
-							std::string lbl = rtmath::ddscat::ddOutput::stat_entries::stringify((int) i);
-							std::ostringstream fldname;
-							fldname << "FIELD_" << i << "_NAME";
-							std::string sfldname = fldname.str();
-							addAttr<string, DataSet>(csd, sfldname.c_str(), lbl);
-						}
-
-					}
+					addColNames(csd, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
+						rtmath::ddscat::ddOutput::stat_entries::stringify);
 				}
 
 				/*
@@ -238,21 +223,8 @@ namespace rtmath {
 				if (writeFML)
 				{
 					auto ft = addDatasetEigen(gRun, "FML_Data", *(s->fmldata), plistFML);
-					// Add special labeling information to the columns
-					// The simple datasets are not tables, so the column labels will not match these.
-					{
-						//addAttr<string, DataSet>(csd, "CLASS", "TABLE");
-						//addAttr<string, DataSet>(csd, "VERSION", "0.2");
-						for (size_t i = 0; i < rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS; ++i)
-						{
-							std::string lbl = rtmath::ddscat::ddOutput::fmlColDefs::stringify((int)i);
-							std::ostringstream fldname;
-							fldname << "FIELD_" << i << "_NAME";
-							std::string sfldname = fldname.str();
-							addAttr<string, DataSet>(ft, sfldname.c_str(), lbl);
-						}
-
-					}
+					addColNames(ft, rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS,
+						rtmath::ddscat::ddOutput::fmlColDefs::stringify);
 				}
 				//addDatasetEigen(gRun, "Scattering_Data", s->scadata);
 
@@ -275,31 +247,10 @@ namespace rtmath {
 				if (writeSHP)
 					gRun->link(H5L_TYPE_SOFT, pShape, "Shape");
 
-
-				// If stats are written to this file, make a symlink
-				/*
-				std::string pStats;
-				{
-					std::ostringstream o;
-					o << "/Hashed/" << s->shapeHash.string() << "/Stats";
-					pShape = o.str();
-				}
-				gRun->link(H5L_TYPE_SOFT, pShape, "Stats");
-				*/
-				// Insert stats information given known dipole spacing
-
-
 				// ddscat.par file
 				write_hdf5_ddPar(
 					shared_ptr<Group>(new Group(gRun->createGroup("par"))), 
 					s->parfile.get());
-
-				// Testing ddscat.par read...
-				//boost::shared_ptr<rtmath::ddscat::ddPar> stest(new rtmath::ddscat::ddPar);
-				//shared_ptr<Group> grpPar = openGroup(gRun, "par");
-				//read_hdf5_ddPar(grpPar, stest);
-				//stest->write(std::cout);
-
 
 				return gRun;
 			}

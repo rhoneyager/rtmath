@@ -34,14 +34,13 @@ namespace rtmath {
 				//shapeFileStatsRotated &res = *pres;
 
 				rotData pres;
-				crd &c = pres.get<0>();
-				basicTable &tbl = pres.get<1>();
-				matrixTable &mat = pres.get<2>();
-				vectorTable &vec = pres.get<3>();
+				basicTable &tbl = pres.get<0>();
+				matrixTable &mat = pres.get<1>();
+				vectorTable &vec = pres.get<2>();
 
-				c.get<0>() = beta;
-				c.get<1>() = theta;
-				c.get<2>() = phi;
+				tbl[rotColDefs::BETA] = beta;
+				tbl[rotColDefs::THETA] = theta;
+				tbl[rotColDefs::PHI] = phi;
 				// Please note that the set rotations has a special comparator to allow for 
 				// rotational ordering intrusive to a shared pointer, which allows for the 
 				// avoidance of a map.
