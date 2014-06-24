@@ -39,6 +39,9 @@ namespace rtmath
 			double maxDiameter() const;
 			/// Rotation coordinates to principle axes of hull
 			void principalAxes(double &beta, double &theta, double &phi) const;
+
+			void area2d(double out[3]) const;
+			void perimeter2d(double out[3]) const;
 		protected:
 			boost::shared_ptr<hullData> _p;
 		public:
@@ -56,11 +59,11 @@ namespace rtmath
 			void constructHull();
 		};
 
-		/*
-		class concaveHull : public hull
+		/* // Disabled because the VTK hull algorithms are SLOW, and setting alpha requires all points!
+		class DLEXPORT_rtmath_voronoi concaveHull : public hull
 		{
 		public:
-			concaveHull(const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&);
+			concaveHull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >);
 			virtual ~concaveHull() {}
 			void constructHull(double alpha);
 		};

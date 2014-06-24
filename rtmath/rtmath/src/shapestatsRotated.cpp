@@ -22,6 +22,7 @@
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/rotations.h"
+#include "../rtmath/ddscat/hulls.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -262,6 +263,9 @@ namespace rtmath {
 
 				// Take the voronoi convex hull candidate points, rotate then and project, and find the 2d hull
 				auto vcpts = vd->calcCandidateConvexHullPoints();
+				//std::cout << *vcpts << std::endl;
+				Voronoi::VoronoiDiagram::matrixTypeMutable rpts(new Eigen::MatrixXf(vcpts->rows(), vcpts->cols()));
+				rpts->setZero(); // Need to have the final column set to zero?
 				for (size_t i = 0; i < (size_t) vcpts->rows(); i++)
 				{
 					auto iit = vcpts->block<1, 3>(i, 0);
@@ -273,17 +277,32 @@ namespace rtmath {
 					const double y = pt(1);
 					const double z = pt(2);
 					
-
+					auto oit = rpts->block<1, 3>(i, 0);
+					oit(0) = x;
+					oit(1) = y;
+					oit(2) = z;
 				}
+				//std::cout << *rpts << std::endl;
+				Voronoi::VoronoiDiagram::matrixType crpts(rpts);
 
-				vec[rotColDefs::AREA_CONVEX](0) = 0;
-				vec[rotColDefs::AREA_CONVEX](1) = 0;
-				vec[rotColDefs::AREA_CONVEX](2) = 0;
+				// for vtk delaunay triangulation, the z coordinate is ignored by default
+				// an alpha value may also be specified!
+
+				// using the rotated points
+				convexHull cvHull2d(crpts);
+				cvHull2d.constructHull();
+
+				double areas[3], perims[3];
+				cvHull2d.area2d(areas);
+				cvHull2d.perimeter2d(perims);
+				vec[rotColDefs::AREA_CONVEX](0) = static_cast<float>(areas[0]);
+				vec[rotColDefs::AREA_CONVEX](1) = static_cast<float>(areas[1]);
+				vec[rotColDefs::AREA_CONVEX](2) = static_cast<float>(areas[2]);
 				vec[rotColDefs::AREA_CONVEX](3) = 0;
 
-				vec[rotColDefs::PERIMETER_CONVEX](0) = 0;
-				vec[rotColDefs::PERIMETER_CONVEX](1) = 0;
-				vec[rotColDefs::PERIMETER_CONVEX](2) = 0;
+				vec[rotColDefs::PERIMETER_CONVEX](0) = static_cast<float>(perims[0]);
+				vec[rotColDefs::PERIMETER_CONVEX](1) = static_cast<float>(perims[1]);
+				vec[rotColDefs::PERIMETER_CONVEX](2) = static_cast<float>(perims[2]);
 				vec[rotColDefs::PERIMETER_CONVEX](3) = 0;
 
 

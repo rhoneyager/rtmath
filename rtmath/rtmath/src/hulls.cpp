@@ -43,6 +43,7 @@
 #include <vtkMarchingCubes.h>
 #include <vtkImplicitModeller.h>
 #include <vtkVoxelModeller.h>
+#include <vtkCleanPolyData.h>
 
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/hulls.h"
@@ -68,7 +69,7 @@ namespace rtmath
 				: volume(0), surfarea(0), vx(0), vy(0), vz(0), vproj(0), diameter(0),
 				diameter1(0), diameter2(0), diameter3(0),
 				beta(0), theta(0), phi(0),
-				boundsCalced(false), mcCalced(false)
+				boundsCalced(false), mcCalced(false), alpha(0)
 			{
 				points = vtkSmartPointer< vtkPoints >::New();
 				surfacePoints = vtkSmartPointer< vtkPoints >::New();
@@ -78,6 +79,8 @@ namespace rtmath
 				mc = vtkSmartPointer<vtkMarchingCubes>::New();
 				std::fill_n(mins,3,0);
 				std::fill_n(maxs,3,0);
+				std::fill_n(area2d, 3, 0);
+				std::fill_n(perimeter2d, 3, 0);
 			}
 			virtual ~hullData() {}
 			vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter;
@@ -86,7 +89,9 @@ namespace rtmath
 			vtkSmartPointer<vtkPoints> surfacePoints;
 			vtkSmartPointer<vtkPolyData> polygons;
 			vtkSmartPointer<vtkDelaunay3D> hull;
-			vtkSmartPointer<vtkDelaunay2D> hull2d;
+			double alpha;
+			double area2d[3], perimeter2d[3];
+
 			vtkSmartPointer<vtkMarchingCubes> mc;
 			double volume, surfarea, diameter;
 			/// Max distance information for the three max axes
@@ -208,6 +213,7 @@ namespace rtmath
 		convexHull::convexHull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >  src) : hull(src)
 		{
 		}
+		//concaveHull::concaveHull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >  src) : hull(src) {}
 
 		void convexHull::constructHull()
 		{
@@ -299,36 +305,62 @@ namespace rtmath
 			_p->diameter1 = _p->diameter;
 
 
+			auto get2d = [&](size_t missingcrd)
+			{
+				// x,y,z refers to the coordinate that is ignored
+				vtkSmartPointer<vtkTransform> trns = vtkSmartPointer<vtkTransform>::New();
+				//trns->SetInput(surfacePointsPolys);
+				// using pre-multiplication semantics
+				if (missingcrd == 0)
+					trns->RotateY(-90.);
+				else if (missingcrd == 1)
+					trns->RotateX(90.);
+				// missingcrd == 2 is the default case - no need to rotate for delaunay2d
+				trns->Scale(1, 1, 0);
+				trns->Update();
 
-			_p->hull2d = vtkSmartPointer<vtkDelaunay2D>::New();
-			_p->hull2d->SetInput(surfacePointsPolys);
-			_p->hull2d->Update();
+				vtkSmartPointer<vtkCleanPolyData> cleanPolyData =
+					vtkSmartPointer<vtkCleanPolyData>::New();
+				cleanPolyData->SetInput(surfacePointsPolys);
+				cleanPolyData->Update();
 
-			vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter2 = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-			vtkSmartPointer<vtkDecimatePro> decimate2 = vtkSmartPointer<vtkDecimatePro>::New();
+				vtkSmartPointer<vtkDelaunay2D> hull2d = vtkSmartPointer<vtkDelaunay2D>::New();
+				hull2d->SetInput(cleanPolyData->GetOutput());
+				hull2d->SetTransform(trns);
+				hull2d->Update();
+
+				vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter2 = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+				vtkSmartPointer<vtkDecimatePro> decimate2 = vtkSmartPointer<vtkDecimatePro>::New();
+
+				decimate2->SetInputConnection(hull2d->GetOutputPort());
+				decimate2->SetBoundaryVertexDeletion(1);
+				decimate2->SetPreserveTopology(1);
+				decimate2->SetTargetReduction(1.0);
+				decimate2->Update();
+
+				surfaceFilter2->SetInputConnection(hull2d->GetOutputPort());
+				surfaceFilter2->Update();
+
+				vtkSmartPointer<vtkTriangleFilter> triFilter2 =
+					vtkSmartPointer<vtkTriangleFilter>::New();
+				triFilter2->SetInputConnection(surfaceFilter2->GetOutputPort());
+				triFilter2->Update();
+
+
+				vtkSmartPointer<vtkMassProperties> massFilter2 =
+					vtkSmartPointer<vtkMassProperties>::New();
+				massFilter2->SetInputConnection(triFilter->GetOutputPort());
+				massFilter2->Update();
+
+				_p->area2d[missingcrd] = massFilter2->GetVolume();
+				_p->perimeter2d[missingcrd] = massFilter2->GetSurfaceArea();
+			};
+
+			get2d(0);
+			get2d(1);
+			get2d(2);
+
 			
-			decimate2->SetInputConnection(_p->hull2d->GetOutputPort());
-			decimate2->SetBoundaryVertexDeletion(1);
-			decimate2->SetPreserveTopology(1);
-			decimate2->SetTargetReduction(1.0);
-			decimate2->Update();
-
-			surfaceFilter2->SetInputConnection(_p->hull2d->GetOutputPort());
-			surfaceFilter2->Update();
-
-			vtkSmartPointer<vtkTriangleFilter> triFilter2 =
-				vtkSmartPointer<vtkTriangleFilter>::New();
-			triFilter2->SetInputConnection(surfaceFilter2->GetOutputPort());
-			triFilter2->Update();
-
-
-			vtkSmartPointer<vtkMassProperties> massFilter2 =
-				vtkSmartPointer<vtkMassProperties>::New();
-			massFilter2->SetInputConnection(triFilter->GetOutputPort());
-			massFilter2->Update();
-
-			double v = massFilter2->GetVolume();
-			double sa = massFilter2->GetSurfaceArea();
 			
 			/*
 			// Use point ids to construct a rotation that puts these points parallel to the x axis
@@ -427,6 +459,15 @@ namespace rtmath
 			beta = _p->beta; theta = _p->theta; phi = _p->phi;
 		}
 
+		void hull::area2d(double out[3]) const
+		{
+			std::copy_n(_p->area2d, 3, out);
+		}
+
+		void hull::perimeter2d(double out[3]) const
+		{
+			std::copy_n(_p->perimeter2d, 3, out);
+		}
 	}
 }
 
