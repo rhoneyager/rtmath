@@ -30,15 +30,18 @@ namespace rtmath {
 		namespace hdf5 {
 
 			template<class T, class U>
-			void devectorize(const T& src, U &mats, size_t numMats, size_t rows, size_t cols)
+			void devectorize(const T& src, U &mats, size_t irow)
 			{
-				for (size_t i = 0; i < numMats * rows * cols; ++i)
+				// Reading in one large matrix, at the specified row
+				size_t i = 0;
+				for (auto &mat : mats)
 				{
-					size_t mat = i / (rows * cols);
-					size_t index = i % (rows * cols);
-					size_t row = index / cols;
-					size_t col = index % cols;
-					mats[mat](row, col) = src(mat, index);
+					for (size_t row = 0; row < (size_t)mat.rows(); ++row)
+						for (size_t col = 0; col < (size_t)mat.cols(); ++col)
+						{
+						mat(row, col) = src(irow, i);
+						++i;
+						}
 				}
 			}
 
@@ -159,8 +162,8 @@ namespace rtmath {
 						for (size_t j = 0; j < rotColDefs::NUM_ROTDEFS_FLOAT; ++j)
 							tbl[j] = tblBasic(i, j);
 						
-						devectorize(tblMatrices, mat, rotColDefs::NUM_MATRIXDEFS, 3, 3);
-						devectorize(tblVectors, vec, rotColDefs::NUM_VECTORDEFS, 4, 1);
+						devectorize(tblMatrices, mat, i);
+						devectorize(tblVectors, vec, i);
 
 						r->rotstats.insert(std::move(rot));
 					}

@@ -45,7 +45,7 @@ namespace rtmath {
 						}
 				}
 			}
-
+			
 
 
 			/// \param base is the base to write the subgroups to. From here, "./Stats" is the root of the routine's output.
