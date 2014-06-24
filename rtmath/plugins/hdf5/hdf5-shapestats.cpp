@@ -75,7 +75,7 @@ namespace rtmath {
 				using std::string;
 				addAttr<string, Group>(statsraw, "ingest_timestamp", s->ingest_timestamp);
 				addAttr<string, Group>(statsraw, "ingest_hostname", s->ingest_hostname);
-				addAttr<string, Group>(statsraw, "ingest_username", s->ingest_username); // Not all ingests have this...
+				addAttr<string, Group>(statsraw, "ingest_username", s->ingest_username);
 				addAttr<int, Group>(statsraw, "ingest_rtmath_version", s->ingest_rtmath_version);
 
 				// The full hash
@@ -94,9 +94,9 @@ namespace rtmath {
 				// Rotation and inverse rotation matrix are written out as Eigen datasets
 				addDatasetEigen<Eigen::Matrix3f, Group>(statsraw, "rot", s->rot);
 				addDatasetEigen<Eigen::Matrix3f, Group>(statsraw, "invrot", s->invrot);
-				addAttr<double, Group>(statsraw, "beta", s->beta);
-				addAttr<double, Group>(statsraw, "theta", s->theta);
-				addAttr<double, Group>(statsraw, "phi", s->phi);
+				addAttr<float, Group>(statsraw, "beta", s->beta);
+				addAttr<float, Group>(statsraw, "theta", s->theta);
+				addAttr<float, Group>(statsraw, "phi", s->phi);
 
 				// Volumetric data
 				{

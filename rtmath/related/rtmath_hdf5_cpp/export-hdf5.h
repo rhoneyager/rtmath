@@ -440,7 +440,7 @@ namespace rtmath {
 					size_t j = i / nstride;
 					std::string lbl = s((int)j);
 					std::ostringstream fldname;
-					fldname << "FIELD_" << i+1 << "_NAME";
+					fldname << "FIELD_" << i << "_NAME";
 					std::string sfldname = fldname.str();
 					if (stride)
 					{
