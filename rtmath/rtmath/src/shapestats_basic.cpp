@@ -360,7 +360,7 @@ namespace rtmath {
 				std::shared_ptr<registry::IOhandler> sh;
 				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-				if (hashStore::findHashObj(hash, "stats-r1.hdf5", sh, opts))
+				if (hashStore::findHashObj(hash, "stats-r2.hdf5", sh, opts))
 				{
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats);
 					res->readMulti(sh, opts);
@@ -474,7 +474,7 @@ namespace rtmath {
 				std::shared_ptr<registry::IO_options> opts;
 
 				// Only store hash if a storage mechanism can be found
-				if (hashStore::storeHash(_shp->_localhash.string(), "stats-r1.hdf5", sh, opts))
+				if (hashStore::storeHash(_shp->_localhash.string(), "stats-r2.hdf5", sh, opts))
 				{
 					if (!Ryan_Serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);

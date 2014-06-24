@@ -55,10 +55,12 @@ namespace rtmath
 
 		int rev(void)
 		{
-#ifndef SUB_REV
-			return -1;
-#else
+#if RTMATH_SVNREVISION
+			return RTMATH_SVNREVISION;
+#elif SUB_REV
 			return SUB_REV;
+#else
+			return -1;
 #endif
 		};
 

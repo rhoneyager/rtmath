@@ -30,7 +30,7 @@ set(MAJOR 0)
 set(MINOR 3)
 set(REVISION 0)
 set(RTMATH_VERSION
-	${MAJOR}.${MINOR}.${REVISION} )
+	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION} )
 
 
 addBaseProject()
