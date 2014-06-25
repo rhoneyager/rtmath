@@ -193,6 +193,7 @@ int main(int argc, char** argv)
 			for (const auto &o : rinputs)
 			{
 				try {
+					cerr << " Extracting hash " << o->shapeHash.string() << endl;
 					boost::shared_ptr<rotations> rotsrc = rotations::create(*(o->parfile));
 					boost::shared_ptr<rotations> rot = rotations::create(
 						rotsrc->bMin(), rotsrc->bMax(), rotsrc->bN(),

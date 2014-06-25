@@ -72,6 +72,7 @@ namespace rtmath {
 				// Define the accumulators that we want
 				// For each axis, get min, max and the other statistics about the distribution
 
+				std::cerr << "Calculating base stats for shape with hash " << _shp->hash().string() << std::endl;
 				// Iterate accumulator as function of radial distance from center of mass
 
 				// Pull in some vars from the shapefile
@@ -259,6 +260,7 @@ namespace rtmath {
 				// Calculate all default (from config or command-line) rotations
 				for (auto rot : defaultRots)
 				{
+					std::cerr << "Calculating stats for rotation " << rot.get<0>() << ", " << rot.get<1>() << ", " << rot.get<2>() << std::endl;
 					calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
 					//const basicTable &tbl = rot.get<0>();
 					//calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
