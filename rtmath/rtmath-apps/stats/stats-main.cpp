@@ -261,10 +261,8 @@ int main(int argc, char** argv)
 			cerr << "Processing hash " << vd.second->_shp->hash().lower << endl;
 
 			std::map<boost::tuple<double, double, double>, size_t > rots;
-			rotations rotb(vd.first->bMin(), vd.first->bMax(), vd.first->bN(),
-				vd.first->tMin(), vd.first->tMax(), vd.first->tN(), 0, 0, 1);
-			//vd.first->getRots(rots);
-			rotb.getRots(rots);
+			// Rotation setting done above
+			vd.first->getRots(rots);
 			cerr << " There are " << rots.size() << " rotations that will be calculated" << endl;
 			for (auto &r : rots)
 			{

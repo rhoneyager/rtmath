@@ -186,6 +186,7 @@ namespace rtmath {
 						candidate_hull_points = m;
 					}
 				}
+				std::cerr << " Voronoi diagram calculated. Extracting hull points." << std::endl;
 				convexHull cvHull(candidate_hull_points);
 				cvHull.constructHull();
 				max_distance = cvHull.maxDiameter();

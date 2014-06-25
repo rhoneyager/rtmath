@@ -253,8 +253,12 @@ namespace rtmath {
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
+				std::cerr << "Generating (or loading) stats for hash " << shp->hash().string() << std::endl;
 				auto res = shapeFileStats::loadHash(shp->hash());
-				if (!res) res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+				if (!res) {
+					std::cerr << "Stats for hash not found. Calculating. " << std::endl;
+					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+				}
 				if (autoHashStats) res->writeToHash();
 
 				return res;
