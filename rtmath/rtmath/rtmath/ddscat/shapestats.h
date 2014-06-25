@@ -122,6 +122,7 @@ namespace rtmath {
 				/// \brief Function that, if the shapefile referenced is not loaded, reloads the 
 				/// shapefile. Required for hulling or stats adding operations.
 				bool load();
+				bool load(boost::shared_ptr<const shapefile::shapefile>);
 
 				/// When the run was imported
 				std::string ingest_timestamp;
@@ -271,6 +272,10 @@ namespace rtmath {
 				/// \note Reads and writes to hash database for precomputed stats
 				static boost::shared_ptr<shapeFileStats> genStats(
 					const boost::shared_ptr<const shapefile::shapefile> &shp);
+
+				/// Alias to loadHash
+				static boost::shared_ptr<shapeFileStats> genStats(
+					const HASH_t &hash);
 
 				/**
 				* \brief Adds shapestats options to a program

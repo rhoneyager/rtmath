@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 		vector<string> inputrun;
 		if (vm.count("input-run"))
 		{
-			inputstats = vm["input-run"].as<vector<string> >();
+			inputrun = vm["input-run"].as<vector<string> >();
 			cerr << "Input DDSCAT run files are:" << endl;
 			for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
 				cerr << "\t" << *it << "\n";
@@ -192,12 +192,20 @@ int main(int argc, char** argv)
 
 			for (const auto &o : rinputs)
 			{
-				boost::shared_ptr<rotations> rotsrc = rotations::create(*(o->parfile));
-				boost::shared_ptr<rotations> rot = rotations::create(
-					rotsrc->bMin(), rotsrc->bMax(), rotsrc->bN(),
-					rotsrc->tMin(), rotsrc->tMax(), rotsrc->tN(),
-					0, 0, 1);
-				objs.push_back(rotpair(rot, stats::shapeFileStats::genStats(o->shape)));
+				try {
+					boost::shared_ptr<rotations> rotsrc = rotations::create(*(o->parfile));
+					boost::shared_ptr<rotations> rot = rotations::create(
+						rotsrc->bMin(), rotsrc->bMax(), rotsrc->bN(),
+						rotsrc->tMin(), rotsrc->tMax(), rotsrc->tN(),
+						0, 0, 1);
+					o->loadShape();
+					if (!o->stats)
+						o->stats = stats::shapeFileStats::genStats(o->shape);
+					objs.push_back(rotpair(rot, o->stats));
+				} catch (rtmath::debug::xError &e) {
+					cerr << "Cannot load results for hash " << o->shapeHash.string() << ".\n"
+						<< e.what() << endl;
+				}
 			}
 		}
 

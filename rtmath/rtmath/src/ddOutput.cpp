@@ -142,9 +142,12 @@ namespace rtmath {
 		void ddOutput::loadShape() const
 		{
 			// Load stats and shape based on the hash
-			stats = stats::shapeFileStats::loadHash(this->shapeHash);
-			stats->load();
-			shape = stats->_shp;
+			shape = shapefile::shapefile::loadHash(shapeHash);
+			if (!shape) RTthrow debug::xMissingHash("shapefile", shapeHash.string().c_str());
+			stats = stats::shapeFileStats::genStats(shape);
+			//stats = stats::shapeFileStats::loadHash(this->shapeHash);
+			if (!stats) RTthrow debug::xMissingHash("shapestats", shapeHash.string().c_str()); // should never happen
+			stats->load(shape);
 		}
 
 		/*

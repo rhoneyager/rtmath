@@ -179,6 +179,18 @@ namespace rtmath {
 				return false;
 			}
 
+
+			bool shapeFileStatsBase::load(boost::shared_ptr<const shapefile::shapefile> nshp)
+			{
+				_shp = nshp;
+
+				// Load the Voronoi diagram also
+				vd = _shp->generateVoronoi(
+					std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
+
+				return true;
+			}
+
 			bool shapeFileStatsBase::load()
 			{
 				// Return true if shape is loaded or can be loaded (and load it)
@@ -243,6 +255,23 @@ namespace rtmath {
 
 				auto res = shapeFileStats::loadHash(shp->hash());
 				if (!res) res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+				if (autoHashStats) res->writeToHash();
+
+				return res;
+			}
+
+			boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
+				const HASH_t &hash)
+			{
+				using boost::filesystem::path;
+				using boost::filesystem::exists;
+
+				auto res = shapeFileStats::loadHash(hash);
+				if (!res) {
+					auto shp = shapefile::shapefile::loadHash(hash);
+					if (!shp) RTthrow debug::xMissingHash("shapefile+stats", hash.string().c_str());
+					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+				}
 				if (autoHashStats) res->writeToHash();
 
 				return res;

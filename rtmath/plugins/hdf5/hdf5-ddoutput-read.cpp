@@ -87,9 +87,9 @@ namespace rtmath {
 				readAttrArray<double, Group>(base, "LFK", r->s.LFK.data(), 1, 3);
 
 				readAttrComplex<std::complex<double>, Group>
-					(base, "IPV1LF", r->s.IPV1LF.data(), 1, 3);
+					(base, "IPV1LF", r->s.IPV1LF.data(), 3, 1);
 				readAttrComplex<std::complex<double>, Group>
-					(base, "IPV2LF", r->s.IPV2LF.data(), 1, 3);
+					(base, "IPV2LF", r->s.IPV2LF.data(), 3, 1);
 
 				/*
 				Eigen::MatrixXf refrs;

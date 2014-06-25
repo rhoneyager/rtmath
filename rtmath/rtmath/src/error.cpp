@@ -253,6 +253,15 @@ namespace rtmath {
 			_message.append("\n");
 		}
 
+		void xMissingHash::_setmessage()
+		{
+			_message = "ERROR: cannot find hash in caches: ";
+			_message.append(_m);
+			_message.append("\n");
+			_message.append(_n);
+			_message.append("\n");
+		}
+
 		void xOtherError::_setmessage()
 		{
 			_message = "ERROR (unknown)\n";

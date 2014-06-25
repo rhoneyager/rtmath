@@ -394,7 +394,7 @@ namespace rtmath {
 					if (!grpRuns) continue;
 
 					hsize_t rz = grpRuns->getNumObjs();
-					for (hsize_t i = 0; i < sz; ++i)
+					for (hsize_t i = 0; i < rz; ++i)
 					{
 						std::string runname = grpRuns->getObjnameByIdx(i);
 						H5G_obj_t t = grpRuns->getObjTypeByIdx(i);

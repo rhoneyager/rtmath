@@ -82,6 +82,9 @@ namespace rtmath
 		/// File format is unknown
 		ERRSTR(xUnknownFileFormat);
 
+		/// Cannot find hash to load
+		ERRSTR2(xMissingHash);
+
 		/// A function has not been defined. Always stops execution.
 		ERRSTD(xUnimplementedFunction);
 

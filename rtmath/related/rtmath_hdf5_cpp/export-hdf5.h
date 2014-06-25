@@ -136,8 +136,15 @@ namespace rtmath {
 				hsize_t *sz = new hsize_t[dimensionality];
 				attr.getArrayType().getArrayDims(sz);
 
-				if (sz[0] != rows) throw("Rows mismatch in readAttrArray");
-				if (sz[1] != cols) throw("Cols mismatch in readAttrArray");
+				if (dimensionality == 1)
+				{
+					if (sz[0] != rows && sz[0] != cols) throw("Row/column mismatch in readAttrArray");
+				}
+				else {
+					if (sz[0] != rows) throw("Rows mismatch in readAttrArray");
+					if (sz[1] != cols) throw("Cols mismatch in readAttrArray");
+				}
+				
 
 				//if (dimensionality == 2)
 				//	value.resize(sz[0], sz[1]);
