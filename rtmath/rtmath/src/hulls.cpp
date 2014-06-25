@@ -356,9 +356,9 @@ namespace rtmath
 				_p->perimeter2d[missingcrd] = massFilter2->GetSurfaceArea();
 			};
 
-			get2d(0);
-			get2d(1);
-			get2d(2);
+			//get2d(0);
+			//get2d(1);
+			//get2d(2);
 
 			
 			
