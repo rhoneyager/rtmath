@@ -77,6 +77,7 @@ namespace rtmath {
 
 				// Pull in some vars from the shapefile
 				const size_t _N = _shp->numPoints;
+				std::cerr << " " << _N << " points" << std::endl;
 
 				if (!_N)
 					throw rtmath::debug::xBadInput("Stats cannot be calculated because the shapefile is not loaded.");
@@ -159,6 +160,7 @@ namespace rtmath {
 
 				// Using the convec hull to get the maximum diameter
 				using namespace rtmath::Voronoi;
+				std::cerr << " Voronoi" << std::endl;
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
 				//boost::shared_ptr<VoronoiDiagram> vd;
@@ -229,6 +231,7 @@ namespace rtmath {
 
 				_currVersion = -1;
 
+				std::cerr << " Calculating 0,0,0 rotation" << std::endl;
 				// Calculate rotated stats to avoid having to duplicate code
 				// From the 0,0,0 rotation,
 				{
