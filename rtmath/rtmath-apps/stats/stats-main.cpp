@@ -189,6 +189,7 @@ int main(int argc, char** argv)
 				}
 				
 			}
+			cerr << " " << rinputs.size() << " hashes found." << endl;
 
 			for (const auto &o : rinputs)
 			{
@@ -220,6 +221,7 @@ int main(int argc, char** argv)
 				cerr << e.what() << std::endl;
 				continue;
 			}
+			cerr << " " << sinputs.size() << " hashes found." << endl;
 			for (const auto &o : sinputs)
 				objs.push_back(rotpair(defaultrots, stats::shapeFileStats::genStats(o)));
 		}
@@ -236,6 +238,7 @@ int main(int argc, char** argv)
 				cerr << e.what() << std::endl;
 				continue;
 			}
+			cerr << " " << sinputs.size() << " hashes found." << endl;
 			for (const auto &o : sinputs)
 				objs.push_back(rotpair(defaultrots, o));
 		}
