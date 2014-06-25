@@ -189,8 +189,9 @@ namespace rtmath {
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
 			//IOhandler::IOtype iotype = opts->iotype();
-			std::string hash = opts->getVal<std::string>("hash");
-			std::string key = opts->getVal<std::string>("key");
+			std::string key;
+			if (opts->hasVal("hash")) key = opts->getVal<std::string>("hash");
+			else key = opts->getVal<std::string>("key");
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();

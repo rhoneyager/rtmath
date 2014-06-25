@@ -349,8 +349,8 @@ namespace rtmath {
 				const Eigen::Array3f&, const Eigen::Array3f&,
 				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> f) const
 			{
-				if (voronoi_diagrams.count(name))
-					return voronoi_diagrams[name];
+				//if (voronoi_diagrams.count(name))
+				//	return voronoi_diagrams[name];
 				// Attempt to load the voronoi diagram from the hash database.
 				boost::shared_ptr<Voronoi::VoronoiDiagram> res;
 				std::cerr << "Requesting voronoi diagrams for " << hash().string() << std::endl;
@@ -361,7 +361,7 @@ namespace rtmath {
 					res->setHash(this->hash());
 				}
 
-				voronoi_diagrams[name] = res;
+				//voronoi_diagrams[name] = res;
 				return res;
 			}
 

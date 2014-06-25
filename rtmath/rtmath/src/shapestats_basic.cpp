@@ -185,8 +185,8 @@ namespace rtmath {
 				_shp = nshp;
 
 				// Load the Voronoi diagram also
-				vd = _shp->generateVoronoi(
-					std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
+				//vd = _shp->generateVoronoi(
+				//	std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
 
 				return true;
 			}
@@ -212,8 +212,8 @@ namespace rtmath {
 					return false;
 
 				// Load the Voronoi diagram also
-				vd = _shp->generateVoronoi(
-					std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
+				//vd = _shp->generateVoronoi(
+				//	std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
 
 				return true;
 			}
@@ -391,10 +391,12 @@ namespace rtmath {
 				using boost::filesystem::exists;
 
 				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+				std::shared_ptr<registry::IO_options> opts; // No need to set here - it gets reset by findHashObj
 
 				if (hashStore::findHashObj(hash, "stats-r2.hdf5", sh, opts))
 				{
+					// However, value "hash" or "key" must be set here
+					opts->setVal<std::string>("hash", hash);
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats);
 					res->readMulti(sh, opts);
 				}

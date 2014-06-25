@@ -93,48 +93,30 @@ int main(int argc, char** argv)
 			*(betas.begin()), *(betas.rbegin()), betas.size(),
 			*(thetas.begin()), *(thetas.rbegin()), thetas.size(),
 			0, 0, 1
-			);
+			); // This is already done in the stats base code...
 
 		vector<string> inputshp;
-		if (vm.count("input-shp"))
+		if (vm.count("input-shp")) inputshp = vm["input-shp"].as< vector<string> >();
+		vector<string> inputstats;
+		if (vm.count("input-stats")) inputstats = vm["input-stats"].as<vector<string> >();
+		vector<string> inputrun;
+		if (vm.count("input-run")) inputrun = vm["input-run"].as<vector<string> >();
+		string output;
+		if (vm.count("output")) output = vm["output"].as<string>();
+		bool doExport = false;
+		std::string exportType, exportFilename;
 		{
-			inputshp = vm["input-shp"].as< vector<string> >();
 			cerr << "Input shape files are:" << endl;
 			for (auto it = inputshp.begin(); it != inputshp.end(); ++it)
 				cerr << "\t" << *it << "\n";
-		};
-
-		vector<string> inputstats;
-		if (vm.count("input-stats"))
-		{
-			inputstats = vm["input-stats"].as<vector<string> >();
 			cerr << "Input stats files are:" << endl;
 			for (auto it = inputstats.begin(); it != inputstats.end(); ++it)
 				cerr << "\t" << *it << "\n";
-		};
-
-		vector<string> inputrun;
-		if (vm.count("input-run"))
-		{
-			inputrun = vm["input-run"].as<vector<string> >();
 			cerr << "Input DDSCAT run files are:" << endl;
 			for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
 				cerr << "\t" << *it << "\n";
-		};
-
-		// No vectors! They are hard to detect before readins, leading to input stream errors.
-		bool doExport = false;
-		std::string exportType, exportFilename;
-		//if (vm.count("separate-outputs")) sepOutputs = true;
-
-		string output;
-
-		if (vm.count("output"))
-		{
-			output = vm["output"].as<string>();
 			cerr << "Outputting to: " << output << endl;
 		}
-
 		if (vm.count("export"))
 		{
 			doExport = true;
@@ -143,42 +125,103 @@ int main(int argc, char** argv)
 			cerr << "Exporting to: " << exportFilename << endl;
 		}
 
-		// Validate input files
-		vector<string> vinputs;
-		for (auto it = inputshp.begin(); it != inputshp.end(); ++it)
+		// Setup for output
+		std::shared_ptr<registry::IOhandler> handle, exportHandle;
+		auto opts = registry::IO_options::generate();
+		auto optsExport = registry::IO_options::generate();
+		opts->exportType(exportType);
+		opts->filename(output);
+		optsExport->filename(exportFilename);
+		optsExport->exportType(exportType);
+
+		using namespace rtmath::ddscat;
+		//for (const auto &vd : objs)
+		auto doProcess = [&](
+			rtmath::HASH_t hash, // always set
+			boost::shared_ptr<const shapefile::shapefile> shp, // pre-loaded shape (if any). else, load from hash.
+			boost::shared_ptr<stats::shapeFileStats> stats, // pre-loaded stats (if any). else, load from hash.
+			boost::shared_ptr<rotations> rots // forced (non-default) rotations (for ddoutput)
+			)
 		{
-			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
-			if (is_directory(pi))
+			cerr << "Processing hash " << hash.string() << endl;
+
+			if (!shp) shp = shapefile::shapefile::loadHash(hash);
+			if (!shp) { cerr << " Shapefile not found" << endl; return; }
+
+			if (!stats) stats = stats::shapeFileStats::genStats(shp);
+			if (!stats) { cerr << " Unable to generate stats" << endl; return; }
+
+			if (!rots) rots = defaultrots;
+
+			std::map<boost::tuple<double, double, double>, size_t > rotmap;
+			// Rotation setting done above
+			rots->getRots(rotmap);
+			cerr << " There are " << rotmap.size() << " rotations that will be calculated" << endl;
+			for (auto &r : rotmap)
 			{
-				path ps = pi / "shape.dat";
-				if (exists(ps)) vinputs.push_back(ps.string());
-				else continue;
-				//else throw rtmath::debug::xPathExistsWrongType(it->c_str());
+				stats->calcStatsRot(r.first.get<0>(), r.first.get<1>(), r.first.get<2>());
 			}
-			else vinputs.push_back(*it);
-		}
-		vector<string> sinputs;
+
+			if (vm.count("hash-stats"))
+				stats->writeToHash();
+
+			if (output.size())
+				handle = stats->writeMulti(handle, opts);
+			if (doExport)
+				exportHandle = stats->writeMulti(exportHandle, optsExport);
+
+			// At this point, the stats can be discarded to save memory
+		};
+
+
+		// Do stat processing first, in case it covers the other cases (useful when hashing)
 		for (auto it = inputstats.begin(); it != inputstats.end(); ++it)
 		{
+			cerr << "Processing stat file " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (!exists(pi)) {cerr << "Misssing file " << pi << endl; continue;}
 			if (is_directory(pi)) continue;
-			sinputs.push_back(*it);
+
+			vector<boost::shared_ptr<stats::shapeFileStats> > sinputs;
+			try {
+				io::readObjs<stats::shapeFileStats>(sinputs, *it);
+			} catch (std::exception &e) {
+				cerr << e.what() << std::endl;
+				continue;
+			}
+			cerr << " " << sinputs.size() << " stat hashes found." << endl;
+			for (const auto &o : sinputs)
+				doProcess(o->_shp->hash(), o->_shp, o, defaultrots);
 		}
-
-		// Storing the shape data as a shape + desired rotations
-		using namespace ddscat;
-		typedef std::pair<boost::shared_ptr<rotations>, boost::shared_ptr<stats::shapeFileStats> > rotpair;
-		vector<rotpair> objs;
-
-
+		for (auto it = inputshp.begin(); it != inputshp.end(); ++it)
+		{
+			cerr << "Processing shape file " << *it << endl;
+			path ps;
+			path pi(*it);
+			if (!exists(pi)) { cerr << "Misssing file " << pi << endl; continue; }
+			if (is_directory(pi))
+			{
+				ps = pi / "shape.dat";
+				if (!exists(ps)) { cerr << "Misssing file " << ps << endl; continue; }
+			}
+			else ps = pi;
+			vector<boost::shared_ptr<ddscat::shapefile::shapefile> > sinputs;
+			try {
+				io::readObjs<ddscat::shapefile::shapefile>(sinputs, ps.string());
+			} catch (std::exception &e) {
+				cerr << e.what() << std::endl;
+				continue;
+			}
+			cerr << " " << sinputs.size() << " shape hashes found." << endl;
+			for (const auto &o : sinputs)
+				doProcess(o->hash(), o, nullptr, defaultrots);
+		}
 		for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
 		{
-			cerr << "Processing " << *it << endl;
+			cerr << "Processing ddOutput file " << *it << endl;
 			vector<boost::shared_ptr<ddscat::ddOutput> > rinputs;
 			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (!exists(pi)) { cerr << "Misssing file " << pi << endl; continue; }
 			if (is_directory(pi)) rinputs.push_back(ddscat::ddOutput::generate(*it, true));
 			else {
 				try {
@@ -190,107 +233,23 @@ int main(int argc, char** argv)
 				
 			}
 			cerr << " " << rinputs.size() << " hashes found." << endl;
-
 			for (const auto &o : rinputs)
 			{
-				try {
-					cerr << " Extracting hash " << o->shapeHash.string() << endl;
-					boost::shared_ptr<rotations> rotsrc = rotations::create(*(o->parfile));
-					boost::shared_ptr<rotations> rot = rotations::create(
-						rotsrc->bMin(), rotsrc->bMax(), rotsrc->bN(),
-						rotsrc->tMin(), rotsrc->tMax(), rotsrc->tN(),
-						0, 0, 1);
-					o->loadShape();
-					if (!o->stats)
-						o->stats = stats::shapeFileStats::genStats(o->shape);
-					objs.push_back(rotpair(rot, o->stats));
-				} catch (rtmath::debug::xError &e) {
-					cerr << "Cannot load results for hash " << o->shapeHash.string() << ".\n"
-						<< e.what() << endl;
-				}
+				cerr << " Extracting hash " << o->shapeHash.string() << endl;
+				boost::shared_ptr<rotations> rotsrc = rotations::create(*(o->parfile));
+				boost::shared_ptr<rotations> rot = rotations::create(
+					rotsrc->bMin(), rotsrc->bMax(), rotsrc->bN(),
+					rotsrc->tMin(), rotsrc->tMax(), rotsrc->tN(),
+					0, 0, 1);
+				doProcess(o->shapeHash, nullptr, nullptr, rot);
 			}
 		}
 
-		for (auto it = vinputs.begin(); it != vinputs.end(); ++it)
-		{
-			cerr << "Processing " << *it << endl;
-			vector<boost::shared_ptr<ddscat::shapefile::shapefile> > sinputs;
-			try {
-				io::readObjs<ddscat::shapefile::shapefile>(sinputs, *it);
-			} catch (std::exception &e) {
-				cerr << e.what() << std::endl;
-				continue;
-			}
-			cerr << " " << sinputs.size() << " hashes found." << endl;
-			for (const auto &o : sinputs)
-				objs.push_back(rotpair(defaultrots, stats::shapeFileStats::genStats(o)));
-		}
-
-
-		for (auto it = sinputs.begin(); it != sinputs.end(); ++it)
-		{
-			cerr << "Processing stored stat data " << *it << endl;
-			vector<boost::shared_ptr<stats::shapeFileStats> > sinputs;
-			try {
-				io::readObjs<stats::shapeFileStats>(sinputs, *it);
-			}
-			catch (std::exception &e) {
-				cerr << e.what() << std::endl;
-				continue;
-			}
-			cerr << " " << sinputs.size() << " hashes found." << endl;
-			for (const auto &o : sinputs)
-				objs.push_back(rotpair(defaultrots, o));
-		}
-
-
-
-
-		std::shared_ptr<registry::IOhandler> handle, exportHandle;
-
-		auto opts = registry::IO_options::generate();
-		auto optsExport = registry::IO_options::generate();
-
-		opts->exportType(exportType);
-		opts->filename(output);
-		optsExport->filename(exportFilename);
-		optsExport->exportType(exportType);
-
-		for (const auto &vd : objs)
-		{
-			cerr << "Processing hash " << vd.second->_shp->hash().lower << endl;
-
-			std::map<boost::tuple<double, double, double>, size_t > rots;
-			// Rotation setting done above
-			vd.first->getRots(rots);
-			cerr << " There are " << rots.size() << " rotations that will be calculated" << endl;
-			for (auto &r : rots)
-			{
-				vd.second->calcStatsRot(r.first.get<0>(), r.first.get<1>(), r.first.get<2>());
-			}
-
-			if (vm.count("hash-stats"))
-				vd.second->writeToHash();
-
-			if (output.size())
-				handle = vd.second->writeMulti(handle, opts);
-			//	handle = sstats.writeMulti(handle, opts);
-			if (doExport)
-				exportHandle = vd.second->writeMulti(exportHandle, optsExport);
-			//	exportHandle = sstats.writeMulti(exportHandle, optsExport);
-
-			//Stats.push_back(std::move(sstats));
-		}
-
-	}
-	catch (rtmath::debug::xError &err)
-	{
+	} catch (rtmath::debug::xError &err) {
 		err.Display();
 		cerr << endl;
 		return 1;
-	}
-	catch (std::exception &e)
-	{
+	} catch (std::exception &e) {
 		cerr << e.what() << endl;
 		return 1;
 	}

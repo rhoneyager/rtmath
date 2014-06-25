@@ -161,6 +161,7 @@ namespace rtmath {
 				// Using the convec hull to get the maximum diameter
 				using namespace rtmath::Voronoi;
 				std::cerr << " Voronoi" << std::endl;
+				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
 				//boost::shared_ptr<VoronoiDiagram> vd;

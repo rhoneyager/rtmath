@@ -216,8 +216,8 @@ namespace rtmath {
 				 **/
 				mutable std::map < std::string, boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > > latticeExtras;
 
-				/// Container for temporary Voronoi diagrams
-				mutable std::map < std::string, boost::shared_ptr<Voronoi::VoronoiDiagram> > voronoi_diagrams;
+				/// Container for temporary Voronoi diagrams (disabled due to high memory usage)
+				//mutable std::map < std::string, boost::shared_ptr<Voronoi::VoronoiDiagram> > voronoi_diagrams;
 
 				/// Convenient function override to generate a given Voronoi diagram uniquely
 				boost::shared_ptr<Voronoi::VoronoiDiagram> generateVoronoi(

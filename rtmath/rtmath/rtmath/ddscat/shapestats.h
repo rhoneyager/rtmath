@@ -220,7 +220,10 @@ namespace rtmath {
 				mutable rotPtr _rotMinPE, _rotMaxAR;
 
 				/// Holds the Voronoi diagram (now used when calculating per-orientation area and perimeter)
-				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
+				// Currently disabled because it makes stats storage huge! Per-ori vd use is currently
+				// disabled, so it can be turned off. Otherwise, a cacheing shared pointer should be established, 
+				// or the use of weak pointers with a parent that can drop the object.
+				//boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 
 
 			};
