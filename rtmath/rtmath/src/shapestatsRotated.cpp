@@ -33,6 +33,7 @@ namespace rtmath {
 			{
 				//boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
 				//shapeFileStatsRotated &res = *pres;
+				std::cerr << " " << beta << ", " << theta << ", " << phi << std::endl;
 
 				rotData pres;
 				basicTable &tbl = pres.get<0>();
@@ -261,6 +262,7 @@ namespace rtmath {
 				vec[rotColDefs::PE](2) = g*boost::accumulators::sum(acc_z);
 				vec[rotColDefs::PE](3) = 0; // Writing dir_mat_t, but with three elements instead of four.
 
+				/*
 				// Take the voronoi convex hull candidate points, rotate then and project, and find the 2d hull
 				auto vcpts = vd->calcCandidateConvexHullPoints();
 				//std::cout << *vcpts << std::endl;
@@ -292,9 +294,10 @@ namespace rtmath {
 				convexHull cvHull2d(crpts);
 				cvHull2d.constructHull();
 
-				double areas[3], perims[3];
-				cvHull2d.area2d(areas);
-				cvHull2d.perimeter2d(perims);
+				*/
+				double areas[3] = { 0, 0, 0 }, perims[3] = { 0, 0, 0 };
+				///cvHull2d.area2d(areas);
+				//cvHull2d.perimeter2d(perims);
 				vec[rotColDefs::AREA_CONVEX](0) = static_cast<float>(areas[0]);
 				vec[rotColDefs::AREA_CONVEX](1) = static_cast<float>(areas[1]);
 				vec[rotColDefs::AREA_CONVEX](2) = static_cast<float>(areas[2]);

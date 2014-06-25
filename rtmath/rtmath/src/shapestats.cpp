@@ -260,7 +260,7 @@ namespace rtmath {
 				// Calculate all default (from config or command-line) rotations
 				for (auto rot : defaultRots)
 				{
-					std::cerr << "Calculating stats for rotation " << rot.get<0>() << ", " << rot.get<1>() << ", " << rot.get<2>() << std::endl;
+					//std::cerr << "Calculating stats for rotation " << rot.get<0>() << ", " << rot.get<1>() << ", " << rot.get<2>() << std::endl;
 					calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
 					//const basicTable &tbl = rot.get<0>();
 					//calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);

@@ -264,7 +264,6 @@ int main(int argc, char** argv)
 			vd.first->getRots(rots);
 			for (auto &r : rots)
 			{
-				cerr << " " << r.first.get<0>() << ", " << r.first.get<1>() << ", " << r.first.get<2>() << std::endl;
 				vd.second->calcStatsRot(r.first.get<0>(), r.first.get<1>(), r.first.get<2>());
 			}
 
