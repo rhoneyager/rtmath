@@ -353,7 +353,7 @@ namespace rtmath {
 					return voronoi_diagrams[name];
 				// Attempt to load the voronoi diagram from the hash database.
 				boost::shared_ptr<Voronoi::VoronoiDiagram> res;
-				std:::cerr << "Requesting voronoi diagrams for " << hash().string() << std::endl;
+				std::cerr << "Requesting voronoi diagrams for " << hash().string() << std::endl;
 				res = Voronoi::VoronoiDiagram::loadHash(hash());
 				if (!res) {
 					std::cerr << " Diagrams not found. Generating." << std::endl;
