@@ -25,7 +25,7 @@ EXECUTE_PROCESS(COMMAND "svn" "info" "."
 #message("${res} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}")
 
 univ_grep("Revis" "SVN-INFO" "SVN-REV")
-univ_grep("URL" "SVN-INFO" "SVN-URL")
+univ_grep("URL:\ ht" "SVN-INFO" "SVN-URL")
 univ_grep("UUID" "SVN-INFO" "SVN-UUID")
 univ_grep("Date" "SVN-INFO" "SVN-DATE")
 
