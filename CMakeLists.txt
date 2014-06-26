@@ -26,7 +26,7 @@ include(generateAssemblyGuid)
 
 set(MAJOR 0)
 set(MINOR 7)
-set(REVISION 2)
+set(REVISION 3)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
