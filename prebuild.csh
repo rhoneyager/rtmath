@@ -9,7 +9,7 @@ set file = $argv[1]/debug_subversion.h
 echo "Outputting to $file"
 # Get information
 set rev = `/usr/bin/svn info . | /bin/grep Revision: |/usr/bin/cut -c11-`
-set url = `/usr/bin/svn info . | /bin/grep URL: |/usr/bin/cut -c6-`
+set url = `/usr/bin/svn info . | /bin/grep URL:\ htt |/usr/bin/cut -c6-`
 set dt = `/usr/bin/svn info . | /bin/grep Date: |/usr/bin/cut -c20-`
 # Create file
 /bin/rm -f $file
