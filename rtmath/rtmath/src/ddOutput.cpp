@@ -150,98 +150,22 @@ namespace rtmath {
 			stats->load(shape);
 		}
 
-		/*
-		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
+		boost::shared_ptr<const Eigen::MatrixXf> ddOutput::genWeights(
+			boost::shared_ptr<weights::OrientationWeights3d> p) const
 		{
-			this->write(filename, outtype);
+			boost::shared_ptr<Eigen::MatrixXf> res(new Eigen::MatrixXf(oridata_d.rows(), 1));
+			for (size_t i = 0; i < (size_t)res->rows(); ++i)
+			{
+				const double &beta = oridata_d(i, stat_entries::BETA);
+				const double &theta = oridata_d(i, stat_entries::THETA);
+				const double &phi = oridata_d(i, stat_entries::PHI);
+
+				double wt = p->getWeight(beta, theta, phi);
+				(*res)(i) = static_cast<float>(wt);
+			}
+			boost::shared_ptr<const Eigen::MatrixXf> resb(res);
+			return resb;
 		}
-
-		void ddOutput::writeFile(const std::string &filename, const std::string &outtype) const
-		{
-			using namespace Ryan_Serialization;
-			using namespace std;
-			using boost::filesystem::path;
-			string cmeth, uncompressed;
-
-			string type = outtype;
-			::rtmath::registry::IO_class_registry<ddOutput>::io_multi_type dllsaver = nullptr;
-			
-			Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
-			path pext = path(uncompressed).extension();
-
-			// Process dll hooks first
-			auto hooks = usesDLLregistry<ddOutput_IO_output_registry,
-				::rtmath::registry::IO_class_registry<ddOutput> >::getHooks();
-			auto opts = registry::IO_options::generate();
-			opts->filename(uncompressed);
-			opts->filetype(type);
-			for (const auto &hook : *hooks)
-			{
-				//if (hook.io_multi_matches(uncompressed.c_str(), type.c_str()))
-				if (hook.io_multi_matches(nullptr,opts))
-				{
-					dllsaver = hook.io_multi_processor;
-					if (!type.size())
-						type = "dll";
-					break;
-				}
-			}
-			if (!type.size())
-			{
-				if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
-				// Default is to write a standard shapefile
-				else type = "shp";
-			}
-
-
-			if (type == "serialized")
-			{
-				Ryan_Serialization::write<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
-			}
-			else if (dllsaver)
-			{
-				// Most of these types aren't compressible or implement their
-				// own compression schemes. So, it's not handled at this level.
-				dllsaver(nullptr, opts, this);
-				//dllsaver(filename.c_str(), this);
-			} else {
-				// Cannot match a file type to save.
-				// Should never occur.
-				RTthrow debug::xUnknownFileFormat(filename.c_str());
-			}
-		}
-
-		void ddOutput::readFile(const std::string &filename)
-		{
-			// First, detect if the file is compressed.
-			using namespace Ryan_Serialization;
-			std::string cmeth, target, uncompressed;
-			// Combination of detection of compressed file, file type and existence.
-			if (!detect_compressed(filename, cmeth, target))
-				RTthrow rtmath::debug::xMissingFile(filename.c_str());
-			uncompressed_name(target, uncompressed, cmeth);
-
-			boost::filesystem::path p(uncompressed);
-			boost::filesystem::path pext = p.extension(); // Uncompressed extension
-
-			// Serialization gets its own override
-			if (Ryan_Serialization::known_format(pext))
-			{
-				// This is a serialized file. Verify that it has the correct identifier, and 
-				// load the serialized object directly
-				Ryan_Serialization::read<ddOutput>(*this, filename, "rtmath::ddscat::ddOutput");
-			} else {
-				RTthrow rtmath::debug::xUnknownFileFormat(filename.c_str());
-			}
-		}
-
-		boost::shared_ptr<ddOutput> ddOutput::load(const std::string &filename)
-		{
-			boost::shared_ptr<ddOutput> res(new ddOutput);
-			res->readFile(filename);
-			return res;
-		}
-        */
 
 		/** \brief Resize the orientation and fml tables
 		*

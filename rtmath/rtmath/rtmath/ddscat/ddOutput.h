@@ -32,6 +32,7 @@ namespace rtmath {
 		class ddOutput_IO_output_registry {};
 		class ddOutput_IO_input_registry {};
 		//class ddOutput_serialization {};
+		namespace weights { class OrientationWeights3d; }
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
@@ -53,14 +54,8 @@ namespace rtmath {
 
 		class ddOriData;
 		//class ddOutputGenerator;
-		namespace shapefile
-		{
-			class shapefile;
-		}
-		namespace stats
-		{
-			class shapeFileStats;
-		}
+		namespace shapefile { class shapefile; }
+		namespace stats { class shapeFileStats; }
 		class ddPar;
 		//class ddOutputGeneratorConnector;
 
@@ -160,30 +155,7 @@ namespace rtmath {
 					NUM_STAT_ENTRIES_DOUBLES
 				};
 
-				/*
-				enum stat_entries_size_ts
-				{
-					// DOWEIGHT indicates whether this is an avg entry or a raw oriented result.
-					//VERSION, NUM_DIPOLES, NAVG, 
-					DOWEIGHT,
-					NUM_STAT_ENTRIES_INTS
-				};
-				*/
-
-				/*
-				enum stat_entries_strings {
-					TARGET,
-					DDAMETH,
-					CCGMETH,
-					SHAPE,
-					NUM_STAT_ENTRIES_STRINGS
-				};
-				*/
-
-				//template<class T> static std::string stringify(int val) { return std::string(); }
 				static DLEXPORT_rtmath_ddscat std::string stringify(int val);
-				//template<> static DLEXPORT_rtmath_ddscat std::string stringify<size_t>(int val);
-				//template<> static DLEXPORT_rtmath_ddscat std::string stringify<std::string>(int val);
 			};
 
 			struct shared_data
@@ -204,13 +176,11 @@ namespace rtmath {
 			/// Table containing orientation data (cross-sections, etc.)
 			/// Set when listing folder.
 			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> oridata_d;
-			//Eigen::Matrix<size_t, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_INTS> oridata_i;
-			//std::vector<std::array<std::string, stat_entries::NUM_STAT_ENTRIES_STRINGS> > oridata_s;
-
-			//Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> > avgoridata_d;
-			//Eigen::Matrix<size_t, 1, stat_entries::NUM_STAT_ENTRIES_INTS> > avgoridata_i;
-			//std::array<std::string, stat_entries::stat_entries > avgoridata_s;
-
+			
+			/// Generate a table containing weighting data, matching the ori table rows, 
+			/// for the specified distribution.
+			boost::shared_ptr<const Eigen::MatrixXf> genWeights(
+				boost::shared_ptr<weights::OrientationWeights3d> ) const;
 
 			/// Refractive indices
 			std::vector<std::vector<std::complex<double> > > ms;

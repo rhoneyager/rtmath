@@ -203,6 +203,7 @@ set(rtmath_ddscat-files
 	rtmath/ddscat/mtab.h
 	#rtmath/ddscat/runScripts.h
 	rtmath/ddscat/tmData.h
+	src/ddavg.cpp
 	# src/ddLoader.cpp
 	#src/ddparGenerator.cpp
 	#src/ddparGenerator_serialization.cpp
