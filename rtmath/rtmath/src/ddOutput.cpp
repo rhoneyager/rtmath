@@ -96,7 +96,6 @@ namespace rtmath {
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0), temp(0), numOriData(0), ingest_rtmath_version(0)
 		{
-			avg.setZero();
 			resize(0, 0);
 		}
 
@@ -213,6 +212,7 @@ namespace rtmath {
 		void ddOutput::resize(size_t numOris, size_t numTotAngles)
 		{
 			oridata_d.conservativeResize(numOris, Eigen::NoChange);
+			avg.conservativeResize(1, Eigen::NoChange);
 			//oridata_i.conservativeResize(numOris, Eigen::NoChange);
 			//oridata_s.resize(1);
 			ms.resize(numOris);

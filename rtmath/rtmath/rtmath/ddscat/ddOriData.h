@@ -90,6 +90,7 @@ namespace rtmath {
 		public:
 			ddOriData(ddOutput &parent, size_t row,
 				const std::string &filenameSCA = "", const std::string &filenameFML = "");
+			ddOriData(ddOutput &parent, const std::string &filenameAVG);
 			//ddOriData(ddOutput &parent, size_t row, )
 			virtual ~ddOriData();
 
@@ -108,13 +109,13 @@ namespace rtmath {
 			void writeMueller(std::ostream &out, const mMuellerIndices &mi = mMuellerIndicesDefault()) const;
 			void writeS(std::ostream &out) const;
 			void writeF(std::ostream &out) const;
-			void writeStatTable(std::ostream &out, bool isAvg = false) const;
+			void writeStatTable(std::ostream &out) const;
 
 			void readFML(std::istream &in);
 			void readSCA(std::istream &in);
 			void readAVG(std::istream &in);
 			//void readHeader(std::istream &in, const std::string &sstop = "Qext");
-			void readStatTable(std::istream &in, bool isAvg = false);
+			void readStatTable(std::istream &in);
 			void readMueller(std::istream &in);
 			void readF(std::istream &in, boost::shared_ptr<const ddScattMatrixConnector>);
 
@@ -228,6 +229,11 @@ namespace rtmath {
 			ddOutput &_parent;
 			/// Row in the ddOutput tables
 			size_t _row;
+			bool isAvg;
+
+			Eigen::Block<ddOutput::doubleType, 
+				1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
+				false, true> selectData() const;
 		};
 
 

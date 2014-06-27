@@ -175,12 +175,14 @@ namespace rtmath {
 				//	   iter2, mxiter2, nsca2;
 			} s;
 
+			typedef Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> doubleType;
 			/// Table containing orientation data (cross-sections, etc.)
 			/// Set when listing folder.
-			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> oridata_d;
+			doubleType oridata_d;
 			
-			/// Storage for avg file data - used in reading runs that aren't mine
-			Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> avg;
+			/// \brief Storage for avg file data - used in reading runs that aren't mine
+			/// \note Using Eigen::Dynamic to preserve type compatabiity with oridata_d
+			doubleType avg;
 
 			/// Generate a table containing weighting data, matching the ori table rows, 
 			/// for the specified distribution.

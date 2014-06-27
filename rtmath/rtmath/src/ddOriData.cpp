@@ -146,12 +146,19 @@ namespace rtmath {
 		ddOriData::ddOriData(ddOutput &parent, size_t row, 
 			const std::string &filenameSCA, 
 			const std::string &filenameFML) :
-			_parent(parent), _row(row)
+			_parent(parent), _row(row), isAvg(false)
 		{
 			_init();
 			// Double read to capture fml data and cross-sections in one container.
 			if (filenameSCA.size()) readFile(filenameSCA);
 			if (filenameFML.size()) readFile(filenameFML);
+		}
+
+		ddOriData::ddOriData(ddOutput &parent, const std::string &filenameAVG) :
+			_parent(parent), _row(0), isAvg(true)
+		{
+			_init();
+			if (filenameAVG.size()) readFile(filenameAVG);
 		}
 		
 		void ddOriData::_init()
@@ -253,9 +260,17 @@ namespace rtmath {
 			return _parent.s.num_dipoles;
 		}
 
+		Eigen::Block<ddOutput::doubleType, 1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, false, true>
+		ddOriData::selectData() const
+		{
+			if (isAvg)
+				return _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			return _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+		}
+
 		double ddOriData::freq() const
 		{
-			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = selectData();
 			//std::cerr << _row << " freq() " << od(ddOutput::stat_entries::WAVE) << std::endl;
 			return units::conv_spec("um", "GHz").convert(od(ddOutput::stat_entries::WAVE));
 		}
@@ -353,7 +368,7 @@ namespace rtmath {
 
 			std::getline(in, junk); //"          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
 
-			readStatTable(in, true);
+			readStatTable(in);
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
@@ -654,7 +669,7 @@ namespace rtmath {
 			
 
 			// Write the odd table of Qsca and the others
-			writeStatTable(out, true);
+			writeStatTable(out);
 
 			// Write the P matrix (not supported for avg file here)
 			//writeMueller(out);
@@ -873,12 +888,10 @@ namespace rtmath {
 		}
 
 
-		void ddOriData::writeStatTable(std::ostream &out, bool isAvg) const
+		void ddOriData::writeStatTable(std::ostream &out) const
 		{
 			// cannot be const as it changes if it is an avg file
-			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
-			if (isAvg)
-				od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			auto od = selectData();
 
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
@@ -928,11 +941,9 @@ namespace rtmath {
 			out.width(0);
 		}
 
-		void ddOriData::readStatTable(std::istream &in, bool isAvg)
+		void ddOriData::readStatTable(std::istream &in)
 		{
-			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
-			if (isAvg) 
-				od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			auto od = selectData();
 			//auto &os = _parent.oridata_s.at(_row);
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 
@@ -969,7 +980,7 @@ namespace rtmath {
 
 		double ddOriData::guessTemp(size_t dielIndex) const
 		{
-			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			const auto od = selectData();
 			return rtmath::refract::guessTemp(freq(), M(dielIndex));
 		}
 
