@@ -22,6 +22,7 @@
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -49,7 +50,8 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("inputshp,s", po::value< vector<string> >()->multitoken(), "Input shape files")
-			("inputvoro,v", po::value<vector<string> >(), "Input voronoi diagrams")
+			("inputvoro,v", po::value<vector<string> >()->multitoken(), "Input voronoi diagrams")
+			("inputrun,r", po::value<vector<string> >()->multitoken(), "Input ddscat runs")
 			("output,o", po::value<string>(), "Output filename of Voronoi diagram file")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
@@ -82,6 +84,8 @@ int main(int argc, char** argv)
 		if (vm.count("inputshp")) inputshp = vm["inputshp"].as< vector<string> >(); 
 		vector<string> inputvoro;
 		if (vm.count("inputvoro")) inputvoro = vm["inputvoro"].as<vector<string> >();
+		vector<string> inputrun;
+		if (vm.count("inputrun")) inputrun = vm["inputrun"].as<vector<string> >();
 		string output;
 		if (vm.count("output")) output = vm["output"].as<string>();
 		bool storeShape = false;
@@ -94,6 +98,9 @@ int main(int argc, char** argv)
 				cerr << "\t" << *it << "\n";
 			cerr << "Input voronoi diagrams are:" << endl;
 			for (auto it = inputvoro.begin(); it != inputvoro.end(); ++it)
+				cerr << "\t" << *it << "\n";
+			cerr << "Input ddscat runs are:" << endl;
+			for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
 				cerr << "\t" << *it << "\n";
 			cerr << "Outputting to: " << output << endl;
 		}
@@ -213,6 +220,57 @@ int main(int argc, char** argv)
 				vd->calcCandidateConvexHullPoints();
 
 				doProcess(std::move(vd));
+			}
+		}
+
+		for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
+		{
+			path ps;
+			path pi(*it);
+			if (!exists(pi)) { cerr << "Misssing file " << pi << endl; continue; }
+			ps = pi;
+			vector<boost::shared_ptr<ddscat::ddOutput> > runs;
+
+			try {
+				auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
+				iopts->filename(*it);
+				// Handle not needed as the read context is used only once.
+				if (is_directory(ps))
+				{
+					// Input is a ddscat run
+					boost::shared_ptr<ddOutput> s(new ddOutput);
+					s = ddOutput::generate(ps.string());
+					runs.push_back(s);
+				}
+				else if (ddOutput::canReadMulti(nullptr, iopts))
+					ddOutput::readVector(nullptr, iopts, runs);
+				else {
+					// This fallback shouldn't happen...
+					boost::shared_ptr<ddOutput> s(new ddOutput);
+					s->readFile(*it);
+					runs.push_back(s);
+				}
+			}
+			catch (std::exception &e) {
+				cerr << e.what() << std::endl;
+				continue;
+			}
+
+			for (const auto &r : runs)
+			{
+				cerr << "Generating Voronoi diagrams for hash " << r->shapeHash.lower << endl;
+				auto shp = shapefile::shapefile::loadHash(r->shapeHash);
+				if (shp) {
+					boost::shared_ptr<VoronoiDiagram> vd;
+					vd = shp->generateVoronoi(
+						std::string("standard"), VoronoiDiagram::generateStandard);
+					vd->calcSurfaceDepth();
+					vd->calcCandidateConvexHullPoints();
+
+					doProcess(std::move(vd));
+				}
+				else std::cerr << "Shape file matching hash " 
+					<< r->shapeHash.string() << " was not found." << std::endl;
 			}
 		}
 

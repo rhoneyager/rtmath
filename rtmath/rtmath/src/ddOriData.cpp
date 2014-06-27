@@ -268,7 +268,8 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 
-			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			auto od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			//auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			ddOutput::shared_data s;
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
@@ -352,7 +353,7 @@ namespace rtmath {
 
 			std::getline(in, junk); //"          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
 
-			readStatTable(in);
+			readStatTable(in, true);
 			{
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
@@ -586,7 +587,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
-			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row,0);
+			const auto od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0,0);
 			const auto &s = _parent.s;
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
@@ -653,10 +654,10 @@ namespace rtmath {
 			
 
 			// Write the odd table of Qsca and the others
-			writeStatTable(out);
+			writeStatTable(out, true);
 
-			// Write the P matrix
-			writeMueller(out);
+			// Write the P matrix (not supported for avg file here)
+			//writeMueller(out);
 		}
 
 		void ddOriData::writeSCA(std::ostream &out) const
@@ -872,9 +873,13 @@ namespace rtmath {
 		}
 
 
-		void ddOriData::writeStatTable(std::ostream &out) const
+		void ddOriData::writeStatTable(std::ostream &out, bool isAvg) const
 		{
-			const auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			// cannot be const as it changes if it is an avg file
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			if (isAvg)
+				od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 			using namespace std;
@@ -923,10 +928,11 @@ namespace rtmath {
 			out.width(0);
 		}
 
-
-		void ddOriData::readStatTable(std::istream &in)
+		void ddOriData::readStatTable(std::istream &in, bool isAvg)
 		{
 			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			if (isAvg) 
+				od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
 			//auto &os = _parent.oridata_s.at(_row);
 			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
 

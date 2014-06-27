@@ -108,13 +108,13 @@ namespace rtmath {
 			void writeMueller(std::ostream &out, const mMuellerIndices &mi = mMuellerIndicesDefault()) const;
 			void writeS(std::ostream &out) const;
 			void writeF(std::ostream &out) const;
-			void writeStatTable(std::ostream &out) const;
+			void writeStatTable(std::ostream &out, bool isAvg = false) const;
 
 			void readFML(std::istream &in);
 			void readSCA(std::istream &in);
 			void readAVG(std::istream &in);
 			//void readHeader(std::istream &in, const std::string &sstop = "Qext");
-			void readStatTable(std::istream &in);
+			void readStatTable(std::istream &in, bool isAvg = false);
 			void readMueller(std::istream &in);
 			void readF(std::istream &in, boost::shared_ptr<const ddScattMatrixConnector>);
 

@@ -87,6 +87,8 @@ namespace rtmath {
 		public:
 			ddOutput();
 
+			ddOutput(const ddOutput&);
+
 			/// Regenerates ddOutputSingle entries from tables (used in hdf5 read)
 			//void doImport();
 
@@ -177,6 +179,9 @@ namespace rtmath {
 			/// Set when listing folder.
 			Eigen::Matrix<double, Eigen::Dynamic, stat_entries::NUM_STAT_ENTRIES_DOUBLES> oridata_d;
 			
+			/// Storage for avg file data - used in reading runs that aren't mine
+			Eigen::Matrix<double, 1, stat_entries::NUM_STAT_ENTRIES_DOUBLES> avg;
+
 			/// Generate a table containing weighting data, matching the ori table rows, 
 			/// for the specified distribution.
 			boost::shared_ptr<const Eigen::MatrixXf> genWeights(

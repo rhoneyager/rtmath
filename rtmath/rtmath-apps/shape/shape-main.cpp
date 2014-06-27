@@ -62,9 +62,10 @@ int main(int argc, char** argv)
 		ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		//Ryan_Serialization::add_options(cmdline, config, hidden);
 
+		/// \todo Add unified read option, to pull shapefiles from other sources (useful for tagging)
+
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("trial-run,T", "Only list what would be done")
 			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
 			("input,i", po::value< vector<string> >(), "Input shape files")
 			("output,o", po::value<string>(), "Output filename")
@@ -151,38 +152,12 @@ int main(int argc, char** argv)
 
 		bool doTargetOut = vm["process-target-out"].as<bool>();
 
-		// Validate input files
-		vector<string> vinputs;
-		for (auto it = inputs.begin(); it != inputs.end(); it++)
-		{
-			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
-			if (is_directory(pi))
-			{
-				path pt = pi / "target.out";
-				path ps = pi / "shape.dat";
-				if (doTargetOut)
-					if (exists(pt)) vinputs.push_back(pt.string());
-				if (exists(ps)) vinputs.push_back(ps.string());
-				else continue;
-				//else throw rtmath::debug::xPathExistsWrongType(it->c_str());
-			} else vinputs.push_back(*it);
-		}
-
-		if (vm.count("trial-run")) 
-		{
-			cerr << "Trial run specified. Terminating here." << endl;
-			return 0;
-		}
-
-		//vector<rtmath::ddscat::stats::shapeFileStats> Stats;
-		//Stats.reserve(inputs.size());
 
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
 
 		auto opts = registry::IO_options::generate();
 		auto optsExport = registry::IO_options::generate();
-		
+
 		//opts->filetype(ctype);
 		opts->exportType(exportType);
 		opts->filename(output);
@@ -193,38 +168,14 @@ int main(int argc, char** argv)
 		//opts->setVal("key", sstats._shp->filename);
 		//optsExport->setVal("key", sstats._shp->filename);
 
-		using std::vector;
 		using namespace rtmath::ddscat;
-		vector<boost::shared_ptr<shapefile::shapefile> > shapes;
-		for (auto it = vinputs.begin(); it != vinputs.end(); ++it)
+		auto processShape = [&](boost::shared_ptr<shapefile::shapefile> shp)
 		{
-			cerr << "Processing " << *it << endl;
-			auto iopts = registry::IO_options::generate();
-			iopts->filename(*it);
-			try {
-				// Handle not needed as the read context is used only once.
-				if (shapefile::shapefile::canReadMulti(nullptr,iopts))
-					shapefile::shapefile::readVector(nullptr, iopts, shapes);
-				else {
-					boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
-					s->readFile(*it);
-					shapes.push_back(s);
-				}
-			} catch (std::exception &e)
-			{
-				cerr << e.what() << std::endl;
-				continue;
-			}
-		}
-
-		for (const auto &shp : shapes)
-		{
-			cerr << "Shape " << shp->hash().lower << endl;
+			cerr << "  Shape " << shp->hash().lower << endl;
 			for (auto &t : tags)
 				shp->tags.insert(t);
 
 			if (vm.count("hash-shape")) shp->writeToHash();
-			//if (vm.count("hash-stats")) stats->writeToHash();
 			if (vm.count("hash-voronoi"))
 			{
 				using namespace rtmath::Voronoi;
@@ -235,10 +186,10 @@ int main(int argc, char** argv)
 				// If already hashed, then this does nothing
 				vd->writeToHash();
 			}
-
+			//if (vm.count("hash-stats")) stats->writeToHash();
 			//cerr << "\tCalculating statistics" << endl;
 			//rtmath::ddscat::stats::shapeFileStats sstats(shp);
-			
+
 			if (output.size())
 				handle = shp->writeMulti(handle, opts);
 			//	handle = sstats.writeMulti(handle, opts);
@@ -247,7 +198,59 @@ int main(int argc, char** argv)
 			//	exportHandle = sstats.writeMulti(exportHandle, optsExport);
 
 			//Stats.push_back(std::move(sstats));
+		};
+
+		// Validate input files
+		vector<string> vinputs;
+		for (auto it = inputs.begin(); it != inputs.end(); it++)
+		{
+			cerr << "Processing " << *it << endl;
+			path pi(*it);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (is_directory(pi))
+			{
+				path pt = pi / "target.out";
+				path ps = pi / "shape.dat";
+				boost::shared_ptr<shapefile::shapefile> smain;
+
+				if (exists(ps))
+				{
+					cerr << " found " << ps << endl;
+					smain = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(ps.string()));
+					processShape(smain);
+				}
+				if (doTargetOut && exists(pt))
+				{
+					cerr << " found " << pi << endl;
+					boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile(pt.string()));
+					if (smain)
+						s->tags.insert(std::pair<string, string>("target-src-hash", smain->hash().string()));
+					processShape(s);
+				}
+			} else {
+				auto iopts = registry::IO_options::generate();
+				iopts->filename(*it);
+				try {
+					vector<boost::shared_ptr<shapefile::shapefile> > shapes;
+					// Handle not needed as the read context is used only once.
+					if (shapefile::shapefile::canReadMulti(nullptr, iopts))
+						shapefile::shapefile::readVector(nullptr, iopts, shapes);
+					else {
+						boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
+						s->readFile(*it);
+						shapes.push_back(s);
+					}
+					for (auto &s : shapes)
+						processShape(std::move(s));
+				}
+				catch (std::exception &e)
+				{
+					cerr << e.what() << std::endl;
+					continue;
+				}
+			}
 		}
+
 
 	}
 	catch (rtmath::debug::xError &err)

@@ -57,6 +57,7 @@ namespace rtmath {
 				bool writeORI = opts->getVal<bool>("writeORI", true);
 				bool writeFML = opts->getVal<bool>("writeFML", true);
 				bool writeSHP = opts->getVal<bool>("writeSHP", true);
+				bool writeAVG = opts->getVal<bool>("writeAVG", true);
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
 				/// \todo Pick a better naming function for hdf5-internal runs
@@ -145,31 +146,27 @@ namespace rtmath {
 				// DDSCAT run verion tag
 				addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
 
-				// Enable compression
-				hsize_t chunk_dimsOri[2] = { (hsize_t)s->oridata_d.rows(), 1 };
-				hsize_t chunk_dimsFML[2] = { (hsize_t) s->fmldata->rows(), 
-					rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS };
-				auto plistOri = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-				plistOri->setChunk(2, chunk_dimsOri);
-				auto plistFML = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
-				plistFML->setChunk(2, chunk_dimsFML);
-				/* // SZIP compression disabled for now
-#if COMPRESS_SZIP
-				unsigned szip_options_mask = H5_SZIP_NN_OPTION_MASK;
-				unsigned szip_pixels_per_block = 16;
-				plistOri->setSzip(szip_options_mask, szip_pixels_per_block);
-				plistFML->setSzip(szip_options_mask, szip_pixels_per_block);
-				*/
-#if COMPRESS_ZLIB
-				plistOri->setDeflate(6);
-				plistFML->setDeflate(6);
-#endif
+				auto plistOri = make_plist(s->oridata_d.rows(), 1);
+				auto plistAvg = make_plist(1, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES);
+				auto plistFML = make_plist(s->fmldata->rows(),
+					rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
+
 
 				if (writeORI)
 				{
 					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), plistOri);
 					addColNames(csd, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
 						rtmath::ddscat::ddOutput::stat_entries::stringify);
+				}
+
+				if (writeAVG)
+				{
+					if (s->avg(0)) // Only write if there is something to write
+					{
+						auto avg = addDatasetEigen(gRun, "Average_Results", (s->avg), plistAvg);
+						addColNames(avg, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
+							rtmath::ddscat::ddOutput::stat_entries::stringify);
+					}
 				}
 
 				/*

@@ -28,6 +28,9 @@ IF (DEFINED SZIP_LIBRARIES)
 		SET (h5libs ${h5libs} szip)
 ENDIF()
 
+
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../../rtmath")
+
 add_library (rtmath_hdf5_cpp STATIC
 	export-hdf5.cpp
 	export-hdf5.h

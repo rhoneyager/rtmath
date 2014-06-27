@@ -151,11 +151,14 @@ namespace rtmath {
 				//bool readSHP = opts->getVal<bool>("readSHP", false);
 				bool readORI = opts->getVal<bool>("readORI", true);
 				bool readFML = opts->getVal<bool>("readFML", true);
+				bool readAVG = opts->getVal<bool>("readAVG", true);
 
 				if (readORI && datasetExists(base, "Cross_Sections"))
 					readDatasetEigen(base, "Cross_Sections", (r->oridata_d));
 				if (readFML && datasetExists(base, "FML_Data"))
 					readDatasetEigen(base, "FML_Data", *(r->fmldata));
+				if (readAVG && datasetExists(base, "Average_Results"))
+					readDatasetEigen(base, "Average_Results", (r->avg));
 				// The shapefiles are loaded in a separate bit of code, and they have their own search
 				// directory. The same applies to shape stats. As such, don't read the symlinks in this 
 				// iteration of the code.

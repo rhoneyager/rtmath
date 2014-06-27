@@ -473,6 +473,9 @@ namespace rtmath {
 				}
 			}
 
+
+			/// Creates a property list with the compression + chunking as specified
+			std::shared_ptr<H5::DSetCreatPropList> make_plist(size_t rows, size_t cols);
 		}
 	}
 }

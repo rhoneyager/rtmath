@@ -1,5 +1,7 @@
 #include "export-hdf5.h"
 
+#include "cmake-settings.h"
+
 namespace rtmath {
 	namespace plugins
 	{
@@ -112,7 +114,17 @@ namespace rtmath {
 				}
 			}
 
-
+			std::shared_ptr<H5::DSetCreatPropList> make_plist(size_t rows, size_t cols)
+			{
+				using namespace H5;
+				hsize_t chunk[2] = { (hsize_t)rows, (hsize_t)cols };
+				auto plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
+				plist->setChunk(2, chunk);
+#if COMPRESS_ZLIB
+				plist->setDeflate(6);
+#endif
+				return plist;
+			}
 		}
 	}
 }

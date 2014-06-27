@@ -96,8 +96,39 @@ namespace rtmath {
 		ddOutput::ddOutput() : 
 			freq(0), aeff(0), temp(0), numOriData(0), ingest_rtmath_version(0)
 		{
+			avg.setZero();
 			resize(0, 0);
 		}
+
+		ddOutput::ddOutput(const ddOutput &src) :
+			description(src.description),
+			ingest_timestamp(src.ingest_timestamp),
+			ingest_hostname(src.ingest_hostname),
+			ingest_username(src.ingest_username),
+			hostname(src.hostname),
+			ingest_rtmath_version(src.ingest_rtmath_version),
+			freq(src.freq),
+			aeff(src.aeff),
+			temp(src.temp),
+			sources(src.sources),
+			tags(src.tags),
+			ddvertag(src.ddvertag),
+			s(src.s),
+			oridata_d(src.oridata_d),
+			avg(src.avg),
+			ms(src.ms),
+			numOriData(src.numOriData),
+			shapeHash(src.shapeHash),
+			parsedShapeHash(src.parsedShapeHash),
+			shape(src.shape),
+			stats(src.stats)
+		{
+			fmldata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
+			(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>
+			(*(src.fmldata)));
+			parfile = boost::shared_ptr<ddPar>(new ddPar(*(src.parfile)));
+		}
+
 
 		ddOutput::shared_data::shared_data() : version(0), num_dipoles(0), navg(0) {}
 
@@ -277,7 +308,7 @@ namespace rtmath {
 				pfileid.replace_extension();
 
 				if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
-				if (pext.string() == ".sca" || pext.string() == ".fml" ) // disable avg: || pext.string() == ".avg")
+				if (pext.string() == ".sca" || pext.string() == ".fml" || pext.string() == ".avg")
 				{
 					if (!orisources.count(pfileid)) orisources[pfileid] = std::pair<path, path>(path(), path());
 					if (pext.string() == ".sca" || pext.string() == ".avg")
@@ -621,8 +652,7 @@ namespace rtmath {
 				<< tDesc << "-"
 				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
-				<< ddvertag
-				<< ".xml";
+				<< ddvertag;
 
 			res = out.str();
 			return res;
