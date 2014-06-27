@@ -148,7 +148,7 @@ namespace rtmath {
 
 				if (writeORI && s->oridata_d.rows())
 				{
-					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), make_plist(s->oridata_d.rows(), 1););
+					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), make_plist(s->oridata_d.rows(), 1));
 					addColNames(csd, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
 						rtmath::ddscat::ddOutput::stat_entries::stringify);
 				}
