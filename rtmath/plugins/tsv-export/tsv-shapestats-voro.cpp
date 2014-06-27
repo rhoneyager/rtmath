@@ -99,13 +99,18 @@ namespace rtmath {
 				// Initial file creation handles writing the initial header.
 				// So, just write the data.
 				auto r = s->calcStatsRot(0, 0, 0);
+				auto &tbl = r->get<0>();
+				auto &mat = r->get<1>();
+				auto &vec = r->get<2>();
+				using namespace rtmath::ddscat::stats;
+
 				(*(h->file.get())) << s->_shp->hash().lower << "\t" << s->V_dipoles_const << "\t"
 					<< s->Scircum_sphere.V << "\t" << s->Scircum_sphere.SA << "\t"
 					<< s->Sconvex_hull.V << "\t" << s->Sconvex_hull.SA << "\t"
 					<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
-					<< r->as_abs(0, 1) << "\t" << r->as_abs(0, 2) << "\t" << r->as_abs(1, 2) << "\t"
-					<< r->as_rms(0, 1) << "\t" << r->as_rms(0, 2) << "\t" << r->as_rms(1, 2) << "\t"
-					<< r->as_abs_mean(0, 1) << "\t" << r->as_abs_mean(0, 2) << "\t" << r->as_abs_mean(1, 2)
+					<< mat[rotColDefs::AS_ABS](0, 1) << "\t" << mat[rotColDefs::AS_ABS](0, 2) << "\t" << mat[rotColDefs::AS_ABS](1, 2) << "\t"
+					<< mat[rotColDefs::AS_RMS](0, 1) << "\t" << mat[rotColDefs::AS_RMS](0, 2) << "\t" << mat[rotColDefs::AS_RMS](1, 2) << "\t"
+					<< mat[rotColDefs::AS_ABS_MEAN](0, 1) << "\t" << mat[rotColDefs::AS_ABS_MEAN](0, 2) << "\t" << mat[rotColDefs::AS_ABS_MEAN](1, 2)
 					<< std::endl;
 				;
 

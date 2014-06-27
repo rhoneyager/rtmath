@@ -116,7 +116,7 @@ namespace rtmath {
 
 				double dSpacing = opts->getVal<double>("dSpacing", 0);
 				double aeff_um = s->Scircum_sphere.aeff_V * dSpacing;
-				size_t nRots = s->rotations.size();
+				size_t nRots = s->rotstats.size();
 
 				// Write the aspect ratio stat data
 				// Go through the loaded rotations and calculate ar stats
@@ -132,11 +132,18 @@ namespace rtmath {
 					tag::variance
 				> > m_xy, m_yz, m_xz;
 
-				for (const auto &rot : s->rotations)
+				/// \todo Modify stats to imclude aspect ratios that are in the target reference frame
+
+				for (const auto &rot : s->rotstats)
 				{
-					m_xy(rot->as_abs(0, 1));
-					m_yz(rot->as_abs(1, 2));
-					m_xz(rot->as_abs(0, 2));
+					auto &tbl = rot.get<0>();
+					auto &mat = rot.get<1>();
+					auto &vec = rot.get<2>();
+					using namespace rtmath::ddscat::stats;
+
+					m_xy(mat[rotColDefs::AS_ABS](0, 1));
+					m_yz(mat[rotColDefs::AS_ABS](1, 2));
+					m_xz(mat[rotColDefs::AS_ABS](0, 2));
 				}
 
 

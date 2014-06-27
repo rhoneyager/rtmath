@@ -146,15 +146,9 @@ namespace rtmath {
 				// DDSCAT run verion tag
 				addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
 
-				auto plistOri = make_plist(s->oridata_d.rows(), 1);
-				auto plistAvg = make_plist(1, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES);
-				auto plistFML = make_plist(s->fmldata->rows(),
-					rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS);
-
-
-				if (writeORI)
+				if (writeORI && s->oridata_d.rows())
 				{
-					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), plistOri);
+					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), make_plist(s->oridata_d.rows(), 1););
 					addColNames(csd, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
 						rtmath::ddscat::ddOutput::stat_entries::stringify);
 				}
@@ -163,7 +157,7 @@ namespace rtmath {
 				{
 					if (s->avg(0)) // Only write if there is something to write
 					{
-						auto avg = addDatasetEigen(gRun, "Average_Results", (s->avg), plistAvg);
+						auto avg = addDatasetEigen(gRun, "Average_Results", (s->avg), make_plist(1, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES));
 						addColNames(avg, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
 							rtmath::ddscat::ddOutput::stat_entries::stringify);
 					}
@@ -217,9 +211,10 @@ namespace rtmath {
 				//addDatasetEigen(gRun, "Cross_Sections_s", (s->oridata_s)); // , plistOri);
 				//if (s->avg)
 				//	addDatasetEigen(gRun, "Isotropic_Cross_Sections", *(s->avgoridata));
-				if (writeFML)
+				if (writeFML && s->fmldata->rows())
 				{
-					auto ft = addDatasetEigen(gRun, "FML_Data", *(s->fmldata), plistFML);
+					auto ft = addDatasetEigen(gRun, "FML_Data", *(s->fmldata), make_plist(s->fmldata->rows(),
+						rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS));
 					addColNames(ft, rtmath::ddscat::ddOutput::fmlColDefs::NUM_FMLCOLDEFS,
 						rtmath::ddscat::ddOutput::fmlColDefs::stringify);
 				}
