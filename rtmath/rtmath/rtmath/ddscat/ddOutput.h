@@ -180,10 +180,6 @@ namespace rtmath {
 			/// Set when listing folder.
 			doubleType oridata_d;
 			
-			/// \brief Storage for avg file data - used in reading runs that aren't mine
-			/// \note Using Eigen::Dynamic to preserve type compatabiity with oridata_d
-			doubleType avg;
-
 			/// Generate a table containing weighting data, matching the ori table rows, 
 			/// for the specified distribution.
 			boost::shared_ptr<const Eigen::MatrixXf> genWeights(
@@ -191,6 +187,19 @@ namespace rtmath {
 
 			/// Refractive indices
 			std::vector<std::vector<std::complex<double> > > ms;
+
+			struct Avgdata
+			{
+				double beta_min, beta_max, theta_min, theta_max, phi_min, phi_max;
+				size_t beta_n, theta_n, phi_n;
+				bool hasAvg;
+				std::vector < std::complex<double> > avg_ms;
+
+				/// \brief Storage for avg file data - used in reading runs that aren't mine
+				/// \note Using Eigen::Dynamic to preserve type compatabiity with oridata_d
+				doubleType avg;
+				Avgdata();
+			} avgdata;
 
 			/// Number of stored orientations + averages
 			size_t numOriData;

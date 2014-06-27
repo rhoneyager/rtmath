@@ -158,7 +158,7 @@ namespace rtmath {
 				if (readFML && datasetExists(base, "FML_Data"))
 					readDatasetEigen(base, "FML_Data", *(r->fmldata));
 				if (readAVG && datasetExists(base, "Average_Results"))
-					readDatasetEigen(base, "Average_Results", (r->avg));
+					readDatasetEigen(base, "Average_Results", (r->avgdata.avg));
 				// The shapefiles are loaded in a separate bit of code, and they have their own search
 				// directory. The same applies to shape stats. As such, don't read the symlinks in this 
 				// iteration of the code.

@@ -155,9 +155,9 @@ namespace rtmath {
 
 				if (writeAVG)
 				{
-					if (s->avg(0)) // Only write if there is something to write
+					if (s->avgdata.hasAvg) // Only write if there is something to write
 					{
-						auto avg = addDatasetEigen(gRun, "Average_Results", (s->avg), make_plist(1, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES));
+						auto avg = addDatasetEigen(gRun, "Average_Results", (s->avgdata.avg), make_plist(1, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES));
 						addColNames(avg, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
 							rtmath::ddscat::ddOutput::stat_entries::stringify);
 					}

@@ -90,7 +90,7 @@ namespace rtmath {
 		public:
 			ddOriData(ddOutput &parent, size_t row,
 				const std::string &filenameSCA = "", const std::string &filenameFML = "");
-			ddOriData(ddOutput &parent, const std::string &filenameAVG);
+			ddOriData(ddOutput &parent, const std::string &filenameAVG = "");
 			//ddOriData(ddOutput &parent, size_t row, )
 			virtual ~ddOriData();
 
@@ -199,10 +199,10 @@ namespace rtmath {
 			//std::string getStatEntry(stat_entries::stat_entries_strings e) const;
 
 		protected:
-			double __getSimpleDouble(int id) const { return _parent.oridata_d(_row, id); }
+			double __getSimpleDouble(int id) const { return selectData()(id); }
 			template<class valtype>
 			void __setSimpleDouble(int id, const valtype val) { __setSimpleRefDouble(id, val); }
-			void __setSimpleRefDouble(int id, const double &val) { _parent.oridata_d(_row, id) = val; }
+			void __setSimpleRefDouble(int id, const double &val) { selectData()(id) = val; }
 
 
 			/// Handles role of delegated constructor

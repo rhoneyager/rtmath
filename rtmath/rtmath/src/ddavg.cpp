@@ -63,7 +63,7 @@ namespace rtmath {
 			{
 				using namespace rtmath::ddscat;
 				// If an avg table is specified, just copy it to the resulting object
-				if (in->avg(0))
+				if (in->avgdata.hasAvg)
 				{
 					out = boost::shared_ptr<ddOutput>(new ddOutput(*in));
 					outwts.resize(0, 0);
@@ -73,7 +73,7 @@ namespace rtmath {
 					// The weights are provided already!
 					out = boost::shared_ptr<ddOutput>(new ddOutput(*in));
 					outwts.resize(in->oridata_d.rows(), 4);
-					out->avg.setZero();
+					out->avgdata.avg.setZero();
 
 					double cdf = 0;
 					for (size_t i = 0; i < (size_t)in->oridata_d.rows(); ++i)
@@ -87,17 +87,17 @@ namespace rtmath {
 						auto ow = outwts.block<1, 4>(i, 0);
 						ow(0) = beta; ow(1) = theta; ow(2) = phi; ow(3) = (float) wt;
 
-						out->avg = out->avg + (od * wt);
+						out->avgdata.avg = out->avgdata.avg + (od * wt);
 
 						cdf += wt;
 					}
 					// Weights should sum to unity. If not, tweak to fix.
-					out->avg = out->avg / cdf;
+					out->avgdata.avg = out->avgdata.avg / cdf;
 
 					// Finally, set irrelevant fields to indicate avg output.
-					out->avg(ddOutput::stat_entries::BETA) = -1;
-					out->avg(ddOutput::stat_entries::THETA) = -1;
-					out->avg(ddOutput::stat_entries::PHI) = -1;
+					out->avgdata.avg(ddOutput::stat_entries::BETA) = -1;
+					out->avgdata.avg(ddOutput::stat_entries::THETA) = -1;
+					out->avgdata.avg(ddOutput::stat_entries::PHI) = -1;
 				}
 
 			}

@@ -114,7 +114,7 @@ namespace rtmath {
 			ddvertag(src.ddvertag),
 			s(src.s),
 			oridata_d(src.oridata_d),
-			avg(src.avg),
+			avgdata(src.avgdata),
 			ms(src.ms),
 			numOriData(src.numOriData),
 			shapeHash(src.shapeHash),
@@ -212,7 +212,7 @@ namespace rtmath {
 		void ddOutput::resize(size_t numOris, size_t numTotAngles)
 		{
 			oridata_d.conservativeResize(numOris, Eigen::NoChange);
-			avg.conservativeResize(1, Eigen::NoChange);
+			avgdata.avg.conservativeResize(1, Eigen::NoChange);
 			//oridata_i.conservativeResize(numOris, Eigen::NoChange);
 			//oridata_s.resize(1);
 			ms.resize(numOris);
@@ -226,6 +226,12 @@ namespace rtmath {
 		void ddOutput::resizeFML(size_t numTotAngles)
 		{
 			fmldata->conservativeResize(numTotAngles, Eigen::NoChange);
+		}
+
+		ddOutput::Avgdata::Avgdata() : beta_min(0), beta_max(0), beta_n(0),
+			theta_min(0), theta_max(0), theta_n(0),
+			phi_min(0), phi_max(0), phi_n(0), hasAvg(0)
+		{
 		}
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
@@ -290,6 +296,11 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lock(m_par);
 				res->parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
 			};
+			auto loadAvg = [&](const path &p)
+			{
+				std::lock_guard<std::mutex> lock(m_other);
+				ddOriData dat(*res, p.string());
+			};
 
 			for (const auto &p : cands)
 			{
@@ -308,15 +319,18 @@ namespace rtmath {
 				pfileid.replace_extension();
 
 				if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
-				if (pext.string() == ".sca" || pext.string() == ".fml" || pext.string() == ".avg")
+				if (pext.string() == ".sca" || pext.string() == ".fml")
 				{
 					if (!orisources.count(pfileid)) orisources[pfileid] = std::pair<path, path>(path(), path());
-					if (pext.string() == ".sca" || pext.string() == ".avg")
+					if (pext.string() == ".sca")
 					{
 						orisources[pfileid].second = praw;
 					} else {
 						orisources[pfileid].first = praw;
 					}
+				} else if (pext.string() == ".avg") {
+					std::thread t(loadAvg, praw);
+					pool.push_back(std::move(t));
 				} else if (praw.filename().string() == "ddscat.par") { // Match full name
 					std::thread t(loadPar, praw);
 					pool.push_back(std::move(t));
@@ -427,28 +441,33 @@ namespace rtmath {
 
 			tags.insert(std::pair<std::string, std::string>("target", s.target));
 
-			// Pull the information from the first loaded entry
-			/// \todo Pull the information from the first avg file?
-			if (oridata_d.rows())
+			/*
+			auto selectData = [&]() -> Eigen::Block<ddOutput::doubleType, 1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, false, true>
 			{
-				const size_t _row = 0;
-				auto od = oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
-				//auto &os = oridata_s.at(_row);
-				//auto &oi = oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
-
-				ddOriData data(*this, _row);
-
+				if (avg(0)))
+					return avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+				return oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			};
+			*/
+			if (numOriData || avgdata.hasAvg)
+			{
+				//auto od = selectData();
+				boost::shared_ptr<ddOriData> data;
+				if (avgdata.hasAvg) data = boost::shared_ptr<ddOriData>(new ddOriData(*this, ""));
+				else data = boost::shared_ptr<ddOriData>(new ddOriData(*this, 0));
+			
 				// Extract the ddscat version from the target field
 				// Find "ddscat/" and read until the next space
 				ddUtil::getDDSCATbuild(s.target, ddvertag);
 
-				freq = data.freq();
-				aeff = data.aeff();
-				temp = data.guessTemp();
+				freq = data->freq();
+				aeff = data->aeff();
+				temp = data->guessTemp();
 			}
 			else {
 				aeff = 0;
 				freq = 0;
+				temp = 0;
 			}
 			
 			if (shape) {

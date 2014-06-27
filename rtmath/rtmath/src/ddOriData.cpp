@@ -264,7 +264,7 @@ namespace rtmath {
 		ddOriData::selectData() const
 		{
 			if (isAvg)
-				return _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+				return _parent.avgdata.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
 			return _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 		}
 
@@ -282,8 +282,8 @@ namespace rtmath {
 		{
 			using namespace std;
 			using namespace ddOriDataParsers;
-
-			auto od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			_parent.avgdata.hasAvg = true;
+			auto od = _parent.avgdata.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
 			//auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 			ddOutput::shared_data s;
 			{
@@ -326,7 +326,7 @@ namespace rtmath {
 				size_t subst = 0;
 				std::complex<double> m;
 				refractive::read(lin, subst, m);
-				_parent.ms[_row].push_back(m);
+				_parent.avgdata.avg_ms.push_back(m);
 			}
 
 			//simpleNumCompound<double>::read(lin, od(ddOutput::stat_entries::TOL)); // lin from refractive index read
@@ -357,9 +357,9 @@ namespace rtmath {
 			od(ddOutput::stat_entries::IPV2TFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV2TFYI) = iv[1].imag();
 			od(ddOutput::stat_entries::IPV2TFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV2TFZI) = iv[2].imag();
 
-			std::getline(in, junk); // beta extent
-			std::getline(in, junk); // theta extent
-			std::getline(in, junk); // phi extent
+			ddRot1d::read(in, junk, _parent.avgdata.beta_min, _parent.avgdata.beta_max, _parent.avgdata.beta_n);
+			ddRot1d::read(in, junk, _parent.avgdata.theta_min, _parent.avgdata.theta_max, _parent.avgdata.theta_n);
+			ddRot1d::read(in, junk, _parent.avgdata.phi_min, _parent.avgdata.phi_max, _parent.avgdata.phi_n);
 			std::getline(in, junk); // empty line
 
 			std::getline(in, junk); // simpleNumRev<double>::read(in, od(ddOutput::stat_entries::ETASCA));
@@ -602,7 +602,7 @@ namespace rtmath {
 			using namespace std;
 			using namespace ddOriDataParsers;
 			//using namespace ddOutput::stat_entries;
-			const auto od = _parent.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0,0);
+			const auto od = _parent.avgdata.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
 			const auto &s = _parent.s;
 			//const auto &os = _parent.oridata_s.at(_row);
 			//const auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
@@ -628,8 +628,8 @@ namespace rtmath {
 				//simpleNumCompound<double>::write(out, this->version(), od(ddOutput::stat_entries::NAMBIENT), 8, "NAMBIENT=    ", "refractive index of ambient medium");
 
 			// Write refractive indices (plural)
-			for (size_t i = 0; i < _parent.ms[_row].size(); ++i)
-				refractive::write(out, this->version(), i + 1, _parent.ms[_row][i], k, od(ddOutput::stat_entries::D));
+			for (size_t i = 0; i < _parent.avgdata.avg_ms.size(); ++i)
+				refractive::write(out, this->version(), i + 1, _parent.avgdata.avg_ms[i], k, od(ddOutput::stat_entries::D));
 
 			simpleNumCompound<double>::write(out, this->version(), _parent.parfile->maxTol(), 9, "   TOL= ", " error tolerance for CCG method");
 			
@@ -655,9 +655,9 @@ namespace rtmath {
 			iv[2] = s.IPV2LF[2];
 			ddPolVec::write(out, this->version(), iv, 2, frameType::LF);
 
-			ddRot1d::write(out, this->version(), "beta", 0, 360, 0, "BETA");
-			ddRot1d::write(out, this->version(), "theta", 0, 180, 0, "THETA");
-			ddRot1d::write(out, this->version(), "phi", 0, 360, 0, "PHI");
+			ddRot1d::write(out, this->version(), "beta", _parent.avgdata.beta_min, _parent.avgdata.beta_max, _parent.avgdata.beta_n, "BETA");
+			ddRot1d::write(out, this->version(), "theta", _parent.avgdata.theta_min, _parent.avgdata.theta_max, _parent.avgdata.theta_n, "THETA");
+			ddRot1d::write(out, this->version(), "phi", _parent.avgdata.phi_min, _parent.avgdata.phi_max, _parent.avgdata.phi_n, "PHI");
 
 			out << endl;
 
@@ -1119,19 +1119,32 @@ namespace rtmath {
 
 		std::complex<double> ddOriData::M(size_t dielIndex) const
 		{
-			if (_parent.ms[_row].size() > dielIndex) return _parent.ms[_row][dielIndex];
+			if (!isAvg)
+			{
+				if (_parent.ms[_row].size() > dielIndex) return _parent.ms[_row][dielIndex];
+			} else {
+				if (_parent.avgdata.avg_ms.size() > dielIndex) return _parent.avgdata.avg_ms[dielIndex];
+			}
 			RTthrow debug::xArrayOutOfBounds();
 			return std::complex<double>(0, 0); // needed to suppress _parent.ms[_row]vc warning
 		}
 		void ddOriData::M(const std::complex<double>& m, size_t dielIndex)
 		{
-			if (_parent.ms[_row].size() < dielIndex) _parent.ms[_row].resize(dielIndex + 1);
-			_parent.ms[_row][dielIndex] = m;
+			if (!isAvg)
+			{
+				if (_parent.ms[_row].size() < dielIndex) _parent.ms[_row].resize(dielIndex + 1);
+				_parent.ms[_row][dielIndex] = m;
+			}
+			else {
+				if (_parent.avgdata.avg_ms.size() < dielIndex) _parent.avgdata.avg_ms.resize(dielIndex + 1);
+				_parent.avgdata.avg_ms[dielIndex] = m;
+			}
 		}
 
 		size_t ddOriData::numM() const
 		{
-			return _parent.ms[_row].size();
+			if (!isAvg) return _parent.ms[_row].size();
+			else return _parent.avgdata.avg_ms.size();
 		}
 
 
