@@ -35,16 +35,14 @@ int main(int argc, char** argv)
 		rtmath::debug::add_options(cmdline, config, hidden);
 		Ryan_Serialization::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
-		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
+		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >()->multitoken(),"specify input directory or file.")
-			("from-summary-files", "Indicate the first input file is an avg file, the "
-			"second is a par file, and the third is a shape file. Used for importing "
-			"Holly runs.")
 			("output,o", po::value<string>(), "specify output directory or file")
+			("output-export-type", po::value<string>(), "Identifier to export (i.e. isotropic_data, orientation_data)")
 			("output-aux", po::value<string>(), "optional auxiliary output file (with separate writing options)")
 			("output-shape", "If writing an output directory, also write the shape.")
 			//("hash,s", "Store ddscat output in the hash store")
@@ -70,7 +68,7 @@ int main(int argc, char** argv)
 		rtmath::debug::process_static_options(vm);
 		Ryan_Serialization::process_static_options(vm);
 		rtmath::ddscat::ddUtil::process_static_options(vm);
-		//rtmath::ddscat::shapeFileStats::process_static_options(vm);
+		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 		rtmath::ddscat::ddOutput::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
@@ -118,12 +116,14 @@ int main(int argc, char** argv)
 		bool writeFML = vm["write-fmls"].as<bool>();
 		bool writeFMLaux = vm["write-fmls-aux"].as<bool>();
 		bool writeShapes = vm["write-shapes"].as<bool>();
+		string exportType = vm["output-export-type"].as<string>();
 
 		auto opts = rtmath::registry::IO_options::generate();
 		opts->filename(sOutput);
 		opts->setVal<bool>("writeORI", writeORI);
 		opts->setVal<bool>("writeFML", writeFML);
 		opts->setVal<bool>("writeSHP", writeShapes);
+		opts->exportType(exportType);
 
 		auto optsaux = rtmath::registry::IO_options::generate();
 		optsaux->filename(sOutputAux);
@@ -209,6 +209,13 @@ int main(int argc, char** argv)
 			for (auto &t : tags)
 				run->tags.insert(t);
 
+			// Pull in shape and stats in case they are needed during the write operation (i.e. exports)
+			// If hash not found and calculations are prohibited, ignore (it's the plugin's job to check).
+			try {
+				run->loadShape();
+			} catch (rtmath::debug::xMissingHash &e) {
+				std::cerr << e.what() << std::endl;
+			}
 			//if (doHash)
 			//	run->writeToHash();
 

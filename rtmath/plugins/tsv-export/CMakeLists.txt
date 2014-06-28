@@ -8,7 +8,7 @@ add_library (rtmath_plugin_tsv SHARED
 	plugin-tsv.h
 	tsv-ddoutput.cpp
 	tsv-ddoutput-iso.cpp
-	tsv-ddoutput-ori.cpp
+	#tsv-ddoutput-ori.cpp
 	tsv-image-basicstats.cpp
 	tsv-sacr.cpp
 	tsv-shapestats.cpp

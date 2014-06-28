@@ -29,7 +29,7 @@ namespace rtmath
 				ddOutputAvg(boost::shared_ptr<OrientationWeights3d>);
 				virtual ~ddOutputAvg();
 
-				void doAvgAll(boost::shared_ptr<const ddscat::ddOutput> &in,
+				void doAvgAll(const ddscat::ddOutput *in,
 					boost::shared_ptr<ddscat::ddOutput> &out, Eigen::MatrixXf &outwts) const;
 			};
 		}

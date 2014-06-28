@@ -57,7 +57,7 @@ namespace rtmath {
 			*/
 
 			void ddOutputAvg::doAvgAll(
-				boost::shared_ptr<const ddscat::ddOutput> &in,
+				const ddscat::ddOutput *in,
 				boost::shared_ptr<ddscat::ddOutput> &out,
 				Eigen::MatrixXf &outwts) const
 			{

@@ -32,7 +32,7 @@ namespace rtmath {
 			SHARED_PRIVATE bool doVoronoi = true;
 			SHARED_PRIVATE bool disableVoronoi = false;
 			SHARED_PRIVATE bool forceRecalcStats = false;
-
+			SHARED_PRIVATE bool prohibitStats = false;
 
 			shapeFileStats::shapeFileStats(const shapefile::shapefile &shp)
 			{
@@ -238,12 +238,16 @@ namespace rtmath {
 				// Generate basic stats for a file.
 				rtmath::ddscat::shapefile::shapefile shp(shpfile);
 				boost::shared_ptr<shapeFileStats> s = loadHash(shp.hash().string());
-				if (!s) s = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+				if (!s) {
+					if (!prohibitStats)
+						s = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+					else std::cerr << "Stats not found. New calculations prohibited." << std::endl;
+				}
 
 				if (autoHashShapes) shp.writeToHash();
-				if (autoHashStats) s->writeToHash();
+				if (autoHashStats && s) s->writeToHash();
 
-				if (statsfile.size()) s->writeFile(statsfile);
+				if (statsfile.size() && s) s->writeFile(statsfile);
 				return s;
 			}
 
@@ -256,10 +260,13 @@ namespace rtmath {
 				std::cerr << "Generating (or loading) stats for hash " << shp->hash().string() << std::endl;
 				auto res = shapeFileStats::loadHash(shp->hash());
 				if (!res) {
-					std::cerr << "Stats for hash not found. Calculating. " << std::endl;
-					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+					if (!prohibitStats) {
+						std::cerr << "Stats for hash not found. Calculating. " << std::endl;
+						res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
+					}
+					else std::cerr << "Stats for hash not found. New calculations prohibited." << std::endl;
 				}
-				if (autoHashStats) res->writeToHash();
+				if (autoHashStats && res) res->writeToHash();
 
 				return res;
 			}
@@ -271,12 +278,12 @@ namespace rtmath {
 				using boost::filesystem::exists;
 
 				auto res = shapeFileStats::loadHash(hash);
-				if (!res) {
+				if (!res && !prohibitStats) {
 					auto shp = shapefile::shapefile::loadHash(hash);
 					if (!shp) RTthrow debug::xMissingHash("shapefile+stats", hash.string().c_str());
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 				}
-				if (autoHashStats) res->writeToHash();
+				if (autoHashStats && res) res->writeToHash();
 
 				return res;
 			}
@@ -319,6 +326,7 @@ namespace rtmath {
 					("suppress-voronoi-calcs", "Skip some Voronoi-based calculations (for faster debugging)")
 					//("disable-voronoi", "Disable all Voronoi-based calculations (for faster debugging)")
 					("force-recalc-stats", "Force shape stats recalculation, ignoring the cache. Used in debugging.")
+					("no-recalc-stats", "Stats will only be loaded from hashes. If not found, refuse to calculate.")
 					("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
 					("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
 					("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
@@ -345,6 +353,7 @@ namespace rtmath {
 				if (vm.count("suppress-voronoi-calcs")) doVoronoi = false;
 				if (vm.count("disable-voronoi")) disableVoronoi = true;
 				if (vm.count("force-recalc-stats")) forceRecalcStats = true;
+				if (vm.count("no-recalc-stats")) prohibitStats = true;
 
 				//initPaths();
 				//if (vm.count("hash-shape-dir")) pHashShapes = path(vm["hash-shape-dir"].as<string>());

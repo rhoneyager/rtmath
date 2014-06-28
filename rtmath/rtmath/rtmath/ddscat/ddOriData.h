@@ -198,6 +198,10 @@ namespace rtmath {
 			//size_t getStatEntry(stat_entries::stat_entries_size_ts e) const;
 			//std::string getStatEntry(stat_entries::stat_entries_strings e) const;
 
+			/// Retrieves the block in which the relevant data is stored
+			Eigen::Block<ddOutput::doubleType,
+				1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
+				false, true> selectData() const;
 		protected:
 			double __getSimpleDouble(int id) const { return selectData()(id); }
 			template<class valtype>
@@ -231,9 +235,7 @@ namespace rtmath {
 			size_t _row;
 			bool isAvg;
 
-			Eigen::Block<ddOutput::doubleType, 
-				1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
-				false, true> selectData() const;
+			
 		};
 
 
