@@ -343,19 +343,19 @@ namespace rtmath {
 			//od(ddOutput::stat_entries::DOWEIGHT) = 0;
 
 			ddAxisVec::read(in, a, axisnum, frm);
-			od(ddOutput::stat_entries::TFKX) = a[0]; od(ddOutput::stat_entries::TFKY) = a[1]; od(ddOutput::stat_entries::TFKZ) = a[2];
+			s.LFK[0] = a[0]; s.LFK[1] = a[1]; s.LFK[2] = a[2];
 
 
 			std::vector<std::complex<double> > iv(3);
 			size_t vecnum = 0;
 			ddPolVec::read(in, iv, vecnum, frm);
-			od(ddOutput::stat_entries::IPV1TFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV1TFXI) = iv[0].imag();
-			od(ddOutput::stat_entries::IPV1TFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV1TFYI) = iv[1].imag();
-			od(ddOutput::stat_entries::IPV1TFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV1TFZI) = iv[2].imag();
+			s.IPV1LF[0] = iv[0];
+			s.IPV1LF[1] = iv[1];
+			s.IPV1LF[2] = iv[2];
 			ddPolVec::read(in, iv, vecnum, frm);
-			od(ddOutput::stat_entries::IPV2TFXR) = iv[0].real(); od(ddOutput::stat_entries::IPV2TFXI) = iv[0].imag();
-			od(ddOutput::stat_entries::IPV2TFYR) = iv[1].real(); od(ddOutput::stat_entries::IPV2TFYI) = iv[1].imag();
-			od(ddOutput::stat_entries::IPV2TFZR) = iv[2].real(); od(ddOutput::stat_entries::IPV2TFZI) = iv[2].imag();
+			s.IPV2LF[0] = iv[0];
+			s.IPV2LF[1] = iv[1];
+			s.IPV2LF[2] = iv[2];
 
 			ddRot1d::read(in, junk, _parent.avgdata.beta_min, _parent.avgdata.beta_max, _parent.avgdata.beta_n);
 			ddRot1d::read(in, junk, _parent.avgdata.theta_min, _parent.avgdata.theta_max, _parent.avgdata.theta_n);

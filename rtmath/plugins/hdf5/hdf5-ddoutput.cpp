@@ -160,6 +160,16 @@ namespace rtmath {
 						auto avg = addDatasetEigen(gRun, "Average_Results", (s->avgdata.avg), make_plist(1, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES));
 						addColNames(avg, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
 							rtmath::ddscat::ddOutput::stat_entries::stringify);
+						addAttr(avg, "beta_min", s->avgdata.beta_min);
+						addAttr(avg, "beta_max", s->avgdata.beta_max);
+						addAttr(avg, "beta_n", s->avgdata.beta_n);
+						addAttr(avg, "theta_min", s->avgdata.theta_min);
+						addAttr(avg, "theta_max", s->avgdata.theta_max);
+						addAttr(avg, "theta_n", s->avgdata.theta_n);
+						addAttr(avg, "phi_min", s->avgdata.phi_min);
+						addAttr(avg, "phi_max", s->avgdata.phi_max);
+						addAttr(avg, "phi_n", s->avgdata.phi_n);
+						
 					}
 				}
 

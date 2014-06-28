@@ -161,10 +161,30 @@ int main(int argc, char** argv)
 			// Handle not needed as the read context is used only once.
 			if (is_directory(ps))
 			{
-				// Input is a ddscat run
-				boost::shared_ptr<ddOutput> s(new ddOutput);
-				s = ddOutput::generate(ps.string());
-				runs.push_back(s);
+				// Check for recursion
+				path pd = ps / "shape.dat";
+				if (!exists(pd))
+				{
+					// Load one level of subdirectories
+					vector<path> subdirs;
+					copy(directory_iterator(ps),
+						directory_iterator(), back_inserter(subdirs));
+					for (const auto &p : subdirs)
+					{
+						if (is_directory(p))
+						{
+							cerr << " processing " << p << endl;
+							boost::shared_ptr<ddOutput> s(new ddOutput);
+							s = ddOutput::generate(ps.string());
+							runs.push_back(s);
+						}
+					}
+				} else {
+					// Input is a ddscat run
+					boost::shared_ptr<ddOutput> s(new ddOutput);
+					s = ddOutput::generate(ps.string());
+					runs.push_back(s);
+				}
 			} else if (ddOutput::canReadMulti(nullptr, iopts))
 				ddOutput::readVector(nullptr, iopts, runs);
 			else {

@@ -158,7 +158,18 @@ namespace rtmath {
 				if (readFML && datasetExists(base, "FML_Data"))
 					readDatasetEigen(base, "FML_Data", *(r->fmldata));
 				if (readAVG && datasetExists(base, "Average_Results"))
-					readDatasetEigen(base, "Average_Results", (r->avgdata.avg));
+				{
+					auto tbl = readDatasetEigen(base, "Average_Results", (r->avgdata.avg));
+					readAttr(tbl, "beta_min", r->avgdata.beta_min);
+					readAttr(tbl, "beta_max", r->avgdata.beta_max);
+					readAttr(tbl, "beta_n", r->avgdata.beta_n);
+					readAttr(tbl, "theta_min", r->avgdata.theta_min);
+					readAttr(tbl, "theta_max", r->avgdata.theta_max);
+					readAttr(tbl, "theta_n", r->avgdata.theta_n);
+					readAttr(tbl, "phi_min", r->avgdata.phi_min);
+					readAttr(tbl, "phi_max", r->avgdata.phi_max);
+					readAttr(tbl, "phi_n", r->avgdata.phi_n);
+				}
 				// The shapefiles are loaded in a separate bit of code, and they have their own search
 				// directory. The same applies to shape stats. As such, don't read the symlinks in this 
 				// iteration of the code.

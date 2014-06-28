@@ -199,6 +199,20 @@ namespace rtmath {
 				/// \note Using Eigen::Dynamic to preserve type compatabiity with oridata_d
 				doubleType avg;
 				Avgdata();
+
+				/*
+				enum avg_entries {
+					BETA_MIN, BETA_MAX, BETA_N,
+					THETA_MIN, THETA_MAX, THETA_N,
+					PHI_MIN, PHI_MAX, PHI_N,
+					NUM_AVG_ENTRIES
+				};
+
+				typedef Eigen::Matrix<double, Eigen::Dynamic, NUM_AVG_ENTRIES> avgType;
+				/// Table containing orientation data (cross-sections, etc.)
+				/// Set when listing folder.
+				avgType d;
+				*/
 			} avgdata;
 
 			/// Number of stored orientations + averages

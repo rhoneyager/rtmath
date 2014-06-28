@@ -129,7 +129,11 @@ namespace rtmath {
 		}
 
 
-		ddOutput::shared_data::shared_data() : version(0), num_dipoles(0), navg(0) {}
+		ddOutput::shared_data::shared_data() : version(0), num_dipoles(0), navg(0) {
+			mins.fill(0); maxs.fill(0), TA1TF.fill(0); TA2TF.fill(0); LFK.fill(0);
+			IPV1LF.fill(std::complex<double>(0, 0));
+			IPV2LF.fill(std::complex<double>(0, 0));
+		}
 
 		/*
 		void ddOutput::updateAVG()

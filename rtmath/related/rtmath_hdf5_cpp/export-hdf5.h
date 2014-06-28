@@ -330,13 +330,13 @@ namespace rtmath {
 
 			/// Convenience function to read an Eigen object, in the correct format
 			template <class DataType, class Container>
-			void readDatasetEigen(std::shared_ptr<Container> obj, const char* name, 
+			std::shared_ptr<H5::DataSet> readDatasetEigen(std::shared_ptr<Container> obj, const char* name,
 				DataType &value) //, std::shared_ptr<H5::DSetCreatPropList> iplist = nullptr)
 			{
 				using namespace H5;
-				H5::DataSet dataset = obj->openDataSet(name);
-				H5T_class_t type_class = dataset.getTypeClass();
-				DataSpace fspace = dataset.getSpace();
+				std::shared_ptr<H5::DataSet> dataset(new H5::DataSet(obj->openDataSet(name)));
+				H5T_class_t type_class = dataset->getTypeClass();
+				DataSpace fspace = dataset->getSpace();
 				int rank = fspace.getSimpleExtentNdims();
 
 				//ArrayType a = dataset.getArrayType();
@@ -377,20 +377,21 @@ namespace rtmath {
 				//std::shared_ptr<DataSet> dataset(new DataSet(obj->createDataSet(name, *(ftype.get()), 
 				//	fspace, *(plist.get())   )));
 				Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rowmajor(value);
-				dataset.read(rowmajor.data(), *(ftype.get()));
+				dataset->read(rowmajor.data(), *(ftype.get()));
 				//dataset->write(rowmajor.data(), *(ftype.get()));
 				value = rowmajor;
 				delete[] sz;
+				return dataset;
 			}
 
 			template <class Container>
-			void readDatasetDimensions(std::shared_ptr<Container> obj, const char* name, std::vector<size_t> &out)
+			std::shared_ptr<H5::DataSet> readDatasetDimensions(std::shared_ptr<Container> obj, const char* name, std::vector<size_t> &out)
 			{
 				using namespace H5;
 
-				H5::DataSet dataset = obj->openDataSet(name);
-				H5T_class_t type_class = dataset.getTypeClass();
-				DataSpace fspace = dataset.getSpace();
+				std::shared_ptr<H5::DataSet> dataset(new H5::DataSet(obj->openDataSet(name)));
+				H5T_class_t type_class = dataset->getTypeClass();
+				DataSpace fspace = dataset->getSpace();
 				int rank = fspace.getSimpleExtentNdims();
 
 				hsize_t *sz = new hsize_t[rank];
@@ -399,17 +400,18 @@ namespace rtmath {
 					out.push_back(sz[i]);
 
 				delete[] sz;
+				return dataset;
 			}
 
 			template <class DataType, class Container>
-			void readDatasetArray(std::shared_ptr<Container> obj, const char* name, 
+			std::shared_ptr<H5::DataSet> readDatasetArray(std::shared_ptr<Container> obj, const char* name,
 				DataType *values)
 			{
 				using namespace H5;
 
-				H5::DataSet dataset = obj->openDataSet(name);
-				H5T_class_t type_class = dataset.getTypeClass();
-				DataSpace fspace = dataset.getSpace();
+				std::shared_ptr<H5::DataSet> dataset(new H5::DataSet(obj->openDataSet(name)));
+				H5T_class_t type_class = dataset->getTypeClass();
+				DataSpace fspace = dataset->getSpace();
 				/*
 				int rank = fspace.getSimpleExtentNdims();
 
@@ -430,8 +432,9 @@ namespace rtmath {
 				//DataSpace fspace(dimensionality, sz);
 				std::shared_ptr<H5::AtomType> ftype = MatchAttributeType<DataType>();
 
-				dataset.read(values, *(ftype.get()));
+				dataset->read(values, *(ftype.get()));
 				//delete[] sz;
+				return dataset;
 			}
 
 			/// \brief Add column names to table.
