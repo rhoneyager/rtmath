@@ -93,6 +93,7 @@ namespace rtmath {
 					}
 					// Weights should sum to unity. If not, tweak to fix.
 					out->avgdata.avg = out->avgdata.avg / cdf;
+					if (!cdf) out->avgdata.avg.setZero();
 
 					// Finally, set irrelevant fields to indicate avg output.
 					out->avgdata.avg(ddOutput::stat_entries::BETA) = -1;

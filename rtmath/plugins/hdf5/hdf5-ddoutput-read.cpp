@@ -160,6 +160,7 @@ namespace rtmath {
 				if (readAVG && datasetExists(base, "Average_Results"))
 				{
 					auto tbl = readDatasetEigen(base, "Average_Results", (r->avgdata.avg));
+					r->avgdata.hasAvg = true;
 					readAttr(tbl, "beta_min", r->avgdata.beta_min);
 					readAttr(tbl, "beta_max", r->avgdata.beta_max);
 					readAttr(tbl, "beta_n", r->avgdata.beta_n);

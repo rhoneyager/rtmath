@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value<vector<string> >()->multitoken(),"specify input directory or file.")
 			("output,o", po::value<string>(), "specify output directory or file")
-			("output-export-type", po::value<string>(), "Identifier to export (i.e. isotropic_data, orientation_data)")
+			("output-export-type", po::value<string>()->default_value(""), "Identifier to export (i.e. isotropic_data, orientation_data)")
 			("output-aux", po::value<string>(), "optional auxiliary output file (with separate writing options)")
 			("output-shape", "If writing an output directory, also write the shape.")
 			//("hash,s", "Store ddscat output in the hash store")
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
 		}
 
 
-		for (const auto &run : runs)
+		for (auto &run : runs)
 		{
 			cerr << "Run: " << run->genName() << endl;
 			std::cerr << " Frequency: " << run->freq << " GHz\n";
@@ -265,7 +265,8 @@ int main(int argc, char** argv)
 			if (sOutputAux.size())
 				doWrite(optsaux, writeraux);
 
-			if (fromSummary) break;
+			// Drop run from memory
+			run.reset();
 		}
 
 	} catch (std::exception &e)
