@@ -171,9 +171,9 @@ namespace rtmath {
 				double fcirc = ddOut->stats->Scircum_sphere.f;
 				*/
 
-				if (!sDescrip.size()) sDescrip=ddOut->description;
-				double lambda = units::conv_spec("GHz", "um").convert(ddOut->freq);
+				if (!sDescrip.size()) sDescrip = ddOut->description;
 				const double pi = boost::math::constants::pi<double>();
+				double lambda = units::conv_spec("GHz", "um").convert(ddOut->freq);
 				double sizep = 2. * pi * ddOut->aeff / lambda;
 				double Vice_um = pow(ddOut->aeff, 3.) * 4. * pi / 3;
 				double aeff_di = ddOut->aeff / data(ddOutput::stat_entries::D);
