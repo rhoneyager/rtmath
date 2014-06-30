@@ -16,6 +16,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/math/constants/constants.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/ddavg.h"
@@ -31,6 +32,7 @@
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
+#include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
@@ -80,13 +82,14 @@ namespace rtmath {
 				void writeHeader()
 				{
 					(*(file.get())) << "Shape Hash\tDescription\tDDSCAT Version Tag\t"
-						"Frequency (GHz)\tDipole Spacing (um)\t"
-						"Temperature (K)\tAeff (um)\tNumber of Dipoles\tBetas\tThetas\tPhis\t"
-						"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso\tG_iso\t"
-						"V_Voronoi\tSA_Voronoi\taeff_SA_Voronoi\taeff_V_Voronoi\tf_Voronoi\t"
-						"V_Circum_Sphere\tSA_Circum_Sphere\taeff_SA_Circum_Sphere\taeff_V_Circum_Sphere\tf_Circum_Sphere\t"
-						"V_Convex\tSA_Convex\taeff_SA_Convex\taeff_V_Convex\tf_Convex\t"
-						"V_Ellipsoid_Max\tSA_Ellipsoid_Max\taeff_SA_Ellipsoid_Max\taeff_V_Ellipsoid_Max\tf_Ellipsoid_Max"
+						"Frequency (GHz)\tWavelength (um)\tSize Parameter\tDipole Spacing (um)\t"
+						"Temperature (K)\tAeff (um)\tV_Ice (um^3)\tV_Ice (dipoles^3)\tSA_Ice (um^2)\tSA_Ice (dipoles^2)\tSA_V_Ice (um^-1)\tSA_V_Ice (dipoles^-1)\t"
+						"Number of Dipoles\tBetas\tThetas\tPhis\t"
+						"Qsca_iso\tQbk_iso\tQbk_normalized\tQabs_iso\tQext_iso\tG_iso\t"
+						"V_Voronoi\tSA_Voronoi\tSA_V_Voronoi\taeff_SA_Voronoi\taeff_V_Voronoi\tf_Voronoi\tRatio_Voronoi_Ice\t"
+						"V_Circum_Sphere\tSA_Circum_Sphere\tSA_V_Circum_Sphere\taeff_SA_Circum_Sphere\taeff_V_Circum_Sphere\tf_Circum_Sphere\tRatio_Circum_Ice\tRatio_Voronoi_Circum\t"
+						"V_Convex\tSA_Convex\tSA_V_Convex\taeff_SA_Convex\taeff_V_Convex\tf_Convex\tRatio_Convex_Ice\t"
+						"V_Ellipsoid_Max\tSA_Ellipsoid_Max\tSA_V_Ellipsoid_Max\taeff_SA_Ellipsoid_Max\taeff_V_Ellipsoid_Max\tf_Ellipsoid_Max\tRatio_Ellipsoid_Max_Ice"
 						<< std::endl;
 					;
 				}
@@ -169,29 +172,49 @@ namespace rtmath {
 				*/
 
 				if (!sDescrip.size()) sDescrip=ddOut->description;
+				double lambda = units::conv_spec("GHz", "um").convert(ddOut->freq);
+				const double pi = boost::math::constants::pi<double>();
+				double sizep = 2. * pi * ddOut->aeff / lambda;
+				double Vice_um = pow(ddOut->aeff, 3.) * 4. * pi / 3;
+				double aeff_di = ddOut->aeff / data(ddOutput::stat_entries::D);
+				double Vice_di = pow(aeff_di, 3.) * 4. * pi / 3;
+				double SAice_um = 4. * pi * pow(ddOut->aeff, 2.);
+				double SAice_di = 4. * pi * pow(aeff_di, 2.);
+				double SA_V_ice_di = SAice_di / Vice_di;
+				double SA_V_ice_um = SAice_um / Vice_um;
+
 
 				(*(h->file.get())) << ddOut->shapeHash.lower << "\t" << sDescrip << "\t"
 					<< ddOut->ddvertag << "\t"
-					<< ddOut->freq << "\t" << data(ddOutput::stat_entries::D) << "\t"
+					<< ddOut->freq << "\t" << lambda << "\t" 
+					<< sizep << "\t"
+					<< data(ddOutput::stat_entries::D) << "\t"
 					<< ddOut->temp << "\t"
-					<< ddOut->aeff << "\t" 
+					<< ddOut->aeff << "\t" << Vice_um << "\t" << Vice_di << "\t" << SAice_um << "\t" << SAice_di << "\t"
+					<< SA_V_ice_um << "\t" << SA_V_ice_di << "\t"
 					<< ddOut->s.num_dipoles << "\t"
 					<< rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
 					<< data(ddOutput::stat_entries::QSCAM) << "\t"
 					<< data(ddOutput::stat_entries::QBKM) << "\t"
+					<< data(ddOutput::stat_entries::QBKM) * 4. * pi << "\t"
 					<< data(ddOutput::stat_entries::QABSM) << "\t"
 					<< data(ddOutput::stat_entries::QEXTM) << "\t"
 					<< data(ddOutput::stat_entries::G1M);
 				if (stats)
 				{
-					(*(h->file.get())) << "\t" << stats->SVoronoi_hull.V << "\t" << stats->SVoronoi_hull.SA
+					(*(h->file.get())) << "\t" << stats->SVoronoi_hull.V << "\t" << stats->SVoronoi_hull.SA << "\t" << stats->SVoronoi_hull.SA / stats->SVoronoi_hull.V
 						<< "\t" << stats->SVoronoi_hull.aeff_SA << "\t" << stats->SVoronoi_hull.aeff_V << "\t" << stats->SVoronoi_hull.f
-						<< "\t" << stats->Scircum_sphere.V << "\t" << stats->Scircum_sphere.SA
+						<< "\t" << ((stats->SVoronoi_hull.SA / stats->SVoronoi_hull.V) / (SA_V_ice_di))
+						<< "\t" << stats->Scircum_sphere.V << "\t" << stats->Scircum_sphere.SA << "\t" << stats->Scircum_sphere.SA / stats->Scircum_sphere.V
 						<< "\t" << stats->Scircum_sphere.aeff_SA << "\t" << stats->Scircum_sphere.aeff_V << "\t" << stats->Scircum_sphere.f
-						<< "\t" << stats->Sconvex_hull.V << "\t" << stats->Sconvex_hull.SA
+						<< "\t" << ((stats->Scircum_sphere.SA / stats->Scircum_sphere.V) / (SA_V_ice_di))
+						<< "\t" << ((stats->Scircum_sphere.SA / stats->Scircum_sphere.V) / (stats->Scircum_sphere.SA / stats->Scircum_sphere.V))
+						<< "\t" << stats->Sconvex_hull.V << "\t" << stats->Sconvex_hull.SA << "\t" << stats->Sconvex_hull.SA / stats->Sconvex_hull.V
 						<< "\t" << stats->Sconvex_hull.aeff_SA << "\t" << stats->Sconvex_hull.aeff_V << "\t" << stats->Sconvex_hull.f
-						<< "\t" << stats->Sellipsoid_max.V << "\t" << stats->Sellipsoid_max.SA
+						<< "\t" << ((stats->Sconvex_hull.SA / stats->Sconvex_hull.V) / (SA_V_ice_di))
+						<< "\t" << stats->Sellipsoid_max.V << "\t" << stats->Sellipsoid_max.SA << "\t" << stats->Sellipsoid_max.SA / stats->Sellipsoid_max.V
 						<< "\t" << stats->Sellipsoid_max.aeff_SA << "\t" << stats->Sellipsoid_max.aeff_V << "\t" << stats->Sellipsoid_max.f
+						<< "\t" << ((stats->Sellipsoid_max.SA / stats->Sellipsoid_max.V) / (SA_V_ice_di))
 						;
 				}
 				(*(h->file.get())) << std::endl;

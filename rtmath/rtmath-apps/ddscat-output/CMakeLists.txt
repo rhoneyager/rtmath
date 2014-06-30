@@ -11,5 +11,7 @@ endif()
 if (BUILD_PLUGIN_HDF5)
 	add_dependencies ( rtmath-ddscat-output rtmath_plugin_hdf5)
 endif()
-
+if (BUILD_PLUGIN_TSV)
+	add_dependencies ( rtmath-ddscat-output rtmath_plugin_tsv)
+endif()
 
