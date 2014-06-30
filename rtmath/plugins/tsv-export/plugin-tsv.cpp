@@ -30,9 +30,9 @@ void dllEntry()
 	const size_t nExts = 1;
 	const char* exportExts[nExts] = { "tsv" };
 
-	genAndRegisterIOregistryPlural_writer<::rtmath::data::arm::arm_scanning_radar_sacr,
-		::rtmath::data::arm::arm_IO_sacr_output_registry>(
-		nExts, exportExts, PLUGINID_SACR_REFL, "reflectivity");
+	//genAndRegisterIOregistryPlural_writer<::rtmath::data::arm::arm_scanning_radar_sacr,
+	//	::rtmath::data::arm::arm_IO_sacr_output_registry>(
+	//	nExts, exportExts, PLUGINID_SACR_REFL, "reflectivity");
 
 	genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,
