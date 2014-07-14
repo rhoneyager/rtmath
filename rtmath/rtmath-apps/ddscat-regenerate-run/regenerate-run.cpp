@@ -179,8 +179,13 @@ int main(int argc, char** argv)
 					// If a shape file, read shape and extract dipole number
 					size_t nDipoles = 0;
 					if (dataset::isShape(pfile)) {
+						auto opts = rtmath::registry::IO_options::generate();
+						opts->filename(pfile.string());
+						opts->setVal<bool>("headerOnly", true);
+
 						rtmath::ddscat::shapefile::shapefile s;
-						s.readHeaderOnly(pfile.string());
+						s.readMulti(nullptr, opts);
+						// OLD: s.readHeaderOnly(pfile.string());
 						nDipoles = s.numPoints;
 					}
 					// If an avg file, read and extract dipole number.
@@ -285,7 +290,7 @@ int main(int argc, char** argv)
 			if (calcDipoleExtent)
 			{
 				rtmath::ddscat::shapefile::shapefile s;
-				s.read(d.second.shapefile.string());
+				s.readFile(d.second.shapefile.string());
 				// Extra padding is needed by ddscat...
 				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 20);
 				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 20);

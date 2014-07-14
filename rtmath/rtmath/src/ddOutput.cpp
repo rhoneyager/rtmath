@@ -33,6 +33,7 @@
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/units.h"
+#include "../rtmath/ddscat/dielTabFile.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -417,14 +418,13 @@ namespace rtmath {
 			}
 
 
-			// Apply consistent generation
-			//auto res = generate(avg, parfile, shape, fmls, scas);
-			res->finalize();
-
 			// Tag the source directory and ddscat version
 			path pdir(dir);
 			path pbdir = absolute(pdir);
 			res->sources.insert(pbdir.string());
+
+			// Apply consistent generation
+			res->finalize();
 
 			return res;
 		}
@@ -467,8 +467,38 @@ namespace rtmath {
 				freq = data->freq();
 				aeff = data->aeff();
 				temp = data->guessTemp();
-			}
-			else {
+			} else if (parfile) {
+				// select first wavelength and effective radius
+				double min, max;
+				size_t n;
+				std::string spacing;
+				parfile->getWavelengths(min, max, n, spacing);
+				freq = units::conv_spec("um", "GHz").convert(min);
+				parfile->getAeff(min, max, n, spacing);
+				aeff = min;
+				// attempt to load the dielectric file
+				using namespace boost::filesystem;
+				std::vector<std::string> diels;
+				parfile->getDiels(diels);
+				if (diels.size() && sources.size()) {
+					std::string pardir = *(sources.begin());
+					path ppar = path(pardir);
+					//path ppar = path(filename).remove_filename();
+					path pval(diels[0]);
+					path prel = boost::filesystem::absolute(pval, ppar);
+					if (boost::filesystem::exists(prel))
+					{
+						std::cerr << prel << std::endl;
+						dielTab dt(prel.string());
+						std::complex<double> diel;
+						std::cerr << 5;
+						diel = dt.interpolate(freq);
+						std::cerr << 6;
+						temp = refract::guessTemp(freq, diel);
+						std::cerr << 7;
+					} else temp = 0;
+				} else temp = 0;
+			} else {
 				aeff = 0;
 				freq = 0;
 				temp = 0;
