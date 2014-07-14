@@ -121,13 +121,12 @@ namespace rtmath {
 				double SA_V_ice_di = SAice_di / Vice_di;
 				double SA_V_ice_um = SAice_um / Vice_um;
 
-				(*(h->file.get())) << ddOut->shapeHash.lower << "\t" << ddOut->description << "\t"
-					<< ddOut->ddvertag << "\t"
+				(*(h->file.get())) << ddOut->shapeHash.lower << "\t"
 					<< ddOut->freq << "\t" << lambda << "\t" << sizep << "\t"
 					<< d << "\t" << ddOut->temp << "\t"
 					<< ddOut->aeff << "\t" << Vice_um << "\t" << Vice_di << "\t" << SAice_um << "\t" << SAice_di << "\t"
 					<< SA_V_ice_um << "\t" << SA_V_ice_di << "\t"
-					<< ddOut->s.num_dipoles << "\t"
+					<< ddOut->shape->numPoints << "\t"
 					<< rots.bN() << "\t" << rots.tN() << "\t" << rots.pN();
 
 
