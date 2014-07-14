@@ -31,6 +31,16 @@ namespace rtmath {
 			if (lower != rhs.lower) return lower < rhs.lower;
 			return false;
 		}
+		inline bool operator==(const UINT128 &rhs) const
+		{
+			if (upper != rhs.upper) return false;
+			if (lower != rhs.lower) return false;
+			return true;
+		}
+		inline bool operator!=(const UINT128 &rhs) const
+		{
+			return !operator==(rhs);
+		}
 		std::string string() const
 		{
 			std::ostringstream o;

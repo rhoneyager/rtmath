@@ -253,7 +253,7 @@ namespace rtmath {
 			/// Shape file statistics (may load fully later)
 			mutable boost::shared_ptr<stats::shapeFileStats> stats;
 			/// Load the full shape file and stats (uses shapeHash)
-			void loadShape() const;
+			void loadShape(bool dostats = true) const;
 
 			/// The ddscat parameter file
 			boost::shared_ptr<ddPar> parfile;

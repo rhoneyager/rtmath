@@ -168,7 +168,7 @@ namespace rtmath {
 				{
 					// Seek to first nonspace character
 					posa = in.find_first_not_of(" \t\n", posb);
-					if (posa == string::npos) break; // At end of retreival
+					if (posa == string::npos) return; // At end of retreival
 					// Find first space after this position
 					posb = in.find_first_of(" \t\n", posa);
 					if (posb == string::npos) // End of file condition

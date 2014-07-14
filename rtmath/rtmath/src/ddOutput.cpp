@@ -174,11 +174,30 @@ namespace rtmath {
 			// Store the stats and the Mueller matrix results
 		}
 		*/
-		void ddOutput::loadShape() const
+		void ddOutput::loadShape(bool dostats) const
 		{
 			// Load stats and shape based on the hash
 			shape = shapefile::shapefile::loadHash(shapeHash);
-			if (!shape) RTthrow debug::xMissingHash("shapefile", shapeHash.string().c_str());
+			if (!shape->hash().lower)
+			{
+				// Intelligently try to find the shape if not in the hash tree.
+				// If the ddOutput sources field lists a reference directory, then use it to 
+				// try and find a shapefile with a matching hash.
+				if (sources.size())
+				{
+					using namespace boost::filesystem;
+					path pBase(*(sources.begin()));
+					path pshp = pBase / "shape.dat";
+					if (exists(pshp))
+					{
+						boost::shared_ptr<shapefile::shapefile> scand(new shapefile::shapefile);
+						scand->readFile(pshp.string());
+						if (scand->hash() == shapeHash) shape = scand;
+					}
+				}
+			}
+			if (!shape->hash().lower) RTthrow debug::xMissingHash("shapefile", shapeHash.string().c_str());
+			if (!dostats) return;
 			stats = stats::shapeFileStats::genStats(shape);
 			//stats = stats::shapeFileStats::loadHash(this->shapeHash);
 			if (!stats) RTthrow debug::xMissingHash("shapestats", shapeHash.string().c_str()); // should never happen
@@ -488,14 +507,10 @@ namespace rtmath {
 					path prel = boost::filesystem::absolute(pval, ppar);
 					if (boost::filesystem::exists(prel))
 					{
-						std::cerr << prel << std::endl;
 						dielTab dt(prel.string());
 						std::complex<double> diel;
-						std::cerr << 5;
 						diel = dt.interpolate(freq);
-						std::cerr << 6;
 						temp = refract::guessTemp(freq, diel);
-						std::cerr << 7;
 					} else temp = 0;
 				} else temp = 0;
 			} else {
