@@ -55,6 +55,11 @@ void dllEntry()
 		nExts, exportExts, PLUGINID_DDISO, "isotropic_data");
 
 	rtmath::registry::genAndRegisterIOregistryPlural_writer
+		<::rtmath::ddscat::ddOutput,
+		::rtmath::ddscat::ddOutput_IO_output_registry>(
+		nExts, exportExts, PLUGINID_DDSTATS, "stats");
+
+	rtmath::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::images::image,
 		::rtmath::images::image_IO_output_registry>(
 		nExts, exportExts, PLUGINID_IMAGE, "image_basicstats");

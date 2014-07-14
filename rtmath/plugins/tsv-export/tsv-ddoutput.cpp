@@ -37,6 +37,11 @@ namespace rtmath {
 				export_tsv_ddori_ori_data
 				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
 				const ::rtmath::ddscat::ddOutput *s);
+
+			shared_ptr<::rtmath::registry::IOhandler>
+				export_tsv_ddori_stats
+				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
+				const ::rtmath::ddscat::ddOutput *s);
 		}
 	}
 	namespace registry {
@@ -51,6 +56,7 @@ namespace rtmath {
 			std::string exporttype = opts->exportType();
 			if (exporttype == "isotropic_data") return ::rtmath::plugins::tsv::export_tsv_ddori_iso_data(sh, opts, s);
 			else if (exporttype == "orientation_data") return ::rtmath::plugins::tsv::export_tsv_ddori_ori_data(sh, opts, s);
+			else if (exporttype == "stats") return ::rtmath::plugins::tsv::export_tsv_ddori_stats(sh, opts, s);
 			else { RTthrow debug::xUnimplementedFunction(); }
 			return nullptr;
 		}
