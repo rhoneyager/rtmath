@@ -53,9 +53,9 @@ namespace rtmath {
 
 			struct tsv_ddoutput_stats_handle : public tsv_handle
 			{
-				tsv_ddoutput_stats_handle(const char* filename, IOtype t) : tsv_handle(filename, t, PLUGINID_DDSTATS) {}
+				tsv_ddoutput_stats_handle(const char* filename, IOtype t) : tsv_handle(filename, t, PLUGINID_DDSTATS) { open(filename, t); }
 				virtual ~tsv_ddoutput_stats_handle() {}
-				virtual void writeHeader()
+				virtual void writeHeader() override
 				{
 					(*(file.get())) << "Shape Hash\t"
 						"Frequency (GHz)\tWavelength (um)\tSize Parameter\tDipole Spacing (um)\t"

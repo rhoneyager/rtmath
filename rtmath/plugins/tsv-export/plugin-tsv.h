@@ -37,7 +37,7 @@ namespace rtmath {
 
 			struct tsv_handle : public rtmath::registry::IOhandler
 			{
-				tsv_handle(const char* filename, IOtype t, const std::string &id) : IOhandler(id) { open(filename, t); }
+				tsv_handle(const char* filename, IOtype t, const std::string &id) : IOhandler(id) {  }
 				virtual ~tsv_handle() {}
 				void open(const char* filename, IOtype t)
 				{
