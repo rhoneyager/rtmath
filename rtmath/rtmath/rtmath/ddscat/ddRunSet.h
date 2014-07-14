@@ -37,7 +37,7 @@ namespace rtmath
 			/// all avg results (.avg)
 			std::vector<boost::filesystem::path> ddres;
 			/// all loaded ddscat results
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutputSingle> > ddloaded;
+			//std::vector<boost::shared_ptr<rtmath::ddscat::ddOutputSingle> > ddloaded;
 
 			/// shape stats (.xml)
 			boost::filesystem::path shapestatsfile;

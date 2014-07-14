@@ -28,7 +28,8 @@
 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/ddscat/ddOutputSingle.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddRunSet.h"
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"
 #include "../../rtmath/rtmath/refract.h"
@@ -184,9 +185,11 @@ int main(int argc, char** argv)
 					}
 					// If an avg file, read and extract dipole number.
 					else if (dataset::isAvg(pfile)) {
-						rtmath::ddscat::ddOutputSingle a;
-						a.readFile(pfile.string(), ".avg");
-						nDipoles = a.numDipoles();
+						rtmath::ddscat::ddOutput a;
+						//a.readFile(pfile.string(), ".avg");
+						rtmath::ddscat::ddOriData b(a);
+						b.readFile(pfile.string(), ".avg");
+						nDipoles = b.numDipoles();
 					}
 					if (!nDipoles) continue; // Prefix 0 is not valid. Wrong file type.
 					std::ostringstream ntos;
@@ -389,7 +392,14 @@ int main(int argc, char** argv)
 			for (auto &pavg : d.second.ddres)
 			{
 				cerr << "Using avg file " << pavg << "\n";
-				ddOutputSingle avg(pavg.string(),".avg");
+				//ddOriData avg(d.second.ddres)
+
+				rtmath::ddscat::ddOutput a;
+				//a.readFile(pfile.string(), ".avg");
+				rtmath::ddscat::ddOriData avg(a);
+				avg.readFile(pavg.string(), ".avg");
+
+				//ddOutputSingle avg(pavg.string(),".avg");
 				path p = pa;
 				// path p = pOut / pa.filename(); // / path(pavg).filename();
 				cerr << "\tCreating directory " << p << endl;
@@ -397,7 +407,7 @@ int main(int argc, char** argv)
 				if (!linkShape(p / path("shape.dat"))) continue;
 				ddPar ppar = parFile;
 				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), ppar, avg.aeff(), avg.wave(), avg.getM());
+				createPar((p / path("ddscat.par")), ppar, avg.aeff(), avg.wave(), avg.M());
 
 				if (avgOne) break;
 			}
