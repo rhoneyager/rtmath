@@ -82,7 +82,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_ddoutput_stats_handle>(new tsv_ddoutput_stats_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_VORO) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID_DDSTATS) RTthrow debug::xDuplicateHook("Bad passed plugin");
 					h = std::dynamic_pointer_cast<tsv_ddoutput_stats_handle>(sh);
 				}
 
