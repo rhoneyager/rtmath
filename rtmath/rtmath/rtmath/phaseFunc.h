@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <Eigen/Core>
+#include "registry.h"
 //#include "enums.h"
 //#include "da/damatrix.h"
 
@@ -43,6 +44,101 @@ namespace rtmath {
 
 		void DLEXPORT_rtmath_core genExtinctionMatrix(Eigen::Matrix4d &Knn, const Eigen::Matrix2cd &Sn, double fGHz);
 
+		/// \brief This class is used for registration of phase function and cross-section
+		/// providers.
+		/// \note Full stats will use a connector when passed to this code.
+		struct DLEXPORT_rtmath_core pf_class_registry
+		{
+			virtual ~pf_class_registry();
+			/// Module name. Tagging is handled elsewhere.
+			const char* name;
+
+			/// Indicates whether the module handles random or aligned orientations.
+			enum class orientation_type {
+				ISOTROPIC, ORIENTED
+			} orientations;
+
+			/// Angle setup
+			struct setup {
+				setup();
+				double beta, theta, phi; // ddscat-based rotation angles
+				double sTheta, sTheta0, sPhi, sPhi0; // incident and scattered beam angles (degrees)
+				double wavelength; // wavelength of incident light
+			};
+
+			/// Used to specify basic stats for constructing a run
+			struct inputParamsPartial {
+				inputParamsPartial();
+				double aeff; // equivalent-sphere radius
+				enum class aeff_version_type
+				{
+					EQUIV_V_SPHERE,
+					EQUIV_SA_SPHERE
+				} aeff_version;
+				std::complex<double> m; // refractive index
+				bool m_rescale;
+
+				enum class shape_type
+				{
+					SPHEROID,
+					CYLINDER
+				} shape;
+				double eps; // spheroid / cylinder aspect ratio
+			};
+
+			/// Cross-section return structure
+			struct cross_sections {
+				cross_sections();
+				double Qbk, Qext, Qsca, Qabs, g;
+			};
+
+			/// Phase function return structure
+			struct pfs {
+				typedef Eigen::Matrix4d PnnType;
+				typedef Eigen::Matrix2cd FType;
+				PnnType mueller;
+				FType S;
+			};
+
+			typedef std::function<void(const setup&, const inputParamsPartial&, cross_sections&)> small_c_type;
+			typedef std::function<void(const setup&, const inputParamsPartial&, pfs&)> small_p_type;
+
+			/// Get cross-sections from small stats
+			small_c_type fCrossSections;
+			/// Get pfs from small stats
+			small_p_type fPfs;
+		};
+
+		/// Dummy class as a component for usesDLLregistry - keeps different registration types separate
+		class pf_registry {};
+
+		/// Provides phase function and cross-sectional information 
+		/// from multiple sources, such as DDA, Tmatrix, ...
+		///
+		/// \todo Add stats-conversion code here
+		class DLEXPORT_rtmath_core pf_provider :
+			virtual public ::rtmath::registry::usesDLLregistry<
+			pf_registry, pf_class_registry>
+		{
+		public:
+			pf_provider(pf_class_registry::orientation_type, const pf_class_registry::inputParamsPartial&);
+			virtual ~pf_provider();
+
+			/// \brief Find the first matching handler
+			/// \param oriType specifies isotropic or oriented run.
+			/// \param name forces match to a specific plugin. NULL causes this parameter to be skipped.
+			/// \param res is a container for all matching modules.
+			static void findHandler(pf_class_registry::orientation_type oriType, 
+				const char* name, const pf_class_registry *res);
+
+			typedef std::vector<std::pair<const char*, pf_class_registry::cross_sections> > resCtype;
+			typedef std::vector<std::pair<const char*, pf_class_registry::pfs> > resPtype;
+			void getCrossSections(const pf_class_registry::setup&, resCtype& res) const;
+			void getPfs(const pf_class_registry::setup&, resPtype& res) const;
+		private:
+			const pf_class_registry::inputParamsPartial& iparams;
+			pf_class_registry::orientation_type otype;
+		};
 	}
 
 	/* // These will be reimplemented by the da code?

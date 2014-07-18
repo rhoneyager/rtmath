@@ -9,35 +9,18 @@
 #include "../../rtmath/rtmath/error/debug.h"
 
 
-#define PLUGINID "f8340412-f146-47c4-8b32-a395d829f7b2"
+#define PLUGINID "390CDC28-62BF-43C9-AB07-BC19899C7891"
 
 
 namespace rtmath {
 	namespace ddscat {
 		class ddOutput;
-		class ddOutputSingle;
-		class ddScattMatrix;
 		namespace shapefile { class shapefile; }
 		namespace stats { class shapeFileStats; }
 	}
 	namespace plugins {
-		namespace silo {
-			class siloFile;
-
-			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_shapefile
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::shapefile::shapefile *shp, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
-
-			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_shapestats
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::stats::shapeFileStats *s, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
-			
+		namespace tmatrix {
+			/*
 			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_ddoutputs
 				(std::shared_ptr<rtmath::registry::IOhandler> h, 
 				const char* filename, 
@@ -53,7 +36,7 @@ namespace rtmath {
 				void open(const char* filename, IOtype t);
 				std::shared_ptr<siloFile> file;
 			};
-
+			*/
 
 		}
 	}

@@ -12,6 +12,75 @@ namespace rtmath {
 
 	namespace phaseFuncs
 	{
+		pf_class_registry::~pf_class_registry() {}
+		pf_provider::~pf_provider() {}
+
+		pf_class_registry::setup::setup()
+			: beta(0), theta(0), phi(0),
+			sTheta(0), sTheta0(0), sPhi(0), sPhi0(0),
+			wavelength(0)
+		{}
+
+		pf_class_registry::inputParamsPartial::inputParamsPartial()
+			: aeff(0), aeff_version(aeff_version_type::EQUIV_V_SPHERE),
+			m(1.33, 0), shape(shape_type::SPHEROID), eps(1.00001),
+			m_rescale(true)
+		{}
+
+		pf_class_registry::cross_sections::cross_sections() :
+			Qbk(-1), Qext(-1), Qsca(-1), Qabs(-1), g(-1) {}
+
+		void pf_provider::findHandler(
+			pf_class_registry::orientation_type oriType, 
+			const char* name, const pf_class_registry *res)
+		{
+			res = nullptr;
+			auto container = getHooks();
+			for (const auto &c : *container)
+			{
+				if (oriType != c.orientations) continue;
+				if (name)
+					if (std::string(name) != std::string(c.name)) continue;
+				res = &c;
+			}
+		}
+
+		pf_provider::pf_provider(pf_class_registry::orientation_type o, 
+			const pf_class_registry::inputParamsPartial& i)
+			: iparams(i), otype(o) {}
+
+		void pf_provider::getCrossSections(const pf_class_registry::setup& s,
+			resCtype& res) const
+		{
+			res.clear();
+			auto container = getHooks();
+			for (const auto &c : *container)
+			{
+				if (otype != c.orientations) continue;
+				if (!c.fCrossSections) continue;
+				pf_class_registry::cross_sections cs;
+				c.fCrossSections(s, iparams, cs);
+				res.push_back(std::pair<const char*, pf_class_registry::cross_sections>
+					(c.name, std::move(cs)));
+			}
+		}
+
+		void pf_provider::getPfs(const pf_class_registry::setup& s,
+			resPtype& res) const
+		{
+			res.clear();
+			auto container = getHooks();
+			for (const auto &c : *container)
+			{
+				if (otype != c.orientations) continue;
+				if (!c.fPfs) continue;
+				pf_class_registry::pfs cs;
+				c.fPfs(s, iparams, cs);
+				res.push_back(std::pair<const char*, pf_class_registry::pfs>
+					(c.name, std::move(cs)));
+			}
+		}
+
 		void convertFtoS(const Eigen::Matrix2cd &f, Eigen::Matrix2cd& Sn, double phi, 
 			std::complex<double> a, std::complex<double> b, std::complex<double> c, std::complex<double> d)
 		{

@@ -640,7 +640,7 @@ namespace rtmath
 		public:
 			virtual ~implementsStandardSingleReader() {}
 
-			/// Duplicate to avoid clashes and having to speify a full template name...
+			/// Duplicate to avoid clashes and having to specify a full template name...
 			virtual void readFile(const std::string &filename, const std::string &outtype = "")
 			{
 				baseRead(filename, outtype);

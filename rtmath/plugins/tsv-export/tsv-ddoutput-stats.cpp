@@ -121,6 +121,8 @@ namespace rtmath {
 				double SA_V_ice_di = SAice_di / Vice_di;
 				double SA_V_ice_um = SAice_um / Vice_um;
 
+				/// \todo Write out the more relevant stats (AR, Voronoi stuff, fractal dimension.....)
+
 				(*(h->file.get())) << ddOut->shapeHash.lower << "\t"
 					<< ddOut->freq << "\t" << lambda << "\t" << sizep << "\t"
 					<< d << "\t" << ddOut->temp << "\t"
