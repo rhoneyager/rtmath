@@ -76,7 +76,9 @@ namespace rtmath {
 					EQUIV_SA_SPHERE
 				} aeff_version;
 				std::complex<double> m; // refractive index
-				bool m_rescale;
+				bool m_rescale; // Rescale refractive index
+				bool aeff_rescale; // Rescale effective radius
+				double vFrac; // Volume fraction
 
 				enum class shape_type
 				{
@@ -90,6 +92,8 @@ namespace rtmath {
 			struct cross_sections {
 				cross_sections();
 				double Qbk, Qext, Qsca, Qabs, g;
+				double Qsca_iso, Qabs_iso;
+				double Qbk_iso, Qext_iso, g_iso;
 			};
 
 			/// Phase function return structure

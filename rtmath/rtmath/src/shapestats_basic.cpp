@@ -71,6 +71,8 @@ namespace rtmath {
 
 			shapeFileStatsBase::~shapeFileStatsBase() { }
 
+			shapeFileStatsBase::volumetric::volumetric()
+				: V(-1), aeff_V(-1), SA(-1), aeff_SA(-1), f(-1) {} //, f_V(f), f_SA(-1) {}
 
 			void shapeFileStatsBase::volumetric::calc(const shapeFileStatsBase *s,
 				std::function<std::pair<float, float>()> fn)

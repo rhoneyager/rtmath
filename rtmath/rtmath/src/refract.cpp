@@ -61,6 +61,7 @@ void rtmath::refract::process_static_options(
 	}
 
 	// Add in refractive method calculations here.
+	throw;
 }
 
 void rtmath::refract::mWater(double f, double t, std::complex<double> &m)

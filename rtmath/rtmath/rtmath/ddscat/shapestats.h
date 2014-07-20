@@ -145,8 +145,10 @@ namespace rtmath {
 				class volumetric
 				{
 				public:
-					volumetric() : V(-1), aeff_V(-1), SA(-1), aeff_SA(-1), f(-1) {}
+					volumetric();
 					float V, aeff_V, SA, aeff_SA, f;
+					//float &f_V;
+					//float f_SA;
 					void calc(const shapeFileStatsBase*,
 						std::function<std::pair<float,float>()>);
 					void calc(const shapeFileStatsBase*);

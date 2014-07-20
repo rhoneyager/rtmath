@@ -162,6 +162,7 @@ namespace rtmath {
 			if (in == "m") {_Iin = true; inV = true; _Sin /= c; }
 			if (in == "cm") {_Iin = true; inV = true; _Sin /= 100; _Sin /= c; }
 			if (in == "um") {_Iin = true; inV = true; _Sin /= 1.e6; _Sin /= c; }
+			if (in == "mm") { _Iin = true; inV = true; _Sin /= 1.e3; _Sin /= c; }
 			// cm^-1 specifies SPECTRAL WAVENUMBER
 			if (in == "cm^-1" || in == "wcm^-1") {_Sin *= c*100; inV = true;}
 			if (in == "m^-1" || in == "wm^-1") {_Sin *= c; inV = true;}
@@ -172,6 +173,7 @@ namespace rtmath {
 			if (out == "m") { outV = true; _Iout = true; _Sout *= c; }
 			if (out == "cm") { outV = true; _Iout = true; _Sout *= 100; _Sout *= c; }
 			if (out == "um") { outV = true; _Iout = true; _Sout *= 1.e6; _Sout *= c;}
+			if (out == "mm") { outV = true; _Iout = true; _Sout *= 1.e3; _Sout *= c; }
 			if (out == "cm^-1" || out == "wcm^-1") {_Sout /= 100*c; outV = true; }
 			if (out == "m^-1" || out == "wm^-1") {_Sout /= c; outV = true; }
 

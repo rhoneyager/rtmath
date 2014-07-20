@@ -14,6 +14,6 @@ addlib(rtmath_plugin_tmatrix SHARED)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
 
 
-target_link_libraries(rtmath_plugin_tmatrix ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
+target_link_libraries(rtmath_plugin_tmatrix ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat tmatrix_cpp)
 addplugin(rtmath_plugin_tmatrix non_dda)
 

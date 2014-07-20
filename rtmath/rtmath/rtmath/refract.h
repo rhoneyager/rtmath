@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+namespace boost { namespace program_options { class options_description; class variables_map; } }
 namespace rtmath {
 	namespace refract {
 		/// m to e converters
