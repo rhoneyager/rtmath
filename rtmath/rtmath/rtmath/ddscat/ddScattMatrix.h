@@ -26,6 +26,7 @@ namespace rtmath
 		enum class scattMatrixType
 		{
 			F,
+			S,
 			P
 		};
 
@@ -108,7 +109,7 @@ namespace rtmath
 
 
 		/**
-		* \brief Provides the amplitude scattering matrix, which can 
+		* \brief Provides the amplitude scattering matrix precursor, which can 
 		* be converted into the Mueller matrix.
 		*
 		* \todo Add extinction calculations
@@ -150,9 +151,39 @@ namespace rtmath
 			//boost::shared_ptr<matrixop> _sRe, _sIm;
 		};
 
-		/* class ddScattMatrixS : public ddScattMatrix
+		/**
+		* \brief Provides the amplitude scattering matrix, which can
+		* be converted into the Mueller matrix.
+		*
+		* \todo Add extinction calculations
+		* \todo Add scattering cross-sections
+		**/
+		class DLEXPORT_rtmath_ddscat ddScattMatrixS :
+			public ddScattMatrix //,
+			//boost::additive<ddScattMatrixF>,
+			//boost::multiplicative<ddScattMatrixF, double>
 		{
-		}; */
+		public:
+			/// Needs frequency (GHz) and phi (degrees) for P and K calculations
+
+			ddScattMatrixS(double freq = 0, double theta = 0, double phi = 0, double thetan = 0, double phin = 0,
+				boost::shared_ptr<const ddScattMatrixConnector> frame = ddScattMatrixConnector::defaults())
+				: ddScattMatrix(freq, theta, phi, thetan, phin), frame(frame) {}
+			virtual ~ddScattMatrixS();
+			virtual ddScattMatrixS* clone() const;
+			virtual scattMatrixType id() const { return scattMatrixType::S; }
+			// matrixop extinction() const;
+			/// Calculate Mueller matrix from F matrix
+			virtual PnnType mueller() const;
+			void setS(const FType& s);
+			inline FType getS() const { return _s; }
+		protected:
+			/// Calculate Mueller matrix from scattering amplitude matrix
+			void _calcP() const;
+			mutable FType _s;
+			boost::shared_ptr<const ddScattMatrixConnector> frame;
+		};
+
 
 		/// Represents data for just a Mueller matrix
 		class DLEXPORT_rtmath_ddscat ddScattMatrixP : 

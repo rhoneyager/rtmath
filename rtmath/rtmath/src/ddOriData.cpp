@@ -373,7 +373,7 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
-			//readMueller(in);
+			//readMuellerDDSCAT(in);
 		}
 
 		/// Input in sca format
@@ -487,7 +487,7 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
-			//readMueller(in);
+			//readMuellerDDSCAT(in);
 		}
 
 		/// Input in fml format
@@ -592,7 +592,7 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
-			readF(in, cn);
+			readF_DDSCAT(in, cn);
 		}
 
 
@@ -672,7 +672,7 @@ namespace rtmath {
 			writeStatTable(out);
 
 			// Write the P matrix (not supported for avg file here)
-			//writeMueller(out);
+			//writeMuellerDDSCAT(out);
 		}
 
 		void ddOriData::writeSCA(std::ostream &out) const
@@ -775,7 +775,7 @@ namespace rtmath {
 			writeStatTable(out);
 
 			// Write the P matrix
-			writeMueller(out);
+			writeMuellerDDSCAT(out);
 		}
 
 		void ddOriData::writeFML(std::ostream &out) const
@@ -862,7 +862,7 @@ namespace rtmath {
 			out << endl;
 
 			// Write the f matrix
-			writeF(out);
+			writeF_DDSCAT(out);
 		}
 
 		boost::shared_ptr<const ddScattMatrixConnector> ddOriData::getConnector() const
@@ -984,7 +984,7 @@ namespace rtmath {
 			return rtmath::refract::guessTemp(freq(), M(dielIndex));
 		}
 
-		void ddOriData::writeF(std::ostream &out) const
+		void ddOriData::writeF_DDSCAT(std::ostream &out) const
 		{
 			using namespace std;
 			out << " theta   phi  Re(f_11)   Im(f_11)   Re(f_21)   Im(f_21)   Re(f_12)   Im(f_12)   Re(f_22)   Im(f_22)";
@@ -1054,7 +1054,7 @@ namespace rtmath {
 			return mi;
 		}
 
-		void ddOriData::writeMueller(std::ostream &out, const mMuellerIndices &mi) const
+		void ddOriData::writeMuellerDDSCAT(std::ostream &out, const mMuellerIndices &mi) const
 		{
 			using namespace std;
 			out << "            Mueller matrix elements for selected scattering directions in Lab Frame" << endl;

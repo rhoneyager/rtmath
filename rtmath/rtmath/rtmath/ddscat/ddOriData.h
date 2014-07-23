@@ -106,9 +106,9 @@ namespace rtmath {
 			void writeSCA(std::ostream &out) const;
 			void writeAVG(std::ostream &out) const;
 			static const mMuellerIndices& mMuellerIndicesDefault();
-			void writeMueller(std::ostream &out, const mMuellerIndices &mi = mMuellerIndicesDefault()) const;
+			void writeMuellerDDSCAT(std::ostream &out, const mMuellerIndices &mi = mMuellerIndicesDefault()) const;
 			void writeS(std::ostream &out) const;
-			void writeF(std::ostream &out) const;
+			void writeF_DDSCAT(std::ostream &out) const;
 			void writeStatTable(std::ostream &out) const;
 
 			void readFML(std::istream &in);
@@ -116,8 +116,10 @@ namespace rtmath {
 			void readAVG(std::istream &in);
 			//void readHeader(std::istream &in, const std::string &sstop = "Qext");
 			void readStatTable(std::istream &in);
-			void readMueller(std::istream &in);
-			void readF(std::istream &in, boost::shared_ptr<const ddScattMatrixConnector>);
+			void readMuellerDDSCAT(std::istream &in);
+			void readF_DDSCAT(std::istream &in, boost::shared_ptr<const ddScattMatrixConnector>);
+
+			void readS_ADDA(std::istream &in);
 
 			
 #define accessorRW(name,id,valtype) \

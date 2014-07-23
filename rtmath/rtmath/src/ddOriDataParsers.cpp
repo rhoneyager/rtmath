@@ -477,7 +477,7 @@ namespace rtmath
 			}
 		}
 
-		void ddOriData::readMueller(std::istream &in)
+		void ddOriData::readMuellerDDSCAT(std::istream &in)
 		{
 			using namespace std;
 			using namespace rtmath::ddscat::ddOriDataParsers;
@@ -569,7 +569,7 @@ namespace rtmath
 			//_statTable_Size_ts.at(stat_entries_size_ts::NUMP) = _scattMatricesRaw.size();
 		}
 
-		void ddOriData::readF(std::istream &in,
+		void ddOriData::readF_DDSCAT(std::istream &in,
 			boost::shared_ptr<const ddScattMatrixConnector> eProvider)
 		{
 			using namespace std;
@@ -620,5 +620,62 @@ namespace rtmath
 
 			//_statTable_Size_ts.at(stat_entries_size_ts::NUMF) = _scattMatricesRaw.size();
 		}
+
+		void ddOriData::readS_ADDA(std::istream &in)
+		{
+			throw rtmath::debug::xUnimplemented();
+			/*
+			using namespace std;
+			using namespace rtmath::ddscat::ddOriDataParsers;
+
+			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
+			//auto &os = _parent.oridata_s.at(_row);
+			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
+
+			// The frequency is needed when reading this matrix
+			const double f = freq();
+
+			string lin;
+
+			std::vector<double> vals;
+			vals.reserve(10);
+
+			while (in.good())
+			{
+				std::getline(in, lin);
+				if (lin == "") return;
+				// Parse the string to get rid of spaces. This is used to determine
+				// if we are still in the S matrix header or in the actual data
+				boost::trim(lin);
+				if (std::isalpha(lin.at(0))) continue;
+
+				vals.clear();
+				if (!parse_numbers_space(lin.begin(), lin.end(), vals))
+					throw debug::xBadInput("Cannot parse S entry");
+
+				// TODO: Add check to see if phi is a column or not!!!!!
+
+				// ddScattMatrixF constructor takes frequency (GHz) and phi
+				//boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF
+				//	(freq, vals[0], vals[1], 0, 0, eProvider));
+				ddScattMatrixS mat(f, vals[0], vals[1], 0, 0, eProvider);
+				ddScattMatrix::FType fs;
+				fs(0, 0) = complex<double>(vals[2], vals[3]);
+				fs(1, 0) = complex<double>(vals[4], vals[5]);
+				fs(0, 1) = complex<double>(vals[6], vals[7]);
+				fs(1, 1) = complex<double>(vals[8], vals[9]);
+				mat.setF(fs);
+
+				//boost::shared_ptr<const ddScattMatrix> matC =
+				//	boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
+
+				//_scattMatricesRaw.push_back(matC);
+				_scattMatricesRaw.push_back(mat);
+			}
+
+			//_statTable_Size_ts.at(stat_entries_size_ts::NUMF) = _scattMatricesRaw.size();
+			*/
+		}
+
 	}
 }

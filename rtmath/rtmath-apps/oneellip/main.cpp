@@ -16,6 +16,7 @@
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/phaseFunc.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
@@ -139,10 +140,75 @@ int main(int argc, char *argv[])
 		bool scale = false;
 		if (vm.count("scale-aeff")) scale = true;
 
-
-		auto process_ddoutput = [&](const std::string &file)
+		using rtmath::ddscat::ddOutput;
+		auto process_indiv_ddoutput = [&](boost::shared_ptr<ddOutput> s)
 		{
-			
+			run r;
+			r.aeff = aeff;
+			r.ar = aspect;
+			r.freq = freq;
+			r.fv = vfrac;
+			r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
+			r.m = ovM;
+			r.temp = -1;
+			runs.push_back(std::move(r));
+		};
+
+		vector<string> vddoutputs;
+		auto process_ddoutput = [&]()
+		{
+			using namespace boost::filesystem;
+			for (const auto &i : vddoutputs)
+			{
+				cerr << "Processing " << i << endl;
+				path ps = rtmath::debug::expandSymlink(i);
+
+				auto iopts = rtmath::registry::IO_options::generate();
+				iopts->filename(i);
+				// Handle not needed as the read context is used only once.
+				if (is_directory(ps))
+				{
+					// Check for recursion
+					path pd = ps / "shape.dat";
+					if (!exists(pd))
+					{
+						// Load one level of subdirectories
+						vector<path> subdirs;
+						copy(directory_iterator(ps),
+							directory_iterator(), back_inserter(subdirs));
+						for (const auto &p : subdirs)
+						{
+							if (is_directory(p))
+							{
+								cerr << " processing " << p << endl;
+								boost::shared_ptr<ddOutput> s(new ddOutput);
+								s = ddOutput::generate(ps.string());
+								process_indiv_ddoutput(s);
+							}
+						}
+					}
+					else {
+						// Input is a ddscat run
+						boost::shared_ptr<ddOutput> s(new ddOutput);
+						s = ddOutput::generate(ps.string());
+						process_indiv_ddoutput(s);
+					}
+				}
+				else if (ddOutput::canReadMulti(nullptr, iopts))
+				{
+					vector<boost::shared_ptr<ddOutput> > dos;
+					ddOutput::readVector(nullptr, iopts, dos);
+					for (const auto &s : dos)
+						process_indiv_ddoutput(s);
+				} else {
+					// This fallback shouldn't happen...
+					boost::shared_ptr<ddOutput> s(new ddOutput);
+					s->readFile(i);
+					process_indiv_ddoutput(s);
+				}
+
+			}
+
 		};
 
 		auto process_commandline = [&]()
@@ -210,166 +276,57 @@ int main(int argc, char *argv[])
 
 		vector<string> vddoutputs;
 		if (vm.count("ddoutput")) vddoutputs = vm["ddoutput"].as<vector<string> >();
-		for (const auto &f : vddoutputs) process_ddoutput(f);
+		process_ddoutput();
+		process_commandline();
 		
 		
-		
-		
-
-		/*
-		rtmath::config::splitSet(vm["alphas"].as<string>(), alphas);
-		rtmath::config::splitSet(vm["betas"].as<string>(), betas);
-
-		// Precalculate the standard angle pairs
-		std::vector<std::pair<double, double> > angles_pre;
-		angles_pre.reserve(alphas.size() * betas.size());
-		for (const double &alpha : alphas)
-			for (const double &beta : betas)
-			{
-				double ra = alpha;
-				if (ra >= 179.9) ra = 179.99; /// \todo Fix the tmatrix code here.
-				angles_pre.push_back(std::pair<double,double>(ra,beta));
-			}
-		*/
-
-		// The actual runs begin here
-		using namespace std;
-		
-		const double pi = boost::math::constants::pi<double>();
-		typedef boost::random::mt19937 gen_type;
-		gen_type rand_gen;
-		rand_gen.seed(static_cast<unsigned int>(std::time(0)));
-		boost::random::uniform_on_sphere<double> dist(3);
-		boost::variate_generator<gen_type&, boost::uniform_on_sphere<double> >
-			random_on_sphere(rand_gen, dist);
-		boost::random::uniform_real_distribution<double> distUni(0,2.*pi);
 
 
 		ofstream out( string(oprefix).append(".tsv").c_str());
-		out << "Temperature (K)\tFrequency (GHz)\tEffective Radius (um)\tAspect Ratio\t"
-			"mrr\tmri\tVolume Fraction\tnu\tSize Parameter\tAlpha (degrees)\tBeta (degrees)\tQabs_iso\tQsca_iso\tQext_iso\tQsca\tQbk" << endl;
+		// Output a header line
 
-		for (const double &temp : temps)
-		for (const double &freq : freqs)
-		for (const double &aeff : aeffs)
-		for (const double &vfrac : vfracs)
-		for (const double &aspect : aspects)
+		// Iterate over all possible runs
+		for (const auto &r : runs)
 		{
 			ostringstream ofiless;
 			// the prefix is expected to be the discriminant for the rotational data
-			ofiless << oprefix << "-t-" << temp << "-f-" << freq 
-				<< "-aeff-" << aeff << "-nu-" << nu 
-				<< "-vfrac-" << vfrac << "-aspect-" << aspect;
+			ofiless << oprefix << "-t-" << r.temp << "-f-" << r.freq 
+				<< "-aeff-" << r.aeff 
+				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
 			cout << ofile << endl;
 
-			complex<double> mIce, m, mAir(1,0);
-			rtmath::refract::mIce(freq, temp, mIce);
-			if (overrideM)
-			{
-				m = ovM;
-			} else {
-				rtmath::refract::sihvola(mIce,mAir,vfrac,nu,m);
-			}
 
-			double saeff = aeff;
-			if (scale)
-			{
-				double sV = pow(aeff,3.0);
-				sV /= vfrac;
-				saeff = pow(sV,1./3.);
-			}
-
-			double lam = rtmath::units::conv_spec("GHz","um").convert(freq);
-			const double sizep = 2. * boost::math::constants::pi<double>() * aeff / lam;
+			const double sizep = 2. * boost::math::constants::pi<double>() * r.aeff / r.lambda;
 			
-			
+			using namespace rtmath::phaseFuncs;
+			pf_class_registry::orientation_type o = pf_class_registry::orientation_type::ISOTROPIC;
+			pf_class_registry::inputParamsPartial i;
+			i.aeff = r.aeff;
+			i.aeff_rescale;
+			i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
+			i.eps = r.ar;
+			i.m;
+			i.m_rescale;
+			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
+			i.vFrac = r.fv;
 
-			tmatrixBase base;
-			base.AXI = saeff;
-			base.LAM = lam;
-			base.MRR = m.real();
-			base.MRI = abs(m.imag());
-			base.EPS = aspect;
-			if ( abs(aspect - 1.0) < 0.00001 ) base.EPS = 1.0001;
-			const double k = 2. * pi / lam;
-			boost::shared_ptr<const tmatrixParams> params = tmatrixParams::create(base);
+			pf_provider p(o, i);
 
-			const double nRots = (double) alphas.size() * (double) betas.size();
-
-			vector<std::pair<double,double> > angles;
-			if (!vm.count("random-rotations"))
-			{
-				angles = angles_pre;
-			} else {
-				size_t n = vm["random-rotations"].as<size_t>();
-				angles.reserve(n);
-
-				for (size_t i=0; i<n; ++i)
-				{
-					// Convert from cartesian coordinates to rotation angles (in degrees)
-					// The norm of the input vector is unity.
-					auto radToDeg = [&pi](double rad) -> double
-					{
-						double res = rad * 180 / pi;
-						return res;
-					};
-
-					vector<double> crdsCartesian = random_on_sphere();
-
-					//float beta_R = distUni(rand_gen);
-					//float &r = beta_R;
-			
-					double theta_R = acos(crdsCartesian[2]);
-					double phi_R = atan2(crdsCartesian[1], crdsCartesian[0]) + pi;
-
-					double theta_D = radToDeg(theta_R);
-					double phi_D = radToDeg(phi_R) / 2.;
-
-					angles.push_back(std::pair<double,double>(theta_D,phi_D));
-				}
-			}
-
-			for (const auto &angle : angles)
-			{
-				const double &alpha = angle.first;
-				const double &beta = angle.second;
-				auto res = OriTmatrix::calc(params, alpha, beta);
-				auto ang = OriAngleRes::calc(res, 0, 0, 180, 0); // theta = 0, phi = 90
-				double C_sphere = pi * pow(saeff,2.0);
-				double Qbk = getDifferentialBackscatterCrossSectionUnpol(res);
-				double Qext_iso = res->qext;
-				double Qsca_iso = res->qsca;
-				
-				double p = saeff / 2.;
-
-				double Qsca = 8. * pi / (3. * k * k) * ang->getP(0,0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
-				// unpolarized version for generalized ellipsoid. see yurkin 2013.
-				//double Qext = 0;
-				//double g = 0;
-				double Qabs_iso = Qext_iso - Qsca_iso;
-				//double Qabs = Qext - Qsca;
-
-				out << temp << "\t" << freq << "\t" << aeff << "\t" << aspect << "\t"
-				<< m.real() << "\t" << abs(m.imag()) << "\t" << vfrac << "\t" 
-				<< nu << "\t" << sizep << "\t" << alpha << "\t" << beta << "\t"
-				<< Qabs_iso << "\t" << Qsca_iso << "\t" << Qext_iso << "\t"
-				<< Qsca << "\t" << Qbk << endl;
-			}
+			pf_provider::resCtype res;
+			pf_class_registry::setup s;
+			p.getCrossSections()
 		}
 
-		return 0;
-	} 
-	catch (std::exception &e)
-	{
+	} catch (std::exception &e) {
 		cerr << "Exception: " << e.what() << endl;
 		exit(2);
-	}
-	catch (...)
-	{
+	} catch (...) {
 		cerr << "Caught unidentified error... Terminating." << endl;
 		exit(1);
 	}
+
+	return 0;
 }
 
 
