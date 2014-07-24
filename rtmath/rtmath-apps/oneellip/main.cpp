@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 		scale.add_options()
 			("scale-aeff", "Scale effective radius based on volume fraction")
 			("scale-m", "Scale refractive index based on volume fraction")
-			("scale-v", "Scale for an equivalent volume ellipsoid")
+			//("scale-v", "Scale for an equivalent volume ellipsoid")
 			//("scale-sa", "Scale for an equivalent surface area ellipsoid")
 			;
 
@@ -137,20 +137,40 @@ int main(int argc, char *argv[])
 		}
 
 		//double vfrac = vm["volume-fraction"].as<double>();
-		bool scale = false;
-		if (vm.count("scale-aeff")) scale = true;
+		//bool scaleaeff = false;
+		//if (vm.count("scale-aeff")) scaleaeff = true;
+
+
+		enum class VFRAC_TYPE
+		{
+			CIRCUM_SPHERE,
+			VORONOI,
+			CONVEX,
+			ELLIPSOID_MAX
+		};
+		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
+		if (vm.count("scale-circumscribing-sphere")) vf = VFRAC_TYPE::CIRCUM_SPHERE;
+		else if (vm.count("scale-voronoi")) vf = VFRAC_TYPE::VORONOI;
+		else if (vm.count("scale-convex")) vf = VFRAC_TYPE::CONVEX;
+		else if (vm.count("scale-ellipsoid-max")) vf = VFRAC_TYPE::ELLIPSOID_MAX;
 
 		using rtmath::ddscat::ddOutput;
 		auto process_indiv_ddoutput = [&](boost::shared_ptr<ddOutput> s)
 		{
 			run r;
-			r.aeff = aeff;
-			r.ar = aspect;
-			r.freq = freq;
-			r.fv = vfrac;
-			r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
-			r.m = ovM;
-			r.temp = -1;
+			rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
+			if (vf == VFRAC_TYPE::CIRCUM_SPHERE) v = &(s->stats->Scircum_sphere);
+			else if (vf == VFRAC_TYPE::VORONOI) v = &(s->stats->SVoronoi_hull);
+			else if (vf == VFRAC_TYPE::CONVEX) v = &(s->stats->Sconvex_hull);
+			else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) v = &(s->stats->Sellipsoid_max);
+			TASSERT(v);
+
+			r.aeff = v->aeff_V;
+			r.ar = s->stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
+			r.freq = s->freq;
+			r.fv = v->f;
+			r.m = (overrideM) ? ovM : s->ms.at(0).at(0);
+			r.temp = s->temp;
 			runs.push_back(std::move(r));
 		};
 
@@ -274,7 +294,6 @@ int main(int argc, char *argv[])
 
 		};
 
-		vector<string> vddoutputs;
 		if (vm.count("ddoutput")) vddoutputs = vm["ddoutput"].as<vector<string> >();
 		process_ddoutput();
 		process_commandline();
@@ -284,6 +303,7 @@ int main(int argc, char *argv[])
 
 		ofstream out( string(oprefix).append(".tsv").c_str());
 		// Output a header line
+		out << "Method\tTheta\tBeta\tPhi\tg\tg_iso\tQabs\tQabs_iso\tQbk\tQbk_iso\tQext\tQext_iso\tQsca\tQsca_iso" << std::endl;
 
 		// Iterate over all possible runs
 		for (const auto &r : runs)
@@ -303,19 +323,33 @@ int main(int argc, char *argv[])
 			pf_class_registry::orientation_type o = pf_class_registry::orientation_type::ISOTROPIC;
 			pf_class_registry::inputParamsPartial i;
 			i.aeff = r.aeff;
-			i.aeff_rescale;
+			i.aeff_rescale = (vm.count("scale-aeff") > 0) ? true : false;
 			i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
 			i.eps = r.ar;
-			i.m;
-			i.m_rescale;
+			i.m = r.m;
+			i.m_rescale = (vm.count("scale-m") > 0) ? true : false;
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
 			i.vFrac = r.fv;
+
 
 			pf_provider p(o, i);
 
 			pf_provider::resCtype res;
 			pf_class_registry::setup s;
-			p.getCrossSections()
+			s.beta = 0; s.theta = 0; s.phi = 0;
+			s.sPhi = 0; s.sPhi0 = 0; s.sTheta = 0; s.sTheta0 = 0;
+			s.wavelength = r.lambda;
+			p.getCrossSections(s, res);
+
+			for (const auto &rr : res)
+			{
+				out << rr.first << "\t" << s.theta << "\t" << s.beta << "\t" << s.phi << "\t" 
+					<< rr.second.g << "\t" << rr.second.g_iso << "\t"
+					<< rr.second.Qabs << "\t" << rr.second.Qabs_iso << "\t" << rr.second.Qbk << "\t"
+					<< rr.second.Qbk_iso << "\t" << rr.second.Qext << "\t" << rr.second.Qext_iso << "\t"
+					<< rr.second.Qsca << "\t" << rr.second.Qsca_iso
+					<< std::endl;
+			}
 		}
 
 	} catch (std::exception &e) {

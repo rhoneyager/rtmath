@@ -623,7 +623,7 @@ namespace rtmath
 
 		void ddOriData::readS_ADDA(std::istream &in)
 		{
-			throw rtmath::debug::xUnimplemented();
+			throw rtmath::debug::xUnimplementedFunction();
 			/*
 			using namespace std;
 			using namespace rtmath::ddscat::ddOriDataParsers;

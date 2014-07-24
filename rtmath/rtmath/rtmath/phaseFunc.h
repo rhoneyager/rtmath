@@ -59,7 +59,7 @@ namespace rtmath {
 			} orientations;
 
 			/// Angle setup
-			struct setup {
+			struct DLEXPORT_rtmath_core setup {
 				setup();
 				double beta, theta, phi; // ddscat-based rotation angles
 				double sTheta, sTheta0, sPhi, sPhi0; // incident and scattered beam angles (degrees)
@@ -67,7 +67,7 @@ namespace rtmath {
 			};
 
 			/// Used to specify basic stats for constructing a run
-			struct inputParamsPartial {
+			struct DLEXPORT_rtmath_core inputParamsPartial {
 				inputParamsPartial();
 				double aeff; // equivalent-sphere radius
 				enum class aeff_version_type
@@ -89,7 +89,7 @@ namespace rtmath {
 			};
 
 			/// Cross-section return structure
-			struct cross_sections {
+			struct DLEXPORT_rtmath_core cross_sections {
 				cross_sections();
 				double Qbk, Qext, Qsca, Qabs, g;
 				double Qsca_iso, Qabs_iso;
