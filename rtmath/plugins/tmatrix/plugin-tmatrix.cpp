@@ -12,7 +12,7 @@
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
 
-#include <Tmatrix/tmatrix.h>
+#include <tmatrix/tmatrix.h>
 
 #include "plugin-tmatrix.h"
 
