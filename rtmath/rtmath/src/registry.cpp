@@ -184,7 +184,7 @@ namespace {
 		auto modinfo = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) constructSearchPaths), freeModuleInfo);
 		boost::filesystem::path libpath(getPath(modinfo.get()));
 		libpath.remove_filename();
-		rtmath::registry::searchPathsRecursive.emplace(libpath / "plugins");
+		rtmath::registry::searchPathsOne.emplace(libpath / "plugins");
 
 
 		// Checking rtmath.conf
@@ -294,9 +294,10 @@ namespace {
 			// Could not open the dll for some reason
 			if (this->dlHandle == NULL)
 			{
+				DWORD err = GetLastError();
+				std::cerr << "Error: Could not open DLL at " << filename << " --- error code " << err << std::endl;
 				if (critical)
 					RTthrow rtmath::debug::xBadInput(filename.c_str());
-				std::cerr << "Error: Could not open DLL at " << filename << std::endl;
 			}
 #endif
 			DLLpathsLoaded.insert(filename);

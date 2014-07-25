@@ -273,6 +273,7 @@ int main(int argc, char *argv[])
 								r.fv = vfrac;
 								r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
 								r.temp = temp;
+								rtmath::refract::mIce(freq, temp, r.m);
 								runs.push_back(std::move(r));
 							}
 						}

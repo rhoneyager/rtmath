@@ -67,9 +67,9 @@ namespace rtmath
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
 				double ar = i.eps;
-				if (abs(ar - 1.0) < 0.00001) ar = 1.0001;
+				if (abs(ar - 1.0) < 0.00001) ar = 1.00001;
 				auto tp = ::tmatrix::tmatrixParams::create(
-					i.aeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 5);
+					i.aeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 7);
 
 				const double k = 2. * pi / s.wavelength;
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
@@ -82,10 +82,12 @@ namespace rtmath
 
 				double C_sphere = pi * pow(scaledAeff, 2.0);
 				auto ang = ::tmatrix::OriAngleRes::calc(ori, 0, 0, 180., 0);
-				c.Qsca = 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
+				// 4?
+				c.Qsca = 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
 				c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
 				c.g = -1;
 
+				c.Qbk_iso = -1;
 				// Cext (and thus Qext) can come from the optical theorem...
 				// Cext = -4pi/k^2 * Re{S(\theta=0)}
 				c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
@@ -142,11 +144,11 @@ void dllEntry()
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);
 
 	rtmath::phaseFuncs::pf_class_registry pcb;
-	pc.name = "tmatrix-iso";
-	pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	pc.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
-	pc.fPfs = rtmath::plugins::tmatrix::doPf;
-	rtmath::phaseFuncs::pf_provider::registerHook(pc);
+	pcb.name = "tmatrix-iso";
+	pcb.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pcb.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
+	pcb.fPfs = rtmath::plugins::tmatrix::doPf;
+	rtmath::phaseFuncs::pf_provider::registerHook(pcb);
 
 	// Also register some Rayleigh-Gans approximation codes
 	// - Standard theory
