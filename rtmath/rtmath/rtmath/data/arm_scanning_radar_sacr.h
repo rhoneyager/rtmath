@@ -49,15 +49,6 @@ namespace rtmath
 		{
 			class dataStreamHandler;
 
-			/** \brief Ascertains information about a data file from ARM.
-			*
-			* This class reads a file from ARM, determines the type of instrument used, 
-			* the site, the datastream and the time range. It is intended to be very useful 
-			* for establishing coverage information.
-			*
-			* Reads ARM files and database entries.
-			* Writes / exports database and tsv information.
-			**/
 			class DLEXPORT_rtmath_data arm_scanning_radar_sacr :
 				virtual public boost::enable_shared_from_this<arm_scanning_radar_sacr>,
 				virtual public ::rtmath::registry::usesDLLregistry<
