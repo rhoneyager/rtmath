@@ -144,7 +144,10 @@ namespace rtmath {
 				}
 
 				// DDSCAT run verion tag
-				addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
+				//if (debug::rev() < 1510)
+				//	addAttr<string, Group>(gRun, "DDSCAT_Version_Tag", s->ddvertag);
+				//else
+				addAttr<string, Group>(gRun, "DDA_Version_Tag", s->ddvertag);
 
 				if (writeORI && s->oridata_d.rows())
 				{

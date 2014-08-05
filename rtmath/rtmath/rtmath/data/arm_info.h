@@ -2,7 +2,6 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-//#include <boost/serialization/version.hpp>
 #include <boost/date_time.hpp>
 #include "../defs.h"
 #include "../hash.h"
@@ -16,12 +15,59 @@ namespace rtmath
 		namespace arm
 		{
 			class arm_info;
-			// Reader bindings for netcdf files and database entries.
+			/// Reader bindings for netcdf files and database entries.
 			class arm_IO_input_registry {};
-			// Used when convertiong file formats and writing database entries.
+			/// Used when convertiong file formats and writing database entries.
 			class arm_IO_output_registry {};
 //			class arm_info_serialization {};
-			class DLEXPORT_rtmath_data dataStreamHandler { public: virtual ~dataStreamHandler() {} };
+			/// Database querying
+			class arm_query_registry {};
+
+			/// Base class for all ARM data products. Used for casting.
+			class DLEXPORT_rtmath_data dataStreamHandler { public: virtual ~dataStreamHandler(); };
+
+			/// \brief This class is used for plugins to register themselves to handle arm_info queries.
+			struct DLEXPORT_rtmath_data arm_info_registry
+			{
+				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
+				class DLEXPORT_rtmath_data arm_info_index
+				{
+				private:
+					arm_info_index();
+					std::vector<std::string> instruments, sites, subsites, data_levels;
+					std::vector<boost::posix_time::ptime> discrete_times;
+					std::vector<std::pair<boost::posix_time::ptime, boost::posix_time::ptime> > time_ranges;
+				public:
+					~arm_info_index();
+					static boost::shared_ptr<arm_info_index> generate();
+					arm_info_index& match_site(const std::string&);
+					arm_info_index& match_subsite(const std::string&);
+					arm_info_index& time_range(const boost::posix_time::ptime&, const boost::posix_time::ptime&);
+					arm_info_index& has_time(const boost::posix_time::ptime&);
+					arm_info_index& match_instrument(const std::string&);
+					arm_info_index& data_level(const std::string&);
+
+					typedef boost::shared_ptr<std::set<boost::shared_ptr<arm_info> > > collection;
+					collection doQuery() const;
+
+				};
+
+				arm_info_registry();
+				virtual ~arm_info_registry();
+				/// Module name.
+				const char* name;
+
+				enum class updateType { INSERT_ONLY, UPDATE_ONLY, INSERT_AND_UPDATE };
+				typedef std::function<void(const arm_info_index&, arm_info_index::collection)> queryType;
+				typedef std::function<void(const arm_info_index::collection, updateType)> writeType;
+
+				/// Get cross-sections from small stats
+				queryType fQuery;
+				/// Get pfs from small stats
+				writeType fInsertUpdate;
+
+				
+			};
 		}
 	}
 	namespace registry {
@@ -41,12 +87,17 @@ namespace rtmath
 			::rtmath::data::arm::arm_IO_output_registry,
 			IO_class_registry_writer<::rtmath::data::arm::arm_info> >;
 		
+		extern template class usesDLLregistry<
+			::rtmath::data::arm::arm_query_registry,
+			IO_class_registry_writer<::rtmath::data::arm::arm_info> >;
 	}
 	namespace data
 	{
 		namespace arm
 		{
 			class dataStreamHandler;
+
+			
 
 			/** \brief Ascertains information about a data file from ARM.
 			*
@@ -66,17 +117,27 @@ namespace rtmath
 					::rtmath::data::arm::arm_IO_output_registry, 
 					::rtmath::registry::IO_class_registry_writer<arm_info> >,
 				virtual public ::rtmath::io::implementsStandardWriter<arm_info, arm_IO_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<arm_info, arm_IO_input_registry>
+				virtual public ::rtmath::io::implementsStandardReader<arm_info, arm_IO_input_registry>,
 //				virtual public ::rtmath::io::Serialization::implementsSerialization<
 //					arm_info, arm_IO_output_registry, arm_IO_input_registry, arm_info_serialization>
+				virtual public ::rtmath::registry::usesDLLregistry<
+					arm_query_registry, arm_info_registry >
 			{
+				void _init();
 			public:
 				arm_info();
 				arm_info(const std::string &filename);
 				virtual ~arm_info();
 
+				bool operator<(const arm_info &) const;
+				bool operator==(const arm_info &) const;
+				bool operator!=(const arm_info &) const;
+
 				/// Filename
 				std::string filename;
+
+				/// Path to access file (needed in database index)
+				std::string filepath;
 
 				/// ARM main site (SGP, TWP, NSA, ...)
 				std::string site;
@@ -114,15 +175,17 @@ namespace rtmath
 				/// appropriate stream analysis type.
 				boost::shared_ptr<dataStreamHandler> getHandler() const;
 
-			private:
-				void _init();
-//				friend class ::boost::serialization::access;
-//				template<class Archive>
-//				void serialize(Archive & ar, const unsigned int version);
+				// These don't really fit the standard io plugin spec, as they refer to database entries.
+				// Database search and update semantics are different, and it is much better to do bulk searches 
+				// and updates than one-by-one.
+				// Of course, the io plugins could be usable, but selecting ranges for read with IO_options is bad, 
+				// and handling many writes would either involve code complexity or poor code performance.
+
+				static boost::shared_ptr<arm_info_registry::arm_info_index> makeQuery() { return arm_info_registry::arm_info_index::generate(); }
+				void updateEntry(arm_info_registry::updateType) const;
+				static arm_info_registry::arm_info_index::collection makeCollection();
+				static void updateCollection(arm_info_registry::arm_info_index::collection, arm_info_registry::updateType);
 			};
 		}
 	}
 }
-//BOOST_CLASS_EXPORT_KEY(::rtmath::data::arm::arm_info);
-//BOOST_CLASS_VERSION(::rtmath::data::arm::arm_info, 0);
-

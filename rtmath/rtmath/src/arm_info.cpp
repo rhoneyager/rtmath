@@ -1,16 +1,5 @@
 #include "Stdafx-data.h"
-/*
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/date_time/gregorian/greg_serialize.hpp>
-#include <boost/date_time/posix_time/time_serialize.hpp>
-*/
 #include <sstream>
-
-//#include "../rtmath/Serialization/serialization_macros.h"
 
 #include "../rtmath/data/arm_info.h"
 
@@ -35,14 +24,23 @@ namespace rtmath
 		template class usesDLLregistry<
 			::rtmath::data::arm::arm_IO_output_registry,
 			IO_class_registry_writer<::rtmath::data::arm::arm_info> >;
+
+		template class usesDLLregistry<
+			::rtmath::data::arm::arm_query_registry,
+			::rtmath::data::arm::arm_info_registry >;
 		
 	}
 	namespace data
 	{
 		namespace arm
 		{
+			dataStreamHandler::~dataStreamHandler() {}
+
 			arm_info::arm_info() { _init(); }
 			arm_info::~arm_info() { }
+			bool arm_info::operator!=(const arm_info &rhs) const { return !operator==(rhs); }
+			bool arm_info::operator==(const arm_info &rhs) const { return filename == rhs.filename; }
+			bool arm_info::operator<(const arm_info &rhs) const { return filename < rhs.filename; }
 
 			arm_info::arm_info(const std::string &filename)
 			{
@@ -95,30 +93,88 @@ namespace rtmath
 				return res;
 			}
 
-			/*
-			template<class Archive>
-			void arm_info::serialize(Archive &ar, const unsigned int version)
+			arm_info_registry::arm_info_registry() : name(nullptr), fQuery(nullptr) {}
+
+			arm_info_registry::~arm_info_registry() {}
+
+			arm_info_registry::arm_info_index::arm_info_index() {}
+			arm_info_registry::arm_info_index::~arm_info_index() {}
+			boost::shared_ptr<arm_info_registry::arm_info_index> 
+				arm_info_registry::arm_info_index::generate()
 			{
-				ar & boost::serialization::make_nvp("filename", filename);
-				//ar & boost::serialization::make_nvp("Hash", hash);
-				ar & boost::serialization::make_nvp("site", site);
-				ar & boost::serialization::make_nvp("subsite", subsite);
-				ar & boost::serialization::make_nvp("subsiteFull", subsiteFull);
-				ar & boost::serialization::make_nvp("product", product);
-				ar & boost::serialization::make_nvp("datalevel", alt);
-				ar & boost::serialization::make_nvp("lat", lat);
-				ar & boost::serialization::make_nvp("lon", lon);
-				ar & boost::serialization::make_nvp("alt", alt);
-				ar & boost::serialization::make_nvp("filesize", filesize);
-				ar & boost::serialization::make_nvp("startTime", startTime);
-				ar & boost::serialization::make_nvp("endTime", endTime);
+				boost::shared_ptr<arm_info_registry::arm_info_index> res
+					(new arm_info_index());
+				return res;
 			}
 
-			EXPORTINTERNAL(::rtmath::data::arm::arm_info::serialize);
-			*/
+			arm_info_registry::arm_info_index& arm_info_registry::arm_info_index::match_site(const std::string& s)
+			{
+				sites.push_back(s);
+				return *this;
+			}
+
+			arm_info_registry::arm_info_index& arm_info_registry::arm_info_index::match_subsite(const std::string& s)
+			{
+				subsites.push_back(s);
+				return *this;
+			}
+			arm_info_registry::arm_info_index& arm_info_registry::arm_info_index::time_range(const boost::posix_time::ptime& b, const boost::posix_time::ptime& e)
+			{
+				time_ranges.push_back(std::pair<boost::posix_time::ptime, boost::posix_time::ptime>(b,e));
+				return *this;
+			}
+			arm_info_registry::arm_info_index& arm_info_registry::arm_info_index::has_time(const boost::posix_time::ptime& t)
+			{
+				discrete_times.push_back(t);
+				return *this;
+			}
+			arm_info_registry::arm_info_index& arm_info_registry::arm_info_index::match_instrument(const std::string& s)
+			{
+				instruments.push_back(s);
+				return *this;
+			}
+			arm_info_registry::arm_info_index& arm_info_registry::arm_info_index::data_level(const std::string& s)
+			{
+				data_levels.push_back(s);
+				return *this;
+			}
+
+			arm_info_registry::arm_info_index::collection arm_info_registry::arm_info_index::doQuery() const
+			{
+				collection c(new std::set<boost::shared_ptr<arm_info> >());
+
+				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
+				for (const auto &h : *(hooks.get()))
+				{
+					h.fQuery(*this, c);
+				}
+
+				return c;
+			}
+
+			arm_info_registry::arm_info_index::collection arm_info::makeCollection()
+			{
+				return arm_info_registry::arm_info_index::collection(new std::set<boost::shared_ptr<arm_info> >());
+			}
+			
+			void arm_info::updateEntry(arm_info_registry::updateType t) const
+			{
+				auto c = makeCollection();
+				c->insert(boost::shared_ptr<arm_info>(new arm_info(*this)));
+				updateCollection(c, t);
+			}
+
+			void arm_info::updateCollection(arm_info_registry::arm_info_index::collection c, 
+				arm_info_registry::updateType t)
+			{
+				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
+				for (const auto &h : *(hooks.get()))
+				{
+					h.fInsertUpdate(c, t);
+				}
+			}
+
+			
 		}
 	}
 }
-
-//BOOST_CLASS_EXPORT_IMPLEMENT(::rtmath::data::arm::arm_info);
-

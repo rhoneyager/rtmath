@@ -35,6 +35,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_NETCDF)
 		add_subdirectory (netcdf)
 	endif()
+	option (BUILD_PLUGIN_PSQL
+		"Build PostgreSQL IO plugin" ON)
+	if (BUILD_PLUGIN_PSQL)
+		add_subdirectory (psql)
+	endif()
 	option (BUILD_PLUGIN_ROOT
 		"Build ROOT plugin (io and plotting)" OFF)
 	if (BUILD_PLUGIN_ROOT)

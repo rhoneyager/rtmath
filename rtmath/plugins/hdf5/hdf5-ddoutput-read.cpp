@@ -141,7 +141,10 @@ namespace rtmath {
 				}
 
 				// DDSCAT run version tag
-				readAttr<string, Group>(base, "DDSCAT_Version_Tag", r->ddvertag);
+				if (attrExists(base, "DDA_Version_Tag") )
+					readAttr<string, Group>(base, "DDA_Version_Tag", r->ddvertag);
+				else if (attrExists(base, "DDSCAT_Version_Tag") )
+					readAttr<string, Group>(base, "DDSCAT_Version_Tag", r->ddvertag);
 
 				readAttr<uint64_t, Group>(base, "Shapehash_lower", r->shapeHash.lower);
 				readAttr<uint64_t, Group>(base, "Shapehash_upper", r->shapeHash.upper);

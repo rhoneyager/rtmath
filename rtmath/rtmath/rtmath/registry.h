@@ -138,13 +138,15 @@ namespace rtmath
 		public:
 			typedef typename std::vector<signature> hookStorageType;
 		protected:
+			usesDLLregistry() {}
 			template <class T, class U>
 			friend class ::rtmath::io::implementsStandardWriter;
 			template <class T, class U>
 			friend class ::rtmath::io::implementsStandardReader;
 			template <class T, class U>
 			friend class ::rtmath::io::implementsStandardSingleReader;
-			usesDLLregistry() {}
+			
+		public:
 			/// \note Implemented as a function-internal static function to avoid gcc template issue.
 			static boost::shared_ptr<hookStorageType> getHooks()
 			{
@@ -153,7 +155,7 @@ namespace rtmath
 					boost::shared_ptr<hookStorageType>(new hookStorageType);
 				return hooks;
 			}
-		public:
+		//public:
 			virtual ~usesDLLregistry() {}
 			static void registerHook(const signature &f)
 			{
