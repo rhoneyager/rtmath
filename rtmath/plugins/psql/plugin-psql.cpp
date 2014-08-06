@@ -1,4 +1,4 @@
-/// \brief Provides ImageMagick file IO
+/// \brief Provides psql database access
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <Eigen/Core>
@@ -24,86 +24,52 @@ namespace rtmath
 	{
 		namespace psql
 		{
-			psql_handle::psql_handle(const char* filename, IOtype t)
-				: IOhandler(PLUGINID), file(-1), headerOpen(false), readable(false), writeable(false)
+			void psql_handle::handle_error(ConnStatusType status)
 			{
-				open(filename, t);
-			}
-
-			void psql_handle::open(const char* filename, IOtype t)
-			{
-				try {
-					switch (t)
-					{
-					case IOtype::EXCLUSIVE:
-					case IOtype::DEBUG:
-						RTthrow rtmath::debug::xUnimplementedFunction();
-						break;
-					case IOtype::READONLY:
-					{
-						int status = nc_open(filename, 0, &file);
-						if (status != NC_NOERR) handle_error(status);
-						readable = true;
-					}
-						break;
-					case IOtype::READWRITE:
-					{
-						int status = nc_open(filename, NC_WRITE, &file);
-						if (status != NC_NOERR) handle_error(status);
-						readable = true;
-						writeable = true;
-					}
-						break;
-					case IOtype::CREATE:
-						if (boost::filesystem::exists(boost::filesystem::path(filename)))
-							RTthrow debug::xFileExists(filename);
-					case IOtype::TRUNCATE:
-					{
-						int status = nc_create(filename, 0, &file);
-						if (status != NC_NOERR) handle_error(status);
-						headerOpen = true;
-						writeable = true;
-					}
-						break;
-					}
-				}
-				catch (std::exception &e) {
-					std::cerr << "Error caught in psql_handle::open!\n"
-						<< "\tFilename: " << filename << "\n"
-						<< "\tIOtype: " << t << std::endl;
-					RTthrow e;
-				}
-			}
-
-			void psql_handle::handle_error(int status)
-			{
-				std::cerr << "psql library error " << status << std::endl;
+				std::cerr << "psql library connection error " << status << std::endl;
+				std::cerr << PQerrorMessage(connection.get()) << std::endl;
 				RTthrow debug::xOtherError();
 			}
 
-			psql_handle::~psql_handle()
+			void psql_handle::handle_error(ExecStatusType status)
 			{
-				if (file >= 0)
-				{
-					nc_close(file);
-				}
+				std::cerr << "psql library execution error " << status << std::endl;
+				std::cerr << PQerrorMessage(connection.get()) << std::endl;
+				RTthrow debug::xOtherError();
 			}
 
-			void psql_handle::openHeader()
+			psql_handle::~psql_handle() {}
+
+			psql_handle::psql_handle() : readable(true), writeable(true) {}
+
+			void psql_handle::connect()
 			{
-				// It's a bit useless for psql4, but occasionally a v3 file could be written...
-				if (headerOpen) return;
-				nc_redef(file);
+				const char* keywords[] = { "host", "dbname", "user", "password", "sslmode", "" };
+				const char* values[] = { "plenus.met.fsu.edu", "rtmath", "rhoneyager", "", "require", "" };
+				connection = boost::shared_ptr<PGconn>(PQconnectdbParams(keywords, values, 0), PQfinish);
+				ConnStatusType errcode = PQstatus(connection.get());
+				if (errcode != PGRES_COMMAND_OK) handle_error(errcode);
 			}
 
-			void psql_handle::closeHeader()
+			void psql_handle::disconnect()
 			{
-				// It's a bit useless for psql4, but occasionally a v3 file could be written...
-				if (!headerOpen) return;
-				nc_enddef(file);
+				connection.reset();
+			}
+
+			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
+			{
+				boost::shared_ptr<PGresult> res
+					(PQexec(connection.get(), command), PQclear);
+				ExecStatusType errcode = PQresultStatus(res.get());
+				if (errcode != PGRES_COMMAND_OK) handle_error(errcode);
+				return res;
 			}
 
 
+			void search(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
+				rtmath::data::arm::arm_info_registry::arm_info_index::collection res);
+			void update(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
+				rtmath::data::arm::arm_info_registry::updateType t);
 		}
 
 	}
@@ -119,23 +85,12 @@ void dllEntry()
 		PLUGINID);
 	rtmath_registry_register_dll(id);
 
-	const size_t nExts = 2;
-	const char* exts[nExts] = { "cdf", "nc" };
+	using namespace rtmath::data::arm;
 
-	genAndRegisterIOregistryPlural_reader
-		<::rtmath::data::arm::arm_info,
-		::rtmath::data::arm::arm_IO_input_registry>(
-		nExts, exts, PLUGINID);
+	arm_info_registry reg_ai;
+	reg_ai.name = "psql-" PLUGINID;
+	reg_ai.fInsertUpdate = rtmath::plugins::psql::update;
+	reg_ai.fQuery = rtmath::plugins::psql::search;
 
-	/*
-	genAndRegisterIOregistryPlural_writer
-	<::rtmath::images::image,
-	rtmath::images::image_IO_output_registry>(
-	nExts, exts, PLUGINID, "");
-	*/
-
-	genAndRegisterIOregistryPlural_reader
-		<::rtmath::data::arm::arm_scanning_radar_sacr,
-		::rtmath::data::arm::arm_IO_sacr_input_registry>(
-		nExts, exts, PLUGINID);
+	doRegisterHook<arm_info, arm_query_registry, arm_info_registry>(reg_ai);
 }

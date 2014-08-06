@@ -146,6 +146,7 @@ namespace rtmath
 				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{
+					if (!h.fQuery) continue;
 					h.fQuery(*this, c);
 				}
 
@@ -170,6 +171,7 @@ namespace rtmath
 				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{
+					if (!h.fInsertUpdate) continue;
 					h.fInsertUpdate(c, t);
 				}
 			}

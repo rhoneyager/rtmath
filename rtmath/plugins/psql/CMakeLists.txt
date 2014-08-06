@@ -16,6 +16,7 @@ add_library (rtmath_plugin_psql SHARED
 	#nc-sacr.cpp
 	plugin-psql.cpp
 	plugin-psql.h
+	psql-arm-info.cpp
 	)
 addlib(rtmath_plugin_psql SHARED)
 #message("${PostgreSQL_INCLUDE_DIRS} Libs ${PostgreSQL_LIBRARIES}")

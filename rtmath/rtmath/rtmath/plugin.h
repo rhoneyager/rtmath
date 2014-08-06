@@ -92,6 +92,16 @@ namespace rtmath
 			return res;
 		}
 
+		template <class base, class reg, class obj>
+		void doRegisterHook(const obj& res)
+		{
+#ifdef _MSC_FULL_VER
+			base::usesDLLregistry<reg, obj >::registerHook(res);
+#else
+			base::template usesDLLregistry<reg, obj >::registerHook(res);
+#endif
+		}
+
 		template <class T, class IO_reg_class>
 		void genAndRegisterIOregistry_writer(
 			const char* extension,
@@ -99,11 +109,14 @@ namespace rtmath
 			const char* exportType = "")
 		{
 			auto res = genIOregistry_writer<T>(extension, pluginid, exportType);
+			doRegisterHook<T, IO_reg_class, IO_class_registry_writer<T> >(res);
+			/*
 #ifdef _MSC_FULL_VER
 			T::usesDLLregistry<IO_reg_class, IO_class_registry_writer<T> >::registerHook(res);
 #else
 			T::template usesDLLregistry<IO_reg_class, IO_class_registry_writer<T> >::registerHook(res);
 #endif
+			*/
 		}
 
 
@@ -157,11 +170,14 @@ namespace rtmath
 			const char* exportType = "")
 		{
 			auto res = genIOregistry_reader<T>(extension, pluginid, exportType);
+			doRegisterHook<T, IO_reg_class, IO_class_registry_reader<T> >(res);
+			/*
 #ifdef _MSC_FULL_VER
 			T::usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
 #else
 			T::template usesDLLregistry<IO_reg_class, IO_class_registry_reader<T> >::registerHook(res);
 #endif
+			*/
 		}
 
 

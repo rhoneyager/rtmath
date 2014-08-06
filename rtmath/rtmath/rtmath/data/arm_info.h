@@ -32,8 +32,8 @@ namespace rtmath
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
 				class DLEXPORT_rtmath_data arm_info_index
 				{
-				private:
 					arm_info_index();
+				public:
 					std::vector<std::string> instruments, sites, subsites, data_levels;
 					std::vector<boost::posix_time::ptime> discrete_times;
 					std::vector<std::pair<boost::posix_time::ptime, boost::posix_time::ptime> > time_ranges;
