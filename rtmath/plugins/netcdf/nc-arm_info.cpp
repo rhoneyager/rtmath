@@ -1,4 +1,4 @@
-/// \brief Provides ImageMagick file IO
+/// \brief Provides netcdf file IO
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <Eigen/Core>
