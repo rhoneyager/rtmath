@@ -9,7 +9,9 @@
 #include <mutex>
 //#include <boost/bind.hpp>
 //#include <boost/bind/protect.hpp>
+#if USE_RYAN_SERIALIZATION
 #include <Ryan_Serialization/serialization.h>
+#endif
 #include "registry.h"
 #include "plugin.h"
 #include "defs.h"
@@ -81,6 +83,7 @@ namespace rtmath
 				std::unique_ptr<hSerialization> h;
 			};
 
+#if USE_RYAN_SERIALIZATION
 			template <class obj_class>
 			void writeSerialization(const obj_class* obj, 
 				std::ostream &out, 
@@ -111,6 +114,8 @@ namespace rtmath
 				else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
 
 			}
+
+#endif
 
 			template <class obj_class>
 			std::shared_ptr<rtmath::registry::IOhandler> writeFunc(
@@ -403,6 +408,7 @@ namespace rtmath
 			}
 		};
 
+#if USE_RYAN_SERIALIZATION
 		namespace Serialization
 		{
 			
@@ -507,6 +513,7 @@ namespace rtmath
 
 			};
 		}
+#endif
 
 		template <class obj_class,
 		class output_registry_class>

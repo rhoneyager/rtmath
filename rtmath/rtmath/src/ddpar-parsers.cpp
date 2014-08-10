@@ -14,7 +14,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
+#if USE_RYAN_SERIALIZATION
 #include <Ryan_Serialization/serialization.h>
+#endif
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/config.h"

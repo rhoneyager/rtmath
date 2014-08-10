@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Core>
+#if USE_RYAN_SERIALIZATION
 #include <boost/serialization/array.hpp>
 
 namespace boost
@@ -50,3 +51,4 @@ namespace boost
 	}
 }
 
+#endif

@@ -5,8 +5,10 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
+#if USE_RYAN_SERIALIZATION
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
+#endif
 #include <boost/tuple/tuple.hpp>
 
 // Forward declarations
@@ -32,10 +34,11 @@ namespace rtmath {
 			double _tMin, _tMax;
 			double _pMin, _pMax;
 			size_t _bN, _tN, _pN;
-
+#if USE_RYAN_SERIALIZATION
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+#endif
 		};
 
 		class DLEXPORT_rtmath_ddscat_base rotations : public rotationsBase
@@ -84,9 +87,11 @@ namespace rtmath {
 			bool operator!=(const rotations &rhs) const;
 			bool operator<(const rotations &rhs) const;
 
+#if USE_RYAN_SERIALIZATION
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+#endif
 
 			/** \brief Convenience function to generate rotations based on 
 			 * betas, thetas and phis. Handles degeneracy.
@@ -123,6 +128,7 @@ namespace rtmath {
 	}
 }
 
-
+#if USE_RYAN_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::rotationsBase);
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::rotations);
+#endif

@@ -17,7 +17,7 @@
 #include "../rtmath/config.h"
 #include "../rtmath/splitSet.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/debug_mem.h"
+//#include "../rtmath/error/debug_mem.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/registry.h"
 
@@ -149,7 +149,7 @@ namespace {
 		using std::string;
 
 		// Checking cmake pre-defined locations
-#if REGISTRY_PLUGINS_OVERRIDE_DIR
+#ifdef REGISTRY_PLUGINS_OVERRIDE_DIR
 		{
 			string regdir(REGISTRY_PLUGINS_OVERRIDE_DIR);
 			if (regdir.size())

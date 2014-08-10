@@ -9,25 +9,6 @@
 #include <map>
 #include <stdlib.h>
 
-namespace rtmath {
-	namespace debug {
-		namespace memcheck {
-			extern DLEXPORT_rtmath_core const char* __file__;
-			extern DLEXPORT_rtmath_core size_t __line__;
-			extern DLEXPORT_rtmath_core const char* __caller__;
-			extern DLEXPORT_rtmath_core bool enabled;
-			bool DLEXPORT_rtmath_core __Track(int option, void* p, size_t size, const char* file, int line, const char* caller);
-			inline bool setloc(const char* _file, int _line, const char* _caller)
-			{
-				rtmath::debug::memcheck::__file__ = _file;
-				rtmath::debug::memcheck::__line__ = _line;
-				rtmath::debug::memcheck::__caller__ = _caller;
-				return false;
-			}
-		};
-	};
-};
-
 #ifdef HEAP_CHECK
 
 inline void* operator new(size_t size)

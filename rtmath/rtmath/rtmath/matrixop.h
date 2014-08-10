@@ -12,6 +12,7 @@ namespace rtmath {
 }
 
 // Need these so the template friends can work
+#if USE_RYAN_SERIALIZATION
 namespace boost
 {
 	namespace serialization
@@ -24,6 +25,7 @@ namespace boost
 		void save(Archive &, const rtmath::matrixop &, const unsigned int);
 	}
 }
+#endif
 
 #define inlinerval(x,y) inline x y(size_t rank, ...) const \
 	{ x res(_dims); va_list indices; va_start(indices, rank); std::vector<size_t> ptr; \
@@ -40,6 +42,7 @@ namespace rtmath {
 		// This enables arbitrary multiplication / integration
 		// It's a base class so I can reuse the code in many different ways
 	{
+#if USE_RYAN_SERIALIZATION
 		template<class Archive> 
 		friend void ::boost::serialization::serialize(
 			Archive &, matrixop &, const unsigned int);
@@ -49,6 +52,7 @@ namespace rtmath {
 		template<class Archive> 
 		friend void ::boost::serialization::save(
 			Archive &, const matrixop &, const unsigned int);
+#endif
 	public:
 		matrixop(const std::vector<size_t> &size);
 		matrixop(size_t ndims, ...);

@@ -1,6 +1,7 @@
 #include "Stdafx-ddscat_base.h"
+#include "../rtmath/defs.h"
 #include "../rtmath/ddscat/ddpar.h"
-
+#if USE_RYAN_SERIALIZATION
 #include "../rtmath/Serialization/serialization_macros.h"
 
 #include <boost/serialization/base_object.hpp>
@@ -72,3 +73,4 @@ namespace rtmath
 }
 
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::ddscat::ddPar);
+#endif

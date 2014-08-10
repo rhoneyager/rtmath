@@ -18,12 +18,14 @@
 #include "../io.h"
 
 // For ddParParsers
+#if USE_RYAN_SERIALIZATION
 #include "../Serialization/serialization_macros.h"
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#endif
 
 namespace boost {
 	namespace program_options {
@@ -111,6 +113,7 @@ namespace rtmath {
 				ParId _id;
 				bool _endWriteWithEndl;
 			private:
+#if USE_RYAN_SERIALIZATION
 				friend class boost::serialization::access;
 				template<class Archive>
 				void serialize(Archive & ar, const unsigned int version)
@@ -118,6 +121,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("id", _id);
 					ar & boost::serialization::make_nvp("endWriteWithEndl", _endWriteWithEndl);
 				}
+#endif
 			};
 
 			/// Added this as a level of abstraction to prevent code duplication
@@ -135,6 +139,7 @@ namespace rtmath {
 				void set(const T &val) { _val = val; }
 			protected:
 				T _val;
+#if USE_RYAN_SERIALIZATION
 			private:
 				friend class boost::serialization::access;
 				template<class Archive>
@@ -144,6 +149,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("ddParParsers_ddParLine",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine>(*this));
 				}
+#endif
 			};
 
 			// std::string is specialized later
@@ -173,6 +179,7 @@ namespace rtmath {
 					this->set(trgt);
 					//set( boost::lexical_cast<T>(val) );
 				}
+#if USE_RYAN_SERIALIZATION
 			private:
 				friend class boost::serialization::access;
 				template<class Archive>
@@ -181,6 +188,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("ddParParsers_ddParLineSimpleBase_T",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLineSimpleBase<T> >(*this));
 				}
+#endif
 			};
 
 			// Put parser def here so the subsequent class can load it
@@ -210,6 +218,7 @@ namespace rtmath {
 					pString(val, pstr);
 					set(pstr);
 				}
+#if USE_RYAN_SERIALIZATION
 			private:
 				friend class boost::serialization::access;
 				template<class Archive>
@@ -218,6 +227,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("ddParParsers_ddParLineSimpleBase_std_string",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLineSimpleBase<std::string> >(*this));
 				}
+#endif
 			};
 
 			template <class T>
@@ -265,6 +275,7 @@ namespace rtmath {
 				void resize(size_t sz) { _val.resize(sz); }
 			protected:
 				mutable std::vector<T> _val;
+#if USE_RYAN_SERIALIZATION
 			private:
 				friend class boost::serialization::access;
 				template<class Archive>
@@ -274,6 +285,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("ddParParsers_ddParLine",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine>(*this));
 				}
+#endif
 			};
 
 			/// This is a special case for paired numbers.
@@ -309,6 +321,7 @@ namespace rtmath {
 				}
 			protected:
 				size_t _tuplesize;
+#if USE_RYAN_SERIALIZATION
 			private:
 				friend class boost::serialization::access;
 				template<class Archive>
@@ -318,6 +331,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("ddParParsers_ddParLineSimplePlural<T>",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLineSimplePlural<T> >(*this));
 				}
+#endif
 			};
 
 			template <class T, class R>
@@ -441,6 +455,7 @@ namespace rtmath {
 				// TODO: fix mutability / setSep constness
 				mutable std::vector<ddParLineSimple<T> > _t;
 				mutable std::vector<ddParLineSimple<R> > _r;
+#if USE_RYAN_SERIALIZATION
 			private:
 				friend class boost::serialization::access;
 				template<class Archive>
@@ -453,6 +468,7 @@ namespace rtmath {
 					ar & boost::serialization::make_nvp("ddParParsers_ddParLine",
 						boost::serialization::base_object<rtmath::ddscat::ddParParsers::ddParLine >(*this));
 				}
+#endif
 			};
 
 			boost::shared_ptr<ddParLine> SHARED_PRIVATE mapKeys(const std::string &key);
@@ -514,8 +530,10 @@ namespace rtmath {
 				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
 			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
 			virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>,
+#if USE_RYAN_SERIALIZATION
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
 				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry, ddPar_serialization>,
+#endif
 			virtual public implementsDDPAR
 		{
 		public:
@@ -689,6 +707,7 @@ namespace rtmath {
 			bool __getStringBool(ddParParsers::ParId id, const std::string &bfalse, const std::string &btrue) const;
 			void __setStringBool(ddParParsers::ParId id, bool v, const std::string &bfalse, const std::string &btrue);
 
+#if USE_RYAN_SERIALIZATION
 			//template <class Archive>
 			//friend void ::boost::serialization::serialize(
 			//	Archive&, ddPar&, const unsigned int);
@@ -699,6 +718,7 @@ namespace rtmath {
 			void save(Archive & ar, const unsigned int version) const;
 			template<class Archive>
 			void load(Archive & ar, const unsigned int version);
+#endif
 		};
 
 #undef accessorSimple
@@ -710,7 +730,9 @@ namespace rtmath {
 	}
 }
 
+#if USE_RYAN_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(rtmath::ddscat::ddPar);
 //BOOST_CLASS_VERSION(rtmath::ddscat::ddPar, 1);
+#endif
 
 

@@ -1,6 +1,6 @@
 #pragma once
 /* defs.h - Header containing typedefs and other defines for many things */
-
+#include "cmake-settings.h"
 #pragma warning( disable : 4251 ) // DLL C-interface MSVC
 
 /// \todo CMakeLists needs to set the appropriate flags EXPORTING_RTMATH on all libraries and 

@@ -12,7 +12,7 @@
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/debug_mem.h"
+//#include "../rtmath/error/debug_mem.h"
 #include "../rtmath/registry.h"
 #include "../rtmath/hash.h"
 

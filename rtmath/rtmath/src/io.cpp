@@ -4,12 +4,18 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+#if USE_RYAN_SERIALIZATION
 #include <Ryan_Serialization/serialization.h>
+#endif
 #include <boost/algorithm/string.hpp>
 #include <boost/iostreams/filter/newline.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/copy.hpp>
 #include <boost/filesystem.hpp>
 #include "../rtmath/splitSet.h"
 #include "../rtmath/registry.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/io.h"
 
 namespace {
@@ -94,7 +100,7 @@ namespace rtmath
 				// Check file existence
 				using namespace std;
 				using namespace boost::filesystem;
-				using namespace Ryan_Serialization;
+				using namespace serialization;
 				std::string cmeth, target, uncompressed, filename(fname);
 				// Combination of detection of compressed file, file type and existence.
 				if (!detect_compressed(filename, cmeth, target))
@@ -121,7 +127,7 @@ namespace rtmath
 
 			void serialization_handle::create(const char* fname)
 			{
-				using namespace Ryan_Serialization;
+				using namespace serialization;
 				std::string cmeth, uncompressed, filename(fname);
 				uncompressed_name(filename, uncompressed, cmeth);
 				boost::filesystem::path p(uncompressed);
@@ -154,7 +160,7 @@ namespace rtmath
 					if (!mtypes.size())
 					{
 						std::string formats;
-						Ryan_Serialization::known_formats(formats, compressionEnabled());
+						serialization::known_formats(formats, compressionEnabled());
 						rtmath::config::splitSet(formats, mtypes);
 					}
 				}

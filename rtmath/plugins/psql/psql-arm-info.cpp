@@ -37,14 +37,25 @@ namespace rtmath
 
 				// Select sites, subsites, data_levels
 
-				// Select rime ranges and discrete times
+				// Select time ranges and discrete times
 
 			}
 
 			void update(const arm_info_registry::arm_info_index::collection c, 
 				arm_info_registry::updateType t)
 			{
+				// First, look for any matching filenames.
+				arm_info_registry::arm_info_index::collection 
+					toUpdate = arm_info::makeCollection(),
+					toInsert = arm_info::makeCollection();
 
+				std::vector<const char*> filenames;
+				filenames.reserve(c->size());
+				for (const auto &i : *c)
+					filenames.push_back(i->filename.c_str());
+
+				//auto res = 
+				
 			}
 		}
 	}

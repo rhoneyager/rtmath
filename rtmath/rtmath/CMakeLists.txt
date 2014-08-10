@@ -98,6 +98,18 @@ IF (DEFINED SZIP_LIBRARY)
 	set(COMPRESS_SZIP 1)
 ENDIF()
 
+find_package(Ryan_Debug REQUIRED)
+option(USE_RYAN_SERIALIZATION "Use Ryan_Serialization library in core rtmath libraries" OFF)
+set(USE_RYAN_SERIALIZATION_FLAG 0)
+if (USE_RYAN_SERIALIZATION)
+	find_package(Ryan_Serialization REQUIRED)
+	include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
+	set(USE_RYAN_SERIALIZATION_FLAG 1)
+endif()
+find_package(Eigen3 REQUIRED)
+include_directories(EIGEN3_INCLUDE_DIR)
+include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
+
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/rtmath/cmake-settings.h.in"
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
@@ -111,23 +123,23 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-addBoostUniform(program_options serialization iostreams filesystem system unit_test_framework regex)
+set (boost_uniform_libs program_options iostreams filesystem system unit_test_framework regex)
+if (USE_RYAN_SERIALIZATION)
+	set (boost_uniform_libs ${boost_unifirm_libs} serialization)
+endif()
+addBoostUniform(${boost_uniform_libs})
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 if(WIN32 AND NOT CYGWIN)
 	set(rtmath_core-libs "")
 else()
-	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
+	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY}
 		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
 		${Boost_PROGRAM_OPTIONS_LIBRARY})
+	if (USE_RYAN_SERIALIZATION)
+		set (rtmath_core-libs ${rtmath_core-libs} ${Boost_SERIALIZATION_LIBRARY})
+	endif()
 endif()
-
-find_package(Ryan_Debug REQUIRED)
-find_package(Ryan_Serialization REQUIRED)
-find_package(Eigen3 REQUIRED)
-include_directories(EIGEN3_INCLUDE_DIR)
-include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
-include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
 add_library (rtmath_core SHARED
 	${rtmath_core-files} 
@@ -137,7 +149,10 @@ add_library (rtmath_core SHARED
 	)
 addlib(rtmath_core SHARED)
 add_precompiled_header(rtmath_core Stdafx-core.h src)
-set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug Ryan_Serialization)
+set (rtmath_core-libs ${rtmath_core-libs} Ryan_Debug )
+if (USE_RYAN_SERIALIZATION)
+		set (rtmath_core-libs ${rtmath_core-libs} Ryan_Serialization)
+endif()
 if(WIN32 AND NOT CYGWIN)
 else()
 	set (rtmath_core-libs ${rtmath_core-libs} dl)

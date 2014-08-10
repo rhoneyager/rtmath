@@ -92,10 +92,12 @@ set(rtmath_core_serialization
 	rtmath/Serialization/eigen_serialization.h
 	#rtmath/Serialization/matrixop_serialization.h
 	rtmath/Serialization/serialization_macros.h
+	rtmath/Serialization/Serialization.h
 	#src/common_templates_serialization.cpp
 	src/io.cpp
 	#src/eigen_serialization.cpp
 	#src/matrixop_serialization.cpp
+	src/serialization.cpp
 	)
 source_group("Serialization" FILES ${rtmath_core_serialization})
 

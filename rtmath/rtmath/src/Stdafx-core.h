@@ -26,26 +26,14 @@
 #include <string>
 #include <vector>
 
-/*
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-*/
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
-/*
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/string.hpp> 
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-*/
-//#include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 
+#include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 //#pragma warning( push )
 
 #endif

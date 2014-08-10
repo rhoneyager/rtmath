@@ -7,7 +7,9 @@
 #include "../Stdafx.h"
 #include <iostream>
 //#include <boost/exception/all.hpp>
+#ifdef HEAP_CHECK
 #include "debug_mem.h"
+#endif
 
 /// \def ERRSTD(x) Defines an exception class that takes no arguments.
 #define ERRSTD(x) class DLEXPORT_rtmath_core x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
@@ -134,6 +136,20 @@ namespace rtmath
 		ERRSTR(xUnsupportedIOaction);
 
 
+		namespace memcheck {
+			extern DLEXPORT_rtmath_core const char* __file__;
+			extern DLEXPORT_rtmath_core size_t __line__;
+			extern DLEXPORT_rtmath_core const char* __caller__;
+			extern DLEXPORT_rtmath_core bool enabled;
+			bool DLEXPORT_rtmath_core __Track(int option, void* p, size_t size, const char* file, int line, const char* caller);
+			inline bool setloc(const char* _file, int _line, const char* _caller)
+			{
+				rtmath::debug::memcheck::__file__ = _file;
+				rtmath::debug::memcheck::__line__ = _line;
+				rtmath::debug::memcheck::__caller__ = _caller;
+				return false;
+			}
+		}
 
 	}
 }

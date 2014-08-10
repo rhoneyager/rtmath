@@ -1,11 +1,8 @@
 /// \brief Provides psql database access
 #define _SCL_SECURE_NO_WARNINGS
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
 #include <algorithm>
 #include <string>
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
@@ -44,6 +41,7 @@ namespace rtmath
 
 			void psql_handle::connect()
 			{
+				if (connection) return;
 				const char* keywords[] = { "host", "dbname", "user", "password", "sslmode", "" };
 				const char* values[] = { "plenus.met.fsu.edu", "rtmath", "rhoneyager", "", "require", "" };
 				connection = boost::shared_ptr<PGconn>(PQconnectdbParams(keywords, values, 0), PQfinish);
@@ -54,6 +52,7 @@ namespace rtmath
 			void psql_handle::disconnect()
 			{
 				connection.reset();
+				connection = nullptr;
 			}
 
 			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
@@ -61,7 +60,7 @@ namespace rtmath
 				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
-				if (errcode != PGRES_COMMAND_OK) handle_error(errcode);
+				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
 				return res;
 			}
 

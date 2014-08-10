@@ -6,8 +6,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#if USE_RYAN_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#endif
 
 #include "registry.h"
 #include <boost/filesystem.hpp>
@@ -48,10 +50,12 @@ namespace rtmath {
 			std::string res = o.str();
 			return res;
 		}
+#if USE_RYAN_SERIALIZATION
 	private:
 		friend class ::boost::serialization::access;
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version);
+#endif
 	};
 
 	typedef UINT128 HASH_t;
@@ -94,6 +98,7 @@ namespace rtmath {
 
 }
 
+#if USE_RYAN_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(rtmath::UINT128);
-
+#endif
 

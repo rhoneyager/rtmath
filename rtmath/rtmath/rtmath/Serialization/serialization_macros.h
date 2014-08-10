@@ -1,6 +1,8 @@
 #pragma once
 #include "../defs.h"
 
+#if USE_RYAN_SERIALIZATION
+
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -42,3 +44,9 @@
 
 // 	template void U(boost::archive::text_oarchive &, T &, const unsigned int); 
 //	template void U(boost::archive::text_iarchive &, T &, const unsigned int); 
+
+#else
+#define EXPORT(U,T)
+#define EXPORTTEMPLATE(U,T,W)
+#define EXPORTINTERNAL(U)
+#endif

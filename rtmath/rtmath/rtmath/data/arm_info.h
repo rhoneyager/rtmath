@@ -47,6 +47,7 @@ namespace rtmath
 					arm_info_index& match_instrument(const std::string&);
 					arm_info_index& data_level(const std::string&);
 
+					/// \todo Order collection based on filename
 					typedef boost::shared_ptr<std::set<boost::shared_ptr<arm_info> > > collection;
 					collection doQuery() const;
 

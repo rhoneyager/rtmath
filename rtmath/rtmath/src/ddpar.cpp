@@ -1,4 +1,5 @@
 #include "Stdafx-ddscat_base.h"
+#include "../rtmath/defs.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -14,7 +15,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
+#if USE_RYAN_SERIALIZATION
 #include <Ryan_Serialization/serialization.h>
+#endif
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/config.h"
@@ -27,64 +31,56 @@ namespace {
 	
 	boost::filesystem::path pDefaultPar;
 	const std::string ddparDefaultInternal = 
-		"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>\n"
-		"<!DOCTYPE boost_serialization>\n"
-		"<boost_serialization signature=\"serialization::archive\" version=\"10\">\n"
-		"<identifier>rtmath::ddscat::ddPar</identifier>\n"
-		"<obj class_id=\"0\" tracking_level=\"1\" version=\"0\" object_id=\"_0\">\n"
-		"	<Par_File>&apos; ========= Parameter file for v7.3 =================== &apos;\n"
-		"&apos;**** Preliminaries ****&apos;\n"
-		"&apos;NOTORQ&apos; = CMTORQ*6 (NOTORQ, DOTORQ) -- either do or skip torque calculations\n"
-		"&apos;PBCGS2&apos; = CMDSOL*6 (PBCGS2, PBCGST, PETRKP) -- select solution method\n"
-		"&apos;GPFAFT&apos; = CMDFFT*6 (GPFAFT, FFTMKL) --- FFT method\n"
-		"&apos;GKDLDR&apos; = CALPHA*6 (GKDLDR, LATTDR)\n"
-		"&apos;NOTBIN&apos; = CBINFLAG (NOTBIN, ORIBIN, ALLBIN)\n"
-		"&apos;**** Initial Memory Allocation ****&apos;\n"
-		"101 101 101  = dimension\n"
-		"&apos;**** Target Geometry and Composition ****&apos;\n"
-		"&apos;FROM_FILE&apos; = CSHAPE*9 shape directive\n"
-		"101 101 101  = shape parameters 1-3\n"
-		"1  = NCOMP = number of dielectric materials\n"
-		"&apos;diel.tab&apos; = file with refractive index 1\n"
-		"&apos;**** Additional Nearfield calculation? ****&apos;\n"
-		"0  = NRFLD (=0 to skip nearfield calc., =1 to calculate nearfield E)\n"
-		"0 0 0 0 0 0  = (fract. extens. of calc. vol. in -x,+x,-y,+y,-z,+z)\n"
-		"&apos;**** Error Tolerance ****&apos;\n"
-		"1e-005  = TOL = MAX ALLOWED (NORM OF |G&gt;=AC|E&gt;-ACA|X&gt;)/(NORM OF AC|E&gt;)\n"
-		"&apos;**** Maximum number of iterations ****&apos;\n"
-		"300  = MXITER\n"
-		"&apos;**** Integration cutoff parameter for PBC calculations ****&apos;\n"
-		"0.005  = GAMMA (1e-2 is normal, 3e-3 for greater accuracy)\n"
-		"&apos;**** Angular resolution for calculation of &lt;cos&gt;, etc. ****&apos;\n"
-		"0.5  = ETASCA (number of angles is proportional to [(3+x)/ETASCA]^2 )\n"
-		"&apos;**** Vacuum wavelengths (micron) ****&apos;\n"
-		"3189.28 3189.28 1 &apos;LIN&apos; = wavelengths\n"
-		"&apos;**** Refractive index of ambient medium&apos;\n"
-		"1  = NAMBIENT\n"
-		"&apos;**** Effective Radii (micron) **** &apos;\n"
-		"616.221 616.221 1 &apos;LIN&apos; = aeff\n"
-		"&apos;**** Define Incident Polarizations ****&apos;\n"
-		"(0,0) (1,0) (0,0)  = Polarization state e01 (k along x axis)\n"
-		"2  = IORTH  (=1 to do only pol. state e01; =2 to also do orth. pol. state)\n"
-		"&apos;**** Specify which output files to write ****&apos;\n"
-		"1  = IWRKSC (=0 to suppress, =1 to write &quot;.sca&quot; file for each target orient.\n"
-		"0 = IWRPOL (=0 to suppress, =1 to write &quot;.pol&quot; file for each (BETA,THETA)\n"
-		"&apos;**** Specify Target Rotations ****&apos;\n"
-		"0 0 1  = BETAMI, BETAMX, NBETA  (beta=rotation around a1)\n"
-		"0 90 10  = THETMI, THETMX, NTHETA (theta=angle between a1 and k)\n"
-		"0 0 1  = PHIMIN, PHIMAX, NPHI (phi=rotation angle of a1 around k)\n"
-		"&apos;**** Specify first IWAV, IRAD, IORI (normally 0 0 0) ****&apos;\n"
-		"0 0 0  = first IWAV, first IRAD, first IORI (0 0 0 to begin fresh)\n"
-		"&apos;**** Select Elements of S_ij Matrix to Print ****&apos;\n"
-		"6  = NSMELTS = number of elements of S_ij to print (not more than 9)\n"
-		"11 12 21 22 31 41  = indices ij of elements to print\n"
-		"&apos;**** Specify Scattered Directions ****&apos;\n"
-		"&apos;LFRAME&apos; = CMDFRM (LFRAME, TFRAME for Lab Frame or Target Frame)\n"
-		"2  = NPLANES = number of scattering planes\n"
-		"0 0 180 10  = phi, thetan_min, thetan_max, dtheta (in deg) for plane 1\n"
-		"90 0 180 10  = phi, thetan_min, thetan_max, dtheta (in deg) for plane 2\n"
-		"</Par_File>\n"
-		"</obj>\n"
+		"' ========= Parameter file for v7.3 =================== '\n"
+		"'**** Preliminaries ****'\n"
+		"'NOTORQ' = CMTORQ * 6 (NOTORQ, DOTORQ) --either do or skip torque calculations\n"
+		"'PBCGS2' = CMDSOL * 6 (PBCGS2, PBCGST, PETRKP) --select solution method\n"
+		"'GPFAFT' = CMDFFT * 6 (GPFAFT, FFTMKL)-- - FFT method\n"
+		"'GKDLDR' = CALPHA * 6 (GKDLDR, LATTDR)\n"
+		"'NOTBIN' = CBINFLAG(NOTBIN, ORIBIN, ALLBIN)\n"
+		"'**** Initial Memory Allocation ****'\n"
+		"101 101 101 = dimension\n"
+		"'**** Target Geometry and Composition ****'\n"
+		"'FROM_FILE' = CSHAPE * 9 shape directive\n"
+		"101 101 101 = shape parameters 1 - 3\n"
+		"1 = NCOMP = number of dielectric materials\n"
+		"'diel.tab' = file with refractive index 1\n"
+		"'**** Additional Nearfield calculation? ****'\n"
+		"0 = NRFLD(= 0 to skip nearfield calc., = 1 to calculate nearfield E)\n"
+		"0 0 0 0 0 0 = (fract.extens.of calc.vol.in - x, +x, -y, +y, -z, +z)\n"
+		"'**** Error Tolerance ****'\n"
+		"1e-05 = TOL = MAX ALLOWED(NORM OF | G >= AC | E>-ACA | X>) / (NORM OF AC | E>)\n"
+		"'**** Maximum number of iterations ****'\n"
+		"300 = MXITER\n"
+		"'**** Integration cutoff parameter for PBC calculations ****'\n"
+		"0.005 = GAMMA(1e-2 is normal, 3e-3 for greater accuracy)\n"
+		"'**** Angular resolution for calculation of <cos>, etc. ****'\n"
+		"0.5 = ETASCA(number of angles is proportional to[(3 + x) / ETASCA] ^ 2)\n"
+		"'**** Vacuum wavelengths (micron) ****'\n"
+		"3189.28 3189.28 1 'LIN' = wavelengths\n"
+		"'**** Refractive index of ambient medium'\n"
+		"1 = NAMBIENT\n"
+		"'**** Effective Radii (micron) **** '\n"
+		"341.49 341.49 1 'LIN' = aeff\n"
+		"'**** Define Incident Polarizations ****'\n"
+		"(0, 0) (1, 0) (0, 0) = Polarization state e01(k along x axis)\n"
+		"2 = IORTH(= 1 to do only pol.state e01; = 2 to also do orth.pol.state)\n"
+		"'**** Specify which output files to write ****'\n"
+		"1 = IWRKSC(= 0 to suppress, = 1 to write \".sca\" file for each target orient.\n"
+		"'**** Specify Target Rotations ****'\n"
+		"0. 360. 18 = BETAMI, BETAMX, NBETA(beta = rotation around a1)\n"
+		"0. 180. 19 = THETMI, THETMX, NTHETA(theta = angle between a1 and k)\n"
+		"0. 360. 18 = PHIMIN, PHIMAX, NPHI(phi = rotation angle of a1 around k)\n"
+		"'**** Specify first IWAV, IRAD, IORI (normally 0 0 0) ****'\n"
+		"0 0 0 = first IWAV, first IRAD, first IORI(0 0 0 to begin fresh)\n"
+		"'**** Select Elements of S_ij Matrix to Print ****'\n"
+		"6 = NSMELTS = number of elements of S_ij to print(not more than 9)\n"
+		"11 12 21 22 31 41 = indices ij of elements to print\n"
+		"'**** Specify Scattered Directions ****'\n"
+		"'LFRAME' = CMDFRM(LFRAME, TFRAME for Lab Frame or Target Frame)\n"
+		"2 = NPLANES = number of scattering planes\n"
+		"0 0 180 10 = phi, thetan_min, thetan_max, dtheta(in deg) for plane 1\n"
+		"90 0 180 10 = phi, thetan_min, thetan_max, dtheta(in deg) for plane 2\n"
 		;
 
 	/// \todo This function should contain much of ddPar::defaultInstance
@@ -155,7 +151,7 @@ namespace rtmath {
 				{
 					std::string sctypes;
 					std::set<std::string> ctypes;
-					Ryan_Serialization::known_compressions(sctypes, ".par");
+					serialization::known_compressions(sctypes, ".par");
 					rtmath::config::splitSet(sctypes, ctypes);
 					for (const auto & t : ctypes)
 						mtypes.emplace(t);
@@ -373,10 +369,11 @@ namespace rtmath {
 		void ddPar::_init()
 		{
 			_version = rtmath::ddscat::ddVersions::getDefaultVer();
+#if USE_RYAN_SERIALIZATION
 			::rtmath::io::Serialization::implementsSerialization<
 				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, 
 				ddPar_IO_input_registry, ddPar_serialization>::set_sname("rtmath::ddscat::ddpar");
-
+#endif
 		}
 
 		void ddPar::readDDSCAT(ddPar *src, std::istream &in, bool overlay)
@@ -542,8 +539,10 @@ namespace rtmath {
 				} else {
 					// Attempt to load the internal instance
 					try {
+						std::istringstream in(ddparDefaultInternal);
 						//s_inst = new ddPar;
-						Ryan_Serialization::readString(s_inst, ddparDefaultInternal, "rtmath::ddscat::ddPar");
+						readDDSCAT(&s_inst, in, false);
+						//Ryan_Serialization::readString(s_inst, ddparDefaultInternal, "rtmath::ddscat::ddPar");
 
 					} catch (std::exception&)
 					{

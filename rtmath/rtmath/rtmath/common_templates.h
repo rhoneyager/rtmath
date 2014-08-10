@@ -8,10 +8,12 @@
 #include <string>
 //#include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
+#if USE_RYAN_SERIALIZATION
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
+#endif
 
 #include "defs.h"
 #include "splitSet.h"
@@ -65,6 +67,7 @@ namespace rtmath
 	template <class T>
 	class paramSet
 	{
+#if USE_RYAN_SERIALIZATION
 		// Serialization of this template is annoyingly frustrating thanks to gcc and msvc issues
 		// involving nested templates. Basically, it HAS to be done in the header.
 		friend class ::boost::serialization::access;
@@ -74,6 +77,7 @@ namespace rtmath
 			ar & boost::serialization::make_nvp("values_short", _shorthand);
 			ar & boost::serialization::make_nvp("values_expanded", _expanded);
 		}
+#endif
 		//
 		//template<class Archive, class U> friend
 		//void ::boost::serialization::serialize(Archive&, paramSet<U>&, const unsigned int);

@@ -2,13 +2,14 @@
 #include "../rtmath/defs.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/Public_Domain/MurmurHash3.h"
+#if USE_RYAN_SERIALIZATION
 #include "../rtmath/Serialization/serialization_macros.h"
-
-#include <mutex>
-#include <map>
 #include <Ryan_Serialization/serialization.h>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/version.hpp>
+#endif
+#include <mutex>
+#include <map>
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
@@ -16,6 +17,7 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include "../rtmath/config.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/error.h"
 
 /// Handles private hash functions
@@ -126,7 +128,7 @@ namespace rtmath {
 
 		using namespace boost::filesystem;
 		using boost::lexical_cast;
-		using Ryan_Serialization::detect_compressed;
+		using serialization::detect_compressed;
 		using std::string;
 
 		const string sHashName = h;
@@ -162,7 +164,7 @@ namespace rtmath {
 			opts->filename(pf.string());
 			opts->setVal<string>("base_filename", pf.string());
 			string meth;
-			Ryan_Serialization::select_compression(pf.string(), meth);
+			serialization::select_compression(pf.string(), meth);
 			opts->setVal<string>("compression_method", meth);
 		}
 		return true;
@@ -176,7 +178,7 @@ namespace rtmath {
 
 		using namespace boost::filesystem;
 		using boost::lexical_cast;
-		using Ryan_Serialization::detect_compressed;
+		using serialization::detect_compressed;
 		using std::string;
 
 		const string sHashName = hash;
@@ -246,9 +248,9 @@ namespace rtmath {
 		using namespace boost::interprocess;
 		using namespace boost::filesystem;
 
-		using namespace Ryan_Serialization;
+		using namespace serialization;
 		std::string cmeth, fname;
-		if (!detect_compressed(filename, cmeth, fname))
+		if (!serialization::detect_compressed(filename, cmeth, fname))
 			throw rtmath::debug::xMissingFile(filename.c_str());
 
 		// Do a direct map into memory. It's faster than stream i/o for reading a large file.
@@ -295,6 +297,7 @@ namespace rtmath {
 		return res;
 	}
 
+#if USE_RYAN_SERIALIZATION
 	template<class Archive>
 	void UINT128::serialize(Archive &ar, const unsigned int version)
 	{
@@ -303,7 +306,9 @@ namespace rtmath {
 	}
 
 	EXPORTINTERNAL(rtmath::UINT128::serialize);
+#endif
 }
 
-
+#if USE_RYAN_SERIALIZATION
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::UINT128);
+#endif

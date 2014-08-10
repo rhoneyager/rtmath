@@ -1,5 +1,6 @@
 #include "Stdafx-core.h"
-#include "../rtmath/error/debug_mem.h"
+//#include "../rtmath/error/debug_mem.h"
+#include "../rtmath/error/error.h"
 #include <cstring>
 
 namespace rtmath {
