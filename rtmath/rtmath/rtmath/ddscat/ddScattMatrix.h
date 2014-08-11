@@ -33,9 +33,11 @@ namespace rtmath
 		/// Connector object that provides target frame information
 		class DLEXPORT_rtmath_ddscat ddScattMatrixConnector
 		{
+#if USE_RYAN_SERIALIZATION
 			friend class ::boost::serialization::access;
 			template<class Archive>
 			void serialize(Archive & ar, const unsigned int version);
+#endif
 			ddScattMatrixConnector();
 			ddScattMatrixConnector(const ddPar &src);
 			ddScattMatrixConnector(const std::vector<std::complex<double> >&);

@@ -15,10 +15,10 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 
-#include <Ryan_Serialization/serialization.h>
 
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/hash.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -309,7 +309,7 @@ namespace rtmath
 				// Only store hash if a storage mechanism can be found
 				if (hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts))
 				{
-					if (!Ryan_Serialization::detect_compressed(opts->filename()))
+					if (!serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);
 				}
 				else {

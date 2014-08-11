@@ -17,13 +17,13 @@
 #include <boost/lexical_cast.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/splitSet.h"
 #include "../rtmath/registry.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -77,10 +77,10 @@ namespace rtmath {
 					{
 						std::string sctypes;
 						std::set<std::string> ctypes;
-						Ryan_Serialization::known_compressions(sctypes, ".shp");
-						Ryan_Serialization::known_compressions(sctypes, "shape.txt");
-						Ryan_Serialization::known_compressions(sctypes, "shape.dat");
-						Ryan_Serialization::known_compressions(sctypes, "target.out");
+						serialization::known_compressions(sctypes, ".shp");
+						serialization::known_compressions(sctypes, "shape.txt");
+						serialization::known_compressions(sctypes, "shape.dat");
+						serialization::known_compressions(sctypes, "target.out");
 						rtmath::config::splitSet(sctypes, ctypes);
 						for (const auto & t : ctypes)
 							mtypes.emplace(t);

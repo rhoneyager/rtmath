@@ -34,6 +34,7 @@
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/units.h"
 #include "../rtmath/ddscat/dielTabFile.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -333,7 +334,7 @@ namespace rtmath {
 				std::string meth;
 				{
 					//std::lock_guard<std::mutex> lock(m_filecheck);
-					Ryan_Serialization::uncompressed_name(p, praw, meth);
+					serialization::uncompressed_name(p, praw, meth);
 				}
 				// Extract entension of files in ._ form
 				// Note: some files (like mtable) have no extension. I don't use these.

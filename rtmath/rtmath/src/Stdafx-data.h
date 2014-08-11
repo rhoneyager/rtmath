@@ -24,6 +24,11 @@
 #include <string>
 #include <vector>
 
+#include "../rtmath/registry.h"
+#include "../rtmath/error/error.h"
+#include "../rtmath/error/debug.h"
+#include "../rtmath/defs.h"
+
 #include <boost/math/constants/constants.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>

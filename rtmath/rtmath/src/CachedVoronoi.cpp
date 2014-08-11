@@ -13,7 +13,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
 #include <Voro/voro++.hh>
-#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"

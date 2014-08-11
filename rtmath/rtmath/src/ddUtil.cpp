@@ -8,8 +8,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <Ryan_Serialization/serialization.h>
-
 #include "../rtmath/ddscat/ddUtil.h"
 //#include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/shapefile.h"

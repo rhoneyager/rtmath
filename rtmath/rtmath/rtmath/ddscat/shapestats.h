@@ -22,7 +22,9 @@ namespace rtmath {
 			class shapeFileStats;
 			class shapeFileStats_IO_input_registry {};
 			class shapeFileStats_IO_output_registry {};
+#if USE_RYAN_SERIALIZATION
 			class shapeFileStats_serialization {};
+#endif
 			class DLEXPORT_rtmath_ddscat rotColDefs
 			{
 			public:
@@ -153,9 +155,11 @@ namespace rtmath {
 						std::function<std::pair<float,float>()>);
 					void calc(const shapeFileStatsBase*);
 				protected:
+#if USE_RYAN_SERIALIZATION
 					friend class ::boost::serialization::access;
 					template<class Archive>
 					void serialize(Archive & ar, const unsigned int version);
+#endif
 				};
 
 				volumetric Scircum_sphere, Sconvex_hull,

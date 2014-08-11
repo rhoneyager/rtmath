@@ -23,7 +23,6 @@
 #include <limits>
 #include <Eigen/Dense>
 
-#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"

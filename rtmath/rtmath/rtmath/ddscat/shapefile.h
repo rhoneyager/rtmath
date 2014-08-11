@@ -24,7 +24,7 @@ namespace rtmath {
 			class shapefile;
 			class shapefile_IO_input_registry {};
 			class shapefile_IO_output_registry {};
-			class shapefile_serialization {};
+			//class shapefile_serialization {};
 			class shapefile_Standard {};
 		}
 	}

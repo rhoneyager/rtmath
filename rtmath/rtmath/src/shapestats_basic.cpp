@@ -10,7 +10,6 @@
 #include <Eigen/Dense>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
@@ -18,6 +17,7 @@
 #include "../rtmath/common_templates.h"
 #include "../rtmath/config.h"
 #include "../rtmath/hash.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 #include "shapestats_private.h"
@@ -206,7 +206,7 @@ namespace rtmath {
 				using boost::filesystem::exists;
 				if (nshp = shapefile::shapefile::loadHash(_shp->hash()))
 					_shp = nshp;
-				else if (Ryan_Serialization::detect_compressed(_shp->filename)) {
+				else if (serialization::detect_compressed(_shp->filename)) {
 					nshp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
 					_shp = nshp;
 				}
@@ -229,7 +229,7 @@ namespace rtmath {
 				// automatically stored in the hash directory
 				
 				// Preferentially use the local file, if it exists (the do nothing case)
-				if (Ryan_Serialization::detect_compressed(statsfile))
+				if (serialization::detect_compressed(statsfile))
 				{
 					boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
 					res->read(statsfile);
@@ -522,7 +522,7 @@ namespace rtmath {
 				// Only store hash if a storage mechanism can be found
 				if (hashStore::storeHash(_shp->_localhash.string(), "stats-r2.hdf5", sh, opts))
 				{
-					if (!Ryan_Serialization::detect_compressed(opts->filename()))
+					if (!serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);
 				}
 				else {

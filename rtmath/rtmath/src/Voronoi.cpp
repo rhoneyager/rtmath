@@ -19,12 +19,13 @@
 #include <boost/unordered_set.hpp>
 #include <Voro/voro++.hh>
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Serialization/serialization.h>
 #include <string>
 #include "../rtmath/hash.h"
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -655,7 +656,7 @@ namespace rtmath
 			// Only store hash if a storage mechanism can be found
 			if (hashStore::storeHash(_hash.string(), "voronoi.hdf5", sh, opts))
 			{
-				if (!Ryan_Serialization::detect_compressed(opts->filename()))
+				if (!rtmath::serialization::detect_compressed(opts->filename()))
 					this->writeMulti(sh, opts);
 			}
 			else {

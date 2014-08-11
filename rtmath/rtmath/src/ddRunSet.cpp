@@ -1,13 +1,13 @@
 #include "Stdafx-ddscat.h"
 #include <algorithm>
 #include <string>
-#include <Ryan_Serialization/serialization.h>
 #include <boost/serialization/shared_ptr.hpp>
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddRunSet.h"
+#include "../../rtmath/rtmath/Serialization/Serialization.h"
 #include "../../rtmath/rtmath/error/error.h"
 
 namespace rtmath {
@@ -102,7 +102,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
+			if (serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();
@@ -119,7 +119,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
+			if (serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();
@@ -135,7 +135,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
+			if (serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();
@@ -151,7 +151,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (Ryan_Serialization::detect_compression(pleaf.string(), meth))
+			if (serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();

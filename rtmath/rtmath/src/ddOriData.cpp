@@ -25,6 +25,7 @@
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
 #include "../rtmath/macros.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/quadrature.h"
 #include "../rtmath/error/error.h"
 
@@ -77,10 +78,10 @@ namespace rtmath {
 				{
 					std::string sctypes;
 					std::set<std::string> ctypes;
-					Ryan_Serialization::known_compressions(sctypes, ".avg");
-					Ryan_Serialization::known_compressions(sctypes, ".fml");
-					Ryan_Serialization::known_compressions(sctypes, ".sca");
-					Ryan_Serialization::known_compressions(sctypes, "avg_");
+					serialization::known_compressions(sctypes, ".avg");
+					serialization::known_compressions(sctypes, ".fml");
+					serialization::known_compressions(sctypes, ".sca");
+					serialization::known_compressions(sctypes, "avg_");
 					rtmath::config::splitSet(sctypes, ctypes);
 					for (const auto & t : ctypes)
 						mtypes.emplace(t);
