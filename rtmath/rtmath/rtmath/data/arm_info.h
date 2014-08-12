@@ -29,12 +29,18 @@ namespace rtmath
 			/// \brief This class is used for plugins to register themselves to handle arm_info queries.
 			struct DLEXPORT_rtmath_data arm_info_registry
 			{
+				struct DLEXPORT_rtmath_data arm_info_comp {
+					bool operator() (const boost::shared_ptr<arm_info>& lhs, 
+						const boost::shared_ptr<arm_info>& rhs) const;
+				};
+
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
 				class DLEXPORT_rtmath_data arm_info_index
 				{
 					arm_info_index();
 				public:
-					std::vector<std::string> instruments, sites, subsites, data_levels;
+					std::vector<std::string> instruments, sites, subsites, data_levels, 
+						filenames, product_names, stream_names;
 					std::vector<boost::posix_time::ptime> discrete_times;
 					std::vector<std::pair<boost::posix_time::ptime, boost::posix_time::ptime> > time_ranges;
 				public:
@@ -46,10 +52,15 @@ namespace rtmath
 					arm_info_index& has_time(const boost::posix_time::ptime&);
 					arm_info_index& match_instrument(const std::string&);
 					arm_info_index& data_level(const std::string&);
+					arm_info_index& filename(const std::string&);
+					arm_info_index& filename(const std::vector<std::string>&);
+					arm_info_index& product_name(const std::string&);
+					arm_info_index& stream_name(const std::string&);
 
 					/// \todo Order collection based on filename
-					typedef boost::shared_ptr<std::set<boost::shared_ptr<arm_info> > > collection;
-					collection doQuery() const;
+					typedef boost::shared_ptr<std::set<boost::shared_ptr<arm_info>, arm_info_comp > > collection;
+					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
+						doQuery(std::shared_ptr<rtmath::registry::DBhandler>) const;
 
 				};
 
@@ -59,15 +70,23 @@ namespace rtmath
 				const char* name;
 
 				enum class updateType { INSERT_ONLY, UPDATE_ONLY, INSERT_AND_UPDATE };
-				typedef std::function<void(const arm_info_index&, arm_info_index::collection)> queryType;
-				typedef std::function<void(const arm_info_index::collection, updateType)> writeType;
+
+				/// \todo As more database types become prevalent, move this over to 
+				/// rtmath::registry and standardize.
+				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+					(const arm_info_index&, arm_info_index::collection,
+					std::shared_ptr<rtmath::registry::DBhandler>)> queryType;
+				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+					(const arm_info_index::collection, updateType,
+					std::shared_ptr<rtmath::registry::DBhandler>)> writeType;
+				typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>)> matchType;
 
 				/// Get cross-sections from small stats
 				queryType fQuery;
 				/// Get pfs from small stats
 				writeType fInsertUpdate;
 
-				
+				matchType fMatches;
 			};
 		}
 	}
@@ -183,9 +202,12 @@ namespace rtmath
 				// and handling many writes would either involve code complexity or poor code performance.
 
 				static boost::shared_ptr<arm_info_registry::arm_info_index> makeQuery() { return arm_info_registry::arm_info_index::generate(); }
-				void updateEntry(arm_info_registry::updateType) const;
+				std::shared_ptr<rtmath::registry::DBhandler> updateEntry(arm_info_registry::updateType,
+					std::shared_ptr<rtmath::registry::DBhandler> = nullptr) const;
 				static arm_info_registry::arm_info_index::collection makeCollection();
-				static void updateCollection(arm_info_registry::arm_info_index::collection, arm_info_registry::updateType);
+				static std::shared_ptr<rtmath::registry::DBhandler> 
+					updateCollection(arm_info_registry::arm_info_index::collection, 
+					arm_info_registry::updateType, std::shared_ptr<rtmath::registry::DBhandler> = nullptr);
 			};
 		}
 	}

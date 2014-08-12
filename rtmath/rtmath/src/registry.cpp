@@ -580,7 +580,31 @@ namespace rtmath
 			out << std::endl;
 		}
 
-		IOhandler::IOhandler(const std::string &id) : id(id) {}
+		options::options() {}
+		options::~options() {}
+		void options::enumVals(std::ostream &out) const
+		{
+			using namespace rtmath::registry;
+			out << "Options definition:\n\tName\tValue" << std::endl;
+			for (const auto &v : _mapStr)
+			{
+				if (v.first != "password")
+				{
+					out << "\t" << v.first << ":\t" << v.second << std::endl;
+				}
+				else {
+					out << "\t" << v.first << ":\t" << "********" << std::endl;
+				}
+			}
+		}
+		IO_options::IO_options() {}
+		IO_options::~IO_options() {}
+		DB_options::DB_options() {}
+		DB_options::~DB_options() {}
+
+		IOhandler::IOhandler(const char* id) : handler_external(id) {}
+
+		DBhandler::DBhandler(const char* id) : handler_external(id) {}
 		
 		bool match_file_type(const char* filename, const char* type, 
 			const char* ext, const char *op, const char *opref)
@@ -672,6 +696,40 @@ std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::IOhandler:
 	else if (val == IOhandler::IOtype::CREATE) v = "CREATE";
 	else RTthrow ::rtmath::debug::xBadInput("Unlisted IOtype value");
 	out << v;
+	return out;
+}
+
+std::istream& operator>>(std::istream& in, ::rtmath::registry::DBhandler::DBtype& val)
+{
+	using namespace rtmath::registry;
+	char data[50];
+	in >> data;
+	//in.getline(data,48);
+	std::string v(data);
+	if ("READONLY" == v) val = DBhandler::DBtype::READONLY;
+	else if ("READWRITE" == v) val = DBhandler::DBtype::READWRITE;
+	else if ("NOUPDATE" == v) val = DBhandler::DBtype::NOUPDATE;
+	else if ("NOINSERT" == v) val = DBhandler::DBtype::NOINSERT;
+	else RTthrow::rtmath::debug::xBadInput(v.c_str());
+	return in;
+}
+
+std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::DBhandler::DBtype& val)
+{
+	using namespace rtmath::registry;
+	std::string v;
+	if (val == DBhandler::DBtype::READONLY) v = "READONLY";
+	else if (val == DBhandler::DBtype::READWRITE) v = "READWRITE";
+	else if (val == DBhandler::DBtype::NOUPDATE) v = "NOUPDATE";
+	else if (val == DBhandler::DBtype::NOINSERT) v = "NOINSERT";
+	else RTthrow::rtmath::debug::xBadInput("Unlisted IOtype value");
+	out << v;
+	return out;
+}
+
+std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::options& val)
+{
+	val.enumVals(out);
 	return out;
 }
 

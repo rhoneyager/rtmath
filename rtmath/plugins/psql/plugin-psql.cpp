@@ -37,7 +37,8 @@ namespace rtmath
 
 			psql_handle::~psql_handle() {}
 
-			psql_handle::psql_handle() : readable(true), writeable(true) {}
+			psql_handle::psql_handle() : readable(true), writeable(true), 
+				rtmath::registry::DBhandler(PLUGINID) {}
 
 			void psql_handle::connect()
 			{
@@ -57,6 +58,7 @@ namespace rtmath
 
 			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
 			{
+				connect();
 				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
@@ -65,15 +67,26 @@ namespace rtmath
 			}
 
 
-			void search(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
-				rtmath::data::arm::arm_info_registry::arm_info_index::collection res);
-			void update(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
-				rtmath::data::arm::arm_info_registry::updateType t);
+			std::shared_ptr<rtmath::registry::DBhandler>
+				search(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
+				rtmath::data::arm::arm_info_registry::arm_info_index::collection res,
+				std::shared_ptr<rtmath::registry::DBhandler>);
+			std::shared_ptr<rtmath::registry::DBhandler>
+				update(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
+				rtmath::data::arm::arm_info_registry::updateType t,
+				std::shared_ptr<rtmath::registry::DBhandler>);
+			bool matches(std::shared_ptr<rtmath::registry::DBhandler>);
 		}
 
 	}
 }
 
+/*
+std::shared_ptr<hdf5_handle> h = registry::construct_handle
+<registry::IOhandler, hdf5_handle>(
+sh, PLUGINID, [&](){return std::shared_ptr<hdf5_handle>(
+new hdf5_handle(filename.c_str(), iotype)); });
+*/
 
 void dllEntry()
 {
@@ -90,6 +103,7 @@ void dllEntry()
 	reg_ai.name = "psql-" PLUGINID;
 	reg_ai.fInsertUpdate = rtmath::plugins::psql::update;
 	reg_ai.fQuery = rtmath::plugins::psql::search;
+	reg_ai.fMatches = rtmath::plugins::psql::matches;
 
 	doRegisterHook<arm_info, arm_query_registry, arm_info_registry>(reg_ai);
 }

@@ -10,6 +10,8 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package(PostgreSQLrtmath REQUIRED)
 #message("Include ${psql_INCLUDE_DIRS}")
 include_directories(${PostgreSQL_INCLUDE_DIRS})
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
+
 
 add_library (rtmath_plugin_psql SHARED 
 	#nc-arm_info.cpp

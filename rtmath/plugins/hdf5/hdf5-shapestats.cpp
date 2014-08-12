@@ -206,15 +206,10 @@ namespace rtmath {
 			using std::shared_ptr;
 			using namespace H5;
 			Exception::dontPrint();
-			std::shared_ptr<hdf5_handle> h;
-			if (!sh)
-			{
-				// Access the hdf5 file
-				h = std::shared_ptr<hdf5_handle>(new hdf5_handle(filename.c_str(), iotype));
-			} else {
-				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
-				h = std::dynamic_pointer_cast<hdf5_handle>(sh);
-			}
+			std::shared_ptr<hdf5_handle> h = registry::construct_handle
+				<registry::IOhandler, hdf5_handle>(
+				sh, PLUGINID, [&](){return std::shared_ptr<hdf5_handle>(
+				new hdf5_handle(filename.c_str(), iotype)); });
 
 			// Check for the existence of the appropriate:
 			// Group "Hashed"

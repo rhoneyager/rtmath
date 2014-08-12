@@ -92,6 +92,7 @@ namespace rtmath
 			return res;
 		}
 
+		/// Encapsulates msvc / gcc differences in calling a base class template function
 		template <class base, class reg, class obj>
 		void doRegisterHook(const obj& res)
 		{

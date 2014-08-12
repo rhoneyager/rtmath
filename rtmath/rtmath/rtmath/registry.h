@@ -164,17 +164,25 @@ namespace rtmath
 			}
 		};
 
-
-		/// Base class to handle multiple IO operations on a single file
-		struct DLEXPORT_rtmath_core IOhandler
+		/// Base class for external data access, throgh file I/O or database
+		struct DLEXPORT_rtmath_core handler_external
 		{
 		protected:
-			IOhandler(const std::string &id);
+			handler_external(const char* id);
 			/// Ensures that plugins do not collide
-			std::string id;
+			const char* id;
 		public:
-			inline std::string getId() { return id; }
-			virtual ~IOhandler() { }
+			inline const char* getId() { return id; }
+			virtual ~handler_external() {}
+		};
+
+		/// Base class to handle multiple IO operations on a single file
+		struct DLEXPORT_rtmath_core IOhandler : public handler_external
+		{
+		protected:
+			IOhandler(const char* id);
+		public:
+			virtual ~IOhandler() {}
 			/// If modifying these, change IO_options::setVal and getVal.
 			enum class IOtype
 			{
@@ -186,19 +194,57 @@ namespace rtmath
 				CREATE
 			};
 		};
+
+		/// Base class to handle database access
+		struct DLEXPORT_rtmath_core DBhandler : public handler_external
+		{
+		protected:
+			DBhandler(const char* id);
+		public:
+			virtual ~DBhandler() {}
+			enum class DBtype
+			{
+				READONLY,
+				NOUPDATE,
+				NOINSERT,
+				READWRITE
+			};
+		};
 		
+		/**
+		* \param base is the raw pointer type (IOhandler or DBhandler)
+		* \param derived is the pointer type being cast to / constructed
+		* \param constructor is a function that creates a new object (shared_ptr<derived>).
+		*		 Use std::bind and lambdas to feed it any necessary parameters.
+		**/
+		template<class base, class derived>
+		std::shared_ptr<derived> construct_handle
+			(const std::shared_ptr<base> sh, const char* id,
+			const std::function<std::shared_ptr<derived>()> constructor)
+		{
+			std::shared_ptr<derived> h;
+			if (!sh)
+				h = std::shared_ptr<derived>(constructor());
+			else {
+				if (std::string(sh->getId()) != std::string(id)) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				h = std::dynamic_pointer_cast<derived>(sh);
+			}
+			return h;
+		}
+
 		/// \brief Convenient options specification class for use with an IO class registry.
 		/// 
 		/// Used because std::map doesn't like to go beyond template boundaries
-		class IO_options
+		class DLEXPORT_rtmath_core options
 		{
-		private:
-			IO_options () {}
+		protected:
+			options();
 			std::map<std::string, std::string> _mapStr;
 		public:
-			virtual ~IO_options() {}
-			static inline std::shared_ptr<IO_options> generate(IOhandler::IOtype v = IOhandler::IOtype::TRUNCATE) 
-			{ auto res = std::shared_ptr<IO_options>(new IO_options); res->iotype(v); return res; }
+			virtual ~options();
+			void enumVals(std::ostream &out) const;
+			static inline std::shared_ptr<options> generate() 
+			{ auto res = std::shared_ptr<options>(new options); return res; }
 			inline bool hasVal(const std::string &key) const
 			{
 				if (_mapStr.count(key)) return true;
@@ -224,7 +270,19 @@ namespace rtmath
 			}
 			inline void setVal(const std::string &key, const IOhandler::IOtype val) { setVal<IOhandler::IOtype>(key, val); }
 
+		};
 
+		class DLEXPORT_rtmath_core IO_options : public options
+		{
+		private:
+			IO_options();
+		public:
+			virtual ~IO_options();
+			static inline std::shared_ptr<IO_options> generate(IOhandler::IOtype v = IOhandler::IOtype::TRUNCATE)
+			{
+				auto res = std::shared_ptr<IO_options>(new IO_options); res->iotype(v); return res;
+			}
+			
 			// Some convenient definitions
 			void filename(const std::string& val) { setVal<std::string>("filename", val); }
 			std::string filename() const { return getVal<std::string>("filename", ""); }
@@ -236,6 +294,32 @@ namespace rtmath
 			std::string exportType() const { return getVal<std::string>("exportType", ""); }
 			void iotype(IOhandler::IOtype val) { setVal<IOhandler::IOtype>("ioType", val); }
 			IOhandler::IOtype iotype() const { return getVal<IOhandler::IOtype>("ioType", IOhandler::IOtype::TRUNCATE); }
+		};
+
+		class DLEXPORT_rtmath_core DB_options : public options
+		{
+		private:
+			DB_options();
+		public:
+			virtual ~DB_options();
+			static inline std::shared_ptr<DB_options> generate(DBhandler::DBtype v = DBhandler::DBtype::READWRITE)
+			{
+				auto res = std::shared_ptr<DB_options>(new DB_options); res->dbtype(v); return res;
+			}
+
+			// Some convenient definitions
+			void username(const std::string& val) { setVal<std::string>("username", val); }
+			std::string username() const { return getVal<std::string>("username", ""); }
+			void password(const std::string& val) { setVal<std::string>("password", val); }
+			std::string password() const { return getVal<std::string>("password", ""); }
+			void hostname(const std::string &val) { setVal<std::string>("hostname", val); }
+			std::string hostname() const { return getVal<std::string>("hostname", ""); }
+			void dbname(const std::string &val) { setVal<std::string>("dbname", val); }
+			std::string dbname() const { return getVal<std::string>("dbname", ""); }
+			void sslmode(const std::string &val) { setVal<std::string>("sslmode", val); }
+			std::string sslmode() const { return getVal<std::string>("sslmode", ""); }
+			void dbtype(DBhandler::DBtype val) { setVal<DBhandler::DBtype>("dbType", val); }
+			DBhandler::DBtype dbtype() const { return getVal<DBhandler::DBtype>("dbType", DBhandler::DBtype::READWRITE); }
 		};
 
 		/// Convenient template pattern for defining an IO class registry
@@ -333,5 +417,9 @@ extern "C"
 namespace rtmath { namespace registry {
 std::ostream DLEXPORT_rtmath_core & operator<<(std::ostream&, const ::rtmath::registry::IOhandler::IOtype&);
 std::istream DLEXPORT_rtmath_core & operator>>(std::istream&, ::rtmath::registry::IOhandler::IOtype&);
+std::ostream DLEXPORT_rtmath_core & operator<<(std::ostream&, const ::rtmath::registry::DBhandler::DBtype&);
+std::istream DLEXPORT_rtmath_core & operator>>(std::istream&, ::rtmath::registry::DBhandler::DBtype&);
+
+std::ostream DLEXPORT_rtmath_core & operator<<(std::ostream&, const ::rtmath::registry::options&);
 } }
 
