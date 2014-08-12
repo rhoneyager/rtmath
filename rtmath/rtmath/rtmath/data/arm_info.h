@@ -69,7 +69,7 @@ namespace rtmath
 				/// Module name.
 				const char* name;
 
-				enum class updateType { INSERT_ONLY, UPDATE_ONLY, INSERT_AND_UPDATE };
+				enum class updateType { INSERT_ONLY, UPDATE_ONLY }; // , INSERT_AND_UPDATE};
 
 				/// \todo As more database types become prevalent, move this over to 
 				/// rtmath::registry and standardize.

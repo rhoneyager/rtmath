@@ -580,6 +580,7 @@ namespace rtmath
 			out << std::endl;
 		}
 
+		handler_external::handler_external(const char* id) : id(id) {}
 		options::options() {}
 		options::~options() {}
 		void options::enumVals(std::ostream &out) const

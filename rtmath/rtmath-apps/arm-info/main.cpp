@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 			"means that hard links will be attempted first. If these fail, then fall back to just copying the file. "
 			"Options are combinations of hard,soft,copy.")
 			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
+			("update-db", "Insert arm file entries into database")
 			;
 
 		desc.add(cmdline).add(config);

@@ -156,6 +156,44 @@ namespace rtmath
 				return h;
 			}
 
+			struct subsiteInfo
+			{
+				std::string site;
+				float lat, lon, alt;
+			};
+
+			void createBackgroundInfo(std::shared_ptr<psql_handle> h,
+				const std::map<std::string, subsiteInfo> &subsites, // First is subsite name, 2nd is site
+				std::map<std::string, std::string> &products, // first is prod name, 2nd is uuid. Gets filled.
+				//std::map<std::string, // stream is harder, as it references uuid, stream name, product_uuid
+				const std::set<std::string> &datalevels
+				)
+			{
+				auto hSites = h->execute("SELECT id FROM site;");
+				auto hSubsites = h->execute("SELECT id, site FROM subsite;");
+				auto hProducts = h->execute("SELECT id, name FROM product;");
+				auto hStreams = h->execute("SELECT id, name, product FROM stream;");
+				auto hDatalevel = h->execute("SELECT level FROM datalevel;");
+
+				std::set<std::string> known_sites;
+				std::map<std::string, std::string> known_subsites;
+				std::map<std::string, std::string> known_products;
+				// known_streams
+				std::set<std::string> known_datalevels;
+
+
+				for (int i = 0; i < PQntuples(hSites.get()); ++i)
+					known_sites.emplace(std::string(PQgetvalue(hSites.get(), i, 0)));
+				for (int i = 0; i < PQntuples(hSubsites.get()); ++i) {
+					known_subsites.emplace(std::pair<std::string, std::string>
+						(std::string(PQgetvalue(hSubsites.get(), i, 0)),
+						std::string(PQgetvalue(hSubsites.get(), i, 1))));
+				}
+				// todo: add streams
+				for (int i = 0; i < PQntuples(hDatalevel.get()); ++i)
+					known_datalevels.emplace(std::string(PQgetvalue(hDatalevel.get(), i, 0)));
+			}
+
 			std::shared_ptr<rtmath::registry::DBhandler> update(
 				const arm_info_registry::arm_info_index::collection c,
 				arm_info_registry::updateType t,
@@ -166,6 +204,30 @@ namespace rtmath
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle()); });
 
+				if (t == arm_info_registry::updateType::INSERT_ONLY)
+				{
+					// Search site, subsite, datalevel, product_name and add if missing
+					// Just select all from these tables
+					std::map<std::string, subsiteInfo > subsites;
+					std::map<std::string, std::string> products;
+					std::set<std::string> datalevels;
+
+					for (const auto &i : *c)
+					{
+						subsiteInfo info;
+						info.site = i->site;
+						info.lat = i->lat; info.lon = i->lon; info.alt = i->alt;
+						subsites.emplace(std::pair<std::string, 
+							subsiteInfo >(i->subsite, std::move(info)));
+						products.emplace(std::pair<std::string, std::string>(i->product, ""));
+						datalevels.emplace(i->datalevel);
+					}
+					
+					createBackgroundInfo(h, subsites, products, datalevels);
+
+				}
+
+				/*
 				// First, look for any matching filenames.
 				arm_info_registry::arm_info_index::collection 
 					toUpdate = arm_info::makeCollection(),
@@ -177,7 +239,7 @@ namespace rtmath
 					filenames.push_back(i->filename.c_str());
 
 				//auto res = 
-				
+				*/
 
 
 				return h;
