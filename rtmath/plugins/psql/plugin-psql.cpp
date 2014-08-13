@@ -53,8 +53,8 @@ namespace rtmath
 
 				values.push_back(o->getVal<std::string>("hostname", "plenus.met.fsu.edu"));
 				values.push_back(o->getVal<std::string>("dbname", "rtmath"));
-				values.push_back(o->getVal<string>("user","rhoneyager"));
-				values.push_back(o->getVal<string>("password","");
+				values.push_back(o->getVal<string>("user","rtmath_test"));
+				values.push_back(o->getVal<string>("password","kjASDGK7nwk83g8gnKIu2g3neiY"));
 				values.push_back(o->getVal<string>("sslmode","require"));
 				values.push_back("");
 
@@ -62,9 +62,11 @@ namespace rtmath
 				for (const auto &s : keywords) ck.push_back(s.c_str());
 				for (const auto &s : values) cv.push_back(s.c_str());
 
-				connection = boost::shared_ptr<PGconn>(PQconnectdbParams(ck.data(), cv.data(), 0), PQfinish);
+				//connection = boost::shared_ptr<PGconn>(PQconnectdbParams(ck.data(), cv.data(), 0), PQfinish);
+				connection = boost::shared_ptr<PGconn>(PQconnectdb(
+					"host = plenus.met.fsu.edu dbname = rtmath user = rtmath_test sslmode = require password = kjASDGK7nwk83g8gnKIu2g3neiY"), PQfinish);
 				ConnStatusType errcode = PQstatus(connection.get());
-				if (errcode != PGRES_COMMAND_OK) handle_error(errcode);
+				if (errcode != CONNECTION_OK) handle_error(errcode);
 			}
 
 			void psql_handle::disconnect()

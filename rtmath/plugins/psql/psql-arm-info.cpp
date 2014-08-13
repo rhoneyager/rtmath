@@ -169,29 +169,63 @@ namespace rtmath
 				const std::set<std::string> &datalevels
 				)
 			{
+				using namespace std;
 				auto hSites = h->execute("SELECT id FROM site;");
 				auto hSubsites = h->execute("SELECT id, site FROM subsite;");
 				auto hProducts = h->execute("SELECT id, name FROM product;");
-				auto hStreams = h->execute("SELECT id, name, product FROM stream;");
+				auto hStreams = h->execute("SELECT id, name, product_id FROM stream;");
 				auto hDatalevel = h->execute("SELECT level FROM datalevel;");
 
-				std::set<std::string> known_sites;
-				std::map<std::string, std::string> known_subsites;
-				std::map<std::string, std::string> known_products;
+				set<string> known_sites;
+				map<string, string> known_subsites;
+				map<string, string> known_products;
 				// known_streams
-				std::set<std::string> known_datalevels;
+				set<string> known_datalevels;
 
 
 				for (int i = 0; i < PQntuples(hSites.get()); ++i)
-					known_sites.emplace(std::string(PQgetvalue(hSites.get(), i, 0)));
+					known_sites.emplace(string(PQgetvalue(hSites.get(), i, 0)));
 				for (int i = 0; i < PQntuples(hSubsites.get()); ++i) {
-					known_subsites.emplace(std::pair<std::string, std::string>
-						(std::string(PQgetvalue(hSubsites.get(), i, 0)),
-						std::string(PQgetvalue(hSubsites.get(), i, 1))));
+					known_subsites.emplace(pair<string, string>
+						(string(PQgetvalue(hSubsites.get(), i, 0)),
+						string(PQgetvalue(hSubsites.get(), i, 1))));
 				}
 				// todo: add streams
 				for (int i = 0; i < PQntuples(hDatalevel.get()); ++i)
-					known_datalevels.emplace(std::string(PQgetvalue(hDatalevel.get(), i, 0)));
+					known_datalevels.emplace(string(PQgetvalue(hDatalevel.get(), i, 0)));
+
+
+				// Now, insert any missing entries
+				for (const auto &s : subsites)
+				{
+					if (!known_sites.count(s.second.site))
+					{
+						string nsite("insert into site (id) values ('");
+						nsite.append(s.second.site);
+						nsite.append("');");
+						h->execute(nsite.c_str());
+					}
+					if (!known_subsites.count(s.first))
+					{
+						ostringstream nssite;
+						nssite << "insert into subsite (id, site, lat, lon, alt) values ('"
+							<< s.first << "', '" << s.second.site << "', " << s.second.lat
+							<< ", " << s.second.lon << ", " << s.second.alt << ");";
+						string s = nssite.str();
+						h->execute(s.c_str());
+					}
+				}
+				// todo: add streams
+				for (const auto &s : datalevels)
+				{
+					if (!known_datalevels.count(s))
+					{
+						ostringstream ss;
+						ss << "insert into datalevel (level) values ('" << s << "');";
+						string s = ss.str();
+						h->execute(s.c_str());
+					}
+				}
 			}
 
 			std::shared_ptr<rtmath::registry::DBhandler> update(
