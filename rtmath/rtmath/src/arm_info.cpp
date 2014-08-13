@@ -167,7 +167,7 @@ namespace rtmath
 
 
 			std::pair<arm_info_registry::arm_info_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
-				arm_info_registry::arm_info_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p) const
+				arm_info_registry::arm_info_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
 				collection c(new std::set<boost::shared_ptr<arm_info>, arm_info_comp >());
 				std::shared_ptr<rtmath::registry::DBhandler> fp;
@@ -177,8 +177,8 @@ namespace rtmath
 				{
 					if (!h.fQuery) continue;
 					if (!h.fMatches) continue;
-					if (!h.fMatches(p)) continue;
-					fp = h.fQuery(*this, c, p);
+					if (!h.fMatches(p, o)) continue;
+					fp = h.fQuery(*this, c, p, o);
 
 					return std::pair < arm_info_registry::arm_info_index::collection,
 						std::shared_ptr<rtmath::registry::DBhandler> > (c, fp);
@@ -196,24 +196,24 @@ namespace rtmath
 			
 			std::shared_ptr<rtmath::registry::DBhandler> 
 				arm_info::updateEntry(arm_info_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p) const
+				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
 				auto c = makeCollection();
 				c->insert(boost::shared_ptr<arm_info>(new arm_info(*this)));
-				return updateCollection(c, t, p);
+				return updateCollection(c, t, p, o);
 			}
 
 			std::shared_ptr<rtmath::registry::DBhandler> 
 				arm_info::updateCollection(arm_info_registry::arm_info_index::collection c,
-				arm_info_registry::updateType t, std::shared_ptr<rtmath::registry::DBhandler> p)
+				arm_info_registry::updateType t, std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
 			{
 				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{
 					if (!h.fMatches) continue;
 					if (!h.fInsertUpdate) continue;
-					if (h.fMatches(p))
-						return h.fInsertUpdate(c, t, p);
+					if (h.fMatches(p, o))
+						return h.fInsertUpdate(c, t, p, o);
 				}
 				return nullptr;
 			}

@@ -31,6 +31,16 @@ namespace rtmath
 		/// Commonly-used function that expands any possible symlink in a path.
 		boost::filesystem::path DLEXPORT_rtmath_core expandSymlink(const boost::filesystem::path &p);
 
+		/// Commonly-used function that expands a folder's contents
+		void DLEXPORT_rtmath_core expandFolder(const std::string &p, 
+			std::vector<boost::filesystem::path> &out, bool recurse);
+		void DLEXPORT_rtmath_core expandFolder(const boost::filesystem::path &p, 
+			std::vector<boost::filesystem::path> &out, bool recurse);
+		void DLEXPORT_rtmath_core expandFolders(const std::vector<boost::filesystem::path> &p, 
+			std::vector<boost::filesystem::path> &out, bool recurse);
+		void DLEXPORT_rtmath_core expandFolders(const std::vector<std::string> &p, 
+			std::vector<boost::filesystem::path> &out, bool recurse);
+
 		/**
 		* \brief Adds options to a program
 		*

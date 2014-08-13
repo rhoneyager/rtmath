@@ -124,41 +124,23 @@ int main(int argc, char** argv)
 		if (exportTypes.size() && !vm.count("output-prefix")) doHelp("Need to specify output file prefix.\n");
 
 		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > exportHandlers(exportTypes.size());
+		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
 
 		bool recurse = false;
 		if (vm.count("recursive")) recurse = true;
 		bool index = false;
 		if (vm.count("show-index-location")) index = true;
 		bool summary = vm["show-summary"].as<bool>();
-		auto expandFolders = [&](const vector<string> &src, vector<path> &dest)
-		{
-			dest.clear();
-			for (auto s : src)
-			{
-				using namespace boost::filesystem;
-				path p(s);
-				if (is_directory(p))
-				{
-					if (!recurse)
-						copy(directory_iterator(p), 
-						directory_iterator(), back_inserter(dest));
-					else
-						copy(recursive_directory_iterator(p,symlink_option::recurse), 
-						recursive_directory_iterator(), back_inserter(dest));
-				}
-				else dest.push_back(p);
-			}
-		};
 
 		vector<boost::filesystem::path> vinputs;
-		expandFolders(inputs, vinputs);
+		rtmath::debug::expandFolders(inputs, vinputs, recurse);
 
 		for (const auto &si : vinputs)
 		{
 			// Validate input file
 			path pi(si);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
-			if (is_symlink(pi)) pi = boost::filesystem::read_symlink(pi);
+			pi = rtmath::debug::expandSymlink(pi);
 			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
 			if (is_directory(pi)) continue;
 
@@ -230,6 +212,11 @@ int main(int argc, char** argv)
 					std::cerr << "Error indexing file. Skipping index operation." << std::endl;
 					continue;
 				}
+			}
+
+			if (vm.count("update-db"))
+			{
+				dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
 			}
 
 			if (output.size())

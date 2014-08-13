@@ -27,7 +27,7 @@ namespace rtmath
 		using std::ostringstream;
 		namespace psql
 		{
-			bool matches(std::shared_ptr<rtmath::registry::DBhandler> p)
+			bool matches(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options>)
 			{
 				if (!p) return true;
 				if (std::string(p->getId()) == std::string(PLUGINID)) return true;
@@ -37,12 +37,12 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::DBhandler> search(
 				const arm_info_registry::arm_info_index &index,
 				arm_info_registry::arm_info_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler> p)
+				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
 			{
 				std::shared_ptr<psql_handle> h = registry::construct_handle
 					<registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
-					new psql_handle()); });
+					new psql_handle(o)); });
 
 				// Query is broken up into temporary subtables to accomodate the dates?
 				// where discreteTime is within startTime and endTime
@@ -197,12 +197,12 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::DBhandler> update(
 				const arm_info_registry::arm_info_index::collection c,
 				arm_info_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p)
+				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
 			{
 				std::shared_ptr<psql_handle> h = registry::construct_handle
 					<registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
-					new psql_handle()); });
+					new psql_handle(o)); });
 
 				if (t == arm_info_registry::updateType::INSERT_ONLY)
 				{

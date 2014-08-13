@@ -147,6 +147,41 @@ namespace rtmath
 			return pf;
 		}
 
+		void expandFolder(const std::string &s, 
+			std::vector<boost::filesystem::path> &out, bool recurse)
+		{
+			using namespace boost::filesystem;
+			path p(s);
+			expandFolder(p, out, recurse);
+		}
+		void expandFolder(const boost::filesystem::path &p, 
+			std::vector<boost::filesystem::path> &dest, bool recurse)
+		{
+			using namespace boost::filesystem;
+			if (is_directory(p))
+			{
+				if (!recurse)
+					copy(directory_iterator(p), 
+					directory_iterator(), back_inserter(dest));
+				else
+					copy(recursive_directory_iterator(p,symlink_option::recurse), 
+					recursive_directory_iterator(), back_inserter(dest));
+			}
+			else dest.push_back(p);
+		}
+		void expandFolders(const std::vector<boost::filesystem::path> &src, 
+			std::vector<boost::filesystem::path> &dest, bool recurse)
+		{
+			for (auto s : src)
+				expandFolder(s, dest, recurse);
+		}
+		void expandFolders(const std::vector<std::string> &src, 
+			std::vector<boost::filesystem::path> &dest, bool recurse)
+		{
+			for (auto s : src)
+				expandFolder(s, dest, recurse);
+		}
+
 		void add_options(
 			boost::program_options::options_description &cmdline,
 			boost::program_options::options_description &config,

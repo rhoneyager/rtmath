@@ -60,7 +60,7 @@ namespace rtmath
 					/// \todo Order collection based on filename
 					typedef boost::shared_ptr<std::set<boost::shared_ptr<arm_info>, arm_info_comp > > collection;
 					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
-						doQuery(std::shared_ptr<rtmath::registry::DBhandler>) const;
+						doQuery(std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options> = nullptr) const;
 
 				};
 
@@ -75,11 +75,12 @@ namespace rtmath
 				/// rtmath::registry and standardize.
 				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
 					(const arm_info_index&, arm_info_index::collection,
-					std::shared_ptr<rtmath::registry::DBhandler>)> queryType;
+					std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> queryType;
 				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
 					(const arm_info_index::collection, updateType,
-					std::shared_ptr<rtmath::registry::DBhandler>)> writeType;
-				typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>)> matchType;
+					std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> writeType;
+				typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>, 
+					std::shared_ptr<registry::DB_options>)> matchType;
 
 				/// Get cross-sections from small stats
 				queryType fQuery;
@@ -203,11 +204,14 @@ namespace rtmath
 
 				static boost::shared_ptr<arm_info_registry::arm_info_index> makeQuery() { return arm_info_registry::arm_info_index::generate(); }
 				std::shared_ptr<rtmath::registry::DBhandler> updateEntry(arm_info_registry::updateType,
-					std::shared_ptr<rtmath::registry::DBhandler> = nullptr) const;
+					std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
+					std::shared_ptr<registry::DB_options> = nullptr) const;
 				static arm_info_registry::arm_info_index::collection makeCollection();
 				static std::shared_ptr<rtmath::registry::DBhandler> 
 					updateCollection(arm_info_registry::arm_info_index::collection, 
-					arm_info_registry::updateType, std::shared_ptr<rtmath::registry::DBhandler> = nullptr);
+					arm_info_registry::updateType, 
+					std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
+					std::shared_ptr<registry::DB_options> = nullptr);
 			};
 		}
 	}

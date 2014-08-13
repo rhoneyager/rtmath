@@ -35,7 +35,7 @@ namespace rtmath {
 			
 			struct psql_handle : public rtmath::registry::DBhandler
 			{
-				psql_handle();
+				psql_handle(std::shared_ptr<registry::DB_options>);
 				virtual ~psql_handle();
 
 				boost::shared_ptr<PGresult> execute(const char* command);
@@ -48,6 +48,7 @@ namespace rtmath {
 				void handle_error(ExecStatusType status);
 				//std::shared_ptr<psqlFile> file;
 				boost::shared_ptr<PGconn> connection;
+				std::shared_ptr<registry::DB_options> o;
 			};
 
 

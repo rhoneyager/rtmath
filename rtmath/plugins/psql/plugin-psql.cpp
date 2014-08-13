@@ -37,15 +37,32 @@ namespace rtmath
 
 			psql_handle::~psql_handle() {}
 
-			psql_handle::psql_handle() : readable(true), writeable(true), 
-				rtmath::registry::DBhandler(PLUGINID) {}
+			psql_handle::psql_handle(std::shared_ptr<registry::DB_options> o) : readable(true), writeable(true), 
+				rtmath::registry::DBhandler(PLUGINID), o(o)
+			{
+				if (!o) this->o = registry::DB_options::generate();
+			}
 
 			void psql_handle::connect()
 			{
 				if (connection) return;
-				const char* keywords[] = { "host", "dbname", "user", "password", "sslmode", "" };
-				const char* values[] = { "plenus.met.fsu.edu", "rtmath", "rhoneyager", "", "require", "" };
-				connection = boost::shared_ptr<PGconn>(PQconnectdbParams(keywords, values, 0), PQfinish);
+				using namespace std;
+				vector<string> keywords, values;
+				keywords.push_back("host"); keywords.push_back("dbname"); keywords.push_back("user");
+				keywords.push_back("password"); keywords.push_back("sslmode"); keywords.push_back("");
+
+				values.push_back(o->getVal<std::string>("hostname", "plenus.met.fsu.edu"));
+				values.push_back(o->getVal<std::string>("dbname", "rtmath"));
+				values.push_back(o->getVal<string>("user","rhoneyager"));
+				values.push_back(o->getVal<string>("password","");
+				values.push_back(o->getVal<string>("sslmode","require"));
+				values.push_back("");
+
+				vector<const char*> ck, cv;
+				for (const auto &s : keywords) ck.push_back(s.c_str());
+				for (const auto &s : values) cv.push_back(s.c_str());
+
+				connection = boost::shared_ptr<PGconn>(PQconnectdbParams(ck.data(), cv.data(), 0), PQfinish);
 				ConnStatusType errcode = PQstatus(connection.get());
 				if (errcode != PGRES_COMMAND_OK) handle_error(errcode);
 			}
@@ -70,12 +87,12 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::DBhandler>
 				search(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
 				rtmath::data::arm::arm_info_registry::arm_info_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler>);
+				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
 			std::shared_ptr<rtmath::registry::DBhandler>
 				update(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
 				rtmath::data::arm::arm_info_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler>);
-			bool matches(std::shared_ptr<rtmath::registry::DBhandler>);
+				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
+			bool matches(std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
 		}
 
 	}
