@@ -144,6 +144,30 @@ int main(int argc, char** argv)
 		rtmath::debug::expandFolders(inputs, vinputs, recurse);
 
 		auto dbcollection = rtmath::data::arm::arm_info::makeCollection();
+		auto qExisting = rtmath::data::arm::arm_info::makeQuery();
+
+		// Search first for matching files already in the database. Ignore these.
+		for (const auto &si : vinputs)
+		{
+			// Validate input file
+			path pi(si);
+			if (!exists(pi)) continue;
+			pi = rtmath::debug::expandSymlink(pi);
+			if (!exists(pi)) continue;
+			if (is_directory(pi)) continue;
+
+			qExisting->filename(pi.filename().string());
+		}
+		std::pair<rtmath::data::arm::arm_info_registry::arm_info_index::collection, 
+			std::shared_ptr<rtmath::registry::DBhandler> > 
+			existing = qExisting->doQuery(dHandler);
+		// And use a map for easy retrieval of existing entries
+		std::map<std::string, std::shared_ptr<rtmath::data::arm::arm_info> > cExist;
+		for (const auto &i : *(existing.first))
+		{
+			cExist[i->filename] = i;
+		}
+		dHandler = existing.second;
 
 		for (const auto &si : vinputs)
 		{
@@ -164,20 +188,27 @@ int main(int argc, char** argv)
 			cerr << pi.filename() << endl;
 
 			using namespace rtmath::data::arm;
-			boost::shared_ptr<arm_info> im;
-			try {
-				im = boost::shared_ptr<arm_info>( new arm_info(si.string()) );
-			} catch (...) {
-				cerr << "Error processing file. Skipping." << endl;
-				(*err) << "\t" << si.string() << std::endl;
-				continue;
+			std::shared_ptr<arm_info> im;
+			bool inDb = false;
+			if (cExist.count(pi.filename().string()))
+			{
+				im = cExist.at(pi.filename().string());
+				inDb = true;
+			} else {
+				try {
+					im = std::shared_ptr<arm_info>(new arm_info(si.string()));
+				}
+				catch (...) {
+					cerr << "Error processing file. Skipping." << endl;
+					(*err) << "\t" << si.string() << std::endl;
+					continue;
+				}
 			}
 
 			if (summary)
 				cerr << "\t" << im->site << "\t" << im->subsite << "\n\t"
 				<< im->product << "\t" << im->stream << "\t" << im->datalevel << "\n\t"
-				<< im->startTime << "\t" << im->endTime << "\t" << "\n\t"
-				<< im->lat << "\t" << im->lon << "\t" << im->alt << endl;
+				<< im->startTime << "\t" << im->endTime << endl;
 
 			//boost::shared_ptr<dataStreamHandler> loadedData;
 			//loadedData = im->getHandler();
@@ -231,7 +262,7 @@ int main(int argc, char** argv)
 				}
 			}
 
-			if (vm.count("update-db"))
+			if (vm.count("update-db") && !inDb)
 			{
 				dbcollection->insert(im);
 

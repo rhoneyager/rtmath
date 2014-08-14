@@ -16,7 +16,6 @@ macro(addappdir appname appdefault)
 endmacro(addappdir appname appdefault)
 
 #add_subdirectory (absorb-slab)
-#add_subdirectory (arm-index-files)
 #add_subdirectory (atmosplot)
 addappdir(arm-info ON)
 addappdir(arm-sacr ON)

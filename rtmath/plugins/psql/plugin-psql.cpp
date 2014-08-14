@@ -41,6 +41,20 @@ namespace rtmath
 				RTthrow debug::xOtherError();
 			}
 
+			std::string psql_handle::escString(const std::string &in)
+			{
+				int error = 0;
+				size_t outmxlen = (in.size() * 2) + 1;
+				char *to = new char[outmxlen];
+				size_t outlen = PQescapeStringConn(connection.get(), to, in.c_str(), in.size(), &error);
+				std::string res(to);
+				delete[] to;
+
+				if (error) handle_error("Bad input string encoding.");
+				
+				return res;
+			}
+
 			psql_handle::~psql_handle() {}
 
 			psql_handle::psql_handle(std::shared_ptr<registry::DB_options> o) : readable(true), writeable(true), 
@@ -69,7 +83,7 @@ namespace rtmath
 				for (const auto &s : values) cv.push_back(s.c_str());
 
 				//connection = std::shared_ptr<PGconn>(PQconnectdbParams(ck.data(), cv.data(), 0), PQfinish);
-				connection = std::shared_ptr<PGconn>(PQconnectdb(
+				connection = boost::shared_ptr<PGconn>(PQconnectdb(
 					"host = plenus.met.fsu.edu dbname = rtmath user = rtmath_test sslmode = require password = kjASDGK7nwk83g8gnKIu2g3neiY"), PQfinish);
 				ConnStatusType errcode = PQstatus(connection.get());
 				if (errcode != CONNECTION_OK) handle_error(errcode);
@@ -81,10 +95,10 @@ namespace rtmath
 				connection = nullptr;
 			}
 
-			std::shared_ptr<PGresult> psql_handle::execute(const char* command)
+			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
 			{
 				connect();
-				std::shared_ptr<PGresult> res
+				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
@@ -102,10 +116,10 @@ namespace rtmath
 				}
 			}
 
-			std::shared_ptr<PGresult> psql_handle::getQueryResult()
+			boost::shared_ptr<PGresult> psql_handle::getQueryResult()
 			{
 				connect();
-				std::shared_ptr<PGresult> res
+				boost::shared_ptr<PGresult> res
 					(PQgetResult(connection.get()), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);

@@ -68,6 +68,17 @@ namespace rtmath
 					return res;
 				};
 
+				auto getSubsiteFromFilename = [](const std::string &filename, std::string &subsite)
+				{
+					auto fp = filename.find_first_of('.');
+					auto ep = fp;
+					fp--;
+					// Most subsites follow C1, but some are like E12.
+					size_t len = 1;
+					while (std::isdigit(filename[fp])) { fp--; len++; }
+					subsite = filename.substr(fp, len);
+				};
+
 				// Read attributes site_id, facility_id, data_level
 				// Add sanity checks here to filter out early data, like sbsswacr without any of these attributes.
 				if (AttrExists(h->file, NC_GLOBAL, "site_id").first)
@@ -76,7 +87,7 @@ namespace rtmath
 					if (s->site.length() > 3) s->site = s->filename.substr(0,3); // pyemwrlos error in netcdf attribute
 					s->subsiteFull = getAttrString("facility_id", NC_GLOBAL);
 					//s->subsite = s->subsiteFull.substr(0, 2);
-					s->subsite = sfilename.substr(sfilename.find_first_of('.') - 2, 2); // mmcrspeccmaskblC1.a0... inconsistency
+					getSubsiteFromFilename(sfilename, s->subsite); // sfilename.substr(sfilename.find_first_of('.') - 2, 2); // mmcrspeccmaskblC1.a0... inconsistency
 					//if (AttrExists(h->file, NC_GLOBAL, "proc_level").first) // proc_level failed for tsiskycover... annoying.
 					//	s->datalevel = getAttrString("proc_level", NC_GLOBAL);
 					//else {
@@ -87,7 +98,7 @@ namespace rtmath
 				} else {
 					// Annoying Steamboat Springs data...
 					s->site = s->filename.substr(0,3);
-					s->subsite = sfilename.substr(sfilename.find_first_of('.') - 2, 2);
+					getSubsiteFromFilename(sfilename, s->subsite); //s->subsite = sfilename.substr(sfilename.find_first_of('.') - 2, 2);
 					s->subsiteFull = s->subsite;
 					s->datalevel = sfilename.substr(sfilename.find_first_of('.') + 1, 2);
 				}

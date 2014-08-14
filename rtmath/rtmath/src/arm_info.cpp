@@ -61,10 +61,10 @@ namespace rtmath
 //					arm_IO_input_registry, arm_info_serialization>::set_sname("rtmath::data::arm::arm_info");
 			}
 
-			boost::shared_ptr<dataStreamHandler> arm_info::getHandler() const
+			std::shared_ptr<dataStreamHandler> arm_info::getHandler() const
 			{
-				boost::shared_ptr<dataStreamHandler> res;
-				//if (product == "wsacr") res = boost::shared_ptr<dataStreamHandler>(
+				std::shared_ptr<dataStreamHandler> res;
+				//if (product == "wsacr") res = std::shared_ptr<dataStreamHandler>(
 				//	new arm_scanning_radar_sacr(filename));
 				RTthrow debug::xUnimplementedFunction();
 				return res;
@@ -93,7 +93,7 @@ namespace rtmath
 				return res;
 			}
 
-			bool arm_info_registry::arm_info_comp::operator()(const boost::shared_ptr<arm_info>& lhs, const boost::shared_ptr<arm_info>& rhs) const
+			bool arm_info_registry::arm_info_comp::operator()(const std::shared_ptr<arm_info>& lhs, const std::shared_ptr<arm_info>& rhs) const
 			{
 				return lhs->filename < rhs->filename;
 			}
@@ -104,10 +104,10 @@ namespace rtmath
 
 			arm_info_registry::arm_info_index::arm_info_index() {}
 			arm_info_registry::arm_info_index::~arm_info_index() {}
-			boost::shared_ptr<arm_info_registry::arm_info_index> 
+			std::shared_ptr<arm_info_registry::arm_info_index> 
 				arm_info_registry::arm_info_index::generate()
 			{
-				boost::shared_ptr<arm_info_registry::arm_info_index> res
+				std::shared_ptr<arm_info_registry::arm_info_index> res
 					(new arm_info_index());
 				return res;
 			}
@@ -169,7 +169,7 @@ namespace rtmath
 			std::pair<arm_info_registry::arm_info_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 				arm_info_registry::arm_info_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
-				collection c(new std::set<boost::shared_ptr<arm_info>, arm_info_comp >());
+				collection c(new std::set<std::shared_ptr<arm_info>, arm_info_comp >());
 				std::shared_ptr<rtmath::registry::DBhandler> fp;
 
 				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
@@ -191,7 +191,7 @@ namespace rtmath
 
 			arm_info_registry::arm_info_index::collection arm_info::makeCollection()
 			{
-				return arm_info_registry::arm_info_index::collection(new std::set<boost::shared_ptr<arm_info>, arm_info_registry::arm_info_comp >());
+				return arm_info_registry::arm_info_index::collection(new std::set<std::shared_ptr<arm_info>, arm_info_registry::arm_info_comp >());
 			}
 			
 			std::shared_ptr<rtmath::registry::DBhandler> 
@@ -199,7 +199,7 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
 				auto c = makeCollection();
-				c->insert(boost::shared_ptr<arm_info>(new arm_info(*this)));
+				c->insert(std::shared_ptr<arm_info>(new arm_info(*this)));
 				return updateCollection(c, t, p, o);
 			}
 
