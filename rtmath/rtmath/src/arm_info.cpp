@@ -46,7 +46,7 @@ namespace rtmath
 			{
 				_init();
 				read(filename);
-				this->filename = filename;
+				this->filepath = filename;
 			}
 
 			void arm_info::_init()

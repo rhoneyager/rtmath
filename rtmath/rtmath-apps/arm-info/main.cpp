@@ -135,6 +135,8 @@ int main(int argc, char** argv)
 		vector<boost::filesystem::path> vinputs;
 		rtmath::debug::expandFolders(inputs, vinputs, recurse);
 
+		auto dbcollection = rtmath::data::arm::arm_info::makeCollection();
+
 		for (const auto &si : vinputs)
 		{
 			// Validate input file
@@ -216,7 +218,15 @@ int main(int argc, char** argv)
 
 			if (vm.count("update-db"))
 			{
-				dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
+				dbcollection->insert(im);
+
+				if (dbcollection->size() > 500) // Do in batches. The final uneven batch is handled at the end of execution.
+				{
+					dHandler = data::arm::arm_info::updateCollection(dbcollection, 
+						rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
+					dbcollection->clear();
+				}
+				//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
 			}
 
 			if (output.size())
@@ -254,6 +264,14 @@ int main(int argc, char** argv)
 					std::cerr << e.what() << endl;
 				}
 			}
+		}
+
+		if (dbcollection->size())
+		{
+			dHandler = data::arm::arm_info::updateCollection(dbcollection,
+				rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
+			dbcollection->clear();
+			//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
 		}
 	}
 	catch (rtmath::debug::xError &err)

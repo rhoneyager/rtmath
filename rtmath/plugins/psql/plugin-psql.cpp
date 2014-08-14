@@ -21,17 +21,23 @@ namespace rtmath
 	{
 		namespace psql
 		{
-			void psql_handle::handle_error(ConnStatusType status)
+			void psql_handle::handle_error(ConnStatusType status) const
 			{
 				std::cerr << "psql library connection error " << status << std::endl;
 				std::cerr << PQerrorMessage(connection.get()) << std::endl;
 				RTthrow debug::xOtherError();
 			}
 
-			void psql_handle::handle_error(ExecStatusType status)
+			void psql_handle::handle_error(ExecStatusType status) const
 			{
 				std::cerr << "psql library execution error " << status << std::endl;
 				std::cerr << PQerrorMessage(connection.get()) << std::endl;
+				RTthrow debug::xOtherError();
+			}
+
+			void psql_handle::handle_error(const char* err) const
+			{
+				std::cerr << "psql library execution error: " << err << std::endl;
 				RTthrow debug::xOtherError();
 			}
 
@@ -62,8 +68,8 @@ namespace rtmath
 				for (const auto &s : keywords) ck.push_back(s.c_str());
 				for (const auto &s : values) cv.push_back(s.c_str());
 
-				//connection = boost::shared_ptr<PGconn>(PQconnectdbParams(ck.data(), cv.data(), 0), PQfinish);
-				connection = boost::shared_ptr<PGconn>(PQconnectdb(
+				//connection = std::shared_ptr<PGconn>(PQconnectdbParams(ck.data(), cv.data(), 0), PQfinish);
+				connection = std::shared_ptr<PGconn>(PQconnectdb(
 					"host = plenus.met.fsu.edu dbname = rtmath user = rtmath_test sslmode = require password = kjASDGK7nwk83g8gnKIu2g3neiY"), PQfinish);
 				ConnStatusType errcode = PQstatus(connection.get());
 				if (errcode != CONNECTION_OK) handle_error(errcode);
@@ -75,11 +81,32 @@ namespace rtmath
 				connection = nullptr;
 			}
 
-			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
+			std::shared_ptr<PGresult> psql_handle::execute(const char* command)
 			{
 				connect();
-				boost::shared_ptr<PGresult> res
+				std::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
+				ExecStatusType errcode = PQresultStatus(res.get());
+				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
+				return res;
+			}
+
+			void psql_handle::sendQuery(const char* command)
+			{
+				connect();
+				int res = PQsendQuery(connection.get(), command);
+				if (!res)
+				{
+					const char* err = PQerrorMessage(connection.get());
+					handle_error(err);
+				}
+			}
+
+			std::shared_ptr<PGresult> psql_handle::getQueryResult()
+			{
+				connect();
+				std::shared_ptr<PGresult> res
+					(PQgetResult(connection.get()), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
 				return res;

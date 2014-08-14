@@ -13,16 +13,15 @@ create table subsite (
 );
 
 create table product ( --- swacr, vceil, ...
-	id		uuid primary key,
-	name	varchar(80),
+	name 	varchar(80) primary key,
 	fullname varchar(255)
 );
 
 create table stream (
-	id		uuid primary key,
-	name	varchar(80),
+	id 	uuid primary key,
+	name 	varchar(80),
 	description varchar(255),
-	product_id	uuid references product(id)
+	product varchar(80) references product(name)
 );
 
 create table datalevel (
@@ -32,13 +31,13 @@ create table datalevel (
 
 create table arm_info_obs (
 	subsite varchar(2) references subsite(id),
-	stream_id	uuid references stream(id),
-	datalevel	varchar(10) references datalevel(level),
-	startTime	timestamp with time zone,
-	endTime		timestamp with time zone,
-	size		int,	--- bytes
-	filename	varchar(80) primary key,
-	path		text
+	stream_id 	uuid references stream(id),
+	datalevel 	varchar(10) references datalevel(level),
+	startTime 	timestamp,
+	endTime	 	timestamp,
+	size 		int,	--- bytes
+	filename 	varchar(80) primary key,
+	path 		text
 );
 
 create view arm_info as select
@@ -50,7 +49,7 @@ create view arm_info as select
 	from subsite, product, stream, arm_info_obs
 	where subsite.id = arm_info_obs.subsite
 	and stream.id = arm_info_obs.stream_id
-	and product.id = stream.product_id
+	and product.name = stream.product
 	order by subsite.site, subsite.id, product.name, stream.name, arm_info_obs.datalevel,
 	arm_info_obs.startTime
 	;
