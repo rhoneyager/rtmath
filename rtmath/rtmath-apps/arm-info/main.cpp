@@ -67,6 +67,7 @@ int main(int argc, char** argv)
 			"Options are combinations of hard,soft,copy.")
 			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("update-db", "Insert arm file entries into database")
+			("errors", po::value<string>(), "All files with errors are listed in this output.")
 			;
 
 		desc.add(cmdline).add(config);
@@ -89,6 +90,13 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
+		string sErrors;
+		if (vm.count("errors")) sErrors = vm["errors"].as<string>();
+		ostream *err = &cerr;
+		if (sErrors.size())
+		{
+			err = new ofstream(sErrors.c_str());
+		}
 		if (!vm.count("input")) doHelp("Need to specify input file(s).\n");
 
 		vector<string > inputs = vm["input"].as< vector<string > >();
@@ -155,6 +163,7 @@ int main(int argc, char** argv)
 				im = boost::shared_ptr<arm_info>( new arm_info(si.string()) );
 			} catch (...) {
 				cerr << "Error processing file. Skipping." << endl;
+				(*err) << "\t" << si.string() << std::endl;
 				continue;
 			}
 
@@ -273,6 +282,8 @@ int main(int argc, char** argv)
 			dbcollection->clear();
 			//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
 		}
+		if (sErrors.size())
+			if (err) delete err;
 	}
 	catch (rtmath::debug::xError &err)
 	{
