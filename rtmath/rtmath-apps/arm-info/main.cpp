@@ -149,9 +149,15 @@ int main(int argc, char** argv)
 		{
 			// Validate input file
 			path pi(si);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
+			if (!exists(pi)) {
+				cerr << "Missing file: " << si.string() << std::endl;
+				continue;
+			}
 			pi = rtmath::debug::expandSymlink(pi);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(si.string().c_str());
+			if (!exists(pi)) {
+				cerr << "Missing file: " << si.string() << std::endl;
+				continue;
+			}
 			if (is_directory(pi)) continue;
 
 			//cerr << "Input: " << si << endl;
