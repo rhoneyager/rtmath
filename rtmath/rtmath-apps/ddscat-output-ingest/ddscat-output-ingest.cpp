@@ -7,9 +7,10 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Serialization/serialization.h>
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/macros.h"
 #include "../../rtmath/rtmath/splitSet.h"
@@ -28,7 +29,7 @@ int main(int argc, char** argv)
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::debug::add_options(cmdline, config, hidden);
-		Ryan_Serialization::add_options(cmdline, config, hidden);
+//		Ryan_Serialization::add_options(cmdline, config, hidden);
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()

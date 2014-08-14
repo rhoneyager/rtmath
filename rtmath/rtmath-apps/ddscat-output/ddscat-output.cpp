@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::debug::add_options(cmdline, config, hidden);
-		Ryan_Serialization::add_options(cmdline, config, hidden);
+//		Ryan_Serialization::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
 		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
-		Ryan_Serialization::process_static_options(vm);
+		//Ryan_Serialization::process_static_options(vm);
 		rtmath::ddscat::ddUtil::process_static_options(vm);
 		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 		rtmath::ddscat::ddOutput::process_static_options(vm);
