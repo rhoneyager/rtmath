@@ -74,14 +74,14 @@ namespace rtmath
 			s->stream = sfilename.substr(3, iSubsite - 3); // ARM-based stream name
 
 			const char* prods[] = { "mwr", "arscl", "aeri", "irt", "915rwp", "disdrometer", "rss",
-				"rl", "mpl", "sonde", "sirs", "qcrad", "pbl", "surf", "aerosol", "aos", "ls", "twr",
+				"rl", "mpl", "sonde", "sirs", "qcrad", "pbl", "surf", "aerosol", "aos", "twr",
 				"mfrsr", "mergesonde", "swf", "aip", "sas", "rlccn", "surfspecalb", "tdmaaps", "armbe",
 				"armbe", "arscl", "mmcrmode", // all mmcrmodde go under arscl
 				"microbase", "ripbe", "rwp", "wsi", "tlcv", "sirs", "bsrn", "nimfr", "mfr" // must go after mfrsr
 				"org", "rain", "sws", "thwaps", "tsi", "vceil", "vdis", "dl", "tdma", "co2flx",
 				"pgs", "mmcr", "swacr", "mwacr", "wacr", "nfov", "brs", "kazr", "sasze", "csphot",
 				"kasacr", "wsacr", "g12", "iap", "g8", "blc", "ceil" // alias for vceil
-				"xsacr", "xsapr", "csapr", "co", "" };
+				"xsacr", "xsapr", "csapr", "co", "ls", "" };
 
 			int i = 0;
 			while (prods[i] != "" && sfilename.find(std::string(prods[i])) == std::string::npos) i++;
