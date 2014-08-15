@@ -83,10 +83,10 @@ namespace rtmath
 				"kasacr", "wsacr", "g12", "iap", "g8", "blc", "ceil" // alias for vceil
 				"xsacr", "xsapr", "csapr", "" };
 
-			const char* prod = prods[0];
-			while (prod != "" && sfilename.find(std::string(prod)) == std::string::npos) prod++;
+			int i = 0;
+			while (prods[i] != "" && sfilename.find(std::string(prods[i])) == std::string::npos) i++;
 			
-			s->product = std::string(prod);
+			s->product = std::string(prods[i]);
 			if (s->product == "mmcrmode") s->product = "arscl";
 			if (s->product == "ceil") s->product = "vceil";
 			s->productFull = s->product;
