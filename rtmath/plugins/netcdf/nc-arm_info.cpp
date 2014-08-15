@@ -79,9 +79,9 @@ namespace rtmath
 				"armbe", "arscl", "mmcrmode", // all mmcrmodde go under arscl
 				"microbase", "ripbe", "rwp", "wsi", "tlcv", "sirs", "bsrn", "nimfr", "mfr" // must go after mfrsr
 				"org", "rain", "sws", "thwaps", "tsi", "vceil", "vdis", "dl", "tdma", "co2flx",
-				"pgs", "co", "mmcr", "swacr", "mwacr", "wacr", "nfov", "brs", "kazr", "sasze", "csphot",
+				"pgs", "mmcr", "swacr", "mwacr", "wacr", "nfov", "brs", "kazr", "sasze", "csphot",
 				"kasacr", "wsacr", "g12", "iap", "g8", "blc", "ceil" // alias for vceil
-				"xsacr", "xsapr", "csapr", "" };
+				"xsacr", "xsapr", "csapr", "co", "" };
 
 			int i = 0;
 			while (prods[i] != "" && sfilename.find(std::string(prods[i])) == std::string::npos) i++;
