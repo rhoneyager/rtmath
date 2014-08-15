@@ -29,6 +29,121 @@ namespace rtmath
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			::rtmath::data::arm::arm_info *s)
 		{
+			std::string filename = opts->filename();
+			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
+			//IOhandler::IOtype iotype = opts->iotype();
+			std::string key = opts->getVal<std::string>("key");
+			using std::shared_ptr;
+			std::shared_ptr<netcdf_handle> h = registry::construct_handle
+				<registry::IOhandler, netcdf_handle>(
+				sh, PLUGINID, [&](){return std::shared_ptr<netcdf_handle>(
+				new netcdf_handle(filename.c_str(), iotype)); });
+
+			boost::filesystem::path pfile(filename);
+			s->filesize = static_cast<size_t>(boost::filesystem::file_size(pfile));
+			auto pfilename = pfile.filename();
+			std::string sfilename = pfilename.string();
+			s->filename = sfilename;
+
+			auto getSiteFromFilename = [](const std::string &filename, std::string &site)
+			{
+				site = filename.substr(0, 3);
+			};
+			auto getSubsiteFromFilename = [](const std::string &filename, std::string &subsite)
+			{
+				auto fp = filename.find_first_of('.');
+				auto ep = fp;
+				fp--;
+				// Most subsites follow C1, but some are like E12.
+				size_t len = 1;
+				while (std::isdigit(filename[fp])) { fp--; len++; }
+				subsite = filename.substr(fp, len);
+				return fp;
+			};
+			auto getDatalevelFromFilename = [](const std::string &filename, std::string &datalevel)
+			{
+				auto fp = filename.find_first_of('.');
+				auto ep = fp;
+				fp++;
+				datalevel = filename.substr(fp, 2);
+				return fp;
+			};
+			getSiteFromFilename(sfilename, s->site); // short site name
+			auto iSubsite = getSubsiteFromFilename(sfilename, s->subsite); // short subsite id
+			getDatalevelFromFilename(sfilename, s->datalevel); // short datalevel
+			s->stream = sfilename.substr(3, iSubsite - 3); // ARM-based stream name
+
+			const char* prods[] = { "mwr", "arscl", "aeri", "irt", "915rwp", "disdrometer", "rss",
+				"rl", "mpl", "sonde", "sirs", "qcrad", "pbl", "surf", "aerosol", "aos", "ls", "twr",
+				"mfrsr", "mergesonde", "swf", "aip", "sas", "rlccn", "surfspecalb", "tdmaaps", "armbe",
+				"armbe", "arscl", "mmcrmode", // all mmcrmodde go under arscl
+				"microbase", "ripbe", "rwp", "wsi", "tlcv", "sirs", "bsrn", "nimfr", "mfr" // must go after mfrsr
+				"org", "rain", "sws", "thwaps", "tsi", "vceil", "vdis", "dl", "tdma", "co2flx",
+				"pgs", "co", "mmcr", "swacr", "mwacr", "wacr", "nfov", "brs", "kazr", "sasze", "csphot",
+				"kasacr", "wsacr", "g12", "iap", "g8", "blc", "ceil" // alias for vceil
+				"xsacr", "xsapr", "csapr", "" };
+
+			const char* prod = prods[0];
+			while (prod != "" && sfilename.find(std::string(prod)) == std::string::npos) prod++;
+			
+			s->product = std::string(prod);
+			if (s->product == "mmcrmode") s->product = "arscl";
+			if (s->product == "ceil") s->product = "vceil";
+			s->productFull = s->product;
+			//s->hash = rtmath::HASHfile(filename);
+			
+			auto getAttrString = [&](const char* name, int varid) -> std::string
+			{
+				int status = 0;
+				size_t len = 0;
+				status = nc_inq_attlen(h->file, varid, name, &len);
+				if (status) h->handle_error(status);
+				std::unique_ptr<char[]> txtbuf(new char[len + 1]);
+				status = nc_get_att_text(h->file, varid, name, txtbuf.get());
+				if (status) h->handle_error(status);
+				std::string res(txtbuf.get(), len + 1); // The netcdf storage of some of the arm attributes was flawed
+				return res;
+			};
+
+			if (AttrExists(h->file, NC_GLOBAL, "facility_id").first)
+				s->subsiteFull = getAttrString("facility_id", NC_GLOBAL);
+			else s->subsiteFull = s->subsite;
+
+			// Read in datasets lat, lon, alt, base_time, time_offsets
+			auto time_offsets = getMatrix<double>("time_offset", h);
+			auto base_time = getMatrix<int>("base_time", h);
+			using namespace boost::posix_time;
+			using namespace boost::gregorian;
+			date b(1970, Jan, 1);
+			s->startTime = ptime(b, seconds(static_cast<long>(base_time(0, 0))));
+
+			s->endTime = s->startTime + seconds(static_cast<long>(time_offsets.bottomRows(1)(0, 0)));
+			try {
+				auto lat = getMatrix<float>("lat", h);
+				s->lat = lat(0, 0);
+				auto lon = getMatrix<float>("lon", h);
+				s->lon = lon(0, 0);
+				auto alt = getMatrix<float>("alt", h);
+				s->alt = alt(0, 0);
+			}
+			catch (debug::xArrayOutOfBounds&)
+			{
+				// Just skip over the fields
+				s->lat = 0;
+				s->lon = 0;
+				s->alt = 0;
+			}
+
+			return h;
+		}
+
+		/*
+		template<>
+		shared_ptr<IOhandler>
+			read_file_type_multi<::rtmath::data::arm::arm_info>
+			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
+			::rtmath::data::arm::arm_info *s)
+		{
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
 				//IOhandler::IOtype iotype = opts->iotype();
@@ -258,6 +373,7 @@ namespace rtmath
 
 				return h;
 		}
+		*/
 
 		template<>
 		std::shared_ptr<IOhandler>
