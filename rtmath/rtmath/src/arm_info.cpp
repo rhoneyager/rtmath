@@ -85,9 +85,8 @@ namespace rtmath
 				year = startTime.date().year();
 
 				std::ostringstream out;
-				out << product << "/";
-				if (stream.size()) out << stream << "/";
-				out << year << "/" << site << "/"
+				out << stream << "/"
+					<< year << "/" << site << "/"
 					<< subsite << "/" << datalevel;
 				std::string res = out.str();
 				return res;

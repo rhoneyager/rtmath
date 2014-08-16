@@ -31,7 +31,7 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
-enum class linkMethod { HARD, SOFT, COPY };
+enum class linkMethod { HARD, SOFT, COPY, MOVE };
 
 
 int main(int argc, char** argv)
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 			"Linking / copying behavior is set by the link-method flag")
 			("link-method", po::value<string>()->default_value("hard,copy"), "Sets link method attempted order. \"hard,copy\" "
 			"means that hard links will be attempted first. If these fail, then fall back to just copying the file. "
-			"Options are combinations of hard,soft,copy.")
+			"Options are combinations of hard,soft,copy,move.")
 			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("update-db", "Insert arm file entries into database")
 			("errors", po::value<string>(), "All files with errors are listed in this output.")
@@ -121,6 +121,7 @@ int main(int argc, char** argv)
 			if (slm == "hard") linkMethods.push_back(linkMethod::HARD);
 			if (slm == "soft") linkMethods.push_back(linkMethod::SOFT);
 			if (slm == "copy") linkMethods.push_back(linkMethod::COPY);
+			if (slm == "move") linkMethods.push_back(linkMethod::MOVE);
 		}
 		string sindexBase;
 		if (vm.count("index-base")) sindexBase = vm["index-base"].as<string>();
@@ -244,6 +245,11 @@ int main(int argc, char** argv)
 								} else if (meth == linkMethod::COPY) {
 									boost::filesystem::copy(pi, pfile);
 									cerr << "Copied file.\n";
+									success = true;
+									break;
+								} else if (meth == linkMethod::MOVE) {
+									boost::filesystem::rename(pi, pfile);
+									cerr << "Moved file.\n";
 									success = true;
 									break;
 								}
