@@ -17,6 +17,7 @@ endmacro(addappdir appname appdefault)
 
 #add_subdirectory (absorb-slab)
 #add_subdirectory (atmosplot)
+addappdir(arm-coverage ON)
 addappdir(arm-info ON)
 addappdir(arm-sacr ON)
 addappdir(combo ON)

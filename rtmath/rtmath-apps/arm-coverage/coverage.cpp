@@ -1,4 +1,4 @@
-/* This program is designed to index arm data. */
+/* This program is designed to index arm data by unifying data intervals. */
 
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // Dumb boost uuid warning
@@ -28,8 +28,6 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
-enum class linkMethod { HARD, SOFT, COPY, MOVE };
-
 
 int main(int argc, char** argv)
 {
@@ -38,7 +36,7 @@ int main(int argc, char** argv)
 	using namespace boost::filesystem;
 
 	try {
-		cerr << "rtmath-arm-info\n\n";
+		cerr << "rtmath-arm-coverage\n\n";
 
 		namespace po = boost::program_options;
 
@@ -51,20 +49,14 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value< vector<string> >()->multitoken(), "input files")
-			("recursive,r", "Select recursive directory input")
-			("output-prefix,o", po::value< string >(), "output file prefix")
+			("site", po::value<string>(), "Select a single site")
+			("subsite", po::value<string>(), "Select a single subsite (requires site)")
+			("product", po::value<string>(), "Select a single product")
+			("stream", po::value<string>(), "Select a single stream")
+			("datalevel", po::value<string>(), "Select a single datalevel")
+			("only-extract", "Only export the table, do not attempt to update it")
+			("output,o", po::value< string >(), "output filename")
 			("export-types,e", po::value<vector<string> >()->multitoken(), "Identifiers to export (i.e. image_stats)")
-			("show-summary", po::value<bool>()->default_value(true), "Show summary of analysis")
-			("show-index-location", "Option to generate a unique folder name for indexing / storing the file consistently")
-			("index-base", po::value<string>(), "If set, link files into an indexed directory tree, starting at index-base."
-			"Linking / copying behavior is set by the link-method flag")
-			("link-method", po::value<string>()->default_value("hard,copy"), "Sets link method attempted order. \"hard,copy\" "
-			"means that hard links will be attempted first. If these fail, then fall back to just copying the file. "
-			"Options are combinations of hard,soft,copy,move.")
-			//("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
-			("update-db", "Insert arm file entries into database")
-			("errors", po::value<string>(), "All files with errors are listed in this output.")
 			;
 
 		desc.add(cmdline).add(config);
@@ -87,47 +79,16 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
-		string sErrors;
-		if (vm.count("errors")) sErrors = vm["errors"].as<string>();
-		ostream *err = &cerr;
-		if (sErrors.size())
-		{
-			err = new ofstream(sErrors.c_str());
-		}
-		if (!vm.count("input")) doHelp("Need to specify input file(s).\n");
-
-		vector<string > inputs = vm["input"].as< vector<string > >();
 
 		string output;
-		if (vm.count("output-prefix"))
+		if (vm.count("output"))
 		{
-			output= vm["output-prefix"].as< string >();
+			output= vm["output"].as< string >();
 			using namespace boost::filesystem;
 			path pOut(output);
-			if (!boost::filesystem::exists(pOut)) boost::filesystem::create_directory(pOut);
-			else if (!boost::filesystem::is_directory(pOut))
-				RTthrow rtmath::debug::xPathExistsWrongType(output.c_str());
 		}
 
-		vector<string> vslinkMethods;
-		vector<linkMethod> linkMethods;
-		string slinkMethods = vm["link-method"].as<string>();
-		config::splitVector(slinkMethods, vslinkMethods, ',');
-		for (const auto &slm : vslinkMethods)
-		{
-			if (slm == "hard") linkMethods.push_back(linkMethod::HARD);
-			if (slm == "soft") linkMethods.push_back(linkMethod::SOFT);
-			if (slm == "copy") linkMethods.push_back(linkMethod::COPY);
-			if (slm == "move") linkMethods.push_back(linkMethod::MOVE);
-		}
-		string sindexBase;
-		if (vm.count("index-base")) sindexBase = vm["index-base"].as<string>();
-		path indexBase(sindexBase);
-
-		vector<string> exportTypes;
-		if (vm.count("export-types")) exportTypes = vm["export-types"].as<vector<string> >();
-
-		if (exportTypes.size() && !vm.count("output-prefix")) doHelp("Need to specify output file prefix.\n");
+		if (exportTypes.size() && !vm.count("output")) doHelp("Need to specify output filename.");
 
 		std::vector<std::shared_ptr<rtmath::registry::IOhandler> > exportHandlers(exportTypes.size());
 		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
@@ -229,26 +190,6 @@ int main(int argc, char** argv)
 						for (const auto & meth : linkMethods)
 						{
 							try {
-								if (meth == linkMethod::HARD) {
-									boost::filesystem::create_hard_link(pi, pfile);
-									cerr << "Created hard link.\n";
-									success = true;
-									break;
-								} else if (meth == linkMethod::SOFT) {
-									boost::filesystem::create_symlink(pi, pfile);
-									cerr << "Created symlink.\n";
-									success = true;
-									break;
-								} else if (meth == linkMethod::COPY) {
-									boost::filesystem::copy(pi, pfile);
-									cerr << "Copied file.\n";
-									success = true;
-									break;
-								} else if (meth == linkMethod::MOVE) {
-									boost::filesystem::rename(pi, pfile);
-									cerr << "Moved file.\n";
-									success = true;
-									break;
 								}
 							} catch (std::exception &e) {
 								cerr << e.what() << endl;

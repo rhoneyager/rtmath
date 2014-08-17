@@ -115,14 +115,15 @@ CREATE VIEW currentRuns AS
 	activeRuns.username,
 	flakeTypes.name,
 	activeRuns.frequency,
-	activeRuns.temperature,
+	activeRuns.temperature as temp,
 	host.hostname,
 	activeRuns.path,
-	activeRuns.decimation,
+	activeRuns.decimation as dec,
 	activeRuns.perturbation,
-	activeRuns.polarization,
-	activeRuns.runsTotal, activeRuns.runsCompleted, activeRuns.runsFailed,
+	activeRuns.polarization as pol,
+	activeRuns.runsTotal as total, activeRuns.runsCompleted as good, activeRuns.runsFailed as bad,
 	activeRuns.nBetas, activeRuns.nThetas, activeRuns.nPhis, 
+	activeRuns.tsLastStarted, 
 	activeRuns.tsLastUpdated
 	FROM activeRuns, host, flakeTypes
 	WHERE activeRuns.progress = 'running'
