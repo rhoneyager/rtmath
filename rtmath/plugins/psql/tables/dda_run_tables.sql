@@ -64,6 +64,7 @@ CREATE VIEW stalledRuns AS
 	WHERE age(activeRuns.tsLastUpdated) > '2 days'
 	AND activeRuns.progress = 'running'
 	AND host.id = activeRuns.host
+	AND flakeTypes.id = activeRuns.flakeType
 	ORDER BY activeRuns.tsLastUpdated;
 
 CREATE VIEW successfulRuns AS
