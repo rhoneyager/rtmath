@@ -12,8 +12,6 @@
 #include <iostream>
 #include <sstream>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -21,8 +19,7 @@
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/macros.h"
-#include "../../rtmath/rtmath/data/arm_info.h"
-#include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "plugin-psql.h"
@@ -31,20 +28,14 @@ namespace rtmath
 {
 	namespace plugins
 	{
-		using namespace rtmath::data::arm;
+		using namespace rtmath::ddscat::shapefile;
 		using std::ostringstream;
 		namespace psql
 		{
-			bool matches(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options>)
-			{
-				if (!p) return true;
-				if (std::string(p->getId()) == std::string(PLUGINID)) return true;
-				return false;
-			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> searchARM(
-				const arm_info_registry::arm_info_index &index,
-				arm_info_registry::arm_info_index::collection res,
+			std::shared_ptr<rtmath::registry::DBhandler> searchSHP(
+				const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index &index,
+				rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection res,
 				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
 			{
 				using namespace std;
@@ -57,44 +48,28 @@ namespace rtmath
 				ostringstream squery;
 				//squery << "BEGIN;\n";
 
-				string ssel("SELECT site, subsite, product, stream, "
-					"datalevel, filename, size, path, startTime, endTime FROM arm_info ");
+				string ssel("SELECT hashLower, hashUpper, flakeType_id, tags, "
+					"standardD, description, flake_references FROM flake ");
 				bool unionFlag = false;
-				// Query is broken up into temporary subtables to accomodate the dates?
-				// where discreteTime is within startTime and endTime
-				// where the interval s,e contains all or part of startTime and endTime
-
-				if (index.discrete_times.size())
-				{
-					if (unionFlag) squery << " INTERSECT ";
-					squery << ssel << " WHERE ";
-					for (auto it = index.discrete_times.begin(); it != index.discrete_times.end(); ++it)
-					{
-						if (it != index.discrete_times.begin())
-							squery << " OR ";
-						squery << "'" << *it << "' BETWEEN startTime AND endTime ";
-					}
-					unionFlag = true;
-				}
-
-				if (index.time_ranges.size())
-				{
-					if (unionFlag) squery << " INTERSECT ";
-					squery << ssel << " WHERE ";
-					for (auto it = index.time_ranges.begin(); it != index.time_ranges.end(); ++it)
-					{
-						if (it != index.time_ranges.begin())
-							squery << " OR ";
-						squery << " tstzrange('" << it->first << "', '" << it->second << "') && tstzrange(startTime, endTime) ";
-					}
-					unionFlag = true;
-				}
-
 				
-				if (index.instruments.size() || index.sites.size() ||
-					index.subsites.size() || index.data_levels.size() ||
-					index.filenames.size() || index.product_names.size() ||
-					index.stream_names.size())
+				// Dipole spacing ranges
+				if (index.standardDs.size())
+				{
+					if (unionFlag) squery << " INTERSECT ";
+					squery << ssel << " WHERE ";
+					for (auto it = index.standardDs.begin(); it != index.standardDs.end(); ++it)
+					{
+						if (it != index.standardDs.begin())
+							squery << " OR ";
+						squery << "numrange( " << it->first * (1.0f - it->second) << " , "
+							<< it->first * (1.0f + it->second) << " ) @> standardD ";
+					}
+					unionFlag = true;
+				}
+
+				if (index.tags.size() || index.hashLowers.size() ||
+					index.hashUppers.size() || index.flakeTypes.size() ||
+					index.flakeTypeUUIDs.size() || index.refHashLowers.size())
 				{
 					if (unionFlag) squery << " INTERSECT ";
 					squery << ssel << " WHERE ";
@@ -102,7 +77,6 @@ namespace rtmath
 				}
 
 				size_t numSel = 0;
-				// Select sites, subsites, data_levels, filenames
 				auto selString = [&](const std::vector<std::string> &v, const std::string &tblName)
 				{
 					if (!v.size()) return;
@@ -119,12 +93,12 @@ namespace rtmath
 					numSel++;
 				};
 
-				selString(index.sites, "site_id");
-				selString(index.subsites, "subsite_id");
-				selString(index.data_levels, "data_level");
-				selString(index.filenames, "filename");
-				selString(index.product_names, "product_name");
-				selString(index.stream_names, "stream_name");
+				selString(index.tags, "tag");
+				selString(index.hashLowers, "hashLower");
+				selString(index.hashUppers, "hashUpper");
+				selString(index.flakeTypes, "flakeType");
+				selString(index.flakeTypeUUIDs, "flakeType_UUID");
+				selString(index.refHashLowers, "flake_references");
 
 				squery << ";";
 
@@ -132,24 +106,45 @@ namespace rtmath
 				//std::cerr << s << std::endl;
 				auto resIntersect = h->execute(s.c_str());
 
-				// Turn the result into arm_info objects
+				// Turn the result into shapefile stub objects
 				// Unified object is in resIntersect
+				// SELECT hashLower, hashUpper, flakeType_id, tags, "
+					//"standardD, description, flake_references FROM flake 
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
-					std::shared_ptr<arm_info> ap(new arm_info);
-					ap->site = string(PQgetvalue(resIntersect.get(), i, 0));
-					ap->subsite = string(PQgetvalue(resIntersect.get(), i, 1));
-					ap->product = string(PQgetvalue(resIntersect.get(), i, 2));
-					ap->stream = string(PQgetvalue(resIntersect.get(), i, 3));
-					ap->datalevel = string(PQgetvalue(resIntersect.get(), i, 4));
-					ap->filename = string(PQgetvalue(resIntersect.get(), i, 5));
-					ap->filesize = rtmath::macros::m_atoi(PQgetvalue(resIntersect.get(), i, 6));
-					ap->filepath = string(PQgetvalue(resIntersect.get(), i, 7));
+					std::shared_ptr<shapefile> ap(new shapefile);
 
-					string sstime(PQgetvalue(resIntersect.get(), i, 8)), setime(PQgetvalue(resIntersect.get(), i, 9));
-					
-					ap->startTime = boost::posix_time::time_from_string(sstime);
-					ap->endTime = boost::posix_time::time_from_string(setime);
+					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
+					ap->setHash(HASH_t( rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
+						rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 1))));
+
+					ap->desc = string(PQgetvalue(resIntersect.get(), i, 5));
+
+					ap->tags.insert(std::pair<std::string,std::string>("flake_reference",
+						std::string(PQgetvalue(resIntersect.get(), i, 6))));
+					ap->tags.insert(std::pair<std::string,std::string>("flake_type",
+						std::string(PQgetvalue(resIntersect.get(), i, 2))));
+
+					// Iterate over all tags and add to the tags field.
+					// psql tags saved as key=value strings.
+					string othertags(PQgetvalue(resIntersect.get(), i, 3));
+					// Parse tags (they look like {a=b,c=d,e=f})
+					// First, remove { and }
+					othertags.erase(std::remove(othertags.begin(), othertags.end(), '{'), othertags.end());
+					othertags.erase(std::remove(othertags.begin(), othertags.end(), '}'), othertags.end());
+					// Split based on commas
+					std::vector<std::string> vother;
+					rtmath::config::splitVector(othertags, vother, ',');
+					// Insert, splitting on =
+					for (const auto & i : vother)
+					{
+						vector<string> vs;
+						rtmath::config::splitVector(i, vs, '=');
+						string a, b;
+						if (vs.size()) a = vs[0];
+						if (vs.size() > 1) b = vs[1];
+						ap->tags.insert(std::pair<std::string,std::string>(a,b));
+					}
 
 					res->insert(ap);
 				}
@@ -290,9 +285,9 @@ namespace rtmath
 				h->execute(sres.c_str());
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> updateARM(
-				const arm_info_registry::arm_info_index::collection c,
-				arm_info_registry::updateType t,
+			std::shared_ptr<rtmath::registry::DBhandler> updateSHP(
+				const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection c,
+				rtmath::ddscat::shapefile::shapefile_db_registry::updateType t,
 				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
 			{
 				using namespace std;
@@ -369,20 +364,6 @@ namespace rtmath
 				sadd << "COMMIT;";
 				std::string sres = sadd.str();
 				h->execute(sres.c_str());
-
-				/*
-				// First, look for any matching filenames.
-				arm_info_registry::arm_info_index::collection
-				toUpdate = arm_info::makeCollection(),
-				toInsert = arm_info::makeCollection();
-
-				std::vector<const char*> filenames;
-				filenames.reserve(c->size());
-				for (const auto &i : *c)
-				filenames.push_back(i->filename.c_str());
-
-				//auto res =
-				*/
 
 
 				return h;

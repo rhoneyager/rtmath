@@ -154,6 +154,7 @@ namespace rtmath {
 			void shapefile::_init()
 			{
 				numPoints = 0;
+				standardD = 0;
 				//filename = "";
 				//::rtmath::io::Serialization::implementsSerialization<
 				//	shapefile, shapefile_IO_output_registry, 

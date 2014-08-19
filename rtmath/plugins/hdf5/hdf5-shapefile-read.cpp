@@ -54,6 +54,10 @@ namespace rtmath {
 				readAttr<std::string, Group>(base, "ingest_hostname", shp->ingest_hostname);
 				readAttr<int, Group>(base, "ingest_rtmath_version", shp->ingest_rtmath_version);
 				readAttr<std::string, Group>(base, "ingest_username", shp->ingest_username);
+
+				if (attrExists(base, "Standard_Dipole_Spacing"))
+					readAttr<float, Group>(base, "Standard_Dipole_Spacing", shp->standardD);
+
 				// mins, maxs, means
 				readAttrEigen<Eigen::Array3f, Group>(base, "mins", shp->mins);
 				readAttrEigen<Eigen::Array3f, Group>(base, "maxs", shp->maxs);

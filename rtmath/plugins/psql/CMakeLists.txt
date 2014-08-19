@@ -26,7 +26,7 @@ add_library (rtmath_plugin_psql SHARED
 	plugin-psql.cpp
 	plugin-psql.h
 	psql-arm-info.cpp
-
+	psql-shapefile.cpp
 	${sql_files}
 	)
 addlib(rtmath_plugin_psql SHARED)

@@ -270,6 +270,8 @@ namespace rtmath {
 				std::string ingest_username;
 				/// Revision of the rtmath code for ingest
 				int ingest_rtmath_version;
+				/// Standard dipole spacing for this shape (the value usually used)
+				float standardD;
 
 				//std::vector<Eigen::Vector3f> 
 				/// \todo Move latticePts and the rest into const shared_ptr containers

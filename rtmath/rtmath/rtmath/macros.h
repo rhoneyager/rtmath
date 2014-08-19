@@ -1,6 +1,7 @@
 #pragma once
 #include "defs.h"
 
+#include <cstdint>
 #include <boost/lexical_cast.hpp>
 
 namespace rtmath {
@@ -14,15 +15,17 @@ namespace rtmath {
 	**/
 	namespace macros {
 		/// Convert argument to float
-		double DLEXPORT_rtmath_core m_atof(const char* x, size_t len = 0);
+		template <class T>
+		T DLEXPORT_rtmath_core m_atof(const char* x, size_t len = 0);
 
 		/// Convert argument to int
-		int DLEXPORT_rtmath_core m_atoi(const char *x, size_t len = 0);
+		template <class T>
+		T DLEXPORT_rtmath_core m_atoi(const char *x, size_t len = 0);
 
 
 #ifdef _MSC_FULL_VER
-#define M_ATOF(x) rtmath::macros::m_atof(x)
-#define M_ATOI(x) rtmath::macros::m_atoi(x)
+#define M_ATOF(x) rtmath::macros::m_atof<double>(x)
+#define M_ATOI(x) rtmath::macros::m_atoi<int>(x)
 #else
 #define M_ATOF(x) atof(x)
 #define M_ATOI(x) atoi(x)
@@ -45,7 +48,7 @@ namespace rtmath {
 		template<> DLEXPORT_rtmath_core float fastCast(const std::string &ss);
 		template<> DLEXPORT_rtmath_core size_t fastCast(const std::string &ss);
 		template<> DLEXPORT_rtmath_core int fastCast(const std::string &ss);
-
+		template<> DLEXPORT_rtmath_core uint64_t fastCast(const std::string &ss);
 	}
 
 }

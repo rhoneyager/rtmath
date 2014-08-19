@@ -154,6 +154,8 @@ namespace rtmath {
 					addAttr<uint64_t, Group>(shpraw, "Hash_Lower", shp->hash().lower);
 					addAttr<uint64_t, Group>(shpraw, "Hash_Upper", shp->hash().upper);
 
+					addAttr<float, Group>(shpraw, "Standard_Dipole_Spacing", shp->standardD);
+
 					// mins, maxs, means
 					addAttrEigen<Eigen::Array3f, Group>(shpraw, "mins", shp->mins);
 					addAttrEigen<Eigen::Array3f, Group>(shpraw, "maxs", shp->maxs);

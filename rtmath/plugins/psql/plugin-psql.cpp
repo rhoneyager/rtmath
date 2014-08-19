@@ -6,6 +6,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -128,25 +129,27 @@ namespace rtmath
 
 
 			std::shared_ptr<rtmath::registry::DBhandler>
-				search(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
+				searchARM(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
 				rtmath::data::arm::arm_info_registry::arm_info_index::collection res,
 				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
 			std::shared_ptr<rtmath::registry::DBhandler>
-				update(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
+				updateARM(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
 				rtmath::data::arm::arm_info_registry::updateType t,
 				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
 			bool matches(std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
+
+			std::shared_ptr<rtmath::registry::DBhandler>
+				searchSHP(const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index &index,
+				rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection res,
+				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
+			std::shared_ptr<rtmath::registry::DBhandler>
+				updateSHP(const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection c,
+				rtmath::ddscat::shapefile::shapefile_db_registry::updateType t,
+				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
 		}
 
 	}
 }
-
-/*
-std::shared_ptr<hdf5_handle> h = registry::construct_handle
-<registry::IOhandler, hdf5_handle>(
-sh, PLUGINID, [&](){return std::shared_ptr<hdf5_handle>(
-new hdf5_handle(filename.c_str(), iotype)); });
-*/
 
 void dllEntry()
 {
@@ -158,12 +161,21 @@ void dllEntry()
 	rtmath_registry_register_dll(id);
 
 	using namespace rtmath::data::arm;
+	using namespace rtmath::ddscat::shapefile;
 
 	arm_info_registry reg_ai;
 	reg_ai.name = "psql-" PLUGINID;
-	reg_ai.fInsertUpdate = rtmath::plugins::psql::update;
-	reg_ai.fQuery = rtmath::plugins::psql::search;
+	reg_ai.fInsertUpdate = rtmath::plugins::psql::updateARM;
+	reg_ai.fQuery = rtmath::plugins::psql::searchARM;
 	reg_ai.fMatches = rtmath::plugins::psql::matches;
 
 	doRegisterHook<arm_info, arm_query_registry, arm_info_registry>(reg_ai);
+
+	shapefile_db_registry reg_shp;
+	reg_shp.name = "psql-" PLUGINID;
+	reg_shp.fInsertUpdate = rtmath::plugins::psql::updateSHP;
+	reg_shp.fQuery = rtmath::plugins::psql::searchSHP;
+	reg_shp.fMatches = rtmath::plugins::psql::matches;
+
+	doRegisterHook<shapefile, shapefile_query_registry, shapefile_db_registry>(reg_shp);
 }

@@ -11,6 +11,7 @@
 #include <boost/serialization/export.hpp>
 #endif
 
+#include "macros.h"
 #include "registry.h"
 #include <boost/filesystem.hpp>
 
@@ -25,6 +26,7 @@ namespace rtmath {
 	class DLEXPORT_rtmath_core UINT128 {
 	public:
 		UINT128() : lower(0), upper(0) {}
+		UINT128(uint64_t lower, uint64_t upper) : lower(lower), upper(upper) {}
 		uint64_t lower;
 		uint64_t upper;
 		inline bool operator<(const UINT128 &rhs) const

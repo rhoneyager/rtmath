@@ -6,9 +6,10 @@
 namespace rtmath {
 	namespace macros {
 
-		double m_atof(const char* x, size_t len)
+		template <class T>
+		T m_atof(const char* x, size_t len)
 		{
-			double res = 0.0;
+			T res = 0;
 			unsigned int remainder = 0;
 			unsigned int rembase = 1;
 			unsigned int digit = 0;
@@ -105,23 +106,24 @@ namespace rtmath {
 			}
 			// Iterated through the string
 			// Now, to combine the elements into my double
-			res += (double) remainder / (double) rembase;
-			if (sign) res *= -1.0;
+			res += (T) remainder / (T) rembase;
+			if (sign) res *= -1;
 			if (exponent)
 			{
 				if (!expsign)
 				{
-					res *= std::pow(10, (double) expi);
+					res *= std::pow(10, (T) expi);
 				} else {
-					res *= std::pow(10, -1.0 * (double) expi);
+					res *= std::pow(10, -1.0 * (T) expi);
 				}
 			}
 			return res;
 		}
 
-		int m_atoi(const char *x, size_t len)
+		template <class T>
+		T m_atoi(const char *x, size_t len)
 		{
-			int res = 0;
+			T res = 0;
 			int digit = 0;
 			bool sign = false; // false is pos, true is neg
 			bool done = false;
@@ -187,6 +189,12 @@ namespace rtmath {
 			if (sign) res *= -1;
 			return res;
 		}
+
+		template double DLEXPORT_rtmath_core m_atof(const char* x, size_t len);
+		template float DLEXPORT_rtmath_core m_atof(const char* x, size_t len);
+
+		template int DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
+		template uint64_t DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
 
 		/*
 		double pythag(double a, double b)
