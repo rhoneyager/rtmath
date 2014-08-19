@@ -96,11 +96,38 @@ namespace rtmath {
 			shapefile::shapefile() { _init(); }
 			shapefile::~shapefile() { }
 
-#if 0 // _MSC_FULL_VER
+#if 0 //_MSC_FULL_VER
 			shapefile& shapefile::operator=(const shapefile& rhs)
 			{
 				if (this == &rhs) return *this;
+#define cp(x) this->x = rhs.x;
+				cp(_localhash);
+				cp(filename);
+				cp(ingest_timestamp);
+				cp(ingest_hostname);
+				cp(ingest_username);
+				cp(ingest_rtmath_version);
+				cp(latticePts);
+				cp(latticePtsStd);
+				cp(latticePtsNorm);
+				cp(latticePtsRi);
+				cp(latticeIndex);
+				cp(tags);
+				cp(latticeExtras);
+				cp(numPoints);
+				cp(Dielectrics);
+				cp(desc);
+				cp(a1);
+				cp(a2);
+				cp(a3);
+				cp(d);
+				cp(x0);
+				cp(xd);
+				cp(mins);
+				cp(maxs);
+				cp(means);
 
+#undef cp
 			}
 #endif
 

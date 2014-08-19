@@ -803,16 +803,18 @@ namespace rtmath
 		{
 		public:
 			static std::shared_ptr<index_class> makeQuery() { return index_class::generate(); }
+			/* // Doesn't compile in MSVC. Complains about the cast.
 			std::shared_ptr<rtmath::registry::DBhandler> updateEntry(typename registry_class::updateType t,
 				std::shared_ptr<rtmath::registry::DBhandler> p = nullptr, 
 				std::shared_ptr<registry::DB_options> o = nullptr) const
 			{
 				auto c = makeCollection();
-				auto obj = std::shared_ptr<obj_class>(new obj_class);
-				*obj = *this;
+				std::shared_ptr<obj_class> obj = std::shared_ptr<obj_class>(new obj_class);
+				*obj = (dynamic_cast<obj_class>(*this));
 				c->insert(obj);
 				return updateCollection(c, t, p, o);
 			}
+			*/
 			static typename index_class::collection makeCollection()
 			{
 				return index_class::collection

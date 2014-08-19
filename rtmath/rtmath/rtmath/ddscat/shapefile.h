@@ -177,7 +177,7 @@ namespace rtmath {
 				shapefile();
 				virtual ~shapefile();
 
-#if 0 // _MSC_FULL_VER
+#if 0 //_MSC_FULL_VER
 				shapefile& operator=(const shapefile&);
 #endif
 

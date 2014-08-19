@@ -7,11 +7,7 @@
 #include <vector>
 #include <map>
 #include <tuple>
-#include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <Ryan_Debug/debug.h>
