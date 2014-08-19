@@ -26,7 +26,7 @@ CREATE TYPE activeRunProgress AS ENUM (
 	'cancelled'
 );
 
-CREATE TABLE activeRuns (
+CREATE TABLE flakeRuns (
 	id				uuid primary key,
 	tsCreated		timestamp with time zone,
 	tsLastStarted	timestamp with time zone,
@@ -42,6 +42,7 @@ CREATE TABLE activeRuns (
 	flakeType		uuid references flakeTypes(id),
 	host			uuid references host(id),
 	path			varchar(1024),
+	ingestPath		varchar(1024),
 	runsTotal		int,
 	runsCompleted	int,
 	runsFailed		int,
@@ -55,103 +56,103 @@ CREATE TABLE activeRuns (
 
 CREATE VIEW stalledRuns AS
 	SELECT 
-	activeRuns.username,
-	activeRuns.tsLastStarted, activeRuns.tsLastUpdated, 
+	flakeRuns.username,
+	flakeRuns.tsLastStarted, flakeRuns.tsLastUpdated, 
 	host.hostname,
-	activeRuns.path,
-	activeRuns.runsTotal, activeRuns.runsCompleted, activeRuns.runsFailed
-	FROM activeRuns, host, flakeTypes
-	WHERE age(activeRuns.tsLastUpdated) > '2 days'
-	AND activeRuns.progress = 'running'
-	AND host.id = activeRuns.host
-	AND flakeTypes.id = activeRuns.flakeType
-	ORDER BY activeRuns.tsLastUpdated;
+	flakeRuns.path,
+	flakeRuns.runsTotal, flakeRuns.runsCompleted, flakeRuns.runsFailed
+	FROM flakeRuns, host, flakeTypes
+	WHERE age(flakeRuns.tsLastUpdated) > '2 days'
+	AND flakeRuns.progress = 'running'
+	AND host.id = flakeRuns.host
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY flakeRuns.tsLastUpdated;
 
 CREATE VIEW successfulRuns AS
 	SELECT
-	activeRuns.username,
+	flakeRuns.username,
 	flakeTypes.name,
-	activeRuns.frequency,
-	activeRuns.temperature,
+	flakeRuns.frequency,
+	flakeRuns.temperature,
 	host.hostname,
-	activeRuns.path,
-	activeRuns.decimation,
-	activeRuns.perturbation,
-	activeRuns.polarization,
-	activeRuns.runsTotal,
-	activeRuns.nBetas, activeRuns.nThetas, activeRuns.nPhis, 
-	activeRuns.tsFinished
-	FROM activeRuns, host, flakeTypes
-	WHERE activeRuns.progress = 'finished'
-	AND host.id = activeRuns.host
-	AND activeRuns.runsFailed = 0
-	AND flakeTypes.id = activeRuns.flakeType
-	ORDER BY activeRuns.tsFinished
+	flakeRuns.path,
+	flakeRuns.decimation,
+	flakeRuns.perturbation,
+	flakeRuns.polarization,
+	flakeRuns.runsTotal,
+	flakeRuns.nBetas, flakeRuns.nThetas, flakeRuns.nPhis, 
+	flakeRuns.tsFinished
+	FROM flakeRuns, host, flakeTypes
+	WHERE flakeRuns.progress = 'finished'
+	AND host.id = flakeRuns.host
+	AND flakeRuns.runsFailed = 0
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY flakeRuns.tsFinished
 	;
 
 CREATE VIEW failedRuns AS
 	SELECT
-	activeRuns.username,
+	flakeRuns.username,
 	flakeTypes.name,
-	activeRuns.frequency,
-	activeRuns.temperature,
+	flakeRuns.frequency,
+	flakeRuns.temperature,
 	host.hostname,
-	activeRuns.path,
-	activeRuns.decimation,
-	activeRuns.perturbation,
-	activeRuns.polarization,
-	activeRuns.runsTotal, activeRuns.runsCompleted, activeRuns.runsFailed,
-	activeRuns.nBetas, activeRuns.nThetas, activeRuns.nPhis, 
-	activeRuns.tsFinished
-	FROM activeRuns, host, flakeTypes
-	WHERE activeRuns.progress = 'finished'
-	AND activeRuns.runsFailed > 0
-	AND host.id = activeRuns.host
-	AND flakeTypes.id = activeRuns.flakeType
-	ORDER BY activeRuns.tsFinished
+	flakeRuns.path,
+	flakeRuns.decimation,
+	flakeRuns.perturbation,
+	flakeRuns.polarization,
+	flakeRuns.runsTotal, flakeRuns.runsCompleted, flakeRuns.runsFailed,
+	flakeRuns.nBetas, flakeRuns.nThetas, flakeRuns.nPhis, 
+	flakeRuns.tsFinished
+	FROM flakeRuns, host, flakeTypes
+	WHERE flakeRuns.progress = 'finished'
+	AND flakeRuns.runsFailed > 0
+	AND host.id = flakeRuns.host
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY flakeRuns.tsFinished
 	;
 
 CREATE VIEW currentRuns AS
 	SELECT
-	activeRuns.username,
+	flakeRuns.username,
 	flakeTypes.name,
-	activeRuns.frequency,
-	activeRuns.temperature as temp,
+	flakeRuns.frequency,
+	flakeRuns.temperature as temp,
 	host.hostname,
-	activeRuns.path,
-	activeRuns.decimation as dec,
-	activeRuns.perturbation,
-	activeRuns.polarization as pol,
-	activeRuns.runsTotal as total, activeRuns.runsCompleted as good, activeRuns.runsFailed as bad,
-	activeRuns.nBetas, activeRuns.nThetas, activeRuns.nPhis, 
-	activeRuns.tsLastStarted, 
-	activeRuns.tsLastUpdated
-	FROM activeRuns, host, flakeTypes
-	WHERE activeRuns.progress = 'running'
-	AND host.id = activeRuns.host
-	AND flakeTypes.id = activeRuns.flakeType
-	ORDER BY host.hostname, activeRuns.runsCompleted
+	flakeRuns.path,
+	flakeRuns.decimation as dec,
+	flakeRuns.perturbation,
+	flakeRuns.polarization as pol,
+	flakeRuns.runsTotal as total, flakeRuns.runsCompleted as good, flakeRuns.runsFailed as bad,
+	flakeRuns.nBetas, flakeRuns.nThetas, flakeRuns.nPhis, 
+	flakeRuns.tsLastStarted, 
+	flakeRuns.tsLastUpdated
+	FROM flakeRuns, host, flakeTypes
+	WHERE flakeRuns.progress = 'running'
+	AND host.id = flakeRuns.host
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY host.hostname, flakeRuns.runsCompleted
 	;
 
 CREATE VIEW waitingRuns AS
 	SELECT
-	activeRuns.username,
+	flakeRuns.username,
 	flakeTypes.name,
-	activeRuns.frequency,
-	activeRuns.temperature,
+	flakeRuns.frequency,
+	flakeRuns.temperature,
 	host.hostname,
-	activeRuns.path,
-	activeRuns.decimation,
-	activeRuns.perturbation,
-	activeRuns.polarization,
-	activeRuns.runsTotal,
-	activeRuns.nBetas, activeRuns.nThetas, activeRuns.nPhis, 
-	activeRuns.tsCreated
-	FROM activeRuns, host, flakeTypes
-	WHERE activeRuns.progress = 'created'
-	AND host.id = activeRuns.host
-	AND flakeTypes.id = activeRuns.flakeType
-	ORDER BY host.hostname, activeRuns.tsCreated
+	flakeRuns.path,
+	flakeRuns.decimation,
+	flakeRuns.perturbation,
+	flakeRuns.polarization,
+	flakeRuns.runsTotal,
+	flakeRuns.nBetas, flakeRuns.nThetas, flakeRuns.nPhis, 
+	flakeRuns.tsCreated
+	FROM flakeRuns, host, flakeTypes
+	WHERE flakeRuns.progress = 'created'
+	AND host.id = flakeRuns.host
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY host.hostname, flakeRuns.tsCreated
 	;
 
 CREATE VIEW hostLoad AS
@@ -170,9 +171,9 @@ CREATE VIEW hostLoad AS
 	grant select on waitingruns TO public;
 	grant select on hostLoad TO public;
 
-	grant insert ON activeruns TO ddastatus_updater;
-	grant update ON activeruns TO ddastatus_updater;
+	grant insert ON flakeRuns TO ddastatus_updater;
+	grant update ON flakeRuns TO ddastatus_updater;
 	grant select on ddaversion to ddastatus_updater ;
 	grant select on host to ddastatus_updater ;
 	grant select on flaketypes to ddastatus_updater ;
-	grant select ON activeruns to ddastatus_updater ;
+	grant select ON flakeRuns to ddastatus_updater ;

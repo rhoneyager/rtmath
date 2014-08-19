@@ -13,6 +13,13 @@ include_directories(${PostgreSQL_INCLUDE_DIRS})
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
 
 
+set (sql_files 
+	tables/arm_tables.sql
+	tables/dda_run_tables.sql
+	tables/flakes.sql
+	)
+source_group("SQL" FILES ${sql_files})
+
 add_library (rtmath_plugin_psql SHARED 
 	#nc-arm_info.cpp
 	#nc-sacr.cpp
@@ -20,8 +27,7 @@ add_library (rtmath_plugin_psql SHARED
 	plugin-psql.h
 	psql-arm-info.cpp
 
-	tables/arm_tables.sql
-	tables/dda_run_tables.sql
+	${sql_files}
 	)
 addlib(rtmath_plugin_psql SHARED)
 #message("${PostgreSQL_INCLUDE_DIRS} Libs ${PostgreSQL_LIBRARIES}")

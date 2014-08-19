@@ -48,6 +48,10 @@ namespace rtmath {
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
 			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >;
 		
+		template class usesDLLregistry<
+			::rtmath::data::shapefile::shapefile_query_registry,
+			::rtmath::data::shapefile::shapefile_db_registry >;
+		
 	}
 
 	namespace ddscat {

@@ -26,6 +26,83 @@ namespace rtmath {
 			class shapefile_IO_output_registry {};
 			//class shapefile_serialization {};
 			class shapefile_Standard {};
+			class shapefile_query_registry {};
+
+			/// \brief This class is used for plugins to register themselves to handle arm_info queries.
+			struct DLEXPORT_rtmath_ddscat shapefile_db_registry
+			{
+				struct DLEXPORT_rtmath_ddscat shapefile_db_comp {
+					bool operator() (const std::shared_ptr<shapefile>& lhs, 
+						const std::shared_ptr<shapefile>& rhs) const;
+				};
+
+				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
+				class DLEXPORT_rtmath_ddscat shapefile_index
+				{
+					shapefile_index();
+				public:
+					std::vector<std::string> tags, hashLowers, hashUppers, flakeTypes, flakeTypeUUIDs, 
+						filenames, product_names, stream_names, refHashLowers;
+					std::vector<std::pair<float, float> > standardDs;
+				public:
+					~shapefile_index();
+					static std::shared_ptr<shapefile_index> generate();
+
+					shapefile_index& tag(const std::string&);
+					shapefile_index& hashLower(const std::string&);
+					shapefile_index& hashLower(const uint64_t);
+					shapefile_index& hashUpper(const std::string&);
+					shapefile_index& hashUpper(const uint64_t);
+					shapefile_index& hash(const HASH_t&);
+					shapefile_index& flakeType(const std::string&);
+					shapefile_index& flakeType_uuid(const std::string&);
+					shapefile_index& standardD(const float d, const float tolpercent = 1.0f);
+					shapefile_index& flakeRefHashLower(const std::string&);
+					shapefile_index& flakeRefHashLower(const uint64_t&);
+					shapefile_index& tag(const std::vector<std::string>&);
+					shapefile_index& hashLower(const std::vector<std::string>&);
+					shapefile_index& hashLower(const std::vector<uint64_t>);
+					shapefile_index& hashUpper(const std::vector<std::string>&);
+					shapefile_index& hashUpper(const std::vector<uint64_t>);
+					shapefile_index& hash(const std::vector<HASH_t>&);
+					shapefile_index& flakeType(const std::vector<std::string>&);
+					shapefile_index& flakeType_uuid(const std::vector<std::string>&);
+					shapefile_index& flakeRefHashLower(const std::vector<std::string>&);
+					shapefile_index& flakeRefHashLower(const std::vector<uint64_t>&);
+
+					/// \todo Order collection based on filename
+					typedef std::shared_ptr<std::set<std::shared_ptr<shapefile>, shapefile_db_comp > > collection;
+					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
+						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
+						std::shared_ptr<registry::DB_options> = nullptr) const;
+
+				};
+
+				shapefile_db_registry();
+				virtual ~shapefile_db_registry();
+				/// Module name.
+				const char* name;
+
+				enum class updateType { INSERT_ONLY, UPDATE_ONLY }; // , INSERT_AND_UPDATE};
+
+				/// \todo As more database types become prevalent, move this over to 
+				/// rtmath::registry and standardize.
+				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+					(const shapefile_index&, shapefile_index::collection,
+					std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> queryType;
+				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+					(const shapefile_index::collection, updateType,
+					std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> writeType;
+				typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>, 
+					std::shared_ptr<registry::DB_options>)> matchType;
+
+				/// Get cross-sections from small stats
+				queryType fQuery;
+				/// Get pfs from small stats
+				writeType fInsertUpdate;
+
+				matchType fMatches;
+			};
 		}
 	}
 	namespace registry {
@@ -45,6 +122,9 @@ namespace rtmath {
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
 			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
 		
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::shapefile::shapefile_query_registry,
+			::rtmath::ddscat::shapefile::shapefile_db_registry >;
 	}
 	namespace ddscat {
 
@@ -82,14 +162,25 @@ namespace rtmath {
 					::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
 				virtual public ::rtmath::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>,
 				virtual public ::rtmath::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>,
+				virtual public ::rtmath::registry::usesDLLregistry<
+					shapefile_query_registry, shapefile_db_registry >,
+				virtual public implementsDDSHP,
+				virtual public ::rtmath::io::implementsDBbasic<shapefile, shapefile_db_registry, 
+					shapefile_db_registry::shapefile_index, 
+					shapefile_db_registry::shapefile_db_comp, shapefile_query_registry>
 				//virtual public ::rtmath::io::Serialization::implementsSerialization<
 				//	shapefile, shapefile_IO_output_registry, shapefile_IO_input_registry, shapefile_serialization>,
-				virtual public implementsDDSHP
 			{
 			public:
 				shapefile(const std::string &filename);
 				shapefile(std::istream &in);
+				shapefile();
 				virtual ~shapefile();
+
+				bool operator<(const shapefile &) const;
+				bool operator==(const shapefile &) const;
+				bool operator!=(const shapefile &) const;
+
 				/// Function to fix the shape center of mass to match calculated stats
 				void fixStats();
 				/// Write ddscat-formatted shapefile to the given output stream.
@@ -101,29 +192,11 @@ namespace rtmath {
 				/// Read in ONLY a shape header (for speed with dipole matching) - string, NOT a filename
 				void readHeaderOnly(const std::string &str);
 				static void readDDSCAT(shapefile*, std::istream&, std::shared_ptr<registry::IO_options>);
-				/// Write a shapefile (compression allowed)
-				/// \param autoCompress determines whether any output should be 
-				/// automatically compressed. Specifying a compressed output filename 
-				/// always forces compression.
-				//void write(const std::string &fname, bool autoCompress = false,
-				//	const std::string &type = "") const;
 				/// Write shape to the hash directory (convenience function)
 				void writeToHash() const;
 				/// Write a standard DDSCAT shapefile to a stream (no compression)
 				static void writeDDSCAT(const shapefile*, std::ostream &, std::shared_ptr<registry::IO_options>);
-				/// Write to a complex, multiple storage object
-				//std::shared_ptr<registry::IOhandler> writeMulti(
-				//	const char* key,
-				//	std::shared_ptr<registry::IOhandler> handle = nullptr,
-				//	const char* filename = "",
-				//	const char* type = "",
-				//	registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::TRUNCATE) const;
-				// \brief Export a shapefile to vtk output
-				// \todo Move to plugin
-				//void writeVTK(const std::string &fname) const;
-				/** \brief Function type definition for a function that determines a decimated cell
-				* refractive index.
-				**/
+				/// Function type definition for a function that determines a decimated cell refractive index.
 				typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
 
 				/** \brief Decimate a shapefile
@@ -172,7 +245,6 @@ namespace rtmath {
 				//void getNeighbors(size_t index, float rsq, std::vector<size_t>& out) const;
 
 
-				shapefile();
 			private:
 				/// Read a shapefile from an uncompressed string
 				void readString(const std::string &in, bool headerOnly = false);
@@ -259,6 +331,8 @@ namespace rtmath {
 				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
 				static boost::shared_ptr<shapefile> loadHash(
 					const std::string &hash);
+
+
 			};
 
 			/// Cell information structure for convolution functions

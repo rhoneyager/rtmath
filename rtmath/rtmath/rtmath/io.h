@@ -791,7 +791,50 @@ namespace rtmath
 			}
 		};
 
-
+		/**
+		* These don't really fit the standard io plugin spec, as they refer to database entries.
+		* Database search and update semantics are different, and it is much better to do bulk searches 
+		* and updates than one-by-one.
+		* Of course, the io plugins could be usable, but selecting ranges for read with IO_options is bad, 
+		* and handling many writes would either involve code complexity or poor code performance.
+		**/
+		template <class obj_class, class registry_class, class index_class, class comp_class, class query_reg_class>
+		class implementsDBbasic
+		{
+		public:
+			static std::shared_ptr<index_class> makeQuery() { return index_class::generate(); }
+			std::shared_ptr<rtmath::registry::DBhandler> updateEntry(typename registry_class::updateType t,
+				std::shared_ptr<rtmath::registry::DBhandler> p = nullptr, 
+				std::shared_ptr<registry::DB_options> o = nullptr) const
+			{
+				auto c = makeCollection();
+				auto obj = std::shared_ptr<obj_class>(new obj_class);
+				*obj = *this;
+				c->insert(obj);
+				return updateCollection(c, t, p, o);
+			}
+			static typename index_class::collection makeCollection()
+			{
+				return index_class::collection
+					(new std::set<std::shared_ptr<obj_class>, comp_class >());
+			}
+			static std::shared_ptr<rtmath::registry::DBhandler> 
+				updateCollection(typename index_class::collection c, 
+				typename registry_class::updateType t, 
+				std::shared_ptr<rtmath::registry::DBhandler> p = nullptr, 
+				std::shared_ptr<registry::DB_options> o = nullptr)
+			{
+				auto hooks = ::rtmath::registry::usesDLLregistry<query_reg_class, registry_class >::getHooks();
+				for (const auto &h : *(hooks.get()))
+				{
+					if (!h.fMatches) continue;
+					if (!h.fInsertUpdate) continue;
+					if (h.fMatches(p, o))
+						return h.fInsertUpdate(c, t, p, o);
+				}
+				return nullptr;
+			}
+		};
 
 	}
 }

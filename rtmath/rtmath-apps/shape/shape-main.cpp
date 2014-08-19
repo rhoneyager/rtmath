@@ -27,7 +27,6 @@
 
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
@@ -68,14 +67,17 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
 			("input,i", po::value< vector<string> >(), "Input shape files")
+			// TODO: Add options for querying input here!
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("tag", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("process-target-out", po::value<bool>()->default_value(0), "Process target.out files in addition to shape.dat files.")
+			("update-db", "Insert shape file entries into database")
+			("list-hash", "Write the hashes of each processed shapefile to stdout (for scripting)")
 			("hash-shape", "Store shapefile hash")
-			("hash-stats", "Store shapefile hash")
+			("hash-stats", "Store shapefile stats in hash location")
 			("hash-voronoi", "Store standard Voronoi diagram")
 			;
 
@@ -175,6 +177,10 @@ int main(int argc, char** argv)
 			for (auto &t : tags)
 				shp->tags.insert(t);
 
+			if (vm.count("list-hash"))
+			{
+				std::cout << shp->hash().lower << endl;
+			}
 			if (vm.count("hash-shape")) shp->writeToHash();
 			if (vm.count("hash-voronoi"))
 			{

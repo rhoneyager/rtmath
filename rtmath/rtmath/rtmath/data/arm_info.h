@@ -111,7 +111,7 @@ namespace rtmath
 		
 		extern template class usesDLLregistry<
 			::rtmath::data::arm::arm_query_registry,
-			IO_class_registry_writer<::rtmath::data::arm::arm_info> >;
+			::rtmath::data::arm::arm_info_registry >;
 	}
 	namespace data
 	{

@@ -75,13 +75,14 @@ namespace rtmath
 
 			const char* prods[] = { "mwr", "arscl", "aeri", "irt", "915rwp", "disdrometer", "rss",
 				"rl", "mpl", "sonde", "sirs", "qcrad", "pbl", "surf", "aerosol", "aos", "twr",
-				"mfrsr", "mergesonde", "swf", "aip", "sas", "rlccn", "surfspecalb", "tdmaaps", "armbe",
+				"mfrsr", "mergesonde", "swf", "aip", "skyrad", "gvr", "sas", "rlccn", "surfspecalb", 
+				"tdmaaps", "armbe", "beflux", 
 				"armbe", "arscl", "mmcrmode", // all mmcrmodde go under arscl
-				"microbase", "ripbe", "rwp", "wsi", "tlcv", "sirs", "bsrn", "nimfr", "mfr" // must go after mfrsr
+				"microbase", "ripbe", "rwp", "wsi", "tlcv", "sirs", "bsrn", "nimfr", "mfr", // must go after mfrsr
 				"org", "rain", "sws", "thwaps", "tsi", "vceil", "vdis", "dl", "tdma", "co2flx",
 				"pgs", "mmcr", "swacr", "mwacr", "wacr", "nfov", "brs", "kazr", "sasze", "csphot",
 				"kasacr", "wsacr", "g12", "iap", "g8", "blc", "ceil" // alias for vceil
-				"xsacr", "xsapr", "csapr", "co", "ls", "" };
+				"xsacr", "xsapr", "csapr", "co", "ls", "gndrad", "gvr", "" };
 
 			int i = 0;
 			while (prods[i] != "" && sfilename.find(std::string(prods[i])) == std::string::npos) i++;
