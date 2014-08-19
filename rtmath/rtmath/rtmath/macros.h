@@ -18,6 +18,7 @@ namespace rtmath {
 		template <class T>
 		T DLEXPORT_rtmath_core m_atof(const char* x, size_t len = 0);
 
+
 		/// Convert argument to int
 		template <class T>
 		T DLEXPORT_rtmath_core m_atoi(const char *x, size_t len = 0);
