@@ -96,6 +96,14 @@ namespace rtmath {
 			shapefile::shapefile() { _init(); }
 			shapefile::~shapefile() { }
 
+#if 0 // _MSC_FULL_VER
+			shapefile& shapefile::operator=(const shapefile& rhs)
+			{
+				if (this == &rhs) return *this;
+
+			}
+#endif
+
 			shapefile::shapefile(const std::string &filename)
 			{
 				_init();

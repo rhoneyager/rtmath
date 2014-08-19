@@ -177,6 +177,10 @@ namespace rtmath {
 				shapefile();
 				virtual ~shapefile();
 
+#if 0 // _MSC_FULL_VER
+				shapefile& operator=(const shapefile&);
+#endif
+
 				bool operator<(const shapefile &) const;
 				bool operator==(const shapefile &) const;
 				bool operator!=(const shapefile &) const;
