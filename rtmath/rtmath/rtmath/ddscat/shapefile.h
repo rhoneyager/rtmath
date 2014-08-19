@@ -53,7 +53,7 @@ namespace rtmath {
 					shapefile_index& hashLower(const uint64_t);
 					shapefile_index& hashUpper(const std::string&);
 					shapefile_index& hashUpper(const uint64_t);
-					shapefile_index& hash(const HASH_t&);
+					//shapefile_index& hash(const HASH_t&);
 					shapefile_index& flakeType(const std::string&);
 					shapefile_index& flakeType_uuid(const std::string&);
 					shapefile_index& standardD(const float d, const float tolpercent = 1.0f);

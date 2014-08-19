@@ -94,7 +94,7 @@ namespace rtmath {
 			searchAndVec1(flakeType, flakeTypes, std::string);
 			searchAndVec1(flakeType_uuid, flakeTypeUUIDs, std::string);
 			searchAndVec1(flakeRefHashLower, refHashLowers, std::string);
-			searchAndVec1(hash, hashLowers, HASH_t);
+			//searchAndVec1(hash, hashLowers, HASH_t);
 			searchAndVec2(hashLower, hashLowers, uint64_t);
 			searchAndVec2(hashUpper, hashUppers, uint64_t);
 

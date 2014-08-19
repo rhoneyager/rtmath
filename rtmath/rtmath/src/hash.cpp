@@ -312,3 +312,12 @@ namespace rtmath {
 #if USE_RYAN_SERIALIZATION
 BOOST_CLASS_EXPORT_IMPLEMENT(rtmath::UINT128);
 #endif
+
+
+std::ostream & operator<<(std::ostream &stream, const rtmath::UINT128 &ob)
+{
+	stream << ob.string();
+	return stream;
+}
+
+
