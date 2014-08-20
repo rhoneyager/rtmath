@@ -45,6 +45,11 @@ namespace rtmath {
 				return *lhs < *rhs;
 			}
 
+			bool shapefile_db_registry::shapefile_db_comp::operator()(const boost::shared_ptr<shapefile>& lhs, const boost::shared_ptr<shapefile>& rhs) const
+			{
+				return *lhs < *rhs;
+			}
+
 
 			bool shapefile::operator!=(const shapefile &rhs) const { return !operator==(rhs); }
 			bool shapefile::operator==(const shapefile &rhs) const { return hash().lower == rhs.hash().lower; }
@@ -106,7 +111,7 @@ namespace rtmath {
 			std::pair<shapefile_db_registry::shapefile_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 				shapefile_db_registry::shapefile_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
-				collection c(new std::set<std::shared_ptr<shapefile>, shapefile_db_comp >());
+				collection c(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
 				std::shared_ptr<rtmath::registry::DBhandler> fp;
 
 				auto hooks = ::rtmath::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();

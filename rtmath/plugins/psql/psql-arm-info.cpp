@@ -136,14 +136,14 @@ namespace rtmath
 				// Unified object is in resIntersect
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
-					std::shared_ptr<arm_info> ap(new arm_info);
+					boost::shared_ptr<arm_info> ap(new arm_info);
 					ap->site = string(PQgetvalue(resIntersect.get(), i, 0));
 					ap->subsite = string(PQgetvalue(resIntersect.get(), i, 1));
 					ap->product = string(PQgetvalue(resIntersect.get(), i, 2));
 					ap->stream = string(PQgetvalue(resIntersect.get(), i, 3));
 					ap->datalevel = string(PQgetvalue(resIntersect.get(), i, 4));
 					ap->filename = string(PQgetvalue(resIntersect.get(), i, 5));
-					ap->filesize = rtmath::macros::m_atoi(PQgetvalue(resIntersect.get(), i, 6));
+					ap->filesize = rtmath::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 6));
 					ap->filepath = string(PQgetvalue(resIntersect.get(), i, 7));
 
 					string sstime(PQgetvalue(resIntersect.get(), i, 8)), setime(PQgetvalue(resIntersect.get(), i, 9));

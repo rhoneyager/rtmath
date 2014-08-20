@@ -810,7 +810,7 @@ namespace rtmath
 			{
 				auto c = makeCollection();
 				std::shared_ptr<obj_class> obj = std::shared_ptr<obj_class>(new obj_class);
-				*obj = (dynamic_cast<obj_class>(*this));
+				*obj = (dynamic_cast<obj_class*>(this)); // TODO:
 				c->insert(obj);
 				return updateCollection(c, t, p, o);
 			}
@@ -818,7 +818,7 @@ namespace rtmath
 			static typename index_class::collection makeCollection()
 			{
 				return index_class::collection
-					(new std::set<std::shared_ptr<obj_class>, comp_class >());
+					(new std::set<boost::shared_ptr<obj_class>, comp_class >());
 			}
 			static std::shared_ptr<rtmath::registry::DBhandler> 
 				updateCollection(typename index_class::collection c, 

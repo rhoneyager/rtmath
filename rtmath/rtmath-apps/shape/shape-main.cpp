@@ -156,6 +156,8 @@ int main(int argc, char** argv)
 
 
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
+		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+
 
 		auto opts = registry::IO_options::generate();
 		auto optsExport = registry::IO_options::generate();
@@ -169,6 +171,11 @@ int main(int argc, char** argv)
 		optsExport->exportType(exportType);
 		//opts->setVal("key", sstats._shp->filename);
 		//optsExport->setVal("key", sstats._shp->filename);
+
+		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
+		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
+
+		// TODO: add a search first for existing files in the database
 
 		using namespace rtmath::ddscat;
 		auto processShape = [&](boost::shared_ptr<shapefile::shapefile> shp)
@@ -195,6 +202,19 @@ int main(int argc, char** argv)
 			//if (vm.count("hash-stats")) stats->writeToHash();
 			//cerr << "\tCalculating statistics" << endl;
 			//rtmath::ddscat::stats::shapeFileStats sstats(shp);
+
+			if (vm.count("update-db"))
+			{
+				dbcollection->insert(shp);
+
+				if (dbcollection->size() > 500) // Do in batches. The final uneven batch is handled at the end of execution.
+				{
+					dHandler = shapefile::shapefile::updateCollection(dbcollection,
+						shapefile::shapefile_db_registry::updateType::INSERT_ONLY, dHandler);
+					dbcollection->clear();
+				}
+				//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
+			}
 
 			if (output.size())
 				handle = shp->writeMulti(handle, opts);
@@ -231,6 +251,8 @@ int main(int argc, char** argv)
 					boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile(pt.string()));
 					if (smain)
 						s->tags.insert(std::pair<string, string>("target-src-hash", smain->hash().string()));
+					if (smain)
+						s->tags.insert(std::pair<string, string>("flake_reference", smain->hash().string()));
 					processShape(s);
 				}
 			} else {
@@ -247,7 +269,7 @@ int main(int argc, char** argv)
 						shapes.push_back(s);
 					}
 					for (auto &s : shapes)
-						processShape(std::move(s));
+						processShape(s);
 				}
 				catch (std::exception &e)
 				{
@@ -255,6 +277,13 @@ int main(int argc, char** argv)
 					continue;
 				}
 			}
+		}
+
+		if (dbcollection->size())
+		{
+			dHandler = shapefile::shapefile::updateCollection(dbcollection,
+				shapefile::shapefile_db_registry::updateType::INSERT_ONLY, dHandler);
+			dbcollection->clear();
 		}
 
 

@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 			std::shared_ptr<rtmath::registry::DBhandler> > 
 			existing = qExisting->doQuery(dHandler);
 		// And use a map for easy retrieval of existing entries
-		std::map<std::string, std::shared_ptr<rtmath::data::arm::arm_info> > cExist;
+		std::map<std::string, boost::shared_ptr<rtmath::data::arm::arm_info> > cExist;
 		for (const auto &i : *(existing.first))
 		{
 			cExist[i->filename] = i;
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 			cerr << pi.filename() << endl;
 
 			using namespace rtmath::data::arm;
-			std::shared_ptr<arm_info> im;
+			boost::shared_ptr<arm_info> im;
 			bool inDb = false;
 			if (cExist.count(pi.filename().string()))
 			{
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 				inDb = true;
 			} else {
 				try {
-					im = std::shared_ptr<arm_info>(new arm_info(si.string()));
+					im = boost::shared_ptr<arm_info>(new arm_info(si.string()));
 				}
 				catch (...) {
 					cerr << "Error processing file. Skipping." << endl;

@@ -280,11 +280,11 @@ namespace rtmath
 				// fieldname is from 19 to an underscore
 				// fieldnamecaps is from 41 to 47
 				// n is from 48 to the end of the line
-				min = macros::m_atof(str.data(), 8);
-				max = macros::m_atof(str.data() + 9, 8);
+				min = macros::m_atof<double>(str.data(), 8);
+				max = macros::m_atof<double>(str.data() + 9, 8);
 				fieldname = str.substr(19, str.find_first_of('_', 19) - 19);
 				fieldnamecaps = str.substr(41, 6);
-				n = (size_t)macros::m_atoi(str.data() + 48);
+				n = (size_t)macros::m_atoi<size_t>(str.data() + 48);
 			}
 
 			void ddPolVec::write(std::ostream &out, size_t, const std::vector<std::complex<double> > &pols,
@@ -340,9 +340,9 @@ namespace rtmath
 				using boost::algorithm::trim_copy;
 				using std::complex;
 				pols.resize(3);
-				pols[0] = complex<double>(macros::m_atof(snums[0].c_str()), macros::m_atof(snums[1].c_str()));
-				pols[1] = complex<double>(macros::m_atof(snums[2].c_str()), macros::m_atof(snums[3].c_str()));
-				pols[2] = complex<double>(macros::m_atof(snums[4].c_str()), macros::m_atof(snums[5].c_str()));
+				pols[0] = complex<double>(macros::m_atof<double>(snums[0].c_str()), macros::m_atof<double>(snums[1].c_str()));
+				pols[1] = complex<double>(macros::m_atof<double>(snums[2].c_str()), macros::m_atof<double>(snums[3].c_str()));
+				pols[2] = complex<double>(macros::m_atof<double>(snums[4].c_str()), macros::m_atof<double>(snums[5].c_str()));
 				vecnum = fastCast<size_t>(snums[6]);
 				auto it = str.find_last_of('F');
 				if (it == std::string::npos) RTthrow debug::xBadInput(
@@ -409,9 +409,9 @@ namespace rtmath
 				using boost::algorithm::trim_copy;
 				using std::complex;
 				v.resize(3);
-				v[0] = macros::m_atof(snums[0].c_str());
-				v[1] = macros::m_atof(snums[1].c_str());
-				v[2] = macros::m_atof(snums[2].c_str());
+				v[0] = macros::m_atof<double>(snums[0].c_str());
+				v[1] = macros::m_atof<double>(snums[1].c_str());
+				v[2] = macros::m_atof<double>(snums[2].c_str());
 
 				axisnum = 0;
 				if (str.at(45) == '1') axisnum = 1;
@@ -471,8 +471,8 @@ namespace rtmath
 
 				using namespace rtmath::macros;
 				using boost::algorithm::trim_copy;
-				a = macros::m_atof(snums[0].c_str());
-				b = macros::m_atof(snums[1].c_str());
+				a = macros::m_atof<double>(snums[0].c_str());
+				b = macros::m_atof<double>(snums[1].c_str());
 				axisname = str.at(31);
 			}
 		}
@@ -521,7 +521,7 @@ namespace rtmath
 						size_t loc = it->find("_");
 						if (loc == string::npos) continue;
 						//std::cerr << it->substr(loc+1) << std::endl;
-						size_t id = (size_t)macros::m_atoi(it->substr(loc + 1).c_str());
+						size_t id = macros::m_atoi<size_t>(it->substr(loc + 1).c_str());
 						size_t row = (id / 10) - 1; // Annoying start at 1...
 						size_t col = (id % 10) - 1;
 						//std::cerr << "mIndices loc: " << loc << " id: " << id << " i: " << i << " row: " << row << " col: " << col << std::endl;

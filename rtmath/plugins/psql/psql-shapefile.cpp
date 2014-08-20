@@ -112,7 +112,7 @@ namespace rtmath
 					//"standardD, description, flake_references FROM flake 
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
-					std::shared_ptr<shapefile> ap(new shapefile);
+					boost::shared_ptr<shapefile> ap(new shapefile);
 
 					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
 					ap->setHash(HASH_t( rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
@@ -152,133 +152,45 @@ namespace rtmath
 				return h;
 			}
 
-			struct subsiteInfo
-			{
-				std::string site, siteFull;
-				std::string subsite, subsiteFull;
-				std::string uuid;
-				float lat, lon, alt;
-			};
-
 			void createBackgroundInfo(std::shared_ptr<psql_handle> h,
-				std::map<std::string, subsiteInfo> &subsites, // First is unique "site/subsite" key, 2nd is subsiteInfo (with uuid)
-				const std::set<std::string> &products,
-				std::map<std::string, std::map<std::string, std::string> > &streams, // product, stream, combo uuid. gets updated with uuids.
-				const std::set<std::string> &datalevels
+				std::map<std::string, std::string > &flakeTypes
 				)
 			{
 				using namespace std;
 				h->sendQuery(
 					"BEGIN;"
-					"SELECT id FROM site; "
-					"SELECT id, subsite, site FROM subsite;"
-					"SELECT name FROM product;"
-					"SELECT id, name, product FROM stream;"
-					"SELECT level FROM datalevel;");
+					"SELECT id, name FROM flakeTypes; ");
 				h->getQueryResult();
-				auto hSites = h->getQueryResult();
-				auto hSubsites = h->getQueryResult();
-				auto hProducts = h->getQueryResult();
-				auto hStreams = h->getQueryResult();
-				auto hDatalevel = h->getQueryResult();
-
+				auto hFlakeTypes = h->getQueryResult();
+				
 				using std::string;
-				set<string> known_sites;
-				map<string, subsiteInfo> known_subsites; // "site/subsite", full subsite info
-				set<string> known_products;
-				map<string, map<string, string> > known_streams; // first is the instrument, 2nd is the data stream, 3rd is the uuid
-				set<string> known_datalevels;
+				map<string, string> known_flaketypes;
 
-
-				for (int i = 0; i < PQntuples(hSites.get()); ++i)
-					known_sites.emplace(string(PQgetvalue(hSites.get(), i, 0)));
-				for (int i = 0; i < PQntuples(hSubsites.get()); ++i) {
-					string uuid(PQgetvalue(hSubsites.get(), i, 0));
-					string subsite(PQgetvalue(hSubsites.get(), i, 1));
-					string site(PQgetvalue(hSubsites.get(), i, 2));
-					string key = site; key.append("/"); key.append(subsite);
-					subsiteInfo info; info.site = site; info.subsite = subsite;
-					info.uuid = uuid;
-					known_subsites.emplace(pair<string, subsiteInfo>
-						(key, move(info)));
-				}
-				for (int i = 0; i < PQntuples(hProducts.get()); ++i)
-					known_products.emplace(string(PQgetvalue(hProducts.get(), i, 0)));
-				for (int i = 0; i < PQntuples(hStreams.get()); ++i) {
-					string product(PQgetvalue(hStreams.get(), i, 2));
-					if (!known_streams.count(product))
-						known_streams[product] = move(map<string, string>());
-
-					known_streams[product].emplace(pair<string, string>
-						(string(PQgetvalue(hStreams.get(), i, 1)),
-						string(PQgetvalue(hStreams.get(), i, 0))));
-				}
-				for (int i = 0; i < PQntuples(hDatalevel.get()); ++i)
-					known_datalevels.emplace(string(PQgetvalue(hDatalevel.get(), i, 0)));
-
+				for (int i = 0; i < PQntuples(hFlakeTypes.get()); ++i)
+					known_flaketypes[string(PQgetvalue(hFlakeTypes.get(), i, 1))] 
+					= string(PQgetvalue(hFlakeTypes.get(), i, 0));
+				
 				ostringstream ss;
 
 				using namespace boost::uuids;
 				random_generator gen;
 				// Now, insert any missing entries
-				for (const auto &s : subsites)
+				for (const auto &s : flakeTypes)
 				{
-					if (!known_sites.count(s.second.site))
-					{
-						ss << "insert into site (id) values ('" << s.second.site << "');";
-					}
-					if (!known_subsites.count(s.first))
-					{
-						uuid u = gen();
-						string suuid = boost::lexical_cast<string>(u);
-						subsiteInfo info; info.site = s.second.site; 
-						info.subsite = s.second.subsite; info.uuid = suuid;
-						info.lat = s.second.lat; info.lon = s.second.lon;
-						info.alt = s.second.alt;
-
-						known_subsites[s.first] = info;
-
-						
-
-						ss << "insert into subsite (id, subsite, site, lat, lon, alt, name) values ('"
-							<< info.uuid << "', '" << s.second.subsite << "', '" << s.second.site
-							<< "', " << s.second.lat
-							<< ", " << s.second.lon << ", " << s.second.alt << ", '" 
-							<< h->escString(s.second.subsiteFull) << "');";
-					}
-				}
-				subsites = known_subsites;
-				for (const auto &s : products)
-					if (!known_products.count(s))
-						ss << "insert into product (name) values ('" << s << "');";
-				for (const auto &s : streams)
-				{
-					string product(s.first);
-					if (!known_streams.count(product))
-						known_streams[product] = move(map<string, string>());
-					for (const auto &sb : s.second)
+					string ftype(s.first);
+					if (!known_flaketypes.count(ftype))
 					{
 						// Generate a uuid
 						uuid u = gen();
 						string suuid = boost::lexical_cast<string>(u);
-						if (!known_streams[product].count(sb.first))
-						{
-							known_streams[product].insert(pair < string, string >
-								(sb.first, suuid));
-							ss << "insert into stream (id, name, product) values ('" << suuid << "', '"
-								<< sb.first << "', '" << product << "');";
-						}
+						known_flaketypes.insert(pair < string, string >
+							(ftype, suuid));
+						ss << "insert into flakeTypes (id, name) values ('" << suuid << "', '"
+							<< ftype << "');";
 					}
 				}
-				streams = known_streams; // For object additions
-				for (const auto &s : datalevels)
-				{
-					if (!known_datalevels.count(s))
-					{
-						ss << "insert into datalevel (level) values ('" << s << "');";
-					}
-				}
-
+				flakeTypes = known_flaketypes; // For object additions
+				
 				ss << "COMMIT;";
 				string sres = ss.str();
 				//cerr << sres << endl;
@@ -297,15 +209,19 @@ namespace rtmath
 					new psql_handle(o)); });
 
 				
-
-				// Search site, subsite, datalevel, product_name and add if missing
-				// Just select all from these tables
-				std::map<std::string, subsiteInfo > subsites;
-				std::set<std::string> products;
-				std::map<std::string, std::map<std::string, std::string> > streams;
-				std::set<std::string> datalevels;
-
+				map<string, string> flakeTypes;
+				for (const auto &i : *c)
+				{
+					for (const auto &t : i->tags)
+					{
+						if (t.first == "flake_type")
+						{
+							flakeTypes[t.second] = "";
+						}
+					}
+				}
 				using std::string;
+				/*
 				for (const auto &i : *c)
 				{
 					subsiteInfo info;
@@ -323,42 +239,96 @@ namespace rtmath
 					streams[i->product].emplace(std::pair<std::string, std::string>(i->stream, ""));
 					datalevels.emplace(i->datalevel);
 				}
+				*/
 
-				createBackgroundInfo(h, subsites, products, streams, datalevels);
+				createBackgroundInfo(h, flakeTypes);
 
 				// Actually insert the data
 				h->execute("BEGIN;");
 				std::ostringstream sadd;
 
 				// Query the database regarding matching filenames (determines insert / update operation)
-				set<string> matched_files;
+				set<string> matched_hashes;
 				{
 					ostringstream qmatch;
-					qmatch << "select filename from arm_info_obs intersect values ";
+					qmatch << "select hashLower from flake intersect values ";
 					for (auto it = c->begin(); it != c->end(); ++it)
 					{
 						if (it != c->begin()) qmatch << ", ";
-						qmatch << "('" << (*it)->filename << "')";
+						qmatch << "('" << (*it)->hash().lower << "')";
 					}
 					qmatch << ";";
 					string sqm = qmatch.str();
 					auto hMatches = h->execute(sqm.c_str());
 
 					for (int i = 0; i < PQntuples(hMatches.get()); ++i)
-						matched_files.emplace(string(PQgetvalue(hMatches.get(), i, 0)));
+						matched_hashes.emplace(string(PQgetvalue(hMatches.get(), i, 0)));
 				}
 
 				for (const auto &i : *c)
 				{
-					if (t != arm_info_registry::updateType::UPDATE_ONLY)
+					// Determine flakeType_id
+					string flakeType_id;
+					// Determine tag list
+					string tags;
+					// Determine flake reference_id
+					string refId;
+					auto genTagList = [&](std::string &tagout, std::string &flakeTypeid, std::string &refId)
 					{
-						string sitesubkey = i->site; sitesubkey.append("/"); sitesubkey.append(i->subsite);
+						ostringstream stags;
+						stags << "{";
+						bool firstTag = false;
+						for (const auto &t : i->tags)
+						{
+							if (t.first == "flake_reference")
+								refId = t.second;
+							else if (t.first == "flake_type")
+							{
+								flakeType_id = flakeTypes.at(t.second);
+							} else {
+								if (firstTag) stags << ", ";
+								stags << "\"" << t.first << "=" << t.second << "\"";
+								firstTag = true;
+							}
 
-						if (!matched_files.count(i->filename))
-							sadd << "insert into arm_info_obs (subsite_id, stream_id, datalevel, starttime, endtime, size, filename) values "
-								<< "('" << subsites[sitesubkey].uuid << "', '" << streams[i->product].at(i->stream) << "', '" << i->datalevel << "', '"
-								<< i->startTime << "', '" << i->endTime << "', " << i->filesize << ", '" << i->filename << "');";
+						}
+						stags << "}";
+						tagout = stags.str();
+					};
+					genTagList(tags, flakeType_id, refId);
+					
+
+					if (!matched_hashes.count(i->hash().string()))
+					{
+						if (t != shapefile_db_registry::updateType::UPDATE_ONLY)
+						{
+							sadd << "insert into flake (hashLower, hashUpper";
+							if (flakeType_id.size())
+								sadd << ", flakeType_id";
+							if (i->tags.size())
+								sadd << ", tags";
+							if (i->standardD)
+								sadd << ", standardD";
+							if (i->desc.size())
+								sadd << ", description";
+							if (refId.size())
+								sadd << ", flake_references";
+							sadd << ") values ('" << i->hash().lower << "', '" << i->hash().upper << "'";
+							if (flakeType_id.size())
+								sadd << ", '" << flakeType_id << "'";
+							if (i->tags.size())
+								sadd << ", '" << tags << "'";
+							if (i->standardD)
+								sadd << ", " << i->standardD;
+							if (i->desc.size())
+								sadd << ", '" << i->desc << "'";
+							if (refId.size())
+								sadd << ", '" << refId << "'";
+							sadd << ");";
+							
+						}
 					}
+					// TODO: add update code
 				}
 
 				sadd << "COMMIT;";

@@ -97,6 +97,11 @@ namespace rtmath
 				return lhs->filename < rhs->filename;
 			}
 
+			bool arm_info_registry::arm_info_comp::operator()(const boost::shared_ptr<arm_info>& lhs, const boost::shared_ptr<arm_info>& rhs) const
+			{
+				return lhs->filename < rhs->filename;
+			}
+
 			arm_info_registry::arm_info_registry() : name(nullptr), fQuery(nullptr) {}
 
 			arm_info_registry::~arm_info_registry() {}
@@ -168,7 +173,7 @@ namespace rtmath
 			std::pair<arm_info_registry::arm_info_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 				arm_info_registry::arm_info_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
-				collection c(new std::set<std::shared_ptr<arm_info>, arm_info_comp >());
+				collection c(new std::set<boost::shared_ptr<arm_info>, arm_info_comp >());
 				std::shared_ptr<rtmath::registry::DBhandler> fp;
 
 				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
@@ -190,7 +195,7 @@ namespace rtmath
 
 			arm_info_registry::arm_info_index::collection arm_info::makeCollection()
 			{
-				return arm_info_registry::arm_info_index::collection(new std::set<std::shared_ptr<arm_info>, arm_info_registry::arm_info_comp >());
+				return arm_info_registry::arm_info_index::collection(new std::set<boost::shared_ptr<arm_info>, arm_info_registry::arm_info_comp >());
 			}
 			
 			std::shared_ptr<rtmath::registry::DBhandler> 
@@ -198,7 +203,7 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
 				auto c = makeCollection();
-				c->insert(std::shared_ptr<arm_info>(new arm_info(*this)));
+				c->insert(boost::shared_ptr<arm_info>(new arm_info(*this)));
 				return updateCollection(c, t, p, o);
 			}
 

@@ -32,6 +32,8 @@ namespace rtmath
 				struct DLEXPORT_rtmath_data arm_info_comp {
 					bool operator() (const std::shared_ptr<arm_info>& lhs, 
 						const std::shared_ptr<arm_info>& rhs) const;
+					bool operator() (const boost::shared_ptr<arm_info>& lhs,
+						const boost::shared_ptr<arm_info>& rhs) const;
 				};
 
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
@@ -58,7 +60,7 @@ namespace rtmath
 					arm_info_index& stream_name(const std::string&);
 
 					/// \todo Order collection based on filename
-					typedef std::shared_ptr<std::set<std::shared_ptr<arm_info>, arm_info_comp > > collection;
+					typedef std::shared_ptr<std::set<boost::shared_ptr<arm_info>, arm_info_comp > > collection;
 					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
 						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
 						std::shared_ptr<registry::DB_options> = nullptr) const;

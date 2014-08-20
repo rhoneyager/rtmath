@@ -133,7 +133,7 @@ namespace rtmath {
 								// Find first space after this position
 								posb = in.find_first_of(" \t\n,", posa);
 								size_t len = posb - posa;
-								v[j] = (size_t) rtmath::macros::m_atoi(&(in.data()[posa]),len);
+								v[j] = rtmath::macros::m_atoi<size_t>(&(in.data()[posa]),len);
 							}
 						}
 						break;
@@ -179,7 +179,7 @@ namespace rtmath {
 					}
 					size_t len = posb - posa;
 					double val;
-					val = rtmath::macros::m_atof(&(in.data()[posa]),len);
+					val = rtmath::macros::m_atof<double>(&(in.data()[posa]),len);
 					valser[j] = val;
 				}
 

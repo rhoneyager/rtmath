@@ -30,13 +30,14 @@ add_library (rtmath_plugin_psql SHARED
 	${sql_files}
 	)
 addlib(rtmath_plugin_psql SHARED)
-#message("${PostgreSQL_INCLUDE_DIRS} Libs ${PostgreSQL_LIBRARIES}")
+#message("${PostgreSQL_INCLUDE_DIRS} Libs ${PostgreSQL_LIBRARIES} ${PostgreSQL_LIBRARY}")
 
 target_link_libraries(rtmath_plugin_psql 
 	${rtmath_data-libs} 
 	rtmath_core 
 	rtmath_voronoi
 	rtmath_data
-	${PostgreSQL_LIBRARIES})
+	rtmath_ddscat
+	${PostgreSQL_LIBRARY})
 addplugin(rtmath_plugin_psql RT)
 

@@ -34,6 +34,8 @@ namespace rtmath {
 				struct DLEXPORT_rtmath_ddscat shapefile_db_comp {
 					bool operator() (const std::shared_ptr<shapefile>& lhs, 
 						const std::shared_ptr<shapefile>& rhs) const;
+					bool operator() (const boost::shared_ptr<shapefile>& lhs,
+						const boost::shared_ptr<shapefile>& rhs) const;
 				};
 
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
@@ -70,8 +72,7 @@ namespace rtmath {
 					shapefile_index& flakeRefHashLower(const std::vector<std::string>&);
 					shapefile_index& flakeRefHashLower(const std::vector<uint64_t>&);
 
-					/// \todo Order collection based on filename
-					typedef std::shared_ptr<std::set<std::shared_ptr<shapefile>, shapefile_db_comp > > collection;
+					typedef std::shared_ptr<std::set<boost::shared_ptr<shapefile>, shapefile_db_comp > > collection;
 					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
 						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
 						std::shared_ptr<registry::DB_options> = nullptr) const;

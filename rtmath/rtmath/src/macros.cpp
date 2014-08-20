@@ -112,9 +112,9 @@ namespace rtmath {
 			{
 				if (!expsign)
 				{
-					res *= std::pow(10, (T) expi);
+					res *= (T) std::pow(10, (T) expi);
 				} else {
-					res *= std::pow(10, -1.0 * (T) expi);
+					res *= (T) std::pow(10, -1.0 * (T) expi);
 				}
 			}
 			return res;
@@ -195,6 +195,7 @@ namespace rtmath {
 
 		template int DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
 		template uint64_t DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
+		template size_t DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
 
 		/*
 		double pythag(double a, double b)

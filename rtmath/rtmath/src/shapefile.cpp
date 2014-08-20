@@ -304,7 +304,7 @@ namespace rtmath {
 								// Find first space after this position
 								posb = lin.find_first_of(" \t\n", posa);
 								size_t len = posb - posa;
-								numPoints = rtmath::macros::m_atoi(&(lin.data()[posa]), len);
+								numPoints = rtmath::macros::m_atoi<size_t>(&(lin.data()[posa]), len);
 					}
 						break;
 					case 6: // Junk line
@@ -327,7 +327,7 @@ namespace rtmath {
 									// Find first space after this position
 									posb = lin.find_first_of(" \t\n,", posa);
 									size_t len = posb - posa;
-									(*v)(j) = (float)rtmath::macros::m_atof(&(lin.data()[posa]), len);
+									(*v)(j) = rtmath::macros::m_atof<float>(&(lin.data()[posa]), len);
 								}
 					}
 						break;
