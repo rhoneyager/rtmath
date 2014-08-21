@@ -67,11 +67,18 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
 			("input,i", po::value< vector<string> >(), "Input shape files")
-			// TODO: Add options for querying input here!
+			("from-db", "Perform search on database and select files matching criteria.")
+			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
+			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
+			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
+			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
+			("match-parent-flake", "Select the parent flakes")
+
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("tag", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
+			("flake-type", po::value<string>(), "Specify flake type (e.g. oblate, oblate_small, prolate, ...")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("process-target-out", po::value<bool>()->default_value(0), "Process target.out files in addition to shape.dat files.")
 			("update-db", "Insert shape file entries into database")
@@ -158,6 +165,27 @@ int main(int argc, char** argv)
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
 		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
 
+		/*
+		("from-db", "Perform search on database and select files matching criteria.")
+		("match-hash", po::value<vector<string> >(), "Match lower hashes")
+		("match-flake-type", po::value<vector<string> >(), "Match flake types")
+		("match-dipole-spacing", po::value<vector<float> >(), "Match typical dipole spacings")
+		("match-parent-flake-hash", po::value<vector<string> >(), "Match flakes having a given parent hash")
+		("match-parent-flake", "Select the parent flakes")
+		*/
+		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
+		vector<float> matchDipoleSpacings;
+		bool matchParentFlakes;
+
+		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
+		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
+		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
+		if (vm.count("match-dipole-spacing")) matchDipoleSpacings = vm["match-dipole-spacing"].as<vector<float> >();
+		if (vm.count("match-parent-flake")) matchParentFlakes = true;
+
+		std::string sFlakeType;
+		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
+
 
 		auto opts = registry::IO_options::generate();
 		auto optsExport = registry::IO_options::generate();
@@ -175,7 +203,7 @@ int main(int argc, char** argv)
 		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
 		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
 
-		// TODO: add a search first for existing files in the database
+		// TODO: add a search first for existing files in the database, and then import the results.
 
 		using namespace rtmath::ddscat;
 		auto processShape = [&](boost::shared_ptr<shapefile::shapefile> shp)
@@ -185,9 +213,10 @@ int main(int argc, char** argv)
 				shp->tags.insert(t);
 
 			if (vm.count("list-hash"))
-			{
 				std::cout << shp->hash().lower << endl;
-			}
+			if (sFlakeType.size())
+				shp->tags.insert(pair<string, string>("flake_type", sFlakeType));
+			if (dSpacing) shp->standardD = (float) dSpacing;
 			if (vm.count("hash-shape")) shp->writeToHash();
 			if (vm.count("hash-voronoi"))
 			{

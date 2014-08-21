@@ -43,32 +43,34 @@ namespace rtmath {
 				{
 					shapefile_index();
 				public:
-					std::vector<std::string> tags, hashLowers, hashUppers, flakeTypes, flakeTypeUUIDs, 
-						filenames, product_names, stream_names, refHashLowers;
-					std::vector<std::pair<float, float> > standardDs;
+					std::set<std::string> hashLowers, hashUppers,
+						flakeTypes, refHashLowers;
+					std::map<float, float > standardDs;
+					std::map<std::string, std::string> tags;
+					std::vector<std::pair<size_t, size_t> > dipoleRanges;
 				public:
 					~shapefile_index();
 					static std::shared_ptr<shapefile_index> generate();
 
-					shapefile_index& tag(const std::string&);
+					shapefile_index& tag(const std::string&, const std::string&);
 					shapefile_index& hashLower(const std::string&);
 					shapefile_index& hashLower(const uint64_t);
 					shapefile_index& hashUpper(const std::string&);
 					shapefile_index& hashUpper(const uint64_t);
+					shapefile_index& dipoleRange(size_t inclLowerBound, size_t inclUpperBound);
 					//shapefile_index& hash(const HASH_t&);
 					shapefile_index& flakeType(const std::string&);
-					shapefile_index& flakeType_uuid(const std::string&);
 					shapefile_index& standardD(const float d, const float tolpercent = 1.0f);
 					shapefile_index& flakeRefHashLower(const std::string&);
 					shapefile_index& flakeRefHashLower(const uint64_t&);
-					shapefile_index& tag(const std::vector<std::string>&);
+					shapefile_index& tag(const std::vector<std::pair<std::string, std::string> >&);
 					shapefile_index& hashLower(const std::vector<std::string>&);
 					shapefile_index& hashLower(const std::vector<uint64_t>);
 					shapefile_index& hashUpper(const std::vector<std::string>&);
 					shapefile_index& hashUpper(const std::vector<uint64_t>);
+					shapefile_index& dipoleRange(const std::vector<std::pair<size_t, size_t> >&);
 					shapefile_index& hash(const std::vector<HASH_t>&);
 					shapefile_index& flakeType(const std::vector<std::string>&);
-					shapefile_index& flakeType_uuid(const std::vector<std::string>&);
 					shapefile_index& flakeRefHashLower(const std::vector<std::string>&);
 					shapefile_index& flakeRefHashLower(const std::vector<uint64_t>&);
 
@@ -77,6 +79,22 @@ namespace rtmath {
 						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
 						std::shared_ptr<registry::DB_options> = nullptr) const;
 
+					/**
+					* \brief Add support for filtering based on existing, loaded objects (in a collection).
+					*
+					* Will pull information from the database for filling.
+					* \param srcs is a preexisting collection of loaded objects
+					* \param doUnion indicates whether the database is used to merely add tag 
+					*			information to the already-loaded objects, or whether objects in the 
+					*			database that match the criteria are also added in.
+					* \param doDb indicates whether the database is consulted for the lookup. If not,
+					* only filter the objects in srcs.
+					**/
+					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
+						doQuery(collection srcs, 
+						bool doUnion = false, bool doDb = true, 
+						std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
+						std::shared_ptr<registry::DB_options> = nullptr) const;
 				};
 
 				shapefile_db_registry();
@@ -84,7 +102,7 @@ namespace rtmath {
 				/// Module name.
 				const char* name;
 
-				enum class updateType { INSERT_ONLY, UPDATE_ONLY }; // , INSERT_AND_UPDATE};
+				enum class updateType { INSERT_ONLY, UPDATE_ONLY, INSERT_AND_UPDATE };
 
 				/// \todo As more database types become prevalent, move this over to 
 				/// rtmath::registry and standardize.
@@ -284,7 +302,7 @@ namespace rtmath {
 				/// The first field in the point listings. Provides a nonunique point id.
 				Eigen::Matrix<int, Eigen::Dynamic, 1> latticeIndex;
 				/// Tags used to describe the shape (decimation, perturbations, ...). Not saved in .shp format.
-				std::multimap<std::string, std::string> tags;
+				std::map<std::string, std::string> tags;
 				/**
 				 * Container for other, temporary tables, which reflect different information 
 				 * about the shapefile, such as number of dipoles from the surface, the point's 

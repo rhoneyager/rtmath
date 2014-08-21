@@ -49,7 +49,7 @@ namespace rtmath
 				//squery << "BEGIN;\n";
 
 				string ssel("SELECT hashLower, hashUpper, flakeType_id, tags, "
-					"standardD, description, flake_references FROM flake ");
+					"standardD, description, flake_references, numDipoles FROM flake ");
 				bool unionFlag = false;
 				
 				// Dipole spacing ranges
@@ -67,9 +67,24 @@ namespace rtmath
 					unionFlag = true;
 				}
 
+				// Number of dipoles
+				if (index.dipoleRanges.size())
+				{
+					if (unionFlag) squery << " INTERSECT ";
+					squery << ssel << " WHERE ";
+					for (auto it = index.dipoleRanges.begin(); it != index.dipoleRanges.end(); ++it)
+					{
+						if (it != index.dipoleRanges.begin())
+							squery << " OR ";
+						squery << "numrange( " << it->first << " , "
+							<< it->second << " ) @> numDipoles ";
+					}
+					unionFlag = true;
+				}
+
 				if (index.tags.size() || index.hashLowers.size() ||
 					index.hashUppers.size() || index.flakeTypes.size() ||
-					index.flakeTypeUUIDs.size() || index.refHashLowers.size())
+					index.refHashLowers.size())
 				{
 					if (unionFlag) squery << " INTERSECT ";
 					squery << ssel << " WHERE ";
@@ -77,7 +92,7 @@ namespace rtmath
 				}
 
 				size_t numSel = 0;
-				auto selString = [&](const std::vector<std::string> &v, const std::string &tblName)
+				auto selString = [&](const std::set<std::string> &v, const std::string &tblName)
 				{
 					if (!v.size()) return;
 					if (numSel) squery << "AND ";
@@ -92,12 +107,21 @@ namespace rtmath
 					squery << ") ";
 					numSel++;
 				};
+				auto selStringArray = [&](const std::map<std::string, std::string> &v, const std::string &tblName)
+				{
+					if (!v.size()) return;
+					for (auto it = v.begin(); it != v.end(); ++it)
+					{
+						if (numSel) squery << "AND ";
+						squery << "'" << it->first << "=" << it->second << "' = any(" << tblName << ") ";
+						numSel++;
+					}
+				};
 
-				selString(index.tags, "tag");
+				selStringArray(index.tags, "tags");
 				selString(index.hashLowers, "hashLower");
 				selString(index.hashUppers, "hashUpper");
-				selString(index.flakeTypes, "flakeType");
-				selString(index.flakeTypeUUIDs, "flakeType_UUID");
+				selString(index.flakeTypes, "flakeType"); // flakeType_id
 				selString(index.refHashLowers, "flake_references");
 
 				squery << ";";
@@ -109,11 +133,12 @@ namespace rtmath
 				// Turn the result into shapefile stub objects
 				// Unified object is in resIntersect
 				// SELECT hashLower, hashUpper, flakeType_id, tags, "
-					//"standardD, description, flake_references FROM flake 
+					//"standardD, description, flake_references, numDipoles FROM flake 
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
 					boost::shared_ptr<shapefile> ap(new shapefile);
 
+					ap->numPoints = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 7));
 					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
 					ap->setHash(HASH_t( rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
 						rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 1))));
@@ -302,7 +327,7 @@ namespace rtmath
 					{
 						if (t != shapefile_db_registry::updateType::UPDATE_ONLY)
 						{
-							sadd << "insert into flake (hashLower, hashUpper";
+							sadd << "insert into flake (hashLower, hashUpper, numDipoles";
 							if (flakeType_id.size())
 								sadd << ", flakeType_id";
 							if (i->tags.size())
@@ -313,7 +338,8 @@ namespace rtmath
 								sadd << ", description";
 							if (refId.size())
 								sadd << ", flake_references";
-							sadd << ") values ('" << i->hash().lower << "', '" << i->hash().upper << "'";
+							sadd << ") values ('" << i->hash().lower << "', '" << i->hash().upper << "'"
+								<< ", " << i->numPoints;
 							if (flakeType_id.size())
 								sadd << ", '" << flakeType_id << "'";
 							if (i->tags.size())
@@ -327,8 +353,50 @@ namespace rtmath
 							sadd << ");";
 							
 						}
+					} else {
+						if (t != shapefile_db_registry::updateType::UPDATE_ONLY)
+						{
+							sadd << "update flake set ";
+							bool needComma = false;
+							if (flakeType_id.size())
+							{
+								if (needComma) sadd << ", ";
+								sadd << "flakeType_id = '" << flakeType_id << "' ";
+								needComma = true;
+							}
+							if (i->tags.size())
+							{
+								if (needComma) sadd << ", ";
+								sadd << "tags = '" << tags << "' ";
+								needComma = true;
+							}
+							if (i->standardD)
+							{
+								if (needComma) sadd << ", ";
+								sadd << "standardD = " << i->standardD;
+								needComma = true;
+							}
+							if (i->numPoints)
+							{
+								if (needComma) sadd << ", ";
+								sadd << "numDipoles = " << i->standardD;
+								needComma = true;
+							}
+							if (i->desc.size())
+							{
+								if (needComma) sadd << ", ";
+								sadd << "description = '" << i->desc << "' ";
+								needComma = true;
+							}
+							if (refId.size())
+							{
+								if (needComma) sadd << ", ";
+								sadd << "flake_references = '" << refId << "' ";
+								needComma = true;
+							}
+							sadd << " where hashlower = '" << i->hash().lower << "' ;";
+						}
 					}
-					// TODO: add update code
 				}
 
 				sadd << "COMMIT;";

@@ -71,29 +71,55 @@ namespace rtmath {
 #define searchAndVec1(fname, varname, t) \
 	shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::fname(const t& s) \
 			{ \
-				varname.push_back(boost::lexical_cast<std::string>(s)); \
+				varname.insert(boost::lexical_cast<std::string>(s)); \
 				return *this; \
 			} \
 			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::fname(const std::vector<t>& s) \
 			{ \
-				std::vector<std::string> res(s.size()); \
-				for (const auto i : s) \
-					res.push_back(boost::lexical_cast<std::string>(i)); \
-				varname.insert(varname.begin(), s.begin(), s.end()); \
+				for (const auto &i : s) \
+					varname.insert(boost::lexical_cast<std::string>(i)); \
 				return *this; \
 			}
 #define searchAndVec2(fname, varname, t) \
 	shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::fname(const t s) \
 			{ \
-				varname.push_back(boost::lexical_cast<std::string>(s)); \
+				varname.insert(boost::lexical_cast<std::string>(s)); \
 				return *this; \
 			}
 
-			searchAndVec1(tag, tags, std::string);
+			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::tag(
+				const std::string &a, const std::string &b)
+			{
+				tags[a] = b; return *this;
+			}
+
+			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::tag(
+				const std::vector<std::pair<std::string, std::string> > &vec)
+			{
+				for (const auto & v : vec)
+					tags[v.first] = v.second;
+				return *this;
+			}
+
+			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::dipoleRange(
+				size_t lower, size_t upper)
+			{
+				dipoleRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
+			}
+
+			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::dipoleRange(
+				const std::vector<std::pair<size_t, size_t> > &vec)
+			{
+				for (const auto & v : vec)
+					dipoleRanges.push_back(v);
+				return *this;
+			}
+
+			//searchAndVec1(tag, tags, std::string);
 			searchAndVec1(hashLower, hashLowers, std::string);
 			searchAndVec1(hashUpper, hashUppers, std::string);
 			searchAndVec1(flakeType, flakeTypes, std::string);
-			searchAndVec1(flakeType_uuid, flakeTypeUUIDs, std::string);
+			//searchAndVec1(flakeType_uuid, flakeTypeUUIDs, std::string);
 			searchAndVec1(flakeRefHashLower, refHashLowers, std::string);
 			//searchAndVec1(hash, hashLowers, HASH_t);
 			searchAndVec2(hashLower, hashLowers, uint64_t);
@@ -101,7 +127,7 @@ namespace rtmath {
 
 			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::standardD(const float d, const float tolpercent)
 			{
-				standardDs.push_back(std::pair<float,float>(d,tolpercent));
+				standardDs.insert(std::pair<float,float>(d,tolpercent));
 				return *this;
 			}
 
@@ -131,6 +157,146 @@ namespace rtmath {
 					(c, nullptr);
 			}
 
+
+			std::pair<shapefile_db_registry::shapefile_index::collection, 
+				std::shared_ptr<rtmath::registry::DBhandler> >
+				shapefile_db_registry::shapefile_index::doQuery(
+				collection srcs, bool doUnion, bool doDb,
+				std::shared_ptr<rtmath::registry::DBhandler> p, 
+				std::shared_ptr<registry::DB_options> o) const
+			{
+				collection toMergeC(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
+				//collection toMergeS(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
+				collection res(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
+				std::shared_ptr<rtmath::registry::DBhandler> fp;
+
+				std::map<rtmath::HASH_t, boost::shared_ptr<shapefile> > db_hashes; // database results, as a map
+
+				auto hooks = ::rtmath::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
+				if (doDb)
+				{
+					for (const auto &h : *(hooks.get()))
+					{
+						if (!h.fQuery) continue;
+						if (!h.fMatches) continue;
+						if (!h.fMatches(p, o)) continue;
+						fp = h.fQuery(*this, toMergeC, p, o);
+
+						//return std::pair < shapefile_db_registry::shapefile_index::collection,
+						//	std::shared_ptr<rtmath::registry::DBhandler> >(c, fp);
+					}
+
+					for (const auto &r : *(toMergeC))
+						db_hashes[r->hash()] = r;
+				}
+
+
+
+				// Also perform the same filtering on srcs, putting results in res
+				for (auto &s : *(srcs))
+				{
+					auto works = [&]() -> bool
+					{
+						// Tag filtering - OR filtering
+						if (tags.size())
+						{
+							bool matches = false;
+							for (const auto &t : tags)
+							{
+								if (s->tags.count(t.first))
+								{
+									if (s->tags[t.first] == t.second)
+										matches = true;
+									break;
+								}
+							}
+							if (!matches) return false;
+						}
+
+						// hash filtering
+						if (hashLowers.size() && !hashLowers.count(s->hash().string()))
+							return false;
+						if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->hash().upper)))
+							return false;
+
+						// flake types
+						if (flakeTypes.size())
+						{
+							if (s->tags.count("flake_type"))
+							{
+								if (!flakeTypes.count(s->tags.at("flake_type"))) 
+									return false;
+							}
+						}
+
+						// refHashLowers
+						if (s->tags.count("flake_reference"))
+						{
+							if (refHashLowers.size() &&
+								std::find(refHashLowers.begin(), refHashLowers.end(), 
+								boost::lexical_cast<std::string>(s->hash().lower)) == refHashLowers.end())
+								return false;
+						}
+
+						// Dipole spacings
+						if (standardDs.size())
+						{
+							bool matches = false;
+							for (const auto &r : standardDs)
+							{
+								if (r.first * (1. - r.second) <= s->standardD && s->standardD <= r.first * (1. + r.second))
+								{
+									matches = true;
+									break;
+								}
+							}
+							if (!matches) return false;
+						}
+
+						// Number of dipoles
+						if (dipoleRanges.size())
+						{
+							bool matches = false;
+							for (const auto &r : dipoleRanges)
+							{
+								if (r.first <= s->numPoints && s->numPoints <= r.second)
+								{
+									matches = true;
+									break;
+								}
+							}
+							if (!matches) return false;
+						}
+						return true;
+					};
+					if (!works()) continue;
+
+					res->insert(s); // Passed filtering
+					// Merge the results of the provided object with any query results
+					if (db_hashes.count(s->hash()))
+					{
+						auto d = db_hashes.at(s->hash());
+
+						if (!s->standardD && d->standardD) s->standardD = d->standardD;
+						if (!s->numPoints && d->numPoints) s->numPoints = d->numPoints;
+						if (!s->desc.size() && d->desc.size()) s->desc = d->desc;
+						for (const auto &tag : d->tags)
+							if (!s->tags.count(tag.first)) s->tags[tag.first] = tag.second;
+
+						db_hashes.erase(s->hash()); // Remove from consideration (already matched)
+					}
+				}
+
+				// If doUnion, select the remainder of doHashes and insert
+				if (doUnion)
+					for (const auto &d : db_hashes)
+						res->insert(d.second);
+
+
+				return std::pair<shapefile_db_registry::shapefile_index::collection,
+					std::shared_ptr<rtmath::registry::DBhandler> >
+					(res, fp);
+			}
 		}
 	}
 }
