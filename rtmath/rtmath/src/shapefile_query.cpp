@@ -222,9 +222,9 @@ namespace rtmath {
 						// flake types
 						if (flakeTypes.size())
 						{
-							if (s->tags.count("flake_type"))
+							if (s->tags.count("flake_classification"))
 							{
-								if (!flakeTypes.count(s->tags.at("flake_type"))) 
+								if (!flakeTypes.count(s->tags.at("flake_classification"))) 
 									return false;
 							}
 						}

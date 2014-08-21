@@ -294,7 +294,7 @@ int main(int argc, char** argv)
 			if (vm.count("list-hash"))
 				std::cout << shp->hash().lower << endl;
 			if (sFlakeType.size())
-				shp->tags.insert(pair<string, string>("flake_type", sFlakeType));
+				shp->tags.insert(pair<string, string>("flake_classification", sFlakeType));
 			if (dSpacing) shp->standardD = (float)dSpacing;
 			if (vm.count("hash-shape")) shp->writeToHash();
 			if (vm.count("hash-voronoi"))
