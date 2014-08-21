@@ -157,7 +157,8 @@ CREATE VIEW waitingRuns AS
 
 CREATE VIEW hostLoad AS
 	SELECT host.hostname, count(currentRuns.hostname) 
-	as NumberOfRunningJobs from host
+	as NumberOfRunningJobs 
+	from host
 	left join currentRuns on currentRuns.hostname = host.hostname 
 	and host.active = true
 	group by host.hostname
