@@ -71,6 +71,7 @@ int main(int argc, char** argv)
 			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
 			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
 			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
+			("match-dipole-numbers", po::value<vector<size_t> >()->multitoken(), "Match typical dipole numbers")
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			("match-parent-flake", "Select the parent flakes")
 
@@ -162,6 +163,9 @@ int main(int argc, char** argv)
 		bool doTargetOut = vm["process-target-out"].as<bool>();
 
 
+		std::string sFlakeType;
+		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
+
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
 		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
 
@@ -175,16 +179,31 @@ int main(int argc, char** argv)
 		*/
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
 		vector<float> matchDipoleSpacings;
+		vector<std::pair<size_t, size_t> > matchDipoleNums;
 		bool matchParentFlakes;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
 		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
 		if (vm.count("match-dipole-spacing")) matchDipoleSpacings = vm["match-dipole-spacing"].as<vector<float> >();
+		//if (vm.count("match-dipole-numbers")) matchDipoleNums = vm["match-dipole-numbers"].as<vector<float> >();
 		if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
-		std::string sFlakeType;
-		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
+		using namespace rtmath::ddscat::shapefile;
+		auto collection = shapefile::makeCollection();
+		auto query = shapefile::makeQuery();
+		query->hashLower(matchHashes);
+		query->flakeType(matchFlakeTypes);
+		query->flakeRefHashLower(matchParentHashes);
+		query->dipoleRange(matchDipoleNums);
+		for (const auto &ds : matchDipoleSpacings)
+			query->standardD(ds);
+
+		bool useDb = false;
+		if (vm.count("from-db")) useDb = true;
+
+
+
 
 
 		auto opts = registry::IO_options::generate();
@@ -202,11 +221,64 @@ int main(int argc, char** argv)
 
 		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
 		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
+		
+		// Load in all local shapefiles, then perform the matching query
+		vector<string> vinputs;
+		for (auto it = inputs.begin(); it != inputs.end(); it++)
+		{
+			cerr << "Processing " << *it << endl;
+			path pi(*it);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (is_directory(pi))
+			{
+				path pt = pi / "target.out";
+				path ps = pi / "shape.dat";
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> smain;
 
-		// TODO: add a search first for existing files in the database, and then import the results.
+				if (exists(ps))
+				{
+					cerr << " found " << ps << endl;
+					smain = boost::shared_ptr<rtmath::ddscat::shapefile::shapefile>(new rtmath::ddscat::shapefile::shapefile(ps.string()));
+					collection->insert(smain);
+				}
+				if (doTargetOut && exists(pt))
+				{
+					cerr << " found " << pi << endl;
+					boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s(new rtmath::ddscat::shapefile::shapefile(pt.string()));
+					if (smain)
+						s->tags.insert(std::pair<string, string>("target-src-hash", smain->hash().string()));
+					if (smain)
+						s->tags.insert(std::pair<string, string>("flake_reference", smain->hash().string()));
+					collection->insert(smain);
+				}
+			} else {
+				auto iopts = registry::IO_options::generate();
+				iopts->filename(*it);
+				try {
+					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
+					// Handle not needed as the read context is used only once.
+					if (rtmath::ddscat::shapefile::shapefile::canReadMulti(nullptr, iopts))
+						rtmath::ddscat::shapefile::shapefile::readVector(nullptr, iopts, shapes);
+					else {
+						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s(new rtmath::ddscat::shapefile::shapefile);
+						s->readFile(*it);
+						shapes.push_back(s);
+					}
+					for (auto &s : shapes)
+						collection->insert(s);
+				}
+				catch (std::exception &e)
+				{
+					cerr << e.what() << std::endl;
+					continue;
+				}
+			}
+		}
 
-		using namespace rtmath::ddscat;
-		auto processShape = [&](boost::shared_ptr<shapefile::shapefile> shp)
+		// Perform the query, and then process the matched shapefiles
+		auto res = query->doQuery(collection, true, useDb, dHandler);
+
+		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp)
 		{
 			cerr << "  Shape " << shp->hash().lower << endl;
 			for (auto &t : tags)
@@ -216,7 +288,7 @@ int main(int argc, char** argv)
 				std::cout << shp->hash().lower << endl;
 			if (sFlakeType.size())
 				shp->tags.insert(pair<string, string>("flake_type", sFlakeType));
-			if (dSpacing) shp->standardD = (float) dSpacing;
+			if (dSpacing) shp->standardD = (float)dSpacing;
 			if (vm.count("hash-shape")) shp->writeToHash();
 			if (vm.count("hash-voronoi"))
 			{
@@ -238,8 +310,8 @@ int main(int argc, char** argv)
 
 				if (dbcollection->size() > 500) // Do in batches. The final uneven batch is handled at the end of execution.
 				{
-					dHandler = shapefile::shapefile::updateCollection(dbcollection,
-						shapefile::shapefile_db_registry::updateType::INSERT_ONLY, dHandler);
+					dHandler = rtmath::ddscat::shapefile::shapefile::updateCollection(dbcollection,
+						rtmath::ddscat::shapefile::shapefile_db_registry::updateType::INSERT_ONLY, dHandler);
 					dbcollection->clear();
 				}
 				//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
@@ -255,63 +327,14 @@ int main(int argc, char** argv)
 			//Stats.push_back(std::move(sstats));
 		};
 
-		// Validate input files
-		vector<string> vinputs;
-		for (auto it = inputs.begin(); it != inputs.end(); it++)
-		{
-			cerr << "Processing " << *it << endl;
-			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
-			if (is_directory(pi))
-			{
-				path pt = pi / "target.out";
-				path ps = pi / "shape.dat";
-				boost::shared_ptr<shapefile::shapefile> smain;
+		for (auto &s : *(res.first))
+			processShape(s);
 
-				if (exists(ps))
-				{
-					cerr << " found " << ps << endl;
-					smain = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(ps.string()));
-					processShape(smain);
-				}
-				if (doTargetOut && exists(pt))
-				{
-					cerr << " found " << pi << endl;
-					boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile(pt.string()));
-					if (smain)
-						s->tags.insert(std::pair<string, string>("target-src-hash", smain->hash().string()));
-					if (smain)
-						s->tags.insert(std::pair<string, string>("flake_reference", smain->hash().string()));
-					processShape(s);
-				}
-			} else {
-				auto iopts = registry::IO_options::generate();
-				iopts->filename(*it);
-				try {
-					vector<boost::shared_ptr<shapefile::shapefile> > shapes;
-					// Handle not needed as the read context is used only once.
-					if (shapefile::shapefile::canReadMulti(nullptr, iopts))
-						shapefile::shapefile::readVector(nullptr, iopts, shapes);
-					else {
-						boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
-						s->readFile(*it);
-						shapes.push_back(s);
-					}
-					for (auto &s : shapes)
-						processShape(s);
-				}
-				catch (std::exception &e)
-				{
-					cerr << e.what() << std::endl;
-					continue;
-				}
-			}
-		}
-
+		// Update any remainder
 		if (dbcollection->size())
 		{
-			dHandler = shapefile::shapefile::updateCollection(dbcollection,
-				shapefile::shapefile_db_registry::updateType::INSERT_ONLY, dHandler);
+			dHandler = rtmath::ddscat::shapefile::shapefile::updateCollection(dbcollection,
+				rtmath::ddscat::shapefile::shapefile_db_registry::updateType::INSERT_ONLY, dHandler);
 			dbcollection->clear();
 		}
 
