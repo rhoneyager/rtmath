@@ -61,13 +61,12 @@ int main(int argc, char** argv)
 		ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		//Ryan_Serialization::add_options(cmdline, config, hidden);
 
-		/// \todo Add unified read option, to pull shapefiles from other sources (useful for tagging)
-
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
 			("input,i", po::value< vector<string> >(), "Input shape files")
-			("from-db", "Perform search on database and select files matching criteria.")
+			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
+			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
 			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
 			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
 			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
@@ -78,7 +77,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
-			("tag", po::value<vector<string> >(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
+			("tag", po::value<vector<string> >()->multitoken(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
 			("flake-type", po::value<string>(), "Specify flake type (e.g. oblate, oblate_small, prolate, ...")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("process-target-out", po::value<bool>()->default_value(0), "Process target.out files in addition to shape.dat files.")
@@ -129,13 +128,14 @@ int main(int argc, char** argv)
 		if (vm.count("dipole-spacing"))
 			dSpacing = vm["dipole-spacing"].as<double>();
 
-		vector<string> inputs = vm["input"].as< vector<string> >();
+		vector<string> inputs;
 		if (vm.count("input"))
 		{
+			inputs = vm["input"].as< vector<string> >();
 			cerr << "Input files are:" << endl;
 			for (auto it = inputs.begin(); it != inputs.end(); it++)
 				cerr << "\t" << *it << "\n";
-		} else doHelp("Need to specify input files.");
+		}; // else doHelp("Need to specify input files.");
 
 		// sepOutputs is a vestigial option. I want everything in a separate file automatically. 
 		// No vectors! They are hard to detect before readins, leading to input stream errors.
@@ -186,7 +186,11 @@ int main(int argc, char** argv)
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
 		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
 		if (vm.count("match-dipole-spacing")) matchDipoleSpacings = vm["match-dipole-spacing"].as<vector<float> >();
-		//if (vm.count("match-dipole-numbers")) matchDipoleNums = vm["match-dipole-numbers"].as<vector<float> >();
+		if (vm.count("match-dipole-numbers")) {
+			vector<size_t> candDipoleNums = vm["match-dipole-numbers"].as<vector<size_t> >();
+			for (size_t i = 0; i < candDipoleNums.size(); i = i + 2)
+				matchDipoleNums.push_back(std::pair<size_t, size_t>(candDipoleNums[i], candDipoleNums[i + 1]));
+		}
 		if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
 		using namespace rtmath::ddscat::shapefile;
@@ -199,8 +203,10 @@ int main(int argc, char** argv)
 		for (const auto &ds : matchDipoleSpacings)
 			query->standardD(ds);
 
-		bool useDb = false;
-		if (vm.count("from-db")) useDb = true;
+		bool supplementDb = false;
+		supplementDb = vm["use-db"].as<bool>();
+		bool fromDb = false;
+		fromDb = vm["from-db"].as<bool>();
 
 
 
@@ -276,11 +282,12 @@ int main(int argc, char** argv)
 		}
 
 		// Perform the query, and then process the matched shapefiles
-		auto res = query->doQuery(collection, true, useDb, dHandler);
+		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
 		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp)
 		{
 			cerr << "  Shape " << shp->hash().lower << endl;
+			shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
 			for (auto &t : tags)
 				shp->tags.insert(t);
 

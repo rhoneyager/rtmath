@@ -45,13 +45,13 @@ namespace {
 		// For now, just default to loading the rtmath.conf-listed store, if any.
 		{
 			auto conf = rtmath::config::loadRtconfRoot();
-			std::string shapeDir;
+			std::string hashDir;
 			auto chash = conf->getChild("ddscat")->getChild("hash");
-			chash->getVal<std::string>("shapeDir", shapeDir);
+			chash->getVal<std::string>("hashDir", hashDir);
 
 			std::shared_ptr<rtmath::hashStore> h(new rtmath::hashStore);
 			h->writable = true;
-			h->base = boost::filesystem::path(shapeDir);
+			h->base = boost::filesystem::path(hashDir);
 			rtmath::hashStore::addHashStore(h, 100);
 		}
 	}

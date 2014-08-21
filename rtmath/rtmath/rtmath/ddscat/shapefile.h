@@ -357,6 +357,11 @@ namespace rtmath {
 				static boost::shared_ptr<shapefile> loadHash(
 					const std::string &hash);
 
+				/// When shape is partially loaded, use this routine to force a 
+				// reload from the hash database
+				void loadHashLocal();
+				void loadHashLocal(const HASH_t &hash);
+				void loadHashLocal(const std::string &hash);
 
 			};
 

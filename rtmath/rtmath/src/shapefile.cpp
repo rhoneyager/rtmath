@@ -185,9 +185,25 @@ namespace rtmath {
 				return this->_localhash;
 			}
 
+			void shapefile::loadHashLocal()
+			{
+				if (latticePts.rows()) return; // Already loaded
+				const auto origtags = tags;
+				loadHashLocal(hash());
+
+				for (const auto &tag : origtags)
+					if (!tags.count(tag.first)) tags[tag.first] = tag.second;
+			}
+
 			boost::shared_ptr<shapefile> shapefile::loadHash(
 				const HASH_t &hash)
 			{ return loadHash(boost::lexical_cast<std::string>(hash.lower)); }
+
+			void shapefile::loadHashLocal(
+				const HASH_t &hash)
+			{
+				loadHashLocal(boost::lexical_cast<std::string>(hash.lower));
+			}
 
 			
 			void shapefile::readHeaderOnly(const std::string &str)

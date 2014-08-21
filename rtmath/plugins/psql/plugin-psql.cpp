@@ -102,7 +102,8 @@ namespace rtmath
 				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
-				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
+				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK 
+					&& errcode != PGRES_EMPTY_QUERY) handle_error(errcode);
 				return res;
 			}
 

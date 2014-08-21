@@ -33,6 +33,55 @@ namespace rtmath
 		namespace psql
 		{
 
+			void createBackgroundInfo(std::shared_ptr<psql_handle> h,
+				std::map<std::string, std::string > &flakeTypes, // type, uuid
+				std::map<std::string, std::string > &flakeRevTypes // uuid, type (used in searchSHP)
+				)
+			{
+				using namespace std;
+				h->sendQuery(
+					"BEGIN;"
+					"SELECT id, name FROM flakeTypes; ");
+				h->getQueryResult();
+				auto hFlakeTypes = h->getQueryResult();
+
+				using std::string;
+				map<string, string> known_flaketypes;
+
+				for (int i = 0; i < PQntuples(hFlakeTypes.get()); ++i)
+					known_flaketypes[string(PQgetvalue(hFlakeTypes.get(), i, 1))]
+					= string(PQgetvalue(hFlakeTypes.get(), i, 0));
+
+				ostringstream ss;
+
+				using namespace boost::uuids;
+				random_generator gen;
+				// Now, insert any missing entries
+				for (const auto &s : flakeTypes)
+				{
+					string ftype(s.first);
+					if (!known_flaketypes.count(ftype))
+					{
+						// Generate a uuid
+						uuid u = gen();
+						string suuid = boost::lexical_cast<string>(u);
+						known_flaketypes.insert(pair < string, string >
+							(ftype, suuid));
+						ss << "insert into flakeTypes (id, name) values ('" << suuid << "', '"
+							<< ftype << "');";
+					}
+				}
+				flakeTypes = known_flaketypes; // For object additions
+
+				for (const auto &s : flakeTypes)
+					flakeRevTypes[s.second] = s.first;
+
+				ss << "COMMIT;";
+				string sres = ss.str();
+				//cerr << sres << endl;
+				h->execute(sres.c_str());
+			}
+
 			std::shared_ptr<rtmath::registry::DBhandler> searchSHP(
 				const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index &index,
 				rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection res,
@@ -44,6 +93,10 @@ namespace rtmath
 					<registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
+
+
+				map<string, string> flakeTypes, flakeRevTypes;
+				createBackgroundInfo(h, flakeTypes, flakeRevTypes); // Populate the flaketype name / uuid map
 
 				ostringstream squery;
 				//squery << "BEGIN;\n";
@@ -61,8 +114,8 @@ namespace rtmath
 					{
 						if (it != index.standardDs.begin())
 							squery << " OR ";
-						squery << "numrange( " << it->first * (1.0f - it->second) << " , "
-							<< it->first * (1.0f + it->second) << " ) @> standardD ";
+						squery << "cast(standardD as numeric ) <@ numrange( " << it->first * (1.0f - 0.01 * it->second) << " , "
+							<< it->first * (1.0f + 0.01 * it->second) << " ) ";
 					}
 					unionFlag = true;
 				}
@@ -76,8 +129,8 @@ namespace rtmath
 					{
 						if (it != index.dipoleRanges.begin())
 							squery << " OR ";
-						squery << "numrange( " << it->first << " , "
-							<< it->second << " ) @> numDipoles ";
+						squery << "numDipoles <@ int4range( " << it->first << " , "
+							<< it->second << " ) ";
 					}
 					unionFlag = true;
 				}
@@ -107,6 +160,24 @@ namespace rtmath
 					squery << ") ";
 					numSel++;
 				};
+				auto selStringMap = [&](const std::set<std::string> &v, const std::string &tblName, const std::map<std::string, std::string> &m)
+				{
+					if (!v.size()) return;
+					if (numSel) squery << "AND ";
+					size_t numQ = 0;
+					squery << tblName << " IN (";
+					for (auto it = v.begin(); it != v.end(); ++it)
+					{
+						if (m.count(*it))
+						{
+							if (it != v.begin()) squery << ", ";
+							squery << "'" << m.at(*it) << "'";
+							numQ++;
+						} else RTthrow debug::xMissingHash(it->c_str(), "selStringMap");
+					}
+					squery << ") ";
+					numSel++;
+				};
 				auto selStringArray = [&](const std::map<std::string, std::string> &v, const std::string &tblName)
 				{
 					if (!v.size()) return;
@@ -121,7 +192,7 @@ namespace rtmath
 				selStringArray(index.tags, "tags");
 				selString(index.hashLowers, "hashLower");
 				selString(index.hashUppers, "hashUpper");
-				selString(index.flakeTypes, "flakeType"); // flakeType_id
+				selStringMap(index.flakeTypes, "flaketype_id", flakeTypes);
 				selString(index.refHashLowers, "flake_references");
 
 				squery << ";";
@@ -138,7 +209,7 @@ namespace rtmath
 				{
 					boost::shared_ptr<shapefile> ap(new shapefile);
 
-					ap->numPoints = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 7));
+					ap->numPoints = rtmath::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 7));
 					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
 					ap->setHash(HASH_t( rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
 						rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 1))));
@@ -147,8 +218,8 @@ namespace rtmath
 
 					ap->tags.insert(std::pair<std::string,std::string>("flake_reference",
 						std::string(PQgetvalue(resIntersect.get(), i, 6))));
-					ap->tags.insert(std::pair<std::string,std::string>("flake_type",
-						std::string(PQgetvalue(resIntersect.get(), i, 2))));
+					ap->tags.insert(std::pair<std::string,std::string>("flake_classification",
+						flakeRevTypes.at(std::string(PQgetvalue(resIntersect.get(), i, 2)))));
 
 					// Iterate over all tags and add to the tags field.
 					// psql tags saved as key=value strings.
@@ -177,51 +248,6 @@ namespace rtmath
 				return h;
 			}
 
-			void createBackgroundInfo(std::shared_ptr<psql_handle> h,
-				std::map<std::string, std::string > &flakeTypes
-				)
-			{
-				using namespace std;
-				h->sendQuery(
-					"BEGIN;"
-					"SELECT id, name FROM flakeTypes; ");
-				h->getQueryResult();
-				auto hFlakeTypes = h->getQueryResult();
-				
-				using std::string;
-				map<string, string> known_flaketypes;
-
-				for (int i = 0; i < PQntuples(hFlakeTypes.get()); ++i)
-					known_flaketypes[string(PQgetvalue(hFlakeTypes.get(), i, 1))] 
-					= string(PQgetvalue(hFlakeTypes.get(), i, 0));
-				
-				ostringstream ss;
-
-				using namespace boost::uuids;
-				random_generator gen;
-				// Now, insert any missing entries
-				for (const auto &s : flakeTypes)
-				{
-					string ftype(s.first);
-					if (!known_flaketypes.count(ftype))
-					{
-						// Generate a uuid
-						uuid u = gen();
-						string suuid = boost::lexical_cast<string>(u);
-						known_flaketypes.insert(pair < string, string >
-							(ftype, suuid));
-						ss << "insert into flakeTypes (id, name) values ('" << suuid << "', '"
-							<< ftype << "');";
-					}
-				}
-				flakeTypes = known_flaketypes; // For object additions
-				
-				ss << "COMMIT;";
-				string sres = ss.str();
-				//cerr << sres << endl;
-				h->execute(sres.c_str());
-			}
-
 			std::shared_ptr<rtmath::registry::DBhandler> updateSHP(
 				const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection c,
 				rtmath::ddscat::shapefile::shapefile_db_registry::updateType t,
@@ -234,12 +260,12 @@ namespace rtmath
 					new psql_handle(o)); });
 
 				
-				map<string, string> flakeTypes;
+				map<string, string> flakeTypes, flakeRevTypes;
 				for (const auto &i : *c)
 				{
 					for (const auto &t : i->tags)
 					{
-						if (t.first == "flake_type")
+						if (t.first == "flake_classification")
 						{
 							flakeTypes[t.second] = "";
 						}
@@ -266,7 +292,7 @@ namespace rtmath
 				}
 				*/
 
-				createBackgroundInfo(h, flakeTypes);
+				createBackgroundInfo(h, flakeTypes, flakeRevTypes);
 
 				// Actually insert the data
 				h->execute("BEGIN;");
@@ -307,7 +333,7 @@ namespace rtmath
 						{
 							if (t.first == "flake_reference")
 								refId = t.second;
-							else if (t.first == "flake_type")
+							else if (t.first == "flake_classification")
 							{
 								flakeType_id = flakeTypes.at(t.second);
 							} else {
@@ -379,7 +405,7 @@ namespace rtmath
 							if (i->numPoints)
 							{
 								if (needComma) sadd << ", ";
-								sadd << "numDipoles = " << i->standardD;
+								sadd << "numDipoles = " << i->numPoints;
 								needComma = true;
 							}
 							if (i->desc.size())

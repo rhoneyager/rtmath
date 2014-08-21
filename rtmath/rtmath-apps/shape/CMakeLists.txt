@@ -11,7 +11,9 @@ endif()
 if (BUILD_PLUGIN_HDF5)
 	add_dependencies ( rtmath-shape rtmath_plugin_hdf5)
 endif()
-
+if (BUILD_PLUGIN_PSQL)
+	add_dependencies ( rtmath-shape rtmath_plugin_psql)
+endif()
 
 
 
