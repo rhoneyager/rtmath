@@ -815,9 +815,9 @@ namespace rtmath
 				return updateCollection(c, t, p, o);
 			}
 			*/
-			static typename index_class::collection makeCollection()
+			static typename index_class:: collection makeCollection()
 			{
-				return index_class::collection
+				return typename index_class::collection
 					(new std::set<boost::shared_ptr<obj_class>, comp_class >());
 			}
 			static std::shared_ptr<rtmath::registry::DBhandler> 

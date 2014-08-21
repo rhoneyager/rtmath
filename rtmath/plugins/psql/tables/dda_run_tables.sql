@@ -62,7 +62,7 @@ CREATE VIEW stalledRuns AS
 	flakeRuns.path,
 	flakeRuns.runsTotal, flakeRuns.runsCompleted, flakeRuns.runsFailed
 	FROM flakeRuns, host, flakeTypes
-	WHERE age(flakeRuns.tsLastUpdated) > '2 days'
+	WHERE age(flakeRuns.tsLastUpdated) > '3 days'
 	AND flakeRuns.progress = 'running'
 	AND host.id = flakeRuns.host
 	AND flakeTypes.id = flakeRuns.flakeType

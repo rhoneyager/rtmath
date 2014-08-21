@@ -194,8 +194,10 @@ namespace rtmath {
 		template float DLEXPORT_rtmath_core m_atof(const char* x, size_t len);
 
 		template int DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
-		template uint64_t DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
-		template size_t DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
+		//template uint64_t DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
+		template unsigned long long DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
+		template unsigned long DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
+		template long DLEXPORT_rtmath_core m_atoi(const char* x, size_t len);
 
 		/*
 		double pythag(double a, double b)
