@@ -181,6 +181,7 @@ set(rtmath_ddscat-ddoutput-files
 	src/ddOriDataParsers.cpp
 	src/ddOriDataParsers.h
 	src/ddOutput.cpp
+	src/ddOutput_query.cpp
 	#src/ddOutput_serialization.cpp
 	#src/ddOutputGenerator.cpp
 	#src/ddOutputGenerator_serialization.cpp

@@ -28,7 +28,7 @@ namespace rtmath {
 			class shapefile_Standard {};
 			class shapefile_query_registry {};
 
-			/// \brief This class is used for plugins to register themselves to handle arm_info queries.
+			/// \brief This class is used for plugins to register themselves to handle shape queries.
 			struct DLEXPORT_rtmath_ddscat shapefile_db_registry
 			{
 				struct DLEXPORT_rtmath_ddscat shapefile_db_comp {

@@ -62,6 +62,10 @@ namespace rtmath {
 			::rtmath::ddscat::ddOutput_IO_input_registry,
 			IO_class_registry_reader<::rtmath::ddscat::ddOutput> >;
 		
+		template class usesDLLregistry<
+			::rtmath::ddscat::ddOutput_query_registry,
+			::rtmath::ddscat::ddOutput_db_registry >;
+
 	}
 
 	namespace ddscat {

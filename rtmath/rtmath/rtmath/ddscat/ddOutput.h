@@ -11,9 +11,6 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
-//#include <boost/serialization/export.hpp>
-//#include <boost/serialization/assume_abstract.hpp>
-//#include <boost/serialization/version.hpp>
 
 #include "../hash.h"
 #include "../common_templates.h"
@@ -31,8 +28,118 @@ namespace rtmath {
 		class ddOutput;
 		class ddOutput_IO_output_registry {};
 		class ddOutput_IO_input_registry {};
+		class ddOutput_query_registry {};
 		//class ddOutput_serialization {};
 		namespace weights { class OrientationWeights3d; }
+
+
+		/// \brief This class is used for plugins to register themselves to handle ddOutput queries.
+		struct DLEXPORT_rtmath_ddscat ddOutput_db_registry
+		{
+			struct DLEXPORT_rtmath_ddscat ddOutput_db_comp {
+				bool operator() (const std::shared_ptr<ddOutput>& lhs,
+					const std::shared_ptr<ddOutput>& rhs) const;
+				bool operator() (const boost::shared_ptr<ddOutput>& lhs,
+					const boost::shared_ptr<ddOutput>& rhs) const;
+			};
+
+			/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
+			class DLEXPORT_rtmath_ddscat ddOutput_index
+			{
+				ddOutput_index();
+			public:
+				std::set<std::string> hashLowers, hashUppers,
+					flakeTypes, runids, polarization;
+				// Number and percent error
+				std::map<float, float > standardDs, freqRanges;
+				// Lower and upper (both inclusive) bounds
+				std::vector<std::pair<float, float> > aeffRanges, tempRanges;
+				std::vector<std::pair<size_t, size_t> > dipoleRanges, betaRanges, thetaRanges, phiRanges;
+			public:
+				~ddOutput_index();
+				static std::shared_ptr<shapefile_index> generate();
+
+
+				ddOutput_index& hashLower(const std::string&);
+				ddOutput_index& hashLower(const uint64_t);
+				ddOutput_index& hashUpper(const std::string&);
+				ddOutput_index& hashUpper(const uint64_t);
+				//ddOutput_index& hash(const HASH_t&);
+				ddOutput_index& flakeType(const std::string&);
+				ddOutput_index& runId(const std::string&);
+				ddOutput_index& polarization(const std::string&);
+				ddOutput_index& standardD(const float d, const float tolpercent = 1.0f);
+				ddOutput_index& freqRange(const float d, const float tolpercent = 1.0f);
+				ddOutput_index& dipoleRange(size_t inclLowerBound, size_t inclUpperBound);
+				ddOutput_index& betaRange(size_t inclLowerBound, size_t inclUpperBound);
+				ddOutput_index& thetaRange(size_t inclLowerBound, size_t inclUpperBound);
+				ddOutput_index& phiRange(size_t inclLowerBound, size_t inclUpperBound);
+				ddOutput_index& aeffRange(float inclLowerBound, float inclUpperBound);
+				ddOutput_index& tempRange(float inclLowerBound, float inclUpperBound);
+				
+				ddOutput_index& hashLower(const std::vector<std::string>&);
+				ddOutput_index& hashLower(const std::vector<uint64_t>);
+				ddOutput_index& hashUpper(const std::vector<std::string>&);
+				ddOutput_index& hashUpper(const std::vector<uint64_t>);
+				ddOutput_index& flakeType(const std::vector<std::string>&);
+				ddOutput_index& runId(const std::vector<std::string>&);
+				ddOutput_index& polarization(const std::vector<std::string>&);
+				ddOutput_index& dipoleRange(const std::vector<std::pair<size_t, size_t> >&);
+				ddOutput_index& betaRange(const std::vector<std::pair<size_t, size_t> >&);
+				ddOutput_index& thetaRange(const std::vector<std::pair<size_t, size_t> >&);
+				ddOutput_index& phiRange(const std::vector<std::pair<size_t, size_t> >&);
+				ddOutput_index& aeffRange(const std::vector<std::pair<float, float> >&);
+				ddOutput_index& tempRange(const std::vector<std::pair<float, float> >&);
+				//ddOutput_index& hash(const std::vector<HASH_t>&);
+
+				typedef std::shared_ptr<std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp > > collection;
+				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
+					doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
+					std::shared_ptr<registry::DB_options> = nullptr) const;
+
+				/**
+				* \brief Add support for filtering based on existing, loaded objects (in a collection).
+				*
+				* Will pull information from the database for filling.
+				* \param srcs is a preexisting collection of loaded objects
+				* \param doUnion indicates whether the database is used to merely add tag
+				*			information to the already-loaded objects, or whether objects in the
+				*			database that match the criteria are also added in.
+				* \param doDb indicates whether the database is consulted for the lookup. If not,
+				* only filter the objects in srcs.
+				**/
+				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
+					doQuery(collection srcs,
+					bool doUnion = false, bool doDb = true,
+					std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
+					std::shared_ptr<registry::DB_options> = nullptr) const;
+			};
+
+			ddOutput_db_registry();
+			virtual ~ddOutput_db_registry();
+			/// Module name.
+			const char* name;
+
+			enum class updateType { INSERT_ONLY, UPDATE_ONLY, INSERT_AND_UPDATE };
+
+			/// \todo As more database types become prevalent, move this over to 
+			/// rtmath::registry and standardize.
+			typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+				(const ddOutput_index&, ddOutput_index::collection,
+				std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> queryType;
+			typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+				(const ddOutput_index::collection, updateType,
+				std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> writeType;
+			typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>,
+				std::shared_ptr<registry::DB_options>)> matchType;
+
+			/// Get cross-sections from small stats
+			queryType fQuery;
+			/// Get pfs from small stats
+			writeType fInsertUpdate;
+
+			matchType fMatches;
+		};
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
@@ -48,6 +155,10 @@ namespace rtmath {
 		extern template class usesDLLregistry<
 			::rtmath::ddscat::ddOutput_IO_input_registry,
 			IO_class_registry_reader<::rtmath::ddscat::ddOutput> >;
+
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::ddOutput_query_registry,
+			::rtmath::ddscat::ddOutput_db_registry >;
 		
 	}
 	namespace ddscat {
@@ -76,7 +187,10 @@ namespace rtmath {
 			virtual public ::rtmath::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOutput_IO_input_registry,
 			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
-			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>
+			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
+			virtual public ::rtmath::io::implementsDBbasic<ddOutput, ddOutput_db_registry,
+			ddOutput_db_registry::ddOutput_index,
+			ddOutput_db_registry::ddOutput_db_comp, ddOutput_query_registry>
 		{
 			void resize(size_t numOris, size_t numTotAngles);
 			void resizeFML(size_t numTotAngles);
@@ -86,8 +200,12 @@ namespace rtmath {
 			friend class ddOriData;
 		public:
 			ddOutput();
-
 			ddOutput(const ddOutput&);
+
+			bool operator<(const ddOutput &) const;
+			bool operator==(const ddOutput &) const;
+			bool operator!=(const ddOutput &) const;
+
 
 			/// Regenerates ddOutputSingle entries from tables (used in hdf5 read)
 			//void doImport();
