@@ -1,13 +1,13 @@
 #include "Stdafx-voronoi.h"
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/managed_heap_memory.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
-#include <boost/interprocess/containers/flat_map.hpp>
-#include <boost/interprocess/containers/flat_set.hpp>
-#include <boost/interprocess/containers/set.hpp>
-#include <boost/interprocess/containers/vector.hpp>
+//#include <boost/interprocess/mapped_region.hpp>
+//#include <boost/interprocess/managed_heap_memory.hpp>
+//#include <boost/interprocess/allocators/allocator.hpp>
+//#include <boost/interprocess/containers/flat_map.hpp>
+//#include <boost/interprocess/containers/flat_set.hpp>
+//#include <boost/interprocess/containers/set.hpp>
+//#include <boost/interprocess/containers/vector.hpp>
 #include <functional>
-#include <scoped_allocator>
+//#include <scoped_allocator>
 #include <boost/functional/hash.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -144,6 +144,8 @@ namespace rtmath
 			} while (cl.inc());
 		}
 
+		const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* CachedVoronoi::getCellMap() const
+		{ generateCellMap(); return &cellmap; }
 
 		void CachedVoronoi::calcCell(voro::voronoicell_neighbor &vc, size_t _row)
 		{

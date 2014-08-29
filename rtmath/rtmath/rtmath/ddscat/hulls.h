@@ -13,6 +13,18 @@ namespace rtmath
 {
 	namespace ddscat
 	{
+		class hull;
+		class hull_IO_output_registry {};
+	}
+	namespace registry
+	{
+		extern template class usesDLLregistry<
+			::rtmath::ddscat::hull_IO_output_registry,
+			IO_class_registry_writer<::rtmath::ddscat::hull> >;
+
+	}
+	namespace ddscat
+	{
 		// This requires vtk
 		// Move to a plugin
 		//void writeVTKpolys(const std::string &filename, 
@@ -22,41 +34,49 @@ namespace rtmath
 
 		class DLEXPORT_rtmath_voronoi hull
 		{
-		public:
+		protected:
 			hull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
+			hull();
+			//boost::shared_ptr<hullData> _p;
+		public:
+			/// Encapsulated in a static function to allow multiple hull generators to return cast objects to the 
+			/// appropriate backends.
+			static boost::shared_ptr<hull> generate
+				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
+
 			virtual ~hull() {}
-			/// \brief Write raw input points and polygons
-			/// \todo Move to plugin
+			/// Write raw input points and polygons
 			void writeVTKraw(const std::string &filename) const;
-			/// \brief Write hull points and polygons
-			/// \todo Move to plugin
+			/// Write hull points and polygons
 			void writeVTKhull(const std::string &filename) const;
 			/// Hull volume
-			double volume() const;
+			virtual double volume() const = 0;
 			/// Hull surface area
-			double surfaceArea() const;
+			virtual double surfaceArea() const = 0;
 			/// Max distance between two points in hull
-			double maxDiameter() const;
+			virtual double maxDiameter() const = 0;
 			/// Rotation coordinates to principle axes of hull
-			void principalAxes(double &beta, double &theta, double &phi) const;
+			virtual void principalAxes(double &beta, double &theta, double &phi) const = 0;
 
-			void area2d(double out[3]) const;
-			void perimeter2d(double out[3]) const;
-		protected:
-			boost::shared_ptr<hullData> _p;
-		public:
-			hull();
+			virtual void area2d(double out[3]) const = 0;
+			virtual void perimeter2d(double out[3]) const = 0;
 		};
 
 		/// \todo Move implementation code to vtk plugin
-		class DLEXPORT_rtmath_voronoi convexHull : public hull
+		class DLEXPORT_rtmath_voronoi convexHull : virtual public hull
 		{
+		protected:
+			convexHull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >);
 		public:
-			convexHull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > );
+			/// Encapsulated in a static function to allow multiple hull generators to return cast objects to the 
+			/// appropriate backends.
+			static boost::shared_ptr<hull> generate
+				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
+
 			virtual ~convexHull() {}
 			/// Construct the convex hull, and populate the quantities
-			/// \todo Invoke in constructor
-			void constructHull();
+			/// \todo Invoke in constructor?
+			virtual void constructHull() = 0;
 		};
 
 		/* // Disabled because the VTK hull algorithms are SLOW, and setting alpha requires all points!

@@ -24,6 +24,24 @@ namespace rtmath {
 		class VoronoiDiagram;
 		class Voronoi_IO_output_registry {};
 		class Voronoi_IO_input_registry {};
+		class Voronoi_provider_registry {};
+
+		/// Designed to be a singleton
+		class DLEXPORT_rtmath_voronoi Voronoi_provider
+		{
+			Voronoi_provider();
+			virtual ~Voronoi_provider;
+		public:
+
+			//typedef std::function<boost::shared_ptr<VoronoiDiagram>
+			//	(const Eigen::Array3f &, const Eigen::Array3f &,
+			//	const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoiStdGeneratorType;
+			//voronoiStdGeneratorType generator;
+			virtual boost::shared_ptr<VoronoiDiagram> generate(
+				const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
+				) = 0;
+		};
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram>;
@@ -34,6 +52,10 @@ namespace rtmath {
 		extern template class usesDLLregistry<
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
 			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
+
+		extern template class usesDLLregistry<
+			::rtmath::Voronoi::Voronoi_provider_registry,
+			::rtmath::Voronoi::Voronoi_provider >;
 	}
 
 	namespace Voronoi
@@ -68,7 +90,9 @@ namespace rtmath {
 				::rtmath::Voronoi::Voronoi_IO_output_registry,
 				::rtmath::registry::IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >,
 			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<VoronoiDiagram, Voronoi_IO_input_registry>
+			virtual public ::rtmath::io::implementsStandardReader<VoronoiDiagram, Voronoi_IO_input_registry>,
+			virtual public ::rtmath::registry::usesDLLregistry<
+				Voronoi_provider_registry, Voronoi_provider >
 		{
 		public:
 			typedef boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixType;
