@@ -60,5 +60,10 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_TSV)
 		add_subdirectory(tsv-export)
 	endif()
+	option (BUILD_PLUGIN_VTK
+		"Build VTK plugin. Used in hull calculation, image processing and visualization." ON)
+	if (BUILD_PLUGIN_VTK)
+		add_subdirectory(vtk)
+	endif()
 endif()
 

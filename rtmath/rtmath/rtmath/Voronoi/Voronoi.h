@@ -30,7 +30,7 @@ namespace rtmath {
 		class DLEXPORT_rtmath_voronoi Voronoi_provider
 		{
 			Voronoi_provider();
-			virtual ~Voronoi_provider;
+			virtual ~Voronoi_provider();
 		public:
 
 			//typedef std::function<boost::shared_ptr<VoronoiDiagram>

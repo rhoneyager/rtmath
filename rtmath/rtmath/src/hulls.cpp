@@ -51,6 +51,19 @@
 
 namespace rtmath
 {
+	namespace registry {
+		//template struct IO_class_registry_writer
+		//	<::rtmath::Voronoi::VoronoiDiagram>;
+		//template class usesDLLregistry<
+		//	::rtmath::Voronoi::Voronoi_IO_output_registry,
+		//	IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
+
+		
+		template class usesDLLregistry<
+			::rtmath::ddscat::hull_provider_registry,
+			::rtmath::ddscat::hull_provider<convexHull> >;
+	}
+
 	namespace ddscat
 	{
 		void SHARED_INTERNAL writeVTKpolys(const std::string &filename, const vtkSmartPointer< vtkPolyData > &src)

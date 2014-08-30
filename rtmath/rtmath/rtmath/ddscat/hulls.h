@@ -15,12 +15,27 @@ namespace rtmath
 	{
 		class hull;
 		class hull_IO_output_registry {};
+		class hull_provider_registry {};
+		class convexHull;
+
+		template <class hullType>
+		struct DLEXPORT_rtmath_voronoi hull_provider
+		{
+			typedef std::function<boost::shared_ptr<hullType>
+				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend)>
+				hullGenerator;
+			hullGenerator generator;
+		};
 	}
 	namespace registry
 	{
+		//extern template class usesDLLregistry<
+		//	::rtmath::ddscat::hull_IO_output_registry,
+		//	IO_class_registry_writer<::rtmath::ddscat::hull> >;
+
 		extern template class usesDLLregistry<
-			::rtmath::ddscat::hull_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::hull> >;
+			::rtmath::ddscat::hull_provider_registry,
+			::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> >;
 
 	}
 	namespace ddscat
@@ -30,7 +45,7 @@ namespace rtmath
 		//void writeVTKpolys(const std::string &filename, 
 		//	const vtkSmartPointer< vtkPolyData > &src);
 
-		class hullData;
+		//class hullData;
 
 		class DLEXPORT_rtmath_voronoi hull
 		{
@@ -41,14 +56,14 @@ namespace rtmath
 		public:
 			/// Encapsulated in a static function to allow multiple hull generators to return cast objects to the 
 			/// appropriate backends.
-			static boost::shared_ptr<hull> generate
-				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
+			//static boost::shared_ptr<hull> generate
+			//	(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
 
 			virtual ~hull() {}
 			/// Write raw input points and polygons
-			void writeVTKraw(const std::string &filename) const;
+			//void writeVTKraw(const std::string &filename) const;
 			/// Write hull points and polygons
-			void writeVTKhull(const std::string &filename) const;
+			//void writeVTKhull(const std::string &filename) const;
 			/// Hull volume
 			virtual double volume() const = 0;
 			/// Hull surface area
@@ -63,14 +78,16 @@ namespace rtmath
 		};
 
 		/// \todo Move implementation code to vtk plugin
-		class DLEXPORT_rtmath_voronoi convexHull : virtual public hull
+		class DLEXPORT_rtmath_voronoi convexHull : virtual public hull,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			hull_provider_registry, hull_provider<convexHull> >
 		{
 		protected:
 			convexHull(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >);
 		public:
 			/// Encapsulated in a static function to allow multiple hull generators to return cast objects to the 
 			/// appropriate backends.
-			static boost::shared_ptr<hull> generate
+			static boost::shared_ptr<convexHull> generate
 				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
 
 			virtual ~convexHull() {}

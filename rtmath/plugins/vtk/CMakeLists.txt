@@ -1,4 +1,9 @@
 include (common)
+include (commonRtmathApps)
+set(CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_SOURCE_DIR}/"
+)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
@@ -9,13 +14,10 @@ include(${VTK_USE_FILE})
 add_library (rtmath_plugin_vtk SHARED 
 	plugin-vtk.cpp
 	plugin-vtk.h
+	vtk-hulls.cpp
 	)
 addlib(rtmath_plugin_vtk SHARED)
 
-set_target_properties( rtmath_plugin_vtk PROPERTIES FOLDER "Plugins/Shapes")
-target_link_libraries(rtmath_plugin_vtk ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
-INSTALL(TARGETS rtmath_plugin_vtk 
-	LIBRARY DESTINATION ${INSTALL_PLUGIN_DIR} 
-	ARCHIVE DESTINATION ${INSTALL_PLUGIN_DIR} 
-	COMPONENT Plugins)
+target_link_libraries(rtmath_plugin_vtk ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${VTK_LIBRARIES})
+addplugin(rtmath_plugin_vtk Shapes)
 
