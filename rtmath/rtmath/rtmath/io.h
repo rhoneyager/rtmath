@@ -630,7 +630,8 @@ namespace rtmath
 
 			/// This actually handles the template writing i/o. It can report the 
 			/// success of the write to a calling parent class.
-			bool baseRead(const std::string &filename, const std::string &outtype)
+			bool baseRead(const std::string &filename, const std::string &outtype,
+				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr)
 			{
 				auto opts = rtmath::registry::IO_options::generate();
 				opts->filename(filename);
@@ -638,7 +639,7 @@ namespace rtmath
 				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::READONLY;
 				opts->iotype(accessType);
 				opts->filetype(outtype);
-				auto res = readMulti(nullptr, opts);
+				auto res = readMulti(nullptr, opts, filter);
 				//auto res = readMulti(filename.c_str(), nullptr, filename.c_str(),
 				//	outtype.c_str(), registry::IOhandler::IOtype::TRUNCATE, opts);
 				if (res) return true;
@@ -648,19 +649,22 @@ namespace rtmath
 			virtual ~implementsStandardSingleReader() {}
 
 			/// Duplicate to avoid clashes and having to specify a full template name...
-			virtual void readFile(const std::string &filename, const std::string &outtype = "")
+			virtual void readFile(const std::string &filename, const std::string &outtype = "",
+				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr)
 			{
-				baseRead(filename, outtype);
+				baseRead(filename, outtype, filter);
 			}
 
-			virtual void read(const std::string &filename, const std::string &outtype = "")
+			virtual void read(const std::string &filename, const std::string &outtype = "",
+				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr)
 			{
-				baseRead(filename, outtype);
+				baseRead(filename, outtype, filter);
 			}
 
 			std::shared_ptr<registry::IOhandler> readMulti(
 				std::shared_ptr<rtmath::registry::IOhandler> handle,
-				std::shared_ptr<rtmath::registry::IO_options> opts
+				std::shared_ptr<rtmath::registry::IO_options> opts,
+				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr
 				)
 			{
 				// All of these objects can handle their own compression
@@ -683,7 +687,7 @@ namespace rtmath
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, opts, dynamic_cast<obj_class*>(this));
+					return dllsaver(handle, opts, dynamic_cast<obj_class*>(this), filter);
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 				}
 				else {
@@ -729,7 +733,8 @@ namespace rtmath
 			static std::shared_ptr<registry::IOhandler> readVector(
 				std::shared_ptr<rtmath::registry::IOhandler> handle,
 				std::shared_ptr<rtmath::registry::IO_options> opts,
-				std::vector<boost::shared_ptr<obj_class> > &v
+				std::vector<boost::shared_ptr<obj_class> > &v,
+				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter
 				)
 			{
 				// All of these objects can handle their own compression
@@ -756,11 +761,11 @@ namespace rtmath
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					if (dllv) return dllv(handle, opts, v);
+					if (dllv) return dllv(handle, opts, v, filter);
 					else {
 						// obj_Class must be default-constructable to work here
 						boost::shared_ptr<obj_class> obj(new obj_class);
-						auto res = dllm(handle, opts, obj.get());
+						auto res = dllm(handle, opts, obj.get(), filter);
 						v.push_back(obj);
 						return res;
 					}
@@ -778,17 +783,18 @@ namespace rtmath
 
 		/// Quick template to read objects, depending on vector read support.
 		template <class T>
-		void readObjs(std::vector<boost::shared_ptr<T> > &rinputs, const std::string &fname)
+		void readObjs(std::vector<boost::shared_ptr<T> > &rinputs, const std::string &fname, 
+			std::shared_ptr<const rtmath::registry::collectionTyped<T> > filter = nullptr)
 		{
 			auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 			iopts->filename(fname);
-			if (T::canReadMulti(nullptr, iopts))
-				T::readVector(nullptr, iopts, rinputs);
-			else {
-				boost::shared_ptr<T> s(new T);
-				s->readFile(fname);
-				rinputs.push_back(s);
-			}
+			//if (T::canReadMulti(nullptr, iopts)) // This is wrong. Indicates if it can be read at all, not just for vectors.
+				T::readVector(nullptr, iopts, rinputs, filter);
+			//else {
+			//	boost::shared_ptr<T> s(new T);
+			//	s->readFile(fname);
+			//	rinputs.push_back(s);
+			//}
 		};
 
 		/**

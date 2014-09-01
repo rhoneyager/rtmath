@@ -72,6 +72,8 @@ namespace rtmath {
 				readAttr<string, Group>(base, "ingest_hostname", r->ingest_hostname);
 				if (attrExists(base, "ingest_username"))
 					readAttr<string, Group>(base, "ingest_username", r->ingest_username);
+				if (attrExists(base, "run_uuid"))
+					readAttr<string, Group>(base, "run_uuid", r->runuuid);
 				readAttr<int, Group>(base, "ingest_rtmath_version", r->ingest_rtmath_version);
 				readAttr<string, Group>(base, "hostname", r->hostname);
 

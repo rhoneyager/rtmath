@@ -5,6 +5,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
+#include "../registry.h"
 
 /* This contains the necessary functions for computing convex and concave hulls, 
  * both for writeout and for shapefile determinations */
@@ -21,10 +22,13 @@ namespace rtmath
 		template <class hullType>
 		struct DLEXPORT_rtmath_voronoi hull_provider
 		{
-			typedef std::function<boost::shared_ptr<hullType>
-				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend)>
-				hullGenerator;
+			typedef std::function<
+				boost::shared_ptr<hullType>
+				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > )
+				> hullGenerator;
 			hullGenerator generator;
+
+			const char* name;
 		};
 	}
 	namespace registry

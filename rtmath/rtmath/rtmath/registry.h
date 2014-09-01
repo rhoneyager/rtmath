@@ -354,6 +354,12 @@ namespace rtmath
 			io_multi_type io_multi_processor;
 		};
 
+		/// These exist for inheritance, so as to select objects to be read.
+		template <class T>
+		struct collectionTyped { collectionTyped(); virtual ~collectionTyped();
+		virtual void filter() = 0;
+		};
+
 		template<class object>
 		struct IO_class_registry_reader : IO_class_registry<object>
 		{
@@ -367,7 +373,7 @@ namespace rtmath
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
-				object*)> io_multi_type;
+				object*, std::shared_ptr<const rtmath::registry::collectionTyped<object> >)> io_multi_type;
 			io_multi_type io_multi_processor;
 
 			/** \brief Handles reading multiple objects from a single source
@@ -381,9 +387,11 @@ namespace rtmath
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
-				std::vector<boost::shared_ptr<object> > &)> io_vector_type;
+				std::vector<boost::shared_ptr<object> > &,
+				std::shared_ptr<const rtmath::registry::collectionTyped<object> >)> io_vector_type;
 			io_vector_type io_vector_processor;
 		};
+
 
 
 		/** \brief Match file type (basic model)

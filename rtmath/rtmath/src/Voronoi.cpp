@@ -416,7 +416,7 @@ namespace rtmath
 				*/
 			}
 
-			cerr << endl;
+			std::cerr << std::endl;
 
 			// Clean up vertex graph
 			//m.destroy_ptr(vertexIdMap);
@@ -497,7 +497,7 @@ namespace rtmath
 			}
 
 			if (numPointCells)
-				cerr << "Number of point cells: " << numPointCells << endl;
+				std::cerr << "Number of point cells: " << numPointCells << std::endl;
 
 			
 			out->conservativeResize(numSurfacePoints, 4);

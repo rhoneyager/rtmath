@@ -1,23 +1,27 @@
 #include "Stdafx-voronoi.h"
-//#include <boost/interprocess/mapped_region.hpp>
-//#include <boost/interprocess/managed_heap_memory.hpp>
-//#include <boost/interprocess/allocators/allocator.hpp>
-//#include <boost/interprocess/containers/flat_map.hpp>
-//#include <boost/interprocess/containers/flat_set.hpp>
-//#include <boost/interprocess/containers/set.hpp>
-//#include <boost/interprocess/containers/vector.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/managed_heap_memory.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/flat_map.hpp>
+#include <boost/interprocess/containers/flat_set.hpp>
+#include <boost/interprocess/containers/set.hpp>
+#include <boost/interprocess/containers/vector.hpp>
 #include <functional>
-//#include <scoped_allocator>
+#include <scoped_allocator>
 #include <boost/functional/hash.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
 #include <Voro/voro++.hh>
+#include <cmath>
 //#include <Ryan_Serialization/serialization.h>
 #include "../rtmath/depGraph.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
 #include "../rtmath/error/error.h"
+
+#undef min
+#undef max
 
 namespace rtmath
 {
@@ -28,9 +32,9 @@ namespace rtmath
 		{
 			tblDoubles.resize(n, NUM_CELL_DEFS_DOUBLES);
 			tblInts.resize(n, NUM_CELL_DEFS_INTS);
-			tblCellNeighs.resize(n, CachedVoronoi_MaxNeighbors::value);
-			tblCellF_verts.resize(n, CachedVoronoi_MaxNeighbors::value);
-			tblCellF_areas.resize(n, CachedVoronoi_MaxNeighbors::value);
+			tblCellNeighs.resize(n, CachedVoronoi_MaxNeighbors_VAL);
+			tblCellF_verts.resize(n, CachedVoronoi_MaxNeighbors_VAL);
+			tblCellF_areas.resize(n, CachedVoronoi_MaxNeighbors_VAL);
 
 			tblCellNeighs.setZero();
 			tblCellF_verts.setZero();
@@ -161,7 +165,7 @@ namespace rtmath
 			//vc.vertices(crds(0),crds(1),crds(2),v);
 			vc.face_areas(lf_areas);
 
-			const size_t cArraySize = CachedVoronoi_MaxNeighbors::value;
+			const size_t cArraySize = CachedVoronoi_MaxNeighbors_VAL;
 
 			auto neigh = tblCellNeighs.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
 			auto f_vert = tblCellF_verts.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);

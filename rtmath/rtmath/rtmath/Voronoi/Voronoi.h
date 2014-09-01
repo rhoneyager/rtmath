@@ -30,17 +30,16 @@ namespace rtmath {
 		class DLEXPORT_rtmath_voronoi Voronoi_provider
 		{
 			Voronoi_provider();
-			virtual ~Voronoi_provider();
 		public:
-
-			//typedef std::function<boost::shared_ptr<VoronoiDiagram>
-			//	(const Eigen::Array3f &, const Eigen::Array3f &,
-			//	const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoiStdGeneratorType;
-			//voronoiStdGeneratorType generator;
-			virtual boost::shared_ptr<VoronoiDiagram> generate(
-				const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
-				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
-				) = 0;
+			~Voronoi_provider();
+			typedef std::function<boost::shared_ptr<VoronoiDiagram>
+				(const Eigen::Array3f &, const Eigen::Array3f &,
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoiStdGeneratorType;
+			voronoiStdGeneratorType generator;
+			//virtual boost::shared_ptr<VoronoiDiagram> generate(
+			//	const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
+			//	const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
+			//	) = 0;
 		};
 	}
 	namespace registry {
@@ -120,9 +119,9 @@ namespace rtmath {
 
 			HASH_t _hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
-			void regenerateVoronoi() const;
+			virtual void regenerateVoronoi() const;
 			/// Recalculates all cells in the Voronoi diagram
-			void regenerateFull() const;
+			virtual void regenerateFull() const;
 			Eigen::Array3f mins;
 			Eigen::Array3f maxs;
 		public:
@@ -141,43 +140,43 @@ namespace rtmath {
 			/// Revision of the rtmath code for ingest
 			int ingest_rtmath_version;
 
-			void getResultsTable(std::map<std::string, matrixType> &res) const;
+			virtual void getResultsTable(std::map<std::string, matrixType> &res) const;
 
-			const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
+			virtual const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
 			
-			void getBounds(Eigen::Array3f &mins, Eigen::Array3f &maxs, Eigen::Array3f &span) const;
-			Eigen::Array3i getSpan() const;
-			size_t numPoints() const;
+			virtual void getBounds(Eigen::Array3f &mins, Eigen::Array3f &maxs, Eigen::Array3f &span) const;
+			virtual Eigen::Array3i getSpan() const;
+			virtual size_t numPoints() const;
 			
 			// Takes the output of another function and creates a solid 'hull' for display.
 			//matrixType hullPts(const matrixType &src);
 
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			matrixType calcSurfaceDepth() const;
+			virtual matrixType calcSurfaceDepth() const;
 
 			/// \brief Calculate the depth from the surface of each cell, and output 
 			/// as an Eigen::Matrix, following the initial point indices.
-			matrixType calcSurfaceDepthVectors() const;
+			virtual matrixType calcSurfaceDepthVectors() const;
 
 			/// \brief Calculate the number of neighbors for each point.
-			matrixType calcSurfaceNumNeighs() const;
+			virtual matrixType calcSurfaceNumNeighs() const;
 
 			/// \brief Debug function to display the filling order of the vertices.
-			matrixType calcSurfaceFillingOrder() const;
+			virtual matrixType calcSurfaceFillingOrder() const;
 
 			/// Calculate candidate convex hull points (used in max diameter calculations).
-			matrixType calcCandidateConvexHullPoints() const;
+			virtual matrixType calcCandidateConvexHullPoints() const;
 
 			/// \brief Calculate the external surface area fraction of all 
 			/// points.
-			matrixType calcPointsSAfracExternal() const;
+			virtual matrixType calcPointsSAfracExternal() const;
 
 
 			/// Calculate the surface area of the bulk figure
-			double surfaceArea() const;
+			virtual double surfaceArea() const;
 			/// Calculate the volume of the bulk figure
-			double volume() const;
+			virtual double volume() const;
 			/// Calculate projective area of the figure intersecting the specified plane
 
 
@@ -209,7 +208,7 @@ namespace rtmath {
 			static boost::shared_ptr<VoronoiDiagram> loadHash(
 				const std::string &hash);
 			/// Write to the hash directory (convenience function)
-			void writeToHash() const;
+			virtual void writeToHash() const;
 		};
 	}
 }

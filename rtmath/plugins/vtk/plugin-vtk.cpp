@@ -6,7 +6,6 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -43,4 +42,11 @@ void dllEntry()
 
 	//genAndRegisterIOregistry<::rtmath::Voronoi::VoronoiDiagram,
 	//	rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);
+
+	rtmath::ddscat::hull_provider<rtmath::ddscat::convexHull> reg_convex_hull;
+	reg_convex_hull.name = "vtk";
+	reg_convex_hull.generator = rtmath::plugins::vtk::vtkConvexHull::generate;
+
+	doRegisterHook<rtmath::ddscat::convexHull, ::rtmath::ddscat::hull_provider_registry, 
+		::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> >(reg_convex_hull);
 }

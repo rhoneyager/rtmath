@@ -205,14 +205,10 @@ namespace rtmath {
 			bool operator<(const ddOutput &) const;
 			bool operator==(const ddOutput &) const;
 			bool operator!=(const ddOutput &) const;
-
-
 			/// Regenerates ddOutputSingle entries from tables (used in hdf5 read)
 			//void doImport();
-
 			/// A brief description of the run
 			std::string description;
-
 			/// When the run was imported
 			std::string ingest_timestamp;
 			/// The system that the run was imported on
@@ -223,22 +219,18 @@ namespace rtmath {
 			std::string hostname;
 			/// Revision of the rtmath code for ingest
 			int ingest_rtmath_version;
-			
-
 			/// Frequency (GHz)
 			double freq;
 			/// Effective radius (um)
 			double aeff;
 			/// Temperature (K)
 			double temp;
-
 			/// Paths of source files. Used in consolidation.
 			std::multiset<std::string> sources;
 			/// User-set brief description snippets. Used in isolating sets of runs.
 			std::multimap<std::string, std::string> tags;
 			/// DDSCAT run version tag
 			std::string ddvertag;
-
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
 			class stat_entries {
 				/// \note Every time these are changed, the stringify code also needs to be updated
@@ -336,7 +328,6 @@ namespace rtmath {
 			/// Number of stored orientations + averages
 			size_t numOriData;
 
-
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
 			class fmlColDefs
 			{
@@ -389,7 +380,6 @@ namespace rtmath {
 			* the effective radius, and the ddscat version tag.
 			**/
 			std::string genName() const;
-
 			/**
 			* \brief Generate a standardized file name (for saving) based on the 
 			* ddOutput contents
@@ -398,6 +388,10 @@ namespace rtmath {
 			* radius, and the ddscat version tag.
 			**/
 			std::string genNameSmall() const;
+			/// Unique identifier id for the run
+			std::string runuuid;
+			/// Unique name based on the run uuid and the shapehash.
+			std::string genUUID() const;
 
 			/// Generate a ddOutputSingle .avg object that reflects the 
 			/// sca file weights.

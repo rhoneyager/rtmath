@@ -67,6 +67,7 @@ namespace rtmath {
 				addAttr<string, Group>(gRun, "Description", s->description);
 				addAttr<string, Group>(gRun, "ingest_timestamp", s->ingest_timestamp);
 				addAttr<string, Group>(gRun, "ingest_hostname", s->ingest_hostname);
+				addAttr<string, Group>(gRun, "run_uuid", s->runuuid); // Not all ingests have this...
 				addAttr<string, Group>(gRun, "ingest_username", s->ingest_username); // Not all ingests have this...
 				addAttr<int, Group>(gRun, "ingest_rtmath_version", s->ingest_rtmath_version);
 				addAttr<string, Group>(gRun, "hostname", s->hostname);

@@ -164,7 +164,9 @@ CREATE VIEW hostLoad AS
 	group by host.hostname
 	order by host.hostname;
 
+	create view currentruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from currentruns order by total - good;
 
+	grant select on currentruns_console to public;
 	grant select on currentruns TO public;
 	grant select on failedruns TO public;
 	grant select on stalledruns TO public;
