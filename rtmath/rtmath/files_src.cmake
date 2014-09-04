@@ -119,10 +119,10 @@ source_group("Resource Files" FILES ${resource-files})
 
 
 set(rtmath_voronoi-files
-	rtmath/Voronoi/CachedVoronoi.h
+	#rtmath/Voronoi/CachedVoronoi.h
 	rtmath/Voronoi/Voronoi.h
 	rtmath/ddscat/hulls.h
-	src/CachedVoronoi.cpp
+	#src/CachedVoronoi.cpp
 	src/hulls.cpp
 	src/Stdafx-voronoi.cpp
 	src/Stdafx-voronoi.h

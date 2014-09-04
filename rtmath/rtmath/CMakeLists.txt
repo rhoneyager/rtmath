@@ -170,8 +170,8 @@ storebin(rtmath_core)
 
 
 
-find_package(Voro REQUIRED)
-include_directories(${VORO_INCLUDE_DIRS})
+#find_package(Voro REQUIRED)
+#include_directories(${VORO_INCLUDE_DIRS})
 #find_package(VTK REQUIRED)
 #include(${VTK_USE_FILE})
 #include_directories(BEFORE ${VTK_INCLUDE_DIRS})

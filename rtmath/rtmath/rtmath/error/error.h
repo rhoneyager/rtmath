@@ -129,6 +129,9 @@ namespace rtmath
 		/// Another hook blocked unload
 		ERRSTR2(xBlockedHookUnload);
 
+		/// Cannot cast upwards to a derived class (usually for plugin handling)
+		ERRSTR2(xUpcast);
+
 		/// Unknown error
 		ERRSTD(xOtherError);
 

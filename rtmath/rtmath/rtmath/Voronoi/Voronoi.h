@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -12,12 +13,6 @@
 #include "../io.h"
 
 
-namespace voro
-{
-	class container;
-	class voronicell_neighbor;
-	class c_loop_all;
-}
 
 namespace rtmath {
 	namespace Voronoi {
@@ -36,6 +31,14 @@ namespace rtmath {
 				(const Eigen::Array3f &, const Eigen::Array3f &,
 				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoiStdGeneratorType;
 			voronoiStdGeneratorType generator;
+			typedef std::function<boost::shared_ptr<VoronoiDiagram>()> voronoiBlankGeneratorType;
+			voronoiBlankGeneratorType voronoiBlankGenerator;
+
+			typedef std::function<boost::shared_ptr<VoronoiDiagram>(boost::shared_ptr<VoronoiDiagram>)> 
+				voronoiUpcastGeneratorType;
+			voronoiUpcastGeneratorType voronoiUpcastGenerator;
+
+			const char* name;
 			//virtual boost::shared_ptr<VoronoiDiagram> generate(
 			//	const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
 			//	const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
@@ -59,10 +62,7 @@ namespace rtmath {
 
 	namespace Voronoi
 	{
-		
 		class CachedVoronoi;
-		
-
 		/** \brief Encapsulators + generators for Voronoi objects.
 		*
 		* These objects represent various Voronoi diagrams (voro++ library), usually used in
@@ -82,6 +82,7 @@ namespace rtmath {
 		* \todo Add io functions (saving / loading hash, better serialization, silo output)
 		**/
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
+			public boost::enable_shared_from_this<VoronoiDiagram>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::Voronoi::Voronoi_IO_input_registry,
 				::rtmath::registry::IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >,
@@ -96,26 +97,13 @@ namespace rtmath {
 		public:
 			typedef boost::shared_ptr<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixType;
 			typedef boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > matrixTypeMutable;
-			VoronoiDiagram();
 		public:
-			/**
-			* \brief Internal pointer to the Voro++ object
-			*
-			* This object contains the actual Voronoi diagram calculation.
-			* It does not persist in serialization and so needs to be recalculated each 
-			* time a Voronoi object is loaded.
-			**/
-			mutable boost::shared_ptr<voro::container> vc;
-			/// \brief Internal pointer to the internal Voronoi cache
-			/// \todo Move the internal Voro++ object to within here
-			/// \todo Add precalced object serialization
-			mutable std::map<std::string, boost::shared_ptr<CachedVoronoi> > cache;
-			//mutable boost::shared_ptr<CachedVoronoi> precalced, precalcedSmall;
-
 			/// The Eigen source object.
 			matrixType src;
 			/// Derived matrices from Voronoi-based algorithms. Results get stored / read from here.
 			mutable std::map<std::string, matrixType > results;
+			/// Container for cached Voronoi diagram results. CachedVoronoi is the common base class.
+			std::map<std::string, boost::shared_ptr<CachedVoronoi> > cache;
 
 			HASH_t _hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
@@ -124,7 +112,11 @@ namespace rtmath {
 			virtual void regenerateFull() const;
 			Eigen::Array3f mins;
 			Eigen::Array3f maxs;
+		private:
+			void upcast(const char* pluginid = "") const;
 		public:
+			/// \note Constructor needs to be public for io standard reader (for now)
+			VoronoiDiagram();
 			~VoronoiDiagram() {}
 
 			/// Forcibly set the hash to a given value (can be used to match to a shape or stats)
@@ -139,6 +131,8 @@ namespace rtmath {
 			std::string ingest_username;
 			/// Revision of the rtmath code for ingest
 			int ingest_rtmath_version;
+			/// Plugin id of the generator (used in upcasting)
+			std::string pluginId;
 
 			virtual void getResultsTable(std::map<std::string, matrixType> &res) const;
 
@@ -179,22 +173,17 @@ namespace rtmath {
 			virtual double volume() const;
 			/// Calculate projective area of the figure intersecting the specified plane
 
-
-
-			/// Save the Voronoi diagram
-			//void writeFile(const std::string &filename, const std::string type = "") const;
-
-			// Save the voronoi diagram to the given hash
-			//void writeToHash(HASH_t hash) const;
-			//inline void writeToHash() const { writeToHash(hash); }
-
-
 			/// \brief Generate standard Voronoi diagram, with cells starting with pre-contoured size
 			/// \todo Add points shared_ptr overload.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
 				const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
-				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points,
+				const char* pluginid = ""
 				);
+
+			/// Used only by the hdf readers and io storage plugins.
+			/// \param is the plugin id of an object to be read. Handles the cast.
+			static boost::shared_ptr<VoronoiDiagram> generateBlank(const char* pluginid = "");
 
 			// Load a Voronoi diagram from a given hash
 			//static boost::shared_ptr<VoronoiDiagram> loadHash(HASH_t hash);

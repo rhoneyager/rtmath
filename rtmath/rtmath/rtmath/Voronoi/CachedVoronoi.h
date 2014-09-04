@@ -5,35 +5,29 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 //#include <stddef.h>
-
-namespace voro
-{
-	class container;
-	class voronoicell_neighbor;
-	class c_loop_all;
-}
-
 namespace rtmath {
 	namespace Voronoi {
 
 #define CachedVoronoi_MaxNeighbors_VAL 50
 		
-		/// Storage container class for the cached Voronoi cell information
+		/// \brief Storage container class for the cached Voronoi cell information
+		/// \note This is a base class! It can be overridden to store more. Everything here 
+		/// gets written with the hdf5 plugin.
 		class DLEXPORT_rtmath_voronoi CachedVoronoi
 		{
-			friend class VoronoiDiagram;
+			//friend class VoronoiDiagram;
 		public:
 			mutable Eigen::Array3i span;
 			/// Maps each possible integral coordinate to a given cell.
 			mutable Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> cellmap;
-		private:
+		protected:
 			void resize(size_t numCells);
 			mutable double sa, vol;
-			mutable boost::shared_ptr<voro::container> vc;
-			void calcCell(voro::voronoicell_neighbor &vc, size_t _row);
-			void regenerateCache(size_t numPoints);
+			//mutable boost::shared_ptr<voro::container> vc;
+			//void calcCell(voro::voronoicell_neighbor &vc, size_t _row);
+			virtual void regenerateCache(size_t numPoints);
 			/// Iterate over all possible coordinates in the container and find a matching cell
-			void generateCellMap() const;
+			virtual void generateCellMap() const;
 		public:
 			enum CellDefsDoubles
 			{
@@ -67,10 +61,10 @@ namespace rtmath {
 
 			Eigen::Array3f mins, maxs;
 
-			CachedVoronoi(size_t numPoints, boost::shared_ptr<voro::container> vc, 
+			CachedVoronoi(size_t numPoints, 
 				const Eigen::Array3f &mins, const Eigen::Array3f &maxs);
 			CachedVoronoi(); // Used in hdf5 read
-			~CachedVoronoi();
+			virtual ~CachedVoronoi();
 			
 			/// Calculate the surface area of the bulk figure
 			inline double surfaceArea() const { return sa; }
@@ -81,7 +75,7 @@ namespace rtmath {
 			/// Get the span of the bulk figure
 			inline Eigen::Array3i getSpan() const { return span; }
 			/// Get pointer to the mapping between coordinates and the stored cell
-			const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
+			virtual const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
 		};
 
 

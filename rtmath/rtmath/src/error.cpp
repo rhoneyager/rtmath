@@ -262,6 +262,15 @@ namespace rtmath {
 			_message.append("\n");
 		}
 
+		void xUpcast::_setmessage()
+		{
+			_message = "ERROR: cannot find plugin to handle cast to derived class: ";
+			_message.append(_m);
+			_message.append("\n");
+			_message.append(_n);
+			_message.append("\n");
+		}
+
 		void xOtherError::_setmessage()
 		{
 			_message = "ERROR (unknown)\n";
