@@ -103,7 +103,7 @@ namespace rtmath {
 			/// Derived matrices from Voronoi-based algorithms. Results get stored / read from here.
 			mutable std::map<std::string, matrixType > results;
 			/// Container for cached Voronoi diagram results. CachedVoronoi is the common base class.
-			std::map<std::string, boost::shared_ptr<CachedVoronoi> > cache;
+			mutable std::map<std::string, boost::shared_ptr<CachedVoronoi> > cache;
 
 			HASH_t _hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)

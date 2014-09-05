@@ -76,6 +76,7 @@ namespace rtmath {
 				addAttr<string, Group>(base, "hostname", s->hostname);
 				addAttr<string, Group>(base, "ingest_username", s->ingest_username); // Not all ingests have this...
 				addAttr<int, Group>(base, "ingest_rtmath_version", s->ingest_rtmath_version);
+				addAttr<string, Group>(base, "pluginId", s->pluginId);
 
 				addAttr<uint64_t, Group>(base, "Hash_lower", s->hash().lower);
 				addAttr<uint64_t, Group>(base, "Hash_upper", s->hash().upper);

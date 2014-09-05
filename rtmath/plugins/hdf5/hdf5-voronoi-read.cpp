@@ -48,6 +48,8 @@ namespace rtmath {
 				readAttr<string, Group>(base, "hostname", s->hostname);
 				readAttr<string, Group>(base, "ingest_username", s->ingest_username); // Not all ingests have this...
 				readAttr<int, Group>(base, "ingest_rtmath_version", s->ingest_rtmath_version);
+				if (attrExists(base, "pluginId"))
+					readAttr<string, Group>(base, "pluginId", s->pluginId);
 
 				HASH_t hash;
 				readAttr<uint64_t, Group>(base, "Hash_lower", hash.lower);
