@@ -25,6 +25,10 @@ namespace boost { namespace filesystem { class path; } }
 
 namespace rtmath {
 	namespace ddscat {
+		namespace shapefile {
+			class shapefile_index;
+			class shapefile;
+		}
 		class ddOutput;
 		class ddOutput_IO_output_registry {};
 		class ddOutput_IO_input_registry {};

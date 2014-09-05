@@ -175,10 +175,11 @@ namespace rtmath {
 
 			/// \brief Generate standard Voronoi diagram, with cells starting with pre-contoured size
 			/// \todo Add points shared_ptr overload.
+			/// \note pluginid cannot be defaulted because shapefile has the generateVoronoi function.
 			static boost::shared_ptr<VoronoiDiagram> generateStandard(
 				const Eigen::Array3f &mins, const Eigen::Array3f &maxs,
 				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& points,
-				const char* pluginid = ""
+				const char* pluginid
 				);
 
 			/// Used only by the hdf readers and io storage plugins.

@@ -10,7 +10,7 @@
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 
-#include "plugin-vtk.h"
+#include "plugin-voro.h"
 
 void dllEntry();
 rtmath_plugin_init(dllEntry);

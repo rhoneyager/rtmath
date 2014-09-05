@@ -321,7 +321,7 @@ namespace rtmath {
 					const std::string &name,
 					std::function < boost::shared_ptr<Voronoi::VoronoiDiagram>(
 					const Eigen::Array3f&, const Eigen::Array3f&,
-					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)>) const;
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&, const char*)>) const;
 
 				size_t numPoints;
 				std::set<size_t> Dielectrics;

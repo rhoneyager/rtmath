@@ -403,7 +403,7 @@ namespace rtmath {
 				const std::string &name,
 				std::function < boost::shared_ptr<Voronoi::VoronoiDiagram>(
 				const Eigen::Array3f&, const Eigen::Array3f&,
-				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> f) const
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&, const char*)> f) const
 			{
 				//if (voronoi_diagrams.count(name))
 				//	return voronoi_diagrams[name];
@@ -413,7 +413,7 @@ namespace rtmath {
 				res = Voronoi::VoronoiDiagram::loadHash(hash());
 				if (!res) {
 					std::cerr << " Diagrams not found. Generating." << std::endl;
-					res = f(mins, maxs, latticePts);
+					res = f(mins, maxs, latticePts, ""); // note that no particular plugin is specified here.
 					res->setHash(this->hash());
 				}
 

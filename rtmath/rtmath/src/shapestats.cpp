@@ -187,9 +187,9 @@ namespace rtmath {
 					}
 				}
 				std::cerr << " Voronoi diagram calculated. Extracting " << candidate_hull_points->rows() << " hull points." << std::endl;
-				convexHull cvHull(candidate_hull_points);
-				cvHull.constructHull();
-				max_distance = cvHull.maxDiameter();
+				boost::shared_ptr<convexHull> cvHull(convexHull::generate(candidate_hull_points));
+				cvHull->constructHull();
+				max_distance = cvHull->maxDiameter();
 				
 				// Calculate stats on max aspect ratio
 				/*{
@@ -216,8 +216,8 @@ namespace rtmath {
 				auto cvxHullCalc = [&]()
 				{
 					std::pair<float, float> res;
-					res.first = (float) cvHull.volume();
-					res.second = (float) cvHull.surfaceArea();
+					res.first = (float) cvHull->volume();
+					res.second = (float) cvHull->surfaceArea();
 					return res;
 				};
 

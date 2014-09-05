@@ -52,6 +52,9 @@ namespace rtmath
 
 	namespace Voronoi
 	{
+		Voronoi_provider::~Voronoi_provider() {}
+		Voronoi_provider::Voronoi_provider() {}
+
 		VoronoiDiagram::VoronoiDiagram()
 		{
 			hostname = Ryan_Debug::getHostname();
