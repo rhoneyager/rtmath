@@ -279,44 +279,6 @@ namespace rtmath
 				hash();
 			}
 
-			boost::shared_ptr<shapefile> shapefile::loadHash(
-				const std::string &hash)
-			{
-				boost::shared_ptr<shapefile> res(new shapefile);
-
-				using boost::filesystem::path;
-				using boost::filesystem::exists;
-
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
-
-				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
-				{
-					opts->setVal<std::string>("key", hash);
-					res = boost::shared_ptr<shapefile>(new shapefile);
-					res->readMulti(sh, opts);
-				}
-				return res;
-			}
-
-			void shapefile::loadHashLocal(
-				const std::string &hash)
-			{
-				using boost::filesystem::path;
-				using boost::filesystem::exists;
-
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
-
-				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
-				{
-					opts->setVal<std::string>("key", hash);
-					readMulti(sh, opts);
-				} else {
-					RTthrow debug::xMissingHash(hash.c_str(), "shapefile");
-				}
-			}
-
 			void shapefile::writeToHash() const
 			{
 				using boost::filesystem::path;

@@ -252,6 +252,7 @@ namespace rtmath {
 				shapeFileStats();
 				shapeFileStats(const ::rtmath::ddscat::shapefile::shapefile &shp);
 				shapeFileStats(const boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> &shp);
+				//static boost::shared_ptr<shapeFileStats> generate();
 				/// Should the stats file be recalculated in the newest version?
 				bool needsUpgrade() const;
 				/// Recalculate all stats, using the newest version of the code

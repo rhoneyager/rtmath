@@ -14,6 +14,7 @@
 #include "../registry.h"
 #include "../io.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 namespace rtmath {
 	namespace Voronoi {
@@ -32,10 +33,10 @@ namespace rtmath {
 			struct DLEXPORT_rtmath_ddscat shapefile_db_registry
 			{
 				struct DLEXPORT_rtmath_ddscat shapefile_db_comp {
-					bool operator() (const std::shared_ptr<shapefile>& lhs, 
-						const std::shared_ptr<shapefile>& rhs) const;
-					bool operator() (const boost::shared_ptr<shapefile>& lhs,
-						const boost::shared_ptr<shapefile>& rhs) const;
+					bool operator() (const std::shared_ptr<const shapefile>& lhs, 
+						const std::shared_ptr<const shapefile>& rhs) const;
+					bool operator() (const boost::shared_ptr<const shapefile>& lhs,
+						const boost::shared_ptr<const shapefile>& rhs) const;
 				};
 
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
@@ -74,7 +75,7 @@ namespace rtmath {
 					shapefile_index& flakeRefHashLower(const std::vector<std::string>&);
 					shapefile_index& flakeRefHashLower(const std::vector<uint64_t>&);
 
-					typedef std::shared_ptr<std::set<boost::shared_ptr<shapefile>, shapefile_db_comp > > collection;
+					typedef std::shared_ptr<std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp > > collection;
 					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
 						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
 						std::shared_ptr<registry::DB_options> = nullptr) const;
@@ -145,6 +146,11 @@ namespace rtmath {
 			::rtmath::ddscat::shapefile::shapefile_query_registry,
 			::rtmath::ddscat::shapefile::shapefile_db_registry >;
 	}
+	namespace io {
+		template <>
+		DLEXPORT_rtmath_ddscat boost::shared_ptr
+			<::rtmath::ddscat::shapefile::shapefile> customGenerator();
+	}
 	namespace ddscat {
 
 		namespace stats {
@@ -173,6 +179,7 @@ namespace rtmath {
 			
 			/// Class for reading / writing shapefiles. May be used in statistical calculations.
 			class DLEXPORT_rtmath_ddscat shapefile : 
+				virtual public boost::enable_shared_from_this<shapefile>,
 				virtual public ::rtmath::registry::usesDLLregistry<
 					::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
 					::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
@@ -190,13 +197,22 @@ namespace rtmath {
 				//virtual public ::rtmath::io::Serialization::implementsSerialization<
 				//	shapefile, shapefile_IO_output_registry, shapefile_IO_input_registry, shapefile_serialization>,
 			{
-			public:
+				// Need readVector as a friend class
+				friend boost::shared_ptr<shapefile> io::customGenerator<shapefile>();
 				shapefile(const std::string &filename);
 				shapefile(std::istream &in);
 				shapefile();
+			public:
 				virtual ~shapefile();
-
-#if 0 //_MSC_FULL_VER
+				static boost::shared_ptr<shapefile> generate(const std::string &filename);
+				static boost::shared_ptr<shapefile> generate(std::istream &in);
+				static boost::shared_ptr<shapefile> generate();
+				/// Copy from an existing object
+				static boost::shared_ptr<shapefile> generate(boost::shared_ptr<const shapefile>);
+				
+/// For some reason, MSVC refuses to make a copy constructor. It fails with one of the base classes.
+				/// \todo Fix the shapefile inheritance copy constructor
+#if _MSC_FULL_VER
 				shapefile& operator=(const shapefile&);
 #endif
 
@@ -228,20 +244,20 @@ namespace rtmath {
 				*
 				* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
 				**/
-				boost::shared_ptr<shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
+				boost::shared_ptr<const shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
 					decimationFunction dFunc = shapefile::decimateDielCount) const;
 
 				/// \brief Convenience function to decimate using the same degree in each dimension
-				inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
+				inline boost::shared_ptr<const shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
 
 				/** \brief Upscale a shapefile
 				* This function takes each dipole and multiplies it into a rectangular cell of a given size.
 				*
 				* All refractive indices are the same as the initial dipole.
 				**/
-				boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
+				boost::shared_ptr<const shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
 				/// \brief Convenience function to upscale using the same degree in each dimension
-				inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
+				inline boost::shared_ptr<const shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
 
 				/// \brief Decimation dielectric function that assigns a dielectric
 				/// that corresponds to the number of filled dipoles.
@@ -350,18 +366,23 @@ namespace rtmath {
 
 				/// Convenience functions to load shape based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
-				static boost::shared_ptr<shapefile> loadHash(
+				static boost::shared_ptr<const shapefile> loadHash(
 					const HASH_t &hash);
 				/// Convenience functions to load shape based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
-				static boost::shared_ptr<shapefile> loadHash(
+				static boost::shared_ptr<const shapefile> loadHash(
 					const std::string &hash);
 
 				/// When shape is partially loaded, use this routine to force a 
-				// reload from the hash database
+				/// reload from the hash database
 				void loadHashLocal();
 				void loadHashLocal(const HASH_t &hash);
 				void loadHashLocal(const std::string &hash);
+
+				/// Register a shape in the local hash database. Used in subsequent searches for the shape.
+				void registerHash() const;
+				/// Register a shape in the local hash database. Can also register a loading placeholder.
+				//static void registerHash(boost::shared_ptr<shapefile>);
 
 			};
 

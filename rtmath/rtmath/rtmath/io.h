@@ -718,6 +718,13 @@ namespace rtmath
 			}
 		};
 
+		template <class obj_class>
+		boost::shared_ptr<obj_class> customGenerator()
+		{
+			boost::shared_ptr<obj_class> res(new obj_class);
+			return res;
+		}
+
 		template <class obj_class,
 		class input_registry_class>
 		class implementsStandardReader : public implementsStandardSingleReader<obj_class, input_registry_class>
@@ -727,7 +734,6 @@ namespace rtmath
 			{}
 		public:
 			virtual ~implementsStandardReader() {}
-
 
 			/// Read all matching contained results into a vector
 			static std::shared_ptr<registry::IOhandler> readVector(
@@ -763,8 +769,12 @@ namespace rtmath
 					// own compression schemes. So, it's not handled at this level.
 					if (dllv) return dllv(handle, opts, v, filter);
 					else {
-						// obj_Class must be default-constructable to work here
-						boost::shared_ptr<obj_class> obj(new obj_class);
+						// obj_Class instance created using a generator template, which can be overridden if
+						// the obj_class has no publicly-available constructor (if it only can be used 
+						// as a shared_ptr, for example).
+						//boost::shared_ptr<obj_class> obj = obj_class::generate();
+						//boost::shared_ptr<obj_class> obj(new obj_class);
+						boost::shared_ptr<obj_class> obj = customGenerator<obj_class>();
 						auto res = dllm(handle, opts, obj.get(), filter);
 						v.push_back(obj);
 						return res;
@@ -824,7 +834,7 @@ namespace rtmath
 			static typename index_class:: collection makeCollection()
 			{
 				return typename index_class::collection
-					(new std::set<boost::shared_ptr<obj_class>, comp_class >());
+					(new std::set<boost::shared_ptr<const obj_class>, comp_class >());
 			}
 			static std::shared_ptr<rtmath::registry::DBhandler> 
 				updateCollection(typename index_class::collection c, 

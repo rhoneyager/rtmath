@@ -15,6 +15,7 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/macros.h"
@@ -30,6 +31,10 @@
 namespace {
 	std::set<std::string> mtypes;
 	std::mutex mlock_shp;
+
+	std::map<std::string, 
+		boost::weak_ptr<const ::rtmath::ddscat::shapefile::shapefile> > loadedShapes;
+	//std::map<rtmath::HASH_t, boost::shared_ptr<shapefile> > stubShapes;
 }
 
 namespace rtmath {
@@ -54,6 +59,15 @@ namespace rtmath {
 		
 	}
 
+	namespace io {
+		template <>
+		boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> customGenerator()
+		{
+			boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> res
+				(new ::rtmath::ddscat::shapefile::shapefile);
+			return res;
+		}
+	}
 	namespace ddscat {
 		namespace shapefile {
 
@@ -96,7 +110,7 @@ namespace rtmath {
 			shapefile::shapefile() { _init(); }
 			shapefile::~shapefile() { }
 
-#if 0 //_MSC_FULL_VER
+#if _MSC_FULL_VER
 			shapefile& shapefile::operator=(const shapefile& rhs)
 			{
 				if (this == &rhs) return *this;
@@ -128,8 +142,45 @@ namespace rtmath {
 				cp(means);
 
 #undef cp
+				return *this;
 			}
 #endif
+
+			void shapefile::registerHash() const
+			{
+				boost::shared_ptr<const shapefile> ptr = this->shared_from_this();
+				boost::weak_ptr<const shapefile> wshp(ptr);
+				loadedShapes[this->_localhash.string()] = wshp;
+				//loadedShapes.emplace(std::pair < std::string,
+				//boost::weak_ptr<const ::rtmath::ddscat::shapefile::shapefile> > (
+				//this->_localhash.string(), wshp));
+			}
+
+			boost::shared_ptr<shapefile> shapefile::generate(const std::string &filename)
+			{
+				boost::shared_ptr<shapefile> res(new shapefile(filename));
+				return res;
+			}
+
+			boost::shared_ptr<shapefile> shapefile::generate(std::istream &in)
+			{
+				boost::shared_ptr<shapefile> res(new shapefile(in));
+				return res;
+			}
+
+			boost::shared_ptr<shapefile> shapefile::generate()
+			{
+				boost::shared_ptr<shapefile> res(new shapefile);
+				return res;
+			}
+
+			boost::shared_ptr<shapefile> shapefile::generate(boost::shared_ptr<const shapefile> p)
+			{
+				boost::shared_ptr<shapefile> res(new shapefile);
+				*res = *p;
+				return res;
+			}
+
 
 			shapefile::shapefile(const std::string &filename)
 			{
@@ -195,7 +246,7 @@ namespace rtmath {
 					if (!tags.count(tag.first)) tags[tag.first] = tag.second;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::loadHash(
+			boost::shared_ptr<const shapefile> shapefile::loadHash(
 				const HASH_t &hash)
 			{ return loadHash(boost::lexical_cast<std::string>(hash.lower)); }
 
@@ -421,7 +472,7 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
+			boost::shared_ptr<const shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
 				decimationFunction dFunc) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
@@ -532,7 +583,7 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::enhance(size_t dx, size_t dy, size_t dz) const
+			boost::shared_ptr<const shapefile> shapefile::enhance(size_t dx, size_t dy, size_t dz) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 
@@ -711,6 +762,67 @@ namespace rtmath {
 			void shapefile::fixStats()
 			{
 				x0 = means;
+			}
+
+
+
+			boost::shared_ptr<const shapefile> shapefile::loadHash(
+				const std::string &hash)
+			{
+				if (loadedShapes.count(hash))
+				{
+					auto wptr = loadedShapes.at(hash);
+					if (!wptr.expired()) return wptr.lock();
+				}
+
+				boost::shared_ptr<shapefile> res(new shapefile);
+
+				using boost::filesystem::path;
+				using boost::filesystem::exists;
+
+				std::shared_ptr<registry::IOhandler> sh;
+				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+
+				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				{
+					opts->setVal<std::string>("key", hash);
+					res = boost::shared_ptr<shapefile>(new shapefile);
+					res->readMulti(sh, opts);
+				}
+
+				res->registerHash();
+				return res;
+			}
+
+			void shapefile::loadHashLocal(
+				const std::string &hash)
+			{
+				if (loadedShapes.count(hash))
+				{
+					auto wptr = loadedShapes.at(hash);
+					if (!wptr.expired())
+					{
+						*this = *(wptr.lock());
+						return;
+					}
+				}
+
+				using boost::filesystem::path;
+				using boost::filesystem::exists;
+
+				std::shared_ptr<registry::IOhandler> sh;
+				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+
+				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				{
+					opts->setVal<std::string>("key", hash);
+					readMulti(sh, opts);
+				}
+				else {
+					RTthrow debug::xMissingHash(hash.c_str(), "shapefile");
+				}
+
+				this->registerHash();
 			}
 
 		}

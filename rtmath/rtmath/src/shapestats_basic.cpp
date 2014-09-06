@@ -52,6 +52,13 @@ namespace rtmath {
 
 			shapeFileStats::shapeFileStats() { _init();  }
 
+			/*
+			boost::shared_ptr<shapeFileStats> shapeFileStats::generate()
+			{
+				boost::shared_ptr<shapeFileStats> res(new shapeFileStats);
+				return res;
+			}
+			*/
 
 			shapeFileStatsBase::shapeFileStatsBase()
 			{

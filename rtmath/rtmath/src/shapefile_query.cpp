@@ -40,12 +40,12 @@ namespace rtmath {
 	namespace ddscat {
 		namespace shapefile {
 
-			bool shapefile_db_registry::shapefile_db_comp::operator()(const std::shared_ptr<shapefile>& lhs, const std::shared_ptr<shapefile>& rhs) const
+			bool shapefile_db_registry::shapefile_db_comp::operator()(const std::shared_ptr<const shapefile>& lhs, const std::shared_ptr<const shapefile>& rhs) const
 			{
 				return *lhs < *rhs;
 			}
 
-			bool shapefile_db_registry::shapefile_db_comp::operator()(const boost::shared_ptr<shapefile>& lhs, const boost::shared_ptr<shapefile>& rhs) const
+			bool shapefile_db_registry::shapefile_db_comp::operator()(const boost::shared_ptr<const shapefile>& lhs, const boost::shared_ptr<const shapefile>& rhs) const
 			{
 				return *lhs < *rhs;
 			}
@@ -137,7 +137,7 @@ namespace rtmath {
 			std::pair<shapefile_db_registry::shapefile_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 				shapefile_db_registry::shapefile_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 			{
-				collection c(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
+				collection c(new std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp >());
 				std::shared_ptr<rtmath::registry::DBhandler> fp;
 
 				auto hooks = ::rtmath::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
@@ -165,12 +165,12 @@ namespace rtmath {
 				std::shared_ptr<rtmath::registry::DBhandler> p, 
 				std::shared_ptr<registry::DB_options> o) const
 			{
-				collection toMergeC(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
+				collection toMergeC(new std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp >());
 				//collection toMergeS(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
-				collection res(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
+				collection res(new std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp >());
 				std::shared_ptr<rtmath::registry::DBhandler> fp;
 
-				std::map<rtmath::HASH_t, boost::shared_ptr<shapefile> > db_hashes; // database results, as a map
+				std::map<rtmath::HASH_t, boost::shared_ptr<const shapefile> > db_hashes; // database results, as a map
 
 				auto hooks = ::rtmath::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
 				if (doDb)
@@ -205,7 +205,7 @@ namespace rtmath {
 							{
 								if (s->tags.count(t.first))
 								{
-									if (s->tags[t.first] == t.second)
+									if (s->tags.at(t.first) == t.second)
 										matches = true;
 									break;
 								}
@@ -277,11 +277,14 @@ namespace rtmath {
 					{
 						auto d = db_hashes.at(s->hash());
 
-						if (!s->standardD && d->standardD) s->standardD = d->standardD;
-						if (!s->numPoints && d->numPoints) s->numPoints = d->numPoints;
-						if (!s->desc.size() && d->desc.size()) s->desc = d->desc;
+						/// \note This is not good.
+						boost::shared_ptr<shapefile> ucs = boost::const_pointer_cast<shapefile>(s);
+
+						if (!s->standardD && d->standardD) ucs->standardD = d->standardD;
+						if (!s->numPoints && d->numPoints) ucs->numPoints = d->numPoints;
+						if (!s->desc.size() && d->desc.size()) ucs->desc = d->desc;
 						for (const auto &tag : d->tags)
-							if (!s->tags.count(tag.first)) s->tags[tag.first] = tag.second;
+							if (!s->tags.count(tag.first)) ucs->tags[tag.first] = tag.second;
 
 						db_hashes.erase(s->hash()); // Remove from consideration (already matched)
 					}
