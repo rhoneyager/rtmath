@@ -20,6 +20,9 @@
 #include "../rtmath/macros.h"
 #include "../rtmath/hash.h"
 #include "../rtmath/ddscat/ddOutput.h"
+#include "../rtmath/ddscat/shapefile.h"
+#include "../rtmath/ddscat/rotations.h"
+#include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/splitSet.h"
 #include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
@@ -62,6 +65,7 @@ namespace rtmath {
 			check(shapeHash);
 			check(freq); check(temp); check(aeff); check(numOriData);
 			return true;
+#undef check
 		}
 		bool ddOutput::operator<(const ddOutput &rhs) const {
 #define check(x) if (x != rhs.x) return x < rhs.x;
@@ -118,37 +122,37 @@ namespace rtmath {
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::betaRange(
 			size_t lower, size_t upper)
 		{
-			betaRange.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
+			betaRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
 		}
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::betaRange(
 			const std::vector<std::pair<size_t, size_t> > &vec)
 		{
 			for (const auto & v : vec)
-				betaRange.push_back(v);
+				betaRanges.push_back(v);
 			return *this;
 		}
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::thetaRange(
 			size_t lower, size_t upper)
 		{
-			thetaRange.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
+			thetaRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
 		}
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::thetaRange(
 			const std::vector<std::pair<size_t, size_t> > &vec)
 		{
 			for (const auto & v : vec)
-				thetaRange.push_back(v);
+				thetaRanges.push_back(v);
 			return *this;
 		}
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::phiRange(
 			size_t lower, size_t upper)
 		{
-			phiRange.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
+			phiRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
 		}
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::phiRange(
 			const std::vector<std::pair<size_t, size_t> > &vec)
 		{
 			for (const auto & v : vec)
-				phiRange.push_back(v);
+				phiRanges.push_back(v);
 			return *this;
 		}
 		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::aeffRange(
@@ -181,7 +185,7 @@ namespace rtmath {
 		searchAndVec1(hashUpper, hashUppers, std::string);
 		searchAndVec1(flakeType, flakeTypes, std::string);
 		searchAndVec1(runId, runids, std::string);
-		searchAndVec1(polarization, polarization, std::string);
+		//searchAndVec1(polarization, pol, std::string);
 		//searchAndVec1(hash, hashLowers, HASH_t);
 		searchAndVec2(hashLower, hashLowers, uint64_t);
 		searchAndVec2(hashUpper, hashUppers, uint64_t);
@@ -236,7 +240,7 @@ namespace rtmath {
 			collection res(new std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp >());
 			std::shared_ptr<rtmath::registry::DBhandler> fp;
 
-			std::map<rtmath::HASH_t, boost::shared_ptr<ddOutput> > db_hashes; // database results, as a map
+			std::map<std::string, boost::shared_ptr<ddOutput> > db_hashes; // database results, as a map
 
 			auto hooks = ::rtmath::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
 			if (doDb)
@@ -253,7 +257,7 @@ namespace rtmath {
 				}
 
 				for (const auto &r : *(toMergeC))
-					db_hashes[r->hash()] = r;
+					db_hashes[r->genUUID()] = r;
 			}
 
 
@@ -263,26 +267,15 @@ namespace rtmath {
 			{
 				auto works = [&]() -> bool
 				{
-					// Tag filtering - OR filtering
-					if (tags.size())
-					{
-						bool matches = false;
-						for (const auto &t : tags)
-						{
-							if (s->tags.count(t.first))
-							{
-								if (s->tags[t.first] == t.second)
-									matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					s->loadShape(false);
+
+					if (runids.size() && !runids.count(s->genUUID()))
+						return false;
 
 					// hash filtering
-					if (hashLowers.size() && !hashLowers.count(s->hash().string()))
+					if (hashLowers.size() && !hashLowers.count(s->shapeHash.string()))
 						return false;
-					if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->hash().upper)))
+					if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->shapeHash.upper)))
 						return false;
 
 					// flake types
@@ -290,19 +283,11 @@ namespace rtmath {
 					{
 						if (s->tags.count("flake_classification"))
 						{
-							if (!flakeTypes.count(s->tags.at("flake_classification")))
+							if (!flakeTypes.count(s->shape->tags.at("flake_classification")))
 								return false;
 						}
 					}
 
-					// refHashLowers
-					if (s->tags.count("flake_reference"))
-					{
-						if (refHashLowers.size() &&
-							std::find(refHashLowers.begin(), refHashLowers.end(),
-							boost::lexical_cast<std::string>(s->hash().lower)) == refHashLowers.end())
-							return false;
-					}
 
 					// Dipole spacings
 					if (standardDs.size())
@@ -310,7 +295,7 @@ namespace rtmath {
 						bool matches = false;
 						for (const auto &r : standardDs)
 						{
-							if (r.first * (1. - r.second) <= s->standardD && s->standardD <= r.first * (1. + r.second))
+							if (r.first * (1. - r.second) <= s->shape->standardD && s->shape->standardD <= r.first * (1. + r.second))
 							{
 								matches = true;
 								break;
@@ -325,7 +310,94 @@ namespace rtmath {
 						bool matches = false;
 						for (const auto &r : dipoleRanges)
 						{
-							if (r.first <= s->numPoints && s->numPoints <= r.second)
+							if (r.first <= s->shape->numPoints && s->shape->numPoints <= r.second)
+							{
+								matches = true;
+								break;
+							}
+						}
+						if (!matches) return false;
+					}
+
+					ddscat::rotations rots;
+					s->parfile->getRots(rots);
+
+					if (betaRanges.size())
+					{
+						bool matches = false;
+						for (const auto &r : betaRanges)
+						{
+							if (r.first <= rots.bN() && rots.bN() <= r.second)
+							{
+								matches = true;
+								break;
+							}
+						}
+						if (!matches) return false;
+					}
+
+					if (thetaRanges.size())
+					{
+						bool matches = false;
+						for (const auto &r : thetaRanges)
+						{
+							if (r.first <= rots.tN() && rots.tN() <= r.second)
+							{
+								matches = true;
+								break;
+							}
+						}
+						if (!matches) return false;
+					}
+
+					if (phiRanges.size())
+					{
+						bool matches = false;
+						for (const auto &r : phiRanges)
+						{
+							if (r.first <= rots.pN() && rots.pN() <= r.second)
+							{
+								matches = true;
+								break;
+							}
+						}
+						if (!matches) return false;
+					}
+
+					if (aeffRanges.size())
+					{
+						bool matches = false;
+						for (const auto &r : aeffRanges)
+						{
+							if (r.first <= s->aeff && s->aeff <= r.second)
+							{
+								matches = true;
+								break;
+							}
+						}
+						if (!matches) return false;
+					}
+
+					if (tempRanges.size())
+					{
+						bool matches = false;
+						for (const auto &r : tempRanges)
+						{
+							if (r.first <= s->temp && s->temp <= r.second)
+							{
+								matches = true;
+								break;
+							}
+						}
+						if (!matches) return false;
+					}
+
+					if (freqRanges.size())
+					{
+						bool matches = false;
+						for (const auto &r : phiRanges)
+						{
+							if (r.first <= s->freq && s->freq <= r.second)
 							{
 								matches = true;
 								break;
@@ -339,17 +411,12 @@ namespace rtmath {
 
 				res->insert(s); // Passed filtering
 				// Merge the results of the provided object with any query results
-				if (db_hashes.count(s->hash()))
+				if (db_hashes.count(s->genUUID()))
 				{
-					auto d = db_hashes.at(s->hash());
+					auto d = db_hashes.at(s->genUUID());
 
-					if (!s->standardD && d->standardD) s->standardD = d->standardD;
-					if (!s->numPoints && d->numPoints) s->numPoints = d->numPoints;
-					if (!s->desc.size() && d->desc.size()) s->desc = d->desc;
-					for (const auto &tag : d->tags)
-						if (!s->tags.count(tag.first)) s->tags[tag.first] = tag.second;
-
-					db_hashes.erase(s->hash()); // Remove from consideration (already matched)
+					db_hashes.erase(s->genUUID()); // Remove from consideration (already matched)
+					db_hashes[s->genUUID()] = s;
 				}
 			}
 

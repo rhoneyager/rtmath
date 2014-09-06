@@ -53,7 +53,7 @@ namespace rtmath {
 				ddOutput_index();
 			public:
 				std::set<std::string> hashLowers, hashUppers,
-					flakeTypes, runids, polarization;
+					flakeTypes, runids, pol;
 				// Number and percent error
 				std::map<float, float > standardDs, freqRanges;
 				// Lower and upper (both inclusive) bounds
@@ -61,7 +61,7 @@ namespace rtmath {
 				std::vector<std::pair<size_t, size_t> > dipoleRanges, betaRanges, thetaRanges, phiRanges;
 			public:
 				~ddOutput_index();
-				static std::shared_ptr<shapefile_index> generate();
+				static std::shared_ptr<ddOutput_db_registry::ddOutput_index> generate();
 
 
 				ddOutput_index& hashLower(const std::string&);
@@ -71,7 +71,7 @@ namespace rtmath {
 				//ddOutput_index& hash(const HASH_t&);
 				ddOutput_index& flakeType(const std::string&);
 				ddOutput_index& runId(const std::string&);
-				ddOutput_index& polarization(const std::string&);
+				//ddOutput_index& polarization(const std::string&);
 				ddOutput_index& standardD(const float d, const float tolpercent = 1.0f);
 				ddOutput_index& freqRange(const float d, const float tolpercent = 1.0f);
 				ddOutput_index& dipoleRange(size_t inclLowerBound, size_t inclUpperBound);
@@ -87,7 +87,7 @@ namespace rtmath {
 				ddOutput_index& hashUpper(const std::vector<uint64_t>);
 				ddOutput_index& flakeType(const std::vector<std::string>&);
 				ddOutput_index& runId(const std::vector<std::string>&);
-				ddOutput_index& polarization(const std::vector<std::string>&);
+				//ddOutput_index& polarization(const std::vector<std::string>&);
 				ddOutput_index& dipoleRange(const std::vector<std::pair<size_t, size_t> >&);
 				ddOutput_index& betaRange(const std::vector<std::pair<size_t, size_t> >&);
 				ddOutput_index& thetaRange(const std::vector<std::pair<size_t, size_t> >&);
