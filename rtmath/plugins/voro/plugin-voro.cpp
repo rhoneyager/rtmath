@@ -9,31 +9,20 @@
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "voro-Voronoi.h"
 
 #include "plugin-voro.h"
 
 void dllEntry();
 rtmath_plugin_init(dllEntry);
 
-namespace rtmath
-{
-	namespace plugins
-	{
-		namespace vtk
-		{
-
-		}
-	}
-}
-
-
 void dllEntry()
 {
 	using namespace rtmath::registry;
-	using namespace rtmath::plugins::vtk;
+	using namespace rtmath::plugins::voro;
 	static const rtmath::registry::DLLpreamble id(
-		"Plugin-vtk",
-		"Provides hull generation, image processing, and file i/o.",
+		"Plugin-voro",
+		"Provides voronoi diagram generation",
 		PLUGINID);
 	rtmath_registry_register_dll(id);
 
@@ -43,10 +32,12 @@ void dllEntry()
 	//genAndRegisterIOregistry<::rtmath::Voronoi::VoronoiDiagram,
 	//	rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);
 
-	rtmath::ddscat::hull_provider<rtmath::ddscat::convexHull> reg_convex_hull;
-	reg_convex_hull.name = "vtk";
-	reg_convex_hull.generator = rtmath::plugins::vtk::vtkConvexHull::generate;
+	rtmath::Voronoi::Voronoi_provider reg_Voronoi;
+	reg_Voronoi.name = "voro";
+	reg_Voronoi.generator = ::rtmath::plugins::voro::VoroVoronoiDiagram::generateStandard;
+	reg_Voronoi.voronoiBlankGenerator = ::rtmath::plugins::voro::VoroVoronoiDiagram::generateBlank;
+	reg_Voronoi.voronoiUpcastGenerator = ::rtmath::plugins::voro::VoroVoronoiDiagram::generateUpcast;
 
-	doRegisterHook<rtmath::ddscat::convexHull, ::rtmath::ddscat::hull_provider_registry, 
-		::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> >(reg_convex_hull);
+	doRegisterHook<rtmath::Voronoi::VoronoiDiagram, ::rtmath::Voronoi::Voronoi_provider_registry,
+		::rtmath::Voronoi::Voronoi_provider >(reg_Voronoi);
 }

@@ -27,7 +27,8 @@ namespace rtmath
 		shared_ptr<IOhandler>
 			read_file_type_multi<::rtmath::data::arm::arm_info>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			::rtmath::data::arm::arm_info *s)
+			::rtmath::data::arm::arm_info *s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -380,7 +381,8 @@ namespace rtmath
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<::rtmath::data::arm::arm_info>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_info> > &s)
+			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_info> > &s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
 				RTthrow debug::xUnimplementedFunction();
 				return sh;

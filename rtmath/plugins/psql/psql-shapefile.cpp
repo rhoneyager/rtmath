@@ -207,7 +207,7 @@ namespace rtmath
 					//"standardD, description, flake_references, numDipoles FROM flake 
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
-					boost::shared_ptr<shapefile> ap(new shapefile);
+					boost::shared_ptr<shapefile> ap = shapefile::generate();
 
 					ap->numPoints = rtmath::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 7));
 					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));

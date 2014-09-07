@@ -136,7 +136,8 @@ namespace rtmath
 		std::shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::images::image>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			rtmath::images::image *im)
+			rtmath::images::image *im,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::images::image> >)
 		{
 			using namespace plugins::ImageMagick;
 			std::string filename = opts->filename();
@@ -163,7 +164,8 @@ namespace rtmath
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<rtmath::images::image>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::images::image> > &ims)
+			std::vector<boost::shared_ptr<rtmath::images::image> > &ims,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::images::image> >)
 		{
 			return sh;
 		}

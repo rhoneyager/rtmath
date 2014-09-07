@@ -320,7 +320,8 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::ddOutput *s)
+			rtmath::ddscat::ddOutput *s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddOutput> > )
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -352,7 +353,8 @@ namespace rtmath {
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<rtmath::ddscat::ddOutput>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s)
+			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddOutput> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -395,7 +397,11 @@ namespace rtmath {
 						boost::shared_ptr<rtmath::ddscat::ddOutput>
 							run(new rtmath::ddscat::ddOutput);
 						read_hdf5_ddOutput(grpRun, opts, run.get());
-						s.push_back(run);
+						if (filter) {
+							if (filter->filter(run.get()))
+								s.push_back(run);
+						}
+						else s.push_back(run);
 					}
 				}
 			}

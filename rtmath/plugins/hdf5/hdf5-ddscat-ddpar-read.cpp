@@ -243,7 +243,8 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::ddPar>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::ddPar *s)
+			rtmath::ddscat::ddPar *s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -292,7 +293,8 @@ namespace rtmath {
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<rtmath::ddscat::ddPar>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s)
+			std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
 			RTthrow debug::xUnimplementedFunction();
 			return sh;

@@ -94,8 +94,11 @@ namespace rtmath {
 					readAttrEigen<Eigen::Array3f, Group>(grp, "maxs", vobj->maxs);
 					readAttrEigen<Eigen::Array3i, Group>(grp, "span", vobj->span);
 
-					readAttr<double, Group>(grp, "surfaceArea", vobj->sa);
-					readAttr<double, Group>(grp, "volume", vobj->vol);
+					double sa, vol;
+					readAttr<double, Group>(grp, "surfaceArea", sa);
+					readAttr<double, Group>(grp, "volume", vol);
+					vobj->surfaceArea(sa);
+					vobj->volume(vol);
 
 					// Store object in the cache
 					s->cache[hname] = vobj;
@@ -153,7 +156,8 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::Voronoi::VoronoiDiagram>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::Voronoi::VoronoiDiagram *s)
+			rtmath::Voronoi::VoronoiDiagram *s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> >)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -186,7 +190,8 @@ namespace rtmath {
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<rtmath::Voronoi::VoronoiDiagram>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> > &s)
+			std::vector<boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> > &s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -229,7 +234,11 @@ namespace rtmath {
 						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram>
 							run(new rtmath::Voronoi::VoronoiDiagram);
 						read_hdf5_voro(grpRun, opts, run.get());
-						s.push_back(run);
+						if (filter) {
+							if (filter->filter(run.get()))
+								s.push_back(run);
+						}
+						else s.push_back(run);
 					}
 				}
 			}

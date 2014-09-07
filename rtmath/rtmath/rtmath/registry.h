@@ -358,6 +358,7 @@ namespace rtmath
 		template <class T>
 		struct collectionTyped { collectionTyped(); virtual ~collectionTyped();
 		virtual void filter() = 0;
+		virtual bool filter(const T*) const = 0;
 		};
 
 		template<class object>

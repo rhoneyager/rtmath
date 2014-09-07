@@ -24,8 +24,8 @@ namespace rtmath {
 		/// Designed to be a singleton
 		class DLEXPORT_rtmath_voronoi Voronoi_provider
 		{
-			Voronoi_provider();
 		public:
+			Voronoi_provider();
 			~Voronoi_provider();
 			typedef std::function<boost::shared_ptr<VoronoiDiagram>
 				(const Eigen::Array3f &, const Eigen::Array3f &,

@@ -28,7 +28,8 @@ namespace rtmath
 		shared_ptr<IOhandler>
 			read_file_type_multi<::rtmath::data::arm::arm_scanning_radar_sacr>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			::rtmath::data::arm::arm_scanning_radar_sacr *s)
+			::rtmath::data::arm::arm_scanning_radar_sacr *s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> > filter)
 		{
 			using namespace ::rtmath::data::arm;
 				std::string filename = opts->filename();
@@ -50,7 +51,7 @@ namespace rtmath
 				if (!s->info)
 				{
 					boost::shared_ptr<arm_info> info(new arm_info);
-					read_file_type_multi(h, opts, info.get());
+					read_file_type_multi<arm_info>(h, opts, info.get(), nullptr); // filter needs to be null here to make the call bind
 					s->info = info;
 				}
 
@@ -109,7 +110,8 @@ namespace rtmath
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<::rtmath::data::arm::arm_scanning_radar_sacr>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_scanning_radar_sacr> > &s)
+			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_scanning_radar_sacr> > &s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> >)
 		{
 				RTthrow debug::xUnimplementedFunction();
 				return sh;

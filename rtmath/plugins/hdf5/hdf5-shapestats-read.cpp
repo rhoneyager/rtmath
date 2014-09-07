@@ -63,7 +63,7 @@ namespace rtmath {
 				HASH_t hash;
 				readAttr<uint64_t, Group>(base, "Hash_Lower", hash.lower);
 				readAttr<uint64_t, Group>(base, "Hash_Upper", hash.upper);
-				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shp(new shapefile::shapefile);
+				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shp = shapefile::shapefile::generate();
 				shp->setHash(hash);
 				r->_shp = shp;
 
@@ -184,7 +184,8 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::stats::shapeFileStats>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::stats::shapeFileStats *s)
+			rtmath::ddscat::stats::shapeFileStats *s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> >)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -215,7 +216,8 @@ namespace rtmath {
 		std::shared_ptr<IOhandler>
 			read_file_type_vector<rtmath::ddscat::stats::shapeFileStats>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> > &s)
+			std::vector<boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> > &s,
+			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -249,7 +251,11 @@ namespace rtmath {
 						boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats>
 							stats(new rtmath::ddscat::stats::shapeFileStats);
 						read_hdf5_statsrawdata(grpStats, opts, stats.get());
-						s.push_back(stats);
+						if (filter) {
+							if (filter->filter(stats.get()))
+								s.push_back(stats);
+						}
+						else s.push_back(stats);
 					}
 				}
 			}
