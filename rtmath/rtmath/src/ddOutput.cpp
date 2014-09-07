@@ -195,7 +195,7 @@ namespace rtmath {
 					path pshp = pBase / "shape.dat";
 					if (exists(pshp))
 					{
-						boost::shared_ptr<shapefile::shapefile> scand(new shapefile::shapefile);
+						boost::shared_ptr<shapefile::shapefile> scand = shapefile::shapefile::generate();
 						scand->readFile(pshp.string());
 						if (scand->hash() == shapeHash) shape = scand;
 					}
@@ -299,8 +299,7 @@ namespace rtmath {
 				//if (noLoadRots) return;
 				// Note: the hashed object is the fundamental thing here that needs to be loaded
 				// The other stuff is only loaded for processing, and is not serialized directly.
-				res->shape = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
-					(new ::rtmath::ddscat::shapefile::shapefile(p.string()));
+				res->shape = ::rtmath::ddscat::shapefile::shapefile::generate(p.string());
 				// Get the hash and load the stats
 				//shapeHash = res->shape->hash();
 				//if (dostats)
@@ -313,8 +312,8 @@ namespace rtmath {
 				//if (noLoadRots) return;
 				// Note: the hashed object is the fundamental thing here that needs to be loaded
 				// The other stuff is only loaded for processing, and is not serialized directly.
-				res->parsedShapeHash = boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile>
-					(new ::rtmath::ddscat::shapefile::shapefile(p.string()))->hash();
+				res->parsedShapeHash = ::rtmath::ddscat::shapefile::shapefile::generate
+					(p.string())->hash();
 				// Get the hash and load the stats
 				//shapeHash = res->shape->hash();
 				//if (dostats)
@@ -725,6 +724,7 @@ namespace rtmath {
 				<< tDesc << "-"
 				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
+				<< parfile->namePolState() << "-"
 				<< ddvertag;
 
 			res = out.str();
@@ -757,6 +757,7 @@ namespace rtmath {
 				<< tDesc << "-"
 				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
+				<< parfile->namePolState() << "-"
 				<< ddvertag;
 
 			res = out.str();

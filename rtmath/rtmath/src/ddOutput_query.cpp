@@ -48,12 +48,12 @@ namespace rtmath {
 			} else return genName();
 		}
 
-		bool ddOutput_db_registry::ddOutput_db_comp::operator()(const std::shared_ptr<ddOutput>& lhs, const std::shared_ptr<ddOutput>& rhs) const
+		bool ddOutput_db_registry::ddOutput_db_comp::operator()(const std::shared_ptr<const ddOutput>& lhs, const std::shared_ptr<const ddOutput>& rhs) const
 		{
 			return *lhs < *rhs;
 		}
 
-		bool ddOutput_db_registry::ddOutput_db_comp::operator()(const boost::shared_ptr<ddOutput>& lhs, const boost::shared_ptr<ddOutput>& rhs) const
+		bool ddOutput_db_registry::ddOutput_db_comp::operator()(const boost::shared_ptr<const ddOutput>& lhs, const boost::shared_ptr<const ddOutput>& rhs) const
 		{
 			return *lhs < *rhs;
 		}
@@ -207,7 +207,7 @@ namespace rtmath {
 		std::pair<ddOutput_db_registry::ddOutput_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 			ddOutput_db_registry::ddOutput_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 		{
-			collection c(new std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp >());
+			collection c(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
 			std::shared_ptr<rtmath::registry::DBhandler> fp;
 
 			auto hooks = ::rtmath::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
@@ -235,12 +235,12 @@ namespace rtmath {
 			std::shared_ptr<rtmath::registry::DBhandler> p,
 			std::shared_ptr<registry::DB_options> o) const
 		{
-			collection toMergeC(new std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp >());
+			collection toMergeC(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
 			//collection toMergeS(new std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp >());
-			collection res(new std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp >());
+			collection res(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
 			std::shared_ptr<rtmath::registry::DBhandler> fp;
 
-			std::map<std::string, boost::shared_ptr<ddOutput> > db_hashes; // database results, as a map
+			std::map<std::string, boost::shared_ptr<const ddOutput> > db_hashes; // database results, as a map
 
 			auto hooks = ::rtmath::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
 			if (doDb)

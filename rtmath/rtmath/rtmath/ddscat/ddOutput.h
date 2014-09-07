@@ -41,10 +41,10 @@ namespace rtmath {
 		struct DLEXPORT_rtmath_ddscat ddOutput_db_registry
 		{
 			struct DLEXPORT_rtmath_ddscat ddOutput_db_comp {
-				bool operator() (const std::shared_ptr<ddOutput>& lhs,
-					const std::shared_ptr<ddOutput>& rhs) const;
-				bool operator() (const boost::shared_ptr<ddOutput>& lhs,
-					const boost::shared_ptr<ddOutput>& rhs) const;
+				bool operator() (const std::shared_ptr<const ddOutput>& lhs,
+					const std::shared_ptr<const ddOutput>& rhs) const;
+				bool operator() (const boost::shared_ptr<const ddOutput>& lhs,
+					const boost::shared_ptr<const ddOutput>& rhs) const;
 			};
 
 			/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
@@ -96,7 +96,7 @@ namespace rtmath {
 				ddOutput_index& tempRange(const std::vector<std::pair<float, float> >&);
 				//ddOutput_index& hash(const std::vector<HASH_t>&);
 
-				typedef std::shared_ptr<std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp > > collection;
+				typedef std::shared_ptr<std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp > > collection;
 				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
 					doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
 					std::shared_ptr<registry::DB_options> = nullptr) const;

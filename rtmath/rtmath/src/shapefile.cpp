@@ -181,7 +181,6 @@ namespace rtmath {
 				return res;
 			}
 
-
 			shapefile::shapefile(const std::string &filename)
 			{
 				_init();

@@ -206,7 +206,7 @@ namespace rtmath {
 				// Return false if shape CANNOT be loaded
 				if (_shp->latticePts.rows()) return true;
 
-				boost::shared_ptr<shapefile::shapefile> nshp;
+				boost::shared_ptr<const shapefile::shapefile> nshp;
 
 				// Reload initial shape file by 1) hash or 2) filename
 				using boost::filesystem::path;
@@ -214,7 +214,7 @@ namespace rtmath {
 				if (nshp = shapefile::shapefile::loadHash(_shp->hash()))
 					_shp = nshp;
 				else if (serialization::detect_compressed(_shp->filename)) {
-					nshp = boost::shared_ptr<shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
+					nshp = boost::shared_ptr<const shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
 					_shp = nshp;
 				}
 				else

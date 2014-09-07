@@ -617,6 +617,7 @@ namespace rtmath {
 			std::string getAeff() const;
 
 			accessorSimplePluralTuple(PolState, ddParParsers::POLSTATE, double, 6, 2);
+			std::string namePolState() const;
 			accessorSimple(OrthPolState, ddParParsers::IORTH, size_t);
 			accessorSimpleBool(writePol, ddParParsers::IWRPOL);
 			accessorSimpleBool(writeSca, ddParParsers::IWRKSC);

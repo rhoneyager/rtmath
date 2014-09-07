@@ -127,6 +127,36 @@ namespace rtmath {
 			return res;
 		}
 
+		/// Labels the typical polarization states. Not rigorous by any means.
+		std::string ddPar::namePolState() const
+		{
+			const double pols[6] = { PolState(0), PolState(1), PolState(2), 
+				PolState(3), PolState(4), PolState(5) };
+			auto nearPol = [](const double val[6], const double ref[6]) -> bool
+			{
+				// Normalize val and ref
+				double normvalsq = 0, normrefsq = 0;
+				for (size_t i = 0; i < 6; ++i)
+				{
+					normvalsq += val[i] * val[i];
+					normrefsq += ref[i] * ref[i];
+				}
+				double normsq = 0;
+				for (size_t i = 0; i < 6; ++i)
+					normsq += pow((val[i] /sqrt(normvalsq))- (ref[i]/sqrt(normrefsq)), 2.);
+				if (normsq < 0.01) return true;
+				return false;
+			};
+
+			const double lin[6] = { 0, 0, 1, 0, 0, 0 };
+			const double rhc[6] = { 0, 0, 1, 0, 0, 1 };
+			const double lhc[6] = { 0, 0, 0, 1, 1, 0 };
+			if (nearPol(pols, lin)) return std::string("lin");
+			if (nearPol(pols, rhc)) return std::string("rhc");
+			if (nearPol(pols, lhc)) return std::string("lhc");
+			return std::string("unlabeled");
+		}
+
 		void ddPar::getAeff(std::set<double> &aeffs) const
 		{
 			std::string in = getAeff();
