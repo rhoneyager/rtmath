@@ -244,13 +244,13 @@ int main(int argc, char** argv)
 				if (exists(ps))
 				{
 					cerr << " found " << ps << endl;
-					smain = boost::shared_ptr<rtmath::ddscat::shapefile::shapefile>(new rtmath::ddscat::shapefile::shapefile(ps.string()));
+					smain = rtmath::ddscat::shapefile::shapefile::generate(ps.string());
 					collection->insert(smain);
 				}
 				if (doTargetOut && exists(pt))
 				{
 					cerr << " found " << pi << endl;
-					boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s(new rtmath::ddscat::shapefile::shapefile(pt.string()));
+					boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s = rtmath::ddscat::shapefile::shapefile::generate(pt.string());
 					if (smain)
 						s->tags.insert(std::pair<string, string>("target-src-hash", smain->hash().string()));
 					if (smain)
@@ -264,10 +264,9 @@ int main(int argc, char** argv)
 					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
 					// Handle not needed as the read context is used only once.
 					if (rtmath::ddscat::shapefile::shapefile::canReadMulti(nullptr, iopts))
-						rtmath::ddscat::shapefile::shapefile::readVector(nullptr, iopts, shapes);
+						rtmath::ddscat::shapefile::shapefile::readVector(nullptr, iopts, shapes, nullptr);
 					else {
-						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s(new rtmath::ddscat::shapefile::shapefile);
-						s->readFile(*it);
+						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s = rtmath::ddscat::shapefile::shapefile::generate(*it);
 						shapes.push_back(s);
 					}
 					for (auto &s : shapes)
@@ -334,8 +333,8 @@ int main(int argc, char** argv)
 			//Stats.push_back(std::move(sstats));
 		};
 
-		for (auto &s : *(res.first))
-			processShape(s);
+		for (const auto &s : *(res.first))
+			processShape(rtmath::ddscat::shapefile::shapefile::generate(s));
 
 		// Update any remainder
 		if (dbcollection->size())

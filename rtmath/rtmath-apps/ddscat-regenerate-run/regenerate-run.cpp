@@ -183,10 +183,10 @@ int main(int argc, char** argv)
 						opts->filename(pfile.string());
 						opts->setVal<bool>("headerOnly", true);
 
-						rtmath::ddscat::shapefile::shapefile s;
-						s.readMulti(nullptr, opts);
+						auto s = rtmath::ddscat::shapefile::shapefile::generate();
+						s->readMulti(nullptr, opts);
 						// OLD: s.readHeaderOnly(pfile.string());
-						nDipoles = s.numPoints;
+						nDipoles = s->numPoints;
 					}
 					// If an avg file, read and extract dipole number.
 					else if (dataset::isAvg(pfile)) {
@@ -289,12 +289,11 @@ int main(int argc, char** argv)
 			vector<size_t> dims(3,0);
 			if (calcDipoleExtent)
 			{
-				rtmath::ddscat::shapefile::shapefile s;
-				s.readFile(d.second.shapefile.string());
+				auto s = rtmath::ddscat::shapefile::shapefile::generate(d.second.shapefile.string());
 				// Extra padding is needed by ddscat...
-				dims[0] = (size_t) (s.maxs(0) - s.mins(0) + 20);
-				dims[1] = (size_t) (s.maxs(1) - s.mins(1) + 20);
-				dims[2] = (size_t) (s.maxs(2) - s.mins(2) + 20);
+				dims[0] = (size_t) (s->maxs(0) - s->mins(0) + 20);
+				dims[1] = (size_t) (s->maxs(1) - s->mins(1) + 20);
+				dims[2] = (size_t) (s->maxs(2) - s->mins(2) + 20);
 				cerr << "\tDipole extent is " << dims[0] << ", " << dims[1] << ", " << dims[2] << endl;
 			}
 			else cerr << "\tUsing initial dipole extent" << endl;

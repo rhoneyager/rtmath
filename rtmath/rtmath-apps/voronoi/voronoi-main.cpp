@@ -17,7 +17,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
 				vector<boost::shared_ptr<Voronoi::VoronoiDiagram> > voros;
 				// Handle not needed as the read context is used only once.
 				if (VoronoiDiagram::canReadMulti(nullptr, iopts))
-					VoronoiDiagram::readVector(nullptr, iopts, voros);
+					VoronoiDiagram::readVector(nullptr, iopts, voros, nullptr);
 				else {
 					boost::shared_ptr<VoronoiDiagram> s(new VoronoiDiagram);
 					s->readFile(*it);
@@ -199,10 +199,9 @@ int main(int argc, char** argv)
 				iopts->filename(*it);
 				// Handle not needed as the read context is used only once.
 				if (shapefile::shapefile::canReadMulti(nullptr, iopts))
-					shapefile::shapefile::readVector(nullptr, iopts, shapes);
+					shapefile::shapefile::readVector(nullptr, iopts, shapes, nullptr);
 				else {
-					boost::shared_ptr<shapefile::shapefile> s(new shapefile::shapefile);
-					s->readFile(*it);
+					boost::shared_ptr<shapefile::shapefile> s = shapefile::shapefile::generate(*it);
 					shapes.push_back(s);
 				}
 			} catch (std::exception &e) {
@@ -243,7 +242,7 @@ int main(int argc, char** argv)
 					runs.push_back(s);
 				}
 				else if (ddOutput::canReadMulti(nullptr, iopts))
-					ddOutput::readVector(nullptr, iopts, runs);
+					ddOutput::readVector(nullptr, iopts, runs, nullptr);
 				else {
 					// This fallback shouldn't happen...
 					boost::shared_ptr<ddOutput> s(new ddOutput);

@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 				else if (ddOutput::canReadMulti(nullptr, iopts))
 				{
 					vector<boost::shared_ptr<ddOutput> > dos;
-					ddOutput::readVector(nullptr, iopts, dos);
+					ddOutput::readVector(nullptr, iopts, dos, nullptr);
 					for (const auto &s : dos)
 						process_indiv_ddoutput(s);
 				} else {

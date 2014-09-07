@@ -24,7 +24,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
@@ -52,7 +51,7 @@ int main(int argc, char** argv)
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		rtmath::debug::add_options(cmdline, config, hidden);
 		ddscat::ddPar::add_options(cmdline, config, hidden);
-		Ryan_Serialization::add_options(cmdline, config, hidden);
+		//Ryan_Serialization::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
@@ -96,7 +95,7 @@ int main(int argc, char** argv)
 		if (vm.count("help") || argc == 1) doHelp("");
 
 		rtmath::debug::process_static_options(vm);
-		Ryan_Serialization::process_static_options(vm);
+		//Ryan_Serialization::process_static_options(vm);
 		ddscat::ddPar::process_static_options(vm);
 
 		if (!vm.count("input")) doHelp("Need to specify input file.\n");

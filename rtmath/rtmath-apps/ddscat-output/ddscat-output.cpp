@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 					runs.push_back(s);
 				}
 			} else if (ddOutput::canReadMulti(nullptr, iopts))
-				ddOutput::readVector(nullptr, iopts, runs);
+				ddOutput::readVector(nullptr, iopts, runs, nullptr);
 			else {
 				// This fallback shouldn't happen...
 				boost::shared_ptr<ddOutput> s(new ddOutput);
