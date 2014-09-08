@@ -63,11 +63,14 @@ namespace rtmath {
 			std::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
 			std::shared_ptr<configsegment> getParent() const;
 			void listKeys(std::map<std::string,std::string> &output) const;
+			const std::map<std::string, std::string>& listKeys() const { return _mapStr; }
 			void listKeys(std::set<std::string> &res) const;
-			inline std::set<std::string> listKeys() const { std::set<std::string> res; listKeys(res); return res; }
+			inline std::set<std::string> enumKeys() const { std::set<std::string> res; listKeys(res); return res; }
 			void listChildren(std::set<std::string> &res) const;
 			inline std::set<std::string> listChildren() const { std::set<std::string> res; listChildren(res); return res; }
 			void getCWD(std::string &cwd) const; // Returns directory of the loaded config file node.
+
+			
 		protected:
 			std::string _segname, _cwd;
 			std::weak_ptr<configsegment> _parent;

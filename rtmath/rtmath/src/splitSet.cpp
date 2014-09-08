@@ -133,7 +133,9 @@ namespace rtmath {
 			// Prepare tokenizer
 			typedef boost::tokenizer<boost::char_separator<char> >
 				tokenizer;
-			boost::char_separator<char> seprange(":");
+			boost::char_separator<char> seprange(":/");
+			bool isRange = false;
+			if (instr.find('/') != string::npos) { isRange = true; specializer = "range"; }
 			tokenizer trange(instr,seprange);
 			vector<T> range;
 			size_t i = 0;
@@ -371,6 +373,13 @@ namespace rtmath {
 			}
 		}
 
+		
+		template class DLEXPORT_rtmath_core intervals < int >;
+		template class DLEXPORT_rtmath_core intervals < double >;
+		template class DLEXPORT_rtmath_core intervals < float >;
+		template class DLEXPORT_rtmath_core intervals < unsigned int >;
+		template class DLEXPORT_rtmath_core intervals < long >;
+		template class DLEXPORT_rtmath_core intervals < unsigned long >;
 	}
 }
 

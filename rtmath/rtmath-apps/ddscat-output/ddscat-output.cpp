@@ -11,6 +11,7 @@
 #include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/hash.h"
+#include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
@@ -55,6 +56,24 @@ int main(int argc, char** argv)
 			("write-fmls", po::value<bool>()->default_value(true), "Write FML data into output file")
 			("write-fmls-aux", po::value<bool>()->default_value(false), "Write FML data into aux output file")
 			("write-shapes", po::value<bool>()->default_value(true), "Write shapefile data into output file")
+
+			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
+			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
+			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
+			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
+			("match-dipole-spacing", po::value<vector<std::string> >()->multitoken(), "Match typical dipole spacings")
+			("match-dipole-numbers", po::value<vector<std::string> >()->multitoken(), "Match typical dipole numbers")
+			("match-frequency", po::value<vector<std::string> >()->multitoken(), "Match frequencies")
+			("match-aeff", po::value<vector<std::string> >()->multitoken(), "Match effective radii")
+			("match-temp", po::value<vector<std::string> >()->multitoken(), "Match temperatures")
+			("match-betas", po::value<vector<std::string> >()->multitoken(), "Match beta rotation count")
+			("match-thetas", po::value<vector<std::string> >()->multitoken(), "Match theta rotation count")
+			("match-phis", po::value<vector<std::string> >()->multitoken(), "Match phi rotation count")
+			("match-pol", po::value<vector<std::string> >()->multitoken(), "Match polarization")
+			("match-run-uuid", po::value<vector<std::string> >()->multitoken(), "Match run id")
+			("update-db", "Insert shape file entries into database")
+
+			("hash-output", "Store flake data in hash directory")
 			;
 
 		desc.add(cmdline).add(config);
@@ -132,9 +151,73 @@ int main(int argc, char** argv)
 		optsaux->setVal<bool>("writeSHP", writeShapes);
 
 		std::shared_ptr<rtmath::registry::IOhandler> writer, writeraux;
+		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+		/*
+		("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
+		("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
+		("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
+		("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
+		("match-dipole-spacing", po::value<vector<std::string> >()->multitoken(), "Match typical dipole spacings")
+		("match-dipole-numbers", po::value<vector<std::string> >()->multitoken(), "Match typical dipole numbers")
+		("match-frequency", po::value<vector<std::string> >()->multitoken(), "Match frequencies")
+		("match-aeff", po::value<vector<std::string> >()->multitoken(), "Match effective radii")
+		("match-temp", po::value<vector<std::string> >()->multitoken(), "Match temperatures")
+		("match-betas", po::value<vector<std::string> >()->multitoken(), "Match beta rotation count")
+		("match-thetas", po::value<vector<std::string> >()->multitoken(), "Match theta rotation count")
+		("match-phis", po::value<vector<std::string> >()->multitoken(), "Match phi rotation count")
+		("match-pol", po::value<vector<std::string> >()->multitoken(), "Match polarization")
+		("match-run-uuid", po::value<vector<std::string> >()->multitoken(), "Match run id")
+		("update-db", "Insert shape file entries into database")
+
+		("hash-output", "Store flake data in hash directory")
+		*/
+		auto conf = rtmath::config::loadRtconfRoot();
+		auto freqmap = conf->getChild("ddscat")->getChild("freqs")->listKeys();
+
+		vector<string> matchHashes, matchFlakeTypes, matchPols, matchRunUuids;
+		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
+		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
+		if (vm.count("match-pol")) matchPols = vm["match-pol"].as<vector<string> >();
+		if (vm.count("match-run-uuid")) matchRunUuids = vm["match-run-uuid"].as<vector<string> >();
+		rtmath::config::intervals<float> iDipoleSpacing, iFrequencies, iAeffs, iTemps;
+		rtmath::config::intervals<size_t> iDipoleNumbers, iBetas, iThetas, iPhis;
+		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
+		if (vm.count("match-frequency")) iFrequencies.append(vm["match-frequency"].as<vector<string>>(), &freqmap);
+		if (vm.count("match-aeff")) iAeffs.append(vm["match-aeff"].as<vector<string>>());
+		if (vm.count("match-temp")) iTemps.append(vm["match-temp"].as<vector<string>>());
+		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
+		if (vm.count("match-betas")) iBetas.append(vm["match-betas"].as<vector<string>>());
+		if (vm.count("match-thetas")) iThetas.append(vm["match-thetas"].as<vector<string>>());
+		if (vm.count("match-phis")) iPhis.append(vm["match-phis"].as<vector<string>>());
 
 		using std::vector;
 		using namespace rtmath::ddscat;
+
+		auto collection = ddOutput::makeCollection();
+		auto query = ddOutput::makeQuery();
+		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
+		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
+		query->dipoleNumbers = iDipoleNumbers;
+		query->freqRanges = iFrequencies;
+		query->tempRanges = iTemps;
+		query->aeffRanges = iAeffs;
+		query->pol.insert(matchPols.begin(), matchPols.end());
+		query->runids.insert(matchRunUuids.begin(), matchRunUuids.end());
+		query->betaRanges = iBetas;
+		query->thetaRanges = iThetas;
+		query->phiRanges = iPhis;
+		query->dipoleSpacings = iDipoleSpacing;
+		
+		bool supplementDb = false;
+		supplementDb = vm["use-db"].as<bool>();
+		bool fromDb = false;
+		fromDb = vm["from-db"].as<bool>();
+
+
+		auto dbcollection = ddOutput::makeCollection();
+		auto qExisting = ddOutput::makeQuery();
+
+
 		vector<boost::shared_ptr<ddOutput> > runs;
 
 		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
@@ -176,6 +259,7 @@ int main(int argc, char** argv)
 							cerr << " processing " << p << endl;
 							boost::shared_ptr<ddOutput> s(new ddOutput);
 							s = ddOutput::generate(ps.string());
+							collection->insert(s);
 							runs.push_back(s);
 						}
 					}
@@ -183,6 +267,7 @@ int main(int argc, char** argv)
 					// Input is a ddscat run
 					boost::shared_ptr<ddOutput> s(new ddOutput);
 					s = ddOutput::generate(ps.string());
+					collection->insert(s);
 					runs.push_back(s);
 				}
 			} else if (ddOutput::canReadMulti(nullptr, iopts))
@@ -191,10 +276,14 @@ int main(int argc, char** argv)
 				// This fallback shouldn't happen...
 				boost::shared_ptr<ddOutput> s(new ddOutput);
 				s->readFile(i);
+				collection->insert(s);
 				runs.push_back(s);
 			}
 
 		}
+
+		// Perform the query, and then process the matched shapefiles
+		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
 
 		for (auto &run : runs)
@@ -264,9 +353,12 @@ int main(int argc, char** argv)
 				doWrite(opts, writer);
 			if (sOutputAux.size())
 				doWrite(optsaux, writeraux);
+			// TODO: Add Hash Support
+
+			// TODO: update database
 
 			// Drop run from memory
-			run.reset();
+			run.reset(); // update collection result
 		}
 
 	} catch (std::exception &e)

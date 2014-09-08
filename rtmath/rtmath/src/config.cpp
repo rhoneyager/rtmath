@@ -537,6 +537,8 @@ namespace rtmath {
 			ob = rtmath::config::configsegment::loadFile(stream, nullptr);
 			return stream;
 		}
+
+
 	}
 }
 

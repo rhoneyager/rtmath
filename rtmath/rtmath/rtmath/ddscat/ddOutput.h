@@ -15,6 +15,7 @@
 #include "../hash.h"
 #include "../common_templates.h"
 #include "../registry.h"
+#include "../splitSet.h"
 #include "../io.h"
 
 
@@ -55,46 +56,18 @@ namespace rtmath {
 				std::set<std::string> hashLowers, hashUppers,
 					flakeTypes, runids, pol;
 				// Number and percent error
-				std::map<float, float > standardDs, freqRanges;
+				//std::map<float, float > standardDs, freqRanges;
 				// Lower and upper (both inclusive) bounds
-				std::vector<std::pair<float, float> > aeffRanges, tempRanges;
-				std::vector<std::pair<size_t, size_t> > dipoleRanges, betaRanges, thetaRanges, phiRanges;
+				//std::vector<std::pair<float, float> > aeffRanges, tempRanges;
+				//std::vector<std::pair<size_t, size_t> > dipoleRanges, betaRanges, thetaRanges, phiRanges;
+
+				config::intervals<float> dipoleSpacings, freqRanges,
+					aeffRanges, tempRanges;
+				config::intervals<size_t> dipoleNumbers,
+					betaRanges, thetaRanges, phiRanges;
 			public:
 				~ddOutput_index();
 				static std::shared_ptr<ddOutput_db_registry::ddOutput_index> generate();
-
-
-				ddOutput_index& hashLower(const std::string&);
-				ddOutput_index& hashLower(const uint64_t);
-				ddOutput_index& hashUpper(const std::string&);
-				ddOutput_index& hashUpper(const uint64_t);
-				//ddOutput_index& hash(const HASH_t&);
-				ddOutput_index& flakeType(const std::string&);
-				ddOutput_index& runId(const std::string&);
-				//ddOutput_index& polarization(const std::string&);
-				ddOutput_index& standardD(const float d, const float tolpercent = 1.0f);
-				ddOutput_index& freqRange(const float d, const float tolpercent = 1.0f);
-				ddOutput_index& dipoleRange(size_t inclLowerBound, size_t inclUpperBound);
-				ddOutput_index& betaRange(size_t inclLowerBound, size_t inclUpperBound);
-				ddOutput_index& thetaRange(size_t inclLowerBound, size_t inclUpperBound);
-				ddOutput_index& phiRange(size_t inclLowerBound, size_t inclUpperBound);
-				ddOutput_index& aeffRange(float inclLowerBound, float inclUpperBound);
-				ddOutput_index& tempRange(float inclLowerBound, float inclUpperBound);
-				
-				ddOutput_index& hashLower(const std::vector<std::string>&);
-				ddOutput_index& hashLower(const std::vector<uint64_t>);
-				ddOutput_index& hashUpper(const std::vector<std::string>&);
-				ddOutput_index& hashUpper(const std::vector<uint64_t>);
-				ddOutput_index& flakeType(const std::vector<std::string>&);
-				ddOutput_index& runId(const std::vector<std::string>&);
-				//ddOutput_index& polarization(const std::vector<std::string>&);
-				ddOutput_index& dipoleRange(const std::vector<std::pair<size_t, size_t> >&);
-				ddOutput_index& betaRange(const std::vector<std::pair<size_t, size_t> >&);
-				ddOutput_index& thetaRange(const std::vector<std::pair<size_t, size_t> >&);
-				ddOutput_index& phiRange(const std::vector<std::pair<size_t, size_t> >&);
-				ddOutput_index& aeffRange(const std::vector<std::pair<float, float> >&);
-				ddOutput_index& tempRange(const std::vector<std::pair<float, float> >&);
-				//ddOutput_index& hash(const std::vector<HASH_t>&);
 
 				typedef std::shared_ptr<std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp > > collection;
 				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >

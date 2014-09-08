@@ -88,122 +88,6 @@ namespace rtmath {
 			return res;
 		}
 
-#define searchAndVec1(fname, varname, t) \
-	ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::fname(const t& s) \
-								{ \
-				varname.insert(boost::lexical_cast<std::string>(s)); \
-				return *this; \
-								} \
-			ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::fname(const std::vector<t>& s) \
-								{ \
-				for (const auto &i : s) \
-					varname.insert(boost::lexical_cast<std::string>(i)); \
-				return *this; \
-								}
-#define searchAndVec2(fname, varname, t) \
-	ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::fname(const t s) \
-								{ \
-				varname.insert(boost::lexical_cast<std::string>(s)); \
-				return *this; \
-								}
-
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::dipoleRange(
-			size_t lower, size_t upper)
-		{
-			dipoleRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::dipoleRange(
-			const std::vector<std::pair<size_t, size_t> > &vec)
-		{
-			for (const auto & v : vec)
-				dipoleRanges.push_back(v);
-			return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::betaRange(
-			size_t lower, size_t upper)
-		{
-			betaRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::betaRange(
-			const std::vector<std::pair<size_t, size_t> > &vec)
-		{
-			for (const auto & v : vec)
-				betaRanges.push_back(v);
-			return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::thetaRange(
-			size_t lower, size_t upper)
-		{
-			thetaRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::thetaRange(
-			const std::vector<std::pair<size_t, size_t> > &vec)
-		{
-			for (const auto & v : vec)
-				thetaRanges.push_back(v);
-			return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::phiRange(
-			size_t lower, size_t upper)
-		{
-			phiRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::phiRange(
-			const std::vector<std::pair<size_t, size_t> > &vec)
-		{
-			for (const auto & v : vec)
-				phiRanges.push_back(v);
-			return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::aeffRange(
-			float lower, float upper)
-		{
-			aeffRanges.push_back(std::pair<float, float>(lower, upper)); return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::aeffRange(
-			const std::vector<std::pair<float, float> > &vec)
-		{
-			for (const auto & v : vec)
-				aeffRanges.push_back(v);
-			return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::tempRange(
-			float lower, float upper)
-		{
-			tempRanges.push_back(std::pair<float, float>(lower, upper)); return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::tempRange(
-			const std::vector<std::pair<float, float> > &vec)
-		{
-			for (const auto & v : vec)
-				tempRanges.push_back(v);
-			return *this;
-		}
-
-		//searchAndVec1(tag, tags, std::string);
-		searchAndVec1(hashLower, hashLowers, std::string);
-		searchAndVec1(hashUpper, hashUppers, std::string);
-		searchAndVec1(flakeType, flakeTypes, std::string);
-		searchAndVec1(runId, runids, std::string);
-		//searchAndVec1(polarization, pol, std::string);
-		//searchAndVec1(hash, hashLowers, HASH_t);
-		searchAndVec2(hashLower, hashLowers, uint64_t);
-		searchAndVec2(hashUpper, hashUppers, uint64_t);
-
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::standardD(const float d, const float tolpercent)
-		{
-			standardDs.insert(std::pair<float, float>(d, tolpercent));
-			return *this;
-		}
-		ddOutput_db_registry::ddOutput_index& ddOutput_db_registry::ddOutput_index::freqRange(const float d, const float tolpercent)
-		{
-			freqRanges.insert(std::pair<float, float>(d, tolpercent));
-			return *this;
-		}
-
-#undef searchAndVec1
-#undef searchAndVec2
-
 		std::pair<ddOutput_db_registry::ddOutput_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 			ddOutput_db_registry::ddOutput_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
 		{
@@ -279,132 +163,48 @@ namespace rtmath {
 						return false;
 
 					// flake types
-					if (flakeTypes.size())
-					{
-						if (s->tags.count("flake_classification"))
-						{
-							if (!flakeTypes.count(s->shape->tags.at("flake_classification")))
-								return false;
-						}
-					}
+					if (flakeTypes.size() && s->tags.count("flake_classification"))
+						if (!flakeTypes.count(s->shape->tags.at("flake_classification")))
+							return false;
 
+					// polarizations
+					if (pol.size())
+						if (!pol.count(s->parfile->namePolState()))
+							return false;
+
+					// run ids
+					if (runids.size())
+						if (!runids.count(s->runuuid))
+							return false;
 
 					// Dipole spacings
-					if (standardDs.size())
-					{
-						bool matches = false;
-						for (const auto &r : standardDs)
-						{
-							if (r.first * (1. - r.second) <= s->shape->standardD && s->shape->standardD <= r.first * (1. + r.second))
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					if (dipoleSpacings.ranges.size())
+						if (!dipoleSpacings.inRange(s->shape->standardD)) return false;
 
 					// Number of dipoles
-					if (dipoleRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : dipoleRanges)
-						{
-							if (r.first <= s->shape->numPoints && s->shape->numPoints <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					if (dipoleNumbers.ranges.size())
+						if (!dipoleNumbers.inRange(s->shape->numPoints)) return false;
 
 					ddscat::rotations rots;
 					s->parfile->getRots(rots);
 
-					if (betaRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : betaRanges)
-						{
-							if (r.first <= rots.bN() && rots.bN() <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					if (betaRanges.ranges.size())
+						if (!betaRanges.inRange(rots.bN())) return false;
+					if (thetaRanges.ranges.size())
+						if (!thetaRanges.inRange(rots.tN())) return false;
+					if (phiRanges.ranges.size())
+						if (!phiRanges.inRange(rots.pN())) return false;
 
-					if (thetaRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : thetaRanges)
-						{
-							if (r.first <= rots.tN() && rots.tN() <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
 
-					if (phiRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : phiRanges)
-						{
-							if (r.first <= rots.pN() && rots.pN() <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					if (aeffRanges.ranges.size())
+						if (!aeffRanges.inRange(static_cast<float>(s->aeff))) return false;
 
-					if (aeffRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : aeffRanges)
-						{
-							if (r.first <= s->aeff && s->aeff <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					if (tempRanges.ranges.size())
+						if (!tempRanges.isNear(static_cast<float>(s->temp), 1, 0)) return false; // within 1 K
 
-					if (tempRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : tempRanges)
-						{
-							if (r.first <= s->temp && s->temp <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
+					if (freqRanges.ranges.size())
+						if (!freqRanges.isNear(static_cast<float>(s->freq), 0, 0.01f)) return false; // within 1%
 
-					if (freqRanges.size())
-					{
-						bool matches = false;
-						for (const auto &r : phiRanges)
-						{
-							if (r.first <= s->freq && s->freq <= r.second)
-							{
-								matches = true;
-								break;
-							}
-						}
-						if (!matches) return false;
-					}
 					return true;
 				};
 				if (!works()) continue;

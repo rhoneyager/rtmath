@@ -60,6 +60,94 @@ namespace rtmath {
 		void DLEXPORT_rtmath_core splitNullMap(
 			const std::string &instr, std::map<std::string, std::string> &out);
 
+
+		/** \brief Class to define and search on intervals.
+		*
+		* This is a simple class used for searching based on user input. It does not 
+		* provide interval unions, intersections, etc. It can, however, aid in setting 
+		* these up, such as for a database query.
+		* 
+		* Accepts standard paramSet notation, but also adds the '-' range operator, 
+		* implying that values may be found in a certain range.
+		**/
+		template <class T>
+		class intervals
+		{
+			std::vector<std::pair<T, T> > _ranges;
+		public:
+			const std::vector<std::pair<T, T> > ranges;
+			intervals(const std::string &s = "") : ranges(_ranges) { if (s.size()) append(s); }
+			intervals(const std::vector<std::string> &s) : ranges(_ranges) { append(s); }
+			~intervals() {}
+			void append(const std::string &instr,
+				const std::map<std::string, std::string> *aliases = nullptr)
+			{
+				std::vector<std::string> splits;
+				splitVector(instr, splits, ',');
+				std::set<T> vals;
+				for (const auto &s : splits)
+				{
+					std::map<std::string, std::string> defaliases;
+					if (!aliases) aliases = &defaliases; // Provides a convenient default
+
+					if (aliases->count(s))
+					{
+						std::string ssubst = aliases->at(s);
+						// Recursively call splitSet to handle bundles of aliases
+						append(ssubst, aliases);
+					} else {
+						T start, end, interval;
+						size_t n;
+						std::string specializer;
+						bool isRange = false;
+						extractInterval(s, start, end, interval, n, specializer);
+						if (specializer == "range")
+						{
+							_ranges.push_back(std::pair<T, T>(start, end));
+						} else {
+							splitSet(start, end, interval, specializer, vals);
+						}
+					}
+				}
+				for (const auto &v : vals)
+				{
+					_ranges.push_back(std::pair<T, T>(v, v));
+				}
+			}
+			void append(const std::vector<std::string> &s,
+				const std::map<std::string, std::string> *aliases = nullptr)
+			{
+				for (const auto &str : s) append(str, aliases);
+			}
+			void append(const intervals<T>& src)
+			{
+				_ranges.insert(_ranges.end(), src->_ranges.begin(), src->_ranges.end());
+			}
+			bool inRange(const T& val) const
+			{
+				for (const auto &r : _ranges)
+				{
+					if (val >= r.first && val < r.second) return true;
+				}
+				return false;
+			}
+			bool isNear(const T& val, const T& linSep, const T& factorSep) const
+			{
+				for (const auto &r : _ranges)
+				{
+					T lower = (r.first * (static_cast<T>(1) - factorSep)) - linSep,
+						upper = (r.second * (static_cast<T>(1) + factorSep)) + linSep;
+					if (val >= lower && val < upper) return true;
+				}
+				return false;
+			}
+		};
+		extern template class intervals < int >;
+		extern template class intervals < double >;
+		extern template class intervals < float >;
+		extern template class intervals < unsigned int >;
+		extern template class intervals < long >;
+		extern template class intervals < unsigned long >;
 	}
 }
 
