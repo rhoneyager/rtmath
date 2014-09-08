@@ -210,11 +210,11 @@ namespace rtmath {
 				/// Copy from an existing object
 				static boost::shared_ptr<shapefile> generate(boost::shared_ptr<const shapefile>);
 				
-/// For some reason, MSVC refuses to make a copy constructor. It fails with one of the base classes.
-				/// \todo Fix the shapefile inheritance copy constructor
-#if _MSC_FULL_VER
+				/// \todo Fix the shapefile inheritance copy constructor.
+				/// Problem is caused by io.h implementsIObasic inF being a reference.
+//#if _MSC_FULL_VER
 				shapefile& operator=(const shapefile&);
-#endif
+//#endif
 
 				bool operator<(const shapefile &) const;
 				bool operator==(const shapefile &) const;

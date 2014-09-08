@@ -110,7 +110,7 @@ namespace rtmath {
 			shapefile::shapefile() { _init(); }
 			shapefile::~shapefile() { }
 
-#if _MSC_FULL_VER
+//#if _MSC_FULL_VER
 			shapefile& shapefile::operator=(const shapefile& rhs)
 			{
 				if (this == &rhs) return *this;
@@ -144,7 +144,7 @@ namespace rtmath {
 #undef cp
 				return *this;
 			}
-#endif
+//#endif
 
 			void shapefile::registerHash() const
 			{
