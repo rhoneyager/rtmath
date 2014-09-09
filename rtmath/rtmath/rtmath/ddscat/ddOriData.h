@@ -203,7 +203,8 @@ namespace rtmath {
 			/// Retrieves the block in which the relevant data is stored
 			Eigen::Block<ddOutput::doubleType,
 				1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
-				false, true> selectData() const;
+				false> selectData() const;
+			//	false, true> selectData() const;
 		protected:
 			double __getSimpleDouble(int id) const { return selectData()(id); }
 			template<class valtype>

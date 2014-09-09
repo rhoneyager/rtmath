@@ -121,7 +121,7 @@ namespace rtmath {
 			}
 			void append(const intervals<T>& src)
 			{
-				_ranges.insert(_ranges.end(), src->_ranges.begin(), src->_ranges.end());
+				_ranges.insert(_ranges.end(), src._ranges.begin(), src._ranges.end());
 			}
 			bool inRange(const T& val) const
 			{

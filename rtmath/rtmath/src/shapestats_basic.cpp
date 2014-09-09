@@ -211,7 +211,8 @@ namespace rtmath {
 				// Reload initial shape file by 1) hash or 2) filename
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
-				if (nshp = shapefile::shapefile::loadHash(_shp->hash()))
+				nshp = shapefile::shapefile::loadHash(_shp->hash());
+				if (nshp)
 					_shp = nshp;
 				else if (serialization::detect_compressed(_shp->filename)) {
 					nshp = boost::shared_ptr<const shapefile::shapefile>(new shapefile::shapefile(_shp->filename));

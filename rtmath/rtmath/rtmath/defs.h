@@ -20,9 +20,12 @@
 #define DEPRECATED __declspec(deprecated)
 #define WARN_UNIMPLEMENTED
 #define ERR_UNIMPLEMENTED __declspec(deprecated("Function is unimplemented / is commented out"))
+#elif defined __clang__
+#define DEPRECATED __attribute__ ((deprecated))
+#define WARN_UNIMPLEMENTED __attribute__ ((unavailable("Unimplemented function is used")))
+#define ERR_UNIMPLEMENTED __attribute__ ((unavailable("Unimplemented function is used")))
 #elif defined __GNUC__
 #define DEPRECATED __attribute__ ((deprecated))
-//#define DEPRECATED
 #define WARN_UNIMPLEMENTED __attribute__ ((warning("Unimplemented function is used")))
 #define ERR_UNIMPLEMENTED __attribute__ ((error("Unimplemented function is used")))
 #else

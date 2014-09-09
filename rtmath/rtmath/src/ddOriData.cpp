@@ -261,7 +261,9 @@ namespace rtmath {
 			return _parent.s.num_dipoles;
 		}
 
-		Eigen::Block<ddOutput::doubleType, 1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, false, true>
+		Eigen::Block<ddOutput::doubleType, 1, 
+			ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
+			false> //, true>
 		ddOriData::selectData() const
 		{
 			if (isAvg)
