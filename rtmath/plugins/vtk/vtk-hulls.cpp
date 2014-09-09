@@ -144,12 +144,12 @@ namespace rtmath
 					voxelModeller->SetScalarTypeToFloat();
 					voxelModeller->SetMaximumDistance(.1);
 
-					voxelModeller->SetInput(pointsPolys);
+					voxelModeller->SetInputData(pointsPolys);
 					voxelModeller->Update();
 					volume->DeepCopy(voxelModeller->GetOutput());
 
 
-					mc->SetInput(volume);
+					mc->SetInputData(volume);
 
 					mc->ComputeNormalsOn();
 					mc->ComputeGradientsOn();
@@ -198,7 +198,7 @@ namespace rtmath
 
 				vtkSmartPointer<vtkDelaunay3D> delaunay3D =
 					vtkSmartPointer<vtkDelaunay3D>::New();
-				delaunay3D->SetInput(surfacePointsPolys);
+				delaunay3D->SetInputData(surfacePointsPolys);
 				delaunay3D->Update();
 
 
@@ -292,11 +292,11 @@ namespace rtmath
 
 					vtkSmartPointer<vtkCleanPolyData> cleanPolyData =
 						vtkSmartPointer<vtkCleanPolyData>::New();
-					cleanPolyData->SetInput(surfacePointsPolys);
+					cleanPolyData->SetInputData(surfacePointsPolys);
 					cleanPolyData->Update();
 
 					vtkSmartPointer<vtkDelaunay2D> hull2d = vtkSmartPointer<vtkDelaunay2D>::New();
-					hull2d->SetInput(cleanPolyData->GetOutput());
+					hull2d->SetInputData(cleanPolyData->GetOutput());
 					hull2d->SetTransform(trns);
 					hull2d->Update();
 
