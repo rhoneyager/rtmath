@@ -73,11 +73,10 @@ namespace rtmath {
 		template <class T>
 		class intervals
 		{
-			std::vector<std::pair<T, T> > _ranges;
 		public:
-			const std::vector<std::pair<T, T> > ranges;
-			intervals(const std::string &s = "") : ranges(_ranges) { if (s.size()) append(s); }
-			intervals(const std::vector<std::string> &s) : ranges(_ranges) { append(s); }
+			std::vector<std::pair<T, T> > ranges;
+			intervals(const std::string &s = "") { if (s.size()) append(s); }
+			intervals(const std::vector<std::string> &s) { append(s); }
 			~intervals() {}
 			void append(const std::string &instr,
 				const std::map<std::string, std::string> *aliases = nullptr)
@@ -103,7 +102,7 @@ namespace rtmath {
 						extractInterval(s, start, end, interval, n, specializer);
 						if (specializer == "range")
 						{
-							_ranges.push_back(std::pair<T, T>(start, end));
+							ranges.push_back(std::pair<T, T>(start, end));
 						} else {
 							splitSet(start, end, interval, specializer, vals);
 						}
@@ -111,7 +110,7 @@ namespace rtmath {
 				}
 				for (const auto &v : vals)
 				{
-					_ranges.push_back(std::pair<T, T>(v, v));
+					ranges.push_back(std::pair<T, T>(v, v));
 				}
 			}
 			void append(const std::vector<std::string> &s,
@@ -121,11 +120,11 @@ namespace rtmath {
 			}
 			void append(const intervals<T>& src)
 			{
-				_ranges.insert(_ranges.end(), src._ranges.begin(), src._ranges.end());
+				ranges.insert(ranges.end(), src.ranges.begin(), src.ranges.end());
 			}
 			bool inRange(const T& val) const
 			{
-				for (const auto &r : _ranges)
+				for (const auto &r : ranges)
 				{
 					if (val >= r.first && val < r.second) return true;
 				}
@@ -133,7 +132,7 @@ namespace rtmath {
 			}
 			bool isNear(const T& val, const T& linSep, const T& factorSep) const
 			{
-				for (const auto &r : _ranges)
+				for (const auto &r : ranges)
 				{
 					T lower = (r.first * (static_cast<T>(1) - factorSep)) - linSep,
 						upper = (r.second * (static_cast<T>(1) + factorSep)) + linSep;
