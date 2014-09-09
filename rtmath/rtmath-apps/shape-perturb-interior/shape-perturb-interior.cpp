@@ -19,7 +19,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
@@ -56,10 +55,27 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value<string>(), "Input shape file")
-			("output,o", po::value<string>(), "Output file")
+			("output,o", po::value<vector<string> >(), "Output files")
+
+			("output-dielectric", po::value<string>()->default_value("dielInterior.tab"), 
+			 "Output effective dielectric file for interior "
+			 "(if interior uniformization is used)")
+			("frequency,f", po::value<string>(), "List of frequencies (default of GHz). Can also take rtmath.conf-provided frequency key (ex: GPM_freqs).")
+			("temperature,T", po::value<string>(), "List of temperatures (K)")
+			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
+			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
+			"Only matters if volume fractions are given. Then, default is Sihvola.")
+
 			("threshold", po::value<int>()->default_value(3), "All dipole sites greater than or equal to "
 			"this threshold are subject to randomization.")
-			//("convex-hull,c", "Calculate and write convex hull")
+			("use-effective-dielectric", "If specified, then all interior points will be replaced by "
+			 "an effective dielectric (scaled based on filled vs. total volume fraction. ")
+
+			("update-db", "Insert shape file entries into database")
+			("tag", po::value<vector<string> >()->multitoken(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
+			("flake-type", po::value<string>(), "Specify flake type (e.g. oblate, oblate_small, prolate, ...")
+			("list-hash", "Write the hashes of each processed shapefile to stdout (for scripting)")
+			("hash-shape", "Store shapefile hash")
 			;
 		rtmath::debug::add_options(cmdline, config, hidden);
 		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
@@ -96,6 +112,9 @@ int main(int argc, char** argv)
 		string output = vm["output"].as< string >();
 
 		int threshold = vm["threshold"].as<int>();
+		bool useEffectiveDiel = false;
+		if (vm.count("use-effective-dieelctric")) useEffectiveDiel = true;
+		string outputDiel = vm["output-dielectric"].as<string>();
 
 		// Validate input files
 		path pi(input);

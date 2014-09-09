@@ -61,7 +61,7 @@ namespace rtmath {
 			{
 			protected:
 				friend struct silo_handle;
-				class meshBase : protected std::enable_shared_from_this<meshBase> {protected: meshBase() {} virtual ~meshBase() {}};
+				class meshBase : public std::enable_shared_from_this<meshBase> {protected: meshBase() {} virtual ~meshBase() {}};
 				siloFile(const char* filename, const char* desc = nullptr);
 			private:
 				
@@ -102,7 +102,7 @@ namespace rtmath {
 					friend class siloFile;
 				protected:
 					pointMesh(std::shared_ptr<siloFile> parent) 
-						: mesh(meshType::MESH_POINTS, parent) {}
+						: mesh<T>(meshType::MESH_POINTS, parent) {}
 				public:
 					virtual ~pointMesh() {}
 					static std::shared_ptr<pointMesh<T> > createMesh(
@@ -182,7 +182,7 @@ namespace rtmath {
 					friend class siloFile;
 				protected:
 					rectilinearMesh(std::shared_ptr<siloFile> parent) 
-						: mesh(meshType::MESH_RECTILINEAR, parent) {}
+						: mesh<T>(meshType::MESH_RECTILINEAR, parent) {}
 					std::vector<int> dimsizes;
 
 					//const T* crdarray[];
