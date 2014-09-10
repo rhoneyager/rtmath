@@ -24,6 +24,7 @@
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/hash.h"
+#include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
@@ -55,27 +56,27 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("input,i", po::value<string>(), "Input shape file")
-			("output,o", po::value<vector<string> >(), "Output files")
+			("output,o", po::value<string >(), "Output file")
 
-			("output-dielectric", po::value<string>()->default_value("dielInterior.tab"), 
-			 "Output effective dielectric file for interior "
-			 "(if interior uniformization is used)")
-			("frequency,f", po::value<string>(), "List of frequencies (default of GHz). Can also take rtmath.conf-provided frequency key (ex: GPM_freqs).")
-			("temperature,T", po::value<string>(), "List of temperatures (K)")
-			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
-			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
-			"Only matters if volume fractions are given. Then, default is Sihvola.")
+			//("output-dielectric", po::value<string>()->default_value("dielInterior.tab"),
+			//"Output effective dielectric file for interior "
+			//"(if interior uniformization is used)")
+			//("frequency,f", po::value<double>(), "Frequency (GHz) if using an effective medium")
+			//("temperature,T", po::value<double>(), "Temperature (K) if using an effective medium")
+			//("diel-method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
+			//"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
+			//"Only matters if volume fractions are given. Then, default is Sihvola.")
 
+			("use-effective-dielectric", "If specified, then all interior points will be replaced by "
+			"an effective dielectric (scaled based on filled vs. total volume fraction. ")
 			("threshold", po::value<int>()->default_value(3), "All dipole sites greater than or equal to "
 			"this threshold are subject to randomization.")
-			("use-effective-dielectric", "If specified, then all interior points will be replaced by "
-			 "an effective dielectric (scaled based on filled vs. total volume fraction. ")
-
-			("update-db", "Insert shape file entries into database")
-			("tag", po::value<vector<string> >()->multitoken(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
+			
+			//("update-db", "Insert shape file entries into database")
+			("tag", po::value<vector<string> >()->multitoken(), "Using \"key=value pairs\", add tags to the output (hdf5; not with .shp files)")
 			("flake-type", po::value<string>(), "Specify flake type (e.g. oblate, oblate_small, prolate, ...")
-			("list-hash", "Write the hashes of each processed shapefile to stdout (for scripting)")
-			("hash-shape", "Store shapefile hash")
+			//("list-hash", "Write the hashes of each processed shapefile to stdout (for scripting)")
+			//("hash-shape", "Store shapefile hash")
 			;
 		rtmath::debug::add_options(cmdline, config, hidden);
 		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
@@ -116,6 +117,9 @@ int main(int argc, char** argv)
 		if (vm.count("use-effective-dieelctric")) useEffectiveDiel = true;
 		string outputDiel = vm["output-dielectric"].as<string>();
 
+		std::string sFlakeType;
+		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
+
 		// Validate input files
 		path pi(input);
 		if (!exists(pi)) 
@@ -125,12 +129,11 @@ int main(int argc, char** argv)
 
 		using rtmath::ddscat::shapefile::shapefile;
 		using rtmath::ddscat::stats::shapeFileStats;
-		boost::shared_ptr<shapefile> shp;
-		boost::shared_ptr<shapeFileStats> stats;
+		//boost::shared_ptr<shapeFileStats> stats;
 		// Load the shape file
 
 		using namespace rtmath::Voronoi;
-		shp = boost::shared_ptr<shapefile> (new shapefile(input));
+		boost::shared_ptr<shapefile> shp = shapefile::generate(input);
 		auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
 
 		auto depthSfc = vd->calcSurfaceDepth();
@@ -188,31 +191,89 @@ int main(int argc, char** argv)
 			<< "The inner fraction is " << 100.f * (float) innerPointsFilled 
 			/ (float) innerPointsTotal << " percent." << std::endl;
 
-		// Scramble the potential inner points listing.
-		//auto myrandom = [](int i) {return std::rand()%i;};
-		std::srand ( unsigned ( std::time(0) ) );
-		std::random_shuffle ( potentialInnerPoints.begin(), potentialInnerPoints.end() );
-		// After shuffling, take the first innerPointsFilled and write them to the resultant shape.
-		for (size_t i=0; i < (size_t) innerPointsFilled; ++i)
+		bool doEffDiel = false;
+		if (vm.count("use-effective-dielectric")) doEffDiel = true;
+		
+		boost::shared_ptr<Eigen::MatrixXi > resDiels(new Eigen::MatrixXi());
+		resDiels->resize(resPts->rows(), 3);
+		resDiels->setOnes();
+
+		if (doEffDiel)
 		{
-			resPts->block<1,3>(outerCount+i, 0) = potentialInnerPoints[i].block<1,3>(0,0);
+			/*
+			if (!vm.count("frequency")) doHelp("When using an effective dielectric, need to specify frequency and temperature");
+			if (!vm.count("temperature")) doHelp("When using an effective dielectric, need to specify frequency and temperature");
+			double freq = vm["frequency"].as<double>();
+			double temp = vm["temperature"].as<double>();
+			string method = vm["diel-method"].as<string>();
+
+			complex<double> mAir(1.0, 0);
+			complex<double> mIce, mEff;
+			double fIce = innerPointsFilled / innerPointsTotal;
+			rtmath::refract::mIce(freq, temp, mIce);
+			if (method == "Sihvola")
+				rtmath::refract::sihvola(mIce, mAir, fIce, 0.85, mEff);
+			else if (method == "Debye")
+				rtmath::refract::debyeDry(mIce, mAir, fIce, mEff);
+			else if (method == "Maxwell-Garnett-Spheres")
+				rtmath::refract::maxwellGarnettSpheres(mIce, mAir, fIce, mEff);
+			else if (method == "Maxwell-Garnett-Ellipsoids")
+				rtmath::refract::maxwellGarnettEllipsoids(mIce, mAir, fIce, mEff);
+			else {
+				cerr << "Unknown dielectric method: " << method << endl;
+				throw rtmath::debug::xBadInput(method.c_str());
+			}
+			*/
+
+			resPts->conservativeResize(potentialInnerPoints.size() + outerCount, 3);
+			boost::shared_ptr<Eigen::MatrixXi > resDiels(new Eigen::MatrixXi());
+			resDiels->conservativeResize(resPts->rows(), 3);
+			//resDiels->setOnes();
+			
+
+			for (size_t i = 0; i < (size_t)potentialInnerPoints.size(); ++i)
+			{
+				resPts->block<1, 3>(outerCount + i, 0) = potentialInnerPoints[i].block<1, 3>(0, 0);
+				resDiels->block<1, 3>(outerCount + i, 0).setConstant(2);
+			}
+
+
+		} else {
+			// Scramble the potential inner points listing.
+			//auto myrandom = [](int i) {return std::rand()%i;};
+			std::srand(unsigned(std::time(0)));
+			std::random_shuffle(potentialInnerPoints.begin(), potentialInnerPoints.end());
+			// After shuffling, take the first innerPointsFilled and write them to the resultant shape.
+			for (size_t i = 0; i < (size_t)innerPointsFilled; ++i)
+			{
+				resPts->block<1, 3>(outerCount + i, 0) = potentialInnerPoints[i].block<1, 3>(0, 0);
+			}
 		}
 
 		// All points are now filled. Write a shape file from the data.
 		// Not using the standard ddscat class at first, as it has to be read back in.
 		std::ostringstream out;
 		out << shp->desc << " - randomized with threshold " << threshold << "\n";
-		out << shp->numPoints << std::endl;
+		out << resPts->rows() << std::endl;
 		out << "1.0 0.0 0.0\n0.0 1.0 0.0\n1 1 1\n0 0 0\n";
 		out << "No. ix iy iz dx dy dz\n";
-		for (size_t i=0; i<shp->numPoints; ++i)
+		for (size_t i = 0; i< (size_t) resPts->rows(); ++i)
 			out << i+1 << "\t" << (*resPts)(i,0) << "\t" << (*resPts)(i,1) << "\t" << 
-			(*resPts)(i,2) << "\t1\t1\t1\n";
+			(*resPts)(i, 2) << "\t" << (*resDiels)(i, 0) << "\t" << 
+			(*resDiels)(i, 1) << "\t" << (*resDiels)(i, 2) << "\n";
 		std::string ostr = out.str();
 		std::istringstream in(ostr);
-		shapefile oshp(in);
-		oshp.fixStats();
-		oshp.write(output);
+		auto oshp = shapefile::generate(in);
+		oshp->fixStats();
+		oshp->standardD = shp->standardD;
+		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-threshold", boost::lexical_cast<std::string>(threshold)));
+		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numSurfacePoints", boost::lexical_cast<std::string>(outerCount)));
+		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numInnerLatticeSites", boost::lexical_cast<std::string>(innerPointsTotal)));
+		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numOccupiedInnerLatticeSites", boost::lexical_cast<std::string>(innerPointsFilled)));
+		if (sFlakeType.size())
+			oshp->tags.insert(pair<string, string>("flake_classification", sFlakeType));
+		oshp->tags.insert(std::pair<string, string>("flake_reference", shp->hash().string()));
+		oshp->write(output);
 
 
 	} catch (std::exception &e)
