@@ -245,7 +245,7 @@ namespace rtmath {
 
 		template<>
 		shared_ptr<IOhandler> 
-			write_file_type_multi
+			write_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			const ddOutput *ddo)
 		{

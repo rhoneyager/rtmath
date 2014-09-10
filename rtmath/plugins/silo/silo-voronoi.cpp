@@ -33,8 +33,9 @@ namespace rtmath {
 		using namespace rtmath::plugins::silo;
 
 
+		template<>
 		shared_ptr<IOhandler>
-			write_file_type_multi
+			write_file_type_multi<rtmath::Voronoi::VoronoiDiagram>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts, 
 			const rtmath::Voronoi::VoronoiDiagram *v)
 		{
