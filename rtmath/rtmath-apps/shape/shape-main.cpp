@@ -178,30 +178,26 @@ int main(int argc, char** argv)
 		("match-parent-flake", "Select the parent flakes")
 		*/
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
-		vector<float> matchDipoleSpacings;
-		vector<std::pair<size_t, size_t> > matchDipoleNums;
+		rtmath::config::intervals<float> iDipoleSpacing;
+		rtmath::config::intervals<size_t> iDipoleNumbers;
 		bool matchParentFlakes;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
 		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
-		if (vm.count("match-dipole-spacing")) matchDipoleSpacings = vm["match-dipole-spacing"].as<vector<float> >();
-		if (vm.count("match-dipole-numbers")) {
-			vector<size_t> candDipoleNums = vm["match-dipole-numbers"].as<vector<size_t> >();
-			for (size_t i = 0; i < candDipoleNums.size(); i = i + 2)
-				matchDipoleNums.push_back(std::pair<size_t, size_t>(candDipoleNums[i], candDipoleNums[i + 1]));
-		}
+		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
+		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
+
 		if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
 		using namespace rtmath::ddscat::shapefile;
 		auto collection = shapefile::makeCollection();
 		auto query = shapefile::makeQuery();
-		query->hashLower(matchHashes);
-		query->flakeType(matchFlakeTypes);
-		query->flakeRefHashLower(matchParentHashes);
-		query->dipoleRange(matchDipoleNums);
-		for (const auto &ds : matchDipoleSpacings)
-			query->standardD(ds);
+		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
+		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
+		query->refHashLowers.insert(matchParentHashes.begin(), matchParentHashes.end());
+		query->dipoleNumbers = iDipoleNumbers;
+		query->dipoleSpacings = iDipoleSpacing;
 
 		bool supplementDb = false;
 		supplementDb = vm["use-db"].as<bool>();

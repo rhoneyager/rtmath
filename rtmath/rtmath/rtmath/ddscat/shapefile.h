@@ -11,6 +11,7 @@
 #include <Eigen/Dense>
 
 #include "../hash.h"
+#include "../splitSet.h"
 #include "../registry.h"
 #include "../io.h"
 #include <boost/shared_ptr.hpp>
@@ -46,34 +47,14 @@ namespace rtmath {
 				public:
 					std::set<std::string> hashLowers, hashUppers,
 						flakeTypes, refHashLowers;
-					std::map<float, float > standardDs;
+					//std::map<float, float > standardDs;
+					config::intervals<float> dipoleSpacings;
 					std::map<std::string, std::string> tags;
-					std::vector<std::pair<size_t, size_t> > dipoleRanges;
+					//std::vector<std::pair<size_t, size_t> > dipoleRanges;
+					config::intervals<size_t> dipoleNumbers;
 				public:
 					~shapefile_index();
 					static std::shared_ptr<shapefile_index> generate();
-
-					shapefile_index& tag(const std::string&, const std::string&);
-					shapefile_index& hashLower(const std::string&);
-					shapefile_index& hashLower(const uint64_t);
-					shapefile_index& hashUpper(const std::string&);
-					shapefile_index& hashUpper(const uint64_t);
-					shapefile_index& dipoleRange(size_t inclLowerBound, size_t inclUpperBound);
-					//shapefile_index& hash(const HASH_t&);
-					shapefile_index& flakeType(const std::string&);
-					shapefile_index& standardD(const float d, const float tolpercent = 1.0f);
-					shapefile_index& flakeRefHashLower(const std::string&);
-					shapefile_index& flakeRefHashLower(const uint64_t&);
-					shapefile_index& tag(const std::vector<std::pair<std::string, std::string> >&);
-					shapefile_index& hashLower(const std::vector<std::string>&);
-					shapefile_index& hashLower(const std::vector<uint64_t>);
-					shapefile_index& hashUpper(const std::vector<std::string>&);
-					shapefile_index& hashUpper(const std::vector<uint64_t>);
-					shapefile_index& dipoleRange(const std::vector<std::pair<size_t, size_t> >&);
-					shapefile_index& hash(const std::vector<HASH_t>&);
-					shapefile_index& flakeType(const std::vector<std::string>&);
-					shapefile_index& flakeRefHashLower(const std::vector<std::string>&);
-					shapefile_index& flakeRefHashLower(const std::vector<uint64_t>&);
 
 					typedef std::shared_ptr<std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp > > collection;
 					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >

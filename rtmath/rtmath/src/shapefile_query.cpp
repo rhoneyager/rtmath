@@ -68,71 +68,6 @@ namespace rtmath {
 				return res;
 			}
 
-#define searchAndVec1(fname, varname, t) \
-	shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::fname(const t& s) \
-			{ \
-				varname.insert(boost::lexical_cast<std::string>(s)); \
-				return *this; \
-			} \
-			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::fname(const std::vector<t>& s) \
-			{ \
-				for (const auto &i : s) \
-					varname.insert(boost::lexical_cast<std::string>(i)); \
-				return *this; \
-			}
-#define searchAndVec2(fname, varname, t) \
-	shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::fname(const t s) \
-			{ \
-				varname.insert(boost::lexical_cast<std::string>(s)); \
-				return *this; \
-			}
-
-			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::tag(
-				const std::string &a, const std::string &b)
-			{
-				tags[a] = b; return *this;
-			}
-
-			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::tag(
-				const std::vector<std::pair<std::string, std::string> > &vec)
-			{
-				for (const auto & v : vec)
-					tags[v.first] = v.second;
-				return *this;
-			}
-
-			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::dipoleRange(
-				size_t lower, size_t upper)
-			{
-				dipoleRanges.push_back(std::pair<size_t, size_t>(lower, upper)); return *this;
-			}
-
-			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::dipoleRange(
-				const std::vector<std::pair<size_t, size_t> > &vec)
-			{
-				for (const auto & v : vec)
-					dipoleRanges.push_back(v);
-				return *this;
-			}
-
-			//searchAndVec1(tag, tags, std::string);
-			searchAndVec1(hashLower, hashLowers, std::string);
-			searchAndVec1(hashUpper, hashUppers, std::string);
-			searchAndVec1(flakeType, flakeTypes, std::string);
-			//searchAndVec1(flakeType_uuid, flakeTypeUUIDs, std::string);
-			searchAndVec1(flakeRefHashLower, refHashLowers, std::string);
-			//searchAndVec1(hash, hashLowers, HASH_t);
-			searchAndVec2(hashLower, hashLowers, uint64_t);
-			searchAndVec2(hashUpper, hashUppers, uint64_t);
-
-			shapefile_db_registry::shapefile_index& shapefile_db_registry::shapefile_index::standardD(const float d, const float tolpercent)
-			{
-				standardDs.insert(std::pair<float,float>(d,tolpercent));
-				return *this;
-			}
-
-#undef searchAndVec1
-#undef searchAndVec2
 
 			std::pair<shapefile_db_registry::shapefile_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
 				shapefile_db_registry::shapefile_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
@@ -239,34 +174,13 @@ namespace rtmath {
 						}
 
 						// Dipole spacings
-						if (standardDs.size())
-						{
-							bool matches = false;
-							for (const auto &r : standardDs)
-							{
-								if (r.first * (1. - r.second) <= s->standardD && s->standardD <= r.first * (1. + r.second))
-								{
-									matches = true;
-									break;
-								}
-							}
-							if (!matches) return false;
-						}
+						if (dipoleSpacings.ranges.size())
+							if (!dipoleSpacings.inRange(s->standardD)) return false;
 
 						// Number of dipoles
-						if (dipoleRanges.size())
-						{
-							bool matches = false;
-							for (const auto &r : dipoleRanges)
-							{
-								if (r.first <= s->numPoints && s->numPoints <= r.second)
-								{
-									matches = true;
-									break;
-								}
-							}
-							if (!matches) return false;
-						}
+						if (dipoleNumbers.ranges.size())
+							if (!dipoleNumbers.inRange(s->numPoints)) return false;
+
 						return true;
 					};
 					if (!works()) continue;

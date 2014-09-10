@@ -106,28 +106,28 @@ namespace rtmath
 				bool unionFlag = false;
 				
 				// Dipole spacing ranges
-				if (index.standardDs.size())
+				if (index.dipoleSpacings.ranges.size())
 				{
 					if (unionFlag) squery << " INTERSECT ";
 					squery << ssel << " WHERE ";
-					for (auto it = index.standardDs.begin(); it != index.standardDs.end(); ++it)
+					for (auto it = index.dipoleSpacings.ranges.begin(); it != index.dipoleSpacings.ranges.end(); ++it)
 					{
-						if (it != index.standardDs.begin())
+						if (it != index.dipoleSpacings.ranges.begin())
 							squery << " OR ";
-						squery << "cast(standardD as numeric ) <@ numrange( " << it->first * (1.0f - 0.01 * it->second) << " , "
-							<< it->first * (1.0f + 0.01 * it->second) << " ) ";
+						squery << "cast(standardD as numeric ) <@ numrange( " << it->first << " , "
+							<< it->second  << " ) ";
 					}
 					unionFlag = true;
 				}
 
 				// Number of dipoles
-				if (index.dipoleRanges.size())
+				if (index.dipoleNumbers.ranges.size())
 				{
 					if (unionFlag) squery << " INTERSECT ";
 					squery << ssel << " WHERE ";
-					for (auto it = index.dipoleRanges.begin(); it != index.dipoleRanges.end(); ++it)
+					for (auto it = index.dipoleNumbers.ranges.begin(); it != index.dipoleNumbers.ranges.end(); ++it)
 					{
-						if (it != index.dipoleRanges.begin())
+						if (it != index.dipoleNumbers.ranges.begin())
 							squery << " OR ";
 						squery << "numDipoles <@ int4range( " << it->first << " , "
 							<< it->second << " ) ";

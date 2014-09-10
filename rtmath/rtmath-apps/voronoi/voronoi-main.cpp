@@ -57,6 +57,13 @@ int main(int argc, char** argv)
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
 			("hash-voronoi", "Store standard Voronoi diagram")
 			("store-shape", "Store standard shape data in output")
+
+			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
+			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
+			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
+			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
+			("match-dipole-spacing", po::value<vector<std::string> >()->multitoken(), "Match typical dipole spacings")
+			("match-dipole-numbers", po::value<vector<std::string> >()->multitoken(), "Match typical dipole numbers")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -91,7 +98,37 @@ int main(int argc, char** argv)
 		bool storeShape = false;
 		if (vm.count("store-shape")) storeShape = true;
 		bool doExport = false;
+
+		vector<string> matchHashes, matchFlakeTypes, matchPols, matchRunUuids;
+		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
+		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
+		rtmath::config::intervals<float> iDipoleSpacing;
+		rtmath::config::intervals<size_t> iDipoleNumbers;
+		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
+		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
+
+		using std::vector;
+		using namespace rtmath::ddscat;
+
+		auto collection = shapefile::shapefile::makeCollection();
+		auto query = shapefile::shapefile::makeQuery();
+		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
+		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
+		query->dipoleNumbers = iDipoleNumbers;
+		query->dipoleSpacings = iDipoleSpacing;
+
+		bool supplementDb = false;
+		supplementDb = vm["use-db"].as<bool>();
+		bool fromDb = false;
+		fromDb = vm["from-db"].as<bool>();
+
+
+		auto dbcollection = shapefile::shapefile::makeCollection();
+		auto qExisting = shapefile::shapefile::makeQuery();
+
+
 		std::string exportType, exportFilename;
+		/*
 		{
 			cerr << "Input shape files are:" << endl;
 			for (auto it = inputshp.begin(); it != inputshp.end(); ++it)
@@ -104,6 +141,7 @@ int main(int argc, char** argv)
 				cerr << "\t" << *it << "\n";
 			cerr << "Outputting to: " << output << endl;
 		}
+		*/
 		if (vm.count("export"))
 		{
 			doExport = true;
@@ -114,6 +152,7 @@ int main(int argc, char** argv)
 
 		// Setup for output
 		std::shared_ptr<registry::IOhandler> handle, exportHandle;
+		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
 		auto opts = registry::IO_options::generate();
 		auto optsExport = registry::IO_options::generate();
 		//opts->filetype(ctype);
@@ -124,6 +163,8 @@ int main(int argc, char** argv)
 		//opts->setVal("key", sstats._shp->filename);
 		//optsExport->setVal("key", sstats._shp->filename);
 
+		std::set<rtmath::HASH_t> already_done; // Prevent duplicate runs
+
 		using namespace rtmath::ddscat;
 		using namespace rtmath::Voronoi;
 		auto doProcess = [&](
@@ -131,6 +172,7 @@ int main(int argc, char** argv)
 			)
 		{
 			cerr << "Processing hash " << vd->hash().string() << endl;
+			already_done.insert(vd->hash());
 			
 			if (vm.count("hash-voronoi"))
 				vd->writeToHash();
@@ -173,7 +215,10 @@ int main(int argc, char** argv)
 				}
 
 				for (auto &vd : voros)
-					doProcess(std::move(vd)); // Invalidate initial pointer to remove from memory after processing
+				{
+					if (!already_done.count(vd->hash()))
+						doProcess(std::move(vd)); // Invalidate initial pointer to remove from memory after processing
+				}
 			} catch (std::exception &e) {
 				cerr << e.what() << std::endl;
 				continue;
@@ -192,25 +237,36 @@ int main(int argc, char** argv)
 				//else throw rtmath::debug::xPathExistsWrongType(it->c_str());
 			}
 			else ps = pi;
-			vector<boost::shared_ptr<shapefile::shapefile> > shapes;
-
+			
 			try {
 				auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 				iopts->filename(*it);
 				// Handle not needed as the read context is used only once.
-				if (shapefile::shapefile::canReadMulti(nullptr, iopts))
+				if (shapefile::shapefile::canReadMulti(nullptr, iopts)) {
+					vector<boost::shared_ptr<shapefile::shapefile> > shapes;
 					shapefile::shapefile::readVector(nullptr, iopts, shapes, nullptr);
+					for (auto &s : shapes)
+						collection->insert(s);
+				}
 				else {
 					boost::shared_ptr<shapefile::shapefile> s = shapefile::shapefile::generate(*it);
-					shapes.push_back(s);
+					collection->insert(s);
 				}
 			} catch (std::exception &e) {
 				cerr << e.what() << std::endl;
 				continue;
 			}
 
-			for (const auto &shp : shapes)
+			// Perform the query, and then process the matched shapefiles
+			auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
+
+
+			for (const auto &s : *(res.first))
 			{
+				auto shp = rtmath::ddscat::shapefile::shapefile::generate(s);
+				if (already_done.count(shp->hash())) continue;
+				shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
+
 				cerr << "Generating Voronoi diagrams for hash " << shp->hash().lower << endl;
 				boost::shared_ptr<VoronoiDiagram> vd;
 				vd = shp->generateVoronoi(
@@ -260,6 +316,7 @@ int main(int argc, char** argv)
 				cerr << "Generating Voronoi diagrams for hash " << r->shapeHash.lower << endl;
 				auto shp = shapefile::shapefile::loadHash(r->shapeHash);
 				if (shp) {
+					if (already_done.count(shp->hash())) continue;
 					boost::shared_ptr<VoronoiDiagram> vd;
 					vd = shp->generateVoronoi(
 						std::string("standard"), VoronoiDiagram::generateStandard);
