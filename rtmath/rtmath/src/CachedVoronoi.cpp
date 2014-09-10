@@ -29,19 +29,35 @@ namespace rtmath
 
 		void CachedVoronoi::resize(size_t n)
 		{
-			tblDoubles.resize(n, NUM_CELL_DEFS_DOUBLES);
-			tblInts.resize(n, NUM_CELL_DEFS_INTS);
-			tblCellNeighs.resize(n, CachedVoronoi_MaxNeighbors_VAL);
-			tblCellF_verts.resize(n, CachedVoronoi_MaxNeighbors_VAL);
-			tblCellF_areas.resize(n, CachedVoronoi_MaxNeighbors_VAL);
+			if (!tblDoubles)
+			{
+				this->tblDoubles = boost::shared_ptr<Eigen::Matrix<double, Eigen::Dynamic, NUM_CELL_DEFS_DOUBLES> >(
+					new Eigen::Matrix<double, Eigen::Dynamic, NUM_CELL_DEFS_DOUBLES>);
+				this->tblInts = boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, NUM_CELL_DEFS_INTS> >(
+					new Eigen::Matrix<int, Eigen::Dynamic, NUM_CELL_DEFS_INTS>);
+				this->tblCellNeighs = boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> >(
+					new Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL>);
+				this->tblCellF_verts = boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> >(
+					new Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL>);
+				this->tblCellF_areas = boost::shared_ptr<Eigen::Matrix<double, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> >(
+					new Eigen::Matrix<double, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL>);
+				this->cellmap = boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> >(
+					new Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>);
+			}
 
-			tblCellNeighs.setZero();
-			tblCellF_verts.setZero();
-			tblCellF_areas.setZero();
+			tblDoubles->resize(n, NUM_CELL_DEFS_DOUBLES);
+			tblInts->resize(n, NUM_CELL_DEFS_INTS);
+			tblCellNeighs->resize(n, CachedVoronoi_MaxNeighbors_VAL);
+			tblCellF_verts->resize(n, CachedVoronoi_MaxNeighbors_VAL);
+			tblCellF_areas->resize(n, CachedVoronoi_MaxNeighbors_VAL);
+
+			tblCellNeighs->setZero();
+			tblCellF_verts->setZero();
+			tblCellF_areas->setZero();
 
 		}
 
-		CachedVoronoi::CachedVoronoi() {}
+		CachedVoronoi::CachedVoronoi() : sa(0), vol(0) { resize(0); }
 
 		CachedVoronoi::CachedVoronoi(size_t numPoints, const Eigen::Array3f &mins, const Eigen::Array3f &maxs) :
 			sa(0),
@@ -54,7 +70,7 @@ namespace rtmath
 
 		void CachedVoronoi::generateCellMap() const
 		{
-			if (cellmap.rows() > 0) return;
+			if (cellmap->rows() > 0) return;
 
 			throw rtmath::debug::xUpcast("CachedVoronoi", "generateCellMap");
 		}
@@ -64,9 +80,9 @@ namespace rtmath
 			throw rtmath::debug::xUpcast("CachedVoronoi", "regenerateCache");
 		}
 
-		const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* CachedVoronoi::getCellMap() const
+		boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > CachedVoronoi::getCellMap() const
 		{
-			generateCellMap(); return &cellmap;
+			generateCellMap(); return cellmap;
 		}
 
 	}

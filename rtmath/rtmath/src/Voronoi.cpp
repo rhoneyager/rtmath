@@ -194,6 +194,8 @@ namespace rtmath
 		**/
 		void VoronoiDiagram::upcast(const char* pluginid) const
 		{
+			if (_upcastVd) return;
+
 			std::string bname(pluginid);
 			if (!bname.size()) bname = pluginId;
 
@@ -205,12 +207,13 @@ namespace rtmath
 				if (bname.size() && pname != bname) continue;
 				if (!h.voronoiUpcastGenerator) continue;
 
+				/// \todo Change upcastGenerator definition to allow for a constant object
 				auto ptr = this->shared_from_this();
 				// Remove const-ness
-				auto mptr = boost::const_pointer_cast<VoronoiDiagram>(ptr);
+				//auto mptr = boost::const_pointer_cast<VoronoiDiagram>(ptr);
 				// Casting upwards to this plugin
-				auto mres = h.voronoiUpcastGenerator(mptr);
-				mptr.swap(mres); // Needs testing to check for stack issues!
+				_upcastVd = h.voronoiUpcastGenerator(ptr);
+				//mptr.swap(mres); // Needs testing to check for stack issues!
 				return;
 			}
 			
@@ -223,57 +226,57 @@ namespace rtmath
 
 		void VoronoiDiagram::regenerateVoronoi() const
 		{
-			upcast(); regenerateVoronoi();
+			upcast(); _upcastVd->regenerateVoronoi();
 		}
 
 		void VoronoiDiagram::regenerateFull() const
 		{
-			upcast(); regenerateFull();
+			upcast(); _upcastVd->regenerateFull();
 		}
 
-		const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* VoronoiDiagram::getCellMap() const
+		boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > VoronoiDiagram::getCellMap() const
 		{
-			upcast(); return getCellMap();
+			upcast(); return _upcastVd->getCellMap();
 		}
 
 		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceDepth() const
 		{
-			upcast(); return calcSurfaceDepth();
+			upcast(); return _upcastVd->calcSurfaceDepth();
 		}
 
 		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceDepthVectors() const
 		{
-			upcast(); return calcSurfaceDepthVectors();
+			upcast(); return _upcastVd->calcSurfaceDepthVectors();
 		}
 
 		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceNumNeighs() const
 		{
-			upcast(); return calcSurfaceNumNeighs();
+			upcast(); return _upcastVd->calcSurfaceNumNeighs();
 		}
 
 		VoronoiDiagram::matrixType VoronoiDiagram::calcSurfaceFillingOrder() const
 		{
-			upcast(); return calcSurfaceFillingOrder();
+			upcast(); return _upcastVd->calcSurfaceFillingOrder();
 		}
 
 		VoronoiDiagram::matrixType VoronoiDiagram::calcCandidateConvexHullPoints() const
 		{
-			upcast(); return calcCandidateConvexHullPoints();
+			upcast(); return _upcastVd->calcCandidateConvexHullPoints();
 		}
 
 		VoronoiDiagram::matrixType VoronoiDiagram::calcPointsSAfracExternal() const
 		{
-			upcast(); return calcPointsSAfracExternal();
+			upcast(); return _upcastVd->calcPointsSAfracExternal();
 		}
 
 		double VoronoiDiagram::surfaceArea() const
 		{
-			upcast(); return surfaceArea();
+			upcast(); return _upcastVd->surfaceArea();
 		}
 
 		double VoronoiDiagram::volume() const
 		{
-			upcast(); return volume();
+			upcast(); return _upcastVd->volume();
 		}
 	}
 }

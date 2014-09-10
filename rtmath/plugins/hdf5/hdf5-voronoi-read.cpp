@@ -80,16 +80,16 @@ namespace rtmath {
 
 
 					// Store the cell map
-					readDatasetEigen(grp, "Cell_Map", vobj->cellmap);
+					readDatasetEigen(grp, "Cell_Map", *(vobj->cellmap));
 
 
-					readDatasetEigen(grp, "tblDoubles", vobj->tblDoubles);
-					readDatasetEigen(grp, "tblInts", vobj->tblInts);
+					readDatasetEigen(grp, "tblDoubles", *(vobj->tblDoubles));
+					readDatasetEigen(grp, "tblInts", *(vobj->tblInts));
 
 
-					readDatasetEigen(grp, "tblCellNeighs", vobj->tblCellNeighs);
-					readDatasetEigen(grp, "tblCellF_verts", vobj->tblCellF_verts);
-					readDatasetEigen(grp, "tblCellF_areas", vobj->tblCellF_areas);
+					readDatasetEigen(grp, "tblCellNeighs", *(vobj->tblCellNeighs));
+					readDatasetEigen(grp, "tblCellF_verts", *(vobj->tblCellF_verts));
+					readDatasetEigen(grp, "tblCellF_areas", *(vobj->tblCellF_areas));
 					readAttrEigen<Eigen::Array3f, Group>(grp, "mins", vobj->mins);
 					readAttrEigen<Eigen::Array3f, Group>(grp, "maxs", vobj->maxs);
 					readAttrEigen<Eigen::Array3i, Group>(grp, "span", vobj->span);

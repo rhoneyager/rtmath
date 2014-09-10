@@ -19,7 +19,7 @@ namespace rtmath {
 		public:
 			mutable Eigen::Array3i span;
 			/// Maps each possible integral coordinate to a given cell.
-			mutable Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> cellmap;
+			mutable boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > cellmap;
 		protected:
 			void resize(size_t numCells);
 			mutable double sa, vol;
@@ -53,11 +53,11 @@ namespace rtmath {
 				NUM_CELL_DEFS_INTS
 			};
 
-			Eigen::Matrix<double, Eigen::Dynamic, NUM_CELL_DEFS_DOUBLES> tblDoubles;
-			Eigen::Matrix<int, Eigen::Dynamic, NUM_CELL_DEFS_INTS> tblInts;
-			Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> tblCellNeighs;
-			Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> tblCellF_verts;
-			Eigen::Matrix<double, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> tblCellF_areas;
+			boost::shared_ptr<Eigen::Matrix<double, Eigen::Dynamic, NUM_CELL_DEFS_DOUBLES> > tblDoubles;
+			boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, NUM_CELL_DEFS_INTS> > tblInts;
+			boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> > tblCellNeighs;
+			boost::shared_ptr<Eigen::Matrix<int, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> > tblCellF_verts;
+			boost::shared_ptr<Eigen::Matrix<double, Eigen::Dynamic, CachedVoronoi_MaxNeighbors_VAL> > tblCellF_areas;
 
 			Eigen::Array3f mins, maxs;
 
@@ -75,7 +75,7 @@ namespace rtmath {
 			/// Get the span of the bulk figure
 			inline Eigen::Array3i getSpan() const { return span; }
 			/// Get pointer to the mapping between coordinates and the stored cell
-			virtual const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
+			virtual boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > getCellMap() const;
 		};
 
 

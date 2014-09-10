@@ -59,8 +59,7 @@ namespace rtmath {
 				//	meshname.append(std::string(key));
 				//else meshname.append(s->filename);
 
-				const Eigen::Matrix<int, Eigen::Dynamic, 
-					Eigen::Dynamic>* cellmap = v->getCellMap();
+				auto cellmap = v->getCellMap();
 				std::map<std::string, VoronoiDiagram::matrixType> tbl;
 				v->getResultsTable(tbl);
 

@@ -32,7 +32,9 @@ namespace rtmath
 	namespace plugins {
 		namespace voro {
 			VoroCachedVoronoi::~VoroCachedVoronoi() {}
-			VoroCachedVoronoi::VoroCachedVoronoi() {}
+			VoroCachedVoronoi::VoroCachedVoronoi() : CachedVoronoi()
+			{
+			}
 
 			VoroCachedVoronoi::VoroCachedVoronoi(boost::shared_ptr<CachedVoronoi> src,
 				boost::shared_ptr<::voro::container> vc)
@@ -64,7 +66,7 @@ namespace rtmath
 
 			void VoroCachedVoronoi::generateCellMap() const
 			{
-				if (cellmap.rows() > 0) return;
+				if (cellmap->rows() > 0) return;
 				if (!vc) return;
 				// Defining the span as an inclusive bound
 				Eigen::Array3i mins = this->mins.cast<int>(), maxs = this->maxs.cast<int>();
@@ -77,7 +79,7 @@ namespace rtmath
 
 				span = maxs - mins + 1;
 				int numBoxes = span.prod();
-				cellmap.resize(numBoxes, 4);
+				cellmap->resize(numBoxes, 4);
 
 				auto getCoords = [&](int i)->Eigen::Array3i
 				{
@@ -108,8 +110,8 @@ namespace rtmath
 						// Should not happen
 						cellId = -1;
 					}
-					cellmap(i, 3) = cellId;
-					cellmap.block<1, 3>(i, 0) = crd;
+					(*cellmap)(i, 3) = cellId;
+					cellmap->block<1, 3>(i, 0) = crd;
 				}
 			}
 
@@ -136,8 +138,8 @@ namespace rtmath
 
 					if (id % 1000 == 0) std::cerr << id << "\n";
 
-					auto od = tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(id, 0);
-					auto oi = tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(id, 0);
+					auto od = tblDoubles->block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(id, 0);
+					auto oi = tblInts->block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(id, 0);
 
 					// These are found from the iterator...
 					oi(CachedVoronoi::ID) = id;
@@ -157,8 +159,8 @@ namespace rtmath
 
 			void VoroCachedVoronoi::calcCell(::voro::voronoicell_neighbor &vc, size_t _row)
 			{
-				auto od = tblDoubles.block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(_row, 0);
-				auto oi = tblInts.block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(_row, 0);
+				auto od = tblDoubles->block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(_row, 0);
+				auto oi = tblInts->block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(_row, 0);
 
 				Eigen::Matrix3d crds;
 				// Need to copy vectors due to potentially different allocators
@@ -171,9 +173,9 @@ namespace rtmath
 
 				const size_t cArraySize = CachedVoronoi_MaxNeighbors_VAL;
 
-				auto neigh = tblCellNeighs.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
-				auto f_vert = tblCellF_verts.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
-				auto f_areas = tblCellF_areas.block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
+				auto neigh = tblCellNeighs->block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
+				auto f_vert = tblCellF_verts->block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
+				auto f_areas = tblCellF_areas->block<1, CachedVoronoi_MaxNeighbors_VAL>(_row, 0);
 
 				for (size_t i = 0; i < std::min(cArraySize, lneigh.size()); ++i)
 					neigh(i) = lneigh[i];

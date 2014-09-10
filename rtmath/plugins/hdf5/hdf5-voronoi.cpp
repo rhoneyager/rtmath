@@ -117,8 +117,8 @@ namespace rtmath {
 					addDatasetEigen(grp, "Cell_Map", *cellmap, make_plist((size_t)cellmap->rows(), (size_t)cellmap->cols()));
 
 
-					addDatasetEigen(grp, "tblDoubles", e.second->tblDoubles, make_plist((size_t)e.second->tblDoubles.rows(), (size_t)e.second->tblDoubles.cols()));
-					addDatasetEigen(grp, "tblInts", e.second->tblInts, make_plist((size_t)e.second->tblInts.rows(), (size_t)e.second->tblInts.cols()));
+					addDatasetEigen(grp, "tblDoubles", *(e.second->tblDoubles), make_plist((size_t)e.second->tblDoubles->rows(), (size_t)e.second->tblDoubles->cols()));
+					addDatasetEigen(grp, "tblInts", *(e.second->tblInts), make_plist((size_t)e.second->tblInts->rows(), (size_t)e.second->tblInts->cols()));
 
 					/*
 					std::vector<std::string> res;
@@ -134,9 +134,9 @@ namespace rtmath {
 					addDatasetArray<const char*, Group>(grp, "tblCellF_areas", resb.size(), 1, resb.data());
 					*/
 
-					addDatasetEigen(grp, "tblCellNeighs", e.second->tblCellNeighs, make_plist((size_t)e.second->tblCellNeighs.rows(), (size_t)e.second->tblCellNeighs.cols()));
-					addDatasetEigen(grp, "tblCellF_verts", e.second->tblCellF_verts, make_plist((size_t)e.second->tblCellF_verts.rows(), (size_t)e.second->tblCellF_verts.cols()));
-					addDatasetEigen(grp, "tblCellF_areas", e.second->tblCellF_areas, make_plist((size_t)e.second->tblCellF_areas.rows(), (size_t)e.second->tblCellF_areas.cols()));
+					addDatasetEigen(grp, "tblCellNeighs", *(e.second->tblCellNeighs), make_plist((size_t)e.second->tblCellNeighs->rows(), (size_t)e.second->tblCellNeighs->cols()));
+					addDatasetEigen(grp, "tblCellF_verts", *(e.second->tblCellF_verts), make_plist((size_t)e.second->tblCellF_verts->rows(), (size_t)e.second->tblCellF_verts->cols()));
+					addDatasetEigen(grp, "tblCellF_areas", *(e.second->tblCellF_areas), make_plist((size_t)e.second->tblCellF_areas->rows(), (size_t)e.second->tblCellF_areas->cols()));
 					addAttrEigen<Eigen::Array3f, Group>(grp, "mins", e.second->mins);
 					addAttrEigen<Eigen::Array3f, Group>(grp, "maxs", e.second->maxs);
 					addAttrEigen<Eigen::Array3i, Group>(grp, "span", e.second->span);

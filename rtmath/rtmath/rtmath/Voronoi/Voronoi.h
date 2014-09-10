@@ -34,7 +34,7 @@ namespace rtmath {
 			typedef std::function<boost::shared_ptr<VoronoiDiagram>()> voronoiBlankGeneratorType;
 			voronoiBlankGeneratorType voronoiBlankGenerator;
 
-			typedef std::function<boost::shared_ptr<VoronoiDiagram>(boost::shared_ptr<VoronoiDiagram>)> 
+			typedef std::function<boost::shared_ptr<VoronoiDiagram>(boost::shared_ptr<const VoronoiDiagram>)> 
 				voronoiUpcastGeneratorType;
 			voronoiUpcastGeneratorType voronoiUpcastGenerator;
 
@@ -113,6 +113,7 @@ namespace rtmath {
 			Eigen::Array3f mins;
 			Eigen::Array3f maxs;
 		private:
+			mutable boost::shared_ptr<VoronoiDiagram> _upcastVd;
 			void upcast(const char* pluginid = "") const;
 		public:
 			/// \note Constructor needs to be public for io standard reader (for now)
@@ -136,7 +137,7 @@ namespace rtmath {
 
 			virtual void getResultsTable(std::map<std::string, matrixType> &res) const;
 
-			virtual const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const;
+			virtual boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > getCellMap() const;
 			
 			virtual void getBounds(Eigen::Array3f &mins, Eigen::Array3f &maxs, Eigen::Array3f &span) const;
 			virtual Eigen::Array3i getSpan() const;

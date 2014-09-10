@@ -37,7 +37,7 @@ namespace rtmath
 				virtual void regenerateFull() const override;
 
 				virtual void getResultsTable(std::map<std::string, matrixType> &res) const override;
-				virtual const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>* getCellMap() const override;
+				virtual boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > getCellMap() const override;
 				virtual void getBounds(Eigen::Array3f &mins, Eigen::Array3f &maxs, Eigen::Array3f &span) const override;
 
 				virtual matrixType calcSurfaceDepth() const override;
@@ -58,7 +58,7 @@ namespace rtmath
 					);
 				static boost::shared_ptr<VoronoiDiagram> generateBlank();
 				static boost::shared_ptr<VoronoiDiagram> generateUpcast(
-					boost::shared_ptr<VoronoiDiagram>);
+					boost::shared_ptr<const VoronoiDiagram>);
 
 			};
 		}
