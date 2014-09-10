@@ -115,7 +115,8 @@ int main(int argc, char** argv)
 		int threshold = vm["threshold"].as<int>();
 		bool useEffectiveDiel = false;
 		if (vm.count("use-effective-dieelctric")) useEffectiveDiel = true;
-		string outputDiel = vm["output-dielectric"].as<string>();
+		string outputDiel;
+		if (vm.count("output-dielectric")) outputDiel = vm["output-dielectric"].as<string>();
 
 		std::string sFlakeType;
 		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
