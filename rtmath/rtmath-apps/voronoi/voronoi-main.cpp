@@ -237,7 +237,7 @@ int main(int argc, char** argv)
 				//else throw rtmath::debug::xPathExistsWrongType(it->c_str());
 			}
 			else ps = pi;
-			
+
 			try {
 				auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 				iopts->filename(*it);
@@ -252,30 +252,30 @@ int main(int argc, char** argv)
 					boost::shared_ptr<shapefile::shapefile> s = shapefile::shapefile::generate(*it);
 					collection->insert(s);
 				}
-			} catch (std::exception &e) {
+			}
+			catch (std::exception &e) {
 				cerr << e.what() << std::endl;
 				continue;
 			}
+		}
+		// Perform the query, and then process the matched shapefiles
+		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
-			// Perform the query, and then process the matched shapefiles
-			auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
+		for (const auto &s : *(res.first))
+		{
+			auto shp = rtmath::ddscat::shapefile::shapefile::generate(s);
+			if (already_done.count(shp->hash())) continue;
+			shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
 
-			for (const auto &s : *(res.first))
-			{
-				auto shp = rtmath::ddscat::shapefile::shapefile::generate(s);
-				if (already_done.count(shp->hash())) continue;
-				shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
+			cerr << "Generating Voronoi diagrams for hash " << shp->hash().lower << endl;
+			boost::shared_ptr<VoronoiDiagram> vd;
+			vd = shp->generateVoronoi(
+				std::string("standard"), VoronoiDiagram::generateStandard);
+			vd->calcSurfaceDepth();
+			vd->calcCandidateConvexHullPoints();
 
-				cerr << "Generating Voronoi diagrams for hash " << shp->hash().lower << endl;
-				boost::shared_ptr<VoronoiDiagram> vd;
-				vd = shp->generateVoronoi(
-					std::string("standard"), VoronoiDiagram::generateStandard);
-				vd->calcSurfaceDepth();
-				vd->calcCandidateConvexHullPoints();
-
-				doProcess(std::move(vd));
-			}
+			doProcess(std::move(vd));
 		}
 
 		for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
