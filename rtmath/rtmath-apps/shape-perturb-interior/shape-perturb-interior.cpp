@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
 		cmdline.add_options()
 			("help,h", "produce help message")
-			("input,i", po::value<string>(), "Input shape file")
+			("input,i", po::value<vector<string> >(), "Input shape file(s)")
 			("output,o", po::value<string >(), "Output file")
 
 			//("output-dielectric", po::value<string>()->default_value("dielInterior.tab"),
@@ -66,6 +66,16 @@ int main(int argc, char** argv)
 			//("diel-method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
 			//"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
 			//"Only matters if volume fractions are given. Then, default is Sihvola.")
+
+			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
+			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
+			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
+			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
+			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
+			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
+			("match-dipole-numbers", po::value<vector<size_t> >()->multitoken(), "Match typical dipole numbers")
+			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
+			("match-parent-flake", "Select the parent flakes")
 
 			("use-effective-dielectric", "If specified, then all interior points will be replaced by "
 			"an effective dielectric (scaled based on filled vs. total volume fraction. ")
@@ -104,9 +114,15 @@ int main(int argc, char** argv)
 		if (vm.count("help") || argc == 1) doHelp("");
 
 
-		if (!vm.count("input"))
-			doHelp("Need to specify input file(s).");
-		string input = vm["input"].as< string >();
+		vector<string> inputs;
+		if (vm.count("input"))
+		{
+			inputs = vm["input"].as< vector<string> >();
+			cerr << "Input files are:" << endl;
+			for (auto it = inputs.begin(); it != inputs.end(); it++)
+				cerr << "\t" << *it << "\n";
+		}; // else doHelp("Need to specify input files.");
+
 
 		if (!vm.count("output"))
 			doHelp("Need to specify output file(s).");
@@ -121,160 +137,278 @@ int main(int argc, char** argv)
 		std::string sFlakeType;
 		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
 
-		// Validate input files
-		path pi(input);
-		if (!exists(pi)) 
-			throw rtmath::debug::xMissingFile(input.c_str());
-		if (is_directory(pi)) 
-			throw rtmath::debug::xPathExistsWrongType(input.c_str());
 
-		using rtmath::ddscat::shapefile::shapefile;
-		using rtmath::ddscat::stats::shapeFileStats;
-		//boost::shared_ptr<shapeFileStats> stats;
-		// Load the shape file
+		std::shared_ptr<registry::IOhandler> handle, exportHandle;
+		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
 
-		using namespace rtmath::Voronoi;
-		boost::shared_ptr<shapefile> shp = shapefile::generate(input);
-		auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
+		/*
+		("from-db", "Perform search on database and select files matching criteria.")
+		("match-hash", po::value<vector<string> >(), "Match lower hashes")
+		("match-flake-type", po::value<vector<string> >(), "Match flake types")
+		("match-dipole-spacing", po::value<vector<float> >(), "Match typical dipole spacings")
+		("match-parent-flake-hash", po::value<vector<string> >(), "Match flakes having a given parent hash")
+		("match-parent-flake", "Select the parent flakes")
+		*/
+		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
+		rtmath::config::intervals<float> iDipoleSpacing;
+		rtmath::config::intervals<size_t> iDipoleNumbers;
+		bool matchParentFlakes;
 
-		auto depthSfc = vd->calcSurfaceDepth();
-		auto cellmap = vd->getCellMap();
+		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
+		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
+		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
+		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
+		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
 
-		// Preserve the dipoles that make up the 'surface'
-		boost::shared_ptr<Eigen::MatrixXi > resPts(new Eigen::MatrixXi());
-		resPts->resize(shp->numPoints,3);
-		size_t outerCount = 0; // Keeps track of the number of points on the 'outside'.
+		if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
-		// Keep track of the inner volume fraction
-		size_t innerPointsTotal = 0;
-		size_t innerPointsFilled = 0;
+		using namespace rtmath::ddscat::shapefile;
+		auto collection = shapefile::makeCollection();
+		auto query = shapefile::makeQuery();
+		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
+		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
+		query->refHashLowers.insert(matchParentHashes.begin(), matchParentHashes.end());
+		query->dipoleNumbers = iDipoleNumbers;
+		query->dipoleSpacings = iDipoleSpacing;
 
-		// Also track all potential dipole sites
-		std::vector<Eigen::Matrix3i> potentialInnerPoints;
-		potentialInnerPoints.reserve(cellmap->rows());
+		bool supplementDb = false;
+		supplementDb = vm["use-db"].as<bool>();
+		bool fromDb = false;
+		fromDb = vm["from-db"].as<bool>();
 
-		// First, iterate over all of the entries in depthSfc to extract the constant surface points.
-		for (int i=0; i<depthSfc->rows(); ++i)
+
+
+		auto opts = registry::IO_options::generate();
+		auto optsExport = registry::IO_options::generate();
+
+		opts->filename(output);
+
+		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
+		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
+
+		// Load in all local shapefiles, then perform the matching query
+		vector<string> vinputs;
+		for (auto it = inputs.begin(); it != inputs.end(); it++)
 		{
-			// First three arguments are the coordinate. Fourth is the surface depth.
-			auto crds = depthSfc->block<1,3>(i,0);
-			int depth = (int) (*depthSfc)(i,3);
-			if (depth < threshold)
+			cerr << "Processing " << *it << endl;
+			path pi(*it);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (is_directory(pi))
 			{
-				resPts->block<1,3>(outerCount,0) = crds.cast<int>();
-				outerCount++;
-			} else innerPointsFilled++;
-		}
+				path ps = pi / "shape.dat";
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> smain;
 
-		// Iterate over all entries in the cell map, while consulting the surface depth field.
-		for (int i=0; i<cellmap->rows(); ++i)
-		{
-			// i is the probe point id
-			// The first three columns are the probe point coordinates
-			// The fourth column is the the voronoi point id (row)
-			auto crds = cellmap->block<1,3>(i,0);
-			int voroid = (*cellmap)(i,3);
-			int depth = (int) (*depthSfc)(voroid,3);
-			if (depth >= threshold)
-			{
-				innerPointsTotal++;
-				Eigen::Matrix3i p;
-				p.block<1,3>(0,0) = crds.block<1,3>(0,0);
-				potentialInnerPoints.push_back(std::move(p));
+				if (exists(ps))
+				{
+					cerr << " found " << ps << endl;
+					smain = rtmath::ddscat::shapefile::shapefile::generate(ps.string());
+					collection->insert(smain);
+				}
+			}
+			else {
+				auto iopts = registry::IO_options::generate();
+				iopts->filename(*it);
+				try {
+					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
+					// Handle not needed as the read context is used only once.
+					if (rtmath::ddscat::shapefile::shapefile::canReadMulti(nullptr, iopts))
+						rtmath::ddscat::shapefile::shapefile::readVector(nullptr, iopts, shapes, nullptr);
+					else {
+						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s = rtmath::ddscat::shapefile::shapefile::generate(*it);
+						shapes.push_back(s);
+					}
+					for (auto &s : shapes)
+						collection->insert(s);
+				}
+				catch (std::exception &e)
+				{
+					cerr << e.what() << std::endl;
+					continue;
+				}
 			}
 		}
 
-		cout << "There are " << shp->numPoints << " total.\n"
-			<< "The threshold is " << threshold << ".\n"
-			<< "The surface has " << outerCount << " points.\n"
-			<< "The interior has " << innerPointsFilled << " filled points, "
-			"and " << innerPointsTotal << " total potential sites.\n"
-			<< "The inner fraction is " << 100.f * (float) innerPointsFilled 
-			/ (float) innerPointsTotal << " percent." << std::endl;
+		// Perform the query, and then process the matched shapefiles
+		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
-		bool doEffDiel = false;
-		if (vm.count("use-effective-dielectric")) doEffDiel = true;
-		
-		boost::shared_ptr<Eigen::MatrixXi > resDiels(new Eigen::MatrixXi());
-		resDiels->resize(resPts->rows(), 3);
-		resDiels->setOnes();
 
-		if (doEffDiel)
+		auto processShape = [&](boost::shared_ptr < rtmath::ddscat::shapefile::shapefile > shp)
 		{
-			/*
-			if (!vm.count("frequency")) doHelp("When using an effective dielectric, need to specify frequency and temperature");
-			if (!vm.count("temperature")) doHelp("When using an effective dielectric, need to specify frequency and temperature");
-			double freq = vm["frequency"].as<double>();
-			double temp = vm["temperature"].as<double>();
-			string method = vm["diel-method"].as<string>();
+			using rtmath::ddscat::shapefile::shapefile;
+			using rtmath::ddscat::stats::shapeFileStats;
+			//boost::shared_ptr<shapeFileStats> stats;
+			// Load the shape file
 
-			complex<double> mAir(1.0, 0);
-			complex<double> mIce, mEff;
-			double fIce = innerPointsFilled / innerPointsTotal;
-			rtmath::refract::mIce(freq, temp, mIce);
-			if (method == "Sihvola")
+			using namespace rtmath::Voronoi;
+			cerr << "  Shape " << shp->hash().lower << endl;
+			shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
+
+			//boost::shared_ptr<shapefile> shp = shapefile::generate(input);
+			auto vd = shp->generateVoronoi("standard", VoronoiDiagram::generateStandard);
+
+			auto depthSfc = vd->calcSurfaceDepth();
+			auto cellmap = vd->getCellMap();
+
+			// Preserve the dipoles that make up the 'surface'
+			boost::shared_ptr<Eigen::MatrixXi > resPts(new Eigen::MatrixXi());
+			resPts->resize(shp->numPoints, 3);
+			size_t outerCount = 0; // Keeps track of the number of points on the 'outside'.
+
+			// Keep track of the inner volume fraction
+			size_t innerPointsTotal = 0;
+			size_t innerPointsFilled = 0;
+
+			// Also track all potential dipole sites
+			std::vector<Eigen::Matrix3i> potentialInnerPoints;
+			potentialInnerPoints.reserve(cellmap->rows());
+
+			// First, iterate over all of the entries in depthSfc to extract the constant surface points.
+			for (int i = 0; i < depthSfc->rows(); ++i)
+			{
+				// First three arguments are the coordinate. Fourth is the surface depth.
+				auto crds = depthSfc->block<1, 3>(i, 0);
+				int depth = (int)(*depthSfc)(i, 3);
+				if (depth < threshold)
+				{
+					resPts->block<1, 3>(outerCount, 0) = crds.cast<int>();
+					outerCount++;
+				}
+				else innerPointsFilled++;
+			}
+
+			// Iterate over all entries in the cell map, while consulting the surface depth field.
+			for (int i = 0; i < cellmap->rows(); ++i)
+			{
+				// i is the probe point id
+				// The first three columns are the probe point coordinates
+				// The fourth column is the the voronoi point id (row)
+				auto crds = cellmap->block<1, 3>(i, 0);
+				int voroid = (*cellmap)(i, 3);
+				int depth = (int)(*depthSfc)(voroid, 3);
+				if (depth >= threshold)
+				{
+					innerPointsTotal++;
+					Eigen::Matrix3i p;
+					p.block<1, 3>(0, 0) = crds.block<1, 3>(0, 0);
+					potentialInnerPoints.push_back(std::move(p));
+				}
+			}
+
+			cout << "There are " << shp->numPoints << " points total.\n"
+				<< "The threshold is " << threshold << ".\n"
+				<< "The surface has " << outerCount << " points.\n"
+				<< "The interior has " << innerPointsFilled << " filled points, "
+				"and " << innerPointsTotal << " total potential sites.\n"
+				<< "The inner fraction is " << 100.f * (float)innerPointsFilled
+				/ (float)innerPointsTotal << " percent." << std::endl;
+
+			bool doEffDiel = false;
+			if (vm.count("use-effective-dielectric")) doEffDiel = true;
+
+			boost::shared_ptr<Eigen::MatrixXi > resDiels(new Eigen::MatrixXi());
+			resDiels->resize(resPts->rows(), 3);
+			resDiels->setOnes();
+
+			if (doEffDiel)
+			{
+				/*
+				if (!vm.count("frequency")) doHelp("When using an effective dielectric, need to specify frequency and temperature");
+				if (!vm.count("temperature")) doHelp("When using an effective dielectric, need to specify frequency and temperature");
+				double freq = vm["frequency"].as<double>();
+				double temp = vm["temperature"].as<double>();
+				string method = vm["diel-method"].as<string>();
+
+				complex<double> mAir(1.0, 0);
+				complex<double> mIce, mEff;
+				double fIce = innerPointsFilled / innerPointsTotal;
+				rtmath::refract::mIce(freq, temp, mIce);
+				if (method == "Sihvola")
 				rtmath::refract::sihvola(mIce, mAir, fIce, 0.85, mEff);
-			else if (method == "Debye")
+				else if (method == "Debye")
 				rtmath::refract::debyeDry(mIce, mAir, fIce, mEff);
-			else if (method == "Maxwell-Garnett-Spheres")
+				else if (method == "Maxwell-Garnett-Spheres")
 				rtmath::refract::maxwellGarnettSpheres(mIce, mAir, fIce, mEff);
-			else if (method == "Maxwell-Garnett-Ellipsoids")
+				else if (method == "Maxwell-Garnett-Ellipsoids")
 				rtmath::refract::maxwellGarnettEllipsoids(mIce, mAir, fIce, mEff);
-			else {
+				else {
 				cerr << "Unknown dielectric method: " << method << endl;
 				throw rtmath::debug::xBadInput(method.c_str());
-			}
-			*/
+				}
+				*/
 
-			resPts->conservativeResize(potentialInnerPoints.size() + outerCount, 3);
-			boost::shared_ptr<Eigen::MatrixXi > resDiels(new Eigen::MatrixXi());
-			resDiels->conservativeResize(resPts->rows(), 3);
-			//resDiels->setOnes();
+				resPts->conservativeResize(potentialInnerPoints.size() + outerCount, 3);
+				resDiels->conservativeResize(resPts->rows(), 3);
+				//resDiels->setOnes();
+
+
+				for (size_t i = 0; i < (size_t)potentialInnerPoints.size(); ++i)
+				{
+					resPts->block<1, 3>(outerCount + i, 0) = potentialInnerPoints[i].block<1, 3>(0, 0);
+					resDiels->block<1, 3>(outerCount + i, 0).setConstant(2);
+				}
+
+
+			}
+			else {
+				// Scramble the potential inner points listing.
+				//auto myrandom = [](int i) {return std::rand()%i;};
+				std::srand(unsigned(std::time(0)));
+				std::random_shuffle(potentialInnerPoints.begin(), potentialInnerPoints.end());
+				// After shuffling, take the first innerPointsFilled and write them to the resultant shape.
+				for (size_t i = 0; i < (size_t)innerPointsFilled; ++i)
+				{
+					resPts->block<1, 3>(outerCount + i, 0) = potentialInnerPoints[i].block<1, 3>(0, 0);
+				}
+			}
+
+			// All points are now filled. Write a shape file from the data.
+			// Not using the standard ddscat class at first, as it has to be read back in.
+			std::ostringstream out;
+			if (doEffDiel) 
+				out << shp->desc << " - effective dielectric past threshold " << threshold << "\n";
+			else 
+				out << shp->desc << " - randomized past threshold " << threshold << "\n";
+			out << resPts->rows() << std::endl;
+			out << "1.0 0.0 0.0\n0.0 1.0 0.0\n1 1 1\n0 0 0\n";
+			out << "No. ix iy iz dx dy dz\n";
+			for (size_t i = 0; i < (size_t)resPts->rows(); ++i)
+				out << i + 1 << "\t" << (*resPts)(i, 0) << "\t" << (*resPts)(i, 1) << "\t" <<
+				(*resPts)(i, 2) << "\t" << (*resDiels)(i, 0) << "\t" <<
+				(*resDiels)(i, 1) << "\t" << (*resDiels)(i, 2) << "\n";
+			std::string ostr = out.str();
+			std::istringstream in(ostr);
+			auto oshp = shapefile::generate(in);
+			oshp->fixStats();
+			oshp->standardD = shp->standardD;
+			if (!oshp->standardD && vm.count("dipole-spacing"))
+				oshp->standardD = vm["dipole-spacing"].as<float>();
+			oshp->tags.insert(std::pair<std::string, std::string>("decimation", "none"));
+			{
+				std::ostringstream pstr;
+				pstr << "inner_";
+				pstr << threshold;
+				if (doEffDiel) pstr << "_eff";
+				else pstr << "_rnd";
+
+				oshp->tags.insert(std::pair<std::string, std::string>("perturbation", pstr.str()));
+			}
 			
+			oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-threshold", boost::lexical_cast<std::string>(threshold)));
+			oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numSurfacePoints", boost::lexical_cast<std::string>(outerCount)));
+			oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numInnerLatticeSites", boost::lexical_cast<std::string>(innerPointsTotal)));
+			oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numOccupiedInnerLatticeSites", boost::lexical_cast<std::string>(innerPointsFilled)));
+			if (sFlakeType.size())
+				oshp->tags.insert(pair<string, string>("flake_classification", sFlakeType));
+			oshp->tags.insert(std::pair<string, string>("flake_reference", shp->hash().string()));
 
-			for (size_t i = 0; i < (size_t)potentialInnerPoints.size(); ++i)
-			{
-				resPts->block<1, 3>(outerCount + i, 0) = potentialInnerPoints[i].block<1, 3>(0, 0);
-				resDiels->block<1, 3>(outerCount + i, 0).setConstant(2);
-			}
+			if (output.size())
+				handle = oshp->writeMulti(handle, opts);
+
+		};
 
 
-		} else {
-			// Scramble the potential inner points listing.
-			//auto myrandom = [](int i) {return std::rand()%i;};
-			std::srand(unsigned(std::time(0)));
-			std::random_shuffle(potentialInnerPoints.begin(), potentialInnerPoints.end());
-			// After shuffling, take the first innerPointsFilled and write them to the resultant shape.
-			for (size_t i = 0; i < (size_t)innerPointsFilled; ++i)
-			{
-				resPts->block<1, 3>(outerCount + i, 0) = potentialInnerPoints[i].block<1, 3>(0, 0);
-			}
-		}
-
-		// All points are now filled. Write a shape file from the data.
-		// Not using the standard ddscat class at first, as it has to be read back in.
-		std::ostringstream out;
-		out << shp->desc << " - randomized with threshold " << threshold << "\n";
-		out << resPts->rows() << std::endl;
-		out << "1.0 0.0 0.0\n0.0 1.0 0.0\n1 1 1\n0 0 0\n";
-		out << "No. ix iy iz dx dy dz\n";
-		for (size_t i = 0; i< (size_t) resPts->rows(); ++i)
-			out << i+1 << "\t" << (*resPts)(i,0) << "\t" << (*resPts)(i,1) << "\t" << 
-			(*resPts)(i, 2) << "\t" << (*resDiels)(i, 0) << "\t" << 
-			(*resDiels)(i, 1) << "\t" << (*resDiels)(i, 2) << "\n";
-		std::string ostr = out.str();
-		std::istringstream in(ostr);
-		auto oshp = shapefile::generate(in);
-		oshp->fixStats();
-		oshp->standardD = shp->standardD;
-		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-threshold", boost::lexical_cast<std::string>(threshold)));
-		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numSurfacePoints", boost::lexical_cast<std::string>(outerCount)));
-		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numInnerLatticeSites", boost::lexical_cast<std::string>(innerPointsTotal)));
-		oshp->tags.insert(std::pair<std::string, std::string>("inner-perturbation-numOccupiedInnerLatticeSites", boost::lexical_cast<std::string>(innerPointsFilled)));
-		if (sFlakeType.size())
-			oshp->tags.insert(pair<string, string>("flake_classification", sFlakeType));
-		oshp->tags.insert(std::pair<string, string>("flake_reference", shp->hash().string()));
-		oshp->write(output);
+		for (const auto &s : *(res.first))
+			processShape(rtmath::ddscat::shapefile::shapefile::generate(s));
 
 
 	} catch (std::exception &e)

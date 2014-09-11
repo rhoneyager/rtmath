@@ -205,6 +205,16 @@ namespace rtmath {
 			{
 				numPoints = 0;
 				standardD = 0;
+
+				// Add the ingest tags. If using a copy constructor, then these get overridden.
+				using namespace boost::posix_time;
+				using namespace boost::gregorian;
+				ptime now = second_clock::local_time();
+				ingest_timestamp = to_iso_string(now);
+				ingest_hostname = Ryan_Debug::getHostname();
+				ingest_username = Ryan_Debug::getUsername();
+				ingest_rtmath_version = rtmath::debug::rev();
+
 				//filename = "";
 				//::rtmath::io::Serialization::implementsSerialization<
 				//	shapefile, shapefile_IO_output_registry, 
@@ -260,59 +270,6 @@ namespace rtmath {
 			{
 				readString(str, true);
 			}
-
-			/*
-			void shapefile::read(const std::string &filename, bool headerOnly)
-			{
-				using namespace std;
-				using namespace boost::interprocess;
-				using namespace boost::filesystem;
-				// Detect if the input file is compressed
-				using namespace Ryan_Serialization;
-				std::string cmeth, fname;
-				if (!detect_compressed(filename, cmeth, fname))
-					throw rtmath::debug::xMissingFile(filename.c_str());
-
-				// Do a direct map into memory. It's faster than stream i/o for reading a large file.
-				// Plus, all other operations can be done solely in memory.
-				size_t fsize = (size_t)file_size(path(fname)); // bytes
-
-				file_mapping m_file(
-					fname.c_str(),
-					read_only
-					);
-
-				mapped_region region(
-					m_file,
-					read_only,
-					0,
-					fsize);
-
-				void* start = region.get_address();
-				const char* a = (char*)start;
-				this->filename = fname;
-
-				string s(a, fsize);
-				std::istringstream ss(s);
-
-
-				boost::iostreams::filtering_istream sin;
-				// sin can contain either compressed or uncompressed input at this point.
-				if (cmeth.size())
-					prep_decompression(cmeth, sin);
-				sin.push(ss);
-
-				string suncompressed;
-				suncompressed.reserve(1024 * 1024 * 10);
-				std::ostringstream so;
-				boost::iostreams::copy(sin, so);
-				suncompressed = so.str();
-				this->_localhash = HASH(suncompressed.c_str(), (int)suncompressed.size());
-
-				//istringstream ss_unc(suncompressed);
-				readString(suncompressed, headerOnly);
-			}
-            */
 
 			void shapefile::readString(const std::string &in, bool headerOnly)
 			{
@@ -423,7 +380,7 @@ namespace rtmath {
 				s->ingest_timestamp = to_iso_string(now);
 				s->ingest_hostname = Ryan_Debug::getHostname();
 				s->ingest_username = Ryan_Debug::getUsername();
-				s->ingest_rtmath_version = rtmath::debug::rev();;
+				s->ingest_rtmath_version = rtmath::debug::rev();
 
 			}
 
@@ -761,6 +718,7 @@ namespace rtmath {
 			void shapefile::fixStats()
 			{
 				x0 = means;
+				xd = x0 * d;
 			}
 
 
