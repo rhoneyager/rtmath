@@ -144,12 +144,19 @@ namespace rtmath
 					voxelModeller->SetScalarTypeToFloat();
 					voxelModeller->SetMaximumDistance(.1);
 
+#if VTK_MAJOR_VERSION <= 5
+					voxelModeller->SetInput(pointsPolys);
+#else
 					voxelModeller->SetInputData(pointsPolys);
+#endif
 					voxelModeller->Update();
 					volume->DeepCopy(voxelModeller->GetOutput());
 
-
+#if VTK_MAJOR_VERSION <= 5
+					mc->SetInput(volume);
+#else
 					mc->SetInputData(volume);
+#endif
 
 					mc->ComputeNormalsOn();
 					mc->ComputeGradientsOn();
@@ -198,7 +205,11 @@ namespace rtmath
 
 				vtkSmartPointer<vtkDelaunay3D> delaunay3D =
 					vtkSmartPointer<vtkDelaunay3D>::New();
+#if VTK_MAJOR_VERSION <= 5
+				delaunay3D->SetInput(surfacePointsPolys);
+#else
 				delaunay3D->SetInputData(surfacePointsPolys);
+#endif
 				delaunay3D->Update();
 
 
@@ -292,11 +303,19 @@ namespace rtmath
 
 					vtkSmartPointer<vtkCleanPolyData> cleanPolyData =
 						vtkSmartPointer<vtkCleanPolyData>::New();
+#if VTK_MAJOR_VERSION <= 5
+					cleanPolyData->SetInput(surfacePointsPolys);
+#else
 					cleanPolyData->SetInputData(surfacePointsPolys);
+#endif
 					cleanPolyData->Update();
 
 					vtkSmartPointer<vtkDelaunay2D> hull2d = vtkSmartPointer<vtkDelaunay2D>::New();
+#if VTK_MAJOR_VERSION <= 5
+					hull2d->SetInput(cleanPolyData->GetOutput());
+#else
 					hull2d->SetInputData(cleanPolyData->GetOutput());
+#endif
 					hull2d->SetTransform(trns);
 					hull2d->Update();
 
