@@ -32,6 +32,7 @@
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/io.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
@@ -223,7 +224,12 @@ int main(int argc, char** argv)
 		{
 			doWrite = true;
 			string shpfile = vm["inputshape"].as<string>();
-			auto shp = rtmath::ddscat::shapefile::shapefile::generate(shpfile);
+
+			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shps;
+			rtmath::io::readObjs(shps, shpfile);
+			if (!shps.size()) doHelp("File must contain shapes");
+			auto shp = shps[0];
+
 			double dSpacing = shp->standardD;
 			double numPoints = (double)shp->numPoints;
 			if (vm.count("dipole-spacing")) dSpacing = vm["dipole-spacing"].as<double>();

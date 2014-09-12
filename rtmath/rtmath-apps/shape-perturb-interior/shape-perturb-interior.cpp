@@ -380,8 +380,8 @@ int main(int argc, char** argv)
 			auto oshp = shapefile::generate(in);
 			oshp->fixStats();
 			oshp->standardD = shp->standardD;
-			if (!oshp->standardD && vm.count("dipole-spacing"))
-				oshp->standardD = vm["dipole-spacing"].as<float>();
+			if (vm.count("dipole-spacing"))
+				oshp->standardD = (float) vm["dipole-spacing"].as<double>();
 			oshp->tags.insert(std::pair<std::string, std::string>("decimation", "none"));
 			{
 				std::ostringstream pstr;

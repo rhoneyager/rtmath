@@ -23,7 +23,8 @@
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include "../../rtmath/rtmath/io.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 enum PHASE {
 	ICE,
@@ -41,8 +42,11 @@ int main(int argc, char** argv)
 		// detect if rtmath-mtab is being called
 
 		namespace po = boost::program_options;
-		po::options_description desc("Allowed options");
-		desc.add_options()
+		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
+			config("Config options"), hidden("Hidden options"), oall("all options");
+		rtmath::debug::add_options(cmdline, config, hidden);
+
+		cmdline.add_options()
 			("help,h", "produce help message")
 			("mtab,m", "Produce mtab-style output")
 			("debug", "Produce debug output")
@@ -65,11 +69,16 @@ int main(int argc, char** argv)
 		p.add("frequency",1);
 		p.add("temperature",2);
 
+		desc.add(cmdline).add(config);
+		oall.add(cmdline).add(config).add(hidden);
+
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc,argv).
-			options(desc).positional(p).run(),
+			options(oall).positional(p).run(),
 			vm );
 		po::notify (vm);
+
+		rtmath::debug::process_static_options(vm);
 
 		rtmath::ddscat::dielTab dfile;
 		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen;
@@ -125,7 +134,10 @@ int main(int argc, char** argv)
 		{
 			if (!vVols.count(PHASE::ICE)) vVols[PHASE::ICE] = set<double>();
 
-			auto shp = rtmath::ddscat::shapefile::shapefile::generate(sshape);
+			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shps;
+			rtmath::io::readObjs(shps, sshape);
+			if (!shps.size()) doHelp("File must contain shapes");
+			auto shp = shps[0];
 			double numInner = 0, numOccupied = 0, frac = 0;
 			if (shp->tags.count("inner-perturbation-numInnerLatticeSites"))
 				numInner = boost::lexical_cast<double>(shp->tags.at("inner-perturbation-numInnerLatticeSites"));
@@ -133,7 +145,7 @@ int main(int argc, char** argv)
 				numOccupied = boost::lexical_cast<double>(shp->tags.at("inner-perturbation-numOccupiedInnerLatticeSites"));
 			if (numInner && numOccupied)
 			{
-				frac = numInner / numOccupied;
+				frac = numOccupied / numInner;
 				vVols[PHASE::ICE].insert(frac);
 			} else doHelp("Need to specify a flake with perturbative structure recorded");
 		}

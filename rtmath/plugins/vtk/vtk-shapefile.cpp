@@ -37,7 +37,7 @@ namespace rtmath {
 	namespace registry {
 		using std::shared_ptr;
 		using rtmath::ddscat::ddOutput;
-		using namespace rtmath::plugins::silo;
+		//using namespace rtmath::plugins::silo;
 
 		/*
 		template<>
