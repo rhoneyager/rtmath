@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <iostream>
@@ -18,6 +19,7 @@
 #include <Ryan_Debug/debug.h>
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/splitSet.h"
@@ -55,6 +57,8 @@ int main(int argc, char** argv)
 			("method", po::value<string>()->default_value("Sihvola"), "Method used to calculate the resulting dielectric "
 			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
 			"Only matters if volume fractions are given. Then, default is Sihvola.")
+
+			("input-shape,s", po::value<string>(), "Specify shapefile for inner dielectric calculation. Provides volume fraction.")
 			;
 
 		po::positional_options_description p;
@@ -69,6 +73,7 @@ int main(int argc, char** argv)
 
 		rtmath::ddscat::dielTab dfile;
 		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen;
+		string sshape;
 		set<double> temps, freqs, nus;
 		map<PHASE,string> vsVols;
 		map<PHASE,set<double> > vVols;
@@ -80,6 +85,7 @@ int main(int argc, char** argv)
 		if (vm.count("debug"))
 			debug = true;
 
+		if (vm.count("input-shape")) sshape = vm["input-shape"].as<string>();
 		if (vm.count("method"))
 			method = vm["method"].as<string>();
 		if (vm.count("temperature"))
@@ -95,12 +101,16 @@ int main(int argc, char** argv)
 		if (vm.count("volume-fraction-ice"))
 			vsVols[ICE] = vm["volume-fraction-ice"].as<string>();
 
-		if (vm.count("help") || vm.size() == 0 || argc == 1 ||
-			!vm.count("temperature") || !vm.count("frequency"))
+		auto doHelp = [&](const std::string &s)
 		{
 			cerr << desc << endl;
+			cerr << s << endl;
 			exit(1);
-		}
+		};
+
+		if (vm.count("help") || vm.size() == 0 || argc == 1 ||
+			!vm.count("temperature") || !vm.count("frequency"))
+			doHelp("");
 
 		rtmath::config::splitSet<double>(sTemps,temps);
 		rtmath::config::splitSet<double>(sFreqs,freqs);
@@ -110,6 +120,22 @@ int main(int argc, char** argv)
 			set<double> s;
 			rtmath::config::splitSet<double>(it->second,s);
 			vVols[it->first] = move(s);
+		}
+		if (sshape.size())
+		{
+			if (!vVols.count(PHASE::ICE)) vVols[PHASE::ICE] = set<double>();
+
+			auto shp = rtmath::ddscat::shapefile::shapefile::generate(sshape);
+			double numInner = 0, numOccupied = 0, frac = 0;
+			if (shp->tags.count("inner-perturbation-numInnerLatticeSites"))
+				numInner = boost::lexical_cast<double>(shp->tags.at("inner-perturbation-numInnerLatticeSites"));
+			if (shp->tags.count("inner-perturbation-numOccupiedInnerLatticeSites"))
+				numOccupied = boost::lexical_cast<double>(shp->tags.at("inner-perturbation-numOccupiedInnerLatticeSites"));
+			if (numInner && numOccupied)
+			{
+				frac = numInner / numOccupied;
+				vVols[PHASE::ICE].insert(frac);
+			} else doHelp("Need to specify a flake with perturbative structure recorded");
 		}
 
 		if (vm.count("mtab")) mtab = true;

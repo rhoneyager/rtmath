@@ -11,6 +11,7 @@
 
 #define PLUGINID "694928E5-D4C1-4463-B2D1-3B10EFBFB15B"
 
+class vtkXMLStructuredGridWriter;
 namespace rtmath {
 	namespace ddscat {
 		class ddOutput;
@@ -21,6 +22,17 @@ namespace rtmath {
 	}
 	namespace plugins {
 		namespace vtk {
+
+			struct vtk_xml_s_handle : public rtmath::registry::IOhandler
+			{
+				vtk_xml_s_handle(const char* filename, IOtype t);
+				virtual ~vtk_xml_s_handle() {}
+				void open(const char* filename, IOtype t);
+				std::shared_ptr<vtkXMLStructuredGridWriter> writer;
+			};
+
+
+
 			class SHARED_INTERNAL hullData;
 			class SHARED_INTERNAL vtkConvexHull : virtual public ::rtmath::ddscat::convexHull
 			{

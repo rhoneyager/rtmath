@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <limits>

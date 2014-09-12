@@ -49,4 +49,16 @@ void dllEntry()
 
 	doRegisterHook<rtmath::ddscat::convexHull, ::rtmath::ddscat::hull_provider_registry, 
 		::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> >(reg_convex_hull);
+
+
+	const size_t nExts = 1;
+	const char* exportExts[nExts] = { "png" };
+
+	//genAndRegisterIOregistryPlural_writer<::rtmath::data::arm::arm_scanning_radar_sacr,
+	//	::rtmath::data::arm::arm_IO_sacr_output_registry>(
+	//	nExts, exportExts, PLUGINID_SACR_REFL, "reflectivity");
+
+	//genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile,
+	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("vts", PLUGINID);
+
 }

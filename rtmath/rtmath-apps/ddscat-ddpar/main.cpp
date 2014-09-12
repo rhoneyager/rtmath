@@ -16,6 +16,7 @@
 #include <set>
 #include <algorithm>
 
+#include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/serialization/access.hpp>
@@ -27,6 +28,7 @@
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
@@ -57,6 +59,8 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< string >(), "input ddscat.par file")
 			("output,o", po::value< string >(), "output ddscat.par file (defaults to input)")
+			("inputshape,s", po::value<string>(), "input shapefile (for patching)")
+			("dipole-spacing,d", po::value<double>(), "Force assumed dipole spacing (for use when setting aeff from shape)")
 
 			("set-version,v", po::value<size_t>(), "Specify version (70, 72, ...)")
 			("set-frequency,f", po::value<double>(), "Specify frequency (GHz)")
@@ -214,6 +218,20 @@ int main(int argc, char** argv)
 			vector<string> dielFiles;
 			dielFiles = vm["set-diels"].as<vector<string> >();
 			par->setDiels(dielFiles);
+		}
+		if (vm.count("inputshape"))
+		{
+			doWrite = true;
+			string shpfile = vm["inputshape"].as<string>();
+			auto shp = rtmath::ddscat::shapefile::shapefile::generate(shpfile);
+			double dSpacing = shp->standardD;
+			double numPoints = (double)shp->numPoints;
+			if (vm.count("dipole-spacing")) dSpacing = vm["dipole-spacing"].as<double>();
+			if (!dSpacing) doHelp("Need to specify interdipole spacing (um) for this shape.");
+			double aeff_dipoles = pow(3.0 * numPoints * shp->d.prod() / (4.0 * boost::math::constants::pi<double>()), 1. / 3.);
+
+			double aeff_um = aeff_dipoles * dSpacing;
+			par->setAeff(aeff_um, aeff_um, 1, "LIN");
 		}
 
 		if (vm.count("output")) output = vm["output"].as< string >();
