@@ -223,6 +223,8 @@ int main(int argc, char** argv)
 		for (int i = 0; i <= 6; ++i)
 			out << "# lattice available (" << i << ")\t# lattice occupied (" << i << ")\tVolume Fraction (" << i << ")\t";
 
+		out << std::endl;
+
 		auto processShape = [&](boost::shared_ptr < rtmath::ddscat::shapefile::shapefile > shp)
 		{
 			using rtmath::ddscat::shapefile::shapefile;
@@ -309,6 +311,7 @@ int main(int argc, char** argv)
 				out << innerPointsTotal << "\t" << innerPointsFilled << "\t" << f << "\t";
 			}
 
+			out << std::endl;
 		};
 
 
