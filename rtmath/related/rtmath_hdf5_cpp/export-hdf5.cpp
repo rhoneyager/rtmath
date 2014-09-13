@@ -2,12 +2,19 @@
 
 //#include "cmake-settings.h"
 
+namespace {
+	bool zlib = false;
+}
+
 namespace rtmath {
 	namespace plugins
 	{
 		namespace hdf5
 		{
-
+			void useZLIB(bool val)
+			{
+				zlib = val;
+			}
 
 			template <class DataType>
 			MatchAttributeTypeType MatchAttributeType() { throw("Unsupported type during attribute conversion in rtmath::plugins::hdf5::MatchAttributeType."); }
@@ -120,9 +127,11 @@ namespace rtmath {
 				hsize_t chunk[2] = { (hsize_t)rows, (hsize_t)cols };
 				auto plist = std::shared_ptr<DSetCreatPropList>(new DSetCreatPropList);
 				plist->setChunk(2, chunk);
-#if COMPRESS_ZLIB
-				plist->setDeflate(6);
-#endif
+				if (zlib)
+					plist->setDeflate(6);
+//#if COMPRESS_ZLIB
+//				plist->setDeflate(6);
+//#endif
 				return plist;
 			}
 		}

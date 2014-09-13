@@ -29,7 +29,7 @@ void readHDF(const std::string &filename,
 		lobs.wbTemp = mdataset(i, 4) / 1000;
 		lobs.rain_snowFlag = mdataset(i, 5);
 		lobs.pres = mdataset(i, 6) / 10;
-		lobs.skinTemp = mdataset(i, 7) / 100000; // extra zero
+		lobs.skinTemp = (int) (((float) mdataset(i, 7) / (float) 10000) - 273.15f);
 		lobs.lapseRate = mdataset(i, 8) / 100;
 
 		if (lobs.lat == 0) continue;

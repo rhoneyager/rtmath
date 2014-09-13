@@ -19,6 +19,8 @@
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include "plugin-hdf5.h"
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
+#include "cmake-settings.h"
 
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -76,6 +78,12 @@ void dllEntry()
 		"Plugin that provides HDF5 io routines for various classes.",
 		PLUGINID);
 	rtmath_registry_register_dll(id);
+
+#if COMPRESS_ZLIB
+	useZLIB(true);
+#else
+	useZLIB(false);
+#endif
 
 	genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile,
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("hdf5", PLUGINID);

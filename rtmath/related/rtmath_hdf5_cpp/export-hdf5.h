@@ -16,6 +16,9 @@ namespace rtmath {
 	{
 		namespace hdf5
 		{
+			/// Master switch for zlib compression
+			void useZLIB(bool);
+
 			/// Provides a method for calculating the offsets from std::arrays of data
 #define ARRAYOFFSET(TYPE, INDEX) [](){TYPE a; return (size_t) &a[INDEX] - (size_t) &a; }()
 
