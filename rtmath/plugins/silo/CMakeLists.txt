@@ -16,6 +16,9 @@ else()
 endif()
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
 
+add_subdirectory (../../related/rtmath_silo_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_silo_cpp")
+
+
 add_library (rtmath_plugin_silo SHARED 
 	plugin-silo.cpp
 	plugin-silo.h
@@ -30,12 +33,12 @@ add_library (rtmath_plugin_silo SHARED
 	#QuadMesh3d.h
 	#RectilinearMesh3d.cpp
 	#RectilinearMesh3d.h
-	remake.h
-	WritePoints.cpp
-	WritePoints.h
+	#remake.h
+	#WritePoints.cpp
+	#WritePoints.h
 	)
 addlib(rtmath_plugin_silo SHARED)
 
-target_link_libraries(rtmath_plugin_silo ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat silo)
+target_link_libraries(rtmath_plugin_silo ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat silo rtmath_silo_cpp)
 addplugin(rtmath_plugin_silo export)
 

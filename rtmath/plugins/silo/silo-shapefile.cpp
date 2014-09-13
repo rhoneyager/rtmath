@@ -24,7 +24,7 @@
 #include "../../rtmath/rtmath/error/error.h"
 
 #include "plugin-silo.h"
-#include "WritePoints.h"
+#include "../../related/rtmath_silo_cpp/WritePoints.h"
 
 
 namespace rtmath {

@@ -6,7 +6,12 @@
 #include <vector>
 #include <Eigen/Dense>
 
-struct DBfile;
+
+#include <vtkPoints.h>
+#include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
+
+//struct DBfile;
 
 namespace rtmath {
 	namespace ddscat {
@@ -15,13 +20,10 @@ namespace rtmath {
 		}
 	}
 	namespace plugins {
-		namespace silo {
-			struct silo_handle;
+		namespace vtk {
+			struct vtk_handle;
 
-			void writeShape(DBfile *f, const char* meshname, 
-				const rtmath::ddscat::shapefile::shapefile *shp);
-
-			/// \brief Old method of writing points to a silo file
+			/// \brief Old method of writing points to a vtk file
 			/// \deprecated
 			void DEPRECATED WritePoints(DBfile *db, 
 				const char* meshname,
@@ -57,12 +59,12 @@ namespace rtmath {
 			*
 			* \todo Enable re-finding of meshes.
 			**/
-			class siloFile : public std::enable_shared_from_this<siloFile>
+			class vtkFile : public std::enable_shared_from_this<vtkFile>
 			{
 			protected:
-				friend struct silo_handle;
+				friend struct vtk_handle;
 				class meshBase : public std::enable_shared_from_this<meshBase> {protected: meshBase() {} virtual ~meshBase() {}};
-				siloFile(const char* filename, const char* desc = nullptr);
+				vtkFile(const char* filename, const char* desc = nullptr);
 			private:
 				
 				friend class meshBase;
@@ -70,12 +72,12 @@ namespace rtmath {
 			public:
 				/// \todo Make private after silo-ddOutput is ported.
 				DBfile *df;
-				static std::shared_ptr<siloFile> generate
+				static std::shared_ptr<vtkFile> generate
 					(const char* filename, const char* desc = nullptr)
 				{
-					return std::shared_ptr<siloFile>(new siloFile(filename, desc));
+					return std::shared_ptr<vtkFile>(new vtkFile(filename, desc));
 				}
-				~siloFile();
+				~vtkFile();
 
 				enum class meshType
 				{

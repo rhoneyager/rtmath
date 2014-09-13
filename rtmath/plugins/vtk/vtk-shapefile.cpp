@@ -37,9 +37,9 @@ namespace rtmath {
 	namespace registry {
 		using std::shared_ptr;
 		using rtmath::ddscat::ddOutput;
-		//using namespace rtmath::plugins::silo;
+		using namespace rtmath::plugins::vtk;
 
-		/*
+		
 		template<>
 		shared_ptr<IOhandler>
 			write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
@@ -167,7 +167,7 @@ namespace rtmath {
 
 			return h; // Pass back the handle
 		}
-		*/
+		
 	}
 }
 

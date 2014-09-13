@@ -132,6 +132,9 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
 include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 
+find_package(silo REQUIRED)
+include_directories(${SILO_INCLUDE_DIRS})
+
 find_package(HDF5 COMPONENTS C CXX REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR_CPP})
 add_definitions(${HDF5_DEFINITIONS})
@@ -150,6 +153,7 @@ IF (DEFINED SZIP_LIBRARIES)
 ENDIF()
 
 add_subdirectory (../../rtmath_hdf5_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_hdf5_cpp")
+add_subdirectory (../../rtmath_silo_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_silo_cpp")
 
 add_executable (obsSkinTemp-convert 
 	export.cpp
@@ -162,5 +166,16 @@ add_executable (obsSkinTemp-convert
 	)
 target_link_libraries(obsSkinTemp-convert ${h5libs} ${libs} rtmath_hdf5_cpp Ryan_Debug Ryan_Serialization)
 INSTALL(TARGETS obsSkinTemp-convert RUNTIME DESTINATION bin COMPONENT Applications)
+
+
+add_executable (obsSkinTemp-silo
+	import.cpp
+	import.h
+	main-import.cpp
+	observation.cpp
+	observation.h
+	)
+target_link_libraries(obsSkinTemp-silo ${h5libs} ${libs} rtmath_hdf5_cpp silo rtmath_silo_cpp Ryan_Debug Ryan_Serialization)
+INSTALL(TARGETS obsSkinTemp-silo RUNTIME DESTINATION bin COMPONENT Applications)
 
 

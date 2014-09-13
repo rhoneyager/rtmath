@@ -1,6 +1,6 @@
 #include "export-hdf5.h"
 
-#include "cmake-settings.h"
+//#include "cmake-settings.h"
 
 namespace rtmath {
 	namespace plugins

@@ -11,6 +11,8 @@ find_package(VTK REQUIRED)
 include_directories(${VTK_INCLUDE_DIRS})
 include(${VTK_USE_FILE})
 
+#add_subdirectory (../../related/rtmath_vtk_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_vtk_cpp")
+
 add_library (rtmath_plugin_vtk SHARED 
 	plugin-vtk.cpp
 	plugin-vtk.h
@@ -19,6 +21,6 @@ add_library (rtmath_plugin_vtk SHARED
 	)
 addlib(rtmath_plugin_vtk SHARED)
 
-target_link_libraries(rtmath_plugin_vtk ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${VTK_LIBRARIES})
+target_link_libraries(rtmath_plugin_vtk ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${VTK_LIBRARIES} ) #rtmath_vtk_cpp)
 addplugin(rtmath_plugin_vtk Shapes)
 
