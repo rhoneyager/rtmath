@@ -16,7 +16,7 @@ include(${VTK_USE_FILE})
 add_library (rtmath_plugin_vtk SHARED 
 	plugin-vtk.cpp
 	plugin-vtk.h
-	vtk-shapefile.cpp
+	#vtk-shapefile.cpp
 	vtk-hulls.cpp
 	)
 addlib(rtmath_plugin_vtk SHARED)
