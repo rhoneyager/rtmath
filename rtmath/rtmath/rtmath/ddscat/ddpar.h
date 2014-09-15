@@ -596,6 +596,9 @@ namespace rtmath {
 			void getDielHashes(std::vector<HASH_t>&) const;
 			void setDielHashes(std::vector<HASH_t>&);
 
+			/// Calculates the hash of the given ddscat.par.
+			HASH_t hash() const;
+
 			accessorSimpleBool(doNearField, ddParParsers::NRFLD);
 #undef near // Annoying MSVC thing
 			accessorSimplePlural(near, ddParParsers::FRACT_EXTENS, double, 6);

@@ -67,7 +67,7 @@ namespace rtmath {
 				addAttr<string, Group>(gRun, "Description", s->description);
 				addAttr<string, Group>(gRun, "ingest_timestamp", s->ingest_timestamp);
 				addAttr<string, Group>(gRun, "ingest_hostname", s->ingest_hostname);
-				addAttr<string, Group>(gRun, "run_uuid", s->runuuid); // Not all ingests have this...
+				//addAttr<string, Group>(gRun, "run_uuid", s->runuuid); // Not all ingests have this...
 				addAttr<string, Group>(gRun, "ingest_username", s->ingest_username); // Not all ingests have this...
 				addAttr<int, Group>(gRun, "ingest_rtmath_version", s->ingest_rtmath_version);
 				addAttr<string, Group>(gRun, "hostname", s->hostname);
@@ -242,6 +242,8 @@ namespace rtmath {
 				addAttr<uint64_t, Group>(gRun, "ParsedShapehash_lower", s->parsedShapeHash.lower);
 				addAttr<uint64_t, Group>(gRun, "ParsedShapehash_upper", s->parsedShapeHash.upper);
 
+				addAttr<uint64_t, Group>(gRun, "runhash_lower", s->_runhash.lower);
+				addAttr<uint64_t, Group>(gRun, "runhash_upper", s->_runhash.upper);
 
 				// If a shapefile is written to this file, make a symlink
 				std::string pShape;

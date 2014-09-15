@@ -54,7 +54,9 @@ namespace rtmath {
 				ddOutput_index();
 			public:
 				std::set<std::string> hashLowers, hashUppers,
-					flakeTypes, runids, pol;
+					flakeTypes, 
+					runids, 
+					pol;
 				// Number and percent error
 				//std::map<float, float > standardDs, freqRanges;
 				// Lower and upper (both inclusive) bounds
@@ -365,10 +367,13 @@ namespace rtmath {
 			* radius, and the ddscat version tag.
 			**/
 			std::string genNameSmall() const;
-			/// Unique identifier id for the run
-			std::string runuuid;
+			/// Unique identifier for the run
+			mutable HASH_t _runhash;
+			HASH_t runhash() const;
+
+			//std::string runuuid;
 			/// Unique name based on the run uuid and the shapehash.
-			std::string genUUID() const;
+			//std::string genUUID() const;
 
 			/// Generate a ddOutputSingle .avg object that reflects the 
 			/// sca file weights.
@@ -384,7 +389,7 @@ namespace rtmath {
 				const std::string &dir, bool noLoadRots = false);
 
 			/// Write run to the hash directory (convenience function)
-			//void writeToHash() const;
+			void writeToHash() const;
 
 			/**
 			 * \brief Adds ddOutput options to a program
@@ -402,13 +407,15 @@ namespace rtmath {
 			static void process_static_options(
 				boost::program_options::variables_map &vm);
 			
-			/// Load stats based on hash
+			/// Load result based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
-			//static boost::shared_ptr<shapeFileStats> loadHash(
-			//	const HASH_t &hash);
-			/// Load stats based on hash
+			static boost::shared_ptr<ddOutput> loadHash(
+				const HASH_t &shphash, const HASH_t &runhash);
+			static boost::shared_ptr<ddOutput> loadHash(
+				const std::string &shphash, const std::string &runhash);
+			/// Load result based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
-			//static boost::shared_ptr<shapeFileStats> loadHash(
+			//static boost::shared_ptr<ddOutput> loadHash(
 			//	const std::string &hash);
 		};
 

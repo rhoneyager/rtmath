@@ -72,8 +72,8 @@ namespace rtmath {
 				readAttr<string, Group>(base, "ingest_hostname", r->ingest_hostname);
 				if (attrExists(base, "ingest_username"))
 					readAttr<string, Group>(base, "ingest_username", r->ingest_username);
-				if (attrExists(base, "run_uuid"))
-					readAttr<string, Group>(base, "run_uuid", r->runuuid);
+				//if (attrExists(base, "run_uuid"))
+				//	readAttr<string, Group>(base, "run_uuid", r->runuuid);
 				readAttr<int, Group>(base, "ingest_rtmath_version", r->ingest_rtmath_version);
 				readAttr<string, Group>(base, "hostname", r->hostname);
 
@@ -152,6 +152,12 @@ namespace rtmath {
 				readAttr<uint64_t, Group>(base, "Shapehash_upper", r->shapeHash.upper);
 				readAttr<uint64_t, Group>(base, "ParsedShapehash_lower", r->parsedShapeHash.lower);
 				readAttr<uint64_t, Group>(base, "ParsedShapehash_upper", r->parsedShapeHash.upper);
+
+				if (attrExists(base, "runhash_lower")) // Not all have this
+				{
+					readAttr<uint64_t, Group>(base, "runhash_lower", r->_runhash.lower);
+					readAttr<uint64_t, Group>(base, "runhash_upper", r->_runhash.upper);
+				}
 
 				//bool readSHP = opts->getVal<bool>("readSHP", false);
 				bool readORI = opts->getVal<bool>("readORI", true);

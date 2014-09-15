@@ -32,6 +32,7 @@ namespace rtmath {
 
 	namespace ddscat {
 
+		/*
 		std::string ddOutput::genUUID() const
 		{
 			//using namespace boost::uuids;
@@ -47,6 +48,7 @@ namespace rtmath {
 				return res;
 			} else return genName();
 		}
+		*/
 
 		bool ddOutput_db_registry::ddOutput_db_comp::operator()(const std::shared_ptr<const ddOutput>& lhs, const std::shared_ptr<const ddOutput>& rhs) const
 		{
@@ -124,7 +126,7 @@ namespace rtmath {
 			collection res(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
 			std::shared_ptr<rtmath::registry::DBhandler> fp;
 
-			std::map<std::string, boost::shared_ptr<const ddOutput> > db_hashes; // database results, as a map
+			std::map<HASH_t, boost::shared_ptr<const ddOutput> > db_hashes; // database results, as a map
 
 			auto hooks = ::rtmath::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
 			if (doDb)
@@ -141,7 +143,7 @@ namespace rtmath {
 				}
 
 				for (const auto &r : *(toMergeC))
-					db_hashes[r->genUUID()] = r;
+					db_hashes[r->runhash()] = r;
 			}
 
 
@@ -153,7 +155,7 @@ namespace rtmath {
 				{
 					s->loadShape(false);
 
-					if (runids.size() && !runids.count(s->genUUID()))
+					if (runids.size() && !runids.count(s->runhash().string()))
 						return false;
 
 					// hash filtering
@@ -174,7 +176,7 @@ namespace rtmath {
 
 					// run ids
 					if (runids.size())
-						if (!runids.count(s->runuuid))
+						if (!runids.count(s->runhash().string()))
 							return false;
 
 					// Dipole spacings
@@ -211,12 +213,12 @@ namespace rtmath {
 
 				res->insert(s); // Passed filtering
 				// Merge the results of the provided object with any query results
-				if (db_hashes.count(s->genUUID()))
+				if (db_hashes.count(s->runhash()))
 				{
-					auto d = db_hashes.at(s->genUUID());
+					auto d = db_hashes.at(s->runhash());
 
-					db_hashes.erase(s->genUUID()); // Remove from consideration (already matched)
-					db_hashes[s->genUUID()] = s;
+					db_hashes.erase(s->runhash()); // Remove from consideration (already matched)
+					db_hashes[s->runhash()] = s;
 				}
 			}
 

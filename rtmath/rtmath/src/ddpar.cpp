@@ -243,6 +243,15 @@ namespace rtmath {
 			return lhs;
 		}
 
+		HASH_t ddPar::hash() const
+		{
+			std::string res;
+			std::ostringstream out;
+			write(out);
+			res = out.str();
+			return HASH(res.c_str(), (int)res.size());
+		}
+
 		/*
 		void ddPar::readFile(const std::string &filename, bool overlay)
 		{

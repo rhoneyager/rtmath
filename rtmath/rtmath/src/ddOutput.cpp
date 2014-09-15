@@ -47,24 +47,24 @@ namespace {
 
 namespace rtmath {
 	namespace registry {
-	
+
 		template struct IO_class_registry_writer
-			<::rtmath::ddscat::ddOutput>;
-		
-		template class usesDLLregistry<
+			< ::rtmath::ddscat::ddOutput > ;
+
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddOutput_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::ddOutput> >;
-		
+			IO_class_registry_writer<::rtmath::ddscat::ddOutput> > ;
+
 		template struct IO_class_registry_reader
-			<::rtmath::ddscat::ddOutput>;
-		
-		template class usesDLLregistry<
+			< ::rtmath::ddscat::ddOutput > ;
+
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddOutput_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::ddOutput> >;
-		
-		template class usesDLLregistry<
+			IO_class_registry_reader<::rtmath::ddscat::ddOutput> > ;
+
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddOutput_query_registry,
-			::rtmath::ddscat::ddOutput_db_registry >;
+			::rtmath::ddscat::ddOutput_db_registry > ;
 
 	}
 
@@ -72,25 +72,25 @@ namespace rtmath {
 		/*
 		void ddOutput::doImport()
 		{
-			size_t nOris = static_cast<size_t>(oridata_s.rows());
-			size_t nAngles = 0;
-			for (size_t i = 0; i < nOris; ++i)
-			{
-				if (oridata_i(i, stat_entries::DOWEIGHT))
-				{
-					nAngles += oridata_i(im stat_entries::NUMF);
-				}
-			}
+		size_t nOris = static_cast<size_t>(oridata_s.rows());
+		size_t nAngles = 0;
+		for (size_t i = 0; i < nOris; ++i)
+		{
+		if (oridata_i(i, stat_entries::DOWEIGHT))
+		{
+		nAngles += oridata_i(im stat_entries::NUMF);
+		}
+		}
 
-			resizeFML(nAngles);
+		resizeFML(nAngles);
 
-			for (size_t i = 0, j = 0; i < nOris; ++i)
-			{
-				if (oridata_i(i, stat_entries::DOWEIGHT))
-				{
+		for (size_t i = 0, j = 0; i < nOris; ++i)
+		{
+		if (oridata_i(i, stat_entries::DOWEIGHT))
+		{
 
-				}
-			}
+		}
+		}
 		}
 		*/
 
@@ -99,7 +99,7 @@ namespace rtmath {
 			a = isFMLforced; b = forceWriteFML;
 		}
 
-		ddOutput::ddOutput() : 
+		ddOutput::ddOutput() :
 			freq(0), aeff(0), temp(0), numOriData(0), ingest_rtmath_version(0)
 		{
 			resize(0, 0);
@@ -129,8 +129,8 @@ namespace rtmath {
 			stats(src.stats)
 		{
 			fmldata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
-			(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>
-			(*(src.fmldata)));
+				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>
+				(*(src.fmldata)));
 			parfile = boost::shared_ptr<ddPar>(new ddPar(*(src.parfile)));
 		}
 
@@ -144,39 +144,39 @@ namespace rtmath {
 		/*
 		void ddOutput::updateAVG()
 		{
-			if (!scas.size()) return; // Nothing to do
+		if (!scas.size()) return; // Nothing to do
 
-			RTthrow debug::xUnimplementedFunction();
+		RTthrow debug::xUnimplementedFunction();
 
-			boost::shared_ptr<ddOutputSingle> navg(new ddOutputSingle);
-			//if (!avg) navg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle);
-			//else navg = 
+		boost::shared_ptr<ddOutputSingle> navg(new ddOutputSingle);
+		//if (!avg) navg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle);
+		//else navg =
 
-			/// \todo Adjust ddOutputSingle with a 'reload' function, which updates 
-			// values of _beta and others.
-			/// \todo Implement header creation here
+		/// \todo Adjust ddOutputSingle with a 'reload' function, which updates
+		// values of _beta and others.
+		/// \todo Implement header creation here
 
-			// Construct a ddOutputSingle based on the sca files and the weights.
-			ddOutputSingle::statTableType stats;
-			stats.resize(NUM_STAT_ENTRIES, 0);
-			
-			for (const auto &wtm : weights)
-			{
-				// Update the stats table
-				ddOutputSingle::statTableType istats;
-				wtm.first->getStatTable(istats);
+		// Construct a ddOutputSingle based on the sca files and the weights.
+		ddOutputSingle::statTableType stats;
+		stats.resize(NUM_STAT_ENTRIES, 0);
 
-				for (size_t i=0; i<NUM_STAT_ENTRIES; ++i)
-					stats[i] += istats[i] * wtm.second;
+		for (const auto &wtm : weights)
+		{
+		// Update the stats table
+		ddOutputSingle::statTableType istats;
+		wtm.first->getStatTable(istats);
 
-				// Update the Mueller matrix table
-				// Use the angle spacings of the first sca file. If the others do 
-				// not fall in line, then RTthrow an error for now.
-				/// \todo Eventually just interpolate.
+		for (size_t i=0; i<NUM_STAT_ENTRIES; ++i)
+		stats[i] += istats[i] * wtm.second;
 
-			}
+		// Update the Mueller matrix table
+		// Use the angle spacings of the first sca file. If the others do
+		// not fall in line, then RTthrow an error for now.
+		/// \todo Eventually just interpolate.
 
-			// Store the stats and the Mueller matrix results
+		}
+
+		// Store the stats and the Mueller matrix results
 		}
 		*/
 		void ddOutput::loadShape(bool dostats) const
@@ -232,8 +232,8 @@ namespace rtmath {
 		* Resizing to a smaller size is typically quite destructive - ddOutputSingle
 		* binds to a certain range of values for manipulations.
 		*
-		* \param numTotAngles is the total number of scattering angles considered, over 
-		* all orientations. Used to allow heterogeneous angle combinations, from combined 
+		* \param numTotAngles is the total number of scattering angles considered, over
+		* all orientations. Used to allow heterogeneous angle combinations, from combined
 		* runs over the same particle.
 		*
 		* \param numOris is the number of orientation angles being considered.
@@ -273,182 +273,196 @@ namespace rtmath {
 			path pBase(dir);
 			if (!exists(pBase)) RTthrow debug::xMissingFile(dir.c_str());
 
-			// Perform a single-level iteration through the path tree
-			vector<path> cands;
-			cands.reserve(50000);
-			copy(directory_iterator(pBase), directory_iterator(), back_inserter(cands));
-
-			// Iterate over and load each file. Loading files in parallel because each read operation is 
-			// rather slow. The ddscat file parsers could use much improvement.
-
-			//shared_ptr<ddPar> parfile;
-			//shared_ptr<shapefile::shapefile> shape;
-			std::mutex m_fmls, m_fmlmap, m_shape, m_par, m_other, m_pathlist, m_filecheck;
-
-			// Pair up matching sca and fml files for a combined read.
-			// Keys with only an sca entry are avg files.
-			std::map<path, std::pair<path, path> > orisources;
-
-			const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
-			std::vector<std::thread> pool;
-
-			auto loadShape = [&](const path &p)
+			if (!is_directory(pBase))
 			{
-				std::lock_guard<std::mutex> lock(m_shape);
-				if (res->shape) return; // Only needs to be loaded once
-				//if (noLoadRots) return;
-				// Note: the hashed object is the fundamental thing here that needs to be loaded
-				// The other stuff is only loaded for processing, and is not serialized directly.
-				res->shape = ::rtmath::ddscat::shapefile::shapefile::generate(p.string());
-				// Get the hash and load the stats
-				//shapeHash = res->shape->hash();
-				//if (dostats)
-				//	res->stats = stats::shapeFileStats::genStats(res->shape);
-			};
-			auto loadShapeParsed = [&](const path &p)
-			{
-				std::lock_guard<std::mutex> lock(m_shape);
-				if (res->parsedShapeHash.lower) return; // Only needs to be loaded once
-				//if (noLoadRots) return;
-				// Note: the hashed object is the fundamental thing here that needs to be loaded
-				// The other stuff is only loaded for processing, and is not serialized directly.
-				res->parsedShapeHash = ::rtmath::ddscat::shapefile::shapefile::generate
-					(p.string())->hash();
-				// Get the hash and load the stats
-				//shapeHash = res->shape->hash();
-				//if (dostats)
-				//	res->stats = stats::shapeFileStats::genStats(res->shape);
-			};
-			auto loadPar = [&](const path &p)
-			{
-				std::lock_guard<std::mutex> lock(m_par);
-				res->parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
-			};
-			auto loadAvg = [&](const path &p)
-			{
-				std::lock_guard<std::mutex> lock(m_other);
-				ddOriData dat(*res, p.string());
-			};
-
-			for (const auto &p : cands)
-			{
-				// Handle compressed files (in case my or Liu's scripts compressed the input)
-				path praw;
-				std::string meth;
-				{
-					//std::lock_guard<std::mutex> lock(m_filecheck);
-					serialization::uncompressed_name(p, praw, meth);
-				}
-				// Extract entension of files in ._ form
-				// Note: some files (like mtable) have no extension. I don't use these.
-				if (!praw.has_extension()) continue;
-				path pext = praw.extension();
-				path pfileid = praw;
-				pfileid.replace_extension();
-
-				if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
-				if (pext.string() == ".sca" || pext.string() == ".fml")
-				{
-					if (!orisources.count(pfileid)) orisources[pfileid] = std::pair<path, path>(path(), path());
-					if (pext.string() == ".sca")
-					{
-						orisources[pfileid].second = praw;
-					} else {
-						orisources[pfileid].first = praw;
-					}
-				} else if (pext.string() == ".avg") {
-					std::thread t(loadAvg, praw);
-					pool.push_back(std::move(t));
-				} else if (praw.filename().string() == "ddscat.par") { // Match full name
-					std::thread t(loadPar, praw);
-					pool.push_back(std::move(t));
-				} else if (praw.filename().string() == "shape.dat") { // Match full name
-					std::thread t(loadShape, praw);
-					pool.push_back(std::move(t));
-				} else if (praw.filename().string() == "target.out") { // Match full name
-					std::thread t(loadShapeParsed, praw);
-					pool.push_back(std::move(t));
-				}
+				std::vector<boost::shared_ptr<ddOutput> > runs;
+				rtmath::io::readObjs(runs, dir);
+				if (!runs.size()) RTthrow debug::xEmptyInputFile(dir.c_str());
+				res = runs[0];
 			}
+			else {
 
-			std::vector<std::pair<path, path> > oris;
-			oris.reserve(orisources.size());
-			for (const auto &s : orisources)
-				oris.push_back(s.second);
-			res->resize(oris.size(), 0); // fml size is not yet known. These entries will be imported later.
-			vector<ddOriData > fmls;
-			fmls.reserve(orisources.size());
-			size_t count = 0;
+				// Perform a single-level iteration through the path tree
+				vector<path> cands;
+				cands.reserve(50000);
+				copy(directory_iterator(pBase), directory_iterator(), back_inserter(cands));
 
-			auto process_path = [&](const std::pair<path, path> &p)
-			{
-				size_t mycount = count;
+				// Iterate over and load each file. Loading files in parallel because each read operation is 
+				// rather slow. The ddscat file parsers could use much improvement.
+
+				//shared_ptr<ddPar> parfile;
+				//shared_ptr<shapefile::shapefile> shape;
+				std::mutex m_fmls, m_fmlmap, m_shape, m_par, m_other, m_pathlist, m_filecheck;
+
+				// Pair up matching sca and fml files for a combined read.
+				// Keys with only an sca entry are avg files.
+				std::map<path, std::pair<path, path> > orisources;
+
+				const size_t numThreads = rtmath::debug::getConcurrentThreadsSupported();
+				std::vector<std::thread> pool;
+
+				auto loadShape = [&](const path &p)
 				{
-					std::lock_guard<std::mutex> lock(m_fmls);
-					++count;
-				}
-				ddOriData dat(*res, mycount, p.second.string(), p.first.string());
+					std::lock_guard<std::mutex> lock(m_shape);
+					if (res->shape) return; // Only needs to be loaded once
+					//if (noLoadRots) return;
+					// Note: the hashed object is the fundamental thing here that needs to be loaded
+					// The other stuff is only loaded for processing, and is not serialized directly.
+					res->shape = ::rtmath::ddscat::shapefile::shapefile::generate(p.string());
+					// Get the hash and load the stats
+					//shapeHash = res->shape->hash();
+					//if (dostats)
+					//	res->stats = stats::shapeFileStats::genStats(res->shape);
+				};
+				auto loadShapeParsed = [&](const path &p)
 				{
-					std::lock_guard<std::mutex> lock(m_fmlmap);
-					fmls.push_back(std::move(dat));
-				}
-			};
+					std::lock_guard<std::mutex> lock(m_shape);
+					if (res->parsedShapeHash.lower) return; // Only needs to be loaded once
+					//if (noLoadRots) return;
+					// Note: the hashed object is the fundamental thing here that needs to be loaded
+					// The other stuff is only loaded for processing, and is not serialized directly.
+					res->parsedShapeHash = ::rtmath::ddscat::shapefile::shapefile::generate
+						(p.string())->hash();
+					// Get the hash and load the stats
+					//shapeHash = res->shape->hash();
+					//if (dostats)
+					//	res->stats = stats::shapeFileStats::genStats(res->shape);
+				};
+				auto loadPar = [&](const path &p)
+				{
+					std::lock_guard<std::mutex> lock(m_par);
+					res->parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
+				};
+				auto loadAvg = [&](const path &p)
+				{
+					std::lock_guard<std::mutex> lock(m_other);
+					ddOriData dat(*res, p.string());
+				};
 
-			auto process_paths = [&]()
-			{
-				try {
-					std::pair<path, path> p;
-					for (;;)
+				for (const auto &p : cands)
+				{
+					// Handle compressed files (in case my or Liu's scripts compressed the input)
+					path praw;
+					std::string meth;
 					{
+						//std::lock_guard<std::mutex> lock(m_filecheck);
+						serialization::uncompressed_name(p, praw, meth);
+					}
+					// Extract entension of files in ._ form
+					// Note: some files (like mtable) have no extension. I don't use these.
+					if (!praw.has_extension()) continue;
+					path pext = praw.extension();
+					path pfileid = praw;
+					pfileid.replace_extension();
+
+					if ((pext.string() == ".sca" || pext.string() == ".fml") && noLoadRots) continue;
+					if (pext.string() == ".sca" || pext.string() == ".fml")
+					{
+						if (!orisources.count(pfileid)) orisources[pfileid] = std::pair<path, path>(path(), path());
+						if (pext.string() == ".sca")
 						{
-							std::lock_guard<std::mutex> lock(m_pathlist);
-
-							if (!oris.size()) return;
-							p = oris.back();
-							oris.pop_back();
+							orisources[pfileid].second = praw;
 						}
-
-						process_path(p);
+						else {
+							orisources[pfileid].first = praw;
+						}
+					}
+					else if (pext.string() == ".avg") {
+						std::thread t(loadAvg, praw);
+						pool.push_back(std::move(t));
+					}
+					else if (praw.filename().string() == "ddscat.par") { // Match full name
+						std::thread t(loadPar, praw);
+						pool.push_back(std::move(t));
+					}
+					else if (praw.filename().string() == "shape.dat") { // Match full name
+						std::thread t(loadShape, praw);
+						pool.push_back(std::move(t));
+					}
+					else if (praw.filename().string() == "target.out") { // Match full name
+						std::thread t(loadShapeParsed, praw);
+						pool.push_back(std::move(t));
 					}
 				}
-				catch (std::exception &e)
+
+				std::vector<std::pair<path, path> > oris;
+				oris.reserve(orisources.size());
+				for (const auto &s : orisources)
+					oris.push_back(s.second);
+				res->resize(oris.size(), 0); // fml size is not yet known. These entries will be imported later.
+				vector<ddOriData > fmls;
+				fmls.reserve(orisources.size());
+				size_t count = 0;
+
+				auto process_path = [&](const std::pair<path, path> &p)
 				{
-					std::cerr << e.what() << std::endl;
-					return;
+					size_t mycount = count;
+					{
+						std::lock_guard<std::mutex> lock(m_fmls);
+						++count;
+					}
+					ddOriData dat(*res, mycount, p.second.string(), p.first.string());
+					{
+						std::lock_guard<std::mutex> lock(m_fmlmap);
+						fmls.push_back(std::move(dat));
+					}
+				};
+
+				auto process_paths = [&]()
+				{
+					try {
+						std::pair<path, path> p;
+						for (;;)
+						{
+							{
+								std::lock_guard<std::mutex> lock(m_pathlist);
+
+								if (!oris.size()) return;
+								p = oris.back();
+								oris.pop_back();
+							}
+
+							process_path(p);
+						}
+					}
+					catch (std::exception &e)
+					{
+						std::cerr << e.what() << std::endl;
+						return;
+					}
+				};
+
+
+
+				for (size_t i = 0; i < numThreads; i++)
+				{
+					std::thread t(process_paths);
+					pool.push_back(std::move(t));
 				}
-			};
+				for (auto &t : pool)
+					t.join();
+
+				/// \todo Do table resorting for better memory access for both the orientation and fml tables.
+				size_t numAngles = 0;
+				for (const auto &f : fmls) // Avg files have no fml entries - only cross-sections are stored
+					numAngles += f.numMat();
+				res->resizeFML(numAngles);
+				size_t i = 0;
+				for (const auto &f : fmls)
+				{
+					f.doExportFMLs(i);
+					i += f.numMat();
+				}
 
 
+				// Tag the source directory and ddscat version
+				path pdir(dir);
+				path pbdir = absolute(pdir);
+				res->sources.insert(pbdir.string());
 
-			for (size_t i = 0; i<numThreads; i++)
-			{
-				std::thread t(process_paths);
-				pool.push_back(std::move(t));
+				// Apply consistent generation
+				res->finalize();
 			}
-			for (auto &t : pool)
-				t.join();
-
-			/// \todo Do table resorting for better memory access for both the orientation and fml tables.
-			size_t numAngles = 0;
-			for (const auto &f : fmls) // Avg files have no fml entries - only cross-sections are stored
-				numAngles += f.numMat();
-			res->resizeFML(numAngles);
-			size_t i = 0;
-			for (const auto &f : fmls)
-			{
-				f.doExportFMLs(i);
-				i += f.numMat();
-			}
-
-
-			// Tag the source directory and ddscat version
-			path pdir(dir);
-			path pbdir = absolute(pdir);
-			res->sources.insert(pbdir.string());
-
-			// Apply consistent generation
-			res->finalize();
-
 			return res;
 		}
 
@@ -471,9 +485,9 @@ namespace rtmath {
 			/*
 			auto selectData = [&]() -> Eigen::Block<ddOutput::doubleType, 1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, false, true>
 			{
-				if (avg(0)))
-					return avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
-				return oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			if (avg(0)))
+			return avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			return oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
 			};
 			*/
 			if (numOriData || avgdata.hasAvg)
@@ -482,7 +496,7 @@ namespace rtmath {
 				boost::shared_ptr<ddOriData> data;
 				if (avgdata.hasAvg) data = boost::shared_ptr<ddOriData>(new ddOriData(*this, ""));
 				else data = boost::shared_ptr<ddOriData>(new ddOriData(*this, 0));
-			
+
 				// Extract the ddscat version from the target field
 				// Find "ddscat/" and read until the next space
 				ddUtil::getDDSCATbuild(s.target, ddvertag);
@@ -490,7 +504,8 @@ namespace rtmath {
 				freq = data->freq();
 				aeff = data->aeff();
 				temp = data->guessTemp();
-			} else if (parfile) {
+			}
+			else if (parfile) {
 				// select first wavelength and effective radius
 				double min, max;
 				size_t n;
@@ -515,14 +530,17 @@ namespace rtmath {
 						std::complex<double> diel;
 						diel = dt.interpolate(freq);
 						temp = refract::guessTemp(freq, diel);
-					} else temp = 0;
-				} else temp = 0;
-			} else {
+					}
+					else temp = 0;
+				}
+				else temp = 0;
+			}
+			else {
 				aeff = 0;
 				freq = 0;
 				temp = 0;
 			}
-			
+
 			if (shape) {
 				// Save the shape in the hash location, if necessary
 				//shape->writeToHash();
@@ -538,6 +556,53 @@ namespace rtmath {
 			ptime now = second_clock::local_time();
 			ingest_timestamp = to_iso_string(now);
 			ingest_rtmath_version = rtmath::debug::rev();
+
+			runhash();
+		}
+
+		HASH_t ddOutput::runhash() const
+		{
+			if (!_runhash.lower)
+			{
+				// Set the run uuid
+				HASH_t shphash = shapeHash;
+				HASH_t parhash = parfile->hash();
+				HASH_t tmprhash = shphash ^ parhash;
+				std::vector<HASH_t> dielhashes;
+				parfile->getDielHashes(dielhashes);
+				for (const auto &dh : dielhashes)
+				{
+					if (dh.lower)
+					{
+						tmprhash = tmprhash ^ dh;
+					}
+				}
+
+				_runhash = tmprhash;
+			}
+			return _runhash;
+		}
+
+		void ddOutput::writeToHash() const
+		{
+			using boost::filesystem::path;
+
+			std::shared_ptr<registry::IOhandler> sh;
+			std::shared_ptr<registry::IO_options> opts;
+
+			std::ostringstream sHash;
+			sHash << shapeHash.string() << "-" << runhash().string() << ".hdf5";
+			std::string shashs = sHash.str();
+
+			// Only store hash if a storage mechanism can be found
+			if (hashStore::storeHash(shapeHash.string(), shashs, sh, opts))
+			{
+				if (!serialization::detect_compressed(opts->filename()))
+					this->writeMulti(sh, opts);
+			}
+			else {
+				std::cerr << "Cannot write run to hash " << shashs << std::endl;
+			}
 		}
 
 		void ddOutput::expand(const std::string &outdir, bool writeShape) //const
@@ -549,29 +614,30 @@ namespace rtmath {
 				path pSym = debug::expandSymlink(pOut);
 				if (!is_directory(pSym))
 					RTthrow debug::xPathExistsWrongType(outdir.c_str());
-			} else {
+			}
+			else {
 				create_directory(pOut);
 			}
 
 			// Write par file
 			if (parfile)
-				this->parfile->writeFile( (path(pOut)/"ddscat.par").string());
+				this->parfile->writeFile((path(pOut) / "ddscat.par").string());
 
 			// Write shape file
 			if (writeShape)
 			{
 				if (!this->shape) this->loadShape();
-				shape->writeFile( (path(pOut)/"target.out").string() );
+				shape->writeFile((path(pOut) / "target.out").string());
 			}
 			/*
 			auto oname = [](const boost::filesystem::path &base,
-				boost::shared_ptr<ddOutputSingle> d) -> std::string
+			boost::shared_ptr<ddOutputSingle> d) -> std::string
 			{
-				std::ostringstream n;
-				/// \todo add a unique orientation hash
-				n << d->beta() << "-" << d->theta() << 
-					"-" << d->phi();
-				return (base/path(n.str())).string();
+			std::ostringstream n;
+			/// \todo add a unique orientation hash
+			n << d->beta() << "-" << d->theta() <<
+			"-" << d->phi();
+			return (base/path(n.str())).string();
 			};
 			*/
 			auto onameb = [](const boost::filesystem::path &base,
@@ -586,46 +652,46 @@ namespace rtmath {
 					n.fill('0');
 					n << i;
 				}
-				return (base/path(n.str())).string();
+				return (base / path(n.str())).string();
 			};
 
 			// Write fmls
-			for (size_t i = 0; i < (size_t) oridata_d.rows(); ++i)
+			for (size_t i = 0; i < (size_t)oridata_d.rows(); ++i)
 			{
 				//if (oridata_d(i, stat_entries::DOWEIGHT)) {
-					std::string basename = onameb(pOut, i, 4);
-					std::string fmlname = basename;
-					std::string scaname = basename;
-					fmlname.append(".fml");
-					scaname.append(".sca");
+				std::string basename = onameb(pOut, i, 4);
+				std::string fmlname = basename;
+				std::string scaname = basename;
+				fmlname.append(".fml");
+				scaname.append(".sca");
 
-					ddOriData obj(*this, i);
-					obj.doImportFMLs();
-					obj.writeFile(fmlname);
-					obj.writeFile(scaname);
-					/*
-				} else {
-					// File is an avg file of some sort
-					std::string basename = onameb(pOut, i, 0);
-					basename.append(".avg");
+				ddOriData obj(*this, i);
+				obj.doImportFMLs();
+				obj.writeFile(fmlname);
+				obj.writeFile(scaname);
+				/*
+			} else {
+			// File is an avg file of some sort
+			std::string basename = onameb(pOut, i, 0);
+			basename.append(".avg");
 
-					ddOriData obj(*this, i);
-					//obj.doImportFMLs();
-					obj.writeFile(basename);
-				}
-					*/
+			ddOriData obj(*this, i);
+			//obj.doImportFMLs();
+			obj.writeFile(basename);
+			}
+			*/
 			}
 
 			/*
 			// Write out the weighting table
 			{
-				std::ofstream owt( (path(pOut)/"weights.tsv").string() );
-				owt << "Theta\tPhi\tBeta\tWeight\n";
-				for (auto w : weights)
-				{
-					owt << w.first->theta() << "\t" << w.first->phi() << "\t"
-						<< w.first->beta() << "\t" << w.second << "\n";
-				}
+			std::ofstream owt( (path(pOut)/"weights.tsv").string() );
+			owt << "Theta\tPhi\tBeta\tWeight\n";
+			for (auto w : weights)
+			{
+			owt << w.first->theta() << "\t" << w.first->phi() << "\t"
+			<< w.first->beta() << "\t" << w.second << "\n";
+			}
 			}
 			*/
 		}
@@ -681,19 +747,58 @@ namespace rtmath {
 		/*
 		void ddOutput::writeToHash() const
 		{
-			using boost::filesystem::path;
+		using boost::filesystem::path;
 
-			path pHashRunsO;
-			getHashPaths(pHashRunsO);
+		path pHashRunsO;
+		getHashPaths(pHashRunsO);
 
-			path pHashRun = storeHash(pHashRunsO, shapeHash);
-			// Append the name to the hash
-			std::string n = genName();
-			pHashRun = pHashRun.parent_path() / path(n);
-			if (!Ryan_Serialization::detect_compressed(pHashRun.string()))
-				writeFile(pHashRun.string());
+		path pHashRun = storeHash(pHashRunsO, shapeHash);
+		// Append the name to the hash
+		std::string n = genName();
+		pHashRun = pHashRun.parent_path() / path(n);
+		if (!Ryan_Serialization::detect_compressed(pHashRun.string()))
+		writeFile(pHashRun.string());
 		}
 		*/
+
+		boost::shared_ptr<ddOutput> ddOutput::loadHash(
+			const HASH_t &shphash, const HASH_t &runhash)
+		{
+			return loadHash(boost::lexical_cast<std::string>(shphash.lower),
+				boost::lexical_cast<std::string>(runhash.lower));
+		}
+
+		boost::shared_ptr<ddOutput> ddOutput::loadHash(
+			const std::string &shphash, const std::string &runhash)
+		{
+			//if (loadedShapes.count(hash))
+			//{
+			//	auto wptr = loadedShapes.at(hash);
+			//	if (!wptr.expired()) return wptr.lock();
+			//}
+
+			boost::shared_ptr<ddOutput> res(new ddOutput);
+
+			using boost::filesystem::path;
+			using boost::filesystem::exists;
+
+			std::shared_ptr<registry::IOhandler> sh;
+			std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+
+			std::ostringstream sHash;
+			sHash << shphash << "-" << runhash << ".hdf5";
+			std::string shashs = sHash.str();
+
+			if (hashStore::findHashObj(shphash, shashs, sh, opts))
+			{
+				opts->setVal<std::string>("key", shashs); /// \todo Add hash query to hdf5 plugin (if folder not found, do vector read and figure out which hash matches)
+				res = boost::shared_ptr<ddOutput>(new ddOutput);
+				res->readMulti(sh, opts);
+			}
+
+			//res->registerHash();
+			return res;
+		}
 
 
 		std::string ddOutput::genName() const
@@ -713,14 +818,14 @@ namespace rtmath {
 			rotations rots;
 			parfile->getRots(rots);
 
-			float tDesc = (boost::math::round((float) temp*10.f)/10.f);
+			float tDesc = (boost::math::round((float)temp*10.f) / 10.f);
 			//if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
 
 
 			std::ostringstream out;
 			out << shapeHash.lower << "-"
-				<< (boost::math::round((float) freq*10.f)/10.f) << "-"
-				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
+				<< (boost::math::round((float)freq*10.f) / 10.f) << "-"
+				<< (boost::math::round((float)aeff*10.f) / 10.f) << "-"
 				<< tDesc << "-"
 				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
@@ -747,13 +852,13 @@ namespace rtmath {
 			rotations rots;
 			parfile->getRots(rots);
 
-			float tDesc = (boost::math::round((float) temp*10.f)/10.f);
+			float tDesc = (boost::math::round((float)temp*10.f) / 10.f);
 			//if (!tDesc) tDesc = (boost::math::round((float) ms.at(0).real() * 100000.f)/100000.f);
 
 
 			std::ostringstream out;
-			out << (boost::math::round((float) freq*10.f)/10.f) << "-"
-				<< (boost::math::round((float) aeff*10.f)/10.f) << "-"
+			out << (boost::math::round((float)freq*10.f) / 10.f) << "-"
+				<< (boost::math::round((float)aeff*10.f) / 10.f) << "-"
 				<< tDesc << "-"
 				<< oridata_d.rows() << "-"
 				<< rots.bN() << "-" << rots.tN() << "-" << rots.pN() << "-"
@@ -780,7 +885,7 @@ namespace rtmath {
 			check(IPV1TFYI); check(IPV1TFZR); check(IPV1TFZI); check(IPV2TFXR);
 			check(IPV2TFXI); check(IPV2TFYR); check(IPV2TFYI); check(IPV2TFZR);
 			check(IPV2TFZI); check(TA1LFX); check(TA1LFY); check(TA1LFZ);
-			check(TA2LFX); check(TA2LFY); check(TA2LFZ); 
+			check(TA2LFX); check(TA2LFY); check(TA2LFZ);
 			//check(LFKX);
 			//check(LFKY); check(LFKZ); check(IPV1LFXR); check(IPV1LFXI);
 			//check(IPV1LFYR); check(IPV1LFYI); check(IPV1LFZR); check(IPV1LFZI);
@@ -795,10 +900,10 @@ namespace rtmath {
 			check(QEXTM); check(QABSM); check(QSCAM); check(G1M);
 			check(G2M); check(QBKM); check(QPHAM); check(QPOL);
 			check(DQPHA); check(QSCAG11); check(QSCAG21); check(QSCAG31);
-			check(ITER1); check(MXITER1); check(NSCA1); 
+			check(ITER1); check(MXITER1); check(NSCA1);
 			check(QSCAG12);
-			check(QSCAG22); check(QSCAG32); 
-			check(ITER2); check(MXITER2); check(NSCA2); 
+			check(QSCAG22); check(QSCAG32);
+			check(ITER2); check(MXITER2); check(NSCA2);
 			check(QSCAG1M); check(QSCAG2M); check(QSCAG3M);
 			//check(DOWEIGHT);
 			return std::string("");
@@ -811,28 +916,28 @@ namespace rtmath {
 		template<>
 		std::string ddOutput::stat_entries::stringify<size_t>(int val)
 		{
-#define _tostr(a) #a
-#define tostr(a) _tostr(a)
-#define check(a) if (val == a) return std::string( tostr(a) );
-			//check(VERSION); check(NUM_DIPOLES); check(NAVG); check(DOWEIGHT);
-			return std::string("");
-#undef _tostr
-#undef tostr
-#undef check
+		#define _tostr(a) #a
+		#define tostr(a) _tostr(a)
+		#define check(a) if (val == a) return std::string( tostr(a) );
+		//check(VERSION); check(NUM_DIPOLES); check(NAVG); check(DOWEIGHT);
+		return std::string("");
+		#undef _tostr
+		#undef tostr
+		#undef check
 		}
-		
+
 
 		template<>
 		std::string ddOutput::stat_entries::stringify<std::string>(int val)
 		{
-#define _tostr(a) #a
-#define tostr(a) _tostr(a)
-#define check(a) if (val == a) return std::string( tostr(a) );
-			check(TARGET); check(DDAMETH); check(CCGMETH); check(SHAPE);
-			return std::string("");
-#undef _tostr
-#undef tostr
-#undef check
+		#define _tostr(a) #a
+		#define tostr(a) _tostr(a)
+		#define check(a) if (val == a) return std::string( tostr(a) );
+		check(TARGET); check(DDAMETH); check(CCGMETH); check(SHAPE);
+		return std::string("");
+		#undef _tostr
+		#undef tostr
+		#undef check
 		}
 		*/
 
@@ -866,7 +971,7 @@ namespace rtmath {
 		_mapOutputSingleRaw[obj->genCoords()] = obj;
 		}
 
-		void ddOutput::get(const coords::cyclic<double> &crds, 
+		void ddOutput::get(const coords::cyclic<double> &crds,
 		std::shared_ptr<const ddscat::ddOutputSingle> &obj,
 		bool interpolate) const
 		{

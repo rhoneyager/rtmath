@@ -45,6 +45,14 @@ namespace rtmath {
 		{
 			return !operator==(rhs);
 		}
+		inline UINT128 operator^(const UINT128 &rhs)
+		{
+			UINT128 res = *this;
+			res.lower = res.lower ^ rhs.lower;
+			res.upper = res.upper ^ rhs.upper;
+			return res;
+		}
+
 		std::string string() const
 		{
 			std::ostringstream o;
