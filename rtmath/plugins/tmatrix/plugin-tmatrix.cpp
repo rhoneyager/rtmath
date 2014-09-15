@@ -55,7 +55,8 @@ namespace rtmath
 				if (i.m_rescale)
 				{
 					std::complex<double> mAir(1.0, 0);
-					rtmath::refract::sihvola(i.m, mAir, i.vFrac, 0.85, mRes);
+					rtmath::refract::maxwellGarnettEllipsoids(i.m, mAir, i.vFrac, mRes);
+					//rtmath::refract::sihvola(i.m, mAir, i.vFrac, 0.85, mRes);
 				}
 
 				// Perform the calculation
@@ -69,30 +70,34 @@ namespace rtmath
 				double ar = i.eps;
 				if (abs(ar - 1.0) < 0.00001) ar = 1.00001;
 				auto tp = ::tmatrix::tmatrixParams::create(
-					i.aeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 7);
+					scaledAeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 7);
 
 				const double k = 2. * pi / s.wavelength;
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
 
 				auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
-				c.Qsca_iso = ori->qsca;
-				c.Qext_iso = ori->qext;
+				c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
+				c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
 				c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
 				c.g_iso = -1;
 
 				double C_sphere = pi * pow(scaledAeff, 2.0);
 				auto ang = ::tmatrix::OriAngleRes::calc(ori, 0, 0, 180., 0);
 				// 4?
-				c.Qsca = 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
+				c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
 				c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
 				c.g = -1;
 
-				c.Qbk_iso = -1;
+				c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
 				// Cext (and thus Qext) can come from the optical theorem...
 				// Cext = -4pi/k^2 * Re{S(\theta=0)}
 				c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
 				c.Qabs = c.Qext - c.Qsca;
 
+				/// iso values are validated with solid spheres
+				/// need to validate against soft spheres
+
+				//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 			}
 
 			void doPf(

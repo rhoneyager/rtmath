@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 			("volume-fraction-water,w", po::value<string>(), "Water volume fractions. If not given, calculation depends on presence of both ice and water fractions. If both are given, w = 1 - a - i. If only one is given, assume that water fraction is zero.")
 			("volume-fraction-air,a", po::value<string>(), "Air volume fraction. If not given, calculate from others.")
 			("nu", po::value<string>()->default_value("0.85"), "Value of nu for Sihvola (default is 0.85. Range is [0,2].")
-			("method", po::value<string>()->default_value("Sihvola"), "Method used to calculate the resulting dielectric "
+			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
 			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
 			"Only matters if volume fractions are given. Then, default is Sihvola.")
 

@@ -48,6 +48,7 @@ namespace rtmath
 				virtual matrixType calcPointsSAfracExternal() const override;
 				virtual double surfaceArea() const override;
 				virtual double volume() const override;
+				virtual void calcFv(size_t depth, size_t &numLatticeTotal, size_t &numLatticeFilled) const override;
 				virtual size_t numPoints() const override;
 				virtual Eigen::Array3i getSpan() const override;
 

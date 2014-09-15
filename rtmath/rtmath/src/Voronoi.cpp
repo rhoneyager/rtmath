@@ -278,6 +278,11 @@ namespace rtmath
 		{
 			upcast(); return _upcastVd->volume();
 		}
+
+		void VoronoiDiagram::calcFv(size_t depth, size_t &numLatticeTotal, size_t &numLatticeFilled) const
+		{
+			upcast(); _upcastVd->calcFv(depth, numLatticeTotal, numLatticeFilled);
+		}
 	}
 }
 

@@ -172,6 +172,8 @@ namespace rtmath {
 			virtual double surfaceArea() const;
 			/// Calculate the volume of the bulk figure
 			virtual double volume() const;
+			/// Calculate volume fraction at a level within the diagram
+			virtual void calcFv(size_t depth, size_t &numLatticeTotal, size_t &numLatticeFilled) const;
 			/// Calculate projective area of the figure intersecting the specified plane
 
 			/// \brief Generate standard Voronoi diagram, with cells starting with pre-contoured size

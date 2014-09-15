@@ -128,6 +128,66 @@ namespace rtmath
 				return cache.at("precalced")->volume();
 			}
 
+			void VoroVoronoiDiagram::calcFv(size_t threshold, size_t &innerPointsTotal, size_t &innerPointsFilled) const
+			{
+				auto depthSfc = calcSurfaceDepth();
+				auto cellmap = getCellMap();
+
+				//boost::shared_ptr<Eigen::MatrixXi > resPts(new Eigen::MatrixXi());
+				//resPts->resize(shp->numPoints, 3);
+				size_t outerCount = 0; // Keeps track of the number of points on the 'outside'.
+
+				// Keep track of the inner volume fraction
+				innerPointsTotal = 0;
+				innerPointsFilled = 0;
+
+				// Also track all potential dipole sites
+				//std::vector<Eigen::Matrix3i> potentialInnerPoints;
+				//potentialInnerPoints.reserve(cellmap->rows());
+
+				// First, iterate over all of the entries in depthSfc to extract the constant surface points.
+				for (int i = 0; i < depthSfc->rows(); ++i)
+				{
+					// First three arguments are the coordinate. Fourth is the surface depth.
+					auto crds = depthSfc->block<1, 3>(i, 0);
+					int depth = (int)(*depthSfc)(i, 3);
+					if (depth < threshold)
+					{
+						//resPts->block<1, 3>(outerCount, 0) = crds.cast<int>();
+						outerCount++;
+					}
+					else innerPointsFilled++;
+				}
+
+				// Iterate over all entries in the cell map, while consulting the surface depth field.
+				for (int i = 0; i < cellmap->rows(); ++i)
+				{
+					// i is the probe point id
+					// The first three columns are the probe point coordinates
+					// The fourth column is the the voronoi point id (row)
+					auto crds = cellmap->block<1, 3>(i, 0);
+					int voroid = (*cellmap)(i, 3);
+					int depth = (int)(*depthSfc)(voroid, 3);
+					if (depth >= threshold)
+					{
+						innerPointsTotal++;
+						//Eigen::Matrix3i p;
+						//p.block<1, 3>(0, 0) = crds.block<1, 3>(0, 0);
+						//potentialInnerPoints.push_back(std::move(p));
+					}
+				}
+
+				/*
+				cout << "There are " << shp->numPoints << " points total.\n"
+					<< "The threshold is " << threshold << ".\n"
+					<< "The surface has " << outerCount << " points.\n"
+					<< "The interior has " << innerPointsFilled << " filled points, "
+					"and " << innerPointsTotal << " total potential sites.\n"
+					<< "The inner fraction is " << 100.f * (float)innerPointsFilled
+					/ (float)innerPointsTotal << " percent." << std::endl;
+				*/
+			}
+
 			void VoroVoronoiDiagram::getBounds(Eigen::Array3f &mins,
 				Eigen::Array3f &maxs, Eigen::Array3f &span) const
 			{
