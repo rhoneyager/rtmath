@@ -226,13 +226,13 @@ void rtmath::refract::maxwellGarnettEllipsoids(std::complex<double> Ma, std::com
 	mToE(Ma,eA);
 	mToE(Mb,eB);
 
-	complex<double> betaA = complex<double>(2.,0)*eB/(eA-eB);
-	complex<double> betaB = ( (eA/(eA-eB)) * log(eA/eB) ) - complex<double>(1.,0);
+	complex<double> betaA = complex<double>(2., 0)*eA / (eB - eA);
+	complex<double> betaB = ((eB / (eB - eA)) * log(eB / eA)) - complex<double>(1., 0);
 	complex<double> beta = betaA * betaB;
 
 	complex<double> cf(fa,0), cfc(1.-fa,0);
 
-	eRes = ( (cfc*eB) + (cf*beta*eA) )/(cfc + (cf*beta) );
+	eRes = ((cfc*beta) + (cf*eA)) / (cf + (cfc*beta));
 	eToM(eRes,Mres);
 }
 

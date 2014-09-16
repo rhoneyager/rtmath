@@ -56,11 +56,11 @@ namespace rtmath {
 		// Maxwell-Garnett - assuming sphere inclusions with standard ice / water / air dielectric
 		//void maxwellGarnettSpheresMulti(std::complex<double> Mice, std::complex<double> Mwater, std::complex<double> Mair, double fIce, double fWater, std::complex<double> &Mres);
 
-		/// Maxwell-Garnet - assuming that ice spheres are inclusions and water is the surrounding medium
+		/// Maxwell-Garnett - assuming that ice spheres are inclusions and water is the surrounding medium
 		void DLEXPORT_rtmath_core maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 		/// Maxwell-Garnett - assuming ellipsoidal inclusions
-		/// Bohren and Battan (1982)
+		/// Bohren and Battan (1982). Ma for ice, mB for air.
 		void DLEXPORT_rtmath_core maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 		/// Sihvola (1989) - requires extra parameter, nu.
