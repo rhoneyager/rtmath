@@ -51,20 +51,9 @@ namespace rtmath
 					}
 				}
 
-				std::complex<double> mRes = i.m;
-				if (i.m_rescale != pf_class_registry::inputParamsPartial::refract_method::NONE)
-				{
-					std::complex<double> mAir(1.0, 0);
-					if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::MG_ELLIPSOIDS)
-						rtmath::refract::maxwellGarnettEllipsoids(i.m, mAir, i.vFrac, mRes);
-					else if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::MG_SPHERES)
-						rtmath::refract::maxwellGarnettSpheres(i.m, mAir, i.vFrac, mRes);
-					else if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::DEBYE)
-						rtmath::refract::debyeDry(i.m, mAir, i.vFrac, mRes);
-					else if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::SIHVOLA)
-						rtmath::refract::sihvola(i.m, mAir, i.vFrac, 0.85, mRes);
-					else RTthrow debug::xUnimplementedFunction();
-				}
+				std::complex<double> mRes = i.m; 
+                std::complex<double> mAir(1.0, 0);
+				i.rmeth(i.m, mAir, i.vFrac, mRes);
 
 				// Perform the calculation
 

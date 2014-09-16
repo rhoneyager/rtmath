@@ -1,11 +1,7 @@
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <boost/random/random_device.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_on_sphere.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
 #include <fstream>
 #include <complex>
 #include <set>
@@ -17,13 +13,10 @@
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/phaseFunc.h"
-#include "../../rtmath/rtmath/ddscat/ddOutput.h"
-#include "../../rtmath/rtmath/ddscat/ddOriData.h"
-#include "../../rtmath/rtmath/ddscat/ddUtil.h"
-#include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
@@ -35,36 +28,45 @@ int main(int argc, char *argv[])
 		// Do processing of argv
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options"), cmdline("Command-line options"),
-			runmatch("Run-matching options"), basic("Basic ellipsoid options"), 
+			runmatch("Run-matching options"), basic("Basic ellipsoid options"),
 			refract("Refractive index options"), scale("Scaling options"),
 			config("Config options"), hidden("Hidden options"), oall("all options");
 
 		rtmath::debug::add_options(cmdline, config, hidden);
 		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
-		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
+		//rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
 		//rtmath::refract::add_options(cmdline, config, hidden);
 
 		runmatch.add_options()
-			("ddoutput", po::value<vector<string> >(), "Specify ddscat output to use when regenerating")
-			("scale-voronoi-internal", "Scale using the internal voronoi fraction")
-			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
-			("scale-circumscribing-sphere", "Scale using the circumscribing sphere fraction")
-			("scale-convex", "Scale using the convex hull fraction")
-			("scale-ellipsoid-max", "Scale using the max ellipsoid fraction")
+			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
+			("input-shape,i", po::value< vector<string> >(), "Input shape files")
+			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
+			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
+			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
+			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
+			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
+			("match-dipole-numbers", po::value<vector<size_t> >()->multitoken(), "Match typical dipole numbers")
+			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
+			("match-parent-flake", "Select the parent flakes")
 
-			("ar-method", po::value<string>()->default_value("Max-Ellipsoids"),
-			"Max-Ellipsoids: Force aspect ratios to be ellipsoids, following the max AR calculated in stats code. "
+			("vf-scaling", po::value<string>()->default_value(""),
+			"Select the method used in determining the volume fraction. 1) Voronoi_Internal uses the internal volume fraction."
+			" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid.")
+			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
+
+			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
+			"Max_Ellipsoids: Force aspect ratios to be ellipsoids, following the max AR calculated in stats code. "
 			"Spheres: Force aspect ratios to be spheres, instead of stats-determined spheroids. "
-			"(TODO SA-V-Ellipsoids: Select AR of ellipsoid with matching surface area to volume ratio).")
+			"(TODO SA_V_Ellipsoids: Select AR of ellipsoid with matching surface area to volume ratio).")
 			;
 		refract.add_options()
-			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
-			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
-			"Only matters if volume fractions are given. Then, default is Maxwell-Garnett-Ellipsoids.")
+			("refract-method", po::value<string>()->default_value("Maxwell_Garnett_Ellipsoids"), "Method used to calculate the resulting dielectric "
+			"(Sihvola, Debye, Maxwell_Garnett_Spheres, Maxwell_Garnett_Ellipsoids). "
+			"Only matters if volume fractions are given. Then, default is Maxwell_Garnett_Ellipsoids.")
 			("temps,T", po::value<std::string>()->default_value("263"), "Specify temperatures in K")
 			("mr", po::value<double>(), "Override real refractive index value")
 			("mi", po::value<double>(), "Override imaginary refractive index value")
-			("volume-fractions,v", po::value<std::string>()->default_value("1"), "Set the ice volume fractions")
+			("volume-fractions,v", po::value<std::string>()->default_value("1"), "Set the ice volume fractions. Used when not doing shapefiles.")
 			("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
 			;
 		basic.add_options()
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 			//("betas", po::value<string>()->default_value("0"), "Set second rotation for backscatter calculation. UNDER DEVELOPMENT.")
 			//("random-rotations,r", po::value<size_t>(),
 			//"Replaces standard alpha and beta angles with random points.")
-		;
+			;
 
 		desc.add(cmdline).add(config).add(runmatch).add(refract).add(basic).add(scale);
 		oall.add(cmdline).add(runmatch).add(refract).add(config).add(hidden).add(basic).add(scale);
@@ -97,9 +99,8 @@ int main(int argc, char *argv[])
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
-		rtmath::ddscat::ddUtil::process_static_options(vm);
 		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
-		rtmath::ddscat::ddOutput::process_static_options(vm);
+		//rtmath::ddscat::ddOutput::process_static_options(vm);
 		//rtmath::refract::process_static_options(vm);
 
 		// Begin checking parameters
@@ -115,6 +116,99 @@ int main(int argc, char *argv[])
 		string oprefix;
 		if (vm.count("output-prefix"))
 			oprefix = vm["output-prefix"].as<string>();
+
+		double dSpacing = 0;
+		if (vm.count("dipole-spacing"))
+			dSpacing = vm["dipole-spacing"].as<double>();
+
+		vector<string> inputs;
+		if (vm.count("input-shape"))
+		{
+			inputs = vm["input-shape"].as< vector<string> >();
+			cerr << "Input files are:" << endl;
+			for (auto it = inputs.begin(); it != inputs.end(); it++)
+				cerr << "\t" << *it << "\n";
+		};
+		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+		/*
+		("from-db", "Perform search on database and select files matching criteria.")
+		("match-hash", po::value<vector<string> >(), "Match lower hashes")
+		("match-flake-type", po::value<vector<string> >(), "Match flake types")
+		("match-dipole-spacing", po::value<vector<float> >(), "Match typical dipole spacings")
+		("match-parent-flake-hash", po::value<vector<string> >(), "Match flakes having a given parent hash")
+		("match-parent-flake", "Select the parent flakes")
+		*/
+		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
+		rtmath::config::intervals<float> iDipoleSpacing;
+		rtmath::config::intervals<size_t> iDipoleNumbers;
+		bool matchParentFlakes;
+
+		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
+		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
+		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
+		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
+		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
+
+		if (vm.count("match-parent-flake")) matchParentFlakes = true;
+
+		using namespace rtmath::ddscat::shapefile;
+		auto collection = shapefile::makeCollection();
+		auto query = shapefile::makeQuery();
+		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
+		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
+		query->refHashLowers.insert(matchParentHashes.begin(), matchParentHashes.end());
+		query->dipoleNumbers = iDipoleNumbers;
+		query->dipoleSpacings = iDipoleSpacing;
+
+		bool supplementDb = false;
+		supplementDb = vm["use-db"].as<bool>();
+		bool fromDb = false;
+		fromDb = vm["from-db"].as<bool>();
+
+		using namespace boost::filesystem;
+		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
+		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
+		// Load in all local shapefiles, then perform the matching query
+		vector<string> vinputs;
+		for (auto it = inputs.begin(); it != inputs.end(); it++)
+		{
+			cerr << "Processing " << *it << endl;
+			path pi(*it);
+			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (is_directory(pi))
+			{
+				path pt = pi / "target.out";
+				path ps = pi / "shape.dat";
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> smain;
+
+				if (exists(ps))
+				{
+					cerr << " found " << ps << endl;
+					smain = rtmath::ddscat::shapefile::shapefile::generate(ps.string());
+					collection->insert(smain);
+				}
+			}
+			else {
+				auto iopts = rtmath::registry::IO_options::generate();
+				iopts->filename(*it);
+				try {
+					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
+					rtmath::io::readObjs(shapes, *it);
+					for (auto &s : shapes)
+						collection->insert(s);
+				}
+				catch (std::exception &e)
+				{
+					cerr << e.what() << std::endl;
+					continue;
+				}
+			}
+		}
+
+		// Perform the query, and then process the matched shapefiles
+		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
+
+
 
 		struct run
 		{
@@ -147,10 +241,14 @@ int main(int argc, char *argv[])
 			ovM = complex<double>(r, i);
 			nu = -1.0;
 		}
-
-		//double vfrac = vm["volume-fraction"].as<double>();
-		//bool scaleaeff = false;
-		//if (vm.count("scale-aeff")) scaleaeff = true;
+		auto sihvolaBinder = [&](std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres)
+		{
+			rtmath::refract::sihvola(Ma, Mb, fa, nu, Mres);
+		};
+		auto fixedBinder = [&](std::complex<double>, std::complex<double>, double, std::complex<double> &Mres)
+		{
+			Mres = ovM;
+		};
 
 
 		enum class VFRAC_TYPE
@@ -162,147 +260,46 @@ int main(int argc, char *argv[])
 			INTERNAL_VORONOI
 		};
 		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
-		if (vm.count("scale-circumscribing-sphere")) vf = VFRAC_TYPE::CIRCUM_SPHERE;
-		else if (vm.count("scale-voronoi")) vf = VFRAC_TYPE::VORONOI;
-		else if (vm.count("scale-voronoi-internal")) vf = VFRAC_TYPE::INTERNAL_VORONOI;
-		else if (vm.count("scale-convex")) vf = VFRAC_TYPE::CONVEX;
-		else if (vm.count("scale-ellipsoid-max")) vf = VFRAC_TYPE::ELLIPSOID_MAX;
+		/*
+		("vf-scaling", po::value<string>()->default_value(""),
+		"Select the method used in determining the volume fraction. 1) Voronoi_Internal uses the internal volume fraction."
+		" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid.")
+		("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
+
+		*/
+		string vfScaling = vm["vf-scaling"].as<string>();
+
+		if (vfScaling == "Circumscribing_Sphere") vf = VFRAC_TYPE::CIRCUM_SPHERE;
+		else if (vfScaling == "Voronoi_Full") vf = VFRAC_TYPE::VORONOI;
+		else if (vfScaling == "Voronoi_Internal") vf = VFRAC_TYPE::INTERNAL_VORONOI;
+		else if (vfScaling == "Convex") vf = VFRAC_TYPE::CONVEX;
+		else if (vfScaling == "Ellipsoid_Max") vf = VFRAC_TYPE::ELLIPSOID_MAX;
 		size_t int_voro_depth = vm["voronoi-depth"].as<size_t>();
+
 		bool rescaleM = vm["scale-m"].as<bool>();
 
-		string scaleMeth = vm["method"].as<string>();
-		rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method rmeth = 
-			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::NONE;
-		if (scaleMeth == "Sihvola") rmeth =
-			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::SIHVOLA;
-		else if (scaleMeth == "Maxwell-Garnett-Ellipsoids") rmeth =
-			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::MG_ELLIPSOIDS;
-		else if (scaleMeth == "Maxwell-Garnett-Spheres") rmeth =
-			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::MG_SPHERES;
-		else if (scaleMeth == "Debye") rmeth =
-			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::DEBYE;
-		
-		string armeth = vm["ar-method"].as<string>();
+		/*
+		("refract-method", po::value<string>()->default_value("Maxwell_Garnett_Ellipsoids"), "Method used to calculate the resulting dielectric "
+		"(Sihvola, Debye, Maxwell_Garnett_Spheres, Maxwell_Garnett_Ellipsoids). "
+		"Only matters if volume fractions are given. Then, default is Maxwell_Garnett_Ellipsoids.")
+		*/
+		string refractScaling = vm["refract-method"].as<string>();
+		std::function<void(std::complex<double>, std::complex<double>, double, std::complex<double> &)> rmeth;
+		if (refractScaling == "Sihvola") rmeth = sihvolaBinder;
+		else if (refractScaling == "Maxwell_Garnett_Ellipsoids") rmeth = rtmath::refract::maxwellGarnettEllipsoids;
+		else if (refractScaling == "Maxwell_Garnett_Spheres") rmeth = rtmath::refract::maxwellGarnettSpheres;
+		else if (refractScaling == "Debye") rmeth = rtmath::refract::debyeDry;
+		else if (!rescaleM) rmeth = fixedBinder;
+		else doHelp("Need to specify a proper refractive index scaling.");
 
-		using rtmath::ddscat::ddOutput;
-		auto process_indiv_ddoutput = [&](boost::shared_ptr<ddOutput> s)
-		{
-			run r;
-			s->loadShape(true);
-			rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
-			if (vf == VFRAC_TYPE::CIRCUM_SPHERE) {
-				v = &(s->stats->Scircum_sphere); r.fvMeth = "Circumscribing Sphere";
-			} else if (vf == VFRAC_TYPE::VORONOI) {
-				v = &(s->stats->SVoronoi_hull); r.fvMeth = "Voronoi hull";
-			} else if (vf == VFRAC_TYPE::CONVEX) {
-				v = &(s->stats->Sconvex_hull); r.fvMeth = "Convex hull";
-			} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
-				v = &(s->stats->Sellipsoid_max);
-				r.fvMeth = "Max ellipsoid";
-			}
-			if (v) {
-				r.aeff = v->aeff_V;
-				r.fv = v->f;
-			} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
-				auto shp = s->shape; // shape and stats loaded above
-				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
-				vd = shp->generateVoronoi(
-					std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
-				vd->calcSurfaceDepth();
-				vd->calcCandidateConvexHullPoints();
+		string armeth = vm["ar-method"].as<string>(); // Used much further below
 
-				size_t numLatticeTotal = 0, numLatticeFilled = 0;
-				vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
-
-				r.aeff = s->aeff; /// TODO: CHECK ACCURACY AND CONSISTENCY OF AEFF DEFINITIONS!
-				r.fvMeth = "Internal Voronoi Depth ";
-				r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
-				r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-			}
-			else RTthrow rtmath::debug::xBadInput("Unhandled volume fraction method");
-			
-			/// Gives aspect ratio of matching ellipsoid
-			/// \todo Implement this function
-			auto arEllipsoid = [](double sa, double v) -> double
-			{
-				RTthrow rtmath::debug::xUnimplementedFunction();
-				return -1;
-			};
-
-			
-			if (armeth == "Max-Ellipsoids")
-				r.ar = s->stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
-			else if (armeth == "Spheres")
-				r.ar = 1;
-			else doHelp("ar-method needs a correct value.");
-			r.freq = s->freq;
-			r.m = (overrideM) ? ovM : s->ms.at(0).at(0);
-			r.temp = s->temp;
-			r.refHash = s->shapeHash.string();
-			runs.push_back(std::move(r));
-		};
-
-		vector<string> vddoutputs;
-		auto process_ddoutput = [&]()
-		{
-			using namespace boost::filesystem;
-			for (const auto &i : vddoutputs)
-			{
-				cerr << "Processing " << i << endl;
-				path ps = rtmath::debug::expandSymlink(i);
-
-				auto iopts = rtmath::registry::IO_options::generate();
-				iopts->filename(i);
-				// Handle not needed as the read context is used only once.
-				if (is_directory(ps))
-				{
-					// Check for recursion
-					path pd = ps / "shape.dat";
-					if (!exists(pd))
-					{
-						// Load one level of subdirectories
-						vector<path> subdirs;
-						copy(directory_iterator(ps),
-							directory_iterator(), back_inserter(subdirs));
-						for (const auto &p : subdirs)
-						{
-							if (is_directory(p))
-							{
-								cerr << " processing " << p << endl;
-								boost::shared_ptr<ddOutput> s(new ddOutput);
-								s = ddOutput::generate(ps.string());
-								process_indiv_ddoutput(s);
-							}
-						}
-					}
-					else {
-						// Input is a ddscat run
-						boost::shared_ptr<ddOutput> s(new ddOutput);
-						s = ddOutput::generate(ps.string());
-						process_indiv_ddoutput(s);
-					}
-				}
-				else if (ddOutput::canReadMulti(nullptr, iopts))
-				{
-					vector<boost::shared_ptr<ddOutput> > dos;
-					ddOutput::readVector(nullptr, iopts, dos, nullptr);
-					for (const auto &s : dos)
-						process_indiv_ddoutput(s);
-				} else {
-					// This fallback shouldn't happen...
-					boost::shared_ptr<ddOutput> s(new ddOutput);
-					s->readFile(i);
-					process_indiv_ddoutput(s);
-				}
-
-			}
-
-		};
 
 		auto process_commandline = [&]()
 		{
 			// If any of these are set, ensure that the temperature and frequency are also set
-			
+
+			// Freqs and temps are in main's scope
 			set<double> aeffs, aspects, vfracs; // , alphas, betas;
 			if (vm.count("aeffs"))
 				rtmath::config::splitSet(vm["aeffs"].as<string>(), aeffs);
@@ -316,10 +313,10 @@ int main(int argc, char *argv[])
 				if (temps.size() || overrideM)
 				{
 					for (const auto &freq : freqs)
-					for (const auto &aeff : aeffs)
-						for (const auto &aspect : aspects)
-							for (const auto &vfrac : vfracs)
-							{
+						for (const auto &aeff : aeffs)
+							for (const auto &aspect : aspects)
+								for (const auto &vfrac : vfracs)
+								{
 						if (overrideM)
 						{
 							run r;
@@ -331,7 +328,8 @@ int main(int argc, char *argv[])
 							r.m = ovM;
 							r.temp = -1;
 							runs.push_back(std::move(r));
-						} else {
+						}
+						else {
 							for (const auto &temp : temps)
 							{
 								run r;
@@ -345,7 +343,7 @@ int main(int argc, char *argv[])
 								runs.push_back(std::move(r));
 							}
 						}
-							}
+								}
 				}
 				else doHelp("Need to specify temperatures or a refractive index");
 			}
@@ -363,34 +361,105 @@ int main(int argc, char *argv[])
 
 		};
 
-		if (vm.count("ddoutput")) vddoutputs = vm["ddoutput"].as<vector<string> >();
-		process_ddoutput();
 		process_commandline();
-		
-		
 
 
-		ofstream out( string(oprefix).append(".tsv").c_str());
+
+		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s)
+		{
+			cerr << "  Shape " << s->hash().lower << endl;
+			s->loadHashLocal(); // Load the shape fully, if it was imported from a database
+			auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
+			if (dSpacing && !s->standardD) s->standardD = (float)dSpacing;
+
+			if (overrideM) { temps.clear(); temps.insert(-1); } // Use a dummy temperatre value so that the loop works.
+			for (const auto &freq : freqs)
+				for (const auto &temp : temps) { // Can also be -1 when overriding temp
+				run r;
+
+				rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
+				if (vf == VFRAC_TYPE::CIRCUM_SPHERE) {
+					v = &(stats->Scircum_sphere); r.fvMeth = "Circumscribing Sphere";
+				} else if (vf == VFRAC_TYPE::VORONOI) {
+					v = &(stats->SVoronoi_hull); r.fvMeth = "Voronoi hull";
+				} else if (vf == VFRAC_TYPE::CONVEX) {
+					v = &(stats->Sconvex_hull); r.fvMeth = "Convex hull";
+				} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
+					v = &(stats->Sellipsoid_max);
+					r.fvMeth = "Max ellipsoid";
+				}
+				if (v) {
+					r.aeff = v->aeff_V;
+					r.fv = v->f;
+				} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
+					boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
+					vd = s->generateVoronoi(
+						std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
+					vd->calcSurfaceDepth();
+					vd->calcCandidateConvexHullPoints();
+
+					size_t numLatticeTotal = 0, numLatticeFilled = 0;
+					vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
+
+					r.aeff = stats->aeff_dipoles_const * s->standardD;
+					r.fvMeth = "Internal Voronoi Depth ";
+					r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
+					r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
+				} else RTthrow rtmath::debug::xBadInput("Unhandled volume fraction method");
+
+				/// Gives aspect ratio of matching ellipsoid
+				/// \todo Implement this function
+				auto arEllipsoid = [](double sa, double v) -> double
+				{
+					RTthrow rtmath::debug::xUnimplementedFunction();
+					return -1;
+				};
+
+
+				if (armeth == "Max-Ellipsoids")
+					r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
+				else if (armeth == "Spheres")
+					r.ar = 1;
+				else doHelp("ar-method needs a correct value.");
+				r.freq = freq;
+				if (overrideM) r.m = ovM;
+				else rtmath::refract::mIce(freq, temp, r.m);
+				r.temp = temp;
+				r.refHash = s->hash().string();
+				r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
+				
+				runs.push_back(std::move(r));
+				}
+		};
+
+		for (const auto &s : *(res.first))
+			processShape(rtmath::ddscat::shapefile::shapefile::generate(s));
+
+
+
+
+		ofstream out(string(oprefix).append(".tsv").c_str());
 		// Output a header line
-		out << "Method\tAeff (um)\tFrequency (GHz)\tVolume Fraction\tTemperature (K)\tHash\tAR Meth\tScale Meth\t"
+		out << "Method\tAeff (um)\tFrequency (GHz)\tVolume Fraction\tTemperature (K)\tHash\t"
+			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
 			"Aspect Ratio\tLambda (um)\tM_re\tM_im\t"
-			"Size Parameter\tRescale aeff\tfv Method\t"
-			"Theta\tBeta\tPhi\tg\tg_iso\tQabs\tQabs_iso\tQbk\tQbk_iso\tQext\tQext_iso\tQsca\tQsca_iso" << std::endl;
+			"Size Parameter\tRescale aeff\t"
+			"Theta\tBeta\tPhi\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 
 		// Iterate over all possible runs
 		for (const auto &r : runs)
 		{
 			ostringstream ofiless;
 			// the prefix is expected to be the discriminant for the rotational data
-			ofiless << oprefix << "-t-" << r.temp << "-f-" << r.freq 
-				<< "-aeff-" << r.aeff 
+			ofiless << oprefix << "-t-" << r.temp << "-f-" << r.freq
+				<< "-aeff-" << r.aeff
 				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
 			cout << ofile << endl;
 
 
 			const double sizep = 2. * boost::math::constants::pi<double>() * r.aeff / r.lambda;
-			
+
 			using namespace rtmath::phaseFuncs;
 			pf_class_registry::orientation_type o = pf_class_registry::orientation_type::ISOTROPIC;
 			pf_class_registry::inputParamsPartial i;
@@ -399,9 +468,7 @@ int main(int argc, char *argv[])
 			i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
 			i.eps = r.ar;
 			i.m = r.m;
-			
-			i.m_rescale = rmeth;
-			if (!rescaleM) i.m_rescale = pf_class_registry::inputParamsPartial::refract_method::NONE;
+			i.rmeth = rmeth; // Yeah, only one refractive index method per program invocation is supported.
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
 			i.vFrac = r.fv;
 
@@ -417,23 +484,26 @@ int main(int argc, char *argv[])
 
 			for (const auto &rr : res)
 			{
-				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t" 
-					<< r.refHash << "\t" << armeth << "\t" << scaleMeth << "\t"
+				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
-					<< sizep  << "\t" << i.aeff_rescale << "\t" << r.fvMeth << "\t"
-					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t" 
-					<< rr.second.g << "\t" << rr.second.g_iso << "\t"
-					<< rr.second.Qabs << "\t" << rr.second.Qabs_iso << "\t" << rr.second.Qbk << "\t"
-					<< rr.second.Qbk_iso << "\t" << rr.second.Qext << "\t" << rr.second.Qext_iso << "\t"
-					<< rr.second.Qsca << "\t" << rr.second.Qsca_iso
+					<< sizep << "\t" << i.aeff_rescale << "\t"
+					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
+					<< rr.second.g_iso << "\t"
+					<< rr.second.Qabs_iso << "\t"
+					<< rr.second.Qbk_iso << "\t"
+					<< rr.second.Qext_iso << "\t"
+					<< rr.second.Qsca_iso
 					<< std::endl;
 			}
 		}
 
-	} catch (std::exception &e) {
+	}
+	catch (std::exception &e) {
 		cerr << "Exception: " << e.what() << endl;
 		exit(2);
-	} catch (...) {
+	}
+	catch (...) {
 		cerr << "Caught unidentified error... Terminating." << endl;
 		exit(1);
 	}
