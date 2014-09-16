@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			("match-parent-flake", "Select the parent flakes")
 
-			("vf-scaling", po::value<string>()->default_value(""),
+			("vf-scaling", po::value<string>()->default_value("Ellipsoid_Max"),
 			"Select the method used in determining the volume fraction. 1) Voronoi_Internal uses the internal volume fraction."
 			" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid.")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
@@ -308,6 +308,8 @@ int main(int argc, char *argv[])
 			if (vm.count("volume-fractions"))
 				rtmath::config::splitSet(vm["volume-fractions"].as<string>(), vfracs);
 
+			if (!freqs.size()) doHelp("Need to specify frequencies.");
+			if (!temps.size() && !overrideM) doHelp("Need to specify temperatures.");
 			if (freqs.size() && aeffs.size() && aspects.size() && vfracs.size())
 			{
 				if (temps.size() || overrideM)
@@ -347,6 +349,7 @@ int main(int argc, char *argv[])
 				}
 				else doHelp("Need to specify temperatures or a refractive index");
 			}
+			/*
 			else if (aeffs.size() || aspects.size() || vfracs.size())
 			{
 				std::ostringstream o;
@@ -357,7 +360,7 @@ int main(int argc, char *argv[])
 				if (!freqs.size()) o << "frequencies, ";
 				if (!overrideM && !temps.size()) o << "temperatures or dielectric overloads";
 				doHelp(o.str());
-			}
+			}*/
 
 		};
 
@@ -427,7 +430,7 @@ int main(int argc, char *argv[])
 				r.temp = temp;
 				r.refHash = s->hash().string();
 				r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
-				
+
 				runs.push_back(std::move(r));
 				}
 		};
@@ -438,7 +441,7 @@ int main(int argc, char *argv[])
 
 
 
-		ofstream out(string(oprefix).append(".tsv").c_str());
+		ofstream out(string(oprefix).c_str());
 		// Output a header line
 		out << "Method\tAeff (um)\tFrequency (GHz)\tVolume Fraction\tTemperature (K)\tHash\t"
 			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
@@ -446,6 +449,8 @@ int main(int argc, char *argv[])
 			"Size Parameter\tRescale aeff\t"
 			"Theta\tBeta\tPhi\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 
+		std::cerr << "Doing " << runs.size() << " runs." << std::endl;
+		size_t i=0;
 		// Iterate over all possible runs
 		for (const auto &r : runs)
 		{
@@ -455,8 +460,8 @@ int main(int argc, char *argv[])
 				<< "-aeff-" << r.aeff
 				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
-			cout << ofile << endl;
-
+			cout << ofile << " --- " << i << " " << r.refHash << endl;
+			++i;
 
 			const double sizep = 2. * boost::math::constants::pi<double>() * r.aeff / r.lambda;
 
@@ -480,22 +485,25 @@ int main(int argc, char *argv[])
 			s.beta = 0; s.theta = 0; s.phi = 0;
 			s.sPhi = 0; s.sPhi0 = 0; s.sTheta = 0; s.sTheta0 = 0;
 			s.wavelength = r.lambda;
-			p.getCrossSections(s, res);
 
-			for (const auto &rr : res)
-			{
-				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
-					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
-					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
-					<< sizep << "\t" << i.aeff_rescale << "\t"
-					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
-					<< rr.second.g_iso << "\t"
-					<< rr.second.Qabs_iso << "\t"
-					<< rr.second.Qbk_iso << "\t"
-					<< rr.second.Qext_iso << "\t"
-					<< rr.second.Qsca_iso
-					<< std::endl;
-			}
+			try {
+				p.getCrossSections(s, res);
+
+				for (const auto &rr : res)
+				{
+					out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+						<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
+						<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
+						<< sizep << "\t" << i.aeff_rescale << "\t"
+						<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
+						<< rr.second.g_iso << "\t"
+						<< rr.second.Qabs_iso << "\t"
+						<< rr.second.Qbk_iso << "\t"
+						<< rr.second.Qext_iso << "\t"
+						<< rr.second.Qsca_iso
+						<< std::endl;
+				}
+			} catch (...) {std::cerr << "Error in getting cross-sections!" << std::endl;}
 		}
 
 	}

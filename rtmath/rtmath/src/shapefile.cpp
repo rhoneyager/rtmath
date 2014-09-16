@@ -88,6 +88,7 @@ namespace rtmath {
 					{
 						mtypes.insert(".shp");
 						mtypes.insert("shape.txt");
+						mtypes.insert(".dat");
 						mtypes.insert("shape.dat");
 						mtypes.insert("target.out");
 					}
@@ -96,6 +97,7 @@ namespace rtmath {
 						std::string sctypes;
 						std::set<std::string> ctypes;
 						serialization::known_compressions(sctypes, ".shp");
+						serialization::known_compressions(sctypes, ".dat");
 						serialization::known_compressions(sctypes, "shape.txt");
 						serialization::known_compressions(sctypes, "shape.dat");
 						serialization::known_compressions(sctypes, "target.out");

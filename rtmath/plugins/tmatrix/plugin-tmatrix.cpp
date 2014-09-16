@@ -11,6 +11,8 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/error/error.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 #include <tmatrix/tmatrix.h>
 
@@ -71,30 +73,36 @@ namespace rtmath
 				const double k = 2. * pi / s.wavelength;
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
 
-				auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
-				/// \todo Move these scalings into the T-matrix core code?
-				c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
-				c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
-				c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
-				c.g_iso = -1;
+				try {
+					auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
+					/// \todo Move these scalings into the T-matrix core code?
+					c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
+					c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
+					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
+					c.g_iso = -1;
 
-				double C_sphere = pi * pow(scaledAeff, 2.0);
-				auto ang = ::tmatrix::OriAngleRes::calc(ori, 0, 0, 180., 0);
-				// 4?
-				c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
-				c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
-				c.g = -1;
+					double C_sphere = pi * pow(scaledAeff, 2.0);
+					auto ang = ::tmatrix::OriAngleRes::calc(ori, 0, 0, 180., 0);
+					// 4?
+					c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
+					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
+					c.g = -1;
 
-				c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
-				// Cext (and thus Qext) can come from the optical theorem...
-				// Cext = -4pi/k^2 * Re{S(\theta=0)}
-				c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
-				c.Qabs = c.Qext - c.Qsca;
+					c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
+					// Cext (and thus Qext) can come from the optical theorem...
+					// Cext = -4pi/k^2 * Re{S(\theta=0)}
+					c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
+					c.Qabs = c.Qext - c.Qsca;
 
-				/// iso values are validated with solid spheres and soft spheres using liu code
-				/// \todo need to validate with ellipsoids
+					/// iso values are validated with solid spheres and soft spheres using liu code
+					/// \todo need to validate with ellipsoids
 
-				//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
+					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
+				} catch (const ::tmatrix::tmError& t) {
+					std::cerr << "A tmatrix error has occurred." << std::endl;
+					std::cerr << "\t" << t.what() << std::endl;
+					RTthrow rtmath::debug::xOtherError();
+				}
 			}
 
 			void doPf(
@@ -108,17 +116,23 @@ namespace rtmath
 
 				// Perform the calculation
 				using namespace ::tmatrix;
-				auto tp = ::tmatrix::tmatrixParams::create(
-					i.aeff, 0, s.wavelength, 0, 0, i.eps, -1, 0, 3);
-				auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
+				try {
+					auto tp = ::tmatrix::tmatrixParams::create(
+						i.aeff, 0, s.wavelength, 0, 0, i.eps, -1, 0, 3);
+					auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
 
-				auto ang = ::tmatrix::OriAngleRes::calc(ori, s.sTheta, s.sTheta0, 180. - s.sPhi, s.sPhi0);
-				for (size_t i = 0; i < 4; ++i)
-					for (size_t j = 0; j < 4; ++j)
-						p.mueller(i,j) = ang->getP(i, j);
-				for (size_t i = 0; i < 2; ++i)
-					for (size_t j = 0; j < 2; ++j)
-						p.S(i,j) = ang->getS(i, j);
+					auto ang = ::tmatrix::OriAngleRes::calc(ori, s.sTheta, s.sTheta0, 180. - s.sPhi, s.sPhi0);
+					for (size_t i = 0; i < 4; ++i)
+						for (size_t j = 0; j < 4; ++j)
+							p.mueller(i,j) = ang->getP(i, j);
+					for (size_t i = 0; i < 2; ++i)
+						for (size_t j = 0; j < 2; ++j)
+							p.S(i,j) = ang->getS(i, j);
+				} catch (const ::tmatrix::tmError& t) {
+					std::cerr << "A tmatrix error has occurred" << std::endl;
+					std::cerr << t.what() << std::endl;
+					RTthrow rtmath::debug::xOtherError();
+				}
 			}
 		}
 	}
