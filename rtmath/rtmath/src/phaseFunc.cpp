@@ -24,7 +24,7 @@ namespace rtmath {
 		pf_class_registry::inputParamsPartial::inputParamsPartial()
 			: aeff(0), aeff_version(aeff_version_type::EQUIV_V_SPHERE),
 			m(1.33, 0), shape(shape_type::SPHEROID), eps(1.00001),
-			m_rescale(true)
+			m_rescale(refract_method::MG_ELLIPSOIDS)
 		{}
 
 		pf_class_registry::cross_sections::cross_sections() :

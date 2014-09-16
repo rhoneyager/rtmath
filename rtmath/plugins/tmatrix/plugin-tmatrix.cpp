@@ -52,11 +52,18 @@ namespace rtmath
 				}
 
 				std::complex<double> mRes = i.m;
-				if (i.m_rescale)
+				if (i.m_rescale != pf_class_registry::inputParamsPartial::refract_method::NONE)
 				{
 					std::complex<double> mAir(1.0, 0);
-					rtmath::refract::maxwellGarnettEllipsoids(i.m, mAir, i.vFrac, mRes);
-					//rtmath::refract::sihvola(i.m, mAir, i.vFrac, 0.85, mRes);
+					if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::MG_ELLIPSOIDS)
+						rtmath::refract::maxwellGarnettEllipsoids(i.m, mAir, i.vFrac, mRes);
+					else if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::MG_SPHERES)
+						rtmath::refract::maxwellGarnettSpheres(i.m, mAir, i.vFrac, mRes);
+					else if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::DEBYE)
+						rtmath::refract::debyeDry(i.m, mAir, i.vFrac, mRes);
+					else if (i.m_rescale == pf_class_registry::inputParamsPartial::refract_method::SIHVOLA)
+						rtmath::refract::sihvola(i.m, mAir, i.vFrac, 0.85, mRes);
+					else RTthrow debug::xUnimplementedFunction();
 				}
 
 				// Perform the calculation
@@ -76,6 +83,7 @@ namespace rtmath
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
 
 				auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
+				/// \todo Move these scalings into the T-matrix core code?
 				c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
 				c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
 				c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
@@ -94,8 +102,8 @@ namespace rtmath
 				c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
 				c.Qabs = c.Qext - c.Qsca;
 
-				/// iso values are validated with solid spheres
-				/// need to validate against soft spheres
+				/// iso values are validated with solid spheres and soft spheres using liu code
+				/// \todo need to validate with ellipsoids
 
 				//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 			}

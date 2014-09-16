@@ -51,6 +51,11 @@ int main(int argc, char *argv[])
 			("scale-circumscribing-sphere", "Scale using the circumscribing sphere fraction")
 			("scale-convex", "Scale using the convex hull fraction")
 			("scale-ellipsoid-max", "Scale using the max ellipsoid fraction")
+
+			("ar-method", po::value<string>()->default_value("Max-Ellipsoids"),
+			"Max-Ellipsoids: Force aspect ratios to be ellipsoids, following the max AR calculated in stats code. "
+			"Spheres: Force aspect ratios to be spheres, instead of stats-determined spheroids. "
+			"(TODO SA-V-Ellipsoids: Select AR of ellipsoid with matching surface area to volume ratio).")
 			;
 		refract.add_options()
 			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
@@ -117,6 +122,7 @@ int main(int argc, char *argv[])
 			double fv;
 			std::string fvMeth;
 			std::complex<double> m;
+			std::string refHash;
 		};
 		vector<run> runs;
 		runs.reserve(50000);
@@ -162,6 +168,21 @@ int main(int argc, char *argv[])
 		else if (vm.count("scale-convex")) vf = VFRAC_TYPE::CONVEX;
 		else if (vm.count("scale-ellipsoid-max")) vf = VFRAC_TYPE::ELLIPSOID_MAX;
 		size_t int_voro_depth = vm["voronoi-depth"].as<size_t>();
+		bool rescaleM = vm["scale-m"].as<bool>();
+
+		string scaleMeth = vm["method"].as<string>();
+		rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method rmeth = 
+			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::NONE;
+		if (scaleMeth == "Sihvola") rmeth =
+			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::SIHVOLA;
+		else if (scaleMeth == "Maxwell-Garnett-Ellipsoids") rmeth =
+			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::MG_ELLIPSOIDS;
+		else if (scaleMeth == "Maxwell-Garnett-Spheres") rmeth =
+			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::MG_SPHERES;
+		else if (scaleMeth == "Debye") rmeth =
+			rtmath::phaseFuncs::pf_class_registry::inputParamsPartial::refract_method::DEBYE;
+		
+		string armeth = vm["ar-method"].as<string>();
 
 		using rtmath::ddscat::ddOutput;
 		auto process_indiv_ddoutput = [&](boost::shared_ptr<ddOutput> s)
@@ -200,10 +221,24 @@ int main(int argc, char *argv[])
 			}
 			else RTthrow rtmath::debug::xBadInput("Unhandled volume fraction method");
 			
-			r.ar = s->stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
+			/// Gives aspect ratio of matching ellipsoid
+			/// \todo Implement this function
+			auto arEllipsoid = [](double sa, double v) -> double
+			{
+				RTthrow rtmath::debug::xUnimplementedFunction();
+				return -1;
+			};
+
+			
+			if (armeth == "Max-Ellipsoids")
+				r.ar = s->stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
+			else if (armeth == "Spheres")
+				r.ar = 1;
+			else doHelp("ar-method needs a correct value.");
 			r.freq = s->freq;
 			r.m = (overrideM) ? ovM : s->ms.at(0).at(0);
 			r.temp = s->temp;
+			r.refHash = s->shapeHash.string();
 			runs.push_back(std::move(r));
 		};
 
@@ -337,9 +372,9 @@ int main(int argc, char *argv[])
 
 		ofstream out( string(oprefix).append(".tsv").c_str());
 		// Output a header line
-		out << "Method\tAeff (um)\tFrequency (GHz)\tVolume Fraction\tTemperature (K)\t"
+		out << "Method\tAeff (um)\tFrequency (GHz)\tVolume Fraction\tTemperature (K)\tHash\tAR Meth\tScale Meth\t"
 			"Aspect Ratio\tLambda (um)\tM_re\tM_im\t"
-			"Size Parameter\tRescale m\tRescale aeff\tMethod\t"
+			"Size Parameter\tRescale aeff\tfv Method\t"
 			"Theta\tBeta\tPhi\tg\tg_iso\tQabs\tQabs_iso\tQbk\tQbk_iso\tQext\tQext_iso\tQsca\tQsca_iso" << std::endl;
 
 		// Iterate over all possible runs
@@ -364,7 +399,9 @@ int main(int argc, char *argv[])
 			i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
 			i.eps = r.ar;
 			i.m = r.m;
-			i.m_rescale = vm["scale-m"].as<bool>();
+			
+			i.m_rescale = rmeth;
+			if (!rescaleM) i.m_rescale = pf_class_registry::inputParamsPartial::refract_method::NONE;
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
 			i.vFrac = r.fv;
 
@@ -380,9 +417,10 @@ int main(int argc, char *argv[])
 
 			for (const auto &rr : res)
 			{
-				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t" 
+					<< r.refHash << "\t" << armeth << "\t" << scaleMeth << "\t"
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
-					<< sizep << "\t" << i.m_rescale << "\t" << i.aeff_rescale << "\t" << r.fvMeth << "\t"
+					<< sizep  << "\t" << i.aeff_rescale << "\t" << r.fvMeth << "\t"
 					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t" 
 					<< rr.second.g << "\t" << rr.second.g_iso << "\t"
 					<< rr.second.Qabs << "\t" << rr.second.Qabs_iso << "\t" << rr.second.Qbk << "\t"

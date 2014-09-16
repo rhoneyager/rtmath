@@ -76,7 +76,15 @@ namespace rtmath {
 					EQUIV_SA_SPHERE
 				} aeff_version;
 				std::complex<double> m; // refractive index
-				bool m_rescale; // Rescale refractive index
+				//bool m_rescale; // Rescale refractive index
+				enum class refract_method
+				{
+					NONE,
+					MG_ELLIPSOIDS,
+					MG_SPHERES,
+					SIHVOLA,
+					DEBYE
+				} m_rescale;
 				bool aeff_rescale; // Rescale effective radius
 				double vFrac; // Volume fraction
 
