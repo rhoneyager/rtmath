@@ -203,6 +203,7 @@ namespace rtmath
 				Voronoi_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
+				//std::cerr << h.name << " --- " << bname << std::endl;
 				std::string pname(h.name);
 				if (bname.size() && pname != bname) continue;
 				if (!h.voronoiUpcastGenerator) continue;
@@ -216,8 +217,7 @@ namespace rtmath
 				//mptr.swap(mres); // Needs testing to check for stack issues!
 				return;
 			}
-			
-			throw rtmath::debug::xUpcast("VoronoiDiagram", "upcast");
+			throw rtmath::debug::xUpcast("VoronoiDiagram", bname.c_str());
 		}
 
 

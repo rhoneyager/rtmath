@@ -33,7 +33,7 @@ void dllEntry()
 	//	rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);
 
 	rtmath::Voronoi::Voronoi_provider reg_Voronoi;
-	reg_Voronoi.name = "voro";
+	reg_Voronoi.name = PLUGINID;
 	reg_Voronoi.generator = ::rtmath::plugins::voro::VoroVoronoiDiagram::generateStandard;
 	reg_Voronoi.voronoiBlankGenerator = ::rtmath::plugins::voro::VoroVoronoiDiagram::generateBlank;
 	reg_Voronoi.voronoiUpcastGenerator = ::rtmath::plugins::voro::VoroVoronoiDiagram::generateUpcast;
