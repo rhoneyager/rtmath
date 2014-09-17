@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
 			("match-dipole-numbers", po::value<vector<size_t> >()->multitoken(), "Match typical dipole numbers")
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
-			("match-parent-flake", "Select the parent flakes")
+			//("match-parent-flake", "Select the parent flakes")
 
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
 		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
 
-		if (vm.count("match-parent-flake")) matchParentFlakes = true;
+		//if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
 		using namespace rtmath::ddscat::shapefile;
 		auto collection = shapefile::makeCollection();
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
 					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
 					// Handle not needed as the read context is used only once.
 					if (rtmath::ddscat::shapefile::shapefile::canReadMulti(nullptr, iopts))
-						rtmath::ddscat::shapefile::shapefile::readVector(nullptr, iopts, shapes, nullptr);
+						rtmath::ddscat::shapefile::shapefile::readVector(nullptr, iopts, shapes, query);
 					else {
 						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s = rtmath::ddscat::shapefile::shapefile::generate(*it);
 						shapes.push_back(s);

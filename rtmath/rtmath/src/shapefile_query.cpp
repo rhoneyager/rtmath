@@ -93,6 +93,60 @@ namespace rtmath {
 			}
 
 
+			bool shapefile_db_registry::shapefile_index::filter(const shapefile *s) const
+			{
+				// Tag filtering - OR filtering
+				if (tags.size())
+				{
+					bool matches = false;
+					for (const auto &t : tags)
+					{
+						if (s->tags.count(t.first))
+						{
+							if (s->tags.at(t.first) == t.second)
+								matches = true;
+							break;
+						}
+					}
+					if (!matches) return false;
+				}
+
+				// hash filtering
+				if (hashLowers.size() && !hashLowers.count(s->hash().string()))
+					return false;
+				if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->hash().upper)))
+					return false;
+
+				// flake types
+				if (flakeTypes.size())
+				{
+					if (s->tags.count("flake_classification"))
+					{
+						if (!flakeTypes.count(s->tags.at("flake_classification")))
+							return false;
+					}
+				}
+
+				// refHashLowers
+				if (s->tags.count("flake_reference"))
+				{
+					if (refHashLowers.size() &&
+						std::find(refHashLowers.begin(), refHashLowers.end(),
+						boost::lexical_cast<std::string>(s->hash().lower)) == refHashLowers.end())
+						return false;
+				}
+
+				// Dipole spacings
+				if (dipoleSpacings.ranges.size())
+					if (!dipoleSpacings.inRange(s->standardD)) return false;
+
+				// Number of dipoles
+				if (dipoleNumbers.ranges.size())
+					if (!dipoleNumbers.inRange(s->numPoints)) return false;
+
+				return true;
+			}
+
 			std::pair<shapefile_db_registry::shapefile_index::collection, 
 				std::shared_ptr<rtmath::registry::DBhandler> >
 				shapefile_db_registry::shapefile_index::doQuery(
@@ -130,60 +184,7 @@ namespace rtmath {
 				// Also perform the same filtering on srcs, putting results in res
 				for (auto &s : *(srcs))
 				{
-					auto works = [&]() -> bool
-					{
-						// Tag filtering - OR filtering
-						if (tags.size())
-						{
-							bool matches = false;
-							for (const auto &t : tags)
-							{
-								if (s->tags.count(t.first))
-								{
-									if (s->tags.at(t.first) == t.second)
-										matches = true;
-									break;
-								}
-							}
-							if (!matches) return false;
-						}
-
-						// hash filtering
-						if (hashLowers.size() && !hashLowers.count(s->hash().string()))
-							return false;
-						if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->hash().upper)))
-							return false;
-
-						// flake types
-						if (flakeTypes.size())
-						{
-							if (s->tags.count("flake_classification"))
-							{
-								if (!flakeTypes.count(s->tags.at("flake_classification"))) 
-									return false;
-							}
-						}
-
-						// refHashLowers
-						if (s->tags.count("flake_reference"))
-						{
-							if (refHashLowers.size() &&
-								std::find(refHashLowers.begin(), refHashLowers.end(), 
-								boost::lexical_cast<std::string>(s->hash().lower)) == refHashLowers.end())
-								return false;
-						}
-
-						// Dipole spacings
-						if (dipoleSpacings.ranges.size())
-							if (!dipoleSpacings.inRange(s->standardD)) return false;
-
-						// Number of dipoles
-						if (dipoleNumbers.ranges.size())
-							if (!dipoleNumbers.inRange(s->numPoints)) return false;
-
-						return true;
-					};
-					if (!works()) continue;
+					if (!filter(s.get())) continue;
 
 					res->insert(s); // Passed filtering
 					// Merge the results of the provided object with any query results

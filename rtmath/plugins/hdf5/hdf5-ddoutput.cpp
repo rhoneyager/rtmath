@@ -402,6 +402,7 @@ namespace rtmath {
 						if (filter) {
 							if (filter->filter(run.get()))
 								s.push_back(run);
+							else run.reset();
 						}
 						else s.push_back(run);
 					}

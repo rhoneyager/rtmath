@@ -356,9 +356,13 @@ namespace rtmath
 
 		/// These exist for inheritance, so as to select objects to be read.
 		template <class T>
-		struct collectionTyped { collectionTyped(); virtual ~collectionTyped();
-		virtual void filter() = 0;
+		struct collectionTyped {
+			collectionTyped() {} virtual ~collectionTyped() {}
+		//virtual void filter() = 0;
+		/** Using too many types of shared pointers, so the filter just uses the object's raw pointer. **/
 		virtual bool filter(const T*) const = 0;
+		virtual bool filter(std::shared_ptr<const T> p) const { return filter(p.get()); }
+		virtual bool filter(boost::shared_ptr<const T> p) const { return filter(p.get()); }
 		};
 
 		template<class object>

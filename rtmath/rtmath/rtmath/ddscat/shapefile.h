@@ -41,7 +41,9 @@ namespace rtmath {
 				};
 
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
-				class DLEXPORT_rtmath_ddscat shapefile_index
+				class DLEXPORT_rtmath_ddscat shapefile_index : 
+					virtual public ::rtmath::registry::collectionTyped<shapefile> //,
+					//virtual public ::rtmath::registry::collectionTyped<::rtmath::Voronoi::VoronoiDiagram>
 				{
 					shapefile_index();
 				public:
@@ -60,6 +62,9 @@ namespace rtmath {
 					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
 						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
 						std::shared_ptr<registry::DB_options> = nullptr) const;
+
+					virtual bool filter(const shapefile*) const override;
+					//virtual bool filter(const ::rtmath::Voronoi::VoronoiDiagram*) const override;
 
 					/**
 					* \brief Add support for filtering based on existing, loaded objects (in a collection).

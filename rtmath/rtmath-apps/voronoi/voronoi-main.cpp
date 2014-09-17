@@ -64,6 +64,8 @@ int main(int argc, char** argv)
 			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
 			("match-dipole-spacing", po::value<vector<std::string> >()->multitoken(), "Match typical dipole spacings")
 			("match-dipole-numbers", po::value<vector<std::string> >()->multitoken(), "Match typical dipole numbers")
+			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
+			//("match-parent-flake", "Select the parent flakes")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -99,13 +101,16 @@ int main(int argc, char** argv)
 		if (vm.count("store-shape")) storeShape = true;
 		bool doExport = false;
 
-		vector<string> matchHashes, matchFlakeTypes, matchPols, matchRunUuids;
+		bool matchParentFlakes;
+		vector<string> matchHashes, matchFlakeTypes, matchPols, matchRunUuids, matchParentHashes;
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
 		rtmath::config::intervals<float> iDipoleSpacing;
 		rtmath::config::intervals<size_t> iDipoleNumbers;
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
 		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
+		if (vm.count("match-parent-flake")) matchParentFlakes = true;
+		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
 
 		using std::vector;
 		using namespace rtmath::ddscat;
@@ -114,6 +119,7 @@ int main(int argc, char** argv)
 		auto query = shapefile::shapefile::makeQuery();
 		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
 		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
+		query->refHashLowers.insert(matchParentHashes.begin(), matchParentHashes.end());
 		query->dipoleNumbers = iDipoleNumbers;
 		query->dipoleSpacings = iDipoleSpacing;
 
@@ -244,7 +250,7 @@ int main(int argc, char** argv)
 				// Handle not needed as the read context is used only once.
 				if (shapefile::shapefile::canReadMulti(nullptr, iopts)) {
 					vector<boost::shared_ptr<shapefile::shapefile> > shapes;
-					shapefile::shapefile::readVector(nullptr, iopts, shapes, nullptr);
+					shapefile::shapefile::readVector(nullptr, iopts, shapes, query);
 					for (auto &s : shapes)
 						collection->insert(s);
 				}

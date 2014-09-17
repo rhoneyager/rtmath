@@ -49,7 +49,7 @@ namespace rtmath {
 			};
 
 			/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
-			class DLEXPORT_rtmath_ddscat ddOutput_index
+			class DLEXPORT_rtmath_ddscat ddOutput_index : public ::rtmath::registry::collectionTyped<ddOutput>
 			{
 				ddOutput_index();
 			public:
@@ -70,6 +70,10 @@ namespace rtmath {
 			public:
 				~ddOutput_index();
 				static std::shared_ptr<ddOutput_db_registry::ddOutput_index> generate();
+
+
+				virtual bool filter(const ddOutput*) const override;
+
 
 				typedef std::shared_ptr<std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp > > collection;
 				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >

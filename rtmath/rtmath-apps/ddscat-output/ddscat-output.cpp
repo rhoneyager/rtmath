@@ -218,7 +218,6 @@ int main(int argc, char** argv)
 		auto qExisting = ddOutput::makeQuery();
 
 
-		vector<boost::shared_ptr<ddOutput> > runs;
 
 		auto expandSymlinks = [](const boost::filesystem::path &p) -> boost::filesystem::path
 		{
@@ -259,25 +258,31 @@ int main(int argc, char** argv)
 							cerr << " processing " << p << endl;
 							boost::shared_ptr<ddOutput> s(new ddOutput);
 							s = ddOutput::generate(ps.string());
-							collection->insert(s);
-							runs.push_back(s);
+							if (query->filter(s.get()))
+								collection->insert(s);
+							//runs.push_back(s);
 						}
 					}
 				} else {
 					// Input is a ddscat run
 					boost::shared_ptr<ddOutput> s(new ddOutput);
 					s = ddOutput::generate(ps.string());
-					collection->insert(s);
-					runs.push_back(s);
+					if (query->filter(s.get()))
+						collection->insert(s);
+					//runs.push_back(s);
 				}
-			} else if (ddOutput::canReadMulti(nullptr, iopts))
-				ddOutput::readVector(nullptr, iopts, runs, nullptr);
-			else {
+			} else if (ddOutput::canReadMulti(nullptr, iopts)) {
+				vector<boost::shared_ptr<ddOutput> > runs;
+				ddOutput::readVector(nullptr, iopts, runs, query);
+				for (auto &s : runs)
+					collection->insert(s);
+			} else {
 				// This fallback shouldn't happen...
 				boost::shared_ptr<ddOutput> s(new ddOutput);
 				s->readFile(i);
-				collection->insert(s);
-				runs.push_back(s);
+				if (query->filter(s.get()))
+					collection->insert(s);
+				//runs.push_back(s);
 			}
 
 		}
@@ -286,8 +291,10 @@ int main(int argc, char** argv)
 		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
 
-		for (auto &run : runs)
+		for (auto &r : *(res.first))
 		{
+			auto run = boost::const_pointer_cast<ddOutput>(r);
+
 			cerr << "Run: " << run->genName() << endl;
 			std::cerr << " Frequency: " << run->freq << " GHz\n";
 			std::cerr << " Temperature: " << run->temp << " K." << std::endl;

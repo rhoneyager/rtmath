@@ -114,6 +114,66 @@ namespace rtmath {
 		}
 
 
+		bool ddOutput_db_registry::ddOutput_index::filter(const ddOutput* s) const
+		{
+			std::cerr << "Filtering " << s->shapeHash.string() << std::endl;
+			// hash filtering
+			if (hashLowers.size() && !hashLowers.count(s->shapeHash.string()))
+				return false;
+			if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->shapeHash.upper)))
+				return false;
+
+			if (runids.size() && !runids.count(s->runhash().string()))
+				return false;
+
+			// flake types
+			if (flakeTypes.size() && s->tags.count("flake_classification"))
+				if (!flakeTypes.count(s->shape->tags.at("flake_classification")))
+					return false;
+
+			// polarizations
+			if (pol.size())
+				if (!pol.count(s->parfile->namePolState()))
+					return false;
+
+			ddscat::rotations rots;
+			s->parfile->getRots(rots);
+
+			if (betaRanges.ranges.size())
+				if (!betaRanges.inRange(rots.bN())) return false;
+			if (thetaRanges.ranges.size())
+				if (!thetaRanges.inRange(rots.tN())) return false;
+			if (phiRanges.ranges.size())
+				if (!phiRanges.inRange(rots.pN())) return false;
+
+
+			if (aeffRanges.ranges.size())
+				if (!aeffRanges.inRange(static_cast<float>(s->aeff))) return false;
+
+			if (tempRanges.ranges.size())
+				if (!tempRanges.isNear(static_cast<float>(s->temp), 1, 0)) return false; // within 1 K
+
+			if (freqRanges.ranges.size())
+				if (!freqRanges.isNear(static_cast<float>(s->freq), 0, 0.01f)) return false; // within 1%
+
+			// Only load the shape if necessary
+			if (dipoleSpacings.ranges.size() || dipoleNumbers.ranges.size())
+			{
+				s->loadShape(false);
+
+
+				// Dipole spacings
+				if (dipoleSpacings.ranges.size())
+					if (!dipoleSpacings.inRange(s->shape->standardD)) return false;
+
+				// Number of dipoles
+				if (dipoleNumbers.ranges.size())
+					if (!dipoleNumbers.inRange(s->shape->numPoints)) return false;
+			}
+			
+			return true;
+		}
+
 		std::pair<ddOutput_db_registry::ddOutput_index::collection,
 			std::shared_ptr<rtmath::registry::DBhandler> >
 			ddOutput_db_registry::ddOutput_index::doQuery(
@@ -151,65 +211,7 @@ namespace rtmath {
 			// Also perform the same filtering on srcs, putting results in res
 			for (auto &s : *(srcs))
 			{
-				auto works = [&]() -> bool
-				{
-					s->loadShape(false);
-
-					if (runids.size() && !runids.count(s->runhash().string()))
-						return false;
-
-					// hash filtering
-					if (hashLowers.size() && !hashLowers.count(s->shapeHash.string()))
-						return false;
-					if (hashUppers.size() && !hashUppers.count(boost::lexical_cast<std::string>(s->shapeHash.upper)))
-						return false;
-
-					// flake types
-					if (flakeTypes.size() && s->tags.count("flake_classification"))
-						if (!flakeTypes.count(s->shape->tags.at("flake_classification")))
-							return false;
-
-					// polarizations
-					if (pol.size())
-						if (!pol.count(s->parfile->namePolState()))
-							return false;
-
-					// run ids
-					if (runids.size())
-						if (!runids.count(s->runhash().string()))
-							return false;
-
-					// Dipole spacings
-					if (dipoleSpacings.ranges.size())
-						if (!dipoleSpacings.inRange(s->shape->standardD)) return false;
-
-					// Number of dipoles
-					if (dipoleNumbers.ranges.size())
-						if (!dipoleNumbers.inRange(s->shape->numPoints)) return false;
-
-					ddscat::rotations rots;
-					s->parfile->getRots(rots);
-
-					if (betaRanges.ranges.size())
-						if (!betaRanges.inRange(rots.bN())) return false;
-					if (thetaRanges.ranges.size())
-						if (!thetaRanges.inRange(rots.tN())) return false;
-					if (phiRanges.ranges.size())
-						if (!phiRanges.inRange(rots.pN())) return false;
-
-
-					if (aeffRanges.ranges.size())
-						if (!aeffRanges.inRange(static_cast<float>(s->aeff))) return false;
-
-					if (tempRanges.ranges.size())
-						if (!tempRanges.isNear(static_cast<float>(s->temp), 1, 0)) return false; // within 1 K
-
-					if (freqRanges.ranges.size())
-						if (!freqRanges.isNear(static_cast<float>(s->freq), 0, 0.01f)) return false; // within 1%
-
-					return true;
-				};
-				if (!works()) continue;
+				if (!filter(s.get())) continue;
 
 				res->insert(s); // Passed filtering
 				// Merge the results of the provided object with any query results
