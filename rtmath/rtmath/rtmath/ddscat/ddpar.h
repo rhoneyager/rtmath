@@ -634,7 +634,8 @@ namespace rtmath {
 			void setSIJ(const std::set<size_t> &sij);
 
 			accessorString(getCMDFRM, setCMDFRM, ddParParsers::CMDFRM);
-			accessorSimple(numPlanes, ddParParsers::NPLANES, size_t);
+			size_t numPlanes() const;
+			//accessorSimple(numPlanes, ddParParsers::NPLANES, size_t);
 			// Scattering planes
 			void getPlane(size_t n, double &phi, double &thetan_min, double &thetan_max, double &dtheta) const;
 			void setPlane(size_t n, double phi, double thetan_min, double thetan_max, double dtheta);

@@ -279,6 +279,11 @@ namespace rtmath {
 		{
 			if (_scaPlanes.count(key))
 				_scaPlanes.erase(key);
+
+			boost::shared_ptr<ddParParsers::ddParLineSimple<std::size_t> > nplanes
+				(new ddParParsers::ddParLineSimple<std::size_t>(ddParParsers::NPLANES));
+			nplanes->set(_scaPlanes.size());
+			_parsedData[nplanes->id()] = nplanes;
 		}
 
 		void ddPar::insertPlane(size_t key, boost::shared_ptr<ddParParsers::ddParLineSimplePlural<double> > &res)
@@ -286,7 +291,14 @@ namespace rtmath {
 			if (_scaPlanes.count(key))
 				_scaPlanes.erase(key);
 			_scaPlanes[key] = res;
+
+			boost::shared_ptr<ddParParsers::ddParLineSimple<std::size_t> > nplanes
+				(new ddParParsers::ddParLineSimple<std::size_t>(ddParParsers::NPLANES));
+			nplanes->set(_scaPlanes.size());
+			_parsedData[nplanes->id()] = nplanes;
 		}
+
+		size_t ddPar::numPlanes() const { return _scaPlanes.size(); }
 
 		void ddPar::setPlane(size_t n, double phi, double thetan_min, double thetan_max, double dtheta)
 		{
@@ -299,6 +311,7 @@ namespace rtmath {
 			res->set(3, dtheta);
 
 			insertPlane(n, res);
+
 		}
 
 		void ddPar::getDiels(std::vector<std::string>& res) const

@@ -215,7 +215,8 @@ namespace rtmath {
 
 				readAttrSet<string, Group>(grpPar, "CMDFRM", r,&rtmath::ddscat::ddPar::setCMDFRM);
 
-				//readAttr<size_t, Group>(grpPar, "NPLANES", r->numPlanes());
+				size_t numPlanesCheck = 0;
+				readAttr<size_t, Group>(grpPar, "NPLANES", numPlanesCheck);
 				Eigen::MatrixXd planes; //(r->numPlanes(), 4);
 				readDatasetEigen<Eigen::MatrixXd, Group>(grpPar, "Planes", planes);
 				// Write out scattering plane information
@@ -227,6 +228,8 @@ namespace rtmath {
 						dtheta = planes(i,3);
 					r->setPlane(i+1,phi,thetan_min,thetan_max,dtheta);
 				}
+				if ((size_t) planes.rows() != numPlanesCheck)
+					RTthrow rtmath::debug::xAssert("Bad number of planes check when reading hdf5 ddpar");
 
 				//return grpRot;
 				return true;
