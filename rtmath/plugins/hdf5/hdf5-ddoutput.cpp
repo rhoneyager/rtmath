@@ -309,9 +309,11 @@ namespace rtmath {
 
 			bool writeShape = opts->getVal<bool>("writeSHP", true);
 			if (writeShape)
+			{
+				s->loadShape(false);
 				write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 					(h, opts, s->shape.get());
-
+			}
 			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
 

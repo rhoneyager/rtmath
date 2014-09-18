@@ -87,6 +87,7 @@ namespace rtmath {
 				}
 
 				ddOutput* ddOutRW = const_cast<ddOutput*>(ddOut);
+				ddOutRW->loadShape(true);
 
 				rotations rots(*(ddOut->parfile));
 				weights::ddWeightsDDSCAT wts(rots);

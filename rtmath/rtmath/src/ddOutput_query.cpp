@@ -156,20 +156,21 @@ namespace rtmath {
 			if (freqRanges.ranges.size())
 				if (!freqRanges.isNear(static_cast<float>(s->freq), 0, 0.01f)) return false; // within 1%
 
-			// Only load the shape if necessary
-			if (dipoleSpacings.ranges.size() || dipoleNumbers.ranges.size())
+
+			// Run already has dipole spacings and number of dipoles. No need to load the shape.
+			// Number of dipoles
+			if (dipoleNumbers.ranges.size())
+				if (!dipoleNumbers.inRange(s->s.num_dipoles)) return false;
+
+			// Dipole spacings
+			if (dipoleSpacings.ranges.size())
 			{
-				s->loadShape(false);
-
-
-				// Dipole spacings
-				if (dipoleSpacings.ranges.size())
-					if (!dipoleSpacings.inRange(s->shape->standardD)) return false;
-
-				// Number of dipoles
-				if (dipoleNumbers.ranges.size())
-					if (!dipoleNumbers.inRange(s->shape->numPoints)) return false;
+				double V_um = pow(s->aeff, 3.) * 4. * boost::math::constants::pi<double>() / 3.;
+				double V_di = (double)s->s.num_dipoles;
+				double ds = pow(V_um / V_di, 1. / 3.);
+				if (!dipoleSpacings.inRange((float)ds)) return false;
 			}
+
 			
 			return true;
 		}

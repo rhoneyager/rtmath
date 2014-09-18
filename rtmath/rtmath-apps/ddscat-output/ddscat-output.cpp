@@ -307,14 +307,17 @@ int main(int argc, char** argv)
 
 			// Pull in shape and stats in case they are needed during the write operation (i.e. exports)
 			// If hash not found and calculations are prohibited, ignore (it's the plugin's job to check).
-			try {
-				run->loadShape();
-			} catch (rtmath::debug::xMissingHash &e) {
-				std::cerr << e.what() << std::endl;
-			}
+			//try {
+			//	run->loadShape(true);
+			//} catch (rtmath::debug::xMissingHash &e) {
+			//	std::cerr << e.what() << std::endl;
+			//}
+
+			// TODO: Add Hash Support
 			//if (doHash)
 			//	run->writeToHash();
 
+			// TODO: update database
 
 			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
 			{
@@ -360,9 +363,7 @@ int main(int argc, char** argv)
 				doWrite(opts, writer);
 			if (sOutputAux.size())
 				doWrite(optsaux, writeraux);
-			// TODO: Add Hash Support
 
-			// TODO: update database
 
 			// Drop run from memory
 			run.reset(); // update collection result
