@@ -66,7 +66,7 @@ namespace rtmath
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
 				double ar = i.eps;
-				if (abs(ar - 1.0) < 0.00001) ar = 1.00001;
+				if (abs(ar - 1.0) < 0.00001) ar = 1.0001;
 				auto tp = ::tmatrix::tmatrixParams::create(
 					scaledAeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 7);
 
