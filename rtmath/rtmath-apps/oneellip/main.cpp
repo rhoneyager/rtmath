@@ -419,7 +419,7 @@ int main(int argc, char *argv[])
 				};
 
 
-				if (armeth == "Max-Ellipsoids")
+				if (armeth == "Max_Ellipsoids")
 					r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
 				else if (armeth == "Spheres")
 					r.ar = 1;
