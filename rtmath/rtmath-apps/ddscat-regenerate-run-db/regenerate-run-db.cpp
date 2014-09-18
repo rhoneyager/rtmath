@@ -106,7 +106,8 @@ int main(int argc, char** argv)
 		if (!vm.count("par")) doHelp("Need to specify par file(s)");
 		if (!vm.count("output")) doHelp("Need to specify output base");
 
-		ishapes = vm["shape"].as<vector<string> >();
+		if (vm.count("shape"))
+			ishapes = vm["shape"].as<vector<string> >();
 
 		if (!vm.count("par")) doHelp("Must specify a ddscat.par file for use as a base.");
 		sparfile = vm["par"].as<string >();
@@ -226,6 +227,7 @@ int main(int argc, char** argv)
 
 			if (dSpacing && !shp->standardD) shp->standardD = (float)dSpacing;
 
+			if (shp->standardD == 0) doHelp("Need to set standard dipole spacings for some of these files.");
 			path outpath = pOut / path(shp->hash().string());
 			if (!boost::filesystem::exists(outpath))
 				boost::filesystem::create_directory(outpath);
@@ -245,6 +247,8 @@ int main(int argc, char** argv)
 			// Write par file
 			rtmath::ddscat::ddPar parFile;
 			parFile = rtmath::ddscat::ddPar(sparfile);
+
+			cerr << "\tEffective radius is " << aeff_um << std::endl;
 
 			auto createPar = [&](const boost::filesystem::path &ppath, ddPar &ppar,
 				double aeff)
