@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
 					r.fvMeth = "Max ellipsoid";
 				}
 				if (v) {
-					r.aeff = v->aeff_V;
+					r.aeff = v->aeff_V * s->standardD;
 					r.fv = v->f;
 				} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
 					boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
