@@ -65,7 +65,7 @@ namespace rtmath
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
 				auto tp = mieParams::create(
-					scaledAeff, s.wavelength, abs(mRes.real()), abs(mRes.imag()), 0.001);
+					scaledAeff, s.wavelength, abs(mRes.real()), -1.0 * abs(mRes.imag()), 0.001);
 
 				const double k = 2. * pi / s.wavelength;
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;

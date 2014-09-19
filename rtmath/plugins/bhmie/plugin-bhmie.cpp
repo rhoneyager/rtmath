@@ -70,7 +70,7 @@ namespace rtmath
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
 				fcomplex cxref;
 				cxref.r = (float) mRes.real();
-				cxref.i = (float) mRes.imag();
+				cxref.i = -1.f * (float) mRes.imag();
 				const unsigned long nang = 2;
 				const unsigned long ndirs = 2 * nang; // -1;
 				fcomplex cxs1[ndirs], cxs2[ndirs];

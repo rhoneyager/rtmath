@@ -32,7 +32,7 @@ namespace rtmath
 				res->axi = mb.AXI;
 				res->lam = mb.LAM;
 				res->ddelt = mb.DDELT;
-				res->m = std::complex<double>(mb.MRR, abs(mb.MRI));
+				res->m = std::complex<double>(mb.MRR, -1.*abs(mb.MRI));
 				return res;
 			}
 
@@ -47,7 +47,7 @@ namespace rtmath
 				res->axi = axi;
 				res->lam = lam;
 				res->ddelt = ddelt;
-				res->m = std::complex<double>(mrr, abs(mri));
+				res->m = std::complex<double>(mrr, -1.*abs(mri));
 				return res;
 			}
 
