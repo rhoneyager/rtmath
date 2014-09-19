@@ -28,6 +28,10 @@ namespace rtmath {
 
 				aRes = ((aFirst * _Wn.real()) - _Wnm1.real()) / ( (aFirst * _Wn)-_Wnm1);
 				bRes = ((bFirst * _Wn.real()) - _Wnm1.real()) / ( (bFirst * _Wn)-_Wnm1);
+				std::cerr << "  abNCalc n " << n << " aFirst " << aFirst << " bFirst " << bFirst << std::endl;
+				std::cerr << "          _Wn " << _Wn << " _Wnm1 " << _Wnm1 << " _An " << _An << std::endl;
+				std::cerr << "          aFirst " << aFirst << " bFirst " << bFirst << std::endl;
+				std::cerr << "          aRes " << aRes << " bRes " << bRes << std::endl;
 			}
 
 
