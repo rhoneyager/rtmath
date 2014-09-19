@@ -123,7 +123,7 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-set (boost_uniform_libs program_options iostreams filesystem system unit_test_framework regex)
+set (boost_uniform_libs program_options iostreams filesystem system unit_test_framework regex date_time )
 if (USE_RYAN_SERIALIZATION)
 	set (boost_uniform_libs ${boost_unifirm_libs} serialization)
 endif()
@@ -135,7 +135,7 @@ if(WIN32 AND NOT CYGWIN)
 else()
 	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY}
 		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
-		${Boost_PROGRAM_OPTIONS_LIBRARY})
+		${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_DATE_TIME_LIBRARY})
 	if (USE_RYAN_SERIALIZATION)
 		set (rtmath_core-libs ${rtmath_core-libs} ${Boost_SERIALIZATION_LIBRARY})
 	endif()
