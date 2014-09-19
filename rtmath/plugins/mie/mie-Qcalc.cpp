@@ -35,6 +35,7 @@ namespace rtmath {
 				if (sizep<8) nc = sizep + 4.*pow(sizep, 1. / 3.) + 1.;
 				else 
 					nc = sizep + 4.05*pow(sizep, 1. / 3.) + 2.; // Candidate bounding formula
+				std::cerr << "nc " << nc << " sizep " << sizep << std::endl;
 				for (unsigned int n = 1; n < (unsigned int)(nc + 1); n++)
 					//for (unsigned int n=1; n < 400; n++)
 				{
@@ -52,6 +53,9 @@ namespace rtmath {
 					Qbpar = complex<double>((2.0*n + 1.0)*pow(-1.0, n), 0.0) * (an - bn);
 					suma = an*conj(anp) + bn*conj(bnp);
 					sumb = an*conj(bn);
+					std:: cerr << " n " << n << " an " << an << " bn " << bn << std::endl;
+					std::cerr << " n " << n << " anp " << anp << " bnp " << bnp << std::endl;
+					std::cerr << " suma " << suma << " sumb " << sumb << std::endl;
 
 
 					Qe += Qepar;
