@@ -10,6 +10,11 @@ include_directories(${RYAN_SERIALIZATION_INCLUDE_DIRS})
 option (BUILD_PLUGINS
 	"Master switch to enable / disable building of plugins" ON)
 if (BUILD_PLUGINS)
+	option (BUILD_PLUGIN_BHMIE
+		"Build Bohren and Huffman Mie plugin" ON)
+	if (BUILD_PLUGIN_BHMIE)
+		add_subdirectory(bhmie)
+	endif()
 	option (BUILD_PLUGIN_BOV
 		"Build shapefile BOV import / export plugin" OFF)
 	if (BUILD_PLUGIN_BOV)
@@ -29,6 +34,11 @@ if (BUILD_PLUGINS)
 		"Build ImageMagick IO plugin" ON)
 	if (BUILD_PLUGIN_IMAGEMAGICK)
 		add_subdirectory (ImageMagick)
+	endif()
+	option (BUILD_PLUGIN_MIE
+		"Build Mie plugin" ON)
+	if (BUILD_PLUGIN_MIE)
+		add_subdirectory(mie)
 	endif()
 	option (BUILD_PLUGIN_NETCDF
 		"Build NETCDF IO plugin" ON)

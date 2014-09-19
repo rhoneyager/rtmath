@@ -450,6 +450,7 @@ int main(int argc, char *argv[])
 			"Theta\tBeta\tPhi\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 
 		std::cerr << "Doing " << runs.size() << " runs." << std::endl;
+		cout << "Meth\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 		size_t i=0;
 		// Iterate over all possible runs
 		for (const auto &r : runs)
@@ -486,24 +487,31 @@ int main(int argc, char *argv[])
 			s.sPhi = 0; s.sPhi0 = 0; s.sTheta = 0; s.sTheta0 = 0;
 			s.wavelength = r.lambda;
 
-			try {
-				p.getCrossSections(s, res);
+			p.getCrossSections(s, res);
 
-				for (const auto &rr : res)
-				{
-					out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
-						<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
-						<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
-						<< sizep << "\t" << i.aeff_rescale << "\t"
-						<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
-						<< rr.second.g_iso << "\t"
-						<< rr.second.Qabs_iso << "\t"
-						<< rr.second.Qbk_iso << "\t"
-						<< rr.second.Qext_iso << "\t"
-						<< rr.second.Qsca_iso
-						<< std::endl;
-				}
-			} catch (...) {std::cerr << "Error in getting cross-sections!" << std::endl;}
+			for (const auto &rr : res)
+			{
+				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
+					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
+					<< sizep << "\t" << i.aeff_rescale << "\t"
+					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
+					<< rr.second.g_iso << "\t"
+					<< rr.second.Qabs_iso << "\t"
+					<< rr.second.Qbk_iso << "\t"
+					<< rr.second.Qext_iso << "\t"
+					<< rr.second.Qsca_iso
+					<< std::endl;
+
+				cout << rr.first << "\t"
+					<< rr.second.g_iso << "\t"
+					<< rr.second.Qabs_iso << "\t"
+					<< rr.second.Qbk_iso << "\t"
+					<< rr.second.Qext_iso << "\t"
+					<< rr.second.Qsca_iso
+					<< std::endl;
+			}
+			
 		}
 
 	}

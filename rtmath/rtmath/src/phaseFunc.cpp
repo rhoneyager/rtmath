@@ -57,10 +57,13 @@ namespace rtmath {
 			{
 				if (otype != c.orientations) continue;
 				if (!c.fCrossSections) continue;
-				pf_class_registry::cross_sections cs;
-				c.fCrossSections(s, iparams, cs);
-				res.push_back(std::pair<const char*, pf_class_registry::cross_sections>
-					(c.name, std::move(cs)));
+				try {
+					pf_class_registry::cross_sections cs;
+					c.fCrossSections(s, iparams, cs);
+					res.push_back(std::pair<const char*, pf_class_registry::cross_sections>
+						(c.name, std::move(cs)));
+				}
+				catch (...) { std::cerr << "Error in getting cross-sections!" << std::endl; }
 			}
 		}
 

@@ -12,11 +12,14 @@ target_link_libraries( rtmath-oneellip
 	)
 addapp(rtmath-oneellip Analysis)
 
-if (BUILD_PLUGIN_TMATRIX)
-	add_dependencies ( rtmath-oneellip rtmath_plugin_tmatrix)
+if (BUILD_PLUGIN_BHMIE)
+	add_dependencies ( rtmath-oneellip rtmath_plugin_bhmie)
+endif()
+if (BUILD_PLUGIN_MIE)
+	add_dependencies ( rtmath-oneellip rtmath_plugin_mie)
 endif()
 
-if (BUILD_PLUGIN_TSV)
-	add_dependencies ( rtmath-oneellip rtmath_plugin_tsv)
+if (BUILD_PLUGIN_TMATRIX)
+	add_dependencies ( rtmath-oneellip rtmath_plugin_tmatrix)
 endif()
 
