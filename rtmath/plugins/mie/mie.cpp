@@ -32,7 +32,7 @@ namespace rtmath
 				res->axi = mb.AXI;
 				res->lam = mb.LAM;
 				res->ddelt = mb.DDELT;
-				res->m = std::complex<double>(mb.MRR, -1.*abs(mb.MRI));
+				res->m = std::complex<double>(mb.MRR, -1.*std::abs(mb.MRI));
 				return res;
 			}
 
@@ -47,7 +47,7 @@ namespace rtmath
 				res->axi = axi;
 				res->lam = lam;
 				res->ddelt = ddelt;
-				res->m = std::complex<double>(mrr, -1.*abs(mri));
+				res->m = std::complex<double>(mrr, -1.*std::abs(mri));
 				return res;
 			}
 
@@ -67,7 +67,7 @@ namespace rtmath
 				res->sizep = 2. * boost::math::constants::pi<double>() * in->axi / in->lam;
 				mie::Qcalc qm(in->m);
 				qm.calc(res->sizep, res->qext, res->qsca, res->qabs, res->qbk, res->g);
-				res->walb = abs(res->qsca / res->qext);
+				res->walb = std::abs(res->qsca / res->qext);
 				return res;
 			}
 

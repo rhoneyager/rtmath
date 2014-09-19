@@ -66,9 +66,9 @@ namespace rtmath
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
 				double ar = i.eps;
-				if (abs(ar - 1.0) < 0.00001) ar = 1.0001;
+				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 				auto tp = ::tmatrix::tmatrixParams::create(
-					scaledAeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 7);
+					scaledAeff, rat, s.wavelength, std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);
 
 				const double k = 2. * pi / s.wavelength;
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
@@ -142,12 +142,12 @@ namespace rtmath
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
 				double ar = i.eps;
-				if (abs(ar - 1.0) < 0.00001) ar = 1.0001;
+				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 
 				// Perform the calculation
 				try {
 					auto tp = ::tmatrix::tmatrixParams::create(
-						scaledAeff, rat, s.wavelength, abs(mRes.real()), abs(mRes.imag()), ar, np, 0.001, 7);
+						scaledAeff, rat, s.wavelength, std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);
 					auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
 
 					auto ang = ::tmatrix::OriAngleRes::calc(ori, s.sTheta, s.sTheta0, 180. - s.sPhi, s.sPhi0);

@@ -1,4 +1,5 @@
 #include "mie-AnCalc.h"
+#include <iostream>
 
 namespace rtmath {
 	namespace plugins {
@@ -33,6 +34,8 @@ namespace rtmath {
 					res += -1.0 * (complex<double>((double)i, 0.0) / (sizep*m));
 					An.push_back(std::move(res));
 				}
+				//std::cerr << "   An n " << n << " m " << m << " sizep " << sizep << std::endl;
+				//std::cerr << "   An[n] " << An[n] << std::endl;
 				return An[n];
 			}
 

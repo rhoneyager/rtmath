@@ -1,8 +1,9 @@
-/// \brief Provides silo file IO
+/// \brief Provides mie scattering
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <string>
 #include <boost/math/constants/constants.hpp>
+#include <cmath>
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/refract.h"
@@ -64,8 +65,10 @@ namespace rtmath
 					? 1 : 0; // TODO: Add support for equiv_sa_spheres.
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
+				//std::cerr << "mRes " << mRes << " m " << i.m << " vf " << i.vFrac << " mAir " << mAir << std::endl;
+				//std::cerr << mRes.real() << "\t\t " << mRes.imag() << std::endl;
 				auto tp = mieParams::create(
-					scaledAeff, s.wavelength, abs(mRes.real()), -1.0 * abs(mRes.imag()), 0.001);
+					scaledAeff, s.wavelength, std::abs(mRes.real()), -1.0 * std::abs(mRes.imag()), 0.001);
 
 				const double k = 2. * pi / s.wavelength;
 				const double size_p = 2. * pi * scaledAeff / s.wavelength;
