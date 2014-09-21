@@ -567,8 +567,9 @@ namespace rtmath {
 				HASH_t shphash = shapeHash;
 				HASH_t parhash;
 				if (parfile) parhash = parfile->hash();
-				else RTthrow debug::xOtherError("No loaded parfile object when hashing");
+				else RTthrow debug::xOtherError();
 				HASH_t tmprhash = shphash ^ parhash;
+				tmprhash.lower += (uint64_t)temp;
 				std::vector<HASH_t> dielhashes;
 				parfile->getDielHashes(dielhashes);
 				for (const auto &dh : dielhashes)

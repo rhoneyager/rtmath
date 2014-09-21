@@ -143,12 +143,14 @@ int main(int argc, char** argv)
 		opts->setVal<bool>("writeFML", writeFML);
 		opts->setVal<bool>("writeSHP", writeShapes);
 		opts->exportType(exportType);
+		if (boost::filesystem::exists(boost::filesystem::path(sOutput))) opts->iotype(rtmath::registry::IOhandler::IOtype::READWRITE);
 
 		auto optsaux = rtmath::registry::IO_options::generate();
 		optsaux->filename(sOutputAux);
 		optsaux->setVal<bool>("writeORI", writeORI);
 		optsaux->setVal<bool>("writeFML", writeFMLaux);
 		optsaux->setVal<bool>("writeSHP", writeShapes);
+		if (boost::filesystem::exists(boost::filesystem::path(sOutputAux))) optsaux->iotype(rtmath::registry::IOhandler::IOtype::READWRITE);
 
 		std::shared_ptr<rtmath::registry::IOhandler> writer, writeraux;
 		std::shared_ptr<rtmath::registry::DBhandler> dHandler;

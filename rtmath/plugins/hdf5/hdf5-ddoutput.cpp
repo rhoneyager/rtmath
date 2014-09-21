@@ -61,7 +61,8 @@ namespace rtmath {
 
 				// Pick a unique name matching frequency, aeff and temperature (refractive index)
 				/// \todo Pick a better naming function for hdf5-internal runs
-				shared_ptr<Group> gRun(new Group(base->createGroup(s->genNameSmall())));
+				//shared_ptr<Group> gRun(new Group(base->createGroup(s->genNameSmall())));
+				shared_ptr<Group> gRun(new Group(base->createGroup(s->runhash().string())));
 
 
 				addAttr<string, Group>(gRun, "Description", s->description);
