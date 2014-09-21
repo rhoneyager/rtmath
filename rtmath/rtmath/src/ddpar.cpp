@@ -335,6 +335,7 @@ namespace rtmath {
 			// Ensute that all necessary keys exist. If not, create them!!!
 			//populateDefaults(); // User's responsibility
 
+			if (!p) RTthrow rtmath::debug::xAssert("ddPar::writeDDSCAT::p is null");
 			// Write file version
 			string ver;
 			ver = rtmath::ddscat::ddVersions::getVerString(p->_version);

@@ -504,8 +504,7 @@ namespace rtmath {
 				freq = data->freq();
 				aeff = data->aeff();
 				temp = data->guessTemp();
-			}
-			else if (parfile) {
+			} else if (parfile) {
 				// select first wavelength and effective radius
 				double min, max;
 				size_t n;
@@ -566,7 +565,9 @@ namespace rtmath {
 			{
 				// Set the run uuid
 				HASH_t shphash = shapeHash;
-				HASH_t parhash = parfile->hash();
+				HASH_t parhash;
+				if (parfile) parhash = parfile->hash();
+				else RTthrow debug::xOtherError("No loaded parfile object when hashing");
 				HASH_t tmprhash = shphash ^ parhash;
 				std::vector<HASH_t> dielhashes;
 				parfile->getDielHashes(dielhashes);
