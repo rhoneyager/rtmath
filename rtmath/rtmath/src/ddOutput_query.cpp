@@ -116,7 +116,7 @@ namespace rtmath {
 
 		bool ddOutput_db_registry::ddOutput_index::filter(const ddOutput* s) const
 		{
-			std::cerr << "Filtering " << s->shapeHash.string() << std::endl;
+			//std::cerr << "Filtering " << s->shapeHash.string() << std::endl;
 			// hash filtering
 			if (hashLowers.size() && !hashLowers.count(s->shapeHash.string()))
 				return false;
