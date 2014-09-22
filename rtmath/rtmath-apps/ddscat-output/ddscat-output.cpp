@@ -309,11 +309,12 @@ int main(int argc, char** argv)
 
 			// Pull in shape and stats in case they are needed during the write operation (i.e. exports)
 			// If hash not found and calculations are prohibited, ignore (it's the plugin's job to check).
-			//try {
-			//	run->loadShape(true);
-			//} catch (rtmath::debug::xMissingHash &e) {
-			//	std::cerr << e.what() << std::endl;
-			//}
+			try {
+				if (writeShapes)
+					run->loadShape(true);
+			} catch (rtmath::debug::xMissingHash &e) {
+				std::cerr << e.what() << std::endl;
+			}
 
 			// TODO: Add Hash Support
 			//if (doHash)

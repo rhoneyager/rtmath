@@ -234,7 +234,43 @@ int main(int argc, char** argv)
 		auto processItem = [&](ncCmd*) -> bool
 		{
 			// Processing goes here
-				lblStatus->text = "Committing Item...";
+			size_t i=1;
+			for (const auto &r : runs)
+			{
+				std::ostringstream msg;
+				msg << "Commiting item " << i << " of " << runs.size();
+				lblStatus->text = msg.str();
+				wndInfo->refresh();
+				auto run = boost::const_pointer_cast<ddOutput>(r);
+				run->loadShape(false);
+
+				run->tags.erase("perturbation");
+				run->tags.erase("decimation");
+				run->tags.insert(std::pair<std::string,std::string>("perturbation", txtPert->text));
+				run->tags.insert(std::pair<std::string,std::string>("decimation", txtDecim->text));
+				run->hostname = txtHostname->text;
+				run->ddvertag = txtDDVER->text;
+				//if (sDesc.size())
+				//	run->description = sDesc;
+				//run->hostname = hostname;
+				//for (auto &t : tags)
+				//	run->tags.insert(t);
+				auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
+				{
+					if (!oopts->filename().size()) return;
+
+					// Check for the existence of an output directory
+					w = run->writeMulti(w, oopts);
+
+				};
+
+				if (sOutput.size())
+					doWrite(opts, writer);
+
+				// Drop run from memory
+				run.reset(); // update collection result
+				++i;
+			}
 
 			// Increment
 			++it;
@@ -248,40 +284,6 @@ int main(int argc, char** argv)
 		wndInfo->focus();
 		nextItem();
 		wndInfo->beginMessageLoop();
-
-
-		/*
-		for (auto &r : *(res.first))
-		{
-			auto run = boost::const_pointer_cast<ddOutput>(r);
-
-			//cerr << "Run: " << run->genName() << endl;
-			//std::cerr << " Frequency: " << run->freq << " GHz\n";
-			//std::cerr << " Temperature: " << run->temp << " K." << std::endl;
-
-			//if (sDesc.size())
-			//	run->description = sDesc;
-			//run->hostname = hostname;
-			//for (auto &t : tags)
-			//	run->tags.insert(t);
-
-			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
-			{
-				if (!oopts->filename().size()) return;
-
-				// Check for the existence of an output directory
-				w = run->writeMulti(w, oopts);
-				}
-
-			};
-
-			if (sOutput.size())
-				doWrite(opts, writer);
-
-			// Drop run from memory
-			run.reset(); // update collection result
-		}
-	*/
 
 	} catch (std::exception &e)
 	{

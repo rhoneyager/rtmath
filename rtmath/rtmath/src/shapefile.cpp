@@ -148,6 +148,14 @@ namespace rtmath {
 			}
 //#endif
 
+			bool shapefile::isHashStored(const std::string &hash)
+			{
+				if (loadedShapes.count(hash)) return true;
+				return false;
+			}
+
+			bool shapefile::isHashStored(const HASH_t &hash) { return isHashStored(hash.string()); }
+
 			void shapefile::registerHash() const
 			{
 				boost::shared_ptr<const shapefile> ptr = this->shared_from_this();

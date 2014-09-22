@@ -222,6 +222,12 @@ namespace rtmath {
 			/// Convenience function to check if a given group exists
 			bool groupExists(std::shared_ptr<H5::CommonFG> base, const char* name);
 
+			/// Convenience function to check if a symbolic link exists, and if the object being 
+			/// pointed to also exists.
+			/// \returns std::pair<bool,bool> refers to, respectively, if a symbolic link is found and 
+			/// if the symbolic link is good.
+			std::pair<bool, bool> symLinkExists(std::shared_ptr<H5::CommonFG> base, const char* name);
+
 			/// \brief Convenience function to open a group, if it exists
 			/// \returns nullptr is the group does not exist.
 			std::shared_ptr<H5::Group> openGroup(std::shared_ptr<H5::CommonFG> base, const char* name);

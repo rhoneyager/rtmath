@@ -107,6 +107,25 @@ namespace rtmath {
 				}
 			}
 
+			std::pair<bool,bool> symLinkExists(std::shared_ptr<H5::CommonFG> base, const char* name)
+			{
+				bool linkexists = false;
+				bool linkgood = false;
+				std::string lloc;
+				try {
+					H5G_stat_t stats;
+					base->getObjInfo(name, false, stats);
+					linkexists = true;
+
+					//lloc = base->getLinkval(name);
+					base->getObjInfo(name, true, stats);
+					linkgood = true;
+				} catch( H5::GroupIException not_found_error ) {
+				} catch( H5::FileIException not_found_error) {
+				}
+				return std::pair<bool,bool>(linkexists,linkgood);
+			}
+
 			bool datasetExists(std::shared_ptr<H5::CommonFG> base, const char* name)
 			{
 				try {

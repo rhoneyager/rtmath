@@ -367,6 +367,8 @@ namespace rtmath {
 
 				/// Register a shape in the local hash database. Used in subsequent searches for the shape.
 				void registerHash() const;
+				static bool isHashStored(const std::string &hash);
+				static bool isHashStored(const HASH_t &hash);
 				/// Register a shape in the local hash database. Can also register a loading placeholder.
 				//static void registerHash(boost::shared_ptr<shapefile>);
 

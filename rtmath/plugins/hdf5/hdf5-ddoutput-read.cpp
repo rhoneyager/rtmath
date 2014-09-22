@@ -55,7 +55,8 @@ namespace rtmath {
 
 			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
 				rtmath::ddscat::ddPar *r);
-
+			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
+				rtmath::ddscat::shapefile::shapefile *shp);
 			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts, 
 				rtmath::ddscat::ddOutput *r)
 			{
@@ -159,7 +160,7 @@ namespace rtmath {
 					readAttr<uint64_t, Group>(base, "runhash_upper", r->_runhash.upper);
 				}
 
-				//bool readSHP = opts->getVal<bool>("readSHP", false);
+				bool readSHP = opts->getVal<bool>("readSHP", false);
 				bool readORI = opts->getVal<bool>("readORI", true);
 				bool readFML = opts->getVal<bool>("readFML", true);
 				bool readAVG = opts->getVal<bool>("readAVG", true);
@@ -182,10 +183,23 @@ namespace rtmath {
 					readAttr(tbl, "phi_max", r->avgdata.phi_max);
 					readAttr(tbl, "phi_n", r->avgdata.phi_n);
 				}
-				// The shapefiles are loaded in a separate bit of code, and they have their own search
-				// directory. The same applies to shape stats. As such, don't read the symlinks in this 
-				// iteration of the code.
-				//if (readSHP && 0)
+				if (readSHP) {
+					// Try these, in order:
+					if (rtmath::ddscat::shapefile::shapefile::isHashStored(r->shapeHash)) {
+						r->shape = rtmath::ddscat::shapefile::shapefile::loadHash(r->shapeHash);
+					} else if (symLinkExists(base, "Shape").second) {
+						// Read the shape and store a pointer within the ddOutput object.
+						// Also, register this shape with the shapefile routines.
+						shared_ptr<Group> grpShape = openGroup(base, "Shape");
+						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp = 
+							rtmath::ddscat::shapefile::shapefile::generate();
+						read_hdf5_shaperawdata(grpShape, shp);
+						shp->registerHash();
+						r->shape = shp;
+					} else {
+						r->shape = rtmath::ddscat::shapefile::shapefile::loadHash(r->shapeHash);
+					}
+				}
 				
 				// Do, however, read the ddscat.par file, since some of these values are useful when 
 				// interpreting the ddscat run.
