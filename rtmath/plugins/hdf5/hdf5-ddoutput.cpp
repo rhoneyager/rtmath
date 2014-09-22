@@ -294,7 +294,7 @@ namespace rtmath {
 			// Group "Hashed"
 			shared_ptr<Group> grpHashes = openOrCreateGroup(h->file, "Hashed");
 			// Group "Hashed"/shp->hash
-			shared_ptr<Group> grpHash = openOrCreateGroup(grpHashes, s->shape->hash().string().c_str());
+			shared_ptr<Group> grpHash = openOrCreateGroup(grpHashes, s->shapeHash.string().c_str());
 			// Group "Hashed"/shp->hash/"Shape". If it exists, overwrite it. There should be no hard links here.
 			/// \note The unlink operation does not really free the space..... Should warn the user.
 			shared_ptr<Group> gRuns = openOrCreateGroup(grpHash, "Runs");
