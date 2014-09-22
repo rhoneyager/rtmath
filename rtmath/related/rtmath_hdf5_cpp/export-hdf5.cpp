@@ -114,11 +114,11 @@ namespace rtmath {
 				std::string lloc;
 				try {
 					H5G_stat_t stats;
-					base->getObjInfo(name, false, stats);
+					base->getObjinfo(name, false, stats);
 					linkexists = true;
 
 					//lloc = base->getLinkval(name);
-					base->getObjInfo(name, true, stats);
+					base->getObjinfo(name, true, stats);
 					linkgood = true;
 				} catch( H5::GroupIException not_found_error ) {
 				} catch( H5::FileIException not_found_error) {

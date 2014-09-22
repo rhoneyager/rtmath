@@ -193,7 +193,7 @@ namespace rtmath {
 						shared_ptr<Group> grpShape = openGroup(base, "Shape");
 						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp = 
 							rtmath::ddscat::shapefile::shapefile::generate();
-						read_hdf5_shaperawdata(grpShape, shp);
+						read_hdf5_shaperawdata(grpShape, shp.get());
 						shp->registerHash();
 						r->shape = shp;
 					} else {
