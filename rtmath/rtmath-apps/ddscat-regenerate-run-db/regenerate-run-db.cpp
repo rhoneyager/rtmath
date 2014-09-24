@@ -284,7 +284,10 @@ int main(int argc, char** argv)
 							rtmath::refract::maxwellGarnettEllipsoids(m, mAir, frac, mEff);
 							boost::shared_ptr<dielTab> dielEff = dielTab::generate(mEff);
 							dielEff->write((ppath.parent_path() / path("dielEff.tab")).string());
-							ppar.setDiels(vector<string>(2, string("dielEff.tab")));
+							vector<string> diels;
+							diels.push_back("diel.tab");
+							diels.push_back("dielEff.tab");
+							ppar.setDiels(diels);
 						}
 					}
 				} // If no case matches, then the par file skeleton defaults are fine.
