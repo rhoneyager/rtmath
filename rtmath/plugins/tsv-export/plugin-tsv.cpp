@@ -33,6 +33,10 @@ void dllEntry()
 	//genAndRegisterIOregistryPlural_writer<::rtmath::data::arm::arm_scanning_radar_sacr,
 	//	::rtmath::data::arm::arm_IO_sacr_output_registry>(
 	//	nExts, exportExts, PLUGINID_SACR_REFL, "reflectivity");
+	genAndRegisterIOregistryPlural_writer
+		<::rtmath::ddscat::shapefile::shapefile,
+		rtmath::ddscat::shapefile::shapefile_IO_output_registry>(
+		nExts, exportExts, PLUGINID, "shape_data");
 
 	genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,

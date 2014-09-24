@@ -31,7 +31,7 @@ namespace rtmath {
 			using namespace rtmath::registry;
 			struct tsv_shp_handle : public rtmath::registry::IOhandler
 			{
-				tsv_shp_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_ARS) { open(filename, t); }
+				tsv_shp_handle(const char* filename, IOtype t) : IOhandler(PLUGINID) { open(filename, t); }
 				virtual ~tsv_shp_handle() {}
 				void open(const char* filename, IOtype t)
 				{
@@ -86,7 +86,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_shp_handle>(new tsv_shp_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_ARS) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
 					h = std::dynamic_pointer_cast<tsv_shp_handle>(sh);
 				}
 

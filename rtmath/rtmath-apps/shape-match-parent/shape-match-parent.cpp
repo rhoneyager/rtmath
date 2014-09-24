@@ -196,16 +196,18 @@ int main(int argc, char** argv)
 
 		auto processShape = [&](boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile> s)
 		{
-			cerr << "  Child shape " << s->hash().lower << endl;
+			cerr << "  Child shape " << s->hash().lower << endl
+				<< "\thas " << s->numPoints << " dipoles" << endl;
 			boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp 
 				= boost::const_pointer_cast<rtmath::ddscat::shapefile::shapefile>(s);
 			shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
 
 			// Do search for parent
 			auto parQ = rtmath::ddscat::shapefile::shapefile::makeQuery();
-			parQ->dipoleNumbers.ranges.push_back(std::pair<size_t,size_t>(shp->numPoints, shp->numPoints));
+			parQ->dipoleNumbers.ranges.push_back(std::pair<size_t,size_t>(shp->numPoints, shp->numPoints+1));
 
 			auto parC = parQ->doQuery(res.first, false, false, nullptr);
+			cerr << "\t\tThere are " << parC.first->size() << " matches" << endl;
 
 			if (!parC.first->size())
 			{
