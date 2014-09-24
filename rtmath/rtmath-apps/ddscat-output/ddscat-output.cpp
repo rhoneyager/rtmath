@@ -278,13 +278,6 @@ int main(int argc, char** argv)
 				ddOutput::readVector(nullptr, iopts, runs, query);
 				for (auto &s : runs)
 					collection->insert(s);
-			} else {
-				// This fallback shouldn't happen...
-				boost::shared_ptr<ddOutput> s(new ddOutput);
-				s->readFile(i);
-				if (query->filter(s.get()))
-					collection->insert(s);
-				//runs.push_back(s);
 			}
 
 		}
