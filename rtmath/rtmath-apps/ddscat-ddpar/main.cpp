@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 			("set-shape", po::value<string>(), "Set SHAPE parameter (FROM_FILE, ...)")
 			("set-shapeparams", po::value<vector<double> >(), "Set shape params (double, double, double)")
 			("set-intermediate-output", po::value<bool>(), "Set IWRKSC")
-			("set-diels,D", po::value<vector<std::string> >(), "Set dielectric files. Can specify multiple times for "
+			("set-diels,D", po::value<vector<std::string> >()->multitoken(), "Set dielectric files. Can specify multiple times for "
 			 "multiple refractive indices. In this case, the dielectrics follow command-line ordering.")
 
 			("get-version", "Get version (70, 72, ...)")
