@@ -304,7 +304,7 @@ int main(int argc, char** argv)
 			// If hash not found and calculations are prohibited, ignore (it's the plugin's job to check).
 			try {
 				if (writeShapes)
-					run->loadShape(true);
+					run->loadShape(false);
 			} catch (rtmath::debug::xMissingHash &e) {
 				std::cerr << e.what() << std::endl;
 			}
