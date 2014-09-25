@@ -45,6 +45,12 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_NETCDF)
 		add_subdirectory (netcdf)
 	endif()
+	option (BUILD_PLUGIN_NONDDA_MISC
+		"Build miscellaneous non-DDA plugins (Rayleigh, Rayleigh-Gans,
+		SSRGA)" ON)
+		if (BUILD_PLUGIN_NONDDA_MISC)
+		add_subdirectory(nondda-misc)
+	endif()
 	option (BUILD_PLUGIN_PSQL
 		"Build PostgreSQL IO plugin" ON)
 	if (BUILD_PLUGIN_PSQL)

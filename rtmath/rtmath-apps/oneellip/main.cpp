@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 		basic.add_options()
 			("aspect-ratios,s", po::value<std::string>()->default_value("1"), "Specify aspect ratio for ellipsoids.")
 			("aeffs,a", po::value<std::string>(), "Specify the effective radii in um")
+			("radii,r", po::value<std::string>(), "Specify the actual mean sphere radii in um")
 			("freqs,f", po::value<std::string>(), "Specify frequencies in GHz. Needed for dielectrics.")
 			;
 		scale.add_options()
@@ -300,9 +301,11 @@ int main(int argc, char *argv[])
 			// If any of these are set, ensure that the temperature and frequency are also set
 
 			// Freqs and temps are in main's scope
-			set<double> aeffs, aspects, vfracs; // , alphas, betas;
+			set<double> aeffs, radii, aspects, vfracs; // , alphas, betas;
 			if (vm.count("aeffs"))
 				rtmath::config::splitSet(vm["aeffs"].as<string>(), aeffs);
+			if (vm.count("radii"))
+				rtmath::config::splitSet(vm["radii"].as<string>(), radii);
 			if (vm.count("aspect-ratios"))
 				rtmath::config::splitSet(vm["aspect-ratios"].as<string>(), aspects);
 			if (vm.count("volume-fractions"))
@@ -310,51 +313,69 @@ int main(int argc, char *argv[])
 
 			if (!freqs.size()) doHelp("Need to specify frequencies.");
 			if (!temps.size() && !overrideM) doHelp("Need to specify temperatures.");
-			if (freqs.size() && aeffs.size() && aspects.size() && vfracs.size())
+			if (freqs.size() && (aeffs.size() || radii.size()) && aspects.size() && vfracs.size())
 			{
 				if (temps.size() || overrideM)
 				{
 					for (const auto &freq : freqs)
-						for (const auto &aeff : aeffs)
-							for (const auto &aspect : aspects)
-								for (const auto &vfrac : vfracs)
-								{
-						if (overrideM)
-						{
-							run r;
-							r.aeff = aeff;
-							r.ar = aspect;
-							r.freq = freq;
-							r.fv = vfrac;
-							r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
-							r.m = ovM;
-							r.temp = -1;
-							runs.push_back(std::move(r));
-						}
-						else {
-							for (const auto &temp : temps)
+						for (const auto &aspect : aspects)
+							for (const auto &vfrac : vfracs)
 							{
-								run r;
-								r.aeff = aeff;
-								r.ar = aspect;
-								r.freq = freq;
-								r.fv = vfrac;
-								r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
-								r.temp = temp;
-								rtmath::refract::mIce(freq, temp, r.m);
-								runs.push_back(std::move(r));
-							}
-						}
+								auto doAeff = [&](double aeff, bool rescale)
+								{
+									if (rescale) {
+										double V_rad = std::pow(aeff,3.);
+										double V_sca = V_rad * vfrac;
+										aeff = std::pow(V_sca, 1./3.);
+									}
+									if (overrideM)
+									{
+										run r;
+										r.aeff = aeff;
+										r.ar = aspect;
+										r.freq = freq;
+										r.fv = vfrac;
+										r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
+										r.m = ovM;
+										r.temp = -1;
+										runs.push_back(std::move(r));
+									}
+									else {
+										for (const auto &temp : temps)
+										{
+											run r;
+											r.aeff = aeff;
+											r.ar = aspect;
+											r.freq = freq;
+											r.fv = vfrac;
+											r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
+											r.temp = temp;
+											rtmath::refract::mIce(freq, temp, r.m);
+											runs.push_back(std::move(r));
+										}
+									}
+								};
+								for (const auto &aeff : aeffs)
+									doAeff(aeff, false);
+								for (const auto &rad : radii)
+								{
+									// Rescale radius to effective radius
+									// using r.fv, rad.
+									//double V_rad = std::pow(rad,3.);
+									//double V_sca = V_rad * r.fv;
+									//double aeff = std::pow(V_sca, 1./3.);
+									doAeff(rad, true);
 								}
+					}
 				}
 				else doHelp("Need to specify temperatures or a refractive index");
 			}
 			/*
-			else if (aeffs.size() || aspects.size() || vfracs.size())
+			else if (aeffs.size() || radii.size() || aspects.size() || vfracs.size())
 			{
 				std::ostringstream o;
 				o << "Need to specify: ";
-				if (!aeffs.size()) o << "aeffs, ";
+				if (!aeffs.size() && !radii.size()) o << "aeffs or radii, ";
 				if (!aspects.size()) o << "aspect ratios, ";
 				if (!vfracs.size()) o << "volume fractions, ";
 				if (!freqs.size()) o << "frequencies, ";
