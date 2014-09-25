@@ -743,6 +743,10 @@ namespace rtmath
 				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter
 				)
 			{
+				// Brief invocation of the object constructor to ensure that any custom handlers get registered.
+				//boost::shared_ptr<obj_class> obj = 
+				customGenerator<obj_class>();
+
 				// All of these objects can handle their own compression
 				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_vector_type dllv = nullptr;
 				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_multi_type dllm = nullptr;
