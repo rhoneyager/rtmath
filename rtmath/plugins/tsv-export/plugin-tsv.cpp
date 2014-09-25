@@ -61,6 +61,11 @@ void dllEntry()
 	rtmath::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
+		nExts, exportExts, PLUGINID_DDISOSMALL, "isotropic_data_small");
+
+	rtmath::registry::genAndRegisterIOregistryPlural_writer
+		<::rtmath::ddscat::ddOutput,
+		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDSTATS, "stats");
 
 	rtmath::registry::genAndRegisterIOregistryPlural_writer
