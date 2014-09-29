@@ -77,6 +77,7 @@ int main(int argc, char** argv)
 			("output,o", po::value<string>(), "Output filename")
 			("export-type", po::value<string>(), "Identifier to export (i.e. ar_rot_data)")
 			("export,e", po::value<string>(), "Export filename (all shapes are combined into this)")
+			("force", "Forces tag or flake type update, to fix typos.")
 			("tag", po::value<vector<string> >()->multitoken(), "Using \"key=value pairs\", add tags to the output (not with .shp files)")
 			("flake-type", po::value<string>(), "Specify flake type (e.g. oblate, oblate_small, prolate, ...")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
@@ -284,12 +285,20 @@ int main(int argc, char** argv)
 			cerr << "  Shape " << shp->hash().lower << endl;
 			shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
 			for (auto &t : tags)
+			{
+				if (vm.count("force"))
+					if (shp->tags.count(t.first)) shp->tags.erase(t.first);
 				shp->tags.insert(t);
+			}
 
 			if (vm.count("list-hash"))
 				std::cout << shp->hash().lower << endl;
 			if (sFlakeType.size())
+			{
+				if (vm.count("force"))
+					if (shp->tags.count("flake_classification")) shp->tags.erase("flake_classification");
 				shp->tags.insert(pair<string, string>("flake_classification", sFlakeType));
+			}
 			if (dSpacing) shp->standardD = (float)dSpacing;
 			if (vm.count("hash-shape")) shp->writeToHash();
 			if (vm.count("hash-voronoi"))
