@@ -131,6 +131,7 @@ namespace rtmath {
 				cp(tags);
 				cp(latticeExtras);
 				cp(numPoints);
+				cp(standardD);
 				cp(Dielectrics);
 				cp(desc);
 				cp(a1);
