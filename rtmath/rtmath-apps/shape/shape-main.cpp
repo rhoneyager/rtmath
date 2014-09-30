@@ -181,7 +181,7 @@ int main(int argc, char** argv)
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
 		rtmath::config::intervals<float> iDipoleSpacing;
 		rtmath::config::intervals<size_t> iDipoleNumbers;
-		bool matchParentFlakes;
+//		bool matchParentFlakes;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();

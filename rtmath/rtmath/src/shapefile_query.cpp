@@ -195,11 +195,11 @@ namespace rtmath {
 						/// \note This is not good.
 						boost::shared_ptr<shapefile> ucs = boost::const_pointer_cast<shapefile>(s);
 
-						if (!s->standardD && d->standardD) ucs->standardD = d->standardD;
-						if (!s->numPoints && d->numPoints) ucs->numPoints = d->numPoints;
-						if (!s->desc.size() && d->desc.size()) ucs->desc = d->desc;
+						if (d->standardD) ucs->standardD = d->standardD;
+						if (d->numPoints) ucs->numPoints = d->numPoints;
+						if (d->desc.size()) ucs->desc = d->desc;
 						for (const auto &tag : d->tags)
-							if (!s->tags.count(tag.first)) ucs->tags[tag.first] = tag.second;
+							ucs->tags[tag.first] = tag.second;
 
 						db_hashes.erase(s->hash()); // Remove from consideration (already matched)
 					}

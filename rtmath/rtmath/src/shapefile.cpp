@@ -259,10 +259,15 @@ namespace rtmath {
 			{
 				if (latticePts.rows()) return; // Already loaded
 				const auto origtags = tags;
-				loadHashLocal(hash());
+				auto sD = standardD;
 
+				// Tags are stored this way because incomplete entries usually come from databases.
+				loadHashLocal(hash());
+				
+				if (sD) standardD = sD;
 				for (const auto &tag : origtags)
-					if (!tags.count(tag.first)) tags[tag.first] = tag.second;
+					//if (!tags.count(tag.first)) 
+					tags[tag.first] = tag.second;
 			}
 
 			boost::shared_ptr<const shapefile> shapefile::loadHash(
