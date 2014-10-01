@@ -97,7 +97,7 @@ namespace rtmath
 			/// \param scale indicates that the values should be scaled by elevation angle
 			void write_sacr_reflectivity
 				(shared_ptr<tsv_sacr_reflectivity_handle> h, shared_ptr<IO_options> opts,
-				const ::rtmath::data::arm::arm_scanning_radar_sacr *s)
+				const boost::shared_ptr<const ::rtmath::data::arm::arm_scanning_radar_sacr > s)
 			{
 				size_t numPass = opts->getVal<size_t>("pass", 0);
 				if (numPass > (size_t) s->sweep_start_ray_index.rows() && numPass > (size_t) s->sweep_start_ray_index.cols())
@@ -161,7 +161,7 @@ namespace rtmath
 		std::shared_ptr<IOhandler>
 			write_file_type_multi<::rtmath::data::arm::arm_scanning_radar_sacr>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			const ::rtmath::data::arm::arm_scanning_radar_sacr *s)
+			const boost::shared_ptr<const ::rtmath::data::arm::arm_scanning_radar_sacr > s)
 		{
 			using namespace ::rtmath::data::arm;
 			std::string filename = opts->filename();

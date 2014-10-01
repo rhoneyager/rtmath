@@ -46,7 +46,7 @@ namespace rtmath {
 			}
 
 			bool read_hdf5_statsrawdata(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts,
-				rtmath::ddscat::stats::shapeFileStats *r)
+				boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats > r)
 			{
 				using std::shared_ptr;
 				using std::string;
@@ -184,7 +184,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::stats::shapeFileStats>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::stats::shapeFileStats *s,
+			boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats > s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> >)
 		{
 			std::string filename = opts->filename();
@@ -250,7 +250,7 @@ namespace rtmath {
 					{
 						boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats>
 							stats(new rtmath::ddscat::stats::shapeFileStats);
-						read_hdf5_statsrawdata(grpStats, opts, stats.get());
+						read_hdf5_statsrawdata(grpStats, opts, stats);
 						if (filter) {
 							if (filter->filter(stats.get()))
 								s.push_back(stats);

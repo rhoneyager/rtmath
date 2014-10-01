@@ -3,13 +3,45 @@
 
 #include <string>
 #include <iostream>
-//#include <iomanip>
 #include <map>
 #include <set>
-#include <memory>
-#include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/lexical_cast.hpp> // used in getVal<>
+#include "registry.h"
+#include "io.h"
 
 namespace rtmath {
+	namespace config {
+		class configsegment;
+		class configsegment_IO_input_registry{};
+		class configsegment_IO_output_registry{};
+		class configsegment_OldStandard {};
+		class configsegment_Boost {};
+		class configsegment_Env {}; //todo
+		class configsegment_Registry {}; //todo
+	}
+	namespace registry {
+		extern template struct IO_class_registry_writer<
+			::rtmath::config::configsegment>;
+
+		extern template struct IO_class_registry_reader<
+			::rtmath::config::configsegment>;
+
+		extern template class usesDLLregistry<
+			::rtmath::config::configsegment_IO_input_registry,
+			IO_class_registry_reader<::rtmath::config::configsegment> >;
+
+		extern template class usesDLLregistry<
+			::rtmath::config::configsegment_IO_output_registry,
+			IO_class_registry_writer<::rtmath::config::configsegment> >;
+	}
+	namespace io {
+		template <>
+		DLEXPORT_rtmath_core boost::shared_ptr
+			<::rtmath::config::configsegment> customGenerator();
+	}
+
 	/** \brief describes the structure that should be contained in options files that
 	 * involve the rtmath library.
 	 * 
@@ -31,19 +63,65 @@ namespace rtmath {
 	 * the user what to do.
 	 **/
 	namespace config {
+		/// Provides local readers and writers for old configuration format (it's a binder)
+		class DLEXPORT_rtmath_core implementsConfigOld :
+			private rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
+			configsegment_IO_input_registry, configsegment_OldStandard>
+		{
+		public:
+			virtual ~implementsConfigOld() {}
+		protected:
+			implementsConfigOld();
+		private:
+			static const std::set<std::string>& known_formats();
+		};
+
+		/// Provides local readers and writers for new configuration format for xml, json, ini (it's a binder)
+		/// \todo Implement
+		class DLEXPORT_rtmath_core implementsConfigBoost :
+			private rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
+			configsegment_IO_input_registry, configsegment_Boost>
+		{
+		public:
+			virtual ~implementsConfigBoost() {}
+		protected:
+			implementsConfigBoost();
+		private:
+			static const std::set<std::string>& known_formats();
+		};
+
+		/// \note Upgrading this to use xml writes
 		/// \todo fix findSegment so that it works
 		/// \todo findSegment check for not found condition (currently returns garbage)
 		/// \todo restructure to explicitly enable symlinks
-		/// \todo Switch to boost::shared_ptr
-		class DLEXPORT_rtmath_core configsegment : public std::enable_shared_from_this<configsegment> {
-		public:
-			static std::shared_ptr<configsegment> create(const std::string &name);
-			static std::shared_ptr<configsegment> create(const std::string &name, 
-				std::shared_ptr<configsegment> &parent);
+		class DLEXPORT_rtmath_core configsegment : 
+			virtual public boost::enable_shared_from_this<configsegment>,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			::rtmath::config::configsegment_IO_input_registry,
+			::rtmath::registry::IO_class_registry_reader<configsegment> >,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			::rtmath::config::configsegment_IO_output_registry,
+			::rtmath::registry::IO_class_registry_writer<configsegment> >,
+			virtual public ::rtmath::io::implementsStandardWriter<configsegment, configsegment_IO_output_registry>,
+			virtual public ::rtmath::io::implementsStandardReader<configsegment, configsegment_IO_input_registry>,
+			virtual public implementsConfigOld
+		{
+			// Need readVector as a friend class
+			friend boost::shared_ptr<configsegment> io::customGenerator<configsegment>();
 			configsegment(const std::string &name);
-			configsegment(const std::string &name, std::shared_ptr<configsegment> &parent);
+			configsegment(const std::string &name, boost::shared_ptr<configsegment> &parent);
+		public:
 			~configsegment();
-			std::shared_ptr<configsegment> getPtr() const;
+			static boost::shared_ptr<configsegment> generate(const std::string &name);
+			static boost::shared_ptr<configsegment> generate(const std::string &name,
+				boost::shared_ptr<configsegment> &parent);
+			
+			static void readOld(boost::shared_ptr<configsegment>, std::istream&, std::shared_ptr<registry::IO_options>);
+			static void writeOld(const boost::shared_ptr<const configsegment>, std::ostream &, std::shared_ptr<registry::IO_options>);
+			//static void readBoost(boost::shared_ptr<configsegment>, std::istream&, std::shared_ptr<registry::IO_options>);
+			//static void writeBoost(const boost::shared_ptr<const configsegment>, std::ostream &, std::shared_ptr<registry::IO_options>);
+
+			boost::shared_ptr<configsegment> getPtr() const;
 			bool hasVal(const std::string &key) const;
 			bool getVal(const std::string &key, std::string &value) const;
 			template <class T> bool getVal(const std::string &key, T &value) const
@@ -57,11 +135,11 @@ namespace rtmath {
 			void setVal(const std::string &key, const std::string &value);
 			void name(std::string &res) const;
 			inline std::string name() const { std::string res; name(res); return res; }
-			void move(std::shared_ptr<configsegment> &newparent);
-			std::shared_ptr<configsegment> findSegment(const std::string &key) const;
-			std::shared_ptr<configsegment> getChild(const std::string &name) const;
-			std::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
-			std::shared_ptr<configsegment> getParent() const;
+			void move(boost::shared_ptr<configsegment> &newparent);
+			boost::shared_ptr<configsegment> findSegment(const std::string &key) const;
+			boost::shared_ptr<configsegment> getChild(const std::string &name) const;
+			boost::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
+			boost::shared_ptr<configsegment> getParent() const;
 			void listKeys(std::map<std::string,std::string> &output) const;
 			const std::map<std::string, std::string>& listKeys() const { return _mapStr; }
 			void listKeys(std::set<std::string> &res) const;
@@ -73,20 +151,20 @@ namespace rtmath {
 			
 		protected:
 			std::string _segname, _cwd;
-			std::weak_ptr<configsegment> _parent;
+			boost::weak_ptr<configsegment> _parent;
 			//std::weak_ptr<configsegment> _self;
 			std::map<std::string, std::string> _mapStr;
-			std::set<std::shared_ptr<configsegment> > _children;
-			std::set<std::weak_ptr<configsegment> > _symlinks;
+			std::set<boost::shared_ptr<configsegment> > _children;
+			std::set<boost::weak_ptr<configsegment> > _symlinks;
 		public: // And let's have a static loading function here!
-			static std::shared_ptr<configsegment> loadFile(const char* filename, std::shared_ptr<configsegment> root);
-			static std::shared_ptr<configsegment> loadFile(std::istream &indata, std::shared_ptr<configsegment> root, const std::string &cwd = "./");
-			friend DLEXPORT_rtmath_core std::ostream& operator<< (std::ostream& stream, const rtmath::config::configsegment &ob);
+			//static boost::shared_ptr<configsegment> loadFile(const char* filename, boost::shared_ptr<configsegment> root);
+			//static boost::shared_ptr<configsegment> loadFile(std::istream &indata, boost::shared_ptr<configsegment> root, const std::string &cwd = "./");
+			//friend DLEXPORT_rtmath_core std::ostream& operator<< (std::ostream& stream, const rtmath::config::configsegment &ob);
 			//friend std::istream& std::operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
 		};
 
 		// Easy-to-use function that looks in config for a property. If not found, ask the user!
-		inline std::string queryConfig(std::shared_ptr<configsegment> &root, const std::string &key, const std::string &question)
+		inline std::string queryConfig(boost::shared_ptr<configsegment> &root, const std::string &key, const std::string &question)
 		{
 			std::string res;
 			root->getVal(key,res);
@@ -99,17 +177,17 @@ namespace rtmath {
 		}
 
 		void DLEXPORT_rtmath_core getConfigDefaultFile(std::string &filename);
-		std::shared_ptr<configsegment> DLEXPORT_rtmath_core getRtconfRoot();
+		boost::shared_ptr<configsegment> DLEXPORT_rtmath_core getRtconfRoot();
 		/// Load the appropriate default rtmath configuration file (default may be overridden in command line, see registry.cpp)
-		std::shared_ptr<configsegment> DLEXPORT_rtmath_core loadRtconfRoot(const std::string &filename = "");
-		void DLEXPORT_rtmath_core setRtconfRoot(std::shared_ptr<configsegment> &root);
+		boost::shared_ptr<configsegment> DLEXPORT_rtmath_core loadRtconfRoot(const std::string &filename = "");
+		void DLEXPORT_rtmath_core setRtconfRoot(boost::shared_ptr<configsegment> &root);
 
 		//extern std::shared_ptr<configsegment> _rtconfroot;
 
 		/// Take the object, and print in the appropriate form, using recursion
-		DLEXPORT_rtmath_core std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
+		//DLEXPORT_rtmath_core std::ostream& operator<< (std::ostream &stream, const rtmath::config::configsegment &ob);
 		/// Take the object, and input in the appropriate form, using recursion
-		DLEXPORT_rtmath_core std::istream& operator>> (std::istream &stream, std::shared_ptr<rtmath::config::configsegment> &ob);
+		DLEXPORT_rtmath_core std::istream& operator>> (std::istream &stream, boost::shared_ptr<rtmath::config::configsegment> &ob);
 
 	}
 }

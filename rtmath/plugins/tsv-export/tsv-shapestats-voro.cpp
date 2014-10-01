@@ -81,7 +81,7 @@ namespace rtmath {
 			shared_ptr<IOhandler>
 				export_tsv_summary_data
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-				const rtmath::ddscat::stats::shapeFileStats *s)
+				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats> s)
 			{
 				std::string exporttype = opts->exportType();
 				if (exporttype != "summary_data") RTthrow debug::xUnimplementedFunction();

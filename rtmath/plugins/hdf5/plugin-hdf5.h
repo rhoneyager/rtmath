@@ -30,12 +30,12 @@ namespace rtmath {
 			//	const rtmath::ddscat::shapefile::shapefile *shp);
 			
 			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
-				const rtmath::ddscat::shapefile::shapefile *shp);
+				const boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile > shp);
 
 			//void write_hdf5_shapestats(const char*,
 			//	const rtmath::ddscat::stats::shapeFileStats *s);
 			std::shared_ptr<H5::Group> write_hdf5_statsrawdata(std::shared_ptr<H5::Group> base, 
-				const rtmath::ddscat::stats::shapeFileStats *s);
+				const boost::shared_ptr<const  rtmath::ddscat::stats::shapeFileStats > s);
 
 			//void write_hdf5_ddOutput(const char* filename,
 			//	const rtmath::ddscat::ddOutput*);

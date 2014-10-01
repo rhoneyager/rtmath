@@ -54,11 +54,11 @@ namespace rtmath {
 			}
 
 			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
-				rtmath::ddscat::ddPar *r);
+				boost::shared_ptr<rtmath::ddscat::ddPar > r);
 			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
-				rtmath::ddscat::shapefile::shapefile *shp);
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > shp);
 			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts, 
-				rtmath::ddscat::ddOutput *r)
+				boost::shared_ptr<rtmath::ddscat::ddOutput > r)
 			{
 				using std::shared_ptr;
 				using std::string;
@@ -193,7 +193,7 @@ namespace rtmath {
 						shared_ptr<Group> grpShape = openGroup(base, "Shape");
 						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp = 
 							rtmath::ddscat::shapefile::shapefile::generate();
-						read_hdf5_shaperawdata(grpShape, shp.get());
+						read_hdf5_shaperawdata(grpShape, shp);
 						shp->registerHash();
 						r->shape = shp;
 					} else {
@@ -204,7 +204,7 @@ namespace rtmath {
 				// Do, however, read the ddscat.par file, since some of these values are useful when 
 				// interpreting the ddscat run.
 				r->parfile = boost::shared_ptr<ddPar>(new ddPar);
-				read_hdf5_ddPar(openGroup(base, "par"), r->parfile.get());
+				read_hdf5_ddPar(openGroup(base, "par"), r->parfile);
 				//r->doImport();
 				return true;
 			}

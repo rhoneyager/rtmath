@@ -350,7 +350,8 @@ namespace rtmath
 			 * \returns Pointer to a IOhandler object (for example after the first write).
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
-				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, const object*)> io_multi_type;
+				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, const boost::shared_ptr<const object>)> io_multi_type;
+			//	(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, const object*)> io_multi_type;
 			io_multi_type io_multi_processor;
 		};
 
@@ -378,7 +379,8 @@ namespace rtmath
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
-				object*, std::shared_ptr<const rtmath::registry::collectionTyped<object> >)> io_multi_type;
+				boost::shared_ptr<object>, std::shared_ptr<const rtmath::registry::collectionTyped<object> >)> io_multi_type;
+			//	object*, std::shared_ptr<const rtmath::registry::collectionTyped<object> >)> io_multi_type;
 			io_multi_type io_multi_processor;
 
 			/** \brief Handles reading multiple objects from a single source

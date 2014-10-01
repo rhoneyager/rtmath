@@ -9,6 +9,7 @@
 
 #include "../rtmath/config.h"
 #include "../rtmath/splitSet.h"
+#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 
@@ -22,19 +23,123 @@
 #define SYS_RTC RTC
 #endif
 
+namespace {
+	std::set<std::string> mtypes, mnewtypes;
+	std::mutex mlock;
+
+	boost::shared_ptr<::rtmath::config::configsegment> _rtconfroot = nullptr;
+}
 
 namespace rtmath {
-	namespace config {
+	namespace registry {
+		template struct IO_class_registry_writer
+			<::rtmath::config::configsegment>;
 
-		std::shared_ptr<configsegment> configsegment::create(const std::string &name)
+		template struct IO_class_registry_reader
+			<::rtmath::config::configsegment>;
+
+		template class usesDLLregistry<
+			::rtmath::config::configsegment_IO_output_registry,
+			IO_class_registry_writer<::rtmath::config::configsegment> >;
+
+		template class usesDLLregistry<
+			::rtmath::config::configsegment_IO_input_registry,
+			IO_class_registry_reader<::rtmath::config::configsegment> >;
+	}
+
+	namespace io {
+		template <>
+		boost::shared_ptr<::rtmath::config::configsegment> customGenerator()
 		{
-			std::shared_ptr<configsegment> obj(new configsegment(name));
+			boost::shared_ptr<::rtmath::config::configsegment> res
+				(new ::rtmath::config::configsegment(""));
+			return res;
+		}
+	}
+	namespace config {
+		implementsConfigOld::implementsConfigOld() :
+			rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
+			configsegment_IO_input_registry, configsegment_OldStandard>(configsegment::writeOld, configsegment::readOld, known_formats())
+		{}
+
+		const std::set<std::string>& implementsConfigOld::known_formats()
+		{
+			// Moved to hidden file scope to avoid race condition
+			//static std::set<std::string> mtypes;
+			//static std::mutex mlock;
+			// Prevent threading clashes
+			{
+				std::lock_guard<std::mutex> lck(mlock);
+				if (!mtypes.size())
+				{
+					mtypes.insert(".rtmath");
+					mtypes.insert("rtmath.conf");
+				}
+				if (io::TextFiles::serialization_handle::compressionEnabled())
+				{
+					std::string sctypes;
+					std::set<std::string> ctypes;
+					serialization::known_compressions(sctypes, ".shp");
+					serialization::known_compressions(sctypes, ".dat");
+					serialization::known_compressions(sctypes, "shape.txt");
+					serialization::known_compressions(sctypes, "shape.dat");
+					serialization::known_compressions(sctypes, "target.out");
+					rtmath::config::splitSet(sctypes, ctypes);
+					for (const auto & t : ctypes)
+						mtypes.emplace(t);
+				}
+			}
+			return mtypes;
+		}
+
+		/*
+		implementsConfigBoost::implementsConfigBoost() :
+			rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
+			configsegment_IO_input_registry, configsegment_Boost>(configsegment::writeBoost, configsegment::readBoost, known_formats())
+		{}
+
+		const std::set<std::string>& implementsConfigBoost::known_formats()
+		{
+			// Moved to hidden file scope to avoid race condition
+			//static std::set<std::string> mtypes;
+			//static std::mutex mlock;
+			// Prevent threading clashes
+			{
+				std::lock_guard<std::mutex> lck(mlock);
+				if (!mnewtypes.size())
+				{
+					mnewtypes.insert(".xml");
+					mnewtypes.insert(".json");
+					mnewtypes.insert(".ini");
+				}
+				if (io::TextFiles::serialization_handle::compressionEnabled())
+				{
+					std::string sctypes;
+					std::set<std::string> ctypes;
+					serialization::known_compressions(sctypes, ".shp");
+					serialization::known_compressions(sctypes, ".dat");
+					serialization::known_compressions(sctypes, "shape.txt");
+					serialization::known_compressions(sctypes, "shape.dat");
+					serialization::known_compressions(sctypes, "target.out");
+					rtmath::config::splitSet(sctypes, ctypes);
+					for (const auto & t : ctypes)
+						mnewtypes.emplace(t);
+				}
+			}
+			return mtypes;
+		}
+		*/
+
+
+		boost::shared_ptr<configsegment> configsegment::generate(const std::string &name)
+		{
+			boost::shared_ptr<configsegment> obj(new configsegment(name));
 			return obj;
 		}
 
-		std::shared_ptr<configsegment> configsegment::create(const std::string &name, std::shared_ptr<configsegment> &parent)
+		boost::shared_ptr<configsegment> configsegment::generate(const std::string &name, boost::shared_ptr<configsegment> &parent)
 		{
-			std::shared_ptr<configsegment> obj(new configsegment(name));
+			boost::shared_ptr<configsegment> obj(new configsegment(name));
 			obj->_parent = parent;
 			parent->_children.insert(obj);
 			return obj;
@@ -46,7 +151,7 @@ namespace rtmath {
 			this->_segname = name;
 		}
 
-		configsegment::configsegment(const std::string &name, std::shared_ptr<configsegment> &parent)
+		configsegment::configsegment(const std::string &name, boost::shared_ptr<configsegment> &parent)
 		{
 			this->_segname = name;
 			_parent = parent;
@@ -58,23 +163,23 @@ namespace rtmath {
 			// Thanks to shared_ptr, children will delete naturally when nothing holds them!
 		}
 
-		std::shared_ptr<configsegment> configsegment::getPtr() const
+		boost::shared_ptr<configsegment> configsegment::getPtr() const
 		{
-			std::shared_ptr<const configsegment> a = shared_from_this();
-			return std::const_pointer_cast<configsegment>(a);
+			boost::shared_ptr<const configsegment> a = shared_from_this();
+			return boost::const_pointer_cast<configsegment>(a);
 		}
 
-		// Deprecated in shared_ptr conversion
-		std::shared_ptr<configsegment> configsegment::findSegment(const std::string &key) const
+		/// Deprecated in shared_ptr conversion
+		boost::shared_ptr<configsegment> configsegment::findSegment(const std::string &key) const
 		{
 			using namespace std;
-			std::shared_ptr<configsegment> cseg = getPtr();
+			boost::shared_ptr<configsegment> cseg = getPtr();
 
 			// If first part of key is '/', seek to root
 
 			if (key[0] == '/')
 			{
-				std::shared_ptr<configsegment> cpar = this->_parent.lock();
+				boost::shared_ptr<configsegment> cpar = this->_parent.lock();
 				while (cpar.use_count())
 				{
 					cseg = cpar;
@@ -95,9 +200,9 @@ namespace rtmath {
 			{
 				segname = dkey.substr(s_start, s_end - s_start);
 				if (segname.size() == 0) break;
-				std::shared_ptr<configsegment> newChild = cseg->getChild(segname);
-				//if (newChild == nullptr) newChild = std::shared_ptr<configsegment> (new configsegment(segname,cseg));
-				if (newChild == nullptr) newChild = create(segname, cseg);
+				boost::shared_ptr<configsegment> newChild = cseg->getChild(segname);
+				//if (newChild == nullptr) newChild = boost::shared_ptr<configsegment> (new configsegment(segname,cseg));
+				if (newChild == nullptr) newChild = generate(segname, cseg);
 
 				// Advance into the child
 				cseg = newChild;
@@ -118,7 +223,7 @@ namespace rtmath {
 			// Otherwise, it is relative only going downwards
 			if (key.find('/') != string::npos)
 			{
-				std::shared_ptr<configsegment> relseg = findSegment(key);
+				boost::shared_ptr<configsegment> relseg = findSegment(key);
 				if (!relseg) RTthrow rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
@@ -154,7 +259,7 @@ namespace rtmath {
 			// Otherwise, it is relative only going downwards
 			if (key.find('/') != string::npos)
 			{
-				std::shared_ptr<configsegment> relseg = findSegment(key);
+				boost::shared_ptr<configsegment> relseg = findSegment(key);
 				if (!relseg) RTthrow rtmath::debug::xBadInput(key.c_str());
 				// keystripped is the key without the path. If ends in /, an error will occur
 				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
@@ -187,7 +292,7 @@ namespace rtmath {
 			using namespace std;
 			if (key.find('/') != string::npos)
 			{
-				std::shared_ptr<configsegment> relseg = findSegment(key);
+				boost::shared_ptr<configsegment> relseg = findSegment(key);
 				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
 				relseg->setVal(keystripped, value);
 				return;
@@ -198,12 +303,12 @@ namespace rtmath {
 			_mapStr[key] = value;
 		}
 
-		std::shared_ptr<configsegment> configsegment::getChild(const std::string &name) const
+		boost::shared_ptr<configsegment> configsegment::getChild(const std::string &name) const
 		{
 			using namespace std;
 			if (name.find('/') != string::npos)
 			{
-				std::shared_ptr<configsegment> relseg = findSegment(name);
+				boost::shared_ptr<configsegment> relseg = findSegment(name);
 				return relseg;
 			}
 
@@ -215,10 +320,10 @@ namespace rtmath {
 			return nullptr;
 		}
 
-		std::shared_ptr<configsegment> configsegment::getParent() const
+		boost::shared_ptr<configsegment> configsegment::getParent() const
 		{
-			if (_parent.expired()) return nullptr;
-			return std::shared_ptr<configsegment>(_parent);
+			if (_parent.expired()) return boost::shared_ptr<configsegment>();
+			return boost::shared_ptr<configsegment>(_parent);
 		}
 
 		void configsegment::name(std::string &res) const
@@ -250,8 +355,9 @@ namespace rtmath {
 			cwd = _cwd;
 		}
 
-		std::shared_ptr<configsegment> configsegment::loadFile
-			(const char* filename, std::shared_ptr<configsegment> root)
+		/*
+		boost::shared_ptr<configsegment> configsegment::loadFile
+			(const char* filename, boost::shared_ptr<configsegment> root)
 		{
 			using namespace std;
 			using namespace boost::filesystem;
@@ -268,9 +374,35 @@ namespace rtmath {
 			return loadFile(indata, root, filename);
 			//return root;
 		}
+		*/
 
-		std::shared_ptr<configsegment> configsegment::loadFile
-			(std::istream &indata, std::shared_ptr<configsegment> root, const std::string &cwd)
+		void configsegment::writeOld(const boost::shared_ptr<const configsegment> ob, std::ostream & stream, std::shared_ptr<registry::IO_options>)
+		{
+			/// \todo allow for include statements and support symlinks. Will never implement, as this is the old file format.
+			using namespace std;
+			string name = ob->name();
+			stream << "<" << name << ">" << endl;
+			{
+				for (auto ut = ob->_symlinks.begin(); ut != ob->_symlinks.end(); ++ut)
+				{
+					if ((*ut).expired() == false)
+					{
+						stream << (*ut).lock();
+						//stream << (*ut);
+					}
+				}
+				for (auto ot = ob->_mapStr.begin(); ot != ob->_mapStr.end(); ++ot)
+					stream << " " << ot->first << " " << ot->second << endl;
+				for (auto it = ob->_children.begin(); it != ob->_children.end(); ++it)
+					stream << (*it);
+			}
+			stream << "</" << name << ">" << endl;
+		}
+
+		void configsegment::readOld
+			(boost::shared_ptr<configsegment> root,
+			std::istream &indata, std::shared_ptr<registry::IO_options> opts)
+			//const std::string &cwd) --- cwd is now a parameter passed in opts
 		{
 			// This will load a file and tack it into the root (if specified)
 			// If this is a new config tree, pass NULL as the root
@@ -280,12 +412,19 @@ namespace rtmath {
 			using namespace std;
 			using namespace boost::filesystem;
 
+			std::string cwd = opts->getVal<std::string>("cwd", "./");
+			//boost::shared_ptr<configsegment> root = getRtconfRoot();
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
-				//root = std::shared_ptr<configsegment>(new configsegment("ROOT"));
-				root = create("ROOT");
+			{
+				//root = getRtconfRoot();
+				if (!root)
+					root = boost::shared_ptr<configsegment>(new configsegment("ROOT"));
+				//setRtconfRoot(root);
+			}
 
-			std::shared_ptr<configsegment> cseg = root; // The current container in the tree
+			//auto cseg = root;
+			boost::shared_ptr<configsegment> cseg = root; // The current container in the tree
 			if (cseg->_cwd.size() == 0) cseg->_cwd = cwd;
 
 			// Read in each line, one at a time.
@@ -319,8 +458,8 @@ namespace rtmath {
 						line = line.substr(kstart, kend - kstart);
 
 						// Now, create the new container and switch to it
-						//std::shared_ptr<configsegment> child (new configsegment(line, cseg));
-						std::shared_ptr<configsegment> child = create(line, cseg);
+						//boost::shared_ptr<configsegment> child (new configsegment(line, cseg));
+						boost::shared_ptr<configsegment> child = generate(line, cseg);
 						cseg = child;
 					}
 				}
@@ -335,8 +474,9 @@ namespace rtmath {
 					value = line.substr(vstart, vend - vstart);
 
 					// Check for special keywords, like Include!
-					if (key == "Include")
+					//if (key == "Include")
 					{
+						/*
 						// Use Boost to get the full path of the file (use appropriate dir)
 						// rootpath now relative to current file being loaded, NOT tree root (cseg->_cwd) or ROOT
 						boost::filesystem::path rootpath(cwd);
@@ -373,18 +513,18 @@ namespace rtmath {
 
 					}
 					else {
+						*/
 						// Set the key-val combination
 						cseg->setVal(key, value);
 					}
 				}
 
 			}
-			return root;
 		}
 
-		void configsegment::move(std::shared_ptr<configsegment> &newparent)
+		void configsegment::move(boost::shared_ptr<configsegment> &newparent)
 		{
-			std::shared_ptr<configsegment> me = getPtr();
+			boost::shared_ptr<configsegment> me = getPtr();
 			if (_parent.expired() == false)
 			{
 				// Parent exists. Free child reference.
@@ -483,30 +623,38 @@ namespace rtmath {
 			return;
 		}
 
-		std::shared_ptr<configsegment> SHARED_INTERNAL _rtconfroot = nullptr;
-
-		std::shared_ptr<configsegment> getRtconfRoot()
+		boost::shared_ptr<configsegment> getRtconfRoot()
 		{
 			return _rtconfroot;
 		}
 
-		void setRtconfRoot(std::shared_ptr<configsegment> &root)
+		void setRtconfRoot(boost::shared_ptr<configsegment> &root)
 		{
 			_rtconfroot = root;
 		}
 
-		std::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename)
+		boost::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename)
 		{
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			std::string fn = filename;
 			if (fn == "") getConfigDefaultFile(fn);
 			if (fn == "") RTthrow debug::xMissingFile("Cannot find the rtmath.conf file");
-			std::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
-			if (cnf != nullptr) _rtconfroot = cnf;
+			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
+			auto opts = rtmath::registry::IO_options::generate(rtmath::registry::IOhandler::IOtype::READONLY);
+			opts->filename(filename);
+
+			std::vector< boost::shared_ptr<configsegment> > rootcands;
+			configsegment::readVector(nullptr, opts, rootcands, nullptr);
+			boost::shared_ptr<configsegment> cnf;
+			for (const auto &r : rootcands)
+			{
+				if (r->name() == "ROOT") cnf = r;
+			}
+			if (cnf) _rtconfroot = cnf;
 			return cnf;
 		}
 
-
+		/*
 		std::ostream& operator<< (std::ostream& stream, const ::rtmath::config::configsegment &ob)
 		{
 			/// \todo allow for include statements
@@ -530,14 +678,7 @@ namespace rtmath {
 			stream << "</" << name << ">" << endl;
 			return stream;
 		}
-
-
-		std::istream& operator>> (std::istream &stream, std::shared_ptr<::rtmath::config::configsegment> &ob)
-		{
-			ob = rtmath::config::configsegment::loadFile(stream, nullptr);
-			return stream;
-		}
-
+		*/
 
 	}
 }

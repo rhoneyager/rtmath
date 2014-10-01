@@ -79,12 +79,12 @@ namespace rtmath {
 			shared_ptr<IOhandler>
 				export_tsv_ar_rot_data
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-				const rtmath::ddscat::stats::shapeFileStats *s);
+				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats > s);
 
 			shared_ptr<IOhandler>
 				export_tsv_summary_data
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-				const rtmath::ddscat::stats::shapeFileStats *s);
+				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats > s);
 		}
 	}
 	namespace registry {
@@ -94,7 +94,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			write_file_type_multi<rtmath::ddscat::stats::shapeFileStats>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			const rtmath::ddscat::stats::shapeFileStats *s)
+			const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats > s)
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "ar_rot_data") return ::rtmath::plugins::tsv::export_tsv_ar_rot_data(sh, opts, s);

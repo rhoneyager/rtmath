@@ -32,7 +32,7 @@ namespace rtmath {
 		namespace hdf5 {
 
 			void write_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
-				const rtmath::ddscat::ddPar *r)
+				const boost::shared_ptr<const rtmath::ddscat::ddPar > r)
 			{
 				using std::shared_ptr;
 				using std::string;

@@ -86,7 +86,7 @@ namespace rtmath {
 			shared_ptr<IOhandler>
 				export_tsv_image_basicstats
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-				const rtmath::images::image *s)
+				const boost::shared_ptr<const rtmath::images::image > s)
 			{
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();
@@ -131,7 +131,7 @@ namespace rtmath {
 		std::shared_ptr<IOhandler>
 			write_file_type_multi<rtmath::images::image>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			const rtmath::images::image *s)
+			const boost::shared_ptr<const rtmath::images::image > s)
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "image_basicstats") return ::rtmath::plugins::tsv::export_tsv_image_basicstats(sh, opts, s);

@@ -38,17 +38,17 @@ namespace rtmath {
 		namespace hdf5 {
 
 			void write_hdf5_ddPar(std::shared_ptr<H5::Group> base, 
-				const rtmath::ddscat::ddPar *r);
+				const boost::shared_ptr<const rtmath::ddscat::ddPar > r);
 			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar, 
 				boost::shared_ptr<rtmath::ddscat::ddPar> &r);
 
 			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts,
-				rtmath::ddscat::ddOutput *r);
+				boost::shared_ptr<rtmath::ddscat::ddOutput > r);
 
 			/// \param base is the base (./Runs) to write the subgroups to.
 			std::shared_ptr<H5::Group> write_hdf5_ddOutput(std::shared_ptr<H5::Group> base, 
 				std::shared_ptr<rtmath::registry::IO_options> opts, 
-				const rtmath::ddscat::ddOutput *s)
+				const boost::shared_ptr<const rtmath::ddscat::ddOutput > s)
 			{
 				using std::string;
 				using std::shared_ptr;
@@ -259,7 +259,7 @@ namespace rtmath {
 				// ddscat.par file
 				write_hdf5_ddPar(
 					shared_ptr<Group>(new Group(gRun->createGroup("par"))), 
-					s->parfile.get());
+					s->parfile);
 
 				return gRun;
 			}
@@ -277,7 +277,7 @@ namespace rtmath {
 		shared_ptr<IOhandler> 
 			write_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts, 
-			const rtmath::ddscat::ddOutput *s)
+			const boost::shared_ptr<const rtmath::ddscat::ddOutput > s)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();
@@ -313,7 +313,7 @@ namespace rtmath {
 			{
 				s->loadShape(false);
 				write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
-					(h, opts, s->shape.get());
+					(h, opts, s->shape);
 			}
 			//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
 			//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
@@ -325,7 +325,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::ddOutput *s,
+			boost::shared_ptr<rtmath::ddscat::ddOutput> s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddOutput> > )
 		{
 			std::string filename = opts->filename();
@@ -401,7 +401,7 @@ namespace rtmath {
 
 						boost::shared_ptr<rtmath::ddscat::ddOutput>
 							run(new rtmath::ddscat::ddOutput);
-						read_hdf5_ddOutput(grpRun, opts, run.get());
+						read_hdf5_ddOutput(grpRun, opts, run);
 						if (filter) {
 							if (filter->filter(run.get()))
 								s.push_back(run);

@@ -37,7 +37,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			write_file_type_multi<rtmath::Voronoi::VoronoiDiagram>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts, 
-			const rtmath::Voronoi::VoronoiDiagram *v)
+			const boost::shared_ptr<const rtmath::Voronoi::VoronoiDiagram > v)
 		{
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();

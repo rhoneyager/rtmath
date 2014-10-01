@@ -35,7 +35,7 @@ namespace rtmath {
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> read_hdf5_voro(std::shared_ptr<H5::Group> base,
 				std::shared_ptr<rtmath::registry::IO_options> opts,
-				rtmath::Voronoi::VoronoiDiagram *s)
+				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram > s)
 			{
 				using std::shared_ptr;
 				using std::string;
@@ -156,7 +156,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::Voronoi::VoronoiDiagram>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::Voronoi::VoronoiDiagram *s,
+			boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram > s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> >)
 		{
 			std::string filename = opts->filename();
@@ -233,7 +233,7 @@ namespace rtmath {
 
 						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram>
 							run(new rtmath::Voronoi::VoronoiDiagram);
-						read_hdf5_voro(grpRun, opts, run.get());
+						read_hdf5_voro(grpRun, opts, run);
 						if (filter) {
 							if (filter->filter(run.get()))
 								s.push_back(run);

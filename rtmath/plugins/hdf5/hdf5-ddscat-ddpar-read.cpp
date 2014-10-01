@@ -33,7 +33,7 @@ namespace rtmath {
 
 			template<class T, class Container>
 			void readAttrSet(std::shared_ptr<H5::Group> grpPar, const char* name,
-				rtmath::ddscat::ddPar* r, void (rtmath::ddscat::ddPar::* f) (const T&))
+				boost::shared_ptr<rtmath::ddscat::ddPar> r, void (rtmath::ddscat::ddPar::* f) (const T&))
 			{
 				T val;
 				readAttr<T, Container>(grpPar, name, val);
@@ -42,7 +42,7 @@ namespace rtmath {
 
 			template<class T, class Container>
 			void readAttrSet(std::shared_ptr<H5::Group> grpPar, const char* name,
-				rtmath::ddscat::ddPar* r, void (rtmath::ddscat::ddPar::* f) (T))
+				boost::shared_ptr<rtmath::ddscat::ddPar> r, void (rtmath::ddscat::ddPar::* f) (T))
 			{
 				T val;
 				readAttr<T, Container>(grpPar, name, val);
@@ -50,7 +50,7 @@ namespace rtmath {
 			}
 
 			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar, 
-				rtmath::ddscat::ddPar *r)
+				boost::shared_ptr<rtmath::ddscat::ddPar > r)
 			{
 				using std::shared_ptr;
 				using std::string;
@@ -246,7 +246,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::ddPar>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::ddPar *s,
+			boost::shared_ptr<rtmath::ddscat::ddPar > s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
 			std::string filename = opts->filename();

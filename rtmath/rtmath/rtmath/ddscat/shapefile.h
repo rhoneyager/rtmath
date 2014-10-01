@@ -216,11 +216,11 @@ namespace rtmath {
 				void readContents(const char *in, size_t headerEnd);
 				/// Read in ONLY a shape header (for speed with dipole matching) - string, NOT a filename
 				void readHeaderOnly(const std::string &str);
-				static void readDDSCAT(shapefile*, std::istream&, std::shared_ptr<registry::IO_options>);
+				static void readDDSCAT(boost::shared_ptr<shapefile>, std::istream&, std::shared_ptr<registry::IO_options>);
 				/// Write shape to the hash directory (convenience function)
 				void writeToHash() const;
 				/// Write a standard DDSCAT shapefile to a stream (no compression)
-				static void writeDDSCAT(const shapefile*, std::ostream &, std::shared_ptr<registry::IO_options>);
+				static void writeDDSCAT(const boost::shared_ptr<const shapefile>, std::ostream &, std::shared_ptr<registry::IO_options>);
 				/// Function type definition for a function that determines a decimated cell refractive index.
 				typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
 

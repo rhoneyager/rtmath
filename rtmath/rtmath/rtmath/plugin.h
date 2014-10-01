@@ -33,13 +33,13 @@ namespace rtmath
 		std::shared_ptr<rtmath::registry::IOhandler> write_file_type_multi
 			(std::shared_ptr<rtmath::registry::IOhandler> sh, 
 			std::shared_ptr<rtmath::registry::IO_options> opts,
-			const T *obj);
+			const boost::shared_ptr<const T > obj);
 
 		template <class T>
 		std::shared_ptr<rtmath::registry::IOhandler> read_file_type_multi
 			(std::shared_ptr<rtmath::registry::IOhandler> sh, 
 			std::shared_ptr<rtmath::registry::IO_options> opts,
-			T *obj, 
+			boost::shared_ptr<T > obj,
 			std::shared_ptr<const rtmath::registry::collectionTyped<T> > filter);
 
 		template <class T>

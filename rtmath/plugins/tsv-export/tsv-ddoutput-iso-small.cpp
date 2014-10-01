@@ -95,7 +95,7 @@ namespace rtmath {
 			shared_ptr<::rtmath::registry::IOhandler>
 				export_tsv_ddori_iso_small_data
 				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
-				const ::rtmath::ddscat::ddOutput *ddOut)
+				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > ddOut)
 			{
 				std::string exporttype = opts->exportType();
 				if (exporttype != "isotropic_data_small") RTthrow debug::xUnimplementedFunction();
@@ -114,7 +114,7 @@ namespace rtmath {
 				// Initial file creation handles writing the initial header.
 				// So, just write the data.
 
-				ddOutput* ddOutRW = const_cast<ddOutput*>(ddOut); 
+				boost::shared_ptr<const ddOutput > ddOutRW = (ddOut);
 				ddOutRW->loadShape(false);
 
 				rotations rots(*(ddOut->parfile));
@@ -124,7 +124,7 @@ namespace rtmath {
 
 				boost::shared_ptr<ddOutput> ddOutWithAvg;
 				Eigen::MatrixXf outwts;
-				averager.doAvgAll(ddOut, ddOutWithAvg, outwts);
+				averager.doAvgAll(ddOut.get(), ddOutWithAvg, outwts);
 
 
 				boost::shared_ptr<const ddOriData> fori = boost::shared_ptr<const ddOriData>(new ddOriData(*ddOutWithAvg));

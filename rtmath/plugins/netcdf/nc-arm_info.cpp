@@ -27,7 +27,7 @@ namespace rtmath
 		shared_ptr<IOhandler>
 			read_file_type_multi<::rtmath::data::arm::arm_info>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			::rtmath::data::arm::arm_info *s,
+			boost::shared_ptr<::rtmath::data::arm::arm_info > s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
 			std::string filename = opts->filename();

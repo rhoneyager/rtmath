@@ -82,7 +82,7 @@ namespace rtmath {
 		* \todo Add io functions (saving / loading hash, better serialization, silo output)
 		**/
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
-			public boost::enable_shared_from_this<VoronoiDiagram>,
+			virtual public boost::enable_shared_from_this<VoronoiDiagram>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::Voronoi::Voronoi_IO_input_registry,
 				::rtmath::registry::IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >,

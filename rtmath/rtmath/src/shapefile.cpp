@@ -377,10 +377,10 @@ namespace rtmath {
 				resize(numPoints);
 			}
 
-			void shapefile::writeDDSCAT(const shapefile *s, std::ostream &out, std::shared_ptr<registry::IO_options>)
+			void shapefile::writeDDSCAT(const boost::shared_ptr<const shapefile> s, std::ostream &out, std::shared_ptr<registry::IO_options>)
 			{ s->print(out); }
 
-			void shapefile::readDDSCAT(shapefile *s, std::istream &in, std::shared_ptr<registry::IO_options> opts)
+			void shapefile::readDDSCAT(boost::shared_ptr<shapefile> s, std::istream &in, std::shared_ptr<registry::IO_options> opts)
 			{
 				std::ostringstream so;
 				boost::iostreams::copy(in, so);

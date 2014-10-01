@@ -30,7 +30,7 @@ namespace rtmath {
 		namespace hdf5 {
 
 			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
-				rtmath::ddscat::shapefile::shapefile *shp)
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > shp)
 			{
 				using std::shared_ptr;
 				using namespace H5;
@@ -193,7 +193,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			read_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			rtmath::ddscat::shapefile::shapefile *s,
+			boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::shapefile::shapefile> > filter)
 		{
 			std::string filename = opts->filename();
@@ -259,7 +259,7 @@ namespace rtmath {
 					{
 						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile>
 							shp = rtmath::ddscat::shapefile::shapefile::generate();
-						read_hdf5_shaperawdata(grpShape, shp.get());
+						read_hdf5_shaperawdata(grpShape, shp);
 						if (filter) {
 							if (filter->filter(shp.get()))
 								s.push_back(shp);

@@ -98,7 +98,7 @@ namespace rtmath {
 			shared_ptr<IOhandler>
 				export_tsv_ar_rot_data
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-				const rtmath::ddscat::stats::shapeFileStats *s)
+				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats > s)
 			{
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();

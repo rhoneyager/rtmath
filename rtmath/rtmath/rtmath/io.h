@@ -9,6 +9,8 @@
 #include <mutex>
 //#include <boost/bind.hpp>
 //#include <boost/bind/protect.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #if USE_RYAN_SERIALIZATION
 #include <Ryan_Serialization/serialization.h>
 #endif
@@ -85,7 +87,7 @@ namespace rtmath
 
 #if USE_RYAN_SERIALIZATION
 			template <class obj_class>
-			void writeSerialization(const obj_class* obj, 
+			void writeSerialization(const boost::shared_ptr<const obj_class> obj, 
 				std::ostream &out, 
 				std::shared_ptr<rtmath::registry::IO_options> opts,
 				const char* sname)
@@ -100,7 +102,7 @@ namespace rtmath
 			}
 
 			template <class obj_class>
-			void readSerialization(obj_class *obj, 
+			void readSerialization(boost::shared_ptr<obj_class> obj, 
 				std::istream &in, 
 				std::shared_ptr<const rtmath::registry::IO_options> opts,
 				const char* sname)
@@ -108,9 +110,9 @@ namespace rtmath
 				using namespace Ryan_Serialization;
 				serialization_method sm = select_format(opts->filename());
 				if (sm == serialization_method::XML)
-					::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*obj, in, sname);
+					::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*(obj.get()), in, sname);
 				else if (sm == serialization_method::TEXT)
-					::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*obj, in, sname);
+					::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*(obj.get()), in, sname);
 				else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
 
 			}
@@ -121,8 +123,8 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::IOhandler> writeFunc(
 				std::shared_ptr<rtmath::registry::IOhandler> sh,
 				std::shared_ptr<rtmath::registry::IO_options> opts,
-				const obj_class *obj,
-				const std::function<void(const obj_class*, std::ostream&, 
+				const boost::shared_ptr<const obj_class> obj,
+				const std::function<void(const boost::shared_ptr<const obj_class>, std::ostream&,
 				std::shared_ptr<rtmath::registry::IO_options>)> &writer)
 			{
 				std::string exporttype = opts->exportType();
@@ -151,8 +153,8 @@ namespace rtmath
 			std::shared_ptr<rtmath::registry::IOhandler> readFunc(
 				std::shared_ptr<rtmath::registry::IOhandler> sh,
 				std::shared_ptr<rtmath::registry::IO_options> opts,
-				obj_class *obj,
-				const std::function<void(obj_class*, std::istream&,
+				boost::shared_ptr<obj_class> obj,
+				const std::function<void(boost::shared_ptr<obj_class>, std::istream&,
 				std::shared_ptr<rtmath::registry::IO_options>)> &reader)
 			{
 				std::string exporttype = opts->exportType();
@@ -189,6 +191,8 @@ namespace rtmath
 		 * core library code, such as the ddscat readers in ddPar, ddOutputSingle and shapefile.
 		 * It is also leveraged in the serialization code.
 		 * Any code that reads text files serially and would like optional compression can take advantage of this.
+		 *
+		 * \todo Split into input and output objects.
 		 **/
 		template <class obj_class,
 		class output_registry_class,
@@ -277,9 +281,9 @@ namespace rtmath
 		public:
 			virtual ~implementsIObasic() {}
 		private:
-			typedef const std::function<void(const obj_class*, std::ostream&, std::shared_ptr<rtmath::registry::IO_options>)> outFunc;
+			typedef const std::function<void(const boost::shared_ptr<const obj_class>, std::ostream&, std::shared_ptr<rtmath::registry::IO_options>)> outFunc;
 			outFunc &outF;
-			typedef const std::function<void(obj_class*, std::istream&, std::shared_ptr<rtmath::registry::IO_options>)> inFunc;
+			typedef const std::function<void(boost::shared_ptr<obj_class>, std::istream&, std::shared_ptr<rtmath::registry::IO_options>)> inFunc;
 			inFunc &inF;
 		protected:
 			implementsIObasic(outFunc &outF, inFunc &inF, const std::set<std::string> &exts) : 
@@ -299,7 +303,7 @@ namespace rtmath
 				auto writerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
-					const obj_class* obj, outFunc outF) -> std::shared_ptr<rtmath::registry::IOhandler>
+					const boost::shared_ptr<const obj_class> obj, outFunc outF) -> std::shared_ptr<rtmath::registry::IOhandler>
 				{
 					using namespace rtmath::registry;
 					using namespace rtmath::io::TextFiles;
@@ -338,7 +342,7 @@ namespace rtmath
 				auto readerBinder = [&](
 					std::shared_ptr<rtmath::registry::IOhandler> sh,
 					std::shared_ptr<rtmath::registry::IO_options> opts,
-					obj_class *obj, inFunc inF) -> std::shared_ptr<rtmath::registry::IOhandler>
+					boost::shared_ptr<obj_class> obj, inFunc inF) -> std::shared_ptr<rtmath::registry::IOhandler>
 				{
 					using namespace rtmath::registry;
 					using namespace rtmath::io::TextFiles;
@@ -517,7 +521,8 @@ namespace rtmath
 
 		template <class obj_class,
 		class output_registry_class>
-		class implementsStandardWriter
+		class implementsStandardWriter :
+			virtual public boost::enable_shared_from_this<obj_class>
 		{
 		protected:
 			/// \brief Variable controls if compression is used for certain recognized 
@@ -586,7 +591,7 @@ namespace rtmath
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, opts, dynamic_cast<const obj_class*>(this));
+					return dllsaver(handle, opts, this->shared_from_this()); //dynamic_cast<const obj_class*>(this));
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 				}
 				else {
@@ -620,7 +625,8 @@ namespace rtmath
 		
 		template <class obj_class,
 		class input_registry_class>
-		class implementsStandardSingleReader
+		class implementsStandardSingleReader :
+			virtual public boost::enable_shared_from_this<obj_class>
 		{
 		protected:
 			// Controls whether boost::serialization can write this file.
@@ -630,7 +636,7 @@ namespace rtmath
 
 			/// This actually handles the template writing i/o. It can report the 
 			/// success of the write to a calling parent class.
-			bool baseRead(const std::string &filename, const std::string &outtype,
+			bool baseRead(const std::string &filename, const std::string &intype,
 				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr)
 			{
 				auto opts = rtmath::registry::IO_options::generate();
@@ -638,7 +644,7 @@ namespace rtmath
 				opts->setVal("key", filename);
 				registry::IOhandler::IOtype accessType = registry::IOhandler::IOtype::READONLY;
 				opts->iotype(accessType);
-				opts->filetype(outtype);
+				opts->filetype(intype);
 				auto res = readMulti(nullptr, opts, filter);
 				//auto res = readMulti(filename.c_str(), nullptr, filename.c_str(),
 				//	outtype.c_str(), registry::IOhandler::IOtype::TRUNCATE, opts);
@@ -649,16 +655,16 @@ namespace rtmath
 			virtual ~implementsStandardSingleReader() {}
 
 			/// Duplicate to avoid clashes and having to specify a full template name...
-			virtual void readFile(const std::string &filename, const std::string &outtype = "",
+			virtual void readFile(const std::string &filename, const std::string &intype = "",
 				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr)
 			{
-				baseRead(filename, outtype, filter);
+				baseRead(filename, intype, filter);
 			}
 
-			virtual void read(const std::string &filename, const std::string &outtype = "",
+			virtual void read(const std::string &filename, const std::string &intype = "",
 				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr)
 			{
-				baseRead(filename, outtype, filter);
+				baseRead(filename, intype, filter);
 			}
 
 			std::shared_ptr<registry::IOhandler> readMulti(
@@ -687,7 +693,7 @@ namespace rtmath
 				{
 					// Most of these types aren't compressible or implement their
 					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, opts, dynamic_cast<obj_class*>(this), filter);
+					return dllsaver(handle, opts, this->shared_from_this(), filter); //dynamic_cast<obj_class*>(this), filter);
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 				}
 				else {
@@ -779,7 +785,7 @@ namespace rtmath
 						//boost::shared_ptr<obj_class> obj = obj_class::generate();
 						//boost::shared_ptr<obj_class> obj(new obj_class);
 						boost::shared_ptr<obj_class> obj = customGenerator<obj_class>();
-						auto res = dllm(handle, opts, obj.get(), filter);
+						auto res = dllm(handle, opts, obj, filter);
 						v.push_back(obj);
 						return res;
 					}

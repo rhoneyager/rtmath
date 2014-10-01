@@ -90,7 +90,7 @@ namespace rtmath {
 			return mtypes;
 		}
 
-		void ddOriData::readDDSCAT(ddOriData* obj, std::istream&in, std::shared_ptr<registry::IO_options> opts)
+		void ddOriData::readDDSCAT(boost::shared_ptr<ddOriData> obj, std::istream&in, std::shared_ptr<registry::IO_options> opts)
 		{
 			std::string filename = opts->filename();
 			std::string filetype = opts->filetype();
@@ -115,7 +115,7 @@ namespace rtmath {
 			}
 		}
 
-		void ddOriData::writeDDSCAT(const ddOriData* obj, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
+		void ddOriData::writeDDSCAT(const boost::shared_ptr<const ddOriData> obj, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
 		{
 			bool isFMLforced = false, writeFML = true;
 			ddOutput::isForcingFMLwrite(isFMLforced, writeFML);

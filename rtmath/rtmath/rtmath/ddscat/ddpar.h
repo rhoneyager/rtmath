@@ -522,6 +522,7 @@ namespace rtmath {
 		* upgrading ddscat versions. It also provides writing functionality for the files.
 		**/
 		class DLEXPORT_rtmath_ddscat_base ddPar :
+			virtual public boost::enable_shared_from_this<ddPar>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 				::rtmath::ddscat::ddPar_IO_input_registry,
 				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddPar> >,
@@ -538,7 +539,7 @@ namespace rtmath {
 		{
 		public:
 			/// Load the default ddscat.par file, used in setting default values
-			static ddPar* defaultInstance();
+			static boost::shared_ptr<const ddPar> defaultInstance();
 
 			/**
 			 * \brief Adds ddPar options to a program
@@ -568,15 +569,15 @@ namespace rtmath {
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream&) const;
 			/// Write a standard DDSCAT par file to the output stream
-			static void writeDDSCAT(const ddPar*, std::ostream &, std::shared_ptr<registry::IO_options>);
+			static void writeDDSCAT(const boost::shared_ptr<const ddPar>, std::ostream &, std::shared_ptr<registry::IO_options>);
 			/// Read a standard DDSCAT par file from an input stream
-			static void readDDSCAT(ddPar*, std::istream &, bool overlay = false);
+			static void readDDSCAT(boost::shared_ptr<ddPar>, std::istream &, bool overlay = false);
 			/// \note Default parameter case is split because of function binding.
-			static void readDDSCATdef(ddPar*, std::istream&, std::shared_ptr<registry::IO_options>);
+			static void readDDSCATdef(boost::shared_ptr<ddPar>, std::istream&, std::shared_ptr<registry::IO_options>);
 
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;
-			ddPar* clone() const;
+			boost::shared_ptr<ddPar> clone() const;
 			inline size_t version() const { return _version; }
 			inline void version(size_t nv) { _version = nv; }
 

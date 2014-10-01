@@ -38,7 +38,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			const rtmath::ddscat::shapefile::shapefile *s)
+			const boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile> s)
 		{
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();

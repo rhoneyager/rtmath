@@ -71,7 +71,7 @@ namespace rtmath {
 		* This means one radius, wavelength, and orientation.
 		**/
 		class DLEXPORT_rtmath_ddscat ddOriData :
-			public boost::enable_shared_from_this<ddOriData>,
+			virtual public boost::enable_shared_from_this<ddOriData>,
 			virtual public ::rtmath::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOriData_IO_output_registry,
 			::rtmath::registry::IO_class_registry_writer<ddOriData> >,
@@ -95,8 +95,8 @@ namespace rtmath {
 			virtual ~ddOriData();
 
 			// Binders for the standard ddscat formats
-			static void readDDSCAT(ddOriData*, std::istream&, std::shared_ptr<registry::IO_options>);
-			static void writeDDSCAT(const ddOriData*, std::ostream &, std::shared_ptr<registry::IO_options>);
+			static void readDDSCAT(boost::shared_ptr<ddOriData>, std::istream&, std::shared_ptr<registry::IO_options>);
+			static void writeDDSCAT(const boost::shared_ptr<const ddOriData>, std::ostream &, std::shared_ptr<registry::IO_options>);
 
 			double guessTemp(size_t dielIndex = 0) const;
 

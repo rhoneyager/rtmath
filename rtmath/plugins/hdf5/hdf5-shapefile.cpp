@@ -30,7 +30,7 @@ namespace rtmath {
 		namespace hdf5 {
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
-				const rtmath::ddscat::shapefile::shapefile *shp)
+				const boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile > shp)
 			{
 				using std::shared_ptr;
 				using namespace H5;
@@ -220,7 +220,7 @@ namespace rtmath {
 		shared_ptr<IOhandler> 
 			write_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			const rtmath::ddscat::shapefile::shapefile *shp)
+			const boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile > shp)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->iotype();

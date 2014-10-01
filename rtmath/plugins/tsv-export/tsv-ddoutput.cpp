@@ -31,22 +31,22 @@ namespace rtmath {
 			shared_ptr<::rtmath::registry::IOhandler>
 				export_tsv_ddori_iso_data
 				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
-				const ::rtmath::ddscat::ddOutput *s);
+				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > s);
 
 			shared_ptr<::rtmath::registry::IOhandler>
 				export_tsv_ddori_iso_small_data
 				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
-				const ::rtmath::ddscat::ddOutput *s);
+				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > s);
 
 			shared_ptr<::rtmath::registry::IOhandler>
 				export_tsv_ddori_ori_data
 				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
-				const ::rtmath::ddscat::ddOutput *s);
+				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > s);
 
 			shared_ptr<::rtmath::registry::IOhandler>
 				export_tsv_ddori_stats
 				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
-				const ::rtmath::ddscat::ddOutput *s);
+				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput >s);
 		}
 	}
 	namespace registry {
@@ -56,7 +56,7 @@ namespace rtmath {
 		shared_ptr<IOhandler>
 			write_file_type_multi<::rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			const ::rtmath::ddscat::ddOutput *s)
+			const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > s)
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "isotropic_data") return ::rtmath::plugins::tsv::export_tsv_ddori_iso_data(sh, opts, s);

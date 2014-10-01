@@ -94,7 +94,7 @@ namespace {
 
 		try {
 			// First try to load using rtmath.conf location
-			std::shared_ptr<rtmath::config::configsegment> cRoot = config::loadRtconfRoot();
+			auto cRoot = config::loadRtconfRoot();
 			string sBasePar, scwd;
 			cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
 			cRoot->getCWD(scwd);
@@ -190,8 +190,8 @@ namespace rtmath {
 		{
 			std::string sThis, sRhs;
 			std::ostringstream oThis, oRhs;
-			writeDDSCAT(this, oThis, nullptr);
-			writeDDSCAT(&rhs, oRhs, nullptr);
+			writeDDSCAT(this->shared_from_this(), oThis, nullptr);
+			writeDDSCAT(rhs.shared_from_this(), oRhs, nullptr);
 			sThis = oThis.str();
 			sRhs = oRhs.str();
 			return (sThis == sRhs);
@@ -208,7 +208,7 @@ namespace rtmath {
 			{
 				_version = rhs._version;
 				std::ostringstream out;
-				writeDDSCAT(&rhs, out, nullptr);
+				writeDDSCAT(rhs.shared_from_this(), out, nullptr);
 				std::string data = out.str();
 				std::istringstream in(data);
 				read(in);
@@ -221,20 +221,20 @@ namespace rtmath {
 			// Expensive copy constructor. Implements cloning to avoid screwups.
 			_version = src._version;
 			std::ostringstream out;
-			writeDDSCAT(&src, out, nullptr);
+			writeDDSCAT(src.shared_from_this(), out, nullptr);
 			std::string data = out.str();
 			std::istringstream in(data);
 			read(in);
 		}
 
-		ddPar* ddPar::clone() const
+		boost::shared_ptr<ddPar> ddPar::clone() const
 		{
-			ddPar *lhs = new ddPar;
+			boost::shared_ptr<ddPar> lhs(new ddPar);
 
 			lhs->_version = _version;
 			
 			std::ostringstream out;
-			writeDDSCAT(this, out, nullptr);
+			writeDDSCAT(this->shared_from_this(), out, nullptr);
 			std::string data = out.str();
 			std::istringstream in(data);
 
@@ -327,7 +327,7 @@ namespace rtmath {
 		}
 		*/
 
-		void ddPar::writeDDSCAT(const ddPar *p, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
+		void ddPar::writeDDSCAT(const boost::shared_ptr<const ddPar> p, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
 		{
 			// Writing is much easier than reading!
 			using namespace std;
@@ -386,19 +386,19 @@ namespace rtmath {
 #endif
 		}
 
-		void ddPar::readDDSCAT(ddPar *src, std::istream &in, bool overlay)
+		void ddPar::readDDSCAT(boost::shared_ptr<ddPar> src, std::istream &in, bool overlay)
 		{
 			src->read(in, overlay);
 		}
 
-		void ddPar::readDDSCATdef(ddPar *src, std::istream &in, std::shared_ptr<registry::IO_options>)
+		void ddPar::readDDSCATdef(boost::shared_ptr<ddPar> src, std::istream &in, std::shared_ptr<registry::IO_options>)
 		{
 			readDDSCAT(src, in, false);
 		}
 
 		void ddPar::write(std::ostream& out) const
 		{
-			writeDDSCAT(this, out, nullptr);
+			writeDDSCAT(this->shared_from_this(), out, nullptr);
 		}
 
 		void ddPar::read(std::istream &stream, bool overlay)
@@ -534,24 +534,24 @@ namespace rtmath {
 			}
 		}
 
-		ddPar* ddPar::defaultInstance()
+		boost::shared_ptr<const ddPar> ddPar::defaultInstance()
 		{
 			using namespace std;
 			using namespace boost::filesystem;
-			static ddPar s_inst;
+			static boost::shared_ptr<ddPar> s_inst(new ddPar);
 			static bool loaded = false;
 			if (!loaded)
 			{
 				initPaths();
 				if (pDefaultPar.string().size() && boost::filesystem::exists(path(pDefaultPar)))
 				{
-					s_inst = ddPar(pDefaultPar.string(), false);
+					s_inst = boost::shared_ptr<ddPar>(new ddPar(pDefaultPar.string(), false));
 				} else {
 					// Attempt to load the internal instance
 					try {
 						std::istringstream in(ddparDefaultInternal);
 						//s_inst = new ddPar;
-						readDDSCAT(&s_inst, in, false);
+						readDDSCAT(s_inst, in, false);
 						//Ryan_Serialization::readString(s_inst, ddparDefaultInternal, "rtmath::ddscat::ddPar");
 
 					} catch (std::exception&)
@@ -569,7 +569,7 @@ namespace rtmath {
 				//rtmath::debug::instances::registerInstance( "ddPar::defaultInstance", reinterpret_cast<void*>(s_inst));
 				loaded = true;
 			}
-			return &s_inst;
+			return s_inst;
 		}
 
 		void ddPar::add_options(
