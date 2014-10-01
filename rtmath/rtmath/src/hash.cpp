@@ -42,17 +42,33 @@ namespace {
 		// The highest-priority writable store is used for writing, and the first store 
 		// having a given key is used when reading.
 
-		// For now, just default to loading the rtmath.conf-listed store, if any.
 		{
 			auto conf = rtmath::config::loadRtconfRoot();
-			std::string hashDir;
-			auto chash = conf->getChild("ddscat")->getChild("hash");
-			chash->getVal<std::string>("hashDir", hashDir);
+			auto chash = conf->getChild("ddscat")->getChild("hashes");
+			// Iterate over all hash store entries
+			std::multiset<boost::shared_ptr<rtmath::config::configsegment> > children;
+			chash->listChildren(children);
+			for (const auto &c : children)
+			{
+				if (c->name() != "store") continue;
+				size_t priority = 999; 
+				if (c->hasVal("priority"))
+					c->getVal<size_t>("priority", priority);
 
-			std::shared_ptr<rtmath::hashStore> h(new rtmath::hashStore);
-			h->writable = true;
-			h->base = boost::filesystem::path(hashDir);
-			rtmath::hashStore::addHashStore(h, 100);
+				std::string location;
+				if (c->hasVal("path"))
+					c->getVal<std::string>("path", location);
+
+				bool writable = false;
+				if (c->hasVal("writable"))
+					c->getVal<bool>("writable", writable);
+
+				std::shared_ptr<rtmath::hashStore> h(new rtmath::hashStore);
+				h->writable = writable;
+				h->base = boost::filesystem::path(location);
+
+				rtmath::hashStore::addHashStore(h, priority);
+			}
 		}
 	}
 }

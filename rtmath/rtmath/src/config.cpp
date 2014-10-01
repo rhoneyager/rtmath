@@ -4,6 +4,10 @@
 #include <fstream>
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #include <Ryan_Debug/debug.h>
 
@@ -28,6 +32,7 @@ namespace {
 	std::mutex mlock;
 
 	boost::shared_ptr<::rtmath::config::configsegment> _rtconfroot = nullptr;
+
 }
 
 namespace rtmath {
@@ -57,6 +62,7 @@ namespace rtmath {
 		}
 	}
 	namespace config {
+
 		implementsConfigOld::implementsConfigOld() :
 			rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_OldStandard>(configsegment::writeOld, configsegment::readOld, known_formats())
@@ -79,11 +85,8 @@ namespace rtmath {
 				{
 					std::string sctypes;
 					std::set<std::string> ctypes;
-					serialization::known_compressions(sctypes, ".shp");
-					serialization::known_compressions(sctypes, ".dat");
-					serialization::known_compressions(sctypes, "shape.txt");
-					serialization::known_compressions(sctypes, "shape.dat");
-					serialization::known_compressions(sctypes, "target.out");
+					serialization::known_compressions(sctypes, ".rtmath");
+					serialization::known_compressions(sctypes, "rtmath.conf");
 					rtmath::config::splitSet(sctypes, ctypes);
 					for (const auto & t : ctypes)
 						mtypes.emplace(t);
@@ -140,7 +143,7 @@ namespace rtmath {
 		boost::shared_ptr<configsegment> configsegment::generate(const std::string &name, boost::shared_ptr<configsegment> &parent)
 		{
 			boost::shared_ptr<configsegment> obj(new configsegment(name));
-			obj->_parent = parent;
+			obj->_parents.insert(parent);
 			parent->_children.insert(obj);
 			return obj;
 		}
@@ -154,13 +157,39 @@ namespace rtmath {
 		configsegment::configsegment(const std::string &name, boost::shared_ptr<configsegment> &parent)
 		{
 			this->_segname = name;
-			_parent = parent;
+			_parents.insert(parent);
 			parent->_children.insert(getPtr());
 		}
 
 		configsegment::~configsegment()
 		{
 			// Thanks to shared_ptr, children will delete naturally when nothing holds them!
+		}
+
+		void configsegment::addChild(boost::shared_ptr<configsegment> child)
+		{
+			child->_parents.insert(shared_from_this());
+			this->_children.insert(child);
+
+		}
+
+		void configsegment::removeChild(boost::shared_ptr<configsegment> child)
+		{
+			child->_parents.erase(shared_from_this());
+			this->_children.erase(child);
+		}
+
+		void configsegment::uncouple()
+		{
+			for (auto &i : _parents)
+			{
+				if (!i.expired())
+				{
+					auto j = i.lock();
+					j->removeChild(shared_from_this());
+				}
+			}
+			_parents.clear();
 		}
 
 		boost::shared_ptr<configsegment> configsegment::getPtr() const
@@ -174,20 +203,6 @@ namespace rtmath {
 		{
 			using namespace std;
 			boost::shared_ptr<configsegment> cseg = getPtr();
-
-			// If first part of key is '/', seek to root
-
-			if (key[0] == '/')
-			{
-				boost::shared_ptr<configsegment> cpar = this->_parent.lock();
-				while (cpar.use_count())
-				{
-					cseg = cpar;
-					cpar = cseg->_parent.lock();
-				}
-				cseg = cpar;
-			}
-
 
 			std::string dkey = key.substr(0, key.find_last_of('/') + 1);
 			// Go down the tree, pulling out one '/' at a time, until done
@@ -218,35 +233,11 @@ namespace rtmath {
 		bool configsegment::hasVal(const std::string &key) const
 		{
 			using namespace std;
-			// If the key contains '/', we should search the path
-			// a / at the beginning specifies an absolute path.
-			// Otherwise, it is relative only going downwards
-			if (key.find('/') != string::npos)
-			{
-				boost::shared_ptr<configsegment> relseg = findSegment(key);
-				if (!relseg) RTthrow rtmath::debug::xBadInput(key.c_str());
-				// keystripped is the key without the path. If ends in /, an error will occur
-				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
-				bool res = relseg->hasVal(keystripped);
-				return res;
-			}
-
-			// Let's be promiscuous!
 			// If this container does not have the value, look at the parent
 
 			if (_mapStr.count(key))
 			{
 				return true;
-			}
-			else
-			{
-				if (this->_parent.expired() == false)
-				{
-					return this->_parent.lock()->hasVal(key);
-				}
-				else {
-					return false;
-				}
 			}
 			return false;
 		}
@@ -254,64 +245,34 @@ namespace rtmath {
 		bool configsegment::getVal(const std::string &key, std::string &value) const
 		{
 			using namespace std;
-			// If the key contains '/', we should search the path
-			// a / at the beginning specifies an absolute path.
-			// Otherwise, it is relative only going downwards
-			if (key.find('/') != string::npos)
-			{
-				boost::shared_ptr<configsegment> relseg = findSegment(key);
-				if (!relseg) RTthrow rtmath::debug::xBadInput(key.c_str());
-				// keystripped is the key without the path. If ends in /, an error will occur
-				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
-				bool res = relseg->getVal(keystripped, value);
-				return res;
-			}
-
-			// Let's be promiscuous!
-			// If this container does not have the value, look at the parent
-
 			if (_mapStr.count(key))
 			{
-				value = _mapStr.at(key);
+				value = _mapStr.find(key)->second;
 			}
 			else
 			{
-				if (this->_parent.expired() == false)
-				{
-					return this->_parent.lock()->getVal(key, value);
-				}
-				else {
-					return false;
-				}
+				return false;
 			}
 			return true;
 		}
 
 		void configsegment::setVal(const std::string &key, const std::string &value)
 		{
-			using namespace std;
-			if (key.find('/') != string::npos)
-			{
-				boost::shared_ptr<configsegment> relseg = findSegment(key);
-				string keystripped = key.substr(key.find_last_of('/') + 1, key.size());
-				relseg->setVal(keystripped, value);
-				return;
-			}
-			// Set the value here. Overwrite any pre-existing value
+			using namespace std;// Set the value here. Overwrite any pre-existing value(s)
 			if (this->_mapStr.count(key))
 				_mapStr.erase(key);
-			_mapStr[key] = value;
+			_mapStr.insert(std::pair<std::string,std::string>(key,value));
+		}
+
+		void configsegment::addVal(const std::string &key, const std::string &value)
+		{
+			using namespace std;
+			_mapStr.insert(std::pair<std::string, std::string>(key, value));
 		}
 
 		boost::shared_ptr<configsegment> configsegment::getChild(const std::string &name) const
 		{
 			using namespace std;
-			if (name.find('/') != string::npos)
-			{
-				boost::shared_ptr<configsegment> relseg = findSegment(name);
-				return relseg;
-			}
-
 			// Search through the child list to find the child
 			for (auto it = _children.begin(); it != _children.end(); it++)
 			{
@@ -320,10 +281,15 @@ namespace rtmath {
 			return nullptr;
 		}
 
-		boost::shared_ptr<configsegment> configsegment::getParent() const
+		std::set<boost::shared_ptr<configsegment> > configsegment::getParents() const
 		{
-			if (_parent.expired()) return boost::shared_ptr<configsegment>();
-			return boost::shared_ptr<configsegment>(_parent);
+			std::set<boost::shared_ptr<configsegment> > p;
+			for (const auto &i : _parents)
+			{
+				if (!i.expired())
+					p.insert(boost::shared_ptr<configsegment>(i));
+			}
+			return p;
 		}
 
 		void configsegment::name(std::string &res) const
@@ -331,24 +297,30 @@ namespace rtmath {
 			res = _segname;
 		}
 
-		void configsegment::listKeys(std::map<std::string, std::string> &output) const
+		void configsegment::listKeys(std::multimap<std::string, std::string> &output) const
 		{
 			output = _mapStr;
 		}
 
-		void configsegment::listKeys(std::set<std::string> &res) const
+		void configsegment::listKeys(std::multiset<std::string> &res) const
 		{
 			res.clear();
 			for (auto it = _mapStr.begin(); it != _mapStr.end(); it++)
 				res.insert(it->first);
 		}
 
-		void configsegment::listChildren(std::set<std::string> &res) const
+		void configsegment::listChildren(std::multiset<std::string> &res) const
 		{
 			res.clear();
 			for (auto it = _children.begin(); it != _children.end(); it++)
 				res.insert((*it)->_segname);
 		}
+
+		void configsegment::listChildren(std::multiset<boost::shared_ptr<configsegment> > &res) const
+		{
+			res = _children;
+		}
+
 
 		void configsegment::getCWD(std::string &cwd) const
 		{
@@ -425,6 +397,7 @@ namespace rtmath {
 
 			//auto cseg = root;
 			boost::shared_ptr<configsegment> cseg = root; // The current container in the tree
+			std::vector<boost::shared_ptr<configsegment> > pseg;
 			if (cseg->_cwd.size() == 0) cseg->_cwd = cwd;
 
 			// Read in each line, one at a time.
@@ -447,7 +420,9 @@ namespace rtmath {
 					if (key[1] == '/')
 					{
 						// Close container
-						cseg = cseg->getParent();
+						if (!pseg.size()) RTthrow rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
+						cseg = *(pseg.rbegin());
+						pseg.pop_back();
 						if (!cseg) RTthrow rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
 					}
 					else {
@@ -460,6 +435,8 @@ namespace rtmath {
 						// Now, create the new container and switch to it
 						//boost::shared_ptr<configsegment> child (new configsegment(line, cseg));
 						boost::shared_ptr<configsegment> child = generate(line, cseg);
+						
+						pseg.push_back(cseg);
 						cseg = child;
 					}
 				}
@@ -520,18 +497,6 @@ namespace rtmath {
 				}
 
 			}
-		}
-
-		void configsegment::move(boost::shared_ptr<configsegment> &newparent)
-		{
-			boost::shared_ptr<configsegment> me = getPtr();
-			if (_parent.expired() == false)
-			{
-				// Parent exists. Free child reference.
-				_parent.lock()->_children.erase(me);
-			}
-			_parent = newparent;
-			newparent->_children.insert(me);
 		}
 
 		/**

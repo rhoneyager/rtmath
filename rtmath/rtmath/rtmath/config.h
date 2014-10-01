@@ -90,7 +90,7 @@ namespace rtmath {
 			static const std::set<std::string>& known_formats();
 		};
 
-		/// \note Upgrading this to use xml writes
+		/// \note Upgrading this to just be a wrapper for a boost property tree
 		/// \todo fix findSegment so that it works
 		/// \todo findSegment check for not found condition (currently returns garbage)
 		/// \todo restructure to explicitly enable symlinks
@@ -133,29 +133,33 @@ namespace rtmath {
 				return success;
 			}
 			void setVal(const std::string &key, const std::string &value);
+			void addVal(const std::string &key, const std::string &value);
+
 			void name(std::string &res) const;
 			inline std::string name() const { std::string res; name(res); return res; }
-			void move(boost::shared_ptr<configsegment> &newparent);
 			boost::shared_ptr<configsegment> findSegment(const std::string &key) const;
 			boost::shared_ptr<configsegment> getChild(const std::string &name) const;
-			boost::shared_ptr<configsegment> addChild(std::shared_ptr<configsegment> child);
-			boost::shared_ptr<configsegment> getParent() const;
-			void listKeys(std::map<std::string,std::string> &output) const;
-			const std::map<std::string, std::string>& listKeys() const { return _mapStr; }
-			void listKeys(std::set<std::string> &res) const;
-			inline std::set<std::string> enumKeys() const { std::set<std::string> res; listKeys(res); return res; }
-			void listChildren(std::set<std::string> &res) const;
-			inline std::set<std::string> listChildren() const { std::set<std::string> res; listChildren(res); return res; }
+			void addChild(boost::shared_ptr<configsegment> child);
+			void removeChild(boost::shared_ptr<configsegment> child);
+			void uncouple(); // Delete entire object from all parents.
+			std::set<boost::shared_ptr<configsegment> > getParents() const;
+			void listKeys(std::multimap<std::string,std::string> &output) const;
+			const std::multimap<std::string, std::string>& listKeys() const { return _mapStr; }
+			void listKeys(std::multiset<std::string> &res) const;
+			inline std::multiset<std::string> enumKeys() const { std::multiset<std::string> res; listKeys(res); return res; }
+			void listChildren(std::multiset<boost::shared_ptr<configsegment> > &res) const;
+			void listChildren(std::multiset<std::string> &res) const;
+			//inline std::multiset<std::string> listChildren() const { std::multiset<std::string> res; listChildren(res); return res; }
 			void getCWD(std::string &cwd) const; // Returns directory of the loaded config file node.
 
 			
 		protected:
 			std::string _segname, _cwd;
-			boost::weak_ptr<configsegment> _parent;
+			std::set<boost::weak_ptr<configsegment> > _parents;
 			//std::weak_ptr<configsegment> _self;
-			std::map<std::string, std::string> _mapStr;
-			std::set<boost::shared_ptr<configsegment> > _children;
-			std::set<boost::weak_ptr<configsegment> > _symlinks;
+			std::multimap<std::string, std::string> _mapStr;
+			std::multiset<boost::shared_ptr<configsegment> > _children;
+			std::multiset<boost::weak_ptr<configsegment> > _symlinks;
 		public: // And let's have a static loading function here!
 			//static boost::shared_ptr<configsegment> loadFile(const char* filename, boost::shared_ptr<configsegment> root);
 			//static boost::shared_ptr<configsegment> loadFile(std::istream &indata, boost::shared_ptr<configsegment> root, const std::string &cwd = "./");
