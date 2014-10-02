@@ -27,7 +27,8 @@ int main(int argc, char** argv)
 		cmdline.add_options()
 			("help,h", "Produce help message")
 			("split,s", po::value<std::string>(), "The values to be expanded")
-			("aliases,k", po::value<std::string>(), "The key location in the config tables that contains the desired expansion table");
+		//	("aliases,k", po::value<std::string>(), "The key location in the config tables that contains the desired expansion table")
+			;
 
 		po::positional_options_description p;
 		p.add("split",1);
@@ -53,11 +54,11 @@ int main(int argc, char** argv)
 		std::string src, nodename;
 		bool mapAliases = false;
 		
-		if (vm.count("aliases"))
-		{
-			mapAliases = true;
-			nodename = vm["aliases"].as<std::string>();
-		}
+		//if (vm.count("aliases"))
+		//{
+		//	mapAliases = true;
+		//	nodename = vm["aliases"].as<std::string>();
+		//}
 
 		if (!vm.count("split")) doHelp();
 		src = vm["split"].as<std::string>();
@@ -66,14 +67,14 @@ int main(int argc, char** argv)
 		// paramset expansion from key/value combinations found in rtmath.conf
 
 		// config::loadRtconfroot is called during appEntry...
-		std::shared_ptr<configsegment> root = rtmath::config::getRtconfRoot();
-		std::shared_ptr<configsegment> node;
-		if (mapAliases)
-			node = root->findSegment(nodename);
+		//std::shared_ptr<configsegment> root = rtmath::config::getRtconfRoot();
+		//std::shared_ptr<configsegment> node;
+		//if (mapAliases)
+		//	node = root->findSegment(nodename);
 
 		paramSet<double>::aliasmap aliases;
-		if (mapAliases)
-			node->listKeys(aliases);
+		//if (mapAliases)
+		//	node->listKeys(aliases);
 		paramSet<double> expander(src, &aliases);
 
 		// expander now has the full expanded list of everything
