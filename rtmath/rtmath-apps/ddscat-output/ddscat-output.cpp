@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 		("hash-output", "Store flake data in hash directory")
 		*/
 		auto conf = rtmath::config::loadRtconfRoot();
-		auto freqmap = conf->getChild("ddscat")->getChild("freqs")->listKeys();
+		//auto freqmap = conf->getChild("ddscat")->getChild("freqs")->listKeys();
 
 		vector<string> matchHashes, matchFlakeTypes, matchPols, matchRunUuids;
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
@@ -184,7 +184,7 @@ int main(int argc, char** argv)
 		rtmath::config::intervals<float> iDipoleSpacing, iFrequencies, iAeffs, iTemps;
 		rtmath::config::intervals<size_t> iDipoleNumbers, iBetas, iThetas, iPhis;
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
-		if (vm.count("match-frequency")) iFrequencies.append(vm["match-frequency"].as<vector<string>>(), &freqmap);
+		if (vm.count("match-frequency")) iFrequencies.append(vm["match-frequency"].as<vector<string>>()); //, &freqmap);
 		if (vm.count("match-aeff")) iAeffs.append(vm["match-aeff"].as<vector<string>>());
 		if (vm.count("match-temp")) iTemps.append(vm["match-temp"].as<vector<string>>());
 		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());

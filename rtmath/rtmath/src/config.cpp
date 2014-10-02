@@ -29,7 +29,7 @@
 
 namespace {
 	std::set<std::string> mtypes, mnewtypes;
-	std::mutex mlock;
+	std::mutex cmlock;
 
 	boost::shared_ptr<::rtmath::config::configsegment> _rtconfroot = nullptr;
 
@@ -72,10 +72,10 @@ namespace rtmath {
 		{
 			// Moved to hidden file scope to avoid race condition
 			//static std::set<std::string> mtypes;
-			//static std::mutex mlock;
+			//static std::mutex cmlock;
 			// Prevent threading clashes
 			{
-				std::lock_guard<std::mutex> lck(mlock);
+				std::lock_guard<std::mutex> lck(cmlock);
 				if (!mtypes.size())
 				{
 					mtypes.insert(".rtmath");
@@ -105,10 +105,10 @@ namespace rtmath {
 		{
 			// Moved to hidden file scope to avoid race condition
 			//static std::set<std::string> mtypes;
-			//static std::mutex mlock;
+			//static std::mutex cmlock;
 			// Prevent threading clashes
 			{
-				std::lock_guard<std::mutex> lck(mlock);
+				std::lock_guard<std::mutex> lck(cmlock);
 				if (!mnewtypes.size())
 				{
 					mnewtypes.insert(".xml");
