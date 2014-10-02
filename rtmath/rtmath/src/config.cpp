@@ -606,14 +606,15 @@ namespace rtmath {
 			if (fn == "") RTthrow debug::xMissingFile("Cannot find the rtmath.conf file");
 			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
 			auto opts = rtmath::registry::IO_options::generate(rtmath::registry::IOhandler::IOtype::READONLY);
-			opts->filename(filename);
+			opts->filename(fn);
 
 			std::vector< boost::shared_ptr<configsegment> > rootcands;
 			configsegment::readVector(nullptr, opts, rootcands, nullptr);
 			boost::shared_ptr<configsegment> cnf;
 			for (const auto &r : rootcands)
 			{
-				if (r->name() == "ROOT") cnf = r;
+				std::cerr << "rootcand " << r->name() << std::endl;
+				if (r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
 			}
 			if (cnf) _rtconfroot = cnf;
 			return cnf;
