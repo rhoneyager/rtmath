@@ -369,13 +369,14 @@ namespace rtmath {
 			boost::shared_ptr<ddPar> basep; // basep is a copy with auto-deletion
 			if (src == "")
 			{
-				basep = boost::shared_ptr<ddPar>(new ddPar(*(defaultInstance())));
+				basep = ddPar::generate(defaultInstance());
+				//basep = boost::shared_ptr<ddPar>(new ddPar(*(defaultInstance())));
 			}
 			else
 			{
 				if (boost::filesystem::exists(path(src)))
 				{
-					basep = boost::shared_ptr<ddPar>(new ddPar(src));
+					basep = ddPar::generate(src); //boost::shared_ptr<ddPar>(new ddPar(src));
 				}
 				else {
 					throw rtmath::debug::xMissingFile(src.c_str());

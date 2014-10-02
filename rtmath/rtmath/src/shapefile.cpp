@@ -169,7 +169,9 @@ namespace rtmath {
 
 			boost::shared_ptr<shapefile> shapefile::generate(const std::string &filename)
 			{
-				boost::shared_ptr<shapefile> res(new shapefile(filename));
+				boost::shared_ptr<shapefile> res(new shapefile);
+				res->read(filename);
+				res->filename = filename;
 				return res;
 			}
 
@@ -192,12 +194,14 @@ namespace rtmath {
 				return res;
 			}
 
+			/*
 			shapefile::shapefile(const std::string &filename)
 			{
 				_init();
 				read(filename);
 				this->filename = filename;
 			}
+			*/
 
 			shapefile::shapefile(std::istream &in)
 			{

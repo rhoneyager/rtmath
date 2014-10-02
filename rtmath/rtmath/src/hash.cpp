@@ -44,7 +44,11 @@ namespace {
 
 		{
 			auto conf = rtmath::config::loadRtconfRoot();
-			auto chash = conf->getChild("ddscat")->getChild("hashes");
+			if (!conf) return;
+			auto cdd = conf->getChild("ddscat");
+			if (!cdd) return;
+			auto chash = cdd->getChild("hashes");
+			if (!chash) return;
 			// Iterate over all hash store entries
 			std::multiset<boost::shared_ptr<rtmath::config::configsegment> > children;
 			chash->listChildren(children);

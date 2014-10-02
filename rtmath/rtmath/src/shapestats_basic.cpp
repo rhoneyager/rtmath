@@ -206,7 +206,13 @@ namespace rtmath {
 				// Return true if shape is loaded or can be loaded (and load it)
 				// Return false if shape CANNOT be loaded
 				if (_shp->latticePts.rows()) return true;
+				try {
+					boost::shared_ptr<shapefile::shapefile> nshp = boost::const_pointer_cast<shapefile::shapefile>(_shp);
+					nshp->loadHashLocal();
+					return true;
+				} catch (...) {return false;}
 
+				/*
 				boost::shared_ptr<const shapefile::shapefile> nshp;
 
 				// Reload initial shape file by 1) hash or 2) filename
@@ -216,7 +222,8 @@ namespace rtmath {
 				if (nshp)
 					_shp = nshp;
 				else if (serialization::detect_compressed(_shp->filename)) {
-					nshp = boost::shared_ptr<const shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
+					nshp = shapefile::shapefile::generate(_shp->filename);
+					//nshp = boost::shared_ptr<const shapefile::shapefile>(new shapefile::shapefile(_shp->filename));
 					_shp = nshp;
 				}
 				else
@@ -227,6 +234,7 @@ namespace rtmath {
 				//	std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
 
 				return true;
+				*/
 			}
 
 			boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
@@ -247,15 +255,16 @@ namespace rtmath {
 
 				// Local file does not exist. Does it exist in the hash database?
 				// Generate basic stats for a file.
-				rtmath::ddscat::shapefile::shapefile shp(shpfile);
-				boost::shared_ptr<shapeFileStats> s = loadHash(shp.hash().string());
+				auto shp = rtmath::ddscat::shapefile::shapefile::generate(shpfile);
+				//rtmath::ddscat::shapefile::shapefile shp(shpfile);
+				boost::shared_ptr<shapeFileStats> s = loadHash(shp->hash().string());
 				if (!s) {
 					if (!prohibitStats)
 						s = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 					else std::cerr << "Stats not found. New calculations prohibited." << std::endl;
 				}
 
-				if (autoHashShapes) shp.writeToHash();
+				if (autoHashShapes) shp->writeToHash();
 				if (autoHashStats && s) s->writeToHash();
 
 				if (statsfile.size() && s) s->writeFile(statsfile);

@@ -192,9 +192,9 @@ int main(int argc, char** argv)
 					else if (dataset::isAvg(pfile)) {
 						rtmath::ddscat::ddOutput a;
 						//a.readFile(pfile.string(), ".avg");
-						rtmath::ddscat::ddOriData b(a);
-						b.readFile(pfile.string(), ".avg");
-						nDipoles = b.numDipoles();
+						auto b = rtmath::ddscat::ddOriData::generate(a);
+						b->readFile(pfile.string(), ".avg");
+						nDipoles = b->numDipoles();
 					}
 					if (!nDipoles) continue; // Prefix 0 is not valid. Wrong file type.
 					std::ostringstream ntos;
@@ -272,16 +272,16 @@ int main(int argc, char** argv)
 			if (!boost::filesystem::exists(pa))
 				boost::filesystem::create_directory(pa);
 
-			rtmath::ddscat::ddPar parFile;
+			auto parFile = rtmath::ddscat::ddPar::generate();
 			if (d.second.parfile.empty() && pars.size())
 			{
-				parFile = rtmath::ddscat::ddPar(pars[0].string());
+				parFile = rtmath::ddscat::ddPar::generate(pars[0].string());
 				cerr << "\tUsing generic par file " << pars[0] << endl;
 			}
 			else if (d.second.parfile.empty() && !pars.size())
 				throw rtmath::debug::xMissingFile("ddscat.par");
 			else {
-				parFile = rtmath::ddscat::ddPar(d.second.parfile.string());
+				parFile = rtmath::ddscat::ddPar::generate(d.second.parfile.string());
 				cerr << "\tUsing matched par file " << d.second.parfile.string() << endl;
 			}
 
@@ -388,9 +388,9 @@ int main(int argc, char** argv)
 				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
 				if (!linkShape(p / path("shape.dat"))) continue;
-				ddPar ppar = parFile;
+				auto ppar = parFile;
 				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), ppar, 0, 0, std::complex<double>(0,0));
+				createPar((p / path("ddscat.par")), *(ppar.get()), 0, 0, std::complex<double>(0,0));
 			}
 			// and if there are avg files to regenerate from
 			for (auto &pavg : d.second.ddres)
@@ -400,8 +400,8 @@ int main(int argc, char** argv)
 
 				rtmath::ddscat::ddOutput a;
 				//a.readFile(pfile.string(), ".avg");
-				rtmath::ddscat::ddOriData avg(a);
-				avg.readFile(pavg.string(), ".avg");
+				auto avg = rtmath::ddscat::ddOriData::generate(a);
+				avg->readFile(pavg.string(), ".avg");
 
 				//ddOutputSingle avg(pavg.string(),".avg");
 				path p = pa;
@@ -409,9 +409,9 @@ int main(int argc, char** argv)
 				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
 				if (!linkShape(p / path("shape.dat"))) continue;
-				ddPar ppar = parFile;
+				auto ppar = parFile;
 				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), ppar, avg.aeff(), avg.wave(), avg.M());
+				createPar((p / path("ddscat.par")), *(ppar.get()), avg->aeff(), avg->wave(), avg->M());
 
 				if (avgOne) break;
 			}

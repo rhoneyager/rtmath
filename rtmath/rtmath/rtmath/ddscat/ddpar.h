@@ -558,11 +558,18 @@ namespace rtmath {
 				boost::program_options::variables_map &vm);
 
 
+		private:
 			ddPar();
 			ddPar(const ddPar &src); // Copy constructor
-			ddPar(const std::string &filename, bool populateDefaults = true);
+			//ddPar(const std::string &filename, bool populateDefaults = true);
+		public:
 			~ddPar();
 			ddPar & operator=(const ddPar &rhs);
+
+			/** The generators are required for file loading to work. **/
+			static boost::shared_ptr<ddPar> generate();
+			static boost::shared_ptr<ddPar> generate(const std::string &filename, bool populateDefaults = true);
+			static boost::shared_ptr<ddPar> generate(const boost::shared_ptr<const ddPar>);
 
 			//void readFile(const std::string &filename, bool overlay = false);
 			/// \todo Add in line number matching as a backup when key parsing fails

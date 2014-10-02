@@ -203,7 +203,7 @@ namespace rtmath {
 				
 				// Do, however, read the ddscat.par file, since some of these values are useful when 
 				// interpreting the ddscat run.
-				r->parfile = boost::shared_ptr<ddPar>(new ddPar);
+				r->parfile = ddPar::generate(); //boost::shared_ptr<ddPar>(new ddPar);
 				read_hdf5_ddPar(openGroup(base, "par"), r->parfile);
 				//r->doImport();
 				return true;

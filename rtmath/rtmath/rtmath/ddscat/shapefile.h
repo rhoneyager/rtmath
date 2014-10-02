@@ -185,7 +185,7 @@ namespace rtmath {
 			{
 				// Need readVector as a friend class
 				friend boost::shared_ptr<shapefile> io::customGenerator<shapefile>();
-				shapefile(const std::string &filename);
+				//shapefile(const std::string &filename); // Handled by the generator
 				shapefile(std::istream &in);
 				shapefile();
 			public:

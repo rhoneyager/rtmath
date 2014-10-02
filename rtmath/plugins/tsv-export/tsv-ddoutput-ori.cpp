@@ -131,7 +131,7 @@ namespace rtmath {
 				averager.doAvgAll(ddOut.get(), ddOutWithAvg, outwts);
 
 
-				boost::shared_ptr<const ddOriData> fiso = boost::shared_ptr<const ddOriData>(new ddOriData(*ddOutWithAvg));
+				boost::shared_ptr<const ddOriData> fiso = ddOriData::generate(*ddOutWithAvg);
 
 				auto data = fiso->selectData();
 
@@ -152,7 +152,7 @@ namespace rtmath {
 
 				for (size_t i = 0; i < ddOut->numOriData; ++i)
 				{
-					boost::shared_ptr<const ddOriData> fori = boost::shared_ptr<const ddOriData>(new ddOriData(*ddOutWithAvg));
+					boost::shared_ptr<const ddOriData> fori = ddOriData::generate(*ddOutWithAvg);
 
 					auto dataori = fori->selectData();
 					double beta = dataori(ddOutput::stat_entries::BETA);

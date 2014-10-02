@@ -95,9 +95,13 @@ namespace {
 		try {
 			// First try to load using rtmath.conf location
 			auto cRoot = config::loadRtconfRoot();
+			if (!cRoot) RTthrow rtmath::debug::xOtherError();
+			auto rtddscat = cRoot->getChild("ddscat");
 			string sBasePar, scwd;
-			cRoot->getVal<string>("ddscat/DefaultFile", sBasePar);
-			cRoot->getCWD(scwd);
+			if (rtddscat) {
+				rtddscat->getVal<string>("DefaultFile", sBasePar);
+				rtddscat->getCWD(scwd);
+			} else RTthrow rtmath::debug::xOtherError();
 
 			path pscwd(scwd), psBasePar(sBasePar);
 			pscwd.remove_filename();
@@ -174,12 +178,26 @@ namespace rtmath {
 			_populateDefaults(false);
 		}
 		*/
-		ddPar::ddPar(const std::string &filename, bool popDefaults)
+
+		boost::shared_ptr<ddPar> ddPar::generate(const boost::shared_ptr<const ddPar> src)
 		{
-			_init();
-			readFile(filename);
+			boost::shared_ptr<ddPar> res(new ddPar(*(src.get())));
+			return res;
+		}
+
+		boost::shared_ptr<ddPar> ddPar::generate()
+		{
+			boost::shared_ptr<ddPar> res(new ddPar);
+			return res;
+		}
+
+		boost::shared_ptr<ddPar> ddPar::generate(const std::string &filename, bool popDefaults)
+		{
+			boost::shared_ptr<ddPar> res(new ddPar);
+			res->readFile(filename);
 			if (popDefaults)
-				populateDefaults(false);
+				res->populateDefaults(false);
+			return res;
 		}
 
 		ddPar::~ddPar()
@@ -545,7 +563,8 @@ namespace rtmath {
 				initPaths();
 				if (pDefaultPar.string().size() && boost::filesystem::exists(path(pDefaultPar)))
 				{
-					s_inst = boost::shared_ptr<ddPar>(new ddPar(pDefaultPar.string(), false));
+					s_inst = ddPar::generate(pDefaultPar.string(), false); 
+					// = boost::shared_ptr<ddPar>(new ddPar(pDefaultPar.string(), false));
 				} else {
 					// Attempt to load the internal instance
 					try {

@@ -87,11 +87,11 @@ namespace rtmath {
 			void doExportFMLs(size_t startIndex) const;
 			void doImportFMLs(size_t startIndex, size_t n);
 			void doImportFMLs();
+			ddOriData(ddOutput &parent, size_t row, bool isAvg);
 		public:
-			ddOriData(ddOutput &parent, size_t row,
+			static boost::shared_ptr<ddOriData> generate(ddOutput &parent, size_t row,
 				const std::string &filenameSCA = "", const std::string &filenameFML = "");
-			ddOriData(ddOutput &parent, const std::string &filenameAVG = "");
-			//ddOriData(ddOutput &parent, size_t row, )
+			static boost::shared_ptr<ddOriData> generate(ddOutput &parent, const std::string &filenameAVG = "");
 			virtual ~ddOriData();
 
 			// Binders for the standard ddscat formats

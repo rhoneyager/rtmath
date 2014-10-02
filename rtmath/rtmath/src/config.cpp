@@ -613,7 +613,6 @@ namespace rtmath {
 			boost::shared_ptr<configsegment> cnf;
 			for (const auto &r : rootcands)
 			{
-				std::cerr << "rootcand " << r->name() << std::endl;
 				if (r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
 			}
 			if (cnf) _rtconfroot = cnf;

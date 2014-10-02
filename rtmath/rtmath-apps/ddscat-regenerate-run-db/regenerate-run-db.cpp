@@ -245,8 +245,7 @@ int main(int argc, char** argv)
 			double aeff_um = aeff_di * shp->standardD;
 
 			// Write par file
-			rtmath::ddscat::ddPar parFile;
-			parFile = rtmath::ddscat::ddPar(sparfile);
+			auto parFile = rtmath::ddscat::ddPar::generate(sparfile);
 
 			cerr << "\tEffective radius is " << aeff_um << std::endl;
 
@@ -310,7 +309,7 @@ int main(int argc, char** argv)
 				// Scattering angle selection will match the par file.
 				ppar.writeFile(ppath.string());
 			};
-			createPar(path(outpath / "ddscat.par"), parFile, aeff_um);
+			createPar(path(outpath / "ddscat.par"), *(parFile.get()), aeff_um);
 
 			// First dielectric is written by createPar (if not specified on command-line)
 

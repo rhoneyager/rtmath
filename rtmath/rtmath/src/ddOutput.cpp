@@ -131,7 +131,7 @@ namespace rtmath {
 			fmldata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
 				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>
 				(*(src.fmldata)));
-			parfile = boost::shared_ptr<ddPar>(new ddPar(*(src.parfile)));
+			parfile = ddPar::generate(src.parfile); //boost::shared_ptr<ddPar>(new ddPar(*(src.parfile)));
 		}
 
 
@@ -331,12 +331,13 @@ namespace rtmath {
 				auto loadPar = [&](const path &p)
 				{
 					std::lock_guard<std::mutex> lock(m_par);
-					res->parfile = boost::shared_ptr<ddPar>(new ddPar(p.string()));
+					res->parfile = ddPar::generate(p.string());
 				};
 				auto loadAvg = [&](const path &p)
 				{
 					std::lock_guard<std::mutex> lock(m_other);
-					ddOriData dat(*res, p.string());
+					auto dat = ddOriData::generate(*res, p.string());
+					//ddOriData dat(*res, p.string());
 				};
 
 				for (const auto &p : cands)
@@ -390,7 +391,7 @@ namespace rtmath {
 				for (const auto &s : orisources)
 					oris.push_back(s.second);
 				res->resize(oris.size(), 0); // fml size is not yet known. These entries will be imported later.
-				vector<ddOriData > fmls;
+				vector<boost::shared_ptr<ddOriData> > fmls;
 				fmls.reserve(orisources.size());
 				size_t count = 0;
 
@@ -401,7 +402,7 @@ namespace rtmath {
 						std::lock_guard<std::mutex> lock(m_fmls);
 						++count;
 					}
-					ddOriData dat(*res, mycount, p.second.string(), p.first.string());
+					auto dat = ddOriData::generate(*res, mycount, p.second.string(), p.first.string());
 					{
 						std::lock_guard<std::mutex> lock(m_fmlmap);
 						fmls.push_back(std::move(dat));
@@ -445,13 +446,13 @@ namespace rtmath {
 				/// \todo Do table resorting for better memory access for both the orientation and fml tables.
 				size_t numAngles = 0;
 				for (const auto &f : fmls) // Avg files have no fml entries - only cross-sections are stored
-					numAngles += f.numMat();
+					numAngles += f->numMat();
 				res->resizeFML(numAngles);
 				size_t i = 0;
 				for (const auto &f : fmls)
 				{
-					f.doExportFMLs(i);
-					i += f.numMat();
+					f->doExportFMLs(i);
+					i += f->numMat();
 				}
 
 
@@ -494,8 +495,8 @@ namespace rtmath {
 			{
 				//auto od = selectData();
 				boost::shared_ptr<ddOriData> data;
-				if (avgdata.hasAvg) data = boost::shared_ptr<ddOriData>(new ddOriData(*this, ""));
-				else data = boost::shared_ptr<ddOriData>(new ddOriData(*this, 0));
+				if (avgdata.hasAvg) data = ddOriData::generate(*this, "");
+				else data = ddOriData::generate(*this, 0);
 
 				// Extract the ddscat version from the target field
 				// Find "ddscat/" and read until the next space
@@ -667,10 +668,10 @@ namespace rtmath {
 				fmlname.append(".fml");
 				scaname.append(".sca");
 
-				ddOriData obj(*this, i);
-				obj.doImportFMLs();
-				obj.writeFile(fmlname);
-				obj.writeFile(scaname);
+				auto obj = ddOriData::generate(*this, i);
+				obj->doImportFMLs();
+				obj->writeFile(fmlname);
+				obj->writeFile(scaname);
 				/*
 			} else {
 			// File is an avg file of some sort

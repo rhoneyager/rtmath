@@ -131,7 +131,7 @@ namespace rtmath {
 				averager.doAvgAll(ddOut.get(), ddOutWithAvg, outwts);
 
 
-				boost::shared_ptr<const ddOriData> fori = boost::shared_ptr<const ddOriData>(new ddOriData(*ddOutWithAvg));
+				boost::shared_ptr<const ddOriData> fori = ddOriData::generate(*ddOutWithAvg);
 
 				auto data = fori->selectData();
 

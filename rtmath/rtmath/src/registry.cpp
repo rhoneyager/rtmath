@@ -194,9 +194,13 @@ namespace {
 			if (!rtconf) RTthrow rtmath::debug::xOtherError();
 			string srecursivePaths, sonePaths;
 			auto rtgeneral = rtconf->getChild("General");
-			auto rtplugins = rtgeneral->getChild("Plugins");
-			rtplugins->getVal("Recursive", srecursivePaths);
-			rtplugins->getVal("OneLevel", sonePaths);
+			if (rtgeneral) {
+				auto rtplugins = rtgeneral->getChild("Plugins");
+				if (rtplugins) {
+					rtplugins->getVal("Recursive", srecursivePaths);
+					rtplugins->getVal("OneLevel", sonePaths);
+				}
+			}
 			// Split loading paths based on semicolons and commas. Do not trim spaces.
 			set<string> CrecursivePaths, ConePaths;
 			rtmath::config::splitSet(srecursivePaths, CrecursivePaths);

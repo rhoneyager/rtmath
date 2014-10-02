@@ -123,8 +123,7 @@ int main(int argc, char** argv)
 
 		// Load the shape file or shape stats file
 		cerr << "Processing " << input << endl;
-		boost::shared_ptr<rtmath::ddscat::ddPar> par
-			( new rtmath::ddscat::ddPar(input) );
+		auto par = rtmath::ddscat::ddPar::generate(input);
 
 		if (vm.count("get-version"))
 		{

@@ -144,24 +144,30 @@ namespace rtmath {
 			}
 		}
 
-		ddOriData::ddOriData(ddOutput &parent, size_t row, 
-			const std::string &filenameSCA, 
-			const std::string &filenameFML) :
-			_parent(parent), _row(row), isAvg(false)
+		ddOriData::ddOriData(ddOutput &parent, size_t row, bool isAvg) :
+			_parent(parent), _row(row), isAvg(isAvg)
 		{
 			_init();
-			// Double read to capture fml data and cross-sections in one container.
-			if (filenameSCA.size()) readFile(filenameSCA);
-			if (filenameFML.size()) readFile(filenameFML);
 		}
 
-		ddOriData::ddOriData(ddOutput &parent, const std::string &filenameAVG) :
-			_parent(parent), _row(0), isAvg(true)
+		boost::shared_ptr<ddOriData> ddOriData::generate(ddOutput &parent, size_t row, 
+			const std::string &filenameSCA, 
+			const std::string &filenameFML)
 		{
-			_init();
-			if (filenameAVG.size()) readFile(filenameAVG);
+			boost::shared_ptr<ddOriData> res(new ddOriData(parent, row, false));
+			// Double read to capture fml data and cross-sections in one container.
+			if (filenameSCA.size()) res->readFile(filenameSCA);
+			if (filenameFML.size()) res->readFile(filenameFML);
+			return res;
 		}
-		
+
+		boost::shared_ptr<ddOriData> ddOriData::generate(ddOutput &parent, const std::string &filenameAVG)
+		{
+			boost::shared_ptr<ddOriData> res(new ddOriData(parent, 0, true));
+			if (filenameAVG.size()) res->readFile(filenameAVG);
+			return res;
+		}
+
 		void ddOriData::_init()
 		{
 			//_statTable_Size_ts.at(stat_entries_size_ts::VERSION)
