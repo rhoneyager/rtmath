@@ -55,6 +55,12 @@ namespace {
 			for (const auto &c : children)
 			{
 				if (c->name() != "store") continue;
+
+				bool enabled = true;
+				if (c->hasVal("enabled"))
+					c->getVal<bool>("enabled", enabled);
+				if (!enabled) continue;
+
 				size_t priority = 999; 
 				if (c->hasVal("priority"))
 					c->getVal<size_t>("priority", priority);
@@ -66,6 +72,8 @@ namespace {
 				bool writable = false;
 				if (c->hasVal("writable"))
 					c->getVal<bool>("writable", writable);
+
+				// PLACEHOLDER for hashStore type flag - probably coded on galahad.
 
 				std::shared_ptr<rtmath::hashStore> h(new rtmath::hashStore);
 				h->writable = writable;
@@ -206,26 +214,32 @@ namespace rtmath {
 		path pHashName(sHashName);
 		path pHashStart(sHashStart);
 
+		try {
 
-		if (!exists(base))
-			return false;
-		if (!exists(base / pHashStart))
-			return false;
-		path p = base / pHashStart / pHashName;
-		if (!exists(p))
-			return false;
+			if (!exists(base))
+				return false;
+			if (!exists(base / pHashStart))
+				return false;
+			path p = base / pHashStart / pHashName;
+			if (!exists(p))
+				return false;
 
-		opts->setVal<std::string>("folder", p.string());
-		if (!key.size()) return true;
-		path pf = p / path(key);
-		string meth;
-		path target;
-		if (detect_compressed(pf, meth, target))
-		{
-			opts->filename(target.string());
-			opts->setVal<string>("compression_method", meth);
-			opts->setVal<string>("base_filename", pf.string());
-			return true;
+			opts->setVal<std::string>("folder", p.string());
+			if (!key.size()) return true;
+			path pf = p / path(key);
+			string meth;
+			path target;
+			if (detect_compressed(pf, meth, target))
+			{
+				opts->filename(target.string());
+				opts->setVal<string>("compression_method", meth);
+				opts->setVal<string>("base_filename", pf.string());
+				return true;
+			}
+		} catch (boost::filesystem::filesystem_error &f) {
+			std::cerr << f.what() << " when searching " << base << " - " << hash << std::endl;
+		} catch (...) {
+			// Filesystem exceptions can be very annoying
 		}
 		return false;
 	}

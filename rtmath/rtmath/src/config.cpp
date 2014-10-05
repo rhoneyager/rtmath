@@ -33,6 +33,76 @@ namespace {
 
 	boost::shared_ptr<::rtmath::config::configsegment> _rtconfroot = nullptr;
 
+	
+
+	void writeSegment(
+		const boost::shared_ptr<const rtmath::config::configsegment> it, 
+		boost::property_tree::ptree& parent,
+		std::map<boost::shared_ptr<const rtmath::config::configsegment>, size_t > &encountered,
+		size_t &id_count)
+	{
+		using namespace boost::property_tree;
+		//path.push_back(it->name());
+		auto makeId = [&]() -> size_t {
+			id_count++;
+			return id_count;
+		};
+		if (encountered.count(it))
+		{
+			// Hard link
+			std::string slink = "hardlink:";
+			slink.append(boost::lexical_cast<std::string>(encountered.at(it)));
+			ptree self;
+			self.add(it->name(), slink);
+			parent.add_child(it->name(), self);
+		} else {
+			const size_t id = makeId();
+			encountered[it] = id;
+			ptree self;
+			// Add keys
+			for (const auto &k : it->listKeys())
+				self.add(k.first, k.second);
+			// Add children
+			for (const auto &k : it->listChildren())
+				writeSegment(k, self, encountered, id_count);
+
+			parent.add_child(it->name(), self);
+		}
+		//path.pop_back();
+	}
+
+	void readSegment(
+		boost::shared_ptr<rtmath::config::configsegment> cs,
+		boost::property_tree::ptree& pobj,
+		std::map< size_t, boost::shared_ptr<rtmath::config::configsegment> > &encountered,
+		size_t &id_count
+		)
+	{
+		using namespace boost::property_tree;
+		// Iterate over all child objects and value keys
+		for (auto it = pobj.begin(); it != pobj.end(); ++it)
+		{
+			if (it->second.data().size())
+			{
+				// This is a value key
+				std::string sdata = it->second.data();
+				if (sdata.find("hardlink:") == 0)
+				{
+					// Hard link reference
+					std::string sid = sdata.substr(9);
+					size_t refId = boost::lexical_cast<size_t>(sid);
+					if (!encountered.count(refId)) RTthrow rtmath::debug::xArrayOutOfBounds();
+					cs->addChild(encountered.at(refId));
+				} else cs->addVal(it->first, it->second.data());
+			} else {
+				// This is a child key
+				id_count++;
+				auto ncs = cs->generate(it->first, cs);
+				encountered[id_count] = ncs;
+				readSegment(ncs, it->second, encountered, id_count);
+			}
+		}
+	}
 }
 
 namespace rtmath {
@@ -95,7 +165,6 @@ namespace rtmath {
 			return mtypes;
 		}
 
-		/*
 		implementsConfigBoost::implementsConfigBoost() :
 			rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_Boost>(configsegment::writeBoost, configsegment::readBoost, known_formats())
@@ -112,18 +181,16 @@ namespace rtmath {
 				if (!mnewtypes.size())
 				{
 					mnewtypes.insert(".xml");
-					mnewtypes.insert(".json");
-					mnewtypes.insert(".ini");
+					//mnewtypes.insert(".json");
+					//mnewtypes.insert(".ini");
 				}
 				if (io::TextFiles::serialization_handle::compressionEnabled())
 				{
 					std::string sctypes;
 					std::set<std::string> ctypes;
-					serialization::known_compressions(sctypes, ".shp");
-					serialization::known_compressions(sctypes, ".dat");
-					serialization::known_compressions(sctypes, "shape.txt");
-					serialization::known_compressions(sctypes, "shape.dat");
-					serialization::known_compressions(sctypes, "target.out");
+					serialization::known_compressions(sctypes, ".xml");
+					//serialization::known_compressions(sctypes, ".json");
+					//serialization::known_compressions(sctypes, ".ini");
 					rtmath::config::splitSet(sctypes, ctypes);
 					for (const auto & t : ctypes)
 						mnewtypes.emplace(t);
@@ -131,8 +198,58 @@ namespace rtmath {
 			}
 			return mtypes;
 		}
-		*/
 
+
+		void configsegment::writeBoost(const boost::shared_ptr<const configsegment> ob, std::ostream & stream, std::shared_ptr<registry::IO_options>)
+		{
+			/// \todo allow for include statements.
+			using namespace std;
+			using boost::property_tree::ptree;
+			ptree pt;
+
+			// Take the property and iterate over its values and children.
+			// Keep track of hard and soft links. In these cases, add a reference object to the appropriate place.
+			std::map<boost::shared_ptr<const configsegment>, size_t > encountered;
+			//std::vector<std::string> path;
+			size_t id_count = 0;
+			
+			writeSegment(ob, pt, encountered, id_count);
+			/*
+			{
+			for (auto ut = ob->_symlinks.begin(); ut != ob->_symlinks.end(); ++ut)
+			{
+			if ((*ut).expired() == false)
+			{
+			stream << (*ut).lock();
+			//stream << (*ut);
+			}
+			}
+			for (auto ot = ob->_mapStr.begin(); ot != ob->_mapStr.end(); ++ot)
+			stream << " " << ot->first << " " << ot->second << endl;
+			for (auto it = ob->_children.begin(); it != ob->_children.end(); ++it)
+			stream << (*it);
+			}
+			*/
+			boost::property_tree::write_xml(stream, pt);
+		}
+
+		void configsegment::readBoost(boost::shared_ptr<configsegment> root, std::istream& indata, std::shared_ptr<registry::IO_options> opts)
+		{
+			// First, check that the file can be opened. If not, return NULL.
+			using namespace std;
+			using namespace boost::filesystem;
+			using boost::property_tree::ptree;
+
+			ptree pt;
+			boost::property_tree::read_xml(indata, pt);
+
+			std::map<size_t, boost::shared_ptr<configsegment> > encountered;
+			size_t id_count = 0;
+			// root should be constructed already
+
+			// Just convert the ptree into configsegment objects
+			readSegment(root, pt, encountered, id_count);
+		}
 
 		boost::shared_ptr<configsegment> configsegment::generate(const std::string &name)
 		{
@@ -355,6 +472,7 @@ namespace rtmath {
 			string name = ob->name();
 			stream << "<" << name << ">" << endl;
 			{
+				/*
 				for (auto ut = ob->_symlinks.begin(); ut != ob->_symlinks.end(); ++ut)
 				{
 					if ((*ut).expired() == false)
@@ -363,6 +481,7 @@ namespace rtmath {
 						//stream << (*ut);
 					}
 				}
+				*/
 				for (auto ot = ob->_mapStr.begin(); ot != ob->_mapStr.end(); ++ot)
 					stream << " " << ot->first << " " << ot->second << endl;
 				for (auto it = ob->_children.begin(); it != ob->_children.end(); ++it)

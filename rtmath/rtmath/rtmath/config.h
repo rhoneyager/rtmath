@@ -88,6 +88,12 @@ namespace rtmath {
 			implementsConfigBoost();
 		private:
 			static const std::set<std::string>& known_formats();
+			friend class configsegment;
+			//static void writeSegment(
+			//	const boost::shared_ptr<const rtmath::config::configsegment> it,
+			//	boost::property_tree::ptree& parent,
+			//	std::map<boost::shared_ptr<const rtmath::config::configsegment>, size_t > &encountered,
+			//	size_t &id_count);
 		};
 
 		/// \note Upgrading this to just be a wrapper for a boost property tree
@@ -118,8 +124,8 @@ namespace rtmath {
 			
 			static void readOld(boost::shared_ptr<configsegment>, std::istream&, std::shared_ptr<registry::IO_options>);
 			static void writeOld(const boost::shared_ptr<const configsegment>, std::ostream &, std::shared_ptr<registry::IO_options>);
-			//static void readBoost(boost::shared_ptr<configsegment>, std::istream&, std::shared_ptr<registry::IO_options>);
-			//static void writeBoost(const boost::shared_ptr<const configsegment>, std::ostream &, std::shared_ptr<registry::IO_options>);
+			static void readBoost(boost::shared_ptr<configsegment>, std::istream&, std::shared_ptr<registry::IO_options>);
+			static void writeBoost(const boost::shared_ptr<const configsegment>, std::ostream &, std::shared_ptr<registry::IO_options>);
 
 			boost::shared_ptr<configsegment> getPtr() const;
 			bool hasVal(const std::string &key) const;
@@ -149,7 +155,7 @@ namespace rtmath {
 			inline std::multiset<std::string> enumKeys() const { std::multiset<std::string> res; listKeys(res); return res; }
 			void listChildren(std::multiset<boost::shared_ptr<configsegment> > &res) const;
 			void listChildren(std::multiset<std::string> &res) const;
-			//inline std::multiset<std::string> listChildren() const { std::multiset<std::string> res; listChildren(res); return res; }
+			inline std::multiset<boost::shared_ptr<configsegment> > listChildren() const { std::multiset<boost::shared_ptr<configsegment> > res; listChildren(res); return res; }
 			void getCWD(std::string &cwd) const; // Returns directory of the loaded config file node.
 
 			
@@ -159,7 +165,7 @@ namespace rtmath {
 			//std::weak_ptr<configsegment> _self;
 			std::multimap<std::string, std::string> _mapStr;
 			std::multiset<boost::shared_ptr<configsegment> > _children;
-			std::multiset<boost::weak_ptr<configsegment> > _symlinks;
+			//std::multiset<boost::weak_ptr<configsegment> > _symlinks;
 		public: // And let's have a static loading function here!
 			//static boost::shared_ptr<configsegment> loadFile(const char* filename, boost::shared_ptr<configsegment> root);
 			//static boost::shared_ptr<configsegment> loadFile(std::istream &indata, boost::shared_ptr<configsegment> root, const std::string &cwd = "./");
