@@ -73,11 +73,20 @@ namespace {
 				if (c->hasVal("writable"))
 					c->getVal<bool>("writable", writable);
 
-				// PLACEHOLDER for hashStore type flag - probably coded on galahad.
+				std::string type = "dir";
+				if (c->hasVal("type"))
+					c->getVal<std::string>("type", type);
 
-				std::shared_ptr<rtmath::hashStore> h(new rtmath::hashStore);
+				std::shared_ptr < rtmath::hashStore > h;
+
+				if (type == "dir") {
+					h = std::shared_ptr<rtmath::hashStore>(new rtmath::hashStore);
+				} /// \todo Add hash store plugin search code here, and fill in the store generator in the header file.
+				else RTthrow rtmath::debug::xUnknownFileFormat(type.c_str());
+
 				h->writable = writable;
 				h->base = boost::filesystem::path(location);
+				h->type = type;
 
 				rtmath::hashStore::addHashStore(h, priority);
 			}
@@ -86,6 +95,14 @@ namespace {
 }
 
 namespace rtmath {
+	namespace registry {
+		template class usesDLLregistry <
+			::rtmath::hash_provider_registry,
+			::rtmath::Hash_registry_provider >;
+	}
+
+	Hash_registry_provider::~Hash_registry_provider() {}
+	Hash_registry_provider::Hash_registry_provider() {}
 
 	/*
 	boost::filesystem::path findHash(const boost::filesystem::path &base, const std::string &hash,

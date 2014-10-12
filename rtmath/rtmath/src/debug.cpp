@@ -213,6 +213,7 @@ namespace rtmath
 				"all other search locations. If it cannot be found, fall back to the "
 				"next option.")
 				("hash-dir", po::value<std::vector<string> >(), "Add a hash directory")
+				("hash-dir-writable", po::value<bool>()->default_value(false), "Is the custom hash directory writable?")
 				;
 
 			registry::add_options(cmdline, config, hidden);
@@ -257,7 +258,7 @@ namespace rtmath
 				for (const auto &p : hashDirs)
 				{
 					std::shared_ptr<hashStore> h(new hashStore);
-					h->writable = true;
+					h->writable = vm["hash-dir-writable"].as<bool>();
 					h->base = boost::filesystem::path(p);
 					hashStore::addHashStore(h, 0);
 				}

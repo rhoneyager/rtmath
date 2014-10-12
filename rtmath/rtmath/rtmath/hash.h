@@ -21,6 +21,26 @@
 //}
 
 namespace rtmath {
+	class hashStore;
+	typedef std::shared_ptr<const hashStore> pHashStore;
+	class hash_provider_registry{};
+	/// Designed to be a singleton
+	class DLEXPORT_rtmath_core Hash_registry_provider
+	{
+	public:
+		Hash_registry_provider();
+		~Hash_registry_provider();
+		//typedef std::function<boost::shared_ptr<VoronoiDiagram>
+		//	(const Eigen::Array3f &, const Eigen::Array3f &,
+		//	const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoiStdGeneratorType;
+		//voronoiStdGeneratorType generator;
+		const char* name;
+	};
+	namespace registry {
+		extern template class usesDLLregistry<
+			::rtmath::hash_provider_registry,
+			::rtmath::Hash_registry_provider >;
+	}
 
 	/// Used for hashing
 	class DLEXPORT_rtmath_core UINT128 {
@@ -78,9 +98,11 @@ namespace rtmath {
 	HASH_t DLEXPORT_rtmath_core HASHfile(const std::string& filename);
 
 
-	class hashStore;
-	typedef std::shared_ptr<const hashStore> pHashStore;
-	class DLEXPORT_rtmath_core hashStore {
+	
+	class DLEXPORT_rtmath_core hashStore :
+		virtual public ::rtmath::registry::usesDLLregistry<
+		hash_provider_registry, Hash_registry_provider >
+	{
 	public:
 		static bool findHashObj(const std::string &hash, const std::string &key,
 			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts);
@@ -100,9 +122,10 @@ namespace rtmath {
 		boost::filesystem::path base;
 		/// Indicates whether this store is read-only
 		bool writable;
-		
+		/// The type of the hash store (dir, hdf5, ...)
+		std::string type;
 	public:
-		~hashStore();
+		virtual ~hashStore();
 	
 	};
 
