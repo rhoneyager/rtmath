@@ -77,9 +77,14 @@ if (BUILD_PLUGINS)
 		add_subdirectory(tsv-export)
 	endif()
 	option (BUILD_PLUGIN_VORO
-		"Build VORO++ plugin. Used in Voronoi diagram." ON)
+		"Build VORO++ 3d plugin. Used in Voronoi diagram." ON)
 	if (BUILD_PLUGIN_VORO)
 		add_subdirectory(voro)
+	endif()
+	option (BUILD_PLUGIN_VORO2D
+		"Build VORO++ 2d plugin. Used in stats." ON)
+	if (BUILD_PLUGIN_VORO2D)
+		add_subdirectory(voro2d)
 	endif()
 	option (BUILD_PLUGIN_VTK
 		"Build VTK plugin. Used in hull calculation, image processing and visualization." ON)
