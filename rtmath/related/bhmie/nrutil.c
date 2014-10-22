@@ -1,6 +1,6 @@
 
 
-#if defined(__STDC__) || defined(ANSI) || defined(NRANSI) /* ANSI */
+#if 1 || defined(__STDC__) || defined(ANSI) || defined(NRANSI) /* ANSI */
 
 #include <stdio.h>
 #include <stddef.h>
@@ -293,6 +293,8 @@ void free_f3tensor(float ***t, long nrl, long nrh, long ncl, long nch,
 /* traditional - K&R */
 
 #include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
 #define NR_END 1
 #define FREE_ARG char*
 

@@ -138,6 +138,13 @@ namespace rtmath {
 			static void findHandler(pf_class_registry::orientation_type oriType, 
 				const char* name, const pf_class_registry *res);
 
+			struct csContainer
+			{
+				const char* name;
+				pf_class_registry::setup setup;
+				pf_class_registry::cross_sections cs;
+			};
+
 			typedef std::vector<std::pair<const char*, pf_class_registry::cross_sections> > resCtype;
 			typedef std::vector<std::pair<const char*, pf_class_registry::pfs> > resPtype;
 			void getCrossSections(const pf_class_registry::setup&, resCtype& res) const;
