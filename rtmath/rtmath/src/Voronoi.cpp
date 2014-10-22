@@ -311,6 +311,16 @@ namespace rtmath
 
 		//void Voronoi2dDiagram::setHash(HASH_t hash) { this->_hash = hash; }
 		//HASH_t Voronoi2dDiagram::hash() const { return this->_hash; }
+		Voronoi2dDiagram::Voronoi2dDiagram()
+		{
+			hostname = Ryan_Debug::getHostname();
+			ingest_username = Ryan_Debug::getUsername();
+			using namespace boost::posix_time;
+			using namespace boost::gregorian;
+			ptime now = second_clock::local_time();
+			ingest_timestamp = to_iso_string(now);
+			ingest_rtmath_version = rtmath::debug::rev();
+		}
 
 
 		void Voronoi2dDiagram::getBounds(Eigen::Array3f &mins,

@@ -133,7 +133,16 @@ namespace rtmath {
 			::rtmath::ddscat::ddPar_IO_input_registry,
 			IO_class_registry_reader<::rtmath::ddscat::ddPar> >;
 	}
-
+	namespace io {
+		template <>
+		boost::shared_ptr<::rtmath::ddscat::ddPar> customGenerator()
+		{
+			boost::shared_ptr<::rtmath::ddscat::ddPar> res
+				= ::rtmath::ddscat::ddPar::generate();
+			//	(new ::rtmath::ddscat::ddPar);
+			return res;
+		}
+	}
 	namespace ddscat {
 
 		implementsDDPAR::implementsDDPAR() :

@@ -59,6 +59,11 @@ namespace rtmath {
 			IO_class_registry_writer<::rtmath::ddscat::ddPar> >;
 
 	}
+	namespace io {
+		template <>
+		DLEXPORT_rtmath_ddscat boost::shared_ptr
+			<::rtmath::ddscat::ddPar> customGenerator();
+	}
 	namespace ddscat {
 
 		class rotations;
@@ -540,7 +545,8 @@ namespace rtmath {
 		public:
 			/// Load the default ddscat.par file, used in setting default values
 			static boost::shared_ptr<const ddPar> defaultInstance();
-
+			// Need readVector as a friend class
+			friend boost::shared_ptr<ddPar> io::customGenerator<ddPar>();
 			/**
 			 * \brief Adds ddPar options to a program
 			 *
