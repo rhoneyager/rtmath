@@ -261,8 +261,8 @@ namespace rtmath
 			std::stringstream in;
 			boost::iostreams::copy(sin, in);
 			//obj = in.str();
-			read<T>(T, in);
-			in >> obj;
+			read<T>(obj, in);
+			//in >> obj;
 		}
 
 		/**
