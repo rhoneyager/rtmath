@@ -537,6 +537,10 @@ namespace rtmath
 #endif
 		}
 
+		template<> DLEXPORT_rtmath_core void read<std::string>(std::string &obj, std::stringstream &in)
+		{
+			obj = in.str();
+		}
 
 
 	}

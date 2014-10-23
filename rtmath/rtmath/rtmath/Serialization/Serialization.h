@@ -249,10 +249,8 @@ namespace rtmath
 		{
 			in >> obj;
 		}
-		template<> void read<std::string>(std::string &obj, std::stringstream &in)
-		{
-			obj = in.str();
-		}
+		template<> void DLEXPORT_rtmath_core read<std::string>
+			(std::string &obj, std::stringstream &in);
 
 		/// Read object using boost::iostreams::filtering_istream (compressible)
 		template<class T>
@@ -261,7 +259,7 @@ namespace rtmath
 			std::stringstream in;
 			boost::iostreams::copy(sin, in);
 			//obj = in.str();
-			read<T>(obj, in);
+			rtmath::serialization::read<T>(obj, in);
 			//in >> obj;
 		}
 
@@ -299,7 +297,7 @@ namespace rtmath
 			prep_decompression(cmeth, sin);
 			sin.push(in);
 
-			read<T>(obj, sin);
+			rtmath::serialization::read<T>(obj, sin);
 		}
 
 	}
