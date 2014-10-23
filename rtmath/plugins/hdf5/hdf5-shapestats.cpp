@@ -78,6 +78,10 @@ namespace rtmath {
 				addAttr<string, Group>(statsraw, "ingest_username", s->ingest_username);
 				addAttr<int, Group>(statsraw, "ingest_rtmath_version", s->ingest_rtmath_version);
 
+
+
+				addAttr<int, Group>(statsraw, "shapeFileStats_version", s->_currVersion);
+				
 				// The full hash
 				addAttr<uint64_t, Group>(statsraw, "Hash_Lower", s->_shp->hash().lower);
 				addAttr<uint64_t, Group>(statsraw, "Hash_Upper", s->_shp->hash().upper);
@@ -105,9 +109,12 @@ namespace rtmath {
 						float V, SA, aeff_SA, aeff_V, f;
 					};
 
-					const char* names[4] = { "Circum_Sphere", "Convex_Hull", "Voronoi_Hull", "Ellipsoid_Max" };
+					const size_t nMeths = 6;
+					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
+						"Voronoi_Hull", "Ellipsoid_Max", 
+						"RMS_Sphere", "Gyration_Sphere" };
 
-					std::array<vdata, 4> data;
+					std::array<vdata, nMeths> data;
 					data[0].name = names[0]; data[0].V = s->Scircum_sphere.V; data[0].SA = s->Scircum_sphere.SA; 
 					data[0].aeff_V = s->Scircum_sphere.aeff_V; data[0].aeff_SA = s->Scircum_sphere.aeff_SA; data[0].f = s->Scircum_sphere.f;
 
@@ -119,6 +126,13 @@ namespace rtmath {
 
 					data[3].name = names[3]; data[3].V = s->Sellipsoid_max.V; data[3].SA = s->Sellipsoid_max.SA;
 					data[3].aeff_V = s->Sellipsoid_max.aeff_V; data[3].aeff_SA = s->Sellipsoid_max.aeff_SA; data[3].f = s->Sellipsoid_max.f;
+
+					data[4].name = names[4]; data[4].V = s->Srms_sphere.V; data[4].SA = s->Srms_sphere.SA;
+					data[4].aeff_V = s->Srms_sphere.aeff_V; data[4].aeff_SA = s->Srms_sphere.aeff_SA; data[4].f = s->Srms_sphere.f;
+
+					data[5].name = names[5]; data[5].V = s->Sgyration.V; data[5].SA = s->Sgyration.SA;
+					data[5].aeff_V = s->Sgyration.aeff_V; data[5].aeff_SA = s->Sgyration.aeff_SA; data[5].f = s->Sgyration.f;
+
 
 					//data[4].name = names[4]; data[4].V = s->Sellipsoid_rms.V; data[4].SA = s->Sellipsoid_rms.SA;
 					//data[4].aeff_V = s->Sellipsoid_rms.aeff_V; data[4].aeff_SA = s->Sellipsoid_rms.aeff_SA; data[4].f = s->Sellipsoid_rms.f;

@@ -26,7 +26,7 @@
 namespace rtmath {
 	namespace ddscat {
 		namespace stats {
-			//const unsigned int shapeFileStatsBase::_maxVersion = SHAPESTATS_VERSION;
+			const int shapeFileStatsBase::_maxVersion = 5;
 			SHARED_PRIVATE bool autoHashShapes = false;
 			SHARED_PRIVATE bool autoHashStats = false;
 			SHARED_PRIVATE std::vector<boost::tuple<double, double, double> > defaultRots;
@@ -71,7 +71,7 @@ namespace rtmath {
 				aeff_dipoles_const = 0;
 				max_distance = 0;
 
-				_currVersion = -1;
+				_currVersion = _maxVersion;
 
 				// Need to fill with something for serialization to work with
 				//_shp = boost::shared_ptr<shapefile>(new shapefile);
@@ -185,7 +185,10 @@ namespace rtmath {
 			bool shapeFileStats::needsUpgrade() const
 			{
 				// Standard case
-				//if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
+				//if (this->ingest_rtmath_version < 1636 
+				//	&& this->ingest_rtmath_version > 0) return true;
+				if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
+				if (_currVersion < 0 && this->ingest_rtmath_version < 1636) return true;
 				return false;
 			}
 
@@ -325,6 +328,7 @@ namespace rtmath {
 					calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
 				}
 
+				this->_currVersion = _maxVersion;
 			}
 
 			void shapeFileStats::add_options(

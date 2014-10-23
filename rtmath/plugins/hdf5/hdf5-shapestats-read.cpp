@@ -59,6 +59,10 @@ namespace rtmath {
 				readAttr<string, Group>(base, "ingest_username", r->ingest_username);
 				readAttr<int, Group>(base, "ingest_rtmath_version", r->ingest_rtmath_version);
 
+				if (attrExists(base, "shapeFileStats_version"))
+					addAttr<int, Group>(base, "shapeFileStats_version", r->_currVersion);
+				else r->_currVersion = 4; // The version where this was added.
+
 				// Shape hash
 				HASH_t hash;
 				readAttr<uint64_t, Group>(base, "Hash_Lower", hash.lower);
@@ -95,7 +99,11 @@ namespace rtmath {
 						float V, SA, aeff_SA, aeff_V, f;
 					};
 
-					const char* names[4] = { "Circum_Sphere", "Convex_Hull", "Voronoi_Hull", "Ellipsoid_Max" };
+					const size_t nMeths = 6;
+					// Names must match writer
+					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull", 
+						"Voronoi_Hull", "Ellipsoid_Max",
+						"RMS_Sphere", "Gyration_Sphere" };
 
 					std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Volumetric")));
 					std::vector<size_t> dims;
@@ -123,6 +131,8 @@ namespace rtmath {
 						else if (name == string(names[1])) v = &(r->Sconvex_hull);
 						else if(name == string(names[2])) v = &(r->SVoronoi_hull);
 						else if(name == string(names[3])) v = &(r->Sellipsoid_max);
+						else if (name == string(names[4])) v = &(r->Srms_sphere);
+						else if (name == string(names[5])) v = &(r->Sgyration);
 						else RTthrow debug::xUnimplementedFunction();
 
 						v->V = d.V;

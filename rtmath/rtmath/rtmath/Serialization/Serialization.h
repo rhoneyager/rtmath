@@ -182,6 +182,125 @@ namespace rtmath
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
 
+		
+		/**
+		* \brief Serialize object and write to file (compressible)
+		*
+		* \param obj is the object to be written. Usually a string.
+		* \param outfile is the file path to write.
+		* \param autoCompress enables / disables compression for this write.
+		* \param overwrite will overwrite any existing file.
+		* \throws std::string if the file exists and overwrite is false
+		* \throws on any filesystem exception
+		**/
+		template<class T>
+		void write(const T &obj, const std::string &outfile, bool autoCompress = auto_compression_enabled(), bool overwrite = true)
+		{
+			using namespace std;
+			using namespace boost::filesystem;
+			path pBase(outfile), pXML; // Note: pXML as a name is a holdover.
+			string cmeth, target;
+
+			// Check for compression
+			if (autoCompress) {
+				if (!detect_compressed(pBase.string(), cmeth, target))
+					select_compression(pBase.string(), cmeth);
+				// If a compression method is detected, and it is NOT already 
+				// in the file name:
+				if (cmeth.size() && pBase.extension().string() != (string(".").append(cmeth))) {
+					ostringstream sCompressed;
+					// Note: boost 1.49 or 1.50 implements << operator.  1.48 and below do not.
+					//					if (pBase.string().find(cmeth) != std::string::npos)
+					{
+						sCompressed << pBase.string() << "." << cmeth;
+						pXML = path(sCompressed.str());
+						//					} else {
+						//						pXML = pBase;
+					}
+				} else {
+					pXML = pBase;
+				}
+			} else {
+				pXML = pBase;
+			}
+			if (exists(pXML) && !overwrite) {
+				std::string f("File: ");
+				f.append(pXML.string());
+				f.append(" exists, and overwrite is disabled.");
+				throw(f);
+			}
+
+			// Open file for writing with appropriate other params
+			std::ofstream out(pXML.string().c_str(), ios_base::out | ios_base::binary);
+
+			// Prepare compression
+			using namespace boost::iostreams;
+			filtering_ostream sout;
+			prep_compression(cmeth, sout);
+
+			// Serialize and output
+			sout.push(out);
+			sout << obj;
+		}
+
+		/// Reads object from stringstream
+		template<class T>
+		void read(T &obj, std::stringstream &in)
+		{
+			in >> obj;
+		}
+		template<> void read<std::string>(std::string &obj, std::stringstream &in)
+		{
+			obj = in.str();
+		}
+
+		/// Read object using boost::iostreams::filtering_istream (compressible)
+		template<class T>
+		void read(T &obj, boost::iostreams::filtering_istream &sin)
+		{
+			std::stringstream in;
+			boost::iostreams::copy(sin, in);
+			//obj = in.str();
+			read<T>(T, in);
+			in >> obj;
+		}
+
+		/**
+		* \brief Read serialized object from file (compressible)
+		*
+		* \param obj is the object to be populated.
+		* \param infile is the file path to read.
+		* \throws if the file cannot be read, does not exist, or does not match the appropriate identifier.
+		**/
+		template<class T>
+		void read(T &obj, const std::string &infile)
+		{
+			// This routine can accept either a base directory or an actual filename
+			// If a base directory is given, search for dirSuffix within the directory
+			using namespace std;
+			using namespace boost::filesystem;
+			bool found = false;
+			bool isDir = false;
+
+			path pBase(infile), pTarget;
+			string sTarget, cmeth;
+
+			found = detect_compressed(pBase.string(), cmeth, sTarget);
+			if (!found) throw("Cannot find file");
+
+			pTarget = path(sTarget);
+
+			// Open file for writing with appropriate other params
+			ifstream in(pTarget.string().c_str(), ios_base::in | ios_base::binary);
+
+			// Prepare compression
+			using namespace boost::iostreams;
+			filtering_istream sin;
+			prep_decompression(cmeth, sin);
+			sin.push(in);
+
+			read<T>(obj, sin);
+		}
 
 	}
 

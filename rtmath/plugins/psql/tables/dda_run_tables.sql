@@ -134,6 +134,26 @@ CREATE VIEW currentRuns AS
 	ORDER BY host.hostname, flakeRuns.runsCompleted
 	;
 
+CREATE VIEW ingestedRuns AS
+	SELECT
+	flakeRuns.username,
+	flakeTypes.name,
+	flakeRuns.frequency,
+	flakeRuns.temperature as temp,
+	host.hostname,
+	flakeRuns.decimation as dec,
+	flakeRuns.perturbation,
+	flakeRuns.polarization as pol,
+	flakeRuns.runsTotal as total, 
+	flakeRuns.nBetas, flakeRuns.nThetas, flakeRuns.nPhis, 
+	flakeRuns.tsTransferred
+	FROM flakeRuns, host, flakeTypes
+	WHERE flakeRuns.progress = 'ingested'
+	AND host.id = flakeRuns.host
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY flakeRuns.frequency, temp, dec, flakeruns.perturbation
+	;
+
 CREATE VIEW waitingRuns AS
 	SELECT
 	flakeRuns.username,
@@ -165,6 +185,7 @@ CREATE VIEW hostLoad AS
 	order by host.hostname;
 
 	create view currentruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from currentruns order by total - good;
+	create view ingestedruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from ingestedruns order by total - good;
 
 	grant select on currentruns_console to public;
 	grant select on currentruns TO public;

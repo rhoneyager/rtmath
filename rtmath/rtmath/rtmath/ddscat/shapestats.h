@@ -111,6 +111,7 @@ namespace rtmath {
 			/**
 			* Version history for shapeFileStats, shapeFileStatsRotated and base classes:
 			*
+			* 5 - Adding rms sphere and radius of gyration to stats
 			* 4 - Adding Voronoi hulls, and subclassing V,SA and f values.
 			* 3 - Bug fixes
 			* 2 - removed qhull_enabled flag, as vtk convex hulls are now used
@@ -162,8 +163,14 @@ namespace rtmath {
 #endif
 				};
 
-				volumetric Scircum_sphere, Sconvex_hull,
-					SVoronoi_hull, Sellipsoid_max; // , Sellipsoid_rms;
+				/// Scircum_sphere is for a circumscribing sphere
+				/// Srms_sphere is for a RMS sphere (P&H 2010 def.)
+				/// SVoronoi_hull is for a voronoi hull
+				/// Sellipsoid_max is for a max ellipsoid
+				/// Sconvex_hull is for a convex hull
+				/// Sgyration is for Westbrook 2006's radius of gyration
+				volumetric Scircum_sphere, Sconvex_hull, Sgyration,
+					SVoronoi_hull, Sellipsoid_max, Srms_sphere; // , Sellipsoid_rms;
 
 				/// Maximum distance between any two points
 				float max_distance;
@@ -172,9 +179,9 @@ namespace rtmath {
 				/// Max distance 2nd point
 
 				/// Tracks the current stats version to see if recalculation is required.
-				static const unsigned int _maxVersion;
+				static const int _maxVersion;
 				/// Tracks the loaded stats version to see if reaclculation is required.
-				unsigned int _currVersion;
+				int _currVersion;
 
 				// Before normalization and rotation
 				Eigen::Vector3f b_min, b_max, b_mean;
@@ -316,3 +323,4 @@ namespace rtmath {
 		}
 	}
 }
+

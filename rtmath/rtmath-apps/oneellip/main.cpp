@@ -49,9 +49,11 @@ int main(int argc, char *argv[])
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			("match-parent-flake", "Select the parent flakes")
 
-			("vf-scaling", po::value<string>()->default_value("Ellipsoid_Max"),
+			("vf-scaling", po::value<string>()->default_value("Circumscribing_Sphere"),
 			"Select the method used in determining the volume fraction. 1) Voronoi_Internal uses the internal volume fraction."
-			" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid.")
+			" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid,"
+			" 5) RMS_Sphere for a root mean square sphere (per Petty and Huang 2010),"
+			" 6) Gyration_Sphere uses the Westbrok 2006 radius of gyration.")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
 
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -258,16 +260,11 @@ int main(int argc, char *argv[])
 			VORONOI,
 			CONVEX,
 			ELLIPSOID_MAX,
-			INTERNAL_VORONOI
+			INTERNAL_VORONOI,
+			RMS_SPHERE,
+			GYRATION_SPHERE
 		};
 		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
-		/*
-		("vf-scaling", po::value<string>()->default_value(""),
-		"Select the method used in determining the volume fraction. 1) Voronoi_Internal uses the internal volume fraction."
-		" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid.")
-		("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
-
-		*/
 		string vfScaling = vm["vf-scaling"].as<string>();
 
 		if (vfScaling == "Circumscribing_Sphere") vf = VFRAC_TYPE::CIRCUM_SPHERE;
@@ -275,6 +272,8 @@ int main(int argc, char *argv[])
 		else if (vfScaling == "Voronoi_Internal") vf = VFRAC_TYPE::INTERNAL_VORONOI;
 		else if (vfScaling == "Convex") vf = VFRAC_TYPE::CONVEX;
 		else if (vfScaling == "Ellipsoid_Max") vf = VFRAC_TYPE::ELLIPSOID_MAX;
+		else if (vfScaling == "RMS_Sphere") vf = VFRAC_TYPE::RMS_SPHERE;
+		else if (vfScaling == "Gyration_Sphere") vf = VFRAC_TYPE::GYRATION_SPHERE;
 		size_t int_voro_depth = vm["voronoi-depth"].as<size_t>();
 
 		bool rescaleM = vm["scale-m"].as<bool>();
@@ -282,16 +281,19 @@ int main(int argc, char *argv[])
 		/*
 		("refract-method", po::value<string>()->default_value("Maxwell_Garnett_Ellipsoids"), "Method used to calculate the resulting dielectric "
 		"(Sihvola, Debye, Maxwell_Garnett_Spheres, Maxwell_Garnett_Ellipsoids). "
-		"Only matters if volume fractions are given. Then, default is Maxwell_Garnett_Ellipsoids.")
+		"Only matters if volume fractions are given, default is Maxwell_Garnett_Ellipsoids.")
 		*/
 		string refractScaling = vm["refract-method"].as<string>();
 		std::function<void(std::complex<double>, std::complex<double>, double, std::complex<double> &)> rmeth;
-		if (refractScaling == "Sihvola") rmeth = sihvolaBinder;
-		else if (refractScaling == "Maxwell_Garnett_Ellipsoids") rmeth = rtmath::refract::maxwellGarnettEllipsoids;
+		if (refractScaling == "Sihvola") { 
+			rmeth = sihvolaBinder;
+			refractScaling.append(" nu ");
+			refractScaling.append(boost::lexical_cast<std::string>(nu));
+		} else if (refractScaling == "Maxwell_Garnett_Ellipsoids") rmeth = rtmath::refract::maxwellGarnettEllipsoids;
 		else if (refractScaling == "Maxwell_Garnett_Spheres") rmeth = rtmath::refract::maxwellGarnettSpheres;
 		else if (refractScaling == "Debye") rmeth = rtmath::refract::debyeDry;
 		else if (!rescaleM) rmeth = fixedBinder;
-		else doHelp("Need to specify a proper refractive index scaling.");
+		else doHelp("Need to specify a proper refractive  scaling.");
 
 		string armeth = vm["ar-method"].as<string>(); // Used much further below
 
@@ -404,6 +406,10 @@ int main(int argc, char *argv[])
 				rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
 				if (vf == VFRAC_TYPE::CIRCUM_SPHERE) {
 					v = &(stats->Scircum_sphere); r.fvMeth = "Circumscribing Sphere";
+				} else if (vf == VFRAC_TYPE::RMS_SPHERE) {
+					v = &(stats->Srms_sphere); r.fvMeth = "RMS Sphere";
+				} else if (vf == VFRAC_TYPE::GYRATION_SPHERE) {
+					v = &(stats->Sgyration); r.fvMeth = "Radius of gyration Sphere";
 				} else if (vf == VFRAC_TYPE::VORONOI) {
 					v = &(stats->SVoronoi_hull); r.fvMeth = "Voronoi hull";
 				} else if (vf == VFRAC_TYPE::CONVEX) {

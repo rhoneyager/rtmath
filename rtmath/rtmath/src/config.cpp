@@ -86,13 +86,47 @@ namespace {
 			{
 				// This is a value key
 				std::string sdata = it->second.data();
-				if (sdata.find("hardlink:") == 0)
-				{
+				if (sdata.find("hardlink:") == 0) {
 					// Hard link reference
 					std::string sid = sdata.substr(9);
 					size_t refId = boost::lexical_cast<size_t>(sid);
 					if (!encountered.count(refId)) RTthrow rtmath::debug::xArrayOutOfBounds();
 					cs->addChild(encountered.at(refId));
+				} else if (sdata.find("include:") == 0) {
+					std::string sid = sdata.substr(8);
+					boost::filesystem::path pInc(sid);
+					boost::filesystem::path pIncSym = rtmath::debug::expandSymlink(pInc);
+
+					auto doReadFile = [&](const boost::filesystem::path &p)
+					{
+						auto ncs = cs->generate(it->first, cs);
+						size_t cid_count = 0;
+						std::map< size_t, boost::shared_ptr<rtmath::config::configsegment> > cenc;
+
+						boost::property_tree::ptree pt_child;
+						// Read file into stream. Handle compression.
+						std::string sfile;
+						rtmath::serialization::read(sfile, p.string());
+						std::istringstream sin(sfile);
+						boost::property_tree::read_xml(sin, pt_child);
+						readSegment(ncs, pt_child, cenc, cid_count);
+					};
+
+					if (boost::filesystem::is_directory(pIncSym))
+					{
+						std::vector<boost::filesystem::path> vs;
+						rtmath::debug::expandFolder(pIncSym, vs, false);
+						for (const auto & v : vs)
+						{
+							auto sym = rtmath::debug::expandSymlink(v);
+							boost::filesystem::path sym_unc; std::string cmeth;
+							rtmath::serialization::uncompressed_name(sym, sym_unc, cmeth);
+							if (boost::filesystem::is_regular_file(sym) && sym_unc.extension().string() == ".xml")
+								doReadFile(sym);
+						}
+					} else {
+						doReadFile(pIncSym);
+					}
 				} else cs->addVal(it->first, it->second.data());
 			} else {
 				// This is a child key

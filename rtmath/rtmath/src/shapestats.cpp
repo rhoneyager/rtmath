@@ -258,6 +258,21 @@ namespace rtmath {
 
 					Sellipsoid_max.calc(this);
 					//Sellipsoid_rms.calc(this);
+
+					// RMS aeff is determined by summation over all points to get the rms vector.
+					double rms_index = vec[rotColDefs::RMS_MEAN](3) * sqrt(5. / 3.);
+					Srms_sphere.aeff_V = rms_index;
+					Srms_sphere.aeff_SA = rms_index;
+					Srms_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Srms_sphere.aeff_V, 3.0f) / 3.0f;
+					Srms_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Srms_sphere.aeff_SA, 2.0f);
+					Srms_sphere.calc(this);
+
+					/// need r^2, not r, so MOM1, not SUM
+					Sgyration.aeff_V = pow(vec[rotColDefs::MOM1](3) / (double)_N, 2.);
+					Sgyration.aeff_SA = Sgyration.aeff_V;
+					Sgyration.V = boost::math::constants::pi<float>() * 4.0f * pow(Sgyration.aeff_V, 3.0f) / 3.0f;
+					Sgyration.SA = boost::math::constants::pi<float>() * 4.0f * pow(Sgyration.aeff_SA, 2.0f);
+					Sgyration.calc(this);
 				}
 
 
