@@ -179,6 +179,8 @@ namespace rtmath {
 					}
 				}
 
+				r->upgrade(); // Will upgrade to the latest version if necessary.
+
 				return true;
 			}
 		}

@@ -187,6 +187,8 @@ namespace rtmath {
 				// Standard case
 				//if (this->ingest_rtmath_version < 1636 
 				//	&& this->ingest_rtmath_version > 0) return true;
+				if (prohibitStats) return false;
+				if (forceRecalcStats) return true;
 				if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
 				if (_currVersion < 0 && this->ingest_rtmath_version < 1636) return true;
 				return false;
@@ -266,6 +268,7 @@ namespace rtmath {
 						s = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 					else std::cerr << "Stats not found. New calculations prohibited." << std::endl;
 				}
+				if (s->needsUpgrade()) s->upgrade();
 
 				if (autoHashShapes) shp->writeToHash();
 				if (autoHashStats && s) s->writeToHash();
@@ -306,6 +309,8 @@ namespace rtmath {
 					if (!shp) RTthrow debug::xMissingHash("shapefile+stats", hash.string().c_str());
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 				}
+				if (res)
+					if (res->needsUpgrade()) res->upgrade(); // obeys stat prohibitions
 				if (autoHashStats && res) res->writeToHash();
 
 				return res;
