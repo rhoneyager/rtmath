@@ -319,6 +319,7 @@ namespace rtmath {
 			void shapeFileStats::upgrade()
 			{
 				if (!needsUpgrade()) return;
+				std::cerr << " upgrading stats from version " << this->_currVersion << " to " << _maxVersion << std::endl;
 				load();
 
 				bool baseRecalced = false;

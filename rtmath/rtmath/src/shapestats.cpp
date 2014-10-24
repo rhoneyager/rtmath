@@ -256,7 +256,8 @@ namespace rtmath {
 				// Can't use RMS_MEAN, since the mean should be zero, not the mean of the r distribution.
 				// Also, RMS_MEAN is for a sample, not a population.
 				double rms_index = vec[rotColDefs::MOM2](0) + vec[rotColDefs::MOM2](1) + vec[rotColDefs::MOM2](2);
-				rms_index *= sqrt(5. / (3. * (double)_shp->numPoints));
+				rms_index *= sqrt(5. / 3.);
+				//rms_index *= sqrt(5. / (3. * (double)_shp->numPoints));
 				//double rms_index = vec[rotColDefs::RMS_MEAN](3) * sqrt(5. / 3.);
 				Srms_sphere.aeff_V = rms_index;
 				Srms_sphere.aeff_SA = rms_index;
@@ -274,9 +275,9 @@ namespace rtmath {
 
 				/// need r^2, not r, so MOM2, not SUM
 				double g_index = vec[rotColDefs::MOM2](0) + vec[rotColDefs::MOM2](1) + vec[rotColDefs::MOM2](2);
-				g_index /= (double)_shp->numPoints;
+				//g_index /= (double)_shp->numPoints; ?
 
-				Sgyration.aeff_V = pow(g_index, 2.); // / (double)_shp->numPoints, 2.);
+				Sgyration.aeff_V = pow(g_index, 2.) / (double)_shp->numPoints; // / (double)_shp->numPoints, 2.);
 				Sgyration.aeff_SA = Sgyration.aeff_V;
 				Sgyration.V = boost::math::constants::pi<float>() * 4.0f * pow(Sgyration.aeff_V, 3.0f) / 3.0f;
 				Sgyration.SA = boost::math::constants::pi<float>() * 4.0f * pow(Sgyration.aeff_SA, 2.0f);
