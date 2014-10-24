@@ -12,19 +12,19 @@
 #include <tuple>
 
 #include <boost/filesystem.hpp>
-#include <hdf5.h>
-#include <H5Cpp.h>
 
-#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
 #include "plugin-hdf5.h"
-
+// These go last, as they do odd stuff to definitions.
+#include <hdf5.h>
+#include <H5Cpp.h>
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
@@ -169,8 +169,11 @@ namespace rtmath {
 						matrixTable &mat = rot.get<1>();
 						vectorTable &vec = rot.get<2>();
 
-						for (size_t j = 0; j < rotColDefs::NUM_ROTDEFS_FLOAT; ++j)
+						//  rotColDefs::NUM_ROTDEFS_FLOAT;
+						for (size_t j = 0; j < (size_t)tblBasic.cols(); ++j)
 							tbl[j] = tblBasic(i, j);
+						if (tblBasic.cols() < 4) tbl[3] = 4; // Version tag added in version 5, 
+						// so this is version 4 (when the hdf5 plugin was first implemented).
 						
 						devectorize(tblMatrices, mat, i);
 						devectorize(tblVectors, vec, i);

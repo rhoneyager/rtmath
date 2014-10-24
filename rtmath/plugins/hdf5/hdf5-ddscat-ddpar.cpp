@@ -12,12 +12,10 @@
 #include <tuple>
 
 #include <boost/filesystem.hpp>
-#include <hdf5.h>
-#include <H5Cpp.h>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/ddscat/shapestats.h"
+//#include "../../rtmath/rtmath/ddscat/shapefile.h"
+//#include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -27,6 +25,8 @@
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "plugin-hdf5.h"
 
+#include <hdf5.h>
+#include <H5Cpp.h>
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {

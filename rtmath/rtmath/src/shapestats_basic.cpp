@@ -321,17 +321,45 @@ namespace rtmath {
 				if (!needsUpgrade()) return;
 				load();
 
-				// Recalculate base stats
-				calcStatsBase();
+				bool baseRecalced = false;
+				bool rotsRecalced = false;
 
-				// Redo each rotation
-				std::set<rotData> oldRotations = rotstats;
-				rotstats.clear();
-				for (auto rot : oldRotations)
+				auto recalcBase = [&]() {
+					if (baseRecalced) return;
+					// Recalculate base stats
+					calcStatsBase();
+					baseRecalced = true;
+				};
+				auto recalcRots = [&]() {
+					if (rotsRecalced) return;
+					// Redo each rotation
+					std::set<rotData> oldRotations = rotstats;
+					rotstats.clear();
+					for (auto rot : oldRotations)
+					{
+						const basicTable &tbl = rot.get<0>();
+						calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
+					}
+					rotsRecalced = true;
+				};
+
+				// Some logic to keep from having to recalculate everything between version upgrades
+				if (this->_currVersion < 4)
 				{
-					const basicTable &tbl = rot.get<0>();
-					calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
+					recalcBase();
+					recalcRots();
+					this->_currVersion = _maxVersion;
 				}
+				// Can just follow the upgrade chain
+				if (this->_currVersion == 4)
+				{
+					// 4-5 added more volumetric solvers and 2d projections
+					calcSrms_sphere(); // These will pick up on recalculating rot stats automatically if needed
+					calcSgyration();
+
+					this->_currVersion++;
+				}
+				// Future upgrades can go here.
 
 				this->_currVersion = _maxVersion;
 			}
@@ -563,7 +591,7 @@ namespace rtmath {
 #define check(a) if (val == a) return std::string( tostr(a) );
 			std::string rotColDefs::stringifyBasic(int val)
 			{
-				check(BETA); check(THETA); check(PHI);
+				check(BETA); check(THETA); check(PHI); check(VERSION);
 				return std::string("");
 			}
 

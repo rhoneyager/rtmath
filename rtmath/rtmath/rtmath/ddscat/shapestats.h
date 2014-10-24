@@ -29,7 +29,8 @@ namespace rtmath {
 			{
 			public:
 				enum rotDefs {
-					BETA, THETA, PHI,
+					// VERSION TAG ADDED IN VERSION 5
+					BETA, THETA, PHI, VERSION,
 					NUM_ROTDEFS_FLOAT
 				};
 				enum vectorDefs {
@@ -229,7 +230,13 @@ namespace rtmath {
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 			protected:
 				shapeFileStatsBase();
-
+				void calcStatsBaseRotMatrix();
+				void calcVoroCvx();
+				void calcBs();
+				void calcScircum();
+				void calcSellmax();
+				void calcSrms_sphere();
+				void calcSgyration();
 				mutable rotPtr _rotMinPE, _rotMaxAR;
 
 				/// Holds the Voronoi diagram (now used when calculating per-orientation area and perimeter)

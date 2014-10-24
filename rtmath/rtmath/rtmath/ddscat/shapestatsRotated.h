@@ -127,9 +127,9 @@ namespace rtmath {
 				bool needsUpgrade() const;
 			private:
 				/// Internally indicates the most current class definition (used for upgrade check).
-				static const unsigned int _maxVersion;
+				static const int _maxVersion;
 				/// Internally indicates the serialized version (used for upgrade check).
-				unsigned int _currVersion;
+				int _currVersion;
 			public:
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 			};

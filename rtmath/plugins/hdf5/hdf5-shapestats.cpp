@@ -2,29 +2,30 @@
 #define _SCL_SECURE_NO_WARNINGS
 #pragma warning( disable : 4251 ) // warning C4251: dll-interface
 
+#include <string>
 #include <array>
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <memory>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <tuple>
 
 #include <boost/filesystem.hpp>
-#include <hdf5.h>
-#include <H5Cpp.h>
 
-#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
+#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
+#include "../../rtmath/rtmath/plugin.h"
 
 #include "plugin-hdf5.h"
 
+// These go last, as they do odd stuff to definitions.
+#include <hdf5.h>
+#include <H5Cpp.h>
 namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {

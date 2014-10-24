@@ -29,6 +29,17 @@ namespace rtmath {
 
 		namespace stats {
 
+			/* These were removed when I stopped using shapeFileStatsRotated.
+			shapeFileStatsRotated::shapeFileStatsRotated() {}
+			shapeFileStatsRotated::~shapeFileStatsRotated() {}
+			bool shapeFileStatsRotated::operator<(const shapeFileStatsRotated &rhs) const
+			{
+				if (beta != rhs.beta) return beta < rhs.beta;
+				if (theta != rhs.theta) return theta < rhs.theta;
+				if (phi != rhs.phi) return phi < rhs.phi;
+			}
+			*/
+
 			shapeFileStatsBase::rotPtr shapeFileStatsBase::calcStatsRot(double beta, double theta, double phi) const
 			{
 				//boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
@@ -49,9 +60,15 @@ namespace rtmath {
 				if (rotstats.count(pres)) // Already calculated
 				{
 					auto it = rotstats.find(pres);
-					return it;
+					// Check if it needs an upgrade
+					/// \todo Add easier upgrade code
+					if (it->get<0>().at(rotColDefs::VERSION) >= 4) //== shapeFileStatsBase::_maxVersion)
+						return it;
+					else rotstats.erase(it);
 				}
 
+
+				tbl[rotColDefs::VERSION] = shapeFileStatsBase::_maxVersion;
 				Eigen::Matrix3f Roteff;
 				rotationMatrix<float>((float)theta, (float)phi, (float)beta, Roteff);
 				// Normally, Reff = RyRxRz. But, the rotation is a1,a2-dependent, 
@@ -156,7 +173,7 @@ namespace rtmath {
 				vec[rotColDefs::ABS_MEAN](2) = boost::accumulators::moment<1>(abs_z);
 
 
-				// RMS accumulators - rms is the square root of the 2nd moment
+				// RMS accumulators - rms is the square root of the 2nd moment - note: this is sample, not pop.
 				vec[rotColDefs::RMS_MEAN](0) = sqrt(boost::accumulators::variance(acc_x));
 				vec[rotColDefs::RMS_MEAN](1) = sqrt(boost::accumulators::variance(acc_y));
 				vec[rotColDefs::RMS_MEAN](2) = sqrt(boost::accumulators::variance(acc_z));
