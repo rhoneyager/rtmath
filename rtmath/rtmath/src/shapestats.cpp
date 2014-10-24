@@ -194,7 +194,7 @@ namespace rtmath {
 				SVoronoi_internal_2.aeff_SA = SVoronoi_internal_2.aeff_V;
 				SVoronoi_internal_2.V = boost::math::constants::pi<float>() * 4.0f * pow(SVoronoi_internal_2.aeff_V, 3.0f) / 3.0f;
 				SVoronoi_internal_2.SA = boost::math::constants::pi<float>() * 4.0f * pow(SVoronoi_internal_2.aeff_SA, 2.0f);
-				SVoronoi_internal_2.calc(this);
+				//SVoronoi_internal_2.calc(this);
 				auto voroHullCalc = [&]()
 				{
 					std::pair<float, float> res;

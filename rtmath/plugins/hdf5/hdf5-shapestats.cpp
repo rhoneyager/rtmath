@@ -123,19 +123,21 @@ namespace rtmath {
 						"Sarea_circle_proj_z"*/ };
 
 					std::array<vdata, nMeths> data;
-					auto writeIndex = [&](size_t i, const rtmath::ddscat::stats::shapeFileStatsBase::volumetric &v)
+					size_t i=0;
+					auto writeIndex = [&](const rtmath::ddscat::stats::shapeFileStatsBase::volumetric &v)
 					{
-						data[i].name = names[0]; data[i].V = v.V; data[i].SA = v.SA;
+						data[i].name = names[i]; data[i].V = v.V; data[i].SA = v.SA;
 						data[i].aeff_V = v.aeff_V; data[i].aeff_SA = v.aeff_SA; data[i].f = v.f;
+						++i;
 					};
-					writeIndex(0, s->Scircum_sphere);
-					writeIndex(1, s->Sconvex_hull);
-					writeIndex(2, s->SVoronoi_hull);
-					writeIndex(3, s->Sellipsoid_max);
-					writeIndex(4, s->Srms_sphere);
-					writeIndex(5, s->Sgyration);
-					writeIndex(6, s->Ssolid);
-					writeIndex(7, s->SVoronoi_internal_2);
+					writeIndex(s->Scircum_sphere);
+					writeIndex(s->Sconvex_hull);
+					writeIndex(s->SVoronoi_hull);
+					writeIndex(s->Sellipsoid_max);
+					writeIndex(s->Srms_sphere);
+					writeIndex(s->Sgyration);
+					writeIndex(s->Ssolid);
+					writeIndex(s->SVoronoi_internal_2);
 					/*
 					writeIndex(8, s->SCircum_circle_proj_x);
 					writeIndex(9, s->SCircum_circle_proj_y);
