@@ -184,6 +184,17 @@ namespace rtmath {
 				_rotMaxAR = calcStatsRot(beta, theta, phi);
 				}*/
 
+
+				vd->calcSurfaceDepth();
+				size_t numLatticeTotal = 0, numLatticeFilled = 0;
+				size_t int_voro_depth = 2;
+				vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
+				SVoronoi_internal_2.f = (double)numLatticeFilled / (double)numLatticeTotal;
+				SVoronoi_internal_2.aeff_V = aeff_dipoles_const;
+				SVoronoi_internal_2.aeff_SA = SVoronoi_internal_2.aeff_V;
+				SVoronoi_internal_2.V = boost::math::constants::pi<float>() * 4.0f * pow(SVoronoi_internal_2.aeff_V, 3.0f) / 3.0f;
+				SVoronoi_internal_2.SA = boost::math::constants::pi<float>() * 4.0f * pow(SVoronoi_internal_2.aeff_SA, 2.0f);
+				SVoronoi_internal_2.calc(this);
 				auto voroHullCalc = [&]()
 				{
 					std::pair<float, float> res;
@@ -219,6 +230,15 @@ namespace rtmath {
 				Scircum_sphere.V = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_V, 3.0f) / 3.0f;
 				Scircum_sphere.SA = boost::math::constants::pi<float>() * 4.0f * pow(Scircum_sphere.aeff_SA, 2.0f);
 				Scircum_sphere.calc(this);
+			}
+
+			void shapeFileStatsBase::calcSsolid()
+			{
+				Ssolid.aeff_V = aeff_dipoles_const;
+				Ssolid.aeff_SA = aeff_dipoles_const;
+				Ssolid.V = V_dipoles_const; //boost::math::constants::pi<float>() * 4.0f * pow(Ssolid.aeff_V, 3.0f) / 3.0f;
+				Ssolid.SA = boost::math::constants::pi<float>() * 4.0f * pow(Ssolid.aeff_SA, 2.0f);
+				Ssolid.calc(this);
 			}
 
 			void shapeFileStatsBase::calcSellmax()
@@ -310,9 +330,11 @@ namespace rtmath {
 				V_cell_const = dxdydz;
 				V_dipoles_const = dxdydz * _N;
 				aeff_dipoles_const = pow(V_dipoles_const*3.f/(4.f*boost::math::constants::pi<float>()),1.f/3.f);
-
+				
 				calcStatsBaseRotMatrix();
 				calcBs();
+
+				calcSsolid();
 				calcVoroCvx();
 				calcScircum();
 				

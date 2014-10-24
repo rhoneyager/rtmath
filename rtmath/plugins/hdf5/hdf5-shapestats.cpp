@@ -110,33 +110,46 @@ namespace rtmath {
 						float V, SA, aeff_SA, aeff_V, f;
 					};
 
-					const size_t nMeths = 6;
+					const size_t nMeths = 8;
 					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
 						"Voronoi_Hull", "Ellipsoid_Max", 
-						"RMS_Sphere", "Gyration_Sphere" };
+						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
+						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
+						"Circum_circle_proj_y", "Circum_circle_proj_z",
+						"SCircum_ellipse_proj_x", "SCircum_ellipse_proj_y",
+						"SCircum_ellipse_proj_z", "Smean_circle_proj_x",
+						"Smean_circle_proj_y", "Smean_circle_proj_z",
+						"Sarea_circle_proj_x", "Sarea_circle_proj_y",
+						"Sarea_circle_proj_z"*/ };
 
 					std::array<vdata, nMeths> data;
-					data[0].name = names[0]; data[0].V = s->Scircum_sphere.V; data[0].SA = s->Scircum_sphere.SA; 
-					data[0].aeff_V = s->Scircum_sphere.aeff_V; data[0].aeff_SA = s->Scircum_sphere.aeff_SA; data[0].f = s->Scircum_sphere.f;
-
-					data[1].name = names[1]; data[1].V = s->Sconvex_hull.V; data[1].SA = s->Sconvex_hull.SA;
-					data[1].aeff_V = s->Sconvex_hull.aeff_V; data[1].aeff_SA = s->Sconvex_hull.aeff_SA; data[1].f = s->Sconvex_hull.f;
-
-					data[2].name = names[2]; data[2].V = s->SVoronoi_hull.V; data[2].SA = s->SVoronoi_hull.SA;
-					data[2].aeff_V = s->SVoronoi_hull.aeff_V; data[2].aeff_SA = s->SVoronoi_hull.aeff_SA; data[2].f = s->SVoronoi_hull.f;
-
-					data[3].name = names[3]; data[3].V = s->Sellipsoid_max.V; data[3].SA = s->Sellipsoid_max.SA;
-					data[3].aeff_V = s->Sellipsoid_max.aeff_V; data[3].aeff_SA = s->Sellipsoid_max.aeff_SA; data[3].f = s->Sellipsoid_max.f;
-
-					data[4].name = names[4]; data[4].V = s->Srms_sphere.V; data[4].SA = s->Srms_sphere.SA;
-					data[4].aeff_V = s->Srms_sphere.aeff_V; data[4].aeff_SA = s->Srms_sphere.aeff_SA; data[4].f = s->Srms_sphere.f;
-
-					data[5].name = names[5]; data[5].V = s->Sgyration.V; data[5].SA = s->Sgyration.SA;
-					data[5].aeff_V = s->Sgyration.aeff_V; data[5].aeff_SA = s->Sgyration.aeff_SA; data[5].f = s->Sgyration.f;
-
-
-					//data[4].name = names[4]; data[4].V = s->Sellipsoid_rms.V; data[4].SA = s->Sellipsoid_rms.SA;
-					//data[4].aeff_V = s->Sellipsoid_rms.aeff_V; data[4].aeff_SA = s->Sellipsoid_rms.aeff_SA; data[4].f = s->Sellipsoid_rms.f;
+					auto writeIndex = [&](size_t i, const rtmath::ddscat::stats::shapeFileStatsBase::volumetric &v)
+					{
+						data[i].name = names[0]; data[i].V = v.V; data[i].SA = v.SA;
+						data[i].aeff_V = v.aeff_V; data[i].aeff_SA = v.aeff_SA; data[i].f = v.f;
+					};
+					writeIndex(0, s->Scircum_sphere);
+					writeIndex(1, s->Sconvex_hull);
+					writeIndex(2, s->SVoronoi_hull);
+					writeIndex(3, s->Sellipsoid_max);
+					writeIndex(4, s->Srms_sphere);
+					writeIndex(5, s->Sgyration);
+					writeIndex(6, s->Ssolid);
+					writeIndex(7, s->SVoronoi_internal_2);
+					/*
+					writeIndex(8, s->SCircum_circle_proj_x);
+					writeIndex(9, s->SCircum_circle_proj_y);
+					writeIndex(10, s->SCircum_circle_proj_z);
+					writeIndex(11, s->SCircum_ellipse_proj_x);
+					writeIndex(12, s->SCircum_ellipse_proj_y);
+					writeIndex(13, s->SCircum_ellipse_proj_z);
+					writeIndex(14, s->Smean_circle_proj_x);
+					writeIndex(15, s->Smean_circle_proj_y);
+					writeIndex(16, s->Smean_circle_proj_z);
+					writeIndex(17, s->Sarea_circle_proj_x);
+					writeIndex(18, s->Sarea_circle_proj_y);
+					writeIndex(19, s->Sarea_circle_proj_z);
+					*/
 
 					hsize_t dim[1] = { data.size() };
 					DataSpace space(1, dim);

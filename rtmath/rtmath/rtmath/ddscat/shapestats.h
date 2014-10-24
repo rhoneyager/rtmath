@@ -170,8 +170,17 @@ namespace rtmath {
 				/// Sellipsoid_max is for a max ellipsoid
 				/// Sconvex_hull is for a convex hull
 				/// Sgyration is for Westbrook 2006's radius of gyration
+				/// Ssolid is for solid ice
+				/// SVoronoi_internal_2 is for the internal voronoi hull
 				volumetric Scircum_sphere, Sconvex_hull, Sgyration,
-					SVoronoi_hull, Sellipsoid_max, Srms_sphere; // , Sellipsoid_rms;
+					SVoronoi_hull, Sellipsoid_max, Srms_sphere,
+					Ssolid, SVoronoi_internal_2;
+					//SCircum_circle_proj_x, SCircum_circle_proj_y,
+					//SCircum_circle_proj_z, SCircum_ellipse_proj_x,
+					//SCircum_ellipse_proj_y, SCircum_ellipse_proj_z,
+					//Smean_circle_proj_x, Smean_circle_proj_y,
+					//Smean_circle_proj_z, Sarea_circle_proj_x,
+					//Sarea_circle_proj_y, Sarea_circle_proj_z; // , Sellipsoid_rms;
 
 				/// Maximum distance between any two points
 				float max_distance;
@@ -233,6 +242,7 @@ namespace rtmath {
 				void calcStatsBaseRotMatrix();
 				void calcVoroCvx();
 				void calcBs();
+				void calcSsolid();
 				void calcScircum();
 				void calcSellmax();
 				void calcSrms_sphere();

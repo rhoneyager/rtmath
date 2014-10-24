@@ -60,7 +60,7 @@ namespace rtmath {
 				readAttr<int, Group>(base, "ingest_rtmath_version", r->ingest_rtmath_version);
 
 				if (attrExists(base, "shapeFileStats_version"))
-					addAttr<int, Group>(base, "shapeFileStats_version", r->_currVersion);
+					readAttr<int, Group>(base, "shapeFileStats_version", r->_currVersion);
 				else r->_currVersion = 4; // The version where this was added.
 
 				// Shape hash
@@ -99,11 +99,18 @@ namespace rtmath {
 						float V, SA, aeff_SA, aeff_V, f;
 					};
 
-					const size_t nMeths = 6;
+					const size_t nMeths = 8;
 					// Names must match writer
-					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull", 
-						"Voronoi_Hull", "Ellipsoid_Max",
-						"RMS_Sphere", "Gyration_Sphere" };
+					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
+						"Voronoi_Hull", "Ellipsoid_Max", 
+						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
+						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
+						"Circum_circle_proj_y", "Circum_circle_proj_z",
+						"SCircum_ellipse_proj_x", "SCircum_ellipse_proj_y",
+						"SCircum_ellipse_proj_z", "Smean_circle_proj_x",
+						"Smean_circle_proj_y", "Smean_circle_proj_z",
+						"Sarea_circle_proj_x", "Sarea_circle_proj_y",
+						"Sarea_circle_proj_z"*/ };
 
 					std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Volumetric")));
 					std::vector<size_t> dims;
@@ -133,6 +140,20 @@ namespace rtmath {
 						else if(name == string(names[3])) v = &(r->Sellipsoid_max);
 						else if (name == string(names[4])) v = &(r->Srms_sphere);
 						else if (name == string(names[5])) v = &(r->Sgyration);
+						else if (name == string(names[6])) v = &(r->Ssolid);
+						else if (name == string(names[7])) v = &(r->SVoronoi_internal_2);/*
+						else if (name == string(names[8])) v = &(r->SCircum_circle_proj_x);
+						else if (name == string(names[9])) v = &(r->SCircum_circle_proj_y);
+						else if (name == string(names[10])) v = &(r->SCircum_circle_proj_z);
+						else if (name == string(names[11])) v = &(r->SCircum_ellipse_proj_x);
+						else if (name == string(names[12])) v = &(r->SCircum_ellipse_proj_y);
+						else if (name == string(names[13])) v = &(r->SCircum_ellipse_proj_z);
+						else if (name == string(names[14])) v = &(r->Smean_circle_proj_x);
+						else if (name == string(names[15])) v = &(r->Smean_circle_proj_y);
+						else if (name == string(names[16])) v = &(r->Smean_circle_proj_z);
+						else if (name == string(names[17])) v = &(r->Sarea_circle_proj_x);
+						else if (name == string(names[18])) v = &(r->Sarea_circle_proj_y);
+						else if (name == string(names[19])) v = &(r->Sarea_circle_proj_z);*/
 						else RTthrow debug::xUnimplementedFunction();
 
 						v->V = d.V;

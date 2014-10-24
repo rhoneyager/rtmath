@@ -53,7 +53,8 @@ int main(int argc, char *argv[])
 			"Select the method used in determining the volume fraction. 1) Voronoi_Internal uses the internal volume fraction."
 			" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid,"
 			" 5) RMS_Sphere for a root mean square sphere (per Petty and Huang 2010),"
-			" 6) Gyration_Sphere uses the Westbrok 2006 radius of gyration.")
+			" 6) Gyration_Sphere uses the Westbrok 2006 radius of gyration,"
+			" 7) Solid_Sphere is an optically hard sphere.")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
 
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -262,7 +263,8 @@ int main(int argc, char *argv[])
 			ELLIPSOID_MAX,
 			INTERNAL_VORONOI,
 			RMS_SPHERE,
-			GYRATION_SPHERE
+			GYRATION_SPHERE,
+			SOLID_SPHERE
 		};
 		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
 		string vfScaling = vm["vf-scaling"].as<string>();
@@ -274,6 +276,7 @@ int main(int argc, char *argv[])
 		else if (vfScaling == "Ellipsoid_Max") vf = VFRAC_TYPE::ELLIPSOID_MAX;
 		else if (vfScaling == "RMS_Sphere") vf = VFRAC_TYPE::RMS_SPHERE;
 		else if (vfScaling == "Gyration_Sphere") vf = VFRAC_TYPE::GYRATION_SPHERE;
+		else if (vfScaling == "Solid_Sphere") vf = VFRAC_TYPE::SOLID_SPHERE;
 		size_t int_voro_depth = vm["voronoi-depth"].as<size_t>();
 
 		bool rescaleM = vm["scale-m"].as<bool>();
@@ -417,6 +420,12 @@ int main(int argc, char *argv[])
 				} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
 					v = &(stats->Sellipsoid_max);
 					r.fvMeth = "Max ellipsoid";
+				} else if (vf == VFRAC_TYPE::SOLID_SPHERE) {
+					v = &(stats->Ssolid);
+					r.fvMeth = "Solid sphere";
+				} else if ((vf == VFRAC_TYPE::INTERNAL_VORONOI) && (int_voro_depth == 2)) {
+					v = &(stats->SVoronoi_internal_2);
+					r.fvMeth = "Internal Voronoi Depth 2";
 				}
 				if (v) {
 					r.aeff = v->aeff_V * s->standardD;

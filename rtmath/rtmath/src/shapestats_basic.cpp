@@ -357,6 +357,8 @@ namespace rtmath {
 					// 4-5 added more volumetric solvers and 2d projections
 					calcSrms_sphere(); // These will pick up on recalculating rot stats automatically if needed
 					calcSgyration();
+					calcSsolid();
+					calcVoroCvx(); // To get internal voronoi
 
 					this->_currVersion++;
 				}
