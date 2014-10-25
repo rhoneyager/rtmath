@@ -117,7 +117,10 @@ namespace rtmath {
 					readDatasetDimensions(base, "Volumetric", dims);
 
 					/// \note If another data member is added, this has to be updated!
-					std::array<vdata, 4> data;
+
+					std::vector<vdata> data;
+					data.resize(dims[0]);
+					//std::array<vdata, 4> data;
 					CompType sType(sizeof(vdata));
 					H5::StrType strtype(0, H5T_VARIABLE);
 
