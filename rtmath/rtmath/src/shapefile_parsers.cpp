@@ -289,7 +289,11 @@ namespace rtmath
 				// Only store hash if a storage mechanism can be found
 				if (hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts))
 				{
-					if (!serialization::detect_compressed(opts->filename()))
+					std::string meth, target;
+
+					if (serialization::detect_compressed(opts->filename(), meth, target))
+						boost::filesystem::remove(boost::filesystem::path(target));
+					//if (!serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);
 				}
 				else {
