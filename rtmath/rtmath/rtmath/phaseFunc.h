@@ -13,6 +13,29 @@
 
 #pragma message("Warning: phaseFunc.h needs the pf class moved elsewhere, + interpolation")
 namespace rtmath {
+	// Forward declaration
+	namespace phaseFuncs {
+		class pfRunSetContainer;
+		class pfRunSetContainer_IO_input_registry {};
+		class pfRunSetContainer_IO_output_registry {};
+	}
+	// Registry declarations
+	namespace registry {
+		extern template struct IO_class_registry_writer<
+			::rtmath::phaseFuncs::pfRunSetContainer>;
+
+		extern template struct IO_class_registry_reader<
+			::rtmath::phaseFuncs::pfRunSetContainer>;
+
+		extern template class usesDLLregistry<
+			::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry,
+			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> >;
+
+		extern template class usesDLLregistry<
+			::rtmath::phaseFuncs::pfRunSetContainer_IO_output_registry,
+			IO_class_registry_writer<::rtmath::phaseFuncs::pfRunSetContainer> >;
+
+	}
 
 	/** \brief This namespace provides the different type of radiative 
 	* transfer matrix manipulations.
@@ -80,15 +103,20 @@ namespace rtmath {
                 /// Refractive index scaling method
 				std::function<void(std::complex<double>, std::complex<double>, 
                     double, std::complex<double> &)> rmeth;
-				bool aeff_rescale; // Rescale effective radius
-				double vFrac; // Volume fraction
+				/// Rescale effective radius
+				bool aeff_rescale; 
+				/// Volume fraction
+				double vFrac; 
+				/// Run description (usually a shape hash to indicate the target)
+				std::string ref;
 
 				enum class shape_type
 				{
 					SPHEROID,
 					CYLINDER
 				} shape;
-				double eps; // spheroid / cylinder aspect ratio
+				/// spheroid / cylinder aspect ratio
+				double eps; 
 			};
 
 			/// Cross-section return structure
@@ -97,6 +125,7 @@ namespace rtmath {
 				double Qbk, Qext, Qsca, Qabs, g;
 				double Qsca_iso, Qabs_iso;
 				double Qbk_iso, Qext_iso, g_iso;
+				bool valid;
 			};
 
 			/// Phase function return structure
@@ -105,6 +134,7 @@ namespace rtmath {
 				typedef Eigen::Matrix2cd FType;
 				PnnType mueller;
 				FType S;
+				bool valid;
 			};
 
 			typedef std::function<void(const setup&, const inputParamsPartial&, cross_sections&)> small_c_type;
@@ -138,12 +168,6 @@ namespace rtmath {
 			static void findHandler(pf_class_registry::orientation_type oriType, 
 				const char* name, const pf_class_registry *res);
 
-			struct csContainer
-			{
-				const char* name;
-				pf_class_registry::setup setup;
-				pf_class_registry::cross_sections cs;
-			};
 
 			typedef std::vector<std::pair<const char*, pf_class_registry::cross_sections> > resCtype;
 			typedef std::vector<std::pair<const char*, pf_class_registry::pfs> > resPtype;
@@ -152,6 +176,47 @@ namespace rtmath {
 		private:
 			const pf_class_registry::inputParamsPartial& iparams;
 			pf_class_registry::orientation_type otype;
+		};
+
+		struct pfRunSetContainer :
+			virtual public ::rtmath::registry::usesDLLregistry<
+			pfRunSetContainer_IO_input_registry,
+			::rtmath::registry::IO_class_registry_reader<pfRunSetContainer> >,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			pfRunSetContainer_IO_output_registry,
+			::rtmath::registry::IO_class_registry_writer<pfRunSetContainer> >,
+			virtual public ::rtmath::io::implementsStandardWriter<pfRunSetContainer, pfRunSetContainer_IO_output_registry>,
+			virtual public ::rtmath::io::implementsStandardReader<pfRunSetContainer, pfRunSetContainer_IO_input_registry>//,
+		{
+			pfRunSetContainer();
+			virtual ~pfRunSetContainer();
+
+			struct csContainer
+			{
+				const char* providerName;
+				pf_class_registry::setup setup;
+				pf_class_registry::inputParamsPartial i;
+				pf_class_registry::cross_sections cs;
+			};
+			std::vector<csContainer> runs;
+			/// When the run was imported
+			std::string ingest_timestamp;
+			/// The system that the run was imported on
+			std::string ingest_hostname;
+			/// The user account that imported the run
+			std::string ingest_username;
+			/// Revision of the rtmath code for ingest
+			int ingest_rtmath_version;
+			/// Version of the phaseFunc code
+			int phaseFunc_version;
+			/// Current version of the phasefunc code
+			const static int max_phaseFunc_version;
+			/// Should the results be recalculated in the newest version?
+			//bool needsUpgrade() const;
+			/// Recalculate all results, using the newest version of the code
+			//void upgrade();
+		private:
+			void _init();
 		};
 	}
 

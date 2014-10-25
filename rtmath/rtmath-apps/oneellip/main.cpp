@@ -510,6 +510,7 @@ int main(int argc, char *argv[])
 			i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
 			i.eps = r.ar;
 			i.m = r.m;
+			i.ref = r.refHash;
 			//std::cerr << "i.m = r.m = " << i.m << std::endl;
 			i.rmeth = rmeth; // Yeah, only one refractive index method per program invocation is supported.
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;

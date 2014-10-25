@@ -4,14 +4,113 @@
 #include <cmath>
 #include <algorithm>
 #include <boost/math/constants/constants.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <Ryan_Debug/debug.h>
 #include "../rtmath/phaseFunc.h"
 #include "../rtmath/units.h"
 #include "../rtmath/error/debug.h"
 
 namespace rtmath {
+	namespace registry {
+		template struct IO_class_registry_writer
+			<::rtmath::phaseFuncs::pfRunSetContainer>;
 
+		template struct IO_class_registry_reader
+			<::rtmath::phaseFuncs::pfRunSetContainer>;
+
+		template class usesDLLregistry<
+			::rtmath::phaseFuncs::pfRunSetContainer_IO_output_registry,
+			IO_class_registry_writer<::rtmath::phaseFuncs::pfRunSetContainer> >;
+
+		template class usesDLLregistry<
+			::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry,
+			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> >;
+
+	}
 	namespace phaseFuncs
 	{
+
+		const int pfRunSetContainer::max_phaseFunc_version = 1;
+		pfRunSetContainer::~pfRunSetContainer() {}
+		pfRunSetContainer::pfRunSetContainer() {
+			_init();
+		}
+		void pfRunSetContainer::_init()
+		{
+			ingest_hostname = Ryan_Debug::getHostname();
+			ingest_username = Ryan_Debug::getUsername();
+			using namespace boost::posix_time;
+			using namespace boost::gregorian;
+			ptime now = second_clock::local_time();
+			ingest_timestamp = to_iso_string(now);
+			ingest_rtmath_version = rtmath::debug::rev();
+		}
+		/*
+		bool pfRunSetContainer::needsUpgrade() const
+		{
+			// Standard case
+			//if (this->ingest_rtmath_version < 1636 
+			//	&& this->ingest_rtmath_version > 0) return true;
+			if (prohibitStats) return false;
+			if (forceRecalcStats) return true;
+			if (this->_currVersion >= 0 && this->_currVersion < _maxVersion) return true;
+			if (_currVersion < 0 && this->ingest_rtmath_version < 1636) return true;
+			return false;
+		}
+
+		void pfRunSetContainer::upgrade()
+		{
+			if (!needsUpgrade()) return;
+			std::cerr << " upgrading nondda run from version " << this->phaseFunc_version << " to " << max_phaseFunc_version << std::endl;
+			load();
+
+			bool baseRecalced = false;
+			bool rotsRecalced = false;
+
+			auto recalcBase = [&]() {
+				if (baseRecalced) return;
+				// Recalculate base stats
+				calcStatsBase();
+				baseRecalced = true;
+			};
+			auto recalcRots = [&]() {
+				if (rotsRecalced) return;
+				// Redo each rotation
+				std::set<rotData> oldRotations = rotstats;
+				rotstats.clear();
+				for (auto rot : oldRotations)
+				{
+					const basicTable &tbl = rot.get<0>();
+					calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);
+				}
+				rotsRecalced = true;
+			};
+
+			// Some logic to keep from having to recalculate everything between version upgrades
+			if (this->_currVersion < 4)
+			{
+				recalcBase();
+				recalcRots();
+				this->_currVersion = _maxVersion;
+			}
+			// Can just follow the upgrade chain
+			if (this->_currVersion == 4)
+			{
+				// 4-5 added more volumetric solvers and 2d projections
+				calcSrms_sphere(); // These will pick up on recalculating rot stats automatically if needed
+				calcSgyration();
+				calcSsolid();
+				calcVoroCvx(); // To get internal voronoi
+
+				this->_currVersion++;
+			}
+			// Future upgrades can go here.
+
+			this->_currVersion = _maxVersion;
+		}
+		*/
+
 		pf_class_registry::~pf_class_registry() {}
 		pf_provider::~pf_provider() {}
 
@@ -27,7 +126,7 @@ namespace rtmath {
 		{}
 
 		pf_class_registry::cross_sections::cross_sections() :
-			Qbk(-1), Qext(-1), Qsca(-1), Qabs(-1), g(-1) {}
+			Qbk(-1), Qext(-1), Qsca(-1), Qabs(-1), g(-1), valid(false) {}
 
 		void pf_provider::findHandler(
 			pf_class_registry::orientation_type oriType, 

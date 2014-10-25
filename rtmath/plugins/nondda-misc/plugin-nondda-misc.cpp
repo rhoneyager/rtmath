@@ -35,6 +35,12 @@ namespace rtmath
 					using namespace ::rtmath::phaseFuncs;
 					const double pi = boost::math::constants::pi<double>();
 
+					if (abs(i.eps - 1) > 0.001)
+					{
+						c.valid = false;
+						return;
+					}
+
 					// First, scale the effective radius and refractive index?
 					double scaledAeff = i.aeff;
 					if (i.aeff_rescale)
@@ -68,6 +74,11 @@ namespace rtmath
 					//if (abs(ar - 1.0) < 0.00001) ar = 1.0001;
 
 					const double size_p = 2. * pi * scaledAeff / s.wavelength;
+					if (size_p > 0.2)
+					{
+						c.valid = false;
+						return;
+					}
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 
 					try {
@@ -132,9 +143,9 @@ void dllEntry()
 	pc.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);
 
-	rtmath::phaseFuncs::pf_class_registry pcrg;
-	pcrg.name = "Rayleigh-Gans";
-	pcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	pcrg.fCrossSections = rtmath::plugins::nondda_misc::RG::doCrossSection;
-	rtmath::phaseFuncs::pf_provider::registerHook(pcrg);
+	//rtmath::phaseFuncs::pf_class_registry pcrg;
+	//pcrg.name = "Rayleigh-Gans";
+	//pcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	//pcrg.fCrossSections = rtmath::plugins::nondda_misc::RG::doCrossSection;
+	//rtmath::phaseFuncs::pf_provider::registerHook(pcrg);
 }

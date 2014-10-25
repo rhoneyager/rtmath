@@ -36,6 +36,12 @@ namespace rtmath
 				using namespace ::rtmath::phaseFuncs;
 				const double pi = boost::math::constants::pi<double>();
 
+				if (abs(i.eps - 1) > 0.001)
+				{
+					c.valid = false;
+					return;
+				}
+
 				// First, scale the effective radius and refractive index?
 				double scaledAeff = i.aeff;
 				if (i.aeff_rescale)

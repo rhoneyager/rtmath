@@ -14,6 +14,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
+#include "../../rtmath/rtmath/phaseFunc.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/error/debug.h"
@@ -93,6 +94,8 @@ void dllEntry()
 		rtmath::ddscat::ddOutput_IO_output_registry>("hdf5", PLUGINID);
 	genAndRegisterIOregistry_writer<::rtmath::Voronoi::VoronoiDiagram,
 		::rtmath::Voronoi::Voronoi_IO_output_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry_writer<::rtmath::phaseFuncs::pfRunSetContainer,
+		::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry>("hdf5", PLUGINID);
 
 
 	genAndRegisterIOregistry_reader<::rtmath::ddscat::shapefile::shapefile,
@@ -103,4 +106,6 @@ void dllEntry()
 		rtmath::ddscat::ddOutput_IO_input_registry>("hdf5", PLUGINID);
 	genAndRegisterIOregistry_reader<::rtmath::Voronoi::VoronoiDiagram,
 		::rtmath::Voronoi::Voronoi_IO_input_registry>("hdf5", PLUGINID);
+	genAndRegisterIOregistry_reader<::rtmath::phaseFuncs::pfRunSetContainer,
+		::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry>("hdf5", PLUGINID);
 }
