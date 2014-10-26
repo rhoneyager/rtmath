@@ -106,6 +106,6 @@ void dllEntry()
 		rtmath::ddscat::ddOutput_IO_input_registry>("hdf5", PLUGINID);
 	genAndRegisterIOregistry_reader<::rtmath::Voronoi::VoronoiDiagram,
 		::rtmath::Voronoi::Voronoi_IO_input_registry>("hdf5", PLUGINID);
-	genAndRegisterIOregistry_reader<::rtmath::phaseFuncs::pfRunSetContainer,
-		::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry>("hdf5", PLUGINID);
+	//genAndRegisterIOregistry_reader<::rtmath::phaseFuncs::pfRunSetContainer,
+	//	::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry>("hdf5", PLUGINID);
 }

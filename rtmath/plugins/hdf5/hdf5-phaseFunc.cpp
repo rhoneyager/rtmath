@@ -79,79 +79,82 @@ namespace rtmath {
 				addAttr<int, Group>(statsraw, "ingest_rtmath_version", s->ingest_rtmath_version);
 				addAttr<int, Group>(statsraw, "phaseFunc_version", s->phaseFunc_version);
 
-				/*
-				// The full hash
-				addAttr<uint64_t, Group>(statsraw, "Hash_Lower", s->_shp->hash().lower);
-				addAttr<uint64_t, Group>(statsraw, "Hash_Upper", s->_shp->hash().upper);
-
-				addAttrEigen<Eigen::Vector3f, Group>(statsraw, "b_min", s->b_min);
-				addAttrEigen<Eigen::Vector3f, Group>(statsraw, "b_max", s->b_max);
-				addAttrEigen<Eigen::Vector3f, Group>(statsraw, "b_mean", s->b_mean);
-
-				addAttr<float, Group>(statsraw, "V_cell_const", s->V_cell_const);
-				addAttr<float, Group>(statsraw, "V_dipoles_const", s->V_dipoles_const);
-				addAttr<float, Group>(statsraw, "aeff_dipoles_const", s->aeff_dipoles_const);
-				addAttr<float, Group>(statsraw, "max_distance", s->max_distance);
-
-				// Rotation and inverse rotation matrix are written out as Eigen datasets
-				addDatasetEigen<Eigen::Matrix3f, Group>(statsraw, "rot", s->rot);
-				addDatasetEigen<Eigen::Matrix3f, Group>(statsraw, "invrot", s->invrot);
-				addAttr<float, Group>(statsraw, "beta", s->beta);
-				addAttr<float, Group>(statsraw, "theta", s->theta);
-				addAttr<float, Group>(statsraw, "phi", s->phi);
-				*/
-				// Volumetric data
+				using std::vector;
+				using namespace rtmath::phaseFuncs;
+				vector<const char*> providers;
+				vector<pf_class_registry::setup> setups;
+				struct transInputParamsPartial
 				{
-					struct vdata {
-						const char* name;
-						float V, SA, aeff_SA, aeff_V, f;
-					};
-
-					const size_t nMeths = 8;
-					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
-						"Voronoi_Hull", "Ellipsoid_Max",
-						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
-						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
-											"Circum_circle_proj_y", "Circum_circle_proj_z",
-											"SCircum_ellipse_proj_x", "SCircum_ellipse_proj_y",
-											"SCircum_ellipse_proj_z", "Smean_circle_proj_x",
-											"Smean_circle_proj_y", "Smean_circle_proj_z",
-											"Sarea_circle_proj_x", "Sarea_circle_proj_y",
-											"Sarea_circle_proj_z"*/ };
-
-					std::array<vdata, nMeths> data;
-					size_t i = 0;
-					auto writeIndex = [&](const rtmath::ddscat::stats::shapeFileStatsBase::volumetric &v)
+					double aeff;
+					// hdf5 enumtype aeff_version_type
+					double m_real, m_im;
+					// refractive index scaling method
+					bool aeff_rescale;
+					double vFrac;
+					const char* ref;
+					// hdf5 enumtype shape_type
+					double eps;
+					transInputParamsPartial() 
+						: aeff(0), m_real(0), m_im(0), aeff_rescale(0), vFrac(0), ref(nullptr), eps(0) 
+					{}
+					transInputParamsPartial(const pf_class_registry::inputParamsPartial &p)
+						: aeff(0), m_real(0), m_im(0), aeff_rescale(0), vFrac(0), ref(nullptr), eps(0)
 					{
-						data[i].name = names[i]; data[i].V = v.V; data[i].SA = v.SA;
-						data[i].aeff_V = v.aeff_V; data[i].aeff_SA = v.aeff_SA; data[i].f = v.f;
-						++i;
-					};
-					writeIndex(s->Scircum_sphere);
-					writeIndex(s->Sconvex_hull);
-					writeIndex(s->SVoronoi_hull);
-					writeIndex(s->Sellipsoid_max);
-					writeIndex(s->Srms_sphere);
-					writeIndex(s->Sgyration);
-					writeIndex(s->Ssolid);
-					writeIndex(s->SVoronoi_internal_2);
 
-					hsize_t dim[1] = { data.size() };
-					DataSpace space(1, dim);
-					CompType sType(sizeof(vdata));
-					H5::StrType strtype(0, H5T_VARIABLE);
+					}
+				};
+				vector<transInputParamsPartial> inputs;
+				vector<pf_class_registry::cross_sections> css;
 
-					sType.insertMember("Method", HOFFSET(vdata, name), strtype);
-					sType.insertMember("V", HOFFSET(vdata, V), PredType::NATIVE_FLOAT);
-					sType.insertMember("SA", HOFFSET(vdata, SA), PredType::NATIVE_FLOAT);
-					sType.insertMember("aeff_V", HOFFSET(vdata, aeff_V), PredType::NATIVE_FLOAT);
-					sType.insertMember("aeff_SA", HOFFSET(vdata, aeff_SA), PredType::NATIVE_FLOAT);
-					sType.insertMember("f", HOFFSET(vdata, f), PredType::NATIVE_FLOAT);
+				providers.resize(s->runs.size());
+				setups.resize(s->runs.size());
+				inputs.resize(s->runs.size());
+				css.resize(s->runs.size());
 
-
-					std::shared_ptr<DataSet> gV(new DataSet(statsraw->createDataSet("Volumetric", sType, space)));
-					gV->write(data.data(), sType);
+				for (size_t i = 0; i < s->runs.size(); ++i)
+				{
+					providers[i] = s->runs[i].providerName;
+					setups[i] = s->runs[i].setup;
+					inputs[i] = transInputParamsPartial(s->runs[i].i);
+					css[i] = s->runs[i].cs;
 				}
+
+				const char* ippNames[] = { "aeff", "aeff_version_type", "m_real", "m_imag",
+					"Refr_Index_Scaling_Meth", "aeff_rescale_flag", "vFrac", "FlakeRef",
+					"shape_type", "ar" };
+
+				hsize_t dim[1] = { s->runs.size() };
+				DataSpace space(1, dim);
+				CompType sTypeSetups(sizeof(pf_class_registry::setup));
+				CompType sTypeInputs(sizeof(transInputParamsPartial));
+				CompType sTypeCSS(sizeof(pf_class_registry::cross_sections));
+				H5::StrType strtype(0, H5T_VARIABLE);
+
+				sTypeSetups.insertMember("beta", HOFFSET(pf_class_registry::setup, beta), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("theta", HOFFSET(pf_class_registry::setup, theta), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("phi", HOFFSET(pf_class_registry::setup, phi), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("sTheta", HOFFSET(pf_class_registry::setup, sTheta), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("sTheta0", HOFFSET(pf_class_registry::setup, sTheta0), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("sPhi", HOFFSET(pf_class_registry::setup, sPhi), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("sPhi0", HOFFSET(pf_class_registry::setup, sPhi0), PredType::NATIVE_DOUBLE);
+				sTypeSetups.insertMember("wavelength", HOFFSET(pf_class_registry::setup, wavelength), PredType::NATIVE_DOUBLE);
+
+				sTypeCSS.insertMember("Qbk", HOFFSET(pf_class_registry::cross_sections, Qbk), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qext", HOFFSET(pf_class_registry::cross_sections, Qext), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qsca", HOFFSET(pf_class_registry::cross_sections, Qsca), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qabs", HOFFSET(pf_class_registry::cross_sections, Qabs), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("g", HOFFSET(pf_class_registry::cross_sections, g), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qbk_iso", HOFFSET(pf_class_registry::cross_sections, Qbk_iso), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qext_iso", HOFFSET(pf_class_registry::cross_sections, Qext_iso), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qsca_iso", HOFFSET(pf_class_registry::cross_sections, Qsca_iso), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("Qabs_iso", HOFFSET(pf_class_registry::cross_sections, Qabs_iso), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("g_iso", HOFFSET(pf_class_registry::cross_sections, g_iso), PredType::NATIVE_DOUBLE);
+				sTypeCSS.insertMember("valid", HOFFSET(pf_class_registry::cross_sections, valid), PredType::NATIVE_HBOOL);
+
+
+				std::shared_ptr<DataSet> gV(new DataSet(statsraw->createDataSet("Volumetric", sType, space)));
+				gV->write(data.data(), sType);
+
 
 				// Rotations
 				{
