@@ -20,7 +20,7 @@ namespace rtmath {
 
 		// The raw dielectric providers
 
-		/// Water complex refractive index
+		/// Water complex refractive index for microwave for 0 to 1000 GHz
 		/// Liebe, Hufford and Manabe (1991)
 		void DLEXPORT_rtmath_core mWaterLiebe(double f, double t, std::complex<double> &m);
 
@@ -28,9 +28,29 @@ namespace rtmath {
 		/// Christian Matzler (2006)
 		void DLEXPORT_rtmath_core mIceMatzler(double f, double t, std::complex<double> &m);
 
+		/// Ice complex refractive index for microwave/uv
+		void DLEXPORT_rtmath_core mIceWarren(double f, double t, std::complex<double> &m);
 
+		/// Water complex refractive index for ir/vis //
+		void DLEXPORT_rtmath_core mWaterHanel(double lambda, std::complex<double> &m);
 
+		/// Ice complex refractive index for ir/vis //
+		void DLEXPORT_rtmath_core mIceHanel(double lambda, std::complex<double> &m);
 
+		/// Sodium chloride refractive index for ir/vis //
+		void DLEXPORT_rtmath_core mNaClHanel(double lambda, std::complex<double> &m);
+
+		/// Sea salt refractive index for ir/vis //
+		void DLEXPORT_rtmath_core mSeaSaltHanel(double lambda, std::complex<double> &m);
+
+		/// Dust-like particle refractive index for ir/vis //
+		void DLEXPORT_rtmath_core mDustHanel(double lambda, std::complex<double> &m);
+
+		/// Sand O-ray refractvie index for ir/vis (birefringent) //
+		void DLEXPORT_rtmath_core mSandOHanel(double lambda, std::complex<double> &m);
+
+		/// Sane E-ray refractive index for ir/vis (birefringent) //
+		void DLEXPORT_rtmath_core mSandEHanel(double lambda, std::complex<double> &m);
 
 
 		/// basic Liu-based diel.tab writer
@@ -116,7 +136,8 @@ namespace rtmath {
 
 
 		// Temperature-guessing
-		double DLEXPORT_rtmath_core guessTemp(double freq, const std::complex<double>&);
+		double DLEXPORT_rtmath_core guessTemp(double freq, const std::complex<double> &mToEval,
+			std::function<void(double freq, double temp, std::complex<double>& mres)> meth = rtmath::refract::mIce);
 
 		/**
 		* \brief Adds options to a program
