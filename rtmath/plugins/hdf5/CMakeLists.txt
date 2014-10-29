@@ -33,8 +33,8 @@ add_library (rtmath_plugin_hdf5 SHARED
 	hdf5-ddoutput-read.cpp
 	hdf5-ddscat-ddpar.cpp
 	hdf5-ddscat-ddpar-read.cpp
-	hdf5-phaseFunc.cpp
-	hdf5-phaseFunc-read.cpp
+	#hdf5-phaseFunc.cpp
+	#hdf5-phaseFunc-read.cpp
 	hdf5-shapefile.cpp
 	hdf5-shapefile-read.cpp
 	hdf5-shapestats.cpp

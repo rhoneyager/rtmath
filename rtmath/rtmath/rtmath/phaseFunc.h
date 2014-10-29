@@ -7,6 +7,7 @@
 #include <string>
 #include <Eigen/Core>
 #include "registry.h"
+#include "io.h"
 //#include "enums.h"
 //#include "da/damatrix.h"
 
