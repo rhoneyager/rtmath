@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 			;
 		refract.add_options()
 			("refract-method", po::value<string>()->default_value("Maxwell_Garnett_Ellipsoids"), "Method used to calculate the resulting dielectric "
-			"(Sihvola, Debye, Maxwell_Garnett_Spheres, Maxwell_Garnett_Ellipsoids). "
+			"(Sihvola, Debye, Maxwell_Garnett_Spheres, Maxwell_Garnett_Ellipsoids, Bruggeman). "
 			"Only matters if volume fractions are given. Then, default is Maxwell_Garnett_Ellipsoids.")
 			("temps,T", po::value<std::string>()->default_value("263"), "Specify temperatures in K")
 			("mr", po::value<double>(), "Override real refractive index value")
@@ -295,6 +295,7 @@ int main(int argc, char *argv[])
 		} else if (refractScaling == "Maxwell_Garnett_Ellipsoids") rmeth = rtmath::refract::maxwellGarnettEllipsoids;
 		else if (refractScaling == "Maxwell_Garnett_Spheres") rmeth = rtmath::refract::maxwellGarnettSpheres;
 		else if (refractScaling == "Debye") rmeth = rtmath::refract::debyeDry;
+		else if (refractScaling == "Bruggeman") rmeth = rtmath::refract::bruggeman;
 		else if (!rescaleM) rmeth = fixedBinder;
 		else doHelp("Need to specify a proper refractive  scaling.");
 

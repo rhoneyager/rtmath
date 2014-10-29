@@ -397,6 +397,14 @@ void rtmath::refract::bruggeman(std::complex<double> Ma, std::complex<double> Mb
 	eToM(eRes,Mres);
 }
 
+/*
+void rtmath::refract::bruggeman(std::complex<double> Ma, std::complex<double> Mb, 
+											double fa, std::complex<double> &Mres)
+{
+	sihvola(Ma, Mb, fa, 2., Mres);
+}
+*/
+
 void rtmath::refract::debyeDry(std::complex<double> Ma, std::complex<double> Mb, 
 							   double fa, std::complex<double> &Mres)
 {
