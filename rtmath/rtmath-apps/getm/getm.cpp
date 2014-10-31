@@ -51,15 +51,16 @@ int main(int argc, char** argv)
 			("mtab,m", "Produce mtab-style output")
 			("debug", "Produce debug output")
 			("frequency,f", po::value<string>(), "List of frequencies (default of GHz). Can also take rtmath.conf-provided frequency key (ex: GPM_freqs).")
-			("frequency-units", po::value<string>()->default_value("GHz"), "Units for all frequencies.")
-			("wavelength-units", po::value<string>()->default_value("um"), "Units for all wavelengths.")
-			("temperature,T", po::value<string>(), "List of temperatures (K)")
+			("in-units", po::value<string>()->default_value("GHz"), "Units for all frequencies. Can also be in wavelengths or spectral wavenumbers.")
+			("output-units", po::value<string>()->default_value("um"), "Output units (should be a wavelength).")
+			("temperature,T", po::value<string>(), "List of temperatures")
+			("temperature-units", po::value<string>()->default_value("K"), "Units for temperatures.")
 			("volume-fraction-ice,i", po::value<string >(), "Volume fractions [0,1] for mixed phase volumes. If not given, calculate from others.")
 			("volume-fraction-water,w", po::value<string>(), "Water volume fractions. If not given, calculation depends on presence of both ice and water fractions. If both are given, w = 1 - a - i. If only one is given, assume that water fraction is zero.")
 			("volume-fraction-air,a", po::value<string>(), "Air volume fraction. If not given, calculate from others.")
 			("nu", po::value<string>()->default_value("0.85"), "Value of nu for Sihvola (default is 0.85. Range is [0,2].")
 			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
-			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids). "
+			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids, Bruggeman). "
 			"Only matters if volume fractions are given. Then, default is Sihvola.")
 
 			("input-shape,s", po::value<string>(), "Specify shapefile for inner dielectric calculation. Provides volume fraction.")
@@ -81,15 +82,16 @@ int main(int argc, char** argv)
 		rtmath::debug::process_static_options(vm);
 
 		rtmath::ddscat::dielTab dfile;
-		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen;
+		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen, unitsTemp;
 		string sshape;
 		set<double> temps, freqs, nus;
 		map<PHASE,string> vsVols;
 		map<PHASE,set<double> > vVols;
 		bool debug = false;
 
-		unitsFreq = vm["frequency-units"].as<string>();
-		unitsWvlen = vm["wavelength-units"].as<string>();
+		unitsFreq = vm["in-units"].as<string>();
+		unitsWvlen = vm["output-units"].as<string>();
+		unitsTemp = vm["temperature-units"].as<string>();
 
 		if (vm.count("debug"))
 			debug = true;
@@ -251,8 +253,9 @@ int main(int argc, char** argv)
 		}
 
 		// Actual calculations
-		for (auto T = temps.begin(); T != temps.end(); ++T)
+		for (auto rT = temps.begin(); rT != temps.end(); ++rT)
 		{
+			double T = rtmath::units::conv_temp(unitsTemp, "K").convert(*rT);
 			for (auto tempfreq = freqs.begin(); tempfreq != freqs.end(); ++tempfreq)
 			{
 				// Yes, this is ugly, but I wanted to avoid renaming everything.
@@ -274,7 +277,7 @@ int main(int argc, char** argv)
 
 						if (fIce == 0 && fWat == 0 && fAir == 0)
 						{
-							if (*T < 273.15)
+							if (T < 273.15)
 							{
 								fIce = 1.0;
 							} else {
@@ -282,13 +285,16 @@ int main(int argc, char** argv)
 							}
 						}
 
+						using rtmath::refract::_frequency;
+						using rtmath::refract::_temperature;
+						using rtmath::refract::_m;
 						if (fIce)
-							rtmath::refract::mIce(*freq,*T,mIce);
+							rtmath::refract::mIce(_frequency = *freq, _temperature = T, _m = mIce);
 						if (fWat)
-							rtmath::refract::mWater(*freq,*T,mWat);
+							rtmath::refract::mWater(_frequency = *freq, _temperature = T, _m = mWat);
 
 						if (debug)
-							cerr << fIce << "," << fWat << "," << fAir << "," << *T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
+							cerr << fIce << "," << fWat << "," << fAir << "," << T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
 						if (fIce + fWat + fAir > 1.0)
 						{
 							if (debug)
@@ -318,6 +324,9 @@ int main(int argc, char** argv)
 						} else if (method == "Maxwell-Garnett-Ellipsoids")
 						{
 							rtmath::refract::maxwellGarnettEllipsoids(mIce,mAir,fIce,mEff);
+						} else if (method == "Bruggeman")
+						{
+							rtmath::refract::bruggeman(mIce, mAir, fIce, mEff);
 						} else {
 							cerr << "Unknown method: " << method << endl;
 							throw rtmath::debug::xBadInput(method.c_str());

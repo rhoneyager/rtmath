@@ -16,7 +16,7 @@
 namespace rtmath {
 	// Forward declaration
 	namespace phaseFuncs {
-		class pfRunSetContainer;
+		struct pfRunSetContainer;
 		class pfRunSetContainer_IO_input_registry {};
 		class pfRunSetContainer_IO_output_registry {};
 	}

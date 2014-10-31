@@ -4,6 +4,12 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <boost/parameter/keyword.hpp>
+#include <boost/parameter/name.hpp>
+#include <boost/parameter/preprocessor.hpp>
+#include <boost/lexical_cast.hpp>
+#include "../rtmath/units.h"
+#include "../rtmath/error/error.h"
 
 namespace boost { namespace program_options { class options_description; class variables_map; } }
 namespace rtmath {
@@ -12,45 +18,93 @@ namespace rtmath {
 		void DLEXPORT_rtmath_core mToE(std::complex<double> m, std::complex<double> &e);
 		void DLEXPORT_rtmath_core eToM(std::complex<double> e, std::complex<double> &m);
 
+		// The raw dielectric providers implementations
+		namespace implementations {
+			void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m);
+			void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m);
+			/// Water complex refractive index for microwave for 0 to 1000 GHz
+			/// Liebe, Hufford and Manabe (1991)
+			void DLEXPORT_rtmath_core mWaterLiebe(double f, double t, std::complex<double> &m);
+			/// Ice complex refractive index
+			/// Christian Matzler (2006)
+			void DLEXPORT_rtmath_core mIceMatzler(double f, double t, std::complex<double> &m);
+			/// Ice complex refractive index for microwave/uv
+			void DLEXPORT_rtmath_core mIceWarren(double f, double t, std::complex<double> &m);
+			/// Water complex refractive index for ir/vis
+			void DLEXPORT_rtmath_core mWaterHanel(double lambda, std::complex<double> &m);
+			/// Ice complex refractive index for ir/vis
+			void DLEXPORT_rtmath_core mIceHanel(double lambda, std::complex<double> &m);
+			/// Sodium chloride refractive index for ir/vis
+			void DLEXPORT_rtmath_core mNaClHanel(double lambda, std::complex<double> &m);
+			/// Sea salt refractive index for ir/vis
+			void DLEXPORT_rtmath_core mSeaSaltHanel(double lambda, std::complex<double> &m);
+			/// Dust-like particle refractive index for ir/vis
+			void DLEXPORT_rtmath_core mDustHanel(double lambda, std::complex<double> &m);
+			/// Sand O-ray refractvie index for ir/vis (birefringent)
+			void DLEXPORT_rtmath_core mSandOHanel(double lambda, std::complex<double> &m);
+			/// Sand E-ray refractive index for ir/vis (birefringent)
+			void DLEXPORT_rtmath_core mSandEHanel(double lambda, std::complex<double> &m);
+		}
+
 		/// Dielectric providers - these use f and T to automatically determine the correct
 		/// base dielectric function to use.
-		void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m);
-		void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m);
+		BOOST_PARAMETER_NAME(frequency)
+		BOOST_PARAMETER_NAME(temperature)
+		BOOST_PARAMETER_NAME(temp_units)
+		BOOST_PARAMETER_NAME(freq_units)
+		BOOST_PARAMETER_NAME(m)
 
+#define standardFTmProvider(name) \
+	BOOST_PARAMETER_FUNCTION( \
+		(void), \
+			name, \
+			tag, \
+			(required \
+			(frequency, (double)) \
+			(temperature, (double)) \
+			(in_out(m), (std::complex<double>))) \
+			(optional \
+			(freq_units, *, std::string("GHz")) \
+			(temp_units, *, std::string("K"))) \
+			) \
+		{ \
+			double freq = rtmath::units::conv_spec(freq_units, "GHz").convert(frequency); \
+			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			implementations:: name(freq, temp, m); \
+		}
 
-		// The raw dielectric providers
+		standardFTmProvider(mWater);
+		standardFTmProvider(mIce);
+		standardFTmProvider(mWaterLiebe);
+		standardFTmProvider(mIceMatzler);
+		standardFTmProvider(mIceWarren);
 
-		/// Water complex refractive index for microwave for 0 to 1000 GHz
-		/// Liebe, Hufford and Manabe (1991)
-		void DLEXPORT_rtmath_core mWaterLiebe(double f, double t, std::complex<double> &m);
-
-		/// Ice complex refractive index
-		/// Christian Matzler (2006)
-		void DLEXPORT_rtmath_core mIceMatzler(double f, double t, std::complex<double> &m);
-
-		/// Ice complex refractive index for microwave/uv
-		void DLEXPORT_rtmath_core mIceWarren(double f, double t, std::complex<double> &m);
-
-		/// Water complex refractive index for ir/vis
-		void DLEXPORT_rtmath_core mWaterHanel(double lambda, std::complex<double> &m);
-
-		/// Ice complex refractive index for ir/vis
-		void DLEXPORT_rtmath_core mIceHanel(double lambda, std::complex<double> &m);
-
-		/// Sodium chloride refractive index for ir/vis
-		void DLEXPORT_rtmath_core mNaClHanel(double lambda, std::complex<double> &m);
-
-		/// Sea salt refractive index for ir/vis
-		void DLEXPORT_rtmath_core mSeaSaltHanel(double lambda, std::complex<double> &m);
-
-		/// Dust-like particle refractive index for ir/vis
-		void DLEXPORT_rtmath_core mDustHanel(double lambda, std::complex<double> &m);
-
-		/// Sand O-ray refractvie index for ir/vis (birefringent)
-		void DLEXPORT_rtmath_core mSandOHanel(double lambda, std::complex<double> &m);
-
-		/// Sane E-ray refractive index for ir/vis (birefringent)
-		void DLEXPORT_rtmath_core mSandEHanel(double lambda, std::complex<double> &m);
+#define standardLmProvider(name) \
+	BOOST_PARAMETER_FUNCTION( \
+		(void), \
+			name, \
+			tag, \
+			(required \
+			(temperature, (double)) \
+			(frequency, (double)) \
+			(in_out(m), (std::complex<double>))) \
+			(optional \
+			(freq_units, *, std::string("GHz")) \
+			(temp_units, *, std::string("K"))) \
+			) \
+				{ \
+			double lambda = rtmath::units::conv_spec(freq_units, "mm").convert(frequency); \
+			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			implementations:: name(lambda, temp, m); \
+				}
+		
+		standardLmProvider(mWaterHanel);
+		standardLmProvider(mIceHanel);
+		standardLmProvider(mNaClHanel);
+		standardLmProvider(mSeaSaltHanel);
+		standardLmProvider(mDustHanel);
+		standardLmProvider(mSandOHanel);
+		standardLmProvider(mSandEHanel);
 
 
 		/// basic Liu-based diel.tab writer
@@ -137,7 +191,7 @@ namespace rtmath {
 
 		// Temperature-guessing
 		double DLEXPORT_rtmath_core guessTemp(double freq, const std::complex<double> &mToEval,
-			std::function<void(double freq, double temp, std::complex<double>& mres)> meth = rtmath::refract::mIce);
+			std::function<void(double freq, double temp, std::complex<double>& mres)> meth = rtmath::refract::implementations::mIce);
 
 		/**
 		* \brief Adds options to a program
