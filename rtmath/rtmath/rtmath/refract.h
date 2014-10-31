@@ -31,25 +31,25 @@ namespace rtmath {
 		/// Ice complex refractive index for microwave/uv
 		void DLEXPORT_rtmath_core mIceWarren(double f, double t, std::complex<double> &m);
 
-		/// Water complex refractive index for ir/vis //
+		/// Water complex refractive index for ir/vis
 		void DLEXPORT_rtmath_core mWaterHanel(double lambda, std::complex<double> &m);
 
-		/// Ice complex refractive index for ir/vis //
+		/// Ice complex refractive index for ir/vis
 		void DLEXPORT_rtmath_core mIceHanel(double lambda, std::complex<double> &m);
 
-		/// Sodium chloride refractive index for ir/vis //
+		/// Sodium chloride refractive index for ir/vis
 		void DLEXPORT_rtmath_core mNaClHanel(double lambda, std::complex<double> &m);
 
-		/// Sea salt refractive index for ir/vis //
+		/// Sea salt refractive index for ir/vis
 		void DLEXPORT_rtmath_core mSeaSaltHanel(double lambda, std::complex<double> &m);
 
-		/// Dust-like particle refractive index for ir/vis //
+		/// Dust-like particle refractive index for ir/vis
 		void DLEXPORT_rtmath_core mDustHanel(double lambda, std::complex<double> &m);
 
-		/// Sand O-ray refractvie index for ir/vis (birefringent) //
+		/// Sand O-ray refractvie index for ir/vis (birefringent)
 		void DLEXPORT_rtmath_core mSandOHanel(double lambda, std::complex<double> &m);
 
-		/// Sane E-ray refractive index for ir/vis (birefringent) //
+		/// Sane E-ray refractive index for ir/vis (birefringent)
 		void DLEXPORT_rtmath_core mSandEHanel(double lambda, std::complex<double> &m);
 
 
@@ -68,7 +68,7 @@ namespace rtmath {
 		void DLEXPORT_rtmath_core bruggeman(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 		/// Bohren and Battan (1980)
-		/// Debye formula (specific case of Clausius-Mosotti)
+		/// Debye formula (specific case of Clausius-Mosotti), Debye(1929, pp. 44-47)
 		void DLEXPORT_rtmath_core debyeDry(std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres);
 
 

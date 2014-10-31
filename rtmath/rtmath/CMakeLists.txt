@@ -130,6 +130,11 @@ endif()
 addBoostUniform(${boost_uniform_libs})
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
+
+# linterp is in the related directory
+include_directories(BEFORE "${CMAKE_SOURCE_DIR}/related/linterp/rncarpio-linterp-ca556a0/src")
+
+
 if(WIN32 AND NOT CYGWIN)
 	set(rtmath_core-libs "")
 else()
