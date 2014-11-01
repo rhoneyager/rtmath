@@ -605,7 +605,7 @@ void rtmath::refract::implementations::mIceWarren(double f, double t, std::compl
 	double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	std::array<double, 2> args = { wvlen, t - 273.15 };
 	m = std::complex<double>(interp_ML_warren_re->interp(args.begin()),
-		interp_ML_warren_im->interp(args.begin()));
+		-1.0 * interp_ML_warren_im->interp(args.begin()));
 }
 
 
@@ -614,7 +614,7 @@ void rtmath::refract::implementations::mWaterHanel(double lambda, std::complex<d
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelA(hanelAmedium::WATER_RE)->interp(args),
-		setupHanelA(hanelAmedium::WATER_IM)->interp(args));
+		-1.0 * setupHanelA(hanelAmedium::WATER_IM)->interp(args));
 }
 
 void rtmath::refract::implementations::mIceHanel(double lambda, std::complex<double> &m)
@@ -622,7 +622,7 @@ void rtmath::refract::implementations::mIceHanel(double lambda, std::complex<dou
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelA(hanelAmedium::ICE_RE)->interp(args),
-		setupHanelA(hanelAmedium::ICE_IM)->interp(args));
+		-1.0 * setupHanelA(hanelAmedium::ICE_IM)->interp(args));
 }
 
 void rtmath::refract::implementations::mNaClHanel(double lambda, std::complex<double> &m)
@@ -630,7 +630,7 @@ void rtmath::refract::implementations::mNaClHanel(double lambda, std::complex<do
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelA(hanelAmedium::NACL_RE)->interp(args),
-		setupHanelA(hanelAmedium::NACL_IM)->interp(args));
+		-1.0 * setupHanelA(hanelAmedium::NACL_IM)->interp(args));
 }
 
 void rtmath::refract::implementations::mSeaSaltHanel(double lambda, std::complex<double> &m)
@@ -638,7 +638,7 @@ void rtmath::refract::implementations::mSeaSaltHanel(double lambda, std::complex
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda }; 
 	m = std::complex<double>(setupHanelA(hanelAmedium::SEASALT_RE)->interp(args),
-		setupHanelA(hanelAmedium::SEASALT_IM)->interp(args));
+		-1.0 * setupHanelA(hanelAmedium::SEASALT_IM)->interp(args));
 }
 
 void rtmath::refract::implementations::mDustHanel(double lambda, std::complex<double> &m)
@@ -646,7 +646,7 @@ void rtmath::refract::implementations::mDustHanel(double lambda, std::complex<do
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelB(hanelBmedium::DUST_LIKE_RE)->interp(args),
-		setupHanelB(hanelBmedium::DUST_LIKE_IM)->interp(args));
+		-1.0 * setupHanelB(hanelBmedium::DUST_LIKE_IM)->interp(args));
 }
 
 void rtmath::refract::implementations::mSandOHanel(double lambda, std::complex<double> &m)
@@ -654,7 +654,7 @@ void rtmath::refract::implementations::mSandOHanel(double lambda, std::complex<d
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelB(hanelBmedium::SAND_O_RE)->interp(args),
-		setupHanelB(hanelBmedium::SAND_O_IM)->interp(args));
+		-1.0 * setupHanelB(hanelBmedium::SAND_O_IM)->interp(args));
 }
 
 void rtmath::refract::implementations::mSandEHanel(double lambda, std::complex<double> &m)
@@ -662,7 +662,7 @@ void rtmath::refract::implementations::mSandEHanel(double lambda, std::complex<d
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelB(hanelBmedium::SAND_E_RE)->interp(args),
-		setupHanelB(hanelBmedium::SAND_E_IM)->interp(args));
+		-1.0 * setupHanelB(hanelBmedium::SAND_E_IM)->interp(args));
 }
 
 
