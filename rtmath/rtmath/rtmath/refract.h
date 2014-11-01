@@ -109,7 +109,7 @@ namespace rtmath {
 		standardFTmProvider(mWaterLiebe);
 		standardFTmProvider(mIceMatzler);
 		standardFTmProvider(mIceWarren);
-		standardFTmProvider(mWaterMeissnerWentz);
+		standardFTmProvider(mWaterFreshMeissnerWentz);
 
 #define standardLmProvider(name) \
 	BOOST_PARAMETER_FUNCTION( \
