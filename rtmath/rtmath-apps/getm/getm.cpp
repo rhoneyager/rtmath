@@ -55,6 +55,8 @@ int main(int argc, char** argv)
 			("output-units", po::value<string>()->default_value("um"), "Output units (should be a wavelength).")
 			("temperature,T", po::value<string>(), "List of temperatures")
 			("temperature-units", po::value<string>()->default_value("K"), "Units for temperatures.")
+			//("salinity,S", po::value<string>(), "List of salinities (TBI)")
+			//("salinity-units", po::value<string>()->default_value("ppm"), "Units for salinity.")
 			("volume-fraction-ice,i", po::value<string >(), "Volume fractions [0,1] for mixed phase volumes. If not given, calculate from others.")
 			("volume-fraction-water,w", po::value<string>(), "Water volume fractions. If not given, calculation depends on presence of both ice and water fractions. If both are given, w = 1 - a - i. If only one is given, assume that water fraction is zero.")
 			("volume-fraction-air,a", po::value<string>(), "Air volume fraction. If not given, calculate from others.")
@@ -62,6 +64,9 @@ int main(int argc, char** argv)
 			("method", po::value<string>()->default_value("Maxwell-Garnett-Ellipsoids"), "Method used to calculate the resulting dielectric "
 			"(Sihvola, Debye, Maxwell-Garnett-Spheres, Maxwell-Garnett-Ellipsoids, Bruggeman). "
 			"Only matters if volume fractions are given. Then, default is Sihvola.")
+			("ice-provider", po::value<string>()->default_value(""), "Provider for the raw ice dielectric. Function name from rtmath::refract.")
+			("water-provider", po::value<string>()->default_value(""), "Provider for the raw water dielectric. Function name from rtmath::refract.")
+			("other-provider", po::value<string>()->default_value(""), "Provider for the other dielectric. Function name from rtmath::refract.")
 
 			("input-shape,s", po::value<string>(), "Specify shapefile for inner dielectric calculation. Provides volume fraction.")
 			;
@@ -83,7 +88,7 @@ int main(int argc, char** argv)
 
 		rtmath::ddscat::dielTab dfile;
 		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen, unitsTemp;
-		string sshape;
+		string sshape, waterProvider, iceProvider, otherProvider;
 		set<double> temps, freqs, nus;
 		map<PHASE,string> vsVols;
 		map<PHASE,set<double> > vVols;
@@ -92,6 +97,12 @@ int main(int argc, char** argv)
 		unitsFreq = vm["in-units"].as<string>();
 		unitsWvlen = vm["output-units"].as<string>();
 		unitsTemp = vm["temperature-units"].as<string>();
+
+		//("ice-provider", po::value<string>()->default_value("mIce"), "Provider for the raw ice dielectric.")
+		//("water-provider", po::value<string>()->default_value("mWater"), "Provider for the raw water dielectric.")
+		waterProvider = vm["water-provider"].as<string>();
+		iceProvider = vm["ice-provider"].as<string>();
+		otherProvider = vm["other-provider"].as<string>();
 
 		if (vm.count("debug"))
 			debug = true;
@@ -270,12 +281,14 @@ int main(int argc, char** argv)
 						complex<double> mAir(1.0,0);
 						complex<double> mWat;
 						complex<double> mIce;
+						complex<double> mOther;
 
 						double fIce = frac->get<0>();
 						double fWat = frac->get<1>();
 						double fAir = frac->get<2>();
+						double fOther = 0;
 
-						if (fIce == 0 && fWat == 0 && fAir == 0)
+						if (fIce == 0 && fWat == 0 && fAir == 0 && fOther == 0)
 						{
 							if (T < 273.15)
 							{
@@ -288,19 +301,23 @@ int main(int argc, char** argv)
 						using rtmath::refract::_frequency;
 						using rtmath::refract::_temperature;
 						using rtmath::refract::_m;
+						using rtmath::refract::_provider;
 						if (fIce)
-							rtmath::refract::mIce(_frequency = *freq, _temperature = T, _m = mIce);
+							rtmath::refract::mIce(_frequency = *freq, _temperature = T, _m = mIce, _provider = iceProvider.c_str());
 						if (fWat)
-							rtmath::refract::mWater(_frequency = *freq, _temperature = T, _m = mWat);
+							rtmath::refract::mWater(_frequency = *freq, _temperature = T, _m = mWat, _provider = waterProvider.c_str());
+						if (fOther)
+							rtmath::refract::mOther(_frequency = *freq, _temperature = T, _m = mOther, _provider = otherProvider.c_str());
 
 						if (debug)
-							cerr << fIce << "," << fWat << "," << fAir << "," << T << "," << *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir;
-						if (fIce + fWat + fAir > 1.0)
+							cerr << fIce << "," << fWat << "," << fAir << "," << fOther << "," << T << "," 
+							<< *freq << "," << *nu << "," << mIce << "," << mWat << "," << mAir << "," << mOther;
+						if (fIce + fWat + fAir + fOther > 1.0)
 						{
 							if (debug)
 								cerr << " - Invalid\n";
 							continue;
-						} if (fIce < 0 || fIce > 1.0 || fWat < 0 || fWat > 1.0 || fAir < 0 || fAir > 1.0)
+						} if (fIce < 0 || fIce > 1.0 || fWat < 0 || fWat > 1.0 || fAir < 0 || fAir > 1.0 || fOther < 0 || fOther > 1.0)
 						{
 							if (debug)
 								cerr << " - Invalid\n";

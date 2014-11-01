@@ -20,11 +20,16 @@ namespace rtmath {
 
 		// The raw dielectric providers implementations
 		namespace implementations {
-			void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m);
-			void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m);
+			void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m, const char* provider = nullptr);
+			void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m, const char* provider = nullptr);
+			void DLEXPORT_rtmath_core mOther(double f, double t, std::complex<double> &m, const char* provider = nullptr);
 			/// Water complex refractive index for microwave for 0 to 1000 GHz
 			/// Liebe, Hufford and Manabe (1991)
 			void DLEXPORT_rtmath_core mWaterLiebe(double f, double t, std::complex<double> &m);
+			/// Water complex refractive index for microwave for 0 to 500 GHz, temps from -20 to 40 C.
+			/// This one is for pure water (salinity = 0). There is also a model with salinity (TBI).
+			/// Meissner and Wentz (2004)
+			void DLEXPORT_rtmath_core mWaterFreshMeissnerWentz(double f, double t, std::complex<double> &m);
 			/// Ice complex refractive index
 			/// Christian Matzler (2006)
 			void DLEXPORT_rtmath_core mIceMatzler(double f, double t, std::complex<double> &m);
@@ -50,9 +55,37 @@ namespace rtmath {
 		/// base dielectric function to use.
 		BOOST_PARAMETER_NAME(frequency)
 		BOOST_PARAMETER_NAME(temperature)
+		BOOST_PARAMETER_NAME(salinity)
 		BOOST_PARAMETER_NAME(temp_units)
 		BOOST_PARAMETER_NAME(freq_units)
+		BOOST_PARAMETER_NAME(salinity_units)
 		BOOST_PARAMETER_NAME(m)
+		BOOST_PARAMETER_NAME(provider)
+
+		/// Really generic (has everything and hides details from user)
+#define standardGenericProvider(name) \
+	BOOST_PARAMETER_FUNCTION( \
+		(void), \
+			name, \
+			tag, \
+			(required \
+			(frequency, (double)) \
+			(temperature, (double)) \
+			(in_out(m), (std::complex<double>))) \
+			(optional \
+			(freq_units, *, std::string("GHz")) \
+			(temp_units, *, std::string("K")) \
+			(provider, (const char*), "")) \
+			) \
+				{ \
+			double freq = rtmath::units::conv_spec(freq_units, "GHz").convert(frequency); \
+			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			implementations:: name(freq, temp, m, provider); \
+				}
+
+		standardGenericProvider(mWater);
+		standardGenericProvider(mIce);
+		standardGenericProvider(mOther);
 
 #define standardFTmProvider(name) \
 	BOOST_PARAMETER_FUNCTION( \
@@ -73,11 +106,10 @@ namespace rtmath {
 			implementations:: name(freq, temp, m); \
 		}
 
-		standardFTmProvider(mWater);
-		standardFTmProvider(mIce);
 		standardFTmProvider(mWaterLiebe);
 		standardFTmProvider(mIceMatzler);
 		standardFTmProvider(mIceWarren);
+		standardFTmProvider(mWaterMeissnerWentz);
 
 #define standardLmProvider(name) \
 	BOOST_PARAMETER_FUNCTION( \
@@ -85,17 +117,17 @@ namespace rtmath {
 			name, \
 			tag, \
 			(required \
-			(temperature, (double)) \
-			(frequency, (double)) \
-			(in_out(m), (std::complex<double>))) \
+				(frequency, (double)) \
+				(in_out(m), (std::complex<double>)) ) \
 			(optional \
-			(freq_units, *, std::string("GHz")) \
-			(temp_units, *, std::string("K"))) \
+				(temperature, (double), 0) \
+				(freq_units, *, std::string("GHz")) \
+				(temp_units, *, std::string("K")) ) \
 			) \
 				{ \
 			double lambda = rtmath::units::conv_spec(freq_units, "mm").convert(frequency); \
 			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
-			implementations:: name(lambda, temp, m); \
+			implementations:: name(lambda, m); \
 				}
 		
 		standardLmProvider(mWaterHanel);
@@ -105,6 +137,8 @@ namespace rtmath {
 		standardLmProvider(mDustHanel);
 		standardLmProvider(mSandOHanel);
 		standardLmProvider(mSandEHanel);
+
+
 
 
 		/// basic Liu-based diel.tab writer
@@ -191,7 +225,7 @@ namespace rtmath {
 
 		// Temperature-guessing
 		double DLEXPORT_rtmath_core guessTemp(double freq, const std::complex<double> &mToEval,
-			std::function<void(double freq, double temp, std::complex<double>& mres)> meth = rtmath::refract::implementations::mIce);
+			std::function<void(double freq, double temp, std::complex<double>& mres)> meth = rtmath::refract::implementations::mIceMatzler);
 
 		/**
 		* \brief Adds options to a program

@@ -334,42 +334,79 @@ void rtmath::refract::process_static_options(
 	throw;
 }
 
-void rtmath::refract::implementations::mWater(double f, double t, std::complex<double> &m)
+void rtmath::refract::implementations::mWater(double f, double t, std::complex<double> &m, const char* provider)
 {
-	if (f< 0) RTthrow rtmath::debug::xModelOutOfRange(f);
-	if (f < 1000)
+	std::string sP(provider);
+	if (sP.size())
 	{
-		if (t >= 273)
-		{
-			mWaterLiebe(f,t,m);
-		} else {
-			throw rtmath::debug::xModelOutOfRange(t);
-		}
+		using rtmath::refract::_frequency;
+		using rtmath::refract::_temperature;
+		using rtmath::refract::_m;
+		using rtmath::refract::_provider;
+		using rtmath::refract::_freq_units;
+
+		if (sP == "mWaterLiebe") mWaterLiebe(f, t, m);
+		if (sP == "mWaterFreshMeissnerWentz") mWaterFreshMeissnerWentz(f, t, m);
+		if (sP == "mWaterHanel") ::rtmath::refract::mWaterHanel(_frequency = f, _freq_units = std::string("GHz"), _m = m);
 	} else {
-		throw rtmath::debug::xModelOutOfRange(f);
+		if (f < 0) RTthrow rtmath::debug::xModelOutOfRange(f);
+		if (f < 1000)
+		{
+			if (t >= 273)
+			{
+				mWaterLiebe(f, t, m);
+			}
+			else {
+				throw rtmath::debug::xModelOutOfRange(t);
+			}
+		}
+		else {
+			throw rtmath::debug::xModelOutOfRange(f);
+		}
 	}
 }
 
-void rtmath::refract::implementations::mIce(double f, double t, std::complex<double> &m)
+void rtmath::refract::implementations::mIce(double f, double t, std::complex<double> &m, const char* provider)
 {
-	if (f< 0) RTthrow rtmath::debug::xModelOutOfRange(f);
-	if (f < 1000)
+	std::string sP(provider);
+	if (sP.size())
 	{
-		if (t <= 278)
-		{
-			mIceMatzler(f,t,m);
-		} else {
-			throw rtmath::debug::xModelOutOfRange(t);
-		}
+		using rtmath::refract::_frequency;
+		using rtmath::refract::_temperature;
+		using rtmath::refract::_m;
+		using rtmath::refract::_provider;
+		using rtmath::refract::_freq_units;
+
+		if (sP == "mIceMatzler") mIceMatzler(f, t, m);
+		if (sP == "mIceWarren") mIceWarren(f, t, m);
+		if (sP == "mIceHanel") ::rtmath::refract::mIceHanel(_frequency = f, _freq_units = std::string("GHz"), _m = m);
 	} else {
-		if (t <= 278)
+		if (f < 0) RTthrow rtmath::debug::xModelOutOfRange(f);
+		if (f < 1000)
 		{
-			mIceWarren(f, t, m);
+			if (t <= 278)
+			{
+				mIceMatzler(f, t, m);
+			}
+			else {
+				throw rtmath::debug::xModelOutOfRange(t);
+			}
 		}
 		else {
-			throw rtmath::debug::xModelOutOfRange(t);
+			if (t <= 278)
+			{
+				mIceWarren(f, t, m);
+			}
+			else {
+				throw rtmath::debug::xModelOutOfRange(t);
+			}
 		}
 	}
+}
+
+void rtmath::refract::implementations::mOther(double f, double t, std::complex<double> &m, const char* provider)
+{
+	RTthrow rtmath::debug::xUnimplementedFunction();
 }
 
 // Water complex refractive index
@@ -394,6 +431,41 @@ void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::comp
 		+ complex<double>(eps2,0);
 	m = sqrt(eps);
 }
+
+void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double tK, std::complex<double> &m)
+{
+	if (f < 0 || f > 500)
+		throw rtmath::debug::xModelOutOfRange(f);
+
+	const double as[11] = {
+		5.7230, 2.2379e-2, -7.1237e-4, 5.0478,
+		-7.0315e-2, 6.0059e-4, 3.6143, 2.8841e-2,
+		1.3652e-1, 1.4825e-3, 2.4166e-4
+	};
+
+	double tC = tK - 273.15;
+	if (tC < -20 || tC > 40)
+		throw rtmath::debug::xModelOutOfRange(tK);
+
+	// static dielectric constant for pure water (Stogryn)
+	double es = (37088.6 - (82.168*tC)) / (tC + 421.854);
+
+	double e1 = as[0] + (as[1] * tC) + (as[2] * tC*tC);
+	double nu1 = (45 + tC) / (as[3] + (tC*as[4]) + (tC*tC*as[5]));
+	double einf = as[6] + (tC*as[7]);
+	double nu2 = (45 + tC) / (as[8] + (tC*as[9]) + (tC*tC*as[10]));
+	double sigma = 0;
+	// vacuum electric permittivity
+	const double oneover2pie0 = 17.97510; // GHz m / S
+
+	using namespace std;
+	complex<double> eps;
+	eps = complex<double>(es - e1, 0) / (complex<double>(1, f / nu1));
+	eps += complex<double>(e1 - einf, 0) / (complex<double>(1, f / nu2));
+	eps += complex<double>(einf, -sigma * oneover2pie0 / f ); // -sigma / (f*2.*pi*e0));
+	m = sqrt(eps);
+}
+
 
 void rtmath::refract::implementations::mIceMatzler(double f, double t, std::complex<double> &m)
 {
@@ -666,7 +738,6 @@ void rtmath::refract::debyeDry(std::complex<double> Ma, std::complex<double> Mb,
 	eToM(eRes,Mres);
 }
 
-/// \todo Check this vs. Bohren and Battan 1980, p. 1822
 void rtmath::refract::maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, 
 											double fa, std::complex<double> &Mres)
 {
