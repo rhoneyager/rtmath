@@ -438,9 +438,9 @@ void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double
 		throw rtmath::debug::xModelOutOfRange(f);
 
 	const double as[11] = {
-		5.7230, 2.2379e-2, -7.1237e-4, 5.0478,
-		-7.0315e-2, 6.0059e-4, 3.6143, 2.8841e-2,
-		1.3652e-1, 1.4825e-3, 2.4166e-4
+		5.7230, 0.022379, -0.00071237, 5.0478,
+		-0.070315, 0.00060059, 3.6143, 0.028841,
+		0.13652, 0.0014825, 0.00024166
 	};
 
 	double tC = tK - 273.15;
@@ -574,12 +574,8 @@ void rtmath::refract::implementations::mIceWarren(double f, double t, std::compl
 		for (size_t i = 0; i < 558; ++i)
 		{
 			if (i % 9 == 0) wavelengths.push_back(tbl[i]);
-			else {
-				double re = tbl[i];
-				double im = tbl[i + i];
-				vals_re.push_back(re); vals_im.push_back(im);
-				++i;
-			}
+			else if (i % 9 == 1 || i % 9 == 3 || i % 9 == 5 || i % 9 == 7) vals_re.push_back(tbl[i]);
+			else vals_im.push_back(tbl[i]);
 		}
 
 		static std::vector< std::vector<double>::iterator > grid_iter_list;

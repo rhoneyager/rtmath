@@ -125,7 +125,7 @@ namespace rtmath {
 				(temp_units, *, std::string("K")) ) \
 			) \
 				{ \
-			double lambda = rtmath::units::conv_spec(freq_units, "mm").convert(frequency); \
+			double lambda = rtmath::units::conv_spec(freq_units, "um").convert(frequency); \
 			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
 			implementations:: name(lambda, m); \
 				}
