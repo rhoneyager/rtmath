@@ -71,7 +71,7 @@ namespace rtmath {
 			(required \
 			(frequency, (double)) \
 			(temperature, (double)) \
-			(in_out(m), (std::complex<double>))) \
+			(in_out(m), *)) \
 			(optional \
 			(freq_units, *, std::string("GHz")) \
 			(temp_units, *, std::string("K")) \
@@ -95,7 +95,7 @@ namespace rtmath {
 			(required \
 			(frequency, (double)) \
 			(temperature, (double)) \
-			(in_out(m), (std::complex<double>))) \
+			(in_out(m), *)) \
 			(optional \
 			(freq_units, *, std::string("GHz")) \
 			(temp_units, *, std::string("K"))) \
@@ -118,7 +118,7 @@ namespace rtmath {
 			tag, \
 			(required \
 				(frequency, (double)) \
-				(in_out(m), (std::complex<double>)) ) \
+				(in_out(m), *) ) \
 			(optional \
 				(temperature, (double), 0) \
 				(freq_units, *, std::string("GHz")) \
