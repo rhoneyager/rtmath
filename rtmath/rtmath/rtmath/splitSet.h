@@ -10,8 +10,6 @@ namespace rtmath {
 		/**
 		* \brief Function that expands sets of _numbers_ with 
 		* separators of commas, dashes and colons.
-		*
-		* \todo Check template export on msvc
 		**/
 		template <class T>
 		void splitSet(
@@ -75,78 +73,25 @@ namespace rtmath {
 		{
 		public:
 			std::vector<std::pair<T, T> > ranges;
-			intervals(const std::string &s = "") { if (s.size()) append(s); }
-			intervals(const std::vector<std::string> &s) { append(s); }
-			~intervals() {}
+			intervals(const std::string &s = "");
+			intervals(const std::vector<std::string> &s);
+			~intervals();
 			void append(const std::string &instr,
-				const std::map<std::string, std::string> *aliases = nullptr)
-			{
-				std::vector<std::string> splits;
-				splitVector(instr, splits, ',');
-				std::set<T> vals;
-				for (const auto &s : splits)
-				{
-					std::map<std::string, std::string> defaliases;
-					if (!aliases) aliases = &defaliases; // Provides a convenient default
-
-					if (aliases->count(s))
-					{
-						std::string ssubst = aliases->at(s);
-						// Recursively call splitSet to handle bundles of aliases
-						append(ssubst, aliases);
-					} else {
-						T start, end, interval;
-						size_t n;
-						std::string specializer;
-						bool isRange = false;
-						extractInterval(s, start, end, interval, n, specializer);
-						if (specializer == "range")
-						{
-							ranges.push_back(std::pair<T, T>(start, end));
-						} else {
-							splitSet(start, end, interval, specializer, vals);
-						}
-					}
-				}
-				for (const auto &v : vals)
-				{
-					ranges.push_back(std::pair<T, T>(v, v));
-				}
-			}
+				const std::map<std::string, std::string> *aliases = nullptr);
 			void append(const std::vector<std::string> &s,
-				const std::map<std::string, std::string> *aliases = nullptr)
-			{
-				for (const auto &str : s) append(str, aliases);
-			}
-			void append(const intervals<T>& src)
-			{
-				ranges.insert(ranges.end(), src.ranges.begin(), src.ranges.end());
-			}
-			bool inRange(const T& val) const
-			{
-				for (const auto &r : ranges)
-				{
-					if (val >= r.first && val < r.second) return true;
-				}
-				return false;
-			}
-			bool isNear(const T& val, const T& linSep, const T& factorSep) const
-			{
-				for (const auto &r : ranges)
-				{
-					T lower = (r.first * (static_cast<T>(1) - factorSep)) - linSep,
-						upper = (r.second * (static_cast<T>(1) + factorSep)) + linSep;
-					if (val >= lower && val < upper) return true;
-				}
-				return false;
-			}
+				const std::map<std::string, std::string> *aliases = nullptr);
+			void append(const intervals<T>& src);
+			bool inRange(const T& val) const;
+			bool isNear(const T& val, const T& linSep, const T& factorSep) const;
 		};
-		extern template class intervals < int >;
+		/*extern template class intervals < int >;
 		extern template class intervals < double >;
 		extern template class intervals < float >;
 		extern template class intervals < unsigned int >;
 		extern template class intervals < long >;
+		extern template class intervals < long long >;
 		extern template class intervals < unsigned long >;
+		extern template class intervals < unsigned long long >;*/
 	}
 }
 

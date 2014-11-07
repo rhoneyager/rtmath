@@ -19,19 +19,18 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-//#include <memory>
-//#include <new>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <boost/program_options.hpp>
+//#include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/tokenizer.hpp>
+//#include <boost/tokenizer.hpp>
 
+#include "../rtmath/defs.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 //#pragma warning( push )

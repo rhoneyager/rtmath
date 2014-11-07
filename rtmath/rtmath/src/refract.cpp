@@ -10,6 +10,10 @@
 #include <valarray>
 #include <thread>
 #include <mutex>
+
+#include <boost/program_options.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/tokenizer.hpp>
 #include "../rtmath/refract.h"
 #include "../rtmath/zeros.h"
 #include "../rtmath/units.h"

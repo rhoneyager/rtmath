@@ -18,6 +18,9 @@
 namespace rtmath {
 	namespace config {
 
+#define DOTYPES(f) f(int); f(size_t); f(float); f(double); f(long); f(long long); \
+	f(unsigned int); f(unsigned long); f(unsigned long long);
+
 		template <class T>
 		void splitSet(
 			const T &Tstart, const T &Tend, const T &Tinterval,
@@ -118,10 +121,12 @@ namespace rtmath {
 	template void DLEXPORT_rtmath_core splitSet<T>(const T&, const T&, \
 	const T&, const std::string&, std::set<T> &);
 
-		SPEC_SPLITSET_A(int);
-		SPEC_SPLITSET_A(size_t);
-		SPEC_SPLITSET_A(float);
-		SPEC_SPLITSET_A(double);
+		//SPEC_SPLITSET_A(int);
+		//SPEC_SPLITSET_A(size_t);
+		//SPEC_SPLITSET_A(float);
+		//SPEC_SPLITSET_A(double);
+
+		DOTYPES(SPEC_SPLITSET_A);
 
 
 		template <class T>
@@ -183,10 +188,12 @@ namespace rtmath {
 	template void DLEXPORT_rtmath_core extractInterval<T>( \
 	const std::string&, T&, T&, T&, size_t&, std::string&);
 
-		SPEC_SPLITSET_INTERVAL(int);
-		SPEC_SPLITSET_INTERVAL(size_t);
-		SPEC_SPLITSET_INTERVAL(float);
-		SPEC_SPLITSET_INTERVAL(double);
+		//SPEC_SPLITSET_INTERVAL(int);
+		//SPEC_SPLITSET_INTERVAL(size_t);
+		//SPEC_SPLITSET_INTERVAL(float);
+		//SPEC_SPLITSET_INTERVAL(double);
+
+		DOTYPES(SPEC_SPLITSET_INTERVAL);
 
 
 
@@ -292,10 +299,11 @@ namespace rtmath {
 	template void DLEXPORT_rtmath_core splitSet<T>(const std::string &instr, std::set<T> &expanded, \
 	const std::map<std::string, std::string> *aliases);
 
-		SPEC_SPLITSET(int);
-		SPEC_SPLITSET(size_t);
-		SPEC_SPLITSET(float);
-		SPEC_SPLITSET(double);
+		DOTYPES(SPEC_SPLITSET);
+		//SPEC_SPLITSET(int);
+		//SPEC_SPLITSET(size_t);
+		//SPEC_SPLITSET(float);
+		//SPEC_SPLITSET(double);
 
 
 
@@ -374,12 +382,100 @@ namespace rtmath {
 		}
 
 		
+		template <class T>
+		intervals<T>::intervals(const std::string &s) { if (s.size()) append(s); }
+
+		template <class T>
+		intervals<T>::intervals(const std::vector<std::string> &s) { append(s); }
+		
+		template <class T>
+		intervals<T>::~intervals() {}
+		
+		template <class T>
+		void intervals<T>::append(const std::string &instr,
+			const std::map<std::string, std::string> *aliases)
+		{
+			std::vector<std::string> splits;
+			splitVector(instr, splits, ',');
+			std::set<T> vals;
+			for (const auto &s : splits)
+			{
+				std::map<std::string, std::string> defaliases;
+				if (!aliases) aliases = &defaliases; // Provides a convenient default
+
+				if (aliases->count(s))
+				{
+					std::string ssubst = aliases->at(s);
+					// Recursively call splitSet to handle bundles of aliases
+					append(ssubst, aliases);
+				}
+				else {
+					T start, end, interval;
+					size_t n;
+					std::string specializer;
+					bool isRange = false;
+					extractInterval(s, start, end, interval, n, specializer);
+					if (specializer == "range")
+					{
+						ranges.push_back(std::pair<T, T>(start, end));
+					}
+					else {
+						splitSet(start, end, interval, specializer, vals);
+					}
+				}
+			}
+			for (const auto &v : vals)
+			{
+				ranges.push_back(std::pair<T, T>(v, v));
+			}
+		}
+		
+		template <class T>
+		void intervals<T>::append(const std::vector<std::string> &s,
+			const std::map<std::string, std::string> *aliases)
+		{
+			for (const auto &str : s) append(str, aliases);
+		}
+		
+		template <class T>
+		void intervals<T>::append(const intervals<T>& src)
+		{
+			ranges.insert(ranges.end(), src.ranges.begin(), src.ranges.end());
+		}
+		template <class T>
+		bool intervals<T>::inRange(const T& val) const
+		{
+			for (const auto &r : ranges)
+			{
+				if (val >= r.first && val < r.second) return true;
+			}
+			return false;
+		}
+		template <class T>
+		bool intervals<T>::isNear(const T& val, const T& linSep, const T& factorSep) const
+		{
+			for (const auto &r : ranges)
+			{
+				T lower = (r.first * (static_cast<T>(1) - factorSep)) - linSep,
+					upper = (r.second * (static_cast<T>(1) + factorSep)) + linSep;
+				if (val >= lower && val < upper) return true;
+			}
+			return false;
+		}
+
+#define IMPL_INTS(T) template class DLEXPORT_rtmath_core intervals < T >;
+		DOTYPES(IMPL_INTS);
+
+		/*
 		template class DLEXPORT_rtmath_core intervals < int >;
 		template class DLEXPORT_rtmath_core intervals < double >;
 		template class DLEXPORT_rtmath_core intervals < float >;
 		template class DLEXPORT_rtmath_core intervals < unsigned int >;
+		template class DLEXPORT_rtmath_core intervals < long long >;
 		template class DLEXPORT_rtmath_core intervals < long >;
 		template class DLEXPORT_rtmath_core intervals < unsigned long >;
+		template class DLEXPORT_rtmath_core intervals < unsigned long long >;
+		*/
 	}
 }
 

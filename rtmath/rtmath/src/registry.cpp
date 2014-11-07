@@ -13,6 +13,7 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/tokenizer.hpp>
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/config.h"
 #include "../rtmath/splitSet.h"
