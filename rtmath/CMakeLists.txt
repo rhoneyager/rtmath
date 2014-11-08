@@ -91,6 +91,12 @@ add_definitions(-DWITH_CMAKE)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+if(NOT ZLIB_INCLUDE_DIR)
+	if (DEFINED ENV{ZLIB_ROOT})
+		set(ZLIB_ROOT $ENV{ZLIB_ROOT})
+	ENDIF()
+endif()
+
 # Set a uniform output directory (to make app debugs easier)
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_Debug ${CMAKE_BINARY_DIR}/Debug)
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_Release ${CMAKE_BINARY_DIR}/Release)

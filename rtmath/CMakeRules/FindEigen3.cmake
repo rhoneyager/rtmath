@@ -15,6 +15,12 @@
 # Copyright (c) 2009 Benoit Jacob <jacob.benoit.1@gmail.com>
 # Redistribution and use is allowed according to the terms of the 2-clause BSD license.
 
+if(NOT EIGEN3_INCLUDE_DIR)
+	if (DEFINED ENV{EIGEN3_INCLUDE_DIR})
+		set(EIGEN3_INCLUDE_DIR_BASE $ENV{EIGEN3_INCLUDE_DIR})
+	ENDIF()
+endif()
+
 if(NOT Eigen3_FIND_VERSION)
   if(NOT Eigen3_FIND_VERSION_MAJOR)
     set(Eigen3_FIND_VERSION_MAJOR 2)
@@ -65,6 +71,7 @@ else (EIGEN3_INCLUDE_DIR)
       PATHS
       ${CMAKE_INSTALL_PREFIX}/include
       ${KDE4_INCLUDE_DIR}
+      ${EIGEN3_INCLUDE_DIR_BASE}
       PATH_SUFFIXES eigen3 eigen
     )
 
