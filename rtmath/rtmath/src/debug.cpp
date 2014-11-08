@@ -10,8 +10,27 @@
 #include <mutex>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
+#include <boost/exception/all.hpp>
+#include <boost/core/null_deleter.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions/predicates/is_debugger_present.hpp>
+#include <boost/log/attributes.hpp>
+#include <boost/log/expressions/keyword.hpp>
+#include <boost/log/expressions/attr_fwd.hpp>
+#include <boost/log/expressions/attr.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sources/channel_feature.hpp>
+#include <boost/log/sources/channel_logger.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/sinks/text_ostream_backend.hpp>
+#include <boost/log/sinks/debug_output_backend.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/error/debug.h"
+#include "../rtmath/error/error.h"
 //#include "../rtmath/error/debug_mem.h"
 #include "../rtmath/registry.h"
 #include "../rtmath/hash.h"
@@ -22,12 +41,20 @@
 #include "cmake-settings.h"
 #endif
 
+namespace blog = boost::log;
 namespace {
 	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
 	boost::program_options::options_description SHARED_PRIVATE *pconfig = nullptr;
 	boost::program_options::options_description SHARED_PRIVATE *phidden = nullptr;
 	size_t sys_num_threads = 0;
 	std::mutex m_sys_num_threads;
+
+
+
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_deb,
+		blog::sources::severity_channel_logger< >,
+		(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "debug"))
 }
 
 namespace rtmath
@@ -219,6 +246,59 @@ namespace rtmath
 			registry::add_options(cmdline, config, hidden);
 		}
 
+		/*bool stdlogFilter(boost::log::value_ref< severity_level, boost::log::tag::severity > const& level,
+			boost::log::value_ref< std::string, boost::log::sources::tag::tag_attr > const& tag)
+		{
+			return level >= rtmath::debug::warning; // || tag == "IMPORTANT_MESSAGE";
+		}*/
+
+
+
+		void setupLogging()
+		{
+			static bool setup = false;
+			if (setup) return;
+
+			// Construct the sink
+			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
+			static boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
+
+			// We have to provide an empty deleter to avoid destroying the global stream object
+			boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
+			sink->locked_backend()->add_stream(stream);
+			sink->set_filter( severity >= warning
+				//boost::log::expressions::attr < int >
+				//("Severity").or_default(rtmath::debug::normal)
+				); // rtmath::debug::warning);
+
+			
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			core->add_sink(sink);
+			//boost::log::core::get()->set_filter(rtmath::debug::severity_level >= rtmath::debug::warning);
+
+
+
+			// Complete sink type
+			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > d_sink_t;
+
+			// Create the sink. The backend requires synchronization in the frontend.
+			boost::shared_ptr< d_sink_t > d_sink(new d_sink_t());
+
+			// Set the special filter to the frontend
+			// in order to skip the sink when no debugger is available
+			d_sink->set_filter(boost::log::expressions::is_debugger_present());
+
+			core->add_sink(d_sink);
+
+			setup = true;
+		}
+
+		/*void appExit()
+		{
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			core->remove_all_sinks();
+		}*/
+
 		void process_static_options(
 			boost::program_options::variables_map &vm)
 		{
@@ -233,24 +313,23 @@ namespace rtmath
 				std::cerr << oall << std::endl;
 				exit(2);
 			}
+			
+			//atexit(appExit);
+			setupLogging();
 
-			if (vm.count("version"))
-			{
-				std::cerr << "rtmath library information: \n";
-				debug_preamble(std::cerr);
-				/// \todo Add serialization and tmatrix information
-				std::cerr << "Ryan_Debug library information: \n";
-				Ryan_Debug::printDebugInfo();
-				exit(2);
-			}
-
+			auto& lg = m_deb::get();
+			
 			if (vm.count("rtmath-config-file"))
 			{
 				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
+				BOOST_LOG_SEV(lg, normal) << "Console override of rtmath-config-file: " << sConfigDefaultFile << "\n";
 			}
 
-			if (vm.count("close-on-finish"))
-				Ryan_Debug::waitOnExit(!(vm["close-on-finish"].as<bool>()));
+			if (vm.count("close-on-finish")) {
+				bool val = !(vm["close-on-finish"].as<bool>());
+				Ryan_Debug::waitOnExit(val);
+				BOOST_LOG_SEV(lg, normal) << "Console override of waiting on exit: " << val << "\n";
+			}
 
 			if (vm.count("hash-dir"))
 			{
@@ -261,10 +340,29 @@ namespace rtmath
 					h->writable = vm["hash-dir-writable"].as<bool>();
 					h->base = boost::filesystem::path(p);
 					hashStore::addHashStore(h, 0);
+
+					BOOST_LOG_SEV(lg, normal) << "Console override of hash directory: " << p << ", writable: " << h->writable << ".\n";
 				}
 			}
 
 			registry::process_static_options(vm);
+
+			std::ostringstream preambles;
+			preambles << "rtmath library information: \n";
+			debug_preamble(preambles);
+			preambles << "Ryan_Debug library information: \n";
+			Ryan_Debug::printDebugInfo(preambles);
+
+			std::string spreambles = preambles.str();
+
+			if (vm.count("version"))
+			{
+				std::cerr << spreambles;
+				exit(2);
+			}
+
+
+			BOOST_LOG_SEV(lg, normal) << spreambles;
 		}
 
 

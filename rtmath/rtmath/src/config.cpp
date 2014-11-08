@@ -759,7 +759,8 @@ namespace rtmath {
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			std::string fn = filename;
 			if (fn == "") getConfigDefaultFile(fn);
-			if (fn == "") RTthrow debug::xMissingFile("Cannot find the rtmath.conf file");
+			if (fn == "") RTthrow debug::xMissingFile("Cannot find the rtmath.conf file") 
+				<< debug::file_name(filename) << debug::default_file_name(fn);
 			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
 			auto opts = rtmath::registry::IO_options::generate(rtmath::registry::IOhandler::IOtype::READONLY);
 			opts->filename(fn);

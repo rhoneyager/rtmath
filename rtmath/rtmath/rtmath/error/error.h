@@ -3,13 +3,23 @@
 #include "../defs.h"
 
 #pragma warning( disable : 4996 ) // Deprecated function warning
+#pragma warning( disable : 4275 ) // DLL boundary warning
 
 #include "../Stdafx.h"
 #include <iostream>
-//#include <boost/exception/all.hpp>
+#include <boost/exception/all.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/attributes.hpp>
+#include <boost/log/expressions/keyword.hpp>
+#include <boost/log/sources/channel_feature.hpp>
+#include <boost/log/sources/channel_logger.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
 #ifdef HEAP_CHECK
 #include "debug_mem.h"
 #endif
+
 
 /// \def ERRSTD(x) Defines an exception class that takes no arguments.
 #define ERRSTD(x) class DLEXPORT_rtmath_core x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
@@ -20,16 +30,58 @@
 /// \def ERRDOU(x) Defines an exception class that takes a double as an argument
 #define ERRDOU(x) class DLEXPORT_rtmath_core x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
 
+namespace blog = boost::log;
+
 namespace rtmath
 {
 	namespace debug
 	{
+		enum severity_level
+		{
+			normal,
+			notification,
+			warning,
+			error,
+			critical
+		};
+
+		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::rtmath::debug::severity_level)
+		BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
+		typedef ::boost::log::sources::severity_channel_logger_mt<
+			severity_level,     // the type of the severity level
+			std::string         // the type of the channel name
+		> my_logger_mt;
+
+		// Where the errors occur
+		//typedef boost::error_info<struct tag_file_name, std::string> src_file;
+		//typedef boost::error_info<struct tag_file_name, int> src_line;
+		//typedef boost::error_info<struct tag_file_name, std::string> func_name;
+
+		//typedef boost::tuple<boost::errinfo_api_function, boost::errinfo_errno> clib_failure;
+
+		typedef boost::error_info<struct tag_file_name, std::string> file_name;
+		typedef boost::error_info<struct tag_file_name, std::string> default_file_name;
+		typedef boost::error_info<struct tag_file_name, std::string> folder_name;
+		typedef boost::error_info<struct tag_file_name, std::string> symbol_name;
+		typedef boost::error_info<struct tag_file_name, std::pair<std::string, std::string> > path_type_expected;
+		typedef boost::error_info<struct tag_file_name, double> freq;
+		typedef boost::error_info<struct tag_file_name, double> temp;
+		typedef boost::error_info<struct tag_file_name, std::pair<double, double> > freq_ref_range;
+		typedef boost::error_info<struct tag_file_name, std::pair<double, double> > temp_ref_range;
+		typedef boost::error_info<struct tag_file_name, std::string> hash;
+		typedef boost::error_info<struct tag_file_name, bool> is_Critical; // dll loads
+		typedef boost::error_info<struct tag_file_name, std::string> otherErrorText;
+		typedef boost::error_info<struct tag_file_name, long long> otherErrorCode;
+
+		//typedef boost::error_info<struct tag_file_name, std::string> var_name;
+
 		/// \brief This is the parent error class. Everything inherits from this.
 		/// \note Using throw() because MSVC2012 does not have noexcept
-		class DLEXPORT_rtmath_core xError : public virtual std::exception //, public virtual boost::exception
+		class DLEXPORT_rtmath_core xError : public virtual std::exception, public virtual boost::exception
 		{
 		public:
 			xError() throw(); 
+			xError(const std::string&) throw();
 			virtual ~xError() throw();
 			virtual void message(std::string &message) const throw();
 			virtual void Display(std::ostream &out = std::cerr) const throw();
@@ -47,7 +99,7 @@ namespace rtmath
 		protected:
 			std::string _message;
 			static SHARED_PRIVATE void (*_errHandlerFunc)(const char*);
-			virtual void _setmessage() = 0;
+			virtual void _setmessage();
 			const char* file;
 			const char* caller;
 			int line;
@@ -129,6 +181,10 @@ namespace rtmath
 		/// Another hook blocked unload
 		ERRSTR2(xBlockedHookUnload);
 
+		/// DLL function error (unspecified)
+		ERRSTR(xDLLerror);
+
+
 		/// Cannot cast upwards to a derived class (usually for plugin handling)
 		ERRSTR2(xUpcast);
 
@@ -158,19 +214,16 @@ namespace rtmath
 }
 
 // Redefine throws so that the location of the code in error is recorded
-#ifdef _DEBUG
+
+//#ifdef _DEBUG
 #ifdef _MSC_FULL_VER
-// I need to be careful with MSVC, since this line disagrees with some of the boost headers. So,
-// error.h should be loaded after the default system headers
-//#define throw (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 #define RTthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 #endif
 #ifdef __GNUC__
-//#define throw (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
 #define RTthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
 #endif
 #define TASSERT(x) if(x) ; else RTthrow ::rtmath::debug::xAssert(#x)
-#else
-#define TASSERT(x) NULL;
-#define RTthrow throw
-#endif
+//#else
+//#define TASSERT(x) NULL;
+//#define RTthrow throw
+//#endif

@@ -21,6 +21,7 @@
 //#include "../rtmath/error/debug_mem.h"
 #include "../rtmath/error/error.h"
 #include "../rtmath/registry.h"
+#include <boost/log/sources/global_logger_storage.hpp>
 
 #ifdef _WIN32
 #include "windows.h"
@@ -39,12 +40,18 @@ typedef void* dlHandleType;
 typedef void* dlHandleType;
 #endif
 
+using namespace rtmath::debug;
 namespace rtmath
 {
 	namespace registry
 	{
 		/// Recursive and single-level DLL loading paths
 		std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
+
+		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+			m_reg,
+			blog::sources::severity_channel_logger< >,
+			(blog::keywords::severity = error)(blog::keywords::channel = "registry"))
 	}
 }
 
@@ -147,14 +154,20 @@ namespace {
 	{
 		using std::vector;
 		using std::set;
-		using std::string;
+		using std::string; 
+		auto& lg = rtmath::registry::m_reg::get();
+		BOOST_LOG_SEV(lg, normal) << "Constructing search paths" << "\n";
+
 
 		// Checking cmake pre-defined locations
 #ifdef REGISTRY_PLUGINS_OVERRIDE_DIR
 		{
 			string regdir(REGISTRY_PLUGINS_OVERRIDE_DIR);
 			if (regdir.size())
+			{
+				BOOST_LOG_SEV(lg, normal) << "REGISTRY_PLUGINS_OVERRIDE_DIR defined, so using: " << regdir << "\n";
 				searchPathsRecursive.emplace(boost::filesystem::path(regdir));
+			}
 		}
 #endif
 		using namespace Ryan_Debug;
@@ -186,13 +199,14 @@ namespace {
 		boost::filesystem::path libpath(getPath(modinfo.get()));
 		libpath.remove_filename();
 		rtmath::registry::searchPathsOne.emplace(libpath / "plugins");
+		BOOST_LOG_SEV(lg, normal) << "Adding library-relative path: " << libpath / "plugins" << "\n";
 
 
 		// Checking rtmath.conf
 		if (use_rtmath_conf)
 		{
 			auto rtconf = rtmath::config::loadRtconfRoot();
-			if (!rtconf) RTthrow rtmath::debug::xOtherError();
+			if (!rtconf) RTthrow rtmath::debug::xMissingFile("Cannot find rtmath configuration file");
 			string srecursivePaths, sonePaths;
 			auto rtgeneral = rtconf->getChild("General");
 			if (rtgeneral) {
@@ -206,10 +220,18 @@ namespace {
 			set<string> CrecursivePaths, ConePaths;
 			rtmath::config::splitSet(srecursivePaths, CrecursivePaths);
 			rtmath::config::splitSet(sonePaths, ConePaths);
+
+			BOOST_LOG_SEV(lg, normal) << "Adding paths from rtmath config file" << "\n";
 			for (auto &p : CrecursivePaths)
+			{
+				BOOST_LOG_SEV(lg, normal) << "Adding " << p << "\n";
 				searchPathsRecursive.emplace(boost::filesystem::path(p));
+			}
 			for (auto &p : ConePaths)
+			{
+				BOOST_LOG_SEV(lg, normal) << "Adding " << p << "\n";
 				searchPathsOne.emplace(boost::filesystem::path(p));
+			}
 		}
 
 		// Checking environment variables
@@ -248,10 +270,15 @@ namespace {
 						using namespace boost::filesystem;
 						path testEnv(it->second);
 						if (exists(testEnv))
+						{
 							res.emplace(testEnv);
+							BOOST_LOG_SEV(lg, normal) << "Adding " << testEnv << "\n";
+						}
 					}
 				}
 			};
+
+			BOOST_LOG_SEV(lg, normal) << "Adding paths from environment" << "\n";
 			searchEnviron("rtmath_plugins_DIR", searchPathsRecursive);
 			searchEnviron("rtmath_dlls_recursive", searchPathsRecursive);
 			searchEnviron("rtmath_dlls_onelevel", searchPathsOne);
@@ -269,18 +296,30 @@ namespace {
 	**/
 	class DLLhandle
 	{
+		rtmath::debug::my_logger_mt m_dll;
 	public:
-		DLLhandle(const std::string &filename, bool critical = false) : dlHandle(nullptr)
+		DLLhandle(const std::string &filename, bool critical = false) : dlHandle(nullptr), m_dll(blog::keywords::channel = "dll")
 		{
 			open(filename, critical);
 		}
-		DLLhandle() : dlHandle(nullptr)
+		DLLhandle() : dlHandle(nullptr), m_dll(blog::keywords::channel = "dll")
 		{
 		}
 		void open(const std::string &filename, bool critical = false)
 		{
-			if (DLLpathsLoaded.count(filename)) RTthrow rtmath::debug::xDuplicateHook(fname.c_str());
-			if (dlHandle) RTthrow rtmath::debug::xHandleInUse(fname.c_str());
+			BOOST_LOG_SEV(m_dll, normal) << "Loading dll " << filename << " with critical flag " << critical << ".\n";
+			if (DLLpathsLoaded.count(filename))
+			{
+				BOOST_LOG_SEV(m_dll, error) << "DLL is already loaded (" << filename << ", " << critical << ")!\n";
+				RTthrow rtmath::debug::xDuplicateHook(fname.c_str()) 
+					<< rtmath::debug::file_name(filename) << rtmath::debug::is_Critical(critical);
+			}
+			if (dlHandle)
+			{
+				BOOST_LOG_SEV(m_dll, error) << "DLL handle is already in use (opening " 
+					<< filename << ") (already opened " << fname << ") (critical " << critical << ")!\n";
+				RTthrow rtmath::debug::xHandleInUse(fname.c_str()) << rtmath::debug::file_name(filename) << rtmath::debug::is_Critical(critical);
+			}
 			fname = filename;
 
 // ifdef _DEBUG
@@ -292,9 +331,11 @@ namespace {
 			const char* cerror = dlerror();
 			if (cerror)
 			{
-				std::string serror(cerror);
-				std::cerr << "DLL loading error: " << serror << std::endl;
-				RTthrow rtmath::debug::xMissingFile(filename.c_str());
+				rtmath::debug::severity_level sl = (critical) ? rtmath::debug::critical : rtmath::debug::error;
+				BOOST_LOG_SEV(m_dll, sl) << "dlopen error (opening " 
+					<< filename << "): " << cerror << "\n";
+				//std::string serror(cerror);
+				RTthrow rtmath::debug::xDLLerror(cerror) << rtmath::debug::file_name(filename) << rtmath::debug::is_Critical(critical);
 			}
 #endif
 #ifdef _WIN32
@@ -303,16 +344,20 @@ namespace {
 			if (this->dlHandle == NULL)
 			{
 				DWORD err = GetLastError();
-				std::cerr << "Error: Could not open DLL at " << filename << " --- error code " << err << std::endl;
+				rtmath::debug::severity_level sl = (critical) ? rtmath::debug::critical : rtmath::debug::error;
+				BOOST_LOG_SEV(m_dll, sl) << "LoadLibrary error (opening "
+					<< filename << "): error code " << err << ".\n";
 				if (critical)
-					RTthrow rtmath::debug::xBadInput(filename.c_str());
+					RTthrow xDLLerror("LoadLibrary") << file_name(filename) << is_Critical(critical) << otherErrorCode(err);
 			}
 #endif
 			DLLpathsLoaded.insert(filename);
+			BOOST_LOG_SEV(m_dll, normal) << "Loaded dll " << filename << " with critical flag " << critical << ".\n";
 		}
 		void close()
 		{
 			if (!dlHandle) return;
+			//BOOST_LOG_SEV(m_dll, normal) << "Closing dll " << fname << "." << "\n";
 			DLLpathsLoaded.erase(fname);
 #ifdef __unix__
 			dlclose(this->dlHandle);
@@ -320,6 +365,7 @@ namespace {
 #ifdef _WIN32
 			FreeLibrary(this->dlHandle);
 #endif
+			//BOOST_LOG_SEV(m_dll, normal) << "Closed dll " << fname << "." << "\n";
 		}
 		~DLLhandle()
 		{
@@ -327,7 +373,12 @@ namespace {
 		}
 		void* getSym(const char* symbol)
 		{
-			if (dlHandle == NULL) RTthrow rtmath::debug::xHandleNotOpen(fname.c_str());
+			BOOST_LOG_SEV(m_dll, normal) << "Finding symbol " << symbol << " in dll " << fname << ".\n";
+			if (dlHandle == NULL)
+			{
+				BOOST_LOG_SEV(m_dll, error) << "DLL handle is closed when finding symbol " << symbol << " in dll " << fname << ".\n";
+				RTthrow rtmath::debug::xHandleNotOpen(fname.c_str()) << file_name(fname);
+			}
 			void* sym;
 #ifdef __unix__
 			sym = dlsym(dlHandle, symbol);
@@ -335,7 +386,11 @@ namespace {
 #ifdef _WIN32
 			sym = GetProcAddress(dlHandle, symbol);
 #endif
-			if (!sym) RTthrow rtmath::debug::xSymbolNotFound(symbol, fname.c_str());
+			if (!sym)
+			{
+				BOOST_LOG_SEV(m_dll, error) << "Cannot find symbol " << symbol << " in dll " << fname << ".\n";
+				RTthrow rtmath::debug::xSymbolNotFound(symbol, fname.c_str()) << file_name(fname) << symbol_name(symbol);
+			}
 			return (void*)sym;
 		}
 	private:
@@ -388,8 +443,10 @@ namespace rtmath
 			using namespace boost::filesystem;
 			using namespace std;
 
+			auto& lg = m_reg::get();
 			for (const auto &sbase : searchPaths)
 			{
+				BOOST_LOG_SEV(lg, normal) << "Finding dlls in " << sbase << " with recursion=" << recurse << ".\n";
 				path base(sbase);
 				base = rtmath::debug::expandSymlink(base);
 				if (!exists(base)) continue;
@@ -467,8 +524,15 @@ namespace rtmath
 			namespace po = boost::program_options;
 			using std::string;
 
+			auto& lg = m_reg::get();
+			BOOST_LOG_SEV(lg, normal) << "Initializing registry system\n";
+
+
 			if (vm.count("rtmath-conf"))
+			{
+				BOOST_LOG_SEV(lg, notification) << "Loading custom rtmath.conf from " << vm["rtmath-conf"].as<string>() << "\n";
 				rtmath::config::loadRtconfRoot(vm["rtmath-conf"].as<string>());
+			}
 
 			//if (vm.count("dll-no-default-locations"))
 			//	autoLoadDLLs = false;
@@ -476,15 +540,23 @@ namespace rtmath
 			if (vm.count("dll-load-onelevel"))
 			{
 				std::vector<std::string> sPaths = vm["dll-load-onelevel"].as<std::vector<std::string> >();
+				BOOST_LOG_SEV(lg, notification) << "Loading custom dll paths (1)\n";
 				for (const auto s : sPaths)
+				{
 					searchPathsOne.emplace(s);
+					BOOST_LOG_SEV(lg, notification) << "Loading custom dll path (1): " << s << "\n";
+				}
 			}
 
 			if (vm.count("dll-load-recursive"))
 			{
 				std::vector<std::string> sPaths = vm["dll-load-recursive"].as<std::vector<std::string> >();
+				BOOST_LOG_SEV(lg, notification) << "Loading custom dll paths (1)" << "\n";
 				for (const auto s : sPaths)
+				{
 					searchPathsRecursive.emplace(s);
+					BOOST_LOG_SEV(lg, notification) << "Loading custom dll path (r): " << s << "\n";
+				}
 			}
 
 			constructSearchPaths(false, true, true);
@@ -499,13 +571,14 @@ namespace rtmath
 			// If a 'default' folder exists in the default search path, then use it for dlls.
 			// If not, then use the base plugins directory.
 			// Any library version / name detecting logic is in loadDLL (called by loadDLLs).
+
 			if (rPaths.size() || oPaths.size())
 			{
 				searchDLLs(toLoadDlls, rPaths, true);
 				searchDLLs(toLoadDlls, oPaths, false);
 			}
 			else { searchDLLs(toLoadDlls); }
-			
+
 			loadDLLs(toLoadDlls);
 			
 
@@ -525,6 +598,8 @@ namespace rtmath
 		 **/
 		void loadDLL(const std::string &filename)
 		{
+			auto& lg = m_reg::get();
+			BOOST_LOG_SEV(lg, normal) << "Loading DLL: " << filename << "\n";
 			auto doLoad = [](const std::string &f)
 			{
 				boost::shared_ptr<DLLhandle> h(new DLLhandle(f));
@@ -536,7 +611,10 @@ namespace rtmath
 			//if (p.is_absolute())
 			{
 				if (exists(p)) doLoad(p.string());
-				else RTthrow debug::xMissingFile(p.string().c_str());
+				else {
+					BOOST_LOG_SEV(lg, error) << "DLL does not exist: " << filename << "\n";
+					RTthrow debug::xMissingFile("Cannot find dll to load") << file_name(p.string());
+				}
 			}
 		}
 
@@ -689,7 +767,7 @@ std::istream& operator>>(std::istream& in, ::rtmath::registry::IOhandler::IOtype
 	else if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
 	else if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
 	else if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
-	else RTthrow ::rtmath::debug::xBadInput(v.c_str());
+	else RTthrow ::rtmath::debug::xBadInput("Unlisted IOtype value") << symbol_name(v);
 	return in;
 }
 
@@ -719,7 +797,7 @@ std::istream& operator>>(std::istream& in, ::rtmath::registry::DBhandler::DBtype
 	else if ("READWRITE" == v) val = DBhandler::DBtype::READWRITE;
 	else if ("NOUPDATE" == v) val = DBhandler::DBtype::NOUPDATE;
 	else if ("NOINSERT" == v) val = DBhandler::DBtype::NOINSERT;
-	else RTthrow::rtmath::debug::xBadInput(v.c_str());
+	else RTthrow ::rtmath::debug::xBadInput("Unlisted DBtype value") << symbol_name(v);
 	return in;
 }
 
@@ -731,7 +809,7 @@ std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::DBhandler:
 	else if (val == DBhandler::DBtype::READWRITE) v = "READWRITE";
 	else if (val == DBhandler::DBtype::NOUPDATE) v = "NOUPDATE";
 	else if (val == DBhandler::DBtype::NOINSERT) v = "NOINSERT";
-	else RTthrow::rtmath::debug::xBadInput("Unlisted IOtype value");
+	else RTthrow::rtmath::debug::xBadInput("Unlisted DBtype value");
 	out << v;
 	return out;
 }

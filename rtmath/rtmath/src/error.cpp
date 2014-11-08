@@ -11,9 +11,18 @@ namespace rtmath {
 		xError::xError() throw()
 		{
 			using namespace rtmath::debug::memcheck;
-			file = __file__;
-			line = (int) __line__;
-			caller = __caller__;
+			//file = __file__;
+			//line = (int) __line__;
+			//caller = __caller__;
+		}
+
+		xError::xError(const std::string& m) throw()
+		{
+			using namespace rtmath::debug::memcheck;
+			//file = __file__;
+			//line = (int)__line__;
+			//caller = __caller__;
+			_message = m;
 		}
 		
 		bool xError::hasLoc() const
@@ -23,6 +32,10 @@ namespace rtmath {
 		}
 
 		xError::~xError() throw()
+		{
+		}
+
+		void xError::_setmessage()
 		{
 		}
 
@@ -201,6 +214,13 @@ namespace rtmath {
 		void xHandleInUse::_setmessage()
 		{
 			_message = "ERROR: handle is already in use: ";
+			_message.append(_m);
+			_message.append("\n");
+		}
+
+		void xDLLerror::_setmessage()
+		{
+			_message = "ERROR: DLL error: ";
 			_message.append(_m);
 			_message.append("\n");
 		}
