@@ -50,6 +50,9 @@ namespace {
 			id_count++;
 			return id_count;
 		};
+
+		std::string name = it->name();
+		if (!name.size()) name = "RTMATH";
 		if (encountered.count(it))
 		{
 			// Hard link
@@ -57,7 +60,7 @@ namespace {
 			slink.append(boost::lexical_cast<std::string>(encountered.at(it)));
 			ptree self;
 			self.add(it->name(), slink);
-			parent.add_child(it->name(), self);
+			parent.add_child(name, self);
 		} else {
 			const size_t id = makeId();
 			encountered[it] = id;
@@ -69,7 +72,7 @@ namespace {
 			for (const auto &k : it->listChildren())
 				writeSegment(k, self, encountered, id_count);
 
-			parent.add_child(it->name(), self);
+			parent.add_child(name, self);
 		}
 		//path.pop_back();
 	}
@@ -173,7 +176,11 @@ namespace rtmath {
 		implementsConfigOld::implementsConfigOld() :
 			rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_OldStandard>(configsegment::writeOld, configsegment::readOld, known_formats())
-		{}
+		{
+			auto& lg = rtmath::io::m_io::get();
+			BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Just registered config - implementsConfigOld\n";
+
+		}
 
 		const std::set<std::string>& implementsConfigOld::known_formats()
 		{
@@ -187,16 +194,16 @@ namespace rtmath {
 				{
 					mtypes.insert(".rtmath");
 					mtypes.insert("rtmath.conf");
-				}
-				if (io::TextFiles::serialization_handle::compressionEnabled())
-				{
-					std::string sctypes;
-					std::set<std::string> ctypes;
-					serialization::known_compressions(sctypes, ".rtmath");
-					serialization::known_compressions(sctypes, "rtmath.conf");
-					rtmath::config::splitSet(sctypes, ctypes);
-					for (const auto & t : ctypes)
-						mtypes.emplace(t);
+					if (io::TextFiles::serialization_handle::compressionEnabled())
+					{
+						std::string sctypes;
+						std::set<std::string> ctypes;
+						serialization::known_compressions(sctypes, ".rtmath");
+						serialization::known_compressions(sctypes, "rtmath.conf");
+						rtmath::config::splitSet(sctypes, ctypes);
+						for (const auto & t : ctypes)
+							mtypes.emplace(t);
+					}
 				}
 			}
 			return mtypes;
@@ -205,7 +212,10 @@ namespace rtmath {
 		implementsConfigBoost::implementsConfigBoost() :
 			rtmath::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_Boost>(configsegment::writeBoost, configsegment::readBoost, known_formats())
-		{}
+		{
+			auto& lg = rtmath::io::m_io::get();
+			BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Just registered config - implementsConfigBoost\n";
+		}
 
 		const std::set<std::string>& implementsConfigBoost::known_formats()
 		{
@@ -220,20 +230,20 @@ namespace rtmath {
 					mnewtypes.insert(".xml");
 					//mnewtypes.insert(".json");
 					//mnewtypes.insert(".ini");
-				}
-				if (io::TextFiles::serialization_handle::compressionEnabled())
-				{
-					std::string sctypes;
-					std::set<std::string> ctypes;
-					serialization::known_compressions(sctypes, ".xml");
-					//serialization::known_compressions(sctypes, ".json");
-					//serialization::known_compressions(sctypes, ".ini");
-					rtmath::config::splitSet(sctypes, ctypes);
-					for (const auto & t : ctypes)
-						mnewtypes.emplace(t);
+					if (io::TextFiles::serialization_handle::compressionEnabled())
+					{
+						std::string sctypes;
+						std::set<std::string> ctypes;
+						serialization::known_compressions(sctypes, ".xml");
+						//serialization::known_compressions(sctypes, ".json");
+						//serialization::known_compressions(sctypes, ".ini");
+						rtmath::config::splitSet(sctypes, ctypes);
+						for (const auto & t : ctypes)
+							mnewtypes.emplace(t);
+					}
 				}
 			}
-			return mtypes;
+			return mnewtypes;
 		}
 
 
@@ -267,7 +277,8 @@ namespace rtmath {
 			stream << (*it);
 			}
 			*/
-			boost::property_tree::write_xml(stream, pt);
+			boost::property_tree::xml_writer_settings<ptree::key_type> settings(' ', 4);
+			boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
 		}
 
 		void configsegment::readBoost(boost::shared_ptr<configsegment> root, std::istream& indata, std::shared_ptr<registry::IO_options> opts)
@@ -547,7 +558,7 @@ namespace rtmath {
 			{
 				//root = getRtconfRoot();
 				if (!root)
-					root = boost::shared_ptr<configsegment>(new configsegment("ROOT"));
+					root = boost::shared_ptr<configsegment>(new configsegment("RTMATH"));
 				//setRtconfRoot(root);
 			}
 
@@ -770,7 +781,7 @@ namespace rtmath {
 			boost::shared_ptr<configsegment> cnf;
 			for (const auto &r : rootcands)
 			{
-				if (r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
+				if (r->name() == "RTMATH" || r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
 			}
 			if (cnf) _rtconfroot = cnf;
 			return cnf;

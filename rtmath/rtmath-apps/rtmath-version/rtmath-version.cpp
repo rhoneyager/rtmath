@@ -16,6 +16,9 @@ int main(int argc, char* argv[])
 		config("Config options"), hidden("Hidden options"), oall("all options");
 	//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 	rtmath::debug::add_options(cmdline, config, hidden);
+	cmdline.add_options()
+		("write-config", po::value<std::string>(), "Write the configuration to the specified location.")
+		;
 
 	rtmath::debug::debug_preamble();
 
@@ -39,6 +42,15 @@ int main(int argc, char* argv[])
 	else cerr << "rtmath configuration file not found." << endl << endl;
 	
 	Ryan_Debug::printDebugInfo();
+
+
+	if (vm.count("write-config"))
+	{
+		std::string outfile = vm["write-config"].as<std::string>();
+		auto conf = rtmath::config::getRtconfRoot();
+		conf->writeFile(outfile);
+		//BOOST_LOG_SEV(lg, normal) << "Console override of rtmath-config-file: " << sConfigDefaultFile << "\n";
+	}
 
 	return 0;
 }

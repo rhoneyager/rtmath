@@ -11,6 +11,7 @@
 //#include <boost/bind/protect.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
 #if USE_RYAN_SERIALIZATION
 #include <Ryan_Serialization/serialization.h>
 #endif
@@ -22,6 +23,11 @@ namespace rtmath
 {
 	namespace io
 	{
+		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+			m_io,
+			blog::sources::severity_channel_logger_mt< >,
+			(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "io"));
+
 		/// Provides uniform access semantics for compressible text file reading and writing
 		namespace TextFiles
 		{
@@ -229,6 +235,9 @@ namespace rtmath
 		private:
 			virtual void setup()
 			{
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Performing io setup\n";
+
 				using namespace registry;
 				using namespace std;
 
@@ -246,6 +255,8 @@ namespace rtmath
 					// ! Generate writer
 					using namespace std::placeholders;
 					IO_class_registry_writer<obj_class> writer;
+
+					BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Creating & registering reader and writer for extension " << ext << "\n";
 					makeWriter(writer);
 					writers.push_back(std::move(writer));
 					// ! Register writer
@@ -295,6 +306,12 @@ namespace rtmath
 			}
 			virtual void makeWriter(rtmath::registry::IO_class_registry_writer<obj_class> &writer)
 			{
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Creating writer (shid " << rtmath::io::TextFiles::serialization_handle::getSHid()
+					<< "), matching extensions : \n";
+				for (const auto &e : this->matchExts)
+					BOOST_LOG_SEV(lg, rtmath::debug::normal) << e << "\n";
+
 				writer.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
 					std::placeholders::_1, 
@@ -332,9 +349,17 @@ namespace rtmath
 				writer.io_multi_processor = std::bind(writerBinder,
 					std::placeholders::_1,std::placeholders::_2,std::placeholders::_3,
 					outF);
+
+
 			}
 			virtual void makeReader(rtmath::registry::IO_class_registry_reader<obj_class> &reader)
 			{
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Creating reader (shid " << rtmath::io::TextFiles::serialization_handle::getSHid()
+					<< "), matching extensions : \n";
+				for (const auto &e : this->matchExts)
+					BOOST_LOG_SEV(lg, rtmath::debug::normal) << e << "\n";
+
 				reader.io_multi_matches = std::bind(
 					rtmath::io::TextFiles::serialization_handle::match_file_type_multi,
 					std::placeholders::_1, rtmath::io::TextFiles::serialization_handle::getSHid(), 
@@ -571,6 +596,9 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::IO_options> opts
 				) const
 			{
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Performing write on file " << opts->filename() << "\n";
+
 				// All of these objects can handle their own compression
 				typename ::rtmath::registry::IO_class_registry_writer<obj_class>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
@@ -583,6 +611,7 @@ namespace rtmath
 					//if (hook.io_multi_matches(filename, ctype, handle))
 					if (hook.io_multi_matches(handle, opts))
 					{
+						BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Found a match\n";
 						dllsaver = hook.io_multi_processor;
 						break;
 					}
@@ -593,11 +622,11 @@ namespace rtmath
 					// own compression schemes. So, it's not handled at this level.
 					return dllsaver(handle, opts, this->shared_from_this()); //dynamic_cast<const obj_class*>(this));
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
-				}
-				else {
+				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str());
+					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
+					RTthrow debug::xUnknownFileFormat(opts->filename().c_str()) << debug::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
 			}
@@ -673,6 +702,9 @@ namespace rtmath
 				std::shared_ptr<const rtmath::registry::collectionTyped<obj_class> > filter = nullptr
 				)
 			{
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Performing single read on file " << opts->filename() << "\n";
+
 				// All of these objects can handle their own compression
 				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_multi_type dllsaver = nullptr;
 				// Process dll hooks first
@@ -685,6 +717,7 @@ namespace rtmath
 					//if (hook.io_multi_matches(filename, ctype, handle))
 					if (hook.io_multi_matches(handle, opts))
 					{
+						BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Found a match\n";
 						dllsaver = hook.io_multi_processor;
 						break;
 					}
@@ -695,11 +728,11 @@ namespace rtmath
 					// own compression schemes. So, it's not handled at this level.
 					return dllsaver(handle, opts, this->shared_from_this(), filter); //dynamic_cast<obj_class*>(this), filter);
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
-				}
-				else {
+				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str());
+					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
+					RTthrow debug::xUnknownFileFormat(opts->filename().c_str()) << debug::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
 			}
@@ -753,6 +786,9 @@ namespace rtmath
 				//boost::shared_ptr<obj_class> obj = 
 				customGenerator<obj_class>();
 
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Performing vector read on file " << opts->filename() << "\n";
+
 				// All of these objects can handle their own compression
 				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_vector_type dllv = nullptr;
 				typename ::rtmath::registry::IO_class_registry_reader<obj_class>::io_multi_type dllm = nullptr;
@@ -770,6 +806,7 @@ namespace rtmath
 						else if (hook.io_multi_processor)
 							dllm = hook.io_multi_processor;
 						else continue; // No vector or multi reader - shouldn't happen if io_multi_matches, but fail to next plugin
+						BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Found a match\n";
 						break;
 					}
 				}
@@ -790,11 +827,11 @@ namespace rtmath
 						return res;
 					}
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
-				}
-				else {
-					// Cannot match a file type to save.
+				} else {
+					// Cannot match a file type to read.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str());
+					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
+					RTthrow debug::xUnknownFileFormat(opts->filename().c_str()) << debug::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
 			}
@@ -852,6 +889,9 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::DBhandler> p = nullptr, 
 				std::shared_ptr<registry::DB_options> o = nullptr)
 			{
+				auto& lg = rtmath::registry::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Updating database" << "\n";
+
 				auto hooks = ::rtmath::registry::usesDLLregistry<query_reg_class, registry_class >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{

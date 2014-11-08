@@ -53,7 +53,7 @@ namespace {
 
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 		m_deb,
-		blog::sources::severity_channel_logger< >,
+		blog::sources::severity_channel_logger_mt< >,
 		(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "debug"))
 }
 
@@ -259,7 +259,10 @@ namespace rtmath
 			static bool setup = false;
 			if (setup) return;
 
-			// Construct the sink
+			// Using the parameters from the rtmath config (and the console options),
+			// create the logging sinks.
+
+			// Construct the console sink
 			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
 			static boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
 
@@ -278,16 +281,16 @@ namespace rtmath
 
 
 
+
+
 			// Complete sink type
 			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > d_sink_t;
-
-			// Create the sink. The backend requires synchronization in the frontend.
+			// Create the debugger sink. The backend requires synchronization in the frontend.
 			boost::shared_ptr< d_sink_t > d_sink(new d_sink_t());
 
 			// Set the special filter to the frontend
 			// in order to skip the sink when no debugger is available
 			d_sink->set_filter(boost::log::expressions::is_debugger_present());
-
 			core->add_sink(d_sink);
 
 			setup = true;
@@ -314,9 +317,6 @@ namespace rtmath
 				exit(2);
 			}
 			
-			//atexit(appExit);
-			setupLogging();
-
 			auto& lg = m_deb::get();
 			
 			if (vm.count("rtmath-config-file"))
@@ -324,6 +324,9 @@ namespace rtmath
 				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
 				BOOST_LOG_SEV(lg, normal) << "Console override of rtmath-config-file: " << sConfigDefaultFile << "\n";
 			}
+
+			//atexit(appExit);
+			setupLogging();
 
 			if (vm.count("close-on-finish")) {
 				bool val = !(vm["close-on-finish"].as<bool>());

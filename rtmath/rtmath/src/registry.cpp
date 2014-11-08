@@ -50,7 +50,7 @@ namespace rtmath
 
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_reg,
-			blog::sources::severity_channel_logger< >,
+			blog::sources::severity_channel_logger_mt< >,
 			(blog::keywords::severity = error)(blog::keywords::channel = "registry"))
 	}
 }

@@ -110,7 +110,8 @@ namespace rtmath {
 			::rtmath::registry::IO_class_registry_writer<configsegment> >,
 			virtual public ::rtmath::io::implementsStandardWriter<configsegment, configsegment_IO_output_registry>,
 			virtual public ::rtmath::io::implementsStandardReader<configsegment, configsegment_IO_input_registry>,
-			virtual public implementsConfigOld
+			virtual public implementsConfigOld,
+			virtual public implementsConfigBoost
 		{
 			// Need readVector as a friend class
 			friend boost::shared_ptr<configsegment> io::customGenerator<configsegment>();

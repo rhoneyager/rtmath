@@ -175,6 +175,11 @@ namespace rtmath
 				using namespace boost::filesystem;
 				using std::string;
 				using std::ofstream;
+				auto& lg = rtmath::io::m_io::get();
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Matching file type for file: " << filename 
+					<< ", with type: " << type << ", with op (exportType): " << op<< "\n";
+				for (const auto & mt : mtypes)
+					BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Matched type enumeration: " << mt << "\n";
 
 				//const std::set<string> &mtypes = known_formats();
 
@@ -217,8 +222,7 @@ namespace rtmath
 				{
 					if (h->getId() != spluginid) return false;
 					return true;
-				}
-				else {
+				} else {
 					std::string filename = opts->filename();
 					std::string type = opts->filetype();
 					return match_file_type(filename.c_str(), type.c_str(), mtypes,
