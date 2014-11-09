@@ -29,6 +29,7 @@
 #include <boost/log/sinks/debug_output_backend.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 #include <Ryan_Debug/debug.h>
+#include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/error/error.h"
 //#include "../rtmath/error/debug_mem.h"
@@ -254,14 +255,71 @@ namespace rtmath
 
 
 
-		void setupLogging()
+		void setupLogging(boost::program_options::variables_map &vm)
 		{
 			static bool setup = false;
 			if (setup) return;
 
+			// First, use any console overrides
+			/*
+
 			// Using the parameters from the rtmath config (and the console options),
 			// create the logging sinks.
 
+			auto conf = rtmath::config::loadRtconfRoot();
+			auto cdd = conf->getChild("General");
+			if (!cdd) return;
+			auto clogs = cdd->getChild("Logging");
+
+			
+
+			// Iterate over all hash store entries
+			std::multiset<boost::shared_ptr<rtmath::config::configsegment> > children;
+			clogs->listChildren(children);
+			for (const auto &c : children)
+			{
+				if (c->name() != "Sink") continue;
+
+				bool enabled = true;
+				if (c->hasVal("enabled"))
+					c->getVal<bool>("enabled", enabled);
+				if (!enabled) continue;
+
+				std::string id;
+				if (c->hasVal("id"))
+					c->getVal<std::string>("id", id);
+				else {
+					RTthrow debug::xBadInput("Parsing error in log configuration");
+				}
+
+				// Make the filters
+				auto subkeys = c->listChildren();
+				for (const auto &i : subkeys)
+				{
+					if (i->name() == "filter")
+					{
+						// Construct a new filter, matching all of the traits
+						if (c->hasVal("SeverityThreshold"))
+						{
+							debug::severity_level sl;
+							std::string ssl;
+							c->getVal<std::string>("SeverityThreshold", ssl);
+							if (ssl == "normal") sl = debug::normal;
+							else if (ssl == "notification") sl = debug::notification;
+							else if (ssl == "warning") sl = debug::warning;
+							else if (ssl == "error") sl = debug::error;
+							else if (ssl == "critical") sl = debug::critical;
+							else RTthrow debug::xBadInput("Parsing error in log configuration");
+
+							auto checkSeverityThreshold = [&](bool, debug::severity_level minsl) -> bool
+							{
+
+							};
+						}
+					}
+				}
+			}
+			*/
 			// Construct the console sink
 			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
 			static boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
@@ -326,7 +384,7 @@ namespace rtmath
 			}
 
 			//atexit(appExit);
-			setupLogging();
+			setupLogging(vm);
 
 			if (vm.count("close-on-finish")) {
 				bool val = !(vm["close-on-finish"].as<bool>());
