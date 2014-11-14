@@ -314,6 +314,157 @@ namespace rtmath
 				return h;
 			}
 
+
+			std::shared_ptr<rtmath::registry::DBhandler> updateRUN(
+				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection c,
+				rtmath::ddscat::ddOutput_db_registry::updateType t,
+				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+			{
+				using namespace std;
+				std::shared_ptr<psql_handle> h = registry::construct_handle
+					<registry::DBhandler, psql_handle>(
+					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
+					new psql_handle(o)); });
+
+
+				using std::string;
+
+				/// \todo Add base search function to pull in the flake run database, with uuids
+				/// \todo Add a matching function that finds the run uuid for a given run
+				//createBackgroundInfo(h, flakeTypes, flakeRevTypes);
+
+				// Actually insert the data
+				h->execute("BEGIN;");
+				std::ostringstream sadd;
+
+				// If a ddOutput run already has the matching tag that matches to a run, then use it.
+				// Otherwise, find the run id. This is accomplished by looking at the existing runs, and 
+				// matching based on 1) the flake type, 2) near-freq, 3) near-temp, 4) polarization,
+				// 5) number of rotations (beta, theta, phi), 6) ddscat version, 7) completion flag (remove 
+				// cancelled and not started), 8) decimation, 9) perturbation.
+
+				for (const auto &i : *c)
+				{
+					// Source file path
+					string srcpath; // currently unused
+					// Timestamp for import
+					string tsadded; // currently unused
+
+					// Determine tag list
+					string tags; // mostly unused
+					// Determine run id
+					string run_id;
+					auto genTagList = [&](std::string &tagout, std::string &run_id)
+					{
+						ostringstream stags;
+						stags << "{";
+						bool firstTag = false;
+						for (const auto &t : i->tags)
+						{
+							if (t.first == "run_id")
+								run_id = t.second;
+							else {
+								if (firstTag) stags << ", ";
+								stags << "\"" << t.first << "=" << t.second << "\"";
+								firstTag = true;
+							}
+
+						}
+						stags << "}";
+						tagout = stags.str();
+					};
+					genTagList(tags, run_id);
+
+
+					//if (!matched_hashes.count(i->hash().string()))
+					if (1)
+					{
+						if (t != ddOutput_db_registry::updateType::UPDATE_ONLY)
+						{
+							sadd << "insert into flakeResult (hashLower, runid, aeff, ";
+							if (i->avgdata.hasAvg)
+								sadd << "Qsca_iso, Qbk_iso, Qext_iso, Qabs_iso, g_iso";
+							if (srcpath.size())
+								sadd << ", path";
+							if (tsadded.size())
+								sadd << ", tsAdded";
+							sadd << ") values ('" << i->shapeHash.lower << "', '" << run_id << "', " << i->aeff;
+							if (i->avgdata.hasAvg)
+							{
+								sadd << ", " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QSCAM)
+									<< ", " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QBKM)
+									<< ", " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QEXTM)
+									<< ", " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QABSM)
+									<< ", " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::G1M);
+							}
+							if (srcpath.size())
+								sadd << ", 'path'";
+							if (tsadded.size())
+								sadd << ", '" << tsadded << "'";
+							
+							sadd << ");";
+						}
+					} else {
+						if (t != ddOutput_db_registry::updateType::INSERT_ONLY)
+						{
+							sadd << "update flakeResult set ";
+							bool needComma = false;
+							if (i->aeff)
+							{
+								if (needComma) sadd << ", ";
+								sadd << "aeff = " << i->aeff;
+								needComma = true;
+							}
+							if (srcpath.size())
+							{
+								if (needComma) sadd << ", ";
+								sadd << "path = '" << srcpath << "' ";
+								needComma = true;
+							}
+							{
+								if (needComma) sadd << ", ";
+								sadd << "tsAdded = '" << tsadded << "' ";
+								needComma = true;
+							}
+							{
+								if (needComma) sadd << ", ";
+								sadd << "Qsca_iso = " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QSCAM);
+								needComma = true;
+							}
+							{
+								if (needComma) sadd << ", ";
+								sadd << "Qbk_iso = " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QBKM);
+								needComma = true;
+							}
+							{
+								if (needComma) sadd << ", ";
+								sadd << "Qext_iso = " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QEXTM);
+								needComma = true;
+							}
+							{
+								if (needComma) sadd << ", ";
+								sadd << "Qabs_iso = " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::QABSM);
+								needComma = true;
+							}
+							{
+								if (needComma) sadd << ", ";
+								sadd << "g_iso = " << i->avgdata.avg(0, rtmath::ddscat::ddOutput::stat_entries::G1M);
+								needComma = true;
+							}
+							sadd << " where hashlower = '" << i->shapeHash.lower << "'"
+								<< " AND runid = '" << run_id << "';";
+						}
+					}
+				}
+
+				sadd << "COMMIT;";
+				std::string sres = sadd.str();
+				h->execute(sres.c_str());
+
+
+				return h;
+			}
+
 			/*
 			std::shared_ptr<rtmath::registry::DBhandler> updateRUN(
 				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection c,

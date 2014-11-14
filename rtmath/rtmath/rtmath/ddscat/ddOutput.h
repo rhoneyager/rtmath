@@ -171,6 +171,9 @@ namespace rtmath {
 			::rtmath::ddscat::ddOutput_IO_input_registry,
 			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
 			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
+			virtual public ::rtmath::registry::usesDLLregistry<
+			::rtmath::ddscat::ddOutput_query_registry,
+			::rtmath::ddscat::ddOutput_db_registry >,
 			virtual public ::rtmath::io::implementsDBbasic<ddOutput, ddOutput_db_registry,
 			ddOutput_db_registry::ddOutput_index,
 			ddOutput_db_registry::ddOutput_db_comp, ddOutput_query_registry>

@@ -380,7 +380,7 @@ namespace rtmath
 							
 						}
 					} else {
-						if (t != shapefile_db_registry::updateType::UPDATE_ONLY)
+						if (t != shapefile_db_registry::updateType::INSERT_ONLY)
 						{
 							sadd << "update flake set ";
 							bool needComma = false;

@@ -23,32 +23,11 @@
 #include <string>
 #include <vector>
 
-#include "../rtmath/registry.h"
-#include "../rtmath/error/error.h"
-#include "../rtmath/error/debug.h"
 #include "../rtmath/defs.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
-#if USE_RYAN_SERIALIZATION
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/complex.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/string.hpp> 
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/version.hpp>
-#include "../rtmath/Serialization/serialization_macros.h"
-#include "../rtmath/Serialization/eigen_serialization.h"
-#endif
 
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>

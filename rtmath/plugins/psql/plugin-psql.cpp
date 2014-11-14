@@ -6,6 +6,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
@@ -99,6 +100,7 @@ namespace rtmath
 			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
 			{
 				connect();
+				std::cerr << command << std::endl;
 				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
@@ -147,6 +149,15 @@ namespace rtmath
 				updateSHP(const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection c,
 				rtmath::ddscat::shapefile::shapefile_db_registry::updateType t,
 				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
+
+			std::shared_ptr<rtmath::registry::DBhandler> searchRUN(
+				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index &index,
+				rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection res,
+				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o);
+			std::shared_ptr<rtmath::registry::DBhandler> updateRUN(
+				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection c,
+				rtmath::ddscat::ddOutput_db_registry::updateType t,
+				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o);
 		}
 
 	}
@@ -163,6 +174,7 @@ void dllEntry()
 
 	using namespace rtmath::data::arm;
 	using namespace rtmath::ddscat::shapefile;
+	using namespace rtmath::ddscat;
 
 	arm_info_registry reg_ai;
 	reg_ai.name = "psql-" PLUGINID;
@@ -178,5 +190,14 @@ void dllEntry()
 	reg_shp.fQuery = rtmath::plugins::psql::searchSHP;
 	reg_shp.fMatches = rtmath::plugins::psql::matches;
 
-	doRegisterHook<shapefile, shapefile_query_registry, shapefile_db_registry>(reg_shp);
+	doRegisterHook<rtmath::ddscat::shapefile::shapefile, shapefile_query_registry, shapefile_db_registry>(reg_shp);
+
+	ddOutput_db_registry reg_run;
+	reg_run.name = "psql-" PLUGINID;
+	reg_run.fInsertUpdate = rtmath::plugins::psql::updateRUN;
+	reg_run.fQuery = rtmath::plugins::psql::searchRUN;
+	reg_run.fMatches = rtmath::plugins::psql::matches;
+
+	doRegisterHook<ddOutput, ddOutput_query_registry, 
+		ddOutput_db_registry>(reg_run);
 }

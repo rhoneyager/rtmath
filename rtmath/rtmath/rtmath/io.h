@@ -889,7 +889,7 @@ namespace rtmath
 				std::shared_ptr<rtmath::registry::DBhandler> p = nullptr, 
 				std::shared_ptr<registry::DB_options> o = nullptr)
 			{
-				auto& lg = rtmath::registry::m_io::get();
+				auto& lg = rtmath::io::m_io::get();
 				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Updating database" << "\n";
 
 				auto hooks = ::rtmath::registry::usesDLLregistry<query_reg_class, registry_class >::getHooks();

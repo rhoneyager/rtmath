@@ -745,6 +745,13 @@ extern "C"
 	bool rtmath_registry_register_dll(const rtmath::registry::DLLpreamble &p)
 	{
 		rtmath::registry::DLLpreamble b = p;
+
+		//auto& lg = rtmath::registry::m_reg::get();
+		//BOOST_LOG_SEV(lg, normal) << "DLL info for: " << p.path << "\n";
+		//BOOST_LOG_SEV(lg, normal) << "Name: " << p.name << "\n";
+		//BOOST_LOG_SEV(lg, normal) << "UUID: " << p.uuid << "\n";
+		//BOOST_LOG_SEV(lg, normal) << "Description: " << p.description << "\n";
+
 		// \todo Add in dll path to preamble!
 		preambles.push_back(b);
 		return true;

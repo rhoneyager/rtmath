@@ -70,8 +70,9 @@ int main(int argc, char** argv)
 			("match-thetas", po::value<vector<std::string> >()->multitoken(), "Match theta rotation count")
 			("match-phis", po::value<vector<std::string> >()->multitoken(), "Match phi rotation count")
 			("match-pol", po::value<vector<std::string> >()->multitoken(), "Match polarization")
-			("match-run-uuid", po::value<vector<std::string> >()->multitoken(), "Match run id")
-			("update-db", "Insert shape file entries into database")
+			("match-run-uuid", po::value<vector<std::string> >()->multitoken(), "Match run id (exists as a tag)")
+
+			("update-db", "Insert runs into database")
 
 			("hash-output", "Store flake data in hash directory")
 			;
@@ -313,7 +314,18 @@ int main(int argc, char** argv)
 			//if (doHash)
 			//	run->writeToHash();
 
-			// TODO: update database
+			if (vm.count("update-db"))
+			{
+				dbcollection->insert(run);
+
+				if (dbcollection->size() > 50) // Do in batches. The final uneven batch is handled at the end of execution.
+				{
+					dHandler = rtmath::ddscat::ddOutput::updateCollection(dbcollection,
+						rtmath::ddscat::ddOutput_db_registry::updateType::INSERT_ONLY, dHandler);
+					dbcollection->clear();
+				}
+				//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
+			}
 
 			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
 			{
@@ -361,8 +373,16 @@ int main(int argc, char** argv)
 				doWrite(optsaux, writeraux);
 
 
-			// Drop run from memory
+			// Drop run from memory. NOTE: in current invocation, the run results queried for a db update remain.
 			run.reset(); // update collection result
+		}
+
+		// Update any remainder
+		if (dbcollection->size())
+		{
+			dHandler = rtmath::ddscat::ddOutput::updateCollection(dbcollection,
+				rtmath::ddscat::ddOutput_db_registry::updateType::INSERT_ONLY, dHandler);
+			dbcollection->clear();
 		}
 
 	} catch (std::exception &e)
