@@ -184,6 +184,30 @@ CREATE VIEW hostLoad AS
 	group by host.hostname
 	order by host.hostname;
 
+CREATE VIEW flakeRuns_db AS
+	SELECT
+	flakeRuns.id, 
+	flakeRuns.username,
+	flakeTypes.name,
+	flakeRuns.frequency,
+	flakeRuns.temperature as temp,
+	host.hostname,
+	flakeRuns.path,
+	flakeRuns.decimation as dec,
+	flakeRuns.perturbation,
+	flakeRuns.polarization as pol,
+	flakeRuns.runsTotal as total, flakeRuns.runsCompleted as good, flakeRuns.runsFailed as bad,
+	flakeRuns.progress,
+	flakeRuns.nBetas, flakeRuns.nThetas, flakeRuns.nPhis, 
+	flakeRuns.tsLastStarted, 
+	flakeRuns.tsLastUpdated 
+	FROM flakeRuns, host, flakeTypes 
+	WHERE host.id = flakeRuns.host 
+	AND flakeTypes.id = flakeRuns.flakeType 
+	ORDER BY host.hostname, flakeRuns.runsCompleted
+	;
+
+
 	create view currentruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from currentruns order by total - good;
 	create view ingestedruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from ingestedruns order by total - good;
 
@@ -194,6 +218,7 @@ CREATE VIEW hostLoad AS
 	grant select on successfulruns TO public;
 	grant select on waitingruns TO public;
 	grant select on hostLoad TO public;
+	grant select on flakeRuns_db to public ;
 
 	grant insert ON flakeRuns TO ddastatus_updater;
 	grant update ON flakeRuns TO ddastatus_updater;

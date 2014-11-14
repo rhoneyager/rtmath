@@ -277,7 +277,7 @@ namespace rtmath {
 			stream << (*it);
 			}
 			*/
-			boost::property_tree::xml_writer_settings<ptree::key_type> settings(' ', 4);
+			boost::property_tree::xml_writer_settings<char> settings(' ', 4);
 			boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
 		}
 

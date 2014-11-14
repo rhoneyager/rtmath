@@ -11,7 +11,9 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/exception/all.hpp>
-#include <boost/core/null_deleter.hpp>
+//#include <boost/core/null_deleter.hpp>
+#include <boost/utility/empty_deleter.hpp>
+//#include <boost/serialization/shared_ptr.hpp> // provides null_deleter for older boost versions
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions/predicates/is_debugger_present.hpp>
 #include <boost/log/attributes.hpp>
@@ -325,7 +327,8 @@ namespace rtmath
 			static boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
 
 			// We have to provide an empty deleter to avoid destroying the global stream object
-			boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
+			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
+			boost::shared_ptr< std::ostream > stream(&std::clog, boost::empty_deleter());
 			sink->locked_backend()->add_stream(stream);
 			sink->set_filter( severity >= warning
 				//boost::log::expressions::attr < int >
