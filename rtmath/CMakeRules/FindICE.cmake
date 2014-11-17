@@ -22,6 +22,28 @@
 # start with 'not found'
 set( ICE_FOUND 0 CACHE BOOL "Do we have Ice?" )
 
+
+if (WIN32 AND NOT CYGWIN)
+	set(IceLibPrefix "")
+	set(IceLibSuffix .lib)
+	set(IceExeSuffix .exe)
+	if(DEFINED MSVC_VERSION)
+		if (MSVC_VERSION GREATER 1700) # 1800 and up
+			set (IceFolder vc120)
+		elseif (MSVC_VERSION GREATER 1600) # 1700 and up
+			set (IceFolder vc110)
+		endif()
+		if (CMAKE_CL_64)
+			set (IceFolder ${IceFolder}/x64)
+		endif()
+	endif()
+else()
+	set(IceLibPrefix lib)
+	set(IceLibSuffix .so)
+	set(IceExeSuffix "")
+	set(IceFolder "")
+endif()
+
 find_path( ICE_HOME_INCLUDE_ICE Ice.h
   # rational for this search order:
   #    source install w/env.var -> source install
@@ -51,7 +73,8 @@ find_path( ICE_HOME_INCLUDE_ICE Ice.h
   C:/Ice-3.3.0-VC80/include/Ice
   C:/Ice-3.3.0/include/Ice
   "C:/Program Files (x86)/ZeroC/Ice-3.5.0/include/Ice"
-  # Windows needs to check for vc110 and x64 flags
+  "C:/Program Files (x86)/ZeroC/Ice-3.5.1/include/Ice"
+  # Windows needs to check for vc110, vc120 and x64 flags
   )
 # message( STATUS "DEBUG: Ice.h is apparently found in : ${ICE_HOME_INCLUDE_ICE}" )
 
@@ -74,14 +97,8 @@ if( ICE_HOME_INCLUDE_ICE )
     set( ICE_LIBRARY_PREFIX ${ICE_LIBRARY_DIR})
     # For windows, query cmake for the compiler and compiled architecture
     # I care about x86/64 and msvc version.
-    if(DEFINED MSVC_VERSION)
-	    if (MSVC_VERSION GREATER 1600) # 1700 and up
-		    set (ICE_LIBRARY_PREFIX ${ICE_LIBRARY_PREFIX}/vc110)
-	    endif()
-	    if (CMAKE_CL_64)
-		    set (ICE_LIBRARY_PREFIX ${ICE_LIBRARY_PREFIX}/x64)
-	    endif()
-    endif()
+    set (ICE_LIBRARY_PREFIX ${ICE_LIBRARY_PREFIX}/${IceFolder})
+    
     file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/libSlice.so)
     if (NOT ICE_LIBRARY_DIR_HINT)
 	 file( GLOB_RECURSE ICE_LIBRARY_DIR_HINT ${ICE_LIBRARY_PREFIX}/../lib64/libSlice.so)
@@ -90,15 +107,20 @@ if( ICE_HOME_INCLUDE_ICE )
 	endif()
     endif()
     get_filename_component( ICE_LIBRARY_DIR_HINT_PATH "${ICE_LIBRARY_DIR_HINT}" PATH)
+    ########################
+    #message("ILD ${ICE_LIBRARY_DIR_HINT_PATH}")
 #    get_filename_component( ICE_LIBRARY_DIR_HINT_PATH "${ICE_LIBRARY_DIR_HINT}" PATH)
 
     # exe dir
-    set (ICE_BIN_DIR ${ICE_HOME}/bin)
+    set (ICE_BIN_DIR ${ICE_HOME}/bin/${IceFolder})
     if (NOT ICE_BIN_DIR_HINT)
-	    file( GLOB_RECURSE ICE_BIN_DIR_HINT ${ICE_HOME}/bin/slice2cpp*)
+	    file( GLOB_RECURSE ICE_BIN_DIR_HINT ${ICE_HOME}/bin/${IceFolder}/slice2cpp${IceExeSuffix})
     endif()
     get_filename_component( ICE_BIN_DIR_HINT_PATH "${ICE_BIN_DIR_HINT}" PATH)
+    set(SLICE2CPP ${ICE_BIN_DIR_HINT})
 
+    #######################################
+    #message("IBD ${ICE_BIN_DIR_HINT} ${ICE_BIN_DIR_HINT_PATH}")
     
     # Slice files are often installed elsewhere
     file( GLOB_RECURSE ICE_SLICE_ICE_HINT /usr/share/Ice-*/Communicator.ice )
