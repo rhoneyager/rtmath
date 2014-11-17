@@ -14,13 +14,31 @@ message(STATUS "Checking whether Bonjour/Avahi is supported")
 
 # Bonjour is built-in on MacOS X / iOS (i.e. available in libSystem)
 if(NOT APPLE)
-  find_path(BONJOUR_INCLUDE_DIR dns_sd.h 
-    PATHS /opt/dnssd/include /usr/include  /usr/local/include
+  find_path(BONJOUR_INCLUDE_DIR dns_sd.h dnssd.h
+    PATHS 
+    $ENV{ZEROCONF_DIR}/include
+    $ENV{ZEROCONF_DIR}
+    "C:/Program Files/Bonjour SDK/Include"
+    /opt/dnssd/include
+    /usr/include
+    /usr/local/include
   )
   find_library(BONJOUR_LIBRARY 
-    NAMES libdns_sd
-    PATHS /opt/dnssd/lib /usr/lib /usr/local/lib
+    NAMES dns_sd dnssd
+    PATHS 
+    $ENV{ZEROCONF_DIR}/Lib/x64
+    $ENV{ZEROCONF_DIR}/Lib/Win32
+    $ENV{ZEROCONF_DIR}/lib64
+    $ENV{ZEROCONF_DIR}/lib
+    $ENV{ZEROCONF_DIR}
+    "C:/Program Files/Bonjour SDK/Lib/x64"
+    "C:/Program Files/Bonjour SDK/Lib/Win32"
+    /opt/dnssd/lib
+    /usr/lib64
+    /usr/lib
+    /usr/local/lib
   )
+#message("Results: ${BONJOUR_LIBRARY} ${BONJOUR_INCLUDE_DIR}")
   if(NOT BONJOUR_INCLUDE_DIR OR NOT BONJOUR_LIBRARY)
     return()
   else()
@@ -32,8 +50,11 @@ else()
 endif()
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
   # The compatibility layer is needed for the Bonjour record management.
-  find_path(AVAHI_INCLUDE_DIR avahi-client/client.h 
-    PATHS /opt/include /usr/include /usr/local/include
+  find_path(AVAHI_INCLUDE_DIR
+	  avahi-client/client.h 
+    PATHS /opt/include
+    /usr/include
+    /usr/local/include
   )
   if(AVAHI_INCLUDE_DIR)
    set(BONJOUR_INCLUDE_DIR ${BONJOUR_INCLUDE_DIR} ${AVAHI_INCLUDE_DIR})
@@ -43,7 +64,7 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
   # layer, also the other libraries must be in the same location.
   foreach(l client common core) 
     find_library(AVAHI_${l}_LIBRARY 
-      NAMES libavahi-${l}.so
+      NAMES avahi-${l}.so
       PATHS /opt/lib /usr/lib /usr/local/lib
     )
     if(AVAHI_${l}_LIBRARY)
@@ -56,8 +77,10 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
   endif()
 endif()
 
-mark_as_advanced(
-  BONJOUR_LIBRARIES
+mark_as_advanced( FORCE
   BONJOUR_INCLUDE_DIR
+  BONJOUR_LIBRARY
 )
+
+
 
