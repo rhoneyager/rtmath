@@ -36,6 +36,7 @@
 #include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/error/error.h"
 
+#include "comm.h"
 #include "dispatcher.h"
 #include "worker.h"
 
@@ -143,6 +144,8 @@ int main(int argc, char *argv[])
 		};
 
 		if (vm.count("help") || vm.size() == 0) doHelp("");
+
+		Ice::CommunicatorPtr communicator = Ice::initialize(argc, argv, initData);
 
 		QCoreApplication a(argc, argv);
 

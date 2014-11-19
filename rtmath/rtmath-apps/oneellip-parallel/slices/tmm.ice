@@ -4,84 +4,98 @@
 
 module rtmath
 {
-
-	module OneEllip
+	module apps
 	{
-		/**
-		 * OneellipException contains all possible exceptions in the Oneellip subsystem.
-		 **/
-		exception OneellipException { string message; };
-
-
-		enum eAeffVersion
+		module oneellipParallel
 		{
-			VSPHERE,
-			SASPHERE
-		};
+			/**
+			 * OneellipException contains all possible exceptions in the Oneellip subsystem.
+			 **/
+			exception OneellipException { string message; };
 
-		enum eShapeType
-		{
-			SPHEROID,
-			CYLINDER
-		};
+			enum messageId
+			{
+				NOOP,
+				START,
+				DONE,
+				TERMINATE
+			};
 
-		dictionary<string, double> refrDic;
+			enum eAeffVersion
+			{
+				VSPHERE,
+				SASPHERE
+			};
 
-		struct inputParams
-		{
+			enum eShapeType
+			{
+				SPHEROID,
+				CYLINDER
+			};
 
-			double beta = 0;
-			double theta = 0;
-			double phi = 0;
-			double sTheta = 0;
-			double sTheta0 = 0;
-			double sPhi = 0;
-			double sPhi0 = 0;
+			dictionary<string, double> refrDic;
 
-			double aeff = 0;
-			eAeffVersion aeffVersion;
-			double mRe = 0;
-			double mIm = 0;
+			struct inputParams
+			{
 
-			string refrMeth;
-			refrDic refrVals;
+				double beta = 0;
+				double theta = 0;
+				double phi = 0;
+				double sTheta = 0;
+				double sTheta0 = 0;
+				double sPhi = 0;
+				double sPhi0 = 0;
 
-			bool aeffRescale = true;
-			double vFrac = 0;
-			string ref;
+				double aeff = 0;
+				eAeffVersion aeffVersion;
+				double mRe = 0;
+				double mIm = 0;
+				double lambda = 0;
+				string refrMeth;
+				refrDic refrVals;
 
-			eShapeType shapeType;
+				bool aeffRescale = true;
+				double vFrac = 0;
+				string ref;
 
-			double eps = 1;
-		};
+				eShapeType shapeType;
 
-		sequence<inputParams> inputs;
+				double eps = 1;
+			};
 
-		struct crossSections
-		{
-			string provider;
-			double Qbk = 0;
-			double Qext = 0;
-			double Qsca = 0;
-			double Qabs = 0;
-			double g = 0;
-			bool valid = false;
+			sequence<inputParams> inputs;
 
-			inputParams input;
-		};
+			struct crossSections
+			{
+				string provider;
+				double Qbk = 0;
+				double Qext = 0;
+				double Qsca = 0;
+				double Qabs = 0;
+				double g = 0;
+				bool valid = false;
 
-		sequence<crossSections> outputs;
+			};
 
+			sequence<crossSections> outputs;
 
-		interface csProvider
-		{
-			["cpp:const"] idempotent outputs doRun(inputs invals) throws OneellipException;
-			["cpp:const"] idempotent int numProcessors();
-		};
+			struct message
+			{
+				messageId id;
+				inputParams in;
+				outputs cs;
+			};
 
-		interface csProviderFactory
-		{
-			csProvider* createCsProvider();
+			interface csProvider
+			{
+				["cpp:const"] idempotent outputs doRun(inputs invals) throws OneellipException;
+				["cpp:const"] idempotent int numProcessors();
+			};
+
+			interface csProviderFactory
+			{
+				csProvider* createCsProvider();
+			};
 		};
 	};
 	

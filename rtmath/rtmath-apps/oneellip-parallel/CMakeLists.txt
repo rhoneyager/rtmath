@@ -8,9 +8,18 @@ find_package(Ice REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(protobuf)
+
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS tmm.proto)
 
 # Definitions of ICE communications layer
 add_subdirectory (slices)
+
+include_directories(SYSTEM ${CMAKE_CURRENT_BINARY_DIR}/slices)
+
+include_directories(${ICE_INCLUDE_DIR})
+
+#add_subdirectory (protobuf)
 add_executable (rtmath-oneellip-parallel
 	comm.cpp
 	comm.h
@@ -27,6 +36,7 @@ target_link_libraries( rtmath-oneellip-parallel
 	${rtmath_ddscat-libs}
 	Qt5::Core Qt5::Network Qt5::Widgets
 	oneellip_slices
+	#oneellip_proto
 	)
 addapp(rtmath-oneellip-parallel Analysis)
 
