@@ -27,6 +27,7 @@
 #ifdef _WIN32
 //#include "../../rtmath/rtmath/ROOTlink.h"
 #include <Windows.h>
+#include <ShlObj.h>
 //#include <Winsock2.h>
 #include <TlHelp32.h>
 #include <Psapi.h>
@@ -34,6 +35,7 @@
 #pragma comment(lib, "Psapi")
 #pragma comment(lib, "Ws2_32")
 #pragma comment(lib, "Advapi32")
+#pragma comment(lib, "Shell32")
 
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
@@ -106,6 +108,7 @@ namespace {
 	std::mutex m_sys_names;
 	std::string hostname;
 	std::string username;
+	std::string homeDir, appConfigDir;
 }
 
 namespace Ryan_Debug {
@@ -914,6 +917,96 @@ namespace Ryan_Debug {
 		}
 #endif
 		return hostname.c_str();
+	}
+
+	const char* getAppConfigDir()
+	{
+		std::lock_guard<std::mutex> lock(m_sys_names);
+		if (appConfigDir.size()) return appConfigDir.c_str();
+
+#ifdef __unix__
+		// First, test the HOME environment variable. If not set, 
+		// then query the passwd database.
+
+		boost::shared_ptr<const processInfo> hInfo;
+		hInfo = boost::shared_ptr<const processInfo>(getInfo(getPID()), freeProcessInfo);
+		const char* eConfig = getEnviron(hInfo.get(), "XDG_CONFIG_HOME");
+		homeDir = std::string(eConfig);
+		if (homeDir.size()) return homeDir.c_str();
+
+		// Otherwise...
+		const char* eHome = getEnviron(hInfo.get(), "HOME");
+		homeDir = std::string(eHome);
+
+		if (!homeDir.size())
+		{
+			struct passwd *pw = getpwuid_r(getuid());
+			const char *homedir = pw->pw_dir;
+			homeDir = std::string(homedir);
+		}
+
+		homeDir.append("/.config");
+#endif
+#ifdef _WIN32
+		//WCHAR path[MAX_PATH];
+		//BOOL res = false;
+		//res = SHGetFolderPathW
+		BOOL res = false;
+		const DWORD clen = MAX_PATH;
+		DWORD len = clen;
+		TCHAR hname[clen];
+		res = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, hname);
+		if (res)
+		{
+			appConfigDir = convertStr(hname);
+		}
+		else {
+			DWORD err = GetLastError();
+			std::cerr << "SHGetFolderPathA failed with error " << err << std::endl;
+		}
+#endif
+		return appConfigDir.c_str();
+	}
+
+	const char* getHomeDir()
+	{
+		std::lock_guard<std::mutex> lock(m_sys_names);
+		if (homeDir.size()) return homeDir.c_str();
+
+#ifdef __unix__
+		// First, test the HOME environment variable. If not set, 
+		// then query the passwd database.
+
+		boost::shared_ptr<const processInfo> hInfo;
+		hInfo = boost::shared_ptr<const processInfo>(getInfo(getPID()), freeProcessInfo);
+		const char* eHome = getEnviron(hInfo.get(), "HOME");
+		homeDir = std::string(eHome);
+
+		if (!homeDir.size())
+		{
+			struct passwd *pw = getpwuid_r(getuid());
+			const char *homedir = pw->pw_dir;
+			homeDir = std::string(homedir);
+		}
+#endif
+#ifdef _WIN32
+		//WCHAR path[MAX_PATH];
+		//BOOL res = false;
+		//res = SHGetFolderPathW
+		BOOL res = false;
+		const DWORD clen = MAX_PATH;
+		DWORD len = clen;
+		TCHAR hname[clen];
+		res = SHGetFolderPathA(NULL, CSIDL_PROFILE, NULL, 0, hname);
+		if (res)
+		{
+			homeDir = convertStr(hname);
+		} else {
+			DWORD err = GetLastError();
+			std::cerr << "SHGetFolderPathA failed with error " << err << std::endl;
+		}
+#endif
+		return homeDir.c_str();
 	}
 
 	/**

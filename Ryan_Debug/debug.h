@@ -66,9 +66,12 @@ namespace Ryan_Debug
 
 	/// Get current username
 	RYAN_DEBUG_DLEXPORT const char* getUsername();
-
 	/// Get system hostname
 	RYAN_DEBUG_DLEXPORT const char* getHostname();
+	/// Get the home directory
+	RYAN_DEBUG_DLEXPORT const char* getHomeDir();
+	/// Get the user app config directory
+	RYAN_DEBUG_DLEXPORT const char* getAppConfigDir();
 
 	/// Print the compiler information for the debug library.
 	void RYAN_DEBUG_DLEXPORT printDebugInfo(std::ostream &out = std::cerr);
