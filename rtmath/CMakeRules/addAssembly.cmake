@@ -102,7 +102,7 @@ macro(implementAssembly basename targetname ) #packagein)
 	add_custom_command(TARGET ${targetname} POST_BUILD
 		COMMAND echo $<CONFIGURATION> - Signing DLL
 		COMMAND cd $<CONFIGURATION>
-		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll $<TARGET_FILE:${targetname}>
+		COMMAND signtool.exe sign ${TIMESTAMP_PROVIDER} $<TARGET_FILE:${targetname}>
 		COMMAND echo Updating manifest with hashes and making CDF
 		COMMAND echo mt.exe -manifest $<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.pre.manifest
 			-hashupdate:.
@@ -116,7 +116,7 @@ macro(implementAssembly basename targetname ) #packagein)
 		COMMAND echo makecat.exe -v $<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
 		COMMAND makecat.exe -v $<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
 		COMMAND echo Signing catalog
-		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+		COMMAND signtool.exe sign ${TIMESTAMP_PROVIDER}  
 			 "$<TARGET_FILE_DIR:${targetname}>/$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.cat"
 		COMMAND echo Creating the policy cdf
 		COMMAND echo mt.exe -manifest policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest -makecdfs
@@ -125,9 +125,9 @@ macro(implementAssembly basename targetname ) #packagein)
 		COMMAND echo makecat.exe policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
 		COMMAND makecat.exe policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.manifest.cdf
 		COMMAND echo Sign the policy catalog
-		COMMAND echo signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+		COMMAND echo signtool.exe sign ${TIMESTAMP_PROVIDER} 
 			policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.cat
-		COMMAND signtool.exe sign /t http://timestamp.verisign.com/scripts/timestamp.dll 
+			COMMAND signtool.exe sign ${TIMESTAMP_PROVIDER} 
 			policy.@MAJOR@.@MINOR@.$<TARGET_PROPERTY:${targetname},$<CONFIGURATION>_ASSEMBLY>.cat
 		COMMAND cd ..
 		)
