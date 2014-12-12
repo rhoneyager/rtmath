@@ -1,6 +1,8 @@
 if (WIN32)
 set (TIMESTAMP_PROVIDER /t http://timestamp.verisign.com/scripts/timestamp.dll
 	CACHE STRING "Specifies the site used for timestamping signed code")
+# /t http://timestamp.verisign.com/scripts/timestamp.dll
+# /tr http://www.startssl.com/timestamp
 endif()
 
 macro(signing appname )
