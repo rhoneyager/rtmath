@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "Generate and manipulate module files"
             VALUE "FileVersion", "@MAJOR@,@MINOR@,@REVISION@,@SVNREVISION@"
             VALUE "InternalName", "Ryan_Debug"
-            VALUE "LegalCopyright", "Copyright (C) 2014 Ryan Honeyager"
+            VALUE "LegalCopyright", "Copyright (C) 2015 Ryan Honeyager"
             VALUE "OriginalFilename", "Ryan_Debug-module.exe"
             VALUE "ProductName", "Ryan_Debug-module"
             VALUE "ProductVersion", "@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@"

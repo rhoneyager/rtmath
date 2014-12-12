@@ -12,6 +12,7 @@
 // debug_subversion.h is auto-generated
 #include <debug_subversion.h>
 
+#include <boost/shared_array.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -321,13 +322,30 @@ namespace Ryan_Debug {
 
 		const size_t newsize = origsize*4;
 		size_t convertedChars = 0;
-		char nstring[newsize];
-		wcstombs_s(&convertedChars, nstring, origsize, instr, _TRUNCATE);
+
+		boost::shared_array<char> nstring(new char[newsize]);
+		//char nstring[newsize];
+		wcstombs_s(&convertedChars, nstring.get(), origsize, instr, _TRUNCATE);
 		// Destination string was always null-terminated!
-		std::string res(nstring);
+		std::string res(nstring.get());
 #else
 		std::string res(instr);
 #endif
+		return std::move(res);
+	}
+
+	std::string convertStr(const PWSTR instr)
+	{
+		size_t origsize = wcslen(instr) + 1;
+
+		const size_t newsize = origsize * 4;
+		size_t convertedChars = 0;
+		boost::shared_array<char> nstring(new char[newsize]);
+		//char nstring[newsize];
+		wcstombs_s(&convertedChars, nstring.get(), origsize, instr, _TRUNCATE);
+		// Destination string was always null-terminated!
+		std::string res(nstring.get());
+
 		return std::move(res);
 	}
 
@@ -948,22 +966,17 @@ namespace Ryan_Debug {
 		homeDir.append("/.config");
 #endif
 #ifdef _WIN32
-		//WCHAR path[MAX_PATH];
-		//BOOL res = false;
-		//res = SHGetFolderPathW
-		BOOL res = false;
-		const DWORD clen = MAX_PATH;
-		DWORD len = clen;
-		TCHAR hname[clen];
-		res = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, hname);
-		if (res)
+		HRESULT res = false;
+		wchar_t* hname = nullptr;
+		res = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &hname);
+		if (res == S_OK)
 		{
 			appConfigDir = convertStr(hname);
-		}
-		else {
+		} else {
 			DWORD err = GetLastError();
 			std::cerr << "SHGetFolderPathA failed with error " << err << std::endl;
 		}
+		CoTaskMemFree(static_cast<void*>(hname));
 #endif
 		return appConfigDir.c_str();
 	}
@@ -990,21 +1003,18 @@ namespace Ryan_Debug {
 		}
 #endif
 #ifdef _WIN32
-		//WCHAR path[MAX_PATH];
-		//BOOL res = false;
-		//res = SHGetFolderPathW
-		BOOL res = false;
-		const DWORD clen = MAX_PATH;
-		DWORD len = clen;
-		TCHAR hname[clen];
-		res = SHGetFolderPathA(NULL, CSIDL_PROFILE, NULL, 0, hname);
-		if (res)
+		HRESULT res = false;
+		wchar_t* hname = nullptr;
+		res = SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, &hname);
+		if (res == S_OK)
 		{
 			homeDir = convertStr(hname);
-		} else {
+		}
+		else {
 			DWORD err = GetLastError();
 			std::cerr << "SHGetFolderPathA failed with error " << err << std::endl;
 		}
+		CoTaskMemFree(static_cast<void*>(hname));
 #endif
 		return homeDir.c_str();
 	}

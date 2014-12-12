@@ -33,6 +33,12 @@ int main(int argc, char** argv)
 	cerr << "Testing app build settings:\n";
 	Ryan_Debug::debug_preamble(cerr);
 	cerr << endl;
+
+	cerr << "Other functions tested:\n";
+	cerr << "\tApp config dir: " << Ryan_Debug::getAppConfigDir() << std::endl;
+	cerr << "\tUsername: " << Ryan_Debug::getUsername() << std::endl;
+	cerr << "\tHome dir: " << Ryan_Debug::getHomeDir() << std::endl;
+	cerr << "\tHostname: " << Ryan_Debug::getHostname() << std::endl;
 	return 0;
 }
 

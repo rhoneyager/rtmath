@@ -1,6 +1,7 @@
 include (SVNinfo)
 include (signing)
 include (addconfiginfo)
+include (addlib)
 
 configure_file(module.rc.in
 	"${CMAKE_CURRENT_BINARY_DIR}/module.rc" @ONLY)
@@ -27,5 +28,5 @@ INSTALL(TARGETS Ryan_Debug-module
 	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 	COMPONENT Applications
 	)
-
+storebin(Ryan_Debug-module)
 
