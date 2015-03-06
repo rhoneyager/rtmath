@@ -25,8 +25,8 @@ include(adddocs)
 include(generateAssemblyGuid)
 
 set(MAJOR 0)
-set(MINOR 7)
-set(REVISION 3)
+set(MINOR 8)
+set(REVISION 0)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
