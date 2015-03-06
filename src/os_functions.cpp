@@ -966,12 +966,13 @@ namespace Ryan_Debug {
 		boost::shared_ptr<const processInfo> hInfo;
 		hInfo = boost::shared_ptr<const processInfo>(getInfo(getPID()), freeProcessInfo);
 		const char* eConfig = getEnviron(hInfo.get(), "XDG_CONFIG_HOME");
-		homeDir = std::string(eConfig);
+		if (eConfig) homeDir = std::string(eConfig);
 		if (homeDir.size()) return homeDir.c_str();
 
 		// Otherwise...
 		const char* eHome = getEnviron(hInfo.get(), "HOME");
-		homeDir = std::string(eHome);
+		if (eHome)
+			homeDir = std::string(eHome);
 
 		if (!homeDir.size())
 		{
@@ -1016,7 +1017,7 @@ namespace Ryan_Debug {
 		boost::shared_ptr<const processInfo> hInfo;
 		hInfo = boost::shared_ptr<const processInfo>(getInfo(getPID()), freeProcessInfo);
 		const char* eHome = getEnviron(hInfo.get(), "HOME");
-		homeDir = std::string(eHome);
+		if (eHome) homeDir = std::string(eHome);
 
 		if (!homeDir.size())
 		{
