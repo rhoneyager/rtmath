@@ -47,6 +47,7 @@
 #ifdef __unix__
 #include <unistd.h>
 #include <sys/types.h>
+#include <pwd.h>
 #include <dlfcn.h>
 #include <link.h>
 #endif
@@ -62,6 +63,8 @@
 
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/info.h"
+#include "../Ryan_Debug/splitSet.h"
+
 #include "versioninfo.h"
 #include "internal.h"
 
@@ -133,8 +136,21 @@ namespace Ryan_Debug {
 		int pid;
 		/// Process ID of parent
 		int ppid;
-	};
 
+		std::map<std::string, std::string> expandedEnviron;
+		std::vector<std::string> expandedCmd;
+	};
+}
+namespace {
+
+	void expandEnviron(Ryan_Debug::processInfo *p) {
+		if (!p) return;
+		if (p->expandedEnviron.size()) return;
+		Ryan_Debug::splitSet::splitNullMap(p->environ, p->expandedEnviron);
+		Ryan_Debug::splitSet::splitNullVector(p->cmdline, p->expandedCmd);
+	}
+}
+namespace Ryan_Debug {
 	// Don't export this symbol (not in header)
 #ifdef _WIN32
 	BOOL WINAPI _CloseHandlerRoutine(DWORD dwCtrlType); // Helps gracefully close console
@@ -619,7 +635,6 @@ namespace Ryan_Debug {
 			res->startTime = ct;
 
 		}
-		return res;
 #endif
 #ifdef _WIN32
 		//throw std::string("Unimplemented on WIN32"); // unimplemented
@@ -693,19 +708,21 @@ namespace Ryan_Debug {
 
 		CloseHandle(h);
 
-		return res;
 #endif
 
-
-
-		// Should only reach here if not unix or win32. An odd possibility.
-		throw "Unimplemented OS";
+		expandEnviron(res);
+		return res;
 	}
 
 	const char* getName(const hProcessInfo hp) { return hp->name.c_str(); }
 	const char* getPath(const hProcessInfo hp) { return hp->path.c_str(); }
 	const char* getCwd(const hProcessInfo hp) { return hp->cwd.c_str(); }
 	const char* getEnviron(const hProcessInfo hp, size_t &sz) { sz = hp->environ.size(); return hp->environ.c_str(); }
+	const char* getEnviron(const hProcessInfo hp, const char* varname) {
+		if (hp->expandedEnviron.count(std::string(varname)))
+			return hp->expandedEnviron.at(std::string(varname)).c_str();
+		else return nullptr;
+	}
 	const char* getCmdline(const hProcessInfo hp, size_t &sz) { sz = hp->cmdline.size(); return hp->cmdline.c_str(); }
 	const char* getStartTime(const hProcessInfo hp) { return hp->startTime.c_str(); }
 	int getPID(const hProcessInfo hp) { return hp->pid; }
@@ -958,12 +975,18 @@ namespace Ryan_Debug {
 
 		if (!homeDir.size())
 		{
-			struct passwd *pw = getpwuid_r(getuid());
-			const char *homedir = pw->pw_dir;
-			homeDir = std::string(homedir);
+			struct passwd pw, *pwp;
+			const size_t buflen = 1024;
+			char buf[buflen];
+			int res = getpwuid_r(getuid(), &pw, buf, buflen, &pwp);
+			if (res == 0) {
+				const char *homedir = pw.pw_dir;
+				homeDir = std::string(homedir);
+			}
 		}
 
-		homeDir.append("/.config");
+		if (homeDir.size())
+			homeDir.append("/.config");
 #endif
 #ifdef _WIN32
 		HRESULT res = false;
@@ -997,9 +1020,15 @@ namespace Ryan_Debug {
 
 		if (!homeDir.size())
 		{
-			struct passwd *pw = getpwuid_r(getuid());
-			const char *homedir = pw->pw_dir;
-			homeDir = std::string(homedir);
+			struct passwd pw, *pwp;
+			const size_t buflen = 1024;
+			char buf[buflen];
+			int res = getpwuid_r(getuid(), &pw, buf, buflen, &pwp);
+			if (res == 0) {
+				const char *homedir = pw.pw_dir;
+				homeDir = std::string(homedir);
+			}
+
 		}
 #endif
 #ifdef _WIN32

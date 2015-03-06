@@ -58,14 +58,20 @@ include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
 set( srcs
+	src/error.cpp
+	src/fs.cpp
 	src/modules.cpp
 	src/os_functions.cpp
+	src/splitSet.cpp
 	)
 set (hdrs
 	Ryan_Debug/defs.h
 	Ryan_Debug/debug.h
+	Ryan_Debug/error.h
+	Ryan_Debug/fs.h
 	Ryan_Debug/info.h
 	Ryan_Debug/modules.h
+	Ryan_Debug/splitSet.h
 	src/internal.h
 	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
 	)

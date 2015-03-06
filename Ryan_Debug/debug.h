@@ -55,6 +55,7 @@ namespace Ryan_Debug
 	RYAN_DEBUG_DLEXPORT const char* getPath(const hProcessInfo);
 	RYAN_DEBUG_DLEXPORT const char* getCwd(const hProcessInfo);
 	RYAN_DEBUG_DLEXPORT const char* getEnviron(const hProcessInfo, size_t &sz);
+	RYAN_DEBUG_DLEXPORT const char* getEnviron(const hProcessInfo, const char* varname);
 	RYAN_DEBUG_DLEXPORT const char* getCmdline(const hProcessInfo, size_t &sz);
 	RYAN_DEBUG_DLEXPORT const char* getStartTime(const hProcessInfo);
 	void RYAN_DEBUG_DLEXPORT freeProcessInfo(hProcessInfo);
