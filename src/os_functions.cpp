@@ -113,6 +113,7 @@ namespace {
 	std::string hostname;
 	std::string username;
 	std::string homeDir, appConfigDir;
+	std::string moduleCallbackBuffer;
 }
 
 namespace Ryan_Debug {
@@ -784,7 +785,8 @@ namespace Ryan_Debug {
 		// Keeping function definition this way to preserve compatibility with gcc 4.7
 		int moduleCallback(dl_phdr_info *info, size_t sz, void* data)
 		{
-			std::ostream &out = std::cerr;
+			//std::ostream &out = std::cerr;
+			std::ostringstream out;
 			std::string name(info->dlpi_name);
 			if (!name.size()) return 0;
 			out << "\t" << info->dlpi_name << " (" << info->dlpi_phnum 
@@ -796,8 +798,10 @@ namespace Ryan_Debug {
 					<< "\n";
 			}
 			*/
+			moduleCallbackBuffer.append(out.str());
 			return 0;
 		}
+
 #endif
 
 	struct moduleInfo
@@ -885,7 +889,11 @@ namespace Ryan_Debug {
 					out)
 					, NULL);
 					*/
-		dl_iterate_phdr(moduleCallback, NULL);
+		std::lock_guard<std::mutex> lock(m_sys_names);
+		if (!moduleCallbackBuffer.size()) {
+			dl_iterate_phdr(moduleCallback, NULL);
+		}
+		out << moduleCallbackBuffer;
 		return;
 #endif
 		// Execution should not reach this point
