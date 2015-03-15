@@ -18,7 +18,7 @@
 namespace rtmath {
 	namespace config {
 
-#define DOTYPES(f) f(int); f(size_t); f(float); f(double); f(long); f(long long); \
+#define DOTYPES(f) f(int); f(float); f(double); f(long); f(long long); \
 	f(unsigned int); f(unsigned long); f(unsigned long long);
 
 		template <class T>

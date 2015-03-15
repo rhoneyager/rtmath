@@ -3,6 +3,11 @@
 #include "cmake-settings.h"
 #pragma warning( disable : 4251 ) // DLL C-interface MSVC
 
+
+// Spirit parser / log conflict...
+#define BOOST_SPIRIT_USE_PHOENIX_V3
+
+
 /// \todo CMakeLists needs to set the appropriate flags EXPORTING_RTMATH on all libraries and 
 /// SHARED_RTMATH_* for the libraries that are shared.
 

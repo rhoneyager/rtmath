@@ -278,9 +278,11 @@ namespace rtmath {
 			}
 			*/
 			//boost::property_tree::xml_writer_settings<char> settings(' ', 4);
-			boost::property_tree::xml_writer_settings <
-				boost::property_tree::ptree::key_type > settings(' ', 4);
-			boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
+			//boost::property_tree::xml_writer_settings <
+			//	boost::property_tree::ptree::key_type > settings(' ', 4);
+			//boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
+			boost::property_tree::write_xml(stream, pt); // , std::locale(), settings);
+
 		}
 
 		void configsegment::readBoost(boost::shared_ptr<configsegment> root, std::istream& indata, std::shared_ptr<registry::IO_options> opts)

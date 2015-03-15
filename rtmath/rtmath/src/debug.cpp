@@ -343,7 +343,7 @@ namespace rtmath
 
 
 
-
+#ifdef _WIN32
 			// Complete sink type
 			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > d_sink_t;
 			// Create the debugger sink. The backend requires synchronization in the frontend.
@@ -353,7 +353,7 @@ namespace rtmath
 			// in order to skip the sink when no debugger is available
 			d_sink->set_filter(boost::log::expressions::is_debugger_present());
 			core->add_sink(d_sink);
-
+#endif
 			setup = true;
 		}
 

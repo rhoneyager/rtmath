@@ -98,6 +98,7 @@ namespace rtmath
 			static void setHandler(void (*func)(const char*));
 		protected:
 			std::string _message;
+			mutable std::string _emessage;
 			static SHARED_PRIVATE void (*_errHandlerFunc)(const char*);
 			virtual void _setmessage();
 			const char* file;

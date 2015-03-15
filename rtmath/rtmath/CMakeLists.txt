@@ -114,7 +114,7 @@ if (USE_RYAN_SERIALIZATION)
 	set(USE_RYAN_SERIALIZATION_FLAG 1)
 endif()
 find_package(Eigen3 REQUIRED)
-include_directories(EIGEN3_INCLUDE_DIR)
+include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
 
 configure_file (
