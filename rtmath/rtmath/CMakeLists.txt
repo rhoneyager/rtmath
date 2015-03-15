@@ -130,7 +130,7 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-set (boost_uniform_libs program_options iostreams filesystem system unit_test_framework regex date_time )
+set (boost_uniform_libs program_options iostreams filesystem system unit_test_framework regex date_time log log_setup)
 if (USE_RYAN_SERIALIZATION)
 	set (boost_uniform_libs ${boost_unifirm_libs} serialization)
 endif()
@@ -141,13 +141,16 @@ link_directories(${Boost_LIBRARY_DIR})
 # linterp is in the related directory
 include_directories(BEFORE "${CMAKE_SOURCE_DIR}/related/linterp/rncarpio-linterp-ca556a0/src")
 
+#message("${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY}")
 
 if(WIN32 AND NOT CYGWIN)
 	set(rtmath_core-libs "")
 else()
 	set (rtmath_core-libs ${Boost_FILESYSTEM_LIBRARY}
 		${Boost_IOSTREAMS_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
-		${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_DATE_TIME_LIBRARY})
+		${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_DATE_TIME_LIBRARY}
+		${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY}
+		)
 	if (USE_RYAN_SERIALIZATION)
 		set (rtmath_core-libs ${rtmath_core-libs} ${Boost_SERIALIZATION_LIBRARY})
 	endif()
