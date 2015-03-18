@@ -7,55 +7,39 @@ namespace {
 namespace Ryan_Debug {
 	namespace error {
 
-		xError::xError() throw() {}
+		xError::xError() throw() : inWhat(false) {}
 		xError::~xError() throw() {}
 		const char* xError::what() const throw()
 		{
+			/*
+			if (errText.size() == 0) {
+			struct g { 
+				bool &b; 
+				~g() { 
+					b = false; 
+				} 
+				} guard{inWhat};
+
+				if (inWhat) {
+					static const char unc[] = "Unclassified error";
+					if (errLbl.size()) return errLbl.c_str();
+					else return unc;
+				} else {
+					inWhat = true;
+					errText += boost::diagnostic_information(*this, false);
+				}
+			}
+			return errText.c_str();
+			*/
 			std::ostringstream out;
-			out << "Unclassified error: ";
+			if (errLbl.size()) out << "\n\nError: " << errLbl;
+			else out << "\n\nUnclassified error: ";
 			out << std::endl;
+
+			out << boost::diagnostic_information_what(*this, true) << std::endl;
 			errText = out.str();
-			addLineInfo();
 			return errText.c_str();
 		}
-
-		void xError::addLineInfo() const throw()
-		{
-			std::ostringstream out;
-			if( std::string const * mi=boost::get_error_info<source_file_name>(*this) )
-				out << " source file: " << *mi << std::endl;
-			if( int const * mi=boost::get_error_info<source_file_line>(*this) )
-				out << " source line: " << *mi << std::endl;
-			if( std::string const * mi=boost::get_error_info<source_func_sig>(*this) )
-				out << " function: " << *mi << std::endl;
-			errText.append(out.str());
-		}
-
-		const char* xDivByZero::what() const throw()
-		{
-			std::ostringstream out;
-			out << "Error: Divide by zero encountered\n";
-			if( std::string const * mi=boost::get_error_info<split_range_name>(*this) )
-				std::cerr << " statement: " << *mi << std::endl;
-			errText = out.str();
-			addLineInfo();
-			return errText.c_str();
-		}
-
-		const char* xInvalidRange::what() const throw()
-		{
-			std::ostringstream out;
-			out << "Error: Invalid range\n";
-			if( std::string const * mi=boost::get_error_info<split_range_name>(*this) )
-				std::cerr << " statement: " << *mi << std::endl;
-			if( std::string const * mi=boost::get_error_info<specializer_type>(*this) )
-				std::cerr << " specializer: " << *mi << std::endl;
-			errText = out.str();
-
-			addLineInfo();
-			return errText.c_str();
-		}
-
 
 	}
 }
