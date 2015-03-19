@@ -3,6 +3,8 @@
 
 #include <string>
 #include <boost/math/constants/constants.hpp>
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/refract.h"
@@ -108,7 +110,7 @@ namespace rtmath
 				} catch (...) {
 					std::cerr << "A bhmie error has occurred." << std::endl;
 					//std::cerr << "\t" << t.what() << std::endl;
-					RTthrow rtmath::debug::xOtherError();
+					RTthrow(rtmath::debug::xOtherError());
 				}
 			}
 

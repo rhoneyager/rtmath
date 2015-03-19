@@ -306,7 +306,9 @@ namespace rtmath {
 				auto res = shapeFileStats::loadHash(hash);
 				if (!res && !prohibitStats) {
 					auto shp = shapefile::shapefile::loadHash(hash);
-					if (!shp) RTthrow debug::xMissingHash("shapefile+stats", hash.string().c_str());
+					if (!shp) RTthrow(debug::xMissingHash())
+					<< debug::hash(hash.string())
+					<< debug::hashType("shapefile+stats");
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 				}
 				if (res)

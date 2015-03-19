@@ -206,10 +206,13 @@ namespace rtmath {
 				bool operator==(const shapefile &) const;
 				bool operator!=(const shapefile &) const;
 
+				/// Function to output shapefile information
+				void info(std::ostream &out = std::cout) const;
+
 				/// Function to fix the shape center of mass to match calculated stats
 				void fixStats();
 				/// Write ddscat-formatted shapefile to the given output stream.
-				void print(std::ostream &out) const;
+				void print(std::ostream &out = std::cout) const;
 				/// Resizes arrays to hold the desired number of points
 				void resize(size_t num);
 				/// Read shape dipoles from a memory buffer

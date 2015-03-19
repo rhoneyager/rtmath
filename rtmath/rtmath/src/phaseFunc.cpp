@@ -216,7 +216,8 @@ namespace rtmath {
 			else if (tid == "tmatrix")
 				f = muellerTMATRIX;
 			else
-				throw rtmath::debug::xBadInput(id.c_str()); /// \todo use another xError? Create a new one?
+				RTthrow(::rtmath::debug::xBadInput())
+					<< ::rtmath::debug::key(id); /// \todo use another xError? Create a new one?
 		}
 
 		void muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn)

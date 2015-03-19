@@ -101,7 +101,7 @@ namespace rtmath
 				} catch (const ::tmatrix::tmError& t) {
 					std::cerr << "A tmatrix error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
-					RTthrow rtmath::debug::xOtherError();
+					RTthrow(rtmath::debug::xOtherError());
 				}
 			}
 
@@ -160,7 +160,7 @@ namespace rtmath
 				} catch (const ::tmatrix::tmError& t) {
 					std::cerr << "A tmatrix error has occurred" << std::endl;
 					std::cerr << t.what() << std::endl;
-					RTthrow rtmath::debug::xOtherError();
+					RTthrow(rtmath::debug::xOtherError());
 				}
 			}
 		}

@@ -342,13 +342,17 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpHashes) RTthrow(debug::xMissingKey())
+				<< rtmath::debug::key(key);
 			shared_ptr<Group> grpHash = openGroup(grpHashes, hash.c_str());
-			if (!grpHash) RTthrow debug::xMissingFile(hash.c_str());
+			if (!grpHash) RTthrow(debug::xMissingHash())
+				<< rtmath::debug::hash(hash);
 			shared_ptr<Group> grpRuns = openGroup(h->file, "Runs");
-			if (!grpRuns) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpRuns) RTthrow(debug::xMissingKey())
+				<< rtmath::debug::key(key);
 			shared_ptr<Group> grpRun = openGroup(grpRuns, key.c_str());
-			if (!grpRun) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpRun) RTthrow(debug::xMissingKey())
+				<< rtmath::debug::key(key);
 			read_hdf5_ddOutput(grpRun, opts, s);
 
 			return h;

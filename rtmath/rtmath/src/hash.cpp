@@ -82,7 +82,12 @@ namespace {
 				if (type == "dir") {
 					h = std::shared_ptr<rtmath::hashStore>(new rtmath::hashStore);
 				} /// \todo Add hash store plugin search code here, and fill in the store generator in the header file.
-				else RTthrow rtmath::debug::xUnknownFileFormat(type.c_str());
+				else RTthrow(::rtmath::debug::xUnknownFileFormat())
+					<< ::rtmath::debug::otherErrorText("Hash store code currently "
+					"only supports \"dir\"-type stores. TODO: Add "
+					"hash store plugin search code in hash.cpp and "
+					"the header file.")
+					<< ::rtmath::debug::hashType(type);
 
 				h->writable = writable;
 				h->base = boost::filesystem::path(location);
@@ -183,7 +188,10 @@ namespace rtmath {
 
 		
 		if (!exists(base))
-			RTthrow debug::xMissingFolder(base.string().c_str());
+			RTthrow(debug::xMissingFolder())
+				<< debug::folder_name(base.string())
+				<< debug::hash(h)
+				<< debug::hashType(key);
 		
 		if (!exists(base / pHashStart))
 			create_directory(base / pHashStart);
@@ -302,7 +310,8 @@ namespace rtmath {
 		using namespace serialization;
 		std::string cmeth, fname;
 		if (!serialization::detect_compressed(filename, cmeth, fname))
-			throw rtmath::debug::xMissingFile(filename.c_str());
+			RTthrow(::rtmath::debug::xMissingFile())
+				<< ::rtmath::debug::file_name(filename);
 
 		// Do a direct map into memory. It's faster than stream i/o for reading a large file.
 		// Plus, all other operations can be done solely in memory.

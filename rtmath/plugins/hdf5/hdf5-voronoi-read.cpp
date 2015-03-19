@@ -174,13 +174,20 @@ namespace rtmath {
 			
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow debug::xMissingFile("Hashed");
+			if (!grpHashes) RTthrow(debug::xMissingKey())
+				<< debug::key("Hashed")
+				<< debug::hash(key);
 			shared_ptr<Group> grpHash = openGroup(grpHashes, hash.c_str());
-			if (!grpHash) RTthrow debug::xMissingFile(hash.c_str());
+			if (!grpHash) RTthrow(debug::xMissingHash())
+				<< debug::key("Hashed")
+				<< debug::hash(key);
 			shared_ptr<Group> grpVoro = openGroup(grpHash, "Voronoi");
-			if (!grpVoro) RTthrow debug::xMissingFile("Voronoi");
+			if (!grpVoro) RTthrow(debug::xMissingKey())
+				<< debug::key("Voronoi")
+				<< debug::hash(key);
 			shared_ptr<Group> grpKey = openGroup(grpVoro, key.c_str());
-			if (!grpKey) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpKey) RTthrow(debug::xMissingKey())
+				<< debug::key(key);
 			read_hdf5_voro(grpKey, opts, s);
 
 			return h;

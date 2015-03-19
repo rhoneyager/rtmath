@@ -129,7 +129,9 @@ namespace rtmath {
 		ddScattMatrixConnector::ddScattMatrixConnector(
 			const std::vector<std::complex<double> >& src)
 		{
-			if (src.size() % 3 != 0 || !src.size()) RTthrow debug::xArrayOutOfBounds();
+			if (src.size() % 3 != 0 || !src.size()) RTthrow(debug::xArrayOutOfBounds())
+				<< debug::otherErrorText("Element src has the wrong size or is a "
+					"null matrix.");
 			e01x = src[0];
 			e01y = src[1];
 			e01z = src[2];

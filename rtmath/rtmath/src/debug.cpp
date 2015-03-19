@@ -66,14 +66,6 @@ namespace rtmath
 	{
 		std::string SHARED_PRIVATE sConfigDefaultFile;
 
-		void dumpErrorLocation(std::ostream &out)
-		{
-			out << "File: " << memcheck::__file__ << std::endl;
-			out << "Line: " << memcheck::__line__ << std::endl;
-			out << "Caller: " << memcheck::__caller__ << std::endl;
-			out << std::endl;
-		}
-
 		size_t DLEXPORT_rtmath_core getConcurrentThreadsSupported()
 		{
 			std::lock_guard<std::mutex> lock(m_sys_num_threads);
@@ -161,57 +153,6 @@ namespace rtmath
 			out << std::endl;
 			out << std::endl;
 		}
-
-		boost::filesystem::path expandSymlink(const boost::filesystem::path &p)
-		{
-			using namespace boost::filesystem;
-			// Set a max depth to avoid infinite loops
-			const size_t maxDepth = 10;
-			size_t d=0;
-			path pf = p;
-			while(is_symlink(pf) && d<maxDepth)
-			{
-				pf = boost::filesystem::absolute(read_symlink(pf), p.parent_path());
-				d++;
-			}
-			return pf;
-		}
-
-		void expandFolder(const std::string &s, 
-			std::vector<boost::filesystem::path> &out, bool recurse)
-		{
-			using namespace boost::filesystem;
-			path p(s);
-			expandFolder(p, out, recurse);
-		}
-		void expandFolder(const boost::filesystem::path &p, 
-			std::vector<boost::filesystem::path> &dest, bool recurse)
-		{
-			using namespace boost::filesystem;
-			if (is_directory(p))
-			{
-				if (!recurse)
-					copy(directory_iterator(p), 
-					directory_iterator(), back_inserter(dest));
-				else
-					copy(recursive_directory_iterator(p,symlink_option::recurse), 
-					recursive_directory_iterator(), back_inserter(dest));
-			}
-			else dest.push_back(p);
-		}
-		void expandFolders(const std::vector<boost::filesystem::path> &src, 
-			std::vector<boost::filesystem::path> &dest, bool recurse)
-		{
-			for (auto s : src)
-				expandFolder(s, dest, recurse);
-		}
-		void expandFolders(const std::vector<std::string> &src, 
-			std::vector<boost::filesystem::path> &dest, bool recurse)
-		{
-			for (auto s : src)
-				expandFolder(s, dest, recurse);
-		}
-
 		void add_options(
 			boost::program_options::options_description &cmdline,
 			boost::program_options::options_description &config,

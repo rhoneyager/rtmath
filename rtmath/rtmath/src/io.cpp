@@ -78,19 +78,23 @@ namespace rtmath
 				{
 				case IOtype::READONLY:
 				{
-					if (!exists(path(filename))) RTthrow debug::xMissingFile(filename);
+					if (!exists(path(filename))) RTthrow(debug::xMissingFile())
+						<< debug::file_name(filename);
 					load(filename);
 				}
 					break;
 				case IOtype::CREATE:
-					if (exists(path(filename))) RTthrow debug::xFileExists(filename);
+					if (exists(path(filename))) RTthrow(debug::xFileExists())
+						<< debug::file_name(filename);
 				case IOtype::TRUNCATE:
 					create(filename);
 					break;
 				case IOtype::EXCLUSIVE:
 				case IOtype::DEBUG:
 				case IOtype::READWRITE:
-					RTthrow debug::xUnsupportedIOaction("Unsupported IO mode");
+					RTthrow(debug::xUnsupportedIOaction())
+						<< debug::otherErrorText("IO mode READWRITE "
+						"is currently unsupported in serialization code.");
 					break;
 				}
 			}
@@ -104,7 +108,8 @@ namespace rtmath
 				std::string cmeth, target, uncompressed, filename(fname);
 				// Combination of detection of compressed file, file type and existence.
 				if (!detect_compressed(filename, cmeth, target))
-					throw rtmath::debug::xMissingFile(filename.c_str());
+					RTthrow(rtmath::debug::xMissingFile())
+					<< rtmath::debug::file_name(filename);
 				uncompressed_name(target, uncompressed, cmeth);
 
 				boost::filesystem::path p(uncompressed);

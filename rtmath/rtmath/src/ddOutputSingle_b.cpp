@@ -591,7 +591,8 @@ namespace rtmath {
 
 		boost::shared_ptr<ddOutputSingleObj> ddOutputSingle::getObj(const std::string &id) const
 		{
-			if (_objMap.count(id) == 0) RTthrow debug::xBadInput(id.c_str());
+			if (_objMap.count(id) == 0) RTthrow(debug::xMissingHash())
+				<< debug::hash(id);
 			return _objMap.at(id);
 		}
 

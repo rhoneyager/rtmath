@@ -35,7 +35,8 @@ namespace rtmath {
 		double converter::convert(double inVal) const
 		{
 			if (_valid) return ((inVal + _inOffset) * _convFactor) + (_outOffset);
-			throw rtmath::debug::xBadInput("Trying to convert with bad converter units.");
+			RTthrow(rtmath::debug::xBadInput())
+				<< rtmath::debug::otherErrorText("Trying to convert with bad converter units.");
 			return 0;
 		}
 
@@ -184,7 +185,8 @@ namespace rtmath {
 		{
 			// Less trivial set of conversions
 			// First, if conversion of prefixes is needed, do it.
-			if (!_valid) RTthrow rtmath::debug::xUnimplementedFunction();
+			if (!_valid) RTthrow(debug::xUnimplementedFunction())
+				<< debug::otherErrorText("Unsupported conversion");
 			double res = in;
 			res *= _Sin;
 

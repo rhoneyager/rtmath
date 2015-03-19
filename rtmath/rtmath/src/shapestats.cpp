@@ -323,7 +323,8 @@ namespace rtmath {
 				std::cerr << " " << _N << " points" << std::endl;
 
 				if (!_N)
-					throw rtmath::debug::xBadInput("Stats cannot be calculated because the shapefile is not loaded.");
+					RTthrow(rtmath::debug::xBadInput())
+						<< rtmath::debug::otherErrorText("Stats cannot be calculated because the shapefile is not loaded.");
 
 				// Calculate volume elements
 				float dxdydz = _shp->d(0) * _shp->d(1) * _shp->d(2);

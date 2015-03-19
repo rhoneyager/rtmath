@@ -440,7 +440,10 @@ namespace rtmath {
 			{
 				IntervalTable intervals;
 				w.getIntervals(intervals);
-				if (intervals.size() == 0) RTthrow debug::xArrayOutOfBounds();
+				if (intervals.size() == 0) RTthrow(rtmath::debug::xArrayOutOfBounds())
+					<< rtmath::debug::otherErrorText("No intervals can be "
+					"constructed from the parameters passed to "
+					"this function.");
 				min = intervals.begin()->second.first;
 				max = intervals.rbegin()->second.second;
 				span = max - min;

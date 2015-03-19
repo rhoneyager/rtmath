@@ -229,7 +229,8 @@ namespace rtmath {
 					r->setPlane(i+1,phi,thetan_min,thetan_max,dtheta);
 				}
 				if ((size_t) planes.rows() != numPlanesCheck)
-					RTthrow rtmath::debug::xAssert("Bad number of planes check when reading hdf5 ddpar");
+					RTthrow(rtmath::debug::xAssert())
+						<< rtmath::debug::otherErrorText("Bad number of planes check when reading hdf5 ddpar");
 
 				//return grpRot;
 				return true;
@@ -265,7 +266,8 @@ namespace rtmath {
 			if (!grpHashes) return h;
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-			if (!grpShape) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpShape) RTthrow(debug::xMissingHash())
+				<< debug::hash(key);
 			read_hdf5_ddPar(grpShape, s);
 			/*
 			// Iterate over hash entries
@@ -299,7 +301,7 @@ namespace rtmath {
 			std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
-			RTthrow debug::xUnimplementedFunction();
+			RTthrow(debug::xUnimplementedFunction());
 			return sh;
 		}
 	}

@@ -245,10 +245,6 @@ int main(int argc, char** argv)
 			}
 		}
 
-	} catch (rtmath::debug::xError &err) {
-		err.Display();
-		cerr << endl;
-		return 1;
 	} catch (std::exception &e) {
 		cerr << e.what() << endl;
 		return 1;

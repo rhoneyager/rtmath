@@ -73,7 +73,7 @@ namespace rtmath {
 				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > ddOut)
 			{
 				std::string exporttype = opts->exportType();
-				if (exporttype != "stats") RTthrow debug::xUnimplementedFunction();
+				if (exporttype != "stats") RTthrow(debug::xUnimplementedFunction());
 				std::string filename = opts->filename();
 				std::string sDescrip = opts->getVal<std::string>("description", "");
 				IOhandler::IOtype iotype = opts->iotype();
@@ -82,7 +82,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_ddoutput_stats_handle>(new tsv_ddoutput_stats_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_DDSTATS) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID_DDSTATS) RTthrow(debug::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ddoutput_stats_handle>(sh);
 				}
 

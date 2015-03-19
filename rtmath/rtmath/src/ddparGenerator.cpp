@@ -105,7 +105,8 @@ namespace rtmath {
 		{
 			using namespace boost::filesystem;
 			path p(ddparfilename);
-			if (!exists(ddparfilename)) RTthrow rtmath::debug::xMissingFile(ddparfilename.c_str());
+			if (!exists(ddparfilename)) RTthrow(debug::xMissingFile())
+				<< debug::file_name(ddparfilename);
 			rtmath::ddscat::ddPar ddfile(ddparfilename);
 			base = ddfile;
 		}

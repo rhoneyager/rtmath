@@ -16,19 +16,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
-#ifdef HEAP_CHECK
-#include "debug_mem.h"
-#endif
-
-
-/// \def ERRSTD(x) Defines an exception class that takes no arguments.
-#define ERRSTD(x) class DLEXPORT_rtmath_core x : public xError { public: x() : xError() { _setmessage(); } protected: void _setmessage(); }
-/// \def ERRSTR(x) Defines an exception class that takes a string as an argument
-#define ERRSTR(x) class DLEXPORT_rtmath_core x : public xError { public: x(const char* m) : xError() {_m=m; _setmessage(); } protected: const char *_m; void _setmessage(); }
-/// \def ERRSTR(x) Defines an exception class that takes two strings as arguments
-#define ERRSTR2(x) class DLEXPORT_rtmath_core x : public xError { public: x(const char* m, const char* n) : xError() {_m=m; _n=n; _setmessage(); } protected: const char *_m, *_n; void _setmessage(); }
-/// \def ERRDOU(x) Defines an exception class that takes a double as an argument
-#define ERRDOU(x) class DLEXPORT_rtmath_core x : public xError { public: x(double m) : xError() {_m=m; _setmessage(); } protected: double _m; void _setmessage(); }
+#include <Ryan_Debug/error.h>
 
 namespace blog = boost::log;
 
@@ -60,156 +48,81 @@ namespace rtmath
 		//typedef boost::tuple<boost::errinfo_api_function, boost::errinfo_errno> clib_failure;
 
 		typedef boost::error_info<struct tag_file_name, std::string> file_name;
-		typedef boost::error_info<struct tag_file_name, std::string> default_file_name;
-		typedef boost::error_info<struct tag_file_name, std::string> folder_name;
-		typedef boost::error_info<struct tag_file_name, std::string> symbol_name;
-		typedef boost::error_info<struct tag_file_name, std::pair<std::string, std::string> > path_type_expected;
-		typedef boost::error_info<struct tag_file_name, double> freq;
-		typedef boost::error_info<struct tag_file_name, double> temp;
-		typedef boost::error_info<struct tag_file_name, std::pair<double, double> > freq_ref_range;
-		typedef boost::error_info<struct tag_file_name, std::pair<double, double> > temp_ref_range;
-		typedef boost::error_info<struct tag_file_name, std::string> hash;
-		typedef boost::error_info<struct tag_file_name, bool> is_Critical; // dll loads
-		typedef boost::error_info<struct tag_file_name, std::string> otherErrorText;
-		typedef boost::error_info<struct tag_file_name, long long> otherErrorCode;
+		typedef boost::error_info<struct tag_file_name_b, std::string> file_name_b;
+		typedef boost::error_info<struct tag_plugins, 
+			std::pair<std::string, std::string> > plugin_types;
+		typedef boost::error_info<struct tag_default_file_name, 
+			std::string> default_file_name;
+		typedef boost::error_info<struct tag_line_number, unsigned long long> line_number;
+		typedef boost::error_info<struct tag_line_text, std::string> line_text;
+		typedef boost::error_info<struct tag_ref_id, size_t> ref_number;
+		typedef boost::error_info<struct tag_folder_name, std::string> folder_name;
+		typedef boost::error_info<struct tag_symbol_name, std::string> symbol_name;
+		typedef boost::error_info<struct tag_path_type_expected, 
+			std::pair<std::string, std::string> > path_type_expected;
+		typedef boost::error_info<struct tag_frequency, double> freq;
+		typedef boost::error_info<struct tag_temp, double> temp;
+		typedef boost::error_info<struct tag_freq_ref_range, 
+			std::pair<double, double> > freq_ref_range;
+		typedef boost::error_info<struct tag_temp_ref_range, 
+			std::pair<double, double> > temp_ref_range;
+		typedef boost::error_info<struct tag_range_min, double> rangeMin;
+		typedef boost::error_info<struct tag_range_max, double> rangeMax;
+		typedef boost::error_info<struct tag_range_span, double> rangeSpan;
 
-		//typedef boost::error_info<struct tag_file_name, std::string> var_name;
+		typedef boost::error_info<struct tag_key, std::string> key;
+		typedef boost::error_info<struct tag_hash, std::string> hash;
+		typedef boost::error_info<struct tag_hash_type, std::string> hashType;
+		typedef boost::error_info<struct tag_dll_is_critical, bool> is_Critical; // dll loads
+		typedef boost::error_info<struct tag_otherErrorText, std::string> otherErrorText;
+		typedef boost::error_info<struct tag_otherErrorCode, long long> otherErrorCode;
 
-		/// \brief This is the parent error class. Everything inherits from this.
-		/// \note Using throw() because MSVC2012 does not have noexcept
-		class DLEXPORT_rtmath_core xError : public virtual std::exception, public virtual boost::exception
-		{
-		public:
-			xError() throw(); 
-			xError(const std::string&) throw();
-			virtual ~xError() throw();
-			virtual void message(std::string &message) const throw();
-			virtual void Display(std::ostream &out = std::cerr) const throw();
-			virtual const char* what() const throw();
-			bool hasLoc() const;
-		public: 
-			/**
-			 * \brief Handler function that passes error messages
-			 *
-			 * Allows code to define static functions for
-			 * providing error handling to the UI (message boxes and the like).
-			 * If not set, sent to stderr.
-			 **/
-			static void setHandler(void (*func)(const char*));
-		protected:
-			std::string _message;
-			mutable std::string _emessage;
-			static SHARED_PRIVATE void (*_errHandlerFunc)(const char*);
-			virtual void _setmessage();
-			const char* file;
-			const char* caller;
-			int line;
-		};
+#define ERRSTDR(x, mess) class DLEXPORT_rtmath_core x : \
+		public virtual ::Ryan_Debug::error::xError \
+		{ public: x() throw() { errLbl = mess; } \
+		virtual ~x() throw() {} };
 
-		/// The throwable assert call failed! It's like assert, but will throw
-		ERRSTR(xAssert);
 
-		/// The values passed to the function are nonsensical
-		ERRSTR(xBadInput);
+		// These are separate classes for error catches.
 
+		ERRSTDR(xAssert, "Assertion failed.");
+		ERRSTDR(xBadInput, "Bad or nonsensical input.");
+		ERRSTDR(xDivByZero, "Divide by zero encountered.");
+		ERRSTDR(xInvalidRange, "Invalid range.");
+		ERRSTDR(xNullPointer, "Expected non-null pointer is null.")
 		/// \brief The model (typically for optical depth) was called for a value outside
 		/// of the expected domain of the function. Results will be nonsensical.
-		ERRDOU(xModelOutOfRange);
-
-		/// ddscat data missing for this frequency.
-		ERRDOU(xMissingFrequency);
-
-		/// The file that is opened for reading is empty
-		ERRSTR(xEmptyInputFile);
-
-		/// Folder does not exist
-		ERRSTR(xMissingFolder);
-
-		/// File to be opened for reading does not exist
-		ERRSTR(xMissingFile);
-
-		/// File to be opened for writing already exists
-		ERRSTR(xFileExists);
-
-		/// File / directory to be created already exists and is not the desired type
-		ERRSTR(xPathExistsWrongType);
-
-		/// File format is unknown
-		ERRSTR(xUnknownFileFormat);
-
-		/// Cannot find hash to load
-		ERRSTR2(xMissingHash);
-
-		/// A function has not been defined. Always stops execution.
-		ERRSTD(xUnimplementedFunction);
-
-		/// An array went out of bounds.
-		ERRSTD(xArrayOutOfBounds);
-
-		/// Attempting to eval a damatrix that is locked and a cached source cannot be found
-		ERRSTD(xLockedNotInCache);
-
-		/// Function has been obsoleted.
-		ERRSTD(xObsolete);
-
-		/// Function is known to be defective.
-		ERRSTD(xDefective);
-
-		/// Singular matrix detected.
-		ERRSTD(xSingular);
-
-		/// Duplicate DLL hook
-		ERRSTR(xDuplicateHook);
-
-		/// Handle in use
-		ERRSTR(xHandleInUse);
-
-		/// Handle not open
-		ERRSTR(xHandleNotOpen);
-
-		/// Symbol not found
-		ERRSTR2(xSymbolNotFound);
-
-		/// DLL symbol map table invalid
-		ERRSTR(xBadFunctionMap);
-
-		/// DLL symbol map table invalid
-		ERRSTR(xBadFunctionReturn);
-
-		/// Another hook blocked the load
-		ERRSTR2(xBlockedHookLoad);
-
-		/// Another hook blocked unload
-		ERRSTR2(xBlockedHookUnload);
-
-		/// DLL function error (unspecified)
-		ERRSTR(xDLLerror);
-
-
-		/// Cannot cast upwards to a derived class (usually for plugin handling)
-		ERRSTR2(xUpcast);
-
-		/// Unknown error
-		ERRSTD(xOtherError);
-
-		/// Unsupported IO action
-		ERRSTR(xUnsupportedIOaction);
-
-
-		namespace memcheck {
-			extern DLEXPORT_rtmath_core const char* __file__;
-			extern DLEXPORT_rtmath_core size_t __line__;
-			extern DLEXPORT_rtmath_core const char* __caller__;
-			extern DLEXPORT_rtmath_core bool enabled;
-			bool DLEXPORT_rtmath_core __Track(int option, void* p, size_t size, const char* file, int line, const char* caller);
-			inline bool setloc(const char* _file, int _line, const char* _caller)
-			{
-				rtmath::debug::memcheck::__file__ = _file;
-				rtmath::debug::memcheck::__line__ = _line;
-				rtmath::debug::memcheck::__caller__ = _caller;
-				return false;
-			}
-		}
+		ERRSTDR(xModelOutOfRange, "Model out of range.");
+		ERRSTDR(xMissingFrequency, "Missing data for this frequency.");
+		ERRSTDR(xEmptyInputFile, "Input file is empty.");
+		ERRSTDR(xMissingFolder, "Folder does not exist.");
+		ERRSTDR(xMissingFile, "Missing file.");
+		ERRSTDR(xMissingRtmathConf, "Cannot find a rtmath configuration file.");
+		ERRSTDR(xFileExists, "File to be opened for writing already exists.");
+		ERRSTDR(xPathExistsWrongType, "Path exists, but wrong type (e.g. file vs. directory).");
+		ERRSTDR(xUnknownFileFormat, "Unknown file format.");
+		ERRSTDR(xMissingKey, "Key not found in map");
+		ERRSTDR(xMissingHash, "Cannot find hash to load.");
+		ERRSTDR(xUnimplementedFunction, "Unimplemented function.");
+		ERRSTDR(xArrayOutOfBounds, "An array went out of bounds.");
+		ERRSTDR(xLockedNotInCache, "Object is constant but cannot find cached information requested.");
+		ERRSTDR(xObsolete, "Function is obsolete. Rewrite code.");
+		ERRSTDR(xDefective, "Function is defective. Fix it.");
+		ERRSTDR(xSingular, "Singular matrix detected.");
+		ERRSTDR(xDuplicateHook, "Attempting to load same DLL twice.");
+		ERRSTDR(xHandleInUse, "DLL handle is currently in use, but the code wants to overwrite it.");
+		ERRSTDR(xHandleNotOpen, "Attempting to access unopened DLL handle.");
+		ERRSTDR(xSymbolNotFound, "Cannot find symbol in DLL.");
+		ERRSTDR(xBadFunctionMap, "DLL symbol function map table is invalid.");
+		ERRSTDR(xBadFunctionReturn, "DLL symbol map table is invalid.");
+		ERRSTDR(xBlockedHookLoad, "Another hook blocked the load operation (for DLLs).");
+		ERRSTDR(xBlockedHookUnload, "Another DLL depends on the one that you are unloading.");
+		ERRSTDR(xDLLerror, "Unspecified DLL error.");
+		ERRSTDR(xUpcast, "Plugin failure: cannot cast base upwards to a derived class provided by a plugin. "
+			"Usually means that no matching plugin can be found.");
+		ERRSTDR(xCannotFindReference, "Cannot find reference in file.")
+		ERRSTDR(xOtherError, "Unspecified error.");
+		ERRSTDR(xUnsupportedIOaction, "Unsupported IO action.");
 
 	}
 }
@@ -218,10 +131,10 @@ namespace rtmath
 
 //#ifdef _DEBUG
 #ifdef _MSC_FULL_VER
-#define RTthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+#define RTthrow RDthrow
 #endif
 #ifdef __GNUC__
-#define RTthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
+#define RTthrow RDthrow 
 #endif
 #define TASSERT(x) if(x) ; else RTthrow ::rtmath::debug::xAssert(#x)
 //#else

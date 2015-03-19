@@ -26,7 +26,8 @@ namespace rtmath {
 
 			// Bad starting points if fa*fb > 0
 			if (fa*fb > 0) 
-				throw rtmath::debug::xBadInput("Bad selection of a,b. f(a) and f(b) need to have opposite signs.");
+				RTthrow(rtmath::debug::xBadInput())
+					<< rtmath::debug::otherErrorText("Bad selection of a,b. f(a) and f(b) need to have opposite signs.");
 
 			if ( abs(fa) < abs(fb) )
 			{

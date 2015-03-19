@@ -5,12 +5,12 @@ source_group("CMake Rules" FILES ${cmake-other})
 # rtmath_core
 set(rtmath_core_error
 	rtmath/error/debug.h
-	rtmath/error/debug_mem.h
-	rtmath/error/debug_mem_class.h
+	#rtmath/error/debug_mem.h
+	#rtmath/error/debug_mem_class.h
 	rtmath/error/error.h
 	src/debug.cpp
-	src/debug_mem.cpp
-	src/error.cpp
+	#src/debug_mem.cpp
+	#src/error.cpp
 	)
 source_group("Debugging" FILES ${rtmath_core_error})
 

@@ -176,7 +176,8 @@ int main(int argc, char** argv)
 		{
 			if (temps.size() > 1 || nus.size() > 1 || vVols.size() > 1)
 			{
-				throw rtmath::debug::xBadInput("mtab output can only vary by frequency");
+				RTthrow(rtmath::debug::xBadInput())
+					<< rtmath::debug::otherErrorText("mtab output can only vary by frequency");
 			}
 		}
 
@@ -346,7 +347,7 @@ int main(int argc, char** argv)
 							rtmath::refract::bruggeman(mIce, mAir, fIce, mEff);
 						} else {
 							cerr << "Unknown method: " << method << endl;
-							throw rtmath::debug::xBadInput(method.c_str());
+							RTthrow(rtmath::debug::xBadInput());
 						}
 
 						// Write effective refractive index

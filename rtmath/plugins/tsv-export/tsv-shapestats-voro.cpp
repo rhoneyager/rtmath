@@ -46,10 +46,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow debug::xOtherError();
+						RTthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow("File already exists");
+						if (exists(path(filename))) RTthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -84,7 +84,7 @@ namespace rtmath {
 				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats> s)
 			{
 				std::string exporttype = opts->exportType();
-				if (exporttype != "summary_data") RTthrow debug::xUnimplementedFunction();
+				if (exporttype != "summary_data") RTthrow(debug::xUnimplementedFunction());
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();
 				using std::shared_ptr;
@@ -92,7 +92,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_summary_handle>(new tsv_summary_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_VORO) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID_VORO) RTthrow(debug::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_summary_handle>(sh);
 				}
 

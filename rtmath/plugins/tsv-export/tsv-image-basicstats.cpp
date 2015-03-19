@@ -51,10 +51,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow debug::xOtherError();
+						RTthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow("File already exists");
+						if (exists(path(filename))) RTthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -100,7 +100,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_image_basicstats_handle>(new tsv_image_basicstats_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_IMAGE) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID_IMAGE) RTthrow(debug::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_image_basicstats_handle>(sh);
 				}
 
@@ -135,7 +135,7 @@ namespace rtmath {
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "image_basicstats") return ::rtmath::plugins::tsv::export_tsv_image_basicstats(sh, opts, s);
-			else { RTthrow debug::xUnimplementedFunction(); }
+			else { RTthrow(debug::xUnimplementedFunction()); }
 			return nullptr;
 		}
 

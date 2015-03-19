@@ -63,7 +63,7 @@ namespace rtmath {
 			else if (exporttype == "isotropic_data_small") return ::rtmath::plugins::tsv::export_tsv_ddori_iso_small_data(sh, opts, s);
 			else if (exporttype == "orientation_data") return ::rtmath::plugins::tsv::export_tsv_ddori_ori_data(sh, opts, s);
 			else if (exporttype == "stats") return ::rtmath::plugins::tsv::export_tsv_ddori_stats(sh, opts, s);
-			else { RTthrow debug::xUnimplementedFunction(); }
+			else { RTthrow(debug::xUnimplementedFunction()); }
 			return nullptr;
 		}
 

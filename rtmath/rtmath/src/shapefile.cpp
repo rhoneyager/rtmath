@@ -260,6 +260,34 @@ namespace rtmath {
 				return this->_localhash;
 			}
 
+			void shapefile::info(std::ostream &out) const
+			{
+				// Print hash and all tags. Usually called after loading 
+				// supplementary information from a database.
+				out << "Shape: " << this->hash().lower << std::endl;
+				out << "Description: " << desc << std::endl;
+				out << "# points: " << numPoints << std::endl;
+				out << "Filename: " << this->filename << std::endl;
+				out << "Ingested on: " << ingest_timestamp << std::endl;
+				out << "Ingested host: " << ingest_hostname << std::endl;
+				out << "Ingested username: " << ingest_username << std::endl;
+				out << "Ingested rtmath: " << ingest_rtmath_version << std::endl;
+				out << "Dipole spacing: " << standardD << std::endl;
+				out << "a1: " << a1.transpose() << std::endl
+					<< "a2: " << a2.transpose() << std::endl
+					<< "a3: " << a3.transpose() << std::endl
+					<< "d: " << d.transpose() << std::endl
+					<< "x0: " << x0.transpose() << std::endl
+					<< "xd: " << xd.transpose() << std::endl
+					<< "mins: " << mins.transpose() << std::endl
+					<< "maxs: " << maxs.transpose() << std::endl
+					<< "means: " << means.transpose() << std::endl;
+
+				out << "Tags:" << std::endl;
+				for (const auto &t : tags)
+					out << "\t" << t.first << " - " << t.second << std::endl;
+			}
+
 			void shapefile::loadHashLocal()
 			{
 				if (latticePts.rows()) return; // Already loaded
@@ -796,7 +824,9 @@ namespace rtmath {
 					readMulti(sh, opts);
 				}
 				else {
-					RTthrow debug::xMissingHash(hash.c_str(), "shapefile");
+					RTthrow(debug::xMissingHash())
+						<< debug::hash(hash)
+					       	<< debug::hashType("shapefile");
 				}
 
 				this->registerHash();

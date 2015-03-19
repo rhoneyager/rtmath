@@ -239,7 +239,9 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 6) RTthrow debug::xBadInput("Cannot parse refractive index in ddOriDataParsers::refractive");
+				if (snums.size() < 6) RTthrow(debug::xBadInput()) 
+					<< debug::line_text(str)
+					<< debug::otherErrorText("Cannot parse refractive index");
 
 				using namespace rtmath::macros;
 				for (size_t i = 0; i < 6; ++i)
@@ -333,8 +335,10 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 7) RTthrow debug::xBadInput(
-					"Cannot parse inc.pol.vec. numbers in ddOriDataParsers::ddPolVec");
+				if (snums.size() < 7) RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText(
+					"Cannot parse inc.pol.vec. numbers");
 
 				using namespace rtmath::macros;
 				using boost::algorithm::trim_copy;
@@ -345,13 +349,17 @@ namespace rtmath
 				pols[2] = complex<double>(macros::m_atof<double>(snums[4].c_str()), macros::m_atof<double>(snums[5].c_str()));
 				vecnum = fastCast<size_t>(snums[6]);
 				auto it = str.find_last_of('F');
-				if (it == std::string::npos) RTthrow debug::xBadInput(
-					"Cannot parse inc.pol.vec. in ddOriDataParsers::ddPolVec for frame identifier");
+				if (it == std::string::npos) RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText(
+					"Cannot parse inc.pol.vec. numbers");
 				it--;
 				if (str.at(it) == 'L') frame = frameType::LF;
 				else if (str.at(it) == 'T') frame = frameType::TF;
-				else RTthrow debug::xBadInput(
-					"Cannot parse inc.pol.vec. in ddOriDataParsers::ddPolVec for frame identifier (b)");
+				else RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText(
+					"Cannot parse inc.pol.vec. numbers");
 			}
 
 			void ddAxisVec::write(std::ostream &out, size_t, const std::vector<double > &v,
@@ -538,7 +546,8 @@ namespace rtmath
 					// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 					vals.clear();
 					if (!parse_numbers_space(lin.begin(), lin.end(), vals))
-						throw debug::xBadInput("Cannot parse Mueller entry");
+						RTthrow(debug::xBadInput())
+							<< debug::otherErrorText("Cannot parse Mueller entry");
 
 					//for (auto it = t.begin(); it != t.end(); ++it)
 					//	vals.push_back(rtmath::macros::m_atof(it->data(), it->size())); // Speedup using my own atof
@@ -559,8 +568,8 @@ namespace rtmath
 						boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
 
 					/// \note Actual read of mueller matrix entries disabled
-					std::cerr << "Actual read of mueller matrix entries disabled\n";
-					RTthrow debug::xUnimplementedFunction();
+					RTthrow(debug::xUnimplementedFunction())
+						<< debug::otherErrorText("Actual read of mueller matrix entries disabled");
 					//_scattMatricesRaw.push_back(matC);
 					//std::cerr << _scattMatricesRaw.size() << " elements\n";
 				}
@@ -598,7 +607,8 @@ namespace rtmath
 
 				vals.clear();
 				if (!parse_numbers_space(lin.begin(), lin.end(), vals))
-					throw debug::xBadInput("Cannot parse F entry");
+					RTthrow(debug::xBadInput())
+					<< debug::otherErrorText("Cannot parse F entry");
 
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
 				//boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF

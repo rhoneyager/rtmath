@@ -266,7 +266,7 @@ namespace rtmath {
 					ptr = boost::shared_ptr<ddParLineSimple<std::size_t> >
 					(new ddParLineSimple<std::size_t>(NRFLD));
 				// version 7.2 NRFLD
-				else if (key.find("fract. extens.") != string::npos)
+				else if (key.find("extens.") != string::npos)
 					ptr = boost::shared_ptr<ddParLineSimplePlural<double> >
 					(new ddParLineSimplePlural<double>(FRACT_EXTENS));
 				// version 7.2 FRACT_EXTENS
@@ -339,8 +339,11 @@ namespace rtmath {
 					(new ddParLineSimplePlural<double>(PLANE1));
 				else
 				{
-					cerr << "Unmatched key: " << key << endl;
-					throw rtmath::debug::xBadInput("ddscat.par");
+					//cerr << "Unmatched key: " << key << endl;
+					RTthrow(rtmath::debug::xBadInput())
+					<< rtmath::debug::default_file_name("ddscat.par")
+					<< rtmath::debug::otherErrorText("Unmatched key")
+					<< rtmath::debug::key(key);
 				}
 
 				return ptr;
@@ -586,7 +589,8 @@ namespace rtmath {
 					break;
 				case UNKNOWN:
 				default:
-					throw rtmath::debug::xBadInput("Unknown parid");
+					RTthrow(rtmath::debug::xBadInput())
+					<< rtmath::debug::otherErrorText("Unknown parid");
 				}
 			}
 		} // end ddparparsers

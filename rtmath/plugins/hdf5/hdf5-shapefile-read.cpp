@@ -209,11 +209,15 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpHashes) RTthrow(debug::xMissingKey())
+				<< debug::key("Hashed")
+				<< debug::hash(key);
 
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-			if (!grpShape) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpShape) RTthrow(debug::xMissingFile())
+				<< debug::key("Shape")
+				<< debug::hash(key);
 			read_hdf5_shaperawdata(grpShape, s);
 
 			return h;

@@ -226,7 +226,12 @@ namespace rtmath
 			if (!sh)
 				h = std::shared_ptr<derived>(constructor());
 			else {
-				if (std::string(sh->getId()) != std::string(id)) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				if (std::string(sh->getId()) != std::string(id)) 
+					RTthrow(::rtmath::debug::xDuplicateHook())
+					<< ::rtmath::debug::otherErrorText("Bad passed plugin. The ids do not match.")
+					<< ::rtmath::debug::plugin_types
+					(std::pair<std::string, std::string>
+						(std::string(sh->getId()), std::string(id)));
 				h = std::dynamic_pointer_cast<derived>(sh);
 			}
 			return h;
@@ -252,7 +257,8 @@ namespace rtmath
 			}
 			template <class T> T getVal(const std::string &key) const
 			{
-				if (!hasVal(key)) RTthrow rtmath::debug::xArrayOutOfBounds();
+				if (!hasVal(key)) RTthrow(rtmath::debug::xMissingKey())
+					<< rtmath::debug::key(key);
 				std::string valS = _mapStr.at(key);
 				T res = boost::lexical_cast<T>(valS);
 				return res;

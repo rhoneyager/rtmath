@@ -73,7 +73,9 @@ namespace rtmath {
 			// Assumes legendre polynomials
 			// Use the appropriate quadrature and weights (precomputed mostly!)
 			if (degree <= 1) 
-				throw rtmath::debug::xBadInput("Bad quadrature degree");
+				RTthrow(::rtmath::debug::xModelOutOfRange())
+					<< ::rtmath::debug::otherErrorText("Bad quadrature degree")
+					;
 
 			/*
 			// For each n degree, expect n quadrature points

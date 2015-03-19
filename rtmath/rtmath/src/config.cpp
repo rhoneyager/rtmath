@@ -13,6 +13,7 @@
 #include <boost/tokenizer.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/fs.h>
 
 #include "../rtmath/config.h"
 #include "../rtmath/splitSet.h"
@@ -96,12 +97,12 @@ namespace {
 					// Hard link reference
 					std::string sid = sdata.substr(9);
 					size_t refId = boost::lexical_cast<size_t>(sid);
-					if (!encountered.count(refId)) RTthrow rtmath::debug::xArrayOutOfBounds();
+					if (!encountered.count(refId)) RTthrow(rtmath::debug::xCannotFindReference()) << rtmath::debug::ref_number(refId);
 					cs->addChild(encountered.at(refId));
 				} else if (sdata.find("include:") == 0) {
 					std::string sid = sdata.substr(8);
 					boost::filesystem::path pInc(sid);
-					boost::filesystem::path pIncSym = rtmath::debug::expandSymlink(pInc);
+					boost::filesystem::path pIncSym = Ryan_Debug::fs::expandSymlink<boost::filesystem::path, boost::filesystem::path>(pInc);
 
 					auto doReadFile = [&](const boost::filesystem::path &p)
 					{
@@ -121,10 +122,10 @@ namespace {
 					if (boost::filesystem::is_directory(pIncSym))
 					{
 						std::vector<boost::filesystem::path> vs;
-						rtmath::debug::expandFolder(pIncSym, vs, false);
+						Ryan_Debug::fs::expandFolder(pIncSym, vs, false);
 						for (const auto & v : vs)
 						{
-							auto sym = rtmath::debug::expandSymlink(v);
+							auto sym = Ryan_Debug::fs::expandSymlink<boost::filesystem::path, boost::filesystem::path>(v);
 							boost::filesystem::path sym_unc; std::string cmeth;
 							rtmath::serialization::uncompressed_name(sym, sym_unc, cmeth);
 							if (boost::filesystem::is_regular_file(sym) && sym_unc.extension().string() == ".xml")
@@ -556,6 +557,7 @@ namespace rtmath {
 			using namespace boost::filesystem;
 
 			std::string cwd = opts->getVal<std::string>("cwd", "./");
+			std::string fname = opts->getVal<std::string>("filename", "");
 			//boost::shared_ptr<configsegment> root = getRtconfRoot();
 			// Okay then. File is good. If no root, create it now.
 			if (!root)
@@ -571,6 +573,7 @@ namespace rtmath {
 			std::vector<boost::shared_ptr<configsegment> > pseg;
 			if (cseg->_cwd.size() == 0) cseg->_cwd = cwd;
 
+			size_t lnum = 0;
 			// Read in each line, one at a time.
 			// This is Apache-style, so tags in <> are containers, ended by </> tags.
 			// Everything else is a key-value combination.
@@ -578,6 +581,7 @@ namespace rtmath {
 			while (indata.good())
 			{
 				std::string line, key;
+				lnum++;
 				std::getline(indata, line); // Read in the line
 				std::istringstream linestream(line); // A string stream for the line
 				if (line.size() == 0) continue; // Skip empty lines
@@ -591,10 +595,17 @@ namespace rtmath {
 					if (key[1] == '/')
 					{
 						// Close container
-						if (!pseg.size()) RTthrow rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
+						if (!pseg.size()) 
+							RTthrow(rtmath::debug::xBadInput()) 
+								<< rtmath::debug::line_number(lnum)
+								<< rtmath::debug::file_name(fname); 
+						// Shouldn't happen unless syntax error
 						cseg = *(pseg.rbegin());
 						pseg.pop_back();
-						if (!cseg) RTthrow rtmath::debug::xOtherError(); // Shouldn't happen unless syntax error
+						if (!cseg) RTthrow(rtmath::debug::xBadInput())
+							<< rtmath::debug::file_name(fname)
+							<< rtmath::debug::line_number(lnum); 
+						// Shouldn't happen unless syntax error
 					}
 					else {
 						// New container
@@ -773,8 +784,8 @@ namespace rtmath {
 		{
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			std::string fn = filename;
-			if (fn == "") getConfigDefaultFile(fn);
-			if (fn == "") RTthrow debug::xMissingFile("Cannot find the rtmath.conf file") 
+			if (!fn.size()) getConfigDefaultFile(fn);
+			if (!fn.size()) RTthrow(debug::xMissingRtmathConf()) 
 				<< debug::file_name(filename) << debug::default_file_name(fn);
 			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
 			auto opts = rtmath::registry::IO_options::generate(rtmath::registry::IOhandler::IOtype::READONLY);

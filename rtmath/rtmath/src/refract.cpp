@@ -176,7 +176,10 @@ namespace {
 		else if (m == hanelAmedium::NACL_IM) return res_nacl_im;
 		else if (m == hanelAmedium::SEASALT_RE) return res_seasalt_re;
 		else if (m == hanelAmedium::SEASALT_IM) return res_seasalt_im;
-		else RTthrow rtmath::debug::xUnimplementedFunction();
+		else RTthrow(rtmath::debug::xUnimplementedFunction())
+			<< rtmath::debug::otherErrorText("Bad enum input for hanelAmedium. "
+			"This is not a "
+			"case that the Hanel dielectric code can handle.");
 		return nullptr;
 	}
 	enum class hanelBmedium { SAND_O_RE, SAND_O_IM, SAND_E_RE, SAND_E_IM, DUST_LIKE_RE, DUST_LIKE_IM };
@@ -286,7 +289,10 @@ namespace {
 		else if (m == hanelBmedium::SAND_E_IM) return res_sand_e_im;
 		else if (m == hanelBmedium::DUST_LIKE_RE) return res_dust_re;
 		else if (m == hanelBmedium::DUST_LIKE_IM) return res_dust_im;
-		else RTthrow rtmath::debug::xUnimplementedFunction();
+		else RTthrow(rtmath::debug::xUnimplementedFunction())
+			<< rtmath::debug::otherErrorText("Bad enum input for hanelBmedium. "
+			"This is not a "
+			"case that the Hanel dielectric code can handle.");
 		return nullptr;
 	}
 }
@@ -353,7 +359,9 @@ void rtmath::refract::implementations::mWater(double f, double t, std::complex<d
 		if (sP == "mWaterFreshMeissnerWentz") mWaterFreshMeissnerWentz(f, t, m);
 		if (sP == "mWaterHanel") ::rtmath::refract::mWaterHanel(_frequency = f, _freq_units = std::string("GHz"), _m = m);
 	} else {
-		if (f < 0) RTthrow rtmath::debug::xModelOutOfRange(f);
+		if (f < 0) RTthrow(rtmath::debug::xModelOutOfRange())
+			<< rtmath::debug::freq(f)
+			<< rtmath::debug::freq_ref_range(std::pair<double,double>(0,1000));
 		if (f < 1000)
 		{
 			if (t >= 273)
@@ -361,11 +369,16 @@ void rtmath::refract::implementations::mWater(double f, double t, std::complex<d
 				mWaterLiebe(f, t, m);
 			}
 			else {
-				throw rtmath::debug::xModelOutOfRange(t);
+				RTthrow(rtmath::debug::xModelOutOfRange())
+				<< rtmath::debug::temp(t)
+				<< rtmath::debug::temp_ref_range(std::pair<double,double>(273,500));
 			}
 		}
 		else {
-			throw rtmath::debug::xModelOutOfRange(f);
+			RTthrow(rtmath::debug::xModelOutOfRange())
+				<< rtmath::debug::freq(f)
+				<< rtmath::debug::freq_ref_range(std::pair<double,double>
+						(0,1000));
 		}
 	}
 }
@@ -385,7 +398,18 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 		if (sP == "mIceWarren") mIceWarren(f, t, m);
 		if (sP == "mIceHanel") ::rtmath::refract::mIceHanel(_frequency = f, _freq_units = std::string("GHz"), _m = m);
 	} else {
-		if (f < 0) RTthrow rtmath::debug::xModelOutOfRange(f);
+		if (f < 0) 
+			RTthrow(rtmath::debug::xModelOutOfRange())
+			<< rtmath::debug::freq(f)
+			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+				(0,99999));
+		if (t<100)
+			RTthrow(rtmath::debug::xModelOutOfRange())
+				<< rtmath::debug::temp(t)
+				<< rtmath::debug::temp_ref_range(std::pair<double,double>
+					(100,278));
+
+
 		if (f < 1000)
 		{
 			if (t <= 278)
@@ -393,7 +417,11 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 				mIceMatzler(f, t, m);
 			}
 			else {
-				throw rtmath::debug::xModelOutOfRange(t);
+				RTthrow(rtmath::debug::xModelOutOfRange())
+				<< rtmath::debug::temp(t)
+				<< rtmath::debug::temp_ref_range(std::pair<double,double>
+					(100,278));
+
 			}
 		}
 		else {
@@ -402,7 +430,10 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 				mIceWarren(f, t, m);
 			}
 			else {
-				throw rtmath::debug::xModelOutOfRange(t);
+				RTthrow(rtmath::debug::xModelOutOfRange())
+				<< rtmath::debug::temp(t)
+				<< rtmath::debug::temp_ref_range(std::pair<double,double>(100,278));
+
 			}
 		}
 	}
@@ -410,7 +441,7 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 
 void rtmath::refract::implementations::mOther(double f, double t, std::complex<double> &m, const char* provider)
 {
-	RTthrow rtmath::debug::xUnimplementedFunction();
+	RTthrow(rtmath::debug::xUnimplementedFunction());
 }
 
 // Water complex refractive index
@@ -421,7 +452,11 @@ void rtmath::refract::implementations::mOther(double f, double t, std::complex<d
 void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::complex<double> &m)
 {
 	if (f < 0 || f > 1000)
-		throw rtmath::debug::xModelOutOfRange(f);
+		RTthrow(rtmath::debug::xModelOutOfRange())
+			<< rtmath::debug::freq(f)
+			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+				(0,1000));
+
 	double theta1 = 1.0 - (300.0/t);
 	double eps0 = 77.66 - (103.3*theta1);
 	double eps1 = .0671*eps0;
@@ -439,7 +474,10 @@ void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::comp
 void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double tK, std::complex<double> &m)
 {
 	if (f < 0 || f > 500)
-		throw rtmath::debug::xModelOutOfRange(f);
+		RTthrow(rtmath::debug::xModelOutOfRange())
+			<< rtmath::debug::freq(f)
+			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+				(0,500));
 
 	const double as[11] = {
 		5.7230, 0.022379, -0.00071237, 5.0478,
@@ -449,7 +487,12 @@ void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double
 
 	double tC = tK - 273.15;
 	if (tC < -20 || tC > 40)
-		throw rtmath::debug::xModelOutOfRange(tK);
+		RTthrow(rtmath::debug::xModelOutOfRange())
+			<< rtmath::debug::temp(tK)
+			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+				(-20,40))
+			<< rtmath::debug::otherErrorText("Temp in K, range in C");
+
 
 	// static dielectric constant for pure water (Stogryn)
 	double es = (37088.6 - (82.168*tC)) / (tC + 421.854);

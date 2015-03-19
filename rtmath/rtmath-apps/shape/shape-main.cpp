@@ -82,6 +82,7 @@ int main(int argc, char** argv)
 			("flake-type", po::value<string>(), "Specify flake type (e.g. oblate, oblate_small, prolate, ...")
 			//("separate-outputs,s", "Vestigial option. Write separate output file for each input. Use default naming scheme.")
 			("process-target-out", po::value<bool>()->default_value(0), "Process target.out files in addition to shape.dat files.")
+			("info", "List information about loaded shapes")
 			("update-db", "Insert shape file entries into database")
 			("list-hash", "Write the hashes of each processed shapefile to stdout (for scripting)")
 			("hash-shape", "Store shapefile hash")
@@ -110,6 +111,9 @@ int main(int argc, char** argv)
 		rtmath::debug::process_static_options(vm);
 		//Ryan_Serialization::process_static_options(vm);
 		ddscat::stats::shapeFileStats::process_static_options(vm);
+
+		bool info = false;
+		if (vm.count("info")) info = true;
 
 		vector<std::pair<string, string> > tags;
 		vector<string> tags_pre;
@@ -231,7 +235,8 @@ int main(int argc, char** argv)
 		{
 			cerr << "Processing " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
+				<< rtmath::debug::file_name(*it);
 			if (is_directory(pi))
 			{
 				path pt = pi / "target.out";
@@ -300,6 +305,7 @@ int main(int argc, char** argv)
 				shp->tags.insert(pair<string, string>("flake_classification", sFlakeType));
 			}
 			if (dSpacing) shp->standardD = (float)dSpacing;
+			if (info) shp->info(std::cout);
 			if (vm.count("hash-shape")) shp->writeToHash();
 			if (vm.count("hash-voronoi"))
 			{
@@ -351,12 +357,7 @@ int main(int argc, char** argv)
 
 
 	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		cerr << endl;
-		return 1;
-	} catch (std::exception &e)
+	catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
 		return 1;

@@ -259,7 +259,8 @@ namespace rtmath
 							squery << "'" << m.at(*it) << "'";
 							numQ++;
 						}
-						else RTthrow debug::xMissingHash(it->c_str(), "selStringMap");
+						else RTthrow(debug::xMissingHash())
+							<< debug::hash(*it);
 					}
 					squery << ") ";
 					numSel++;

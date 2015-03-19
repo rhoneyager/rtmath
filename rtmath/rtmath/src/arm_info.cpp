@@ -66,7 +66,7 @@ namespace rtmath
 				std::shared_ptr<dataStreamHandler> res;
 				//if (product == "wsacr") res = std::shared_ptr<dataStreamHandler>(
 				//	new arm_scanning_radar_sacr(filename));
-				RTthrow debug::xUnimplementedFunction();
+				RTthrow(debug::xUnimplementedFunction());
 				return res;
 			}
 

@@ -15,6 +15,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/fs.h>
 #include "../rtmath/config.h"
 #include "../rtmath/splitSet.h"
 #include "../rtmath/error/debug.h"
@@ -206,7 +207,7 @@ namespace {
 		if (use_rtmath_conf)
 		{
 			auto rtconf = rtmath::config::loadRtconfRoot();
-			if (!rtconf) RTthrow rtmath::debug::xMissingFile("Cannot find rtmath configuration file");
+			if (!rtconf) RTthrow(rtmath::debug::xMissingRtmathConf());
 			string srecursivePaths, sonePaths;
 			auto rtgeneral = rtconf->getChild("General");
 			if (rtgeneral) {
@@ -311,14 +312,19 @@ namespace {
 			if (DLLpathsLoaded.count(filename))
 			{
 				BOOST_LOG_SEV(m_dll, error) << "DLL is already loaded (" << filename << ", " << critical << ")!\n";
-				RTthrow rtmath::debug::xDuplicateHook(fname.c_str()) 
-					<< rtmath::debug::file_name(filename) << rtmath::debug::is_Critical(critical);
+				RTthrow(rtmath::debug::xDuplicateHook())
+					<< rtmath::debug::file_name_b(fname) 
+					<< rtmath::debug::file_name(filename)
+					<< rtmath::debug::is_Critical(critical);
 			}
 			if (dlHandle)
 			{
 				BOOST_LOG_SEV(m_dll, error) << "DLL handle is already in use (opening " 
 					<< filename << ") (already opened " << fname << ") (critical " << critical << ")!\n";
-				RTthrow rtmath::debug::xHandleInUse(fname.c_str()) << rtmath::debug::file_name(filename) << rtmath::debug::is_Critical(critical);
+				RTthrow(rtmath::debug::xHandleInUse())
+					<< rtmath::debug::file_name_b(fname.c_str()) 
+					<< rtmath::debug::file_name(filename) 
+					<< rtmath::debug::is_Critical(critical);
 			}
 			fname = filename;
 
@@ -335,7 +341,10 @@ namespace {
 				BOOST_LOG_SEV(m_dll, sl) << "dlopen error (opening " 
 					<< filename << "): " << cerror << "\n";
 				//std::string serror(cerror);
-				RTthrow rtmath::debug::xDLLerror(cerror) << rtmath::debug::file_name(filename) << rtmath::debug::is_Critical(critical);
+				RTthrow(rtmath::debug::xDLLerror())
+					<< rtmath::debug::otherErrorText(std::string(cerror)) 
+					<< rtmath::debug::file_name(filename) 
+					<< rtmath::debug::is_Critical(critical);
 			}
 #endif
 #ifdef _WIN32
@@ -348,7 +357,11 @@ namespace {
 				BOOST_LOG_SEV(m_dll, sl) << "LoadLibrary error (opening "
 					<< filename << "): error code " << err << ".\n";
 				if (critical)
-					RTthrow xDLLerror("LoadLibrary") << file_name(filename) << is_Critical(critical) << otherErrorCode(err);
+					RTthrow(rtmath::debug::xDLLerror())
+						<< rtmath::debug::otherErrorText("LoadLibrary") 
+						<< file_name(filename) 
+						<< is_Critical(critical) 
+						<< otherErrorCode(err);
 			}
 #endif
 			DLLpathsLoaded.insert(filename);
@@ -377,7 +390,8 @@ namespace {
 			if (dlHandle == NULL)
 			{
 				BOOST_LOG_SEV(m_dll, error) << "DLL handle is closed when finding symbol " << symbol << " in dll " << fname << ".\n";
-				RTthrow rtmath::debug::xHandleNotOpen(fname.c_str()) << file_name(fname);
+				RTthrow(rtmath::debug::xHandleNotOpen())
+					<< file_name(fname);
 			}
 			void* sym;
 #ifdef __unix__
@@ -389,7 +403,9 @@ namespace {
 			if (!sym)
 			{
 				BOOST_LOG_SEV(m_dll, error) << "Cannot find symbol " << symbol << " in dll " << fname << ".\n";
-				RTthrow rtmath::debug::xSymbolNotFound(symbol, fname.c_str()) << file_name(fname) << symbol_name(symbol);
+				RTthrow(rtmath::debug::xSymbolNotFound()) 
+					<< file_name(fname) 
+					<< symbol_name(symbol);
 			}
 			return (void*)sym;
 		}
@@ -448,7 +464,7 @@ namespace rtmath
 			{
 				BOOST_LOG_SEV(lg, normal) << "Finding dlls in " << sbase << " with recursion=" << recurse << ".\n";
 				path base(sbase);
-				base = rtmath::debug::expandSymlink(base);
+				base = Ryan_Debug::fs::expandSymlink<path,path>(base);
 				if (!exists(base)) continue;
 				if (is_regular_file(base)) dlls.push_back(base.string());
 				else if (is_directory(base))
@@ -613,7 +629,9 @@ namespace rtmath
 				if (exists(p)) doLoad(p.string());
 				else {
 					BOOST_LOG_SEV(lg, error) << "DLL does not exist: " << filename << "\n";
-					RTthrow debug::xMissingFile("Cannot find dll to load") << file_name(p.string());
+					RTthrow(debug::xMissingFile())
+						<< otherErrorText("Cannot find dll to load") 
+						<< file_name(p.string());
 				}
 			}
 		}
@@ -774,7 +792,9 @@ std::istream& operator>>(std::istream& in, ::rtmath::registry::IOhandler::IOtype
 	else if ("TRUNCATE" == v) val = IOhandler::IOtype::TRUNCATE;
 	else if ("DEBUG" == v) val = IOhandler::IOtype::DEBUG;
 	else if ("CREATE" == v) val = IOhandler::IOtype::CREATE;
-	else RTthrow ::rtmath::debug::xBadInput("Unlisted IOtype value") << symbol_name(v);
+	else RTthrow(::rtmath::debug::xBadInput())
+		<< otherErrorText("Unlisted IOtype value") 
+		<< symbol_name(v);
 	return in;
 }
 
@@ -788,7 +808,8 @@ std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::IOhandler:
 	else if (val == IOhandler::IOtype::TRUNCATE) v = "TRUNCATE";
 	else if (val == IOhandler::IOtype::DEBUG) v = "DEBUG";
 	else if (val == IOhandler::IOtype::CREATE) v = "CREATE";
-	else RTthrow ::rtmath::debug::xBadInput("Unlisted IOtype value");
+	else RTthrow(::rtmath::debug::xBadInput())
+		<< otherErrorText("Unlisted IOtype value");
 	out << v;
 	return out;
 }
@@ -804,7 +825,8 @@ std::istream& operator>>(std::istream& in, ::rtmath::registry::DBhandler::DBtype
 	else if ("READWRITE" == v) val = DBhandler::DBtype::READWRITE;
 	else if ("NOUPDATE" == v) val = DBhandler::DBtype::NOUPDATE;
 	else if ("NOINSERT" == v) val = DBhandler::DBtype::NOINSERT;
-	else RTthrow ::rtmath::debug::xBadInput("Unlisted DBtype value") << symbol_name(v);
+	else RTthrow(::rtmath::debug::xBadInput())
+		<< otherErrorText("Unlisted DBtype value") << symbol_name(v);
 	return in;
 }
 
@@ -816,7 +838,8 @@ std::ostream& operator<<(std::ostream &out, const ::rtmath::registry::DBhandler:
 	else if (val == DBhandler::DBtype::READWRITE) v = "READWRITE";
 	else if (val == DBhandler::DBtype::NOUPDATE) v = "NOUPDATE";
 	else if (val == DBhandler::DBtype::NOINSERT) v = "NOINSERT";
-	else RTthrow::rtmath::debug::xBadInput("Unlisted DBtype value");
+	else RTthrow(::rtmath::debug::xBadInput())
+		 << otherErrorText("Unlisted DBtype value");
 	out << v;
 	return out;
 }

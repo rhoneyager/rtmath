@@ -19,6 +19,7 @@
 
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/fs.h>
 
 #include "../rtmath/zeros.h"
 #include "../rtmath/refract.h"
@@ -201,11 +202,15 @@ namespace rtmath {
 					}
 				}
 			}
-			if (!shape->hash().lower) RTthrow debug::xMissingHash("shapefile", shapeHash.string().c_str());
+			if (!shape->hash().lower) RTthrow(debug::xMissingHash())
+				<< debug::hash(shapeHash.string())
+				<< debug::hashType("shapefile");
 			if (!dostats) return;
 			stats = stats::shapeFileStats::genStats(shape);
 			//stats = stats::shapeFileStats::loadHash(this->shapeHash);
-			if (!stats) RTthrow debug::xMissingHash("shapestats", shapeHash.string().c_str()); // should never happen
+			if (!stats) RTthrow(debug::xMissingHash())
+				<< debug::hash(shapeHash.string())
+				<< debug::hashType("shapestats");
 			stats->load(shape);
 		}
 
@@ -271,13 +276,15 @@ namespace rtmath {
 			using std::vector;
 
 			path pBase(dir);
-			if (!exists(pBase)) RTthrow debug::xMissingFile(dir.c_str());
+			if (!exists(pBase)) RTthrow(debug::xMissingFile())
+				<< debug::folder_name(dir);
 
 			if (!is_directory(pBase))
 			{
 				std::vector<boost::shared_ptr<ddOutput> > runs;
 				rtmath::io::readObjs(runs, dir);
-				if (!runs.size()) RTthrow debug::xEmptyInputFile(dir.c_str());
+				if (!runs.size()) RTthrow(debug::xEmptyInputFile())
+					<< debug::file_name(dir);
 				res = runs[0];
 			}
 			else {
@@ -568,7 +575,8 @@ namespace rtmath {
 				HASH_t shphash = shapeHash;
 				HASH_t parhash;
 				if (parfile) parhash = parfile->hash();
-				else RTthrow debug::xOtherError();
+				else RTthrow(debug::xMissingFile())
+					<< debug::file_name("ddscat.par");
 				HASH_t tmprhash = shphash ^ parhash;
 				tmprhash.lower += (uint64_t)temp;
 				std::vector<HASH_t> dielhashes;
@@ -614,9 +622,10 @@ namespace rtmath {
 			path pOut(outdir);
 			if (exists(pOut))
 			{
-				path pSym = debug::expandSymlink(pOut);
+				path pSym = Ryan_Debug::fs::expandSymlink<path,path>(pOut);
 				if (!is_directory(pSym))
-					RTthrow debug::xPathExistsWrongType(outdir.c_str());
+					RTthrow(debug::xPathExistsWrongType())
+					<< debug::file_name(outdir);
 			}
 			else {
 				create_directory(pOut);

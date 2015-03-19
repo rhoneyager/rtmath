@@ -95,13 +95,14 @@ namespace {
 		try {
 			// First try to load using rtmath.conf location
 			auto cRoot = config::loadRtconfRoot();
-			if (!cRoot) RTthrow rtmath::debug::xOtherError();
+			if (!cRoot) RTthrow(rtmath::debug::xMissingRtmathConf());
 			auto rtddscat = cRoot->getChild("ddscat");
 			string sBasePar, scwd;
 			if (rtddscat) {
 				rtddscat->getVal<string>("DefaultFile", sBasePar);
 				rtddscat->getCWD(scwd);
-			} else RTthrow rtmath::debug::xOtherError();
+			} else RTthrow(rtmath::debug::xBadInput())
+				<< debug::otherErrorText("rtmath configutation file missing ddscat branch");
 
 			path pscwd(scwd), psBasePar(sBasePar);
 			pscwd.remove_filename();
@@ -362,7 +363,8 @@ namespace rtmath {
 			// Ensute that all necessary keys exist. If not, create them!!!
 			//populateDefaults(); // User's responsibility
 
-			if (!p) RTthrow rtmath::debug::xAssert("ddPar::writeDDSCAT::p is null");
+			if (!p) RTthrow(debug::xNullPointer())
+				<< debug::otherErrorText("ddPar::writeDDSCAT::p is null");
 			// Write file version
 			string ver;
 			ver = rtmath::ddscat::ddVersions::getVerString(p->_version);
@@ -539,7 +541,8 @@ namespace rtmath {
 								ostringstream ostr;
 								ostr << "Duplicate ddscat.par key: ";
 								ostr << vals[1];
-								throw rtmath::debug::xBadInput(ostr.str().c_str());
+								RTthrow(rtmath::debug::xBadInput())
+								<< rtmath::debug::otherErrorText(ostr.str());
 							}
 						}
 						_parsedData[ptr->id()] = ptr;
@@ -554,7 +557,8 @@ namespace rtmath {
 						ostringstream ostr;
 						ostr << "Unknown ddscat.par key: ";
 						ostr << vals[1];
-						throw rtmath::debug::xBadInput(ostr.str().c_str());
+						RTthrow(rtmath::debug::xBadInput())
+							<< rtmath::debug::otherErrorText(ostr.str());
 					}
 				}
 
@@ -587,9 +591,11 @@ namespace rtmath {
 						// Cannot get default instance.....
 						if (pDefaultPar.string().size())
 						{
-							throw rtmath::debug::xMissingFile(pDefaultPar.string().c_str());
+							RTthrow(rtmath::debug::xMissingFile())
+							<< rtmath::debug::file_name(pDefaultPar.string());
 						} else {
-							throw rtmath::debug::xOtherError();
+							RTthrow(rtmath::debug::xOtherError())
+							<< rtmath::debug::otherErrorText("Cannot get default instance. Reason unknown.");
 						}
 					}
 				}

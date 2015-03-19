@@ -83,7 +83,12 @@ namespace rtmath
 			// temp is in K, but convert to Celsius for convenience
 			units::conv_temp c("K","C");
 			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -260) RTthrow rtmath::debug::xModelOutOfRange(T);
+			if (Tc > 0 || Tc < -260) RTthrow(debug::xModelOutOfRange())
+				<< debug::temp_ref_range(std::pair<double,double>(-260,0))
+				<< debug::temp(Tc)
+				<< debug::otherErrorText("Temp. out of range. Function "
+					"needs input temp in Kelvin. Listed ranges "
+					"in error are in Celsius.");
 
 			return interpMap(Tc, denIce);
 		}
@@ -93,7 +98,12 @@ namespace rtmath
 			initSuperWater();
 			units::conv_temp c("K","C");
 			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -30) RTthrow rtmath::debug::xModelOutOfRange(T);
+			if (Tc > 0 || Tc < -30) RTthrow(debug::xModelOutOfRange())
+				<< debug::temp_ref_range(std::pair<double,double>(-30, 0))
+				<< debug::temp(Tc)
+				<< debug::otherErrorText("Temp. out of range. Function "
+					"needs input temp in Kelvin. Listed ranges "
+					"in error are in Celsius.");
 
 			return interpMap(Tc, denSuperWater);
 		}

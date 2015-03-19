@@ -27,20 +27,20 @@ namespace rtmath
 			{
 				std::cerr << "psql library connection error " << status << std::endl;
 				std::cerr << PQerrorMessage(connection.get()) << std::endl;
-				RTthrow debug::xOtherError();
+				RTthrow(debug::xOtherError());
 			}
 
 			void psql_handle::handle_error(ExecStatusType status) const
 			{
 				std::cerr << "psql library execution error " << status << std::endl;
 				std::cerr << PQerrorMessage(connection.get()) << std::endl;
-				RTthrow debug::xOtherError();
+				RTthrow(debug::xOtherError());
 			}
 
 			void psql_handle::handle_error(const char* err) const
 			{
 				std::cerr << "psql library execution error: " << err << std::endl;
-				RTthrow debug::xOtherError();
+				RTthrow(debug::xOtherError());
 			}
 
 			std::string psql_handle::escString(const std::string &in)

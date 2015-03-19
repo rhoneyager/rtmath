@@ -136,7 +136,9 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 6) RTthrow debug::xBadInput("Cannot parse refractive index in ddOutputSingleKeys::ddM");
+				if (snums.size() < 6) RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText("Cannot parse refractive index");
 
 				using boost::lexical_cast;
 				using boost::algorithm::trim_copy;
@@ -215,8 +217,10 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 7) RTthrow debug::xBadInput(
-					"Cannot parse inc.pol.vec. numbers in ddOutputSingleKeys::ddPolVec");
+				if (snums.size() < 7) RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText(
+						"Cannot parse inc.pol.vec. numbers");
 
 				using boost::lexical_cast;
 				using boost::algorithm::trim_copy;
@@ -226,13 +230,17 @@ namespace rtmath
 				pols[2] = complex<double>(macros::m_atof(snums[4].c_str()), macros::m_atof(snums[5].c_str()));
 				vecnum = lexical_cast<size_t>(snums[6]);
 				auto it = str.find_last_of('F');
-				if (it == std::string::npos) RTthrow debug::xBadInput(
-					"Cannot parse inc.pol.vec. in ddOutputSingleKeys::ddPolVec for frame identifier");
+				if (it == std::string::npos) RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText(
+					"Cannot parse inc.pol.vec. frame identifier");
 				it--;
 				if (str.at(it) == 'L') frame = frameType::LF;
 				else if (str.at(it) == 'T') frame = frameType::TF;
-				else RTthrow debug::xBadInput(
-					"Cannot parse inc.pol.vec. in ddOutputSingleKeys::ddPolVec for frame identifier (b)");
+				else RTthrow(debug::xBadInput())
+					<< debug::line_text(str)
+					<< debug::otherErrorText(
+					"Cannot parse inc.pol.vec. frame identifier (b)");
 			}
 			std::string ddPolVec::value() const  { return std::string(); }
 			std::complex<double> ddPolVec::getPol(size_t n) const { return pols[n]; }

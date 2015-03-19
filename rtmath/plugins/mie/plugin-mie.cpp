@@ -105,10 +105,10 @@ namespace rtmath
 					/// \todo need to validate with ellipsoids
 
 					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
-				} catch (const ::rtmath::debug::xError& t) {
+				} catch (const ::Ryan_Debug::error::xError& t) {
 					std::cerr << "A mie error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
-					RTthrow rtmath::debug::xOtherError();
+					RTthrow(rtmath::debug::xOtherError());
 				}
 			}
 
@@ -162,10 +162,10 @@ namespace rtmath
 					for (size_t i = 0; i < 2; ++i)
 						for (size_t j = 0; j < 2; ++j)
 							p.S(i,j) = ang->getS(i, j);
-				} catch (const ::rtmath::debug::xError& t) {
+				} catch (const ::Ryan_Debug::error::xError& t) {
 					std::cerr << "A mie error has occurred" << std::endl;
 					std::cerr << t.what() << std::endl;
-					RTthrow rtmath::debug::xOtherError();
+					RTthrow(rtmath::debug::xOtherError());
 				}
 			}
 		}

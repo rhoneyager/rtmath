@@ -40,7 +40,7 @@ namespace rtmath {
 				{
 					// Die from invalid range
 					// Should really RTthrow error
-					throw rtmath::debug::xBadInput("Invalid range");
+					RTthrow(rtmath::debug::xModelOutOfRange());
 				}
 				for (double j=start;j<=end+(interval/100.0);j+=interval)
 				{
@@ -58,7 +58,7 @@ namespace rtmath {
 				}
 			} else if (specializer == "log") {
 				if (start == 0 || end == 0)
-					throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
+					RTthrow(rtmath::debug::xDivByZero());
 				double is = log10( (double) start); 
 				double ie = log10( (double) end); 
 				double increment = (ie - is) / (interval);
@@ -71,7 +71,7 @@ namespace rtmath {
 				}
 			} else if (specializer == "inv") {
 				if (start == 0 || end == 0)
-					throw rtmath::debug::xBadInput("Cannot take inverse of zero.");
+					RTthrow(rtmath::debug::xDivByZero());
 				double is = 1.0 / start; 
 				double ie = 1.0 / end; 
 				double increment = (is - ie) / (interval);
@@ -113,7 +113,8 @@ namespace rtmath {
 						expanded.insert((T) k);
 				}
 			} else {
-				throw rtmath::debug::xBadInput("Bad input in inner splitSet");
+				RTthrow(rtmath::debug::xBadInput())
+					<< rtmath::debug::otherErrorText("Bad input in inner splitSet");
 			}
 		}
 
@@ -158,7 +159,8 @@ namespace rtmath {
 				}
 				catch (...)
 				{
-					throw rtmath::debug::xBadInput(rt->c_str());
+					RTthrow(rtmath::debug::xBadInput())
+						<< rtmath::debug::otherErrorText(*rt);
 				}
 			}
 			// Look at range. If one element, just add it. If two or 
@@ -242,7 +244,8 @@ namespace rtmath {
 							}
 							catch (...)
 							{
-								throw rtmath::debug::xBadInput(rt->c_str());
+								RTthrow(rtmath::debug::xBadInput())
+								<< rtmath::debug::otherErrorText(*rt);
 							}
 						}
 						// Look at range. If one element, just add it. If two or 

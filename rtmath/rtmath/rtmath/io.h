@@ -104,7 +104,8 @@ namespace rtmath
 					::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(*obj, out, sname);
 				else if (sm == serialization_method::TEXT)
 					::Ryan_Serialization::write<obj_class, boost::archive::text_oarchive>(*obj, out, sname);
-				else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
+				else RTthrow(debug::xUnknownFileFormat())
+					<< debug::otherErrorText("Unknown serialization method");
 			}
 
 			template <class obj_class>
@@ -119,7 +120,8 @@ namespace rtmath
 					::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*(obj.get()), in, sname);
 				else if (sm == serialization_method::TEXT)
 					::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*(obj.get()), in, sname);
-				else RTthrow debug::xUnknownFileFormat("Unknown serialization method");
+				else RTthrow(debug::xUnknownFileFormat())
+					<< debug::otherErrorText("Unknown serialization method");
 
 			}
 
@@ -144,7 +146,10 @@ namespace rtmath
 					h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
 				else {
 					if (sh->getId() != std::string(serialization_handle::getSHid()))
-						RTthrow debug::xDuplicateHook("Bad passed plugin");
+						RTthrow(debug::xDuplicateHook())
+						<< debug::otherErrorText("Passed plugin is "
+						"the wrong one. It is not the serialization "
+						"plugin.");
 					h = std::dynamic_pointer_cast<serialization_handle>(sh);
 				}
 
@@ -175,7 +180,9 @@ namespace rtmath
 					h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
 				else {
 					if (sh->getId() != std::string(serialization_handle::getSHid()))
-						RTthrow debug::xDuplicateHook("Bad passed plugin");
+						RTthrow(debug::xDuplicateHook())
+						<< debug::otherErrorText("Bad passed plugin. "
+						"It is not the serialization plugin.");
 					h = std::dynamic_pointer_cast<serialization_handle>(sh);
 				}
 
@@ -335,7 +342,8 @@ namespace rtmath
 						h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
 					else {
 						if (sh->getId() != std::string(serialization_handle::getSHid()))
-							RTthrow debug::xDuplicateHook("Bad passed plugin");
+							RTthrow(debug::xDuplicateHook())
+							<< debug::otherErrorText("Bad passed plugin. It is not the serialization plugin.");
 						h = std::dynamic_pointer_cast<serialization_handle>(sh);
 					}
 
@@ -382,7 +390,8 @@ namespace rtmath
 						h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
 					else {
 						if (sh->getId() != std::string(serialization_handle::getSHid()))
-							RTthrow debug::xDuplicateHook("Bad passed plugin");
+							RTthrow(debug::xDuplicateHook())
+							<< debug::otherErrorText("Bad passed plugin. It is not the serialization plugin.");
 						h = std::dynamic_pointer_cast<serialization_handle>(sh);
 					}
 
@@ -626,7 +635,8 @@ namespace rtmath
 					// Cannot match a file type to save.
 					// Should never occur.
 					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str()) << debug::file_name(opts->filename());
+					RTthrow(debug::xUnknownFileFormat())
+					<< debug::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
 			}
@@ -732,7 +742,8 @@ namespace rtmath
 					// Cannot match a file type to save.
 					// Should never occur.
 					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str()) << debug::file_name(opts->filename());
+					RTthrow(debug::xUnknownFileFormat()) 
+						<< debug::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
 			}
@@ -831,7 +842,8 @@ namespace rtmath
 					// Cannot match a file type to read.
 					// Should never occur.
 					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str()) << debug::file_name(opts->filename());
+					RTthrow(debug::xUnknownFileFormat())
+						<< debug::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
 			}

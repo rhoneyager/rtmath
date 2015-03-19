@@ -89,7 +89,8 @@ int main(int argc, char** argv)
 		/// \todo Change so that only parts of a large file are mapped at once.
 		using namespace boost::filesystem;
 		using namespace boost::interprocess;
-		if (!exists(path(infile))) throw debug::xMissingFile(infile.c_str());
+		if (!exists(path(infile))) RTthrow(debug::xMissingFile())
+			<< debug::file_name(infile);
 		
 		size_t fsize = (size_t) file_size(path(infile)); // bytes
 		file_mapping m_in(

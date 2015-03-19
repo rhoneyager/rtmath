@@ -157,7 +157,7 @@ namespace rtmath {
 						else if (name == string(names[17])) v = &(r->Sarea_circle_proj_x);
 						else if (name == string(names[18])) v = &(r->Sarea_circle_proj_y);
 						else if (name == string(names[19])) v = &(r->Sarea_circle_proj_z);*/
-						else RTthrow debug::xUnimplementedFunction();
+						else RTthrow(debug::xUnimplementedFunction());
 
 						v->V = d.V;
 						v->SA = d.SA;
@@ -241,11 +241,15 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpHashes) RTthrow(debug::xMissingKey())
+				<< debug::key("Hashed")
+				<< debug::hash(key);
 
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpStats = openGroup(grpHash, "Stats");
-			if (!grpStats) RTthrow debug::xMissingFile(key.c_str());
+			if (!grpStats) RTthrow(debug::xMissingKey())
+				<< debug::key("Hashed")
+				<< debug::hash(key);
 			read_hdf5_statsrawdata(grpStats, opts, s);
 
 			return h;

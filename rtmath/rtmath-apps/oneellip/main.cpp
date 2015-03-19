@@ -178,7 +178,8 @@ int main(int argc, char *argv[])
 		{
 			cerr << "Processing " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
+				<< rtmath::debug::file_name(*it);
 			if (is_directory(pi))
 			{
 				path pt = pi / "target.out";
@@ -445,13 +446,14 @@ int main(int argc, char *argv[])
 					r.fvMeth = "Internal Voronoi Depth ";
 					r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
 					r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-				} else RTthrow rtmath::debug::xBadInput("Unhandled volume fraction method");
+				} else RTthrow(rtmath::debug::xBadInput())
+					<< rtmath::debug::otherErrorText("Unhandled volume fraction method");
 
 				/// Gives aspect ratio of matching ellipsoid
 				/// \todo Implement this function
 				auto arEllipsoid = [](double sa, double v) -> double
 				{
-					RTthrow rtmath::debug::xUnimplementedFunction();
+					RTthrow(rtmath::debug::xUnimplementedFunction());
 					return -1;
 				};
 
