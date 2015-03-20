@@ -40,17 +40,24 @@ namespace rtmath
 			{
 				using namespace std;
 				h->sendQuery(
-					"BEGIN;"
+					"BEGIN; "
 					"SELECT id, name FROM flakeTypes; ");
-				h->getQueryResult();
+				h->getQueryResult(); // For the BEGIN statement
 				auto hFlakeTypes = h->getQueryResult();
 
 				using std::string;
 				map<string, string> known_flaketypes;
 
+				ostringstream deb_flaketypesmap;
+				deb_flaketypesmap << "Flake types map:\n";
 				for (int i = 0; i < PQntuples(hFlakeTypes.get()); ++i)
+				{
 					known_flaketypes[string(PQgetvalue(hFlakeTypes.get(), i, 1))]
 					= string(PQgetvalue(hFlakeTypes.get(), i, 0));
+					deb_flaketypesmap << string(PQgetvalue(hFlakeTypes.get(), i, 1))
+						<< " = " << PQgetvalue(hFlakeTypes.get(), i, 0) << std::endl;
+				}
+				BOOST_LOG_SEV(h->lg, debug::debug_3) << deb_flaketypesmap.str();
 
 				ostringstream ss;
 
@@ -201,6 +208,7 @@ namespace rtmath
 				string s = squery.str();
 				//std::cerr << s << std::endl;
 				auto resIntersect = h->execute(s.c_str());
+				BOOST_LOG_SEV(h->lg, debug::debug_2) << "Query has " << PQntuples(resIntersect.get()) << " results.\n";
 
 				// Turn the result into shapefile stub objects
 				// Unified object is in resIntersect
@@ -209,7 +217,6 @@ namespace rtmath
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
 					boost::shared_ptr<shapefile> ap = shapefile::generate();
-
 					ap->numPoints = rtmath::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 7));
 					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
 					ap->setHash(HASH_t( rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
@@ -242,6 +249,14 @@ namespace rtmath
 						if (vs.size() > 1) b = vs[1];
 						ap->tags.insert(std::pair<std::string,std::string>(a,b));
 					}
+					std::ostringstream dbg_res;
+					dbg_res << "Result " << i+1 << ":\n"
+						<< " num points " << ap->numPoints << std::endl
+						<< " standard dipole spacing " << ap->standardD << std::endl
+						<< " desc " << ap->desc << std::endl
+						<< " hash " << ap->hash().lower << std::endl
+						<< " tags " << othertags << std::endl;
+					BOOST_LOG_SEV(h->lg, debug::debug_2) << dbg_res.str();
 
 					res->insert(ap);
 				}

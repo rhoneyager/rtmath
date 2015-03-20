@@ -529,8 +529,6 @@ namespace rtmath
 				//("dll-no-default-locations", "Prevent non-command line dll locations from being read")
 				("print-dll-loaded", "Prints the table of loaded DLLs.")
 				("print-dll-search-paths", "Prints the search paths used when loading dlls.")
-				("rtmath-conf", po::value<std::vector<std::string> >(),
-				"Override location to rtmath.conf file.")
 				;
 		}
 
@@ -542,13 +540,6 @@ namespace rtmath
 
 			auto& lg = m_reg::get();
 			BOOST_LOG_SEV(lg, normal) << "Initializing registry system\n";
-
-
-			if (vm.count("rtmath-conf"))
-			{
-				BOOST_LOG_SEV(lg, notification) << "Loading custom rtmath.conf from " << vm["rtmath-conf"].as<string>() << "\n";
-				rtmath::config::loadRtconfRoot(vm["rtmath-conf"].as<string>());
-			}
 
 			//if (vm.count("dll-no-default-locations"))
 			//	autoLoadDLLs = false;

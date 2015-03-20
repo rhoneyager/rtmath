@@ -627,14 +627,21 @@ namespace rtmath
 				}
 				if (dllsaver)
 				{
-					// Most of these types aren't compressible or implement their
-					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(handle, opts, this->shared_from_this()); //dynamic_cast<const obj_class*>(this));
-					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
+					try {	
+						// Most of these types aren't compressible or implement their
+						// own compression schemes. So, it's not handled at this level.
+						return dllsaver(handle, opts, this->shared_from_this()); //dynamic_cast<const obj_class*>(this));
+						//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
+					} catch (::boost::exception &e) {
+						BOOST_LOG_SEV(lg, ::rtmath::debug::error) << "Unable to save file: " << opts->filename() << "\nThrowing error.\n";
+						e << ::rtmath::debug::file_name(opts->filename());
+						throw;
+					}
+					
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					BOOST_LOG_SEV(lg, rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
+					BOOST_LOG_SEV(lg, ::rtmath::debug::warning) << "File format unknown for file: " << opts->filename() << "\n";
 					RTthrow(debug::xUnknownFileFormat())
 					<< debug::file_name(opts->filename());
 				}
@@ -823,19 +830,25 @@ namespace rtmath
 				}
 				if (dllv || dllm)
 				{
-					// Most of these types aren't compressible or implement their
-					// own compression schemes. So, it's not handled at this level.
-					if (dllv) return dllv(handle, opts, v, filter);
-					else {
-						// obj_Class instance created using a generator template, which can be overridden if
-						// the obj_class has no publicly-available constructor (if it only can be used 
-						// as a shared_ptr, for example).
-						//boost::shared_ptr<obj_class> obj = obj_class::generate();
-						//boost::shared_ptr<obj_class> obj(new obj_class);
-						boost::shared_ptr<obj_class> obj = customGenerator<obj_class>();
-						auto res = dllm(handle, opts, obj, filter);
-						v.push_back(obj);
-						return res;
+					try {
+						// Most of these types aren't compressible or implement their
+						// own compression schemes. So, it's not handled at this level.
+						if (dllv) return dllv(handle, opts, v, filter);
+						else {
+							// obj_Class instance created using a generator template, which can be overridden if
+							// the obj_class has no publicly-available constructor (if it only can be used 
+							// as a shared_ptr, for example).
+							//boost::shared_ptr<obj_class> obj = obj_class::generate();
+							//boost::shared_ptr<obj_class> obj(new obj_class);
+							boost::shared_ptr<obj_class> obj = customGenerator<obj_class>();
+							auto res = dllm(handle, opts, obj, filter);
+							v.push_back(obj);
+							return res;
+						}
+					} catch (::boost::exception &e) {
+						BOOST_LOG_SEV(lg, ::rtmath::debug::error) << "Unable to read file: " << opts->filename() << "\nThrowing error.\n";
+						e << ::rtmath::debug::file_name(opts->filename());
+						throw;
 					}
 					//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 				} else {

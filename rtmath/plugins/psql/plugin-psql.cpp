@@ -25,21 +25,28 @@ namespace rtmath
 		{
 			void psql_handle::handle_error(ConnStatusType status) const
 			{
-				std::cerr << "psql library connection error " << status << std::endl;
-				std::cerr << PQerrorMessage(connection.get()) << std::endl;
+				std::ostringstream out;
+				out << "psql library connection error " << status << std::endl;
+				out << PQerrorMessage(connection.get()) << std::endl;
+				BOOST_LOG_SEV(lg, debug::error) << out.str();
+
 				RTthrow(debug::xOtherError());
 			}
 
 			void psql_handle::handle_error(ExecStatusType status) const
 			{
-				std::cerr << "psql library execution error " << status << std::endl;
-				std::cerr << PQerrorMessage(connection.get()) << std::endl;
+				std::ostringstream out;
+				out << "psql library execution error " << status << std::endl;
+				out << PQerrorMessage(connection.get()) << std::endl;
+				BOOST_LOG_SEV(lg, debug::error) << out.str();
 				RTthrow(debug::xOtherError());
 			}
 
 			void psql_handle::handle_error(const char* err) const
 			{
-				std::cerr << "psql library execution error: " << err << std::endl;
+				std::ostringstream out;
+				out << "psql library execution error: " << err << std::endl;
+				BOOST_LOG_SEV(lg, debug::error) << out.str();
 				RTthrow(debug::xOtherError());
 			}
 
@@ -60,7 +67,7 @@ namespace rtmath
 			psql_handle::~psql_handle() {}
 
 			psql_handle::psql_handle(std::shared_ptr<registry::DB_options> o) : readable(true), writeable(true), 
-				rtmath::registry::DBhandler(PLUGINID), o(o)
+				rtmath::registry::DBhandler(PLUGINID), o(o), lg(boost::log::keywords::channel = "psql")
 			{
 				if (!o) this->o = registry::DB_options::generate();
 			}
@@ -68,6 +75,8 @@ namespace rtmath
 			void psql_handle::connect()
 			{
 				if (connection) return;
+				BOOST_LOG_SEV(lg, debug::normal) << "Opening psql connection\n";
+
 				using namespace std;
 				vector<string> keywords, values;
 				keywords.push_back("host"); keywords.push_back("dbname"); keywords.push_back("user");
@@ -93,6 +102,7 @@ namespace rtmath
 
 			void psql_handle::disconnect()
 			{
+				BOOST_LOG_SEV(lg, debug::normal) << "Closing psql connection\n";
 				connection.reset();
 				connection = nullptr;
 			}
@@ -100,33 +110,43 @@ namespace rtmath
 			boost::shared_ptr<PGresult> psql_handle::execute(const char* command)
 			{
 				connect();
-				std::cerr << command << std::endl;
+				std::ostringstream out;
+				out << "Executing command: " << command << std::endl;
+				BOOST_LOG_SEV(lg, debug::normal) << out.str();
+				//std::cerr << command << std::endl;
 				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK 
 					&& errcode != PGRES_EMPTY_QUERY) handle_error(errcode);
+				BOOST_LOG_SEV(lg, debug::normal) << "Command executed ok\n";
 				return res;
 			}
 
 			void psql_handle::sendQuery(const char* command)
 			{
 				connect();
+				std::ostringstream out;
+				out << "Sending query: " << command << std::endl;
+				BOOST_LOG_SEV(lg, debug::normal) << out.str();
 				int res = PQsendQuery(connection.get(), command);
 				if (!res)
 				{
 					const char* err = PQerrorMessage(connection.get());
 					handle_error(err);
 				}
+				 BOOST_LOG_SEV(lg, debug::normal) << "Query executed ok.\n";
 			}
 
 			boost::shared_ptr<PGresult> psql_handle::getQueryResult()
 			{
 				connect();
+				BOOST_LOG_SEV(lg, debug::normal) << "Retrieving query result.\n";
 				boost::shared_ptr<PGresult> res
 					(PQgetResult(connection.get()), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
+				BOOST_LOG_SEV(lg, debug::normal) << "Query result retrieved ok.\n";
 				return res;
 			}
 

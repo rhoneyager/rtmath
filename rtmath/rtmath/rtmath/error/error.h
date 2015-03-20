@@ -26,6 +26,9 @@ namespace rtmath
 	{
 		enum severity_level
 		{
+			debug_3,
+			debug_2,
+			debug_1,
 			normal,
 			notification,
 			warning,
@@ -34,7 +37,8 @@ namespace rtmath
 		};
 
 		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::rtmath::debug::severity_level)
-		BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
+		//BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
+		BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
 		typedef ::boost::log::sources::severity_channel_logger_mt<
 			severity_level,     // the type of the severity level
 			std::string         // the type of the channel name

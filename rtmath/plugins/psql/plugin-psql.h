@@ -43,6 +43,7 @@ namespace rtmath {
 				boost::shared_ptr<PGresult> getQueryResult();
 
 				std::string escString(const std::string &in);
+				mutable ::rtmath::debug::my_logger_mt lg;
 			private:
 				void connect();
 				void disconnect();

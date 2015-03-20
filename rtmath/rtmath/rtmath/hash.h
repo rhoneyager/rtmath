@@ -14,6 +14,7 @@
 #include "macros.h"
 #include "registry.h"
 #include <boost/filesystem.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
 
 //namespace boost {
 	//namespace filesystem { class path; } 
@@ -21,6 +22,12 @@
 //}
 
 namespace rtmath {
+	namespace hash {
+		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+			m_hash,
+			blog::sources::severity_channel_logger_mt< >,
+			(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "hash"));
+	}
 	class hashStore;
 	typedef std::shared_ptr<const hashStore> pHashStore;
 	class hash_provider_registry{};

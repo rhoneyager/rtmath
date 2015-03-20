@@ -32,6 +32,8 @@ namespace {
 		if (inited) return;
 		inited = true;
 
+		auto& lg = rtmath::hash::m_hash::get();
+		BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Loading hash stores\n";
 		/// \todo Implement most of this function
 
 		// Stores can be folder trees, single hdf5 files, and websites.
@@ -46,9 +48,15 @@ namespace {
 			auto conf = rtmath::config::loadRtconfRoot();
 			if (!conf) return;
 			auto cdd = conf->getChild("ddscat");
-			if (!cdd) return;
+			if (!cdd) cdd = conf;
 			auto chash = cdd->getChild("hashes");
-			if (!chash) return;
+			if (!chash) {
+				BOOST_LOG_SEV(lg, rtmath::debug::critical) << "rtmath configuration file does "
+				"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.\n";
+				RTthrow(rtmath::debug::xMissingKey())
+				<< rtmath::debug::otherErrorText("/ddscat/hashes in rtmath config is missing");
+				return;
+			}
 			// Iterate over all hash store entries
 			std::multiset<boost::shared_ptr<rtmath::config::configsegment> > children;
 			chash->listChildren(children);
@@ -76,6 +84,13 @@ namespace {
 				std::string type = "dir";
 				if (c->hasVal("type"))
 					c->getVal<std::string>("type", type);
+
+				BOOST_LOG_SEV(lg, rtmath::debug::debug_1) << "Parsed hash store:\n"
+					<< "enabled: " << enabled
+					<< "\npriority: " << priority
+					<< "\npath: " << location
+					<< "\ntype: " << type
+					<< "\nwritable: " << writable << std::endl;
 
 				std::shared_ptr < rtmath::hashStore > h;
 
@@ -228,6 +243,7 @@ namespace rtmath {
 	{
 		opts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 		sh = nullptr; // IOhandler is not needed for the basic filesystem store
+		auto& lg = rtmath::hash::m_hash::get();
 
 		using namespace boost::filesystem;
 		using boost::lexical_cast;
@@ -261,10 +277,22 @@ namespace rtmath {
 				opts->setVal<string>("base_filename", pf.string());
 				return true;
 			}
+		} catch (::boost::exception &e) {
+			std::ostringstream serr;
+			serr << "When searching " << base << " - " << hash << " the following error was encountered:\n";
+			serr << boost::diagnostic_information(e);
+			BOOST_LOG_SEV(lg, rtmath::debug::warning) << serr.str();
 		} catch (boost::filesystem::filesystem_error &f) {
-			std::cerr << f.what() << " when searching " << base << " - " << hash << std::endl;
+			BOOST_LOG_SEV(lg, rtmath::debug::warning) 
+				<< f.what() << " when searching " << base << " - " << hash << std::endl;
+		} catch (boost::system::system_error &f) {
+			BOOST_LOG_SEV(lg, rtmath::debug::error)
+				<< f.what() << " when searching " << base << " - " << hash << std::endl;
+			throw;
 		} catch (...) {
-			// Filesystem exceptions can be very annoying
+			BOOST_LOG_SEV(lg, rtmath::debug::error) << "An unhandled error occurred "
+				" when searching " << base << " - " << hash << std::endl;
+			throw;
 		}
 		return false;
 	}

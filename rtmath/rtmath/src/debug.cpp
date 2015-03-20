@@ -30,6 +30,9 @@
 #include <boost/log/sinks/text_ostream_backend.hpp>
 #include <boost/log/sinks/debug_output_backend.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
+#include <boost/log/attributes/clock.hpp>
+#include <boost/log/expressions/formatters/date_time.hpp>
+#include <boost/log/support/date_time.hpp>
 #include <Ryan_Debug/debug.h>
 #include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
@@ -58,6 +61,11 @@ namespace {
 		m_deb,
 		blog::sources::severity_channel_logger_mt< >,
 		(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "debug"))
+		;
+
+	// Both logging systems go here
+	typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
+	static boost::shared_ptr< text_sink > sink_init, sink;
 }
 
 namespace rtmath
@@ -179,6 +187,7 @@ namespace rtmath
 				("help-verbose", "Print out all possible program options")
 				("help-all", "Print out all possible program options")
 				("help-full", "Print out all possible program options")
+				("log-init", "Log initial startup")
 				("rtmath-config-file", po::value<std::string>(),
 				"Specify the location of the rtmath configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
@@ -196,13 +205,52 @@ namespace rtmath
 			return level >= rtmath::debug::warning; // || tag == "IMPORTANT_MESSAGE";
 		}*/
 
+		void setupLoggingInitial(bool logall)
+		{
+			static bool setup = false;
+			if (setup) return;
+			setup = true;
+
+			::boost::log::core::get()->add_global_attribute(
+				"TimeStamp",
+				::boost::log::attributes::local_clock());
+
+			sink_init = boost::make_shared< text_sink >();
+
+			// We have to provide an empty deleter to avoid destroying the global stream object
+			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
+			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::empty_deleter());
+			sink_init->locked_backend()->add_stream(stream);
+			if (!logall) {
+			sink_init->set_filter( severity >= debug_3 //warning
+				//boost::log::expressions::attr < int >
+				//("Severity").or_default(rtmath::debug::normal)
+				); // rtmath::debug::warning);
+			}
+			sink_init->set_formatter( boost::log::expressions::stream 
+				<< boost::log::expressions::format_date_time
+					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+				<< ": <" << severity
+				<< "> [" << channel << "] {init} "
+				<< boost::log::expressions::smessage
+				);
+
+			
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			core->add_sink(sink_init);
+			//boost::log::core::get()->set_filter(rtmath::debug::severity_level >= rtmath::debug::warning);
+
+			
+			auto& lg = m_deb::get();
+			BOOST_LOG_SEV(lg, normal) << "Initial logging started." << std::endl;
+			core->flush();
+		}
 
 
 		void setupLogging(boost::program_options::variables_map &vm)
 		{
 			static bool setup = false;
 			if (setup) return;
-
 			// First, use any console overrides
 			/*
 
@@ -264,21 +312,32 @@ namespace rtmath
 			}
 			*/
 			// Construct the console sink
-			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
-			static boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
+			sink = boost::make_shared< text_sink >();
 
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			//core->remove_all_sinks(); // Remove initial sink
 			// We have to provide an empty deleter to avoid destroying the global stream object
 			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
 			boost::shared_ptr< std::ostream > stream(&std::clog, boost::empty_deleter());
 			sink->locked_backend()->add_stream(stream);
-			sink->set_filter( severity >= warning
+			sink->set_filter( severity >= warning //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(rtmath::debug::normal)
 				); // rtmath::debug::warning);
+			sink->set_formatter( boost::log::expressions::stream 
+				<< boost::log::expressions::format_date_time
+					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+				<< ": <" << severity
+				<< "> [" << channel << "] "
+				<< boost::log::expressions::smessage
+				);
 
 			
-			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 			core->add_sink(sink);
+			core->flush();
+			core->remove_sink(sink_init);
+
+
 			//boost::log::core::get()->set_filter(rtmath::debug::severity_level >= rtmath::debug::warning);
 
 
@@ -309,7 +368,13 @@ namespace rtmath
 		{
 			namespace po = boost::program_options;
 			using std::string;
-			
+	
+			// Bring up a basic logging system for critical first-load library tasks,
+			// like finding a configuration file.	
+			bool loginit = false;
+			if (vm.count("log-init")) loginit = true;
+			setupLoggingInitial(loginit);
+
 			if (vm.count("help-verbose") || vm.count("help-all") || vm.count("help-full"))
 			{
 				po::options_description oall("All Options");
@@ -327,9 +392,15 @@ namespace rtmath
 				BOOST_LOG_SEV(lg, normal) << "Console override of rtmath-config-file: " << sConfigDefaultFile << "\n";
 			}
 
-			//atexit(appExit);
-			setupLogging(vm);
+			//if (vm.count("rtmath-conf"))
+			//{
+			//	BOOST_LOG_SEV(lg, notification) << "Loading custom rtmath.conf from " << vm["rtmath-conf"].as<string>() << "\n";
+			//	rtmath::config::loadRtconfRoot(vm["rtmath-conf"].as<string>());
+			//} else { rtmath::config::loadRtconfRoot(); }
+			rtmath::config::loadRtconfRoot();
 
+			//atexit(appExit);
+			//Switch to more complete logging system.
 			if (vm.count("close-on-finish")) {
 				bool val = !(vm["close-on-finish"].as<bool>());
 				Ryan_Debug::waitOnExit(val);
@@ -344,11 +415,19 @@ namespace rtmath
 					std::shared_ptr<hashStore> h(new hashStore);
 					h->writable = vm["hash-dir-writable"].as<bool>();
 					h->base = boost::filesystem::path(p);
+					BOOST_LOG_SEV(lg, normal) 
+						<< "Console override of hash directory: " << p 
+						<< ", writable: " << h->writable << ".\n";
 					hashStore::addHashStore(h, 0);
-
-					BOOST_LOG_SEV(lg, normal) << "Console override of hash directory: " << p << ", writable: " << h->writable << ".\n";
 				}
 			}
+
+			BOOST_LOG_SEV(lg, normal) << "Switching to primary logging system\n";
+			setupLogging(vm);
+			BOOST_LOG_SEV(lg, normal) << "Primary logging system started.\n";
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			core->flush();
+
 
 			registry::process_static_options(vm);
 

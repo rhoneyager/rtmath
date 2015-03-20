@@ -698,12 +698,15 @@ namespace rtmath {
 		{
 			filename = "";
 			using namespace boost::filesystem;
+			auto& lg = rtmath::config::m_config::get();
 
 			// Check application execution arguments
+			BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << "Checking app command line\n";
 			path testCMD(rtmath::debug::sConfigDefaultFile);
 			if (exists(testCMD))
 			{
 				filename = rtmath::debug::sConfigDefaultFile;
+				BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << filename << std::endl;
 				return;
 			}
 
@@ -712,6 +715,7 @@ namespace rtmath {
 				using namespace Ryan_Debug;
 				boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
 
+				BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << "Checking rtmath_conf environment variable\n";
 				size_t sEnv = 0;
 				const char* cenv = getEnviron(info.get(), sEnv);
 				std::string env(cenv,sEnv);
@@ -734,6 +738,7 @@ namespace rtmath {
 						tokenizer;
 					boost::char_separator<char> sep(";");
 
+					BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << "Candidates are: " << it->second << std::endl;
 					std::string ssubst;
 					tokenizer tcom(it->second, sep);
 					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
@@ -742,6 +747,7 @@ namespace rtmath {
 						if (exists(testEnv))
 						{
 							filename = it->second;
+							BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << "Using " << filename << std::endl;
 							return;
 						}
 					}
@@ -754,6 +760,9 @@ namespace rtmath {
 			// Finally, just use the default os-dependent path
 			//filename = "/home/rhoneyag/.rtmath";
 			// Macro defining the correct path
+			BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << "Checking compile-time paths: \n"
+				<< "RTC: " << RTC << "\nRTCB: " << RTCB << "\nRTCC: " << RTCC
+				<< "\nSYS_RTC: " << SYS_RTC << "\n";
 			path testUser(RTC);
 			path testUserB(RTCB);
 			path testUserC(RTCC);
@@ -766,6 +775,11 @@ namespace rtmath {
 				filename = RTCC;
 			else if (exists(testSys))
 				filename = SYS_RTC;
+			if (filename.size()) BOOST_LOG_SEV(lg, rtmath::debug::debug_2) << "Using conf file: " << filename << "\n";
+			else BOOST_LOG_SEV(lg, rtmath::debug::critical) << "Unable to find rtmath configuration file. "
+				<< "Log channel config at severity debug_2 lists the searched paths. You can specify the file by "
+				"command-line (option --rtmath-config-file), environment variable (rtmath_conf), "
+				"or place one in an at-compile-time-specified path.\n";
 
 			return;
 		}
@@ -783,8 +797,13 @@ namespace rtmath {
 		boost::shared_ptr<configsegment> loadRtconfRoot(const std::string &filename)
 		{
 			if (_rtconfroot != nullptr) return _rtconfroot;
+			auto& lg = rtmath::config::m_config::get();
+			BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Loading rtmath config file.\n";
+			if (filename.size())
+				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Override filename " << filename << "\n";
 			std::string fn = filename;
 			if (!fn.size()) getConfigDefaultFile(fn);
+			if (fn.size()) BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Found rtmath config file " << fn << "\n";
 			if (!fn.size()) RTthrow(debug::xMissingRtmathConf()) 
 				<< debug::file_name(filename) << debug::default_file_name(fn);
 			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);

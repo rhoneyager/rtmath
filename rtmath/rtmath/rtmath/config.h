@@ -8,6 +8,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/lexical_cast.hpp> // used in getVal<>
+#include <boost/log/sources/global_logger_storage.hpp>
 #include "registry.h"
 #include "io.h"
 
@@ -20,6 +21,10 @@ namespace rtmath {
 		class configsegment_Boost {};
 		class configsegment_Env {}; //todo
 		class configsegment_Registry {}; //todo
+		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+			m_config,
+			blog::sources::severity_channel_logger_mt< >,
+			(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "config"));
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
