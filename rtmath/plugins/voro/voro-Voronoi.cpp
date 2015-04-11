@@ -18,7 +18,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
-#include <Voro/voro++.hh>
+#include <voro++.hh>
 #include <Ryan_Debug/debug.h>
 //#include <Ryan_Serialization/serialization.h>
 #include <string>
