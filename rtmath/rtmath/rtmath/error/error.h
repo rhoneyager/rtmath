@@ -83,7 +83,7 @@ namespace rtmath
 
 #define ERRSTDR(x, mess) class DLEXPORT_rtmath_core x : \
 		public virtual ::Ryan_Debug::error::xError \
-				{ public: x() throw() { setErrLbl(mess); } \
+				{ public: x() throw() { this->setErrLbl(mess); } \
 		virtual ~x() throw() {} };
 
 
