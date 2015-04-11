@@ -9,6 +9,10 @@ namespace Ryan_Debug {
 
 		xError::xError() throw() : inWhat(false) {}
 		xError::~xError() throw() {}
+		const char* xError::getErrLbl() const { return errLbl.c_str(); }
+		const char* xError::getErrText() const { return errText.c_str(); }
+		void xError::setErrLbl(const char* lbl) { errLbl = std::string(lbl); }
+		void xError::setErrText(const char* lbl) { errText = std::string(lbl); }
 		const char* xError::what() const throw()
 		{
 			/*

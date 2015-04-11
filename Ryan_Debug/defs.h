@@ -11,7 +11,7 @@
 #endif
 #endif
 
-#ifdef RYAN_DEBUG_EXPORTING
+#ifdef EXPORTING_Ryan_Debug
 #ifdef _MSC_FULL_VER
 #define RYAN_DEBUG_DLEXPORT __declspec(dllexport)
 #else

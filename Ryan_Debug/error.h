@@ -4,6 +4,7 @@
 
 #pragma warning( disable : 4996 ) // Deprecated function warning
 #pragma warning( disable : 4275 ) // DLL boundary warning
+#pragma warning( disable : 4251 ) // DLL interface - warns on private objects...
 
 
 namespace Ryan_Debug {
@@ -26,13 +27,17 @@ namespace Ryan_Debug {
 			virtual const char* what() const throw();
 		protected:
 			//void addLineInfo() const throw();
-			mutable std::string errLbl;
-			mutable std::string errText;
+			const char* getErrLbl() const;
+			const char* getErrText() const;
+			void setErrLbl(const char* lbl);
+			void setErrText(const char* lbl);
 		private:
 			mutable bool inWhat;
+			mutable std::string errLbl;
+			mutable std::string errText;
 		};
 
-#define ERRSTD(x, mess) class RYAN_DEBUG_DLEXPORT x : public virtual xError { public: x() throw() { errLbl = mess; } \
+#define ERRSTD(x, mess) class RYAN_DEBUG_DLEXPORT x : public virtual xError { public: x() throw() { setErrLbl(mess); } \
 	virtual ~x() throw() {} };
 
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "defs.h"
+#pragma warning( disable : 4251 ) // DLL interface
 
 #include <string>
 #include <iostream>
