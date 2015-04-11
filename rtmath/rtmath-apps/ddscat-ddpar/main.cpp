@@ -109,12 +109,14 @@ int main(int argc, char** argv)
 		string output = input;
 		// Validate input file
 		path pi(input);
-		if (!exists(pi)) throw rtmath::debug::xMissingFile(input.c_str());
+		if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
+			<< rtmath::debug::file_name(input);
 		if (is_directory(pi))
 		{
 			path pt = pi / "ddscat.par";
 			if (exists(pt)) input = pt.string();
-			else throw rtmath::debug::xPathExistsWrongType(input.c_str());
+			else RTthrow(rtmath::debug::xPathExistsWrongType())
+				<< rtmath::debug::file_name(input);
 		}
 		cerr << "Input par file is: " << input << endl;
 
@@ -201,7 +203,8 @@ int main(int argc, char** argv)
 		{
 			doWrite = true;
 			vector<double> s = vm["set-shapeparams"].as<vector<double> >();
-			if (s.size() != 3) throw rtmath::debug::xBadInput("set-shapeparams needs three doubles as input");
+			if (s.size() != 3) RTthrow(rtmath::debug::xBadInput())
+				<< rtmath::debug::otherErrorText("set-shapeparams needs three doubles as input");
 			par->shpar(0, s[0]);
 			par->shpar(1, s[1]);
 			par->shpar(2, s[2]);
@@ -245,12 +248,6 @@ int main(int argc, char** argv)
 			cerr << "Output par file is: " << output << endl;
 			par->writeFile(output);
 		}
-	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		cerr << endl;
-		return 1;
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;

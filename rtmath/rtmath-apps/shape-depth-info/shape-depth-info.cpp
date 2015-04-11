@@ -163,7 +163,8 @@ int main(int argc, char** argv)
 		{
 			cerr << "Processing " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) throw rtmath::debug::xMissingFile(it->c_str());
+			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
+				<< rtmath::debug::file_name(*it);
 			if (is_directory(pi))
 			{
 				path ps = pi / "shape.dat";

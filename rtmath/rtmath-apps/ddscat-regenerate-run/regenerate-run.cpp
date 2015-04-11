@@ -279,7 +279,8 @@ int main(int argc, char** argv)
 				cerr << "\tUsing generic par file " << pars[0] << endl;
 			}
 			else if (d.second.parfile.empty() && !pars.size())
-				throw rtmath::debug::xMissingFile("ddscat.par");
+				RTthrow(rtmath::debug::xMissingFile())
+				<< rtmath::debug::file_name("ddscat.par");
 			else {
 				parFile = rtmath::ddscat::ddPar::generate(d.second.parfile.string());
 				cerr << "\tUsing matched par file " << d.second.parfile.string() << endl;

@@ -20,6 +20,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/fs.h>
 
 #pragma warning( pop ) 
 #include "../../rtmath/rtmath/data/arm_info.h"
@@ -106,7 +107,8 @@ int main(int argc, char** argv)
 			path pOut(output);
 			if (!boost::filesystem::exists(pOut)) boost::filesystem::create_directory(pOut);
 			else if (!boost::filesystem::is_directory(pOut))
-				RTthrow rtmath::debug::xPathExistsWrongType(output.c_str());
+				RTthrow(rtmath::debug::xPathExistsWrongType())
+				<< rtmath::debug::file_name(pOut.string());
 		}
 
 		vector<string> vslinkMethods;
@@ -139,7 +141,7 @@ int main(int argc, char** argv)
 		bool summary = vm["show-summary"].as<bool>();
 
 		vector<boost::filesystem::path> vinputs;
-		rtmath::debug::expandFolders(inputs, vinputs, recurse);
+		Ryan_Debug::fs::expandFolder(inputs, vinputs, recurse);
 
 		auto dbcollection = rtmath::data::arm::arm_info::makeCollection();
 		auto qExisting = rtmath::data::arm::arm_info::makeQuery();
@@ -150,7 +152,7 @@ int main(int argc, char** argv)
 			// Validate input file
 			path pi(si);
 			if (!exists(pi)) continue;
-			pi = rtmath::debug::expandSymlink(pi);
+			pi = Ryan_Debug::fs::expandSymlink<boost::filesystem::path>(pi);
 			if (!exists(pi)) continue;
 			if (is_directory(pi)) continue;
 
@@ -175,7 +177,7 @@ int main(int argc, char** argv)
 				cerr << "Missing file: " << si.string() << std::endl;
 				continue;
 			}
-			pi = rtmath::debug::expandSymlink(pi);
+			pi = Ryan_Debug::fs::expandSymlink<boost::filesystem::path>(pi);
 			if (!exists(pi)) {
 				cerr << "Missing file: " << si.string() << std::endl;
 				continue;
@@ -220,7 +222,8 @@ int main(int argc, char** argv)
 					path pdir = indexBase / indexLocation;
 					// Create this directory if not found
 					if (!exists(pdir)) boost::filesystem::create_directories(pdir);
-					if (!is_directory(pdir)) RTthrow debug::xPathExistsWrongType(pdir.string().c_str());
+					if (!is_directory(pdir)) RTthrow(rtmath::debug::xPathExistsWrongType())
+						<< rtmath::debug::file_name(pdir.string());
 
 					path pfile = pdir / pi.filename();
 					if (!exists(pfile)) {
@@ -255,7 +258,8 @@ int main(int argc, char** argv)
 								continue;
 							}
 						}
-						if (!success) RTthrow debug::xUnsupportedIOaction("Cannot create indexed location");
+						if (!success) RTthrow(debug::xUnsupportedIOaction())
+							<< debug::otherErrorText("Cannot create indexed location");
 					} else {
 						cerr << "File at" << pfile << " already exists. Skipping." << endl;
 					}
@@ -324,12 +328,6 @@ int main(int argc, char** argv)
 		}
 		if (sErrors.size())
 			if (err) delete err;
-	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		cerr << endl;
-		return 1;
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;
