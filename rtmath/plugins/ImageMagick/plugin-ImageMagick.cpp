@@ -31,7 +31,7 @@ namespace rtmath
 				case IOtype::READWRITE:
 				case IOtype::EXCLUSIVE:
 				case IOtype::DEBUG:
-					RTthrow rtmath::debug::xUnimplementedFunction();
+					RTthrow(debug::xUnimplementedFunction());
 					break;
 				case IOtype::READONLY:
 				case IOtype::CREATE:

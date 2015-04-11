@@ -7,8 +7,12 @@
 #include <string>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/throw_exception.hpp>
 
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -37,7 +41,7 @@ namespace rtmath
 					{
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
-						RTthrow rtmath::debug::xUnimplementedFunction();
+						RTthrow(debug::xUnimplementedFunction());
 						break;
 					case IOtype::READONLY:
 					{
@@ -56,7 +60,8 @@ namespace rtmath
 						break;
 					case IOtype::CREATE:
 						if (boost::filesystem::exists(boost::filesystem::path(filename)))
-							RTthrow debug::xFileExists(filename);
+							RTthrow(debug::xFileExists())
+							<< debug::file_name(filename);
 					case IOtype::TRUNCATE:
 					{
 						int status = nc_create(filename, 0, &file);
@@ -71,14 +76,16 @@ namespace rtmath
 					std::cerr << "Error caught in netcdf_handle::open!\n"
 						<< "\tFilename: " << filename << "\n"
 						<< "\tIOtype: " << t << std::endl;
-					RTthrow e;
+					boost::throw_exception(e);
+					//RTthrow e;
 				}
 			}
 
 			void netcdf_handle::handle_error(int status)
 			{
-				std::cerr << "netcdf library error " << status << std::endl;
-				RTthrow debug::xOtherError();
+				RTthrow(debug::xOtherError())
+					<< debug::otherErrorCode(status)
+					<< debug::otherErrorText("netcdf library error");
 			}
 
 			netcdf_handle::~netcdf_handle()

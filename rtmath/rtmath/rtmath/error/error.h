@@ -83,7 +83,7 @@ namespace rtmath
 
 #define ERRSTDR(x, mess) class DLEXPORT_rtmath_core x : \
 		public virtual ::Ryan_Debug::error::xError \
-		{ public: x() throw() { errLbl = mess; } \
+				{ public: x() throw() { setErrLbl(mess); } \
 		virtual ~x() throw() {} };
 
 
@@ -101,14 +101,18 @@ namespace rtmath
 		ERRSTDR(xEmptyInputFile, "Input file is empty.");
 		ERRSTDR(xMissingFolder, "Folder does not exist.");
 		ERRSTDR(xMissingFile, "Missing file.");
+		ERRSTDR(xMissingVariable, "Missing variable in saved structure.");
 		ERRSTDR(xMissingRtmathConf, "Cannot find a rtmath configuration file.");
 		ERRSTDR(xFileExists, "File to be opened for writing already exists.");
 		ERRSTDR(xPathExistsWrongType, "Path exists, but wrong type (e.g. file vs. directory).");
+		ERRSTDR(xTypeMismatch, "Variable does not have the correct type.");
 		ERRSTDR(xUnknownFileFormat, "Unknown file format.");
 		ERRSTDR(xMissingKey, "Key not found in map");
 		ERRSTDR(xMissingHash, "Cannot find hash to load.");
 		ERRSTDR(xUnimplementedFunction, "Unimplemented function.");
+		ERRSTDR(xFallbackTemplate, "Reached point in code that is the fallback template. Missing the appropriate template specialization.");
 		ERRSTDR(xArrayOutOfBounds, "An array went out of bounds.");
+		ERRSTDR(xDimensionMismatch, "An array went out of bounds.");
 		ERRSTDR(xLockedNotInCache, "Object is constant but cannot find cached information requested.");
 		ERRSTDR(xObsolete, "Function is obsolete. Rewrite code.");
 		ERRSTDR(xDefective, "Function is defective. Fix it.");

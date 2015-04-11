@@ -51,7 +51,7 @@ namespace rtmath {
 					h = std::shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID) RTthrow(debug::xDuplicateHook());
 					h = std::dynamic_pointer_cast<silo_handle>(sh);
 				}
 

@@ -8,7 +8,10 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/plugin.h"
 
@@ -384,8 +387,8 @@ namespace rtmath
 			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_info> > &s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
-				RTthrow debug::xUnimplementedFunction();
-				return sh;
+			RTthrow(debug::xUnimplementedFunction());
+			return sh;
 		}
 	}
 }

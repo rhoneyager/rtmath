@@ -46,7 +46,7 @@ namespace rtmath
 					//break;
 				case IOtype::READONLY:
 					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_RDONLY ));
-					RTthrow rtmath::debug::xUnimplementedFunction();
+					RTthrow(rtmath::debug::xUnimplementedFunction());
 					break;
 				case IOtype::TRUNCATE:
 					file = std::shared_ptr<siloFile>(new siloFile(filename));

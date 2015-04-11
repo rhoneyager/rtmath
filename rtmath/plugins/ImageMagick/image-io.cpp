@@ -114,18 +114,15 @@ namespace rtmath
 			IOhandler::IOtype iotype = opts->iotype();
 			std::string imkey = opts->getVal<std::string>("imkey", "raw");
 			using std::shared_ptr;
-			std::shared_ptr<ImageMagick_handle> h;
-			if (!sh)
-			{
-				h = std::shared_ptr<ImageMagick_handle>(new ImageMagick_handle(filename.c_str(), iotype));
-			} else {
-				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
-				h = std::dynamic_pointer_cast<ImageMagick_handle>(sh);
-			}
-
+			std::shared_ptr<ImageMagick_handle> h = registry::construct_handle
+				<registry::IOhandler, ImageMagick_handle>(
+				sh, PLUGINID, [&](){return std::shared_ptr<ImageMagick_handle>(
+				new ImageMagick_handle(filename.c_str(), iotype)); });
+			
 			boost::shared_ptr<const Eigen::MatrixXf> eim;
 			if (im->imageMaps.count(imkey)) eim = im->imageMaps.at(imkey);
-			else RTthrow debug::xMissingFile(imkey.c_str());
+			else RTthrow(debug::xMissingFile())
+				<< debug::file_name(imkey);
 
 			writeImage(filename, eim);
 
@@ -145,14 +142,11 @@ namespace rtmath
 			//IOhandler::IOtype iotype = opts->iotype();
 			std::string imkey = opts->getVal<std::string>("imkey", "raw");
 			using std::shared_ptr;
-			std::shared_ptr<ImageMagick_handle> h;
-			if (!sh)
-			{
-				h = std::shared_ptr<ImageMagick_handle>(new ImageMagick_handle(filename.c_str(), iotype));
-			} else {
-				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
-				h = std::dynamic_pointer_cast<ImageMagick_handle>(sh);
-			}
+			std::shared_ptr<ImageMagick_handle> h = registry::construct_handle
+				<registry::IOhandler, ImageMagick_handle>(
+				sh, PLUGINID, [&](){return std::shared_ptr<ImageMagick_handle>(
+				new ImageMagick_handle(filename.c_str(), iotype)); });
+
 
 			boost::shared_ptr<const Eigen::MatrixXf> eim = readImage(filename);
 			im->imageMaps[imkey] = eim;

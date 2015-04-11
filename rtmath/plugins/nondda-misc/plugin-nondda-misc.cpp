@@ -83,11 +83,11 @@ namespace rtmath
 
 					try {
 						std::complex<double> d = ((mRes*mRes)-1.)/((mRes*mRes)+2.);
-						qext = 4. * size_p * (-1. * d).imag();
-						qsca = 8. * std::pow(size_p,4.)/3. 
+						qext = (float) 4. * size_p * (-1. * d).imag();
+						qsca = (float) 8. * std::pow(size_p, 4.) / 3.
 							* (d * conj(d)).real();
-						qback = (d * conj(d)).real() * 8. * std::pow(size_p,4.)/2.;
-						gsca = -1;
+						qback = (float) (d * conj(d)).real() * 8. * std::pow(size_p, 4.) / 2.;
+						gsca = (float) -1;
 
 						const double k = 2. * pi / s.wavelength;
 
@@ -109,9 +109,9 @@ namespace rtmath
 
 						//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 					} catch (...) {
-						std::cerr << "A bhmie error has occurred." << std::endl;
 						//std::cerr << "\t" << t.what() << std::endl;
-						RTthrow rtmath::debug::xOtherError();
+						RTthrow(debug::xOtherError()) <<
+							debug::otherErrorText("A bhmie error has occurred");
 					}
 				}
 			}

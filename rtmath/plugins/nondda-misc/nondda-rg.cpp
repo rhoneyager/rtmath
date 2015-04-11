@@ -80,7 +80,7 @@ namespace rtmath
 						//qext = 4. * size_p * (-1. * d).imag();
 						//qsca = 8. * std::pow(size_p, 4.) / 3.
 						//	* (d * conj(d)).real();
-						qback = (Km * conj(Km)).real() 
+						qback = (float) (Km * conj(Km)).real() 
 							//* 9. * pi * (f*f) / (16 * k * k  * pow(ar, 4.))
 							* pow(sin(k*d) - (k*d*cos(k*d)), 2.);
 						//qback = (d * conj(d)).real() * 8. * std::pow(size_p, 4.) / 2.;
@@ -106,9 +106,9 @@ namespace rtmath
 						//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 					}
 					catch (...) {
-						std::cerr << "A rg error has occurred." << std::endl;
 						//std::cerr << "\t" << t.what() << std::endl;
-						RTthrow rtmath::debug::xOtherError();
+						RTthrow(debug::xOtherError()) 
+							<< debug::otherErrorText("A rayleigh-gans error has occurred");
 					}
 				}
 			}

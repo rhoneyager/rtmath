@@ -8,7 +8,10 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
+#include "../../rtmath/rtmath/error/debug.h"
+#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -37,15 +40,11 @@ namespace rtmath
 				//IOhandler::IOtype iotype = opts->iotype();
 				std::string key = opts->getVal<std::string>("key");
 				using std::shared_ptr;
-				std::shared_ptr<netcdf_handle> h;
-				if (!sh)
-				{
-					h = std::shared_ptr<netcdf_handle>(new netcdf_handle(filename.c_str(), iotype));
-				}
-				else {
-					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
-					h = std::dynamic_pointer_cast<netcdf_handle>(sh);
-				}
+				std::shared_ptr<netcdf_handle> h = registry::construct_handle
+					<registry::IOhandler, netcdf_handle>(
+					sh, PLUGINID, [&](){return std::shared_ptr<netcdf_handle>(
+					new netcdf_handle(filename.c_str(), iotype)); });
+
 
 				// Read base file information
 				if (!s->info)
@@ -113,8 +112,8 @@ namespace rtmath
 			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_scanning_radar_sacr> > &s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> >)
 		{
-				RTthrow debug::xUnimplementedFunction();
-				return sh;
+			RTthrow(debug::xUnimplementedFunction());
+			return sh;
 		}
 	}
 }
