@@ -12,6 +12,15 @@
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/hulls.h"
 #include "../rtmath/error/error.h"
+#include <boost/log/sources/global_logger_storage.hpp>
+
+
+namespace {
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_hull,
+		blog::sources::severity_channel_logger_mt< >,
+		(blog::keywords::severity = ::rtmath::debug::error)(blog::keywords::channel = "hull"));
+}
 
 namespace rtmath
 {
@@ -46,12 +55,20 @@ namespace rtmath
 		boost::shared_ptr<convexHull> convexHull::generate
 			(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend)
 		{
+			auto& lg = m_hull::get();
+			BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Generating convex hull for backend " << &backend;
+
 			auto hooks = ::rtmath::registry::usesDLLregistry<hull_provider_registry, hull_provider<convexHull> >::getHooks();
+			//std::cerr << hooks->size() << std::endl;
 			for (const auto &h : *(hooks.get()))
 			{
 				if (!h.generator) continue;
 				return h.generator(backend);
 			}
+			// Only return nullptr if unable to find a usable hook.
+			BOOST_LOG_SEV(lg, rtmath::debug::error) << "No registered handler for hull calculation found. Throwing error.";
+			std::cerr << "Ping" << std::endl;
+			RTthrow(rtmath::debug::xUpcast());
 			return nullptr;
 		}
 

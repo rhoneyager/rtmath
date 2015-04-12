@@ -25,6 +25,7 @@ namespace rtmath
 		/// \todo Transfer to Ryan_Debug.
 		/// \todo Finish implementation using Windows and Linux system calls.
 		size_t DLEXPORT_rtmath_core getConcurrentThreadsSupported();
+
 		/**
 		* \brief Adds options to a program
 		*
@@ -46,3 +47,12 @@ namespace rtmath
 		extern std::string SHARED_PRIVATE sConfigDefaultFile;
 	}
 }
+
+
+#ifdef _MSC_FULL_VER
+#define fsig() __FILE__ << ": " << __LINE__ << ": " << __FUNCSIG__
+#endif
+#ifdef __GNUC__
+#define fsig() __FILE__ << ": " << __LINE__ << ": " << __PRETTY_FUNCTION__ 
+#endif
+

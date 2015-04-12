@@ -187,7 +187,8 @@ namespace rtmath
 				("help-verbose", "Print out all possible program options")
 				("help-all", "Print out all possible program options")
 				("help-full", "Print out all possible program options")
-				("log-init", "Log initial startup")
+				//("log-init", "Log initial startup")
+				("log-level-all", po::value<int>()->default_value((int)::rtmath::debug::warning), "Threshold for console logging")
 				("rtmath-config-file", po::value<std::string>(),
 				"Specify the location of the rtmath configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
@@ -205,7 +206,7 @@ namespace rtmath
 			return level >= rtmath::debug::warning; // || tag == "IMPORTANT_MESSAGE";
 		}*/
 
-		void setupLoggingInitial(bool logall)
+		void setupLoggingInitial(int logthresholdlevel = ::rtmath::debug::warning)
 		{
 			static bool setup = false;
 			if (setup) return;
@@ -221,12 +222,12 @@ namespace rtmath
 			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
 			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::empty_deleter());
 			sink_init->locked_backend()->add_stream(stream);
-			if (!logall) {
-			sink_init->set_filter( severity >= debug_3 //warning
+			//if (!logall) {
+			sink_init->set_filter( severity >= logthresholdlevel //debug_3 //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(rtmath::debug::normal)
 				); // rtmath::debug::warning);
-			}
+			//}
 			sink_init->set_formatter( boost::log::expressions::stream 
 				<< boost::log::expressions::format_date_time
 					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
@@ -247,7 +248,7 @@ namespace rtmath
 		}
 
 
-		void setupLogging(boost::program_options::variables_map &vm)
+		void setupLogging(boost::program_options::variables_map &vm, int logthresholdlevel = ::rtmath::debug::warning)
 		{
 			static bool setup = false;
 			if (setup) return;
@@ -320,7 +321,7 @@ namespace rtmath
 			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
 			boost::shared_ptr< std::ostream > stream(&std::clog, boost::empty_deleter());
 			sink->locked_backend()->add_stream(stream);
-			sink->set_filter( severity >= warning //warning
+			sink->set_filter( severity >= logthresholdlevel //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(rtmath::debug::normal)
 				); // rtmath::debug::warning);
@@ -371,9 +372,11 @@ namespace rtmath
 	
 			// Bring up a basic logging system for critical first-load library tasks,
 			// like finding a configuration file.	
-			bool loginit = false;
-			if (vm.count("log-init")) loginit = true;
-			setupLoggingInitial(loginit);
+
+			int sevlev = (int) ::rtmath::debug::warning; // default really set in add_static_options
+			sevlev = vm["log-level-all"].as<int>();
+
+			setupLoggingInitial(sevlev);
 
 			if (vm.count("help-verbose") || vm.count("help-all") || vm.count("help-full"))
 			{
@@ -423,7 +426,7 @@ namespace rtmath
 			}
 
 			BOOST_LOG_SEV(lg, normal) << "Switching to primary logging system\n";
-			setupLogging(vm);
+			setupLogging(vm, sevlev);
 			BOOST_LOG_SEV(lg, normal) << "Primary logging system started.\n";
 			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 			core->flush();

@@ -52,7 +52,13 @@ namespace rtmath
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_reg,
 			blog::sources::severity_channel_logger_mt< >,
-			(blog::keywords::severity = error)(blog::keywords::channel = "registry"))
+			(blog::keywords::severity = error)(blog::keywords::channel = "registry"));
+
+		void emit_registry_log(const std::string &m, ::rtmath::debug::severity_level sev)
+		{
+			auto& lg = rtmath::registry::m_reg::get();
+			BOOST_LOG_SEV(lg, sev) << m;
+		}
 	}
 }
 

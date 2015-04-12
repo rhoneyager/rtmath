@@ -10,9 +10,11 @@
 //#include <list>
 #include <set>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
+#include "error/debug.h"
 #include "error/error.h"
 
 namespace boost {
@@ -56,6 +58,9 @@ namespace rtmath
 				: name(name), description(desc), uuid(uuid), path(0) {}
 			DLLpreamble() : name(0), description(0), uuid(0), path(0) {}
 		};
+
+		/// Internal function used in templates that writes to the registry log
+		void DLEXPORT_rtmath_core emit_registry_log(const std::string&, ::rtmath::debug::severity_level = ::rtmath::debug::debug_2);
 
 		/**
 		* \brief Adds options to a program
@@ -153,13 +158,32 @@ namespace rtmath
 				static boost::shared_ptr<hookStorageType> hooks;
 				if (!hooks) hooks = 
 					boost::shared_ptr<hookStorageType>(new hookStorageType);
+				// Log available hooks every time this is called.
+				std::ostringstream l;
+				l << "Getting hooks in store: " << fsig() << std::endl
+					<< "There are " << hooks->size() << " elements." << std::endl;
+				/// \todo Need to implement stack walking in Ryan_Debug to get 
+				/// information about the registering function.
+				//size_t i=0;
+				//for (const auto &h : *(hooks.get()))
+				//{
+				//	l << ++i << h.registered_name << std::endl;
+				//}
+
+				emit_registry_log(l.str());
 				return hooks;
 			}
 		//public:
 			virtual ~usesDLLregistry() {}
 			static void registerHook(const signature &f)
 			{
+				// Log every time a hook is registered, along with the table contents before insert.
 				boost::shared_ptr<hookStorageType> hookstore = getHooks();
+				std::ostringstream l;
+				l << "Registering hook in store: " << fsig() << std::endl;
+				//l << "Adding hook to " << f.name << std::endl;
+				emit_registry_log(l.str());
+
 				hookstore->push_back(f); 
 			}
 		};
@@ -342,6 +366,7 @@ namespace rtmath
 			typedef std::function<bool(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>
 				)> io_multi_matcher_type;
 			io_multi_matcher_type io_multi_matches;
+			std::string registered_name;
 		};
 
 		template<class object>
