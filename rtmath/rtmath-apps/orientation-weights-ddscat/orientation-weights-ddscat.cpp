@@ -16,7 +16,6 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
@@ -94,8 +93,8 @@ int main(int argc, char** argv)
 		if (vm.count("input"))
 		{
 			std::string file = vm["input"].as<std::string >();
-			rtmath::ddscat::ddPar par(file);
-			par.getRots(rot);
+			auto par = rtmath::ddscat::ddPar::generate(file);
+			par->getRots(rot);
 		} else {
 			// interval is a dummy variable
 			double bMin, bMax, tMin, tMax, pMin, pMax, interval;
@@ -103,13 +102,13 @@ int main(int argc, char** argv)
 			size_t nB, nT, nP;
 			rtmath::config::extractInterval(sbetas, bMin, bMax,interval, nB, specializer);
 			if (specializer != "lin") 
-				throw debug::xBadInput("Beta interval needs to be linearly spaced.");
+				RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("Beta interval needs to be linearly spaced.");
 			rtmath::config::extractInterval(sthetas, tMin, tMax,interval, nT, specializer);
 			if (specializer != "cos") 
-				throw debug::xBadInput("Theta interval needs to be cosine spaced.");
+				RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("Theta interval needs to be cosine spaced.");
 			rtmath::config::extractInterval(sphis, pMin, pMax,interval, nP, specializer);
 			if (specializer != "lin") 
-				throw debug::xBadInput("phi interval needs to be linearly spaced.");
+				RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("phi interval needs to be linearly spaced.");
 
 			rot = rtmath::ddscat::rotations(bMin,bMax,nB,tMin,tMax,nT,pMin,pMax,nP);
 		}
@@ -117,15 +116,23 @@ int main(int argc, char** argv)
 		rtmath::ddscat::weights::ddWeightsDDSCAT ddw(rot);
 		rtmath::ddscat::weights::ddWeightsLinInt ddbeta(rot.bMin(), rot.bMax(), rot.bN());
 
+		ostream *out = &(std::cout);
+		ofstream *oof = nullptr;
+
 		if (vm.count("output"))
 		{
 			std::string sofile = vm["output"].as<string>();
-			ofstream out(sofile.c_str());
-			out << "Weightings for " 
+			oof = new ofstream(sofile.c_str());
+			out = oof;
+		}
+
+
+		{
+			*out << "Weightings for " 
 				"beta: " << rot.bMin() << ":" << rot.bN() << ":" << rot.bMax() << ":lin "
 				"theta: " << rot.tMin() << ":" << rot.tN() << ":" << rot.tMax() << ":cos "
 				"phi: " << rot.pMin() << ":" << rot.pN() << ":" << rot.pMax() << ":lin\n";
-			out << "Theta\tPhi\tBeta\tWa1\tWa2\tWeight\n";
+			*out << "Theta\tPhi\tBeta\tWa1\tWa2\tWeight\tCDF\n";
 
 			set<double> betas, thetas, phis;
 			rot.betas(betas);
@@ -140,11 +147,11 @@ int main(int argc, char** argv)
 						sumTotal += totWeight;
 						double bWeight = ddbeta.weightBase(beta);
 						double a1weight = totWeight / bWeight;
-						out << theta << "\t" << phi << "\t" << beta << "\t" << 
-							a1weight << "\t" << bWeight << "\t" << totWeight << endl;
+						*out << theta << "\t" << phi << "\t" << beta << "\t" << 
+							a1weight << "\t" << bWeight << "\t" << totWeight << "\t" << sumTotal << endl;
 					}
-			out << endl;
-			if (abs(sumTotal-1.0) > 0.001) throw debug::xAssert("Weights do not sum to unity!");
+			*out << endl;
+			if (abs(sumTotal-1.0) > 0.001) RDthrow(debug::xAssert()) << rtmath::debug::otherErrorText("Weights do not sum to unity!");
 			//out << "Sums:\t\t\t\t" << sumTotal << endl << endl;
 		}
 

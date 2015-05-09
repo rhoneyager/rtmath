@@ -15,7 +15,7 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 		size_t N;
 		rtmath::config::extractInterval(srots, Min, Max,interval, N, specializer);
 		if (specializer != "lin" && specializer != "cos") 
-			throw debug::xBadInput("Interval needs to be linearly or cosine spaced.");
+			RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("Interval needs to be linearly or cosine spaced.");
 		
 		boost::shared_ptr<ddWeights> dw;
 		if (specializer == "lin")
@@ -120,13 +120,18 @@ int main(int argc, char** argv)
 			ow = boost::shared_ptr<OrientationWeights1d>(new VonMisesWeights(*dw,mu,kappa));
 		} else doHelp("Unknown weighting method");
 
-
+		ostream *out = &(std::cout);
+		ofstream *oof = nullptr;
 		if (vm.count("output"))
 		{
 			std::string sofile = vm["output"].as<string>();
-			ofstream out(sofile.c_str());
-			out << "Weightings ( " << method << ", mu = " << mu << ", kappa = " << kappa << " ) for " << Min << ":" << N << ":" << Max << ":" << specializer << endl;
-			out << "Angle midpoint (Degrees)\tAngle low (degrees)\tAngle high (degrees)\tPDF\tCDF\n";
+			oof = new ofstream(sofile.c_str());
+			out = oof;
+		}
+
+		{
+			*out << "Weightings ( " << method << ", mu = " << mu << ", kappa = " << kappa << " ) for " << Min << ":" << N << ":" << Max << ":" << specializer << endl;
+			*out << "Angle midpoint (Degrees)\tAngle low (degrees)\tAngle high (degrees)\tPDF\tCDF\n";
 
 			OrientationWeights1d::weightTable wts;
 			ow->getWeights(wts);
@@ -137,7 +142,7 @@ int main(int argc, char** argv)
 				double low, high, pivot;
 				dw->interval(it->first, low, high, pivot);
 
-				out << pivot<< "\t" << low << "\t" << high << "\t" << it->second << "\t" << cdf << endl;
+				*out << pivot<< "\t" << low << "\t" << high << "\t" << it->second << "\t" << cdf << endl;
 			}
 		}
 
