@@ -26,7 +26,7 @@
 #include <mutex>
 #include <time.h>
 #ifdef _WIN32
-//#include "../../rtmath/rtmath/ROOTlink.h"
+//#include "../../Ryan_Debug/Ryan_Debug/ROOTlink.h"
 #include <Windows.h>
 #include <ShlObj.h>
 //#include <Winsock2.h>
@@ -254,7 +254,7 @@ namespace Ryan_Debug {
 
 
 		cerr << endl << endl;
-		//			rtmath::debug::listuniqueobj(cerr, false);
+		//			Ryan_Debug::debug::listuniqueobj(cerr, false);
 		//#endif
 
 		if (doWaitOnExit)
@@ -1105,7 +1105,7 @@ namespace Ryan_Debug {
 		//pconfig = &config;
 		//phidden = &hidden;
 
-		/// \todo Add option for default rtmath.conf location
+		/// \todo Add option for default Ryan_Debug.conf location
 
 		cmdline.add_options()
 			("close-on-finish", po::value<bool>(), "Should the app automatically close on termination?")

@@ -25,8 +25,8 @@ include(adddocs)
 include(generateAssemblyGuid)
 
 set(MAJOR 0)
-set(MINOR 8)
-set(REVISION 2)
+set(MINOR 9)
+set(REVISION 0)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
@@ -52,25 +52,41 @@ configure_file(src/lib.rc.in
 configure_file(src/versioninfo.h.in
 	"${PROJECT_BINARY_DIR}/versioninfo.h" @ONLY)
 
-addBoostUniform(filesystem program_options system)
+addBoostUniform(filesystem iostreams program_options system log log_setup)
 
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
 set( srcs
+	src/config.cpp
+	src/debug.cpp
 	src/error.cpp
 	src/fs.cpp
+	src/hash.cpp
+	src/macros.cpp
 	src/modules.cpp
+	src/MurmurHash3.cpp
 	src/os_functions.cpp
+	src/registry.cpp
+	src/serialization.cpp
 	src/splitSet.cpp
 	)
 set (hdrs
+	Ryan_Debug/config.h
 	Ryan_Debug/defs.h
 	Ryan_Debug/debug.h
 	Ryan_Debug/error.h
 	Ryan_Debug/fs.h
+	Ryan_Debug/hash.h
 	Ryan_Debug/info.h
+	Ryan_Debug/io.h
+	Ryan_Debug/macros.h
 	Ryan_Debug/modules.h
+	Ryan_Debug/MurmurHash3.h
+	Ryan_Debug/options.h
+	Ryan_Debug/plugin.h
+	Ryan_Debug/registry.h
+	Ryan_Debug/Serialization.h
 	Ryan_Debug/splitSet.h
 	src/internal.h
 	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h

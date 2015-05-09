@@ -1,6 +1,23 @@
 #pragma once
 
 
+
+#ifdef EXPORTING_Ryan_Debug
+
+#ifdef _MSC_FULL_VER
+#define RYAN_DEBUG_DLEXPORT __declspec(dllexport)
+#else
+#define RYAN_DEBUG_DLEXPORT
+#endif
+
+#else
+
+#ifdef _MSC_FULL_VER
+#define RYAN_DEBUG_DLEXPORT __declspec(dllimport)
+#else
+#define RYAN_DEBUG_DLEXPORT
+#endif
+
 #ifndef RYAN_DEBUG_NO_LINK
 #ifdef _MSC_FULL_VER
 #ifdef _M_X64
@@ -11,18 +28,6 @@
 #endif
 #endif
 
-#ifdef EXPORTING_Ryan_Debug
-#ifdef _MSC_FULL_VER
-#define RYAN_DEBUG_DLEXPORT __declspec(dllexport)
-#else
-#define RYAN_DEBUG_DLEXPORT
-#endif
-#else
-#ifdef _MSC_FULL_VER
-#define RYAN_DEBUG_DLEXPORT __declspec(dllimport)
-#else
-#define RYAN_DEBUG_DLEXPORT
-#endif
 #endif
 
 #ifdef _MSC_FULL_VER

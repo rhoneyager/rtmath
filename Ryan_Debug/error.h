@@ -6,9 +6,33 @@
 #pragma warning( disable : 4275 ) // DLL boundary warning
 #pragma warning( disable : 4251 ) // DLL interface - warns on private objects...
 
+#include <boost/log/trivial.hpp>
+#include <boost/log/attributes.hpp>
+#include <boost/log/expressions/keyword.hpp>
+#include <boost/log/sources/channel_feature.hpp>
+#include <boost/log/sources/channel_logger.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
 
 namespace Ryan_Debug {
 	namespace error {
+		enum severity_level
+		{
+			debug_3,
+			debug_2,
+			debug_1,
+			normal,
+			notification,
+			warning,
+			error,
+			critical
+		};
+
+		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::Ryan_Debug::debug::severity_level)
+		//BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
+		BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
+	
 		typedef boost::error_info<struct tag_file_name, std::string> file_name;
 		typedef boost::error_info<struct tag_folder_name, std::string> folder_name;
 		typedef boost::error_info<struct tag_symbol_name, std::string> symbol_name;
@@ -47,13 +71,13 @@ namespace Ryan_Debug {
 }
 
 #ifdef _MSC_FULL_VER
-//#define RDthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
+//#define RDthrow (::Ryan_Debug::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 //#define RDthrow(x) throw x << ::Ryan_Debug::error::source_file_name(__FILE__) << ::Ryan_Debug::error::source_file_line(__LINE__) << ::Ryan_Debug::error::source_func_sig(__FUNCSIG__)
 #define RDthrow(x) throw x << ::boost::throw_function(__FUNCSIG__) << ::boost::throw_file(__FILE__) << ::boost::throw_line((int)__LINE__)
 #endif
 #ifdef __GNUC__
 //#define RDthrow(x) throw x << ::Ryan_Debug::error::source_file_name(__FILE__) << ::Ryan_Debug::error::source_file_line(__LINE__) << ::Ryan_Debug::error::source_func_sig(__PRETTY_FUNCTION__) 
-//#define RDthrow (::rtmath::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
+//#define RDthrow (::Ryan_Debug::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
 #define RDthrow(x) throw x << ::boost::throw_function(__PRETTY_FUNCTION__) << ::boost::throw_file(__FILE__) << ::boost::throw_line((int)__LINE__)
 #endif
 

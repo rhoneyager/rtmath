@@ -11,8 +11,8 @@
 
 #include "../Ryan_Debug/splitSet.h"
 #include "../Ryan_Debug/error.h"
-//#include "../rtmath/error/debug.h"
-//#include "../rtmath/error/error.h"
+//#include "../Ryan_Debug/error/debug.h"
+//#include "../Ryan_Debug/error/error.h"
 
 #pragma warning( disable : 4244 ) // lots of template math involves doubles, and I'm sick of static casting
 
