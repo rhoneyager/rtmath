@@ -10,6 +10,7 @@
 #include <boost/algorithm/string/trim.hpp>
 
 #include "../Ryan_Debug/splitSet.h"
+#include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/error.h"
 //#include "../Ryan_Debug/error/debug.h"
 //#include "../Ryan_Debug/error/error.h"

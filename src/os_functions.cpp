@@ -1080,7 +1080,7 @@ namespace Ryan_Debug {
 			<< "Machine name: " << getHostname() << endl;
 
 
-		debug_preamble(out);
+		versioning::debug_preamble(out);
 	}
 
 	/// \todo Finish implementation using Windows and Linux system calls.

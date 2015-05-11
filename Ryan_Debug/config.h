@@ -24,7 +24,7 @@ namespace Ryan_Debug {
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_config,
 			blog::sources::severity_channel_logger_mt< >,
-			(blog::keywords::severity = Ryan_Debug::debug::error)(blog::keywords::channel = "config"));
+			(blog::keywords::severity = Ryan_Debug::log::error)(blog::keywords::channel = "config"));
 	}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
@@ -43,7 +43,7 @@ namespace Ryan_Debug {
 	}
 	namespace io {
 		template <>
-		DLEXPORT_Ryan_Debug_core boost::shared_ptr
+		RYAN_DEBUG_DLEXPORT boost::shared_ptr
 			<::Ryan_Debug::config::configsegment> customGenerator();
 	}
 
@@ -69,7 +69,7 @@ namespace Ryan_Debug {
 	 **/
 	namespace config {
 		/// Provides local readers and writers for old configuration format (it's a binder)
-		class DLEXPORT_Ryan_Debug_core implementsConfigOld :
+		class RYAN_DEBUG_DLEXPORT implementsConfigOld :
 			private Ryan_Debug::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_OldStandard>
 		{
@@ -83,7 +83,7 @@ namespace Ryan_Debug {
 
 		/// Provides local readers and writers for new configuration format for xml, json, ini (it's a binder)
 		/// \todo Implement
-		class DLEXPORT_Ryan_Debug_core implementsConfigBoost :
+		class RYAN_DEBUG_DLEXPORT implementsConfigBoost :
 			private Ryan_Debug::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_Boost>
 		{
@@ -105,7 +105,7 @@ namespace Ryan_Debug {
 		/// \todo fix findSegment so that it works
 		/// \todo findSegment check for not found condition (currently returns garbage)
 		/// \todo restructure to explicitly enable symlinks
-		class DLEXPORT_Ryan_Debug_core configsegment : 
+		class RYAN_DEBUG_DLEXPORT configsegment : 
 			virtual public boost::enable_shared_from_this<configsegment>,
 			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::Ryan_Debug::config::configsegment_IO_input_registry,
@@ -175,7 +175,7 @@ namespace Ryan_Debug {
 		public: // And let's have a static loading function here!
 			//static boost::shared_ptr<configsegment> loadFile(const char* filename, boost::shared_ptr<configsegment> root);
 			//static boost::shared_ptr<configsegment> loadFile(std::istream &indata, boost::shared_ptr<configsegment> root, const std::string &cwd = "./");
-			//friend DLEXPORT_Ryan_Debug_core std::ostream& operator<< (std::ostream& stream, const Ryan_Debug::config::configsegment &ob);
+			//friend RYAN_DEBUG_DLEXPORT std::ostream& operator<< (std::ostream& stream, const Ryan_Debug::config::configsegment &ob);
 			//friend std::istream& std::operator>> (std::istream &stream, std::shared_ptr<Ryan_Debug::config::configsegment> &ob);
 		};
 
@@ -192,18 +192,18 @@ namespace Ryan_Debug {
 			return res;
 		}
 
-		void DLEXPORT_Ryan_Debug_core getConfigDefaultFile(std::string &filename);
-		boost::shared_ptr<configsegment> DLEXPORT_Ryan_Debug_core getRtconfRoot();
+		void RYAN_DEBUG_DLEXPORT getConfigDefaultFile(std::string &filename);
+		boost::shared_ptr<configsegment> RYAN_DEBUG_DLEXPORT getRtconfRoot();
 		/// Load the appropriate default Ryan_Debug configuration file (default may be overridden in command line, see registry.cpp)
-		boost::shared_ptr<configsegment> DLEXPORT_Ryan_Debug_core loadRtconfRoot(const std::string &filename = "");
-		void DLEXPORT_Ryan_Debug_core setRtconfRoot(boost::shared_ptr<configsegment> &root);
+		boost::shared_ptr<configsegment> RYAN_DEBUG_DLEXPORT loadRtconfRoot(const std::string &filename = "");
+		void RYAN_DEBUG_DLEXPORT setRtconfRoot(boost::shared_ptr<configsegment> &root);
 
 		//extern std::shared_ptr<configsegment> _rtconfroot;
 
 		/// Take the object, and print in the appropriate form, using recursion
-		//DLEXPORT_Ryan_Debug_core std::ostream& operator<< (std::ostream &stream, const Ryan_Debug::config::configsegment &ob);
+		//RYAN_DEBUG_DLEXPORT std::ostream& operator<< (std::ostream &stream, const Ryan_Debug::config::configsegment &ob);
 		/// Take the object, and input in the appropriate form, using recursion
-		DLEXPORT_Ryan_Debug_core std::istream& operator>> (std::istream &stream, boost::shared_ptr<Ryan_Debug::config::configsegment> &ob);
+		RYAN_DEBUG_DLEXPORT std::istream& operator>> (std::istream &stream, boost::shared_ptr<Ryan_Debug::config::configsegment> &ob);
 
 	}
 }

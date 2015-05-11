@@ -3,7 +3,6 @@
 * and versioning code resides.
 **/
 
-#include "Stdafx-core.h"
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -11,8 +10,8 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/exception/all.hpp>
-//#include <boost/core/null_deleter.hpp>
-#include <boost/utility/empty_deleter.hpp>
+#include <boost/core/null_deleter.hpp> // This is the correct one
+//#include <boost/utility/empty_deleter.hpp>
 //#include <boost/serialization/shared_ptr.hpp> // provides null_deleter for older boost versions
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions/predicates/is_debugger_present.hpp>
@@ -33,25 +32,22 @@
 #include <boost/log/attributes/clock.hpp>
 #include <boost/log/expressions/formatters/date_time.hpp>
 #include <boost/log/support/date_time.hpp>
-#include <Ryan_Debug/debug.h>
+#include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/config.h"
-#include "../Ryan_Debug/error/debug.h"
-#include "../Ryan_Debug/error/error.h"
-//#include "../Ryan_Debug/error/debug_mem.h"
+#include "../Ryan_Debug/debug.h"
+#include "../Ryan_Debug/error.h"
 #include "../Ryan_Debug/registry.h"
 #include "../Ryan_Debug/hash.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "debug_subversion.h"
-#ifdef WITH_CMAKE
 #include "cmake-settings.h"
-#endif
 
 namespace blog = boost::log;
 namespace {
-	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
-	boost::program_options::options_description SHARED_PRIVATE *pconfig = nullptr;
-	boost::program_options::options_description SHARED_PRIVATE *phidden = nullptr;
+	boost::program_options::options_description *pcmdline = nullptr;
+	boost::program_options::options_description *pconfig = nullptr;
+	boost::program_options::options_description *phidden = nullptr;
 	size_t sys_num_threads = 0;
 	std::mutex m_sys_num_threads;
 
@@ -60,7 +56,7 @@ namespace {
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 		m_deb,
 		blog::sources::severity_channel_logger_mt< >,
-		(blog::keywords::severity = Ryan_Debug::debug::error)(blog::keywords::channel = "debug"))
+		(blog::keywords::severity = Ryan_Debug::log::error)(blog::keywords::channel = "debug"))
 		;
 
 	// Both logging systems go here
@@ -72,7 +68,7 @@ namespace Ryan_Debug
 {
 	namespace debug
 	{
-		std::string SHARED_PRIVATE sConfigDefaultFile;
+		std::string sConfigDefaultFile;
 
 		size_t RYAN_DEBUG_DLEXPORT getConcurrentThreadsSupported()
 		{
@@ -110,7 +106,7 @@ namespace Ryan_Debug
 				("help-all", "Print out all possible program options")
 				("help-full", "Print out all possible program options")
 				//("log-init", "Log initial startup")
-				("log-level-all", po::value<int>()->default_value((int)::Ryan_Debug::debug::warning), "Threshold for console logging")
+				("log-level-all", po::value<int>()->default_value((int)::Ryan_Debug::log::warning), "Threshold for console logging")
 				("Ryan_Debug-config-file", po::value<std::string>(),
 				"Specify the location of the Ryan_Debug configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
@@ -128,7 +124,7 @@ namespace Ryan_Debug
 			return level >= Ryan_Debug::debug::warning; // || tag == "IMPORTANT_MESSAGE";
 		}*/
 
-		void setupLoggingInitial(int logthresholdlevel = ::Ryan_Debug::debug::warning)
+		void setupLoggingInitial(int logthresholdlevel = ::Ryan_Debug::log::warning)
 		{
 			static bool setup = false;
 			if (setup) return;
@@ -142,10 +138,10 @@ namespace Ryan_Debug
 
 			// We have to provide an empty deleter to avoid destroying the global stream object
 			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
-			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::empty_deleter());
+			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::null_deleter());
 			sink_init->locked_backend()->add_stream(stream);
 			//if (!logall) {
-			sink_init->set_filter( severity >= logthresholdlevel //debug_3 //warning
+			sink_init->set_filter(Ryan_Debug::error::severity >= logthresholdlevel //debug_3 //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(Ryan_Debug::debug::normal)
 				); // Ryan_Debug::debug::warning);
@@ -153,8 +149,8 @@ namespace Ryan_Debug
 			sink_init->set_formatter( boost::log::expressions::stream 
 				<< boost::log::expressions::format_date_time
 					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-				<< ": <" << severity
-				<< "> [" << channel << "] {init} "
+					<< ": <" << (Ryan_Debug::error::severity)
+				<< "> [" << Ryan_Debug::error::channel << "] {init} "
 				<< boost::log::expressions::smessage
 				);
 
@@ -165,12 +161,12 @@ namespace Ryan_Debug
 
 			
 			auto& lg = m_deb::get();
-			BOOST_LOG_SEV(lg, normal) << "Initial logging started." << std::endl;
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Initial logging started." << std::endl;
 			core->flush();
 		}
 
 
-		void setupLogging(boost::program_options::variables_map &vm, int logthresholdlevel = ::Ryan_Debug::debug::warning)
+		void setupLogging(boost::program_options::variables_map &vm, int logthresholdlevel = ::Ryan_Debug::log::warning)
 		{
 			static bool setup = false;
 			if (setup) return;
@@ -241,17 +237,17 @@ namespace Ryan_Debug
 			//core->remove_all_sinks(); // Remove initial sink
 			// We have to provide an empty deleter to avoid destroying the global stream object
 			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
-			boost::shared_ptr< std::ostream > stream(&std::clog, boost::empty_deleter());
+			boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
 			sink->locked_backend()->add_stream(stream);
-			sink->set_filter( severity >= logthresholdlevel //warning
+			sink->set_filter( Ryan_Debug::error::severity >= logthresholdlevel //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(Ryan_Debug::debug::normal)
 				); // Ryan_Debug::debug::warning);
 			sink->set_formatter( boost::log::expressions::stream 
 				<< boost::log::expressions::format_date_time
 					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-				<< ": <" << severity
-				<< "> [" << channel << "] "
+					<< ": <" << Ryan_Debug::error::severity
+				<< "> [" << Ryan_Debug::error::channel << "] "
 				<< boost::log::expressions::smessage
 				);
 
@@ -295,7 +291,7 @@ namespace Ryan_Debug
 			// Bring up a basic logging system for critical first-load library tasks,
 			// like finding a configuration file.	
 
-			int sevlev = (int) ::Ryan_Debug::debug::warning; // default really set in add_static_options
+			int sevlev = (int) ::Ryan_Debug::log::warning; // default really set in add_static_options
 			sevlev = vm["log-level-all"].as<int>();
 
 			setupLoggingInitial(sevlev);
@@ -314,7 +310,7 @@ namespace Ryan_Debug
 			if (vm.count("Ryan_Debug-config-file"))
 			{
 				sConfigDefaultFile = vm["Ryan_Debug-config-file"].as<std::string>();
-				BOOST_LOG_SEV(lg, normal) << "Console override of Ryan_Debug-config-file: " << sConfigDefaultFile << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of Ryan_Debug-config-file: " << sConfigDefaultFile << "\n";
 			}
 
 			//if (vm.count("Ryan_Debug-conf"))
@@ -329,7 +325,7 @@ namespace Ryan_Debug
 			if (vm.count("close-on-finish")) {
 				bool val = !(vm["close-on-finish"].as<bool>());
 				Ryan_Debug::waitOnExit(val);
-				BOOST_LOG_SEV(lg, normal) << "Console override of waiting on exit: " << val << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of waiting on exit: " << val << "\n";
 			}
 
 			if (vm.count("hash-dir"))
@@ -337,19 +333,19 @@ namespace Ryan_Debug
 				std::vector<string> hashDirs = vm["hash-dir"].as<std::vector<string> >();
 				for (const auto &p : hashDirs)
 				{
-					std::shared_ptr<hashStore> h(new hashStore);
+					std::shared_ptr<Ryan_Debug::hash::hashStore> h(new Ryan_Debug::hash::hashStore);
 					h->writable = vm["hash-dir-writable"].as<bool>();
 					h->base = boost::filesystem::path(p);
-					BOOST_LOG_SEV(lg, normal) 
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
 						<< "Console override of hash directory: " << p 
 						<< ", writable: " << h->writable << ".\n";
-					hashStore::addHashStore(h, 0);
+					Ryan_Debug::hash::hashStore::addHashStore(h, 0);
 				}
 			}
 
-			BOOST_LOG_SEV(lg, normal) << "Switching to primary logging system\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Switching to primary logging system\n";
 			setupLogging(vm, sevlev);
-			BOOST_LOG_SEV(lg, normal) << "Primary logging system started.\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Primary logging system started.\n";
 			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 			core->flush();
 
@@ -358,9 +354,7 @@ namespace Ryan_Debug
 
 			std::ostringstream preambles;
 			preambles << "Ryan_Debug library information: \n";
-			debug_preamble(preambles);
-			preambles << "Ryan_Debug library information: \n";
-			Ryan_Debug::printDebugInfo(preambles);
+			Ryan_Debug::versioning::debug_preamble(preambles);
 
 			std::string spreambles = preambles.str();
 
@@ -371,7 +365,7 @@ namespace Ryan_Debug
 			}
 
 
-			BOOST_LOG_SEV(lg, normal) << spreambles;
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << spreambles;
 		}
 
 

@@ -15,33 +15,53 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
 
-namespace Ryan_Debug {
-	namespace error {
-		enum severity_level
-		{
-			debug_3,
-			debug_2,
-			debug_1,
-			normal,
-			notification,
-			warning,
-			error,
-			critical
-		};
+namespace blog = boost::log;
 
-		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::Ryan_Debug::debug::severity_level)
+namespace Ryan_Debug {
+	namespace log {
+		typedef ::boost::log::sources::severity_channel_logger_mt<
+			::Ryan_Debug::log::severity_level,     // the type of the severity level
+			std::string         // the type of the channel name
+		> my_logger_mt;
+	}
+	namespace error {
+		
+		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::Ryan_Debug::log::severity_level)
 		//BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
 		BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
 	
-		typedef boost::error_info<struct tag_file_name, std::string> file_name;
-		typedef boost::error_info<struct tag_folder_name, std::string> folder_name;
-		typedef boost::error_info<struct tag_symbol_name, std::string> symbol_name;
-		typedef boost::error_info<struct tag_pathtype_name, std::pair<std::string, std::string> > path_type_expected;
 		typedef boost::error_info<struct tag_range_text, std::string> split_range_name;
 		typedef boost::error_info<struct tag_specializer_type, std::string> specializer_type;
-//		typedef boost::error_info<struct tag_source_file_name, std::string> source_file_name;
-//		typedef boost::error_info<struct tag_source_file_line, int> source_file_line;
-//		typedef boost::error_info<struct tag_source_func_sig, std::string> source_func_sig;
+
+		typedef boost::error_info<struct tag_file_name, std::string> file_name;
+		typedef boost::error_info<struct tag_file_name_b, std::string> file_name_b;
+		typedef boost::error_info<struct tag_plugins,
+			std::pair<std::string, std::string> > plugin_types;
+		typedef boost::error_info<struct tag_default_file_name,
+			std::string> default_file_name;
+		typedef boost::error_info<struct tag_line_number, unsigned long long> line_number;
+		typedef boost::error_info<struct tag_line_text, std::string> line_text;
+		typedef boost::error_info<struct tag_ref_id, size_t> ref_number;
+		typedef boost::error_info<struct tag_folder_name, std::string> folder_name;
+		typedef boost::error_info<struct tag_symbol_name, std::string> symbol_name;
+		typedef boost::error_info<struct tag_path_type_expected,
+			std::pair<std::string, std::string> > path_type_expected;
+		typedef boost::error_info<struct tag_frequency, double> freq;
+		typedef boost::error_info<struct tag_temp, double> temp;
+		typedef boost::error_info<struct tag_freq_ref_range,
+			std::pair<double, double> > freq_ref_range;
+		typedef boost::error_info<struct tag_temp_ref_range,
+			std::pair<double, double> > temp_ref_range;
+		typedef boost::error_info<struct tag_range_min, double> rangeMin;
+		typedef boost::error_info<struct tag_range_max, double> rangeMax;
+		typedef boost::error_info<struct tag_range_span, double> rangeSpan;
+
+		typedef boost::error_info<struct tag_key, std::string> key;
+		typedef boost::error_info<struct tag_hash, std::string> hash;
+		typedef boost::error_info<struct tag_hash_type, std::string> hashType;
+		typedef boost::error_info<struct tag_dll_is_critical, bool> is_Critical; // dll loads
+		typedef boost::error_info<struct tag_otherErrorText, std::string> otherErrorText;
+		typedef boost::error_info<struct tag_otherErrorCode, long long> otherErrorCode;
 
 		class RYAN_DEBUG_DLEXPORT xError : public virtual std::exception, public virtual boost::exception
 		{
@@ -67,6 +87,46 @@ namespace Ryan_Debug {
 
 		ERRSTD(xDivByZero, "Divide by zero encountered.");
 		ERRSTD(xInvalidRange, "Invalid range.");
+		ERRSTD(xAssert, "Assertion failed.");
+		ERRSTD(xBadInput, "Bad or nonsensical input.");
+		ERRSTD(xNullPointer, "Expected non-null pointer is null.");
+		/// \brief The model (typically for optical depth) was called for a value outside
+		/// of the expected domain of the function. Results will be nonsensical.
+		ERRSTD(xModelOutOfRange, "Model out of range.");
+		ERRSTD(xMissingFrequency, "Missing data for this frequency.");
+		ERRSTD(xEmptyInputFile, "Input file is empty.");
+		ERRSTD(xMissingFolder, "Folder does not exist.");
+		ERRSTD(xMissingFile, "Missing file.");
+		ERRSTD(xMissingVariable, "Missing variable in saved structure.");
+		ERRSTD(xMissingRyan_DebugConf, "Cannot find a Ryan_Debug configuration file.");
+		ERRSTD(xFileExists, "File to be opened for writing already exists.");
+		ERRSTD(xPathExistsWrongType, "Path exists, but wrong type (e.g. file vs. directory).");
+		ERRSTD(xTypeMismatch, "Variable does not have the correct type.");
+		ERRSTD(xUnknownFileFormat, "Unknown file format.");
+		ERRSTD(xMissingKey, "Key not found in map");
+		ERRSTD(xMissingHash, "Cannot find hash to load.");
+		ERRSTD(xUnimplementedFunction, "Unimplemented function.");
+		ERRSTD(xFallbackTemplate, "Reached point in code that is the fallback template. Missing the appropriate template specialization.");
+		ERRSTD(xArrayOutOfBounds, "An array went out of bounds.");
+		ERRSTD(xDimensionMismatch, "An array went out of bounds.");
+		ERRSTD(xLockedNotInCache, "Object is constant but cannot find cached information requested.");
+		ERRSTD(xObsolete, "Function is obsolete. Rewrite code.");
+		ERRSTD(xDefective, "Function is defective. Fix it.");
+		ERRSTD(xSingular, "Singular matrix detected.");
+		ERRSTD(xDuplicateHook, "Attempting to load same DLL twice.");
+		ERRSTD(xHandleInUse, "DLL handle is currently in use, but the code wants to overwrite it.");
+		ERRSTD(xHandleNotOpen, "Attempting to access unopened DLL handle.");
+		ERRSTD(xSymbolNotFound, "Cannot find symbol in DLL.");
+		ERRSTD(xBadFunctionMap, "DLL symbol function map table is invalid.");
+		ERRSTD(xBadFunctionReturn, "DLL symbol map table is invalid.");
+		ERRSTD(xBlockedHookLoad, "Another hook blocked the load operation (for DLLs).");
+		ERRSTD(xBlockedHookUnload, "Another DLL depends on the one that you are unloading.");
+		ERRSTD(xDLLerror, "Unspecified DLL error.");
+		ERRSTD(xUpcast, "Plugin failure: cannot cast base upwards to a derived class provided by a plugin. "
+			"Usually means that no matching plugin can be found.");
+		ERRSTD(xCannotFindReference, "Cannot find reference in file.");
+		ERRSTD(xOtherError, "Unspecified error.");
+		ERRSTD(xUnsupportedIOaction, "Unsupported IO action.");
 	}
 }
 

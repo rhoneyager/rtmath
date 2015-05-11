@@ -56,14 +56,14 @@ namespace Ryan_Debug
 			/// Path of the loaded module (DLL leaves it blank)
 			const char* path;
 			/// Linked Ryan_Debug library architecture and version
-			const char* rdversion;
-			DLLpreamble(const char* name, const char* desc, const char* uuid, const char* rdversion)
+			Ryan_Debug::versioning::versionInfo *rdversion;
+			DLLpreamble(const char* name, const char* desc, const char* uuid, Ryan_Debug::versioning::versionInfo * rdversion)
 				: name(name), description(desc), uuid(uuid), rdversion(rdversion), path(0) {}
 			DLLpreamble() : name(0), description(0), uuid(0), rdversion(0), path(0) {}
 		};
 
 		/// Internal function used in templates that writes to the registry log
-		void RYAN_DEBUG_DLEXPORT emit_registry_log(const std::string&, ::Ryan_Debug::debug::severity_level = ::Ryan_Debug::debug::debug_2);
+		void RYAN_DEBUG_DLEXPORT emit_registry_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
 
 		/**
 		* \brief Adds options to a program
@@ -163,8 +163,8 @@ namespace Ryan_Debug
 					boost::shared_ptr<hookStorageType>(new hookStorageType);
 				// Log available hooks every time this is called.
 				std::ostringstream l;
-				l << "Getting hooks in store: " << fsig() << std::endl
-					<< "There are " << hooks->size() << " elements." << std::endl;
+				//l << "Getting hooks in store: " << fsig() << std::endl
+				//	<< "There are " << hooks->size() << " elements." << std::endl;
 				/// \todo Need to implement stack walking in Ryan_Debug to get 
 				/// information about the registering function.
 				//size_t i=0;
@@ -183,7 +183,7 @@ namespace Ryan_Debug
 				// Log every time a hook is registered, along with the table contents before insert.
 				boost::shared_ptr<hookStorageType> hookstore = getHooks();
 				std::ostringstream l;
-				l << "Registering hook in store: " << fsig() << std::endl;
+				//l << "Registering hook in store: " << fsig() << std::endl;
 				//l << "Adding hook to " << f.name << std::endl;
 				emit_registry_log(l.str());
 
@@ -284,8 +284,8 @@ namespace Ryan_Debug
 			}
 			template <class T> T getVal(const std::string &key) const
 			{
-				if (!hasVal(key)) RDthrow(Ryan_Debug::debug::xMissingKey())
-					<< Ryan_Debug::debug::key(key);
+				if (!hasVal(key)) RDthrow(Ryan_Debug::error::xMissingKey())
+					<< Ryan_Debug::error::key(key);
 				std::string valS = _mapStr.at(key);
 				T res = boost::lexical_cast<T>(valS);
 				return res;

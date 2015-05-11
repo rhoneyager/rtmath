@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cstdint>
 #include <cstring>
+#include "cmake-settings.h"
 
 #define QUOTE(str) #str
 #define EXPAND_AND_QUOTE(str) QUOTE(str)
@@ -38,6 +39,7 @@ namespace Ryan_Debug
 			char vssource[charmax];
 			char vsuuid[charmax];
 			char vboost[charmax];
+			char vassembly[charmax];
 		};
 
 		enum ver_match {
@@ -54,6 +56,7 @@ namespace Ryan_Debug
 #define tryStr(x) if (std::strncmp(a. x, b. x, versionInfo::charmax ) != 0) return res;
 #define tryNumB(x) if ((a.vn[versionInfo:: x] != b.vn[versionInfo:: x]) && a.vn[versionInfo:: x]) return res;
 			// First filter the incompatible stuff
+			tryStr(vassembly);
 			tryNum(V_MAJOR);
 			tryNum(V_MINOR);
 			tryBool(V_AMD64);
@@ -100,6 +103,13 @@ namespace Ryan_Debug
 			std::strncpy(out.vdate, __DATE__, versionInfo::charmax);
 			std::strncpy(out.vtime, __TIME__, versionInfo::charmax);
 
+			out.vn[versionInfo::V_MAJOR] = RYAN_DEBUG_MAJOR;
+			out.vn[versionInfo::V_MINOR] = RYAN_DEBUG_MINOR;
+			out.vn[versionInfo::V_REVISION] = RYAN_DEBUG_REVISION;
+
+#ifdef RYAN_DEBUG_ASSEMBLY_NAME
+			std::strncpy(out.vassembly, RYAN_DEBUG_ASSEMBLY_NAME, versionInfo::charmax);
+#endif
 #ifdef __GNUC__
 			out.vn[versionInfo::V_GNUC_MAJ] = __GNUC__;
 			out.vn[versionInfo::V_GNUC_MIN] = __GNUC_MINOR__;
@@ -135,8 +145,8 @@ namespace Ryan_Debug
 #ifdef BOOST_LIB_VERSION
 			strncpy(out.vboost, BOOST_LIB_VERSION, versionInfo::charmax);
 #endif
-#ifdef SUB_REV
-			out.vn[versionInfo::V_SVNREVISION] = SUB_REV;
+#ifdef RYAN_DEBUG_SVNREVISION
+			out.vn[versionInfo::V_SVNREVISION] = RYAN_DEBUG_SVNREVISION;
 #endif
 #ifdef SUB_DATE
 			std::strncpy(out.vsdate, SUB_DATE, versionInfo::charmax);

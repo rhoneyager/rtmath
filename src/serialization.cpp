@@ -1,3 +1,7 @@
+#pragma warning( disable : 4996 )
+#pragma warning( disable : 4251 )
+#pragma warning( disable : 4275 )
+#pragma warning( disable : 4244 )
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -6,7 +10,6 @@
 #include <map>
 
 #pragma warning( push )
-#pragma warning( disable : 4244 )
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
@@ -15,13 +18,8 @@
 #include "../Ryan_Debug/Serialization.h"
 
 
-#ifdef WITH_CMAKE
 #include "cmake-settings.h"
-#else
-#define COMPRESS_ZLIB 0
-#define COMPRESS_GZIP 0
-#define COMPRESS_BZIP2 0
-#endif
+
 
 
 #if COMPRESS_BZIP2
