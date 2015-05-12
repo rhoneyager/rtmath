@@ -7,14 +7,8 @@
 #include <thread>
 #include <memory>
 #include <mutex>
-//#include <boost/bind.hpp>
-//#include <boost/bind/protect.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/log/sources/global_logger_storage.hpp>
-#if USE_RYAN_SERIALIZATION
-#include <Ryan_Serialization/serialization.h>
-#endif
 #include "registry.h"
 #include "plugin.h"
 #include "defs.h"
@@ -23,10 +17,9 @@ namespace Ryan_Debug
 {
 	namespace io
 	{
-		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
-			m_io,
-			blog::sources::severity_channel_logger_mt< >,
-			(blog::keywords::severity = Ryan_Debug::log::error)(blog::keywords::channel = "io"));
+		/// Internal function used in templates that writes to the registry log
+		void RYAN_DEBUG_DLEXPORT emit_io_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
+
 
 		/// Provides uniform access semantics for compressible text file reading and writing
 		namespace TextFiles
@@ -242,8 +235,7 @@ namespace Ryan_Debug
 		private:
 			virtual void setup()
 			{
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Performing io setup";
+				emit_io_log("Performing io setup", Ryan_Debug::log::normal);
 
 				using namespace registry;
 				using namespace std;
@@ -263,7 +255,10 @@ namespace Ryan_Debug
 					using namespace std::placeholders;
 					IO_class_registry_writer<obj_class> writer;
 
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Creating & registering reader and writer for extension " << ext;
+					std::ostringstream o;
+					o << "Creating & registering reader and writer for extension " << ext;
+					emit_io_log(o.str(), Ryan_Debug::log::normal);
+
 					makeWriter(writer);
 					writers.push_back(std::move(writer));
 					// ! Register writer
@@ -313,11 +308,13 @@ namespace Ryan_Debug
 			}
 			virtual void makeWriter(Ryan_Debug::registry::IO_class_registry_writer<obj_class> &writer)
 			{
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Creating writer (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
+				std::ostringstream o;
+				o << "Creating writer (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
 					<< "), matching extensions : ";
 				for (const auto &e : this->matchExts)
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << e;
+					o << e;
+
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
 				writer.io_multi_matches = std::bind(
 					Ryan_Debug::io::TextFiles::serialization_handle::match_file_type_multi,
@@ -362,11 +359,13 @@ namespace Ryan_Debug
 			}
 			virtual void makeReader(Ryan_Debug::registry::IO_class_registry_reader<obj_class> &reader)
 			{
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Creating reader (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
+				std::ostringstream o;
+				o << "Creating writer (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
 					<< "), matching extensions : ";
 				for (const auto &e : this->matchExts)
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << e ;
+					o << e;
+
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
 				reader.io_multi_matches = std::bind(
 					Ryan_Debug::io::TextFiles::serialization_handle::match_file_type_multi,
@@ -605,8 +604,10 @@ namespace Ryan_Debug
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts
 				) const
 			{
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Performing write on file " << opts->filename();
+				std::ostringstream o;
+				o << "Performing write on file " << opts->filename();
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
+
 
 				// All of these objects can handle their own compression
 				typename ::Ryan_Debug::registry::IO_class_registry_writer<obj_class>::io_multi_type dllsaver = nullptr;
@@ -620,7 +621,10 @@ namespace Ryan_Debug
 					//if (hook.io_multi_matches(filename, ctype, handle))
 					if (hook.io_multi_matches(handle, opts))
 					{
-						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found a match";
+						std::ostringstream s;
+						s << "Found a match for " << opts->filename();
+						emit_io_log(s.str(), Ryan_Debug::log::normal);
+
 						dllsaver = hook.io_multi_processor;
 						break;
 					}
@@ -633,7 +637,9 @@ namespace Ryan_Debug
 						return dllsaver(handle, opts, this->shared_from_this()); //dynamic_cast<const obj_class*>(this));
 						//return dllsaver(handle, filename, dynamic_cast<const obj_class*>(this), key, accessType);
 					} catch (::boost::exception &e) {
-						BOOST_LOG_SEV(lg, ::Ryan_Debug::log::error) << "Unable to save file: " << opts->filename() << "\nThrowing error.";
+						std::ostringstream s;
+						s << "Unable to save file: " << opts->filename() << "\nThrowing error.";
+						emit_io_log(s.str(), Ryan_Debug::log::error);
 						e << ::Ryan_Debug::error::file_name(opts->filename());
 						throw;
 					}
@@ -641,7 +647,9 @@ namespace Ryan_Debug
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					BOOST_LOG_SEV(lg, ::Ryan_Debug::log::warning) << "File format unknown for file: " << opts->filename();
+					std::ostringstream s;
+					s << "File format unknown for file: " << opts->filename();
+					emit_io_log(s.str(), Ryan_Debug::log::warning);
 					RDthrow(error::xUnknownFileFormat())
 					<< error::file_name(opts->filename());
 				}
@@ -719,8 +727,9 @@ namespace Ryan_Debug
 				std::shared_ptr<const Ryan_Debug::registry::collectionTyped<obj_class> > filter = nullptr
 				)
 			{
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Performing single read on file " << opts->filename();
+				std::ostringstream o;
+				o << "Performing single read on file " << opts->filename();
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
 				// All of these objects can handle their own compression
 				typename ::Ryan_Debug::registry::IO_class_registry_reader<obj_class>::io_multi_type dllsaver = nullptr;
@@ -734,7 +743,9 @@ namespace Ryan_Debug
 					//if (hook.io_multi_matches(filename, ctype, handle))
 					if (hook.io_multi_matches(handle, opts))
 					{
-						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found a match";
+						std::ostringstream s;
+						s << "Found a match";
+						emit_io_log(s.str(), Ryan_Debug::log::normal);
 						dllsaver = hook.io_multi_processor;
 						break;
 					}
@@ -748,7 +759,10 @@ namespace Ryan_Debug
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "File format unknown for file: " << opts->filename();
+					std::ostringstream s;
+					s << "File format unknown for file: " << opts->filename();
+					emit_io_log(s.str(), Ryan_Debug::log::warning);
+
 					RDthrow(error::xUnknownFileFormat()) 
 						<< error::file_name(opts->filename());
 				}
@@ -804,8 +818,9 @@ namespace Ryan_Debug
 				//boost::shared_ptr<obj_class> obj = 
 				customGenerator<obj_class>();
 
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Performing vector read on file " << opts->filename();
+				std::ostringstream o;
+				o << "Performing vector read on file " << opts->filename();
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
 				// All of these objects can handle their own compression
 				typename ::Ryan_Debug::registry::IO_class_registry_reader<obj_class>::io_vector_type dllv = nullptr;
@@ -824,7 +839,10 @@ namespace Ryan_Debug
 						else if (hook.io_multi_processor)
 							dllm = hook.io_multi_processor;
 						else continue; // No vector or multi reader - shouldn't happen if io_multi_matches, but fail to next plugin
-						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found a match";
+						std::ostringstream s;
+						s << "Found a match";
+						emit_io_log(s.str(), Ryan_Debug::log::normal);
+
 						break;
 					}
 				}
@@ -846,7 +864,10 @@ namespace Ryan_Debug
 							return res;
 						}
 					} catch (::boost::exception &e) {
-						BOOST_LOG_SEV(lg, ::Ryan_Debug::log::error) << "Unable to read file: " << opts->filename() << "\nThrowing error.";
+						std::ostringstream o;
+						o << "Unable to read file: " << opts->filename() << "\nThrowing error.";
+						emit_io_log(o.str(), Ryan_Debug::log::error);
+
 						e << ::Ryan_Debug::error::file_name(opts->filename());
 						throw;
 					}
@@ -854,7 +875,10 @@ namespace Ryan_Debug
 				} else {
 					// Cannot match a file type to read.
 					// Should never occur.
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "File format unknown for file: " << opts->filename();
+					std::ostringstream o;
+					o << "File format unknown for file: " << opts->filename();
+					emit_io_log(o.str(), Ryan_Debug::log::warning);
+
 					RDthrow(error::xUnknownFileFormat())
 						<< error::file_name(opts->filename());
 				}
@@ -914,8 +938,9 @@ namespace Ryan_Debug
 				std::shared_ptr<Ryan_Debug::registry::DBhandler> p = nullptr, 
 				std::shared_ptr<registry::DB_options> o = nullptr)
 			{
-				auto& lg = Ryan_Debug::io::m_io::get();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Updating database";
+				std::ostringstream o;
+				o << "Updating database";
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
 				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<query_reg_class, registry_class >::getHooks();
 				for (const auto &h : *(hooks.get()))

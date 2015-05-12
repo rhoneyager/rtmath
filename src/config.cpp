@@ -13,6 +13,7 @@
 
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/fs.h"
+#include "../Ryan_Debug/logging.h"
 #include "internal.h"
 
 #include "../Ryan_Debug/config.h"
@@ -174,8 +175,7 @@ namespace Ryan_Debug {
 			Ryan_Debug::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_OldStandard>(configsegment::writeOld, configsegment::readOld, known_formats())
 		{
-			auto& lg = Ryan_Debug::io::m_io::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Just registered config - implementsConfigOld";
+			Ryan_Debug::io::emit_io_log("Just registered config - implementsConfigOld", Ryan_Debug::log::normal);
 
 		}
 
@@ -210,8 +210,7 @@ namespace Ryan_Debug {
 			Ryan_Debug::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_Boost>(configsegment::writeBoost, configsegment::readBoost, known_formats())
 		{
-			auto& lg = Ryan_Debug::io::m_io::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Just registered config - implementsConfigBoost";
+			Ryan_Debug::io::emit_io_log("Just registered config - implementsConfigBoost", Ryan_Debug::log::normal);
 		}
 
 		const std::set<std::string>& implementsConfigBoost::known_formats()

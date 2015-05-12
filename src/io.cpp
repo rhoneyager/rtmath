@@ -9,10 +9,12 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
 #include "../Ryan_Debug/splitSet.h"
 #include "../Ryan_Debug/registry.h"
 #include "../Ryan_Debug/Serialization.h"
 #include "../Ryan_Debug/io.h"
+#include "../Ryan_Debug/logging.h"
 
 namespace {
 	const char* hid = "io_implementsSerialization";
@@ -25,6 +27,18 @@ namespace Ryan_Debug
 {
 	namespace io
 	{
+		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+			m_io,
+			boost::log::sources::severity_channel_logger_mt< >,
+			(boost::log::keywords::severity = Ryan_Debug::log::error)
+			(boost::log::keywords::channel = "io"));
+
+		void emit_io_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
+		{
+			auto& lg = Ryan_Debug::io::m_io::get();
+			BOOST_LOG_SEV(lg, sev) << m;
+		}
+
 		namespace TextFiles
 		{
 			class hSerialization

@@ -25,6 +25,8 @@
 #include <thread>
 #include <mutex>
 #include <time.h>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include "../Ryan_Debug/logging.h"
 
 //#include "../Ryan_Debug/debug.h"
 
@@ -65,6 +67,7 @@
 #endif
 
 #include "../Ryan_Debug/debug.h"
+#include "../Ryan_Debug/error.h"
 #include "../Ryan_Debug/info.h"
 #include "../Ryan_Debug/splitSet.h"
 
@@ -123,6 +126,17 @@ namespace {
 }
 
 namespace Ryan_Debug {
+
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_os,
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)
+		(boost::log::keywords::channel = "os_functions"));
+	void emit_os_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
+	{
+		auto& lg = m_os::get();
+		BOOST_LOG_SEV(lg, sev) << m;
+	}
 
 	/// Contains information about a process
 	struct processInfo
@@ -401,7 +415,8 @@ namespace Ryan_Debug {
 		if (!success)
 		{
 			success = GetLastError();
-			std::cout << "Failure\n" << success << std::endl;
+			auto& lg = m_os::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "Failure in getPathWIN32\n" << success << std::endl;
 			return false;
 		}
 		return true;
@@ -691,8 +706,9 @@ namespace Ryan_Debug {
 		}
 		else {
 			// Privilege escalation required. Need to handle this case.
-			std::string err("Privilege escalation required to get full process information for another process. UNIMPLEMENTED.\n");
-			std::cerr << err;
+			auto& lg = m_os::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "Privilege escalation required to get full process information for another process. UNIMPLEMENTED.\n";
+			
 			//throw err.c_str();
 		}
 
@@ -932,7 +948,9 @@ namespace Ryan_Debug {
 		}
 		else {
 			DWORD err = GetLastError();
-			std::cerr << "getUsername failed with error " << err << std::endl;
+			auto& lg = m_os::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) 
+				<< "getUsername failed with error " << err << std::endl;
 		}
 #endif
 		return username.c_str();
@@ -964,7 +982,9 @@ namespace Ryan_Debug {
 		}
 		else {
 			DWORD err = GetLastError();
-			std::cerr << "getHostname failed with error " << err << std::endl;
+			auto& lg = m_os::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) 
+				<< "getHostname failed with error " << err << std::endl;
 		}
 #endif
 		return hostname.c_str();
@@ -1016,7 +1036,9 @@ namespace Ryan_Debug {
 			appConfigDir = convertStr(hname);
 		} else {
 			DWORD err = GetLastError();
-			std::cerr << "SHGetFolderPathA failed with error " << err << std::endl;
+			auto& lg = m_os::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) 
+				<< "SHGetFolderPathA failed with error " << err << std::endl;
 		}
 		CoTaskMemFree(static_cast<void*>(hname));
 #endif
@@ -1060,7 +1082,9 @@ namespace Ryan_Debug {
 		}
 		else {
 			DWORD err = GetLastError();
-			std::cerr << "SHGetFolderPathA failed with error " << err << std::endl;
+			auto& lg = m_os::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error)
+				<< "SHGetFolderPathA failed with error " << err << std::endl;
 		}
 		CoTaskMemFree(static_cast<void*>(hname));
 #endif

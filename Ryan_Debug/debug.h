@@ -6,7 +6,6 @@
 #include <ostream>
 // Intended as a single dll, so using std::vector is complicated.
 //#include <vector>
-
 namespace boost
 {
 	namespace program_options {
@@ -21,19 +20,6 @@ namespace boost
 
 namespace Ryan_Debug
 {
-	namespace log {
-		enum severity_level
-		{
-			debug_3,
-			debug_2,
-			debug_1,
-			normal,
-			notification,
-			warning,
-			error,
-			critical
-		};
-	}
 
 	struct processInfo;
 	typedef const processInfo* hProcessInfo;

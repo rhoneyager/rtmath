@@ -13,6 +13,7 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
+#include "../Ryan_Debug/logging.h"
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/error.h"
 #include "../Ryan_Debug/fs.h"
@@ -48,8 +49,8 @@ namespace Ryan_Debug
 
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_reg,
-			blog::sources::severity_channel_logger_mt< >,
-			(blog::keywords::severity = Ryan_Debug::log::error)(blog::keywords::channel = "registry"));
+			boost::log::sources::severity_channel_logger_mt< >,
+			(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "registry"));
 
 		void emit_registry_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
 		{
@@ -302,11 +303,11 @@ namespace {
 	{
 		Ryan_Debug::log::my_logger_mt m_dll;
 	public:
-		DLLhandle(const std::string &filename, bool critical = false) : dlHandle(nullptr), m_dll(blog::keywords::channel = "dll")
+		DLLhandle(const std::string &filename, bool critical = false) : dlHandle(nullptr), m_dll(boost::log::keywords::channel = "dll")
 		{
 			open(filename, critical);
 		}
-		DLLhandle() : dlHandle(nullptr), m_dll(blog::keywords::channel = "dll")
+		DLLhandle() : dlHandle(nullptr), m_dll(boost::log::keywords::channel = "dll")
 		{
 		}
 		void open(const std::string &filename, bool critical = false)

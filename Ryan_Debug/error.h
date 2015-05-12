@@ -6,30 +6,9 @@
 #pragma warning( disable : 4275 ) // DLL boundary warning
 #pragma warning( disable : 4251 ) // DLL interface - warns on private objects...
 
-#include <boost/log/trivial.hpp>
-#include <boost/log/attributes.hpp>
-#include <boost/log/expressions/keyword.hpp>
-#include <boost/log/sources/channel_feature.hpp>
-#include <boost/log/sources/channel_logger.hpp>
-#include <boost/log/sources/severity_feature.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
-
-namespace blog = boost::log;
-
 namespace Ryan_Debug {
-	namespace log {
-		typedef ::boost::log::sources::severity_channel_logger_mt<
-			::Ryan_Debug::log::severity_level,     // the type of the severity level
-			std::string         // the type of the channel name
-		> my_logger_mt;
-	}
 	namespace error {
 		
-		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::Ryan_Debug::log::severity_level)
-		//BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
-		BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
-	
 		typedef boost::error_info<struct tag_range_text, std::string> split_range_name;
 		typedef boost::error_info<struct tag_specializer_type, std::string> specializer_type;
 

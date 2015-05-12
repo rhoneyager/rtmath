@@ -36,6 +36,7 @@
 #include "../Ryan_Debug/config.h"
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/error.h"
+#include "../Ryan_Debug/logging.h"
 #include "../Ryan_Debug/registry.h"
 #include "../Ryan_Debug/hash.h"
 #include "internal.h"
@@ -133,7 +134,7 @@ namespace Ryan_Debug
 			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::null_deleter());
 			sink_init->locked_backend()->add_stream(stream);
 			//if (!logall) {
-			sink_init->set_filter(Ryan_Debug::error::severity >= logthresholdlevel //debug_3 //warning
+			sink_init->set_filter(Ryan_Debug::log::severity >= logthresholdlevel //debug_3 //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(Ryan_Debug::debug::normal)
 				); // Ryan_Debug::debug::warning);
@@ -141,8 +142,8 @@ namespace Ryan_Debug
 			sink_init->set_formatter( boost::log::expressions::stream 
 				<< boost::log::expressions::format_date_time
 					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-					<< ": <" << (Ryan_Debug::error::severity)
-				<< "> [" << Ryan_Debug::error::channel << "] {init} "
+					<< ": <" << (Ryan_Debug::log::severity)
+					<< "> [" << Ryan_Debug::log::channel << "] {init} "
 				<< boost::log::expressions::smessage
 
 				);
@@ -165,8 +166,8 @@ namespace Ryan_Debug
 			d_sink->set_formatter(boost::log::expressions::stream
 				<< boost::log::expressions::format_date_time
 				< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-				<< ": <" << (Ryan_Debug::error::severity)
-				<< "> [" << Ryan_Debug::error::channel << "] {debugger} "
+				<< ": <" << (Ryan_Debug::log::severity)
+				<< "> [" << Ryan_Debug::log::channel << "] {debugger} "
 				<< boost::log::expressions::smessage << std::endl);
 
 			core->add_sink(d_sink);
@@ -251,15 +252,15 @@ namespace Ryan_Debug
 			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
 			boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
 			sink->locked_backend()->add_stream(stream);
-			sink->set_filter( Ryan_Debug::error::severity >= logthresholdlevel //warning
+			sink->set_filter(Ryan_Debug::log::severity >= logthresholdlevel //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(Ryan_Debug::debug::normal)
 				); // Ryan_Debug::debug::warning);
 			sink->set_formatter( boost::log::expressions::stream 
 				<< boost::log::expressions::format_date_time
 					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-					<< ": <" << Ryan_Debug::error::severity
-				<< "> [" << Ryan_Debug::error::channel << "] "
+					<< ": <" << Ryan_Debug::log::severity
+					<< "> [" << Ryan_Debug::log::channel << "] "
 				<< boost::log::expressions::smessage
 				);
 

@@ -17,6 +17,7 @@
 #include "debug.h"
 #include "error.h"
 #include "info.h"
+#include "logging_base.h"
 
 namespace boost {
 	namespace program_options {

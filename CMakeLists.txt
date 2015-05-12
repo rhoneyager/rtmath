@@ -131,6 +131,7 @@ set( srcs
 	src/hash.cpp
 	src/info.cpp
 	src/io.cpp
+	src/logging.cpp
 	src/macros.cpp
 	src/modules.cpp
 	src/MurmurHash3.cpp
@@ -148,6 +149,7 @@ set (hdrs
 	Ryan_Debug/hash.h
 	Ryan_Debug/info.h
 	Ryan_Debug/io.h
+	Ryan_Debug/logging.h
 	Ryan_Debug/macros.h
 	Ryan_Debug/modules.h
 	Ryan_Debug/MurmurHash3.h

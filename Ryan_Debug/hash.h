@@ -9,6 +9,7 @@
 
 #include "macros.h"
 #include "registry.h"
+#include "logging.h"
 #include <boost/filesystem.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 
@@ -21,8 +22,8 @@ namespace Ryan_Debug {
 	namespace hash {
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_hash,
-			blog::sources::severity_channel_logger_mt< >,
-			(blog::keywords::severity = Ryan_Debug::log::error)(blog::keywords::channel = "hash"));
+			boost::log::sources::severity_channel_logger_mt< >,
+			(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "hash"));
 
 		class hashStore;
 		typedef std::shared_ptr<const hashStore> pHashStore;
