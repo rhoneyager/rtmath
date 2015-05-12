@@ -13,6 +13,7 @@
 
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/fs.h"
+#include "internal.h"
 
 #include "../Ryan_Debug/config.h"
 #include "../Ryan_Debug/splitSet.h"
@@ -174,7 +175,7 @@ namespace Ryan_Debug {
 			configsegment_IO_input_registry, configsegment_OldStandard>(configsegment::writeOld, configsegment::readOld, known_formats())
 		{
 			auto& lg = Ryan_Debug::io::m_io::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Just registered config - implementsConfigOld\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Just registered config - implementsConfigOld";
 
 		}
 
@@ -210,7 +211,7 @@ namespace Ryan_Debug {
 			configsegment_IO_input_registry, configsegment_Boost>(configsegment::writeBoost, configsegment::readBoost, known_formats())
 		{
 			auto& lg = Ryan_Debug::io::m_io::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Just registered config - implementsConfigBoost\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Just registered config - implementsConfigBoost";
 		}
 
 		const std::set<std::string>& implementsConfigBoost::known_formats()
@@ -696,21 +697,21 @@ namespace Ryan_Debug {
 			auto& lg = Ryan_Debug::config::m_config::get();
 
 			// Check application execution arguments
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "Checking app command line is disabled!!!!!!!\n";
-			//path testCMD(Ryan_Debug::debug::sConfigDefaultFile);
-			//if (exists(testCMD))
-			//{
-			//	filename = Ryan_Debug::debug::sConfigDefaultFile;
-			//	BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << filename << std::endl;
-			//	return;
-			//}
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "Checking app command line";
+			path testCMD(Ryan_Debug::debug::sConfigDefaultFile);
+			if (exists(testCMD))
+			{
+				filename = Ryan_Debug::debug::sConfigDefaultFile;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << filename;
+				return;
+			}
 
 			// Checking environment variables
 			{
 				using namespace Ryan_Debug;
 				boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
 
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking Ryan_Debug_conf environment variable\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking Ryan_Debug_conf environment variable";
 				size_t sEnv = 0;
 				const char* cenv = getEnviron(info.get(), sEnv);
 				std::string env(cenv,sEnv);
@@ -733,7 +734,7 @@ namespace Ryan_Debug {
 						tokenizer;
 					boost::char_separator<char> sep(";");
 
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Candidates are: " << it->second << std::endl;
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Candidates are: " << it->second;
 					std::string ssubst;
 					tokenizer tcom(it->second, sep);
 					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
@@ -742,7 +743,7 @@ namespace Ryan_Debug {
 						if (exists(testEnv))
 						{
 							filename = it->second;
-							BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using " << filename << std::endl;
+							BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using " << filename;
 							return;
 						}
 					}
@@ -755,9 +756,9 @@ namespace Ryan_Debug {
 			// Finally, just use the default os-dependent path
 			//filename = "/home/rhoneyag/.Ryan_Debug";
 			// Macro defining the correct path
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking compile-time paths: \n"
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking compile-time paths: "
 				//<< "RTC: " << RTC << "\nRTCB: " << RTCB << "\nRTCC: " << RTCC
-				<< "\nSYS_RTC: " << SYS_RTC << "\n";
+				<< "\nSYS_RTC: " << SYS_RTC;
 			//path testUser(RTC);
 			//path testUserB(RTCB);
 			//path testUserC(RTCC);
@@ -770,11 +771,11 @@ namespace Ryan_Debug {
 			//	filename = RTCC;
 			if (exists(testSys))
 				filename = SYS_RTC;
-			if (filename.size()) BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using conf file: " << filename << "\n";
+			if (filename.size()) BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using conf file: " << filename;
 			else BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Unable to find Ryan_Debug configuration file. "
 				<< "Log channel config at severity debug_2 lists the searched paths. You can specify the file by "
 				"command-line (option --Ryan_Debug-config-file), environment variable (Ryan_Debug_conf), "
-				"or place one in an at-compile-time-specified path.\n";
+				"or place one in an at-compile-time-specified path.";
 
 			return;
 		}
@@ -793,14 +794,17 @@ namespace Ryan_Debug {
 		{
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			auto& lg = Ryan_Debug::config::m_config::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading Ryan_Debug config file.\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading Ryan_Debug config file.";
 			if (filename.size())
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Override filename " << filename << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Override filename " << filename;
 			std::string fn = filename;
 			if (!fn.size()) getConfigDefaultFile(fn);
-			if (fn.size()) BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found Ryan_Debug config file " << fn << "\n";
-			if (!fn.size()) RDthrow(error::xMissingRyan_DebugConf())
-				<< error::file_name(filename) << error::default_file_name(fn);
+			if (fn.size()) BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found Ryan_Debug config file " << fn;
+			else {
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Cannot find Ryan_Debug config file!";
+				RDthrow(error::xMissingRyan_DebugConf())
+					<< error::file_name(filename) << error::default_file_name(fn);
+			}
 			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
 			auto opts = Ryan_Debug::registry::IO_options::generate(Ryan_Debug::registry::IOhandler::IOtype::READONLY);
 			opts->filename(fn);

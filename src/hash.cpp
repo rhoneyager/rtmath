@@ -27,7 +27,7 @@ namespace {
 		inited = true;
 
 		auto& lg = Ryan_Debug::hash::m_hash::get();
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading hash stores\n";
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading hash stores";
 		/// \todo Implement most of this function
 
 		// Stores can be folder trees, single hdf5 files, and websites.
@@ -46,7 +46,7 @@ namespace {
 			auto chash = cdd->getChild("hashes");
 			if (!chash) {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Ryan_Debug configuration file does "
-					"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.\n";
+					"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.";
 				RDthrow(Ryan_Debug::error::xMissingKey())
 					<< Ryan_Debug::error::otherErrorText("/ddscat/hashes in Ryan_Debug config is missing");
 				return;
@@ -84,7 +84,7 @@ namespace {
 					<< "\npriority: " << priority
 					<< "\npath: " << location
 					<< "\ntype: " << type
-					<< "\nwritable: " << writable << std::endl;
+					<< "\nwritable: " << writable;
 
 				std::shared_ptr < Ryan_Debug::hash::hashStore > h;
 
@@ -280,16 +280,16 @@ namespace Ryan_Debug {
 			}
 			catch (boost::filesystem::filesystem_error &f) {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::warning)
-					<< f.what() << " when searching " << base << " - " << hash << std::endl;
+					<< f.what() << " when searching " << base << " - " << hash;
 			}
 			catch (boost::system::system_error &f) {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::error)
-					<< f.what() << " when searching " << base << " - " << hash << std::endl;
+					<< f.what() << " when searching " << base << " - " << hash;
 				throw;
 			}
 			catch (...) {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "An unhandled error occurred "
-					" when searching " << base << " - " << hash << std::endl;
+					" when searching " << base << " - " << hash;
 				throw;
 			}
 			return false;

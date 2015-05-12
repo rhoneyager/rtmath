@@ -160,7 +160,7 @@ namespace {
 		using std::set;
 		using std::string; 
 		auto& lg = Ryan_Debug::registry::m_reg::get();
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Constructing search paths" << "\n";
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Constructing search paths" ;
 
 
 		// Checking cmake pre-defined locations
@@ -169,7 +169,7 @@ namespace {
 			string regdir(REGISTRY_PLUGINS_OVERRIDE_DIR);
 			if (regdir.size())
 			{
-				BOOST_LOG_SEV(lg, normal) << "REGISTRY_PLUGINS_OVERRIDE_DIR defined, so using: " << regdir << "\n";
+				BOOST_LOG_SEV(lg, normal) << "REGISTRY_PLUGINS_OVERRIDE_DIR defined, so using: " << regdir;
 				searchPathsRecursive.emplace(boost::filesystem::path(regdir));
 			}
 		}
@@ -203,7 +203,7 @@ namespace {
 		boost::filesystem::path libpath(getPath(modinfo.get()));
 		libpath.remove_filename();
 		Ryan_Debug::registry::searchPathsOne.emplace(libpath / "plugins");
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding library-relative path: " << libpath / "plugins" << "\n";
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding library-relative path: " << libpath / "plugins";
 
 
 		// Checking Ryan_Debug.conf
@@ -225,15 +225,15 @@ namespace {
 			Ryan_Debug::splitSet::splitSet(srecursivePaths, CrecursivePaths);
 			Ryan_Debug::splitSet::splitSet(sonePaths, ConePaths);
 
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding paths from Ryan_Debug config file" << "\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding paths from Ryan_Debug config file";
 			for (auto &p : CrecursivePaths)
 			{
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p;
 				searchPathsRecursive.emplace(boost::filesystem::path(p));
 			}
 			for (auto &p : ConePaths)
 			{
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p;
 				searchPathsOne.emplace(boost::filesystem::path(p));
 			}
 		}
@@ -276,13 +276,13 @@ namespace {
 						if (exists(testEnv))
 						{
 							res.emplace(testEnv);
-							BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << testEnv << "\n";
+							BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << testEnv;
 						}
 					}
 				}
 			};
 
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding paths from environment" << "\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding paths from environment";
 			searchEnviron("Ryan_Debug_plugins_DIR", searchPathsRecursive);
 			searchEnviron("Ryan_Debug_dlls_recursive", searchPathsRecursive);
 			searchEnviron("Ryan_Debug_dlls_onelevel", searchPathsOne);
@@ -311,10 +311,10 @@ namespace {
 		}
 		void open(const std::string &filename, bool critical = false)
 		{
-			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Loading dll " << filename << " with critical flag " << critical << ".\n";
+			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Loading dll " << filename << " with critical flag " << critical << ".";
 			if (DLLpathsLoaded.count(filename))
 			{
-				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "DLL is already loaded (" << filename << ", " << critical << ")!\n";
+				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "DLL is already loaded (" << filename << ", " << critical << ")!";
 				RDthrow(Ryan_Debug::error::xDuplicateHook())
 					<< Ryan_Debug::error::file_name_b(fname)
 					<< Ryan_Debug::error::file_name(filename)
@@ -323,7 +323,7 @@ namespace {
 			if (dlHandle)
 			{
 				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "DLL handle is already in use (opening "
-					<< filename << ") (already opened " << fname << ") (critical " << critical << ")!\n";
+					<< filename << ") (already opened " << fname << ") (critical " << critical << ")!";
 				RDthrow(Ryan_Debug::error::xHandleInUse())
 					<< Ryan_Debug::error::file_name_b(fname.c_str())
 					<< Ryan_Debug::error::file_name(filename)
@@ -342,7 +342,7 @@ namespace {
 			{
 				Ryan_Debug::debug::severity_level sl = (critical) ? Ryan_Debug::debug::critical : Ryan_Debug::debug::error;
 				BOOST_LOG_SEV(m_dll, sl) << "dlopen error (opening " 
-					<< filename << "): " << cerror << "\n";
+					<< filename << "): " << cerror;
 				//std::string serror(cerror);
 				RDthrow(Ryan_Debug::debug::xDLLerror())
 					<< Ryan_Debug::debug::otherErrorText(std::string(cerror)) 
@@ -358,7 +358,7 @@ namespace {
 				DWORD err = GetLastError();
 				Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
 				BOOST_LOG_SEV(m_dll, sl) << "LoadLibrary error (opening "
-					<< filename << "): error code " << err << ".\n";
+					<< filename << "): error code " << err << ".";
 				if (critical)
 					RDthrow(Ryan_Debug::error::xDLLerror())
 						<< Ryan_Debug::error::otherErrorText("LoadLibrary") 
@@ -368,7 +368,7 @@ namespace {
 			}
 #endif
 			DLLpathsLoaded.insert(filename);
-			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Loaded dll " << filename << " with critical flag " << critical << ".\n";
+			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Loaded dll " << filename << " with critical flag " << critical << ".";
 		}
 		void close()
 		{
@@ -389,10 +389,10 @@ namespace {
 		}
 		void* getSym(const char* symbol)
 		{
-			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Finding symbol " << symbol << " in dll " << fname << ".\n";
+			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Finding symbol " << symbol << " in dll " << fname << ".";
 			if (dlHandle == NULL)
 			{
-				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "DLL handle is closed when finding symbol " << symbol << " in dll " << fname << ".\n";
+				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "DLL handle is closed when finding symbol " << symbol << " in dll " << fname << ".";
 				RDthrow(Ryan_Debug::error::xHandleNotOpen())
 					<< Ryan_Debug::error::file_name(fname);
 			}
@@ -405,7 +405,7 @@ namespace {
 #endif
 			if (!sym)
 			{
-				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "Cannot find symbol " << symbol << " in dll " << fname << ".\n";
+				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "Cannot find symbol " << symbol << " in dll " << fname << ".";
 				RDthrow(Ryan_Debug::error::xSymbolNotFound()) 
 					<< Ryan_Debug::error::file_name(fname)
 					<< Ryan_Debug::error::symbol_name(symbol);
@@ -465,7 +465,7 @@ namespace Ryan_Debug
 			auto& lg = m_reg::get();
 			for (const auto &sbase : searchPaths)
 			{
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Finding dlls in " << sbase << " with recursion=" << recurse << ".\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Finding dlls in " << sbase << " with recursion=" << recurse << ".";
 				path base(sbase);
 				base = Ryan_Debug::fs::expandSymlink<path,path>(base);
 				if (!exists(base)) continue;
@@ -542,7 +542,7 @@ namespace Ryan_Debug
 			using std::string;
 
 			auto& lg = m_reg::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Initializing registry system\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Initializing registry system";
 
 			//if (vm.count("dll-no-default-locations"))
 			//	autoLoadDLLs = false;
@@ -550,22 +550,22 @@ namespace Ryan_Debug
 			if (vm.count("dll-load-onelevel"))
 			{
 				std::vector<std::string> sPaths = vm["dll-load-onelevel"].as<std::vector<std::string> >();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll paths (1)\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll paths (1)";
 				for (const auto s : sPaths)
 				{
 					searchPathsOne.emplace(s);
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll path (1): " << s << "\n";
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll path (1): " << s;
 				}
 			}
 
 			if (vm.count("dll-load-recursive"))
 			{
 				std::vector<std::string> sPaths = vm["dll-load-recursive"].as<std::vector<std::string> >();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll paths (1)" << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll paths (1)";
 				for (const auto s : sPaths)
 				{
 					searchPathsRecursive.emplace(s);
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll path (r): " << s << "\n";
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Loading custom dll path (r): " << s;
 				}
 			}
 
@@ -609,7 +609,7 @@ namespace Ryan_Debug
 		void loadDLL(const std::string &filename)
 		{
 			auto& lg = m_reg::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading DLL: " << filename << "\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading DLL: " << filename;
 			auto doLoad = [](const std::string &f)
 			{
 				boost::shared_ptr<DLLhandle> h(new DLLhandle(f));
@@ -622,7 +622,7 @@ namespace Ryan_Debug
 			{
 				if (exists(p)) doLoad(p.string());
 				else {
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "DLL does not exist: " << filename << "\n";
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "DLL does not exist: " << filename;
 					RDthrow(Ryan_Debug::error::xMissingFile())
 						<< Ryan_Debug::error::otherErrorText("Cannot find dll to load")
 						<< Ryan_Debug::error::file_name(p.string());
@@ -759,10 +759,10 @@ extern "C"
 		Ryan_Debug::registry::DLLpreamble b = p;
 
 		auto& lg = Ryan_Debug::registry::m_reg::get();
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "DLL info for: " << p.path << "\n";
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Name: " << p.name << "\n";
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "UUID: " << p.uuid << "\n";
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Description: " << p.description << "\n";
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "DLL info for: " << p.path << "\n"
+			<< "Name: " << p.name << "\n"
+			<< "UUID: " << p.uuid << "\n"
+			<< "Description: " << p.description << "\n";
 
 		// Verify dll version of Ryan_Debug matches the current version!
 		Ryan_Debug::versioning::versionInfo rdver;
@@ -776,7 +776,7 @@ extern "C"
 				<< "Ryan_Debug library is: \n"
 				<< mine.str()
 				<< "Library at " << p.path << " uses version: \n"
-				<< theirs.str() << "\n";
+				<< theirs.str();
 		}
 
 		// \todo Add in dll path to preamble!

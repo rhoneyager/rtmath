@@ -38,6 +38,7 @@
 #include "../Ryan_Debug/error.h"
 #include "../Ryan_Debug/registry.h"
 #include "../Ryan_Debug/hash.h"
+#include "internal.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
 #include "debug_subversion.h"
@@ -69,16 +70,7 @@ namespace Ryan_Debug
 	namespace debug
 	{
 		std::string sConfigDefaultFile;
-
-		size_t RYAN_DEBUG_DLEXPORT getConcurrentThreadsSupported()
-		{
-			std::lock_guard<std::mutex> lock(m_sys_num_threads);
-			if (sys_num_threads) return sys_num_threads;
-			sys_num_threads = static_cast<size_t> (std::thread::hardware_concurrency());
-			if (!sys_num_threads) return 4;
-			return sys_num_threads;
-		}
-
+	}
 		void add_options(
 			boost::program_options::options_description &cmdline,
 			boost::program_options::options_description &config,
@@ -152,6 +144,7 @@ namespace Ryan_Debug
 					<< ": <" << (Ryan_Debug::error::severity)
 				<< "> [" << Ryan_Debug::error::channel << "] {init} "
 				<< boost::log::expressions::smessage
+
 				);
 
 			
@@ -159,9 +152,28 @@ namespace Ryan_Debug
 			core->add_sink(sink_init);
 			//boost::log::core::get()->set_filter(Ryan_Debug::debug::severity_level >= Ryan_Debug::debug::warning);
 
+
+#ifdef _WIN32
+			// Complete sink type
+			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > d_sink_t;
+			// Create the debugger sink. The backend requires synchronization in the frontend.
+			boost::shared_ptr< d_sink_t > d_sink(new d_sink_t());
+
+			// Set the special filter to the frontend
+			// in order to skip the sink when no debugger is available
+			d_sink->set_filter(boost::log::expressions::is_debugger_present());
+			d_sink->set_formatter(boost::log::expressions::stream
+				<< boost::log::expressions::format_date_time
+				< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+				<< ": <" << (Ryan_Debug::error::severity)
+				<< "> [" << Ryan_Debug::error::channel << "] {debugger} "
+				<< boost::log::expressions::smessage << std::endl);
+
+			core->add_sink(d_sink);
+#endif
 			
 			auto& lg = m_deb::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Initial logging started." << std::endl;
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Initial logging started.";
 			core->flush();
 		}
 
@@ -261,18 +273,6 @@ namespace Ryan_Debug
 
 
 
-
-#ifdef _WIN32
-			// Complete sink type
-			typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > d_sink_t;
-			// Create the debugger sink. The backend requires synchronization in the frontend.
-			boost::shared_ptr< d_sink_t > d_sink(new d_sink_t());
-
-			// Set the special filter to the frontend
-			// in order to skip the sink when no debugger is available
-			d_sink->set_filter(boost::log::expressions::is_debugger_present());
-			core->add_sink(d_sink);
-#endif
 			setup = true;
 		}
 
@@ -309,13 +309,14 @@ namespace Ryan_Debug
 			
 			if (vm.count("Ryan_Debug-config-file"))
 			{
-				sConfigDefaultFile = vm["Ryan_Debug-config-file"].as<std::string>();
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of Ryan_Debug-config-file: " << sConfigDefaultFile << "\n";
+				debug::sConfigDefaultFile = vm["Ryan_Debug-config-file"].as<std::string>();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of Ryan_Debug-config-file: " 
+					<< debug::sConfigDefaultFile ;
 			}
 
 			//if (vm.count("Ryan_Debug-conf"))
 			//{
-			//	BOOST_LOG_SEV(lg, notification) << "Loading custom Ryan_Debug.conf from " << vm["Ryan_Debug-conf"].as<string>() << "\n";
+			//	BOOST_LOG_SEV(lg, notification) << "Loading custom Ryan_Debug.conf from " << vm["Ryan_Debug-conf"].as<string>();
 			//	Ryan_Debug::config::loadRtconfRoot(vm["Ryan_Debug-conf"].as<string>());
 			//} else { Ryan_Debug::config::loadRtconfRoot(); }
 			Ryan_Debug::config::loadRtconfRoot();
@@ -325,7 +326,7 @@ namespace Ryan_Debug
 			if (vm.count("close-on-finish")) {
 				bool val = !(vm["close-on-finish"].as<bool>());
 				Ryan_Debug::waitOnExit(val);
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of waiting on exit: " << val << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of waiting on exit: " << val ;
 			}
 
 			if (vm.count("hash-dir"))
@@ -338,14 +339,14 @@ namespace Ryan_Debug
 					h->base = boost::filesystem::path(p);
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
 						<< "Console override of hash directory: " << p 
-						<< ", writable: " << h->writable << ".\n";
+						<< ", writable: " << h->writable << ".";
 					Ryan_Debug::hash::hashStore::addHashStore(h, 0);
 				}
 			}
 
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Switching to primary logging system\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Switching to primary logging system";
 			setupLogging(vm, sevlev);
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Primary logging system started.\n";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Primary logging system started.";
 			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 			core->flush();
 
@@ -369,5 +370,5 @@ namespace Ryan_Debug
 		}
 
 
-	}
+	//}
 }

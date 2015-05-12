@@ -25,6 +25,9 @@
 #include <thread>
 #include <mutex>
 #include <time.h>
+
+//#include "../Ryan_Debug/debug.h"
+
 #ifdef _WIN32
 //#include "../../Ryan_Debug/Ryan_Debug/ROOTlink.h"
 #include <Windows.h>
@@ -114,6 +117,9 @@ namespace {
 	std::string username;
 	std::string homeDir, appConfigDir;
 	std::string moduleCallbackBuffer;
+
+	// First element is name, second is path. Gets locked with m_sys_names.
+	std::vector<std::pair<std::string, std::string> > loadedModulesList;
 }
 
 namespace Ryan_Debug {
@@ -848,6 +854,7 @@ namespace Ryan_Debug {
 		delete h;
 	}
 
+
 	/// Enumerate the modules in a given process.
 	void enumModules(int pid, std::ostream &out = std::cerr)
 	{
@@ -880,7 +887,7 @@ namespace Ryan_Debug {
 #endif
 #ifdef __unix__ // _WIN32 block will have handled cygwin case
 		// Depends on dladdr existence. Found in gcc, clang, intel.
-		// Also depends on dl_iterate_phdr
+		// Also depends on dl_iterate_phdr. IGNORES PID!
 		/*
 		dl_iterate_phdr(std::bind(moduleCallback,
 					std::placeholders::_1,
@@ -890,6 +897,7 @@ namespace Ryan_Debug {
 					, NULL);
 					*/
 		std::lock_guard<std::mutex> lock(m_sys_names);
+		if (pid != getPID()) return;
 		if (!moduleCallbackBuffer.size()) {
 			dl_iterate_phdr(moduleCallback, NULL);
 		}
@@ -1091,68 +1099,6 @@ namespace Ryan_Debug {
 		sys_num_threads = static_cast<size_t> (std::thread::hardware_concurrency());
 		if (!sys_num_threads) return 4;
 		return sys_num_threads;
-	}
-
-	void add_options(
-		boost::program_options::options_description &cmdline,
-		boost::program_options::options_description &config,
-		boost::program_options::options_description &hidden)
-	{
-		namespace po = boost::program_options;
-		using std::string;
-
-		//pcmdline = &cmdline;
-		//pconfig = &config;
-		//phidden = &hidden;
-
-		/// \todo Add option for default Ryan_Debug.conf location
-
-		cmdline.add_options()
-			("close-on-finish", po::value<bool>(), "Should the app automatically close on termination?")
-			;
-
-		config.add_options()
-			;
-
-		hidden.add_options()
-			("debug-version", "Print Ryan_Debug library version information and exit")
-			//("help-verbose", "Print out all possible program options")
-			("set-num-threads", po::value<size_t>(), "Set suggested of threads")
-			;
-	}
-
-	void process_static_options(
-		boost::program_options::variables_map &vm)
-	{
-		namespace po = boost::program_options;
-		using std::string;
-
-		/*
-		if (vm.count("help-verbose"))
-		{
-		po::options_description oall("All Options");
-		oall.add(*pcmdline).add(*pconfig).add(*phidden);
-
-		std::cerr << oall << std::endl;
-		exit(2);
-		}
-		*/
-
-		if (vm.count("debug-version"))
-		{
-			std::cerr << "Ryan_Debug library information: \n";
-			Ryan_Debug::printDebugInfo();
-			exit(2);
-		}
-
-		if (vm.count("close-on-finish"))
-			Ryan_Debug::waitOnExit(!(vm["close-on-finish"].as<bool>()));
-
-		if (vm.count("set-num-threads"))
-		{
-			std::lock_guard<std::mutex> lock(m_sys_num_threads);
-			sys_num_threads = vm["set-num-threads"].as<size_t>();
-		}
 	}
 
 }

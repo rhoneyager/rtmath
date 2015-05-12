@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cstdint>
 #include <cstring>
+#include "defs.h"
 #include "cmake-settings.h"
 
 #define QUOTE(str) #str
@@ -25,7 +26,7 @@ namespace Ryan_Debug
 			};
 			enum bools {
 				V_DEBUG, V_OPENMP, V_AMD64, V_X64, V_UNIX, V_APPLE, V_WIN32,
-				V_LLVM,
+				V_LLVM, V_HAS_BZIP2, V_HAS_GZIP, V_HAS_ZLIB, V_HAS_SZIP, 
 				V_MAX_BOOLS
 			};
 
@@ -46,54 +47,8 @@ namespace Ryan_Debug
 			INCOMPATIBLE, COMPATIBLE_1, COMPATIBLE_2, COMPATIBLE_3, EXACT_MATCH
 		};
 
-		// TODO: Embed this into the library!
-		ver_match compareVersions(const versionInfo &a, const versionInfo &b)
-		{
-			ver_match res = INCOMPATIBLE;
-
-#define tryNum(x) if (a.vn[versionInfo:: x] != b.vn[versionInfo:: x]) return res;
-#define tryBool(x) if (a.vb[versionInfo:: x] != b.vb[versionInfo:: x]) return res;
-#define tryStr(x) if (std::strncmp(a. x, b. x, versionInfo::charmax ) != 0) return res;
-#define tryNumB(x) if ((a.vn[versionInfo:: x] != b.vn[versionInfo:: x]) && a.vn[versionInfo:: x]) return res;
-			// First filter the incompatible stuff
-			tryStr(vassembly);
-			tryNum(V_MAJOR);
-			tryNum(V_MINOR);
-			tryBool(V_AMD64);
-			tryBool(V_X64);
-			tryBool(V_UNIX);
-			tryBool(V_APPLE);
-			tryBool(V_WIN32);
-			tryStr(vboost);
-			tryNum(V_MSCVER);
-
-			res = COMPATIBLE_1;
-			tryNumB(V_GNUC_MAJ);
-			tryNumB(V_MINGW_MAJ);
-			tryNumB(V_SUNPRO);
-			tryNumB(V_PATHCC_MAJ);
-			tryNumB(V_CLANG_MAJ);
-			tryNumB(V_INTEL);
-
-			res = COMPATIBLE_2;
-			tryNumB(V_GNUC_MIN);
-			tryNumB(V_MINGW_MIN);
-			tryNumB(V_PATHCC_MIN);
-			tryNumB(V_CLANG_MIN);
-			tryNum(V_REVISION);
-
-			res = COMPATIBLE_3;
-			tryBool(V_OPENMP);
-			tryNum(V_SVNREVISION);
-
-			res = EXACT_MATCH;
-			return res;
-#undef tryNum
-#undef tryBool
-#undef tryStr
-#undef tryNumB
-		}
-
+		ver_match RYAN_DEBUG_DLEXPORT compareVersions(const versionInfo &a, const versionInfo &b);
+		
 		/// Calculates Ryan_Debug version string based on compile-time version of external code.
 		inline void genVersionInfo(versionInfo &out)
 		{
@@ -106,6 +61,12 @@ namespace Ryan_Debug
 			out.vn[versionInfo::V_MAJOR] = RYAN_DEBUG_MAJOR;
 			out.vn[versionInfo::V_MINOR] = RYAN_DEBUG_MINOR;
 			out.vn[versionInfo::V_REVISION] = RYAN_DEBUG_REVISION;
+			
+			out.vb[versionInfo::V_HAS_BZIP2] = COMPRESS_BZIP2;
+			out.vb[versionInfo::V_HAS_GZIP] = COMPRESS_GZIP;
+			out.vb[versionInfo::V_HAS_ZLIB] = COMPRESS_ZLIB;
+			out.vb[versionInfo::V_HAS_SZIP] = COMPRESS_SZIP;
+			
 
 #ifdef RYAN_DEBUG_ASSEMBLY_NAME
 			std::strncpy(out.vassembly, RYAN_DEBUG_ASSEMBLY_NAME, versionInfo::charmax);
@@ -192,10 +153,12 @@ namespace Ryan_Debug
 		inline void debug_preamble(const versionInfo &v, std::ostream &out = std::cerr)
 		{
 			out << "Compiled on " << v.vdate << " at " << v.vtime << std::endl;
-			if (v.vssource) out << "SVN Revision " << v.vssource << std::endl;
-			if (v.vsdate) out << "SVN Revision Date: " << v.vsdate << std::endl;
-			if (v.vssource) out << "SVN Source: " << v.vssource << std::endl;
-			if (v.vsuuid) out << "SVN UUID: " << v.vsuuid << std::endl;
+			out << "Version " << v.vn[versionInfo::V_MAJOR] << "." << v.vn[versionInfo::V_MINOR]
+				<< "." << v.vn[versionInfo::V_REVISION] << std::endl;
+			if (v.vn[versionInfo::V_SVNREVISION]) out << "SVN Revision " << v.vn[versionInfo::V_SVNREVISION] << std::endl;
+			if (v.vsdate[0] != '\0') out  << "SVN Revision Date: " << v.vsdate << std::endl;
+			if (v.vssource[0] != '\0') out << "SVN Source: " << v.vssource << std::endl;
+			if (v.vsuuid[0] != '\0') out << "SVN UUID: " << v.vsuuid << std::endl;
 			if (v.vb[versionInfo::V_DEBUG]) out << "Debug Version" << std::endl;
 			else out << "Release Version" << std::endl;
 			if (v.vb[versionInfo::V_OPENMP]) out << "OpenMP enabled in Compiler" << std::endl;
@@ -226,6 +189,12 @@ namespace Ryan_Debug
 			if (v.vn[versionInfo::V_MSCVER])
 				out << "Microsoft Visual Studio Compiler Version " << v.vn[versionInfo::V_MSCVER] << std::endl;
 			out << "Boost version " << v.vboost << std::endl;
+
+			if(v.vb[versionInfo::V_HAS_BZIP2]) out << "Linked with bzip2." << std::endl;
+			if (v.vb[versionInfo::V_HAS_GZIP]) out << "Linked with gzip." << std::endl;
+			if (v.vb[versionInfo::V_HAS_ZLIB]) out << "Linked with zlib." << std::endl;
+			if (v.vb[versionInfo::V_HAS_SZIP]) out << "Linked with szip." << std::endl;
+
 			out << std::endl;
 			out << std::endl;
 		}

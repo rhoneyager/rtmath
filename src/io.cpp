@@ -1,22 +1,18 @@
-#include "Stdafx-core.h"
 #include <iostream>
 #include <sstream>
 #include <thread>
 #include <memory>
 #include <mutex>
-#if USE_RYAN_SERIALIZATION
-#include <Ryan_Serialization/serialization.h>
-#endif
 #include <boost/algorithm/string.hpp>
 #include <boost/iostreams/filter/newline.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/filesystem.hpp>
-#include "../rtmath/splitSet.h"
-#include "../rtmath/registry.h"
-#include "../rtmath/Serialization/Serialization.h"
-#include "../rtmath/io.h"
+#include "../Ryan_Debug/splitSet.h"
+#include "../Ryan_Debug/registry.h"
+#include "../Ryan_Debug/Serialization.h"
+#include "../Ryan_Debug/io.h"
 
 namespace {
 	const char* hid = "io_implementsSerialization";
@@ -25,7 +21,7 @@ namespace {
 	std::mutex mlock_implementsIO;
 }
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace io
 	{
@@ -61,7 +57,7 @@ namespace rtmath
 			}
 
 			serialization_handle::serialization_handle(const char* filename,
-				::rtmath::registry::IOhandler::IOtype t) :
+				::Ryan_Debug::registry::IOhandler::IOtype t) :
 				IOhandler(hid), h(new hSerialization)
 			{
 				open(filename, t);
@@ -71,29 +67,29 @@ namespace rtmath
 			{
 			}
 
-			void serialization_handle::open(const char* filename, ::rtmath::registry::IOhandler::IOtype t)
+			void serialization_handle::open(const char* filename, ::Ryan_Debug::registry::IOhandler::IOtype t)
 			{
 				using namespace boost::filesystem;
 				switch (t)
 				{
 				case IOtype::READONLY:
 				{
-					if (!exists(path(filename))) RTthrow(debug::xMissingFile())
-						<< debug::file_name(filename);
+					if (!exists(path(filename))) RDthrow(error::xMissingFile())
+						<< error::file_name(filename);
 					load(filename);
 				}
 					break;
 				case IOtype::CREATE:
-					if (exists(path(filename))) RTthrow(debug::xFileExists())
-						<< debug::file_name(filename);
+					if (exists(path(filename))) RDthrow(error::xFileExists())
+						<< error::file_name(filename);
 				case IOtype::TRUNCATE:
 					create(filename);
 					break;
 				case IOtype::EXCLUSIVE:
 				case IOtype::DEBUG:
 				case IOtype::READWRITE:
-					RTthrow(debug::xUnsupportedIOaction())
-						<< debug::otherErrorText("IO mode READWRITE "
+					RDthrow(error::xUnsupportedIOaction())
+						<< error::otherErrorText("IO mode READWRITE "
 						"is currently unsupported in serialization code.");
 					break;
 				}
@@ -108,8 +104,8 @@ namespace rtmath
 				std::string cmeth, target, uncompressed, filename(fname);
 				// Combination of detection of compressed file, file type and existence.
 				if (!detect_compressed(filename, cmeth, target))
-					RTthrow(rtmath::debug::xMissingFile())
-					<< rtmath::debug::file_name(filename);
+					RDthrow(Ryan_Debug::error::xMissingFile())
+					<< Ryan_Debug::error::file_name(filename);
 				uncompressed_name(target, uncompressed, cmeth);
 
 				boost::filesystem::path p(uncompressed);
@@ -166,7 +162,7 @@ namespace rtmath
 					{
 						std::string formats;
 						serialization::known_formats(formats, compressionEnabled());
-						rtmath::config::splitSet(formats, mtypes);
+						Ryan_Debug::splitSet::splitSet(formats, mtypes);
 					}
 				}
 				return mtypes;
@@ -180,11 +176,11 @@ namespace rtmath
 				using namespace boost::filesystem;
 				using std::string;
 				using std::ofstream;
-				auto& lg = rtmath::io::m_io::get();
-				BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Matching file type for file: " << filename 
-					<< ", with type: " << type << ", with op (exportType): " << op<< "\n";
+				auto& lg = Ryan_Debug::io::m_io::get();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Matching file type for file: " << filename 
+					<< ", with type: " << type << ", with op (exportType): " << op;
 				for (const auto & mt : mtypes)
-					BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Matched type enumeration: " << mt << "\n";
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Matched type enumeration: " << mt ;
 
 				//const std::set<string> &mtypes = known_formats();
 
@@ -217,9 +213,9 @@ namespace rtmath
 			}
 
 			bool serialization_handle::match_file_type_multi(
-				std::shared_ptr<rtmath::registry::IOhandler> h,
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> h,
 				const char* pluginid,
-				std::shared_ptr<rtmath::registry::IO_options> opts, 
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts, 
 					const std::set<std::string> &mtypes)
 			{
 				std::string spluginid(pluginid);

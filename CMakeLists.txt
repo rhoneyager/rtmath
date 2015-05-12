@@ -129,6 +129,8 @@ set( srcs
 	src/error.cpp
 	src/fs.cpp
 	src/hash.cpp
+	src/info.cpp
+	src/io.cpp
 	src/macros.cpp
 	src/modules.cpp
 	src/MurmurHash3.cpp

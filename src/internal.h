@@ -8,10 +8,11 @@
 
 namespace Ryan_Debug
 {
+	namespace debug {
+		extern std::string sConfigDefaultFile; // in debug.cpp
 
-	void splitNullMap(
-		const std::string &instr, std::map<std::string, std::string> &out);
-
+		//bool checkDuplicateRyan_Debug();
+	}
 #ifdef _WIN32
 	/// Convert from unicode string to multibyte
 	std::string convertStr(const LPTSTR instr);

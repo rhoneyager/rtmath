@@ -1,5 +1,6 @@
 #include <iostream>
 #include <boost/program_options.hpp>
+#define IGNORE_MANIFESTS
 #include "../../Ryan_Debug/debug.h"
 #include "../../Ryan_Debug/info.h"
 //#include "Ryan.Debug.DebugAssembly.manifest.h"
@@ -31,7 +32,7 @@ int main(int argc, char** argv)
 	Ryan_Debug::printDebugInfo();
 
 	cerr << "Testing app build settings:\n";
-	Ryan_Debug::debug_preamble(cerr);
+	Ryan_Debug::versioning::debug_preamble(cerr);
 	cerr << endl;
 
 	cerr << "Other functions tested:\n";
