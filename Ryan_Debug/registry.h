@@ -127,6 +127,10 @@ namespace Ryan_Debug
 		void RYAN_DEBUG_DLEXPORT searchDLLs(std::vector<std::string> &dlls,
 			const std::set<boost::filesystem::path> &searchPaths, bool recurse);
 
+		void RYAN_DEBUG_DLEXPORT add_hook_table(const char* tempsig, void* store);
+		void RYAN_DEBUG_DLEXPORT dump_hook_table(std::ostream &out = std::cerr);
+
+
 		// Recursive and single-level DLL loading paths
 		//extern RYAN_DEBUG_DLEXPORT std::set<boost::filesystem::path> searchPathsRecursive, searchPathsOne;
 
@@ -162,10 +166,12 @@ namespace Ryan_Debug
 				static boost::shared_ptr<hookStorageType> hooks;
 				if (!hooks) hooks = 
 					boost::shared_ptr<hookStorageType>(new hookStorageType);
+				add_hook_table(FSIG, hooks.get());
 				// Log available hooks every time this is called.
 				std::ostringstream l;
-				//l << "Getting hooks in store: " << fsig() << std::endl
-				//	<< "There are " << hooks->size() << " elements." << std::endl;
+				l << "Getting hooks in store: " << hooks.get() << std::endl
+					<< "There are " << hooks->size() << " elements." << std::endl
+					<< "Function is " << FSIG;
 				/// \todo Need to implement stack walking in Ryan_Debug to get 
 				/// information about the registering function.
 				//size_t i=0;
@@ -174,7 +180,7 @@ namespace Ryan_Debug
 				//	l << ++i << h.registered_name << std::endl;
 				//}
 
-				emit_registry_log(l.str());
+				emit_registry_log(l.str(), Ryan_Debug::log::debug_3);
 				return hooks;
 			}
 		//public:
@@ -184,9 +190,9 @@ namespace Ryan_Debug
 				// Log every time a hook is registered, along with the table contents before insert.
 				boost::shared_ptr<hookStorageType> hookstore = getHooks();
 				std::ostringstream l;
-				//l << "Registering hook in store: " << fsig() << std::endl;
-				//l << "Adding hook to " << f.name << std::endl;
-				emit_registry_log(l.str());
+				l << "Registering hook: " << &f << std::endl << " in store: " << hookstore.get()
+					<< std::endl << " in templated function: " << FSIG;
+				emit_registry_log(l.str(), Ryan_Debug::log::debug_2);
 
 				hookstore->push_back(f); 
 			}

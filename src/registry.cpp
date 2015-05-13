@@ -39,6 +39,9 @@ typedef void* dlHandleType;
 typedef void* dlHandleType;
 #endif
 
+namespace {
+	std::map<void*, std::string> hookTable;
+}
 //using namespace Ryan_Debug::debug;
 namespace Ryan_Debug
 {
@@ -56,6 +59,18 @@ namespace Ryan_Debug
 		{
 			auto& lg = Ryan_Debug::registry::m_reg::get();
 			BOOST_LOG_SEV(lg, sev) << m;
+		}
+
+		void add_hook_table(const char* tempsig, void* store) {
+			hookTable[store] = std::string(tempsig);
+		}
+
+		void dump_hook_table(std::ostream &out) {
+			out << "Hook table\nStore\t - \tSignature\n";
+			for (const auto &i : hookTable)
+			{
+				out << i.first << "\t - \t" << i.second << std::endl;
+			}
 		}
 	}
 }

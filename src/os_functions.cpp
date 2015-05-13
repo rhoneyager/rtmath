@@ -27,7 +27,7 @@
 #include <time.h>
 #include <boost/log/sources/global_logger_storage.hpp>
 #include "../Ryan_Debug/logging.h"
-
+#include "../Ryan_Debug/registry.h"
 //#include "../Ryan_Debug/debug.h"
 
 #ifdef _WIN32
@@ -258,10 +258,17 @@ namespace Ryan_Debug {
 	* Otherwise, it examines the doWaitOnExit flag.
 	* If the application is spawned in its own window (parent is not cmd.exe),
 	* then it prompts the user to press the return key.
+	*
+	* Also tries if possible to perform final logging of hook table.
 	*/
 	void appExit()
 	{
 		using namespace std;
+
+		std::ostringstream hooks;
+		hooks << "At app exit, final hook table is:\n";
+		Ryan_Debug::registry::dump_hook_table(hooks);
+		Ryan_Debug::registry::emit_registry_log(hooks.str());
 
 #ifdef _WIN32
 		// If console is closed, then don't even bother 

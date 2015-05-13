@@ -113,10 +113,12 @@ namespace Ryan_Debug {
 //#define RDthrow (::Ryan_Debug::debug::memcheck::setloc(__FILE__,__LINE__,__FUNCSIG__)) ? NULL : throw 
 //#define RDthrow(x) throw x << ::Ryan_Debug::error::source_file_name(__FILE__) << ::Ryan_Debug::error::source_file_line(__LINE__) << ::Ryan_Debug::error::source_func_sig(__FUNCSIG__)
 #define RDthrow(x) throw x << ::boost::throw_function(__FUNCSIG__) << ::boost::throw_file(__FILE__) << ::boost::throw_line((int)__LINE__)
+#define FSIG __FUNCSIG__
 #endif
 #ifdef __GNUC__
 //#define RDthrow(x) throw x << ::Ryan_Debug::error::source_file_name(__FILE__) << ::Ryan_Debug::error::source_file_line(__LINE__) << ::Ryan_Debug::error::source_func_sig(__PRETTY_FUNCTION__) 
 //#define RDthrow (::Ryan_Debug::debug::memcheck::setloc(__FILE__,__LINE__,__PRETTY_FUNCTION__)) ? NULL : throw 
 #define RDthrow(x) throw x << ::boost::throw_function(__PRETTY_FUNCTION__) << ::boost::throw_file(__FILE__) << ::boost::throw_line((int)__LINE__)
+#define FSIG __PRETTY_FUNCTION__
 #endif
 
