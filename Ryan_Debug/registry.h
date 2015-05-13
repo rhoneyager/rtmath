@@ -88,9 +88,13 @@ namespace Ryan_Debug
 		void RYAN_DEBUG_DLEXPORT process_static_options(
 			boost::program_options::variables_map &vm);
 
-		/// Load a DLL.
+		/// Validator for DLLs
+		class dllValidator;
+
+
+		/// Load a DLL. ADD VALIDATOR
 		void RYAN_DEBUG_DLEXPORT loadDLL(const std::string &filename);
-		/// Load DLLs.
+		/// Load DLLs. ADD VALIDATOR
 		void RYAN_DEBUG_DLEXPORT loadDLLs(const std::vector<std::string> &dlls);
 
 		/// Print loaded DLLs

@@ -8,7 +8,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/lexical_cast.hpp> // used in getVal<>
-#include <boost/log/sources/global_logger_storage.hpp>
 #include "registry.h"
 #include "io.h"
 
@@ -21,11 +20,7 @@ namespace Ryan_Debug {
 		class configsegment_Boost {};
 		class configsegment_Env {}; //todo
 		class configsegment_Registry {}; //todo
-		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
-			m_config,
-			boost::log::sources::severity_channel_logger_mt< >,
-			(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "config"));
-	}
+		}
 	namespace registry {
 		extern template struct IO_class_registry_writer<
 			::Ryan_Debug::config::configsegment>;

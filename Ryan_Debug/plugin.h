@@ -1,16 +1,29 @@
 #pragma once
-
+#include "info.h"
 #include "registry.h"
 
+// When loading, Ryan_Debug::registry asks for symbol dllVer.
+// dllVer is a function like void(Ryan_Debug::versioning::versionInfo&, void*, void*)
+// First is the compiled Ryan_Debug version info.
+// Second is rdcheck - the plugin-reported address &(Ryan_Debug::registry::dump_hook_table).
+// Third is vfStart - the address of the successful initialization function.
+//
+// So, upon gcc_init or msvc_init, call a function that 
 
-#define gcc_init(x) void __attribute__((constructor)) plugin_gcc_init() { x(); }
-#define msvc_init(x) BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved) \
-{ if (dwReason == DLL_PROCESS_ATTACH) x(); return true; }
+
+#define d_dllVer(x) void dllVer(Ryan_Debug::versioning::versionInfo& vf, void* rd, void* vfs) \
+		{ \
+		Ryan_Debug::versioning::genVersionInfo(vf); \
+		rd = &(Ryan_Debug::registry::dump_hook_table); \
+		vfs = &(x); }
+//#define gcc_init(x) void __attribute__((constructor)) plugin_gcc_init() { x(); }
+//#define msvc_init(x) BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved) \
+//{ if (dwReason == DLL_PROCESS_ATTACH) x(); return true; }
 
 #ifndef _MSC_FULL_VER
-#define Ryan_Debug_plugin_init(x) gcc_init(x)
+#define Ryan_Debug_plugin_init(x) d_dllVer(x); //gcc_init();
 #else
-#define Ryan_Debug_plugin_init(x) msvc_init(x)
+#define Ryan_Debug_plugin_init(x) d_dllVer(x); //msvc_init();
 #endif
 
 #ifdef _WIN32

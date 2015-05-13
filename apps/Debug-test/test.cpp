@@ -3,6 +3,7 @@
 #define IGNORE_MANIFESTS
 #include "../../Ryan_Debug/debug.h"
 #include "../../Ryan_Debug/info.h"
+#include "../../Ryan_Debug/config.h"
 //#include "Ryan.Debug.DebugAssembly.manifest.h"
 
 int main(int argc, char** argv)
@@ -16,6 +17,10 @@ int main(int argc, char** argv)
 	po::options_description cmdline("Command-line options"), config("Config options"),
 		hidden("Hidden options"), desc("Allowed options"), oall("all options");
 	Ryan_Debug::add_options(cmdline, config, hidden);
+
+	cmdline.add_options()
+		("write-conf", po::value<std::string>(), "Write the Ryan_Debug config file to specified location.")
+		;
 
 	desc.add(cmdline).add(config);
 	oall.add(cmdline).add(config).add(hidden);
@@ -40,6 +45,13 @@ int main(int argc, char** argv)
 	cerr << "\tUsername: " << Ryan_Debug::getUsername() << std::endl;
 	cerr << "\tHome dir: " << Ryan_Debug::getHomeDir() << std::endl;
 	cerr << "\tHostname: " << Ryan_Debug::getHostname() << std::endl;
+
+	if (vm.count("write-conf")) {
+		std::string sout = vm["write-conf"].as<std::string>();
+		cerr << "Writing config file to: " << sout << std::endl;
+		auto conf = Ryan_Debug::config::getRtconfRoot();
+		conf->writeFile(sout);
+	}
 	return 0;
 }
 

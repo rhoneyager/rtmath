@@ -53,5 +53,11 @@ namespace Ryan_Debug {
 #undef tryNumB
 		}
 
+		void getLibVersionInfo(versionInfo &out)
+		{
+			genVersionInfo(out);
+		}
+
+
 	}
 }

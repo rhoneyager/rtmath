@@ -49,6 +49,9 @@ namespace Ryan_Debug
 
 		ver_match RYAN_DEBUG_DLEXPORT compareVersions(const versionInfo &a, const versionInfo &b);
 		
+		/// Internal Ryan_Debug version
+		void RYAN_DEBUG_DLEXPORT getLibVersionInfo(versionInfo &out);
+
 		/// Calculates Ryan_Debug version string based on compile-time version of external code.
 		inline void genVersionInfo(versionInfo &out)
 		{

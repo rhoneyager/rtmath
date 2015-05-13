@@ -312,7 +312,7 @@ namespace Ryan_Debug
 				o << "Creating writer (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
 					<< "), matching extensions : ";
 				for (const auto &e : this->matchExts)
-					o << e;
+					o << std::endl << e;
 
 				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
@@ -360,10 +360,10 @@ namespace Ryan_Debug
 			virtual void makeReader(Ryan_Debug::registry::IO_class_registry_reader<obj_class> &reader)
 			{
 				std::ostringstream o;
-				o << "Creating writer (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
+				o << "Creating reader (shid " << Ryan_Debug::io::TextFiles::serialization_handle::getSHid()
 					<< "), matching extensions : ";
 				for (const auto &e : this->matchExts)
-					o << e;
+					o << std::endl << e;
 
 				emit_io_log(o.str(), Ryan_Debug::log::normal);
 

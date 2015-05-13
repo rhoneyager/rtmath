@@ -2,7 +2,7 @@
 * \brief The debugging file, where all of the error-handling
 * and versioning code resides.
 **/
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <sstream>
 #include <thread>

@@ -20,6 +20,7 @@
 #include "../Ryan_Debug/config.h"
 #include "../Ryan_Debug/splitSet.h"
 #include "../Ryan_Debug/registry.h"
+#include "../Ryan_Debug/info.h"
 #include <boost/log/sources/global_logger_storage.hpp>
 
 #ifdef _WIN32
@@ -66,7 +67,10 @@ namespace Ryan_Debug
 		}
 
 		void dump_hook_table(std::ostream &out) {
-			out << "Hook table\nStore\t - \tSignature\n";
+			auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(dump_hook_table), freeModuleInfo);
+			out << "Hook table for Ryan_Debug dll at "
+				<< getPath(h.get()) << std::endl
+				<< "Store\t - \tSignature\n";
 			for (const auto &i : hookTable)
 			{
 				out << i.first << "\t - \t" << i.second << std::endl;
@@ -318,6 +322,7 @@ namespace {
 	{
 		Ryan_Debug::log::my_logger_mt m_dll;
 	public:
+		// ADD VALIDATOR
 		DLLhandle(const std::string &filename, bool critical = false) : dlHandle(nullptr), m_dll(boost::log::keywords::channel = "dll")
 		{
 			open(filename, critical);
@@ -325,6 +330,7 @@ namespace {
 		DLLhandle() : dlHandle(nullptr), m_dll(boost::log::keywords::channel = "dll")
 		{
 		}
+		// ADD VALIDATOR
 		void open(const std::string &filename, bool critical = false)
 		{
 			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Loading dll " << filename << " with critical flag " << critical << ".";
@@ -347,44 +353,139 @@ namespace {
 			}
 			fname = filename;
 
-// ifdef _DEBUG
-			// std::cerr << "Loading DLL " << filename << std::endl;
-// endif
+			auto attemptLoad = [&]() -> bool {
+
 #ifdef __unix__ // Indicates that DLSYM is provided (unix, linux, mac, etc. (sometimes even windows))
-			//Check that file exists here
-			this->dlHandle = dlopen(filename.c_str(), RTLD_LAZY);
-			const char* cerror = dlerror();
-			if (cerror)
-			{
-				Ryan_Debug::debug::severity_level sl = (critical) ? Ryan_Debug::debug::critical : Ryan_Debug::debug::error;
-				BOOST_LOG_SEV(m_dll, sl) << "dlopen error (opening " 
-					<< filename << "): " << cerror;
-				//std::string serror(cerror);
-				RDthrow(Ryan_Debug::debug::xDLLerror())
-					<< Ryan_Debug::debug::otherErrorText(std::string(cerror)) 
-					<< Ryan_Debug::debug::file_name(filename) 
-					<< Ryan_Debug::debug::is_Critical(critical);
-			}
+				//Check that file exists here
+				this->dlHandle = dlopen(filename.c_str(), RTLD_LAZY);
+				const char* cerror = dlerror();
+				if (cerror)
+				{
+					Ryan_Debug::debug::severity_level sl = (critical) ? Ryan_Debug::debug::critical : Ryan_Debug::debug::error;
+					BOOST_LOG_SEV(m_dll, sl) << "dlopen error (opening " 
+						<< filename << "): " << cerror;
+					//std::string serror(cerror);
+					RDthrow(Ryan_Debug::debug::xDLLerror())
+						<< Ryan_Debug::debug::otherErrorText(std::string(cerror)) 
+						<< Ryan_Debug::debug::file_name(filename) 
+						<< Ryan_Debug::debug::is_Critical(critical);
+					return false;
+				}
 #endif
 #ifdef _WIN32
-			this->dlHandle = LoadLibrary(filename.c_str());
-			// Could not open the dll for some reason
-			if (this->dlHandle == NULL)
-			{
-				DWORD err = GetLastError();
-				Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
-				BOOST_LOG_SEV(m_dll, sl) << "LoadLibrary error (opening "
-					<< filename << "): error code " << err << ".";
-				if (critical)
-					RDthrow(Ryan_Debug::error::xDLLerror())
-						<< Ryan_Debug::error::otherErrorText("LoadLibrary") 
+				this->dlHandle = LoadLibrary(filename.c_str());
+				// Could not open the dll for some reason
+				if (this->dlHandle == NULL)
+				{
+					DWORD err = GetLastError();
+					Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
+					BOOST_LOG_SEV(m_dll, sl) << "LoadLibrary error (opening "
+						<< filename << "): error code " << err << ".";
+					if (critical)
+						RDthrow(Ryan_Debug::error::xDLLerror())
+						<< Ryan_Debug::error::otherErrorText("LoadLibrary")
 						<< Ryan_Debug::error::file_name(filename)
 						<< Ryan_Debug::error::is_Critical(critical)
 						<< Ryan_Debug::error::otherErrorCode(err);
-			}
+					return false;
+				}
 #endif
+				return true;
+			};
+			bool res = attemptLoad();
+			if (!res) return;
+
 			DLLpathsLoaded.insert(filename);
+
+			auto attemptSym = [&]() -> bool {
+
+				Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
+				void (*fVer)(Ryan_Debug::versioning::versionInfo&, void*, void*) = 
+					(void(*)(Ryan_Debug::versioning::versionInfo&, void*, void*)) getSym("dllVer", critical);
+				//std::function<void(Ryan_Debug::versioning::versionInfo&, void*, void*)> fVer = getSym("dllVer", critical);
+				void (*vfStart)() = nullptr;
+				if (fVer) {
+					using namespace Ryan_Debug::versioning;
+					versionInfo dllVer, myVer;
+					void* rdcheck = nullptr; // Check to make sure the same Ryan_Debug functions are being used.
+					getLibVersionInfo(myVer);
+					fVer(dllVer, rdcheck, vfStart);
+					auto verres = compareVersions(dllVer, myVer);
+					std::ostringstream dver, mver;
+					debug_preamble(dllVer, dver);
+					debug_preamble(myVer, mver);
+					std::string sdver = dver.str(), smver = mver.str();
+					if (verres < COMPATIBLE_2) {
+						BOOST_LOG_SEV(m_dll, sl) << "Dll " << filename << " with critical flag " << critical
+							<< " references an incompatible Ryan_Debug version!" << std::endl
+							<< "DLL version: \n" << sdver << std::endl
+							<< "My version: \n" << smver << std::endl;
+						if (critical)
+							RDthrow(Ryan_Debug::error::xDLLversionMismatch())
+							<< Ryan_Debug::error::file_name(filename)
+							<< Ryan_Debug::error::is_Critical(critical);
+						return false;
+					} else if (verres != EXACT_MATCH) {
+						BOOST_LOG_SEV(m_dll, Ryan_Debug::log::notification) << "Dll " << filename << " with critical flag " << critical
+							<< " references a slightly different Ryan_Debug version!" << std::endl
+							<< "DLL version: \n" << sdver << std::endl
+							<< "My version: \n" << smver << std::endl;
+					}
+
+					// Check that the DLL's Ryan_Debug function calls are really to the correct code.
+					void *mdcheck = &(Ryan_Debug::registry::dump_hook_table);
+					if (rdcheck != mdcheck) {
+						using namespace Ryan_Debug::registry;
+						using namespace Ryan_Debug;
+						auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(mdcheck), freeModuleInfo);
+						std::string myPath(getPath(h.get()));
+						auto ho = boost::shared_ptr<const moduleInfo>(getModuleInfo(rdcheck), freeModuleInfo);
+						std::string rPath(getPath(ho.get()));
+						h.reset();
+						ho.reset();
+
+						BOOST_LOG_SEV(m_dll, sl) << "Dll " << filename << " with critical flag " << critical
+							<< " is loading the wrong Ryan_Debug version!" << std::endl
+							<< "DLL's Ryan_Debug path: \n" << rPath << std::endl
+							<< "My Ryan_Debug path: \n" << myPath << std::endl;
+						if (critical)
+							RDthrow(Ryan_Debug::error::xDLLversionMismatch())
+							<< Ryan_Debug::error::file_name(filename)
+							<< Ryan_Debug::error::is_Critical(critical);
+						return false;
+					}
+				} else {
+					BOOST_LOG_SEV(m_dll, sl) << "Dll " << filename << " with critical flag " << critical
+						<< " is missing Ryan_Debug version information!" << std::endl;
+					if (critical)
+						RDthrow(Ryan_Debug::error::xDLLversionMismatch())
+						<< Ryan_Debug::error::file_name(filename)
+						<< Ryan_Debug::error::is_Critical(critical);
+					return false;
+				}
+
+				if (vfStart)
+					vfStart();
+				//std::function<void()> fInit = vfStart;// getSym("dllEntry", critical); // Will throw if symbol cannot be found.
+				//if (fInit) fInit();
+				else {
+					// Will not reach this point if critical flag is set.
+					Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
+					BOOST_LOG_SEV(m_dll, sl) << "Unable to load dll " << filename << " with critical flag " << critical << ".";
+					return false;
+				}
+				return true;
+			};
+			bool res2 = attemptSym();
+
+			if (!res2) {
+				close();
+				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "Failed to load dll " << filename << " with critical flag " << critical << ".";
+				return;
+			}
+
 			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Loaded dll " << filename << " with critical flag " << critical << ".";
+
 		}
 		void close()
 		{
@@ -403,7 +504,7 @@ namespace {
 		{
 			if (dlHandle) close();
 		}
-		void* getSym(const char* symbol)
+		void* getSym(const char* symbol, bool critical = false)
 		{
 			BOOST_LOG_SEV(m_dll, Ryan_Debug::log::normal) << "Finding symbol " << symbol << " in dll " << fname << ".";
 			if (dlHandle == NULL)
@@ -412,7 +513,7 @@ namespace {
 				RDthrow(Ryan_Debug::error::xHandleNotOpen())
 					<< Ryan_Debug::error::file_name(fname);
 			}
-			void* sym;
+			void* sym = nullptr;
 #ifdef __unix__
 			sym = dlsym(dlHandle, symbol);
 #endif
@@ -422,7 +523,8 @@ namespace {
 			if (!sym)
 			{
 				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "Cannot find symbol " << symbol << " in dll " << fname << ".";
-				RDthrow(Ryan_Debug::error::xSymbolNotFound()) 
+				if (critical)
+					RDthrow(Ryan_Debug::error::xSymbolNotFound()) 
 					<< Ryan_Debug::error::file_name(fname)
 					<< Ryan_Debug::error::symbol_name(symbol);
 			}
@@ -481,6 +583,7 @@ namespace Ryan_Debug
 			auto& lg = m_reg::get();
 			for (const auto &sbase : searchPaths)
 			{
+				size_t sDlls = dlls.size();
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Finding dlls in " << sbase << " with recursion=" << recurse << ".";
 				path base(sbase);
 				base = Ryan_Debug::fs::expandSymlink<path,path>(base);
@@ -509,11 +612,15 @@ namespace Ryan_Debug
 							// Convert to lower case and do matching from there (now in func)
 							//std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
 
-							if (correctVersionByName(slower))
+							if (correctVersionByName(slower)) {
+								BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found candidate " << p.string();
 								dlls.push_back(p.string());
+							}
 						}
 					}
 				}
+				size_t eDlls = dlls.size();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found " << eDlls - sDlls << " potential dlls in " << sbase << " with recursion=" << recurse << ".";
 			}
 		}
 

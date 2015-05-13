@@ -10,6 +10,7 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
 
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/fs.h"
@@ -170,13 +171,19 @@ namespace Ryan_Debug {
 		}
 	}
 	namespace config {
+		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+			m_config,
+			boost::log::sources::severity_channel_logger_mt< >,
+			(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "config"));
 
 		implementsConfigOld::implementsConfigOld() :
 			Ryan_Debug::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_OldStandard>(configsegment::writeOld, configsegment::readOld, known_formats())
 		{
-			Ryan_Debug::io::emit_io_log("Just registered config - implementsConfigOld", Ryan_Debug::log::normal);
-
+			static bool registered = false;
+			if (!registered)
+				Ryan_Debug::io::emit_io_log("Just registered config - implementsConfigOld", Ryan_Debug::log::normal);
+			registered = true;
 		}
 
 		const std::set<std::string>& implementsConfigOld::known_formats()
@@ -210,7 +217,10 @@ namespace Ryan_Debug {
 			Ryan_Debug::io::implementsIObasic<configsegment, configsegment_IO_output_registry,
 			configsegment_IO_input_registry, configsegment_Boost>(configsegment::writeBoost, configsegment::readBoost, known_formats())
 		{
-			Ryan_Debug::io::emit_io_log("Just registered config - implementsConfigBoost", Ryan_Debug::log::normal);
+			static bool registered = false;
+			if (!registered)
+				Ryan_Debug::io::emit_io_log("Just registered config - implementsConfigBoost", Ryan_Debug::log::normal);
+			registered = true;
 		}
 
 		const std::set<std::string>& implementsConfigBoost::known_formats()
@@ -274,10 +284,10 @@ namespace Ryan_Debug {
 			}
 			*/
 			//boost::property_tree::xml_writer_settings<char> settings(' ', 4);
-			//boost::property_tree::xml_writer_settings <
-			//	boost::property_tree::ptree::key_type > settings(' ', 4);
-			//boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
-			boost::property_tree::write_xml(stream, pt); // , std::locale(), settings);
+			boost::property_tree::xml_writer_settings <
+				boost::property_tree::ptree::key_type > settings(' ', 4);
+			boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
+			//boost::property_tree::write_xml(stream, pt); // , std::locale(), settings);
 
 		}
 
@@ -695,8 +705,10 @@ namespace Ryan_Debug {
 			using namespace boost::filesystem;
 			auto& lg = Ryan_Debug::config::m_config::get();
 
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Finding Ryan_Debug configuration file";
+
 			// Check application execution arguments
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "Checking app command line";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking app command line";
 			path testCMD(Ryan_Debug::debug::sConfigDefaultFile);
 			if (exists(testCMD))
 			{
@@ -751,6 +763,60 @@ namespace Ryan_Debug {
 
 			// Check the system registry
 			// TODO
+
+			// Check a few other places
+			std::string sAppConfigDir (Ryan_Debug::getAppConfigDir());
+			std::string sHomeDir(Ryan_Debug::getHomeDir());
+			auto hm = boost::shared_ptr<const moduleInfo>(getModuleInfo(&getConfigDefaultFile), freeModuleInfo);
+			std::string dllPath(getPath(hm.get()));
+
+			auto hp = boost::shared_ptr<const processInfo>(Ryan_Debug::getInfo(Ryan_Debug::getPID()), freeProcessInfo);
+			std::string appPath(getPath(hp.get()));
+
+			std::string sCWD(Ryan_Debug::getCwd(hp.get()));
+
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking app data directory: ";
+			// For all of these places, search for file names matching Ryan_Debug.xml, Ryan_Debug.conf and .Ryan_Debug.
+			// Compression is allowed.
+			auto searchPath = [&](const std::string &base, const std::string &suffix, bool searchParent) -> bool
+			{
+				using namespace boost::filesystem;
+				path pBase(base);
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Getting search path based on: " << pBase.string();
+				if (!is_directory(pBase))
+					pBase.remove_filename();
+				if (searchParent) pBase.remove_leaf();
+				if (suffix.size()) pBase = pBase / path(suffix);
+
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Searching in: " << pBase.string();
+
+				path p1 = pBase / "Ryan_Debug.xml";
+				path p2 = pBase / "Ryan_Debug.conf";
+				path p3 = pBase / ".Ryan_Debug";
+
+				bool res = false;
+				path pRes;
+				std::string meth;
+				res = Ryan_Debug::serialization::detect_compressed<path>(p1, meth, pRes);
+				if (!res) res = Ryan_Debug::serialization::detect_compressed<path>(p2, meth, pRes);
+				if (!res) res = Ryan_Debug::serialization::detect_compressed<path>(p3, meth, pRes);
+				if (!res) return false;
+				filename = pRes.string();
+				return true;
+			};
+			bool found = false; // junk variable
+
+			if (searchPath(sCWD, "", true)) found = true;
+			else if (searchPath(sAppConfigDir, "Ryan_Debug", false)) found = true;
+			else if (searchPath(sHomeDir, "", false)) found = true;
+			else if (searchPath(dllPath, "", true)) found = true;
+			else if (searchPath(appPath, "", true)) found = true;
+
+			if (filename.size()) {
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using conf file: " << filename;
+				return;
+			}
+
 
 			// Finally, just use the default os-dependent path
 			//filename = "/home/rhoneyag/.Ryan_Debug";

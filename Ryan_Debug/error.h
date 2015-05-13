@@ -92,6 +92,7 @@ namespace Ryan_Debug {
 		ERRSTD(xObsolete, "Function is obsolete. Rewrite code.");
 		ERRSTD(xDefective, "Function is defective. Fix it.");
 		ERRSTD(xSingular, "Singular matrix detected.");
+		ERRSTD(xDLLversionMismatch, "Attempting to load a DLL that is compiled against an incompatible Ryan_Debug version.");
 		ERRSTD(xDuplicateHook, "Attempting to load same DLL twice.");
 		ERRSTD(xHandleInUse, "DLL handle is currently in use, but the code wants to overwrite it.");
 		ERRSTD(xHandleNotOpen, "Attempting to access unopened DLL handle.");
