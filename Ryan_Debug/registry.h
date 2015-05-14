@@ -51,16 +51,14 @@ namespace Ryan_Debug
 			const char* name;
 			/// Short description
 			const char* description;
-			/// UUID that prevents different versions of the same DLL from being  
-			/// loaded simultaneously.
+			/// UUID that prevents different versions or copies   
+			/// of the same DLL from being loaded simultaneously.
 			const char* uuid;
 			/// Path of the loaded module (DLL leaves it blank)
-			const char* path;
-			/// Linked Ryan_Debug library architecture and version
-			Ryan_Debug::versioning::versionInfo *rdversion;
-			DLLpreamble(const char* name, const char* desc, const char* uuid, Ryan_Debug::versioning::versionInfo * rdversion)
-				: name(name), description(desc), uuid(uuid), rdversion(rdversion), path(0) {}
-			DLLpreamble() : name(0), description(0), uuid(0), rdversion(0), path(0) {}
+			//const char* path;
+			DLLpreamble(const char* name, const char* desc, const char* uuid)
+				: name(name), description(desc), uuid(uuid) {} //, path(0) {}
+			DLLpreamble() : name(0), description(0), uuid(0) {} //, path(0) {}
 		};
 
 		/// Internal function used in templates that writes to the registry log
@@ -469,8 +467,17 @@ namespace Ryan_Debug
 
 extern "C"
 {
+	enum dllInitResult {
+		SUCCESS,
+		DUPLICATE_DLL,
+		OTHER_FAILURE
+	};
+
 	/// Provides interface for DLLs to register basic information about themselves
-	bool RYAN_DEBUG_DLEXPORT Ryan_Debug_registry_register_dll(const Ryan_Debug::registry::DLLpreamble&);
+	dllInitResult RYAN_DEBUG_DLEXPORT Ryan_Debug_registry_register_dll(
+		const Ryan_Debug::registry::DLLpreamble&,
+		void* funcInDllForPath);
+
 }
 
 // GCC sure has odd attribute positioning rules...
@@ -479,7 +486,6 @@ std::ostream RYAN_DEBUG_DLEXPORT & operator<<(std::ostream&, const ::Ryan_Debug:
 std::istream RYAN_DEBUG_DLEXPORT & operator>>(std::istream&, ::Ryan_Debug::registry::IOhandler::IOtype&);
 std::ostream RYAN_DEBUG_DLEXPORT & operator<<(std::ostream&, const ::Ryan_Debug::registry::DBhandler::DBtype&);
 std::istream RYAN_DEBUG_DLEXPORT & operator>>(std::istream&, ::Ryan_Debug::registry::DBhandler::DBtype&);
-
 std::ostream RYAN_DEBUG_DLEXPORT & operator<<(std::ostream&, const ::Ryan_Debug::registry::options&);
 } }
 

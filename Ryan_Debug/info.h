@@ -1,8 +1,11 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning( disable : 4996 )
 #include <iostream>
 #include <sstream>
 #include <cstdint>
 #include <cstring>
+#include <boost/version.hpp>
 #include "defs.h"
 #include "cmake-settings.h"
 
@@ -57,7 +60,8 @@ namespace Ryan_Debug
 		{
 			for (size_t i = 0; i < versionInfo::V_MAX_INTS; ++i) out.vn[i] = 0;
 			for (size_t i = 0; i < versionInfo::V_MAX_BOOLS; ++i) out.vb[i] = false;
-			out.vsdate[0] = '\0'; out.vssource[0] = '\0'; out.vsuuid[0] = '\0'; out.vboost[0] = '\0';
+			out.vsdate[0] = '\0'; out.vssource[0] = '\0'; out.vsuuid[0] = '\0';
+			out.vboost[0] = '\0'; out.vassembly[0] = '\0';
 			std::strncpy(out.vdate, __DATE__, versionInfo::charmax);
 			std::strncpy(out.vtime, __TIME__, versionInfo::charmax);
 

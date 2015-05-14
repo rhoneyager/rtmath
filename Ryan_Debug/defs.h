@@ -30,6 +30,14 @@
 
 #endif
 
+
+#ifdef _MSC_FULL_VER
+#define FORCE_DLEXPORT __declspec(dllexport)
+#else
+#define FORCE_DLEXPORT
+#endif
+
+
 #ifdef _MSC_FULL_VER
 #include "Ryan.Ryan_Debug.manifest.h"
 #endif

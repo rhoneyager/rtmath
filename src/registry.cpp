@@ -400,16 +400,17 @@ namespace {
 			auto attemptSym = [&]() -> bool {
 
 				Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
-				void (*fVer)(Ryan_Debug::versioning::versionInfo&, void*, void*) = 
-					(void(*)(Ryan_Debug::versioning::versionInfo&, void*, void*)) getSym("dllVer", critical);
-				//std::function<void(Ryan_Debug::versioning::versionInfo&, void*, void*)> fVer = getSym("dllVer", critical);
-				void (*vfStart)() = nullptr;
+				void (*fVer)(Ryan_Debug::versioning::versionInfo&, void**, void**) = 
+					(void(*)(Ryan_Debug::versioning::versionInfo&, void**, void**)) getSym("dllVer", critical);
+				dllInitResult (*vfStart)() = nullptr;
+				void* vfStarta = nullptr;
 				if (fVer) {
 					using namespace Ryan_Debug::versioning;
 					versionInfo dllVer, myVer;
 					void* rdcheck = nullptr; // Check to make sure the same Ryan_Debug functions are being used.
 					getLibVersionInfo(myVer);
-					fVer(dllVer, rdcheck, vfStart);
+					fVer(dllVer, &rdcheck, &vfStarta);
+					vfStart = (dllInitResult(*)()) vfStarta;
 					auto verres = compareVersions(dllVer, myVer);
 					std::ostringstream dver, mver;
 					debug_preamble(dllVer, dver);
@@ -433,14 +434,15 @@ namespace {
 					}
 
 					// Check that the DLL's Ryan_Debug function calls are really to the correct code.
-					void *mdcheck = &(Ryan_Debug::registry::dump_hook_table);
+					void *mdcheck = &(Ryan_Debug_registry_register_dll);
 					if (rdcheck != mdcheck) {
 						using namespace Ryan_Debug::registry;
 						using namespace Ryan_Debug;
 						auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(mdcheck), freeModuleInfo);
 						std::string myPath(getPath(h.get()));
 						auto ho = boost::shared_ptr<const moduleInfo>(getModuleInfo(rdcheck), freeModuleInfo);
-						std::string rPath(getPath(ho.get()));
+						std::string rPath;
+						if (rdcheck) rPath = (getPath(ho.get())); else rPath = "Unknown";
 						h.reset();
 						ho.reset();
 
@@ -464,11 +466,33 @@ namespace {
 					return false;
 				}
 
-				if (vfStart)
-					vfStart();
-				//std::function<void()> fInit = vfStart;// getSym("dllEntry", critical); // Will throw if symbol cannot be found.
-				//if (fInit) fInit();
-				else {
+				if (vfStart) {
+					// It's a C function, so it does not raise exceptions. Might not pass exceptions either.
+					dllInitResult res;
+					res = vfStart();
+
+					if (DUPLICATE_DLL == res) {
+						if (critical)
+							RDthrow(Ryan_Debug::error::xDuplicateHook())
+							<< Ryan_Debug::error::file_name(filename)
+							<< Ryan_Debug::error::is_Critical(critical);
+						return false;
+					} else if (SUCCESS != res) {
+						if (critical)
+							RDthrow(Ryan_Debug::error::xDLLerror())
+							<< Ryan_Debug::error::otherErrorText("vfStart")
+							<< Ryan_Debug::error::file_name(filename)
+							<< Ryan_Debug::error::is_Critical(critical)
+							<< Ryan_Debug::error::otherErrorCode(res);
+						return false;
+					}
+					//} catch (Ryan_Debug::error::xDuplicateHook &e) {
+						// Already logged duplicate detected message.
+					//	if (critical)
+					//		throw e << Ryan_Debug::error::is_Critical(critical);
+					//	return false;
+					//}
+				} else {
 					// Will not reach this point if critical flag is set.
 					Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
 					BOOST_LOG_SEV(m_dll, sl) << "Unable to load dll " << filename << " with critical flag " << critical << ".";
@@ -522,11 +546,19 @@ namespace {
 #endif
 			if (!sym)
 			{
+#ifdef _WIN32
+				long long errcode = 0;
+				errcode = (long long)GetLastError();
+#endif
 				BOOST_LOG_SEV(m_dll, Ryan_Debug::log::error) << "Cannot find symbol " << symbol << " in dll " << fname << ".";
 				if (critical)
 					RDthrow(Ryan_Debug::error::xSymbolNotFound()) 
 					<< Ryan_Debug::error::file_name(fname)
-					<< Ryan_Debug::error::symbol_name(symbol);
+					<< Ryan_Debug::error::symbol_name(symbol)
+#ifdef _WIN32
+					<< Ryan_Debug::error::otherErrorCode(errcode)
+#endif
+					;
 			}
 			return (void*)sym;
 		}
@@ -726,9 +758,6 @@ namespace Ryan_Debug
 		}
 
 		/// \todo Check for duplicate load
-		/** \todo Check Ryan_Debug libraries loaded (core, ddscat, mie, ...). 
-		 * Only load dlls that depend on a loaded Ryan_Debug lib, and ignore the rest.
-		 **/
 		void loadDLL(const std::string &filename)
 		{
 			auto& lg = m_reg::get();
@@ -762,8 +791,6 @@ namespace Ryan_Debug
 					<< "UUID:\t\t\t" << p.uuid << "\n"
 					<< "Description:\t" << p.description << "\n";
 
-				if (p.path)
-					out << "Path:\t" << p.path << std::endl;
 			}
 			out << std::endl;
 			out << "DLL paths loaded:\n----------------\n";
@@ -877,34 +904,37 @@ namespace Ryan_Debug
 
 extern "C"
 {
-	bool Ryan_Debug_registry_register_dll(const Ryan_Debug::registry::DLLpreamble &p)
+	dllInitResult Ryan_Debug_registry_register_dll(const Ryan_Debug::registry::DLLpreamble &p, void* ptr)
 	{
+		using namespace Ryan_Debug;
 		Ryan_Debug::registry::DLLpreamble b = p;
+		auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(ptr), freeModuleInfo);
+		std::string dllPath( getPath(h.get()) );
+		h.reset();
 
 		auto& lg = Ryan_Debug::registry::m_reg::get();
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "DLL info for: " << p.path << "\n"
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Registering DLL info for: " << dllPath << "\n"
 			<< "Name: " << p.name << "\n"
 			<< "UUID: " << p.uuid << "\n"
 			<< "Description: " << p.description << "\n";
+		
+		for (const auto & i : preambles)
+		{
+			if (std::strcmp(i.uuid, p.uuid) == 0) {
+				// Duplicate load detected!
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "Duplicate DLL load detected for: " << dllPath << "\n"
+					<< "Name: " << p.name << "\n"
+					<< "UUID: " << p.uuid << "\n"
+					<< "Description: " << p.description << "\n";
 
-		// Verify dll version of Ryan_Debug matches the current version!
-		Ryan_Debug::versioning::versionInfo rdver;
-		Ryan_Debug::versioning::genVersionInfo(rdver);
-		auto match = Ryan_Debug::versioning::compareVersions(rdver, *(p.rdversion));
-		if (match < Ryan_Debug::versioning::COMPATIBLE_2) {
-			std::ostringstream mine, theirs;
-			Ryan_Debug::versioning::debug_preamble(rdver, mine);
-			Ryan_Debug::versioning::debug_preamble(*(p.rdversion), theirs);
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "Incompatible dll versions!\n"
-				<< "Ryan_Debug library is: \n"
-				<< mine.str()
-				<< "Library at " << p.path << " uses version: \n"
-				<< theirs.str();
+				// Cannot Throw failure condition.
+				//RDthrow(Ryan_Debug::error::xDuplicateHook())
+				//	<< Ryan_Debug::error::file_name(dllPath);
+				return DUPLICATE_DLL;
+			}
 		}
-
-		// \todo Add in dll path to preamble!
 		preambles.push_back(b);
-		return true;
+		return SUCCESS;
 	}
 
 }

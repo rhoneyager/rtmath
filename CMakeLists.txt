@@ -1,4 +1,4 @@
-# CMake file for Ryan's serialization library
+# CMake file for Ryan's Debugging library
 # Designed to build a shared library (though static is also okay)
 
 # Will handle easy project imports
@@ -108,7 +108,11 @@ configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake-settings.h.in"
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
 	)
-
+	
+configure_file (
+	"${CMAKE_CURRENT_SOURCE_DIR}/Ryan_Debug.xml.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.xml"
+	)
 
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
@@ -161,6 +165,7 @@ set (hdrs
 	src/internal.h
 	"${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h"
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
+	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.xml"
 	)
 
 #set(srcs-test src/test.cpp)
@@ -218,14 +223,12 @@ if (MAKE_ASSEMBLY)
 		"${CMAKE_CURRENT_SOURCE_DIR}/collectdirs.bat"
 		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
 		"${CMAKE_CURRENT_SOURCE_DIR}/license.rtf"
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.xml"
 		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
 endif()
 
+add_subdirectory(plugins)
 add_subdirectory(apps)
-
-#add_executable(Ryan_Debug-test ${srcs-test})
-#target_link_libraries(Ryan_Debug-test ${liblist} Ryan_Debug)
-#set_target_properties(Ryan_Debug-test PROPERTIES FOLDER "Apps")
 
 export(TARGETS Ryan_Debug
 	FILE "${PROJECT_BINARY_DIR}/Ryan_DebugTargets.cmake")

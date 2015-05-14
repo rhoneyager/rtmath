@@ -249,52 +249,6 @@ namespace Ryan_Debug {
 #endif
 	}
 
-	/**
-	* \brief Function called on application exit to hold the console window open
-	*
-	* This function is the completion of the appEntry() code.
-	* If the window is already closed (such as by the user clicking the X or
-	* pressing CTRL-C), then it silently falls through.
-	* Otherwise, it examines the doWaitOnExit flag.
-	* If the application is spawned in its own window (parent is not cmd.exe),
-	* then it prompts the user to press the return key.
-	*
-	* Also tries if possible to perform final logging of hook table.
-	*/
-	void appExit()
-	{
-		using namespace std;
-
-		std::ostringstream hooks;
-		hooks << "At app exit, final hook table is:\n";
-		Ryan_Debug::registry::dump_hook_table(hooks);
-		Ryan_Debug::registry::emit_registry_log(hooks.str());
-
-#ifdef _WIN32
-		// If console is closed, then don't even bother 
-		// Windows app will fault if closed before main returns
-		if (_consoleTerminated)
-		{
-			return;
-		}
-#endif
-
-
-		cerr << endl << endl;
-		//			Ryan_Debug::debug::listuniqueobj(cerr, false);
-		//#endif
-
-		if (doWaitOnExit)
-		{
-			//#ifdef _WIN32
-			//				_CrtDumpMemoryLeaks();
-			//#endif
-			cerr << endl << "Program terminated. Press return to exit." << endl;
-			std::getchar();
-		}
-
-	}
-
 #ifdef _WIN32
 	/// Windows handler for window close events.
 	BOOL WINAPI _CloseHandlerRoutine(DWORD dwCtrlType)
@@ -1130,6 +1084,58 @@ namespace Ryan_Debug {
 		sys_num_threads = static_cast<size_t> (std::thread::hardware_concurrency());
 		if (!sys_num_threads) return 4;
 		return sys_num_threads;
+	}
+
+
+	/**
+	* \brief Function called on application exit to hold the console window open
+	*
+	* This function is the completion of the appEntry() code.
+	* If the window is already closed (such as by the user clicking the X or
+	* pressing CTRL-C), then it silently falls through.
+	* Otherwise, it examines the doWaitOnExit flag.
+	* If the application is spawned in its own window (parent is not cmd.exe),
+	* then it prompts the user to press the return key.
+	*
+	* Also tries if possible to perform final logging of hook table.
+	*/
+	void appExit()
+	{
+		using namespace std;
+
+		std::ostringstream hooks;
+		hooks << "At app exit, loaded dlls are:\n";
+		enumModules(getPID(), hooks);
+
+		hooks << "\nAt app exit, final hook table is:\n";
+		Ryan_Debug::registry::dump_hook_table(hooks);
+
+
+		Ryan_Debug::registry::emit_registry_log(hooks.str());
+
+#ifdef _WIN32
+		// If console is closed, then don't even bother 
+		// Windows app will fault if closed before main returns
+		if (_consoleTerminated)
+		{
+			return;
+		}
+#endif
+
+
+		cerr << endl << endl;
+		//			Ryan_Debug::debug::listuniqueobj(cerr, false);
+		//#endif
+
+		if (doWaitOnExit)
+		{
+			//#ifdef _WIN32
+			//				_CrtDumpMemoryLeaks();
+			//#endif
+			cerr << endl << "Program terminated. Press return to exit." << endl;
+			std::getchar();
+		}
+
 	}
 
 }

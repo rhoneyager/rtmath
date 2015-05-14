@@ -11,10 +11,10 @@
 // So, upon gcc_init or msvc_init, call a function that 
 
 
-#define d_dllVer(x) void dllVer(Ryan_Debug::versioning::versionInfo& vf, void* rd, void* vfs) \
+#define d_dllVer(x) extern "C" void FORCE_DLEXPORT dllVer(Ryan_Debug::versioning::versionInfo& vf, void* rd, void* vfs) \
 		{ \
 		Ryan_Debug::versioning::genVersionInfo(vf); \
-		rd = &(Ryan_Debug::registry::dump_hook_table); \
+		rd = &(Ryan_Debug_registry_register_dll); \
 		vfs = &(x); }
 //#define gcc_init(x) void __attribute__((constructor)) plugin_gcc_init() { x(); }
 //#define msvc_init(x) BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved) \
