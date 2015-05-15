@@ -130,6 +130,7 @@ link_directories(${Boost_LIBRARY_DIR})
 set( srcs
 	src/config.cpp
 	src/debug.cpp
+	src/dlls.cpp
 	src/error.cpp
 	src/fs.cpp
 	src/hash.cpp
@@ -148,6 +149,7 @@ set (hdrs
 	Ryan_Debug/config.h
 	Ryan_Debug/defs.h
 	Ryan_Debug/debug.h
+	Ryan_Debug/dlls.h
 	Ryan_Debug/error.h
 	Ryan_Debug/fs.h
 	Ryan_Debug/hash.h

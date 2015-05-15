@@ -1,5 +1,6 @@
 #pragma once
 #include "info.h"
+#include "dlls.h"
 #include "registry.h"
 
 // When loading, Ryan_Debug::registry asks for symbol dllVer.
@@ -10,12 +11,11 @@
 //
 // So, upon gcc_init or msvc_init, call a function that 
 
-
-#define d_dllVer(x) extern "C" void FORCE_DLEXPORT dllVer(Ryan_Debug::versioning::versionInfo& vf, void* rd, void* vfs) \
+#define D_Ryan_Debug_start() extern "C" dllInitResult FORCE_DLEXPORT dllStart()
+#define D_Ryan_Debug_validator() extern "C" void FORCE_DLEXPORT dllVer(Ryan_Debug::versioning::versionInfo& vf, void** rd) \
 		{ \
 		Ryan_Debug::versioning::genVersionInfo(vf); \
-		rd = &(Ryan_Debug_registry_register_dll); \
-		vfs = &(x); }
+		*rd = &(Ryan_Debug_registry_register_dll); }
 //#define gcc_init(x) void __attribute__((constructor)) plugin_gcc_init() { x(); }
 //#define msvc_init(x) BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved) \
 //{ if (dwReason == DLL_PROCESS_ATTACH) x(); return true; }
@@ -24,15 +24,6 @@
 #define Ryan_Debug_plugin_init(x) d_dllVer(x); //gcc_init();
 #else
 #define Ryan_Debug_plugin_init(x) d_dllVer(x); //msvc_init();
-#endif
-
-#ifdef _WIN32
-#include "windows.h"
-typedef HINSTANCE dlHandleType;
-#endif
-#ifdef __unix__
-#include "dlfcn.h"
-typedef void* dlHandleType;
 #endif
 
 // Convenience functions to register with a class
