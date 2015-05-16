@@ -65,6 +65,7 @@ endmacro(storeplugin objname)
 macro(addplugin appname foldername)
 	set_target_properties( ${appname} PROPERTIES FOLDER "Plugins/${foldername}")
 	INSTALL(TARGETS ${appname} 
+		RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}/plugins
 		LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 		ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 		COMPONENT Plugins)
