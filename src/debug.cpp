@@ -4,6 +4,7 @@
 **/
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <thread>
 #include <mutex>
@@ -15,6 +16,8 @@
 //#include <boost/utility/empty_deleter.hpp>
 //#include <boost/serialization/shared_ptr.hpp> // provides null_deleter for older boost versions
 #include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/formatter_parser.hpp>
 #include <boost/log/expressions/predicates/is_debugger_present.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/expressions/keyword.hpp>
@@ -64,7 +67,7 @@ namespace {
 
 	// Both logging systems go here
 	typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
-	static boost::shared_ptr< text_sink > sink_init, sink;
+	static boost::shared_ptr< text_sink > sink_init, sink, sink_file;
 }
 
 namespace Ryan_Debug
@@ -101,6 +104,7 @@ namespace Ryan_Debug
 				("help-full", "Print out all possible program options")
 				//("log-init", "Log initial startup")
 				("log-level-all", po::value<int>()->default_value((int)::Ryan_Debug::log::warning), "Threshold for console logging")
+				("log-file", po::value<std::string>(), "Log everything to specified file.")
 				("Ryan_Debug-config-file", po::value<std::string>(),
 				"Specify the location of the Ryan_Debug configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
@@ -176,6 +180,30 @@ namespace Ryan_Debug
 			
 			auto& lg = m_deb::get();
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Initial logging started.";
+			core->flush();
+		}
+
+		void setupFileLog(const std::string &outfile) {
+			sink_file = boost::make_shared< text_sink >();
+
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			boost::shared_ptr< std::ofstream > stream(new std::ofstream(outfile.c_str()));
+			//boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
+			sink_file->locked_backend()->add_stream(stream);
+			sink_file->set_formatter( boost::log::expressions::stream 
+				//<< Ryan_Debug::log::line_id << "\t| "
+				<< boost::log::expressions::format_date_time
+					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+					//<< ": " << Ryan_Debug::log::process_id 
+					//<< " - " << Ryan_Debug::log::thread_id
+					<< ": <" << Ryan_Debug::log::severity
+					<< boost::log::expressions::attr< ::Ryan_Debug::log::severity_level > ("Severity")
+					<< boost::log::trivial::severity
+					<< "> [" << Ryan_Debug::log::channel << "] "
+				<< boost::log::expressions::smessage
+				);
+
+			core->add_sink(sink_file);
 			core->flush();
 		}
 
@@ -289,12 +317,19 @@ namespace Ryan_Debug
 		{
 			namespace po = boost::program_options;
 			using std::string;
-	
+
+			boost::log::add_common_attributes();
+			//boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
+			boost::log::register_simple_formatter_factory< ::Ryan_Debug::log::severity_level, char >("Severity");
 			// Bring up a basic logging system for critical first-load library tasks,
 			// like finding a configuration file.	
 
 			int sevlev = (int) ::Ryan_Debug::log::warning; // default really set in add_static_options
 			sevlev = vm["log-level-all"].as<int>();
+
+			if (vm.count("log-file")) {
+				setupFileLog(vm["log-file"].as<std::string>());
+			}
 
 			setupLoggingInitial(sevlev);
 
@@ -347,7 +382,7 @@ namespace Ryan_Debug
 			}
 
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Switching to primary logging system";
-			setupLogging(vm, sevlev);
+			//setupLogging(vm, sevlev);
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Primary logging system started.";
 			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 			core->flush();

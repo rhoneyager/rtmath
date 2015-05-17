@@ -26,10 +26,14 @@ namespace Ryan_Debug
 			std::string         // the type of the channel name
 		> my_logger_mt;
 
-
-		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::Ryan_Debug::log::severity_level)
-		//BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
-		BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
+		BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ::Ryan_Debug::log::severity_level);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(scope, "Scope", ::boost::log::attributes::named_scope::value_type);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, "Timeline", ::boost::log::attributes::timer::value_type);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(process_id, "ProcessID", ::boost::log::attributes::current_process_id::value_type);
+		BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", ::boost::log::attributes::current_thread_id::value_type);
 
 		RYAN_DEBUG_DLEXPORT const char*  stringify(severity_level);
 		/*
@@ -47,8 +51,15 @@ namespace Ryan_Debug
 			std::ostream& log(severity_level);
 		};
 		*/
-
 	}
 
 }
+
+/// The operator is used for regular stream formatting
+RYAN_DEBUG_DLEXPORT std::ostream& operator<< (std::ostream& strm, ::Ryan_Debug::log::severity_level level);
+/// The operator is used when putting the severity level to log
+RYAN_DEBUG_DLEXPORT ::boost::log::formatting_ostream& operator<< (
+		::boost::log::formatting_ostream& strm,
+		::boost::log::to_log_manip< ::Ryan_Debug::log::severity_level, ::Ryan_Debug::log::tag::severity > const& manip);
+
 

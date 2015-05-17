@@ -1103,15 +1103,15 @@ namespace Ryan_Debug {
 	{
 		using namespace std;
 
-		std::ostringstream hooks;
-		hooks << "At app exit, loaded dlls are:\n";
-		enumModules(getPID(), hooks);
+		//std::ostringstream hooks;
+		//hooks << "At app exit, loaded dlls are:\n";
+		//enumModules(getPID(), hooks);
 
-		hooks << "\nAt app exit, final hook table is:\n";
-		Ryan_Debug::registry::dump_hook_table(hooks);
+		//hooks << "\nAt app exit, final hook table is:\n";
+		//Ryan_Debug::registry::dump_hook_table(hooks);
 
 
-		Ryan_Debug::registry::emit_registry_log(hooks.str());
+		//Ryan_Debug::registry::emit_registry_log(hooks.str());
 
 #ifdef _WIN32
 		// If console is closed, then don't even bother 

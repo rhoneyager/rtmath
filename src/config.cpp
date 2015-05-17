@@ -719,7 +719,6 @@ namespace Ryan_Debug {
 			}
 
 			// Checking environment variables
-			{
 				using namespace Ryan_Debug;
 				boost::shared_ptr<const processInfo> info(getInfo(getPID()), freeProcessInfo);
 
@@ -732,40 +731,49 @@ namespace Ryan_Debug {
 				std::map<std::string, std::string> mEnv;
 				splitSet::splitNullMap(env, mEnv);
 				//std::vector<std::string> mCands;
-				auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
-					[](const std::pair<std::string, std::string> &pred)
-				{
-					std::string key = pred.first;
-					std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-					if (key == "Ryan_Debug_conf") return true;
-					return false;
-				});
-				if (it != mEnv.cend())
-				{
-					typedef boost::tokenizer<boost::char_separator<char> >
-						tokenizer;
-					boost::char_separator<char> sep(";");
+				auto findEnv = [&](const std::string &fkey, std::string &outname) -> bool {
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Parsing environment variable: " << fkey;
 
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Candidates are: " << it->second;
-					std::string ssubst;
-					tokenizer tcom(it->second, sep);
-					for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
+					std::string flkey = fkey;
+					std::transform(flkey.begin(), flkey.end(), flkey.begin(), ::tolower);
+					auto it = std::find_if(mEnv.cbegin(), mEnv.cend(),
+						[&flkey](const std::pair<std::string, std::string> &pred)
 					{
-						path testEnv(it->second);
-						if (exists(testEnv))
+						std::string key = pred.first;
+						std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+						if (key == flkey) return true;
+						return false;
+					});
+					if (it != mEnv.cend())
+					{
+						typedef boost::tokenizer<boost::char_separator<char> >
+							tokenizer;
+						boost::char_separator<char> sep(";");
+
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Candidates are: " << it->second;
+						std::string ssubst;
+						tokenizer tcom(it->second, sep);
+						for (auto ot = tcom.begin(); ot != tcom.end(); ot++)
 						{
-							filename = it->second;
-							BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using " << filename;
-							return;
+							path testEnv(it->second);
+							if (exists(testEnv))
+							{
+								outname = it->second;
+								BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using " << outname;
+								return true;
+							}
 						}
-					}
-				}
-			}
+					} else BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Cannot find environment variable: " << fkey;
+					return false;
+				};
+				if (findEnv("Ryan_Debug_conf", filename)) return;
 
 			// Check the system registry
 			// TODO
 
 			// Check a few other places
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking app data directories... ";
+
 			std::string sAppConfigDir (Ryan_Debug::getAppConfigDir());
 			std::string sHomeDir(Ryan_Debug::getHomeDir());
 			auto hm = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) &getConfigDefaultFile), freeModuleInfo);
@@ -775,8 +783,6 @@ namespace Ryan_Debug {
 			std::string appPath(getPath(hp.get()));
 
 			std::string sCWD(Ryan_Debug::getCwd(hp.get()));
-
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking app data directory: ";
 			// For all of these places, search for file names matching Ryan_Debug.xml, Ryan_Debug.conf and .Ryan_Debug.
 			// Compression is allowed.
 			auto searchPath = [&](const std::string &base, const std::string &suffix, bool searchParent) -> bool
@@ -784,6 +790,7 @@ namespace Ryan_Debug {
 				using namespace boost::filesystem;
 				path pBase(base);
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Getting search path based on: " << pBase.string();
+				if (base.size() == 0) return false;
 				if (!is_directory(pBase))
 					pBase.remove_filename();
 				if (searchParent) pBase.remove_leaf();
@@ -813,6 +820,12 @@ namespace Ryan_Debug {
 			else if (searchPath(dllPath, "", true)) found = true;
 			else if (searchPath(appPath, "", true)) found = true;
 
+			if (!filename.size()) {
+				std::string RDCpath;
+				findEnv("Ryan_Debug_DIR", RDCpath);
+				if (searchPath(RDCpath, "../../../../share", false)) found = true;
+			}
+			if (searchPath(dllPath, "../../share", false)) found = true;
 			if (filename.size()) {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using conf file: " << filename;
 				return;
