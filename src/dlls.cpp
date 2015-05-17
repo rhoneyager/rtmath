@@ -299,7 +299,7 @@ namespace Ryan_Debug
 		}
 
 		void dump_hook_table(std::ostream &out) {
-			auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(dump_hook_table), freeModuleInfo);
+			auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) dump_hook_table), freeModuleInfo);
 			out << "Hook table for Ryan_Debug dll at "
 				<< getPath(h.get()) << std::endl
 				<< "Store\t - \tSignature\n";
@@ -403,14 +403,14 @@ namespace Ryan_Debug
 					const char* cerror = dlerror();
 					if (cerror)
 					{
-						Ryan_Debug::debug::severity_level sl = (critical) ? Ryan_Debug::debug::critical : Ryan_Debug::debug::error;
+						Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
 						BOOST_LOG_SEV(lg, sl) << "dlopen error (opening "
 							<< filename << "): " << cerror;
 						//std::string serror(cerror);
-						RDthrow(Ryan_Debug::debug::xDLLerror())
-							<< Ryan_Debug::debug::otherErrorText(std::string(cerror))
-							<< Ryan_Debug::debug::file_name(filename)
-							<< Ryan_Debug::debug::is_Critical(critical);
+						RDthrow(Ryan_Debug::error::xDLLerror())
+							<< Ryan_Debug::error::otherErrorText(std::string(cerror))
+							<< Ryan_Debug::error::file_name(filename)
+							<< Ryan_Debug::error::is_Critical(critical);
 						return false;
 					}
 #endif
@@ -515,13 +515,13 @@ namespace Ryan_Debug
 			boost::shared_ptr<const Ryan_Debug::registry::dllValidatorSet> dvs,
 			bool critical)
 		{
-			_p.swap(boost::shared_ptr<DLLhandleImpl>(new DLLhandleImpl(dvs, this)));
+			_p = boost::shared_ptr<DLLhandleImpl>(new DLLhandleImpl(dvs, this));
 			open(filename, critical);
 		}
 		DLLhandle::DLLhandle()
 		{
-			_p.swap(boost::shared_ptr<DLLhandleImpl>(new DLLhandleImpl(
-				Ryan_Debug::registry::dllValidatorSet::getDefault(), this)));
+			_p = boost::shared_ptr<DLLhandleImpl>(new DLLhandleImpl(
+				Ryan_Debug::registry::dllValidatorSet::getDefault(), this));
 		}
 		void DLLhandle::open(const std::string &filename, bool critical)
 		{ _p->open(filename, critical); }
@@ -549,7 +549,7 @@ namespace Ryan_Debug
 				Ryan_Debug::log::severity_level sl = (critical) ? Ryan_Debug::log::critical : Ryan_Debug::log::error;
 				void(*fVer)(Ryan_Debug::versioning::versionInfo&, void**) =
 					(void(*)(Ryan_Debug::versioning::versionInfo&, void**)) func;
-				auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(func), freeModuleInfo);
+				auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) func), freeModuleInfo);
 				std::string filename(getPath(h.get()));
 				h.reset();
 				//dllInitResult(*vfStart)() = nullptr;
@@ -584,13 +584,13 @@ namespace Ryan_Debug
 					}
 
 					// Check that the DLL's Ryan_Debug function calls are really to the correct code.
-					void *mdcheck = &(Ryan_Debug_registry_register_dll);
+					void *mdcheck = (void*) &(Ryan_Debug_registry_register_dll);
 					if (rdcheck != mdcheck) {
 						using namespace Ryan_Debug::registry;
 						using namespace Ryan_Debug;
-						auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo(mdcheck), freeModuleInfo);
+						auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*)mdcheck), freeModuleInfo);
 						std::string myPath(getPath(h.get()));
-						auto ho = boost::shared_ptr<const moduleInfo>(getModuleInfo(rdcheck), freeModuleInfo);
+						auto ho = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*)rdcheck), freeModuleInfo);
 						std::string rPath;
 						if (rdcheck) rPath = (getPath(ho.get())); else rPath = "Unknown";
 						h.reset();

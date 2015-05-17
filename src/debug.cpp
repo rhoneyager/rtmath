@@ -10,7 +10,8 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/exception/all.hpp>
-#include <boost/core/null_deleter.hpp> // This is the correct one
+//#include <boost/core/null_deleter.hpp> // This is the correct one
+#include "../Ryan_Debug/deleter.h" // Sick of so many different locations for this.
 //#include <boost/utility/empty_deleter.hpp>
 //#include <boost/serialization/shared_ptr.hpp> // provides null_deleter for older boost versions
 #include <boost/log/trivial.hpp>

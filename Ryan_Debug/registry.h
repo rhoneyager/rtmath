@@ -15,6 +15,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include "debug.h"
+#include "dlls.h"
 #include "error.h"
 #include "info.h"
 #include "logging_base.h"
@@ -170,9 +171,9 @@ namespace Ryan_Debug
 				h = std::shared_ptr<derived>(constructor());
 			else {
 				if (std::string(sh->getId()) != std::string(id)) 
-					RDthrow(::Ryan_Debug::debug::xDuplicateHook())
-					<< ::Ryan_Debug::debug::otherErrorText("Bad passed plugin. The ids do not match.")
-					<< ::Ryan_Debug::debug::plugin_types
+					RDthrow(::Ryan_Debug::error::xDuplicateHook())
+					<< ::Ryan_Debug::error::otherErrorText("Bad passed plugin. The ids do not match.")
+					<< ::Ryan_Debug::error::plugin_types
 					(std::pair<std::string, std::string>
 						(std::string(sh->getId()), std::string(id)));
 				h = std::dynamic_pointer_cast<derived>(sh);

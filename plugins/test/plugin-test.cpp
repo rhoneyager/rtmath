@@ -15,7 +15,7 @@ D_Ryan_Debug_start()
 		"Plugin-test",
 		"A test plugin",
 		PLUGINID);
-	dllInitResult res = Ryan_Debug_registry_register_dll(id, dllStart);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*) dllStart);
 	if (res != SUCCESS) return res;
 
 	return SUCCESS;

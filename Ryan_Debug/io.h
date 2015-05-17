@@ -97,8 +97,8 @@ namespace Ryan_Debug
 					::Ryan_Serialization::write<obj_class, boost::archive::xml_oarchive>(*obj, out, sname);
 				else if (sm == serialization_method::TEXT)
 					::Ryan_Serialization::write<obj_class, boost::archive::text_oarchive>(*obj, out, sname);
-				else RDthrow(debug::xUnknownFileFormat())
-					<< debug::otherErrorText("Unknown serialization method");
+				else RDthrow(error::xUnknownFileFormat())
+					<< error::otherErrorText("Unknown serialization method");
 			}
 
 			template <class obj_class>
@@ -113,8 +113,8 @@ namespace Ryan_Debug
 					::Ryan_Serialization::read<obj_class, boost::archive::xml_iarchive>(*(obj.get()), in, sname);
 				else if (sm == serialization_method::TEXT)
 					::Ryan_Serialization::read<obj_class, boost::archive::text_iarchive>(*(obj.get()), in, sname);
-				else RDthrow(debug::xUnknownFileFormat())
-					<< debug::otherErrorText("Unknown serialization method");
+				else RDthrow(error::xUnknownFileFormat())
+					<< error::otherErrorText("Unknown serialization method");
 
 			}
 
@@ -139,8 +139,8 @@ namespace Ryan_Debug
 					h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
 				else {
 					if (sh->getId() != std::string(serialization_handle::getSHid()))
-						RDthrow(debug::xDuplicateHook())
-						<< debug::otherErrorText("Passed plugin is "
+						RDthrow(error::xDuplicateHook())
+						<< error::otherErrorText("Passed plugin is "
 						"the wrong one. It is not the serialization "
 						"plugin.");
 					h = std::dynamic_pointer_cast<serialization_handle>(sh);
@@ -173,8 +173,8 @@ namespace Ryan_Debug
 					h = std::shared_ptr<serialization_handle>(new serialization_handle(filename.c_str(), iotype));
 				else {
 					if (sh->getId() != std::string(serialization_handle::getSHid()))
-						RDthrow(debug::xDuplicateHook())
-						<< debug::otherErrorText("Bad passed plugin. "
+						RDthrow(error::xDuplicateHook())
+						<< error::otherErrorText("Bad passed plugin. "
 						"It is not the serialization plugin.");
 					h = std::dynamic_pointer_cast<serialization_handle>(sh);
 				}
@@ -938,9 +938,9 @@ namespace Ryan_Debug
 				std::shared_ptr<Ryan_Debug::registry::DBhandler> p = nullptr, 
 				std::shared_ptr<registry::DB_options> o = nullptr)
 			{
-				std::ostringstream o;
-				o << "Updating database";
-				emit_io_log(o.str(), Ryan_Debug::log::normal);
+				std::ostringstream os;
+				os << "Updating database";
+				emit_io_log(os.str(), Ryan_Debug::log::normal);
 
 				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<query_reg_class, registry_class >::getHooks();
 				for (const auto &h : *(hooks.get()))

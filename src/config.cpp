@@ -284,10 +284,11 @@ namespace Ryan_Debug {
 			}
 			*/
 			//boost::property_tree::xml_writer_settings<char> settings(' ', 4);
-			boost::property_tree::xml_writer_settings <
-				boost::property_tree::ptree::key_type > settings(' ', 4);
-			boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
-			//boost::property_tree::write_xml(stream, pt); // , std::locale(), settings);
+			//const char* spacer = " ";
+			//boost::property_tree::xml_writer_settings <
+			//	boost::property_tree::ptree::key_type > settings(spacer, 4);
+			//boost::property_tree::write_xml(stream, pt, settings ); // , std::locale(), settings);
+			boost::property_tree::write_xml(stream, pt); // , std::locale(), settings);
 
 		}
 
@@ -767,7 +768,7 @@ namespace Ryan_Debug {
 			// Check a few other places
 			std::string sAppConfigDir (Ryan_Debug::getAppConfigDir());
 			std::string sHomeDir(Ryan_Debug::getHomeDir());
-			auto hm = boost::shared_ptr<const moduleInfo>(getModuleInfo(&getConfigDefaultFile), freeModuleInfo);
+			auto hm = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) &getConfigDefaultFile), freeModuleInfo);
 			std::string dllPath(getPath(hm.get()));
 
 			auto hp = boost::shared_ptr<const processInfo>(Ryan_Debug::getInfo(Ryan_Debug::getPID()), freeProcessInfo);

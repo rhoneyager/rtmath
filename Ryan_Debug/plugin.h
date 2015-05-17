@@ -15,7 +15,7 @@
 #define D_Ryan_Debug_validator() extern "C" void FORCE_DLEXPORT dllVer(Ryan_Debug::versioning::versionInfo& vf, void** rd) \
 		{ \
 		Ryan_Debug::versioning::genVersionInfo(vf); \
-		*rd = &(Ryan_Debug_registry_register_dll); }
+		*rd = (void*) &(Ryan_Debug_registry_register_dll); }
 //#define gcc_init(x) void __attribute__((constructor)) plugin_gcc_init() { x(); }
 //#define msvc_init(x) BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved) \
 //{ if (dwReason == DLL_PROCESS_ATTACH) x(); return true; }
