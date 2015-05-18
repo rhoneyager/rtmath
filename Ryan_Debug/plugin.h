@@ -12,7 +12,7 @@
 // So, upon gcc_init or msvc_init, call a function that 
 
 #define D_Ryan_Debug_start() extern "C" dllInitResult FORCE_DLEXPORT dllStart()
-#define D_Ryan_Debug_validator() extern "C" void FORCE_DLEXPORT dllVer(Ryan_Debug::versioning::versionInfo& vf, void** rd) \
+#define D_Ryan_Debug_validator() extern "C" void FORCE_DLEXPORT dlVer(Ryan_Debug::versioning::versionInfo& vf, void** rd) \
 		{ \
 		Ryan_Debug::versioning::genVersionInfo(vf); \
 		*rd = (void*) &(Ryan_Debug_registry_register_dll); }
