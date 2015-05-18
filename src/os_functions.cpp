@@ -28,6 +28,7 @@
 #include <boost/log/sources/global_logger_storage.hpp>
 #include "../Ryan_Debug/logging.h"
 #include "../Ryan_Debug/registry.h"
+#include "../Ryan_Debug/dlls.h"
 //#include "../Ryan_Debug/debug.h"
 
 #ifdef _WIN32

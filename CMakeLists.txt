@@ -23,6 +23,7 @@ include(addModuleFiles)
 include(addBoostUniform)
 include(adddocs)
 include(generateAssemblyGuid)
+include(generaterc)
 
 set(MAJOR 0)
 set(MINOR 9)
@@ -117,10 +118,10 @@ configure_file (
 # Add in script-generated includes
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-configure_file(src/lib.rc.in
-	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
-configure_file(src/versioninfo.h.in
-	"${PROJECT_BINARY_DIR}/versioninfo.h" @ONLY)
+#configure_file(src/lib.rc.in
+#	"${PROJECT_BINARY_DIR}/lib.rc" @ONLY)
+#configure_file(src/versioninfo.h.in
+#	"${PROJECT_BINARY_DIR}/versioninfo.h" @ONLY)
 
 addBoostUniform(filesystem iostreams program_options system log log_setup)
 
@@ -173,6 +174,7 @@ set (hdrs
 #set(srcs-test src/test.cpp)
 
 if(WIN32 AND NOT CYGWIN)
+	generaterc(Ryan_Debug dll Ryan_Debug "Core debugging library" "${PROJECT_BINARY_DIR}/lib.rc")
 	set (srcs ${srcs} "${PROJECT_BINARY_DIR}/lib.rc" )
 endif()
 
