@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef IGNORE_MANIFESTS
-#ifndef RYAN_DEBUG_EXPORTING
-
 // The manifest component name depends on whether a debug or release build is using the app.
 // This is for ease of use when debugging.
 #ifndef RYAN_DEBUG_ASSEMBLY_RELEASE
@@ -47,6 +44,10 @@
 #endif
 #endif
 
+#if @USINGMANIFESTS@
+#ifndef IGNORE_MANIFESTS
+#ifndef RYAN_DEBUG_EXPORTING
+
 #pragma region Includes and Manifest Dependencies
 
 // Enable manifest referencing
@@ -61,6 +62,7 @@
 #endif
 #pragma endregion
 
+#endif
 #endif
 #endif
 

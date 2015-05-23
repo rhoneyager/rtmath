@@ -72,7 +72,7 @@
 #include "../Ryan_Debug/info.h"
 #include "../Ryan_Debug/splitSet.h"
 
-#include "versioninfo.h"
+//#include "versioninfo.h"
 #include "internal.h"
 
 // DLL binding and unbinding code
@@ -81,7 +81,7 @@
 /// GCC - code that is executed on DLL import
 void __attribute__ ((constructor)) debug_gcc_init()
 {
-	Ryan_Debug::appEntry();
+	//Ryan_Debug::appEntry();
 }
 
 /// GCC - code that is executed on DLL unload
@@ -95,7 +95,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	if (dwReason == DLL_PROCESS_ATTACH)
 	{
-		Ryan_Debug::appEntry();
+		//Ryan_Debug::appEntry();
 		// DisableThreadLibraryCalls(hInstance);
 	}
 	return true;

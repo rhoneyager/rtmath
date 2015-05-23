@@ -16,6 +16,8 @@ echo Processing header files
 for /d %%r IN (include/*) DO CALL :procincdir %%r
 echo Processing sxs files
 for %%r IN (installer/sxs_*) DO CALL :procsxs %%r
+echo Processing share files
+CALL :procsharedir %%r
 echo All wxs files generated.
 
 goto end
@@ -63,8 +65,17 @@ rem set lbl=%lbl:lib_=%
 echo found %lbl%
 heat.exe  dir include/%1 -nologo -o installer/inc_%lbl%.wxs -ag -sw5150 -cg inc_%lbl% -dr includedir -var var.MySource
 candle.exe -nologo -arch x64 installer/inc_%lbl%.wxs -dMySource=include/%1
+goto end
+
+:procsharedir
+set lbl=%1
+echo found %lbl%
+heat.exe  dir share -nologo -o installer/sha_%lbl%.wxs -ag -sw5150 -cg sha_%lbl% -dr sharedir -var var.MySource
+candle.exe -nologo -arch x64 installer/sha_%lbl%.wxs -dMySource=share
 
 goto end
 
 :end
+
+
 

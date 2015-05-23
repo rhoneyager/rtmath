@@ -84,6 +84,8 @@ namespace Ryan_Debug
 			namespace po = boost::program_options;
 			using std::string;
 
+			Ryan_Debug::appEntry();
+
 			pcmdline = &cmdline;
 			pconfig = &config;
 			phidden = &hidden;

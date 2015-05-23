@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='Windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
-  <Product Name='Ryan_Debug' Id='1BF1703C-4367-47F0-8962-13E2D59173D5' UpgradeCode='73A4FD88-A321-4559-9E31-87B0442CE9AA'
+  <Product Name='Ryan_Debug' Id='1BF1703C-4367-47F0-8962-13E2D59173D6' UpgradeCode='73A4FD88-A321-4559-9E31-87B0442CE9AA'
     Language='1033' Codepage='1252' Version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' Manufacturer='Ryan Honeyager'>
 
     <Package Id='*' Keywords='Installer' Description="Ryan_Debug Installer"
@@ -70,7 +70,8 @@
             </Directory>
             <Directory Id='includedir' Name='include'></Directory>
             <Directory Id='libdir' Name='lib'></Directory>
-            <Directory Id='cmakedir' Name='CMake'></Directory>
+	    <Directory Id='cmakedir' Name='CMake'></Directory>
+	    <Directory Id='sharedir' Name='share'></Directory>
           </Directory>
         </Directory>
       </Directory>
@@ -78,8 +79,11 @@
 
     <Feature Id='Complete' Title='Ryan_Debug' Description='The complete package' Level='1' Display='expand'
              ConfigurableDirectory='INSTALLDIR' AllowAdvertise='no' Absent='disallow'>
-      <FeatureRef Id='assembly_x64_vc110' />
-      <FeatureRef Id='assembly_x64_vc120' />
+      <ComponentGroupRef Id="bin_x64_vc120" />
+	    <ComponentGroupRef Id="conf_x64_vc120" />
+	    <ComponentGroupRef Id="inc_Ryan_Debug" />
+	    <ComponentGroupRef Id="lib_x64_vc120" />
+	    <ComponentGroupRef Id="sha_Ryan_Debug.xml" />
     </Feature>
 
     <UIRef Id="WixUI_FeatureTree" />

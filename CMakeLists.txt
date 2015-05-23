@@ -98,7 +98,7 @@ IF (DEFINED SZIP_LIBRARY)
 	set(COMPRESS_SZIP 1)
 ENDIF()
 
-
+install (SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/CMakeRules/implSigning.cmake")
 # Configure the subversion.h file
 configure_file(
 	"debug_subversion.h.template"
@@ -195,11 +195,12 @@ ELSE()
 	target_link_libraries(Ryan_Debug dl)
 ENDIF()
 addlib(Ryan_Debug SHARED)
-if (NOT DEFINED MAKE_ASSEMBLY)
-	signing(Ryan_Debug) # Will be part of the assembly code
-endif()
+#if (NOT DEFINED MAKE_ASSEMBLY)
+#	signing(Ryan_Debug) # Will be part of the assembly code
+#endif()
 
 if (MAKE_ASSEMBLY)
+	set (USINGMANIFESTS 1)
 	foreach(p Debug RelWithDebInfo MinSizeRel Release)
 		set(ASSEMBLY_NAME ${ASSEMBLY_NAME_${p}})
 		set(ASSEMBLY_LIB_NAME Ryan_Debug_${p}${configappend}.dll)
@@ -214,23 +215,23 @@ if (MAKE_ASSEMBLY)
 			"${CMAKE_CURRENT_BINARY_DIR}/${p}/sxs_${ASSEMBLY_NAME_${p}}.wxs" @ONLY)	
 	endforeach()
 	implementAssembly(Ryan_Debug Ryan_Debug )
+else()
+	set (USINGMANIFESTS 0)
+endif()
+if(WIN32 AND NOT CYGWIN)
 	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.template.wxs"
 		"${CMAKE_CURRENT_BINARY_DIR}/config${configappend}.wxs" @ONLY)
 	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Ryan_Debug.template.wxs"
 		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs" @ONLY)
-	INSTALL(FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/config${configappend}.wxs"
-		DESTINATION "${INSTALL_INCLUDE_DIR}/../installer" COMPONENT Scripts)
-	INSTALL(FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
-		"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
-		"${CMAKE_CURRENT_SOURCE_DIR}/collectdirs.bat"
-		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
-		"${CMAKE_CURRENT_SOURCE_DIR}/license.rtf"
-		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.xml"
-		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
-endif()
 
+	
+
+endif()
+# App snippets
+set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_BINARY_DIR}/Ryan.Ryan_Debug.manifest.h")
+	configure_file(
+		"manifestref.h.in"
+		"${MANIFEST_APP_SNIPPET_NAME}" @ONLY)
 add_subdirectory(plugins)
 add_subdirectory(apps)
 
@@ -267,12 +268,26 @@ configure_file(Ryan-DebugConfigVersion.cmake.in
 #message("${INSTALL_CMAKE_DIR}/${REL_ASSEMBLY_DIR}")
 
 #foreach(p Debug RelWithDebInfo MinSizeRel Release)
-	if(WIN32 AND NOT CYGWIN) # NSIS bug
+	if(WIN32 AND NOT CYGWIN) 
+	# NSIS bug
 	INSTALL(TARGETS Ryan_Debug
 		RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 		COMPONENT Libraries
 		#CONFIGURATIONS ${p}
 		)
+
+	# Regular windows
+
+	INSTALL(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/config${configappend}.wxs"
+		DESTINATION "${INSTALL_INCLUDE_DIR}/../installer" COMPONENT Scripts)
+	INSTALL(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.wxs"
+		"${CMAKE_CURRENT_SOURCE_DIR}/upgrade.bat"
+		"${CMAKE_CURRENT_SOURCE_DIR}/collectdirs.bat"
+		"${CMAKE_CURRENT_SOURCE_DIR}/deploy.bat"
+		"${CMAKE_CURRENT_SOURCE_DIR}/license.rtf"
+		DESTINATION "${INSTALL_INCLUDE_DIR}/.." COMPONENT Scripts)
 	endif()
 
 	INSTALL(TARGETS Ryan_Debug
@@ -320,4 +335,6 @@ INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Ryan_DebugConfig.cm
 	"${PROJECT_BINARY_DIR}/Ryan_DebugConfigVersion.cmake"
 	DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT Libraries)
 
+
+#message("Delayed signing: ${dsfiles}")
 

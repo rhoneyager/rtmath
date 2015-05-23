@@ -90,14 +90,19 @@ namespace {
 	/// Checks if a dll file matches the build settings of the Ryan_Debug library, by file path
 	bool correctVersionByName(const std::string &s)
 	{
-		std::string slower = s;
+		auto& lg = Ryan_Debug::registry::m_reg::get();
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_1) << "Verifying if dll " << s << " has the correct version by name";
+
+		std::string slower = boost::filesystem::path(s).filename().string();
 		std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
 
 		using namespace std;
 		// The DLL case probably sould never occur.
 #ifdef _DLL
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if dll";
 		if (slower.find("static") != string::npos) return false;
 #else
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if static lib";
 		if (slower.find("dynamic") != string::npos) return false;
 #endif
 		// Debug vs release dlls
@@ -110,34 +115,41 @@ namespace {
 #define BUILDTYPE_RelWithDebInfo 4
 
 #if BUILDTYPE == BUILDTYPE_Debug
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if BUILDTYPE_Debug";
 		buildtype = "Debug";
 #elif BUILDTYPE == BUILDTYPE_Release
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if BUILDTYPE_Release";
 		buildtype = "Release";
 #elif BUILDTYPE == BUILDTYPE_MinSizeRel
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if BUILDTYPE_MinSizeRel";
 		buildtype = "MinSizeRel";
 #elif BUILDTYPE == BUILDTYPE_Release
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if BUILDTYPE_Release";
 		buildtype = "Release";
 #else
 		buildtype = BUILDCONF;
 #endif
 		std::transform(buildtype.begin(), buildtype.end(), buildtype.begin(), ::tolower);
 
-		if (slower.find(buildtype) == string::npos)
-		{
-			if (slower.find("release") != string::npos) return false;
-			if (slower.find("minsizerel") != string::npos) return false;
-			if (slower.find("debug") != string::npos) return false;
-			if (slower.find("relwithdebinfo") != string::npos) return false;
-		}
+		if (slower.find(buildtype) == string::npos) return false;
+		//{
+		//	if (slower.find("release") != string::npos) return false;
+		//	if (slower.find("minsizerel") != string::npos) return false;
+		//	if (slower.find("debug") != string::npos) return false;
+		//	if (slower.find("relwithdebinfo") != string::npos) return false;
+		//}
 
 		/// Check for x86 vs x64
 #if __amd64 || _M_X64
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if x64";
 		if (slower.find("x86") != string::npos) return false;
 #else
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking if x86";
 		if (slower.find("x64") != string::npos) return false;
 #endif
 		/// \todo Check against windows system crt vs version-specific one
 		/// \todo Figure out how to get crt lib name from loaded dll
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_1) << "Dll " << s << " has the correct version by name";
 		return true;
 	}
 
@@ -731,6 +743,7 @@ namespace Ryan_Debug
 							// Convert to lower case and do matching from there (now in func)
 							//std::transform(slower.begin(), slower.end(), slower.begin(), ::tolower);
 
+							BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Checking candidate " << p.string();
 							if (correctVersionByName(slower)) {
 								BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found candidate " << p.string();
 								dlls.push_back(p.string());

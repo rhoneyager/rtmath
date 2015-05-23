@@ -2,6 +2,7 @@
 #pragma once
 #include "defs.h"
 
+#pragma warning( disable : 4251 ) // DLL interface
 #pragma warning( disable : 4661 ) // Exporting vector
 
 #include <iostream>
