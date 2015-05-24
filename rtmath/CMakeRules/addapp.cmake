@@ -1,6 +1,6 @@
 # CMake script for the very repetitive structure of 
 # rtmath-apps CMakeLists.txt files.
-
+include(signing)
 # Take the variable {appname}, and link libraries,
 # set properties and create an INSTALL target
 macro(addapp appname foldername)
@@ -36,6 +36,7 @@ macro(addapp appname foldername)
 	#ENDIF()
 
 	storebin(${appname})
+	delayedsigning( ${appname} )
 endmacro(addapp appname)
 
 macro(add_header_files srcs)
@@ -63,6 +64,7 @@ ENDIF()
 
 	INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin COMPONENT Applications)
 	set_target_properties(${appname} PROPERTIES FOLDER "Apps")
+	delayedsigning( ${appname} )
 endmacro(addbasicapp appname)
 
 

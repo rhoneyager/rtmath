@@ -23,9 +23,19 @@ if (WIN32 AND NOT CYGWIN)
 		#CACHE STRING
 		#"Assembly name for MinSizeRel builds")
 	set(ASSEMBLY_PUBLICKEYTOKEN
-		"ca89aae88144abf2"
+		"d25a3269370f4771"
 		CACHE STRING
-		"Public id of signing key (defaulting to Liulab-3 CA)"
+		"Public id of signing key (defaulting to Yubi)"
+		)
+	set(ASSEMBLY_PUBLICKEYTOKEN_YUBI
+		"d25a3269370f4771"
+		CACHE STRING
+		"Public id of YubiKey signing key (defaulting to Pellinore CA)"
+		)
+	set(ASSEMBLY_PUBLICKEYTOKEN
+		"2ed5d8ddfcfe197d"
+		CACHE STRING
+		"Public id of card 3 signing key (defaulting to Pellinore CA)"
 		)
 	set (ASSEMBLY_SIGN ON)
 	#option (ASSEMBLY_SIGN
@@ -92,7 +102,7 @@ macro(implementAssembly basename targetname ) #packagein)
 	endforeach()	
 
 	# App snippets
-	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.${basename}.manifest.h")
+	set (MANIFEST_APP_SNIPPET_NAME "${CMAKE_CURRENT_BINARY_DIR}/Ryan.Ryan_Debug.manifest.h")
 	configure_file(
 		"manifestref.h.in"
 		"${MANIFEST_APP_SNIPPET_NAME}" @ONLY)

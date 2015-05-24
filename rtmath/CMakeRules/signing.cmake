@@ -3,6 +3,9 @@ set (TIMESTAMP_PROVIDER /t http://timestamp.verisign.com/scripts/timestamp.dll
 	CACHE STRING "Specifies the site used for timestamping signed code")
 # /t http://timestamp.verisign.com/scripts/timestamp.dll
 # /tr http://www.startssl.com/timestamp
+set (SIGN_BINARIES TRUE CACHE BOOL "Sign the binaries")
+else()
+	set (SIGN_BINARIES FALSE)
 endif()
 
 macro(signing appname )
@@ -16,4 +19,11 @@ macro(signing appname )
 			)
 	endif()
 endmacro(signing appname )
+
+macro(delayedsigning appname)
+#	if (SIGN_BINARIES)
+#		set (dsfiles ${dsfiles} ${appname} CACHE INTERNAL "DSFILES")
+		#		set (dsfiles ${dsfiles} $<TARGET_FILE:${appname}> )
+		#	endif()
+endmacro()
 

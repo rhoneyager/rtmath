@@ -33,6 +33,7 @@ macro(addlib libname libshared )
 	target_compile_definitions(${libname} PUBLIC SHARED_${headername}=$<STREQUAL:${libshared},SHARED>)
 	#set (${libname}-libs rtmath_core ${rtmath_core-libs})
 	#target_link_libraries(${libname} ${libname}-libs)
+	delayedsigning( ${libname} )
 
 endmacro(addlib libname headername)
 
