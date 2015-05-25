@@ -55,7 +55,7 @@ namespace {
 	boost::program_options::options_description *pconfig = nullptr;
 	boost::program_options::options_description *phidden = nullptr;
 	size_t sys_num_threads = 0;
-	std::mutex m_sys_num_threads;
+	std::mutex m_debug;
 
 
 
@@ -83,6 +83,11 @@ namespace Ryan_Debug
 		{
 			namespace po = boost::program_options;
 			using std::string;
+
+			std::lock_guard<std::mutex> lock(m_debug);
+			static bool added = false;
+			if (added) return;
+			added = true;
 
 			Ryan_Debug::appEntry();
 
@@ -319,6 +324,11 @@ namespace Ryan_Debug
 		{
 			namespace po = boost::program_options;
 			using std::string;
+
+			std::lock_guard<std::mutex> lock(m_debug);
+			static bool done = false;
+			if (done) return;
+			done = true;
 
 			boost::log::add_common_attributes();
 			//boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");

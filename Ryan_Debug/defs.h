@@ -38,6 +38,6 @@
 #endif
 
 
-#ifdef _MSC_FULL_VER
+//#ifdef _MSC_FULL_VER
 #include "Ryan.Ryan_Debug.manifest.h"
-#endif
+//#endif
