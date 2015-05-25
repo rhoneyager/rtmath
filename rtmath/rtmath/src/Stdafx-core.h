@@ -31,8 +31,6 @@
 //#include <boost/tokenizer.hpp>
 
 #include "../rtmath/defs.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 //#pragma warning( push )
 
 #endif

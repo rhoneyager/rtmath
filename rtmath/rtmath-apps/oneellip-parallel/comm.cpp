@@ -7,7 +7,7 @@
 namespace rtmath {
 	namespace apps {
 		namespace oneellipParallel {
-
+			Ice::CommunicatorPtr defaultCommunicator;
 
 			processBase::processBase() : _pid(0), _type(ptype_t::WORKER),
 				_sIn(nullptr), _sOut(nullptr), _bIn(nullptr), _bOut(nullptr),
@@ -128,13 +128,13 @@ namespace rtmath {
 				_connected = true;
 			}
 
-			void processBase::exec(const message & msg)
+			void processBase::exec(const std::shared_ptr<message> & msg)
 			{
 				// Serialize the message and then release
 				//message *nm = new(_processes[id]->_bOut->data()) message(START);
 				std::vector<Ice::Byte> data;
 				auto out = Ice::createOutputStream(defaultCommunicator);
-				out->write(msg);
+				out->write(*msg);
 				out->finished(data);
 				std::copy_n(data.data(), data.size(),
 				(char*)_bOut->data());
@@ -144,8 +144,8 @@ namespace rtmath {
 
 			void processBase::kill()
 			{
-				message msg;
-				msg.id = messageId::TERMINATE;
+				std::shared_ptr<message> msg(new message);
+				msg->id = messageId::TERMINATE;
 				exec(msg);
 			}
 

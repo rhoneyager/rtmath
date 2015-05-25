@@ -86,9 +86,11 @@ module rtmath
 				outputs cs;
 			};
 
+			sequence<message> messages;
+
 			interface csProvider
 			{
-				["cpp:const"] idempotent outputs doRun(inputs invals) throws OneellipException;
+				["cpp:const"] idempotent messages doRun(inputs invals) throws OneellipException;
 				["cpp:const"] idempotent int numProcessors();
 			};
 

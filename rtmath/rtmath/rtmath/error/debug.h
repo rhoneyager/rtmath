@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "error.h"
+//#include "error.h"
 
 namespace boost { namespace program_options { 
 	class options_description; class variables_map; } 

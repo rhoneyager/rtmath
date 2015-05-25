@@ -22,7 +22,7 @@ namespace rtmath {
 				WORKER
 			};
 
-			Ice::CommunicatorPtr defaultCommunicator;
+			extern Ice::CommunicatorPtr defaultCommunicator;
 
 			class process;
 
@@ -39,7 +39,7 @@ namespace rtmath {
 				void connect(bool swap = false);
 				bool connected() const;
 				void kill();
-				void exec(const message &msg);
+				void exec(const std::shared_ptr<message> &msg);
 			public:
 				int _pid;
 				int _suffix;

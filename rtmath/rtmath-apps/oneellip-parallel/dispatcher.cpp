@@ -8,18 +8,13 @@
 #include <boost/filesystem.hpp>
 #include <Ryan_Debug/debug.h>
 #include "dispatcher.h"
-#include ""
+
 namespace rtmath {
 	namespace apps {
 		namespace oneellipParallel {
 
-
-			void test()
-			{
-
-			}
-
-			Dispatcher::Dispatcher(QObject *parent) : QObject(parent)
+			Dispatcher::Dispatcher(const std::string &appname,
+				size_t numcpus, QObject *parent) : QObject(parent)
 			{
 				_processesLoaded = false;
 				_numWorkers = 0;
@@ -28,6 +23,17 @@ namespace rtmath {
 				_modelRunning = false;
 				_pid = QCoreApplication::applicationPid();
 				sQueue.release(1);
+
+				if (parent)
+					QObject::connect(this, SIGNAL(terminated()), parent,
+					SLOT(quit()), Qt::QueuedConnection);
+				QObject::connect(this, SIGNAL(loaded()), this,
+					SLOT(startModel()), Qt::QueuedConnection);
+				//QObject::connect(this, SIGNAL(modelDone()), this,
+				//	SLOT(close()), Qt::QueuedConnection);
+				QObject::connect(this, SIGNAL(subprocessDone(int)), this,
+					SLOT(schedule(int)), Qt::QueuedConnection);
+				QTimer::singleShot(0, this, SLOT(initialize()));
 			}
 
 			Dispatcher::~Dispatcher()
@@ -71,7 +77,7 @@ namespace rtmath {
 				for (size_t i = 0; i < num; i++)
 				{
 					int pid = Ryan_Debug::getPID();
-					boost::shared_ptr<process> np(new process(pid, _numWorkers, ptype_t::WORKER));
+					boost::shared_ptr<process> np(new process(pid, (int)_numWorkers, ptype_t::WORKER));
 					np->connect(false);
 
 
@@ -131,34 +137,36 @@ namespace rtmath {
 
 			void Dispatcher::load()
 			{
+				/*
 				using namespace std;
 				vector <tmatrixSet> loader;
 				for (auto it = _files.begin(); it != _files.end(); ++it)
 				{
-					serialization::read< vector<tmatrixSet> >(loader, *it);
-					_tmatrices.resize(_tmatrices.size() + loader.size());
-					std::copy(loader.begin(), loader.end(), _tmatrices.rbegin());
+				serialization::read< vector<tmatrixSet> >(loader, *it);
+				_tmatrices.resize(_tmatrices.size() + loader.size());
+				std::copy(loader.begin(), loader.end(), _tmatrices.rbegin());
 				}
 
-				// Now that all tmatrices are loaded, insert the operations 
+				// Now that all tmatrices are loaded, insert the operations
 				// into the queue
 				for (auto it = _tmatrices.begin(); it != _tmatrices.end(); ++it)
 				{
-					for (auto ot = it->results.begin(); ot != it->results.end(); ++ot)
-					{
-						boost::shared_ptr<tmatrixInVars> ineff(new tmatrixInVars(*(it->base)));
-						ineff->ALPHA = (*ot)->alpha;
-						ineff->BETA = (*ot)->beta;
-						ineff->THET = (*ot)->theta;
-						ineff->THET0 = (*ot)->theta0;
-						ineff->PHI = (*ot)->phi;
-						ineff->PHI0 = (*ot)->phi0;
+				for (auto ot = it->results.begin(); ot != it->results.end(); ++ot)
+				{
+				boost::shared_ptr<tmatrixInVars> ineff(new tmatrixInVars(*(it->base)));
+				ineff->ALPHA = (*ot)->alpha;
+				ineff->BETA = (*ot)->beta;
+				ineff->THET = (*ot)->theta;
+				ineff->THET0 = (*ot)->theta0;
+				ineff->PHI = (*ot)->phi;
+				ineff->PHI0 = (*ot)->phi0;
 
-						_queue.push(std::pair < boost::shared_ptr<tmatrixInVars>,
-							boost::shared_ptr<tmatrixAngleRes> >
-							(ineff, *ot));
-					}
+				_queue.push(std::pair < boost::shared_ptr<tmatrixInVars>,
+				boost::shared_ptr<tmatrixAngleRes> >
+				(ineff, *ot));
 				}
+				}
+				*/
 			}
 
 			void Dispatcher::startModel()
@@ -181,7 +189,7 @@ namespace rtmath {
 				// Once all entries are loaded, schedule each process
 				_numActiveWorkers = _numWorkers;
 				for (size_t i = 0; i < _numWorkers; i++)
-					schedule(i);
+					schedule((int)i);
 			}
 
 			void Dispatcher::schedule(int id)
@@ -210,18 +218,12 @@ namespace rtmath {
 
 				// Talk to subprocess, providing new tmatrix to process
 
-				DispatcherProcessor *dp = new DispatcherProcessor(id, _processes[id], this, ntm.first, ntm.second);
+				DispatcherProcessor *dp = new DispatcherProcessor(id, _processes[id], this, ntm);
 				_processesHandler[id] = boost::shared_ptr<DispatcherProcessor>(dp);
 
 				dp->start(); // exec the command and await for response from child process on a separate thread...
 
 				sQueue.release();
-			}
-
-			void Dispatcher::setFiles(const std::vector<std::string> &files, const std::string &ofile)
-			{
-				_files = files;
-				_ofile = ofile;
 			}
 
 			void Dispatcher::setAppName(const std::string &fname)
@@ -232,27 +234,24 @@ namespace rtmath {
 			void DispatcherProcessor::run()
 			{
 				using namespace std;
-				message nm(START);
-
-				ostringstream body;
-
-				serialization::write<boost::shared_ptr<tmatrixInVars> >(_in, body);
-				serialization::write<boost::shared_ptr<tmatrixAngleRes> >(_out, body);
-				nm._data = body.str();
-
-				_p->exec(nm);
+				_in->id = START;
+				_p->exec(_in);
 
 				for (;;)
 				{
 					if (_p->_sIn->acquire())
 					{
 						// Thread blocks until the response is received
-						std::string sin((char*)_p->_bIn->data());
-						message in;
-						serialization::readString<message>(in, sin);
-						//message *in = (message*) _p->_bIn->data();
 
-						switch (in.id())
+						std::vector<Ice::Byte> data;
+						std::copy_n((char*)_p->_bIn->data(),
+							oneellip_parallel_maxMessageSize,
+							data.end());
+
+						auto ins = Ice::createInputStream(defaultCommunicator, data);
+						ins->read(*_in);
+
+						switch (_in->id)
 						{
 						case TERMINATE:
 							std::cerr << "Child id " << _id << " is terminating.\n";
@@ -263,14 +262,14 @@ namespace rtmath {
 						case DONE:
 							// Child process has completed its task and is now done.
 							// Save data!
-							serialization::readString<tmatrixOutVars>(_out->res, in._data);
-							_src->emitSubprocessDone(_id);
+							_src->_results.push_back(_in);
+							_src->emitSubprocessDone((int)_id);
 							return;
 							break;
 						default:
 							// Unknown signal received
 							std::cerr << "child " << _id << " has sent an abnormal response.\n";
-							std::cerr << "\tCode: " << in.id() << std::endl;
+							std::cerr << "\tCode: " << _in->id << std::endl;
 							break;
 						}
 
@@ -281,6 +280,32 @@ namespace rtmath {
 						exit(1);
 					}
 				}
+			}
+
+			int Dispatcher::numProcessors(const ::Ice::Current&) const
+			{
+				return _numCPUS;
+			}
+
+			std::vector<message> Dispatcher::doRun(const inputs& input,
+				const ::Ice::Current& c) const
+			{
+				std::vector<message> res;
+
+				for (const auto &i : input)
+				{
+					std::shared_ptr<message> m(new message);
+					m->in = i;
+					m->id = START;
+					_queue.push(m);
+				}
+
+				startModel();
+
+				// Take model outputs and return to caller
+				// Results are in _results
+
+				return res;
 			}
 
 

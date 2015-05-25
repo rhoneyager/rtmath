@@ -22,27 +22,27 @@ namespace rtmath {
 	}
 	// Registry declarations
 	namespace registry {
-		extern template struct IO_class_registry_writer<
-			::rtmath::phaseFuncs::pfRunSetContainer>;
+		extern template struct IO_class_registry_writer <
+			::rtmath::phaseFuncs::pfRunSetContainer > ;
 
-		extern template struct IO_class_registry_reader<
-			::rtmath::phaseFuncs::pfRunSetContainer>;
+		extern template struct IO_class_registry_reader <
+			::rtmath::phaseFuncs::pfRunSetContainer > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry,
-			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> >;
+			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::phaseFuncs::pfRunSetContainer_IO_output_registry,
-			IO_class_registry_writer<::rtmath::phaseFuncs::pfRunSetContainer> >;
+			IO_class_registry_writer<::rtmath::phaseFuncs::pfRunSetContainer> > ;
 
 	}
 
-	/** \brief This namespace provides the different type of radiative 
+	/** \brief This namespace provides the different type of radiative
 	* transfer matrix manipulations.
-	* 
-	* This includes several Mueller matrix generation methods and 
-	* the ability to generate an extinction matrix. Eventually, Mueller matrix 
+	*
+	* This includes several Mueller matrix generation methods and
+	* the ability to generate an extinction matrix. Eventually, Mueller matrix
 	* inversion routines will also go here.
 	*
 	* \todo Need to move pf class elsewhere and add interpolation
@@ -61,7 +61,7 @@ namespace rtmath {
 		void DLEXPORT_rtmath_core muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
 		void DLEXPORT_rtmath_core muellerTMATRIX(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn);
 
-		void DLEXPORT_rtmath_core convertFtoS(const Eigen::Matrix2cd &f, Eigen::Matrix2cd& Sn, double phi, 
+		void DLEXPORT_rtmath_core convertFtoS(const Eigen::Matrix2cd &f, Eigen::Matrix2cd& Sn, double phi,
 			std::complex<double> a, std::complex<double> b, std::complex<double> c, std::complex<double> d);
 
 		void DLEXPORT_rtmath_core invertS(const Eigen::Matrix4d &Snn, const Eigen::Matrix4d &Knn, double fGHz, Eigen::Matrix2cd& Sn);
@@ -99,15 +99,17 @@ namespace rtmath {
 					EQUIV_V_SPHERE,
 					EQUIV_SA_SPHERE
 				} aeff_version;
-                /// Base refractive index
+				/// Base refractive index
 				std::complex<double> m;
-                /// Refractive index scaling method
-				std::function<void(std::complex<double>, std::complex<double>, 
-                    double, std::complex<double> &)> rmeth;
+				/// Refractive index scaling method
+				//std::function<void(std::complex<double>, std::complex<double>, 
+				//double, std::complex<double> &)> rmeth;
+				std::string refrMeth;
+				std::map<std::string, double> refrVals;
 				/// Rescale effective radius
-				bool aeff_rescale; 
+				bool aeff_rescale;
 				/// Volume fraction
-				double vFrac; 
+				double vFrac;
 				/// Run description (usually a shape hash to indicate the target)
 				std::string ref;
 
@@ -117,7 +119,7 @@ namespace rtmath {
 					CYLINDER
 				} shape;
 				/// spheroid / cylinder aspect ratio
-				double eps; 
+				double eps;
 			};
 
 			/// Cross-section return structure
@@ -155,8 +157,8 @@ namespace rtmath {
 		///
 		/// \todo Add stats-conversion code here
 		class DLEXPORT_rtmath_core pf_provider :
-			virtual public ::rtmath::registry::usesDLLregistry<
-			pf_registry, pf_class_registry>
+			virtual public ::rtmath::registry::usesDLLregistry <
+			pf_registry, pf_class_registry >
 		{
 		public:
 			pf_provider(pf_class_registry::orientation_type, const pf_class_registry::inputParamsPartial&);
@@ -166,7 +168,7 @@ namespace rtmath {
 			/// \param oriType specifies isotropic or oriented run.
 			/// \param name forces match to a specific plugin. NULL causes this parameter to be skipped.
 			/// \param res is a container for all matching modules.
-			static void findHandler(pf_class_registry::orientation_type oriType, 
+			static void findHandler(pf_class_registry::orientation_type oriType,
 				const char* name, const pf_class_registry *res);
 
 
@@ -187,7 +189,7 @@ namespace rtmath {
 			pfRunSetContainer_IO_output_registry,
 			::rtmath::registry::IO_class_registry_writer<pfRunSetContainer> >,
 			virtual public ::rtmath::io::implementsStandardWriter<pfRunSetContainer, pfRunSetContainer_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<pfRunSetContainer, pfRunSetContainer_IO_input_registry>//,
+			virtual public ::rtmath::io::implementsStandardReader < pfRunSetContainer, pfRunSetContainer_IO_input_registry >//,
 		{
 			pfRunSetContainer();
 			virtual ~pfRunSetContainer();
@@ -225,30 +227,30 @@ namespace rtmath {
 	class phaseFunc // TODO: rewrite this.
 	{
 	public:
-		// This fuction is designed to be pure virtual, so that mie and other
-		// phase functions can be included in atmospheric layers
-		phaseFunc(void) {}
-		virtual ~phaseFunc(void) {}
-		// eval evaluates P for reduced mur and phir (mu-mu0, phi-phi0) to get proper directional data
-		//virtual void eval(double mu, double mun, double phir, double Pnn[4][4], double res[4][4]);
-		// calc constructs the base P matrix, centered on mu=mu0
-		//virtual void calc(double mu, std::complex<double> &m, double x, double Pnn[4][4]) = 0;
-		//virtual std::shared_ptr<matrixop> eval(double alpha) const = 0;
+	// This fuction is designed to be pure virtual, so that mie and other
+	// phase functions can be included in atmospheric layers
+	phaseFunc(void) {}
+	virtual ~phaseFunc(void) {}
+	// eval evaluates P for reduced mur and phir (mu-mu0, phi-phi0) to get proper directional data
+	//virtual void eval(double mu, double mun, double phir, double Pnn[4][4], double res[4][4]);
+	// calc constructs the base P matrix, centered on mu=mu0
+	//virtual void calc(double mu, std::complex<double> &m, double x, double Pnn[4][4]) = 0;
+	//virtual std::shared_ptr<matrixop> eval(double alpha) const = 0;
 	protected:
-		//mutable std::map<double,std::shared_ptr<matrixop> > _eval_cache;
+	//mutable std::map<double,std::shared_ptr<matrixop> > _eval_cache;
 	};
 
 	class scattMatrix
 	{
 	public:
-		scattMatrix(void) {}
-		virtual ~scattMatrix(void) {}
-		// Calculate the scattering amplitude matrix for a given mu.
-		// Here, mu = cos(alpha), the total scattering angle.
-		virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
+	scattMatrix(void) {}
+	virtual ~scattMatrix(void) {}
+	// Calculate the scattering amplitude matrix for a given mu.
+	// Here, mu = cos(alpha), the total scattering angle.
+	virtual void calc(double mu, double Snn[4][4], std::complex<double> Sn[4]) = 0;
 	public:
-		// f is the frequency
-		//static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
+	// f is the frequency
+	//static void _genMuellerMatrix(double Snn[4][4], const std::complex<double> Sn[4]);
 
 	};
 	*/

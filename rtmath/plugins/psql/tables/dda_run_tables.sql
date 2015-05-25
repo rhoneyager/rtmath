@@ -207,10 +207,13 @@ CREATE VIEW flakeRuns_db AS
 	ORDER BY host.hostname, flakeRuns.runsCompleted
 	;
 
+	create view flakeRunsHiRes as select frequency, temp, name  from flakeruns_db where dec = 'none' and perturbation = 'none' and pol = 'lin' and (name like '%late%' or name like '%micron') and progress = 'ingested' and nbetas = 18 order by frequency, name;
+
 
 	create view currentruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from currentruns order by total - good;
 	create view ingestedruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from ingestedruns order by total - good;
 
+	grant select on flakeRunsHiRes to public;
 	grant select on currentruns_console to public;
 	grant select on currentruns TO public;
 	grant select on failedruns TO public;

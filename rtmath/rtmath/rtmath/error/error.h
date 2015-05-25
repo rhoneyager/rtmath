@@ -1,5 +1,6 @@
 /* error.h - handling routines for all errors that can be thrown */
 #pragma once
+#error "Removed header. Switch to Ryan_Debug code."
 #include "../defs.h"
 
 #pragma warning( disable : 4996 ) // Deprecated function warning
@@ -128,7 +129,7 @@ namespace rtmath
 		ERRSTDR(xDLLerror, "Unspecified DLL error.");
 		ERRSTDR(xUpcast, "Plugin failure: cannot cast base upwards to a derived class provided by a plugin. "
 			"Usually means that no matching plugin can be found.");
-		ERRSTDR(xCannotFindReference, "Cannot find reference in file.")
+		ERRSTDR(xCannotFindReference, "Cannot find reference in file.");
 		ERRSTDR(xOtherError, "Unspecified error.");
 		ERRSTDR(xUnsupportedIOaction, "Unsupported IO action.");
 

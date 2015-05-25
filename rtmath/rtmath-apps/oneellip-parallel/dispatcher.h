@@ -16,6 +16,7 @@
 #include <queue>
 #include <boost/shared_ptr.hpp>
 #include "comm.h"
+#include <tmm.h>
 
 namespace rtmath {
 	namespace apps {
@@ -23,12 +24,15 @@ namespace rtmath {
 
 			class DispatcherProcessor;
 
-			class Dispatcher : public QObject
+			class Dispatcher : public QObject, public csProvider
 			{
 				Q_OBJECT
 			public:
-				explicit Dispatcher(QObject *parent = 0);
+				explicit Dispatcher(const std::string &appname,
+					size_t numcpus, QObject *parent = 0);
 				virtual ~Dispatcher();
+				int numProcessors(const ::Ice::Current& = Ice::Current()) const override;
+				std::vector<message> doRun(const inputs&, const ::Ice::Current& = ::Ice::Current()) const override;
 			signals:
 				void terminated();
 				// Real signals
@@ -57,13 +61,12 @@ namespace rtmath {
 				//std::map<size_t, tmatrix::tmatrixOutVars> _results;
 				std::set<boost::shared_ptr<QProcess> > _processesExec;
 				//std::map<size_t, std::shared_ptr<QTimer> > _pLifeTimer;
-				std::vector<std::string> _files; // Input files
-				std::string _ofile; // Output file
+				//std::vector<std::string> _files; // Input files
+				//std::string _ofile; // Output file
 				std::string _appname;
 
-				//std::vector< tmatrixSet > _tmatrices;
-				//std::queue < std::pair< boost::shared_ptr<tmatrixInVars>,
-				//	boost::shared_ptr<tmatrixAngleRes> > > _queue;
+				std::vector<std::shared_ptr<message> > _results;
+				std::queue < std::shared_ptr<message> > _queue;
 				
 				QSemaphore sQueue;
 			public:
@@ -86,16 +89,14 @@ namespace rtmath {
 			public:
 				DispatcherProcessor(size_t id,
 					boost::shared_ptr<process> p,
-					Dispatcher* src)//,
-					//boost::shared_ptr<tmatrixInVars> &in,
-					//boost::shared_ptr<tmatrixAngleRes> &out)
-					: _p(p), _id(id), _src(src) {} //, _in(in), _out(out) {}
+					Dispatcher* src,
+					std::shared_ptr<message> in)
+					: _p(p), _id(id), _src(src), _in(in) {}
 				void run();
 			private:
 				boost::shared_ptr<process> _p;
 				size_t _id;
-				//boost::shared_ptr<tmatrixInVars> _in;
-				//boost::shared_ptr<tmatrixAngleRes> _out;
+				std::shared_ptr<message> _in;
 				Dispatcher *_src;
 			};
 

@@ -21,11 +21,14 @@ include_directories(${ICE_INCLUDE_DIR})
 
 #add_subdirectory (protobuf)
 add_executable (rtmath-oneellip-parallel
+	app.cpp
+	app.h
 	comm.cpp
 	comm.h
 	dispatcher.cpp
 	dispatcher.h
 	main.cpp
+	main.h
 	worker.cpp
 	worker.h
 	)

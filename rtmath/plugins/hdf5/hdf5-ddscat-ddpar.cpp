@@ -141,12 +141,15 @@ namespace rtmath {
 				rot.betas(srot);
 				std::vector<double> vrot(srot.begin(), srot.end());
 				addDatasetArray<double, Group>(grpPar, "Betas", vrot.size(), 1, vrot.data());
+				srot.clear();
 				rot.thetas(srot);
 				vrot = std::vector<double>(srot.begin(), srot.end());
 				addDatasetArray<double, Group>(grpPar, "Thetas", vrot.size(), 1, vrot.data());
+				srot.clear();
 				rot.phis(srot);
 				vrot = std::vector<double>(srot.begin(), srot.end());
 				addDatasetArray<double, Group>(grpPar, "Phis", vrot.size(), 1, vrot.data());
+				srot.clear();
 
 				Eigen::Vector3i iwav;
 				iwav(0) = r->firstOri(0);

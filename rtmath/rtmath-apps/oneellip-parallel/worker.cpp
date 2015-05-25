@@ -192,17 +192,36 @@ namespace rtmath {
 				pf_class_registry::inputParamsPartial i;
 				i.aeff = _in->in.aeff;
 				i.aeff_rescale = _in->in.aeffRescale;
-				// TODO: cast shape version
-				//i.aeff_version = _in->in.aeffVersion;
-				i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
+				switch (_in->in.aeffVersion)
+				{
+				case VSPHERE:
+					i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
+					break;
+				case SASPHERE:
+					i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_SA_SPHERE;
+					break;
+				default:
+					throw;
+				}
 				i.eps = _in->in.eps;
 				i.m = std::complex<double>(_in->in.mRe, _in->in.mIm);
 				i.ref = _in->in.ref;
-				// Figure out function to use from refractive index specification
-				// TODO!
-				i.rmeth = rmeth; // Yeah, only one refractive index method per program invocation is supported.
-				// TODO: cast shape type
-				i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
+
+				i.refrMeth = _in->in.refrMeth; // Yeah, only one refractive index method per program invocation is supported.
+				i.refrVals = _in->in.refrVals;
+
+				switch (_in->in.shapeType)
+				{
+				case VSPHERE:
+					i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
+					break;
+				case SASPHERE:
+					i.shape = pf_class_registry::inputParamsPartial::shape_type::CYLINDER;
+					break;
+				default:
+					throw;
+				}
+
 
 				i.vFrac = _in->in.vFrac;
 

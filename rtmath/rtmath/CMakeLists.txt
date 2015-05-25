@@ -32,78 +32,78 @@ endif()
 #set (libflag "/D EXPORTING_RTMATH")
 
 # Custom prebuild step based on os
-IF(WIN32 AND NOT CYGWIN)
-	add_custom_command (
-		COMMAND prebuild.bat "${CMAKE_CURRENT_BINARY_DIR}"
-		COMMENT Running custom commands to set paths and query the repository information.
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
-else()
-	add_custom_command (
-		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
-ENDIF()
+#IF(WIN32 AND NOT CYGWIN)
+#	add_custom_command (
+#		COMMAND prebuild.bat "${CMAKE_CURRENT_BINARY_DIR}"
+#		COMMENT Running custom commands to set paths and query the repository information.
+#		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
+#		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#	)
+#else()
+#	add_custom_command (
+#		COMMAND tcsh ./prebuild.csh "${CMAKE_CURRENT_BINARY_DIR}"
+#		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h
+#		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#	)
+#ENDIF()
 
 # Needed here to properly configure
-set(COMPRESS_ZLIB 0)
-set(COMPRESS_GZIP 0)
-set(COMPRESS_BZIP2 0)
-set(COMPRESS_SZIP 0) # Only the HDF plugin uses SZIP
+#set(COMPRESS_ZLIB 0)
+#set(COMPRESS_GZIP 0)
+#set(COMPRESS_BZIP2 0)
+#set(COMPRESS_SZIP 0) # Only the HDF plugin uses SZIP
 
-find_package(BZip2)
+#find_package(BZip2)
+## BZIP2_FOUND requires that the debug libary be found, which is not desired.
+#if (NOT BZIP2_INCLUDE_DIR)
+#	message(STATUS "BZip2 libraries not found. Retrying with environment variables.")
+#	# FindBZip.cmake is annoying. It doesn't check the environment.
+#	if (DEFINED ENV{BZIP2_INCLUDE_DIR})
+#		set(BZIP2_INCLUDE_DIR $ENV{BZIP2_INCLUDE_DIR}
+#			CACHE PATH "BZip2 Include directory" FORCE)
+#	endif()
+#	if (DEFINED ENV{BZIP2_LIBRARY_DEBUG})
+#		set(BZIP2_LIBRARY_DEBUG $ENV{BZIP2_LIBRARY_DEBUG}
+#			CACHE FILEPATH "BZip2 Debug library path" FORCE)
+#	endif()
+#	if (DEFINED ENV{BZIP2_LIBRARY_RELEASE})
+#		set(BZIP2_LIBRARY_RELEASE $ENV{BZIP2_LIBRARY_RELEASE}
+#			CACHE FILEPATH "BZip2 Release library path" FORCE)
+#	endif()
+#	if (DEFINED ENV{BZIP2_LIBRARIES})
+#		set(BZIP2_LIBRARIES $ENV{BZIP2_LIBRARIES}
+#			CACHE FILEPATH "BZip2 libraries" FORCE)
+#		mark_as_advanced(BZIP2_LIBRARIES)
+#	endif()
+#	find_package(BZip2)
+#endif()
+
+
+#if(NOT ZLIB_INCLUDE_DIR)
+#	if (DEFINED ENV{ZLIB_ROOT})
+#		set(ZLIB_ROOT $ENV{ZLIB_ROOT})
+#	ENDIF()
+#endif()
+#find_package(ZLIB)
+
+
+#if (ZLIB_FOUND)
+#	set(COMPRESS_ZLIB 1)
+#	set(COMPRESS_GZIP 1)
+#	include_directories(${ZLIB_INCLUDE_DIRS})
+#	#set(liblist ${liblist} ${ZLIB_LIBRARIES})
+#endif()
 # BZIP2_FOUND requires that the debug libary be found, which is not desired.
-if (NOT BZIP2_INCLUDE_DIR)
-	message(STATUS "BZip2 libraries not found. Retrying with environment variables.")
-	# FindBZip.cmake is annoying. It doesn't check the environment.
-	if (DEFINED ENV{BZIP2_INCLUDE_DIR})
-		set(BZIP2_INCLUDE_DIR $ENV{BZIP2_INCLUDE_DIR}
-			CACHE PATH "BZip2 Include directory" FORCE)
-	endif()
-	if (DEFINED ENV{BZIP2_LIBRARY_DEBUG})
-		set(BZIP2_LIBRARY_DEBUG $ENV{BZIP2_LIBRARY_DEBUG}
-			CACHE FILEPATH "BZip2 Debug library path" FORCE)
-	endif()
-	if (DEFINED ENV{BZIP2_LIBRARY_RELEASE})
-		set(BZIP2_LIBRARY_RELEASE $ENV{BZIP2_LIBRARY_RELEASE}
-			CACHE FILEPATH "BZip2 Release library path" FORCE)
-	endif()
-	if (DEFINED ENV{BZIP2_LIBRARIES})
-		set(BZIP2_LIBRARIES $ENV{BZIP2_LIBRARIES}
-			CACHE FILEPATH "BZip2 libraries" FORCE)
-		mark_as_advanced(BZIP2_LIBRARIES)
-	endif()
-	find_package(BZip2)
-endif()
-
-
-if(NOT ZLIB_INCLUDE_DIR)
-	if (DEFINED ENV{ZLIB_ROOT})
-		set(ZLIB_ROOT $ENV{ZLIB_ROOT})
-	ENDIF()
-endif()
-find_package(ZLIB)
-
-
-if (ZLIB_FOUND)
-	set(COMPRESS_ZLIB 1)
-	set(COMPRESS_GZIP 1)
-	include_directories(${ZLIB_INCLUDE_DIRS})
-	#set(liblist ${liblist} ${ZLIB_LIBRARIES})
-endif()
-# BZIP2_FOUND requires that the debug libary be found, which is not desired.
-if (BZIP2_INCLUDE_DIR)
-	set(COMPRESS_BZIP2 1)
-	include_directories(${BZIP2_INCLUDE_DIR})
-	#set(liblist ${liblist} ${BZIP2_LIBRARIES})
-endif()
-IF (DEFINED SZIP_LIBRARY)
-	include_directories(${SZIP_INCLUDE_DIRS})
-	#	SET (h5libs ${h5libs} szip)
-	set(COMPRESS_SZIP 1)
-ENDIF()
+#if (BZIP2_INCLUDE_DIR)
+#	set(COMPRESS_BZIP2 1)
+#	include_directories(${BZIP2_INCLUDE_DIR})
+#	#set(liblist ${liblist} ${BZIP2_LIBRARIES})
+#endif()
+#IF (DEFINED SZIP_LIBRARY)
+#	include_directories(${SZIP_INCLUDE_DIRS})
+#	#	SET (h5libs ${h5libs} szip)
+#	set(COMPRESS_SZIP 1)
+#ENDIF()
 
 find_package(Ryan_Debug REQUIRED)
 option(USE_RYAN_SERIALIZATION "Use Ryan_Serialization library in core rtmath libraries" OFF)
@@ -132,7 +132,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set (boost_uniform_libs program_options iostreams filesystem system unit_test_framework regex date_time log log_setup)
 if (USE_RYAN_SERIALIZATION)
-	set (boost_uniform_libs ${boost_unifirm_libs} serialization)
+	set (boost_uniform_libs ${boost_uniform_libs} serialization)
 endif()
 addBoostUniform(${boost_uniform_libs})
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
