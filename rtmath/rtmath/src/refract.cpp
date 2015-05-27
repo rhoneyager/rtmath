@@ -18,7 +18,7 @@
 #include "../rtmath/zeros.h"
 #include "../rtmath/units.h"
 #include "linterp.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace {
 	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
@@ -176,8 +176,8 @@ namespace {
 		else if (m == hanelAmedium::NACL_IM) return res_nacl_im;
 		else if (m == hanelAmedium::SEASALT_RE) return res_seasalt_re;
 		else if (m == hanelAmedium::SEASALT_IM) return res_seasalt_im;
-		else RTthrow(rtmath::debug::xUnimplementedFunction())
-			<< rtmath::debug::otherErrorText("Bad enum input for hanelAmedium. "
+		else RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+			<< Ryan_Debug::error::otherErrorText("Bad enum input for hanelAmedium. "
 			"This is not a "
 			"case that the Hanel dielectric code can handle.");
 		return nullptr;
@@ -289,8 +289,8 @@ namespace {
 		else if (m == hanelBmedium::SAND_E_IM) return res_sand_e_im;
 		else if (m == hanelBmedium::DUST_LIKE_RE) return res_dust_re;
 		else if (m == hanelBmedium::DUST_LIKE_IM) return res_dust_im;
-		else RTthrow(rtmath::debug::xUnimplementedFunction())
-			<< rtmath::debug::otherErrorText("Bad enum input for hanelBmedium. "
+		else RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+			<< Ryan_Debug::error::otherErrorText("Bad enum input for hanelBmedium. "
 			"This is not a "
 			"case that the Hanel dielectric code can handle.");
 		return nullptr;
@@ -359,9 +359,9 @@ void rtmath::refract::implementations::mWater(double f, double t, std::complex<d
 		if (sP == "mWaterFreshMeissnerWentz") mWaterFreshMeissnerWentz(f, t, m);
 		if (sP == "mWaterHanel") ::rtmath::refract::mWaterHanel(_frequency = f, _freq_units = std::string("GHz"), _m = m);
 	} else {
-		if (f < 0) RTthrow(rtmath::debug::xModelOutOfRange())
-			<< rtmath::debug::freq(f)
-			<< rtmath::debug::freq_ref_range(std::pair<double,double>(0,1000));
+		if (f < 0) RDthrow(Ryan_Debug::error::xModelOutOfRange())
+			<< Ryan_Debug::error::freq(f)
+			<< Ryan_Debug::error::freq_ref_range(std::pair<double, double>(0, 1000));
 		if (f < 1000)
 		{
 			if (t >= 273)
@@ -369,15 +369,15 @@ void rtmath::refract::implementations::mWater(double f, double t, std::complex<d
 				mWaterLiebe(f, t, m);
 			}
 			else {
-				RTthrow(rtmath::debug::xModelOutOfRange())
-				<< rtmath::debug::temp(t)
-				<< rtmath::debug::temp_ref_range(std::pair<double,double>(273,500));
+				RDthrow(Ryan_Debug::error::xModelOutOfRange())
+					<< Ryan_Debug::error::temp(t)
+					<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(273, 500));
 			}
 		}
 		else {
-			RTthrow(rtmath::debug::xModelOutOfRange())
-				<< rtmath::debug::freq(f)
-				<< rtmath::debug::freq_ref_range(std::pair<double,double>
+			RDthrow(Ryan_Debug::error::xModelOutOfRange())
+				<< Ryan_Debug::error::freq(f)
+				<< Ryan_Debug::error::freq_ref_range(std::pair<double,double>
 						(0,1000));
 		}
 	}
@@ -399,14 +399,14 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 		if (sP == "mIceHanel") ::rtmath::refract::mIceHanel(_frequency = f, _freq_units = std::string("GHz"), _m = m);
 	} else {
 		if (f < 0) 
-			RTthrow(rtmath::debug::xModelOutOfRange())
-			<< rtmath::debug::freq(f)
-			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+			RDthrow(Ryan_Debug::error::xModelOutOfRange())
+			<< Ryan_Debug::error::freq(f)
+			<< Ryan_Debug::error::freq_ref_range(std::pair<double, double>
 				(0,99999));
 		if (t<100)
-			RTthrow(rtmath::debug::xModelOutOfRange())
-				<< rtmath::debug::temp(t)
-				<< rtmath::debug::temp_ref_range(std::pair<double,double>
+			RDthrow(Ryan_Debug::error::xModelOutOfRange())
+				<< Ryan_Debug::error::temp(t)
+				<< Ryan_Debug::error::temp_ref_range(std::pair<double,double>
 					(100,278));
 
 
@@ -417,9 +417,9 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 				mIceMatzler(f, t, m);
 			}
 			else {
-				RTthrow(rtmath::debug::xModelOutOfRange())
-				<< rtmath::debug::temp(t)
-				<< rtmath::debug::temp_ref_range(std::pair<double,double>
+				RDthrow(Ryan_Debug::error::xModelOutOfRange())
+				<< Ryan_Debug::error::temp(t)
+				<< Ryan_Debug::error::temp_ref_range(std::pair<double,double>
 					(100,278));
 
 			}
@@ -430,9 +430,9 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 				mIceWarren(f, t, m);
 			}
 			else {
-				RTthrow(rtmath::debug::xModelOutOfRange())
-				<< rtmath::debug::temp(t)
-				<< rtmath::debug::temp_ref_range(std::pair<double,double>(100,278));
+				RDthrow(Ryan_Debug::error::xModelOutOfRange())
+				<< Ryan_Debug::error::temp(t)
+				<< Ryan_Debug::error::temp_ref_range(std::pair<double,double>(100,278));
 
 			}
 		}
@@ -441,7 +441,7 @@ void rtmath::refract::implementations::mIce(double f, double t, std::complex<dou
 
 void rtmath::refract::implementations::mOther(double f, double t, std::complex<double> &m, const char* provider)
 {
-	RTthrow(rtmath::debug::xUnimplementedFunction());
+	RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 }
 
 // Water complex refractive index
@@ -452,9 +452,9 @@ void rtmath::refract::implementations::mOther(double f, double t, std::complex<d
 void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::complex<double> &m)
 {
 	if (f < 0 || f > 1000)
-		RTthrow(rtmath::debug::xModelOutOfRange())
-			<< rtmath::debug::freq(f)
-			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+		RDthrow(Ryan_Debug::error::xModelOutOfRange())
+			<< Ryan_Debug::error::freq(f)
+			<< Ryan_Debug::error::freq_ref_range(std::pair<double,double>
 				(0,1000));
 
 	double theta1 = 1.0 - (300.0/t);
@@ -474,9 +474,9 @@ void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::comp
 void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double tK, std::complex<double> &m)
 {
 	if (f < 0 || f > 500)
-		RTthrow(rtmath::debug::xModelOutOfRange())
-			<< rtmath::debug::freq(f)
-			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+		RDthrow(Ryan_Debug::error::xModelOutOfRange())
+			<< Ryan_Debug::error::freq(f)
+			<< Ryan_Debug::error::freq_ref_range(std::pair<double,double>
 				(0,500));
 
 	const double as[11] = {
@@ -487,11 +487,11 @@ void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double
 
 	double tC = tK - 273.15;
 	if (tC < -20 || tC > 40)
-		RTthrow(rtmath::debug::xModelOutOfRange())
-			<< rtmath::debug::temp(tK)
-			<< rtmath::debug::freq_ref_range(std::pair<double,double>
+		RDthrow(Ryan_Debug::error::xModelOutOfRange())
+			<< Ryan_Debug::error::temp(tK)
+			<< Ryan_Debug::error::freq_ref_range(std::pair<double,double>
 				(-20,40))
-			<< rtmath::debug::otherErrorText("Temp in K, range in C");
+			<< Ryan_Debug::error::otherErrorText("Temp in K, range in C");
 
 
 	// static dielectric constant for pure water (Stogryn)
@@ -870,7 +870,7 @@ double rtmath::refract::guessTemp(double freq, const std::complex<double>& m,
 			//try {
 				meth(freq, T, mRes);
 			//}
-			//catch (rtmath::debug::xModelOutOfRange &) {
+			//catch (Ryan_Debug::error::xModelOutOfRange &) {
 			//	rtmath::refract::mWater(freq, T, mRes);
 			//}
 
@@ -887,7 +887,7 @@ double rtmath::refract::guessTemp(double freq, const std::complex<double>& m,
 		temp = zeros::secantMethod(formulaTemp, TA, TB, 0.00001);
 		return temp;
 	}
-	catch (debug::xModelOutOfRange &)
+	catch (Ryan_Debug::error::xModelOutOfRange &)
 	{
 		return 0;
 	}
@@ -900,8 +900,8 @@ void rtmath::refract::MultiInclusions(
 	const std::vector<std::complex<double> > &ms, 
 	std::complex<double> &Mres)
 {
-	//if (fs.size() != ms.size() + 1) RTthrow rtmath::debug::xBadInput("Array sizes are not the same");
-	//if (fs.size() != funcs.size()) RTthrow rtmath::debug::xBadInput("Array sizes are not the same");
+	//if (fs.size() != ms.size() + 1) RDthrow Ryan_Debug::error::xBadInput("Array sizes are not the same");
+	//if (fs.size() != funcs.size()) RDthrow Ryan_Debug::error::xBadInput("Array sizes are not the same");
 
 	using namespace std;
 

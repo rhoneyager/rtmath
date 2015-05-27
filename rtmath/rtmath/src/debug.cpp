@@ -11,16 +11,15 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/exception/all.hpp>
-
 #include <boost/log/sources/global_logger_storage.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/hash.h>
 #include <Ryan_Debug/logging.h>
 #include <Ryan_Debug/error.h>
+#include <Ryan_Debug/registry.h>
 #include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
-//#include "../rtmath/error/debug_mem.h"
 #include "../rtmath/registry.h"
-#include "../rtmath/hash.h"
 
 #include "cmake-settings.h"
 
@@ -35,13 +34,10 @@ namespace {
 
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 		m_deb,
-		blog::sources::severity_channel_logger_mt< >,
-		(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "debug"))
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "debug"))
 		;
 
-	// Both logging systems go here
-	typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
-	static boost::shared_ptr< text_sink > sink_init, sink;
 }
 
 namespace rtmath
@@ -166,7 +162,7 @@ namespace rtmath
 				("hash-dir-writable", po::value<bool>()->default_value(false), "Is the custom hash directory writable?")
 				;
 
-			registry::add_options(cmdline, config, hidden);
+			rtmath::registry::add_options(cmdline, config, hidden);
 		}
 
 		
@@ -176,28 +172,14 @@ namespace rtmath
 			namespace po = boost::program_options;
 			using std::string;
 	
-			if (vm.count("help-verbose") || vm.count("help-all") || vm.count("help-full"))
-			{
-				po::options_description oall("All Options");
-				oall.add(*pcmdline).add(*pconfig).add(*phidden);
-
-				std::cerr << oall << std::endl;
-				exit(2);
-			}
-			
 			auto& lg = m_deb::get();
 			
 			if (vm.count("rtmath-config-file"))
 			{
 				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
-				BOOST_LOG_SEV(lg, normal) << "Console override of rtmath-config-file: " << sConfigDefaultFile << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of rtmath-config-file: " << sConfigDefaultFile << "\n";
 			}
 
-			//if (vm.count("rtmath-conf"))
-			//{
-			//	BOOST_LOG_SEV(lg, notification) << "Loading custom rtmath.conf from " << vm["rtmath-conf"].as<string>() << "\n";
-			//	rtmath::config::loadRtconfRoot(vm["rtmath-conf"].as<string>());
-			//} else { rtmath::config::loadRtconfRoot(); }
 			rtmath::config::loadRtconfRoot();
 
 			if (vm.count("hash-dir"))
@@ -205,13 +187,13 @@ namespace rtmath
 				std::vector<string> hashDirs = vm["hash-dir"].as<std::vector<string> >();
 				for (const auto &p : hashDirs)
 				{
-					std::shared_ptr<hashStore> h(new hashStore);
+					std::shared_ptr<Ryan_Debug::hash::hashStore> h(new Ryan_Debug::hash::hashStore);
 					h->writable = vm["hash-dir-writable"].as<bool>();
 					h->base = boost::filesystem::path(p);
-					BOOST_LOG_SEV(lg, normal) 
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
 						<< "Console override of hash directory: " << p 
 						<< ", writable: " << h->writable << ".\n";
-					hashStore::addHashStore(h, 0);
+					Ryan_Debug::hash::hashStore::addHashStore(h, 0);
 				}
 			}
 
@@ -232,7 +214,7 @@ namespace rtmath
 			}
 
 
-			BOOST_LOG_SEV(lg, normal) << spreambles;
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << spreambles;
 		}
 
 

@@ -1,4 +1,5 @@
 #pragma once
+#error "Removed header. Switch to Ryan_Debug code."
 /// Part of the serialization code, but this section only deals with 
 /// handling file compression. Pulled from Ryan_Serialization to 
 /// remove the rtmath dependency.

@@ -3,7 +3,7 @@
 #include <map>
 #include "../rtmath/density.h"
 #include "../rtmath/units.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 /* This file contains the tables and functions for the density of ice-1h
  * and supercooled water */
@@ -83,10 +83,10 @@ namespace rtmath
 			// temp is in K, but convert to Celsius for convenience
 			units::conv_temp c("K","C");
 			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -260) RTthrow(debug::xModelOutOfRange())
-				<< debug::temp_ref_range(std::pair<double,double>(-260,0))
-				<< debug::temp(Tc)
-				<< debug::otherErrorText("Temp. out of range. Function "
+			if (Tc > 0 || Tc < -260) RDthrow(Ryan_Debug::error::xModelOutOfRange())
+				<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-260, 0))
+				<< Ryan_Debug::error::temp(Tc)
+				<< Ryan_Debug::error::otherErrorText("Temp. out of range. Function "
 					"needs input temp in Kelvin. Listed ranges "
 					"in error are in Celsius.");
 
@@ -98,10 +98,10 @@ namespace rtmath
 			initSuperWater();
 			units::conv_temp c("K","C");
 			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -30) RTthrow(debug::xModelOutOfRange())
-				<< debug::temp_ref_range(std::pair<double,double>(-30, 0))
-				<< debug::temp(Tc)
-				<< debug::otherErrorText("Temp. out of range. Function "
+			if (Tc > 0 || Tc < -30) RDthrow(Ryan_Debug::error::xModelOutOfRange())
+				<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-30, 0))
+				<< Ryan_Debug::error::temp(Tc)
+				<< Ryan_Debug::error::otherErrorText("Temp. out of range. Function "
 					"needs input temp in Kelvin. Listed ranges "
 					"in error are in Celsius.");
 
@@ -110,7 +110,7 @@ namespace rtmath
 
 		double water(double T)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 			return 0;
 		}
 	}

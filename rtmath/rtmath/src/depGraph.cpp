@@ -7,7 +7,7 @@
 #endif
 
 #include "../rtmath/depGraph.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace rtmath
 {
@@ -56,8 +56,8 @@ namespace rtmath
 		{
 			if (this == slot)
 			{
-				std::cerr << "Ignoring vertex as a slot for itself " << this << ".\n";
-				//RTthrow debug::xArrayOutOfBounds();
+				//std::cerr << "Ignoring vertex as a slot for itself " << this << ".\n";
+				//RDthrow debug::xArrayOutOfBounds();
 				return true;
 			}
 			// Find first unused _slots
@@ -70,8 +70,8 @@ namespace rtmath
 			//auto it = std::find(_slots.begin(), _slots.end(), nullptr);
 			if (it == _slots.end())
 			{
-				std::cerr << "Cannot find empty vertex for addSlot " << this << " + " << slot << ".\n";
-				//RTthrow debug::xArrayOutOfBounds();
+				//std::cerr << "Cannot find empty vertex for addSlot " << this << " + " << slot << ".\n";
+				//RDthrow debug::xArrayOutOfBounds();
 				return false;
 			}
 			*it = slot;
@@ -86,8 +86,8 @@ namespace rtmath
 		{
 			if (this == signal)
 			{
-				std::cerr << "Ignoring vertex as a signal for itself " << this << ".\n";
-				//RTthrow debug::xArrayOutOfBounds();
+				//std::cerr << "Ignoring vertex as a signal for itself " << this << ".\n";
+				//RDthrow debug::xArrayOutOfBounds();
 				return true;
 			}
 			//_signals.insert(signal);
@@ -101,8 +101,8 @@ namespace rtmath
 			//auto it = std::find(_signals.begin(), _signals.end(), nullptr);
 			if (it == _signals.end()) 
 			{
-				std::cerr << "Cannot find empty vertex for _addSignal " << this << " + " << signal << ".\n";
-				//RTthrow debug::xArrayOutOfBounds();
+				//std::cerr << "Cannot find empty vertex for _addSignal " << this << " + " << signal << ".\n";
+				//RDthrow debug::xArrayOutOfBounds();
 				return false;
 			}
 			*it = signal;

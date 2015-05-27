@@ -1,4 +1,5 @@
 #pragma once
+#error "Removed header. Switch to Ryan_Debug code."
 #include "defs.h"
 #include <cmath>
 #include <cstdint>
@@ -15,6 +16,7 @@
 #include "registry.h"
 #include <boost/filesystem.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
+#include <Ryan_Debug/logging_base.h>
 
 //namespace boost {
 	//namespace filesystem { class path; } 
@@ -25,8 +27,8 @@ namespace rtmath {
 	namespace hash {
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_hash,
-			blog::sources::severity_channel_logger_mt< >,
-			(blog::keywords::severity = rtmath::debug::error)(blog::keywords::channel = "hash"));
+			boost::log::sources::severity_channel_logger_mt< >,
+			(boost::log::keywords::severity = rtmath::debug::error)(boost::log::keywords::channel = "hash"));
 	}
 	class hashStore;
 	typedef std::shared_ptr<const hashStore> pHashStore;

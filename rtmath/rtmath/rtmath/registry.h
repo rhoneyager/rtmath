@@ -2,31 +2,27 @@
 #pragma once
 #include "defs.h"
 
-#pragma warning( disable : 4661 ) // Exporting vector
-
-#include <functional>
 #include <iostream>
-#include <map>
-#include <set>
 #include <string>
-#include <sstream>
-#include <vector>
-#include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
-#include "error/debug.h"
+#include <Ryan_Debug/logging_base.h>
+//#include "error/debug.h"
 
 namespace boost {
 	namespace program_options {
 		class options_description; class variables_map;
 	}
 }
-
+namespace Ryan_Debug {
+	namespace registry {
+		class dllValidatorSet;
+	}
+}
 namespace rtmath
 {
 	namespace registry
 	{
 		/// Internal function used in templates that writes to the registry log
-		void DLEXPORT_rtmath_core emit_registry_log(const std::string&, ::rtmath::debug::severity_level = ::rtmath::debug::debug_2);
+		void DLEXPORT_rtmath_core emit_registry_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
 
 		/**
 		* \brief Adds options to a program
@@ -49,5 +45,13 @@ namespace rtmath
 		 **/
 		void DLEXPORT_rtmath_core process_static_options(
 			boost::program_options::variables_map &vm);
+
+		namespace dll {
+			/// Load a DLL.
+			void DLEXPORT_rtmath_core loadDLL(const std::string &filename);
+			/// Load DLLs.
+			void DLEXPORT_rtmath_core loadDLLs(const std::vector<std::string> &dlls);
+
+		}
 	}
 }

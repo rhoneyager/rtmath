@@ -72,12 +72,12 @@ namespace rtmath
 		{
 			if (cellmap->rows() > 0) return;
 
-			RTthrow(rtmath::debug::xUpcast());
+			RDthrow(rtmath::debug::xUpcast());
 		}
 
 		void CachedVoronoi::regenerateCache(size_t numPoints)
 		{
-			RTthrow(rtmath::debug::xUpcast());
+			RDthrow(rtmath::debug::xUpcast());
 		}
 
 		boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > CachedVoronoi::getCellMap() const

@@ -1,61 +1,18 @@
 #pragma once
-/* Contains common templates used in various functions.
-*/
+/** Contains common templates used in various functions. **/
 
-//#include <sstream>
 #include <set>
 #include <vector>
 #include <string>
-//#include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
-#if USE_RYAN_SERIALIZATION
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/string.hpp>
-#endif
 
 #include "defs.h"
-#include "splitSet.h"
-#include "Public_Domain/MurmurHash3.h"
+#include <Ryan_Debug/splitSet.h>
 
-// Forward declaration for boost::serialization below
 namespace rtmath {
 	template <class T>
 	class paramSet;
 }
-
-/*
-namespace boost
-{
-	namespace serialization
-	{
-		/// Definition to serialize all paramSet objects.
-		/// \note Need to use the external definition because of a MSVC 2012 bug.
-		/// \todo Check for bug resolution in MSVC 2013.
-		template <class Archive, class T>
-		void serialize(Archive&, rtmath::paramSet<T>&, const unsigned int);
-	}
-/// \todo Fix boost tuple serialization to work with LLVM/CLANG.
-		// boost tuple serialization - from http://uint32t.blogspot.com/2008/03/update-serializing-boosttuple-using.html
-		// Breaks in CLANG!
-
-#define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
-	ar & boost::serialization::make_nvp("element",t.get< which >());
-
-#define GENERATE_TUPLE_SERIALIZE(z,nargs,unused)                        \
-	template< typename Archive, BOOST_PP_ENUM_PARAMS(nargs,typename T) > \
-	void serialize(Archive & ar,                                        \
-	boost::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
-	const unsigned int version)                          \
-		{                                                                   \
-		BOOST_PP_REPEAT_FROM_TO(0,nargs,GENERATE_ELEMENT_SERIALIZE,~);    \
-		}
-
-
-		BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
-}
-*/
 
 namespace rtmath
 {
@@ -67,20 +24,6 @@ namespace rtmath
 	template <class T>
 	class paramSet
 	{
-#if USE_RYAN_SERIALIZATION
-		// Serialization of this template is annoyingly frustrating thanks to gcc and msvc issues
-		// involving nested templates. Basically, it HAS to be done in the header.
-		friend class ::boost::serialization::access;
-		template<class Archive>
-		void serialize(Archive & ar, const unsigned int version)
-		{
-			ar & boost::serialization::make_nvp("values_short", _shorthand);
-			ar & boost::serialization::make_nvp("values_expanded", _expanded);
-		}
-#endif
-		//
-		//template<class Archive, class U> friend
-		//void ::boost::serialization::serialize(Archive&, paramSet<U>&, const unsigned int);
 	public:
 		typedef std::map<std::string, std::string> aliasmap;
 		paramSet(const aliasmap *aliases = nullptr) 
@@ -151,7 +94,7 @@ namespace rtmath
 		const std::map<std::string, std::string> *_aliases;
 		void _expand()
 		{
-			rtmath::config::splitSet<T>(_shorthand, _expanded, _aliases);
+			Ryan_Debug::splitSet::splitSet<T>(_shorthand, _expanded, _aliases);
 		}
 	};
 
@@ -163,20 +106,8 @@ namespace rtmath
 	{
 		bool operator()(const T &lhs, const T &rhs) const
 		{
-			//std::cerr << "Comparing " << lhs << "\t" << rhs << "\t";
-			//bool a = (lhs < rhs);
-			//std::cerr << a << "\t";
 			bool res = (lhs)->operator<(*rhs);
-			//std::cerr << res << std::endl;
 			return res;
 		}
 	};
 }
-
-/*
-BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<double>);
-BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<float>);
-BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<int>);
-BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<size_t>);
-BOOST_CLASS_EXPORT_KEY(rtmath::paramSet<std::string>);
-*/

@@ -1,6 +1,6 @@
 #include "Stdafx-core.h"
 #include "../rtmath/units.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace rtmath {
 	namespace units {
@@ -35,8 +35,8 @@ namespace rtmath {
 		double converter::convert(double inVal) const
 		{
 			if (_valid) return ((inVal + _inOffset) * _convFactor) + (_outOffset);
-			RTthrow(rtmath::debug::xBadInput())
-				<< rtmath::debug::otherErrorText("Trying to convert with bad converter units.");
+			RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("Trying to convert with bad converter units.");
 			return 0;
 		}
 
@@ -185,8 +185,8 @@ namespace rtmath {
 		{
 			// Less trivial set of conversions
 			// First, if conversion of prefixes is needed, do it.
-			if (!_valid) RTthrow(debug::xUnimplementedFunction())
-				<< debug::otherErrorText("Unsupported conversion");
+			if (!_valid) RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+				<< Ryan_Debug::error::otherErrorText("Unsupported conversion");
 			double res = in;
 			res *= _Sin;
 

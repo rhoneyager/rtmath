@@ -1,4 +1,5 @@
 #pragma once
+#error "Unimplemented header"
 #include "defs.h"
 
 namespace rtmath

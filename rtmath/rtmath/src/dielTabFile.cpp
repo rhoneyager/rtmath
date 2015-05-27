@@ -48,13 +48,13 @@ namespace rtmath {
 				{
 					fname = _filename;
 				} else {
-					RTthrow(rtmath::debug::xBadInput())
+					RDthrow(rtmath::debug::xBadInput())
 					<< rtmath::debug::otherErrorText("Must specify filename");
 				}
 			}
 
 			if (!exists(path(fname)))
-				RTthrow(rtmath::debug::xMissingFile())
+				RDthrow(rtmath::debug::xMissingFile())
 				<< rtmath::debug::file_name(fname.c_str());
 
 			size_t fsize = (size_t) file_size(path(fname)); // bytes
@@ -144,7 +144,7 @@ namespace rtmath {
 			}
 
 			// Finish the column mappings
-			if (!importMap[0]) RTthrow(debug::xBadInput())
+			if (!importMap[0]) RDthrow(debug::xBadInput())
 				<< debug::otherErrorText("Cannot make diel map without "
 					"wavelengths.")
 				<< debug::line_text(in);
@@ -160,7 +160,7 @@ namespace rtmath {
 			bool mrei_mi = (importMap[1] && importMap[4]);
 
 			bool sufficient = (mBasic || mFromE || ( (mier_mr || miei_mr) && ( mrer_mi || mrei_mi) ) );
-			if (!sufficient) RTthrow(debug::xBadInput())
+			if (!sufficient) RDthrow(debug::xBadInput())
 				<< debug::otherErrorText("Cannot make diel map "
 					"with incomplete information.")
 				<< debug::line_text(in);
@@ -258,9 +258,9 @@ namespace rtmath {
 		{
 			using namespace std;
 
-			if (!freqMMap.size()) RTthrow(debug::xArrayOutOfBounds())
+			if (!freqMMap.size()) RDthrow(debug::xArrayOutOfBounds())
 				<< debug::otherErrorText("freqMMap is empty");
-			if (!_colMapsValid()) RTthrow(debug::xBadInput())
+			if (!_colMapsValid()) RDthrow(debug::xBadInput())
 				<< debug::otherErrorText("Bad diel column mappings");
 			//out.setf( ios::scientific, ios::floatfield);
 			//out.precision(7);
@@ -367,7 +367,7 @@ namespace rtmath {
 		{
 			using namespace std;
 			complex<double> res;
-			if (freqMMap.size() == 0) RTthrow(debug::xArrayOutOfBounds())
+			if (freqMMap.size() == 0) RDthrow(debug::xArrayOutOfBounds())
 				<< debug::otherErrorText("freqMMap is empty")
 				<< debug::freq(freq);
 			// Perform linear interpolation based on known dielectric values.

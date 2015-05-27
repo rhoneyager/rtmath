@@ -136,7 +136,7 @@ namespace rtmath
 				return h.generator(mins, maxs, points);
 			}
 
-			RTthrow(rtmath::debug::xUpcast());
+			RDthrow(rtmath::debug::xUpcast());
 		}
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::loadHash(
@@ -202,7 +202,7 @@ namespace rtmath
 				return h.voronoiBlankGenerator();
 			}
 
-			RTthrow(rtmath::debug::xUpcast());
+			RDthrow(rtmath::debug::xUpcast());
 		}
 
 		// These methods exist to keep the Voronoi class from being pure virtual. If one is 
@@ -237,7 +237,7 @@ namespace rtmath
 				//mptr.swap(mres); // Needs testing to check for stack issues!
 				return;
 			}
-			RTthrow(rtmath::debug::xUpcast())
+			RDthrow(rtmath::debug::xUpcast())
 			<< rtmath::debug::key(bname);
 		}
 
@@ -370,7 +370,7 @@ namespace rtmath
 				return h.generator(mins, maxs, points);
 			}
 
-			RTthrow(rtmath::debug::xUpcast());
+			RDthrow(rtmath::debug::xUpcast());
 		}
 
 		/*
@@ -437,7 +437,7 @@ namespace rtmath
 				return h.voronoiBlankGenerator();
 			}
 
-			RTthrow(rtmath::debug::xUpcast());
+			RDthrow(rtmath::debug::xUpcast());
 		}
 
 		// These methods exist to keep the Voronoi class from being pure virtual. If one is 
@@ -472,7 +472,7 @@ namespace rtmath
 				//mptr.swap(mres); // Needs testing to check for stack issues!
 				return;
 			}
-			RTthrow(rtmath::debug::xUpcast())
+			RDthrow(rtmath::debug::xUpcast())
 				<< rtmath::debug::key(bname);
 		}
 

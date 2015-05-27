@@ -306,7 +306,7 @@ namespace rtmath {
 				auto res = shapeFileStats::loadHash(hash);
 				if (!res && !prohibitStats) {
 					auto shp = shapefile::shapefile::loadHash(hash);
-					if (!shp) RTthrow(debug::xMissingHash())
+					if (!shp) RDthrow(debug::xMissingHash())
 					<< debug::hash(hash.string())
 					<< debug::hashType("shapefile+stats");
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
@@ -532,7 +532,7 @@ namespace rtmath {
 				else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(filename.c_str());
+					RDthrow debug::xUnknownFileFormat(filename.c_str());
 				}
 			}
 
@@ -566,7 +566,7 @@ namespace rtmath {
 				else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(opts->filename().c_str());
+					RDthrow debug::xUnknownFileFormat(opts->filename().c_str());
 				}
 				return nullptr; // Should never be reached
 			}

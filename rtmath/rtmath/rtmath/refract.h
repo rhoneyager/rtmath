@@ -9,7 +9,7 @@
 #include <boost/parameter/preprocessor.hpp>
 #include <boost/lexical_cast.hpp>
 #include "../rtmath/units.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace boost { namespace program_options { class options_description; class variables_map; } }
 namespace rtmath {

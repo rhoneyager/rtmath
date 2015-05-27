@@ -7,11 +7,11 @@
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <Ryan_Debug/debug.h>
+#include "../rtmath/error/debug.h"
 #include "../rtmath/phaseFunc.h"
 #include "../rtmath/units.h"
-#include "../rtmath/error/debug.h"
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
 		template struct IO_class_registry_writer
 			<::rtmath::phaseFuncs::pfRunSetContainer>;
@@ -28,6 +28,9 @@ namespace rtmath {
 			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> >;
 
 	}
+}
+namespace rtmath {
+	
 	namespace phaseFuncs
 	{
 
@@ -216,8 +219,8 @@ namespace rtmath {
 			else if (tid == "tmatrix")
 				f = muellerTMATRIX;
 			else
-				RTthrow(::rtmath::debug::xBadInput())
-					<< ::rtmath::debug::key(id); /// \todo use another xError? Create a new one?
+				RDthrow(::Ryan_Debug::error::xBadInput())
+				<< ::Ryan_Debug::error::key(id); /// \todo use another xError? Create a new one?
 		}
 
 		void muellerBH(const Eigen::Matrix2cd& Sn, Eigen::Matrix4d& Snn)

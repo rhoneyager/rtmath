@@ -1,6 +1,6 @@
 #include "Stdafx-core.h"
 #include "../rtmath/zeros.h"
-#include "../rtmath/error/debug.h"
+#include <Ryan_Debug/error.h>
 //#include <cstdlib>
 #include <cmath>
 
@@ -26,8 +26,8 @@ namespace rtmath {
 
 			// Bad starting points if fa*fb > 0
 			if (fa*fb > 0) 
-				RTthrow(rtmath::debug::xBadInput())
-					<< rtmath::debug::otherErrorText("Bad selection of a,b. f(a) and f(b) need to have opposite signs.");
+				RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("Bad selection of a,b. f(a) and f(b) need to have opposite signs.");
 
 			if ( abs(fa) < abs(fb) )
 			{

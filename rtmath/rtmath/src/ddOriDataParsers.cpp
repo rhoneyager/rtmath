@@ -239,7 +239,7 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 6) RTthrow(debug::xBadInput()) 
+				if (snums.size() < 6) RDthrow(debug::xBadInput()) 
 					<< debug::line_text(str)
 					<< debug::otherErrorText("Cannot parse refractive index");
 
@@ -335,7 +335,7 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 7) RTthrow(debug::xBadInput())
+				if (snums.size() < 7) RDthrow(debug::xBadInput())
 					<< debug::line_text(str)
 					<< debug::otherErrorText(
 					"Cannot parse inc.pol.vec. numbers");
@@ -349,14 +349,14 @@ namespace rtmath
 				pols[2] = complex<double>(macros::m_atof<double>(snums[4].c_str()), macros::m_atof<double>(snums[5].c_str()));
 				vecnum = fastCast<size_t>(snums[6]);
 				auto it = str.find_last_of('F');
-				if (it == std::string::npos) RTthrow(debug::xBadInput())
+				if (it == std::string::npos) RDthrow(debug::xBadInput())
 					<< debug::line_text(str)
 					<< debug::otherErrorText(
 					"Cannot parse inc.pol.vec. numbers");
 				it--;
 				if (str.at(it) == 'L') frame = frameType::LF;
 				else if (str.at(it) == 'T') frame = frameType::TF;
-				else RTthrow(debug::xBadInput())
+				else RDthrow(debug::xBadInput())
 					<< debug::line_text(str)
 					<< debug::otherErrorText(
 					"Cannot parse inc.pol.vec. numbers");
@@ -546,7 +546,7 @@ namespace rtmath
 					// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 					vals.clear();
 					if (!parse_numbers_space(lin.begin(), lin.end(), vals))
-						RTthrow(debug::xBadInput())
+						RDthrow(debug::xBadInput())
 							<< debug::otherErrorText("Cannot parse Mueller entry");
 
 					//for (auto it = t.begin(); it != t.end(); ++it)
@@ -568,7 +568,7 @@ namespace rtmath
 						boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
 
 					/// \note Actual read of mueller matrix entries disabled
-					RTthrow(debug::xUnimplementedFunction())
+					RDthrow(debug::xUnimplementedFunction())
 						<< debug::otherErrorText("Actual read of mueller matrix entries disabled");
 					//_scattMatricesRaw.push_back(matC);
 					//std::cerr << _scattMatricesRaw.size() << " elements\n";
@@ -607,7 +607,7 @@ namespace rtmath
 
 				vals.clear();
 				if (!parse_numbers_space(lin.begin(), lin.end(), vals))
-					RTthrow(debug::xBadInput())
+					RDthrow(debug::xBadInput())
 					<< debug::otherErrorText("Cannot parse F entry");
 
 				// ddScattMatrixF constructor takes frequency (GHz) and phi

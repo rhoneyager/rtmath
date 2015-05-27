@@ -39,8 +39,8 @@ namespace rtmath {
 				if ((start > end && interval > 0) || (start < end && interval < 0))
 				{
 					// Die from invalid range
-					// Should really RTthrow error
-					RTthrow(rtmath::debug::xModelOutOfRange());
+					// Should really RDthrow error
+					RDthrow(rtmath::debug::xModelOutOfRange());
 				}
 				for (double j=start;j<=end+(interval/100.0);j+=interval)
 				{
@@ -58,7 +58,7 @@ namespace rtmath {
 				}
 			} else if (specializer == "log") {
 				if (start == 0 || end == 0)
-					RTthrow(rtmath::debug::xDivByZero());
+					RDthrow(rtmath::debug::xDivByZero());
 				double is = log10( (double) start); 
 				double ie = log10( (double) end); 
 				double increment = (ie - is) / (interval);
@@ -71,7 +71,7 @@ namespace rtmath {
 				}
 			} else if (specializer == "inv") {
 				if (start == 0 || end == 0)
-					RTthrow(rtmath::debug::xDivByZero());
+					RDthrow(rtmath::debug::xDivByZero());
 				double is = 1.0 / start; 
 				double ie = 1.0 / end; 
 				double increment = (is - ie) / (interval);
@@ -113,7 +113,7 @@ namespace rtmath {
 						expanded.insert((T) k);
 				}
 			} else {
-				RTthrow(rtmath::debug::xBadInput())
+				RDthrow(rtmath::debug::xBadInput())
 					<< rtmath::debug::otherErrorText("Bad input in inner splitSet");
 			}
 		}
@@ -159,7 +159,7 @@ namespace rtmath {
 				}
 				catch (...)
 				{
-					RTthrow(rtmath::debug::xBadInput())
+					RDthrow(rtmath::debug::xBadInput())
 						<< rtmath::debug::otherErrorText(*rt);
 				}
 			}
@@ -244,7 +244,7 @@ namespace rtmath {
 							}
 							catch (...)
 							{
-								RTthrow(rtmath::debug::xBadInput())
+								RDthrow(rtmath::debug::xBadInput())
 								<< rtmath::debug::otherErrorText(*rt);
 							}
 						}

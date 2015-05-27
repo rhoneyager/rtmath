@@ -1,4 +1,5 @@
 #pragma once
+#error "Needs heavy revision. Currently unused."
 #include <memory>
 #include <string>
 #include <iostream>

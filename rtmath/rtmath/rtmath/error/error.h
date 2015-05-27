@@ -140,13 +140,13 @@ namespace rtmath
 
 //#ifdef _DEBUG
 #ifdef _MSC_FULL_VER
-#define RTthrow RDthrow
+#define RDthrow RDthrow
 #endif
 #ifdef __GNUC__
-#define RTthrow RDthrow 
+#define RDthrow RDthrow 
 #endif
-#define TASSERT(x) if(x) ; else RTthrow ::rtmath::debug::xAssert(#x)
+#define TASSERT(x) if(x) ; else RDthrow ::rtmath::debug::xAssert(#x)
 //#else
 //#define TASSERT(x) NULL;
-//#define RTthrow throw
+//#define RDthrow throw
 //#endif

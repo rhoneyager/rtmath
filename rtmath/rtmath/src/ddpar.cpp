@@ -95,13 +95,13 @@ namespace {
 		try {
 			// First try to load using rtmath.conf location
 			auto cRoot = config::loadRtconfRoot();
-			if (!cRoot) RTthrow(rtmath::debug::xMissingRtmathConf());
+			if (!cRoot) RDthrow(rtmath::debug::xMissingRtmathConf());
 			auto rtddscat = cRoot->getChild("ddscat");
 			string sBasePar, scwd;
 			if (rtddscat) {
 				rtddscat->getVal<string>("DefaultFile", sBasePar);
 				rtddscat->getCWD(scwd);
-			} else RTthrow(rtmath::debug::xBadInput())
+			} else RDthrow(rtmath::debug::xBadInput())
 				<< debug::otherErrorText("rtmath configutation file missing ddscat branch");
 
 			path pscwd(scwd), psBasePar(sBasePar);
@@ -363,7 +363,7 @@ namespace rtmath {
 			// Ensute that all necessary keys exist. If not, create them!!!
 			//populateDefaults(); // User's responsibility
 
-			if (!p) RTthrow(debug::xNullPointer())
+			if (!p) RDthrow(debug::xNullPointer())
 				<< debug::otherErrorText("ddPar::writeDDSCAT::p is null");
 			// Write file version
 			string ver;
@@ -541,7 +541,7 @@ namespace rtmath {
 								ostringstream ostr;
 								ostr << "Duplicate ddscat.par key: ";
 								ostr << vals[1];
-								RTthrow(rtmath::debug::xBadInput())
+								RDthrow(rtmath::debug::xBadInput())
 								<< rtmath::debug::otherErrorText(ostr.str());
 							}
 						}
@@ -557,7 +557,7 @@ namespace rtmath {
 						ostringstream ostr;
 						ostr << "Unknown ddscat.par key: ";
 						ostr << vals[1];
-						RTthrow(rtmath::debug::xBadInput())
+						RDthrow(rtmath::debug::xBadInput())
 							<< rtmath::debug::otherErrorText(ostr.str());
 					}
 				}
@@ -591,10 +591,10 @@ namespace rtmath {
 						// Cannot get default instance.....
 						if (pDefaultPar.string().size())
 						{
-							RTthrow(rtmath::debug::xMissingFile())
+							RDthrow(rtmath::debug::xMissingFile())
 							<< rtmath::debug::file_name(pDefaultPar.string());
 						} else {
-							RTthrow(rtmath::debug::xOtherError())
+							RDthrow(rtmath::debug::xOtherError())
 							<< rtmath::debug::otherErrorText("Cannot get default instance. Reason unknown.");
 						}
 					}
@@ -646,7 +646,7 @@ namespace rtmath {
 				if (is_directory(p)) return false;
 				return true;
 			};
-			//if (!validateFile(pDefaultPar)) RTthrow debug::xMissingFile(pDefaultPar.string().c_str());
+			//if (!validateFile(pDefaultPar)) RDthrow debug::xMissingFile(pDefaultPar.string().c_str());
 		}
 
 	} // end namespace ddscat

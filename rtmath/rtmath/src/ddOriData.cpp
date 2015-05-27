@@ -111,7 +111,7 @@ namespace rtmath {
 				obj->readAVG(in);
 			}
 			else {
-				RTthrow(rtmath::debug::xUnknownFileFormat())
+				RDthrow(rtmath::debug::xUnknownFileFormat())
 					<< rtmath::debug::file_name(filename);
 			}
 		}
@@ -141,7 +141,7 @@ namespace rtmath {
 				obj->writeAVG(out);
 			}
 			else {
-				RTthrow(rtmath::debug::xUnknownFileFormat())
+				RDthrow(rtmath::debug::xUnknownFileFormat())
 					<< rtmath::debug::file_name(filename);
 			}
 		}
@@ -228,7 +228,7 @@ namespace rtmath {
 			}
 			if (!startFound) return;
 			if (!endFound) stopRow = _parent.fmldata->rows();
-			if (stopRow <= startRow) RTthrow(debug::xArrayOutOfBounds());
+			if (stopRow <= startRow) RDthrow(debug::xArrayOutOfBounds());
 
 			doImportFMLs(startRow, stopRow - startRow);
 		}
@@ -1136,7 +1136,7 @@ namespace rtmath {
 			} else {
 				if (_parent.avgdata.avg_ms.size() > dielIndex) return _parent.avgdata.avg_ms[dielIndex];
 			}
-			RTthrow(debug::xArrayOutOfBounds());
+			RDthrow(debug::xArrayOutOfBounds());
 			return std::complex<double>(0, 0); // needed to suppress _parent.ms[_row]vc warning
 		}
 		void ddOriData::M(const std::complex<double>& m, size_t dielIndex)

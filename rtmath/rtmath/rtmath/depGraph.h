@@ -1,9 +1,6 @@
 #pragma once
 #include "defs.h"
 #include <array>
-//#include <list>
-//#include <map>
-//#include <memory>
 #include <set>
 #include <vector>
 #include <unordered_set>
@@ -11,9 +8,6 @@
 #ifdef __GNUC__
 #include <initializer_list>
 #endif
-//#include <boost/shared_ptr.hpp>
-//#include <boost/enable_shared_from_this.hpp>
-//#include <boost/weak_ptr.hpp>
 
 namespace rtmath
 {

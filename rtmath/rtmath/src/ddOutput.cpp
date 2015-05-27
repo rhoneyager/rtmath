@@ -147,7 +147,7 @@ namespace rtmath {
 		{
 		if (!scas.size()) return; // Nothing to do
 
-		RTthrow debug::xUnimplementedFunction();
+		RDthrow debug::xUnimplementedFunction();
 
 		boost::shared_ptr<ddOutputSingle> navg(new ddOutputSingle);
 		//if (!avg) navg = boost::shared_ptr<ddOutputSingle>(new ddOutputSingle);
@@ -172,7 +172,7 @@ namespace rtmath {
 
 		// Update the Mueller matrix table
 		// Use the angle spacings of the first sca file. If the others do
-		// not fall in line, then RTthrow an error for now.
+		// not fall in line, then RDthrow an error for now.
 		/// \todo Eventually just interpolate.
 
 		}
@@ -202,13 +202,13 @@ namespace rtmath {
 					}
 				}
 			}
-			if (!shape->hash().lower) RTthrow(debug::xMissingHash())
+			if (!shape->hash().lower) RDthrow(debug::xMissingHash())
 				<< debug::hash(shapeHash.string())
 				<< debug::hashType("shapefile");
 			if (!dostats) return;
 			stats = stats::shapeFileStats::genStats(shape);
 			//stats = stats::shapeFileStats::loadHash(this->shapeHash);
-			if (!stats) RTthrow(debug::xMissingHash())
+			if (!stats) RDthrow(debug::xMissingHash())
 				<< debug::hash(shapeHash.string())
 				<< debug::hashType("shapestats");
 			stats->load(shape);
@@ -276,14 +276,14 @@ namespace rtmath {
 			using std::vector;
 
 			path pBase(dir);
-			if (!exists(pBase)) RTthrow(debug::xMissingFile())
+			if (!exists(pBase)) RDthrow(debug::xMissingFile())
 				<< debug::folder_name(dir);
 
 			if (!is_directory(pBase))
 			{
 				std::vector<boost::shared_ptr<ddOutput> > runs;
 				rtmath::io::readObjs(runs, dir);
-				if (!runs.size()) RTthrow(debug::xEmptyInputFile())
+				if (!runs.size()) RDthrow(debug::xEmptyInputFile())
 					<< debug::file_name(dir);
 				res = runs[0];
 			}
@@ -575,7 +575,7 @@ namespace rtmath {
 				HASH_t shphash = shapeHash;
 				HASH_t parhash;
 				if (parfile) parhash = parfile->hash();
-				else RTthrow(debug::xMissingFile())
+				else RDthrow(debug::xMissingFile())
 					<< debug::file_name("ddscat.par");
 				HASH_t tmprhash = shphash ^ parhash;
 				tmprhash.lower += (uint64_t)temp;
@@ -624,7 +624,7 @@ namespace rtmath {
 			{
 				path pSym = Ryan_Debug::fs::expandSymlink<path,path>(pOut);
 				if (!is_directory(pSym))
-					RTthrow(debug::xPathExistsWrongType())
+					RDthrow(debug::xPathExistsWrongType())
 					<< debug::file_name(outdir);
 			}
 			else {
@@ -746,7 +746,7 @@ namespace rtmath {
 				return false;
 			};
 			// Will enable after actual use
-			//if (!validateDir(pHashRuns)) RTthrow debug::xMissingFile(pHashRuns.string().c_str());
+			//if (!validateDir(pHashRuns)) RDthrow debug::xMissingFile(pHashRuns.string().c_str());
 
 			if (vm.count("ddOutput-force-write-fmls"))
 			{
@@ -1002,7 +1002,7 @@ namespace rtmath {
 
 		// Failure to get appropriate output
 		obj = nullptr;
-		// TODO: RTthrow stuff?
+		// TODO: RDthrow stuff?
 		//throw rtmath::debug::xUnimplementedFunction();
 		return;
 		}

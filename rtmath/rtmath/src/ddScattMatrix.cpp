@@ -129,7 +129,7 @@ namespace rtmath {
 		ddScattMatrixConnector::ddScattMatrixConnector(
 			const std::vector<std::complex<double> >& src)
 		{
-			if (src.size() % 3 != 0 || !src.size()) RTthrow(debug::xArrayOutOfBounds())
+			if (src.size() % 3 != 0 || !src.size()) RDthrow(debug::xArrayOutOfBounds())
 				<< debug::otherErrorText("Element src has the wrong size or is a "
 					"null matrix.");
 			e01x = src[0];
@@ -200,7 +200,7 @@ namespace rtmath {
 		/*
 		ddScattMatrixF ddScattMatrixF::operator+(const ddScattMatrixF& rhs) const
 		{
-		if (!compareTolHeader(rhs)) RTthrow(debug::xBadInput(
+		if (!compareTolHeader(rhs)) RDthrow(debug::xBadInput(
 		"ddScattMatrices are not of the same header type"));
 		ddScattMatrixF res;
 
@@ -226,7 +226,7 @@ namespace rtmath {
 
 		ddScattMatrixP ddScattMatrixP::operator+(const ddScattMatrixP& rhs) const
 		{
-		if (!compareTolHeader(rhs)) RTthrow(debug::xBadInput(
+		if (!compareTolHeader(rhs)) RDthrow(debug::xBadInput(
 		"ddScattMatrices are not of the same header type"));
 		ddScattMatrixP res;
 

@@ -1,4 +1,6 @@
 #pragma once
+/// \todo phaseFunc.h needs the pf class moved elsewhere, + interpolation
+
 #include "defs.h"
 
 #include <functional>
@@ -6,13 +8,10 @@
 #include <map>
 #include <string>
 #include <Eigen/Core>
-#include "registry.h"
-#include "io.h"
-//#include "enums.h"
-//#include "da/damatrix.h"
 
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/io.h>
 
-#pragma message("Warning: phaseFunc.h needs the pf class moved elsewhere, + interpolation")
 namespace rtmath {
 	// Forward declaration
 	namespace phaseFuncs {
@@ -20,24 +19,27 @@ namespace rtmath {
 		class pfRunSetContainer_IO_input_registry {};
 		class pfRunSetContainer_IO_output_registry {};
 	}
+}
+namespace Ryan_Debug {
 	// Registry declarations
 	namespace registry {
 		extern template struct IO_class_registry_writer <
-			::rtmath::phaseFuncs::pfRunSetContainer > ;
+			::rtmath::phaseFuncs::pfRunSetContainer >;
 
 		extern template struct IO_class_registry_reader <
-			::rtmath::phaseFuncs::pfRunSetContainer > ;
+			::rtmath::phaseFuncs::pfRunSetContainer >;
 
 		extern template class usesDLLregistry <
 			::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry,
-			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> > ;
+			IO_class_registry_reader<::rtmath::phaseFuncs::pfRunSetContainer> >;
 
 		extern template class usesDLLregistry <
 			::rtmath::phaseFuncs::pfRunSetContainer_IO_output_registry,
-			IO_class_registry_writer<::rtmath::phaseFuncs::pfRunSetContainer> > ;
+			IO_class_registry_writer<::rtmath::phaseFuncs::pfRunSetContainer> >;
 
 	}
-
+}
+namespace rtmath {
 	/** \brief This namespace provides the different type of radiative
 	* transfer matrix manipulations.
 	*
@@ -157,7 +159,7 @@ namespace rtmath {
 		///
 		/// \todo Add stats-conversion code here
 		class DLEXPORT_rtmath_core pf_provider :
-			virtual public ::rtmath::registry::usesDLLregistry <
+			virtual public ::Ryan_Debug::registry::usesDLLregistry <
 			pf_registry, pf_class_registry >
 		{
 		public:
@@ -182,14 +184,14 @@ namespace rtmath {
 		};
 
 		struct pfRunSetContainer :
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			pfRunSetContainer_IO_input_registry,
-			::rtmath::registry::IO_class_registry_reader<pfRunSetContainer> >,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			::Ryan_Debug::registry::IO_class_registry_reader<pfRunSetContainer> >,
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			pfRunSetContainer_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<pfRunSetContainer> >,
-			virtual public ::rtmath::io::implementsStandardWriter<pfRunSetContainer, pfRunSetContainer_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader < pfRunSetContainer, pfRunSetContainer_IO_input_registry >//,
+			::Ryan_Debug::registry::IO_class_registry_writer<pfRunSetContainer> >,
+			virtual public ::Ryan_Debug::io::implementsStandardWriter<pfRunSetContainer, pfRunSetContainer_IO_output_registry>,
+			virtual public ::Ryan_Debug::io::implementsStandardReader < pfRunSetContainer, pfRunSetContainer_IO_input_registry >//,
 		{
 			pfRunSetContainer();
 			virtual ~pfRunSetContainer();

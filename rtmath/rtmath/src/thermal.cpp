@@ -1,7 +1,6 @@
 #include "Stdafx-core.h"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
-//#include "../rtmath/error/error.h"
 #include "../rtmath/thermal.h"
 #include "../rtmath/units.h"
 

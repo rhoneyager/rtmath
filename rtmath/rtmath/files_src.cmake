@@ -11,6 +11,8 @@ set(rtmath_core_error
 	src/debug.cpp
 	#src/debug_mem.cpp
 	#src/error.cpp
+	src/info.cpp
+	rtmath/info.h
 	)
 source_group("Debugging" FILES ${rtmath_core_error})
 
@@ -33,14 +35,14 @@ set(rtmath_core_general
 	rtmath/density.h
 	rtmath/depGraph.h
 	rtmath/derivatives.h
-	rtmath/hash.h
+	#rtmath/hash.h
 	rtmath/interpolatable.h
 	rtmath/macros.h
-	rtmath/matrixop.h
+	#rtmath/matrixop.h
 	rtmath/phaseFunc.h
 	rtmath/quadrature.h
 	rtmath/refract.h
-	rtmath/splitSet.h
+	#rtmath/splitSet.h
 	rtmath/thermal.h
 	rtmath/units.h
 	rtmath/zeros.h
@@ -48,14 +50,14 @@ set(rtmath_core_general
 	src/denseMatrix.cpp
 	src/density.cpp
 	src/depGraph.cpp
-	src/hash.cpp
+	#src/hash.cpp
 	src/macros.cpp
 	#src/matrixop.cpp
 	#src/os_functions.cpp
 	src/phaseFunc.cpp
 	src/quadrature.cpp
 	src/refract.cpp
-	src/splitSet.cpp
+	#src/splitSet.cpp
 	src/thermal.cpp
 	src/units.cpp
 	src/zeros.cpp
@@ -80,24 +82,24 @@ set(rtmath_core_polynomials
 source_group("Polynomials" FILES ${rtmath_core_polynomials})
 
 
-set(rtmath_core_publicdomain
-	rtmath/Public_Domain/MurmurHash3.h
-	src/MurmurHash3.cpp
-	)
-source_group("Public Domain" FILES ${rtmath_core_publicdomain})
+#set(rtmath_core_publicdomain
+#	rtmath/Public_Domain/MurmurHash3.h
+#	src/MurmurHash3.cpp
+#	)
+#source_group("Public Domain" FILES ${rtmath_core_publicdomain})
 
 
 set(rtmath_core_serialization
-	rtmath/io.h
-	rtmath/Serialization/eigen_serialization.h
+	#rtmath/io.h
+	#rtmath/Serialization/eigen_serialization.h
 	#rtmath/Serialization/matrixop_serialization.h
 	rtmath/Serialization/serialization_macros.h
 	rtmath/Serialization/Serialization.h
 	#src/common_templates_serialization.cpp
-	src/io.cpp
+	#src/io.cpp
 	#src/eigen_serialization.cpp
 	#src/matrixop_serialization.cpp
-	src/serialization.cpp
+	#src/serialization.cpp
 	)
 source_group("Serialization" FILES ${rtmath_core_serialization})
 

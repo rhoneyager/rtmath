@@ -1,4 +1,5 @@
 #pragma once
+#error "Removed header. Switch to Ryan_Debug code."
 #include "defs.h"
 #include <map>
 #include <set>

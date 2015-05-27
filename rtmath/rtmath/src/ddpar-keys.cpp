@@ -379,7 +379,7 @@ namespace rtmath {
 					basep = ddPar::generate(src); //boost::shared_ptr<ddPar>(new ddPar(src));
 				}
 				else {
-					RTthrow(rtmath::debug::xMissingFile())
+					RDthrow(rtmath::debug::xMissingFile())
 					<< rtmath::debug::file_name(src);
 				}
 			}

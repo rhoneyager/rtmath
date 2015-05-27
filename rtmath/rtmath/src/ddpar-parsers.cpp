@@ -340,7 +340,7 @@ namespace rtmath {
 				else
 				{
 					//cerr << "Unmatched key: " << key << endl;
-					RTthrow(rtmath::debug::xBadInput())
+					RDthrow(rtmath::debug::xBadInput())
 					<< rtmath::debug::default_file_name("ddscat.par")
 					<< rtmath::debug::otherErrorText("Unmatched key")
 					<< rtmath::debug::key(key);
@@ -589,7 +589,7 @@ namespace rtmath {
 					break;
 				case UNKNOWN:
 				default:
-					RTthrow(rtmath::debug::xBadInput())
+					RDthrow(rtmath::debug::xBadInput())
 					<< rtmath::debug::otherErrorText("Unknown parid");
 				}
 			}

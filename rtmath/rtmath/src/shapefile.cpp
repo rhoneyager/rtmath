@@ -675,7 +675,7 @@ namespace rtmath {
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(filename);
+					RDthrow debug::xUnknownFileFormat(filename);
 				}
 				return nullptr; // Should never be reached
 			}
@@ -758,7 +758,7 @@ namespace rtmath {
 				} else {
 					// Cannot match a file type to save.
 					// Should never occur.
-					RTthrow debug::xUnknownFileFormat(filename.c_str());
+					RDthrow debug::xUnknownFileFormat(filename.c_str());
 				}
 			}
             */
@@ -824,7 +824,7 @@ namespace rtmath {
 					readMulti(sh, opts);
 				}
 				else {
-					RTthrow(debug::xMissingHash())
+					RDthrow(debug::xMissingHash())
 						<< debug::hash(hash)
 					       	<< debug::hashType("shapefile");
 				}

@@ -323,7 +323,7 @@ namespace rtmath {
 				std::cerr << " " << _N << " points" << std::endl;
 
 				if (!_N)
-					RTthrow(rtmath::debug::xBadInput())
+					RDthrow(rtmath::debug::xBadInput())
 						<< rtmath::debug::otherErrorText("Stats cannot be calculated because the shapefile is not loaded.");
 
 				// Calculate volume elements

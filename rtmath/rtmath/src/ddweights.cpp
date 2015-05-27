@@ -101,8 +101,8 @@ namespace rtmath {
 					if (is_directory(p)) return true;
 					return false;
 				};
-				if (!validateDir(pHashShapes)) RTthrow debug::xMissingFile(pHashShapes.string().c_str());
-				if (!validateDir(pHashStats)) RTthrow debug::xMissingFile(pHashStats.string().c_str());
+				if (!validateDir(pHashShapes)) RDthrow debug::xMissingFile(pHashShapes.string().c_str());
+				if (!validateDir(pHashStats)) RDthrow debug::xMissingFile(pHashStats.string().c_str());
 			}
 			*/
 
@@ -440,7 +440,7 @@ namespace rtmath {
 			{
 				IntervalTable intervals;
 				w.getIntervals(intervals);
-				if (intervals.size() == 0) RTthrow(rtmath::debug::xArrayOutOfBounds())
+				if (intervals.size() == 0) RDthrow(rtmath::debug::xArrayOutOfBounds())
 					<< rtmath::debug::otherErrorText("No intervals can be "
 					"constructed from the parameters passed to "
 					"this function.");
@@ -836,7 +836,7 @@ namespace rtmath {
 			// end on the interval. Otherwise, find the two middle
 			// points between the adjacent points, and this area
 			// will be the interval considered for weight calculation
-			if (*it < 0) RTthrow rtmath::debug::xAssert("Point < 0");
+			if (*it < 0) RDthrow rtmath::debug::xAssert("Point < 0");
 			double _a = 0, _b = 0;
 			ot = it;
 			// Advance ot until it no longer matches it (multiset)

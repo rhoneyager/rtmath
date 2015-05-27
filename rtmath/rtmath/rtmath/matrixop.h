@@ -1,4 +1,5 @@
 #pragma once
+#error "Superseded header"
 #include <algorithm>
 #include <vector>
 #include <cstdarg>

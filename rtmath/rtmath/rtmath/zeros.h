@@ -4,9 +4,7 @@
 #include <complex>
 #include <functional>
 
-#include "error/error.h"
-//#include "polynomial.h"
-//#include "quadrature.h"
+#include <Ryan_Debug/error.h>
 
 namespace rtmath {
 
@@ -37,7 +35,7 @@ namespace rtmath {
 				xn = xn1 - fxn1 * (xn1 - xn2) / (fxn1 - fxn2);
 			} while ( (abs(xn-xn1) > eps) && (i++ < maxIter));
 
-			if (i >= maxIter) RTthrow(debug::xModelOutOfRange());
+			if (i >= maxIter) RDthrow(Ryan_Debug::error::xModelOutOfRange());
 			zero = xn;
 			return zero;
 		}
