@@ -6,11 +6,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <Ryan_Debug/macros.h>
 #include "../rtmath/ddscat/dielTabFile.h"
 #include "../rtmath/refract.h"
-#include "../rtmath/macros.h"
 
-#include "../rtmath/error/error.h"
 namespace rtmath {
 	namespace ddscat {
 
@@ -48,14 +47,14 @@ namespace rtmath {
 				{
 					fname = _filename;
 				} else {
-					RDthrow(rtmath::debug::xBadInput())
-					<< rtmath::debug::otherErrorText("Must specify filename");
+					RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Must specify filename");
 				}
 			}
 
 			if (!exists(path(fname)))
-				RDthrow(rtmath::debug::xMissingFile())
-				<< rtmath::debug::file_name(fname.c_str());
+				RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::file_name(fname.c_str());
 
 			size_t fsize = (size_t) file_size(path(fname)); // bytes
 
@@ -135,7 +134,7 @@ namespace rtmath {
 								// Find first space after this position
 								posb = in.find_first_of(" \t\n,", posa);
 								size_t len = posb - posa;
-								v[j] = rtmath::macros::m_atoi<size_t>(&(in.data()[posa]),len);
+								v[j] = Ryan_Debug::macros::m_atoi<size_t>(&(in.data()[posa]),len);
 							}
 						}
 						break;
@@ -144,10 +143,10 @@ namespace rtmath {
 			}
 
 			// Finish the column mappings
-			if (!importMap[0]) RDthrow(debug::xBadInput())
-				<< debug::otherErrorText("Cannot make diel map without "
+			if (!importMap[0]) RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("Cannot make diel map without "
 					"wavelengths.")
-				<< debug::line_text(in);
+				<< Ryan_Debug::error::line_text(in);
 			// eps = m^2
 			// m = mr + i mi, where mr, mi > 0
 			// The easy cases:
@@ -160,10 +159,10 @@ namespace rtmath {
 			bool mrei_mi = (importMap[1] && importMap[4]);
 
 			bool sufficient = (mBasic || mFromE || ( (mier_mr || miei_mr) && ( mrer_mi || mrei_mi) ) );
-			if (!sufficient) RDthrow(debug::xBadInput())
-				<< debug::otherErrorText("Cannot make diel map "
+			if (!sufficient) RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("Cannot make diel map "
 					"with incomplete information.")
-				<< debug::line_text(in);
+				<< Ryan_Debug::error::line_text(in);
 
 
 			size_t posa = 0, posb = pend+1;
@@ -187,7 +186,7 @@ namespace rtmath {
 					}
 					size_t len = posb - posa;
 					double val;
-					val = rtmath::macros::m_atof<double>(&(in.data()[posa]),len);
+					val = Ryan_Debug::macros::m_atof<double>(&(in.data()[posa]),len);
 					valser[j] = val;
 				}
 
@@ -258,10 +257,10 @@ namespace rtmath {
 		{
 			using namespace std;
 
-			if (!freqMMap.size()) RDthrow(debug::xArrayOutOfBounds())
-				<< debug::otherErrorText("freqMMap is empty");
-			if (!_colMapsValid()) RDthrow(debug::xBadInput())
-				<< debug::otherErrorText("Bad diel column mappings");
+			if (!freqMMap.size()) RDthrow(Ryan_Debug::error::xArrayOutOfBounds())
+				<< Ryan_Debug::error::otherErrorText("freqMMap is empty");
+			if (!_colMapsValid()) RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("Bad diel column mappings");
 			//out.setf( ios::scientific, ios::floatfield);
 			//out.precision(7);
 			out.unsetf(ios_base::floatfield);
@@ -354,22 +353,22 @@ namespace rtmath {
 			write(out);
 		}
 
-		HASH_t dielTab::hash() const
+		Ryan_Debug::hash::HASH_t dielTab::hash() const
 		{
 			using namespace std;
 			ostringstream out;
 			write(out);
 			string sout = out.str();
-			return HASH(sout.c_str(), (int) sout.size());
+			return Ryan_Debug::hash::HASH(sout.c_str(), (int) sout.size());
 		}
 
 		std::complex<double> dielTab::interpolate(double freq) const
 		{
 			using namespace std;
 			complex<double> res;
-			if (freqMMap.size() == 0) RDthrow(debug::xArrayOutOfBounds())
-				<< debug::otherErrorText("freqMMap is empty")
-				<< debug::freq(freq);
+			if (freqMMap.size() == 0) RDthrow(Ryan_Debug::error::xArrayOutOfBounds())
+				<< Ryan_Debug::error::otherErrorText("freqMMap is empty")
+				<< Ryan_Debug::error::freq(freq);
 			// Perform linear interpolation based on known dielectric values.
 			// If only one dielectric value is present, just return it.
 			auto it = freqMMap.begin();

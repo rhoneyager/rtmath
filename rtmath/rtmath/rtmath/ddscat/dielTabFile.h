@@ -1,11 +1,12 @@
 #pragma once
 #include "../defs.h"
-#include "../hash.h"
 #include <complex>
 #include <functional>
 #include <iostream>
 #include <map>
 #include <string>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/error.h>
 #include <boost/shared_ptr.hpp>
 
 namespace rtmath
@@ -72,7 +73,7 @@ namespace rtmath
 			size_t colMaps[dielColumns::NUMCOLS];
 
 			/// Calculates the hash of the dielectic. Convenience function.
-			HASH_t hash() const;
+			Ryan_Debug::hash::HASH_t hash() const;
 
 			
 
@@ -106,7 +107,9 @@ namespace rtmath
 					numFreqs++;
 					pstart++;
 				}
-				if (!numFreqs) throw; // Wrong function is being used
+				if (!numFreqs) RDthrow(Ryan_Debug::error::xMissingFrequency())
+					<< Ryan_Debug::error::otherErrorText("Need to specify the dielectric for at "
+					"least one frequency when creating a diel.tab file.");
 				if (numFreqs <=3)
 				{
 					// Not enough values for interpolation. Take the first value in the 

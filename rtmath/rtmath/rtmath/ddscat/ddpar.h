@@ -13,19 +13,12 @@
 #include <boost/shared_ptr.hpp>
 #include "ddVersions.h"
 #include "parids.h"
-#include "../hash.h"
-#include "../registry.h"
-#include "../io.h"
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/io.h>
+//#include "../registry.h"
+//#include "../io.h"
 
-// For ddParParsers
-#if USE_RYAN_SERIALIZATION
-#include "../Serialization/serialization_macros.h"
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/split_free.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/version.hpp>
-#endif
 
 namespace boost {
 	namespace program_options {
@@ -42,21 +35,23 @@ namespace rtmath {
 		class ddPar_serialization {};
 		class ddPar_Standard {};
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
 
-		extern template struct IO_class_registry_writer<
-			::rtmath::ddscat::ddPar>;
+		extern template struct IO_class_registry_writer <
+			::rtmath::ddscat::ddPar > ;
 
-		extern template struct IO_class_registry_reader<
-			::rtmath::ddscat::ddPar>;
+		extern template struct IO_class_registry_reader <
+			::rtmath::ddscat::ddPar > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::ddPar_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::ddPar> >;
+			IO_class_registry_reader<::rtmath::ddscat::ddPar> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::ddPar_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::ddPar> >;
+			IO_class_registry_writer<::rtmath::ddscat::ddPar> > ;
 
 	}
 	namespace io {
@@ -64,6 +59,8 @@ namespace rtmath {
 		DLEXPORT_rtmath_ddscat boost::shared_ptr
 			<::rtmath::ddscat::ddPar> customGenerator();
 	}
+}
+namespace rtmath {
 	namespace ddscat {
 
 		class rotations;
@@ -509,7 +506,7 @@ namespace rtmath {
 
 		/// Provides local readers and writers for ddscat ddpar data (it's a binder)
 		class DLEXPORT_rtmath_ddscat_base implementsDDPAR :
-			private rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
+			private Ryan_Debug::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
 			ddPar_IO_input_registry, ddPar_Standard>
 		{
 		public:
@@ -528,14 +525,14 @@ namespace rtmath {
 		**/
 		class DLEXPORT_rtmath_ddscat_base ddPar :
 			virtual public boost::enable_shared_from_this<ddPar>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				::rtmath::ddscat::ddPar_IO_input_registry,
-				::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddPar> >,
-			virtual public ::rtmath::registry::usesDLLregistry<
+				::Ryan_Debug::registry::IO_class_registry_reader<::rtmath::ddscat::ddPar> >,
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				::rtmath::ddscat::ddPar_IO_output_registry,
-				::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
-			virtual public ::rtmath::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>,
+				::Ryan_Debug::registry::IO_class_registry_writer<::rtmath::ddscat::ddPar> >,
+				virtual public ::Ryan_Debug::io::implementsStandardWriter<ddPar, ddPar_IO_output_registry>,
+				virtual public ::Ryan_Debug::io::implementsStandardReader<ddPar, ddPar_IO_input_registry>,
 #if USE_RYAN_SERIALIZATION
 			virtual public ::rtmath::io::Serialization::implementsSerialization<
 				::rtmath::ddscat::ddPar, ddPar_IO_output_registry, ddPar_IO_input_registry, ddPar_serialization>,
@@ -546,7 +543,7 @@ namespace rtmath {
 			/// Load the default ddscat.par file, used in setting default values
 			static boost::shared_ptr<const ddPar> defaultInstance();
 			// Need readVector as a friend class
-			friend boost::shared_ptr<ddPar> io::customGenerator<ddPar>();
+			friend boost::shared_ptr<ddPar> Ryan_Debug::io::customGenerator<ddPar>();
 			/**
 			 * \brief Adds ddPar options to a program
 			 *
@@ -582,11 +579,11 @@ namespace rtmath {
 			void read(std::istream &stream, bool overlay = false);
 			void write(std::ostream&) const;
 			/// Write a standard DDSCAT par file to the output stream
-			static void writeDDSCAT(const boost::shared_ptr<const ddPar>, std::ostream &, std::shared_ptr<registry::IO_options>);
+			static void writeDDSCAT(const boost::shared_ptr<const ddPar>, std::ostream &, std::shared_ptr<Ryan_Debug::registry::IO_options>);
 			/// Read a standard DDSCAT par file from an input stream
 			static void readDDSCAT(boost::shared_ptr<ddPar>, std::istream &, bool overlay = false);
 			/// \note Default parameter case is split because of function binding.
-			static void readDDSCATdef(boost::shared_ptr<ddPar>, std::istream&, std::shared_ptr<registry::IO_options>);
+			static void readDDSCATdef(boost::shared_ptr<ddPar>, std::istream&, std::shared_ptr<Ryan_Debug::registry::IO_options>);
 
 			bool operator==(const ddPar &rhs) const;
 			bool operator!=(const ddPar &rhs) const;
@@ -607,11 +604,11 @@ namespace rtmath {
 
 			void setDiels(const std::vector<std::string>&);
 			void getDiels(std::vector<std::string>&) const;
-			void getDielHashes(std::vector<HASH_t>&) const;
-			void setDielHashes(std::vector<HASH_t>&);
+			void getDielHashes(std::vector<Ryan_Debug::hash::HASH_t>&) const;
+			void setDielHashes(std::vector<Ryan_Debug::hash::HASH_t>&);
 
 			/// Calculates the hash of the given ddscat.par.
-			HASH_t hash() const;
+			Ryan_Debug::hash::HASH_t hash() const;
 
 			accessorSimpleBool(doNearField, ddParParsers::NRFLD);
 #undef near // Annoying MSVC thing
@@ -694,7 +691,7 @@ namespace rtmath {
 				boost::shared_ptr<ddParParsers::ddParLineSimple<std::string> > >
 				_diels;
 
-			mutable std::vector< HASH_t > _dielHashes;
+			mutable std::vector< Ryan_Debug::hash::HASH_t > _dielHashes;
 
 			std::string _filename;
 

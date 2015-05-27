@@ -34,11 +34,11 @@ namespace rtmath {
 	 **/
 	namespace config {
 		
-		void DLEXPORT_rtmath_core getConfigDefaultFile(std::string &filename);
-		boost::shared_ptr<::Ryan_Debug::config::configsegment> DLEXPORT_rtmath_core getRtconfRoot();
+		DLEXPORT_rtmath_core void getConfigDefaultFile(std::string &filename);
+		DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> getRtconfRoot();
 		/// Load the appropriate default rtmath configuration file (default may be overridden in command line, see registry.cpp)
-		boost::shared_ptr<::Ryan_Debug::config::configsegment> DLEXPORT_rtmath_core loadRtconfRoot(const std::string &filename = "");
-		void DLEXPORT_rtmath_core setRtconfRoot(boost::shared_ptr<::Ryan_Debug::config::configsegment> &root);
+		DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> loadRtconfRoot(const std::string &filename = "");
+		DLEXPORT_rtmath_core void setRtconfRoot(boost::shared_ptr<::Ryan_Debug::config::configsegment> &root);
 
 	}
 }

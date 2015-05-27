@@ -15,17 +15,14 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
-#if USE_RYAN_SERIALIZATION
-#include <Ryan_Serialization/serialization.h>
-#endif
-#include "../rtmath/Serialization/Serialization.h"
+#include <Ryan_Debug/Serialization.h>
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
+#include <Ryan_Debug/config.h>
 #include "../rtmath/config.h"
-#include "../rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
 #include "../rtmath/ddscat/rotations.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace {
 	
@@ -94,15 +91,15 @@ namespace {
 
 		try {
 			// First try to load using rtmath.conf location
-			auto cRoot = config::loadRtconfRoot();
-			if (!cRoot) RDthrow(rtmath::debug::xMissingRtmathConf());
+			auto cRoot = rtmath::config::loadRtconfRoot();
+			if (!cRoot) RDthrow(Ryan_Debug::error::xMissingRyan_DebugConf());
 			auto rtddscat = cRoot->getChild("ddscat");
 			string sBasePar, scwd;
 			if (rtddscat) {
 				rtddscat->getVal<string>("DefaultFile", sBasePar);
 				rtddscat->getCWD(scwd);
-			} else RDthrow(rtmath::debug::xBadInput())
-				<< debug::otherErrorText("rtmath configutation file missing ddscat branch");
+			} else RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("rtmath configutation file missing ddscat branch");
 
 			path pscwd(scwd), psBasePar(sBasePar);
 			pscwd.remove_filename();
@@ -121,18 +118,19 @@ namespace {
 	std::mutex mlock;
 }
 
-namespace rtmath {
+
+namespace Ryan_Debug {
 	namespace registry {
 		template struct IO_class_registry_writer
-			<::rtmath::ddscat::ddPar>;
-		template class usesDLLregistry<
+			< ::rtmath::ddscat::ddPar > ;
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddPar_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::ddPar> >;
+			IO_class_registry_writer<::rtmath::ddscat::ddPar> > ;
 		template struct IO_class_registry_reader
-			<::rtmath::ddscat::ddPar>;
-		template class usesDLLregistry<
+			< ::rtmath::ddscat::ddPar > ;
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddPar_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::ddPar> >;
+			IO_class_registry_reader<::rtmath::ddscat::ddPar> > ;
 	}
 	namespace io {
 		template <>
@@ -144,10 +142,12 @@ namespace rtmath {
 			return res;
 		}
 	}
+}
+namespace rtmath {
 	namespace ddscat {
 
 		implementsDDPAR::implementsDDPAR() :
-			rtmath::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
+			Ryan_Debug::io::implementsIObasic<ddPar, ddPar_IO_output_registry,
 			ddPar_IO_input_registry, ddPar_Standard>(ddPar::writeDDSCAT, ddPar::readDDSCATdef, known_formats())
 		{}
 
@@ -161,12 +161,12 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lck(mlock);
 				if (!mtypes.size())
 					mtypes.insert(".par");
-				if (io::TextFiles::serialization_handle::compressionEnabled())
+				if (Ryan_Debug::io::TextFiles::serialization_handle::compressionEnabled())
 				{
 					std::string sctypes;
 					std::set<std::string> ctypes;
-					serialization::known_compressions(sctypes, ".par");
-					rtmath::config::splitSet(sctypes, ctypes);
+					Ryan_Debug::serialization::known_compressions(sctypes, ".par");
+					Ryan_Debug::splitSet::splitSet(sctypes, ctypes);
 					for (const auto & t : ctypes)
 						mtypes.emplace(t);
 				}
@@ -271,13 +271,13 @@ namespace rtmath {
 			return lhs;
 		}
 
-		HASH_t ddPar::hash() const
+		Ryan_Debug::hash::HASH_t ddPar::hash() const
 		{
 			std::string res;
 			std::ostringstream out;
 			write(out);
 			res = out.str();
-			return HASH(res.c_str(), (int)res.size());
+			return Ryan_Debug::hash::HASH(res.c_str(), (int)res.size());
 		}
 
 		/*
@@ -355,7 +355,7 @@ namespace rtmath {
 		}
 		*/
 
-		void ddPar::writeDDSCAT(const boost::shared_ptr<const ddPar> p, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
+		void ddPar::writeDDSCAT(const boost::shared_ptr<const ddPar> p, std::ostream &out, std::shared_ptr<Ryan_Debug::registry::IO_options> opts)
 		{
 			// Writing is much easier than reading!
 			using namespace std;
@@ -363,8 +363,8 @@ namespace rtmath {
 			// Ensute that all necessary keys exist. If not, create them!!!
 			//populateDefaults(); // User's responsibility
 
-			if (!p) RDthrow(debug::xNullPointer())
-				<< debug::otherErrorText("ddPar::writeDDSCAT::p is null");
+			if (!p) RDthrow(Ryan_Debug::error::xNullPointer())
+				<< Ryan_Debug::error::otherErrorText("ddPar::writeDDSCAT::p is null");
 			// Write file version
 			string ver;
 			ver = rtmath::ddscat::ddVersions::getVerString(p->_version);
@@ -420,7 +420,7 @@ namespace rtmath {
 			src->read(in, overlay);
 		}
 
-		void ddPar::readDDSCATdef(boost::shared_ptr<ddPar> src, std::istream &in, std::shared_ptr<registry::IO_options>)
+		void ddPar::readDDSCATdef(boost::shared_ptr<ddPar> src, std::istream &in, std::shared_ptr<Ryan_Debug::registry::IO_options>)
 		{
 			readDDSCAT(src, in, false);
 		}
@@ -524,8 +524,8 @@ namespace rtmath {
 
 						if (boost::filesystem::exists(prel))
 						{
-							_dielHashes.push_back(HASHfile(prel.string()));
-						} else _dielHashes.push_back(HASH_t());
+							_dielHashes.push_back(Ryan_Debug::hash::HASHfile(prel.string()));
+						} else _dielHashes.push_back(Ryan_Debug::hash::HASH_t());
 
 						//_dielHashes.push_back(HASHfile(dval));
 					}
@@ -541,8 +541,8 @@ namespace rtmath {
 								ostringstream ostr;
 								ostr << "Duplicate ddscat.par key: ";
 								ostr << vals[1];
-								RDthrow(rtmath::debug::xBadInput())
-								<< rtmath::debug::otherErrorText(ostr.str());
+								RDthrow(Ryan_Debug::error::xBadInput())
+									<< Ryan_Debug::error::otherErrorText(ostr.str());
 							}
 						}
 						_parsedData[ptr->id()] = ptr;
@@ -557,8 +557,8 @@ namespace rtmath {
 						ostringstream ostr;
 						ostr << "Unknown ddscat.par key: ";
 						ostr << vals[1];
-						RDthrow(rtmath::debug::xBadInput())
-							<< rtmath::debug::otherErrorText(ostr.str());
+						RDthrow(Ryan_Debug::error::xBadInput())
+							<< Ryan_Debug::error::otherErrorText(ostr.str());
 					}
 				}
 
@@ -591,11 +591,11 @@ namespace rtmath {
 						// Cannot get default instance.....
 						if (pDefaultPar.string().size())
 						{
-							RDthrow(rtmath::debug::xMissingFile())
-							<< rtmath::debug::file_name(pDefaultPar.string());
+							RDthrow(Ryan_Debug::error::xMissingFile())
+								<< Ryan_Debug::error::file_name(pDefaultPar.string());
 						} else {
-							RDthrow(rtmath::debug::xOtherError())
-							<< rtmath::debug::otherErrorText("Cannot get default instance. Reason unknown.");
+							RDthrow(Ryan_Debug::error::xOtherError())
+								<< Ryan_Debug::error::otherErrorText("Cannot get default instance. Reason unknown.");
 						}
 					}
 				}
@@ -646,7 +646,7 @@ namespace rtmath {
 				if (is_directory(p)) return false;
 				return true;
 			};
-			//if (!validateFile(pDefaultPar)) RDthrow debug::xMissingFile(pDefaultPar.string().c_str());
+			//if (!validateFile(pDefaultPar)) RDthrow Ryan_Debug::error::xMissingFile(pDefaultPar.string().c_str());
 		}
 
 	} // end namespace ddscat

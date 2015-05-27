@@ -19,11 +19,12 @@
 #endif
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
+#include <Ryan_Debug/config.h>
 #include "../rtmath/config.h"
-#include "../rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/hash.h>
 #include "../rtmath/ddscat/rotations.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 
 namespace rtmath {
@@ -160,13 +161,13 @@ namespace rtmath {
 		void ddPar::getAeff(std::set<double> &aeffs) const
 		{
 			std::string in = getAeff();
-			rtmath::config::splitSet<double>(in, aeffs);
+			Ryan_Debug::splitSet::splitSet<double>(in, aeffs);
 		}
 
 		void ddPar::getWavelengths(std::set<double> &wvs) const
 		{
 			std::string in = getWavelengths();
-			rtmath::config::splitSet<double>(in, wvs);
+			Ryan_Debug::splitSet::splitSet<double>(in, wvs);
 		}
 
 		std::string ddPar::getWavelengths() const
@@ -325,12 +326,12 @@ namespace rtmath {
 			}
 		}
 
-		void ddPar::getDielHashes(std::vector<HASH_t>& res) const
+		void ddPar::getDielHashes(std::vector<Ryan_Debug::hash::HASH_t>& res) const
 		{
 			res = _dielHashes;
 		}
 
-		void ddPar::setDielHashes(std::vector<HASH_t>& res)
+		void ddPar::setDielHashes(std::vector<Ryan_Debug::hash::HASH_t>& res)
 		{
 			_dielHashes = res;
 		}
@@ -379,8 +380,8 @@ namespace rtmath {
 					basep = ddPar::generate(src); //boost::shared_ptr<ddPar>(new ddPar(src));
 				}
 				else {
-					RDthrow(rtmath::debug::xMissingFile())
-					<< rtmath::debug::file_name(src);
+					RDthrow(Ryan_Debug::error::xMissingFile())
+						<< Ryan_Debug::error::file_name(src);
 				}
 			}
 			ddPar &base = *basep;

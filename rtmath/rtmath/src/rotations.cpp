@@ -10,7 +10,7 @@
 //#include "../rtmath/matrixop.h"
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/rotations.h"
-#include "../../rtmath/rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
 
 namespace rtmath {
 	namespace ddscat {
@@ -252,7 +252,7 @@ namespace rtmath {
 			using namespace std;
 			string sbetas;
 			betas(sbetas);
-			rtmath::config::splitSet<double>(sbetas,b);
+			Ryan_Debug::splitSet::splitSet<double>(sbetas,b);
 		}
 
 		void rotations::thetas(std::set<double> &t) const
@@ -260,7 +260,7 @@ namespace rtmath {
 			using namespace std;
 			string sthetas;
 			thetas(sthetas);
-			rtmath::config::splitSet<double>(sthetas,t);
+			Ryan_Debug::splitSet::splitSet<double>(sthetas,t);
 		}
 
 		void rotations::phis(std::set<double> &p) const
@@ -268,7 +268,7 @@ namespace rtmath {
 			using namespace std;
 			string sphis;
 			phis(sphis);
-			rtmath::config::splitSet<double>(sphis,p);
+			Ryan_Debug::splitSet::splitSet<double>(sphis,p);
 		}
 
 		template<class T>

@@ -17,11 +17,11 @@ set(rtmath_core_error
 source_group("Debugging" FILES ${rtmath_core_error})
 
 set(rtmath_core_config
-	rtmath/command.h
+	#rtmath/command.h
 	rtmath/config.h
 	rtmath/registry.h
 	rtmath/plugin.h
-	src/command.cpp
+	#src/command.cpp
 	src/config.cpp
 	src/registry.cpp
 	)
@@ -138,10 +138,10 @@ set(rtmath_ddscat_base-files
 	src/ddpar.cpp
 	src/ddpar-keys.cpp
 	src/ddpar-parsers.cpp
-	src/ddpar_serialization.cpp
+	#src/ddpar_serialization.cpp
 	rtmath/ddscat/rotations.h
 	src/rotations.cpp
-	src/rotations_serialization.cpp
+	#src/rotations_serialization.cpp
 	rtmath/ddscat/dielTabFile.h
 	src/dielTabFile.cpp
 	rtmath/ddscat/ddVersions.h

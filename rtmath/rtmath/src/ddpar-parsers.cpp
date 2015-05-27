@@ -19,11 +19,12 @@
 #endif
 #include "../rtmath/ddscat/ddpar.h"
 #include "../rtmath/ddscat/ddVersions.h"
+#include <Ryan_Debug/config.h>
 #include "../rtmath/config.h"
-#include "../rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/hash.h>
 #include "../rtmath/ddscat/rotations.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {
@@ -340,10 +341,10 @@ namespace rtmath {
 				else
 				{
 					//cerr << "Unmatched key: " << key << endl;
-					RDthrow(rtmath::debug::xBadInput())
-					<< rtmath::debug::default_file_name("ddscat.par")
-					<< rtmath::debug::otherErrorText("Unmatched key")
-					<< rtmath::debug::key(key);
+					RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::default_file_name("ddscat.par")
+					<< Ryan_Debug::error::otherErrorText("Unmatched key")
+					<< Ryan_Debug::error::key(key);
 				}
 
 				return ptr;
@@ -589,8 +590,8 @@ namespace rtmath {
 					break;
 				case UNKNOWN:
 				default:
-					RDthrow(rtmath::debug::xBadInput())
-					<< rtmath::debug::otherErrorText("Unknown parid");
+					RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Unknown parid");
 				}
 			}
 		} // end ddparparsers

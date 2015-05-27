@@ -29,7 +29,7 @@ namespace {
 		boost::log::sources::severity_channel_logger_mt< >,
 		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "config"));
 
-	boost::shared_ptr<::Ryan_Debug::config::configsegment> _rtconfroot = nullptr;
+	DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> _rtconfroot = nullptr;
 
 }
 
@@ -49,7 +49,7 @@ namespace rtmath {
 		*
 		* Finally, check using the precompiled paths.
 		**/
-		void getConfigDefaultFile(std::string &filename)
+		DLEXPORT_rtmath_core void getConfigDefaultFile(std::string &filename)
 		{
 			filename = "";
 			using namespace boost::filesystem;
@@ -210,17 +210,17 @@ namespace rtmath {
 			return;
 		}
 
-		boost::shared_ptr<::Ryan_Debug::config::configsegment> getRtconfRoot()
+		DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> getRtconfRoot()
 		{
 			return _rtconfroot;
 		}
 
-		void setRtconfRoot(boost::shared_ptr<::Ryan_Debug::config::configsegment> &root)
+		DLEXPORT_rtmath_core void setRtconfRoot(boost::shared_ptr<::Ryan_Debug::config::configsegment> &root)
 		{
 			_rtconfroot = root;
 		}
 
-		boost::shared_ptr<::Ryan_Debug::config::configsegment> loadRtconfRoot(const std::string &filename)
+		DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> loadRtconfRoot(const std::string &filename)
 		{
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			auto& lg = m_config::get();

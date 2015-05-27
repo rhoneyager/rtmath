@@ -21,7 +21,7 @@
 #include <sstream>
 #include <vector>
 #include "../rtmath/ddscat/ddVersions.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 
 /// Internal namespace for the reader parsers
@@ -109,9 +109,9 @@ namespace rtmath
 				parse_ddversion(start,end,v);
 
 				size_t ret = 0;
-				if (!v.size()) RDthrow(debug::xBadInput())
-					<< debug::otherErrorText("Bad version id")
-					<< debug::line_text(s);
+				if (!v.size()) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Bad version id")
+					<< Ryan_Debug::error::line_text(s);
 				for (auto it = v.begin(); it != v.end(); ++it)
 				{
 					//                                std::cerr << "Token " << *it << std::endl;
@@ -121,32 +121,6 @@ namespace rtmath
 				}
 
 				return ret;
-				/*
-				static const boost::regex e("[0-9]\\.[0-9]\\.[0-9]");
-				static const boost::regex eb("[0-9]\\.[0-9]");
-				boost::match_results<std::string::const_iterator> what;
-				boost::match_flag_type flags = boost::match_default;
-				if (!boost::regex_search(s, what, e, flags))
-					if (!boost::regex_search(s,what,eb, flags)) 
-						throw rtmath::debug::xBadInput("Bad version id");
-				// what.begin() now contains the raw 0.0.0 version text. Split it.
-				using namespace std;
-				using namespace boost;
-				vector<string> tokens;
-				string sss = what.begin()->str();
-				split(tokens, sss, is_any_of("."), token_compress_on);
-
-				size_t ret = 0;
-				for (auto it = tokens.begin(); it != tokens.end(); ++it)
-				{
-					//                                std::cerr << "Token " << *it << std::endl;
-					size_t i = atoi(it->c_str());
-					ret *= 10;
-					ret += i;
-				}
-
-				return ret;
-				*/
 			}
 
 			std::string getVerString(size_t id)
@@ -178,9 +152,9 @@ namespace rtmath
 				initVerMap();
 				std::string s;
 				if (avgMap.count(id)) s = avgMap.at(id);
-				else RDthrow(debug::xBadInput())
-					<< debug::otherErrorText("getVerAvgHeaderString id not found. Id number in line_number.")
-					<< debug::line_number((unsigned long long) id);
+				else RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("getVerAvgHeaderString id not found. Id number in line_number.")
+					<< Ryan_Debug::error::line_number((unsigned long long) id);
 				return s;
 			}
 
@@ -245,8 +219,8 @@ namespace rtmath
 						}
 						catch (...)
 						{
-							RDthrow(rtmath::debug::xBadInput())
-							<< rtmath::debug::otherErrorText(*rt);
+							RDthrow(Ryan_Debug::error::xBadInput())
+								<< Ryan_Debug::error::otherErrorText(*rt);
 						}
 					}
 
@@ -263,7 +237,7 @@ namespace rtmath
 			size_t getDefaultVer()
 			{
 #pragma message("Warning: ddVersions needs a full getDefaultVer() implementation")
-				return 722;
+				return 730;
 			}
 		}
 	}

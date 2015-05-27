@@ -158,7 +158,7 @@ endif()
 
 add_library (rtmath_core SHARED
 	${rtmath_core-files} 
-	${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
+	#${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h 
 	${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h
 	${CMAKE_CURRENT_BINARY_DIR}/module-rtmath
 	)
