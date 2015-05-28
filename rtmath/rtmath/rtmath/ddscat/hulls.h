@@ -5,7 +5,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
-#include "../registry.h"
+#include <Ryan_Debug/registry.h>
 
 /* This contains the necessary functions for computing convex and concave hulls, 
  * both for writeout and for shapefile determinations */
@@ -22,26 +22,30 @@ namespace rtmath
 		template <class hullType>
 		struct DLEXPORT_rtmath_voronoi hull_provider
 		{
-			typedef std::function<
+			typedef std::function <
 				boost::shared_ptr<hullType>
-				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > )
-				> hullGenerator;
+				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >)
+			> hullGenerator;
 			hullGenerator generator;
 
 			const char* name;
 		};
 	}
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		//extern template class usesDLLregistry<
 		//	::rtmath::ddscat::hull_IO_output_registry,
 		//	IO_class_registry_writer<::rtmath::ddscat::hull> >;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::hull_provider_registry,
-			::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> >;
+			::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> > ;
 
 	}
+}
+namespace rtmath {
 	namespace ddscat
 	{
 		// This requires vtk
@@ -83,7 +87,7 @@ namespace rtmath
 
 		/// \todo Move implementation code to vtk plugin
 		class DLEXPORT_rtmath_voronoi convexHull : virtual public hull,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			hull_provider_registry, hull_provider<convexHull> >
 		{
 		protected:

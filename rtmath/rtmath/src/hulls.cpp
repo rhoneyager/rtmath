@@ -11,18 +11,20 @@
 
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/hulls.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging.h>
+#include <Ryan_Debug/logging_base.h>
 #include <boost/log/sources/global_logger_storage.hpp>
 
 
 namespace {
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 		m_hull,
-		blog::sources::severity_channel_logger_mt< >,
-		(blog::keywords::severity = ::rtmath::debug::error)(blog::keywords::channel = "hull"));
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "hull"));
 }
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace registry {
 		//template struct IO_class_registry_writer
@@ -31,12 +33,13 @@ namespace rtmath
 		//	::rtmath::Voronoi::Voronoi_IO_output_registry,
 		//	IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
 
-		
-		template class usesDLLregistry<
-			::rtmath::ddscat::hull_provider_registry,
-			::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> >;
-	}
 
+		template class usesDLLregistry <
+			::rtmath::ddscat::hull_provider_registry,
+			::rtmath::ddscat::hull_provider<::rtmath::ddscat::convexHull> > ;
+	}
+}
+namespace rtmath {
 	namespace ddscat
 	{
 		
@@ -56,9 +59,9 @@ namespace rtmath
 			(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend)
 		{
 			auto& lg = m_hull::get();
-			BOOST_LOG_SEV(lg, rtmath::debug::normal) << "Generating convex hull for backend " << &backend;
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Generating convex hull for backend " << &backend;
 
-			auto hooks = ::rtmath::registry::usesDLLregistry<hull_provider_registry, hull_provider<convexHull> >::getHooks();
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<hull_provider_registry, hull_provider<convexHull> >::getHooks();
 			//std::cerr << hooks->size() << std::endl;
 			for (const auto &h : *(hooks.get()))
 			{
@@ -66,9 +69,10 @@ namespace rtmath
 				return h.generator(backend);
 			}
 			// Only return nullptr if unable to find a usable hook.
-			BOOST_LOG_SEV(lg, rtmath::debug::error) << "No registered handler for hull calculation found. Throwing error.";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "No registered handler for hull calculation found. Throwing error.";
 			std::cerr << "Ping" << std::endl;
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast())
+				<< Ryan_Debug::error::otherErrorText("No registered handler for hull calculation found. Throwing error.");
 			return nullptr;
 		}
 

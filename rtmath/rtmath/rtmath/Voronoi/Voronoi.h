@@ -8,11 +8,9 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include "../hash.h"
-#include "../registry.h"
-#include "../io.h"
-
-
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/io.h>
 
 namespace rtmath {
 	namespace Voronoi {
@@ -31,14 +29,14 @@ namespace rtmath {
 		public:
 			Voronoi_provider();
 			~Voronoi_provider();
-			typedef std::function<boost::shared_ptr<VoronoiDiagram>
+			typedef std::function < boost::shared_ptr<VoronoiDiagram>
 				(const Eigen::Array3f &, const Eigen::Array3f &,
-				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoiStdGeneratorType;
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&) > voronoiStdGeneratorType;
 			voronoiStdGeneratorType generator;
 			typedef std::function<boost::shared_ptr<VoronoiDiagram>()> voronoiBlankGeneratorType;
 			voronoiBlankGeneratorType voronoiBlankGenerator;
 
-			typedef std::function<boost::shared_ptr<VoronoiDiagram>(boost::shared_ptr<const VoronoiDiagram>)> 
+			typedef std::function < boost::shared_ptr<VoronoiDiagram>(boost::shared_ptr<const VoronoiDiagram>) >
 				voronoiUpcastGeneratorType;
 			voronoiUpcastGeneratorType voronoiUpcastGenerator;
 
@@ -51,48 +49,51 @@ namespace rtmath {
 		public:
 			Voronoi2d_provider();
 			~Voronoi2d_provider();
-			typedef std::function<boost::shared_ptr<Voronoi2dDiagram>
+			typedef std::function < boost::shared_ptr<Voronoi2dDiagram>
 				(const Eigen::Array3f &, const Eigen::Array3f &,
-				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&)> voronoi2dStdGeneratorType;
+				const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&) > voronoi2dStdGeneratorType;
 			voronoi2dStdGeneratorType generator;
 			typedef std::function<boost::shared_ptr<Voronoi2dDiagram>()> voronoi2dBlankGeneratorType;
 			voronoi2dBlankGeneratorType voronoiBlankGenerator;
 
-			typedef std::function<boost::shared_ptr<Voronoi2dDiagram>(boost::shared_ptr<const Voronoi2dDiagram>)>
+			typedef std::function < boost::shared_ptr<Voronoi2dDiagram>(boost::shared_ptr<const Voronoi2dDiagram>) >
 				voronoi2dUpcastGeneratorType;
 			voronoi2dUpcastGeneratorType voronoiUpcastGenerator;
 
 			const char* name;
 		};
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
-		extern template struct IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram>;
-		extern template struct IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram>;
-		extern template struct IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram>;
-		extern template struct IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram>;
-		extern template class usesDLLregistry<
+		extern template struct IO_class_registry_writer < ::rtmath::Voronoi::VoronoiDiagram > ;
+		extern template struct IO_class_registry_reader < ::rtmath::Voronoi::VoronoiDiagram > ;
+		extern template struct IO_class_registry_writer < ::rtmath::Voronoi::Voronoi2dDiagram > ;
+		extern template struct IO_class_registry_reader < ::rtmath::Voronoi::Voronoi2dDiagram > ;
+		extern template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi_IO_input_registry,
-			IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >;
-		extern template class usesDLLregistry<
+			IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> > ;
+		extern template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
+			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi_provider_registry,
-			::rtmath::Voronoi::Voronoi_provider >;
+			::rtmath::Voronoi::Voronoi_provider > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi2d_IO_input_registry,
-			IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram> >;
-		extern template class usesDLLregistry<
+			IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram> > ;
+		extern template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi2d_IO_output_registry,
-			IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram> >;
+			IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi2d_provider_registry,
-			::rtmath::Voronoi::Voronoi2d_provider >;
+			::rtmath::Voronoi::Voronoi2d_provider > ;
 	}
-
+}
+namespace rtmath {
 	namespace Voronoi
 	{
 		class CachedVoronoi;
@@ -117,15 +118,15 @@ namespace rtmath {
 		**/
 		class DLEXPORT_rtmath_voronoi VoronoiDiagram :
 			virtual public boost::enable_shared_from_this<VoronoiDiagram>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				::rtmath::Voronoi::Voronoi_IO_input_registry,
-				::rtmath::registry::IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >,
-			virtual public ::rtmath::registry::usesDLLregistry<
+				::Ryan_Debug::registry::IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >,
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				::rtmath::Voronoi::Voronoi_IO_output_registry,
-				::rtmath::registry::IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >,
-			virtual public ::rtmath::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<VoronoiDiagram, Voronoi_IO_input_registry>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+				::Ryan_Debug::registry::IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >,
+				virtual public ::Ryan_Debug::io::implementsStandardWriter<VoronoiDiagram, Voronoi_IO_output_registry>,
+				virtual public ::Ryan_Debug::io::implementsStandardReader<VoronoiDiagram, Voronoi_IO_input_registry>,
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				Voronoi_provider_registry, Voronoi_provider >
 		{
 		public:
@@ -139,7 +140,7 @@ namespace rtmath {
 			/// Container for cached Voronoi diagram results. CachedVoronoi is the common base class.
 			mutable std::map<std::string, boost::shared_ptr<CachedVoronoi> > cache;
 
-			HASH_t _hash;
+			Ryan_Debug::hash::HASH_t _hash;
 			/// Reconstructs the Voronoi diagram (when constructing, or when restored from serialization)
 			virtual void regenerateVoronoi() const;
 			/// Recalculates all cells in the Voronoi diagram
@@ -155,8 +156,8 @@ namespace rtmath {
 			~VoronoiDiagram() {}
 
 			/// Forcibly set the hash to a given value (can be used to match to a shape or stats)
-			void setHash(HASH_t hash);
-			HASH_t hash() const;
+			void setHash(Ryan_Debug::hash::HASH_t hash);
+			Ryan_Debug::hash::HASH_t hash() const;
 
 			/// When calculated
 			std::string ingest_timestamp;
@@ -229,7 +230,7 @@ namespace rtmath {
 			/// Convenience functions to load shape based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
 			static boost::shared_ptr<VoronoiDiagram> loadHash(
-				const HASH_t &hash);
+				const Ryan_Debug::hash::HASH_t &hash);
 			/// Convenience functions to load shape based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
 			static boost::shared_ptr<VoronoiDiagram> loadHash(
@@ -240,15 +241,15 @@ namespace rtmath {
 
 		class DLEXPORT_rtmath_voronoi Voronoi2dDiagram :
 			virtual public boost::enable_shared_from_this<Voronoi2dDiagram>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::Voronoi::Voronoi2d_IO_input_registry,
-			::rtmath::registry::IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram> >,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			::Ryan_Debug::registry::IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram> >,
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::Voronoi::Voronoi2d_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram> >,
-			virtual public ::rtmath::io::implementsStandardWriter<Voronoi2dDiagram, Voronoi2d_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<Voronoi2dDiagram, Voronoi2d_IO_input_registry>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			::Ryan_Debug::registry::IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram> >,
+			virtual public ::Ryan_Debug::io::implementsStandardWriter<Voronoi2dDiagram, Voronoi2d_IO_output_registry>,
+			virtual public ::Ryan_Debug::io::implementsStandardReader<Voronoi2dDiagram, Voronoi2d_IO_input_registry>,
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			Voronoi2d_provider_registry, Voronoi2d_provider >
 		{
 		public:

@@ -17,7 +17,7 @@
 #include "../rtmath/depGraph.h"
 //#include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #undef min
 #undef max
@@ -72,12 +72,12 @@ namespace rtmath
 		{
 			if (cellmap->rows() > 0) return;
 
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast());
 		}
 
 		void CachedVoronoi::regenerateCache(size_t numPoints)
 		{
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast());
 		}
 
 		boost::shared_ptr<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> > CachedVoronoi::getCellMap() const

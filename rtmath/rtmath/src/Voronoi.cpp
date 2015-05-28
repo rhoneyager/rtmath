@@ -17,33 +17,30 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/unordered_set.hpp>
-//#include <Voro/voro++.hh>
-#include <Ryan_Debug/debug.h>
-//#include <Ryan_Serialization/serialization.h>
+//#include <Ryan_Debug/debug.h>
 #include <string>
-#include "../rtmath/hash.h"
 #include "../rtmath/depGraph.h"
+#include "../rtmath/error/debug.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/Voronoi/CachedVoronoi.h"
-#include "../rtmath/Serialization/Serialization.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/Serialization.h>
+#include <Ryan_Debug/error.h>
 
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace registry {
 		template struct IO_class_registry_writer
-			<::rtmath::Voronoi::VoronoiDiagram>;
-		template class usesDLLregistry<
+			< ::rtmath::Voronoi::VoronoiDiagram > ;
+		template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi_IO_output_registry,
-			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> >;
+			IO_class_registry_writer<::rtmath::Voronoi::VoronoiDiagram> > ;
 
 		template struct IO_class_registry_reader
-			<::rtmath::Voronoi::VoronoiDiagram>;
-		template class usesDLLregistry<
+			< ::rtmath::Voronoi::VoronoiDiagram > ;
+		template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi_IO_input_registry,
-			IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> >;
+			IO_class_registry_reader<::rtmath::Voronoi::VoronoiDiagram> > ;
 
 		template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi_provider_registry,
@@ -51,22 +48,23 @@ namespace rtmath
 
 
 		template struct IO_class_registry_writer
-			<::rtmath::Voronoi::Voronoi2dDiagram>;
-		template class usesDLLregistry<
+			< ::rtmath::Voronoi::Voronoi2dDiagram > ;
+		template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi2d_IO_output_registry,
-			IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram> >;
+			IO_class_registry_writer<::rtmath::Voronoi::Voronoi2dDiagram> > ;
 
 		template struct IO_class_registry_reader
-			<::rtmath::Voronoi::Voronoi2dDiagram>;
-		template class usesDLLregistry<
+			< ::rtmath::Voronoi::Voronoi2dDiagram > ;
+		template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi2d_IO_input_registry,
-			IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram> >;
+			IO_class_registry_reader<::rtmath::Voronoi::Voronoi2dDiagram> > ;
 
 		template class usesDLLregistry <
 			::rtmath::Voronoi::Voronoi2d_provider_registry,
-			::rtmath::Voronoi::Voronoi2d_provider >;
+			::rtmath::Voronoi::Voronoi2d_provider > ;
 	}
-
+}
+namespace rtmath {
 	namespace Voronoi
 	{
 		Voronoi_provider::~Voronoi_provider() {}
@@ -86,8 +84,8 @@ namespace rtmath
 			ingest_rtmath_version = rtmath::debug::rev();
 		}
 
-		void VoronoiDiagram::setHash(HASH_t hash) { this->_hash = hash; }
-		HASH_t VoronoiDiagram::hash() const { return this->_hash; }
+		void VoronoiDiagram::setHash(Ryan_Debug::hash::HASH_t hash) { this->_hash = hash; }
+		Ryan_Debug::hash::HASH_t VoronoiDiagram::hash() const { return this->_hash; }
 
 
 		void VoronoiDiagram::getBounds(Eigen::Array3f &mins, 
@@ -125,7 +123,7 @@ namespace rtmath
 			const char* pluginid
 			)
 		{
-			auto hooks = ::rtmath::registry::usesDLLregistry<Voronoi_provider_registry,
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<Voronoi_provider_registry,
 				Voronoi_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
@@ -136,7 +134,7 @@ namespace rtmath
 				return h.generator(mins, maxs, points);
 			}
 
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast());
 		}
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::loadHash(
@@ -147,10 +145,10 @@ namespace rtmath
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
 
-			std::shared_ptr<registry::IOhandler> sh;
-			std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+			std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+			std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-			if (hashStore::findHashObj(hash, "voronoi.hdf5", sh, opts))
+			if (Ryan_Debug::hash::hashStore::findHashObj(hash, "voronoi.hdf5", sh, opts))
 			{
 				opts->setVal<std::string>("hash", hash);
 				res = boost::shared_ptr<VoronoiDiagram>(new VoronoiDiagram);
@@ -163,8 +161,8 @@ namespace rtmath
 		{
 			using boost::filesystem::path;
 
-			std::shared_ptr<registry::IOhandler> sh;
-			std::shared_ptr<registry::IO_options> opts;
+			std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+			std::shared_ptr<Ryan_Debug::registry::IO_options> opts;
 
 			if (_hash.lower == 0)
 			{
@@ -173,9 +171,9 @@ namespace rtmath
 			}
 
 			// Only store hash if a storage mechanism can be found
-			if (hashStore::storeHash(_hash.string(), "voronoi.hdf5", sh, opts))
+			if (Ryan_Debug::hash::hashStore::storeHash(_hash.string(), "voronoi.hdf5", sh, opts))
 			{
-				if (!rtmath::serialization::detect_compressed(opts->filename()))
+				if (!Ryan_Debug::serialization::detect_compressed(opts->filename()))
 					this->writeMulti(sh, opts);
 			}
 			else {
@@ -184,14 +182,14 @@ namespace rtmath
 		}
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::loadHash(
-			const HASH_t &hash)
+			const Ryan_Debug::hash::HASH_t &hash)
 		{
 			return loadHash(boost::lexical_cast<std::string>(hash.lower));
 		}
 
 		boost::shared_ptr<VoronoiDiagram> VoronoiDiagram::generateBlank(const char* pluginid)
 		{
-			auto hooks = ::rtmath::registry::usesDLLregistry<Voronoi_provider_registry,
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<Voronoi_provider_registry,
 				Voronoi_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
@@ -202,7 +200,7 @@ namespace rtmath
 				return h.voronoiBlankGenerator();
 			}
 
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast());
 		}
 
 		// These methods exist to keep the Voronoi class from being pure virtual. If one is 
@@ -219,7 +217,7 @@ namespace rtmath
 			std::string bname(pluginid);
 			if (!bname.size()) bname = pluginId;
 
-			auto hooks = ::rtmath::registry::usesDLLregistry<Voronoi_provider_registry,
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<Voronoi_provider_registry,
 				Voronoi_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
@@ -237,8 +235,8 @@ namespace rtmath
 				//mptr.swap(mres); // Needs testing to check for stack issues!
 				return;
 			}
-			RDthrow(rtmath::debug::xUpcast())
-			<< rtmath::debug::key(bname);
+			RDthrow(Ryan_Debug::error::xUpcast())
+			<< Ryan_Debug::error::key(bname);
 		}
 
 
@@ -359,7 +357,7 @@ namespace rtmath
 			const char* pluginid
 			)
 		{
-			auto hooks = ::rtmath::registry::usesDLLregistry<Voronoi2d_provider_registry,
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<Voronoi2d_provider_registry,
 				Voronoi2d_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
@@ -370,7 +368,7 @@ namespace rtmath
 				return h.generator(mins, maxs, points);
 			}
 
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast());
 		}
 
 		/*
@@ -426,7 +424,7 @@ namespace rtmath
 		*/
 		boost::shared_ptr<Voronoi2dDiagram> Voronoi2dDiagram::generateBlank(const char* pluginid)
 		{
-			auto hooks = ::rtmath::registry::usesDLLregistry<Voronoi2d_provider_registry,
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<Voronoi2d_provider_registry,
 				Voronoi2d_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
@@ -437,7 +435,7 @@ namespace rtmath
 				return h.voronoiBlankGenerator();
 			}
 
-			RDthrow(rtmath::debug::xUpcast());
+			RDthrow(Ryan_Debug::error::xUpcast());
 		}
 
 		// These methods exist to keep the Voronoi class from being pure virtual. If one is 
@@ -454,7 +452,7 @@ namespace rtmath
 			std::string bname(pluginid);
 			if (!bname.size()) bname = pluginId;
 
-			auto hooks = ::rtmath::registry::usesDLLregistry<Voronoi2d_provider_registry,
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<Voronoi2d_provider_registry,
 				Voronoi2d_provider >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
@@ -472,8 +470,8 @@ namespace rtmath
 				//mptr.swap(mres); // Needs testing to check for stack issues!
 				return;
 			}
-			RDthrow(rtmath::debug::xUpcast())
-				<< rtmath::debug::key(bname);
+			RDthrow(Ryan_Debug::error::xUpcast())
+				<< Ryan_Debug::error::key(bname);
 		}
 
 

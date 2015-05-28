@@ -29,7 +29,7 @@ namespace {
 		boost::log::sources::severity_channel_logger_mt< >,
 		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "config"));
 
-	DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> _rtconfroot = nullptr;
+	boost::shared_ptr<::Ryan_Debug::config::configsegment> _rtconfroot = nullptr;
 
 }
 
