@@ -13,15 +13,11 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include "../../related/bhmie/bhmie.h"
 
 #include "plugin-bhmie.h"
-
-void dllEntry();
-rtmath_plugin_init(dllEntry);
 
 namespace rtmath
 {
@@ -110,7 +106,7 @@ namespace rtmath
 				} catch (...) {
 					std::cerr << "A bhmie error has occurred." << std::endl;
 					//std::cerr << "\t" << t.what() << std::endl;
-					RTthrow(rtmath::debug::xOtherError());
+					RDthrow(Ryan_Debug::error::xOtherError());
 				}
 			}
 
@@ -178,16 +174,18 @@ namespace rtmath
 }
 
 
+D_rtmath_validator();
 
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::bhmie;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-bhmie",
 		"Links to Bohren and Huffman Mie code",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	//genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
 	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
@@ -198,4 +196,5 @@ void dllEntry()
 	//pc.fPfs = rtmath::plugins::bhmie::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);
 
+	return SUCCESS;
 }

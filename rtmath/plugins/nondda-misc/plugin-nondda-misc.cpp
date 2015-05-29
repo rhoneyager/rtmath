@@ -11,13 +11,10 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/error.h"
-#include "../../rtmath/rtmath/error/debug.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-nondda-misc.h"
-
-void dllEntry();
-rtmath_plugin_init(dllEntry);
 
 namespace rtmath
 {
@@ -83,10 +80,10 @@ namespace rtmath
 
 					try {
 						std::complex<double> d = ((mRes*mRes)-1.)/((mRes*mRes)+2.);
-						qext = (float) 4. * size_p * (-1. * d).imag();
-						qsca = (float) 8. * std::pow(size_p, 4.) / 3.
-							* (d * conj(d)).real();
-						qback = (float) (d * conj(d)).real() * 8. * std::pow(size_p, 4.) / 2.;
+						qext = (float) (4. * size_p * (-1. * d).imag());
+						qsca = (float) (8. * std::pow(size_p, 4.) / 3.
+							* (d * conj(d)).real());
+						qback = (float) (d * conj(d)).real() * 8. * std::pow(size_p, 4.) / 2.f;
 						gsca = (float) -1;
 
 						const double k = 2. * pi / s.wavelength;
@@ -110,8 +107,8 @@ namespace rtmath
 						//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 					} catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;
-						RTthrow(debug::xOtherError()) <<
-							debug::otherErrorText("A bhmie error has occurred");
+						RDthrow(Ryan_Debug::error::xOtherError()) <<
+							Ryan_Debug::error::otherErrorText("A bhmie error has occurred");
 					}
 				}
 			}
@@ -125,17 +122,19 @@ namespace rtmath
 	}
 }
 
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
-
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::nondda_misc;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-nondda-misc",
 		"Miscellaneous non-dda scattering plugins (Rayleigh, RG, SSRGA)",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	rtmath::phaseFuncs::pf_class_registry pc;
 	pc.name = "Rayleigh";
@@ -148,4 +147,5 @@ void dllEntry()
 	//pcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	//pcrg.fCrossSections = rtmath::plugins::nondda_misc::RG::doCrossSection;
 	//rtmath::phaseFuncs::pf_provider::registerHook(pcrg);
+	return SUCCESS;
 }

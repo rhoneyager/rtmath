@@ -11,15 +11,13 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include <tmatrix/tmatrix.h>
 
 #include "plugin-tmatrix.h"
-
-void dllEntry();
-rtmath_plugin_init(dllEntry);
 
 namespace rtmath
 {
@@ -101,7 +99,7 @@ namespace rtmath
 				} catch (const ::tmatrix::tmError& t) {
 					std::cerr << "A tmatrix error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
-					RTthrow(rtmath::debug::xOtherError());
+					RDthrow(Ryan_Debug::error::xOtherError());
 				}
 			}
 
@@ -160,7 +158,7 @@ namespace rtmath
 				} catch (const ::tmatrix::tmError& t) {
 					std::cerr << "A tmatrix error has occurred" << std::endl;
 					std::cerr << t.what() << std::endl;
-					RTthrow(rtmath::debug::xOtherError());
+					RDthrow(Ryan_Debug::error::xOtherError());
 				}
 			}
 		}
@@ -168,16 +166,20 @@ namespace rtmath
 }
 
 
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
-void dllEntry()
+
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::tmatrix;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-Tmatrix-ori",
 		"Links to Mishchenko T-matrix code (oriented version)",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	//genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
 	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
@@ -198,4 +200,5 @@ void dllEntry()
 	// Also register some Rayleigh-Gans approximation codes
 	// - Standard theory
 	// - Hogan aggregate modifications
+	return SUCCESS;
 }

@@ -12,15 +12,12 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/error.h"
-#include "../../rtmath/rtmath/error/debug.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "mie.h"
 
 #include "plugin-mie.h"
-
-void dllEntry();
-rtmath_plugin_init(dllEntry);
 
 namespace rtmath
 {
@@ -108,7 +105,7 @@ namespace rtmath
 				} catch (const ::Ryan_Debug::error::xError& t) {
 					std::cerr << "A mie error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
-					RTthrow(rtmath::debug::xOtherError());
+					RDthrow(Ryan_Debug::error::xOtherError());
 				}
 			}
 
@@ -165,24 +162,26 @@ namespace rtmath
 				} catch (const ::Ryan_Debug::error::xError& t) {
 					std::cerr << "A mie error has occurred" << std::endl;
 					std::cerr << t.what() << std::endl;
-					RTthrow(rtmath::debug::xOtherError());
+					RDthrow(Ryan_Debug::error::xOtherError());
 				}
 			}
 		}
 	}
 }
 
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
-
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::mie;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-mie",
 		"My independent implementation of Mie theory",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	rtmath::phaseFuncs::pf_class_registry pc;
 	pc.name = "mie-iso";
@@ -190,4 +189,6 @@ void dllEntry()
 	pc.fCrossSections = rtmath::plugins::mie::doCrossSection;
 	pc.fPfs = rtmath::plugins::mie::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);
+
+	return SUCCESS;
 }

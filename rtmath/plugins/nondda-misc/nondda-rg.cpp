@@ -11,8 +11,8 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/error.h"
-#include "../../rtmath/rtmath/error/debug.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-nondda-misc.h"
 
@@ -107,8 +107,8 @@ namespace rtmath
 					}
 					catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;
-						RTthrow(debug::xOtherError()) 
-							<< debug::otherErrorText("A rayleigh-gans error has occurred");
+						RDthrow(Ryan_Debug::error::xOtherError()) 
+							<< Ryan_Debug::error::otherErrorText("A rayleigh-gans error has occurred");
 					}
 				}
 			}

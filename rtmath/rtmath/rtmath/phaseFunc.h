@@ -104,10 +104,10 @@ namespace rtmath {
 				/// Base refractive index
 				std::complex<double> m;
 				/// Refractive index scaling method
-				//std::function<void(std::complex<double>, std::complex<double>, 
-				//double, std::complex<double> &)> rmeth;
-				std::string refrMeth;
-				std::map<std::string, double> refrVals;
+				std::function<void(std::complex<double>, std::complex<double>, 
+				double, std::complex<double> &)> rmeth;
+				//std::string refrMeth;
+				//std::map<std::string, double> refrVals;
 				/// Rescale effective radius
 				bool aeff_rescale;
 				/// Volume fraction
