@@ -5,31 +5,33 @@
 
 #include "../rtmath/data/arm_scanning_radar_sacr.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace registry {
-		
-		template struct IO_class_registry_writer<
-			::rtmath::data::arm::arm_info>;
 
-		template struct IO_class_registry_reader<
-			::rtmath::data::arm::arm_info>;
+		template struct IO_class_registry_writer <
+			::rtmath::data::arm::arm_info > ;
 
-		template class usesDLLregistry<
+		template struct IO_class_registry_reader <
+			::rtmath::data::arm::arm_info > ;
+
+		template class usesDLLregistry <
 			::rtmath::data::arm::arm_IO_input_registry,
-			IO_class_registry_reader<::rtmath::data::arm::arm_info> >;
+			IO_class_registry_reader<::rtmath::data::arm::arm_info> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::data::arm::arm_IO_output_registry,
-			IO_class_registry_writer<::rtmath::data::arm::arm_info> >;
+			IO_class_registry_writer<::rtmath::data::arm::arm_info> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::data::arm::arm_query_registry,
-			::rtmath::data::arm::arm_info_registry >;
-		
+			::rtmath::data::arm::arm_info_registry > ;
+
 	}
+}
+namespace rtmath {
 	namespace data
 	{
 		namespace arm
@@ -66,7 +68,7 @@ namespace rtmath
 				std::shared_ptr<dataStreamHandler> res;
 				//if (product == "wsacr") res = std::shared_ptr<dataStreamHandler>(
 				//	new arm_scanning_radar_sacr(filename));
-				RDthrow(debug::xUnimplementedFunction());
+				RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 				return res;
 			}
 
@@ -170,13 +172,13 @@ namespace rtmath
 			}
 
 
-			std::pair<arm_info_registry::arm_info_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
-				arm_info_registry::arm_info_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
+			std::pair<arm_info_registry::arm_info_index::collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
+				arm_info_registry::arm_info_index::doQuery(std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o) const
 			{
 				collection c(new std::set<boost::shared_ptr<arm_info>, arm_info_comp >());
-				std::shared_ptr<rtmath::registry::DBhandler> fp;
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> fp;
 
-				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
+				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{
 					if (!h.fQuery) continue;
@@ -185,11 +187,11 @@ namespace rtmath
 					fp = h.fQuery(*this, c, p, o);
 
 					return std::pair < arm_info_registry::arm_info_index::collection,
-						std::shared_ptr<rtmath::registry::DBhandler> > (c, fp);
+						std::shared_ptr<Ryan_Debug::registry::DBhandler> >(c, fp);
 				}
 
 				return std::pair<arm_info_registry::arm_info_index::collection, 
-					std::shared_ptr<rtmath::registry::DBhandler> >
+					std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 					(c, nullptr);
 			}
 
@@ -198,20 +200,20 @@ namespace rtmath
 				return arm_info_registry::arm_info_index::collection(new std::set<boost::shared_ptr<arm_info>, arm_info_registry::arm_info_comp >());
 			}
 			
-			std::shared_ptr<rtmath::registry::DBhandler> 
+			std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				arm_info::updateEntry(arm_info_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o) const
 			{
 				auto c = makeCollection();
 				c->insert(boost::shared_ptr<arm_info>(new arm_info(*this)));
 				return updateCollection(c, t, p, o);
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> 
+			std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				arm_info::updateCollection(arm_info_registry::arm_info_index::collection c,
-				arm_info_registry::updateType t, std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				arm_info_registry::updateType t, std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
-				auto hooks = ::rtmath::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
+				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<arm_query_registry, arm_info_registry >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{
 					if (!h.fMatches) continue;

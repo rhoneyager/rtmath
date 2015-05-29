@@ -6,8 +6,8 @@
 #include <string>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include "../registry.h"
-#include "../io.h"
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/io.h>
 
 namespace rtmath
 {
@@ -17,34 +17,37 @@ namespace rtmath
 		class image_IO_input_registry {};
 		class image_IO_output_registry {};
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
-		extern template struct IO_class_registry_writer<
-			::rtmath::images::image>;
+		extern template struct IO_class_registry_writer <
+			::rtmath::images::image > ;
 
-		extern template struct IO_class_registry_reader<
-			::rtmath::images::image>;
+		extern template struct IO_class_registry_reader <
+			::rtmath::images::image > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::images::image_IO_input_registry,
-			IO_class_registry_reader<::rtmath::images::image> >;
+			IO_class_registry_reader<::rtmath::images::image> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::images::image_IO_output_registry,
-			IO_class_registry_writer<::rtmath::images::image> >;
-
+			IO_class_registry_writer<::rtmath::images::image> > ;
 	}
+}
+namespace rtmath {
 	/// Contains image manipulation code
 	namespace images
 	{
 		class DLEXPORT_rtmath_images image : 
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				image_IO_input_registry, 
-				::rtmath::registry::IO_class_registry_reader<image> >,
-			virtual public ::rtmath::registry::usesDLLregistry<
+				::Ryan_Debug::registry::IO_class_registry_reader<image> >,
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				image_IO_output_registry, 
-				::rtmath::registry::IO_class_registry_writer<image> >,
-			virtual public ::rtmath::io::implementsStandardWriter<image, image_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardReader<image, image_IO_input_registry>
+				::Ryan_Debug::registry::IO_class_registry_writer<image> >,
+				virtual public ::Ryan_Debug::io::implementsStandardWriter<image, image_IO_output_registry>,
+				virtual public ::Ryan_Debug::io::implementsStandardReader<image, image_IO_input_registry>
 		{
 		public:
 			image();

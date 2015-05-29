@@ -6,10 +6,10 @@
 #include <boost/date_time.hpp>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/io.h>
 #include "../defs.h"
-#include "../hash.h"
-#include "../registry.h"
-#include "../io.h"
 
 #include "arm_info.h"
 namespace rtmath
@@ -26,23 +26,27 @@ namespace rtmath
 			//class arm_info_serialization {};
 		}
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
-		
-		extern template struct IO_class_registry_writer<
-			::rtmath::data::arm::arm_scanning_radar_sacr>;
 
-		extern template struct IO_class_registry_reader<
-			::rtmath::data::arm::arm_scanning_radar_sacr>;
+		extern template struct IO_class_registry_writer <
+			::rtmath::data::arm::arm_scanning_radar_sacr > ;
 
-		extern template class usesDLLregistry<
+		extern template struct IO_class_registry_reader <
+			::rtmath::data::arm::arm_scanning_radar_sacr > ;
+
+		extern template class usesDLLregistry <
 			::rtmath::data::arm::arm_IO_sacr_input_registry,
-			IO_class_registry_reader<::rtmath::data::arm::arm_scanning_radar_sacr> >;
+			IO_class_registry_reader<::rtmath::data::arm::arm_scanning_radar_sacr> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::data::arm::arm_IO_sacr_output_registry,
-			IO_class_registry_writer<::rtmath::data::arm::arm_scanning_radar_sacr> >;
-		
+			IO_class_registry_writer<::rtmath::data::arm::arm_scanning_radar_sacr> > ;
+
 	}
+}
+namespace rtmath {
 	namespace data
 	{
 		namespace arm
@@ -51,14 +55,14 @@ namespace rtmath
 
 			class DLEXPORT_rtmath_data arm_scanning_radar_sacr :
 				virtual public boost::enable_shared_from_this<arm_scanning_radar_sacr>,
-				virtual public ::rtmath::registry::usesDLLregistry<
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 					::rtmath::data::arm::arm_IO_sacr_input_registry, 
-					::rtmath::registry::IO_class_registry_reader<arm_scanning_radar_sacr> >,
-				virtual public ::rtmath::registry::usesDLLregistry<
+					::Ryan_Debug::registry::IO_class_registry_reader<arm_scanning_radar_sacr> >,
+					virtual public ::Ryan_Debug::registry::usesDLLregistry<
 					::rtmath::data::arm::arm_IO_sacr_output_registry, 
-					::rtmath::registry::IO_class_registry_writer<arm_scanning_radar_sacr> >,
-				virtual public ::rtmath::io::implementsStandardWriter<arm_scanning_radar_sacr, arm_IO_sacr_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<arm_scanning_radar_sacr, arm_IO_sacr_input_registry>//,
+					::Ryan_Debug::registry::IO_class_registry_writer<arm_scanning_radar_sacr> >,
+					virtual public ::Ryan_Debug::io::implementsStandardWriter<arm_scanning_radar_sacr, arm_IO_sacr_output_registry>,
+					virtual public ::Ryan_Debug::io::implementsStandardReader<arm_scanning_radar_sacr, arm_IO_sacr_input_registry>//,
 				//public dataStreamHandler
 			{
 			public:

@@ -12,23 +12,24 @@
 #undef min
 #undef max
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
-		template struct IO_class_registry_writer<
-			::rtmath::images::image>;
+		template struct IO_class_registry_writer <
+			::rtmath::images::image > ;
 
-		template struct IO_class_registry_reader<
-			::rtmath::images::image>;
+		template struct IO_class_registry_reader <
+			::rtmath::images::image > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::images::image_IO_input_registry,
-			IO_class_registry_reader<::rtmath::images::image> >;
+			IO_class_registry_reader<::rtmath::images::image> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::images::image_IO_output_registry,
-			IO_class_registry_writer<::rtmath::images::image> >;
+			IO_class_registry_writer<::rtmath::images::image> > ;
 	}
-
+}
+namespace rtmath {
 	namespace images {
 
 		image::~image() {}

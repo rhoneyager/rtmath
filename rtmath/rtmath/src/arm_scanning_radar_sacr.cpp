@@ -4,27 +4,29 @@
 
 #include "../rtmath/data/arm_scanning_radar_sacr.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace registry {
-		
-		template struct IO_class_registry_writer<
-			::rtmath::data::arm::arm_scanning_radar_sacr>;
 
-		template struct IO_class_registry_reader<
-			::rtmath::data::arm::arm_scanning_radar_sacr>;
+		template struct IO_class_registry_writer <
+			::rtmath::data::arm::arm_scanning_radar_sacr > ;
 
-		template class usesDLLregistry<
+		template struct IO_class_registry_reader <
+			::rtmath::data::arm::arm_scanning_radar_sacr > ;
+
+		template class usesDLLregistry <
 			::rtmath::data::arm::arm_IO_sacr_input_registry,
-			IO_class_registry_reader<::rtmath::data::arm::arm_scanning_radar_sacr> >;
+			IO_class_registry_reader<::rtmath::data::arm::arm_scanning_radar_sacr> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::data::arm::arm_IO_sacr_output_registry,
-			IO_class_registry_writer<::rtmath::data::arm::arm_scanning_radar_sacr> >;
-		
+			IO_class_registry_writer<::rtmath::data::arm::arm_scanning_radar_sacr> > ;
+
 	}
+}
+namespace rtmath {
 	namespace data
 	{
 		namespace arm
