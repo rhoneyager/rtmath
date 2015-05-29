@@ -12,11 +12,11 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include "../hash.h"
+#include <Ryan_Debug/hash.h>
 #include "../common_templates.h"
-#include "../registry.h"
-#include "../splitSet.h"
-#include "../io.h"
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/io.h>
 
 
 namespace boost { namespace program_options { 
@@ -49,13 +49,13 @@ namespace rtmath {
 			};
 
 			/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
-			class DLEXPORT_rtmath_ddscat ddOutput_index : public ::rtmath::registry::collectionTyped<ddOutput>
+			class DLEXPORT_rtmath_ddscat ddOutput_index : public ::Ryan_Debug::registry::collectionTyped < ddOutput >
 			{
 				ddOutput_index();
 			public:
 				std::set<std::string> hashLowers, hashUppers,
-					flakeTypes, 
-					runids, 
+					flakeTypes,
+					runids,
 					pol;
 				// Number and percent error
 				//std::map<float, float > standardDs, freqRanges;
@@ -63,9 +63,9 @@ namespace rtmath {
 				//std::vector<std::pair<float, float> > aeffRanges, tempRanges;
 				//std::vector<std::pair<size_t, size_t> > dipoleRanges, betaRanges, thetaRanges, phiRanges;
 
-				config::intervals<float> dipoleSpacings, freqRanges,
+				Ryan_Debug::splitSet::intervals<float> dipoleSpacings, freqRanges,
 					aeffRanges, tempRanges;
-				config::intervals<size_t> dipoleNumbers,
+				Ryan_Debug::splitSet::intervals<size_t> dipoleNumbers,
 					betaRanges, thetaRanges, phiRanges;
 			public:
 				~ddOutput_index();
@@ -76,9 +76,9 @@ namespace rtmath {
 
 
 				typedef std::shared_ptr<std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp > > collection;
-				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
-					doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
-					std::shared_ptr<registry::DB_options> = nullptr) const;
+				std::pair<collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
+					doQuery(std::shared_ptr<Ryan_Debug::registry::DBhandler> = nullptr,
+					std::shared_ptr<Ryan_Debug::registry::DB_options> = nullptr) const;
 
 				/**
 				* \brief Add support for filtering based on existing, loaded objects (in a collection).
@@ -91,11 +91,11 @@ namespace rtmath {
 				* \param doDb indicates whether the database is consulted for the lookup. If not,
 				* only filter the objects in srcs.
 				**/
-				std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
+				std::pair<collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 					doQuery(collection srcs,
 					bool doUnion = false, bool doDb = true,
-					std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
-					std::shared_ptr<registry::DB_options> = nullptr) const;
+					std::shared_ptr<Ryan_Debug::registry::DBhandler> = nullptr,
+					std::shared_ptr<Ryan_Debug::registry::DB_options> = nullptr) const;
 			};
 
 			ddOutput_db_registry();
@@ -107,14 +107,14 @@ namespace rtmath {
 
 			/// \todo As more database types become prevalent, move this over to 
 			/// rtmath::registry and standardize.
-			typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+			typedef std::function < std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				(const ddOutput_index&, ddOutput_index::collection,
-				std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> queryType;
-			typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+				std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>) > queryType;
+			typedef std::function < std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				(const ddOutput_index::collection, updateType,
-				std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> writeType;
-			typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>,
-				std::shared_ptr<registry::DB_options>)> matchType;
+				std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>) > writeType;
+			typedef std::function < bool(std::shared_ptr<Ryan_Debug::registry::DBhandler>,
+				std::shared_ptr<Ryan_Debug::registry::DB_options>) > matchType;
 
 			/// Get cross-sections from small stats
 			queryType fQuery;
@@ -124,26 +124,30 @@ namespace rtmath {
 			matchType fMatches;
 		};
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
-		extern template struct IO_class_registry_writer<
-			::rtmath::ddscat::ddOutput>;
+		extern template struct IO_class_registry_writer <
+			::rtmath::ddscat::ddOutput > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::ddOutput_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::ddOutput> >;
+			IO_class_registry_writer<::rtmath::ddscat::ddOutput> > ;
 
-		extern template struct IO_class_registry_reader<
-			::rtmath::ddscat::ddOutput>;
+		extern template struct IO_class_registry_reader <
+			::rtmath::ddscat::ddOutput > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::ddOutput_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::ddOutput> >;
+			IO_class_registry_reader<::rtmath::ddscat::ddOutput> > ;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::ddOutput_query_registry,
-			::rtmath::ddscat::ddOutput_db_registry >;
-		
+			::rtmath::ddscat::ddOutput_db_registry > ;
+
 	}
+}
+namespace rtmath {
 	namespace ddscat {
 
 		class ddOriData;
@@ -163,25 +167,24 @@ namespace rtmath {
 		 * permutations of these.
 		 **/
 		class DLEXPORT_rtmath_ddscat ddOutput :
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOutput_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutput> >,
-			virtual public ::rtmath::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			::Ryan_Debug::registry::IO_class_registry_writer<::rtmath::ddscat::ddOutput> >,
+			virtual public ::Ryan_Debug::io::implementsStandardWriter<ddOutput, ddOutput_IO_output_registry>,
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOutput_IO_input_registry,
-			::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
-			virtual public ::rtmath::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			::Ryan_Debug::registry::IO_class_registry_reader<::rtmath::ddscat::ddOutput> >,
+			virtual public ::Ryan_Debug::io::implementsStandardReader<ddOutput, ddOutput_IO_input_registry>,
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOutput_query_registry,
 			::rtmath::ddscat::ddOutput_db_registry >,
-			virtual public ::rtmath::io::implementsDBbasic<ddOutput, ddOutput_db_registry,
+			virtual public ::Ryan_Debug::io::implementsDBbasic<ddOutput, ddOutput_db_registry,
 			ddOutput_db_registry::ddOutput_index,
 			ddOutput_db_registry::ddOutput_db_comp, ddOutput_query_registry>
 		{
 			void resize(size_t numOris, size_t numTotAngles);
 			void resizeFML(size_t numTotAngles);
 			void finalize();
-			static void isForcingFMLwrite(bool&, bool&);
 			std::mutex mtxUpdate;
 			friend class ddOriData;
 		public:
@@ -340,9 +343,9 @@ namespace rtmath {
 			//static boost::shared_ptr<ddOutputSingle> genAvg(const weights&);
 			
 			/// Hash of shape file contents (an identifier)
-			HASH_t shapeHash;
+			Ryan_Debug::hash::HASH_t shapeHash;
 			/// DDSCAT-parsed shapefile hash
-			HASH_t parsedShapeHash;
+			Ryan_Debug::hash::HASH_t parsedShapeHash;
 			/// The shape file (may load fully later)
 			mutable boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> shape;
 			/// Shape file statistics (may load fully later)
@@ -375,8 +378,10 @@ namespace rtmath {
 			**/
 			std::string genNameSmall() const;
 			/// Unique identifier for the run
-			mutable HASH_t _runhash;
-			HASH_t runhash() const;
+			mutable Ryan_Debug::hash::HASH_t _runhash;
+			Ryan_Debug::hash::HASH_t runhash() const;
+
+			//static void isForcingFMLwrite(bool& a, bool& b);
 
 			//std::string runuuid;
 			/// Unique name based on the run uuid and the shapehash.
@@ -417,7 +422,7 @@ namespace rtmath {
 			/// Load result based on hash
 			/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 			static boost::shared_ptr<ddOutput> loadHash(
-				const HASH_t &shphash, const HASH_t &runhash);
+				const Ryan_Debug::hash::HASH_t &shphash, const Ryan_Debug::hash::HASH_t &runhash);
 			static boost::shared_ptr<ddOutput> loadHash(
 				const std::string &shphash, const std::string &runhash);
 			/// Load result based on hash

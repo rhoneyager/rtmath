@@ -1,4 +1,5 @@
 #pragma once
+#error "Unused header mtab.h"
 #include "../defs.h"
 /* The purpose of this header is to generate the mtab files - files which contain 
  * information on the index of refraction for a scatterer. This index of refraction 

@@ -12,13 +12,13 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 //#include "../interpolatable.h"
-#include "../registry.h"
+#include <Ryan_Debug/registry.h>
 #include "../common_templates.h"
 //#include "../phaseFunc.h"
 #include "ddOutput.h"
 #include "ddVersions.h"
 #include "ddScattMatrix.h"
-#include "../io.h"
+#include <Ryan_Debug/io.h>
 
 namespace rtmath {
 	namespace ddscat {
@@ -29,7 +29,8 @@ namespace rtmath {
 		class ddOriData_Standard {};
 		class ddScattMatrixConnector;
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry {
 		extern template struct IO_class_registry_writer <
 			::rtmath::ddscat::ddOriData > ;
@@ -45,7 +46,8 @@ namespace rtmath {
 			::rtmath::ddscat::ddOriData_IO_input_registry,
 			IO_class_registry_reader<::rtmath::ddscat::ddOriData> > ;
 	}
-
+}
+namespace rtmath {
 	namespace ddscat {
 		
 		/// \brief Converts the stat_entries id to a string for display.
@@ -55,7 +57,7 @@ namespace rtmath {
 
 		/// Provides local readers and writers for ddscat data (it's a binder)
 		class DLEXPORT_rtmath_ddscat implementsDDRES :
-			private rtmath::io::implementsIObasic<ddOriData, ddOriData_IO_output_registry,
+			private Ryan_Debug::io::implementsIObasic<ddOriData, ddOriData_IO_output_registry,
 			ddOriData_IO_input_registry, ddOriData_Standard>
 		{
 		public:
@@ -72,14 +74,14 @@ namespace rtmath {
 		**/
 		class DLEXPORT_rtmath_ddscat ddOriData :
 			virtual public boost::enable_shared_from_this<ddOriData>,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOriData_IO_output_registry,
-			::rtmath::registry::IO_class_registry_writer<ddOriData> >,
-			virtual public ::rtmath::registry::usesDLLregistry<
+			::Ryan_Debug::registry::IO_class_registry_writer<ddOriData> >,
+			virtual public ::Ryan_Debug::registry::usesDLLregistry<
 			::rtmath::ddscat::ddOriData_IO_input_registry,
-			::rtmath::registry::IO_class_registry_reader<ddOriData> >,
-			virtual public ::rtmath::io::implementsStandardWriter<ddOriData, ddOriData_IO_output_registry>,
-			virtual public ::rtmath::io::implementsStandardSingleReader<ddOriData, ddOriData_IO_input_registry>,
+			::Ryan_Debug::registry::IO_class_registry_reader<ddOriData> >,
+			virtual public ::Ryan_Debug::io::implementsStandardWriter<ddOriData, ddOriData_IO_output_registry>,
+			virtual public ::Ryan_Debug::io::implementsStandardSingleReader<ddOriData, ddOriData_IO_input_registry>,
 			virtual public implementsDDRES
 		{
 			friend class ddOutput;
@@ -95,8 +97,8 @@ namespace rtmath {
 			virtual ~ddOriData();
 
 			// Binders for the standard ddscat formats
-			static void readDDSCAT(boost::shared_ptr<ddOriData>, std::istream&, std::shared_ptr<registry::IO_options>);
-			static void writeDDSCAT(const boost::shared_ptr<const ddOriData>, std::ostream &, std::shared_ptr<registry::IO_options>);
+			static void readDDSCAT(boost::shared_ptr<ddOriData>, std::istream&, std::shared_ptr<Ryan_Debug::registry::IO_options>);
+			static void writeDDSCAT(const boost::shared_ptr<const ddOriData>, std::ostream &, std::shared_ptr<Ryan_Debug::registry::IO_options>);
 
 			double guessTemp(size_t dielIndex = 0) const;
 

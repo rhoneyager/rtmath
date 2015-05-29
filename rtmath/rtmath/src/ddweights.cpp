@@ -11,10 +11,10 @@
 #include <boost/random/uniform_on_sphere.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
-#include "../rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/error.h>
 #include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/ddscat/rotations.h"
-#include "../rtmath/error/error.h"
 
 
 /// Namespace contains random number generator information
@@ -245,7 +245,7 @@ namespace rtmath {
 			{
 				double dn = (double) n;
 				std::set<double> pts;
-				rtmath::config::splitSet(start, end, dn, "lin", pts);
+				Ryan_Debug::splitSet::splitSet(start, end, dn, "lin", pts);
 				for (auto &pt : pts)
 					weights[pt] = 1. / (double) pts.size();
 
@@ -261,7 +261,7 @@ namespace rtmath {
 			{
 				double dn = (double) n;
 				std::set<double> pts;
-				rtmath::config::splitSet(start, end, dn, "cos", pts);
+				Ryan_Debug::splitSet::splitSet(start, end, dn, "cos", pts);
 				if (pts.size() % 2 == 0) // even n
 				{
 					for (auto &pt : pts)
@@ -440,8 +440,8 @@ namespace rtmath {
 			{
 				IntervalTable intervals;
 				w.getIntervals(intervals);
-				if (intervals.size() == 0) RDthrow(rtmath::debug::xArrayOutOfBounds())
-					<< rtmath::debug::otherErrorText("No intervals can be "
+				if (intervals.size() == 0) RDthrow(Ryan_Debug::error::xArrayOutOfBounds())
+					<< Ryan_Debug::error::otherErrorText("No intervals can be "
 					"constructed from the parameters passed to "
 					"this function.");
 				min = intervals.begin()->second.first;
@@ -511,7 +511,7 @@ namespace rtmath {
 				calcSpan(dw,min,max,span);
 
 				if ( abs(span - ( 360 ) ) > 0.001)
-					throw debug::xArrayOutOfBounds();
+					RDthrow(Ryan_Debug::error::xArrayOutOfBounds());
 
 				IntervalTable intervals;
 				dw.getIntervals(intervals);

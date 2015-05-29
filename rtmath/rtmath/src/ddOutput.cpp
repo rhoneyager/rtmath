@@ -29,24 +29,24 @@
 #include "../rtmath/ddscat/ddweights.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/ddUtil.h"
-#include "../rtmath/hash.h"
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/config.h>
 #include "../rtmath/config.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/units.h"
 #include "../rtmath/ddscat/dielTabFile.h"
-#include "../rtmath/Serialization/Serialization.h"
+#include <Ryan_Debug/Serialization.h>
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace {
 	boost::filesystem::path pHashRuns;
 	//bool autoHashRuns = false;
-	static bool isFMLforced = false;
-	static bool forceWriteFML = true;
+	//bool isFMLforced, forceWriteFML;
 }
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
 
 		template struct IO_class_registry_writer
@@ -68,7 +68,8 @@ namespace rtmath {
 			::rtmath::ddscat::ddOutput_db_registry > ;
 
 	}
-
+}
+namespace rtmath {
 	namespace ddscat {
 		/*
 		void ddOutput::doImport()
@@ -95,10 +96,10 @@ namespace rtmath {
 		}
 		*/
 
-		void ddOutput::isForcingFMLwrite(bool& a, bool& b)
-		{
-			a = isFMLforced; b = forceWriteFML;
-		}
+		//void ddOutput::isForcingFMLwrite(bool& a, bool& b)
+		//{
+		//	a = isFMLforced; b = forceWriteFML;
+		//}
 
 		ddOutput::ddOutput() :
 			freq(0), aeff(0), temp(0), numOriData(0), ingest_rtmath_version(0)
@@ -202,15 +203,15 @@ namespace rtmath {
 					}
 				}
 			}
-			if (!shape->hash().lower) RDthrow(debug::xMissingHash())
-				<< debug::hash(shapeHash.string())
-				<< debug::hashType("shapefile");
+			if (!shape->hash().lower) RDthrow(Ryan_Debug::error::xMissingHash())
+				<< Ryan_Debug::error::hash(shapeHash.string())
+				<< Ryan_Debug::error::hashType("shapefile");
 			if (!dostats) return;
 			stats = stats::shapeFileStats::genStats(shape);
 			//stats = stats::shapeFileStats::loadHash(this->shapeHash);
-			if (!stats) RDthrow(debug::xMissingHash())
-				<< debug::hash(shapeHash.string())
-				<< debug::hashType("shapestats");
+			if (!stats) RDthrow(Ryan_Debug::error::xMissingHash())
+				<< Ryan_Debug::error::hash(shapeHash.string())
+				<< Ryan_Debug::error::hashType("shapestats");
 			stats->load(shape);
 		}
 
@@ -276,15 +277,15 @@ namespace rtmath {
 			using std::vector;
 
 			path pBase(dir);
-			if (!exists(pBase)) RDthrow(debug::xMissingFile())
-				<< debug::folder_name(dir);
+			if (!exists(pBase)) RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::folder_name(dir);
 
 			if (!is_directory(pBase))
 			{
 				std::vector<boost::shared_ptr<ddOutput> > runs;
-				rtmath::io::readObjs(runs, dir);
-				if (!runs.size()) RDthrow(debug::xEmptyInputFile())
-					<< debug::file_name(dir);
+				Ryan_Debug::io::readObjs(runs, dir);
+				if (!runs.size()) RDthrow(Ryan_Debug::error::xEmptyInputFile())
+					<< Ryan_Debug::error::file_name(dir);
 				res = runs[0];
 			}
 			else {
@@ -354,7 +355,7 @@ namespace rtmath {
 					std::string meth;
 					{
 						//std::lock_guard<std::mutex> lock(m_filecheck);
-						serialization::uncompressed_name(p, praw, meth);
+						Ryan_Debug::serialization::uncompressed_name(p, praw, meth);
 					}
 					// Extract entension of files in ._ form
 					// Note: some files (like mtable) have no extension. I don't use these.
@@ -567,19 +568,19 @@ namespace rtmath {
 			runhash();
 		}
 
-		HASH_t ddOutput::runhash() const
+		Ryan_Debug::hash::HASH_t ddOutput::runhash() const
 		{
 			if (!_runhash.lower)
 			{
 				// Set the run uuid
-				HASH_t shphash = shapeHash;
-				HASH_t parhash;
+				Ryan_Debug::hash::HASH_t shphash = shapeHash;
+				Ryan_Debug::hash::HASH_t parhash;
 				if (parfile) parhash = parfile->hash();
-				else RDthrow(debug::xMissingFile())
-					<< debug::file_name("ddscat.par");
-				HASH_t tmprhash = shphash ^ parhash;
+				else RDthrow(Ryan_Debug::error::xMissingFile())
+					<< Ryan_Debug::error::file_name("ddscat.par");
+				Ryan_Debug::hash::HASH_t tmprhash = shphash ^ parhash;
 				tmprhash.lower += (uint64_t)temp;
-				std::vector<HASH_t> dielhashes;
+				std::vector<Ryan_Debug::hash::HASH_t> dielhashes;
 				parfile->getDielHashes(dielhashes);
 				for (const auto &dh : dielhashes)
 				{
@@ -598,17 +599,17 @@ namespace rtmath {
 		{
 			using boost::filesystem::path;
 
-			std::shared_ptr<registry::IOhandler> sh;
-			std::shared_ptr<registry::IO_options> opts;
+			std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+			std::shared_ptr<Ryan_Debug::registry::IO_options> opts;
 
 			std::ostringstream sHash;
 			sHash << shapeHash.string() << "-" << runhash().string() << ".hdf5";
 			std::string shashs = sHash.str();
 
 			// Only store hash if a storage mechanism can be found
-			if (hashStore::storeHash(shapeHash.string(), shashs, sh, opts))
+			if (Ryan_Debug::hash::hashStore::storeHash(shapeHash.string(), shashs, sh, opts))
 			{
-				if (!serialization::detect_compressed(opts->filename()))
+				if (!Ryan_Debug::serialization::detect_compressed(opts->filename()))
 					this->writeMulti(sh, opts);
 			}
 			else {
@@ -624,8 +625,8 @@ namespace rtmath {
 			{
 				path pSym = Ryan_Debug::fs::expandSymlink<path,path>(pOut);
 				if (!is_directory(pSym))
-					RDthrow(debug::xPathExistsWrongType())
-					<< debug::file_name(outdir);
+					RDthrow(Ryan_Debug::error::xPathExistsWrongType())
+					<< Ryan_Debug::error::file_name(outdir);
 			}
 			else {
 				create_directory(pOut);
@@ -725,7 +726,6 @@ namespace rtmath {
 				;
 
 			hidden.add_options()
-				("ddOutput-force-write-fmls", po::value<bool>(), "Force / disable fml table writing")
 				;
 		}
 
@@ -748,11 +748,6 @@ namespace rtmath {
 			// Will enable after actual use
 			//if (!validateDir(pHashRuns)) RDthrow debug::xMissingFile(pHashRuns.string().c_str());
 
-			if (vm.count("ddOutput-force-write-fmls"))
-			{
-				isFMLforced = true;
-				forceWriteFML = vm["ddOutput-force-write-fmls"].as<bool>();
-			}
 
 		}
 
@@ -774,7 +769,7 @@ namespace rtmath {
 		*/
 
 		boost::shared_ptr<ddOutput> ddOutput::loadHash(
-			const HASH_t &shphash, const HASH_t &runhash)
+			const Ryan_Debug::hash::HASH_t &shphash, const Ryan_Debug::hash::HASH_t &runhash)
 		{
 			return loadHash(boost::lexical_cast<std::string>(shphash.lower),
 				boost::lexical_cast<std::string>(runhash.lower));
@@ -794,14 +789,14 @@ namespace rtmath {
 			using boost::filesystem::path;
 			using boost::filesystem::exists;
 
-			std::shared_ptr<registry::IOhandler> sh;
-			std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+			std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+			std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
 			std::ostringstream sHash;
 			sHash << shphash << "-" << runhash << ".hdf5";
 			std::string shashs = sHash.str();
 
-			if (hashStore::findHashObj(shphash, shashs, sh, opts))
+			if (Ryan_Debug::hash::hashStore::findHashObj(shphash, shashs, sh, opts))
 			{
 				opts->setVal<std::string>("key", shashs); /// \todo Add hash query to hdf5 plugin (if folder not found, do vector read and figure out which hash matches)
 				res = boost::shared_ptr<ddOutput>(new ddOutput);

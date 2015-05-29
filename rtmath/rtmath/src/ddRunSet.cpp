@@ -7,8 +7,8 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddRunSet.h"
-#include "../../rtmath/rtmath/Serialization/Serialization.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/Serialization.h>
+#include <Ryan_Debug/error.h>
 
 namespace rtmath {
 	namespace ddscat {
@@ -66,12 +66,12 @@ namespace rtmath {
 				if ((pund != string::npos) && (pavg != string::npos)) pund = string::npos;
 				if (pund == string::npos && pshape != string::npos) pos = pshape;
 				else if (pshape == string::npos && pund != string::npos) pos = pund;
-				else if (pshape == string::npos) RDthrow(debug::xBadInput())
-					<< debug::file_name(filename.string())
-					<< debug::otherErrorText("Cannot parse filename");
-				else if (pund == string::npos) RDthrow(debug::xBadInput())
-					<< debug::file_name(filename.string())
-					<< debug::otherErrorText("Cannot parse filename");
+				else if (pshape == string::npos) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::file_name(filename.string())
+					<< Ryan_Debug::error::otherErrorText("Cannot parse filename");
+				else if (pund == string::npos) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::file_name(filename.string())
+					<< Ryan_Debug::error::otherErrorText("Cannot parse filename");
 				else pos = (pund < pshape) ? pund : pshape;
 				sleaf = sleaf.substr(0,pos);
 
@@ -106,7 +106,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (serialization::detect_compression(pleaf.string(), meth))
+			if (Ryan_Debug::serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();
@@ -123,7 +123,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (serialization::detect_compression(pleaf.string(), meth))
+			if (Ryan_Debug::serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();
@@ -139,7 +139,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (serialization::detect_compression(pleaf.string(), meth))
+			if (Ryan_Debug::serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();
@@ -155,7 +155,7 @@ namespace rtmath {
 			path pleaf = filename.filename();
 
 			string meth; // replaced with std::string()
-			if (serialization::detect_compression(pleaf.string(), meth))
+			if (Ryan_Debug::serialization::detect_compression(pleaf.string(), meth))
 				pleaf.replace_extension();
 
 			path ext = pleaf.extension();

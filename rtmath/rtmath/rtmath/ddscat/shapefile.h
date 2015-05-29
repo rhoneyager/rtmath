@@ -9,13 +9,13 @@
 #include <set>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-
-#include "../hash.h"
-#include "../splitSet.h"
-#include "../registry.h"
-#include "../io.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/io.h>
 
 namespace rtmath {
 	namespace Voronoi {
@@ -34,15 +34,15 @@ namespace rtmath {
 			struct DLEXPORT_rtmath_ddscat shapefile_db_registry
 			{
 				struct DLEXPORT_rtmath_ddscat shapefile_db_comp {
-					bool operator() (const std::shared_ptr<const shapefile>& lhs, 
+					bool operator() (const std::shared_ptr<const shapefile>& lhs,
 						const std::shared_ptr<const shapefile>& rhs) const;
 					bool operator() (const boost::shared_ptr<const shapefile>& lhs,
 						const boost::shared_ptr<const shapefile>& rhs) const;
 				};
 
 				/// Language-Integrated Query (LINQ) is not a good idea here, since an external database is used
-				class DLEXPORT_rtmath_ddscat shapefile_index : 
-					virtual public ::rtmath::registry::collectionTyped<shapefile> //,
+				class DLEXPORT_rtmath_ddscat shapefile_index :
+					virtual public ::Ryan_Debug::registry::collectionTyped < shapefile > //,
 					//virtual public ::rtmath::registry::collectionTyped<::rtmath::Voronoi::VoronoiDiagram>
 				{
 					shapefile_index();
@@ -50,18 +50,18 @@ namespace rtmath {
 					std::set<std::string> hashLowers, hashUppers,
 						flakeTypes, refHashLowers;
 					//std::map<float, float > standardDs;
-					config::intervals<float> dipoleSpacings;
+					Ryan_Debug::splitSet::intervals<float> dipoleSpacings;
 					std::map<std::string, std::string> tags;
 					//std::vector<std::pair<size_t, size_t> > dipoleRanges;
-					config::intervals<size_t> dipoleNumbers;
+					Ryan_Debug::splitSet::intervals<size_t> dipoleNumbers;
 				public:
 					~shapefile_index();
 					static std::shared_ptr<shapefile_index> generate();
 
 					typedef std::shared_ptr<std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp > > collection;
-					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
-						doQuery(std::shared_ptr<rtmath::registry::DBhandler> = nullptr, 
-						std::shared_ptr<registry::DB_options> = nullptr) const;
+					std::pair<collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
+						doQuery(std::shared_ptr<Ryan_Debug::registry::DBhandler> = nullptr,
+						std::shared_ptr<Ryan_Debug::registry::DB_options> = nullptr) const;
 
 					virtual bool filter(const shapefile*) const override;
 					//virtual bool filter(const ::rtmath::Voronoi::VoronoiDiagram*) const override;
@@ -71,17 +71,17 @@ namespace rtmath {
 					*
 					* Will pull information from the database for filling.
 					* \param srcs is a preexisting collection of loaded objects
-					* \param doUnion indicates whether the database is used to merely add tag 
-					*			information to the already-loaded objects, or whether objects in the 
+					* \param doUnion indicates whether the database is used to merely add tag
+					*			information to the already-loaded objects, or whether objects in the
 					*			database that match the criteria are also added in.
 					* \param doDb indicates whether the database is consulted for the lookup. If not,
 					* only filter the objects in srcs.
 					**/
-					std::pair<collection, std::shared_ptr<rtmath::registry::DBhandler> >
-						doQuery(collection srcs, 
-						bool doUnion = false, bool doDb = true, 
-						std::shared_ptr<rtmath::registry::DBhandler> = nullptr,
-						std::shared_ptr<registry::DB_options> = nullptr) const;
+					std::pair<collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
+						doQuery(collection srcs,
+						bool doUnion = false, bool doDb = true,
+						std::shared_ptr<Ryan_Debug::registry::DBhandler> = nullptr,
+						std::shared_ptr<Ryan_Debug::registry::DB_options> = nullptr) const;
 				};
 
 				shapefile_db_registry();
@@ -93,14 +93,14 @@ namespace rtmath {
 
 				/// \todo As more database types become prevalent, move this over to 
 				/// rtmath::registry and standardize.
-				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+				typedef std::function < std::shared_ptr<Ryan_Debug::registry::DBhandler>
 					(const shapefile_index&, shapefile_index::collection,
-					std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> queryType;
-				typedef std::function<std::shared_ptr<rtmath::registry::DBhandler>
+					std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>) > queryType;
+				typedef std::function < std::shared_ptr<Ryan_Debug::registry::DBhandler>
 					(const shapefile_index::collection, updateType,
-					std::shared_ptr<registry::DBhandler>, std::shared_ptr<registry::DB_options>)> writeType;
-				typedef std::function<bool(std::shared_ptr<rtmath::registry::DBhandler>, 
-					std::shared_ptr<registry::DB_options>)> matchType;
+					std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>) > writeType;
+				typedef std::function < bool(std::shared_ptr<Ryan_Debug::registry::DBhandler>,
+					std::shared_ptr<Ryan_Debug::registry::DB_options>) > matchType;
 
 				/// Get cross-sections from small stats
 				queryType fQuery;
@@ -111,32 +111,36 @@ namespace rtmath {
 			};
 		}
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
-		
-		extern template struct IO_class_registry_writer<
-			::rtmath::ddscat::shapefile::shapefile>;
 
-		extern template struct IO_class_registry_reader<
-			::rtmath::ddscat::shapefile::shapefile>;
+		extern template struct IO_class_registry_writer <
+			::rtmath::ddscat::shapefile::shapefile > ;
 
-		extern template class usesDLLregistry<
+		extern template struct IO_class_registry_reader <
+			::rtmath::ddscat::shapefile::shapefile > ;
+
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >;
-			//::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
+			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> > ;
+		//::rtmath::ddscat::shapefile::shapefile_IO_class_registry>;
 
-		extern template class usesDLLregistry<
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
-		
-		extern template class usesDLLregistry<
+			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> > ;
+
+		extern template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_query_registry,
-			::rtmath::ddscat::shapefile::shapefile_db_registry >;
+			::rtmath::ddscat::shapefile::shapefile_db_registry > ;
 	}
 	namespace io {
 		template <>
 		DLEXPORT_rtmath_ddscat boost::shared_ptr
 			<::rtmath::ddscat::shapefile::shapefile> customGenerator();
 	}
+}
+namespace rtmath {
 	namespace ddscat {
 
 		namespace stats {
@@ -152,7 +156,7 @@ namespace rtmath {
 
 			/// Provides local readers and writers for ddscat ddpar data (it's a binder)
 			class DLEXPORT_rtmath_ddscat implementsDDSHP :
-				private rtmath::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
+				private Ryan_Debug::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
 				shapefile_IO_input_registry, shapefile_Standard>
 			{
 			public:
@@ -166,25 +170,25 @@ namespace rtmath {
 			/// Class for reading / writing shapefiles. May be used in statistical calculations.
 			class DLEXPORT_rtmath_ddscat shapefile : 
 				virtual public boost::enable_shared_from_this<shapefile>,
-				virtual public ::rtmath::registry::usesDLLregistry<
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 					::rtmath::ddscat::shapefile::shapefile_IO_input_registry, 
-					::rtmath::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
-				virtual public ::rtmath::registry::usesDLLregistry<
+					::Ryan_Debug::registry::IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >,
+					virtual public ::Ryan_Debug::registry::usesDLLregistry<
 					::rtmath::ddscat::shapefile::shapefile_IO_output_registry, 
-					::rtmath::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
-				virtual public ::rtmath::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>,
-				virtual public ::rtmath::registry::usesDLLregistry<
+					::Ryan_Debug::registry::IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >,
+					virtual public ::Ryan_Debug::io::implementsStandardWriter<shapefile, shapefile_IO_output_registry>,
+					virtual public ::Ryan_Debug::io::implementsStandardReader<shapefile, shapefile_IO_input_registry>,
+					virtual public ::Ryan_Debug::registry::usesDLLregistry<
 					shapefile_query_registry, shapefile_db_registry >,
 				virtual public implementsDDSHP,
-				virtual public ::rtmath::io::implementsDBbasic<shapefile, shapefile_db_registry, 
+				virtual public ::Ryan_Debug::io::implementsDBbasic<shapefile, shapefile_db_registry,
 					shapefile_db_registry::shapefile_index, 
 					shapefile_db_registry::shapefile_db_comp, shapefile_query_registry>
 				//virtual public ::rtmath::io::Serialization::implementsSerialization<
 				//	shapefile, shapefile_IO_output_registry, shapefile_IO_input_registry, shapefile_serialization>,
 			{
 				// Need readVector as a friend class
-				friend boost::shared_ptr<shapefile> io::customGenerator<shapefile>();
+				friend boost::shared_ptr<shapefile> Ryan_Debug::io::customGenerator<shapefile>();
 				//shapefile(const std::string &filename); // Handled by the generator
 				shapefile(std::istream &in);
 				shapefile();
@@ -219,11 +223,11 @@ namespace rtmath {
 				void readContents(const char *in, size_t headerEnd);
 				/// Read in ONLY a shape header (for speed with dipole matching) - string, NOT a filename
 				void readHeaderOnly(const std::string &str);
-				static void readDDSCAT(boost::shared_ptr<shapefile>, std::istream&, std::shared_ptr<registry::IO_options>);
+				static void readDDSCAT(boost::shared_ptr<shapefile>, std::istream&, std::shared_ptr<Ryan_Debug::registry::IO_options>);
 				/// Write shape to the hash directory (convenience function)
 				void writeToHash() const;
 				/// Write a standard DDSCAT shapefile to a stream (no compression)
-				static void writeDDSCAT(const boost::shared_ptr<const shapefile>, std::ostream &, std::shared_ptr<registry::IO_options>);
+				static void writeDDSCAT(const boost::shared_ptr<const shapefile>, std::ostream &, std::shared_ptr<Ryan_Debug::registry::IO_options>);
 				/// Function type definition for a function that determines a decimated cell refractive index.
 				typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
 
@@ -280,7 +284,7 @@ namespace rtmath {
 				void readHeader(const char *in, size_t &headerEnd);
 				/// Recalculate stats after a manipulation operation
 				void recalcStats();
-				mutable HASH_t _localhash;
+				mutable Ryan_Debug::hash::HASH_t _localhash;
 			public:
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -333,11 +337,11 @@ namespace rtmath {
 				std::string desc;
 				/// Calculates the hash of the given shapefile. Used as a reference when 
 				/// serializing the shape. The hash table allows for smaller stats files.
-				HASH_t hash() const;
+				Ryan_Debug::hash::HASH_t hash() const;
 				/// Forcibly set the hash of the shapefile
-				void setHash(const HASH_t &);
+				void setHash(const Ryan_Debug::hash::HASH_t &);
 				/// Force a hash to be recalculated
-				HASH_t rehash() const;
+				Ryan_Debug::hash::HASH_t rehash() const;
 				// Specified in shape.dat
 				// a1 and a2 are the INITIAL vectors (before rotation!)
 				// usually a1 = x_lf, a2 = y_lf
@@ -356,7 +360,7 @@ namespace rtmath {
 				/// Convenience functions to load shape based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
 				static boost::shared_ptr<const shapefile> loadHash(
-					const HASH_t &hash);
+					const Ryan_Debug::hash::HASH_t &hash);
 				/// Convenience functions to load shape based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed shape is not found
 				static boost::shared_ptr<const shapefile> loadHash(
@@ -365,13 +369,13 @@ namespace rtmath {
 				/// When shape is partially loaded, use this routine to force a 
 				/// reload from the hash database
 				void loadHashLocal();
-				void loadHashLocal(const HASH_t &hash);
+				void loadHashLocal(const Ryan_Debug::hash::HASH_t &hash);
 				void loadHashLocal(const std::string &hash);
 
 				/// Register a shape in the local hash database. Used in subsequent searches for the shape.
 				void registerHash() const;
 				static bool isHashStored(const std::string &hash);
-				static bool isHashStored(const HASH_t &hash);
+				static bool isHashStored(const Ryan_Debug::hash::HASH_t &hash);
 				/// Register a shape in the local hash database. Can also register a loading placeholder.
 				//static void registerHash(boost::shared_ptr<shapefile>);
 

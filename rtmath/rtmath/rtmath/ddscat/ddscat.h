@@ -1,4 +1,5 @@
 #pragma once
+#error "Unused header ddscat.h"
 #include <memory>
 #include <string>
 #include <vector>

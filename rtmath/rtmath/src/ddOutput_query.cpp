@@ -17,16 +17,16 @@
 //#include <boost/uuid/uuid_io.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include "../rtmath/macros.h"
-#include "../rtmath/hash.h"
+#include <Ryan_Debug/macros.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/error.h>
 #include "../rtmath/ddscat/ddOutput.h"
 #include "../rtmath/ddscat/shapefile.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/ddpar.h"
-#include "../rtmath/splitSet.h"
-#include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 namespace rtmath {
 
@@ -90,13 +90,13 @@ namespace rtmath {
 			return res;
 		}
 
-		std::pair<ddOutput_db_registry::ddOutput_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
-			ddOutput_db_registry::ddOutput_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
+		std::pair<ddOutput_db_registry::ddOutput_index::collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
+			ddOutput_db_registry::ddOutput_index::doQuery(std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o) const
 		{
 			collection c(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
-			std::shared_ptr<rtmath::registry::DBhandler> fp;
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> fp;
 
-			auto hooks = ::rtmath::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
 			for (const auto &h : *(hooks.get()))
 			{
 				if (!h.fQuery) continue;
@@ -105,11 +105,11 @@ namespace rtmath {
 				fp = h.fQuery(*this, c, p, o);
 
 				return std::pair < ddOutput_db_registry::ddOutput_index::collection,
-					std::shared_ptr<rtmath::registry::DBhandler> > (c, fp);
+					std::shared_ptr<Ryan_Debug::registry::DBhandler> >(c, fp);
 			}
 
 			return std::pair<ddOutput_db_registry::ddOutput_index::collection,
-				std::shared_ptr<rtmath::registry::DBhandler> >
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 				(c, nullptr);
 		}
 
@@ -176,20 +176,20 @@ namespace rtmath {
 		}
 
 		std::pair<ddOutput_db_registry::ddOutput_index::collection,
-			std::shared_ptr<rtmath::registry::DBhandler> >
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 			ddOutput_db_registry::ddOutput_index::doQuery(
 			collection srcs, bool doUnion, bool doDb,
-			std::shared_ptr<rtmath::registry::DBhandler> p,
-			std::shared_ptr<registry::DB_options> o) const
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> p,
+			std::shared_ptr<Ryan_Debug::registry::DB_options> o) const
 		{
 			collection toMergeC(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
 			//collection toMergeS(new std::set<boost::shared_ptr<ddOutput>, ddOutput_db_comp >());
 			collection res(new std::set<boost::shared_ptr<const ddOutput>, ddOutput_db_comp >());
-			std::shared_ptr<rtmath::registry::DBhandler> fp;
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> fp;
 
-			std::map<HASH_t, boost::shared_ptr<const ddOutput> > db_hashes; // database results, as a map
+			std::map<Ryan_Debug::hash::HASH_t, boost::shared_ptr<const ddOutput> > db_hashes; // database results, as a map
 
-			auto hooks = ::rtmath::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
+			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<ddOutput_query_registry, ddOutput_db_registry >::getHooks();
 			if (doDb)
 			{
 				for (const auto &h : *(hooks.get()))
@@ -232,7 +232,7 @@ namespace rtmath {
 
 
 			return std::pair<ddOutput_db_registry::ddOutput_index::collection,
-				std::shared_ptr<rtmath::registry::DBhandler> >
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 				(res, fp);
 		}
 	}

@@ -14,7 +14,7 @@
 #include "../rtmath/units.h"
 #include "../rtmath/phaseFunc.h"
 //#include "../rtmath/coords.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace rtmath {
 	namespace ddscat {
@@ -129,8 +129,8 @@ namespace rtmath {
 		ddScattMatrixConnector::ddScattMatrixConnector(
 			const std::vector<std::complex<double> >& src)
 		{
-			if (src.size() % 3 != 0 || !src.size()) RDthrow(debug::xArrayOutOfBounds())
-				<< debug::otherErrorText("Element src has the wrong size or is a "
+			if (src.size() % 3 != 0 || !src.size()) RDthrow(Ryan_Debug::error::xArrayOutOfBounds())
+				<< Ryan_Debug::error::otherErrorText("Element src has the wrong size or is a "
 					"null matrix.");
 			e01x = src[0];
 			e01y = src[1];

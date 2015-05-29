@@ -22,13 +22,13 @@
 #include <boost/spirit/include/qi_repeat.hpp>
 
 #include "../rtmath/ddscat/ddOriData.h"
-#include "../rtmath/macros.h"
+#include <Ryan_Debug/macros.h>
 #include "ddOriDataParsers.h"
 #include "../rtmath/ddscat/ddVersions.h"
 #include "../rtmath/units.h"
 
 #include "../rtmath/refract.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace rtmath
 {
@@ -239,11 +239,11 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 6) RDthrow(debug::xBadInput()) 
-					<< debug::line_text(str)
-					<< debug::otherErrorText("Cannot parse refractive index");
+				if (snums.size() < 6) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::line_text(str)
+					<< Ryan_Debug::error::otherErrorText("Cannot parse refractive index");
 
-				using namespace rtmath::macros;
+				using namespace Ryan_Debug::macros;
 				for (size_t i = 0; i < 6; ++i)
 					boost::algorithm::trim(snums[i]);
 				mre = fastCast<double>(snums[0]);
@@ -282,11 +282,11 @@ namespace rtmath
 				// fieldname is from 19 to an underscore
 				// fieldnamecaps is from 41 to 47
 				// n is from 48 to the end of the line
-				min = macros::m_atof<double>(str.data(), 8);
-				max = macros::m_atof<double>(str.data() + 9, 8);
+				min = Ryan_Debug::macros::m_atof<double>(str.data(), 8);
+				max = Ryan_Debug::macros::m_atof<double>(str.data() + 9, 8);
 				fieldname = str.substr(19, str.find_first_of('_', 19) - 19);
 				fieldnamecaps = str.substr(41, 6);
-				n = (size_t)macros::m_atoi<size_t>(str.data() + 48);
+				n = (size_t)Ryan_Debug::macros::m_atoi<size_t>(str.data() + 48);
 			}
 
 			void ddPolVec::write(std::ostream &out, size_t, const std::vector<std::complex<double> > &pols,
@@ -335,30 +335,30 @@ namespace rtmath
 				}
 				nDone();
 
-				if (snums.size() < 7) RDthrow(debug::xBadInput())
-					<< debug::line_text(str)
-					<< debug::otherErrorText(
+				if (snums.size() < 7) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::line_text(str)
+					<< Ryan_Debug::error::otherErrorText(
 					"Cannot parse inc.pol.vec. numbers");
 
-				using namespace rtmath::macros;
+				using namespace Ryan_Debug::macros;
 				using boost::algorithm::trim_copy;
 				using std::complex;
 				pols.resize(3);
-				pols[0] = complex<double>(macros::m_atof<double>(snums[0].c_str()), macros::m_atof<double>(snums[1].c_str()));
-				pols[1] = complex<double>(macros::m_atof<double>(snums[2].c_str()), macros::m_atof<double>(snums[3].c_str()));
-				pols[2] = complex<double>(macros::m_atof<double>(snums[4].c_str()), macros::m_atof<double>(snums[5].c_str()));
+				pols[0] = complex<double>(m_atof<double>(snums[0].c_str()), m_atof<double>(snums[1].c_str()));
+				pols[1] = complex<double>(m_atof<double>(snums[2].c_str()), m_atof<double>(snums[3].c_str()));
+				pols[2] = complex<double>(m_atof<double>(snums[4].c_str()), m_atof<double>(snums[5].c_str()));
 				vecnum = fastCast<size_t>(snums[6]);
 				auto it = str.find_last_of('F');
-				if (it == std::string::npos) RDthrow(debug::xBadInput())
-					<< debug::line_text(str)
-					<< debug::otherErrorText(
+				if (it == std::string::npos) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::line_text(str)
+					<< Ryan_Debug::error::otherErrorText(
 					"Cannot parse inc.pol.vec. numbers");
 				it--;
 				if (str.at(it) == 'L') frame = frameType::LF;
 				else if (str.at(it) == 'T') frame = frameType::TF;
-				else RDthrow(debug::xBadInput())
-					<< debug::line_text(str)
-					<< debug::otherErrorText(
+				else RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::line_text(str)
+					<< Ryan_Debug::error::otherErrorText(
 					"Cannot parse inc.pol.vec. numbers");
 			}
 
@@ -413,13 +413,13 @@ namespace rtmath
 				}
 				nDone();
 
-				using namespace rtmath::macros;
+				using namespace Ryan_Debug::macros;
 				using boost::algorithm::trim_copy;
 				using std::complex;
 				v.resize(3);
-				v[0] = macros::m_atof<double>(snums[0].c_str());
-				v[1] = macros::m_atof<double>(snums[1].c_str());
-				v[2] = macros::m_atof<double>(snums[2].c_str());
+				v[0] = m_atof<double>(snums[0].c_str());
+				v[1] = m_atof<double>(snums[1].c_str());
+				v[2] = m_atof<double>(snums[2].c_str());
 
 				axisnum = 0;
 				if (str.at(45) == '1') axisnum = 1;
@@ -477,10 +477,10 @@ namespace rtmath
 				}
 				nDone();
 
-				using namespace rtmath::macros;
+				using namespace Ryan_Debug::macros;
 				using boost::algorithm::trim_copy;
-				a = macros::m_atof<double>(snums[0].c_str());
-				b = macros::m_atof<double>(snums[1].c_str());
+				a = m_atof<double>(snums[0].c_str());
+				b = m_atof<double>(snums[1].c_str());
 				axisname = str.at(31);
 			}
 		}
@@ -529,7 +529,7 @@ namespace rtmath
 						size_t loc = it->find("_");
 						if (loc == string::npos) continue;
 						//std::cerr << it->substr(loc+1) << std::endl;
-						size_t id = macros::m_atoi<size_t>(it->substr(loc + 1).c_str());
+						size_t id = Ryan_Debug::macros::m_atoi<size_t>(it->substr(loc + 1).c_str());
 						size_t row = (id / 10) - 1; // Annoying start at 1...
 						size_t col = (id % 10) - 1;
 						//std::cerr << "mIndices loc: " << loc << " id: " << id << " i: " << i << " row: " << row << " col: " << col << std::endl;
@@ -546,8 +546,8 @@ namespace rtmath
 					// theta phi Pol. S_11 S_12 S_21 S_22 S_31 S_41
 					vals.clear();
 					if (!parse_numbers_space(lin.begin(), lin.end(), vals))
-						RDthrow(debug::xBadInput())
-							<< debug::otherErrorText("Cannot parse Mueller entry");
+						RDthrow(Ryan_Debug::error::xBadInput())
+						<< Ryan_Debug::error::otherErrorText("Cannot parse Mueller entry");
 
 					//for (auto it = t.begin(); it != t.end(); ++it)
 					//	vals.push_back(rtmath::macros::m_atof(it->data(), it->size())); // Speedup using my own atof
@@ -568,8 +568,8 @@ namespace rtmath
 						boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
 
 					/// \note Actual read of mueller matrix entries disabled
-					RDthrow(debug::xUnimplementedFunction())
-						<< debug::otherErrorText("Actual read of mueller matrix entries disabled");
+					RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+						<< Ryan_Debug::error::otherErrorText("Actual read of mueller matrix entries disabled");
 					//_scattMatricesRaw.push_back(matC);
 					//std::cerr << _scattMatricesRaw.size() << " elements\n";
 				}
@@ -607,8 +607,8 @@ namespace rtmath
 
 				vals.clear();
 				if (!parse_numbers_space(lin.begin(), lin.end(), vals))
-					RDthrow(debug::xBadInput())
-					<< debug::otherErrorText("Cannot parse F entry");
+					RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Cannot parse F entry");
 
 				// ddScattMatrixF constructor takes frequency (GHz) and phi
 				//boost::shared_ptr<ddScattMatrixF> mat(new ddScattMatrixF
@@ -633,7 +633,7 @@ namespace rtmath
 
 		void ddOriData::readS_ADDA(std::istream &in)
 		{
-			throw rtmath::debug::xUnimplementedFunction();
+			RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 			/*
 			using namespace std;
 			using namespace rtmath::ddscat::ddOriDataParsers;

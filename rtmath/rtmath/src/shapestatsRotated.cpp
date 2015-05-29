@@ -18,12 +18,21 @@
 #include <boost/math/constants/constants.hpp>
 #include <Eigen/Dense>
 
+#include <Ryan_Debug/logging.h>
 //#include "../rtmath/ddscat/shapestatsRotated.h"
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/hulls.h"
 
+namespace {
+
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_shapestatsrot,
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "stats"));
+
+}
 namespace rtmath {
 	namespace ddscat {
 
@@ -44,7 +53,11 @@ namespace rtmath {
 			{
 				//boost::shared_ptr<shapeFileStatsRotated> pres(new shapeFileStatsRotated);
 				//shapeFileStatsRotated &res = *pres;
-				std::cerr << " " << beta << ", " << theta << ", " << phi << std::endl;
+				// Logged in the caller
+				auto& lg = m_shapestatsrot::get();
+
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) 
+					<< "Calculating stats for rotation " << beta << ", " << theta << ", " << phi;
 
 				rotData pres;
 				basicTable &tbl = pres.get<0>();

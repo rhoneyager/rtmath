@@ -28,9 +28,10 @@
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/common_templates.h"
-#include "../rtmath/config.h"
+#include <Ryan_Debug/config.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging.h>
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 #include "../rtmath/ddscat/hulls.h"
 
@@ -40,23 +41,34 @@
 #undef min
 #undef max
 
-namespace rtmath {
+namespace {
+	
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_shapestats,
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "stats"));
+
+}
+
+namespace Ryan_Debug {
 	namespace registry {
 		template struct IO_class_registry_writer
-			<::rtmath::ddscat::stats::shapeFileStats>;
+			< ::rtmath::ddscat::stats::shapeFileStats > ;
 
 		template struct IO_class_registry_reader
-			<::rtmath::ddscat::stats::shapeFileStats>;
+			< ::rtmath::ddscat::stats::shapeFileStats > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::stats::shapeFileStats_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> >;
+			IO_class_registry_writer<::rtmath::ddscat::stats::shapeFileStats> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::stats::shapeFileStats_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::stats::shapeFileStats> >;
+			IO_class_registry_reader<::rtmath::ddscat::stats::shapeFileStats> > ;
 
 	}
+}
+namespace rtmath {
 	namespace ddscat {
 		namespace stats {
 
@@ -141,10 +153,11 @@ namespace rtmath {
 
 			void shapeFileStatsBase::calcVoroCvx()
 			{
-
+				auto& lg = m_shapestats::get();
 				// Using the convex hull to get the maximum diameter
 				using namespace rtmath::Voronoi;
-				std::cerr << " Voronoi" << std::endl;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Calculating Voronoi convex hull";
+
 				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
@@ -172,7 +185,9 @@ namespace rtmath {
 						candidate_hull_points = m;
 					}
 				}
-				std::cerr << " Voronoi diagram calculated. Extracting " << candidate_hull_points->rows() << " hull points." << std::endl;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Voronoi diagram calculated. Extracting "
+					<< candidate_hull_points->rows() << " hull points.";
+
 				boost::shared_ptr<convexHull> cvHull(convexHull::generate(candidate_hull_points));
 				cvHull->constructHull();
 				max_distance = cvHull->maxDiameter();
@@ -314,17 +329,22 @@ namespace rtmath {
 
 				// Define the accumulators that we want
 				// For each axis, get min, max and the other statistics about the distribution
+				auto& lg = m_shapestats::get();
 
-				std::cerr << "Calculating base stats for shape with hash " << _shp->hash().string() << std::endl;
+				
 				// Iterate accumulator as function of radial distance from center of mass
 
 				// Pull in some vars from the shapefile
 				const size_t _N = _shp->numPoints;
-				std::cerr << " " << _N << " points" << std::endl;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Calculating base stats for shape with hash "
+					<< _shp->hash().string() << ". There are " << _N << " points.";
 
-				if (!_N)
-					RDthrow(rtmath::debug::xBadInput())
-						<< rtmath::debug::otherErrorText("Stats cannot be calculated because the shapefile is not loaded.");
+				if (!_N) {
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) 
+						<< "Stats cannot be calculated because the shapefile is not loaded.";
+					RDthrow(Ryan_Debug::error::xBadInput())
+						<< Ryan_Debug::error::otherErrorText("Stats cannot be calculated because the shapefile is not loaded.");
+				}
 
 				// Calculate volume elements
 				float dxdydz = _shp->d(0) * _shp->d(1) * _shp->d(2);
@@ -340,7 +360,7 @@ namespace rtmath {
 				calcScircum();
 				
 
-				std::cerr << " Calculating 0,0,0 rotation" << std::endl;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Calculating 0,0,0 base rotation.";
 				// Calculate rotated stats to avoid having to duplicate code
 				// From the 0,0,0 rotation,
 				calcSellmax();
@@ -351,7 +371,8 @@ namespace rtmath {
 				// Calculate all default (from config or command-line) rotations
 				for (auto rot : defaultRots)
 				{
-					//std::cerr << "Calculating stats for rotation " << rot.get<0>() << ", " << rot.get<1>() << ", " << rot.get<2>() << std::endl;
+					// Logged in calcStatsRot
+					//BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Calculating stats for rotation " << rot.get<0>() << ", " << rot.get<1>() << ", " << rot.get<2>() << std::endl;
 					calcStatsRot(rot.get<0>(), rot.get<1>(), rot.get<2>());
 					//const basicTable &tbl = rot.get<0>();
 					//calcStatsRot(tbl[rotColDefs::BETA], tbl[rotColDefs::THETA], tbl[rotColDefs::PHI]);

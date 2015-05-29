@@ -15,12 +15,11 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 
-
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/Serialization.h>
+#include <Ryan_Debug/error.h>
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/hash.h"
-#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 #undef min
 #undef max
@@ -120,17 +119,17 @@ namespace rtmath
 				parser_vals.reserve(numPoints*8);
 				parse_shapefile_entries(pa,pb, parser_vals);
 
-				if (numPoints == 0) RDthrow(debug::xBadInput())
-					<< debug::otherErrorText("Header indicates no dipoles.")
-					<< debug::line_text(std::string(pa));
-				if (parser_vals.size() == 0) RDthrow(debug::xBadInput())
-					<< debug::otherErrorText("Unable to parse dipoles.")
-					<< debug::line_text(std::string(pa));
+				if (numPoints == 0) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Header indicates no dipoles.")
+					<< Ryan_Debug::error::line_text(std::string(pa));
+				if (parser_vals.size() == 0) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Unable to parse dipoles.")
+					<< Ryan_Debug::error::line_text(std::string(pa));
 				if (parser_vals.size() < ((numPoints - 1) * 7))
-					RDthrow(debug::xBadInput())
-					<< debug::otherErrorText("When reading shapefile, "
+					RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("When reading shapefile, "
 					"header dipoles do not match the number in the file.")
-					<< debug::line_text(std::string(pa));
+					<< Ryan_Debug::error::line_text(std::string(pa));
 
 				using namespace boost::accumulators;
 				accumulator_set<float, boost::accumulators::stats<tag::mean, tag::min, tag::max> > m_x, m_y, m_z;
@@ -290,15 +289,15 @@ namespace rtmath
 			{
 				using boost::filesystem::path;
 
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts;
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts;
 
 				// Only store hash if a storage mechanism can be found
-				if (hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts))
 				{
 					std::string meth, target;
 
-					if (serialization::detect_compressed(opts->filename(), meth, target))
+					if (Ryan_Debug::serialization::detect_compressed(opts->filename(), meth, target))
 						boost::filesystem::remove(boost::filesystem::path(target));
 					//if (!serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);

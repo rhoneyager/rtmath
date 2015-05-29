@@ -1,4 +1,5 @@
 #pragma once
+#error "Unused header"
 #include "../defs.h"
 #include <vector>
 #include <map>
@@ -7,9 +8,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/version.hpp>
 
 namespace rtmath {
 	namespace ddscat {
@@ -26,9 +24,6 @@ namespace rtmath {
 			/// \todo Split generation function to improve readability.
 			class DLEXPORT_rtmath_ddscat shapeFileStatsRotated
 			{
-				friend class ::boost::serialization::access;
-				template<class Archive>
-				void serialize(Archive & ar, const unsigned int version);
 			public:
 				/** \brief Trivial constructor for serialization. 
 				*

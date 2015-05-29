@@ -1,5 +1,5 @@
 #pragma once
-#include "../rtmath/macros.h"
+#include <Ryan_Debug/macros.h>
 
 namespace rtmath
 {
@@ -46,8 +46,7 @@ namespace rtmath
 					// Remove any leading and lagging spaces
 					// Not all Liu avg files are correct in this respect
 					boost::algorithm::trim(ss);
-					using namespace rtmath::macros;
-					s = fastCast<T>(ss);
+					s = Ryan_Debug::macros::fastCast<T>(ss);
 				}
 			};
 
@@ -77,8 +76,7 @@ namespace rtmath
 					// Remove any leading and lagging spaces
 					// Not all Liu avg files are correct in this respect
 					boost::algorithm::trim(ss);
-					using namespace rtmath::macros;
-					s = fastCast<T>(ss);
+					s = Ryan_Debug::macros::fastCast<T>(ss);
 				}
 			};
 

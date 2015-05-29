@@ -18,15 +18,15 @@
 #include <boost/weak_ptr.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include "../rtmath/macros.h"
-#include "../rtmath/hash.h"
+#include <Ryan_Debug/macros.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/Serialization.h>
+#include <Ryan_Debug/error.h>
+#include "../rtmath/error/debug.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/splitSet.h"
-#include "../rtmath/registry.h"
-#include "../rtmath/Serialization/Serialization.h"
-#include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 namespace {
 	std::set<std::string> mtypes;
@@ -37,26 +37,26 @@ namespace {
 	//std::map<rtmath::HASH_t, boost::shared_ptr<shapefile> > stubShapes;
 }
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
 		template struct IO_class_registry_writer
-			<::rtmath::ddscat::shapefile::shapefile>;
+			< ::rtmath::ddscat::shapefile::shapefile > ;
 
 		template struct IO_class_registry_reader
-			<::rtmath::ddscat::shapefile::shapefile>;
+			< ::rtmath::ddscat::shapefile::shapefile > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >;
-		
-		template class usesDLLregistry<
+			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> > ;
+
+		template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_query_registry,
-			::rtmath::ddscat::shapefile::shapefile_db_registry >;
-		
+			::rtmath::ddscat::shapefile::shapefile_db_registry > ;
+
 	}
 
 	namespace io {
@@ -68,11 +68,13 @@ namespace rtmath {
 			return res;
 		}
 	}
+}
+namespace rtmath {
 	namespace ddscat {
 		namespace shapefile {
 
 			implementsDDSHP::implementsDDSHP() :
-				rtmath::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
+				Ryan_Debug::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
 				shapefile_IO_input_registry, shapefile_Standard>(shapefile::writeDDSCAT, shapefile::readDDSCAT, known_formats())
 			{}
 
@@ -92,16 +94,16 @@ namespace rtmath {
 						mtypes.insert("shape.dat");
 						mtypes.insert("target.out");
 					}
-					if (io::TextFiles::serialization_handle::compressionEnabled())
+					if (Ryan_Debug::io::TextFiles::serialization_handle::compressionEnabled())
 					{
 						std::string sctypes;
 						std::set<std::string> ctypes;
-						serialization::known_compressions(sctypes, ".shp");
-						serialization::known_compressions(sctypes, ".dat");
-						serialization::known_compressions(sctypes, "shape.txt");
-						serialization::known_compressions(sctypes, "shape.dat");
-						serialization::known_compressions(sctypes, "target.out");
-						rtmath::config::splitSet(sctypes, ctypes);
+						Ryan_Debug::serialization::known_compressions(sctypes, ".shp");
+						Ryan_Debug::serialization::known_compressions(sctypes, ".dat");
+						Ryan_Debug::serialization::known_compressions(sctypes, "shape.txt");
+						Ryan_Debug::serialization::known_compressions(sctypes, "shape.dat");
+						Ryan_Debug::serialization::known_compressions(sctypes, "target.out");
+						Ryan_Debug::splitSet::splitSet(sctypes, ctypes);
 						for (const auto & t : ctypes)
 							mtypes.emplace(t);
 					}
@@ -155,7 +157,7 @@ namespace rtmath {
 				return false;
 			}
 
-			bool shapefile::isHashStored(const HASH_t &hash) { return isHashStored(hash.string()); }
+			bool shapefile::isHashStored(const Ryan_Debug::hash::HASH_t &hash) { return isHashStored(hash.string()); }
 
 			void shapefile::registerHash() const
 			{
@@ -210,7 +212,7 @@ namespace rtmath {
 				boost::iostreams::copy(in, so);
 				std::string s;
 				s = so.str();
-				this->_localhash = HASH(s.c_str(), (int)s.size());
+				this->_localhash = Ryan_Debug::hash::HASH(s.c_str(), (int)s.size());
 
 				//std::istringstream ss_unc(s);
 				readString(s);
@@ -236,18 +238,18 @@ namespace rtmath {
 				//	shapefile_IO_input_registry, shapefile_serialization>::set_sname("rtmath::ddscat::shapefile::shapefile");
 			}
 
-			void shapefile::setHash(const HASH_t &h)
+			void shapefile::setHash(const Ryan_Debug::hash::HASH_t &h)
 			{
 				_localhash = h;
 			}
 
-			HASH_t shapefile::hash() const
+			Ryan_Debug::hash::HASH_t shapefile::hash() const
 			{
 				if (_localhash.lower) return _localhash;
 				return rehash();
 			}
 
-			HASH_t shapefile::rehash() const
+			Ryan_Debug::hash::HASH_t shapefile::rehash() const
 			{
 				if (numPoints)
 				{
@@ -255,7 +257,7 @@ namespace rtmath {
 					std::ostringstream out;
 					print(out);
 					res = out.str();
-					this->_localhash = HASH(res.c_str(), (int)res.size());
+					this->_localhash = Ryan_Debug::hash::HASH(res.c_str(), (int)res.size());
 				}
 				return this->_localhash;
 			}
@@ -304,11 +306,11 @@ namespace rtmath {
 			}
 
 			boost::shared_ptr<const shapefile> shapefile::loadHash(
-				const HASH_t &hash)
+				const Ryan_Debug::hash::HASH_t &hash)
 			{ return loadHash(boost::lexical_cast<std::string>(hash.lower)); }
 
 			void shapefile::loadHashLocal(
-				const HASH_t &hash)
+				const Ryan_Debug::hash::HASH_t &hash)
 			{
 				loadHashLocal(boost::lexical_cast<std::string>(hash.lower));
 			}
@@ -375,7 +377,7 @@ namespace rtmath {
 								// Find first space after this position
 								posb = lin.find_first_of(" \t\n", posa);
 								size_t len = posb - posa;
-								numPoints = rtmath::macros::m_atoi<size_t>(&(lin.data()[posa]), len);
+								numPoints = Ryan_Debug::macros::m_atoi<size_t>(&(lin.data()[posa]), len);
 					}
 						break;
 					case 6: // Junk line
@@ -398,7 +400,7 @@ namespace rtmath {
 									// Find first space after this position
 									posb = lin.find_first_of(" \t\n,", posa);
 									size_t len = posb - posa;
-									(*v)(j) = rtmath::macros::m_atof<float>(&(lin.data()[posa]), len);
+									(*v)(j) = Ryan_Debug::macros::m_atof<float>(&(lin.data()[posa]), len);
 								}
 					}
 						break;
@@ -409,10 +411,10 @@ namespace rtmath {
 				resize(numPoints);
 			}
 
-			void shapefile::writeDDSCAT(const boost::shared_ptr<const shapefile> s, std::ostream &out, std::shared_ptr<registry::IO_options>)
+			void shapefile::writeDDSCAT(const boost::shared_ptr<const shapefile> s, std::ostream &out, std::shared_ptr<Ryan_Debug::registry::IO_options>)
 			{ s->print(out); }
 
-			void shapefile::readDDSCAT(boost::shared_ptr<shapefile> s, std::istream &in, std::shared_ptr<registry::IO_options> opts)
+			void shapefile::readDDSCAT(boost::shared_ptr<shapefile> s, std::istream &in, std::shared_ptr<Ryan_Debug::registry::IO_options> opts)
 			{
 				std::ostringstream so;
 				boost::iostreams::copy(in, so);
@@ -785,10 +787,10 @@ namespace rtmath {
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
 				{
 					opts->setVal<std::string>("key", hash);
 					res = boost::shared_ptr<shapefile>(new shapefile);
@@ -815,18 +817,18 @@ namespace rtmath {
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts; // No need to set - it gets reset by findHashObj
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-				if (hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
 				{
 					opts->setVal<std::string>("key", hash);
 					readMulti(sh, opts);
 				}
 				else {
-					RDthrow(debug::xMissingHash())
-						<< debug::hash(hash)
-					       	<< debug::hashType("shapefile");
+					RDthrow(Ryan_Debug::error::xMissingHash())
+						<< Ryan_Debug::error::hash(hash)
+						<< Ryan_Debug::error::hashType("shapefile");
 				}
 
 				this->registerHash();

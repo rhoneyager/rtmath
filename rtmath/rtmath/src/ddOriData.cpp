@@ -24,10 +24,11 @@
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/refract.h"
 #include "../rtmath/units.h"
-#include "../rtmath/macros.h"
-#include "../rtmath/Serialization/Serialization.h"
+#include <Ryan_Debug/macros.h>
+#include <Ryan_Debug/logging.h>
+#include <Ryan_Debug/Serialization.h>
+#include <Ryan_Debug/error.h>
 #include "../rtmath/quadrature.h"
-#include "../rtmath/error/error.h"
 
 #include "ddOriDataParsers.h"
 
@@ -35,29 +36,29 @@ namespace {
 	static std::mutex implementsDDRESmlock;
 }
 
-namespace rtmath {
+namespace Ryan_Debug {
 
 	namespace registry {
 		template struct IO_class_registry_writer
-			<::rtmath::ddscat::ddOriData>;
+			< ::rtmath::ddscat::ddOriData > ;
 
 		template struct IO_class_registry_reader
-			<::rtmath::ddscat::ddOriData>;
+			< ::rtmath::ddscat::ddOriData > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddOriData_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::ddOriData> >;
+			IO_class_registry_writer<::rtmath::ddscat::ddOriData> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::ddOriData_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::ddOriData> >;
+			IO_class_registry_reader<::rtmath::ddscat::ddOriData> > ;
 	}
-
-
+}
+namespace rtmath {
 	namespace ddscat {
 
 		implementsDDRES::implementsDDRES() :
-			rtmath::io::implementsIObasic<ddOriData, ddOriData_IO_output_registry,
+			Ryan_Debug::io::implementsIObasic<ddOriData, ddOriData_IO_output_registry,
 			ddOriData_IO_input_registry, ddOriData_Standard>(ddOriData::writeDDSCAT, ddOriData::readDDSCAT, known_formats())
 		{}
 
@@ -74,15 +75,15 @@ namespace rtmath {
 					mtypes.insert(".sca");
 					mtypes.insert("avg_");
 				}
-				if (io::TextFiles::serialization_handle::compressionEnabled())
+				if (Ryan_Debug::io::TextFiles::serialization_handle::compressionEnabled())
 				{
 					std::string sctypes;
 					std::set<std::string> ctypes;
-					serialization::known_compressions(sctypes, ".avg");
-					serialization::known_compressions(sctypes, ".fml");
-					serialization::known_compressions(sctypes, ".sca");
-					serialization::known_compressions(sctypes, "avg_");
-					rtmath::config::splitSet(sctypes, ctypes);
+					Ryan_Debug::serialization::known_compressions(sctypes, ".avg");
+					Ryan_Debug::serialization::known_compressions(sctypes, ".fml");
+					Ryan_Debug::serialization::known_compressions(sctypes, ".sca");
+					Ryan_Debug::serialization::known_compressions(sctypes, "avg_");
+					Ryan_Debug::splitSet::splitSet(sctypes, ctypes);
 					for (const auto & t : ctypes)
 						mtypes.emplace(t);
 				}
@@ -90,7 +91,7 @@ namespace rtmath {
 			return mtypes;
 		}
 
-		void ddOriData::readDDSCAT(boost::shared_ptr<ddOriData> obj, std::istream&in, std::shared_ptr<registry::IO_options> opts)
+		void ddOriData::readDDSCAT(boost::shared_ptr<ddOriData> obj, std::istream&in, std::shared_ptr<Ryan_Debug::registry::IO_options> opts)
 		{
 			std::string filename = opts->filename();
 			std::string filetype = opts->filetype();
@@ -111,16 +112,16 @@ namespace rtmath {
 				obj->readAVG(in);
 			}
 			else {
-				RDthrow(rtmath::debug::xUnknownFileFormat())
-					<< rtmath::debug::file_name(filename);
+				RDthrow(Ryan_Debug::error::xUnknownFileFormat())
+					<< Ryan_Debug::error::file_name(filename);
 			}
 		}
 
-		void ddOriData::writeDDSCAT(const boost::shared_ptr<const ddOriData> obj, std::ostream &out, std::shared_ptr<registry::IO_options> opts)
+		void ddOriData::writeDDSCAT(const boost::shared_ptr<const ddOriData> obj, std::ostream &out, std::shared_ptr<Ryan_Debug::registry::IO_options> opts)
 		{
-			bool isFMLforced = false, writeFML = true;
-			ddOutput::isForcingFMLwrite(isFMLforced, writeFML);
-			if (isFMLforced) opts->setVal<bool>("writeFML", writeFML);
+			//bool isFMLforced = false, writeFML = true;
+			//ddOutput::isForcingFMLwrite(isFMLforced, writeFML);
+			//if (isFMLforced) opts->setVal<bool>("writeFML", writeFML);
 			
 			std::string filename = opts->filename();
 			std::string filetype = opts->filetype();
@@ -141,8 +142,8 @@ namespace rtmath {
 				obj->writeAVG(out);
 			}
 			else {
-				RDthrow(rtmath::debug::xUnknownFileFormat())
-					<< rtmath::debug::file_name(filename);
+				RDthrow(Ryan_Debug::error::xUnknownFileFormat())
+					<< Ryan_Debug::error::file_name(filename);
 			}
 		}
 
@@ -228,7 +229,7 @@ namespace rtmath {
 			}
 			if (!startFound) return;
 			if (!endFound) stopRow = _parent.fmldata->rows();
-			if (stopRow <= startRow) RDthrow(debug::xArrayOutOfBounds());
+			if (stopRow <= startRow) RDthrow(Ryan_Debug::error::xArrayOutOfBounds());
 
 			doImportFMLs(startRow, stopRow - startRow);
 		}
@@ -1136,7 +1137,7 @@ namespace rtmath {
 			} else {
 				if (_parent.avgdata.avg_ms.size() > dielIndex) return _parent.avgdata.avg_ms[dielIndex];
 			}
-			RDthrow(debug::xArrayOutOfBounds());
+			RDthrow(Ryan_Debug::error::xArrayOutOfBounds());
 			return std::complex<double>(0, 0); // needed to suppress _parent.ms[_row]vc warning
 		}
 		void ddOriData::M(const std::complex<double>& m, size_t dielIndex)

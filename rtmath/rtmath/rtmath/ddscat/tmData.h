@@ -1,4 +1,5 @@
 #pragma once
+#error "Unused header"
 /* This is the container for tmatrix raw data, used by the tmatrix-convert-from-ddscat program.
  * It represents the serialized run data. For further comparisons, it provides several outputs 
  * to make the data manipulable in the same manner as ddscat data.

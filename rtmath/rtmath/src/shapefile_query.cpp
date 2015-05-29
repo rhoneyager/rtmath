@@ -11,32 +11,33 @@
 #include <boost/lexical_cast.hpp>
 
 #include <Ryan_Debug/debug.h>
-#include "../rtmath/macros.h"
-#include "../rtmath/hash.h"
+#include <Ryan_Debug/macros.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/error.h>
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/splitSet.h"
-#include "../rtmath/registry.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
 		template struct IO_class_registry_writer
-			<::rtmath::ddscat::shapefile::shapefile>;
+			< ::rtmath::ddscat::shapefile::shapefile > ;
 
 		template struct IO_class_registry_reader
-			<::rtmath::ddscat::shapefile::shapefile>;
+			< ::rtmath::ddscat::shapefile::shapefile > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_IO_output_registry,
-			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> >;
+			IO_class_registry_writer<::rtmath::ddscat::shapefile::shapefile> > ;
 
-		template class usesDLLregistry<
+		template class usesDLLregistry <
 			::rtmath::ddscat::shapefile::shapefile_IO_input_registry,
-			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> >;
-		
-	}
+			IO_class_registry_reader<::rtmath::ddscat::shapefile::shapefile> > ;
 
+	}
+}
+namespace rtmath {
 	namespace ddscat {
 		namespace shapefile {
 
@@ -69,13 +70,13 @@ namespace rtmath {
 			}
 
 
-			std::pair<shapefile_db_registry::shapefile_index::collection, std::shared_ptr<rtmath::registry::DBhandler> >
-				shapefile_db_registry::shapefile_index::doQuery(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o) const
+			std::pair<shapefile_db_registry::shapefile_index::collection, std::shared_ptr<Ryan_Debug::registry::DBhandler> >
+				shapefile_db_registry::shapefile_index::doQuery(std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o) const
 			{
 				collection c(new std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp >());
-				std::shared_ptr<rtmath::registry::DBhandler> fp;
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> fp;
 
-				auto hooks = ::rtmath::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
+				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
 				for (const auto &h : *(hooks.get()))
 				{
 					if (!h.fQuery) continue;
@@ -84,11 +85,11 @@ namespace rtmath {
 					fp = h.fQuery(*this, c, p, o);
 
 					return std::pair < shapefile_db_registry::shapefile_index::collection,
-						std::shared_ptr<rtmath::registry::DBhandler> > (c, fp);
+						std::shared_ptr<Ryan_Debug::registry::DBhandler> >(c, fp);
 				}
 
 				return std::pair<shapefile_db_registry::shapefile_index::collection, 
-					std::shared_ptr<rtmath::registry::DBhandler> >
+					std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 					(c, nullptr);
 			}
 
@@ -148,20 +149,20 @@ namespace rtmath {
 			}
 
 			std::pair<shapefile_db_registry::shapefile_index::collection, 
-				std::shared_ptr<rtmath::registry::DBhandler> >
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 				shapefile_db_registry::shapefile_index::doQuery(
 				collection srcs, bool doUnion, bool doDb,
-				std::shared_ptr<rtmath::registry::DBhandler> p, 
-				std::shared_ptr<registry::DB_options> o) const
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p,
+				std::shared_ptr<Ryan_Debug::registry::DB_options> o) const
 			{
 				collection toMergeC(new std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp >());
 				//collection toMergeS(new std::set<boost::shared_ptr<shapefile>, shapefile_db_comp >());
 				collection res(new std::set<boost::shared_ptr<const shapefile>, shapefile_db_comp >());
-				std::shared_ptr<rtmath::registry::DBhandler> fp;
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> fp;
 
-				std::map<rtmath::HASH_t, boost::shared_ptr<const shapefile> > db_hashes; // database results, as a map
+				std::map<Ryan_Debug::hash::HASH_t, boost::shared_ptr<const shapefile> > db_hashes; // database results, as a map
 
-				auto hooks = ::rtmath::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
+				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<shapefile_query_registry, shapefile_db_registry >::getHooks();
 				if (doDb)
 				{
 					for (const auto &h : *(hooks.get()))
@@ -212,7 +213,7 @@ namespace rtmath {
 
 
 				return std::pair<shapefile_db_registry::shapefile_index::collection,
-					std::shared_ptr<rtmath::registry::DBhandler> >
+					std::shared_ptr<Ryan_Debug::registry::DBhandler> >
 					(res, fp);
 			}
 		}

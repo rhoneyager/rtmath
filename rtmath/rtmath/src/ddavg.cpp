@@ -9,6 +9,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include <Ryan_Debug/error.h>
 #include "../rtmath/ddscat/ddavg.h"
 #include "../rtmath/ddscat/ddOriData.h"
 #include "../rtmath/ddscat/ddOutput.h"
@@ -16,7 +17,6 @@
 #include "../rtmath/ddscat/rotations.h"
 #include "../rtmath/ddscat/ddUtil.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
 
 namespace rtmath {
 	namespace ddscat {

@@ -16,12 +16,23 @@
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/common_templates.h"
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/Serialization.h>
+#include <Ryan_Debug/config.h>
 #include "../rtmath/config.h"
-#include "../rtmath/hash.h"
-#include "../rtmath/Serialization/Serialization.h"
 #include "../rtmath/error/debug.h"
-#include "../rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging.h>
 #include "shapestats_private.h"
+
+namespace {
+
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_shapestatsbas,
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "stats"));
+
+}
 
 namespace rtmath {
 	namespace ddscat {
@@ -249,9 +260,13 @@ namespace rtmath {
 				using boost::filesystem::exists;
 				// When generating stats, check if the shape and stats files should be 
 				// automatically stored in the hash directory
-				
+				auto& lg = m_shapestatsbas::get();
+
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+					<< "Requested generation of stats for shape file " << shpfile << " and stats file " << statsfile;
+
 				// Preferentially use the local file, if it exists (the do nothing case)
-				if (serialization::detect_compressed(statsfile))
+				if (Ryan_Debug::serialization::detect_compressed(statsfile))
 				{
 					boost::shared_ptr<shapeFileStats> res(new shapeFileStats); // Object creation
 					res->read(statsfile);
@@ -266,7 +281,11 @@ namespace rtmath {
 				if (!s) {
 					if (!prohibitStats)
 						s = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
-					else std::cerr << "Stats not found. New calculations prohibited." << std::endl;
+					else {
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::warning)
+							<< "Stats not found. New calculations prohibited. Returning nullptr to caller.";
+						return nullptr;
+					}
 				}
 				if (s->needsUpgrade()) s->upgrade();
 
@@ -282,15 +301,21 @@ namespace rtmath {
 			{
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
+				auto& lg = m_shapestatsbas::get();
 
-				std::cerr << "Generating (or loading) stats for hash " << shp->hash().string() << std::endl;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+					<< "Generating (or loading) stats for hash " << shp->hash().string();
+
 				auto res = shapeFileStats::loadHash(shp->hash());
 				if (!res) {
 					if (!prohibitStats) {
-						std::cerr << "Stats for hash not found. Calculating. " << std::endl;
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+							<< "Stats for hash not found. Calculating.";
+
 						res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 					}
-					else std::cerr << "Stats for hash not found. New calculations prohibited." << std::endl;
+					else BOOST_LOG_SEV(lg, Ryan_Debug::log::warning)
+						<< "Stats for hash not found. New calculations prohibited."; // Still exits to nullptr.
 				}
 				if (autoHashStats && res) res->writeToHash();
 
@@ -298,7 +323,7 @@ namespace rtmath {
 			}
 
 			boost::shared_ptr<shapeFileStats> shapeFileStats::genStats(
-				const HASH_t &hash)
+				const Ryan_Debug::hash::HASH_t &hash)
 			{
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
@@ -306,9 +331,9 @@ namespace rtmath {
 				auto res = shapeFileStats::loadHash(hash);
 				if (!res && !prohibitStats) {
 					auto shp = shapefile::shapefile::loadHash(hash);
-					if (!shp) RDthrow(debug::xMissingHash())
-					<< debug::hash(hash.string())
-					<< debug::hashType("shapefile+stats");
+					if (!shp) RDthrow(Ryan_Debug::error::xMissingHash())
+						<< Ryan_Debug::error::hash(hash.string())
+						<< Ryan_Debug::error::hashType("shapefile+stats");
 					res = boost::shared_ptr<shapeFileStats>(new shapeFileStats(shp));
 				}
 				if (res)
@@ -321,7 +346,10 @@ namespace rtmath {
 			void shapeFileStats::upgrade()
 			{
 				if (!needsUpgrade()) return;
-				std::cerr << " upgrading stats from version " << this->_currVersion << " to " << _maxVersion << std::endl;
+				auto& lg = m_shapestatsbas::get();
+
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+					<< " upgrading stats from version " << this->_currVersion << " to " << _maxVersion;
 				load();
 
 				bool baseRecalced = false;
@@ -389,9 +417,9 @@ namespace rtmath {
 					//("disable-voronoi", "Disable all Voronoi-based calculations (for faster debugging)")
 					("force-recalc-stats", "Force shape stats recalculation, ignoring the cache. Used in debugging.")
 					("no-recalc-stats", "Stats will only be loaded from hashes. If not found, refuse to calculate.")
-					("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
-					("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
-					("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
+					//("betas,b", po::value<string>()->default_value("0"), "Specify beta rotations for stats") // static option
+					//("thetas,t", po::value<string>()->default_value("0"), "Specify theta rotations for stats") // static option
+					//("phis,p", po::value<string>()->default_value("0"), "Specify phi rotations for stats") // static option
 					//("rotations", po::value<string>(), "Specify rotations directly, in ") // static option
 					/// \todo Check for options conflict / default_value priority with shape-hash
 					//("do-hash-shapes", po::value<bool>()->default_value(false), "Create shape hash links")
@@ -423,16 +451,17 @@ namespace rtmath {
 
 				// Rotations can be used to automatically set defaults for rotated shape stats
 				// Rotations are always specified (thanks to default_value)
-				string sbetas = vm["betas"].as<string>();
-				paramSet<double> betas(sbetas);
-				string sthetas = vm["thetas"].as<string>();
-				paramSet<double> thetas(sthetas);
-				string sphis = vm["phis"].as<string>();
-				paramSet<double> phis(sphis);
+				//string sbetas = vm["betas"].as<string>();
+				//paramSet<double> betas(sbetas);
+				//string sthetas = vm["thetas"].as<string>();
+				//paramSet<double> thetas(sthetas);
+				//string sphis = vm["phis"].as<string>();
+				//paramSet<double> phis(sphis);
 
 				defaultRots.clear();
-				for (auto beta : betas) for (auto theta : thetas) for (auto phi : phis)
-					defaultRots.push_back(boost::tuple<double, double, double>(beta, theta, phi));
+				defaultRots.push_back(boost::tuple<double, double, double>(0, 0, 0));
+				//for (auto beta : betas) for (auto theta : thetas) for (auto phi : phis)
+				//	defaultRots.push_back(boost::tuple<double, double, double>(beta, theta, phi));
 
 				// Validate paths
 				/*
@@ -448,7 +477,7 @@ namespace rtmath {
 			}
 
 			boost::shared_ptr<shapeFileStats> shapeFileStats::loadHash(
-				const HASH_t &hash)
+				const Ryan_Debug::hash::HASH_t &hash)
 			{
 				return loadHash(boost::lexical_cast<std::string>(hash.lower));
 			}
@@ -461,10 +490,10 @@ namespace rtmath {
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts; // No need to set here - it gets reset by findHashObj
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set here - it gets reset by findHashObj
 
-				if (hashStore::findHashObj(hash, "stats-r2.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "stats-r2.hdf5", sh, opts))
 				{
 					// However, value "hash" or "key" must be set here
 					opts->setVal<std::string>("hash", hash);
@@ -576,15 +605,15 @@ namespace rtmath {
 			{
 				using boost::filesystem::path;
 
-				std::shared_ptr<registry::IOhandler> sh;
-				std::shared_ptr<registry::IO_options> opts;
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts;
 
 				// Only store hash if a storage mechanism can be found
-				if (hashStore::storeHash(_shp->_localhash.string(), "stats-r2.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::storeHash(_shp->_localhash.string(), "stats-r2.hdf5", sh, opts))
 				{
 					std::string meth, target;
 
-					if (serialization::detect_compressed(opts->filename(), meth, target))
+					if (Ryan_Debug::serialization::detect_compressed(opts->filename(), meth, target))
 						boost::filesystem::remove(boost::filesystem::path(target));
 					//if (!serialization::detect_compressed(opts->filename()))
 						this->writeMulti(sh, opts);

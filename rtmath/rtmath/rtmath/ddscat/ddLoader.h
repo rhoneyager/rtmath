@@ -1,4 +1,5 @@
 #pragma once
+#error "Unused header ddLoader.h"
 #include "../defs.h"
 /* ddLoader.h
  * These functions are used by atmos to map a pf entry in an atmosphere

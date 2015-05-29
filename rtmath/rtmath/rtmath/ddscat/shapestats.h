@@ -11,8 +11,7 @@
 //#include <boost/program_options.hpp>
 
 #include "shapefile.h"
-//#include "shapestatsRotated.h"
-#include "../io.h"
+#include <Ryan_Debug/io.h>
 
 // Forward declarations
 namespace rtmath {
@@ -22,9 +21,6 @@ namespace rtmath {
 			class shapeFileStats;
 			class shapeFileStats_IO_input_registry {};
 			class shapeFileStats_IO_output_registry {};
-#if USE_RYAN_SERIALIZATION
-			class shapeFileStats_serialization {};
-#endif
 			class DLEXPORT_rtmath_ddscat rotColDefs
 			{
 			public:
@@ -78,7 +74,7 @@ namespace std {
 	};
 }
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
 		
 		extern template struct IO_class_registry_writer<
@@ -156,12 +152,6 @@ namespace rtmath {
 					void calc(const shapeFileStatsBase*,
 						std::function<std::pair<float,float>()>);
 					void calc(const shapeFileStatsBase*);
-				protected:
-#if USE_RYAN_SERIALIZATION
-					friend class ::boost::serialization::access;
-					template<class Archive>
-					void serialize(Archive & ar, const unsigned int version);
-#endif
 				};
 
 				/// Scircum_sphere is for a circumscribing sphere
@@ -260,14 +250,14 @@ namespace rtmath {
 
 			class DLEXPORT_rtmath_ddscat shapeFileStats 
 				: public shapeFileStatsBase,
-				virtual public ::rtmath::registry::usesDLLregistry<
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				    shapeFileStats_IO_input_registry, 
-				    ::rtmath::registry::IO_class_registry_reader<shapeFileStats> >,
-				virtual public ::rtmath::registry::usesDLLregistry<
+					::Ryan_Debug::registry::IO_class_registry_reader<shapeFileStats> >,
+					virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				    shapeFileStats_IO_output_registry, 
-				    ::rtmath::registry::IO_class_registry_writer<shapeFileStats> >,
-				virtual public ::rtmath::io::implementsStandardWriter<shapeFileStats, shapeFileStats_IO_output_registry>,
-				virtual public ::rtmath::io::implementsStandardReader<shapeFileStats, shapeFileStats_IO_input_registry>//,
+					::Ryan_Debug::registry::IO_class_registry_writer<shapeFileStats> >,
+					virtual public ::Ryan_Debug::io::implementsStandardWriter<shapeFileStats, shapeFileStats_IO_output_registry>,
+					virtual public ::Ryan_Debug::io::implementsStandardReader<shapeFileStats, shapeFileStats_IO_input_registry>//,
 				//virtual public ::rtmath::io::Serialization::implementsSerialization<
 				//	shapeFileStats, shapeFileStats_IO_output_registry, 
                 //	shapeFileStats_IO_input_registry, shapeFileStats_serialization>
@@ -309,7 +299,7 @@ namespace rtmath {
 
 				/// Alias to loadHash
 				static boost::shared_ptr<shapeFileStats> genStats(
-					const HASH_t &hash);
+					const Ryan_Debug::hash::HASH_t &hash);
 
 				/**
 				* \brief Adds shapestats options to a program
@@ -329,7 +319,7 @@ namespace rtmath {
 				/// Load stats based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 				static boost::shared_ptr<shapeFileStats> loadHash(
-					const HASH_t &hash);
+					const Ryan_Debug::hash::HASH_t &hash);
 				/// Load stats based on hash
 				/// \throws rtmath::debug::xMissingFile if the hashed stats not found
 				static boost::shared_ptr<shapeFileStats> loadHash(

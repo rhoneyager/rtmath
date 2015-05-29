@@ -1,6 +1,6 @@
 #pragma once
 #include "../defs.h"
-#include "../hash.h"
+#include <Ryan_Debug/hash.h>
 
 namespace boost { namespace filesystem { class path; } }
 
@@ -41,7 +41,7 @@ namespace rtmath
 			 **/
 			void ERR_UNIMPLEMENTED DLEXPORT_rtmath_ddscat tagTARGET(
 				const boost::filesystem::path &pFile,
-				HASH_t &hash, const std::string &ddver);
+				Ryan_Debug::hash::HASH_t &hash, const std::string &ddver);
 
 			/**
 			 * \brief Modifies TARGET strings of all results in a ddscat 

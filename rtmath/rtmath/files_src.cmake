@@ -214,7 +214,7 @@ set(rtmath_ddscat-files
 	#src/ddparGenerator.cpp
 	#src/ddparGenerator_serialization.cpp
 	src/ddRunSet.cpp
-	src/ddscat.cpp
+	#src/ddscat.cpp
 	src/ddUtil.cpp
 	src/ddweights.cpp	
 	# src/mtab.cpp

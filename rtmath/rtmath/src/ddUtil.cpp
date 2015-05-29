@@ -11,7 +11,7 @@
 #include "../rtmath/ddscat/ddUtil.h"
 //#include "../rtmath/ddscat/ddOutputSingle.h"
 #include "../rtmath/ddscat/shapefile.h"
-#include "../rtmath/hash.h"
+#include <Ryan_Debug/hash.h>
 #include "../rtmath/ddscat/ddpar.h"
 
 namespace {
