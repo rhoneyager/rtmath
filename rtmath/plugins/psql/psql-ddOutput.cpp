@@ -89,7 +89,7 @@ namespace rtmath
 				const std::string &paramName,
 				const T lower, const T upper)
 			{
-				RTthrow(debug::xUpcast());
+				RDthrow(debug::xUpcast());
 			}
 
 			template<> void makeStrNumRange<float>(std::ostringstream &squery,
@@ -259,7 +259,7 @@ namespace rtmath
 							squery << "'" << m.at(*it) << "'";
 							numQ++;
 						}
-						else RTthrow(debug::xMissingHash())
+						else RDthrow(debug::xMissingHash())
 							<< debug::hash(*it);
 					}
 					squery << ") ";

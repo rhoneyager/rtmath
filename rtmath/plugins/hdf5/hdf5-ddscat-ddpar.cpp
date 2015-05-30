@@ -20,7 +20,7 @@
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "plugin-hdf5.h"
@@ -67,7 +67,7 @@ namespace rtmath {
 					cdiels[i] = diels[i].c_str();
 				addAttr<size_t, Group>(grpPar, "NCOMP", diels.size());
 				addDatasetArray<const char*, Group>(grpPar, "Dielectrics", cdiels.size(), 1, cdiels.data());
-				std::vector<HASH_t> dielhashes;
+				std::vector<Ryan_Debug::hash::HASH_t> dielhashes;
 				r->getDielHashes(dielhashes);
 				std::vector<uint64_t> cdielhashes(dielhashes.size()*2);
 				for (size_t i=0; i<dielhashes.size(); ++i)

@@ -17,7 +17,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include "plugin-hdf5.h"
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
@@ -29,7 +29,7 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
-			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
+			std::shared_ptr<H5::Group> write_hdf5_shaperawdata(std::shared_ptr<H5::Group> base,
 				const boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile > shp)
 			{
 				using std::shared_ptr;
@@ -59,15 +59,15 @@ namespace rtmath {
 #endif
 
 					// Create a dataspace describing the dataset size
-					hsize_t fDimBasic[] = {shp->numPoints, 3};
-					DataSpace fspacePts( 2, fDimBasic );
+					hsize_t fDimBasic[] = { shp->numPoints, 3 };
+					DataSpace fspacePts(2, fDimBasic);
 					// Write the entire dataset (no hyperslabs necessary)
-					shared_ptr<DataSet> latticePts(new DataSet(shpraw->createDataSet("latticePts", PredType::NATIVE_INT, 
+					shared_ptr<DataSet> latticePts(new DataSet(shpraw->createDataSet("latticePts", PredType::NATIVE_INT,
 						fspacePts, plist_3)));
 					Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> latticePtsInt = shp->latticePts.cast<int>();
 					latticePts->write(latticePtsInt.data(), PredType::NATIVE_INT);
 
-					shared_ptr<DataSet> latticePtsRi(new DataSet(shpraw->createDataSet("latticePtsRi", PredType::NATIVE_INT, 
+					shared_ptr<DataSet> latticePtsRi(new DataSet(shpraw->createDataSet("latticePtsRi", PredType::NATIVE_INT,
 						fspacePts, plist_3)));
 					Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> latticePtsRiInt = shp->latticePtsRi.cast<int>();
 					latticePtsRi->write(latticePtsRiInt.data(), PredType::NATIVE_INT);
@@ -82,9 +82,9 @@ namespace rtmath {
 					//Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> latticePtsNormRow(shp->latticePtsNorm);
 					//latticePtsNorm->write(latticePtsNormRow.data(), PredType::NATIVE_FLOAT);
 
-					hsize_t fDimBasic1[] = {shp->numPoints};
-					DataSpace fspacePts1( 1, fDimBasic1 );
-					shared_ptr<DataSet> latticePtsIndex(new DataSet(shpraw->createDataSet("latticePtsIndex", PredType::NATIVE_INT, 
+					hsize_t fDimBasic1[] = { shp->numPoints };
+					DataSpace fspacePts1(1, fDimBasic1);
+					shared_ptr<DataSet> latticePtsIndex(new DataSet(shpraw->createDataSet("latticePtsIndex", PredType::NATIVE_INT,
 						fspacePts1, plist_1)));
 					latticePtsIndex->write(shp->latticeIndex.data(), PredType::NATIVE_INT);
 
@@ -92,7 +92,7 @@ namespace rtmath {
 					shared_ptr<Group> shpextras(new Group(shpraw->createGroup("Extras")));
 					for (const auto& e : shp->latticeExtras)
 					{
-						hsize_t fDimExtra[] = { (hsize_t) e.second->rows(), (hsize_t) e.second->cols()};
+						hsize_t fDimExtra[] = { (hsize_t)e.second->rows(), (hsize_t)e.second->cols() };
 						DSetCreatPropList plist;
 						plist.setFillValue(PredType::NATIVE_INT, &fillvalue);
 						// Enable compression
@@ -115,9 +115,9 @@ namespace rtmath {
 						//}
 						//int dimensionality = (fDimExtra[1] == 1) ? 1 : 2;
 						int dimensionality = 2;
-						DataSpace fDimExtraSpace( dimensionality, fDimExtra );
+						DataSpace fDimExtraSpace(dimensionality, fDimExtra);
 
-						shared_ptr<DataSet> data(new DataSet(shpextras->createDataSet(e.first.c_str(), PredType::NATIVE_FLOAT, 
+						shared_ptr<DataSet> data(new DataSet(shpextras->createDataSet(e.first.c_str(), PredType::NATIVE_FLOAT,
 							fDimExtraSpace, plist)));
 						// Store in row-major form temporarily for proper output to hdf5
 						Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> outmatrix(*(e.second));
@@ -128,9 +128,9 @@ namespace rtmath {
 
 					// Write the dielectric information
 					{
-						hsize_t fDielsSize[] = {shp->Dielectrics.size()};
-						DataSpace fDielsSpace( 1, fDielsSize );
-						shared_ptr<DataSet> diels(new DataSet(shpraw->createDataSet("Dielectrics", PredType::NATIVE_ULLONG, 
+						hsize_t fDielsSize[] = { shp->Dielectrics.size() };
+						DataSpace fDielsSpace(1, fDielsSize);
+						shared_ptr<DataSet> diels(new DataSet(shpraw->createDataSet("Dielectrics", PredType::NATIVE_ULLONG,
 							fDielsSpace)));
 						std::vector<size_t> vd(shp->Dielectrics.begin(), shp->Dielectrics.end());
 						diels->write(vd.data(), PredType::NATIVE_ULLONG);
@@ -200,17 +200,18 @@ namespace rtmath {
 				}
 				catch (H5::Exception &e)
 				{
-					std::cerr  << e.getCDetailMsg() << std::endl;
+					std::cerr << e.getCDetailMsg() << std::endl;
 					throw e;
 				}
 				return shpraw;
 			}
 
-			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
+			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base,
 				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> &shp);
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using std::shared_ptr;

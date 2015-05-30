@@ -194,7 +194,7 @@ namespace rtmath {
 			read_file_type_multi<rtmath::ddscat::shapefile::shapefile>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::shapefile::shapefile> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::shapefile::shapefile> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -209,13 +209,13 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow(debug::xMissingKey())
+			if (!grpHashes) RDthrow(debug::xMissingKey())
 				<< debug::key("Hashed")
 				<< debug::hash(key);
 
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-			if (!grpShape) RTthrow(debug::xMissingFile())
+			if (!grpShape) RDthrow(debug::xMissingFile())
 				<< debug::key("Shape")
 				<< debug::hash(key);
 			read_hdf5_shaperawdata(grpShape, s);
@@ -230,7 +230,7 @@ namespace rtmath {
 			read_file_type_vector<rtmath::ddscat::shapefile::shapefile>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::shapefile::shapefile> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::shapefile::shapefile> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);

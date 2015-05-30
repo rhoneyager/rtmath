@@ -229,7 +229,7 @@ namespace rtmath {
 					r->setPlane(i+1,phi,thetan_min,thetan_max,dtheta);
 				}
 				if ((size_t) planes.rows() != numPlanesCheck)
-					RTthrow(rtmath::debug::xAssert())
+					RDthrow(rtmath::debug::xAssert())
 						<< rtmath::debug::otherErrorText("Bad number of planes check when reading hdf5 ddpar");
 
 				//return grpRot;
@@ -248,7 +248,7 @@ namespace rtmath {
 			read_file_type_multi<rtmath::ddscat::ddPar>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<rtmath::ddscat::ddPar > s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -266,7 +266,7 @@ namespace rtmath {
 			if (!grpHashes) return h;
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-			if (!grpShape) RTthrow(debug::xMissingHash())
+			if (!grpShape) RDthrow(debug::xMissingHash())
 				<< debug::hash(key);
 			read_hdf5_ddPar(grpShape, s);
 			/*
@@ -299,9 +299,9 @@ namespace rtmath {
 			read_file_type_vector<rtmath::ddscat::ddPar>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
-			RTthrow(debug::xUnimplementedFunction());
+			RDthrow(debug::xUnimplementedFunction());
 			return sh;
 		}
 	}

@@ -40,7 +40,7 @@ namespace rtmath {
 			//void write_hdf5_ddOutput(const char* filename,
 			//	const rtmath::ddscat::ddOutput*);
 
-			struct hdf5_handle : public rtmath::registry::IOhandler
+			struct hdf5_handle : public Ryan_Debug::registry::IOhandler
 			{
 				hdf5_handle(const char* filename, IOtype t);
 				virtual ~hdf5_handle() {}

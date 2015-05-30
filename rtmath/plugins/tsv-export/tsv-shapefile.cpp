@@ -41,10 +41,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow(debug::xOtherError());
+						RDthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -86,7 +86,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_shp_handle>(new tsv_shp_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID) RTthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID) RDthrow(debug::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_shp_handle>(sh);
 				}
 
@@ -119,7 +119,7 @@ namespace rtmath {
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "shape_data") return ::rtmath::plugins::tsv::export_tsv_shape_data(sh, opts, s);
-			else { RTthrow(debug::xUnimplementedFunction()); }
+			else { RDthrow(debug::xUnimplementedFunction()); }
 			return nullptr;
 		}
 

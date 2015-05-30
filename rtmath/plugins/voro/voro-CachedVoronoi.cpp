@@ -21,12 +21,19 @@
 //#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "voro-CachedVoronoi.h"
 //#include "../../rtmath/rtmath/Voronoi/CachedVoronoi.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 //#include "voro-Voronoi.h"
-
+#include <Ryan_Debug/logging.h>
+#include <boost/log/sources/global_logger_storage.hpp>
 #undef min
 #undef max
-
+namespace {
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+		m_voro,
+		boost::log::sources::severity_channel_logger_mt< >,
+		(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "voronoi"))
+		;
+}
 namespace rtmath
 {
 	namespace plugins {
@@ -118,6 +125,8 @@ namespace rtmath
 			void VoroCachedVoronoi::regenerateCache(size_t numPoints)
 			{
 				if (!vc) return;
+				auto& lg = m_voro::get();
+
 				// Iterate over cells and store cell information 
 				// (prevents constant recalculations)
 				using namespace boost::interprocess;
@@ -136,7 +145,8 @@ namespace rtmath
 					double r;
 					cl.pos(id, pos(0), pos(1), pos(2), r); // getting id directly into field would be problematic
 
-					if (id % 1000 == 0) std::cerr << id << "\n";
+					if (id % 1000 == 0) 
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Processing using vc->compute_cell for cell " << id;
 
 					auto od = tblDoubles->block<1, CachedVoronoi::NUM_CELL_DEFS_DOUBLES>(id, 0);
 					auto oi = tblInts->block<1, CachedVoronoi::NUM_CELL_DEFS_INTS>(id, 0);

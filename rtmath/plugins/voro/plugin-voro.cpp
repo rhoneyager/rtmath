@@ -9,22 +9,25 @@
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 #include "voro-Voronoi.h"
 
 #include "plugin-voro.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::voro;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-voro",
 		"Provides voronoi diagram generation",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	//genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
 	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
@@ -40,4 +43,5 @@ void dllEntry()
 
 	doRegisterHook<rtmath::Voronoi::VoronoiDiagram, ::rtmath::Voronoi::Voronoi_provider_registry,
 		::rtmath::Voronoi::Voronoi_provider >(reg_Voronoi);
+	return SUCCESS;
 }

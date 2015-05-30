@@ -7,6 +7,7 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include <Ryan_Debug/registry.h>
 #include "../../rtmath/rtmath/error/debug.h"
 
 #define PLUGINID "694928E5-D4C1-4463-B2D1-3B10EFBFB15B"
@@ -23,7 +24,7 @@ namespace rtmath {
 	namespace plugins {
 		namespace vtk {
 
-			struct vtk_xml_s_handle : public rtmath::registry::IOhandler
+			struct vtk_xml_s_handle : public Ryan_Debug::registry::IOhandler
 			{
 				vtk_xml_s_handle(const char* filename, IOtype t);
 				virtual ~vtk_xml_s_handle() {}

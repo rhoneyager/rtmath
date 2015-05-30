@@ -19,7 +19,7 @@
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include "plugin-hdf5.h"
 // These go last, as they do odd stuff to definitions.
@@ -39,13 +39,13 @@ namespace rtmath {
 					for (size_t row = 0; row < (size_t)mat.rows(); ++row)
 						for (size_t col = 0; col < (size_t)mat.cols(); ++col)
 						{
-						mat(row, col) = src(irow, i);
-						++i;
+							mat(row, col) = src(irow, i);
+							++i;
 						}
 				}
 			}
 
-			bool read_hdf5_statsrawdata(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts,
+			bool read_hdf5_statsrawdata(std::shared_ptr<H5::Group> base, std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
 				boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats > r)
 			{
 				using std::shared_ptr;
@@ -64,7 +64,7 @@ namespace rtmath {
 				else r->_currVersion = 4; // The version where this was added.
 
 				// Shape hash
-				HASH_t hash;
+				Ryan_Debug::hash::HASH_t hash;
 				readAttr<uint64_t, Group>(base, "Hash_Lower", hash.lower);
 				readAttr<uint64_t, Group>(base, "Hash_Upper", hash.upper);
 				boost::shared_ptr<::rtmath::ddscat::shapefile::shapefile> shp = shapefile::shapefile::generate();
@@ -94,7 +94,7 @@ namespace rtmath {
 					/// \todo Add a name field for the volumetric class
 					/// \see shapeFileStatsBase::volumetric
 					/// \todo change volumetric to be contained in a map
-					struct vdata { 
+					struct vdata {
 						const char* name;
 						float V, SA, aeff_SA, aeff_V, f;
 					};
@@ -102,7 +102,7 @@ namespace rtmath {
 					const size_t nMeths = 8;
 					// Names must match writer
 					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
-						"Voronoi_Hull", "Ellipsoid_Max", 
+						"Voronoi_Hull", "Ellipsoid_Max",
 						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
 						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
 						"Circum_circle_proj_y", "Circum_circle_proj_z",
@@ -139,8 +139,8 @@ namespace rtmath {
 						string name(d.name);
 						if (name == string(names[0])) v = &(r->Scircum_sphere);
 						else if (name == string(names[1])) v = &(r->Sconvex_hull);
-						else if(name == string(names[2])) v = &(r->SVoronoi_hull);
-						else if(name == string(names[3])) v = &(r->Sellipsoid_max);
+						else if (name == string(names[2])) v = &(r->SVoronoi_hull);
+						else if (name == string(names[3])) v = &(r->Sellipsoid_max);
 						else if (name == string(names[4])) v = &(r->Srms_sphere);
 						else if (name == string(names[5])) v = &(r->Sgyration);
 						else if (name == string(names[6])) v = &(r->Ssolid);
@@ -157,7 +157,7 @@ namespace rtmath {
 						else if (name == string(names[17])) v = &(r->Sarea_circle_proj_x);
 						else if (name == string(names[18])) v = &(r->Sarea_circle_proj_y);
 						else if (name == string(names[19])) v = &(r->Sarea_circle_proj_z);*/
-						else RTthrow(debug::xUnimplementedFunction());
+						else RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 
 						v->V = d.V;
 						v->SA = d.SA;
@@ -165,7 +165,7 @@ namespace rtmath {
 						v->aeff_V = d.aeff_V;
 						v->f = d.f;
 					}
-					
+
 				}
 
 				// Rotations
@@ -181,7 +181,7 @@ namespace rtmath {
 					readDatasetEigen(grpRotations, "Matrices", tblMatrices);
 					readDatasetEigen(grpRotations, "Vectors", tblVectors);
 
-					
+
 					// Matrix and vector tables get written out also as arrays
 					const size_t matSize = 9 * rotColDefs::NUM_MATRIXDEFS;
 					const size_t vecSize = 4 * rotColDefs::NUM_VECTORDEFS;
@@ -198,7 +198,7 @@ namespace rtmath {
 							tbl[j] = tblBasic(i, j);
 						if (tblBasic.cols() < 4) tbl[3] = 4; // Version tag added in version 5, 
 						// so this is version 4 (when the hdf5 plugin was first implemented).
-						
+
 						devectorize(tblMatrices, mat, i);
 						devectorize(tblVectors, vec, i);
 
@@ -212,7 +212,8 @@ namespace rtmath {
 			}
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using std::shared_ptr;
@@ -224,7 +225,7 @@ namespace rtmath {
 			read_file_type_multi<rtmath::ddscat::stats::shapeFileStats>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats > s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> >)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> >)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -241,15 +242,15 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow(debug::xMissingKey())
-				<< debug::key("Hashed")
-				<< debug::hash(key);
+			if (!grpHashes) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key("Hashed")
+				<< Ryan_Debug::error::hash(key);
 
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpStats = openGroup(grpHash, "Stats");
-			if (!grpStats) RTthrow(debug::xMissingKey())
-				<< debug::key("Hashed")
-				<< debug::hash(key);
+			if (!grpStats) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key("Hashed")
+				<< Ryan_Debug::error::hash(key);
 			read_hdf5_statsrawdata(grpStats, opts, s);
 
 			return h;
@@ -260,7 +261,7 @@ namespace rtmath {
 			read_file_type_vector<rtmath::ddscat::stats::shapeFileStats>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);

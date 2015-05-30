@@ -30,7 +30,7 @@ namespace rtmath
 				out << PQerrorMessage(connection.get()) << std::endl;
 				BOOST_LOG_SEV(lg, debug::error) << out.str();
 
-				RTthrow(debug::xOtherError());
+				RDthrow(debug::xOtherError());
 			}
 
 			void psql_handle::handle_error(ExecStatusType status) const
@@ -39,7 +39,7 @@ namespace rtmath
 				out << "psql library execution error " << status << std::endl;
 				out << PQerrorMessage(connection.get()) << std::endl;
 				BOOST_LOG_SEV(lg, debug::error) << out.str();
-				RTthrow(debug::xOtherError());
+				RDthrow(debug::xOtherError());
 			}
 
 			void psql_handle::handle_error(const char* err) const
@@ -47,7 +47,7 @@ namespace rtmath
 				std::ostringstream out;
 				out << "psql library execution error: " << err << std::endl;
 				BOOST_LOG_SEV(lg, debug::error) << out.str();
-				RTthrow(debug::xOtherError());
+				RDthrow(debug::xOtherError());
 			}
 
 			std::string psql_handle::escString(const std::string &in)

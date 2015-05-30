@@ -65,10 +65,10 @@ namespace rtmath
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow(debug::xOtherError());
+						RDthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -101,7 +101,7 @@ namespace rtmath
 			{
 				size_t numPass = opts->getVal<size_t>("pass", 0);
 				if (numPass > (size_t) s->sweep_start_ray_index.rows() && numPass > (size_t) s->sweep_start_ray_index.cols())
-					RTthrow(debug::xArrayOutOfBounds());
+					RDthrow(debug::xArrayOutOfBounds());
 				int startIndex = s->sweep_start_ray_index(numPass);
 				int endIndex = s->sweep_end_ray_index(numPass);
 				int span = endIndex - startIndex;
@@ -174,13 +174,13 @@ namespace rtmath
 			std::shared_ptr<tsv_sacr_reflectivity_handle> h;
 			if (!sh) h = std::shared_ptr<tsv_sacr_reflectivity_handle>(new tsv_sacr_reflectivity_handle(filename.c_str(), iotype));
 			else {
-				if (sh->getId() != PLUGINID_SACR_REFL) RTthrow(debug::xDuplicateHook());
+				if (sh->getId() != PLUGINID_SACR_REFL) RDthrow(debug::xDuplicateHook());
 				h = std::dynamic_pointer_cast<tsv_sacr_reflectivity_handle>(sh);
 			}
 
 			if (exporttype == "reflectivity_angscaled")
 			{
-				RTthrow(debug::xUnimplementedFunction());
+				RDthrow(debug::xUnimplementedFunction());
 				//write_sacr_reflectivity(h, opts, s);
 			} else if (exporttype == "reflectivity")
 			{

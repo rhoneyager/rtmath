@@ -48,7 +48,7 @@
 
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include "plugin-vtk.h"
 namespace rtmath

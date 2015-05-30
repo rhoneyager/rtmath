@@ -160,7 +160,7 @@ namespace rtmath
 					h = std::shared_ptr<netcdf_handle>(new netcdf_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+					if (sh->getId() != PLUGINID) RDthrow debug::xDuplicateHook("Bad passed plugin");
 					h = std::dynamic_pointer_cast<netcdf_handle>(sh);
 				}
 
@@ -251,9 +251,9 @@ namespace rtmath
 								astr = getAttrString("zeb_platform", NC_GLOBAL);
 								subsiteLoc = astr.find(s->subsite);
 								if (subsiteLoc == string::npos) 
-									RTthrow debug::xBadInput(filename.c_str());
+									RDthrow debug::xBadInput(filename.c_str());
 							} else {
-								RTthrow debug::xBadInput(filename.c_str());
+								RDthrow debug::xBadInput(filename.c_str());
 							}
 						auto pstart = astr.rfind('/', subsiteLoc);
 						if (pstart == string::npos)
@@ -300,7 +300,7 @@ namespace rtmath
 						// or mfrcdl_ingest.c,v 1.27 (note the old prodct name...)
 						// The goal is to pull out enough matching information
 						auto firstUnderscore = astr.find('_');
-						if (firstUnderscore == string::npos) RTthrow debug::xBadInput(astr.c_str());
+						if (firstUnderscore == string::npos) RDthrow debug::xBadInput(astr.c_str());
 						//string pcand = astr.substr(0, firstUnderscore);
 						// The product is the part of pcand that matches s->productFull.
 						size_t i = 0;
@@ -340,7 +340,7 @@ namespace rtmath
 						s->product = astr.substr(plastslash, pspace-plastslash);
 						// No stream in this fall-through case
 					} else {
-						RTthrow debug::xArrayOutOfBounds();
+						RDthrow debug::xArrayOutOfBounds();
 					}
 					
 				}
@@ -387,7 +387,7 @@ namespace rtmath
 			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_info> > &s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
-			RTthrow(debug::xUnimplementedFunction());
+			RDthrow(debug::xUnimplementedFunction());
 			return sh;
 		}
 	}

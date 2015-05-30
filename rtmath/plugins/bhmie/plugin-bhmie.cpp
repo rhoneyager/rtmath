@@ -165,7 +165,7 @@ namespace rtmath
 				} catch (...) {
 					std::cerr << "A bhmie error has occurred" << std::endl;
 					//std::cerr << t.what() << std::endl;
-					RTthrow rtmath::debug::xOtherError();
+					RDthrow rtmath::debug::xOtherError();
 				}
 			}
 			*/

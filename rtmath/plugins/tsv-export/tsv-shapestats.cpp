@@ -42,10 +42,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow(debug::xOtherError());
+						RDthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -99,7 +99,7 @@ namespace rtmath {
 			std::string exporttype = opts->exportType();
 			if (exporttype == "ar_rot_data") return ::rtmath::plugins::tsv::export_tsv_ar_rot_data(sh, opts, s);
 			else if (exporttype == "summary_data") return ::rtmath::plugins::tsv::export_tsv_summary_data(sh, opts, s);
-			else { RTthrow(debug::xUnimplementedFunction()); }
+			else { RDthrow(debug::xUnimplementedFunction()); }
 			return nullptr;
 		}
 

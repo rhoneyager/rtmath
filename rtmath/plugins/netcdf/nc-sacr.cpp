@@ -112,7 +112,7 @@ namespace rtmath
 			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_scanning_radar_sacr> > &s,
 			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> >)
 		{
-			RTthrow(debug::xUnimplementedFunction());
+			RDthrow(debug::xUnimplementedFunction());
 			return sh;
 		}
 	}

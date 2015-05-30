@@ -21,14 +21,14 @@
 
 #include "plugin-hdf5.h"
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
+#include <Ryan_Debug/cmake-settings.h>
 #include "cmake-settings.h"
 
 #include <hdf5.h>
 #include <H5Cpp.h>
 
-
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
 namespace rtmath {
 	namespace plugins {
@@ -70,15 +70,17 @@ namespace rtmath {
 }
 
 
-void dllEntry()
+
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::hdf5;
 	static const DLLpreamble id(
 		"Plugin-HDF5",
 		"Plugin that provides HDF5 io routines for various classes.",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 #if COMPRESS_ZLIB
 	useZLIB(true);
@@ -108,4 +110,5 @@ void dllEntry()
 		::rtmath::Voronoi::Voronoi_IO_input_registry>("hdf5", PLUGINID);
 	//genAndRegisterIOregistry_reader<::rtmath::phaseFuncs::pfRunSetContainer,
 	//	::rtmath::phaseFuncs::pfRunSetContainer_IO_input_registry>("hdf5", PLUGINID);
+	return SUCCESS;
 }

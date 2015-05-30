@@ -17,7 +17,7 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "../../rtmath/rtmath/plugin.h"
 
@@ -41,16 +41,16 @@ namespace rtmath {
 					for (size_t row = 0; row < (size_t)mat.rows(); ++row)
 						for (size_t col = 0; col < (size_t)mat.cols(); ++col)
 						{
-						arr(r, i) = mat(row, col);
-						++i;
+							arr(r, i) = mat(row, col);
+							++i;
 						}
 				}
 			}
-			
+
 
 
 			/// \param base is the base to write the subgroups to. From here, "./Stats" is the root of the routine's output.
-			std::shared_ptr<H5::Group> write_hdf5_statsrawdata(std::shared_ptr<H5::Group> base, 
+			std::shared_ptr<H5::Group> write_hdf5_statsrawdata(std::shared_ptr<H5::Group> base,
 				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats > s)
 			{
 				using std::shared_ptr;
@@ -82,7 +82,7 @@ namespace rtmath {
 
 
 				addAttr<int, Group>(statsraw, "shapeFileStats_version", s->_currVersion);
-				
+
 				// The full hash
 				addAttr<uint64_t, Group>(statsraw, "Hash_Lower", s->_shp->hash().lower);
 				addAttr<uint64_t, Group>(statsraw, "Hash_Upper", s->_shp->hash().upper);
@@ -112,7 +112,7 @@ namespace rtmath {
 
 					const size_t nMeths = 8;
 					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
-						"Voronoi_Hull", "Ellipsoid_Max", 
+						"Voronoi_Hull", "Ellipsoid_Max",
 						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
 						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
 						"Circum_circle_proj_y", "Circum_circle_proj_z",
@@ -123,7 +123,7 @@ namespace rtmath {
 						"Sarea_circle_proj_z"*/ };
 
 					std::array<vdata, nMeths> data;
-					size_t i=0;
+					size_t i = 0;
 					auto writeIndex = [&](const rtmath::ddscat::stats::shapeFileStatsBase::volumetric &v)
 					{
 						data[i].name = names[i]; data[i].V = v.V; data[i].SA = v.SA;
@@ -207,7 +207,7 @@ namespace rtmath {
 					auto dBasic = addDatasetEigen(grpRotations, "Basic", tblBasic, make_plist(rows, rotColDefs::NUM_ROTDEFS_FLOAT));
 					auto dMats = addDatasetEigen(grpRotations, "Matrices", tblMatrices, make_plist(rows, matSize));
 					auto dVecs = addDatasetEigen(grpRotations, "Vectors", tblVectors, make_plist(rows, vecSize));
-					
+
 					addColNames(dBasic, rotColDefs::NUM_ROTDEFS_FLOAT, rotColDefs::stringifyBasic);
 					addColNames(dMats, 9 * rotColDefs::NUM_MATRIXDEFS, rotColDefs::stringifyMatrix, 9, 3);
 					addColNames(dVecs, 4 * rotColDefs::NUM_VECTORDEFS, rotColDefs::stringifyVector, 4);
@@ -218,7 +218,8 @@ namespace rtmath {
 
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using std::shared_ptr;

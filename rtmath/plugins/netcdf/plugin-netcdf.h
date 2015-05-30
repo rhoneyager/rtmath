@@ -68,7 +68,7 @@ namespace rtmath {
 			std::pair<bool, int> VarExists(int ncid, const char* varname);
 
 			template <class DataType>
-			int getNCvar(int ncid, int varid, DataType *) { RTthrow(debug::xFallbackTemplate()); }
+			int getNCvar(int ncid, int varid, DataType *) { RDthrow(debug::xFallbackTemplate()); }
 
 			template<> int getNCvar<double>(int ncid, int varid, double* res);
 			template<> int getNCvar<float>(int ncid, int varid, float* res);
@@ -84,21 +84,21 @@ namespace rtmath {
 					int status = 0;
 					int parentId = h->file;
 					int varid = 0;
-					if (!VarExists(parentId, name).first) RTthrow(debug::xMissingVariable())
+					if (!VarExists(parentId, name).first) RDthrow(debug::xMissingVariable())
 						<< debug::otherErrorText("Variable (see symbolName) does not exist");
 					status = nc_inq_varid(parentId, name, &varid);
 					if (status) h->handle_error(status);
 					nc_type vartype;
 					status = nc_inq_vartype(parentId, varid, &vartype);
 					if (status) h->handle_error(status);
-					if (!AttrMatches<DataType>(vartype)) RTthrow(debug::xTypeMismatch())
+					if (!AttrMatches<DataType>(vartype)) RDthrow(debug::xTypeMismatch())
 						<< debug::otherErrorText("Variable (see symbolName) has the wrong data type.");
 
 					int ndims = 0;
 					status = nc_inq_varndims(parentId, varid, &ndims);
 
 					if (status) h->handle_error(status);
-					if (ndims < 0 || ndims > 2) RTthrow(debug::xDimensionMismatch())
+					if (ndims < 0 || ndims > 2) RDthrow(debug::xDimensionMismatch())
 						<< debug::otherErrorText("Variable (in symbolName) has the wrong number of dimensions.")
 						<< debug::otherErrorCode(ndims);
 

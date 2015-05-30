@@ -22,16 +22,16 @@
 #include <Ryan_Debug/debug.h>
 //#include <Ryan_Serialization/serialization.h>
 #include <string>
-#include "../../rtmath/rtmath/hash.h"
+#include <Ryan_Debug/hash.h>
 #include "../../rtmath/rtmath/depGraph.h"
 #include "plugin-voro.h"
 #include "voro-CachedVoronoi.h"
 #include "voro-Voronoi.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/Voronoi/CachedVoronoi.h"
-#include "../../rtmath/rtmath/Serialization/Serialization.h"
+#include <Ryan_Debug/Serialization.h>
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 namespace {
 	// Golden ratio constants

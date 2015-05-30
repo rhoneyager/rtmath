@@ -12,30 +12,20 @@
 
 #include "plugin-vtk.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
-namespace rtmath
+
+D_Ryan_Debug_start()
 {
-	namespace plugins
-	{
-		namespace vtk
-		{
-
-		}
-	}
-}
-
-
-void dllEntry()
-{
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::vtk;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-vtk",
 		"Provides hull generation, image processing, and file i/o.",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	//genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
 	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
@@ -60,5 +50,5 @@ void dllEntry()
 
 	//genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile,
 	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("vts", PLUGINID);
-
+	return SUCCESS;
 }

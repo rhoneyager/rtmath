@@ -41,7 +41,7 @@ namespace rtmath
 					{
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
-						RTthrow(debug::xUnimplementedFunction());
+						RDthrow(debug::xUnimplementedFunction());
 						break;
 					case IOtype::READONLY:
 					{
@@ -60,7 +60,7 @@ namespace rtmath
 						break;
 					case IOtype::CREATE:
 						if (boost::filesystem::exists(boost::filesystem::path(filename)))
-							RTthrow(debug::xFileExists())
+							RDthrow(debug::xFileExists())
 							<< debug::file_name(filename);
 					case IOtype::TRUNCATE:
 					{
@@ -77,13 +77,13 @@ namespace rtmath
 						<< "\tFilename: " << filename << "\n"
 						<< "\tIOtype: " << t << std::endl;
 					boost::throw_exception(e);
-					//RTthrow e;
+					//RDthrow e;
 				}
 			}
 
 			void netcdf_handle::handle_error(int status)
 			{
-				RTthrow(debug::xOtherError())
+				RDthrow(debug::xOtherError())
 					<< debug::otherErrorCode(status)
 					<< debug::otherErrorText("netcdf library error");
 			}

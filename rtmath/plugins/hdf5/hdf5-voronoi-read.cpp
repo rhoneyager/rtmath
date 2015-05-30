@@ -18,7 +18,8 @@
 #include "../../rtmath/rtmath/Voronoi/CachedVoronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/error.h>
 
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "plugin-hdf5.h"
@@ -34,7 +35,7 @@ namespace rtmath {
 
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
 			std::shared_ptr<H5::Group> read_hdf5_voro(std::shared_ptr<H5::Group> base,
-				std::shared_ptr<rtmath::registry::IO_options> opts,
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
 				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram > s)
 			{
 				using std::shared_ptr;
@@ -51,7 +52,7 @@ namespace rtmath {
 				if (attrExists(base, "pluginId"))
 					readAttr<string, Group>(base, "pluginId", s->pluginId);
 
-				HASH_t hash;
+				Ryan_Debug::hash::HASH_t hash;
 				readAttr<uint64_t, Group>(base, "Hash_lower", hash.lower);
 				readAttr<uint64_t, Group>(base, "Hash_upper", hash.upper);
 				s->setHash(hash);
@@ -66,7 +67,7 @@ namespace rtmath {
 				s->src = src;
 
 				// Store the precalced objects
-				shared_ptr<Group> grpcache(openGroup(base,"Voronoi_Cache"));
+				shared_ptr<Group> grpcache(openGroup(base, "Voronoi_Cache"));
 				hsize_t sz = grpcache->getNumObjs();
 				for (hsize_t i = 0; i < sz; ++i)
 				{
@@ -131,7 +132,7 @@ namespace rtmath {
 					else {
 						for (size_t r = 0; r < (size_t)resb.rows(); ++r)
 						{
-							res->block<1,3>(r, 0) = src->block<1, 3>((int)resb(r, 0), 0);
+							res->block<1, 3>(r, 0) = src->block<1, 3>((int)resb(r, 0), 0);
 						}
 					}
 
@@ -146,6 +147,8 @@ namespace rtmath {
 		}
 	}
 
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using std::shared_ptr;
@@ -157,7 +160,7 @@ namespace rtmath {
 			read_file_type_multi<rtmath::Voronoi::VoronoiDiagram>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram > s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> >)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> >)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -174,20 +177,20 @@ namespace rtmath {
 			
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow(debug::xMissingKey())
-				<< debug::key("Hashed")
-				<< debug::hash(key);
+			if (!grpHashes) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key("Hashed")
+				<< Ryan_Debug::error::hash(key);
 			shared_ptr<Group> grpHash = openGroup(grpHashes, hash.c_str());
-			if (!grpHash) RTthrow(debug::xMissingHash())
-				<< debug::key("Hashed")
-				<< debug::hash(key);
+			if (!grpHash) RDthrow(Ryan_Debug::error::xMissingHash())
+				<< Ryan_Debug::error::key("Hashed")
+				<< Ryan_Debug::error::hash(key);
 			shared_ptr<Group> grpVoro = openGroup(grpHash, "Voronoi");
-			if (!grpVoro) RTthrow(debug::xMissingKey())
-				<< debug::key("Voronoi")
-				<< debug::hash(key);
+			if (!grpVoro) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key("Voronoi")
+				<< Ryan_Debug::error::hash(key);
 			shared_ptr<Group> grpKey = openGroup(grpVoro, key.c_str());
-			if (!grpKey) RTthrow(debug::xMissingKey())
-				<< debug::key(key);
+			if (!grpKey) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key(key);
 			read_hdf5_voro(grpKey, opts, s);
 
 			return h;
@@ -198,7 +201,7 @@ namespace rtmath {
 			read_file_type_vector<rtmath::Voronoi::VoronoiDiagram>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::Voronoi::VoronoiDiagram> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);

@@ -48,10 +48,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow(debug::xOtherError());
+						RDthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();

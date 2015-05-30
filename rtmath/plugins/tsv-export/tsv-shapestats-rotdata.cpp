@@ -61,10 +61,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RTthrow(debug::xOtherError());
+						RDthrow(debug::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RTthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(debug::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -110,7 +110,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_ar_handle>(new tsv_ar_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_ARS) RTthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID_ARS) RDthrow(debug::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ar_handle>(sh);
 				}
 

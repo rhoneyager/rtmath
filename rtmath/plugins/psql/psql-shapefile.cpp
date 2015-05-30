@@ -180,7 +180,7 @@ namespace rtmath
 							if (it != v.begin()) squery << ", ";
 							squery << "'" << m.at(*it) << "'";
 							numQ++;
-						} else RTthrow(debug::xMissingHash())
+						} else RDthrow(debug::xMissingHash())
 							<< debug::hash(*it);
 					}
 					squery << ") ";

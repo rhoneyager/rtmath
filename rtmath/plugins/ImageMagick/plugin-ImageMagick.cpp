@@ -6,11 +6,13 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/images/image.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-ImageMagick.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
 namespace rtmath
 {
@@ -31,7 +33,7 @@ namespace rtmath
 				case IOtype::READWRITE:
 				case IOtype::EXCLUSIVE:
 				case IOtype::DEBUG:
-					RTthrow(debug::xUnimplementedFunction());
+					RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 					break;
 				case IOtype::READONLY:
 				case IOtype::CREATE:
@@ -45,14 +47,16 @@ namespace rtmath
 }
 
 
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
-	static const rtmath::registry::DLLpreamble id(
+	using namespace Ryan_Debug::registry;
+	using namespace rtmath::plugins::ImageMagick;
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-ImageMagick",
 		"Provides ImageMagick IO for reading and writing images",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	const size_t nExts = 5;
 	const char* exts[nExts] = { "png", "bmp", "jpg", "jpeg", "gif" };
@@ -65,4 +69,5 @@ void dllEntry()
 		<::rtmath::images::image,
 		rtmath::images::image_IO_input_registry>(
 		nExts, exts, PLUGINID);
+	return SUCCESS;
 }

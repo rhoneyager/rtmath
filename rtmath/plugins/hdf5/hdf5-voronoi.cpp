@@ -18,7 +18,7 @@
 #include "../../rtmath/rtmath/Voronoi/CachedVoronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
 #include "plugin-hdf5.h"
@@ -61,8 +61,8 @@ namespace rtmath {
 
 
 			/// \param base is the base to write the subgroups to. From here, "./Shape" is the root of the routine's output.
-			std::shared_ptr<H5::Group> write_hdf5_voro(std::shared_ptr<H5::Group> base, 
-				std::shared_ptr<rtmath::registry::IO_options> opts,
+			std::shared_ptr<H5::Group> write_hdf5_voro(std::shared_ptr<H5::Group> base,
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
 				const boost::shared_ptr<const rtmath::Voronoi::VoronoiDiagram > s)
 			{
 				using std::shared_ptr;
@@ -176,7 +176,8 @@ namespace rtmath {
 
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using std::shared_ptr;

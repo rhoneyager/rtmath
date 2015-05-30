@@ -23,7 +23,7 @@
 #include "../../rtmath/rtmath/ddscat/ddScattMatrix.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -37,17 +37,17 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
-			void write_hdf5_ddPar(std::shared_ptr<H5::Group> base, 
+			void write_hdf5_ddPar(std::shared_ptr<H5::Group> base,
 				const boost::shared_ptr<const rtmath::ddscat::ddPar > r);
-			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar, 
+			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
 				boost::shared_ptr<rtmath::ddscat::ddPar> &r);
 
-			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts,
+			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
 				boost::shared_ptr<rtmath::ddscat::ddOutput > r);
 
 			/// \param base is the base (./Runs) to write the subgroups to.
-			std::shared_ptr<H5::Group> write_hdf5_ddOutput(std::shared_ptr<H5::Group> base, 
-				std::shared_ptr<rtmath::registry::IO_options> opts, 
+			std::shared_ptr<H5::Group> write_hdf5_ddOutput(std::shared_ptr<H5::Group> base,
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
 				const boost::shared_ptr<const rtmath::ddscat::ddOutput > s)
 			{
 				using std::string;
@@ -113,7 +113,7 @@ namespace rtmath {
 				{
 					std::vector<string> srcs(s->sources.begin(), s->sources.end());
 					std::vector<const char*> csrcs(srcs.size());
-					for (size_t i = 0; i<srcs.size(); ++i)
+					for (size_t i = 0; i < srcs.size(); ++i)
 						csrcs[i] = srcs[i].c_str();
 					addAttr<size_t, Group>(gRun, "Num_Source_Paths", srcs.size());
 					addDatasetArray<const char*, Group>(gRun, "Sources", csrcs.size(), 1, csrcs.data());
@@ -121,7 +121,7 @@ namespace rtmath {
 				// Tags
 				{
 					addAttr<size_t, Group>(gRun, "Num_Tags", s->tags.size());
-					
+
 					const size_t nTagCols = 2;
 					typedef std::array<const char*, nTagCols> strdata;
 					std::vector<strdata> sdata(s->tags.size());
@@ -154,7 +154,7 @@ namespace rtmath {
 				if (writeORI && s->oridata_d.rows())
 				{
 					auto csd = addDatasetEigen(gRun, "Cross_Sections", (s->oridata_d), make_plist(s->oridata_d.rows(), 1));
-					addColNames(csd, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES, 
+					addColNames(csd, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES,
 						rtmath::ddscat::ddOutput::stat_entries::stringify);
 				}
 
@@ -174,7 +174,7 @@ namespace rtmath {
 						addAttr(avg, "phi_min", s->avgdata.phi_min);
 						addAttr(avg, "phi_max", s->avgdata.phi_max);
 						addAttr(avg, "phi_n", s->avgdata.phi_n);
-						
+
 					}
 				}
 
@@ -182,44 +182,44 @@ namespace rtmath {
 				// String table can't be compressed...
 				// This will be written as a compound datatype
 				{
-					typedef std::array<const char*, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_STRINGS> strdata;
-					std::vector<strdata> sdata(s->oridata_s.size());
-					for (size_t i = 0; i < s->oridata_s.size(); ++i)
-						for (size_t j = 0; j < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_STRINGS; ++j)
-						{
-						sdata.at(i).at(j) = s->oridata_s.at(i).at(j).c_str();
-						}
+				typedef std::array<const char*, rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_STRINGS> strdata;
+				std::vector<strdata> sdata(s->oridata_s.size());
+				for (size_t i = 0; i < s->oridata_s.size(); ++i)
+				for (size_t j = 0; j < rtmath::ddscat::ddOutput::stat_entries::NUM_STAT_ENTRIES_STRINGS; ++j)
+				{
+				sdata.at(i).at(j) = s->oridata_s.at(i).at(j).c_str();
+				}
 
 
-					hsize_t dim[1] = { static_cast<hsize_t>(s->oridata_s.size()) };
-					DataSpace space(1, dim);
-					// May have to cast array to a private structure
-					H5::StrType strtype(0, H5T_VARIABLE);
+				hsize_t dim[1] = { static_cast<hsize_t>(s->oridata_s.size()) };
+				DataSpace space(1, dim);
+				// May have to cast array to a private structure
+				H5::StrType strtype(0, H5T_VARIABLE);
 
-					CompType stringTableType(sizeof(strdata));
-					//#define HOFFSETORIG(TYPE, MEMBER) ((size_t) &((TYPE *)0)-> MEMBER)
-					
-					if (0) {
-					std::cerr << ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::TARGET) << " "
-						<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::DDAMETH) << " "
-						<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::CCGMETH) << " "
-						<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::SHAPE) << " "
-						<< sizeof(strdata) << " " 
-						<< (size_t) &(sdata[0]) - (size_t) sdata[0].data() << " " 
-						<< (size_t) &(sdata[1]) - (size_t)sdata[1].data() << " " 
-						<< (size_t) &(sdata[0].at(1)) - (size_t)&(sdata[0]) << " "
-						<< (size_t)&(sdata[0].at(2)) - (size_t)&(sdata[0]) << " "
-						<< (size_t)&(sdata[0].at(3)) - (size_t)&(sdata[0]) << " "
-						<< std::endl;
-					}
+				CompType stringTableType(sizeof(strdata));
+				//#define HOFFSETORIG(TYPE, MEMBER) ((size_t) &((TYPE *)0)-> MEMBER)
 
-					stringTableType.insertMember("TARGET", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::TARGET), strtype);
-					stringTableType.insertMember("DDAMETH", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::DDAMETH), strtype);
-					stringTableType.insertMember("CCGMETH", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::CCGMETH), strtype);
-					stringTableType.insertMember("SHAPE", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::SHAPE), strtype);
-					std::shared_ptr<DataSet> sdataset(new DataSet(gRun->createDataSet(
-						"Cross_Sections_s", stringTableType, space)));
-					sdataset->write(sdata.data(), stringTableType);
+				if (0) {
+				std::cerr << ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::TARGET) << " "
+				<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::DDAMETH) << " "
+				<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::CCGMETH) << " "
+				<< ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::SHAPE) << " "
+				<< sizeof(strdata) << " "
+				<< (size_t) &(sdata[0]) - (size_t) sdata[0].data() << " "
+				<< (size_t) &(sdata[1]) - (size_t)sdata[1].data() << " "
+				<< (size_t) &(sdata[0].at(1)) - (size_t)&(sdata[0]) << " "
+				<< (size_t)&(sdata[0].at(2)) - (size_t)&(sdata[0]) << " "
+				<< (size_t)&(sdata[0].at(3)) - (size_t)&(sdata[0]) << " "
+				<< std::endl;
+				}
+
+				stringTableType.insertMember("TARGET", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::TARGET), strtype);
+				stringTableType.insertMember("DDAMETH", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::DDAMETH), strtype);
+				stringTableType.insertMember("CCGMETH", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::CCGMETH), strtype);
+				stringTableType.insertMember("SHAPE", ARRAYOFFSET(strdata, rtmath::ddscat::ddOutput::stat_entries::SHAPE), strtype);
+				std::shared_ptr<DataSet> sdataset(new DataSet(gRun->createDataSet(
+				"Cross_Sections_s", stringTableType, space)));
+				sdataset->write(sdata.data(), stringTableType);
 				}
 				*/
 
@@ -235,11 +235,11 @@ namespace rtmath {
 				}
 				//addDatasetEigen(gRun, "Scattering_Data", s->scadata);
 
-				
+
 				// Shapefile link
 				//addAttr<string,Group>(gRun, "Shapehash_full", s->shapeHash.string());
-				addAttr<uint64_t,Group>(gRun, "Shapehash_lower", s->shapeHash.lower);
-				addAttr<uint64_t,Group>(gRun, "Shapehash_upper", s->shapeHash.upper);
+				addAttr<uint64_t, Group>(gRun, "Shapehash_lower", s->shapeHash.lower);
+				addAttr<uint64_t, Group>(gRun, "Shapehash_upper", s->shapeHash.upper);
 				addAttr<uint64_t, Group>(gRun, "ParsedShapehash_lower", s->parsedShapeHash.lower);
 				addAttr<uint64_t, Group>(gRun, "ParsedShapehash_upper", s->parsedShapeHash.upper);
 
@@ -258,13 +258,15 @@ namespace rtmath {
 
 				// ddscat.par file
 				write_hdf5_ddPar(
-					shared_ptr<Group>(new Group(gRun->createGroup("par"))), 
+					shared_ptr<Group>(new Group(gRun->createGroup("par"))),
 					s->parfile);
 
 				return gRun;
 			}
 		}
 	}
+}
+namespace Ryan_Debug {
 
 	namespace registry
 	{
@@ -326,7 +328,7 @@ namespace rtmath {
 			read_file_type_multi<rtmath::ddscat::ddOutput>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<rtmath::ddscat::ddOutput> s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddOutput> > )
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::ddOutput> > )
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -342,17 +344,17 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RTthrow(debug::xMissingKey())
-				<< rtmath::debug::key(key);
+			if (!grpHashes) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key(key);
 			shared_ptr<Group> grpHash = openGroup(grpHashes, hash.c_str());
-			if (!grpHash) RTthrow(debug::xMissingHash())
-				<< rtmath::debug::hash(hash);
+			if (!grpHash) RDthrow(Ryan_Debug::error::xMissingHash())
+				<< Ryan_Debug::error::hash(hash);
 			shared_ptr<Group> grpRuns = openGroup(h->file, "Runs");
-			if (!grpRuns) RTthrow(debug::xMissingKey())
-				<< rtmath::debug::key(key);
+			if (!grpRuns) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key(key);
 			shared_ptr<Group> grpRun = openGroup(grpRuns, key.c_str());
-			if (!grpRun) RTthrow(debug::xMissingKey())
-				<< rtmath::debug::key(key);
+			if (!grpRun) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key(key);
 			read_hdf5_ddOutput(grpRun, opts, s);
 
 			return h;
@@ -363,7 +365,7 @@ namespace rtmath {
 			read_file_type_vector<rtmath::ddscat::ddOutput>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<rtmath::ddscat::ddOutput> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::ddOutput> > filter)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
