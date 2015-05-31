@@ -14,7 +14,7 @@ add_library (plugin_test SHARED
 	)
 addlib(plugin_test SHARED)
 
-addplugin(plugin_test Testing)
+addplugin(plugin_test Testing Ryan_Debug)
 
 target_link_libraries(plugin_test ${liblist} Ryan_Debug )
 

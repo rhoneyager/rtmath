@@ -100,6 +100,7 @@ namespace Ryan_Debug
 			~DLLhandle();
 			void* getSym(const char* symbol, bool critical = false) const;
 			const char* filename() const;
+			bool isOpen() const;
 		private:
 			boost::shared_ptr<DLLhandleImpl> _p;
 		};
@@ -129,9 +130,9 @@ namespace Ryan_Debug
 
 
 		/// Load a DLL.
-		void RYAN_DEBUG_DLEXPORT loadDLL(const std::string &filename, boost::shared_ptr<const dllValidatorSet> = dllValidatorSet::getDefault());
+		void RYAN_DEBUG_DLEXPORT loadDLL(const std::string &filename, boost::shared_ptr<const dllValidatorSet> = dllValidatorSet::getDefault(), bool critical = false);
 		/// Load DLLs.
-		void RYAN_DEBUG_DLEXPORT loadDLLs(const std::vector<std::string> &dlls, boost::shared_ptr<const dllValidatorSet> = dllValidatorSet::getDefault());
+		void RYAN_DEBUG_DLEXPORT loadDLLs(const std::vector<std::string> &dlls, boost::shared_ptr<const dllValidatorSet> = dllValidatorSet::getDefault(), bool critical = false);
 
 		/// Print loaded DLLs
 		void RYAN_DEBUG_DLEXPORT printDLLs(std::ostream &out = std::cerr);

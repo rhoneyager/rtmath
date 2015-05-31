@@ -193,8 +193,8 @@ namespace {
 
 		// Relative to application
 		// Install path apps
-		boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
-		appBin.remove_filename();
+		//boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
+		//appBin.remove_filename();
 		//Ryan_Debug::registry::searchPathsRecursive.emplace(appBin / "plugins");
 		//Ryan_Debug::registry::searchPathsRecursive.emplace( appBin / "../plugins" );
 		// Build path apps (linux)
@@ -205,8 +205,8 @@ namespace {
 		auto modinfo = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*)constructSearchPaths), freeModuleInfo);
 		boost::filesystem::path libpath(getPath(modinfo.get()));
 		libpath.remove_filename();
-		Ryan_Debug::registry::searchPathsOne.emplace(libpath / "plugins");
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding library-relative path: " << libpath / "plugins";
+		Ryan_Debug::registry::searchPathsOne.emplace(libpath / "Ryan_Debug-plugins");
+		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding library-relative path: " << libpath / "Ryan_Debug-plugins";
 
 
 		// Checking Ryan_Debug.conf
@@ -349,6 +349,7 @@ namespace Ryan_Debug
 #endif
 				//BOOST_LOG_SEV(m_reg, normal) << "Closed dll " << fname << "." << "\n";
 			}
+			bool isOpen() const { if (dlHandle) return true; return false; }
 			void* getSym(const char* symbol, bool critical = false) const 
 			{
 				auto& lg = m_reg::get();
@@ -391,7 +392,8 @@ namespace Ryan_Debug
 				if (DLLpathsLoaded.count(filename))
 				{
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "DLL is already loaded (" << filename << ", " << critical << ")!";
-					RDthrow(Ryan_Debug::error::xDuplicateHook())
+					if (critical)
+						RDthrow(Ryan_Debug::error::xDuplicateHook())
 						<< Ryan_Debug::error::file_name_b(fname)
 						<< Ryan_Debug::error::file_name(filename)
 						<< Ryan_Debug::error::is_Critical(critical);
@@ -541,7 +543,7 @@ namespace Ryan_Debug
 		DLLhandle::~DLLhandle() {}
 		void* DLLhandle::getSym(const char* symbol, bool critical) const
 		{ return _p->getSym(symbol, critical); }
-
+		bool DLLhandle::isOpen() const { return _p->isOpen(); }
 
 		dllValidator::dllValidator() {}
 		dllValidator::~dllValidator() {}
@@ -851,27 +853,32 @@ namespace Ryan_Debug
 				printDLLs();
 		}
 
-		void loadDLLs(const std::vector<std::string> &dlls, boost::shared_ptr<const dllValidatorSet> dvs)
+		void loadDLLs(const std::vector<std::string> &dlls, boost::shared_ptr<const dllValidatorSet> dvs, bool critical)
 		{
 			for (const auto &dll : dlls)
 				loadDLL(dll, dvs);
 		}
 
-		void loadDLL(const std::string &filename, boost::shared_ptr<const dllValidatorSet> dvs)
+		void loadDLL(const std::string &filename, boost::shared_ptr<const dllValidatorSet> dvs, bool critical)
 		{
 			auto& lg = m_reg::get();
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading DLL: " << filename;
-			auto doLoad = [&](const std::string &f)
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading DLL: " << filename << " with critical flag " << critical;
+			auto doLoad = [&](const std::string &f, bool critical)
 			{
-				boost::shared_ptr<DLLhandle> h(new DLLhandle(f, dvs));
-				handles.push_back(h);
+				boost::shared_ptr<DLLhandle> h(new DLLhandle(f, dvs, critical));
+				if (h->isOpen())
+					handles.push_back(h);
+				else {
+					// If critical and a throw condition occurs, then it is already logged and this is not reached.
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "loadDLL is unable to open DLL: " << filename;
+				}
 			};
 			// Search for the dll
 			using namespace boost::filesystem;
 			path p(filename);
 			//if (p.is_absolute())
 			{
-				if (exists(p)) doLoad(p.string());
+				if (exists(p)) doLoad(p.string(), critical);
 				else {
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "DLL does not exist: " << filename;
 					RDthrow(Ryan_Debug::error::xMissingFile())
