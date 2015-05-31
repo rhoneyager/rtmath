@@ -18,7 +18,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/macros.h"
+#include <Ryan_Debug/macros.h>
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/plugin.h"
 
@@ -57,7 +57,7 @@ namespace rtmath
 					deb_flaketypesmap << string(PQgetvalue(hFlakeTypes.get(), i, 1))
 						<< " = " << PQgetvalue(hFlakeTypes.get(), i, 0) << std::endl;
 				}
-				BOOST_LOG_SEV(h->lg, debug::debug_3) << deb_flaketypesmap.str();
+				BOOST_LOG_SEV(h->lg, Ryan_Debug::log::debug_3) << deb_flaketypesmap.str();
 
 				ostringstream ss;
 
@@ -89,15 +89,15 @@ namespace rtmath
 				h->execute(sres.c_str());
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> searchSHP(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> searchSHP(
 				const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index &index,
 				rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
 				using namespace std;
 				using std::string;
-				std::shared_ptr<psql_handle> h = registry::construct_handle
-					<registry::DBhandler, psql_handle>(
+				std::shared_ptr<psql_handle> h = Ryan_Debug::registry::construct_handle
+					<Ryan_Debug::registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
 
@@ -180,8 +180,8 @@ namespace rtmath
 							if (it != v.begin()) squery << ", ";
 							squery << "'" << m.at(*it) << "'";
 							numQ++;
-						} else RDthrow(debug::xMissingHash())
-							<< debug::hash(*it);
+						} else RDthrow(Ryan_Debug::error::xMissingHash())
+							<< Ryan_Debug::error::hash(*it);
 					}
 					squery << ") ";
 					numSel++;
@@ -208,7 +208,7 @@ namespace rtmath
 				string s = squery.str();
 				//std::cerr << s << std::endl;
 				auto resIntersect = h->execute(s.c_str());
-				BOOST_LOG_SEV(h->lg, debug::debug_2) << "Query has " << PQntuples(resIntersect.get()) << " results.\n";
+				BOOST_LOG_SEV(h->lg, Ryan_Debug::log::debug_2) << "Query has " << PQntuples(resIntersect.get()) << " results.\n";
 
 				// Turn the result into shapefile stub objects
 				// Unified object is in resIntersect
@@ -217,10 +217,10 @@ namespace rtmath
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
 					boost::shared_ptr<shapefile> ap = shapefile::generate();
-					ap->numPoints = rtmath::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 7));
-					ap->standardD = rtmath::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
-					ap->setHash(HASH_t( rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
-						rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 1))));
+					ap->numPoints = Ryan_Debug::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 7));
+					ap->standardD = Ryan_Debug::macros::m_atof<float>(PQgetvalue(resIntersect.get(), i, 4));
+					ap->setHash(Ryan_Debug::hash::HASH_t(Ryan_Debug::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)),
+						Ryan_Debug::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 1))));
 
 					ap->desc = string(PQgetvalue(resIntersect.get(), i, 5));
 
@@ -238,12 +238,12 @@ namespace rtmath
 					othertags.erase(std::remove(othertags.begin(), othertags.end(), '}'), othertags.end());
 					// Split based on commas
 					std::vector<std::string> vother;
-					rtmath::config::splitVector(othertags, vother, ',');
+					Ryan_Debug::splitSet::splitVector(othertags, vother, ',');
 					// Insert, splitting on =
 					for (const auto & i : vother)
 					{
 						vector<string> vs;
-						rtmath::config::splitVector(i, vs, '=');
+						Ryan_Debug::splitSet::splitVector(i, vs, '=');
 						string a, b;
 						if (vs.size()) a = vs[0];
 						if (vs.size() > 1) b = vs[1];
@@ -256,7 +256,7 @@ namespace rtmath
 						<< " desc " << ap->desc << std::endl
 						<< " hash " << ap->hash().lower << std::endl
 						<< " tags " << othertags << std::endl;
-					BOOST_LOG_SEV(h->lg, debug::debug_2) << dbg_res.str();
+					BOOST_LOG_SEV(h->lg, Ryan_Debug::log::debug_2) << dbg_res.str();
 
 					res->insert(ap);
 				}
@@ -264,14 +264,14 @@ namespace rtmath
 				return h;
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> updateSHP(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> updateSHP(
 				const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection c,
 				rtmath::ddscat::shapefile::shapefile_db_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
 				using namespace std;
-				std::shared_ptr<psql_handle> h = registry::construct_handle
-					<registry::DBhandler, psql_handle>(
+				std::shared_ptr<psql_handle> h = Ryan_Debug::registry::construct_handle
+					<Ryan_Debug::registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
 

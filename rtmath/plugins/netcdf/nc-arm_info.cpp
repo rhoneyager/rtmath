@@ -10,8 +10,6 @@
 
 #include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/plugin.h"
 
@@ -19,7 +17,7 @@
 #include <netcdf.h>
 
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace registry
 	{
@@ -31,7 +29,7 @@ namespace rtmath
 			read_file_type_multi<::rtmath::data::arm::arm_info>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<::rtmath::data::arm::arm_info > s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
 			std::string filename = opts->filename();
 			IOhandler::IOtype iotype = opts->getVal<IOhandler::IOtype>("iotype", IOhandler::IOtype::READONLY);
@@ -131,7 +129,7 @@ namespace rtmath
 				auto alt = getMatrix<float>("alt", h);
 				s->alt = alt(0, 0);
 			}
-			catch (debug::xArrayOutOfBounds&)
+			catch (Ryan_Debug::error::xArrayOutOfBounds&)
 			{
 				// Just skip over the fields
 				s->lat = 0;
@@ -385,9 +383,9 @@ namespace rtmath
 			read_file_type_vector<::rtmath::data::arm::arm_info>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_info> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<::rtmath::data::arm::arm_info> >)
 		{
-			RDthrow(debug::xUnimplementedFunction());
+			RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 			return sh;
 		}
 	}

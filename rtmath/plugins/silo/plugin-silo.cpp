@@ -9,12 +9,14 @@
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-silo.h"
 #include "../../related/rtmath_silo_cpp/WritePoints.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
 namespace rtmath
 {
@@ -46,7 +48,7 @@ namespace rtmath
 					//break;
 				case IOtype::READONLY:
 					//file = std::shared_ptr<siloFile>(new siloFile(filename, H5F_ACC_RDONLY ));
-					RDthrow(rtmath::debug::xUnimplementedFunction());
+					RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 					break;
 				case IOtype::TRUNCATE:
 					file = std::shared_ptr<siloFile>(new siloFile(filename));
@@ -59,16 +61,17 @@ namespace rtmath
 }
 
 
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	using namespace rtmath::plugins::silo;
-	static const rtmath::registry::DLLpreamble id(
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-SILO",
 		"Example plugin to provide shapefile class with the ability to "
 		"read and write SILO files.",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile, 
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
@@ -81,4 +84,5 @@ void dllEntry()
 
 	genAndRegisterIOregistry_writer<::rtmath::Voronoi::VoronoiDiagram,
 		rtmath::Voronoi::Voronoi_IO_output_registry>("silo", PLUGINID);
+	return SUCCESS;
 }

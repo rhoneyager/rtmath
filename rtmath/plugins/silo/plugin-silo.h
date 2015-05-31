@@ -42,7 +42,7 @@ namespace rtmath {
 			*/
 
 
-			struct silo_handle : public rtmath::registry::IOhandler
+			struct silo_handle : public Ryan_Debug::registry::IOhandler
 			{
 				silo_handle(const char* filename, IOtype t);
 				virtual ~silo_handle() {}

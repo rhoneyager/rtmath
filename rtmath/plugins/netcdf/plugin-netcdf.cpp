@@ -11,16 +11,16 @@
 
 #include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "plugin-netcdf.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
 namespace rtmath
 {
@@ -41,7 +41,7 @@ namespace rtmath
 					{
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
-						RDthrow(debug::xUnimplementedFunction());
+						RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 						break;
 					case IOtype::READONLY:
 					{
@@ -60,8 +60,8 @@ namespace rtmath
 						break;
 					case IOtype::CREATE:
 						if (boost::filesystem::exists(boost::filesystem::path(filename)))
-							RDthrow(debug::xFileExists())
-							<< debug::file_name(filename);
+							RDthrow(Ryan_Debug::error::xFileExists())
+							<< Ryan_Debug::error::file_name(filename);
 					case IOtype::TRUNCATE:
 					{
 						int status = nc_create(filename, 0, &file);
@@ -83,9 +83,9 @@ namespace rtmath
 
 			void netcdf_handle::handle_error(int status)
 			{
-				RDthrow(debug::xOtherError())
-					<< debug::otherErrorCode(status)
-					<< debug::otherErrorText("netcdf library error");
+				RDthrow(Ryan_Debug::error::xOtherError())
+					<< Ryan_Debug::error::otherErrorCode(status)
+					<< Ryan_Debug::error::otherErrorText("netcdf library error");
 			}
 
 			netcdf_handle::~netcdf_handle()
@@ -164,14 +164,15 @@ namespace rtmath
 }
 
 
-void dllEntry()
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
-	static const rtmath::registry::DLLpreamble id(
+	using namespace Ryan_Debug::registry;
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-netcdf",
 		"Provides netcdf IO for reading and writing ARM data",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	const size_t nExts = 2;
 	const char* exts[nExts] = { "cdf", "nc" };
@@ -192,4 +193,5 @@ void dllEntry()
 		<::rtmath::data::arm::arm_scanning_radar_sacr,
 		::rtmath::data::arm::arm_IO_sacr_input_registry>(
 		nExts, exts, PLUGINID);
+	return SUCCESS;
 }

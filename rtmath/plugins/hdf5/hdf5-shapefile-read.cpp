@@ -17,7 +17,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include "plugin-hdf5.h"
 #include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
@@ -29,7 +29,7 @@ namespace rtmath {
 	namespace plugins {
 		namespace hdf5 {
 
-			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
+			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base,
 				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > shp)
 			{
 				using std::shared_ptr;
@@ -40,7 +40,7 @@ namespace rtmath {
 				// Description
 				readAttr<std::string, Group>(base, "Description", shp->desc);
 				// Shape hash
-				HASH_t hash;
+				Ryan_Debug::hash::HASH_t hash;
 				readAttr<uint64_t, Group>(base, "Hash_Lower", hash.lower);
 				readAttr<uint64_t, Group>(base, "Hash_Upper", hash.upper);
 				shp->setHash(hash);
@@ -119,8 +119,8 @@ namespace rtmath {
 				// Dielectrics
 				readDatasetEigen<Eigen::Matrix<int, Eigen::Dynamic, 1>, Group>
 					(base, "Dielectrics", lptsi);
-				for (size_t i=0; i< (size_t) lptsi.rows(); ++i)
-					shp->Dielectrics.insert((size_t) lptsi(i));
+				for (size_t i = 0; i < (size_t)lptsi.rows(); ++i)
+					shp->Dielectrics.insert((size_t)lptsi(i));
 
 				// latticePts
 				Eigen::Matrix<int, Eigen::Dynamic, 3> lpts;
@@ -163,13 +163,13 @@ namespace rtmath {
 				shared_ptr<Group> grpExtras = openGroup(base, "Extras");
 				// Iterate over tables
 				hsize_t nObjs = grpExtras->getNumObjs();
-				for (hsize_t i=0; i<nObjs; ++i)
+				for (hsize_t i = 0; i < nObjs; ++i)
 				{
 					std::string name = grpExtras->getObjnameByIdx(i);
 					H5G_obj_t t = grpExtras->getObjTypeByIdx(i);
 					if (t != H5G_obj_t::H5G_GROUP) continue;
 
-					boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > 
+					boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
 						mextra(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>);
 					readDatasetEigen<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>, Group>
 						(grpExtras, name.c_str(), *(mextra));
@@ -183,7 +183,8 @@ namespace rtmath {
 
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using std::shared_ptr;
@@ -209,15 +210,15 @@ namespace rtmath {
 				new hdf5_handle(filename.c_str(), iotype)); });
 
 			shared_ptr<Group> grpHashes = openGroup(h->file, "Hashed");
-			if (!grpHashes) RDthrow(debug::xMissingKey())
-				<< debug::key("Hashed")
-				<< debug::hash(key);
+			if (!grpHashes) RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::key("Hashed")
+				<< Ryan_Debug::error::hash(key);
 
 			shared_ptr<Group> grpHash = openGroup(grpHashes, key.c_str());
 			shared_ptr<Group> grpShape = openGroup(grpHash, "Shape");
-			if (!grpShape) RDthrow(debug::xMissingFile())
-				<< debug::key("Shape")
-				<< debug::hash(key);
+			if (!grpShape) RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::key("Shape")
+				<< Ryan_Debug::error::hash(key);
 			read_hdf5_shaperawdata(grpShape, s);
 
 			return h;

@@ -18,7 +18,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/macros.h"
+#include <Ryan_Debug/macros.h>
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -89,7 +89,7 @@ namespace rtmath
 				const std::string &paramName,
 				const T lower, const T upper)
 			{
-				RDthrow(debug::xUpcast());
+				RDthrow(Ryan_Debug::error::xUpcast());
 			}
 
 			template<> void makeStrNumRange<float>(std::ostringstream &squery,
@@ -154,7 +154,7 @@ namespace rtmath
 				const std::string &ssel,
 				const std::string &sclose,
 				const std::string &paramName,
-				const rtmath::config::intervals<T> &vals,
+				const Ryan_Debug::splitSet::intervals<T> &vals,
 				bool &unionFlag, bool allowNull = false)
 			{
 				if (!vals.ranges.size()) return;
@@ -171,15 +171,15 @@ namespace rtmath
 				unionFlag = true;
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> searchRUN(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> searchRUN(
 				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index &index,
 				rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
 				using namespace std;
 				using std::string;
-				std::shared_ptr<psql_handle> h = registry::construct_handle
-					<registry::DBhandler, psql_handle>(
+				std::shared_ptr<psql_handle> h = Ryan_Debug::registry::construct_handle
+					<Ryan_Debug::registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
 
@@ -259,8 +259,8 @@ namespace rtmath
 							squery << "'" << m.at(*it) << "'";
 							numQ++;
 						}
-						else RDthrow(debug::xMissingHash())
-							<< debug::hash(*it);
+						else RDthrow(Ryan_Debug::error::xMissingHash())
+							<< Ryan_Debug::error::hash(*it);
 					}
 					squery << ") ";
 					numSel++;
@@ -300,8 +300,8 @@ namespace rtmath
 				*/
 				for (int i = 0; i < PQntuples(resIntersect.get()); ++i)
 				{
-					HASH_t shpLower(rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)), 0);
-					HASH_t resultidLower(rtmath::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 2)), 0);
+					Ryan_Debug::hash::HASH_t shpLower(Ryan_Debug::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 0)), 0);
+					Ryan_Debug::hash::HASH_t resultidLower(Ryan_Debug::macros::m_atoi<uint64_t>(PQgetvalue(resIntersect.get(), i, 2)), 0);
 					std::string pathOverride(PQgetvalue(resIntersect.get(), i, 14));
 					//boost::shared_ptr<ddOutput> ap = ddOutput::
 
@@ -316,14 +316,14 @@ namespace rtmath
 			}
 
 
-			std::shared_ptr<rtmath::registry::DBhandler> updateRUN(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> updateRUN(
 				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection c,
 				rtmath::ddscat::ddOutput_db_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
 				using namespace std;
-				std::shared_ptr<psql_handle> h = registry::construct_handle
-					<registry::DBhandler, psql_handle>(
+				std::shared_ptr<psql_handle> h = Ryan_Debug::registry::construct_handle
+					<Ryan_Debug::registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
 

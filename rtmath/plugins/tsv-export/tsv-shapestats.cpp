@@ -19,8 +19,8 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 
@@ -29,8 +29,8 @@ using std::shared_ptr;
 namespace rtmath {
 	namespace plugins {
 		namespace tsv {
-			using namespace rtmath::registry;
-			struct tsv_ar_handle : public rtmath::registry::IOhandler
+			using namespace Ryan_Debug::registry;
+			struct tsv_ar_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_ar_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_ARS) { open(filename, t); }
 				virtual ~tsv_ar_handle() {}
@@ -42,22 +42,22 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
 						break;
 					case IOtype::READWRITE:
-						{
-							bool e = false;
-							if (exists(path(filename))) e = true;
-							file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
-							if (!e) writeHeader(); // If the file had to be created, give it a header
-						}
-						break;
+					{
+						bool e = false;
+						if (exists(path(filename))) e = true;
+						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
+						if (!e) writeHeader(); // If the file had to be created, give it a header
+					}
+					break;
 					}
 				}
 				void writeHeader()
@@ -87,9 +87,11 @@ namespace rtmath {
 				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats > s);
 		}
 	}
+}
+namespace Ryan_Debug {
 	namespace registry {
 		using rtmath::ddscat::ddOutput;
-
+		
 		template<>
 		shared_ptr<IOhandler>
 			write_file_type_multi<rtmath::ddscat::stats::shapeFileStats>
@@ -99,7 +101,7 @@ namespace rtmath {
 			std::string exporttype = opts->exportType();
 			if (exporttype == "ar_rot_data") return ::rtmath::plugins::tsv::export_tsv_ar_rot_data(sh, opts, s);
 			else if (exporttype == "summary_data") return ::rtmath::plugins::tsv::export_tsv_summary_data(sh, opts, s);
-			else { RDthrow(debug::xUnimplementedFunction()); }
+			else { RDthrow(Ryan_Debug::error::xUnimplementedFunction()); }
 			return nullptr;
 		}
 

@@ -16,8 +16,8 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-silo.h"
 #include "../../related/rtmath_silo_cpp/WritePoints.h"
@@ -26,7 +26,7 @@
 #include <silo.h>
 
 
-namespace rtmath {
+namespace Ryan_Debug {
 	namespace registry {
 		using std::shared_ptr;
 		using namespace rtmath::Voronoi;
@@ -49,7 +49,7 @@ namespace rtmath {
 					h = std::shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID) RDthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<silo_handle>(sh);
 				}
 

@@ -11,11 +11,12 @@
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include <Ryan_Debug/logging.h>
 
 #include "plugin-psql.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
+D_Ryan_Debug_validator();
+D_rtmath_validator();
 
 namespace rtmath
 {
@@ -28,26 +29,26 @@ namespace rtmath
 				std::ostringstream out;
 				out << "psql library connection error " << status << std::endl;
 				out << PQerrorMessage(connection.get()) << std::endl;
-				BOOST_LOG_SEV(lg, debug::error) << out.str();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << out.str();
 
-				RDthrow(debug::xOtherError());
+				RDthrow(Ryan_Debug::error::xOtherError());
 			}
 
 			void psql_handle::handle_error(ExecStatusType status) const
 			{
 				std::ostringstream out;
 				out << "psql library execution error " << status << std::endl;
-				out << PQerrorMessage(connection.get()) << std::endl;
-				BOOST_LOG_SEV(lg, debug::error) << out.str();
-				RDthrow(debug::xOtherError());
+				out << PQerrorMessage(connection.get());
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << out.str();
+				RDthrow(Ryan_Debug::error::xOtherError());
 			}
 
 			void psql_handle::handle_error(const char* err) const
 			{
 				std::ostringstream out;
 				out << "psql library execution error: " << err << std::endl;
-				BOOST_LOG_SEV(lg, debug::error) << out.str();
-				RDthrow(debug::xOtherError());
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << out.str();
+				RDthrow(Ryan_Debug::error::xOtherError());
 			}
 
 			std::string psql_handle::escString(const std::string &in)
@@ -66,16 +67,16 @@ namespace rtmath
 
 			psql_handle::~psql_handle() {}
 
-			psql_handle::psql_handle(std::shared_ptr<registry::DB_options> o) : readable(true), writeable(true), 
-				rtmath::registry::DBhandler(PLUGINID), o(o), lg(boost::log::keywords::channel = "psql")
+			psql_handle::psql_handle(std::shared_ptr<Ryan_Debug::registry::DB_options> o) : readable(true), writeable(true), 
+				Ryan_Debug::registry::DBhandler(PLUGINID), o(o), lg(boost::log::keywords::channel = "psql")
 			{
-				if (!o) this->o = registry::DB_options::generate();
+				if (!o) this->o = Ryan_Debug::registry::DB_options::generate();
 			}
 
 			void psql_handle::connect()
 			{
 				if (connection) return;
-				BOOST_LOG_SEV(lg, debug::normal) << "Opening psql connection\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Opening psql connection\n";
 
 				using namespace std;
 				vector<string> keywords, values;
@@ -102,7 +103,7 @@ namespace rtmath
 
 			void psql_handle::disconnect()
 			{
-				BOOST_LOG_SEV(lg, debug::normal) << "Closing psql connection\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Closing psql connection\n";
 				connection.reset();
 				connection = nullptr;
 			}
@@ -112,14 +113,14 @@ namespace rtmath
 				connect();
 				std::ostringstream out;
 				out << "Executing command: " << command << std::endl;
-				BOOST_LOG_SEV(lg, debug::normal) << out.str();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << out.str();
 				//std::cerr << command << std::endl;
 				boost::shared_ptr<PGresult> res
 					(PQexec(connection.get(), command), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK 
 					&& errcode != PGRES_EMPTY_QUERY) handle_error(errcode);
-				BOOST_LOG_SEV(lg, debug::normal) << "Command executed ok\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Command executed ok\n";
 				return res;
 			}
 
@@ -128,69 +129,71 @@ namespace rtmath
 				connect();
 				std::ostringstream out;
 				out << "Sending query: " << command << std::endl;
-				BOOST_LOG_SEV(lg, debug::normal) << out.str();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << out.str();
 				int res = PQsendQuery(connection.get(), command);
 				if (!res)
 				{
 					const char* err = PQerrorMessage(connection.get());
 					handle_error(err);
 				}
-				 BOOST_LOG_SEV(lg, debug::normal) << "Query executed ok.\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Query executed ok.\n";
 			}
 
 			boost::shared_ptr<PGresult> psql_handle::getQueryResult()
 			{
 				connect();
-				BOOST_LOG_SEV(lg, debug::normal) << "Retrieving query result.\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Retrieving query result.\n";
 				boost::shared_ptr<PGresult> res
 					(PQgetResult(connection.get()), PQclear);
 				ExecStatusType errcode = PQresultStatus(res.get());
 				if (errcode != PGRES_COMMAND_OK && errcode != PGRES_TUPLES_OK) handle_error(errcode);
-				BOOST_LOG_SEV(lg, debug::normal) << "Query result retrieved ok.\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Query result retrieved ok.\n";
 				return res;
 			}
 
 
-			std::shared_ptr<rtmath::registry::DBhandler>
+			std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				searchARM(const rtmath::data::arm::arm_info_registry::arm_info_index &index,
 				rtmath::data::arm::arm_info_registry::arm_info_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
-			std::shared_ptr<rtmath::registry::DBhandler>
+				std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>);
+			std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				updateARM(const rtmath::data::arm::arm_info_registry::arm_info_index::collection c,
 				rtmath::data::arm::arm_info_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
-			bool matches(std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
+				std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>);
+			bool matches(std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>);
 
-			std::shared_ptr<rtmath::registry::DBhandler>
+			std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				searchSHP(const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index &index,
 				rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
-			std::shared_ptr<rtmath::registry::DBhandler>
+				std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>);
+			std::shared_ptr<Ryan_Debug::registry::DBhandler>
 				updateSHP(const rtmath::ddscat::shapefile::shapefile_db_registry::shapefile_index::collection c,
 				rtmath::ddscat::shapefile::shapefile_db_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler>, std::shared_ptr<registry::DB_options>);
+				std::shared_ptr<Ryan_Debug::registry::DBhandler>, std::shared_ptr<Ryan_Debug::registry::DB_options>);
 
-			std::shared_ptr<rtmath::registry::DBhandler> searchRUN(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> searchRUN(
 				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index &index,
 				rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o);
-			std::shared_ptr<rtmath::registry::DBhandler> updateRUN(
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o);
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> updateRUN(
 				const rtmath::ddscat::ddOutput_db_registry::ddOutput_index::collection c,
 				rtmath::ddscat::ddOutput_db_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o);
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o);
 		}
 
 	}
 }
 
-void dllEntry()
+
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
-	static const rtmath::registry::DLLpreamble id(
+	using namespace Ryan_Debug::registry;
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-psql",
 		"Provides postgresql database access (used for indexing stuff)",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	using namespace rtmath::data::arm;
 	using namespace rtmath::ddscat::shapefile;
@@ -220,4 +223,5 @@ void dllEntry()
 
 	doRegisterHook<ddOutput, ddOutput_query_registry, 
 		ddOutput_db_registry>(reg_run);
+	return SUCCESS;
 }

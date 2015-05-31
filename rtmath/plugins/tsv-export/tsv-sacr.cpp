@@ -33,8 +33,8 @@
 
 
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 #ifdef min
@@ -48,12 +48,12 @@
 namespace rtmath
 {
 	using std::shared_ptr;
-	using namespace rtmath::registry;
+	using namespace Ryan_Debug::registry;
 	namespace plugins
 	{
 		namespace tsv
 		{
-			struct tsv_sacr_reflectivity_handle : public rtmath::registry::IOhandler
+			struct tsv_sacr_reflectivity_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_sacr_reflectivity_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_SACR_REFL) { open(filename, t); }
 				virtual ~tsv_sacr_reflectivity_handle() {}
@@ -65,22 +65,22 @@ namespace rtmath
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
 						break;
 					case IOtype::READWRITE:
-						{
-							bool e = false;
-							if (exists(path(filename))) e = true;
-							file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
-							if (!e) writeHeader(); // If the file had to be created, give it a header
-						}
-						break;
+					{
+						bool e = false;
+						if (exists(path(filename))) e = true;
+						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
+						if (!e) writeHeader(); // If the file had to be created, give it a header
+					}
+					break;
 					}
 				}
 				void writeHeader()
@@ -100,8 +100,8 @@ namespace rtmath
 				const boost::shared_ptr<const ::rtmath::data::arm::arm_scanning_radar_sacr > s)
 			{
 				size_t numPass = opts->getVal<size_t>("pass", 0);
-				if (numPass > (size_t) s->sweep_start_ray_index.rows() && numPass > (size_t) s->sweep_start_ray_index.cols())
-					RDthrow(debug::xArrayOutOfBounds());
+				if (numPass > (size_t)s->sweep_start_ray_index.rows() && numPass > (size_t)s->sweep_start_ray_index.cols())
+					RDthrow(Ryan_Debug::error::xArrayOutOfBounds());
 				int startIndex = s->sweep_start_ray_index(numPass);
 				int endIndex = s->sweep_end_ray_index(numPass);
 				int span = endIndex - startIndex;
@@ -111,7 +111,7 @@ namespace rtmath
 				auto &AllElevations = s->elevations;
 				auto &AllTime_offsets = s->time_offsets;
 
-				Eigen::Array<float, Eigen::Dynamic, Eigen::Dynamic> refl_pass 
+				Eigen::Array<float, Eigen::Dynamic, Eigen::Dynamic> refl_pass
 					= s->reflectivity.block(startIndex, 0, span, ranges.size());
 				// refl rows are for each time index
 				// cols are for the range bins
@@ -131,7 +131,7 @@ namespace rtmath
 				// Start time
 				using namespace boost::posix_time;
 				using namespace boost::gregorian;
-				boost::posix_time::ptime startTime = s->info->startTime + seconds(static_cast<long>(time_offsets(0))); 
+				boost::posix_time::ptime startTime = s->info->startTime + seconds(static_cast<long>(time_offsets(0)));
 				// End time
 				boost::posix_time::ptime endTime = startTime + seconds(static_cast<long>(AllTime_offsets(endIndex)));
 
@@ -139,18 +139,19 @@ namespace rtmath
 				//std::ostringstream otitle;
 				//otitle << "Pass " << numPass << " for " << s->info->filename;
 				//std::string stitle = otitle.str();
-				for (int i=0; i<span; ++i)
-					for (int rbin=0; rbin < ranges.size(); ++rbin)
-				{
-					boost::posix_time::ptime t = s->info->startTime + seconds(static_cast<long>(time_offsets(i))); 
-					*(h->file.get()) << s->info->filename << "\t" << numPass << "\t"
-						<< t << "\t" << elevations(i) << "\t" << azimuths(i) << "\t" << ranges(rbin) << "\t"
-						<< xs(i) * ranges(rbin) << "\t" << ys(i) * ranges(rbin) << "\t" << refl_pass(i,rbin) << std::endl;
-				}
+				for (int i = 0; i < span; ++i)
+					for (int rbin = 0; rbin < ranges.size(); ++rbin)
+					{
+						boost::posix_time::ptime t = s->info->startTime + seconds(static_cast<long>(time_offsets(i)));
+						*(h->file.get()) << s->info->filename << "\t" << numPass << "\t"
+							<< t << "\t" << elevations(i) << "\t" << azimuths(i) << "\t" << ranges(rbin) << "\t"
+							<< xs(i) * ranges(rbin) << "\t" << ys(i) * ranges(rbin) << "\t" << refl_pass(i, rbin) << std::endl;
+					}
 			}
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry
 	{
 		using namespace rtmath::plugins::tsv;
@@ -174,13 +175,13 @@ namespace rtmath
 			std::shared_ptr<tsv_sacr_reflectivity_handle> h;
 			if (!sh) h = std::shared_ptr<tsv_sacr_reflectivity_handle>(new tsv_sacr_reflectivity_handle(filename.c_str(), iotype));
 			else {
-				if (sh->getId() != PLUGINID_SACR_REFL) RDthrow(debug::xDuplicateHook());
+				if (sh->getId() != PLUGINID_SACR_REFL) RDthrow(Ryan_Debug::error::xDuplicateHook());
 				h = std::dynamic_pointer_cast<tsv_sacr_reflectivity_handle>(sh);
 			}
 
 			if (exporttype == "reflectivity_angscaled")
 			{
-				RDthrow(debug::xUnimplementedFunction());
+				RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 				//write_sacr_reflectivity(h, opts, s);
 			} else if (exporttype == "reflectivity")
 			{

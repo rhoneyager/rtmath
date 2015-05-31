@@ -20,7 +20,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/macros.h"
+#include <Ryan_Debug/macros.h>
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -35,22 +35,22 @@ namespace rtmath
 		using std::ostringstream;
 		namespace psql
 		{
-			bool matches(std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options>)
+			bool matches(std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options>)
 			{
 				if (!p) return true;
 				if (std::string(p->getId()) == std::string(PLUGINID)) return true;
 				return false;
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> searchARM(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> searchARM(
 				const arm_info_registry::arm_info_index &index,
 				arm_info_registry::arm_info_index::collection res,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
 				using namespace std;
 				using std::string;
-				std::shared_ptr<psql_handle> h = registry::construct_handle
-					<registry::DBhandler, psql_handle>(
+				std::shared_ptr<psql_handle> h = Ryan_Debug::registry::construct_handle
+					<Ryan_Debug::registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
 
@@ -143,7 +143,7 @@ namespace rtmath
 					ap->stream = string(PQgetvalue(resIntersect.get(), i, 3));
 					ap->datalevel = string(PQgetvalue(resIntersect.get(), i, 4));
 					ap->filename = string(PQgetvalue(resIntersect.get(), i, 5));
-					ap->filesize = rtmath::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 6));
+					ap->filesize = Ryan_Debug::macros::m_atoi<size_t>(PQgetvalue(resIntersect.get(), i, 6));
 					ap->filepath = string(PQgetvalue(resIntersect.get(), i, 7));
 
 					string sstime(PQgetvalue(resIntersect.get(), i, 8)), setime(PQgetvalue(resIntersect.get(), i, 9));
@@ -290,14 +290,14 @@ namespace rtmath
 				h->execute(sres.c_str());
 			}
 
-			std::shared_ptr<rtmath::registry::DBhandler> updateARM(
+			std::shared_ptr<Ryan_Debug::registry::DBhandler> updateARM(
 				const arm_info_registry::arm_info_index::collection c,
 				arm_info_registry::updateType t,
-				std::shared_ptr<rtmath::registry::DBhandler> p, std::shared_ptr<registry::DB_options> o)
+				std::shared_ptr<Ryan_Debug::registry::DBhandler> p, std::shared_ptr<Ryan_Debug::registry::DB_options> o)
 			{
 				using namespace std;
-				std::shared_ptr<psql_handle> h = registry::construct_handle
-					<registry::DBhandler, psql_handle>(
+				std::shared_ptr<psql_handle> h = Ryan_Debug::registry::construct_handle
+					<Ryan_Debug::registry::DBhandler, psql_handle>(
 					p, PLUGINID, [&](){return std::shared_ptr<psql_handle>(
 					new psql_handle(o)); });
 

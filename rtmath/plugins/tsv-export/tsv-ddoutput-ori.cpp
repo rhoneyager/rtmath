@@ -22,8 +22,6 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/hash.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
@@ -35,8 +33,8 @@
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
 #include "../../rtmath/rtmath/ddscat/ddavg.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 
@@ -49,9 +47,9 @@ namespace rtmath {
 			using namespace rtmath::ddscat::weights;
 			using rtmath::ddscat::ddOutput;
 			using rtmath::ddscat::rotations;
-			using namespace rtmath::registry;
+			using namespace Ryan_Debug::registry;
 
-			struct tsv_ddoutput_ori_handle : public rtmath::registry::IOhandler
+			struct tsv_ddoutput_ori_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_ddoutput_ori_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_DDORI) { open(filename, t); }
 				virtual ~tsv_ddoutput_ori_handle() {}
@@ -63,10 +61,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -98,13 +96,13 @@ namespace rtmath {
 				std::shared_ptr<std::ofstream> file;
 			};
 
-			shared_ptr<::rtmath::registry::IOhandler>
+			shared_ptr<::Ryan_Debug::registry::IOhandler>
 				export_tsv_ddori_ori_data
-				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
+				(shared_ptr<::Ryan_Debug::registry::IOhandler> sh, shared_ptr<::Ryan_Debug::registry::IO_options> opts,
 				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > ddOut)
 			{
 				std::string exporttype = opts->exportType();
-				if (exporttype != "orientation_data") RDthrow(debug::xUnimplementedFunction());
+				if (exporttype != "orientation_data") RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 				std::string filename = opts->filename();
 				std::string sDescrip = opts->getVal<std::string>("description", "");
 				bool isoWts = opts->getVal<bool>("isoWts", false);
@@ -114,7 +112,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_ddoutput_ori_handle>(new tsv_ddoutput_ori_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_DDORI) RDthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID_DDORI) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ddoutput_ori_handle>(sh);
 				}
 

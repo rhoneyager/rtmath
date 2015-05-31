@@ -9,8 +9,9 @@
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
 
+#include <Ryan_Debug/logging.h>
+#include <Ryan_Debug/error.h>
 #include <libpq-fe.h>
 
 #define PLUGINID "8B0AA4D8-AF0E-4EBD-8452-974AD0342325"
@@ -33,9 +34,9 @@ namespace rtmath {
 		**/
 		namespace psql {
 			
-			struct psql_handle : public rtmath::registry::DBhandler
+			struct psql_handle : public Ryan_Debug::registry::DBhandler
 			{
-				psql_handle(std::shared_ptr<registry::DB_options>);
+				psql_handle(std::shared_ptr<Ryan_Debug::registry::DB_options>);
 				virtual ~psql_handle();
 
 				boost::shared_ptr<PGresult> execute(const char* command);
@@ -43,7 +44,7 @@ namespace rtmath {
 				boost::shared_ptr<PGresult> getQueryResult();
 
 				std::string escString(const std::string &in);
-				mutable ::rtmath::debug::my_logger_mt lg;
+				mutable ::Ryan_Debug::log::my_logger_mt lg;
 			private:
 				void connect();
 				void disconnect();
@@ -54,7 +55,7 @@ namespace rtmath {
 				void handle_error(const char* err) const;
 				//std::shared_ptr<psqlFile> file;
 				boost::shared_ptr<PGconn> connection;
-				std::shared_ptr<registry::DB_options> o;
+				std::shared_ptr<Ryan_Debug::registry::DB_options> o;
 			};
 
 

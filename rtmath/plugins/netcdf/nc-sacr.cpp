@@ -10,8 +10,6 @@
 
 #include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/data/arm_info.h"
 #include "../../rtmath/rtmath/data/arm_scanning_radar_sacr.h"
 #include "../../rtmath/rtmath/plugin.h"
@@ -20,7 +18,7 @@
 #include <netcdf.h>
 
 
-namespace rtmath
+namespace Ryan_Debug
 {
 	namespace registry
 	{
@@ -32,7 +30,7 @@ namespace rtmath
 			read_file_type_multi<::rtmath::data::arm::arm_scanning_radar_sacr>
 			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
 			boost::shared_ptr<::rtmath::data::arm::arm_scanning_radar_sacr > s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> > filter)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> > filter)
 		{
 			using namespace ::rtmath::data::arm;
 				std::string filename = opts->filename();
@@ -110,9 +108,9 @@ namespace rtmath
 			read_file_type_vector<::rtmath::data::arm::arm_scanning_radar_sacr>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
 			std::vector<boost::shared_ptr<::rtmath::data::arm::arm_scanning_radar_sacr> > &s,
-			std::shared_ptr<const rtmath::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> >)
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<::rtmath::data::arm::arm_scanning_radar_sacr> >)
 		{
-			RDthrow(debug::xUnimplementedFunction());
+			RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 			return sh;
 		}
 	}

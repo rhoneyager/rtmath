@@ -20,8 +20,8 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/images/image.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 
@@ -32,14 +32,14 @@
 #undef max
 #endif
 
-using namespace rtmath::registry;
+using namespace Ryan_Debug::registry;
 namespace rtmath {
 	namespace plugins {
 		namespace tsv {
 			using std::shared_ptr;
 			using rtmath::ddscat::ddOutput;
 
-			struct tsv_image_basicstats_handle : public rtmath::registry::IOhandler
+			struct tsv_image_basicstats_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_image_basicstats_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_IMAGE) { open(filename, t); }
 				virtual ~tsv_image_basicstats_handle() {}
@@ -51,22 +51,22 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
 						break;
 					case IOtype::READWRITE:
-						{
-							bool e = false;
-							if (exists(path(filename))) e = true;
-							file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
-							if (!e) writeHeader(); // If the file had to be created, give it a header
-						}
-						break;
+					{
+						bool e = false;
+						if (exists(path(filename))) e = true;
+						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::app));
+						if (!e) writeHeader(); // If the file had to be created, give it a header
+					}
+					break;
 					}
 				}
 				void writeHeader()
@@ -100,7 +100,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_image_basicstats_handle>(new tsv_image_basicstats_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_IMAGE) RDthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID_IMAGE) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_image_basicstats_handle>(sh);
 				}
 
@@ -123,7 +123,8 @@ namespace rtmath {
 
 		}
 	}
-
+}
+namespace Ryan_Debug {
 	namespace registry {
 		using rtmath::images::image;
 
@@ -135,7 +136,7 @@ namespace rtmath {
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "image_basicstats") return ::rtmath::plugins::tsv::export_tsv_image_basicstats(sh, opts, s);
-			else { RDthrow(debug::xUnimplementedFunction()); }
+			else { RDthrow(Ryan_Debug::error::xUnimplementedFunction()); }
 			return nullptr;
 		}
 

@@ -9,8 +9,8 @@
 #include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include <netcdf.h>
 
@@ -39,7 +39,7 @@ namespace rtmath {
 			//class netcdfFile;
 
 
-			struct netcdf_handle : public rtmath::registry::IOhandler
+			struct netcdf_handle : public Ryan_Debug::registry::IOhandler
 			{
 				netcdf_handle(const char* filename, IOtype t);
 				virtual ~netcdf_handle();
@@ -84,23 +84,23 @@ namespace rtmath {
 					int status = 0;
 					int parentId = h->file;
 					int varid = 0;
-					if (!VarExists(parentId, name).first) RDthrow(debug::xMissingVariable())
-						<< debug::otherErrorText("Variable (see symbolName) does not exist");
+					if (!VarExists(parentId, name).first) RDthrow(Ryan_Debug::error::xMissingVariable())
+						<< Ryan_Debug::error::otherErrorText("Variable (see symbolName) does not exist");
 					status = nc_inq_varid(parentId, name, &varid);
 					if (status) h->handle_error(status);
 					nc_type vartype;
 					status = nc_inq_vartype(parentId, varid, &vartype);
 					if (status) h->handle_error(status);
-					if (!AttrMatches<DataType>(vartype)) RDthrow(debug::xTypeMismatch())
-						<< debug::otherErrorText("Variable (see symbolName) has the wrong data type.");
+					if (!AttrMatches<DataType>(vartype)) RDthrow(Ryan_Debug::error::xTypeMismatch())
+						<< Ryan_Debug::error::otherErrorText("Variable (see symbolName) has the wrong data type.");
 
 					int ndims = 0;
 					status = nc_inq_varndims(parentId, varid, &ndims);
 
 					if (status) h->handle_error(status);
-					if (ndims < 0 || ndims > 2) RDthrow(debug::xDimensionMismatch())
-						<< debug::otherErrorText("Variable (in symbolName) has the wrong number of dimensions.")
-						<< debug::otherErrorCode(ndims);
+					if (ndims < 0 || ndims > 2) RDthrow(Ryan_Debug::error::xDimensionMismatch())
+						<< Ryan_Debug::error::otherErrorText("Variable (in symbolName) has the wrong number of dimensions.")
+						<< Ryan_Debug::error::otherErrorCode(ndims);
 
 					int dimids[2] = { 0, 0 };
 					status = nc_inq_vardimid(parentId, varid, dimids);
@@ -121,7 +121,7 @@ namespace rtmath {
 					if (status) h->handle_error(status);
 					return res;
 				} catch (::Ryan_Debug::error::xError & e) {
-					e << ::rtmath::debug::symbol_name(name);
+					e << ::Ryan_Debug::error::symbol_name(name);
 				}
 				// Will never reach, but suppresses a VS error.
 				Eigen::Matrix<DataType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> res(1,1);

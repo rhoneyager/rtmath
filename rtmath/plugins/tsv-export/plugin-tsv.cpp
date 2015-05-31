@@ -15,17 +15,19 @@
 
 #include "plugin-tsv.h"
 
-void dllEntry();
-rtmath_plugin_init(dllEntry);
 
-void dllEntry()
+D_Ryan_Debug_validator();
+D_rtmath_validator();
+
+D_Ryan_Debug_start()
 {
-	using namespace rtmath::registry;
-	static const rtmath::registry::DLLpreamble id(
+	using namespace Ryan_Debug::registry;
+	static const Ryan_Debug::registry::DLLpreamble id(
 		"Plugin-tsv",
 		"Provides tsv export of some data.",
 		PLUGINID);
-	rtmath_registry_register_dll(id);
+	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
+	if (res != SUCCESS) return res;
 
 	const size_t nExts = 1;
 	const char* exportExts[nExts] = { "tsv" };
@@ -43,37 +45,37 @@ void dllEntry()
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_ARS, "ar_rot_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural_writer
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_VORO, "summary_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural_writer
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDORI, "orientation_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural_writer
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDISO, "isotropic_data");
 
-	rtmath::registry::genAndRegisterIOregistryPlural_writer
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDISOSMALL, "isotropic_data_small");
 
-	rtmath::registry::genAndRegisterIOregistryPlural_writer
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::ddOutput,
 		::rtmath::ddscat::ddOutput_IO_output_registry>(
 		nExts, exportExts, PLUGINID_DDSTATS, "stats");
 
-	rtmath::registry::genAndRegisterIOregistryPlural_writer
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
 		<::rtmath::images::image,
 		::rtmath::images::image_IO_output_registry>(
 		nExts, exportExts, PLUGINID_IMAGE, "image_basicstats");
 
-
+	return SUCCESS;
 }
 
 

@@ -7,8 +7,8 @@
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 
 #define PLUGINID "B77570C4-C2D2-471C-B24A-A279061E363B"
@@ -36,7 +36,7 @@ namespace rtmath {
 	namespace plugins {
 		namespace tsv {
 
-			struct tsv_handle : public rtmath::registry::IOhandler
+			struct tsv_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_handle(const char* filename, IOtype t, const char* id) : IOhandler(id) {  }
 				virtual ~tsv_handle() {}
@@ -48,10 +48,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();

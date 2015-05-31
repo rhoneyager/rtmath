@@ -22,8 +22,8 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/hash.h"
-#include "../../rtmath/rtmath/splitSet.h"
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
@@ -35,8 +35,8 @@
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
 #include "../../rtmath/rtmath/ddscat/ddavg.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 
@@ -49,7 +49,7 @@ namespace rtmath {
 			using namespace rtmath::ddscat::weights;
 			using rtmath::ddscat::ddOutput;
 			using rtmath::ddscat::rotations;
-			using namespace rtmath::registry;
+			using namespace Ryan_Debug::registry;
 
 			struct tsv_ddoutput_stats_handle : public tsv_handle
 			{
@@ -67,13 +67,13 @@ namespace rtmath {
 				}
 			};
 
-			shared_ptr<::rtmath::registry::IOhandler>
+			shared_ptr<::Ryan_Debug::registry::IOhandler>
 				export_tsv_ddori_stats
-				(shared_ptr<::rtmath::registry::IOhandler> sh, shared_ptr<::rtmath::registry::IO_options> opts,
+				(shared_ptr<::Ryan_Debug::registry::IOhandler> sh, shared_ptr<::Ryan_Debug::registry::IO_options> opts,
 				const boost::shared_ptr<const ::rtmath::ddscat::ddOutput > ddOut)
 			{
 				std::string exporttype = opts->exportType();
-				if (exporttype != "stats") RDthrow(debug::xUnimplementedFunction());
+				if (exporttype != "stats") RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 				std::string filename = opts->filename();
 				std::string sDescrip = opts->getVal<std::string>("description", "");
 				IOhandler::IOtype iotype = opts->iotype();
@@ -82,7 +82,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_ddoutput_stats_handle>(new tsv_ddoutput_stats_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_DDSTATS) RDthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID_DDSTATS) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ddoutput_stats_handle>(sh);
 				}
 

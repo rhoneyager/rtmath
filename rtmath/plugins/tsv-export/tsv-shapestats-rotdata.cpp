@@ -30,8 +30,8 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 
@@ -42,14 +42,14 @@
 #undef max
 #endif
 
-using namespace rtmath::registry;
+using namespace Ryan_Debug::registry;
 namespace rtmath {
 	namespace plugins {
 		namespace tsv {
 			using std::shared_ptr;
 			using rtmath::ddscat::ddOutput;
 
-			struct tsv_ar_handle : public rtmath::registry::IOhandler
+			struct tsv_ar_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_ar_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_ARS) { open(filename, t); }
 				virtual ~tsv_ar_handle() {}
@@ -61,10 +61,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -110,7 +110,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_ar_handle>(new tsv_ar_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_ARS) RDthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID_ARS) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ar_handle>(sh);
 				}
 

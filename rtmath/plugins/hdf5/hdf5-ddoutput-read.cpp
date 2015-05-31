@@ -24,7 +24,7 @@
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/error.h>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -57,7 +57,7 @@ namespace rtmath {
 				boost::shared_ptr<rtmath::ddscat::ddPar > r);
 			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
 				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > shp);
-			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<registry::IO_options> opts, 
+			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
 				boost::shared_ptr<rtmath::ddscat::ddOutput > r)
 			{
 				using std::shared_ptr;

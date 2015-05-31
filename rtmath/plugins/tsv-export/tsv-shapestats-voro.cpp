@@ -21,20 +21,20 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 
 #include "plugin-tsv.h"
 
 using std::shared_ptr;
 using rtmath::ddscat::ddOutput;
-using namespace rtmath::registry;
+using namespace Ryan_Debug::registry;
 
 namespace rtmath {
 	namespace plugins {
 		namespace tsv {
 
-			struct tsv_summary_handle : public rtmath::registry::IOhandler
+			struct tsv_summary_handle : public Ryan_Debug::registry::IOhandler
 			{
 				tsv_summary_handle(const char* filename, IOtype t) : IOhandler(PLUGINID_VORO) { open(filename, t); }
 				virtual ~tsv_summary_handle() {}
@@ -46,10 +46,10 @@ namespace rtmath {
 					case IOtype::EXCLUSIVE:
 					case IOtype::DEBUG:
 					case IOtype::READONLY:
-						RDthrow(debug::xOtherError());
+						RDthrow(Ryan_Debug::error::xOtherError());
 						break;
 					case IOtype::CREATE:
-						if (exists(path(filename))) RDthrow(debug::xFileExists());
+						if (exists(path(filename))) RDthrow(Ryan_Debug::error::xFileExists());
 					case IOtype::TRUNCATE:
 						file = std::shared_ptr<std::ofstream>(new std::ofstream(filename, std::ios_base::trunc));
 						writeHeader();
@@ -84,7 +84,7 @@ namespace rtmath {
 				const boost::shared_ptr<const rtmath::ddscat::stats::shapeFileStats> s)
 			{
 				std::string exporttype = opts->exportType();
-				if (exporttype != "summary_data") RDthrow(debug::xUnimplementedFunction());
+				if (exporttype != "summary_data") RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 				std::string filename = opts->filename();
 				IOhandler::IOtype iotype = opts->iotype();
 				using std::shared_ptr;
@@ -92,7 +92,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_summary_handle>(new tsv_summary_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_VORO) RDthrow(debug::xDuplicateHook());
+					if (sh->getId() != PLUGINID_VORO) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_summary_handle>(sh);
 				}
 
