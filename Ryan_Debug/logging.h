@@ -5,7 +5,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <ostream>
-#include <boost/log/trivial.hpp>
+//#include <boost/log/trivial.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/expressions/keyword.hpp>
 #include <boost/log/sources/channel_feature.hpp>
