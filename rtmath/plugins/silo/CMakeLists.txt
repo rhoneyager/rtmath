@@ -40,5 +40,5 @@ add_library (rtmath_plugin_silo SHARED
 addlib(rtmath_plugin_silo SHARED)
 
 target_link_libraries(rtmath_plugin_silo ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat silo rtmath_silo_cpp)
-addplugin(rtmath_plugin_silo export)
+addplugin(rtmath_plugin_silo export rtmath)
 

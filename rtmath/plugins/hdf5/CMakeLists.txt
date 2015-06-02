@@ -49,5 +49,5 @@ target_link_libraries(rtmath_plugin_hdf5
 	${h5libs}
 	rtmath_hdf5_cpp
 	)
-addplugin(rtmath_plugin_hdf5 io)
+addplugin(rtmath_plugin_hdf5 io rtmath)
 

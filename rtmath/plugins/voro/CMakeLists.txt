@@ -20,5 +20,5 @@ add_library (rtmath_plugin_voro SHARED
 addlib(rtmath_plugin_voro SHARED)
 
 target_link_libraries(rtmath_plugin_voro ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${VORO_LIBRARIES})
-addplugin(rtmath_plugin_voro Shapes)
+addplugin(rtmath_plugin_voro Shapes rtmath)
 

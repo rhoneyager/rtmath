@@ -21,6 +21,6 @@ target_link_libraries(rtmath_plugin_ImageMagick
 	rtmath_images
 	${rtmath_images-libs}
 	${ImageMagick_LIBRARIES})
-addplugin(rtmath_plugin_ImageMagick Shapes)
+addplugin(rtmath_plugin_ImageMagick Shapes rtmath)
 
 

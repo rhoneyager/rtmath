@@ -40,5 +40,5 @@ target_link_libraries(rtmath_plugin_psql
 	rtmath_data
 	rtmath_ddscat
 	${PostgreSQL_LIBRARY})
-addplugin(rtmath_plugin_psql RT)
+addplugin(rtmath_plugin_psql RT rtmath)
 

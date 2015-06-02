@@ -20,7 +20,7 @@ add_library (rtmath_plugin_tsv SHARED
 	)
 addlib(rtmath_plugin_tsv SHARED)
 
-addplugin(rtmath_plugin_tsv export)
+addplugin(rtmath_plugin_tsv export rtmath)
 
 target_link_libraries(rtmath_plugin_tsv ${rtmath_images-libs} rtmath_images ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
 

@@ -22,5 +22,5 @@ add_library (rtmath_plugin_vtk SHARED
 addlib(rtmath_plugin_vtk SHARED)
 
 target_link_libraries(rtmath_plugin_vtk ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat ${VTK_LIBRARIES} ) #rtmath_vtk_cpp)
-addplugin(rtmath_plugin_vtk Shapes)
+addplugin(rtmath_plugin_vtk Shapes rtmath)
 

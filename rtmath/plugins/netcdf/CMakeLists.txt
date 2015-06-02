@@ -38,5 +38,5 @@ target_link_libraries(rtmath_plugin_netcdf
 	rtmath_voronoi
 	rtmath_data
 	netcdf)
-addplugin(rtmath_plugin_netcdf io)
+addplugin(rtmath_plugin_netcdf io rtmath)
 

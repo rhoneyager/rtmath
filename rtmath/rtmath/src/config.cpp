@@ -55,7 +55,7 @@ namespace rtmath {
 			using namespace boost::filesystem;
 			auto& lg = m_config::get();
 
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Finding Ryan_Debug configuration file";
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::notification) << "Finding rtmath configuration file";
 
 			// Check application execution arguments
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking app command line";

@@ -30,5 +30,5 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
 
 
 target_link_libraries(rtmath_plugin_mie ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat )
-addplugin(rtmath_plugin_mie non_dda)
+addplugin(rtmath_plugin_mie non_dda rtmath)
 

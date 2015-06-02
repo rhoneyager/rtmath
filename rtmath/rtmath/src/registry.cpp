@@ -214,8 +214,8 @@ namespace rtmath
 
 				// Relative to application
 				// Install path apps
-				boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
-				appBin.remove_filename();
+				//boost::filesystem::path appBin(Ryan_Debug::getPath(info.get()));
+				//appBin.remove_filename();
 				//Ryan_Debug::registry::searchPathsRecursive.emplace(appBin / "plugins");
 				//Ryan_Debug::registry::searchPathsRecursive.emplace( appBin / "../plugins" );
 				// Build path apps (linux)
@@ -226,8 +226,8 @@ namespace rtmath
 				auto modinfo = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*)constructSearchPaths), freeModuleInfo);
 				boost::filesystem::path libpath(getPath(modinfo.get()));
 				libpath.remove_filename();
-				searchPathsOne.emplace(libpath / "plugins");
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding library-relative path: " << libpath / "plugins";
+				searchPathsOne.emplace(libpath / "rtmath-plugins");
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding library-relative path: " << libpath / "rtmath-plugins";
 
 
 				// Checking Ryan_Debug.conf
@@ -235,30 +235,32 @@ namespace rtmath
 				{
 					auto rtconf = rtmath::config::loadRtconfRoot();
 					if (!rtconf) RDthrow(Ryan_Debug::error::xMissingRyan_DebugConf());
-					string srecursivePaths, sonePaths;
-					auto rtgeneral = rtconf->getChild("General");
-					if (rtgeneral) {
-						auto rtplugins = rtgeneral->getChild("Plugins");
-						if (rtplugins) {
-							rtplugins->getVal("Recursive", srecursivePaths);
-							rtplugins->getVal("OneLevel", sonePaths);
+					else {
+						string srecursivePaths, sonePaths;
+						auto rtgeneral = rtconf->getChild("General");
+						if (rtgeneral) {
+							auto rtplugins = rtgeneral->getChild("Plugins");
+							if (rtplugins) {
+								rtplugins->getVal("Recursive", srecursivePaths);
+								rtplugins->getVal("OneLevel", sonePaths);
+							}
 						}
-					}
-					// Split loading paths based on semicolons and commas. Do not trim spaces.
-					set<string> CrecursivePaths, ConePaths;
-					Ryan_Debug::splitSet::splitSet(srecursivePaths, CrecursivePaths);
-					Ryan_Debug::splitSet::splitSet(sonePaths, ConePaths);
+						// Split loading paths based on semicolons and commas. Do not trim spaces.
+						set<string> CrecursivePaths, ConePaths;
+						Ryan_Debug::splitSet::splitSet(srecursivePaths, CrecursivePaths);
+						Ryan_Debug::splitSet::splitSet(sonePaths, ConePaths);
 
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding paths from rtmath config file";
-					for (auto &p : CrecursivePaths)
-					{
-						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p;
-						searchPathsRecursive.emplace(boost::filesystem::path(p));
-					}
-					for (auto &p : ConePaths)
-					{
-						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p;
-						searchPathsOne.emplace(boost::filesystem::path(p));
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding paths from rtmath config file";
+						for (auto &p : CrecursivePaths)
+						{
+							BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p;
+							searchPathsRecursive.emplace(boost::filesystem::path(p));
+						}
+						for (auto &p : ConePaths)
+						{
+							BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Adding " << p;
+							searchPathsOne.emplace(boost::filesystem::path(p));
+						}
 					}
 				}
 
@@ -353,20 +355,19 @@ namespace rtmath
 			//if (vm.count("print-dll-search-paths"))
 			//	Ryan_Debug::registry::printDLLsearchPaths(std::cerr);
 
-			std::set<boost::filesystem::path> rPaths, oPaths;
-			Ryan_Debug::registry::findPath(rPaths, boost::filesystem::path("default"), searchPathsRecursive, true);
-			Ryan_Debug::registry::findPath(oPaths, boost::filesystem::path("default"), searchPathsOne, false);
+			//std::set<boost::filesystem::path> rPaths, oPaths;
+			//Ryan_Debug::registry::findPath(rPaths, boost::filesystem::path("default"), rtmath::registry::searchPathsRecursive, true);
+			//Ryan_Debug::registry::findPath(oPaths, boost::filesystem::path("default"), rtmath::registry::searchPathsOne, false);
 			std::vector<std::string> toLoadDlls;
 			// If a 'default' folder exists in the default search path, then use it for dlls.
 			// If not, then use the base plugins directory.
 			// Any library version / name detecting logic is in loadDLL (called by loadDLLs).
 
-			if (rPaths.size() || oPaths.size())
-			{
-				Ryan_Debug::registry::searchDLLs(toLoadDlls, rPaths, true);
-				Ryan_Debug::registry::searchDLLs(toLoadDlls, oPaths, false);
-			}
-			else { Ryan_Debug::registry::searchDLLs(toLoadDlls); }
+			//if (rPaths.size() || oPaths.size())
+			//{
+				Ryan_Debug::registry::searchDLLs(toLoadDlls, rtmath::registry::searchPathsRecursive, true);
+				Ryan_Debug::registry::searchDLLs(toLoadDlls, rtmath::registry::searchPathsOne, false);
+			//} else Ryan_Debug::registry::searchDLLs(toLoadDlls);
 
 			dll::loadDLLs(toLoadDlls);
 			
