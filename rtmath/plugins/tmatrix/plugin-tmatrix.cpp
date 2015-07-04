@@ -52,7 +52,7 @@ namespace rtmath
 				}
 
 				std::complex<double> mRes = i.m; 
-                std::complex<double> mAir(1.0, 0);
+				std::complex<double> mAir(1.0, 0);
 				i.rmeth(i.m, mAir, i.vFrac, mRes);
 
 				// Perform the calculation
