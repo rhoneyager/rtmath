@@ -15,7 +15,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
-#include "../../rtmath/rtmath/splitSet.h"
+//#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)

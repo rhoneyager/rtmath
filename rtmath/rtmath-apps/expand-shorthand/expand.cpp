@@ -3,11 +3,11 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options"), cmdline("Command-line options"),
 		config("Config options"), hidden("Hidden options"), oall("all options");
-		rtmath::debug::add_options(cmdline, config, hidden);
+		Ryan_Debug::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "Produce help message")

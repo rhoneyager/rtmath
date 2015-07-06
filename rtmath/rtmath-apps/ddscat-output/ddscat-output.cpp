@@ -9,18 +9,18 @@
 #include <iostream>
 #include <string>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/config.h>
+#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/hash.h"
 #include "../../rtmath/rtmath/config.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
 {
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
-		rtmath::debug::add_options(cmdline, config, hidden);
+		Ryan_Debug::add_options(cmdline, config, hidden);
 //		Ryan_Serialization::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
 		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 			options(oall).run(), vm);
 		po::notify(vm);
 
-		rtmath::debug::process_static_options(vm);
+		Ryan_Debug::process_static_options(vm);
 		//Ryan_Serialization::process_static_options(vm);
 		rtmath::ddscat::ddUtil::process_static_options(vm);
 		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 			vector<string> out;
 			for (const auto &v : tags_pre)
 			{
-				rtmath::config::splitVector(v, out, '=');
+				Ryan_Debug::splitSet::splitVector(v, out, '=');
 				if (out.size() < 2) out.push_back("");
 				tags.push_back(std::pair<string, string>(out[0], out[1]));
 				out.clear();
@@ -138,23 +138,25 @@ int main(int argc, char** argv)
 		bool writeShapes = vm["write-shapes"].as<bool>();
 		string exportType = vm["output-export-type"].as<string>();
 
-		auto opts = rtmath::registry::IO_options::generate();
+		auto opts = Ryan_Debug::registry::IO_options::generate();
 		opts->filename(sOutput);
 		opts->setVal<bool>("writeORI", writeORI);
 		opts->setVal<bool>("writeFML", writeFML);
 		opts->setVal<bool>("writeSHP", writeShapes);
 		opts->exportType(exportType);
-		if (boost::filesystem::exists(boost::filesystem::path(sOutput))) opts->iotype(rtmath::registry::IOhandler::IOtype::READWRITE);
+		if (boost::filesystem::exists(boost::filesystem::path(sOutput))) 
+			opts->iotype(Ryan_Debug::registry::IOhandler::IOtype::READWRITE);
 
-		auto optsaux = rtmath::registry::IO_options::generate();
+		auto optsaux = Ryan_Debug::registry::IO_options::generate();
 		optsaux->filename(sOutputAux);
 		optsaux->setVal<bool>("writeORI", writeORI);
 		optsaux->setVal<bool>("writeFML", writeFMLaux);
 		optsaux->setVal<bool>("writeSHP", writeShapes);
-		if (boost::filesystem::exists(boost::filesystem::path(sOutputAux))) optsaux->iotype(rtmath::registry::IOhandler::IOtype::READWRITE);
+		if (boost::filesystem::exists(boost::filesystem::path(sOutputAux))) 
+			optsaux->iotype(Ryan_Debug::registry::IOhandler::IOtype::READWRITE);
 
-		std::shared_ptr<rtmath::registry::IOhandler> writer, writeraux;
-		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> writer, writeraux;
+		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
 		/*
 		("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
 		("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
@@ -182,8 +184,8 @@ int main(int argc, char** argv)
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
 		if (vm.count("match-pol")) matchPols = vm["match-pol"].as<vector<string> >();
 		if (vm.count("match-run-uuid")) matchRunUuids = vm["match-run-uuid"].as<vector<string> >();
-		rtmath::config::intervals<float> iDipoleSpacing, iFrequencies, iAeffs, iTemps;
-		rtmath::config::intervals<size_t> iDipoleNumbers, iBetas, iThetas, iPhis;
+		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing, iFrequencies, iAeffs, iTemps;
+		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers, iBetas, iThetas, iPhis;
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
 		if (vm.count("match-frequency")) iFrequencies.append(vm["match-frequency"].as<vector<string>>()); //, &freqmap);
 		if (vm.count("match-aeff")) iAeffs.append(vm["match-aeff"].as<vector<string>>());
@@ -241,7 +243,7 @@ int main(int argc, char** argv)
 			cerr << "Processing " << i << endl;
 			path ps = expandSymlinks(i);
 
-			auto iopts = rtmath::registry::IO_options::generate();
+			auto iopts = Ryan_Debug::registry::IO_options::generate();
 			iopts->filename(i);
 			// Handle not needed as the read context is used only once.
 			if (is_directory(ps))
@@ -306,7 +308,7 @@ int main(int argc, char** argv)
 			try {
 				if (writeShapes)
 					run->loadShape(false);
-			} catch (rtmath::debug::xMissingHash &e) {
+			} catch (Ryan_Debug::error::xMissingHash &e) {
 				std::cerr << e.what() << std::endl;
 			}
 
@@ -327,7 +329,8 @@ int main(int argc, char** argv)
 				//dHandler = im->updateEntry(rtmath::data::arm::arm_info_registry::updateType::INSERT_ONLY, dHandler);
 			}
 
-			auto doWrite = [&](std::shared_ptr<rtmath::registry::IO_options> &oopts, std::shared_ptr<rtmath::registry::IOhandler> &w)
+			auto doWrite = [&](std::shared_ptr<Ryan_Debug::registry::IO_options> &oopts, 
+					std::shared_ptr<Ryan_Debug::registry::IOhandler> &w)
 			{
 				if (!oopts->filename().size()) return;
 

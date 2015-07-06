@@ -12,7 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
-#include "../../rtmath/rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
@@ -218,9 +218,9 @@ int main(int argc, char** argv)
 			
 			// Handle the common and merged columns in the same manner
 			for (auto it = sCommonCols.begin(); it != sCommonCols.end(); it++)
-				rtmath::config::splitSet<size_t>(*it,common_cols);
+				Ryan_Debug::splitSet::splitSet<size_t>(*it,common_cols);
 			for (auto it = sMergeCols.begin(); it != sMergeCols.end(); it++)
-				rtmath::config::splitSet<size_t>(*it,merge_cols);
+				Ryan_Debug::splitSet::splitSet<size_t>(*it,merge_cols);
 
 			// Validate input files beforehand
 			// Note, I'm relying on shell globbing. It's too annoying to
