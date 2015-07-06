@@ -3,7 +3,8 @@
 
 #include <string>
 #include <boost/math/constants/constants.hpp>
-
+#include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/phaseFunc.h"
@@ -11,8 +12,7 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
-#include <Ryan_Debug/debug.h>
-#include <Ryan_Debug/error.h>
+
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include <tmatrix/tmatrix.h>
@@ -96,10 +96,10 @@ namespace rtmath
 					/// \todo need to validate with ellipsoids
 
 					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
-				} catch (const ::tmatrix::tmError& t) {
+				} catch (const ::std::exception& t) {
 					std::cerr << "A tmatrix error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
-					RDthrow(Ryan_Debug::error::xOtherError());
+					throw(t);
 				}
 			}
 
@@ -155,10 +155,10 @@ namespace rtmath
 					for (size_t i = 0; i < 2; ++i)
 						for (size_t j = 0; j < 2; ++j)
 							p.S(i,j) = ang->getS(i, j);
-				} catch (const ::tmatrix::tmError& t) {
+				} catch (const ::std::exception& t) {
 					std::cerr << "A tmatrix error has occurred" << std::endl;
 					std::cerr << t.what() << std::endl;
-					RDthrow(Ryan_Debug::error::xOtherError());
+					throw(t);
 				}
 			}
 		}
