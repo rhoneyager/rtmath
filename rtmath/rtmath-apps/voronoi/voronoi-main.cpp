@@ -17,11 +17,11 @@
 #include <boost/serialization/vector.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/splitSet.h>
 //#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
@@ -105,8 +105,8 @@ int main(int argc, char** argv)
 		vector<string> matchHashes, matchFlakeTypes, matchPols, matchRunUuids, matchParentHashes;
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
-		rtmath::config::intervals<float> iDipoleSpacing;
-		rtmath::config::intervals<size_t> iDipoleNumbers;
+		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
+		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
 		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
 		if (vm.count("match-parent-flake")) matchParentFlakes = true;
@@ -157,10 +157,10 @@ int main(int argc, char** argv)
 		}
 
 		// Setup for output
-		std::shared_ptr<registry::IOhandler> handle, exportHandle;
-		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
-		auto opts = registry::IO_options::generate();
-		auto optsExport = registry::IO_options::generate();
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle, exportHandle;
+		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
+		auto opts = Ryan_Debug::registry::IO_options::generate();
+		auto optsExport = Ryan_Debug::registry::IO_options::generate();
 		//opts->filetype(ctype);
 		opts->exportType(exportType);
 		opts->filename(output);
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 		//opts->setVal("key", sstats._shp->filename);
 		//optsExport->setVal("key", sstats._shp->filename);
 
-		std::set<rtmath::HASH_t> already_done; // Prevent duplicate runs
+		std::set<Ryan_Debug::hash::HASH_t> already_done; // Prevent duplicate runs
 
 		using namespace rtmath::ddscat;
 		using namespace rtmath::Voronoi;
@@ -203,12 +203,13 @@ int main(int argc, char** argv)
 		for (auto it = inputvoro.begin(); it != inputvoro.end(); ++it)
 		{
 			path pi(*it);
-			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
-				<< rtmath::debug::file_name(*it);
+			if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::file_name(*it);
 			if (is_directory(pi)) continue;
 			
 			cerr << "Processing stored Voronoi data " << *it << endl;
-			auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
+			auto iopts = Ryan_Debug::registry::IO_options::generate(
+					Ryan_Debug::registry::IOhandler::IOtype::READONLY);
 			iopts->filename(*it);
 			try {
 				vector<boost::shared_ptr<Voronoi::VoronoiDiagram> > voros;
@@ -246,7 +247,8 @@ int main(int argc, char** argv)
 			else ps = pi;
 
 			try {
-				auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
+				auto iopts = Ryan_Debug::registry::IO_options::generate(
+						Ryan_Debug::registry::IOhandler::IOtype::READONLY);
 				iopts->filename(*it);
 				// Handle not needed as the read context is used only once.
 				if (shapefile::shapefile::canReadMulti(nullptr, iopts)) {
@@ -294,7 +296,8 @@ int main(int argc, char** argv)
 			vector<boost::shared_ptr<ddscat::ddOutput> > runs;
 
 			try {
-				auto iopts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
+				auto iopts = Ryan_Debug::registry::IO_options::generate(
+						Ryan_Debug::registry::IOhandler::IOtype::READONLY);
 				iopts->filename(*it);
 				// Handle not needed as the read context is used only once.
 				if (is_directory(ps))

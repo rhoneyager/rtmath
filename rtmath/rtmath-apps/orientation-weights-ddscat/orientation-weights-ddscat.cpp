@@ -16,10 +16,10 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/splitSet.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
@@ -100,15 +100,15 @@ int main(int argc, char** argv)
 			double bMin, bMax, tMin, tMax, pMin, pMax, interval;
 			std::string specializer;
 			size_t nB, nT, nP;
-			rtmath::config::extractInterval(sbetas, bMin, bMax,interval, nB, specializer);
+			Ryan_Debug::splitSet::extractInterval(sbetas, bMin, bMax,interval, nB, specializer);
 			if (specializer != "lin") 
-				RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("Beta interval needs to be linearly spaced.");
-			rtmath::config::extractInterval(sthetas, tMin, tMax,interval, nT, specializer);
+				RDthrow(Ryan_Debug::error::xBadInput()) << Ryan_Debug::error::otherErrorText("Beta interval needs to be linearly spaced.");
+			Ryan_Debug::splitSet::extractInterval(sthetas, tMin, tMax,interval, nT, specializer);
 			if (specializer != "cos") 
-				RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("Theta interval needs to be cosine spaced.");
-			rtmath::config::extractInterval(sphis, pMin, pMax,interval, nP, specializer);
+				RDthrow(Ryan_Debug::error::xBadInput()) << Ryan_Debug::error::otherErrorText("Theta interval needs to be cosine spaced.");
+			Ryan_Debug::splitSet::extractInterval(sphis, pMin, pMax,interval, nP, specializer);
 			if (specializer != "lin") 
-				RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("phi interval needs to be linearly spaced.");
+				RDthrow(Ryan_Debug::error::xBadInput()) << Ryan_Debug::error::otherErrorText("phi interval needs to be linearly spaced.");
 
 			rot = rtmath::ddscat::rotations(bMin,bMax,nB,tMin,tMax,nT,pMin,pMax,nP);
 		}
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 							a1weight << "\t" << bWeight << "\t" << totWeight << "\t" << sumTotal << endl;
 					}
 			*out << endl;
-			if (abs(sumTotal-1.0) > 0.001) RDthrow(debug::xAssert()) << rtmath::debug::otherErrorText("Weights do not sum to unity!");
+			if (abs(sumTotal-1.0) > 0.001) RDthrow(Ryan_Debug::error::xAssert()) << Ryan_Debug::error::otherErrorText("Weights do not sum to unity!");
 			//out << "Sums:\t\t\t\t" << sumTotal << endl << endl;
 		}
 

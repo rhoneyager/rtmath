@@ -17,11 +17,11 @@
 #include <boost/serialization/vector.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/splitSet.h>
 //#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
@@ -126,9 +126,9 @@ int main(int argc, char** argv)
 		}
 
 		// Setup for output
-		std::shared_ptr<registry::IOhandler> handle, exportHandle;
-		auto opts = registry::IO_options::generate();
-		auto optsExport = registry::IO_options::generate();
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle, exportHandle;
+		auto opts = Ryan_Debug::registry::IO_options::generate();
+		auto optsExport = Ryan_Debug::registry::IO_options::generate();
 		opts->exportType(exportType);
 		opts->filename(output);
 		optsExport->filename(exportFilename);
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 		using namespace rtmath::ddscat;
 		//for (const auto &vd : objs)
 		auto doProcess = [&](
-			rtmath::HASH_t hash, // always set
+			Ryan_Debug::hash::HASH_t hash, // always set
 			boost::shared_ptr<const shapefile::shapefile> shp, // pre-loaded shape (if any). else, load from hash.
 			boost::shared_ptr<stats::shapeFileStats> stats, // pre-loaded stats (if any). else, load from hash.
 			boost::shared_ptr<rotations> rots // forced (non-default) rotations (for ddoutput)
@@ -184,7 +184,7 @@ int main(int argc, char** argv)
 
 			vector<boost::shared_ptr<stats::shapeFileStats> > sinputs;
 			try {
-				io::readObjs<stats::shapeFileStats>(sinputs, *it);
+				Ryan_Debug::io::readObjs<stats::shapeFileStats>(sinputs, *it);
 			} catch (std::exception &e) {
 				cerr << e.what() << std::endl;
 				continue;
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
 			else ps = pi;
 			vector<boost::shared_ptr<ddscat::shapefile::shapefile> > sinputs;
 			try {
-				io::readObjs<ddscat::shapefile::shapefile>(sinputs, ps.string());
+				Ryan_Debug::io::readObjs<ddscat::shapefile::shapefile>(sinputs, ps.string());
 			} catch (std::exception &e) {
 				cerr << e.what() << std::endl;
 				continue;
@@ -225,7 +225,7 @@ int main(int argc, char** argv)
 			if (is_directory(pi)) rinputs.push_back(ddscat::ddOutput::generate(*it, true));
 			else {
 				try {
-					io::readObjs<ddscat::ddOutput>(rinputs, *it);
+					Ryan_Debug::io::readObjs<ddscat::ddOutput>(rinputs, *it);
 				} catch (std::exception &e) {
 					cerr << e.what() << std::endl;
 					continue;

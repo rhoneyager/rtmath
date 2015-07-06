@@ -11,6 +11,7 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
@@ -89,8 +90,8 @@ int main(int argc, char** argv)
 		/// \todo Change so that only parts of a large file are mapped at once.
 		using namespace boost::filesystem;
 		using namespace boost::interprocess;
-		if (!exists(path(infile))) RTthrow(debug::xMissingFile())
-			<< debug::file_name(infile);
+		if (!exists(path(infile))) RDthrow(Ryan_Debug::error::xMissingFile())
+			<< Ryan_Debug::error::file_name(infile);
 		
 		size_t fsize = (size_t) file_size(path(infile)); // bytes
 		file_mapping m_in(
