@@ -38,8 +38,14 @@ namespace Ryan_Debug {
 	}
 	namespace io {
 		template <>
-		RYAN_DEBUG_DLEXPORT boost::shared_ptr
-			<::Ryan_Debug::config::configsegment> customGenerator();
+		boost::shared_ptr<::Ryan_Debug::config::configsegment> 
+		RYAN_DEBUG_DLEXPORT
+		customGenerator<::Ryan_Debug::config::configsegment>();
+
+		extern template
+		boost::shared_ptr<::Ryan_Debug::config::configsegment> 
+		RYAN_DEBUG_DLEXPORT
+		customGenerator<::Ryan_Debug::config::configsegment>();
 	}
 
 	/** \brief describes the structure that should be contained in options files that
@@ -115,6 +121,8 @@ namespace Ryan_Debug {
 		{
 			// Need readVector as a friend class
 			friend boost::shared_ptr<configsegment> io::customGenerator<configsegment>();
+			/// \note Blasted gcc refuses to use template specialization of customGenerator outside of project.
+			configsegment();
 			configsegment(const std::string &name);
 			configsegment(const std::string &name, boost::shared_ptr<configsegment> &parent);
 		public:

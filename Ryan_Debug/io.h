@@ -796,6 +796,15 @@ namespace Ryan_Debug
 			return res;
 		}
 
+	} namespace config {
+		class configsegment;
+	} namespace io {
+		template <>
+		boost::shared_ptr<::Ryan_Debug::config::configsegment> 
+		RYAN_DEBUG_DLEXPORT
+		customGenerator<::Ryan_Debug::config::configsegment>();
+
+
 		template <class obj_class,
 		class input_registry_class>
 		class implementsStandardReader : public implementsStandardSingleReader<obj_class, input_registry_class>
@@ -816,7 +825,7 @@ namespace Ryan_Debug
 			{
 				// Brief invocation of the object constructor to ensure that any custom handlers get registered.
 				//boost::shared_ptr<obj_class> obj = 
-				customGenerator<obj_class>();
+				::Ryan_Debug::io::customGenerator<obj_class>();
 
 				std::ostringstream o;
 				o << "Performing vector read on file " << opts->filename();
@@ -858,7 +867,7 @@ namespace Ryan_Debug
 							// as a shared_ptr, for example).
 							//boost::shared_ptr<obj_class> obj = obj_class::generate();
 							//boost::shared_ptr<obj_class> obj(new obj_class);
-							boost::shared_ptr<obj_class> obj = customGenerator<obj_class>();
+							boost::shared_ptr<obj_class> obj = ::Ryan_Debug::io::customGenerator<obj_class>();
 							auto res = dllm(handle, opts, obj, filter);
 							v.push_back(obj);
 							return res;

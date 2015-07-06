@@ -162,8 +162,10 @@ namespace Ryan_Debug {
 	}
 
 	namespace io {
-		template <>
-		boost::shared_ptr<::Ryan_Debug::config::configsegment> customGenerator()
+		template<>
+		boost::shared_ptr<::Ryan_Debug::config::configsegment> 
+		RYAN_DEBUG_DLEXPORT customGenerator
+		<::Ryan_Debug::config::configsegment>()
 		{
 			boost::shared_ptr<::Ryan_Debug::config::configsegment> res
 				(new ::Ryan_Debug::config::configsegment(""));
@@ -322,6 +324,12 @@ namespace Ryan_Debug {
 			obj->_parents.insert(parent);
 			parent->_children.insert(obj);
 			return obj;
+		}
+
+		configsegment::configsegment()
+		{
+			// No parent
+			this->_segname = "";
 		}
 
 		configsegment::configsegment(const std::string &name)
