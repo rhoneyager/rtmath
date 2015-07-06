@@ -9,6 +9,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 
+#include <Ryan_Debug/io.h>
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 #include <Ryan_Debug/logging.h>
