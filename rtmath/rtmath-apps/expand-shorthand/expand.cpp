@@ -3,9 +3,9 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
 #include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/command.h"
-#include "../../rtmath/rtmath/error/error.h"
 #include "../../rtmath/rtmath/config.h"
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/error/debug.h"

@@ -15,11 +15,12 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/splitSet.h>
 //#include <Ryan_Serialization/serialization.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/ddweights.h"
@@ -98,9 +99,9 @@ int main(int argc, char** argv)
 		double Min, Max, interval;
 		std::string specializer;
 		size_t N;
-		rtmath::config::extractInterval(srots, Min, Max,interval, N, specializer);
+		Ryan_Debug::splitSet::extractInterval(srots, Min, Max,interval, N, specializer);
 		if (specializer != "lin" && specializer != "cos") 
-			RDthrow(debug::xBadInput()) << rtmath::debug::otherErrorText("Interval needs to be linearly or cosine spaced.");
+			RDthrow(Ryan_Debug::error::xBadInput()) << Ryan_Debug::error::otherErrorText("Interval needs to be linearly or cosine spaced.");
 		
 		boost::shared_ptr<ddWeights> dw;
 		if (specializer == "lin")

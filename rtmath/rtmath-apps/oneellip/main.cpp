@@ -9,7 +9,8 @@
 #include <sstream>
 #include <string>
 #include <Ryan_Debug/debug.h>
-#include "../../rtmath/rtmath/splitSet.h"
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/phaseFunc.h"
@@ -18,7 +19,6 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char *argv[])
 {
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 			for (auto it = inputs.begin(); it != inputs.end(); it++)
 				cerr << "\t" << *it << "\n";
 		};
-		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
 		/*
 		("from-db", "Perform search on database and select files matching criteria.")
 		("match-hash", po::value<vector<string> >(), "Match lower hashes")
@@ -143,8 +143,8 @@ int main(int argc, char *argv[])
 		("match-parent-flake", "Select the parent flakes")
 		*/
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
-		rtmath::config::intervals<float> iDipoleSpacing;
-		rtmath::config::intervals<size_t> iDipoleNumbers;
+		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
+		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
 		bool matchParentFlakes;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
@@ -178,8 +178,8 @@ int main(int argc, char *argv[])
 		{
 			cerr << "Processing " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
-				<< rtmath::debug::file_name(*it);
+			if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::file_name(*it);
 			if (is_directory(pi))
 			{
 				path pt = pi / "target.out";
@@ -194,11 +194,11 @@ int main(int argc, char *argv[])
 				}
 			}
 			else {
-				auto iopts = rtmath::registry::IO_options::generate();
+				auto iopts = Ryan_Debug::registry::IO_options::generate();
 				iopts->filename(*it);
 				try {
 					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
-					rtmath::io::readObjs(shapes, *it);
+					Ryan_Debug::io::readObjs(shapes, *it);
 					for (auto &s : shapes)
 						collection->insert(s);
 				}
@@ -229,9 +229,9 @@ int main(int argc, char *argv[])
 		// First, set any overrides for the frequency, temperature and refractive index
 		set<double> temps, freqs;
 		if (vm.count("temps"))
-			rtmath::config::splitSet(vm["temps"].as<string>(), temps);
+			Ryan_Debug::splitSet::splitSet(vm["temps"].as<string>(), temps);
 		if (vm.count("freqs"))
-			rtmath::config::splitSet(vm["freqs"].as<string>(), freqs);
+			Ryan_Debug::splitSet::splitSet(vm["freqs"].as<string>(), freqs);
 		bool overrideM = false;
 		complex<double> ovM;
 		double nu = vm["nu"].as<double>();
@@ -310,13 +310,13 @@ int main(int argc, char *argv[])
 			// Freqs and temps are in main's scope
 			set<double> aeffs, radii, aspects, vfracs; // , alphas, betas;
 			if (vm.count("aeffs"))
-				rtmath::config::splitSet(vm["aeffs"].as<string>(), aeffs);
+				Ryan_Debug::splitSet::splitSet(vm["aeffs"].as<string>(), aeffs);
 			if (vm.count("radii"))
-				rtmath::config::splitSet(vm["radii"].as<string>(), radii);
+				Ryan_Debug::splitSet::splitSet(vm["radii"].as<string>(), radii);
 			if (vm.count("aspect-ratios"))
-				rtmath::config::splitSet(vm["aspect-ratios"].as<string>(), aspects);
+				Ryan_Debug::splitSet::splitSet(vm["aspect-ratios"].as<string>(), aspects);
 			if (vm.count("volume-fractions"))
-				rtmath::config::splitSet(vm["volume-fractions"].as<string>(), vfracs);
+				Ryan_Debug::splitSet::splitSet(vm["volume-fractions"].as<string>(), vfracs);
 
 			if (!freqs.size()) doHelp("Need to specify frequencies.");
 			if (!temps.size() && !overrideM) doHelp("Need to specify temperatures.");
@@ -446,14 +446,14 @@ int main(int argc, char *argv[])
 					r.fvMeth = "Internal Voronoi Depth ";
 					r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
 					r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-				} else RTthrow(rtmath::debug::xBadInput())
-					<< rtmath::debug::otherErrorText("Unhandled volume fraction method");
+				} else RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("Unhandled volume fraction method");
 
 				/// Gives aspect ratio of matching ellipsoid
 				/// \todo Implement this function
 				auto arEllipsoid = [](double sa, double v) -> double
 				{
-					RTthrow(rtmath::debug::xUnimplementedFunction());
+					RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 					return -1;
 				};
 

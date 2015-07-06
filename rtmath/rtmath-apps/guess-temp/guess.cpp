@@ -4,8 +4,8 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/command.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/error/debug.h"
 

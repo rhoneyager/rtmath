@@ -17,14 +17,13 @@
 #include <vector>
 #include <map>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/splitSet.h>
+#include <Ryan_Debug/io.h>
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"
 #include "../../rtmath/rtmath/command.h"
-#include "../../rtmath/rtmath/splitSet.h"
-#include "../../rtmath/rtmath/io.h"
-#include "../../rtmath/rtmath/error/debug.h"
 
 enum PHASE {
 	ICE,
@@ -44,7 +43,7 @@ int main(int argc, char** argv)
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
-		rtmath::debug::add_options(cmdline, config, hidden);
+		Ryan_Debug::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
@@ -84,7 +83,7 @@ int main(int argc, char** argv)
 			vm );
 		po::notify (vm);
 
-		rtmath::debug::process_static_options(vm);
+		Ryan_Debug::process_static_options(vm);
 
 		rtmath::ddscat::dielTab dfile;
 		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen, unitsTemp;
@@ -134,13 +133,13 @@ int main(int argc, char** argv)
 			!vm.count("temperature") || !vm.count("frequency"))
 			doHelp("");
 
-		rtmath::config::splitSet<double>(sTemps,temps);
-		rtmath::config::splitSet<double>(sFreqs,freqs);
-		rtmath::config::splitSet<double>(sNus,nus);
+		Ryan_Debug::splitSet::splitSet<double>(sTemps,temps);
+		Ryan_Debug::splitSet::splitSet<double>(sFreqs,freqs);
+		Ryan_Debug::splitSet::splitSet<double>(sNus,nus);
 		for (auto it = vsVols.begin(); it != vsVols.end(); ++it)
 		{
 			set<double> s;
-			rtmath::config::splitSet<double>(it->second,s);
+			Ryan_Debug::splitSet::splitSet<double>(it->second,s);
 			vVols[it->first] = move(s);
 		}
 		if (sshape.size())
@@ -148,7 +147,7 @@ int main(int argc, char** argv)
 			if (!vVols.count(PHASE::ICE)) vVols[PHASE::ICE] = set<double>();
 
 			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shps;
-			rtmath::io::readObjs(shps, sshape);
+			Ryan_Debug::io::readObjs(shps, sshape);
 			if (!shps.size()) doHelp("File must contain shapes");
 			auto shp = shps[0];
 			double numInner = 0, numOccupied = 0, frac = 0;
@@ -176,8 +175,8 @@ int main(int argc, char** argv)
 		{
 			if (temps.size() > 1 || nus.size() > 1 || vVols.size() > 1)
 			{
-				RTthrow(rtmath::debug::xBadInput())
-					<< rtmath::debug::otherErrorText("mtab output can only vary by frequency");
+				RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("mtab output can only vary by frequency");
 			}
 		}
 
@@ -347,7 +346,7 @@ int main(int argc, char** argv)
 							rtmath::refract::bruggeman(mIce, mAir, fIce, mEff);
 						} else {
 							cerr << "Unknown method: " << method << endl;
-							RTthrow(rtmath::debug::xBadInput());
+							RDthrow(Ryan_Debug::error::xBadInput());
 						}
 
 						// Write effective refractive index
