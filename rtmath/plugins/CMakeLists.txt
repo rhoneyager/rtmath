@@ -82,7 +82,7 @@ if (BUILD_PLUGINS)
 		add_subdirectory(voro)
 	endif()
 	option (BUILD_PLUGIN_VORO2D
-		"Build VORO++ 2d plugin. Used in stats." ON)
+		"Build VORO++ 2d plugin. Used in stats." OFF)
 	if (BUILD_PLUGIN_VORO2D)
 		add_subdirectory(voro2d)
 	endif()
