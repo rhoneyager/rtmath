@@ -37,7 +37,7 @@ namespace {
 namespace rtmath {
 	namespace ddscat {
 		namespace stats {
-			const int shapeFileStatsBase::_maxVersion = 5;
+			const int shapeFileStatsBase::_maxVersion = 6;
 			SHARED_PRIVATE bool autoHashShapes = false;
 			SHARED_PRIVATE bool autoHashStats = false;
 			SHARED_PRIVATE std::vector<boost::tuple<double, double, double> > defaultRots;
@@ -390,6 +390,18 @@ namespace rtmath {
 					calcSsolid();
 					calcVoroCvx(); // To get internal voronoi
 
+					this->_currVersion++;
+				}
+				if (this->_currVersion == 5)
+				{
+					// Version 6 supplements the max ellipsoid calculation with another
+					// code designed for Holly's flakes. It assumes that flakes
+					// are aligned using her system, determines if oblate / prolate
+					// and uses the corresponding aspect ratio in a precalculated formula.
+					//
+					// And Sellmax adds in surface area approximation.
+					calcSellmax();
+					calcSellmaxHolly();
 					this->_currVersion++;
 				}
 				// Future upgrades can go here.

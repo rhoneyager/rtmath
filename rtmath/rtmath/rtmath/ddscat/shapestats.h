@@ -108,6 +108,7 @@ namespace rtmath {
 			/**
 			* Version history for shapeFileStats, shapeFileStatsRotated and base classes:
 			*
+			* 6 - Ellipsoid_max adds SA. Adding Holly AR ellipsoid_max.
 			* 5 - Adding rms sphere and radius of gyration to stats
 			* 4 - Adding Voronoi hulls, and subclassing V,SA and f values.
 			* 3 - Bug fixes
@@ -164,7 +165,7 @@ namespace rtmath {
 				/// SVoronoi_internal_2 is for the internal voronoi hull
 				volumetric Scircum_sphere, Sconvex_hull, Sgyration,
 					SVoronoi_hull, Sellipsoid_max, Srms_sphere,
-					Ssolid, SVoronoi_internal_2;
+					Ssolid, SVoronoi_internal_2, Sellipsoid_max_Holly;
 					//SCircum_circle_proj_x, SCircum_circle_proj_y,
 					//SCircum_circle_proj_z, SCircum_ellipse_proj_x,
 					//SCircum_ellipse_proj_y, SCircum_ellipse_proj_z,
@@ -235,6 +236,7 @@ namespace rtmath {
 				void calcSsolid();
 				void calcScircum();
 				void calcSellmax();
+				void calcSellmaxHolly();
 				void calcSrms_sphere();
 				void calcSgyration();
 				mutable rotPtr _rotMinPE, _rotMaxAR;

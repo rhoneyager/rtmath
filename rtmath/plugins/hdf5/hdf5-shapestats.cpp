@@ -110,11 +110,12 @@ namespace rtmath {
 						float V, SA, aeff_SA, aeff_V, f;
 					};
 
-					const size_t nMeths = 8;
+					const size_t nMeths = 9;
 					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
 						"Voronoi_Hull", "Ellipsoid_Max",
 						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
-						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
+						"Voronoi_Internal_2", "Ellipsoid_Max_Holly"
+						/*, "Circum_circle_proj_x",
 						"Circum_circle_proj_y", "Circum_circle_proj_z",
 						"SCircum_ellipse_proj_x", "SCircum_ellipse_proj_y",
 						"SCircum_ellipse_proj_z", "Smean_circle_proj_x",
@@ -138,6 +139,7 @@ namespace rtmath {
 					writeIndex(s->Sgyration);
 					writeIndex(s->Ssolid);
 					writeIndex(s->SVoronoi_internal_2);
+					writeIndex(s->Sellipsoid_max_Holly);
 					/*
 					writeIndex(8, s->SCircum_circle_proj_x);
 					writeIndex(9, s->SCircum_circle_proj_y);

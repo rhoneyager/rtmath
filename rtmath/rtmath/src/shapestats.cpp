@@ -263,7 +263,6 @@ namespace rtmath {
 				const matrixTable &mat = pdr->get<1>();
 				const vectorTable &vec = pdr->get<2>();
 
-
 				Sellipsoid_max.V = boost::math::constants::pi<float>() / 6.0f;
 				// Using diameters, and factor in prev line reflects this
 
@@ -271,13 +270,45 @@ namespace rtmath {
 				Sellipsoid_max.V *= vec[rotColDefs::MAX](0) - vec[rotColDefs::MIN](0);
 				Sellipsoid_max.V *= vec[rotColDefs::MAX](1) - vec[rotColDefs::MIN](1);
 				Sellipsoid_max.V *= vec[rotColDefs::MAX](2) - vec[rotColDefs::MIN](2);
-
-				//Sellipsoid_rms.V = 4.0f * boost::math::constants::pi<float>() / 3.0f;
-				//Sellipsoid_rms.V *= pdr->max(0,0) - pdr->min(0,0);
-				//Sellipsoid_rms.V *= pdr->max(0,1) - pdr->min(0,1);
-				//Sellipsoid_rms.V *= pdr->max(0,2) - pdr->min(0,2);
-
+				float a = vec[rotColDefs::MAX](0) - vec[rotColDefs::MIN](0);
+				float b = vec[rotColDefs::MAX](1) - vec[rotColDefs::MIN](1);
+				float c = vec[rotColDefs::MAX](2) - vec[rotColDefs::MIN](2);
+				a /= 2.f; b /= 2.f; c /= 2.f;
+				Sellipsoid_max.SA = boost::math::constants::pi<float>() * 4.0f
+					* pow((1.f/3.f)*( pow(a,1.6f) + pow(b,1.6f) + pow(c,1.6f) ),(1.f/1.6f));
 				Sellipsoid_max.calc(this);
+			}
+
+			void shapeFileStatsBase::calcSellmaxHolly()
+			{
+				auto pdr = calcStatsRot(0, 0, 0);
+				const basicTable &tbl = pdr->get<0>();
+				const matrixTable &mat = pdr->get<1>();
+				const vectorTable &vec = pdr->get<2>();
+
+				// Determine first if oblate or prolate.
+				// Then, select appropriate aspect ratio.
+				// Use formula of AR and max diameter to get V and SA.
+
+				// Indices: 0 -> x, 1 -> y, 2 -> z
+				float a = vec[rotColDefs::MAX](0) - vec[rotColDefs::MIN](0);
+				float b = vec[rotColDefs::MAX](1) - vec[rotColDefs::MIN](1);
+				float c = vec[rotColDefs::MAX](2) - vec[rotColDefs::MIN](2);
+				a /= 2.f; b /= 2.f; c /= 2.f;
+				float eps = a/c;
+				bool oblate = (eps>=1.f) ? true : false;
+				const float &md = max_distance;
+
+				Sellipsoid_max_Holly.V = boost::math::constants::pi<float>();
+				if (oblate) {
+					Sellipsoid_max_Holly.V *= pow(md,3.f) / (6.f * eps);
+				} else { // prolate
+					Sellipsoid_max_Holly.V *= pow(md,3.f) * pow(eps,2.f) / 6.f;
+				}
+
+				Sellipsoid_max_Holly.SA = boost::math::constants::pi<float>() * 4.0f
+					* pow((1.f/3.f)*( pow(a,1.6f) + pow(b,1.6f) + pow(c,1.6f) ),(1.f/1.6f));
+				Sellipsoid_max_Holly.calc(this);
 			}
 
 			void shapeFileStatsBase::calcSrms_sphere()
@@ -364,6 +395,7 @@ namespace rtmath {
 				// Calculate rotated stats to avoid having to duplicate code
 				// From the 0,0,0 rotation,
 				calcSellmax();
+				calcSellmaxHolly();
 				calcSrms_sphere();
 				calcSgyration();
 

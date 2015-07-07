@@ -99,12 +99,13 @@ namespace rtmath {
 						float V, SA, aeff_SA, aeff_V, f;
 					};
 
-					const size_t nMeths = 8;
+					const size_t nMeths = 9; // Remember to update writer, too!!!!
 					// Names must match writer
 					const char* names[nMeths] = { "Circum_Sphere", "Convex_Hull",
 						"Voronoi_Hull", "Ellipsoid_Max",
 						"RMS_Sphere", "Gyration_Sphere", "Solid_Sphere",
-						"Voronoi_Internal_2"/*, "Circum_circle_proj_x",
+						"Voronoi_Internal_2", "Ellipsoid_Max_Holly"
+						/*, "Circum_circle_proj_x",
 						"Circum_circle_proj_y", "Circum_circle_proj_z",
 						"SCircum_ellipse_proj_x", "SCircum_ellipse_proj_y",
 						"SCircum_ellipse_proj_z", "Smean_circle_proj_x",
@@ -144,7 +145,9 @@ namespace rtmath {
 						else if (name == string(names[4])) v = &(r->Srms_sphere);
 						else if (name == string(names[5])) v = &(r->Sgyration);
 						else if (name == string(names[6])) v = &(r->Ssolid);
-						else if (name == string(names[7])) v = &(r->SVoronoi_internal_2);/*
+						else if (name == string(names[7])) v = &(r->SVoronoi_internal_2);
+						else if (name == string(names[8])) v = &(r->Sellipsoid_max_Holly);
+						/*
 						else if (name == string(names[8])) v = &(r->SCircum_circle_proj_x);
 						else if (name == string(names[9])) v = &(r->SCircum_circle_proj_y);
 						else if (name == string(names[10])) v = &(r->SCircum_circle_proj_z);

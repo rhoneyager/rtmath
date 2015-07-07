@@ -70,6 +70,8 @@ namespace rtmath {
 						"Circum_Sphere_V\tCircum_Sphere_SA\t"
 						"Convex_V\tConvex_SA\t"
 						"Voronoi_V\tVoronoi_SA\t"
+						"Ell_Max_V\tEll_Max_SA\t"
+						"Ell_Max_H_V\tEll_Max_H_SA\t"
 						"as_abs_xy\tas_abs_xz\tas_abs_yz\t"
 						"as_rms_xy\tas_rms_xz\tas_rms_yz\t"
 						"as_abm_xy\tas_abm_xz\tas_abm_yz\n"
@@ -108,6 +110,8 @@ namespace rtmath {
 					<< s->Scircum_sphere.V << "\t" << s->Scircum_sphere.SA << "\t"
 					<< s->Sconvex_hull.V << "\t" << s->Sconvex_hull.SA << "\t"
 					<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
+					<< s->Sellipsoid_max.V << "\t" << s->Sellipsoid_max.SA << "\t"
+					<< s->Sellipsoid_max_Holly.V << "\t" << s->Sellipsoid_max_Holly.SA << "\t"
 					<< mat[rotColDefs::AS_ABS](0, 1) << "\t" << mat[rotColDefs::AS_ABS](0, 2) << "\t" << mat[rotColDefs::AS_ABS](1, 2) << "\t"
 					<< mat[rotColDefs::AS_RMS](0, 1) << "\t" << mat[rotColDefs::AS_RMS](0, 2) << "\t" << mat[rotColDefs::AS_RMS](1, 2) << "\t"
 					<< mat[rotColDefs::AS_ABS_MEAN](0, 1) << "\t" << mat[rotColDefs::AS_ABS_MEAN](0, 2) << "\t" << mat[rotColDefs::AS_ABS_MEAN](1, 2)

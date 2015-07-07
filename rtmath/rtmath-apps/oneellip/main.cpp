@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
 			" 2) Circumscribing_Sphere, 3) Convex, 4) Ellipsoid_Max uses the max circumscribing ellipsoid,"
 			" 5) RMS_Sphere for a root mean square sphere (per Petty and Huang 2010),"
 			" 6) Gyration_Sphere uses the Westbrok 2006 radius of gyration,"
-			" 7) Solid_Sphere is an optically hard sphere.")
+			" 7) Solid_Sphere is an optically hard sphere,"
+			" 8) Ellipsoid_Max_Holly is another implementation of the max circumscribing ellipsoid.")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
 
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -265,7 +266,8 @@ int main(int argc, char *argv[])
 			INTERNAL_VORONOI,
 			RMS_SPHERE,
 			GYRATION_SPHERE,
-			SOLID_SPHERE
+			SOLID_SPHERE,
+			ELLIPSOID_MAX_HOLLY
 		};
 		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
 		string vfScaling = vm["vf-scaling"].as<string>();
@@ -275,6 +277,7 @@ int main(int argc, char *argv[])
 		else if (vfScaling == "Voronoi_Internal") vf = VFRAC_TYPE::INTERNAL_VORONOI;
 		else if (vfScaling == "Convex") vf = VFRAC_TYPE::CONVEX;
 		else if (vfScaling == "Ellipsoid_Max") vf = VFRAC_TYPE::ELLIPSOID_MAX;
+		else if (vfScaling == "Ellipsoid_Max_Holly") vf = VFRAC_TYPE::ELLIPSOID_MAX_HOLLY;
 		else if (vfScaling == "RMS_Sphere") vf = VFRAC_TYPE::RMS_SPHERE;
 		else if (vfScaling == "Gyration_Sphere") vf = VFRAC_TYPE::GYRATION_SPHERE;
 		else if (vfScaling == "Solid_Sphere") vf = VFRAC_TYPE::SOLID_SPHERE;
@@ -422,6 +425,9 @@ int main(int argc, char *argv[])
 				} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
 					v = &(stats->Sellipsoid_max);
 					r.fvMeth = "Max ellipsoid";
+				} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX_HOLLY) {
+					v = &(stats->Sellipsoid_max_Holly);
+					r.fvMeth = "Max ellipsoid Holly";
 				} else if (vf == VFRAC_TYPE::SOLID_SPHERE) {
 					v = &(stats->Ssolid);
 					r.fvMeth = "Solid sphere";
@@ -459,7 +465,8 @@ int main(int argc, char *argv[])
 
 
 				if (armeth == "Max_Ellipsoids")
-					r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 1);
+					// 0,2 to match Holly convention!!!!!!! 0,1 always is near sphere.
+					r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
 				else if (armeth == "Spheres")
 					r.ar = 1;
 				else doHelp("ar-method needs a correct value.");
