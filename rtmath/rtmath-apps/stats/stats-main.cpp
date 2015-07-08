@@ -83,9 +83,9 @@ int main(int argc, char** argv)
 		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 		//Ryan_Serialization::process_static_options(vm);
 
-		string sbetas = vm["betas"].as<string>();
+		string sbetas = "0"; //vm["betas"].as<string>();
 		paramSet<double> betas(sbetas);
-		string sthetas = vm["thetas"].as<string>();
+		string sthetas = "0"; //vm["thetas"].as<string>();
 		paramSet<double> thetas(sthetas);
 		//string sphis = vm["phis"].as<string>();
 		//paramSet<double> phis(sphis);

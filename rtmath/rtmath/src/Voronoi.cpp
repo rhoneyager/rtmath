@@ -148,7 +148,7 @@ namespace rtmath {
 			std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
 			std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-			if (Ryan_Debug::hash::hashStore::findHashObj(hash, "voronoi.hdf5", sh, opts))
+			if (Ryan_Debug::hash::hashStore::findHashObj(hash, "voronoi.hdf5", sh, opts, "rtmath"))
 			{
 				opts->setVal<std::string>("hash", hash);
 				res = boost::shared_ptr<VoronoiDiagram>(new VoronoiDiagram);
@@ -171,7 +171,7 @@ namespace rtmath {
 			}
 
 			// Only store hash if a storage mechanism can be found
-			if (Ryan_Debug::hash::hashStore::storeHash(_hash.string(), "voronoi.hdf5", sh, opts))
+			if (Ryan_Debug::hash::hashStore::storeHash(_hash.string(), "voronoi.hdf5", sh, opts, "rtmath"))
 			{
 				if (!Ryan_Debug::serialization::detect_compressed(opts->filename()))
 					this->writeMulti(sh, opts);
@@ -406,7 +406,7 @@ namespace rtmath {
 			}
 
 			// Only store hash if a storage mechanism can be found
-			if (hashStore::storeHash(_hash.string(), "voronoi2d.hdf5", sh, opts))
+			if (hashStore::storeHash(_hash.string(), "voronoi2d.hdf5", sh, opts, "rtmath"))
 			{
 				if (!rtmath::serialization::detect_compressed(opts->filename()))
 					this->writeMulti(sh, opts);

@@ -293,7 +293,7 @@ namespace rtmath
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts;
 
 				// Only store hash if a storage mechanism can be found
-				if (Ryan_Debug::hash::hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::storeHash(_localhash.string(), "shape.hdf5", sh, opts, "rtmath"))
 				{
 					std::string meth, target;
 

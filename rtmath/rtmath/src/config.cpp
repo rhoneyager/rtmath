@@ -10,6 +10,7 @@
 #include <boost/log/sources/global_logger_storage.hpp>
 
 #include <Ryan_Debug/io.h>
+#include <Ryan_Debug/hash.h>
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 #include <Ryan_Debug/logging.h>
@@ -223,6 +224,7 @@ namespace rtmath {
 
 		DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> loadRtconfRoot(const std::string &filename)
 		{
+			std::lock_guard<std::mutex> lock(cmlock);
 			if (_rtconfroot != nullptr) return _rtconfroot;
 			auto& lg = m_config::get();
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading rtmath config file.\n";
@@ -244,7 +246,31 @@ namespace rtmath {
 			{
 				if (r->name() == "RTMATH" || r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
 			}
-			if (cnf) _rtconfroot = cnf;
+			if (cnf) {
+				_rtconfroot = cnf;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loaded rtmath config file successfully. "
+					"Searching for hash databases. Top level children are: ";
+				// Enumerate top level children.
+				auto ccnf = cnf->getChild("RTMATH");
+				std::multiset<std::string> children;
+				ccnf->listChildren(children);
+				std::ostringstream schd;
+				for (const auto &i : children)
+					schd << "\t" << i << "\n";
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << schd.str();
+				// Search for hash databases to load
+				auto hashes = ccnf->getChild("ddscat");
+				if (!hashes) { hashes = ccnf; BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "No ddscat key"; }
+				hashes = hashes->getChild("hashes");
+				if (hashes) {
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found hashes key";
+					Ryan_Debug::hash::hashStore::loadStoresFromSource(hashes, "rtmath");
+				} else {
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "When loading the rtmath "
+						"configuration file, no /ddscat/hashes or /hashes keys were found. "
+						"This is undesirable, as no hash databases are loaded.";
+				}
+			}
 			return cnf;
 		}
 

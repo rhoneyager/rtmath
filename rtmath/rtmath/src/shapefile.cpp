@@ -790,7 +790,7 @@ namespace rtmath {
 				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "shape.hdf5", sh, opts, "rtmath"))
 				{
 					opts->setVal<std::string>("key", hash);
 					res = boost::shared_ptr<shapefile>(new shapefile);
@@ -820,7 +820,7 @@ namespace rtmath {
 				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set - it gets reset by findHashObj
 
-				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "shape.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "shape.hdf5", sh, opts, "rtmath"))
 				{
 					opts->setVal<std::string>("key", hash);
 					readMulti(sh, opts);

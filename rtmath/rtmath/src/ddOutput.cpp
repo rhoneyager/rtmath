@@ -607,7 +607,7 @@ namespace rtmath {
 			std::string shashs = sHash.str();
 
 			// Only store hash if a storage mechanism can be found
-			if (Ryan_Debug::hash::hashStore::storeHash(shapeHash.string(), shashs, sh, opts))
+			if (Ryan_Debug::hash::hashStore::storeHash(shapeHash.string(), shashs, sh, opts, "rtmath"))
 			{
 				if (!Ryan_Debug::serialization::detect_compressed(opts->filename()))
 					this->writeMulti(sh, opts);
@@ -796,7 +796,7 @@ namespace rtmath {
 			sHash << shphash << "-" << runhash << ".hdf5";
 			std::string shashs = sHash.str();
 
-			if (Ryan_Debug::hash::hashStore::findHashObj(shphash, shashs, sh, opts))
+			if (Ryan_Debug::hash::hashStore::findHashObj(shphash, shashs, sh, opts, "rtmath"))
 			{
 				opts->setVal<std::string>("key", shashs); /// \todo Add hash query to hdf5 plugin (if folder not found, do vector read and figure out which hash matches)
 				res = boost::shared_ptr<ddOutput>(new ddOutput);

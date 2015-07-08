@@ -19,6 +19,7 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/splitSet.h>
 #include <Ryan_Debug/io.h>
+#include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options"), cmdline("Command-line options"), 
 			config("Config options"), hidden("Hidden options"), oall("all options");
-		Ryan_Debug::add_options(cmdline, config, hidden);
+		rtmath::debug::add_options(cmdline, config, hidden);
 
 		cmdline.add_options()
 			("help,h", "produce help message")
@@ -83,7 +84,7 @@ int main(int argc, char** argv)
 			vm );
 		po::notify (vm);
 
-		Ryan_Debug::process_static_options(vm);
+		rtmath::debug::process_static_options(vm);
 
 		rtmath::ddscat::dielTab dfile;
 		string method, sTemps, sFreqs, sNus, ofile, unitsFreq, unitsWvlen, unitsTemp;

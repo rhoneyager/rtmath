@@ -505,7 +505,7 @@ namespace rtmath {
 				std::shared_ptr<Ryan_Debug::registry::IOhandler> sh;
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts; // No need to set here - it gets reset by findHashObj
 
-				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "stats-r2.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::findHashObj(hash, "stats-r2.hdf5", sh, opts, "rtmath"))
 				{
 					// However, value "hash" or "key" must be set here
 					opts->setVal<std::string>("hash", hash);
@@ -621,7 +621,7 @@ namespace rtmath {
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts;
 
 				// Only store hash if a storage mechanism can be found
-				if (Ryan_Debug::hash::hashStore::storeHash(_shp->_localhash.string(), "stats-r2.hdf5", sh, opts))
+				if (Ryan_Debug::hash::hashStore::storeHash(_shp->_localhash.string(), "stats-r2.hdf5", sh, opts, "rtmath"))
 				{
 					std::string meth, target;
 

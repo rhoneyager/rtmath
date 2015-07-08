@@ -28,7 +28,7 @@ namespace {
 	boost::program_options::options_description SHARED_PRIVATE *pconfig = nullptr;
 	boost::program_options::options_description SHARED_PRIVATE *phidden = nullptr;
 	size_t sys_num_threads = 0;
-	std::mutex m_sys_num_threads;
+	std::mutex m_sys_num_threads, m_debug;
 
 
 
@@ -142,12 +142,17 @@ namespace rtmath
 			namespace po = boost::program_options;
 			using std::string;
 
+			std::lock_guard<std::mutex> lock(m_debug);
+			static bool added = false;
+			if (added) return;
+			added = true;
+
 			pcmdline = &cmdline;
 			pconfig = &config;
 			phidden = &hidden;
 
 			cmdline.add_options()
-				("version", "Print rtmath library version information and exit")
+				("rtmath-version", "Print rtmath library version information and exit")
 				;
 
 			config.add_options()
@@ -158,22 +163,30 @@ namespace rtmath
 				"Specify the location of the rtmath configuration file. Overrides "
 				"all other search locations. If it cannot be found, fall back to the "
 				"next option.")
-				("hash-dir", po::value<std::vector<string> >(), "Add a hash directory")
-				("hash-dir-writable", po::value<bool>()->default_value(false), "Is the custom hash directory writable?")
+				("rtmath-hash-dir", po::value<std::vector<string> >(), "Add a hash directory")
+				("rtmath-hash-dir-writable", po::value<bool>()->default_value(false), "Is the custom hash directory writable?")
 				;
 
+			Ryan_Debug::add_options(cmdline, config, hidden);
 			rtmath::registry::add_options(cmdline, config, hidden);
 		}
 
-		
+
 		void process_static_options(
 			boost::program_options::variables_map &vm)
 		{
 			namespace po = boost::program_options;
 			using std::string;
-	
+
+			std::lock_guard<std::mutex> lock(m_debug);
+			static bool added = false;
+			if (added) return;
+			added = true;
+
 			auto& lg = m_deb::get();
-			
+
+			Ryan_Debug::process_static_options(vm);
+
 			if (vm.count("rtmath-config-file"))
 			{
 				sConfigDefaultFile = vm["rtmath-config-file"].as<std::string>();
@@ -182,14 +195,15 @@ namespace rtmath
 
 			rtmath::config::loadRtconfRoot();
 
-			if (vm.count("hash-dir"))
+			if (vm.count("rtmath-hash-dir"))
 			{
-				std::vector<string> hashDirs = vm["hash-dir"].as<std::vector<string> >();
+				std::vector<string> hashDirs = vm["rtmath-hash-dir"].as<std::vector<string> >();
 				for (const auto &p : hashDirs)
 				{
 					std::shared_ptr<Ryan_Debug::hash::hashStore> h(new Ryan_Debug::hash::hashStore);
-					h->writable = vm["hash-dir-writable"].as<bool>();
+					h->writable = vm["rtmath-hash-dir-writable"].as<bool>();
 					h->base = boost::filesystem::path(p);
+					h->tag = "rtmath";
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
 						<< "Console override of hash directory: " << p 
 						<< ", writable: " << h->writable << ".\n";
@@ -207,10 +221,14 @@ namespace rtmath
 
 			std::string spreambles = preambles.str();
 
-			if (vm.count("version"))
+			if (vm.count("rtmath-version"))
 			{
 				std::cerr << spreambles;
 				exit(2);
+			}
+			if (vm.count("version"))
+			{
+				std::cerr << spreambles;
 			}
 
 
