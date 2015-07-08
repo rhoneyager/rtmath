@@ -353,16 +353,17 @@ namespace Ryan_Debug {
 				//if (!cdd) cdd = conf;
 				//auto chash = cdd->getChild("hashes");
 				auto chash = conf;
-				if (!chash) { // Should never happen. Code beanch is superseded and moved elsewhere.
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Ryan_Debug configuration file does "
-						"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.";
-					RDthrow(Ryan_Debug::error::xMissingKey())
-						<< Ryan_Debug::error::otherErrorText("/ddscat/hashes in Ryan_Debug config is missing");
-					return;
-				}
+				//if (!chash) { // Should never happen. Code branch is superseded and moved elsewhere.
+				//	BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Ryan_Debug configuration file does "
+				//		"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.";
+				//	RDthrow(Ryan_Debug::error::xMissingKey())
+				//		<< Ryan_Debug::error::otherErrorText("/ddscat/hashes in Ryan_Debug config is missing");
+				//	return;
+				//}
 				// Iterate over all hash store entries
 				std::multiset<boost::shared_ptr<Ryan_Debug::config::configsegment> > children;
 				chash->listChildren(children);
+				size_t nAdded = 0;
 				for (const auto &c : children)
 				{
 					if (c->name() != "store") continue;
@@ -370,7 +371,6 @@ namespace Ryan_Debug {
 					bool enabled = true;
 					if (c->hasVal("enabled"))
 						c->getVal<bool>("enabled", enabled);
-					if (!enabled) continue;
 
 					size_t priority = 999;
 					if (c->hasVal("priority"))
@@ -399,6 +399,7 @@ namespace Ryan_Debug {
 						<< "\ntype: " << type
 						<< "\nwritable: " << writable
 						<< "\ntag: " << tag;
+					if (!enabled) continue;
 
 					std::shared_ptr < Ryan_Debug::hash::hashStore > h;
 
@@ -418,7 +419,11 @@ namespace Ryan_Debug {
 					h->tag = tag;
 
 					Ryan_Debug::hash::hashStore::addHashStore(h, priority);
+					nAdded++;
 				}
+				if (!nAdded)
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) 
+						<< "No hash stores added and enabled from this configuration tree!";
 			}
 		}
 	}
