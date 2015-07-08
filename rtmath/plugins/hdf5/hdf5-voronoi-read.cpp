@@ -232,7 +232,7 @@ namespace Ryan_Debug {
 					if (!grpVoro) continue;
 
 					hsize_t rz = grpVoro->getNumObjs();
-					for (hsize_t i = 0; i < sz; ++i)
+					for (hsize_t i = 0; i < rz; ++i)
 					{
 						std::string runname = grpVoro->getObjnameByIdx(i);
 						H5G_obj_t t = grpVoro->getObjTypeByIdx(i);
