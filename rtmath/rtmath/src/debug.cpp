@@ -70,13 +70,13 @@ namespace rtmath
 		{
 			out << "rtmath library" << std::endl;
 			out << "Compiled on " << __DATE__ << " at " << __TIME__ << std::endl;
-#ifdef SUB_REV
-			out << "SVN Revision " << SUB_REV << std::endl;
+			out << "SVN Revision " << rev() << std::endl;
+#ifdef SUB_DATE
 			out << "SVN Revision Date: " << SUB_DATE << std::endl;
 			//			out << "SVN Working Copy Range: " << SUB_WCRANGE << std::endl;
 			out << "SVN Source: " << SUB_SOURCE << std::endl;
 #else
-			out << "SVN Repository Information Unknown" << std::endl;
+			out << "Further SVN Repository Information Unknown" << std::endl;
 #endif
 		std::string buildtype(
 				BUILDCONF
