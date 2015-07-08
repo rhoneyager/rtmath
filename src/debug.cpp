@@ -98,7 +98,7 @@ namespace Ryan_Debug
 			/// \todo Add option for default Ryan_Debug.conf location
 
 			cmdline.add_options()
-				("version", "Print Ryan_Debug library version information and exit")
+				("version", "Print library version information and exit")
 				("close-on-finish", po::value<bool>(), "Should the app automatically close on termination?")
 				;
 
@@ -106,6 +106,7 @@ namespace Ryan_Debug
 				;
 			
 			hidden.add_options()
+				("Ryan_Debug-version", "Print Ryan_Debug library version information and exit")
 				("help-verbose", "Print out all possible program options")
 				("help-all", "Print out all possible program options")
 				("help-full", "Print out all possible program options")
@@ -408,10 +409,15 @@ namespace Ryan_Debug
 
 			std::string spreambles = preambles.str();
 
-			if (vm.count("version"))
+			if (vm.count("Ryan_Debug-version"))
 			{
 				std::cerr << spreambles;
 				exit(2);
+			}
+
+			if (vm.count("version"))
+			{
+				std::cerr << spreambles;
 			}
 
 

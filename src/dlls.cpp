@@ -421,7 +421,8 @@ namespace Ryan_Debug
 						BOOST_LOG_SEV(lg, sl) << "dlopen error (opening "
 							<< filename << "): " << cerror;
 						//std::string serror(cerror);
-						RDthrow(Ryan_Debug::error::xDLLerror())
+						if (critical)
+							RDthrow(Ryan_Debug::error::xDLLerror())
 							<< Ryan_Debug::error::otherErrorText(std::string(cerror))
 							<< Ryan_Debug::error::file_name(filename)
 							<< Ryan_Debug::error::is_Critical(critical);

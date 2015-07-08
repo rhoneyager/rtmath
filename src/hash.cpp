@@ -16,95 +16,26 @@
 
 /// Handles private hash functions
 namespace {
-	std::mutex mHashStore;
+	std::mutex mHashStore, mLoadingStores, mLoadingStoresB;
 	std::multimap<size_t, Ryan_Debug::hash::pHashStore> stores;
-
-	void loadStores()
-	{
+	std::set<std::string> known_ids;
+	void loadStores() {
+		std::lock_guard<std::mutex> lck(mLoadingStoresB);
 		static bool inited = false;
-		// Already locked by calling function
 		if (inited) return;
 		inited = true;
-
 		auto& lg = Ryan_Debug::hash::m_hash::get();
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading hash stores";
-		/// \todo Implement most of this function
-
-		// Stores can be folder trees, single hdf5 files, and websites.
-		// The store database can be stored in sql. 
-		/// \todo Add entries in registry for store registration
-
-		// Each entry in the store has a priority, reflecting its use order.
-		// The highest-priority writable store is used for writing, and the first store 
-		// having a given key is used when reading.
-
-		{
-			auto conf = Ryan_Debug::config::loadRtconfRoot();
-			if (!conf) return;
-			auto cdd = conf->getChild("ddscat");
-			if (!cdd) cdd = conf;
-			auto chash = cdd->getChild("hashes");
-			if (!chash) {
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Ryan_Debug configuration file does "
-					"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.";
-				RDthrow(Ryan_Debug::error::xMissingKey())
-					<< Ryan_Debug::error::otherErrorText("/ddscat/hashes in Ryan_Debug config is missing");
-				return;
-			}
-			// Iterate over all hash store entries
-			std::multiset<boost::shared_ptr<Ryan_Debug::config::configsegment> > children;
-			chash->listChildren(children);
-			for (const auto &c : children)
-			{
-				if (c->name() != "store") continue;
-
-				bool enabled = true;
-				if (c->hasVal("enabled"))
-					c->getVal<bool>("enabled", enabled);
-				if (!enabled) continue;
-
-				size_t priority = 999;
-				if (c->hasVal("priority"))
-					c->getVal<size_t>("priority", priority);
-
-				std::string location;
-				if (c->hasVal("path"))
-					c->getVal<std::string>("path", location);
-
-				bool writable = false;
-				if (c->hasVal("writable"))
-					c->getVal<bool>("writable", writable);
-
-				std::string type = "dir";
-				if (c->hasVal("type"))
-					c->getVal<std::string>("type", type);
-
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_1) << "Parsed hash store:\n"
-					<< "enabled: " << enabled
-					<< "\npriority: " << priority
-					<< "\npath: " << location
-					<< "\ntype: " << type
-					<< "\nwritable: " << writable;
-
-				std::shared_ptr < Ryan_Debug::hash::hashStore > h;
-
-				if (type == "dir") {
-					h = std::shared_ptr<Ryan_Debug::hash::hashStore>(new Ryan_Debug::hash::hashStore);
-				} /// \todo Add hash store plugin search code here, and fill in the store generator in the header file.
-				else RDthrow(::Ryan_Debug::error::xUnknownFileFormat())
-					<< ::Ryan_Debug::error::otherErrorText("Hash store code currently "
-					"only supports \"dir\"-type stores. TODO: Add "
-					"hash store plugin search code in hash.cpp and "
-					"the header file.")
-					<< ::Ryan_Debug::error::hashType(type);
-
-				h->writable = writable;
-				h->base = boost::filesystem::path(location);
-				h->type = type;
-
-				Ryan_Debug::hash::hashStore::addHashStore(h, priority);
-			}
+		auto conf = Ryan_Debug::config::loadRtconfRoot();
+		if (!conf) return;
+		auto chash = conf->getChild("hashes");
+		if (!chash) {
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "Ryan_Debug configuration file does "
+				"not have a /hashes key. Unable to load hash stores for default setup.";
+			//RDthrow(Ryan_Debug::error::xMissingKey())
+			//	<< Ryan_Debug::error::otherErrorText("/ddscat/hashes in Ryan_Debug config is missing");
+			return;
 		}
+		Ryan_Debug::hash::hashStore::loadStoresFromSource(chash, "");
 	}
 }
 
@@ -179,8 +110,10 @@ namespace Ryan_Debug {
 		hashStore::~hashStore() {}
 
 		bool hashStore::storeHashInStore(const std::string& h, const std::string &key,
-			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+			const std::string &tag) const
 		{
+			if (tag != this->tag) return false;
 			opts = registry::IO_options::generate(registry::IOhandler::IOtype::TRUNCATE);
 			sh = nullptr; // IOhandler is not needed for the basic filesystem store
 			if (!writable) return false;
@@ -233,8 +166,10 @@ namespace Ryan_Debug {
 		}
 
 		bool hashStore::findHashInStore(const std::string &hash, const std::string &key,
-			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+			const std::string &tag) const
 		{
+			if (tag != this->tag) return false;
 			opts = registry::IO_options::generate(registry::IOhandler::IOtype::READONLY);
 			sh = nullptr; // IOhandler is not needed for the basic filesystem store
 			auto& lg = Ryan_Debug::hash::m_hash::get();
@@ -304,26 +239,34 @@ namespace Ryan_Debug {
 
 
 		bool hashStore::storeHash(const std::string& h, const std::string &key,
-			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts)
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+			const std::string &tag)
 		{
 			// Make sure that the store backend is loaded
 			std::lock_guard<std::mutex> lck(mHashStore);
 			loadStores();
 
 			for (auto &s : stores)
-				if (s.second->storeHashInStore(h, key, sh, opts)) return true;
+				if (s.second->storeHashInStore(h, key, sh, opts, tag)) return true;
+			// Log an error and throw.
+			auto& lg = Ryan_Debug::hash::m_hash::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "No hash stores were available to store "
+				"the object. Hash: " << h << ", Key: " << key << ", tag: " << tag;
+			RDthrow(Ryan_Debug::error::xMissingKey())
+				<< Ryan_Debug::error::otherErrorText("No hash stores accepted the given object. See log details. ");
 			return false;
 		}
 
 		bool hashStore::findHashObj(const std::string& h, const std::string &key,
-			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts)
+			std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+			const std::string &tag)
 		{
 			// Make sure that the store backend is loaded
 			std::lock_guard<std::mutex> lck(mHashStore);
 			loadStores();
 
 			for (const auto &s : stores)
-				if (s.second->findHashInStore(h, key, sh, opts)) return true;
+				if (s.second->findHashInStore(h, key, sh, opts, tag)) return true;
 			return false;
 		}
 
@@ -381,6 +324,102 @@ namespace Ryan_Debug {
 			HASH_t res;
 			MurmurHash3_x64_128(key, len, HASHSEED, &res);
 			return res;
+		}
+
+		/// \param conf is the configuration tree being used to load hashes
+		/// \param id is a unique id for this tree to avoid loading the same hash sources twice
+		void hashStore::loadStoresFromSource(boost::shared_ptr<const Ryan_Debug::config::configsegment> conf, const char* id)
+		{
+			std::lock_guard<std::mutex> lck(mLoadingStores);
+			if (known_ids.count(std::string(id))) return;
+			known_ids.insert(std::string(id));
+
+			auto& lg = Ryan_Debug::hash::m_hash::get();
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loading hash stores";
+			/// \todo Implement most of this function
+
+			// Stores can be folder trees, single hdf5 files, and websites.
+			// The store database can be stored in sql. 
+			/// \todo Add entries in registry for store registration
+
+			// Each entry in the store has a priority, reflecting its use order.
+			// The highest-priority writable store is used for writing, and the first store 
+			// having a given key is used when reading.
+
+			{
+				//auto conf = Ryan_Debug::config::loadRtconfRoot();
+				//if (!conf) return;
+				//auto cdd = conf->getChild("ddscat");
+				//if (!cdd) cdd = conf;
+				//auto chash = cdd->getChild("hashes");
+				auto chash = conf;
+				if (!chash) { // Should never happen. Code beanch is superseded and moved elsewhere.
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Ryan_Debug configuration file does "
+						"not have a /ddscat/hashes or /hashes key. Unable to load hash stores.";
+					RDthrow(Ryan_Debug::error::xMissingKey())
+						<< Ryan_Debug::error::otherErrorText("/ddscat/hashes in Ryan_Debug config is missing");
+					return;
+				}
+				// Iterate over all hash store entries
+				std::multiset<boost::shared_ptr<Ryan_Debug::config::configsegment> > children;
+				chash->listChildren(children);
+				for (const auto &c : children)
+				{
+					if (c->name() != "store") continue;
+
+					bool enabled = true;
+					if (c->hasVal("enabled"))
+						c->getVal<bool>("enabled", enabled);
+					if (!enabled) continue;
+
+					size_t priority = 999;
+					if (c->hasVal("priority"))
+						c->getVal<size_t>("priority", priority);
+
+					std::string location;
+					if (c->hasVal("path"))
+						c->getVal<std::string>("path", location);
+
+					bool writable = false;
+					if (c->hasVal("writable"))
+						c->getVal<bool>("writable", writable);
+
+					std::string type = "dir";
+					if (c->hasVal("type"))
+						c->getVal<std::string>("type", type);
+
+					std::string tag = "";
+					if (c->hasVal("tag"))
+						c->getVal<std::string>("tag", tag);
+
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_1) << "Parsed hash store:\n"
+						<< "enabled: " << enabled
+						<< "\npriority: " << priority
+						<< "\npath: " << location
+						<< "\ntype: " << type
+						<< "\nwritable: " << writable
+						<< "\ntag: " << tag;
+
+					std::shared_ptr < Ryan_Debug::hash::hashStore > h;
+
+					if (type == "dir") {
+						h = std::shared_ptr<Ryan_Debug::hash::hashStore>(new Ryan_Debug::hash::hashStore);
+					} /// \todo Add hash store plugin search code here, and fill in the store generator in the header file.
+					else RDthrow(::Ryan_Debug::error::xUnknownFileFormat())
+						<< ::Ryan_Debug::error::otherErrorText("Hash store code currently "
+						"only supports \"dir\"-type stores. TODO: Add "
+						"hash store plugin search code in hash.cpp and "
+						"the header file.")
+						<< ::Ryan_Debug::error::hashType(type);
+
+					h->writable = writable;
+					h->base = boost::filesystem::path(location);
+					h->type = type;
+					h->tag = tag;
+
+					Ryan_Debug::hash::hashStore::addHashStore(h, priority);
+				}
+			}
 		}
 	}
 

@@ -10,6 +10,7 @@
 #include "macros.h"
 #include "registry.h"
 #include "logging.h"
+#include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 
@@ -19,6 +20,9 @@
 //}
 
 namespace Ryan_Debug {
+	namespace config {
+		class configsegment;
+	}
 	namespace hash {
 		BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
 			m_hash,
@@ -105,16 +109,21 @@ namespace Ryan_Debug {
 		{
 		public:
 			static bool findHashObj(const std::string &hash, const std::string &key,
-				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts);
+				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+				const std::string &tag = "");
 			static bool storeHash(const std::string&, const std::string &key,
-				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts);
+				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+				const std::string &tag = "");
 			static void addHashStore(pHashStore, size_t priority);
+			static void loadStoresFromSource(boost::shared_ptr<const Ryan_Debug::config::configsegment> conf, const char* id);
 		public:
 			virtual bool storeHashInStore(const std::string& hash, const std::string &key,
-				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts
+				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+				const std::string &tag = ""
 				) const;
 			virtual bool findHashInStore(const std::string &hash, const std::string &key,
-				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts) const;
+				std::shared_ptr<registry::IOhandler> &sh, std::shared_ptr<registry::IO_options> &opts,
+				const std::string &tag = "") const;
 
 		public:
 			hashStore();
@@ -124,6 +133,8 @@ namespace Ryan_Debug {
 			bool writable;
 			/// The type of the hash store (dir, hdf5, ...)
 			std::string type;
+			/// Grouping of hash store (a tag value to separate different products, like rtmath, Tmatrix, ...)
+			std::string tag;
 		public:
 			virtual ~hashStore();
 
