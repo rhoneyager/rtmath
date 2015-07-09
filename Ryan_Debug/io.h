@@ -816,10 +816,14 @@ namespace Ryan_Debug
 			virtual ~implementsStandardReader() {}
 
 			/// Read all matching contained results into a vector
-			static std::shared_ptr<registry::IOhandler> readVector(
+			static std::shared_ptr<registry::IOhandler> readIterate(
 				std::shared_ptr<Ryan_Debug::registry::IOhandler> handle,
 				std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
-				std::vector<boost::shared_ptr<obj_class> > &v,
+				std::function<void(
+					std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+					std::shared_ptr<Ryan_Debug::registry::IO_options>,
+					boost::shared_ptr<obj_class>
+					) > v,
 				std::shared_ptr<const Ryan_Debug::registry::collectionTyped<obj_class> > filter
 				)
 			{
@@ -828,11 +832,11 @@ namespace Ryan_Debug
 				::Ryan_Debug::io::customGenerator<obj_class>();
 
 				std::ostringstream o;
-				o << "Performing vector read on file " << opts->filename();
+				o << "Performing iterative read on file " << opts->filename();
 				emit_io_log(o.str(), Ryan_Debug::log::normal);
 
 				// All of these objects can handle their own compression
-				typename ::Ryan_Debug::registry::IO_class_registry_reader<obj_class>::io_vector_type dllv = nullptr;
+				typename ::Ryan_Debug::registry::IO_class_registry_reader<obj_class>::io_iterate_type dllv = nullptr;
 				typename ::Ryan_Debug::registry::IO_class_registry_reader<obj_class>::io_multi_type dllm = nullptr;
 				// Process dll hooks first
 				auto hooks = ::Ryan_Debug::registry::usesDLLregistry<input_registry_class,
@@ -843,8 +847,8 @@ namespace Ryan_Debug
 					//if (hook.io_multi_matches(filename, ctype, handle))
 					if (hook.io_multi_matches(handle, opts))
 					{
-						if (hook.io_vector_processor)
-							dllv = hook.io_vector_processor;
+						if (hook.io_iterator_processor)
+							dllv = hook.io_iterator_processor;
 						else if (hook.io_multi_processor)
 							dllm = hook.io_multi_processor;
 						else continue; // No vector or multi reader - shouldn't happen if io_multi_matches, but fail to next plugin
@@ -860,6 +864,9 @@ namespace Ryan_Debug
 					try {
 						// Most of these types aren't compressible or implement their
 						// own compression schemes. So, it's not handled at this level.
+						//
+						// dllv is useful for stull like hdf reads, where loading the whole 
+						// object before filtration may be undesirable.
 						if (dllv) return dllv(handle, opts, v, filter);
 						else {
 							// obj_Class instance created using a generator template, which can be overridden if
@@ -869,7 +876,7 @@ namespace Ryan_Debug
 							//boost::shared_ptr<obj_class> obj(new obj_class);
 							boost::shared_ptr<obj_class> obj = ::Ryan_Debug::io::customGenerator<obj_class>();
 							auto res = dllm(handle, opts, obj, filter);
-							v.push_back(obj);
+							v(handle, opts, obj);
 							return res;
 						}
 					} catch (::boost::exception &e) {
@@ -892,6 +899,34 @@ namespace Ryan_Debug
 						<< error::file_name(opts->filename());
 				}
 				return nullptr; // Should never be reached
+			}
+
+			/// Read all matching contained results into a vector
+			static std::shared_ptr<registry::IOhandler> readVector(
+				std::shared_ptr<Ryan_Debug::registry::IOhandler> handle,
+				std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
+				std::vector<boost::shared_ptr<obj_class> > &v,
+				std::shared_ptr<const Ryan_Debug::registry::collectionTyped<obj_class> > filter
+				)
+			{
+				std::ostringstream o;
+				o << "Performing vector read on file " << opts->filename();
+				emit_io_log(o.str(), Ryan_Debug::log::normal);
+
+				auto implVectorInserter = [&](
+						std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+						std::shared_ptr<Ryan_Debug::registry::IO_options>,
+						boost::shared_ptr<obj_class> obj) -> void
+				{
+					v.push_back(obj);
+				};
+				auto res = readIterate(handle,
+						opts,
+						implVectorInserter,
+						//std::bind(implVectorInserter, std::placeholders::_1,
+						//	std::placeholders::_2,std::placeholders::_3),
+						filter);
+				return res;
 			}
 
 		};

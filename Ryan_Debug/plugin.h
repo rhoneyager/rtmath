@@ -50,7 +50,19 @@ namespace Ryan_Debug
 		std::shared_ptr<Ryan_Debug::registry::IOhandler> read_file_type_vector
 			(std::shared_ptr<Ryan_Debug::registry::IOhandler> sh, 
 			std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
-			std::vector<boost::shared_ptr<T> > &vec, 
+			std::vector<boost::shared_ptr<T> > &vec,  // old
+			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<T> > filter);
+
+
+		template <class T>
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> read_file_type_iterate
+			(std::shared_ptr<Ryan_Debug::registry::IOhandler> sh, 
+			std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
+			std::function<void( // new
+				std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+				std::shared_ptr<Ryan_Debug::registry::IO_options>,
+				boost::shared_ptr<T>
+				) > v,
 			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<T> > filter);
 
 		/** \brief Template (designed to be overridable) that can be used to 
@@ -166,7 +178,8 @@ namespace Ryan_Debug
 				res.io_multi_matches = std::bind(match_file_type_multi, std::placeholders::_1, pluginid, std::placeholders::_2, opts2);
 
 				res.io_multi_processor = read_file_type_multi<T>;
-				res.io_vector_processor = read_file_type_vector<T>;
+				//res.io_vector_processor = read_file_type_vector<T>;
+				res.io_vector_processor = read_file_type_iterate<T>;
 				return res;
 		}
 

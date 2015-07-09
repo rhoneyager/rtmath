@@ -342,12 +342,34 @@ namespace Ryan_Debug
 			 * It also provides the ability to select objects from the source matching various criteria.
 			 * Selection abilities vary based on the plugin.
 			 * \returns Pointer to a IOhandler object (for example after the first read).
+			 * \deprecated Use io_iterate_type instead.
 			 **/
 			typedef std::function<std::shared_ptr<IOhandler>
 				(std::shared_ptr<IOhandler>, std::shared_ptr<IO_options>, 
 				std::vector<boost::shared_ptr<object> > &,
 				std::shared_ptr<const Ryan_Debug::registry::collectionTyped<object> >)> io_vector_type;
-			io_vector_type io_vector_processor;
+
+			/** \brief Handles reading multiple objects from a single source
+			 * \param IOhandler is the plugin-provided opaque object that keeps track of 
+			 * the state of the object being accessed.
+			 * \param  is a pointer to the object container.
+			 * \param IO_options specifies the filename, file type, type of object to export, ...
+			 * It also provides the ability to select objects from the source matching various criteria.
+			 * Selection abilities vary based on the plugin.
+			 * \returns Pointer to a IOhandler object (for example after the first read).
+			 **/
+			typedef std::function<std::shared_ptr<IOhandler>
+				(
+				 	std::shared_ptr<IOhandler>, 
+					std::shared_ptr<IO_options>, 
+					std::function<void(
+						std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+						std::shared_ptr<Ryan_Debug::registry::IO_options>,
+						boost::shared_ptr<object>
+						) > ,
+					std::shared_ptr<const Ryan_Debug::registry::collectionTyped<object> >
+				)> io_iterate_type;
+			io_iterate_type io_iterator_processor;
 		};
 
 

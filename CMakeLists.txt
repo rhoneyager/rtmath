@@ -26,7 +26,7 @@ include(generateAssemblyGuid)
 include(generaterc)
 
 set(MAJOR 0)
-set(MINOR 9)
+set(MINOR 10)
 set(REVISION 0)
 
 set(RYAN_DEBUG_VERSION
