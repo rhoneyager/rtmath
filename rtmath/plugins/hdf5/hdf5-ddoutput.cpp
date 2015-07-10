@@ -362,9 +362,14 @@ namespace Ryan_Debug {
 
 		template<>
 		std::shared_ptr<IOhandler>
-			read_file_type_vector<rtmath::ddscat::ddOutput>
+			read_file_type_iterate<rtmath::ddscat::ddOutput>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s,
+			std::function<void(
+				std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+				std::shared_ptr<Ryan_Debug::registry::IO_options>,
+				boost::shared_ptr<rtmath::ddscat::ddOutput>
+				) > s,
+			//std::vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > &s,
 			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::ddOutput> > filter)
 		{
 			std::string filename = opts->filename();
@@ -410,10 +415,11 @@ namespace Ryan_Debug {
 						read_hdf5_ddOutput(grpRun, opts, run);
 						if (filter) {
 							if (filter->filter(run.get()))
-								s.push_back(run);
+								s(sh, opts, run);
+								//s.push_back(run);
 							else run.reset();
 						}
-						else s.push_back(run);
+						else s(sh, opts, run); //s.push_back(run);
 					}
 				}
 			}

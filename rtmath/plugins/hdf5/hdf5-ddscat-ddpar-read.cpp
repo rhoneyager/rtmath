@@ -298,9 +298,14 @@ namespace Ryan_Debug {
 
 		template<>
 		std::shared_ptr<IOhandler>
-			read_file_type_vector<rtmath::ddscat::ddPar>
+			read_file_type_iterate<rtmath::ddscat::ddPar>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s,
+			std::function<void(
+				std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+				std::shared_ptr<Ryan_Debug::registry::IO_options>,
+				boost::shared_ptr<rtmath::ddscat::ddPar>
+				) > s,
+			//std::vector<boost::shared_ptr<rtmath::ddscat::ddPar> > &s,
 			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::ddPar> > filter)
 		{
 			RDthrow(Ryan_Debug::error::xUnimplementedFunction());

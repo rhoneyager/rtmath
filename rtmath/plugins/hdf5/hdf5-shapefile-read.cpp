@@ -228,9 +228,14 @@ namespace Ryan_Debug {
 		/// \todo Add opts selector information to eventually narrow the returned data.
 		template<>
 		std::shared_ptr<IOhandler>
-			read_file_type_vector<rtmath::ddscat::shapefile::shapefile>
+			read_file_type_iterate<rtmath::ddscat::shapefile::shapefile>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > &s,
+			std::function<void(
+				std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+				std::shared_ptr<Ryan_Debug::registry::IO_options>,
+				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile>
+				) > s,
+			//std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > &s,
 			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::shapefile::shapefile> > filter)
 		{
 			std::string filename = opts->filename();
@@ -267,9 +272,10 @@ namespace Ryan_Debug {
 						read_hdf5_shaperawdata(grpShape, shp);
 						if (filter) {
 							if (filter->filter(shp.get()))
-								s.push_back(shp);
+								s(sh, opts, shp);
+								//s.push_back(shp);
 						}
-						else s.push_back(shp);
+						else s(sh, opts, shp); //s.push_back(shp);
 					}
 				}
 			}

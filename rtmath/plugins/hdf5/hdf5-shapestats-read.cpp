@@ -261,9 +261,14 @@ namespace Ryan_Debug {
 
 		template<>
 		std::shared_ptr<IOhandler>
-			read_file_type_vector<rtmath::ddscat::stats::shapeFileStats>
+			read_file_type_iterate<rtmath::ddscat::stats::shapeFileStats>
 			(std::shared_ptr<IOhandler> sh, std::shared_ptr<IO_options> opts,
-			std::vector<boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> > &s,
+			//std::vector<boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats> > &s,
+			std::function<void(
+				std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+				std::shared_ptr<Ryan_Debug::registry::IO_options>,
+				boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats>
+				) > s,
 			std::shared_ptr<const Ryan_Debug::registry::collectionTyped<rtmath::ddscat::stats::shapeFileStats> > filter)
 		{
 			std::string filename = opts->filename();
@@ -299,10 +304,12 @@ namespace Ryan_Debug {
 							stats(new rtmath::ddscat::stats::shapeFileStats);
 						read_hdf5_statsrawdata(grpStats, opts, stats);
 						if (filter) {
-							if (filter->filter(stats.get()))
-								s.push_back(stats);
+							if (filter->filter(stats.get())) {
+								//s.push_back(stats);
+								s(sh, opts, stats);
+							}
 						}
-						else s.push_back(stats);
+						else s(sh, opts, stats); //s.push_back(stats);
 					}
 				}
 			}

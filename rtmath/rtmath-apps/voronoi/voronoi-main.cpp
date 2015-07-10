@@ -174,7 +174,9 @@ int main(int argc, char** argv)
 		using namespace rtmath::ddscat;
 		using namespace rtmath::Voronoi;
 		auto doProcess = [&](
-			boost::shared_ptr<const Voronoi::VoronoiDiagram> vd
+			std::shared_ptr<Ryan_Debug::registry::IOhandler>,
+			std::shared_ptr<Ryan_Debug::registry::IO_options>,
+			boost::shared_ptr<Voronoi::VoronoiDiagram> vd
 			)
 		{
 			cerr << "Processing hash " << vd->hash().string() << endl;
@@ -212,6 +214,10 @@ int main(int argc, char** argv)
 					Ryan_Debug::registry::IOhandler::IOtype::READONLY);
 			iopts->filename(*it);
 			try {
+				if (VoronoiDiagram::canReadMulti(nullptr, iopts))
+					VoronoiDiagram::readIterate(nullptr, iopts, doProcess, nullptr);
+
+				/*
 				vector<boost::shared_ptr<Voronoi::VoronoiDiagram> > voros;
 				// Handle not needed as the read context is used only once.
 				if (VoronoiDiagram::canReadMulti(nullptr, iopts))
@@ -227,6 +233,7 @@ int main(int argc, char** argv)
 					if (!already_done.count(vd->hash()))
 						doProcess(std::move(vd)); // Invalidate initial pointer to remove from memory after processing
 				}
+				*/
 			} catch (std::exception &e) {
 				cerr << e.what() << std::endl;
 				continue;
@@ -284,7 +291,7 @@ int main(int argc, char** argv)
 			vd->calcSurfaceDepth();
 			vd->calcCandidateConvexHullPoints();
 
-			doProcess(std::move(vd));
+			doProcess(nullptr, nullptr, std::move(vd));
 		}
 
 		for (auto it = inputrun.begin(); it != inputrun.end(); ++it)
@@ -333,7 +340,7 @@ int main(int argc, char** argv)
 					vd->calcSurfaceDepth();
 					vd->calcCandidateConvexHullPoints();
 
-					doProcess(std::move(vd));
+					doProcess(nullptr, nullptr, std::move(vd));
 				}
 				else std::cerr << "Shape file matching hash " 
 					<< r->shapeHash.string() << " was not found." << std::endl;
