@@ -779,7 +779,7 @@ namespace Ryan_Debug
 				for (const auto &hook : *hooks)
 				{
 					if (!hook.io_multi_matches) continue; // Sanity check
-					if (!hook.io_multi_processor && !hook.io_vector_processor) continue; // Sanity check
+					if (!hook.io_multi_processor && !hook.io_iterator_processor) continue; // Sanity check
 					if (hook.io_multi_matches(handle, opts))
 					{
 						return true;

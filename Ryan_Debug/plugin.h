@@ -179,7 +179,7 @@ namespace Ryan_Debug
 
 				res.io_multi_processor = read_file_type_multi<T>;
 				//res.io_vector_processor = read_file_type_vector<T>;
-				res.io_vector_processor = read_file_type_iterate<T>;
+				res.io_iterator_processor = read_file_type_iterate<T>;
 				return res;
 		}
 
