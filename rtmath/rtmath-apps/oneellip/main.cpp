@@ -401,83 +401,88 @@ int main(int argc, char *argv[])
 
 		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s)
 		{
-			cerr << "  Shape " << s->hash().lower << endl;
-			s->loadHashLocal(); // Load the shape fully, if it was imported from a database
-			auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
-			if (dSpacing && !s->standardD) s->standardD = (float)dSpacing;
+			try {
+				cerr << "  Shape " << s->hash().lower << endl;
+				s->loadHashLocal(); // Load the shape fully, if it was imported from a database
+				auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
+				if (dSpacing && !s->standardD) s->standardD = (float)dSpacing;
 
-			if (overrideM) { temps.clear(); temps.insert(-1); } // Use a dummy temperatre value so that the loop works.
-			for (const auto &freq : freqs)
-				for (const auto &temp : temps) { // Can also be -1 when overriding temp
-				run r;
+				if (overrideM) { temps.clear(); temps.insert(-1); } // Use a dummy temperatre value so that the loop works.
+				for (const auto &freq : freqs)
+					for (const auto &temp : temps) { // Can also be -1 when overriding temp
+					run r;
 
-				rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
-				if (vf == VFRAC_TYPE::CIRCUM_SPHERE) {
-					v = &(stats->Scircum_sphere); r.fvMeth = "Circumscribing Sphere";
-				} else if (vf == VFRAC_TYPE::RMS_SPHERE) {
-					v = &(stats->Srms_sphere); r.fvMeth = "RMS Sphere";
-				} else if (vf == VFRAC_TYPE::GYRATION_SPHERE) {
-					v = &(stats->Sgyration); r.fvMeth = "Radius of gyration Sphere";
-				} else if (vf == VFRAC_TYPE::VORONOI) {
-					v = &(stats->SVoronoi_hull); r.fvMeth = "Voronoi hull";
-				} else if (vf == VFRAC_TYPE::CONVEX) {
-					v = &(stats->Sconvex_hull); r.fvMeth = "Convex hull";
-				} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
-					v = &(stats->Sellipsoid_max);
-					r.fvMeth = "Max ellipsoid";
-				} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX_HOLLY) {
-					v = &(stats->Sellipsoid_max_Holly);
-					r.fvMeth = "Max ellipsoid Holly";
-				} else if (vf == VFRAC_TYPE::SOLID_SPHERE) {
-					v = &(stats->Ssolid);
-					r.fvMeth = "Solid sphere";
-				} else if ((vf == VFRAC_TYPE::INTERNAL_VORONOI) && (int_voro_depth == 2)) {
-					v = &(stats->SVoronoi_internal_2);
-					r.fvMeth = "Internal Voronoi Depth 2";
-				}
-				if (v) {
-					r.aeff = v->aeff_V * s->standardD;
-					r.fv = v->f;
-				} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
-					boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
-					vd = s->generateVoronoi(
-						std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
-					vd->calcSurfaceDepth();
-					vd->calcCandidateConvexHullPoints();
+					rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
+					if (vf == VFRAC_TYPE::CIRCUM_SPHERE) {
+						v = &(stats->Scircum_sphere); r.fvMeth = "Circumscribing Sphere";
+					} else if (vf == VFRAC_TYPE::RMS_SPHERE) {
+						v = &(stats->Srms_sphere); r.fvMeth = "RMS Sphere";
+					} else if (vf == VFRAC_TYPE::GYRATION_SPHERE) {
+						v = &(stats->Sgyration); r.fvMeth = "Radius of gyration Sphere";
+					} else if (vf == VFRAC_TYPE::VORONOI) {
+						v = &(stats->SVoronoi_hull); r.fvMeth = "Voronoi hull";
+					} else if (vf == VFRAC_TYPE::CONVEX) {
+						v = &(stats->Sconvex_hull); r.fvMeth = "Convex hull";
+					} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
+						v = &(stats->Sellipsoid_max);
+						r.fvMeth = "Max ellipsoid";
+					} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX_HOLLY) {
+						v = &(stats->Sellipsoid_max_Holly);
+						r.fvMeth = "Max ellipsoid Holly";
+					} else if (vf == VFRAC_TYPE::SOLID_SPHERE) {
+						v = &(stats->Ssolid);
+						r.fvMeth = "Solid sphere";
+					} else if ((vf == VFRAC_TYPE::INTERNAL_VORONOI) && (int_voro_depth == 2)) {
+						v = &(stats->SVoronoi_internal_2);
+						r.fvMeth = "Internal Voronoi Depth 2";
+					}
+					if (v) {
+						r.aeff = v->aeff_V * s->standardD;
+						r.fv = v->f;
+					} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
+						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
+						vd = s->generateVoronoi(
+							std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
+						vd->calcSurfaceDepth();
+						vd->calcCandidateConvexHullPoints();
 
-					size_t numLatticeTotal = 0, numLatticeFilled = 0;
-					vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
+						size_t numLatticeTotal = 0, numLatticeFilled = 0;
+						vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
 
-					r.aeff = stats->aeff_dipoles_const * s->standardD;
-					r.fvMeth = "Internal Voronoi Depth ";
-					r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
-					r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-				} else RDthrow(Ryan_Debug::error::xBadInput())
-					<< Ryan_Debug::error::otherErrorText("Unhandled volume fraction method");
+						r.aeff = stats->aeff_dipoles_const * s->standardD;
+						r.fvMeth = "Internal Voronoi Depth ";
+						r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
+						r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
+					} else RDthrow(Ryan_Debug::error::xBadInput())
+						<< Ryan_Debug::error::otherErrorText("Unhandled volume fraction method");
 
-				/// Gives aspect ratio of matching ellipsoid
-				/// \todo Implement this function
-				auto arEllipsoid = [](double sa, double v) -> double
-				{
-					RDthrow(Ryan_Debug::error::xUnimplementedFunction());
-					return -1;
-				};
+					/// Gives aspect ratio of matching ellipsoid
+					/// \todo Implement this function
+					auto arEllipsoid = [](double sa, double v) -> double
+					{
+						RDthrow(Ryan_Debug::error::xUnimplementedFunction());
+						return -1;
+					};
 
 
-				if (armeth == "Max_Ellipsoids")
-					// 0,2 to match Holly convention!!!!!!! 0,1 always is near sphere.
-					r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
-				else if (armeth == "Spheres")
-					r.ar = 1;
-				else doHelp("ar-method needs a correct value.");
-				r.freq = freq;
-				if (overrideM) r.m = ovM;
-				else rtmath::refract::mIce(freq, temp, r.m);
-				r.temp = temp;
-				r.refHash = s->hash().string();
-				r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
+					if (armeth == "Max_Ellipsoids")
+						// 0,2 to match Holly convention!!!!!!! 0,1 always is near sphere.
+						r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
+					else if (armeth == "Spheres")
+						r.ar = 1;
+					else doHelp("ar-method needs a correct value.");
+					r.freq = freq;
+					if (overrideM) r.m = ovM;
+					else rtmath::refract::mIce(freq, temp, r.m);
+					r.temp = temp;
+					r.refHash = s->hash().string();
+					r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
 
-				runs.push_back(std::move(r));
+					runs.push_back(std::move(r));
+					}
+				} catch (Ryan_Debug::error::xMissingHash &err) {
+					cerr << "  Cannot find hash for " << s->hash().lower << endl;
+					cerr << err.what() << endl;
 				}
 		};
 
