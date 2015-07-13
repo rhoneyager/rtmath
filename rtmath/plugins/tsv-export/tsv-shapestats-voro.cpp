@@ -94,7 +94,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_summary_handle>(new tsv_summary_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_VORO) RDthrow(Ryan_Debug::error::xDuplicateHook());
+					if (std::string(sh->getId()) != std::string(PLUGINID_VORO)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_summary_handle>(sh);
 				}
 

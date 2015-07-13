@@ -110,7 +110,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_ar_handle>(new tsv_ar_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_ARS) RDthrow(Ryan_Debug::error::xDuplicateHook());
+					if (std::string(sh->getId()) != std::string(PLUGINID_ARS)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ar_handle>(sh);
 				}
 

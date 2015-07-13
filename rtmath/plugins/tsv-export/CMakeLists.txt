@@ -14,6 +14,7 @@ add_library (rtmath_plugin_tsv SHARED
 	tsv-image-basicstats.cpp
 	tsv-sacr.cpp
 	tsv-shapefile.cpp
+	tsv-shapefile-sfc.cpp
 	tsv-shapestats.cpp
 	tsv-shapestats-rotdata.cpp
 	tsv-shapestats-voro.cpp

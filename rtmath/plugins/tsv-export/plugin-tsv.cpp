@@ -41,6 +41,11 @@ D_Ryan_Debug_start()
 		nExts, exportExts, PLUGINID, "shape_data");
 
 	genAndRegisterIOregistryPlural_writer
+		<::rtmath::ddscat::shapefile::shapefile,
+		rtmath::ddscat::shapefile::shapefile_IO_output_registry>(
+		nExts, exportExts, PLUGINID_SHP2, "shape_points");
+
+	genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
 		nExts, exportExts, PLUGINID_ARS, "ar_rot_data");

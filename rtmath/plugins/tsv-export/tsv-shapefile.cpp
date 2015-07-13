@@ -71,6 +71,12 @@ namespace rtmath {
 			};
 
 
+			// in separate file
+			shared_ptr<IOhandler>
+				export_tsv_shape_points
+				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
+				const boost::shared_ptr<const rtmath::ddscat::shapefile::shapefile > s);
+
 			shared_ptr<IOhandler>
 				export_tsv_shape_data
 				(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
@@ -86,7 +92,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_shp_handle>(new tsv_shp_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID) RDthrow(Ryan_Debug::error::xDuplicateHook());
+					if (std::string(sh->getId()) != std::string(PLUGINID)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_shp_handle>(sh);
 				}
 
@@ -120,6 +126,7 @@ namespace Ryan_Debug {
 		{
 			std::string exporttype = opts->exportType();
 			if (exporttype == "shape_data") return ::rtmath::plugins::tsv::export_tsv_shape_data(sh, opts, s);
+			else if (exporttype == "shape_points") return ::rtmath::plugins::tsv::export_tsv_shape_points(sh, opts, s);
 			else { RDthrow(Ryan_Debug::error::xUnimplementedFunction()); }
 			return nullptr;
 		}

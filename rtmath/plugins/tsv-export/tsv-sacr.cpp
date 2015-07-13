@@ -175,7 +175,7 @@ namespace Ryan_Debug {
 			std::shared_ptr<tsv_sacr_reflectivity_handle> h;
 			if (!sh) h = std::shared_ptr<tsv_sacr_reflectivity_handle>(new tsv_sacr_reflectivity_handle(filename.c_str(), iotype));
 			else {
-				if (sh->getId() != PLUGINID_SACR_REFL) RDthrow(Ryan_Debug::error::xDuplicateHook());
+				if (std::string(sh->getId()) != std::string(PLUGINID_SACR_REFL)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 				h = std::dynamic_pointer_cast<tsv_sacr_reflectivity_handle>(sh);
 			}
 

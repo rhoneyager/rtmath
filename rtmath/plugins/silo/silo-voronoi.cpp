@@ -49,7 +49,7 @@ namespace Ryan_Debug {
 					h = std::shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID) RDthrow(Ryan_Debug::error::xDuplicateHook());
+					if (std::string(sh->getId()) != std::string(PLUGINID)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<silo_handle>(sh);
 				}
 

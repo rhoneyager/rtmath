@@ -100,7 +100,7 @@ namespace rtmath {
 					h = std::shared_ptr<tsv_image_basicstats_handle>(new tsv_image_basicstats_handle(filename.c_str(), iotype));
 				}
 				else {
-					if (sh->getId() != PLUGINID_IMAGE) RDthrow(Ryan_Debug::error::xDuplicateHook());
+					if (std::string(sh->getId()) != std::string(PLUGINID_IMAGE)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_image_basicstats_handle>(sh);
 				}
 

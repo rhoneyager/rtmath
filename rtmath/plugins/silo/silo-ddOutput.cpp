@@ -258,7 +258,7 @@ namespace rtmath {
 				// Access the hdf5 file
 				h = shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
 			} else {
-				if (sh->getId() != PLUGINID) RTthrow debug::xDuplicateHook("Bad passed plugin");
+				if (std::string(sh->getId()) != std::string(PLUGINID)) RTthrow debug::xDuplicateHook("Bad passed plugin");
 				h = std::dynamic_pointer_cast<silo_handle>(sh);
 			}
 

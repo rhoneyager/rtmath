@@ -109,7 +109,7 @@ namespace rtmath {
 				if (!sh)
 					h = std::shared_ptr<tsv_ddoutput_iso_handle>(new tsv_ddoutput_iso_handle(filename.c_str(), iotype));
 				else {
-					if (sh->getId() != PLUGINID_DDISO) RDthrow(Ryan_Debug::error::xDuplicateHook());
+					if (std::string(sh->getId()) != std::string(PLUGINID_DDISO)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<tsv_ddoutput_iso_handle>(sh);
 				}
 
