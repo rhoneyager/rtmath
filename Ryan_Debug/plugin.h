@@ -98,6 +98,12 @@ namespace Ryan_Debug
 			const char* pluginid,
 			const char* exportType = "")
 		{
+			std::ostringstream l;
+			l << "Registering writer for extension " << extension << 
+				" with plugin id " << pluginid << " and export type "
+				<< exportType << " in templated function: " << FSIG;
+			emit_registry_log(l.str(), Ryan_Debug::log::debug_2);
+
 			IO_class_registry_writer<T> res;
 			//res.io_multi_matches = std::bind(match_file_type, _1, _2, extension);
 			auto opts2 = IO_options::generate();
@@ -170,6 +176,12 @@ namespace Ryan_Debug
 			const char* pluginid,
 			const char* exportType = "")
 		{
+			std::ostringstream l;
+			l << "Registering reader for extension " << extension << 
+				" with plugin id " << pluginid << " and export type "
+				<< exportType << " in templated function: " << FSIG;
+			emit_registry_log(l.str(), Ryan_Debug::log::debug_2);
+
 				IO_class_registry_reader<T> res;
 				//res.io_matches = std::bind(match_file_type, _1, _2, extension);
 				auto opts2 = IO_options::generate();
