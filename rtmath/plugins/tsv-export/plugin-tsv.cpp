@@ -45,6 +45,11 @@ D_Ryan_Debug_start()
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>(
 		nExts, exportExts, PLUGINID_SHP2, "shape_points");
 
+	Ryan_Debug::registry::genAndRegisterIOregistryPlural_writer
+		<::rtmath::Voronoi::VoronoiDiagram,
+		rtmath::Voronoi::Voronoi_IO_output_registry>(
+		nExts, exportExts, PLUGINID_VORO_SHP, "point_depth_data");
+
 	genAndRegisterIOregistryPlural_writer
 		<::rtmath::ddscat::stats::shapeFileStats,
 		rtmath::ddscat::stats::shapeFileStats_IO_output_registry>(
