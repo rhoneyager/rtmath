@@ -25,6 +25,83 @@ namespace rtmath
 	{
 		namespace tmatrix
 		{
+			void doCrossSectionIso(
+				const rtmath::phaseFuncs::pf_class_registry::setup &s,
+				const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
+				rtmath::phaseFuncs::pf_class_registry::cross_sections& c)
+			{
+				using namespace ::rtmath::phaseFuncs;
+				const double pi = boost::math::constants::pi<double>();
+
+				// First, scale the effective radius and refractive index?
+				double scaledAeff = i.aeff;
+				if (i.aeff_rescale)
+				{
+					if (i.aeff_version ==
+						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
+					{
+						double scaledVolume = pow(i.aeff, 3.0);
+						scaledVolume /= i.vFrac;
+						scaledAeff = pow(scaledVolume, 1. / 3.);
+					} else {
+						double scaledSA = pow(i.aeff, 2.0);
+						scaledSA /= i.vFrac;
+						scaledAeff = pow(scaledSA, 0.5);
+					}
+				}
+
+				std::complex<double> mRes = i.m; 
+				std::complex<double> mAir(1.0, 0);
+				i.rmeth(i.m, mAir, i.vFrac, mRes);
+
+				// Perform the calculation
+
+				using namespace ::tmatrix;
+				double rat = (i.aeff_version ==
+					pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
+					? 1 : 0;
+				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
+					? -1 : -2;
+				double ar = i.eps;
+				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
+				auto tp = ::tmatrix::tmatrixParams::create(
+					scaledAeff, rat, s.wavelength, 
+					std::abs(mRes.real()), std::abs(mRes.imag()), 
+					ar, np, 0.001, 7, true);
+
+				const double k = 2. * pi / s.wavelength;
+				const double size_p = 2. * pi * scaledAeff / s.wavelength;
+
+				try {
+					auto ori = ::tmatrix::OriTmatrix::calcIso(tp);
+					/// \todo Move these scalings into the T-matrix core code?
+					c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
+					c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
+					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
+					c.g_iso = ori->g;
+
+					auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
+
+					c.Qsca = -1;
+					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
+					c.g = ori->g;
+
+					c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
+					// Cext (and thus Qext) can come from the optical theorem...
+					// Cext = -4pi/k^2 * Re{S(\theta=0)}
+					c.Qext = c.Qext_iso; //-4. * pi * isoAng->getS(0, 0).real() / (k*k*C_sphere);
+					c.Qabs = c.Qext - c.Qsca;
+
+					/// iso values are validated with solid spheres and soft spheres using liu code
+					/// \todo need to validate with ellipsoids
+
+					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
+				} catch (const ::std::exception& t) {
+					std::cerr << "A tmatrix error has occurred." << std::endl;
+					std::cerr << "\t" << t.what() << std::endl;
+					throw(t);
+				}
+			}
 
 			void doCrossSection(
 				const rtmath::phaseFuncs::pf_class_registry::setup &s,
@@ -193,8 +270,8 @@ D_Ryan_Debug_start()
 	rtmath::phaseFuncs::pf_class_registry pcb;
 	pcb.name = "tmatrix-iso";
 	pcb.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	pcb.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
-	pcb.fPfs = rtmath::plugins::tmatrix::doPf;
+	pcb.fCrossSections = rtmath::plugins::tmatrix::doCrossSectionIso;
+	//pcb.fPfs = rtmath::plugins::tmatrix::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pcb);
 
 	// Also register some Rayleigh-Gans approximation codes

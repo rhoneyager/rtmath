@@ -20,23 +20,6 @@ namespace rtmath {
 	}
 	namespace plugins {
 		namespace tmatrix {
-			/*
-			std::shared_ptr<rtmath::registry::IOhandler> write_silo_multi_ddoutputs
-				(std::shared_ptr<rtmath::registry::IOhandler> h, 
-				const char* filename, 
-				const rtmath::ddscat::ddOutput*, 
-				const char* key, 
-				rtmath::registry::IOhandler::IOtype iotype);
-
-
-			struct silo_handle : public rtmath::registry::IOhandler
-			{
-				silo_handle(const char* filename, IOtype t);
-				virtual ~silo_handle() {}
-				void open(const char* filename, IOtype t);
-				std::shared_ptr<siloFile> file;
-			};
-			*/
 
 		}
 	}
