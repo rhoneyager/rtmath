@@ -1,4 +1,4 @@
-/// \brief Provides silo file IO
+/// \brief Provides Bohren and Huffman pf and cross-section calculations.
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <string>
@@ -173,7 +173,7 @@ namespace rtmath
 	}
 }
 
-
+D_Ryan_Debug_validator();
 D_rtmath_validator();
 
 D_Ryan_Debug_start()

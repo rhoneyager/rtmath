@@ -75,8 +75,8 @@ namespace rtmath
 				try {
 					auto ori = ::tmatrix::OriTmatrix::calcIso(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
+					c.Qsca_iso = ori->qsca; //* pow(scaledAeff / i.aeff, 2.);
+					c.Qext_iso = ori->qext; //* pow(scaledAeff / i.aeff, 2.);
 					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
 					c.g_iso = ori->g;
 
@@ -86,7 +86,7 @@ namespace rtmath
 					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
 					c.g = ori->g;
 
-					c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
+					c.Qbk_iso = c.Qbk; //* pow(scaledAeff / i.aeff, 2.);
 					// Cext (and thus Qext) can come from the optical theorem...
 					// Cext = -4pi/k^2 * Re{S(\theta=0)}
 					c.Qext = c.Qext_iso; //-4. * pi * isoAng->getS(0, 0).real() / (k*k*C_sphere);
@@ -266,6 +266,14 @@ D_Ryan_Debug_start()
 	pc.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
 	pc.fPfs = rtmath::plugins::tmatrix::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);
+
+	rtmath::phaseFuncs::pf_class_registry pcc;
+	pcc.name = "tmatrix-ori-iso";
+	pcc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pcc.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
+	pcc.fPfs = rtmath::plugins::tmatrix::doPf;
+	rtmath::phaseFuncs::pf_provider::registerHook(pcc);
+
 
 	rtmath::phaseFuncs::pf_class_registry pcb;
 	pcb.name = "tmatrix-iso";

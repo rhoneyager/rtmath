@@ -1,4 +1,4 @@
-/// \brief Provides silo file IO
+/// \brief Provides Rayleigh and Rayleigh-Gans
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <string>
