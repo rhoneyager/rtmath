@@ -84,7 +84,7 @@ namespace rtmath
 						qsca = (float) (8. * std::pow(size_p, 4.) / 3.
 							* (d * conj(d)).real());
 						qback = (float) (d * conj(d)).real() * 8. * std::pow(size_p, 4.) / 2.f;
-						gsca = (float) -1;
+						gsca = (float) 0;
 
 						const double k = 2. * pi / s.wavelength;
 
@@ -118,6 +118,18 @@ namespace rtmath
 					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
 					rtmath::phaseFuncs::pf_class_registry::cross_sections& c);
 			}
+			namespace HRG {
+				void doCrossSection(
+					const rtmath::phaseFuncs::pf_class_registry::setup &s,
+					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
+					rtmath::phaseFuncs::pf_class_registry::cross_sections& c);
+			}
+			namespace Rayleigh_2 {
+				void doCrossSection(
+					const rtmath::phaseFuncs::pf_class_registry::setup &s,
+					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
+					rtmath::phaseFuncs::pf_class_registry::cross_sections& c);
+			}
 		}
 	}
 }
@@ -142,10 +154,23 @@ D_Ryan_Debug_start()
 	pc.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);
 
-	//rtmath::phaseFuncs::pf_class_registry pcrg;
-	//pcrg.name = "Rayleigh-Gans";
-	//pcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	//pcrg.fCrossSections = rtmath::plugins::nondda_misc::RG::doCrossSection;
-	//rtmath::phaseFuncs::pf_provider::registerHook(pcrg);
+	rtmath::phaseFuncs::pf_class_registry pc2;
+	pc2.name = "Rayleigh-2";
+	pc2.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pc2.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh_2::doCrossSection;
+	rtmath::phaseFuncs::pf_provider::registerHook(pc2);
+
+	rtmath::phaseFuncs::pf_class_registry pcrg;
+	pcrg.name = "Rayleigh-Gans";
+	pcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pcrg.fCrossSections = rtmath::plugins::nondda_misc::RG::doCrossSection;
+	rtmath::phaseFuncs::pf_provider::registerHook(pcrg);
+
+	rtmath::phaseFuncs::pf_class_registry hpcrg;
+	hpcrg.name = "SSRG";
+	hpcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	hpcrg.fCrossSections = rtmath::plugins::nondda_misc::HRG::doCrossSection;
+	rtmath::phaseFuncs::pf_provider::registerHook(hpcrg);
+
 	return SUCCESS;
 }

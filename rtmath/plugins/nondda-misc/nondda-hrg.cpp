@@ -23,7 +23,7 @@ namespace rtmath
 		namespace nondda_misc
 		{
 
-			namespace RG {
+			namespace HRG {
 				void doCrossSection(
 					const rtmath::phaseFuncs::pf_class_registry::setup &s,
 					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
@@ -65,14 +65,27 @@ namespace rtmath
 					const double dmax = 2. * std::pow(V*3./(4.*pi*ar),1./3.); // oblate particles
 					const double d = ar * dmax; // d is the vertical dimension, d is the horizontal dimension.
 
+					const double gamma = 5./3., beta = 0.23, kappa = 0.19;
+
 					try {
 						std::complex<double> K = ((i.m*i.m) - 1.) / ((i.m*i.m) + 2.);
 						std::complex<double> Km = ((mRes*mRes) - 1.) / ((mRes*mRes) + 2.);
 						qext = -1;
 						qsca = -1;
-						qback = (float) (Km * conj(Km)).real()  * 81./4. * V * V 
-							/ (pi * wvnum * wvnum * pow(d,6.));
-						qback *= pow(sin(k*d) - (k*d*cos(k*d)), 2.);
+						double prefactor = 8. * pi * pow(wvnum,4.)* pow(abs(Km),2.) * V * V / 16.;
+						double term1 = cos(size_p) * ( (1.+kappa/3.)*(1./(2.*size_p+pi) - 1./(2.*size_p-pi))
+								- kappa * (1./(2.*size_p+3*pi) - 1./(2.*size_p - 3.*pi)));
+						term1 *= term1;
+						int jmax = (int) ( 5.*size_p / pi) + 1;
+						qback = 0;
+						for (int j=1; j <= jmax; ++j) {
+							qback += pow(2.*j,-gamma) * sin(size_p) * sin(size_p)
+								* ( pow(1./(2.*(size_p+(pi*j))),2.)
+								+ pow(1./(2.*(size_p - (pi*j))),2.) );
+						}
+						qback *= beta;
+						qback += term1;
+						qback *= prefactor;
 						qback /= pi * pow(scaledAeff,2.);
 						gsca = -1;
 

@@ -23,7 +23,7 @@ namespace rtmath
 		namespace nondda_misc
 		{
 
-			namespace RG {
+			namespace Rayleigh_2 {
 				void doCrossSection(
 					const rtmath::phaseFuncs::pf_class_registry::setup &s,
 					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
@@ -68,18 +68,18 @@ namespace rtmath
 					try {
 						std::complex<double> K = ((i.m*i.m) - 1.) / ((i.m*i.m) + 2.);
 						std::complex<double> Km = ((mRes*mRes) - 1.) / ((mRes*mRes) + 2.);
-						qext = -1;
-						qsca = -1;
-						qback = (float) (Km * conj(Km)).real()  * 81./4. * V * V 
-							/ (pi * wvnum * wvnum * pow(d,6.));
-						qback *= pow(sin(k*d) - (k*d*cos(k*d)), 2.);
+						//qext = 4. * size_p * (-1. * d).imag();
+						//qsca = 8. * std::pow(size_p, 4.) / 3.
+						//	* (d * conj(d)).real();
+						qback = 9. * V * V * pow(abs(Km),2.) * pow(wvnum,4.)/(4.*pi);
 						qback /= pi * pow(scaledAeff,2.);
-						gsca = -1;
+						gsca = 0;
 
+						
 						c.Qsca_iso = -1; // qsca;// *pow(scaledAeff / i.aeff, 2.);
 						c.Qext_iso = -1;// qext;// *pow(scaledAeff / i.aeff, 2.);
 						c.Qabs_iso = -1; // c.Qext_iso - c.Qsca_iso;
-						c.g_iso = -1;// gsca;
+						c.g_iso = 0;// gsca;
 						c.Qbk_iso = qback; // * pow(scaledAeff / i.aeff, 2.);
 
 						double C_sphere = pi * pow(scaledAeff, 2.0);
