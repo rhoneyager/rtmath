@@ -28,5 +28,31 @@ namespace rtmath {
 
 		typedef std::pair<double, double> ptWeight;
 		void DLEXPORT_rtmath_core getQuadPtsLeg(size_t deg, std::set<ptWeight>&);
+
+		/// Trapezoid rule integration, with specified dN
+		template <class T>
+		T integrateTrapezoid2(const std::function<double(double)> &f, T low, T high, T dN)
+		{
+			T res = 0;
+			T vLast = f(low);
+			for (T val = low; val < high; val += dN) {
+				T vNext = f(val+dN);
+				res += (T) ((vNext + vLast) / (T) 2.);
+				vLast = vNext;
+			}
+			res *= dN;
+			return res;
+		}
+
+
+		/// Trapezoid rule integration, autocalculate dN
+		template <class T>
+		T integrateTrapezoid(const std::function<double(double)> &f, T low, T high, size_t n)
+		{
+			T dN = (high - low) / (T) n;
+			return integrateTrapezoid2<T>(f, low, high, dN);
+		}
+
 	}
 }
+

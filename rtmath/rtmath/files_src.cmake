@@ -40,6 +40,7 @@ set(rtmath_core_general
 	rtmath/macros.h
 	#rtmath/matrixop.h
 	rtmath/phaseFunc.h
+	rtmath/psd.h
 	rtmath/quadrature.h
 	rtmath/refract.h
 	#rtmath/splitSet.h
@@ -55,6 +56,7 @@ set(rtmath_core_general
 	#src/matrixop.cpp
 	#src/os_functions.cpp
 	src/phaseFunc.cpp
+	src/psd.cpp
 	src/quadrature.cpp
 	src/refract.cpp
 	#src/splitSet.cpp

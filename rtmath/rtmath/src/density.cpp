@@ -77,41 +77,77 @@ namespace rtmath
 {
 	namespace density
 	{
-		double ice1h(double T)
-		{
-			initIce();
-			// temp is in K, but convert to Celsius for convenience
-			units::conv_temp c("K","C");
-			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -260) RDthrow(Ryan_Debug::error::xModelOutOfRange())
-				<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-260, 0))
-				<< Ryan_Debug::error::temp(Tc)
-				<< Ryan_Debug::error::otherErrorText("Temp. out of range. Function "
-					"needs input temp in Kelvin. Listed ranges "
-					"in error are in Celsius.");
+		namespace implementations {
+			double ice1h(double T)
+			{
+				initIce();
+				// temp is in K, but convert to Celsius for convenience
+				units::conv_temp c("K","C");
+				double Tc = c.convert(T);
+				if (Tc > 0 || Tc < -260) RDthrow(Ryan_Debug::error::xModelOutOfRange())
+					<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-260, 0))
+					<< Ryan_Debug::error::temp(Tc)
+					<< Ryan_Debug::error::otherErrorText("Temp. out of range. Function "
+						"needs input temp in Kelvin. Listed ranges "
+						"in error are in Celsius.");
 
-			return interpMap(Tc, denIce);
-		}
+				return interpMap(Tc, denIce);
+			}
 
-		double SuperWater(double T)
-		{
-			initSuperWater();
-			units::conv_temp c("K","C");
-			double Tc = c.convert(T);
-			if (Tc > 0 || Tc < -30) RDthrow(Ryan_Debug::error::xModelOutOfRange())
-				<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-30, 0))
-				<< Ryan_Debug::error::temp(Tc)
-				<< Ryan_Debug::error::otherErrorText("Temp. out of range. Function "
-					"needs input temp in Kelvin. Listed ranges "
-					"in error are in Celsius.");
+			double SuperWater(double T)
+			{
+				initSuperWater();
+				units::conv_temp c("K","C");
+				double Tc = c.convert(T);
+				if (Tc > 0 || Tc < -30) RDthrow(Ryan_Debug::error::xModelOutOfRange())
+					<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-30, 0))
+					<< Ryan_Debug::error::temp(Tc)
+					<< Ryan_Debug::error::otherErrorText("Temp. out of range. Function "
+						"needs input temp in Kelvin. Listed ranges "
+						"in error are in Celsius.");
 
-			return interpMap(Tc, denSuperWater);
-		}
+				return interpMap(Tc, denSuperWater);
+			}
 
-		double water(double T)
-		{
-			RDthrow(Ryan_Debug::error::xUnimplementedFunction());
-			return 0;
+			double water(double T)
+			{
+				RDthrow(Ryan_Debug::error::xUnimplementedFunction());
+				return 0;
+			}
+
+			double BrownFrancis1995Hogan2012(double D) {
+				double mass = 0.012 * pow(D,1.9);
+				const double rho0 = 917.0; // kg m^-3
+				const double V = mass / rho0;
+
+				RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+					<< Ryan_Debug::error::otherErrorText("Read papera and see how to define density consistenty.");
+				return 0;
+			}
+
+			double Brandes2007(double D) {
+				return 0.178 * pow(D,-0.922); // Context of D is in the calling function.
+			}
+
+			double MagonoNakamura1965(double D) {
+				return 2. * pow(D,-2.);
+			}
+
+			double Holroyd1971(double D) {
+				return 0.17 * pow(D,-1.);
+			}
+
+			double Muramoto1995(double D) {
+				return 0.048 * pow(D,-0.406);
+			}
+
+			double FabrySzyrmer1999(double D) {
+				return 0.15 / D;
+			}
+
+			double Heymsfield2004(double D) {
+				return 0.104 * pow(D,-0.95);
+			}
 		}
 	}
 }
