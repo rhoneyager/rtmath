@@ -151,7 +151,7 @@ namespace rtmath {
 			: iparams(i), otype(o) {}
 
 		void pf_provider::getCrossSections(const pf_class_registry::setup& s,
-			resCtype& res) const
+			resCtype& res, const std::string &forceProvider) const
 		{
 			res.clear();
 			auto container = getHooks();
@@ -159,6 +159,11 @@ namespace rtmath {
 			{
 				if (otype != c.orientations) continue;
 				if (!c.fCrossSections) continue;
+				if (forceProvider.size() ) {
+					if (c.name) {
+						if (forceProvider != std::string(c.name)) continue;
+					}
+				}
 				try {
 					pf_class_registry::cross_sections cs;
 					c.fCrossSections(s, iparams, cs);
@@ -170,7 +175,7 @@ namespace rtmath {
 		}
 
 		void pf_provider::getPfs(const pf_class_registry::setup& s,
-			resPtype& res) const
+			resPtype& res, const std::string &forceProvider) const
 		{
 			res.clear();
 			auto container = getHooks();
@@ -178,6 +183,11 @@ namespace rtmath {
 			{
 				if (otype != c.orientations) continue;
 				if (!c.fPfs) continue;
+				if (forceProvider.size() ) {
+					if (c.name) {
+						if (forceProvider != std::string(c.name)) continue;
+					}
+				}
 				pf_class_registry::pfs cs;
 				c.fPfs(s, iparams, cs);
 				res.push_back(std::pair<const char*, pf_class_registry::pfs>

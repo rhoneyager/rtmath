@@ -130,6 +130,9 @@ int main(int argc, char *argv[])
 
 		if (vm.count("help") || vm.size() == 0) doHelp("");
 
+		string smeth;
+		if (vm.count("solution-method"))
+			smeth = vm["solution-method"].as<string>();
 		string oprefix;
 		if (vm.count("output-prefix"))
 			oprefix = vm["output-prefix"].as<string>();
@@ -609,8 +612,8 @@ int main(int argc, char *argv[])
 			s.sPhi = 0; s.sPhi0 = 0; s.sTheta = 0; s.sTheta0 = 0;
 			s.wavelength = r.lambda;
 
-			// TODO: Add in solution-method specifier here.
-			p.getCrossSections(s, res);
+			// smeth is parameter solution-method, which can force a single method to be used
+			p.getCrossSections(s, res, smeth);
 
 			for (const auto &rr : res)
 			{

@@ -176,8 +176,8 @@ namespace rtmath {
 
 			typedef std::vector<std::pair<const char*, pf_class_registry::cross_sections> > resCtype;
 			typedef std::vector<std::pair<const char*, pf_class_registry::pfs> > resPtype;
-			void getCrossSections(const pf_class_registry::setup&, resCtype& res) const;
-			void getPfs(const pf_class_registry::setup&, resPtype& res) const;
+			void getCrossSections(const pf_class_registry::setup&, resCtype& res, const std::string &forceProvider = "") const;
+			void getPfs(const pf_class_registry::setup&, resPtype& res, const std::string &forceProvider = "") const;
 		private:
 			const pf_class_registry::inputParamsPartial& iparams;
 			pf_class_registry::orientation_type otype;
