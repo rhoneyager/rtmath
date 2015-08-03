@@ -111,6 +111,9 @@ namespace rtmath
 
 			double water(double T)
 			{
+				if (T < 273.15) { 
+					return SuperWater(T);
+				}
 				RDthrow(Ryan_Debug::error::xUnimplementedFunction());
 				return 0;
 			}
@@ -121,7 +124,7 @@ namespace rtmath
 				const double V = mass / rho0;
 
 				RDthrow(Ryan_Debug::error::xUnimplementedFunction())
-					<< Ryan_Debug::error::otherErrorText("Read papera and see how to define density consistenty.");
+					<< Ryan_Debug::error::otherErrorText("Read papers and see how to define density consistenty.");
 				return 0;
 			}
 

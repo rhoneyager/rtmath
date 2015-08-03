@@ -211,10 +211,35 @@ CREATE VIEW flakeRuns_db AS
 
 
 	create view currentruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from currentruns order by total - good;
+
+
+CREATE VIEW activeruns_console AS
+	SELECT
+	flakeTypes.name,
+	flakeRuns.frequency as freq,
+	flakeRuns.temperature as temp,
+	host.hostname as host,
+	flakeRuns.decimation as dec,
+	flakeRuns.perturbation as pert,
+	flakeRuns.polarization as pol,
+	flakeRuns.runsTotal as total, flakeRuns.runsCompleted as good, flakeRuns.runsFailed as bad,
+	flakeRuns.nBetas as nb, 
+	flakeRuns.progress as state,
+---age(current_timestamp, flakeRuns.tsLastUpdated)
+	to_char( age(current_timestamp, flakeRuns.tsLastUpdated), 'HH24 "h"') as last
+---extract(hour from age(current_timestamp, flakeRuns.tsLastUpdated) )
+	FROM flakeRuns, host, flakeTypes
+	WHERE (flakeRuns.progress = 'running' OR flakeRuns.progress = 'finished')
+	AND host.id = flakeRuns.host
+	AND flakeTypes.id = flakeRuns.flakeType
+	ORDER BY flakeRuns.runsTotal - flakeRuns.runsCompleted
+	;
+
 	create view ingestedruns_console as select name, frequency as freq, temp, hostname as host, dec, perturbation as pert, pol, total, good, nbetas from ingestedruns order by total - good;
 
 	grant select on flakeRunsHiRes to public;
 	grant select on currentruns_console to public;
+	grant select on activeruns_console to public;
 	grant select on currentruns TO public;
 	grant select on failedruns TO public;
 	grant select on stalledruns TO public;
