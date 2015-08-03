@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 			("temps,T", po::value<std::string>()->default_value("263"), "Specify temperatures in K")
 			("mr", po::value<double>(), "Override real refractive index value")
 			("mi", po::value<double>(), "Override imaginary refractive index value")
-			("volume-fractions,v", po::value<std::string>()->default_value("1"), "Set the ice volume fractions. "
+			("volume-fractions,v", po::value<std::string>(), "Set the ice volume fractions. "
 			 "Used when: not using shapefiles AND vf-scaling is not one of the paper-based methods.")
 			("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
 			("solution-method", po::value<std::string>(), "Force only a specific algorithm to be used, such as "
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
 		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
 		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
-		bool matchParentFlakes;
+		//bool matchParentFlakes;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
@@ -353,6 +353,7 @@ int main(int argc, char *argv[])
 						for (const auto &aspect : aspects) {
 							auto doAeff = [&](double aeff, double vfrac, double temp)
 							{
+								std::cerr << "calling doAeff aeff: " << aeff << " vf " << vfrac << " t " << temp << std::endl;
 								run r;
 								r.aeff = aeff;
 								r.ar = aspect;
@@ -375,7 +376,8 @@ int main(int argc, char *argv[])
 							if (!vfracs.size() && vf != VFRAC_TYPE::OTHER)
 								doHelp("Need to specify how volume fractions are determined.");
 							// Density is temperature-dependent.
-							if (!vfracs.size() && vf == VFRAC_TYPE::OTHER) {
+							if (!vfracs.size() && vf == VFRAC_TYPE::OTHER)
+							{
 								if (!temps.size()) doHelp("When using a predetermined density "
 									"formula, temperature should be specified.");
 								for (const auto &temp : temps) {
@@ -394,6 +396,7 @@ int main(int argc, char *argv[])
 											_temp_units = "K"
 											);
 										double vf = dEff / dIce;
+										std::cerr << "dIce " << dIce << " dEff " << dEff << " vf " << vf << std::endl;
 										aeff_vf_rad.push_back(std::tuple<double, double, double>(aeff, vf, temp));
 									}
 									for (const auto &rad : radii) {

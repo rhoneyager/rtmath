@@ -147,6 +147,13 @@ namespace rtmath
 				(out_substance, *, std::string(""))
 			) )
 		{
+				std::cerr << "in_density: " << in_density
+				<< "\tout_density: " << out_density
+				<< "\tin_volume: " << in_volume
+				<< "\tin_aeff: " << in_aeff
+				<< "\ttemp: " << temperature << " " << temp_units
+				<< "\tin_subst: " << in_substance
+				<< "\tout_subst: " << out_substance << std::endl;
 			double inDen = in_density;
 			double outDen = out_density;
 			double inV = in_volume;
@@ -170,19 +177,21 @@ namespace rtmath
 				if (den) return;
 				if (!temperature) RDthrow(Ryan_Debug::error::xBadInput())
 					<< Ryan_Debug::error::otherErrorText("This density conversion requires a temperature.");
-				if (subst == "ice1h") {
+				if (subst == "ice1h" || subst == "ice") {
 					den = ice1h( _temperature = temperature, _temp_units = temp_units );
 				} else if (subst == "water") {
 					den = water( _temperature = temperature, _temp_units = temp_units );
 				} else if (subst == "SuperWater") {
 					den = SuperWater( _temperature = temperature, _temp_units = temp_units );
 				} else RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::specializer_type(subst)
 					<< Ryan_Debug::error::otherErrorText("Unknown substance for density conversion.");
 				return;
 			};
 			findDen(inDen, in_substance);
 			findDen(outDen, out_substance);
 
+			std::cerr << "inDen " << inDen << "\toutDen: " << outDen << std::endl;
 			// Once the densities are determined, then do the conversion of the volumes.
 			// den = m / v.
 			double mass = inDen * inV;
@@ -191,6 +200,7 @@ namespace rtmath
 			if (doAeff) { // convert back to effective radius if requested
 				out = pow(3.*out/(4.),1./3.);
 			}
+			std::cerr << "out is " << out << " and doAeff is " << doAeff << std::endl;
 			return out;
 		}
 
@@ -209,6 +219,13 @@ namespace rtmath
 				(out_length_units, *, std::string("um"))
 			) )
 		{
+			std::cerr << "Converting length.\n"
+				<< "in_length_value: " << in_length_value
+				<< "\tin_length_type: " << in_length_type
+				<< "\tout_length_type: " << out_length_type
+				<< "\tar: " << ar
+				<< "\tin_length_units: " << in_length_units
+				<< "\tout_length_units: " << out_length_units << std::endl;
 			// First convert to the right dimensional units
 			double inVal = rtmath::units::conv_alt(in_length_units, out_length_units).convert(in_length_value);
 			// Next, pass the desired conversion formulas. The main conversions are between (radius,diameter)
@@ -281,6 +298,13 @@ namespace rtmath
 			)
 			)
 		{
+			std::cerr << "in_length_value: " << in_length_value
+				<< "\tin_length_type: " << in_length_type
+				<< "\tprovider: " << provider
+				<< "\tin_length_units: " << in_length_units
+				<< "\tar: " << ar
+				<< "\ttemperature: " << temperature
+				<< "\ttemp_units: " << temp_units << std::endl;
 			const size_t numProviders = 7;
 			const char *providers[numProviders * 4] = { 
 				"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice",
@@ -311,6 +335,7 @@ namespace rtmath
 				func = funcs[i];
 			}
 			if (!found) RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::specializer_type(provider)
 				<< Ryan_Debug::error::otherErrorText("Unknown density provider");
 
 			double len = 0;
@@ -321,12 +346,14 @@ namespace rtmath
 				_out_length_units = "um",
 				_out_length_type = "EffectiveRadius"
 				);
+			std::cerr << "length as aeff (um): " << len << std::endl;
 			len = convertSubstanceDensity( _in_aeff = len,
 				_in_substance = "ice",
 				_temperature = temperature,
 				_temp_units = temp_units,
 				_out_substance = needsSubstance
 				);
+			std::cerr << "length with correct substance: " << len << std::endl;
 			len = convertLength( _in_length_value = len,
 				_in_length_type = "EffectiveRadius",
 				_in_length_units = "um",
@@ -334,7 +361,10 @@ namespace rtmath
 				_ar = ar,
 				_out_length_type = needsDtype
 				);
-			return (func)(len);
+			double val = (func)(len);
+			std::cerr << "length in " << needsUnits << " type " << needsDtype << ": " <<  len << std::endl
+				<< "has effective density of: " << val << std::endl;
+			return val;
 		}
 
 #define standardDProvider(name) \
