@@ -8,8 +8,8 @@
 #include <boost/parameter/name.hpp>
 #include <boost/parameter/preprocessor.hpp>
 #include <boost/lexical_cast.hpp>
-//#include <boost/math/constants/constants.hpp>
-#include "../rtmath/units.h"
+#include <boost/math/constants/constants.hpp>
+#include "units.h"
 #include <Ryan_Debug/error.h>
 
 namespace rtmath
@@ -50,6 +50,9 @@ namespace rtmath
 		/// \todo Implement this for density above freezing.
 			double DLEXPORT_rtmath_core water(double Tk);
 
+		/// Selector function to find density
+			void DLEXPORT_rtmath_core findDen(double &den, const std::string &subst,
+					double temperature, const std::string &temp_units);
 		/**
 		* \brief Brown and Francis (1995) mass-size relationship, but using Hogan et al.'s
 		* (2012) conversion to be in terms of the longest particle dimension.
@@ -93,6 +96,7 @@ namespace rtmath
 		BOOST_PARAMETER_NAME(freq_units)
 		BOOST_PARAMETER_NAME(salinity_units)
 		BOOST_PARAMETER_NAME(m)
+		BOOST_PARAMETER_NAME(volume_fraction)
 		BOOST_PARAMETER_NAME(provider)
 		BOOST_PARAMETER_NAME(in_length_value)
 		BOOST_PARAMETER_NAME(max_dimension)
@@ -173,23 +177,8 @@ namespace rtmath
 			//const double pi = boost::math::constants::pi<double>();
 			if (doAeff) inV = (4./3.) * pow(inAeff,3.);
 			// Determine densities
-			auto findDen = [&temperature, &temp_units](double &den, const std::string &subst) {
-				if (den) return;
-				if (!temperature) RDthrow(Ryan_Debug::error::xBadInput())
-					<< Ryan_Debug::error::otherErrorText("This density conversion requires a temperature.");
-				if (subst == "ice1h" || subst == "ice") {
-					den = ice1h( _temperature = temperature, _temp_units = temp_units );
-				} else if (subst == "water") {
-					den = water( _temperature = temperature, _temp_units = temp_units );
-				} else if (subst == "SuperWater") {
-					den = SuperWater( _temperature = temperature, _temp_units = temp_units );
-				} else RDthrow(Ryan_Debug::error::xBadInput())
-					<< Ryan_Debug::error::specializer_type(subst)
-					<< Ryan_Debug::error::otherErrorText("Unknown substance for density conversion.");
-				return;
-			};
-			findDen(inDen, in_substance);
-			findDen(outDen, out_substance);
+			implementations::findDen(inDen, in_substance, temperature, temp_units);
+			implementations::findDen(outDen, out_substance, temperature, temp_units);
 
 			std::cerr << "inDen " << inDen << "\toutDen: " << outDen << std::endl;
 			// Once the densities are determined, then do the conversion of the volumes.
@@ -244,6 +233,7 @@ namespace rtmath
 			check(out_length_type, "Max_Dimension", outIsMD);
 			check(out_length_type, "Max_Diameter", outIsMD);
 			check(out_length_type, "Max_Radius", outIsMD);
+			/// \todo add Min_Diameters and Mean_Diameters
 
 			double outVal = 0;
 			double inVnp = 0; // Volume without the factor of pi.
@@ -272,6 +262,62 @@ namespace rtmath
 			if(out_length_type.find("adius") != std::string::npos) outVal /= 2.;
 			return outVal;
 		}
+
+		/// Function that calculates volume based on different aspect ratios. Assumes
+		/// that the volume has the units of length^3.
+		BOOST_PARAMETER_FUNCTION( (double),
+			convertVolumeLength,
+			tag,
+			(required
+				(in_length_value, (double))
+				(in_length_type, (std::string)) // can be Volume or a length that convertLength can handle
+				(out_length_type, (std::string))
+			)
+			(optional
+				(ar, *, 0.6)
+				//(volume_fraction, *, 1)
+			) )
+		{
+			std::cerr << "Interconverting volume and length.\n"
+				<< "in_length_value: " << in_length_value
+				<< "\tin_length_type: " << in_length_type
+				<< "\tout_length_type: " << out_length_type
+				<< "\tar: " << ar << std::endl;
+			bool inIsV = false, outIsV = false;
+			auto check = [](const std::string &name, const std::string &match, bool &out) {
+				if (name == match) out = true; };
+			check(in_length_type, "Volume", inIsV);
+			check(out_length_type, "Volume", outIsV);
+			// If input value is a volume, convert back to a length
+			double inMD = 0;
+			const double pi = boost::math::constants::pi<double>();
+			if (inIsV) {
+				if (ar <= 1) inMD = pow(6.*in_length_value*ar/pi,1./3.);
+				else inMD = pow(6.*in_length_value/(pi*ar*ar),1./3.);
+			} else {
+				inMD = convertLength( _in_length_value = in_length_value,
+				_in_length_type = in_length_type,
+				_ar = ar,
+				_out_length_type = "Max_Dimension"
+				);
+			}
+
+			// inMD is the Max_Dimension
+			double out = 0;
+			if (outIsV) {
+				if (ar <= 1) out = pow(inMD,3.) * pi / (6.*ar);
+				else out = pow(inMD,3.) * pi * pow(ar,2.) / 6;
+			} else {
+				out = convertLength( _in_length_value = inMD,
+					_in_length_type = "Max_Dimension",
+					_ar = ar,
+					_out_length_type = out_length_type
+					);
+			}
+
+			return out;
+		}
+
 
 		/** \brief Provides effective densities for use in particle modeling.
 		 *
@@ -305,15 +351,15 @@ namespace rtmath
 				<< "\tar: " << ar
 				<< "\ttemperature: " << temperature
 				<< "\ttemp_units: " << temp_units << std::endl;
-			const size_t numProviders = 7;
-			const char *providers[numProviders * 4] = { 
-				"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice",
-				"Brandes2007", "Median_Volume_Diameter", "mm", "ice",
-				"MagonoNakamura1965", "Equivalent_Diameter", "mm", "water",
-				"Holroyd1971", "Equivalent_Diameter", "mm", "ice",
-				"Muramoto1995", "Equivalent_Diameter", "mm", "ice",
-				"FabrySzyrmer1999", "Equivalent_Diameter", "mm", "ice",
-				"Heymsfield2004", "Equivalent_Diameter", "mm", "ice" };
+			const size_t numProviders = 7, span = 5;
+			const char *providers[numProviders * span] = {
+				"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice", "mass",
+				"Brandes2007", "Median_Volume_Diameter", "mm", "ice", "density",
+				"MagonoNakamura1965", "Max_Diameter", "mm", "ice", "density",
+				"Holroyd1971", "Max_Diameter", "mm", "ice", "density",
+				"Muramoto1995", "Max_Diameter", "mm", "ice", "density",
+				"FabrySzyrmer1999", "Max_Diameter", "mm", "ice", "density",
+				"Heymsfield2004", "Max_Diameter", "mm", "ice", "density" };
 			std::function<double(double)> funcs[] = {
 				&(implementations::BrownFrancis1995Hogan2012),
 				&(implementations::Brandes2007),
@@ -324,21 +370,22 @@ namespace rtmath
 				&(implementations::Heymsfield2004) };
 			// Find provider and set values
 			bool found = false;
-			std::string needsDtype, needsUnits, needsSubstance;
+			std::string needsDtype, needsUnits, needsSubstance, relnResult;
 			std::function<double(double)> func;
 			for( size_t i = 0; i < numProviders; ++i) {
-				if (std::string(providers[i*4]) != provider) continue;
+				if (std::string(providers[i*span]) != provider) continue;
 				found = true;
-				needsDtype = std::string(providers[(i*4)+1]);
-				needsUnits = std::string(providers[(i*4)+2]);
-				needsSubstance = std::string(providers[(i*4)+3]);
+				needsDtype = std::string(providers[(i*span)+1]);
+				needsUnits = std::string(providers[(i*span)+2]);
+				needsSubstance = std::string(providers[(i*span)+3]);
+				relnResult = std::string(providers[(i*span)+4]);
 				func = funcs[i];
 			}
 			if (!found) RDthrow(Ryan_Debug::error::xBadInput())
 				<< Ryan_Debug::error::specializer_type(provider)
 				<< Ryan_Debug::error::otherErrorText("Unknown density provider");
 
-			double len = 0;
+			double len = 0, lenaeff = 0;
 			len = convertLength( _in_length_value = in_length_value,
 				_in_length_type = in_length_type,
 				_in_length_units = in_length_units,
@@ -347,14 +394,14 @@ namespace rtmath
 				_out_length_type = "EffectiveRadius"
 				);
 			std::cerr << "length as aeff (um): " << len << std::endl;
-			len = convertSubstanceDensity( _in_aeff = len,
+			lenaeff = convertSubstanceDensity( _in_aeff = len,
 				_in_substance = "ice",
 				_temperature = temperature,
 				_temp_units = temp_units,
 				_out_substance = needsSubstance
 				);
 			std::cerr << "length with correct substance: " << len << std::endl;
-			len = convertLength( _in_length_value = len,
+			len = convertLength( _in_length_value = lenaeff,
 				_in_length_type = "EffectiveRadius",
 				_in_length_units = "um",
 				_out_length_units = needsUnits,
@@ -362,6 +409,30 @@ namespace rtmath
 				_out_length_type = needsDtype
 				);
 			double val = (func)(len);
+			if (relnResult == "mass") {
+				// This relation provides a result in mass. It needs to be divided by volume
+				// to give a proper density. Has to be handled here.
+				double lenAeffUnits = convertLength( _in_length_value = lenaeff,
+					_in_length_type = "EffectiveRadius",
+					_in_length_units = "um",
+					_out_length_units = needsUnits,
+					_ar = ar,
+					_out_length_type = "EffectiveRadius");
+				double V = convertVolumeLength( _ar=ar,
+						_in_length_value = lenAeffUnits,
+						_in_length_type = "EffectiveRadius",
+						_out_length_type = "Volume");
+				V = units::conv_vol(needsUnits, "cm^3").convert(V);
+				std::cerr << "length (aeff): " << lenAeffUnits << " " << needsUnits << ", V: "
+					<< V << " " << needsUnits << "^3, mass: " << val;
+				val /= V;
+				std::cerr << " volume fraction: " << val << std::endl;
+
+				double den = 0;
+				implementations::findDen(den, "ice", temperature, temp_units);
+				val *= den;
+				std::cerr << "density of ice is " << den << " and eff den is " << val << std::endl;
+			}
 			std::cerr << "length in " << needsUnits << " type " << needsDtype << ": " <<  len << std::endl
 				<< "has effective density of: " << val << std::endl;
 			return val;

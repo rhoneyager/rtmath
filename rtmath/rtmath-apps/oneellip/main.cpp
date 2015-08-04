@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
 		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
 
-		if (vm.count("match-parent-flake")) matchParentFlakes = true;
+		//if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
 		using namespace rtmath::ddscat::shapefile;
 		auto collection = shapefile::makeCollection();
@@ -567,7 +567,8 @@ int main(int argc, char *argv[])
 		ofstream out(string(oprefix).c_str());
 		// Output a header line
 		// TODO: Add in the density information.
-		out << "Cross-Section Method\tAeff (um)\tFrequency (GHz)\t"
+		out << "Cross-Section Method\tAeff (um)\t"
+			"Ice Volume (mm^3)\tMax Diameter (mm)\tFrequency (GHz)\t"
 			"Volume Fraction\t" // "Effective Density (g/cm^3)\t"
 			"Temperature (K)\tHash\t"
 			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
@@ -618,9 +619,35 @@ int main(int argc, char *argv[])
 			// smeth is parameter solution-method, which can force a single method to be used
 			p.getCrossSections(s, res, smeth);
 
+			double maxDiam = 0;
+			{
+				using namespace rtmath::density;
+				double V = convertVolumeLength( _ar = r.ar,
+					_in_length_value = r.aeff,
+					_in_length_type = "EffectiveRadius",
+					_out_length_type = "Volume"
+					);
+				V /= r.fv;
+				double effRad = 0;
+				effRad = convertVolumeLength( _ar = r.ar,
+					_in_length_value = V,
+					_in_length_type = "Volume",
+					_out_length_type = "EffectiveRadius"
+					);
+				maxDiam = convertLength( _ar = r.ar,
+					_in_length_units = "um",
+					_out_length_units = "mm",
+					_in_length_value = effRad,
+					_in_length_type = "Effective_Radius",
+					_out_length_type = "Max_Diameter"
+					);
+			}
+
 			for (const auto &rr : res)
 			{
-				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+				out << rr.first << "\t" << r.aeff << "\t" << (4.*boost::math::constants::pi<double>()/3.)
+					*pow(r.aeff/1000.,3.) << "\t" << maxDiam << "\t"
+					<< r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
 					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" 
 					<< r.fvMeth << "\t" //<< r.fvMeth * 0 << "\t" // get ice density here.....
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"

@@ -119,13 +119,10 @@ namespace rtmath
 			}
 
 			double BrownFrancis1995Hogan2012(double D) {
-				double mass = 0.012 * pow(D,1.9);
-				const double rho0 = 917.0; // kg m^-3
-				const double V = mass / rho0;
-
-				RDthrow(Ryan_Debug::error::xUnimplementedFunction())
-					<< Ryan_Debug::error::otherErrorText("Read papers and see how to define density consistenty.");
-				return 0;
+				double mass = 0.012 * pow(D,1.9); // in kg
+				//const double rho0 = 917.0; // kg m^-3
+				//const double V = mass / rho0;
+				return mass * 1000.; // output in g
 			}
 
 			double Brandes2007(double D) {
@@ -150,6 +147,24 @@ namespace rtmath
 
 			double Heymsfield2004(double D) {
 				return 0.104 * pow(D,-0.95);
+			}
+
+			void findDen(double &den, const std::string &subst,
+					double temperature, const std::string &temp_units)
+			{
+				if (den) return;
+				if (!temperature) RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::otherErrorText("This density conversion requires a temperature.");
+				if (subst == "ice1h" || subst == "ice") {
+					den = ::rtmath::density::ice1h( _temperature = temperature, _temp_units = temp_units );
+				} else if (subst == "water") {
+					den = ::rtmath::density::water( _temperature = temperature, _temp_units = temp_units );
+				} else if (subst == "SuperWater") {
+					den = ::rtmath::density::SuperWater( _temperature = temperature, _temp_units = temp_units );
+				} else RDthrow(Ryan_Debug::error::xBadInput())
+					<< Ryan_Debug::error::specializer_type(subst)
+					<< Ryan_Debug::error::otherErrorText("Unknown substance for density conversion.");
+				return;
 			}
 		}
 	}

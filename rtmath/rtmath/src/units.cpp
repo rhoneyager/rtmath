@@ -61,11 +61,15 @@ namespace rtmath {
 			if (inV && outV) _valid = true;
 		}
 
-		conv_vol::conv_vol(const std::string &inUnits, const std::string &outUnits)
+		conv_vol::conv_vol(const std::string &iu, const std::string &ou)
 		{
-			_init(inUnits,outUnits);
+			_init(iu,ou);
 			bool inV = false, outV = false;
 
+			std::string inUnits = iu, outUnits = ou;
+			// If it doesn't end in ^3, add it. Used to prevent awkward string manipulations.
+			if (inUnits.find("^3") == std::string::npos) inUnits.append("^3");
+			if (outUnits.find("^3") == std::string::npos) outUnits.append("^3");
 			if (inUnits == "nm^3") { _convFactor /= 1e27; inV = true; }
 			if (inUnits == "um^3") { _convFactor /= 1e18; inV = true; }
 			if (inUnits == "mm^3") { _convFactor /= 1e9; inV = true; }
