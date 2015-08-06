@@ -1,6 +1,8 @@
 #include "Stdafx-core.h"
 #include <cmath>
 #include <map>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include <Ryan_Debug/logging.h>
 #include "../rtmath/density.h"
 #include "../rtmath/units.h"
 #include <Ryan_Debug/error.h>
@@ -78,6 +80,24 @@ namespace rtmath
 	namespace density
 	{
 		namespace implementations {
+
+			BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+				m_den,
+				boost::log::sources::severity_channel_logger_mt< >,
+				(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "density"));
+
+			/** \todo Need to heavily modify to determine dll search paths from configuration and select 
+			* folders. Load the plugins using a custom validator that checks both Ryan_Debug and rtmath.
+			**/
+
+
+			void emit_density_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
+			{
+				auto& lg = rtmath::density::implementations::m_den::get();
+				BOOST_LOG_SEV(lg, sev) << m;
+			}
+
+
 			double ice1h(double T)
 			{
 				initIce();
@@ -166,6 +186,43 @@ namespace rtmath
 					<< Ryan_Debug::error::otherErrorText("Unknown substance for density conversion.");
 				return;
 			}
+
+			bool findProvider(const std::string & name, std::function<double(double)> &outfunc,
+				std::string &in_type, std::string &in_units,
+				std::string &in_subst, std::string &out_quantity)
+			{
+				const size_t numProviders = 7, span = 5;
+				const char *providers[numProviders * span] = {
+					"BrownFrancis1995Hogan2012", "Max_Diameter_Full", "m", "ice", "mass",
+					"Brandes2007", "Median_Volume_Diameter_Full", "mm", "ice", "density",
+					"MagonoNakamura1965", "Max_Diameter_Full", "mm", "ice", "density",
+					"Holroyd1971", "Max_Diameter_Full", "mm", "ice", "density",
+					"Muramoto1995", "Max_Diameter_Full", "mm", "ice", "density",
+					"FabrySzyrmer1999", "Max_Diameter_Full", "mm", "ice", "density",
+					"Heymsfield2004", "Max_Diameter_Full", "mm", "ice", "density" };
+				std::function<double(double)> funcs[] = {
+					&(BrownFrancis1995Hogan2012),
+					&(Brandes2007),
+					&(MagonoNakamura1965),
+					&(Holroyd1971),
+					&(Muramoto1995),
+					&(FabrySzyrmer1999),
+					&(Heymsfield2004) };
+				// Find provider and set values
+				std::string needsDtype, needsUnits, needsSubstance, relnResult;
+				std::function<double(double)> func;
+				for( size_t i = 0; i < numProviders; ++i) {
+					if (std::string(providers[i*span]) != (name)) continue;
+					in_type = std::string(providers[(i*span)+1]);
+					in_units = std::string(providers[(i*span)+2]);
+					in_subst = std::string(providers[(i*span)+3]);
+					out_quantity = std::string(providers[(i*span)+4]);
+					outfunc = funcs[i];
+					return true;
+				}
+				return false;
+			}
+
 		}
 	}
 }

@@ -3,6 +3,7 @@
 #include <complex>
 #include <functional>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <boost/parameter/keyword.hpp>
 #include <boost/parameter/name.hpp>
@@ -10,7 +11,14 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 #include "units.h"
+#include "zeros.h"
 #include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging_base.h>
+
+//#define FL __FILE__ << ", " << (int)__LINE__ << ": "
+#define FL "density.h, line " << (int)__LINE__ << ": "
+
+#define mylog(x) { std::ostringstream l; l << FL << x; rtmath::density::implementations::emit_density_log(l.str()); }
 
 namespace rtmath
 {
@@ -24,6 +32,9 @@ namespace rtmath
 	namespace density
 	{
 		namespace implementations {
+		/// Internal function used in templates that writes to the registry log
+		void DLEXPORT_rtmath_core emit_density_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
+
 			/// \note All density outputs are in g/cm^3!!!
 
 		/* For ice and supercooled water, 
@@ -85,6 +96,21 @@ namespace rtmath
 
 			/// Heymsfield et al. (2004) ...
 			double DLEXPORT_rtmath_core Heymsfield2004(double D);
+
+			/** \brief Determines which function shopuld be used to handle the density formulation.
+			 *
+			 * \param name is the name of the relation used.
+			 * \param func is a returned pointer to the proper function.
+			 * \param in_type indicates if effective ice or equivalent whole (ice+air) measurements are used.
+			 * \param in_units is the length dimension passed to this function.
+			 * \param in_subst is the substance used in this function (ice or water)
+			 * \param out_quantity is the output quantity (mass (g) or density in g/cm^3).
+			 * \returns bool Indicating success or failure to match the relation.
+			 **/
+			bool DLEXPORT_rtmath_core findProvider(const std::string& name, std::function<double(double)> &func,
+					std::string& in_type, std::string& in_units,
+					std::string& in_subst, std::string& out_quantity);
+
 		}
 
 		/// Dielectric providers - these use f and T to automatically determine the correct
@@ -151,13 +177,14 @@ namespace rtmath
 				(out_substance, *, std::string(""))
 			) )
 		{
-				std::cerr << "in_density: " << in_density
-				<< "\tout_density: " << out_density
-				<< "\tin_volume: " << in_volume
-				<< "\tin_aeff: " << in_aeff
-				<< "\ttemp: " << temperature << " " << temp_units
-				<< "\tin_subst: " << in_substance
-				<< "\tout_subst: " << out_substance << std::endl;
+				mylog( "convertSubstanceDensity\n"
+					"\tin_density: " << in_density
+				<< "\n\tout_density: " << out_density
+				<< "\n\tin_volume: " << in_volume
+				<< "\n\tin_aeff: " << in_aeff
+				<< "\n\ttemp: " << temperature << " " << temp_units
+				<< "\n\tin_subst: " << in_substance
+				<< "\n\tout_subst: " << out_substance << std::endl);
 			double inDen = in_density;
 			double outDen = out_density;
 			double inV = in_volume;
@@ -166,7 +193,7 @@ namespace rtmath
 			if (!inV && !inAeff) RDthrow(Ryan_Debug::error::xBadInput())
 				<< Ryan_Debug::error::otherErrorText("Function requires either an input volume or "
 						"effective radius to perform the conversion.");
-			double out = 0;
+			double outval = 0;
 			if (in_substance == out_substance) {
 				if (doAeff) return in_aeff;
 				return in_volume;
@@ -180,17 +207,17 @@ namespace rtmath
 			implementations::findDen(inDen, in_substance, temperature, temp_units);
 			implementations::findDen(outDen, out_substance, temperature, temp_units);
 
-			std::cerr << "inDen " << inDen << "\toutDen: " << outDen << std::endl;
+			mylog("\n\tinDen " << inDen << "\toutDen: " << outDen << std::endl);
 			// Once the densities are determined, then do the conversion of the volumes.
 			// den = m / v.
 			double mass = inDen * inV;
-			out = mass / outDen;
+			outval = mass / outDen;
 
 			if (doAeff) { // convert back to effective radius if requested
-				out = pow(3.*out/(4.),1./3.);
+				outval = pow(3.*outval/(4.),1./3.);
 			}
-			std::cerr << "out is " << out << " and doAeff is " << doAeff << std::endl;
-			return out;
+			mylog("\n\tresult is " << outval << " and doAeff is " << doAeff << std::endl);
+			return outval;
 		}
 
 		/// Function to convert between different length measurements
@@ -208,13 +235,10 @@ namespace rtmath
 				(out_length_units, *, std::string("um"))
 			) )
 		{
-			std::cerr << "Converting length.\n"
-				<< "in_length_value: " << in_length_value
-				<< "\tin_length_type: " << in_length_type
-				<< "\tout_length_type: " << out_length_type
-				<< "\tar: " << ar
-				<< "\tin_length_units: " << in_length_units
-				<< "\tout_length_units: " << out_length_units << std::endl;
+			mylog( "Converting length.\n"
+				<< "\tFrom: " << in_length_value << " " << in_length_units << " in " << in_length_type
+				<< "\n\tto: " << out_length_units << " as " << out_length_type
+				<< "\n\tar: " << ar);
 			// First convert to the right dimensional units
 			double inVal = rtmath::units::conv_alt(in_length_units, out_length_units).convert(in_length_value);
 			// Next, pass the desired conversion formulas. The main conversions are between (radius,diameter)
@@ -260,6 +284,7 @@ namespace rtmath
 				outVal = maxDiam;
 			}
 			if(out_length_type.find("adius") != std::string::npos) outVal /= 2.;
+			mylog("\toutput is " << outVal << " " << out_length_units << " as " << out_length_type);
 			return outVal;
 		}
 
@@ -278,11 +303,11 @@ namespace rtmath
 				//(volume_fraction, *, 1)
 			) )
 		{
-			std::cerr << "Interconverting volume and length.\n"
-				<< "in_length_value: " << in_length_value
-				<< "\tin_length_type: " << in_length_type
-				<< "\tout_length_type: " << out_length_type
-				<< "\tar: " << ar << std::endl;
+			mylog( "convertVolumeLength\n"
+				<< "\tin_length_value: " << in_length_value
+				<< "\n\tin_length_type: " << in_length_type
+				<< "\n\tout_length_type: " << out_length_type
+				<< "\n\tar: " << ar << std::endl);
 			bool inIsV = false, outIsV = false;
 			auto check = [](const std::string &name, const std::string &match, bool &out) {
 				if (name == match) out = true; };
@@ -314,10 +339,9 @@ namespace rtmath
 					_out_length_type = out_length_type
 					);
 			}
-
+			mylog("\tresult is " << out);
 			return out;
 		}
-
 
 		/** \brief Provides effective densities for use in particle modeling.
 		 *
@@ -344,98 +368,145 @@ namespace rtmath
 			)
 			)
 		{
-			std::cerr << "in_length_value: " << in_length_value
-				<< "\tin_length_type: " << in_length_type
-				<< "\tprovider: " << provider
-				<< "\tin_length_units: " << in_length_units
-				<< "\tar: " << ar
-				<< "\ttemperature: " << temperature
-				<< "\ttemp_units: " << temp_units << std::endl;
-			const size_t numProviders = 7, span = 5;
-			const char *providers[numProviders * span] = {
-				"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice", "mass",
-				"Brandes2007", "Median_Volume_Diameter", "mm", "ice", "density",
-				"MagonoNakamura1965", "Max_Diameter", "mm", "ice", "density",
-				"Holroyd1971", "Max_Diameter", "mm", "ice", "density",
-				"Muramoto1995", "Max_Diameter", "mm", "ice", "density",
-				"FabrySzyrmer1999", "Max_Diameter", "mm", "ice", "density",
-				"Heymsfield2004", "Max_Diameter", "mm", "ice", "density" };
-			std::function<double(double)> funcs[] = {
-				&(implementations::BrownFrancis1995Hogan2012),
-				&(implementations::Brandes2007),
-				&(implementations::MagonoNakamura1965),
-				&(implementations::Holroyd1971),
-				&(implementations::Muramoto1995),
-				&(implementations::FabrySzyrmer1999),
-				&(implementations::Heymsfield2004) };
-			// Find provider and set values
+			mylog( "effDen\n\tin_length: " << in_length_value << " " << in_length_units
+				<< " as " << in_length_type
+				<< "\n\tprovider: " << provider
+				<< "\n\tar: " << ar
+				<< "\n\ttemperature: " << temperature
+				<< " " << temp_units);
+
+			const double pi = boost::math::constants::pi<double>();
 			bool found = false;
 			std::string needsDtype, needsUnits, needsSubstance, relnResult;
 			std::function<double(double)> func;
-			for( size_t i = 0; i < numProviders; ++i) {
-				if (std::string(providers[i*span]) != provider) continue;
-				found = true;
-				needsDtype = std::string(providers[(i*span)+1]);
-				needsUnits = std::string(providers[(i*span)+2]);
-				needsSubstance = std::string(providers[(i*span)+3]);
-				relnResult = std::string(providers[(i*span)+4]);
-				func = funcs[i];
-			}
+			found = implementations::findProvider(provider, func,
+				needsDtype, needsUnits, needsSubstance, relnResult);
 			if (!found) RDthrow(Ryan_Debug::error::xBadInput())
 				<< Ryan_Debug::error::specializer_type(provider)
 				<< Ryan_Debug::error::otherErrorText("Unknown density provider");
 
-			double len = 0, lenaeff = 0;
-			len = convertLength( _in_length_value = in_length_value,
-				_in_length_type = in_length_type,
-				_in_length_units = in_length_units,
-				_ar = ar,
-				_out_length_units = "um",
-				_out_length_type = "EffectiveRadius"
-				);
-			std::cerr << "length as aeff (um): " << len << std::endl;
-			lenaeff = convertSubstanceDensity( _in_aeff = len,
-				_in_substance = "ice",
-				_temperature = temperature,
-				_temp_units = temp_units,
-				_out_substance = needsSubstance
-				);
-			std::cerr << "length with correct substance: " << len << std::endl;
-			len = convertLength( _in_length_value = lenaeff,
-				_in_length_type = "EffectiveRadius",
-				_in_length_units = "um",
-				_out_length_units = needsUnits,
-				_ar = ar,
-				_out_length_type = needsDtype
-				);
-			double val = (func)(len);
-			if (relnResult == "mass") {
-				// This relation provides a result in mass. It needs to be divided by volume
-				// to give a proper density. Has to be handled here.
-				double lenAeffUnits = convertLength( _in_length_value = lenaeff,
-					_in_length_type = "EffectiveRadius",
-					_in_length_units = "um",
-					_out_length_units = needsUnits,
-					_ar = ar,
-					_out_length_type = "EffectiveRadius");
-				double V = convertVolumeLength( _ar=ar,
-						_in_length_value = lenAeffUnits,
-						_in_length_type = "EffectiveRadius",
-						_out_length_type = "Volume");
-				V = units::conv_vol(needsUnits, "cm^3").convert(V);
-				std::cerr << "length (aeff): " << lenAeffUnits << " " << needsUnits << ", V: "
-					<< V << " " << needsUnits << "^3, mass: " << val;
-				val /= V;
-				std::cerr << " volume fraction: " << val << std::endl;
+			double in_len_um = rtmath::units::conv_alt(in_length_units, "um").convert(in_length_value);
+			mylog("Converting length to um gives " << in_len_um << " um");
+			// Separate into actual vs. sans air dimensions.
+			auto check = [](const std::string &name, const std::string &match, bool &out) {
+				if (name.find(match) != std::string::npos ) out = true; };
+			bool in_is_ice_only = false, out_is_ice_only = false;
+			check(in_length_type, std::string("Ice"), in_is_ice_only);
+			check(needsDtype, std::string("Ice"), out_is_ice_only);
+			mylog("is input for only ice: " << in_is_ice_only << ", is output for only ice: " << out_is_ice_only);
 
-				double den = 0;
-				implementations::findDen(den, "ice", temperature, temp_units);
-				val *= den;
-				std::cerr << "density of ice is " << den << " and eff den is " << val << std::endl;
+			/// Can the conversion go directly, or does it need an iteration with successive approximations?
+			auto needsIteration = [&]() -> bool {
+				if (in_is_ice_only == out_is_ice_only) return false;
+				if (!out_is_ice_only) return true;
+				return false;
+			};
+
+			auto innerGetDen = [&](double inlen, double ar,
+				const std::string &in_type) -> double {
+				mylog("innerGetDen called");
+				double outlen = 0;
+				outlen = convertLength( _in_length_value = inlen,
+					_in_length_type = in_type,
+					_in_length_units = "um",
+					_ar = ar,
+					_out_length_type = needsDtype,
+					_out_length_units = needsUnits);
+				double den = (func)(outlen); // either a mass or in g/cm^3
+				mylog("innerGetDen\n"
+					<< "\tinlen: " << inlen << " as " << in_type << ", with ar " << ar
+					<< "\n\toutlen as " << needsDtype << " units " << needsUnits
+					<< "\n\tden before mass conversion (if needed): " << den);
+				if (relnResult == "mass") {
+					// This relation provides a result in mass. It needs to be divided by volume
+					// to give a proper density. Has to be handled here.
+					double lenAeffUnits = convertLength( _in_length_value = inlen,
+						_in_length_type = in_type,
+						_in_length_units = "um",
+						_out_length_units = needsUnits,
+						_ar = ar,
+						_out_length_type = "Effective_Radius_Full");
+					double V = convertVolumeLength( _ar=ar,
+							_in_length_value = lenAeffUnits,
+							_in_length_type = "Effective_Radius_Full",
+							_out_length_type = "Volume");
+					V = units::conv_vol(needsUnits, "cm^3").convert(V);
+					den /= V;
+					mylog("mass conversion needed\n"
+						<< "\tlenAeffUnits: " << lenAeffUnits
+						<< "\n\tV: " << V << " cm^3"
+						<< "\n\tactual den: " << den << " g/cm^3");
+				}
+				return den;
+			};
+
+			// Take a guessed vf, convert from ice term (aeff) into the ice+air term, stick into density
+			// relation, and re-extract the resultant volume fraction.
+			auto backConvert = [&](double guess) -> double {
+				mylog("backConvert called");
+				// The guess is a volume fraction. Other parameters are from context.
+				// in_length_um is in ice units.
+				double AeffIceUm = convertLength( _in_length_value = in_len_um, _ar = ar,
+					_in_length_type = in_length_type, _out_length_type = "Effective_Radius_Ice");
+				double VIceUm3 = (4./3.) * pi * pow(AeffIceUm,3.);
+				double VFullUm3 = VIceUm3 / guess;
+				double AeffFullUm = pow(3.*VFullUm3/(4.*pi),1./3.);
+				mylog("backConvert loop A:\n\tguess: " << guess
+					<< "\n\tAeffIceUm: " << AeffIceUm
+					<< "\n\tVIceUm3: " << VIceUm3
+					<< "\n\tVFullUm3: " << VFullUm3
+					<< "\n\tAeffFullUm: " << AeffFullUm);
+				double den = innerGetDen( AeffFullUm, ar, "Effective_Radius_Full");
+
+				double solidIceDen = 0;
+				implementations::findDen(solidIceDen, "ice", temperature, temp_units);
+				double resVf = den / solidIceDen;
+				mylog("backConvert loop B:\n\tguess: " << guess
+					<< "\n\tAeffIceUm: " << AeffIceUm
+					<< "\n\tVIceUm3: " << VIceUm3
+					<< "\n\tVFullUm3: " << VFullUm3
+					<< "\n\tAeffFullUm: " << AeffFullUm
+					<< "\n\tden = innerGetDen: " << den << " g/cm^3"
+					<< "\n\tsolidIceDen: " << solidIceDen << " g/cm^3"
+					<< "\n\tresVf: " << resVf);
+				return resVf;
+			};
+
+			/// Iterative conversion needed, usually from ice effective radius to max dimension. Guess a vf,
+			/// then do the back conversion with the desired method, and successively re-approximate.
+			auto convertIterate = [&]() -> double {
+				mylog("convertIterate called");
+				double vfa = backConvert(0.0001), vfb = backConvert(1.0);
+				mylog("convertIterate initial bounds a: vf 0.0001: " << vfa << ", b: vf 1.0: " << vfb);
+				if (vfa > 1.0 || vfb > 1.0) {
+					mylog("The particle size chosen is too small for this size-density relation! Cannot proceed.");
+					return 0;
+				}
+				double vf = zeros::findzero(0.0001, 1.0, [&](double guess) {
+					return guess - backConvert(guess); });
+				mylog("convertIterate returned a volume fraction of " << vf);
+				// The proper volume fraction is now known. Now determine the effective density.
+				// Slightly repetitive, but I prefer it this way.
+				double solidIceDen = 0;
+				implementations::findDen(solidIceDen, "ice", temperature, temp_units);
+				mylog("The density of ice at " << temperature << " " << temp_units << " is " << solidIceDen);
+				double effDen = solidIceDen * vf;
+				return effDen;
+			};
+
+			double effden = 0;
+
+			// Is a back-conversion necessary? If so, calculate the effective density this way.
+			if (needsIteration()) {
+				mylog("This conversion needs iteration.");
+				effden = convertIterate();
+			} else { // Can just calculate directly.
+				mylog("No iteration needed. Can calculate directly");
+				effden = innerGetDen( in_len_um, ar, in_length_type);
 			}
-			std::cerr << "length in " << needsUnits << " type " << needsDtype << ": " <<  len << std::endl
-				<< "has effective density of: " << val << std::endl;
-			return val;
+
+			mylog("\teffden is " << effden << " g/cm^3");
+			return effden;
 		}
 
 #define standardDProvider(name) \

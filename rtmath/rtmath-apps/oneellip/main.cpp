@@ -87,8 +87,9 @@ int main(int argc, char *argv[])
 			;
 		basic.add_options()
 			("aspect-ratios,s", po::value<std::string>()->default_value("1"), "Specify aspect ratio for ellipsoids.")
-			("aeffs,a", po::value<std::string>(), "Specify the effective radii in um")
-			("radii,r", po::value<std::string>(), "Specify the actual mean sphere radii in um")
+			("sizes,a", po::value<std::string>(), "Specify the particle sizes in um")
+			("size-type", po::value<std::string>()->default_value("Effective_Radius_Ice"), "How is the size described? "
+			 "Effective_Radius_Ice, Effective_Radius_Full, Max_Diameter_Full, etc. are valid options.")
 			("freqs,f", po::value<std::string>(), "Specify frequencies in GHz. Needed for dielectrics.")
 			;
 		scale.add_options()
@@ -328,11 +329,10 @@ int main(int argc, char *argv[])
 			// If any of these are set, ensure that the temperature and frequency are also set
 
 			// Freqs and temps are in main's scope
-			set<double> aeffs, radii, aspects, vfracs; // , alphas, betas;
-			if (vm.count("aeffs"))
-				Ryan_Debug::splitSet::splitSet(vm["aeffs"].as<string>(), aeffs);
-			if (vm.count("radii"))
-				Ryan_Debug::splitSet::splitSet(vm["radii"].as<string>(), radii);
+			string sizetype = vm["size-type"].as<string>();
+			set<double> aeffs, aspects, vfracs; // , alphas, betas;
+			if (vm.count("sizes"))
+				Ryan_Debug::splitSet::splitSet(vm["sizes"].as<string>(), aeffs);
 			if (vm.count("aspect-ratios"))
 				Ryan_Debug::splitSet::splitSet(vm["aspect-ratios"].as<string>(), aspects);
 			if (vm.count("volume-fractions"))
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
 			if (!freqs.size()) doHelp("Need to specify frequencies.");
 			if (!temps.size() && !overrideM) doHelp("Need to specify temperatures.");
 
-			if (freqs.size() && (aeffs.size() || radii.size()) && aspects.size())
+			if (freqs.size() && (aeffs.size() ) && aspects.size())
 			{
 				if (temps.size() || overrideM)
 				{
@@ -353,7 +353,6 @@ int main(int argc, char *argv[])
 						for (const auto &aspect : aspects) {
 							auto doAeff = [&](double aeff, double vfrac, double temp)
 							{
-								std::cerr << "calling doAeff aeff: " << aeff << " vf " << vfrac << " t " << temp << std::endl;
 								run r;
 								r.aeff = aeff;
 								r.ar = aspect;
@@ -389,34 +388,29 @@ int main(int argc, char *argv[])
 										dEff = effDen(
 											_provider = vfScaling,
 											_in_length_value = aeff,
-											_in_length_type = "EffectiveRadius",
+											_in_length_type = sizetype, //"Effective_Radius_Ice",
 											_in_length_units = "um",
 											_ar = aspect,
 											_temperature = temp,
 											_temp_units = "K"
 											);
+										bool isIceAeff = false;
 										double vf = dEff / dIce;
-										std::cerr << "dIce " << dIce << " dEff " << dEff << " vf " << vf << std::endl;
-										aeff_vf_rad.push_back(std::tuple<double, double, double>(aeff, vf, temp));
-									}
-									for (const auto &rad : radii) {
-										using namespace rtmath::density;
-										double dIce = ice1h( _temperature = temp, _temp_units = "K" );
-										double dEff = 0;
-										dEff = effDen(
-											_provider = vfScaling,
-											_in_length_value = rad,
-											_in_length_type = "Max_Radius",
-											_in_length_units = "um",
-											_ar = aspect,
-											_temperature = temp,
-											_temp_units = "K"
-											);
-										double vf = dEff / dIce;
-										double V_rad = std::pow(rad,3.);
-										double V_sca = V_rad * vf;
-										double aeff = std::pow(V_sca, 1./3.);
-										aeff_vf_rad.push_back(std::tuple<double, double, double>(aeff, vf, temp));
+										double V = pow(aeff,3.);
+										if (sizetype.find("Ice") != std::string::npos) isIceAeff = true;
+										double inAeff = 0;
+										double rad = 0;
+										if (isIceAeff) {
+											inAeff = aeff;
+											V /= vf;
+											rad = pow(V,1./3.);
+										} else {
+											rad = aeff;
+											V *= vf;
+											inAeff = pow(V,1./3.);
+										}
+										std::cerr << "aeff " << inAeff << " rad " << rad << " dIce " << dIce << " dEff " << dEff << " vf " << vf << std::endl;
+										aeff_vf_rad.push_back(std::tuple<double, double, double>(inAeff, vf, temp));
 									}
 								}
 							} else {
@@ -426,13 +420,6 @@ int main(int argc, char *argv[])
 										for (const auto &aeff : aeffs)
 											aeff_vf_rad.push_back(std::tuple<double, double, double>
 												(aeff, vf, temp));
-										for (const auto &rad : radii) {
-											double V_rad = std::pow(rad,3.);
-											double V_sca = V_rad * vf;
-											double aeff = std::pow(V_sca, 1./3.);
-											aeff_vf_rad.push_back(std::tuple<double, double, double>
-												(aeff, vf, temp));
-										}
 								}
 							}
 							for (const auto &t : aeff_vf_rad)
@@ -534,7 +521,7 @@ int main(int argc, char *argv[])
 						dEff = effDen(
 							_provider = r.fvMeth,
 							_in_length_value = r.aeff,
-							_in_length_type = "EffectiveRadius",
+							_in_length_type = "Effective_Radius_Ice",
 							_in_length_units = "um",
 							_ar = r.ar,
 							_temperature = temp,
@@ -566,10 +553,9 @@ int main(int argc, char *argv[])
 
 		ofstream out(string(oprefix).c_str());
 		// Output a header line
-		// TODO: Add in the density information.
-		out << "Cross-Section Method\tAeff (um)\t"
-			"Ice Volume (mm^3)\tMax Diameter (mm)\tFrequency (GHz)\t"
-			"Volume Fraction\t" // "Effective Density (g/cm^3)\t"
+		out << "Cross-Section Method\tAeff (um)\tMax Diameter (mm)\t"
+			"Ice Volume (mm^3)\tFrequency (GHz)\t"
+			"Volume Fraction\tEffective Density (g/cm^3)\t"
 			"Temperature (K)\tHash\t"
 			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
 			"Aspect Ratio\tLambda (um)\tM_re\tM_im\t"
@@ -607,6 +593,12 @@ int main(int argc, char *argv[])
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
 			i.vFrac = r.fv;
 
+			if (r.fv <= 0 || r.fv > 1.) {
+				std::cout << "\tCowardly refusing to calculate scattering for an invalid particle. See "
+					"the log for details (channel=density). Skipping to next one." << std::endl;
+				continue;
+			}
+
 
 			pf_provider p(o, i);
 
@@ -619,35 +611,32 @@ int main(int argc, char *argv[])
 			// smeth is parameter solution-method, which can force a single method to be used
 			p.getCrossSections(s, res, smeth);
 
-			double maxDiam = 0;
+			const double pi = boost::math::constants::pi<double>();
+			double maxDiam = 0, Vi = 0, V = 0, effDen = 0;
 			{
 				using namespace rtmath::density;
-				double V = convertVolumeLength( _ar = r.ar,
-					_in_length_value = r.aeff,
-					_in_length_type = "EffectiveRadius",
-					_out_length_type = "Volume"
-					);
-				V /= r.fv;
-				double effRad = 0;
-				effRad = convertVolumeLength( _ar = r.ar,
-					_in_length_value = V,
-					_in_length_type = "Volume",
-					_out_length_type = "EffectiveRadius"
-					);
-				maxDiam = convertLength( _ar = r.ar,
+				double aeffmm = convertLength( _ar = r.ar,
 					_in_length_units = "um",
 					_out_length_units = "mm",
-					_in_length_value = effRad,
-					_in_length_type = "Effective_Radius",
-					_out_length_type = "Max_Diameter"
+					_in_length_value = r.aeff,
+					_in_length_type = "Max_Diameter_Ice",
+					_out_length_type = "Max_Diameter_Ice"
 					);
+				V = (4. * pi / 3.) * pow(aeffmm,3.);
+				Vi = V;
+				V /= r.fv;
+				double rad = pow(3.*V/(4.*pi),1./3.);
+				maxDiam = 2. * rad;
+
+				double dIce = ice1h( _temperature = r.temp, _temp_units = "K" );
+				effDen = dIce * r.fv;
 			}
 
 			for (const auto &rr : res)
 			{
-				out << rr.first << "\t" << r.aeff << "\t" << (4.*boost::math::constants::pi<double>()/3.)
-					*pow(r.aeff/1000.,3.) << "\t" << maxDiam << "\t"
-					<< r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+				out << rr.first << "\t" << r.aeff << "\t" << maxDiam << "\t" 
+					<< Vi << "\t"
+					<< r.freq << "\t" << r.fv << "\t" << effDen << "\t" << r.temp << "\t"
 					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" 
 					<< r.fvMeth << "\t" //<< r.fvMeth * 0 << "\t" // get ice density here.....
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
