@@ -19,8 +19,11 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/formatter_parser.hpp>
 #include <boost/log/expressions/predicates/is_debugger_present.hpp>
+#include <boost/log/expressions/predicates/is_in_range.hpp>
+#include <boost/log/expressions/predicates/contains.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/expressions/keyword.hpp>
+#include <boost/log/expressions/filter.hpp>
 #include <boost/log/expressions/attr_fwd.hpp>
 #include <boost/log/expressions/attr.hpp>
 #include <boost/log/expressions.hpp>
@@ -68,6 +71,8 @@ namespace {
 	// Both logging systems go here
 	typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
 	static boost::shared_ptr< text_sink > sink_init, sink, sink_file;
+
+	std::set<std::string> logChannels;
 }
 
 namespace Ryan_Debug
@@ -112,6 +117,7 @@ namespace Ryan_Debug
 				("help-full", "Print out all possible program options")
 				//("log-init", "Log initial startup")
 				("log-level-all", po::value<int>()->default_value((int)::Ryan_Debug::log::warning), "Threshold for console logging")
+				("log-channel", po::value<std::vector<std::string> >()->multitoken(), "Log only the specified channel(s)")
 				("log-file", po::value<std::string>(), "Log everything to specified file.")
 				("Ryan_Debug-config-file", po::value<std::string>(),
 				"Specify the location of the Ryan_Debug configuration file. Overrides "
@@ -130,6 +136,12 @@ namespace Ryan_Debug
 			return level >= Ryan_Debug::debug::warning; // || tag == "IMPORTANT_MESSAGE";
 		}*/
 
+		bool logChannel(std::string const & chan) {
+			if (!logChannels.size()) return true;
+			if (logChannels.count(chan)) return true;
+			return false;
+		}
+
 		void setupLoggingInitial(int logthresholdlevel = ::Ryan_Debug::log::warning)
 		{
 			static bool setup = false;
@@ -147,7 +159,11 @@ namespace Ryan_Debug
 			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::null_deleter());
 			sink_init->locked_backend()->add_stream(stream);
 			//if (!logall) {
-			sink_init->set_filter(Ryan_Debug::log::severity >= logthresholdlevel //debug_3 //warning
+			if (logChannels.size())
+			sink_init->set_filter(
+				//boost::log::expressions::contains(boost::log::expressions::attr<std::string>("Channel"),
+				//	*(logChannels.begin()))
+				Ryan_Debug::log::severity >= logthresholdlevel //debug_3 //warning
 				//boost::log::expressions::attr < int >
 				//("Severity").or_default(Ryan_Debug::debug::normal)
 				); // Ryan_Debug::debug::warning);
@@ -156,7 +172,7 @@ namespace Ryan_Debug
 				<< boost::log::expressions::format_date_time
 					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
 					<< ": <" << (Ryan_Debug::log::severity)
-					<< "> [" << Ryan_Debug::log::channel << "] {init} "
+					<< "> [" << Ryan_Debug::log::channel << "] "
 				<< boost::log::expressions::smessage
 
 				);
@@ -198,6 +214,12 @@ namespace Ryan_Debug
 			boost::shared_ptr< std::ofstream > stream(new std::ofstream(outfile.c_str()));
 			//boost::shared_ptr< std::ostream > stream(&std::clog, boost::null_deleter());
 			sink_file->locked_backend()->add_stream(stream);
+			if (logChannels.size())
+				sink_file->set_filter(
+					boost::log::expressions::contains(boost::log::expressions::attr<std::string>("Channel"),
+					*(logChannels.begin()))
+				);
+			//}
 			sink_file->set_formatter( boost::log::expressions::stream 
 				//<< Ryan_Debug::log::line_id << "\t| "
 				<< boost::log::expressions::format_date_time
@@ -339,6 +361,10 @@ namespace Ryan_Debug
 
 			int sevlev = (int) ::Ryan_Debug::log::warning; // default really set in add_static_options
 			sevlev = vm["log-level-all"].as<int>();
+
+			std::vector<std::string> lc;
+			if (vm.count("log-channel")) lc = vm["log-channel"].as<std::vector<std::string> >();
+			for (const auto &i : lc) logChannels.insert(i);
 
 			if (vm.count("log-file")) {
 				setupFileLog(vm["log-file"].as<std::string>());
