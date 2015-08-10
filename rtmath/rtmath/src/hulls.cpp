@@ -70,7 +70,6 @@ namespace rtmath {
 			}
 			// Only return nullptr if unable to find a usable hook.
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "No registered handler for hull calculation found. Throwing error.";
-			std::cerr << "Ping" << std::endl;
 			RDthrow(Ryan_Debug::error::xUpcast())
 				<< Ryan_Debug::error::otherErrorText("No registered handler for hull calculation found. Throwing error.");
 			return nullptr;

@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 		struct run
 		{
 			double temp, freq, aeff, lambda, ar;
-			double fv;
+			double fv, maxDiamFull;
 			std::string fvMeth;
 			std::complex<double> m;
 			std::string refHash;
@@ -368,6 +368,8 @@ int main(int argc, char *argv[])
 									r.m = ovM;
 								else
 									rtmath::refract::mIce(freq, temp, r.m);
+								double V = pow(aeff,3.) / vfrac;
+								r.maxDiamFull = pow(V,1./3.) * 2.;
 								runs.push_back(std::move(r));
 							};
 							std::vector<std::tuple<double, double, double> > aeff_vf_rad;
@@ -381,13 +383,13 @@ int main(int argc, char *argv[])
 									"formula, temperature should be specified.");
 								for (const auto &temp : temps) {
 								// Populate the volume fractions being calculated
-									for (const auto &aeff : aeffs) {
+									for (const auto &aeff1 : aeffs) {
 										using namespace rtmath::density;
 										double dIce = ice1h( _temperature = temp, _temp_units = "K" );
 										double dEff = 0;
 										dEff = effDen(
 											_provider = vfScaling,
-											_in_length_value = aeff,
+											_in_length_value = aeff1,
 											_in_length_type = sizetype, //"Effective_Radius_Ice",
 											_in_length_units = "um",
 											_ar = aspect,
@@ -395,6 +397,13 @@ int main(int argc, char *argv[])
 											_temp_units = "K"
 											);
 										bool isIceAeff = false;
+										double aeff = convertLength(
+											_in_length_value = aeff1,
+											_in_length_type = sizetype,
+											_in_length_units = "um",
+											_ar = aspect,
+											_out_length_type = "Effective_Radius"
+											);
 										double vf = dEff / dIce;
 										double V = pow(aeff,3.);
 										if (sizetype.find("Ice") != std::string::npos) isIceAeff = true;
@@ -462,7 +471,7 @@ int main(int argc, char *argv[])
 
 					if (armeth == "Max_Ellipsoids")
 						// 0,2 to match Holly convention!!!!!!! 0,1 always is near sphere.
-						r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
+						r.ar = 1 / stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
 					else if (armeth == "Spheres")
 						r.ar = 1;
 					else doHelp("ar-method needs a correct value.");
@@ -511,23 +520,20 @@ int main(int argc, char *argv[])
 						r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
 						r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
 					} else if (vf == VFRAC_TYPE::OTHER ) {
-						// TODO: Determine r.fv based on the density scaling relation
-						// Effective radius and aspect ratio are known, so the other quantities like 
-						// effectvie mac dimension are easily determined. Assume that ice is used, 
-						// like in the refractive index portion of the code.
 						using namespace rtmath::density;
 						double dIce = ice1h( _temperature = temp, _temp_units = "K" );
 						double dEff = 0;
 						dEff = effDen(
 							_provider = r.fvMeth,
-							_in_length_value = r.aeff,
-							_in_length_type = "Effective_Radius_Ice",
+							_in_length_value = stats->max_distance * s->standardD,
+							_in_length_type = "Max_Diameter_Full",
 							_in_length_units = "um",
 							_ar = r.ar,
 							_temperature = temp,
 							_temp_units = "K"
 							);
 						r.fv = dEff / dIce;
+						r.aeff = stats->aeff_dipoles_const * s->standardD;
 					}
 
 					r.freq = freq;
@@ -536,6 +542,11 @@ int main(int argc, char *argv[])
 					r.temp = temp;
 					r.refHash = s->hash().string();
 					r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
+					r.maxDiamFull = stats->max_distance * s->standardD;
+					std::cerr << "Max diam: " << r.maxDiamFull << ", standardD: " << s->standardD
+						<< ", stats->max_distance: " << stats->max_distance << std::endl
+						<< "\taeff " << r.aeff << ", aeff_dipoles_const: " << stats->aeff_dipoles_const << std::endl
+						<< "\treference hash " << r.refHash << std::endl;
 
 					runs.push_back(std::move(r));
 					}
@@ -553,7 +564,7 @@ int main(int argc, char *argv[])
 
 		ofstream out(string(oprefix).c_str());
 		// Output a header line
-		out << "Cross-Section Method\tAeff (um)\tMax Diameter (mm)\t"
+		out << "Cross-Section Method\tIce Aeff (um)\tMax Diameter (mm)\t"
 			"Ice Volume (mm^3)\tFrequency (GHz)\t"
 			"Volume Fraction\tEffective Density (g/cm^3)\t"
 			"Temperature (K)\tHash\t"
@@ -564,7 +575,7 @@ int main(int argc, char *argv[])
 
 		std::cerr << "Doing " << runs.size() << " runs." << std::endl;
 		cout << "Meth\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
-		size_t i=0;
+		size_t i=1;
 		// Iterate over all possible runs
 		for (const auto &r : runs)
 		{
@@ -574,7 +585,7 @@ int main(int argc, char *argv[])
 				<< "-aeff-" << r.aeff
 				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
-			cout << ofile << " --- " << i << " " << r.refHash << endl;
+			cout << ofile << " --- " << i << " / " << runs.size() << " " << r.refHash << endl;
 			++i;
 
 			const double sizep = 2. * boost::math::constants::pi<double>() * r.aeff / r.lambda;
@@ -612,21 +623,25 @@ int main(int argc, char *argv[])
 			p.getCrossSections(s, res, smeth);
 
 			const double pi = boost::math::constants::pi<double>();
-			double maxDiam = 0, Vi = 0, V = 0, effDen = 0;
+			// Somehow maxDiamFull is wrong.
+			double maxDiam = r.maxDiamFull, Vi = 0, V = 0, effDen = 0;
 			{
 				using namespace rtmath::density;
-				double aeffmm = convertLength( _ar = r.ar,
-					_in_length_units = "um",
-					_out_length_units = "mm",
-					_in_length_value = r.aeff,
-					_in_length_type = "Max_Diameter_Ice",
-					_out_length_type = "Max_Diameter_Ice"
-					);
-				V = (4. * pi / 3.) * pow(aeffmm,3.);
-				Vi = V;
-				V /= r.fv;
-				double rad = pow(3.*V/(4.*pi),1./3.);
-				maxDiam = 2. * rad;
+				double diammm = maxDiam / 1000.;
+				//convertLength( _ar = r.ar,
+				//	_in_length_units = "um",
+				//	_out_length_units = "mm",
+				//	_in_length_value = maxDiam,
+				//	_in_length_type = "Max_Diameter_Full",
+				//	_out_length_type = "Max_Diameter_Full"
+				//	);
+				V = (4. * pi / 3.) * pow(diammm/2.,3.);
+				//Vi = V * r.fv; // Somehow this one is wrong
+				Vi = (4. * pi / 3.) * pow(r.aeff/1000,3.);
+				//Vi = V;
+				//V /= r.fv;
+				//double rad = pow(3.*V/(4.*pi),1./3.);
+				//maxDiam = 2. * rad;
 
 				double dIce = ice1h( _temperature = r.temp, _temp_units = "K" );
 				effDen = dIce * r.fv;
@@ -634,7 +649,7 @@ int main(int argc, char *argv[])
 
 			for (const auto &rr : res)
 			{
-				out << rr.first << "\t" << r.aeff << "\t" << maxDiam << "\t" 
+				out << rr.first << "\t" << r.aeff << "\t" << maxDiam / 1000. << "\t" 
 					<< Vi << "\t"
 					<< r.freq << "\t" << r.fv << "\t" << effDen << "\t" << r.temp << "\t"
 					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" 

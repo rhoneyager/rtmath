@@ -249,7 +249,7 @@ namespace rtmath
 			double inDiam = inVal;
 			if (in_length_type.find("adius") != std::string::npos) inDiam *= 2.;
 			auto check = [](const std::string &name, const std::string &match, bool &out) {
-				if (name == match) out = true; };
+				if (name.find(match) != std::string::npos) out = true; };
 			// Max_Dimension vs. Median_Diameter
 			check(in_length_type, "Max_Dimension", inIsMD);
 			check(in_length_type, "Max_Diameter", inIsMD);
