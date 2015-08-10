@@ -147,41 +147,43 @@ namespace Ryan_Debug
 			static bool setup = false;
 			if (setup) return;
 			setup = true;
-
-			::boost::log::core::get()->add_global_attribute(
+			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+			core->add_global_attribute(
 				"TimeStamp",
 				::boost::log::attributes::local_clock());
 
-			sink_init = boost::make_shared< text_sink >();
+			if (1) {
+				sink_init = boost::make_shared< text_sink >();
 
-			// We have to provide an empty deleter to avoid destroying the global stream object
-			// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
-			boost::shared_ptr< std::ostream > stream(&std::cerr, boost::null_deleter());
-			sink_init->locked_backend()->add_stream(stream);
-			//if (!logall) {
-			if (logChannels.size())
-			sink_init->set_filter(
-				//boost::log::expressions::contains(boost::log::expressions::attr<std::string>("Channel"),
-				//	*(logChannels.begin()))
-				Ryan_Debug::log::severity >= logthresholdlevel //debug_3 //warning
-				//boost::log::expressions::attr < int >
-				//("Severity").or_default(Ryan_Debug::debug::normal)
-				); // Ryan_Debug::debug::warning);
-			//}
-			sink_init->set_formatter( boost::log::expressions::stream 
-				<< boost::log::expressions::format_date_time
-					< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
-					<< ": <" << (Ryan_Debug::log::severity)
-					<< "> [" << Ryan_Debug::log::channel << "] "
-				<< boost::log::expressions::smessage
+				// We have to provide an empty deleter to avoid destroying the global stream object
+				// boost::serialization::null_deleter(), boost::empty_deleter(), boost::null_deleter() use varies with boost version...
+				boost::shared_ptr< std::ostream > stream(&std::cerr, boost::null_deleter());
+				sink_init->locked_backend()->add_stream(stream);
+				//if (!logall) {
+				//if (logChannels.size())
+				sink_init->set_filter(
+					//boost::log::expressions::contains(boost::log::expressions::attr<std::string>("Channel"),
+					//	*(logChannels.begin()))
+					Ryan_Debug::log::severity >= logthresholdlevel //debug_3 //warning
+					//boost::log::expressions::attr < int >
+					//("Severity").or_default(Ryan_Debug::debug::normal)
+					); // Ryan_Debug::debug::warning);
+				//}
+				sink_init->set_formatter( boost::log::expressions::stream 
+					<< boost::log::expressions::format_date_time
+						< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+						<< ": <" << (Ryan_Debug::log::severity)
+						<< "> [" << Ryan_Debug::log::channel << "] "
+					<< boost::log::expressions::smessage
 
-				);
+					);
 
+				
 			
-			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
-			core->add_sink(sink_init);
-			//boost::log::core::get()->set_filter(Ryan_Debug::debug::severity_level >= Ryan_Debug::debug::warning);
+				core->add_sink(sink_init);
+				//boost::log::core::get()->set_filter(Ryan_Debug::debug::severity_level >= Ryan_Debug::debug::warning);
 
+			}
 
 #ifdef _WIN32
 			// Complete sink type
@@ -303,6 +305,7 @@ namespace Ryan_Debug
 			}
 			*/
 			// Construct the console sink
+			if (0) {
 			sink = boost::make_shared< text_sink >();
 
 			boost::shared_ptr< boost::log::core > core = boost::log::core::get();
@@ -328,6 +331,7 @@ namespace Ryan_Debug
 			core->flush();
 			core->remove_sink(sink_init);
 
+			}
 
 			//boost::log::core::get()->set_filter(Ryan_Debug::debug::severity_level >= Ryan_Debug::debug::warning);
 
