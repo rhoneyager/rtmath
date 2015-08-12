@@ -21,6 +21,7 @@
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {
@@ -35,6 +36,7 @@ int main(int argc, char** argv)
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		Ryan_Debug::add_options(cmdline, config, hidden);
 //		Ryan_Serialization::add_options(cmdline, config, hidden);
+		rtmath::debug::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
 		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
@@ -75,6 +77,7 @@ int main(int argc, char** argv)
 			("update-db", "Insert runs into database")
 
 			("hash-output", "Store flake data in hash directory")
+			("skip-missing-shapes", "Skips ddOutput results with a missing shape file")
 			;
 
 		desc.add(cmdline).add(config);
@@ -88,6 +91,7 @@ int main(int argc, char** argv)
 		Ryan_Debug::process_static_options(vm);
 		//Ryan_Serialization::process_static_options(vm);
 		rtmath::ddscat::ddUtil::process_static_options(vm);
+		rtmath::debug::process_static_options(vm);
 		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 		rtmath::ddscat::ddOutput::process_static_options(vm);
 
@@ -104,6 +108,8 @@ int main(int argc, char** argv)
 		bool doHash = false;
 		if (vm.count("hash")) doHash = true;
 
+		bool skipMissing = false;
+		if (vm.count("skip-missing-shapes")) skipMissing = true;
 		string hostname;
 		if (vm.count("hostname")) hostname = vm["hostname"].as<string>();
 		vector<string> vsInput;
@@ -309,7 +315,10 @@ int main(int argc, char** argv)
 				if (writeShapes)
 					run->loadShape(false);
 			} catch (Ryan_Debug::error::xMissingHash &e) {
-				std::cerr << e.what() << std::endl;
+				//if (skipMissing)
+					std::cerr << e.what() << std::endl;
+				//else throw e;
+				//continue;
 			}
 
 			// TODO: Add Hash Support

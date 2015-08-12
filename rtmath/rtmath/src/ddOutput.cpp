@@ -203,9 +203,11 @@ namespace rtmath {
 					}
 				}
 			}
-			if (!shape->hash().lower) RDthrow(Ryan_Debug::error::xMissingHash())
+			if (!shape->hash().lower) {
+				RDthrow(Ryan_Debug::error::xMissingHash())
 				<< Ryan_Debug::error::hash(shapeHash.string())
 				<< Ryan_Debug::error::hashType("shapefile");
+			}
 			if (!dostats) return;
 			stats = stats::shapeFileStats::genStats(shape);
 			//stats = stats::shapeFileStats::loadHash(this->shapeHash);

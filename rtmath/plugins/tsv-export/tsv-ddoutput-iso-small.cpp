@@ -113,7 +113,18 @@ namespace rtmath {
 				// So, just write the data.
 
 				boost::shared_ptr<const ddOutput > ddOutRW = (ddOut);
-				ddOutRW->loadShape(false);
+				bool ignoreMissingShape = false;
+				if (opts->hasVal("ignoreMissingShape"))
+					ignoreMissingShape = opts->getVal<bool>("ignoreMissingShape");
+				try {
+					//ddOutRW->loadShape(false); // not used right now...
+				} catch (Ryan_Debug::error::xMissingHash &e) {
+					if (ignoreMissingShape) {
+						std::cerr << e.what() << std::endl;
+						return h;
+					}
+					else throw e;
+				}
 
 				rotations rots(*(ddOut->parfile));
 				weights::ddWeightsDDSCAT wts(rots);
