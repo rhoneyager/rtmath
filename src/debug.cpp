@@ -41,11 +41,11 @@
 #include <boost/log/support/date_time.hpp>
 #include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/config.h"
-#include "../Ryan_Debug/debug.h"
 #include "../Ryan_Debug/error.h"
 #include "../Ryan_Debug/logging.h"
 #include "../Ryan_Debug/registry.h"
 #include "../Ryan_Debug/hash.h"
+#include "../Ryan_Debug/splitSet.h"
 #include "internal.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
@@ -376,6 +376,7 @@ namespace Ryan_Debug
 
 			setupLoggingInitial(sevlev);
 
+
 			if (vm.count("help-verbose") || vm.count("help-all") || vm.count("help-full"))
 			{
 				po::options_description oall("All Options");
@@ -393,6 +394,36 @@ namespace Ryan_Debug
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Console override of Ryan_Debug-config-file: " 
 					<< debug::sConfigDefaultFile ;
 			}
+
+			// Log the command-line arguments and environment variables to the file log.
+			auto hp = boost::shared_ptr<const processInfo>(Ryan_Debug::getInfo(Ryan_Debug::getPID()), freeProcessInfo);
+			std::string appName(getName(hp.get()));
+			std::string appPath(getPath(hp.get()));
+			std::string cwd(getCwd(hp.get()));
+			size_t sEnv = 0, sCmd = 0;
+			const char* cenv = getEnviron(hp.get(), sEnv);
+			std::string env(cenv,sEnv);
+			std::map<std::string, std::string> mEnv;
+			splitSet::splitNullMap(env, mEnv);
+			const char* ccmd = getCmdline(hp.get(), sCmd);
+			std::string cmd(ccmd, sCmd);
+			std::vector<std::string> mCmd;
+			splitSet::splitNullVector(cmd, mCmd);
+			std::string sCmdP;
+			for (auto it = mCmd.begin(); it != mCmd.end(); ++it) {
+				if (it != mCmd.begin()) sCmdP.append(" ");
+				else sCmdP.append("\t");
+				sCmdP.append(*it);
+			}
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Starting application: \n"
+				<< "\tName: " << appName
+				<< "\n\tPath: " << appPath
+				<< "\n\tCWD: " << cwd
+				<< "\n\tApp config dir: " << Ryan_Debug::getAppConfigDir()
+				<< "\n\tUsername: " << Ryan_Debug::getUsername()
+				<< "\n\tHome dir: " << Ryan_Debug::getHomeDir()
+				<< "\n\tHostname: " << Ryan_Debug::getHostname()
+				<< "\n\tCommand-Line Args: " << sCmdP;
 
 			//if (vm.count("Ryan_Debug-conf"))
 			//{
