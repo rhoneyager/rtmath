@@ -162,10 +162,18 @@ namespace rtmath {
 				// Voronoi diagram is used twice - to calcuate voronoi stats and to 
 				// prefilter the points for the convex hull stats.
 				//boost::shared_ptr<VoronoiDiagram> vd;
-				if (doVoronoi)
+				if (!disableVoronoi)
 				{
 					vd = _shp->generateVoronoi(
 						std::string("standard"), VoronoiDiagram::generateStandard);
+					if (!vd) // Something went wrong
+					{
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::error) 
+							<< "Voronoi diagram generation / load unexpectedly failed.";
+						RDthrow(Ryan_Debug::error::xMissingHash())
+							<< Ryan_Debug::error::hash(_shp->hash().string())
+							<< Ryan_Debug::error::otherErrorText("Voronoi diagram generation / load unexpectedly failed.");
+					}
 				}
 
 				boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
@@ -175,9 +183,26 @@ namespace rtmath {
 					candidate_hull_points = _shp->latticeExtras["cvxcands"];
 				}
 				else {
-					if (doVoronoi)
-						candidate_hull_points = vd->calcCandidateConvexHullPoints();
-					else {
+					if (doVoronoi) {
+						//candidate_hull_points = vd->calcCandidateConvexHullPoints();
+						//
+						// Temporary fix
+						auto depth_points = vd->calcPointsSAfracExternal();
+						size_t numSurfacePoints = 0;
+						boost::shared_ptr
+								< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > m
+								(new Eigen::MatrixXf(_shp->numPoints, 4));
+
+						for (size_t i = 0; i < (size_t)depth_points->rows(); ++i)
+						{
+							if ((*(depth_points))(i,3)) {
+								m->block<1,3>(numSurfacePoints, 0) = depth_points->block<1,3>(i,0);
+								numSurfacePoints++;
+							}
+						}
+						m->conservativeResize(numSurfacePoints, 4);
+						candidate_hull_points = m;
+					} else {
 						boost::shared_ptr
 							< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > m
 							(new Eigen::MatrixXf(_shp->numPoints, 3));

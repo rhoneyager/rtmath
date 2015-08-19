@@ -256,7 +256,7 @@ namespace rtmath
 						double it[3];
 						base->GetPoint(i, it);
 
-						for (size_t j = i + 1; j < (size_t)base->GetNumberOfPoints(); j++)
+						for (size_t j = i + 1; j < np; j++)
 						{
 							double ot[3];
 							base->GetPoint(j, ot);
@@ -283,7 +283,10 @@ namespace rtmath
 
 				// Get max diameter and store the point ids
 				size_t mp1, mp2;
-				_p->diameter = fMaxDiameter(delaunay3D->GetOutput()->GetPoints(), mp1, mp2);
+				/// \note delaunay3D in VTK is buggy!!!!!!! Gives wrong max diameter and
+				/// trims points that it shouldn't.
+				//_p->diameter = fMaxDiameter(delaunay3D->GetOutput()->GetPoints(), mp1, mp2);
+				_p->diameter = fMaxDiameter(_p->surfacePoints, mp1, mp2);
 				_p->diameter1 = _p->diameter;
 
 

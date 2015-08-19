@@ -37,7 +37,7 @@ namespace {
 namespace rtmath {
 	namespace ddscat {
 		namespace stats {
-			const int shapeFileStatsBase::_maxVersion = 6;
+			const int shapeFileStatsBase::_maxVersion = 7;
 			SHARED_PRIVATE bool autoHashShapes = false;
 			SHARED_PRIVATE bool autoHashStats = false;
 			SHARED_PRIVATE std::vector<boost::tuple<double, double, double> > defaultRots;
@@ -306,7 +306,9 @@ namespace rtmath {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
 					<< "Generating (or loading) stats for hash " << shp->hash().string();
 
-				auto res = shapeFileStats::loadHash(shp->hash());
+				boost::shared_ptr<shapeFileStats> res;
+				if (!forceRecalcStats)
+					res = shapeFileStats::loadHash(shp->hash());
 				if (!res) {
 					if (!prohibitStats) {
 						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
@@ -328,7 +330,9 @@ namespace rtmath {
 				using boost::filesystem::path;
 				using boost::filesystem::exists;
 
-				auto res = shapeFileStats::loadHash(hash);
+				boost::shared_ptr<shapeFileStats> res;
+				if (!forceRecalcStats)
+					res = shapeFileStats::loadHash(hash);
 				if (!res && !prohibitStats) {
 					auto shp = shapefile::shapefile::loadHash(hash);
 					if (!shp) RDthrow(Ryan_Debug::error::xMissingHash())
@@ -375,34 +379,13 @@ namespace rtmath {
 				};
 
 				// Some logic to keep from having to recalculate everything between version upgrades
-				if (this->_currVersion < 4)
+				if (this->_currVersion < 7)
 				{
+					// Versions 6- got max_diameter wrong, thanks to VTK.
+					// Recalculating everything, just in case.
 					recalcBase();
 					recalcRots();
 					this->_currVersion = _maxVersion;
-				}
-				// Can just follow the upgrade chain
-				if (this->_currVersion == 4)
-				{
-					// 4-5 added more volumetric solvers and 2d projections
-					calcSrms_sphere(); // These will pick up on recalculating rot stats automatically if needed
-					calcSgyration();
-					calcSsolid();
-					calcVoroCvx(); // To get internal voronoi
-
-					this->_currVersion++;
-				}
-				if (this->_currVersion == 5)
-				{
-					// Version 6 supplements the max ellipsoid calculation with another
-					// code designed for Holly's flakes. It assumes that flakes
-					// are aligned using her system, determines if oblate / prolate
-					// and uses the corresponding aspect ratio in a precalculated formula.
-					//
-					// And Sellmax adds in surface area approximation.
-					calcSellmax();
-					calcSellmaxHolly();
-					this->_currVersion++;
 				}
 				// Future upgrades can go here.
 

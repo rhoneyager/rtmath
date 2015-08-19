@@ -27,6 +27,7 @@
 #include "../rtmath/error/debug.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/ddscat/shapefile.h"
+#include "shapestats_private.h"
 
 namespace {
 	std::set<std::string> mtypes;
@@ -469,9 +470,13 @@ namespace rtmath {
 				std::cerr << "Requesting voronoi diagrams for " << hash().string() << std::endl;
 				res = Voronoi::VoronoiDiagram::loadHash(hash());
 				if (!res) {
-					std::cerr << " Diagrams not found. Generating." << std::endl;
-					res = f(mins, maxs, latticePts, ""); // note that no particular plugin is specified here.
-					res->setHash(this->hash());
+					if (stats::doVoronoi) {
+						std::cerr << " Diagrams not found. Generating." << std::endl;
+						res = f(mins, maxs, latticePts, ""); // note that no particular plugin is specified here.
+						res->setHash(this->hash());
+					} else {
+						std::cerr << " Diagrams not found, and calculation prohibited." << std::endl;
+					}
 				}
 
 				//voronoi_diagrams[name] = res;

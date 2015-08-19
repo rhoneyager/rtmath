@@ -108,6 +108,7 @@ namespace rtmath {
 			/**
 			* Version history for shapeFileStats, shapeFileStatsRotated and base classes:
 			*
+			* 7 - Fixed max_diameter calculation. Error caused by a bug in VTK. Affects Scircum.
 			* 6 - Ellipsoid_max adds SA. Adding Holly AR ellipsoid_max.
 			* 5 - Adding rms sphere and radius of gyration to stats
 			* 4 - Adding Voronoi hulls, and subclassing V,SA and f values.
