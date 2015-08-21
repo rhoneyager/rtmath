@@ -139,6 +139,7 @@ namespace rtmath
 			}
 
 			double BrownFrancis1995Hogan2012(double D) {
+				// D is in meters
 				double mass = 0.012 * pow(D,1.9); // in kg
 				//const double rho0 = 917.0; // kg m^-3
 				//const double V = mass / rho0;

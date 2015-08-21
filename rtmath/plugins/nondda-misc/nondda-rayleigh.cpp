@@ -51,28 +51,28 @@ namespace rtmath
 					}
 
 					std::complex<double> mRes = i.m;
-					std::complex<double> mAir(1.0, 0);
-					i.rmeth(i.m, mAir, i.vFrac, mRes);
+					//std::complex<double> mAir(1.0, 0);
+					//i.rmeth(i.m, mAir, i.vFrac, mRes);
 
 					// Perform the calculation
 					double ar = i.eps;
 					const double k = 2. * pi / s.wavelength;
-					const double wvnum = 2. * pi / s.wavelength;
 					const double size_p = 2. * pi * scaledAeff / s.wavelength;
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 					const double f = i.vFrac;
-					const double V = 4. / 3. * pi * std::pow(scaledAeff, 3.); //i.aeff
+					const double V = 4. / 3. * pi * std::pow(i.aeff, 3.); //i.aeff
 					const double dmax = 2. * std::pow(V*3./(4.*pi*ar),1./3.); // oblate particles
 					const double d = ar * dmax; // d is the vertical dimension, d is the horizontal dimension.
 
 					try {
 						std::complex<double> K = ((i.m*i.m) - 1.) / ((i.m*i.m) + 2.);
 						std::complex<double> Km = ((mRes*mRes) - 1.) / ((mRes*mRes) + 2.);
+						double K2 = pow(abs(Km),2.);
 						//qext = 4. * size_p * (-1. * d).imag();
 						//qsca = 8. * std::pow(size_p, 4.) / 3.
 						//	* (d * conj(d)).real();
-						qback = 9. * V * V * pow(abs(Km),2.) * pow(wvnum,4.)/(4.*pi);
-						qback /= pi * pow(scaledAeff,2.);
+						qback = 9. * V * V * K2 * pow(k,4.)/(4.*pi);
+						qback /= pi * pow(i.aeff,2.);
 						gsca = 0;
 
 						

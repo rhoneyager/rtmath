@@ -32,48 +32,40 @@ namespace rtmath
 					using namespace ::rtmath::phaseFuncs;
 					const double pi = boost::math::constants::pi<double>();
 
-					// First, scale the effective radius and refractive index?
-					double scaledAeff = i.aeff;
-					if (i.aeff_rescale)
-					{
-						if (i.aeff_version ==
-							pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
-						{
-							double scaledVolume = pow(i.aeff, 3.0);
-							scaledVolume /= i.vFrac;
-							scaledAeff = pow(scaledVolume, 1. / 3.);
-						}
-						else {
-							double scaledSA = pow(i.aeff, 2.0);
-							scaledSA /= i.vFrac;
-							scaledAeff = pow(scaledSA, 0.5);
-						}
-					}
-
+					// Force the dielectric constant of solid ice
 					std::complex<double> mRes = i.m;
-					std::complex<double> mAir(1.0, 0);
-					i.rmeth(i.m, mAir, i.vFrac, mRes);
+					//std::complex<double> mAir(1.0, 0);
+					//i.rmeth(i.m, mAir, i.vFrac, mRes);
+
+					// Expressed in terms of the max diameter
+					// ar gives oblate/prolate indicator.
 
 					// Perform the calculation
 					double ar = i.eps;
+					bool prolate = false;
+					if (ar > 1.0) {
+						prolate = true;
+						ar = 1./ar;
+					}
+					double Dlong = i.maxDiamFull;
+					double Dshort = Dlong * ar;
+
 					const double k = 2. * pi / s.wavelength;
-					const double wvnum = 2. * pi / s.wavelength;
-					const double size_p = 2. * pi * scaledAeff / s.wavelength;
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 					const double f = i.vFrac;
-					const double V = 4. / 3. * pi * std::pow(scaledAeff, 3.); //i.aeff
-					const double dmax = 2. * std::pow(V*3./(4.*pi*ar),1./3.); // oblate particles
-					const double d = ar * dmax; // d is the vertical dimension, d is the horizontal dimension.
+					// V is volume of solid ice in particle
+					const double V = 4. / 3. * pi * std::pow(i.aeff, 3.); //i.aeff, scaledAeff
 
 					try {
 						std::complex<double> K = ((i.m*i.m) - 1.) / ((i.m*i.m) + 2.);
 						std::complex<double> Km = ((mRes*mRes) - 1.) / ((mRes*mRes) + 2.);
+						double K2 = (Km * conj(Km)).real();
 						qext = -1;
 						qsca = -1;
-						qback = (float) (Km * conj(Km)).real()  * 81./4. * V * V 
-							/ (pi * wvnum * wvnum * pow(d,6.));
-						qback *= pow(sin(k*d) - (k*d*cos(k*d)), 2.);
-						qback /= pi * pow(scaledAeff,2.);
+						qback = (float) K2  * 81./4. * V * V
+							/ (pi * k * k * pow(Dlong,6.));
+						qback *= pow(sin(k*Dlong) - (k*Dlong*cos(k*Dlong)), 2.);
+						qback /= pi * pow(i.aeff,2.);
 						gsca = -1;
 
 						c.Qsca_iso = -1; // qsca;// *pow(scaledAeff / i.aeff, 2.);
@@ -82,7 +74,6 @@ namespace rtmath
 						c.g_iso = -1;// gsca;
 						c.Qbk_iso = qback; // * pow(scaledAeff / i.aeff, 2.);
 
-						double C_sphere = pi * pow(scaledAeff, 2.0);
 						c.Qsca = c.Qsca_iso;
 						c.Qbk = c.Qbk_iso;
 						c.g = c.g_iso;
@@ -96,7 +87,7 @@ namespace rtmath
 					}
 					catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;
-						RDthrow(Ryan_Debug::error::xOtherError()) 
+						RDthrow(Ryan_Debug::error::xOtherError())
 							<< Ryan_Debug::error::otherErrorText("A rayleigh-gans error has occurred");
 					}
 				}

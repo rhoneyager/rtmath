@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 	using namespace std;
 	try {
 		cerr << "rtmath-oneellip" << endl;
+		const double pi = boost::math::constants::pi<double>();
 		// Do processing of argv
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options"), cmdline("Command-line options"),
@@ -368,8 +369,9 @@ int main(int argc, char *argv[])
 									r.m = ovM;
 								else
 									rtmath::refract::mIce(freq, temp, r.m);
-								double V = pow(aeff,3.) / vfrac;
-								r.maxDiamFull = pow(V,1./3.) * 2.;
+								double V = (4.*pi/3.) * pow(aeff,3.) / vfrac; // No aspect here
+								r.maxDiamFull = pow(6.*V/(pi*aspect),1./3.);
+								//r.maxDiamFull = pow(3.*V/(4.*pi),1./3.) * 2.; // WRONG FOR AR!
 								runs.push_back(std::move(r));
 							};
 							std::vector<std::tuple<double, double, double> > aeff_vf_rad;
@@ -395,8 +397,10 @@ int main(int argc, char *argv[])
 											_ar = aspect,
 											_temperature = temp,
 											_temp_units = "K"
-											);
+											); // TODO: Need to test effDen for ar != 1.
 										bool isIceAeff = false;
+										// NOTE: This conversion sucks. There should be 
+										// no need to then recast aeff/rad.
 										double aeff = convertLength(
 											_in_length_value = aeff1,
 											_in_length_type = sizetype,
@@ -405,15 +409,17 @@ int main(int argc, char *argv[])
 											_out_length_type = "Effective_Radius"
 											);
 										double vf = dEff / dIce;
-										double V = pow(aeff,3.);
+										double V = (4.*pi/3.) * pow(aeff,3.);
 										if (sizetype.find("Ice") != std::string::npos) isIceAeff = true;
 										double inAeff = 0;
 										double rad = 0;
 										if (isIceAeff) {
 											inAeff = aeff;
 											V /= vf;
-											rad = pow(V,1./3.);
+											//rad = pow(V,1./3.);
+											rad = pow(6.*V/(pi*aspect),1./3.) / 2;
 										} else {
+											// TODO: FIX THIS PART TOO
 											rad = aeff;
 											V *= vf;
 											inAeff = pow(V,1./3.);
@@ -426,9 +432,34 @@ int main(int argc, char *argv[])
 								if (!temps.size() && overrideM) temps.insert(-1);
 								for (const auto &temp : temps)
 									for (const auto &vf : vfracs) {
-										for (const auto &aeff : aeffs)
+										for (const auto &aeff1 : aeffs) {
+											using namespace rtmath::density;
+											bool isIceAeff = false;
+											// TODO: FIX FOR AR!!!
+											double aeff = convertLength(
+												_in_length_value = aeff1,
+												_in_length_type = sizetype,
+												_in_length_units = "um",
+												_ar = aspect,
+												_out_length_type = "Effective_Radius"
+												);
+											double V = pow(aeff,3.);
+											if (sizetype.find("Ice") != std::string::npos) isIceAeff = true;
+											double inAeff = 0;
+											double rad = 0;
+											if (isIceAeff) {
+												inAeff = aeff;
+												V /= vf;
+												rad = pow(V,1./3.);
+											} else {
+												rad = aeff;
+												V *= vf;
+												inAeff = pow(V,1./3.);
+											}
+											std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
 											aeff_vf_rad.push_back(std::tuple<double, double, double>
 												(aeff, vf, temp));
+										}
 								}
 							}
 							for (const auto &t : aeff_vf_rad)
@@ -437,19 +468,6 @@ int main(int argc, char *argv[])
 				}
 				else doHelp("Need to specify temperatures or a refractive index");
 			}
-			/*
-			else if (aeffs.size() || radii.size() || aspects.size() || vfracs.size())
-			{
-				std::ostringstream o;
-				o << "Need to specify: ";
-				if (!aeffs.size() && !radii.size()) o << "aeffs or radii, ";
-				if (!aspects.size()) o << "aspect ratios, ";
-				if (!vfracs.size()) o << "volume fractions, ";
-				if (!freqs.size()) o << "frequencies, ";
-				if (!overrideM && !temps.size()) o << "temperatures or dielectric overloads";
-				doHelp(o.str());
-			}*/
-
 		};
 
 		process_commandline();
@@ -582,13 +600,13 @@ int main(int argc, char *argv[])
 			ostringstream ofiless;
 			// the prefix is expected to be the discriminant for the rotational data
 			ofiless << oprefix << "-t-" << r.temp << "-f-" << r.freq
-				<< "-aeff-" << r.aeff
+				<< "-aeff-" << r.aeff << "-md-" << r.maxDiamFull
 				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
 			cout << ofile << " --- " << i << " / " << runs.size() << " " << r.refHash << endl;
 			++i;
 
-			const double sizep = 2. * boost::math::constants::pi<double>() * r.aeff / r.lambda;
+			const double sizep = 2. * pi * r.aeff / r.lambda;
 
 			using namespace rtmath::phaseFuncs;
 			pf_class_registry::orientation_type o = pf_class_registry::orientation_type::ISOTROPIC;
@@ -599,6 +617,7 @@ int main(int argc, char *argv[])
 			i.eps = r.ar;
 			i.m = r.m;
 			i.ref = r.refHash;
+			i.maxDiamFull = r.maxDiamFull;
 			//std::cerr << "i.m = r.m = " << i.m << std::endl;
 			i.rmeth = rmeth; // Yeah, only one refractive index method per program invocation is supported.
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
@@ -622,12 +641,11 @@ int main(int argc, char *argv[])
 			// smeth is parameter solution-method, which can force a single method to be used
 			p.getCrossSections(s, res, smeth);
 
-			const double pi = boost::math::constants::pi<double>();
-			// Somehow maxDiamFull is wrong.
-			double maxDiam = r.maxDiamFull, Vi = 0, V = 0, effDen = 0;
+
+			double maxDiam = r.maxDiamFull, Vi = 0, effDen = 0; // V=0
 			{
 				using namespace rtmath::density;
-				double diammm = maxDiam / 1000.;
+				//double diammm = maxDiam / 1000.;
 				//convertLength( _ar = r.ar,
 				//	_in_length_units = "um",
 				//	_out_length_units = "mm",
@@ -635,8 +653,7 @@ int main(int argc, char *argv[])
 				//	_in_length_type = "Max_Diameter_Full",
 				//	_out_length_type = "Max_Diameter_Full"
 				//	);
-				V = (4. * pi / 3.) * pow(diammm/2.,3.);
-				//Vi = V * r.fv; // Somehow this one is wrong
+				//V = (4. * pi / 3.) * pow(diammm/2.,3.);
 				Vi = (4. * pi / 3.) * pow(r.aeff/1000,3.);
 				//Vi = V;
 				//V /= r.fv;

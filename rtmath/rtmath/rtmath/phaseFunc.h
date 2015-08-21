@@ -114,6 +114,10 @@ namespace rtmath {
 				double vFrac;
 				/// Run description (usually a shape hash to indicate the target)
 				std::string ref;
+				/// Maximum diameter (used by RG-based methods)
+				/// Some conversion routines between effective radius and max diameter
+				/// can be found in density.h.
+				double maxDiamFull;
 
 				enum class shape_type
 				{

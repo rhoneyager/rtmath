@@ -280,7 +280,7 @@ D_Ryan_Debug_start()
 	pcb.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pcb.fCrossSections = rtmath::plugins::tmatrix::doCrossSectionIso;
 	//pcb.fPfs = rtmath::plugins::tmatrix::doPf;
-	rtmath::phaseFuncs::pf_provider::registerHook(pcb);
+	//rtmath::phaseFuncs::pf_provider::registerHook(pcb);
 
 	// Also register some Rayleigh-Gans approximation codes
 	// - Standard theory
