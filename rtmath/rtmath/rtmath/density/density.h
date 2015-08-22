@@ -62,6 +62,8 @@ namespace rtmath
 		 * Takes input in terms of the particle dimension (max dimension, ice effective radius,
 		 * etc.), temperature and substance (ice).
 		 *
+		 * \note This routine assumes that the aspect ratio is fixed at a user-provided
+		 * or default value.
 		 * \returns Effective density in g/cm^3.
 		 **/
 	BOOST_PARAMETER_FUNCTION(
@@ -75,7 +77,7 @@ namespace rtmath
 			)
 			(optional
 				(in_length_units, *, std::string("m"))
-				(ar, *, 0.6)
+				(ar, *, 1.0)
 				(temperature, *, 263)
 				(temp_units, *, std::string("K"))
 			)
@@ -102,53 +104,79 @@ namespace rtmath
 
 			double in_len_um = rtmath::units::conv_alt(in_length_units, "um").convert(in_length_value);
 			mylog("Converting length to um gives " << in_len_um << " um");
-			// Separate into actual vs. sans air dimensions.
-			auto check = [](const std::string &name, const std::string &match, bool &out) {
-				if (name.find(match) != std::string::npos ) out = true; };
-			bool in_is_ice_only = false, out_is_ice_only = false;
-			check(in_length_type, std::string("Ice"), in_is_ice_only);
-			check(needsDtype, std::string("Ice"), out_is_ice_only);
-			mylog("is input for only ice: " << in_is_ice_only << ", is output for only ice: " << out_is_ice_only);
 
-			/// Can the conversion go directly, or does it need an iteration with successive approximations?
+			// Can the conversion go directly, or does it need an iteration with
+			// successive approximations? Basically, see if the input quantity is a
+			// 1) effective radius or diameter or total volume, or
+			// 2) it is a Max or Min radius/diameter
+			auto check = [](const std::string &name, const std::string &match, bool &out, bool &out2) {
+				if (name.find(match) != std::string::npos) {
+					//bool pout = out, pout2 = out2;
+					out = true; out2 = true;
+					//mylog("\n\tmatched " << match << " in " << name
+					//	<< "\n\t prev out " << pout << ", prev out2 " << pout2);
+				} };
+			// These statements could be combined some more.
+			bool inIsV = false, inIsMD = false, inIsMax = false, junk = false, inIsRad = false;
+			check(in_length_type, "Max_Dimension", inIsMD, inIsMax);
+			check(in_length_type, "Max_Diameter", inIsMD, inIsMax);
+			check(in_length_type, "Max_Radius", inIsMD, inIsMax);
+			check(in_length_type, "Min_Dimension", inIsMD, junk);
+			check(in_length_type, "Min_Diameter", inIsMD, junk);
+			check(in_length_type, "Min_Radius", inIsMD, junk);
+			check(in_length_type, "Volume", inIsV, junk);
+			check(in_length_type, "adius", inIsRad, junk);
+
+			bool outIsV = false, outIsMD = false, outIsMax = false, outIsRad = false;
+			check(needsDtype, "Max_Dimension", outIsMD, outIsMax);
+			check(needsDtype, "Max_Diameter", outIsMD, outIsMax);
+			check(needsDtype, "Max_Radius", outIsMD, outIsMax);
+			check(needsDtype, "Min_Dimension", outIsMD, junk);
+			check(needsDtype, "Min_Diameter", outIsMD, junk);
+			check(needsDtype, "Min_Radius", outIsMD, junk);
+			check(needsDtype, "Volume", outIsV, junk);
+			check(needsDtype, "adius", outIsRad, junk);
+
+			mylog("in_length_type = " << in_length_type <<
+				"\n\tinIsV " << inIsV << "\n\tinIsMD " << inIsMD <<
+				"\n\tinIsMax " << inIsMax << "\n\tinIsRad " << inIsRad <<
+				"\n\toutIsV " << outIsV << "\n\toutIsMD " << outIsMD <<
+				"\n\toutIsMax " << outIsMax << "\n\toutIsRad " << outIsRad);
+
+			/// Can the conversion go directly, or does it need
+			/// an iteration with successive approximations?
 			auto needsIteration = [&]() -> bool {
-				if (in_is_ice_only == out_is_ice_only) return false;
-				if (!out_is_ice_only) return true;
-				return false;
+				if (inIsMD && outIsMD) return false;
+				if (!outIsMD) return false;
+				return true;
 			};
 
-			auto innerGetDen = [&](double inlen, double ar,
+			auto innerGetDen = [&](double inlen, double ar, double invf,
 				const std::string &in_type) -> double {
 				mylog("innerGetDen called");
 				double outlen = 0;
 				outlen = convertLength( _in_length_value = inlen,
 					_in_length_type = in_type,
-					_in_length_units = "um",
+					_in_volume_fraction = invf,
 					_ar = ar,
-					_out_length_type = needsDtype,
-					_out_length_units = needsUnits);
+					_out_length_type = needsDtype);
 				double den = (func)(outlen); // either a mass or in g/cm^3
 				mylog("innerGetDen\n"
 					<< "\tinlen: " << inlen << " as " << in_type << ", with ar " << ar
 					<< "\n\toutlen as " << needsDtype << " units " << needsUnits
 					<< "\n\tden before mass conversion (if needed): " << den);
 				if (relnResult == "mass") {
+					double in_len_needed = rtmath::units::conv_alt("um", "cm").convert(inlen);
 					// This relation provides a result in mass. It needs to be divided by volume
 					// to give a proper density. Has to be handled here.
-					double lenAeffUnits = convertLength( _in_length_value = inlen,
+					double V = convertLength( _in_length_value = in_len_needed,
 						_in_length_type = in_type,
-						_in_length_units = "um",
-						_out_length_units = needsUnits,
+						_in_volume_fraction = invf,
 						_ar = ar,
-						_out_length_type = "Effective_Radius_Full");
-					double V = convertVolumeLength( _ar=ar,
-							_in_length_value = lenAeffUnits,
-							_in_length_type = "Effective_Radius_Full",
-							_out_length_type = "Volume");
+						_out_length_type = "Volume");
 					V = units::conv_vol(needsUnits, "cm^3").convert(V);
 					den /= V;
 					mylog("mass conversion needed\n"
-						<< "\tlenAeffUnits: " << lenAeffUnits
 						<< "\n\tV: " << V << " cm^3"
 						<< "\n\tactual den: " << den << " g/cm^3");
 				}
@@ -157,30 +185,29 @@ namespace rtmath
 
 			// Take a guessed vf, convert from ice term (aeff) into the ice+air term, stick into density
 			// relation, and re-extract the resultant volume fraction.
-			auto backConvert = [&](double guess) -> double {
+			auto backConvert = [&](double guessvf) -> double {
 				mylog("backConvert called");
 				// The guess is a volume fraction. Other parameters are from context.
 				// in_length_um is in ice units.
-				double AeffIceUm = convertLength( _in_length_value = in_len_um, _ar = ar,
-					_in_length_type = in_length_type, _out_length_type = "Effective_Radius_Ice");
-				double VIceUm3 = (4./3.) * pi * pow(AeffIceUm,3.);
-				double VFullUm3 = VIceUm3 / guess;
-				double AeffFullUm = pow(3.*VFullUm3/(4.*pi),1./3.);
-				mylog("backConvert loop A:\n\tguess: " << guess
-					<< "\n\tAeffIceUm: " << AeffIceUm
-					<< "\n\tVIceUm3: " << VIceUm3
-					<< "\n\tVFullUm3: " << VFullUm3
-					<< "\n\tAeffFullUm: " << AeffFullUm);
-				double den = innerGetDen( AeffFullUm, ar, "Effective_Radius_Full");
+				double AeffUm = convertLength( _in_length_value = in_len_um, _ar = ar,
+					_in_volume_fraction = guessvf,
+					_in_length_type = in_length_type,
+					_out_length_type = "Effective_Radius");
+				//double VIceUm3 = (4./3.) * pi * pow(AeffIceUm,3.);
+				//double VFullUm3 = VIceUm3 / guessvf;
+				//double AeffFullUm = pow(3.*VFullUm3/(4.*pi),1./3.);
+				//mylog("backConvert loop A:\n\tguessvf: " << guessvf
+				//	<< "\n\tAeffIceUm: " << AeffIceUm
+				//	<< "\n\tVIceUm3: " << VIceUm3
+				//	<< "\n\tVFullUm3: " << VFullUm3
+				//	<< "\n\tAeffFullUm: " << AeffFullUm);
+				double den = innerGetDen( AeffUm, ar, guessvf, "Effective_Radius");
 
 				double solidIceDen = 0;
 				implementations::findDen(solidIceDen, "ice", temperature, temp_units);
 				double resVf = den / solidIceDen;
-				mylog("backConvert loop B:\n\tguess: " << guess
-					<< "\n\tAeffIceUm: " << AeffIceUm
-					<< "\n\tVIceUm3: " << VIceUm3
-					<< "\n\tVFullUm3: " << VFullUm3
-					<< "\n\tAeffFullUm: " << AeffFullUm
+				mylog("backConvert loop B:\n\tguessvf: " << guessvf
+					<< "\n\tAeffUm: " << AeffUm
 					<< "\n\tden = innerGetDen: " << den << " g/cm^3"
 					<< "\n\tsolidIceDen: " << solidIceDen << " g/cm^3"
 					<< "\n\tresVf: " << resVf);
@@ -212,13 +239,13 @@ namespace rtmath
 			double effden = 0;
 
 			// Is a back-conversion necessary? If so, calculate the effective density this way.
-			if (needsIteration()) {
-				mylog("This conversion needs iteration.");
+			//if (needsIteration()) {
+			//	mylog("This conversion needs iteration.");
 				effden = convertIterate();
-			} else { // Can just calculate directly.
-				mylog("No iteration needed. Can calculate directly");
-				effden = innerGetDen( in_len_um, ar, in_length_type);
-			}
+			//} else { // Can just calculate directly.
+			//	mylog("No iteration needed. Can calculate directly");
+			//	effden = innerGetDen( in_len_um, ar, invf, in_length_type); // TODO: invf
+			//}
 
 			mylog("\teffden is " << effden << " g/cm^3");
 			return effden;

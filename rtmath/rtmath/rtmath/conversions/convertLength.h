@@ -135,8 +135,10 @@ namespace rtmath {
 				V = pi * pow(inDiam,3.) / (6.);
 			}
 			mylog("\n\tvolume before vf adjustment is " << V);
-			V /= in_volume_fraction;
-			V *= out_volume_fraction;
+			if (inIsMD)
+				V *= in_volume_fraction;
+			if (outIsMD)
+				V /= out_volume_fraction;
 
 			// Volume is known. Use this to get the output quantity
 			// (as a diameter).

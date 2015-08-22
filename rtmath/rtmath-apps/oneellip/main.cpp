@@ -372,9 +372,22 @@ int main(int argc, char *argv[])
 									r.m = ovM;
 								else
 									rtmath::refract::mIce(freq, temp, r.m);
-								double V = (4.*pi/3.) * pow(aeff,3.) / vfrac; // No aspect here
-								r.maxDiamFull = pow(6.*V/(pi*aspect),1./3.);
-								//r.maxDiamFull = pow(3.*V/(4.*pi),1./3.) * 2.; // WRONG FOR AR!
+								r.maxDiamFull = rtmath::units::convertLength(
+									_in_length_value = aeff,
+									_in_length_type = "Effective_Radius",
+									_in_volume_fraction = vfrac,
+									_ar = aspect,
+									_out_length_type = "Max_Diameter");
+								double mindim = convertLength(
+									_in_length_value = aeff,
+									_in_length_type = sizetype,
+									_in_volume_fraction = vfrac,
+									_ar = aspect,
+									_out_length_type = "Min_Dimension"
+									);
+								std::cerr << "aeff " << aeff
+									<< " max dim " << r.maxDiamFull  << " min dim " << mindim
+									<< " vf " << vfrac << std::endl;
 								runs.push_back(std::move(r));
 							};
 							std::vector<std::tuple<double, double, double> > aeff_vf_rad;
@@ -400,35 +413,17 @@ int main(int argc, char *argv[])
 											_ar = aspect,
 											_temperature = temp,
 											_temp_units = "K"
-											); // TODO: Need to test effDen for ar != 1.
-										bool isIceAeff = false;
-										// NOTE: This conversion sucks. There should be 
-										// no need to then recast aeff/rad.
+											);
+										double vf = dEff / dIce;
 										double aeff = convertLength(
 											_in_length_value = aeff1,
 											_in_length_type = sizetype,
-											_in_length_units = "um",
 											_ar = aspect,
+											_in_volume_fraction = vf,
 											_out_length_type = "Effective_Radius"
 											);
-										double vf = dEff / dIce;
-										double V = (4.*pi/3.) * pow(aeff,3.);
-										if (sizetype.find("Ice") != std::string::npos) isIceAeff = true;
-										double inAeff = 0;
-										double rad = 0;
-										if (isIceAeff) {
-											inAeff = aeff;
-											V /= vf;
-											//rad = pow(V,1./3.);
-											rad = pow(6.*V/(pi*aspect),1./3.) / 2;
-										} else {
-											// TODO: FIX THIS PART TOO
-											rad = aeff;
-											V *= vf;
-											inAeff = pow(V,1./3.);
-										}
-										std::cerr << "aeff " << inAeff << " rad " << rad << " dIce " << dIce << " dEff " << dEff << " vf " << vf << std::endl;
-										aeff_vf_rad.push_back(std::tuple<double, double, double>(inAeff, vf, temp));
+										aeff_vf_rad.push_back(std::tuple<double, double, double>
+											(aeff, vf, temp));
 									}
 								}
 							} else {
@@ -437,29 +432,14 @@ int main(int argc, char *argv[])
 									for (const auto &vf : vfracs) {
 										for (const auto &aeff1 : aeffs) {
 											using namespace rtmath::density;
-											bool isIceAeff = false;
-											// TODO: FIX FOR AR!!!
 											double aeff = convertLength(
 												_in_length_value = aeff1,
 												_in_length_type = sizetype,
-												_in_length_units = "um",
 												_ar = aspect,
+												_in_volume_fraction = vf,
 												_out_length_type = "Effective_Radius"
 												);
-											double V = pow(aeff,3.);
-											if (sizetype.find("Ice") != std::string::npos) isIceAeff = true;
-											double inAeff = 0;
-											double rad = 0;
-											if (isIceAeff) {
-												inAeff = aeff;
-												V /= vf;
-												rad = pow(V,1./3.);
-											} else {
-												rad = aeff;
-												V *= vf;
-												inAeff = pow(V,1./3.);
-											}
-											std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
+											//std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
 											aeff_vf_rad.push_back(std::tuple<double, double, double>
 												(aeff, vf, temp));
 										}
