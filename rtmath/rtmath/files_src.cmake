@@ -29,10 +29,13 @@ source_group("Configuration" FILES ${rtmath_core_config})
 
 set(rtmath_core_general
 	rtmath/common_templates.h
+	rtmath/conversions/convertLength.h
+	rtmath/conversions/unitOptions.h
 	#rtmath/coords.h
 	rtmath/defs.h
 	rtmath/denseMatrix.h
-	rtmath/density.h
+	rtmath/density/density.h
+	rtmath/density/densityImpl.h
 	rtmath/depGraph.h
 	rtmath/derivatives.h
 	#rtmath/hash.h

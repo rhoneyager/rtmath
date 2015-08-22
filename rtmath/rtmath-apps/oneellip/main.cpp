@@ -12,8 +12,9 @@
 #include <Ryan_Debug/splitSet.h>
 #include <Ryan_Debug/error.h>
 #include "../../rtmath/rtmath/refract.h"
-#include "../../rtmath/rtmath/density.h"
+#include "../../rtmath/rtmath/density/density.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/phaseFunc.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
@@ -24,6 +25,8 @@
 int main(int argc, char *argv[])
 {
 	using namespace std;
+	using namespace rtmath::units::keywords;
+	using rtmath::units::convertLength;
 	try {
 		cerr << "rtmath-oneellip" << endl;
 		const double pi = boost::math::constants::pi<double>();

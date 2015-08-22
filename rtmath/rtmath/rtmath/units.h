@@ -1,6 +1,8 @@
 #pragma once
 #include "defs.h"
 #include <string>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging_base.h>
 
 namespace rtmath {
 	/** \brief Provides convenient runtime conversion functions for converting
@@ -15,6 +17,9 @@ namespace rtmath {
 	 * correct dimensionality of functions.
 	 **/
 	namespace units {
+		namespace implementations {
+			void DLEXPORT_rtmath_core emit_units_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
+		}
 		typedef std::pair<double, std::string> unit_pair;
 
 		/** \brief Base conversion class

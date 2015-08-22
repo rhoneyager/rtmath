@@ -1,9 +1,25 @@
 #include "Stdafx-core.h"
+#include <string>
 #include "../rtmath/units.h"
+#include <boost/log/sources/global_logger_storage.hpp>
+#include <Ryan_Debug/logging.h>
 #include <Ryan_Debug/error.h>
 
 namespace rtmath {
 	namespace units {
+		namespace implementations {
+
+			BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+				m_units,
+				boost::log::sources::severity_channel_logger_mt< >,
+				(boost::log::keywords::severity = Ryan_Debug::log::error)(boost::log::keywords::channel = "units"));
+
+			void emit_units_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
+			{
+				auto& lg = rtmath::units::implementations::m_units::get();
+				BOOST_LOG_SEV(lg, sev) << m;
+			}
+		}
 
 		converter::converter()
 		{

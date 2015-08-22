@@ -15,12 +15,14 @@
 //#include <Ryan_Debug/splitSet.h>
 #include "../../rtmath/rtmath/command.h"
 #include "../../rtmath/rtmath/units.h"
+#include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {
 	using namespace std;
 	using namespace rtmath;
+	using namespace rtmath::units::keywords;
 	try {
 		// Process some of the flags
 
@@ -35,6 +37,16 @@ int main(int argc, char** argv)
 			("input,i", po::value< double >(), "Input quantity")
 			("input-units,u", po::value< string >(), "Input units")
 			("output-units,o", po::value< string >(), "Output units")
+
+			("input-length-type", po::value<string>(), "Input length type (Max_Dimension, "
+			 "Effective_Radius, ...")
+			("output-length-type", po::value<string>(), "Output length type")
+			("aspect-ratio", po::value<double>()->default_value(1.0), "Aspect "
+			 "ratio for length conversions")
+			("input-vf", po::value<double>()->default_value(1.0),
+			 "Input volume fraction")
+			("output-vf", po::value<double>()->default_value(1.0),
+			 "Output volume fraction")
 
 			("density", "Convert density units")
 			("mass", "Convert mass  units (kg, g, ...)")
@@ -60,7 +72,7 @@ int main(int argc, char** argv)
 
 		rtmath::debug::process_static_options(vm);
 
-		if (vm.count("help") || !vm.count("input") || 
+		if (vm.count("help") || !vm.count("input") ||
 			!vm.count("output-units") || !vm.count ("input-units") ) {
 			cerr << desc << "\n";
 			return 1;
@@ -96,10 +108,29 @@ int main(int argc, char** argv)
 			//return 1;
 		}
 
-		
-		// Do only spectral conversions for now
 		outVal = cnv->convert(inVal);
-		cout << outVal << endl;
+
+		if (vm.count("length") &&
+				vm.count("input-length-type") &&
+				vm.count("output-length-type")) {
+			string ilt = vm["input-length-type"].as<string>();
+			string olt = vm["output-length-type"].as<string>();
+			double ivf = vm["input-vf"].as<double>();
+			double ovf = vm["output-vf"].as<double>();
+			double ar = vm["aspect-ratio"].as<double>();
+			using namespace rtmath::units;
+			double cnvVal = 0;
+			cnvVal = convertLength(
+				_in_length_value = outVal,
+				_in_length_type = ilt,
+				_out_length_type = olt,
+				_ar = ar,
+				_in_volume_fraction = ivf,
+				_out_volume_fraction = ovf);
+			cout << cnvVal << endl;
+		} else {
+			cout << outVal << endl;
+		}
 	}
 	catch (std::exception &e)
 	{

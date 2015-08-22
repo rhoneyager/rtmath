@@ -3,7 +3,7 @@
 #include <map>
 #include <boost/log/sources/global_logger_storage.hpp>
 #include <Ryan_Debug/logging.h>
-#include "../rtmath/density.h"
+#include "../rtmath/density/density.h"
 #include "../rtmath/units.h"
 #include <Ryan_Debug/error.h>
 
@@ -173,6 +173,7 @@ namespace rtmath
 			void findDen(double &den, const std::string &subst,
 					double temperature, const std::string &temp_units)
 			{
+				using namespace ::rtmath::units::keywords;
 				if (den) return;
 				if (!temperature) RDthrow(Ryan_Debug::error::xBadInput())
 					<< Ryan_Debug::error::otherErrorText("This density conversion requires a temperature.");
