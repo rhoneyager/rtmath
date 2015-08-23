@@ -137,11 +137,12 @@ namespace rtmath
 			check(needsDtype, "Volume", outIsV, junk);
 			check(needsDtype, "adius", outIsRad, junk);
 
-			mylog("in_length_type = " << in_length_type <<
+			mylog("\n\tin_length_type = " << in_length_type <<
 				"\n\tinIsV " << inIsV << "\n\tinIsMD " << inIsMD <<
 				"\n\tinIsMax " << inIsMax << "\n\tinIsRad " << inIsRad <<
 				"\n\toutIsV " << outIsV << "\n\toutIsMD " << outIsMD <<
-				"\n\toutIsMax " << outIsMax << "\n\toutIsRad " << outIsRad);
+				"\n\toutIsMax " << outIsMax << "\n\toutIsRad " << outIsRad
+				<< "\n\tNow to perform the iterations");
 
 			/// Can the conversion go directly, or does it need
 			/// an iteration with successive approximations?
@@ -153,17 +154,20 @@ namespace rtmath
 
 			auto innerGetDen = [&](double inlen, double ar, double invf,
 				const std::string &in_type) -> double {
-				mylog("innerGetDen called");
 				double outlen = 0;
+				// inlen is an effective radius. So, output conversion uses _out_volume_fraction.
 				outlen = convertLength( _in_length_value = inlen,
 					_in_length_type = in_type,
-					_in_volume_fraction = invf,
+					_out_volume_fraction = invf,
 					_ar = ar,
 					_out_length_type = needsDtype);
-				double den = (func)(outlen); // either a mass or in g/cm^3
+				// convert to correct units here. inlen is always in um (see calling function)
+				outlen = rtmath::units::conv_alt("um", needsUnits).convert(outlen);
+				double den = (func)(outlen); // either a mass (in g) or a density in g/cm^3
 				mylog("innerGetDen\n"
 					<< "\tinlen: " << inlen << " as " << in_type << ", with ar " << ar
-					<< "\n\toutlen as " << needsDtype << " units " << needsUnits
+					<< "\tinvf: " << invf
+					<< "\n\toutlen: " << outlen << " as " << needsDtype << " units " << needsUnits
 					<< "\n\tden before mass conversion (if needed): " << den);
 				if (relnResult == "mass") {
 					double in_len_needed = rtmath::units::conv_alt("um", "cm").convert(inlen);
@@ -171,13 +175,18 @@ namespace rtmath
 					// to give a proper density. Has to be handled here.
 					double V = convertLength( _in_length_value = in_len_needed,
 						_in_length_type = in_type,
-						_in_volume_fraction = invf,
+						_out_volume_fraction = invf,
 						_ar = ar,
 						_out_length_type = "Volume");
-					V = units::conv_vol(needsUnits, "cm^3").convert(V);
+					V /= invf; // TODO: may need to tweak convertLength...
+					//double Vcm = units::conv_vol(needsUnits, "cm^3").convert(V);
+					double mass = den;
 					den /= V;
 					mylog("mass conversion needed\n"
+						<< "\n\tmass " << mass << " g"
+						<< "\n\tin_len " << in_len_needed << " cm as " << in_type
 						<< "\n\tV: " << V << " cm^3"
+						//<< "\n\tVcm: " << Vcm << " cm^3"
 						<< "\n\tactual den: " << den << " g/cm^3");
 				}
 				return den;
@@ -186,7 +195,6 @@ namespace rtmath
 			// Take a guessed vf, convert from ice term (aeff) into the ice+air term, stick into density
 			// relation, and re-extract the resultant volume fraction.
 			auto backConvert = [&](double guessvf) -> double {
-				mylog("backConvert called");
 				// The guess is a volume fraction. Other parameters are from context.
 				// in_length_um is in ice units.
 				double AeffUm = convertLength( _in_length_value = in_len_um, _ar = ar,
@@ -206,8 +214,9 @@ namespace rtmath
 				double solidIceDen = 0;
 				implementations::findDen(solidIceDen, "ice", temperature, temp_units);
 				double resVf = den / solidIceDen;
-				mylog("backConvert loop B:\n\tguessvf: " << guessvf
-					<< "\n\tAeffUm: " << AeffUm
+				mylog("backConvert called:\n\tguessvf: " << guessvf
+					<< "\n\tAeffUm: " << AeffUm << " ar " << ar
+					<< "\n\t_in_length_value: " << in_len_um << " type " << in_length_type
 					<< "\n\tden = innerGetDen: " << den << " g/cm^3"
 					<< "\n\tsolidIceDen: " << solidIceDen << " g/cm^3"
 					<< "\n\tresVf: " << resVf);
@@ -217,21 +226,30 @@ namespace rtmath
 			/// Iterative conversion needed, usually from ice effective radius to max dimension. Guess a vf,
 			/// then do the back conversion with the desired method, and successively re-approximate.
 			auto convertIterate = [&]() -> double {
-				//mylog("convertIterate called");
+				mylog("convertIterate called. Will evaluate using backconvert for vfa 0.0001 and vfb 1.0");
 				double vfa = backConvert(0.0001), vfb = backConvert(1.0);
 				//mylog("convertIterate initial bounds a: vf 0.0001: " << vfa << ", b: vf 1.0: " << vfb);
 				if (vfa > 1.0 || vfb > 1.0) {
 					mylog("The particle size chosen is too small for this size-density relation! Cannot proceed.");
 					return 0;
 				}
-				double vf = zeros::findzero(0.0001, 1.0, [&](double guess) {
+				mylog("Loop to find zeros (in function convertIterate)"
+					<< "\n\tvfa(0.0001) was " << vfa << " and vfb(1.0) was " << vfb)
+				double vf = 0;
+				if (abs((vfa-vfb)/vfa) < 0.000001) {
+					mylog("Since vfa ~== vfb, the volume fraction doesn't need a loop. This "
+						"happens when the transform already has all necessary info.");
+					vf = vfa;
+				}
+				else vf = zeros::findzero(0.0001, 1.0, [&](double guess) {
 					return guess - backConvert(guess); });
 				//mylog("convertIterate returned a volume fraction of " << vf);
 				// The proper volume fraction is now known. Now determine the effective density.
 				// Slightly repetitive, but I prefer it this way.
 				double solidIceDen = 0;
 				implementations::findDen(solidIceDen, "ice", temperature, temp_units);
-				mylog("The density of ice at " << temperature << " " << temp_units << " is " << solidIceDen);
+				mylog("The density of ice at " << temperature << " " << temp_units 
+					<< " is " << solidIceDen << " g/cm^3");
 				double effDen = solidIceDen * vf;
 				return effDen;
 			};

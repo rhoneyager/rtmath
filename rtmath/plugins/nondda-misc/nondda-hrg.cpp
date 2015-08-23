@@ -51,7 +51,7 @@ namespace rtmath
 					double Dshort = Dlong * ar;
 
 					const double k = 2. * pi / s.wavelength;
-					const double size_p = k * Dlong;
+					const double size_p = k * Dshort;
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 					const double f = i.vFrac;
 					const double V = 4. / 3. * pi * std::pow(i.aeff, 3.); //i.aeff, scaledAeff

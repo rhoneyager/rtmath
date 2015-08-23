@@ -63,8 +63,8 @@ namespace rtmath
 						qext = -1;
 						qsca = -1;
 						qback = (float) K2  * 81./4. * V * V
-							/ (pi * k * k * pow(Dlong,6.));
-						qback *= pow(sin(k*Dlong) - (k*Dlong*cos(k*Dlong)), 2.);
+							/ (pi * k * k * pow(Dshort,6.));
+						qback *= pow(sin(k*Dshort) - (k*Dshort*cos(k*Dshort)), 2.);
 						qback /= pi * pow(i.aeff,2.);
 						gsca = -1;
 

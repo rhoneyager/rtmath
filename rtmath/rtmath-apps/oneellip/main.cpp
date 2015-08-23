@@ -11,6 +11,8 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/splitSet.h>
 #include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging.h>
+#include <boost/log/sources/global_logger_storage.hpp>
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/density/density.h"
 #include "../../rtmath/rtmath/units.h"
@@ -21,6 +23,17 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/error/debug.h"
+
+BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+	m_app,
+	boost::log::sources::severity_channel_logger_mt< >,
+	(boost::log::keywords::severity = Ryan_Debug::log::error)
+	(boost::log::keywords::channel = "app"));
+
+#undef FL
+#undef mylog
+#define FL "main.cpp, line " << (int)__LINE__ << ": "
+#define mylog(x) { std::ostringstream l; l << FL << x; BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_1) << l.str(); }
 
 int main(int argc, char *argv[])
 {
@@ -125,6 +138,7 @@ int main(int argc, char *argv[])
 		//rtmath::ddscat::ddOutput::process_static_options(vm);
 		//rtmath::refract::process_static_options(vm);
 
+		auto& lg = m_app::get();
 		// Begin checking parameters
 		auto doHelp = [&](const std::string& s)
 		{
@@ -331,7 +345,7 @@ int main(int argc, char *argv[])
 		auto process_commandline = [&]()
 		{
 			// If any of these are set, ensure that the temperature and frequency are also set
-
+			mylog( "Processing command-line runs");
 			// Freqs and temps are in main's scope
 			string sizetype = vm["size-type"].as<string>();
 			set<double> aeffs, aspects, vfracs; // , alphas, betas;
@@ -357,6 +371,7 @@ int main(int argc, char *argv[])
 						for (const auto &aspect : aspects) {
 							auto doAeff = [&](double aeff, double vfrac, double temp)
 							{
+								mylog("Adding for aeff " << aeff << " vf " << vfrac << " temp " << temp);
 								run r;
 								r.aeff = aeff;
 								r.ar = aspect;
@@ -375,16 +390,20 @@ int main(int argc, char *argv[])
 								r.maxDiamFull = rtmath::units::convertLength(
 									_in_length_value = aeff,
 									_in_length_type = "Effective_Radius",
-									_in_volume_fraction = vfrac,
+									_out_volume_fraction = vfrac,
 									_ar = aspect,
 									_out_length_type = "Max_Diameter");
 								double mindim = convertLength(
 									_in_length_value = aeff,
 									_in_length_type = sizetype,
-									_in_volume_fraction = vfrac,
+									_out_volume_fraction = vfrac,
 									_ar = aspect,
 									_out_length_type = "Min_Dimension"
 									);
+								mylog("\n\taeff " << aeff
+									<< "\n\tmax dim " << r.maxDiamFull
+									<< "\n\tmin dim " << mindim
+									<< "\n\tvf " << vfrac);
 								std::cerr << "aeff " << aeff
 									<< " max dim " << r.maxDiamFull  << " min dim " << mindim
 									<< " vf " << vfrac << std::endl;
@@ -422,6 +441,17 @@ int main(int argc, char *argv[])
 											_in_volume_fraction = vf,
 											_out_length_type = "Effective_Radius"
 											);
+										mylog("auto vf"
+											<< "\n\t_in_length_value " << aeff1
+											<< "\n\t_in_length_type " << sizetype
+											<< "\n\t_ar " << aspect
+											<< "\n\t_out_length_type Effective_Radius"
+											<< "\n\taeff " << aeff
+											<< "\n\t_in_volume_fraction " << vf
+											<< "\n\tvfScaling " << vfScaling
+											<< "\n\ttemp " << temp << " K"
+											<< "\n\teffDen " << dEff
+											);
 										aeff_vf_rad.push_back(std::tuple<double, double, double>
 											(aeff, vf, temp));
 									}
@@ -439,6 +469,13 @@ int main(int argc, char *argv[])
 												_in_volume_fraction = vf,
 												_out_length_type = "Effective_Radius"
 												);
+											mylog("manual vf"
+												<< "\n\t_in_length_value " << aeff1
+												<< "\n\t_in_length_type " << sizetype
+												<< "\n\t_ar " << aspect
+												<< "\n\t_in_volume_fraction " << vf
+												<< "\n\t_out_length_type Effective_Radius"
+												<< "\n\taeff " << aeff);
 											//std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
 											aeff_vf_rad.push_back(std::tuple<double, double, double>
 												(aeff, vf, temp));
@@ -460,6 +497,7 @@ int main(int argc, char *argv[])
 		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s)
 		{
 			try {
+				mylog("Processing shape " << s->hash().lower);
 				cerr << "  Shape " << s->hash().lower << endl;
 				s->loadHashLocal(); // Load the shape fully, if it was imported from a database
 				auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
@@ -544,6 +582,12 @@ int main(int argc, char *argv[])
 					r.refHash = s->hash().string();
 					r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
 					r.maxDiamFull = stats->max_distance * s->standardD;
+					mylog("Adding shape run " << r.refHash <<
+						"\n\taeff " << r.aeff << ", aeff_dipoles_const " << stats->aeff_dipoles_const <<
+						"\n\tMax diam: " << r.maxDiamFull <<
+						"\n\tfreq " << freq << "\n\ttemp " << temp <<
+						"\n\tfv " << r.fv <<
+						"\n\tar " << r.ar);
 					std::cerr << "Max diam: " << r.maxDiamFull << ", standardD: " << s->standardD
 						<< ", stats->max_distance: " << stats->max_distance << std::endl
 						<< "\taeff " << r.aeff << ", aeff_dipoles_const: " << stats->aeff_dipoles_const << std::endl
@@ -578,6 +622,7 @@ int main(int argc, char *argv[])
 		cout << "Meth\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 		size_t i=1;
 		// Iterate over all possible runs
+		mylog("Executing. There are " << runs.size() << " runs to process.");
 		for (const auto &r : runs)
 		{
 			ostringstream ofiless;
@@ -586,6 +631,7 @@ int main(int argc, char *argv[])
 				<< "-aeff-" << r.aeff << "-md-" << r.maxDiamFull
 				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
+			mylog(ofile << " --- " << i << " / " << runs.size() << " " << r.refHash);
 			cout << ofile << " --- " << i << " / " << runs.size() << " " << r.refHash << endl;
 			++i;
 
@@ -606,9 +652,19 @@ int main(int argc, char *argv[])
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
 			i.vFrac = r.fv;
 
+			mylog("run aeff " << i.aeff << "\n\taeff_rescale " << i.aeff_rescale <<
+				"\n\taeff_version EQUIV_V_SPHERE\n\teps " << i.eps <<
+				"\n\tm " << i.m.real() << ", " << i.m.imag() <<
+				"\n\tref " << i.ref <<
+				"\n\tmaxDiam " << i.maxDiamFull <<
+				"\n\trmeth " << refractScaling <<
+				"\n\tshape SPHEROID" <<
+				"\n\tvFrac " << i.vFrac);
+
 			if (r.fv <= 0 || r.fv > 1.) {
 				std::cout << "\tCowardly refusing to calculate scattering for an invalid particle. See "
 					"the log for details (channel=density). Skipping to next one." << std::endl;
+				mylog("Error. r.fv is not in (0,1]. Skipping.");
 				continue;
 			}
 

@@ -139,6 +139,7 @@ namespace rtmath {
 				V *= in_volume_fraction;
 			if (outIsMD)
 				V /= out_volume_fraction;
+			// TODO: may need to still tweak V vf scaling.
 
 			// Volume is known. Use this to get the output quantity
 			// (as a diameter).

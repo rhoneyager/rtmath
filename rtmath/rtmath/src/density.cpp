@@ -195,13 +195,13 @@ namespace rtmath
 			{
 				const size_t numProviders = 7, span = 5;
 				const char *providers[numProviders * span] = {
-					"BrownFrancis1995Hogan2012", "Max_Diameter_Full", "m", "ice", "mass",
-					"Brandes2007", "Median_Volume_Diameter_Full", "mm", "ice", "density",
-					"MagonoNakamura1965", "Max_Diameter_Full", "mm", "ice", "density",
-					"Holroyd1971", "Max_Diameter_Full", "mm", "ice", "density",
-					"Muramoto1995", "Max_Diameter_Full", "mm", "ice", "density",
-					"FabrySzyrmer1999", "Max_Diameter_Full", "mm", "ice", "density",
-					"Heymsfield2004", "Max_Diameter_Full", "mm", "ice", "density" };
+					"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice", "mass",
+					"Brandes2007", "Max_Diameter", "mm", "ice", "density",
+					"MagonoNakamura1965", "Max_Diameter", "mm", "ice", "density",
+					"Holroyd1971", "Max_Diameter", "mm", "ice", "density",
+					"Muramoto1995", "Max_Diameter", "mm", "ice", "density",
+					"FabrySzyrmer1999", "Max_Diameter", "mm", "ice", "density",
+					"Heymsfield2004", "Max_Diameter", "mm", "ice", "density" };
 				std::function<double(double)> funcs[] = {
 					&(BrownFrancis1995Hogan2012),
 					&(Brandes2007),
