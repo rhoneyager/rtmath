@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
 			("mi", po::value<double>(), "Override imaginary refractive index value")
 			("volume-fractions,v", po::value<std::string>(), "Set the ice volume fractions. "
 			 "Used when: not using shapefiles AND vf-scaling is not one of the paper-based methods.")
+			("vf-is-den", "The -v parameter is not a volume fraction. It is a density in g/cm^3.")
 			("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
 			("solution-method", po::value<std::string>(), "Force only a specific algorithm to be used, such as "
 			 "Rayleigh or bhmie. No other pf generator will be used.")
@@ -395,10 +396,10 @@ int main(int argc, char *argv[])
 									_out_length_type = "Max_Diameter");
 								double mindim = convertLength(
 									_in_length_value = aeff,
-									_in_length_type = sizetype,
+									_in_length_type = "Effective_Radius",
 									_out_volume_fraction = vfrac,
 									_ar = aspect,
-									_out_length_type = "Min_Dimension"
+									_out_length_type = "Min_Diameter"
 									);
 								mylog("\n\taeff " << aeff
 									<< "\n\tmax dim " << r.maxDiamFull
@@ -462,23 +463,27 @@ int main(int argc, char *argv[])
 									for (const auto &vf : vfracs) {
 										for (const auto &aeff1 : aeffs) {
 											using namespace rtmath::density;
+											double dIce = ice1h( _temperature = temp, _temp_units = "K" );
+											double vvf = vf;
+											if (vm.count("vf-is-den"))
+												vvf /= dIce; // TODO: Not yet working.
 											double aeff = convertLength(
 												_in_length_value = aeff1,
 												_in_length_type = sizetype,
 												_ar = aspect,
-												_in_volume_fraction = vf,
+												_in_volume_fraction = vvf,
 												_out_length_type = "Effective_Radius"
 												);
 											mylog("manual vf"
 												<< "\n\t_in_length_value " << aeff1
 												<< "\n\t_in_length_type " << sizetype
 												<< "\n\t_ar " << aspect
-												<< "\n\t_in_volume_fraction " << vf
+												<< "\n\t_in_volume_fraction " << vvf
 												<< "\n\t_out_length_type Effective_Radius"
 												<< "\n\taeff " << aeff);
 											//std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
 											aeff_vf_rad.push_back(std::tuple<double, double, double>
-												(aeff, vf, temp));
+												(aeff, vvf, temp));
 										}
 								}
 							}

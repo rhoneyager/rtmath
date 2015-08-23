@@ -155,7 +155,7 @@ namespace rtmath {
 					outVal = outMax * arnorm;
 				} else outVal = outMax;
 				mylog("\n\toutMax is " << outMax);
-			} else {
+			} else { // An effective radius or diameter
 				outVal = pow(6.*V/pi,1./3.);
 			}
 			if(!outIsV && out_length_type.find("adius") != std::string::npos) outVal /= 2.;

@@ -92,7 +92,7 @@ namespace rtmath
 				<< "\n\ttemperature: " << temperature
 				<< " " << temp_units);
 
-			const double pi = boost::math::constants::pi<double>();
+			//const double pi = boost::math::constants::pi<double>();
 			bool found = false;
 			std::string needsDtype, needsUnits, needsSubstance, relnResult;
 			std::function<double(double)> func;
@@ -146,11 +146,11 @@ namespace rtmath
 
 			/// Can the conversion go directly, or does it need
 			/// an iteration with successive approximations?
-			auto needsIteration = [&]() -> bool {
-				if (inIsMD && outIsMD) return false;
-				if (!outIsMD) return false;
-				return true;
-			};
+			//auto needsIteration = [&]() -> bool {
+			//	if (inIsMD && outIsMD) return false;
+			//	if (!outIsMD) return false;
+			//	return true;
+			//};
 
 			auto innerGetDen = [&](double inlen, double ar, double invf,
 				const std::string &in_type) -> double {
@@ -163,6 +163,8 @@ namespace rtmath
 					_out_length_type = needsDtype);
 				// convert to correct units here. inlen is always in um (see calling function)
 				outlen = rtmath::units::conv_alt("um", needsUnits).convert(outlen);
+				double arnorm = ar;
+				if (ar > 1.) arnorm = 1./ar;
 				double den = (func)(outlen); // either a mass (in g) or a density in g/cm^3
 				mylog("innerGetDen\n"
 					<< "\tinlen: " << inlen << " as " << in_type << ", with ar " << ar
@@ -175,13 +177,14 @@ namespace rtmath
 					// to give a proper density. Has to be handled here.
 					double V = convertLength( _in_length_value = in_len_needed,
 						_in_length_type = in_type,
-						_out_volume_fraction = invf,
+						_in_volume_fraction = invf,
 						_ar = ar,
 						_out_length_type = "Volume");
 					V /= invf; // TODO: may need to tweak convertLength...
 					//double Vcm = units::conv_vol(needsUnits, "cm^3").convert(V);
 					double mass = den;
 					den /= V;
+					den *= arnorm; // SLightly different presentation.
 					mylog("mass conversion needed\n"
 						<< "\n\tmass " << mass << " g"
 						<< "\n\tin_len " << in_len_needed << " cm as " << in_type
@@ -189,7 +192,8 @@ namespace rtmath
 						//<< "\n\tVcm: " << Vcm << " cm^3"
 						<< "\n\tactual den: " << den << " g/cm^3");
 				}
-				return den;
+				//den *= invf; // TODO: may need to tweak convertLength
+				return den / arnorm;
 			};
 
 			// Take a guessed vf, convert from ice term (aeff) into the ice+air term, stick into density
