@@ -62,7 +62,7 @@ namespace rtmath
 					? 1 : 0;
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
-				double ar = i.eps;
+				double ar = 1. / i.eps; // Mish code wants oblate > 1
 				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 				auto tp = ::tmatrix::tmatrixParams::create(
 					scaledAeff, rat, s.wavelength, 
@@ -140,7 +140,7 @@ namespace rtmath
 					? 1 : 0;
 				int np = (i.shape == pf_class_registry::inputParamsPartial::shape_type::SPHEROID)
 					? -1 : -2;
-				double ar = i.eps;
+				double ar = 1. / i.eps; // Mish code wants oblate ar > 1
 				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 				auto tp = ::tmatrix::tmatrixParams::create(
 					scaledAeff, rat, s.wavelength, std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);

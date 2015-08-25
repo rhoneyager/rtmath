@@ -547,9 +547,24 @@ int main(int argc, char *argv[])
 						r.fvMeth = vfScaling;
 					}
 					if (v) {
-						r.aeff = v->aeff_V * s->standardD;
+						// Cannot do this because effective radius != equivalent radius
+						// r.aeff = v->aeff_V * s->standardD;
+						// The stats aeff_V is a misnomer. Should be equivalent radius.
+						// Instead, do this:
+						//r.aeff = s->standardD
+						//	* rtmath::units::convertLength(
+						//		_in_length_value = v->V * v->f,
+						//		_in_length_type = "Volume",
+						//		_out_length_type = "Effective_Radius");
+						// Stats implement aeff_V and V inconsistently. Voronoi is
+						// different from the others. The reliable one is the volume
+						// fraction. So, calculate everything from this.
+						//double vol_real = stats->V_dipoles_const * pow(s->standardD,3.);
+						//double vol_meth = vol_real / v->f;
+						//r.aeff = pow(3.*v->V*v->f/(4.*pi),1./3.) * s->standardD;
+						r.aeff = stats->aeff_dipoles_const * s->standardD;
 						r.fv = v->f;
-					} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
+					 } else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
 						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 						vd = s->generateVoronoi(
 							std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);

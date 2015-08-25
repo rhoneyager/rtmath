@@ -144,10 +144,12 @@ namespace rtmath {
 				float aeff_dipoles_const;
 
 				/// Hold related data together
+				/// \todo Rename aeff_* to rad_*.
 				class volumetric
 				{
 				public:
 					volumetric();
+					// TODO: Fix names. aeff_* are really equivalent radii.
 					float V, aeff_V, SA, aeff_SA, f;
 					//float &f_V;
 					//float f_SA;
