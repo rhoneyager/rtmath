@@ -71,6 +71,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_TMATRIX)
 		add_subdirectory(tmatrix)
 	endif()
+	option (BUILD_PLUGIN_TMATRIX_RANDOM
+		"Build Tmatrix random orientation plugin" ON)
+	if (BUILD_PLUGIN_TMATRIX_RANDOM)
+		add_subdirectory(tmatrix-random)
+	endif()
 	option (BUILD_PLUGIN_TSV
 		"Build TSV export plugin" ON)
 	if (BUILD_PLUGIN_TSV)
