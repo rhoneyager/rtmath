@@ -67,6 +67,7 @@ namespace rtmath {
 				void writeHeader()
 				{
 					(*(file.get())) << "Hash\tV_dipoles_const\t"
+						"Max_Dimension_dipoles\t"
 						"Circum_Sphere_V\tCircum_Sphere_SA\t"
 						"Convex_V\tConvex_SA\t"
 						"Voronoi_V\tVoronoi_SA\t"
@@ -107,6 +108,7 @@ namespace rtmath {
 				using namespace rtmath::ddscat::stats;
 
 				(*(h->file.get())) << s->_shp->hash().lower << "\t" << s->V_dipoles_const << "\t"
+					<< s->max_distance << "\t"
 					<< s->Scircum_sphere.V << "\t" << s->Scircum_sphere.SA << "\t"
 					<< s->Sconvex_hull.V << "\t" << s->Sconvex_hull.SA << "\t"
 					<< s->SVoronoi_hull.V << "\t" << s->SVoronoi_hull.SA << "\t"
