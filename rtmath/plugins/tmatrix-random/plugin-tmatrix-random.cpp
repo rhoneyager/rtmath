@@ -35,13 +35,14 @@ namespace rtmath
 
 				// First, scale the effective radius and refractive index?
 				double scaledAeff = i.aeff;
+				double rawVolume = 0, scaledVolume = 0; // scaled is ice + air. raw is ice only.
 				if (i.aeff_rescale)
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						double scaledVolume = pow(i.aeff, 3.0);
-						scaledVolume /= i.vFrac;
+						rawVolume = pow(i.aeff, 3.0);
+						scaledVolume = pow(i.aeff, 3.0) / i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					} else {
 						double scaledSA = pow(i.aeff, 2.0);
@@ -49,6 +50,8 @@ namespace rtmath
 						scaledAeff = pow(scaledSA, 0.5);
 					}
 				}
+				double aeffRat = scaledAeff / i.aeff;
+				double aeffRatSq = aeffRat * aeffRat;
 
 				std::complex<double> mRes = i.m; 
 				std::complex<double> mAir(1.0, 0);
@@ -75,15 +78,15 @@ namespace rtmath
 				try {
 					auto ori = ::tmatrix_random::OriTmatrix::calc(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca_iso = ori->qsca;
-					c.Qext_iso = ori->qext;
+					c.Qsca_iso = ori->qsca * aeffRatSq;
+					c.Qext_iso = ori->qext * aeffRatSq;
 					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
 					c.g_iso = ori->g;
+					c.Qbk = ori->qbk * aeffRatSq;
 
 					//auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
-
+					//auto ic = ::tmatrix_random::IsoAngleRes::calc(ori);
 					c.Qsca = c.Qsca_iso;
-					c.Qbk = -1;
 					//c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
 					c.g = ori->g;
 

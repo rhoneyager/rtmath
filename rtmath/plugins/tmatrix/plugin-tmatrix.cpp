@@ -82,7 +82,7 @@ namespace rtmath
 
 					auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
 
-					c.Qsca = -1;
+					c.Qsca = c.Qsca_iso;
 					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
 					c.g = ori->g;
 
