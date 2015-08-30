@@ -55,6 +55,7 @@ namespace Ryan_Debug {
 }
 
 namespace {
+	std::mutex m_hooks;
 	std::map<void*, std::string> hookTable;
 	/// Lists the paths of all loaded dlls
 	std::set<std::string> DLLpathsLoaded;
@@ -307,10 +308,12 @@ namespace Ryan_Debug
 		}
 
 		void add_hook_table(const char* tempsig, void* store) {
+			std::lock_guard<std::mutex> lock(m_hooks);
 			hookTable[store] = std::string(tempsig);
 		}
 
 		void dump_hook_table(std::ostream &out) {
+			std::lock_guard<std::mutex> lock(m_hooks);
 			auto h = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*) dump_hook_table), freeModuleInfo);
 			out << "Hook table for Ryan_Debug dll at "
 				<< getPath(h.get()) << std::endl
@@ -867,8 +870,10 @@ namespace Ryan_Debug
 			auto doLoad = [&](const std::string &f, bool critical)
 			{
 				boost::shared_ptr<DLLhandle> h(new DLLhandle(f, dvs, critical));
-				if (h->isOpen())
+				if (h->isOpen()) {
+					std::lock_guard<std::mutex> lock(m_hooks);
 					handles.push_back(h);
+				}
 				else {
 					// If critical and a throw condition occurs, then it is already logged and this is not reached.
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::error) << "loadDLL is unable to open DLL: " << filename;
