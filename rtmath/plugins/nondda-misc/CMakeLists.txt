@@ -6,7 +6,9 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 add_library (rtmath_plugin_nondda_misc SHARED 
 	nondda-rayleigh.cpp
 	nondda-rg.cpp
+	nondda-rg-iso.cpp
 	nondda-hrg.cpp
+	nondda-hrg-iso.cpp
 	plugin-nondda-misc.cpp
 	plugin-nondda-misc.h
 	)

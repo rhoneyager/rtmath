@@ -124,6 +124,18 @@ namespace rtmath
 					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
 					rtmath::phaseFuncs::pf_class_registry::cross_sections& c);
 			}
+			namespace RGi {
+				void doCrossSection(
+					const rtmath::phaseFuncs::pf_class_registry::setup &s,
+					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
+					rtmath::phaseFuncs::pf_class_registry::cross_sections& c);
+			}
+			namespace HRGi {
+				void doCrossSection(
+					const rtmath::phaseFuncs::pf_class_registry::setup &s,
+					const rtmath::phaseFuncs::pf_class_registry::inputParamsPartial& i,
+					rtmath::phaseFuncs::pf_class_registry::cross_sections& c);
+			}
 			namespace Rayleigh_2 {
 				void doCrossSection(
 					const rtmath::phaseFuncs::pf_class_registry::setup &s,
@@ -171,6 +183,18 @@ D_Ryan_Debug_start()
 	hpcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	hpcrg.fCrossSections = rtmath::plugins::nondda_misc::HRG::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(hpcrg);
+
+	rtmath::phaseFuncs::pf_class_registry pcrgi;
+	pcrgi.name = "Rayleigh-Gans-iso";
+	pcrgi.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pcrgi.fCrossSections = rtmath::plugins::nondda_misc::RGi::doCrossSection;
+	rtmath::phaseFuncs::pf_provider::registerHook(pcrgi);
+
+	rtmath::phaseFuncs::pf_class_registry hpcrgi;
+	hpcrgi.name = "SSRG-iso";
+	hpcrgi.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	hpcrgi.fCrossSections = rtmath::plugins::nondda_misc::HRGi::doCrossSection;
+	rtmath::phaseFuncs::pf_provider::registerHook(hpcrgi);
 
 	return SUCCESS;
 }
