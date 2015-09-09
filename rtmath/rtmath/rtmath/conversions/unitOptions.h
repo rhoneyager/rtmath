@@ -33,6 +33,7 @@ namespace rtmath {
 			BOOST_PARAMETER_NAME(out_substance)
 			BOOST_PARAMETER_NAME(in_volume_fraction)
 			BOOST_PARAMETER_NAME(out_volume_fraction)
+			BOOST_PARAMETER_NAME(vfOverride)
 		}
 	}
 }

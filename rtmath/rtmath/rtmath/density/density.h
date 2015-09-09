@@ -80,6 +80,7 @@ namespace rtmath
 				(ar, *, 1.0)
 				(temperature, *, 263)
 				(temp_units, *, std::string("K"))
+				(vfOverride, *, 0)
 			)
 			)
 		{
@@ -89,6 +90,7 @@ namespace rtmath
 				<< " as " << in_length_type
 				<< "\n\tprovider: " << provider
 				<< "\n\tar: " << ar
+				<< "\n\tvfOverride: " << vfOverride
 				<< "\n\ttemperature: " << temperature
 				<< " " << temp_units);
 
@@ -98,7 +100,7 @@ namespace rtmath
 			std::function<double(double)> func;
 			found = implementations::findProvider(provider, func,
 				needsDtype, needsUnits, needsSubstance, relnResult);
-			if (!found) RDthrow(Ryan_Debug::error::xBadInput())
+			if (!found && provider != "Constant") RDthrow(Ryan_Debug::error::xBadInput())
 				<< Ryan_Debug::error::specializer_type(provider)
 				<< Ryan_Debug::error::otherErrorText("Unknown density provider");
 
@@ -230,32 +232,42 @@ namespace rtmath
 			/// Iterative conversion needed, usually from ice effective radius to max dimension. Guess a vf,
 			/// then do the back conversion with the desired method, and successively re-approximate.
 			auto convertIterate = [&]() -> double {
-				mylog("convertIterate called. Will evaluate using backconvert for vfa 0.0001 and vfb 1.0");
-				double vfa = backConvert(0.0001), vfb = backConvert(1.0);
-				//mylog("convertIterate initial bounds a: vf 0.0001: " << vfa << ", b: vf 1.0: " << vfb);
-				if (vfa > 1.0 || vfb > 1.0) {
-					mylog("The particle size chosen is too small for this size-density relation! Cannot proceed.");
-					return 0;
+				if (!vfOverride) {
+					mylog("convertIterate called. Will evaluate using backconvert for vfa 0.0001 and vfb 1.0");
+					double vfa = backConvert(0.0001), vfb = backConvert(1.0);
+					//mylog("convertIterate initial bounds a: vf 0.0001: " << vfa << ", b: vf 1.0: " << vfb);
+					if (vfa > 1.0 || vfb > 1.0) {
+						mylog("The particle size chosen is too small for this size-density relation! Cannot proceed.");
+						return 0;
+					}
+					mylog("Loop to find zeros (in function convertIterate)"
+						<< "\n\tvfa(0.0001) was " << vfa << " and vfb(1.0) was " << vfb)
+					double vf = 0;
+					if (abs((vfa-vfb)/vfa) < 0.000001) {
+						mylog("Since vfa ~== vfb, the volume fraction doesn't need a loop. This "
+							"happens when the transform already has all necessary info.");
+						vf = vfa;
+					}
+					else vf = zeros::findzero(0.0001, 1.0, [&](double guess) {
+						return guess - backConvert(guess); });
+					//mylog("convertIterate returned a volume fraction of " << vf);
+					// The proper volume fraction is now known. Now determine the effective density.
+					// Slightly repetitive, but I prefer it this way.
+					double solidIceDen = 0;
+					implementations::findDen(solidIceDen, "ice", temperature, temp_units);
+					mylog("The density of ice at " << temperature << " " << temp_units 
+						<< " is " << solidIceDen << " g/cm^3");
+					double effDen = solidIceDen * vf;
+					return effDen;
+				} else {
+					mylog("convertIterate called with a known volume fraction");
+					double solidIceDen = 0;
+					implementations::findDen(solidIceDen, "ice", temperature, temp_units);
+					mylog("The density of ice at " << temperature << " " << temp_units 
+						<< " is " << solidIceDen << " g/cm^3");
+					double effDen = solidIceDen * vf;
+					return effDen;
 				}
-				mylog("Loop to find zeros (in function convertIterate)"
-					<< "\n\tvfa(0.0001) was " << vfa << " and vfb(1.0) was " << vfb)
-				double vf = 0;
-				if (abs((vfa-vfb)/vfa) < 0.000001) {
-					mylog("Since vfa ~== vfb, the volume fraction doesn't need a loop. This "
-						"happens when the transform already has all necessary info.");
-					vf = vfa;
-				}
-				else vf = zeros::findzero(0.0001, 1.0, [&](double guess) {
-					return guess - backConvert(guess); });
-				//mylog("convertIterate returned a volume fraction of " << vf);
-				// The proper volume fraction is now known. Now determine the effective density.
-				// Slightly repetitive, but I prefer it this way.
-				double solidIceDen = 0;
-				implementations::findDen(solidIceDen, "ice", temperature, temp_units);
-				mylog("The density of ice at " << temperature << " " << temp_units 
-					<< " is " << solidIceDen << " g/cm^3");
-				double effDen = solidIceDen * vf;
-				return effDen;
 			};
 
 			double effden = 0;

@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 		std::cerr << "PDFs.size(): " << PDFs.size() << std::endl;
 		for (size_t ln = 0; ln < contentLines; ln++) {
 			size_t base = numLineCols * ln;
-			std::cout << "Line " << ln << ", base " << base << std::endl;
+			//std::cout << "Line " << ln << ", base " << base << std::endl;
 			// Aeff
 			double aeff_ice = Ryan_Debug::macros::m_atof<double>(
 				entries.at(base+cice-1).c_str());
@@ -184,26 +184,32 @@ int main(int argc, char *argv[])
 					double N0 = 2500. * pow(*rr,-0.94);
 					double Nd = N0 * exp(-1. * lambda * deff_water / 1.e4);
 					double pdf = Nd  * src;
-					std::cout << "at line " << ln << " and i " << i
-						<< " and nrr " << nrr << ", pIndex is "
-						<< pIndex(i,ln,nrr) << " (diam " << diams.at(ln)
-						<< " lam " << lambda
-						<< " N0 " << N0 << " Nd " << Nd
-						<< " src " << src << ")" << std::endl;
-					std::cout << "\tpdf is " << pdf;
+					//std::cout << "at line " << ln << " and i " << i
+					//	<< " and nrr " << nrr << ", pIndex is "
+					//	<< pIndex(i,ln,nrr) << " (diam " << diams.at(ln)
+					//	<< " lam " << lambda
+					//	<< " N0 " << N0 << " Nd " << Nd
+					//	<< " src " << src << ")" << std::endl;
+					//std::cout << "\tpdf is " << pdf;
 
 					PDFs.at(pIndex(i,ln,nrr)) = pdf;
 					if (ln > 0) {
 						// Just use the trapeziod rule.
 						double dw = deff_water - diams.at(ln-1);
 						double pdfprev = PDFs.at(pIndex(i,ln-1,nrr));
-						CDFs.at(pIndex(i,ln,nrr)) = CDFs.at(pIndex(i,ln-1,nrr))
-							+ ((pdf + pdfprev) * dw / 2.);
-						std::cout << "\tdw: " << dw << " prevPDF: " << pdfprev
-							<< " prevCDF " << CDFs.at(pIndex(i,ln-1,nrr))
-							<< " PCDF is " << CDFs.at(pIndex(i,ln,nrr));
+						double dP = ((pdf + pdfprev) * dw / 2.);
+						// Safety check
+						if (dP > 0)
+							CDFs.at(pIndex(i,ln,nrr)) = CDFs.at(pIndex(i,ln-1,nrr)) + dP;
+						else {
+							CDFs.at(pIndex(i,ln,nrr)) = CDFs.at(pIndex(i,ln-1,nrr));
+							std::cerr << "dp < 0 at ln " << ln << " nrr " << nrr << " i " << i << std::endl;
+						}
+						//std::cout << "\tdw: " << dw << " prevPDF: " << pdfprev
+						//	<< " prevCDF " << CDFs.at(pIndex(i,ln-1,nrr))
+						//	<< " PCDF is " << CDFs.at(pIndex(i,ln,nrr));
 					}
-					std::cout << std::endl;
+					//std::cout << std::endl;
 					nrr++;
 				}
 				++i;

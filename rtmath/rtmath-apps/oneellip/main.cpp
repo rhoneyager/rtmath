@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
 			" 12) Muramoto1995,"
 			" 13) FabrySzyrmer1999,"
 			" 14) Heymsfield2004,"
-			" 15) BrownFrancis1995Hogan2012.")
+			" 15) BrownFrancis1995Hogan2012,"
+			" 16) Constant lets you specify an exact volume fraction (see constant-vf-shape).")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
 
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -99,6 +100,9 @@ int main(int argc, char *argv[])
 			("volume-fractions,v", po::value<std::string>(), "Set the ice volume fractions. "
 			 "Used when: not using shapefiles AND vf-scaling is not one of the paper-based methods.")
 			("vf-is-den", "The -v parameter is not a volume fraction. It is a density in g/cm^3.")
+			("constant-vf-shape", po::value<double>()->default_value(0), "Use this option to "
+			 "force a constant volume fraction for use in DDA comparison runs. The regular "
+			 "volume-fractions parameter will not work in this case.")
 			("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
 			("solution-method", po::value<std::string>(), "Force only a specific algorithm to be used, such as "
 			 "Rayleigh or bhmie. No other pf generator will be used.")
@@ -157,6 +161,7 @@ int main(int argc, char *argv[])
 		if (vm.count("output-prefix"))
 			oprefix = vm["output-prefix"].as<string>();
 
+		double vfo = vm["constant-vf-shape"].as<double>(); // Used only in one place
 		double dSpacing = 0;
 		if (vm.count("dipole-spacing"))
 			dSpacing = vm["dipole-spacing"].as<double>();
@@ -589,7 +594,8 @@ int main(int argc, char *argv[])
 							_in_length_units = "um",
 							_ar = r.ar,
 							_temperature = temp,
-							_temp_units = "K"
+							_temp_units = "K",
+							_vfOverride = vfo
 							);
 						r.fv = dEff / dIce;
 						r.aeff = stats->aeff_dipoles_const * s->standardD;
