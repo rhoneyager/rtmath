@@ -265,7 +265,7 @@ namespace rtmath
 					implementations::findDen(solidIceDen, "ice", temperature, temp_units);
 					mylog("The density of ice at " << temperature << " " << temp_units 
 						<< " is " << solidIceDen << " g/cm^3");
-					double effDen = solidIceDen * vf;
+					double effDen = solidIceDen * vfOverride;
 					return effDen;
 				}
 			};
