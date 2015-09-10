@@ -82,7 +82,8 @@ int main(int argc, char *argv[])
 			" 13) FabrySzyrmer1999,"
 			" 14) Heymsfield2004,"
 			" 15) BrownFrancis1995Hogan2012,"
-			" 16) Constant lets you specify an exact volume fraction (see constant-vf-shape).")
+			" 16) Constant lets you specify an exact volume fraction (see constant-vf-shape),"
+			" 17) Voronoi_Offset takes the Voronoi vf and subtracts 0.1. It's a suggested correction in my paper.")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
 
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -308,6 +309,7 @@ int main(int argc, char *argv[])
 			GYRATION_SPHERE,
 			SOLID_SPHERE,
 			ELLIPSOID_MAX_HOLLY,
+			VORONOI_OFFSET,
 			OTHER
 		};
 		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
@@ -322,6 +324,7 @@ int main(int argc, char *argv[])
 		else if (vfScaling == "RMS_Sphere") vf = VFRAC_TYPE::RMS_SPHERE;
 		else if (vfScaling == "Gyration_Sphere") vf = VFRAC_TYPE::GYRATION_SPHERE;
 		else if (vfScaling == "Solid_Sphere") vf = VFRAC_TYPE::SOLID_SPHERE;
+		else if (vfScaling == "Voronoi_Offset") vf = VFRAC_TYPE::VORONOI_OFFSET;
 		else vf = VFRAC_TYPE::OTHER;
 		size_t int_voro_depth = vm["voronoi-depth"].as<size_t>();
 
@@ -343,7 +346,7 @@ int main(int argc, char *argv[])
 		else if (refractScaling == "Debye") rmeth = rtmath::refract::debyeDry;
 		else if (refractScaling == "Bruggeman") rmeth = rtmath::refract::bruggeman;
 		else if (!rescaleM) rmeth = fixedBinder;
-		else doHelp("Need to specify a proper refractive  scaling.");
+		else doHelp("Need to specify a proper refractive scaling.");
 
 		string armeth = vm["ar-method"].as<string>(); // Used much further below
 
@@ -548,6 +551,9 @@ int main(int argc, char *argv[])
 					} else if ((vf == VFRAC_TYPE::INTERNAL_VORONOI) && (int_voro_depth == 2)) {
 						v = &(stats->SVoronoi_internal_2);
 						r.fvMeth = "Internal Voronoi Depth 2";
+					} else if ((vf == VFRAC_TYPE::VORONOI_OFFSET) && (int_voro_depth == 2)) {
+						v = &(stats->SVoronoi_internal_2);
+						r.fvMeth = "Internal Voronoi Offset Depth 2";
 					} else if (vf == VFRAC_TYPE::OTHER) {
 						r.fvMeth = vfScaling;
 					}
@@ -569,6 +575,7 @@ int main(int argc, char *argv[])
 						//r.aeff = pow(3.*v->V*v->f/(4.*pi),1./3.) * s->standardD;
 						r.aeff = stats->aeff_dipoles_const * s->standardD;
 						r.fv = v->f;
+						if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.1;
 					 } else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
 						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 						vd = s->generateVoronoi(
@@ -583,6 +590,7 @@ int main(int argc, char *argv[])
 						r.fvMeth = "Internal Voronoi Depth ";
 						r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
 						r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
+						if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.1;
 					} else if (vf == VFRAC_TYPE::OTHER ) {
 						using namespace rtmath::density;
 						double dIce = ice1h( _temperature = temp, _temp_units = "K" );

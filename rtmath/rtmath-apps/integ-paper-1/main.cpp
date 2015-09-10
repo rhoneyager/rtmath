@@ -184,6 +184,8 @@ int main(int argc, char *argv[])
 					double N0 = 2500. * pow(*rr,-0.94);
 					double Nd = N0 * exp(-1. * lambda * deff_water / 1.e4);
 					double pdf = Nd  * src;
+					if (pdf < 0) std::cerr << "pdf < 0! lam " << lambda << " n0 " << N0
+						<< " nd " << Nd << " dwat " << deff_water << " src " << src << " pdf " << pdf << std::endl;
 					//std::cout << "at line " << ln << " and i " << i
 					//	<< " and nrr " << nrr << ", pIndex is "
 					//	<< pIndex(i,ln,nrr) << " (diam " << diams.at(ln)
@@ -196,14 +198,25 @@ int main(int argc, char *argv[])
 					if (ln > 0) {
 						// Just use the trapeziod rule.
 						double dw = deff_water - diams.at(ln-1);
+						if (dw < 0) {
+							std::cerr << "Flake results are not in order!!!!\n"
+								<< "ln " << ln << " nrr " << nrr << " i " << i << std::endl;
+						}
 						double pdfprev = PDFs.at(pIndex(i,ln-1,nrr));
+						if (pdfprev < 0) std::cerr << "pdfprev < 0. pdfprev is " << pdfprev << " at i " << i
+							<< " ln " << ln - 1 << " nrr " << nrr << " for lambda " << lambda 
+							<< " n0 " << N0 << " nd " << Nd << " pdf " << pdf << " dwat " << deff_water
+							<< " src " << src << " rr " << *rr << " col " << *it << std::endl;
 						double dP = ((pdf + pdfprev) * dw / 2.);
 						// Safety check
-						if (dP > 0)
+						if (dP >= 0)
 							CDFs.at(pIndex(i,ln,nrr)) = CDFs.at(pIndex(i,ln-1,nrr)) + dP;
 						else {
 							CDFs.at(pIndex(i,ln,nrr)) = CDFs.at(pIndex(i,ln-1,nrr));
 							std::cerr << "dp < 0 at ln " << ln << " nrr " << nrr << " i " << i << std::endl;
+							std::cerr << "dp " << dP << " dw " << dw << " pdf " << pdf << " pdfprev " << pdfprev
+								<< " lam " << lambda << " rr " << *rr << " N0 " << N0 << " Nd " << Nd
+								<< " dwat " << deff_water << " src " << src << " col " << *it << std::endl;
 						}
 						//std::cout << "\tdw: " << dw << " prevPDF: " << pdfprev
 						//	<< " prevCDF " << CDFs.at(pIndex(i,ln-1,nrr))
