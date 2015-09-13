@@ -590,7 +590,7 @@ int main(int argc, char *argv[])
 						r.fvMeth = "Internal Voronoi Depth ";
 						r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
 						r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-						if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.1;
+						if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.15;
 					} else if (vf == VFRAC_TYPE::OTHER ) {
 						using namespace rtmath::density;
 						double dIce = ice1h( _temperature = temp, _temp_units = "K" );
