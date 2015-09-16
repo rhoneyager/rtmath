@@ -590,7 +590,7 @@ int main(int argc, char *argv[])
 						r.fvMeth = "Internal Voronoi Depth ";
 						r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
 						r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-						if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.15;
+						//if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.15;
 					} else if (vf == VFRAC_TYPE::OTHER ) {
 						using namespace rtmath::density;
 						double dIce = ice1h( _temperature = temp, _temp_units = "K" );
@@ -616,6 +616,16 @@ int main(int argc, char *argv[])
 					r.refHash = s->hash().string();
 					r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
 					r.maxDiamFull = stats->max_distance * s->standardD;
+					if (vf == VFRAC_TYPE::VORONOI_OFFSET) {
+						// maxDiamFull is in um. Want value to be the same at small diameters
+						// and larger at large diameters. Max size is 11 mm. Min size ~1 mm.
+						// At max size, want to reduce by ___.
+						// 0.35 is great at 94 GHz AR 0.9 integrated bk.
+						// Trying 0.33333.
+						std::cerr << "\t iv2 " << r.fv;
+						r.fv *= ( 1. - (0.33333*(r.maxDiamFull / 10000)));
+						std::cerr << "\t vo2 " << r.fv << std::endl;
+					}
 					mylog("Adding shape run " << r.refHash <<
 						"\n\taeff " << r.aeff << ", aeff_dipoles_const " << stats->aeff_dipoles_const <<
 						"\n\tMax diam: " << r.maxDiamFull <<
