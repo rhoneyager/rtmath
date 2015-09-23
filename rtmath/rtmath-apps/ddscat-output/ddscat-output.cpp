@@ -78,6 +78,9 @@ int main(int argc, char** argv)
 
 			("hash-output", "Store flake data in hash directory")
 			("skip-missing-shapes", "Skips ddOutput results with a missing shape file")
+			("export-beta", po::value<std::string>(), "Select beta rotations")
+			("export-theta", po::value<std::string>(), "Select theta rotations")
+			("export-phi", po::value<std::string>(), "Select phi rotations")
 			;
 
 		desc.add(cmdline).add(config);
@@ -161,6 +164,19 @@ int main(int argc, char** argv)
 		if (boost::filesystem::exists(boost::filesystem::path(sOutputAux))) 
 			optsaux->iotype(Ryan_Debug::registry::IOhandler::IOtype::READWRITE);
 
+		std::string beta, theta, phi;
+		if (vm.count("export-beta")) beta = vm["export-beta"].as<std::string>();
+		if (vm.count("export-theta")) theta = vm["export-theta"].as<std::string>();
+		if (vm.count("export-phi")) phi = vm["export-phi"].as<std::string>();
+
+		if (beta.size() && theta.size() && phi.size()) {
+			opts->setVal<std::string>("beta", beta);
+			opts->setVal<std::string>("theta", theta);
+			opts->setVal<std::string>("phi", phi);
+			optsaux->setVal<std::string>("beta", beta);
+			optsaux->setVal<std::string>("theta", theta);
+			optsaux->setVal<std::string>("phi", phi);
+		}
 		std::shared_ptr<Ryan_Debug::registry::IOhandler> writer, writeraux;
 		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
 		/*
@@ -371,7 +387,12 @@ int main(int argc, char** argv)
 						return;
 					}
 
-					w = run->writeMulti(w, oopts);
+					try {
+						w = run->writeMulti(w, oopts);
+					} catch (Ryan_Debug::error::xArrayOutOfBounds &err) {
+						err << Ryan_Debug::error::file_name(sOutput);
+						std::cerr << err.what() << std::endl;
+					}
 
 
 					//ddOut->writeFile(sOutput);

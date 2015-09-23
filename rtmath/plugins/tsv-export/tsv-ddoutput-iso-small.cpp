@@ -17,6 +17,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <Ryan_Debug/splitSet.h>
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/ddavg.h"
@@ -82,7 +83,7 @@ namespace rtmath {
 					(*(file.get())) << "Shape Hash\tDescription\tDDSCAT Version Tag\t"
 						"Frequency (GHz)\tWavelength (um)\tSize Parameter\tDipole Spacing (um)\t"
 						"Temperature (K)\tAeff (um)\t"
-						"Number of Dipoles\tBetas\tThetas\tPhis\t"
+						"Number of Dipoles\tisIso\tBetas\tThetas\tPhis\t"
 						"Qsca_iso\tQbk_iso\tQbk_normalized\tQabs_iso\tQext_iso\tG_iso\t"
 						<< std::endl;
 					;
@@ -136,41 +137,86 @@ namespace rtmath {
 				averager.doAvgAll(ddOut.get(), ddOutWithAvg, outwts);
 
 
-				boost::shared_ptr<const ddOriData> fori = ddOriData::generate(*ddOutWithAvg);
-
-				auto data = fori->selectData();
+				bool isAvg = true;
+				std::string sbeta, stheta, sphi;
+				std::set<double> betas, thetas, phis;
+				if (opts->hasVal("beta")) {
+					isAvg = false;
+					sbeta = opts->getVal<std::string>("beta");
+				}
+				if (opts->hasVal("theta")) stheta = opts->getVal<std::string>("theta");
+				if (opts->hasVal("phi")) sphi = opts->getVal<std::string>("phi");
+				Ryan_Debug::splitSet::splitSet(sbeta, betas);
+				Ryan_Debug::splitSet::splitSet(stheta, thetas);
+				Ryan_Debug::splitSet::splitSet(sphi, phis);
+				if (!betas.size()) betas.insert(-1);
+				if (!thetas.size()) thetas.insert(-1);
+				if (!phis.size()) phis.insert(-1);
 
 				if (!sDescrip.size()) sDescrip = ddOut->description;
-				const double pi = boost::math::constants::pi<double>();
-				double lambda = units::conv_spec("GHz", "um").convert(ddOut->freq);
-				double sizep = 2. * pi * ddOut->aeff / lambda;
-				double Vice_um = pow(ddOut->aeff, 3.) * 4. * pi / 3;
-				double aeff_di = ddOut->aeff / data(ddOutput::stat_entries::D);
-				double Vice_di = pow(aeff_di, 3.) * 4. * pi / 3;
-				double SAice_um = 4. * pi * pow(ddOut->aeff, 2.);
-				double SAice_di = 4. * pi * pow(aeff_di, 2.);
-				double SA_V_ice_di = SAice_di / Vice_di;
-				double SA_V_ice_um = SAice_um / Vice_um;
 
+				for (const auto &beta : betas) {
+					for (const auto &theta : thetas) {
+						for (const auto &phi : phis) {
+							boost::shared_ptr<const ddOriData> fori;
+							if (isAvg) {
+								fori = ddOriData::generate(*ddOutWithAvg);
+							} else {
+								size_t row = 0;
+								bool hasRow = false;
+								hasRow = ddOut->getRow(beta, theta, phi, row);
+								if (!hasRow) {
+									fori = ddOriData::generate(*ddOutWithAvg, row);
+									auto data = fori->selectData();
+									std::ostringstream emsg;
+									emsg << "Cannot find rotation in ddOri that matches "
+										"beta " << beta << " theta " << theta << " phi " << phi
+										<< " for hash " << ddOut->shapeHash.lower
+										<< ". Closest match is on row " << row
+										<< ", which has beta " << data(0,rtmath::ddscat::ddOutput::stat_entries::BETA)
+										<< " theta " << data(0,rtmath::ddscat::ddOutput::stat_entries::THETA)
+										<< " phi " << data(0,rtmath::ddscat::ddOutput::stat_entries::PHI);
+									RDthrow(Ryan_Debug::error::xArrayOutOfBounds())
+										<< Ryan_Debug::error::otherErrorText(emsg.str());
+								}
+								fori = ddOriData::generate(*ddOutWithAvg, row);
+							}
 
-				(*(h->file.get())) << ddOut->shapeHash.lower << "\t" << sDescrip << "\t"
-					<< ddOut->ddvertag << "\t"
-					<< ddOut->freq << "\t" << lambda << "\t" 
-					<< sizep << "\t"
-					<< data(ddOutput::stat_entries::D) << "\t"
-					<< ddOut->temp << "\t"
-					<< ddOut->aeff << "\t" 
-					<< ddOut->s.num_dipoles << "\t"
-					<< rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
-					<< data(ddOutput::stat_entries::QSCAM) << "\t"
-					<< data(ddOutput::stat_entries::QBKM) << "\t"
-					<< data(ddOutput::stat_entries::QBKM) * 4. * pi << "\t"
-					<< data(ddOutput::stat_entries::QABSM) << "\t"
-					<< data(ddOutput::stat_entries::QEXTM) << "\t"
-					<< data(ddOutput::stat_entries::G1M);
-				(*(h->file.get())) << std::endl;
-				;
+							auto data = fori->selectData();
+							const double pi = boost::math::constants::pi<double>();
+							double lambda = units::conv_spec("GHz", "um").convert(ddOut->freq);
+							double sizep = 2. * pi * ddOut->aeff / lambda;
+							double Vice_um = pow(ddOut->aeff, 3.) * 4. * pi / 3;
+							double aeff_di = ddOut->aeff / data(ddOutput::stat_entries::D);
+							double Vice_di = pow(aeff_di, 3.) * 4. * pi / 3;
+							double SAice_um = 4. * pi * pow(ddOut->aeff, 2.);
+							double SAice_di = 4. * pi * pow(aeff_di, 2.);
+							double SA_V_ice_di = SAice_di / Vice_di;
+							double SA_V_ice_um = SAice_um / Vice_um;
 
+							(*(h->file.get())) << ddOut->shapeHash.lower << "\t" << sDescrip << "\t"
+								<< ddOut->ddvertag << "\t"
+								<< ddOut->freq << "\t" << lambda << "\t" 
+								<< sizep << "\t"
+								<< data(ddOutput::stat_entries::D) << "\t"
+								<< ddOut->temp << "\t"
+								<< ddOut->aeff << "\t" 
+								<< ddOut->s.num_dipoles << "\t";
+							if (beta >= 0) (*(h->file.get())) 
+								<< "0" << "\t" << beta << "\t" << theta << "\t" << phi << "\t";
+							else (*(h->file.get())) 
+								<< "1" << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t";
+							(*(h->file.get())) << data(ddOutput::stat_entries::QSCAM) << "\t"
+								<< data(ddOutput::stat_entries::QBKM) << "\t"
+								<< data(ddOutput::stat_entries::QBKM) * 4. * pi << "\t"
+								<< data(ddOutput::stat_entries::QABSM) << "\t"
+								<< data(ddOutput::stat_entries::QEXTM) << "\t"
+								<< data(ddOutput::stat_entries::G1M);
+							(*(h->file.get())) << std::endl;
+							;
+						}
+					}
+				}
 				return h; // Pass back the handle
 			}
 

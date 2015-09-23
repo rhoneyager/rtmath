@@ -183,6 +183,8 @@ namespace rtmath {
 					readAttr(tbl, "phi_max", r->avgdata.phi_max);
 					readAttr(tbl, "phi_n", r->avgdata.phi_n);
 				}
+				r->numOriData = r->oridata_d.rows();
+				//r->numTotAngles = r->fmldata->rows();
 				if (readSHP) {
 					// Try these, in order:
 					if (rtmath::ddscat::shapefile::shapefile::isHashStored(r->shapeHash)) {

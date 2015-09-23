@@ -30,13 +30,12 @@ namespace rtmath {
 				complex<double> bn, bnp;
 				complex<double> suma, sumb;
 				abn.calc(1, an, bn);
-				// TODO: use proper bounding formula
+				// Wiscombe 1979
 				double nc = 0;
 				if (sizep<8) nc = sizep + 4.*pow(sizep, 1. / 3.) + 1.;
-				else 
+				else
 					nc = sizep + 4.05*pow(sizep, 1. / 3.) + 2.; // Candidate bounding formula
 				for (unsigned int n = 1; n < (unsigned int)(nc + 1); n++)
-					//for (unsigned int n=1; n < 400; n++)
 				{
 					// Set previous values for iteration
 					Qep = Qe;

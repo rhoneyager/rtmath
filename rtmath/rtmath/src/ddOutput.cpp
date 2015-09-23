@@ -209,6 +209,7 @@ namespace rtmath {
 				<< Ryan_Debug::error::hashType("shapefile");
 			}
 			if (!dostats) return;
+			// genStats will load the hash first, if it can.
 			stats = stats::shapeFileStats::genStats(shape);
 			//stats = stats::shapeFileStats::loadHash(this->shapeHash);
 			if (!stats) RDthrow(Ryan_Debug::error::xMissingHash())
@@ -248,6 +249,8 @@ namespace rtmath {
 		**/
 		void ddOutput::resize(size_t numOris, size_t numTotAngles)
 		{
+			//std::cerr << "Resizing for hash " << ddOut->shapeHash.lower
+			//	<< " numOris " << numOris << std::endl;
 			oridata_d.conservativeResize(numOris, Eigen::NoChange);
 			avgdata.avg.conservativeResize(1, Eigen::NoChange);
 			//oridata_i.conservativeResize(numOris, Eigen::NoChange);
@@ -258,6 +261,34 @@ namespace rtmath {
 				<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> >
 				(new Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS>());
 			if (numTotAngles) resizeFML(numTotAngles);
+		}
+
+		/// \returns if row is found.
+		bool ddOutput::getRow(double beta, double theta, double phi, size_t &row) const {
+			auto inTol = [](double b, double br, double t, double tr,
+					double p, double pr, double &res) -> bool {
+				using namespace std;
+				res = pow(b-br,2.) + pow(t-tr,2.) + pow(p-pr,2.);
+				res = pow(res,0.5);
+				if (res < 0.0001) return true;
+				return false;
+			};
+			double resprev = 9999999, res = 9999999;
+			for (size_t i=0; i < (size_t) oridata_d.rows(); ++i) {
+				auto o = oridata_d.block(i,stat_entries::BETA,1,3);
+				bool r = inTol(o(0,0), beta, o(0,1), theta, o(0,2), phi, res);
+				if (res < resprev) {
+					resprev = res;
+					row = i;
+				} else {
+					//std::cerr << "Eval b " << o(0,0) << " t " << o(0,1) << " p " << o(0,2)
+					//	<< " res " << res << " row " << i << std::endl;
+				}
+				if (r) return true;
+			}
+			std::cerr << "Eval failed. Hash " << shapeHash.lower
+				<< " has " << oridata_d.rows() << " available orientations." << std::endl;
+			return false;
 		}
 
 		void ddOutput::resizeFML(size_t numTotAngles)

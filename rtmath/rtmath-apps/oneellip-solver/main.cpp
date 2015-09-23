@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	using namespace rtmath::units::keywords;
 	using rtmath::units::convertLength;
 	try {
-		cerr << "rtmath-oneellip" << endl;
+		cerr << "rtmath-oneellip-solver" << endl;
 		const double pi = boost::math::constants::pi<double>();
 		// Do processing of argv
 		namespace po = boost::program_options;
@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
 
 		runmatch.add_options()
 			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
-			("input-shape,i", po::value< vector<string> >(), "Input shape files")
+			("input-files,i", po::value< vector<string> >(), "Input files (shapes, stats, "
+			 "Voronoi, runs). Every valid run fill be compared against (see filtering).")
 			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
 			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
 			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
@@ -66,6 +67,8 @@ int main(int argc, char *argv[])
 			("match-dipole-numbers", po::value<vector<size_t> >()->multitoken(), "Match typical dipole numbers")
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			("match-parent-flake", "Select the parent flakes")
+			("match-frequency", po::value<vector<string> >()->multitoken(), "Match the frequency "
+			 "range for comparisons.")
 
 			("vf-scaling", po::value<string>()->default_value("Circumscribing_Sphere"),
 			"Select the method used in determining the volume fraction."
@@ -85,8 +88,6 @@ int main(int argc, char *argv[])
 			" 16) Constant lets you specify an exact volume fraction (see constant-vf-shape),"
 			" 17) Voronoi_Offset takes the Voronoi vf and subtracts 0.1. It's a suggested correction in my paper.")
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
-			("voronoi-offset-factor", po::value<double>()->default_value(3), "Sets the factor used in the Voronoi offset "
-			 "method")
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
 			"Max_Ellipsoids: Force aspect ratios to be ellipsoids, following the max AR calculated in stats code. "
 			"Spheres: Force aspect ratios to be spheres, instead of stats-determined spheroids. "
@@ -97,30 +98,14 @@ int main(int argc, char *argv[])
 			"(Sihvola, Debye, Maxwell_Garnett_Spheres, Maxwell_Garnett_Ellipsoids, Bruggeman). "
 			"Only matters if volume fractions are given. Then, default is Maxwell_Garnett_Ellipsoids.")
 			("temps,T", po::value<std::string>()->default_value("263"), "Specify temperatures in K")
-			("mr", po::value<double>(), "Override real refractive index value")
-			("mi", po::value<double>(), "Override imaginary refractive index value")
-			("volume-fractions,v", po::value<std::string>(), "Set the ice volume fractions. "
-			 "Used when: not using shapefiles AND vf-scaling is not one of the paper-based methods.")
-//			("vf-is-den", "The -v parameter is not a volume fraction. It is a density in g/cm^3.")
-			("constant-vf-shape", po::value<double>()->default_value(0), "Use this option to "
-			 "force a constant volume fraction for use in DDA comparison runs. The regular "
-			 "volume-fractions parameter will not work in this case.")
 			("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
 			("solution-method", po::value<std::string>(), "Force only a specific algorithm to be used, such as "
 			 "Rayleigh or bhmie. No other pf generator will be used.")
 			;
 		basic.add_options()
-			("aspect-ratios,s", po::value<std::string>()->default_value("1"), "Specify aspect ratio for ellipsoids.")
-			("sizes,a", po::value<std::string>(), "Specify the particle sizes in um")
-			("size-type", po::value<std::string>()->default_value("Effective_Radius_Ice"), "How is the size described? "
-			 "Effective_Radius_Ice, Effective_Radius_Full, Max_Diameter_Full, etc. are valid options.")
 			("freqs,f", po::value<std::string>(), "Specify frequencies in GHz. Needed for dielectrics.")
 			;
 		scale.add_options()
-			("scale-aeff", po::value<bool>()->default_value(true), "Scale effective radius based on volume fraction")
-			("scale-m", po::value<bool>()->default_value(true), "Scale refractive index based on volume fraction")
-			//("scale-v", "Scale for an equivalent volume ellipsoid")
-			//("scale-sa", "Scale for an equivalent surface area ellipsoid")
 			;
 
 		cmdline.add_options()
@@ -177,16 +162,8 @@ int main(int argc, char *argv[])
 				cerr << "\t" << *it << "\n";
 		};
 		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
-		/*
-		("from-db", "Perform search on database and select files matching criteria.")
-		("match-hash", po::value<vector<string> >(), "Match lower hashes")
-		("match-flake-type", po::value<vector<string> >(), "Match flake types")
-		("match-dipole-spacing", po::value<vector<float> >(), "Match typical dipole spacings")
-		("match-parent-flake-hash", po::value<vector<string> >(), "Match flakes having a given parent hash")
-		("match-parent-flake", "Select the parent flakes")
-		*/
-		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
-		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
+		vector<string> matchHashes, matchFlakeTypes, matchParentHashes, matchFreq;
+		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing, iFreq;
 		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
 		//bool matchParentFlakes;
 
@@ -195,10 +172,13 @@ int main(int argc, char *argv[])
 		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
 		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
 		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
+		if (vm.count("match-frequency")) iFreq.append(vm["match-frequency"].as<vector<string>>());
 
 		//if (vm.count("match-parent-flake")) matchParentFlakes = true;
 
-		using namespace rtmath::ddscat::shapefile;
+		// Alter to adjust query to work on actual runs
+		// TODO: implement in ddOutput
+		using namespace rtmath::ddscat;
 		auto collection = shapefile::makeCollection();
 		auto query = shapefile::makeQuery();
 		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
@@ -215,7 +195,7 @@ int main(int argc, char *argv[])
 		using namespace boost::filesystem;
 		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
 		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
-		// Load in all local shapefiles, then perform the matching query
+		// Load in all runs
 		vector<string> vinputs;
 		for (auto it = inputs.begin(); it != inputs.end(); it++)
 		{
@@ -223,33 +203,19 @@ int main(int argc, char *argv[])
 			path pi(*it);
 			if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
 				<< Ryan_Debug::error::file_name(*it);
-			if (is_directory(pi))
-			{
-				path pt = pi / "target.out";
-				path ps = pi / "shape.dat";
-				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> smain;
-
-				if (exists(ps))
-				{
-					cerr << " found " << ps << endl;
-					smain = rtmath::ddscat::shapefile::shapefile::generate(ps.string());
-					collection->insert(smain);
-				}
+			auto iopts = Ryan_Debug::registry::IO_options::generate();
+			iopts->filename(*it);
+			try {
+				vector<boost::shared_ptr<rtmath::ddscat::ddOutput> > ddo;
+				// TODO: custom read only avg
+				Ryan_Debug::io::readObjs(ddo, *it);
+				for (auto &s : ddo)
+					collection->insert(s);
 			}
-			else {
-				auto iopts = Ryan_Debug::registry::IO_options::generate();
-				iopts->filename(*it);
-				try {
-					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
-					Ryan_Debug::io::readObjs(shapes, *it);
-					for (auto &s : shapes)
-						collection->insert(s);
-				}
-				catch (std::exception &e)
-				{
-					cerr << e.what() << std::endl;
-					continue;
-				}
+			catch (std::exception &e)
+			{
+				cerr << e.what() << std::endl;
+				continue;
 			}
 		}
 
@@ -265,6 +231,7 @@ int main(int argc, char *argv[])
 			std::string fvMeth;
 			std::complex<double> m;
 			std::string refHash;
+			double DDAcbk, DDAcsca, DDAg;
 		};
 		vector<run> runs;
 		runs.reserve(50000);
@@ -278,17 +245,6 @@ int main(int argc, char *argv[])
 		bool overrideM = false;
 		complex<double> ovM;
 		double nu = vm["nu"].as<double>();
-		if (vm.count("mr") || vm.count("mi"))
-		{
-			overrideM = true;
-			if (!vm.count("mr") || !vm.count("mi"))
-				doHelp("When overriding refractive index, need to specify "
-				"both real and imaginary components.");
-			double r = vm["mr"].as<double>();
-			double i = vm["mi"].as<double>();
-			ovM = complex<double>(r, i);
-			nu = -1.0;
-		}
 		auto sihvolaBinder = [&](std::complex<double> Ma, std::complex<double> Mb, double fa, std::complex<double> &Mres)
 		{
 			rtmath::refract::sihvola(Ma, Mb, fa, nu, Mres);
@@ -351,171 +307,19 @@ int main(int argc, char *argv[])
 
 		string armeth = vm["ar-method"].as<string>(); // Used much further below
 
-
-		auto process_commandline = [&]()
-		{
-			// If any of these are set, ensure that the temperature and frequency are also set
-			mylog( "Processing command-line runs");
-			// Freqs and temps are in main's scope
-			string sizetype = vm["size-type"].as<string>();
-			set<double> aeffs, aspects, vfracs; // , alphas, betas;
-			if (vm.count("sizes"))
-				Ryan_Debug::splitSet::splitSet(vm["sizes"].as<string>(), aeffs);
-			if (vm.count("aspect-ratios"))
-				Ryan_Debug::splitSet::splitSet(vm["aspect-ratios"].as<string>(), aspects);
-			if (vm.count("volume-fractions"))
-				Ryan_Debug::splitSet::splitSet(vm["volume-fractions"].as<string>(), vfracs);
-
-			// To make life easier, I no longer have to explicitly specify volume
-			// fractions. If one of the supported scaling methods is selected (one
-			// that is not exact shape-dependent), then the volume fractions can
-			// be automatically determined.
-			if (!freqs.size()) doHelp("Need to specify frequencies.");
-			if (!temps.size() && !overrideM) doHelp("Need to specify temperatures.");
-
-			if (freqs.size() && (aeffs.size() ) && aspects.size())
-			{
-				if (temps.size() || overrideM)
-				{
-					for (const auto &freq : freqs)
-						for (const auto &aspect : aspects) {
-							auto doAeff = [&](double aeff, double vfrac, double temp)
-							{
-								mylog("Adding for aeff " << aeff << " vf " << vfrac << " temp " << temp);
-								run r;
-								r.aeff = aeff;
-								r.ar = aspect;
-								r.freq = freq;
-								r.fv = vfrac;
-								r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
-								r.m = ovM;
-								r.temp = temp;
-								if (vf == VFRAC_TYPE::OTHER) {
-									r.fvMeth = vfScaling;
-								}
-								if (overrideM)
-									r.m = ovM;
-								else
-									rtmath::refract::mIce(freq, temp, r.m);
-								r.maxDiamFull = rtmath::units::convertLength(
-									_in_length_value = aeff,
-									_in_length_type = "Effective_Radius",
-									_out_volume_fraction = vfrac,
-									_ar = aspect,
-									_out_length_type = "Max_Diameter");
-								double mindim = convertLength(
-									_in_length_value = aeff,
-									_in_length_type = "Effective_Radius",
-									_out_volume_fraction = vfrac,
-									_ar = aspect,
-									_out_length_type = "Min_Diameter"
-									);
-								mylog("\n\taeff " << aeff
-									<< "\n\tmax dim " << r.maxDiamFull
-									<< "\n\tmin dim " << mindim
-									<< "\n\tvf " << vfrac);
-								std::cerr << "aeff " << aeff
-									<< " max dim " << r.maxDiamFull  << " min dim " << mindim
-									<< " vf " << vfrac << std::endl;
-								runs.push_back(std::move(r));
-							};
-							std::vector<std::tuple<double, double, double> > aeff_vf_rad;
-							// If aspect ratios are specified, then a custom run is indicated.
-							if (!vfracs.size() && vf != VFRAC_TYPE::OTHER)
-								doHelp("Need to specify how volume fractions are determined.");
-							// Density is temperature-dependent.
-							if (!vfracs.size() && vf == VFRAC_TYPE::OTHER)
-							{
-								if (!temps.size()) doHelp("When using a predetermined density "
-									"formula, temperature should be specified.");
-								for (const auto &temp : temps) {
-								// Populate the volume fractions being calculated
-									for (const auto &aeff1 : aeffs) {
-										using namespace rtmath::density;
-										double dIce = ice1h( _temperature = temp, _temp_units = "K" );
-										double dEff = 0;
-										dEff = effDen(
-											_provider = vfScaling,
-											_in_length_value = aeff1,
-											_in_length_type = sizetype, //"Effective_Radius_Ice",
-											_in_length_units = "um",
-											_ar = aspect,
-											_temperature = temp,
-											_temp_units = "K"
-											);
-										double vf = dEff / dIce;
-										double aeff = convertLength(
-											_in_length_value = aeff1,
-											_in_length_type = sizetype,
-											_ar = aspect,
-											_in_volume_fraction = vf,
-											_out_length_type = "Effective_Radius"
-											);
-										mylog("auto vf"
-											<< "\n\t_in_length_value " << aeff1
-											<< "\n\t_in_length_type " << sizetype
-											<< "\n\t_ar " << aspect
-											<< "\n\t_out_length_type Effective_Radius"
-											<< "\n\taeff " << aeff
-											<< "\n\t_in_volume_fraction " << vf
-											<< "\n\tvfScaling " << vfScaling
-											<< "\n\ttemp " << temp << " K"
-											<< "\n\teffDen " << dEff
-											);
-										aeff_vf_rad.push_back(std::tuple<double, double, double>
-											(aeff, vf, temp));
-									}
-								}
-							} else {
-								if (!temps.size() && overrideM) temps.insert(-1);
-								for (const auto &temp : temps)
-									for (const auto &vf : vfracs) {
-										for (const auto &aeff1 : aeffs) {
-											using namespace rtmath::density;
-											double dIce = ice1h( _temperature = temp, _temp_units = "K" );
-											double vvf = vf;
-											//if (vm.count("vf-is-den"))
-											//	vvf /= dIce; // TODO: Not yet working.
-											double aeff = convertLength(
-												_in_length_value = aeff1,
-												_in_length_type = sizetype,
-												_ar = aspect,
-												_in_volume_fraction = vvf,
-												_out_length_type = "Effective_Radius"
-												);
-											mylog("manual vf"
-												<< "\n\t_in_length_value " << aeff1
-												<< "\n\t_in_length_type " << sizetype
-												<< "\n\t_ar " << aspect
-												<< "\n\t_in_volume_fraction " << vvf
-												<< "\n\t_out_length_type Effective_Radius"
-												<< "\n\taeff " << aeff);
-											//std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
-											aeff_vf_rad.push_back(std::tuple<double, double, double>
-												(aeff, vvf, temp));
-										}
-								}
-							}
-							for (const auto &t : aeff_vf_rad)
-								doAeff(std::get<0>(t), std::get<1>(t), std::get<2>(t));
-						}
-				}
-				else doHelp("Need to specify temperatures or a refractive index");
-			}
-		};
-
-		process_commandline();
-
-
-
-		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s)
+		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::ddOutput> s)
 		{
 			try {
-				mylog("Processing shape " << s->hash().lower);
+				// TODO: switch shape to ddOutput context. Need to also get stats.
+				mylog("Processing run for shape " << s->hash().lower);
 				cerr << "  Shape " << s->hash().lower << endl;
-				s->loadHashLocal(); // Load the shape fully, if it was imported from a database
-				auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
-				if (dSpacing && !s->standardD) s->standardD = (float)dSpacing;
+				// loadShape will consult the loaded hash tree if necessary.
+				s->loadShape(true);
+				// No need to load the whole shape locally, unless stats need to be
+				// calculated or a non-standard Voronoi diagram.
+				//s->loadHashLocal(); // Load the shape fully, if it was imported from a database
+				//auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
+				if (dSpacing && !s->shape->standardD) s->shape->standardD = (float)dSpacing;
 
 				if (overrideM) { temps.clear(); temps.insert(-1); } // Use a dummy temperatre value so that the loop works.
 				for (const auto &freq : freqs)

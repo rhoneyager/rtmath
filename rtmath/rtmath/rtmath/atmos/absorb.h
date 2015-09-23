@@ -61,12 +61,6 @@ namespace rtmath {
 		private:
 			void _init();
 		public:
-			/// _wvtofreq converts wavenumbers (cm^-1) into frequency (GHz).
-			/// \deprecated Superseded by conv_spec
-			static double _wvtofreq(double wvnum);
-			/// _freqtowv converts frequency (GHz) into wavenumbers (cm^-1)
-			/// \deprecated Superseded by conv_spec
-			static double _freqtowv(double f);
 			/// Function converting relative humidity (%) to density (in g/m^3)
 			static double _Vden(double T, double RH);
 			/// Function converting density (g/m^3) to relative humidity (%)

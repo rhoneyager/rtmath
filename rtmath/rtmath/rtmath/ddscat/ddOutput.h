@@ -314,7 +314,7 @@ namespace rtmath {
 				*/
 			} avgdata;
 
-			/// Number of stored orientations + averages
+			/// Number of stored orientations
 			size_t numOriData;
 
 			/// Encapsulating enum in namespace, as an enum class is too restrictive
@@ -335,7 +335,9 @@ namespace rtmath {
 			};
 			/// Table containing fml data. Delayed allocation because the size resides within a file being read.
 			boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, fmlColDefs::NUM_FMLCOLDEFS> > fmldata;
-			
+
+			/// Find row matching the specified orientation.
+			bool getRow(double beta, double theta, double phi, size_t &row) const;
 
 			/// Weights for the sca and fml files in the average.
 			/// Sum of all of these should equal unity.
