@@ -7,12 +7,22 @@ Additionally, this library provides many ancillary routines for fast matrix mani
 DEPENDENCIES
 ------------
 rtmath depends on:
-- Boost (version >= 1.46)
-- CERN ROOT (recent version)
-- C++11 compiler (gcc >= 4.4, etc.)
-- cmake (>= 1.6.2)
+- Boost (version >= 1.53)
+- C++11 compiler (gcc >= 4.7, etc.)
+- cmake (>= 1.8.2)
 - tcsh
 - postgresql
+- HDF5
+- netCDF
+- LLNL silo
+- ceres-solver
+- ImageMagick
+- voro++
+- Ryan_Tmatrix
+- Ryan_Tmatrix_iso
+- bhmie (included)
+- VTK
+- Ryan_Debug
 
 Not all systems provide these dependencies. For CentOS 5.7, for example, everything but cmake must be compiled from scratch. Recent versions of Debian and Ubuntu no longer provide Boost in their repositories, so this must be compiled manually, along with all respective dependencies.
 

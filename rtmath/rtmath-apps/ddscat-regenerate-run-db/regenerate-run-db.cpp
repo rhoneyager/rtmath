@@ -25,7 +25,10 @@
 #include <vector>
 #include <cstdlib>
 #include <Ryan_Debug/debug.h>
-//#include <Ryan_Serialization/serialization.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/config.h>
+#include <Ryan_Debug/splitSet.h>
 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -35,10 +38,8 @@
 #include "../../rtmath/rtmath/ddscat/dielTabFile.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
 {
@@ -125,8 +126,8 @@ int main(int argc, char** argv)
 		if (vm.count("dipole-spacing"))
 			dSpacing = vm["dipole-spacing"].as<double>();
 
-		std::shared_ptr<rtmath::registry::IOhandler> handle, exportHandle;
-		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle, exportHandle;
+		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
 
 		/*
 		("from-db", "Perform search on database and select files matching criteria.")
@@ -137,8 +138,8 @@ int main(int argc, char** argv)
 		("match-parent-flake", "Select the parent flakes")
 		*/
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
-		rtmath::config::intervals<float> iDipoleSpacing;
-		rtmath::config::intervals<size_t> iDipoleNumbers;
+		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
+		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
 		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
@@ -173,8 +174,8 @@ int main(int argc, char** argv)
 		{
 			cerr << "Processing " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
-				<< rtmath::debug::file_name(*it);
+			if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::file_name(*it);
 			if (is_directory(pi))
 			{
 				path pt = pi / "target.out";
@@ -189,7 +190,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				auto iopts = rtmath::registry::IO_options::generate();
+				auto iopts = Ryan_Debug::registry::IO_options::generate();
 				iopts->filename(*it);
 				try {
 					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
@@ -224,7 +225,13 @@ int main(int argc, char** argv)
 		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp)
 		{
 			cerr << "  Shape " << shp->hash().lower << endl;
+			try {
 			shp->loadHashLocal(); // Load the shape fully, if it was imported from a database
+			} catch (Ryan_Debug::error::xMissingHash &e) {
+				cerr << "  Cannot find hash for " << shp->hash().lower << endl;
+				std::cerr << e.what() << std::endl;
+				return;
+			}
 
 			if (dSpacing && !shp->standardD) shp->standardD = (float)dSpacing;
 

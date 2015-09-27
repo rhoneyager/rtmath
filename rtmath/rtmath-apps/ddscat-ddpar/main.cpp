@@ -25,16 +25,19 @@
 #include <boost/shared_ptr.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/error.h>
+#include <Ryan_Debug/config.h>
+#include <Ryan_Debug/splitSet.h>
 
-#pragma warning( pop ) 
+#pragma warning( pop )
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
+#include "../../rtmath/rtmath/ddscat/rotations.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/units.h"
-#include "../../rtmath/rtmath/io.h"
+//#include "../../rtmath/rtmath/io.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
 {
@@ -71,6 +74,9 @@ int main(int argc, char** argv)
 			("set-intermediate-output", po::value<bool>(), "Set IWRKSC")
 			("set-diels,D", po::value<vector<std::string> >()->multitoken(), "Set dielectric files. Can specify multiple times for "
 			 "multiple refractive indices. In this case, the dielectrics follow command-line ordering.")
+			("set-betas", po::value<string>(), "Set beta rotations. Give interval notation for first, number and last.")
+			("set-thetas", po::value<string>(), "Set theta rotations. See set-betas.")
+			("set-phis", po::value<string>(), "Set phi rotations. See set-betas.")
 
 			("get-version", "Get version (70, 72, ...)")
 			("get-frequency", "Get frequency (GHz)")
@@ -79,6 +85,9 @@ int main(int argc, char** argv)
 			("get-shapeparams", "Get shape parameters")
 			("get-intermediate-output", "Get IWRKSC")
 			("get-diels", "Get all dielectrics")
+			("get-betas", "Get betas")
+			("get-thetas", "Get thetas")
+			("get-phis", "Get phis")
 			;
 
 		desc.add(cmdline).add(config);
@@ -109,14 +118,14 @@ int main(int argc, char** argv)
 		string output = input;
 		// Validate input file
 		path pi(input);
-		if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
-			<< rtmath::debug::file_name(input);
+		if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
+			<< Ryan_Debug::error::file_name(input);
 		if (is_directory(pi))
 		{
 			path pt = pi / "ddscat.par";
 			if (exists(pt)) input = pt.string();
-			else RTthrow(rtmath::debug::xPathExistsWrongType())
-				<< rtmath::debug::file_name(input);
+			else RDthrow(Ryan_Debug::error::xPathExistsWrongType())
+				<< Ryan_Debug::error::file_name(input);
 		}
 		cerr << "Input par file is: " << input << endl;
 
@@ -147,6 +156,20 @@ int main(int argc, char** argv)
 			string spacing;
 			par->getAeff(min,max,n,spacing);
 			cout << "aeff: " << min << endl;
+		}
+		rtmath::ddscat::rotations rot(*(par.get()));
+		string nb, nt, np;
+		rot.betas(nb);
+		rot.thetas(nt);
+		rot.phis(np);
+		if (vm.count("get-betas")) {
+			cout << "Betas: " << nb << endl;
+		}
+		if (vm.count("get-thetas")) {
+			cout << "Thetas: " << nt << endl;
+		}
+		if (vm.count("get-phis")) {
+			cout << "Phis: " << np << endl;
 		}
 		if (vm.count("get-shape"))
 		{
@@ -193,6 +216,26 @@ int main(int argc, char** argv)
 			double aeff = vm["set-aeff"].as<double>();
 			par->setAeff(aeff,aeff,1,"LIN");
 		}
+		if (vm.count("set-betas")) {
+			nb = vm["set-betas"].as<string>();
+		}
+		if (vm.count("set-thetas")) {
+			nt = vm["set-thetas"].as<string>();
+		}
+		if (vm.count("set-phis")) {
+			np = vm["set-phis"].as<string>();
+		}
+		if (vm.count("set-betas") || vm.count("set-thetas") || vm.count("set-phis")) {
+			double bB, bT, bP, eB, eT, eP, junkD;
+			size_t sB, sT, sP;
+			std::string junk;
+			Ryan_Debug::splitSet::extractInterval<double>(nb, bB, eB, junkD, sB, junk);
+			Ryan_Debug::splitSet::extractInterval<double>(nt, bT, eT, junkD, sT, junk);
+			Ryan_Debug::splitSet::extractInterval<double>(np, bP, eP, junkD, sP, junk);
+			auto rotnew = rtmath::ddscat::rotations::create
+				(bB, eB, sB, bT, eT, sT, bP, eP, sP);
+			par->setRots(*(rotnew.get()));
+		}
 		if (vm.count("set-shape"))
 		{
 			doWrite = true;
@@ -203,8 +246,8 @@ int main(int argc, char** argv)
 		{
 			doWrite = true;
 			vector<double> s = vm["set-shapeparams"].as<vector<double> >();
-			if (s.size() != 3) RTthrow(rtmath::debug::xBadInput())
-				<< rtmath::debug::otherErrorText("set-shapeparams needs three doubles as input");
+			if (s.size() != 3) RDthrow(Ryan_Debug::error::xBadInput())
+				<< Ryan_Debug::error::otherErrorText("set-shapeparams needs three doubles as input");
 			par->shpar(0, s[0]);
 			par->shpar(1, s[1]);
 			par->shpar(2, s[2]);
@@ -228,7 +271,7 @@ int main(int argc, char** argv)
 			string shpfile = vm["inputshape"].as<string>();
 
 			std::vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shps;
-			rtmath::io::readObjs(shps, shpfile);
+			Ryan_Debug::io::readObjs(shps, shpfile);
 			if (!shps.size()) doHelp("File must contain shapes");
 			auto shp = shps[0];
 
