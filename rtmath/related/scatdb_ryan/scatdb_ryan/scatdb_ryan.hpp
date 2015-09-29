@@ -16,7 +16,7 @@ namespace scatdb_ryan {
 	public:
 		~db();
 		static std::shared_ptr<const db> loadDB(const char* dbfile = 0);
-		static void findDB(const std::string& out);
+		static bool findDB(std::string& out);
 
 		// The data in the database, in tabular form
 		struct data_entries {

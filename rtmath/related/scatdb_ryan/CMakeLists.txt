@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH
 )
 
 include(common)
+include(addBoostUniform)
 
 find_package(Ryan_Debug REQUIRED)
 find_package(Eigen3 REQUIRED)

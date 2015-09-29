@@ -1,17 +1,33 @@
+#include <cctype>
 #include <iostream>
 #include <fstream>
+#include <memory>
+#include <mutex>
 #include <string>
 #include <sstream>
 
 #include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <Ryan_Debug/io.h>
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/fs.h>
+#include <Ryan_Debug/macros.h>
 #include <Ryan_Debug/splitSet.h>
 #include <Ryan_Debug/Serialization.h>
 
 #include "../scatdb_ryan/scatdb_ryan.hpp"
+
+namespace {
+	const char scatdb_name[] = "scatdb_ag_ryan.csv";
+	const char scatdb_db_env[] = "scatdb_ryan_db";
+	const char scatdb_dir_env[] = "scatdb_ryan_DIR";
+	const char scatdb_config_dir[] = "scatdb_ryan";
+
+	/// Always points to the first loaded database file.
+	std::shared_ptr<const scatdb_ryan::db> loadedDB;
+	std::mutex m_db;
+}
 
 namespace scatdb_ryan {
 	/**
@@ -78,43 +94,36 @@ namespace scatdb_ryan {
 			}
 			return false;
 		};
-		if (findEnv("scatdb_ryan_db", filename)) return true;
+		if (findEnv(std::string(scatdb_db_env), filename)) return true;
 
 		// Check a few other places
 		std::string sAppConfigDir(Ryan_Debug::getAppConfigDir());
 		std::string sHomeDir(Ryan_Debug::getHomeDir());
-		auto hm = boost::shared_ptr<const moduleInfo>(getModuleInfo((void*)&getConfigDefaultFile), freeModuleInfo);
+		auto hm = boost::shared_ptr<const moduleInfo>
+			(getModuleInfo((void*)&(db::findDB)), freeModuleInfo);
 		std::string dllPath(getPath(hm.get()));
 
 		auto hp = boost::shared_ptr<const processInfo>(Ryan_Debug::getInfo(Ryan_Debug::getPID()), freeProcessInfo);
 		std::string appPath(getPath(hp.get()));
 
 		std::string sCWD(Ryan_Debug::getCwd(hp.get()));
-		// For all of these places, search for file names matching rtmath.xml, rtmath.conf and .rtmath.
-		// Compression is allowed.
 		auto searchPath = [&](const std::string &base, const std::string &suffix, bool searchParent) -> bool
 		{
 			using namespace boost::filesystem;
 			path pBase(base);
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Getting search path based on: " << pBase.string();
 			if (base.size() == 0) return false;
 			if (!is_directory(pBase))
 				pBase.remove_filename();
 			if (searchParent) pBase.remove_leaf();
 			if (suffix.size()) pBase = pBase / path(suffix);
 
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Searching in: " << pBase.string();
 
-			path p1 = pBase / "rtmath.xml";
-			path p2 = pBase / "rtmath.conf";
-			path p3 = pBase / ".rtmath";
+			path p1 = pBase / std::string(scatdb_name);
 
 			bool res = false;
 			path pRes;
 			std::string meth;
 			res = Ryan_Debug::serialization::detect_compressed<path>(p1, meth, pRes);
-			if (!res) res = Ryan_Debug::serialization::detect_compressed<path>(p2, meth, pRes);
-			if (!res) res = Ryan_Debug::serialization::detect_compressed<path>(p3, meth, pRes);
 			if (!res) return false;
 			filename = pRes.string();
 			return true;
@@ -122,49 +131,101 @@ namespace scatdb_ryan {
 		bool found = false; // junk variable
 
 		if (searchPath(sCWD, "", true)) found = true;
-		else if (searchPath(sAppConfigDir, "rtmath", false)) found = true;
+		else if (searchPath(sAppConfigDir, std::string(scatdb_config_dir), false)) found = true;
 		else if (searchPath(sHomeDir, "", false)) found = true;
 		else if (searchPath(dllPath, "", true)) found = true;
 		else if (searchPath(appPath, "", true)) found = true;
 
 		if (!filename.size()) {
 			std::string RDCpath;
-			findEnv("rtmath_DIR", RDCpath);
+			findEnv(std::string(scatdb_dir_env), RDCpath);
 			if (searchPath(RDCpath, "../../../../share", false)) found = true;
 		}
 		if (searchPath(dllPath, "../../share", false)) found = true;
-		if (filename.size()) {
-			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using conf file: " << filename;
-			return;
+		if (filename.size()) return true;
+
+		std::cerr << "Unable to find the " << scatdb_name << " database file. " << std::endl;
+
+		return false;
+	}
+
+	std::shared_ptr<const db> db::loadDB(const char* dbfile) {
+		std::lock_guard<std::mutex> lock(m_db);
+		if (!dbfile && loadedDB) return loadedDB;
+
+		// Load the database
+		std::string dbf;
+		if (dbfile) dbf = std::string(dbfile);
+		if (!dbf.size()) findDB(dbf); // If dbfile not provided, take a guess.
+		if (!dbf.size()) {
+			// Scattering database cannot be found.
+		} else {
+			using namespace boost::filesystem;
+			path p(dbf);
+			if (!exists(p)) {
+				// Supplied path to scattering database does not exist.
+				// Scattering database cannot be found.
+			}
 		}
 
+		// From this point, it is established that the scattering database does exist.
+		std::shared_ptr<db> newdb(new db);
 
-		// Finally, just use the default os-dependent path
-		//filename = "/home/rhoneyag/.Ryan_Debug";
-		// Macro defining the correct path
-		//BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Checking compile-time paths: "
-			//<< "RTC: " << RTC << "\nRTCB: " << RTCB << "\nRTCC: " << RTCC
-		//	<< "\nSYS_RTC: " << SYS_RTC;
-		//path testUser(RTC);
-		//path testUserB(RTCB);
-		//path testUserC(RTCC);
-		//path testSys(SYS_RTC);
-		//if (exists(testUser))
-		//	filename = RTC;
-		//else if (exists(testUserB))
-		//	filename = RTCB;
-		//else if (exists(testUserC))
-		//	filename = RTCC;
-		//if (exists(testSys))
-		//	filename = SYS_RTC;
-		//if (filename.size()) BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using conf file: " << filename;
-		//else 
-		BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Unable to find Ryan_Debug configuration file. "
-			<< "Log channel config at severity debug_2 lists the searched paths. You can specify the file by "
-			"command-line (option --Ryan_Debug-config-file), environment variable (Ryan_Debug_conf), "
-			"or place one in an at-compile-time-specified path.";
+		std::ifstream in(dbf.c_str());
+		// Ignore all lines that start with text. Ignore all blank lines.
+		// Read line-by-line, converting from text into integers and floats. Store in
+		// a vector, which gets copied elementwise into matrices.
+		size_t line = 0;
+		const size_t approxNumLines = 1000 * 10 * 2; // Overestimation
+		std::vector<int> ints;
+		std::vector<float> floats;
+		ints.reserve(approxNumLines * data_entries::NUM_DATA_ENTRIES_INTS);
+		floats.reserve(approxNumLines * data_entries::NUM_DATA_ENTRIES_FLOATS);
+		size_t numLines = 0; // Actual number of entries
+		while(in.good()) {
+			std::string lin;
+			std::getline(in,lin);
+			line++;
+			if (!lin.size()) continue; // Skip blank lines
+			if (!std::isdigit(lin.at(0))) continue; // Skip comment lines
+			// Line format is a bunch of comma-separated values. Expand based on commas.
+			std::vector<std::string> ssplit;
+			Ryan_Debug::splitSet::splitVector(lin,ssplit,',');
+			if (ssplit.size() != data_entries::NUM_DATA_ENTRIES_FLOATS
+					+ data_entries::NUM_DATA_ENTRIES_INTS) {
+				std::cerr << "Bad entry formatting on line " << line << std::endl;
+				continue;
+			}
+			// Iterate over column numbers
+			for (size_t i=0; i< ssplit.size(); ++i) {
+				using namespace Ryan_Debug::macros;
+				switch (i) {
+					case 0: // flaketype
+						ints.push_back(fastCast<int>(ssplit[i]));
+						break;
+					default: // All other columns
+						floats.push_back(fastCast<float>(ssplit[i]));
+						break;
+				}
+			}
+			numLines++;
+		}
 
-		return;
+		// The raw data hase been loaded. It now needs to be placed into the relevent
+		// matrices.
+		newdb->floatMat.resize(numLines, data_entries::NUM_DATA_ENTRIES_FLOATS);
+		newdb->intMat.resize(numLines, data_entries::NUM_DATA_ENTRIES_INTS);
+		for(size_t i=0; i<numLines; ++i) {
+			newdb->intMat(i,0) = ints.at(i);
+			for (size_t j=0; j<data_entries::NUM_DATA_ENTRIES_FLOATS; ++j)
+				newdb->floatMat(i,j) = floats.at( (i*data_entries::NUM_DATA_ENTRIES_FLOATS) + j );
+		}
+
+		// The usual case is that the database is loaded once. If so, store a copy for
+		// subsequent function calls.
+		if (!loadedDB) loadedDB = newdb;
+
+		return newdb;
 	}
 }
 
