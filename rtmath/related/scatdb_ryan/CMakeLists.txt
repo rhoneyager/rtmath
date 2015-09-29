@@ -14,7 +14,7 @@ find_package(Eigen3 REQUIRED)
 include_directories(${RYAN_DEBUG_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-set (boost_uniform_libs iostreams filesystem system)
+set (boost_uniform_libs iostreams program_options filesystem system)
 addBoostUniform(${boost_uniform_libs})
 include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
@@ -43,11 +43,19 @@ if(WIN32 AND NOT CYGWIN)
 	set(libs Ryan_Debug)
 else()
 	set (libs Ryan_Debug ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY}
+		${Boost_PROGRAM_OPTIONS_LIBRARY}
 		${Boost_SYSTEM_LIBRARY})
 endif()
 target_link_libraries(scatdb_ryan ${libs})
 
+add_executable (scatdb_ryan_test
+	src/test.cpp
+	)
+set_target_properties( scatdb_ryan_test PROPERTIES FOLDER "Related")
+target_link_libraries(scatdb_ryan_test ${libs} scatdb_ryan)
+
 INSTALL(TARGETS scatdb_ryan
+	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 	COMPONENT Plugins)
