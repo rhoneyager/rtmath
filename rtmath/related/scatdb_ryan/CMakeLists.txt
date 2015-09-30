@@ -28,6 +28,7 @@ add_library (scatdb_ryan SHARED
 	scatdb_ryan/scatdb_ryan.hpp
 	scatdb_ryan/utility.hpp
 	src/scatdb_ryan.cpp
+	src/scatdb_ryan_c.cpp
 	src/filters.cpp
 	src/io.cpp
 	src/utility.cpp
@@ -54,6 +55,13 @@ add_executable (scatdb_ryan_test
 	)
 set_target_properties( scatdb_ryan_test PROPERTIES FOLDER "Related")
 target_link_libraries(scatdb_ryan_test ${libs} scatdb_ryan)
+
+add_executable (scatdb_ryan_test_c
+	src/test-c.c
+	)
+set_target_properties( scatdb_ryan_test_c PROPERTIES FOLDER "Related")
+target_link_libraries(scatdb_ryan_test_c ${libs} scatdb_ryan)
+
 
 INSTALL(TARGETS scatdb_ryan
 	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}

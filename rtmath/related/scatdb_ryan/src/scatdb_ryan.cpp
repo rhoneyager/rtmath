@@ -21,6 +21,8 @@
 namespace scatdb_ryan {
 	db::db() {}
 	db::~db() {}
+	scatdb_base::scatdb_base() {}
+	scatdb_base::~scatdb_base() {}
 	std::shared_ptr<const db::data_stats> db::getStats() const {
 		return db::data_stats::generate(this);
 	}

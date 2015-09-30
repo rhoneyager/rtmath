@@ -7,16 +7,27 @@
 #include <string>
 #include <Eigen/Dense>
 
+/* TODOs:
+ * - add interpolation functions?
+ * - add sorting procedures
+ * - binned stats with equal flake counts in each bin
+ * - c interface
+ * - fortran interface
+ * - more logging output
+ */
+
 /// This is the main namespace, under which all functions are located.
 namespace scatdb_ryan {
+	/// Base class used in pointer marshalling
+	class DLEXPORT_SDBR scatdb_base { public: scatdb_base(); virtual ~scatdb_base(); };
 	class filter;
 	class filterImpl;
-	class DLEXPORT_SDBR db {
+	class DLEXPORT_SDBR db : public scatdb_base {
 		friend class filter;
 		friend class filterImpl;
 		db();
 	public:
-		~db();
+		virtual ~db();
 		static std::shared_ptr<const db> loadDB(const char* dbfile = 0);
 		static bool findDB(std::string& out);
 		void print(std::ostream &out) const;
@@ -47,24 +58,24 @@ namespace scatdb_ryan {
 		typedef Eigen::Matrix<float, data_entries::NUM_DATA_ENTRIES_STATS,
 			data_entries::NUM_DATA_ENTRIES_FLOATS> StatsFloatType;
 
-		struct data_stats {
+		struct data_stats : public scatdb_base {
 			StatsFloatType floatStats;
 			int count;
 			std::shared_ptr<const db> srcdb;
 			void print(std::ostream&) const;
-			~data_stats();
+			virtual ~data_stats();
 			static std::shared_ptr<const data_stats> generate(const db*);
 		private:
 			data_stats();
 		};
 		std::shared_ptr<const data_stats> getStats() const;
 	};
-	class DLEXPORT_SDBR filter {
+	class DLEXPORT_SDBR filter : public scatdb_base {
 	private:
 		std::shared_ptr<filterImpl> p;
 		filter();
 	public:
-		~filter();
+		virtual ~filter();
 		static std::shared_ptr<filter> generate();
 		void addFilterFloat(db::data_entries::data_entries_floats param, float minval, float maxval);
 		void addFilterInt(db::data_entries::data_entries_ints param, int minval, int maxval);

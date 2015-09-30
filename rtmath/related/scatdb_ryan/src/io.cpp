@@ -208,13 +208,20 @@ namespace scatdb_ryan {
 		if (!dbf.size()) {
 			// Scattering database cannot be found.
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Scattering database cannot be found.";
+			std::cerr << "Scattering database cannot be found.";
+			RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::file_name(std::string(scatdb_name));
 		} else {
 			using namespace boost::filesystem;
 			path p(dbf);
 			if (!exists(p)) {
 				// Supplied path to scattering database does not exist.
 				// Scattering database cannot be found.
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Scattering database cannot be found at " << dbf;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2)
+					<< "Scattering database cannot be found at " << dbf;
+				std::cerr << "Scattering database cannot be found at " << dbf;
+				RDthrow(Ryan_Debug::error::xMissingFile())
+					<< Ryan_Debug::error::file_name(p.string());
 			}
 		}
 
