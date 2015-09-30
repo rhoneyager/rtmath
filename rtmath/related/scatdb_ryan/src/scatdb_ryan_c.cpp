@@ -2,6 +2,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -13,13 +14,22 @@
 
 namespace {
 	std::string lastErr;
-	std::vector<std::shared_ptr<const scatdb_ryan::scatdb_base> > ptrs;
+	std::map<const scatdb_ryan::scatdb_base*, std::shared_ptr<const scatdb_ryan::scatdb_base> > ptrs;
+	//std::vector<std::shared_ptr<const scatdb_ryan::scatdb_base> > ptrs;
+	// TODO: add casting checks again
 }
 
 extern "C" {
 
 	bool SDBR_free(SDBR_HANDLE h) {
 		using namespace scatdb_ryan;
+		scatdb_base* hp = (scatdb_base*) (h);
+		if (ptrs.count(hp)) {
+			ptrs[hp].reset();
+			return true;
+		}
+		return false;
+		/*
 		for (auto it = ptrs.begin(); it != ptrs.end(); ++it) {
 			if (it->get() == (scatdb_base*) (h)) {
 				//*it = nullptr;
@@ -27,6 +37,7 @@ extern "C" {
 				return true;
 			}
 		}
+		*/
 		return false;
 	}
 
@@ -46,8 +57,10 @@ extern "C" {
 		using namespace scatdb_ryan;
 		try {
 			auto d = db::loadDB(dbfile);
-			ptrs.push_back(d);
+			ptrs[d.get()] = d;
+			//ptrs.push_back(d);
 			lastErr = "";
+			std::cerr << "d is at " << d.get() << std::endl;
 			return (SDBR_HANDLE)(d.get());
 		} catch (std::exception &e) {
 			lastErr = std::string(e.what());
@@ -58,7 +71,9 @@ extern "C" {
 	bool SDBR_writeDB(SDBR_HANDLE handle, const char* outfile) {
 		using namespace scatdb_ryan;
 		try {
-			db* h = ( db* )(handle);
+			std::cerr << "h is at " << handle << std::endl;
+			const scatdb_base* hp = ( const scatdb_base* )(handle);
+			const db* h = dynamic_cast<const db*>(hp);
 			std::ofstream out(outfile);
 			(h)->print(out);
 			lastErr="";

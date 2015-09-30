@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-project(scatdb_ryan CXX C)
+project(scatdb_ryan CXX C Fortran)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
@@ -62,8 +62,15 @@ add_executable (scatdb_ryan_test_c
 set_target_properties( scatdb_ryan_test_c PROPERTIES FOLDER "Related")
 target_link_libraries(scatdb_ryan_test_c ${libs} scatdb_ryan)
 
+add_executable (scatdb_ryan_test_f
+	src/test-f.f90
+	)
+set_target_properties( scatdb_ryan_test_f PROPERTIES FOLDER "Related")
+set_target_properties( scatdb_ryan_test_f PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(scatdb_ryan_test_f ${libs} scatdb_ryan)
 
-INSTALL(TARGETS scatdb_ryan
+INSTALL(TARGETS scatdb_ryan scatdb_ryan_test scatdb_ryan_test_c
+	scatdb_ryan_test_f
 	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
