@@ -171,6 +171,25 @@ namespace scatdb_ryan {
 		return false;
 	}
 
+	void db::print(std::ostream &out) const {
+		out << "flaketype,frequencyghz,temperaturek,aeffum,max_dimension_mm,"
+			"cabs,cbk,cext,csca,g_iso,as_abs_xy,as_abs_xz,as_abs_yz" << std::endl;
+		for (int i=0; i < floatMat.rows(); ++i) {
+			int col = 0;
+			for (int j=0; j<intMat.cols();++j) {
+				if (col) out << ",";
+				out << intMat(i,j);
+				col++;
+			}
+			for (int j=0; j<floatMat.cols(); ++j) {
+				if (col) out << ",";
+				out << floatMat(i,j);
+				col++;
+			}
+			out << std::endl;
+		}
+	}
+
 	std::shared_ptr<const db> db::loadDB(const char* dbfile) {
 		std::lock_guard<std::mutex> lock(m_db);
 		if (!dbfile && loadedDB) return loadedDB;

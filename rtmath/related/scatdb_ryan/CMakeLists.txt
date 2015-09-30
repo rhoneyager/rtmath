@@ -28,6 +28,7 @@ add_library (scatdb_ryan SHARED
 	scatdb_ryan/scatdb_ryan.hpp
 	scatdb_ryan/utility.hpp
 	src/scatdb_ryan.cpp
+	src/filters.cpp
 	src/io.cpp
 	src/utility.cpp
 	)
