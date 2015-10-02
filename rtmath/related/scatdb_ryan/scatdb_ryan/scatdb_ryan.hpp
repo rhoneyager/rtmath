@@ -14,6 +14,9 @@
  * - c interface
  * - fortran interface
  * - more logging output
+ * - ease of use routines for:
+ *   - calculating means for all bins
+ * - support saving tables of binned results
  */
 
 /// This is the main namespace, under which all functions are located.
@@ -34,20 +37,7 @@ namespace scatdb_ryan {
 
 		// The data in the database, in tabular form
 		struct data_entries {
-			enum data_entries_floats {
-				FREQUENCY_GHZ, TEMPERATURE_K, AEFF_UM, MAX_DIMENSION_MM,
-				CABS_M, CBK_M, CEXT_M, CSCA_M, G,
-				AS_XY, AS_XZ, AS_YZ,
-				NUM_DATA_ENTRIES_FLOATS
-			};
-			enum data_entries_ints {
-				FLAKETYPE,
-				NUM_DATA_ENTRIES_INTS
-			};
-			enum data_entries_stats_fields {
-				S_MIN, S_MAX, MEDIAN, MEAN, SD, SKEWNESS, KURTOSIS,
-				NUM_DATA_ENTRIES_STATS
-			};
+#include "data.h"
 			template<class T> static const char* stringify(int enumval);
 		};
 		typedef Eigen::Matrix<float, Eigen::Dynamic, data_entries::NUM_DATA_ENTRIES_FLOATS> FloatMatType;
@@ -86,8 +76,9 @@ namespace scatdb_ryan {
 		template <class T>
 		void addFilter(int param, const std::string &rng);
 
-		//enum class sortDir { ASCENDING, DESCENDING };
-		//void addSort(db::data_entries::data_entries_floats param, sortDir);
+		enum class sortDir { ASCENDING, DESCENDING };
+		void addSortFloat(db::data_entries::data_entries_floats param, sortDir);
+		void addSortInt(db::data_entries::data_entries_ints param, sortDir);
 
 		std::shared_ptr<const db> apply(std::shared_ptr<const db>) const;
 	};

@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include <stdbool.h>
+#include "data.h"
 
 /// These functions have C-style linkage
 #ifdef __cplusplus
@@ -21,7 +22,7 @@ extern "C" {
 	/// \brief Copies the last error message to the specified character array.
 	/// \param maxlen is the maximum number of characters to write (including the
 	/// null character).
-	/// \param buffer us the output array.
+	/// \param buffer is the output array.
 	/// \returns The number of characters written.
 	int DLEXPORT_SDBR SDBR_err_msg(int maxlen, char* buffer);
 
@@ -39,11 +40,31 @@ extern "C" {
 	 **/
 	SDBR_HANDLE DLEXPORT_SDBR SDBR_loadDB(const char* dbfile);
 
+	/** \brief Find the database file
+	 * \param maxlen is the maximum number of characters to write (including the
+	 * null character).
+	 * \param buffer is the output array.
+	 * \returns The number of characters written. If zero, the search was unsuccessful.
+	 **/
+	int DLEXPORT_SDBR SDBR_findDB(int maxlen, char* buffer);
+
 	/// Write the database
 	/// \param handle is the database handle
 	/// \param outfile is the null-terminated output filename
 	/// \returns indicates success of operation. See error code if return is false.
 	bool DLEXPORT_SDBR SDBR_writeDB(SDBR_HANDLE handle, const char* outfile);
+
+	/// Get number of entries in database
+	int DLEXPORT_SDBR SDBR_getNumEntries(SDBR_HANDLE handle);
+
+	/// Get the 2-D array of floats
+
+	/// Select a 1-D array of floats
+
+	/// Get the 2-D array of ints
+
+	/// Select a 1-D array of ints
+
 
 /// Ensure that C-style linkage is respected
 #ifdef __cplusplus

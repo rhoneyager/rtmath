@@ -46,11 +46,32 @@ extern "C" {
 		return 0;
 	}
 
-	int SDBR_err_msg(int maxlen, char* buffer) {
+	void prepString(int maxlen, char* buffer, const std::string &s) {
 		int cplen = maxlen;
-		if (lastErr.size() + 1 < maxlen) cplen = lastErr.size();
-		std::strncpy(buffer, lastErr.c_str(), cplen);
-		buffer[maxlen-1] = '\0';
+		if (s.size() + 1 < maxlen) cplen = s.size();
+		std::strncpy(buffer, s.c_str(), cplen);
+		buffer[cplen] = '\0';
+	}
+
+	int SDBR_err_msg(int maxlen, char* buffer) {
+		prepString(maxlen, buffer, lastErr);
+	}
+
+	int SDBR_findDB(int maxlen, char* buffer) {
+		using namespace scatdb_ryan;
+		try {
+			if (!buffer) {
+				lastErr = "SDBR_findDB buffer is null";
+				return 0;
+			}
+			std::string dbloc(buffer, maxlen);
+			bool res = db::findDB(dbloc);
+			if (!res) return 0;
+			prepString(maxlen, buffer, dbloc);
+		} catch (std::exception &e) {
+			lastErr = std::string(e.what());
+			return 0;
+		}
 	}
 
 	SDBR_HANDLE SDBR_loadDB(const char* dbfile) {
@@ -60,7 +81,6 @@ extern "C" {
 			ptrs[d.get()] = d;
 			//ptrs.push_back(d);
 			lastErr = "";
-			std::cerr << "d is at " << d.get() << std::endl;
 			return (SDBR_HANDLE)(d.get());
 		} catch (std::exception &e) {
 			lastErr = std::string(e.what());
@@ -71,7 +91,6 @@ extern "C" {
 	bool SDBR_writeDB(SDBR_HANDLE handle, const char* outfile) {
 		using namespace scatdb_ryan;
 		try {
-			std::cerr << "h is at " << handle << std::endl;
 			const scatdb_base* hp = ( const scatdb_base* )(handle);
 			const db* h = dynamic_cast<const db*>(hp);
 			std::ofstream out(outfile);

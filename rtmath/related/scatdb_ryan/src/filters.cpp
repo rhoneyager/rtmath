@@ -17,7 +17,29 @@ namespace scatdb_ryan {
 		}
 		std::vector<Ryan_Debug::splitSet::intervals<float>  > floatFilters;
 		std::vector<Ryan_Debug::splitSet::intervals<int> > intFilters;
+		enum class SortDataType { FLOATS, INTS };
+		struct sortType {
+			SortDataType sortDataType;
+			filter::sortDir dir;
+			int varnum;
+		};
+		std::vector<sortType> sorts;
 	};
+
+	void filter::addSortFloat(db::data_entries::data_entries_floats param, filter::sortDir fsd) {
+		filterImpl::sortType nst;
+		nst.dir = fsd;
+		nst.varnum = (int) param;
+		nst.sortDataType = filterImpl::SortDataType::FLOATS;
+		p->sorts.push_back(std::move(nst));
+	}
+	void filter::addSortInt(db::data_entries::data_entries_ints param, filter::sortDir fsd) {
+		filterImpl::sortType nst;
+		nst.dir = fsd;
+		nst.varnum = (int) param;
+		nst.sortDataType = filterImpl::SortDataType::INTS;
+		p->sorts.push_back(std::move(nst));
+	}
 
 	filter::filter() { p = std::shared_ptr<filterImpl>(new filterImpl); }
 	filter::~filter() {}
@@ -62,7 +84,9 @@ namespace scatdb_ryan {
 	}
 
 	std::shared_ptr<const db> filter::apply(std::shared_ptr<const db> src) const {
-		std::shared_ptr<db> res(new db);
+		std::shared_ptr<db> res(new db), presort(new db);
+		presort->floatMat.resize(src->floatMat.rows(), src->floatMat.cols());
+		presort->intMat.resize(src->intMat.rows(), src->intMat.cols());
 
 		res->floatMat.resize(src->floatMat.rows(), src->floatMat.cols());
 		res->intMat.resize(src->intMat.rows(), src->intMat.cols());

@@ -69,8 +69,12 @@ set_target_properties( scatdb_ryan_test_f PROPERTIES FOLDER "Related")
 set_target_properties( scatdb_ryan_test_f PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(scatdb_ryan_test_f ${libs} scatdb_ryan)
 
+add_executable (scatdb_ryan_envelopes src/envelopes.cpp)
+set_target_properties(scatdb_ryan_envelopes PROPERTIES FOLDER "Related")
+target_link_libraries(scatdb_ryan_envelopes ${libs} scatdb_ryan)
+
 INSTALL(TARGETS scatdb_ryan scatdb_ryan_test scatdb_ryan_test_c
-	scatdb_ryan_test_f
+	scatdb_ryan_test_f scatdb_ryan_envelopes
 	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
 	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
 	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
