@@ -59,6 +59,16 @@ namespace scatdb_ryan {
 			data_stats();
 		};
 		std::shared_ptr<const data_stats> getStats() const;
+
+		/// Regression. See lowess.cpp. delta can equal xrange / 50.
+		/// The initial regression routine uses input x values in the output.
+		/// For convenience, we re-interpolate over the entire x-value domain,
+		/// uniformly spaced in increments of 10 microns. For the lower bound,
+		/// interpolation is combined with Rayleigh scattering.
+		/// \note This routine should be pre-filtered by temperature,
+		///   frequency and flake type.
+		std::shared_ptr<const db> regress(double f = 0.5,
+			long nsteps = 2, double delta = 20.) const;
 	};
 	class DLEXPORT_SDBR filter : public scatdb_base {
 	private:
@@ -75,6 +85,9 @@ namespace scatdb_ryan {
 		void addFilter(int param, T minval, T maxval);
 		template <class T>
 		void addFilter(int param, const std::string &rng);
+
+		void addFilterMaxFlakes(int maxFlakes);
+		void addFilterStartingRow(int row);
 
 		enum class sortDir { ASCENDING, DESCENDING };
 		void addSortFloat(db::data_entries::data_entries_floats param, sortDir);

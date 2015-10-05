@@ -24,12 +24,14 @@ link_directories(${Boost_LIBRARY_DIR})
 add_library (scatdb_ryan SHARED
 	scatdb_ryan/defs.h
 	scatdb_ryan/defs.hpp
+	scatdb_ryan/lowess.h
 	scatdb_ryan/scatdb_ryan.h
 	scatdb_ryan/scatdb_ryan.hpp
 	scatdb_ryan/utility.hpp
 	src/scatdb_ryan.cpp
 	src/scatdb_ryan_c.cpp
 	src/filters.cpp
+	src/lowess.cpp
 	src/io.cpp
 	src/utility.cpp
 	)

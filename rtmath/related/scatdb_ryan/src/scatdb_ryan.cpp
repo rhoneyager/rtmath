@@ -17,6 +17,7 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/variates/covariate.hpp>
 #include "../scatdb_ryan/scatdb_ryan.hpp"
+#include "../scatdb_ryan/lowess.h"
 
 namespace scatdb_ryan {
 	db::db() {}
@@ -28,6 +29,59 @@ namespace scatdb_ryan {
 	}
 	db::data_stats::data_stats() : count(0) {}
 	db::data_stats::~data_stats() {}
+
+	std::shared_ptr<const db> db::regress(double f, long nsteps, double delta) const {
+		std::shared_ptr<db> res(new db);
+
+		//nsteps = 2;
+		f = 0.1;
+		delta = 0;
+		// First, get the stats. Want min and max values for effective radius.
+		auto stats = this->getStats();
+		double minRad = stats->floatStats(data_entries::S_MIN,data_entries::AEFF_UM),
+			   maxRad = stats->floatStats(data_entries::S_MAX,data_entries::AEFF_UM);
+
+		// Convert from eigen arrays into vectors
+		std::vector<double> aeff, cabs, cbk, cext, csca, g,
+			rcabs, rcbk, rcext, rcsca, rg,
+			icabs, icbk, icext, icsca, ig,
+			rw, residuals;
+		auto convertCol = [&](int col, std::vector<double> &out) {
+			auto blk = floatMat.cast<float>().block(0,col,floatMat.rows(),1);
+			out.insert(out.begin(), blk.data(), blk.data() + floatMat.rows());
+		};
+		convertCol(data_entries::AEFF_UM, aeff);
+		convertCol(data_entries::CABS_M, cabs);
+		convertCol(data_entries::CBK_M, cbk);
+		convertCol(data_entries::CEXT_M, cext);
+		convertCol(data_entries::CSCA_M, csca);
+		convertCol(data_entries::G, g);
+
+		lowess(aeff, cabs, f, nsteps, delta, rcabs, rw, residuals);
+		lowess(aeff, cbk, f, nsteps, delta, rcbk, rw, residuals);
+		lowess(aeff, cext, f, nsteps, delta, rcext, rw, residuals);
+		lowess(aeff, csca, f, nsteps, delta, rcsca, rw, residuals);
+		lowess(aeff, g, f, nsteps, delta, rg, rw, residuals);
+
+		res->floatMat = floatMat;
+		res->intMat = intMat;
+		//res->intMat.resize(intMat.rows(), intMat.cols());
+
+		auto revertCol = [&](int col, const std::vector<double> &in) {
+			auto blk = res->floatMat.block(0,col,floatMat.rows(),1);
+			for (size_t i=0; i<floatMat.rows(); ++i) {
+				blk(i,0) = (float) in[i];
+			}
+		};
+		revertCol(data_entries::CABS_M, rcabs);
+		revertCol(data_entries::CBK_M, rcbk);
+		revertCol(data_entries::CEXT_M, rcext);
+		revertCol(data_entries::CSCA_M, rcsca);
+		revertCol(data_entries::G, rg);
+
+		return res;
+	}
+
 	std::shared_ptr<const db::data_stats> db::data_stats::generate(const db* src) {
 		std::shared_ptr<db::data_stats> res(new db::data_stats);
 		if (!src) return res;

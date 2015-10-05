@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("stats", "Print stats for selected data")
+			("lowess", "Use LOWESS Routine to regress data")
 			("output,o", po::value<string>(), "Output file")
 			("db-file,d", "Manually specify database location")
 			("flaketypes,y", po::value<string>(), "Filter flaketypes by number range")
@@ -82,8 +83,12 @@ int main(int argc, char** argv) {
 		if (vm.count("as-yz")) f->addFilterFloat(db::data_entries::AS_YZ, vm["as-yz"].as<string>());
 
 		auto sdb_filtered = f->apply(sdb);
+		auto le_filtered = sdb_filtered;
+		if (vm.count("lowess")) {
+			le_filtered = sdb_filtered->regress();
+		}
 		if (vm.count("stats")) {
-			auto stats = sdb_filtered->getStats();
+			auto stats = le_filtered->getStats();
 			cerr << "Stats tables:" << endl;
 			stats->print(cerr);
 		}
@@ -92,7 +97,7 @@ int main(int argc, char** argv) {
 			std::string fout = vm["output"].as<std::string>();
 			cerr << "Writing output to " << fout << endl;
 			std::ofstream out(fout.c_str());
-			sdb_filtered->print(out);
+			le_filtered->print(out);
 		}
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
