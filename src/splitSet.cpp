@@ -437,8 +437,9 @@ namespace Ryan_Debug {
 					if (specializer == "range")
 					{
 						ranges.push_back(std::pair<T, T>(start, end));
-					}
-					else {
+					} else if (start == end) {
+						ranges.push_back(std::pair<T, T>(start, end));
+					} else {
 						splitSet(start, end, interval, specializer, vals);
 					}
 				}
@@ -467,6 +468,9 @@ namespace Ryan_Debug {
 			for (const auto &r : ranges)
 			{
 				if (val >= r.first && val < r.second) return true;
+				if (r.first == r.second) {
+					if (val == r.first) return true;
+				}
 			}
 			return false;
 		}
