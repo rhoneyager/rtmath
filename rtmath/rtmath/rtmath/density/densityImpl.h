@@ -74,6 +74,10 @@ namespace rtmath
 			/// Heymsfield et al. (2004) ...
 			double DLEXPORT_rtmath_core Heymsfield2004(double D);
 
+			/// Linear density relation. Different units than in other cases.
+			double DLEXPORT_rtmath_core linearDensity(double lowAeff, double lowVf,
+				double highAeff, double highVf, double aeff);
+
 			/** \brief Determines which function shopuld be used to handle the density formulation.
 			 *
 			 * \param name is the name of the relation used.

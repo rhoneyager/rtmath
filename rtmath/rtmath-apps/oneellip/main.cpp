@@ -1,4 +1,5 @@
 #include <iostream>
+#include "../../rtmath/rtmath/defs.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -83,7 +84,9 @@ int main(int argc, char *argv[])
 			" 14) Heymsfield2004,"
 			" 15) BrownFrancis1995Hogan2012,"
 			" 16) Constant lets you specify an exact volume fraction (see constant-vf-shape),"
-			" 17) Voronoi_Offset takes the Voronoi vf and subtracts 0.1. It's a suggested correction in my paper.")
+			" 17) Voronoi_Offset takes the Voronoi vf and subtracts 0.1. It's a suggested correction in my paper."
+			" 18) Linear specifies linear volume fractions with two known anchor points. See vf-points options."
+			)
 			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
 			("voronoi-offset-factor", po::value<double>()->default_value(3), "Sets the factor used in the Voronoi offset "
 			 "method")
@@ -101,10 +104,14 @@ int main(int argc, char *argv[])
 			("mi", po::value<double>(), "Override imaginary refractive index value")
 			("volume-fractions,v", po::value<std::string>(), "Set the ice volume fractions. "
 			 "Used when: not using shapefiles AND vf-scaling is not one of the paper-based methods.")
+			("vf-aeff-1", po::value<double>(), "")
+			("vf-aeff-2", po::value<double>(), "")
+			("vf-val-1", po::value<double>(), "")
+			("vf-val-2", po::value<double>(), "")
 //			("vf-is-den", "The -v parameter is not a volume fraction. It is a density in g/cm^3.")
-			("constant-vf-shape", po::value<double>()->default_value(0), "Use this option to "
-			 "force a constant volume fraction for use in DDA comparison runs. The regular "
-			 "volume-fractions parameter will not work in this case.")
+//			("constant-vf-shape", po::value<double>()->default_value(0), "Use this option to "
+//			 "force a constant volume fraction for use in DDA comparison runs. The regular "
+//			 "volume-fractions parameter will not work in this case.")
 			("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
 			("solution-method", po::value<std::string>(), "Force only a specific algorithm to be used, such as "
 			 "Rayleigh or bhmie. No other pf generator will be used.")
@@ -163,7 +170,12 @@ int main(int argc, char *argv[])
 		if (vm.count("output-prefix"))
 			oprefix = vm["output-prefix"].as<string>();
 
-		double vfo = vm["constant-vf-shape"].as<double>(); // Used only in one place
+		double vf_aeff_1 = -1, vf_aeff_2 = -1, vf_1 = -1, vf_2 = -1;
+		if (vm.count("vf-aeff-1")) vf_aeff_1 = vm["vf-aeff-1"].as<double>();
+		if (vm.count("vf-aeff-2")) vf_aeff_2 = vm["vf-aeff-2"].as<double>();
+		if (vm.count("vf-val-1")) vf_1 = vm["vf-val-1"].as<double>();
+		if (vm.count("vf-val-2")) vf_2 = vm["vf-val-2"].as<double>();
+		//double vfo = vm["constant-vf-shape"].as<double>(); // Used only in one place
 		double dSpacing = 0;
 		if (vm.count("dipole-spacing"))
 			dSpacing = vm["dipole-spacing"].as<double>();
@@ -441,7 +453,11 @@ int main(int argc, char *argv[])
 											_in_length_units = "um",
 											_ar = aspect,
 											_temperature = temp,
-											_temp_units = "K"
+											_temp_units = "K",
+											_vfLowAeff = vf_aeff_1,
+											_vfHighAeff = vf_aeff_2,
+											_vfLow = vf_1,
+											_vfHigh = vf_2
 											);
 										double vf = dEff / dIce;
 										double aeff = convertLength(
@@ -605,7 +621,11 @@ int main(int argc, char *argv[])
 							_ar = r.ar,
 							_temperature = temp,
 							_temp_units = "K",
-							_vfOverride = vfo
+//							_vfOverride = vfo
+							_vfLowAeff = vf_aeff_1,
+							_vfHighAeff = vf_aeff_2,
+							_vfLow = vf_1,
+							_vfHigh = vf_2
 							);
 						r.fv = dEff / dIce;
 						r.aeff = stats->aeff_dipoles_const * s->standardD;

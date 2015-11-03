@@ -80,7 +80,10 @@ namespace rtmath
 				(ar, *, 1.0)
 				(temperature, *, 263)
 				(temp_units, *, std::string("K"))
-				(vfOverride, *, 0)
+				(vfLowAeff, *, -1)
+				(vfHighAeff, *, -1)
+				(vfLow, *, -1)
+				(vfHigh, *, -1)
 			)
 			)
 		{
@@ -90,7 +93,10 @@ namespace rtmath
 				<< " as " << in_length_type
 				<< "\n\tprovider: " << provider
 				<< "\n\tar: " << ar
-				<< "\n\tvfOverride: " << vfOverride
+				<< "\n\tvfLowAeff: " << vfLowAeff << " um"
+				<< "\n\tvfHighAeff: " << vfHighAeff << " um"
+				<< "\n\tvfLow: " << vfLow
+				<< "\n\tvfHigh: " << vfHigh
 				<< "\n\ttemperature: " << temperature
 				<< " " << temp_units);
 
@@ -100,7 +106,22 @@ namespace rtmath
 			std::function<double(double)> func;
 			found = implementations::findProvider(provider, func,
 				needsDtype, needsUnits, needsSubstance, relnResult);
-			if (!found && provider != "Constant") RDthrow(Ryan_Debug::error::xBadInput())
+			if (!found) {
+				if (provider == "Linear" || provider == "Constant") {
+					found = true;
+					needsDtype = "Effective_Radius";
+					needsUnits = "um";
+					needsSubstance = "ice";
+					relnResult = "vf";
+					if (provider == "Linear")
+						func = std::bind(implementations::linearDensity,
+						vfLowAeff, vfLow, vfHighAeff, vfHigh, std::placeholders::_1);
+					if (provider == "Constant")
+						func = std::bind(implementations::linearDensity,
+						1, vfLow, 100, vfHigh, std::placeholders::_1);
+				}
+			}
+			if (!found) RDthrow(Ryan_Debug::error::xBadInput())
 				<< Ryan_Debug::error::specializer_type(provider)
 				<< Ryan_Debug::error::otherErrorText("Unknown density provider");
 
@@ -194,6 +215,11 @@ namespace rtmath
 						//<< "\n\tVcm: " << Vcm << " cm^3"
 						<< "\n\tactual den: " << den << " g/cm^3");
 				}
+				if (relnResult == "vf") {
+					double solidIceDen = 0;
+					implementations::findDen(solidIceDen, "ice", temperature, temp_units);
+					den *= solidIceDen;
+				}
 				//den *= invf; // TODO: may need to tweak convertLength
 				return den / arnorm;
 			};
@@ -232,7 +258,7 @@ namespace rtmath
 			/// Iterative conversion needed, usually from ice effective radius to max dimension. Guess a vf,
 			/// then do the back conversion with the desired method, and successively re-approximate.
 			auto convertIterate = [&]() -> double {
-				if (!vfOverride) {
+				//if (vfLowAeff < 0) {
 					mylog("convertIterate called. Will evaluate using backconvert for vfa 0.0001 and vfb 1.0");
 					double vfa = backConvert(0.0001), vfb = backConvert(1.0);
 					//mylog("convertIterate initial bounds a: vf 0.0001: " << vfa << ", b: vf 1.0: " << vfb);
@@ -259,15 +285,15 @@ namespace rtmath
 						<< " is " << solidIceDen << " g/cm^3");
 					double effDen = solidIceDen * vf;
 					return effDen;
-				} else {
-					mylog("convertIterate called with a known volume fraction");
-					double solidIceDen = 0;
-					implementations::findDen(solidIceDen, "ice", temperature, temp_units);
-					mylog("The density of ice at " << temperature << " " << temp_units 
-						<< " is " << solidIceDen << " g/cm^3");
-					double effDen = solidIceDen * vfOverride;
-					return effDen;
-				}
+				//} else {
+					//mylog("convertIterate called with a known volume fraction");
+					//double solidIceDen = 0;
+					//implementations::findDen(solidIceDen, "ice", temperature, temp_units);
+					//mylog("The density of ice at " << temperature << " " << temp_units 
+					//	<< " is " << solidIceDen << " g/cm^3");
+					//double effDen = solidIceDen * vfOverride;
+					//return effDen;
+				//}
 			};
 
 			double effden = 0;

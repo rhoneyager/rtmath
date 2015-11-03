@@ -13,7 +13,7 @@
 *
 * Supports shapefile decimation / enhancement.
 */
-
+#include "../../rtmath/rtmath/defs.h"
 #include <boost/math/constants/constants.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

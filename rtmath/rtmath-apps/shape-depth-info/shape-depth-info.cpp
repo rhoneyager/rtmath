@@ -11,7 +11,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
+#include "../../rtmath/rtmath/defs.h"
 #include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>

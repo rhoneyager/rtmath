@@ -4,7 +4,7 @@
 // of columns to integrate over, and it performs the integration
 // using the Sekhon and Srivastava [1970] size distribution.
 #define BOOST_SPIRIT_USE_PHOENIX_V3
-
+#include "../../rtmath/rtmath/defs.h"
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

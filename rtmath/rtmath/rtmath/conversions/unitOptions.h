@@ -34,6 +34,10 @@ namespace rtmath {
 			BOOST_PARAMETER_NAME(in_volume_fraction)
 			BOOST_PARAMETER_NAME(out_volume_fraction)
 			BOOST_PARAMETER_NAME(vfOverride)
+			BOOST_PARAMETER_NAME(vfLowAeff)
+			BOOST_PARAMETER_NAME(vfHighAeff)
+			BOOST_PARAMETER_NAME(vfLow)
+			BOOST_PARAMETER_NAME(vfHigh)
 		}
 	}
 }

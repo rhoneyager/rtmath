@@ -170,6 +170,14 @@ namespace rtmath
 				return 0.104 * pow(D,-0.95);
 			}
 
+			double linearDensity(double lowAeff, double lowDen,
+				double highAeff, double highDen, double aeff) {
+				double slope = (highDen - lowDen)/(highAeff - lowAeff);;
+				double res = lowDen;
+				res += slope * (aeff - lowAeff);
+				return res * 0.916;
+			}
+
 			void findDen(double &den, const std::string &subst,
 					double temperature, const std::string &temp_units)
 			{

@@ -222,17 +222,6 @@ int main(int argc, char *argv[])
 		// Perform the query, and then process the matched shapefiles
 		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
-
-
-		struct run
-		{
-			double temp, freq, aeff, lambda, ar;
-			double fv, maxDiamFull;
-			std::string fvMeth;
-			std::complex<double> m;
-			std::string refHash;
-			double DDAcbk, DDAcsca, DDAg;
-		};
 		vector<run> runs;
 		runs.reserve(50000);
 
@@ -254,21 +243,6 @@ int main(int argc, char *argv[])
 			Mres = ovM;
 		};
 
-
-		enum class VFRAC_TYPE
-		{
-			CIRCUM_SPHERE,
-			VORONOI,
-			CONVEX,
-			ELLIPSOID_MAX,
-			INTERNAL_VORONOI,
-			RMS_SPHERE,
-			GYRATION_SPHERE,
-			SOLID_SPHERE,
-			ELLIPSOID_MAX_HOLLY,
-			VORONOI_OFFSET,
-			OTHER
-		};
 		VFRAC_TYPE vf = VFRAC_TYPE::CIRCUM_SPHERE;
 		string vfScaling = vm["vf-scaling"].as<string>();
 
@@ -363,25 +337,8 @@ int main(int argc, char *argv[])
 						r.fvMeth = vfScaling;
 					}
 					if (v) {
-						// Cannot do this because effective radius != equivalent radius
-						// r.aeff = v->aeff_V * s->standardD;
-						// The stats aeff_V is a misnomer. Should be equivalent radius.
-						// Instead, do this:
-						//r.aeff = s->standardD
-						//	* rtmath::units::convertLength(
-						//		_in_length_value = v->V * v->f,
-						//		_in_length_type = "Volume",
-						//		_out_length_type = "Effective_Radius");
-						// Stats implement aeff_V and V inconsistently. Voronoi is
-						// different from the others. The reliable one is the volume
-						// fraction. So, calculate everything from this.
-						//double vol_real = stats->V_dipoles_const * pow(s->standardD,3.);
-						//double vol_meth = vol_real / v->f;
-						//r.aeff = pow(3.*v->V*v->f/(4.*pi),1./3.) * s->standardD;
 						r.aeff = stats->aeff_dipoles_const * s->standardD;
 						r.fv = v->f;
-						// MAY HAVE CAUSED AN ERROR IN THE RESULTS!!!!!!!
-						//if (vf == VFRAC_TYPE::VORONOI_OFFSET) r.fv -= 0.1;
 					 } else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
 						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 						vd = s->generateVoronoi(
