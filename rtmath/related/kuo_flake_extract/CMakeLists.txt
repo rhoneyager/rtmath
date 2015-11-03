@@ -35,7 +35,20 @@ endif()
 #	include_directories(${SZIP_INCLUDE_DIRS})
 #		SET (h5libs ${h5libs} szip)
 #ENDIF()
-
+if(CMAKE_COMPILER_IS_GNUCXX)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+if(WIN32 AND NOT CYGWIN)
+else()
+	add_definitions(-fPIC)
+endif()
+if(WIN32 AND NOT CYGWIN)
+	set(libs Ryan_Debug)
+else()
+	set (libs Ryan_Debug ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY}
+		${Boost_PROGRAM_OPTIONS_LIBRARY}
+		${Boost_SYSTEM_LIBRARY})
+endif()
 add_subdirectory (../rtmath_hdf5_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_hdf5_cpp")
 
 #include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../rtmath")
@@ -44,6 +57,7 @@ add_subdirectory (../rtmath_hdf5_cpp "${CMAKE_CURRENT_BINARY_DIR}/rtmath_hdf5_cp
 add_executable (kuo_flake_extract 
 	read.cpp
 	main.cpp
+	read.h
 	)
 set_target_properties(kuo_flake_extract PROPERTIES FOLDER "Related")
 target_link_libraries(kuo_flake_extract ${libs}

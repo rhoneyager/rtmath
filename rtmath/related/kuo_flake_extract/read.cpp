@@ -14,203 +14,186 @@
 
 #include <boost/filesystem.hpp>
 
-#include "../../rtmath/rtmath/defs.h"
-#include "../../rtmath/rtmath/ddscat/ddOriData.h"
-#include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/ddscat/ddpar.h"
-#include "../../rtmath/rtmath/ddscat/ddOutput.h"
-#include "../../rtmath/rtmath/ddscat/ddScattMatrix.h"
-#include "../../rtmath/rtmath/ddscat/rotations.h"
-#include "../../rtmath/rtmath/plugin.h"
-#include "../../rtmath/rtmath/error/debug.h"
 #include <Ryan_Debug/error.h>
+#include <Ryan_Debug/registry.h>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
-#include "plugin-hdf5.h"
-#include "../../related/rtmath_hdf5_cpp/export-hdf5.h"
+#include "../rtmath_hdf5_cpp/export-hdf5.h"
 
-namespace rtmath {
-	namespace plugins {
-		namespace hdf5 {
+#include "read.h"
 
-			template<class T, class Container>
-			void readAttrSet(std::shared_ptr<H5::Group> grpPar, const char* name,
-				boost::shared_ptr<rtmath::ddscat::ddPar> r, void (rtmath::ddscat::ddOutput::* f) (const T&))
+struct hdf5_handle : public Ryan_Debug::registry::IOhandler
+{
+	hdf5_handle(const char* filename, IOtype t);
+	virtual ~hdf5_handle() {}
+	void open(const char* filename, IOtype t);
+	std::shared_ptr<H5::H5File> file;
+};
+hdf5_handle::hdf5_handle(const char* filename, IOtype t)
+	: IOhandler("hdf5-reader")
+{
+	open(filename, t);
+}
+
+void hdf5_handle::open(const char* filename, IOtype t)
+{
+	using namespace H5;
+	switch (t)
+	{
+	case IOtype::READWRITE:
+		file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_RDWR ));
+		break;
+	case IOtype::EXCLUSIVE:
+		file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_EXCL ));
+		break;
+	case IOtype::DEBUG:
+		file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_DEBUG ));
+		break;
+	case IOtype::CREATE:
+		file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_CREAT ));
+		break;
+	case IOtype::READONLY:
+		file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_RDONLY ));
+		break;
+	case IOtype::TRUNCATE:
+		file = std::shared_ptr<H5File>(new H5File(filename, H5F_ACC_TRUNC ));
+		break;
+	}
+}
+/*
+template<class T, class Container>
+void readAttrSet(std::shared_ptr<H5::Group> grpPar, const char* name,
+	boost::shared_ptr<rtmath::ddscat::ddPar> r, void (rtmath::ddscat::ddOutput::* f) (const T&))
+{
+	T val;
+	readAttr<T, Container>(grpPar, name, val);
+	(*r.*f)(val);
+}
+
+template<class T, class Container>
+void readAttrSet(std::shared_ptr<H5::Group> grpPar, const char* name,
+	boost::shared_ptr<rtmath::ddscat::ddPar> r, void (rtmath::ddscat::ddOutput::* f) (T))
+{
+	T val;
+	readAttr<T, Container>(grpPar, name, val);
+	(*r.*f)(val);
+}
+*/
+void readFile(const std::string &inFile, std::vector<data_entry> &out) {
+	using std::shared_ptr;
+	using std::string;
+	using std::endl;
+	using std::cerr;
+	using namespace H5;
+	using namespace Ryan_Debug;
+	using namespace Ryan_Debug::registry;
+	using namespace rtmath::plugins::hdf5;
+
+	cerr << "Reading file " << inFile << endl;
+	const IOhandler::IOtype iotype = IOhandler::IOtype::READONLY;
+	//Exception::dontPrint();
+	std::shared_ptr<hdf5_handle> h = registry::construct_handle
+		<registry::IOhandler, hdf5_handle>(
+		nullptr, "hdf5-read", [&](){return std::shared_ptr<hdf5_handle>(
+		new hdf5_handle(inFile.c_str(), iotype)); });
+
+	shared_ptr<Group> grpHashes = openGroup(h->file, "shape");
+	if (grpHashes)
+	{
+		hsize_t sz = grpHashes->getNumObjs();
+		//s.reserve(s.size() + sz);
+		for (hsize_t i = 0; i < sz; ++i)
+		{
+			std::string hname = grpHashes->getObjnameByIdx(i);
+			H5G_obj_t t = grpHashes->getObjTypeByIdx(i);
+			if (t != H5G_obj_t::H5G_GROUP) continue;
+
+			shared_ptr<Group> grpHash = openGroup(grpHashes, hname.c_str());
+			if (!grpHash) { continue; } // Should never happen
+			shared_ptr<Group> grpRuns = openGroup(grpHash, "size");
+			if (!grpRuns) { continue; }
+
+			hsize_t rz = grpRuns->getNumObjs();
+			for (hsize_t i = 0; i < rz; ++i)
 			{
-				T val;
-				readAttr<T, Container>(grpPar, name, val);
-				(*r.*f)(val);
-			}
+				std::string runname = grpRuns->getObjnameByIdx(i);
+				H5G_obj_t t = grpRuns->getObjTypeByIdx(i);
+				if (t != H5G_obj_t::H5G_GROUP) continue;
+				shared_ptr<H5::Group> grpRun = openGroup(grpRuns, runname.c_str());
+				if (!grpRun) { continue;}
 
-			template<class T, class Container>
-			void readAttrSet(std::shared_ptr<H5::Group> grpPar, const char* name,
-				boost::shared_ptr<rtmath::ddscat::ddPar> r, void (rtmath::ddscat::ddOutput::* f) (T))
-			{
-				T val;
-				readAttr<T, Container>(grpPar, name, val);
-				(*r.*f)(val);
-			}
+				// subfolders are frequency and pblock
+				shared_ptr<H5::Group> grpPblock = openGroup(grpRun, "pblock");
+				if (!grpPblock) { continue;}
 
-			bool read_hdf5_ddPar(std::shared_ptr<H5::Group> grpPar,
-				boost::shared_ptr<rtmath::ddscat::ddPar > r);
-			bool read_hdf5_shaperawdata(std::shared_ptr<H5::Group> base, 
-				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile > shp);
-			bool read_hdf5_ddOutput(std::shared_ptr<H5::Group> base, std::shared_ptr<Ryan_Debug::registry::IO_options> opts,
-				boost::shared_ptr<rtmath::ddscat::ddOutput > r)
-			{
-				using std::shared_ptr;
-				using std::string;
-				using namespace H5;
-				using namespace ddscat;
-				
-				readAttr<string, Group>(base, "Description", r->description);
-				readAttr<double, Group>(base, "Frequency", r->freq);
-				readAttr<double, Group>(base, "aeff", r->aeff);
-				readAttr<double, Group>(base, "Temperature", r->temp);
-				readAttr<string, Group>(base, "ingest_timestamp", r->ingest_timestamp);
-				readAttr<string, Group>(base, "ingest_hostname", r->ingest_hostname);
-				if (attrExists(base, "ingest_username"))
-					readAttr<string, Group>(base, "ingest_username", r->ingest_username);
-				//if (attrExists(base, "run_uuid"))
-				//	readAttr<string, Group>(base, "run_uuid", r->runuuid);
-				readAttr<int, Group>(base, "ingest_rtmath_version", r->ingest_rtmath_version);
-				readAttr<string, Group>(base, "hostname", r->hostname);
+				double md = 0, aeff = 0, dspacing = 0;
+				readAttr<double, Group>(grpPblock, "INTER_DIPOLE_DISTANCE", dspacing);
 
-				readAttr<size_t, Group>(base, "DDSCAT_Version_Num", r->s.version);
-				readAttr<size_t, Group>(base, "Num_Dipoles", r->s.num_dipoles);
-				readAttr<size_t, Group>(base, "Num_Avgs_cos", r->s.navg);
-				readAttr<string, Group>(base, "target", r->s.target);
+				typedef Eigen::Matrix<float, Eigen::Dynamic, 1> arrt;
+				arrt mat; mat.resize(1,1);
+				readDatasetEigen<arrt, Group>(grpPblock, "EVOL_RADIUS", mat);
+				aeff = mat(0,0);
 
-				readAttrArray<double, Group>(base, "mins", r->s.mins.data(), 1, 3);
-				readAttrArray<double, Group>(base, "maxs", r->s.maxs.data(), 1, 3);
-				readAttrArray<double, Group>(base, "TA1TF", r->s.TA1TF.data(), 1, 3);
-				readAttrArray<double, Group>(base, "TA2TF", r->s.TA2TF.data(), 1, 3);
-				readAttrArray<double, Group>(base, "LFK", r->s.LFK.data(), 1, 3);
+				readDatasetEigen<arrt, Group>(grpPblock, "MAX_DIM", mat);
+				md = mat(0,0);
 
-				readAttrComplex<std::complex<double>, Group>
-					(base, "IPV1LF", r->s.IPV1LF.data(), 3, 1);
-				readAttrComplex<std::complex<double>, Group>
-					(base, "IPV2LF", r->s.IPV2LF.data(), 3, 1);
-
-				/*
-				Eigen::MatrixXf refrs;
-				readDatasetEigen<Eigen::MatrixXf, Group>(base, "Refractive_Indices", refrs);
-				for (size_t i=0; i< (size_t) refrs.rows(); ++i)
-					r->ms.push_back(std::complex<double>( refrs(i,0), refrs(i,1) ));
-				*/
-
-				// Source file paths
+				// iterate over frequency
+				shared_ptr<H5::Group> grpFreqs = openGroup(grpRun, "frequency");
+				if (!grpFreqs) continue;
+				hsize_t fz = grpFreqs->getNumObjs();
+				for (hsize_t f = 0; f < fz; ++f)
 				{
-					std::vector<size_t> dims;
-					readDatasetDimensions<Group>(base, "Sources", dims);
-					std::vector<const char*> csrcs(dims[0]);
-					readDatasetArray<const char*, Group>(base, "Sources", csrcs.data());
-					for (size_t i = 0; i<csrcs.size(); ++i)
-						r->sources.insert(std::string(csrcs[i]));
-					
+					std::string freqname = grpFreqs->getObjnameByIdx(f);
+					H5G_obj_t t = grpFreqs->getObjTypeByIdx(f);
+					if (t != H5G_obj_t::H5G_GROUP) continue;
+					shared_ptr<H5::Group> grpf = openGroup(grpFreqs, freqname.c_str());
+					if (!grpf) continue;
+
+					shared_ptr<H5::Group> grpori = openGroup(grpf, "orientation");
+					if (!grpori) continue;
+					shared_ptr<H5::Group> grpavg = openGroup(grpori, "average");
+					if (!grpavg) continue;
+					shared_ptr<H5::Group> grpcomp = openGroup(grpavg, "compact");
+					if (!grpcomp) continue;
+					shared_ptr<H5::Group> grpadv = openGroup(grpavg, "advanced");
+					if (!grpadv) continue;
+
+					// advanced group has orientations as attributes
+					// compact group has the cross-sections
+					double qabs = 0, qbk = 0, qext = 0, qsca = 0, g = 0, aeffb = 0,
+						wave = 0, freq = 0;
+					int nb = 0, nt = 0, np = 0;
+					readAttr<int, Group>(grpadv, "NBETA", nb);
+					readAttr<int, Group>(grpadv, "NTHETA", nt);
+					readAttr<int, Group>(grpadv, "NPHI", np);
+					readAttr<double, Group>(grpadv, "AEFF", aeffb);
+					readAttr<double, Group>(grpadv, "WAVE", wave);
+					// Frequency conversion
+					freq = (2.9979e5) / wave;
+
+					readDatasetEigen<arrt, Group>(grpcomp, "Q_abs", mat);
+					qabs = mat(0,0);
+					readDatasetEigen<arrt, Group>(grpcomp, "Q_bk", mat);
+					qbk = mat(0,0);
+					readDatasetEigen<arrt, Group>(grpcomp, "Q_ext", mat);
+					qext = mat(0,0);
+					readDatasetEigen<arrt, Group>(grpcomp, "Q_sca", mat);
+					qsca = mat(0,0);
+					readDatasetEigen<arrt, Group>(grpcomp, "g", mat);
+					g = mat(0,0);
+
+					data_entry d;
+					d.version = 0;
+					d.id = hname;
+					d.nb = nb; d.nt = nt; d.np = np;
+					d.aeff = aeffb; d.freq = freq; d.md = md; d.wave = wave; d.dspacing = dspacing;
+					d.qabs = qabs; d.qbk = qbk; d.qext = qext; d.qsca = qsca; d.g = g;
+					out.push_back(std::move(d));
 				}
 
-				// Tags
-				{
-					const size_t nTagCols = 2;
-					typedef std::array<const char*, nTagCols> strdata;
-					// Get size of the tags object
-					size_t numTags = 0;
-					readAttr<size_t, Group>(base, "Num_Tags", numTags);
-
-					if (numTags)
-					{
-						std::vector<strdata> sdata(numTags);
-
-						hsize_t dim[1] = { static_cast<hsize_t>(numTags) };
-						DataSpace space(1, dim);
-						// May have to cast array to a private structure
-						H5::StrType strtype(0, H5T_VARIABLE);
-						CompType stringTableType(sizeof(strdata));
-						stringTableType.insertMember("Key", ARRAYOFFSET(strdata, 0), strtype);
-						stringTableType.insertMember("Value", ARRAYOFFSET(strdata, 1), strtype);
-
-						std::shared_ptr<DataSet> sdataset(new DataSet(base->openDataSet("Tags")));
-						sdataset->read(sdata.data(), stringTableType);
-
-						for (const auto &t : sdata)
-						{
-							r->tags.insert(std::pair<std::string, std::string>(
-								std::string(t.at(0)), std::string(t.at(1))));
-						}
-					}
-				}
-
-				// DDSCAT run version tag
-				if (attrExists(base, "DDA_Version_Tag") )
-					readAttr<string, Group>(base, "DDA_Version_Tag", r->ddvertag);
-				else if (attrExists(base, "DDSCAT_Version_Tag") )
-					readAttr<string, Group>(base, "DDSCAT_Version_Tag", r->ddvertag);
-
-				readAttr<uint64_t, Group>(base, "Shapehash_lower", r->shapeHash.lower);
-				readAttr<uint64_t, Group>(base, "Shapehash_upper", r->shapeHash.upper);
-				readAttr<uint64_t, Group>(base, "ParsedShapehash_lower", r->parsedShapeHash.lower);
-				readAttr<uint64_t, Group>(base, "ParsedShapehash_upper", r->parsedShapeHash.upper);
-
-				if (attrExists(base, "runhash_lower")) // Not all have this
-				{
-					readAttr<uint64_t, Group>(base, "runhash_lower", r->_runhash.lower);
-					readAttr<uint64_t, Group>(base, "runhash_upper", r->_runhash.upper);
-				}
-
-				bool readSHP = opts->getVal<bool>("readSHP", false);
-				bool readORI = opts->getVal<bool>("readORI", true);
-				bool readFML = opts->getVal<bool>("readFML", true);
-				bool readAVG = opts->getVal<bool>("readAVG", true);
-
-				if (readORI && datasetExists(base, "Cross_Sections"))
-					readDatasetEigen(base, "Cross_Sections", (r->oridata_d));
-				if (readFML && datasetExists(base, "FML_Data"))
-					readDatasetEigen(base, "FML_Data", *(r->fmldata));
-				if (readAVG && datasetExists(base, "Average_Results"))
-				{
-					auto tbl = readDatasetEigen(base, "Average_Results", (r->avgdata.avg));
-					r->avgdata.hasAvg = true;
-					readAttr(tbl, "beta_min", r->avgdata.beta_min);
-					readAttr(tbl, "beta_max", r->avgdata.beta_max);
-					readAttr(tbl, "beta_n", r->avgdata.beta_n);
-					readAttr(tbl, "theta_min", r->avgdata.theta_min);
-					readAttr(tbl, "theta_max", r->avgdata.theta_max);
-					readAttr(tbl, "theta_n", r->avgdata.theta_n);
-					readAttr(tbl, "phi_min", r->avgdata.phi_min);
-					readAttr(tbl, "phi_max", r->avgdata.phi_max);
-					readAttr(tbl, "phi_n", r->avgdata.phi_n);
-				}
-				r->numOriData = r->oridata_d.rows();
-				//r->numTotAngles = r->fmldata->rows();
-				if (readSHP) {
-					// Try these, in order:
-					if (rtmath::ddscat::shapefile::shapefile::isHashStored(r->shapeHash)) {
-						r->shape = rtmath::ddscat::shapefile::shapefile::loadHash(r->shapeHash);
-					} else if (symLinkExists(base, "Shape").second) {
-						// Read the shape and store a pointer within the ddOutput object.
-						// Also, register this shape with the shapefile routines.
-						shared_ptr<Group> grpShape = openGroup(base, "Shape");
-						boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> shp = 
-							rtmath::ddscat::shapefile::shapefile::generate();
-						read_hdf5_shaperawdata(grpShape, shp);
-						shp->registerHash();
-						r->shape = shp;
-					} else {
-						r->shape = rtmath::ddscat::shapefile::shapefile::loadHash(r->shapeHash);
-					}
-				}
-				
-				// Do, however, read the ddscat.par file, since some of these values are useful when 
-				// interpreting the ddscat run.
-				r->parfile = ddPar::generate(); //boost::shared_ptr<ddPar>(new ddPar);
-				read_hdf5_ddPar(openGroup(base, "par"), r->parfile);
-				//r->doImport();
-				return true;
 			}
 		}
 	}
-
 }
+
