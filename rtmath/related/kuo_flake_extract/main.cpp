@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 		out << "ID" << dc << "Version" << dc
 			<< "aeff (um)" << dc << "Frequency (GHz)" << dc
 			<< "Wavelength (um)" << dc << "Dipole Spacing (um)" << dc
-			<< "Maximum Diameter (um)" << dc
+			<< "Maximum Diameter (um)" << dc << "Mass (g)" << dc << "Aspect Ratio" << dc
 			<< "nBetas" << dc << "nThetas" << dc << "nPhis" << dc
 			<< "Qabs" << dc << "Qbk" << dc << "Qext" << dc << "Qsca" << dc << "g" << dc
 			<< endl;
@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
 			for (const auto &i : data) {
 				out << i.id << dc << i.version << dc << i.aeff << dc << i.freq << dc
 					<< i.wave << dc << i.dspacing << dc << i.md << dc
+					<< i.mass << dc << i.ar << dc
 					<< i.nb << dc << i.nt << dc << i.np << dc
 					<< i.qabs << dc << i.qbk << dc << i.qext << dc << i.qsca << dc << i.g << endl;
 			}

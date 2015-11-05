@@ -147,11 +147,12 @@ void readFile(const std::string &cross, const std::string &phase,
 	// aeff should be in microns. These two ways are equivalent.
 	arrt aeff = ((3.*(vol.array())/(4.*pi)).pow(1./3.)).matrix() * 1.e6;
 	arrt aeffb = ( (3./(4.*pi)) * pow(dspacing,3.) * ndip.array() ).pow(1./3.).matrix();
-	arrt cbk = chh;
-	arrt qsca = ((csca.array()/(pi*(aeff.array()*aeff.array())))).matrix();
-	arrt qabs = ((cabs.array()/(pi*(aeff.array()*aeff.array())))).matrix();
-	arrt qext = ((cext.array()/(pi*(aeff.array()*aeff.array())))).matrix();
-	arrt qbk = ((cbk.array()/(pi*(aeff.array()*aeff.array())))).matrix();
+	arrt cbk = (chh + cvv) / 2;
+	// csca, cbk, etc. all have units of m^2. aeff has um!
+	arrt qsca = ((csca.array()/(pi*1e-12*(aeff.array()*aeff.array())))).matrix();
+	arrt qabs = ((cabs.array()/(pi*1e-12*(aeff.array()*aeff.array())))).matrix();
+	arrt qext = ((cext.array()/(pi*1e-12*(aeff.array()*aeff.array())))).matrix();
+	arrt qbk = ((cbk.array()/(pi*1e-12*(aeff.array()*aeff.array())))).matrix();
 
 	for (int row = 0; row < chh.rows(); ++row)
 		for (int col = 0; col < chh.cols(); ++col)
@@ -166,6 +167,7 @@ void readFile(const std::string &cross, const std::string &phase,
 			d.aeff = aeffb(row,col); // in um
 			d.md = dmax(row,col) * 1000; // in mm
 			d.g = asym(row,col);
+			d.mass = mass(row,col) * 1000; // in g
 			d.qabs = qabs(row,col); d.qbk = qbk(row,col);
 			d.qext = qext(row,col); d.qsca = qsca(row,col);
 			out.push_back(std::move(d));

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <boost/filesystem.hpp>
+#include <boost/math/constants/constants.hpp>
 
 #include <Ryan_Debug/error.h>
 #include <Ryan_Debug/registry.h>
@@ -127,7 +128,7 @@ void readFile(const std::string &inFile, std::vector<data_entry> &out) {
 				shared_ptr<H5::Group> grpPblock = openGroup(grpRun, "pblock");
 				if (!grpPblock) { continue;}
 
-				double md = 0, aeff = 0, dspacing = 0;
+				double md = 0, aeff = 0, dspacing = 0, ar = 0, mass = 0;
 				readAttr<double, Group>(grpPblock, "INTER_DIPOLE_DISTANCE", dspacing);
 
 				typedef Eigen::Matrix<float, Eigen::Dynamic, 1> arrt;
@@ -137,6 +138,10 @@ void readFile(const std::string &inFile, std::vector<data_entry> &out) {
 
 				readDatasetEigen<arrt, Group>(grpPblock, "MAX_DIM", mat);
 				md = mat(0,0);
+
+				mat.resize(3,1);
+				readDatasetEigen<arrt, Group>(grpPblock, "CIRC_ELLIPSOID_SEMI_AXIS_LENGTH", mat);
+				ar = 2 * mat(0,0) / (mat(1,0) + mat(2,0) );
 
 				// iterate over frequency
 				shared_ptr<H5::Group> grpFreqs = openGroup(grpRun, "frequency");
@@ -171,6 +176,11 @@ void readFile(const std::string &inFile, std::vector<data_entry> &out) {
 					readAttr<double, Group>(grpadv, "WAVE", wave);
 					// Frequency conversion
 					freq = (2.9979e5) / wave;
+					// Get mass
+					const double pi = boost::math::constants::pi<double>();
+					double volume = 4. * pi * pow(aeffb,3) / 3.; // in um3
+					const double den = 0.917 * 1e-12; // g/um^3
+					mass = volume * den; // in g
 
 					readDatasetEigen<arrt, Group>(grpcomp, "Q_abs", mat);
 					qabs = mat(0,0);
@@ -189,6 +199,8 @@ void readFile(const std::string &inFile, std::vector<data_entry> &out) {
 					d.nb = nb; d.nt = nt; d.np = np;
 					d.aeff = aeffb; d.freq = freq; d.md = md; d.wave = wave; d.dspacing = dspacing;
 					d.qabs = qabs; d.qbk = qbk; d.qext = qext; d.qsca = qsca; d.g = g;
+					d.mass = mass;
+					d.ar = ar;
 					out.push_back(std::move(d));
 				}
 

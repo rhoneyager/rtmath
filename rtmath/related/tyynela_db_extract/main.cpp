@@ -58,11 +58,11 @@ int main(int argc, char** argv) {
 		string sPhys = vm["phys"].as<string>();
 
 		ofstream out(sOutput.c_str());
-		out << "ID" << dc << "Source" << dc << "Type" << dc
+		out << "ID" << dc << "Type" << dc
 			<< "aeff (um)" << dc << "Frequency (GHz)" << dc
 			<< "Wavelength (um)" << dc << "Dipole Spacing (um)" << dc
 			<< "Maximum Diameter (mm)" << dc
-			<< "Aspect Ratio" << dc
+			<< "Aspect Ratio" << dc << "Mass (g)" << dc
 			<< "Qabs" << dc << "Qbk" << dc << "Qext" << dc << "Qsca" << dc << "g" << dc
 			<< endl;
 
@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
 		for (const auto &i : data) {
 			out << i.id << dc << i.source << dc << i.aeff << dc << i.freq << dc
 				<< i.wave << dc << i.dspacing << dc << i.md << dc << i.ar << dc
+				<< i.mass << dc
 				<< i.qabs << dc << i.qbk << dc << i.qext << dc << i.qsca << dc << i.g << endl;
 		}
 

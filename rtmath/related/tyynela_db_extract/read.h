@@ -5,7 +5,7 @@
 struct data_entry {
 	std::string id, source;
 	float aeff, freq, md, wave, dspacing,
-		qabs, qbk, qext, qsca, g, ar;
+		qabs, qbk, qext, qsca, g, ar, mass;
 };
 
 void readFile(const std::string &cross,
