@@ -359,7 +359,7 @@ namespace rtmath {
 		double converter::convert(double in) const {
 			if (!h)
 				RDthrow(Ryan_Debug::error::xBadInput())
-					<< Ryan_Debug::error::otherErrorText("Converter handler is null.");
+					<< Ryan_Debug::error::otherErrorText("Converter handler is null. Probably incompatible units.");
 			return h->convert(in);
 		}
 		converter::~converter() {}

@@ -81,6 +81,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_TSV)
 		add_subdirectory(tsv-export)
 	endif()
+	option (BUILD_PLUGIN_UDUNITS
+		"Build udunits plugin. Supplements unit conversions." ON)
+	if (BUILD_PLUGIN_UDUNITS)
+		add_subdirectory(udunits)
+	endif()
 	option (BUILD_PLUGIN_VORO
 		"Build VORO++ 3d plugin. Used in Voronoi diagram." ON)
 	if (BUILD_PLUGIN_VORO)
