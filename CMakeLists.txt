@@ -27,7 +27,7 @@ include(generaterc)
 
 set(MAJOR 0)
 set(MINOR 10)
-set(REVISION 0)
+set(REVISION 1)
 
 set(RYAN_DEBUG_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION})
