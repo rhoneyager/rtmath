@@ -1124,7 +1124,7 @@ namespace Ryan_Debug {
 #endif
 
 
-		cerr << endl << endl;
+		//cerr << endl << endl;
 		//			Ryan_Debug::debug::listuniqueobj(cerr, false);
 		//#endif
 

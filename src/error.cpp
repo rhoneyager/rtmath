@@ -17,11 +17,11 @@ namespace Ryan_Debug {
 		const char* xError::what() const throw()
 		{
 			std::ostringstream out;
-			if (errLbl.size()) out << "\n\nError: " << errLbl;
-			else out << "\n\nUnclassified error: ";
+			if (errLbl.size()) out << "\nError: " << errLbl;
+			else out << "\nUnclassified error: ";
 			out << std::endl;
 
-			out << boost::diagnostic_information_what(*this, true) << std::endl;
+			out << boost::diagnostic_information_what(*this, true);
 			errText = out.str();
 			return errText.c_str();
 		}

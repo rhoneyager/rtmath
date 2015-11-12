@@ -152,7 +152,7 @@ namespace Ryan_Debug
 				"TimeStamp",
 				::boost::log::attributes::local_clock());
 
-			if (1) {
+			if (1) { // need a default sink to suppress most console messages
 				sink_init = boost::make_shared< text_sink >();
 
 				// We have to provide an empty deleter to avoid destroying the global stream object
