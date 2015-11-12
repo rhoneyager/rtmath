@@ -1,9 +1,38 @@
 #pragma once
 #include "defs.h"
 #include <string>
+#include <memory>
 #include <Ryan_Debug/error.h>
 #include <Ryan_Debug/logging_base.h>
-
+#include <Ryan_Debug/registry.h>
+namespace rtmath {
+	namespace units {
+		namespace implementations {
+			void DLEXPORT_rtmath_core emit_units_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
+			class Unithandler;
+			class converter_provider_registry{};
+			class DLEXPORT_rtmath_core Converter_registry_provider
+			{
+			public:
+				Converter_registry_provider();
+				~Converter_registry_provider();
+				typedef const std::shared_ptr<const Ryan_Debug::registry::options> optsType;
+				typedef std::function<bool(optsType)> canConvertType;
+				canConvertType canConvert;
+				typedef std::function<std::shared_ptr<const Unithandler>(optsType)> constructType;
+				constructType constructConverter;
+				const char* name;
+			};
+		}
+	}
+}
+namespace Ryan_Debug {
+	namespace registry {
+		extern template class usesDLLregistry <
+			::rtmath::units::implementations::converter_provider_registry,
+			::rtmath::units::implementations::Converter_registry_provider > ;
+	}
+}
 namespace rtmath {
 	/** \brief Provides convenient runtime conversion functions for converting
 	 * different units. 
@@ -18,100 +47,44 @@ namespace rtmath {
 	 **/
 	namespace units {
 		namespace implementations {
-			void DLEXPORT_rtmath_core emit_units_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
+			/// Opaque object provided to perform unit manipulations.
+			struct DLEXPORT_rtmath_core Unithandler : public Ryan_Debug::registry::handler_external
+			{
+			protected:
+				Unithandler(const char* id);
+			public:
+				virtual ~Unithandler() {}
+				virtual double convert(double input) const = 0;
+				virtual bool isValid() const = 0;
+				//template <typename T>
+				//T convert(T input) const;
+			};
 		}
-		typedef std::pair<double, std::string> unit_pair;
 
 		/** \brief Base conversion class
 		*
 		* Class is virtual. May be overridden with classes that do formulaic operations,
 		* such as converters to density in ppmv.
+		*
+		* Now, with the appropriate DLL loaded, the udunits system will be used for most conversions.
+		* The derived classes still have a bit of code for when udunits is not installed.
 		**/
-		class DLEXPORT_rtmath_core converter
+		class DLEXPORT_rtmath_core converter :
+			virtual public ::Ryan_Debug::registry::usesDLLregistry <
+			implementations::converter_provider_registry, implementations::Converter_registry_provider >
 		{
 		public:
 			virtual ~converter();
 			virtual double convert(double inVal) const;
+			static bool canConvert(const std::string &inUnits, const std::string &outUnits);
+			static std::shared_ptr<const implementations::Unithandler> getConverter(
+				const std::string &inUnits, const std::string &outUnits);
 			//virtual double convertFull
+			converter(const std::string &inUnits, const std::string &outUnits);
+			bool isValid() const;
 		protected:
 			converter();
-			std::string _inUnits, _outUnits;
-			double _convFactor;
-			double _inOffset, _outOffset;
-			bool _valid;
-			void _init(const std::string &inUnits, const std::string &outUnits);
-		};
-
-		/**
-		* \brief Useful parent class to allow for conversions that require more than
-		* just an input quantity. 
-		*
-		* For example: conversions between density, 
-		* partial pressure and parts per million volumetrically or by mass.
-		* It basically just provides another function to conveniently set 
-		* these values, and it's up to a derived class to make use of it.
-		*
-		* \todo Combine some classes.
-		* \todo Add angular converters.
-		* \todo Add classes w/better dimensional analysis and SI prefix awareness.
-		**/
-		class DLEXPORT_rtmath_core atmosConv : public converter
-		{
-		public:
-			virtual ~atmosConv();
-		protected:
-			atmosConv();
-			//std::weak_ptr
-		};
-
-		/// \brief Linear distance conversions (nm, um, mm, cm, km)
-		/// \todo Rename to conv_dist_linear
-		class DLEXPORT_rtmath_core conv_alt : public atmosConv
-		{
-		public:
-			conv_alt(const std::string &inUnits, const std::string &outUnits);
-		};
-
-		/// Volume conversions (nm^3, um3, cm^3, m^3, km^3)
-		class DLEXPORT_rtmath_core conv_vol : public atmosConv
-		{
-		public:
-			conv_vol(const std::string &inUnits, const std::string &outUnits);
-		};
-
-		/// Pressure conversions (hPa, kPa, mb, bar)
-		class DLEXPORT_rtmath_core conv_pres : public atmosConv
-		{
-		public:
-			conv_pres(const std::string &inUnits, const std::string &outUnits);
-		};
-
-		/// Temperature conversions (F, C, K, R)
-		class DLEXPORT_rtmath_core conv_temp : public atmosConv
-		{
-		public:
-			conv_temp(const std::string &inUnits, const std::string &outUnits);
-		};
-
-		/// Mass conversions (ug, mb, g, kg)
-		class DLEXPORT_rtmath_core conv_mass : public atmosConv
-		{
-		public:
-			conv_mass(const std::string &inUnits, const std::string &outUnits);
-		};
-
-		/** \brief Density conversions
-		*
-		* Needs a special invocation of the convert function, as density may
-		* be expressed in terms of mass, volume or numerical densities!!!
-		* \todo Add other stuff, such as water vapor, to allow for more conversions!
-		* \note Currently only supporting numberic density (#/cm^3)
-		* \todo Add functionality to handle unit conversions by tokenizing
-		**/
-		class DLEXPORT_rtmath_core conv_dens : public atmosConv
-		{
-		public:
-			conv_dens(const std::string &inUnits, const std::string &outUnits);
+			std::shared_ptr<const implementations::Unithandler> h;
 		};
 
 		/// \brief Perform interconversions between frequency, wavelength and wavenumber
@@ -120,12 +93,7 @@ namespace rtmath {
 		{
 		public:
 			conv_spec(const std::string &inUnits, const std::string &outUnits);
-			virtual double convert(double in) const;
-		protected:
-			double _Sin, _Sout;
-			bool _Iin, _Iout;
 		};
-
 	}
  }
 

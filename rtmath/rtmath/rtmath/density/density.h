@@ -48,7 +48,7 @@ namespace rtmath
 			(temp_units, *, std::string("K"))) \
 			) \
 		{ \
-			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			double temp = rtmath::units::converter(temp_units, "degK").convert(temperature); \
 			return implementations:: name(temp); \
 		}
 
@@ -125,7 +125,7 @@ namespace rtmath
 				<< Ryan_Debug::error::specializer_type(provider)
 				<< Ryan_Debug::error::otherErrorText("Unknown density provider");
 
-			double in_len_um = rtmath::units::conv_alt(in_length_units, "um").convert(in_length_value);
+			double in_len_um = rtmath::units::converter(in_length_units, "um").convert(in_length_value);
 			mylog("Converting length to um gives " << in_len_um << " um");
 
 			// Can the conversion go directly, or does it need an iteration with
@@ -185,7 +185,7 @@ namespace rtmath
 					_ar = ar,
 					_out_length_type = needsDtype);
 				// convert to correct units here. inlen is always in um (see calling function)
-				outlen = rtmath::units::conv_alt("um", needsUnits).convert(outlen);
+				outlen = rtmath::units::converter("um", needsUnits).convert(outlen);
 				double arnorm = ar;
 				if (ar > 1.) arnorm = 1./ar;
 				double den = (func)(outlen); // either a mass (in g) or a density in g/cm^3
@@ -195,7 +195,7 @@ namespace rtmath
 					<< "\n\toutlen: " << outlen << " as " << needsDtype << " units " << needsUnits
 					<< "\n\tden before mass conversion (if needed): " << den);
 				if (relnResult == "mass") {
-					double in_len_needed = rtmath::units::conv_alt("um", "cm").convert(inlen);
+					double in_len_needed = rtmath::units::converter("um", "cm").convert(inlen);
 					// This relation provides a result in mass. It needs to be divided by volume
 					// to give a proper density. Has to be handled here.
 					double V = convertLength( _in_length_value = in_len_needed,
@@ -204,7 +204,7 @@ namespace rtmath
 						_ar = ar,
 						_out_length_type = "Volume");
 					V /= invf; // TODO: may need to tweak convertLength...
-					//double Vcm = units::conv_vol(needsUnits, "cm^3").convert(V);
+					//double Vcm = units::converter(needsUnits, "cm^3").convert(V);
 					double mass = den;
 					den /= V;
 					den *= arnorm; // SLightly different presentation.

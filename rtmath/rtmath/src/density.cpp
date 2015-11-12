@@ -102,7 +102,7 @@ namespace rtmath
 			{
 				initIce();
 				// temp is in K, but convert to Celsius for convenience
-				units::conv_temp c("K","C");
+				units::converter c("degK","degC");
 				double Tc = c.convert(T);
 				if (Tc > 0 || Tc < -260) RDthrow(Ryan_Debug::error::xModelOutOfRange())
 					<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-260, 0))
@@ -117,7 +117,7 @@ namespace rtmath
 			double SuperWater(double T)
 			{
 				initSuperWater();
-				units::conv_temp c("K","C");
+				units::converter c("degK","degC");
 				double Tc = c.convert(T);
 				if (Tc > 0 || Tc < -30) RDthrow(Ryan_Debug::error::xModelOutOfRange())
 					<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(-30, 0))

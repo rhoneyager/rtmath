@@ -48,14 +48,8 @@ int main(int argc, char** argv)
 			("output-vf", po::value<double>()->default_value(1.0),
 			 "Output volume fraction")
 
-			("density", "Convert density units")
-			("mass", "Convert mass  units (kg, g, ...)")
-			("length", "Convert length units (m, km, ft, ...)")
 			("spec", "Interconvert spectral units (frequency, wavelength, wavenumber) (DEFAULT)")
-			("volume","Convert units of volume (m^3, ...)")
-			("pressure", "Convert units of pressure (Pa, hPa, atm)")
-
-			("temperature", "Perform temperature conversion (K, C, F, R)");
+			;
 
 		po::positional_options_description p;
 		p.add("input",1);
@@ -87,27 +81,11 @@ int main(int argc, char** argv)
 
 		boost::shared_ptr<rtmath::units::converter> cnv;
 
-		if (vm.count("density")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_dens>(new rtmath::units::conv_dens(inUnits,outUnits));
-		} else if (vm.count("mass")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_mass>(new rtmath::units::conv_mass(inUnits,outUnits));
-		} else if (vm.count("length")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_alt>(new rtmath::units::conv_alt(inUnits,outUnits));
-		} else if (vm.count("spec")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_spec>(new rtmath::units::conv_spec(inUnits,outUnits));
-		} else if (vm.count("volume")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_vol>(new rtmath::units::conv_vol(inUnits,outUnits));
-		} else if (vm.count("pressure")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_pres>(new rtmath::units::conv_pres(inUnits,outUnits));
-		} else if (vm.count("temperature")) {
-			cnv = boost::shared_ptr<rtmath::units::conv_temp>(new rtmath::units::conv_temp(inUnits,outUnits));
+		if (vm.count("spec")) {
+			cnv = boost::shared_ptr<rtmath::units::converter>(new rtmath::units::conv_spec(inUnits,outUnits));
 		} else {
-			cnv = boost::shared_ptr<rtmath::units::conv_spec>(new rtmath::units::conv_spec(inUnits,outUnits));
-			//cerr << "Must specify a valid type of unit to convert (temperature, linear distance, ...)\n";
-			//cerr << desc << endl;
-			//return 1;
+			cnv = boost::shared_ptr<rtmath::units::converter>(new rtmath::units::converter(inUnits,outUnits));
 		}
-
 		outVal = cnv->convert(inVal);
 
 		if (vm.count("length") &&

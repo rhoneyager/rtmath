@@ -79,7 +79,7 @@ namespace rtmath {
 			) \
 				{ \
 			double freq = rtmath::units::conv_spec(freq_units, "GHz").convert(frequency); \
-			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			double temp = rtmath::units::converter(temp_units, "degK").convert(temperature); \
 			implementations:: name(freq, temp, m, provider); \
 				}
 
@@ -98,11 +98,11 @@ namespace rtmath {
 			(in_out(m), *)) \
 			(optional \
 			(freq_units, *, std::string("GHz")) \
-			(temp_units, *, std::string("K"))) \
+			(temp_units, *, std::string("degK"))) \
 			) \
 		{ \
 			double freq = rtmath::units::conv_spec(freq_units, "GHz").convert(frequency); \
-			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			double temp = rtmath::units::converter(temp_units, "degK").convert(temperature); \
 			implementations:: name(freq, temp, m); \
 		}
 
@@ -122,11 +122,11 @@ namespace rtmath {
 			(optional \
 				(temperature, (double), 0) \
 				(freq_units, *, std::string("GHz")) \
-				(temp_units, *, std::string("K")) ) \
+				(temp_units, *, std::string("degK")) ) \
 			) \
 				{ \
 			double lambda = rtmath::units::conv_spec(freq_units, "um").convert(frequency); \
-			double temp = rtmath::units::conv_temp(temp_units, "K").convert(temperature); \
+			double temp = rtmath::units::converter(temp_units, "degK").convert(temperature); \
 			implementations:: name(lambda, m); \
 				}
 		
