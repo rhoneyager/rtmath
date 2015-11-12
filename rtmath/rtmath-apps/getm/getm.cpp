@@ -267,7 +267,7 @@ int main(int argc, char** argv)
 		// Actual calculations
 		for (auto rT = temps.begin(); rT != temps.end(); ++rT)
 		{
-			double T = rtmath::units::conv_temp(unitsTemp, "K").convert(*rT);
+			double T = rtmath::units::converter(unitsTemp, "K").convert(*rT);
 			for (auto tempfreq = freqs.begin(); tempfreq != freqs.end(); ++tempfreq)
 			{
 				// Yes, this is ugly, but I wanted to avoid renaming everything.

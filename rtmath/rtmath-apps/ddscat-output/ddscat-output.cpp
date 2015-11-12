@@ -1,4 +1,5 @@
 /* This program is designed to create and extract from ddOutput files. */
+#include "../../rtmath/rtmath/defs.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
