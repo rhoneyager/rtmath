@@ -290,7 +290,7 @@ namespace rtmath {
 				implementations::Converter_registry_provider res;
 				res.canConvert = simpleUnits::canConvert;
 				res.constructConverter = simpleUnits::constructConverter;
-				static const char* name = "simple";
+				static const char* name = "1simple"; // load before others
 				res.name = name;
 				Ryan_Debug::registry::doRegisterHook
 					<converter, implementations::converter_provider_registry,
