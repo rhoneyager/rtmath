@@ -201,9 +201,10 @@ namespace rtmath
 				std::string &in_type, std::string &in_units,
 				std::string &in_subst, std::string &out_quantity)
 			{
-				const size_t numProviders = 7, span = 5;
+				const size_t numProviders = 6, // 7
+					span = 5;
 				const char *providers[numProviders * span] = {
-					"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice", "mass",
+//					"BrownFrancis1995Hogan2012", "Max_Diameter", "m", "ice", "mass",
 					"Brandes2007", "Max_Diameter", "mm", "ice", "density",
 					"MagonoNakamura1965", "Max_Diameter", "mm", "ice", "density",
 					"Holroyd1971", "Max_Diameter", "mm", "ice", "density",
@@ -211,7 +212,7 @@ namespace rtmath
 					"FabrySzyrmer1999", "Max_Diameter", "mm", "ice", "density",
 					"Heymsfield2004", "Max_Diameter", "mm", "ice", "density" };
 				std::function<double(double)> funcs[] = {
-					&(BrownFrancis1995Hogan2012),
+//					&(BrownFrancis1995Hogan2012),
 					&(Brandes2007),
 					&(MagonoNakamura1965),
 					&(Holroyd1971),
