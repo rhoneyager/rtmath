@@ -7,7 +7,19 @@ set(CMAKE_MODULE_PATH
 )
 
 include(common)
+include(SVNinfo)
 include(addBoostUniform)
+include(addBaseProject)
+include(addInstallDirs)
+include(addModuleFiles)
+set(MAJOR 0)
+set(MINOR 1)
+set(REVISION 0)
+set(SCATDB_RYAN_VERSION
+	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION} )
+addBaseProject()
+addInstallDirs(scatdb_ryan ${SCATDB_RYAN_VERSION})
+addModuleFiles(scatdb_ryan ${SCATDB_RYAN_VERSION})
 
 find_package(Ryan_Debug REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -21,7 +33,12 @@ link_directories(${Boost_LIBRARY_DIR})
 #include_directories(BEFORE
 #	"${CMAKE_SOURCE_DIR}/related/linterp/rncarpio-linterp-ca556a0/src")
 
-add_library (scatdb_ryan SHARED
+configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/module-scatdb-ryan.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/module-scatdb-ryan"
+        )
+
+	add_library (scatdb_ryan SHARED
 	scatdb_ryan/defs.h
 	scatdb_ryan/defs.hpp
 	scatdb_ryan/lowess.h
@@ -34,6 +51,7 @@ add_library (scatdb_ryan SHARED
 	src/lowess.cpp
 	src/io.cpp
 	src/utility.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/module-scatdb-ryan
 	)
 if(CMAKE_COMPILER_IS_GNUCXX)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -78,7 +96,18 @@ target_link_libraries(scatdb_ryan_envelopes ${libs} scatdb_ryan)
 INSTALL(TARGETS scatdb_ryan scatdb_ryan_test scatdb_ryan_test_c
 	scatdb_ryan_test_f scatdb_ryan_envelopes
 	RUNTIME DESTINATION ${INSTALL_CMAKE_DIR}/${REL_BIN_DIR}/bin${configappend}
-	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
-	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}/plugins
+	LIBRARY DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
+	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
 	COMPONENT Plugins)
+
+# Install modulefiles on linux / unix / mac
+if (NOT WIN32)
+	if (INSTALL_MODULES)
+		INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/module-scatdb-ryan
+			DESTINATION ${ENV_MOD_DIR_PREFIX}
+			COMPONENT Data
+			RENAME ${MODULES_FILENAME}
+			)
+	endif()
+endif()
 
