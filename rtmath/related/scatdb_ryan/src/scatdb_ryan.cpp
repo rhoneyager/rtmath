@@ -57,6 +57,8 @@ namespace scatdb_ryan {
 		convertCol(data_entries::CSCA_M, csca);
 		convertCol(data_entries::G, g);
 
+		// These are wrong. This just makes the regression and residuals. Need
+		// to use lowest to figure out at interpolated and extrapolated points.
 		lowess(aeff, cabs, f, nsteps, delta, rcabs, rw, residuals);
 		lowess(aeff, cbk, f, nsteps, delta, rcbk, rw, residuals);
 		lowess(aeff, cext, f, nsteps, delta, rcext, rw, residuals);
@@ -100,6 +102,7 @@ namespace scatdb_ryan {
 		std::vector<acc_type> accs(data_entries::NUM_DATA_ENTRIES_FLOATS);
 		for (int i=0; i<src->floatMat.rows(); ++i) {
 			for (int j=0; j<src->floatMat.cols(); ++j) {
+				if (src->floatMat(i,j) < -900) continue;
 				accs[j](src->floatMat(i,j));
 			}
 		}

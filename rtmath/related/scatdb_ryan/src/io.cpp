@@ -52,6 +52,11 @@ namespace scatdb_ryan {
 	**/
 	bool db::findDB(std::string &filename) {
 		auto& lg = m_config::get();
+		if (filename.size()) {
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_2) << "Using database file: " << filename;
+			return true;
+		}
+
 		filename = "";
 		using namespace boost::filesystem;
 

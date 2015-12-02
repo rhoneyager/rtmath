@@ -90,6 +90,8 @@ namespace scatdb_ryan {
 
 		res->floatMat.resize(src->floatMat.rows(), src->floatMat.cols());
 		res->intMat.resize(src->intMat.rows(), src->intMat.cols());
+		//std::cerr << "fm " << src->floatMat.rows() << "x" << src->floatMat.cols()
+		//	<< "  im " << src->intMat.rows() << "x" << src->intMat.cols() << std::endl;
 		int numLines = res->floatMat.rows();
 		int totLines = 0;
 

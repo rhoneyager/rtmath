@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 			("stats", "Print stats for selected data")
 			("lowess", "Use LOWESS Routine to regress data")
 			("output,o", po::value<string>(), "Output file")
-			("db-file,d", "Manually specify database location")
+			("dbfile,d", po::value<string>(), "Manually specify database location")
 			("flaketypes,y", po::value<string>(), "Filter flaketypes by number range")
 			("frequencies,f", po::value<string>(), "Filter frequencies (GHz) by range")
 			("temp,T", po::value<string>(), "Filter temperatures (K) by range")
@@ -57,11 +57,11 @@ int main(int argc, char** argv) {
 
 		using namespace scatdb_ryan;
 		std::string dbfile;
-		if (vm.count("db-file")) dbfile = vm["db-file"].as<string>();
+		if (vm.count("dbfile")) dbfile = vm["dbfile"].as<string>();
 		db::findDB(dbfile);
 		if (!dbfile.size()) doHelp("Unable to detect database file.");
 		cerr << "Database file is at: " << dbfile << endl;
-		auto sdb = db::loadDB();
+		auto sdb = db::loadDB(dbfile.c_str());
 		cerr << "Database loaded. Performing filtering." << endl;
 
 		auto f = filter::generate();
