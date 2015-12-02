@@ -1,7 +1,7 @@
 enum data_entries_floats {
 	FREQUENCY_GHZ, TEMPERATURE_K, AEFF_UM, MAX_DIMENSION_MM,
 	CABS_M, CBK_M, CEXT_M, CSCA_M, G,
-	AS_XY, AS_XZ, AS_YZ,
+	AS_XY,
 	NUM_DATA_ENTRIES_FLOATS
 };
 enum data_entries_ints {

@@ -33,9 +33,7 @@ int main(int argc, char** argv) {
 			("cext", po::value<string>(), "Range filter by extinction cross-section (m)")
 			("csca", po::value<string>(), "Range filter by scattering cross-section (m)")
 			("asymmetry,g", po::value<string>(), "Range filter by asymmetry parameter")
-			("as-xy", po::value<string>(), "Range filter by x-y aspect ratio")
-			("as-xz", po::value<string>(), "Range filter by x-z aspect ratio")
-			("as-yz", po::value<string>(), "Range filter by y-z aspect ratio")
+			("ar", po::value<string>(), "Range filter by aspect ratio")
 			;
 
 		desc.add(cmdline).add(config);
@@ -78,9 +76,7 @@ int main(int argc, char** argv) {
 		if (vm.count("cext")) f->addFilterFloat(db::data_entries::CEXT_M, vm["cext"].as<string>());
 		if (vm.count("csca")) f->addFilterFloat(db::data_entries::CSCA_M, vm["csca"].as<string>());
 		if (vm.count("asymmetry")) f->addFilterFloat(db::data_entries::G, vm["asymmetry"].as<string>());
-		if (vm.count("as-xy")) f->addFilterFloat(db::data_entries::AS_XY, vm["as-xy"].as<string>());
-		if (vm.count("as-xz")) f->addFilterFloat(db::data_entries::AS_XZ, vm["as-xz"].as<string>());
-		if (vm.count("as-yz")) f->addFilterFloat(db::data_entries::AS_YZ, vm["as-yz"].as<string>());
+		if (vm.count("ar")) f->addFilterFloat(db::data_entries::AS_XY, vm["ar"].as<string>());
 
 		auto sdb_filtered = f->apply(sdb);
 		auto le_filtered = sdb_filtered;

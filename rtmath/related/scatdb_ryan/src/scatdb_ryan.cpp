@@ -129,7 +129,7 @@ namespace scatdb_ryan {
 #define check(a) if (ev == a) return tostr(a);
 		check(FREQUENCY_GHZ); check(TEMPERATURE_K); check(AEFF_UM);
 		check(MAX_DIMENSION_MM); check(CABS_M); check(CBK_M); check(CEXT_M);
-		check(CSCA_M); check(G); check(AS_XY); check(AS_XZ); check(AS_YZ);
+		check(CSCA_M); check(G); check(AS_XY);
 
 		return "";
 	}

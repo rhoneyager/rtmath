@@ -173,7 +173,7 @@ namespace scatdb_ryan {
 
 	void db::print(std::ostream &out) const {
 		out << "flaketype,frequencyghz,temperaturek,aeffum,max_dimension_mm,"
-			"cabs,cbk,cext,csca,g_iso,as_abs_xy,as_abs_xz,as_abs_yz" << std::endl;
+			"cabs,cbk,cext,csca,g,ar" << std::endl;
 		int rows = floatMat.rows();
 		int icols = intMat.cols();
 		int fcols = floatMat.cols();
