@@ -25,7 +25,9 @@ namespace scatdb_ryan {
 	scatdb_base::scatdb_base() {}
 	scatdb_base::~scatdb_base() {}
 	std::shared_ptr<const db::data_stats> db::getStats() const {
-		return db::data_stats::generate(this);
+		if (!this->pStats)
+			this->pStats = db::data_stats::generate(this);
+		return this->pStats;
 	}
 	db::data_stats::data_stats() : count(0) {}
 	db::data_stats::~data_stats() {}
@@ -38,14 +40,18 @@ namespace scatdb_ryan {
 		delta = 0;
 		// First, get the stats. Want min and max values for effective radius.
 		auto stats = this->getStats();
+		// TODO: use either aeff or max dimension
 		double minRad = stats->floatStats(data_entries::S_MIN,data_entries::AEFF_UM),
 			   maxRad = stats->floatStats(data_entries::S_MAX,data_entries::AEFF_UM);
+
+		double low = (double) ((int) (minRad/10.)) * 10.;
+		double high = (double) ((int) (maxRad/10.)+1) * 10.;
 
 		// Convert from eigen arrays into vectors
 		std::vector<double> aeff, cabs, cbk, cext, csca, g,
 			rcabs, rcbk, rcext, rcsca, rg,
 			icabs, icbk, icext, icsca, ig,
-			rw, residuals;
+			rw, residuals, lx, lcabs, lcbk, lcext, lcsca, lg;
 		auto convertCol = [&](int col, std::vector<double> &out) {
 			auto blk = floatMat.cast<float>().block(0,col,floatMat.rows(),1);
 			out.insert(out.begin(), blk.data(), blk.data() + floatMat.rows());
@@ -57,30 +63,61 @@ namespace scatdb_ryan {
 		convertCol(data_entries::CSCA_M, csca);
 		convertCol(data_entries::G, g);
 
-		// These are wrong. This just makes the regression and residuals. Need
-		// to use lowest to figure out at interpolated and extrapolated points.
 		lowess(aeff, cabs, f, nsteps, delta, rcabs, rw, residuals);
 		lowess(aeff, cbk, f, nsteps, delta, rcbk, rw, residuals);
 		lowess(aeff, cext, f, nsteps, delta, rcext, rw, residuals);
 		lowess(aeff, csca, f, nsteps, delta, rcsca, rw, residuals);
 		lowess(aeff, g, f, nsteps, delta, rg, rw, residuals);
 
-		res->floatMat = floatMat;
-		res->intMat = intMat;
+		const int sz = (int)(high-low+1)/10;
+		lx.reserve(sz);
+		lcabs.reserve(sz);
+		lcbk.reserve(sz);
+		lcext.reserve(sz);
+		lcsca.reserve(sz);
+		lg.reserve(sz);
+
+		for (double x = low; x <= high; x += 10) {
+			double xcabs, xcext, xcsca, xcbk, xg;
+			std::vector<double> wts(sz*10), junk(sz*10);
+			bool ok;
+			lowest(aeff, cabs, x, xcabs, 0, aeff.size() - 1, wts, false, junk, ok);
+			lowest(aeff, cbk, x, xcbk, 0, aeff.size() - 1, wts, false, junk, ok);
+			lowest(aeff, cext, x, xcext, 0, aeff.size() - 1, wts, false, junk, ok);
+			lowest(aeff, csca, x, xcsca, 0, aeff.size() - 1, wts, false, junk, ok);
+			lowest(aeff, g, x, xg, 0, aeff.size() - 1, wts, false, junk, ok);
+			lx.push_back(x);
+			lcabs.push_back(xcabs);
+			lcbk.push_back(xcbk);
+			lcext.push_back(xcext);
+			lcsca.push_back(xcsca);
+			lg.push_back(xg);
+		}
+		FloatMatType nfm;
+		IntMatType nfi;
+		nfm.resize(lx.size(), floatMat.cols());
+		nfi.resize(lx.size(), intMat.cols());
+
+		nfm.block(0,0,nfm.rows(),nfm.cols()).fill(-999);
+		nfi.block(0,0,nfi.rows(),nfi.cols()).fill(-999);
+
 		//res->intMat.resize(intMat.rows(), intMat.cols());
 
 		auto revertCol = [&](int col, const std::vector<double> &in) {
-			auto blk = res->floatMat.block(0,col,floatMat.rows(),1);
-			for (size_t i=0; i<floatMat.rows(); ++i) {
+			auto blk = nfm.block(0,col,nfm.rows(),1);
+			for (size_t i=0; i<nfm.rows(); ++i) {
 				blk(i,0) = (float) in[i];
 			}
 		};
-		revertCol(data_entries::CABS_M, rcabs);
-		revertCol(data_entries::CBK_M, rcbk);
-		revertCol(data_entries::CEXT_M, rcext);
-		revertCol(data_entries::CSCA_M, rcsca);
-		revertCol(data_entries::G, rg);
+		revertCol(data_entries::AEFF_UM, lx);
+		revertCol(data_entries::CABS_M, lcabs);
+		revertCol(data_entries::CBK_M, lcbk);
+		revertCol(data_entries::CEXT_M, lcext);
+		revertCol(data_entries::CSCA_M, lcsca);
+		revertCol(data_entries::G, lg);
 
+		res->floatMat = nfm;
+		res->intMat = nfi;
 		return res;
 	}
 

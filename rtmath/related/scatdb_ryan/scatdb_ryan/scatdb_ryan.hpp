@@ -69,6 +69,9 @@ namespace scatdb_ryan {
 		///   frequency and flake type.
 		std::shared_ptr<const db> regress(double f = 0.5,
 			long nsteps = 2, double delta = 20.) const;
+
+	private:
+		mutable std::shared_ptr<const data_stats> pStats;
 	};
 	class DLEXPORT_SDBR filter : public scatdb_base {
 	private:
