@@ -21,6 +21,9 @@ int main(int argc, char** argv) {
 			("help,h", "produce help message")
 			("stats", "Print stats for selected data")
 			("lowess", "Use LOWESS Routine to regress data")
+			("interp", "Perform linear interpolation over the x axis.")
+			("integ", po::value<string>(), "Integrate using Sekhon-Srivastava distribution for "
+			 "the specified rainfall rates [mm/h]. Suggested 0.1:0.1:3.")
 			("output,o", po::value<string>(), "Output file")
 			("dbfile,d", po::value<string>(), "Manually specify database location")
 			("flaketypes,y", po::value<string>(), "Filter flaketypes by number range")
@@ -88,12 +91,20 @@ int main(int argc, char** argv) {
 			cerr << "Stats tables:" << endl;
 			stats->print(cerr);
 		}
+		auto interp_filtered = le_filtered;
+		if (vm.count("interp")) {
+			interp_filtered = le_filtered->interpolate();
+		}
+
+		if (vm.count("integ")) {
+			std::string sinteg = vm["integ"].as<std::string>();
+		}
 
 		if (vm.count("output")) {
 			std::string fout = vm["output"].as<std::string>();
 			cerr << "Writing output to " << fout << endl;
 			std::ofstream out(fout.c_str());
-			le_filtered->print(out);
+			interp_filtered->print(out);
 		}
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;

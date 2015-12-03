@@ -33,12 +33,14 @@ link_directories(${Boost_LIBRARY_DIR})
 #include_directories(BEFORE
 #	"${CMAKE_SOURCE_DIR}/related/linterp/rncarpio-linterp-ca556a0/src")
 
+add_subdirectory (../spline "${CMAKE_CURRENT_BINARY_DIR}/spline")
+
 configure_file (
         "${CMAKE_CURRENT_SOURCE_DIR}/module-scatdb-ryan.in"
         "${CMAKE_CURRENT_BINARY_DIR}/module-scatdb-ryan"
         )
 
-	add_library (scatdb_ryan SHARED
+add_library (scatdb_ryan SHARED
 	scatdb_ryan/defs.h
 	scatdb_ryan/defs.hpp
 	scatdb_ryan/lowess.h
@@ -62,9 +64,9 @@ else()
 endif()
 set_target_properties( scatdb_ryan PROPERTIES FOLDER "Related")
 if(WIN32 AND NOT CYGWIN)
-	set(libs Ryan_Debug)
+	set(libs Ryan_Debug spline)
 else()
-	set (libs Ryan_Debug ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY}
+	set (libs Ryan_Debug spline ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY}
 		${Boost_PROGRAM_OPTIONS_LIBRARY}
 		${Boost_SYSTEM_LIBRARY})
 endif()

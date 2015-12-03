@@ -1,3 +1,4 @@
+#pragma once
 double basis_function_b_val ( double tdata[], double tval );
 double basis_function_beta_val ( double beta1, double beta2, double tdata[], 
   double tval );

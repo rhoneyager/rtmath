@@ -18,6 +18,7 @@
 #include <boost/accumulators/statistics/variates/covariate.hpp>
 #include "../scatdb_ryan/scatdb_ryan.hpp"
 #include "../scatdb_ryan/lowess.h"
+#include "../../spline/spline.hpp"
 
 namespace scatdb_ryan {
 	db::db() {}
@@ -32,11 +33,131 @@ namespace scatdb_ryan {
 	db::data_stats::data_stats() : count(0) {}
 	db::data_stats::~data_stats() {}
 
+	std::shared_ptr<const db> db::interpolate() const {
+		std::shared_ptr<db> res(new db);
+		// First, get the stats. Want min and max values for effective radius.
+		auto stats = this->getStats();
+		// TODO: use either aeff or max dimension
+		double minRad = stats->floatStats(data_entries::S_MIN,data_entries::AEFF_UM),
+			   maxRad = stats->floatStats(data_entries::S_MAX,data_entries::AEFF_UM);
+
+		double low = (double) ((int) (minRad/10.)) * 10.;
+		double high = (double) ((int) (maxRad/10.)+1) * 10.;
+
+		// Convert from eigen arrays into vectors
+		std::vector<double> aeff, cabs, cbk, cext, csca, g,
+			rcabs, rcbk, rcext, rcsca, rg,
+			icabs, icbk, icext, icsca, ig,
+			rw, residuals, lx, lcabs, lcbk, lcext, lcsca, lg;
+
+
+		auto convertCol = [&](int col, std::vector<double> &out, bool dolog) {
+			auto blk = floatMat.cast<float>().block(0,col,floatMat.rows(),1);
+			out.insert(out.begin(), blk.data(), blk.data() + floatMat.rows());
+			if (dolog) {
+				for (size_t i=0; i< out.size(); ++i)
+					out[i] = log10(out[i]);
+			}
+		};
+		convertCol(data_entries::AEFF_UM, aeff, false);
+		convertCol(data_entries::CABS_M, cabs, false);
+		convertCol(data_entries::CBK_M, cbk, false);
+		convertCol(data_entries::CEXT_M, cext, false);
+		convertCol(data_entries::CSCA_M, csca, false);
+		convertCol(data_entries::G, g, false);
+
+		const int sz = (int)(high-low+1)/10;
+		lx.reserve(sz);
+		lcabs.reserve(sz);
+		lcbk.reserve(sz);
+		lcext.reserve(sz);
+		lcsca.reserve(sz);
+		lg.reserve(sz);
+
+		for (double x = low; x <= high; x += 10) {
+			lx.push_back(x);
+		}
+
+		// Call interpolation engine here
+		//double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg, 
+		//	double ybcbeg, int ibcend, double ybcend );
+		//double spline_cubic_val ( int n, double t[], double y[], double ypp[], 
+		//	double tval, double *ypval, double *yppval );
+		auto splineit = [&](std::vector<double> &ys, std::vector<double> &iys) {
+			// Really inefficient filtering... Spline code cannot have duplicate x values
+			std::vector<double> fxs, fys;
+			fxs.reserve(aeff.size()); fys.reserve(aeff.size());
+			double last = -9999;
+			for (size_t i=0; i<aeff.size(); ++i) {
+				double x = aeff[i];
+				double y = ys[i];
+				if (abs((last/x)-1) < 0.000001 || last >= x) {
+					std::cerr << "Ignoring x " << x << " with last " << last << std::endl;
+					continue;
+				}
+				fxs.push_back(x);
+				fys.push_back(y);
+				last = x;
+				//std::cerr << x << std::endl;
+			}
+			//
+			double *aeffpp = spline_cubic_set(fxs.size(), fxs.data(), fys.data(),
+				0, 0, 0, 0);
+
+
+			for (double x = low; x <= high; x += 10) { // duplicates loop from above. change together.
+				double ypval = 0, yppval = 0;
+				double val = spline_cubic_val(fxs.size(), fxs.data(), fys.data(), aeffpp,
+					x, &ypval, &yppval);
+				iys.push_back(val);
+			}
+			delete[] aeffpp;
+		};
+
+		splineit(cabs, lcabs);
+		splineit(cbk, lcbk);
+		splineit(cext, lcext);
+		splineit(csca, lcsca);
+		splineit(g, lg);
+
+		FloatMatType nfm;
+		IntMatType nfi;
+		nfm.resize(lx.size(), floatMat.cols());
+		nfi.resize(lx.size(), intMat.cols());
+		//nfm = floatMat;
+		//nfi = intMat;
+
+		nfm.fill(-999);
+		nfi.fill(-999);
+
+		//res->intMat.resize(intMat.rows(), intMat.cols());
+
+		auto revertCol = [&](int col, const std::vector<double> &in, bool islog) {
+			auto blk = nfm.block(0,col,nfm.rows(),1);
+			for (size_t i=0; i<nfm.rows(); ++i) {
+				if (!islog)
+					blk(i,0) = (float) in[i];
+				else
+					blk(i,0) = pow(10.f,(float) in[i]);
+			}
+		};
+		revertCol(data_entries::AEFF_UM, lx, false);
+		revertCol(data_entries::CABS_M, lcabs, false);
+		revertCol(data_entries::CBK_M, lcbk, false);
+		revertCol(data_entries::CEXT_M, lcext, false);
+		revertCol(data_entries::CSCA_M, lcsca, false);
+		revertCol(data_entries::G, lg, false);
+
+		res->floatMat = nfm;
+		res->intMat = nfi;
+		return res;
+	}
+
 	std::shared_ptr<const db> db::regress(double f, long nsteps, double delta) const {
 		std::shared_ptr<db> res(new db);
 
 		//nsteps = 2;
-		f = 0.1;
+		f = 0.1; // 0.1
 		delta = 0;
 		// First, get the stats. Want min and max values for effective radius.
 		auto stats = this->getStats();
@@ -52,69 +173,56 @@ namespace scatdb_ryan {
 			rcabs, rcbk, rcext, rcsca, rg,
 			icabs, icbk, icext, icsca, ig,
 			rw, residuals, lx, lcabs, lcbk, lcext, lcsca, lg;
-		auto convertCol = [&](int col, std::vector<double> &out) {
+		auto convertCol = [&](int col, std::vector<double> &out, bool dolog) {
 			auto blk = floatMat.cast<float>().block(0,col,floatMat.rows(),1);
 			out.insert(out.begin(), blk.data(), blk.data() + floatMat.rows());
+			if (dolog) {
+				for (size_t i=0; i< out.size(); ++i)
+					out[i] = log10(out[i]);
+			}
 		};
-		convertCol(data_entries::AEFF_UM, aeff);
-		convertCol(data_entries::CABS_M, cabs);
-		convertCol(data_entries::CBK_M, cbk);
-		convertCol(data_entries::CEXT_M, cext);
-		convertCol(data_entries::CSCA_M, csca);
-		convertCol(data_entries::G, g);
+		convertCol(data_entries::AEFF_UM, aeff, false);
+		convertCol(data_entries::CABS_M, cabs, true);
+		convertCol(data_entries::CBK_M, cbk, true);
+		convertCol(data_entries::CEXT_M, cext, true);
+		convertCol(data_entries::CSCA_M, csca, true);
+		convertCol(data_entries::G, g, false);
 
 		lowess(aeff, cabs, f, nsteps, delta, rcabs, rw, residuals);
 		lowess(aeff, cbk, f, nsteps, delta, rcbk, rw, residuals);
 		lowess(aeff, cext, f, nsteps, delta, rcext, rw, residuals);
 		lowess(aeff, csca, f, nsteps, delta, rcsca, rw, residuals);
 		lowess(aeff, g, f, nsteps, delta, rg, rw, residuals);
+/*
 
-		const int sz = (int)(high-low+1)/10;
-		lx.reserve(sz);
-		lcabs.reserve(sz);
-		lcbk.reserve(sz);
-		lcext.reserve(sz);
-		lcsca.reserve(sz);
-		lg.reserve(sz);
-
-		for (double x = low; x <= high; x += 10) {
-			double xcabs, xcext, xcsca, xcbk, xg;
-			std::vector<double> wts(sz*10), junk(sz*10);
-			bool ok;
-			lowest(aeff, cabs, x, xcabs, 0, aeff.size() - 1, wts, false, junk, ok);
-			lowest(aeff, cbk, x, xcbk, 0, aeff.size() - 1, wts, false, junk, ok);
-			lowest(aeff, cext, x, xcext, 0, aeff.size() - 1, wts, false, junk, ok);
-			lowest(aeff, csca, x, xcsca, 0, aeff.size() - 1, wts, false, junk, ok);
-			lowest(aeff, g, x, xg, 0, aeff.size() - 1, wts, false, junk, ok);
-			lx.push_back(x);
-			lcabs.push_back(xcabs);
-			lcbk.push_back(xcbk);
-			lcext.push_back(xcext);
-			lcsca.push_back(xcsca);
-			lg.push_back(xg);
-		}
+		*/
 		FloatMatType nfm;
 		IntMatType nfi;
-		nfm.resize(lx.size(), floatMat.cols());
-		nfi.resize(lx.size(), intMat.cols());
+		//nfm.resize(lx.size(), floatMat.cols());
+		//nfi.resize(lx.size(), intMat.cols());
+		nfm = floatMat;
+		nfi = intMat;
 
 		nfm.block(0,0,nfm.rows(),nfm.cols()).fill(-999);
 		nfi.block(0,0,nfi.rows(),nfi.cols()).fill(-999);
 
 		//res->intMat.resize(intMat.rows(), intMat.cols());
 
-		auto revertCol = [&](int col, const std::vector<double> &in) {
+		auto revertCol = [&](int col, const std::vector<double> &in, bool islog) {
 			auto blk = nfm.block(0,col,nfm.rows(),1);
 			for (size_t i=0; i<nfm.rows(); ++i) {
-				blk(i,0) = (float) in[i];
+				if (!islog)
+					blk(i,0) = (float) in[i];
+				else
+					blk(i,0) = pow(10.f,(float) in[i]);
 			}
 		};
-		revertCol(data_entries::AEFF_UM, lx);
-		revertCol(data_entries::CABS_M, lcabs);
-		revertCol(data_entries::CBK_M, lcbk);
-		revertCol(data_entries::CEXT_M, lcext);
-		revertCol(data_entries::CSCA_M, lcsca);
-		revertCol(data_entries::G, lg);
+		revertCol(data_entries::AEFF_UM, aeff, false);
+		revertCol(data_entries::CABS_M, rcabs, true);
+		revertCol(data_entries::CBK_M, rcbk, true);
+		revertCol(data_entries::CEXT_M, rcext, true);
+		revertCol(data_entries::CSCA_M, rcsca, true);
+		revertCol(data_entries::G, rg, false);
 
 		res->floatMat = nfm;
 		res->intMat = nfi;
