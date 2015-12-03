@@ -67,9 +67,13 @@ namespace scatdb_ryan {
 		/// interpolation is combined with Rayleigh scattering.
 		/// \note This routine should be pre-filtered by temperature,
 		///   frequency and flake type.
-		std::shared_ptr<const db> regress(double f = 0.5,
-			long nsteps = 2, double delta = 20.) const;
-		std::shared_ptr<const db> interpolate() const;
+		std::shared_ptr<const db> regress(
+			db::data_entries::data_entries_floats xaxis = db::data_entries::AEFF_UM,
+			double f = 0.1,
+			long nsteps = 2, double delta = 0.) const;
+		std::shared_ptr<const db> interpolate(
+			db::data_entries::data_entries_floats xaxis = db::data_entries::AEFF_UM
+			) const;
 	private:
 		mutable std::shared_ptr<const data_stats> pStats;
 	};

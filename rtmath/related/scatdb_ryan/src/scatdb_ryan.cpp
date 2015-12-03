@@ -2,6 +2,7 @@
 #include <mutex>
 #include <string>
 #include <iostream>
+#include <tuple>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/covariance.hpp>
@@ -33,16 +34,22 @@ namespace scatdb_ryan {
 	db::data_stats::data_stats() : count(0) {}
 	db::data_stats::~data_stats() {}
 
-	std::shared_ptr<const db> db::interpolate() const {
+	std::shared_ptr<const db> db::interpolate(
+			db::data_entries::data_entries_floats xaxis) const {
 		std::shared_ptr<db> res(new db);
 		// First, get the stats. Want min and max values for effective radius.
 		auto stats = this->getStats();
-		// TODO: use either aeff or max dimension
-		double minRad = stats->floatStats(data_entries::S_MIN,data_entries::AEFF_UM),
-			   maxRad = stats->floatStats(data_entries::S_MAX,data_entries::AEFF_UM);
+		double minRad = stats->floatStats(data_entries::S_MIN,xaxis),
+			   maxRad = stats->floatStats(data_entries::S_MAX,xaxis);
 
-		double low = (double) ((int) (minRad/10.)) * 10.;
-		double high = (double) ((int) (maxRad/10.)+1) * 10.;
+		double low = 0, high = 0;
+		if (xaxis == db::data_entries::AEFF_UM) {
+			low = (double) ((int) (minRad/10.)) * 10.;
+			high = (double) ((int) (maxRad/10.)+1) * 10.;
+		} else if (xaxis == db::data_entries::MAX_DIMENSION_MM) {
+			low = (double) (((int) (minRad*10.)) / 10);
+			high = (double) (((int) (maxRad*10.)+1) / 10);
+		}
 
 		// Convert from eigen arrays into vectors
 		std::vector<double> aeff, cabs, cbk, cext, csca, g,
@@ -59,12 +66,35 @@ namespace scatdb_ryan {
 					out[i] = log10(out[i]);
 			}
 		};
-		convertCol(data_entries::AEFF_UM, aeff, false);
+		if (xaxis == data_entries::AEFF_UM)
+			convertCol(data_entries::AEFF_UM, aeff, false);
+		else
+			convertCol(data_entries::MAX_DIMENSION_MM, aeff, false);
 		convertCol(data_entries::CABS_M, cabs, false);
 		convertCol(data_entries::CBK_M, cbk, false);
 		convertCol(data_entries::CEXT_M, cext, false);
 		convertCol(data_entries::CSCA_M, csca, false);
 		convertCol(data_entries::G, g, false);
+
+		// Another slow operation to convert everything to tuples, sort based on x axis,
+		// and then convert back to the vector forms.
+		typedef std::tuple<double,double,double,double,double,double> sInner;
+		std::vector< sInner > vsort;
+		for (size_t i=0; i < aeff.size(); ++i)
+			vsort.push_back( sInner (
+				aeff[i], cabs[i], cbk[i], cext[i], csca[i], g[i]));
+		std::sort(vsort.begin(), vsort.end(), [](
+			sInner lhs, sInner rhs) {
+					return std::get<0>(lhs) < std::get<0>(rhs);
+				});
+		for (size_t i=0; i < vsort.size(); ++i) {
+			aeff[i] = std::get<0>(vsort[i]);
+			cabs[i] = std::get<1>(vsort[i]);
+			cext[i] = std::get<2>(vsort[i]);
+			csca[i] = std::get<3>(vsort[i]);
+			csca[i] = std::get<4>(vsort[i]);
+			g[i] = std::get<5>(vsort[i]);
+		}
 
 		const int sz = (int)(high-low+1)/10;
 		lx.reserve(sz);
@@ -73,8 +103,11 @@ namespace scatdb_ryan {
 		lcext.reserve(sz);
 		lcsca.reserve(sz);
 		lg.reserve(sz);
+		double span = 10;
+		if (xaxis == data_entries::MAX_DIMENSION_MM)
+			span = 0.1;
 
-		for (double x = low; x <= high; x += 10) {
+		for (double x = low; x <= high; x += span) {
 			lx.push_back(x);
 		}
 
@@ -105,7 +138,7 @@ namespace scatdb_ryan {
 				0, 0, 0, 0);
 
 
-			for (double x = low; x <= high; x += 10) { // duplicates loop from above. change together.
+			for (double x = low; x <= high; x += span) {
 				double ypval = 0, yppval = 0;
 				double val = spline_cubic_val(fxs.size(), fxs.data(), fys.data(), aeffpp,
 					x, &ypval, &yppval);
@@ -141,7 +174,10 @@ namespace scatdb_ryan {
 					blk(i,0) = pow(10.f,(float) in[i]);
 			}
 		};
-		revertCol(data_entries::AEFF_UM, lx, false);
+		if (xaxis == db::data_entries::AEFF_UM)
+			revertCol(data_entries::AEFF_UM, lx, false);
+		else
+			revertCol(data_entries::MAX_DIMENSION_MM, lx, false);
 		revertCol(data_entries::CABS_M, lcabs, false);
 		revertCol(data_entries::CBK_M, lcbk, false);
 		revertCol(data_entries::CEXT_M, lcext, false);
@@ -153,20 +189,24 @@ namespace scatdb_ryan {
 		return res;
 	}
 
-	std::shared_ptr<const db> db::regress(double f, long nsteps, double delta) const {
+	std::shared_ptr<const db> db::regress(
+		db::data_entries::data_entries_floats xaxis,
+		double f, long nsteps, double delta) const {
 		std::shared_ptr<db> res(new db);
 
-		//nsteps = 2;
-		f = 0.1; // 0.1
-		delta = 0;
 		// First, get the stats. Want min and max values for effective radius.
 		auto stats = this->getStats();
-		// TODO: use either aeff or max dimension
-		double minRad = stats->floatStats(data_entries::S_MIN,data_entries::AEFF_UM),
-			   maxRad = stats->floatStats(data_entries::S_MAX,data_entries::AEFF_UM);
+		double minRad = stats->floatStats(data_entries::S_MIN,xaxis),
+			   maxRad = stats->floatStats(data_entries::S_MAX,xaxis);
 
-		double low = (double) ((int) (minRad/10.)) * 10.;
-		double high = (double) ((int) (maxRad/10.)+1) * 10.;
+		double low = 0, high = 0;
+		if (xaxis == db::data_entries::AEFF_UM) {
+			low = (double) ((int) (minRad/10.)) * 10.;
+			high = (double) ((int) (maxRad/10.)+1) * 10.;
+		} else if (xaxis == db::data_entries::MAX_DIMENSION_MM) {
+			low = (double) (((int) (minRad*10.)) / 10);
+			high = (double) (((int) (maxRad*10.)+1) / 10);
+		}
 
 		// Convert from eigen arrays into vectors
 		std::vector<double> aeff, cabs, cbk, cext, csca, g,
@@ -181,7 +221,10 @@ namespace scatdb_ryan {
 					out[i] = log10(out[i]);
 			}
 		};
-		convertCol(data_entries::AEFF_UM, aeff, false);
+		if (xaxis == db::data_entries::AEFF_UM)
+			convertCol(data_entries::AEFF_UM, aeff, false);
+		else
+			convertCol(data_entries::MAX_DIMENSION_MM, aeff, false);
 		convertCol(data_entries::CABS_M, cabs, true);
 		convertCol(data_entries::CBK_M, cbk, true);
 		convertCol(data_entries::CEXT_M, cext, true);
@@ -193,9 +236,7 @@ namespace scatdb_ryan {
 		lowess(aeff, cext, f, nsteps, delta, rcext, rw, residuals);
 		lowess(aeff, csca, f, nsteps, delta, rcsca, rw, residuals);
 		lowess(aeff, g, f, nsteps, delta, rg, rw, residuals);
-/*
 
-		*/
 		FloatMatType nfm;
 		IntMatType nfi;
 		//nfm.resize(lx.size(), floatMat.cols());
@@ -217,7 +258,10 @@ namespace scatdb_ryan {
 					blk(i,0) = pow(10.f,(float) in[i]);
 			}
 		};
-		revertCol(data_entries::AEFF_UM, aeff, false);
+		if (xaxis == db::data_entries::AEFF_UM)
+			revertCol(data_entries::AEFF_UM, aeff, false);
+		else
+			revertCol(data_entries::MAX_DIMENSION_MM, aeff, false);
 		revertCol(data_entries::CABS_M, rcabs, true);
 		revertCol(data_entries::CBK_M, rcbk, true);
 		revertCol(data_entries::CEXT_M, rcext, true);

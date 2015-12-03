@@ -20,10 +20,13 @@ int main(int argc, char** argv) {
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("stats", "Print stats for selected data")
+			("xaxis,x", po::value<string>()->default_value("aeff"), "Specify independent "
+			 "axis for interpolation and lowess regression. Default is aeff. Can also use "
+			 "'md' for max dimension.")
 			("lowess", "Use LOWESS Routine to regress data")
 			("interp", "Perform linear interpolation over the x axis.")
-			("integ", po::value<string>(), "Integrate using Sekhon-Srivastava distribution for "
-			 "the specified rainfall rates [mm/h]. Suggested 0.1:0.1:3.")
+			//("integ", po::value<string>(), "Integrate using Sekhon-Srivastava distribution for "
+			// "the specified rainfall rates [mm/h]. Suggested 0.1:0.1:3.")
 			("output,o", po::value<string>(), "Output file")
 			("dbfile,d", po::value<string>(), "Manually specify database location")
 			("flaketypes,y", po::value<string>(), "Filter flaketypes by number range")
@@ -82,9 +85,13 @@ int main(int argc, char** argv) {
 		if (vm.count("ar")) f->addFilterFloat(db::data_entries::AS_XY, vm["ar"].as<string>());
 
 		auto sdb_filtered = f->apply(sdb);
+		string sxaxis = vm["xaxis"].as<string>();
+		db::data_entries::data_entries_floats xaxis = db::data_entries::AEFF_UM;
+		if (sxaxis == "md") xaxis = db::data_entries::MAX_DIMENSION_MM;
+
 		auto le_filtered = sdb_filtered;
 		if (vm.count("lowess")) {
-			le_filtered = sdb_filtered->regress();
+			le_filtered = sdb_filtered->regress(xaxis);
 		}
 		if (vm.count("stats")) {
 			auto stats = le_filtered->getStats();
@@ -93,7 +100,7 @@ int main(int argc, char** argv) {
 		}
 		auto interp_filtered = le_filtered;
 		if (vm.count("interp")) {
-			interp_filtered = le_filtered->interpolate();
+			interp_filtered = le_filtered->interpolate(xaxis);
 		}
 
 		if (vm.count("integ")) {

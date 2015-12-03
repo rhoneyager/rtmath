@@ -1,4 +1,5 @@
 #include <cctype>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -21,7 +22,7 @@
 #include "../scatdb_ryan/scatdb_ryan.hpp"
 
 namespace {
-	const char scatdb_name[] = "scatdb_ag_ryan.csv";
+	const char scatdb_name[] = "scatdb_ryan.csv";
 	const char scatdb_db_env[] = "scatdb_ryan_db";
 	const char scatdb_dir_env[] = "scatdb_ryan_DIR";
 	const char scatdb_config_dir[] = "scatdb_ryan";
@@ -191,7 +192,8 @@ namespace scatdb_ryan {
 			}
 			for (int j=0; j<fcols; ++j) {
 				if (col) out << ",";
-				out << floatMat(i,j);
+				if (isnan(floatMat(i,j))) out << "-999";
+				else out << floatMat(i,j);
 				col++;
 			}
 			out << std::endl;
