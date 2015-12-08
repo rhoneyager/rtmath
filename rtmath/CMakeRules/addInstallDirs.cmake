@@ -5,6 +5,7 @@ set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for headers")
 set(INSTALL_DOC_DIR share/doc/${basename}-${version} CACHE PATH "Installation directory for documentation")
+set(INSTALL_DATA_DIST_DIR share/${basename}-${version}/data CACHE PATH "Installation directory for package-provided data")
 if (USES_PLUGINS)
 	set(INSTALL_PLUGIN_DIR ${INSTALL_BIN_DIR}/plugins CACHE PATH "Installation directory for plugins")
 endif()
@@ -25,7 +26,7 @@ set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
 # Constructing relative and absolute paths, needed for the cmake export file header locator
 # Absolute paths: ABS_INSTALL_${p}_DIR
 # Relative paths: REL_${p}_DIR
-set (folders LIB BIN INCLUDE CMAKE DOC ASSEMBLY)
+set (folders LIB BIN INCLUDE CMAKE DOC ASSEMBLY DATA_DIST )
 if(uses_plugins)
 	SET(folders ${folders} PLUGINS)
 endif()
