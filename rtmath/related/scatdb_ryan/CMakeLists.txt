@@ -102,6 +102,11 @@ INSTALL(TARGETS scatdb_ryan scatdb_ryan_test scatdb_ryan_test_c
 	ARCHIVE DESTINATION ${INSTALL_CMAKE_DIR}/${REL_LIB_DIR}/lib${configappend}
 	COMPONENT Plugins)
 
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/scatdb_ryan.csv
+	DESTINATION ${INSTALL_DATA_DIST_DIR}
+	COMPONENT Data
+	)
+
 # Install modulefiles on linux / unix / mac
 if (NOT WIN32)
 	if (INSTALL_MODULES)

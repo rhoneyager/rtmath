@@ -12,4 +12,5 @@ prepend-path		INCLUDE		@ABS_INSTALL_INCLUDE_DIR@
 prepend-path		C_INCLUDE_PATH	@ABS_INSTALL_INCLUDE_DIR@
 prepend-path		CPLUS_INCLUDE_PATH	@ABS_INSTALL_INCLUDE_DIR@
 setenv			scatdb_ryan_DIR	@ABS_INSTALL_CMAKE_DIR@
+setenv			scatdb_ryan_db @ABS_INSTALL_DATA_DIST_DIR@/scatdb_ryan.csv
 
