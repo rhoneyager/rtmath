@@ -34,6 +34,118 @@ namespace scatdb_ryan {
 	db::data_stats::data_stats() : count(0) {}
 	db::data_stats::~data_stats() {}
 
+	std::shared_ptr<const db> db::sort(
+			db::data_entries::data_entries_floats xaxis) const {
+		std::shared_ptr<db> res(new db);
+
+		// Convert from eigen arrays into vectors
+		std::vector<double> ar, freq, temp, aeff, md, cabs, cbk, cext, csca, g;
+		std::vector<int> ft;
+
+		auto convertCol = [&](int col, std::vector<double> &out, bool dolog) {
+			auto blk = floatMat.cast<float>().block(0,col,floatMat.rows(),1);
+			out.insert(out.begin(), blk.data(), blk.data() + floatMat.rows());
+			if (dolog) {
+				for (size_t i=0; i< out.size(); ++i)
+					out[i] = log10(out[i]);
+			}
+		};
+		auto convertColInt = [&](int col, std::vector<int> &out) {
+			auto blk = intMat.cast<int>().block(0,col,intMat.rows(),1);
+			out.insert(out.begin(), blk.data(), blk.data() + intMat.rows());
+		};
+		convertColInt(data_entries::FLAKETYPE, ft);
+		convertCol(data_entries::FREQUENCY_GHZ, freq, false);
+		convertCol(data_entries::TEMPERATURE_K, temp, false);
+		convertCol(data_entries::AEFF_UM, aeff, false);
+		convertCol(data_entries::MAX_DIMENSION_MM, md, false);
+		convertCol(data_entries::CABS_M, cabs, false);
+		convertCol(data_entries::CBK_M, cbk, false);
+		convertCol(data_entries::CEXT_M, cext, false);
+		convertCol(data_entries::CSCA_M, csca, false);
+		convertCol(data_entries::G, g, false);
+		convertCol(data_entries::AS_XY, ar, false);
+
+		// Another slow operation to convert everything to tuples, sort based on x axis,
+		// and then convert back to the vector forms.
+		typedef std::tuple<int,double,double,double,double,double,double,double,double,double,double> sInner;
+		std::vector< sInner > vsort;
+		for (size_t i=0; i < aeff.size(); ++i)
+			vsort.push_back( sInner (
+				ft[i], freq[i], temp[i], aeff[i], md[i], cabs[i], cbk[i], cext[i], csca[i], g[i], ar[i]));
+		if (xaxis == db::data_entries::AEFF_UM)
+			std::sort(vsort.begin(), vsort.end(), [](
+			sInner lhs, sInner rhs) {
+					if (std::get<3>(lhs) != std::get<3>(rhs))
+						return std::get<3>(lhs) < std::get<3>(rhs);
+					return std::get<4>(lhs) < std::get<4>(rhs);
+				});
+		else
+			std::sort(vsort.begin(), vsort.end(), [](
+			sInner lhs, sInner rhs) {
+					if (std::get<4>(lhs) != std::get<4>(rhs))
+						return std::get<4>(lhs) < std::get<4>(rhs);
+					return std::get<3>(lhs) < std::get<3>(rhs);
+				});
+		for (size_t i=0; i < vsort.size(); ++i) {
+			ft[i] = std::get<0>(vsort[i]);
+			freq[i] = std::get<1>(vsort[i]);
+			temp[i] = std::get<2>(vsort[i]);
+			aeff[i] = std::get<3>(vsort[i]);
+			md[i] = std::get<4>(vsort[i]);
+			cabs[i] = std::get<5>(vsort[i]);
+			cbk[i] = std::get<6>(vsort[i]);
+			cext[i] = std::get<7>(vsort[i]);
+			csca[i] = std::get<8>(vsort[i]);
+			g[i] = std::get<9>(vsort[i]);
+			ar[i] = std::get<10>(vsort[i]);
+
+		}
+
+		FloatMatType nfm;
+		IntMatType nfi;
+		nfm.resize(vsort.size(), floatMat.cols());
+		nfi.resize(vsort.size(), intMat.cols());
+		//nfm = floatMat;
+		//nfi = intMat;
+
+		nfm.fill(-999);
+		nfi.fill(-999);
+
+		//res->intMat.resize(intMat.rows(), intMat.cols());
+
+		auto revertCol = [&](int col, const std::vector<double> &in, bool islog) {
+			auto blk = nfm.block(0,col,nfm.rows(),1);
+			for (size_t i=0; i<nfm.rows(); ++i) {
+				if (!islog)
+					blk(i,0) = (float) in[i];
+				else
+					blk(i,0) = pow(10.f,(float) in[i]);
+			}
+		};
+		auto revertColInt = [&](int col, const std::vector<int> &in) {
+			auto blk = nfi.block(0,col,nfi.rows(),1);
+			for (size_t i=0; i<nfi.rows(); ++i) {
+				blk(i,0) = (int) in[i];
+			}
+		};
+		revertCol(data_entries::AS_XY, ar, false);
+		revertCol(data_entries::FREQUENCY_GHZ, freq, false);
+		revertCol(data_entries::TEMPERATURE_K, temp, false);
+		revertCol(data_entries::AEFF_UM, aeff, false);
+		revertCol(data_entries::MAX_DIMENSION_MM, md, false);
+		revertCol(data_entries::CABS_M, cabs, false);
+		revertCol(data_entries::CBK_M, cbk, false);
+		revertCol(data_entries::CEXT_M, cext, false);
+		revertCol(data_entries::CSCA_M, csca, false);
+		revertCol(data_entries::G, g, false);
+		revertColInt(data_entries::FLAKETYPE, ft);
+
+		res->floatMat = nfm;
+		res->intMat = nfi;
+		return res;
+	}
+
 	std::shared_ptr<const db> db::interpolate(
 			db::data_entries::data_entries_floats xaxis) const {
 		std::shared_ptr<db> res(new db);
@@ -90,8 +202,8 @@ namespace scatdb_ryan {
 		for (size_t i=0; i < vsort.size(); ++i) {
 			aeff[i] = std::get<0>(vsort[i]);
 			cabs[i] = std::get<1>(vsort[i]);
-			cext[i] = std::get<2>(vsort[i]);
-			csca[i] = std::get<3>(vsort[i]);
+			cbk[i] = std::get<2>(vsort[i]);
+			cext[i] = std::get<3>(vsort[i]);
 			csca[i] = std::get<4>(vsort[i]);
 			g[i] = std::get<5>(vsort[i]);
 		}

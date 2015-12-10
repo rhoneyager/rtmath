@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
 			 "'md' for max dimension.")
 			("lowess", "Use LOWESS Routine to regress data")
 			("interp", "Perform linear interpolation over the x axis.")
+			("sort", "Sort values by the corresponding x axis.")
 			//("integ", po::value<string>(), "Integrate using Sekhon-Srivastava distribution for "
 			// "the specified rainfall rates [mm/h]. Suggested 0.1:0.1:3.")
 			("output,o", po::value<string>(), "Output file")
@@ -89,9 +90,13 @@ int main(int argc, char** argv) {
 		db::data_entries::data_entries_floats xaxis = db::data_entries::AEFF_UM;
 		if (sxaxis == "md") xaxis = db::data_entries::MAX_DIMENSION_MM;
 
-		auto le_filtered = sdb_filtered;
+		auto s_sorted = sdb_filtered;
+		if (vm.count("sort"))
+			s_sorted = sdb_filtered->sort(xaxis);
+
+		auto le_filtered = s_sorted;
 		if (vm.count("lowess")) {
-			le_filtered = sdb_filtered->regress(xaxis);
+			le_filtered = s_sorted->regress(xaxis);
 		}
 		if (vm.count("stats")) {
 			auto stats = le_filtered->getStats();

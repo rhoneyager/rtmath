@@ -74,6 +74,9 @@ namespace scatdb_ryan {
 		std::shared_ptr<const db> interpolate(
 			db::data_entries::data_entries_floats xaxis = db::data_entries::AEFF_UM
 			) const;
+		std::shared_ptr<const db> sort(
+			db::data_entries::data_entries_floats xaxis = db::data_entries::AEFF_UM
+			) const;
 	private:
 		mutable std::shared_ptr<const data_stats> pStats;
 	};
