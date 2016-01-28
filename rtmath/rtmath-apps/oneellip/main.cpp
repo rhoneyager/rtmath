@@ -122,6 +122,9 @@ int main(int argc, char *argv[])
 			("size-type", po::value<std::string>()->default_value("Effective_Radius_Ice"), "How is the size described? "
 			 "Effective_Radius_Ice, Effective_Radius_Full, Max_Diameter_Full, etc. are valid options.")
 			("freqs,f", po::value<std::string>(), "Specify frequencies in GHz. Needed for dielectrics.")
+			("other-param", po::value<std::vector<std::string> >(), "Specify optional string parameters "
+			 "that will be passed to the backend functions. Give in type:key:value notation. "
+			 "Types are double or string.")
 			;
 		scale.add_options()
 			("scale-aeff", po::value<bool>()->default_value(true), "Scale effective radius based on volume fraction")
@@ -169,6 +172,23 @@ int main(int argc, char *argv[])
 		string oprefix;
 		if (vm.count("output-prefix"))
 			oprefix = vm["output-prefix"].as<string>();
+
+		// Let's understand the other parameters.
+		auto otherOpts = Ryan_Debug::registry::options::generate();
+		if (vm.count("other-param")) {
+			vector<string> oopts = vm["other-param"].as<vector<string> >();
+			// Split based to type, key and value based on presence of ':'.
+			for (const auto &c : oopts) {
+				vector<string> ssplit;
+				Ryan_Debug::splitSet::splitVector(c, ssplit, ':');
+				if (ssplit.size() != 3)
+					RDthrow(Ryan_Debug::error::xBadInput()) 
+						<< Ryan_Debug::error::key(c)
+						<< Ryan_Debug::error::otherErrorText("other-param needs type:key:value format.");
+				// For now, all option types use the same format.
+				otherOpts->setVal<std::string>(ssplit[1], ssplit[2]);
+			}
+		}
 
 		double vf_aeff_1 = -1, vf_aeff_2 = -1, vf_1 = -1, vf_2 = -1;
 		if (vm.count("vf-aeff-1")) vf_aeff_1 = vm["vf-aeff-1"].as<double>();
@@ -681,7 +701,7 @@ int main(int argc, char *argv[])
 			"Temperature (K)\tHash\t"
 			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
 			"Aspect Ratio\tLambda (um)\tM_re\tM_im\t"
-			"Size Parameter\tRescale aeff\t"
+			"Size Parameter\t"
 			"Theta\tBeta\tPhi\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 
 		std::cerr << "Doing " << runs.size() << " runs." << std::endl;
@@ -717,6 +737,7 @@ int main(int argc, char *argv[])
 			i.rmeth = rmeth; // Yeah, only one refractive index method per program invocation is supported.
 			i.shape = pf_class_registry::inputParamsPartial::shape_type::SPHEROID;
 			i.vFrac = r.fv;
+			i.other = otherOpts;
 
 			mylog("run aeff " << i.aeff << "\n\taeff_rescale " << i.aeff_rescale <<
 				"\n\taeff_version EQUIV_V_SPHERE\n\teps " << i.eps <<
@@ -771,14 +792,20 @@ int main(int argc, char *argv[])
 
 			for (const auto &rr : res)
 			{
+				double beta2 = s.beta, theta2 = s.theta, phi2 = s.phi;
+				if (rr.first == "SSRG") {
+					if (otherOpts->hasVal("beta")) beta2 = otherOpts->getVal<double>("beta");
+					if (otherOpts->hasVal("gamma")) theta2 = otherOpts->getVal<double>("gamma");
+					if (otherOpts->hasVal("kappa")) phi2 = otherOpts->getVal<double>("kappa");
+				}
 				out << rr.first << "\t" << r.aeff << "\t" << maxDiam / 1000. << "\t" 
 					<< Vi << "\t"
 					<< r.freq << "\t" << r.fv << "\t" << effDen << "\t" << r.temp << "\t"
 					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" 
 					<< r.fvMeth << "\t" //<< r.fvMeth * 0 << "\t" // get ice density here.....
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
-					<< sizep << "\t" << i.aeff_rescale << "\t"
-					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
+					<< sizep << "\t"
+					<< theta2 << "\t" << beta2 << "\t" << phi2 << "\t"
 					<< rr.second.g_iso << "\t"
 					<< rr.second.Qabs_iso << "\t"
 					<< rr.second.Qbk_iso << "\t"

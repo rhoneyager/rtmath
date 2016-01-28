@@ -29,6 +29,7 @@ namespace Ryan_Debug {
 
 	}
 }
+
 namespace rtmath {
 	
 	namespace phaseFuncs
@@ -169,6 +170,12 @@ namespace rtmath {
 					c.fCrossSections(s, iparams, cs);
 					res.push_back(std::pair<const char*, pf_class_registry::cross_sections>
 						(c.name, std::move(cs)));
+				}
+				// Prevent whole routine from faulting.
+				catch (std::exception &e)
+				{
+					std::cerr << "Error in getting cross-sections!" << std::endl;
+					std::cerr << e.what() << std::endl;
 				}
 				catch (...) { std::cerr << "Error in getting cross-sections!" << std::endl; }
 			}

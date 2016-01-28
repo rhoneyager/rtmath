@@ -160,14 +160,14 @@ D_Ryan_Debug_start()
 	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
 	if (res != SUCCESS) return res;
 
-	rtmath::phaseFuncs::pf_class_registry pc;
-	pc.name = "Rayleigh";
-	pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	pc.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh::doCrossSection;
-	rtmath::phaseFuncs::pf_provider::registerHook(pc);
+	//rtmath::phaseFuncs::pf_class_registry pc;
+	//pc.name = "Rayleigh";
+	//pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	//pc.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh::doCrossSection;
+	//rtmath::phaseFuncs::pf_provider::registerHook(pc);
 
 	rtmath::phaseFuncs::pf_class_registry pc2;
-	pc2.name = "Rayleigh-2";
+	pc2.name = "Rayleigh";
 	pc2.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pc2.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh_2::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc2);
@@ -190,11 +190,11 @@ D_Ryan_Debug_start()
 	pcrgi.fCrossSections = rtmath::plugins::nondda_misc::RGi::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pcrgi);
 
-	rtmath::phaseFuncs::pf_class_registry hpcrgi;
-	hpcrgi.name = "SSRG-iso";
-	hpcrgi.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	hpcrgi.fCrossSections = rtmath::plugins::nondda_misc::HRGi::doCrossSection;
-	rtmath::phaseFuncs::pf_provider::registerHook(hpcrgi);
+	//rtmath::phaseFuncs::pf_class_registry hpcrgi;
+	//hpcrgi.name = "SSRG-iso";
+	//hpcrgi.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	//hpcrgi.fCrossSections = rtmath::plugins::nondda_misc::HRGi::doCrossSection;
+	//rtmath::phaseFuncs::pf_provider::registerHook(hpcrgi);
 
 	return SUCCESS;
 }

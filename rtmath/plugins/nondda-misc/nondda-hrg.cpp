@@ -10,6 +10,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
@@ -48,7 +49,30 @@ namespace rtmath
 						ar = 1./ar;
 					}
 					double Dlong = i.maxDiamFull;
-					double Dshort = Dlong * ar;
+					double Dshort = 0;
+
+					// What is the angle of incidence?
+					std::string sIncid = "vertical";
+					if (i.other->hasVal("incid_angle"))
+						sIncid = i.other->getVal<std::string>("incid_angle");
+
+					if (sIncid == "vertical")
+						Dshort = Dlong * ar;
+					else if (sIncid == "horizontal")
+						Dshort = Dlong;
+					else if (sIncid == "random") {
+						using namespace rtmath::units;
+						using namespace rtmath::units::keywords;
+						Dshort = convertLength(
+							_in_length_value = i.maxDiamFull,
+							_in_length_type = "Max_Diameter",
+							_out_length_type = "Mean_Diameter",
+							_ar = ar);
+					}
+					else
+						RDthrow(Ryan_Debug::error::xBadInput()) 
+							<< Ryan_Debug::error::key(sIncid)
+							<< Ryan_Debug::error::otherErrorText("Unsupported value of incid_angle");
 
 					const double k = 2. * pi / s.wavelength;
 					const double size_p = k * Dshort;
@@ -58,8 +82,71 @@ namespace rtmath
 					//const double dmax = 2. * std::pow(V*3./(4.*pi*ar),1./3.); // oblate particles
 					//const double d = ar * dmax; // d is the vertical dimension, d is the horizontal dimension.
 
-					const double gamma = 5./3., beta = 0.23, kappa = 0.19;
+					// These defaults are from Hogan and Westbrook (2014),
+					// using Westbrook's aggregates as a base.
+					// Default assumes aligned and vertical incidence.
+					double gamma = 0, beta = 0, kappa = 0;
+					std::string srcModel = "HW2014", srcParticles = "agg_rosettes";
+					// Default is "HW2014" - Westbrook aggregates
+					// Other option is "NLH2013" - our rounded aggregates
+					if (i.other->hasVal("srcModel"))
+						srcModel = i.other->getVal<std::string>("srcModel");
+					if (i.other->hasVal("srcParticles"))
+						srcParticles = i.other->getVal<std::string>("srcParticles");
+					if (srcModel == "NLH2013") {
+						// Only works for random orientation
+						gamma = 5./3.;
+						beta = 0.15;
+						kappa = 0.0;
+					} else if (srcModel == "HW2014") {
+						// Default HW2014
+						// Values depend on incidence angle
+						gamma = 5./3.;
+						if (srcParticles == "agg_rosettes") {
+							if (sIncid == "vertical") {
+								beta = 0.23;
+								kappa = 0.19;
+							}
+							else if (sIncid == "horizontal") {
+								beta = 0.56;
+								kappa = -0.11;
+							}
+							else if (sIncid == "random") {
+								beta = 0.45;
+								kappa = 0.00;
+							}
+						} else if (srcParticles == "agg_plates") {
+							if (sIncid == "vertical") {
+								beta = 0.21;
+								kappa = 0.18;
+							}
+							else if (sIncid == "horizontal") {
+								beta = 0.61;
+								kappa = -0.12;
+							}
+							else if (sIncid == "random") {
+								beta = 0.51;
+								kappa = -0.05;
+							}
+						}
+					}
 
+					// If they exist in i.other, then set to the specified
+					// values.
+					if (i.other->hasVal("gamma"))
+						gamma = i.other->getVal<double>("gamma");
+					if (i.other->hasVal("beta"))
+						beta = i.other->getVal<double>("beta");
+					if (i.other->hasVal("kappa"))
+						kappa = i.other->getVal<double>("kappa");
+
+					if (!gamma || !beta) { // kappa may equal zero
+						RDthrow(Ryan_Debug::error::xBadInput())
+							<< Ryan_Debug::error::key("SSRG")
+							<< Ryan_Debug::error::otherErrorText("beta & gamma & kappa = 0. "
+								"Check incid_angle, srcModel and srcParticles, "
+								"or manually specify beta, gamma and kappa in i.other->");
+					}
 					try {
 						std::complex<double> K = ((i.m*i.m) - 1.) / ((i.m*i.m) + 2.);
 						std::complex<double> Km = ((mRes*mRes) - 1.) / ((mRes*mRes) + 2.);
@@ -100,10 +187,15 @@ namespace rtmath
 
 						//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 					}
+					catch (std::exception &e)
+					{
+						std::cerr << "An SSRG error has occurred!" << std::endl;
+						throw e;
+					}
 					catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;
 						RDthrow(Ryan_Debug::error::xOtherError()) 
-							<< Ryan_Debug::error::otherErrorText("A rayleigh-gans error has occurred");
+							<< Ryan_Debug::error::otherErrorText("An SSRG error has occurred");
 					}
 				}
 			}

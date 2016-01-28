@@ -126,6 +126,10 @@ namespace rtmath {
 				} shape;
 				/// spheroid / cylinder aspect ratio
 				double eps;
+
+				/// Other parameters
+				/// For SSRG, can set the beta, kappa and gamma values for fitting.
+				std::shared_ptr<Ryan_Debug::registry::options> other;
 			};
 
 			/// Cross-section return structure
