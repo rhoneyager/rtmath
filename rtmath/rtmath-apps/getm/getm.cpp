@@ -384,8 +384,9 @@ int main(int argc, char** argv)
 							cout << " ( " << mEff.real() << " , " << mEff.imag() << " ) " << endl;
 						}
 						if (calck) {
-							double K = (( (mEff*conj(mEff)).real()-1) /((mEff*conj(mEff)).real()+2.) );
-							cout << " K is " << K << ", and Ksq is " << K * K << endl;
+							complex<double> K = ( mEff*mEff - complex<double>(1,0))
+								/ ( mEff*mEff + complex<double>(2,0));
+							cout << " K is " << abs(K) << ", and Ksq is " << pow(abs(K),2.) << endl;
 						}
 					}
 				}

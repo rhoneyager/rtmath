@@ -793,7 +793,7 @@ int main(int argc, char *argv[])
 			for (const auto &rr : res)
 			{
 				double beta2 = s.beta, theta2 = s.theta, phi2 = s.phi;
-				if (rr.first == "SSRG") {
+				if (std::string(rr.first) == "SSRG") {
 					if (otherOpts->hasVal("beta")) beta2 = otherOpts->getVal<double>("beta");
 					if (otherOpts->hasVal("gamma")) theta2 = otherOpts->getVal<double>("gamma");
 					if (otherOpts->hasVal("kappa")) phi2 = otherOpts->getVal<double>("kappa");
