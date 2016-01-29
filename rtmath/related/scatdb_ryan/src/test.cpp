@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
 			("csca", po::value<string>(), "Range filter by scattering cross-section (m)")
 			("asymmetry,g", po::value<string>(), "Range filter by asymmetry parameter")
 			("ar", po::value<string>(), "Range filter by aspect ratio")
+			("list-flaketypes", "List valid flaketypes")
 			;
 
 		desc.add(cmdline).add(config);
@@ -61,9 +62,39 @@ int main(int argc, char** argv) {
 		};
 
 		if (vm.count("help") || vm.size() == 0) doHelp("");
+		if (vm.count("list-flaketypes")) {
+			// This may eventually be a separate file.
+			cerr << "Flake Category Listing\nId\t\tDescription\n"
+				"----------------------------------------------------------\n"
+				"20\t\tNowell, Liu and Honeyager [2013] Rounded\n"
+				"21\t\tHoneyager, Liu and Nowell [2016] Oblate\n"
+				"22\t\tHoneyager, Liu and Nowell [2016] Prolate\n"
+				"30\t\tOri et al. [2014] SAM model\n"
+				"40\t\tLeinonen and Szyrmer [2015] - A 0.0\n"
+				"41\t\tLeinonen and Szyrmer [2015] - A 0.1\n"
+				"42\t\tLeinonen and Szyrmer [2015] - A 0.2\n"
+				"43\t\tLeinonen and Szyrmer [2015] - A 0.5\n"
+				"44\t\tLeinonen and Szyrmer [2015] - A 1.0\n"
+				"45\t\tLeinonen and Szyrmer [2015] - A 2.0\n"
+				"46\t\tLeinonen and Szyrmer [2015] - B 0.1\n"
+				"47\t\tLeinonen and Szyrmer [2015] - B 0.2\n"
+				"48\t\tLeinonen and Szyrmer [2015] - B 0.5\n"
+				"49\t\tLeinonen and Szyrmer [2015] - B 1.0\n"
+				"50\t\tLeinonen and Szyrmer [2015] - B 2.0\n"
+				"51\t\tLeinonen and Szyrmer [2015] - C\n"
+				"60\t\tTyynela and Chandrasekhar [2014] - Fernlike dendrite aggregates\n"
+				"61\t\tTyynela and Chandrasekhar [2014] - Needle aggregates\n"
+				"62\t\tTyynela and Chandrasekhar [2014] - 6-bullet rosette aggregates\n"
+				"63\t\tTyynela and Chandrasekhar [2014] - Stellar dendrite aggregates\n"
+				"70\t\tKuo et al. [2016+] - Kuo's model\n"
+				"80\t\tHogan and Westbrook [2014] - Westbrook aggregates, random orientation SSRG\n"
+				;
+			cerr << std::endl;
+			exit(0);
+		}
 
 		using namespace scatdb_ryan;
-		std::string dbfile;
+		string dbfile;
 		if (vm.count("dbfile")) dbfile = vm["dbfile"].as<string>();
 		db::findDB(dbfile);
 		if (!dbfile.size()) doHelp("Unable to detect database file.");

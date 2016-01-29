@@ -69,6 +69,7 @@ int main(int argc, char** argv)
 			("other-provider", po::value<string>()->default_value(""), "Provider for the other dielectric. Function name from rtmath::refract.")
 
 			("input-shape,s", po::value<string>(), "Specify shapefile for inner dielectric calculation. Provides volume fraction.")
+			("calck,k", "Calculate K coefficient");
 			;
 
 		po::positional_options_description p;
@@ -92,7 +93,7 @@ int main(int argc, char** argv)
 		set<double> temps, freqs, nus;
 		map<PHASE,string> vsVols;
 		map<PHASE,set<double> > vVols;
-		bool debug = false;
+		bool debug = false, calck = false;
 
 		unitsFreq = vm["in-units"].as<string>();
 		unitsWvlen = vm["output-units"].as<string>();
@@ -106,6 +107,7 @@ int main(int argc, char** argv)
 
 		if (vm.count("debug"))
 			debug = true;
+		if (vm.count("calck")) calck = true;
 
 		if (vm.count("input-shape")) sshape = vm["input-shape"].as<string>();
 		if (vm.count("method"))
@@ -329,25 +331,41 @@ int main(int argc, char** argv)
 						}
 
 						complex<double> mEff;
+						if (fIce && fWat) {
+							RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+								<< Ryan_Debug::error::otherErrorText(
+								"Currently, the code cannot handle mixing rules "
+								"with both ice and water!");
+						}
+						if (fIce < 1 && fWat < 1) {
+							// TODO: extend to multiple media
+							complex<double> mCur;
+							double f = 0;
+							if (fIce) { f = fIce; mCur = mIce; }
+							if (fWat) { f = fWat; mCur = mWat; }
 
-						if (method == "Sihvola")
-						{
-							rtmath::refract::sihvola(mIce,mAir,fIce,*nu,mEff);
-						} else if (method == "Debye")
-						{
-							rtmath::refract::debyeDry(mIce,mAir,fIce, mEff);
-						} else if (method == "Maxwell-Garnett-Spheres")
-						{
-							rtmath::refract::maxwellGarnettSpheres(mIce,mAir,fIce,mEff);
-						} else if (method == "Maxwell-Garnett-Ellipsoids")
-						{
-							rtmath::refract::maxwellGarnettEllipsoids(mIce,mAir,fIce,mEff);
-						} else if (method == "Bruggeman")
-						{
-							rtmath::refract::bruggeman(mIce, mAir, fIce, mEff);
+							if (method == "Sihvola")
+							{
+								rtmath::refract::sihvola(mCur,mAir,f,*nu,mEff);
+							} else if (method == "Debye")
+							{
+								rtmath::refract::debyeDry(mCur,mAir,f, mEff);
+							} else if (method == "Maxwell-Garnett-Spheres")
+							{
+								rtmath::refract::maxwellGarnettSpheres(mCur,mAir,f,mEff);
+							} else if (method == "Maxwell-Garnett-Ellipsoids")
+							{
+								rtmath::refract::maxwellGarnettEllipsoids(mCur,mAir,f,mEff);
+							} else if (method == "Bruggeman")
+							{
+								rtmath::refract::bruggeman(mCur, mAir, f, mEff);
+							} else {
+								cerr << "Unknown method: " << method << endl;
+								RDthrow(Ryan_Debug::error::xBadInput());
+							}
 						} else {
-							cerr << "Unknown method: " << method << endl;
-							RDthrow(Ryan_Debug::error::xBadInput());
+							if (fIce == 1) mEff = mIce;
+							if (fWat == 1) mEff = mWat;
 						}
 
 						// Write effective refractive index
@@ -364,6 +382,10 @@ int main(int argc, char** argv)
 							cout.setf( ios::scientific, ios::floatfield);
 							cout.precision(7);
 							cout << " ( " << mEff.real() << " , " << mEff.imag() << " ) " << endl;
+						}
+						if (calck) {
+							double K = (( (mEff*conj(mEff)).real()-1) /((mEff*conj(mEff)).real()+2.) );
+							cout << " K is " << K << ", and Ksq is " << K * K << endl;
 						}
 					}
 				}

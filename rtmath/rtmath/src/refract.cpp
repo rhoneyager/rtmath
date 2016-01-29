@@ -11,6 +11,7 @@
 #include <thread>
 #include <mutex>
 
+#include <boost/log/sources/global_logger_storage.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
@@ -19,6 +20,14 @@
 #include "../rtmath/units.h"
 #include "linterp.h"
 #include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging.h>
+
+#undef mylog
+#undef FL
+//#define FL __FILE__ << ", " << (int)__LINE__ << ": "
+#define FL "refract.cpp, line " << (int)__LINE__ << ": "
+
+#define mylog(x) { std::ostringstream l; l << FL << x; rtmath::refract::implementations::emit_refract_log(l.str()); }
 
 namespace {
 	boost::program_options::options_description SHARED_PRIVATE *pcmdline = nullptr;
@@ -312,12 +321,12 @@ void rtmath::refract::add_options(
 	/// \todo Add option for default rtmath.conf location
 
 	cmdline.add_options()
-		("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
-		("mr", po::value<double>(), "Override real refractive index value")
-		("mi", po::value<double>(), "Override imaginary refractive index value")
-		("refractive-method", po::value<string>()->default_value("mg-ellipsoids"),
-		"Specify the dielectric method to use in calculations (mg-spheres, "
-		"mg-ellipsoids, sihvola, bruggeman, debye, maxwell-garnett (mg) )")
+		//("nu,n", po::value<double>()->default_value(0.85), "Value of nu for Sihvola refractive index scaling")
+		//("mr", po::value<double>(), "Override real refractive index value")
+		//("mi", po::value<double>(), "Override imaginary refractive index value")
+		//("refractive-method", po::value<string>()->default_value("mg-ellipsoids"),
+		//"Specify the dielectric method to use in calculations (mg-spheres, "
+		//"mg-ellipsoids, sihvola, bruggeman, debye, maxwell-garnett (mg) )")
 		;
 
 	config.add_options()
@@ -333,20 +342,45 @@ void rtmath::refract::process_static_options(
 	namespace po = boost::program_options;
 	using std::string;
 
-	if (vm.count("nu")) nu = vm["nu"].as<double>();
-	if (vm.count("mr") || vm.count("mi"))
-	{
-		m_force = std::complex<double>(vm["mr"].as<double>(),
-			vm["mi"].as<double>());
-	}
+	//if (vm.count("nu")) nu = vm["nu"].as<double>();
+	//if (vm.count("mr") || vm.count("mi"))
+	//{
+	//	m_force = std::complex<double>(vm["mr"].as<double>(),
+	//		vm["mi"].as<double>());
+	//}
 
 	// Add in refractive method calculations here.
 	throw;
 }
 
+namespace rtmath { namespace refract { namespace implementations {
+			BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+				m_ref,
+				boost::log::sources::severity_channel_logger_mt< >,
+				(boost::log::keywords::severity = Ryan_Debug::log::error)
+				(boost::log::keywords::channel = "refract"));
+
+			/** \todo Need to heavily modify to determine dll search paths from configuration and select 
+			* folders. Load the plugins using a custom validator that checks both Ryan_Debug and rtmath.
+			**/
+
+
+			void emit_refract_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
+			{
+				auto& lg = rtmath::refract::implementations::m_ref::get();
+				BOOST_LOG_SEV(lg, sev) << m;
+			}
+}
+}
+}
+
 void rtmath::refract::implementations::mWater(double f, double t, std::complex<double> &m, const char* provider)
 {
 	std::string sP(provider);
+	mylog("Calculating water refractive index for:\n"
+			"\tfreq: " << f << " GHz\n"
+			"\ttemp: " << t << " K\n"
+			"\tprovider: " << sP);
 	if (sP.size())
 	{
 		using rtmath::refract::_frequency;
@@ -368,7 +402,9 @@ void rtmath::refract::implementations::mWater(double f, double t, std::complex<d
 			{
 				mWaterLiebe(f, t, m);
 			}
-			else {
+			else if ( f < 500 && t >= 253 && t < 313) {
+				mWaterFreshMeissnerWentz(f, t, m);
+			} else {
 				RDthrow(Ryan_Debug::error::xModelOutOfRange())
 					<< Ryan_Debug::error::temp(t)
 					<< Ryan_Debug::error::temp_ref_range(std::pair<double, double>(273, 500));
@@ -386,6 +422,10 @@ void rtmath::refract::implementations::mWater(double f, double t, std::complex<d
 void rtmath::refract::implementations::mIce(double f, double t, std::complex<double> &m, const char* provider)
 {
 	std::string sP(provider);
+	mylog("Calculating ice refractive index for:\n"
+			"\tfreq: " << f << " GHz\n"
+			"\ttemp: " << t << " K\n"
+			"\tprovider: " << sP);
 	if (sP.size())
 	{
 		using rtmath::refract::_frequency;
@@ -451,6 +491,7 @@ void rtmath::refract::implementations::mOther(double f, double t, std::complex<d
 // Valid from 0 to 1000 GHz. freq in GHz, temp in K
 void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::complex<double> &m)
 {
+	mylog("Invoking mWaterLiebe with freq " << f << " GHz and temp " << t << " K");
 	if (f < 0 || f > 1000)
 		RDthrow(Ryan_Debug::error::xModelOutOfRange())
 			<< Ryan_Debug::error::freq(f)
@@ -469,10 +510,12 @@ void rtmath::refract::implementations::mWaterLiebe(double f, double t, std::comp
 		+ complex<double>(eps1-eps2,0)/complex<double>(1.0,f/fs)
 		+ complex<double>(eps2,0);
 	m = sqrt(eps);
+	mylog("mWaterLiebe result for freq: " << f << " temp " << t << " is " << m);
 }
 
 void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double tK, std::complex<double> &m)
 {
+	mylog("Invoking mWaterFreshMeissnerWentz with freq " << f << " GHz and temp " << tK << " K");
 	if (f < 0 || f > 500)
 		RDthrow(Ryan_Debug::error::xModelOutOfRange())
 			<< Ryan_Debug::error::freq(f)
@@ -511,11 +554,13 @@ void rtmath::refract::implementations::mWaterFreshMeissnerWentz(double f, double
 	eps += complex<double>(e1 - einf, 0) / (complex<double>(1, f / nu2));
 	eps += complex<double>(einf, -sigma * oneover2pie0 / f ); // -sigma / (f*2.*pi*e0));
 	m = sqrt(eps);
+	mylog("mWaterFreshMeissnerWentz result for freq: " << f << " temp " << tK << " is " << m);
 }
 
 
 void rtmath::refract::implementations::mIceMatzler(double f, double t, std::complex<double> &m)
 {
+	mylog("Invoking mIceMatzler with freq " << f << " GHz and temp " << t << " K");
 	double er = 0;
 	if (t>243.0)
 		er = 3.1884+9.1e-4*(t-273.0);
@@ -533,12 +578,13 @@ void rtmath::refract::implementations::mIceMatzler(double f, double t, std::comp
 	double ei = alpha/f+beta*f;
 	std::complex<double> e(er,-ei);
 	m = sqrt(e);
+	mylog("mIceMatzler result for freq: " << f << " temp " << t << " is " << m);
 }
 
 void rtmath::refract::implementations::mIceWarren(double f, double t, std::complex<double> &m)
 {
 	// Warren table 2 is used for interpolation
-
+	mylog("Invoking mIceWarren with freq " << f << " GHz and temp " << t << " K");
 	static bool setup = false;
 	static std::vector<double> tempCs, wavelengths;
 	static std::vector<double > vals_re, vals_im;
@@ -653,63 +699,78 @@ void rtmath::refract::implementations::mIceWarren(double f, double t, std::compl
 	std::array<double, 2> args = { wvlen, t - 273.15 };
 	m = std::complex<double>(interp_ML_warren_re->interp(args.begin()),
 		-1.0 * interp_ML_warren_im->interp(args.begin()));
+	mylog("mIceWarren result for freq: " << f << " temp " << t << " is " << m);
 }
 
 
 void rtmath::refract::implementations::mWaterHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mWaterHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelA(hanelAmedium::WATER_RE)->interp(args),
 		-1.0 * setupHanelA(hanelAmedium::WATER_IM)->interp(args));
+	mylog("mWaterHanel result for lambda: " << lambda << " is " << m);
 }
 
 void rtmath::refract::implementations::mIceHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mIceHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelA(hanelAmedium::ICE_RE)->interp(args),
 		-1.0 * setupHanelA(hanelAmedium::ICE_IM)->interp(args));
+	mylog("mIceHanel result for lambda: " << lambda << " is " << m);
 }
 
 void rtmath::refract::implementations::mNaClHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mNaClHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelA(hanelAmedium::NACL_RE)->interp(args),
 		-1.0 * setupHanelA(hanelAmedium::NACL_IM)->interp(args));
+	mylog("mNaClHanel result for lambda: " << lambda << " is " << m);
 }
 
 void rtmath::refract::implementations::mSeaSaltHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mSeaSaltHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda }; 
 	m = std::complex<double>(setupHanelA(hanelAmedium::SEASALT_RE)->interp(args),
 		-1.0 * setupHanelA(hanelAmedium::SEASALT_IM)->interp(args));
+	mylog("mSeaSaltHanel result for lambda: " << lambda << " is " << m);
 }
 
 void rtmath::refract::implementations::mDustHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mDustHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelB(hanelBmedium::DUST_LIKE_RE)->interp(args),
 		-1.0 * setupHanelB(hanelBmedium::DUST_LIKE_IM)->interp(args));
+	mylog("mDustHanel result for lambda: " << lambda << " is " << m);
 }
 
 void rtmath::refract::implementations::mSandOHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mSandOHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelB(hanelBmedium::SAND_O_RE)->interp(args),
 		-1.0 * setupHanelB(hanelBmedium::SAND_O_IM)->interp(args));
+	mylog("mSandOHanel result for lambda: " << lambda << " is " << m);
 }
 
 void rtmath::refract::implementations::mSandEHanel(double lambda, std::complex<double> &m)
 {
+	mylog("Invoking mSandEHanel with lambda " << lambda << " mm");
 	//double wvlen = rtmath::units::conv_spec("GHz", "mm").convert(f);
 	array<double, 1> args = { lambda };
 	m = std::complex<double>(setupHanelB(hanelBmedium::SAND_E_RE)->interp(args),
 		-1.0 * setupHanelB(hanelBmedium::SAND_E_IM)->interp(args));
+	mylog("mSandEHanel result for lambda: " << lambda << " is " << m);
 }
 
 
@@ -754,6 +815,8 @@ void rtmath::refract::bruggeman(std::complex<double> Ma, std::complex<double> Mb
 	eRes = zeros::secantMethod(formula, gA, gB);
 
 	eToM(eRes,Mres);
+	mylog("bruggeman code called\n\tMa " << Ma << "\n\tMb " << Mb << "\n\tfa " << fa
+			<< "\n\tMres " << Mres);
 }
 
 /*
@@ -779,6 +842,8 @@ void rtmath::refract::debyeDry(std::complex<double> Ma, std::complex<double> Mb,
 	eRes = (complex<double>(2.,0) * fact + complex<double>(1.,0)) 
 		/ (complex<double>(1.,0) - fact);
 	eToM(eRes,Mres);
+	mylog("debyeDry code called\n\tMa " << Ma << "\n\tMb " << Mb << "\n\tfa " << fa
+			<< "\n\tMres " << Mres);
 }
 
 void rtmath::refract::maxwellGarnettSpheres(std::complex<double> Ma, std::complex<double> Mb, 
@@ -795,6 +860,8 @@ void rtmath::refract::maxwellGarnettSpheres(std::complex<double> Ma, std::comple
 	eRes = eB * (complex<double>(2,0) * a + complex<double>(1,0))
 		/ (complex<double>(1,0) - a);
 	eToM(eRes,Mres);
+	mylog("maxwellGarnettSpheres code called\n\tMa " << Ma << "\n\tMb " << Mb << "\n\tfa " << fa
+			<< "\n\tMres " << Mres);
 }
 
 void rtmath::refract::maxwellGarnettEllipsoids(std::complex<double> Ma, std::complex<double> Mb, 
@@ -813,6 +880,8 @@ void rtmath::refract::maxwellGarnettEllipsoids(std::complex<double> Ma, std::com
 
 	eRes = ((cfc*beta) + (cf*eA)) / (cf + (cfc*beta));
 	eToM(eRes,Mres);
+	mylog("maxwellGarnettEllipsoids code called\n\tMa " << Ma << "\n\tMb " << Mb << "\n\tfa " << fa
+			<< "\n\tMres " << Mres);
 }
 
 void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb, 
@@ -844,6 +913,8 @@ void rtmath::refract::sihvola(std::complex<double> Ma, std::complex<double> Mb,
 	complex<double> gA(1.0,1.0), gB(1.55,1.45);
 	eRes = zeros::secantMethod(formulaSihvola, gA, gB);
 	eToM(eRes,Mres);
+	mylog("sihvola code called\n\tMa " << Ma << "\n\tMb " << Mb << "\n\tfa " << fa
+			<< "\n\tnu " << nu << "\n\tMres " << Mres);
 }
 
 void rtmath::refract::mToE(std::complex<double> m, std::complex<double> &e)

@@ -14,7 +14,7 @@ include(addInstallDirs)
 include(addModuleFiles)
 set(MAJOR 0)
 set(MINOR 1)
-set(REVISION 0)
+set(REVISION 1)
 set(SCATDB_RYAN_VERSION
 	${MAJOR}.${MINOR}.${REVISION}.${SVNREVISION} )
 addBaseProject()

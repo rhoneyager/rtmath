@@ -10,6 +10,14 @@
 #include <boost/lexical_cast.hpp>
 #include "../rtmath/units.h"
 #include <Ryan_Debug/error.h>
+#include <Ryan_Debug/logging_base.h>
+
+#undef mylog
+#undef FL
+//#define FL __FILE__ << ", " << (int)__LINE__ << ": "
+#define FL "refract.h, line " << (int)__LINE__ << ": "
+
+#define mylog(x) { std::ostringstream l; l << FL << x; rtmath::refract::implementations::emit_refract_log(l.str()); }
 
 namespace boost { namespace program_options { class options_description; class variables_map; } }
 namespace rtmath {
@@ -20,6 +28,8 @@ namespace rtmath {
 
 		// The raw dielectric providers implementations
 		namespace implementations {
+			void DLEXPORT_rtmath_core emit_refract_log(const std::string&, ::Ryan_Debug::log::severity_level = ::Ryan_Debug::log::debug_2);
+
 			void DLEXPORT_rtmath_core mWater(double f, double t, std::complex<double> &m, const char* provider = nullptr);
 			void DLEXPORT_rtmath_core mIce(double f, double t, std::complex<double> &m, const char* provider = nullptr);
 			void DLEXPORT_rtmath_core mOther(double f, double t, std::complex<double> &m, const char* provider = nullptr);
