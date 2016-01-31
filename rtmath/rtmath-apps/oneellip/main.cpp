@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 			("size-type", po::value<std::string>()->default_value("Effective_Radius_Ice"), "How is the size described? "
 			 "Effective_Radius_Ice, Effective_Radius_Full, Max_Diameter_Full, etc. are valid options.")
 			("freqs,f", po::value<std::string>(), "Specify frequencies in GHz. Needed for dielectrics.")
-			("other-param", po::value<std::vector<std::string> >(), "Specify optional string parameters "
+			("other-param,p", po::value<std::vector<std::string> >(), "Specify optional string parameters "
 			 "that will be passed to the backend functions. Give in type:key:value notation. "
 			 "Types are double or string.")
 			;
@@ -177,16 +177,16 @@ int main(int argc, char *argv[])
 		auto otherOpts = Ryan_Debug::registry::options::generate();
 		if (vm.count("other-param")) {
 			vector<string> oopts = vm["other-param"].as<vector<string> >();
-			// Split based to type, key and value based on presence of ':'.
+			// Split based to key and value based on presence of ':'.
 			for (const auto &c : oopts) {
 				vector<string> ssplit;
 				Ryan_Debug::splitSet::splitVector(c, ssplit, ':');
-				if (ssplit.size() != 3)
+				if (ssplit.size() != 2)
 					RDthrow(Ryan_Debug::error::xBadInput()) 
 						<< Ryan_Debug::error::key(c)
 						<< Ryan_Debug::error::otherErrorText("other-param needs type:key:value format.");
 				// For now, all option types use the same format.
-				otherOpts->setVal<std::string>(ssplit[1], ssplit[2]);
+				otherOpts->setVal<std::string>(ssplit[0], ssplit[1]);
 			}
 		}
 

@@ -16,7 +16,17 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 #include <scatdb_ryan/scatdb_ryan.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include <Ryan_Debug/logging.h>
 #include "plugin-scatdb-ryan.h"
+
+
+#undef mylog
+#undef FL
+//#define FL __FILE__ << ", " << (int)__LINE__ << ": "
+#define FL "scatdb_ryan/provider.cpp, line " << (int)__LINE__ << ": "
+
+#define mylog(x) { std::ostringstream l; l << FL << x; rtmath::plugins::scatdb_ryan::implementations::emit_log(l.str(), Ryan_Debug::log::warning); }
 
 namespace rtmath
 {
@@ -24,6 +34,20 @@ namespace rtmath
 	{
 		namespace scatdb_ryan
 		{
+
+			namespace implementations {
+				BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+					m_slog,
+					boost::log::sources::severity_channel_logger_mt< >,
+					(boost::log::keywords::severity = Ryan_Debug::log::error)
+					(boost::log::keywords::channel = "plugin_scatdb_ryan"));
+
+				void emit_log(const std::string &m, ::Ryan_Debug::log::severity_level sev)
+				{
+					auto& lg = rtmath::plugins::scatdb_ryan::implementations::m_slog::get();
+					BOOST_LOG_SEV(lg, sev) << m;
+				}
+			}
 
 			namespace main {
 				void doCrossSection(
@@ -59,16 +83,24 @@ namespace rtmath
 						string mdrange = i.other->getVal<string>("mdrange", "");
 						string arrange = i.other->getVal<string>("arrange","");
 						double targetx = i.aeff;
-						if (usemd) targetx = i.maxDiamFull;
+						if (usemd) targetx = i.maxDiamFull / 1000; // in mm
+						double freq = rtmath::units::conv_spec("um","GHz").convert(s.wavelength);
+						mylog("scatdb_ryan input requested for:\n"
+							"\tdbfile: " << dbfile << "\n\tusemd: " << usemd
+							<< "\n\tinterp: " << doInterp << "\n\tlowess: " << doLowess
+							<< "\n\tflaketypes: " << flaketypes << "\n\taeffrange: " << aeffrange
+							<< "\n\tmdrange: " << mdrange << "\n\tarrange: " << arrange
+							<< "\n\ttargetx: " << targetx << "\n\tfreq: " << freq);
 						// TODO: ADD DB LOADING STATE HERE
 						::scatdb_ryan::db::findDB(dbfile);
 						if (!dbfile.size())
 							RDthrow(::Ryan_Debug::error::xMissingFile())
 							<< ::Ryan_Debug::error::otherErrorText("Unable to detect scatdb_ryan database file");
+						mylog("Loading scatdb_ryan file: " << dbfile);
 						auto sdb = db::loadDB(dbfile.c_str());
 
 						auto f = filter::generate();
-						double freq = rtmath::units::conv_spec("um","GHz").convert(s.wavelength);
+
 						f->addFilterFloat(db::data_entries::FREQUENCY_GHZ, freq-0.01, freq+0.01);
 						f->addFilterInt(db::data_entries::FLAKETYPE, flaketypes);
 						//if (vm.count("temp")) f->addFilterFloat(db::data_entries::TEMPERATURE_K, vm["temp"].as<string>());
@@ -94,7 +126,7 @@ namespace rtmath
 						// Take results and so a linear interpolation between the two
 						// closest target points.
 						int numLines = res->floatMat.rows();
-
+						mylog("Final table has " << numLines << " rows.");
 						double xval = 0, xval2 = 0;
 						for(size_t i=0; i<numLines; ++i) {
 							auto floatLine = res->floatMat.block<1,db::data_entries::NUM_DATA_ENTRIES_FLOATS>(std::min(i-1,i),0);
@@ -107,28 +139,49 @@ namespace rtmath
 							else
 								xval2 = floatLine2(0,db::data_entries::MAX_DIMENSION_MM);
 							if (xval2 > targetx) {
+								double dx = targetx - xval;
 
-								c.Qsca = floatLine(0,db::data_entries::CSCA_M)
-									+ (((targetx-xval)/(xval2-xval))*floatLine2(0,db::data_entries::CSCA_M));
-								c.Qbk = floatLine(0,db::data_entries::CBK_M)
-									+ (((targetx-xval)/(xval2-xval))*floatLine2(0,db::data_entries::CBK_M));
-								c.g = floatLine(0,db::data_entries::G)
-									+ (((targetx-xval)/(xval2-xval))*floatLine2(0,db::data_entries::G));
-								c.Qext = floatLine(0,db::data_entries::CEXT_M)
-									+ (((targetx-xval)/(xval2-xval))*floatLine2(0,db::data_entries::CEXT_M));
-								c.Qabs = floatLine(0,db::data_entries::CABS_M)
-									+ (((targetx-xval)/(xval2-xval))*floatLine2(0,db::data_entries::CABS_M));
+								auto dinterp = [&](int quant) {
+									double y1 = floatLine(0,quant);
+									double y2 = floatLine2(0,quant);
+									double m = (y2-y1)/(xval2-xval);
+									double res = y1 + (m*dx);
+									if (y1 < 0 || y2 < 0) res = -1;
+									return res;
+								};
+								c.Qsca = dinterp(db::data_entries::CSCA_M);
+								c.Qext = dinterp(db::data_entries::CEXT_M);
+								c.Qbk = dinterp(db::data_entries::CBK_M);
+								c.Qabs = dinterp(db::data_entries::CABS_M);
+								c.g = dinterp(db::data_entries::G);
 
-								c.Qbk /= pi * targetx * targetx;
-								c.Qsca /= pi * targetx * targetx;
-								c.Qext /= pi * targetx * targetx;
-								c.Qabs /= pi * targetx * targetx;
+								mylog("Found result with xval " << xval << " and xval2 " << xval2
+									<< " for target " << targetx
+									<< "\n\tCbk1: " << floatLine(0,db::data_entries::CBK_M)
+									<< "\n\tCbk2: " << floatLine2(0,db::data_entries::CBK_M)
+									<< "\n\tCbk_res: " << c.Qbk);
+
+								// Bad for interpolation on maximum diameter!!!!!!!!!!
+								if (c.Qbk > 0)
+									c.Qbk /= pi * targetx * targetx;
+								if (c.Qsca > 0)
+									c.Qsca /= pi * targetx * targetx;
+								if (c.Qext > 0)
+									c.Qext /= pi * targetx * targetx;
+								if (c.Qabs > 0)
+									c.Qabs /= pi * targetx * targetx;
+
 								// TODO: Store state!
 								return;
 							}
 							xval = xval2;
 						}
-
+						c.Qsca = -1;
+						c.g = -1;
+						c.Qbk = -1;
+						c.Qext = -1;
+						c.Qabs = -1;
+						mylog("Out of range. No data returned.");
 					}
 					catch (std::exception &e)
 					{

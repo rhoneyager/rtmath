@@ -237,7 +237,8 @@ namespace scatdb_ryan {
 				double x = aeff[i];
 				double y = ys[i];
 				if (abs((last/x)-1) < 0.000001 || last >= x) {
-					std::cerr << "Ignoring x " << x << " with last " << last << std::endl;
+					// Already tested.
+					//std::cerr << "Ignoring x " << x << " with last " << last << std::endl;
 					continue;
 				}
 				fxs.push_back(x);
