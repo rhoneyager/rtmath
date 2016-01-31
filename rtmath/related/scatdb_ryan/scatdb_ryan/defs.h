@@ -3,6 +3,11 @@
 
 /* defs.h - Header containing typedefs and other defines for many things */
 
+#undef SHARED_EXPORT
+#undef SHARED_IMPORT
+#undef SHARED_INTERNAL
+#undef SHARED_PRIVATE
+
 /// \todo CMakeLists needs to set the appropriate flags EXPORTING_SDBR on all libraries and 
 /// SHARED_SDBR_* for the libraries that are shared.
 

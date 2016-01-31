@@ -16,6 +16,7 @@
 
 #include "plugin-scatdb-ryan.h"
 
+
 namespace rtmath
 {
 	namespace plugins
