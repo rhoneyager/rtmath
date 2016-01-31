@@ -118,3 +118,31 @@ if (NOT WIN32)
 	endif()
 endif()
 
+INSTALL(DIRECTORY scatdb_ryan/
+	DESTINATION ${INSTALL_INCLUDE_DIR}/scatdb_ryan
+	COMPONENT Headers
+	)
+export(TARGETS scatdb_ryan spline
+	FILE "${PROJECT_BINARY_DIR}/scatdb_ryanTargets.cmake")
+export(PACKAGE scatdb_ryan)
+
+# ... for the build tree
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(scatdb_ryanConfig.cmake.in
+	"${PROJECT_BINARY_DIR}/scatdb_ryanConfig.cmake" @ONLY)
+# ... and for the install tree
+set(CONF_INCLUDE_DIRS "\${SCATDB_RYAN_CMAKE_DIR}/${REL_INCLUDE_DIR}") # Before WiX
+#set(CONF_INCLUDE_DIRS "")
+
+#message("${CONF_INCLUDE_DIRS}")
+
+configure_file(scatdb_ryanConfig.cmake.in
+	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/scatdb_ryanConfig.cmake" @ONLY)
+# ... for both
+configure_file(scatdb_ryanConfigVersion.cmake.in
+	"${PROJECT_BINARY_DIR}/scatdb_ryanConfigVersion.cmake" @ONLY)
+
+INSTALL(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/scatdb_ryanConfig.cmake"
+	"${PROJECT_BINARY_DIR}/scatdb_ryanConfigVersion.cmake"
+	DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT Libraries)
+

@@ -724,7 +724,6 @@ int main(int argc, char *argv[])
 			const double sizep = 2. * pi * r.aeff / r.lambda;
 
 			using namespace rtmath::phaseFuncs;
-			pf_class_registry::orientation_type o = pf_class_registry::orientation_type::ISOTROPIC;
 			pf_class_registry::inputParamsPartial i;
 			i.aeff = r.aeff;
 			i.aeff_rescale = vm["scale-aeff"].as<bool>();
@@ -756,7 +755,7 @@ int main(int argc, char *argv[])
 			}
 
 
-			pf_provider p(o, i);
+			pf_provider p(i);
 
 			pf_provider::resCtype res;
 			pf_class_registry::setup s;
@@ -806,19 +805,19 @@ int main(int argc, char *argv[])
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
 					<< sizep << "\t"
 					<< theta2 << "\t" << beta2 << "\t" << phi2 << "\t"
-					<< rr.second.g_iso << "\t"
-					<< rr.second.Qabs_iso << "\t"
-					<< rr.second.Qbk_iso << "\t"
-					<< rr.second.Qext_iso << "\t"
-					<< rr.second.Qsca_iso
+					<< rr.second.g << "\t"
+					<< rr.second.Qabs << "\t"
+					<< rr.second.Qbk << "\t"
+					<< rr.second.Qext << "\t"
+					<< rr.second.Qsca
 					<< std::endl;
 
 				cout << rr.first << "\t"
-					<< rr.second.g_iso << "\t"
-					<< rr.second.Qabs_iso << "\t"
-					<< rr.second.Qbk_iso << "\t"
-					<< rr.second.Qext_iso << "\t"
-					<< rr.second.Qsca_iso
+					<< rr.second.g << "\t"
+					<< rr.second.Qabs << "\t"
+					<< rr.second.Qbk << "\t"
+					<< rr.second.Qext << "\t"
+					<< rr.second.Qsca
 					<< std::endl;
 			}
 			

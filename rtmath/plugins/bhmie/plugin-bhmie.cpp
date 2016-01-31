@@ -85,24 +85,13 @@ namespace rtmath
 
 					const double k = 2. * pi / s.wavelength;
 
-				
-					c.Qsca_iso = qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext_iso = qext * pow(scaledAeff / i.aeff, 2.);
-					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
-					c.g_iso = gsca;
-					c.Qbk_iso = qback * pow(scaledAeff / i.aeff, 2.);
+					c.Qsca = qsca * pow(scaledAeff / i.aeff, 2.);
+					c.Qext = qext * pow(scaledAeff / i.aeff, 2.);
+					c.Qabs = c.Qext - c.Qsca;
+					c.g = gsca;
+					c.Qbk = qback * pow(scaledAeff / i.aeff, 2.);
 
-					double C_sphere = pi * pow(scaledAeff, 2.0);
-					c.Qsca = c.Qsca_iso;
-					c.Qbk = c.Qbk_iso;
-					c.g = c.g_iso;
-					c.Qext = c.Qext_iso;
-					c.Qabs = c.Qabs_iso;
-
-					/// iso values are validated with solid spheres and soft spheres using liu code
-					/// \todo need to validate with ellipsoids
-
-					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
+					//double C_sphere = pi * pow(scaledAeff, 2.0);
 				} catch (...) {
 					std::cerr << "A bhmie error has occurred." << std::endl;
 					//std::cerr << "\t" << t.what() << std::endl;
@@ -191,7 +180,6 @@ D_Ryan_Debug_start()
 	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
 	rtmath::phaseFuncs::pf_class_registry pc;
 	pc.name = "bhmie";
-	pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pc.fCrossSections = rtmath::plugins::bhmie::doCrossSection;
 	//pc.fPfs = rtmath::plugins::bhmie::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);

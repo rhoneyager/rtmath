@@ -75,24 +75,12 @@ namespace rtmath
 						qback /= pi * pow(i.aeff,2.);
 						gsca = 0;
 
-						
-						c.Qsca_iso = -1; // qsca;// *pow(scaledAeff / i.aeff, 2.);
-						c.Qext_iso = -1;// qext;// *pow(scaledAeff / i.aeff, 2.);
-						c.Qabs_iso = -1; // c.Qext_iso - c.Qsca_iso;
-						c.g_iso = 0;// gsca;
-						c.Qbk_iso = qback; // * pow(scaledAeff / i.aeff, 2.);
-
 						double C_sphere = pi * pow(scaledAeff, 2.0);
-						c.Qsca = c.Qsca_iso;
-						c.Qbk = c.Qbk_iso;
-						c.g = c.g_iso;
-						c.Qext = c.Qext_iso;
-						c.Qabs = c.Qabs_iso;
-
-						/// iso values are validated with solid spheres and soft spheres using liu code
-						/// \todo need to validate with ellipsoids
-
-						//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
+						c.Qsca = -1;
+						c.Qbk = qback;
+						c.g = 0;
+						c.Qext = -1;
+						c.Qabs = -1;
 					}
 					catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;

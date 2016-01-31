@@ -80,9 +80,10 @@ namespace rtmath {
 			const char* name;
 
 			/// Indicates whether the module handles random or aligned orientations.
-			enum class orientation_type {
-				ISOTROPIC, ORIENTED
-			} orientations;
+			/// DEPRECATED
+			//enum class orientation_type {
+			//	ISOTROPIC, ORIENTED
+			//} orientations;
 
 			/// Angle setup
 			struct DLEXPORT_rtmath_core setup {
@@ -136,8 +137,8 @@ namespace rtmath {
 			struct DLEXPORT_rtmath_core cross_sections {
 				cross_sections();
 				double Qbk, Qext, Qsca, Qabs, g;
-				double Qsca_iso, Qabs_iso;
-				double Qbk_iso, Qext_iso, g_iso;
+				// Persistant state vector
+				//std::shared_ptr<nullptr> state;
 				bool valid;
 			};
 
@@ -171,14 +172,14 @@ namespace rtmath {
 			pf_registry, pf_class_registry >
 		{
 		public:
-			pf_provider(pf_class_registry::orientation_type, const pf_class_registry::inputParamsPartial&);
+			pf_provider(const pf_class_registry::inputParamsPartial&);
 			virtual ~pf_provider();
 
 			/// \brief Find the first matching handler
 			/// \param oriType specifies isotropic or oriented run.
 			/// \param name forces match to a specific plugin. NULL causes this parameter to be skipped.
 			/// \param res is a container for all matching modules.
-			static void findHandler(pf_class_registry::orientation_type oriType,
+			static void findHandler(
 				const char* name, const pf_class_registry *res);
 
 
@@ -188,7 +189,6 @@ namespace rtmath {
 			void getPfs(const pf_class_registry::setup&, resPtype& res, const std::string &forceProvider = "") const;
 		private:
 			const pf_class_registry::inputParamsPartial& iparams;
-			pf_class_registry::orientation_type otype;
 		};
 
 		struct pfRunSetContainer :

@@ -8,7 +8,6 @@ add_library (rtmath_plugin_nondda_misc SHARED
 	nondda-rg.cpp
 	nondda-rg-iso.cpp
 	nondda-hrg.cpp
-	nondda-hrg-iso.cpp
 	plugin-nondda-misc.cpp
 	plugin-nondda-misc.h
 	)

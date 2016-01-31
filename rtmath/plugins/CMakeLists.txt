@@ -61,6 +61,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_ROOT)
 		add_subdirectory (root)
 	endif()
+	option (BUILD_PLUGIN_SCATDB_RYAN
+		"Scatdb_Ryan plugin provides database I/O" ON)
+	if (BUILD_PLUGIN_SCATDB_RYAN)
+		add_subdirectory (scatdb_ryan)
+	endif()
 	option (BUILD_PLUGIN_SILO
 		"Build SILO IO plugin" ON)
 	if (BUILD_PLUGIN_SILO)

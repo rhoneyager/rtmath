@@ -88,23 +88,13 @@ namespace rtmath
 
 						const double k = 2. * pi / s.wavelength;
 
-						c.Qsca_iso = qsca * pow(scaledAeff / i.aeff, 2.);
-						c.Qext_iso = qext * pow(scaledAeff / i.aeff, 2.);
-						c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
-						c.g_iso = gsca;
-						c.Qbk_iso = qback * pow(scaledAeff / i.aeff, 2.);
+						c.Qsca = qsca * pow(scaledAeff / i.aeff, 2.);
+						c.Qext = qext * pow(scaledAeff / i.aeff, 2.);
+						c.Qabs = c.Qext - c.Qsca;
+						c.g = gsca;
+						c.Qbk = qback * pow(scaledAeff / i.aeff, 2.);
 
 						double C_sphere = pi * pow(scaledAeff, 2.0);
-						c.Qsca = c.Qsca_iso;
-						c.Qbk = c.Qbk_iso;
-						c.g = c.g_iso;
-						c.Qext = c.Qext_iso;
-						c.Qabs = c.Qabs_iso;
-
-						/// iso values are validated with solid spheres and soft spheres using liu code
-						/// \todo need to validate with ellipsoids
-
-						//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 					} catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;
 						RDthrow(Ryan_Debug::error::xOtherError()) <<
@@ -168,33 +158,23 @@ D_Ryan_Debug_start()
 
 	rtmath::phaseFuncs::pf_class_registry pc2;
 	pc2.name = "Rayleigh";
-	pc2.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pc2.fCrossSections = rtmath::plugins::nondda_misc::Rayleigh_2::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc2);
 
 	rtmath::phaseFuncs::pf_class_registry pcrg;
 	pcrg.name = "Rayleigh-Gans";
-	pcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pcrg.fCrossSections = rtmath::plugins::nondda_misc::RG::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pcrg);
 
 	rtmath::phaseFuncs::pf_class_registry hpcrg;
 	hpcrg.name = "SSRG";
-	hpcrg.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	hpcrg.fCrossSections = rtmath::plugins::nondda_misc::HRG::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(hpcrg);
 
 	rtmath::phaseFuncs::pf_class_registry pcrgi;
 	pcrgi.name = "Rayleigh-Gans-iso";
-	pcrgi.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pcrgi.fCrossSections = rtmath::plugins::nondda_misc::RGi::doCrossSection;
 	rtmath::phaseFuncs::pf_provider::registerHook(pcrgi);
-
-	//rtmath::phaseFuncs::pf_class_registry hpcrgi;
-	//hpcrgi.name = "SSRG-iso";
-	//hpcrgi.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	//hpcrgi.fCrossSections = rtmath::plugins::nondda_misc::HRGi::doCrossSection;
-	//rtmath::phaseFuncs::pf_provider::registerHook(hpcrgi);
 
 	return SUCCESS;
 }

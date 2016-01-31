@@ -1,0 +1,17 @@
+# - Config file for the scatdb_ryan package
+# It defines the following variables
+#  SCATDB_RYAN_INCLUDE_DIRS - include directories
+#  SCATDB_RYAN_LIBRARIES    - libraries to link against
+#  SCATDB_RYAN_EXECUTABLE   - an executable
+ 
+# Compute paths
+get_filename_component(SCATDB_RYAN_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(SCATDB_RYAN_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${SCATDB_RYAN_CMAKE_DIR}/scatdb_ryanTargets.cmake")
+ 
+# These are IMPORTED targets created by FooBarTargets.cmake
+set(SCATDB_RYAN_LIBRARIES scatdb_ryan)
+#set(RYAN-DEBUG_EXECUTABLE bar)
+

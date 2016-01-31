@@ -75,27 +75,17 @@ namespace rtmath
 				try {
 					auto ori = ::tmatrix::OriTmatrix::calcIso(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca_iso = ori->qsca; //* pow(scaledAeff / i.aeff, 2.);
-					c.Qext_iso = ori->qext; //* pow(scaledAeff / i.aeff, 2.);
-					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
-					c.g_iso = ori->g;
+					c.Qsca = ori->qsca; //* pow(scaledAeff / i.aeff, 2.);
+					c.Qext = ori->qext; //* pow(scaledAeff / i.aeff, 2.);
+					c.g = ori->g;
 
 					auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
 
-					c.Qsca = c.Qsca_iso;
 					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
-					c.g = ori->g;
 
-					c.Qbk_iso = c.Qbk; //* pow(scaledAeff / i.aeff, 2.);
 					// Cext (and thus Qext) can come from the optical theorem...
 					// Cext = -4pi/k^2 * Re{S(\theta=0)}
-					c.Qext = c.Qext_iso; //-4. * pi * isoAng->getS(0, 0).real() / (k*k*C_sphere);
 					c.Qabs = c.Qext - c.Qsca;
-
-					/// iso values are validated with solid spheres and soft spheres using liu code
-					/// \todo need to validate with ellipsoids
-
-					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 				} catch (const ::std::exception& t) {
 					std::cerr << "A tmatrix error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
@@ -151,10 +141,8 @@ namespace rtmath
 				try {
 					auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
-					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
-					c.g_iso = -1;
+					c.Qsca = ori->qsca * pow(scaledAeff / i.aeff, 2.);
+					c.Qext = ori->qext * pow(scaledAeff / i.aeff, 2.);
 
 					double C_sphere = pi * pow(scaledAeff, 2.0);
 					auto ang = ::tmatrix::OriAngleRes::calc(ori, 0, 0, 180., 0);
@@ -163,11 +151,11 @@ namespace rtmath
 					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
 					c.g = -1;
 
-					c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
+					c.Qbk *= pow(scaledAeff / i.aeff, 2.);
 					// Cext (and thus Qext) can come from the optical theorem...
 					// Cext = -4pi/k^2 * Re{S(\theta=0)}
-					c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
-					c.Qabs = c.Qext - c.Qsca;
+					//c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
+					//c.Qabs = c.Qext - c.Qsca;
 
 					/// iso values are validated with solid spheres and soft spheres using liu code
 					/// \todo need to validate with ellipsoids
@@ -258,32 +246,11 @@ D_Ryan_Debug_start()
 	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
 	if (res != SUCCESS) return res;
 
-	//genAndRegisterIOregistry<::rtmath::ddscat::shapefile::shapefile, 
-	//	rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
-	rtmath::phaseFuncs::pf_class_registry pc;
-	pc.name = "tmatrix-ori";
-	pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ORIENTED;
-	pc.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
-	pc.fPfs = rtmath::plugins::tmatrix::doPf;
-	rtmath::phaseFuncs::pf_provider::registerHook(pc);
-
-	rtmath::phaseFuncs::pf_class_registry pcc;
-	pcc.name = "tmatrix-ori-iso";
-	pcc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
-	pcc.fCrossSections = rtmath::plugins::tmatrix::doCrossSection;
-	pcc.fPfs = rtmath::plugins::tmatrix::doPf;
-	rtmath::phaseFuncs::pf_provider::registerHook(pcc);
-
 
 	rtmath::phaseFuncs::pf_class_registry pcb;
-	pcb.name = "tmatrix-iso";
-	pcb.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pcb.name = "tmatrix-ori";
 	pcb.fCrossSections = rtmath::plugins::tmatrix::doCrossSectionIso;
 	//pcb.fPfs = rtmath::plugins::tmatrix::doPf;
 	//rtmath::phaseFuncs::pf_provider::registerHook(pcb);
-
-	// Also register some Rayleigh-Gans approximation codes
-	// - Standard theory
-	// - Hogan aggregate modifications
 	return SUCCESS;
 }

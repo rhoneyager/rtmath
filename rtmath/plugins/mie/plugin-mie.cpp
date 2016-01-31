@@ -79,24 +79,25 @@ namespace rtmath
 				try {
 					auto ori = mieCalc::calc(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca_iso = ori->qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext_iso = ori->qext * pow(scaledAeff / i.aeff, 2.);
-					c.Qabs_iso = ori->qabs * pow(scaledAeff / i.aeff, 2.);
-					c.g_iso = ori->g;
+					c.Qsca = ori->qsca * pow(scaledAeff / i.aeff, 2.);
+					c.Qext = ori->qext * pow(scaledAeff / i.aeff, 2.);
+					c.Qabs = ori->qabs * pow(scaledAeff / i.aeff, 2.);
+					c.g = ori->g;
+					c.Qbk = ori->qbk * pow(scaledAeff / i.aeff, 2.);
 
 					double C_sphere = pi * pow(scaledAeff, 2.0);
-					auto ang = mieAngleRes::calc(ori, 180.);
+					//auto ang = mieAngleRes::calc(ori, 180.);
 					// 4?
-					c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
-					c.Qbk = getDifferentialBackscatterCrossSectionUnpol(ori);
-					c.g = -1;
+					//c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
+					//c.Qbk = getDifferentialBackscatterCrossSectionUnpol(ori);
+					//c.g = -1;
 
-					c.Qbk_iso = ori->qbk * pow(scaledAeff / i.aeff, 2.);
+
 					//c.Qbk_iso = c.Qbk * pow(scaledAeff / i.aeff, 2.);
 					// Cext (and thus Qext) can come from the optical theorem...
 					// Cext = -4pi/k^2 * Re{S(\theta=0)}
-					c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
-					c.Qabs = c.Qext - c.Qsca;
+					//c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
+					//c.Qabs = c.Qext - c.Qsca;
 
 					/// iso values are validated with solid spheres and soft spheres using liu code
 					/// \todo need to validate with ellipsoids
@@ -184,8 +185,7 @@ D_Ryan_Debug_start()
 	if (res != SUCCESS) return res;
 
 	rtmath::phaseFuncs::pf_class_registry pc;
-	pc.name = "mie-iso";
-	pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
+	pc.name = "mie";
 	pc.fCrossSections = rtmath::plugins::mie::doCrossSection;
 	pc.fPfs = rtmath::plugins::mie::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pc);

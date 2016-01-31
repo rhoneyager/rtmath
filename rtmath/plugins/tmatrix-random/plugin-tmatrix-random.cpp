@@ -78,26 +78,15 @@ namespace rtmath
 				try {
 					auto ori = ::tmatrix_random::OriTmatrix::calc(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca_iso = ori->qsca * aeffRatSq;
-					c.Qext_iso = ori->qext * aeffRatSq;
-					c.Qabs_iso = c.Qext_iso - c.Qsca_iso;
-					c.g_iso = ori->g;
+					c.Qsca = ori->qsca * aeffRatSq;
+					c.Qext = ori->qext * aeffRatSq;
+					c.Qabs = c.Qext - c.Qsca;
+					c.g = ori->g;
 					c.Qbk = ori->qbk * aeffRatSq;
 
 					//auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
 					//auto ic = ::tmatrix_random::IsoAngleRes::calc(ori);
-					c.Qsca = c.Qsca_iso;
 					//c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
-					c.g = ori->g;
-
-					c.Qbk_iso = c.Qbk;
-					c.Qext = c.Qext_iso;
-					c.Qabs = c.Qext - c.Qsca;
-
-					/// iso values are validated with solid spheres and soft spheres using liu code
-					/// \todo need to validate with ellipsoids
-
-					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
 				} catch (const ::std::exception& t) {
 					std::cerr << "A tmatrix_random error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
@@ -125,16 +114,8 @@ D_Ryan_Debug_start()
 	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
 	if (res != SUCCESS) return res;
 
-	rtmath::phaseFuncs::pf_class_registry pc;
-	pc.name = "tmatrix-rnd";
-	pc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ORIENTED;
-	pc.fCrossSections = rtmath::plugins::tmatrix_random::doCrossSection;
-	//pc.fPfs = rtmath::plugins::tmatrix_random::doPf;
-	rtmath::phaseFuncs::pf_provider::registerHook(pc);
-
 	rtmath::phaseFuncs::pf_class_registry pcc;
 	pcc.name = "tmatrix-rnd";
-	pcc.orientations = rtmath::phaseFuncs::pf_class_registry::orientation_type::ISOTROPIC;
 	pcc.fCrossSections = rtmath::plugins::tmatrix_random::doCrossSection;
 	//pcc.fPfs = rtmath::plugins::tmatrix_random::doPf;
 	rtmath::phaseFuncs::pf_provider::registerHook(pcc);

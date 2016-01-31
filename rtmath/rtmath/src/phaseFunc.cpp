@@ -133,23 +133,21 @@ namespace rtmath {
 			Qbk(-1), Qext(-1), Qsca(-1), Qabs(-1), g(-1), valid(false) {}
 
 		void pf_provider::findHandler(
-			pf_class_registry::orientation_type oriType, 
 			const char* name, const pf_class_registry *res)
 		{
 			res = nullptr;
 			auto container = getHooks();
 			for (const auto &c : *container)
 			{
-				if (oriType != c.orientations) continue;
 				if (name)
 					if (std::string(name) != std::string(c.name)) continue;
 				res = &c;
 			}
 		}
 
-		pf_provider::pf_provider(pf_class_registry::orientation_type o, 
+		pf_provider::pf_provider(
 			const pf_class_registry::inputParamsPartial& i)
-			: iparams(i), otype(o) {}
+			: iparams(i) {}
 
 		void pf_provider::getCrossSections(const pf_class_registry::setup& s,
 			resCtype& res, const std::string &forceProvider) const
@@ -158,7 +156,6 @@ namespace rtmath {
 			auto container = getHooks();
 			for (const auto &c : *container)
 			{
-				if (otype != c.orientations) continue;
 				if (!c.fCrossSections) continue;
 				if (forceProvider.size() ) {
 					if (c.name) {
@@ -188,7 +185,6 @@ namespace rtmath {
 			auto container = getHooks();
 			for (const auto &c : *container)
 			{
-				if (otype != c.orientations) continue;
 				if (!c.fPfs) continue;
 				if (forceProvider.size() ) {
 					if (c.name) {
