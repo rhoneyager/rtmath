@@ -12,6 +12,7 @@
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/units.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 
@@ -34,7 +35,9 @@ namespace rtmath
 					const double pi = boost::math::constants::pi<double>();
 
 					// First, scale the effective radius and refractive index?
-					double scaledAeff = i.aeff;
+					auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+					auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+					double scaledAeff = cl->convert(i.aeff);
 
 					// Force refractive index of ice
 					std::complex<double> mRes = i.m;
@@ -48,7 +51,7 @@ namespace rtmath
 						prolate = true;
 						ar = 1./ar;
 					}
-					double Dlong = i.maxDiamFull;
+					double Dlong = cl->convert(i.maxDiamFull);
 					double Dshort = 0;
 
 					// What is the angle of incidence?
@@ -64,7 +67,7 @@ namespace rtmath
 						using namespace rtmath::units;
 						using namespace rtmath::units::keywords;
 						Dshort = convertLength(
-							_in_length_value = i.maxDiamFull,
+							_in_length_value = cl->convert(i.maxDiamFull),
 							_in_length_type = "Max_Diameter",
 							_out_length_type = "Mean_Diameter",
 							_ar = ar);
@@ -74,11 +77,11 @@ namespace rtmath
 							<< Ryan_Debug::error::key(sIncid)
 							<< Ryan_Debug::error::otherErrorText("Unsupported value of incid_angle");
 
-					const double k = 2. * pi / s.wavelength;
+					const double k = 2. * pi / cs->convert(s.wavelength);
 					const double size_p = k * Dshort;
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 					const double f = i.vFrac;
-					const double V = 4. / 3. * pi * std::pow(i.aeff, 3.); //i.aeff, scaledAeff
+					const double V = 4. / 3. * pi * std::pow(cl->convert(i.aeff), 3.); //i.aeff, scaledAeff
 					//const double dmax = 2. * std::pow(V*3./(4.*pi*ar),1./3.); // oblate particles
 					//const double d = ar * dmax; // d is the vertical dimension, d is the horizontal dimension.
 
@@ -167,13 +170,13 @@ namespace rtmath
 						qback *= beta;
 						qback += term1;
 						qback *= prefactor;
-						qback /= pi * pow(i.aeff,2.);
+						//qback /= pi * pow(i.aeff,2.);
 
-						c.Qsca = -1;
-						c.Qbk = qback;
+						c.Csca = -1;
+						c.Cbk = qback;
 						c.g = -1;
-						c.Qext = -1;
-						c.Qabs = -1;
+						c.Cext = -1;
+						c.Cabs = -1;
 
 					}
 					catch (std::exception &e)

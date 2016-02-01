@@ -702,10 +702,10 @@ int main(int argc, char *argv[])
 			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
 			"Aspect Ratio\tLambda (um)\tM_re\tM_im\t"
 			"Size Parameter\t"
-			"Theta\tBeta\tPhi\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
+			"Theta\tBeta\tPhi\tg\tCabs (m^2)\tCbk (m^2)\tCext (m^2)\tCsca (m^2)" << std::endl;
 
 		std::cerr << "Doing " << runs.size() << " runs." << std::endl;
-		cout << "Meth\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
+		cout << "Meth\tg\tCabs (m^2)\tCbk (m^2)\tCext (m^2)\tCsca (m^2)" << std::endl;
 		size_t i=1;
 		// Iterate over all possible runs
 		mylog("Executing. There are " << runs.size() << " runs to process.");
@@ -806,18 +806,18 @@ int main(int argc, char *argv[])
 					<< sizep << "\t"
 					<< theta2 << "\t" << beta2 << "\t" << phi2 << "\t"
 					<< rr.second.g << "\t"
-					<< rr.second.Qabs << "\t"
-					<< rr.second.Qbk << "\t"
-					<< rr.second.Qext << "\t"
-					<< rr.second.Qsca
+					<< rr.second.Cabs << "\t"
+					<< rr.second.Cbk << "\t"
+					<< rr.second.Cext << "\t"
+					<< rr.second.Csca
 					<< std::endl;
 
 				cout << rr.first << "\t"
 					<< rr.second.g << "\t"
-					<< rr.second.Qabs << "\t"
-					<< rr.second.Qbk << "\t"
-					<< rr.second.Qext << "\t"
-					<< rr.second.Qsca
+					<< rr.second.Cabs << "\t"
+					<< rr.second.Cbk << "\t"
+					<< rr.second.Cext << "\t"
+					<< rr.second.Csca
 					<< std::endl;
 			}
 			

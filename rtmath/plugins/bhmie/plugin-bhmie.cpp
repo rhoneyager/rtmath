@@ -9,10 +9,12 @@
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/refract.h"
 #include "../../rtmath/rtmath/phaseFunc.h"
+#include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 #include "../../related/bhmie/bhmie.h"
@@ -41,17 +43,19 @@ namespace rtmath
 				}
 
 				// First, scale the effective radius and refractive index?
-				double scaledAeff = i.aeff;
-				if (i.aeff_rescale)
+				auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+				auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+				double scaledAeff = cl->convert(i.aeff);
+				if (i.aeff_rescale) // Really to just get the radius. TODO: remove and simplify the code.
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						double scaledVolume = pow(i.aeff, 3.0);
+						double scaledVolume = pow(cl->convert(i.aeff), 3.0);
 						scaledVolume /= i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					} else {
-						double scaledSA = pow(i.aeff, 2.0);
+						double scaledSA = pow(cl->convert(i.aeff), 2.0);
 						scaledSA /= i.vFrac;
 						scaledAeff = pow(scaledSA, 0.5);
 					}
@@ -71,7 +75,7 @@ namespace rtmath
 				double ar = i.eps;
 				if (abs(ar - 1.0) < 0.00001) ar = 1.0001;
 
-				const double size_p = 2. * pi * scaledAeff / s.wavelength;
+				const double size_p = 2. * pi * scaledAeff / cs->convert(s.wavelength);
 				fcomplex cxref;
 				cxref.r = (float) mRes.real();
 				cxref.i = -1.f * (float) mRes.imag();
@@ -83,14 +87,18 @@ namespace rtmath
 				try {
 					::bhmie((float)size_p, cxref, nang, cxs1, cxs2, &qext, &qsca, &qback, &gsca);
 
-					const double k = 2. * pi / s.wavelength;
+					const double k = 2. * pi / cs->convert(s.wavelength);
 
-					c.Qsca = qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext = qext * pow(scaledAeff / i.aeff, 2.);
-					c.Qabs = c.Qext - c.Qsca;
+					c.Csca = qsca * pow(scaledAeff / cl->convert(i.aeff), 2.);
+					c.Cext = qext * pow(scaledAeff / cl->convert(i.aeff), 2.);
+					c.Cabs = c.Cext - c.Csca;
 					c.g = gsca;
-					c.Qbk = qback * pow(scaledAeff / i.aeff, 2.);
-
+					c.Cbk = qback * pow(scaledAeff / cl->convert(i.aeff), 2.);
+					// Currently, these are normalized. Convert into actual cross sections.
+					c.Csca *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cext *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cabs *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cbk *= pi * pow(cl->convert(i.aeff),2.0);
 					//double C_sphere = pi * pow(scaledAeff, 2.0);
 				} catch (...) {
 					std::cerr << "A bhmie error has occurred." << std::endl;

@@ -11,6 +11,7 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/units.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 
@@ -33,18 +34,20 @@ namespace rtmath
 					const double pi = boost::math::constants::pi<double>();
 
 					// First, scale the effective radius and refractive index?
-					double scaledAeff = i.aeff;
+					auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+					auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+					double scaledAeff = cl->convert(i.aeff);
 					if (i.aeff_rescale)
 					{
 						if (i.aeff_version ==
 							pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 						{
-							double scaledVolume = pow(i.aeff, 3.0);
+							double scaledVolume = pow(cl->convert(i.aeff), 3.0);
 							scaledVolume /= i.vFrac;
 							scaledAeff = pow(scaledVolume, 1. / 3.);
 						}
 						else {
-							double scaledSA = pow(i.aeff, 2.0);
+							double scaledSA = pow(cl->convert(i.aeff), 2.0);
 							scaledSA /= i.vFrac;
 							scaledAeff = pow(scaledSA, 0.5);
 						}
@@ -56,11 +59,11 @@ namespace rtmath
 
 					// Perform the calculation
 					double ar = i.eps;
-					const double k = 2. * pi / s.wavelength;
-					const double size_p = 2. * pi * scaledAeff / s.wavelength;
+					const double k = 2. * pi / cs->convert(s.wavelength);
+					const double size_p = k * scaledAeff ;
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 					const double f = i.vFrac;
-					const double V = 4. / 3. * pi * std::pow(i.aeff, 3.); //i.aeff
+					const double V = 4. / 3. * pi * std::pow(cl->convert(i.aeff), 3.); //i.aeff
 					const double dmax = 2. * std::pow(V*3./(4.*pi*ar),1./3.); // oblate particles
 					const double d = ar * dmax; // d is the vertical dimension, d is the horizontal dimension.
 
@@ -72,15 +75,15 @@ namespace rtmath
 						//qsca = 8. * std::pow(size_p, 4.) / 3.
 						//	* (d * conj(d)).real();
 						qback = 9. * V * V * K2 * pow(k,4.)/(4.*pi);
-						qback /= pi * pow(i.aeff,2.);
+						//qback /= pi * pow(cl->convert(i.aeff),2.);
 						gsca = 0;
 
 						double C_sphere = pi * pow(scaledAeff, 2.0);
-						c.Qsca = -1;
-						c.Qbk = qback;
+						c.Csca = -1;
+						c.Cbk = qback;
 						c.g = 0;
-						c.Qext = -1;
-						c.Qabs = -1;
+						c.Cext = -1;
+						c.Cabs = -1;
 					}
 					catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;

@@ -91,6 +91,7 @@ namespace rtmath {
 				double beta, theta, phi; // ddscat-based rotation angles
 				double sTheta, sTheta0, sPhi, sPhi0; // incident and scattered beam angles (degrees)
 				double wavelength; // wavelength of incident light
+				std::string lengthUnits;
 			};
 
 			/// Used to specify basic stats for constructing a run
@@ -119,6 +120,7 @@ namespace rtmath {
 				/// Some conversion routines between effective radius and max diameter
 				/// can be found in density.h.
 				double maxDiamFull;
+				std::string lengthUnits;
 
 				enum class shape_type
 				{
@@ -136,7 +138,8 @@ namespace rtmath {
 			/// Cross-section return structure
 			struct DLEXPORT_rtmath_core cross_sections {
 				cross_sections();
-				double Qbk, Qext, Qsca, Qabs, g;
+				double Cbk, Cext, Csca, Cabs, g;
+				std::string Cunits;
 				// Persistant state vector
 				//std::shared_ptr<nullptr> state;
 				bool valid;

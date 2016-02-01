@@ -11,6 +11,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "../../rtmath/rtmath/error/debug.h"
@@ -34,23 +35,25 @@ namespace rtmath
 				const double pi = boost::math::constants::pi<double>();
 
 				// First, scale the effective radius and refractive index?
-				double scaledAeff = i.aeff;
+				auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+				auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+				double scaledAeff = cl->convert(i.aeff);
 				double rawVolume = 0, scaledVolume = 0; // scaled is ice + air. raw is ice only.
 				if (i.aeff_rescale)
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						rawVolume = pow(i.aeff, 3.0);
-						scaledVolume = pow(i.aeff, 3.0) / i.vFrac;
+						rawVolume = pow(cl->convert(i.aeff), 3.0);
+						scaledVolume = pow(cl->convert(i.aeff), 3.0) / i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					} else {
-						double scaledSA = pow(i.aeff, 2.0);
+						double scaledSA = pow(cl->convert(i.aeff), 2.0);
 						scaledSA /= i.vFrac;
 						scaledAeff = pow(scaledSA, 0.5);
 					}
 				}
-				double aeffRat = scaledAeff / i.aeff;
+				double aeffRat = scaledAeff / cl->convert(i.aeff);
 				double aeffRatSq = aeffRat * aeffRat;
 
 				std::complex<double> mRes = i.m; 
@@ -68,22 +71,25 @@ namespace rtmath
 				double ar = 1. / i.eps; // Mish code wants oblate > 1
 				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 				auto tp = ::tmatrix_random::tmatrixParams::create(
-					scaledAeff, rat, s.wavelength,
+					scaledAeff, rat, cs->convert(s.wavelength),
 					std::abs(mRes.real()), std::abs(mRes.imag()),
 					ar, np, 0.001, 7);
 
-				const double k = 2. * pi / s.wavelength;
-				const double size_p = 2. * pi * scaledAeff / s.wavelength;
+				const double k = 2. * pi / cs->convert(s.wavelength);
+				const double size_p = k * scaledAeff;
 
 				try {
 					auto ori = ::tmatrix_random::OriTmatrix::calc(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca = ori->qsca * aeffRatSq;
-					c.Qext = ori->qext * aeffRatSq;
-					c.Qabs = c.Qext - c.Qsca;
+					c.Csca = ori->qsca * aeffRatSq;
+					c.Cext = ori->qext * aeffRatSq;
+					c.Cabs = c.Cext - c.Csca;
 					c.g = ori->g;
-					c.Qbk = ori->qbk * aeffRatSq;
-
+					c.Cbk = ori->qbk * aeffRatSq;
+					c.Csca *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cext *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cabs *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cbk *= pi * pow(cl->convert(i.aeff),2.0);
 					//auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
 					//auto ic = ::tmatrix_random::IsoAngleRes::calc(ori);
 					//c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);

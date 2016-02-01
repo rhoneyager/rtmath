@@ -121,16 +121,21 @@ namespace rtmath {
 		pf_class_registry::setup::setup()
 			: beta(0), theta(0), phi(0),
 			sTheta(0), sTheta0(0), sPhi(0), sPhi0(0),
-			wavelength(0)
+			wavelength(0), lengthUnits("um")
 		{}
 
 		pf_class_registry::inputParamsPartial::inputParamsPartial()
 			: aeff(0), aeff_version(aeff_version_type::EQUIV_V_SPHERE),
-			m(1.33, 0), shape(shape_type::SPHEROID), eps(1.), maxDiamFull(0)
+			m(1.33, 0), shape(shape_type::SPHEROID), eps(1.), maxDiamFull(0),
+			lengthUnits("um")
 		{}
 
+		/// \todo The entire system needs to be revamped. Cunits needs to be set by the plugins.
+		/// Or, pre-conversion into the appropriate units needs to be performed
+		/// before the plugins are invoked.
 		pf_class_registry::cross_sections::cross_sections() :
-			Qbk(-1), Qext(-1), Qsca(-1), Qabs(-1), g(-1), valid(false) {}
+			Cbk(-1), Cext(-1), Csca(-1), Cabs(-1), g(-1), valid(false),
+			Cunits("mm^2") {}
 
 		void pf_provider::findHandler(
 			const char* name, const pf_class_registry *res)

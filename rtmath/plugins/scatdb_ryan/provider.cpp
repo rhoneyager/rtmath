@@ -82,9 +82,11 @@ namespace rtmath
 						string aeffrange = i.other->getVal<string>("aeffrange", "");
 						string mdrange = i.other->getVal<string>("mdrange", "");
 						string arrange = i.other->getVal<string>("arrange","");
-						double targetx = i.aeff;
-						if (usemd) targetx = i.maxDiamFull / 1000; // in mm
-						double freq = rtmath::units::conv_spec("um","GHz").convert(s.wavelength);
+						auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+						auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+						double targetx = cl->convert(i.aeff) * 1e6; // in um
+						if (usemd) targetx = cl->convert(i.maxDiamFull) * 1000; // in mm
+						double freq = rtmath::units::conv_spec("m","GHz").convert(cs->convert(s.wavelength));
 						mylog("scatdb_ryan input requested for:\n"
 							"\tdbfile: " << dbfile << "\n\tusemd: " << usemd
 							<< "\n\tinterp: " << doInterp << "\n\tlowess: " << doLowess
@@ -149,38 +151,28 @@ namespace rtmath
 									if (y1 < 0 || y2 < 0) res = -1;
 									return res;
 								};
-								c.Qsca = dinterp(db::data_entries::CSCA_M);
-								c.Qext = dinterp(db::data_entries::CEXT_M);
-								c.Qbk = dinterp(db::data_entries::CBK_M);
-								c.Qabs = dinterp(db::data_entries::CABS_M);
+								c.Csca = dinterp(db::data_entries::CSCA_M);
+								c.Cext = dinterp(db::data_entries::CEXT_M);
+								c.Cbk = dinterp(db::data_entries::CBK_M);
+								c.Cabs = dinterp(db::data_entries::CABS_M);
 								c.g = dinterp(db::data_entries::G);
 
 								mylog("Found result with xval " << xval << " and xval2 " << xval2
 									<< " for target " << targetx
 									<< "\n\tCbk1: " << floatLine(0,db::data_entries::CBK_M)
 									<< "\n\tCbk2: " << floatLine2(0,db::data_entries::CBK_M)
-									<< "\n\tCbk_res: " << c.Qbk);
-
-								// Bad for interpolation on maximum diameter!!!!!!!!!!
-								if (c.Qbk > 0)
-									c.Qbk /= pi * targetx * targetx;
-								if (c.Qsca > 0)
-									c.Qsca /= pi * targetx * targetx;
-								if (c.Qext > 0)
-									c.Qext /= pi * targetx * targetx;
-								if (c.Qabs > 0)
-									c.Qabs /= pi * targetx * targetx;
+									<< "\n\tCbk_res: " << c.Cbk);
 
 								// TODO: Store state!
 								return;
 							}
 							xval = xval2;
 						}
-						c.Qsca = -1;
+						c.Csca = -1;
 						c.g = -1;
-						c.Qbk = -1;
-						c.Qext = -1;
-						c.Qabs = -1;
+						c.Cbk = -1;
+						c.Cext = -1;
+						c.Cabs = -1;
 						mylog("Out of range. No data returned.");
 					}
 					catch (std::exception &e)

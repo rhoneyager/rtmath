@@ -12,6 +12,7 @@
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/units.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 
@@ -40,18 +41,20 @@ namespace rtmath
 					return;
 				}
 
-				// First, scale the effective radius and refractive index?
-				double scaledAeff = i.aeff;
+				// First, scale the effective radius and refractive index? TODO: change to use real radius.
+				auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+				auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+				double scaledAeff = cl->convert(i.aeff);
 				if (i.aeff_rescale)
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						double scaledVolume = pow(i.aeff, 3.0);
+						double scaledVolume = pow(cl->convert(i.aeff), 3.0);
 						scaledVolume /= i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					} else {
-						double scaledSA = pow(i.aeff, 2.0);
+						double scaledSA = pow(cl->convert(i.aeff), 2.0);
 						scaledSA /= i.vFrac;
 						scaledAeff = pow(scaledSA, 0.5);
 					}
@@ -71,21 +74,25 @@ namespace rtmath
 				//std::cerr << "mRes " << mRes << " m " << i.m << " vf " << i.vFrac << " mAir " << mAir << std::endl;
 				//std::cerr << mRes.real() << "\t\t " << mRes.imag() << std::endl;
 				auto tp = mieParams::create(
-					scaledAeff, s.wavelength, std::abs(mRes.real()), -1.0 * std::abs(mRes.imag()), 0.001);
+					scaledAeff, cs->convert(s.wavelength), std::abs(mRes.real()), -1.0 * std::abs(mRes.imag()), 0.001);
 
-				const double k = 2. * pi / s.wavelength;
-				const double size_p = 2. * pi * scaledAeff / s.wavelength;
+				const double k = 2. * pi / cs->convert(s.wavelength);
+				const double size_p = scaledAeff * k;
 
 				try {
 					auto ori = mieCalc::calc(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca = ori->qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext = ori->qext * pow(scaledAeff / i.aeff, 2.);
-					c.Qabs = ori->qabs * pow(scaledAeff / i.aeff, 2.);
+					c.Csca = ori->qsca * pow(scaledAeff / cl->convert(i.aeff), 2.);
+					c.Cext = ori->qext * pow(scaledAeff / cl->convert(i.aeff), 2.);
+					c.Cabs = ori->qabs * pow(scaledAeff / cl->convert(i.aeff), 2.);
 					c.g = ori->g;
-					c.Qbk = ori->qbk * pow(scaledAeff / i.aeff, 2.);
+					c.Cbk = ori->qbk * pow(scaledAeff / cl->convert(i.aeff), 2.);
 
 					double C_sphere = pi * pow(scaledAeff, 2.0);
+					c.Csca *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cext *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cabs *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cbk *= pi * pow(cl->convert(i.aeff),2.0);
 					//auto ang = mieAngleRes::calc(ori, 180.);
 					// 4?
 					//c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.

@@ -11,6 +11,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/plugin.h"
 
 #include "../../rtmath/rtmath/error/debug.h"
@@ -34,23 +35,25 @@ namespace rtmath
 				const double pi = boost::math::constants::pi<double>();
 
 				// First, scale the effective radius and refractive index?
-				double scaledAeff = i.aeff;
+				auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+				auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+				double scaledAeff = cl->convert(i.aeff);
 				if (i.aeff_rescale)
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						double scaledVolume = pow(i.aeff, 3.0);
+						double scaledVolume = pow(cl->convert(i.aeff), 3.0);
 						scaledVolume /= i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					} else {
-						double scaledSA = pow(i.aeff, 2.0);
+						double scaledSA = pow(cl->convert(i.aeff), 2.0);
 						scaledSA /= i.vFrac;
 						scaledAeff = pow(scaledSA, 0.5);
 					}
 				}
 
-				std::complex<double> mRes = i.m; 
+				std::complex<double> mRes = i.m;
 				std::complex<double> mAir(1.0, 0);
 				i.rmeth(i.m, mAir, i.vFrac, mRes);
 
@@ -65,27 +68,33 @@ namespace rtmath
 				double ar = 1. / i.eps; // Mish code wants oblate > 1
 				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 				auto tp = ::tmatrix::tmatrixParams::create(
-					scaledAeff, rat, s.wavelength, 
-					std::abs(mRes.real()), std::abs(mRes.imag()), 
+					scaledAeff, rat, cs->convert(s.wavelength),
+					std::abs(mRes.real()), std::abs(mRes.imag()),
 					ar, np, 0.001, 7, true);
 
-				const double k = 2. * pi / s.wavelength;
-				const double size_p = 2. * pi * scaledAeff / s.wavelength;
+				const double k = 2. * pi / cs->convert(s.wavelength);
+				const double size_p = k * scaledAeff;
 
 				try {
 					auto ori = ::tmatrix::OriTmatrix::calcIso(tp);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca = ori->qsca; //* pow(scaledAeff / i.aeff, 2.);
-					c.Qext = ori->qext; //* pow(scaledAeff / i.aeff, 2.);
+					c.Csca = ori->qsca; //* pow(scaledAeff / i.aeff, 2.);
+					c.Cext = ori->qext; //* pow(scaledAeff / i.aeff, 2.);
 					c.g = ori->g;
 
 					auto isoAng = ::tmatrix::IsoAngleRes::calc(ori);
 
-					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
+					c.Cbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(isoAng);
 
 					// Cext (and thus Qext) can come from the optical theorem...
 					// Cext = -4pi/k^2 * Re{S(\theta=0)}
-					c.Qabs = c.Qext - c.Qsca;
+					c.Cabs = c.Cext - c.Csca;
+
+					c.Csca *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cext *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cabs *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cbk *= pi * pow(cl->convert(i.aeff),2.0);
+
 				} catch (const ::std::exception& t) {
 					std::cerr << "A tmatrix error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
@@ -102,23 +111,25 @@ namespace rtmath
 				const double pi = boost::math::constants::pi<double>();
 
 				// First, scale the effective radius and refractive index?
-				double scaledAeff = i.aeff;
+				auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+				auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+				double scaledAeff = cl->convert(i.aeff);
 				if (i.aeff_rescale)
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						double scaledVolume = pow(i.aeff, 3.0);
+						double scaledVolume = pow(cl->convert(i.aeff), 3.0);
 						scaledVolume /= i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					} else {
-						double scaledSA = pow(i.aeff, 2.0);
+						double scaledSA = pow(cl->convert(i.aeff), 2.0);
 						scaledSA /= i.vFrac;
 						scaledAeff = pow(scaledSA, 0.5);
 					}
 				}
 
-				std::complex<double> mRes = i.m; 
+				std::complex<double> mRes = i.m;
 				std::complex<double> mAir(1.0, 0);
 				i.rmeth(i.m, mAir, i.vFrac, mRes);
 
@@ -133,34 +144,34 @@ namespace rtmath
 				double ar = 1. / i.eps; // Mish code wants oblate ar > 1
 				if (std::abs(ar - 1.0) < 0.00001) ar = 1.000001;
 				auto tp = ::tmatrix::tmatrixParams::create(
-					scaledAeff, rat, s.wavelength, std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);
+					scaledAeff, rat, cs->convert(s.wavelength), std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);
 
-				const double k = 2. * pi / s.wavelength;
-				const double size_p = 2. * pi * scaledAeff / s.wavelength;
+				const double k = 2. * pi / cs->convert(s.wavelength);
+				const double size_p = k * scaledAeff;
 
 				try {
 					auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
 					/// \todo Move these scalings into the T-matrix core code?
-					c.Qsca = ori->qsca * pow(scaledAeff / i.aeff, 2.);
-					c.Qext = ori->qext * pow(scaledAeff / i.aeff, 2.);
+					c.Csca = ori->qsca * pow(scaledAeff / cl->convert(i.aeff), 2.);
+					c.Cext = ori->qext * pow(scaledAeff / cl->convert(i.aeff), 2.);
 
 					double C_sphere = pi * pow(scaledAeff, 2.0);
 					auto ang = ::tmatrix::OriAngleRes::calc(ori, 0, 0, 180., 0);
 					// 4?
-					c.Qsca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
-					c.Qbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
+					c.Csca = -1; // 4 * 8. * pi / (3. * k * k) * ang->getP(0, 0) / C_sphere / C_sphere; // at theta = 0, phi = pi / 2.
+					c.Cbk = ::tmatrix::getDifferentialBackscatterCrossSectionUnpol(ori);
 					c.g = -1;
 
-					c.Qbk *= pow(scaledAeff / i.aeff, 2.);
+					c.Cbk *= pow(scaledAeff / cl->convert(i.aeff), 2.);
 					// Cext (and thus Qext) can come from the optical theorem...
 					// Cext = -4pi/k^2 * Re{S(\theta=0)}
 					//c.Qext = -4. * pi * ang->getS(0, 0).real() / (k*k*C_sphere);
 					//c.Qabs = c.Qext - c.Qsca;
 
-					/// iso values are validated with solid spheres and soft spheres using liu code
-					/// \todo need to validate with ellipsoids
-
-					//std::cerr << c.Qabs_iso << "\t" << c.Qsca_iso << "\t" << c.Qext_iso << "\t" << c.Qbk_iso << std::endl;
+					c.Csca *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cext *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cabs *= pi * pow(cl->convert(i.aeff),2.0);
+					c.Cbk *= pi * pow(cl->convert(i.aeff),2.0);
 				} catch (const ::std::exception& t) {
 					std::cerr << "A tmatrix error has occurred." << std::endl;
 					std::cerr << "\t" << t.what() << std::endl;
@@ -177,18 +188,20 @@ namespace rtmath
 				const double pi = boost::math::constants::pi<double>();
 
 				// First, scale the effective radius and refractive index?
-				double scaledAeff = i.aeff;
+				auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+				auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
+				double scaledAeff = cl->convert(i.aeff);
 				if (i.aeff_rescale)
 				{
 					if (i.aeff_version ==
 						pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE)
 					{
-						double scaledVolume = pow(i.aeff, 3.0);
+						double scaledVolume = pow(cl->convert(i.aeff), 3.0);
 						scaledVolume /= i.vFrac;
 						scaledAeff = pow(scaledVolume, 1. / 3.);
 					}
 					else {
-						double scaledSA = pow(i.aeff, 2.0);
+						double scaledSA = pow(cl->convert(i.aeff), 2.0);
 						scaledSA /= i.vFrac;
 						scaledAeff = pow(scaledSA, 0.5);
 					}
@@ -210,7 +223,7 @@ namespace rtmath
 				// Perform the calculation
 				try {
 					auto tp = ::tmatrix::tmatrixParams::create(
-						scaledAeff, rat, s.wavelength, std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);
+						scaledAeff, rat, cs->convert(s.wavelength), std::abs(mRes.real()), std::abs(mRes.imag()), ar, np, 0.001, 7);
 					auto ori = ::tmatrix::OriTmatrix::calc(tp, 0, 0);
 
 					auto ang = ::tmatrix::OriAngleRes::calc(ori, s.sTheta, s.sTheta0, 180. - s.sPhi, s.sPhi0);

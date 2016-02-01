@@ -12,6 +12,7 @@
 //#include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/plugin.h"
+#include "../../rtmath/rtmath/units.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 
@@ -40,6 +41,8 @@ namespace rtmath
 
 					// Expressed in terms of the max diameter
 					// ar gives oblate/prolate indicator.
+					auto cl = rtmath::units::converter::getConverter(i.lengthUnits, "m");
+					auto cs = rtmath::units::converter::getConverter(s.lengthUnits, "m");
 
 					// Perform the calculation
 					double ar = 1.; //i.eps;
@@ -53,16 +56,16 @@ namespace rtmath
 					using namespace rtmath::units;
 					using namespace rtmath::units::keywords;
 					double Dshort = convertLength(
-						_in_length_value = i.maxDiamFull,
+						_in_length_value = cl->convert(i.maxDiamFull),
 						_in_length_type = "Max_Diameter",
 						_out_length_type = "Mean_Diameter",
 						_ar = ar);
 
-					const double k = 2. * pi / s.wavelength;
+					const double k = 2. * pi / cs->convert(s.wavelength);
 					float qext = -1, qsca = -1, qback = -1, gsca = -1;
 					const double f = i.vFrac;
 					// V is volume of solid ice in particle
-					const double V = 4. / 3. * pi * std::pow(i.aeff, 3.); //i.aeff, scaledAeff
+					const double V = 4. / 3. * pi * std::pow(cl->convert(i.aeff), 3.); //i.aeff, scaledAeff
 
 					try {
 						std::complex<double> K = ((i.m*i.m) - 1.) / ((i.m*i.m) + 2.);
@@ -73,14 +76,14 @@ namespace rtmath
 						qback = (float) K2  * 81./4. * V * V
 							/ (pi * k * k * pow(Dshort,6.));
 						qback *= pow(sin(k*Dshort) - (k*Dshort*cos(k*Dshort)), 2.);
-						qback /= pi * pow(i.aeff,2.);
+						//qback /= pi * pow(i.aeff,2.);
 						gsca = -1;
 
-						c.Qsca = -1;
-						c.Qbk = qback;
+						c.Csca = -1;
+						c.Cbk = qback;
 						c.g = -1;
-						c.Qext = -1;
-						c.Qabs = -1;
+						c.Cext = -1;
+						c.Cabs = -1;
 					}
 					catch (...) {
 						//std::cerr << "\t" << t.what() << std::endl;
