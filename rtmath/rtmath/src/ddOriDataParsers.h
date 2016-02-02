@@ -30,10 +30,11 @@ namespace rtmath
 			{
 				static void write(std::ostream &out, size_t, const T &s, const std::string &p, size_t pwd = 2, size_t wd = 10)
 				{
-					std::string sp(" ", pwd);
+					std::string sp(pwd, ' ');
 					out << sp;
 					out.width(wd);
 					out << std::left << s << " = ";
+					//out << s << " = ";
 					out << p << std::endl;
 				}
 				static void read(std::istream &in, T &s)
@@ -123,6 +124,12 @@ namespace rtmath
 				static void read(std::istream &in, double &a, double &b, char &axisname);
 				static void write(std::ostream &out, size_t, const double a, const double b,
 					char axisname);
+			};
+
+			struct ddNumOris
+			{
+				static void read(std::istream &in, size_t &a );
+				static void write(std::ostream &out, size_t, const size_t a);
 			};
 
 		}

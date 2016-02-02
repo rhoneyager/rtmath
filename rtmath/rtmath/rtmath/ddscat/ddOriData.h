@@ -166,6 +166,8 @@ namespace rtmath {
 			/// \todo Need special handling for SCA matrix! Needed for cases where only an avg file gets loaded!!!!!
 			typedef std::vector < ddscat::ddScattMatrixF >
 				scattMatricesContainer;
+			typedef std::vector < ddscat::ddScattMatrixP >
+				avgMatricesContainer;
 			//typedef std::vector < boost::shared_ptr<const ddscat::ddScattMatrix> >
 			//	scattMatricesContainer;
 			//typedef std::set<boost::shared_ptr<const ddscat::ddScattMatrix>,
@@ -232,6 +234,8 @@ namespace rtmath {
 			/// Container for sca and fml scattering matrices
 			/// \see ddScattMatrix
 			scattMatricesContainer _scattMatricesRaw;
+			/// Only used for intermediate i/o.
+			avgMatricesContainer _avgMatricesRaw;
 			/// Container for refractive indices
 			//std::vector<std::complex<double> > ms;
 			/// Binding to the relevant ddOutput object

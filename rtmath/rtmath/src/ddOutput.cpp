@@ -300,6 +300,10 @@ namespace rtmath {
 			theta_min(0), theta_max(0), theta_n(0),
 			phi_min(0), phi_max(0), phi_n(0), hasAvg(0)
 		{
+			pdata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic,
+				avgScaColDefs::NUM_AVGSCACOLDEFS> >(new Eigen::Matrix<float, Eigen::Dynamic,
+				avgScaColDefs::NUM_AVGSCACOLDEFS>);
+			pdata->resize(0);
 		}
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
@@ -686,6 +690,7 @@ namespace rtmath {
 			return (base/path(n.str())).string();
 			};
 			*/
+
 			auto onameb = [](const boost::filesystem::path &base,
 				size_t i, size_t ni) -> std::string
 			{
@@ -716,17 +721,25 @@ namespace rtmath {
 				obj->writeFile(fmlname);
 				obj->writeFile(scaname);
 				/*
-			} else {
-			// File is an avg file of some sort
-			std::string basename = onameb(pOut, i, 0);
-			basename.append(".avg");
+				} else {
+				// File is an avg file of some sort
+				std::string basename = onameb(pOut, i, 0);
+				basename.append(".avg");
 
-			ddOriData obj(*this, i);
-			//obj.doImportFMLs();
-			obj.writeFile(basename);
+				ddOriData obj(*this, i);
+				//obj.doImportFMLs();
+				obj.writeFile(basename);
+				}
+				*/
 			}
-			*/
-			}
+
+			// Write out avg files
+			auto avgdat = ddOriData::generate(*this);
+			std::string oavg = onameb(pOut, 0, 0);
+			oavg.append(".avg");
+			avgdat->writeFile(oavg);
+
+			// Write diel.tab files
 
 			/*
 			// Write out the weighting table

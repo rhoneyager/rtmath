@@ -375,7 +375,10 @@ namespace rtmath {
 			std::getline(in, junk); // empty line
 
 			std::getline(in, junk); // simpleNumRev<double>::read(in, od(ddOutput::stat_entries::ETASCA));
-			std::getline(in, junk); // num orientations
+			// num orientations
+			ddNumOris::read(in, _parent.avgdata.num_avg_entries);
+			//std::getline(in, junk); // num orientations
+
 			std::getline(in, junk); // num polarizations
 
 			std::getline(in, junk); //"          Qext       Qabs       Qsca      g(1)=<cos>  <cos^2>     Qbk       Qpha" << endl;
@@ -385,7 +388,7 @@ namespace rtmath {
 				std::lock_guard<std::mutex> lock(_parent.mtxUpdate);
 				_parent.s = s;
 			}
-			//readMuellerDDSCAT(in);
+			readMuellerDDSCAT(in);
 		}
 
 		/// Input in sca format
@@ -667,24 +670,25 @@ namespace rtmath {
 			iv[2] = s.IPV2LF[2];
 			ddPolVec::write(out, this->version(), iv, 2, frameType::LF);
 
-			ddRot1d::write(out, this->version(), "beta", _parent.avgdata.beta_min, _parent.avgdata.beta_max, _parent.avgdata.beta_n, "BETA");
-			ddRot1d::write(out, this->version(), "theta", _parent.avgdata.theta_min, _parent.avgdata.theta_max, _parent.avgdata.theta_n, "THETA");
-			ddRot1d::write(out, this->version(), "phi", _parent.avgdata.phi_min, _parent.avgdata.phi_max, _parent.avgdata.phi_n, "PHI");
+			ddRot1d::write(out, this->version(), "beta", _parent.avgdata.beta_min, _parent.avgdata.beta_max, _parent.avgdata.beta_n, "NBETA");
+			ddRot1d::write(out, this->version(), "theta", _parent.avgdata.theta_min, _parent.avgdata.theta_max, _parent.avgdata.theta_n, "NTHETA");
+			ddRot1d::write(out, this->version(), "phi", _parent.avgdata.phi_min, _parent.avgdata.phi_max, _parent.avgdata.phi_n, "NPHI");
 
 			out << endl;
 
 			simpleNumRev<double>::write(out, this->version(), _parent.parfile->etasca(),
 				"ETASCA = param. controlling # of scatt. dirs used to calculate <cos> etc.", 1, 6);
-			
-			out << " Results averaged over " << 0 << " target orientations\n"
-				<< "                   and    2 incident polarizations\n";
+		
+			ddNumOris::write(out, this->version(), _parent.avgdata.num_avg_entries);
+			out << "                   and    2 incident polarizations\n";
 			
 
 			// Write the odd table of Qsca and the others
 			writeStatTable(out);
 
 			// Write the P matrix (not supported for avg file here)
-			//writeMuellerDDSCAT(out);
+			// TODO: fix this!
+			writeMuellerDDSCAT(out);
 		}
 
 		void ddOriData::writeSCA(std::ostream &out) const

@@ -180,6 +180,20 @@ namespace rtmath
 			template struct simpleNumCompound < double > ;
 			template struct simpleNumCompound < size_t > ;
 
+			void ddNumOris::read(std::istream &in, size_t &num) {
+				std::string lin;
+				std::getline(in, lin);
+				size_t p = lin.find("over ");
+				size_t q = lin.find(" target");
+				s = lin.substr(p+5, q - (p+5));
+				//boost::algorithm::trim(s);
+				num = (size_t)Ryan_Debug::macros::m_atoi<size_t>(s.data());
+			}
+
+			void ddNumOris::write(std::ostream &out, size_t, size_t num) {
+				out << " Results averaged over " << num << " target orientations\n";
+			}
+
 			void refractive::write(std::ostream &out, size_t, size_t inum, const std::complex<double> &m, double k, double d)
 			{
 				std::complex<double> eps;
@@ -485,14 +499,14 @@ namespace rtmath
 			}
 		}
 
+		/// This is now only used for reading the avg data Mueller matrices.
+		/// SCA files' data can be provided by corresponding FML entries.
 		void ddOriData::readMuellerDDSCAT(std::istream &in)
 		{
 			using namespace std;
 			using namespace rtmath::ddscat::ddOriDataParsers;
-
-			auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
-			//auto &os = _parent.oridata_s.at(_row);
-			//auto &oi = _parent.oridata_i.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_INTS>(_row, 0);
+			auto od = _parent.avgdata.avg.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(0, 0);
+			//auto od = _parent.oridata_d.block<1, ddOutput::stat_entries::NUM_STAT_ENTRIES_DOUBLES>(_row, 0);
 
 			// The frequency is needed when reading this matrix
 			const double f = freq();
@@ -512,8 +526,6 @@ namespace rtmath
 				if (!lin.size()) continue;
 				//std::cerr << lin << std::endl;
 				// TODO: parse the header line to get the list of matrix entries known
-				// TODO: use symmetry relationships in a depGraph to get the other
-				// mueller matrix entries.
 
 				// Expecting the first line to begin with theta phi Pol. ...
 				if (std::isalpha(lin.at(0)))
@@ -553,7 +565,7 @@ namespace rtmath
 					//	vals.push_back(rtmath::macros::m_atof(it->data(), it->size())); // Speedup using my own atof
 					//vals.push_back(boost::lexical_cast<double>(*it));
 					// ddScattMatrixF constructor takes frequency (GHz) and phi
-					boost::shared_ptr<ddScattMatrixP> mat(new ddScattMatrixP(f, vals[0], vals[1]));
+					ddScattMatrixP mat(new ddScattMatrixP(f, vals[0], vals[1]));
 					ddScattMatrix::PnnType P;
 
 					size_t j = 0;
@@ -561,18 +573,29 @@ namespace rtmath
 					{
 						P(ot->first, ot->second) = vals[j]; // See Mueller header read
 					}
-					mat->setP(P);
-					mat->polLin(vals[2]);
+					mat.setP(P);
+					mat.polLin(vals[2]);
 
-					boost::shared_ptr<const ddScattMatrix> matC =
-						boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
+					_avgMatricesRaw.push_back(mat);
+
+					//boost::shared_ptr<const ddScattMatrix> matC =
+					//	boost::dynamic_pointer_cast<const ddScattMatrix>(mat);
 
 					/// \note Actual read of mueller matrix entries disabled
-					RDthrow(Ryan_Debug::error::xUnimplementedFunction())
-						<< Ryan_Debug::error::otherErrorText("Actual read of mueller matrix entries disabled");
+					//RDthrow(Ryan_Debug::error::xUnimplementedFunction())
+					//	<< Ryan_Debug::error::otherErrorText("Actual read of mueller matrix entries disabled");
 					//_scattMatricesRaw.push_back(matC);
 					//std::cerr << _scattMatricesRaw.size() << " elements\n";
 				}
+			}
+
+			_parent.avgdata.pdata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic,
+				avgScaColDefs::NUM_AVGSCACOLDEFS> >(new Eigen::Matrix<float, Eigen::Dynamic,
+				avgScaColDefs::NUM_AVGSCACOLDEFS>);
+			_parent.avgdata.pdata->resize((int) _avgMatricesRaw.size());
+			for (size_t i=0; i < _avgMatricesRaw.size(); ++i) {
+				auto o = _parent.avgdata.pdata->block<1, avgScaColDefs::NUM_AVGSCACOLDEFS>(i, 0);
+				o(0)
 			}
 
 			//_statTable_Size_ts.at(stat_entries_size_ts::NUMP) = _scattMatricesRaw.size();

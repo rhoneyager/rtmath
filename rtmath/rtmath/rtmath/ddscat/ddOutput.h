@@ -290,7 +290,8 @@ namespace rtmath {
 			struct Avgdata
 			{
 				double beta_min, beta_max, theta_min, theta_max, phi_min, phi_max;
-				size_t beta_n, theta_n, phi_n;
+				// NOTE: num_avg_entries missing for data assimilated before 2016/2/2.
+				size_t beta_n, theta_n, phi_n, num_avg_entries;
 				bool hasAvg;
 				std::vector < std::complex<double> > avg_ms;
 
@@ -298,6 +299,25 @@ namespace rtmath {
 				/// \note Using Eigen::Dynamic to preserve type compatabiity with oridata_d
 				doubleType avg;
 				Avgdata();
+
+				/// Encapsulating enum in namespace, as an enum class is too restrictive
+				class avgScaColDefs
+				{
+				public:
+					/// Table containing fml data
+					enum avgScaDefs
+					{
+						/// Scattering-angle specific
+						THETAB, PHIB, POL,
+						S11, S12, S13, S14, S21, S22, S23, S24,
+						S31, S32, S33, S34, S41, S42, S43, S44,
+						NUM_AVGSCACOLDEFS
+					};
+					static DLEXPORT_rtmath_ddscat std::string stringify(int val);
+				};
+				/// Table containing mueller data. Delayed allocation because the size resides within a file being read.
+				boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic,
+					avgScaColDefs::NUM_AVGSCACOLDEFS> > pdata;
 
 				/*
 				enum avg_entries {
