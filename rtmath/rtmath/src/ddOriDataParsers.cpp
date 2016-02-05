@@ -181,7 +181,7 @@ namespace rtmath
 			template struct simpleNumCompound < size_t > ;
 
 			void ddNumOris::read(std::istream &in, size_t &num) {
-				std::string lin;
+				std::string lin, s;
 				std::getline(in, lin);
 				size_t p = lin.find("over ");
 				size_t q = lin.find(" target");
@@ -565,6 +565,7 @@ namespace rtmath
 					//	vals.push_back(rtmath::macros::m_atof(it->data(), it->size())); // Speedup using my own atof
 					//vals.push_back(boost::lexical_cast<double>(*it));
 					// ddScattMatrixF constructor takes frequency (GHz) and phi
+				/*	
 					ddScattMatrixP mat(new ddScattMatrixP(f, vals[0], vals[1]));
 					ddScattMatrix::PnnType P;
 
@@ -586,9 +587,10 @@ namespace rtmath
 					//	<< Ryan_Debug::error::otherErrorText("Actual read of mueller matrix entries disabled");
 					//_scattMatricesRaw.push_back(matC);
 					//std::cerr << _scattMatricesRaw.size() << " elements\n";
+				*/
 				}
 			}
-
+/*
 			_parent.avgdata.pdata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic,
 				avgScaColDefs::NUM_AVGSCACOLDEFS> >(new Eigen::Matrix<float, Eigen::Dynamic,
 				avgScaColDefs::NUM_AVGSCACOLDEFS>);
@@ -597,7 +599,7 @@ namespace rtmath
 				auto o = _parent.avgdata.pdata->block<1, avgScaColDefs::NUM_AVGSCACOLDEFS>(i, 0);
 				o(0)
 			}
-
+*/
 			//_statTable_Size_ts.at(stat_entries_size_ts::NUMP) = _scattMatricesRaw.size();
 		}
 

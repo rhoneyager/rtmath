@@ -119,7 +119,7 @@ set (resource-files
 	prebuild.bat
 	prebuild.csh
 	Readme.txt
-	rtlogo.png
+	logo.png
 	)
 source_group("Resource Files" FILES ${resource-files})
 

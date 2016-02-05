@@ -303,7 +303,7 @@ namespace rtmath {
 			pdata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic,
 				avgScaColDefs::NUM_AVGSCACOLDEFS> >(new Eigen::Matrix<float, Eigen::Dynamic,
 				avgScaColDefs::NUM_AVGSCACOLDEFS>);
-			pdata->resize(0);
+			pdata->resize(0,0);
 		}
 
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)

@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 			("output-vf", po::value<double>()->default_value(1.0),
 			 "Output volume fraction")
 
-			("spec", "Interconvert spectral units (frequency, wavelength, wavenumber) (DEFAULT)")
+			("spec", "Interconvert spectral units (frequency, wavelength, wavenumber)")
 			;
 
 		po::positional_options_description p;
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 		}
 		outVal = cnv->convert(inVal);
 
-		if (vm.count("length") &&
+		if (!vm.count("spec") &&
 				vm.count("input-length-type") &&
 				vm.count("output-length-type")) {
 			string ilt = vm["input-length-type"].as<string>();
