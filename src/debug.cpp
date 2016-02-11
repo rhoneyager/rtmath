@@ -415,13 +415,14 @@ namespace Ryan_Debug
 				else sCmdP.append("\t");
 				sCmdP.append(*it);
 			}
+			std::string hdir(Ryan_Debug::getHomeDir());
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Starting application: \n"
 				<< "\tName: " << appName
 				<< "\n\tPath: " << appPath
 				<< "\n\tCWD: " << cwd
 				<< "\n\tApp config dir: " << Ryan_Debug::getAppConfigDir()
 				<< "\n\tUsername: " << Ryan_Debug::getUsername()
-				<< "\n\tHome dir: " << Ryan_Debug::getHomeDir()
+				<< "\n\tHome dir: " << hdir
 				<< "\n\tHostname: " << Ryan_Debug::getHostname()
 				<< "\n\tCommand-Line Args: " << sCmdP;
 

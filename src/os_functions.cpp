@@ -1024,7 +1024,7 @@ namespace Ryan_Debug {
 		if (!homeDir.size())
 		{
 			struct passwd pw, *pwp;
-			const size_t buflen = 1024;
+			const size_t buflen = 4096;
 			char buf[buflen];
 			int res = getpwuid_r(getuid(), &pw, buf, buflen, &pwp);
 			if (res == 0) {
