@@ -129,8 +129,10 @@ set(rtmath_voronoi-files
 	rtmath/Voronoi/CachedVoronoi.h
 	rtmath/Voronoi/Voronoi.h
 	rtmath/ddscat/hulls.h
+	rtmath/ddscat/points.h
 	src/CachedVoronoi.cpp
 	src/hulls.cpp
+	src/points.cpp
 	src/Stdafx-voronoi.cpp
 	src/Stdafx-voronoi.h
 	src/Voronoi.cpp

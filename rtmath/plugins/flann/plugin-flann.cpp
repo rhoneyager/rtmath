@@ -2,16 +2,26 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <string>
+#include <flann/flann.hpp>
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
-#include "../../rtmath/rtmath/ddscat/hulls.h"
+#include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
 
 #include "plugin-flann.h"
+
+namespace rtmath {
+	namespace plugins {
+		namespace flann {
+
+		}
+	}
+}
+
 
 D_Ryan_Debug_validator();
 D_rtmath_validator();
@@ -27,7 +37,8 @@ D_Ryan_Debug_start()
 	dllInitResult res = Ryan_Debug_registry_register_dll(id, (void*)dllStart);
 	if (res != SUCCESS) return res;
 
-	rtmath::Voronoi::Voronoi_provider reg_flann;
+	//rtmath::Voronoi::Voronoi_provider reg_flann;
+	rtmath::kd::kdtree_provider ref_flann;
 	reg_flann.name = PLUGINID;
 	reg_flann.generator = ::rtmath::plugins::flann::VoroVoronoiDiagram::generateStandard;
 	reg_flann.flannnoiBlankGenerator = ::rtmath::plugins::flann::VoroVoronoiDiagram::generateBlank;
