@@ -125,6 +125,8 @@ int main(int argc, char *argv[])
 			("other-param,p", po::value<std::vector<std::string> >(), "Specify optional string parameters "
 			 "that will be passed to the backend functions. Give in type:key:value notation. "
 			 "Types are double or string.")
+			("show-qs", "Instead of actual cross sections, show Q values")
+			("use-ddscat-conv", "Use ddscat conventions for backscatter")
 			;
 		scale.add_options()
 			("scale-aeff", po::value<bool>()->default_value(true), "Scale effective radius based on volume fraction")
@@ -702,10 +704,16 @@ int main(int argc, char *argv[])
 			"AR Method\tRefractive Index Method\tVolume Fraction Method\t"
 			"Aspect Ratio\tLambda (um)\tM_re\tM_im\t"
 			"Size Parameter\t"
-			"Theta\tBeta\tPhi\tg\tCabs (m^2)\tCbk (m^2)\tCext (m^2)\tCsca (m^2)" << std::endl;
+			"Theta\tBeta\tPhi\tg\t";
+		if (vm.count("show-qs"))
+			out << "Qabs\tQbk\tQext\tQsca" << std::endl;
+		else out << "Cabs (m^2)\tCbk (m^2)\tCext (m^2)\tCsca (m^2)" << std::endl;
 
 		std::cerr << "Doing " << runs.size() << " runs." << std::endl;
-		cout << "Meth\tg\tCabs (m^2)\tCbk (m^2)\tCext (m^2)\tCsca (m^2)" << std::endl;
+		if (vm.count("show-qs"))
+			cout << "Meth\tg\tQabs (m^2)\tQbk (m^2)\tQext (m^2)\tQsca (m^2)" << std::endl;
+		else
+			cout << "Meth\tg\tCabs (m^2)\tCbk (m^2)\tCext (m^2)\tCsca (m^2)" << std::endl;
 		size_t i=1;
 		// Iterate over all possible runs
 		mylog("Executing. There are " << runs.size() << " runs to process.");
@@ -797,6 +805,15 @@ int main(int argc, char *argv[])
 					if (otherOpts->hasVal("gamma")) theta2 = otherOpts->getVal<double>("gamma");
 					if (otherOpts->hasVal("kappa")) phi2 = otherOpts->getVal<double>("kappa");
 				}
+				double Qabs = rr.second.Cabs / (pi * pow(r.aeff/1e6,2.));
+				double Qsca = rr.second.Csca / (pi * pow(r.aeff/1e6,2.));
+				double Qext = rr.second.Cext / (pi * pow(r.aeff/1e6,2.));
+				double Qbk = rr.second.Cbk / (pi * pow(r.aeff/1e6,2.));
+				if (rr.second.Cabs < 0 ) Qabs = -1;
+				if (rr.second.Csca < 0 ) Qsca = -1;
+				if (rr.second.Cext < 0 ) Qext = -1;
+				if (vm.count("use-ddscat-conv")) Qbk /= 4.*pi;
+				if (rr.second.Cbk < 0 ) Qbk = -1;
 				out << rr.first << "\t" << r.aeff << "\t" << maxDiam / 1000. << "\t" 
 					<< Vi << "\t"
 					<< r.freq << "\t" << r.fv << "\t" << effDen << "\t" << r.temp << "\t"
@@ -805,13 +822,21 @@ int main(int argc, char *argv[])
 					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
 					<< sizep << "\t"
 					<< theta2 << "\t" << beta2 << "\t" << phi2 << "\t"
-					<< rr.second.g << "\t"
-					<< rr.second.Cabs << "\t"
+					<< rr.second.g << "\t";
+				if (vm.count("show-qs")) {
+					out << Qabs << "\t" << Qbk << "\t" << Qext << "\t" << Qsca << std::endl;
+				} else {
+					out << rr.second.Cabs << "\t"
 					<< rr.second.Cbk << "\t"
 					<< rr.second.Cext << "\t"
 					<< rr.second.Csca
 					<< std::endl;
+				}
 
+				if (vm.count("show-qs")) {
+					cout << rr.first << "\t" << rr.second.g << "\t"
+						<< Qabs << "\t" << Qbk << "\t" << Qext << "\t" << Qsca << std::endl;
+				} else {
 				cout << rr.first << "\t"
 					<< rr.second.g << "\t"
 					<< rr.second.Cabs << "\t"
@@ -819,6 +844,7 @@ int main(int argc, char *argv[])
 					<< rr.second.Cext << "\t"
 					<< rr.second.Csca
 					<< std::endl;
+				}
 			}
 			
 		}

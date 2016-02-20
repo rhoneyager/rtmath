@@ -77,6 +77,7 @@ int main(int argc, char** argv)
 			("set-betas", po::value<string>(), "Set beta rotations. Give interval notation for first, number and last.")
 			("set-thetas", po::value<string>(), "Set theta rotations. See set-betas.")
 			("set-phis", po::value<string>(), "Set phi rotations. See set-betas.")
+			("set-mxiter", po::value<size_t>(), "Set max number of iterations.")
 
 			("get-version", "Get version (70, 72, ...)")
 			("get-frequency", "Get frequency (GHz)")
@@ -88,6 +89,7 @@ int main(int argc, char** argv)
 			("get-betas", "Get betas")
 			("get-thetas", "Get thetas")
 			("get-phis", "Get phis")
+			("get-mxiter", "Get maximum number of iterations")
 			;
 
 		desc.add(cmdline).add(config);
@@ -157,6 +159,11 @@ int main(int argc, char** argv)
 			par->getAeff(min,max,n,spacing);
 			cout << "aeff: " << min << endl;
 		}
+		if (vm.count("get-mxiter")) {
+			size_t mxiter;
+			mxiter = par->maxIter();
+			cout << "Max iterations: " << mxiter << endl;
+		}
 		rtmath::ddscat::rotations rot(*(par.get()));
 		string nb, nt, np;
 		rot.betas(nb);
@@ -201,6 +208,11 @@ int main(int argc, char** argv)
 		{
 			doWrite = true;
 			par->version(vm["set-version"].as<size_t>());
+		}
+		if (vm.count("set-mxiter")) {
+			doWrite = true;
+			size_t mxiter = vm["set-mxiter"].as<size_t>();
+			par->maxIter(mxiter);
 		}
 		if (vm.count("set-frequency"))
 		{
