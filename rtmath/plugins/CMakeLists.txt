@@ -25,6 +25,11 @@ if (BUILD_PLUGINS)
 	if (BUILD_PLUGIN_CERES_SOLVER)
 		add_subdirectory (ceres-solver)
 	endif()
+	option (BUILD_PLUGIN_FLANN
+		"Build FLANN K-d tree plugin" ON)
+	if (BUILD_PLUGIN_FLANN)
+		add_subdirectory (flann)
+	endif()
 	option (BUILD_PLUGIN_HDF5
 		"Build HDF5 IO plugin" ON)
 	if (BUILD_PLUGIN_HDF5)
