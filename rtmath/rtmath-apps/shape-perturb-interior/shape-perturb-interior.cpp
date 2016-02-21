@@ -14,24 +14,26 @@
 #include <string>
 #include <vector>
 
+#include "../../rtmath/rtmath/defs.h"
+
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/hash.h>
+#include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/splitSet.h>
 #pragma warning( pop ) 
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/config.h"
-#include "../../rtmath/rtmath/hash.h"
+#include "../../rtmath/rtmath/error/debug.h"
 #include "../../rtmath/rtmath/refract.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/registry.h"
-#include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
 {
@@ -138,8 +140,8 @@ int main(int argc, char** argv)
 		if (vm.count("flake-type")) sFlakeType = vm["flake-type"].as<string>();
 
 
-		std::shared_ptr<registry::IOhandler> handle, exportHandle;
-		std::shared_ptr<rtmath::registry::DBhandler> dHandler;
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle, exportHandle;
+		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
 
 		/*
 		("from-db", "Perform search on database and select files matching criteria.")
@@ -150,8 +152,8 @@ int main(int argc, char** argv)
 		("match-parent-flake", "Select the parent flakes")
 		*/
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
-		rtmath::config::intervals<float> iDipoleSpacing;
-		rtmath::config::intervals<size_t> iDipoleNumbers;
+		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
+		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
 		bool matchParentFlakes;
 
 		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
@@ -178,8 +180,8 @@ int main(int argc, char** argv)
 
 
 
-		auto opts = registry::IO_options::generate();
-		auto optsExport = registry::IO_options::generate();
+		auto opts = Ryan_Debug::registry::IO_options::generate();
+		auto optsExport = Ryan_Debug::registry::IO_options::generate();
 
 		opts->filename(output);
 
@@ -192,8 +194,8 @@ int main(int argc, char** argv)
 		{
 			cerr << "Processing " << *it << endl;
 			path pi(*it);
-			if (!exists(pi)) RTthrow(rtmath::debug::xMissingFile())
-				<< rtmath::debug::file_name(*it);
+			if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
+				<< Ryan_Debug::error::file_name(*it);
 			if (is_directory(pi))
 			{
 				path ps = pi / "shape.dat";
@@ -207,7 +209,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				auto iopts = registry::IO_options::generate();
+				auto iopts = Ryan_Debug::registry::IO_options::generate();
 				iopts->filename(*it);
 				try {
 					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;

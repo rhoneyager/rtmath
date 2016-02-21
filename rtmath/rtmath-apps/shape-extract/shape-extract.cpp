@@ -8,10 +8,13 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <Ryan_Debug/debug.h>
+#include <Ryan_Debug/io.h>
+#include <Ryan_Debug/registry.h>
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
@@ -39,7 +42,8 @@ int main(int argc, char** argv)
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
 			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
-			("description-append", po::value<string>(), "Apend this to the shape description");
+			("description-append", po::value<string>(), "Apend this to the shape description")
+			("convolute", po::value<double>(), "Perform convolution over specified radius")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -73,13 +77,12 @@ int main(int argc, char** argv)
 		if (!vm.count("output")) doHelp("Need to specify an output file.");
 		string sOutput = vm["output"].as<string>();
 		cerr << "Writing shape file as " << sOutput << endl;
-		std::shared_ptr<registry::IOhandler> handle;
+		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle;
 		
 		for (const auto &ifile : input)
 		{
 			cerr << "Reading input shape file " << ifile << endl;
-			boost::shared_ptr<shapefile> shp(new shapefile);
-			shp->read(ifile);
+			boost::shared_ptr<shapefile> shp = shapefile::generate(ifile);
 			if (vm.count("description-append"))
 			{
 				std::string da = vm["description-append"].as<std::string>();
@@ -98,8 +101,7 @@ int main(int argc, char** argv)
 					//rtmath::ddscat::convolutionCellInfo ci;
 					df = std::bind(shapefile::decimateThreshold,std::placeholders::_1,threshold);
 				}
-				boost::shared_ptr<shapefile> dec = shp->decimate
-					(kernel[0], kernel[1], kernel[2], df);
+				auto dec = shp->decimate(kernel[0], kernel[1], kernel[2], df);
 				shp = dec;
 			}
 
@@ -107,9 +109,22 @@ int main(int argc, char** argv)
 			{
 				vector<size_t> kernel = vm["enhance"].as<vector<size_t> >();
 				if (kernel.size() < 3) kernel.assign(3, kernel.at(0));
-				boost::shared_ptr<shapefile> dec = shp->enhance
-					(kernel[0], kernel[1], kernel[2]);
+				auto dec = shp->enhance(kernel[0], kernel[1], kernel[2]);
 				shp = dec;
+			}
+
+			if (vm.count("convolute")) {
+				double radius = vm["convolute"].as<double>();
+				auto ptsearch = ::rtmath::ddscat::points::points::generate(
+					shp->latticePtsNorm
+					);
+				using namespace std::placeholders;
+				shapefile::decimationFunction df = shapefile::decimateDielCount;
+				df = std::bind(
+					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
+					std::placeholders::_1,radius,ptsearch);
+				auto cnv = shp->decimate(1,1,1, df);
+				shp = cnv;
 			}
 
 
@@ -126,7 +141,7 @@ int main(int argc, char** argv)
 
 			if (multiWrite)
 			{
-				auto opts = registry::IO_options::generate();
+				auto opts = Ryan_Debug::registry::IO_options::generate();
 				opts->filename(shp->filename);
 				handle = shp->writeMulti(handle, opts);
 			} else {
@@ -134,12 +149,6 @@ int main(int argc, char** argv)
 				shp->write(sOutput);
 			}
 		}
-	}
-	catch (rtmath::debug::xError &err)
-	{
-		err.Display();
-		cerr << endl;
-		return 1;
 	} catch (std::exception &e)
 	{
 		cerr << e.what() << endl;

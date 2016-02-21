@@ -237,20 +237,20 @@ namespace rtmath {
 				*
 				* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
 				**/
-				boost::shared_ptr<const shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
+				boost::shared_ptr<shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
 					decimationFunction dFunc = shapefile::decimateDielCount) const;
 
 				/// \brief Convenience function to decimate using the same degree in each dimension
-				inline boost::shared_ptr<const shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
+				inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
 
 				/** \brief Upscale a shapefile
 				* This function takes each dipole and multiplies it into a rectangular cell of a given size.
 				*
 				* All refractive indices are the same as the initial dipole.
 				**/
-				boost::shared_ptr<const shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
+				boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
 				/// \brief Convenience function to upscale using the same degree in each dimension
-				inline boost::shared_ptr<const shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
+				inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
 
 				/// \brief Decimation dielectric function that assigns a dielectric
 				/// that corresponds to the number of filled dipoles.

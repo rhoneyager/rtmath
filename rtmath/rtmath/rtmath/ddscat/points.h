@@ -6,6 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
 #include <Ryan_Debug/registry.h>
+#include "shapefile.h"
 
 /* This contains the necessary functions for doing point-based
  * nearest neighbor searches in arbitrary dimensions.
@@ -20,8 +21,9 @@ namespace rtmath
 			class points_IO_output_registry {};
 			class points_provider_registry {};
 
-			typedef boost::shared_ptr< const Eigen::Matrix<float,
-				Eigen::Dynamic, Eigen::Dynamic> >
+			/// \todo Extend to arbitrary dimensions
+			typedef Eigen::Matrix<float,
+				Eigen::Dynamic, 3>
 				backend_type;
 
 			template <class hullType>
@@ -56,25 +58,40 @@ namespace rtmath {
 			protected:
 				points(backend_type backend);
 				points();
-				//boost::shared_ptr<hullData> _p;
 			public:
 				/// Encapsulated in a static function to allow multiple hull generators to return cast objects to the 
 				/// appropriate backends.
 				static boost::shared_ptr<points> generate
 					(backend_type backend);
-
 				virtual ~points() {}
-				/// Hull volume
-				virtual double volume() const = 0;
-				/// Hull surface area
-				virtual double surfaceArea() const = 0;
-				/// Max distance between two points in hull
-				virtual double maxDiameter() const = 0;
-				/// Rotation coordinates to principle axes of hull
-				virtual void principalAxes(double &beta, double &theta, double &phi) const = 0;
 
-				/// Construct the kd tree, and populate
+				/// \brief Get neighbors in a given search radius
+				/// \returns the number of neighbors found in this radius
+				/// \param radius  is the search distance (Euclidean)
+				/// \param outpoints is an array expressing the locations
+				/// of the found points.
+				virtual size_t neighborSearchRadius(
+					double radius,
+					double x, double y, double z,
+					backend_type &outpoints) const = 0;
+				/// \brief Get nearest N neighbors
+				/// \returns the number of neighbors found
+				/// \param N is the number of neighbors to look for
+				/// \param outpoints is an array expressing the locations
+				/// of the located points.
+				virtual size_t nearestNeighbors(
+					size_t N,
+					float x, float y, float z,
+					backend_type &outpoints) const = 0;
+				/// Construct the search tree, and populate
 				virtual void constructTree() = 0;
+
+				/// \brief Convolution function that fills a dielectric
+				static size_t convolutionNeighborsRadius(
+					const ::rtmath::ddscat::shapefile::convolutionCellInfo&,
+					double radius,
+					boost::shared_ptr<const points> src);
+
 			};
 		}
 	}

@@ -483,7 +483,7 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<const shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
+			boost::shared_ptr<shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
 				decimationFunction dFunc) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
@@ -594,7 +594,7 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<const shapefile> shapefile::enhance(size_t dx, size_t dy, size_t dz) const
+			boost::shared_ptr<shapefile> shapefile::enhance(size_t dx, size_t dy, size_t dz) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 
