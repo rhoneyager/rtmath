@@ -491,7 +491,7 @@ namespace rtmath {
 				auto maxX = maxs(0), maxY = maxs(1), maxZ = maxs(2);
 				auto minX = mins(0), minY = mins(1), minZ = mins(2);
 				size_t spanX = (size_t) (maxX - minX), spanY = (size_t)(maxY - minY), spanZ = (size_t)(maxZ - minZ);
-				size_t rsX = (spanX / dx) + 1, rsY = (spanY / dy) + 1, rsZ = (spanZ / dz) + 1;
+				size_t rsX = (spanX / dx) + 20, rsY = (spanY / dy) + 20, rsZ = (spanZ / dz) + 20;
 
 				auto getIndex = [&](float x, float y, float z) -> size_t
 				{
@@ -539,8 +539,10 @@ namespace rtmath {
 				}
 
 				// Count the decimated points with nonzero values
-				size_t num = vals.size() - std::count_if(vals.begin(), vals.end(), [&]
-					(const convolutionCellInfo& c){if (c.numFilled == 0) return true; return false; });
+				//size_t num = vals.size() - std::count_if(vals.begin(), vals.end(), [&]
+				//	(const convolutionCellInfo& c){if (c.numFilled == 0) return true; return false; });
+				//	NOTE: replaced with this. Resize at end.
+				size_t num = vals.size();
 
 				res->a1 = a1;
 				res->a2 = a2;
