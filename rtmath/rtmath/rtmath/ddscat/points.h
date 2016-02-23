@@ -25,12 +25,15 @@ namespace rtmath
 			typedef Eigen::Matrix<float,
 				Eigen::Dynamic, 3>
 				backend_type;
+			typedef Eigen::Matrix<size_t,
+				Eigen::Dynamic, 3>
+				backend_s_type;
 
 			template <class hullType>
 			struct DLEXPORT_rtmath_voronoi points_provider
 			{
 				typedef std::function <
-					boost::shared_ptr<hullType>(backend_type)
+					boost::shared_ptr<points>(backend_type)
 				> pointsGenerator;
 				pointsGenerator generator;
 
@@ -71,9 +74,10 @@ namespace rtmath {
 				/// \param outpoints is an array expressing the locations
 				/// of the found points.
 				virtual size_t neighborSearchRadius(
-					double radius,
-					double x, double y, double z,
-					backend_type &outpoints) const = 0;
+					float radius,
+					float x, float y, float z,
+					backend_s_type &outpoints,
+					backend_type &outdists) const = 0;
 				/// \brief Get nearest N neighbors
 				/// \returns the number of neighbors found
 				/// \param N is the number of neighbors to look for
@@ -82,14 +86,15 @@ namespace rtmath {
 				virtual size_t nearestNeighbors(
 					size_t N,
 					float x, float y, float z,
-					backend_type &outpoints) const = 0;
+					backend_s_type &outpoints,
+					backend_type &outdists) const = 0;
 				/// Construct the search tree, and populate
 				virtual void constructTree() = 0;
 
 				/// \brief Convolution function that fills a dielectric
 				static size_t convolutionNeighborsRadius(
 					const ::rtmath::ddscat::shapefile::convolutionCellInfo&,
-					double radius,
+					float radius,
 					boost::shared_ptr<const points> src);
 
 			};

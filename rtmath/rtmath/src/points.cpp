@@ -63,14 +63,15 @@ namespace rtmath {
 
 			size_t points::convolutionNeighborsRadius(
 				const ::rtmath::ddscat::shapefile::convolutionCellInfo& ci,
-				double radius,
+				float radius,
 				boost::shared_ptr<const points> src)
 			{
-				backend_type t; // Will get set, but is unused.
+				backend_s_type t;
+				backend_type u; // Will get set, but is unused.
 				// Report the number of points in a radius around the target cell
 				// Target cell specified in ci, radius is radius
 				size_t num = src->neighborSearchRadius(
-					radius, ci.x, ci.y, ci.z, t);
+					radius, ci.x, ci.y, ci.z, t, u);
 				return num;
 			}
 		}
