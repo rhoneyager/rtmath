@@ -44,6 +44,9 @@ int main(int argc, char** argv)
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			("description-append", po::value<string>(), "Apend this to the shape description")
 			("convolute", po::value<double>(), "Perform convolution over specified radius")
+			("x,x", po::value<float>(), "x")
+			("y,y", po::value<float>(), "y")
+			("z,z", po::value<float>(), "z")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -74,9 +77,11 @@ int main(int argc, char** argv)
 		bool multiWrite = false;
 		if (input.size() > 1) multiWrite = true;
 
-		if (!vm.count("output")) doHelp("Need to specify an output file.");
-		string sOutput = vm["output"].as<string>();
-		cerr << "Writing shape file as " << sOutput << endl;
+		string sOutput;
+		if (vm.count("output")) {
+			sOutput = vm["output"].as<string>();
+			cerr << "Writing shape file as " << sOutput << endl;
+		}
 		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle;
 		
 		for (const auto &ifile : input)
@@ -116,15 +121,29 @@ int main(int argc, char** argv)
 			if (vm.count("convolute")) {
 				double radius = vm["convolute"].as<double>();
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
-					shp->latticePtsNorm
+					shp->latticePts
 					);
-				using namespace std::placeholders;
-				shapefile::decimationFunction df = shapefile::decimateDielCount;
-				df = std::bind(
-					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
-					std::placeholders::_1,radius,ptsearch);
-				auto cnv = shp->decimate(1,1,1, df);
-				shp = cnv;
+				// Do a few tests to make sure that the kd trees are working
+				::rtmath::ddscat::points::backend_type outdists;
+				::rtmath::ddscat::points::backend_s_type outpoints;
+				size_t nn = 0;
+				float x = vm["x"].as<float>();
+				float y = vm["y"].as<float>();
+				float z = vm["z"].as<float>();
+				//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
+				nn = ptsearch->neighborSearchRadius
+					((float) radius, x, y, z, outpoints, outdists);
+				std::cerr << "op\n" << outpoints << std::endl;
+				std::cerr << "od\n" << outdists << std::endl;
+				std::cerr << "There are " << nn << " points within rad "
+					<< radius << " of " << x << ", " << y << ", " << z << std::endl;
+				//using namespace std::placeholders;
+				//shapefile::decimationFunction df = shapefile::decimateDielCount;
+				//df = std::bind(
+				//	::rtmath::ddscat::points::points::convolutionNeighborsRadius,
+				//	std::placeholders::_1,radius,ptsearch);
+				//auto cnv = shp->decimate(1,1,1, df);
+				//shp = cnv;
 			}
 
 
@@ -139,14 +158,16 @@ int main(int argc, char** argv)
 			}
 			*/
 
-			if (multiWrite)
-			{
-				auto opts = Ryan_Debug::registry::IO_options::generate();
-				opts->filename(shp->filename);
-				handle = shp->writeMulti(handle, opts);
-			} else {
-				// Standard write
-				shp->write(sOutput);
+			if (vm.count("output")) {
+				if (multiWrite)
+				{
+					auto opts = Ryan_Debug::registry::IO_options::generate();
+					opts->filename(shp->filename);
+					handle = shp->writeMulti(handle, opts);
+				} else {
+					// Standard write
+					shp->write(sOutput);
+				}
 			}
 		}
 	} catch (std::exception &e)

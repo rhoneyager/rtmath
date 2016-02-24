@@ -385,10 +385,15 @@ namespace rtmath {
 			struct convolutionCellInfo
 			{
 				convolutionCellInfo();
+				/// The coordinates of the point being tested
 				float x, y, z;
+				/// The dieelctric at the point being tested
 				size_t initDiel;
+				/// Kernel size operators (decimation only)
 				size_t sx, sy, sz;
+				/// The id of the point being tested (currently unused)
 				size_t index;
+				/// Return values
 				size_t numFilled, numTotal;
 			};
 		}
