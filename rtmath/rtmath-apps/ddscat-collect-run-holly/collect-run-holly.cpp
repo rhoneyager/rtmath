@@ -1,19 +1,3 @@
-/* This program reads in a ddscat.par file along with a shape (and 
- * possibly a .avg file) and uses these to reconstruct a ddscat-ready 
- * folder.
- *
- * It attempts to align multiple files to match up based on filenames.
- * avg files provide rotations, aeff, wave, dielectrics and scattering angles.
- * shp files provide the actual shape.
- * par files provide a base when writing a new par file.
- *
- * If shape files exist in the same filesystem, uses hard links. If on different
- * filesystems, uses symlinks. If a new shape file is generated, only one copy of the
- * file is truly written. Duplicate shape files are matched by hashing.
- *
- * Supports shapefile decimation / enhancement.
- */
-
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
@@ -26,7 +10,6 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/splitSet.h>
 #include <Ryan_Debug/fs.h>
-//#include <Ryan_Serialization/serialization.h>
 
 #include "../../rtmath/rtmath/ddscat/ddpar.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
@@ -272,16 +255,19 @@ int main(int argc, char** argv)
 			if (!boost::filesystem::exists(pa))
 				boost::filesystem::create_directory(pa);
 
+			string sParFile;
 			auto parFile = rtmath::ddscat::ddPar::generate();
 			if (d.second.parfile.empty() && pars.size())
 			{
 				cerr << "\tUsing generic par file " << pars[0] << endl;
+				sParFile = pars[0].string();
 				parFile = rtmath::ddscat::ddPar::generate(pars[0].string());
 			}
 			else if (d.second.parfile.empty() && !pars.size())
 				RDthrow(Ryan_Debug::error::xMissingFile())
 				<< Ryan_Debug::error::file_name("ddscat.par");
 			else {
+				sParFile = d.second.parfile.string();
 				parFile = rtmath::ddscat::ddPar::generate(d.second.parfile.string());
 				cerr << "\tUsing matched par file " << d.second.parfile.string() << endl;
 			}
@@ -379,36 +365,37 @@ int main(int argc, char** argv)
 				ppar.writeFile(ppath.string());
 			};
 
-
-			// If there are no avg files to regenerate from
-			if (!d.second.ddres.size())
-			{
-				cerr << "\tNot using avg file\n";
-				path p = pa; //pOut / pa.filename();
-				//path p = pa / "test";
-				cerr << "\tCreating directory " << p << endl;
-				boost::filesystem::create_directory(p);
-				if (!linkShape(p / path("shape.dat"))) continue;
-				auto ppar = parFile;
-				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), *(ppar.get()), 0, 0, std::complex<double>(0,0));
-			}
-			// and if there are avg files to regenerate from
 			for (auto &pavg : d.second.ddres)
 			{
 				cerr << "Using avg file " << pavg << "\n";
-				//ddOriData avg(d.second.ddres)
 
 				auto a = rtmath::ddscat::ddOutput::generate(
-					pavg.string(), 
+					pavg.string(), sParFile, d.second.shapefile.string());
 				path p = pa;
-				// path p = pOut / pa.filename(); // / path(pavg).filename();
 				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
 				if (!linkShape(p / path("shape.dat"))) continue;
 				auto ppar = parFile;
+
+				double vmax;
+				size_t n;
+				std::string spacing;
+				double aeff = 0, wave = 0;
+				a->parfile->getWavelengths(wave, vmax, n, spacing);
+				a->parfile->getAeff(aeff, vmax, n, spacing);
+				std::complex<double> m;
+
+				using rtmath::refract::_frequency;
+				using rtmath::refract::_temperature;
+				using rtmath::refract::_m;
+				using rtmath::refract::_provider;
+				rtmath::refract::mIce(
+					_frequency = a->freq,
+					_temperature = a->temp,
+					_m = m);
 				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), *(ppar.get()), avg->aeff(), avg->wave(), avg->M());
+				createPar((p / path("ddscat.par")), *(ppar.get()),
+					aeff, wave, m);
 
 				if (avgOne) break;
 			}

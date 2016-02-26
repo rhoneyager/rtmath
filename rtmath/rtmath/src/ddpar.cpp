@@ -93,7 +93,8 @@ namespace {
 			// First try to load using rtmath.conf location
 			auto cRoot = rtmath::config::loadRtconfRoot();
 			if (!cRoot) RDthrow(Ryan_Debug::error::xMissingRyan_DebugConf());
-			auto rtddscat = cRoot->getChild("ddscat");
+			auto ccnf = cRoot->getChild("RTMATH");
+			auto rtddscat = ccnf->getChild("ddscat");
 			string sBasePar, scwd;
 			if (rtddscat) {
 				rtddscat->getVal<string>("DefaultFile", sBasePar);

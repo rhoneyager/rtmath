@@ -421,7 +421,10 @@ namespace rtmath {
 			/// Generate ddOutput from a ddscat output directory
 			static boost::shared_ptr<ddOutput> generate(
 				const std::string &dir, bool noLoadRots = false);
-
+			// Generate ddOutput from raw files
+			static boost::shared_ptr<ddOutput> generate(
+				const std::string &avgfile, const std::string &parfile,
+				const std::string &shpfile);
 			/// Write run to the hash directory (convenience function)
 			void writeToHash() const;
 

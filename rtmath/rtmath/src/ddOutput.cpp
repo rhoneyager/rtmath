@@ -306,6 +306,45 @@ namespace rtmath {
 			pdata->resize(0,0);
 		}
 
+		/** \note This function will correct any bad wavelengths / effective
+		 * radii in the parameter file read. It always assumes that the
+		 * .avg file is correct. Needed when reading Holly's older data.
+		 **/
+		boost::shared_ptr<ddOutput> ddOutput::generate(
+			const std::string &avgfile, const std::string &parfile,
+			const std::string &shpfile)
+		{
+			boost::shared_ptr<ddOutput> res(new ddOutput());
+			using namespace boost::filesystem;
+			using boost::shared_ptr;
+			using std::vector;
+
+			std::mutex m_shape, m_par, m_other, m_pathlist, m_filecheck;
+
+			res->parfile = ddPar::generate(parfile);
+			res->shape = ::rtmath::ddscat::shapefile::shapefile::generate(shpfile);
+			auto dat = ddOriData::generate(*res, avgfile);
+			// Correct the par file with the correct wavelength
+			// and effective radius.
+			double wave = 0, aeff = 0;
+			wave = dat->wave();
+			aeff = dat->aeff();
+			res->parfile->setWavelengths(wave, wave, 1, "LIN");
+			res->parfile->setAeff(aeff, aeff, 1, "LIN");
+
+			// Tag the source directory and ddscat version
+			path pbavg = absolute(path(avgfile));
+			res->sources.insert(pbavg.string());
+			path pbpar = absolute(path(parfile));
+			res->sources.insert(pbpar.string());
+			path pbshp = absolute(path(shpfile));
+			res->sources.insert(pbshp.string());
+
+			// Apply consistent generation
+			res->finalize();
+			return res;
+		}
+
 		boost::shared_ptr<ddOutput> ddOutput::generate(const std::string &dir, bool noLoadRots)
 		{
 			boost::shared_ptr<ddOutput> res(new ddOutput());
