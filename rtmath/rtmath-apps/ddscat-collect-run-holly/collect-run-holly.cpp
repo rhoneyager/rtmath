@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -57,8 +58,7 @@ int main(int argc, char** argv)
 			"These will override the standard par file choices.")
 			("use-avg-dielectrics",
 			"Use the refractive indices that appear in each avg file.")
-			("force-frequency", po::value<double>(), "Override frequency (GHz)")
-			//("force-intermediate", po::value<bool>(), "Force intermediate output")
+			("frequency,f", po::value<double>(), "Specify frequency (GHz)")
 			("match-by-folder", "Instead of matching by standard prefix, match by containing folder")
 			("match-by-dipoles", "Instead of matching by a standard prefix, match avg files and shape "
 			"files by the number of dipoles. Necessary for Liu raw pristine flake extraction. "
@@ -67,6 +67,7 @@ int main(int argc, char** argv)
 			"dimension sizes. Used to tweak the parameter file.")
 			("ice-temp,T", po::value<double>(), "Specify ice temperature. Used if a dielectric is regenerated.")
 			("only-one-avg", "Use only one avg file of each id for regeneration.")
+			("dipole-spacing,d", po::value<double>(), "Set interdipole spacing")
 			;
 
 		desc.add(cmdline).add(config);
@@ -97,7 +98,10 @@ int main(int argc, char** argv)
 		matchCriteria mc = MATCH_STANDARD;
 		if (vm.count("match-by-folder")) mc = MATCH_FOLDERS;
 		if (vm.count("match-by-dipoles")) mc = MATCH_DIPOLES;
-		
+	
+		double dSpacing = 0;
+		if (vm.count("dipole-spacing")) dSpacing = vm["dipole-spacing"]
+			.as<double>();
 		bool avgOne = false;
 		if (vm.count("only-one-avg")) avgOne = true;
 
@@ -112,8 +116,12 @@ int main(int argc, char** argv)
 		ipars = vm["par"].as<vector<string> >();
 		outbase = vm["output"].as<string>();
 
-		double temp = 0;
+		double temp = 0, freq = 0;
 		if (vm.count("ice-temp")) temp = vm["ice-temp"].as<double>();
+		if (vm.count("frequency"))
+			freq = vm["frequency"].as<double>();
+		else doHelp("Need to specify frequency");
+		double wave = rtmath::units::conv_spec("GHz", "um").convert(freq);
 
 		auto makePathAbsolute = [](const boost::filesystem::path &p) -> boost::filesystem::path
 		{
@@ -225,18 +233,6 @@ int main(int argc, char** argv)
 			}
 		};
 
-		/*
-		if (0) // avgs.size() == 1)
-		{
-			// Special case where the exact data is specified
-			string prefix = dataset::getPrefix(path(avgs[0]));
-			if (!prefix.size()) prefix = "manual";
-			cerr << "Single avg file: " << avgs[0] << endl;
-			maps[prefix] = dataset(prefix);
-			maps[prefix].ddres.push_back(path(avgs[0]));
-			maps[prefix].shapefile = path(shapes.at(0));
-		} else {
-			*/
 		expandFolders(ishapes, shapes);
 		expandFolders(iavgs, avgs);
 		expandFolders(ipars, pars);
@@ -274,9 +270,13 @@ int main(int argc, char** argv)
 
 			// Reopen the shape file to determine dipole extent
 			vector<size_t> dims(3,0);
+			auto s = rtmath::ddscat::shapefile::shapefile::generate(d.second.shapefile.string());
+			double aeff_di = pow((float)s->numPoints*3.f
+				/ (4.f*boost::math::constants::pi<float>()), 1.f / 3.f);
+			double aeff_um = aeff_di * dSpacing;
+
 			if (calcDipoleExtent)
 			{
-				auto s = rtmath::ddscat::shapefile::shapefile::generate(d.second.shapefile.string());
 				// Extra padding is needed by ddscat...
 				dims[0] = (size_t) (s->maxs(0) - s->mins(0) + 20);
 				dims[1] = (size_t) (s->maxs(1) - s->mins(1) + 20);
@@ -285,70 +285,55 @@ int main(int argc, char** argv)
 			}
 			else cerr << "\tUsing initial dipole extent" << endl;
 
-			auto linkShape = [&](const boost::filesystem::path &spath) -> bool
+			auto linkObj = [&](
+				const boost::filesystem::path &src,
+				const boost::filesystem::path &spath) -> bool
 			{
 				if (boost::filesystem::exists(spath)) return false;
 				try {
 					// Creating shapefile hard links if possible
-					boost::filesystem::create_hard_link(d.second.shapefile, spath);
+					boost::filesystem::create_hard_link(src, spath);
 				}
 				catch (std::exception&)
 				{
 					try {
 						// Then try making symlinks
-						boost::filesystem::create_symlink(makePathAbsolute(d.second.shapefile), spath);
+						boost::filesystem::create_symlink(makePathAbsolute(src), spath);
 					}
 					catch (std::exception &e)
 					{
-						cerr << "Cannot make link to shape file " << d.second.shapefile << endl;
+						cerr << "Cannot make link to " << src << endl;
 						cerr << "Exception is " << e.what() << endl;
 						return false;
 						// Then just do direct copying
-						//boost::filesystem::copy_file(d.second.shapefile, p / path("shape.dat"));
+						//boost::filesystem::copy_file(src, spath));
 					}
 				}
 				return true;
 			};
 			auto createPar = [&](const boost::filesystem::path &ppath, ddPar &ppar, 
-				double aeff, double wave, std::complex<double> m)
+				double aeff)
 			{
-				if (vm.count("force-frequency"))
-				{
-					double f = vm["force-frequency"].as<double>();
-					wave = rtmath::units::conv_spec("GHz", "um").convert(f);
-					ppar.setWavelengths(wave, wave, 1, "LIN");
-				} else {
-					// If wave is zero, stick with the par file definition
-					if (wave)
-						ppar.setWavelengths(wave, wave, 1, "LIN");
-				}
+				ppar.setWavelengths(wave, wave, 1, "LIN");
 
 				if (dielectrics.size()) ppar.setDiels(dielectrics);
-				else if (vm.count("use-avg-dielectrics"))
-				{
-					if (m.real() == 0)
-					{
-						//throw rtmath::debug::xBadInput("Missing avg file for dielectric calculation");
-						cerr << "Missing avg file for dielectric calculation with " << ppath << endl;
-						return;
-					}
-					/// \todo Allow multiple ms
-					boost::shared_ptr<dielTab> diel = dielTab::generate(m);
-					diel->write((ppath.parent_path() / path("diel.tab")).string());
-					ppar.setDiels(vector<string>(1, string("diel.tab")));
-				}
 				else if (wave && temp) {
 					// Regenerate a dielectric based on the refractive index of ice at this frequency/temp combination.
-					double f = rtmath::units::conv_spec("um", "GHz").convert(wave);
-					rtmath::refract::mIce(f, temp, m);
-					boost::shared_ptr<dielTab> diel = dielTab::generate(m);
-					diel->write((ppath.parent_path() / path("diel.tab")).string());
-					ppar.setDiels(vector<string>(1, string("diel.tab")));
+				std::complex<double> m;
+
+				using rtmath::refract::_frequency;
+				using rtmath::refract::_temperature;
+				using rtmath::refract::_m;
+				using rtmath::refract::_provider;
+				rtmath::refract::mIce(
+					_frequency = freq,
+					_temperature = temp,
+					_m = m);
+				boost::shared_ptr<dielTab> diel = dielTab::generate(m);
+				diel->write((ppath.parent_path() / path("diel.tab")).string());
+				ppar.setDiels(vector<string>(1, string("diel.tab")));
 				} // If no case matches, then the par file skeleton defaults are fine.
-				
-				// If aeff is zero, just stick with the par file definition
-				if (aeff)
-					ppar.setAeff(aeff, aeff, 1, "LIN");
+				ppar.setAeff(aeff, aeff, 1, "LIN");
 
 				// Set initial memory dimensions
 				if (dims[0])
@@ -368,34 +353,21 @@ int main(int argc, char** argv)
 			for (auto &pavg : d.second.ddres)
 			{
 				cerr << "Using avg file " << pavg << "\n";
-
-				auto a = rtmath::ddscat::ddOutput::generate(
-					pavg.string(), sParFile, d.second.shapefile.string());
+				// Ignore the avg file read. Instead,
+				// get the frequency from the command line options,
+				// as well as an interdipole spacing. Then generate
+				// the ddscat.par file manually.
+				//auto a = rtmath::ddscat::ddOutput::generate(
+				//	pavg.string(), sParFile, d.second.shapefile.string());
 				path p = pa;
 				cerr << "\tCreating directory " << p << endl;
 				boost::filesystem::create_directory(p);
-				if (!linkShape(p / path("shape.dat"))) continue;
+				if (!linkObj(d.second.shapefile, p / path("shape.dat"))) continue;
+				if (!linkObj(pavg, p / path("w000r000.avg"))) continue;
 				auto ppar = parFile;
 
-				double vmax;
-				size_t n;
-				std::string spacing;
-				double aeff = 0, wave = 0;
-				a->parfile->getWavelengths(wave, vmax, n, spacing);
-				a->parfile->getAeff(aeff, vmax, n, spacing);
-				std::complex<double> m;
-
-				using rtmath::refract::_frequency;
-				using rtmath::refract::_temperature;
-				using rtmath::refract::_m;
-				using rtmath::refract::_provider;
-				rtmath::refract::mIce(
-					_frequency = a->freq,
-					_temperature = a->temp,
-					_m = m);
-				// Write the diel.tab files
-				createPar((p / path("ddscat.par")), *(ppar.get()),
-					aeff, wave, m);
+				// Write the diel.tab and ddscat.par files.
+				createPar((p / path("ddscat.par")), *(ppar.get()), aeff_um);
 
 				if (avgOne) break;
 			}
