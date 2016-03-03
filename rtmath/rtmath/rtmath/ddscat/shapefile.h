@@ -300,10 +300,13 @@ namespace rtmath {
 				int ingest_rtmath_version;
 				/// Standard dipole spacing for this shape (the value usually used)
 				float standardD;
-
-				//std::vector<Eigen::Vector3f> 
+				typedef Eigen::Matrix<float,
+					Eigen::Dynamic, 3>
+					points_type;
+				typedef Eigen::Matrix<size_t, Eigen::Dynamic, 1> index_type;
+				typedef Eigen::Matrix<float, Eigen::Dynamic, 1> scalar_type;
 				/// \todo Move latticePts and the rest into const shared_ptr containers
-				Eigen::Matrix<float, Eigen::Dynamic, 3>
+				points_type
 					latticePts, // Untransformed points
 					latticePtsStd, // Points with coord translation based on file properties
 					latticePtsNorm, // Points with coord transform to mean center of shape

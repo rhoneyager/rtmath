@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <Ryan_Debug/debug.h>
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
 
 	try {
 		cerr << "rtmath-shape-extract\n\n";
-
+		const double pi = boost::math::constants::pi<double>();
 		namespace po = boost::program_options;
 
 		po::positional_options_description p;
@@ -44,9 +45,11 @@ int main(int argc, char** argv)
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			("description-append", po::value<string>(), "Apend this to the shape description")
 			("convolute", po::value<double>(), "Perform convolution over specified radius")
-			("x,x", po::value<float>(), "x")
-			("y,y", po::value<float>(), "y")
-			("z,z", po::value<float>(), "z")
+			("search-radius", po::value<double>(), "Find all points within the specified radius. Must specify x, y, z.")
+			("search-nearest", po::value<size_t>(), "Find nearest N points of target.")
+			("x,x", po::value<float>()->default_value(0), "x")
+			("y,y", po::value<float>()->default_value(0), "y")
+			("z,z", po::value<float>()->default_value(0), "z")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -117,24 +120,71 @@ int main(int argc, char** argv)
 				auto dec = shp->enhance(kernel[0], kernel[1], kernel[2]);
 				shp = dec;
 			}
+			float x = vm["x"].as<float>();
+			float y = vm["y"].as<float>();
+			float z = vm["z"].as<float>();
+			if (vm.count("search-nearest")) {
+				size_t N = vm["search-nearest"].as<size_t>();
+				auto ptsearch = ::rtmath::ddscat::points::points::generate(
+					shp->latticePts
+					);
+				::rtmath::ddscat::points::backend_scalar_type outdists2;
+				::rtmath::ddscat::points::backend_index_type outpoints;
+				size_t nn = 0; // Number of points found
+				nn = ptsearch->nearestNeighbors(N, x, y, z, outpoints, outdists2);
+				std::cerr << "There are " << nn << " points found out of max "
+					<< N << " near " << x << ", " << y << ", " << z << std::endl;
+				std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
+				for (int i=0; i < nn; ++i) {
+					std::cerr << outpoints(i,0) << "\t"
+						<< shp->latticePts(i,0) << "\t" << shp->latticePts(i,1) << "\t"
+						<< shp->latticePts(i,2) << "\t"
+						<< std::sqrt(outdists2(i,0)) << std::endl;
+				}
 
+			}
+			if (vm.count("search-radius")) {
+				double radius = vm["search-radius"].as<double>();
+				auto ptsearch = ::rtmath::ddscat::points::points::generate(
+					shp->latticePts
+					);
+				::rtmath::ddscat::points::backend_scalar_type outdists2;
+				::rtmath::ddscat::points::backend_index_type outpoints;
+				size_t nn = 0; // Number of points found
+				//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
+				nn = ptsearch->neighborSearchRadius
+					((float) (radius*radius), x, y, z, outpoints, outdists2);
+				std::cerr << "There are " << nn << " points within rad "
+					<< radius << " of " << x << ", " << y << ", " << z << std::endl;
+				std::cerr << "The search volume is "
+					<< (4.*pi/3.) * std::pow(radius,3.) << std::endl;
+				std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
+				for (int i=0; i < nn; ++i) {
+					std::cerr << outpoints(i,0) << "\t"
+						<< shp->latticePts(i,0) << "\t" << shp->latticePts(i,1) << "\t"
+						<< shp->latticePts(i,2) << "\t"
+						<< std::sqrt(outdists2(i,0)) << std::endl;
+				}
+
+			}
 			if (vm.count("convolute")) {
+				/*
 				double radius = vm["convolute"].as<double>();
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
 					shp->latticePts
 					);
 				// Do a few tests to make sure that the kd trees are working
-				::rtmath::ddscat::points::backend_type outdists;
-				::rtmath::ddscat::points::backend_s_type outpoints;
+				::rtmath::ddscat::points::backend_scalar_type outdists2;
+				::rtmath::ddscat::points::backend_index_type outpoints;
 				size_t nn = 0;
 				float x = vm["x"].as<float>();
 				float y = vm["y"].as<float>();
 				float z = vm["z"].as<float>();
 				//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
 				nn = ptsearch->neighborSearchRadius
-					((float) radius, x, y, z, outpoints, outdists);
+					((float) (radius*radius), x, y, z, outpoints, outdists2);
 				std::cerr << "op\n" << outpoints << std::endl;
-				std::cerr << "od\n" << outdists << std::endl;
+				std::cerr << "od2\n" << outdists2 << std::endl;
 				std::cerr << "There are " << nn << " points within rad "
 					<< radius << " of " << x << ", " << y << ", " << z << std::endl;
 				//using namespace std::placeholders;
@@ -144,6 +194,7 @@ int main(int argc, char** argv)
 				//	std::placeholders::_1,radius,ptsearch);
 				//auto cnv = shp->decimate(1,1,1, df);
 				//shp = cnv;
+				*/
 			}
 
 

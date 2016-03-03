@@ -21,13 +21,12 @@ namespace rtmath
 			class points_IO_output_registry {};
 			class points_provider_registry {};
 
-			/// \todo Extend to arbitrary dimensions
-			typedef Eigen::Matrix<float,
-				Eigen::Dynamic, 3>
+			typedef ::rtmath::ddscat::shapefile::shapefile::points_type
 				backend_type;
-			typedef Eigen::Matrix<size_t,
-				Eigen::Dynamic, 3>
-				backend_s_type;
+			typedef ::rtmath::ddscat::shapefile::shapefile::index_type
+				backend_index_type;
+			typedef ::rtmath::ddscat::shapefile::shapefile::scalar_type
+				backend_scalar_type;
 
 			template <class hullType>
 			struct DLEXPORT_rtmath_voronoi points_provider
@@ -76,8 +75,8 @@ namespace rtmath {
 				virtual size_t neighborSearchRadius(
 					float radius,
 					float x, float y, float z,
-					backend_s_type &outpoints,
-					backend_type &outdists) const = 0;
+					backend_index_type &outpoints,
+					backend_scalar_type &outdistssq) const = 0;
 				/// \brief Get nearest N neighbors
 				/// \returns the number of neighbors found
 				/// \param N is the number of neighbors to look for
@@ -86,8 +85,8 @@ namespace rtmath {
 				virtual size_t nearestNeighbors(
 					size_t N,
 					float x, float y, float z,
-					backend_s_type &outpoints,
-					backend_type &outdists) const = 0;
+					backend_index_type &outpoints,
+					backend_scalar_type &outdistssq) const = 0;
 				/// Construct the search tree, and populate
 				virtual void constructTree() = 0;
 

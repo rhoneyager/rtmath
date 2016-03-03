@@ -66,8 +66,8 @@ namespace rtmath {
 				float radius,
 				boost::shared_ptr<const points> src)
 			{
-				backend_s_type t;
-				backend_type u; // Will get set, but is unused.
+				backend_index_type t;
+				backend_scalar_type u; // Will get set, but is unused.
 				// Report the number of points in a radius around the target cell
 				// Target cell specified in ci, radius is radius
 				size_t num = src->neighborSearchRadius(

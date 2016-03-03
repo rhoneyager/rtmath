@@ -28,24 +28,28 @@ namespace rtmath {
 				boost::shared_ptr< ::flann::Index<::flann::L2<float> > > index;
 			public:
 				virtual size_t neighborSearchRadius(
-					float radius,
+					float radiussq,
 					float x, float y, float z,
-					::rtmath::ddscat::points::backend_s_type &outpoints,
-					::rtmath::ddscat::points::backend_type &outdists) const {
-					//constructTree();
+					::rtmath::ddscat::points::backend_index_type &outpoints,
+					::rtmath::ddscat::points::backend_scalar_type &outdists) const {
 
 					Eigen::Matrix<float,1, 3, Eigen::RowMajor> q;
 					q(0,0) = x; q(0,1) = y; q(0,2) = z;
 					::flann::Matrix<float> query(q.data(), 1, 3);
-					Eigen::Matrix<size_t,Eigen::Dynamic, 3, Eigen::RowMajor> indices;
-					indices.resize(pts.rows(), 3);
-					Eigen::Matrix<float,Eigen::Dynamic, 3, Eigen::RowMajor> dists;
-					dists.resize(pts.rows(), 3);
+					Eigen::Matrix<size_t,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
+					indices.resize(pts.rows(), 1);
+					Eigen::Matrix<float,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> dists;
+					dists.resize(pts.rows(), 1);
 
-					::flann::Matrix<size_t> qindices(indices.data(), pts.rows(), 3);
-					::flann::Matrix<float> qdists(dists.data(), pts.rows(), 3);
+					// FLANN truncates the neighbor search based on the
+					// number of COLUMNS of these matrices. They should really
+					// have looked at the total size instead.
+					::flann::Matrix<size_t> qindices(indices.data(), 1, pts.rows());
+					::flann::Matrix<float> qdists(dists.data(), 1, pts.rows());
 
-					size_t count = index->radiusSearch(query, qindices, qdists, radius, ::flann::SearchParams(128));
+					size_t count = index->radiusSearch(query, qindices, qdists, radiussq, ::flann::SearchParams(128));
+					indices.conservativeResize((int) count, 1);
+					dists.conservativeResize((int) count, 1);
 					outpoints = indices;
 					outdists = dists;
 					return count;
@@ -53,20 +57,19 @@ namespace rtmath {
 				virtual size_t nearestNeighbors(
 					size_t N,
 					float x, float y, float z,
-					::rtmath::ddscat::points::backend_s_type &outpoints,
-					::rtmath::ddscat::points::backend_type &outdists) const {
-					//constructTree();
+					::rtmath::ddscat::points::backend_index_type &outpoints,
+					::rtmath::ddscat::points::backend_scalar_type &outdists) const {
 
 					Eigen::Matrix<float,1, 3, Eigen::RowMajor> q;
 					q(0,0) = x; q(0,1) = y; q(0,2) = z;
 					::flann::Matrix<float> query(q.data(), 1, 3);
-					Eigen::Matrix<size_t,Eigen::Dynamic, 3, Eigen::RowMajor> indices;
-					indices.resize(N, 3);
-					Eigen::Matrix<float,Eigen::Dynamic, 3, Eigen::RowMajor> dists;
-					dists.resize(N, 3);
+					Eigen::Matrix<size_t,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
+					indices.resize(N, 1);
+					Eigen::Matrix<float,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> dists;
+					dists.resize(N, 1);
 
-					::flann::Matrix<size_t> qindices(indices.data(), N, 3);
-					::flann::Matrix<float> qdists(dists.data(), N, 3);
+					::flann::Matrix<size_t> qindices(indices.data(), 1, N);
+					::flann::Matrix<float> qdists(dists.data(), 1, N);
 
 					size_t count = index->knnSearch(query, qindices, qdists, N, ::flann::SearchParams(128));
 					outpoints = indices;
