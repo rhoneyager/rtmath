@@ -168,46 +168,18 @@ int main(int argc, char** argv)
 
 			}
 			if (vm.count("convolute")) {
-				/*
 				double radius = vm["convolute"].as<double>();
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
 					shp->latticePts
 					);
-				// Do a few tests to make sure that the kd trees are working
-				::rtmath::ddscat::points::backend_scalar_type outdists2;
-				::rtmath::ddscat::points::backend_index_type outpoints;
-				size_t nn = 0;
-				float x = vm["x"].as<float>();
-				float y = vm["y"].as<float>();
-				float z = vm["z"].as<float>();
-				//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
-				nn = ptsearch->neighborSearchRadius
-					((float) (radius*radius), x, y, z, outpoints, outdists2);
-				std::cerr << "op\n" << outpoints << std::endl;
-				std::cerr << "od2\n" << outdists2 << std::endl;
-				std::cerr << "There are " << nn << " points within rad "
-					<< radius << " of " << x << ", " << y << ", " << z << std::endl;
-				//using namespace std::placeholders;
-				//shapefile::decimationFunction df = shapefile::decimateDielCount;
-				//df = std::bind(
-				//	::rtmath::ddscat::points::points::convolutionNeighborsRadius,
-				//	std::placeholders::_1,radius,ptsearch);
-				//auto cnv = shp->decimate(1,1,1, df);
-				//shp = cnv;
-				*/
+				using namespace std::placeholders;
+				shapefile::decimationFunction df = shapefile::decimateDielCount;
+				df = std::bind(
+					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
+					std::placeholders::_1,radius,ptsearch);
+				auto cnv = shp->convolute(df);
+				shp = cnv;
 			}
-
-
-
-			/*
-			if (vm.count("bov"))
-			{
-			string bPrefix = vm["bov"].as<string>();
-			cerr << "Writing BOV files with prefix " << bPrefix << endl;
-			//shp.write(string(bPrefix).append("-orig.dat"));
-			shp->writeBOV(bPrefix);
-			}
-			*/
 
 			if (vm.count("output")) {
 				if (multiWrite)

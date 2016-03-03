@@ -243,6 +243,10 @@ namespace rtmath {
 				/// \brief Convenience function to decimate using the same degree in each dimension
 				inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
 
+				/// Convolute a shapefile (different logic than decimation. Slower algorithm.)
+				boost::shared_ptr<shapefile> convolute(
+					decimationFunction dFunc = shapefile::decimateDielCount) const;
+
 				/** \brief Upscale a shapefile
 				* This function takes each dipole and multiplies it into a rectangular cell of a given size.
 				*

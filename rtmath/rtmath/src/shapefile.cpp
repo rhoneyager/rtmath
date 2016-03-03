@@ -483,6 +483,110 @@ namespace rtmath {
 				return res;
 			}
 
+
+			boost::shared_ptr<shapefile> shapefile::convolute(
+				decimationFunction dFunc) const
+			{
+				boost::shared_ptr<shapefile> res(new shapefile);
+
+				auto maxX = maxs(0), maxY = maxs(1), maxZ = maxs(2);
+				auto minX = mins(0), minY = mins(1), minZ = mins(2);
+				size_t spanX = (size_t) (maxX - minX), spanY = (size_t)(maxY - minY), spanZ = (size_t)(maxZ - minZ);
+				size_t rsX = (spanX ) + 1, rsY = (spanY ) + 1, rsZ = (spanZ ) + 1;
+				std::cerr << "(" << minX << ", " << maxX << ") ("
+					<< minY << ", " << maxY << ") ("
+					<< minZ << ", " << maxZ << ") - "
+					<< rsX << " " << rsY << " " << rsZ << " - "
+					<< rsX * rsY * rsZ << std::endl;
+
+				auto getIndex = [&](float x, float y, float z) -> size_t
+				{
+					size_t index = 0;
+					size_t sX = (size_t)(x - minX);
+					size_t sY = (size_t)(y - minY);
+					size_t sZ = (size_t)(z - minZ);
+					index = (sX * (rsY * rsZ)) + (sY * rsZ) + sZ;
+					return index;
+				};
+
+				auto getCrds = [&](size_t index) -> std::tuple<size_t, size_t, size_t>
+				{
+					size_t x = index / (rsY*rsZ);
+					index -= x*rsY*rsZ;
+					size_t y = index / rsZ;
+					index -= y*rsZ;
+					size_t z = index;
+					return std::tuple<size_t, size_t, size_t>(x, y, z);
+				};
+				const size_t sz = rsX*rsY*rsZ;
+				size_t num = 0;
+				std::vector<convolutionCellInfo> vals(sz);
+				for (size_t i=0; i<sz; ++i) {
+					auto &v = vals.at(i);
+					v.initDiel = 1;
+					v.numTotal = 1;
+					v.sx = 1;
+					v.sy = 1;
+					v.sz = 1;
+					// Needs to be added to mins to get proper offset.
+					std::tuple<size_t, size_t, size_t> crd = getCrds(i);
+					v.x = (float) std::get<0>(crd) + (float) minX;
+					v.y = (float) std::get<1>(crd) + (float) minY;
+					v.z = (float) std::get<2>(crd) + (float) minZ;
+					v.numFilled = dFunc(v);
+					if (v.numFilled) num++;
+				}
+
+				res->a1 = a1;
+				res->a2 = a2;
+				res->a3 = a3;
+				res->d = d;
+				res->desc = desc;
+				res->Dielectrics = Dielectrics;
+				res->filename = filename;
+				res->xd = xd;
+
+				res->resize(num);
+
+				size_t dielMax = 0;
+				// Set the decimated values
+				size_t point = 0;
+				for (size_t i = 0; i < vals.size(); ++i)
+				{
+					auto &v = vals.at(i);
+					if (v.numFilled == 0) continue;
+					auto t = getCrds(i);
+					auto crdsm = res->latticePts.block<1, 3>(point, 0);
+					auto crdsi = res->latticePtsRi.block<1, 3>(point, 0);
+					crdsm(0) = (float)std::get<0>(t) + minX;
+					crdsm(1) = (float)std::get<1>(t) + minY;
+					crdsm(2) = (float)std::get<2>(t) + minZ;
+					crdsi(0) = (float)v.numFilled;
+					crdsi(1) = (float)v.numFilled;
+					crdsi(2) = (float)v.numFilled;
+					if (dielMax < v.numFilled) dielMax = v.numFilled;
+					point++;
+				}
+				
+				// Shrink the data store
+				if (point < num)
+					res->resize(point);
+
+				// Set the dielectrics
+				res->Dielectrics.clear();
+				for (size_t i = 1; i <= dielMax; ++i)
+					res->Dielectrics.insert(i);
+
+				res->recalcStats();
+				// Rescale x0 to point to the new center
+				//res->x0 = x0 / Eigen::Array3f((float)dx, (float)dy, (float)dz);
+				// Cannot just rescale because of negative coordinates.
+				res->x0 = res->means;
+
+
+				return res;
+			}
+
 			boost::shared_ptr<shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
 				decimationFunction dFunc) const
 			{
@@ -552,8 +656,6 @@ namespace rtmath {
 				res->Dielectrics = Dielectrics;
 				res->filename = filename;
 				res->xd = xd;
-
-				
 
 				res->resize(num);
 
