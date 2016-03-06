@@ -259,9 +259,12 @@ namespace rtmath {
 					schd << "\t" << i << "\n";
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << schd.str();
 				// Search for hash databases to load
-				auto hashes = ccnf->getChild("ddscat");
-				if (!hashes) { hashes = ccnf; BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "No ddscat key"; }
-				hashes = hashes->getChild("hashes");
+				auto nddscat = ccnf->getChild("ddscat");
+				if (!nddscat) {
+					nddscat = ccnf;
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "No ddscat key";
+				}
+				auto hashes = nddscat->getChild("hashes");
 				if (hashes) {
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found hashes key";
 					Ryan_Debug::hash::hashStore::loadStoresFromSource(hashes, "rtmath");
@@ -269,6 +272,18 @@ namespace rtmath {
 					BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "When loading the rtmath "
 						"configuration file, no /ddscat/hashes or /hashes keys were found. "
 						"This is undesirable, as no hash databases are loaded.";
+				}
+
+				if (nddscat) {
+					auto nstats = nddscat->getChild("stats");
+					if (nstats) {
+						std::string defprov = "qhull";
+						if (nstats->hasVal("defaultHullProvider"))
+							nstats->getVal<std::string>("defaultHullProvider", defprov);
+						else nstats->setVal("defaultHullProvider", defprov);
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+							<< "The default convex hull provider is: " << defprov;
+					}
 				}
 			}
 			return cnf;

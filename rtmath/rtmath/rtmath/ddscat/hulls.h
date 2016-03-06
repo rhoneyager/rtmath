@@ -96,7 +96,8 @@ namespace rtmath {
 			/// Encapsulated in a static function to allow multiple hull generators to return cast objects to the 
 			/// appropriate backends.
 			static boost::shared_ptr<convexHull> generate
-				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend);
+				(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend,
+				 const char *defaultplugin = 0);
 
 			virtual ~convexHull() {}
 			/// Construct the convex hull, and populate the quantities

@@ -17,6 +17,7 @@
 #include <Ryan_Debug/logging.h>
 #include <Ryan_Debug/error.h>
 #include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/config.h>
 #include "../rtmath/config.h"
 #include "../rtmath/error/debug.h"
 #include "../rtmath/registry.h"
@@ -165,6 +166,11 @@ namespace rtmath
 				"next option.")
 				("rtmath-hash-dir", po::value<std::vector<string> >(), "Add a hash directory")
 				("rtmath-hash-dir-writable", po::value<bool>()->default_value(false), "Is the custom hash directory writable?")
+				("rtmath-stats-convex-provider", po::value<string>(),
+				 "Override the default convex hull provider. If unspecified, "
+				 "it will default to qhull. The default is the first to be "
+				 "invoked, if found. Otherwise, the first plugin listed will "
+				 "be used.")
 				;
 
 			Ryan_Debug::add_options(cmdline, config, hidden);
@@ -195,6 +201,24 @@ namespace rtmath
 
 			rtmath::config::loadRtconfRoot();
 
+			if (vm.count("rtmath-stats-convex-provider")) {
+				string sprov = vm["rtmath-stats-convex-provider"].as<string>();
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+					<< "The command line overrode the default "
+					"convex hull provider to be: " << sprov;
+				auto cnf = ::rtmath::config::loadRtconfRoot();
+				/// \todo Add a better way to read and write keys!
+				auto ccnf = cnf->getChild("RTMATH");
+				if (ccnf) {
+					auto cdds = ccnf->getChild("ddscat");
+					if (cdds) {
+						auto nstats = cdds->getChild("stats");
+						if (nstats) {
+							nstats->setVal("defaultHullProvider", sprov);
+						}
+					}
+				}
+			}
 			if (vm.count("rtmath-hash-dir"))
 			{
 				std::vector<string> hashDirs = vm["rtmath-hash-dir"].as<std::vector<string> >();

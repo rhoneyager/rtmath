@@ -1,6 +1,7 @@
 #pragma warning( disable : 4996 ) // crt fopen
 #pragma warning( disable : 4244 ) // convertion from int64 to int
 #define _CRT_SECURE_NO_WARNINGS
+#include "../../rtmath/rtmath/defs.h"
 #include <cstdio>
 #include <functional>
 #include <scoped_allocator>

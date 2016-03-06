@@ -28,6 +28,7 @@
 #include "../rtmath/ddscat/shapestats.h"
 #include "../rtmath/Voronoi/Voronoi.h"
 #include "../rtmath/common_templates.h"
+#include "../rtmath/config.h"
 #include <Ryan_Debug/config.h>
 #include <Ryan_Debug/error.h>
 #include <Ryan_Debug/logging.h>
@@ -213,7 +214,23 @@ namespace rtmath {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Voronoi diagram calculated. Extracting "
 					<< candidate_hull_points->rows() << " hull points.";
 
-				boost::shared_ptr<convexHull> cvHull(convexHull::generate(candidate_hull_points));
+				// Query rtmath config database for the default provider (if any).
+				// Recommend the faster qhull plugin over the Voronoi diagram.
+				// However, the Voronoi code is used elsewhere for stats calculation.
+				auto cnf = ::rtmath::config::loadRtconfRoot();
+				std::string cvxprov;
+				auto ccnf = cnf->getChild("RTMATH");
+				if (ccnf) {
+					auto cdds = ccnf->getChild("ddscat");
+					if (cdds) {
+						auto nstats = cdds->getChild("ddscat");
+						if (nstats) {
+							nstats->getVal<std::string>("defaultHullProvider", cvxprov);
+						}
+					}
+				}
+				boost::shared_ptr<convexHull> cvHull
+					(convexHull::generate(candidate_hull_points, cvxprov.c_str()));
 				cvHull->constructHull();
 				max_distance = cvHull->maxDiameter();
 

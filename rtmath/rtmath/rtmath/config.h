@@ -40,6 +40,7 @@ namespace rtmath {
 		DLEXPORT_rtmath_core boost::shared_ptr<::Ryan_Debug::config::configsegment> loadRtconfRoot(const std::string &filename = "");
 		DLEXPORT_rtmath_core void setRtconfRoot(boost::shared_ptr<::Ryan_Debug::config::configsegment> &root);
 
+		// The config file is presently static.....
 	}
 }
 

@@ -17,6 +17,7 @@
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
@@ -61,6 +62,11 @@ namespace rtmath {
 				}
 				void writeHeader()
 				{
+					(*file.get()) << "Point\t"
+						<< "X\tY\tZ\t"
+						<< "Radius\tNormed Radius\t"
+						<< "Index"
+						<< std::endl;
 					//(*(file.get())) << "Hash\tParent Hash\t"
 					//	"Flake Type\tPerturbation\tDecimation\t"
 					//	"Dipole Spacing (um)\tNumber of Dipoles"
@@ -90,6 +96,23 @@ namespace rtmath {
 					h = std::dynamic_pointer_cast<tsv_shp_pts_handle>(sh);
 				}
 
+				boost::shared_ptr< Eigen::Matrix<
+					float, Eigen::Dynamic, Eigen::Dynamic> >
+					src_points;
+				src_points = boost::shared_ptr< Eigen::Matrix<
+					float, Eigen::Dynamic, Eigen::Dynamic> >(
+						new Eigen::Matrix<
+						float, Eigen::Dynamic, Eigen::Dynamic> );
+				*src_points = s->latticePtsNorm;
+				boost::shared_ptr<::rtmath::ddscat::convexHull> cvHull
+					(::rtmath::ddscat::convexHull::generate(src_points, "qhull"));
+				cvHull->constructHull();
+				double max_distance = cvHull->maxDiameter();
+				double max_radius = max_distance / 2.;
+				// max_radius acts as a scaling factor.
+				// For the radius calculation, all of the points are first
+				// relocated according to the true mean. Sould be the center of
+				// mass for a one-substance object.
 
 				(*(h->file.get())) << s->numPoints << std::endl;
 
@@ -100,26 +123,18 @@ namespace rtmath {
 					long point = s->latticeIndex(j);
 					auto it = s->latticePts.block<1, 3>(j, 0);
 					auto ot = s->latticePtsRi.block<1, 3>(j, 0);
-					(*(h->file.get())) <<  (it)(0) << "\t" << (it)(1) <<
-						"\t" << (it)(2) << "\t" << ot(0) << std::endl;
-					//oi[j * 7 + 0] = point;
-					//oi[j * 7 + 1] = (long)(it)(0);
-					//oi[j * 7 + 2] = (long)(it)(1);
-					//oi[j * 7 + 3] = (long)(it)(2);
-					//oi[j * 7 + 4] = (long)(ot)(0);
-					//oi[j * 7 + 5] = (long)(ot)(1);
-					//oi[j * 7 + 6] = (long)(ot)(2);
-
-					//out << "\t" << i << "\t";
-					//out << (it)(0) << "\t" << (it)(1) << "\t" << (it)(2) << "\t";
-					//out << (ot)(0) << "\t" << (ot)(1) << "\t" << (ot)(2);
-					//out << endl;
+					auto nt = s->latticePtsNorm.block<1, 3>(j, 0);
+					auto cradsq = (it-nt).cwiseProduct(it-nt);
+					double radsq = cradsq.sum();
+					double rad = ::std::sqrt(radsq);
+					double normrad = rad / max_radius;
+					(*(h->file.get())) << j << "\t"
+						<< (it)(0) << "\t" << (it)(1) <<
+						"\t" << (it)(2) << "\t" 
+						<< rad << "\t" << normrad << "\t"
+						<< ot(0) << std::endl;
 				}
-
-				//(*(h->file.get())) << s->hash().lower << "\t" << sParent << "\t"
-				//	<< sType << "\t" << sPert << "\t" << sDec << "\t"
 				//	<< s->standardD << "\t" << s->numPoints
-				//	<< std::endl;
 
 				return h; // Pass back the handle
 			}

@@ -56,16 +56,37 @@ namespace rtmath {
 		}
 		
 		boost::shared_ptr<convexHull> convexHull::generate
-			(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend)
+			(boost::shared_ptr< const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> > backend,
+			 const char* defaultPlugin)
 		{
 			auto& lg = m_hull::get();
 			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Generating convex hull for backend " << &backend;
 
 			auto hooks = ::Ryan_Debug::registry::usesDLLregistry<hull_provider_registry, hull_provider<convexHull> >::getHooks();
 			//std::cerr << hooks->size() << std::endl;
+			// Two passes, in case a default plugin is specified.
+			if (defaultPlugin) {
+				for (const auto &h : *(hooks.get()))
+				{
+					if (!h.generator) continue;
+					if (!h.name) continue;
+					std::string sname(h.name), pname(defaultPlugin);
+					if (sname == pname) {
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+							<< "Selected " << h.name;
+						return h.generator(backend);
+					}
+				}
+			}
 			for (const auto &h : *(hooks.get()))
 			{
 				if (!h.generator) continue;
+				if (h.name)
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+						<< "Selected " << h.name;
+				else BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+					 << "Selected unnamed plugin";
+
 				return h.generator(backend);
 			}
 			// Only return nullptr if unable to find a usable hook.
