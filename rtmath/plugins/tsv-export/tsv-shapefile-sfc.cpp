@@ -17,7 +17,6 @@
 
 #include "../../rtmath/rtmath/defs.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/ddscat/hulls.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/error.h>
@@ -62,7 +61,7 @@ namespace rtmath {
 				}
 				void writeHeader()
 				{
-					(*file.get()) << "Point\t"
+					(*file.get()) << "Hash\tPoint\t"
 						<< "X\tY\tZ\t"
 						<< "Radius\tNormed Radius\t"
 						<< "Index"
@@ -96,25 +95,18 @@ namespace rtmath {
 					h = std::dynamic_pointer_cast<tsv_shp_pts_handle>(sh);
 				}
 
-				boost::shared_ptr< Eigen::Matrix<
-					float, Eigen::Dynamic, Eigen::Dynamic> >
-					src_points;
-				src_points = boost::shared_ptr< Eigen::Matrix<
-					float, Eigen::Dynamic, Eigen::Dynamic> >(
-						new Eigen::Matrix<
-						float, Eigen::Dynamic, Eigen::Dynamic> );
-				*src_points = s->latticePtsNorm;
-				boost::shared_ptr<::rtmath::ddscat::convexHull> cvHull
-					(::rtmath::ddscat::convexHull::generate(src_points, "qhull"));
-				cvHull->constructHull();
-				double max_distance = cvHull->maxDiameter();
-				double max_radius = max_distance / 2.;
+				auto hash = s->hash();
+				auto csq = (s->latticePtsNorm.cwiseProduct(s->latticePtsNorm));
+				Eigen::MatrixXf csqs(s->latticePtsNorm.rows(), 1);
+				csqs = csq.block(0,0,csq.rows(),1) + csq.block(0,1,csq.rows(),1)
+					+ csq.block(0,2,csq.rows(),1);
+				double max_radius = ::std::sqrt(csqs.maxCoeff());
 				// max_radius acts as a scaling factor.
 				// For the radius calculation, all of the points are first
 				// relocated according to the true mean. Sould be the center of
 				// mass for a one-substance object.
 
-				(*(h->file.get())) << s->numPoints << std::endl;
+				//(*(h->file.get())) << s->numPoints << std::endl;
 
 				std::vector<long> oi(s->numPoints * 7);
 
@@ -124,11 +116,12 @@ namespace rtmath {
 					auto it = s->latticePts.block<1, 3>(j, 0);
 					auto ot = s->latticePtsRi.block<1, 3>(j, 0);
 					auto nt = s->latticePtsNorm.block<1, 3>(j, 0);
-					auto cradsq = (it-nt).cwiseProduct(it-nt);
+					auto cradsq = (nt).cwiseProduct(nt);
 					double radsq = cradsq.sum();
 					double rad = ::std::sqrt(radsq);
 					double normrad = rad / max_radius;
-					(*(h->file.get())) << j << "\t"
+					(*(h->file.get())) << hash.lower << "\t"
+						<< j << "\t"
 						<< (it)(0) << "\t" << (it)(1) <<
 						"\t" << (it)(2) << "\t" 
 						<< rad << "\t" << normrad << "\t"
