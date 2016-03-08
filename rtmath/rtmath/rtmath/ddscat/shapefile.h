@@ -245,7 +245,8 @@ namespace rtmath {
 
 				/// Convolute a shapefile (different logic than decimation. Slower algorithm.)
 				boost::shared_ptr<shapefile> convolute(
-					decimationFunction dFunc = shapefile::decimateDielCount) const;
+					decimationFunction dFunc = shapefile::decimateDielCount,
+					size_t kernelrad = 10) const;
 
 				/** \brief Upscale a shapefile
 				* This function takes each dipole and multiplies it into a rectangular cell of a given size.

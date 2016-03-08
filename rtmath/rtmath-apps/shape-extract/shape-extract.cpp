@@ -39,12 +39,14 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >()->multitoken(), "input shape file(s)")
 			("output,o", po::value< string >(), "output shape file")
-			//("bov,b", po::value<string>(), "output bov file prefix")
+			("export-type", po::value<string>(), "Identifier to export (i.e. shape_points)")
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
 			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			("description-append", po::value<string>(), "Apend this to the shape description")
 			("convolute", po::value<double>(), "Perform convolution over specified radius")
+			("dielScalingFactor", po::value<double>(), "Set dielectric scaling factor for tsv writes. If convolute"
+			 " is specified, this can be ignored.")
 			("search-radius", po::value<double>(), "Find all points within the specified radius. Must specify x, y, z.")
 			("search-nearest", po::value<size_t>(), "Find nearest N points of target.")
 			("x,x", po::value<float>()->default_value(0), "x")
@@ -77,14 +79,15 @@ int main(int argc, char** argv)
 
 		if (!vm.count("input")) doHelp("Need to specify input file(s).");
 		vector<string> input = vm["input"].as<vector<string> >();
-		bool multiWrite = false;
-		if (input.size() > 1) multiWrite = true;
 
 		string sOutput;
 		if (vm.count("output")) {
 			sOutput = vm["output"].as<string>();
 			cerr << "Writing shape file as " << sOutput << endl;
 		}
+		string exportType;
+		if (vm.count("export-type"))
+			exportType = vm["export-type"].as<string>();
 		std::shared_ptr<Ryan_Debug::registry::IOhandler> handle;
 		
 		for (const auto &ifile : input)
@@ -177,20 +180,25 @@ int main(int argc, char** argv)
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,radius,ptsearch);
-				auto cnv = shp->convolute(df);
+				auto cnv = shp->convolute(df, ((size_t) radius) + 1);
 				shp = cnv;
 			}
 
 			if (vm.count("output")) {
-				if (multiWrite)
-				{
-					auto opts = Ryan_Debug::registry::IO_options::generate();
-					opts->filename(shp->filename);
-					handle = shp->writeMulti(handle, opts);
-				} else {
-					// Standard write
-					shp->write(sOutput);
+				auto opts = Ryan_Debug::registry::IO_options::generate();
+				opts->filename(sOutput);
+				if (exportType.size())
+					opts->exportType(exportType);
+				if (vm.count("convolute") || vm.count("dielScalingFactor")) {
+					double radius = 0;
+					if (vm.count("convolute"))
+						radius = vm["convolute"].as<double>();
+					else
+						radius = vm["dielScalingFactor"].as<double>();
+					double V = (4.*pi/3.) * std::pow(radius,3.);
+					opts->setVal<double>("dielScalingFactor",V);
 				}
+				handle = shp->writeMulti(handle, opts);
 			}
 		}
 	} catch (std::exception &e)

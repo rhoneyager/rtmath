@@ -64,7 +64,7 @@ namespace rtmath {
 					(*file.get()) << "Hash\tPoint\t"
 						<< "X\tY\tZ\t"
 						<< "Radius\tNormed Radius\t"
-						<< "Index"
+						<< "Index\tScaled Index"
 						<< std::endl;
 					//(*(file.get())) << "Hash\tParent Hash\t"
 					//	"Flake Type\tPerturbation\tDecimation\t"
@@ -100,11 +100,15 @@ namespace rtmath {
 				Eigen::MatrixXf csqs(s->latticePtsNorm.rows(), 1);
 				csqs = csq.block(0,0,csq.rows(),1) + csq.block(0,1,csq.rows(),1)
 					+ csq.block(0,2,csq.rows(),1);
-				double max_radius = ::std::sqrt(csqs.maxCoeff());
 				// max_radius acts as a scaling factor.
 				// For the radius calculation, all of the points are first
 				// relocated according to the true mean. Sould be the center of
 				// mass for a one-substance object.
+				double max_radius = ::std::sqrt(csqs.maxCoeff());
+				// For convolution operations, can rescale that dielectric
+				// value (which means number of neighbors) by a factor.
+				// The factor represents the convolution volume.
+				double fScale = opts->getVal<double>("dielScalingFactor", 1.);
 
 				//(*(h->file.get())) << s->numPoints << std::endl;
 
@@ -125,7 +129,8 @@ namespace rtmath {
 						<< (it)(0) << "\t" << (it)(1) <<
 						"\t" << (it)(2) << "\t" 
 						<< rad << "\t" << normrad << "\t"
-						<< ot(0) << std::endl;
+						<< (ot)(0) << "\t"
+						<< ((double) (ot)(0)) / ((double) fScale) << std::endl;
 				}
 				//	<< s->standardD << "\t" << s->numPoints
 

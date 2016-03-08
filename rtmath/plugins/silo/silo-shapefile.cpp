@@ -128,7 +128,9 @@ namespace Ryan_Debug {
 					axislabels, axisunits);
 				// Write the array of zone ids
 				mesh->writeData<float>("Shp_Mesh_Dielectrics", mDiels.data(), "None");
-
+				double fScale = opts->getVal<double>("dielScalingFactor", 1.);
+				Eigen::MatrixXf mDielsScaled = mDiels / fScale;
+				mesh->writeData<float>("Shp_Mesh_Scaled", mDielsScaled.data(), "None");
 
 				// Write the other matrices
 				Eigen::MatrixXi lRi = s->latticePtsRi.col(0).cast<int>();

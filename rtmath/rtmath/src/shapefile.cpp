@@ -485,19 +485,21 @@ namespace rtmath {
 
 
 			boost::shared_ptr<shapefile> shapefile::convolute(
-				decimationFunction dFunc) const
+				decimationFunction dFunc, size_t kernelrad) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 
 				auto maxX = maxs(0), maxY = maxs(1), maxZ = maxs(2);
 				auto minX = mins(0), minY = mins(1), minZ = mins(2);
+				minX -= kernelrad; minY -= kernelrad; minZ -= kernelrad;
+				maxX += kernelrad; maxY += kernelrad; maxZ += kernelrad;
 				size_t spanX = (size_t) (maxX - minX), spanY = (size_t)(maxY - minY), spanZ = (size_t)(maxZ - minZ);
 				size_t rsX = (spanX ) + 1, rsY = (spanY ) + 1, rsZ = (spanZ ) + 1;
-				std::cerr << "(" << minX << ", " << maxX << ") ("
-					<< minY << ", " << maxY << ") ("
-					<< minZ << ", " << maxZ << ") - "
-					<< rsX << " " << rsY << " " << rsZ << " - "
-					<< rsX * rsY * rsZ << std::endl;
+				//std::cerr << "(" << minX << ", " << maxX << ") ("
+				//	<< minY << ", " << maxY << ") ("
+				//	<< minZ << ", " << maxZ << ") - "
+				//	<< rsX << " " << rsY << " " << rsZ << " - "
+				//	<< rsX * rsY * rsZ << std::endl;
 
 				auto getIndex = [&](float x, float y, float z) -> size_t
 				{
@@ -520,6 +522,7 @@ namespace rtmath {
 				};
 				const size_t sz = rsX*rsY*rsZ;
 				size_t num = 0;
+				double runX = 0, runY = 0, runZ = 0;
 				std::vector<convolutionCellInfo> vals(sz);
 				for (size_t i=0; i<sz; ++i) {
 					auto &v = vals.at(i);
@@ -534,7 +537,12 @@ namespace rtmath {
 					v.y = (float) std::get<1>(crd) + (float) minY;
 					v.z = (float) std::get<2>(crd) + (float) minZ;
 					v.numFilled = dFunc(v);
-					if (v.numFilled) num++;
+					if (v.numFilled) {
+						num++;
+						runX += v.x;
+						runY += v.y;
+						runZ += v.z;
+					}
 				}
 
 				res->a1 = a1;
@@ -546,7 +554,14 @@ namespace rtmath {
 				res->filename = filename;
 				res->xd = xd;
 
+				runX /= (double) num;
+				runY /= (double) num;
+				runZ /= (double) num;
 				res->resize(num);
+				Eigen::Matrix<float, 1, 3> center;
+				center(0) = runX;
+				center(1) = runY;
+				center(2) = runZ;
 
 				size_t dielMax = 0;
 				// Set the decimated values
@@ -558,19 +573,20 @@ namespace rtmath {
 					auto t = getCrds(i);
 					auto crdsm = res->latticePts.block<1, 3>(point, 0);
 					auto crdsi = res->latticePtsRi.block<1, 3>(point, 0);
+					auto crdss = res->latticePtsStd.block<1, 3>(point, 0);
+					auto crdsn = res->latticePtsNorm.block<1, 3>(point, 0);
 					crdsm(0) = (float)std::get<0>(t) + minX;
 					crdsm(1) = (float)std::get<1>(t) + minY;
 					crdsm(2) = (float)std::get<2>(t) + minZ;
 					crdsi(0) = (float)v.numFilled;
 					crdsi(1) = (float)v.numFilled;
 					crdsi(2) = (float)v.numFilled;
+
+					crdss = crdsm - center;
+					crdsn = crdsm - center;
 					if (dielMax < v.numFilled) dielMax = v.numFilled;
 					point++;
 				}
-				
-				// Shrink the data store
-				if (point < num)
-					res->resize(point);
 
 				// Set the dielectrics
 				res->Dielectrics.clear();
@@ -579,8 +595,6 @@ namespace rtmath {
 
 				res->recalcStats();
 				// Rescale x0 to point to the new center
-				//res->x0 = x0 / Eigen::Array3f((float)dx, (float)dy, (float)dz);
-				// Cannot just rescale because of negative coordinates.
 				res->x0 = res->means;
 
 

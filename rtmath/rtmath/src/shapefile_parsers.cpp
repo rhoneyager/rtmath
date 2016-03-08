@@ -282,7 +282,7 @@ namespace rtmath
 				means(1) = boost::accumulators::mean(m_y);
 				means(2) = boost::accumulators::mean(m_z);
 
-				hash();
+				rehash();
 			}
 
 			void shapefile::writeToHash() const
