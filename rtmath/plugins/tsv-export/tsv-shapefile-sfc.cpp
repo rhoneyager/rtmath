@@ -62,7 +62,7 @@ namespace rtmath {
 				void writeHeader()
 				{
 					(*file.get()) << "Hash\tPoint\t"
-						<< "X\tY\tZ\t"
+						<< "X\tY\tZ\tNormed X\tNormed Y\tNormed Z\t"
 						<< "Radius\tNormed Radius\t"
 						<< "Index\tScaled Index"
 						<< std::endl;
@@ -110,6 +110,14 @@ namespace rtmath {
 				// The factor represents the convolution volume.
 				double fScale = opts->getVal<double>("dielScalingFactor", 1.);
 
+				// Can easily use latticePtsNorm to determine normed extent in X, Y and Z
+				Eigen::Array<float, 1, 3> mins, maxs;
+				mins(0,0) = s->latticePtsNorm.block(0,0,s->numPoints,1).minCoeff();
+				mins(0,1) = s->latticePtsNorm.block(0,1,s->numPoints,1).minCoeff();
+				mins(0,2) = s->latticePtsNorm.block(0,2,s->numPoints,1).minCoeff();
+				maxs(0,0) = s->latticePtsNorm.block(0,0,s->numPoints,1).maxCoeff();
+				maxs(0,1) = s->latticePtsNorm.block(0,1,s->numPoints,1).maxCoeff();
+				maxs(0,2) = s->latticePtsNorm.block(0,2,s->numPoints,1).maxCoeff();
 				//(*(h->file.get())) << s->numPoints << std::endl;
 
 				std::vector<long> oi(s->numPoints * 7);
@@ -119,7 +127,9 @@ namespace rtmath {
 					long point = s->latticeIndex(j);
 					auto it = s->latticePts.block<1, 3>(j, 0);
 					auto ot = s->latticePtsRi.block<1, 3>(j, 0);
-					auto nt = s->latticePtsNorm.block<1, 3>(j, 0);
+					auto nt = s->latticePtsNorm.array().block<1, 3>(j, 0);
+					Eigen::Array<float, Eigen::Dynamic, 3> off_min = nt - mins;
+					Eigen::Array<float, Eigen::Dynamic, 3> scaled_min_a = off_min / (maxs - mins);
 					auto cradsq = (nt).cwiseProduct(nt);
 					double radsq = cradsq.sum();
 					double rad = ::std::sqrt(radsq);
@@ -128,6 +138,9 @@ namespace rtmath {
 						<< j << "\t"
 						<< (it)(0) << "\t" << (it)(1) <<
 						"\t" << (it)(2) << "\t" 
+						<< (scaled_min_a)(0) - 0.5 << "\t"
+						<< (scaled_min_a)(1) - 0.5 << "\t"
+						<< (scaled_min_a)(2) - 0.5 << "\t"
 						<< rad << "\t" << normrad << "\t"
 						<< (ot)(0) << "\t"
 						<< ((double) (ot)(0)) / ((double) fScale) << std::endl;
