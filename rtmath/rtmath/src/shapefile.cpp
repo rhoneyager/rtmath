@@ -332,13 +332,20 @@ namespace rtmath {
 
 			void shapefile::resize(size_t n)
 			{
+
+				latticePts.conservativeResize(n, 3);
+				latticePtsRi.conservativeResize(n, 3);
+				latticePtsStd.conservativeResize(n, 3);
+				latticePtsNorm.conservativeResize(n, 3);
+				latticeIndex.conservativeResize(n);
+				// I want to keep the point indices if resizing to
+				// something smaller.
+				if (n > numPoints)
+				{
+					auto newinds = latticeIndex.block(numPoints, 0, n - numPoints, 1);
+					newinds.setLinSpaced(n - numPoints,numPoints,(int) n);
+				}
 				numPoints = n;
-				latticePts.conservativeResize(numPoints, 3);
-				latticePtsRi.conservativeResize(numPoints, 3);
-				latticePtsStd.conservativeResize(numPoints, 3);
-				latticePtsNorm.conservativeResize(numPoints, 3);
-				latticeIndex.conservativeResize(numPoints);
-				latticeIndex.setLinSpaced(numPoints,1,(int) numPoints);
 				//for (auto &extra : latticeExtras)
 				//	extra.second->conservativeResize(numPoints, 3);
 			}
@@ -443,16 +450,6 @@ namespace rtmath {
 			}
 			*/
 
-			size_t shapefile::decimateDielCount(const convolutionCellInfo& info)
-			{ return info.numFilled; }
-
-			size_t shapefile::decimateThreshold(const convolutionCellInfo& info,
-				size_t threshold)
-			{
-				if (info.numFilled >= threshold) return info.initDiel;
-				return 0;
-			}
-
 			convolutionCellInfo::convolutionCellInfo() : x(0), y(0), z(0),
 				initDiel(0), sx(0), sy(0), sz(0), numFilled(0), numTotal(0), index(0)
 			{}
@@ -536,7 +533,7 @@ namespace rtmath {
 					v.x = (float) std::get<0>(crd) + (float) minX;
 					v.y = (float) std::get<1>(crd) + (float) minY;
 					v.z = (float) std::get<2>(crd) + (float) minZ;
-					v.numFilled = dFunc(v);
+					v.numFilled = dFunc(v,shared_from_this());
 					if (v.numFilled) {
 						num++;
 						runX += v.x;
@@ -601,8 +598,101 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::decimate(size_t dx, size_t dy, size_t dz,
-				decimationFunction dFunc) const
+			boost::shared_ptr<shapefile> shapefile::slice(
+				int axis, float intercept,
+				float tolerance
+				) const
+			{
+				boost::shared_ptr<shapefile> res(new shapefile);
+
+				res->a1 = a1;
+				res->a2 = a2;
+				res->a3 = a3;
+				res->d = d;
+				res->desc = desc;
+				res->Dielectrics = Dielectrics;
+				res->filename = filename;
+				res->xd = xd;
+				res->resize(numPoints);
+				if (axis < 0 || axis >= 3)
+					RDthrow(Ryan_Debug::error::xBadInput())
+						<< Ryan_Debug::error::otherErrorText("axis must be 0, 1 or 2");
+				if (tolerance <= 0)
+					RDthrow(Ryan_Debug::error::xBadInput())
+						<< Ryan_Debug::error::otherErrorText("tolerance must be > 0");
+
+				size_t point = 0;
+				for (size_t i = 0; i < numPoints; ++i)
+				{
+					auto basem = latticePts.block<1, 3>(i, 0);
+					auto basei = latticePtsRi.block<1, 3>(i, 0);
+					auto bases = latticePtsStd.block<1, 3>(i, 0);
+					auto basen = latticePtsNorm.block<1, 3>(i, 0);
+					float planedist = basem(axis) - intercept;
+					if (std::abs(planedist) > tolerance) continue;
+					auto crdsm = res->latticePts.block<1, 3>(point, 0);
+					auto crdsi = res->latticePtsRi.block<1, 3>(point, 0);
+					auto crdss = res->latticePtsStd.block<1, 3>(point, 0);
+					auto crdsn = res->latticePtsNorm.block<1, 3>(point, 0);
+					crdsm = basem;
+					crdsi = basei;
+					crdss = bases;
+					crdsn = basen;
+					res->latticeIndex(point) = latticeIndex(i);
+					point++;
+				}
+				
+				// Shrink the data store
+				res->resize(point);
+
+				res->recalcStats();
+				// Rescale x0 to point to the new center
+				//res->x0 = x0 / Eigen::Array3f((float)dx, (float)dy, (float)dz);
+				// Cannot just rescale because of negative coordinates.
+				res->x0 = res->means;
+
+				return res;
+			}
+
+			boost::shared_ptr<const Eigen::Array<float, Eigen::Dynamic, 4> >
+			shapefile::sliceAll(int axis) const {
+				if (axis < 0 || axis >= 3)
+					RDthrow(Ryan_Debug::error::xBadInput())
+						<< Ryan_Debug::error::otherErrorText("axis must be 0, 1 or 2");
+
+				boost::shared_ptr<Eigen::Array<float, Eigen::Dynamic, 4> > res(
+					new Eigen::Array<float, Eigen::Dynamic, 4>);
+				auto minBase = mins(axis), maxBase = maxs(axis);
+				int rows = maxBase - minBase + 1;
+				res->resize(rows, 4);
+				res->setZero();
+				Eigen::Array<float,  Eigen::Dynamic, 1> ls;
+				ls.resize(rows,1);
+				ls.setLinSpaced(rows,minBase,maxBase);
+				res->matrix().block(0,0,rows,1) = ls;
+				ls.setLinSpaced(rows,-0.5,0.5);
+				res->matrix().block(0,1,rows,1) = ls;
+
+				for (size_t i = 0; i < numPoints; ++i)
+				{
+					auto basem = latticePts.block<1, 3>(i, 0);
+					int bin = (int) basem(axis) - minBase;
+					if (bin < 0) bin = 0;
+					if (bin >= rows) bin = rows - 1;
+					auto outbin = res->matrix().block(bin, 0, 1, 4);
+					outbin(0,2) = outbin(0,2) + 1;
+					outbin(0,3) = outbin(0,3) + (float) (1.f / (float) numPoints);
+				}
+				// Sum of third column of outbin equals one. Since the bin step is 1,
+				// the integration is unity and this is a pdf.
+
+				return res;
+			}
+
+			boost::shared_ptr<shapefile> shapefile::decimate(
+				decimationFunction dFunc,
+				size_t dx, size_t dy, size_t dz
+				) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 
@@ -678,7 +768,7 @@ namespace rtmath {
 				size_t point = 0;
 				for (size_t i = 0; i < vals.size(); ++i)
 				{
-					size_t diel = dFunc(vals.at(i));
+					size_t diel = dFunc(vals.at(i),shared_from_this());
 					if (diel == 0) continue;
 					auto t = getCrds(i);
 					auto crdsm = res->latticePts.block<1, 3>(point, 0);
@@ -761,132 +851,6 @@ namespace rtmath {
 
 				return res;
 			}
-
-			/*
-			std::shared_ptr<registry::IOhandler> shapefile::writeMulti(
-					const char* key,
-					std::shared_ptr<registry::IOhandler> handle,
-					const char* filename,
-					const char* ctype,
-					registry::IOhandler::IOtype accessType) const
-			{
-				// All of these objects can handle their own compression
-				::rtmath::registry::IO_class_registry_writer<shapefile>::io_multi_type dllsaver = nullptr;
-				// Process dll hooks first
-				auto hooks = usesDLLregistry<shapefile_IO_output_registry,
-					::rtmath::registry::IO_class_registry_writer<shapefile> >::getHooks();
-				auto opts = registry::IO_options::generate();
-				opts->filename(filename);
-				opts->filetype(ctype);
-				opts->iotype(accessType);
-				opts->setVal("key", std::string(key));
-				for (const auto &hook : *hooks)
-				{
-					if (!hook.io_multi_matches) continue; // Sanity check
-					if (!hook.io_multi_processor) continue; // Sanity check
-					//if (hook.io_multi_matches(filename, ctype, handle))
-					if (hook.io_multi_matches(handle, opts))
-					{
-						dllsaver = hook.io_multi_processor;
-						break;
-					}
-				}
-				if (dllsaver)
-				{
-					// Most of these types aren't compressible or implement their
-					// own compression schemes. So, it's not handled at this level.
-					return dllsaver(nullptr, opts, this);
-					//return dllsaver(handle, filename, this, key, accessType);
-				} else {
-					// Cannot match a file type to save.
-					// Should never occur.
-					RDthrow debug::xUnknownFileFormat(filename);
-				}
-				return nullptr; // Should never be reached
-			}
-
-			void shapefile::write(const std::string &filename, bool autoCompress,
-				const std::string &outtype) const
-			{
-				using namespace Ryan_Serialization;
-				using namespace std;
-				using boost::filesystem::path;
-
-				std::string cmeth;
-				std::ostringstream outfile;
-				if (Ryan_Serialization::detect_compression(filename, cmeth))
-					autoCompress = true;
-				if (autoCompress)
-					Ryan_Serialization::select_compression(filename, cmeth);
-
-				// If missing the type, autodetect based on file extension
-				std::string type = outtype;
-				::rtmath::registry::IO_class_registry_writer<shapefile>::io_multi_type dllsaver = nullptr;
-				
-				std::string uncompressed;
-				Ryan_Serialization::uncompressed_name(filename, uncompressed, cmeth);
-				path pext = path(uncompressed).extension();
-
-				// Process dll hooks first
-				auto hooks = usesDLLregistry<shapefile_IO_output_registry,
-					::rtmath::registry::IO_class_registry_writer<shapefile> >::getHooks();
-				auto opts = registry::IO_options::generate();
-				opts->filename(uncompressed);
-				opts->filetype(type);
-				for (const auto &hook : *hooks)
-				{
-					//if (hook.io_multi_matches(uncompressed.c_str(), type.c_str()))
-					if (hook.io_multi_matches(nullptr, opts))
-					{
-						dllsaver = hook.io_multi_processor;
-						if (!type.size())
-							type = "dll";
-						break;
-					}
-				}
-				if (!type.size())
-				{
-					if (Ryan_Serialization::known_format(uncompressed)) type = "serialized";
-					// Default is to write a standard shapefile
-					else type = "shp";
-				}
-
-				// Now, save the appropriate format based on the type
-				/// \todo Ryan_Serialization::select_compression should also return the compressed 
-				/// file name as an optional parameter.
-				
-				if (type == "shp" || type == ".shp")
-				{
-					outfile << filename;
-					if (cmeth.size()) outfile << "." << cmeth;
-					std::string soutfile = outfile.str();
-
-					ofstream out(soutfile.c_str(), ios_base::out | ios_base::binary);
-					using namespace boost::iostreams;
-					filtering_ostream sout;
-					if (cmeth.size())
-						prep_compression(cmeth, sout);
-					sout.push(out);
-					write(sout);
-				}
-				else if (type == "serialized")
-				{
-					Ryan_Serialization::write<shapefile>(*this, filename, 
-						"rtmath::ddscat::shapefile::shapefile");
-				}
-				else if (dllsaver)
-				{
-					// Most of these types aren't compressible or implement their
-					// own compression schemes. So, it's not handled at this level.
-					dllsaver(nullptr, opts, this);
-					//dllsaver(filename.c_str(), this);
-				} else {
-					// Cannot match a file type to save.
-					// Should never occur.
-					RDthrow debug::xUnknownFileFormat(filename.c_str());
-				}
-			}
-            */
 
 			void shapefile::fixStats()
 			{

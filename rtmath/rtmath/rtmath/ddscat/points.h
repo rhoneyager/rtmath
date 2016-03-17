@@ -93,6 +93,7 @@ namespace rtmath {
 				/// \brief Convolution function that fills a dielectric
 				static size_t convolutionNeighborsRadius(
 					const ::rtmath::ddscat::shapefile::convolutionCellInfo&,
+					const boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile>,
 					float radius,
 					boost::shared_ptr<const points> src);
 

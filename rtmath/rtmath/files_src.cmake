@@ -160,6 +160,7 @@ set(rtmath_ddscat_base-files
 
 set(rtmath_ddscat-shape-files
 	rtmath/ddscat/shapefile.h
+	rtmath/ddscat/shapefile_supplemental.h
 	#rtmath/ddscat/shapes.h
 	rtmath/ddscat/shapestats.h
 	src/shapestats_private.h
@@ -168,6 +169,7 @@ set(rtmath_ddscat-shape-files
 	src/shapefile.cpp
 	src/shapefile_parsers.cpp
 	src/shapefile_query.cpp
+	src/shapefile_supplemental.cpp
 	#src/shapefile_serialization.cpp
 	#src/shapes.cpp
 	#src/shapes_serialization.cpp

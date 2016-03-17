@@ -63,6 +63,7 @@ namespace rtmath {
 
 			size_t points::convolutionNeighborsRadius(
 				const ::rtmath::ddscat::shapefile::convolutionCellInfo& ci,
+				const boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile>,
 				float radius,
 				boost::shared_ptr<const points> src)
 			{

@@ -15,6 +15,7 @@
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/shapefile_supplemental.h"
 #include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
@@ -52,6 +53,9 @@ int main(int argc, char** argv)
 			("x,x", po::value<float>()->default_value(0), "x")
 			("y,y", po::value<float>()->default_value(0), "y")
 			("z,z", po::value<float>()->default_value(0), "z")
+			("slice", po::value<int>()->default_value(0), "Slice along plane. Value is axis "
+			 "normal (0 - x, 1 - y, 2 - z).")
+			("intercept", po::value<float>()->default_value(0), "Intercept for slicing")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -73,6 +77,7 @@ int main(int argc, char** argv)
 		
 		rtmath::debug::process_static_options(vm);
 
+		using namespace rtmath::ddscat::shapefile;
 		using rtmath::ddscat::shapefile::shapefile;
 
 		if (vm.count("help") || argc == 1) doHelp("");
@@ -104,15 +109,16 @@ int main(int argc, char** argv)
 			{
 				vector<size_t> kernel = vm["decimate"].as<vector<size_t> >();
 				if (kernel.size() < 3) kernel.assign(3, kernel.at(0));
-				shapefile::decimationFunction df = shapefile::decimateDielCount;
+				decimationFunction df = decimateDielCount;
 				if (vm.count("decimate-threshold"))
 				{
 					size_t threshold = vm["decimate-threshold"].as<size_t>();
 					using namespace std::placeholders;
 					//rtmath::ddscat::convolutionCellInfo ci;
-					df = std::bind(shapefile::decimateThreshold,std::placeholders::_1,threshold);
+					df = std::bind(decimateThreshold, std::placeholders::_1,
+						std::placeholders::_2, threshold);
 				}
-				auto dec = shp->decimate(kernel[0], kernel[1], kernel[2], df);
+				auto dec = shp->decimate(df, kernel[0], kernel[1], kernel[2]);
 				shp = dec;
 			}
 
@@ -176,11 +182,17 @@ int main(int argc, char** argv)
 					shp->latticePts
 					);
 				using namespace std::placeholders;
-				shapefile::decimationFunction df = shapefile::decimateDielCount;
+				decimationFunction df = decimateDielCount;
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
-					std::placeholders::_1,radius,ptsearch);
+					std::placeholders::_1,std::placeholders::_2,radius,ptsearch);
 				auto cnv = shp->convolute(df, ((size_t) radius) + 1);
+				shp = cnv;
+			}
+			if (vm.count("slice")) {
+				int normaxis = vm["slice"].as<int>();
+				float intercept = vm["intercept"].as<float>();
+				auto cnv = shp->slice(normaxis, intercept, 0.25);
 				shp = cnv;
 			}
 

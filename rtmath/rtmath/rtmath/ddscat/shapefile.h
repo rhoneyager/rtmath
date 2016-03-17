@@ -154,6 +154,10 @@ namespace rtmath {
 			struct convolutionCellInfo;
 			class shapefile;
 
+			/// Function type definition for a function that determines a decimated cell refractive index.
+			typedef std::function < size_t(const convolutionCellInfo&,
+				const boost::shared_ptr<const shapefile>) > decimationFunction;
+
 			/// Provides local readers and writers for ddscat ddpar data (it's a binder)
 			class DLEXPORT_rtmath_ddscat implementsDDSHP :
 				private Ryan_Debug::io::implementsIObasic<shapefile, shapefile_IO_output_registry,
@@ -228,8 +232,6 @@ namespace rtmath {
 				void writeToHash() const;
 				/// Write a standard DDSCAT shapefile to a stream (no compression)
 				static void writeDDSCAT(const boost::shared_ptr<const shapefile>, std::ostream &, std::shared_ptr<Ryan_Debug::registry::IO_options>);
-				/// Function type definition for a function that determines a decimated cell refractive index.
-				typedef std::function < size_t(const convolutionCellInfo&) > decimationFunction;
 
 				/** \brief Decimate a shapefile
 				* This version of the function examines the number of dipoles in a given dx*dy*dz
@@ -237,15 +239,37 @@ namespace rtmath {
 				*
 				* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
 				**/
-				boost::shared_ptr<shapefile> decimate(size_t dx = 2, size_t dy = 2, size_t dz = 2,
-					decimationFunction dFunc = shapefile::decimateDielCount) const;
+				boost::shared_ptr<shapefile> decimate(
+						decimationFunction dFunc,
+						size_t dx = 2, size_t dy = 2, size_t dz = 2
+					) const;
 
 				/// \brief Convenience function to decimate using the same degree in each dimension
-				inline boost::shared_ptr<shapefile> decimate(size_t degree = 2) const { return decimate(degree, degree, degree); }
+				inline boost::shared_ptr<shapefile> decimate(
+						decimationFunction dFunc,
+						size_t degree = 2) const {
+					return decimate(dFunc, degree, degree, degree); }
+				/// Take a slice from a principal axis
+				boost::shared_ptr<shapefile> slice(
+					int axis, float intercept,
+					float tolerance = 0.25
+					) const;
+				/** \brief Convenience function to generate areal histograms
+				 *
+				 * \returns An array of areal slices. Columns:
+				 * 0 - The actual coordinate intercept.
+				 * 1 - The normalized coordinate intercept (-1/2 to 1/2).
+				 * 2 - The actual count of lattice cells at this intercept.
+				 * 3 - The normalized count of lattice cells at this intercept (integration = 1).
+				 *
+				 * \param Axis is the principal axis (0 - x, 1 - y, 2 - z).
+				 **/
+				boost::shared_ptr<const Eigen::Array<float, Eigen::Dynamic, 4> >
+					sliceAll(int axis) const;
 
 				/// Convolute a shapefile (different logic than decimation. Slower algorithm.)
 				boost::shared_ptr<shapefile> convolute(
-					decimationFunction dFunc = shapefile::decimateDielCount,
+					decimationFunction dFunc,
 					size_t kernelrad = 10) const;
 
 				/** \brief Upscale a shapefile
@@ -256,31 +280,6 @@ namespace rtmath {
 				boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
 				/// \brief Convenience function to upscale using the same degree in each dimension
 				inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
-
-				/// \brief Decimation dielectric function that assigns a dielectric
-				/// that corresponds to the number of filled dipoles.
-				static size_t decimateDielCount(const convolutionCellInfo&);
-
-				/// \brief Decimation dielectric function that fills a dielectric 
-				/// based on a threshold value (high-pass, inclusive).
-				static size_t decimateThreshold(const convolutionCellInfo&, size_t threshold);
-
-				/** \brief Get filled cells within a certain distance
-				*
-				* \param rsq is the radius squared for the search
-				* \param out is the output vector that holds the cell indices
-				* \param x,y,s are the coordinates of the search cell
-				**/
-				//void getNeighbors(float x, float y, float z, float rsq, std::vector<size_t>& out) const;
-
-				/** \brief Get filled cells within a certain distance
-				*
-				* \param rsq is the radius squared for the search
-				* \param out is the output vector that holds the cell indices
-				* \param index is the cell lattice point index
-				**/
-				//void getNeighbors(size_t index, float rsq, std::vector<size_t>& out) const;
-
 
 			private:
 				/// Read a shapefile from an uncompressed string
