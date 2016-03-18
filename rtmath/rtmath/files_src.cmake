@@ -235,6 +235,8 @@ set(rtmath_ddscat-files
 	src/Stdafx-ddscat.h
 	${rtmath_ddscat-shape-files}
 	${rtmath_ddscat-ddoutput-files}
+	rtmath/rga/rga.h
+	src/rga.cpp
 	)
 #source_group("Resource Files" FILES ${resource-files})
 
