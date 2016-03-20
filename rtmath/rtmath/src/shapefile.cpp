@@ -662,6 +662,7 @@ namespace rtmath {
 
 				boost::shared_ptr<Eigen::Array<float, Eigen::Dynamic, 4> > res(
 					new Eigen::Array<float, Eigen::Dynamic, 4>);
+				std::cerr << mins << "\n" << maxs << std::endl;
 				auto minBase = mins(axis), maxBase = maxs(axis);
 				int rows = maxBase - minBase + 1;
 				res->resize(rows, 4);

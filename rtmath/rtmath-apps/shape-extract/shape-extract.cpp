@@ -5,6 +5,8 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
 #include <boost/math/constants/constants.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -56,6 +58,11 @@ int main(int argc, char** argv)
 			("slice", po::value<int>()->default_value(0), "Slice along plane. Value is axis "
 			 "normal (0 - x, 1 - y, 2 - z).")
 			("intercept", po::value<float>()->default_value(0), "Intercept for slicing")
+			//("fit-kappa", "Calculate the A(s) function and perform fitting")
+			("stats-output", po::value<string>(), "Output stats file for kappa fits")
+			("stats-plane", po::value<int>()->default_value(0), "Stats plane")
+			("dipole-spacing,d", po::value<double>()->default_value(40),
+			 "Interlattice spacing in microns")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -90,6 +97,19 @@ int main(int argc, char** argv)
 			sOutput = vm["output"].as<string>();
 			cerr << "Writing shape file as " << sOutput << endl;
 		}
+		double dSpacing = vm["dipole-spacing"].as<double>();
+		string sstatsOutput;
+		int splane = vm["stats-plane"].as<int>();
+		boost::shared_ptr<std::ofstream> statsout;
+		if (vm.count("stats-output")) {
+			sstatsOutput = vm["stats-output"].as<string>();
+			cerr << "Writing stats output to " << sstatsOutput << endl;
+			statsout = boost::shared_ptr<std::ofstream>(
+				new std::ofstream(sstatsOutput.c_str()));
+			//(*statsout) << "Hash\tAeff (um)\tMax Dimension (um)\t"
+			//	"AR\tkappa_x\tkappa_y\tkappa_z" << std::endl;
+			(*statsout) << "s\tNormalized Area" << std::endl;
+		}
 		string exportType;
 		if (vm.count("export-type"))
 			exportType = vm["export-type"].as<string>();
@@ -99,10 +119,20 @@ int main(int argc, char** argv)
 		{
 			cerr << "Reading input shape file " << ifile << endl;
 			boost::shared_ptr<shapefile> shp = shapefile::generate(ifile);
+			cerr << shp->mins << "\n\n" << shp->maxs << std::endl;
 			if (vm.count("description-append"))
 			{
 				std::string da = vm["description-append"].as<std::string>();
 				shp->desc.append(da);
+			}
+			if (statsout) {
+				auto sx = shp->sliceAll(splane);
+				//auto sy = shp->sliceAll(1);
+				//auto sz = shp->sliceAll(2);
+				//(*statsout) << (*sx) << std::endl;
+				for (int i=0; i < sx->rows(); ++i) {
+					(*statsout) << (*sx)(i,1) << "\t" << (*sx)(i,3) << std::endl;
+				}
 			}
 
 			if (vm.count("decimate"))
@@ -195,7 +225,7 @@ int main(int argc, char** argv)
 				auto cnv = shp->slice(normaxis, intercept, 0.25);
 				shp = cnv;
 			}
-
+			
 			if (vm.count("output")) {
 				auto opts = Ryan_Debug::registry::IO_options::generate();
 				opts->filename(sOutput);
