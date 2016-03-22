@@ -655,16 +655,17 @@ namespace rtmath {
 			}
 
 			boost::shared_ptr<const Eigen::Array<float, Eigen::Dynamic, 4> >
-			shapefile::sliceAll(int axis) const {
+			shapefile::sliceAll(int axis, int numbins) const {
 				if (axis < 0 || axis >= 3)
 					RDthrow(Ryan_Debug::error::xBadInput())
 						<< Ryan_Debug::error::otherErrorText("axis must be 0, 1 or 2");
 
 				boost::shared_ptr<Eigen::Array<float, Eigen::Dynamic, 4> > res(
 					new Eigen::Array<float, Eigen::Dynamic, 4>);
-				std::cerr << mins << "\n" << maxs << std::endl;
+				//std::cerr << mins << "\n" << maxs << std::endl;
 				auto minBase = mins(axis), maxBase = maxs(axis);
 				int rows = maxBase - minBase + 1;
+				if (numbins > 0) rows = numbins;
 				res->resize(rows, 4);
 				res->setZero();
 				Eigen::Array<float,  Eigen::Dynamic, 1> ls;
@@ -677,15 +678,13 @@ namespace rtmath {
 				for (size_t i = 0; i < numPoints; ++i)
 				{
 					auto basem = latticePts.block<1, 3>(i, 0);
-					int bin = (int) basem(axis) - minBase;
+					int bin = rows * (basem(axis) - minBase) / (maxBase - minBase);
 					if (bin < 0) bin = 0;
 					if (bin >= rows) bin = rows - 1;
 					auto outbin = res->matrix().block(bin, 0, 1, 4);
 					outbin(0,2) = outbin(0,2) + 1;
-					outbin(0,3) = outbin(0,3) + (float) (1.f / (float) numPoints);
+					outbin(0,3) = outbin(0,3) + (float) ( (float) rows / (float) numPoints);
 				}
-				// Sum of third column of outbin equals one. Since the bin step is 1,
-				// the integration is unity and this is a pdf.
 
 				return res;
 			}

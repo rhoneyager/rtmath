@@ -263,9 +263,10 @@ namespace rtmath {
 				 * 3 - The normalized count of lattice cells at this intercept (integration = 1).
 				 *
 				 * \param Axis is the principal axis (0 - x, 1 - y, 2 - z).
+				 * \param is the number of bins. If <=0, it will be automatically determined.
 				 **/
 				boost::shared_ptr<const Eigen::Array<float, Eigen::Dynamic, 4> >
-					sliceAll(int axis) const;
+					sliceAll(int axis, int numBins = 0) const;
 
 				/// Convolute a shapefile (different logic than decimation. Slower algorithm.)
 				boost::shared_ptr<shapefile> convolute(
