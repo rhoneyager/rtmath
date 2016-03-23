@@ -20,7 +20,9 @@
 #include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/zeros.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "llsq.hpp"
+//#include "llsq.hpp"
+#include <lmmin.h>
+#include <lmcurve.h>
 
 int main(int argc, char** argv)
 {
@@ -131,31 +133,54 @@ int main(int argc, char** argv)
 		// Perform fitting of the kappa parameter
 		// A_fit(s) = (1 + kappa/3) * cos(pi s) + kappa * cos(3 pi s)
 		//			= cos(pi s)		+ kappa * (cos(pi s)/3 + cos(3 pi s))
-		// A_fit/cos(pi s) = 1 + kappa (-8/3 + 4 cos^2(pi s))
-		// Y		= beta			+ kappaFitted * X
 		// Note that the fits need an offset in s (col 0 is bin left, so add width / 2)
 		// The residuals (A_fit - A(s)) are in the final column
-		double alpha = 0.5, beta = 0;
+		double alpha[2] = {0.3, width * factor};
 		typedef Eigen::Array<float, Eigen::Dynamic, 1> AF;
-		AF xs, ys, cps, cps2;
-		cps = (binMids * pi).cos();
-		cps2 = cps * cps;
-		ys = ((histNorm/cps)-1.) / 4.;
-		xs = cps2 - (2./3.);
-
+		AF xs, ys, cps, cps3;
+		xs = binMids;
+		ys = histCounts;
+		cps = (xs * pif).cos();
+		cps3 = (xs * pif * 3.f).cos();
+		lm_status_struct status;
+		auto f = [](double x, const double *a) -> double {
+			const double pi = boost::math::constants::pi<double>();
+			double ysfit = ((cos(x*pi) * (1 + (a[0]/3)))
+				+ (a[0] * cos(3*x*pi))) * a[1];
+			//cerr << " x " << x << " kappa " << alphas[0]
+			// << " ys " << ysfit << endl;
+			return ysfit;
+		};
 		Eigen::Array<double, Eigen::Dynamic, 1> x, y;
 		x = xs.cast<double>();
 		y = ys.cast<double>();
-		llsq(hist.rows(), x.data(), y.data(),
-			alpha, beta);
-		cerr << "alpha " << alpha << ", beta " << beta << endl;
+		//using namespace std::placeholders;
+		lm_control_struct control = lm_control_double;
+		control.verbosity = 7;
+		lmcurve(2,
+			alpha,
+			hist.rows(),
+			x.data(),
+			y.data(),
+			f,
+			&control,
+			&status);
 
-		double kappaFitted = 0.25;
-		cerr << "Fitted kappa is " << kappaFitted << ", with intercept of " << beta << endl;
-		fitNorm = (cps * (1. + kappaFitted/3.))
-			+ (((cps * cps * cps * 4.) - (cps * 3.))*kappaFitted);
-		//fitNorm = (cps.cast<float>() * (1 + (kappaFitted / 3)));
-		fitCounts = fitNorm * width * factor;
+		double kappaFitted = alpha[0];
+		double ampl = alpha[1];
+
+		cerr << "Fitted kappa is " << kappaFitted
+			<< " a1 " << alpha[1] << endl;
+		cerr << "Number of iterations: " << status.nfev
+			<< "\nStatus: " << lm_infmsg[status.outcome]
+			<< "\nNorm: " << status.fnorm << endl;
+
+		fitCounts = ((cps * (1. + kappaFitted/3.))
+			+ (cps3 * kappaFitted)) * ampl;
+		fitNorm = fitCounts / width / factor;
+		//fitNorm = (cps * (1. + kappaFitted/3.))
+		//	+ (((cps * cps * cps * 4.) - (cps * 3.))*kappaFitted);
+		//fitCounts = fitNorm * width * factor;
 		diffKappa = histCounts - fitCounts;
 		// Write the output
 		ofstream out(sOutput.c_str());
