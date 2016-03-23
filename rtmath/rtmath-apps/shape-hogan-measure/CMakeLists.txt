@@ -7,7 +7,8 @@ include (commonRtmathApps)
 #find_package(Ceres REQUIRED)
 #include_directories(${CERES_INCLUDE_DIRS})
 
-add_executable (rtmath-hogan-measure hogan-measure.cpp)
+add_executable (rtmath-hogan-measure hogan-measure.cpp
+	llsq.hpp llsq.cpp)
 addapp( rtmath-hogan-measure Shapes)
 target_link_libraries(rtmath-hogan-measure
 	${rtmath_ddscat-libs} rtmath_core rtmath_ddscat

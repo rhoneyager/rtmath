@@ -20,6 +20,7 @@
 #include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/zeros.h"
 #include "../../rtmath/rtmath/error/debug.h"
+#include "llsq.hpp"
 
 int main(int argc, char** argv)
 {
@@ -94,10 +95,17 @@ int main(int argc, char** argv)
 		Eigen::Array<float, Eigen::Dynamic, 7> hist;
 		hist.resize(nBins, 7);
 		hist.setZero();
+		auto binStarts = hist.block(0,0,nBins,1);
+		auto binMids = hist.block(0,1,nBins,1);
+		auto histCounts = hist.block(0,2,nBins,1);
+		auto histNorm = hist.block(0,3,nBins,1);
+		auto fitNorm = hist.block(0,4,nBins,1);
+		auto fitCounts = hist.block(0,5,nBins,1);
+		auto diffKappa = hist.block(0,6,nBins,1);
 		const float width = 1.f / (float) nBins;
 		for (int i=0; i < nBins; ++i)
 			hist(i,0) = (-1.f/2.f) + (((float) i) / (float) nBins);
-		hist.block(0,1,nBins,1) = hist.block(0,0,nBins,1) + (width / 2.f);
+		binMids = binStarts + (width / 2.f);
 		for (const auto &ifile : input)
 		{
 			cerr << "Reading input shape file " << ifile << endl;
@@ -116,39 +124,39 @@ int main(int argc, char** argv)
 			}
 		}
 		// Renormalize so that the integral is one.
-		const float factor = hist.block(0,2,nBins,1).sum();
+		const float factor = histCounts.sum();
 		//cout << factor << "\t" << width << endl;
-		hist.block(0,3,nBins,1) = hist.block(0,2,nBins,1) / width / factor;
+		histNorm = histCounts / width / factor;
 
 		// Perform fitting of the kappa parameter
 		// A_fit(s) = (1 + kappa/3) * cos(pi s) + kappa * cos(3 pi s)
+		//			= cos(pi s)		+ kappa * (cos(pi s)/3 + cos(3 pi s))
+		// A_fit/cos(pi s) = 1 + kappa (-8/3 + 4 cos^2(pi s))
+		// Y		= beta			+ kappaFitted * X
 		// Note that the fits need an offset in s (col 0 is bin left, so add width / 2)
 		// The residuals (A_fit - A(s)) are in the final column
-		double kappaFitted = 0;
-		if (0) {
-			// Attempt to guess using the secant method.
-			// This is a linear least-squares problem, with one parameter.
-			// Ceres solver is unavailable for now, so it is ignored.
-			auto f = [&](float kappa) -> float
-			{
-				using namespace std;
-				for (int i = 0; i < hist.rows(); ++i) {
-					float s = hist(i,1);
-					hist(i,3) = (kappa * cos(3.f * pif * s))
-						+ (cos(pif * s) * (1.f + (kappa/3.f)));
-				}
-				// Denormalizing
-				hist.block(0,5,nBins,1) = hist.block(0,4,nBins,1) * width * factor;
-				hist.block(0,6,nBins,1) = hist.block(0,5,nBins,1)
-					- hist.block(0,2,nBins,1);
+		double alpha = 0.5, beta = 0;
+		typedef Eigen::Array<float, Eigen::Dynamic, 1> AF;
+		AF xs, ys, cps, cps2;
+		cps = (binMids * pi).cos();
+		cps2 = cps * cps;
+		ys = ((histNorm/cps)-1.) / 4.;
+		xs = cps2 - (2./3.);
 
-				float res = 0;
-				return res;
-			};
+		Eigen::Array<double, Eigen::Dynamic, 1> x, y;
+		x = xs.cast<double>();
+		y = ys.cast<double>();
+		llsq(hist.rows(), x.data(), y.data(),
+			alpha, beta);
+		cerr << "alpha " << alpha << ", beta " << beta << endl;
 
-			kappaFitted = zeros::secantMethod(f, 0.f, 0.5f, 0.01);
-		}
-		cerr << "Fitted kappa is " << kappaFitted << endl;
+		double kappaFitted = 0.25;
+		cerr << "Fitted kappa is " << kappaFitted << ", with intercept of " << beta << endl;
+		fitNorm = (cps * (1. + kappaFitted/3.))
+			+ (((cps * cps * cps * 4.) - (cps * 3.))*kappaFitted);
+		//fitNorm = (cps.cast<float>() * (1 + (kappaFitted / 3)));
+		fitCounts = fitNorm * width * factor;
+		diffKappa = histCounts - fitCounts;
 		// Write the output
 		ofstream out(sOutput.c_str());
 		out << "Bin left\tBin Mid\tCounts\tNormalized Counts\t"
