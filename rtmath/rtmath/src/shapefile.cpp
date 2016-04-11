@@ -481,7 +481,7 @@ namespace rtmath {
 			}
 
 
-			boost::shared_ptr<shapefile> shapefile::convolute(
+			boost::shared_ptr<const shapefile> shapefile::convolute(
 				decimationFunction dFunc, size_t kernelrad) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
@@ -598,7 +598,7 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::slice(
+			boost::shared_ptr<const shapefile> shapefile::slice(
 				int axis, float intercept,
 				float tolerance
 				) const
@@ -689,7 +689,7 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::decimate(
+			boost::shared_ptr<const shapefile> shapefile::decimate(
 				decimationFunction dFunc,
 				size_t dx, size_t dy, size_t dz
 				) const
@@ -802,7 +802,8 @@ namespace rtmath {
 				return res;
 			}
 
-			boost::shared_ptr<shapefile> shapefile::enhance(size_t dx, size_t dy, size_t dz) const
+			boost::shared_ptr<const shapefile> shapefile::
+				enhance(size_t dx, size_t dy, size_t dz) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 

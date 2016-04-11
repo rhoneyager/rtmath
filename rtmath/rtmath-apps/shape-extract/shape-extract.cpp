@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
 			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
-			("description-append", po::value<string>(), "Apend this to the shape description")
+			//("description-append", po::value<string>(), "Apend this to the shape description")
 			("convolute", po::value<double>(), "Perform convolution over specified radius")
 			("dielScalingFactor", po::value<double>(), "Set dielectric scaling factor for tsv writes. If convolute"
 			 " is specified, this can be ignored.")
@@ -63,6 +63,7 @@ int main(int argc, char** argv)
 			("stats-plane", po::value<int>()->default_value(0), "Stats plane")
 			("dipole-spacing,d", po::value<double>()->default_value(40),
 			 "Interlattice spacing in microns")
+			("vf", "Determines the effective volume fraction for this convolution")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -118,13 +119,13 @@ int main(int argc, char** argv)
 		for (const auto &ifile : input)
 		{
 			cerr << "Reading input shape file " << ifile << endl;
-			boost::shared_ptr<shapefile> shp = shapefile::generate(ifile);
-			cerr << shp->mins << "\n\n" << shp->maxs << std::endl;
-			if (vm.count("description-append"))
-			{
-				std::string da = vm["description-append"].as<std::string>();
-				shp->desc.append(da);
-			}
+			boost::shared_ptr<const shapefile> shp = shapefile::generate(ifile);
+			//cerr << shp->mins << "\n\n" << shp->maxs << std::endl;
+			//if (vm.count("description-append"))
+			//{
+			//	std::string da = vm["description-append"].as<std::string>();
+			//	shp->desc.append(da);
+			//}
 			if (statsout) {
 				auto sx = shp->sliceAll(splane);
 				//auto sy = shp->sliceAll(1);
@@ -149,7 +150,7 @@ int main(int argc, char** argv)
 						std::placeholders::_2, threshold);
 				}
 				auto dec = shp->decimate(df, kernel[0], kernel[1], kernel[2]);
-				shp = dec;
+				shp.swap(dec);
 			}
 
 			if (vm.count("enhance"))
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
 				vector<size_t> kernel = vm["enhance"].as<vector<size_t> >();
 				if (kernel.size() < 3) kernel.assign(3, kernel.at(0));
 				auto dec = shp->enhance(kernel[0], kernel[1], kernel[2]);
-				shp = dec;
+				shp.swap(dec);
 			}
 			float x = vm["x"].as<float>();
 			float y = vm["y"].as<float>();
@@ -217,13 +218,33 @@ int main(int argc, char** argv)
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,radius,ptsearch);
 				auto cnv = shp->convolute(df, ((size_t) radius) + 1);
-				shp = cnv;
+				cout << "There are " << shp->latticePts.rows() << " points\n";
+				shp.swap(cnv);
+				cout << "There are " << shp->latticePts.rows() << " points\n";
 			}
-			if (vm.count("slice")) {
+			cout << "3There are " << shp->latticePts.rows() << " points\n";
+			/*if (vm.count("slice")) {
 				int normaxis = vm["slice"].as<int>();
 				float intercept = vm["intercept"].as<float>();
 				auto cnv = shp->slice(normaxis, intercept, 0.25);
-				shp = cnv;
+				shp.swap(cnv);
+			}*/
+			if (vm.count("vf")) {
+				cout << "vfThere are " << shp->latticePts.rows() << " points\n";
+				// Iterate over all points, and average the dielectric values.
+				double radius = 0;
+				if (vm.count("convolute"))
+					radius = vm["convolute"].as<double>();
+				double sum = 0;
+				double vol = 1; //pi * std::pow(radius,3.) * 4. / 3.;
+				for (int i=0; i < shp->latticePts.rows(); ++i) {
+					sum += shp->latticePtsRi(i,0) / vol;
+				}
+				double tot = sum / (double) (shp->latticePts.rows());
+				cout << "There are " << shp->latticePts.rows() << " points, "
+					<< "and the sum is " << sum << endl
+					<< "Radius is " << radius << " and vol is " << vol << endl;
+				cout << "Vf is " << tot << endl;
 			}
 			
 			if (vm.count("output")) {

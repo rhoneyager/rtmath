@@ -239,18 +239,18 @@ namespace rtmath {
 				*
 				* \param dFunc specifies a decimation function that determines the decimated cell's dielectric.
 				**/
-				boost::shared_ptr<shapefile> decimate(
+				boost::shared_ptr<const shapefile> decimate(
 						decimationFunction dFunc,
 						size_t dx = 2, size_t dy = 2, size_t dz = 2
 					) const;
 
 				/// \brief Convenience function to decimate using the same degree in each dimension
-				inline boost::shared_ptr<shapefile> decimate(
+				inline boost::shared_ptr<const shapefile> decimate(
 						decimationFunction dFunc,
 						size_t degree = 2) const {
 					return decimate(dFunc, degree, degree, degree); }
 				/// Take a slice from a principal axis
-				boost::shared_ptr<shapefile> slice(
+				boost::shared_ptr<const shapefile> slice(
 					int axis, float intercept,
 					float tolerance = 0.25
 					) const;
@@ -269,7 +269,7 @@ namespace rtmath {
 					sliceAll(int axis, int numBins = 0) const;
 
 				/// Convolute a shapefile (different logic than decimation. Slower algorithm.)
-				boost::shared_ptr<shapefile> convolute(
+				boost::shared_ptr<const shapefile> convolute(
 					decimationFunction dFunc,
 					size_t kernelrad = 10) const;
 
@@ -278,9 +278,9 @@ namespace rtmath {
 				*
 				* All refractive indices are the same as the initial dipole.
 				**/
-				boost::shared_ptr<shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
+				boost::shared_ptr<const shapefile> enhance(size_t dx = 2, size_t dy = 2, size_t dz = 2) const;
 				/// \brief Convenience function to upscale using the same degree in each dimension
-				inline boost::shared_ptr<shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
+				inline boost::shared_ptr<const shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
 
 			private:
 				/// Read a shapefile from an uncompressed string
