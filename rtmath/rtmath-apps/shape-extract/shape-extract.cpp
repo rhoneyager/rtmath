@@ -236,7 +236,33 @@ int main(int argc, char** argv)
 				if (vm.count("convolute"))
 					radius = vm["convolute"].as<double>();
 				double sum = 0;
-				double vol = 1; //pi * std::pow(radius,3.) * 4. / 3.;
+				double vol = 0;
+				// Determine the volume
+				{
+					int nd = (int)(2.*(radius)) + 1;
+					Eigen::Array<int, Eigen::Dynamic, 4> mat;
+					mat.resize(nd*nd*nd,4);
+					mat.setZero();
+					for (int i=0; i < mat.rows(); ++i) {
+						// Determine coordinates
+						// Start with x, y, z = -rad.
+						// Increment first in x, then y, then z.
+						auto &x = mat(i,0), &y = mat(i,1),
+							 &z = mat(i,2), &v = mat(i,3);
+						x = (-(int)(radius)) + (i % nd);
+						y = (-(int)(radius)) + ((i / nd) % nd);
+						z = (-(int)(radius)) + (i / (nd*nd));
+						// Determine if point is within or on the sphere
+						int resq = (x*x) + (y*y) + (z*z);
+						double rsq = std::pow(radius + 0.001,2.);
+						if (resq < rsq) v = 1;
+						//cout << "x " << x << " y " << y << " z "
+						//	<< z << " resq " << resq << " rsq " << rsq
+						//	<< " v " << v << endl;
+					}
+					vol = mat.block(0,3,mat.rows(),1).sum();
+				}
+				//double vol = 1; //pi * std::pow(radius,3.) * 4. / 3.;
 				for (int i=0; i < shp->latticePts.rows(); ++i) {
 					sum += shp->latticePtsRi(i,0) / vol;
 				}
