@@ -23,6 +23,7 @@ add_library (rtmath_plugin_silo SHARED
 	plugin-silo.cpp
 	plugin-silo.h
 	silo-shapefile.cpp
+	silo-sphereVol.cpp
 	#silo-ddOutput.cpp
 	silo-voronoi.cpp
 	#CurveMesh3d.cpp

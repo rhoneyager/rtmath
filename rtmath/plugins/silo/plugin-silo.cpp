@@ -7,6 +7,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
+#include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include <Ryan_Debug/debug.h>
@@ -75,6 +76,9 @@ D_Ryan_Debug_start()
 
 	genAndRegisterIOregistry_writer<::rtmath::ddscat::shapefile::shapefile, 
 		rtmath::ddscat::shapefile::shapefile_IO_output_registry>("silo",PLUGINID);
+
+	genAndRegisterIOregistry_writer<::rtmath::ddscat::points::sphereVol, 
+		rtmath::ddscat::points::sphereVol_IO_output_registry>("silo",PLUGINID);
 
 	//genAndRegisterIOregistry_writer<::rtmath::ddscat::ddOutput, 
 	//	rtmath::ddscat::ddOutput_IO_output_registry>("silo",PLUGINID);

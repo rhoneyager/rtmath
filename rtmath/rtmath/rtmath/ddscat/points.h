@@ -20,7 +20,8 @@ namespace rtmath
 			class points;
 			class points_IO_output_registry {};
 			class points_provider_registry {};
-
+			class sphereVol;
+			class sphereVol_IO_output_registry {};
 			typedef ::rtmath::ddscat::shapefile::shapefile::points_type
 				backend_type;
 			typedef ::rtmath::ddscat::shapefile::shapefile::index_type
@@ -47,6 +48,14 @@ namespace Ryan_Debug {
 		extern template class usesDLLregistry <
 			::rtmath::ddscat::points::points_provider_registry,
 			::rtmath::ddscat::points::points_provider<::rtmath::ddscat::points::points> > ;
+
+		extern template struct IO_class_registry_writer <
+			::rtmath::ddscat::points::sphereVol > ;
+
+		extern template class usesDLLregistry <
+			::rtmath::ddscat::points::sphereVol_IO_output_registry,
+			IO_class_registry_writer<::rtmath::ddscat::points::sphereVol> > ;
+
 	}
 }
 namespace rtmath {
@@ -97,6 +106,36 @@ namespace rtmath {
 					float radius,
 					boost::shared_ptr<const points> src);
 
+			};
+
+			
+			/** \brief Provides an exact integer volume determination for
+			 * reference for sphere-based searches
+			 **/
+			class DLEXPORT_rtmath_voronoi sphereVol :
+				virtual public boost::enable_shared_from_this<sphereVol>,
+				virtual public ::Ryan_Debug::registry::usesDLLregistry<
+					::rtmath::ddscat::points::sphereVol_IO_output_registry, 
+					::Ryan_Debug::registry::IO_class_registry_writer<
+						::rtmath::ddscat::points::sphereVol> >,
+				virtual public ::Ryan_Debug::io::implementsStandardWriter
+					<sphereVol, sphereVol_IO_output_registry>
+			{
+				sphereVol();
+			public:
+				static boost::shared_ptr<const sphereVol> generate(double radius);
+				virtual ~sphereVol();
+				int pointsInSphere() const;
+				double volSphere() const;
+				double radius() const;
+				typedef Eigen::Array<int, Eigen::Dynamic, 4> matType;
+				typedef boost::shared_ptr<const matType> pType;
+				pType getData() const;
+			private:
+				double rad;
+				int ps;
+				double vol;
+				pType data;
 			};
 		}
 	}

@@ -42,6 +42,7 @@ int main(int argc, char** argv)
 			("help,h", "produce help message")
 			("input,i", po::value< vector<string> >()->multitoken(), "input shape file(s)")
 			("output,o", po::value< string >(), "output shape file")
+			("output-sphere", po::value< string >(), "output convolution sphere discrete example")
 			("export-type", po::value<string>(), "Identifier to export (i.e. shape_points)")
 			("decimate", po::value<vector<size_t> >()->multitoken(), "Perform decimation with the given kernel sizing")
 			("enhance", po::value<vector<size_t> >()->multitoken(), "Perform enhancement with the given kernel sizing")
@@ -236,43 +237,29 @@ int main(int argc, char** argv)
 				if (vm.count("convolute"))
 					radius = vm["convolute"].as<double>();
 				double sum = 0;
-				double vol = 0;
+				auto volProvider = rtmath::ddscat::points::sphereVol::generate(radius);
+				double volExact = (double) volProvider->pointsInSphere();
+				double volFrm = volProvider->volSphere();
 				// Determine the volume
-				{
-					int nd = (int)(2.*(radius)) + 1;
-					Eigen::Array<int, Eigen::Dynamic, 4> mat;
-					mat.resize(nd*nd*nd,4);
-					mat.setZero();
-					for (int i=0; i < mat.rows(); ++i) {
-						// Determine coordinates
-						// Start with x, y, z = -rad.
-						// Increment first in x, then y, then z.
-						auto &x = mat(i,0), &y = mat(i,1),
-							 &z = mat(i,2), &v = mat(i,3);
-						x = (-(int)(radius)) + (i % nd);
-						y = (-(int)(radius)) + ((i / nd) % nd);
-						z = (-(int)(radius)) + (i / (nd*nd));
-						// Determine if point is within or on the sphere
-						int resq = (x*x) + (y*y) + (z*z);
-						double rsq = std::pow(radius + 0.001,2.);
-						if (resq < rsq) v = 1;
-						//cout << "x " << x << " y " << y << " z "
-						//	<< z << " resq " << resq << " rsq " << rsq
-						//	<< " v " << v << endl;
-					}
-					vol = mat.block(0,3,mat.rows(),1).sum();
-				}
-				//double vol = 1; //pi * std::pow(radius,3.) * 4. / 3.;
 				for (int i=0; i < shp->latticePts.rows(); ++i) {
-					sum += shp->latticePtsRi(i,0) / vol;
+					sum += shp->latticePtsRi(i,0) / volExact;
 				}
 				double tot = sum / (double) (shp->latticePts.rows());
 				cout << "There are " << shp->latticePts.rows() << " points, "
 					<< "and the sum is " << sum << endl
-					<< "Radius is " << radius << " and vol is " << vol << endl;
+					<< "Radius is " << radius << " and volExact is " << volExact 
+					<< " whereas volFrm is " << volFrm << endl;
 				cout << "Vf is " << tot << endl;
+				if (vm.count("output-sphere")) {
+					string osfile = vm["output-sphere"].as<string>();
+					cerr << "Outputting sphere data to " << osfile << endl;
+					auto opts = Ryan_Debug::registry::IO_options::generate();
+					opts->filename(osfile);
+					//opts->exportType("silo");
+					volProvider->writeMulti(nullptr, opts);
+				}
 			}
-			
+
 			if (vm.count("output")) {
 				auto opts = Ryan_Debug::registry::IO_options::generate();
 				opts->filename(sOutput);

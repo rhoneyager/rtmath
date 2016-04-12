@@ -30,6 +30,14 @@ namespace Ryan_Debug
 		template class usesDLLregistry <
 			::rtmath::ddscat::points::points_provider_registry,
 			::rtmath::ddscat::points::points_provider<::rtmath::ddscat::points::points> > ;
+
+		template struct IO_class_registry_writer
+			< ::rtmath::ddscat::points::sphereVol > ;
+
+		template class usesDLLregistry <
+			::rtmath::ddscat::points::sphereVol_IO_output_registry,
+			IO_class_registry_writer<::rtmath::ddscat::points::sphereVol> > ;
+
 	}
 }
 namespace rtmath {
@@ -74,6 +82,45 @@ namespace rtmath {
 				size_t num = src->neighborSearchRadius(
 					radius*radius, ci.x, ci.y, ci.z, t, u);
 				return num;
+			}
+
+			sphereVol::~sphereVol() {}
+			sphereVol::sphereVol() {}
+			sphereVol::pType sphereVol::getData() const { return data; }
+			double sphereVol::volSphere() const { return vol; }
+			double sphereVol::radius() const { return rad; }
+			int sphereVol::pointsInSphere() const { return ps; }
+			boost::shared_ptr<const sphereVol> sphereVol::generate(double r) {
+				boost::shared_ptr<sphereVol> res(new sphereVol);
+				res->rad = r;
+				const double pi = boost::math::constants::pi<double>();
+				res->vol = std::pow(res->rad,3.) * 4. * pi / 3.;
+
+				int nd = (int)(2.*(res->rad)) + 3;
+				boost::shared_ptr<matType> mat(new matType);
+				mat->resize(nd*nd*nd,4);
+				mat->setZero();
+				for (int i=0; i < mat->rows(); ++i) {
+					// Determine coordinates
+					// Start with x, y, z = -rad.
+					// Increment first in x, then y, then z.
+					auto &x = (*mat)(i,0), &y = (*mat)(i,1),
+						 &z = (*mat)(i,2), &v = (*mat)(i,3);
+					x = (-(int)(res->rad)-1) + (i % nd);
+					y = (-(int)(res->rad)-1) + ((i / nd) % nd);
+					z = (-(int)(res->rad)-1) + (i / (nd*nd));
+					// Determine if point is within or on the sphere
+					int resq = (x*x) + (y*y) + (z*z);
+					double rsq = std::pow(res->rad + 0.001,2.);
+					if (resq < rsq) v = 1;
+					//cout << "x " << x << " y " << y << " z "
+					//	<< z << " resq " << resq << " rsq " << rsq
+					//	<< " v " << v << endl;
+				}
+				res->ps = mat->block(0,3,mat->rows(),1).sum();
+				res->data = mat;
+
+				return res;
 			}
 		}
 	}
