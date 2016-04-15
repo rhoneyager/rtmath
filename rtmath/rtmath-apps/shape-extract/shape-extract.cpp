@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,radius,ptsearch);
-				auto cnv = ::rtmath::ddscat::points::convolute_B(
+				auto cnv = ::rtmath::ddscat::points::convolute_A(
 					shp, ((size_t) radius) + 1);
 				cout << "There are " << shp->latticePts.rows() << " points\n";
 				shp.swap(cnv);
