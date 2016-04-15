@@ -49,6 +49,7 @@ int main(int argc, char** argv)
 			("decimate-threshold", po::value<size_t>(), "Use threshold decimation method")
 			//("description-append", po::value<string>(), "Apend this to the shape description")
 			("convolute", po::value<double>(), "Perform convolution over specified radius")
+			("conv-type", po::value<string>()->default_value("A"), "Select convolution routine (A,B)")
 			("dielScalingFactor", po::value<double>(), "Set dielectric scaling factor for tsv writes. If convolute"
 			 " is specified, this can be ignored.")
 			("search-radius", po::value<double>(), "Find all points within the specified radius. Must specify x, y, z.")
@@ -209,6 +210,7 @@ int main(int argc, char** argv)
 				}
 
 			}
+			string ct = vm["conv-type"].as<string>();
 			if (vm.count("convolute")) {
 				double radius = vm["convolute"].as<double>();
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
@@ -219,11 +221,19 @@ int main(int argc, char** argv)
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,radius,ptsearch);
-				auto cnv = ::rtmath::ddscat::points::convolute_A(
-					shp, ((size_t) radius) + 1);
-				cout << "There are " << shp->latticePts.rows() << " points\n";
-				shp.swap(cnv);
-				cout << "There are " << shp->latticePts.rows() << " points\n";
+				if (ct == "A") {
+					auto cnv = ::rtmath::ddscat::points::convolute_A(
+						shp, ((size_t) radius) + 1);
+					cout << "There are " << shp->latticePts.rows() << " points\n";
+					shp.swap(cnv);
+					cout << "There are " << shp->latticePts.rows() << " points\n";
+				} else if (ct == "B") {
+					auto cnv = ::rtmath::ddscat::points::convolute_B(
+						shp, ((size_t) radius) + 1);
+					cout << "There are " << shp->latticePts.rows() << " points\n";
+					shp.swap(cnv);
+					cout << "There are " << shp->latticePts.rows() << " points\n";
+				} else { doHelp("Unknown convolution type"); }
 			}
 			cout << "3There are " << shp->latticePts.rows() << " points\n";
 			/*if (vm.count("slice")) {

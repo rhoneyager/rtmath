@@ -80,7 +80,7 @@ namespace rtmath {
 				// be incremented.
 				auto translate = [&](const Eigen::Array3i pt) -> Eigen::ArrayXi {
 					Eigen::ArrayXi res;
-					res.resize(sNumPtsF);
+					res.resize(sNumPtsF,1);
 					int idx = 0;
 					for (int i=0; i < sSz; ++i) {
 						auto blk = sData->block<1,4>(i,0);
@@ -93,6 +93,7 @@ namespace rtmath {
 							idx++;
 						}
 					}
+					return res;
 				};
 				// To get the convolution, iterate over all points in the
 				// source shape. Pass each point to the translation function. It
@@ -108,7 +109,7 @@ namespace rtmath {
 						(int) s->latticePts(i,1),
 						(int) s->latticePts(i,2));
 					auto resTrans = translate(pt);
-					totlist.block(i * sNumPtsF,0,sNumPtsF,0) = resTrans;
+					totlist.block(i * sNumPtsF,0,sNumPtsF,1) = resTrans;
 				}
 				for (int i=0; i < totlist.rows(); ++i) {
 					int idx = totlist(i);
@@ -207,7 +208,8 @@ namespace rtmath {
 					v.s.setConstant(1);
 					// Needs to be added to mins to get proper offset.
 					auto c = getCrds(i);
-					v.crd = c.cast<float>() + s->mins.cast<float>();
+					// Was off by kernelrad+1 rel to convolution_A, which was correct.
+					v.crd = c.cast<float>() + s->mins.cast<float>() - kernelrad - 1;
 					v.numFilled = df(v,s);
 					if (v.numFilled) {
 						num++; run = run + v.crd.cast<double>();
