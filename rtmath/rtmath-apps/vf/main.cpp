@@ -18,6 +18,7 @@
 #include "../../rtmath/rtmath/units.h"
 #include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
+#include "../../rtmath/rtmath/ddscat/points.h"
 #include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/registry.h"
@@ -77,8 +78,8 @@ int main(int argc, char *argv[])
 			("output-prefix,o", po::value<string>()->default_value("output"), "Set output file (required)")
 			;
 
-		desc.add(cmdline).add(config).add(runmatch).add(refract).add(basic).add(scale);
-		oall.add(cmdline).add(runmatch).add(refract).add(config).add(hidden).add(basic).add(scale);
+		desc.add(cmdline).add(config).add(runmatch);
+		oall.add(cmdline).add(runmatch).add(config).add(hidden);
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -251,11 +252,11 @@ int main(int argc, char *argv[])
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
 					s->latticePts);
 				using namespace std::placeholders;
-				decimationFunction df = decimateDielCount;
+				decimationFunction df;
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,crad,ptsearch);
-				auto cnv = shp->convolute(df, ((size_t) crad) + 1);
+				auto cnv = s->convolute(df, ((size_t) crad) + 1);
 				// Iterate over all points, and average the dielectric values.
 				double sum = 0;
 				auto volProvider = rtmath::ddscat::points::sphereVol::generate(crad);
@@ -266,15 +267,15 @@ int main(int argc, char *argv[])
 					sum += s->latticePtsRi(i,0) / volExact;
 				}
 				double tot = sum / (double) (s->latticePts.rows());
-				cout << "There are " << s->latticePts.rows() << " points, "
-					<< "and the sum is " << sum << endl
-					<< "Radius is " << crad << " and volExact is " << volExact 
-					<< " whereas volFrm is " << volFrm << endl;
-				cout << "Vf is " << tot << endl;
+				//cout << "There are " << s->latticePts.rows() << " points, "
+				//	<< "and the sum is " << sum << endl
+				//	<< "Radius is " << crad << " and volExact is " << volExact 
+				//	<< " whereas volFrm is " << volFrm << endl;
+				//cout << "Vf is " << tot << endl;
 
-				r.vf_ctot = 0;
-				r.vf_cint = 0;
-				r.vf_cext = 0;
+				r.vf_ctot = tot;
+				r.vf_cint = -1;
+				r.vf_cext = -1;
 
 				out << r.hash << "\t" << r.aeff_um << "\t"
 					<< r.md_mm << "\t" << r.vol_mm3 << "\t" << r.ar << "\t"
