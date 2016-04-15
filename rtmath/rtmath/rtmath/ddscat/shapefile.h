@@ -268,11 +268,6 @@ namespace rtmath {
 				boost::shared_ptr<const Eigen::Array<float, Eigen::Dynamic, 4> >
 					sliceAll(int axis, int numBins = 0) const;
 
-				/// Convolute a shapefile (different logic than decimation. Slower algorithm.)
-				boost::shared_ptr<const shapefile> convolute(
-					decimationFunction dFunc,
-					size_t kernelrad = 10) const;
-
 				/** \brief Upscale a shapefile
 				* This function takes each dipole and multiplies it into a rectangular cell of a given size.
 				*
@@ -282,13 +277,14 @@ namespace rtmath {
 				/// \brief Convenience function to upscale using the same degree in each dimension
 				inline boost::shared_ptr<const shapefile> enhance(size_t d = 2) const { return enhance(d, d, d); }
 
+				/// Recalculate stats after a manipulation operation
+				void recalcStats();
 			private:
 				/// Read a shapefile from an uncompressed string
 				void readString(const std::string &in, bool headerOnly = false);
 				void _init();
 				void readHeader(const char *in, size_t &headerEnd);
-				/// Recalculate stats after a manipulation operation
-				void recalcStats();
+
 				mutable Ryan_Debug::hash::HASH_t _localhash;
 			public:
 				EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -394,11 +390,13 @@ namespace rtmath {
 			{
 				convolutionCellInfo();
 				/// The coordinates of the point being tested
-				float x, y, z;
-				/// The dieelctric at the point being tested
+				Eigen::Array3f crd;
+				//float x, y, z;
+				/// The dielectric at the point being tested
 				size_t initDiel;
 				/// Kernel size operators (decimation only)
-				size_t sx, sy, sz;
+				Eigen::Array3i s;
+				//size_t sx, sy, sz;
 				/// The id of the point being tested (currently unused)
 				size_t index;
 				/// Return values

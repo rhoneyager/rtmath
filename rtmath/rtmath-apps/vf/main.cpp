@@ -213,8 +213,8 @@ int main(int argc, char *argv[])
 		ofstream out(string(oprefix).c_str());
 		// Output a header line
 		out << "Hash\tIce Aeff (um)\tMax Diameter (mm)\t"
-			"Ice Volume (mm^3)\tvf cs\tvf ce\tvf vint\tvf hon\t"
-			"vf ctot\tvf cint\tvf cext\tintmfrac\tar"
+			"Ice Volume (mm^3)\tar\tvf cs\tvf ce\tvf vint\tvf hon\t"
+			"vf ctot\tvf cint\tvf cext\tintmfrac"
 			<< std::endl;
 
 		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s)
@@ -249,6 +249,7 @@ int main(int argc, char *argv[])
 
 				double crad = 3.;
 
+				/*
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
 					s->latticePts);
 				using namespace std::placeholders;
@@ -276,7 +277,8 @@ int main(int argc, char *argv[])
 				r.vf_ctot = tot;
 				r.vf_cint = -1;
 				r.vf_cext = -1;
-
+				*/
+				r.vf_ctot = -1; r.vf_cint = -1; r.vf_cext = -1;
 				out << r.hash << "\t" << r.aeff_um << "\t"
 					<< r.md_mm << "\t" << r.vol_mm3 << "\t" << r.ar << "\t"
 					<< r.vf_cs << "\t" << r.vf_ce << "\t"

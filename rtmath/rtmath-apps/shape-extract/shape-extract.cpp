@@ -164,6 +164,7 @@ int main(int argc, char** argv)
 			float x = vm["x"].as<float>();
 			float y = vm["y"].as<float>();
 			float z = vm["z"].as<float>();
+			Eigen::Array3f crd(x,y,z);
 			if (vm.count("search-nearest")) {
 				size_t N = vm["search-nearest"].as<size_t>();
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
@@ -172,7 +173,7 @@ int main(int argc, char** argv)
 				::rtmath::ddscat::points::backend_scalar_type outdists2;
 				::rtmath::ddscat::points::backend_index_type outpoints;
 				size_t nn = 0; // Number of points found
-				nn = ptsearch->nearestNeighbors(N, x, y, z, outpoints, outdists2);
+				nn = ptsearch->nearestNeighbors(N, crd, outpoints, outdists2);
 				std::cerr << "There are " << nn << " points found out of max "
 					<< N << " near " << x << ", " << y << ", " << z << std::endl;
 				std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
@@ -194,7 +195,7 @@ int main(int argc, char** argv)
 				size_t nn = 0; // Number of points found
 				//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
 				nn = ptsearch->neighborSearchRadius
-					((float) (radius*radius), x, y, z, outpoints, outdists2);
+					((float) (radius*radius), crd, outpoints, outdists2);
 				std::cerr << "There are " << nn << " points within rad "
 					<< radius << " of " << x << ", " << y << ", " << z << std::endl;
 				std::cerr << "The search volume is "
@@ -218,7 +219,8 @@ int main(int argc, char** argv)
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,radius,ptsearch);
-				auto cnv = shp->convolute(df, ((size_t) radius) + 1);
+				auto cnv = ::rtmath::ddscat::points::convolute_B(
+					shp, ((size_t) radius) + 1);
 				cout << "There are " << shp->latticePts.rows() << " points\n";
 				shp.swap(cnv);
 				cout << "There are " << shp->latticePts.rows() << " points\n";

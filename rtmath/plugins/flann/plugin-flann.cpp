@@ -29,12 +29,12 @@ namespace rtmath {
 			public:
 				virtual size_t neighborSearchRadius(
 					float radiussq,
-					float x, float y, float z,
+					const Eigen::Array3f &pt,
 					::rtmath::ddscat::points::backend_index_type &outpoints,
 					::rtmath::ddscat::points::backend_scalar_type &outdists) const {
 
 					Eigen::Matrix<float,1, 3, Eigen::RowMajor> q;
-					q(0,0) = x; q(0,1) = y; q(0,2) = z;
+					q(0,0) = pt(0); q(0,1) = pt(1); q(0,2) = pt(2);
 					::flann::Matrix<float> query(q.data(), 1, 3);
 					Eigen::Matrix<size_t,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
 					indices.resize(pts.rows(), 1);
@@ -56,12 +56,12 @@ namespace rtmath {
 				}
 				virtual size_t nearestNeighbors(
 					size_t N,
-					float x, float y, float z,
+					const Eigen::Array3f &pt,
 					::rtmath::ddscat::points::backend_index_type &outpoints,
 					::rtmath::ddscat::points::backend_scalar_type &outdists) const {
 
 					Eigen::Matrix<float,1, 3, Eigen::RowMajor> q;
-					q(0,0) = x; q(0,1) = y; q(0,2) = z;
+					q(0,0) = pt(0); q(0,1) = pt(1); q(0,2) = pt(2);
 					::flann::Matrix<float> query(q.data(), 1, 3);
 					Eigen::Matrix<size_t,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
 					indices.resize(N, 1);

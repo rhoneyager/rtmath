@@ -61,7 +61,9 @@ namespace Ryan_Debug {
 namespace rtmath {
 	namespace ddscat
 	{
+		namespace shapefile { class shapefile; }
 		namespace points {
+			typedef boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile> shape_t;
 			class DLEXPORT_rtmath_voronoi points :
 				virtual public ::Ryan_Debug::registry::usesDLLregistry<
 				points_provider_registry, points_provider<points> >
@@ -83,7 +85,7 @@ namespace rtmath {
 				/// of the found points.
 				virtual size_t neighborSearchRadius(
 					float radius,
-					float x, float y, float z,
+					const Eigen::Array3f &pt,
 					backend_index_type &outpoints,
 					backend_scalar_type &outdistssq) const = 0;
 				/// \brief Get nearest N neighbors
@@ -93,7 +95,7 @@ namespace rtmath {
 				/// of the located points.
 				virtual size_t nearestNeighbors(
 					size_t N,
-					float x, float y, float z,
+					const Eigen::Array3f &pt,
 					backend_index_type &outpoints,
 					backend_scalar_type &outdistssq) const = 0;
 				/// Construct the search tree, and populate
@@ -102,20 +104,27 @@ namespace rtmath {
 				/// \brief Convolution function that fills a dielectric
 				static size_t convolutionNeighborsRadius(
 					const ::rtmath::ddscat::shapefile::convolutionCellInfo&,
-					const boost::shared_ptr<const ::rtmath::ddscat::shapefile::shapefile>,
+					const shape_t,
 					float radius,
 					boost::shared_ptr<const points> src);
 
 			};
 
-			
+			// Methods to convolve a shape
+
+			/// Direct (forward) approach
+			shape_t convolute_A(shape_t src, size_t kernelrad = 10);
+
+			/// Indirect (reverse) approach
+			shape_t convolute_B(shape_t src, size_t kernelrad = 10);
+
 			/** \brief Provides an exact integer volume determination for
 			 * reference for sphere-based searches
 			 **/
 			class DLEXPORT_rtmath_voronoi sphereVol :
 				virtual public boost::enable_shared_from_this<sphereVol>,
 				virtual public ::Ryan_Debug::registry::usesDLLregistry<
-					::rtmath::ddscat::points::sphereVol_IO_output_registry, 
+					::rtmath::ddscat::points::sphereVol_IO_output_registry,
 					::Ryan_Debug::registry::IO_class_registry_writer<
 						::rtmath::ddscat::points::sphereVol> >,
 				virtual public ::Ryan_Debug::io::implementsStandardWriter

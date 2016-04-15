@@ -80,7 +80,7 @@ namespace rtmath {
 				// Report the number of points in a radius around the target cell
 				// Target cell specified in ci, radius is radius
 				size_t num = src->neighborSearchRadius(
-					radius*radius, ci.x, ci.y, ci.z, t, u);
+					radius*radius, ci.crd, t, u);
 				return num;
 			}
 

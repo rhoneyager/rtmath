@@ -450,9 +450,11 @@ namespace rtmath {
 			}
 			*/
 
-			convolutionCellInfo::convolutionCellInfo() : x(0), y(0), z(0),
-				initDiel(0), sx(0), sy(0), sz(0), numFilled(0), numTotal(0), index(0)
-			{}
+			convolutionCellInfo::convolutionCellInfo() :
+				initDiel(0), numFilled(0), numTotal(0), index(0)
+			{
+				s.setZero(); crd.setZero();
+			}
 
 			boost::shared_ptr<Voronoi::VoronoiDiagram> shapefile::generateVoronoi(
 				const std::string &name,
@@ -477,124 +479,6 @@ namespace rtmath {
 				}
 
 				//voronoi_diagrams[name] = res;
-				return res;
-			}
-
-
-			boost::shared_ptr<const shapefile> shapefile::convolute(
-				decimationFunction dFunc, size_t kernelrad) const
-			{
-				boost::shared_ptr<shapefile> res(new shapefile);
-
-				auto maxX = maxs(0), maxY = maxs(1), maxZ = maxs(2);
-				auto minX = mins(0), minY = mins(1), minZ = mins(2);
-				minX -= kernelrad; minY -= kernelrad; minZ -= kernelrad;
-				maxX += kernelrad; maxY += kernelrad; maxZ += kernelrad;
-				size_t spanX = (size_t) (maxX - minX), spanY = (size_t)(maxY - minY), spanZ = (size_t)(maxZ - minZ);
-				size_t rsX = (spanX ) + 1, rsY = (spanY ) + 1, rsZ = (spanZ ) + 1;
-				//std::cerr << "(" << minX << ", " << maxX << ") ("
-				//	<< minY << ", " << maxY << ") ("
-				//	<< minZ << ", " << maxZ << ") - "
-				//	<< rsX << " " << rsY << " " << rsZ << " - "
-				//	<< rsX * rsY * rsZ << std::endl;
-
-				auto getIndex = [&](float x, float y, float z) -> size_t
-				{
-					size_t index = 0;
-					size_t sX = (size_t)(x - minX);
-					size_t sY = (size_t)(y - minY);
-					size_t sZ = (size_t)(z - minZ);
-					index = (sX * (rsY * rsZ)) + (sY * rsZ) + sZ;
-					return index;
-				};
-
-				auto getCrds = [&](size_t index) -> std::tuple<size_t, size_t, size_t>
-				{
-					size_t x = index / (rsY*rsZ);
-					index -= x*rsY*rsZ;
-					size_t y = index / rsZ;
-					index -= y*rsZ;
-					size_t z = index;
-					return std::tuple<size_t, size_t, size_t>(x, y, z);
-				};
-				const size_t sz = rsX*rsY*rsZ;
-				size_t num = 0;
-				double runX = 0, runY = 0, runZ = 0;
-				std::vector<convolutionCellInfo> vals(sz);
-				for (size_t i=0; i<sz; ++i) {
-					auto &v = vals.at(i);
-					v.initDiel = 1;
-					v.numTotal = 1;
-					v.sx = 1;
-					v.sy = 1;
-					v.sz = 1;
-					// Needs to be added to mins to get proper offset.
-					std::tuple<size_t, size_t, size_t> crd = getCrds(i);
-					v.x = (float) std::get<0>(crd) + (float) minX;
-					v.y = (float) std::get<1>(crd) + (float) minY;
-					v.z = (float) std::get<2>(crd) + (float) minZ;
-					v.numFilled = dFunc(v,shared_from_this());
-					if (v.numFilled) {
-						num++;
-						runX += v.x;
-						runY += v.y;
-						runZ += v.z;
-					}
-				}
-
-				res->a1 = a1;
-				res->a2 = a2;
-				res->a3 = a3;
-				res->d = d;
-				res->desc = desc;
-				res->Dielectrics = Dielectrics;
-				res->filename = filename;
-				res->xd = xd;
-
-				runX /= (double) num;
-				runY /= (double) num;
-				runZ /= (double) num;
-				res->resize(num);
-				Eigen::Matrix<float, 1, 3> center;
-				center(0) = runX;
-				center(1) = runY;
-				center(2) = runZ;
-
-				size_t dielMax = 0;
-				// Set the decimated values
-				size_t point = 0;
-				for (size_t i = 0; i < vals.size(); ++i)
-				{
-					auto &v = vals.at(i);
-					if (v.numFilled == 0) continue;
-					auto t = getCrds(i);
-					auto crdsm = res->latticePts.block<1, 3>(point, 0);
-					auto crdsi = res->latticePtsRi.block<1, 3>(point, 0);
-					auto crdss = res->latticePtsStd.block<1, 3>(point, 0);
-					auto crdsn = res->latticePtsNorm.block<1, 3>(point, 0);
-					crdsm(0) = (float)std::get<0>(t) + minX;
-					crdsm(1) = (float)std::get<1>(t) + minY;
-					crdsm(2) = (float)std::get<2>(t) + minZ;
-					crdsi(0) = (float)v.numFilled;
-					crdsi(1) = (float)v.numFilled;
-					crdsi(2) = (float)v.numFilled;
-
-					crdss = crdsm - center;
-					crdsn = crdsm - center;
-					if (dielMax < v.numFilled) dielMax = v.numFilled;
-					point++;
-				}
-
-				// Set the dielectrics
-				res->Dielectrics.clear();
-				for (size_t i = 1; i <= dielMax; ++i)
-					res->Dielectrics.insert(i);
-
-				res->recalcStats();
-				// Rescale x0 to point to the new center
-				res->x0 = res->means;
-
-
 				return res;
 			}
 
@@ -696,54 +580,45 @@ namespace rtmath {
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
 
-				auto maxX = maxs(0), maxY = maxs(1), maxZ = maxs(2);
-				auto minX = mins(0), minY = mins(1), minZ = mins(2);
-				size_t spanX = (size_t) (maxX - minX), spanY = (size_t)(maxY - minY), spanZ = (size_t)(maxZ - minZ);
-				size_t rsX = (spanX / dx) + 1, rsY = (spanY / dy) + 1, rsZ = (spanZ / dz) + 1;
+				auto span = (maxs - mins).cast<int>();
+				// Note: shapefile also has an element (d), which is masked here.
+				Eigen::Array3i d; d << dx, dy, dz;
+				Eigen::Array3i rs = (span / d) + 1;
 
-				auto getIndex = [&](float x, float y, float z) -> size_t
-				{
+				auto getIndex = [&](const Eigen::Array3f p) -> size_t {
 					size_t index = 0;
-					size_t sX = (size_t)(x - minX) / dx;
-					size_t sY = (size_t)(y - minY) / dy;
-					size_t sZ = (size_t)(z - minZ) / dz;
-					index = (sX * (rsY * rsZ)) + (sY * rsZ) + sZ;
+					Eigen::Array3i s = (p - mins).cast<int>() / d;
+					index = (s(0) * (rs(1) * rs(2))) + (s(1) * rs(2)) + s(2);
 					return index;
 				};
-
-				auto getCrds = [&](size_t index) -> std::tuple<size_t, size_t, size_t>
-				{
-					size_t x = index / (rsY*rsZ);
-					index -= x*rsY*rsZ;
-					size_t y = index / rsZ;
-					index -= y*rsZ;
-					size_t z = index;
-					return std::tuple<size_t, size_t, size_t>(x, y, z);
+				auto getCrds = [&](size_t index) -> Eigen::Array3i {
+					Eigen::Array3i res;
+					res(0) = index / (rs(1)*rs(2));
+					index -= res(0)*rs(1)*rs(2);
+					res(1) = index / rs(2);
+					index -= res(1)*rs(2);
+					res(2) = index;
+					return res;
 				};
 
-
-				std::vector<convolutionCellInfo> vals(rsX*rsY*rsZ);
+				std::vector<convolutionCellInfo> vals(rs.prod());
 				for (auto &v : vals)
 				{
 					v.initDiel = 1;
-					v.numTotal = dx * dy * dz;
-					v.sx = dx;
-					v.sy = dy;
-					v.sz = dz;
+					v.numTotal = d.prod();
+					v.s = d;
 				}
 
 				// Iterate over all points and bin into the appropriate set
 				for (size_t i = 0; i < numPoints; ++i)
 				{
 					auto crdsm = latticePts.block<1, 3>(i, 0);
-					float x = crdsm(0), y = crdsm(1), z = crdsm(2);
-					size_t index = getIndex(x, y, z);
+					Eigen::Array3f pt = crdsm.array();
+					size_t index = getIndex(pt);
 					auto &v = vals.at(index);
 					v.numFilled++;
 					v.index = index;
-					v.x = x;
-					v.y = y;
-					v.z = z;
+					v.crd = pt;
 				}
 
 				// Count the decimated points with nonzero values
@@ -755,7 +630,7 @@ namespace rtmath {
 				res->a1 = a1;
 				res->a2 = a2;
 				res->a3 = a3;
-				res->d = d;
+				res->d = d.cast<float>();
 				res->desc = desc;
 				res->Dielectrics = Dielectrics;
 				res->filename = filename;
@@ -773,12 +648,8 @@ namespace rtmath {
 					auto t = getCrds(i);
 					auto crdsm = res->latticePts.block<1, 3>(point, 0);
 					auto crdsi = res->latticePtsRi.block<1, 3>(point, 0);
-					crdsm(0) = (float)std::get<0>(t);
-					crdsm(1) = (float)std::get<1>(t);
-					crdsm(2) = (float)std::get<2>(t);
-					crdsi(0) = (float)diel;
-					crdsi(1) = (float)diel;
-					crdsi(2) = (float)diel;
+					crdsm = t.cast<float>();
+					crdsi.setConstant((float)diel);
 					if (dielMax < diel) dielMax = diel;
 					point++;
 				}
@@ -806,27 +677,24 @@ namespace rtmath {
 				enhance(size_t dx, size_t dy, size_t dz) const
 			{
 				boost::shared_ptr<shapefile> res(new shapefile);
-
-				size_t maxX = static_cast<size_t>(maxs(0)), maxY = static_cast<size_t>(maxs(1)), maxZ = static_cast<size_t>(maxs(2));
-				size_t minX = static_cast<size_t>(mins(0)), minY = static_cast<size_t>(mins(1)), minZ = static_cast<size_t>(mins(2));
-				size_t spanX = maxX - minX, spanY = maxY - minY, spanZ = maxZ - minZ;
-				size_t rsX = (spanX / dx) + 1, rsY = (spanY / dy) + 1, rsZ = (spanZ / dz) + 1;
+				auto span = (maxs - mins).cast<int>();
+				Eigen::Array3i d; d << dx, dy, dz;
+				auto rs = (span / d) + 1;
 
 				// Resize the resultant shapefile based on the new scale
-				size_t nd = dx * dy * dz;
+				size_t nd = d.prod();
 				res->resize(nd * numPoints);
 
 				res->a1 = a1;
 				res->a2 = a2;
 				res->a3 = a3;
-				res->d = d;
+				res->d = d.cast<float>();
 				res->desc = desc;
 				res->Dielectrics = Dielectrics;
 				res->filename = filename;
 				res->xd = xd;
 				// Rescale x0 to point to the new center
-				res->x0 = x0 * Eigen::Array3f((float)dx, (float)dy, (float)dz);
-
+				res->x0 = x0 * d.cast<float>();
 
 				// Iterate over all points and bin into the appropriate set
 				for (size_t i = 0; i < numPoints; ++i)
@@ -834,11 +702,11 @@ namespace rtmath {
 					auto crdsm = latticePts.block<1, 3>(i, 0);
 					auto crdsi = latticePtsRi.block<1, 3>(i, 0);
 
-					for (size_t x = 0; x < dx; ++x)
-					for (size_t y = 0; y < dy; ++y)
-					for (size_t z = 0; z < dz; ++z)
+					for (size_t x = 0; x < d(0); ++x)
+					for (size_t y = 0; y < d(1); ++y)
+					for (size_t z = 0; z < d(2); ++z)
 					{
-						size_t j = (nd * i) + z + (dz*y) + (dz*dy*x);
+						size_t j = (nd * i) + z + (d(2)*y) + (d(2)*d(1)*x);
 						auto rdsm = res->latticePts.block<1, 3>(j, 0);
 						auto rdsi = res->latticePtsRi.block<1, 3>(j, 0);
 						rdsm(0) = crdsm(0) + x;
