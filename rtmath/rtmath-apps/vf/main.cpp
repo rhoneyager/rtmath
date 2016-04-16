@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			("match-parent-flake", "Select the parent flakes")
 
-			("voronoi-depth", po::value<size_t>()->default_value(2), "Sets the internal voronoi depth for scaling")
+			("voronoi-depth", po::value<size_t>()->default_value(1), "Sets the internal voronoi depth for scaling")
 			("voronoi-offset-factor", po::value<double>()->default_value(3), "Sets the factor used in the Voronoi offset "
 			 "method")
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -234,8 +234,9 @@ int main(int argc, char *argv[])
 				r.ar = 1 / stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
 				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
 				vd = s->generateVoronoi(
-					std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
-				vd->calcSurfaceDepth();
+					std::string("standard"),
+					rtmath::Voronoi::VoronoiDiagram::generateStandard);
+				auto surfdepth = vd->calcSurfaceDepth();
 				vd->calcCandidateConvexHullPoints();
 
 				size_t numLatticeTotal = 0, numLatticeFilled = 0;
@@ -249,7 +250,12 @@ int main(int argc, char *argv[])
 
 				double crad = 3.;
 
-				/*
+				// vd is the already-calculated Voronoi diagram. I want to perform
+				// the convolution and report the overall volume fraction. I then
+				// want to decompose the convolution into two spatial regions:
+				// interior and exterior, depending on the Voronoi depth at each
+				// point. Then, I will calculate the statistics of the convolved
+				// regions (means, standard deviations and histograms).
 				auto ptsearch = ::rtmath::ddscat::points::points::generate(
 					s->latticePts);
 				using namespace std::placeholders;
@@ -257,28 +263,51 @@ int main(int argc, char *argv[])
 				df = std::bind(
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,crad,ptsearch);
-				auto cnv = s->convolute(df, ((size_t) crad) + 1);
+				auto cnv = ::rtmath::ddscat::points::convolute_A(
+					s, ((size_t) crad) + 1);
 				// Iterate over all points, and average the dielectric values.
-				double sum = 0;
+				double sum = 0, sumint = 0, sumext = 0;
 				auto volProvider = rtmath::ddscat::points::sphereVol::generate(crad);
 				double volExact = (double) volProvider->pointsInSphere();
 				double volFrm = volProvider->volSphere();
+				auto cellmap = vd->getCellMap();
+				// For each point in cellmap, the point (first 3 cols) can be iterated
+				// over to get the referenced cell (4th col). This cellid is the
+				// row in surfacedepth. If id=-1, surfacedepth = 0 (exterior).
+				// So, I just have to use a lookup function to convert the convoluted
+				// lattice point coordinates into cellMap coordinates.
+				Eigen::Array3i mins = s->mins.cast<int>(),
+					maxs = s->maxs.cast<int>();
+				Eigen::Array3i span = maxs - mins + 1;
+				int imax = span.prod();
+				auto convertcoords =[&](const Eigen::Array3f &lpt) -> int {
+					// Just inverting the code from VoroCachedVoronoi::generateCellMap::getCoords
+					// x varies first, then y, then z
+					Eigen::Array3i pt = lpt.cast<int>();
+					Eigen::Array3i pn = pt - mins;
+					int res = pn(2) * span(2);
+					res += (pn(1) % span(1)) * span(1);
+					res += (pn(0) % span(0));
+					if ((res >= imax) || (res < 0)) res = -1;
+					return res;
+				};
 				// Determine the volume
-				for (int i=0; i < s->latticePts.rows(); ++i) {
-					sum += s->latticePtsRi(i,0) / volExact;
+				int nint = 0, next = 0;
+				for (int i=0; i < cnv->latticePts.rows(); ++i) {
+					Eigen::Array3f pt(cnv->latticePts(i,0),
+						cnv->latticePts(i,1), cnv->latticePts(i,2));
+					int cellid = convertcoords(pt);
+					int depth = 0;
+					if (cellid >= 0) depth = (*surfdepth)(cellid,3);
+					double ns = cnv->latticePtsRi(i,0) / volExact;
+					sum += ns;
+					if (depth >= int_voro_depth) { sumint += ns; nint++; }
+					else { sumext += ns; next++; }
 				}
-				double tot = sum / (double) (s->latticePts.rows());
-				//cout << "There are " << s->latticePts.rows() << " points, "
-				//	<< "and the sum is " << sum << endl
-				//	<< "Radius is " << crad << " and volExact is " << volExact 
-				//	<< " whereas volFrm is " << volFrm << endl;
-				//cout << "Vf is " << tot << endl;
-
-				r.vf_ctot = tot;
-				r.vf_cint = -1;
-				r.vf_cext = -1;
-				*/
-				r.vf_ctot = -1; r.vf_cint = -1; r.vf_cext = -1;
+				r.vf_ctot = sum / (double) (cnv->latticePts.rows());
+				r.vf_cint = sumint / (double) nint;
+				r.vf_cext = sumext / (double) next;
+				cout << "N " << nint + next << " int " << nint << " ext " << next << endl;
 				out << r.hash << "\t" << r.aeff_um << "\t"
 					<< r.md_mm << "\t" << r.vol_mm3 << "\t" << r.ar << "\t"
 					<< r.vf_cs << "\t" << r.vf_ce << "\t"
