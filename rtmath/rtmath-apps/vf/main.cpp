@@ -283,6 +283,7 @@ int main(int argc, char *argv[])
 				auto convertcoords =[&](const Eigen::Array3f &lpt) -> int {
 					// Just inverting the code from VoroCachedVoronoi::generateCellMap::getCoords
 					// x varies first, then y, then z
+					// TODO: CHECK THIS!
 					Eigen::Array3i pt = lpt.cast<int>();
 					Eigen::Array3i pn = pt - mins;
 					int res = pn(2) * span(2);
