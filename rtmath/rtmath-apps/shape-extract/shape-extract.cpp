@@ -13,6 +13,7 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/io.h>
 #include <Ryan_Debug/registry.h>
+#include <Ryan_Debug/splitSet.h>
 
 #include "../../rtmath/rtmath/common_templates.h"
 #include "../../rtmath/rtmath/registry.h"
@@ -54,14 +55,16 @@ int main(int argc, char** argv)
 			 " is specified, this can be ignored.")
 			("search-radius", po::value<double>(), "Find all points within the specified radius. Must specify x, y, z.")
 			("search-nearest", po::value<size_t>(), "Find nearest N points of target.")
-			("x,x", po::value<float>()->default_value(0), "x")
-			("y,y", po::value<float>()->default_value(0), "y")
-			("z,z", po::value<float>()->default_value(0), "z")
+			("list-nearest", po::value<bool>()->default_value(true), "List nearest point search results.")
+			("x,x", po::value<string>()->default_value("0"), "x")
+			("y,y", po::value<string>()->default_value("0"), "y")
+			("z,z", po::value<string>()->default_value("0"), "z")
 			("slice", po::value<int>()->default_value(0), "Slice along plane. Value is axis "
 			 "normal (0 - x, 1 - y, 2 - z).")
 			("intercept", po::value<float>()->default_value(0), "Intercept for slicing")
 			//("fit-kappa", "Calculate the A(s) function and perform fitting")
 			("stats-output", po::value<string>(), "Output stats file for kappa fits")
+			("search-output", po::value<string>(), "Output search results to file")
 			("stats-plane", po::value<int>()->default_value(0), "Stats plane")
 			("dipole-spacing,d", po::value<double>()->default_value(40),
 			 "Interlattice spacing in microns")
@@ -162,53 +165,81 @@ int main(int argc, char** argv)
 				auto dec = shp->enhance(kernel[0], kernel[1], kernel[2]);
 				shp.swap(dec);
 			}
-			float x = vm["x"].as<float>();
-			float y = vm["y"].as<float>();
-			float z = vm["z"].as<float>();
-			Eigen::Array3f crd(x,y,z);
-			if (vm.count("search-nearest")) {
-				size_t N = vm["search-nearest"].as<size_t>();
-				auto ptsearch = ::rtmath::ddscat::points::points::generate(
-					shp->latticePts
-					);
-				::rtmath::ddscat::points::backend_scalar_type outdists2;
-				::rtmath::ddscat::points::backend_index_type outpoints;
-				size_t nn = 0; // Number of points found
-				nn = ptsearch->nearestNeighbors(N, crd, outpoints, outdists2);
-				std::cerr << "There are " << nn << " points found out of max "
-					<< N << " near " << x << ", " << y << ", " << z << std::endl;
-				std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
-				for (int i=0; i < nn; ++i) {
-					std::cerr << outpoints(i,0) << "\t"
-						<< shp->latticePts(i,0) << "\t" << shp->latticePts(i,1) << "\t"
-						<< shp->latticePts(i,2) << "\t"
-						<< std::sqrt(outdists2(i,0)) << std::endl;
-				}
-
+			string sxs = vm["x"].as<string>();
+			string sys = vm["y"].as<string>();
+			string szs = vm["z"].as<string>();
+			set<float> xs, ys, zs;
+			Ryan_Debug::splitSet::splitSet<float>(sxs, xs);
+			Ryan_Debug::splitSet::splitSet<float>(sys, ys);
+			Ryan_Debug::splitSet::splitSet<float>(szs, zs);
+			bool listNearest = vm["list-nearest"].as<bool>();
+			string ssearch;
+			boost::shared_ptr<std::ofstream> ssout;
+			if (vm.count("search-output")) {
+				ssearch = vm["search-output"].as<string>();
+				ssout = boost::shared_ptr<std::ofstream>(new ofstream(ssearch.c_str()));
+				(*ssout) << "x\ty\tz\tNum Neighbors\tNum Sites\tVolume Fraction" << endl;
 			}
-			if (vm.count("search-radius")) {
-				double radius = vm["search-radius"].as<double>();
-				auto ptsearch = ::rtmath::ddscat::points::points::generate(
-					shp->latticePts
-					);
-				::rtmath::ddscat::points::backend_scalar_type outdists2;
-				::rtmath::ddscat::points::backend_index_type outpoints;
-				size_t nn = 0; // Number of points found
-				//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
-				nn = ptsearch->neighborSearchRadius
-					((float) (radius*radius), crd, outpoints, outdists2);
-				std::cerr << "There are " << nn << " points within rad "
-					<< radius << " of " << x << ", " << y << ", " << z << std::endl;
-				std::cerr << "The search volume is "
-					<< (4.*pi/3.) * std::pow(radius,3.) << std::endl;
-				std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
-				for (int i=0; i < nn; ++i) {
-					std::cerr << outpoints(i,0) << "\t"
-						<< shp->latticePts(i,0) << "\t" << shp->latticePts(i,1) << "\t"
-						<< shp->latticePts(i,2) << "\t"
-						<< std::sqrt(outdists2(i,0)) << std::endl;
-				}
+			for (auto x : xs)
+				for (auto y : ys)
+					for (auto z : zs) {
+						Eigen::Array3f crd(x,y,z);
+						if (vm.count("search-nearest")) {
+							size_t N = vm["search-nearest"].as<size_t>();
+							auto ptsearch = ::rtmath::ddscat::points::points::generate(
+								shp->latticePts
+								);
+							::rtmath::ddscat::points::backend_scalar_type outdists2;
+							::rtmath::ddscat::points::backend_index_type outpoints;
+							size_t nn = 0; // Number of points found
+							nn = ptsearch->nearestNeighbors(N, crd, outpoints, outdists2);
+							std::cerr << "There are " << nn << " points found out of max "
+								<< N << " near " << x << ", " << y << ", " << z << std::endl;
+							if (ssout)
+								(*ssout) << x << "\t" << y << "\t" << z << "\t"
+									<< nn << "\t" << N << "\t" << (float) nn / (float) N << endl;
+							if (listNearest == true) {
+								std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
+								for (int i=0; i < nn; ++i) {
+									std::cerr << outpoints(i,0) << "\t"
+										<< shp->latticePts(i,0) << "\t" << shp->latticePts(i,1) << "\t"
+										<< shp->latticePts(i,2) << "\t"
+										<< std::sqrt(outdists2(i,0)) << std::endl;
+								}
+							}
 
+						}
+						if (vm.count("search-radius")) {
+							double radius = vm["search-radius"].as<double>();
+							auto ptsearch = ::rtmath::ddscat::points::points::generate(
+								shp->latticePts
+								);
+							::rtmath::ddscat::points::backend_scalar_type outdists2;
+							::rtmath::ddscat::points::backend_index_type outpoints;
+							size_t nn = 0; // Number of points found
+							auto sph = ::rtmath::ddscat::points::sphereVol::generate(radius);
+							int maxPoints = sph->pointsInSphere();
+							//nn = ptsearch->nearestNeighbors(4, x, y, z, outpoints, outdists);
+							nn = ptsearch->neighborSearchRadius
+								((float) (radius*radius), crd, outpoints, outdists2);
+							std::cerr << "There are " << nn << " points within rad "
+								<< radius << " of " << x << ", " << y << ", " << z << std::endl;
+							if (ssout)
+								(*ssout) << x << "\t" << y << "\t" << z << "\t"
+									<< nn << "\t" << maxPoints << "\t" << (float) nn / (float) maxPoints << endl;
+							std::cerr << "The search volume is "
+								<< maxPoints << endl;
+							if (listNearest) {
+								std::cerr << "Point\tx\ty\tz\tdistance" << std::endl;
+								for (int i=0; i < nn; ++i) {
+									std::cerr << outpoints(i,0) << "\t"
+										<< shp->latticePts(i,0) << "\t" << shp->latticePts(i,1) << "\t"
+										<< shp->latticePts(i,2) << "\t"
+										<< std::sqrt(outdists2(i,0)) << std::endl;
+								}
+							}
+
+						}
 			}
 			string ct = vm["conv-type"].as<string>();
 			if (vm.count("convolute")) {
