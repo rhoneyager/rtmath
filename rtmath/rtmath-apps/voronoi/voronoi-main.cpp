@@ -66,6 +66,11 @@ int main(int argc, char** argv)
 			("match-dipole-numbers", po::value<vector<std::string> >()->multitoken(), "Match typical dipole numbers")
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			//("match-parent-flake", "Select the parent flakes")
+
+			("list-depths", "List Voronoi depths at various x,y,z coordinates")
+			("x,x", po::value<string>()->default_value("0"), "x")
+			("y,y", po::value<string>()->default_value("0"), "y")
+			("z,z", po::value<string>()->default_value("0"), "z")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);

@@ -46,79 +46,73 @@ namespace Ryan_Debug {
 				using std::shared_ptr;
 				std::shared_ptr<silo_handle> h;
 				if (!sh)
-				{
-					// Access the hdf5 file
 					h = std::shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
-				}
 				else {
 					if (std::string(sh->getId()) != std::string(PLUGINID)) RDthrow(Ryan_Debug::error::xDuplicateHook());
 					h = std::dynamic_pointer_cast<silo_handle>(sh);
 				}
 
-				/// \todo Modify to also support external symlinks
-				//shared_ptr<Group> newstatsbase = write_hdf5_statsrawdata(grpHash, s);
-				//shared_ptr<Group> newshapebase = write_hdf5_shaperawdata(grpHash, s->_shp.get());
-
-				std::string meshname("Points_");
-				//if (key)
-				//	meshname.append(std::string(key));
-				//else meshname.append(s->filename);
-
+				std::string meshname("Points");
 				Eigen::MatrixXf lPts(s->latticePts.rows(), s->latticePts.cols());
 				lPts = s->latticePts;
 				const char* axislabels[] = { "x", "y", "z" };
 				const char* axisunits[] = { "dipoles", "dipoles", "dipoles" };
 
 				std::string dielsName = meshname;
-				dielsName.append("Dielectrics");
+				dielsName.append("_Dielectrics");
 				std::string indexName = meshname;
-				indexName.append("Point_IDs");
-				auto pm = h->file->createPointMesh<float>(meshname.c_str(), lPts, axislabels, axisunits);
+				indexName.append("_Point_IDs");
+				//auto pm = h->file->createPointMesh<float>(meshname.c_str(), lPts, axislabels, axisunits);
+
+				// meshPadding adds N cells before and after mins and maxs.
+				// Useful when adding colocated mesh information.
+				int meshPadding = opts->getVal<int>("meshPadding", 2);
 
 				// Create a 3d mesh, also for the dielectrics
 				Eigen::Array3i mins = s->mins.cast<int>(), maxs = s->maxs.cast<int>();
 				// Doing this so that the ends of the shape do not get chopped off
-				mins -= 2 * Eigen::Array3i::Ones(); maxs += 2 * Eigen::Array3i::Ones();
+				mins -= meshPadding * Eigen::Array3i::Ones();
+				maxs += meshPadding * Eigen::Array3i::Ones();
 				Eigen::Array3i span = maxs - mins + 1;
 				int meshSize = span.prod();
-				auto getCoords = [&](int i)->Eigen::Array3i
+				std::cerr << "Writing silo file with mins " << mins.transpose()
+					<< " maxs " << maxs.transpose() << " span " << span.transpose() << std::endl;
+				auto getCoords = [&](int i)->Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>
 				{
-					Eigen::Array3i crd;
-					int x, y, z;
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> crd;
+					crd.resize(1,3);
 					// Iterate first over z, then y, then x
-					x = i / (span(0)*span(1));
-					//crd(1) = (i % (span(2)*span(1))) / span(2);
-					y = (i - (x*span(0)*span(1))) / span(0); // it's not (i - i), as x involves an INTEGER division!
-					z = i % span(0);
-					crd(2) = x; crd(1) = y; crd(0) = z;
-					crd += mins;
-					//x = crd(0); y = crd(1); z = crd(2);
+					crd(0) = i % span(0);
+					crd(2) = i / (span(0)*span(1));
+					crd(1) = (int) (i - (crd(2)*span(0)*span(1))) / span(0); // it's not (i - i), as x involves an INTEGER division!
+					crd(0) = crd(0) + mins(0);
+					crd(1) = crd(1) + mins(1);
+					crd(2) = crd(2) + mins(2); //+= mins;
 					return crd;
 				};
-				auto getIndex = [&](Eigen::Array3i i) -> int
+				auto getIndex = [&](Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> i) -> int
 				{
+					// Iterate first over z, then y, then x
 					int res = 0;
-					i -= mins;
+					i(0) = i(0) - mins(0);
+					i(1) = i(1) - mins(1);
+					i(2) = i(2) - mins(2);
+					//int ip = i(0);
+					//i(0) = i(2); i(2) = ip;
+					//i -= mins;
+					//res = span(2) * span(1) * i(0);
+					//res += span(2) * i(1);
+					//res += i(2);
 					res = span(0) * span(1) * i(2);
 					res += span(0) * i(1);
 					res += i(0);
-					//int x = i(2), y = i(1), z = i(0);
-					//res = z + (span(2) * (y + (span(1)*x)));
 					return res;
 				};
-				Eigen::MatrixXf mDiels(meshSize, 1);
-				mDiels.setZero();
-				for (size_t i = 0; i < (size_t)s->latticePts.rows(); ++i)
-				{
-					Eigen::Array3i a; a(0) = (int)s->latticePts(i, 0);
-					a(1) = (int)s->latticePts(i, 1); a(2) = (int)s->latticePts(i, 2);
-					int index = getIndex(a);
-					mDiels(index, 0) = (float) s->latticePtsRi(i, 0);
-				}
+
 				Eigen::VectorXf xs(span(0), 1), ys(span(1), 1), zs(span(2), 1);
-				xs.setLinSpaced(s->mins(0), s->maxs(0));
-				ys.setLinSpaced(s->mins(1), s->maxs(1));
-				zs.setLinSpaced(s->mins(2), s->maxs(2));
+				xs.setLinSpaced(mins(0), maxs(0));
+				ys.setLinSpaced(mins(1), maxs(1));
+				zs.setLinSpaced(mins(2), maxs(2));
 
 				int dimsizes[] = { span(0), span(1), span(2) };
 				const float *dims[] = { xs.data(), ys.data(), zs.data() };
@@ -126,103 +120,92 @@ namespace Ryan_Debug {
 					"Shp_Mesh",
 					3, dims, dimsizes,
 					axislabels, axisunits);
-				// Write the array of zone ids
-				mesh->writeData<float>("Shp_Mesh_Dielectrics", mDiels.data(), "None");
-				double fScale = opts->getVal<double>("dielScalingFactor", 1.);
-				Eigen::MatrixXf mDielsScaled = mDiels / fScale;
-				mesh->writeData<float>("Shp_Mesh_Scaled", mDielsScaled.data(), "None");
 
-				// Write the other matrices
-				Eigen::MatrixXi lRi = s->latticePtsRi.col(0).cast<int>();
-				pm->writeData<int>(dielsName.c_str(), lRi.data(), "Dimensionless");
-				Eigen::MatrixXi lIndices = s->latticeIndex.cast<int>();
-				pm->writeData<int>(indexName.c_str(), lIndices.data(), "Dimensionless");
+				auto writeMeshData = [&](
+					const char* varName,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &coords,
+					const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> &indata,
+					const char* varUnits) {
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> data(meshSize, indata.cols());
+					data.setZero();
+					int j = 0;
+					std::cerr << "Writing mesh " << varName << std::endl;
+					//std::cerr << "Has min " << mins.transpose() << " with span "
+					//	<< span.transpose() << std::endl;
+					for (int i=0; i < indata.rows(); ++i)
+					{
+						Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> a, b;
+						a.resize(1,3); b.resize(1,3);
+						a = coords.block(i,0,1,3);
+						int index = getIndex(a);
+						b = getCoords(index);
+						//std::cerr << i << " " << a << " -> "
+						//	<< index << " -> " << b << std::endl;
+						if ((index < 0) || (index >= meshSize)) {
+							std::cerr << "Silo mesh is too small for data size "
+								<< "for variable " << varName << std::endl;
+							std::cerr << "Mins " << mins.transpose()
+								<< " Maxs " << maxs.transpose()
+								<< " Span " << span.transpose()
+								<< " prod " << meshSize << std::endl;
+							std::cerr << "Failed at point i " << i << ": " << a
+								<< " with index " << index << std::endl;
+							return;
+						}
+						++j;
+						//data.block(i,3,1,indata.cols()-3)
+						//	= indata.block(i,3,1,indata.cols()-3);
+						data.block(index,0,1,indata.cols())
+							= indata.block(i,0,1,indata.cols());
+					}
+					if (meshSize < j) {
+						std::cerr << "Silo mesh data write failed for variable "
+							<< varName << std::endl;
+						std::cerr << "MeshSize " << meshSize << " != j " << j << std::endl;
+						return;
+					}
+					mesh->writeData<float>(varName, data, varUnits);
+				};
+
+				writeMeshData("Shp_Mesh_Dielectrics3",
+					s->latticePts, s->latticePtsRi, "None");
+				writeMeshData("Shp_Mesh_Dielectrics",
+					s->latticePts,
+					s->latticePtsRi.block(0,0,s->numPoints,1), "None");
+				//double fScale = opts->getVal<double>("dielScalingFactor", 1.);
+				//Eigen::ArrayXf mDielsScaled =
+				//	s->latticePtsRi.block(0,0,s->numPoints,1) / fScale;
+				//writeMeshData("Shp_Mesh_Scaled",
+				//	s->latticePts, mDielsScaled, "None");
+				writeMeshData("Shp_Mesh_Indices",
+					s->latticePts, s->latticeIndex.cast<float>(), "None");
 
 				// Write the extra matrices
 				for (const auto &extras : s->latticeExtras)
 				{
 					std::string varname = meshname;
+					varname.append("_");
 					varname.append(extras.first);
-					if (extras.second->cols() < 4)
-						pm->writeData<float>(varname.c_str(), extras.second->data(), "Unknown");
-					else
-					{
-						// Make a new mesh from the first three columns of the data
-						std::string meshname2(varname);
-						meshname2.append("_mesh");
+					if (extras.second->cols() < 4) {
+						writeMeshData(varname.c_str(),
+						s->latticePts,
+						*(extras.second.get()), "Unknown");
+						//pm->writeData<float>(varname.c_str(), extras.second->data(), "Unknown");
+					} else {
 						Eigen::MatrixXf pts = extras.second->block(0, 0, extras.second->rows(), 3);
 						// Extract the values
 						size_t ndims = extras.second->cols() - 3;
 						Eigen::MatrixXf vals = extras.second->block(0, 3, extras.second->rows(), ndims);
-						auto npm = h->file->createPointMesh<float>(meshname2.c_str(), pts, axislabels, axisunits);
-
-						npm->writeData<float>(varname.c_str(), vals, "Unknown");
-						//npm->writeData<float>(varname.c_str(), vals.data(), "Unknown");
+						writeMeshData(varname.c_str(),
+							pts, vals, "Unknown");
+						//auto npm = h->file->createPointMesh<float>(meshname2.c_str(), pts, axislabels, axisunits);
+						//npm->writeData<float>(varname.c_str(), vals, "Unknown");
 					}
 				}
 
 				return h; // Pass back the handle
 		}
 
-
-		/*
-		shared_ptr<IOhandler>
-			write_file_type_multi
-			(shared_ptr<IOhandler> sh, shared_ptr<IO_options> opts,
-			const rtmath::ddscat::stats::shapeFileStats *s)
-		{
-				std::string filename = opts->filename();
-				IOhandler::IOtype iotype = opts->iotype();
-
-				using std::shared_ptr;
-				std::shared_ptr<silo_handle> h;
-				if (!sh)
-				{
-					// Access the hdf5 file
-					h = std::shared_ptr<silo_handle>(new silo_handle(filename.c_str(), iotype));
-				}
-				else {
-					if (sh->getId() != PLUGINID) RDthrow debug::xDuplicateHook("Bad passed plugin");
-					h = std::dynamic_pointer_cast<silo_handle>(sh);
-				}
-
-				write_file_type_multi(h, opts, s->_shp.get());
-
-				// Add in rotation-dependent information, such as the potential energy of each rotation, 
-				// as well as the associated moments of inertia. This will be on both a point mesh and, 
-				// if possible, a gridded mesh.
-
-				std::string hashname = s->_shp->hash().string();
-				std::string ptRotName = "Rotation_mesh_";
-				ptRotName.append(hashname);
-
-				//auto ptsRots = h->file->createPointMesh<float>(ptRotName.c_str(), 
-				Eigen::MatrixXf ptsRots(s->rotations.size(), 3);
-				Eigen::MatrixXf rotPE(s->rotations.size(), 1);
-				Eigen::MatrixXf rotMI(s->rotations.size(), 3);
-				{
-					size_t i = 0;
-					for (auto rot = s->rotations.begin(); rot != s->rotations.end(); ++rot, ++i)
-					{
-						ptsRots(i, 0) = (float)(*rot)->beta;
-						ptsRots(i, 1) = (float)(*rot)->theta;
-						ptsRots(i, 2) = (float)(*rot)->phi;
-						rotPE(i, 0) = (float)(*rot)->PE(0, 0);
-						rotMI.block(i, 0, 1, 3) = (*rot)->mominert.at(0).block<1, 3>(0, 0);
-					}
-				}
-				const char *dims[] = { "beta", "theta", "phi" };
-				const char *units[] = { "degrees", "degrees", "degrees" };
-				auto mPtsRots = h->file->createPointMesh<float>(ptRotName.c_str(), ptsRots, dims, units);
-				mPtsRots->writeData<float>(std::string("PE_").append(hashname).c_str(), rotPE, "PE Units (dipole space)");
-				mPtsRots->writeData<float>(std::string("MomInert_").append(hashname).c_str(), rotMI, "Moment of inertia units (dipole space)");
-
-				// TODO: make a mesh creation class that creates a mesh out of an irregular set of points
-
-
-				return h; // Pass back the handle
-		}
-		*/
 
 	}
 }

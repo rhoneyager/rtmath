@@ -20,6 +20,7 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapefile_supplemental.h"
 #include "../../rtmath/rtmath/ddscat/points.h"
+#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
 #include "../../rtmath/rtmath/error/debug.h"
 
 int main(int argc, char** argv)
@@ -69,6 +70,10 @@ int main(int argc, char** argv)
 			("dipole-spacing,d", po::value<double>()->default_value(40),
 			 "Interlattice spacing in microns")
 			("vf", "Determines the effective volume fraction for this convolution")
+			("write-voronoi", "Add Voronoi diagram information to final object output. "
+			 "This is a convenience routine to place all information on the same SILO grid.")
+			("write-initial", "Write the initial shape's dielectric information to the "
+			 "output. Useful when exporting graphics.")
 			;
 
 		rtmath::debug::add_options(cmdline, config, hidden);
@@ -125,6 +130,7 @@ int main(int argc, char** argv)
 		{
 			cerr << "Reading input shape file " << ifile << endl;
 			boost::shared_ptr<const shapefile> shp = shapefile::generate(ifile);
+			auto shporig = shp;
 			//cerr << shp->mins << "\n\n" << shp->maxs << std::endl;
 			//if (vm.count("description-append"))
 			//{
@@ -302,7 +308,26 @@ int main(int argc, char** argv)
 					volProvider->writeMulti(nullptr, opts);
 				}
 			}
+			if (vm.count("write-initial")) {
+				boost::shared_ptr<Eigen::Matrix<float,
+					Eigen::Dynamic, Eigen::Dynamic> > matorig(new
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>);
+				matorig->resize(shporig->numPoints, 4);
+				matorig->block(0,0,shporig->numPoints,3)
+					= shporig->latticePts.cast<float>().block(0,0,shporig->numPoints,3);
+				matorig->block(0,3,shporig->numPoints,1)
+					= shporig->latticePtsRi.cast<float>().block(0,0,shporig->numPoints,1);
 
+				shp->latticeExtras["Initial_Structure"] = matorig;
+			}
+			if (vm.count("write-voronoi")) {
+				boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
+				vd = shporig->generateVoronoi(
+					std::string("standard"),
+					rtmath::Voronoi::VoronoiDiagram::generateStandard);
+				auto surfdepth = vd->calcSurfaceDepth();
+				shp->latticeExtras["Voronoi_Depth"] = surfdepth;
+			}
 			if (vm.count("output")) {
 				auto opts = Ryan_Debug::registry::IO_options::generate();
 				opts->filename(sOutput);
@@ -314,8 +339,21 @@ int main(int argc, char** argv)
 						radius = vm["convolute"].as<double>();
 					else
 						radius = vm["dielScalingFactor"].as<double>();
-					double V = (4.*pi/3.) * std::pow(radius,3.);
-					opts->setVal<double>("dielScalingFactor",V);
+					auto volProvider = rtmath::ddscat::points::sphereVol::generate(radius);
+					double volExact = (double) volProvider->pointsInSphere();
+					// Add the scaled convoluted mesh
+					boost::shared_ptr<Eigen::Matrix<float,
+						Eigen::Dynamic, Eigen::Dynamic> > matvf(new
+						Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>);
+					matvf->resize(shp->numPoints, 4);
+					matvf->block(0,0,shp->numPoints,3)
+						= shp->latticePts.cast<float>().block(0,0,shp->numPoints,3);
+					matvf->block(0,3,shp->numPoints,1)
+						= shp->latticePtsRi.cast<float>().block(0,0,shp->numPoints,1)
+						* (1.f/(float) volExact);
+
+					shp->latticeExtras["Convoluted_Volume_Fraction"] = matvf;
+					opts->setVal<int>("meshPadding", (int) (radius +2) );
 				}
 				handle = shp->writeMulti(handle, opts);
 			}
