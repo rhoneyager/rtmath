@@ -326,7 +326,51 @@ int main(int argc, char** argv)
 					std::string("standard"),
 					rtmath::Voronoi::VoronoiDiagram::generateStandard);
 				auto surfdepth = vd->calcSurfaceDepth();
-				shp->latticeExtras["Voronoi_Depth"] = surfdepth;
+				//shp->latticeExtras["Voronoi_Depth"] = surfdepth;
+				auto cellmap = vd->getCellMap();
+				Eigen::MatrixXf grid = cellmap->cast<float>();
+				std::map<std::string, rtmath::Voronoi::VoronoiDiagram::matrixType> tbl;
+				vd->getResultsTable(tbl);
+
+				for (const auto &t : tbl)
+				{
+					const std::string name = t.first;
+					// Make a copy of the output matrix
+					rtmath::Voronoi::VoronoiDiagram::matrixTypeMutable m(new Eigen::MatrixXf(*(t.second)));
+					// Only write the matrices that have the correct number of rows
+					if ((size_t) m->rows() != vd->numPoints()) continue;
+					// If m has 4 or more cols, then the first three are the point location.
+					// If it has 3 or fewer, then the point ids are the row numbers, sequentially.
+					std::cerr << "name " << name << " - nr " << m->rows()
+						<< " nc " << m->cols() << std::endl;
+					size_t numCols = (m->cols() > 3) ? m->cols() - 3 : m->cols();
+					size_t idcol = (m->cols() > 3) ? 3 : 0;
+
+					boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+						res(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>);
+					res->resize(cellmap->rows(), numCols+3);
+					//Eigen::MatrixXf res(cellmap->rows(), numCols);
+					// It helps to construct a map between the probe point id and the matched point id.
+					// For the cellMap table, the row number is the probe point id. The fourth column is 
+					// the voronoi point id (which is the row of matrix m).
+					for (int i=0; i < cellmap->rows(); ++i)
+					{
+						int probeId = i;
+						int voroId = (*cellmap)(i,idcol);
+						// Fill in the point
+						res->block<1,3>(i,0) = cellmap->cast<float>().block<1,3>(i,0);
+						// Fill in the data
+						if (voroId >= 0)
+							res->block(i,3,1,numCols) = m->block(voroId,idcol,1,numCols);
+						else res->block(i,3,1,numCols).fill(-1);
+					}
+
+					//mesh->writeData<float>(name.c_str(), res);
+					string sname = "Voronoi_";
+					sname.append(name);
+					shp->latticeExtras[sname] = res;
+				}
+
 			}
 			if (vm.count("output")) {
 				auto opts = Ryan_Debug::registry::IO_options::generate();

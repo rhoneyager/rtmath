@@ -129,8 +129,14 @@ namespace Ryan_Debug {
 					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> data(meshSize, indata.cols());
 					data.setZero();
 					int j = 0;
-					std::cerr << "Writing mesh " << varName << std::endl;
-					//std::cerr << "Has min " << mins.transpose() << " with span "
+					std::cerr << "\tWriting mesh " << varName << std::endl;
+					std::cerr << "\t\tHas " << coords.rows() << " coords, "
+						"and " << indata.rows() << " points" << std::endl;
+					if (coords.rows() != indata.rows()) {
+						std::cerr << "\t\tMISMATCH. SKIPPING." << std::endl;
+						return;
+					}
+					//std::cerr << "\tHas min " << mins.transpose() << " with span "
 					//	<< span.transpose() << std::endl;
 					for (int i=0; i < indata.rows(); ++i)
 					{
@@ -186,10 +192,13 @@ namespace Ryan_Debug {
 					std::string varname = meshname;
 					varname.append("_");
 					varname.append(extras.first);
+					std::cerr << "Writing supplemental mesh " << varname << std::endl;
+					std::cerr << "\thas " << extras.second->rows() << " rows and "
+						<< extras.second->cols() << " columns." << std::endl;
 					if (extras.second->cols() < 4) {
 						writeMeshData(varname.c_str(),
-						s->latticePts,
-						*(extras.second.get()), "Unknown");
+							s->latticePts,
+							*(extras.second.get()), "Unknown");
 						//pm->writeData<float>(varname.c_str(), extras.second->data(), "Unknown");
 					} else {
 						Eigen::MatrixXf pts = extras.second->block(0, 0, extras.second->rows(), 3);

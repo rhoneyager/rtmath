@@ -242,21 +242,35 @@ namespace rtmath {
 			std::vector< boost::shared_ptr<Ryan_Debug::config::configsegment> > rootcands;
 			Ryan_Debug::config::configsegment::readVector(nullptr, opts, rootcands, nullptr);
 			boost::shared_ptr<Ryan_Debug::config::configsegment> cnf;
+			BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Searching for ROOT or RTMATH.\n"
+				"Top level children (" << rootcands.size() << ") are:\n";
 			for (const auto &r : rootcands)
 			{
-				if (r->name() == "RTMATH" || r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "\t" << r->name() << "\n";
+				if (r->name() == "RTMATH" || r->name() == "ROOT" ||
+					(r->name() == "" && rootcands.size() == 1)) {
+					cnf = r;
+					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "\t\tMATCHED\n";
+				}
 			}
 			if (cnf) {
 				_rtconfroot = cnf;
-				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loaded rtmath config file successfully. "
-					"Searching for hash databases. Top level children are: ";
-				// Enumerate top level children.
 				auto ccnf = cnf->getChild("RTMATH");
 				std::multiset<std::string> children;
 				ccnf->listChildren(children);
+				std::multimap<std::string,std::string> keys;
+				ccnf->listKeys(keys);
+				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loaded rtmath config file successfully. "
+					"Searching for hash databases.\nTop level children ("
+					<< children.size() << ") are: ";
+				// Enumerate top level children.
+
 				std::ostringstream schd;
 				for (const auto &i : children)
 					schd << "\t" << i << "\n";
+				schd << "Top level keys (" << keys.size() << ") are: \n";
+				for (const auto &i : keys)
+					schd << "\t" << i.first << "=" << i.second << "\n";
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << schd.str();
 				// Search for hash databases to load
 				auto nddscat = ccnf->getChild("ddscat");
