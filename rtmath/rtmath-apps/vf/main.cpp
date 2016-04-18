@@ -304,6 +304,10 @@ int main(int argc, char *argv[])
 					sum += ns;
 					if (depth >= int_voro_depth) { sumint += ns; nint++; }
 					else { sumext += ns; next++; }
+					if (i % 1000 == 0) {
+						std::cerr << "Check pt " << pt.transpose()
+							<< " has depth " << depth << " and ns " << ns << std::endl;
+					}
 				}
 				r.vf_ctot = sum / (double) (cnv->latticePts.rows());
 				r.vf_cint = sumint / (double) nint;
