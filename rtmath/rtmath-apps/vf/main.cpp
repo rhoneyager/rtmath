@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
 			"Max_Ellipsoids: Force aspect ratios to be ellipsoids, following the max AR calculated in stats code. "
 			"Spheres: Force aspect ratios to be spheres, instead of stats-determined spheroids. "
 			"(TODO SA_V_Ellipsoids: Select AR of ellipsoid with matching surface area to volume ratio).")
+			("tag", po::value<string>(), "A tag field that is added to keep "
+			 "track of different runs.")
 			;
 
 		cmdline.add_options()
@@ -112,6 +114,8 @@ int main(int argc, char *argv[])
 		if (vm.count("dipole-spacing"))
 			dSpacing = vm["dipole-spacing"].as<double>();
 
+		string tag;
+		if (vm.count("tag")) tag = vm["tag"].as<string>();
 		vector<string> inputs;
 		if (vm.count("input-shape"))
 		{
@@ -216,7 +220,9 @@ int main(int argc, char *argv[])
 
 		ofstream out(string(oprefix).c_str());
 		// Output a header line
-		out << "Hash\tIce Aeff (um)\tMax Diameter (mm)\t"
+		out << "Hash\tTag\t"
+			"Voro Depth\tConvolution Radius\t"
+			"Ice Aeff (um)\tMax Diameter (mm)\t"
 			"Ice Volume (mm^3)\tar\tvf cs\tvf ce\tvf vint\tvf hon\t"
 			"vf ctot\tvf cint\tvf cext\tintmfrac"
 			<< std::endl;
@@ -354,7 +360,9 @@ int main(int argc, char *argv[])
 				r.vf_cint = sumint / (double) nint;
 				r.vf_cext = sumext / (double) next;
 				cout << "N " << nint + next << " int " << nint << " ext " << next << endl;
-				out << r.hash << "\t" << r.aeff_um << "\t"
+				out << r.hash << "\t" << tag << "\t"
+					<< int_voro_depth << "\t" << crad << "\t"
+					<< r.aeff_um << "\t"
 					<< r.md_mm << "\t" << r.vol_mm3 << "\t" << r.ar << "\t"
 					<< r.vf_cs << "\t" << r.vf_ce << "\t"
 					<< r.vf_vint << "\t" << r.vf_hon << "\t"
