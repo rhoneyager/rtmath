@@ -260,13 +260,13 @@ int main(int argc, char** argv)
 					std::placeholders::_1,std::placeholders::_2,radius,ptsearch);
 				if (ct == "A") {
 					auto cnv = ::rtmath::ddscat::points::convolute_A(
-						shp, ((size_t) radius) + 1);
+						shp, ((size_t) radius) + 0.01);
 					cout << "There are " << shp->latticePts.rows() << " points\n";
 					shp.swap(cnv);
 					cout << "There are " << shp->latticePts.rows() << " points\n";
 				} else if (ct == "B") {
 					auto cnv = ::rtmath::ddscat::points::convolute_B(
-						shp, ((size_t) radius) + 1);
+						shp, ((size_t) radius) + 0.01);
 					cout << "There are " << shp->latticePts.rows() << " points\n";
 					shp.swap(cnv);
 					cout << "There are " << shp->latticePts.rows() << " points\n";
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 				if (vm.count("convolute"))
 					radius = vm["convolute"].as<double>();
 				double sum = 0;
-				auto volProvider = rtmath::ddscat::points::sphereVol::generate(radius);
+				auto volProvider = rtmath::ddscat::points::sphereVol::generate(radius+0.01);
 				double volExact = (double) volProvider->pointsInSphere();
 				double volFrm = volProvider->volSphere();
 				// Determine the volume
@@ -355,7 +355,7 @@ int main(int argc, char** argv)
 					// the voronoi point id (which is the row of matrix m).
 					for (int i=0; i < cellmap->rows(); ++i)
 					{
-						int probeId = i;
+						//int probeId = i;
 						int voroId = (*cellmap)(i,idcol);
 						// Fill in the point
 						res->block<1,3>(i,0) = cellmap->cast<float>().block<1,3>(i,0);

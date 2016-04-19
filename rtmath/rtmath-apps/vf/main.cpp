@@ -64,7 +64,11 @@ int main(int argc, char *argv[])
 			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
 			("match-parent-flake", "Select the parent flakes")
 
-			("voronoi-depth", po::value<size_t>()->default_value(1), "Sets the internal voronoi depth for scaling")
+			("convolution-radius", po::value<double>()->default_value(3),
+			 "Sets the radius for the convolution operation")
+			("convolution-threshold", po::value<double>()->default_value(0.1),
+			 "Sets the threshold volume fraction for the convolution valid threshold.")
+			("voronoi-depth", po::value<size_t>()->default_value(3), "Sets the internal voronoi depth for scaling")
 			("voronoi-offset-factor", po::value<double>()->default_value(3), "Sets the factor used in the Voronoi offset "
 			 "method")
 			("ar-method", po::value<string>()->default_value("Max_Ellipsoids"),
@@ -238,6 +242,7 @@ int main(int argc, char *argv[])
 					rtmath::Voronoi::VoronoiDiagram::generateStandard);
 				auto surfdepth = vd->calcSurfaceDepth();
 				vd->calcCandidateConvexHullPoints();
+				auto cellmap = vd->getCellMap();
 
 				size_t numLatticeTotal = 0, numLatticeFilled = 0;
 				vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
@@ -248,7 +253,8 @@ int main(int argc, char *argv[])
 				r.vf_vint = (double)numLatticeFilled / (double)numLatticeTotal;
 				r.vf_hon = r.vf_vint * ( 1. - (0.33333*(r.md_mm / 10.)));
 
-				double crad = 3.;
+				double crad = vm["convolution-radius"].as<double>();
+				double cthres = vm["convolution-threshold"].as<double>();
 
 				// vd is the already-calculated Voronoi diagram. I want to perform
 				// the convolution and report the overall volume fraction. I then
@@ -264,52 +270,87 @@ int main(int argc, char *argv[])
 					::rtmath::ddscat::points::points::convolutionNeighborsRadius,
 					std::placeholders::_1,std::placeholders::_2,crad,ptsearch);
 				auto cnv = ::rtmath::ddscat::points::convolute_A(
-					s, ((size_t) crad) + 1);
+					s, ((size_t) crad) + 0.01 );
 				// Iterate over all points, and average the dielectric values.
-				double sum = 0, sumint = 0, sumext = 0;
-				auto volProvider = rtmath::ddscat::points::sphereVol::generate(crad);
+				auto volProvider = rtmath::ddscat::points::sphereVol::generate(crad + 0.01);
 				double volExact = (double) volProvider->pointsInSphere();
 				double volFrm = volProvider->volSphere();
-				auto cellmap = vd->getCellMap();
-				// For each point in cellmap, the point (first 3 cols) can be iterated
-				// over to get the referenced cell (4th col). This cellid is the
-				// row in surfacedepth. If id=-1, surfacedepth = 0 (exterior).
-				// So, I just have to use a lookup function to convert the convoluted
-				// lattice point coordinates into cellMap coordinates.
-				Eigen::Array3i mins = s->mins.cast<int>(),
-					maxs = s->maxs.cast<int>();
+
+				// For the next step, I need a matrix of all possible point coordinates,
+				// the voronoi depth at each coordinate, and the convoluted volume fraction.
+				Eigen::Array3i mins = s->mins.cast<int>() - crad,
+					maxs = s->maxs.cast<int>() + crad;
 				Eigen::Array3i span = maxs - mins + 1;
 				int imax = span.prod();
-				auto convertcoords =[&](const Eigen::Array3f &lpt) -> int {
-					// Just inverting the code from VoroCachedVoronoi::generateCellMap::getCoords
-					// x varies first, then y, then z
-					// TODO: CHECK THIS!
-					Eigen::Array3i pt = lpt.cast<int>();
-					Eigen::Array3i pn = pt - mins;
-					int res = pn(2) * span(2);
-					res += (pn(1) % span(1)) * span(1);
-					res += (pn(0) % span(0));
-					if ((res >= imax) || (res < 0)) res = -1;
+				// Define some mapping functions to get a consistent index
+				auto getIndex = [&](Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> i) -> int
+				{
+					// Iterate first over z, then y, then x
+					int res = 0;
+					i(0) = i(0) - mins(0);
+					i(1) = i(1) - mins(1);
+					i(2) = i(2) - mins(2);
+					res = span(0) * span(1) * i(2);
+					res += span(0) * i(1);
+					res += i(0);
 					return res;
 				};
-				// Determine the volume
-				int nint = 0, next = 0;
+
+				boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> >
+					mat(new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>);
+				// Coordinate, then num neighbors, then vf, then voro depth
+				mat->resize(imax, 6); //cellmap->rows(), 6);
+				mat->setConstant(-1);
+				// Iterate first over the voronoi diagrams
+				for (int i=0; i < cellmap->rows(); ++i)
+				{
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> pt;
+					pt.resize(1,3);
+					pt = cellmap->cast<float>().block<1,3>(i,0);
+					int matId = getIndex(pt); // mat table row number
+					int voroId = (*cellmap)(i,3); // Depth table row number
+					// Fill in the point
+					mat->block<1,3>(matId,0) = pt;
+					// Fill in the data
+					if (voroId >= 0)
+						(*mat)(matId, 5) = (*surfdepth)(voroId, 3);
+					else (*mat)(matId, 5) = -1.f;
+				}
+				// Now iterate over the convolution results
 				for (int i=0; i < cnv->latticePts.rows(); ++i) {
-					Eigen::Array3f pt(cnv->latticePts(i,0),
-						cnv->latticePts(i,1), cnv->latticePts(i,2));
-					int cellid = convertcoords(pt);
-					int depth = 0;
-					if (cellid >= 0) depth = (*surfdepth)(cellid,3);
-					double ns = cnv->latticePtsRi(i,0) / volExact;
-					sum += ns;
-					if (depth >= int_voro_depth) { sumint += ns; nint++; }
-					else { sumext += ns; next++; }
-					if (i % 1000 == 0) {
-						std::cerr << "Check pt " << pt.transpose()
-							<< " has depth " << depth << " and ns " << ns << std::endl;
+					Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> pt;
+					pt.resize(1,3);
+					pt(0,0) = cnv->latticePts(i,0); pt(0,1) = cnv->latticePts(i,1);
+					pt(0,2) = cnv->latticePts(i,2);
+					int matId = getIndex(pt); // mat table row number
+					// Fill in the data
+					(*mat)(matId, 3) = cnv->latticePtsRi(i,0);
+					(*mat)(matId, 4) = (*mat)(matId, 3) / volExact;
+				}
+				int ntot = 0, nint = 0, next = 0, nign = 0;
+				double sumtot = 0, sumint = 0, sumext = 0, sumign = 0;
+				// Finally, iterate over mat
+				for (int i=0; i < mat->rows(); ++i) {
+					if ((*mat)(i, 4) < cthres) {
+						// Ignore point
+						nign++;
+						sumign += (*mat)(i, 4);
+					} else {
+						if ((*mat)(i,5) < int_voro_depth) {
+							// Surface point
+							next++;
+							sumext += (*mat)(i, 4);
+							sumtot += (*mat)(i, 4);
+						} else {
+							// Interior point
+							nint++;
+							sumint += (*mat)(i, 4);
+							sumtot += (*mat)(i, 4);
+						}
 					}
 				}
-				r.vf_ctot = sum / (double) (cnv->latticePts.rows());
+
+				r.vf_ctot = sumtot / (double) (nint + next);
 				r.vf_cint = sumint / (double) nint;
 				r.vf_cext = sumext / (double) next;
 				cout << "N " << nint + next << " int " << nint << " ext " << next << endl;
