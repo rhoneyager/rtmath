@@ -68,6 +68,8 @@ int main(int argc, char *argv[])
 			 "Specify volume fraction column")
 			("col-hash", po::value<int>()->default_value(1),
 			 "Specify hash column")
+			("vf-bias", po::value<double>()->default_value(0),
+			 "Bias the volume fraction by the specified amount")
 			("tag", po::value<string>(), "Specify tag")
 			("ar-method", po::value<string>()->default_value("Spheres"),
 			"Max_Ellipsoids: Force aspect ratios to be ellipsoids, following the max AR calculated in stats code. "
@@ -126,6 +128,7 @@ int main(int argc, char *argv[])
 		string oprefix;
 		if (vm.count("output"))
 			oprefix = vm["output"].as<string>();
+		double vfbias = vm["vf-bias"].as<double>();
 
 		// Let's understand the other parameters.
 		auto otherOpts = Ryan_Debug::registry::options::generate();
@@ -202,6 +205,7 @@ int main(int argc, char *argv[])
 					r.fv = boost::lexical_cast<double>(spstr.at(colvf));
 					r.refHash = spstr.at(colhash);
 					r.ar = boost::lexical_cast<double>(spstr.at(colar));
+					r.fv += vfbias;
 					runs.push_back(std::move(r));
 				}
 		}
