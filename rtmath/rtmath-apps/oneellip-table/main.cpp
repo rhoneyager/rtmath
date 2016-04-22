@@ -254,11 +254,12 @@ int main(int argc, char *argv[])
 			i.aeff_version = pf_class_registry::inputParamsPartial::aeff_version_type::EQUIV_V_SPHERE;
 			i.eps = r.ar;
 //std::function<void(std::complex<double>, std::complex<double>, double, std::complex<double> &)> rmeth;
-			std::complex<double> mIce, mAir(1,0), mRes;
+			std::complex<double> mIce; //, mAir(1,0), mRes;
 			rtmath::refract::mIce(r.freq, r.temp, mIce);
 			i.vFrac = r.fv;
-			rmeth(mIce, mAir, i.vFrac, mRes);
-			i.m = mRes;
+			//rmeth(mIce, mAir, i.vFrac, mRes);
+			//i.m = mRes;
+			i.m = mIce;
 			i.ref = r.refHash;
 			i.maxDiamFull = r.maxDiamFull;
 			i.rmeth = rmeth; // Yeah, only one refractive index method per program invocation is supported.
