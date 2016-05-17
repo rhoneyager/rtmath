@@ -1,0 +1,31 @@
+oneellip-solver-basic program
+
+Takes input consisting of DDA single scattering properties, max dimension,
+effective radius, ar, and some tag columns, and attempts to find the best
+possible volume fraction fit in md (to quartic terms).  The norm is either
+defined as all possible flakes weighted evenly or weighted according to an
+existing size-number density distribution.
+
+Remaining work:
+- Columns are specified, but the DDA column needs to be used. Assuming here that
+  backscatter is being matched.
+- Need to link the code with lmfit.
+- Need to implement a definition of the norm that accounts for the size
+  distribution function.
+  - Also can define the norm as the difference in integrated backscatter.
+- Need to implement the size distribution function in the core rtmath library
+- Implement Holly's approach of testing sensitivity to perturbations by randomly
+  selecting N flakes and performing the size integral to match this.
+- Validate that the distribution of integrated backscatter for DDA and TMM cases
+  match under random selection of constituent particles.
+- Respecify an alternate solver instead of TMM. Perhaps use Hogan's definition.
+  - Finish creating the program and code that determines Hogan's distribution
+    parameters for a given set of particles.
+- vf equation is fit. Give option to specify terms of equation manually, instead
+  of just assuming that it is linear in maximum dimension. See the example
+  flex/bison code that implements a basic calculator. I can add some basic
+  equation parsing abilities to rtmath. Variables can match column names.
+- Add better support for mapping column names with the id fields. Can specify by
+  number in case of odd column name. In this case, then the default name can
+  also be substituted.
+
