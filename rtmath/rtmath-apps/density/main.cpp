@@ -30,16 +30,13 @@ int main(int argc, char *argv[])
 		namespace po = boost::program_options;
 		po::options_description desc("Allowed options"), cmdline("Command-line options"),
 			runmatch("Run-matching options"), basic("Basic ellipsoid options"),
-			refract("Density options"), scale("Scaling options"),
+			refract("Density options"),
 			config("Config options"), hidden("Hidden options"), oall("all options");
 
 		rtmath::debug::add_options(cmdline, config, hidden);
-		rtmath::ddscat::stats::shapeFileStats::add_options(cmdline, config, hidden);
-		//rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
-		//rtmath::refract::add_options(cmdline, config, hidden);
 
 		runmatch.add_options()
-			("dipole-spacing,d", po::value<double>(), "Set dipole spacing for file exports.")
+			("dipole-spacing,d", po::value<double>(), "Set dipole spacing")
 			("input-shape,i", po::value< vector<string> >(), "Input shape files")
 			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
 			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
@@ -76,16 +73,14 @@ int main(int argc, char *argv[])
 			("aeffs,a", po::value<std::string>(), "Specify the effective radii in um")
 			("radii,r", po::value<std::string>(), "Specify the actual mean sphere radii in um")
 			;
-		scale.add_options()
-			;
 
 		cmdline.add_options()
 			("help,h", "produce help message")
 			("output-prefix,o", po::value<string>()->default_value("output"), "Set output file (required)")
 			;
 
-		desc.add(cmdline).add(config).add(runmatch).add(refract).add(basic).add(scale);
-		oall.add(cmdline).add(runmatch).add(refract).add(config).add(hidden).add(basic).add(scale);
+		desc.add(cmdline).add(config).add(runmatch).add(refract).add(basic);
+		oall.add(cmdline).add(runmatch).add(refract).add(config).add(hidden).add(basic);
 
 		po::variables_map vm;
 		po::store(po::command_line_parser(argc, argv).
@@ -93,7 +88,7 @@ int main(int argc, char *argv[])
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
-		rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
+		//rtmath::ddscat::stats::shapeFileStats::process_static_options(vm);
 
 		// Begin checking parameters
 		auto doHelp = [&](const std::string& s) {
@@ -421,24 +416,9 @@ int main(int argc, char *argv[])
 			cout << ofile << " --- " << i << " " << r.refHash << endl;
 			++i;
 
-				out << rr.first << "\t" << r.aeff << "\t" << r.freq << "\t" << r.fv << "\t" << r.temp << "\t"
+				out << rr.first << "\t" << r.aeff << "\t" << r.fv << "\t" << r.temp << "\t"
 					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
-					<< r.ar << "\t" << r.lambda << "\t" << r.m.real() << "\t" << r.m.imag() << "\t"
-					<< sizep << "\t" << i.aeff_rescale << "\t"
-					<< s.theta << "\t" << s.beta << "\t" << s.phi << "\t"
-					<< rr.second.g_iso << "\t"
-					<< rr.second.Qabs_iso << "\t"
-					<< rr.second.Qbk_iso << "\t"
-					<< rr.second.Qext_iso << "\t"
-					<< rr.second.Qsca_iso
-					<< std::endl;
-
-				cout << rr.first << "\t"
-					<< rr.second.g_iso << "\t"
-					<< rr.second.Qabs_iso << "\t"
-					<< rr.second.Qbk_iso << "\t"
-					<< rr.second.Qext_iso << "\t"
-					<< rr.second.Qsca_iso
+					<< r.ar
 					<< std::endl;
 		}
 
