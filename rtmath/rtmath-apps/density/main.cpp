@@ -1,6 +1,7 @@
 /// Density program tablulates various particle size / density relations.
 /// It accounts for temperature and different length scale units.
 #include <iostream>
+#include "../../rtmath/rtmath/defs.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -13,18 +14,30 @@
 #include <Ryan_Debug/debug.h>
 #include <Ryan_Debug/splitSet.h>
 #include <Ryan_Debug/error.h>
-#include "../../rtmath/rtmath/density.h"
+#include <Ryan_Debug/logging.h>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include "../../rtmath/rtmath/density/density.h"
 #include "../../rtmath/rtmath/units.h"
-#include "../../rtmath/rtmath/ddscat/shapefile.h"
-#include "../../rtmath/rtmath/Voronoi/Voronoi.h"
-#include "../../rtmath/rtmath/ddscat/shapestats.h"
+#include "../../rtmath/rtmath/conversions/convertLength.h"
 #include "../../rtmath/rtmath/registry.h"
 #include "../../rtmath/rtmath/error/debug.h"
+
+BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(
+	m_app,
+	boost::log::sources::severity_channel_logger_mt< >,
+	(boost::log::keywords::severity = Ryan_Debug::log::error)
+	(boost::log::keywords::channel = "app"));
+
+#undef FL
+#undef mylog
+#define FL "main.cpp, line " << (int)__LINE__ << ": "
+#define mylog(x) { std::ostringstream l; l << FL << x; BOOST_LOG_SEV(lg, Ryan_Debug::log::debug_1) << l.str(); }
 
 int main(int argc, char *argv[])
 {
 	using namespace std;
 	try {
+		auto& lg = m_app::get();
 		cerr << "rtmath-density" << endl;
 		// Do processing of argv
 		namespace po = boost::program_options;
@@ -35,18 +48,6 @@ int main(int argc, char *argv[])
 
 		rtmath::debug::add_options(cmdline, config, hidden);
 
-		runmatch.add_options()
-			("dipole-spacing,d", po::value<double>(), "Set dipole spacing")
-			("input-shape,i", po::value< vector<string> >(), "Input shape files")
-			("use-db", po::value<bool>()->default_value(true), "Use database to supplement loaded information")
-			("from-db", po::value<bool>()->default_value(false), "Perform search on database and select files matching criteria.")
-			("match-hash", po::value<vector<string> >()->multitoken(), "Match lower hashes")
-			("match-flake-type", po::value<vector<string> >()->multitoken(), "Match flake types")
-			("match-dipole-spacing", po::value<vector<float> >()->multitoken(), "Match typical dipole spacings")
-			("match-dipole-numbers", po::value<vector<size_t> >()->multitoken(), "Match typical dipole numbers")
-			("match-parent-flake-hash", po::value<vector<string> >()->multitoken(), "Match flakes having a given parent hash")
-			("match-parent-flake", "Select the parent flakes")
-			;
 		refract.add_options()
 			("temps,T", po::value<std::string>()->default_value("263"), "Specify temperatures in K")
 			("volume-fractions,v", po::value<std::string>()->default_value("1"), "Set the ice volume fractions. Used when not doing shapefiles.")
@@ -72,6 +73,12 @@ int main(int argc, char *argv[])
 			("aspect-ratios,s", po::value<std::string>()->default_value("1"), "Specify aspect ratio for ellipsoids.")
 			("aeffs,a", po::value<std::string>(), "Specify the effective radii in um")
 			("radii,r", po::value<std::string>(), "Specify the actual mean sphere radii in um")
+			("size-type", po::value<std::string>()->default_value("Effective_Radius_Ice"), "How is the size described? "
+			 "Effective_Radius_Ice, Effective_Radius_Full, Max_Diameter_Full, etc. are valid options.")
+			("vf-aeff-1", po::value<double>(), "")
+			("vf-aeff-2", po::value<double>(), "")
+			("vf-val-1", po::value<double>(), "")
+			("vf-val-2", po::value<double>(), "")
 			;
 
 		cmdline.add_options()
@@ -103,95 +110,16 @@ int main(int argc, char *argv[])
 		if (vm.count("output-prefix"))
 			oprefix = vm["output-prefix"].as<string>();
 
-		vector<string> inputs;
-		if (vm.count("input-shape"))
-		{
-			inputs = vm["input-shape"].as< vector<string> >();
-			cerr << "Input files are:" << endl;
-			for (auto it = inputs.begin(); it != inputs.end(); it++)
-				cerr << "\t" << *it << "\n";
-		};
-		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
-
-		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
-		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
-		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
-		bool matchParentFlakes;
-
-		if (vm.count("match-hash")) matchHashes = vm["match-hash"].as<vector<string> >();
-		if (vm.count("match-flake-type")) matchFlakeTypes = vm["match-flake-type"].as<vector<string> >();
-		if (vm.count("match-parent-flake-hash")) matchParentHashes = vm["match-parent-flake-hash"].as<vector<string> >();
-		if (vm.count("match-dipole-spacing")) iDipoleSpacing.append(vm["match-dipole-spacing"].as<vector<string>>());
-		if (vm.count("match-dipole-numbers")) iDipoleNumbers.append(vm["match-dipole-numbers"].as<vector<string>>());
-
-		if (vm.count("match-parent-flake")) matchParentFlakes = true;
-
-		using namespace rtmath::ddscat::shapefile;
-		auto collection = shapefile::makeCollection();
-		auto query = shapefile::makeQuery();
-		query->hashLowers.insert(matchHashes.begin(), matchHashes.end());
-		query->flakeTypes.insert(matchFlakeTypes.begin(), matchFlakeTypes.end());
-		query->refHashLowers.insert(matchParentHashes.begin(), matchParentHashes.end());
-		query->dipoleNumbers = iDipoleNumbers;
-		query->dipoleSpacings = iDipoleSpacing;
-
-		bool supplementDb = false;
-		supplementDb = vm["use-db"].as<bool>();
-		bool fromDb = false;
-		fromDb = vm["from-db"].as<bool>();
-
-		using namespace boost::filesystem;
-		auto dbcollection = rtmath::ddscat::shapefile::shapefile::makeCollection();
-		auto qExisting = rtmath::ddscat::shapefile::shapefile::makeQuery();
-		// Load in all local shapefiles, then perform the matching query
-		vector<string> vinputs;
-		for (auto it = inputs.begin(); it != inputs.end(); it++)
-		{
-			cerr << "Processing " << *it << endl;
-			path pi(*it);
-			if (!exists(pi)) RDthrow(Ryan_Debug::error::xMissingFile())
-				<< Ryan_Debug::error::file_name(*it);
-			if (is_directory(pi))
-			{
-				path pt = pi / "target.out";
-				path ps = pi / "shape.dat";
-				boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> smain;
-
-				if (exists(ps))
-				{
-					cerr << " found " << ps << endl;
-					smain = rtmath::ddscat::shapefile::shapefile::generate(ps.string());
-					collection->insert(smain);
-				}
-			}
-			else {
-				auto iopts = Ryan_Debug::registry::IO_options::generate();
-				iopts->filename(*it);
-				try {
-					vector<boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> > shapes;
-					Ryan_Debug::io::readObjs(shapes, *it);
-					for (auto &s : shapes)
-						collection->insert(s);
-				}
-				catch (std::exception &e)
-				{
-					cerr << e.what() << std::endl;
-					continue;
-				}
-			}
-		}
-
-		// Perform the query, and then process the matched shapefiles
-		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
-
-
-
+		double vf_aeff_1 = -1, vf_aeff_2 = -1, vf_1 = -1, vf_2 = -1;
+		if (vm.count("vf-aeff-1")) vf_aeff_1 = vm["vf-aeff-1"].as<double>();
+		if (vm.count("vf-aeff-2")) vf_aeff_2 = vm["vf-aeff-2"].as<double>();
+		if (vm.count("vf-val-1")) vf_1 = vm["vf-val-1"].as<double>();
+		if (vm.count("vf-val-2")) vf_2 = vm["vf-val-2"].as<double>();
 		struct run
 		{
-			double temp, aeff, ar;
-			double fv;
+			double temp, aeff, ar, md;
+			double fv, dens;
 			std::string fvMeth;
-			std::string refHash;
 		};
 		vector<run> runs;
 		runs.reserve(50000);
@@ -233,7 +161,7 @@ int main(int argc, char *argv[])
 		auto process_commandline = [&]()
 		{
 			// If any of these are set, ensure that the temperature and frequency are also set
-
+			string sizetype = vm["size-type"].as<string>();
 			// Freqs and temps are in main's scope
 			set<double> aeffs, radii, aspects, vfracs; // , alphas, betas;
 			if (vm.count("aeffs"))
@@ -245,56 +173,129 @@ int main(int argc, char *argv[])
 			if (vm.count("volume-fractions"))
 				Ryan_Debug::splitSet::splitSet(vm["volume-fractions"].as<string>(), vfracs);
 
-			if (!temps.size() && !overrideM) doHelp("Need to specify temperatures.");
+			using namespace rtmath::units::keywords;
+			if (!temps.size() ) doHelp("Need to specify temperatures.");
 			if ((aeffs.size() || radii.size()) && aspects.size() && vfracs.size())
 			{
-				if (temps.size() || overrideM)
+				for (const auto &aspect : aspects)
+				for (const auto &vfrac : vfracs)
 				{
-						for (const auto &aspect : aspects)
-							for (const auto &vfrac : vfracs)
-							{
-								auto doAeff = [&](double aeff, bool rescale)
-								{
-									if (rescale) {
-										double V_rad = std::pow(aeff,3.);
-										double V_sca = V_rad * vfrac;
-										aeff = std::pow(V_sca, 1./3.);
-									}
-									if (overrideM)
-									{
-										run r;
-										r.aeff = aeff;
-										r.ar = aspect;
-										r.fv = vfrac;
-										r.temp = -1;
-										runs.push_back(std::move(r));
-									}
-									else {
-										for (const auto &temp : temps)
-										{
-											run r;
-											r.aeff = aeff;
-											r.ar = aspect;
-											r.fv = vfrac;
-											r.temp = temp;
-											runs.push_back(std::move(r));
-										}
-									}
-								};
-								for (const auto &aeff : aeffs)
-									doAeff(aeff, false);
-								for (const auto &rad : radii)
-								{
-									// Rescale radius to effective radius
-									// using r.fv, rad.
-									//double V_rad = std::pow(rad,3.);
-									//double V_sca = V_rad * r.fv;
-									//double aeff = std::pow(V_sca, 1./3.);
-									doAeff(rad, true);
+					auto doAeff = [&](double aeff, double vfrac, double temp)
+					{
+						mylog("Adding for aeff " << aeff << " vf " << vfrac << " temp " << temp);
+						run r;
+						r.aeff = aeff;
+						r.ar = aspect;
+						r.fv = vfrac;
+						r.temp = temp;
+						if (vf == VFRAC_TYPE::OTHER) {
+							r.fvMeth = vfScaling;
+						}
+
+						r.md = rtmath::units::convertLength(
+							_in_length_value = aeff,
+							_in_length_type = "Effective_Radius",
+							_out_volume_fraction = vfrac,
+							_ar = aspect,
+							_out_length_type = "Max_Diameter");
+						double mindim = rtmath::units::convertLength(
+							_in_length_value = aeff,
+							_in_length_type = "Effective_Radius",
+							_out_volume_fraction = vfrac,
+							_ar = aspect,
+							_out_length_type = "Min_Diameter"
+							);
+						mylog("\n\taeff " << aeff
+							<< "\n\tmax dim " << r.md
+							<< "\n\tmin dim " << mindim
+							<< "\n\tvf " << vfrac);
+						std::cerr << "aeff " << aeff
+							<< " max dim " << r.md  << " min dim " << mindim
+							<< " vf " << vfrac << std::endl;
+						runs.push_back(std::move(r));
+					};
+					std::vector<std::tuple<double, double, double> > aeff_vf_rad;
+					// Density is temperature-dependent.
+					if (!vfracs.size() && vf == VFRAC_TYPE::OTHER)
+					{
+						if (!temps.size()) doHelp("When using a predetermined density "
+							"formula, temperature should be specified.");
+						for (const auto &temp : temps) {
+						// Populate the volume fractions being calculated
+							for (const auto &aeff1 : aeffs) {
+								using namespace rtmath::density;
+								double dIce = ice1h(
+									_temperature = temp, _temp_units = "K" );
+								double dEff = 0;
+								dEff = effDen(
+									_provider = vfScaling,
+									_in_length_value = aeff1,
+									_in_length_type = sizetype, //"Effective_Radius_Ice",
+									_in_length_units = "um",
+									_ar = aspect,
+									_temperature = temp,
+									_temp_units = "K",
+									_vfLowAeff = vf_aeff_1,
+									_vfHighAeff = vf_aeff_2,
+									_vfLow = vf_1,
+									_vfHigh = vf_2
+									);
+								double vf = dEff / dIce;
+								double aeff = rtmath::units::convertLength(
+									_in_length_value = aeff1,
+									_in_length_type = sizetype,
+									_ar = aspect,
+									_in_volume_fraction = vf,
+									_out_length_type = "Effective_Radius"
+									);
+								mylog("auto vf"
+									<< "\n\t_in_length_value " << aeff1
+									<< "\n\t_in_length_type " << sizetype
+									<< "\n\t_ar " << aspect
+									<< "\n\t_out_length_type Effective_Radius"
+									<< "\n\taeff " << aeff
+									<< "\n\t_in_volume_fraction " << vf
+									<< "\n\tvfScaling " << vfScaling
+									<< "\n\ttemp " << temp << " K"
+									<< "\n\teffDen " << dEff
+									);
+								aeff_vf_rad.push_back(std::tuple<double, double, double>
+									(aeff, vf, temp));
+							}
+						}
+					} else {
+						if (!temps.size() ) temps.insert(-1);
+						for (const auto &temp : temps)
+							for (const auto &vf : vfracs) {
+								for (const auto &aeff1 : aeffs) {
+									using namespace rtmath::density;
+									double dIce = ice1h( _temperature = temp, _temp_units = "K" );
+									double vvf = vf;
+									//if (vm.count("vf-is-den"))
+									//	vvf /= dIce; // TODO: Not yet working.
+									double aeff = rtmath::units::convertLength(
+										_in_length_value = aeff1,
+										_in_length_type = sizetype,
+										_ar = aspect,
+										_in_volume_fraction = vvf,
+										_out_length_type = "Effective_Radius"
+										);
+									mylog("manual vf"
+										<< "\n\t_in_length_value " << aeff1
+										<< "\n\t_in_length_type " << sizetype
+										<< "\n\t_ar " << aspect
+										<< "\n\t_in_volume_fraction " << vvf
+										<< "\n\t_out_length_type Effective_Radius"
+										<< "\n\taeff " << aeff);
+									//std::cerr << "aeff " << inAeff << " rad " << rad << " vf " << vf << std::endl;
+									aeff_vf_rad.push_back(std::tuple<double, double, double>
+										(aeff, vvf, temp));
 								}
+						}
 					}
+					for (const auto &t : aeff_vf_rad)
+						doAeff(std::get<0>(t), std::get<1>(t), std::get<2>(t));
 				}
-				else doHelp("Need to specify temperatures or a refractive index");
 			}
 		};
 
@@ -302,122 +303,35 @@ int main(int argc, char *argv[])
 
 
 
-		auto processShape = [&](boost::shared_ptr<rtmath::ddscat::shapefile::shapefile> s)
-		{
-			try {
-				cerr << "  Shape " << s->hash().lower << endl;
-				s->loadHashLocal(); // Load the shape fully, if it was imported from a database
-				auto stats = rtmath::ddscat::stats::shapeFileStats::genStats(s);
-				if (dSpacing && !s->standardD) s->standardD = (float)dSpacing;
-
-					for (const auto &temp : temps) { // Can also be -1 when overriding temp
-					run r;
-
-					rtmath::ddscat::stats::shapeFileStatsBase::volumetric *v = nullptr;
-					if (vf == VFRAC_TYPE::CIRCUM_SPHERE) {
-						v = &(stats->Scircum_sphere); r.fvMeth = "Circumscribing Sphere";
-					} else if (vf == VFRAC_TYPE::RMS_SPHERE) {
-						v = &(stats->Srms_sphere); r.fvMeth = "RMS Sphere";
-					} else if (vf == VFRAC_TYPE::GYRATION_SPHERE) {
-						v = &(stats->Sgyration); r.fvMeth = "Radius of gyration Sphere";
-					} else if (vf == VFRAC_TYPE::VORONOI) {
-						v = &(stats->SVoronoi_hull); r.fvMeth = "Voronoi hull";
-					} else if (vf == VFRAC_TYPE::CONVEX) {
-						v = &(stats->Sconvex_hull); r.fvMeth = "Convex hull";
-					} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX) {
-						v = &(stats->Sellipsoid_max);
-						r.fvMeth = "Max ellipsoid";
-					} else if (vf == VFRAC_TYPE::ELLIPSOID_MAX_HOLLY) {
-						v = &(stats->Sellipsoid_max_Holly);
-						r.fvMeth = "Max ellipsoid Holly";
-					} else if (vf == VFRAC_TYPE::SOLID_SPHERE) {
-						v = &(stats->Ssolid);
-						r.fvMeth = "Solid sphere";
-					} else if ((vf == VFRAC_TYPE::INTERNAL_VORONOI) && (int_voro_depth == 2)) {
-						v = &(stats->SVoronoi_internal_2);
-						r.fvMeth = "Internal Voronoi Depth 2";
-					} else if ((vf == VFRAC_TYPE::OTHER)) {
-						r.fvMeth = vfother;
-					}
-					if (v) {
-						r.aeff = v->aeff_V * s->standardD;
-						r.fv = v->f;
-					} else if (vf == VFRAC_TYPE::INTERNAL_VORONOI) {
-						boost::shared_ptr<rtmath::Voronoi::VoronoiDiagram> vd;
-						vd = s->generateVoronoi(
-							std::string("standard"), rtmath::Voronoi::VoronoiDiagram::generateStandard);
-						vd->calcSurfaceDepth();
-						vd->calcCandidateConvexHullPoints();
-
-						size_t numLatticeTotal = 0, numLatticeFilled = 0;
-						vd->calcFv(int_voro_depth, numLatticeTotal, numLatticeFilled);
-
-						r.aeff = stats->aeff_dipoles_const * s->standardD;
-						r.fvMeth = "Internal Voronoi Depth ";
-						r.fvMeth.append(boost::lexical_cast<std::string>(int_voro_depth));
-						r.fv = (double)numLatticeFilled / (double)numLatticeTotal;
-					} else RDthrow(Ryan_Debug::error::xBadInput())
-						<< Ryan_Debug::error::otherErrorText("Unhandled volume fraction method");
-
-					/// Gives aspect ratio of matching ellipsoid
-					/// \todo Implement this function
-					auto arEllipsoid = [](double sa, double v) -> double
-					{
-						RDthrow(Ryan_Debug::error::xUnimplementedFunction());
-						return -1;
-					};
-
-
-					if (armeth == "Max_Ellipsoids")
-						// 0,2 to match Holly convention!!!!!!! 0,1 always is near sphere.
-						r.ar = stats->calcStatsRot(0, 0, 0)->get<1>().at(rtmath::ddscat::stats::rotColDefs::AS_ABS)(0, 2);
-					else if (armeth == "Spheres")
-						r.ar = 1;
-					else doHelp("ar-method needs a correct value.");
-					r.freq = freq;
-					if (overrideM) r.m = ovM;
-					else rtmath::refract::mIce(freq, temp, r.m);
-					r.temp = temp;
-					r.refHash = s->hash().string();
-					r.lambda = rtmath::units::conv_spec("GHz", "um").convert(freq);
-
-					runs.push_back(std::move(r));
-					}
-				} catch (Ryan_Debug::error::xMissingHash &err) {
-					cerr << "  Cannot find hash for " << s->hash().lower << endl;
-					cerr << err.what() << endl;
-				}
-		};
-
-		for (const auto &s : *(res.first))
-			processShape(rtmath::ddscat::shapefile::shapefile::generate(s));
-
-
-
 
 		ofstream out(string(oprefix).c_str());
 		// Output a header line
-		out << "Aeff (um)\tMax_Diameter (um)\tVolume Fraction\tDensity (g/cm^3)\tTemperature (K)\t"
-			"Hash\tAspect Ratio\tAR Method\tVolume Fraction Method\t"
-			"Method" << std::endl;
+		out << "Aeff (um)\tMax_Diameter (um)\t"
+			"Volume Fraction\tDensity (g/cm^3)\t"
+			"Temperature (K)\tVolume Fraction Method\t"
+			"Aspect Ratio"
+			<< std::endl;
 
 		std::cerr << "Doing " << runs.size() << " calculations." << std::endl;
-		cout << "Meth\tg\tQabs\tQbk\tQext\tQsca" << std::endl;
 		size_t i=0;
 		// Iterate over all possible runs
 		for (const auto &r : runs)
 		{
 			ostringstream ofiless;
 			// the prefix is expected to be the discriminant for the rotational data
-			ofiless << oprefix << "-t-" << r.temp << "-f-" << r.freq
+			ofiless << oprefix << "-t-" << r.temp 
 				<< "-aeff-" << r.aeff
 				<< "-vfrac-" << r.fv << "-aspect-" << r.ar;
 			string ofile = ofiless.str();
-			cout << ofile << " --- " << i << " " << r.refHash << endl;
+			cout << ofile << " --- " << i << endl;
 			++i;
 
-				out << rr.first << "\t" << r.aeff << "\t" << r.fv << "\t" << r.temp << "\t"
-					<< r.refHash << "\t" << armeth << "\t" << refractScaling << "\t" << r.fvMeth << "\t"
+				out << r.aeff << "\t"
+					<< r.md << "\t"
+					<< r.fv << "\t"
+					<< r.dens << "\t"
+					<< r.temp << "\t"
+					<< r.fvMeth << "\t"
 					<< r.ar
 					<< std::endl;
 		}
