@@ -117,14 +117,7 @@ int main(int argc, char *argv[])
 				cerr << "\t" << *it << "\n";
 		};
 		std::shared_ptr<Ryan_Debug::registry::DBhandler> dHandler;
-		/*
-		("from-db", "Perform search on database and select files matching criteria.")
-		("match-hash", po::value<vector<string> >(), "Match lower hashes")
-		("match-flake-type", po::value<vector<string> >(), "Match flake types")
-		("match-dipole-spacing", po::value<vector<float> >(), "Match typical dipole spacings")
-		("match-parent-flake-hash", po::value<vector<string> >(), "Match flakes having a given parent hash")
-		("match-parent-flake", "Select the parent flakes")
-		*/
+
 		vector<string> matchHashes, matchFlakeTypes, matchParentHashes;
 		Ryan_Debug::splitSet::intervals<float> iDipoleSpacing;
 		Ryan_Debug::splitSet::intervals<size_t> iDipoleNumbers;
