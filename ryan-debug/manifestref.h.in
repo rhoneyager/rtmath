@@ -1,0 +1,68 @@
+#pragma once
+
+// The manifest component name depends on whether a debug or release build is using the app.
+// This is for ease of use when debugging.
+#ifndef RYAN_DEBUG_ASSEMBLY_RELEASE
+#define RYAN_DEBUG_ASSEMBLY_RELEASE "'@ASSEMBLY_NAME_Release@'"
+#endif
+#ifndef RYAN_DEBUG_ASSEMBLY_DEBUG
+#define RYAN_DEBUG_ASSEMBLY_DEBUG "'@ASSEMBLY_NAME_Debug@'"
+#endif
+#ifndef RYAN_DEBUG_ASSEMBLY_RELWITHDEBINFO
+#define RYAN_DEBUG_ASSEMBLY_RELWITHDEBINFO "'@ASSEMBLY_NAME_RelWithDebInfo@'"
+#endif
+#ifndef RYAN_DEBUG_ASSEMBLY_MINSIZEREL
+#define RYAN_DEBUG_ASSEMBLY_MINSIZEREL "'@ASSEMBLY_NAME_MinSizeRel@'"
+#endif
+
+#define BUILDTYPE_Debug 1
+#define BUILDTYPE_Release 2
+#define BUILDTYPE_MinSizeRel 3
+#define BUILDTYPE_RelWithDebInfo 4
+
+#ifndef RYAN_DEBUG_ASSEMBLY_NAME
+#ifdef RYAN_DEBUG_FORCE_RELEASE
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELEASE
+#else
+#ifdef BUILDTYPE
+#if (BUILDTYPE == BUILDTYPE_Debug)
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_DEBUG
+#elif (BUILDTYPE == BUILDTYPE_RelWithDebInfo)
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELWITHDEBINFO
+#elif (BUILDTYPE == BUILDTYPE_MinSizeRel)
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_MINSIZEREL
+#else
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELEASE
+#endif
+#else
+#ifdef _DEBUG
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_DEBUG
+#else
+#define RYAN_DEBUG_ASSEMBLY_NAME RYAN_DEBUG_ASSEMBLY_RELEASE
+#endif
+#endif
+#endif
+#endif
+
+#if @USINGMANIFESTS@
+#ifndef IGNORE_MANIFESTS
+#ifndef RYAN_DEBUG_EXPORTING
+
+#pragma region Includes and Manifest Dependencies
+
+// Enable manifest referencing
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='x86' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='ia64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='amd64' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name="RYAN_DEBUG_ASSEMBLY_NAME" version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' processorArchitecture='*' publicKeyToken='@ASSEMBLY_PUBLICKEYTOKEN@' language='*'\"")
+#endif
+#pragma endregion
+
+#endif
+#endif
+#endif
+

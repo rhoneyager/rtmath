@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='Windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+  <Product Name='Ryan_Debug' Id='1BF1703C-4367-47F0-8962-13E2D59173D6' UpgradeCode='73A4FD88-A321-4559-9E31-87B0442CE9AA'
+    Language='1033' Codepage='1252' Version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' Manufacturer='Ryan Honeyager'>
+
+    <Package Id='*' Keywords='Installer' Description="Ryan_Debug Installer"
+      Comments='Provides the Ryan_Debug library (various versions)' Manufacturer='Ryan Honeyager'
+      InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252' Platform='x64' />
+
+    <Condition Message="This application is only supported on 64-bit Windows Vista, Windows Server 2008, or higher.">
+      <![CDATA[Installed OR (VersionNT64 >= 600)]]>
+    </Condition>
+
+    <Media Id='1' Cabinet='Ryan_Debug_x64.cab' EmbedCab='yes' DiskPrompt='Ryan_Debug_x64' />
+    <Property Id='DiskPrompt' Value="Ryan_Debug x64 vc110" />
+
+    <!-- Need to first add in cmake file customization
+    <Directory Id='MODULEDIR' Name='envmodulebasedir'>
+      <Component Id='envmodules' Guid='24F3A275-CFAD-4E4E-92DF-ED2910271313'>
+        <File Id='develmodule' Name='Ryan_Debug_module' DiskId='1' Source='module' KeyPath='yes' />
+      </Component>
+    </Directory>
+    -->
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFiles64Folder' Name='PFiles'>
+        <Directory Id='Ryan' Name='Ryan'>
+          <Directory Id='INSTALLDIR' Name='Ryan_Debug'>
+            <Directory Id='bindir' Name='bin'>
+
+              <!-- The sxs public assembly stuff goes here (separate folder to prevent reference counting issues when compiling. 
+                <Component Id='Dll' Guid='A1574708-A1BD-4271-B1CA-B5755748CAF7' Win64='yes'>
+                  <File Id='RawDll' 
+                        AssemblyManifest='dllManifest' 
+                        Assembly='win32' 
+                        Vital='yes'
+                        Name='Ryan_Debug_x64.dll' 
+                        DiskId='1' 
+                        Source='bin/Ryan.Debug.DebugAssembly/Ryan_Debug_x64.dll' 
+                        KeyPath='yes' />
+                  <File Id='dllcatalog' 
+                        Vital='yes' 
+                        Name='Ryan.Debug.DebugAssembly.cat' 
+                        DiskId='1' 
+                        Source='bin/Ryan.Debug.DebugAssembly/Ryan.Debug.DebugAssembly.cat' 
+                        KeyPath='no' />
+                  <File Id='dllManifest' 
+                        Vital='yes' 
+                        Name='Ryan.Debug.DebugAssembly.manifest' 
+                        DiskId='1' 
+                        Source='bin/Ryan.Debug.DebugAssembly/Ryan.Debug.DebugAssembly.manifest' 
+                        KeyPath='no' />
+                </Component>
+                <Component Id='Policy' Guid='A1574708-A1BD-4271-B1CA-B5755748CAF8' Win64='yes' Transitive='yes'>
+                  <File Id='policyFile' 
+                        Assembly='win32' 
+                        AssemblyManifest='policyFile' 
+                        Vital='yes' 
+                        Name='policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest' 
+                        DiskId='1' 
+                        Source='bin/Ryan.Debug.DebugAssembly/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.manifest' 
+                        KeyPath='yes' />
+                  <File Id='policyCat' 
+                        Name='policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat' 
+                        Source='bin/Ryan.Debug.DebugAssembly/policy.@MAJOR@.@MINOR@.Ryan.Debug.DebugAssembly.cat' 
+                        Vital='no'/>
+                </Component>
+              -->
+
+            </Directory>
+            <Directory Id='includedir' Name='include'></Directory>
+            <Directory Id='libdir' Name='lib'></Directory>
+	    <Directory Id='cmakedir' Name='CMake'></Directory>
+	    <Directory Id='sharedir' Name='share'></Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id='Complete' Title='Ryan_Debug' Description='The complete package' Level='1' Display='expand'
+             ConfigurableDirectory='INSTALLDIR' AllowAdvertise='no' Absent='disallow'>
+      <ComponentGroupRef Id="bin_x64_vc120" />
+	    <ComponentGroupRef Id="conf_x64_vc120" />
+	    <ComponentGroupRef Id="inc_Ryan_Debug" />
+	    <ComponentGroupRef Id="lib_x64_vc120" />
+	    <ComponentGroupRef Id="sha_Ryan_Debug.xml" />
+    </Feature>
+
+    <UIRef Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf"/>
+
+  </Product>
+</Wix>
+
