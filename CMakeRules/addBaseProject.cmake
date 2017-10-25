@@ -1,31 +1,32 @@
 macro(getMSVCappend)
 	if(DEFINED MSVC)
 		if (MSVC)
-			if (MSVC10)
-				set (MSVC_APPEND "vc100")
-			elseif (MSVC11)
-				set (MSVC_APPEND "vc110")
-			elseif (MSVC12)
-				set (MSVC_APPEND "vc120")
-			else()
-				set (MSVC_APPEND ${MSVC_VERSION})
-			endif()
+			set (MSVC_APPEND ${MSVC_VERSION})
 		endif()
 	endif()
 endmacro(getMSVCappend)
 macro(addBaseProject)
 
-# Enable C++11
-# g++
+set (CMAKE_CXX_STANDARD 11)
 IF(DEFINED CMAKE_COMPILER_IS_GNUCXX)
-	SET (COMMON_CFLAGS ${COMMON_CFLAGS} "-std=c++11 -fPIC")
+	#SET (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
 ENDIF()
-
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # using regular Clang or AppleClang
+#	SET (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-stdlib=libc++")
+endif()
 IF(DEFINED MSVC)
-	# MSVC parallel builds by default
-	SET(COMMON_CFLAGS ${COMMON_CFLAGS} /MP)
+    # MSVC parallel builds by default
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 ENDIF()
-
+if("${CMAKE_HOST_SYSTEM_NAME}" MATCHES "Linux")
+	IF(DEFINED CMAKE_COMPILER_IS_GNUCXX)
+		SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
+		set (COMMON_LIBS ${COMMON_LIBS} "dl")
+		#SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ldl")
+		#SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ldl")
+	ENDIF()
+endif()
 # If doing a debug build, set the appropriate compiler defines
 IF("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
 	add_definitions(-D_DEBUG)

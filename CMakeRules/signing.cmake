@@ -1,12 +1,14 @@
 if (WIN32)
 set (TIMESTAMP_PROVIDER /t http://timestamp.verisign.com/scripts/timestamp.dll
 	CACHE STRING "Specifies the site used for timestamping signed code")
+mark_as_advanced(TIMESTAMP_PROVIDER)
 # /t http://timestamp.verisign.com/scripts/timestamp.dll
 # /tr http://www.startssl.com/timestamp
 set (SIGN_BINARIES TRUE CACHE BOOL "Sign the binaries")
 else()
 	set (SIGN_BINARIES FALSE)
 endif()
+mark_as_advanced(SIGN_BINARIES)
 
 macro(signing appname )
 	if (WIN32)

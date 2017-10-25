@@ -13,7 +13,13 @@ if(BUILD_DOCUMENTATION)
 		message(SEND_ERROR "Documentation build requested but Doxygen is not found.")
 	endif()
 
-	
+    if (NOT DOXYGEN_DOT_EXECUTABLE)
+	    set(HAVE_DOT NO)
+    else()
+	    set(HAVE_DOT YES)
+    endif()
+
+
 	configure_file(Doxyfile.in
 		"${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
 
