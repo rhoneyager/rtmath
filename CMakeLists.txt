@@ -40,7 +40,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(REGISTRY_PLUGINS_OVERRIDE_DIR ../plugins CACHE PATH "Additional plugin search directory (leave to ../plugins for none)")
 
-addBoostUniform(program_options )
+addBoostUniform(filesystem iostreams program_options system log log_setup)
 if(WIN32 AND NOT CYGWIN)
 	set( DATA_DIR_PREFIX_CAND
 		C:/rtmath )
@@ -64,12 +64,74 @@ option ( BUILD_APPS
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+# Needed here to properly configure
+set(COMPRESS_ZLIB 0)
+set(COMPRESS_GZIP 0)
+set(COMPRESS_BZIP2 0)
+set(COMPRESS_SZIP 0) # Only the HDF plugin uses SZIP
+
 if(NOT ZLIB_INCLUDE_DIR)
 	if (DEFINED ENV{ZLIB_ROOT})
 		set(ZLIB_ROOT $ENV{ZLIB_ROOT})
 	ENDIF()
 endif()
 
+find_package(BZip2)
+# BZIP2_FOUND requires that the debug libary be found, which is not desired.
+if (NOT BZIP2_INCLUDE_DIR)
+	message(STATUS "BZip2 libraries not found. Retrying with environment variables.")
+	# FindBZip.cmake is annoying. It doesn't check the environment.
+	if (DEFINED ENV{BZIP2_INCLUDE_DIR})
+		set(BZIP2_INCLUDE_DIR $ENV{BZIP2_INCLUDE_DIR}
+			CACHE PATH "BZip2 Include directory" FORCE)
+	endif()
+	if (DEFINED ENV{BZIP2_LIBRARY_DEBUG})
+		set(BZIP2_LIBRARY_DEBUG $ENV{BZIP2_LIBRARY_DEBUG}
+			CACHE FILEPATH "BZip2 Debug library path" FORCE)
+	endif()
+	if (DEFINED ENV{BZIP2_LIBRARY_RELEASE})
+		set(BZIP2_LIBRARY_RELEASE $ENV{BZIP2_LIBRARY_RELEASE}
+			CACHE FILEPATH "BZip2 Release library path" FORCE)
+	endif()
+	if (DEFINED ENV{BZIP2_LIBRARIES})
+		set(BZIP2_LIBRARIES $ENV{BZIP2_LIBRARIES}
+			CACHE FILEPATH "BZip2 libraries" FORCE)
+		mark_as_advanced(BZIP2_LIBRARIES)
+	endif()
+	find_package(BZip2)
+endif()
+
+
+if(NOT ZLIB_INCLUDE_DIR)
+	if (DEFINED ENV{ZLIB_ROOT})
+		set(ZLIB_ROOT $ENV{ZLIB_ROOT})
+	ENDIF()
+endif()
+find_package(ZLIB)
+
+
+if (ZLIB_FOUND)
+	set(COMPRESS_ZLIB 1)
+	set(COMPRESS_GZIP 1)
+	include_directories(${ZLIB_INCLUDE_DIRS})
+	#set(liblist ${liblist} ${ZLIB_LIBRARIES})
+endif()
+# BZIP2_FOUND requires that the debug libary be found, which is not desired.
+if (BZIP2_INCLUDE_DIR)
+	set(COMPRESS_BZIP2 1)
+	include_directories(${BZIP2_INCLUDE_DIR})
+	#set(liblist ${liblist} ${BZIP2_LIBRARIES})
+endif()
+IF (DEFINED SZIP_LIBRARY)
+	include_directories(${SZIP_INCLUDE_DIRS})
+	#	SET (h5libs ${h5libs} szip)
+	set(COMPRESS_SZIP 1)
+ENDIF()
+
+
+
+
+add_subdirectory (ryan-debug)
 add_subdirectory (rtmath/rtmath)
 add_subdirectory (rtmath/plugins)
 if (BUILD_APPS)
