@@ -61,7 +61,7 @@ set (hdrs
 	Ryan_Debug/Serialization.h
 	Ryan_Debug/splitSet.h
 	src/internal.h
-	"${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h"
+	#	"${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h"
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake-settings.h"
 	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.xml"
 	)

@@ -40,7 +40,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(REGISTRY_PLUGINS_OVERRIDE_DIR ../plugins CACHE PATH "Additional plugin search directory (leave to ../plugins for none)")
 
-addBoostUniform(filesystem iostreams program_options system log log_setup)
+addBoostUniform(filesystem iostreams program_options system log log_setup unit_test_framework regex date_time)
 if(WIN32 AND NOT CYGWIN)
 	set( DATA_DIR_PREFIX_CAND
 		C:/rtmath )
@@ -133,7 +133,7 @@ ENDIF()
 
 add_subdirectory (ryan-debug)
 add_subdirectory (rtmath/rtmath)
-add_subdirectory (rtmath/plugins)
+#add_subdirectory (rtmath/plugins)
 if (BUILD_APPS)
 	add_subdirectory (rtmath/rtmath-apps)
 endif()
