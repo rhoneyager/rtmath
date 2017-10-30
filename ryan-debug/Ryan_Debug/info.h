@@ -7,7 +7,7 @@
 #include <cstring>
 #include <boost/version.hpp>
 #include "defs.h"
-#include "cmake-settings.h"
+#include "Ryan_Debug_cmake-settings.h"
 
 #define QUOTE(str) #str
 #define EXPAND_AND_QUOTE(str) QUOTE(str)

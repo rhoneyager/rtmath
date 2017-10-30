@@ -10,7 +10,7 @@
 #define RYAN_DEBUG_NO_LINK
 
 // debug_subversion.h is auto-generated
-#include <debug_subversion.h>
+//#include <debug_subversion.h>
 
 #include <boost/shared_array.hpp>
 #include <boost/filesystem.hpp>
@@ -587,7 +587,7 @@ namespace Ryan_Debug {
 			// both internally use null-terminated strings
 			// TODO: figure out what to do with this.
 			path pcmd(pp / "cmdline");
-			ifstream scmdline(pcmd.string().c_str());
+			std::ifstream scmdline(pcmd.string().c_str());
 			const int length = 1024;
 			char *buffer = new char[length];
 			while (scmdline.good())
@@ -601,7 +601,7 @@ namespace Ryan_Debug {
 			//		'\0', ' ');
 
 			path penv(pp / "environ");
-			ifstream senviron(penv.string().c_str());
+			std::ifstream senviron(penv.string().c_str());
 
 			while (senviron.good())
 			{

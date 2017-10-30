@@ -25,9 +25,9 @@
 
 
 // Special compile-time generated files that build needs
-#include "debug_subversion.h"
+//#include "debug_subversion.h"
 
-#include "cmake-settings.h"
+#include "Ryan_Debug_cmake-settings.h"
 
 namespace {
 	std::set<std::string> mtypes, mnewtypes;

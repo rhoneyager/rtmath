@@ -289,7 +289,7 @@ namespace Ryan_Debug
 			pTarget = path(sTarget);
 
 			// Open file for writing with appropriate other params
-			ifstream in(pTarget.string().c_str(), ios_base::in | ios_base::binary);
+			std::ifstream in(pTarget.string().c_str(), ios_base::in | ios_base::binary);
 
 			// Prepare compression
 			using namespace boost::iostreams;

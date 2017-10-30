@@ -49,8 +49,8 @@
 #include "internal.h"
 
 // This file just defines the subversion revision, created at a pre-build strp
-#include "debug_subversion.h"
-#include "cmake-settings.h"
+//#include "debug_subversion.h"
+#include "Ryan_Debug_cmake-settings.h"
 
 namespace blog = boost::log;
 namespace {
