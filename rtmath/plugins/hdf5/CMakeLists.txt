@@ -5,9 +5,6 @@ find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 find_package(HDF5 COMPONENTS C CXX REQUIRED)
-include_directories(${HDF5_INCLUDE_DIR_C} ${HDF5_INCLUDE_DIR_CPP})
-add_definitions(${HDF5_DEFINITIONS})
-
 if(DEFINED HDF5_C_LIBRARIES)
 	set (h5libs ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
 else()
@@ -43,6 +40,11 @@ add_library (rtmath_plugin_hdf5 SHARED
 	hdf5-voronoi-read.cpp
 	)
 addlib(rtmath_plugin_hdf5 SHARED)
+message("${HDF5_INCLUDE_DIR_C} ${HDF5_INCLUDE_DIR_CPP} ${HDF5_INCLUDE_DIRS}")
+target_include_directories(rtmath_plugin_hdf5 ${HDF5_INCLUDE_DIR_C} ${HDF5_INCLUDE_DIR_CPP})
+#add_definitions(${HDF5_DEFINITIONS})
+set_target_properties(rtmath_plugin_hdf5 PROPERTIES COMPILE_DEFINITIONS "${HDF5_DEFINITIONS}")
+
 
 target_link_libraries(rtmath_plugin_hdf5 
 	${rtmath_ddscat-libs} rtmath_core rtmath_ddscat

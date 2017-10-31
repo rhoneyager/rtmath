@@ -7,7 +7,7 @@ target_link_libraries(rtmath-ddscat-output-ingest-ncurses ${rtmath_ddscat-libs} 
 #include_directories(${RYCURSES_INCLUDE_DIRS})
 addapp(rtmath-ddscat-output-ingest-ncurses Analysis)
 
-if (BUILD_PLUGIN_HDF5)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_HDF5)
 	add_dependencies ( rtmath-ddscat-output-ingest-ncurses rtmath_plugin_hdf5)
 endif()
 

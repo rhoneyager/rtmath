@@ -7,9 +7,9 @@ addapp(rtmath-visualize-shape-batch-fast Visualization)
 
 #	add_dependencies ( rtmath-visualize-shape-batch-fast rtmath-voronoi )
 
-if (BUILD_PLUGIN_SILO)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_SILO)
 	add_dependencies ( rtmath-visualize-shape-batch-fast rtmath_plugin_silo)
 endif()
-if (BUILD_PLUGIN_HDF5)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_HDF5)
 	add_dependencies ( rtmath-visualize-shape-batch-fast rtmath_plugin_hdf5)
 endif()

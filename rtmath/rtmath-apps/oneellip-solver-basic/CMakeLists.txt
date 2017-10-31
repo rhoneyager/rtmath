@@ -12,7 +12,7 @@ target_link_libraries( rtmath-oneellip-solver-basic
 	)
 addapp(rtmath-oneellip-solver-basic Analysis)
 
-if (BUILD_PLUGIN_TMATRIX)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_TMATRIX)
 	add_dependencies ( rtmath-oneellip-solver-basic rtmath_plugin_tmatrix)
 endif()
 

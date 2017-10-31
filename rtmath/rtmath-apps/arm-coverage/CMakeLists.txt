@@ -12,10 +12,10 @@ addapp(rtmath-arm-coverage Data)
 #	add_dependencies ( rtmath-arm-coverage rtmath_plugin_ImageMagick)
 #endif()
 
-if (BUILD_PLUGIN_PSQL)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_PSQL)
 	add_dependencies ( rtmath-arm-coverage rtmath_plugin_psql)
 endif()
-if (BUILD_PLUGIN_TSV)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_TSV)
 	add_dependencies ( rtmath-arm-coverage rtmath_plugin_tsv)
 endif()
 

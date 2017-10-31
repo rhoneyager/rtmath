@@ -10,10 +10,10 @@ addapp(rtmath-arm-sacr Data)
 #endif()
 
 # Add a database plugin dependency, too...
-if (BUILD_PLUGIN_NETCDF)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_NETCDF)
 	add_dependencies ( rtmath-arm-sacr rtmath_plugin_netcdf)
 endif()
-if (BUILD_PLUGIN_TSV)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_TSV)
 	add_dependencies ( rtmath-arm-sacr rtmath_plugin_tsv)
 endif()
 

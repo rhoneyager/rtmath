@@ -5,10 +5,10 @@ add_executable (rtmath-voronoi voronoi-main.cpp)
 addapp( rtmath-voronoi Shapes)
 target_link_libraries(rtmath-voronoi ${rtmath_ddscat-libs} rtmath_core rtmath_ddscat)
 
-if (BUILD_PLUGIN_SILO)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_SILO)
 	add_dependencies ( rtmath-voronoi rtmath_plugin_silo)
 endif()
-if (BUILD_PLUGIN_HDF5)
+if (BUILD_PLUGINS AND BUILD_PLUGIN_HDF5)
 	add_dependencies ( rtmath-voronoi rtmath_plugin_hdf5)
 endif()
 
