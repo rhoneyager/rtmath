@@ -1,8 +1,8 @@
 include (common)
 include (commonRtmathApps)
-find_package(Eigen3 REQUIRED)
+#find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
-find_package(Ryan_Debug REQUIRED)
+#find_package(Ryan_Debug REQUIRED)
 find_package(Udunits2 REQUIRED)
 include_directories(${UDUNITS2_INCLUDE_DIR})
 

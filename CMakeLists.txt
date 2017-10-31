@@ -136,10 +136,13 @@ ENDIF()
 
 
 
+option (BUILD_PLUGINS
+	"Master switch to enable / disable building of plugins" ON)
 
 add_subdirectory (ryan-debug)
 add_subdirectory (rtmath/rtmath)
-#add_subdirectory (rtmath/plugins)
+
+add_subdirectory (rtmath/plugins)
 if (BUILD_APPS)
 	add_subdirectory (rtmath/rtmath-apps)
 endif()
