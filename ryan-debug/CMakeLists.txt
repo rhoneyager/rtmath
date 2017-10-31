@@ -12,7 +12,7 @@ set(RYAN_DEBUG_VERSION
 
 configure_file (
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake-settings.h.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug_cmake-settings.h"
+	"${CMAKE_BINARY_DIR}/Ryan_Debug_cmake-settings.h"
 	)
 	
 configure_file (
@@ -62,7 +62,7 @@ set (hdrs
 	Ryan_Debug/splitSet.h
 	src/internal.h
 	#	"${CMAKE_CURRENT_BINARY_DIR}/debug_subversion.h"
-	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug_cmake-settings.h"
+	"${CMAKE_BINARY_DIR}/Ryan_Debug_cmake-settings.h"
 	"${CMAKE_CURRENT_BINARY_DIR}/Ryan_Debug.xml"
 	)
 source_group("Header Files" FILES ${hdrs})

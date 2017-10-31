@@ -53,7 +53,7 @@ include_directories(BEFORE SYSTEM ${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
 # linterp is in the related directory
-include_directories(BEFORE "${CMAKE_SOURCE_DIR}/related/linterp/rncarpio-linterp-ca556a0/src")
+include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/../related/linterp/rncarpio-linterp-ca556a0/src")
 
 #message("${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY}")
 
