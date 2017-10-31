@@ -889,21 +889,27 @@ namespace Ryan_Debug {
 			if (fn.size()) BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found Ryan_Debug config file " << fn;
 			else {
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::critical) << "Cannot find Ryan_Debug config file!";
-				RDthrow(error::xMissingRyan_DebugConf())
-					<< error::file_name(filename) << error::default_file_name(fn);
+				//RDthrow(error::xMissingRyan_DebugConf())
+				//	<< error::file_name(filename) << error::default_file_name(fn);
 			}
 			//boost::shared_ptr<configsegment> cnf = configsegment::loadFile(fn.c_str(), nullptr);
-			auto opts = Ryan_Debug::registry::IO_options::generate(Ryan_Debug::registry::IOhandler::IOtype::READONLY);
-			opts->filename(fn);
-
-			std::vector< boost::shared_ptr<configsegment> > rootcands;
-			configsegment::readVector(nullptr, opts, rootcands, nullptr);
 			boost::shared_ptr<configsegment> cnf;
-			for (const auto &r : rootcands)
-			{
-				if (r->name() == "Ryan_Debug" || r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
+
+			if (fn.size()) {
+				auto opts = Ryan_Debug::registry::IO_options::generate(Ryan_Debug::registry::IOhandler::IOtype::READONLY);
+				opts->filename(fn);
+
+				std::vector< boost::shared_ptr<configsegment> > rootcands;
+				configsegment::readVector(nullptr, opts, rootcands, nullptr);
+				for (const auto &r : rootcands)
+				{
+					if (r->name() == "Ryan_Debug" || r->name() == "ROOT" || (r->name() == "" && rootcands.size() == 1)) cnf = r;
+				}
+				if (cnf) _rtconfroot = cnf;
+			} else {
+				cnf = configsegment::generate("Ryan_Debug");
+
 			}
-			if (cnf) _rtconfroot = cnf;
 			return cnf;
 		}
 
