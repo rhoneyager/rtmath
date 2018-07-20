@@ -203,7 +203,7 @@ int main(int argc, char** argv)
 		// Perform the query, and then process the matched shapefiles
 		auto res = query->doQuery(collection, fromDb, supplementDb, dHandler);
 
-		ofstream out(output.c_str());
+		std::ofstream out(output.c_str());
 
 		/** Want to tabulate the following:
 		- shape hash, effective ice radius (dipoles),

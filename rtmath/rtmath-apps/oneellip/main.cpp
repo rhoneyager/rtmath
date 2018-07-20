@@ -695,7 +695,7 @@ int main(int argc, char *argv[])
 
 
 
-		ofstream out(string(oprefix).c_str());
+		std::ofstream out(string(oprefix).c_str());
 		// Output a header line
 		out << "Cross-Section Method\tIce Aeff (um)\tMax Diameter (mm)\t"
 			"Ice Volume (mm^3)\tFrequency (GHz)\t"

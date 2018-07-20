@@ -116,13 +116,13 @@ int main(int argc, char** argv)
 		rtmath::ddscat::weights::ddWeightsDDSCAT ddw(rot);
 		rtmath::ddscat::weights::ddWeightsLinInt ddbeta(rot.bMin(), rot.bMax(), rot.bN());
 
-		ostream *out = &(std::cout);
-		ofstream *oof = nullptr;
+		std::ostream *out = &(std::cout);
+		std::ofstream *oof = nullptr;
 
 		if (vm.count("output"))
 		{
 			std::string sofile = vm["output"].as<string>();
-			oof = new ofstream(sofile.c_str());
+			oof = new std::ofstream(sofile.c_str());
 			out = oof;
 		}
 

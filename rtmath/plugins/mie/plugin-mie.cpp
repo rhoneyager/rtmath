@@ -13,8 +13,8 @@
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/plugin.h"
 #include "../../rtmath/rtmath/units.h"
-#include <Ryan_Debug/debug.h>
-#include <Ryan_Debug/error.h>
+#include "../../../ryan-debug/Ryan_Debug/debug.h"
+#include "../../../ryan-debug/Ryan_Debug/error.h"
 
 #include "mie.h"
 

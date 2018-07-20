@@ -257,9 +257,11 @@ namespace rtmath {
 				_rtconfroot = cnf;
 				auto ccnf = cnf->getChild("RTMATH");
 				std::multiset<std::string> children;
-				ccnf->listChildren(children);
+				if (ccnf)
+					ccnf->listChildren(children);
 				std::multimap<std::string,std::string> keys;
-				ccnf->listKeys(keys);
+				if (ccnf)
+					ccnf->listKeys(keys);
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Loaded rtmath config file successfully. "
 					"Searching for hash databases.\nTop level children ("
 					<< children.size() << ") are: ";
@@ -273,30 +275,32 @@ namespace rtmath {
 					schd << "\t" << i.first << "=" << i.second << "\n";
 				BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << schd.str();
 				// Search for hash databases to load
-				auto nddscat = ccnf->getChild("ddscat");
-				if (!nddscat) {
-					nddscat = ccnf;
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "No ddscat key";
-				}
-				auto hashes = nddscat->getChild("hashes");
-				if (hashes) {
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found hashes key";
-					Ryan_Debug::hash::hashStore::loadStoresFromSource(hashes, "rtmath");
-				} else {
-					BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "When loading the rtmath "
-						"configuration file, no /ddscat/hashes or /hashes keys were found. "
-						"This is undesirable, as no hash databases are loaded.";
-				}
+				if (ccnf) {
+					auto nddscat = ccnf->getChild("ddscat");
+					if (!nddscat) {
+						nddscat = ccnf;
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "No ddscat key";
+					}
+					auto hashes = nddscat->getChild("hashes");
+					if (hashes) {
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal) << "Found hashes key";
+						Ryan_Debug::hash::hashStore::loadStoresFromSource(hashes, "rtmath");
+					} else {
+						BOOST_LOG_SEV(lg, Ryan_Debug::log::warning) << "When loading the rtmath "
+							"configuration file, no /ddscat/hashes or /hashes keys were found. "
+							"This is undesirable, as no hash databases are loaded.";
+					}
 
-				if (nddscat) {
-					auto nstats = nddscat->getChild("stats");
-					if (nstats) {
-						std::string defprov = "qhull";
-						if (nstats->hasVal("defaultHullProvider"))
-							nstats->getVal<std::string>("defaultHullProvider", defprov);
-						else nstats->setVal("defaultHullProvider", defprov);
-						BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
-							<< "The default convex hull provider is: " << defprov;
+					if (nddscat) {
+						auto nstats = nddscat->getChild("stats");
+						if (nstats) {
+							std::string defprov = "qhull";
+							if (nstats->hasVal("defaultHullProvider"))
+								nstats->getVal<std::string>("defaultHullProvider", defprov);
+							else nstats->setVal("defaultHullProvider", defprov);
+							BOOST_LOG_SEV(lg, Ryan_Debug::log::normal)
+								<< "The default convex hull provider is: " << defprov;
+						}
 					}
 				}
 			}

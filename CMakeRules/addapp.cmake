@@ -1,7 +1,9 @@
 include(signing)
+include_directories(${CMAKE_SOURCE_DIR}/ryan-debug/)
+
 macro(addapp appname foldername)
 	set_target_properties( ${appname} PROPERTIES FOLDER "Apps/${foldername}")
-	INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin/bin@configappend@ COMPONENT Applications)
+	INSTALL(TARGETS ${appname} RUNTIME DESTINATION bin/bin${configappend} COMPONENT Applications)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	IF(DEFINED COMMON_CFLAGS) 
 		set_target_properties(${appname} PROPERTIES COMPILE_FLAGS ${COMMON_CFLAGS})

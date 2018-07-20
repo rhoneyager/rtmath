@@ -121,12 +121,12 @@ int main(int argc, char** argv)
 			ow = boost::shared_ptr<OrientationWeights1d>(new VonMisesWeights(*dw,mu,kappa));
 		} else doHelp("Unknown weighting method");
 
-		ostream *out = &(std::cout);
-		ofstream *oof = nullptr;
+		std::ostream *out = &(std::cout);
+		std::ofstream *oof = nullptr;
 		if (vm.count("output"))
 		{
 			std::string sofile = vm["output"].as<string>();
-			oof = new ofstream(sofile.c_str());
+			oof = new std::ofstream(sofile.c_str());
 			out = oof;
 		}
 

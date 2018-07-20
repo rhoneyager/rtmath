@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 			fbuf.sputc(0);
 		}
 		*/
-		ofstream out(outfile.c_str(), std::ios_base::out | std::ios_base::binary);
+		std::ofstream out(outfile.c_str(), std::ios_base::out | std::ios_base::binary);
 		out.write(start, repstart - start);
 		out.write(reptext.data(), reptext.size());
 		out.write(repend, end - repend);
