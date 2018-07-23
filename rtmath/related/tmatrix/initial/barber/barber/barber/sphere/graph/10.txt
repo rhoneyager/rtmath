@@ -1,8 +1,0 @@
-textblock=0                     
-textsymnum=0                    
-textpen=3                       
-textpos=2.899844,5.72436        
-textang=180                     
-textht=0.175                    
-textlines=1                     
-.x axis

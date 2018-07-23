@@ -16,7 +16,7 @@
 
 #include "../../rtmath/rtmath/error/debug.h"
 
-#include <tmatrixRandom/tmatrix.h>
+#include "../../related/random/src/headers/tmatrix.h"
 
 #include "plugin-tmatrix-random.h"
 
