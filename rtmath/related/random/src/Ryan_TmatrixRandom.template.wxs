@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='Windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+  <Product Name='Ryan_Tmatrix_Random' Id='6431B5A8-B631-45E7-9ED3-95B4224ECADA' UpgradeCode='73D5D55A-193D-4CAC-BEF8-914318635AFC'
+    Language='1033' Codepage='1252' Version='@MAJOR@.@MINOR@.@REVISION@.@SVNREVISION@' Manufacturer='Ryan Honeyager'>
+
+    <Package Id='*' Keywords='Installer' Description="Ryan_Tmatrix_Random Installer"
+      Comments='Provides the Ryan_Tmatrix_Random library (various versions)' Manufacturer='Ryan Honeyager'
+      InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252' Platform='x64' />
+
+    <Condition Message="This application is only supported on 64-bit Windows Vista, Windows Server 2008, or higher.">
+      <![CDATA[Installed OR (VersionNT64 >= 600)]]>
+    </Condition>
+
+    <Media Id='1' Cabinet='Ryan_Tmatrix_Random.cab' EmbedCab='yes' DiskPrompt='Ryan_Tmatrix_Random' />
+    <Property Id='DiskPrompt' Value="Ryan_Tmatrix_Random x64 vc110" />
+
+    <!-- Need to first add in cmake file customization
+    <Directory Id='MODULEDIR' Name='envmodulebasedir'>
+      <Component Id='envmodules' Guid='C5991286-AA75-492D-9BD8-627704B9A113'>
+        <File Id='develmodule' Name='Ryan_Tmatrix_Random_module' DiskId='1' Source='module' KeyPath='yes' />
+      </Component>
+    </Directory>
+    -->
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFiles64Folder' Name='PFiles'>
+        <Directory Id='Ryan' Name='Ryan'>
+          <Directory Id='INSTALLDIR' Name='Ryan_Tmatrix_Random'>
+            <Directory Id='bindir' Name='bin'>
+            </Directory>
+            <Directory Id='includedir' Name='include'>
+            </Directory>
+            <Directory Id='libdir' Name='lib'>
+            </Directory>
+            <Directory Id='cmakedir' Name='CMake'>
+	    </Directory>
+	    <Directory Id='srcdir' Name='src'>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+    
+      <Feature Id='Complete' Title='Ryan_Tmatrix_Random' Description='The complete package' Level='1' Display='expand' 
+               ConfigurableDirectory='INSTALLDIR' AllowAdvertise='no' Absent='disallow'>
+        <FeatureRef Id='assembly_x64_vc110' />
+      </Feature>
+
+    <UIRef Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf"/>
+    
+    </Product>
+</Wix>
+

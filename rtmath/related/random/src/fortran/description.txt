@@ -1,0 +1,95 @@
+Great..... we're using common blocks again....
+
+Initial values:
+C      AXI=10D0
+C      RAT=0.1D0 
+C      LAM=DACOS(-1D0)*2D0
+C      MRR=1.5 D0
+C      MRI=0.02 D0 
+C      EPS=0.5 D0 
+C      NP=-1
+C      DDELT=0.001D0 
+C      NDGS=2
+C      ALPHA=145D0
+C      BETA=52D0
+C      THET0=56D0
+C      THET=65D0
+C      PHI0=114D0
+C      PHI=128D0
+
+
+
+
+C   INPUT PARAMETERS:                                                  
+C                                                                      
+C      AXI - equivalent-sphere radius                                  
+C      RAT = 1 - particle size is specified in terms of the            
+C                equal-volume-sphere radius                             
+C      RAT.ne.1 - particle size is specified in terms of the           
+C                equal-surface-area-sphere radius                      
+C      LAM - WAVELENGTH OF INCIDENT LIGHT                                       
+C      MRR and MRI - real and imaginary parts of the refractive        
+C                  index                                               
+C      EPS and NP - specify the shape of the particles.                
+C             For spheroids NP=-1 and EPS is the ratio of the          
+C                 horizontal to rotational axes.  EPS is larger than   
+C                 1 for oblate spheroids and smaller than 1 for        
+C                 prolate spheroids.                                   
+C             For cylinders NP=-2 and EPS is the ratio of the          
+C                 diameter to the length.                              
+C             For Chebyshev particles NP must be positive and 
+C                 is the degree of the Chebyshev polynomial, while     
+C                 EPS is the deformation parameter (Ref. 5).          
+C             For generalized Chebyshev particles (describing the shape
+C                 of distorted water drops) NP=-3.  The coefficients
+C                 of the Chebyshev polynomial expansion of the particle
+C                 shape (Ref. 7) are specified in subroutine DROP.
+C      DDELT - accuracy of the computations                            
+C      NDGS - parameter controlling the number of division points      
+C             in computing integrals over the particle surface (Ref. 5).   
+C             For compact particles, the recommended value is 2.       
+C             For highly aspherical particles larger values (3, 4,...) 
+C             may be necessary to obtain convergence.                  
+C             The code does not check convergence over this parameter. 
+C             Therefore, control comparisons of results obtained with  
+C             different NDGS-values are recommended.                   
+C      ALPHA and BETA - Euler angles (in degrees) specifying the orientation 
+C            of the scattering particle relative to the laboratory reference
+C            frame (Refs. 6 and 7).
+C      THET0 - zenith angle of the incident beam in degrees   
+C      THET - zenith angle of the scattered beam in degrees      
+C      PHI0 - azimuth angle of the incident beam in degrees     
+C      PHI - azimuth angle of the scattered beam in degrees   
+C            (Refs. 6 and 7)
+C      ALPHA, BETA, THET0, THET, PHI0, and PHI are specified at the end of
+C      the main program before the line                                    
+C                                                                      
+C       "CALL AMPL (NMAX,...)"                     
+C                                                                      
+C      The part of the main program following the line 
+C                                                                      
+C       "COMPUTATION OF THE AMPLITUDE AND PHASE MATRICES"               
+C                                                                      
+C      can be repeated any number of times.  By this time the T-matrix 
+C      for the given scattering particle has already     
+C      been fully computed and can be repeatedly used in computations  
+C      for any directions of illumination and scattering and any particle
+C      orientations.              
+                                                                       
+C   OUTPUT PARAMETERS:                                                 
+C                                                                      
+C      Elements of the 2x2 amplitude matrix       
+C      Elements of the 4x4 phase matrix
+
+
+
+
+
+
+
+
+
+
+
+
+

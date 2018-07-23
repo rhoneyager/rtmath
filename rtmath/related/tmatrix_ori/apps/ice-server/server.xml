@@ -1,0 +1,19 @@
+<icegrid>
+	<application name="Tmatrix">
+		<replica-group id="tmReplicas">
+			<load-balancing type="adaptive"/>
+			<object identity="tmProcessor" type="::tmatrix::tmProcessor"/>
+		</replica-group>
+        <node name="Node1">
+		<icebox id="TmatrixServer" exe="iceboxd.exe" activation="on-demand">
+			<service name="TmatrixServer" entry="tmatrix-ice-server_Debug:create">
+				<adapter name="${service}" endpoints="tcp" replica-group="tmReplicas"/>
+			</service>
+			<property name="Ice.StdErr" value="C:/Users/Ryan/Documents/Visual Studio 2012/Projects/tmatrix/build/x86-cpp/apps/ice-server/Debug/logerr.txt"/>
+			<property name="Ice.StdOut" value="C:/Users/Ryan/Documents/Visual Studio 2012/Projects/tmatrix/build/x86-cpp/apps/ice-server/Debug/logout.txt"/>
+			<property name="Identity" value="${node}-${service}"/>
+		</icebox>
+        </node>
+    </application>
+</icegrid>
+

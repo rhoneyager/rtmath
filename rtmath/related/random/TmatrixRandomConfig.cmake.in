@@ -1,0 +1,20 @@
+# _ Config file for the Tmatrix package
+# It defines the following variables
+#  TMATRIX_RANDOM_CPP_INCLUDE_DIRS _ include directories
+#  TMATRIX_RANDOM_CPP_LIBRARIES    _ libraries to link against
+#  TMATRIX_RANDOM_CPP_EXECUTABLE   _ an executable
+ 
+# Compute paths
+get_filename_component(TMATRIX_RANDOM_CPP_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(TMATRIX_RANDOM_CPP_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+set(TMATRIX_RANDOM_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${TMATRIX_RANDOM_CPP_CMAKE_DIR}/TmatrixRandomTargets.cmake")
+ 
+# These are IMPORTED targets
+set(TMATRIX_RANDOM_CPP_LIBRARIES tmatrix_random_cpp )
+set(TMATRIX_RANDOM_FORTRAN_LIBRARIES tmatrix_random_fortran )
+
+set(TMATRIX_RANDOM_LIBRARIES tmatrix_random_cpp tmatrix_random_fortran )
+

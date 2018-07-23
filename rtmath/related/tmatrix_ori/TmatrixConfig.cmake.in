@@ -1,0 +1,20 @@
+# _ Config file for the Tmatrix package
+# It defines the following variables
+#  TMATRIX_CPP_INCLUDE_DIRS _ include directories
+#  TMATRIX_CPP_LIBRARIES    _ libraries to link against
+#  TMATRIX_CPP_EXECUTABLE   _ an executable
+ 
+# Compute paths
+get_filename_component(TMATRIX_CPP_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(TMATRIX_CPP_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+set(TMATRIX_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${TMATRIX_CPP_CMAKE_DIR}/TmatrixTargets.cmake")
+ 
+# These are IMPORTED targets
+set(TMATRIX_CPP_LIBRARIES tmatrix_cpp )
+set(TMATRIX_FORTRAN_LIBRARIES tmatrix_fortran )
+
+set(TMATRIX_LIBRARIES tmatrix_cpp tmatrix_fortran )
+

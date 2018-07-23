@@ -1,0 +1,9 @@
+Cross-Section Method	Ice Aeff (um)	Max Diameter (mm)	Ice Volume (mm^3)	Frequency (GHz)	Volume Fraction	Effective Density (g/cm^3)	Temperature (K)	Hash	AR Method	Refractive Index Method	Volume Fraction Method	Aspect Ratio	Lambda (um)	M_re	M_im	Size Parameter	Rescale aeff	Theta	Beta	Phi	g	Qabs	Qbk	Qext	Qsca
+Rayleigh	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	0	0	6.92558e-310	4.94066e-324	1.9983e-316
+Rayleigh-2	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	0	-1	0.0979702	-1	-1
+Rayleigh-Gans	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	-1	-1	0.0600504	-1	-1
+SSRG	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	-1	-1	0.0714085	-1	-1
+tmatrix-ori-iso	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	-1	0.00619611	0.0871012	0.0833384	0.0771423
+tmatrix-rnd	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	0.109742	0.00390329	0.054872	0.0524999	0.0485966
+mie-iso	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	0.109742	0.00619611	0.0871011	0.0833384	0.0771423
+bhmie	158.74	0.4	0.0167552	183.31	0.5	0.459111	263		Max_Ellipsoids	Maxwell_Garnett_Ellipsoids		1	1635.44	1.78306	-0.00386205	0.609863	1	0	0	0	0.109742	0.00619611	0.0871011	0.0833384	0.0771423
