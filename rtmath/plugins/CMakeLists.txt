@@ -9,11 +9,11 @@
 
 if (BUILD_PLUGINS)
 	# TODO: Add to a separate repository
-	#option (BUILD_PLUGIN_BHMIE
-	#	"Build Bohren and Huffman Mie plugin" ON)
-	#if (BUILD_PLUGIN_BHMIE)
-	#	add_subdirectory(bhmie)
-	#endif()
+	option (BUILD_PLUGIN_BHMIE
+		"Build Bohren and Huffman Mie plugin" ON)
+	if (BUILD_PLUGIN_BHMIE)
+		add_subdirectory(bhmie)
+	endif()
 
 	# Deprecated
 	#option (BUILD_PLUGIN_BOV
@@ -115,17 +115,16 @@ if (BUILD_PLUGINS)
 		add_subdirectory (silo)
 	endif()
 
-	# Must be in a related repository. Links to GPL code.
 	#option (BUILD_PLUGIN_TMATRIX
 	#	"Build Tmatrix plugin" ON)
 	#if (BUILD_PLUGIN_TMATRIX)
 	#	add_subdirectory(tmatrix)
 	#endif()
-	#option (BUILD_PLUGIN_TMATRIX_RANDOM
-	#	"Build Tmatrix random orientation plugin" ON)
-	#if (BUILD_PLUGIN_TMATRIX_RANDOM)
-	#	add_subdirectory(tmatrix-random)
-	#endif()
+	option (BUILD_PLUGIN_TMATRIX_RANDOM
+		"Build Tmatrix random orientation plugin" ON)
+	if (BUILD_PLUGIN_TMATRIX_RANDOM)
+		add_subdirectory(tmatrix-random)
+	endif()
 
 	option (BUILD_PLUGIN_TSV
 		"Build TSV export plugin" ON)
