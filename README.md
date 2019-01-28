@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-rtmath is a set of radiative transfer-geard routines that are designed to ultimately solve the radiative transfer equation in the microwave spectrum. Furthermore, it contains C++ classes designed to read and manipulate ddscat data and to perform weighting based on particle distributions of shape, size and orientation. These weightings change the bulk scattering and absorption matrices for the DA solution. 
+rtmath is a set of microwave radiative transfer-oriented functions. These functions span 3-D structural visualization, manipulation of particle scattering data, electromagnetic scattering theory, prototype C++ plugin interfaces, nearest-neighbor searches, et cetera. It is __no longer under development__, but I keep it around because it has a few cool ideas that haven't yet been included into my latest projects.
 
 ## Building and Installing
 
@@ -116,10 +116,6 @@ sudo make install
 ```
 make package
 ```
-
-## Warning
-
-This library is quite new and under heavy development. Expect much to change, and use at your own risk.
 
 ## License
 
