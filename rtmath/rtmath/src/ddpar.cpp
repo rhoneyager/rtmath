@@ -94,7 +94,9 @@ namespace {
 			auto cRoot = rtmath::config::loadRtconfRoot();
 			if (!cRoot) RDthrow(Ryan_Debug::error::xMissingRyan_DebugConf());
 			auto ccnf = cRoot->getChild("RTMATH");
+			if (!ccnf) RDthrow(Ryan_Debug::error::xMissingRyan_DebugConf());
 			auto rtddscat = ccnf->getChild("ddscat");
+
 			string sBasePar, scwd;
 			if (rtddscat) {
 				rtddscat->getVal<string>("DefaultFile", sBasePar);

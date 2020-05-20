@@ -545,7 +545,7 @@ namespace rtmath
 						size_t row = (id / 10) - 1; // Annoying start at 1...
 						size_t col = (id % 10) - 1;
 						//std::cerr << "mIndices loc: " << loc << " id: " << id << " i: " << i << " row: " << row << " col: " << col << std::endl;
-						mIndices[i] = std::pair<size_t, size_t>(row, col);
+						mIndices.push_back(std::pair<size_t, size_t>(row, col));
 					}
 
 				}

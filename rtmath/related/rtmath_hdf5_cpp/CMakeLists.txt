@@ -11,9 +11,9 @@ include(common)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-find_package(HDF5 COMPONENTS C CXX REQUIRED)
-include_directories(${HDF5_INCLUDE_DIR_C} ${HDF5_INCLUDE_DIR_CPP})
-add_definitions(${HDF5_DEFINITIONS})
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL )
+include_directories(${HDF5_INCLUDE_DIR_C} ${HDF5_INCLUDE_DIR_CPP} ${HDF5_INCLUDE_DIRS})
+#add_definitions(${HDF5_DEFINITIONS})
 
 if(DEFINED HDF5_C_LIBRARIES)
 	set (h5libs ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})

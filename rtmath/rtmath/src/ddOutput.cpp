@@ -303,7 +303,7 @@ namespace rtmath {
 			pdata = boost::shared_ptr<Eigen::Matrix<float, Eigen::Dynamic,
 				avgScaColDefs::NUM_AVGSCACOLDEFS> >(new Eigen::Matrix<float, Eigen::Dynamic,
 				avgScaColDefs::NUM_AVGSCACOLDEFS>);
-			pdata->resize(0,0);
+			pdata->resize(0,avgScaColDefs::NUM_AVGSCACOLDEFS);
 		}
 
 		/** \note This function will correct any bad wavelengths / effective

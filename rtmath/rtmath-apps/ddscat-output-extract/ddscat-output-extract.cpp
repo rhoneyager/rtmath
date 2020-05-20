@@ -5,11 +5,9 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <string>
-#include <Ryan_Debug/debug.h>
-#include <Ryan_Serialization/serialization.h>
+#include "../../../ryan-debug/Ryan_Debug/debug.h"
+#include "../../../ryan-debug/Ryan_Debug/splitSet.h"
 #include "../../rtmath/rtmath/common_templates.h"
-#include "../../rtmath/rtmath/hash.h"
-#include "../../rtmath/rtmath/splitSet.h"
 #include "../../rtmath/rtmath/ddscat/ddOutput.h"
 #include "../../rtmath/rtmath/ddscat/ddOriData.h"
 #include "../../rtmath/rtmath/ddscat/ddUtil.h"
@@ -19,7 +17,6 @@
 #include "../../rtmath/rtmath/ddscat/shapefile.h"
 #include "../../rtmath/rtmath/ddscat/shapestats.h"
 #include "../../rtmath/rtmath/error/debug.h"
-#include "../../rtmath/rtmath/error/error.h"
 
 int main(int argc, char** argv)
 {
@@ -33,7 +30,6 @@ int main(int argc, char** argv)
 			config("Config options"), hidden("Hidden options"), oall("all options");
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::debug::add_options(cmdline, config, hidden);
-		Ryan_Serialization::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddUtil::add_options(cmdline, config, hidden);
 		//rtmath::ddscat::shapeFileStats::add_options(cmdline, config, hidden);
 		rtmath::ddscat::ddOutput::add_options(cmdline, config, hidden);
@@ -61,9 +57,7 @@ int main(int argc, char** argv)
 		po::notify(vm);
 
 		rtmath::debug::process_static_options(vm);
-		Ryan_Serialization::process_static_options(vm);
 		rtmath::ddscat::ddUtil::process_static_options(vm);
-		//rtmath::ddscat::shapeFileStats::process_static_options(vm);
 		rtmath::ddscat::ddOutput::process_static_options(vm);
 
 		auto doHelp = [&](const std::string &message)
@@ -92,9 +86,6 @@ int main(int argc, char** argv)
 		out << "Filename\tDescription\tShape Hash\tDDSCAT Version Tag\t"
 			"Frequency (GHz)\tDipole Spacing (um)\t"
 			"M_real\tM_imag\tAeff (um)\tBetas\tThetas\tPhis\tNumber of Raw Orientations Available\t"
-			//"V_Voronoi\tSA_Voronoi\tf_Voronoi\tV_Convex\tSA_Convex\tf_Convex\t"
-			//"V_Ellipsoid_Max\tSA_Ellipsoid_Max\tEllipsoid_Max\t"
-			//"V_Circum_Sphere\tSA_Circum_Sphere\tf_Circum_Sphere\t"
 			"Qsca_iso\tQbk_iso\tQabs_iso\tQext_iso"<< endl;
 		
 		using namespace boost::filesystem;
@@ -181,32 +172,6 @@ int main(int argc, char** argv)
 			if (!ddOut->avg) continue;
 			rotations rots;
 			ddOut->avg->getRots(rots);
-			/*
-			if (!ddOut->stats)
-			{
-				if (ddOut->shape)
-					ddOut->stats = boost::shared_ptr<rtmath::ddscat::stats::shapeFileStats>(stats::shapeFileStats::genStats(ddOut->shape));
-			}
-			// Calculate scaled quantities
-			double ds = ddOut->avg->dipoleSpacing();
-
-			double Vvoro = ddOut->stats->SVoronoi_hull.V * pow(ds,3.);
-			double Svoro = ddOut->stats->SVoronoi_hull.SA * pow(ds,2.);
-			double fvoro = ddOut->stats->SVoronoi_hull.f;
-
-			double Vconv = ddOut->stats->Sconvex_hull.V * pow(ds,3.);
-			double Sconv = ddOut->stats->Sconvex_hull.SA * pow(ds,2.);
-			double fconv = ddOut->stats->Sconvex_hull.f;
-
-			double Vellm = ddOut->stats->Sellipsoid_max.V * pow(ds,3.);
-			double Sellm = ddOut->stats->Sellipsoid_max.SA * pow(ds,2.);
-			double fellm = ddOut->stats->Sellipsoid_max.f;
-
-			double Vcirc = ddOut->stats->Scircum_sphere.V * pow(ds,3.);
-			double Scirc = ddOut->stats->Scircum_sphere.SA * pow(ds,2.);
-			double fcirc = ddOut->stats->Scircum_sphere.f;
-			*/
-
 			if (sDescrip.size()) ddOut->description = sDescrip;
 
 			out << p.string() << "\t" << ddOut->description << "\t"
@@ -214,11 +179,7 @@ int main(int argc, char** argv)
 				<< ddOut->avg->freq() << "\t" << ddOut->avg->dipoleSpacing() << "\t"
 				<< ddOut->avg->getM().real() << "\t" << ddOut->avg->getM().imag() << "\t"
 				<< ddOut->avg->aeff() << "\t" << rots.bN() << "\t" << rots.tN() << "\t" << rots.pN() << "\t"
-				<< ddOut->scas.size() << "\t" // << ds << "\t"
-				//<< Vvoro << "\t" << Svoro << "\t" << fvoro << "\t" 
-				//<< Vconv << "\t" << Sconv << "\t" << fconv << "\t" 
-				//<< Vellm << "\t" << Sellm << "\t" << fellm << "\t" 
-				//<< Vcirc << "\t" << Scirc << "\t" << fcirc << "\t" 
+				<< ddOut->scas.size() << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QSCAM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QBKM) << "\t"
 				<< ddOut->avg->getStatEntry(stat_entries::QABSM) << "\t"
